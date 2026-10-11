@@ -21,29 +21,6 @@ public sealed class EventService
     private const string AlreadyCancelledMessage = "Diese Veranstaltung ist bereits abgesagt.";
     private const string NotCancelledMessage = "Diese Veranstaltung ist nicht abgesagt.";
 
-    private static readonly Expression<Func<Event, PublicRow>> PublicRowOf = row => new PublicRow(
-        row.CalendarEntryId,
-        row.CalendarEntry!.Title,
-        row.CalendarEntry.StartsAt,
-        row.CalendarEntry.EndsAt,
-        row.DoorsOpenAt,
-        new PublicEventVenue
-        {
-            Name = row.CalendarEntry.Venue!.Name,
-            Street = row.CalendarEntry.Venue.Street,
-            Zip = row.CalendarEntry.Venue.Zip,
-            City = row.CalendarEntry.Venue.City,
-            Hint = row.CalendarEntry.Venue.Hint,
-        },
-        row.Teaser,
-        row.CalendarEntry.Description,
-        row.AgeHint,
-        row.PriceCents,
-        row.PresaleStartsAt,
-        row.TicketAvailability,
-        row.CancelledAt
-    );
-
     private readonly AppDbContext _dbContext;
     private readonly TimeProvider _timeProvider;
 
@@ -132,25 +109,21 @@ public sealed class EventService
     {
         var now = _timeProvider.GetUtcNow();
 
-        var rows = await ShownEvents(now)
+        return await ShownEvents(now)
             .OrderBy(row => row.CalendarEntry!.StartsAt)
             .ThenBy(row => row.CalendarEntryId)
-            .Select(PublicRowOf)
+            .Select(PublicSummaryAt(now))
             .ToListAsync(ct);
-
-        return [.. rows.Select(row => ToPublicSummary(row, now))];
     }
 
     public async Task<PublicEventDetails?> GetPublicEventAsync(int eventId, CancellationToken ct)
     {
         var now = _timeProvider.GetUtcNow();
 
-        var row = await ShownEvents(now)
+        return await ShownEvents(now)
             .Where(row => row.CalendarEntryId == eventId)
-            .Select(PublicRowOf)
+            .Select(PublicDetailsAt(now))
             .SingleOrDefaultAsync(ct);
-
-        return row is null ? null : ToPublicDetails(row, now);
     }
 
     public async Task<Result<int>> CreateAsync(EventFactsCommand facts, CancellationToken ct)
@@ -318,54 +291,73 @@ public sealed class EventService
         };
 
     [Pure]
-    private static PublicEventSummary ToPublicSummary(PublicRow row, DateTimeOffset now) =>
-        new()
+    private static Expression<Func<Event, PublicEventSummary>> PublicSummaryAt(
+        DateTimeOffset now
+    ) =>
+        row => new PublicEventSummary
         {
-            EventId = row.EventId,
-            Title = row.Title,
-            StartsAt = row.StartsAt,
-            EndsAt = row.EndsAt,
-            DoorsOpenAt = DoorsOpenInstantOf(row),
-            Venue = row.Venue,
+            EventId = row.CalendarEntryId,
+            Title = row.CalendarEntry!.Title,
+            StartsAt = row.CalendarEntry.StartsAt,
+            EndsAt = row.CalendarEntry.EndsAt,
+            DoorsOpenAt = DoorsOpenInstantOf(row.CalendarEntry.StartsAt, row.DoorsOpenAt),
+            Venue = new PublicEventVenue
+            {
+                Name = row.CalendarEntry.Venue!.Name,
+                Street = row.CalendarEntry.Venue.Street,
+                Zip = row.CalendarEntry.Venue.Zip,
+                City = row.CalendarEntry.Venue.City,
+                Hint = row.CalendarEntry.Venue.Hint,
+            },
             Teaser = row.Teaser,
             AgeHint = row.AgeHint,
             PriceCents = row.PriceCents,
             PresaleStartsAt = row.PresaleStartsAt,
-            Status = PublicStatusOf(row, now),
+            Status = EventSales.StatusOf(
+                row.PresaleStartsAt,
+                row.TicketAvailability,
+                row.CancelledAt != null,
+                now
+            ),
         };
 
     [Pure]
-    private static PublicEventDetails ToPublicDetails(PublicRow row, DateTimeOffset now) =>
-        new()
+    private static Expression<Func<Event, PublicEventDetails>> PublicDetailsAt(
+        DateTimeOffset now
+    ) =>
+        row => new PublicEventDetails
         {
-            EventId = row.EventId,
-            Title = row.Title,
-            StartsAt = row.StartsAt,
-            EndsAt = row.EndsAt,
-            DoorsOpenAt = DoorsOpenInstantOf(row),
-            Venue = row.Venue,
+            EventId = row.CalendarEntryId,
+            Title = row.CalendarEntry!.Title,
+            StartsAt = row.CalendarEntry.StartsAt,
+            EndsAt = row.CalendarEntry.EndsAt,
+            DoorsOpenAt = DoorsOpenInstantOf(row.CalendarEntry.StartsAt, row.DoorsOpenAt),
+            Venue = new PublicEventVenue
+            {
+                Name = row.CalendarEntry.Venue!.Name,
+                Street = row.CalendarEntry.Venue.Street,
+                Zip = row.CalendarEntry.Venue.Zip,
+                City = row.CalendarEntry.Venue.City,
+                Hint = row.CalendarEntry.Venue.Hint,
+            },
             Teaser = row.Teaser,
-            Description = row.Description,
+            Description = row.CalendarEntry.Description,
             AgeHint = row.AgeHint,
             PriceCents = row.PriceCents,
             PresaleStartsAt = row.PresaleStartsAt,
-            Status = PublicStatusOf(row, now),
+            Status = EventSales.StatusOf(
+                row.PresaleStartsAt,
+                row.TicketAvailability,
+                row.CancelledAt != null,
+                now
+            ),
         };
 
     [Pure]
-    private static DateTimeOffset? DoorsOpenInstantOf(PublicRow row) =>
-        row.DoorsOpenAt is { } doorsOpenAt
-            ? ClubClock.At(ClubClock.DayOf(row.StartsAt), doorsOpenAt)
-            : null;
-
-    [Pure]
-    private static EventSalesStatus PublicStatusOf(PublicRow row, DateTimeOffset now) =>
-        EventSales.StatusOf(
-            row.PresaleStartsAt,
-            row.TicketAvailability,
-            row.CancelledAt is not null,
-            now
-        );
+    private static DateTimeOffset? DoorsOpenInstantOf(
+        DateTimeOffset startsAt,
+        TimeOnly? doorsOpenAt
+    ) => doorsOpenAt is { } time ? ClubClock.At(ClubClock.DayOf(startsAt), time) : null;
 
     private IQueryable<Event> ShownEvents(DateTimeOffset now) =>
         _dbContext.Events.AsNoTracking().Where(PublicEvents.IsShownAt(now));
@@ -421,22 +413,6 @@ public sealed class EventService
         TicketAvailability TicketAvailability,
         DateTimeOffset? CancelledAt,
         bool IsOver
-    );
-
-    private sealed record PublicRow(
-        int EventId,
-        string Title,
-        DateTimeOffset StartsAt,
-        DateTimeOffset? EndsAt,
-        TimeOnly? DoorsOpenAt,
-        PublicEventVenue Venue,
-        string Teaser,
-        string? Description,
-        string? AgeHint,
-        int? PriceCents,
-        DateTimeOffset? PresaleStartsAt,
-        TicketAvailability TicketAvailability,
-        DateTimeOffset? CancelledAt
     );
 
     private sealed record VenueStateRow(DateOnly? ArchivedOn);

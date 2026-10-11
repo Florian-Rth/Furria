@@ -1,6 +1,7 @@
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using Furria.Application.Gallery;
+using Furria.Application.Media;
 using Furria.Application.News;
 using Furria.Core.Club;
 using Furria.Core.Groups;
@@ -53,39 +54,43 @@ public sealed partial class NewsService
 
     public async Task<PublicNewsDetails?> GetPublicNewsPostAsync(string slug, CancellationToken ct)
     {
-        var post = await _dbContext
+        var article = await _dbContext
             .NewsPosts.AsNoTracking()
             .Where(IsLive)
             .Where(post => post.Slug == slug)
-            .Select(PublicPostProjection)
+            .Select(post => new PublicArticleRow(
+                post.Slug!,
+                post.Title,
+                post.Teaser,
+                post.Text,
+                post.Category!.Value,
+                post.PublishedAt!.Value,
+                post.Author == null
+                    ? null
+                    : new NewsAuthor(post.Author.Id, post.Author.FirstName, post.Author.LastName),
+                MediaPictures.PublicNewsPictureOf(
+                    post.PictureId,
+                    post.Picture == null ? null : post.Picture.RenderedAt
+                ),
+                post.PictureCaption,
+                post.EventId,
+                post.AlbumId
+            ))
             .SingleOrDefaultAsync(ct);
-        if (post is null)
+        if (article is null)
             return null;
 
-        var article = await _dbContext
-            .NewsPosts.AsNoTracking()
-            .Where(row => row.Id == post.NewsPostId)
-            .Select(row => new PublicArticleRow(
-                row.Author == null
-                    ? null
-                    : new NewsAuthor(row.Author.Id, row.Author.FirstName, row.Author.LastName),
-                row.PictureCaption,
-                row.EventId,
-                row.AlbumId
-            ))
-            .SingleAsync(ct);
-
-        var mentions = NewsText.Read(post.Text).Mentions;
+        var mentions = NewsText.Read(article.Text).Mentions;
         return new PublicNewsDetails
         {
-            Slug = post.Slug,
-            Title = post.Title,
-            Teaser = post.Teaser,
-            Text = post.Text,
-            Category = post.Category,
-            PublishedAt = post.PublishedAt,
+            Slug = article.Slug,
+            Title = article.Title,
+            Teaser = article.Teaser,
+            Text = article.Text,
+            Category = article.Category,
+            PublishedAt = article.PublishedAt,
             Author = article.Author,
-            Picture = MediaPictures.PublicNewsPictureOf(post.PictureId, post.PictureRenderedAt),
+            Picture = article.Picture,
             PictureCaption = article.PictureCaption,
             MentionedGroups = await MentionedGroupsAsync(
                 TargetsOf(mentions, NewsMentionKind.Group),
@@ -265,7 +270,14 @@ public sealed partial class NewsService
     );
 
     private sealed record PublicArticleRow(
+        string Slug,
+        string Title,
+        string Teaser,
+        string Text,
+        NewsCategory Category,
+        DateTimeOffset PublishedAt,
         NewsAuthor? Author,
+        PictureDetails? Picture,
         string? PictureCaption,
         int? EventId,
         int? AlbumId
