@@ -1,9 +1,10 @@
 import { selectTeaserPosts } from '@/features/news/news-content';
-import { usePublicNewsQuery } from '@/lib/public-news/api';
+import { publicNews } from '@/lib/public-news/api';
 import type { NewsPost } from '@/lib/public-news/schemas';
+import { readySourceData } from '@/lib/public-resource/public-source';
 
 export const useTeaserPosts = (): NewsPost[] => {
-  const { data } = usePublicNewsQuery();
+  const sections = readySourceData(publicNews.useSource());
 
-  return data === undefined ? [] : selectTeaserPosts(data);
+  return sections === undefined ? [] : selectTeaserPosts(sections);
 };

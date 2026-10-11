@@ -1,7 +1,8 @@
-import { usePublicClubQuery } from './api';
+import { readySourceData } from '@/lib/public-resource/public-source';
+import { publicClub } from './api';
 
 export const useClubAgeOfConsent = (): number | null => {
-  const { data } = usePublicClubQuery();
+  const data = readySourceData(publicClub.useSource());
 
   return data?.ageOfConsent ?? null;
 };

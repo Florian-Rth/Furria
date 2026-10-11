@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { buildIdSlug, readSlugId } from './id-slug';
+import { buildIdSlug, readSlugId, serverSlugAddress } from './detail-address';
 
 describe('buildIdSlug', () => {
   it.each([
@@ -22,5 +22,16 @@ describe('readSlugId', () => {
     ['99999999999999999999-zu-gross', null],
   ])('reads the id of %s', (slug, id) => {
     expect(readSlugId(slug)).toBe(id);
+  });
+});
+
+describe('serverSlugAddress', () => {
+  const address = serverSlugAddress((post: { slug: string }) => post.slug);
+
+  it.each([
+    ['motto-2027', 'motto-2027'],
+    ['', null],
+  ])('reads the detail key of %j', (slug, key) => {
+    expect(address.readKey(slug)).toBe(key);
   });
 });

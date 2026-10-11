@@ -2,7 +2,8 @@ import { KkSection } from '@furria/ui';
 import type { FC } from 'react';
 import { AlbumCard } from '@/features/gallery/components/AlbumCard';
 import { nextAlbumHeading, selectNextAlbum } from '@/features/gallery/gallery-content';
-import { usePublicGalleryQuery } from '@/lib/public-gallery/api';
+import { publicGallery } from '@/lib/public-gallery/api';
+import { readySourceData } from '@/lib/public-resource/public-source';
 import { NextAlbumFrame } from './internal/layout/NextAlbumFrame';
 
 interface NextAlbumProps {
@@ -10,7 +11,7 @@ interface NextAlbumProps {
 }
 
 export const NextAlbum: FC<NextAlbumProps> = ({ currentAlbumId }) => {
-  const { data: sections = [] } = usePublicGalleryQuery();
+  const sections = readySourceData(publicGallery.useSource()) ?? [];
   const nextAlbum = selectNextAlbum(sections, currentAlbumId);
 
   if (nextAlbum === undefined) {

@@ -4,7 +4,7 @@ import {
   formatLongDateRange,
   formatWeekdayLong,
 } from '@/lib/date';
-import { buildIdSlug } from '@/lib/id-slug';
+import { publicEvents } from '@/lib/public-events/api';
 import type { Event } from '@/lib/public-events/schemas';
 
 export interface EventAddress {
@@ -12,8 +12,8 @@ export interface EventAddress {
   title: string;
 }
 
-export const buildEventHref = ({ eventId, title }: EventAddress): string =>
-  `/events/${buildIdSlug(eventId, title)}`;
+export const buildEventHref = (address: EventAddress): string =>
+  `/events/${publicEvents.slugOf(address)}`;
 
 export const buildTicketRequestHref = (address: EventAddress): string =>
   `${buildEventHref(address)}/anfrage`;

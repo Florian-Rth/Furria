@@ -1,4 +1,3 @@
-export { groupMatcherKeys, useGroupMatcherQuery } from './api';
 export { GroupMatcherSection } from './components/GroupMatcherSection/GroupMatcherSection';
 export type { MatchAgreement, MatchReason } from './match-reasons';
 export { buildMatchReasons, classifyAgreement } from './match-reasons';

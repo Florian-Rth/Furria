@@ -1,9 +1,7 @@
 import { selectTeaserEvents } from '@/features/landing/teaser-events';
-import { usePublicEventsQuery } from '@/lib/public-events/api';
+import { publicEvents } from '@/lib/public-events/api';
 import type { Event } from '@/lib/public-events/schemas';
+import { readySourceData } from '@/lib/public-resource/public-source';
 
-export const useTeaserEvents = (): Event[] => {
-  const { data } = usePublicEventsQuery();
-
-  return selectTeaserEvents(data ?? []);
-};
+export const useTeaserEvents = (): Event[] =>
+  selectTeaserEvents(readySourceData(publicEvents.useSource()) ?? []);

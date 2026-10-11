@@ -3,6 +3,7 @@ import { newsReadingMinutesOf } from '@furria/ui/news-text';
 import type { LinkProps } from '@tanstack/react-router';
 import type { NumberedSession } from '@/lib/api/session-section';
 import { formatClockTime, formatLongDate, formatWeekdayAndFullDate } from '@/lib/date';
+import { publicNews } from '@/lib/public-news/api';
 import type {
   NewsAlbum,
   NewsArticle,
@@ -11,6 +12,8 @@ import type {
   NewsPost,
   NewsSection,
 } from '@/lib/public-news/schemas';
+
+export type PostAddress = Pick<NewsPost, 'slug'>;
 
 export const newsHeading = 'AKTUELLES';
 
@@ -75,7 +78,7 @@ export const newsEventsBandContent: NewsEventsBandContent = {
   ctaTo: '/events',
 };
 
-export const buildPostHref = (slug: string): string => `/news/${slug}`;
+export const buildPostHref = (post: PostAddress): string => `/news/${publicNews.slugOf(post)}`;
 
 const CATEGORY_LABELS: Record<NewsCategory, string> = {
   session: 'Session',

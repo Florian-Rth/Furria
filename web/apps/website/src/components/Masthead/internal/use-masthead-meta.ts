@@ -1,4 +1,5 @@
-import { usePublicClubQuery } from '@/lib/public-club/api';
+import { publicClub } from '@/lib/public-club/api';
+import { readySourceData } from '@/lib/public-resource/public-source';
 import { buildFoundingLabel, buildSessionLabel } from './masthead-meta';
 
 interface MastheadMeta {
@@ -7,7 +8,7 @@ interface MastheadMeta {
 }
 
 export const useMastheadMeta = (): MastheadMeta => {
-  const { data } = usePublicClubQuery();
+  const data = readySourceData(publicClub.useSource());
 
   return {
     foundingLabel: buildFoundingLabel(data?.foundedYear ?? null),

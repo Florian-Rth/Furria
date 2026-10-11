@@ -4,7 +4,7 @@ import type { LinkProps } from '@tanstack/react-router';
 import type { NumberedSession } from '@/lib/api/session-section';
 import { sessionAt } from '@/lib/club';
 import { formatLongDate } from '@/lib/date';
-import { buildIdSlug } from '@/lib/id-slug';
+import { publicGallery } from '@/lib/public-gallery/api';
 import type {
   AlbumDetail,
   AlbumPhoto,
@@ -89,11 +89,8 @@ export const photoTileSizes = '(min-width: 900px) 50vw, 100vw';
 
 export const viewerPhotoSizes = '100vw';
 
-export const buildAlbumSlug = (album: { albumId: number; title: string }): string =>
-  buildIdSlug(album.albumId, album.title);
-
 export const buildAlbumHref = (album: { albumId: number; title: string }): string =>
-  `/gallery/${buildAlbumSlug(album)}`;
+  `/gallery/${publicGallery.slugOf(album)}`;
 
 export const buildPhotoSourceSet = (photo: GalleryPhoto): string =>
   toPictureSourceSet(photo, photo.aspect);

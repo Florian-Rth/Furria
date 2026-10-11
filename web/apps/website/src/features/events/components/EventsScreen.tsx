@@ -2,14 +2,14 @@ import type { FC } from 'react';
 import { EventListPage } from '@/features/events/components/EventListPage/EventListPage';
 import { EventsLoading } from '@/features/events/components/EventsLoading';
 import { EventsUnavailable } from '@/features/events/components/EventsUnavailable';
-import { useEventsSource } from '@/features/events/hooks/use-events-source';
+import { publicEvents } from '@/lib/public-events/api';
 
 interface EventsScreenProps {
   now: Date;
 }
 
 export const EventsScreen: FC<EventsScreenProps> = ({ now }) => {
-  const source = useEventsSource();
+  const source = publicEvents.useSource();
 
   if (source.status === 'loading') {
     return <EventsLoading />;
@@ -19,5 +19,5 @@ export const EventsScreen: FC<EventsScreenProps> = ({ now }) => {
     return <EventsUnavailable onRetry={source.retry} />;
   }
 
-  return <EventListPage events={source.events} now={now} />;
+  return <EventListPage events={source.data} now={now} />;
 };
