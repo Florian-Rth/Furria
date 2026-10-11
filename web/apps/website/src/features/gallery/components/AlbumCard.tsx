@@ -8,11 +8,11 @@ import {
   buildAlbumCoverAlt,
   buildAlbumHref,
   buildAlbumMeta,
-  buildAlbumSlug,
   buildPhotoCountLabel,
   buildPhotoSourceSet,
   galleryCoverSizes,
 } from '@/features/gallery/gallery-content';
+import { publicGallery } from '@/lib/public-gallery/api';
 import type { AlbumSummary } from '@/lib/public-gallery/schemas';
 
 interface AlbumCardProps {
@@ -21,7 +21,7 @@ interface AlbumCardProps {
 
 export const AlbumCard: FC<AlbumCardProps> = ({ album }) => {
   const albumHref = buildAlbumHref(album);
-  const albumSlug = buildAlbumSlug(album);
+  const albumSlug = publicGallery.slugOf(album);
   const coverAspectRatio = kkTokens.aspectRatio[albumCoverOrientation];
   const coverAlt = buildAlbumCoverAlt(album);
   const coverSourceSet = buildPhotoSourceSet(album.cover);

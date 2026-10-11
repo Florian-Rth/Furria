@@ -18,7 +18,7 @@ export const NewsRow: FC<NewsRowProps> = ({ post }) => {
   const longDate = formatLongDate(post.publishedAt);
   const photo = newsPhotoOf(post.picture, ROW_PHOTO_SIZES);
   const posterWord = categoryLabelOf(post.category);
-  const link = newsLinkOf(post.slug);
+  const link = newsLinkOf(post);
 
   return (
     <KkNewsRow

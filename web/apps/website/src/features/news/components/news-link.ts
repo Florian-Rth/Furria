@@ -1,8 +1,9 @@
 import type { KkNewsLink } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
+import type { PostAddress } from '@/features/news/news-content';
 import { buildPostHref } from '@/features/news/news-content';
 
-export const newsLinkOf = (slug: string): KkNewsLink => ({
+export const newsLinkOf = (post: PostAddress): KkNewsLink => ({
   component: Link,
-  to: buildPostHref(slug),
+  to: buildPostHref(post),
 });

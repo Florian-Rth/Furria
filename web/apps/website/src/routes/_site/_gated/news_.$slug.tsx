@@ -1,23 +1,18 @@
-import { createFileRoute, notFound, useRouter } from '@tanstack/react-router';
+import { createFileRoute, redirect } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { buildPostHref, NewsPostPage, NewsUnavailable } from '@/features/news';
-import { ApiError } from '@/lib/api/errors';
 import { formatBerlinIsoWithOffset } from '@/lib/date';
-import { ensurePublicNews, ensurePublicNewsArticle } from '@/lib/public-news/api';
+import { publicNews } from '@/lib/public-news/api';
 import type { NewsArticle } from '@/lib/public-news/schemas';
+import { loadCanonicalDetail } from '@/lib/public-resource/canonical-detail';
+import { useRouteRetry } from '@/lib/public-resource/use-route-retry';
 import type { RouteHead } from '@/lib/seo';
 import { pageTitle } from '@/lib/seo';
-
-const NOT_FOUND_STATUS = 404;
 
 const NewsPostComponent: FC = () => <NewsPostPage article={Route.useLoaderData()} />;
 
 const NewsPostErrorComponent: FC = () => {
-  const router = useRouter();
-
-  const retry = (): void => {
-    void router.invalidate();
-  };
+  const retry = useRouteRetry();
 
   return <NewsUnavailable onRetry={retry} />;
 };
@@ -41,25 +36,17 @@ const buildPostHead = (article: NewsArticle): RouteHead => {
       },
       ...buildShareImageMeta(article),
     ],
-    links: [{ rel: 'canonical', href: buildPostHref(article.slug) }],
+    links: [{ rel: 'canonical', href: buildPostHref(article) }],
   };
-};
-
-const loadArticle = async (slug: string): Promise<NewsArticle> => {
-  try {
-    return await ensurePublicNewsArticle(slug);
-  } catch (error) {
-    if (error instanceof ApiError && error.status === NOT_FOUND_STATUS) {
-      throw notFound();
-    }
-    throw error;
-  }
 };
 
 export const Route = createFileRoute('/_site/_gated/news_/$slug')({
   loader: ({ params }): Promise<NewsArticle> => {
-    void ensurePublicNews().catch((): null => null);
-    return loadArticle(params.slug);
+    void publicNews.ensure().catch((): null => null);
+
+    return loadCanonicalDetail(publicNews, params.slug, (slug) =>
+      redirect({ to: '/news/$slug', params: { slug }, replace: true }),
+    );
   },
   head: ({ loaderData }): RouteHead =>
     loaderData === undefined ? { meta: [] } : buildPostHead(loaderData),

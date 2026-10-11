@@ -1,11 +1,12 @@
 import type { FC } from 'react';
-import type { MatcherSource } from '../logic/matcher-source';
+import type { PublicSource } from '@/lib/public-resource/public-source';
+import type { GroupMatcher } from '@/lib/seed/group-matcher';
 import { MatcherError } from './MatcherError';
 import { MatcherLoading } from './MatcherLoading';
 import { MatcherStepper } from './MatcherStepper';
 
 interface MatcherBodyProps {
-  source: MatcherSource;
+  source: PublicSource<GroupMatcher>;
 }
 
 export const MatcherBody: FC<MatcherBodyProps> = ({ source }) => {
@@ -17,5 +18,5 @@ export const MatcherBody: FC<MatcherBodyProps> = ({ source }) => {
     return <MatcherError onRetry={source.retry} />;
   }
 
-  return <MatcherStepper matcher={source.matcher} />;
+  return <MatcherStepper matcher={source.data} />;
 };

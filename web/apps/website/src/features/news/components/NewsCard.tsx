@@ -19,7 +19,7 @@ export const NewsCard: FC<NewsCardProps> = ({ post, sx }) => {
   const date = formatShortDate(post.publishedAt);
   const photo = newsPhotoOf(post.picture, CARD_PHOTO_SIZES);
   const posterWord = categoryLabelOf(post.category);
-  const link = newsLinkOf(post.slug);
+  const link = newsLinkOf(post);
 
   return (
     <KkNewsCard

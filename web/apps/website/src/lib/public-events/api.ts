@@ -1,35 +1,17 @@
-import type { UseQueryResult } from '@tanstack/react-query';
-import { useQuery } from '@tanstack/react-query';
-import { apiFetch } from '@/lib/api/api-fetch';
-import { shouldRetryPublicRead } from '@/lib/api/public-read-retry';
-import { queryClient } from '@/lib/query-client';
-import type { Event, EventDetail } from './schemas';
+import { definePublicDetailResource } from '@/lib/public-resource/define-public-resource';
+import { idSlugAddress } from '@/lib/public-resource/detail-address';
+import type { Event } from './schemas';
 import { EventDetailSchema, EventsResponseSchema } from './schemas';
 
-export const publicEventKeys = {
-  all: ['public-events'] as const,
-  detail: (eventId: number): readonly ['public-events', number] =>
-    ['public-events', eventId] as const,
-};
+type EventAddress = Pick<Event, 'eventId' | 'title'>;
 
-const fetchPublicEvents = async (): Promise<Event[]> => {
-  const response = await apiFetch('/api/public/events', { schema: EventsResponseSchema });
-
-  return response.events;
-};
-
-const fetchPublicEvent = (eventId: number): Promise<EventDetail> =>
-  apiFetch(`/api/public/events/${eventId}`, { schema: EventDetailSchema });
-
-export const usePublicEventsQuery = (): UseQueryResult<Event[], Error> =>
-  useQuery({ queryKey: publicEventKeys.all, queryFn: fetchPublicEvents });
-
-export const ensurePublicEvent = (eventId: number): Promise<EventDetail> =>
-  queryClient.ensureQueryData({
-    queryKey: publicEventKeys.detail(eventId),
-    queryFn: (): Promise<EventDetail> => fetchPublicEvent(eventId),
-    retry: shouldRetryPublicRead,
-  });
-
-export const ensurePublicEvents = (): Promise<Event[]> =>
-  queryClient.ensureQueryData({ queryKey: publicEventKeys.all, queryFn: fetchPublicEvents });
+export const publicEvents = definePublicDetailResource({
+  path: '/api/public/events',
+  schema: EventsResponseSchema,
+  key: 'public-events',
+  select: (response): Event[] => response.events,
+  detail: {
+    schema: EventDetailSchema,
+    address: idSlugAddress((event: EventAddress) => ({ id: event.eventId, title: event.title })),
+  },
+});

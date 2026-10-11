@@ -4,10 +4,10 @@ import type { FC } from 'react';
 import {
   albumCoverOrientation,
   buildAlbumCoverAlt,
-  buildAlbumSlug,
   buildPhotoSourceSet,
   featuredCoverSizes,
 } from '@/features/gallery/gallery-content';
+import { publicGallery } from '@/lib/public-gallery/api';
 import type { AlbumSummary } from '@/lib/public-gallery/schemas';
 
 interface FeaturedAlbumCoverProps {
@@ -17,7 +17,7 @@ interface FeaturedAlbumCoverProps {
 export const FeaturedAlbumCover: FC<FeaturedAlbumCoverProps> = ({ album }) => {
   const coverAlt = buildAlbumCoverAlt(album);
   const coverSourceSet = buildPhotoSourceSet(album.cover);
-  const albumSlug = buildAlbumSlug(album);
+  const albumSlug = publicGallery.slugOf(album);
 
   return (
     <Box data-kk-featured-album-cover sx={{ position: 'absolute', inset: 0, zIndex: 0 }}>
