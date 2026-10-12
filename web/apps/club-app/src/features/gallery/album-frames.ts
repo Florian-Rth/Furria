@@ -92,12 +92,3 @@ export const sceneIndexOfFrame = (
     scenes.findIndex((scene) => number >= scene.firstNumber && number <= scene.lastNumber),
     0,
   );
-
-export const framesAround = (
-  frames: readonly AlbumFrame[],
-  number: number,
-  reach: number,
-): AlbumFrame[] => frames.filter((frame) => Math.abs(frame.number - number) <= reach);
-
-export const steppedNumber = (number: number, delta: number, total: number): number =>
-  Math.min(Math.max(number + delta, 1), total);

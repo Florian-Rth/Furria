@@ -91,7 +91,7 @@ public sealed class GetPublicPictureTests : IClassFixture<ApiTestFixture>
         var ctx = await GalleryAsync(ct);
 
         var response = await GetAsync(
-            PublicPictures.PhotoOf(ctx.Gallery.Items.IdOf("finale")).MediumUrl,
+            PublicPictures.PhotoOf(ctx.Gallery.Items.IdOf("finale"), renderedAt: null).MediumUrl,
             ct
         );
 
@@ -110,7 +110,7 @@ public sealed class GetPublicPictureTests : IClassFixture<ApiTestFixture>
         );
 
         var response = await GetAsync(
-            PublicPictures.PhotoOf(ctx.Gallery.Items.IdOf("finale")).MediumUrl,
+            PublicPictures.PhotoOf(ctx.Gallery.Items.IdOf("finale"), renderedAt: null).MediumUrl,
             ct
         );
 

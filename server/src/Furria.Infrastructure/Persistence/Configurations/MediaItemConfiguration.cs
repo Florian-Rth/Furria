@@ -111,6 +111,10 @@ public sealed class MediaItemConfiguration : IEntityTypeConfiguration<MediaItem>
 
         builder.HasIndex(item => item.StorageKey).IsUnique();
         builder.HasIndex(item => item.AlbumId);
+        builder
+            .HasIndex(item => new { item.AlbumId, item.SelectionPosition })
+            .HasDatabaseName("ix_media_item_album_selection")
+            .HasFilter("selection_position IS NOT NULL");
         builder.HasIndex(item => item.PlacedAt);
         builder.HasIndex(item => item.OwnerPersonId);
         builder.HasIndex(item => item.OwnerGroupId);

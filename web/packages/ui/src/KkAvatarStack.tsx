@@ -3,6 +3,7 @@ import Stack from '@mui/material/Stack';
 import type { Theme } from '@mui/material/styles';
 import type { FC } from 'react';
 import { buildAvatarStack } from './avatar-stack';
+import type { KkImageSource } from './image-source';
 import { inkWashScheme } from './internal/ink-wash';
 import type { KkScheme } from './internal/scheme-paint';
 import { applyScheme } from './internal/scheme-paint';
@@ -38,7 +39,7 @@ const ringSchemes: Record<KkAvatarStackRing, (theme: Theme) => KkScheme> = {
 
 interface KkAvatarStackProps {
   initials: readonly string[];
-  portraits?: readonly (string | undefined)[];
+  portraits?: readonly (KkImageSource | null)[];
   max?: number;
   total?: number;
   ringOn?: KkAvatarStackRing;
@@ -115,7 +116,7 @@ export const KkAvatarStack: FC<KkAvatarStackProps> = ({
         >
           <KkAvatar
             initials={circle.initials}
-            source={circle.portrait}
+            image={circle.portrait}
             size="small"
             component="span"
           />

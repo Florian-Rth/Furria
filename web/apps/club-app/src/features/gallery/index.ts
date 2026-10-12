@@ -4,6 +4,7 @@ export { AlbumNewScreen } from './components/AlbumNewScreen';
 export { AlbumPage } from './components/AlbumPage';
 export { AlbumSelectionScreen } from './components/AlbumSelectionScreen';
 export { GalleryBinPage } from './components/GalleryBinPage';
+export { GalleryDevelopingPoller } from './components/GalleryDevelopingPoller';
 export { GalleryHubPage } from './components/GalleryHubPage';
 export { GalleryInboxPage } from './components/GalleryInboxPage';
 export { GalleryUploadPage } from './components/GalleryUploadPage';

@@ -41,7 +41,8 @@ public sealed partial class NewsService
                 .Select(item => new SelectedPhoto(
                     item.AlbumId!.Value,
                     item.Id,
-                    item.SelectionPosition!.Value
+                    item.SelectionPosition!.Value,
+                    item.RenderedAt
                 ))
                 .ToListAsync(ct)
         ).ToLookup(photo => photo.AlbumId);
@@ -56,16 +57,18 @@ public sealed partial class NewsService
         new(
             album.IsPublished,
             selection.Count,
-            CoverIdOf(album.CoverMediaItemId, selection) is { } coverId
-                ? _pictures.GalleryPhotoOf(coverId)
+            CoverOf(album.CoverMediaItemId, selection) is { } cover
+                ? _pictures.GalleryPhotoOf(cover.MediaItemId, cover.RenderedAt)
                 : null
         );
 
     [Pure]
-    private static int? CoverIdOf(int? chosenCoverId, IReadOnlyList<SelectedPhoto> selection) =>
-        selection.Any(photo => photo.MediaItemId == chosenCoverId)
-            ? chosenCoverId
-            : selection.MinBy(photo => photo.Position)?.MediaItemId;
+    private static SelectedPhoto? CoverOf(
+        int? chosenCoverId,
+        IReadOnlyList<SelectedPhoto> selection
+    ) =>
+        selection.FirstOrDefault(photo => photo.MediaItemId == chosenCoverId)
+        ?? selection.MinBy(photo => photo.Position);
 
     [Pure]
     private static NewsAlbumTie? TieOf(
@@ -88,5 +91,10 @@ public sealed partial class NewsService
 
     private sealed record AlbumCard(bool IsPublished, int PhotoCount, PictureDetails? Cover);
 
-    private sealed record SelectedPhoto(int AlbumId, int MediaItemId, int Position);
+    private sealed record SelectedPhoto(
+        int AlbumId,
+        int MediaItemId,
+        int Position,
+        DateTimeOffset? RenderedAt
+    );
 }

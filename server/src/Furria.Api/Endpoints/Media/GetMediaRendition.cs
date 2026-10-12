@@ -10,6 +10,8 @@ namespace Furria.Api.Endpoints.Media;
 
 public sealed class GetMediaRendition : Endpoint<GetMediaRenditionRequest>
 {
+    private const string ImmutableDirective = "immutable";
+
     private readonly MediaStore _mediaStore;
     private readonly MediaUrlSigner _signer;
     private readonly TimeProvider _timeProvider;
@@ -50,14 +52,18 @@ public sealed class GetMediaRendition : Endpoint<GetMediaRenditionRequest>
         await Send.ResultAsync(MediaFileResults.Of(file, asDownload: req.Download is not null));
     }
 
-    private string CacheControlUntil(long expiresAt) =>
-        new CacheControlHeaderValue
+    private string CacheControlUntil(long expiresAt)
+    {
+        var cacheControl = new CacheControlHeaderValue
         {
             Private = true,
             MaxAge = TimeSpan.FromSeconds(
                 Math.Max(0, expiresAt - _timeProvider.GetUtcNow().ToUnixTimeSeconds())
             ),
-        }.ToString();
+        };
+        cacheControl.Extensions.Add(new NameValueHeaderValue(ImmutableDirective));
+        return cacheControl.ToString();
+    }
 
     private static MediaUrlQuery ToQuery(GetMediaRenditionRequest req, MediaOwner owner) =>
         new()

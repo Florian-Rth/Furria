@@ -12,7 +12,15 @@ public sealed class GetMediaRenditionTests : IClassFixture<ApiTestFixture>
     private const string FileName = "Prunksitzung 042.jpg";
     private const int PhotoLength = 4096;
 
-    private static readonly DateTimeOffset EarlyOnADay = new(2026, 10, 8, 1, 0, 0, TimeSpan.Zero);
+    private static readonly DateTimeOffset EarlyInASigningWeek = new(
+        2026,
+        10,
+        8,
+        1,
+        0,
+        0,
+        TimeSpan.Zero
+    );
 
     private readonly ApiTestFixture _fixture;
 
@@ -143,42 +151,74 @@ public sealed class GetMediaRenditionTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_StillServeTheUrl_When_TheDayAfterItsSigningIsNotOver()
+    public async Task Should_LetTheBrowserKeepTheFileUntilTheUrlExpires_When_TheUrlIsServed()
     {
         var ct = TestContext.Current.CancellationToken;
         var (mediaItemId, _) = await GalleryPhotoAsync(ct);
-        var url = await SignedAtAsync(EarlyOnADay, mediaItemId);
+        var url = await SignedAtAsync(EarlyInASigningWeek, mediaItemId);
+        CacheControlHeaderValue? cacheControl = null;
 
-        var status = await StatusAtAsync(EarlyOnADay.AddHours(46).AddMinutes(59), url, ct);
+        await _fixture.AtInstantAsync(
+            EarlyInASigningWeek,
+            async () =>
+                cacheControl = (await _fixture.CreateClient().GetAsync(url, ct))
+                    .Headers
+                    .CacheControl
+        );
+
+        Assert.Equal(
+            (true, true, TimeSpan.FromDays(14) - TimeSpan.FromHours(1)),
+            (cacheControl?.Private, cacheControl?.Extensions.Any(IsImmutable), cacheControl?.MaxAge)
+        );
+    }
+
+    [Fact]
+    public async Task Should_StillServeTheUrl_When_TheWeekAfterItsSigningIsNotOver()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (mediaItemId, _) = await GalleryPhotoAsync(ct);
+        var url = await SignedAtAsync(EarlyInASigningWeek, mediaItemId);
+
+        var status = await StatusAtAsync(
+            EarlyInASigningWeek.AddDays(13).AddHours(22).AddMinutes(59),
+            url,
+            ct
+        );
 
         Assert.Equal(HttpStatusCode.OK, status);
     }
 
     [Fact]
-    public async Task Should_RefuseTheUrl_When_TheDayAfterItsSigningIsOver()
+    public async Task Should_RefuseTheUrl_When_TheWeekAfterItsSigningIsOver()
     {
         var ct = TestContext.Current.CancellationToken;
         var (mediaItemId, _) = await GalleryPhotoAsync(ct);
-        var url = await SignedAtAsync(EarlyOnADay, mediaItemId);
+        var url = await SignedAtAsync(EarlyInASigningWeek, mediaItemId);
 
-        var status = await StatusAtAsync(EarlyOnADay.AddHours(47), url, ct);
+        var status = await StatusAtAsync(EarlyInASigningWeek.AddDays(13).AddHours(23), url, ct);
 
         Assert.Equal(HttpStatusCode.Forbidden, status);
     }
 
     [Fact]
-    public async Task Should_IssueTheSameUrl_When_SignedTwiceOnOneDay()
+    public async Task Should_IssueTheSameUrl_When_SignedTwiceInOneWeek()
     {
         var ct = TestContext.Current.CancellationToken;
         var (mediaItemId, _) = await GalleryPhotoAsync(ct);
 
-        var morning = await SignedAtAsync(EarlyOnADay, mediaItemId);
-        var evening = await SignedAtAsync(EarlyOnADay.AddHours(21), mediaItemId);
-        var nextDay = await SignedAtAsync(EarlyOnADay.AddHours(23), mediaItemId);
+        var firstDay = await SignedAtAsync(EarlyInASigningWeek, mediaItemId);
+        var weekEnd = await SignedAtAsync(EarlyInASigningWeek.AddDays(6).AddHours(22), mediaItemId);
+        var nextWeek = await SignedAtAsync(
+            EarlyInASigningWeek.AddDays(6).AddHours(23),
+            mediaItemId
+        );
 
-        Assert.Equal(morning, evening);
-        Assert.NotEqual(morning, nextDay);
+        Assert.Equal(firstDay, weekEnd);
+        Assert.NotEqual(firstDay, nextWeek);
     }
+
+    private static bool IsImmutable(NameValueHeaderValue directive) =>
+        directive.Name == "immutable";
 
     private async Task<string> SignedAtAsync(DateTimeOffset instant, int mediaItemId)
     {

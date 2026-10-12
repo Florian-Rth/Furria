@@ -1,12 +1,10 @@
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { buildPhotoParam, resolvePhotoIndex } from '@/features/gallery/photo-viewer-search';
-import type { PhotoStepDirection } from '@/features/gallery/photo-viewer-steps';
-import { stepPhotoIndex } from '@/features/gallery/photo-viewer-steps';
 
 export interface PhotoViewerState {
   index: number | null;
   open: (index: number) => void;
-  step: (direction: PhotoStepDirection) => void;
+  show: (index: number) => void;
   close: () => void;
 }
 
@@ -26,12 +24,7 @@ export const usePhotoViewer = (photoCount: number): PhotoViewerState => {
   return {
     index,
     open: (openedIndex: number): void => goToPhoto(openedIndex, false),
-    step: (direction: PhotoStepDirection): void => {
-      if (index === null) {
-        return;
-      }
-      goToPhoto(stepPhotoIndex(index, direction, photoCount), true);
-    },
+    show: (shownIndex: number): void => goToPhoto(shownIndex, true),
     close: (): void => goToPhoto(null, true),
   };
 };

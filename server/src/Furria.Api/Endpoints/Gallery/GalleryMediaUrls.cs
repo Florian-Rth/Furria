@@ -7,35 +7,43 @@ public static class GalleryMediaUrls
 {
     private const string DownloadFlag = "&download";
 
-    public static GalleryMediaUrlsDto Of(MediaUrlSigner signer, int mediaItemId, MediaKind kind)
+    public static GalleryMediaUrlsDto Of(
+        MediaUrlSigner signer,
+        int mediaItemId,
+        MediaKind kind,
+        DateTimeOffset? renderedAt
+    )
     {
-        var original = UrlOf(signer, mediaItemId, MediaRendition.Original);
+        string UrlOf(MediaRendition rendition) =>
+            MediaUrlVersions.Versioned(
+                signer.UrlOf(mediaItemId, MediaOwner.Gallery, rendition),
+                renderedAt
+            );
+
+        var original = UrlOf(MediaRendition.Original);
 
         return kind == MediaKind.Video
             ? new GalleryMediaUrlsDto
             {
-                Small = UrlOf(signer, mediaItemId, MediaRendition.Small),
+                Small = UrlOf(MediaRendition.Small),
                 Medium = null,
                 Large = null,
-                Poster = UrlOf(signer, mediaItemId, MediaRendition.Poster),
-                Video = UrlOf(signer, mediaItemId, MediaRendition.Video),
+                Poster = UrlOf(MediaRendition.Poster),
+                Video = UrlOf(MediaRendition.Video),
                 Original = original,
                 Download = original + DownloadFlag,
             }
             : new GalleryMediaUrlsDto
             {
-                Small = UrlOf(signer, mediaItemId, MediaRendition.Small),
-                Medium = UrlOf(signer, mediaItemId, MediaRendition.Medium),
-                Large = UrlOf(signer, mediaItemId, MediaRendition.Large),
+                Small = UrlOf(MediaRendition.Small),
+                Medium = UrlOf(MediaRendition.Medium),
+                Large = UrlOf(MediaRendition.Large),
                 Poster = null,
                 Video = null,
                 Original = original,
                 Download = original + DownloadFlag,
             };
     }
-
-    private static string UrlOf(MediaUrlSigner signer, int mediaItemId, MediaRendition rendition) =>
-        signer.UrlOf(mediaItemId, MediaOwner.Gallery, rendition);
 }
 
 public sealed record GalleryMediaUrlsDto

@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import type { KkCrop } from '../crop-frame';
+import type { KkCrop } from '../image-crop';
 import { KkButton } from '../KkButton';
 import { KkCoverPicture } from '../KkCoverPicture';
 import { KkNewsPoster } from '../KkNewsPoster';
@@ -71,7 +71,7 @@ export const KkBannerDesk: FC<KkBannerDeskProps> = ({
       />
     ) : (
       <KkCoverPicture
-        source={shownSource}
+        image={{ src: shownSource }}
         alt={alt}
         sx={(theme) => ({
           borderRadius: `${kkTokens.radius.base}px`,

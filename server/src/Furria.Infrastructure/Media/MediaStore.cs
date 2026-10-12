@@ -64,7 +64,20 @@ public sealed class MediaStore
     {
         var item = await _dbContext
             .MediaItems.AsNoTracking()
-            .SingleOrDefaultAsync(row => row.Id == mediaItemId, ct);
+            .Where(row => row.Id == mediaItemId)
+            .Select(row => new ServedItemRow(
+                row.StorageKey,
+                MediaOwner.Of(
+                    row.OwnerKind,
+                    row.OwnerPersonId,
+                    row.OwnerGroupId,
+                    row.OwnerNewsPostId
+                ),
+                row.Kind,
+                row.ContentType,
+                row.OriginalFileName
+            ))
+            .SingleOrDefaultAsync(ct);
         if (item is null || !MediaRenditions.Exists(item.Kind, rendition))
             return null;
 
@@ -76,7 +89,7 @@ public sealed class MediaStore
 
         return new MediaFileDetails
         {
-            Owner = MediaOwner.Of(item),
+            Owner = item.Owner,
             FullPath = file.FullName,
             ContentType = MediaRenditions.ContentTypeOf(rendition, item.ContentType),
             DownloadName = DownloadNameOf(item.OriginalFileName, rendition),
@@ -170,4 +183,12 @@ public sealed class MediaStore
         rendition == MediaRendition.Original
             ? originalFileName
             : $"{Path.GetFileNameWithoutExtension(originalFileName)}{MediaRenditions.ExtensionOf(rendition)}";
+
+    private sealed record ServedItemRow(
+        Guid StorageKey,
+        MediaOwner Owner,
+        MediaKind Kind,
+        string ContentType,
+        string OriginalFileName
+    );
 }

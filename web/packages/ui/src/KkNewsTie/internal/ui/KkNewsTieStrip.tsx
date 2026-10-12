@@ -1,8 +1,8 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
+import type { KkImageSource, KkPictureUrls } from '../../../image-source';
+import { toImageSource } from '../../../image-source';
 import { KkCoverPicture } from '../../../KkCoverPicture';
-import type { KkPictureUrls } from '../../../picture-sources';
-import { toPictureSourceSet } from '../../../picture-sources';
 import { kkTokens } from '../../../tokens';
 
 export interface KkNewsStripPhoto {
@@ -24,38 +24,52 @@ interface KkNewsTieStripProps {
   photos: readonly KkNewsStripPhoto[];
 }
 
-export const KkNewsTieStrip: FC<KkNewsTieStripProps> = ({ photos }) => (
-  <Box
-    data-kk-news-tie-strip
-    sx={{
-      width: '100%',
-      display: 'grid',
-      gap: 0.5,
-      gridTemplateColumns: {
-        xs: `repeat(${VISIBLE.xs}, minmax(0, 1fr))`,
-        sm: `repeat(${VISIBLE.sm}, minmax(0, 1fr))`,
-        md: `repeat(${VISIBLE.md}, minmax(0, 1fr))`,
-      },
-    }}
-  >
-    {photos.map((photo, index) => (
-      <Box
-        key={photo.id}
-        sx={{
-          display: displayOf(index),
-          aspectRatio: '1 / 1',
-          bgcolor: 'action.hover',
-          borderRadius: `${kkTokens.radius.bar}px`,
-        }}
-      >
-        <KkCoverPicture
-          source={photo.picture.smallUrl}
-          sourceSet={toPictureSourceSet(photo.picture, photo.aspect)}
-          sizes={TILE_SIZES}
-          alt=""
-          sx={{ borderRadius: `${kkTokens.radius.bar}px` }}
-        />
-      </Box>
-    ))}
-  </Box>
-);
+interface StripTile {
+  key: number;
+  display: { xs: string; sm: string; md: string };
+  image: KkImageSource;
+}
+
+const tilesOf = (photos: readonly KkNewsStripPhoto[]): StripTile[] =>
+  photos.flatMap((photo, index) => {
+    const image = toImageSource(photo.picture, photo.aspect, TILE_SIZES);
+    return image === null ? [] : [{ key: photo.id, display: displayOf(index), image }];
+  });
+
+export const KkNewsTieStrip: FC<KkNewsTieStripProps> = ({ photos }) => {
+  const tiles = tilesOf(photos);
+
+  return (
+    <Box
+      data-kk-news-tie-strip
+      sx={{
+        width: '100%',
+        display: 'grid',
+        gap: 0.5,
+        gridTemplateColumns: {
+          xs: `repeat(${VISIBLE.xs}, minmax(0, 1fr))`,
+          sm: `repeat(${VISIBLE.sm}, minmax(0, 1fr))`,
+          md: `repeat(${VISIBLE.md}, minmax(0, 1fr))`,
+        },
+      }}
+    >
+      {tiles.map((tile) => (
+        <Box
+          key={tile.key}
+          sx={{
+            display: tile.display,
+            aspectRatio: '1 / 1',
+            bgcolor: 'action.hover',
+            borderRadius: `${kkTokens.radius.bar}px`,
+          }}
+        >
+          <KkCoverPicture
+            image={tile.image}
+            alt=""
+            sx={{ borderRadius: `${kkTokens.radius.bar}px` }}
+          />
+        </Box>
+      ))}
+    </Box>
+  );
+};

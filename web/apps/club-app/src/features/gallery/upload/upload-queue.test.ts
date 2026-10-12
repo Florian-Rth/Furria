@@ -1,12 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { FileVerdict, ThroughputSample, UploadEntry, UploadPhase } from './upload-queue';
+import type { FileVerdict, ThroughputSample, UploadEntry } from './upload-queue';
 import {
   bytesPerSecondOf,
   keptSamples,
   nextToStart,
   remainingMinutesOf,
   tallyOf,
-  targetsOf,
   verdictOfFile,
 } from './upload-queue';
 
@@ -110,26 +109,5 @@ describe('throughput', () => {
     [MB, 10 * MB, 1],
   ])('%s bytes left at %s B/s', (left, speed, expected) => {
     expect(remainingMinutesOf(left, speed)).toBe(expected);
-  });
-});
-
-describe('targetsOf', () => {
-  it.each<[string, number | null, [number | null, UploadPhase][], (number | null)[]]>([
-    ['the page target alone', 5, [], [5]],
-    [
-      'every target of a sent upload, once',
-      null,
-      [
-        [7, 'sent'],
-        [7, 'sent'],
-        [null, 'sent'],
-        [9, 'uploading'],
-      ],
-      [null, 7],
-    ],
-    ['another album beside the page album', 5, [[8, 'sent']], [5, 8]],
-  ])('%s', (_, page, uploads, expected) => {
-    const entries = uploads.map(([albumId, phase]) => ({ albumId, phase }));
-    expect(targetsOf(entries, page)).toEqual(expected);
   });
 });

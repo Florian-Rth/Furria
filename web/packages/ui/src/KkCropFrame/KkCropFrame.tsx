@@ -2,15 +2,18 @@ import Box from '@mui/material/Box';
 import Slider from '@mui/material/Slider';
 import Stack from '@mui/material/Stack';
 import type { Theme } from '@mui/material/styles';
+import { motion } from 'motion/react';
 import type { FC } from 'react';
-import type { KkCrop } from '../crop-frame';
-import { KK_CROP_MAX_ZOOM, KK_CROP_MIN_ZOOM, placeCropImage } from '../crop-frame';
+import type { KkAspect } from '../image-aspect';
+import { aspectRatioCss } from '../image-aspect';
+import type { KkCrop } from '../image-crop';
 import { focusRing } from '../internal/focus-ring';
 import type { KkSx } from '../kk-sx';
 import { kkTokens } from '../tokens';
 import { KkCropFrameGuide } from './KkCropFrameGuide';
-import { useCropFrame } from './use-crop-frame';
+import { KK_CROP_MAX_ZOOM, useCropStage } from './use-crop-stage';
 
+const KK_CROP_MIN_ZOOM = 1;
 const ZOOM_STEP = 0.01;
 
 export type KkCropGuide = 'circle' | 'none';
@@ -23,7 +26,7 @@ export interface KkCropFrameLabels {
 interface KkCropFrameProps {
   source: string;
   alt: string;
-  aspect: number;
+  aspect: KkAspect;
   initialCrop?: KkCrop | null;
   guide?: KkCropGuide;
   labels: KkCropFrameLabels;
@@ -43,8 +46,10 @@ export const KkCropFrame: FC<KkCropFrameProps> = ({
   onUnreadable,
   sx,
 }) => {
-  const frame = useCropFrame({ aspect, initialCrop, onCropChange });
-  const placement = frame.crop === null ? { opacity: 0 } : placeCropImage(frame.crop);
+  const frame = useCropStage({ initialCrop, onCropChange });
+  const { stage } = frame;
+  const box = stage.imageBox;
+  const placement = box === null ? { opacity: 0 } : box;
   const guideLayer = guide === 'circle' ? <KkCropFrameGuide /> : null;
 
   const handleZoom = (_: Event, value: number | number[]): void => {
@@ -54,19 +59,15 @@ export const KkCropFrame: FC<KkCropFrameProps> = ({
   return (
     <Stack data-kk-crop-frame sx={[{ gap: 1.5, minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}>
       <Box
+        ref={stage.stageRef}
         role="group"
         aria-label={labels.frame}
         tabIndex={0}
-        onPointerDown={frame.onPointerDown}
-        onPointerMove={frame.onPointerMove}
-        onPointerUp={frame.onPointerUp}
-        onPointerCancel={frame.onPointerUp}
-        onWheel={frame.onWheel}
-        onKeyDown={frame.onKeyDown}
+        {...stage.handlers}
         sx={(theme: Theme) => ({
           position: 'relative',
           width: '100%',
-          aspectRatio: String(aspect),
+          aspectRatio: aspectRatioCss(aspect),
           borderRadius: `${kkTokens.radius.base}px`,
           touchAction: 'none',
           cursor: 'grab',
@@ -83,19 +84,19 @@ export const KkCropFrame: FC<KkCropFrameProps> = ({
             backgroundColor: 'action.hover',
           }}
         >
-          <Box
-            component="img"
+          <motion.img
             src={source}
             alt={alt}
             draggable={false}
-            onLoad={frame.onImageLoad}
+            onLoad={stage.onImageLoad}
             onError={onUnreadable}
-            sx={{
+            style={{
               position: 'absolute',
               display: 'block',
               maxWidth: 'none',
               pointerEvents: 'none',
               ...placement,
+              ...stage.image,
             }}
           />
           {guideLayer}
@@ -108,7 +109,7 @@ export const KkCropFrame: FC<KkCropFrameProps> = ({
         step={ZOOM_STEP}
         value={frame.zoom}
         onChange={handleZoom}
-        disabled={frame.crop === null}
+        disabled={box === null}
       />
     </Stack>
   );

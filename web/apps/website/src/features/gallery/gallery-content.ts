@@ -1,5 +1,4 @@
-import type { KkPhotoOrientation } from '@furria/ui';
-import { toPictureSourceSet } from '@furria/ui';
+import type { KkPhotoOrientation, KkViewerLabels } from '@furria/ui';
 import type { LinkProps } from '@tanstack/react-router';
 import type { NumberedSession } from '@/lib/api/session-section';
 import { sessionAt } from '@/lib/club';
@@ -9,7 +8,6 @@ import type {
   AlbumDetail,
   AlbumPhoto,
   AlbumSummary,
-  GalleryPhoto,
   GallerySection,
 } from '@/lib/public-gallery/schemas';
 
@@ -52,12 +50,15 @@ export const albumViewerHint = 'Bild antippen für die große Ansicht';
 
 export const featuredAlbumFlag = 'NEUESTES ALBUM';
 
-export const photoViewerLabels = {
+export const photoViewerLabels: KkViewerLabels = {
+  dialog: 'Große Ansicht',
   close: 'Große Ansicht schließen',
   previous: 'Vorheriges Foto',
   next: 'Nächstes Foto',
   counterJoin: 'von',
-} as const;
+  developing: 'Foto wird geladen',
+  play: 'Video abspielen',
+};
 
 export const rightsNoteCopyright = 'Alle Bilder © Furrscher Carnevals Club e.V.';
 
@@ -91,9 +92,6 @@ export const viewerPhotoSizes = '100vw';
 
 export const buildAlbumHref = (album: { albumId: number; title: string }): string =>
   `/gallery/${publicGallery.slugOf(album)}`;
-
-export const buildPhotoSourceSet = (photo: GalleryPhoto): string =>
-  toPictureSourceSet(photo, photo.aspect);
 
 export const buildSessionLabel = (session: NumberedSession): string =>
   session.number === null
@@ -139,14 +137,10 @@ export const buildPhotoAlt = (albumTitle: string, photo: AlbumPhoto, index: numb
 
 export const buildPhotoOpenLabel = (alt: string): string => `${alt} — groß ansehen`;
 
-export const buildPhotoCountSuffix = (photoCount: number): string =>
-  ` ${photoViewerLabels.counterJoin} ${photoCount}`;
-
 export interface AlbumPhotoEntry {
   photo: AlbumPhoto;
   index: number;
   alt: string;
-  sourceSet: string;
 }
 
 export const buildAlbumPhotoEntries = (album: AlbumDetail): AlbumPhotoEntry[] =>
@@ -154,7 +148,6 @@ export const buildAlbumPhotoEntries = (album: AlbumDetail): AlbumPhotoEntry[] =>
     photo,
     index,
     alt: buildPhotoAlt(album.title, photo, index),
-    sourceSet: buildPhotoSourceSet(photo),
   }));
 
 const listAlbums = (sections: GallerySection[]): AlbumSummary[] =>

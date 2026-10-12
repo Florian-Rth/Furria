@@ -1,15 +1,12 @@
 import type { KkContactStripFrame } from '@furria/ui';
 import { KkContactStrip } from '@furria/ui';
 import type { FC } from 'react';
-import { useInboxQuery } from '../api';
 import { INBOX_TITLE } from '../gallery-copy';
 import { clockLabel, countLabel, dayLabel, personNameOf, shownSourceOf } from '../gallery-view';
 import { INBOX_OPEN_TRAIL, OWNERLESS_INBOX } from '../hub-copy';
 import { inboxOwnerOf } from '../hub-view';
 import type { InboxSummary } from '../schemas';
 import type { InboxOwner } from '../types';
-
-const ROLL_FRAMES = 9;
 
 interface GalleryInboxRollProps {
   inbox: InboxSummary;
@@ -24,8 +21,7 @@ const titleOf = (inbox: InboxSummary): string =>
 
 export const GalleryInboxRoll: FC<GalleryInboxRollProps> = ({ inbox, onOpen }) => {
   const owner = inboxOwnerOf(inbox);
-  const items = useInboxQuery(owner, true).data?.items ?? [];
-  const frames: KkContactStripFrame[] = items.slice(0, ROLL_FRAMES).map((item, position) => ({
+  const frames: KkContactStripFrame[] = inbox.samples.map((item, position) => ({
     id: String(item.mediaItemId),
     label: `${INBOX_TITLE}, Bild ${position + 1}`,
     source: shownSourceOf(item),

@@ -84,17 +84,16 @@ export const AlbumView: FC<AlbumViewProps> = ({ albumId, album, screen }) => {
       onReach={screen.reachScene}
     />
   ) : null;
-  const loupe =
-    screen.shown === null ? null : (
-      <AlbumLoupe
-        albumTitle={album.title}
-        frames={screen.frames}
-        scenes={screen.scenes}
-        shown={screen.shown}
-        onShow={screen.showFrame}
-        onClose={screen.closeFrame}
-      />
-    );
+  const loupe = (
+    <AlbumLoupe
+      albumTitle={album.title}
+      frames={screen.frames}
+      scenes={screen.scenes}
+      shown={screen.shown}
+      onShow={screen.showFrame}
+      onClose={screen.closeFrame}
+    />
+  );
   const bulkBar = selecting.active ? <AlbumBulkBar bulk={bulk} /> : null;
   const moveSheet = rights.managesItems ? (
     <AlbumMoveSheet albumId={albumId} onMove={bulk.moveTo} />

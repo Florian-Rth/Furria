@@ -14,7 +14,7 @@ interface KeyHolderRowProps {
 export const KeyHolderRow: FC<KeyHolderRowProps> = ({ entry }) => {
   const params = { personId: String(entry.personId) };
   const avatar = (
-    <KkAvatar initials={entry.initials} source={entry.portrait} size="small" component="span" />
+    <KkAvatar initials={entry.initials} image={entry.portrait} size="small" component="span" />
   );
 
   const contactLink = (

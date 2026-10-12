@@ -1664,6 +1664,10 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("UploadedByPersonId")
                         .HasDatabaseName("ix_media_item_uploaded_by_person_id");
 
+                    b.HasIndex("AlbumId", "SelectionPosition")
+                        .HasDatabaseName("ix_media_item_album_selection")
+                        .HasFilter("selection_position IS NOT NULL");
+
                     b.ToTable("media_item", null, t =>
                         {
                             t.HasCheckConstraint("ck_media_item_album_owner", "album_id IS NULL OR owner_kind = 'Gallery'");

@@ -63,7 +63,7 @@ public sealed class GetGalleryInbox : Endpoint<GetGalleryInboxRequest, GetGaller
             UploadedAt = item.UploadedAt,
             Camera = item.Camera,
             OriginalFileName = item.OriginalFileName,
-            Urls = GalleryMediaUrls.Of(_signer, item.MediaItemId, item.Kind),
+            Urls = GalleryMediaUrls.Of(_signer, item.MediaItemId, item.Kind, item.RenderedAt),
         };
 }
 

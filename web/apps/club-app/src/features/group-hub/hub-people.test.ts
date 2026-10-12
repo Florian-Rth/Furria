@@ -38,6 +38,7 @@ describe('toHubPeople', () => {
         personId: 1,
         firstName: 'Anna',
         lastName: 'Bauer',
+        portrait: null,
         isAffiliated: true,
         groupMembershipId: 11,
         memberSince: '2016-11-11',

@@ -23,6 +23,7 @@ public sealed partial class GalleryService
             Height = item.Height,
             DurationSeconds = item.DurationSeconds,
             CapturedAt = item.CapturedAt,
+            RenderedAt = item.RenderedAt,
             UploadedAt = item.UploadedAt,
             Camera = item.Camera,
             OriginalFileName = item.OriginalFileName,

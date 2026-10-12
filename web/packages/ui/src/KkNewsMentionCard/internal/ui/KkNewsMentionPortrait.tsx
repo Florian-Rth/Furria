@@ -1,12 +1,11 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
+import type { KkPictureUrls } from '../../../image-source';
+import { toImageSource } from '../../../image-source';
 import { KkAvatar } from '../../../KkAvatar';
 import { KkCoverPicture } from '../../../KkCoverPicture';
-import type { KkPictureUrls } from '../../../picture-sources';
-import { toPictureSourceSet } from '../../../picture-sources';
 import { kkTokens } from '../../../tokens';
 
-const PORTRAIT_ASPECT = 4 / 5;
 const PORTRAIT_WIDTH = 72;
 const PORTRAIT_SIZES = `${PORTRAIT_WIDTH}px`;
 
@@ -15,8 +14,10 @@ interface KkNewsMentionPortraitProps {
   picture: KkPictureUrls | null;
 }
 
-export const KkNewsMentionPortrait: FC<KkNewsMentionPortraitProps> = ({ initials, picture }) =>
-  picture === null ? (
+export const KkNewsMentionPortrait: FC<KkNewsMentionPortraitProps> = ({ initials, picture }) => {
+  const image = toImageSource(picture, 'portrait', PORTRAIT_SIZES);
+
+  return image === null ? (
     <KkAvatar initials={initials} size="large" />
   ) : (
     <Box
@@ -30,12 +31,7 @@ export const KkNewsMentionPortrait: FC<KkNewsMentionPortraitProps> = ({ initials
         borderColor: 'divider',
       }}
     >
-      <KkCoverPicture
-        source={picture.smallUrl}
-        sourceSet={toPictureSourceSet(picture, PORTRAIT_ASPECT)}
-        sizes={PORTRAIT_SIZES}
-        alt=""
-        sx={{ borderRadius: `${kkTokens.radius.base}px` }}
-      />
+      <KkCoverPicture image={image} alt="" sx={{ borderRadius: `${kkTokens.radius.base}px` }} />
     </Box>
   );
+};

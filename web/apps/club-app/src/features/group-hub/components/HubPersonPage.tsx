@@ -147,7 +147,7 @@ export const HubPersonPage: FC<HubPersonPageProps> = ({ hub, personId }) => {
         <Stack direction="row" sx={{ alignItems: 'center', gap: HEAD_GAP, minWidth: 0 }}>
           <KkAvatar
             initials={toInitials(person?.firstName ?? '', person?.lastName ?? '')}
-            source={portrait}
+            image={portrait}
             size="large"
           />
           {openProfile}

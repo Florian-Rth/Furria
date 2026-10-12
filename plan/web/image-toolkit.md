@@ -2,7 +2,7 @@
 title: Image Toolkit — stage engine, shared viewer, picture helpers
 slug: image-toolkit
 type: cross-cutting
-status: planned
+status: built
 scope: web/packages/ui, web/apps/club-app, web/apps/website
 rfc: https://github.com/Florian-Rth/Furria/issues/34
 base: refactor/deep-modules (PR #33)
@@ -134,10 +134,21 @@ const initial = centredCrop(photo.size, 'banner');
   - All of these keep the focal point fixed.
 - **Swipe commit.**
   - A swipe commits by distance (0.2 of the width) or by velocity from the last ~80ms.
-  - At the ends there is resistance and no intent.
   - The neighbour track (prev/current/next) follows the finger.
   - Catching an image mid-animation continues from what is on screen (`shown`), so it does not jump.
-- **Reduced motion.** Slide and settle become instant, and there is no pull scaling.
+- **Switch feel — the website viewer is the reference.** Florian likes today's website viewer and the
+  kit keeps its two signatures (`PhotoViewerPhoto`: `dragElastic: 0.16`, `FADE_TRANSITION` 0.22s
+  `easeOut`, opacity 0 → 1):
+  - **No slide into nothing.** Toward a missing neighbour (first/last photo) the drag stays tight:
+    the website's 0.16 elastic, no neighbour track and no empty stage revealed, and it snaps back
+    on release with no intent. Same at a zoomed edge without a neighbour: no handover.
+  - **Calm switch.** A step without a finger (button, arrow key, filmstrip) does not slide: the new
+    photo fades in on place with the website's 0.22s `easeOut`. A finger swipe finishes its slide
+    (the neighbour was already following the finger) and the incoming photo stays fully opaque — no
+    arrival fade, which read as a flash (Florian, 2026-10-11).
+  - These values become engine/viewer constants. The S3 browser check films the website before and
+    after and compares the switch frame by frame.
+- **Reduced motion.** Slide, fade and settle become instant, and there is no pull scaling.
 - **Viewer.**
   - Modal a11y through MUI `Modal`: portal, focus trap, scroll lock, focus restore, dark scheme.
   - Zoom resets when the index changes.
@@ -247,7 +258,10 @@ CLAUDE.md: lint, typecheck of the touched packages and the affected test files. 
 - Browser check at phone and desktop width, light and dark:
   - swipe with neighbour peek, axis lock, pull-to-close;
   - pinch and double-tap zoom, pan clamped with rubber-band, edge handover;
-  - buttons disabled at the ends, keys, reduced motion.
+  - buttons disabled at the ends, keys, reduced motion;
+  - the switch feel (see "Switch feel"): first/last photo cannot be dragged toward the missing side
+    beyond the tight 0.16 elastic, and a button/key step fades like today's website viewer — filmed
+    against the pre-S3 website viewer.
 
 ### S4 — Club-app viewer
 - `AlbumLoupe` composes the `KkViewer` kit: `Bar` holds `KkFilmEdge` and download; facts and caption;
@@ -259,6 +273,8 @@ CLAUDE.md: lint, typecheck of the touched packages and the affected test files. 
 - On close it still scrolls to the frame and makes it glow. The clip-path open animation stays the
   Root's entry, and `tokens.gallery.loupe.closeSeconds` now gets used for the exit.
 - Delete `use-loupe-gestures.ts` and the old `KkLoupe` shell.
+- The club-app loupe gets the same switch feel as the website (it replaces the loupe's own
+  18%-width swipe and un-animated drag).
 - Browser check: the S3 matrix, plus video playback without the drag hijacking its controls,
   developing items, scene steps and the filmstrip.
 

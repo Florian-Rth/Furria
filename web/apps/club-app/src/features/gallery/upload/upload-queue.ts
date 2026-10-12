@@ -164,13 +164,3 @@ export const remainingMinutesOf = (bytesLeft: number, bytesPerSecond: number): n
   }
   return Math.max(Math.ceil(bytesLeft / bytesPerSecond / SECONDS_PER_MINUTE), 1);
 };
-
-export const targetsOf = (
-  entries: readonly Pick<UploadEntry, 'albumId' | 'phase'>[],
-  pageAlbumId: number | null,
-): (number | null)[] => [
-  ...new Set([
-    pageAlbumId,
-    ...entries.filter((entry) => entry.phase === 'sent').map((entry) => entry.albumId),
-  ]),
-];

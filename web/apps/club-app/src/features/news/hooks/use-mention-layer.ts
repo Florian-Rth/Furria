@@ -26,7 +26,7 @@ const choiceOf = (mentionable: NewsMentionable): KkMentionSection['choices'][num
   line: mentionable.line,
   initials: mentionable.initials,
   tone: mentionable.tone,
-  pictureSource: mentionable.pictureSource,
+  image: mentionable.image,
 });
 
 export const useMentionLayer = (

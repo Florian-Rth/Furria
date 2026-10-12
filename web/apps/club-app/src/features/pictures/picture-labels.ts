@@ -1,5 +1,4 @@
 import type { KkCropFrameLabels, KkCropGuide } from '@furria/ui';
-import { kkTokens } from '@furria/ui';
 import type { MediaItemState } from '@/lib/api/schemas';
 import type { UploadFailure } from '@/lib/media/upload-failure';
 import type { PictureKind } from './picture-target';
@@ -7,7 +6,6 @@ import type { PictureKind } from './picture-target';
 export interface PictureCopy {
   title: string;
   noun: string;
-  aspectRatio: string;
   guide: KkCropGuide;
   frame: KkCropFrameLabels;
   emptyNote: string;
@@ -20,7 +18,6 @@ export const PICTURE_COPY: Record<PictureKind, PictureCopy> = {
   portrait: {
     title: 'Porträt',
     noun: 'Porträt',
-    aspectRatio: kkTokens.aspectRatio.portrait,
     guide: 'circle',
     frame: {
       frame: 'Ausschnitt des Porträts – ziehen zum Verschieben, Plus und Minus zum Zoomen',
@@ -36,7 +33,6 @@ export const PICTURE_COPY: Record<PictureKind, PictureCopy> = {
   groupPicture: {
     title: 'Gruppenbild',
     noun: 'Gruppenbild',
-    aspectRatio: kkTokens.aspectRatio.groupPicture,
     guide: 'none',
     frame: {
       frame: 'Ausschnitt des Gruppenbilds – ziehen zum Verschieben, Plus und Minus zum Zoomen',

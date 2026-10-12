@@ -18,6 +18,8 @@ public sealed record GalleryItemSummary
 
     public required DateTimeOffset? CapturedAt { get; init; }
 
+    public required DateTimeOffset? RenderedAt { get; init; }
+
     public required DateTimeOffset UploadedAt { get; init; }
 
     public required string? Camera { get; init; }

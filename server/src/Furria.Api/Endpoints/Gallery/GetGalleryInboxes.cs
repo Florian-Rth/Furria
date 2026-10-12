@@ -1,8 +1,10 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
 using Furria.Application.Gallery;
+using Furria.Core.Media;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Gallery;
+using Furria.Infrastructure.Media;
 
 namespace Furria.Api.Endpoints.Gallery;
 
@@ -10,11 +12,17 @@ public sealed class GetGalleryInboxes : EndpointWithoutRequest<GetGalleryInboxes
 {
     private readonly GalleryService _galleryService;
     private readonly PermissionAuthorizer _authorizer;
+    private readonly MediaUrlSigner _signer;
 
-    public GetGalleryInboxes(GalleryService galleryService, PermissionAuthorizer authorizer)
+    public GetGalleryInboxes(
+        GalleryService galleryService,
+        PermissionAuthorizer authorizer,
+        MediaUrlSigner signer
+    )
     {
         _galleryService = galleryService;
         _authorizer = authorizer;
+        _signer = signer;
     }
 
     public override void Configure()
@@ -34,7 +42,7 @@ public sealed class GetGalleryInboxes : EndpointWithoutRequest<GetGalleryInboxes
         );
     }
 
-    private static GetGalleryInboxesInboxDto ToDto(InboxSummary inbox) =>
+    private GetGalleryInboxesInboxDto ToDto(InboxSummary inbox) =>
         new()
         {
             Uploader = inbox.Uploader is { } uploader
@@ -48,6 +56,19 @@ public sealed class GetGalleryInboxes : EndpointWithoutRequest<GetGalleryInboxes
             Photos = inbox.Photos,
             Videos = inbox.Videos,
             LatestUploadedAt = inbox.LatestUploadedAt,
+            Samples = [.. inbox.Samples.Select(ToDto)],
+        };
+
+    private GetGalleryInboxesMediaDto ToDto(GalleryMediaRef media) =>
+        new()
+        {
+            MediaItemId = media.MediaItemId,
+            Kind = media.Kind,
+            State = media.State,
+            Width = media.Width,
+            Height = media.Height,
+            CapturedAt = media.CapturedAt,
+            Urls = GalleryMediaUrls.Of(_signer, media.MediaItemId, media.Kind, media.RenderedAt),
         };
 }
 
@@ -65,6 +86,25 @@ public sealed record GetGalleryInboxesInboxDto
     public required int Videos { get; init; }
 
     public required DateTimeOffset LatestUploadedAt { get; init; }
+
+    public required IReadOnlyList<GetGalleryInboxesMediaDto> Samples { get; init; }
+}
+
+public sealed record GetGalleryInboxesMediaDto
+{
+    public required int MediaItemId { get; init; }
+
+    public required MediaKind Kind { get; init; }
+
+    public required MediaItemState State { get; init; }
+
+    public required int? Width { get; init; }
+
+    public required int? Height { get; init; }
+
+    public required DateTimeOffset? CapturedAt { get; init; }
+
+    public required GalleryMediaUrlsDto Urls { get; init; }
 }
 
 public sealed record GetGalleryInboxesUploaderDto

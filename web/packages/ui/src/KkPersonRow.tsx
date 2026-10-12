@@ -3,6 +3,7 @@ import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { ElementType, FC, ReactNode } from 'react';
+import type { KkImageSource } from './image-source';
 import { focusRing } from './internal/focus-ring';
 import { highlightMark, highlightPaint } from './internal/highlight-paint';
 import { personRowMetrics } from './internal/person-row-metrics';
@@ -27,7 +28,7 @@ const clampedLine = {
 
 interface KkPersonRowProps {
   initials: string;
-  portrait?: string;
+  portrait?: KkImageSource | null;
   name: string;
   accent?: string;
   meta?: string;
@@ -203,7 +204,7 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
     >
       <KkAvatar
         initials={initials}
-        source={portrait}
+        image={portrait}
         component="span"
         sx={{ flexShrink: 0, opacity: dimmed ? kkTokens.opacity.dimmed : 1 }}
       />

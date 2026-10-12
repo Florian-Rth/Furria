@@ -21,7 +21,7 @@ export const AnnouncementBlock: FC<AnnouncementBlockProps> = ({ block }) => {
         {block.announcement.title}
       </KkHeading>
       <Stack direction="row" sx={{ gap: 1, alignItems: 'center', minWidth: 0 }}>
-        <KkAvatar initials={block.initials} source={block.portrait} size="small" />
+        <KkAvatar initials={block.initials} image={block.portrait} size="small" />
         <KkMeta>{block.byline}</KkMeta>
       </Stack>
       <KkText variant="body2" measure="lead" sx={PRE_LINE}>

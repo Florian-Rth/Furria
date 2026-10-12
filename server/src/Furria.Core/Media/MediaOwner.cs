@@ -56,11 +56,19 @@ public readonly record struct MediaOwner
     public static MediaOwner NewsPost(int newsPostId) => new(MediaOwnerKind.NewsPost, newsPostId);
 
     public static MediaOwner Of(MediaItem item) =>
-        item.OwnerKind switch
+        Of(item.OwnerKind, item.OwnerPersonId, item.OwnerGroupId, item.OwnerNewsPostId);
+
+    public static MediaOwner Of(
+        MediaOwnerKind kind,
+        int? personId,
+        int? groupId,
+        int? newsPostId
+    ) =>
+        kind switch
         {
-            MediaOwnerKind.Person => Person(item.OwnerPersonId!.Value),
-            MediaOwnerKind.Group => Group(item.OwnerGroupId!.Value),
-            MediaOwnerKind.NewsPost => NewsPost(item.OwnerNewsPostId!.Value),
+            MediaOwnerKind.Person => Person(personId!.Value),
+            MediaOwnerKind.Group => Group(groupId!.Value),
+            MediaOwnerKind.NewsPost => NewsPost(newsPostId!.Value),
             _ => Gallery,
         };
 

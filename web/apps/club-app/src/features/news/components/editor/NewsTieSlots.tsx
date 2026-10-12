@@ -1,4 +1,4 @@
-import { KkAlbumTie, KkEventTie, KkText, KkTieOffer, KkTieSlot } from '@furria/ui';
+import { KkAlbumTie, KkEventTie, KkText, KkTieOffer, KkTieSlot, toImageSource } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import {
@@ -20,6 +20,7 @@ const ALBUM_FIELD_ID = 'news-field-album';
 
 export const NewsTieSlots: FC<NewsTieSlotsProps> = ({ ties, isReadOnly }) => {
   const { event, album, eventLines, albumLine } = ties;
+  const albumCover = toImageSource(album?.cover ?? null, 'landscape');
   const eventSlot =
     event === null || eventLines === null ? null : (
       <KkTieSlot
@@ -45,7 +46,7 @@ export const NewsTieSlots: FC<NewsTieSlotsProps> = ({ ties, isReadOnly }) => {
         readOnly={isReadOnly}
         onRelease={ties.releaseAlbum}
       >
-        <KkAlbumTie title={album.title} line={albumLine} cover={album.cover?.smallUrl ?? null} />
+        <KkAlbumTie title={album.title} line={albumLine} cover={albumCover} />
       </KkTieSlot>
     );
   const eventOffer =

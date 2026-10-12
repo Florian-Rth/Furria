@@ -14,7 +14,7 @@ public sealed class MediaUrlSigner
     public const string RoutePrefix = "/api/media";
     public const string AlbumZipRoute = "/api/gallery/albums/{0}/zip";
 
-    private const long WindowSeconds = 24 * 60 * 60;
+    private const long WindowSeconds = 7 * 24 * 60 * 60;
     private const long WindowsValid = 2;
 
     private readonly byte[] _key;

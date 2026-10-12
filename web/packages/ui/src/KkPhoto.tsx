@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import type { SxProps, Theme } from '@mui/material/styles';
 import type { FC } from 'react';
+import type { KkImageSource } from './image-source';
 import { KkPhotoPlaceholder } from './KkPhotoPlaceholder';
 import type { KkPhotoOrientation } from './photo-frame';
 import { resolvePhotoFrame } from './photo-frame';
@@ -11,9 +12,7 @@ interface KkPhotoProps {
   orientation: KkPhotoOrientation;
   aspectRatio?: string;
   placeholderLabel: string;
-  source?: string;
-  sourceSet?: string;
-  sizes?: string;
+  image?: KkImageSource | null;
   tint?: string;
   sx?: SxProps<Theme>;
 }
@@ -23,9 +22,7 @@ export const KkPhoto: FC<KkPhotoProps> = ({
   orientation,
   aspectRatio,
   placeholderLabel,
-  source,
-  sourceSet,
-  sizes,
+  image,
   tint,
   sx,
 }) => {
@@ -44,14 +41,14 @@ export const KkPhoto: FC<KkPhotoProps> = ({
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      {source === undefined ? (
+      {image === undefined || image === null ? (
         <KkPhotoPlaceholder label={placeholderLabel} tint={tint} fill />
       ) : (
         <Box
           component="img"
-          src={source}
-          srcSet={sourceSet}
-          sizes={sizes}
+          src={image.src}
+          srcSet={image.srcSet}
+          sizes={image.sizes}
           alt={alt}
           width={frame.width}
           height={frame.height}

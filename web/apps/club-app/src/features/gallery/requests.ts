@@ -6,6 +6,7 @@ import type {
   CreatedAlbum,
   GalleryBin,
   GalleryHub,
+  GalleryItems,
   InboxesResponse,
   InboxResponse,
   MediaKind,
@@ -15,6 +16,7 @@ import {
   CreatedAlbumSchema,
   GalleryBinSchema,
   GalleryHubSchema,
+  GalleryItemsSchema,
   InboxesResponseSchema,
   InboxResponseSchema,
 } from './schemas';
@@ -73,6 +75,17 @@ export const requestInbox = (owner: InboxOwner, accessToken: string): Promise<In
     schema: InboxResponseSchema,
     accessToken,
   });
+
+export const requestItems = (
+  mediaItemIds: readonly number[],
+  accessToken: string,
+): Promise<GalleryItems> => {
+  const query = new URLSearchParams(mediaItemIds.map((id) => ['ids', String(id)]));
+  return apiFetch(`/api/gallery/items?${query.toString()}`, {
+    schema: GalleryItemsSchema,
+    accessToken,
+  });
+};
 
 export const requestInboxes = (accessToken: string): Promise<InboxesResponse> =>
   apiFetch('/api/gallery/inboxes', { schema: InboxesResponseSchema, accessToken });

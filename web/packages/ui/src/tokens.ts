@@ -1,3 +1,5 @@
+import { aspectRatioCss } from './image-aspect';
+
 const radius = {
   base: 14,
   chip: 20,
@@ -260,10 +262,10 @@ export const kkTokens = {
     floating: '0 8px 22px rgba(16,18,22,0.32)',
   },
   aspectRatio: {
-    portrait: '4 / 5',
-    landscape: '7 / 5',
-    banner: '2 / 1',
-    groupPicture: '3 / 2',
+    portrait: aspectRatioCss('portrait'),
+    landscape: aspectRatioCss('landscape'),
+    banner: aspectRatioCss('banner'),
+    groupPicture: aspectRatioCss('groupPicture'),
   },
   crop: {
     veil: 'rgba(12,13,16,0.55)',

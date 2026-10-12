@@ -116,11 +116,15 @@ export type InboxItem = z.infer<typeof InboxItemSchema>;
 export const InboxResponseSchema = z.object({ items: z.array(InboxItemSchema) });
 export type InboxResponse = z.infer<typeof InboxResponseSchema>;
 
+export const GalleryItemsSchema = z.object({ items: z.array(InboxItemSchema) });
+export type GalleryItems = z.infer<typeof GalleryItemsSchema>;
+
 export const InboxSummarySchema = z.object({
   uploader: GalleryUploaderSchema.nullable(),
   photos: z.int().nonnegative(),
   videos: z.int().nonnegative(),
   latestUploadedAt: z.iso.datetime({ offset: true }),
+  samples: z.array(GalleryMediaSchema),
 });
 export type InboxSummary = z.infer<typeof InboxSummarySchema>;
 

@@ -1,4 +1,4 @@
-import type { KkCrop, KkGroupTone } from '@furria/ui';
+import type { KkCrop, KkGroupTone, KkImageSource } from '@furria/ui';
 import type { NewsAlbumTie, NewsCategory, NewsEventTie, PublishedNewsPost } from './schemas';
 import { NewsCategorySchema } from './schemas';
 
@@ -47,7 +47,7 @@ export interface NewsMentionable {
   line: string;
   tone: KkGroupTone | null;
   initials: string;
-  pictureSource: string | null;
+  image: KkImageSource | null;
   isPublic: boolean;
 }
 
