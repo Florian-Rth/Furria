@@ -1,4 +1,4 @@
-import { KkMeta, KkPhoto, KkText, PORTRAIT_ASPECT, toPictureSources } from '@furria/ui';
+import { KkMeta, KkPhoto, KkText, toImageSource } from '@furria/ui';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';
@@ -33,7 +33,7 @@ export const AnnouncementAuthorLine: FC<AnnouncementAuthorLineProps> = ({
 
   const authorName = `${author.firstName} ${author.lastName}`;
   const initials = toInitials(author.firstName, author.lastName);
-  const portrait = toPictureSources(author.portrait, PORTRAIT_ASPECT);
+  const portrait = toImageSource(author.portrait, 'portrait', PORTRAIT_SIZES);
   const officeLine =
     author.officeName === null ? null : <KkMeta tone="accent">{author.officeName}</KkMeta>;
 
@@ -44,9 +44,7 @@ export const AnnouncementAuthorLine: FC<AnnouncementAuthorLineProps> = ({
           alt={authorName}
           orientation="portrait"
           placeholderLabel={initials}
-          source={portrait.source}
-          sourceSet={portrait.sourceSet}
-          sizes={PORTRAIT_SIZES}
+          image={portrait}
         />
       </Box>
       <Stack sx={{ gap: 0.25, minWidth: 0 }}>

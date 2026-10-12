@@ -15,4 +15,6 @@ public sealed record GalleryMediaRef
     public required int? Height { get; init; }
 
     public required DateTimeOffset? CapturedAt { get; init; }
+
+    public required DateTimeOffset? RenderedAt { get; init; }
 }

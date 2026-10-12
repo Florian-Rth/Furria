@@ -71,7 +71,7 @@ const groupPerson = (overrides: Partial<HubPerson>): HubPerson => ({
   personId: 12,
   firstName: 'Mara',
   lastName: 'Lenz',
-  portrait: undefined,
+  portrait: null,
   isAffiliated: true,
   groupMembershipId: 7,
   memberSince: '2017-09-01',

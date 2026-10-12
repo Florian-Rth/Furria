@@ -85,8 +85,14 @@ export const commitPlanOf = (
       rejects.push(frame.id);
     }
     const albumId = verdict.kind === 'filed' ? (slotAlbums[verdict.slot] ?? null) : null;
-    if (albumId !== null) {
-      placed.set(albumId, [...(placed.get(albumId) ?? []), frame.id]);
+    if (albumId === null) {
+      continue;
+    }
+    const filed = placed.get(albumId);
+    if (filed === undefined) {
+      placed.set(albumId, [frame.id]);
+    } else {
+      filed.push(frame.id);
     }
   }
   return {

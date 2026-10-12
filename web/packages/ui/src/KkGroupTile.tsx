@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { ElementType, FC } from 'react';
+import type { KkImageSource } from './image-source';
 import { focusRing } from './internal/focus-ring';
 import type { KkGroupTone } from './internal/group-tone';
 import { groupToneInkPaint } from './internal/group-tone';
@@ -20,7 +21,7 @@ const ACCENT_LINES = 2;
 interface KkGroupTileProps {
   tone: KkGroupTone;
   initials: string;
-  portrait?: string;
+  portrait?: KkImageSource | null;
   name: string;
   accent?: string;
   meta?: string;
@@ -103,7 +104,7 @@ export const KkGroupTile: FC<KkGroupTileProps> = ({
     >
       <KkAvatar
         initials={initials}
-        source={portrait}
+        image={portrait}
         size="large"
         component="span"
         tone={isAccented ? tone : undefined}

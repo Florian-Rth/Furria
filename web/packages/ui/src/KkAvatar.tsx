@@ -1,5 +1,6 @@
 import Avatar from '@mui/material/Avatar';
 import type { ElementType, FC } from 'react';
+import type { KkImageSource } from './image-source';
 import type { KkGroupTone } from './internal/group-tone';
 import { groupToneFieldPaint } from './internal/group-tone';
 import { applyScheme, schemeFill } from './internal/scheme-paint';
@@ -21,7 +22,7 @@ const avatarMetrics: Record<KkAvatarSize, KkAvatarMetrics> = {
 
 interface KkAvatarProps {
   initials: string;
-  source?: string;
+  image?: KkImageSource | null;
   size?: KkAvatarSize;
   tone?: KkGroupTone;
   component?: ElementType;
@@ -30,7 +31,7 @@ interface KkAvatarProps {
 
 export const KkAvatar: FC<KkAvatarProps> = ({
   initials,
-  source,
+  image,
   size = 'medium',
   tone,
   component,
@@ -38,7 +39,15 @@ export const KkAvatar: FC<KkAvatarProps> = ({
 }) => {
   const metrics = avatarMetrics[size];
   const componentProps = component === undefined ? {} : { component };
-  const portraitProps = source === undefined ? {} : { src: source, alt: initials };
+  const portraitProps =
+    image === undefined || image === null
+      ? {}
+      : {
+          src: image.src,
+          srcSet: image.srcSet,
+          sizes: image.sizes ?? metrics.size,
+          alt: initials,
+        };
 
   const paint: KkSx = (theme) =>
     tone === undefined

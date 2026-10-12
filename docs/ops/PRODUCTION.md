@@ -34,11 +34,14 @@ The edge is Florian's Hetzner nginx and is not in this repo. It must:
 | Reach the homelab through the gateway `EDGE_PROXY_ADDRESS` (`10.10.20.1`) | The API trusts forwarded headers only from that address and the compose network |
 | Pass `/.well-known/assetlinks.json` through without redirect, on both hosts | Android App Links (`app.`) and passkeys (apex) |
 | On `app.`: `client_max_body_size 20m`, `proxy_request_buffering off`, `proxy_buffering off` | Uploads travel by tus in 16 MB chunks — nginx's default 1 MB answers 413; buffering would spool every chunk, and every original (videos up to 20 GB), video seek and album ZIP, to the edge's disk |
+| Pass `Accept-Encoding` through and never compress itself — no `gzip on`, no `brotli on`, no stripping of `Content-Encoding` | The API compresses its JSON (Brotli, then Gzip) and nothing else; media is already compressed and range requests must stay byte-exact |
 | Pass `Range` through and never cache `/api/media/…` or `/api/public/…` — no `proxy_cache`, no `proxy_ignore_headers Cache-Control` | Video seeking needs range requests; a public picture must 404 the moment it leaves the public face ([ADR-0025](../adr/0025-media-is-fetched-by-signed-urls.md)) |
 
 The app nginx adds HSTS (`includeSubDomains`, no `preload`), the CSP and the other security
-headers itself; the edge must not override them. The club-app nginx streams the upload route
-and the media/ZIP routes the same way, so a chunk is limited and streamed at both hops.
+headers itself; the edge must not override them. Neither nginx compresses API answers: the
+app nginx passes `Accept-Encoding` to the API untouched and leaves `gzip` off. The club-app
+nginx streams the upload route and the media/ZIP routes the same way, so a chunk is limited and
+streamed at both hops.
 
 The edge is the nginx plugin of OPNsense (*Services → Nginx → Configuration*). On the `/`
 **Location** of the `app.` HTTP server: *Maximum Body Size* `20m`, *Request Buffering* off,
@@ -68,7 +71,7 @@ every variable. The ones that matter most:
   of the last 10 minutes.
 - **`MEDIA_SIGNING_KEY`** — signs every media URL the API hands out
   ([ADR-0025](../adr/0025-media-is-fetched-by-signed-urls.md), at least 32 characters). A change
-  voids the media URLs of the last 48 hours; clients fetch fresh ones.
+  voids the media URLs of the last 14 days; clients fetch fresh ones.
 - **`MEDIA_PATH`** — where photos and videos live
   ([ADR-0023](../adr/0023-media-lives-under-one-mounted-path.md)); empty keeps the named volume
   `media`. A host path must be owned by uid 1654 (the api's and worker's user). See [Media](#media).

@@ -1,27 +1,30 @@
 import type { KkGroupTone } from '@furria/ui';
-import { KkPhoto, KkPhotoPlaceholder } from '@furria/ui';
+import { aspectRatioCss, KkPhoto, KkPhotoPlaceholder, toImageSource } from '@furria/ui';
 import type { FC } from 'react';
+import type { Picture } from '@/lib/api/schemas';
+import type { PictureKind } from '../picture-target';
 
 const PREVIEW_SIZES = '(min-width: 900px) 32rem, 100vw';
 
 interface PicturePreviewProps {
-  aspectRatio: string;
+  kind: PictureKind;
   alt: string;
   placeholderLabel: string;
-  source: string | undefined;
-  sourceSet: string | undefined;
+  picture: Picture | null;
   tone: KkGroupTone | undefined;
 }
 
 export const PicturePreview: FC<PicturePreviewProps> = ({
-  aspectRatio,
+  kind,
   alt,
   placeholderLabel,
-  source,
-  sourceSet,
+  picture,
   tone,
 }) => {
-  if (source === undefined) {
+  const aspectRatio = aspectRatioCss(kind);
+  const image = toImageSource(picture, kind, PREVIEW_SIZES);
+
+  if (image === null) {
     return <KkPhotoPlaceholder label={placeholderLabel} tone={tone} aspectRatio={aspectRatio} />;
   }
 
@@ -31,9 +34,7 @@ export const PicturePreview: FC<PicturePreviewProps> = ({
       orientation="portrait"
       aspectRatio={aspectRatio}
       placeholderLabel={placeholderLabel}
-      source={source}
-      sourceSet={sourceSet}
-      sizes={PREVIEW_SIZES}
+      image={image}
     />
   );
 };

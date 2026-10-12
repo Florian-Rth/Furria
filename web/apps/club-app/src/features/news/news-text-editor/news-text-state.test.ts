@@ -19,7 +19,7 @@ const mentionable = (fields: Partial<NewsMentionable>): NewsMentionable => ({
   line: 'Der Rat der Elf',
   tone: 'clay',
   initials: 'ER',
-  pictureSource: null,
+  image: null,
   isPublic: true,
   ...fields,
 });

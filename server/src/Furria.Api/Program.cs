@@ -6,6 +6,7 @@ using FastEndpoints.Swagger;
 using Furria.Api.Altcha;
 using Furria.Api.Authentication;
 using Furria.Api.Authorization;
+using Furria.Api.Compression;
 using Furria.Api.Cors;
 using Furria.Api.Errors;
 using Furria.Api.Logging;
@@ -60,6 +61,7 @@ try
     builder.Services.AddAuthorization();
     builder.Services.AddTrustedProxies(builder.Environment);
     builder.Services.AddNativeShellCors();
+    builder.Services.AddJsonCompression();
     builder.Services.AddSignedOutRateLimiting();
     builder.Services.AddAccountRateLimiting();
     builder.Services.AddSignInRateLimiting();
@@ -81,6 +83,7 @@ try
 
     app.UseForwardedHeaders();
     app.UseFurriaRequestLogging();
+    app.UseResponseCompression();
     app.UseExceptionHandler();
     app.UseCors();
     app.UseAuthentication();

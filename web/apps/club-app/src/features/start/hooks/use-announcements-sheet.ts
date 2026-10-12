@@ -1,5 +1,5 @@
-import type { KkSheetAction } from '@furria/ui';
-import { useKkSheet } from '@furria/ui';
+import type { KkImageSource, KkSheetAction } from '@furria/ui';
+import { toImageSource, useKkSheet } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
 import { ANNOUNCEMENTS_PATH } from '@/features/session';
@@ -18,7 +18,7 @@ export interface AnnouncementSheetBlock {
   announcement: StartAnnouncement;
   byline: string;
   initials: string;
-  portrait: string | undefined;
+  portrait: KkImageSource | null;
   focused: boolean;
   ruled: boolean;
 }
@@ -47,7 +47,7 @@ export const useAnnouncementsSheet = (board: StartBoard): AnnouncementsSheetView
       announcement,
       byline: toAnnouncementByline(announcement, board.now),
       initials: toAuthorInitials(announcement.author),
-      portrait: announcement.author?.portrait?.smallUrl,
+      portrait: toImageSource(announcement.author?.portrait ?? null, 'portrait'),
       focused: announcement.announcementId === focusedId,
       ruled: index > 0,
     })),

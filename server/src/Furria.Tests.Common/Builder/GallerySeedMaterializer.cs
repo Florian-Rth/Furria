@@ -89,6 +89,7 @@ internal static class GallerySeedMaterializer
             Width = isReady ? (isPhoto ? 4000 : 1920) : null,
             Height = isReady ? (isPhoto ? 3000 : 1080) : null,
             DurationSeconds = isReady && !isPhoto ? 12.5 : null,
+            RenderedAt = isReady ? uploadedAt : null,
             CapturedAt = intent.CapturedAt,
             UploadedByPersonId = intent.UploaderAlias is { } uploaderAlias
                 ? SeedAliases.RequireId(personIds, uploaderAlias, "person")

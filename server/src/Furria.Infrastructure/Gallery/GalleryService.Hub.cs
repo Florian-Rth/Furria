@@ -47,10 +47,11 @@ public sealed partial class GalleryService
                 .Database.SqlQuery<SampleRow>(
                     $"""
                     SELECT ranked.album_id, ranked.media_item_id, ranked.kind, ranked.state,
-                           ranked.width, ranked.height, ranked.captured_at
+                           ranked.width, ranked.height, ranked.captured_at,
+                           ranked.rendered_at
                     FROM (
                         SELECT item.album_id, item.id AS media_item_id, item.kind, item.state,
-                               item.width, item.height, item.captured_at,
+                               item.width, item.height, item.captured_at, item.rendered_at,
                                row_number() OVER (
                                    PARTITION BY item.album_id
                                    ORDER BY coalesce(item.captured_at, item.uploaded_at), item.id
@@ -126,6 +127,7 @@ public sealed partial class GalleryService
             Width = row.Width,
             Height = row.Height,
             CapturedAt = row.CapturedAt,
+            RenderedAt = row.RenderedAt,
         };
 
     private sealed record HubAlbumRow(
@@ -155,5 +157,7 @@ public sealed partial class GalleryService
         public int? Height { get; init; }
 
         public DateTimeOffset? CapturedAt { get; init; }
+
+        public DateTimeOffset? RenderedAt { get; init; }
     }
 }

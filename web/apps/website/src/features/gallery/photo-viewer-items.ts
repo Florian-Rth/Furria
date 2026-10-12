@@ -1,0 +1,12 @@
+import type { KkViewerItem } from '@furria/ui';
+import { toImageSource } from '@furria/ui';
+import type { AlbumPhotoEntry } from '@/features/gallery/gallery-content';
+import { viewerPhotoSizes } from '@/features/gallery/gallery-content';
+
+export const toViewerItem = ({ photo, alt }: AlbumPhotoEntry): KkViewerItem => ({
+  key: String(photo.mediaItemId),
+  alt,
+  image: toImageSource(photo, photo.aspect, viewerPhotoSizes),
+  size: { width: photo.width, height: photo.height },
+  caption: photo.caption ?? undefined,
+});

@@ -8,6 +8,7 @@ import {
   KkSheet,
   KkText,
   kkTokens,
+  toImageSource,
 } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
@@ -56,7 +57,9 @@ export const GroupPeekSheet: FC<GroupPeekSheetProps> = ({ groups }) => {
     toInitials(person.firstName, person.lastName),
   );
 
-  const portraits = group.memberPreview.map((person) => person.portrait?.smallUrl);
+  const portraits = group.memberPreview.map((person) =>
+    toImageSource(person.portrait ?? null, 'portrait'),
+  );
   const kindLabel = toGroupKindLabel(group.groupKindName);
 
   const kindEyebrow =

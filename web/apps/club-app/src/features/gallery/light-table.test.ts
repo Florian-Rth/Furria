@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { CullFrame, CullIntent, CullState, CullVerdict } from './light-table';
-import { cull, openCount, startCulling, verdictCount, verdictOf } from './light-table';
+import { cull, startCulling, tallyOf, verdictOf } from './light-table';
 
 const FRAMES: CullFrame[] = [
   { id: 1, scene: 1 },
@@ -105,20 +105,25 @@ describe('cull', () => {
   });
 });
 
-describe('tallies', () => {
-  const state = run(
-    REJECT,
-    FILE_TWO,
-    { kind: 'file', slot: 1, wholeScene: false },
-    { kind: 'file', slot: 2, wholeScene: false },
-  );
-
-  it.each<[string, number, number]>([
-    ['open', openCount(state), 1],
-    ['rejected', verdictCount(state, 'rejected'), 1],
-    ['filed', verdictCount(state, 'filed'), 3],
-    ['filed into slot 2', verdictCount(state, 'filed', 2), 2],
-  ])('%s', (_, actual, expected) => {
-    expect(actual).toBe(expected);
+describe('tallyOf', () => {
+  it.each<[string, CullIntent[], ReturnType<typeof tallyOf>]>([
+    ['nothing decided', [], { open: 5, rejected: 0, filed: 0, filedBySlot: {} }],
+    [
+      'rejects and files across slots',
+      [
+        REJECT,
+        FILE_TWO,
+        { kind: 'file', slot: 1, wholeScene: false },
+        { kind: 'file', slot: 2, wholeScene: false },
+      ],
+      { open: 1, rejected: 1, filed: 3, filedBySlot: { 1: 1, 2: 2 } },
+    ],
+    [
+      'undo takes the frame back out of its slot',
+      [FILE_TWO, { kind: 'undo' }],
+      { open: 5, rejected: 0, filed: 0, filedBySlot: {} },
+    ],
+  ])('%s', (_, intents, expected) => {
+    expect(tallyOf(run(...intents))).toEqual(expected);
   });
 });

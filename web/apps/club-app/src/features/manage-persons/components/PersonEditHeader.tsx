@@ -1,4 +1,4 @@
-import { KkAvatar, KkChip, KkEyebrow, KkMeta, KkScreenHeader } from '@furria/ui';
+import { KkAvatar, KkChip, KkEyebrow, KkMeta, KkScreenHeader, toImageSource } from '@furria/ui';
 import type { FC } from 'react';
 import { useMeQuery } from '@/features/session';
 import { PERSON_EYEBROW, toPersonHeadline } from '../manage-persons-labels';
@@ -12,7 +12,7 @@ interface PersonEditHeaderProps {
 export const PersonEditHeader: FC<PersonEditHeaderProps> = ({ person }) => {
   const headline = toPersonHeadline(person);
   const me = useMeQuery();
-  const portrait = person?.portrait?.picture?.smallUrl;
+  const portrait = toImageSource(person?.portrait?.picture ?? null, 'portrait');
   const archiveNote = toArchiveNote(
     person?.archive ?? null,
     me.data?.person?.id ?? null,
@@ -34,7 +34,7 @@ export const PersonEditHeader: FC<PersonEditHeaderProps> = ({ person }) => {
   return (
     <KkScreenHeader>
       <KkScreenHeader.Visual>
-        <KkAvatar initials={headline.initials} source={portrait} size="large" />
+        <KkAvatar initials={headline.initials} image={portrait} size="large" />
       </KkScreenHeader.Visual>
       <KkScreenHeader.Text>
         <KkEyebrow tone="accent">{PERSON_EYEBROW}</KkEyebrow>

@@ -1,11 +1,4 @@
-import {
-  GROUP_PICTURE_ASPECT,
-  KkCoverPicture,
-  KkEyebrow,
-  KkPhotoPlaceholder,
-  kkTokens,
-  toPictureSources,
-} from '@furria/ui';
+import { KkCoverPicture, KkEyebrow, KkPhotoPlaceholder, kkTokens, toImageSource } from '@furria/ui';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -40,9 +33,9 @@ export const GroupModalPanel: FC<GroupModalPanelProps> = ({ group, tint, titleId
   const tone = group.tone ?? undefined;
   const kind = group.groupKindName === null ? null : <KkEyebrow>{group.groupKindName}</KkEyebrow>;
   const foundedLabel = buildFoundedLabel(group.foundedYear);
-  const picture = toPictureSources(group.picture, GROUP_PICTURE_ASPECT);
+  const picture = toImageSource(group.picture, 'groupPicture', BANNER_SIZES);
   const banner =
-    picture.source === undefined ? (
+    picture === null ? (
       <KkPhotoPlaceholder
         label={groupsLabels.photo}
         tint={tint}
@@ -51,9 +44,7 @@ export const GroupModalPanel: FC<GroupModalPanelProps> = ({ group, tint, titleId
       />
     ) : (
       <KkCoverPicture
-        source={picture.source}
-        sourceSet={picture.sourceSet}
-        sizes={BANNER_SIZES}
+        image={picture}
         alt={group.name}
         sx={{ aspectRatio: kkTokens.aspectRatio.banner, height: 'auto' }}
       />

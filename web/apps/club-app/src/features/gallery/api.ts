@@ -1,15 +1,12 @@
-import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import {
-  keepPreviousData,
-  queryOptions,
-  useQueries,
-  useQuery,
-  useQueryClient,
-} from '@tanstack/react-query';
+import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import { keepPreviousData, queryOptions, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
-import { pollWhileDeveloping } from '@/lib/media/developing';
+import { useQueryCacheSnapshot } from '@/lib/api/use-query-cache-snapshot';
+import { DEVELOPING_POLL_MS } from '@/lib/media/developing';
 import { queryKeys } from '@/lib/query/reads';
+import type { DevelopedItems } from './developing-items';
+import { developedAfter, mergeItems, pollBatchOf } from './developing-items';
 import type { AlbumFilter } from './requests';
 import {
   requestAlbum,
@@ -23,6 +20,7 @@ import {
   requestInboxes,
   requestItemDeletion,
   requestItemRestoration,
+  requestItems,
   requestPlacement,
   requestPublication,
   requestSelection,
@@ -34,13 +32,12 @@ import type {
   GalleryBin,
   GalleryHub,
   InboxesResponse,
+  InboxItem,
   InboxResponse,
 } from './schemas';
 import type { AlbumPayload, AlbumUpdatePayload, InboxOwner, SelectionPhoto } from './types';
 import type { DevelopedItem } from './upload/upload-tiles';
-
-const isProcessing = (album: { items: readonly { state: string }[] } | undefined): boolean =>
-  album?.items.some((item) => item.state === 'processing') ?? false;
+import { useUploads } from './upload/use-uploads';
 
 export const useGalleryHubQuery = (): UseQueryResult<GalleryHub, Error> =>
   useQuery({
@@ -52,14 +49,12 @@ const albumQueryOptions = (albumId: number, filter: AlbumFilter) =>
   queryOptions({
     queryKey: queryKeys.album(albumId, filter),
     queryFn: () => withFreshAccessToken((token) => requestAlbum(albumId, filter, token)),
-    refetchInterval: pollWhileDeveloping(isProcessing),
   });
 
 const inboxQueryOptions = (owner: InboxOwner) =>
   queryOptions({
     queryKey: queryKeys.inbox(owner),
     queryFn: () => withFreshAccessToken((token) => requestInbox(owner, token)),
-    refetchInterval: pollWhileDeveloping(isProcessing),
   });
 
 export const useAlbumQuery = (
@@ -76,25 +71,64 @@ export const useInboxQuery = (
 
 const UNFILTERED: AlbumFilter = { kind: null, uploaderPersonId: null };
 
-export const useDevelopedItems = (
-  targets: readonly (number | null)[],
-): Map<number, DevelopedItem> =>
-  useQueries({
-    queries: targets.map((albumId) =>
-      albumId === null
-        ? inboxQueryOptions({ kind: 'mine' })
-        : albumQueryOptions(albumId, UNFILTERED),
-    ),
-    combine: (results) =>
-      new Map(
-        results.flatMap((result) =>
-          (result.data?.items ?? []).map((item): [number, DevelopedItem] => [
-            item.mediaItemId,
-            { state: item.state, source: item.urls.small },
-          ]),
-        ),
-      ),
+const NOTHING_DEVELOPED: DevelopedItems = new Map();
+
+const developedOf = (queryClient: QueryClient): DevelopedItems =>
+  queryClient.getQueryData<DevelopedItems>(queryKeys.galleryDeveloping) ?? NOTHING_DEVELOPED;
+
+const cachedListsOf = (queryClient: QueryClient): (readonly InboxItem[])[] => [
+  ...queryClient
+    .getQueriesData<AlbumDetails>({ queryKey: queryKeys.albums })
+    .map(([, album]) => album?.items ?? []),
+  ...queryClient
+    .getQueriesData<InboxResponse>({ queryKey: queryKeys.inboxesByOwner })
+    .map(([, inbox]) => inbox?.items ?? []),
+];
+
+const pollDeveloping = async (
+  queryClient: QueryClient,
+  batch: readonly number[],
+): Promise<DevelopedItems> => {
+  const answer = await withFreshAccessToken((token) => requestItems(batch, token));
+  queryClient.setQueriesData<AlbumDetails>({ queryKey: queryKeys.albums }, (album) =>
+    album === undefined ? album : { ...album, items: mergeItems(album.items, batch, answer.items) },
+  );
+  queryClient.setQueriesData<InboxResponse>({ queryKey: queryKeys.inboxesByOwner }, (inbox) =>
+    inbox === undefined ? inbox : { items: mergeItems(inbox.items, batch, answer.items) },
+  );
+  return developedAfter(developedOf(queryClient), batch, answer.items);
+};
+
+const batchOfKey = (batchKey: string): number[] =>
+  batchKey === '' ? [] : batchKey.split(',').map(Number);
+
+export const useDevelopingItems = (): void => {
+  const queryClient = useQueryClient();
+  const uploadedIds = useUploads().entries.flatMap((entry) =>
+    entry.phase === 'sent' && entry.mediaItemId !== null ? [entry.mediaItemId] : [],
+  );
+  const batchKey = useQueryCacheSnapshot(() =>
+    pollBatchOf(cachedListsOf(queryClient), uploadedIds, developedOf(queryClient)).join(','),
+  );
+  const batch = batchOfKey(batchKey);
+
+  useQuery({
+    queryKey: queryKeys.galleryDeveloping,
+    queryFn: () => pollDeveloping(queryClient, batch),
+    enabled: batch.length > 0,
+    refetchInterval: DEVELOPING_POLL_MS,
   });
+};
+
+export const useDevelopedItems = (): Map<number, DevelopedItem> => {
+  const queryClient = useQueryClient();
+  const developed = useQueryCacheSnapshot(() => developedOf(queryClient));
+  return new Map(
+    [...developed].flatMap(([mediaItemId, item]): [number, DevelopedItem][] =>
+      item === null ? [] : [[mediaItemId, { state: item.state, source: item.urls.small }]],
+    ),
+  );
+};
 
 export const useInboxesQuery = (enabled: boolean): UseQueryResult<InboxesResponse, Error> =>
   useQuery({

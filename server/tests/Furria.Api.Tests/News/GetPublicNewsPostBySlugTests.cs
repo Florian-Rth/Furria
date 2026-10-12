@@ -166,8 +166,8 @@ public sealed class GetPublicNewsPostBySlugTests : IClassFixture<ApiTestFixture>
             ],
             result.Album?.Photos.Select(photo => photo.MediaItemId)
         );
-        Assert.Equal(
-            $"/api/public/gallery/pictures/{first}/small",
+        Assert.StartsWith(
+            $"/api/public/gallery/pictures/{first}/small?v=",
             result.Album?.Photos[0].SmallUrl
         );
     }

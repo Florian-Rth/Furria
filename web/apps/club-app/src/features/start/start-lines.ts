@@ -1,4 +1,11 @@
-import type { KkDenseFacet, KkDenseLineState, KkIconName, KkLinkSearchValues } from '@furria/ui';
+import type {
+  KkDenseFacet,
+  KkDenseLineState,
+  KkIconName,
+  KkImageSource,
+  KkLinkSearchValues,
+} from '@furria/ui';
+import { toImageSource } from '@furria/ui';
 import type { AttendanceAnswer } from '@/features/attendance';
 import { toGroupTone } from '@/features/groups/group-identity';
 import { toLocalIsoDay } from '@/lib/calendar-days';
@@ -58,7 +65,7 @@ export interface AnnouncementLineView {
   title: string;
   meta: string[];
   initials: string;
-  portrait: string | undefined;
+  portrait: KkImageSource | null;
   accessibleName: string;
   sheetId: string;
 }
@@ -330,7 +337,7 @@ export const toAnnouncementLine = (
     title: announcement.title,
     meta: [day, ...office],
     initials: toAuthorInitials(author),
-    portrait: author?.portrait?.smallUrl,
+    portrait: toImageSource(author?.portrait ?? null, 'portrait'),
     accessibleName: [announcement.title, day, ...byline, ...office].join(NAME_SEPARATOR),
     sheetId: toPeekId('start-announcements', announcement.announcementId),
   };

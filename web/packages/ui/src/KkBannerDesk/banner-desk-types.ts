@@ -1,4 +1,4 @@
-import type { KkCrop } from '../crop-frame';
+import type { KkCrop } from '../image-crop';
 import type { KkCropFrameLabels } from '../KkCropFrame/KkCropFrame';
 
 export type KkBannerState = 'empty' | 'uploading' | 'developing' | 'failed' | 'ready' | 'cropping';

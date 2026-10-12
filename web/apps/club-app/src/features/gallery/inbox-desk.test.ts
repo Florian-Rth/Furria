@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { CommitPlan, DeskSource } from './inbox-desk';
 import { commitPlanOf, defaultSlotsOf, deskOf, reconcileCulling } from './inbox-desk';
-import type { CullState } from './light-table';
+import type { CullState, CullVerdict } from './light-table';
 import { cull, startCulling } from './light-table';
 
 const item = (
@@ -90,6 +90,36 @@ describe('commitPlanOf', () => {
       },
     };
     expect(commitPlanOf(state, slots)).toEqual(expected);
+  });
+});
+
+describe('commitPlanOf at many frames per basket', () => {
+  it('keeps every filed frame in capture order', () => {
+    const ids = Array.from({ length: 3000 }, (_, index) => index + 1);
+    const state: CullState = {
+      ...startCulling(ids.map((id) => ({ id, scene: 0 }))),
+      verdicts: Object.fromEntries(
+        ids.map((id): [number, CullVerdict] => [
+          id,
+          id % 3 === 0 ? { kind: 'rejected' } : { kind: 'filed', slot: id % 3 },
+        ]),
+      ),
+    };
+
+    const plan = commitPlanOf(state, [null, 10, 20]);
+
+    expect({
+      first: plan.placements.map((placed) => placed.mediaItemIds.slice(0, 2)),
+      sizes: plan.placements.map((placed) => placed.mediaItemIds.length),
+      rejects: plan.rejects.length,
+    }).toEqual({
+      first: [
+        [1, 4],
+        [2, 5],
+      ],
+      sizes: [1000, 1000],
+      rejects: 1000,
+    });
   });
 });
 

@@ -1,3 +1,5 @@
+import type { KkImageSource } from '@furria/ui';
+import { toImageSource } from '@furria/ui';
 import { sessionAt, sessionOpeningAt } from '@/lib/club';
 import { stageOf } from './news-lifecycle';
 import type { NewsHub, NewsPostSummary } from './schemas';
@@ -15,7 +17,7 @@ export interface HubRow {
   stage: NewsStage;
   title: string;
   category: NewsCategory | null;
-  pictureSource: string | null;
+  picture: KkImageSource | null;
   date: string;
   fact: HubFact;
 }
@@ -63,7 +65,7 @@ export const hubRowOf = (post: NewsPostSummary): HubRow => {
     stage,
     title: post.title,
     category: post.category,
-    pictureSource: post.picture?.smallUrl ?? null,
+    picture: toImageSource(post.picture, 'banner'),
     date: post.publishedAt ?? post.updatedAt,
     fact: factOf(post, stage),
   };

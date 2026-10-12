@@ -9,4 +9,6 @@ public sealed record InboxSummary
     public required int Videos { get; init; }
 
     public required DateTimeOffset LatestUploadedAt { get; init; }
+
+    public required IReadOnlyList<GalleryMediaRef> Samples { get; init; }
 }

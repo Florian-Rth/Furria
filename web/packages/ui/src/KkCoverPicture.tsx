@@ -1,22 +1,21 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
+import type { KkImageSource } from './image-source';
 import type { KkSx } from './kk-sx';
 
 interface KkCoverPictureProps {
-  source: string;
-  sourceSet?: string;
-  sizes?: string;
+  image: KkImageSource;
   alt: string;
   sx?: KkSx;
 }
 
-export const KkCoverPicture: FC<KkCoverPictureProps> = ({ source, sourceSet, sizes, alt, sx }) => (
+export const KkCoverPicture: FC<KkCoverPictureProps> = ({ image, alt, sx }) => (
   <Box
     component="img"
     data-kk-cover-picture
-    src={source}
-    srcSet={sourceSet}
-    sizes={sizes}
+    src={image.src}
+    srcSet={image.srcSet}
+    sizes={image.sizes}
     alt={alt}
     loading="lazy"
     decoding="async"

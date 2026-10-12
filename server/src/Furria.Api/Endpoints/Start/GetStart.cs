@@ -95,7 +95,12 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
                     Width = cover.Width,
                     Height = cover.Height,
                     CapturedAt = cover.CapturedAt,
-                    Urls = GalleryMediaUrls.Of(_signer, cover.MediaItemId, cover.Kind),
+                    Urls = GalleryMediaUrls.Of(
+                        _signer,
+                        cover.MediaItemId,
+                        cover.Kind,
+                        cover.RenderedAt
+                    ),
                 }
                 : null,
         };

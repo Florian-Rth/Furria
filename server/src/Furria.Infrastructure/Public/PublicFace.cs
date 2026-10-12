@@ -20,13 +20,6 @@ public sealed class PublicFace
     private static readonly Expression<Func<Album, bool>> IsPublishedAlbum = album =>
         album.PublishedAt != null && album.BinnedAt == null;
 
-    private static readonly Expression<Func<MediaItem, bool>> IsSelectedPhoto = item =>
-        item.OwnerKind == MediaOwnerKind.Gallery
-        && item.Kind == MediaKind.Photo
-        && item.State == MediaItemState.Ready
-        && item.BinnedAt == null
-        && item.SelectionPosition != null;
-
     private static readonly Expression<Func<NewsPost, bool>> IsLivePost = post =>
         post.PublishedAt != null
         && post.WithdrawnAt == null
@@ -35,6 +28,13 @@ public sealed class PublicFace
 
     private static readonly Expression<Func<BoardSeat, bool>> IsInAPublicOffice = seat =>
         seat.BoardOffice!.IsPublic;
+
+    public static readonly Expression<Func<MediaItem, bool>> IsSelectedPhoto = item =>
+        item.OwnerKind == MediaOwnerKind.Gallery
+        && item.Kind == MediaKind.Photo
+        && item.State == MediaItemState.Ready
+        && item.BinnedAt == null
+        && item.SelectionPosition != null;
 
     private readonly AppDbContext _dbContext;
     private readonly TimeProvider _timeProvider;

@@ -1,12 +1,12 @@
 import type { KkCrop } from '@furria/ui';
-import { useKkNotice, useKkSheet } from '@furria/ui';
+import { centredCrop, useKkNotice, useKkSheet } from '@furria/ui';
 import type { ChangeEvent } from 'react';
 import { useState } from 'react';
 import { toUploadFailureMessage } from '@/features/pictures';
 import { usePictureDesk } from '@/lib/media/use-picture-desk';
 import { useNewsPictureCrop, useNewsPictureFromGallery, useNewsPictureRemoval } from '../api';
 import { GALLERY_SHEET_ID, PICTURE_ACTION_FAILED } from '../editor-copy';
-import { centredBannerCropOf, uploadOverlayOf } from '../news-picture';
+import { photoSizeOf, uploadOverlayOf } from '../news-picture';
 import type { GalleryPhoto } from '../schemas';
 import type { NewsPicture } from '../types';
 import type { NewsEditor } from './use-news-editor';
@@ -81,7 +81,7 @@ export const useNewsPicture = (editor: NewsEditor): NewsPictureDesk => {
           galleryPick.mutateAsync({
             newsPostId,
             galleryItemId: photo.mediaItemId,
-            crop: centredBannerCropOf(photo.width, photo.height),
+            crop: centredCrop(photoSizeOf(photo), 'banner'),
           }),
         )
         .catch(failNotice);

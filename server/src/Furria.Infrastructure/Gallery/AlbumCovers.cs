@@ -34,6 +34,7 @@ public static class AlbumCovers
                     Width = item.Width,
                     Height = item.Height,
                     CapturedAt = item.CapturedAt,
+                    RenderedAt = item.RenderedAt,
                 })
                 .FirstOrDefault()
         );

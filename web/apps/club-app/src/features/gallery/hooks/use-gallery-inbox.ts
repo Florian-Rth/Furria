@@ -1,4 +1,5 @@
 import type {
+  KkImageSource,
   KkLightTableCommit,
   KkLightTableDeparture,
   KkLightTableDone,
@@ -11,7 +12,7 @@ import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { GALLERY_PATH } from '@/features/session';
 import { useInboxQuery, useItemDeletion, usePlacement } from '../api';
-import { countLabel, sceneSpanLabel, thumbSourceOf, viewSourceOf } from '../gallery-view';
+import { countLabel, sceneSpanLabel, thumbSourceOf } from '../gallery-view';
 import {
   COMMIT_FAILED,
   closeQuestionOf,
@@ -33,9 +34,10 @@ import {
   isEmptyPlan,
   reconcileCulling,
 } from '../inbox-desk';
-import type { CullIntent } from '../light-table';
-import { cull, openCount, startCulling, verdictCount, verdictOf } from '../light-table';
+import type { CullFrame, CullIntent } from '../light-table';
+import { cull, frameNumbersOf, startCulling, tallyOf, verdictOf } from '../light-table';
 import type { InboxItem } from '../schemas';
+import { viewImageOf } from '../view-image';
 import type { InboxBaskets } from './use-inbox-baskets';
 import { useInboxBaskets } from './use-inbox-baskets';
 import type { InboxOwnerChoice } from './use-inbox-owner';
@@ -44,6 +46,7 @@ import { useInboxOwner } from './use-inbox-owner';
 export const INBOX_SHEET_ID = 'gallery-inbox-sheet';
 const HURRY_MS = 260;
 const STRIP_REACH = 14;
+const PRELOAD_OFFSETS = [2, -2] as const;
 
 export interface GalleryInbox {
   title: string;
@@ -52,6 +55,9 @@ export interface GalleryInbox {
   scene: string;
   position: string;
   frame: KkLightTableFrame | null;
+  previous: KkLightTableFrame | null;
+  next: KkLightTableFrame | null;
+  preload: KkImageSource[];
   departure: KkLightTableDeparture | null;
   strip: KkLightTableStripFrame[];
   targets: KkLightTableTarget[];
@@ -106,8 +112,16 @@ export const useGalleryInbox = (): GalleryInbox => {
   }
 
   const plan: CommitPlan = commitPlanOf(state, baskets.slots);
+  const tally = tallyOf(state);
+  const frameNumbers = frameNumbersOf(state.frames);
   const itemOf = (id: number): InboxItem | undefined => desk.items.get(id);
-  const numberOf = (id: number): number => state.frames.findIndex((frame) => frame.id === id) + 1;
+  const numberOf = (id: number): number => frameNumbers.get(id) ?? 0;
+  const tableFrameOf = (frame: CullFrame | undefined): KkLightTableFrame | null => {
+    const item = frame === undefined ? undefined : itemOf(frame.id);
+    return frame === undefined || item === undefined
+      ? null
+      : { id: String(frame.id), label: labelOf(numberOf(frame.id)), image: viewImageOf(item) };
+  };
   const basketTitleOf = (slot: number): string | null => baskets.albumOf(slot)?.title ?? null;
 
   const dispatch = (intent: CullIntent): void => {
@@ -151,8 +165,12 @@ export const useGalleryInbox = (): GalleryInbox => {
   };
 
   const currentFrame = state.frames[state.cursor];
-  const currentItem = currentFrame === undefined ? undefined : itemOf(currentFrame.id);
-  const remaining = openCount(state);
+  const remaining = tally.open;
+  const frame = remaining === 0 ? null : tableFrameOf(currentFrame);
+  const preload = PRELOAD_OFFSETS.flatMap((offset) => {
+    const planned = tableFrameOf(state.frames[state.cursor + offset]);
+    return planned === null ? [] : [planned.image];
+  });
   const sceneIndex = currentFrame?.scene ?? 0;
   const sceneFrames = state.frames.filter((frame) => frame.scene === sceneIndex);
   const inScene = sceneFrames.findIndex((frame) => frame.id === currentFrame?.id) + 1;
@@ -166,7 +184,7 @@ export const useGalleryInbox = (): GalleryInbox => {
       ? null
       : {
           key: state.departure.key,
-          source: viewSourceOf(departedItem.kind, departedItem.urls),
+          image: viewImageOf(departedItem),
           kind: state.departure.verdict.kind === 'rejected' ? 'reject' : 'file',
           slot: state.departure.verdict.kind === 'filed' ? state.departure.verdict.slot : 0,
           stamp:
@@ -187,7 +205,7 @@ export const useGalleryInbox = (): GalleryInbox => {
         {
           id: String(frame.id),
           label: labelOf(numberOf(frame.id)),
-          source: thumbSourceOf(item.urls),
+          thumb: thumbSourceOf(item.urls),
           verdict: verdict.kind,
           slot: verdict.kind === 'filed' ? verdict.slot + 1 : null,
           current: frame.id === currentFrame?.id,
@@ -201,7 +219,7 @@ export const useGalleryInbox = (): GalleryInbox => {
     return {
       id: `korb-${slot}`,
       title: album?.title ?? EMPTY_BASKET,
-      count: countLabel(stored + verdictCount(state, 'filed', slot)),
+      count: countLabel(stored + (tally.filedBySlot[slot] ?? 0)),
     };
   });
 
@@ -260,20 +278,16 @@ export const useGalleryInbox = (): GalleryInbox => {
     title: inboxTitleOf(inboxOwner.ownerName),
     remaining: loaded ? countLabel(remaining) : '–',
     tally: tallyLineOf(
-      settled.filed + verdictCount(state, 'filed'),
-      settled.rejected + verdictCount(state, 'rejected'),
+      settled.filed + tally.filed,
+      settled.rejected + tally.rejected,
       desk.developing,
     ),
     scene: scene === undefined ? '' : `Szene ${sceneIndex + 1} · ${sceneSpanLabel(scene)}`,
     position: sceneFrames.length === 0 ? '' : `${inScene} / ${sceneFrames.length}`,
-    frame:
-      remaining === 0 || currentItem === undefined || currentFrame === undefined
-        ? null
-        : {
-            id: String(currentItem.mediaItemId),
-            label: labelOf(numberOf(currentFrame.id)),
-            source: viewSourceOf(currentItem.kind, currentItem.urls),
-          },
+    frame,
+    previous: tableFrameOf(state.frames[state.cursor - 1]),
+    next: tableFrameOf(state.frames[state.cursor + 1]),
+    preload,
     departure,
     strip,
     targets,

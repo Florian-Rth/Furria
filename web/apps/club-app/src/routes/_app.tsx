@@ -1,5 +1,6 @@
 import { createFileRoute, Navigate, Outlet, redirect, useLocation } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { GalleryDevelopingPoller } from '@/features/gallery';
 import { buildLoginSearch } from '@/features/login';
 import {
   AppFailure,
@@ -22,6 +23,7 @@ const AppLayout: FC = () => {
 
   return (
     <AppShell>
+      <GalleryDevelopingPoller />
       <Outlet />
     </AppShell>
   );

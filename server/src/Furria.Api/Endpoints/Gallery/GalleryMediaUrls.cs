@@ -7,11 +7,19 @@ public static class GalleryMediaUrls
 {
     private const string DownloadFlag = "&download";
 
-    public static GalleryMediaUrlsDto Of(MediaUrlSigner signer, int mediaItemId, MediaKind kind)
+    public static GalleryMediaUrlsDto Of(
+        MediaUrlSigner signer,
+        int mediaItemId,
+        MediaKind kind,
+        DateTimeOffset? renderedAt
+    )
     {
         string? UrlOf(MediaRendition rendition) =>
             MediaRenditions.Exists(kind, rendition)
-                ? signer.UrlOf(mediaItemId, MediaOwner.Gallery, rendition)
+                ? MediaUrlVersions.Versioned(
+                    signer.UrlOf(mediaItemId, MediaOwner.Gallery, rendition),
+                    renderedAt
+                )
                 : null;
 
         var original = UrlOf(MediaRendition.Original)!;

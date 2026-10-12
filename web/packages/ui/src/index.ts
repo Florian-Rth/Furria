@@ -2,8 +2,13 @@ export type { BurstPiece } from './burst-pieces';
 export { buildBurstPieces } from './burst-pieces';
 export type { ConfettiPiece, KkConfettiColor } from './confetti-pieces';
 export { buildConfettiPieces } from './confetti-pieces';
-export type { KkCrop } from './crop-frame';
 export type { KkFilterOption } from './filter-chip-entries';
+export type { KkAspect, KkSize } from './image-aspect';
+export { aspectOf, aspectRatioCss, KK_ASPECT } from './image-aspect';
+export type { KkCrop } from './image-crop';
+export { centredCrop } from './image-crop';
+export type { KkImageSource, KkPictureUrls } from './image-source';
+export { toImageSource } from './image-source';
 export type { KkGroupTone, KkGroupToneRecipe } from './internal/group-tone';
 export {
   GROUP_TONE_ON_FIELD_DARK,
@@ -82,6 +87,7 @@ export type { KkFormatRailItem } from './KkFormatRail';
 export { KkFormatRail } from './KkFormatRail';
 export type { KkFrameMark, KkFrameState } from './KkFrame';
 export { KkFrame } from './KkFrame';
+export { KkFrameFacts } from './KkFrameFacts';
 export type { KkFrameGridDensity } from './KkFrameGrid';
 export { KkFrameGrid } from './KkFrameGrid';
 export type { KkGreaseMarkKind } from './KkGreaseMark';
@@ -107,6 +113,7 @@ export { KkHubRow } from './KkHubRow';
 export type { KkIconName } from './KkIcon';
 export { KkIcon } from './KkIcon';
 export { KkIconButton } from './KkIconButton';
+export { KkImageViewer } from './KkImageViewer/KkImageViewer';
 export { KkInlineLink } from './KkInlineLink';
 export type { KkKickerOption } from './KkKickerMenu';
 export { KkKickerMenu } from './KkKickerMenu';
@@ -123,8 +130,6 @@ export type {
   KkLightTableTarget,
 } from './KkLightTable/KkLightTable';
 export { KkLightTable } from './KkLightTable/KkLightTable';
-export type { KkLoupeLabels, KkLoupeStripFrame, KkLoupeVideo } from './KkLoupe/KkLoupe';
-export { KkLoupe } from './KkLoupe/KkLoupe';
 export type { KkMentionEditorLabels } from './KkMentionEditor';
 export { KkMentionEditor } from './KkMentionEditor';
 export type { KkMentionChoice } from './KkMentionPicker/KkMentionOption';
@@ -283,6 +288,15 @@ export type { KkTimeRailScene } from './KkTimeRail';
 export { KkTimeRail } from './KkTimeRail';
 export { KkTitleHeader } from './KkTitleHeader';
 export { KkTwoToneHeadline } from './KkTwoToneHeadline';
+export { KkViewer } from './KkViewer/KkViewer';
+export type {
+  KkViewerEntrance,
+  KkViewerItem,
+  KkViewerKeys,
+  KkViewerLabels,
+  KkViewerStepDelta,
+  KkViewerVideo,
+} from './KkViewer/viewer-types';
 export { KkVisuallyHidden } from './KkVisuallyHidden';
 export { KkWriteScreen } from './KkWriteScreen/KkWriteScreen';
 export { KK_LANDING_ATTRIBUTE } from './kk-landing';
@@ -295,13 +309,6 @@ export type { KkLetterPace } from './letter-pace';
 export { PageLayout } from './PageLayout/PageLayout';
 export type { KkPanelAction } from './panel-action';
 export type { KkPhotoOrientation } from './photo-frame';
-export type { KkPictureSources, KkPictureUrls } from './picture-sources';
-export {
-  GROUP_PICTURE_ASPECT,
-  PORTRAIT_ASPECT,
-  toPictureSourceSet,
-  toPictureSources,
-} from './picture-sources';
 export { KK_DARK_SCHEME_ATTRIBUTE, KK_DESKTOP_BREAKPOINT, kkTheme } from './theme';
 export type { KkColorSchemeMode, KkResolvedColorScheme } from './theme-color';
 export { kkThemeColorForScheme, resolveKkColorScheme } from './theme-color';

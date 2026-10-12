@@ -1,3 +1,5 @@
+import type { KkImageSource } from '@furria/ui';
+import { toImageSource } from '@furria/ui';
 import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
 import type { PersonRef } from '@/lib/api/schemas';
 
@@ -5,7 +7,7 @@ export interface HubPerson {
   personId: number;
   firstName: string;
   lastName: string;
-  portrait: string | undefined;
+  portrait: KkImageSource | null;
   isAffiliated: boolean;
   groupMembershipId: number | null;
   memberSince: string | null;
@@ -18,7 +20,7 @@ const fromAdmin = (admin: GroupDetailAdmin, member: GroupDetailMember | null): H
   personId: admin.personId,
   firstName: admin.firstName,
   lastName: admin.lastName,
-  portrait: admin.portrait?.smallUrl,
+  portrait: toImageSource(admin.portrait ?? null, 'portrait'),
   isAffiliated: admin.isAffiliated,
   groupMembershipId: member === null ? null : member.groupMembershipId,
   memberSince: member === null ? null : member.since,
@@ -31,7 +33,7 @@ const fromMember = (member: GroupDetailMember): HubPerson => ({
   personId: member.personId,
   firstName: member.firstName,
   lastName: member.lastName,
-  portrait: member.portrait?.smallUrl,
+  portrait: toImageSource(member.portrait ?? null, 'portrait'),
   isAffiliated: member.isAffiliated,
   groupMembershipId: member.groupMembershipId,
   memberSince: member.since,
@@ -61,7 +63,7 @@ export const countGroupAdmins = (people: readonly HubPerson[]): number =>
 export const toHubPortrait = (
   people: readonly HubPerson[],
   personId: number | null,
-): string | undefined => people.find((person) => person.personId === personId)?.portrait;
+): KkImageSource | null => people.find((person) => person.personId === personId)?.portrait ?? null;
 
 export const toPrefillPerson = (
   people: readonly HubPerson[],

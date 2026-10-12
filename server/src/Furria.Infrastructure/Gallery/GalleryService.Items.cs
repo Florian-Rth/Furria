@@ -13,6 +13,7 @@ public sealed partial class GalleryService
     private const string NotPermittedMessage = "Dieses Bild darfst du nicht einsortieren.";
     private const string NotYourInboxMessage = "Diesen Eingang darfst du nicht einsehen.";
     private const string ItemNotBinnedMessage = "Dieses Bild liegt nicht im Papierkorb.";
+    private const int InboxSampleCount = 9;
 
     public async Task<IReadOnlyList<InboxSummary>> GetInboxesAsync(
         int actorAccountId,
@@ -20,6 +21,7 @@ public sealed partial class GalleryService
     )
     {
         var actor = await ActorAsync(actorAccountId, ct);
+        var samples = await InboxSamplesAsync(actor, ct);
 
         return
         [
@@ -54,6 +56,7 @@ public sealed partial class GalleryService
                     Photos = row.Photos,
                     Videos = row.Videos,
                     LatestUploadedAt = row.LatestUploadedAt,
+                    Samples = [.. samples[row.UploadedByPersonId]],
                 }),
         ];
     }
@@ -76,6 +79,31 @@ public sealed partial class GalleryService
                 .Select(ItemSummary)
                 .ToListAsync(ct)
         );
+    }
+
+    public async Task<IReadOnlyList<GalleryItemSummary>> GetItemsAsync(
+        IReadOnlyCollection<int> mediaItemIds,
+        int actorAccountId,
+        CancellationToken ct
+    )
+    {
+        var actor = await ActorAsync(actorAccountId, ct);
+
+        return await GalleryItems()
+            .AsNoTracking()
+            .Where(item => mediaItemIds.Contains(item.Id))
+            .Where(item =>
+                (item.Album != null && item.Album.BinnedAt == null && item.BinnedAt == null)
+                || (
+                    item.AlbumId == null
+                    && (
+                        actor.MayManage
+                        || (actor.MayUpload && item.UploadedByPersonId == actor.PersonId)
+                    )
+                )
+            )
+            .Select(ItemSummary)
+            .ToListAsync(ct);
     }
 
     public async Task<Result> PlaceItemsAsync(
@@ -173,6 +201,36 @@ public sealed partial class GalleryService
         );
     }
 
+    private async Task<ILookup<int?, GalleryMediaRef>> InboxSamplesAsync(
+        GalleryActor actor,
+        CancellationToken ct
+    ) =>
+        (
+            await _dbContext
+                .Database.SqlQuery<InboxSampleRow>(
+                    $"""
+                    SELECT ranked.uploaded_by_person_id, ranked.media_item_id, ranked.kind,
+                           ranked.state, ranked.width, ranked.height, ranked.captured_at,
+                           ranked.rendered_at
+                    FROM (
+                        SELECT item.uploaded_by_person_id, item.id AS media_item_id, item.kind,
+                               item.state, item.width, item.height, item.captured_at, item.rendered_at,
+                               row_number() OVER (
+                                   PARTITION BY item.uploaded_by_person_id
+                                   ORDER BY coalesce(item.captured_at, item.uploaded_at), item.id
+                               ) AS position
+                        FROM media_item item
+                        WHERE item.owner_kind = 'Gallery'
+                          AND item.album_id IS NULL
+                          AND ({actor.MayManage} OR item.uploaded_by_person_id = {actor.PersonId})
+                    ) ranked
+                    WHERE ranked.position <= {InboxSampleCount}
+                    ORDER BY ranked.uploaded_by_person_id, ranked.position
+                    """
+                )
+                .ToListAsync(ct)
+        ).ToLookup(row => row.UploadedByPersonId, ToMediaRef);
+
     private async Task<List<MediaItem>> TrackedItemsAsync(
         IReadOnlyCollection<int> mediaItemIds,
         CancellationToken ct
@@ -227,6 +285,19 @@ public sealed partial class GalleryService
             && item.UploadedByPersonId == personId
         );
 
+    [Pure]
+    private static GalleryMediaRef ToMediaRef(InboxSampleRow row) =>
+        new()
+        {
+            MediaItemId = row.MediaItemId,
+            Kind = Enum.Parse<MediaKind>(row.Kind),
+            State = Enum.Parse<MediaItemState>(row.State),
+            Width = row.Width,
+            Height = row.Height,
+            CapturedAt = row.CapturedAt,
+            RenderedAt = row.RenderedAt,
+        };
+
     private static void Unselect(MediaItem item)
     {
         item.SelectionPosition = null;
@@ -234,4 +305,23 @@ public sealed partial class GalleryService
     }
 
     private sealed record GalleryActor(int? PersonId, bool MayUpload, bool MayManage);
+
+    private sealed class InboxSampleRow
+    {
+        public int? UploadedByPersonId { get; init; }
+
+        public int MediaItemId { get; init; }
+
+        public string Kind { get; init; } = "";
+
+        public string State { get; init; } = "";
+
+        public int? Width { get; init; }
+
+        public int? Height { get; init; }
+
+        public DateTimeOffset? CapturedAt { get; init; }
+
+        public DateTimeOffset? RenderedAt { get; init; }
+    }
 }

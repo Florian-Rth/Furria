@@ -67,7 +67,7 @@ public sealed class GetGallery : EndpointWithoutRequest<GetGalleryResponse>
             Width = media.Width,
             Height = media.Height,
             CapturedAt = media.CapturedAt,
-            Urls = GalleryMediaUrls.Of(_signer, media.MediaItemId, media.Kind),
+            Urls = GalleryMediaUrls.Of(_signer, media.MediaItemId, media.Kind, media.RenderedAt),
         };
 }
 

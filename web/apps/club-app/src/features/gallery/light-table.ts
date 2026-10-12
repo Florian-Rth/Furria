@@ -64,17 +64,29 @@ const nextOpenFrom = (state: CullState, from: number): number => {
 
 const clamp = (value: number, max: number): number => Math.min(Math.max(value, 0), max);
 
-export const openCount = (state: CullState): number =>
-  state.frames.filter((frame) => isOpen(state, frame)).length;
+export interface CullTally {
+  open: number;
+  rejected: number;
+  filed: number;
+  filedBySlot: Record<number, number>;
+}
 
-export const verdictCount = (state: CullState, kind: 'rejected' | 'filed', slot?: number): number =>
-  state.frames.filter((frame) => {
+export const tallyOf = (state: CullState): CullTally => {
+  const tally: CullTally = { open: 0, rejected: 0, filed: 0, filedBySlot: {} };
+  for (const frame of state.frames) {
     const verdict = verdictOf(state, frame.id);
-    if (verdict.kind !== kind) {
-      return false;
+    if (verdict.kind === 'filed') {
+      tally.filed += 1;
+      tally.filedBySlot[verdict.slot] = (tally.filedBySlot[verdict.slot] ?? 0) + 1;
+    } else {
+      tally[verdict.kind] += 1;
     }
-    return slot === undefined || (verdict.kind === 'filed' && verdict.slot === slot);
-  }).length;
+  }
+  return tally;
+};
+
+export const frameNumbersOf = (frames: readonly CullFrame[]): Map<number, number> =>
+  new Map(frames.map((frame, index) => [frame.id, index + 1]));
 
 const apply = (
   state: CullState,
