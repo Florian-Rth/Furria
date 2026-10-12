@@ -5,9 +5,13 @@ import type { CSSObject, Theme } from '@mui/material/styles';
 import { keyframes } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
+import type { KkAspect } from './image-aspect';
+import { aspectRatioCss } from './image-aspect';
 import { focusRing } from './internal/focus-ring';
+import type { KkGroupTone } from './internal/group-tone';
 import { KkGreaseMark } from './KkGreaseMark';
 import { KkIcon } from './KkIcon';
+import { KkVacancyField } from './KkVacancyField';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
@@ -16,6 +20,7 @@ export type KkFrameState = 'ready' | 'queued' | 'uploading' | 'processing' | 'fa
 export type KkFrameMark =
   | { kind: 'selection'; order: number }
   | { kind: 'reject' }
+  | { kind: 'recut' }
   | { kind: 'none' };
 
 const { gallery, overlay } = kkTokens;
@@ -38,13 +43,15 @@ const photoOpacity: Record<KkFrameState, number> = {
   failed: 0.34,
 };
 
+const SQUARE = '1 / 1';
+
 const surfaceOf =
-  (fill: boolean) =>
+  (fill: boolean, aspectRatio: string) =>
   (theme: Theme): CSSObject => ({
     position: 'relative',
     display: 'block',
     width: '100%',
-    ...(fill ? { flex: 1, minHeight: 0 } : { aspectRatio: '1 / 1' }),
+    ...(fill ? { flex: 1, minHeight: 0 } : { aspectRatio }),
     overflow: 'hidden',
     backgroundColor: gallery.latent,
     ...focusRing(theme),
@@ -74,6 +81,8 @@ interface KkFrameProps {
   glow?: boolean;
   focal?: string;
   fill?: boolean;
+  aspect?: KkAspect;
+  vacancy?: KkGroupTone;
   frameId?: string;
   onSelect?: () => void;
   sx?: KkSx;
@@ -92,6 +101,8 @@ export const KkFrame: FC<KkFrameProps> = ({
   glow = false,
   focal = 'center',
   fill = false,
+  aspect,
+  vacancy,
   frameId,
   onSelect,
   sx,
@@ -102,6 +113,7 @@ export const KkFrame: FC<KkFrameProps> = ({
   const showsProgress = state === 'uploading' || state === 'queued';
   const progressScale = state === 'queued' ? 0 : progress;
   const latent = source === undefined;
+  const aspectRatio = aspect === undefined ? SQUARE : aspectRatioCss(aspect);
 
   return (
     <Stack
@@ -115,9 +127,12 @@ export const KkFrame: FC<KkFrameProps> = ({
         onClick={onSelect}
         aria-label={label}
         role={surfaceRole}
-        sx={surfaceOf(fill)}
+        sx={surfaceOf(fill, aspectRatio)}
       >
-        {latent ? (
+        {latent && vacancy !== undefined ? (
+          <KkVacancyField tone={vacancy} sx={{ position: 'absolute', inset: 0 }} />
+        ) : null}
+        {latent && vacancy === undefined ? (
           <Stack
             sx={{
               position: 'absolute',
@@ -139,7 +154,8 @@ export const KkFrame: FC<KkFrameProps> = ({
               {latentLabel}
             </Typography>
           </Stack>
-        ) : (
+        ) : null}
+        {latent ? null : (
           <Box
             component="img"
             src={source}
@@ -255,6 +271,24 @@ export const KkFrame: FC<KkFrameProps> = ({
               {mark.order}
             </Typography>
           </Box>
+        ) : null}
+        {mark.kind === 'recut' ? (
+          <Stack
+            aria-hidden
+            sx={{
+              position: 'absolute',
+              inset: 0,
+              alignItems: 'flex-end',
+              justifyContent: 'flex-start',
+              p: 0.5,
+              color: 'warning.main',
+              outline: '2px dashed',
+              outlineOffset: -4,
+              backgroundColor: 'rgba(5,6,8,0.32)',
+            }}
+          >
+            <KkIcon name="crop" size="small" />
+          </Stack>
         ) : null}
         {mark.kind === 'reject' || state === 'failed' ? (
           <KkGreaseMark kind="cross" sx={{ position: 'absolute', inset: '14%' }} />

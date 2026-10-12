@@ -1,11 +1,5 @@
 import { z } from 'zod';
-import {
-  MediaItemStateSchema,
-  MediaUrlSchema,
-  PersonRefSchema,
-  PictureEditingSchema,
-  PictureSchema,
-} from '@/lib/api/schemas';
+import { PersonRefSchema, PictureEditingSchema, PictureSchema } from '@/lib/api/schemas';
 import { GroupToneSchema } from '@/lib/group-tone';
 
 const InstantSchema = z.iso.datetime({ offset: true });
@@ -156,16 +150,3 @@ export const NewsTieCandidatesSchema = z.object({
   albums: z.array(TieableAlbumSchema),
 });
 export type NewsTieCandidates = z.infer<typeof NewsTieCandidatesSchema>;
-
-export const GalleryPhotoSchema = z.object({
-  mediaItemId: z.number().int(),
-  kind: z.enum(['photo', 'video']),
-  state: MediaItemStateSchema,
-  width: z.number().int().nullable(),
-  height: z.number().int().nullable(),
-  urls: z.object({ small: MediaUrlSchema }),
-});
-export type GalleryPhoto = z.infer<typeof GalleryPhotoSchema>;
-
-export const GalleryAlbumPhotosSchema = z.object({ items: z.array(GalleryPhotoSchema) });
-export type GalleryAlbumPhotos = z.infer<typeof GalleryAlbumPhotosSchema>;

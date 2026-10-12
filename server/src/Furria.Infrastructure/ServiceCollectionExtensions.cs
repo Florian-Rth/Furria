@@ -16,6 +16,7 @@ using Furria.Infrastructure.Public;
 using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.Roles;
 using Furria.Infrastructure.Start;
+using Furria.Infrastructure.Website;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -125,6 +126,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<GalleryService>();
         services.AddScoped<NewsService>();
         services.AddScoped<NewsPictures>();
+        services.AddScoped<MediaCopier>();
+        services.AddScoped<WebsitePictureService>();
+        services.AddScoped<PublicWebsitePictures>();
 
         services.AddScoped<MailOutbox>();
         services.AddSingleton<MailService>();

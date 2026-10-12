@@ -21,6 +21,9 @@ public static class TusUploadSteps
 
     public static string NewsPostOwner(int newsPostId) => $"news:{newsPostId}";
 
+    public static string WebsiteOwner(string slotKey, int position) =>
+        $"website:{slotKey}:{position.ToString(CultureInfo.InvariantCulture)}";
+
     public static Task<HttpResponseMessage> CreateAsync(
         HttpClient client,
         string owner,
@@ -37,7 +40,8 @@ public static class TusUploadSteps
         long length,
         string? crop,
         CancellationToken ct,
-        int? albumId = null
+        int? albumId = null,
+        string? aspect = null
     )
     {
         var request = new HttpRequestMessage(HttpMethod.Post, MediaUploads.UrlPath);
@@ -56,6 +60,7 @@ public static class TusUploadSteps
                         : ""
                 )
                 + cropMetadata
+                + (aspect is null ? "" : $",{MediaUploadEvents.AspectMetadataKey} {Base64(aspect)}")
         );
         return client.SendAsync(request, ct);
     }
@@ -76,10 +81,20 @@ public static class TusUploadSteps
         long length,
         string? crop,
         CancellationToken ct,
-        int? albumId = null
+        int? albumId = null,
+        string? aspect = null
     )
     {
-        var response = await CreateAsync(client, owner, fileName, length, crop, ct, albumId);
+        var response = await CreateAsync(
+            client,
+            owner,
+            fileName,
+            length,
+            crop,
+            ct,
+            albumId,
+            aspect
+        );
         Assert.Equal(HttpStatusCode.Created, response.StatusCode);
         return response.Headers.Location!;
     }
@@ -131,10 +146,20 @@ public static class TusUploadSteps
         int chunkLength,
         string? crop,
         CancellationToken ct,
-        int? albumId = null
+        int? albumId = null,
+        string? aspect = null
     )
     {
-        var upload = await CreatedAsync(client, owner, fileName, content.Length, crop, ct, albumId);
+        var upload = await CreatedAsync(
+            client,
+            owner,
+            fileName,
+            content.Length,
+            crop,
+            ct,
+            albumId,
+            aspect
+        );
         HttpResponseMessage? last = null;
         for (var offset = 0; offset < content.Length; offset += chunkLength)
         {

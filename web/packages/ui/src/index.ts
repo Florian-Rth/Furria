@@ -179,6 +179,8 @@ export type {
   KkSystemNotice,
 } from './KkNotice/KkNotice';
 export { KkNoticeProvider, useKkNotice } from './KkNotice/KkNotice';
+export type { KkPageSketchDevice, KkSketchBlock, KkSketchBlockKind } from './KkPageSketch';
+export { KkPageSketch } from './KkPageSketch';
 export { KkPageWatermark } from './KkPageWatermark';
 export { KkPanel } from './KkPanel';
 export { KkPanelFold } from './KkPanelFold/KkPanelFold';
@@ -269,6 +271,8 @@ export { KkSkeletonBlock } from './KkSkeletonBlock';
 export { KkSkeletonRow } from './KkSkeletonRow';
 export { KkSkeletonText } from './KkSkeletonText';
 export { KkSkeletonToolbar } from './KkSkeletonToolbar';
+export type { KkSlotFlag, KkSlotFlagTone, KkSlotRowPosition } from './KkSlotRow';
+export { KkSlotRow } from './KkSlotRow';
 export { useKkPaneOpen } from './KkSplitLayout/internal/logic/split-layout-sheet-context';
 export { KkSplitLayout } from './KkSplitLayout/KkSplitLayout';
 export { KkStatRow } from './KkStatRow/KkStatRow';
@@ -288,6 +292,7 @@ export type { KkTimeRailScene } from './KkTimeRail';
 export { KkTimeRail } from './KkTimeRail';
 export { KkTitleHeader } from './KkTitleHeader';
 export { KkTwoToneHeadline } from './KkTwoToneHeadline';
+export { KkVacancyField } from './KkVacancyField';
 export { KkViewer } from './KkViewer/KkViewer';
 export type {
   KkViewerEntrance,

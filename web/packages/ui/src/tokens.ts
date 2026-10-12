@@ -288,6 +288,12 @@ export const kkTokens = {
     placeholderSurface: '#D5D8DD',
     placeholderSurfaceDark: '#23262C',
   },
+  website: {
+    sketchWidth: { xs: 40, desktop: 52 },
+    sketchBlock: 'rgba(255,255,255,0.16)',
+    sketchLine: 'rgba(255,255,255,0.3)',
+    slotFrameHeight: { xs: 64, desktop: 84 },
+  },
   gallery: {
     gutter: 2,
     edgeHeight: 14,

@@ -7,6 +7,7 @@ using Furria.Core.Groups;
 using Furria.Core.Media;
 using Furria.Core.News;
 using Furria.Core.Ties;
+using Furria.Core.Website;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -59,6 +60,11 @@ public sealed class PublicFace
     }
 
     public IQueryable<NewsPost> NewsPosts => _dbContext.NewsPosts.AsNoTracking().Where(IsLivePost);
+
+    public IQueryable<WebsitePicture> WebsitePictures =>
+        _dbContext
+            .WebsitePictures.AsNoTracking()
+            .Where(picture => picture.MediaItem!.RenderedAt != null);
 
     public IQueryable<BoardSeat> BoardSeats =>
         _dbContext

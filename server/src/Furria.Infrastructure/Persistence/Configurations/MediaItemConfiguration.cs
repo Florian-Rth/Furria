@@ -30,8 +30,12 @@ public sealed class MediaItemConfiguration : IEntityTypeConfiguration<MediaItem>
                     (owner_kind = '{MediaOwnerKind.Person}' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)
                     OR (owner_kind = '{MediaOwnerKind.Group}' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL)
                     OR (owner_kind = '{MediaOwnerKind.NewsPost}' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL)
-                    OR (owner_kind = '{MediaOwnerKind.Gallery}' AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)
+                    OR (owner_kind IN ('{MediaOwnerKind.Gallery}', '{MediaOwnerKind.Website}') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)
                     """
+                );
+                table.HasCheckConstraint(
+                    "ck_media_item_website_photo",
+                    $"owner_kind <> '{MediaOwnerKind.Website}' OR kind = '{MediaKind.Photo}'"
                 );
                 table.HasCheckConstraint("ck_media_item_byte_size", "byte_size > 0");
                 table.HasCheckConstraint(

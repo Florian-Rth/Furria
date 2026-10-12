@@ -1,7 +1,9 @@
-import { KkPhotoPlaceholder, kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
-import { clubHeroPhotoCaption } from '@/features/club/header-content';
+import { WebsitePicture } from '@/components/WebsitePicture';
+
+const CLUB_HERO_SIZES = '(min-width: 1536px) 600px, 42vw';
 
 export const ClubHeroPhoto: FC = () => (
   <Box
@@ -15,6 +17,6 @@ export const ClubHeroPhoto: FC = () => (
       boxShadow: kkTokens.shadow.raised,
     }}
   >
-    <KkPhotoPlaceholder label={clubHeroPhotoCaption} aspectRatio={kkTokens.aspectRatio.landscape} />
+    <WebsitePicture slot="club.hero" sizes={CLUB_HERO_SIZES} />
   </Box>
 );

@@ -28,6 +28,7 @@ export const DOMAIN_CHANGES = [
   'toDoMark',
   'media',
   'newsPost',
+  'websitePicture',
 ] as const;
 export type DomainChange = (typeof DOMAIN_CHANGES)[number];
 
@@ -79,7 +80,9 @@ export const READ_NAMES = [
   'newsHub',
   'newsMentionables',
   'newsTieCandidates',
-  'newsGalleryAlbum',
+  'galleryPickAlbums',
+  'galleryPickAlbum',
+  'websitePictures',
 ] as const;
 export type ReadName = (typeof READ_NAMES)[number];
 
@@ -131,7 +134,9 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   newsHub: ['news', 'hub'],
   newsMentionables: ['news', 'mentionables'],
   newsTieCandidates: ['news', 'tie-candidates'],
-  newsGalleryAlbum: ['news', 'gallery-album'],
+  galleryPickAlbums: ['gallery', 'pick-albums'],
+  galleryPickAlbum: ['gallery', 'pick-album'],
+  websitePictures: ['website-pictures'],
 };
 
 const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
@@ -270,7 +275,9 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   newsHub: ['newsPost', 'person', 'picture'],
   newsMentionables: ['person', 'picture', 'group'],
   newsTieCandidates: ['event', 'media'],
-  newsGalleryAlbum: ['media'],
+  galleryPickAlbums: ['media'],
+  galleryPickAlbum: ['media'],
+  websitePictures: ['websitePicture'],
 };
 
 export const staleReadsAfter = (changes: readonly DomainChange[]): ReadName[] =>
@@ -346,5 +353,7 @@ export const queryKeys = {
   newsHub: READ_ROOTS.newsHub,
   newsMentionables: READ_ROOTS.newsMentionables,
   newsTieCandidates: READ_ROOTS.newsTieCandidates,
-  newsGalleryAlbum: (albumId: number): QueryKey => keyOf('newsGalleryAlbum', albumId),
+  galleryPickAlbums: READ_ROOTS.galleryPickAlbums,
+  galleryPickAlbum: (albumId: number): QueryKey => keyOf('galleryPickAlbum', albumId),
+  websitePictures: READ_ROOTS.websitePictures,
 } as const;

@@ -70,6 +70,20 @@ describe('uploadVia', () => {
       { owner: 'gallery', filename: 'IMG_0001.HEIC', album: '5' },
     ],
     [
+      'a website picture cut to its position',
+      {
+        file: photo,
+        owner: { kind: 'website', slot: 'gallery.stack', position: 2, aspect: 0.8 },
+        crop: { left: 0.1, top: 0, width: 0.8, height: 1 },
+      },
+      {
+        owner: 'website:gallery.stack:2',
+        filename: 'IMG_0001.HEIC',
+        aspect: '0.8',
+        crop: '0.1,0,0.8,1',
+      },
+    ],
+    [
       'a gallery photo into the inbox',
       { file: photo, owner: { kind: 'gallery', albumId: null } },
       { owner: 'gallery', filename: 'IMG_0001.HEIC' },

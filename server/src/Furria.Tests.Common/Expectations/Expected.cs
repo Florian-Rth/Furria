@@ -123,6 +123,9 @@ public sealed class Expected
 
     public NewsPostExpectations NewsPost(int newsPostId) => new(this, newsPostId);
 
+    public WebsitePictureExpectations WebsitePicture(string slotKey, int position) =>
+        new(this, slotKey, position);
+
     public async Task AssertAsync(CancellationToken ct = default)
     {
         var pending = _reads.ToList();

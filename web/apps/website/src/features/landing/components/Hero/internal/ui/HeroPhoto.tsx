@@ -1,7 +1,9 @@
-import { KkPhotoPlaceholder, KkSeal, kkTokens } from '@furria/ui';
+import { KkSeal, kkTokens } from '@furria/ui';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
+import { WebsitePicture } from '@/components/WebsitePicture';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH } from '@/lib/club';
+import { LANDING_HERO_SIZES } from '@/lib/website-pictures/landing-hero-sizes';
 
 export const HeroPhoto: FC = () => (
   <Box sx={{ position: 'relative' }}>
@@ -14,10 +16,7 @@ export const HeroPhoto: FC = () => (
         boxShadow: kkTokens.shadow.raised,
       }}
     >
-      <KkPhotoPlaceholder
-        label="garde-auf-der-buehne"
-        aspectRatio={kkTokens.aspectRatio.landscape}
-      />
+      <WebsitePicture slot="landing.hero" sizes={LANDING_HERO_SIZES} priority />
     </Box>
     <Box
       sx={(theme) => ({

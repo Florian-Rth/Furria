@@ -23,6 +23,7 @@
     "@emotion/styled": "catalog:",
     "@furria/api-client": "workspace:*",
     "@furria/ui": "workspace:*",
+    "@furria/website-pictures": "workspace:*",
     "@mui/material": "catalog:",
     "@hookform/resolvers": "catalog:",
     "@tanstack/react-query": "catalog:",

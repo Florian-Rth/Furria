@@ -9,6 +9,8 @@
   "exports": {
     ".": "./src/index.ts",
     "./tokens": "./src/tokens.ts",
+    "./image-aspect": "./src/image-aspect.ts",
+    "./image-source": "./src/image-source.ts",
     "./group-tone": "./src/internal/group-tone.ts",
     "./theme": "./src/theme.ts",
     "./fonts": "./src/fonts.ts",

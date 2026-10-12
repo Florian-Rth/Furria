@@ -6,4 +6,3 @@ export const clubDescription =
 
 export const clubPrimaryCtaLabel = 'Mitglied werden →';
 export const clubSecondaryCtaLabel = 'Zu den Veranstaltungen';
-export const clubHeroPhotoCaption = 'session-buehne';

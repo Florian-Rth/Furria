@@ -5,6 +5,7 @@ using Furria.Api.Authorization;
 using Furria.Application.Media;
 using Furria.Application.Results;
 using Furria.Core.Media;
+using Furria.Core.Website;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Media;
 using tusdotnet.Interfaces;
@@ -19,12 +20,13 @@ public sealed class MediaUploadEvents
     public const string FileNameMetadataKey = "filename";
     public const string AlbumMetadataKey = "album";
     public const string CropMetadataKey = "crop";
+    public const string AspectMetadataKey = "aspect";
     public const string MediaItemIdHeader = "Media-Item-Id";
 
     private const string ConcatenationRefused = "Uploads are not concatenated.";
     private const string LengthRequired = "An upload declares its length up front.";
     private const string OwnerRequired =
-        "An upload names its owner: gallery, person:{id}, group:{id} or news:{id}.";
+        "An upload names its owner: gallery, person:{id}, group:{id}, news:{id} or website:{slot}:{position}.";
     private const string FileNameRequired = "An upload names its file.";
     private const string TooLarge = "The upload exceeds what its owner accepts.";
     private const string NotAcceptedMedia =
@@ -33,7 +35,9 @@ public sealed class MediaUploadEvents
     private const string AlbumOfGalleryOnly = "Only a gallery upload goes into an album.";
     private const string AlbumUnknown = "There is no such album.";
     private const string CropRefused =
-        "A crop is left, top, width and height as fractions of a portrait, group or news picture.";
+        "A crop is left, top, width and height as fractions of a portrait, group, news or website picture.";
+    private const string AspectRefused =
+        "A website picture names the aspect of its position; no other upload names one.";
 
     private readonly HttpContext _http;
     private readonly int? _accountId;
@@ -81,6 +85,8 @@ public sealed class MediaUploadEvents
             context.FailRequest(HttpStatusCode.BadRequest, FileNameRequired);
         else if (!CropFits(owner.Value, TextOf(context.Metadata, CropMetadataKey)))
             context.FailRequest(HttpStatusCode.BadRequest, CropRefused);
+        else if (!AspectFits(owner.Value, context.Metadata))
+            context.FailRequest(HttpStatusCode.BadRequest, AspectRefused);
         else if (context.UploadLength > owner.Value.MaxBytes)
             context.FailRequest(HttpStatusCode.RequestEntityTooLarge, TooLarge);
         else if (!await FailsOnAccessAsync(context, owner.Value))
@@ -152,6 +158,7 @@ public sealed class MediaUploadEvents
                     )!.Value,
                     UploadedByPersonId = _http.User.PersonId(),
                     Crop = PictureCrop.Parse(TextOf(metadata, CropMetadataKey)),
+                    Aspect = AspectOf(metadata),
                 },
                 ct
             );
@@ -198,7 +205,26 @@ public sealed class MediaUploadEvents
     }
 
     private static bool CropFits(MediaOwner owner, string? crop) =>
-        crop is null || (owner.PictureAspect is not null && PictureCrop.Parse(crop) is not null);
+        crop is null
+        || (
+            (owner.PictureAspect is not null || owner.Kind == MediaOwnerKind.Website)
+            && PictureCrop.Parse(crop) is not null
+        );
+
+    private static bool AspectFits(MediaOwner owner, Dictionary<string, Metadata> metadata) =>
+        owner.Kind == MediaOwnerKind.Website
+            ? AspectOf(metadata) is not null
+            : TextOf(metadata, AspectMetadataKey) is null;
+
+    private static double? AspectOf(Dictionary<string, Metadata> metadata) =>
+        double.TryParse(
+            TextOf(metadata, AspectMetadataKey),
+            NumberStyles.Float,
+            CultureInfo.InvariantCulture,
+            out var aspect
+        ) && WebsitePicture.IsWellFormedAspect(aspect)
+            ? aspect
+            : null;
 
     private static string? FileNameOf(Dictionary<string, Metadata> metadata)
     {

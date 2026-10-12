@@ -1680,15 +1680,17 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_media_item_kind", "kind IN ('Photo', 'Video')");
 
-                            t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL)\nOR (owner_kind = 'NewsPost' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL)\nOR (owner_kind = 'Gallery' AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)");
+                            t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL)\nOR (owner_kind = 'NewsPost' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL)\nOR (owner_kind IN ('Gallery', 'Website') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)");
 
-                            t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery', 'NewsPost')");
+                            t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery', 'NewsPost', 'Website')");
 
                             t.HasCheckConstraint("ck_media_item_placed", "(album_id IS NULL) = (placed_at IS NULL)");
 
                             t.HasCheckConstraint("ck_media_item_selection", "selection_position IS NULL\nOR (selection_position > 0 AND album_id IS NOT NULL AND binned_at IS NULL AND kind = 'Photo')");
 
                             t.HasCheckConstraint("ck_media_item_state", "state IN ('Processing', 'Ready', 'Failed')");
+
+                            t.HasCheckConstraint("ck_media_item_website_photo", "owner_kind <> 'Website' OR kind = 'Photo'");
                         });
                 });
 
@@ -2204,6 +2206,58 @@ namespace Furria.Infrastructure.Migrations
                         .HasDatabaseName("ix_role_permission_role_id_permission_key");
 
                     b.ToTable("role_permission", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.Website.WebsitePicture", b =>
+                {
+                    b.Property<string>("SlotKey")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("slot_key");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<string>("Alt")
+                        .HasMaxLength(300)
+                        .HasColumnType("character varying(300)")
+                        .HasColumnName("alt");
+
+                    b.Property<double>("Aspect")
+                        .HasColumnType("double precision")
+                        .HasColumnName("aspect");
+
+                    b.Property<int>("MediaItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("media_item_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at");
+
+                    b.Property<int?>("UpdatedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("updated_by_person_id");
+
+                    b.HasKey("SlotKey", "Position")
+                        .HasName("pk_website_picture");
+
+                    b.HasIndex("MediaItemId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_website_picture_media_item_id");
+
+                    b.HasIndex("UpdatedByPersonId")
+                        .HasDatabaseName("ix_website_picture_updated_by_person_id");
+
+                    b.ToTable("website_picture", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_website_picture_aspect", "aspect BETWEEN 0.25 AND 4");
+
+                            t.HasCheckConstraint("ck_website_picture_position", "position BETWEEN 1 AND 24");
+
+                            t.HasCheckConstraint("ck_website_picture_slot_key", "slot_key ~ '^[a-z][a-zA-Z]*(\\.[a-z][a-zA-Z]*)+$'");
+                        });
                 });
 
             modelBuilder.Entity("Furria.Infrastructure.Identity.Account", b =>
@@ -3403,6 +3457,26 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("Furria.Core.Website.WebsitePicture", b =>
+                {
+                    b.HasOne("Furria.Core.Media.MediaItem", "MediaItem")
+                        .WithOne("WebsitePicture")
+                        .HasForeignKey("Furria.Core.Website.WebsitePicture", "MediaItemId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_website_picture_media_item_media_item_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "UpdatedBy")
+                        .WithMany()
+                        .HasForeignKey("UpdatedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_website_picture_person_updated_by_person_id");
+
+                    b.Navigation("MediaItem");
+
+                    b.Navigation("UpdatedBy");
+                });
+
             modelBuilder.Entity("Furria.Infrastructure.Identity.Account", b =>
                 {
                     b.HasOne("Furria.Core.Identity.Person", "Person")
@@ -3608,6 +3682,11 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Memberships");
 
                     b.Navigation("RoleHoldings");
+                });
+
+            modelBuilder.Entity("Furria.Core.Media.MediaItem", b =>
+                {
+                    b.Navigation("WebsitePicture");
                 });
 
             modelBuilder.Entity("Furria.Core.News.NewsPost", b =>

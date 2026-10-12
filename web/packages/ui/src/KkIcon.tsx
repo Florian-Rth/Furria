@@ -15,6 +15,7 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CloseIcon from '@mui/icons-material/Close';
 import CloudOffOutlinedIcon from '@mui/icons-material/CloudOffOutlined';
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
+import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import CropOutlinedIcon from '@mui/icons-material/CropOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import Diversity3Icon from '@mui/icons-material/Diversity3';
@@ -143,6 +144,7 @@ export type KkIconName =
   | 'paragraph'
   | 'mention'
   | 'crop'
+  | 'copy'
   | 'image'
   | 'lock'
   | 'external';
@@ -230,6 +232,7 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   paragraph: NotesOutlinedIcon,
   mention: AlternateEmailOutlinedIcon,
   crop: CropOutlinedIcon,
+  copy: ContentCopyOutlinedIcon,
   image: ImageOutlinedIcon,
   lock: LockOutlinedIcon,
   external: OpenInNewOutlinedIcon,

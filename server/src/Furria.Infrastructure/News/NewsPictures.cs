@@ -1,9 +1,9 @@
-using System.Diagnostics.Contracts;
 using Furria.Application.Media;
 using Furria.Application.News;
 using Furria.Application.Results;
 using Furria.Core.Media;
 using Furria.Core.News;
+using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -18,19 +18,19 @@ public sealed class NewsPictures
         "Dieses Foto liegt in keinem Album der Galerie.";
 
     private readonly AppDbContext _dbContext;
-    private readonly MediaRoot _root;
+    private readonly MediaCopier _copier;
     private readonly MediaJobQueue _jobQueue;
     private readonly TimeProvider _timeProvider;
 
     public NewsPictures(
         AppDbContext dbContext,
-        MediaRoot root,
+        MediaCopier copier,
         MediaJobQueue jobQueue,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
-        _root = root;
+        _copier = copier;
         _jobQueue = jobQueue;
         _timeProvider = timeProvider;
     }
@@ -71,17 +71,8 @@ public sealed class NewsPictures
 
         var photo = await _dbContext
             .MediaItems.AsNoTracking()
-            .SingleOrDefaultAsync(
-                item =>
-                    item.Id == command.GalleryItemId
-                    && item.OwnerKind == MediaOwnerKind.Gallery
-                    && item.Kind == MediaKind.Photo
-                    && item.State == MediaItemState.Ready
-                    && item.AlbumId != null
-                    && item.BinnedAt == null
-                    && item.Album!.BinnedAt == null,
-                ct
-            );
+            .Where(GalleryPicks.IsPickablePhoto)
+            .SingleOrDefaultAsync(item => item.Id == command.GalleryItemId, ct);
         if (photo is null)
             return Result<int>.NotFound(UnknownGalleryPhotoMessage);
 
@@ -159,78 +150,23 @@ public sealed class NewsPictures
         );
     }
 
-    private async Task<int> PlaceCopyAsync(
+    private Task<int> PlaceCopyAsync(
         Placement placement,
         MediaItem source,
         PictureCrop crop,
         CancellationToken ct
-    )
-    {
-        var now = _timeProvider.GetUtcNow();
-        var copy = CopyOf(source, placement.Post.Id, crop, now);
-
-        _root.CopyInto(
-            MediaPaths.OriginalOf(source.StorageKey),
-            MediaPaths.OriginalOf(copy.StorageKey)
-        );
-        try
-        {
-            await RecordCopyAsync(placement, copy, now, ct);
-        }
-        catch
-        {
-            _root.DeleteFilesOf(copy.StorageKey);
-            throw;
-        }
-
-        return copy.Id;
-    }
-
-    private async Task RecordCopyAsync(
-        Placement placement,
-        MediaItem copy,
-        DateTimeOffset now,
-        CancellationToken ct
-    )
-    {
-        _dbContext.MediaItems.Add(copy);
-        _dbContext.MediaJobs.Add(
-            new MediaJob
-            {
-                MediaItem = copy,
-                EnqueuedAt = now,
-                AvailableAt = now,
-            }
-        );
-
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        await _dbContext.SaveChangesAsync(ct);
-        await PlaceAsync(placement, copy.Id, ct);
-        await _dbContext.SaveChangesAsync(ct);
-        await transaction.CommitAsync(ct);
-    }
-
-    [Pure]
-    private static MediaItem CopyOf(
-        MediaItem source,
-        int newsPostId,
-        PictureCrop crop,
-        DateTimeOffset now
     ) =>
-        new()
-        {
-            StorageKey = Guid.NewGuid(),
-            OwnerKind = MediaOwnerKind.NewsPost,
-            OwnerNewsPostId = newsPostId,
-            Kind = MediaKind.Photo,
-            State = MediaItemState.Processing,
-            OriginalFileName = source.OriginalFileName,
-            ContentType = source.ContentType,
-            ByteSize = source.ByteSize,
-            UploadedByPersonId = source.UploadedByPersonId,
-            UploadedAt = now,
-            Crop = MediaCrops.ToEntity(crop),
-        };
+        _copier.CopyPhotoAsync(
+            source,
+            MediaOwner.NewsPost(placement.Post.Id),
+            crop,
+            async copyId =>
+            {
+                await PlaceAsync(placement, copyId, ct);
+                await _dbContext.SaveChangesAsync(ct);
+            },
+            ct
+        );
 
     private sealed record Placement(NewsPost Post, int? ByPersonId);
 }

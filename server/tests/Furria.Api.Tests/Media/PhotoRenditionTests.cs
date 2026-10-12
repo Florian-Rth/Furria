@@ -199,6 +199,27 @@ public sealed class PhotoRenditionTests : IClassFixture<ApiTestFixture>
         Assert.Equal((2560, 1707), await RenditionSizeAsync(mediaItemId, MediaRendition.Large, ct));
     }
 
+    [Fact]
+    public async Task Should_FrameTheWebsitePictureAtTheAspectOfItsPosition_When_ItArrivesUncropped()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+        var mediaItemId = await TusUploadSteps.UploadAsync(
+            await ctx.Identity.ManagingLoginClientAsync(ct),
+            TusUploadSteps.WebsiteOwner("site.shareImage", 1),
+            "Teilen.jpg",
+            MediaSamples.JpegOfSize(3000, 3000),
+            ChunkLength,
+            crop: null,
+            ct,
+            aspect: "1.91"
+        );
+
+        await _fixture.RunMediaWorkerAsync(ct);
+
+        Assert.Equal((2560, 1340), await RenditionSizeAsync(mediaItemId, MediaRendition.Large, ct));
+    }
+
     private async Task<int> UploadAsync(
         SeededContext ctx,
         string fileName,

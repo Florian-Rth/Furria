@@ -1,6 +1,7 @@
 import { KkButton, KkErrorState, KkExposureSweep } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { WebsiteHubEntry } from '@/features/website-pictures';
 import type { GalleryHubState } from '../hooks/use-gallery-hub';
 import { HUB_ERROR_TITLE, HUB_RETRY_LABEL, NEW_ALBUM_LABEL, toHubErrorMessage } from '../hub-copy';
 import { inboxKeyOf, inboxOwnerOf } from '../hub-view';
@@ -60,6 +61,7 @@ export const GalleryHubBody: FC<GalleryHubBodyProps> = ({ state }) => {
   return (
     <KkExposureSweep scope="viewport">
       <Stack sx={{ rowGap: 3.5, pb: 4 }}>
+        <WebsiteHubEntry />
         {rolls}
         {newAlbum}
         {sections}

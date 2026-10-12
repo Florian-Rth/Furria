@@ -4,6 +4,7 @@ import { QueryClientProvider } from '@tanstack/react-query';
 import { createRootRoute, HeadContent, Outlet } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { NotFoundScreen } from '@/components/NotFoundScreen';
+import { ShareImageAltMeta } from '@/components/ShareImageAltMeta';
 import { ThemeColorMeta } from '@/components/ThemeColorMeta/ThemeColorMeta';
 import { PreviewAccessProvider } from '@/features/preview-access';
 import { queryClient } from '@/lib/query-client';
@@ -15,6 +16,7 @@ const RootComponent: FC = () => (
       <PreviewAccessProvider>
         <HeadContent />
         <ThemeColorMeta />
+        <ShareImageAltMeta />
         <Outlet />
       </PreviewAccessProvider>
     </QueryClientProvider>
@@ -33,7 +35,6 @@ export const Route = createRootRoute({
       { property: 'og:locale', content: 'de_DE' },
       { property: 'og:site_name', content: 'FURRIA' },
       { property: 'og:type', content: 'website' },
-      { property: 'og:image', content: '/og-default.png' },
       { name: 'twitter:card', content: 'summary_large_image' },
     ],
   }),

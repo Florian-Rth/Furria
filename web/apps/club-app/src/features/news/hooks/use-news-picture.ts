@@ -2,12 +2,13 @@ import type { KkCrop } from '@furria/ui';
 import { centredCrop, useKkNotice, useKkSheet } from '@furria/ui';
 import type { ChangeEvent } from 'react';
 import { useState } from 'react';
+import type { GalleryPhoto } from '@/features/gallery-pick';
+import { photoSizeOf } from '@/features/gallery-pick';
 import { toUploadFailureMessage } from '@/features/pictures';
 import { usePictureDesk } from '@/lib/media/use-picture-desk';
 import { useNewsPictureCrop, useNewsPictureFromGallery, useNewsPictureRemoval } from '../api';
 import { GALLERY_SHEET_ID, PICTURE_ACTION_FAILED } from '../editor-copy';
-import { photoSizeOf, uploadOverlayOf } from '../news-picture';
-import type { GalleryPhoto } from '../schemas';
+import { uploadOverlayOf } from '../news-picture';
 import type { NewsPicture } from '../types';
 import type { NewsEditor } from './use-news-editor';
 
