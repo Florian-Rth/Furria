@@ -46,12 +46,16 @@ try
         .Services.AddOptions<JwtBearerOptions>(JwtBearerDefaults.AuthenticationScheme)
         .Configure<TimeProvider>(
             (bearer, timeProvider) =>
+            {
                 bearer.TokenValidationParameters.LifetimeValidator = (notBefore, expires, _, _) =>
                     AccessTokenLifetime.IsCurrent(
                         notBefore,
                         expires,
                         timeProvider.GetUtcNow().UtcDateTime
-                    )
+                    );
+                bearer.Events ??= new JwtBearerEvents();
+                bearer.Events.OnTokenValidated = ActingAccount.ResolveAsync;
+            }
         );
     builder.Services.AddAuthorization();
     builder.Services.AddTrustedProxies(builder.Environment);

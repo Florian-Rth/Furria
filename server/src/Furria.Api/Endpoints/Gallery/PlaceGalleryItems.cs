@@ -3,7 +3,6 @@ using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Gallery;
-using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Gallery;
 
 namespace Furria.Api.Endpoints.Gallery;
@@ -11,12 +10,10 @@ namespace Furria.Api.Endpoints.Gallery;
 public sealed class PlaceGalleryItems : Endpoint<PlaceGalleryItemsRequest>
 {
     private readonly GalleryService _galleryService;
-    private readonly PermissionAuthorizer _authorizer;
 
-    public PlaceGalleryItems(GalleryService galleryService, PermissionAuthorizer authorizer)
+    public PlaceGalleryItems(GalleryService galleryService)
     {
         _galleryService = galleryService;
-        _authorizer = authorizer;
     }
 
     public override void Configure()
@@ -30,7 +27,7 @@ public sealed class PlaceGalleryItems : Endpoint<PlaceGalleryItemsRequest>
         var result = await _galleryService.PlaceItemsAsync(
             new PlaceGalleryItemsCommand
             {
-                Actor = await _authorizer.GalleryActorAsync(User.AccountId()!.Value, ct),
+                ActorAccountId = User.AccountId()!.Value,
                 AlbumId = req.AlbumId,
                 MediaItemIds = req.MediaItemIds,
             },

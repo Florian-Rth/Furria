@@ -1,3 +1,4 @@
+using Furria.Application.Authorization;
 using Furria.Application.Results;
 using Furria.Infrastructure.Persistence;
 using Furria.Tests.Common.Fixtures;
@@ -65,6 +66,15 @@ public sealed class WriteConflictTests : IClassFixture<ApiTestFixture>
                             .AddAccount("ilka")
                             .AddMembership("ilka-first", "ilka", JoinedIn2017)
                     )
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "kalender",
+                            "ilka-kalender",
+                            "Kalender",
+                            "ilka",
+                            FurriaPermissions.CalendarManageClub
+                        )
+                    )
                     .Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde"))
                     .Club(club =>
                         club.AddCalendarEntry("prunksitzung", "Prunksitzung", GalaSessionStart)
@@ -75,6 +85,7 @@ public sealed class WriteConflictTests : IClassFixture<ApiTestFixture>
         var result = await _fixture.SaveSecondParticipationAsync(
             ctx.Club.CalendarEntries.IdOf("prunksitzung"),
             ctx.Groups.Groups.IdOf("tanzgarde"),
+            ctx.Identity.Accounts.IdOf("ilka"),
             ctx.Identity.People.IdOf("ilka"),
             ct
         );

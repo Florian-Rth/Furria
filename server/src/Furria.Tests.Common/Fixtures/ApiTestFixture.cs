@@ -677,6 +677,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     public async Task<Result<CalendarEntryWriteResult>> SaveSecondParticipationAsync(
         int calendarEntryId,
         int groupId,
+        int actorAccountId,
         int viewerPersonId,
         CancellationToken ct = default
     )
@@ -698,6 +699,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         return await calendarService.UpdateAsync(
             new UpdateCalendarEntryCommand
             {
+                ActorAccountId = actorAccountId,
                 ViewerPersonId = viewerPersonId,
                 CalendarEntryId = entry.Id,
                 Title = entry.Title,

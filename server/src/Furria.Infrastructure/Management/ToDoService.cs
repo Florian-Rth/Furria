@@ -1,7 +1,6 @@
 using System.Collections.Frozen;
 using System.Diagnostics.Contracts;
 using System.Globalization;
-using Furria.Application.Authorization;
 using Furria.Application.Management;
 using Furria.Application.Results;
 using Furria.Core.Club;
@@ -101,28 +100,29 @@ public sealed class ToDoService
         var today = ClubClock.Today(_timeProvider);
         var work = new List<ToDoWork>();
 
-        if (granted.Contains(FurriaPermissions.PersonsManage))
+        if (ToDoKeys.Shows(ToDoKind.NeverInvited, granted))
             work.AddRange(await InvitationWorkAsync(ct));
 
-        if (
-            granted.Contains(FurriaPermissions.PersonsManage)
-            && granted.Contains(FurriaPermissions.AccountsManage)
-        )
+        if (ToDoKeys.Shows(ToDoKind.BirthDateUnknown, granted))
             work.Add(await BirthDatesUnknownAsync(today, ct));
 
-        if (granted.Contains(FurriaPermissions.KeyHoldingsManage))
+        if (ToDoKeys.Shows(ToDoKind.KeyToTakeBack, granted))
             work.Add(await KeysToTakeBackAsync(today, ct));
 
-        if (granted.Contains(FurriaPermissions.ClubManage))
+        if (ToDoKeys.Shows(ToDoKind.ClubRecordGap, granted))
             work.Add(await ClubRecordGapsAsync(ct));
 
-        if (granted.Contains(FurriaPermissions.MembershipApplicationsDecide))
+        if (ToDoKeys.Shows(ToDoKind.ApplicationWaiting, granted))
             work.Add(await WaitingApplicationsAsync(ct));
 
-        if (granted.Contains(FurriaPermissions.TicketRequestsHandle))
+        if (ToDoKeys.Shows(ToDoKind.TicketRequestWaiting, granted))
             work.Add(await WaitingTicketRequestsAsync(ct));
 
-        return [.. work.Where(item => item.Subjects.Count > 0).OrderBy(item => item.Kind)];
+        return
+        [
+            .. work.Where(item => item.Subjects.Count > 0 && ToDoKeys.Shows(item.Kind, granted))
+                .OrderBy(item => item.Kind),
+        ];
     }
 
     private async Task<IReadOnlyDictionary<ToDoKind, IReadOnlySet<string>>> SeenSubjectsOfAsync(

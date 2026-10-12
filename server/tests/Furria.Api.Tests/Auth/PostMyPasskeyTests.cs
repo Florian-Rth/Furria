@@ -250,29 +250,6 @@ public sealed class PostMyPasskeyTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_HerAccountIsDisabled()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAndBertaAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        using var authenticator = new SoftwareAuthenticator();
-        var (_, options) = await PasskeySteps.CreationOptionsAsync(client);
-        await _fixture.DisableAccountDirectlyAsync(ctx.Identity.Accounts.IdOf("anna"), ct);
-
-        var (response, _) = await PasskeySteps.AddAsync(
-            client,
-            options.ChallengeId,
-            authenticator.Create(options.Options, PasskeySteps.WebOrigin)
-        );
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx
-            .Expected.PasskeysOfAccount(ctx.Identity.Accounts.IdOf("anna"))
-            .ToHaveCount(0)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnBadRequest_When_TheCredentialIsNotAnObject()
     {
         var ct = TestContext.Current.CancellationToken;

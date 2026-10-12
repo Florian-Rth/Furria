@@ -370,26 +370,6 @@ public sealed class AffiliationRequirementTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheAccountWasDisabledAfterItsTokenWasIssued()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddAccount("alice").AddMembership("alice-first", "alice", JoinedIn2017)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        await _fixture.DisableAccountDirectlyAsync(ctx.Identity.Accounts.IdOf("alice"), ct);
-
-        var (response, _) = await client.GETAsync<AffiliationProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_ReturnForbidden_When_TheManagingLoginCalls()
     {
         var ct = TestContext.Current.CancellationToken;

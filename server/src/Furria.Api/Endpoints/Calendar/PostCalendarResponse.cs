@@ -2,10 +2,8 @@ using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
-using Furria.Application.Authorization;
 using Furria.Application.Club;
 using Furria.Core.Club;
-using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 
 namespace Furria.Api.Endpoints.Calendar;
@@ -13,12 +11,10 @@ namespace Furria.Api.Endpoints.Calendar;
 public sealed class PostCalendarResponse : Endpoint<PostCalendarResponseRequest>
 {
     private readonly CalendarService _calendarService;
-    private readonly PermissionAuthorizer _authorizer;
 
-    public PostCalendarResponse(CalendarService calendarService, PermissionAuthorizer authorizer)
+    public PostCalendarResponse(CalendarService calendarService)
     {
         _calendarService = calendarService;
-        _authorizer = authorizer;
     }
 
     public override void Configure()
@@ -35,22 +31,7 @@ public sealed class PostCalendarResponse : Endpoint<PostCalendarResponseRequest>
             return;
         }
 
-        var personId = await _authorizer.ActivePersonIdAsync(accountId.Value, ct);
-        if (personId is null)
-        {
-            await Send.ForbiddenAsync(ct);
-            return;
-        }
-
-        var holdsClubRead = await _authorizer.IsGrantedAsync(
-            accountId.Value,
-            FurriaPermissions.ClubRead,
-            ct
-        );
-        var result = await _calendarService.SetResponseAsync(
-            ToCommand(req, personId.Value, holdsClubRead),
-            ct
-        );
+        var result = await _calendarService.SetResponseAsync(ToCommand(req, accountId.Value), ct);
         if (!result.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(result.Error, ct);
@@ -62,15 +43,13 @@ public sealed class PostCalendarResponse : Endpoint<PostCalendarResponseRequest>
 
     private static SetAttendanceResponseCommand ToCommand(
         PostCalendarResponseRequest req,
-        int personId,
-        bool holdsClubRead
+        int actorAccountId
     ) =>
         new()
         {
             CalendarEntryId = req.CalendarEntryId,
-            PersonId = personId,
+            ActorAccountId = actorAccountId,
             Answer = req.Answer,
-            HoldsClubRead = holdsClubRead,
         };
 }
 

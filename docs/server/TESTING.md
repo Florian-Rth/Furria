@@ -22,6 +22,8 @@ live here, not as dead code.
   once, for every registered route, by `Authorization/EndpointConventionTests`, which reads the
   running host's endpoint metadata — a new endpoint is covered the moment it is mapped:
   - no token → `401` on every route that is not `AllowAnonymous`;
+  - a token whose account was disabled after it was issued → `401` on the same routes (the
+    authentication boundary re-reads the account on every request — never test it per endpoint);
   - a caller holding every permission *except* the declared one (`RequirePermission`, or the whole
     `RequireAnyPermission` set) → `403`, and an unaffiliated caller on `RequireAffiliation` → `403`;
   - an `int` route id of `0` → `400` naming that id;

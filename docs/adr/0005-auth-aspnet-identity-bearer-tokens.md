@@ -152,3 +152,14 @@ passkey of that account.
 The bootstrap admin is no longer seeded once "when no Account exists": it is the **managing
 login**, an account without a person that every start brings in line with the environment and
 recreates when gone ([ADR-0022](0022-the-bootstrap-admin-is-a-personless-managing-login.md)).
+
+## Amendment (2026-10-09, authorization boundary)
+
+**An access token proves who signed in, never who acts.** Every authenticated request re-reads
+its account once, at authentication (`ActingAccount`, the JWT `OnTokenValidated` hook, cached for
+the request by the scoped `PermissionAuthorizer`). A disabled or erased account is refused there
+with `401` — the terminal status of ADR-0006 — instead of working on until its 15-minute token
+expires. The person the request acts for is the account's person *now*: an account re-pointed by
+a claim-in (ADR-0019) acts for the keeper at once, not for the absorbed stray its token names.
+The `person_id` claim stays in the token for compatibility, but the server replaces it with the
+database value before any endpoint reads it; `User.PersonId()` is the one way to ask.

@@ -372,31 +372,6 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
         );
     }
 
-    [Fact]
-    public async Task Should_Refuse_When_TheAccountWasDisabledAfterItsTokenWasIssued()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-                var client = await ctx.Identity.ClientForAsync("bea", ct);
-                await _fixture.DisableAccountDirectlyAsync(ctx.Identity.Accounts.IdOf("bea"), ct);
-                var entryId = ctx.Club.CalendarEntries.IdOf("garde-training");
-
-                var response = await AnswerAsync(client, entryId, AttendanceAnswer.Yes);
-
-                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-                await ctx
-                    .Expected.AttendanceResponsesFor(entryId)
-                    .ToCarryNoAnswerFrom(ctx.Identity.People.IdOf("bea"))
-                    .AssertAsync(ct);
-            }
-        );
-    }
-
     private async Task AssertAnswerTakenAsync(string personAlias, string entryAlias)
     {
         var ct = TestContext.Current.CancellationToken;
