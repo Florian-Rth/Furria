@@ -6,6 +6,7 @@ using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Public;
@@ -161,21 +162,17 @@ public sealed class GroupService
                 group.GroupKind!.Name,
                 group.FoundedYear,
                 group.Tone,
-                group.Memberships.Any(membership =>
-                    membership.PersonId == viewerPersonId
-                    && membership.JoinedOn <= today
-                    && (membership.LeftOn == null || membership.LeftOn >= today)
-                ),
-                group.Admins.Any(admin =>
-                    admin.PersonId == viewerPersonId
-                    && admin.SinceOn <= today
-                    && (admin.UntilOn == null || admin.UntilOn >= today)
-                ),
                 group
-                    .Memberships.Where(membership =>
-                        membership.JoinedOn <= today
-                        && (membership.LeftOn == null || membership.LeftOn >= today)
-                    )
+                    .Memberships.AsQueryable()
+                    .Where(Running.GroupMemberships(today))
+                    .Any(membership => membership.PersonId == viewerPersonId),
+                group
+                    .Admins.AsQueryable()
+                    .Where(Running.GroupAdmins(today))
+                    .Any(admin => admin.PersonId == viewerPersonId),
+                group
+                    .Memberships.AsQueryable()
+                    .Where(Running.GroupMemberships(today))
                     .OrderBy(membership =>
                         EF.Functions.Collate(membership.Person!.LastName, GermanCollation.Name)
                     )
@@ -191,9 +188,8 @@ public sealed class GroupService
                     })
                     .ToList(),
                 group
-                    .Admins.Where(admin =>
-                        admin.SinceOn <= today && (admin.UntilOn == null || admin.UntilOn >= today)
-                    )
+                    .Admins.AsQueryable()
+                    .Where(Running.GroupAdmins(today))
                     .OrderBy(admin =>
                         EF.Functions.Collate(admin.Person!.LastName, GermanCollation.Name)
                     )
@@ -253,16 +249,14 @@ public sealed class GroupService
             {
                 GroupId = group.Id,
                 Name = group.Name,
-                IsMember = group.Memberships.Any(membership =>
-                    membership.PersonId == personId
-                    && membership.JoinedOn <= today
-                    && (membership.LeftOn == null || membership.LeftOn >= today)
-                ),
-                IsAdmin = group.Admins.Any(admin =>
-                    admin.PersonId == personId
-                    && admin.SinceOn <= today
-                    && (admin.UntilOn == null || admin.UntilOn >= today)
-                ),
+                IsMember = group
+                    .Memberships.AsQueryable()
+                    .Where(Running.GroupMemberships(today))
+                    .Any(membership => membership.PersonId == personId),
+                IsAdmin = group
+                    .Admins.AsQueryable()
+                    .Where(Running.GroupAdmins(today))
+                    .Any(admin => admin.PersonId == personId),
             })
             .Where(group => group.IsMember || group.IsAdmin)
             .ToListAsync(ct);
@@ -410,10 +404,8 @@ public sealed class GroupService
                 group.Tone,
                 group.ArchivedOn,
                 group
-                    .Memberships.Where(membership =>
-                        membership.JoinedOn <= today
-                        && (membership.LeftOn == null || membership.LeftOn >= today)
-                    )
+                    .Memberships.AsQueryable()
+                    .Where(Running.GroupMemberships(today))
                     .Select(membership => new PersonReference
                     {
                         PersonId = membership.PersonId,
@@ -422,9 +414,8 @@ public sealed class GroupService
                     })
                     .ToList(),
                 group
-                    .Admins.Where(admin =>
-                        admin.SinceOn <= today && (admin.UntilOn == null || admin.UntilOn >= today)
-                    )
+                    .Admins.AsQueryable()
+                    .Where(Running.GroupAdmins(today))
                     .OrderBy(admin =>
                         EF.Functions.Collate(admin.Person!.LastName, GermanCollation.Name)
                     )
@@ -830,13 +821,14 @@ public sealed class GroupService
 
     private IQueryable<Person> PeopleWithUnendedTiesIn(int groupId, DateOnly today) =>
         _dbContext.People.Where(person =>
-            person.GroupMemberships.Any(membership =>
-                membership.GroupId == groupId
-                && (membership.LeftOn == null || membership.LeftOn >= today)
-            )
-            || person.GroupAdminships.Any(tenure =>
-                tenure.GroupId == groupId && (tenure.UntilOn == null || tenure.UntilOn >= today)
-            )
+            person
+                .GroupMemberships.AsQueryable()
+                .Where(RunningOrAhead.GroupMemberships(today))
+                .Any(membership => membership.GroupId == groupId)
+            || person
+                .GroupAdminships.AsQueryable()
+                .Where(RunningOrAhead.GroupAdmins(today))
+                .Any(tenure => tenure.GroupId == groupId)
         );
 
     private Task<List<PeriodRow>> AdminChainOfAsync(
@@ -886,7 +878,7 @@ public sealed class GroupService
     [Pure]
     private static bool HasRunningRow(IReadOnlyList<TieRow> rows, int? personId, DateOnly today) =>
         personId is { } viewerId
-        && rows.Any(row => row.PersonId == viewerId && IsRunningOn(row, today));
+        && rows.Any(row => row.PersonId == viewerId && row.Period.IsRunningOn(today));
 
     [Pure]
     private static DateOnly? ChainStartOf(
@@ -1005,19 +997,16 @@ public sealed class GroupService
         };
 
     private static IEnumerable<TieRow> RunningRows(IReadOnlyList<TieRow> rows, DateOnly today) =>
-        rows.Where(row => IsRunningOn(row, today));
+        rows.Where(row => row.Period.IsRunningOn(today));
 
     private static IEnumerable<TieRow> EndedRows(IReadOnlyList<TieRow> rows, DateOnly today) =>
-        rows.Where(row => row.EndedOn is { } endedOn && endedOn < today)
+        rows.Where(row => row.Period.HasEndedBefore(today))
             .OrderByDescending(row => row.StartedOn)
             .ThenByDescending(row => row.RowId);
 
     private static IReadOnlyDictionary<int, DateOnly> ChainStarts(IReadOnlyList<TieRow> rows) =>
         rows.GroupBy(row => row.PersonId)
             .ToDictionary(chain => chain.Key, chain => chain.Min(row => row.StartedOn));
-
-    private static bool IsRunningOn(TieRow row, DateOnly today) =>
-        new DatePeriod { Start = row.StartedOn, End = row.EndedOn }.IsRunningOn(today);
 
     private static GroupSummary ToSummary(GroupCardRow row)
     {
@@ -1103,7 +1092,11 @@ public sealed class GroupService
         string? Function,
         DateOnly StartedOn,
         DateOnly? EndedOn
-    );
+    )
+    {
+        [Pure]
+        public DatePeriod Period => new() { Start = StartedOn, End = EndedOn };
+    }
 
     private sealed record GroupState(DateOnly? ArchivedOn);
 

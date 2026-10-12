@@ -7,6 +7,7 @@ using Furria.Core.Club;
 using Furria.Core.Identity;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Registry;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
@@ -231,19 +232,7 @@ public sealed class AccountService
                     },
                 _dbContext
                     .Memberships.Where(membership => membership.PersonId == account.PersonId)
-                    .Select(membership => new MembershipRow(
-                        membership.Id,
-                        membership.StartedOn,
-                        membership.EndedOn,
-                        membership
-                            .Pauses.Select(pause => new MembershipPauseDetails
-                            {
-                                PauseId = pause.Id,
-                                FirstSessionYear = pause.FirstSessionYear,
-                                LastSessionYear = pause.LastSessionYear,
-                            })
-                            .ToList()
-                    ))
+                    .Select(MembershipPeriodRow.Projection)
                     .ToList()
             ))
             .SingleOrDefaultAsync(ct);
@@ -324,7 +313,7 @@ public sealed class AccountService
             Id = row.Id,
             Email = row.Email,
             Person = row.Person,
-            Membership = MembershipChainDetails.Of(ToPeriods(row.Memberships, today), today),
+            Membership = MembershipPeriodRow.ChainOf(row.Memberships, today),
             IsAffiliated = grants.IsAffiliated,
             PermissionKeys = grants.PermissionKeys,
             LastSeenAnnouncementAt = row.LastSeenAnnouncementAt,
@@ -334,15 +323,6 @@ public sealed class AccountService
 
     private static IReadOnlyList<string> Ordered(IReadOnlyCollection<string> permissionKeys) =>
         [.. permissionKeys.Order(StringComparer.Ordinal)];
-
-    private static IReadOnlyList<MembershipDetails> ToPeriods(
-        IReadOnlyList<MembershipRow> rows,
-        DateOnly today
-    ) =>
-        rows.Select(row =>
-                MembershipDetails.Of(row.Id, row.StartedOn, row.EndedOn, row.Pauses, today)
-            )
-            .ToList();
 
     private static SessionTokensDetails Combine(
         AccessTokenDetails access,
@@ -383,15 +363,8 @@ public sealed class AccountService
         DateTimeOffset? LastSeenAnnouncementAt,
         DateTimeOffset? LastRedeemedAt,
         PersonDetails? Person,
-        IReadOnlyList<MembershipRow> Memberships
+        IReadOnlyList<MembershipPeriodRow> Memberships
     );
 
     private sealed record AccountGrants(bool IsAffiliated, IReadOnlyList<string> PermissionKeys);
-
-    private sealed record MembershipRow(
-        int Id,
-        DateOnly StartedOn,
-        DateOnly? EndedOn,
-        IReadOnlyList<MembershipPauseDetails> Pauses
-    );
 }

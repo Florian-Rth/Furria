@@ -6,7 +6,7 @@ using Furria.Core.Gallery;
 using Furria.Core.Groups;
 using Furria.Core.Media;
 using Furria.Core.News;
-using Furria.Infrastructure.Club;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -63,7 +63,7 @@ public sealed class PublicFace
     public IQueryable<BoardSeat> BoardSeats =>
         _dbContext
             .BoardSeats.AsNoTracking()
-            .Where(RunningBoardSeats.RunningOn(ClubClock.Today(_timeProvider)))
+            .Where(Conferring.BoardSeats(ClubClock.Today(_timeProvider)))
             .Where(IsInAPublicOffice);
 
     public PublicFace(AppDbContext dbContext, TimeProvider timeProvider)

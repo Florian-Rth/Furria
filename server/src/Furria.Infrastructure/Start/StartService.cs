@@ -1,5 +1,6 @@
 using Furria.Application.Start;
 using Furria.Core.Club;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Management;
@@ -113,11 +114,8 @@ public sealed partial class StartService
         (
             await _dbContext
                 .KeyHoldings.AsNoTracking()
-                .Where(holding =>
-                    holding.PersonId == personId
-                    && holding.SinceOn <= today
-                    && (holding.UntilOn == null || holding.UntilOn >= today)
-                )
+                .Where(Running.KeyHoldings(today))
+                .Where(holding => holding.PersonId == personId)
                 .Select(holding => holding.VenueId)
                 .ToListAsync(ct)
         ).ToHashSet();

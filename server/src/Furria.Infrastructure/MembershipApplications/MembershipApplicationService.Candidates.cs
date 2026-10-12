@@ -3,6 +3,7 @@ using Furria.Application.Identity;
 using Furria.Application.MembershipApplications;
 using Furria.Core.Identity;
 using Furria.Core.MembershipApplications;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
@@ -36,38 +37,18 @@ public sealed partial class MembershipApplicationService
                     Zip = person.Zip,
                     City = person.City,
                 },
+                person.Memberships.AsQueryable().Select(MembershipPeriodRow.Projection).ToList(),
                 person
-                    .Memberships.Select(membership => new CandidateMembershipRow(
-                        membership.Id,
-                        membership.StartedOn,
-                        membership.EndedOn,
-                        membership
-                            .Pauses.Select(pause => new MembershipPauseDetails
-                            {
-                                PauseId = pause.Id,
-                                FirstSessionYear = pause.FirstSessionYear,
-                                LastSessionYear = pause.LastSessionYear,
-                            })
-                            .ToList()
-                    ))
-                    .ToList(),
-                person
-                    .GroupMemberships.Where(membership =>
-                        membership.JoinedOn <= today
-                        && (membership.LeftOn == null || membership.LeftOn >= today)
-                        && membership.Group!.ArchivedOn == null
-                    )
+                    .GroupMemberships.AsQueryable()
+                    .Where(Conferring.GroupMemberships(today))
                     .OrderBy(membership =>
                         EF.Functions.Collate(membership.Group!.Name, GermanCollation.Name)
                     )
                     .Select(membership => membership.Group!.Name)
                     .ToList(),
                 person
-                    .RoleHoldings.Where(holding =>
-                        holding.SinceOn <= today
-                        && (holding.UntilOn == null || holding.UntilOn >= today)
-                        && holding.Role!.ArchivedOn == null
-                    )
+                    .RoleHoldings.AsQueryable()
+                    .Where(Conferring.RoleHoldings(today))
                     .OrderBy(holding =>
                         EF.Functions.Collate(holding.Role!.Name, GermanCollation.Name)
                     )
@@ -88,17 +69,7 @@ public sealed partial class MembershipApplicationService
         DateOnly today
     )
     {
-        var periods = row
-            .Memberships.Select(membership =>
-                MembershipDetails.Of(
-                    membership.Id,
-                    membership.StartedOn,
-                    membership.EndedOn,
-                    membership.Pauses,
-                    today
-                )
-            )
-            .ToList();
+        var periods = MembershipPeriodRow.PeriodsOf(row.Memberships, today);
         var chain = MembershipChainDetails.Of(periods, today);
 
         return new AdmissionCandidate
@@ -126,17 +97,10 @@ public sealed partial class MembershipApplicationService
         string LastName,
         DateOnly? BirthDate,
         ContactDetails Contact,
-        IReadOnlyList<CandidateMembershipRow> Memberships,
+        IReadOnlyList<MembershipPeriodRow> Memberships,
         IReadOnlyList<string> Groups,
         IReadOnlyList<string> Roles,
         bool HasAccount,
         bool IsAffiliated
-    );
-
-    private sealed record CandidateMembershipRow(
-        int Id,
-        DateOnly StartedOn,
-        DateOnly? EndedOn,
-        IReadOnlyList<MembershipPauseDetails> Pauses
     );
 }

@@ -1,6 +1,7 @@
 using System.Diagnostics.Contracts;
 using Furria.Core.Club;
 using Furria.Core.Groups;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -17,11 +18,8 @@ public static class CalendarTiesQuery
     {
         var runningMembershipPauses = await dbContext
             .Memberships.AsNoTracking()
-            .Where(membership =>
-                membership.PersonId == personId
-                && membership.StartedOn <= today
-                && (membership.EndedOn == null || membership.EndedOn >= today)
-            )
+            .Where(Running.Memberships(today))
+            .Where(membership => membership.PersonId == personId)
             .Select(membership =>
                 membership
                     .Pauses.Select(pause => new PauseRow(
@@ -74,12 +72,9 @@ public static class CalendarTiesQuery
         int? personId,
         DateOnly today
     ) =>
-        dbContext.GroupMemberships.Where(membership =>
-            membership.PersonId == personId
-            && membership.JoinedOn <= today
-            && (membership.LeftOn == null || membership.LeftOn >= today)
-            && membership.Group!.ArchivedOn == null
-        );
+        dbContext
+            .GroupMemberships.Where(Conferring.GroupMemberships(today))
+            .Where(membership => membership.PersonId == personId);
 
     [Pure]
     private static IQueryable<GroupAdmin> RunningGroupAdminTenures(
@@ -87,12 +82,9 @@ public static class CalendarTiesQuery
         int? personId,
         DateOnly today
     ) =>
-        dbContext.GroupAdmins.Where(admin =>
-            admin.PersonId == personId
-            && admin.SinceOn <= today
-            && (admin.UntilOn == null || admin.UntilOn >= today)
-            && admin.Group!.ArchivedOn == null
-        );
+        dbContext
+            .GroupAdmins.Where(Conferring.GroupAdmins(today))
+            .Where(admin => admin.PersonId == personId);
 
     [Pure]
     private static SessionSpan ToSpan(PauseRow pause) =>

@@ -9,6 +9,8 @@ namespace Furria.Api.Tests.Start;
 public sealed class GetStartTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateOnly JoinedIn2015 = new(2015, 11, 11);
+    private static readonly DateOnly ArchivedIn2025 = new(2025, 3, 1);
+    private static readonly DateOnly Today = new(2027, 1, 19);
 
     private static readonly DateTimeOffset TuesdayEvening = new(
         2027,
@@ -131,6 +133,24 @@ public sealed class GetStartTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_ReturnActive_When_TheOnlyGroupAdminTenureEndsToday()
+    {
+        Assert.True(await IsActiveInClubWithOnlyATenureAsync(JoinedIn2015, Today, null));
+    }
+
+    [Fact]
+    public async Task Should_ReturnInactive_When_TheOnlyGroupAdminTenureBeginsTomorrow()
+    {
+        Assert.False(await IsActiveInClubWithOnlyATenureAsync(Today.AddDays(1), null, null));
+    }
+
+    [Fact]
+    public async Task Should_ReturnInactive_When_TheOnlyGroupAdminTenureIsInAnArchivedGroup()
+    {
+        Assert.False(await IsActiveInClubWithOnlyATenureAsync(JoinedIn2015, null, ArchivedIn2025));
+    }
+
+    [Fact]
     public async Task Should_ReturnActive_When_TheViewerOnlyHoldsABoardSeat()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -193,5 +213,56 @@ public sealed class GetStartTests : IClassFixture<ApiTestFixture>
                 );
             }
         );
+    }
+
+    private async Task<bool> IsActiveInClubWithOnlyATenureAsync(
+        DateOnly sinceOn,
+        DateOnly? untilOn,
+        DateOnly? groupArchivedOn
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var isActive = false;
+
+        await _fixture.AtInstantAsync(
+            TuesdayEvening,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(
+                    builder =>
+                        builder
+                            .Identity(identity =>
+                                identity
+                                    .AddPerson("sabine", "Sabine", "Trainerin")
+                                    .AddAccount("sabine")
+                            )
+                            .Groups(groups =>
+                                groups
+                                    .AddGroup(
+                                        "kindergarde",
+                                        "Kindergarde",
+                                        archivedOn: groupArchivedOn
+                                    )
+                                    .AddGroupAdmin(
+                                        "sabine-kindergarde",
+                                        "kindergarde",
+                                        "sabine",
+                                        "Trainerin",
+                                        sinceOn,
+                                        untilOn
+                                    )
+                            ),
+                    ct
+                );
+                var client = await ctx.Identity.ClientForAsync("sabine", ct);
+
+                var (response, result) = await client.GETAsync<GetStart, GetStartResponse>();
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                isActive = result.ViewerIsActiveInClub;
+            }
+        );
+
+        return isActive;
     }
 }
