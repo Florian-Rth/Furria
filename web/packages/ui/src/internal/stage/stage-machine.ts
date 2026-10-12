@@ -1,5 +1,6 @@
 import type { KkSize } from '../../image-aspect';
 import type { KkCrop } from '../../image-crop';
+import { cropInsidePicture } from '../../image-crop';
 import type { StageFit, StageFrame, StagePoint, StageTransform } from './stage-geometry';
 import {
   clampTransform,
@@ -712,7 +713,7 @@ export const keyInputOf = (
 export const cropOfStage = (state: StageState, policy: StagePolicy): KkCrop | null => {
   const frame = frameOf(state, policy);
 
-  return frame === null ? null : cropOf(state.transform, frame);
+  return frame === null ? null : cropInsidePicture(cropOf(state.transform, frame));
 };
 
 export const imageBoxOf = (

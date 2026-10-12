@@ -23,3 +23,17 @@ export const centredCrop = (image: KkSize | null, aspect: KkAspect): KkCrop => {
   const share = ratio / target;
   return { left: 0, top: (1 - share) / 2, width: 1, height: share };
 };
+
+const shareOf = (edge: number): number => Math.min(Math.max(edge, 0), 1);
+
+export const cropInsidePicture = (crop: KkCrop): KkCrop => {
+  const left = shareOf(crop.left);
+  const top = shareOf(crop.top);
+
+  return {
+    left,
+    top,
+    width: Math.min(shareOf(crop.width), 1 - left),
+    height: Math.min(shareOf(crop.height), 1 - top),
+  };
+};
