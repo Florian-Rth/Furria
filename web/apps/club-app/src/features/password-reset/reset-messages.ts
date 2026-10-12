@@ -1,4 +1,4 @@
-import { RequestFailedError } from '@/lib/api/api-error';
+import { refusalMessageOf } from '@furria/api-client';
 import type { ResetFailureKind } from './reset-failure';
 import { toResetFailureKind } from './reset-failure';
 
@@ -24,9 +24,7 @@ export const toResetErrorMessages = (error: Error | null): ResetErrorMessages =>
     return NO_ERRORS;
   }
   if (kind === 'password') {
-    const message =
-      error instanceof RequestFailedError ? error.firstMessage : FALLBACK_PASSWORD_MESSAGE;
-    return { ...NO_ERRORS, password: message };
+    return { ...NO_ERRORS, password: refusalMessageOf(error) ?? FALLBACK_PASSWORD_MESSAGE };
   }
 
   return { ...NO_ERRORS, footer: FOOTER_MESSAGES[kind] };

@@ -1,7 +1,7 @@
 import type { KkNoticePublisher, KkNoticeRequest } from '@furria/ui';
 import type { MutationKey, MutationOptions, QueryClient, QueryKey } from '@tanstack/react-query';
 import { hashKey, onlineManager } from '@tanstack/react-query';
-import { OfflineWriteError } from './api-error';
+import { OfflineWriteError } from './offline-write-error';
 import type { OptimisticPatch } from './optimistic-patch';
 import { closePatch, openPatch } from './optimistic-patch';
 

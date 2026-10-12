@@ -1,10 +1,6 @@
+import { ApiError } from '@furria/api-client';
 import { describe, expect, it } from 'vitest';
-import {
-  OfflineWriteError,
-  RequestBlockedError,
-  RequestFailedError,
-  ServerFailureError,
-} from '@/lib/api/api-error';
+import { OfflineWriteError } from '@/lib/api/offline-write-error';
 import type { Start, StartAttendance, StartEntry } from './schemas';
 import type { StartAnswerAttempt, StartAnswerFailure } from './start-answer';
 import { latestAnswerErrorOf, toAnswerFailureOf, withEntryAttendance } from './start-answer';
@@ -44,20 +40,40 @@ describe('toAnswerFailureOf', () => {
   it.each<{ label: string; error: Error | null; expected: StartAnswerFailure | null }>([
     { label: 'nothing failed', error: null, expected: null },
     { label: 'the device was offline', error: new OfflineWriteError(), expected: 'offline' },
-    { label: 'the request never arrived', error: new RequestBlockedError(), expected: 'unsaved' },
-    { label: 'the server broke', error: new ServerFailureError(500), expected: 'unsaved' },
-    { label: 'the entry was deleted', error: new ServerFailureError(404), expected: 'gone' },
+    {
+      label: 'the request never arrived',
+      error: new ApiError({ kind: 'unreachable' }),
+      expected: 'unsaved',
+    },
+    {
+      label: 'the server broke',
+      error: new ApiError({ kind: 'status', status: 500 }),
+      expected: 'unsaved',
+    },
+    {
+      label: 'the entry was deleted',
+      error: new ApiError({ kind: 'status', status: 404 }),
+      expected: 'gone',
+    },
     {
       label: 'the entry stopped asking',
-      error: new RequestFailedError(400, [{ field: 'answer', message: 'Keine Antwort erbeten.' }]),
+      error: new ApiError({
+        kind: 'refused',
+        status: 400,
+        fields: [{ field: 'answer', message: 'Keine Antwort erbeten.' }],
+      }),
       expected: 'notAsked',
     },
     {
       label: 'the entry stopped asking without details',
-      error: new ServerFailureError(400),
+      error: new ApiError({ kind: 'status', status: 400 }),
       expected: 'notAsked',
     },
-    { label: 'the answer collided', error: new RequestFailedError(409, []), expected: 'conflict' },
+    {
+      label: 'the answer collided',
+      error: new ApiError({ kind: 'refused', status: 409, fields: [] }),
+      expected: 'conflict',
+    },
   ])('is $expected when $label', ({ error, expected }) => {
     expect(toAnswerFailureOf(error)).toBe(expected);
   });
@@ -84,7 +100,7 @@ describe('withEntryAttendance', () => {
 
 describe('latestAnswerErrorOf', () => {
   const since = 1_000;
-  const broken = new ServerFailureError(500);
+  const broken = new ApiError({ kind: 'status', status: 500 });
 
   it.each<{ label: string; attempts: StartAnswerAttempt[]; expected: Error | null }>([
     { label: 'she never answered', attempts: [], expected: null },

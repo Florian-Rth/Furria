@@ -1,4 +1,4 @@
-import { RequestFailedError } from '@/lib/api/api-error';
+import { refusalMessageOf } from '@furria/api-client';
 import type { PasskeyFailureKind } from './passkey-failure';
 import { toPasskeyFailureKind } from './passkey-failure';
 
@@ -12,9 +12,6 @@ const PASSKEY_FAILURE_MESSAGES: Record<Exclude<PasskeyFailureKind, 'cancelled'>,
   unexpected: 'Mit dem Passkey hat es nicht geklappt. Versuch es noch einmal.',
 };
 
-const toServerMessage = (error: Error): string | null =>
-  error instanceof RequestFailedError ? (error.failures[0]?.message ?? null) : null;
-
 export const toPasskeyErrorMessage = (error: Error | null): string | null => {
   if (error === null) {
     return null;
@@ -24,5 +21,5 @@ export const toPasskeyErrorMessage = (error: Error | null): string | null => {
     return null;
   }
 
-  return toServerMessage(error) ?? PASSKEY_FAILURE_MESSAGES[kind];
+  return refusalMessageOf(error) ?? PASSKEY_FAILURE_MESSAGES[kind];
 };

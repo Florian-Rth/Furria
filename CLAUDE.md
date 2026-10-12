@@ -20,6 +20,7 @@ furria/
     │   ├── club-app/  # Internal member app (React 19 + Vite + TS, visuals via @furria/ui only)
     │   └── event-app/ # Guest event app (placeholder)
     └── packages/
+        ├── api-client/ # @furria/api-client — one fetch, one failure classification, media schemas (source-consumed)
         └── ui/        # @furria/ui — shared KK theme + primitives (source-consumed)
 ```
 

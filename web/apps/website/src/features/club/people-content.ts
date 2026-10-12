@@ -1,5 +1,5 @@
+import { PORTRAIT_ASPECT, toPictureSources } from '@furria/ui/picture-sources';
 import type { Theme } from '@mui/material/styles';
-import { PORTRAIT_ASPECT, toPictureSources } from '@/lib/api/picture';
 import type { PublicBoardSeat } from './schemas';
 import { resolveCycleTint } from './tint-cycle';
 

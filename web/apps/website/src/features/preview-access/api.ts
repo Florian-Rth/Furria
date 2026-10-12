@@ -1,7 +1,7 @@
+import { ApiError } from '@furria/api-client';
 import type { UseMutationResult } from '@tanstack/react-query';
 import { useMutation } from '@tanstack/react-query';
 import { apiFetch } from '@/lib/api/api-fetch';
-import { ApiError } from '@/lib/api/errors';
 import type { UnlockPreviewResponse } from './schemas';
 import { UnlockPreviewResponseSchema } from './schemas';
 import { WrongPasswordError } from './unlock-failure';
@@ -14,7 +14,7 @@ const unlockPreview = async (password: string): Promise<UnlockPreviewResponse> =
       schema: UnlockPreviewResponseSchema,
     });
   } catch (error) {
-    if (error instanceof ApiError && error.status === 401) {
+    if (error instanceof ApiError && error.failure.kind === 'unauthorized') {
       throw new WrongPasswordError();
     }
     throw error;

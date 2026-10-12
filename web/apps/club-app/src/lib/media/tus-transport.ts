@@ -1,7 +1,7 @@
-import { DetailedError, Upload } from 'tus-js-client';
-import { buildApiUrl } from '@/lib/api/api-fetch';
-import { ensureFreshAccessToken } from '@/lib/api/session/session-store';
-import { readApiBaseUrl } from '@/lib/runtime-config';
+import { isUnauthorizedStatus } from '@furria/api-client';
+import { DetailedError, defaultOptions, Upload } from 'tus-js-client';
+import { apiUrlOf } from '@/lib/api/api-fetch';
+import { ensureFreshAccessToken, expireSession } from '@/lib/api/session/session-store';
 import type { UploadTransport } from './media-upload';
 
 const UPLOADS_PATH = '/api/media/uploads';
@@ -20,7 +20,7 @@ export const tusTransport: UploadTransport = (file, metadata, events) => {
   let mediaItemId: number | null = null;
   let isStopped = false;
   const upload = new Upload(file, {
-    endpoint: buildApiUrl(readApiBaseUrl(), UPLOADS_PATH),
+    endpoint: apiUrlOf(UPLOADS_PATH),
     chunkSize: CHUNK_BYTES,
     retryDelays: RETRY_DELAYS_MS,
     metadata,
@@ -29,6 +29,9 @@ export const tusTransport: UploadTransport = (file, metadata, events) => {
       request.setHeader('Authorization', `Bearer ${await ensureFreshAccessToken()}`);
     },
     onAfterResponse: (_request, response) => {
+      if (isUnauthorizedStatus(response.getStatus())) {
+        expireSession();
+      }
       const announced = Number(response.getHeader(MEDIA_ITEM_HEADER));
       if (Number.isInteger(announced) && announced > 0) {
         mediaItemId = announced;
@@ -63,4 +66,12 @@ export const tusTransport: UploadTransport = (file, metadata, events) => {
       void upload.abort(discard);
     },
   };
+};
+
+export const forgetResumableUploads = async (): Promise<void> => {
+  const storage = defaultOptions.urlStorage;
+
+  for (const previous of await storage.findAllUploads()) {
+    await storage.removeUpload(previous.urlStorageKey);
+  }
 };

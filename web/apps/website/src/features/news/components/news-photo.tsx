@@ -1,6 +1,6 @@
+import type { Picture } from '@furria/api-client';
 import { KkCoverPicture, toPictureSourceSet } from '@furria/ui';
 import type { ReactNode } from 'react';
-import type { Picture } from '@/lib/api/picture';
 
 const BANNER_ASPECT = 2;
 const PICTURE_FIT = { borderRadius: 'inherit' };

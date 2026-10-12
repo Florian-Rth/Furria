@@ -1,5 +1,5 @@
+import { ApiError } from '@furria/api-client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { ServerFailureError } from '@/lib/api/api-error';
 import type {
   NewsDraftClock,
   NewsDraftRequests,
@@ -67,7 +67,7 @@ const fakeNewsServer = (initial: StoredPost | null): FakeNewsServer => {
 
   const existing = (): StoredPost => {
     if (stored === null) {
-      throw new ServerFailureError(404);
+      throw new ApiError({ kind: 'status', status: 404 });
     }
     return stored;
   };
@@ -115,7 +115,7 @@ const fakeNewsServer = (initial: StoredPost | null): FakeNewsServer => {
         }
         if (failures > 0) {
           failures -= 1;
-          throw new ServerFailureError(503);
+          throw new ApiError({ kind: 'status', status: 503 });
         }
         const post = existing();
         const wire = wireOfContent(content);

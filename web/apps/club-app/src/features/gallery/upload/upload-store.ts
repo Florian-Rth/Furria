@@ -1,3 +1,4 @@
+import { subscribeToSessionEnd } from '@/lib/api/session/session-store';
 import type { UploadHandle, UploadOutcome } from '@/lib/media/media-upload';
 import { startUpload } from '@/lib/media/start-upload';
 import { queryClient } from '@/lib/query-client';
@@ -312,6 +313,26 @@ export const clearFinishedUploads = (): void => {
   };
   notify();
 };
+
+const discardUploads = (): void => {
+  for (const [key, held] of live) {
+    if (held.upload !== null) {
+      held.upload.pause();
+    }
+    live.delete(key);
+  }
+  for (const entry of snapshot.entries) {
+    if (entry.preview !== undefined) {
+      URL.revokeObjectURL(entry.preview);
+    }
+  }
+  previewQueue.length = 0;
+  samples = [];
+  snapshot = { entries: [], paused: snapshot.paused, bytesPerSecond: 0 };
+  notify();
+};
+
+subscribeToSessionEnd(discardUploads);
 
 export const subscribeToUploads = (listener: () => void): (() => void) => {
   listeners.add(listener);

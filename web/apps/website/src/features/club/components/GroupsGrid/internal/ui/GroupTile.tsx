@@ -1,5 +1,11 @@
 import type { KkGroupTone } from '@furria/ui';
-import { KkCard, KkCoverPicture, KkPhotoPlaceholder } from '@furria/ui';
+import {
+  GROUP_PICTURE_ASPECT,
+  KkCard,
+  KkCoverPicture,
+  KkPhotoPlaceholder,
+  toPictureSources,
+} from '@furria/ui';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import {
@@ -7,7 +13,6 @@ import {
   groupsLabels,
   resolveGroupOpenness,
 } from '@/features/club/groups-content';
-import { GROUP_PICTURE_ASPECT, toPictureSources } from '@/lib/api/picture';
 import type { PublicGroup } from '@/lib/public-groups/schemas';
 import { GroupOpennessChip } from './GroupOpennessChip';
 

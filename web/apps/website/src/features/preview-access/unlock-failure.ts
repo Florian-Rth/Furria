@@ -1,4 +1,4 @@
-import { RequestBlockedError } from '@/lib/api/errors';
+import { apiFailureOf } from '@furria/api-client';
 
 export class WrongPasswordError extends Error {
   constructor() {
@@ -25,7 +25,7 @@ export const unlockFailureKindOf = (error: Error | null): UnlockFailureKind | nu
     return 'wrongPassword';
   }
 
-  if (error instanceof RequestBlockedError) {
+  if (apiFailureOf(error)?.kind === 'unreachable') {
     return 'blocked';
   }
 

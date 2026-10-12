@@ -1,8 +1,6 @@
-import { RequestBlockedError, ServerFailureError } from '@/lib/api/api-error';
+import { apiFailureOf } from '@furria/api-client';
 
 export type MailRequestFailureKind = 'throttled' | 'unreachable' | 'unexpected';
-
-const TOO_MANY_REQUESTS_STATUS = 429;
 
 const MAIL_REQUEST_FAILURE_MESSAGES: Record<MailRequestFailureKind, string> = {
   throttled:
@@ -15,14 +13,15 @@ export const toMailRequestFailureKind = (error: Error | null): MailRequestFailur
   if (error === null) {
     return null;
   }
-  if (error instanceof RequestBlockedError) {
-    return 'unreachable';
-  }
-  if (error instanceof ServerFailureError && error.status === TOO_MANY_REQUESTS_STATUS) {
-    return 'throttled';
-  }
 
-  return 'unexpected';
+  switch (apiFailureOf(error)?.kind) {
+    case 'unreachable':
+      return 'unreachable';
+    case 'throttled':
+      return 'throttled';
+    default:
+      return 'unexpected';
+  }
 };
 
 export const toMailRequestFailureMessage = (error: Error | null): string | null => {

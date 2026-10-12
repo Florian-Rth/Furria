@@ -1,21 +1,20 @@
-import { RequestBlockedError, ServerFailureError, UnauthorizedError } from '@/lib/api/api-error';
+import { apiFailureOf } from '@furria/api-client';
 
 export type LoginErrorKind = 'invalid-credentials' | 'throttled' | 'unreachable' | 'unexpected';
-
-const TOO_MANY_REQUESTS_STATUS = 429;
 
 export const toLoginErrorKind = (error: Error | null): LoginErrorKind | null => {
   if (error === null) {
     return null;
   }
-  if (error instanceof UnauthorizedError) {
-    return 'invalid-credentials';
+
+  switch (apiFailureOf(error)?.kind) {
+    case 'unauthorized':
+      return 'invalid-credentials';
+    case 'throttled':
+      return 'throttled';
+    case 'unreachable':
+      return 'unreachable';
+    default:
+      return 'unexpected';
   }
-  if (error instanceof ServerFailureError && error.status === TOO_MANY_REQUESTS_STATUS) {
-    return 'throttled';
-  }
-  if (error instanceof RequestBlockedError) {
-    return 'unreachable';
-  }
-  return 'unexpected';
 };

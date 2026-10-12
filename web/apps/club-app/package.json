@@ -21,6 +21,7 @@
     "@capacitor/splash-screen": "catalog:",
     "@emotion/react": "catalog:",
     "@emotion/styled": "catalog:",
+    "@furria/api-client": "workspace:*",
     "@furria/ui": "workspace:*",
     "@mui/material": "catalog:",
     "@hookform/resolvers": "catalog:",

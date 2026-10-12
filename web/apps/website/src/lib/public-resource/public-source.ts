@@ -1,18 +1,13 @@
-import { ApiError } from '@/lib/api/errors';
+import { apiStatusOf } from '@furria/api-client';
 
 const NOT_FOUND_STATUS = 404;
-const MAX_RETRIES = 1;
 
 export type PublicSource<TData> =
   | { status: 'loading' }
   | { status: 'error'; retry: () => void }
   | { status: 'ready'; data: TData };
 
-export const isMissingRead = (error: Error): boolean =>
-  error instanceof ApiError && error.status === NOT_FOUND_STATUS;
-
-export const shouldRetryPublicRead = (failureCount: number, error: Error): boolean =>
-  !isMissingRead(error) && failureCount < MAX_RETRIES;
+export const isMissingRead = (error: Error): boolean => apiStatusOf(error) === NOT_FOUND_STATUS;
 
 export const resolvePublicSource = <TData>(
   data: TData | undefined,

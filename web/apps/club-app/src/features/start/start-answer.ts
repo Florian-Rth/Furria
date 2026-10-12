@@ -1,4 +1,5 @@
-import { OfflineWriteError, RequestFailedError, ServerFailureError } from '@/lib/api/api-error';
+import { apiStatusOf } from '@furria/api-client';
+import { OfflineWriteError } from '@/lib/api/offline-write-error';
 import type { Start, StartAttendance } from './schemas';
 
 export type StartAnswerFailure = 'unsaved' | 'gone' | 'notAsked' | 'conflict' | 'offline';
@@ -21,9 +22,6 @@ const FORBIDDEN_STATUS = 403;
 const NOT_FOUND_STATUS = 404;
 const CONFLICT_STATUS = 409;
 
-const statusOf = (error: Error): number | null =>
-  error instanceof ServerFailureError || error instanceof RequestFailedError ? error.status : null;
-
 export const toAnswerFailureOf = (error: Error | null): StartAnswerFailure | null => {
   if (error === null) {
     return null;
@@ -32,7 +30,7 @@ export const toAnswerFailureOf = (error: Error | null): StartAnswerFailure | nul
     return 'offline';
   }
 
-  const status = statusOf(error);
+  const status = apiStatusOf(error);
 
   if (status === NOT_FOUND_STATUS || status === FORBIDDEN_STATUS) {
     return 'gone';

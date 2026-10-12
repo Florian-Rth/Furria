@@ -2,9 +2,9 @@ import type { KkNoticeRequest } from '@furria/ui';
 import type { QueryKey } from '@tanstack/react-query';
 import { MutationObserver, onlineManager, QueryClient } from '@tanstack/react-query';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { OfflineWriteError } from './api-error';
 import type { ApiMutation, ApiMutationRuntime } from './api-mutation-options';
 import { toApiMutationOptions } from './api-mutation-options';
+import { OfflineWriteError } from './offline-write-error';
 import { optimisticPatch } from './optimistic-patch';
 
 interface Shelf {
