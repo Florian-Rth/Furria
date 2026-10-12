@@ -1,10 +1,8 @@
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
-import { MY_GROUPS_QUERY_KEY } from '@/features/group-hub';
-import { GROUP_KINDS_QUERY_KEY } from '@/features/group-kinds';
-import { GROUPS_QUERY_KEY } from '@/features/groups';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
+import { queryKeys } from '@/lib/query/reads';
 import {
   toGroupCreatedMessage,
   toGroupKindArchivedMessage,
@@ -30,8 +28,6 @@ import type {
   ManagedGroupsResponse,
 } from './schemas';
 
-export const MANAGED_GROUPS_QUERY_KEY = ['manage', 'groups'] as const;
-
 export interface GroupMutationInput {
   groupId: number;
   name: string;
@@ -46,20 +42,16 @@ export interface UpdateGroupKindInput {
   form: GroupKindForm;
 }
 
-const GROUP_KINDS_SCOPE = [MANAGED_GROUPS_QUERY_KEY, GROUP_KINDS_QUERY_KEY] as const;
-
-const GROUPS_SCOPE = [MANAGED_GROUPS_QUERY_KEY, GROUPS_QUERY_KEY, MY_GROUPS_QUERY_KEY] as const;
-
 export const useManagedGroupsQuery = (): UseQueryResult<ManagedGroupsResponse, Error> =>
   useQuery({
-    queryKey: MANAGED_GROUPS_QUERY_KEY,
+    queryKey: queryKeys.managedGroups,
     queryFn: () => withFreshAccessToken(requestManagedGroups),
   });
 
 export const useCreateGroupMutation = (): UseMutationResult<CreatedGroup, Error, GroupForm> =>
   useApiMutation({
     request: requestGroupCreation,
-    invalidates: GROUPS_SCOPE,
+    changes: ['group'],
     notice: { success: (form) => toGroupCreatedMessage(form.name) },
   });
 
@@ -67,7 +59,7 @@ export const useRestoreGroupMutation = (): UseMutationResult<void, Error, GroupM
   useApiMutation({
     request: (input: GroupMutationInput, accessToken) =>
       requestGroupRestoration(input.groupId, accessToken),
-    invalidates: GROUPS_SCOPE,
+    changes: ['group'],
     notice: { success: (input) => toGroupRestoredMessage(input.name) },
   });
 
@@ -78,7 +70,7 @@ export const useCreateGroupKindMutation = (): UseMutationResult<
 > =>
   useApiMutation({
     request: requestGroupKindCreation,
-    invalidates: GROUP_KINDS_SCOPE,
+    changes: ['groupKind'],
     notice: { success: (form) => toGroupKindCreatedMessage(form.name) },
   });
 
@@ -90,7 +82,7 @@ export const useUpdateGroupKindMutation = (): UseMutationResult<
   useApiMutation({
     request: (input: UpdateGroupKindInput, accessToken) =>
       requestGroupKindUpdate(input.groupKindId, input.form, accessToken),
-    invalidates: GROUP_KINDS_SCOPE,
+    changes: ['groupKind'],
     notice: { success: (input) => toGroupKindSavedMessage(input.form.name) },
   });
 
@@ -100,7 +92,7 @@ export const useArchiveGroupKindMutation = (
   useApiMutation({
     request: (_input: GroupKindNameInput, accessToken) =>
       requestGroupKindArchival(groupKindId, accessToken),
-    invalidates: GROUP_KINDS_SCOPE,
+    changes: ['groupKind'],
     notice: { success: (input) => toGroupKindArchivedMessage(input.kindName) },
   });
 
@@ -110,6 +102,6 @@ export const useRestoreGroupKindMutation = (
   useApiMutation({
     request: (_input: GroupKindNameInput, accessToken) =>
       requestGroupKindRestoration(groupKindId, accessToken),
-    invalidates: GROUP_KINDS_SCOPE,
+    changes: ['groupKind'],
     notice: { success: (input) => toGroupKindRestoredMessage(input.kindName) },
   });

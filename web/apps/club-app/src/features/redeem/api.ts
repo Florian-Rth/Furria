@@ -1,20 +1,21 @@
-import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import type {
+  QueryClient,
+  QueryKey,
+  UseMutationResult,
+  UseQueryResult,
+} from '@tanstack/react-query';
 import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { signInWithIssuedTokens } from '@/lib/api/session/session-store';
 import { provePasskey } from '@/lib/passkey/passkey-flows';
+import { queryKeys } from '@/lib/query/reads';
 import type { InvitationCredential } from './invitation-credential';
 import { toCredentialKey } from './invitation-credential';
 import type { ClaimProof, RedemptionRequest, ResolvedClaimProof } from './requests';
 import { requestInvitationLookup, requestInvitationRedeem } from './requests';
 import type { InvitationLookup, Redemption } from './schemas';
 
-const invitationLookupQueryKey = (
-  credential: InvitationCredential | null,
-): readonly [string, string, string | null] => [
-  'auth',
-  'invitation-lookup',
-  toCredentialKey(credential),
-];
+const invitationLookupQueryKey = (credential: InvitationCredential | null): QueryKey =>
+  queryKeys.invitationLookup(toCredentialKey(credential));
 
 export const useInvitationLookupQuery = (
   credential: InvitationCredential | null,

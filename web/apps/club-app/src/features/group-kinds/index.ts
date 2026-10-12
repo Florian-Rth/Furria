@@ -1,4 +1,4 @@
-export { GROUP_KINDS_QUERY_KEY, useGroupKindsQuery } from './api';
+export { useGroupKindsQuery } from './api';
 export {
   GROUP_KIND_FIELD_HINT,
   GROUP_KIND_FIELD_LABEL,

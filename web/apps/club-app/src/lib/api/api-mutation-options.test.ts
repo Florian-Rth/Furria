@@ -2,6 +2,8 @@ import type { KkNoticeRequest } from '@furria/ui';
 import type { QueryKey } from '@tanstack/react-query';
 import { MutationObserver, onlineManager, QueryClient } from '@tanstack/react-query';
 import { afterEach, describe, expect, it, vi } from 'vitest';
+import { queryKeys } from '@/lib/query/reads';
+import { createWriteCache } from '@/lib/query/refresh-after';
 import type { ApiMutation, ApiMutationRuntime } from './api-mutation-options';
 import { toApiMutationOptions } from './api-mutation-options';
 import { OfflineWriteError } from './offline-write-error';
@@ -16,17 +18,17 @@ interface PendingRequest {
   reject: () => void;
 }
 
-const SHELF_KEY = ['shelf'] as const;
-const SHELF_DETAIL_KEY = ['shelf', 'detail'] as const;
-const HUB_KEY = ['hub'] as const;
-const NEWS_KEY = ['news'] as const;
+const SHELF_KEY = queryKeys.announcements;
+const SHELF_DETAIL_KEY = [...queryKeys.announcements, 'detail'];
+const HUB_KEY = queryKeys.clubHub;
+const NEWS_KEY = queryKeys.galleryHub;
 
 const shelving = optimisticPatch<Shelf, string>(SHELF_KEY, (current, item) =>
   current === undefined ? undefined : { items: [...current.items, item] },
 );
 
 const createHarness = () => {
-  const queryClient = new QueryClient();
+  const queryClient = new QueryClient({ mutationCache: createWriteCache() });
   const notices: KkNoticeRequest[] = [];
   const pending: PendingRequest[] = [];
   const runtime: ApiMutationRuntime = {
@@ -41,7 +43,7 @@ const createHarness = () => {
       new Promise<void>((resolve, reject) => {
         pending.push({ resolve, reject: () => reject(new Error('refused')) });
       }),
-    invalidates: [HUB_KEY],
+    changes: ['announcement'],
     optimistic: [shelving],
   };
 
@@ -124,7 +126,7 @@ describe('toApiMutationOptions', () => {
     { outcome: 'success', settle: (request: PendingRequest) => request.resolve() },
     { outcome: 'failure', settle: (request: PendingRequest) => request.reject() },
   ])(
-    'invalidates exactly the declared and optimistic scopes after a $outcome',
+    'invalidates exactly the reads showing the change and the optimistic scope after a $outcome',
     async ({ settle }) => {
       const harness = createHarness();
 

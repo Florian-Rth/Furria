@@ -1,8 +1,8 @@
 import { subscribeToSessionEnd } from '@/lib/api/session/session-store';
 import type { UploadHandle, UploadOutcome } from '@/lib/media/media-upload';
 import { startUpload } from '@/lib/media/start-upload';
+import { refreshAfter } from '@/lib/query/refresh-after';
 import { queryClient } from '@/lib/query-client';
-import { refreshGallery } from '../api';
 import { captureTimeOf, localStampOf } from './exif-capture';
 import type { ThroughputSample, UploadEntry } from './upload-queue';
 import {
@@ -66,7 +66,7 @@ const refreshSoon = (): void => {
   }
   refreshTimer = window.setTimeout(() => {
     refreshTimer = null;
-    void refreshGallery(queryClient);
+    void refreshAfter(queryClient, ['media']);
   }, REFRESH_MS);
 };
 

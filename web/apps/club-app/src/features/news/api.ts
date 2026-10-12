@@ -2,6 +2,8 @@ import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/r
 import { useQuery } from '@tanstack/react-query';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
+import { queryKeys } from '@/lib/query/reads';
+import { refreshAfter } from '@/lib/query/refresh-after';
 import type { NewsDraftRequests } from './news-draft-session';
 import type { GalleryPickPayload, NewsCropPayload } from './requests';
 import {
@@ -23,29 +25,12 @@ import {
 } from './requests';
 import type { GalleryAlbumPhotos, NewsHub, NewsMentionables, NewsTieCandidates } from './schemas';
 
-export const NEWS_QUERY_KEY = ['news'] as const;
-export const NEWS_HUB_QUERY_KEY = ['news', 'hub'] as const;
-const NEWS_MENTIONABLES_QUERY_KEY = ['news', 'mentionables'] as const;
-const NEWS_TIE_CANDIDATES_QUERY_KEY = ['news', 'tie-candidates'] as const;
-
-const galleryAlbumPhotosQueryKey = (albumId: number): readonly [string, string, number] => [
-  'news',
-  'gallery-album',
-  albumId,
-];
-
-const refreshNews = (queryClient: QueryClient): Promise<void> =>
-  queryClient.invalidateQueries({ queryKey: NEWS_QUERY_KEY });
-
-const refreshHub = (queryClient: QueryClient): Promise<void> =>
-  queryClient.invalidateQueries({ queryKey: NEWS_HUB_QUERY_KEY });
-
 export const useNewsHubQuery = (): UseQueryResult<NewsHub, Error> =>
-  useQuery({ queryKey: NEWS_HUB_QUERY_KEY, queryFn: () => withFreshAccessToken(requestNewsHub) });
+  useQuery({ queryKey: queryKeys.newsHub, queryFn: () => withFreshAccessToken(requestNewsHub) });
 
 export const useNewsMentionablesQuery = (): UseQueryResult<NewsMentionables, Error> =>
   useQuery({
-    queryKey: NEWS_MENTIONABLES_QUERY_KEY,
+    queryKey: queryKeys.newsMentionables,
     queryFn: () => withFreshAccessToken(requestNewsMentionables),
   });
 
@@ -53,15 +38,14 @@ export const useNewsTieCandidatesQuery = (
   enabled: boolean,
 ): UseQueryResult<NewsTieCandidates, Error> =>
   useQuery({
-    queryKey: NEWS_TIE_CANDIDATES_QUERY_KEY,
+    queryKey: queryKeys.newsTieCandidates,
     queryFn: () => withFreshAccessToken(requestNewsTieCandidates),
     enabled,
   });
 
 const useNewsMutation = <TInput, TResult>(
   request: (input: TInput, accessToken: string) => Promise<TResult>,
-): UseMutationResult<TResult, Error, TInput> =>
-  useApiMutation({ request, invalidates: [NEWS_QUERY_KEY] });
+): UseMutationResult<TResult, Error, TInput> => useApiMutation({ request, changes: ['newsPost'] });
 
 export const useNewsPictureCrop = (): UseMutationResult<void, Error, NewsCropPayload> =>
   useNewsMutation(requestNewsPictureCrop);
@@ -77,38 +61,35 @@ export const useGalleryAlbumPhotosQuery = (
   enabled: boolean,
 ): UseQueryResult<GalleryAlbumPhotos, Error> =>
   useQuery({
-    queryKey: galleryAlbumPhotosQueryKey(albumId),
+    queryKey: queryKeys.newsGalleryAlbum(albumId),
     queryFn: () => withFreshAccessToken((token) => requestGalleryAlbumPhotos(albumId, token)),
     enabled,
   });
 
-const refreshingAfter = <T>(work: Promise<T>, refresh: () => Promise<void>): Promise<T> =>
+const refreshingAfter = <T>(queryClient: QueryClient, work: Promise<T>): Promise<T> =>
   work.finally(() => {
-    void refresh();
+    void refreshAfter(queryClient, ['newsPost']);
   });
 
 export const newsDraftRequestsOf = (queryClient: QueryClient): NewsDraftRequests => {
-  const hubAfter = <T>(work: Promise<T>): Promise<T> =>
-    refreshingAfter(work, () => refreshHub(queryClient));
-  const newsAfter = <T>(work: Promise<T>): Promise<T> =>
-    refreshingAfter(work, () => refreshNews(queryClient));
+  const postAfter = <T>(work: Promise<T>): Promise<T> => refreshingAfter(queryClient, work);
   return {
     read: (newsPostId) => withFreshAccessToken((token) => requestNewsPost(newsPostId, token)),
     create: (content) =>
-      hubAfter(withFreshAccessToken((token) => requestNewsPostCreation(content, token))),
+      postAfter(withFreshAccessToken((token) => requestNewsPostCreation(content, token))),
     save: (payload) =>
-      hubAfter(withFreshAccessToken((token) => requestNewsPostSave(payload, token))),
+      postAfter(withFreshAccessToken((token) => requestNewsPostSave(payload, token))),
     publish: (newsPostId) =>
-      newsAfter(withFreshAccessToken((token) => requestNewsPublication(newsPostId, token))),
+      postAfter(withFreshAccessToken((token) => requestNewsPublication(newsPostId, token))),
     publishChanges: (newsPostId) =>
-      newsAfter(
+      postAfter(
         withFreshAccessToken((token) => requestPendingChangesPublication(newsPostId, token)),
       ),
     discardChanges: (newsPostId) =>
-      newsAfter(withFreshAccessToken((token) => requestPendingChangesDiscard(newsPostId, token))),
+      postAfter(withFreshAccessToken((token) => requestPendingChangesDiscard(newsPostId, token))),
     withdraw: (newsPostId) =>
-      newsAfter(withFreshAccessToken((token) => requestNewsWithdrawal(newsPostId, token))),
+      postAfter(withFreshAccessToken((token) => requestNewsWithdrawal(newsPostId, token))),
     remove: (newsPostId) =>
-      hubAfter(withFreshAccessToken((token) => requestNewsPostDeletion(newsPostId, token))),
+      postAfter(withFreshAccessToken((token) => requestNewsPostDeletion(newsPostId, token))),
   };
 };

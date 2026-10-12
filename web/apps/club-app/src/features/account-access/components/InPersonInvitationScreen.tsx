@@ -10,16 +10,14 @@ interface InPersonInvitationScreenProps {
   purpose: InPersonPurpose;
   subject: AccessSubject;
   origin: KkScreenOrigin;
-  onRedeemed: () => void;
 }
 
 export const InPersonInvitationScreen: FC<InPersonInvitationScreenProps> = ({
   purpose,
   subject,
   origin,
-  onRedeemed,
 }) => {
-  const { phase, rejection, action } = useInPersonInvitation({ purpose, subject, onRedeemed });
+  const { phase, rejection, action } = useInPersonInvitation({ purpose, subject });
 
   return (
     <KkScreen kind="fullscreen" title={IN_PERSON_TITLES[purpose]} origin={origin} action={action}>

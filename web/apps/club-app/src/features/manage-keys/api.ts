@@ -1,15 +1,12 @@
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
-import { CLUB_HUB_QUERY_KEY } from '@/features/club';
-import { MANAGE_HUB_QUERY_KEY } from '@/features/manage-hub';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toIsoDay } from '@/lib/day';
+import { queryKeys } from '@/lib/query/reads';
 import { toKeyHandedOutMessage, toKeyTakenBackMessage } from './manage-keys-labels';
 import { requestKeyHandout, requestKeyHoldings, requestKeyReturn } from './requests';
 import type { CreatedKeyHolding, KeyHoldingsResponse } from './schemas';
-
-export const MANAGED_KEYS_QUERY_KEY = ['manage', 'keys'] as const;
 
 export interface KeyHandoutInput {
   venueId: number;
@@ -25,11 +22,9 @@ export interface KeyReturnInput {
   untilOn: string;
 }
 
-const KEYS_SCOPE = [MANAGED_KEYS_QUERY_KEY, MANAGE_HUB_QUERY_KEY, CLUB_HUB_QUERY_KEY] as const;
-
 export const useManagedKeysQuery = (): UseQueryResult<KeyHoldingsResponse, Error> =>
   useQuery({
-    queryKey: MANAGED_KEYS_QUERY_KEY,
+    queryKey: queryKeys.managedKeys,
     queryFn: () => withFreshAccessToken(requestKeyHoldings),
   });
 
@@ -44,7 +39,7 @@ export const useHandOutKeyMutation = (): UseMutationResult<
         { venueId: input.venueId, personId: input.personId, sinceOn: input.sinceOn },
         accessToken,
       ),
-    invalidates: KEYS_SCOPE,
+    changes: ['keyHolding'],
     notice: {
       success: (input) =>
         toKeyHandedOutMessage(
@@ -60,7 +55,7 @@ export const useTakeBackKeyMutation = (): UseMutationResult<void, Error, KeyRetu
   useApiMutation({
     request: (input: KeyReturnInput, accessToken) =>
       requestKeyReturn(input.keyHoldingId, input.untilOn, accessToken),
-    invalidates: KEYS_SCOPE,
+    changes: ['keyHolding'],
     notice: {
       success: (input) =>
         toKeyTakenBackMessage(input.personName, input.untilOn, toIsoDay(new Date())),

@@ -2,7 +2,6 @@ import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { MailInvitationEditor } from '@/features/account-access';
 import { parsePositiveId } from '@/lib/positive-id';
-import { useRefreshPerson } from '../api';
 import { usePersonEditorGate } from '../hooks/use-person-editor-gate';
 import { toPersonOrigin } from '../manage-persons-labels';
 import { PersonEditorFallback } from './PersonEditorFallback';
@@ -14,17 +13,10 @@ export const PersonInvitationNewScreen: FC = () => {
   const { personId } = useParams({ from: ROUTE_ID });
   const id = parsePositiveId(personId);
   const { gate, retry } = usePersonEditorGate(id);
-  const refreshPerson = useRefreshPerson(id);
 
   if (gate.kind !== 'ready') {
     return <PersonEditorFallback hold={gate} title={TITLE} onRetry={retry} />;
   }
 
-  return (
-    <MailInvitationEditor
-      subject={gate.person}
-      origin={toPersonOrigin(gate.person)}
-      onInvited={refreshPerson}
-    />
-  );
+  return <MailInvitationEditor subject={gate.person} origin={toPersonOrigin(gate.person)} />;
 };

@@ -8,7 +8,6 @@ import { useDevelopingPicture } from '@/lib/media/use-developing-picture';
 import { usePictureDesk } from '@/lib/media/use-picture-desk';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { toUploadFailureMessage } from '../picture-labels';
-import { pictureShownIn } from '../picture-shown-in';
 import type { PictureTarget } from '../picture-target';
 import { toUploadOwner } from '../picture-target';
 import { requestPictureCrop, requestPictureRemoval } from '../requests';
@@ -100,7 +99,7 @@ export const usePictureEditor = ({
   const announce = useDevelopingPicture({
     isDeveloping: editing?.state === 'processing',
     refresh,
-    shownIn: pictureShownIn(target.kind),
+    changes: ['picture'],
   });
 
   const desk = usePictureDesk({

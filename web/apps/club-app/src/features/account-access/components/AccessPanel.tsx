@@ -33,10 +33,9 @@ const INVITE_ROUTE = '/manage/persons/$personId/invitations/new';
 interface AccessPanelProps {
   subject: AccessSubject;
   highlightedKey: string | null;
-  onChanged: () => void;
 }
 
-export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey, onChanged }) => {
+export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey }) => {
   const { access } = subject;
   const { mailInvitation, inPersonInvitation, lacksMailAddress, vouchesForAge, recovery, lock } =
     useAccessActions(subject);
@@ -117,8 +116,7 @@ export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey, onC
     </KkNote>
   ) : null;
 
-  const lockAction =
-    lock === null ? null : <AccountLockAction subject={subject} act={lock} onLocked={onChanged} />;
+  const lockAction = lock === null ? null : <AccountLockAction subject={subject} act={lock} />;
 
   return (
     <KkPanelSection title={ACCESS_SECTION_TITLE} action={action}>

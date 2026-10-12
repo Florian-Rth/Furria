@@ -1,25 +1,25 @@
-import type { QueryKey } from '@tanstack/react-query';
-import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useEffectEvent, useRef } from 'react';
+import type { DomainChange } from '@/lib/query/reads';
+import { useRefreshAfter } from '@/lib/query/use-refresh-after';
 import { DEVELOPING_POLL_MS } from './developing';
 
 interface DevelopingPictureOptions {
   isDeveloping: boolean;
   refresh: () => void;
-  shownIn: readonly QueryKey[];
+  changes: readonly DomainChange[];
 }
 
 export const useDevelopingPicture = ({
   isDeveloping,
   refresh,
-  shownIn,
+  changes,
 }: DevelopingPictureOptions): (() => Promise<void>) => {
-  const queryClient = useQueryClient();
+  const refreshAfter = useRefreshAfter();
   const wasDeveloping = useRef(isDeveloping);
 
   const announce = async (): Promise<void> => {
     refresh();
-    await Promise.all(shownIn.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
+    await refreshAfter(changes);
   };
 
   const poll = useEffectEvent((): void => {

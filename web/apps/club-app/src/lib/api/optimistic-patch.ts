@@ -46,6 +46,9 @@ const openPatchesOf = (queryClient: QueryClient): Map<string, OpenPatches> => {
   return created;
 };
 
+export const hasOpenPatch = (queryClient: QueryClient, key: QueryKey): boolean =>
+  openPatchesOf(queryClient).has(hashKey(key));
+
 export const openPatch = async <TInput>(
   queryClient: QueryClient,
   patch: OptimisticPatch<TInput>,

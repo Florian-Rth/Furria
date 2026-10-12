@@ -1,8 +1,8 @@
 import type { UseMutationResult } from '@tanstack/react-query';
-import { ME_QUERY_KEY } from '@/features/session';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import type { Me } from '@/lib/api/schemas';
+import { queryKeys } from '@/lib/query/reads';
 import { CONTACT_DETAILS_SAVED_MESSAGE, toVisibilitySavedMessage } from './profile-labels';
 import { toVisibilityErrorMessage } from './profile-messages';
 import { requestContactDetailsUpdate, requestContactVisibility } from './requests';
@@ -19,8 +19,8 @@ const applyVisibility = (current: Me | undefined, visible: boolean): Me | undefi
 export const useContactVisibilityMutation = (): UseMutationResult<void, Error, boolean> =>
   useApiMutation({
     request: requestContactVisibility,
-    optimistic: [optimisticPatch(ME_QUERY_KEY, applyVisibility)],
-    invalidates: [],
+    optimistic: [optimisticPatch(queryKeys.me, applyVisibility)],
+    changes: ['person'],
     notice: { success: toVisibilitySavedMessage, failure: toVisibilityErrorMessage },
   });
 
@@ -31,6 +31,6 @@ export const useUpdateContactDetailsMutation = (): UseMutationResult<
 > =>
   useApiMutation({
     request: requestContactDetailsUpdate,
-    invalidates: [ME_QUERY_KEY],
+    changes: ['person'],
     notice: { success: () => CONTACT_DETAILS_SAVED_MESSAGE },
   });

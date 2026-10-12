@@ -1,6 +1,7 @@
 import type { KkNoticePublisher, KkNoticeRequest } from '@furria/ui';
 import type { MutationKey, MutationOptions, QueryClient, QueryKey } from '@tanstack/react-query';
 import { hashKey, onlineManager } from '@tanstack/react-query';
+import type { DomainChange } from '@/lib/query/reads';
 import { OfflineWriteError } from './offline-write-error';
 import type { OptimisticPatch } from './optimistic-patch';
 import { closePatch, openPatch } from './optimistic-patch';
@@ -14,7 +15,7 @@ export interface ApiMutationNotice<TInput, TResult> {
 
 export interface ApiMutation<TInput, TResult> {
   request: (input: TInput, accessToken: string) => Promise<TResult>;
-  invalidates: MutationKeys<TInput>;
+  changes: readonly DomainChange[];
   optimistic?: readonly OptimisticPatch<TInput>[];
   forgets?: MutationKeys<TInput>;
   notice?: ApiMutationNotice<TInput, TResult>;
@@ -52,10 +53,11 @@ export const toApiMutationOptions = <TInput, TResult>(
   { queryClient, raiseNotice, authorize }: ApiMutationRuntime,
   definition: ApiMutation<TInput, TResult>,
 ): MutationOptions<TResult, Error, TInput, OpenedPatches<TInput>> => {
-  const { request, invalidates, optimistic = [], forgets, notice, afterSuccess, key } = definition;
+  const { request, changes, optimistic = [], forgets, notice, afterSuccess, key } = definition;
 
   return {
     mutationKey: key,
+    meta: { changes, settlesWhenFresh: true },
     scope: key === undefined ? undefined : { id: hashKey(key) },
     networkMode: definition.offline === 'fail' ? 'always' : 'online',
     mutationFn: (input) =>
@@ -89,9 +91,10 @@ export const toApiMutationOptions = <TInput, TResult>(
       const closed = (opened ?? []).filter((patch) =>
         closePatch(queryClient, patch, input, error === null),
       );
-      const stale = [...keysFor(invalidates, input), ...closed.map((patch) => patch.key)];
 
-      await Promise.all(stale.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
+      await Promise.all(
+        closed.map((patch) => queryClient.invalidateQueries({ queryKey: patch.key })),
+      );
     },
   };
 };

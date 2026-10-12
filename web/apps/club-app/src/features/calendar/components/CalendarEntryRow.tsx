@@ -1,13 +1,13 @@
 import { KkChip, KkFactRow, KkText } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { AttendanceChoice } from '@/features/attendance';
 import { toLandingKey } from '@/features/write';
 import { toDayNumberLabel, toWeekdayEyebrow } from '@/lib/calendar-days';
 import type { CalendarEntryLink } from '../calendar-authoring';
 import { RUNNING_CHIP_LABEL, toEntryMetaLine, toEntrySales } from '../calendar-labels';
 import { toEntryTone } from '../calendar-tones';
 import type { CalendarEntry } from '../schemas';
-import { CalendarAttendanceChoice } from './CalendarAttendanceChoice';
 import { CalendarEventFactLines } from './CalendarEventFactLines';
 
 const LANDING_KIND = 'calendar-entry';
@@ -40,7 +40,7 @@ export const CalendarEntryRow: FC<CalendarEntryRowProps> = ({
   ) : (
     salesChip
   );
-  const actions = entry.asksForResponse ? <CalendarAttendanceChoice entry={entry} /> : undefined;
+  const actions = entry.asksForResponse ? <AttendanceChoice entry={entry} /> : undefined;
   const span = toDayNumberLabel(entry.startsAt);
   const spanLabel = toWeekdayEyebrow(entry.startsAt);
   const meta = toEntryMetaLine(entry);

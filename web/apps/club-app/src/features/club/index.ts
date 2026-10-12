@@ -1,4 +1,4 @@
-export { CLUB_HUB_QUERY_KEY, useClubHubQuery } from './api';
+export { useClubHubQuery } from './api';
 export { ClubPage } from './components/ClubPage';
 export type {
   CalendarEntryKind,
