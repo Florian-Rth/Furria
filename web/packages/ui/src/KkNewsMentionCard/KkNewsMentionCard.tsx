@@ -1,7 +1,7 @@
 import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';
+import type { KkPictureUrls } from '../image-source';
 import type { KkGroupTone } from '../internal/group-tone';
-import type { KkPictureUrls } from '../picture-sources';
 import { KkNewsMentionFacts } from './internal/ui/KkNewsMentionFacts';
 import { KkNewsMentionGroupFace } from './internal/ui/KkNewsMentionGroupFace';
 import { KkNewsMentionPortrait } from './internal/ui/KkNewsMentionPortrait';

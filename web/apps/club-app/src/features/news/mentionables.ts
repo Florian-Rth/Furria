@@ -1,4 +1,5 @@
 import type { KkProseMentionTone } from '@furria/ui';
+import { toImageSource } from '@furria/ui';
 import type { NewsInline } from '@furria/ui/news-text';
 import { newsMentionKeyOf, readNewsText } from '@furria/ui/news-text';
 import type { NewsMentionables } from './schemas';
@@ -25,7 +26,7 @@ export const mentionablesOf = (
       line: group.description.trim().length === 0 ? groupWord : group.description,
       tone: group.tone,
       initials: initialsOf(group.name.split(/\s+/)),
-      pictureSource: group.picture?.smallUrl ?? null,
+      image: toImageSource(group.picture, 'groupPicture'),
       isPublic: true,
     }),
   ),
@@ -38,7 +39,7 @@ export const mentionablesOf = (
       line: person.officeName,
       tone: null,
       initials: initialsOf([person.firstName, person.lastName]),
-      pictureSource: person.portrait?.smallUrl ?? null,
+      image: toImageSource(person.portrait, 'portrait'),
       isPublic: true,
     }),
   ),

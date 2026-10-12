@@ -1,14 +1,16 @@
 import Box from '@mui/material/Box';
 import type { Theme } from '@mui/material/styles';
 import type { FC } from 'react';
+import type { KkImageSource } from '../image-source';
 import { KkCoverPicture } from '../KkCoverPicture';
 import { KkNewsPoster } from '../KkNewsPoster';
 import { kkTokens } from '../tokens';
 
 const STRUCK_FILTER = 'grayscale(1)';
+const THUMB_SIZES = '4rem';
 
 interface KkPressRowThumbProps {
-  picture: string | null;
+  picture: KkImageSource | null;
   struck: boolean;
 }
 
@@ -17,7 +19,7 @@ export const KkPressRowThumb: FC<KkPressRowThumbProps> = ({ picture, struck }) =
     picture === null ? (
       <KkNewsPoster tone={null} word="" />
     ) : (
-      <KkCoverPicture source={picture} alt="" />
+      <KkCoverPicture image={{ ...picture, sizes: picture.sizes ?? THUMB_SIZES }} alt="" />
     );
 
   return (

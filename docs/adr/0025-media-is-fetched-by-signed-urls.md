@@ -11,11 +11,14 @@ and expiry.** Wherever a response contains a media item, it contains ready-made 
 (`/api/media/{id}/{rendition}?exp=…&sig=…`; `?download` adds `Content-Disposition` with the
 original's file name).
 
-- **Expiry is rounded to 24-hour windows and valid for 48 hours**, so a URL stays the same for a
-  day and the browser cache works across reloads.
+- **Expiry is rounded to 7-day windows and valid for 14 days**, so a URL stays the same for a
+  week. The API serves the file `Cache-Control: private, max-age=<until expiry>, immutable`, so
+  a device downloads each thumbnail once a week, not once a day, and never revalidates it.
+- **`v={renderedAt}` rides on every rendition URL**, signed or public, so a re-render or re-crop
+  hands out a new URL at once instead of stale cached bytes. It is not part of the signature.
 - **The API serves the files itself** (range requests, `sendfile`); no nginx needs the media mount.
 - **The API checks the item still exists and still belongs where the URL says before serving**,
-  so deletion and takedown take effect at once; a leaked URL to a living item works at most 48 h.
+  so deletion and takedown take effect at once; a leaked URL to a living item works at most 14 days.
 - **The public face is unsigned**: the website's pictures have stable URLs under `/api/public/…`
   of one shape, `/api/public/{kind}/pictures/{id}/{rendition}`, that are served only while the
   picture is on the public face and answer 404 the moment it leaves it — board portraits
@@ -27,6 +30,12 @@ original's file name).
   re-crop. Amended 2026-10-09 with Florian: board portraits and group pictures joined the
   unsigned public face instead of carrying signed URLs that outlive the office by up to 48 h. Amended
   again 2026-10-09 (L7b S2): news pictures joined it as its fourth member.
+
+**Amended 2026-10-11 with Florian (gallery at scale):** the window grew from 24 h / valid 48 h to
+7 days / valid 14 days, renditions are served `immutable`, and every gallery URL carries
+`v={renderedAt}`. With a few thousand gallery items, a daily rotation made every device fetch
+every thumbnail it saw again each day. Deletion and takedown still act at once, because existence
+is checked on every fetch; the longer life only affects a leaked URL to an item that still lives.
 
 ## Considered options
 

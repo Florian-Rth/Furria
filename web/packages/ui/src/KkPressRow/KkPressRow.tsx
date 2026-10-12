@@ -5,6 +5,7 @@ import type { Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import { motion } from 'motion/react';
 import type { FC } from 'react';
+import type { KkImageSource } from '../image-source';
 import { focusRing } from '../internal/focus-ring';
 import { highlightMark, highlightPaint } from '../internal/highlight-paint';
 import { redInk } from '../internal/red-ink';
@@ -37,7 +38,7 @@ interface KkPressRowProps {
   label: string;
   state: KkRegisterMarkState;
   title: string;
-  picture: string | null;
+  picture: KkImageSource | null;
   category: KkPressRowCategory | null;
   date: string;
   fact: KkPressRowFact | null;

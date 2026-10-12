@@ -11,6 +11,7 @@ public sealed class GetPublicGalleryAlbumByIdTests : IClassFixture<ApiTestFixtur
 {
     private static readonly DateTimeOffset Gala = new(2026, 2, 14, 19, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset Published = new(2026, 2, 20, 9, 0, 0, TimeSpan.Zero);
+    private static readonly TimeSpan RenderedAgainAfter = TimeSpan.FromSeconds(1);
 
     private readonly ApiTestFixture _fixture;
 
@@ -53,7 +54,47 @@ public sealed class GetPublicGalleryAlbumByIdTests : IClassFixture<ApiTestFixtur
         );
         var finale = result.Photos[0];
         Assert.Equal((4000, 3000), (finale.Width, finale.Height));
-        Assert.Equal($"/api/public/gallery/pictures/{finale.MediaItemId}/large", finale.LargeUrl);
+        Assert.StartsWith(
+            $"/api/public/gallery/pictures/{finale.MediaItemId}/large?v=",
+            finale.LargeUrl
+        );
+    }
+
+    [Fact]
+    public async Task Should_HandOutNewUrlsForThatPhotoOnly_When_APhotoIsRenderedAgain()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(Gallery(), ct);
+        var finale = ctx.Gallery.Items.IdOf("finale");
+        var opening = ctx.Gallery.Items.IdOf("opening");
+        var albumId = ctx.Gallery.Albums.IdOf("gala");
+        var before = await UrlsOfAlbumAsync(albumId);
+
+        await _fixture.AtLaterTimeAsync(
+            RenderedAgainAfter,
+            () => _fixture.RenderMediaItemDirectlyAsync(finale, ct)
+        );
+        var after = await UrlsOfAlbumAsync(albumId);
+
+        Assert.NotEqual(before[finale], after[finale]);
+        Assert.Equal(before[opening], after[opening]);
+    }
+
+    private async Task<IReadOnlyDictionary<int, (string Small, string Large)>> UrlsOfAlbumAsync(
+        int albumId
+    )
+    {
+        var (_, result) = await _fixture
+            .CreateClient()
+            .GETAsync<
+                GetPublicGalleryAlbumById,
+                GetPublicGalleryAlbumByIdRequest,
+                GetPublicGalleryAlbumByIdResponse
+            >(new() { AlbumId = albumId });
+        return result.Photos.ToDictionary(
+            photo => photo.MediaItemId,
+            photo => (photo.SmallUrl, photo.LargeUrl)
+        );
     }
 
     private static Action<SeedContextBuilder> Gallery() =>

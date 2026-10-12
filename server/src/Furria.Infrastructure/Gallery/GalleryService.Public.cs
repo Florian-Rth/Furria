@@ -11,21 +11,17 @@ namespace Furria.Infrastructure.Gallery;
 
 public sealed partial class GalleryService
 {
+    private const int ChosenCoverRank = 0;
+    private const int OtherCoverRank = 1;
+
     public async Task<IReadOnlyList<PublicGallerySection>> GetPublicGalleryAsync(
         CancellationToken ct
     )
     {
-        var albums = await PublicAlbumRowsOf(_publicFace.Albums).ToListAsync(ct);
-        var photos = (await PublicPhotoRowsOf(_publicFace.SelectedPhotos).ToListAsync(ct)).ToLookup(
-            photo => photo.AlbumId
-        );
+        var albums = await PublicAlbumCardsOf(_publicFace.Albums).ToListAsync(ct);
         var sessionNumbers = await _dbContext.SessionNumbersAsync(ct);
 
-        return PublicSectionsOf(
-            [.. albums.Where(album => photos[album.AlbumId].Any())],
-            photos,
-            sessionNumbers
-        );
+        return PublicSectionsOf([.. albums.Where(album => album.PhotoCount > 0)], sessionNumbers);
     }
 
     public async Task<PublicAlbumDetails?> GetPublicAlbumAsync(int albumId, CancellationToken ct)
@@ -58,8 +54,33 @@ public sealed partial class GalleryService
             album.Title,
             album.Description,
             album.CalendarEntry == null ? null : album.CalendarEntry.StartsAt,
+            album.SessionStartYear
+        ));
+
+    private static IQueryable<PublicAlbumCardRow> PublicAlbumCardsOf(IQueryable<Album> albums) =>
+        albums.Select(album => new PublicAlbumCardRow(
+            album.Id,
+            album.Title,
+            album.CalendarEntry == null ? null : album.CalendarEntry.StartsAt,
             album.SessionStartYear,
-            album.CoverMediaItemId
+            album.Items.AsQueryable().Count(PublicFace.IsSelectedPhoto),
+            album
+                .Items.AsQueryable()
+                .Where(PublicFace.IsSelectedPhoto)
+                .OrderBy(item =>
+                    item.Id == album.CoverMediaItemId ? ChosenCoverRank : OtherCoverRank
+                )
+                .ThenBy(item => item.SelectionPosition)
+                .Select(item => new PublicPhotoRow(
+                    item.AlbumId!.Value,
+                    item.Id,
+                    item.SelectionPosition!.Value,
+                    item.Width ?? 0,
+                    item.Height ?? 0,
+                    item.Caption,
+                    item.RenderedAt
+                ))
+                .FirstOrDefault()
         ));
 
     private static IQueryable<PublicPhotoRow> PublicPhotoRowsOf(IQueryable<MediaItem> items) =>
@@ -69,13 +90,13 @@ public sealed partial class GalleryService
             item.SelectionPosition!.Value,
             item.Width ?? 0,
             item.Height ?? 0,
-            item.Caption
+            item.Caption,
+            item.RenderedAt
         ));
 
     [Pure]
     private static IReadOnlyList<PublicGallerySection> PublicSectionsOf(
-        IReadOnlyList<PublicAlbumRow> albums,
-        ILookup<int, PublicPhotoRow> photos,
+        IReadOnlyList<PublicAlbumCardRow> albums,
         SessionNumbers sessionNumbers
     ) =>
         [
@@ -94,36 +115,20 @@ public sealed partial class GalleryService
                 {
                     SessionStartYear = section.SessionStartYear,
                     SessionNumber = section.SessionNumber,
-                    Albums =
-                    [
-                        .. section.Items.Select(album =>
-                            PublicSummaryOf(album, [.. photos[album.AlbumId]])
-                        ),
-                    ],
+                    Albums = [.. section.Items.Select(PublicSummaryOf)],
                 }),
         ];
 
     [Pure]
-    private static PublicAlbumSummary PublicSummaryOf(
-        PublicAlbumRow album,
-        IReadOnlyList<PublicPhotoRow> photos
-    ) =>
+    private static PublicAlbumSummary PublicSummaryOf(PublicAlbumCardRow album) =>
         new()
         {
             AlbumId = album.AlbumId,
             Title = album.Title,
             EntryStartsAt = album.EntryStartsAt,
-            PhotoCount = photos.Count,
-            Cover = ToPublicPhoto(PublicCoverOf(album.CoverMediaItemId, photos)),
+            PhotoCount = album.PhotoCount,
+            Cover = ToPublicPhoto(album.Cover!),
         };
-
-    [Pure]
-    private static PublicPhotoRow PublicCoverOf(
-        int? chosenId,
-        IReadOnlyList<PublicPhotoRow> photos
-    ) =>
-        photos.FirstOrDefault(photo => photo.MediaItemId == chosenId)
-        ?? photos.MinBy(photo => photo.Position)!;
 
     [Pure]
     private static PublicGalleryPhoto ToPublicPhoto(PublicPhotoRow photo) =>
@@ -133,7 +138,7 @@ public sealed partial class GalleryService
             Width = photo.Width,
             Height = photo.Height,
             Caption = photo.Caption,
-            Picture = PublicPictures.PhotoOf(photo.MediaItemId),
+            Picture = PublicPictures.PhotoOf(photo.MediaItemId, photo.RenderedAt),
         };
 
     private sealed record PublicAlbumRow(
@@ -141,8 +146,19 @@ public sealed partial class GalleryService
         string Title,
         string? Description,
         DateTimeOffset? EntryStartsAt,
+        int? LinkedSessionStartYear
+    )
+    {
+        public int? SessionStartYear => AlbumSession.YearOf(EntryStartsAt, LinkedSessionStartYear);
+    }
+
+    private sealed record PublicAlbumCardRow(
+        int AlbumId,
+        string Title,
+        DateTimeOffset? EntryStartsAt,
         int? LinkedSessionStartYear,
-        int? CoverMediaItemId
+        int PhotoCount,
+        PublicPhotoRow? Cover
     )
     {
         public int? SessionStartYear => AlbumSession.YearOf(EntryStartsAt, LinkedSessionStartYear);
@@ -154,6 +170,7 @@ public sealed partial class GalleryService
         int Position,
         int Width,
         int Height,
-        string? Caption
+        string? Caption,
+        DateTimeOffset? RenderedAt
     );
 }

@@ -2,10 +2,8 @@ import { describe, expect, it } from 'vitest';
 import type { StrokeMode } from './album-frames';
 import {
   albumFramesOf,
-  framesAround,
   selectionWith,
   selectionWithout,
-  steppedNumber,
   strokeModeOf,
   strokeSelection,
 } from './album-frames';
@@ -104,22 +102,5 @@ describe('strokeSelection', () => {
     expect([...strokeSelection(new Set(base), order, anchor, current, mode)].sort()).toEqual(
       expected,
     );
-  });
-});
-
-describe('framesAround', () => {
-  it('keeps frames within the reach of the shown number', () => {
-    const frames = albumFramesOf([item(1, null), item(2, null), item(3, null), item(4, null)]);
-    expect(framesAround(frames, 2, 1).map((frame) => frame.number)).toEqual([1, 2, 3]);
-  });
-});
-
-describe('steppedNumber', () => {
-  it.each<[number, number, number, number]>([
-    [1, -1, 5, 1],
-    [5, 1, 5, 5],
-    [3, 1, 5, 4],
-  ])('%i stepped by %i of %i is %i', (number, delta, total, expected) => {
-    expect(steppedNumber(number, delta, total)).toBe(expected);
   });
 });

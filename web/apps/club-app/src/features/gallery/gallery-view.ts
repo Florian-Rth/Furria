@@ -1,7 +1,7 @@
 import type { KkFrameState } from '@furria/ui';
 import type { GalleryScene } from './gallery-scenes';
 import { frameNumberOf } from './gallery-scenes';
-import type { GalleryMedia, GalleryMediaUrls, MediaKind } from './schemas';
+import type { GalleryMedia, GalleryMediaUrls } from './schemas';
 
 const GERMAN = new Intl.NumberFormat('de-DE');
 const CLOCK = new Intl.DateTimeFormat('de-DE', { hour: '2-digit', minute: '2-digit' });
@@ -80,9 +80,6 @@ export const railScenesOf = <TFrame extends { id: number; capturedAt: string | n
   });
 
 export const thumbSourceOf = (urls: GalleryMediaUrls): string => urls.small;
-
-export const viewSourceOf = (kind: MediaKind, urls: GalleryMediaUrls): string =>
-  kind === 'video' ? (urls.poster ?? urls.small) : (urls.large ?? urls.medium ?? urls.small);
 
 export const frameStateOf = (media: Pick<GalleryMedia, 'state'>): KkFrameState => {
   switch (media.state) {

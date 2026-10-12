@@ -1,5 +1,5 @@
 import type { KkGroupTone } from '@furria/ui';
-import { KkCard, KkCoverPicture, KkPhotoPlaceholder } from '@furria/ui';
+import { KkCard, KkCoverPicture, KkPhotoPlaceholder, toImageSource } from '@furria/ui';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import {
@@ -7,7 +7,6 @@ import {
   groupsLabels,
   resolveGroupOpenness,
 } from '@/features/club/groups-content';
-import { GROUP_PICTURE_ASPECT, toPictureSources } from '@/lib/api/picture';
 import type { PublicGroup } from '@/lib/public-groups/schemas';
 import { GroupOpennessChip } from './GroupOpennessChip';
 
@@ -25,17 +24,12 @@ interface GroupTileProps {
 export const GroupTile: FC<GroupTileProps> = ({ group, tint, tone, badge, onOpen }) => {
   const openness = resolveGroupOpenness(group.isRecruiting);
   const description = group.description.trim();
-  const picture = toPictureSources(group.picture, GROUP_PICTURE_ASPECT);
+  const picture = toImageSource(group.picture, 'groupPicture', TILE_SIZES);
   const media =
-    picture.source === undefined ? (
+    picture === null ? (
       <KkPhotoPlaceholder label={groupsLabels.photo} tint={tint} tone={tone} fill />
     ) : (
-      <KkCoverPicture
-        source={picture.source}
-        sourceSet={picture.sourceSet}
-        sizes={TILE_SIZES}
-        alt={group.name}
-      />
+      <KkCoverPicture image={picture} alt={group.name} />
     );
   const text =
     description === '' ? null : <KkCard.Text clamp={DESCRIPTION_CLAMP}>{description}</KkCard.Text>;

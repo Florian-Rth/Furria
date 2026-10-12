@@ -26,7 +26,7 @@ export const proofSurfaceOf = (
   photo:
     facts.pictureSource === null ? null : (
       <KkCoverPicture
-        source={facts.pictureSource}
+        image={{ src: facts.pictureSource }}
         alt={facts.title ?? labels.untitled}
         sx={PICTURE_FIT}
       />

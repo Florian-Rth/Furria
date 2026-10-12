@@ -70,7 +70,7 @@ public sealed class GetGalleryBin : EndpointWithoutRequest<GetGalleryBinResponse
             Width = media.Width,
             Height = media.Height,
             CapturedAt = media.CapturedAt,
-            Urls = GalleryMediaUrls.Of(_signer, media.MediaItemId, media.Kind),
+            Urls = GalleryMediaUrls.Of(_signer, media.MediaItemId, media.Kind, media.RenderedAt),
         };
 }
 

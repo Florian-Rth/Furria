@@ -1,4 +1,4 @@
-import { KkChip, KkPersonRow } from '@furria/ui';
+import { KkChip, KkPersonRow, toImageSource } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
@@ -21,6 +21,7 @@ export const PersonRow: FC<PersonRowProps> = ({ person, access }) => {
   const { accent, meta } = toPersonRowAffiliation(person.groups, person.roles);
   const state = toPersonRowChip(person, access);
   const params = { personId: String(person.personId) };
+  const portrait = toImageSource(person.portrait ?? null, 'portrait');
 
   const withheldChip = isContactWithheld(person) ? (
     <KkChip tone={WITHHELD_CHIP.tone} dot={WITHHELD_CHIP.dot} size="small">
@@ -40,7 +41,7 @@ export const PersonRow: FC<PersonRowProps> = ({ person, access }) => {
   return (
     <KkPersonRow
       initials={toInitials(person.firstName, person.lastName)}
-      portrait={person.portrait?.smallUrl}
+      portrait={portrait}
       name={toPersonName(person)}
       accent={accent}
       meta={meta}

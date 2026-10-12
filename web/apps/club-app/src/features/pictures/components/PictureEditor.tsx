@@ -4,7 +4,6 @@ import type { ChangeEvent, FC } from 'react';
 import { useRef } from 'react';
 import { WriteScreen } from '@/features/write';
 import type { PictureEditing } from '@/lib/api/schemas';
-import { toPictureSources } from '@/lib/pictures';
 import { usePictureEditor } from '../hooks/use-picture-editor';
 import { toPictureActionBar } from '../picture-action-bar';
 import {
@@ -14,7 +13,7 @@ import {
   UNREADABLE_PHOTO_NOTE,
 } from '../picture-labels';
 import type { PictureTarget } from '../picture-target';
-import { PICTURE_ACCEPT, toPictureAspect } from '../picture-target';
+import { PICTURE_ACCEPT } from '../picture-target';
 import { PicturePreview } from './PicturePreview';
 
 interface PictureEditorProps {
@@ -39,9 +38,8 @@ export const PictureEditor: FC<PictureEditorProps> = ({
   const control = usePictureEditor({ target, editing, refresh });
   const inputRef = useRef<HTMLInputElement | null>(null);
   const copy = PICTURE_COPY[target.kind];
-  const aspect = toPictureAspect(target.kind);
   const { phase, removal } = control;
-  const current = toPictureSources(editing?.picture ?? null, aspect);
+  const currentPicture = editing?.picture ?? null;
 
   const openPicker = (): void => {
     inputRef.current?.click();
@@ -67,11 +65,10 @@ export const PictureEditor: FC<PictureEditorProps> = ({
   const view = (
     <>
       <PicturePreview
-        aspectRatio={copy.aspectRatio}
+        kind={target.kind}
         alt={alt}
         placeholderLabel={placeholderLabel}
-        source={current.source}
-        sourceSet={current.sourceSet}
+        picture={currentPicture}
         tone={tone}
       />
       {note}
@@ -86,7 +83,7 @@ export const PictureEditor: FC<PictureEditorProps> = ({
         key={phase.source}
         source={phase.source}
         alt={alt}
-        aspect={aspect}
+        aspect={target.kind}
         initialCrop={control.initialCrop}
         guide={copy.guide}
         labels={copy.frame}
@@ -102,11 +99,10 @@ export const PictureEditor: FC<PictureEditorProps> = ({
     phase.kind === 'uploading' ? (
       <>
         <PicturePreview
-          aspectRatio={copy.aspectRatio}
+          kind={target.kind}
           alt={alt}
           placeholderLabel={placeholderLabel}
-          source={undefined}
-          sourceSet={undefined}
+          picture={null}
           tone={tone}
         />
         {unreadableNote}

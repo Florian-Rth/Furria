@@ -1,46 +1,59 @@
-import type { KkLoupeStripFrame, KkLoupeVideo } from '@furria/ui';
+import type { KkViewerItem, KkViewerKeys, KkViewerStepDelta } from '@furria/ui';
+import { useState } from 'react';
 import type { AlbumFrame } from '../album-frames';
-import { framesAround, sceneIndexOfFrame, steppedNumber } from '../album-frames';
-import { loupeAlt, loupeFacts, loupeSceneLine } from '../album-labels';
+import { sceneIndexOfFrame } from '../album-frames';
+import { loupeFacts, loupeSceneLine } from '../album-labels';
+import { albumViewerItemOf } from '../album-viewer-items';
 import type { GalleryScene } from '../gallery-scenes';
 import { frameNumberOf } from '../gallery-scenes';
-import { clockLabel, durationLabel, shownSourceOf, viewSourceOf } from '../gallery-view';
+import { clockLabel } from '../gallery-view';
 
-const STRIP_REACH = 12;
+export interface AlbumLoupeFacts {
+  counter: string;
+  scene: string;
+  time: string;
+  facts: string;
+}
 
 export interface AlbumLoupe {
-  source: string | undefined;
-  alt: string;
-  counter: string;
-  time: string;
-  scene: string;
-  facts: string;
-  caption: string | undefined;
-  video: KkLoupeVideo | undefined;
-  strip: KkLoupeStripFrame[];
-  onStep: (delta: number) => void;
-  onSceneStep: (delta: number) => void;
-  onClose: () => void;
-  onDownload: () => void;
-  onStripSelect: (id: string) => void;
+  items: KkViewerItem[];
+  index: number | null;
+  facts: AlbumLoupeFacts | null;
+  keys: KkViewerKeys;
+  show: (index: number) => void;
+  sceneStep: (delta: KkViewerStepDelta) => void;
+  download: () => void;
 }
 
 interface AlbumLoupeInput {
   albumTitle: string;
   frames: readonly AlbumFrame[];
   scenes: readonly GalleryScene<AlbumFrame>[];
-  shown: AlbumFrame;
+  shown: AlbumFrame | null;
   onShow: (id: number) => void;
-  onClose: () => void;
 }
 
-const videoOf = (frame: AlbumFrame): KkLoupeVideo | undefined => {
-  const { item } = frame;
-  if (item.kind !== 'video' || item.urls.video === null || item.state !== 'ready') {
-    return undefined;
+const useLastShown = (shown: AlbumFrame | null): AlbumFrame | null => {
+  const [last, setLast] = useState(shown);
+
+  if (shown !== null && shown !== last) {
+    setLast(shown);
   }
-  return { source: item.urls.video, duration: durationLabel(item.durationSeconds) ?? '' };
+
+  return shown ?? last;
 };
+
+const factsOf = (
+  frame: AlbumFrame,
+  total: number,
+  sceneIndex: number,
+  sceneCount: number,
+): AlbumLoupeFacts => ({
+  counter: `${frameNumberOf(frame.number)} / ${frameNumberOf(total)}`,
+  scene: loupeSceneLine(sceneIndex + 1, sceneCount),
+  time: clockLabel(frame.capturedAt) || `#${frame.number}`,
+  facts: loupeFacts(frame.item),
+});
 
 export const useAlbumLoupe = ({
   albumTitle,
@@ -48,58 +61,42 @@ export const useAlbumLoupe = ({
   scenes,
   shown,
   onShow,
-  onClose,
 }: AlbumLoupeInput): AlbumLoupe => {
-  const sceneIndex = sceneIndexOfFrame(scenes, shown.number);
-  const scene = scenes[sceneIndex];
-  const around = framesAround(scene?.frames ?? [shown], shown.number, STRIP_REACH);
+  const lastShown = useLastShown(shown);
+  const sceneIndex = lastShown === null ? -1 : sceneIndexOfFrame(scenes, lastShown.number);
+  const index = shown === null ? null : frames.findIndex((frame) => frame.id === shown.id);
 
-  const showNumber = (number: number): void => {
-    const target = frames[number - 1];
-    if (target !== undefined) {
-      onShow(target.id);
+  const show = (target: number): void => {
+    const frame = frames[target];
+    if (frame !== undefined) {
+      onShow(frame.id);
     }
   };
 
-  const onStep = (delta: number): void => {
-    showNumber(steppedNumber(shown.number, delta, frames.length));
-  };
-
-  const onSceneStep = (delta: number): void => {
+  const sceneStep = (delta: KkViewerStepDelta): void => {
     const target = scenes[sceneIndex + delta];
     if (target !== undefined) {
-      showNumber(target.firstNumber);
+      show(target.firstNumber - 1);
     }
   };
 
-  const onDownload = (): void => {
-    window.location.assign(shown.item.urls.download);
-  };
-
-  const onStripSelect = (id: string): void => {
-    onShow(Number(id));
+  const download = (): void => {
+    if (lastShown !== null) {
+      window.location.assign(lastShown.item.urls.download);
+    }
   };
 
   return {
-    source:
-      shown.item.state === 'ready' ? viewSourceOf(shown.item.kind, shown.item.urls) : undefined,
-    alt: shown.item.caption ?? loupeAlt(albumTitle, shown.number),
-    counter: `${frameNumberOf(shown.number)} / ${frameNumberOf(frames.length)}`,
-    time: clockLabel(shown.capturedAt) || `#${shown.number}`,
-    scene: loupeSceneLine(sceneIndex + 1, scenes.length),
-    facts: loupeFacts(shown.item),
-    caption: shown.item.caption ?? undefined,
-    video: videoOf(shown),
-    strip: around.map((frame) => ({
-      id: String(frame.id),
-      label: loupeAlt(albumTitle, frame.number),
-      source: shownSourceOf(frame.item),
-      current: frame.id === shown.id,
-    })),
-    onStep,
-    onSceneStep,
-    onClose,
-    onDownload,
-    onStripSelect,
+    items: frames.map((frame) => albumViewerItemOf(frame, albumTitle)),
+    index: index === -1 ? null : index,
+    facts: lastShown === null ? null : factsOf(lastShown, frames.length, sceneIndex, scenes.length),
+    keys: {
+      PageDown: () => sceneStep(1),
+      PageUp: () => sceneStep(-1),
+      d: download,
+    },
+    show,
+    sceneStep,
+    download,
   };
 };

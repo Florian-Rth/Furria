@@ -1,4 +1,4 @@
-import { KkCard, KkPhoto, kkTokens } from '@furria/ui';
+import { KkCard, KkPhoto, kkTokens, toImageSource } from '@furria/ui';
 import Typography from '@mui/material/Typography';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
@@ -9,7 +9,6 @@ import {
   buildAlbumHref,
   buildAlbumMeta,
   buildPhotoCountLabel,
-  buildPhotoSourceSet,
   galleryCoverSizes,
 } from '@/features/gallery/gallery-content';
 import { publicGallery } from '@/lib/public-gallery/api';
@@ -24,7 +23,7 @@ export const AlbumCard: FC<AlbumCardProps> = ({ album }) => {
   const albumSlug = publicGallery.slugOf(album);
   const coverAspectRatio = kkTokens.aspectRatio[albumCoverOrientation];
   const coverAlt = buildAlbumCoverAlt(album);
-  const coverSourceSet = buildPhotoSourceSet(album.cover);
+  const cover = toImageSource(album.cover, album.cover.aspect, galleryCoverSizes);
   const albumMeta = buildAlbumMeta(album);
   const photoCountLabel = buildPhotoCountLabel(album.photoCount);
 
@@ -36,9 +35,7 @@ export const AlbumCard: FC<AlbumCardProps> = ({ album }) => {
             alt={coverAlt}
             orientation={albumCoverOrientation}
             placeholderLabel={albumSlug}
-            source={album.cover.mediumUrl}
-            sourceSet={coverSourceSet}
-            sizes={galleryCoverSizes}
+            image={cover}
             sx={{ height: '100%', borderRadius: 0 }}
           />
         </KkCard.Media>

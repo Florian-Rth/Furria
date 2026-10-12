@@ -1,17 +1,11 @@
-import { KkCoverPicture, toPictureSourceSet } from '@furria/ui';
+import { KkCoverPicture, toImageSource } from '@furria/ui';
 import type { ReactNode } from 'react';
 import type { Picture } from '@/lib/api/picture';
 
-const BANNER_ASPECT = 2;
 const PICTURE_FIT = { borderRadius: 'inherit' };
 
-export const newsPhotoOf = (picture: Picture | null, sizes: string): ReactNode =>
-  picture === null ? null : (
-    <KkCoverPicture
-      source={picture.mediumUrl}
-      sourceSet={toPictureSourceSet(picture, BANNER_ASPECT)}
-      sizes={sizes}
-      alt=""
-      sx={PICTURE_FIT}
-    />
-  );
+export const newsPhotoOf = (picture: Picture | null, sizes: string): ReactNode => {
+  const image = toImageSource(picture, 'banner', sizes);
+
+  return image === null ? null : <KkCoverPicture image={image} alt="" sx={PICTURE_FIT} />;
+};

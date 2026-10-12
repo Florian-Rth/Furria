@@ -1,4 +1,4 @@
-import type { KkFilterOption, KkLoupeLabels } from '@furria/ui';
+import type { KkFilterOption, KkViewerLabels } from '@furria/ui';
 import { countLabel, dayLabel, personNameOf, sessionLabel } from './gallery-view';
 import type { AlbumDetails, AlbumItem } from './schemas';
 
@@ -39,15 +39,19 @@ export const FAILED_DESCRIPTION = 'Die Verbindung hat nicht geklappt.';
 export const RETRY_LABEL = 'Nochmal';
 export const WRITE_FAILED = 'Das hat nicht geklappt. Bitte nochmal versuchen.';
 
-export const LOUPE_LABELS: KkLoupeLabels = {
+export const LOUPE_LABELS: KkViewerLabels = {
   dialog: 'Bildansicht',
   close: 'Schließen',
-  download: 'Original',
+  previous: 'Voriges Bild',
+  next: 'Nächstes Bild',
+  counterJoin: 'von',
   previousScene: 'Vorige Szene',
   nextScene: 'Nächste Szene',
   play: 'Video abspielen',
   developing: 'Entwickelt sich',
 };
+
+export const LOUPE_DOWNLOAD_LABEL = 'Original';
 
 const WEEKDAY_DATE = new Intl.DateTimeFormat('de-DE', {
   weekday: 'short',

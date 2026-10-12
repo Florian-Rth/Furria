@@ -11,6 +11,7 @@ namespace Furria.Api.Tests.Gallery;
 public sealed class GetGalleryAlbumByIdTests : IClassFixture<ApiTestFixture>
 {
     private static readonly DateTimeOffset Evening = new(2026, 2, 14, 19, 0, 0, TimeSpan.Zero);
+    private static readonly TimeSpan RenderedAgainAfter = TimeSpan.FromSeconds(1);
 
     private readonly ApiTestFixture _fixture;
 
@@ -92,6 +93,40 @@ public sealed class GetGalleryAlbumByIdTests : IClassFixture<ApiTestFixture>
         >(new() { AlbumId = ctx.Gallery.Albums.IdOf("binned") });
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_HandOutNewUrlsForThatItemOnly_When_AnItemIsRenderedAgain()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(GalaAlbumSeed(), ct);
+        var client = await ctx.Identity.ClientForAsync("lena", ct);
+        var opening = ctx.Gallery.Items.IdOf("opening");
+        var before = await UrlsOfAlbumAsync(client, ctx.Gallery.Albums.IdOf("gala"));
+
+        await _fixture.AtLaterTimeAsync(
+            RenderedAgainAfter,
+            () => _fixture.RenderMediaItemDirectlyAsync(opening, ct)
+        );
+        var after = await UrlsOfAlbumAsync(client, ctx.Gallery.Albums.IdOf("gala"));
+
+        Assert.NotEqual(before[opening].Small, after[opening].Small);
+        Assert.NotEqual(before[opening].Large, after[opening].Large);
+        var finale = ctx.Gallery.Items.IdOf("finale");
+        Assert.Equal(before[finale], after[finale]);
+    }
+
+    private static async Task<IReadOnlyDictionary<int, GalleryMediaUrlsDto>> UrlsOfAlbumAsync(
+        HttpClient client,
+        int albumId
+    )
+    {
+        var (_, result) = await client.GETAsync<
+            GetGalleryAlbumById,
+            GetGalleryAlbumByIdRequest,
+            GetGalleryAlbumByIdResponse
+        >(new() { AlbumId = albumId });
+        return result.Items.ToDictionary(item => item.MediaItemId, item => item.Urls);
     }
 
     private static Action<SeedContextBuilder> GalaAlbumSeed() =>

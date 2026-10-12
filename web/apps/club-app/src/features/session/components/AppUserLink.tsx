@@ -1,4 +1,4 @@
-import { KkChip, KkPersonRow, KkSkeletonRow } from '@furria/ui';
+import { KkChip, KkPersonRow, KkSkeletonRow, toImageSource } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
@@ -18,6 +18,7 @@ export const AppUserLink: FC = () => {
 
   const { person, membership } = me.data;
   const stateChip = toMembershipStateChip(membership.state);
+  const portrait = toImageSource(person.portrait?.picture ?? null, 'portrait');
 
   const chip = (
     <KkChip tone={stateChip.tone} dot={stateChip.dot} size="small">
@@ -28,7 +29,7 @@ export const AppUserLink: FC = () => {
   return (
     <KkPersonRow
       initials={toInitials(person.firstName, person.lastName)}
-      portrait={person.portrait?.picture?.smallUrl}
+      portrait={portrait}
       name={`${person.firstName} ${person.lastName}`}
       meta={PROFILE_META}
       trailing={chip}

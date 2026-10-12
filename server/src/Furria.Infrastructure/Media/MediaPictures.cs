@@ -1,5 +1,4 @@
 using System.Diagnostics.Contracts;
-using System.Globalization;
 using Furria.Application.Media;
 using Furria.Core.Media;
 
@@ -26,12 +25,12 @@ public sealed class MediaPictures
     public PictureDetails? Of(MediaOwner owner, int? mediaItemId, DateTimeOffset? renderedAt) =>
         PictureOf(mediaItemId, renderedAt, (id, rendition) => _signer.UrlOf(id, owner, rendition));
 
-    public PictureDetails GalleryPhotoOf(int mediaItemId) =>
+    public PictureDetails GalleryPhotoOf(int mediaItemId, DateTimeOffset? renderedAt) =>
         new()
         {
-            SmallUrl = _signer.UrlOf(mediaItemId, MediaOwner.Gallery, MediaRendition.Small),
-            MediumUrl = _signer.UrlOf(mediaItemId, MediaOwner.Gallery, MediaRendition.Medium),
-            LargeUrl = _signer.UrlOf(mediaItemId, MediaOwner.Gallery, MediaRendition.Large),
+            SmallUrl = GalleryUrlOf(mediaItemId, MediaRendition.Small, renderedAt),
+            MediumUrl = GalleryUrlOf(mediaItemId, MediaRendition.Medium, renderedAt),
+            LargeUrl = GalleryUrlOf(mediaItemId, MediaRendition.Large, renderedAt),
         };
 
     public PictureEditingDetails EditingOf(MediaOwner owner, MediaPictureRow picture) =>
@@ -45,7 +44,10 @@ public sealed class MediaPictures
 
     public string? UncroppedUrlOf(MediaOwner owner, int mediaItemId, DateTimeOffset? renderedAt) =>
         renderedAt is { } rendered
-            ? Versioned(_signer.UrlOf(mediaItemId, owner, MediaRendition.Uncropped), rendered)
+            ? MediaUrlVersions.Versioned(
+                _signer.UrlOf(mediaItemId, owner, MediaRendition.Uncropped),
+                rendered
+            )
             : null;
 
     [Pure]
@@ -57,13 +59,19 @@ public sealed class MediaPictures
         (mediaItemId, renderedAt) is ({ } id, { } rendered)
             ? new PictureDetails
             {
-                SmallUrl = Versioned(urlOf(id, MediaRendition.Small), rendered),
-                MediumUrl = Versioned(urlOf(id, MediaRendition.Medium), rendered),
-                LargeUrl = Versioned(urlOf(id, MediaRendition.Large), rendered),
+                SmallUrl = MediaUrlVersions.Versioned(urlOf(id, MediaRendition.Small), rendered),
+                MediumUrl = MediaUrlVersions.Versioned(urlOf(id, MediaRendition.Medium), rendered),
+                LargeUrl = MediaUrlVersions.Versioned(urlOf(id, MediaRendition.Large), rendered),
             }
             : null;
 
-    [Pure]
-    private static string Versioned(string url, DateTimeOffset renderedAt) =>
-        $"{url}{(url.Contains('?', StringComparison.Ordinal) ? '&' : '?')}v={renderedAt.ToUnixTimeMilliseconds().ToString(CultureInfo.InvariantCulture)}";
+    private string GalleryUrlOf(
+        int mediaItemId,
+        MediaRendition rendition,
+        DateTimeOffset? renderedAt
+    ) =>
+        MediaUrlVersions.Versioned(
+            _signer.UrlOf(mediaItemId, MediaOwner.Gallery, rendition),
+            renderedAt
+        );
 }

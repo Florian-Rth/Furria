@@ -1,10 +1,9 @@
-import { KkPhoto } from '@furria/ui';
+import { KkPhoto, toImageSource } from '@furria/ui';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import {
   albumCoverOrientation,
   buildAlbumCoverAlt,
-  buildPhotoSourceSet,
   featuredCoverSizes,
 } from '@/features/gallery/gallery-content';
 import { publicGallery } from '@/lib/public-gallery/api';
@@ -16,7 +15,7 @@ interface FeaturedAlbumCoverProps {
 
 export const FeaturedAlbumCover: FC<FeaturedAlbumCoverProps> = ({ album }) => {
   const coverAlt = buildAlbumCoverAlt(album);
-  const coverSourceSet = buildPhotoSourceSet(album.cover);
+  const cover = toImageSource(album.cover, album.cover.aspect, featuredCoverSizes);
   const albumSlug = publicGallery.slugOf(album);
 
   return (
@@ -25,9 +24,7 @@ export const FeaturedAlbumCover: FC<FeaturedAlbumCoverProps> = ({ album }) => {
         alt={coverAlt}
         orientation={albumCoverOrientation}
         placeholderLabel={albumSlug}
-        source={album.cover.largeUrl}
-        sourceSet={coverSourceSet}
-        sizes={featuredCoverSizes}
+        image={cover}
         sx={{ height: '100%' }}
       />
     </Box>

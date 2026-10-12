@@ -1,3 +1,5 @@
+import type { KkImageSource } from '@furria/ui';
+import { toImageSource } from '@furria/ui';
 import type { Picture } from '@/lib/api/schemas';
 import { formatIsoDay } from '@/lib/membership-labels';
 import { toInitials } from './initials';
@@ -22,13 +24,13 @@ export interface KeyHolderEntry {
   personId: number;
   name: string;
   initials: string;
-  portrait: string | undefined;
+  portrait: KkImageSource | null;
   sinceValue: string;
 }
 
 export interface KeyVenueSummary {
   initials: string[];
-  portraits: (string | undefined)[];
+  portraits: (KkImageSource | null)[];
   holderCount: number;
   emptyLine: string | null;
 }
@@ -40,7 +42,7 @@ export const toKeyHolderEntries = (holdings: readonly KeyHolding[]): KeyHolderEn
     personId: holding.person.personId,
     name: toName(holding.person),
     initials: toInitials(holding.person.firstName, holding.person.lastName),
-    portrait: holding.person.portrait?.smallUrl,
+    portrait: toImageSource(holding.person.portrait ?? null, 'portrait'),
     sinceValue: formatIsoDay(holding.sinceOn),
   }));
 
@@ -51,7 +53,9 @@ export const toKeyVenueSummary = (holdings: readonly KeyHolding[]): KeyVenueSumm
 
   return {
     initials,
-    portraits: holdings.map((holding) => holding.person.portrait?.smallUrl),
+    portraits: holdings.map((holding) =>
+      toImageSource(holding.person.portrait ?? null, 'portrait'),
+    ),
     holderCount: initials.length,
     emptyLine: initials.length === 0 ? NO_KEY_HOLDER_LINE : null,
   };

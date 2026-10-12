@@ -18,7 +18,7 @@ import {
   tileLabelOf,
 } from '../upload/upload-copy';
 import type { UploadEntry } from '../upload/upload-queue';
-import { inCaptureOrder, tallyOf, targetsOf } from '../upload/upload-queue';
+import { inCaptureOrder, tallyOf } from '../upload/upload-queue';
 import type { UploadStatus } from '../upload/upload-status';
 import { uploadStatusOf } from '../upload/upload-status';
 import {
@@ -102,7 +102,7 @@ export const useGalleryUpload = (): GalleryUpload => {
   const albumId = album ?? null;
   const uploads = useUploads();
   const hub = useGalleryHubQuery();
-  const developed = useDevelopedItems(targetsOf(uploads.entries, albumId));
+  const developed = useDevelopedItems();
   const fileField = useRef<HTMLInputElement | null>(null);
   const folderField = useRef<HTMLInputElement | null>(null);
   const [dragDepth, setDragDepth] = useState(0);

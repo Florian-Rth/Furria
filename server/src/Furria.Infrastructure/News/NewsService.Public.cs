@@ -163,7 +163,7 @@ public sealed partial class NewsService
                 Width = item.Width ?? 0,
                 Height = item.Height ?? 0,
                 Caption = item.Caption,
-                Picture = PublicPictures.PhotoOf(item.Id),
+                Picture = PublicPictures.PhotoOf(item.Id, item.RenderedAt),
             })
             .ToListAsync(ct);
 

@@ -8,7 +8,7 @@ interface AnnouncementLineProps {
 
 export const AnnouncementLine: FC<AnnouncementLineProps> = ({ row }) => {
   const { line } = row;
-  const face = <KkAvatar initials={line.initials} source={line.portrait} size="small" />;
+  const face = <KkAvatar initials={line.initials} image={line.portrait} size="small" />;
 
   return (
     <KkDensePanel.Line

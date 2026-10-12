@@ -55,7 +55,7 @@ export const AlbumPage: FC<AlbumPageProps> = ({ album }) => {
           album={album}
           entries={photoEntries}
           index={viewer.index}
-          onStep={viewer.step}
+          onIndexChange={viewer.show}
           onClose={viewer.close}
         />
       </PageLayout.Body>

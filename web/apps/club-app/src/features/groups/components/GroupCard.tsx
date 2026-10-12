@@ -8,6 +8,7 @@ import {
   KkGroupToneField,
   KkMeta,
   kkTokens,
+  toImageSource,
   useKkSheetCommands,
 } from '@furria/ui';
 import type { FC } from 'react';
@@ -40,7 +41,9 @@ export const GroupCard: FC<GroupCardProps> = ({ group, sx }) => {
   const initials = group.memberPreview.map((person) =>
     toInitials(person.firstName, person.lastName),
   );
-  const portraits = group.memberPreview.map((person) => person.portrait?.smallUrl);
+  const portraits = group.memberPreview.map((person) =>
+    toImageSource(person.portrait ?? null, 'portrait'),
+  );
   const kindLabel = toGroupKindLabel(group.groupKindName);
 
   const kindEyebrow = kindLabel === null ? null : <KkEyebrow tone="muted">{kindLabel}</KkEyebrow>;

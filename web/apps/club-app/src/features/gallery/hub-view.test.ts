@@ -49,6 +49,7 @@ const inbox = (personId: number | null, latestUploadedAt: string): InboxSummary 
   photos: 1,
   videos: 0,
   latestUploadedAt,
+  samples: [],
 });
 
 describe('albumMarkOf', () => {

@@ -6,7 +6,9 @@ import Typography from '@mui/material/Typography';
 import type { TargetAndTransition, Transition } from 'motion/react';
 import { motion } from 'motion/react';
 import type { FC } from 'react';
+import type { KkImageSource } from '../image-source';
 import { focusRing } from '../internal/focus-ring';
+import { usePreloadImages } from '../internal/use-preload-images';
 import { useReducedMotion } from '../internal/use-reduced-motion';
 import { KkButton } from '../KkButton';
 import { KkConfettiBurst } from '../KkConfettiBurst';
@@ -17,8 +19,8 @@ import { KkIcon } from '../KkIcon';
 import { KkIconButton } from '../KkIconButton';
 import { KK_DARK_SCHEME_ATTRIBUTE } from '../theme';
 import { kkTokens } from '../tokens';
-import type { KkLightTableIntents } from './use-light-table-gestures';
-import { useLightTableGestures } from './use-light-table-gestures';
+import type { KkLightTableIntents } from './use-light-table-stage';
+import { useLightTableStage } from './use-light-table-stage';
 
 const { gallery } = kkTokens;
 const { cull } = gallery;
@@ -26,6 +28,15 @@ const darkScheme = { [KK_DARK_SCHEME_ATTRIBUTE]: '' };
 const MILLISECONDS = 1000;
 const STRIP_FRAME = 44;
 const SLOT_SHIFT = 33;
+const NEIGHBOUR_OFFSETS = [-1, 0, 1] as const;
+const SIDE_CLIP = 'inset(-100vh 0)';
+const SETTLED_SLIDE = { opacity: 1, x: 0 } as const;
+const PICTURE_SX = {
+  width: '100%',
+  height: '100%',
+  objectFit: 'contain',
+  display: 'block',
+} as const;
 
 const focusOnMount = (node: HTMLDivElement | null): void => {
   node?.focus();
@@ -34,10 +45,13 @@ const focusOnMount = (node: HTMLDivElement | null): void => {
 export interface KkLightTableFrame {
   id: string;
   label: string;
-  source: string;
+  image: KkImageSource;
 }
 
-export interface KkLightTableStripFrame extends KkLightTableFrame {
+export interface KkLightTableStripFrame {
+  id: string;
+  label: string;
+  thumb: string;
   verdict: 'open' | 'rejected' | 'filed';
   slot: number | null;
   current: boolean;
@@ -51,7 +65,7 @@ export interface KkLightTableTarget {
 
 export interface KkLightTableDeparture {
   key: number;
-  source: string;
+  image: KkImageSource;
   kind: 'reject' | 'file';
   slot: number;
   stamp: string;
@@ -85,6 +99,9 @@ interface KkLightTableProps extends KkLightTableIntents {
   position: string;
   hint: string;
   frame: KkLightTableFrame | null;
+  previous: KkLightTableFrame | null;
+  next: KkLightTableFrame | null;
+  preload: readonly KkImageSource[];
   departure: KkLightTableDeparture | null;
   strip: readonly KkLightTableStripFrame[];
   targets: readonly KkLightTableTarget[];
@@ -143,6 +160,9 @@ export const KkLightTable: FC<KkLightTableProps> = ({
   position,
   hint,
   frame,
+  previous,
+  next,
+  preload,
   departure,
   strip,
   targets,
@@ -158,11 +178,46 @@ export const KkLightTable: FC<KkLightTableProps> = ({
   ...intents
 }) => {
   const reducedMotion = useReducedMotion();
-  const gestures = useLightTableGestures(intents);
-  const entering = reducedMotion ? { opacity: 0 } : { opacity: 0, x: 36 };
-  const enterTransition = { duration: seconds(cull.nextMs, hurried), ease: 'easeOut' } as const;
+  const shownPrevious = frame === null ? null : previous;
+  const shownNext = frame === null ? null : next;
+  const stage = useLightTableStage({
+    frameId: frame?.id ?? null,
+    previousId: shownPrevious?.id ?? null,
+    nextId: shownNext?.id ?? null,
+    reducedMotion,
+    enterSeconds: seconds(cull.nextMs, hurried),
+    intents,
+  });
+  usePreloadImages(preload);
+  const slides = [shownPrevious, frame, shownNext].flatMap((slideFrame, slot) =>
+    slideFrame === null ? [] : [{ frame: slideFrame, offset: NEIGHBOUR_OFFSETS[slot] ?? 0 }],
+  );
+  const slideViews = slides.map((slide) => (
+    <motion.div
+      key={slide.frame.id}
+      aria-hidden={slide.offset === 0 ? undefined : true}
+      style={{
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        width: '100%',
+        left: `${slide.offset * 100}%`,
+        ...(slide.offset === 0 ? stage.arrival : SETTLED_SLIDE),
+      }}
+    >
+      <Box
+        component="img"
+        src={slide.frame.image.src}
+        srcSet={slide.frame.image.srcSet}
+        sizes={slide.frame.image.sizes}
+        alt={slide.frame.label}
+        draggable={false}
+        decoding="async"
+        sx={PICTURE_SX}
+      />
+    </motion.div>
+  ));
   const departing = departure === null ? null : departureMotion(departure, hurried, reducedMotion);
-  const dragStyle = { x: gestures.drag.x, y: gestures.drag.y * 0.6 };
   const rejectIntent = (): void => intents.onReject(false);
   const stripFrames = strip.map((item) => (
     <ButtonBase
@@ -183,8 +238,10 @@ export const KkLightTable: FC<KkLightTableProps> = ({
     >
       <Box
         component="img"
-        src={item.source}
+        src={item.thumb}
         alt=""
+        loading="lazy"
+        decoding="async"
         sx={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
       />
       {item.verdict === 'rejected' ? (
@@ -270,7 +327,7 @@ export const KkLightTable: FC<KkLightTableProps> = ({
       role="application"
       aria-label={labels.dialog}
       tabIndex={0}
-      onKeyDown={gestures.onKeyDown}
+      onKeyDown={stage.onKeyDown}
       {...darkScheme}
       data-kk-light-table
       sx={{
@@ -321,29 +378,15 @@ export const KkLightTable: FC<KkLightTableProps> = ({
         sx={{ px: 1.5, pt: 1.25, pb: 0.5 }}
       />
       <Box
-        onPointerDown={gestures.onPointerDown}
-        onPointerMove={gestures.onPointerMove}
-        onPointerUp={gestures.onPointerUp}
-        onPointerCancel={gestures.onPointerUp}
+        ref={stage.stageRef}
+        {...stage.handlers}
         sx={{ flex: 1, minHeight: 0, position: 'relative', touchAction: 'none', mx: 1 }}
       >
-        {frame === null ? null : (
-          <motion.div
-            key={frame.id}
-            initial={entering}
-            animate={{ opacity: 1, x: 0 }}
-            transition={enterTransition}
-            style={{ position: 'absolute', inset: 0, ...dragStyle }}
-          >
-            <Box
-              component="img"
-              src={frame.source}
-              alt={frame.label}
-              draggable={false}
-              sx={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
-            />
+        <Box sx={{ position: 'absolute', inset: 0, clipPath: SIDE_CLIP }}>
+          <motion.div style={{ position: 'absolute', inset: 0, x: stage.track, y: stage.pullY }}>
+            {slideViews}
           </motion.div>
-        )}
+        </Box>
         {departure === null || departing === null ? null : (
           <motion.div
             key={departure.key}
@@ -354,9 +397,11 @@ export const KkLightTable: FC<KkLightTableProps> = ({
           >
             <Box
               component="img"
-              src={departure.source}
+              src={departure.image.src}
+              srcSet={departure.image.srcSet}
+              sizes={departure.image.sizes}
               alt=""
-              sx={{ width: '100%', height: '100%', objectFit: 'contain', display: 'block' }}
+              sx={PICTURE_SX}
             />
             {departure.kind === 'reject' ? (
               <KkGreaseMark kind="cross" sx={{ position: 'absolute', inset: '18%' }} />

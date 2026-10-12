@@ -1,15 +1,17 @@
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
+import type { KkImageSource } from './image-source';
 import { KkCoverPicture } from './KkCoverPicture';
 import { KkIcon } from './KkIcon';
 
 const COVER_SIZE = 48;
+const COVER_SIZES = `${COVER_SIZE}px`;
 
 interface KkAlbumTieProps {
   title: string;
   line: string;
-  cover: string | null;
+  cover: KkImageSource | null;
 }
 
 export const KkAlbumTie: FC<KkAlbumTieProps> = ({ title, line, cover }) => {
@@ -17,7 +19,11 @@ export const KkAlbumTie: FC<KkAlbumTieProps> = ({ title, line, cover }) => {
     cover === null ? (
       <KkIcon name="gallery" size="small" />
     ) : (
-      <KkCoverPicture source={cover} alt="" sx={{ borderRadius: 0.5 }} />
+      <KkCoverPicture
+        image={{ ...cover, sizes: cover.sizes ?? COVER_SIZES }}
+        alt=""
+        sx={{ borderRadius: 0.5 }}
+      />
     );
 
   return (

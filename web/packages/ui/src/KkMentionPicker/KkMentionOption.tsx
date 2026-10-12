@@ -2,6 +2,7 @@ import ButtonBase from '@mui/material/ButtonBase';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC, MouseEvent } from 'react';
+import type { KkImageSource } from '../image-source';
 import type { KkGroupTone } from '../internal/group-tone';
 import { KkAvatar } from '../KkAvatar';
 
@@ -12,7 +13,7 @@ export interface KkMentionChoice {
   line: string;
   initials: string;
   tone: KkGroupTone | null;
-  pictureSource: string | null;
+  image: KkImageSource | null;
 }
 
 const GROUP_FACE = { borderRadius: 0.5 } as const;
@@ -37,13 +38,12 @@ export const KkMentionOption: FC<KkMentionOptionProps> = ({
   const handleChoose = (): void => {
     onChoose(choice.id);
   };
-  const source = choice.pictureSource ?? undefined;
   const tone = choice.tone ?? undefined;
   const badge =
     choice.kind === 'person' ? (
-      <KkAvatar initials={choice.initials} source={source} />
+      <KkAvatar initials={choice.initials} image={choice.image} />
     ) : (
-      <KkAvatar initials={choice.initials} source={source} tone={tone} sx={GROUP_FACE} />
+      <KkAvatar initials={choice.initials} image={choice.image} tone={tone} sx={GROUP_FACE} />
     );
 
   return (

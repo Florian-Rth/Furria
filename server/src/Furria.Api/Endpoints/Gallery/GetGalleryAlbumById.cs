@@ -94,7 +94,7 @@ public sealed class GetGalleryAlbumById
             Uploader = item.Uploader is { } person ? ToDto(person) : null,
             SelectionPosition = item.SelectionPosition,
             Caption = item.Caption,
-            Urls = GalleryMediaUrls.Of(_signer, item.MediaItemId, item.Kind),
+            Urls = GalleryMediaUrls.Of(_signer, item.MediaItemId, item.Kind, item.RenderedAt),
         };
 
     private static GetGalleryAlbumByIdUploaderDto ToDto(GalleryUploader uploader) =>

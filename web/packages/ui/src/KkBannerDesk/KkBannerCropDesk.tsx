@@ -2,14 +2,12 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import type { KkCrop } from '../crop-frame';
+import type { KkCrop } from '../image-crop';
 import { KkButton } from '../KkButton';
 import { KkCropFrame } from '../KkCropFrame/KkCropFrame';
 import { KkIcon } from '../KkIcon';
 import { kkTokens } from '../tokens';
 import type { KkBannerDeskActions, KkBannerDeskLabels } from './banner-desk-types';
-
-const BANNER_ASPECT = 2;
 
 interface KkBannerCropDeskProps {
   id: string;
@@ -33,7 +31,7 @@ export const KkBannerCropDesk: FC<KkBannerCropDeskProps> = ({
       <KkCropFrame
         source={source}
         alt={alt}
-        aspect={BANNER_ASPECT}
+        aspect="banner"
         initialCrop={crop}
         labels={labels.cropFrame}
         onCropChange={actions.onCropChange}

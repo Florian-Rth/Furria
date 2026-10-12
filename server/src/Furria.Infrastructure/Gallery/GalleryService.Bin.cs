@@ -76,6 +76,7 @@ public sealed partial class GalleryService
                     Width = item.Width,
                     Height = item.Height,
                     CapturedAt = item.CapturedAt,
+                    RenderedAt = item.RenderedAt,
                 },
                 item.OriginalFileName,
                 item.AlbumId!.Value,

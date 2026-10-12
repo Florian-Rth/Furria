@@ -79,13 +79,24 @@ public sealed class PublicPictures
         );
 
     [Pure]
-    public static PictureDetails PhotoOf(int mediaItemId) =>
+    public static PictureDetails PhotoOf(int mediaItemId, DateTimeOffset? renderedAt) =>
         new()
         {
-            SmallUrl = UrlOf(PublicPictureKind.GalleryPhoto, mediaItemId, MediaRendition.Small),
-            MediumUrl = UrlOf(PublicPictureKind.GalleryPhoto, mediaItemId, MediaRendition.Medium),
-            LargeUrl = UrlOf(PublicPictureKind.GalleryPhoto, mediaItemId, MediaRendition.Large),
+            SmallUrl = PhotoUrlOf(mediaItemId, MediaRendition.Small, renderedAt),
+            MediumUrl = PhotoUrlOf(mediaItemId, MediaRendition.Medium, renderedAt),
+            LargeUrl = PhotoUrlOf(mediaItemId, MediaRendition.Large, renderedAt),
         };
+
+    [Pure]
+    private static string PhotoUrlOf(
+        int mediaItemId,
+        MediaRendition rendition,
+        DateTimeOffset? renderedAt
+    ) =>
+        MediaUrlVersions.Versioned(
+            UrlOf(PublicPictureKind.GalleryPhoto, mediaItemId, rendition),
+            renderedAt
+        );
 
     [Pure]
     private static string UrlOf(
