@@ -114,6 +114,40 @@ public sealed class GetPublicEventsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_CarryTheEventsPictureAtItsCut_When_TheEventHasOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildSessionAsync(ct);
+                var pictureId = await EventPictureSteps.RenderedAsync(
+                    _fixture,
+                    await ctx.Identity.ManagingLoginClientAsync(ct),
+                    ctx.Club.Events.IdOf("first-gala"),
+                    ct
+                );
+
+                var (_, result) = await ReadAsync();
+
+                var pictures = result.Events.ToDictionary(
+                    listed => listed.Title,
+                    listed => listed.Picture
+                );
+                var firstGala = pictures[FirstGala];
+                Assert.Equal((800, 400), (firstGala?.Width, firstGala?.Height));
+                Assert.StartsWith(
+                    $"/api/public/events/pictures/{pictureId}/small?v=",
+                    firstGala?.SmallUrl
+                );
+                Assert.Null(pictures[SecondGala]);
+            }
+        );
+    }
+
+    [Fact]
     public async Task Should_CarryTheFactsTheWebsiteShows_When_AnEventIsListed()
     {
         var ct = TestContext.Current.CancellationToken;

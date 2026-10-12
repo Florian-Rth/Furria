@@ -22,6 +22,7 @@ const event = (overrides: Partial<EventDetails>): EventDetails => ({
   cancelledAt: null,
   status: 'presaleScheduled',
   isOver: false,
+  picture: null,
   ...overrides,
 });
 

@@ -2,9 +2,11 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Calendar;
 using Furria.Api.Endpoints.Start;
+using Furria.Api.Tests.Events;
 using Furria.Application.Start;
 using Furria.Core.Club;
 using Furria.Core.Groups;
+using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -133,6 +135,71 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                 Assert.Equal(ctx.Groups.Groups.IdOf("kindergarde"), training.ViewerRuns.GroupId);
                 Assert.Equal(Coach, training.ViewerRuns.Function);
             }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CarryTheEventsPictureAndCancellation_When_AnEntryIsAnEvent()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            TuesdayEvening,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(
+                    builder =>
+                        builder
+                            .Identity(identity =>
+                                identity
+                                    .AddPerson("lena", "Lena", "Garde")
+                                    .AddAccount("lena")
+                                    .AddMembership("lena-member", "lena", JoinedIn2015)
+                            )
+                            .Club(club =>
+                                club.AddVenue("buergerhaus", "Bürgerhaus")
+                                    .AddEvent(
+                                        "gala",
+                                        "Prunksitzung",
+                                        InBerlin(1, 20, 19, 11),
+                                        "buergerhaus",
+                                        cancelledAt: TuesdayEvening.AddDays(-1)
+                                    )
+                            ),
+                    ct
+                );
+                var eventId = ctx.Club.Events.IdOf("gala");
+                var pictureId = await EventPictureSteps.RenderedAsync(
+                    _fixture,
+                    await ctx.Identity.ManagingLoginClientAsync(ct),
+                    eventId,
+                    ct
+                );
+                var client = await ctx.Identity.ClientForAsync("lena", ct);
+
+                var (_, start) = await client.GETAsync<GetStart, GetStartResponse>();
+
+                var gala = EntryOf(start, eventId);
+                Assert.NotNull(gala.Event);
+                Assert.True(gala.Event.IsCancelled);
+                Assert.StartsWith(
+                    _fixture.SignedMediaUrl(
+                        pictureId,
+                        MediaOwner.Event(eventId),
+                        MediaRendition.Medium
+                    ),
+                    gala.Event.Picture?.MediumUrl
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveTheEventOut_When_TheEntryIsNoEvent()
+    {
+        await OnTuesdayEveningAsync(
+            "lena",
+            (ctx, start) => Assert.Null(EntryOf(start, IdOf(ctx, "vereinssitzung")).Event)
         );
     }
 

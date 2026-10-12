@@ -3,6 +3,7 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Gallery;
 using Furria.Api.Endpoints.Groups;
 using Furria.Api.Endpoints.News;
+using Furria.Api.Tests.Events;
 using Furria.Api.Tests.News;
 using Furria.Core.Media;
 using Furria.Core.News;
@@ -172,6 +173,31 @@ public sealed class GetPublicPictureTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Theory]
+    [InlineData("ahead")]
+    [InlineData("cancelled")]
+    public async Task Should_ServeTheEventPicture_When_ItsEventIsShownPublicly(string eventAlias)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var pictureId = await EventPictureAsync(eventAlias, ct);
+
+        var response = await GetAsync(PublicPictureKind.EventPicture, pictureId, ct);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(MediumRendition, await response.Content.ReadAsByteArrayAsync(ct));
+    }
+
+    [Fact]
+    public async Task Should_AnswerNotFound_When_TheEventOfThePictureIsOver()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var pictureId = await EventPictureAsync("over", ct);
+
+        var response = await GetAsync(PublicPictureKind.EventPicture, pictureId, ct);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
     [Fact]
     public async Task Should_AnswerNotFound_When_ThePictureIsAskedUnderAnotherKind()
     {
@@ -265,6 +291,35 @@ public sealed class GetPublicPictureTests : IClassFixture<ApiTestFixture>
         );
         await _fixture.PlaceRenditionAsync(pictureId, MediaRendition.Medium, MediumRendition, ct);
         return (ctx, pictureId);
+    }
+
+    private async Task<int> EventPictureAsync(string eventAlias, CancellationToken ct)
+    {
+        var now = _fixture.TimeProvider.GetUtcNow();
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Club(club =>
+                    club.AddVenue("saal", "Bürgerhaus")
+                        .AddEvent("ahead", "Kinderball", now.AddDays(30), "saal")
+                        .AddEvent(
+                            "cancelled",
+                            "Prunksitzung",
+                            now.AddDays(40),
+                            "saal",
+                            cancelledAt: now.AddDays(-1)
+                        )
+                        .AddEvent("over", "Altweiber", now.AddDays(-30), "saal")
+                ),
+            ct
+        );
+        return await RenderedAsync(
+            await EventPictureSteps.UploadAsync(
+                await ctx.Identity.ManagingLoginClientAsync(ct),
+                ctx.Club.Events.IdOf(eventAlias),
+                ct
+            ),
+            ct
+        );
     }
 
     private async Task<SeededContext> GalleryAsync(CancellationToken ct)

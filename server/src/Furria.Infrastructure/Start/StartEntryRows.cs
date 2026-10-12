@@ -42,7 +42,14 @@ internal static class StartEntryRows
                 .ToList(),
             entry.Visibility,
             entry.AsksForResponse,
-            entry.Description
+            entry.Description,
+            entry.Event == null
+                ? null
+                : new StartEventRow(
+                    entry.Event.CancelledAt != null,
+                    entry.Event.PictureId,
+                    entry.Event.Picture == null ? null : entry.Event.Picture.RenderedAt
+                )
         );
 }
 
@@ -57,7 +64,8 @@ internal sealed record StartEntryRow(
     IReadOnlyList<StartGroupRow> ParticipatingGroups,
     CalendarEntryVisibility Visibility,
     bool AsksForResponse,
-    string? Description
+    string? Description,
+    StartEventRow? Event
 )
 {
     [Pure]
@@ -93,6 +101,12 @@ internal sealed record StartVenueRow(
     string Zip,
     string City,
     string? Hint
+);
+
+internal sealed record StartEventRow(
+    bool IsCancelled,
+    int? PictureId,
+    DateTimeOffset? PictureRenderedAt
 );
 
 internal sealed record StartGroupRow(int GroupId, string Name, GroupTone? Tone);

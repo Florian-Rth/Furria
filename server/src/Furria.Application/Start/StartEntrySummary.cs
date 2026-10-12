@@ -31,4 +31,6 @@ public sealed record StartEntrySummary
     public required StartAttendance? Attendance { get; init; }
 
     public required string? Description { get; init; }
+
+    public required StartEvent? Event { get; init; }
 }

@@ -94,6 +94,7 @@ describe('buildEventTieLine', () => {
     endsAt: null,
     venueName: 'Dorfgemeindehaus',
     isCancelled: false,
+    picture: null,
   };
 
   it.each<[string, NewsEvent, string]>([

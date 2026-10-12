@@ -12,6 +12,7 @@ const summary = (overrides: Partial<EventSummary>): EventSummary => ({
   presaleStartsAt: null,
   status: 'announced',
   isOver: false,
+  picture: null,
   ...overrides,
 });
 
@@ -47,6 +48,7 @@ describe('toAvailabilityState', () => {
     cancelledAt: null,
     status,
     isOver: false,
+    picture: null,
   });
 
   it.each<[EventDetails['status'], AvailabilityState]>([

@@ -11,6 +11,7 @@ export type { KkImageSource, KkPictureUrls } from './image-source';
 export { toImageSource } from './image-source';
 export type { KkGroupTone, KkGroupToneRecipe } from './internal/group-tone';
 export {
+  eventToneOf,
   GROUP_TONE_ON_FIELD_DARK,
   GROUP_TONE_ON_FIELD_LIGHT,
   GROUP_TONES,
@@ -73,6 +74,10 @@ export { KkDiagonalStamp } from './KkDiagonalStamp';
 export { KkDropZone } from './KkDropZone';
 export { KkEmptyState } from './KkEmptyState';
 export { KkErrorState } from './KkErrorState';
+export type { KkEventCoverSize } from './KkEventCover';
+export { KkEventCover } from './KkEventCover';
+export type { KkEventPictureScale } from './KkEventPicture/internal/ui/KkEventPictureStamp';
+export { KkEventPicture } from './KkEventPicture/KkEventPicture';
 export { KkEventTie } from './KkEventTie';
 export { KkExposureSweep } from './KkExposureSweep';
 export { KkEyebrow } from './KkEyebrow';

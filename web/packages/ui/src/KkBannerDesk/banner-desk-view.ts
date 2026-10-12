@@ -21,3 +21,6 @@ export const isBannerEditable = (state: KkBannerState): boolean =>
   state === 'ready' || state === 'cropping';
 
 export const uploadPercentOf = (progress: number): number => Math.round(progress * PERCENT);
+
+export const isBannerStamped = (state: KkBannerState, readOnly: boolean): boolean =>
+  state === 'ready' || state === 'developing' || (state === 'empty' && readOnly);

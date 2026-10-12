@@ -1,6 +1,7 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.News;
+using Furria.Api.Tests.Events;
 using Furria.Api.Tests.Media;
 using Furria.Core.Groups;
 using Furria.Core.News;
@@ -109,6 +110,31 @@ public sealed class GetPublicNewsPostBySlugTests : IClassFixture<ApiTestFixture>
         Assert.Equal(ctx.Club.Events.IdOf("ahead"), result.Event?.EventId);
         Assert.Equal(("Kinderball", "Bürgerhaus"), (result.Event?.Title, result.Event?.VenueName));
         Assert.False(result.Event?.IsCancelled);
+        Assert.Null(result.Event?.Picture);
+    }
+
+    [Fact]
+    public async Task Should_ShowTheEventsPictureOnTheEventTie_When_TheEventHasOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(Club(), ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var eventId = ctx.Club.Events.IdOf("ahead");
+        var pictureId = await EventPictureSteps.RenderedAsync(_fixture, client, eventId, ct);
+        await PublishAsync(
+            client,
+            ctx.News.Posts.IdOf("article"),
+            Article("Text") with
+            {
+                EventId = eventId,
+            }
+        );
+
+        var (_, result) = await GetAsync("festbericht");
+
+        var picture = result.Event?.Picture;
+        Assert.Equal((800, 400), (picture?.Width, picture?.Height));
+        Assert.StartsWith($"/api/public/events/pictures/{pictureId}/large?v=", picture?.LargeUrl);
     }
 
     [Fact]

@@ -1,10 +1,8 @@
-import { KkAnswerChoice, KkMeta, KkPanelSection, KkSheet, KkText } from '@furria/ui';
+import { KkAnswerChoice, KkEventCover, KkMeta, KkPanelSection, KkSheet, KkText } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { ATTENDANCE_LABELS } from '@/lib/calendar-copy';
-import { useEntrySheet } from '../hooks/use-entry-sheet';
-import type { StartBoard } from '../hooks/use-start-view';
-import type { StartEntry } from '../schemas';
+import type { EntrySheetView } from '../types';
 import { EntryGroupsSection } from './EntryGroupsSection';
 import { EntryVenueSection } from './EntryVenueSection';
 
@@ -13,13 +11,21 @@ const ANSWER_TITLE = 'Deine Antwort';
 const PRE_LINE = { whiteSpace: 'pre-line' } as const;
 
 interface EntrySheetBodyProps {
-  entry: StartEntry;
-  board: StartBoard;
+  sheet: EntrySheetView;
 }
 
-export const EntrySheetBody: FC<EntrySheetBodyProps> = ({ entry, board }) => {
-  const sheet = useEntrySheet(entry, board);
-  const { answer } = sheet;
+export const EntrySheetBody: FC<EntrySheetBodyProps> = ({ sheet }) => {
+  const { answer, cover } = sheet;
+
+  const opener =
+    cover === null ? null : (
+      <KkEventCover
+        image={cover.image}
+        tone={cover.tone}
+        cancelledLabel={cover.cancelledLabel}
+        size="opener"
+      />
+    );
 
   const running =
     sheet.runningNote === null ? null : <KkMeta tone="accent">{sheet.runningNote}</KkMeta>;
@@ -34,6 +40,8 @@ export const EntrySheetBody: FC<EntrySheetBodyProps> = ({ entry, board }) => {
         {sheet.description}
       </KkText>
     );
+
+  const details = sheet.details === null ? null : <KkMeta>{sheet.details}</KkMeta>;
 
   const choice =
     answer === null ? null : (
@@ -52,17 +60,19 @@ export const EntrySheetBody: FC<EntrySheetBodyProps> = ({ entry, board }) => {
   return (
     <KkSheet id={sheet.sheetId} title={sheet.title} closeLabel={CLOSE_LABEL}>
       <KkSheet.Body>
+        {opener}
         <Stack sx={{ gap: 0.5, minWidth: 0 }}>
           <KkMeta>{sheet.headline}</KkMeta>
           {running}
         </Stack>
         {description}
+        {details}
         {venue}
         <EntryGroupsSection owner={sheet.owner} participating={sheet.participating} />
         {runs}
         {choice}
       </KkSheet.Body>
-      <KkSheet.Actions primary={sheet.onward} />
+      <KkSheet.Actions primary={sheet.primary} secondary={sheet.secondary} />
     </KkSheet>
   );
 };

@@ -1,4 +1,5 @@
 using Furria.Core.Club;
+using Furria.Core.Events;
 using Furria.Core.Gallery;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
@@ -26,6 +27,8 @@ public sealed class MediaItem : ITimestamped
     public int? OwnerGroupId { get; set; }
 
     public int? OwnerNewsPostId { get; set; }
+
+    public int? OwnerEventId { get; set; }
 
     public MediaKind Kind { get; set; }
 
@@ -76,6 +79,8 @@ public sealed class MediaItem : ITimestamped
     public Group? OwnerGroup { get; set; }
 
     public NewsPost? OwnerNewsPost { get; set; }
+
+    public Event? OwnerEvent { get; set; }
 
     public Person? UploadedBy { get; set; }
 

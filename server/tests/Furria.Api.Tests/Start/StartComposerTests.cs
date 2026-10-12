@@ -681,6 +681,7 @@ public sealed class StartComposerTests
             ViewerRuns = null,
             Attendance = null,
             Description = null,
+            Event = null,
         };
 
     private static StartEntrySummary RunningSince(int calendarEntryId, DateTimeOffset startsAt) =>

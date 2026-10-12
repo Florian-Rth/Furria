@@ -32,6 +32,12 @@ const StartAttendanceSchema = z.object({
 });
 export type StartAttendance = z.infer<typeof StartAttendanceSchema>;
 
+const StartEventSchema = z.object({
+  isCancelled: z.boolean(),
+  picture: PictureSchema.nullable(),
+});
+export type StartEvent = z.infer<typeof StartEventSchema>;
+
 export const StartEntrySchema = z.object({
   calendarEntryId: z.int(),
   title: z.string(),
@@ -47,6 +53,7 @@ export const StartEntrySchema = z.object({
   viewerRuns: StartRunSchema.nullable(),
   attendance: StartAttendanceSchema.nullable(),
   description: z.string().nullable(),
+  event: StartEventSchema.nullable(),
 });
 export type StartEntry = z.infer<typeof StartEntrySchema>;
 

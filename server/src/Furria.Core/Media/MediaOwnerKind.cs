@@ -7,4 +7,5 @@ public enum MediaOwnerKind
     Gallery = 3,
     NewsPost = 4,
     Website = 5,
+    Event = 6,
 }

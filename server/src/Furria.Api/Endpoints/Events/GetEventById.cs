@@ -1,6 +1,7 @@
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
+using Furria.Api.Media;
 using Furria.Application.Authorization;
 using Furria.Application.Events;
 using Furria.Core.Events;
@@ -54,6 +55,7 @@ public sealed class GetEventById : Endpoint<GetEventByIdRequest, GetEventByIdRes
             CancelledAt = details.CancelledAt,
             Status = details.Status,
             IsOver = details.IsOver,
+            Picture = PictureEditingDto.From(details.Picture),
         };
 }
 
@@ -104,4 +106,6 @@ public sealed record GetEventByIdResponse
     public required EventSalesStatus Status { get; init; }
 
     public required bool IsOver { get; init; }
+
+    public required PictureEditingDto? Picture { get; init; }
 }

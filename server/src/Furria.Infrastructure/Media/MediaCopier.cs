@@ -80,6 +80,7 @@ public sealed class MediaCopier
             StorageKey = Guid.NewGuid(),
             OwnerKind = owner.Kind,
             OwnerNewsPostId = owner.Kind == MediaOwnerKind.NewsPost ? owner.Id : null,
+            OwnerEventId = owner.Kind == MediaOwnerKind.Event ? owner.Id : null,
             Kind = MediaKind.Photo,
             State = MediaItemState.Processing,
             OriginalFileName = source.OriginalFileName,

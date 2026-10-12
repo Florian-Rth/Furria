@@ -14,6 +14,7 @@ const evening = (eventId: number, startsAt: string, status: SalesStatus): Event 
   priceCents: null,
   presaleStartsAt: null,
   status,
+  picture: null,
 });
 
 describe('selectTeaserEvents', () => {

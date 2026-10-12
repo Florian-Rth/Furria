@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
+using Furria.Api.Media;
 using Furria.Application.Authorization;
 using Furria.Application.Events;
 using Furria.Core.Events;
@@ -43,6 +44,7 @@ public sealed class GetEvents : EndpointWithoutRequest<GetEventsResponse>
             PresaleStartsAt = listed.PresaleStartsAt,
             Status = listed.Status,
             IsOver = listed.IsOver,
+            Picture = PictureDto.From(listed.Picture),
         };
 }
 
@@ -68,4 +70,6 @@ public sealed record EventSummaryDto
     public required EventSalesStatus Status { get; init; }
 
     public required bool IsOver { get; init; }
+
+    public required PictureDto? Picture { get; init; }
 }

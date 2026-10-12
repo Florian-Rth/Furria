@@ -99,6 +99,7 @@ interface KkFactRowProps extends PropsWithChildren {
   span: string;
   spanLabel?: string;
   meta?: string;
+  thumb?: ReactNode;
   tone?: KkFactRowTone;
   groupTone?: KkGroupTone | null;
   chip?: ReactNode;
@@ -107,6 +108,7 @@ interface KkFactRowProps extends PropsWithChildren {
   highlight?: boolean;
   landing?: string;
   component?: ElementType;
+  onSelect?: () => void;
   to?: string;
   params?: Record<string, string>;
   search?: KkLinkSearch;
@@ -118,6 +120,7 @@ export const KkFactRow: FC<KkFactRowProps> = ({
   span,
   spanLabel,
   meta,
+  thumb,
   tone = 'neutral',
   groupTone,
   chip,
@@ -126,20 +129,28 @@ export const KkFactRow: FC<KkFactRowProps> = ({
   highlight = false,
   landing,
   component,
+  onSelect,
   to,
   params,
   search,
   sx,
   children,
 }) => {
-  const interactive = component !== undefined;
-  const bodyComponent = component ?? 'div';
-  const routeProps = interactive ? { to, params, search } : {};
+  const isLink = component !== undefined;
+  const isButton = !isLink && onSelect !== undefined;
+  const interactive = isLink || isButton;
+  const bodyComponent = component ?? (isButton ? 'button' : 'div');
+  const linkProps = isLink ? { to, params, search } : {};
+  const buttonProps = isButton ? { type: 'button', onClick: onSelect } : {};
   const highlightProps = highlightMark(highlight);
   const metaLine = meta === undefined ? null : <KkMeta>{meta}</KkMeta>;
   const chipSlot =
     chip === undefined || chip === null ? null : (
       <Box sx={{ display: 'inline-flex', flexShrink: 0 }}>{chip}</Box>
+    );
+  const thumbSlot =
+    thumb === undefined || thumb === null ? null : (
+      <Box sx={{ display: 'inline-flex', alignSelf: 'center', flexShrink: 0 }}>{thumb}</Box>
     );
   const titleColor = dimmed ? 'text.secondary' : 'text.primary';
   const barOpacity = dimmed ? kkTokens.opacity.dimmed : 1;
@@ -244,6 +255,7 @@ export const KkFactRow: FC<KkFactRowProps> = ({
         aria-hidden
         sx={(theme) => ({ ...barShape, opacity: barOpacity, ...toneBar[tone](theme) })}
       />
+      {thumbSlot}
       <Stack sx={{ flexGrow: 1, flexBasis: 0, minWidth: 0, alignSelf: 'center', gap: 0.375 }}>
         <Stack
           direction="row"
@@ -301,7 +313,8 @@ export const KkFactRow: FC<KkFactRowProps> = ({
       {groupEdge}
       <Stack
         component={bodyComponent}
-        {...routeProps}
+        {...linkProps}
+        {...buttonProps}
         data-kk-fact-row-body
         sx={(theme) => ({
           flexGrow: 1,

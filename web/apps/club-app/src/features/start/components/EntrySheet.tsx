@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import { useEntryPeek } from '../hooks/use-entry-sheet';
 import type { StartBoard } from '../hooks/use-start-view';
-import { EntrySheetBody } from './EntrySheetBody';
+import { StartEntrySheet } from './StartEntrySheet';
 
 interface EntrySheetProps {
   board: StartBoard;
@@ -14,5 +14,5 @@ export const EntrySheet: FC<EntrySheetProps> = ({ board }) => {
     return null;
   }
 
-  return <EntrySheetBody key={entry.calendarEntryId} entry={entry} board={board} />;
+  return <StartEntrySheet key={entry.calendarEntryId} entry={entry} board={board} />;
 };

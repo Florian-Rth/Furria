@@ -22,6 +22,7 @@ export interface EventJsonLd {
   '@context': typeof SCHEMA_ORG;
   '@type': 'Event';
   name: string;
+  image?: string[];
   startDate: string;
   doorTime?: string;
   eventStatus: string;
@@ -66,6 +67,7 @@ export const buildEventJsonLd = (event: Event): EventJsonLd => {
     '@context': SCHEMA_ORG,
     '@type': 'Event',
     name: event.title,
+    ...(event.picture === null ? {} : { image: [event.picture.largeUrl] }),
     startDate: formatBerlinIsoWithOffset(event.startsAt),
     ...(event.doorsOpenAt === null
       ? {}
