@@ -18,7 +18,7 @@ public sealed class DeleteToDoSeen : Endpoint<DeleteToDoSeenRequest>
     public override void Configure()
     {
         Delete("to-dos/{kind}/seen");
-        Definition.RequireAnyPermission(ToDoKeys.All);
+        Definition.RequireAnyPermission(ToDoKeys.Openers);
     }
 
     public override async Task HandleAsync(DeleteToDoSeenRequest req, CancellationToken ct)

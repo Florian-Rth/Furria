@@ -1,9 +1,9 @@
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
+using Furria.Api.Results;
 using Furria.Application.Gallery;
 using Furria.Core.Media;
-using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Media;
 
@@ -12,17 +12,11 @@ namespace Furria.Api.Endpoints.Gallery;
 public sealed class GetGalleryInbox : Endpoint<GetGalleryInboxRequest, GetGalleryInboxResponse>
 {
     private readonly GalleryService _galleryService;
-    private readonly PermissionAuthorizer _authorizer;
     private readonly MediaUrlSigner _signer;
 
-    public GetGalleryInbox(
-        GalleryService galleryService,
-        PermissionAuthorizer authorizer,
-        MediaUrlSigner signer
-    )
+    public GetGalleryInbox(GalleryService galleryService, MediaUrlSigner signer)
     {
         _galleryService = galleryService;
-        _authorizer = authorizer;
         _signer = signer;
     }
 
@@ -34,21 +28,29 @@ public sealed class GetGalleryInbox : Endpoint<GetGalleryInboxRequest, GetGaller
 
     public override async Task HandleAsync(GetGalleryInboxRequest req, CancellationToken ct)
     {
-        var actor = await _authorizer.GalleryActorAsync(User.AccountId()!.Value, ct);
-        var uploaderPersonId = req.Ownerless ? null : req.UploaderPersonId ?? actor.PersonId;
-        if (!actor.MayManage && (uploaderPersonId is null || uploaderPersonId != actor.PersonId))
+        var items = await _galleryService.GetInboxItemsAsync(
+            ToQuery(User.AccountId()!.Value, req),
+            ct
+        );
+        if (!items.IsSuccess)
         {
-            await Send.ForbiddenAsync(ct);
+            await HttpContext.Response.SendFailureAsync(items.Error, ct);
             return;
         }
 
-        var items = await _galleryService.GetInboxItemsAsync(uploaderPersonId, ct);
-
         await Send.OkAsync(
-            new GetGalleryInboxResponse { Items = [.. items.Select(ToDto)] },
+            new GetGalleryInboxResponse { Items = [.. items.Value.Select(ToDto)] },
             cancellation: ct
         );
     }
+
+    private static GalleryInboxQuery ToQuery(int actorAccountId, GetGalleryInboxRequest req) =>
+        new()
+        {
+            ActorAccountId = actorAccountId,
+            UploaderPersonId = req.UploaderPersonId,
+            Ownerless = req.Ownerless,
+        };
 
     private GetGalleryInboxItemDto ToDto(GalleryItemSummary item) =>
         new()

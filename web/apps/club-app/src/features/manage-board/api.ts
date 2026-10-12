@@ -1,10 +1,10 @@
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { skipToken, useQuery } from '@tanstack/react-query';
-import { ME_QUERY_KEY } from '@/features/session';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toIsoDay } from '@/lib/day';
+import { queryKeys } from '@/lib/query/reads';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import {
   toImpliedRoleSavedMessage,
@@ -36,11 +36,6 @@ import type {
   CreatedBoardSeat,
   ImpliedRoleOptions,
 } from './schemas';
-
-export const BOARD_QUERY_KEY = ['manage', 'board'] as const;
-export const BOARD_ROLE_OPTIONS_QUERY_KEY = ['manage', 'board-role-options'] as const;
-
-const BOARD_SCOPE = [BOARD_QUERY_KEY, ME_QUERY_KEY] as const;
 
 export interface OfficeNameInput {
   officeName: string;
@@ -84,7 +79,7 @@ const applyPublication = (
 
 export const useBoardQuery = (): UseQueryResult<BoardResponse, Error> =>
   useQuery({
-    queryKey: BOARD_QUERY_KEY,
+    queryKey: queryKeys.board,
     queryFn: () => withFreshAccessToken(requestBoard),
   });
 
@@ -92,7 +87,7 @@ export const useImpliedRoleOptionsQuery = (
   enabled: boolean,
 ): UseQueryResult<ImpliedRoleOptions, Error> =>
   useQuery({
-    queryKey: BOARD_ROLE_OPTIONS_QUERY_KEY,
+    queryKey: queryKeys.boardRoleOptions,
     queryFn: enabled ? () => withFreshAccessToken(requestImpliedRoleOptions) : skipToken,
   });
 
@@ -103,7 +98,7 @@ export const useCreateBoardOfficeMutation = (): UseMutationResult<
 > =>
   useApiMutation({
     request: requestCreateBoardOffice,
-    invalidates: BOARD_SCOPE,
+    changes: ['boardOffice'],
     notice: { success: (form) => toOfficeCreatedMessage(form.name) },
   });
 
@@ -113,7 +108,7 @@ export const useUpdateBoardOfficeMutation = (
   useApiMutation({
     request: (form: BoardOfficeForm, accessToken) =>
       requestUpdateBoardOffice(boardOfficeId, form, accessToken),
-    invalidates: BOARD_SCOPE,
+    changes: ['boardOffice'],
     notice: { success: (form) => toOfficeSavedMessage(form.name) },
   });
 
@@ -123,7 +118,7 @@ export const useArchiveBoardOfficeMutation = (
   useApiMutation({
     request: (_input: OfficeNameInput, accessToken) =>
       requestArchiveBoardOffice(boardOfficeId, accessToken),
-    invalidates: BOARD_SCOPE,
+    changes: ['boardOffice'],
     notice: { success: (input) => toOfficeArchivedMessage(input.officeName) },
   });
 
@@ -133,7 +128,7 @@ export const useRestoreBoardOfficeMutation = (
   useApiMutation({
     request: (_input: OfficeNameInput, accessToken) =>
       requestRestoreBoardOffice(boardOfficeId, accessToken),
-    invalidates: BOARD_SCOPE,
+    changes: ['boardOffice'],
     notice: { success: (input) => toOfficeRestoredMessage(input.officeName) },
   });
 
@@ -143,7 +138,7 @@ export const useSetImpliedRoleMutation = (
   useApiMutation({
     request: (input: SetImpliedRoleInput, accessToken) =>
       requestSetImpliedRole(boardOfficeId, input.impliedRoleId, accessToken),
-    invalidates: BOARD_SCOPE,
+    changes: ['boardOffice'],
     notice: {
       success: (input) => toImpliedRoleSavedMessage(input.officeName, input.impliedRoleName),
       failure: toWriteErrorMessage,
@@ -157,11 +152,11 @@ export const useSetOfficePublicationMutation = (
     request: (input: SetOfficePublicationInput, accessToken) =>
       requestSetOfficePublication(boardOfficeId, input.isPublic, accessToken),
     optimistic: [
-      optimisticPatch(BOARD_QUERY_KEY, (current: BoardResponse | undefined, input) =>
+      optimisticPatch(queryKeys.board, (current: BoardResponse | undefined, input) =>
         applyPublication(current, boardOfficeId, input.isPublic),
       ),
     ],
-    invalidates: [],
+    changes: ['boardOffice'],
     notice: {
       success: (input) => toPublicationSavedMessage(input.officeName, input.isPublic),
       failure: toPublicationErrorMessage,
@@ -179,7 +174,7 @@ export const useOpenBoardSeatMutation = (
         { personId: input.personId, sinceOn: input.sinceOn },
         accessToken,
       ),
-    invalidates: BOARD_SCOPE,
+    changes: ['boardSeat'],
     notice: {
       success: (input) =>
         toSeatOpenedMessage(input.personName, officeName, input.sinceOn, toIsoDay(new Date())),
@@ -196,7 +191,7 @@ export const useEndBoardSeatMutation = (
         { boardSeatId: input.boardSeatId, endedOn: input.endedOn },
         accessToken,
       ),
-    invalidates: BOARD_SCOPE,
+    changes: ['boardSeat'],
     notice: {
       success: (input) => toSeatEndedMessage(input.personName, input.endedOn, toIsoDay(new Date())),
     },

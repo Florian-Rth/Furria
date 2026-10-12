@@ -1,5 +1,5 @@
 import type { KkChipTone, KkConfirmFact, KkFilterOption, KkSelectOption } from '@furria/ui';
-import { CALENDAR_KIND_LABELS, toAttendanceSavedMessage } from '@/lib/calendar-copy';
+import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
 import { toIsoDayLabel, toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
 import {
   EVENT_STATUS_TONES,
@@ -41,7 +41,7 @@ const ONE_ENTRY = 1;
 const ONE_ENTRY_LABEL = 'Ein Termin';
 const MANY_ENTRIES_LABEL = 'Termine';
 
-export { CALENDAR_KIND_LABELS, toAttendanceSavedMessage };
+export { CALENDAR_KIND_LABELS };
 
 const CLUB_OWNER_LABEL = 'Verein';
 const CLUB_REACH_LABEL = 'für alle im Verein';

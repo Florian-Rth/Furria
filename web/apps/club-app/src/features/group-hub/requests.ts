@@ -12,7 +12,6 @@ import type {
   EndGroupMembershipForm,
   GeneratedTrainings,
   GroupAdministrationForm,
-  GroupAttendanceAnswer,
   GroupCalendarResponse,
   GroupHub,
   GroupInfoForm,
@@ -44,18 +43,6 @@ export const requestGroupCalendar = (
 ): Promise<GroupCalendarResponse> =>
   apiFetch(`/api/groups/${groupId}/calendar?from=${window.from}&to=${window.to}`, {
     schema: GroupCalendarResponseSchema,
-    accessToken,
-  });
-
-export const requestGroupAttendanceResponse = (
-  calendarEntryId: number,
-  answer: GroupAttendanceAnswer,
-  accessToken: string,
-): Promise<void> =>
-  apiFetch(`/api/calendar/${calendarEntryId}/response`, {
-    method: 'POST',
-    body: { answer },
-    schema: NoContentSchema,
     accessToken,
   });
 

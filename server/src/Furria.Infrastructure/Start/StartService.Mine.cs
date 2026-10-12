@@ -3,6 +3,8 @@ using Furria.Application.Identity;
 using Furria.Application.Start;
 using Furria.Core.Club;
 using Furria.Core.Groups;
+using Furria.Core.Ties;
+using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Start;
@@ -169,20 +171,6 @@ public sealed partial class StartService
             : Anniversary.DayIn(origin, today.Year - 1);
     }
 
-    [Pure]
-    private static MembershipChainDetails ChainOf(
-        IReadOnlyList<MembershipRow> rows,
-        DateOnly today
-    ) =>
-        MembershipChainDetails.Of(
-            [
-                .. rows.Select(row =>
-                    MembershipDetails.Of(row.Id, row.StartedOn, row.EndedOn, row.Pauses, today)
-                ),
-            ],
-            today
-        );
-
     private async Task<IReadOnlyList<StartMineSummary>> MineCandidatesAsync(
         Viewer viewer,
         CancellationToken ct
@@ -203,7 +191,10 @@ public sealed partial class StartService
             .. (await NewKeysAsync(viewer, ct)).Select(row => NewTieOf(StartMineKind.NewKey, row)),
             .. (await ContactChangesByOthersAsync(viewer, ct)).Select(ContactChangeOf),
             .. MembershipNewsOf(
-                ChainOf(await MembershipRowsAsync(viewer.PersonId, ct), viewer.Moment.Today),
+                MembershipPeriodRow.ChainOf(
+                    await MembershipRowsAsync(viewer.PersonId, ct),
+                    viewer.Moment.Today
+                ),
                 viewer.Moment.Today
             ),
         ];
@@ -216,13 +207,8 @@ public sealed partial class StartService
 
         return _dbContext
             .RoleHoldings.AsNoTracking()
-            .Where(holding =>
-                holding.PersonId == personId
-                && holding.SinceOn >= freshSince
-                && holding.SinceOn <= today
-                && (holding.UntilOn == null || holding.UntilOn >= today)
-                && holding.Role!.ArchivedOn == null
-            )
+            .Where(Conferring.RoleHoldings(today))
+            .Where(holding => holding.PersonId == personId && holding.SinceOn >= freshSince)
             .Select(holding => new NewTieRow(
                 holding.RoleId,
                 holding.SinceOn,
@@ -242,13 +228,8 @@ public sealed partial class StartService
 
         return _dbContext
             .BoardSeats.AsNoTracking()
-            .Where(seat =>
-                seat.PersonId == personId
-                && seat.SinceOn >= freshSince
-                && seat.SinceOn <= today
-                && (seat.UntilOn == null || seat.UntilOn >= today)
-                && seat.BoardOffice!.ArchivedOn == null
-            )
+            .Where(Conferring.BoardSeats(today))
+            .Where(seat => seat.PersonId == personId && seat.SinceOn >= freshSince)
             .Select(seat => new NewTieRow(
                 seat.BoardOfficeId,
                 seat.SinceOn,
@@ -274,13 +255,8 @@ public sealed partial class StartService
 
         return _dbContext
             .GroupAdmins.AsNoTracking()
-            .Where(tenure =>
-                tenure.PersonId == personId
-                && tenure.SinceOn >= freshSince
-                && tenure.SinceOn <= today
-                && (tenure.UntilOn == null || tenure.UntilOn >= today)
-                && tenure.Group!.ArchivedOn == null
-            )
+            .Where(Conferring.GroupAdmins(today))
+            .Where(tenure => tenure.PersonId == personId && tenure.SinceOn >= freshSince)
             .Select(tenure => new NewTieRow(
                 tenure.GroupId,
                 tenure.SinceOn,
@@ -300,12 +276,9 @@ public sealed partial class StartService
 
         return _dbContext
             .GroupMemberships.AsNoTracking()
+            .Where(Conferring.GroupMemberships(today))
             .Where(membership =>
-                membership.PersonId == personId
-                && membership.JoinedOn >= freshSince
-                && membership.JoinedOn <= today
-                && (membership.LeftOn == null || membership.LeftOn >= today)
-                && membership.Group!.ArchivedOn == null
+                membership.PersonId == personId && membership.JoinedOn >= freshSince
             )
             .Select(membership => new NewTieRow(
                 membership.GroupId,
@@ -326,13 +299,8 @@ public sealed partial class StartService
 
         return _dbContext
             .KeyHoldings.AsNoTracking()
-            .Where(holding =>
-                holding.PersonId == personId
-                && holding.SinceOn >= freshSince
-                && holding.SinceOn <= today
-                && (holding.UntilOn == null || holding.UntilOn >= today)
-                && holding.Venue!.ArchivedOn == null
-            )
+            .Where(Conferring.KeyHoldings(today))
+            .Where(holding => holding.PersonId == personId && holding.SinceOn >= freshSince)
             .Select(holding => new NewTieRow(
                 holding.VenueId,
                 holding.SinceOn,
@@ -378,23 +346,14 @@ public sealed partial class StartService
             .ToListAsync(ct);
     }
 
-    private Task<List<MembershipRow>> MembershipRowsAsync(int personId, CancellationToken ct) =>
+    private Task<List<MembershipPeriodRow>> MembershipRowsAsync(
+        int personId,
+        CancellationToken ct
+    ) =>
         _dbContext
             .Memberships.AsNoTracking()
             .Where(membership => membership.PersonId == personId)
-            .Select(membership => new MembershipRow(
-                membership.Id,
-                membership.StartedOn,
-                membership.EndedOn,
-                membership
-                    .Pauses.Select(pause => new MembershipPauseDetails
-                    {
-                        PauseId = pause.Id,
-                        FirstSessionYear = pause.FirstSessionYear,
-                        LastSessionYear = pause.LastSessionYear,
-                    })
-                    .ToList()
-            ))
+            .Select(MembershipPeriodRow.Projection)
             .ToListAsync(ct);
 
     private sealed record NewTieRow(
@@ -407,11 +366,4 @@ public sealed partial class StartService
     );
 
     private sealed record ContactChangeRow(DateTimeOffset ChangedAt, StartPersonRef? ChangedBy);
-
-    private sealed record MembershipRow(
-        int Id,
-        DateOnly StartedOn,
-        DateOnly? EndedOn,
-        IReadOnlyList<MembershipPauseDetails> Pauses
-    );
 }

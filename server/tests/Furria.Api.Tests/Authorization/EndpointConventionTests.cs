@@ -9,6 +9,7 @@ using System.Text.Json.Serialization;
 using FastEndpoints;
 using Furria.Api.Authorization;
 using Furria.Application.Authorization;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Routing;
@@ -23,6 +24,7 @@ public sealed class EndpointConventionTests : IClassFixture<ApiTestFixture>
     private const string HarnessUrlCacheRoute = "_test_url_cache_";
     private const string AnyRouteValue = "1";
     private const string NonPositiveId = "0";
+    private const string AllPowerfulAlias = "vorstand";
 
     private static readonly string UnknownId = int.MaxValue.ToString(CultureInfo.InvariantCulture);
 
@@ -50,6 +52,27 @@ public sealed class EndpointConventionTests : IClassFixture<ApiTestFixture>
 
         var answered = await AnswersAsync(
             anonymous,
+            Registered().Where(endpoint => !IsAnonymous(endpoint)),
+            _ => AnyRouteValue,
+            ct
+        );
+
+        AssertAllAnswered(HttpStatusCode.Unauthorized, answered);
+    }
+
+    [Fact]
+    public async Task Should_ReturnUnauthorized_When_AnEndpointThatIsNotAnonymousIsCalledByAnAccountDisabledAfterItsTokenWasIssued()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await AllPowerfulContextAsync(ct);
+        var disabled = await ctx.Identity.ClientForAsync(AllPowerfulAlias, ct);
+        await _fixture.DisableAccountDirectlyAsync(
+            ctx.Identity.Accounts.IdOf(AllPowerfulAlias),
+            ct
+        );
+
+        var answered = await AnswersAsync(
+            disabled,
             Registered().Where(endpoint => !IsAnonymous(endpoint)),
             _ => AnyRouteValue,
             ct
@@ -153,28 +176,31 @@ public sealed class EndpointConventionTests : IClassFixture<ApiTestFixture>
 
     private async Task<HttpClient> AllPowerfulCallerAsync(CancellationToken ct)
     {
-        var ctx = await _fixture.BuildAsync(
+        var ctx = await AllPowerfulContextAsync(ct);
+
+        return await ctx.Identity.ClientForAsync(AllPowerfulAlias, ct);
+    }
+
+    private Task<SeededContext> AllPowerfulContextAsync(CancellationToken ct) =>
+        _fixture.BuildAsync(
             builder =>
                 builder
                     .Identity(identity =>
                         identity
-                            .AddAccount("vorstand")
-                            .AddMembership("vorstand-mitglied", "vorstand")
+                            .AddAccount(AllPowerfulAlias)
+                            .AddMembership("vorstand-mitglied", AllPowerfulAlias)
                     )
                     .Roles(roles =>
                         roles.AddRoleWithHolder(
                             "alles",
                             "vorstand-alles",
                             "Alles",
-                            "vorstand",
+                            AllPowerfulAlias,
                             [.. FurriaPermissions.All]
                         )
                     ),
             ct
         );
-
-        return await ctx.Identity.ClientForAsync("vorstand", ct);
-    }
 
     private IEnumerable<RouteEndpoint> Registered() =>
         _fixture

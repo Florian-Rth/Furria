@@ -1,4 +1,4 @@
-import '@/lib/zod-without-eval';
+import '@furria/api-client/zod-without-eval';
 import { createBrowserHistory, createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';

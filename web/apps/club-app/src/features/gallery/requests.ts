@@ -1,4 +1,4 @@
-import type { JsonBody } from '@/lib/api/api-fetch';
+import type { JsonBody } from '@furria/api-client';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type {

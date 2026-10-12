@@ -1,9 +1,4 @@
-import {
-  RequestBlockedError,
-  RequestFailedError,
-  ServerFailureError,
-  UnauthorizedError,
-} from '@/lib/api/api-error';
+import { apiFailureOf } from '@furria/api-client';
 
 export type PasskeyFailureKind =
   | 'cancelled'
@@ -16,7 +11,6 @@ export type PasskeyFailureKind =
 
 const CANCELLATION_NAMES: readonly string[] = ['NotAllowedError', 'AbortError'];
 const ALREADY_REGISTERED_NAME = 'InvalidStateError';
-const TOO_MANY_REQUESTS_STATUS = 429;
 
 const isDomException = (error: Error): error is DOMException => error instanceof DOMException;
 
@@ -27,17 +21,17 @@ export const toPasskeyFailureKind = (error: Error): PasskeyFailureKind => {
   if (isDomException(error) && error.name === ALREADY_REGISTERED_NAME) {
     return 'already-on-device';
   }
-  if (error instanceof UnauthorizedError) {
-    return 'rejected';
+
+  switch (apiFailureOf(error)?.kind) {
+    case 'unauthorized':
+      return 'rejected';
+    case 'refused':
+      return 'refused';
+    case 'throttled':
+      return 'throttled';
+    case 'unreachable':
+      return 'unreachable';
+    default:
+      return 'unexpected';
   }
-  if (error instanceof RequestFailedError) {
-    return 'refused';
-  }
-  if (error instanceof ServerFailureError && error.status === TOO_MANY_REQUESTS_STATUS) {
-    return 'throttled';
-  }
-  if (error instanceof RequestBlockedError) {
-    return 'unreachable';
-  }
-  return 'unexpected';
 };

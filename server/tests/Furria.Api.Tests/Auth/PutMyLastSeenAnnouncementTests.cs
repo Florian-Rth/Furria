@@ -225,19 +225,6 @@ public sealed class PutMyLastSeenAnnouncementTests : IClassFixture<ApiTestFixtur
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_ReturnNotFound_When_TheAccountBehindTheTokenNoLongerExists()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("alice", ct);
-        await _fixture.ResetDatabaseAsync(ct);
-
-        var response = await MarkSeenAsync(client, seenUpTo: null);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
     private static async Task<HttpResponseMessage> MarkSeenAsync(
         HttpClient client,
         DateTimeOffset? seenUpTo

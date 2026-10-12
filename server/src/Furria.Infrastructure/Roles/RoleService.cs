@@ -5,6 +5,7 @@ using Furria.Application.Roles;
 using Furria.Core.Club;
 using Furria.Core.Identity;
 using Furria.Core.Roles;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
@@ -337,9 +338,10 @@ public sealed class RoleService
 
     private IQueryable<Person> PeopleWithUnendedHoldingsOf(int roleId, DateOnly today) =>
         _dbContext.People.Where(person =>
-            person.RoleHoldings.Any(holding =>
-                holding.RoleId == roleId && (holding.UntilOn == null || holding.UntilOn >= today)
-            )
+            person
+                .RoleHoldings.AsQueryable()
+                .Where(RunningOrAhead.RoleHoldings(today))
+                .Any(holding => holding.RoleId == roleId)
         );
 
     private Task<List<PeriodRow>> ChainOfAsync(int roleId, int personId, CancellationToken ct) =>
@@ -456,18 +458,15 @@ public sealed class RoleService
     private static IEnumerable<HoldingRow> RunningRows(
         IReadOnlyList<HoldingRow> rows,
         DateOnly today
-    ) => rows.Where(row => IsRunningOn(row, today));
+    ) => rows.Where(row => row.Period.IsRunningOn(today));
 
     private static IEnumerable<HoldingRow> EndedRows(
         IReadOnlyList<HoldingRow> rows,
         DateOnly today
     ) =>
-        rows.Where(row => row.UntilOn is { } untilOn && untilOn < today)
+        rows.Where(row => row.Period.HasEndedBefore(today))
             .OrderByDescending(row => row.SinceOn)
             .ThenByDescending(row => row.RowId);
-
-    private static bool IsRunningOn(HoldingRow row, DateOnly today) =>
-        new DatePeriod { Start = row.SinceOn, End = row.UntilOn }.IsRunningOn(today);
 
     private static IReadOnlyDictionary<int, DateOnly> ChainStarts(IReadOnlyList<HoldingRow> rows) =>
         rows.GroupBy(row => row.PersonId)
@@ -489,7 +488,11 @@ public sealed class RoleService
         string LastName,
         DateOnly SinceOn,
         DateOnly? UntilOn
-    );
+    )
+    {
+        [Pure]
+        public DatePeriod Period => new() { Start = SinceOn, End = UntilOn };
+    }
 
     private sealed record RoleState(DateOnly? ArchivedOn);
 

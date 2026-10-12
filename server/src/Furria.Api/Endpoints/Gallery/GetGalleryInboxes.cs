@@ -2,7 +2,6 @@ using FastEndpoints;
 using Furria.Api.Authorization;
 using Furria.Application.Gallery;
 using Furria.Core.Media;
-using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Media;
 
@@ -11,17 +10,11 @@ namespace Furria.Api.Endpoints.Gallery;
 public sealed class GetGalleryInboxes : EndpointWithoutRequest<GetGalleryInboxesResponse>
 {
     private readonly GalleryService _galleryService;
-    private readonly PermissionAuthorizer _authorizer;
     private readonly MediaUrlSigner _signer;
 
-    public GetGalleryInboxes(
-        GalleryService galleryService,
-        PermissionAuthorizer authorizer,
-        MediaUrlSigner signer
-    )
+    public GetGalleryInboxes(GalleryService galleryService, MediaUrlSigner signer)
     {
         _galleryService = galleryService;
-        _authorizer = authorizer;
         _signer = signer;
     }
 
@@ -33,8 +26,7 @@ public sealed class GetGalleryInboxes : EndpointWithoutRequest<GetGalleryInboxes
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var actor = await _authorizer.GalleryActorAsync(User.AccountId()!.Value, ct);
-        var inboxes = await _galleryService.GetInboxesAsync(actor, ct);
+        var inboxes = await _galleryService.GetInboxesAsync(User.AccountId()!.Value, ct);
 
         await Send.OkAsync(
             new GetGalleryInboxesResponse { Inboxes = [.. inboxes.Select(ToDto)] },

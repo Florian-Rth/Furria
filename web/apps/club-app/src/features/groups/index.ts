@@ -1,4 +1,4 @@
-export { GROUPS_QUERY_KEY, useGroupsQuery } from './api';
+export { useGroupsQuery } from './api';
 export { GroupCardBody } from './components/GroupCardBody';
 export { GroupsPage } from './components/GroupsPage';
 export type { Anniversary, GroupTone, TrainingSlotFacts, Weekday } from './group-identity';

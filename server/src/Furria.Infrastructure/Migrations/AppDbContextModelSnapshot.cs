@@ -2698,6 +2698,27 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Furria.Infrastructure.Media.MediaFileTombstone", b =>
+                {
+                    b.Property<Guid>("StorageKey")
+                        .HasColumnType("uuid")
+                        .HasColumnName("storage_key");
+
+                    b.Property<DateTimeOffset>("BuriedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("buried_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("StorageKey")
+                        .HasName("pk_media_file_tombstone");
+
+                    b.HasIndex("BuriedAt")
+                        .HasDatabaseName("ix_media_file_tombstone_buried_at");
+
+                    b.ToTable("media_file_tombstone", (string)null);
+                });
+
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
                 {
                     b.Property<int>("Id")

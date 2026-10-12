@@ -4,7 +4,7 @@ import { apiFetch } from '@/lib/api/api-fetch';
 import { queryClient } from '@/lib/query-client';
 import type { DetailAddress } from './detail-address';
 import type { PublicSource } from './public-source';
-import { resolvePublicSource, shouldRetryPublicRead } from './public-source';
+import { resolvePublicSource } from './public-source';
 
 export interface PublicRead<TData> {
   key: readonly [string];
@@ -45,7 +45,7 @@ export const definePublicRead = <TData>({
   read,
 }: PublicReadConfig<TData>): PublicRead<TData> => {
   const queryKey = [key] as const;
-  const options = { queryKey, queryFn: read, retry: shouldRetryPublicRead };
+  const options = { queryKey, queryFn: read };
 
   return {
     key: queryKey,
@@ -86,6 +86,5 @@ export const definePublicDetailResource = <TResponse, TData, TDetail extends TIt
       queryKey: [config.key, detailKey],
       queryFn: (): Promise<TDetail> =>
         apiFetch(`${config.path}/${encodeURIComponent(detailKey)}`, { schema: detail.schema }),
-      retry: shouldRetryPublicRead,
     }),
 });

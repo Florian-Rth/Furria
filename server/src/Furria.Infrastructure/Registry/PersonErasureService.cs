@@ -5,7 +5,6 @@ using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Mail;
-using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +21,6 @@ public sealed class PersonErasureService
     private readonly UserManager<Account> _userManager;
     private readonly ReauthenticationService _reauthenticationService;
     private readonly MailOutbox _mailOutbox;
-    private readonly MediaRoot _mediaRoot;
     private readonly ILogger<PersonErasureService> _logger;
 
     public PersonErasureService(
@@ -30,7 +28,6 @@ public sealed class PersonErasureService
         UserManager<Account> userManager,
         ReauthenticationService reauthenticationService,
         MailOutbox mailOutbox,
-        MediaRoot mediaRoot,
         ILogger<PersonErasureService> logger
     )
     {
@@ -38,7 +35,6 @@ public sealed class PersonErasureService
         _userManager = userManager;
         _reauthenticationService = reauthenticationService;
         _mailOutbox = mailOutbox;
-        _mediaRoot = mediaRoot;
         _logger = logger;
     }
 
@@ -71,7 +67,6 @@ public sealed class PersonErasureService
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         await DropMailQueuedForAsync(personId, ct);
         await StageNoticeAsync(personId, ct);
-        var ownMedia = await OwnMediaOfAsync(personId, ct);
         var erased = await _dbContext
             .People.Where(person => person.Id == personId)
             .ExecuteDeleteAsync(ct);
@@ -82,17 +77,8 @@ public sealed class PersonErasureService
         }
 
         await transaction.CommitAsync(ct);
-        foreach (var storageKey in ownMedia)
-            _mediaRoot.DeleteFilesOf(storageKey);
-
         return true;
     }
-
-    private Task<List<Guid>> OwnMediaOfAsync(int personId, CancellationToken ct) =>
-        _dbContext
-            .MediaItems.Where(item => item.OwnerPersonId == personId)
-            .Select(item => item.StorageKey)
-            .ToListAsync(ct);
 
     private Task DropMailQueuedForAsync(int personId, CancellationToken ct) =>
         _dbContext

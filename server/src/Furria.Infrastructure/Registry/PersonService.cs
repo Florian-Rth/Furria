@@ -9,6 +9,7 @@ using Furria.Core.Club;
 using Furria.Core.Identity;
 using Furria.Core.MembershipApplications;
 using Furria.Core.Text;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Media;
@@ -38,21 +39,7 @@ public sealed class PersonService
                 person.Zip,
                 person.City
             ),
-            person
-                .Memberships.Select(membership => new MembershipRow(
-                    membership.Id,
-                    membership.StartedOn,
-                    membership.EndedOn,
-                    membership
-                        .Pauses.Select(pause => new MembershipPauseDetails
-                        {
-                            PauseId = pause.Id,
-                            FirstSessionYear = pause.FirstSessionYear,
-                            LastSessionYear = pause.LastSessionYear,
-                        })
-                        .ToList()
-                ))
-                .ToList(),
+            person.Memberships.AsQueryable().Select(MembershipPeriodRow.Projection).ToList(),
             person
                 .GroupMemberships.Where(membership => membership.Group!.ArchivedOn == null)
                 .OrderBy(membership =>
@@ -95,21 +82,7 @@ public sealed class PersonService
                 person.City
             ),
             person.BirthDate,
-            person
-                .Memberships.Select(membership => new MembershipRow(
-                    membership.Id,
-                    membership.StartedOn,
-                    membership.EndedOn,
-                    membership
-                        .Pauses.Select(pause => new MembershipPauseDetails
-                        {
-                            PauseId = pause.Id,
-                            FirstSessionYear = pause.FirstSessionYear,
-                            LastSessionYear = pause.LastSessionYear,
-                        })
-                        .ToList()
-                ))
-                .ToList(),
+            person.Memberships.AsQueryable().Select(MembershipPeriodRow.Projection).ToList(),
             person
                 .GroupMemberships.Where(membership => membership.Group!.ArchivedOn == null)
                 .OrderBy(membership =>
@@ -153,23 +126,7 @@ public sealed class PersonService
                 person.City
             ),
             person.BirthDate,
-            person
-                .Memberships.Select(membership => new MembershipRow(
-                    membership.Id,
-                    membership.StartedOn,
-                    membership.EndedOn,
-                    membership
-                        .Pauses.OrderByDescending(pause => pause.FirstSessionYear)
-                        .ThenByDescending(pause => pause.Id)
-                        .Select(pause => new MembershipPauseDetails
-                        {
-                            PauseId = pause.Id,
-                            FirstSessionYear = pause.FirstSessionYear,
-                            LastSessionYear = pause.LastSessionYear,
-                        })
-                        .ToList()
-                ))
-                .ToList(),
+            person.Memberships.AsQueryable().Select(MembershipPeriodRow.Projection).ToList(),
             person
                 .FeeReductions.OrderByDescending(reduction => reduction.FirstSessionYear)
                 .ThenByDescending(reduction => reduction.Id)
@@ -302,27 +259,10 @@ public sealed class PersonService
                 person.Id,
                 person.FirstName,
                 person.LastName,
+                person.Memberships.AsQueryable().Select(MembershipPeriodRow.Projection).ToList(),
                 person
-                    .Memberships.Select(membership => new MembershipRow(
-                        membership.Id,
-                        membership.StartedOn,
-                        membership.EndedOn,
-                        membership
-                            .Pauses.Select(pause => new MembershipPauseDetails
-                            {
-                                PauseId = pause.Id,
-                                FirstSessionYear = pause.FirstSessionYear,
-                                LastSessionYear = pause.LastSessionYear,
-                            })
-                            .ToList()
-                    ))
-                    .ToList(),
-                person
-                    .GroupMemberships.Where(membership =>
-                        membership.JoinedOn <= today
-                        && (membership.LeftOn == null || membership.LeftOn >= today)
-                        && membership.Group!.ArchivedOn == null
-                    )
+                    .GroupMemberships.AsQueryable()
+                    .Where(Conferring.GroupMemberships(today))
                     .OrderBy(membership =>
                         EF.Functions.Collate(membership.Group!.Name, GermanCollation.Name)
                     )
@@ -334,11 +274,8 @@ public sealed class PersonService
                     })
                     .ToList(),
                 person
-                    .RoleHoldings.Where(holding =>
-                        holding.SinceOn <= today
-                        && (holding.UntilOn == null || holding.UntilOn >= today)
-                        && holding.Role!.ArchivedOn == null
-                    )
+                    .RoleHoldings.AsQueryable()
+                    .Where(Conferring.RoleHoldings(today))
                     .OrderBy(holding =>
                         EF.Functions.Collate(holding.Role!.Name, GermanCollation.Name)
                     )
@@ -636,10 +573,8 @@ public sealed class PersonService
     private Expression<Func<Person, UnendedTiesRow>> UnendedTiesOn(DateOnly today) =>
         person => new UnendedTiesRow(
             person
-                .GroupAdminships.Where(tenure =>
-                    (tenure.UntilOn == null || tenure.UntilOn >= today)
-                    && tenure.Group!.ArchivedOn == null
-                )
+                .GroupAdminships.AsQueryable()
+                .Where(ConferringOrAhead.GroupAdmins(today))
                 .OrderBy(tenure => EF.Functions.Collate(tenure.Group!.Name, GermanCollation.Name))
                 .ThenBy(tenure => tenure.SinceOn)
                 .ThenBy(tenure => tenure.Id)
@@ -653,11 +588,8 @@ public sealed class PersonService
                 })
                 .ToList(),
             _dbContext
-                .BoardSeats.Where(seat =>
-                    seat.PersonId == person.Id
-                    && (seat.UntilOn == null || seat.UntilOn >= today)
-                    && seat.BoardOffice!.ArchivedOn == null
-                )
+                .BoardSeats.Where(ConferringOrAhead.BoardSeats(today))
+                .Where(seat => seat.PersonId == person.Id)
                 .OrderBy(seat => seat.BoardOffice!.SortOrder)
                 .ThenBy(seat => EF.Functions.Collate(seat.BoardOffice!.Name, GermanCollation.Name))
                 .ThenBy(seat => seat.SinceOn)
@@ -671,10 +603,8 @@ public sealed class PersonService
                 })
                 .ToList(),
             _dbContext
-                .KeyHoldings.Where(holding =>
-                    holding.PersonId == person.Id
-                    && (holding.UntilOn == null || holding.UntilOn >= today)
-                )
+                .KeyHoldings.Where(RunningOrAhead.KeyHoldings(today))
+                .Where(holding => holding.PersonId == person.Id)
                 .OrderBy(holding => holding.Venue!.SortOrder)
                 .ThenBy(holding => EF.Functions.Collate(holding.Venue!.Name, GermanCollation.Name))
                 .ThenBy(holding => holding.SinceOn)
@@ -713,7 +643,7 @@ public sealed class PersonService
         DateOnly today
     )
     {
-        var chain = MembershipChainDetails.Of(ToPeriods(row.Memberships, today), today);
+        var chain = MembershipPeriodRow.ChainOf(row.Memberships, today);
 
         return new MemberDetails
         {
@@ -748,7 +678,7 @@ public sealed class PersonService
 
     private static ManagedPersonDetails ToDetails(PersonDetailsRow row, DateOnly today)
     {
-        var chain = MembershipChainDetails.Of(ToPeriods(row.Memberships, today), today);
+        var chain = MembershipPeriodRow.ChainOf(row.Memberships, today);
 
         return new ManagedPersonDetails
         {
@@ -826,7 +756,7 @@ public sealed class PersonService
     ) =>
         [
             .. rows.GroupBy(row => row.Id)
-                .Where(tie => tie.Any(row => IsRunningOn(row, today)))
+                .Where(tie => tie.Any(row => row.Period.IsRunningOn(today)))
                 .Select(tie => new TieSince(
                     tie.Key,
                     tie.First().Name,
@@ -834,12 +764,9 @@ public sealed class PersonService
                 )),
         ];
 
-    private static bool IsRunningOn(TieRow row, DateOnly today) =>
-        new DatePeriod { Start = row.StartedOn, End = row.EndedOn }.IsRunningOn(today);
-
     private static PersonSummary ToSummary(PersonRegistryRow row, DateOnly today)
     {
-        var chain = MembershipChainDetails.Of(ToPeriods(row.Memberships, today), today);
+        var chain = MembershipPeriodRow.ChainOf(row.Memberships, today);
 
         return new PersonSummary
         {
@@ -875,9 +802,7 @@ public sealed class PersonService
             PersonId = row.Id,
             FirstName = row.FirstName,
             LastName = row.LastName,
-            MembershipState = MembershipChainDetails
-                .Of(ToPeriods(row.Memberships, today), today)
-                .State,
+            MembershipState = MembershipPeriodRow.ChainOf(row.Memberships, today).State,
             Groups = [.. row.Groups.DistinctBy(group => group.GroupId)],
             Roles = [.. row.Roles.DistinctBy(role => role.RoleId)],
         };
@@ -890,30 +815,13 @@ public sealed class PersonService
             .Replace("_", "\\_", StringComparison.Ordinal)
         + "%";
 
-    private static IReadOnlyList<MembershipDetails> ToPeriods(
-        IReadOnlyList<MembershipRow> rows,
-        DateOnly today
-    ) =>
-        [
-            .. rows.Select(row =>
-                MembershipDetails.Of(row.Id, row.StartedOn, row.EndedOn, row.Pauses, today)
-            ),
-        ];
-
     private sealed record MemberRow(
         int Id,
         string FirstName,
         string LastName,
-        IReadOnlyList<MembershipRow> Memberships,
+        IReadOnlyList<MembershipPeriodRow> Memberships,
         IReadOnlyList<GroupReference> Groups,
         IReadOnlyList<RoleReference> Roles
-    );
-
-    private sealed record MembershipRow(
-        int Id,
-        DateOnly StartedOn,
-        DateOnly? EndedOn,
-        IReadOnlyList<MembershipPauseDetails> Pauses
     );
 
     private sealed record PersonRegistryRow(
@@ -922,7 +830,7 @@ public sealed class PersonService
         string LastName,
         ContactRow Contact,
         DateOnly? BirthDate,
-        IReadOnlyList<MembershipRow> Memberships,
+        IReadOnlyList<MembershipPeriodRow> Memberships,
         IReadOnlyList<TieRow> Groups,
         IReadOnlyList<TieRow> Roles,
         RegisterAccessState AccessState
@@ -934,7 +842,7 @@ public sealed class PersonService
         string LastName,
         ContactRow Contact,
         DateOnly? BirthDate,
-        IReadOnlyList<MembershipRow> Memberships,
+        IReadOnlyList<MembershipPeriodRow> Memberships,
         IReadOnlyList<PersonFeeReduction> FeeReductions,
         IReadOnlyList<PersonGroup> Groups,
         IReadOnlyList<PersonRole> Roles,
@@ -955,7 +863,7 @@ public sealed class PersonService
         string FirstName,
         string LastName,
         ContactRow Contact,
-        IReadOnlyList<MembershipRow> Memberships,
+        IReadOnlyList<MembershipPeriodRow> Memberships,
         IReadOnlyList<TieRow> Groups,
         IReadOnlyList<TieRow> Roles
     );
@@ -969,7 +877,11 @@ public sealed class PersonService
         string? City
     );
 
-    private sealed record TieRow(int Id, string Name, DateOnly StartedOn, DateOnly? EndedOn);
+    private sealed record TieRow(int Id, string Name, DateOnly StartedOn, DateOnly? EndedOn)
+    {
+        [Pure]
+        public DatePeriod Period => new() { Start = StartedOn, End = EndedOn };
+    }
 
     private sealed record TieSince(int Id, string Name, DateOnly Since);
 }

@@ -13,6 +13,7 @@
   "dependencies": {
     "@emotion/react": "catalog:",
     "@emotion/styled": "catalog:",
+    "@furria/api-client": "workspace:*",
     "@furria/ui": "workspace:*",
     "@mui/icons-material": "catalog:",
     "@mui/material": "catalog:",

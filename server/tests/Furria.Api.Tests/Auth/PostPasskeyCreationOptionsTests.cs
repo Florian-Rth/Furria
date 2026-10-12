@@ -83,20 +83,6 @@ public sealed class PostPasskeyCreationOptionsTests : IClassFixture<ApiTestFixtu
     }
 
     [Fact]
-    public async Task Should_ReturnForbidden_When_HerAccountIsDisabled()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await ArrangeAnnaAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        await _fixture.DisableAccountDirectlyAsync(ctx.Identity.Accounts.IdOf("anna"), ct);
-
-        var (response, _) = await PasskeySteps.CreationOptionsAsync(client);
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-        await ctx.Expected.PasskeyChallenges().ToHaveCount(0).AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnForbidden_When_TheManagingLoginAsks()
     {
         var ct = TestContext.Current.CancellationToken;

@@ -1,10 +1,10 @@
+import { ApiError, apiStatusOf } from '@furria/api-client';
 import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import type { AltchaProof } from '@/lib/altcha/altcha-proof';
 import type { AltchaProofSource } from '@/lib/altcha/proof-source';
 import { submitWithFreshProof, usePreparedAltchaProof } from '@/lib/altcha/proof-source';
 import { apiFetch } from '@/lib/api/api-fetch';
-import { ApiError } from '@/lib/api/errors';
 import { buildMembershipApplicationPayload } from './apply-payload';
 import type {
   ConfirmationOutcome,
@@ -79,7 +79,7 @@ const confirmMembershipApplication = async (token: string): Promise<Confirmation
 
     return outcome;
   } catch (error) {
-    if (error instanceof ApiError && error.status === GONE_STATUS) {
+    if (error instanceof ApiError && apiStatusOf(error) === GONE_STATUS) {
       return 'expired';
     }
     throw error;

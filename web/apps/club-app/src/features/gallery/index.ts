@@ -1,4 +1,4 @@
-export { GALLERY_QUERY_KEY, useGalleryHubQuery } from './api';
+export { useGalleryHubQuery } from './api';
 export { AlbumEditScreen } from './components/AlbumEditScreen';
 export { AlbumNewScreen } from './components/AlbumNewScreen';
 export { AlbumPage } from './components/AlbumPage';

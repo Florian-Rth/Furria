@@ -8,7 +8,6 @@ import { toToDoMarkErrorMessage } from './to-do-messages';
 export interface ToDoMarkSurface<TData> {
   queryKey: QueryKey;
   withMark: (current: TData | undefined, mark: ToDoMark) => TData | undefined;
-  alsoRefresh: readonly QueryKey[];
 }
 
 export const useToDoMarkMutation = <TData>(
@@ -17,6 +16,6 @@ export const useToDoMarkMutation = <TData>(
   useApiMutation({
     request: requestToDoMark,
     optimistic: [optimisticPatch(surface.queryKey, surface.withMark)],
-    invalidates: surface.alsoRefresh,
+    changes: ['toDoMark'],
     notice: { failure: toToDoMarkErrorMessage },
   });

@@ -4,6 +4,8 @@ namespace Furria.Application.Club;
 
 public sealed record CreateCalendarEntryCommand
 {
+    public required int ActorAccountId { get; init; }
+
     public required int? ViewerPersonId { get; init; }
 
     public required string Title { get; init; }

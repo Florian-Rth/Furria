@@ -39,6 +39,7 @@ public sealed class DeleteNewsPictureTests : IClassFixture<ApiTestFixture>
             .MediaItem(pictureId)
             .ToBeGone()
             .AssertAsync(ct);
+        await _fixture.MediaFilesReapedAsync(ct);
         Assert.False(File.Exists(original));
     }
 

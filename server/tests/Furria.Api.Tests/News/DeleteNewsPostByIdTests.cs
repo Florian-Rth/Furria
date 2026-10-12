@@ -83,6 +83,7 @@ public sealed class DeleteNewsPostByIdTests : IClassFixture<ApiTestFixture>
         await DeleteAsync(client, draftId);
 
         await ctx.Expected.MediaItem(pictureId).ToBeGone().AssertAsync(ct);
+        await _fixture.MediaFilesReapedAsync(ct);
         Assert.False(File.Exists(original));
     }
 

@@ -14,35 +14,26 @@ public static class GalleryMediaUrls
         DateTimeOffset? renderedAt
     )
     {
-        string UrlOf(MediaRendition rendition) =>
-            MediaUrlVersions.Versioned(
-                signer.UrlOf(mediaItemId, MediaOwner.Gallery, rendition),
-                renderedAt
-            );
+        string? UrlOf(MediaRendition rendition) =>
+            MediaRenditions.Exists(kind, rendition)
+                ? MediaUrlVersions.Versioned(
+                    signer.UrlOf(mediaItemId, MediaOwner.Gallery, rendition),
+                    renderedAt
+                )
+                : null;
 
-        var original = UrlOf(MediaRendition.Original);
+        var original = UrlOf(MediaRendition.Original)!;
 
-        return kind == MediaKind.Video
-            ? new GalleryMediaUrlsDto
-            {
-                Small = UrlOf(MediaRendition.Small),
-                Medium = null,
-                Large = null,
-                Poster = UrlOf(MediaRendition.Poster),
-                Video = UrlOf(MediaRendition.Video),
-                Original = original,
-                Download = original + DownloadFlag,
-            }
-            : new GalleryMediaUrlsDto
-            {
-                Small = UrlOf(MediaRendition.Small),
-                Medium = UrlOf(MediaRendition.Medium),
-                Large = UrlOf(MediaRendition.Large),
-                Poster = null,
-                Video = null,
-                Original = original,
-                Download = original + DownloadFlag,
-            };
+        return new GalleryMediaUrlsDto
+        {
+            Small = UrlOf(MediaRendition.Small)!,
+            Medium = UrlOf(MediaRendition.Medium),
+            Large = UrlOf(MediaRendition.Large),
+            Poster = UrlOf(MediaRendition.Poster),
+            Video = UrlOf(MediaRendition.Video),
+            Original = original,
+            Download = original + DownloadFlag,
+        };
     }
 }
 

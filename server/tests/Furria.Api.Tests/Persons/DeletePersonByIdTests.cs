@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Headers;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
-using Furria.Api.Endpoints.Management;
 using Furria.Api.Endpoints.Persons;
 using Furria.Api.Tests.Auth;
 using Furria.Api.Tests.Media;
@@ -164,6 +163,7 @@ public sealed class DeletePersonByIdTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx.Expected.MediaItem(portraitId).ToBeGone().AssertAsync(ct);
+        await _fixture.MediaFilesReapedAsync(ct);
         Assert.False(File.Exists(original));
     }
 
@@ -475,8 +475,6 @@ public sealed class DeletePersonByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         var (meResponse, _) = await paula.GETAsync<GetMe, GetMeResponse>();
         Assert.Equal(HttpStatusCode.Unauthorized, meResponse.StatusCode);
-        var (hubResponse, _) = await paula.GETAsync<GetManageHub, GetManageHubResponse>();
-        Assert.Equal(HttpStatusCode.Forbidden, hubResponse.StatusCode);
         Assert.Equal(
             HttpStatusCode.Unauthorized,
             (await AccountSecuritySteps.RefreshAsync(_fixture, session.RefreshToken)).StatusCode

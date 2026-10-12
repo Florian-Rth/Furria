@@ -1,5 +1,5 @@
+import { ApiError } from '@furria/api-client';
 import { describe, expect, it } from 'vitest';
-import { ApiError } from '@/lib/api/errors';
 import type { DetailRead } from './canonical-detail';
 import { resolveCanonicalDetail } from './canonical-detail';
 
@@ -15,10 +15,15 @@ describe('resolveCanonicalDetail', () => {
     [
       'the API knows no such item',
       '12',
-      { status: 'failed', error: new ApiError(404) },
+      { status: 'failed', error: new ApiError({ kind: 'status', status: 404 }) },
       'not-found',
     ],
-    ['the API is down', '12', { status: 'failed', error: new ApiError(503) }, 'fail'],
+    [
+      'the API is down',
+      '12',
+      { status: 'failed', error: new ApiError({ kind: 'status', status: 503 }) },
+      'fail',
+    ],
     ['the request never left', '12', { status: 'failed', error: new Error('offline') }, 'fail'],
     [
       'the address is outdated',

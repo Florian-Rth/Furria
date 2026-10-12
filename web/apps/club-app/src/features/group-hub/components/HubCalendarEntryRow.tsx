@@ -1,9 +1,9 @@
 import { KkFactRow, KkText } from '@furria/ui';
 import type { FC } from 'react';
+import { AttendanceChoice } from '@/features/attendance';
 import { toDayNumberLabel, toWeekdayEyebrow } from '@/lib/calendar-days';
 import { toCalendarEntryMark, toCalendarEntryMetaLine } from '../group-calendar-entries';
 import type { GroupCalendarEntry } from '../schemas';
-import { HubCalendarEntryAnswerChoice } from './HubCalendarEntryAnswerChoice';
 import { HubCalendarEntryMark } from './HubCalendarEntryMark';
 
 interface HubCalendarEntryRowProps {
@@ -14,9 +14,7 @@ interface HubCalendarEntryRowProps {
 export const HubCalendarEntryRow: FC<HubCalendarEntryRowProps> = ({ groupId, entry }) => {
   const tone = entry.isRunning ? 'accent' : 'neutral';
   const chip = <HubCalendarEntryMark mark={toCalendarEntryMark(entry, groupId)} />;
-  const actions = entry.viewerMayAnswer ? (
-    <HubCalendarEntryAnswerChoice entry={entry} />
-  ) : undefined;
+  const actions = entry.viewerMayAnswer ? <AttendanceChoice entry={entry} /> : undefined;
   const span = toDayNumberLabel(entry.startsAt);
   const spanLabel = toWeekdayEyebrow(entry.startsAt);
   const meta = toCalendarEntryMetaLine(entry, groupId);

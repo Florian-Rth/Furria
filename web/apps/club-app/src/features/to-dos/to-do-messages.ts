@@ -1,4 +1,4 @@
-import { RequestFailedError, ServerFailureError } from '@/lib/api/api-error';
+import { apiStatusOf } from '@furria/api-client';
 import type { QueryErrorKind } from '@/lib/query-error';
 import { toQueryErrorMessage } from '@/lib/query-error';
 
@@ -12,9 +12,7 @@ const TO_DO_MARK_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
 
 const TO_DO_CHANGED_MESSAGE = 'Inzwischen hat sich etwas geändert – schau es dir noch einmal an.';
 
-const isConflict = (error: Error | null): boolean =>
-  (error instanceof RequestFailedError || error instanceof ServerFailureError) &&
-  error.status === CONFLICT_STATUS;
+const isConflict = (error: Error | null): boolean => apiStatusOf(error) === CONFLICT_STATUS;
 
 export const toToDoMarkErrorMessage = (error: Error | null): string | null =>
   isConflict(error) ? TO_DO_CHANGED_MESSAGE : toQueryErrorMessage(error, TO_DO_MARK_ERROR_MESSAGES);

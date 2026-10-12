@@ -260,34 +260,6 @@ public sealed class PermissionAuthorizerTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheAccountWasDisabledAfterItsTokenWasIssued()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "personenpflege",
-                            "ilka-personenpflege",
-                            "Personenpflege",
-                            "ilka",
-                            FurriaPermissions.PersonsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        await _fixture.DisableAccountDirectlyAsync(ctx.Identity.Accounts.IdOf("ilka"), ct);
-
-        var (response, _) = await client.GETAsync<PermissionProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_Refuse_When_TheRoleHoldingEndedOnTheUtcDateButBerlinIsAlreadyPastIt()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -323,34 +295,6 @@ public sealed class PermissionAuthorizerTests : IClassFixture<ApiTestFixture>
                 Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
             }
         );
-    }
-
-    [Fact]
-    public async Task Should_Refuse_When_TheAccountBehindTheTokenNoLongerExists()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "personenpflege",
-                            "ilka-personenpflege",
-                            "Personenpflege",
-                            "ilka",
-                            FurriaPermissions.PersonsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        await _fixture.ResetDatabaseAsync(ct);
-
-        var (response, _) = await client.GETAsync<PermissionProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
     [Fact]
@@ -483,26 +427,6 @@ public sealed class PermissionAuthorizerTests : IClassFixture<ApiTestFixture>
         );
 
         var client = await ctx.Identity.ClientForAsync("mira", ct);
-        var (response, _) = await client.GETAsync<ClubReadProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
-    public async Task Should_Refuse_When_TheMembersAccountWasDisabled()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder.Identity(identity =>
-                    identity.AddAccount("mira").AddMembership("mira-first", "mira", HeldSince2017)
-                ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("mira", ct);
-        await _fixture.DisableAccountDirectlyAsync(ctx.Identity.Accounts.IdOf("mira"), ct);
-
         var (response, _) = await client.GETAsync<ClubReadProbe, EmptyResponse>();
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);

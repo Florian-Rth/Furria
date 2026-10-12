@@ -1,6 +1,6 @@
+import type { Picture } from '@furria/api-client';
 import { KkCoverPicture, toImageSource } from '@furria/ui';
 import type { ReactNode } from 'react';
-import type { Picture } from '@/lib/api/picture';
 
 const PICTURE_FIT = { borderRadius: 'inherit' };
 

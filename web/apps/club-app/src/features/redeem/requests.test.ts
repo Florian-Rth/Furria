@@ -1,5 +1,5 @@
+import type { JsonBody } from '@furria/api-client';
 import { describe, expect, it } from 'vitest';
-import type { JsonBody } from '@/lib/api/api-fetch';
 import type { ResolvedClaimProof } from './requests';
 import { toClaimBody } from './requests';
 

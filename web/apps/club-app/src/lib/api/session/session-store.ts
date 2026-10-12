@@ -1,4 +1,4 @@
-import { UnauthorizedError } from '@/lib/api/api-error';
+import { ApiError, apiFailureOf } from '@furria/api-client';
 import type { LoginRequest, SessionTokens } from '@/lib/api/schemas';
 import { requestLogin, requestLogout, requestRefresh } from './auth-api';
 import { broadcastSessionEnd, listenForRemoteSessionEnd } from './session-broadcast';
@@ -91,6 +91,8 @@ const endSession = (expired: boolean): void => {
   finishSession(nextExpired);
 };
 
+const isUnauthorized = (error: Error): boolean => apiFailureOf(error)?.kind === 'unauthorized';
+
 listenForRemoteSessionEnd((expired) => {
   finishSession(snapshot.expired || expired);
 });
@@ -163,13 +165,13 @@ const refreshThroughLock = async (): Promise<string> => {
     }
     if (storedToken === null) {
       endSession(true);
-      throw new UnauthorizedError();
+      throw new ApiError({ kind: 'unauthorized' });
     }
 
     try {
       return await adoptTokens(await requestRefresh(storedToken));
     } catch (error) {
-      if (error instanceof UnauthorizedError) {
+      if (error instanceof Error && isUnauthorized(error)) {
         endSession(true);
       }
       throw error;
@@ -212,11 +214,15 @@ export const withFreshAccessToken = async <TResult>(
   try {
     return await call(token);
   } catch (error) {
-    if (error instanceof UnauthorizedError) {
+    if (error instanceof Error && isUnauthorized(error)) {
       endSession(true);
     }
     throw error;
   }
+};
+
+export const expireSession = (): void => {
+  endSession(true);
 };
 
 export const signIn = async (credentials: LoginRequest): Promise<void> => {

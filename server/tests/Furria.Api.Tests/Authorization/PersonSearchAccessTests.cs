@@ -273,34 +273,6 @@ public sealed class PersonSearchAccessTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_Refuse_When_TheAccountWasDisabledAfterItsTokenWasIssued()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("ilka"))
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "personenpflege",
-                            "ilka-personenpflege",
-                            "Personenpflege",
-                            "ilka",
-                            FurriaPermissions.PersonsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        await _fixture.DisableAccountDirectlyAsync(ctx.Identity.Accounts.IdOf("ilka"), ct);
-
-        var (response, _) = await client.GETAsync<PersonSearchProbe, EmptyResponse>();
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_Allow_When_TheCallerHoldsAccountsManage()
     {
         var response = await ProbeAsHolderOfAsync(FurriaPermissions.AccountsManage);

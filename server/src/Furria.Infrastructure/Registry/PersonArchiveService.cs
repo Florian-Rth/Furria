@@ -3,6 +3,7 @@ using Furria.Application.Registry;
 using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Identity;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -81,14 +82,10 @@ public sealed class PersonArchiveService
             .People.AsNoTracking()
             .Where(person => person.Id == personId)
             .Select(person => new UnendedTiesRow(
-                person.Memberships.Any(membership =>
-                    membership.EndedOn == null || membership.EndedOn >= today
-                ),
+                person.Memberships.AsQueryable().Any(RunningOrAhead.Memberships(today)),
                 person
-                    .GroupMemberships.Where(membership =>
-                        (membership.LeftOn == null || membership.LeftOn >= today)
-                        && membership.Group!.ArchivedOn == null
-                    )
+                    .GroupMemberships.AsQueryable()
+                    .Where(ConferringOrAhead.GroupMemberships(today))
                     .OrderBy(membership =>
                         EF.Functions.Collate(membership.Group!.Name, GermanCollation.Name)
                     )
@@ -96,10 +93,8 @@ public sealed class PersonArchiveService
                     .Select(membership => membership.Group!.Name)
                     .ToList(),
                 person
-                    .RoleHoldings.Where(holding =>
-                        (holding.UntilOn == null || holding.UntilOn >= today)
-                        && holding.Role!.ArchivedOn == null
-                    )
+                    .RoleHoldings.AsQueryable()
+                    .Where(ConferringOrAhead.RoleHoldings(today))
                     .OrderBy(holding =>
                         EF.Functions.Collate(holding.Role!.Name, GermanCollation.Name)
                     )
@@ -107,10 +102,8 @@ public sealed class PersonArchiveService
                     .Select(holding => holding.Role!.Name)
                     .ToList(),
                 person
-                    .GroupAdminships.Where(tenure =>
-                        (tenure.UntilOn == null || tenure.UntilOn >= today)
-                        && tenure.Group!.ArchivedOn == null
-                    )
+                    .GroupAdminships.AsQueryable()
+                    .Where(ConferringOrAhead.GroupAdmins(today))
                     .OrderBy(tenure =>
                         EF.Functions.Collate(tenure.Group!.Name, GermanCollation.Name)
                     )
@@ -118,11 +111,8 @@ public sealed class PersonArchiveService
                     .Select(tenure => tenure.Group!.Name)
                     .ToList(),
                 _dbContext
-                    .BoardSeats.Where(seat =>
-                        seat.PersonId == person.Id
-                        && (seat.UntilOn == null || seat.UntilOn >= today)
-                        && seat.BoardOffice!.ArchivedOn == null
-                    )
+                    .BoardSeats.Where(ConferringOrAhead.BoardSeats(today))
+                    .Where(seat => seat.PersonId == person.Id)
                     .OrderBy(seat => seat.BoardOffice!.SortOrder)
                     .ThenBy(seat =>
                         EF.Functions.Collate(seat.BoardOffice!.Name, GermanCollation.Name)
@@ -131,10 +121,8 @@ public sealed class PersonArchiveService
                     .Select(seat => seat.BoardOffice!.Name)
                     .ToList(),
                 _dbContext
-                    .KeyHoldings.Where(holding =>
-                        holding.PersonId == person.Id
-                        && (holding.UntilOn == null || holding.UntilOn >= today)
-                    )
+                    .KeyHoldings.Where(RunningOrAhead.KeyHoldings(today))
+                    .Where(holding => holding.PersonId == person.Id)
                     .OrderBy(holding => holding.Venue!.SortOrder)
                     .ThenBy(holding =>
                         EF.Functions.Collate(holding.Venue!.Name, GermanCollation.Name)

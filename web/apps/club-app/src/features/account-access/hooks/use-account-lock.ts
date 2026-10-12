@@ -7,7 +7,6 @@ import type { AccessSubject } from '../types';
 interface AccountLockInput {
   subject: AccessSubject;
   act: AccountLockAct;
-  onLocked: () => void;
 }
 
 export interface AccountLockControl {
@@ -19,14 +18,10 @@ export interface AccountLockControl {
   submit: () => void;
 }
 
-export const useAccountLock = ({
-  subject,
-  act,
-  onLocked,
-}: AccountLockInput): AccountLockControl => {
+export const useAccountLock = ({ subject, act }: AccountLockInput): AccountLockControl => {
   const [isOpen, setIsOpen] = useState(false);
   const [rejection, setRejection] = useState<string | null>(null);
-  const mutation = useAccountLockMutation(subject, act, onLocked);
+  const mutation = useAccountLockMutation(subject, act);
 
   const open = (): void => {
     setRejection(null);

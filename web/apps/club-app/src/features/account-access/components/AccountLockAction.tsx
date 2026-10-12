@@ -15,11 +15,10 @@ const CLOSE_LABEL = 'Schließen';
 interface AccountLockActionProps {
   subject: AccessSubject;
   act: AccountLockAct;
-  onLocked: () => void;
 }
 
-export const AccountLockAction: FC<AccountLockActionProps> = ({ subject, act, onLocked }) => {
-  const control = useAccountLock({ subject, act, onLocked });
+export const AccountLockAction: FC<AccountLockActionProps> = ({ subject, act }) => {
+  const control = useAccountLock({ subject, act });
   const copy = ACCOUNT_LOCK_COPY[act];
   const facts = [
     { label: ACCESS_STATE_LABEL, value: toAccountStateChip(subject.access.state).label },

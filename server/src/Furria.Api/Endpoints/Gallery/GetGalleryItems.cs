@@ -3,7 +3,6 @@ using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Application.Gallery;
 using Furria.Core.Media;
-using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Media;
 
@@ -12,17 +11,11 @@ namespace Furria.Api.Endpoints.Gallery;
 public sealed class GetGalleryItems : Endpoint<GetGalleryItemsRequest, GetGalleryItemsResponse>
 {
     private readonly GalleryService _galleryService;
-    private readonly PermissionAuthorizer _authorizer;
     private readonly MediaUrlSigner _signer;
 
-    public GetGalleryItems(
-        GalleryService galleryService,
-        PermissionAuthorizer authorizer,
-        MediaUrlSigner signer
-    )
+    public GetGalleryItems(GalleryService galleryService, MediaUrlSigner signer)
     {
         _galleryService = galleryService;
-        _authorizer = authorizer;
         _signer = signer;
     }
 
@@ -34,8 +27,7 @@ public sealed class GetGalleryItems : Endpoint<GetGalleryItemsRequest, GetGaller
 
     public override async Task HandleAsync(GetGalleryItemsRequest req, CancellationToken ct)
     {
-        var actor = await _authorizer.GalleryActorAsync(User.AccountId()!.Value, ct);
-        var items = await _galleryService.GetItemsAsync(req.Ids, actor, ct);
+        var items = await _galleryService.GetItemsAsync(req.Ids, User.AccountId()!.Value, ct);
 
         await Send.OkAsync(
             new GetGalleryItemsResponse { Items = [.. items.Select(ToDto)] },
