@@ -108,28 +108,19 @@ public sealed class NewsPictures
         if (NewsWorkingCopy.WorkingPictureIdOf(post) is null)
             return Result.Success();
 
-        var dropped = await PlaceAsync(new Placement(post, removedByPersonId), null, ct);
+        await PlaceAsync(new Placement(post, removedByPersonId), null, ct);
         await _dbContext.SaveChangesAsync(ct);
-        DeleteFilesOf(dropped);
         return Result.Success();
     }
 
-    internal async Task<IReadOnlyList<Guid>> PlaceAsync(
-        PlaceNewsPictureCommand command,
-        CancellationToken ct
-    )
+    internal async Task PlaceAsync(PlaceNewsPictureCommand command, CancellationToken ct)
     {
         var post = await _dbContext.NewsPosts.SingleAsync(row => row.Id == command.NewsPostId, ct);
-        var dropped = await PlaceAsync(
-            new Placement(post, command.PlacedByPersonId),
-            command.MediaItemId,
-            ct
-        );
+        await PlaceAsync(new Placement(post, command.PlacedByPersonId), command.MediaItemId, ct);
         await _dbContext.SaveChangesAsync(ct);
-        return dropped;
     }
 
-    internal async Task<IReadOnlyList<Guid>> DropUnusedAsync(NewsPost post, CancellationToken ct)
+    internal async Task DropUnusedAsync(NewsPost post, CancellationToken ct)
     {
         var unused = await _dbContext
             .MediaItems.Where(item =>
@@ -139,30 +130,13 @@ public sealed class NewsPictures
             )
             .ToListAsync(ct);
         _dbContext.MediaItems.RemoveRange(unused);
-        return [.. unused.Select(item => item.StorageKey)];
     }
 
-    internal async Task<IReadOnlyList<Guid>> AllOfAsync(int newsPostId, CancellationToken ct) =>
-        await _dbContext
-            .MediaItems.Where(item => item.OwnerNewsPostId == newsPostId)
-            .Select(item => item.StorageKey)
-            .ToListAsync(ct);
-
-    internal void DeleteFilesOf(IEnumerable<Guid> storageKeys)
-    {
-        foreach (var storageKey in storageKeys)
-            _root.DeleteFilesOf(storageKey);
-    }
-
-    private async Task<IReadOnlyList<Guid>> PlaceAsync(
-        Placement placement,
-        int? mediaItemId,
-        CancellationToken ct
-    )
+    private async Task PlaceAsync(Placement placement, int? mediaItemId, CancellationToken ct)
     {
         NewsWorkingCopy.PlacePicture(placement.Post, mediaItemId, _timeProvider.GetUtcNow());
         NewsWorkingCopy.MarkSaved(placement.Post, placement.ByPersonId);
-        return await DropUnusedAsync(placement.Post, ct);
+        await DropUnusedAsync(placement.Post, ct);
     }
 
     private async Task RecropAsync(
@@ -194,6 +168,31 @@ public sealed class NewsPictures
     {
         var now = _timeProvider.GetUtcNow();
         var copy = CopyOf(source, placement.Post.Id, crop, now);
+
+        _root.CopyInto(
+            MediaPaths.OriginalOf(source.StorageKey),
+            MediaPaths.OriginalOf(copy.StorageKey)
+        );
+        try
+        {
+            await RecordCopyAsync(placement, copy, now, ct);
+        }
+        catch
+        {
+            _root.DeleteFilesOf(copy.StorageKey);
+            throw;
+        }
+
+        return copy.Id;
+    }
+
+    private async Task RecordCopyAsync(
+        Placement placement,
+        MediaItem copy,
+        DateTimeOffset now,
+        CancellationToken ct
+    )
+    {
         _dbContext.MediaItems.Add(copy);
         _dbContext.MediaJobs.Add(
             new MediaJob
@@ -206,16 +205,9 @@ public sealed class NewsPictures
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         await _dbContext.SaveChangesAsync(ct);
-        var dropped = await PlaceAsync(placement, copy.Id, ct);
+        await PlaceAsync(placement, copy.Id, ct);
         await _dbContext.SaveChangesAsync(ct);
-        _root.CopyInto(
-            MediaPaths.OriginalOf(source.StorageKey),
-            MediaPaths.OriginalOf(copy.StorageKey)
-        );
         await transaction.CommitAsync(ct);
-
-        DeleteFilesOf(dropped);
-        return copy.Id;
     }
 
     [Pure]

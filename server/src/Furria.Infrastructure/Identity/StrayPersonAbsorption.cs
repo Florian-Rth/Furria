@@ -1,4 +1,5 @@
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Identity;
@@ -9,25 +10,7 @@ internal static class StrayPersonAbsorption
         AppDbContext dbContext,
         int strayPersonId,
         CancellationToken ct
-    ) =>
-        dbContext
-            .People.Where(person => person.Id == strayPersonId)
-            .AnyAsync(
-                person =>
-                    person.Memberships.Any()
-                    || person.FeeReductions.Any()
-                    || person.GroupMemberships.Any()
-                    || person.GroupAdminships.Any()
-                    || person.RoleHoldings.Any()
-                    || dbContext.BoardSeats.Any(seat => seat.PersonId == person.Id)
-                    || dbContext.KeyHoldings.Any(holding => holding.PersonId == person.Id)
-                    || dbContext.AttendanceResponses.Any(response => response.PersonId == person.Id)
-                    || dbContext.Announcements.Any(announcement =>
-                        announcement.AuthorPersonId == person.Id
-                    )
-                    || dbContext.NewsPosts.Any(post => post.AuthorPersonId == person.Id),
-                ct
-            );
+    ) => ReferencesToPersonStatements.IsReferencedByAnyBlockingAsync(dbContext, strayPersonId, ct);
 
     public static async Task AbsorbAsync(
         AppDbContext dbContext,
@@ -35,25 +18,19 @@ internal static class StrayPersonAbsorption
         CancellationToken ct
     )
     {
-        await MoveAccountAsync(dbContext, absorption, ct);
         await VoidLiveInvitationsAsync(dbContext, absorption, ct);
-        await RepointHistoryAsync(dbContext, absorption, ct);
+        var strayPortraitId = await PortraitIdOfAsync(dbContext, absorption.StrayPersonId, ct);
+        await ReferencesToPersonStatements.MoveOntoKeeperAsync(
+            dbContext,
+            absorption.StrayPersonId,
+            absorption.KeeperPersonId,
+            ct
+        );
+        await HandOverPortraitAsync(dbContext, absorption, strayPortraitId, ct);
         await dbContext
             .People.Where(person => person.Id == absorption.StrayPersonId)
             .ExecuteDeleteAsync(ct);
     }
-
-    private static Task MoveAccountAsync(
-        AppDbContext dbContext,
-        Absorption absorption,
-        CancellationToken ct
-    ) =>
-        dbContext
-            .Users.Where(account => account.Id == absorption.AccountId)
-            .ExecuteUpdateAsync(
-                setters => setters.SetProperty(row => row.PersonId, absorption.KeeperPersonId),
-                ct
-            );
 
     private static Task VoidLiveInvitationsAsync(
         AppDbContext dbContext,
@@ -71,51 +48,48 @@ internal static class StrayPersonAbsorption
                 ct
             );
 
-    private static async Task RepointHistoryAsync(
+    private static Task<int?> PortraitIdOfAsync(
+        AppDbContext dbContext,
+        int personId,
+        CancellationToken ct
+    ) =>
+        dbContext
+            .People.Where(person => person.Id == personId)
+            .Select(person => person.PortraitId)
+            .SingleAsync(ct);
+
+    private static async Task HandOverPortraitAsync(
         AppDbContext dbContext,
         Absorption absorption,
+        int? strayPortraitId,
         CancellationToken ct
     )
     {
-        var stray = absorption.StrayPersonId;
-        var keeper = absorption.KeeperPersonId;
+        if (
+            strayPortraitId is not { } portraitId
+            || !await dbContext.MediaItems.AnyAsync(
+                item => item.Id == portraitId && item.OwnerPersonId == absorption.KeeperPersonId,
+                ct
+            )
+        )
+            return;
 
-        await dbContext
-            .Invitations.Where(invitation => invitation.PersonId == stray)
-            .ExecuteUpdateAsync(setters => setters.SetProperty(row => row.PersonId, keeper), ct);
-        await dbContext
-            .Invitations.Where(invitation => invitation.IssuedByPersonId == stray)
-            .ExecuteUpdateAsync(
-                setters => setters.SetProperty(row => row.IssuedByPersonId, keeper),
-                ct
-            );
-        await dbContext
-            .AccountEvents.Where(accountEvent => accountEvent.PersonId == stray)
-            .ExecuteUpdateAsync(setters => setters.SetProperty(row => row.PersonId, keeper), ct);
-        await dbContext
-            .AccountEvents.Where(accountEvent => accountEvent.ActorPersonId == stray)
-            .ExecuteUpdateAsync(
-                setters => setters.SetProperty(row => row.ActorPersonId, keeper),
-                ct
-            );
-        await dbContext
-            .NewsPosts.Where(post => post.LastSavedByPersonId == stray)
-            .ExecuteUpdateAsync(
-                setters => setters.SetProperty(row => row.LastSavedByPersonId, keeper),
-                ct
-            );
-        await dbContext
-            .People.Where(person => person.ContactChangedByPersonId == stray && person.Id != stray)
-            .ExecuteUpdateAsync(
-                setters => setters.SetProperty(row => row.ContactChangedByPersonId, keeper),
-                ct
-            );
+        await LinkPortraitAsync(dbContext, absorption.StrayPersonId, null, ct);
+        await LinkPortraitAsync(dbContext, absorption.KeeperPersonId, portraitId, ct);
     }
 
-    internal sealed record Absorption(
-        int AccountId,
-        int StrayPersonId,
-        int KeeperPersonId,
-        DateTimeOffset At
-    );
+    private static Task LinkPortraitAsync(
+        AppDbContext dbContext,
+        int personId,
+        int? portraitId,
+        CancellationToken ct
+    ) =>
+        dbContext
+            .People.Where(person => person.Id == personId)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(person => person.PortraitId, portraitId),
+                ct
+            );
+
+    internal sealed record Absorption(int StrayPersonId, int KeeperPersonId, DateTimeOffset At);
 }

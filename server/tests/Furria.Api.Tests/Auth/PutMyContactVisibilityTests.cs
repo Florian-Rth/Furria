@@ -175,25 +175,6 @@ public sealed class PutMyContactVisibilityTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_AnswerNotFound_When_HerPersonIsGone()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Identity(identity => identity.AddAccount("paula")),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("paula", ct);
-        await _fixture.DeletePersonDirectlyAsync(ctx.Identity.People.IdOf("paula"), ct);
-
-        var response = await client.PUTAsync<PutMyContactVisibility, PutMyContactVisibilityRequest>(
-            new() { ContactVisibleToMembers = true }
-        );
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
-    [Fact]
     public async Task Should_ChangeNothing_When_TheBodyCarriesNoSwitchValue()
     {
         var ct = TestContext.Current.CancellationToken;

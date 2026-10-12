@@ -57,14 +57,12 @@ public sealed partial class NewsService
         if (!NewsWorkingCopy.IsLive(post))
             return Result.Conflict(NotLiveMessage);
 
-        var dropped = NewsWorkingCopy.PendingContentOf(post) is { } pending
-            ? await AdoptPendingChangesAsync(post, pending, ct)
-            : [];
+        if (NewsWorkingCopy.PendingContentOf(post) is { } pending)
+            await AdoptPendingChangesAsync(post, pending, ct);
 
         post.WithdrawnAt = _timeProvider.GetUtcNow();
         NewsWorkingCopy.MarkSaved(post, withdrawnByPersonId);
         await _dbContext.SaveChangesAsync(ct);
-        _newsPictures.DeleteFilesOf(dropped);
         return Result.Success();
     }
 
@@ -84,10 +82,9 @@ public sealed partial class NewsService
         if (!IsComplete(pending))
             return Result<NewsPublication>.Conflict(IncompleteMessage);
 
-        var dropped = await AdoptPendingChangesAsync(post, pending, ct);
+        await AdoptPendingChangesAsync(post, pending, ct);
         NewsWorkingCopy.MarkSaved(post, publishedByPersonId);
         await _dbContext.SaveChangesAsync(ct);
-        _newsPictures.DeleteFilesOf(dropped);
         return Result<NewsPublication>.Success(PublicationOf(post));
     }
 
@@ -105,10 +102,9 @@ public sealed partial class NewsService
             return Result.Success();
 
         NewsWorkingCopy.Drop(post);
-        var dropped = await _newsPictures.DropUnusedAsync(post, ct);
+        await _newsPictures.DropUnusedAsync(post, ct);
         NewsWorkingCopy.MarkSaved(post, discardedByPersonId);
         await _dbContext.SaveChangesAsync(ct);
-        _newsPictures.DeleteFilesOf(dropped);
         return Result.Success();
     }
 
@@ -121,14 +117,12 @@ public sealed partial class NewsService
         if (NewsWorkingCopy.IsLive(post))
             return Result.Conflict(LiveDeletionMessage);
 
-        var pictures = await _newsPictures.AllOfAsync(post.Id, ct);
         _dbContext.NewsPosts.Remove(post);
         await _dbContext.SaveChangesAsync(ct);
-        _newsPictures.DeleteFilesOf(pictures);
         return Result.Success();
     }
 
-    private async Task<IReadOnlyList<Guid>> AdoptPendingChangesAsync(
+    private async Task AdoptPendingChangesAsync(
         NewsPost post,
         NewsPostContent pending,
         CancellationToken ct
@@ -137,7 +131,7 @@ public sealed partial class NewsService
         await WriteContentAsync(post, pending, ct);
         post.PictureId = post.PendingPictureId;
         NewsWorkingCopy.Drop(post);
-        return await _newsPictures.DropUnusedAsync(post, ct);
+        await _newsPictures.DropUnusedAsync(post, ct);
     }
 
     private async Task FixAddressAndDateAsync(NewsPost post, CancellationToken ct)

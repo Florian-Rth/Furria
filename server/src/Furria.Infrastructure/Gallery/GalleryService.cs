@@ -50,21 +50,21 @@ public sealed partial class GalleryService
 
     private readonly AppDbContext _dbContext;
     private readonly PermissionAuthorizer _authorizer;
-    private readonly MediaFiles _mediaFiles;
+    private readonly MediaRoot _mediaRoot;
     private readonly PublicFace _publicFace;
     private readonly TimeProvider _timeProvider;
 
     public GalleryService(
         AppDbContext dbContext,
         PermissionAuthorizer authorizer,
-        MediaFiles mediaFiles,
+        MediaRoot mediaRoot,
         PublicFace publicFace,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
         _authorizer = authorizer;
-        _mediaFiles = mediaFiles;
+        _mediaRoot = mediaRoot;
         _publicFace = publicFace;
         _timeProvider = timeProvider;
     }

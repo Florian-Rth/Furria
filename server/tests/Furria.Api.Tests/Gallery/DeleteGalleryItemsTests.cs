@@ -37,6 +37,7 @@ public sealed class DeleteGalleryItemsTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await _fixture.MediaFilesReapedAsync(ct);
         Assert.False(File.Exists(original));
         Assert.False(File.Exists(small));
         await ctx.Expected.GalleryItem(rejectId).ToNotExist().AssertAsync(ct);

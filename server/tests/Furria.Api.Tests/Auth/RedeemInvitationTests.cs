@@ -3,9 +3,11 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
+using Furria.Api.Tests.Media;
 using Furria.Application.Identity;
 using Furria.Core.Club;
 using Furria.Core.Identity;
+using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Furria.Tests.Common.WebAuthn;
@@ -1251,6 +1253,75 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_GiveHerTheStrayPersonsPortrait_When_SheHasNoneAndClaims()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
+        var strayId = ctx.Identity.People.IdOf("stray");
+        var strayPortraitId = await PictureSteps.RenderedPortraitAsync(
+            _fixture,
+            await ctx.Identity.ClientForAsync("stray", ct),
+            strayId,
+            ct
+        );
+
+        await ClaimSteps.ClaimAsync(
+            _fixture.CreateClient(),
+            token,
+            ctx.Identity.EmailOf("stray"),
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        await ctx.Expected.MediaItem(strayPortraitId).ToBeThePortraitOf(annaId).AssertAsync(ct);
+        Assert.True(
+            File.Exists(
+                await _fixture.MediaFileOfAsync(strayPortraitId, MediaRendition.Original, ct)
+            )
+        );
+    }
+
+    [Fact]
+    public async Task Should_KeepHerOwnPortraitAndDiscardTheStrayPersons_When_BothHaveOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, annaId, token) = await ArrangeClaimAsync(ct);
+        var manager = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var annaPortraitId = await PictureSteps.RenderedPortraitAsync(
+            _fixture,
+            manager,
+            annaId,
+            ct
+        );
+        var strayPortraitId = await PictureSteps.RenderedPortraitAsync(
+            _fixture,
+            await ctx.Identity.ClientForAsync("stray", ct),
+            ctx.Identity.People.IdOf("stray"),
+            ct
+        );
+        var strayOriginal = await _fixture.MediaFileOfAsync(
+            strayPortraitId,
+            MediaRendition.Original,
+            ct
+        );
+
+        await ClaimSteps.ClaimAsync(
+            _fixture.CreateClient(),
+            token,
+            ctx.Identity.EmailOf("stray"),
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        await ctx
+            .Expected.MediaItem(annaPortraitId)
+            .ToBeThePortraitOf(annaId)
+            .MediaItem(strayPortraitId)
+            .ToBeGone()
+            .AssertAsync(ct);
+        await _fixture.MediaFilesReapedAsync(ct);
+        Assert.False(File.Exists(strayOriginal));
+    }
+
+    [Fact]
     public async Task Should_MoveTheAccountOntoHer_When_SheConfirmsTheClaimWithItsPasskey()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -1515,6 +1586,7 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
     [InlineData(StrayHolding.AttendanceResponse)]
     [InlineData(StrayHolding.Announcement)]
     [InlineData(StrayHolding.NewsPost)]
+    [InlineData(StrayHolding.NewsMention)]
     public async Task Should_RefuseAsTaken_When_TheStrayPersonHoldsClubData(StrayHolding holding)
     {
         var ct = TestContext.Current.CancellationToken;
@@ -1555,6 +1627,7 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
         AttendanceResponse,
         Announcement,
         NewsPost,
+        NewsMention,
     }
 
     private static void Hold(
@@ -1640,6 +1713,15 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
             case StrayHolding.NewsPost:
                 builder.News(news =>
                     news.AddNewsPost("stray-post", "Entwurf", authorAlias: "stray")
+                );
+                break;
+            case StrayHolding.NewsMention:
+                builder.News(news =>
+                    news.AddNewsPost(
+                        "stray-mention",
+                        "Dank",
+                        text: "Dank an @[Sie](person:{stray})"
+                    )
                 );
                 break;
             default:

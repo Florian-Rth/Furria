@@ -52,13 +52,11 @@ public sealed partial class GalleryService
         );
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        var storageKeys = await expiredItems.Select(item => item.StorageKey).ToListAsync(ct);
-        await expiredItems.ExecuteDeleteAsync(ct);
+        var purgedItems = await expiredItems.ExecuteDeleteAsync(ct);
         var purgedAlbums = await expiredAlbums.ExecuteDeleteAsync(ct);
         await transaction.CommitAsync(ct);
 
-        _mediaFiles.Discard(storageKeys);
-        return storageKeys.Count + purgedAlbums;
+        return purgedItems + purgedAlbums;
     }
 
     private async Task<IReadOnlyList<BinnedItemRow>> BinnedItemsAsync(CancellationToken ct) =>
