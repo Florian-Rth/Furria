@@ -1,4 +1,4 @@
-import type { JsonBody } from '@/lib/api/api-fetch';
+import type { JsonBody } from '@furria/api-client';
 import { provePasskey } from '@/lib/passkey/passkey-flows';
 import type { ReauthenticationProof, ResolvedReauthenticationProof } from './types';
 

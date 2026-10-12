@@ -1,11 +1,11 @@
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { skipToken, useQuery, useQueryClient } from '@tanstack/react-query';
-import { ME_QUERY_KEY } from '@/features/session';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import type { PermissionKey } from '@/lib/api/schemas';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toIsoDay } from '@/lib/day';
+import { queryKeys } from '@/lib/query/reads';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import {
   toHolderAddedMessage,
@@ -36,16 +36,6 @@ import type {
   RoleForm,
   RolesResponse,
 } from './schemas';
-
-export const ROLES_QUERY_KEY = ['manage', 'roles'] as const;
-
-export const roleQueryKey = (roleId: number | null): readonly [string, string, number | null] => [
-  'manage',
-  'roles',
-  roleId,
-];
-
-const ROLES_SCOPE = [ROLES_QUERY_KEY, ME_QUERY_KEY] as const;
 
 export interface RoleNameInput {
   roleName: string;
@@ -94,7 +84,7 @@ const applyListPermissions = (
 
 export const useRolesQuery = (): UseQueryResult<RolesResponse, Error> =>
   useQuery({
-    queryKey: ROLES_QUERY_KEY,
+    queryKey: queryKeys.roles,
     queryFn: () => withFreshAccessToken(requestRoles),
   });
 
@@ -108,24 +98,24 @@ export const useRoleQuery = (roleId: number | null): UseQueryResult<RoleDetails,
           withFreshAccessToken((accessToken) => requestRole(roleId, accessToken));
 
   return useQuery({
-    queryKey: roleQueryKey(roleId),
+    queryKey: queryKeys.role(roleId),
     queryFn: load,
     placeholderData: () =>
-      toRoleSeed(queryClient.getQueryData<RolesResponse>(ROLES_QUERY_KEY), roleId),
+      toRoleSeed(queryClient.getQueryData<RolesResponse>(queryKeys.roles), roleId),
   });
 };
 
 export const useCreateRoleMutation = (): UseMutationResult<CreatedRole, Error, RoleForm> =>
   useApiMutation({
     request: requestCreateRole,
-    invalidates: ROLES_SCOPE,
+    changes: ['role'],
     notice: { success: (form) => toRoleCreatedMessage(form.name) },
   });
 
 export const useUpdateRoleMutation = (roleId: number): UseMutationResult<void, Error, RoleForm> =>
   useApiMutation({
     request: (form: RoleForm, accessToken) => requestUpdateRole(roleId, form, accessToken),
-    invalidates: ROLES_SCOPE,
+    changes: ['role'],
     notice: { success: (form) => toRoleSavedMessage(form.name) },
   });
 
@@ -134,7 +124,7 @@ export const useArchiveRoleMutation = (
 ): UseMutationResult<void, Error, RoleNameInput> =>
   useApiMutation({
     request: (_input: RoleNameInput, accessToken) => requestArchiveRole(roleId, accessToken),
-    invalidates: ROLES_SCOPE,
+    changes: ['role'],
     notice: { success: (input) => toRoleArchivedMessage(input.roleName) },
   });
 
@@ -143,7 +133,7 @@ export const useRestoreRoleMutation = (
 ): UseMutationResult<void, Error, RoleNameInput> =>
   useApiMutation({
     request: (_input: RoleNameInput, accessToken) => requestRestoreRole(roleId, accessToken),
-    invalidates: ROLES_SCOPE,
+    changes: ['role'],
     notice: {
       success: (input) => toRoleRestoredMessage(input.roleName),
       failure: toWriteErrorMessage,
@@ -157,14 +147,14 @@ export const useSetRolePermissionsMutation = (
     request: (input: SetRolePermissionsInput, accessToken) =>
       requestSetRolePermissions(roleId, input.permissionKeys, accessToken),
     optimistic: [
-      optimisticPatch(roleQueryKey(roleId), (current: RoleDetails | undefined, input) =>
+      optimisticPatch(queryKeys.role(roleId), (current: RoleDetails | undefined, input) =>
         applyRolePermissions(current, input.permissionKeys),
       ),
-      optimisticPatch(ROLES_QUERY_KEY, (current: RolesResponse | undefined, input) =>
+      optimisticPatch(queryKeys.roles, (current: RolesResponse | undefined, input) =>
         applyListPermissions(current, roleId, input.permissionKeys),
       ),
     ],
-    invalidates: [ME_QUERY_KEY],
+    changes: ['role'],
     notice: {
       success: (input) =>
         toPermissionSavedMessage(toPermissionCopy(input.key).title, input.enabled),
@@ -183,7 +173,7 @@ export const useAddRoleHoldingMutation = (
         { personId: input.personId, sinceOn: input.sinceOn },
         accessToken,
       ),
-    invalidates: ROLES_SCOPE,
+    changes: ['roleHolding'],
     notice: {
       success: (input) =>
         toHolderAddedMessage(input.personName, roleName, input.sinceOn, toIsoDay(new Date())),
@@ -200,7 +190,7 @@ export const useEndRoleHoldingMutation = (
         { roleHoldingId: input.roleHoldingId, endedOn: input.endedOn },
         accessToken,
       ),
-    invalidates: ROLES_SCOPE,
+    changes: ['roleHolding'],
     notice: {
       success: (input) =>
         toHoldingEndedMessage(input.personName, input.endedOn, toIsoDay(new Date())),

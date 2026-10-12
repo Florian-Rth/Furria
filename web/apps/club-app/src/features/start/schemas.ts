@@ -1,8 +1,9 @@
 import { z } from 'zod';
+import { AttendanceAnswerSchema } from '@/features/attendance/schemas';
 import { TO_DO_KINDS } from '@/features/to-dos/schemas';
 import { knownKindsOnly } from '@/lib/api/known-kinds';
 import { MediaItemStateSchema, MediaUrlSchema, PictureSchema } from '@/lib/api/schemas';
-import { ATTENDANCE_ANSWER_KEYS, CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
+import { CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
 import { GroupToneSchema } from '@/lib/group-tone';
 
 const StartGroupRefSchema = z.object({
@@ -26,7 +27,7 @@ const StartRunSchema = z.object({ groupId: z.int(), function: z.string().nullabl
 export type StartRun = z.infer<typeof StartRunSchema>;
 
 const StartAttendanceSchema = z.object({
-  viewerAnswer: z.enum(ATTENDANCE_ANSWER_KEYS).nullable(),
+  viewerAnswer: AttendanceAnswerSchema.nullable(),
   isOwed: z.boolean(),
 });
 export type StartAttendance = z.infer<typeof StartAttendanceSchema>;

@@ -1,10 +1,4 @@
-export {
-  groupHubQueryKey,
-  MY_GROUPS_QUERY_KEY,
-  useGroupHubQuery,
-  useMyGroupsQuery,
-  usePersonSearchQuery,
-} from './api';
+export { useGroupHubQuery, useMyGroupsQuery, usePersonSearchQuery } from './api';
 export { GroupAdministrationScreen } from './components/GroupAdministrationScreen';
 export { GroupAdminNewScreen } from './components/GroupAdminNewScreen';
 export { GroupAdminScreen } from './components/GroupAdminScreen';

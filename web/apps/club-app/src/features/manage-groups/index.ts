@@ -1,4 +1,4 @@
-export { MANAGED_GROUPS_QUERY_KEY, useManagedGroupsQuery } from './api';
+export { useManagedGroupsQuery } from './api';
 export { GroupCreateScreen } from './components/GroupCreateScreen';
 export { GroupKindCreateScreen } from './components/GroupKindCreateScreen';
 export { GroupKindEditScreen } from './components/GroupKindEditScreen';

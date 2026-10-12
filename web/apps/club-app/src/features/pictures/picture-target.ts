@@ -1,5 +1,5 @@
+import { GROUP_PICTURE_ASPECT, PORTRAIT_ASPECT } from '@furria/ui/picture-sources';
 import type { UploadOwner } from '@/lib/media/media-upload';
-import { GROUP_PICTURE_ASPECT, PORTRAIT_ASPECT } from '@/lib/pictures';
 
 export type PictureKind = 'portrait' | 'groupPicture';
 

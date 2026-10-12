@@ -2,8 +2,9 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
 import { useMeQuery } from '@/features/session';
 import type { PermissionKey } from '@/lib/api/schemas';
+import { queryKeys } from '@/lib/query/reads';
 import { toWriteErrorMessage } from '@/lib/write-error';
-import { ROLES_QUERY_KEY, roleQueryKey, useSetRolePermissionsMutation } from '../api';
+import { useSetRolePermissionsMutation } from '../api';
 import type { RolePermissionEntry } from '../manage-roles-labels';
 import {
   isPermissionHandover,
@@ -61,16 +62,16 @@ export const useRolePermissions = (
   const viewerPersonId = me.data?.person?.id;
 
   const readRoles = (): readonly RoleSummary[] =>
-    queryClient.getQueryData<RolesResponse>(ROLES_QUERY_KEY)?.roles ?? NO_ROLES;
+    queryClient.getQueryData<RolesResponse>(queryKeys.roles)?.roles ?? NO_ROLES;
 
   const readCurrentKeys = (): readonly string[] => {
-    const cached = queryClient.getQueryData<RoleDetails>(roleQueryKey(role.roleId));
+    const cached = queryClient.getQueryData<RoleDetails>(queryKeys.role(role.roleId));
 
     if (cached !== undefined) {
       return cached.permissionKeys;
     }
 
-    const seed = toRoleSeed(queryClient.getQueryData<RolesResponse>(ROLES_QUERY_KEY), role.roleId);
+    const seed = toRoleSeed(queryClient.getQueryData<RolesResponse>(queryKeys.roles), role.roleId);
 
     return seed?.permissionKeys ?? role.permissionKeys;
   };

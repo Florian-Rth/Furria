@@ -1,6 +1,6 @@
+import type { ApiFailure, ApiFieldFailure } from '@furria/api-client';
+import { apiFailureOf } from '@furria/api-client';
 import { ALTCHA_FIELD } from '@/lib/altcha/altcha-proof';
-import type { ApiFieldFailure } from '@/lib/api/errors';
-import { ApiError, RequestBlockedError } from '@/lib/api/errors';
 import type { TicketRequestForm } from './schemas';
 import {
   ticketRequestBlockedMessage,
@@ -36,7 +36,6 @@ export interface TicketRequestFailure {
 const FIELD_FAILURE_STATUS = 400;
 const NOT_FOUND_STATUS = 404;
 const CONFLICT_STATUS = 409;
-const RATE_LIMITED_STATUS = 429;
 
 const FORM_FIELD_OF_API_FIELD = new Map<string, TicketRequestFieldName>([
   ['ticketCount', 'ticketCount'],
@@ -87,16 +86,29 @@ const toFieldRefusal = (failures: readonly ApiFieldFailure[]): TicketRequestFail
     : { fields, noticeKind: null, offersMail: false, closesWindow: false };
 };
 
-const toApiFailure = (error: ApiError): TicketRequestFailure => {
-  switch (error.status) {
-    case RATE_LIMITED_STATUS:
-      return RATE_LIMITED;
+const toStatusFailure = (status: number): TicketRequestFailure => {
+  switch (status) {
     case CONFLICT_STATUS:
       return CLOSED;
     case NOT_FOUND_STATUS:
       return GONE;
-    case FIELD_FAILURE_STATUS:
-      return toFieldRefusal(error.failures);
+    default:
+      return UNAVAILABLE;
+  }
+};
+
+const toApiFailure = (failure: ApiFailure): TicketRequestFailure => {
+  switch (failure.kind) {
+    case 'unreachable':
+      return BLOCKED;
+    case 'throttled':
+      return RATE_LIMITED;
+    case 'refused':
+      return failure.status === FIELD_FAILURE_STATUS
+        ? toFieldRefusal(failure.fields)
+        : toStatusFailure(failure.status);
+    case 'status':
+      return toStatusFailure(failure.status);
     default:
       return UNAVAILABLE;
   }
@@ -107,11 +119,9 @@ export const toTicketRequestFailure = (error: Error | null): TicketRequestFailur
     return null;
   }
 
-  if (error instanceof RequestBlockedError) {
-    return BLOCKED;
-  }
+  const failure = apiFailureOf(error);
 
-  return error instanceof ApiError ? toApiFailure(error) : UNAVAILABLE;
+  return failure === null ? UNAVAILABLE : toApiFailure(failure);
 };
 
 export const toTicketRequestNotice = (failure: TicketRequestFailure | null): string | null =>

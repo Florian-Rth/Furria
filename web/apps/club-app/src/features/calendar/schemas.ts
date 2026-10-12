@@ -1,8 +1,8 @@
 import { z } from 'zod';
+import { AttendanceAnswerSchema } from '@/features/attendance/schemas';
 import { CalendarEntryKindSchema } from '@/features/club';
 import { AppSearchSchema } from '@/features/session';
 import { ClockTimeSchema } from '@/lib/api/schemas';
-import { ATTENDANCE_ANSWER_KEYS } from '@/lib/calendar-copy';
 import { EVENT_SALES_STATUS_KEYS } from '@/lib/event-copy';
 import { GroupToneSchema } from '@/lib/group-tone';
 
@@ -16,9 +16,6 @@ export type CalendarBoardSearch = z.infer<typeof CalendarBoardSearchSchema>;
 
 export const CalendarEntryVisibilitySchema = z.enum(['group', 'club', 'public']);
 export type CalendarEntryVisibility = z.infer<typeof CalendarEntryVisibilitySchema>;
-
-export const AttendanceAnswerSchema = z.enum(ATTENDANCE_ANSWER_KEYS);
-export type AttendanceAnswer = z.infer<typeof AttendanceAnswerSchema>;
 
 export const ParticipatingGroupSchema = z.object({
   groupId: z.number().int(),

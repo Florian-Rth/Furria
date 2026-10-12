@@ -346,6 +346,9 @@ importers:
       '@emotion/styled':
         specifier: 'catalog:'
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react@19.2.7)
+      '@furria/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
       '@furria/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -458,6 +461,9 @@ importers:
       '@emotion/styled':
         specifier: 'catalog:'
         version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react@19.2.7)
+      '@furria/api-client':
+        specifier: workspace:*
+        version: link:../../packages/api-client
       '@furria/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -531,6 +537,19 @@ importers:
       vite:
         specifier: 'catalog:'
         version: 8.1.5(@types/node@26.1.1)(jiti@2.7.0)
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.10(@types/node@26.1.1)(happy-dom@20.10.6)(vite@8.1.5(@types/node@26.1.1)(jiti@2.7.0))
+
+  packages/api-client:
+    dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
       vitest:
         specifier: 'catalog:'
         version: 4.1.10(@types/node@26.1.1)(happy-dom@20.10.6)(vite@8.1.5(@types/node@26.1.1)(jiti@2.7.0))

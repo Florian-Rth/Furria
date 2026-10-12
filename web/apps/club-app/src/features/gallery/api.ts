@@ -1,4 +1,4 @@
-import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import {
   keepPreviousData,
   queryOptions,
@@ -6,10 +6,10 @@ import {
   useQuery,
   useQueryClient,
 } from '@tanstack/react-query';
-import { START_QUERY_KEY } from '@/features/start';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { pollWhileDeveloping } from '@/lib/media/developing';
+import { queryKeys } from '@/lib/query/reads';
 import type { AlbumFilter } from './requests';
 import {
   requestAlbum,
@@ -39,47 +39,25 @@ import type {
 import type { AlbumPayload, AlbumUpdatePayload, InboxOwner, SelectionPhoto } from './types';
 import type { DevelopedItem } from './upload/upload-tiles';
 
-export const GALLERY_QUERY_KEY = ['gallery'] as const;
-export const GALLERY_HUB_QUERY_KEY = ['gallery', 'hub'] as const;
-export const GALLERY_INBOXES_QUERY_KEY = ['gallery', 'inboxes'] as const;
-export const GALLERY_BIN_QUERY_KEY = ['gallery', 'bin'] as const;
-
-export const albumQueryKey = (
-  albumId: number,
-  filter: AlbumFilter,
-): readonly [string, string, number, AlbumFilter] => ['gallery', 'album', albumId, filter];
-
-export const inboxQueryKey = (owner: InboxOwner): readonly [string, string, InboxOwner] => [
-  'gallery',
-  'inbox',
-  owner,
-];
-
 const isProcessing = (album: { items: readonly { state: string }[] } | undefined): boolean =>
   album?.items.some((item) => item.state === 'processing') ?? false;
 
-const GALLERY_SCOPE = [GALLERY_QUERY_KEY, START_QUERY_KEY] as const;
-
-export const refreshGallery = async (queryClient: QueryClient): Promise<void> => {
-  await Promise.all(GALLERY_SCOPE.map((queryKey) => queryClient.invalidateQueries({ queryKey })));
-};
-
 export const useGalleryHubQuery = (): UseQueryResult<GalleryHub, Error> =>
   useQuery({
-    queryKey: GALLERY_HUB_QUERY_KEY,
+    queryKey: queryKeys.galleryHub,
     queryFn: () => withFreshAccessToken(requestGalleryHub),
   });
 
 const albumQueryOptions = (albumId: number, filter: AlbumFilter) =>
   queryOptions({
-    queryKey: albumQueryKey(albumId, filter),
+    queryKey: queryKeys.album(albumId, filter),
     queryFn: () => withFreshAccessToken((token) => requestAlbum(albumId, filter, token)),
     refetchInterval: pollWhileDeveloping(isProcessing),
   });
 
 const inboxQueryOptions = (owner: InboxOwner) =>
   queryOptions({
-    queryKey: inboxQueryKey(owner),
+    queryKey: queryKeys.inbox(owner),
     queryFn: () => withFreshAccessToken((token) => requestInbox(owner, token)),
     refetchInterval: pollWhileDeveloping(isProcessing),
   });
@@ -120,21 +98,20 @@ export const useDevelopedItems = (
 
 export const useInboxesQuery = (enabled: boolean): UseQueryResult<InboxesResponse, Error> =>
   useQuery({
-    queryKey: GALLERY_INBOXES_QUERY_KEY,
+    queryKey: queryKeys.inboxes,
     queryFn: () => withFreshAccessToken(requestInboxes),
     enabled,
   });
 
 export const useGalleryBinQuery = (): UseQueryResult<GalleryBin, Error> =>
   useQuery({
-    queryKey: GALLERY_BIN_QUERY_KEY,
+    queryKey: queryKeys.galleryBin,
     queryFn: () => withFreshAccessToken(requestBin),
   });
 
 const useGalleryMutation = <TInput, TResult>(
   request: (input: TInput, accessToken: string) => Promise<TResult>,
-): UseMutationResult<TResult, Error, TInput> =>
-  useApiMutation({ request, invalidates: GALLERY_SCOPE });
+): UseMutationResult<TResult, Error, TInput> => useApiMutation({ request, changes: ['media'] });
 
 export interface AlbumUpdateInput {
   albumId: number;
@@ -191,7 +168,7 @@ export const useFullAlbumFetch = (): ((albumId: number) => Promise<AlbumDetails>
   const queryClient = useQueryClient();
   return (albumId: number) =>
     queryClient.fetchQuery({
-      queryKey: albumQueryKey(albumId, UNFILTERED),
+      queryKey: queryKeys.album(albumId, UNFILTERED),
       queryFn: () => withFreshAccessToken((token) => requestAlbum(albumId, UNFILTERED, token)),
     });
 };

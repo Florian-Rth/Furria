@@ -1,4 +1,11 @@
-import { KkCoverPicture, KkEyebrow, KkPhotoPlaceholder, kkTokens } from '@furria/ui';
+import {
+  GROUP_PICTURE_ASPECT,
+  KkCoverPicture,
+  KkEyebrow,
+  KkPhotoPlaceholder,
+  kkTokens,
+  toPictureSources,
+} from '@furria/ui';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -13,7 +20,6 @@ import {
   groupsLabels,
   resolveGroupOpenness,
 } from '@/features/club/groups-content';
-import { GROUP_PICTURE_ASPECT, toPictureSources } from '@/lib/api/picture';
 import type { PublicGroup } from '@/lib/public-groups/schemas';
 import { GroupOpennessChip } from './GroupOpennessChip';
 

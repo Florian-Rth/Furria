@@ -1,10 +1,9 @@
-import { KkMeta, KkPhoto, KkText } from '@furria/ui';
+import { KkMeta, KkPhoto, KkText, PORTRAIT_ASPECT, toPictureSources } from '@furria/ui';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';
 import { formatPublishedDay } from '@/lib/announcements';
 import { toInitials } from '@/lib/initials';
-import { PORTRAIT_ASPECT, toPictureSources } from '@/lib/pictures';
 import type { AnnouncementAuthor } from '../schemas';
 
 const PORTRAIT_SPACING = 9;

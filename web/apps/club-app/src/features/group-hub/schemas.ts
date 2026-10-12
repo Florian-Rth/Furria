@@ -1,8 +1,9 @@
 import { z } from 'zod';
+import { AttendanceAnswerSchema } from '@/features/attendance/schemas';
 import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/group-detail';
 import { AppSearchSchema } from '@/features/session';
 import { PersonRefSchema, PictureEditingSchema, PictureSchema } from '@/lib/api/schemas';
-import { ATTENDANCE_ANSWER_KEYS, CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
+import { CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
 import { GroupToneSchema } from '@/lib/group-tone';
 import { requiredDay, requiredPerson } from '@/lib/required-fields';
 
@@ -244,9 +245,6 @@ export type GroupCalendarKind = z.infer<typeof GroupCalendarKindSchema>;
 export const GroupCalendarVisibilitySchema = z.enum(['group', 'club', 'public']);
 export type GroupCalendarVisibility = z.infer<typeof GroupCalendarVisibilitySchema>;
 
-export const GroupAttendanceAnswerSchema = z.enum(ATTENDANCE_ANSWER_KEYS);
-export type GroupAttendanceAnswer = z.infer<typeof GroupAttendanceAnswerSchema>;
-
 export const GroupCalendarParticipantSchema = z.object({
   groupId: z.number().int(),
   name: z.string(),
@@ -269,7 +267,7 @@ export const GroupCalendarEntrySchema = z.object({
   visibility: GroupCalendarVisibilitySchema,
   asksForResponse: z.boolean(),
   description: z.string().nullable(),
-  viewerAnswer: GroupAttendanceAnswerSchema.nullable(),
+  viewerAnswer: AttendanceAnswerSchema.nullable(),
   viewerMayAnswer: z.boolean(),
   isRunning: z.boolean(),
 });

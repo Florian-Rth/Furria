@@ -1,5 +1,5 @@
+import { ApiError } from '@furria/api-client';
 import { describe, expect, it } from 'vitest';
-import { ApiError, RequestBlockedError } from '@/lib/api/errors';
 import type { ApplyFailure } from './apply-failure';
 import { toApplyFailure } from './apply-failure';
 
@@ -8,12 +8,12 @@ describe('toApplyFailure', () => {
     ['nothing failed', null, null],
     [
       'a request that never left the browser',
-      new RequestBlockedError(),
+      new ApiError({ kind: 'unreachable' }),
       { fields: [], noticeKind: 'blocked', offersMail: true },
     ],
     [
       'a server failure',
-      new ApiError(503),
+      new ApiError({ kind: 'status', status: 503 }),
       { fields: [], noticeKind: 'unavailable', offersMail: true },
     ],
     [
@@ -23,22 +23,30 @@ describe('toApplyFailure', () => {
     ],
     [
       'a refusal without a reason',
-      new ApiError(422),
+      new ApiError({ kind: 'status', status: 422 }),
       { fields: [], noticeKind: 'unavailable', offersMail: true },
     ],
     [
       'a proof refused twice',
-      new ApiError(400, [{ field: 'altcha', message: 'abgelaufen' }]),
+      new ApiError({
+        kind: 'refused',
+        status: 400,
+        fields: [{ field: 'altcha', message: 'abgelaufen' }],
+      }),
       { fields: [], noticeKind: 'proofRefused', offersMail: true },
     ],
     [
       'the rate limit',
-      new ApiError(429),
+      new ApiError({ kind: 'throttled' }),
       { fields: [], noticeKind: 'rateLimited', offersMail: false },
     ],
     [
       'the club refusing the birth date',
-      new ApiError(422, [{ field: 'request', message: 'Mindestens 16.' }]),
+      new ApiError({
+        kind: 'refused',
+        status: 422,
+        fields: [{ field: 'request', message: 'Mindestens 16.' }],
+      }),
       {
         fields: [{ name: 'birthDate', message: 'Mindestens 16.' }],
         noticeKind: null,
@@ -47,11 +55,15 @@ describe('toApplyFailure', () => {
     ],
     [
       'field failures, keeping only the fields the applicant typed in',
-      new ApiError(400, [
-        { field: 'email', message: 'Keine Adresse.' },
-        { field: 'consentAccepted', message: 'Fehlt.' },
-        { field: 'generalErrors', message: 'Unbekannt.' },
-      ]),
+      new ApiError({
+        kind: 'refused',
+        status: 400,
+        fields: [
+          { field: 'email', message: 'Keine Adresse.' },
+          { field: 'consentAccepted', message: 'Fehlt.' },
+          { field: 'generalErrors', message: 'Unbekannt.' },
+        ],
+      }),
       {
         fields: [
           { name: 'email', message: 'Keine Adresse.' },
@@ -63,7 +75,11 @@ describe('toApplyFailure', () => {
     ],
     [
       'field failures the form does not know',
-      new ApiError(400, [{ field: 'generalErrors', message: 'x' }]),
+      new ApiError({
+        kind: 'refused',
+        status: 400,
+        fields: [{ field: 'generalErrors', message: 'x' }],
+      }),
       { fields: [], noticeKind: 'unavailable', offersMail: true },
     ],
   ])('answers %s', (_, error, failure) => {

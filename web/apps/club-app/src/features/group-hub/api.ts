@@ -1,14 +1,10 @@
 import type { KkNoticeRequest } from '@furria/ui';
-import type { QueryKey, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { keepPreviousData, skipToken, useQuery } from '@tanstack/react-query';
-import { CALENDAR_QUERY_KEY } from '@/features/calendar';
-import { CLUB_HUB_QUERY_KEY } from '@/features/club';
-import { GROUPS_QUERY_KEY } from '@/features/groups';
-import { START_QUERY_KEY } from '@/features/start';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
-import { toAttendanceSavedMessage } from '@/lib/calendar-copy';
 import { toIsoDay } from '@/lib/day';
+import { queryKeys } from '@/lib/query/reads';
 import type { CalendarEntryWindow } from './group-calendar-entries';
 import {
   GROUP_INFO_SAVED_MESSAGE,
@@ -29,7 +25,6 @@ import {
   requestGeneratedTrainings,
   requestGroupAdministrationUpdate,
   requestGroupArchivalFromHub,
-  requestGroupAttendanceResponse,
   requestGroupCalendar,
   requestGroupHub,
   requestGroupInfoUpdate,
@@ -45,7 +40,6 @@ import type {
   AddedGroupMembership,
   GeneratedTrainings,
   GroupAdministrationForm,
-  GroupAttendanceAnswer,
   GroupCalendarResponse,
   GroupHub,
   GroupInfoForm,
@@ -53,37 +47,6 @@ import type {
   PersonSearchResponse,
   TrainingPreview,
 } from './schemas';
-
-const MANAGED_GROUPS_QUERY_KEY = ['manage', 'groups'] as const;
-
-export const MY_GROUPS_QUERY_KEY = ['my-groups'] as const;
-
-export const groupHubQueryKey = (groupId: number | null): readonly [string, number | null] => [
-  'groups',
-  groupId,
-];
-
-export const groupCalendarQueryKey = (
-  groupId: number | null,
-  from: string,
-  to: string,
-): readonly [string, number | null, string, string, string] => [
-  'groups',
-  groupId,
-  'calendar',
-  from,
-  to,
-];
-
-export const personSearchQueryKey = (term: string): readonly [string, string] => [
-  'person-search',
-  term,
-];
-
-export interface GroupAttendanceInput {
-  calendarEntryId: number;
-  answer: GroupAttendanceAnswer;
-}
 
 export interface AdminAppointment {
   function: string | null;
@@ -117,14 +80,9 @@ export interface EndAdminInput {
   endedOn: string;
 }
 
-const hubScope = (groupId: number): readonly QueryKey[] => [
-  groupHubQueryKey(groupId),
-  MY_GROUPS_QUERY_KEY,
-];
-
 export const useMyGroupsQuery = (): UseQueryResult<MyGroupsResponse, Error> =>
   useQuery({
-    queryKey: MY_GROUPS_QUERY_KEY,
+    queryKey: queryKeys.myGroups,
     queryFn: () => withFreshAccessToken(requestMyGroups),
   });
 
@@ -135,7 +93,7 @@ export const useGroupHubQuery = (groupId: number | null): UseQueryResult<GroupHu
       : (): Promise<GroupHub> =>
           withFreshAccessToken((accessToken) => requestGroupHub(groupId, accessToken));
 
-  return useQuery({ queryKey: groupHubQueryKey(groupId), queryFn: load });
+  return useQuery({ queryKey: queryKeys.groupHub(groupId), queryFn: load });
 };
 
 export const useGroupCalendarQuery = (
@@ -149,22 +107,10 @@ export const useGroupCalendarQuery = (
           withFreshAccessToken((accessToken) => requestGroupCalendar(groupId, window, accessToken));
 
   return useQuery({
-    queryKey: groupCalendarQueryKey(groupId, window.from, window.to),
+    queryKey: queryKeys.groupCalendar(groupId, window.from, window.to),
     queryFn: load,
   });
 };
-
-export const useGroupAttendanceMutation = (): UseMutationResult<
-  void,
-  Error,
-  GroupAttendanceInput
-> =>
-  useApiMutation({
-    request: ({ calendarEntryId, answer }: GroupAttendanceInput, accessToken) =>
-      requestGroupAttendanceResponse(calendarEntryId, answer, accessToken),
-    invalidates: [GROUPS_QUERY_KEY, CALENDAR_QUERY_KEY, START_QUERY_KEY],
-    notice: { success: ({ answer }) => toAttendanceSavedMessage(answer) },
-  });
 
 export const usePersonSearchQuery = (
   term: string | null,
@@ -176,7 +122,7 @@ export const usePersonSearchQuery = (
           withFreshAccessToken((accessToken) => requestPersonSearch(term, accessToken));
 
   return useQuery({
-    queryKey: personSearchQueryKey(term ?? ''),
+    queryKey: queryKeys.personSearch(term ?? ''),
     queryFn: load,
     placeholderData: keepPreviousData,
   });
@@ -188,7 +134,7 @@ export const useUpdateGroupInfoMutation = (
   useApiMutation({
     request: (form: GroupInfoForm, accessToken) =>
       requestGroupInfoUpdate(groupId, form, accessToken),
-    invalidates: hubScope(groupId),
+    changes: ['group'],
     notice: { success: () => GROUP_INFO_SAVED_MESSAGE },
   });
 
@@ -198,7 +144,7 @@ export const useUpdateGroupAdministrationMutation = (
   useApiMutation({
     request: (form: GroupAdministrationForm, accessToken) =>
       requestGroupAdministrationUpdate(groupId, form, accessToken),
-    invalidates: [...hubScope(groupId), MANAGED_GROUPS_QUERY_KEY, GROUPS_QUERY_KEY],
+    changes: ['group'],
     notice: { success: (form) => toGroupAdministrationSavedMessage(form.name) },
   });
 
@@ -212,7 +158,7 @@ export const useArchiveGroupFromHubMutation = (
   useApiMutation({
     request: (_input: ArchiveGroupFromHubInput, accessToken) =>
       requestGroupArchivalFromHub(groupId, accessToken),
-    invalidates: [...hubScope(groupId), MANAGED_GROUPS_QUERY_KEY, GROUPS_QUERY_KEY],
+    changes: ['group'],
     notice: { success: (input) => toGroupArchivedFromHubMessage(input.name) },
   });
 
@@ -260,7 +206,7 @@ export const useAddGroupMembershipMutation = (
   useApiMutation({
     request: (input: AddMemberInput, accessToken) =>
       requestMembershipWithAdmin(groupId, input, accessToken),
-    invalidates: hubScope(groupId),
+    changes: ['groupMembership', 'groupAdmin'],
     notice: { success: toMemberAddedNotice },
   });
 
@@ -274,7 +220,7 @@ export const useEndGroupMembershipMutation = (
         { groupMembershipId: input.groupMembershipId, endedOn: input.endedOn },
         accessToken,
       ),
-    invalidates: hubScope(groupId),
+    changes: ['groupMembership'],
     notice: {
       success: (input) =>
         toMembershipEndedMessage(input.personName, input.endedOn, toIsoDay(new Date())),
@@ -291,7 +237,7 @@ export const useAddGroupAdminMutation = (
         { personId: input.personId, function: input.function, sinceOn: input.sinceOn },
         accessToken,
       ),
-    invalidates: hubScope(groupId),
+    changes: ['groupAdmin'],
     notice: {
       success: (input) =>
         toAdminAppointedMessage(input.personName, input.sinceOn, toIsoDay(new Date())),
@@ -308,19 +254,9 @@ export const useEndGroupAdminMutation = (
         { groupAdminId: input.groupAdminId, endedOn: input.endedOn },
         accessToken,
       ),
-    invalidates: hubScope(groupId),
+    changes: ['groupAdmin'],
     notice: { success: toAdminEndedNotice },
   });
-
-export const trainingPreviewQueryKey = (
-  groupId: number,
-  endsOn: string | null,
-): readonly [string, number, string, string | null] => [
-  'groups',
-  groupId,
-  'training-preview',
-  endsOn,
-];
 
 export interface GenerateTrainingsInput {
   title: string;
@@ -333,7 +269,7 @@ export const useSetTrainingSlotsMutation = (
   useApiMutation({
     request: (slots: readonly TrainingSlotPayload[], accessToken) =>
       requestSetTrainingSlots(groupId, slots, accessToken),
-    invalidates: hubScope(groupId),
+    changes: ['trainingSlot'],
     notice: { success: () => RHYTHM_SAVED_MESSAGE },
   });
 
@@ -348,7 +284,7 @@ export const useTrainingPreviewQuery = (
     : skipToken;
 
   return useQuery({
-    queryKey: trainingPreviewQueryKey(groupId, endsOn),
+    queryKey: queryKeys.trainingPreview(groupId, endsOn),
     queryFn: load,
     placeholderData: keepPreviousData,
   });
@@ -360,7 +296,7 @@ export const useGenerateTrainingsMutation = (
   useApiMutation({
     request: (input: GenerateTrainingsInput, accessToken) =>
       requestGeneratedTrainings(groupId, input.title, input.instants, accessToken),
-    invalidates: [groupHubQueryKey(groupId), CALENDAR_QUERY_KEY, CLUB_HUB_QUERY_KEY],
+    changes: ['calendarEntry'],
     notice: {
       success: (_input, written) =>
         toTrainingsCreatedMessage(written.createdCount, written.skippedCount),

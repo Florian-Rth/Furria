@@ -1,4 +1,4 @@
-import { RequestFailedError } from '@/lib/api/api-error';
+import { refusalMessageOf, refusalOf } from '@furria/api-client';
 import type { RedeemFailureKind } from './redeem-failure';
 import { toRedeemFailureKind } from './redeem-failure';
 import type { InvitationPurpose } from './redeem-stage';
@@ -68,14 +68,13 @@ export const redeemErrorPlacementOf = (error: Error | null): RedeemErrorPlacemen
   return {
     slot: FIELD_SLOTS[failure] ?? 'footer',
     failure,
-    fromServer: SERVER_WORDED_FAILURES.has(failure) && error instanceof RequestFailedError,
+    fromServer: SERVER_WORDED_FAILURES.has(failure) && refusalOf(error) !== null,
   };
 };
 
 const toPlacedMessage = (error: Error | null, placement: RedeemErrorPlacement): string =>
-  placement.fromServer && error instanceof RequestFailedError
-    ? error.firstMessage
-    : toRedeemFailureMessage(placement.failure);
+  (placement.fromServer ? refusalMessageOf(error) : null) ??
+  toRedeemFailureMessage(placement.failure);
 
 export const toRedeemErrorMessages = (error: Error | null): RedeemErrorMessages => {
   const placement = redeemErrorPlacementOf(error);

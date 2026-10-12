@@ -1,4 +1,4 @@
-import type { JsonBody } from '@/lib/api/api-fetch';
+import type { JsonBody } from '@furria/api-client';
 import { apiFetch } from '@/lib/api/api-fetch';
 import type { PasskeyAssertionAttempt } from '@/lib/passkey/passkey-flows';
 import type { InvitationCredential } from './invitation-credential';

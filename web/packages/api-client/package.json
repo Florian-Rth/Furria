@@ -1,0 +1,24 @@
+{
+  "name": "@furria/api-client",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": [
+    "./src/zod-without-eval.ts"
+  ],
+  "exports": {
+    ".": "./src/index.ts",
+    "./zod-without-eval": "./src/zod-without-eval.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -15,3 +15,16 @@ export const toPictureSourceSet = (urls: KkPictureUrls, aspect: number): string 
     `${urls.mediumUrl} ${widthOf(LONG_EDGES.medium, aspect)}w`,
     `${urls.largeUrl} ${widthOf(LONG_EDGES.large, aspect)}w`,
   ].join(', ');
+
+export const PORTRAIT_ASPECT = 4 / 5;
+export const GROUP_PICTURE_ASPECT = 3 / 2;
+
+export interface KkPictureSources {
+  source: string | undefined;
+  sourceSet: string | undefined;
+}
+
+export const toPictureSources = (urls: KkPictureUrls | null, aspect: number): KkPictureSources =>
+  urls === null
+    ? { source: undefined, sourceSet: undefined }
+    : { source: urls.mediumUrl, sourceSet: toPictureSourceSet(urls, aspect) };

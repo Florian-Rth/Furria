@@ -17,15 +17,10 @@ const MISSING_VALUE = 'nicht hinterlegt';
 interface MailInvitationEditorProps {
   subject: AccessSubject;
   origin: KkScreenOrigin;
-  onInvited: () => void;
 }
 
-export const MailInvitationEditor: FC<MailInvitationEditorProps> = ({
-  subject,
-  origin,
-  onInvited,
-}) => {
-  const control = useMailInvitationEditor({ subject, onInvited });
+export const MailInvitationEditor: FC<MailInvitationEditorProps> = ({ subject, origin }) => {
+  const control = useMailInvitationEditor({ subject });
   const { invitation } = subject.access;
 
   const chain =

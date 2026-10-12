@@ -1,8 +1,13 @@
-import { KkChip, KkCoverPicture, KkGroupStage } from '@furria/ui';
+import {
+  GROUP_PICTURE_ASPECT,
+  KkChip,
+  KkCoverPicture,
+  KkGroupStage,
+  toPictureSources,
+} from '@furria/ui';
 import type { FC } from 'react';
 import { toGroupKindLabel, toGroupTone } from '@/features/groups';
 import { currentSessionYear } from '@/lib/club';
-import { GROUP_PICTURE_ASPECT, toPictureSources } from '@/lib/pictures';
 import { useGroupHubQuery } from '../api';
 import {
   toAnniversarySeal,

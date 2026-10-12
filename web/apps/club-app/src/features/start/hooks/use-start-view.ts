@@ -1,8 +1,10 @@
+import { usePendingAnswers } from '@/features/attendance';
 import { useMeQuery, usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { useMinuteNow } from '@/lib/use-minute-now';
 import { useStartQuery } from '../api';
 import type { Start } from '../schemas';
+import { withPendingAnswers } from '../start-answer';
 import { startScreenOf, withoutQuiet } from '../start-board';
 import { toStartErrorMessage } from '../start-messages';
 import { useQuietMemory } from './use-quiet-memory';
@@ -37,11 +39,14 @@ export const useStartView = (): StartView => {
   const { visit, touched, touch } = useStartVisit(query.data);
   const personId = me.data?.person?.id ?? null;
   const { memory, quiet } = useQuietMemory(personId);
+  const pendingAnswers = usePendingAnswers();
   const ready = visit !== null && me.data !== undefined;
   const errorMessage = visit === null ? toStartErrorMessage(query.error) : null;
   const paused = visit === null && query.isPaused;
   const skeletonDue = useSkeletonDelay(!ready && errorMessage === null && !paused);
-  const start = ready ? withoutQuiet(visit.start, memory, touched) : null;
+  const start = ready
+    ? withPendingAnswers(withoutQuiet(visit.start, memory, touched), pendingAnswers)
+    : null;
 
   const refetch = (): void => {
     void query.refetch();

@@ -1,10 +1,9 @@
 import type { KkGroupTone, KkScreenOrigin } from '@furria/ui';
-import { KkConfirmDialog, KkCropFrame, KkNote, KkWriteScreen } from '@furria/ui';
+import { KkConfirmDialog, KkCropFrame, KkNote, KkWriteScreen, toPictureSources } from '@furria/ui';
 import type { ChangeEvent, FC } from 'react';
 import { useRef } from 'react';
 import { WriteScreen } from '@/features/write';
 import type { PictureEditing } from '@/lib/api/schemas';
-import { toPictureSources } from '@/lib/pictures';
 import { usePictureEditor } from '../hooks/use-picture-editor';
 import { toPictureActionBar } from '../picture-action-bar';
 import {

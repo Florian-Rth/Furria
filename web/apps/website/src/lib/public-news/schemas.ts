@@ -1,6 +1,6 @@
 import { GROUP_TONES } from '@furria/ui/group-tone';
 import { z } from 'zod';
-import { PictureSchema } from '@/lib/api/picture';
+import { PictureSchema } from '@/lib/api/schemas';
 import { SessionSectionSchema } from '@/lib/api/session-section';
 import { WallClockSchema } from '@/lib/api/wall-clock';
 

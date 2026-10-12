@@ -295,8 +295,13 @@ export type { KkLetterPace } from './letter-pace';
 export { PageLayout } from './PageLayout/PageLayout';
 export type { KkPanelAction } from './panel-action';
 export type { KkPhotoOrientation } from './photo-frame';
-export type { KkPictureUrls } from './picture-sources';
-export { toPictureSourceSet } from './picture-sources';
+export type { KkPictureSources, KkPictureUrls } from './picture-sources';
+export {
+  GROUP_PICTURE_ASPECT,
+  PORTRAIT_ASPECT,
+  toPictureSourceSet,
+  toPictureSources,
+} from './picture-sources';
 export { KK_DARK_SCHEME_ATTRIBUTE, KK_DESKTOP_BREAKPOINT, kkTheme } from './theme';
 export type { KkColorSchemeMode, KkResolvedColorScheme } from './theme-color';
 export { kkThemeColorForScheme, resolveKkColorScheme } from './theme-color';

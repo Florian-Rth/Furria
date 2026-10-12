@@ -1,9 +1,8 @@
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { skipToken, useQuery, useQueryClient } from '@tanstack/react-query';
-import { MANAGE_HUB_QUERY_KEY } from '@/features/manage-hub';
-import { PERSONS_QUERY_KEY } from '@/features/manage-persons';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
+import { queryKeys } from '@/lib/query/reads';
 import type { AdmissionRequest } from './admission';
 import { toAdmittedMessage } from './admission-labels';
 import { toDeclinedMessage } from './manage-membership-applications-labels';
@@ -19,16 +18,6 @@ import type {
   MembershipApplicationsResponse,
 } from './schemas';
 
-export const MEMBERSHIP_APPLICATIONS_QUERY_KEY = ['manage', 'membership-applications'] as const;
-
-export const membershipApplicationQueryKey = (
-  membershipApplicationId: number | null,
-): readonly [string, string, number | null] => [
-  'manage',
-  'membership-application',
-  membershipApplicationId,
-];
-
 export interface DeclineMembershipApplicationInput {
   membershipApplicationId: number;
   applicantName: string;
@@ -40,14 +29,12 @@ export interface AdmitMembershipApplicationInput {
   request: AdmissionRequest;
 }
 
-const UNDECIDED_SCOPE = [MEMBERSHIP_APPLICATIONS_QUERY_KEY, MANAGE_HUB_QUERY_KEY] as const;
-
 export const useMembershipApplicationsQuery = (): UseQueryResult<
   MembershipApplicationsResponse,
   Error
 > =>
   useQuery({
-    queryKey: MEMBERSHIP_APPLICATIONS_QUERY_KEY,
+    queryKey: queryKeys.membershipApplications,
     queryFn: () => withFreshAccessToken(requestMembershipApplications),
   });
 
@@ -63,7 +50,7 @@ export const useMembershipApplicationQuery = (
           );
 
   return useQuery({
-    queryKey: membershipApplicationQueryKey(membershipApplicationId),
+    queryKey: queryKeys.membershipApplication(membershipApplicationId),
     queryFn: load,
   });
 };
@@ -73,7 +60,7 @@ export const useForgetMembershipApplication = (): ((membershipApplicationId: num
 
   return (membershipApplicationId) => {
     queryClient.removeQueries({
-      queryKey: membershipApplicationQueryKey(membershipApplicationId),
+      queryKey: queryKeys.membershipApplication(membershipApplicationId),
       exact: true,
     });
   };
@@ -87,7 +74,7 @@ export const useDeclineMembershipApplicationMutation = (): UseMutationResult<
   useApiMutation({
     request: (input: DeclineMembershipApplicationInput, accessToken) =>
       requestMembershipApplicationDecline(input.membershipApplicationId, accessToken),
-    invalidates: UNDECIDED_SCOPE,
+    changes: ['membershipApplication'],
     notice: { success: (input) => toDeclinedMessage(input.applicantName) },
   });
 
@@ -103,7 +90,7 @@ export const useAdmitMembershipApplicationMutation = (): UseMutationResult<
         input.request,
         accessToken,
       ),
-    invalidates: [...UNDECIDED_SCOPE, PERSONS_QUERY_KEY],
+    changes: ['membershipApplication', 'membership', 'person', 'account'],
     notice: {
       success: (input, admission) => toAdmittedMessage(input.applicantName, admission.invitation),
     },

@@ -1,4 +1,4 @@
-import { RequestBlockedError } from '@/lib/api/errors';
+import { apiFailureOf } from '@furria/api-client';
 import type { ConfirmationOutcome } from './schemas';
 
 export type ConfirmationVerdict = ConfirmationOutcome | 'incomplete';
@@ -30,6 +30,6 @@ export const resolveConfirmationStage = (
 
   return {
     kind: 'failed',
-    failure: error instanceof RequestBlockedError ? 'blocked' : 'unavailable',
+    failure: apiFailureOf(error)?.kind === 'unreachable' ? 'blocked' : 'unavailable',
   };
 };

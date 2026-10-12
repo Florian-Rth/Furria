@@ -1,5 +1,5 @@
+import { ApiError } from '@furria/api-client';
 import { describe, expect, it } from 'vitest';
-import { ApiError, RequestBlockedError } from '@/lib/api/errors';
 import type { ConfirmationStage } from './confirmation-stage';
 import { resolveConfirmationStage } from './confirmation-stage';
 import type { ConfirmationOutcome } from './schemas';
@@ -38,7 +38,7 @@ describe('resolveConfirmationStage', () => {
       'a blocked request',
       TOKEN,
       undefined,
-      new RequestBlockedError(),
+      new ApiError({ kind: 'unreachable' }),
       false,
       { kind: 'failed', failure: 'blocked' },
     ],
@@ -46,11 +46,18 @@ describe('resolveConfirmationStage', () => {
       'a server failure',
       TOKEN,
       undefined,
-      new ApiError(503),
+      new ApiError({ kind: 'status', status: 503 }),
       false,
       { kind: 'failed', failure: 'unavailable' },
     ],
-    ['a retry after a failure', TOKEN, undefined, new ApiError(503), true, { kind: 'confirming' }],
+    [
+      'a retry after a failure',
+      TOKEN,
+      undefined,
+      new ApiError({ kind: 'status', status: 503 }),
+      true,
+      { kind: 'confirming' },
+    ],
   ])('settles %s', (_case, token, outcome, error, isConfirming, expected) => {
     expect(resolveConfirmationStage(token, outcome, error, isConfirming)).toEqual(expected);
   });

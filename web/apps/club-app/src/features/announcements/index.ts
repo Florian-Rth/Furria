@@ -1,7 +1,6 @@
 export { ANNOUNCEMENTS_ORIGIN, ANNOUNCEMENTS_TITLE } from './announcements-labels';
 export type { LastSeenInput } from './api';
 export {
-  ANNOUNCEMENTS_QUERY_KEY,
   useAnnouncementsQuery,
   useLastSeenAnnouncementMutation,
 } from './api';
