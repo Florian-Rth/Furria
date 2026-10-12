@@ -59,6 +59,11 @@ describe('staleReadsAfter', () => {
       change: 'newsPost',
       stale: ['newsHub'],
     },
+    {
+      label: 'a website picture is filled, cut, described or cleared',
+      change: 'websitePicture',
+      stale: ['websitePictures'],
+    },
   ])('marks every read showing it stale when $label', ({ change, stale }) => {
     expect(staleReadsAfter([change])).toEqual(expect.arrayContaining(stale));
   });
@@ -87,7 +92,12 @@ describe('staleReadsAfter', () => {
     {
       label: 'a news post leaves what it can mention or tie alone',
       change: 'newsPost',
-      fresh: ['newsMentionables', 'newsTieCandidates', 'newsGalleryAlbum'],
+      fresh: ['newsMentionables', 'newsTieCandidates', 'galleryPickAlbum'],
+    },
+    {
+      label: 'a website picture leaves the gallery it was copied from alone',
+      change: 'websitePicture',
+      fresh: ['galleryHub', 'album', 'galleryPickAlbum'],
     },
   ])('keeps the rest fresh when $label', ({ change, fresh }) => {
     const stale = staleReadsAfter([change]);

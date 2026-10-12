@@ -21,7 +21,8 @@ furria/
     │   └── event-app/ # Guest event app (placeholder)
     └── packages/
         ├── api-client/ # @furria/api-client — one fetch, one failure classification, media schemas (source-consumed)
-        └── ui/        # @furria/ui — shared KK theme + primitives (source-consumed)
+        ├── ui/        # @furria/ui — shared KK theme + primitives (source-consumed)
+        └── website-pictures/ # @furria/website-pictures — picture slot catalogue + pure helpers (source-consumed)
 ```
 
 ## Build the End State — No Temp Versions

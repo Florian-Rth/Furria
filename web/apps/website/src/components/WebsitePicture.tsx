@@ -1,0 +1,57 @@
+import { aspectRatioCss, KkCoverPicture, KkVacancyField, kkTokens } from '@furria/ui';
+import type { PictureSlotKey } from '@furria/website-pictures';
+import { vacancyToneOf } from '@furria/website-pictures';
+import Box from '@mui/material/Box';
+import type { FC } from 'react';
+import { useWebsitePicture } from '@/lib/website-pictures/use-website-picture';
+
+const FIRST_POSITION = 1;
+const FILL_SIZING = { width: '100%', height: '100%' } as const;
+const INHERITED_CORNERS = { borderRadius: 'inherit' } as const;
+
+interface WebsitePictureProps {
+  slot: PictureSlotKey;
+  sizes: string;
+  position?: number;
+  priority?: boolean;
+  fill?: boolean;
+}
+
+export const WebsitePicture: FC<WebsitePictureProps> = ({
+  slot,
+  sizes,
+  position = FIRST_POSITION,
+  priority = false,
+  fill = false,
+}) => {
+  const picture = useWebsitePicture(slot, sizes, position);
+
+  if (picture.state === 'undeclared') {
+    return null;
+  }
+
+  const aspectRatio = fill ? undefined : aspectRatioCss(picture.aspect);
+  const sizing = fill
+    ? FILL_SIZING
+    : { width: '100%', aspectRatio, borderRadius: `${kkTokens.radius.base}px` };
+
+  if (picture.state === 'empty') {
+    const tone = vacancyToneOf(slot, position);
+    return <KkVacancyField tone={tone} aspectRatio={aspectRatio} sx={sizing} />;
+  }
+
+  if (picture.state === 'pending') {
+    return <Box data-kk-website-picture="pending" sx={sizing} />;
+  }
+
+  return (
+    <Box data-kk-website-picture={slot} sx={sizing}>
+      <KkCoverPicture
+        image={picture.image}
+        alt={picture.alt}
+        priority={priority}
+        sx={INHERITED_CORNERS}
+      />
+    </Box>
+  );
+};

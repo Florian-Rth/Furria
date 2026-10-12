@@ -1,7 +1,9 @@
-import { KkPhotoPlaceholder, kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
-import { storyPhotoCaption } from '@/features/club/story-content';
+import { WebsitePicture } from '@/components/WebsitePicture';
+
+const CLUB_STORY_SIZES = '(min-width: 1536px) 720px, (min-width: 900px) 50vw, 100vw';
 
 export const ClubStoryPhoto: FC = () => (
   <Box
@@ -12,6 +14,6 @@ export const ClubStoryPhoto: FC = () => (
       boxShadow: kkTokens.shadow.raised,
     }}
   >
-    <KkPhotoPlaceholder label={storyPhotoCaption} aspectRatio={kkTokens.aspectRatio.landscape} />
+    <WebsitePicture slot="club.story" sizes={CLUB_STORY_SIZES} />
   </Box>
 );

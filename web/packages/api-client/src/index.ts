@@ -24,5 +24,10 @@ export {
   refusalOf,
   shouldRetryRequest,
 } from './api-failure';
-export type { MediaSchemas, Picture } from './media-schemas';
+export type {
+  MediaSchemas,
+  Picture,
+  PublicWebsitePicture,
+  PublicWebsitePictures,
+} from './media-schemas';
 export { createMediaSchemas } from './media-schemas';

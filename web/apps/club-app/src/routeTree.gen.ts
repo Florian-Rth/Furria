@@ -42,6 +42,7 @@ import { Route as AppManageBoardRouteImport } from './routes/_app/manage.board'
 import { Route as AppManageApplicationsRouteImport } from './routes/_app/manage.applications'
 import { Route as AppLabGreetingRouteImport } from './routes/_app/lab_.$greeting'
 import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups_.$groupId'
+import { Route as AppGalleryWebsiteRouteImport } from './routes/_app/gallery_.website'
 import { Route as AppGalleryUploadRouteImport } from './routes/_app/gallery_.upload'
 import { Route as AppGalleryNewRouteImport } from './routes/_app/gallery_.new'
 import { Route as AppGalleryInboxRouteImport } from './routes/_app/gallery_.inbox'
@@ -274,6 +275,11 @@ const AppLabGreetingRoute = AppLabGreetingRouteImport.update({
 const AppGroupsGroupIdRoute = AppGroupsGroupIdRouteImport.update({
   id: '/groups_/$groupId',
   path: '/groups/$groupId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppGalleryWebsiteRoute = AppGalleryWebsiteRouteImport.update({
+  id: '/gallery_/website',
+  path: '/gallery/website',
   getParentRoute: () => AppRoute,
 } as any)
 const AppGalleryUploadRoute = AppGalleryUploadRouteImport.update({
@@ -710,6 +716,7 @@ export interface FileRoutesByFullPath {
   '/gallery/inbox': typeof AppGalleryInboxRoute
   '/gallery/new': typeof AppGalleryNewRoute
   '/gallery/upload': typeof AppGalleryUploadRoute
+  '/gallery/website': typeof AppGalleryWebsiteRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/lab/$greeting': typeof AppLabGreetingRoute
   '/manage/applications': typeof AppManageApplicationsRoute
@@ -813,6 +820,7 @@ export interface FileRoutesByTo {
   '/gallery/inbox': typeof AppGalleryInboxRoute
   '/gallery/new': typeof AppGalleryNewRoute
   '/gallery/upload': typeof AppGalleryUploadRoute
+  '/gallery/website': typeof AppGalleryWebsiteRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/lab/$greeting': typeof AppLabGreetingRoute
   '/manage/applications': typeof AppManageApplicationsRoute
@@ -920,6 +928,7 @@ export interface FileRoutesById {
   '/_app/gallery_/inbox': typeof AppGalleryInboxRoute
   '/_app/gallery_/new': typeof AppGalleryNewRoute
   '/_app/gallery_/upload': typeof AppGalleryUploadRoute
+  '/_app/gallery_/website': typeof AppGalleryWebsiteRoute
   '/_app/groups_/$groupId': typeof AppGroupsGroupIdRoute
   '/_app/lab_/$greeting': typeof AppLabGreetingRoute
   '/_app/manage/applications': typeof AppManageApplicationsRoute
@@ -1025,6 +1034,7 @@ export interface FileRouteTypes {
     | '/gallery/inbox'
     | '/gallery/new'
     | '/gallery/upload'
+    | '/gallery/website'
     | '/groups/$groupId'
     | '/lab/$greeting'
     | '/manage/applications'
@@ -1128,6 +1138,7 @@ export interface FileRouteTypes {
     | '/gallery/inbox'
     | '/gallery/new'
     | '/gallery/upload'
+    | '/gallery/website'
     | '/groups/$groupId'
     | '/lab/$greeting'
     | '/manage/applications'
@@ -1234,6 +1245,7 @@ export interface FileRouteTypes {
     | '/_app/gallery_/inbox'
     | '/_app/gallery_/new'
     | '/_app/gallery_/upload'
+    | '/_app/gallery_/website'
     | '/_app/groups_/$groupId'
     | '/_app/lab_/$greeting'
     | '/_app/manage/applications'
@@ -1549,6 +1561,13 @@ declare module '@tanstack/react-router' {
       path: '/groups/$groupId'
       fullPath: '/groups/$groupId'
       preLoaderRoute: typeof AppGroupsGroupIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/gallery_/website': {
+      id: '/_app/gallery_/website'
+      path: '/gallery/website'
+      fullPath: '/gallery/website'
+      preLoaderRoute: typeof AppGalleryWebsiteRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/gallery_/upload': {
@@ -2116,6 +2135,7 @@ interface AppRouteChildren {
   AppGalleryInboxRoute: typeof AppGalleryInboxRoute
   AppGalleryNewRoute: typeof AppGalleryNewRoute
   AppGalleryUploadRoute: typeof AppGalleryUploadRoute
+  AppGalleryWebsiteRoute: typeof AppGalleryWebsiteRoute
   AppGroupsGroupIdRoute: typeof AppGroupsGroupIdRoute
   AppLabGreetingRoute: typeof AppLabGreetingRoute
   AppManageApplicationsRoute: typeof AppManageApplicationsRoute
@@ -2207,6 +2227,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppGalleryInboxRoute: AppGalleryInboxRoute,
   AppGalleryNewRoute: AppGalleryNewRoute,
   AppGalleryUploadRoute: AppGalleryUploadRoute,
+  AppGalleryWebsiteRoute: AppGalleryWebsiteRoute,
   AppGroupsGroupIdRoute: AppGroupsGroupIdRoute,
   AppLabGreetingRoute: AppLabGreetingRoute,
   AppManageApplicationsRoute: AppManageApplicationsRoute,

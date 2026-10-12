@@ -15,6 +15,7 @@
     "@emotion/styled": "catalog:",
     "@furria/api-client": "workspace:*",
     "@furria/ui": "workspace:*",
+    "@furria/website-pictures": "workspace:*",
     "@mui/icons-material": "catalog:",
     "@mui/material": "catalog:",
     "@mui/x-date-pickers": "catalog:",

@@ -79,8 +79,6 @@ export const GALLERY_SHEET_ID = 'news-gallery-pick';
 export const GALLERY_SHEET_TITLE = 'Bild aus der Galerie';
 export const GALLERY_COPY_NOTE = 'Das Bild wird für die Meldung kopiert.';
 export const GALLERY_EMPTY = 'Kein veröffentlichtes Album mit Fotos.';
-export const galleryPhotoLabelOf = (albumTitle: string, index: number): string =>
-  `${albumTitle}, Foto ${index + 1}`;
 export const PICTURE_ACTION_FAILED = 'Das Bild konnte nicht geändert werden.';
 
 export const TIE_OFFER = 'Anheften';

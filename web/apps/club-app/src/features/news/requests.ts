@@ -4,7 +4,6 @@ import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type {
   CreatedNewsPost,
-  GalleryAlbumPhotos,
   NewsCategory,
   NewsHub,
   NewsMentionables,
@@ -15,7 +14,6 @@ import type {
 } from './schemas';
 import {
   CreatedNewsPostSchema,
-  GalleryAlbumPhotosSchema,
   NewsHubSchema,
   NewsMentionablesSchema,
   NewsPostDetailsSchema,
@@ -178,12 +176,3 @@ export const requestNewsPictureFromGallery = async (
     accessToken,
   });
 };
-
-export const requestGalleryAlbumPhotos = (
-  albumId: number,
-  accessToken: string,
-): Promise<GalleryAlbumPhotos> =>
-  apiFetch(`/api/gallery/albums/${albumId}?kind=photo`, {
-    schema: GalleryAlbumPhotosSchema,
-    accessToken,
-  });

@@ -4,7 +4,8 @@ import { failureOfStatus } from './upload-failure';
 
 export type UploadOwner =
   | { kind: 'person' | 'group' | 'news'; id: number }
-  | { kind: 'gallery'; albumId: number | null };
+  | { kind: 'gallery'; albumId: number | null }
+  | { kind: 'website'; slot: string; position: number; aspect: number };
 
 export interface MediaUpload {
   file: File;
@@ -46,11 +47,22 @@ export type UploadTransport = (
   events: TransportEvents,
 ) => TransportRun;
 
-const ownerTokenOf = (owner: UploadOwner): string =>
-  owner.kind === 'gallery' ? 'gallery' : `${owner.kind}:${owner.id}`;
+const ownerTokenOf = (owner: UploadOwner): string => {
+  switch (owner.kind) {
+    case 'gallery':
+      return 'gallery';
+    case 'website':
+      return `website:${owner.slot}:${owner.position}`;
+    default:
+      return `${owner.kind}:${owner.id}`;
+  }
+};
 
 const albumOf = (owner: UploadOwner): Record<string, string> =>
   owner.kind === 'gallery' && owner.albumId !== null ? { album: String(owner.albumId) } : {};
+
+const aspectOf = (owner: UploadOwner): Record<string, string> =>
+  owner.kind === 'website' ? { aspect: String(owner.aspect) } : {};
 
 const cropOf = (crop: KkCrop | null | undefined): Record<string, string> =>
   crop === null || crop === undefined
@@ -61,6 +73,7 @@ const metadataOf = ({ file, owner, crop }: MediaUpload): Record<string, string> 
   owner: ownerTokenOf(owner),
   filename: file.name,
   ...albumOf(owner),
+  ...aspectOf(owner),
   ...cropOf(crop),
 });
 

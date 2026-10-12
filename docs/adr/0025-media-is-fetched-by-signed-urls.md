@@ -31,6 +31,17 @@ original's file name).
   unsigned public face instead of carrying signed URLs that outlive the office by up to 48 h. Amended
   again 2026-10-09 (L7b S2): news pictures joined it as its fourth member.
 
+**Amended 2026-10-12 with Florian (L7c website pictures):** website pictures joined the public
+face as its fifth member, but **key-addressed** instead of item-addressed:
+`/api/public/website-pictures/{slot}/{position}/{small|medium|large}` serves whatever fills that
+position of a **picture slot** and answers 404 while it is empty or not yet rendered
+([ADR-0027](0027-picture-slots-are-declared-by-the-website-filled-on-the-server.md)). The URL stays
+the same when the picture is replaced or re-cut, so static HTML can preload the landing hero and
+name the share image; it carries no `v=` and is revalidated instead, `Cache-Control: private,
+no-cache` with an `ETag` of the media item id and its `renderedAt` (a matching `If-None-Match`
+answers 304). The signed URLs the club app gets for a website picture name its slot and position
+in the owner part of the signature, so moving the picture to another position retires them.
+
 **Amended 2026-10-11 with Florian (gallery at scale):** the window grew from 24 h / valid 48 h to
 7 days / valid 14 days, renditions are served `immutable`, and every gallery URL carries
 `v={renderedAt}`. With a few thousand gallery items, a daily rotation made every device fetch

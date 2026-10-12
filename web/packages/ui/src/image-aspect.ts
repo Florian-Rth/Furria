@@ -3,6 +3,7 @@ export const KK_ASPECT = {
   groupPicture: 3 / 2,
   banner: 2,
   landscape: 7 / 5,
+  shareImage: 1.91,
 } as const;
 
 export type KkAspect = keyof typeof KK_ASPECT | number;

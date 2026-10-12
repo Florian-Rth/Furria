@@ -1,10 +1,13 @@
-import { kkTokens } from '@furria/ui/tokens';
+import type { KkAspect } from '@furria/ui/image-aspect';
+import { aspectOf } from '@furria/ui/image-aspect';
+import { WEBSITE_PICTURE_SLOTS } from '@furria/website-pictures';
 import type { TargetAndTransition, Transition } from 'motion/react';
-import type { PhotoOrientation } from '@/features/gallery/gallery-content';
+
+const STACK_POSITIONS = WEBSITE_PICTURE_SLOTS['gallery.stack'].positions;
 
 export interface PhotoStackFrameSpec {
-  label: string;
-  orientation: PhotoOrientation;
+  position: number;
+  aspect: KkAspect;
   leftPercent: number;
   topPercent: number;
   widthPercent: number;
@@ -13,8 +16,8 @@ export interface PhotoStackFrameSpec {
 }
 
 export const leadPhotoStackFrame: PhotoStackFrameSpec = {
-  label: 'foto-01',
-  orientation: 'landscape',
+  position: 1,
+  aspect: STACK_POSITIONS[0],
   leftPercent: 6,
   topPercent: 30,
   widthPercent: 66,
@@ -24,8 +27,8 @@ export const leadPhotoStackFrame: PhotoStackFrameSpec = {
 
 export const fannedPhotoStackFrames: PhotoStackFrameSpec[] = [
   {
-    label: 'foto-02',
-    orientation: 'portrait',
+    position: 2,
+    aspect: STACK_POSITIONS[1],
     leftPercent: 30,
     topPercent: 2,
     widthPercent: 52,
@@ -33,8 +36,8 @@ export const fannedPhotoStackFrames: PhotoStackFrameSpec[] = [
     depth: 1,
   },
   {
-    label: 'foto-03',
-    orientation: 'landscape',
+    position: 3,
+    aspect: STACK_POSITIONS[2],
     leftPercent: 4,
     topPercent: 4,
     widthPercent: 58,
@@ -45,14 +48,8 @@ export const fannedPhotoStackFrames: PhotoStackFrameSpec[] = [
 
 const allPhotoStackFrames = [leadPhotoStackFrame, ...fannedPhotoStackFrames];
 
-const resolveHeightPerWidth = (orientation: PhotoOrientation): number => {
-  const [width, height] = kkTokens.aspectRatio[orientation].split('/');
-
-  return Number(height) / Number(width);
-};
-
 export const resolveFrameHeightPercent = (spec: PhotoStackFrameSpec): number =>
-  spec.widthPercent * resolveHeightPerWidth(spec.orientation);
+  spec.widthPercent / aspectOf(spec.aspect);
 
 export const resolveFrameBottomPercent = (spec: PhotoStackFrameSpec): number =>
   spec.topPercent + resolveFrameHeightPercent(spec);
@@ -97,10 +94,24 @@ export const resolvePhotoStackEntrance = (
   };
 };
 
-export const resolveFannedPhotoStackFrames = (
+export interface ShownPhotoStackFrames {
+  lead: AnimatedPhotoStackFrame | null;
+  fanned: AnimatedPhotoStackFrame[];
+}
+
+const animatedFrameOf = (
+  spec: PhotoStackFrameSpec,
   reducedMotion: boolean | null,
-): AnimatedPhotoStackFrame[] =>
-  fannedPhotoStackFrames.map((spec) => ({
-    spec,
-    entrance: resolvePhotoStackEntrance(spec, reducedMotion),
-  }));
+): AnimatedPhotoStackFrame => ({ spec, entrance: resolvePhotoStackEntrance(spec, reducedMotion) });
+
+export const resolveShownPhotoStackFrames = (
+  positions: readonly number[],
+  reducedMotion: boolean | null,
+): ShownPhotoStackFrames => ({
+  lead: positions.includes(leadPhotoStackFrame.position)
+    ? animatedFrameOf(leadPhotoStackFrame, reducedMotion)
+    : null,
+  fanned: fannedPhotoStackFrames
+    .filter((spec) => positions.includes(spec.position))
+    .map((spec) => animatedFrameOf(spec, reducedMotion)),
+});

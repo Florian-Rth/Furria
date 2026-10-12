@@ -7,7 +7,6 @@ import { refreshAfter } from '@/lib/query/refresh-after';
 import type { NewsDraftRequests } from './news-draft-session';
 import type { GalleryPickPayload, NewsCropPayload } from './requests';
 import {
-  requestGalleryAlbumPhotos,
   requestNewsHub,
   requestNewsMentionables,
   requestNewsPictureCrop,
@@ -23,7 +22,7 @@ import {
   requestPendingChangesDiscard,
   requestPendingChangesPublication,
 } from './requests';
-import type { GalleryAlbumPhotos, NewsHub, NewsMentionables, NewsTieCandidates } from './schemas';
+import type { NewsHub, NewsMentionables, NewsTieCandidates } from './schemas';
 
 export const useNewsHubQuery = (): UseQueryResult<NewsHub, Error> =>
   useQuery({ queryKey: queryKeys.newsHub, queryFn: () => withFreshAccessToken(requestNewsHub) });
@@ -55,16 +54,6 @@ export const useNewsPictureRemoval = (): UseMutationResult<void, Error, number> 
 
 export const useNewsPictureFromGallery = (): UseMutationResult<void, Error, GalleryPickPayload> =>
   useNewsMutation(requestNewsPictureFromGallery);
-
-export const useGalleryAlbumPhotosQuery = (
-  albumId: number,
-  enabled: boolean,
-): UseQueryResult<GalleryAlbumPhotos, Error> =>
-  useQuery({
-    queryKey: queryKeys.newsGalleryAlbum(albumId),
-    queryFn: () => withFreshAccessToken((token) => requestGalleryAlbumPhotos(albumId, token)),
-    enabled,
-  });
 
 const refreshingAfter = <T>(queryClient: QueryClient, work: Promise<T>): Promise<T> =>
   work.finally(() => {

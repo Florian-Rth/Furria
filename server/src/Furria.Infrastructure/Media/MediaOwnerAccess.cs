@@ -41,6 +41,9 @@ public sealed class MediaOwnerAccess
                 owner.Id!.Value,
                 ct
             ),
+            MediaOwnerKind.Website => PermittedIf(
+                await _authorizer.IsGrantedAsync(accountId, FurriaPermissions.GalleryPublish, ct)
+            ),
             _ => PermittedIf(
                 await _authorizer.IsGrantedAsync(accountId, FurriaPermissions.GalleryUpload, ct)
             ),

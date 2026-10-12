@@ -41,6 +41,7 @@ public sealed class MediaJobQueue
         await _dbContext.SaveChangesAsync(ct);
         var item = await _dbContext
             .MediaItems.AsNoTracking()
+            .Include(row => row.WebsitePicture)
             .SingleAsync(row => row.Id == job.MediaItemId, ct);
         await transaction.CommitAsync(ct);
 
@@ -217,7 +218,7 @@ public sealed class MediaJobQueue
             StorageKey = item.StorageKey,
             Kind = item.Kind,
             Crop = item.Crop is { } crop ? MediaCrops.ToDetails(crop) : null,
-            PictureAspect = MediaOwner.Of(item).PictureAspect,
+            PictureAspect = item.WebsitePicture?.Aspect ?? MediaOwner.Of(item).PictureAspect,
             Attempt = job.Attempts,
         };
 

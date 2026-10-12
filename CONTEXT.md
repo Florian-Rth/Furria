@@ -87,6 +87,7 @@ English rendering anywhere else, so two translations never drift apart.
 | announcement | Aushang | `Announcement` |
 | gallery / album | Galerie / Album | `Gallery`, `Album` |
 | media store / media item | — | `MediaItem` |
+| picture slot / website picture | Bildplatz / Websitebild | `PictureSlot`, `WebsitePicture` |
 | fee | Beitrag | — |
 | ledger | — | — |
 | general meeting | Mitgliederversammlung | — |
@@ -1048,13 +1049,13 @@ message, chat, bulletin board, category, attachment, read receipt
 **Media store**:
 The platform's one store for uploaded pictures and videos, with no screen of its own. It holds
 **media items**; every use (a **portrait**, a **group picture**, a **news picture**, the
-**gallery**) owns its items.
+**gallery**, a **website picture**) owns its items.
 _Avoid_: media library, file store, uploads (as a noun)
 
 **Media item** (`MediaItem`):
 One uploaded photo or video together with everything derived from it. It has **exactly one
 owner** — a person (her **portrait**), a group (its **group picture**), a **news post** (its
-**news picture**) or the **gallery**. Using
+**news picture**), the **gallery** or the website (a **website picture**). Using
 one owner's picture for another *copies* it into a new media item, so a takedown or deletion in
 one use never breaks another.
 _Avoid_: file, asset, attachment, media (as a countable noun)
@@ -1100,6 +1101,26 @@ album is **published**. Publishing releases the selection, never the whole album
 in it.
 _UI copy_: Auswahl
 _Avoid_: public flag, highlights, favourites
+
+**Picture slot** (`PictureSlot`):
+A fixed place on the website that shows a photo — the landing hero, the club story, the share
+image — declared by the website itself, never created or deleted in the club app. It has a page, a
+description of where it sits and one or more **positions**, each with its own format (the gallery
+header's photo stack is one slot of three). A new slot appears empty until it is filled; an empty
+slot shows the website's branded surface, never a stand-in photo. Kept in the **gallery** under
+*Website*, which looks like an album but is none: it has no occasion, session, bin or publishing —
+what fills a slot is public at once (decided 2026-10-12, L7c shaping).
+_UI copy_: Bildplatz; the gallery entry *Website*
+_Avoid_: placeholder (the empty visual), album (for the *Website* entry), banner, asset
+
+**Website picture** (`WebsitePicture`):
+The **media item** filling one position of a **picture slot**, owned by the website. Uploaded or
+picked from the gallery — picking copies, so a later takedown in the album does not reach it;
+replacing or clearing the slot is its own act. It carries an alt text unless its slot is
+decorative. Set by whoever releases photos to the public (`gallery.publish`) (decided 2026-10-12,
+L7c shaping).
+_UI copy_: Websitebild
+_Avoid_: hero image, site asset, stock photo
 
 ### Money
 

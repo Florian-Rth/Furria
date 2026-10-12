@@ -5,6 +5,7 @@ using Furria.Core.Identity;
 using Furria.Core.Media;
 using Furria.Core.News;
 using Furria.Core.Roles;
+using Furria.Core.Website;
 using Furria.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
@@ -61,6 +62,7 @@ public static class ReferencesToPerson
         HerAct<Person>(nameof(Person.ArchivedByPersonId)),
         HerAct<MediaItem>(nameof(MediaItem.UploadedByPersonId)),
         HerAct<NewsPost>(nameof(NewsPost.LastSavedByPersonId)),
+        HerAct<WebsitePicture>(nameof(WebsitePicture.UpdatedByPersonId)),
     ];
 
     [Pure]

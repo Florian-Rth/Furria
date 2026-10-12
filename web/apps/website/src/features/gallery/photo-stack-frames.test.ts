@@ -1,10 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import type { PhotoStackFrameSpec } from './photo-stack-frames';
-import { resolveFrameBottomPercent, resolvePhotoStackEntrance } from './photo-stack-frames';
+import {
+  resolveFrameBottomPercent,
+  resolvePhotoStackEntrance,
+  resolveShownPhotoStackFrames,
+} from './photo-stack-frames';
 
 const frame = (overrides: Partial<PhotoStackFrameSpec>): PhotoStackFrameSpec => ({
-  label: 'foto',
-  orientation: 'portrait',
+  position: 1,
+  aspect: 'portrait',
   leftPercent: 0,
   topPercent: 10,
   widthPercent: 40,
@@ -15,8 +19,8 @@ const frame = (overrides: Partial<PhotoStackFrameSpec>): PhotoStackFrameSpec => 
 
 describe('resolveFrameBottomPercent', () => {
   it.each<[PhotoStackFrameSpec, number]>([
-    [frame({ orientation: 'portrait', topPercent: 10, widthPercent: 40 }), 60],
-    [frame({ orientation: 'landscape', topPercent: 0, widthPercent: 70 }), 50],
+    [frame({ aspect: 'portrait', topPercent: 10, widthPercent: 40 }), 60],
+    [frame({ aspect: 'landscape', topPercent: 0, widthPercent: 70 }), 50],
   ])('places the bottom edge of %j at %d%', (spec, bottom) => {
     expect(resolveFrameBottomPercent(spec)).toBeCloseTo(bottom);
   });
@@ -38,5 +42,18 @@ describe('resolvePhotoStackEntrance', () => {
       animate: { opacity: 1, rotate: -6, y: 0 },
       transition: { duration: 0 },
     });
+  });
+});
+
+describe('resolveShownPhotoStackFrames', () => {
+  it.each<[number[], number | null, number[]]>([
+    [[1, 2, 3], 1, [2, 3]],
+    [[2], null, [2]],
+    [[1, 3], 1, [3]],
+  ])('frames the positions %j as lead %j and fan %j', (positions, lead, fanned) => {
+    const shown = resolveShownPhotoStackFrames(positions, true);
+
+    expect(shown.lead?.spec.position ?? null).toBe(lead);
+    expect(shown.fanned.map((frame) => frame.spec.position)).toEqual(fanned);
   });
 });

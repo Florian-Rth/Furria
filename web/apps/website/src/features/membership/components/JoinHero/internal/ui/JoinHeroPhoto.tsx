@@ -1,7 +1,9 @@
-import { KkPhotoPlaceholder, kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
-import { joinHeroPhotoCaption } from '@/features/membership/join-content';
+import { WebsitePicture } from '@/components/WebsitePicture';
+
+const JOIN_HERO_SIZES = '(min-width: 1536px) 600px, 42vw';
 
 export const JoinHeroPhoto: FC = () => (
   <Box
@@ -16,6 +18,6 @@ export const JoinHeroPhoto: FC = () => (
       boxShadow: kkTokens.shadow.raised,
     }}
   >
-    <KkPhotoPlaceholder label={joinHeroPhotoCaption} aspectRatio={kkTokens.aspectRatio.landscape} />
+    <WebsitePicture slot="join.hero" sizes={JOIN_HERO_SIZES} />
   </Box>
 );

@@ -1,10 +1,13 @@
 using System.Diagnostics.Contracts;
 using Furria.Application.Media;
 using Furria.Application.News;
+using Furria.Application.Website;
 using Furria.Core.Media;
+using Furria.Core.Website;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.News;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Website;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Media;
@@ -15,6 +18,7 @@ public sealed class MediaStore
     private readonly MediaRoot _root;
     private readonly GalleryService _gallery;
     private readonly NewsPictures _newsPictures;
+    private readonly WebsitePictureService _websitePictures;
     private readonly TimeProvider _timeProvider;
 
     public MediaStore(
@@ -22,6 +26,7 @@ public sealed class MediaStore
         MediaRoot root,
         GalleryService gallery,
         NewsPictures newsPictures,
+        WebsitePictureService websitePictures,
         TimeProvider timeProvider
     )
     {
@@ -29,6 +34,7 @@ public sealed class MediaStore
         _root = root;
         _gallery = gallery;
         _newsPictures = newsPictures;
+        _websitePictures = websitePictures;
         _timeProvider = timeProvider;
     }
 
@@ -66,7 +72,13 @@ public sealed class MediaStore
                     row.OwnerKind,
                     row.OwnerPersonId,
                     row.OwnerGroupId,
-                    row.OwnerNewsPostId
+                    row.OwnerNewsPostId,
+                    row.WebsitePicture == null
+                        ? null
+                        : new PictureSlotPosition(
+                            row.WebsitePicture.SlotKey,
+                            row.WebsitePicture.Position
+                        )
                 ),
                 row.Kind,
                 row.ContentType,
@@ -162,6 +174,16 @@ public sealed class MediaStore
                 {
                     NewsPostId = command.Owner.Id!.Value,
                     MediaItemId = mediaItemId,
+                    PlacedByPersonId = command.UploadedByPersonId,
+                },
+                ct
+            ),
+            MediaOwnerKind.Website => _websitePictures.PlaceAsync(
+                new PlaceWebsitePictureCommand
+                {
+                    Slot = command.Owner.Slot!.Value,
+                    MediaItemId = mediaItemId,
+                    Aspect = command.Aspect!.Value,
                     PlacedByPersonId = command.UploadedByPersonId,
                 },
                 ct

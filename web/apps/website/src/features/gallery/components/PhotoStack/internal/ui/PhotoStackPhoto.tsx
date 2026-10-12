@@ -1,14 +1,15 @@
-import { KkPhotoPlaceholder, kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
-import type { PhotoOrientation } from '@/features/gallery/gallery-content';
+import { WebsitePicture } from '@/components/WebsitePicture';
+
+const PHOTO_STACK_SIZES = '(min-width: 1536px) 400px, 28vw';
 
 interface PhotoStackPhotoProps {
-  label: string;
-  orientation: PhotoOrientation;
+  position: number;
 }
 
-export const PhotoStackPhoto: FC<PhotoStackPhotoProps> = ({ label, orientation }) => (
+export const PhotoStackPhoto: FC<PhotoStackPhotoProps> = ({ position }) => (
   <Box
     sx={{
       bgcolor: 'background.paper',
@@ -19,6 +20,6 @@ export const PhotoStackPhoto: FC<PhotoStackPhotoProps> = ({ label, orientation }
       p: 1,
     }}
   >
-    <KkPhotoPlaceholder label={label} aspectRatio={kkTokens.aspectRatio[orientation]} />
+    <WebsitePicture slot="gallery.stack" position={position} sizes={PHOTO_STACK_SIZES} />
   </Box>
 );

@@ -16,8 +16,6 @@ export const storyBodyPlaceholder =
 export const storyBodyPlaceholderNote =
   'Hier steht bald die echte Vereinsgeschichte — dieser Text ist noch ein Platzhalter.';
 
-export const storyPhotoCaption = 'vereinsfoto';
-
 export interface StoryStat {
   value: string;
   label: string;

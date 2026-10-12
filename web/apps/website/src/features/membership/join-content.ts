@@ -31,5 +31,3 @@ export const joinPrimaryCtaLabel = 'Antrag stellen →';
 export const matcherSectionId = 'group-matcher';
 export const matcherSectionHref = `#${matcherSectionId}`;
 export const joinSecondaryCtaLabel = 'Wo passe ich hin? ↓';
-
-export const joinHeroPhotoCaption = 'erste-session';

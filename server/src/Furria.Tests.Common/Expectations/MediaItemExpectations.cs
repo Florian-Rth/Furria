@@ -97,7 +97,15 @@ public sealed class MediaItemExpectations
     public Expected ToBeOwnedBy(MediaOwner owner) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
-                Assert.Equal(owner, MediaOwner.Of(await SingleAsync(dbContext, ct)))
+                Assert.Equal(
+                    owner,
+                    MediaOwner.Of(
+                        await dbContext
+                            .MediaItems.AsNoTracking()
+                            .Include(row => row.WebsitePicture)
+                            .SingleAsync(row => row.Id == _mediaItemId, ct)
+                    )
+                )
         );
 
     public Expected ToBeUploadedAs(int? uploadedByPersonId, string fileName, long byteSize) =>

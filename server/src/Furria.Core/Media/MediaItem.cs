@@ -3,6 +3,7 @@ using Furria.Core.Gallery;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
 using Furria.Core.News;
+using Furria.Core.Website;
 
 namespace Furria.Core.Media;
 
@@ -79,4 +80,6 @@ public sealed class MediaItem : ITimestamped
     public Person? UploadedBy { get; set; }
 
     public Album? Album { get; set; }
+
+    public WebsitePicture? WebsitePicture { get; set; }
 }
