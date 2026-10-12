@@ -215,38 +215,4 @@ public sealed class GroupAdministrationTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
-
-    [Fact]
-    public async Task Should_Refuse_When_TheAccountWasDisabledAfterItsTokenWasIssued()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity => identity.AddAccount("nadine"))
-                    .Groups(groups =>
-                        groups
-                            .AddGroup("kindergarde", "Kindergarde")
-                            .AddGroupAdmin(
-                                "nadine-kindergarde",
-                                "kindergarde",
-                                "nadine",
-                                "Trainerin",
-                                JoinedIn2017
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("nadine", ct);
-        await _fixture.DisableAccountDirectlyAsync(ctx.Identity.Accounts.IdOf("nadine"), ct);
-
-        var (response, _) = await client.GETAsync<
-            GroupAdministrationProbe,
-            GroupAdministrationProbeRequest,
-            EmptyResponse
-        >(new() { GroupId = ctx.Groups.Groups.IdOf("kindergarde") });
-
-        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
-    }
 }

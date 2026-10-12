@@ -5,7 +5,6 @@ using Furria.Api.Authorization;
 using Furria.Application.Media;
 using Furria.Application.Results;
 using Furria.Core.Media;
-using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Media;
 using tusdotnet.Interfaces;
@@ -151,9 +150,7 @@ public sealed class MediaUploadEvents
                     ByteSize = (
                         await context.Store.GetUploadLengthAsync(context.FileId, ct)
                     )!.Value,
-                    UploadedByPersonId = await _http
-                        .RequestServices.GetRequiredService<PermissionAuthorizer>()
-                        .ActivePersonIdAsync(_accountId!.Value, ct),
+                    UploadedByPersonId = _http.User.PersonId(),
                     Crop = PictureCrop.Parse(TextOf(metadata, CropMetadataKey)),
                 },
                 ct

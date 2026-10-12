@@ -2,6 +2,7 @@ using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using Furria.Application.Club;
 using Furria.Core.Club;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,9 +43,7 @@ public sealed partial class ClubService
 
         var holdings = await _dbContext
             .KeyHoldings.AsNoTracking()
-            .Where(holding =>
-                holding.SinceOn <= today && (holding.UntilOn == null || holding.UntilOn >= today)
-            )
+            .Where(Running.KeyHoldings(today))
             .OrderBy(holding =>
                 EF.Functions.Collate(holding.Person!.LastName, GermanCollation.Name)
             )

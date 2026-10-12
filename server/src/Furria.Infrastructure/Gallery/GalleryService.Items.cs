@@ -1,4 +1,5 @@
 using System.Diagnostics.Contracts;
+using Furria.Application.Authorization;
 using Furria.Application.Gallery;
 using Furria.Application.Results;
 using Furria.Core.Media;
@@ -10,12 +11,17 @@ public sealed partial class GalleryService
 {
     private const string BinnedItemMessage = "Ein Bild im Papierkorb wird erst wiederhergestellt.";
     private const string NotPermittedMessage = "Dieses Bild darfst du nicht einsortieren.";
+    private const string NotYourInboxMessage = "Diesen Eingang darfst du nicht einsehen.";
     private const string ItemNotBinnedMessage = "Dieses Bild liegt nicht im Papierkorb.";
 
     public async Task<IReadOnlyList<InboxSummary>> GetInboxesAsync(
-        GalleryActor actor,
+        int actorAccountId,
         CancellationToken ct
-    ) =>
+    )
+    {
+        var actor = await ActorAsync(actorAccountId, ct);
+
+        return
         [
             .. (
                 await InboxItems()
@@ -50,17 +56,27 @@ public sealed partial class GalleryService
                     LatestUploadedAt = row.LatestUploadedAt,
                 }),
         ];
+    }
 
-    public async Task<IReadOnlyList<GalleryItemSummary>> GetInboxItemsAsync(
-        int? uploaderPersonId,
+    public async Task<Result<IReadOnlyList<GalleryItemSummary>>> GetInboxItemsAsync(
+        GalleryInboxQuery query,
         CancellationToken ct
-    ) =>
-        await InboxItems()
-            .AsNoTracking()
-            .Where(item => item.UploadedByPersonId == uploaderPersonId)
-            .InCaptureOrder()
-            .Select(ItemSummary)
-            .ToListAsync(ct);
+    )
+    {
+        var actor = await ActorAsync(query.ActorAccountId, ct);
+        var uploaderPersonId = query.Ownerless ? null : query.UploaderPersonId ?? actor.PersonId;
+        if (!MayOpenInbox(actor, uploaderPersonId))
+            return Result<IReadOnlyList<GalleryItemSummary>>.Forbidden(NotYourInboxMessage);
+
+        return Result<IReadOnlyList<GalleryItemSummary>>.Success(
+            await InboxItems()
+                .AsNoTracking()
+                .Where(item => item.UploadedByPersonId == uploaderPersonId)
+                .InCaptureOrder()
+                .Select(ItemSummary)
+                .ToListAsync(ct)
+        );
+    }
 
     public async Task<Result> PlaceItemsAsync(
         PlaceGalleryItemsCommand command,
@@ -71,7 +87,11 @@ public sealed partial class GalleryService
             return Result.NotFound(UnknownAlbumMessage);
 
         var items = await TrackedItemsAsync(command.MediaItemIds, ct);
-        var refusal = RefusalOf(command.MediaItemIds, items, command.Actor);
+        var refusal = RefusalOf(
+            command.MediaItemIds,
+            items,
+            await ActorAsync(command.ActorAccountId, ct)
+        );
         if (!refusal.IsSuccess)
             return refusal;
 
@@ -97,7 +117,11 @@ public sealed partial class GalleryService
     )
     {
         var items = await TrackedItemsAsync(command.MediaItemIds, ct);
-        var refusal = RefusalOf(command.MediaItemIds, items, command.Actor);
+        var refusal = RefusalOf(
+            command.MediaItemIds,
+            items,
+            await ActorAsync(command.ActorAccountId, ct)
+        );
         if (!refusal.IsSuccess)
             return refusal;
 
@@ -115,7 +139,6 @@ public sealed partial class GalleryService
             [.. binned.Select(item => item.AlbumId!.Value).Distinct()],
             ct
         );
-        _mediaFiles.Discard(rejects.Select(item => item.StorageKey));
 
         return Result.Success();
     }
@@ -137,6 +160,17 @@ public sealed partial class GalleryService
 
         await _dbContext.SaveChangesAsync(ct);
         return Result.Success();
+    }
+
+    private async Task<GalleryActor> ActorAsync(int accountId, CancellationToken ct)
+    {
+        var keys = await _authorizer.GrantedKeysAsync(accountId, ct);
+
+        return new GalleryActor(
+            await _authorizer.ActivePersonIdAsync(accountId, ct),
+            keys.Contains(FurriaPermissions.GalleryUpload),
+            keys.Contains(FurriaPermissions.GalleryManage)
+        );
     }
 
     private async Task<List<MediaItem>> TrackedItemsAsync(
@@ -181,6 +215,10 @@ public sealed partial class GalleryService
         : Result.Forbidden(NotPermittedMessage);
 
     [Pure]
+    private static bool MayOpenInbox(GalleryActor actor, int? uploaderPersonId) =>
+        actor.MayManage || (uploaderPersonId is not null && uploaderPersonId == actor.PersonId);
+
+    [Pure]
     private static bool MaySort(GalleryActor actor, MediaItem item) =>
         actor.MayManage
         || (
@@ -194,4 +232,6 @@ public sealed partial class GalleryService
         item.SelectionPosition = null;
         item.Caption = null;
     }
+
+    private sealed record GalleryActor(int? PersonId, bool MayUpload, bool MayManage);
 }

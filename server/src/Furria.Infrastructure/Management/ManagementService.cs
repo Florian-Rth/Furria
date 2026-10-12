@@ -3,6 +3,7 @@ using Furria.Application.Management;
 using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Core.MembershipApplications;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Identity;
@@ -139,11 +140,7 @@ public sealed class ManagementService
                 ct
             ),
             MemberCount = await _dbContext.People.CountAsync(
-                person =>
-                    person.Memberships.Any(membership =>
-                        membership.StartedOn <= today
-                        && (membership.EndedOn == null || membership.EndedOn >= today)
-                    ),
+                person => person.Memberships.AsQueryable().Any(Running.Memberships(today)),
                 ct
             ),
         };
@@ -166,11 +163,7 @@ public sealed class ManagementService
         {
             RoleCount = await active.CountAsync(ct),
             VacantCount = await active.CountAsync(
-                role =>
-                    !role.Holdings.Any(holding =>
-                        holding.SinceOn <= today
-                        && (holding.UntilOn == null || holding.UntilOn >= today)
-                    ),
+                role => !role.Holdings.AsQueryable().Any(Running.RoleHoldings(today)),
                 ct
             ),
         };
@@ -203,9 +196,7 @@ public sealed class ManagementService
 
     private async Task<ManageHubKeys> KeysAsync(DateOnly today, CancellationToken ct)
     {
-        var running = _dbContext.KeyHoldings.Where(holding =>
-            holding.SinceOn <= today && (holding.UntilOn == null || holding.UntilOn >= today)
-        );
+        var running = _dbContext.KeyHoldings.Where(Running.KeyHoldings(today));
 
         return new ManageHubKeys
         {
@@ -225,18 +216,13 @@ public sealed class ManagementService
                 office => office.ArchivedOn == null,
                 ct
             ),
-            SeatCount = await _dbContext.BoardSeats.CountAsync(
-                seat => seat.SinceOn <= today && (seat.UntilOn == null || seat.UntilOn >= today),
-                ct
-            ),
+            SeatCount = await _dbContext.BoardSeats.Where(Running.BoardSeats(today)).CountAsync(ct),
             VacantOfficeCount = await _dbContext.BoardOffices.CountAsync(
                 office =>
                     office.ArchivedOn == null
-                    && !_dbContext.BoardSeats.Any(seat =>
-                        seat.BoardOfficeId == office.Id
-                        && seat.SinceOn <= today
-                        && (seat.UntilOn == null || seat.UntilOn >= today)
-                    ),
+                    && !_dbContext
+                        .BoardSeats.Where(Running.BoardSeats(today))
+                        .Any(seat => seat.BoardOfficeId == office.Id),
                 ct
             ),
         };

@@ -6,9 +6,7 @@ public sealed record SetAttendanceResponseCommand
 {
     public required int CalendarEntryId { get; init; }
 
-    public required int PersonId { get; init; }
+    public required int ActorAccountId { get; init; }
 
     public required AttendanceAnswer Answer { get; init; }
-
-    public required bool HoldsClubRead { get; init; }
 }

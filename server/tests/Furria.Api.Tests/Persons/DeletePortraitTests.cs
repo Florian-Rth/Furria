@@ -37,6 +37,7 @@ public sealed class DeletePortraitTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx.Expected.MediaItem(portraitId).ToBeGone().AssertAsync(ct);
+        await _fixture.MediaFilesReapedAsync(ct);
         Assert.False(File.Exists(original));
     }
 

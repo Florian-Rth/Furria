@@ -1,5 +1,6 @@
 using Furria.Application.Club;
 using Furria.Core.Club;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Public;
@@ -90,11 +91,7 @@ public sealed partial class ClubService
 
     private Task<int> MemberCountAsync(DateOnly today, CancellationToken ct) =>
         _dbContext.People.CountAsync(
-            person =>
-                person.Memberships.Any(membership =>
-                    membership.StartedOn <= today
-                    && (membership.EndedOn == null || membership.EndedOn >= today)
-                ),
+            person => person.Memberships.AsQueryable().Any(Running.Memberships(today)),
             ct
         );
 

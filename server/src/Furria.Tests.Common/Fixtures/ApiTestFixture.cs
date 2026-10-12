@@ -22,6 +22,7 @@ using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Registry;
 using Furria.MediaWorker;
 using Furria.MediaWorker.Jobs;
 using Furria.Tests.Common.Builder;
@@ -413,6 +414,26 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             ct
         );
 
+    public IReadOnlyList<string> ReferencesToPersonDisagreements()
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return ReferencesToPerson.DisagreementsWith(db.Model);
+    }
+
+    public Task MediaFilesReapedAsync(CancellationToken ct = default) =>
+        Polling.UntilAsync(
+            async token =>
+            {
+                await using var scope = Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                return await db.MediaFileTombstones.AnyAsync(token) ? null : db;
+            },
+            OutboxDrainTimeout,
+            "Files of deleted media items are still on disk",
+            ct
+        );
+
     public Task<string> CreateEmptyDatabaseAsync(CancellationToken ct = default) =>
         _infrastructure.CreateEmptyDatabaseAsync(ct);
 
@@ -677,6 +698,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     public async Task<Result<CalendarEntryWriteResult>> SaveSecondParticipationAsync(
         int calendarEntryId,
         int groupId,
+        int actorAccountId,
         int viewerPersonId,
         CancellationToken ct = default
     )
@@ -698,6 +720,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         return await calendarService.UpdateAsync(
             new UpdateCalendarEntryCommand
             {
+                ActorAccountId = actorAccountId,
                 ViewerPersonId = viewerPersonId,
                 CalendarEntryId = entry.Id,
                 Title = entry.Title,

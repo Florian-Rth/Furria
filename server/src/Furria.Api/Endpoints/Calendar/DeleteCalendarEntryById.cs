@@ -2,7 +2,6 @@ using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
-using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 
 namespace Furria.Api.Endpoints.Calendar;
@@ -10,12 +9,10 @@ namespace Furria.Api.Endpoints.Calendar;
 public sealed class DeleteCalendarEntryById : Endpoint<DeleteCalendarEntryByIdRequest>
 {
     private readonly CalendarService _calendarService;
-    private readonly PermissionAuthorizer _authorizer;
 
-    public DeleteCalendarEntryById(CalendarService calendarService, PermissionAuthorizer authorizer)
+    public DeleteCalendarEntryById(CalendarService calendarService)
     {
         _calendarService = calendarService;
-        _authorizer = authorizer;
     }
 
     public override void Configure()
@@ -32,22 +29,7 @@ public sealed class DeleteCalendarEntryById : Endpoint<DeleteCalendarEntryByIdRe
             return;
         }
 
-        var ownership = await _calendarService.OwnershipOfAsync(req.CalendarEntryId, ct);
-        if (ownership is null)
-        {
-            await Send.NotFoundAsync(ct);
-            return;
-        }
-
-        if (
-            !await _authorizer.MayOwnCalendarEntryAsync(accountId.Value, ownership.OwnerGroupId, ct)
-        )
-        {
-            await Send.ForbiddenAsync(ct);
-            return;
-        }
-
-        var result = await _calendarService.DeleteAsync(req.CalendarEntryId, ct);
+        var result = await _calendarService.DeleteAsync(accountId.Value, req.CalendarEntryId, ct);
         if (!result.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(result.Error, ct);

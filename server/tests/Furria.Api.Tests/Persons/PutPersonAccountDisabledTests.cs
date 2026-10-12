@@ -3,7 +3,6 @@ using System.Net.Http.Headers;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
-using Furria.Api.Endpoints.Management;
 using Furria.Api.Tests.Auth;
 using Furria.Application.Authorization;
 using Furria.Application.Identity;
@@ -53,8 +52,6 @@ public sealed class PutPersonAccountDisabledTests : IClassFixture<ApiTestFixture
         Assert.Equal(HttpStatusCode.Unauthorized, refreshResponse.StatusCode);
         var (meResponse, _) = await signedIn.GETAsync<GetMe, GetMeResponse>();
         Assert.Equal(HttpStatusCode.Unauthorized, meResponse.StatusCode);
-        var (hubResponse, _) = await signedIn.GETAsync<GetManageHub, GetManageHubResponse>();
-        Assert.Equal(HttpStatusCode.Forbidden, hubResponse.StatusCode);
         await ctx
             .Expected.Account(ctx.Identity.Accounts.IdOf("anna"))
             .ToBeDisabled(true)

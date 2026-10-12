@@ -4,6 +4,7 @@ using Furria.Application.Club;
 using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Identity;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
@@ -318,11 +319,9 @@ public sealed class BoardService
 
     private IQueryable<Person> PeopleWithUnendedSeatsIn(int boardOfficeId, DateOnly today) =>
         _dbContext.People.Where(person =>
-            _dbContext.BoardSeats.Any(seat =>
-                seat.PersonId == person.Id
-                && seat.BoardOfficeId == boardOfficeId
-                && (seat.UntilOn == null || seat.UntilOn >= today)
-            )
+            _dbContext
+                .BoardSeats.Where(RunningOrAhead.BoardSeats(today))
+                .Any(seat => seat.PersonId == person.Id && seat.BoardOfficeId == boardOfficeId)
         );
 
     private Task<bool> HasUnendedSeatAsync(
@@ -332,12 +331,8 @@ public sealed class BoardService
     ) =>
         _dbContext
             .BoardSeats.AsNoTracking()
-            .AnyAsync(
-                row =>
-                    row.BoardOfficeId == boardOfficeId
-                    && (row.UntilOn == null || row.UntilOn >= today),
-                ct
-            );
+            .Where(RunningOrAhead.BoardSeats(today))
+            .AnyAsync(row => row.BoardOfficeId == boardOfficeId, ct);
 
     private Task<List<PeriodRow>> ChainOfAsync(
         int boardOfficeId,

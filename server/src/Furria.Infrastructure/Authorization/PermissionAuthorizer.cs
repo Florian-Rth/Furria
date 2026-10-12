@@ -1,5 +1,7 @@
 using Furria.Application.Authorization;
+using Furria.Application.Registry;
 using Furria.Core.Club;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
 using Microsoft.EntityFrameworkCore;
@@ -10,18 +12,6 @@ public sealed class PermissionAuthorizer
 {
     private const string SecondAccountMessage =
         "PermissionAuthorizer answers for one Account per scope; ask about a second Account through its own scope.";
-
-    private static readonly IReadOnlyList<string> PersonSearchKeys =
-    [
-        FurriaPermissions.PersonsManage,
-        FurriaPermissions.GroupsManage,
-        FurriaPermissions.RolesManage,
-        FurriaPermissions.ClubManage,
-        FurriaPermissions.KeyHoldingsManage,
-        FurriaPermissions.BoardManage,
-        FurriaPermissions.CalendarManageClub,
-        FurriaPermissions.AccountsManage,
-    ];
 
     private readonly AppDbContext _dbContext;
     private readonly TimeProvider _timeProvider;
@@ -37,6 +27,12 @@ public sealed class PermissionAuthorizer
     {
         _dbContext = dbContext;
         _timeProvider = timeProvider;
+    }
+
+    public async Task<bool> IsActiveAccountAsync(int accountId, CancellationToken ct)
+    {
+        BindTo(accountId);
+        return (await IdentityAsync(accountId, ct)).IsActive;
     }
 
     public Task<int?> ActivePersonIdAsync(int accountId, CancellationToken ct)
@@ -93,7 +89,7 @@ public sealed class PermissionAuthorizer
         var keys = await _dbContext
             .RoleHoldings.AsNoTracking()
             .Where(holding => holding.PersonId == personId)
-            .Where(PermissionHolderQuery.RoleHoldingGrantsOn(today))
+            .Where(Conferring.RoleHoldings(today))
             .SelectMany(holding => holding.Role!.Permissions.Select(row => row.PermissionKey))
             .Distinct()
             .ToListAsync(ct);
@@ -104,11 +100,7 @@ public sealed class PermissionAuthorizer
             .People.AsNoTracking()
             .Where(person => person.Id == personId)
             .AnyAsync(
-                person =>
-                    person.Memberships.Any(membership =>
-                        membership.StartedOn <= today
-                        && (membership.EndedOn == null || membership.EndedOn >= today)
-                    ),
+                person => person.Memberships.AsQueryable().Any(Running.Memberships(today)),
                 ct
             );
 
@@ -118,7 +110,7 @@ public sealed class PermissionAuthorizer
         var impliedKeys = await _dbContext
             .BoardSeats.AsNoTracking()
             .Where(seat => seat.PersonId == personId)
-            .Where(PermissionHolderQuery.BoardSeatGrantsOn(today))
+            .Where(Conferring.BoardSeatRoles(today))
             .SelectMany(seat =>
                 seat.BoardOffice!.ImpliedRole!.Permissions.Select(row => row.PermissionKey)
             )
@@ -183,7 +175,7 @@ public sealed class PermissionAuthorizer
         if (_canSearchPersons is not null)
             return _canSearchPersons.Value;
 
-        var managesAnything = await IsGrantedAnyAsync(accountId, PersonSearchKeys, ct);
+        var managesAnything = await IsGrantedAnyAsync(accountId, PersonSearchKeys.Searchers, ct);
 
         return (
             _canSearchPersons = managesAnything || await AdministersAnyGroupAsync(accountId, ct)
@@ -215,13 +207,8 @@ public sealed class PermissionAuthorizer
         var today = ClubClock.Today(_timeProvider);
         return await _dbContext
             .GroupAdmins.AsNoTracking()
-            .AnyAsync(
-                admin =>
-                    admin.PersonId == personId.Value
-                    && admin.SinceOn <= today
-                    && (admin.UntilOn == null || admin.UntilOn >= today),
-                ct
-            );
+            .Where(Running.GroupAdmins(today))
+            .AnyAsync(admin => admin.PersonId == personId.Value, ct);
     }
 
     private async Task<GroupTies> GroupTiesAsync(int accountId, int groupId, CancellationToken ct)
@@ -238,16 +225,14 @@ public sealed class PermissionAuthorizer
             .Groups.AsNoTracking()
             .Where(group => group.Id == groupId)
             .Select(group => new GroupTies(
-                group.Admins.Any(admin =>
-                    admin.PersonId == personId.Value
-                    && admin.SinceOn <= today
-                    && (admin.UntilOn == null || admin.UntilOn >= today)
-                ),
-                group.Memberships.Any(membership =>
-                    membership.PersonId == personId.Value
-                    && membership.JoinedOn <= today
-                    && (membership.LeftOn == null || membership.LeftOn >= today)
-                )
+                group
+                    .Admins.AsQueryable()
+                    .Where(Running.GroupAdmins(today))
+                    .Any(admin => admin.PersonId == personId.Value),
+                group
+                    .Memberships.AsQueryable()
+                    .Where(Running.GroupMemberships(today))
+                    .Any(membership => membership.PersonId == personId.Value)
             ))
             .SingleOrDefaultAsync(ct);
 
@@ -262,14 +247,18 @@ public sealed class PermissionAuthorizer
             await _dbContext
                 .Users.AsNoTracking()
                 .Where(account => account.Id == accountId && !account.IsDisabled)
-                .Select(account => new AccountIdentity(account.PersonId, account.IsManagingLogin))
+                .Select(account => new AccountIdentity(
+                    true,
+                    account.PersonId,
+                    account.IsManagingLogin
+                ))
                 .SingleOrDefaultAsync(ct)
             ?? AccountIdentity.Unknown;
 
     private readonly record struct GroupTies(bool IsAdmin, bool IsMember);
 
-    private sealed record AccountIdentity(int? PersonId, bool IsManagingLogin)
+    private sealed record AccountIdentity(bool IsActive, int? PersonId, bool IsManagingLogin)
     {
-        public static readonly AccountIdentity Unknown = new(null, false);
+        public static readonly AccountIdentity Unknown = new(false, null, false);
     }
 }

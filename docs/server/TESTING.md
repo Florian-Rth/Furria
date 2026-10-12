@@ -22,6 +22,8 @@ live here, not as dead code.
   once, for every registered route, by `Authorization/EndpointConventionTests`, which reads the
   running host's endpoint metadata — a new endpoint is covered the moment it is mapped:
   - no token → `401` on every route that is not `AllowAnonymous`;
+  - a token whose account was disabled after it was issued → `401` on the same routes (the
+    authentication boundary re-reads the account on every request — never test it per endpoint);
   - a caller holding every permission *except* the declared one (`RequirePermission`, or the whole
     `RequireAnyPermission` set) → `403`, and an unaffiliated caller on `RequireAffiliation` → `403`;
   - an `int` route id of `0` → `400` naming that id;
@@ -484,6 +486,15 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    without libvips. `TusUploadSteps` takes a crop token (`PictureCrop.Token`) on `CreateAsync` /
    `UploadAsync`. `Expected.MediaItem(id)` adds `ToBeThePortraitOf(personId)`,
    `ToBeThePictureOfGroup(groupId)`, `ToBeCroppedTo(crop)` and `ToBeGone()`.
+17. **Deleted media files (2026-10-09)** — a deleted `media_item` row, however it goes (an endpoint,
+   the bin purge, a person's erasure or absorption cascading), leaves a `media_file_tombstone` behind
+   through a database trigger; the host's `MediaFileReaper` deletes the files and the tombstone
+   after commit. A test proving files are gone awaits `_fixture.MediaFilesReapedAsync(ct)` first.
+18. **References to a person (2026-10-09)** — `ReferencesToPerson` states, for every foreign key
+   onto `person`, what absorbing a stray person and erasing a person do with it.
+   `ReferencesToPersonTests` reads the host's model through
+   `_fixture.ReferencesToPersonDisagreements()` and fails on an unclassified key, a classification
+   whose delete rule the key does not carry, or one naming no key — classify a new key there.
 
 ### Traps worth knowing
 

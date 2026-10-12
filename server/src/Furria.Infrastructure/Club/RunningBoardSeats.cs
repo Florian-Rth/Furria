@@ -1,6 +1,7 @@
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using Furria.Core.Club;
+using Furria.Core.Ties;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -38,7 +39,9 @@ public sealed class RunningBoardSeats
         if (_readFor == today)
             return _seats;
 
-        _seats = await InBoardOrder(_dbContext.BoardSeats.AsNoTracking().Where(RunningOn(today)))
+        _seats = await InBoardOrder(
+                _dbContext.BoardSeats.AsNoTracking().Where(Conferring.BoardSeats(today))
+            )
             .ToListAsync(ct);
         _readFor = today;
 
@@ -49,10 +52,6 @@ public sealed class RunningBoardSeats
         DateOnly today,
         CancellationToken ct
     ) => ToOfficeNames(await SeatsAsync(today, ct));
-
-    [Pure]
-    public static Expression<Func<BoardSeat, bool>> RunningOn(DateOnly today) =>
-        seat => seat.SinceOn <= today && (seat.UntilOn == null || seat.UntilOn >= today);
 
     [Pure]
     public static IQueryable<RunningBoardSeat> InBoardOrder(IQueryable<BoardSeat> seats) =>

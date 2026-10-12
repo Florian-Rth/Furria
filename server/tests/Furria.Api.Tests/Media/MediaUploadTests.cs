@@ -189,6 +189,7 @@ public sealed class MediaUploadTests : IClassFixture<ApiTestFixture>
             .MediaItem(formerId)
             .ToBeGone()
             .AssertAsync(ct);
+        await _fixture.MediaFilesReapedAsync(ct);
         Assert.False(File.Exists(formerOriginal));
     }
 

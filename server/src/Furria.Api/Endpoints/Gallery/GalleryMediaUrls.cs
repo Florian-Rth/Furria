@@ -9,33 +9,24 @@ public static class GalleryMediaUrls
 
     public static GalleryMediaUrlsDto Of(MediaUrlSigner signer, int mediaItemId, MediaKind kind)
     {
-        var original = UrlOf(signer, mediaItemId, MediaRendition.Original);
+        string? UrlOf(MediaRendition rendition) =>
+            MediaRenditions.Exists(kind, rendition)
+                ? signer.UrlOf(mediaItemId, MediaOwner.Gallery, rendition)
+                : null;
 
-        return kind == MediaKind.Video
-            ? new GalleryMediaUrlsDto
-            {
-                Small = UrlOf(signer, mediaItemId, MediaRendition.Small),
-                Medium = null,
-                Large = null,
-                Poster = UrlOf(signer, mediaItemId, MediaRendition.Poster),
-                Video = UrlOf(signer, mediaItemId, MediaRendition.Video),
-                Original = original,
-                Download = original + DownloadFlag,
-            }
-            : new GalleryMediaUrlsDto
-            {
-                Small = UrlOf(signer, mediaItemId, MediaRendition.Small),
-                Medium = UrlOf(signer, mediaItemId, MediaRendition.Medium),
-                Large = UrlOf(signer, mediaItemId, MediaRendition.Large),
-                Poster = null,
-                Video = null,
-                Original = original,
-                Download = original + DownloadFlag,
-            };
+        var original = UrlOf(MediaRendition.Original)!;
+
+        return new GalleryMediaUrlsDto
+        {
+            Small = UrlOf(MediaRendition.Small)!,
+            Medium = UrlOf(MediaRendition.Medium),
+            Large = UrlOf(MediaRendition.Large),
+            Poster = UrlOf(MediaRendition.Poster),
+            Video = UrlOf(MediaRendition.Video),
+            Original = original,
+            Download = original + DownloadFlag,
+        };
     }
-
-    private static string UrlOf(MediaUrlSigner signer, int mediaItemId, MediaRendition rendition) =>
-        signer.UrlOf(mediaItemId, MediaOwner.Gallery, rendition);
 }
 
 public sealed record GalleryMediaUrlsDto

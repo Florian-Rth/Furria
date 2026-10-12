@@ -44,7 +44,7 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
             return;
         }
 
-        var personId = await _authorizer.ActivePersonIdAsync(accountId.Value, ct);
+        var personId = User.PersonId();
         if (personId is null && !await _authorizer.IsManagingLoginAsync(accountId.Value, ct))
         {
             await Send.UnauthorizedAsync(ct);

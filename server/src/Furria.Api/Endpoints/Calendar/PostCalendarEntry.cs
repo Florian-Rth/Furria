@@ -4,7 +4,6 @@ using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Club;
 using Furria.Core.Club;
-using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Club;
 
 namespace Furria.Api.Endpoints.Calendar;
@@ -13,12 +12,10 @@ public sealed class PostCalendarEntry
     : Endpoint<PostCalendarEntryRequest, PostCalendarEntryResponse>
 {
     private readonly CalendarService _calendarService;
-    private readonly PermissionAuthorizer _authorizer;
 
-    public PostCalendarEntry(CalendarService calendarService, PermissionAuthorizer authorizer)
+    public PostCalendarEntry(CalendarService calendarService)
     {
         _calendarService = calendarService;
-        _authorizer = authorizer;
     }
 
     public override void Configure()
@@ -36,13 +33,10 @@ public sealed class PostCalendarEntry
             return;
         }
 
-        if (!await _authorizer.MayOwnCalendarEntryAsync(accountId.Value, req.OwnerGroupId, ct))
-        {
-            await Send.ForbiddenAsync(ct);
-            return;
-        }
-
-        var result = await _calendarService.CreateAsync(ToCommand(req, personId), ct);
+        var result = await _calendarService.CreateAsync(
+            ToCommand(req, accountId.Value, personId),
+            ct
+        );
         if (!result.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(result.Error, ct);
@@ -54,10 +48,12 @@ public sealed class PostCalendarEntry
 
     private static CreateCalendarEntryCommand ToCommand(
         PostCalendarEntryRequest req,
+        int actorAccountId,
         int? viewerPersonId
     ) =>
         new()
         {
+            ActorAccountId = actorAccountId,
             ViewerPersonId = viewerPersonId,
             Title = req.Title,
             Description = req.Description,

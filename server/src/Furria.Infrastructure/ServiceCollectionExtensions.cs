@@ -114,7 +114,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<MediaUrlSigner>();
         services.AddScoped<MediaStore>();
         services.AddScoped<MediaOwnerAccess>();
-        services.AddSingleton<MediaFiles>();
         services.AddSingleton<MediaPictures>();
         services.AddScoped<PictureService>();
         services.AddScoped<PictureLookup>();
@@ -122,6 +121,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<PublicPictures>();
         services.AddScoped<MediaJobQueue>();
         services.AddHostedService<AbandonedUploadSweep>();
+        services.AddHostedService<MediaFileReaper>();
         services.AddScoped<GalleryService>();
         services.AddScoped<NewsService>();
         services.AddScoped<NewsPictures>();
@@ -155,7 +155,14 @@ public static class ServiceCollectionExtensions
         );
         services.AddSingleton<AuditTimestampInterceptor>();
         services.AddSingleton<MailOutboxSignal>();
-        services.AddSingleton<MailOutboxWakeUp>();
+        services.AddSingleton<OutboxSignal>(serviceProvider =>
+            serviceProvider.GetRequiredService<MailOutboxSignal>()
+        );
+        services.AddSingleton<MediaFileReaperSignal>();
+        services.AddSingleton<OutboxSignal>(serviceProvider =>
+            serviceProvider.GetRequiredService<MediaFileReaperSignal>()
+        );
+        services.AddSingleton<OutboxWakeUp>();
         services.AddDbContext<AppDbContext>(
             (serviceProvider, options) =>
                 options
@@ -169,7 +176,7 @@ public static class ServiceCollectionExtensions
                     .UseSnakeCaseNamingConvention()
                     .AddInterceptors(
                         serviceProvider.GetRequiredService<AuditTimestampInterceptor>(),
-                        serviceProvider.GetRequiredService<MailOutboxWakeUp>()
+                        serviceProvider.GetRequiredService<OutboxWakeUp>()
                     )
         );
         services.TryAddSingleton(TimeProvider.System);
