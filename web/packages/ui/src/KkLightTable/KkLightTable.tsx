@@ -7,6 +7,7 @@ import type { TargetAndTransition, Transition } from 'motion/react';
 import { motion } from 'motion/react';
 import type { FC } from 'react';
 import type { KkImageSource } from '../image-source';
+import { filmOf } from '../internal/film-paint';
 import { focusRing } from '../internal/focus-ring';
 import { usePreloadImages } from '../internal/use-preload-images';
 import { useReducedMotion } from '../internal/use-reduced-motion';
@@ -284,7 +285,7 @@ export const KkLightTable: FC<KkLightTableProps> = ({
         borderRadius: `${kkTokens.radius.base}px`,
         border: `${kkTokens.line.hair}px solid`,
         borderColor: 'divider',
-        bgcolor: gallery.darkroomEdge,
+        bgcolor: filmOf(theme).edge,
         textAlign: 'left',
         ...focusRing(theme),
       })}
@@ -334,7 +335,7 @@ export const KkLightTable: FC<KkLightTableProps> = ({
         position: 'fixed',
         inset: 0,
         zIndex: (theme: Theme) => theme.zIndex.modal,
-        bgcolor: gallery.darkroom,
+        bgcolor: 'film.base',
         color: 'text.primary',
         outline: 'none',
         borderTop: `${kkTokens.line.page}px solid`,

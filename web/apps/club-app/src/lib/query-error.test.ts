@@ -1,9 +1,11 @@
 import { ApiError } from '@furria/api-client';
 import { describe, expect, it } from 'vitest';
+import { OfflineWriteError } from '@/lib/api/offline-write-error';
 import {
   isForbiddenError,
   isNotFoundError,
   type QueryErrorKind,
+  type QueryFailureKind,
   toQueryErrorKind,
   toQueryErrorMessage,
 } from './query-error';
@@ -15,14 +17,21 @@ const MESSAGES: Record<QueryErrorKind, string> = {
 };
 
 describe('toQueryErrorKind', () => {
-  it.each<[string, Error | null, QueryErrorKind | null]>([
+  it.each<[string, Error | null, QueryFailureKind | null]>([
     ['no error at all', null, null],
     [
       'a terminal 401 the session layer already handled',
       new ApiError({ kind: 'unauthorized' }),
       null,
     ],
-    ['a 403 a guard is about to answer', new ApiError({ kind: 'status', status: 403 }), null],
+    [
+      'a 403 the cached permissions did not foresee',
+      new ApiError({ kind: 'status', status: 403 }),
+      'forbidden',
+    ],
+    ['a rate limit', new ApiError({ kind: 'throttled' }), 'throttled'],
+    ['a server that answered too slowly', new ApiError({ kind: 'timedOut' }), 'timedOut'],
+    ['a write held back while offline', new OfflineWriteError(), 'unreachable'],
     ['a request that never left the device', new ApiError({ kind: 'unreachable' }), 'unreachable'],
     ['a server failure', new ApiError({ kind: 'status', status: 500 }), 'unexpected'],
     ['a refused write', new ApiError({ kind: 'refused', status: 409, fields: [] }), 'rejected'],

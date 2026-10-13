@@ -6,6 +6,7 @@ const PICTURE = { smallUrl: '/s', mediumUrl: '/m', largeUrl: '/l' };
 
 const editing = (overrides: Partial<PictureEditing>): PictureEditing => ({
   state: 'ready',
+  isStalled: false,
   picture: PICTURE,
   uncroppedUrl: '/u',
   crop: { left: 0, top: 0, width: 1, height: 1 },

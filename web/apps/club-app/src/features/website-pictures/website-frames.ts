@@ -5,7 +5,6 @@ import type {
   KkSlotFlagTone,
   KkSlotRowPosition,
 } from '@furria/ui';
-import { vacancyToneOf } from '@furria/website-pictures';
 import type { DeskPhase } from './hooks/use-position-desk';
 import type { SlotPositionRef } from './types';
 import type { BoardPosition, PositionStatus, SlotFlag } from './website-board';
@@ -14,6 +13,7 @@ import { positionLabelOf } from './website-copy';
 const FRAME_STATES: Record<PositionStatus, KkFrameState> = {
   empty: 'ready',
   processing: 'processing',
+  stalled: 'processing',
   failed: 'failed',
   ready: 'ready',
   mismatch: 'ready',
@@ -21,6 +21,7 @@ const FRAME_STATES: Record<PositionStatus, KkFrameState> = {
 
 const FLAG_TONES: Record<SlotFlag, KkSlotFlagTone> = {
   failed: 'red',
+  stalled: 'gold',
   mismatch: 'gold',
   altMissing: 'red',
   processing: 'muted',
@@ -44,7 +45,7 @@ export const positionFrameOf = (position: BoardPosition): KkSlotRowPosition => (
     undefined,
   state: FRAME_STATES[position.status],
   mark: position.status === 'mismatch' ? { kind: 'recut' } : { kind: 'none' },
-  vacancy: vacancyToneOf(position.slot, position.position),
+  placeholder: true,
 });
 
 export const slotFlagOf = (

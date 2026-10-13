@@ -1,9 +1,7 @@
 import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
-import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import type { KkCrop } from '../image-crop';
-import { KkButton } from '../KkButton';
 import { KkCoverPicture } from '../KkCoverPicture';
 import { KkNewsPoster } from '../KkNewsPoster';
 import type { KkNewsTone } from '../KkNewsProof/news-proof-types';
@@ -13,9 +11,9 @@ import { bannerSourceOf, isBannerEditable, uploadPercentOf } from './banner-desk
 import { KkBannerCropDesk } from './KkBannerCropDesk';
 import { KkBannerEmptyActions } from './KkBannerEmptyActions';
 import { KkBannerOverlay } from './KkBannerOverlay';
-import { KkBannerPanel } from './KkBannerPanel';
 import { KkBannerStatusLine } from './KkBannerStatusLine';
 import { KkBannerToolbar } from './KkBannerToolbar';
+import { KkBannerTrouble } from './KkBannerTrouble';
 
 interface KkBannerDeskProps {
   id: string;
@@ -75,7 +73,10 @@ export const KkBannerDesk: FC<KkBannerDeskProps> = ({
         alt={alt}
         sx={(theme) => ({
           borderRadius: `${kkTokens.radius.base}px`,
-          filter: state === 'developing' ? kkTokens.banner.developingFilter : 'none',
+          filter:
+            state === 'developing' || state === 'stalled'
+              ? kkTokens.banner.developingFilter
+              : 'none',
           transition: theme.transitions.create('filter', {
             duration: kkTokens.banner.revealMs,
             easing: theme.transitions.easing.easeOut,
@@ -114,17 +115,21 @@ export const KkBannerDesk: FC<KkBannerDeskProps> = ({
       </KkBannerOverlay>
     ) : null;
 
-  const failedStatus =
-    state === 'failed' && !readOnly ? (
+  const isFailed = state === 'failed';
+  const isTroubled = isFailed || state === 'stalled';
+  const troubleMessage = isFailed ? labels.failed : labels.stalled;
+  const troubleTone = isFailed ? 'error' : 'warning';
+  const troubleStatus =
+    isTroubled && !readOnly ? (
       <KkBannerOverlay placement="center">
-        <KkBannerPanel>
-          <Typography variant="caption" sx={{ px: 1, fontWeight: 800, color: 'error.main' }}>
-            {labels.failed}
-          </Typography>
-          <KkButton variant="contained" size="small" onClick={actions.onRetry}>
-            {labels.retry}
-          </KkButton>
-        </KkBannerPanel>
+        <KkBannerTrouble
+          message={troubleMessage}
+          tone={troubleTone}
+          retry={labels.retry}
+          remove={labels.remove}
+          onRetry={actions.onRetry}
+          onRemove={actions.onRemove}
+        />
       </KkBannerOverlay>
     ) : null;
 
@@ -147,7 +152,7 @@ export const KkBannerDesk: FC<KkBannerDeskProps> = ({
       {readyActions}
       {uploadStatus}
       {developStatus}
-      {failedStatus}
+      {troubleStatus}
     </Box>
   );
 };

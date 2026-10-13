@@ -5,6 +5,7 @@ import { toResetFailureKind } from './reset-failure';
 const FOOTER_MESSAGES: Record<Exclude<ResetFailureKind, 'dead' | 'password'>, string> = {
   throttled: 'Zu viele Versuche mit diesem Link. Warte einen Moment und versuche es dann erneut.',
   unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
+  'timed-out': 'Der Server antwortet gerade zu langsam. Versuche es gleich noch einmal.',
   unexpected: 'Das hat nicht funktioniert. Bitte versuche es erneut.',
 };
 

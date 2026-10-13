@@ -39,6 +39,7 @@ describe('shouldRetryRequest', () => {
   it.each<[number, ApiFailure | null, boolean]>([
     [0, { kind: 'unreachable' }, true],
     [1, { kind: 'unreachable' }, false],
+    [0, { kind: 'timedOut' }, true],
     [0, { kind: 'status', status: 503 }, true],
     [0, { kind: 'status', status: 404 }, false],
     [0, { kind: 'unauthorized' }, false],

@@ -30,7 +30,7 @@ const tintedSurface = (theme: Theme, tint?: string, tone?: KkGroupTone): CSSObje
     : applyScheme(theme, placeholderSurface, groupToneTint(tone));
 
 interface KkPhotoPlaceholderProps {
-  label: string;
+  label?: string;
   tint?: string;
   tone?: KkGroupTone;
   aspectRatio?: string;
@@ -43,32 +43,39 @@ export const KkPhotoPlaceholder: FC<KkPhotoPlaceholderProps> = ({
   tone,
   aspectRatio = '4 / 5',
   fill = false,
-}) => (
-  <Stack
-    sx={(theme) => ({
-      width: '100%',
-      ...(fill ? { height: '100%' } : { aspectRatio }),
-      alignItems: 'center',
-      justifyContent: 'center',
-      borderRadius: fill ? 0 : `${kkTokens.radius.base}px`,
-      backgroundImage: `repeating-linear-gradient(135deg, color-mix(in srgb, ${TINT} 15%, transparent) 0 11px, color-mix(in srgb, ${TINT} 6%, transparent) 11px 22px)`,
-      ...tintedSurface(theme, tint, tone),
-    })}
-  >
-    <Typography
-      component="span"
+}) => {
+  const caption =
+    label === undefined ? null : (
+      <Typography
+        component="span"
+        sx={(theme) => ({
+          ...theme.typography.caption,
+          fontWeight: 800,
+          letterSpacing: kkTokens.type.tracking.display,
+          color: TINT,
+          bgcolor: `color-mix(in srgb, ${(theme.vars ?? theme).palette.background.default} 80%, transparent)`,
+          px: 1,
+          py: 0.5,
+          borderRadius: 1,
+        })}
+      >
+        {label}
+      </Typography>
+    );
+
+  return (
+    <Stack
       sx={(theme) => ({
-        ...theme.typography.caption,
-        fontWeight: 800,
-        letterSpacing: kkTokens.type.tracking.display,
-        color: TINT,
-        bgcolor: `color-mix(in srgb, ${(theme.vars ?? theme).palette.background.default} 80%, transparent)`,
-        px: 1,
-        py: 0.5,
-        borderRadius: 1,
+        width: '100%',
+        ...(fill ? { height: '100%' } : { aspectRatio }),
+        alignItems: 'center',
+        justifyContent: 'center',
+        borderRadius: fill ? 0 : `${kkTokens.radius.base}px`,
+        backgroundImage: `repeating-linear-gradient(135deg, color-mix(in srgb, ${TINT} 15%, transparent) 0 11px, color-mix(in srgb, ${TINT} 6%, transparent) 11px 22px)`,
+        ...tintedSurface(theme, tint, tone),
       })}
     >
-      {label}
-    </Typography>
-  </Stack>
-);
+      {caption}
+    </Stack>
+  );
+};

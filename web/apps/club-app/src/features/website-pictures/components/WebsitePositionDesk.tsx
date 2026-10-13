@@ -14,6 +14,7 @@ import {
   positionNameOf,
   RECUT_NOTE,
   REPLACE_NOTE,
+  STALLED_NOTE,
   UNREADABLE_NOTE,
   updatedLineOf,
 } from '../website-copy';
@@ -26,6 +27,7 @@ const NOTES: Record<DeskNote, { text: string; tone: 'muted' | 'hint' | 'warning'
   recut: { text: RECUT_NOTE, tone: 'warning' },
   failed: { text: FAILED_NOTE, tone: 'warning' },
   processing: { text: PROCESSING_NOTE, tone: 'hint' },
+  stalled: { text: STALLED_NOTE, tone: 'warning' },
   uncut: { text: UNREADABLE_NOTE, tone: 'hint' },
   replace: { text: REPLACE_NOTE, tone: 'muted' },
   decorative: { text: ALT_DECORATIVE, tone: 'muted' },

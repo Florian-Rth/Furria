@@ -1,10 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PhotoStackFrameSpec } from './photo-stack-frames';
-import {
-  resolveFrameBottomPercent,
-  resolvePhotoStackEntrance,
-  resolveShownPhotoStackFrames,
-} from './photo-stack-frames';
+import { resolveFrameBottomPercent, resolvePhotoStackEntrance } from './photo-stack-frames';
 
 const frame = (overrides: Partial<PhotoStackFrameSpec>): PhotoStackFrameSpec => ({
   position: 1,
@@ -42,18 +38,5 @@ describe('resolvePhotoStackEntrance', () => {
       animate: { opacity: 1, rotate: -6, y: 0 },
       transition: { duration: 0 },
     });
-  });
-});
-
-describe('resolveShownPhotoStackFrames', () => {
-  it.each<[number[], number | null, number[]]>([
-    [[1, 2, 3], 1, [2, 3]],
-    [[2], null, [2]],
-    [[1, 3], 1, [3]],
-  ])('frames the positions %j as lead %j and fan %j', (positions, lead, fanned) => {
-    const shown = resolveShownPhotoStackFrames(positions, true);
-
-    expect(shown.lead?.spec.position ?? null).toBe(lead);
-    expect(shown.fanned.map((frame) => frame.spec.position)).toEqual(fanned);
   });
 });

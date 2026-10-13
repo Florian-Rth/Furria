@@ -24,6 +24,8 @@ export const EMPTY_BASKET = 'Leerer Korb';
 export const NO_ALBUM = 'Kein Album';
 export const NEW_ALBUM_FIELD = 'Neues Album';
 export const NEW_ALBUM_ACTION = 'Anlegen';
+export const BASKET_ALBUM_FAILED =
+  'Das Album konnte nicht angelegt werden. Versuch es noch einmal.';
 export const MY_INBOX = 'Mein Eingang';
 export const OWNERLESS_INBOX = 'Ohne Besitzer';
 export const DONE_HEADLINE = 'EINGANG LEER';
@@ -53,12 +55,27 @@ export const sceneQuestionOf = (count: number, basket: string | null): string =>
     ? `${countLabel(count)} Bilder dieser Szene verwerfen?`
     : `${countLabel(count)} Bilder dieser Szene nach „${basket}“?`;
 
-export const tallyLineOf = (filed: number, rejected: number, developing: number): string =>
+interface UnfinishedItems {
+  developing: number;
+  stalled: number;
+  failed: number;
+}
+
+const countedPart = (count: number, words: string): string[] =>
+  count === 0 ? [] : [`${countLabel(count)} ${words}`];
+
+export const tallyLineOf = (
+  filed: number,
+  rejected: number,
+  { developing, stalled, failed }: UnfinishedItems,
+): string =>
   [
     'übrig',
     `${countLabel(filed)} abgelegt`,
     `${countLabel(rejected)} verworfen`,
-    ...(developing === 0 ? [] : [`${countLabel(developing)} entwickeln noch`]),
+    ...countedPart(developing, 'entwickeln noch'),
+    ...countedPart(stalled, 'brauchen ungewöhnlich lange'),
+    ...countedPart(failed, 'ließen sich nicht entwickeln'),
   ].join(' · ');
 
 export const doneSummaryOf = (filed: number, rejected: number): string =>

@@ -8,7 +8,7 @@ export const NEWS_CATEGORIES: readonly NewsCategory[] = NewsCategorySchema.optio
 
 export type NewsStage = 'draft' | 'live' | 'pending' | 'withdrawn';
 
-export type NewsPictureState = 'uploading' | 'developing' | 'ready' | 'failed';
+export type NewsPictureState = 'uploading' | 'developing' | 'stalled' | 'ready' | 'failed';
 
 export interface NewsPicture {
   key: string;

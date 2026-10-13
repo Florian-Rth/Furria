@@ -36,6 +36,7 @@ export interface PictureRemovalControl {
 export interface PictureEditorControl {
   phase: PicturePhase;
   rejection: string | null;
+  isStalled: boolean;
   initialCrop: KkCrop | null;
   canRecrop: boolean;
   isSaving: boolean;
@@ -96,8 +97,11 @@ export const usePictureEditor = ({
       withFreshAccessToken((accessToken) => requestPictureRemoval(target, accessToken)),
   });
 
+  const isDeveloping = editing?.state === 'processing';
+  const isStalled = isDeveloping && editing.isStalled;
   const announce = useDevelopingPicture({
-    isDeveloping: editing?.state === 'processing',
+    isDeveloping,
+    isStalled,
     refresh,
     changes: ['picture'],
   });
@@ -144,6 +148,7 @@ export const usePictureEditor = ({
   return {
     phase: phaseOf(state),
     rejection,
+    isStalled,
     initialCrop: initialCropOf(state),
     canRecrop: editing?.uncroppedUrl != null,
     isSaving,

@@ -1,7 +1,13 @@
 import type { Refusal } from '@furria/api-client';
 import { apiFailureOf } from '@furria/api-client';
 
-export type ResetFailureKind = 'dead' | 'password' | 'throttled' | 'unreachable' | 'unexpected';
+export type ResetFailureKind =
+  | 'dead'
+  | 'password'
+  | 'throttled'
+  | 'unreachable'
+  | 'timed-out'
+  | 'unexpected';
 
 const PASSWORD_FIELD = 'password';
 
@@ -18,6 +24,8 @@ export const toResetFailureKind = (error: Error | null): ResetFailureKind | null
   switch (failure?.kind) {
     case 'unreachable':
       return 'unreachable';
+    case 'timedOut':
+      return 'timed-out';
     case 'refused':
       return refusesPassword(failure) ? 'password' : 'dead';
     case 'throttled':

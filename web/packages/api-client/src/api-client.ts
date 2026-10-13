@@ -71,6 +71,30 @@ const failureOfResponse = async (response: Response): Promise<ApiFailure> =>
     isRefusalStatus(response.status) ? await readFieldFailures(response) : null,
   );
 
+const failureOfTransport = (signal: AbortSignal | null | undefined): ApiFailure =>
+  signal?.aborted === true ? { kind: 'timedOut' } : { kind: 'unreachable' };
+
+const readText = async (response: Response, init: RequestInit): Promise<string> => {
+  try {
+    return await response.text();
+  } catch {
+    throw new ApiError(failureOfTransport(init.signal));
+  }
+};
+
+type BodyText = { parsed: true; value: JsonBody | undefined } | { parsed: false };
+
+const parseJson = (text: string): BodyText => {
+  if (text.trim().length === 0) {
+    return { parsed: true, value: undefined };
+  }
+  try {
+    return { parsed: true, value: JSON.parse(text) };
+  } catch {
+    return { parsed: false };
+  }
+};
+
 type BodyReading<TResponse> =
   | { readable: true; value: TResponse }
   | { readable: false; issues: readonly z.core.$ZodIssue[] };
@@ -88,16 +112,16 @@ const parseBody = <TResponse>(
 
 const readBody = async <TResponse>(
   response: Response,
+  init: RequestInit,
   schema: ZodType<TResponse>,
 ): Promise<BodyReading<TResponse>> => {
   if (response.status === NO_CONTENT_STATUS || response.status === ACCEPTED_STATUS) {
     return parseBody(schema, undefined);
   }
-  try {
-    return parseBody(schema, await response.json());
-  } catch {
-    return { readable: false, issues: [] };
-  }
+
+  const body = parseJson(await readText(response, init));
+
+  return body.parsed ? parseBody(schema, body.value) : { readable: false, issues: [] };
 };
 
 const toRequestInit = (
@@ -140,25 +164,23 @@ export const createApiClient = ({
 }: ApiClientConfig): ApiClient => {
   const apiUrlOf = (path: string): string => buildApiUrl(readBaseUrl(), path);
 
-  const sendOrUnreachable = async (url: string, init: RequestInit): Promise<Response> => {
+  const sendOrFail = async (url: string, init: RequestInit): Promise<Response> => {
     try {
       return await send(url, init);
     } catch {
-      throw new ApiError({ kind: 'unreachable' });
+      throw new ApiError(failureOfTransport(init.signal));
     }
   };
 
   const apiFetch: ApiFetch = async (path, { schema, method = 'GET', body, accessToken }) => {
-    const response = await sendOrUnreachable(
-      apiUrlOf(path),
-      toRequestInit(method, body, accessToken, timeoutMs),
-    );
+    const init = toRequestInit(method, body, accessToken, timeoutMs);
+    const response = await sendOrFail(apiUrlOf(path), init);
 
     if (!response.ok) {
       throw new ApiError(await failureOfResponse(response));
     }
 
-    const reading = await readBody(response, schema);
+    const reading = await readBody(response, init, schema);
 
     if (!reading.readable) {
       reportMismatch({ method, path, issues: reading.issues });

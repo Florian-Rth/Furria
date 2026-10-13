@@ -4,7 +4,6 @@ import Typography from '@mui/material/Typography';
 import type { FC, ReactNode } from 'react';
 import type { KkAspect } from './image-aspect';
 import { aspectOf } from './image-aspect';
-import type { KkGroupTone } from './internal/group-tone';
 import { lineClamp } from './internal/line-clamp';
 import type { KkFrameMark, KkFrameState } from './KkFrame';
 import { KkFrame } from './KkFrame';
@@ -27,7 +26,7 @@ export interface KkSlotRowPosition {
   state?: KkFrameState;
   progress?: number;
   mark?: KkFrameMark;
-  vacancy?: KkGroupTone;
+  placeholder?: boolean;
 }
 
 const { website, gallery } = kkTokens;
@@ -79,7 +78,7 @@ export const KkSlotRow: FC<KkSlotRowProps> = ({
           state={position.state}
           progress={position.progress}
           mark={position.mark}
-          vacancy={position.vacancy}
+          placeholder={position.placeholder}
           aspect={position.aspect}
           selected={selectedPosition === index}
           onSelect={select}
@@ -137,7 +136,7 @@ export const KkSlotRow: FC<KkSlotRowProps> = ({
           <Typography variant="caption" sx={{ color: 'text.secondary', ...lineClamp(1) }}>
             {facts}
           </Typography>
-          <Typography variant="caption" sx={{ color: 'text.secondary', ...lineClamp(2) }}>
+          <Typography variant="caption" sx={{ color: 'text.secondary' }}>
             {description}
           </Typography>
         </Stack>

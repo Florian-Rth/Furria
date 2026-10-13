@@ -1,9 +1,9 @@
 import Box from '@mui/material/Box';
 import type { Theme } from '@mui/material/styles';
 import type { FC } from 'react';
+import { filmOf } from '../internal/film-paint';
 import { KkVisuallyHidden } from '../KkVisuallyHidden';
 import type { KkSx } from '../kk-sx';
-import { KK_DARK_SCHEME_ATTRIBUTE } from '../theme';
 import { kkTokens } from '../tokens';
 import { KkShowcaseAddTile } from './internal/KkShowcaseAddTile';
 import type { KkShowcasePieceData } from './internal/KkShowcasePiece';
@@ -12,7 +12,6 @@ import { useShowcaseDrag } from './internal/use-showcase-drag';
 
 const { gallery } = kkTokens;
 const { showcase } = gallery;
-const darkScheme = { [KK_DARK_SCHEME_ATTRIBUTE]: '' };
 
 const columnsOf = (count: number): string => `repeat(${count}, minmax(0, 1fr))`;
 
@@ -64,15 +63,14 @@ export const KkShowcase: FC<KkShowcaseProps> = ({
   return (
     <Box
       data-kk-showcase
-      {...darkScheme}
       sx={[
         (theme: Theme) => ({
           position: 'relative',
           p: { xs: 1.5, desktop: 2.5 },
           color: 'text.primary',
-          bgcolor: gallery.darkroom,
+          bgcolor: filmOf(theme).base,
           borderRadius: `${kkTokens.radius.base}px`,
-          boxShadow: `inset 0 0 0 ${kkTokens.line.section}px ${(theme.vars ?? theme).palette.warning.main}`,
+          boxShadow: `inset 0 0 0 ${kkTokens.line.section}px ${filmOf(theme).mark}`,
           '&::after': {
             content: '""',
             position: 'absolute',

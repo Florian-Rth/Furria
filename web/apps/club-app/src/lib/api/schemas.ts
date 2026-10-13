@@ -38,6 +38,7 @@ export type MediaItemState = z.infer<typeof MediaItemStateSchema>;
 
 export const PictureEditingSchema = z.object({
   state: MediaItemStateSchema,
+  isStalled: z.boolean(),
   picture: PictureSchema.nullable(),
   uncroppedUrl: MediaUrlSchema.nullable(),
   crop: PictureCropSchema.nullable(),

@@ -1,7 +1,14 @@
 import type { KkCrop } from '../image-crop';
 import type { KkCropFrameLabels } from '../KkCropFrame/KkCropFrame';
 
-export type KkBannerState = 'empty' | 'uploading' | 'developing' | 'failed' | 'ready' | 'cropping';
+export type KkBannerState =
+  | 'empty'
+  | 'uploading'
+  | 'developing'
+  | 'stalled'
+  | 'failed'
+  | 'ready'
+  | 'cropping';
 
 export interface KkBannerDeskLabels {
   upload: string;
@@ -10,6 +17,7 @@ export interface KkBannerDeskLabels {
   replace: string;
   uploading: string;
   developing: string;
+  stalled: string;
   failed: string;
   retry: string;
   crop: string;

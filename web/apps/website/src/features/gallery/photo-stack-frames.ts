@@ -94,24 +94,10 @@ export const resolvePhotoStackEntrance = (
   };
 };
 
-export interface ShownPhotoStackFrames {
-  lead: AnimatedPhotoStackFrame | null;
-  fanned: AnimatedPhotoStackFrame[];
-}
-
-const animatedFrameOf = (
-  spec: PhotoStackFrameSpec,
+export const resolveFannedPhotoStackFrames = (
   reducedMotion: boolean | null,
-): AnimatedPhotoStackFrame => ({ spec, entrance: resolvePhotoStackEntrance(spec, reducedMotion) });
-
-export const resolveShownPhotoStackFrames = (
-  positions: readonly number[],
-  reducedMotion: boolean | null,
-): ShownPhotoStackFrames => ({
-  lead: positions.includes(leadPhotoStackFrame.position)
-    ? animatedFrameOf(leadPhotoStackFrame, reducedMotion)
-    : null,
-  fanned: fannedPhotoStackFrames
-    .filter((spec) => positions.includes(spec.position))
-    .map((spec) => animatedFrameOf(spec, reducedMotion)),
-});
+): AnimatedPhotoStackFrame[] =>
+  fannedPhotoStackFrames.map((spec) => ({
+    spec,
+    entrance: resolvePhotoStackEntrance(spec, reducedMotion),
+  }));

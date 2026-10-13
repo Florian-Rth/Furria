@@ -7,6 +7,7 @@ export type PasskeyFailureKind =
   | 'refused'
   | 'throttled'
   | 'unreachable'
+  | 'timed-out'
   | 'unexpected';
 
 const CANCELLATION_NAMES: readonly string[] = ['NotAllowedError', 'AbortError'];
@@ -31,6 +32,8 @@ export const toPasskeyFailureKind = (error: Error): PasskeyFailureKind => {
       return 'throttled';
     case 'unreachable':
       return 'unreachable';
+    case 'timedOut':
+      return 'timed-out';
     default:
       return 'unexpected';
   }

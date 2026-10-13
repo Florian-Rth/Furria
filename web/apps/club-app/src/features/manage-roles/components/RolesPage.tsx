@@ -31,16 +31,16 @@ export const RolesPage: FC = () => {
   const { has, isUndecided } = usePermissions();
   const canManage = isUndecided || has(PERMISSION_KEYS.rolesManage);
 
-  const toolRow =
-    roles.data === undefined ? (
-      <KkSkeletonToolbar chips={TOOLBAR_CHIPS} />
-    ) : (
+  const toolbar =
+    roles.data === undefined ? undefined : (
       <RolesToolbar
         status={search.status}
         options={search.filterOptions}
         onStatusChange={search.selectStatus}
       />
     );
+
+  const toolRow = roles.isPending ? <KkSkeletonToolbar chips={TOOLBAR_CHIPS} /> : toolbar;
 
   return (
     <KkScreen

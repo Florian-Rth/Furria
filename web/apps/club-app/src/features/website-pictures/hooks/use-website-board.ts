@@ -9,7 +9,7 @@ import type { TransferTarget } from '../transfer-targets';
 import { namedTransferTargetsOf } from '../transfer-targets';
 import type { SlotPositionRef } from '../types';
 import type { BoardPosition, WebsiteBoard } from '../website-board';
-import { allPositionsOf, copySourcesOf, findPosition, websiteBoardOf } from '../website-board';
+import { copySourcesOf, developingOf, findPosition, websiteBoardOf } from '../website-board';
 import { DESK_SHEET_ID } from '../website-copy';
 
 export interface WebsiteBoardState {
@@ -25,9 +25,6 @@ export interface WebsiteBoardState {
   reload: () => void;
 }
 
-const isProcessing = (board: WebsiteBoard | null): boolean =>
-  board !== null && allPositionsOf(board).some((position) => position.status === 'processing');
-
 export const useWebsiteBoard = (): WebsiteBoardState => {
   const query = useWebsitePicturesQuery(true);
   const sheet = useKkSheet();
@@ -37,11 +34,13 @@ export const useWebsiteBoard = (): WebsiteBoardState => {
     query.data === undefined
       ? null
       : websiteBoardOf(WEBSITE_PAGES, WEBSITE_PICTURE_SLOTS, query.data.pictures);
+  const developing = board === null ? 'none' : developingOf(board);
   const reload = (): void => {
     void query.refetch();
   };
   const announce = useDevelopingPicture({
-    isDeveloping: isProcessing(board),
+    isDeveloping: developing !== 'none',
+    isStalled: developing === 'stalled',
     refresh: reload,
     changes: ['websitePicture'],
   });

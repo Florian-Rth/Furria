@@ -21,6 +21,7 @@ import {
   PICTURE_REMOVE_CONFIRM,
   PICTURE_REPLACE,
   PICTURE_RETRY,
+  PICTURE_STALLED,
   PICTURE_UPLOAD,
   PICTURE_UPLOADING,
 } from '../../editor-copy';
@@ -37,6 +38,7 @@ const LABELS: KkBannerDeskLabels = {
   replace: PICTURE_REPLACE,
   uploading: PICTURE_UPLOADING,
   developing: PICTURE_DEVELOPING,
+  stalled: PICTURE_STALLED,
   failed: PICTURE_FAILED,
   retry: PICTURE_RETRY,
   crop: PICTURE_CROP,

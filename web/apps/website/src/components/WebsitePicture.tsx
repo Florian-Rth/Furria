@@ -1,6 +1,5 @@
-import { aspectRatioCss, KkCoverPicture, KkVacancyField, kkTokens } from '@furria/ui';
+import { aspectRatioCss, KkCoverPicture, KkPhotoPlaceholder, kkTokens } from '@furria/ui';
 import type { PictureSlotKey } from '@furria/website-pictures';
-import { vacancyToneOf } from '@furria/website-pictures';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import { useWebsitePicture } from '@/lib/website-pictures/use-website-picture';
@@ -36,8 +35,7 @@ export const WebsitePicture: FC<WebsitePictureProps> = ({
     : { width: '100%', aspectRatio, borderRadius: `${kkTokens.radius.base}px` };
 
   if (picture.state === 'empty') {
-    const tone = vacancyToneOf(slot, position);
-    return <KkVacancyField tone={tone} aspectRatio={aspectRatio} sx={sizing} />;
+    return <KkPhotoPlaceholder aspectRatio={aspectRatio} fill={fill} />;
   }
 
   if (picture.state === 'pending') {

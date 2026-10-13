@@ -24,6 +24,7 @@ const itemOf = (
   mediaItemId,
   kind,
   state,
+  isStalled: false,
   width: 4000,
   height: 3000,
   durationSeconds: null,

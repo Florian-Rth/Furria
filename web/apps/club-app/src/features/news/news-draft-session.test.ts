@@ -1,5 +1,6 @@
 import { ApiError } from '@furria/api-client';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import type { PictureEditing } from '@/lib/api/schemas';
 import type {
   NewsDraftClock,
   NewsDraftRequests,
@@ -28,6 +29,8 @@ interface FakeNewsServer {
   holdSaves: () => void;
   releaseSaves: () => Promise<void>;
   failNextSaves: (count: number) => void;
+  failNextReads: (count: number) => void;
+  showPicture: (picture: PictureEditing) => void;
   reportSaveInBetween: (inBetween: ForeignSave) => void;
   deletePost: () => void;
   createdCount: () => number;
@@ -60,6 +63,7 @@ const fakeNewsServer = (initial: StoredPost | null): FakeNewsServer => {
   let stored = initial;
   let isHolding = false;
   let failures = 0;
+  let readFailures = 0;
   let inBetween: ForeignSave | null = null;
   let created = 0;
   const heldSaves: (() => void)[] = [];
@@ -96,7 +100,13 @@ const fakeNewsServer = (initial: StoredPost | null): FakeNewsServer => {
 
   return {
     requests: {
-      read: async (newsPostId) => detailsOf(newsPostId, existing()),
+      read: async (newsPostId) => {
+        if (readFailures > 0) {
+          readFailures -= 1;
+          throw new ApiError({ kind: 'status', status: 503 });
+        }
+        return detailsOf(newsPostId, existing());
+      },
       create: async (content) => {
         created += 1;
         stored = {
@@ -164,6 +174,13 @@ const fakeNewsServer = (initial: StoredPost | null): FakeNewsServer => {
     },
     failNextSaves: (count) => {
       failures = count;
+    },
+    failNextReads: (count) => {
+      readFailures = count;
+    },
+    showPicture: (picture) => {
+      const post = existing();
+      stored = { ...post, content: { ...post.content, picture } };
     },
     reportSaveInBetween: (next) => {
       inBetween = next;
@@ -321,6 +338,57 @@ describe('saving', () => {
       expect(session.view().foreignSave?.name ?? null).toBe(expected);
     },
   );
+});
+
+describe('developing picture', () => {
+  const DEVELOPING_POLL_MS = 3_000;
+  const STALLED_POLL_MS = 30_000;
+  const developing: PictureEditing = {
+    state: 'processing',
+    isStalled: false,
+    picture: null,
+    uncroppedUrl: null,
+    crop: null,
+  };
+  const failed: PictureEditing = { ...developing, state: 'failed' };
+  const developingServer = (): FakeNewsServer =>
+    fakeNewsServer({
+      state: 'draft',
+      content: { ...wireOf('Text', 'Titel'), picture: developing },
+      pendingChanges: null,
+      revision: 1,
+    });
+
+  it('keeps following the picture after a read fails', async () => {
+    const server = developingServer();
+    const session = await openedSession(server);
+    server.failNextReads(1);
+
+    await vi.advanceTimersByTimeAsync(DEVELOPING_POLL_MS);
+    server.showPicture(failed);
+    await vi.advanceTimersByTimeAsync(DEVELOPING_POLL_MS);
+
+    expect(session.view().version.picture?.state).toBe('failed');
+  });
+
+  it('reports a picture stuck developing and then asks less often', async () => {
+    const server = developingServer();
+    const session = await openedSession(server);
+    server.showPicture({ ...developing, isStalled: true });
+
+    await vi.advanceTimersByTimeAsync(DEVELOPING_POLL_MS);
+    const stuck = session.view().version.picture?.state;
+    server.showPicture(failed);
+    await vi.advanceTimersByTimeAsync(DEVELOPING_POLL_MS);
+    const soonAfter = session.view().version.picture?.state;
+    await vi.advanceTimersByTimeAsync(STALLED_POLL_MS);
+
+    expect([stuck, soonAfter, session.view().version.picture?.state]).toEqual([
+      'stalled',
+      'stalled',
+      'failed',
+    ]);
+  });
 });
 
 describe('leaving', () => {

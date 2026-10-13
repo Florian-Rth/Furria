@@ -110,7 +110,7 @@ export const KkShowcasePiece: FC<KkShowcasePieceProps> = ({
           px: 0.75,
           py: 0.5,
           borderBottom: `${kkTokens.line.hair}px dashed`,
-          borderColor: 'warning.main',
+          borderColor: 'film.mark',
           '& textarea::placeholder': { fontStyle: 'italic', opacity: DRAGGED_OPACITY },
         }}
       />
@@ -125,7 +125,7 @@ export const KkShowcasePiece: FC<KkShowcasePieceProps> = ({
           sx={(theme: Theme) => ({
             touchAction: 'none',
             cursor: isDragging ? 'grabbing' : 'grab',
-            color: 'warning.main',
+            color: 'film.mark',
             p: 0.5,
             borderRadius: `${kkTokens.radius.bar}px`,
             ...focusRing(theme),

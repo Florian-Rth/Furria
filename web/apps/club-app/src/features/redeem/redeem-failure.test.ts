@@ -7,6 +7,7 @@ describe('toRedeemFailureKind', () => {
   it.each<[string, Error | null, RedeemFailureKind | null]>([
     ['no error', null, null],
     ['a blocked request', new ApiError({ kind: 'unreachable' }), 'unreachable'],
+    ['a server that answered too slowly', new ApiError({ kind: 'timedOut' }), 'timedOut'],
     [
       'a conflict with a problem body',
       new ApiError({ kind: 'refused', status: 409, fields: [] }),

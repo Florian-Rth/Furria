@@ -1,7 +1,14 @@
 import type { DeskPhase } from './hooks/use-position-desk';
 import type { BoardPosition } from './website-board';
 
-export type DeskNote = 'recut' | 'failed' | 'processing' | 'uncut' | 'replace' | 'decorative';
+export type DeskNote =
+  | 'recut'
+  | 'failed'
+  | 'processing'
+  | 'stalled'
+  | 'uncut'
+  | 'replace'
+  | 'decorative';
 
 export const deskNotesOf = (
   phase: DeskPhase,
@@ -23,6 +30,9 @@ export const deskNotesOf = (
   }
   if (position.status === 'processing') {
     status.push('processing');
+  }
+  if (position.status === 'stalled') {
+    status.push('stalled');
   }
   if (!position.orphan && position.status !== 'empty') {
     status.push('replace');

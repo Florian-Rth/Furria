@@ -70,6 +70,7 @@ export const PICTURE_REMOVE_CONFIRM = 'Wirklich entfernen';
 export const PICTURE_UPLOADING = 'Wird hochgeladen';
 export const PICTURE_DEVELOPING = 'Wird entwickelt';
 export const PICTURE_FAILED = 'Hochladen fehlgeschlagen';
+export const PICTURE_STALLED = 'Entwickeln dauert ungewöhnlich lange';
 export const PICTURE_RETRY = 'Erneut';
 export const PICTURE_ALT = 'Bild der Meldung';
 export const PICTURE_CROP_LABELS = { frame: 'Bildausschnitt verschieben', zoom: 'Zoom' };

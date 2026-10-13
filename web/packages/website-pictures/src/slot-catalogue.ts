@@ -61,8 +61,7 @@ export const WEBSITE_PICTURE_SLOTS = {
   'events.filmstrip': {
     page: 'events',
     title: 'Filmstreifen',
-    description:
-      'Bis zu acht Fotos als Filmstreifen im Kopf der Veranstaltungsseite. Leere Plätze fallen weg, ohne Fotos entfällt der Streifen.',
+    description: 'Acht Fotos als Filmstreifen im Kopf der Veranstaltungsseite.',
     positions: Array.from({ length: FILMSTRIP_FRAMES }, () => 'landscape' as const),
     decorative: true,
   },

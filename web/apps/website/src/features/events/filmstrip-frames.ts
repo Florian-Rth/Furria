@@ -1,3 +1,5 @@
+import { WEBSITE_PICTURE_SLOTS } from '@furria/website-pictures';
+
 const FRAME_TILTS = [-2, 1.5, -1, 2, -1.5, 1, -2.5, 2] as const;
 const FIRST_POSITION = 1;
 const UPRIGHT = 0;
@@ -12,3 +14,7 @@ const tiltAt = (position: number): number =>
 
 export const filmstripFramesOf = (positions: readonly number[]): FilmstripFrame[] =>
   positions.map((position) => ({ position, transform: `rotate(${tiltAt(position)}deg)` }));
+
+export const eventsFilmstripFrames: readonly FilmstripFrame[] = filmstripFramesOf(
+  WEBSITE_PICTURE_SLOTS['events.filmstrip'].positions.map((_, index) => index + FIRST_POSITION),
+);

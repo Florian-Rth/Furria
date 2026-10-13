@@ -1,16 +1,18 @@
 import { useEffect, useEffectEvent, useRef } from 'react';
 import type { DomainChange } from '@/lib/query/reads';
 import { useRefreshAfter } from '@/lib/query/use-refresh-after';
-import { DEVELOPING_POLL_MS } from './developing';
+import { developingPollMsOf } from './developing';
 
 interface DevelopingPictureOptions {
   isDeveloping: boolean;
+  isStalled?: boolean;
   refresh: () => void;
   changes: readonly DomainChange[];
 }
 
 export const useDevelopingPicture = ({
   isDeveloping,
+  isStalled = false,
   refresh,
   changes,
 }: DevelopingPictureOptions): (() => Promise<void>) => {
@@ -37,9 +39,9 @@ export const useDevelopingPicture = ({
     if (!isDeveloping) {
       return undefined;
     }
-    const timer = window.setInterval(poll, DEVELOPING_POLL_MS);
+    const timer = window.setInterval(poll, developingPollMsOf(isStalled));
     return () => window.clearInterval(timer);
-  }, [isDeveloping]);
+  }, [isDeveloping, isStalled]);
 
   return announce;
 };

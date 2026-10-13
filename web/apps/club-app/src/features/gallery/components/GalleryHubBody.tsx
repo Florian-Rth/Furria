@@ -61,11 +61,11 @@ export const GalleryHubBody: FC<GalleryHubBodyProps> = ({ state }) => {
   return (
     <KkExposureSweep scope="viewport">
       <Stack sx={{ rowGap: 3.5, pb: 4 }}>
-        <WebsiteHubEntry />
         {rolls}
         {newAlbum}
         {sections}
         {empty}
+        <WebsiteHubEntry />
       </Stack>
     </KkExposureSweep>
   );

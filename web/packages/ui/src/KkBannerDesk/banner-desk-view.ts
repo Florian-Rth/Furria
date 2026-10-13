@@ -14,7 +14,7 @@ export const bannerSourceOf = (
   if (state === 'ready' || state === 'cropping') {
     return source;
   }
-  return state === 'developing' ? uncroppedSource : null;
+  return state === 'developing' || state === 'stalled' ? uncroppedSource : null;
 };
 
 export const isBannerEditable = (state: KkBannerState): boolean =>

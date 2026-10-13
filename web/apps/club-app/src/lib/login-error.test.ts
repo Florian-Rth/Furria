@@ -7,6 +7,7 @@ describe('toLoginErrorKind', () => {
     ['no error at all', null, null],
     ['a rejected credential pair', new ApiError({ kind: 'unauthorized' }), 'invalid-credentials'],
     ['a request that never left the device', new ApiError({ kind: 'unreachable' }), 'unreachable'],
+    ['a server that answered too slowly', new ApiError({ kind: 'timedOut' }), 'timed-out'],
     [
       'too many failed sign-ins from this address',
       new ApiError({ kind: 'throttled' }),

@@ -9,7 +9,7 @@ import { toPictureActionBar } from '../picture-action-bar';
 import {
   PICTURE_ACTION_LABELS,
   PICTURE_COPY,
-  PICTURE_STATE_NOTES,
+  pictureStateNoteOf,
   UNREADABLE_PHOTO_NOTE,
 } from '../picture-labels';
 import type { PictureTarget } from '../picture-target';
@@ -50,7 +50,8 @@ export const PictureEditor: FC<PictureEditorProps> = ({
     event.target.value = '';
   };
 
-  const stateNote = editing === null ? copy.emptyNote : PICTURE_STATE_NOTES[editing.state];
+  const stateNote =
+    editing === null ? copy.emptyNote : pictureStateNoteOf(editing.state, control.isStalled);
   const note = stateNote === null ? null : <KkNote>{stateNote}</KkNote>;
 
   const recropLine = control.canRecrop ? (
