@@ -182,7 +182,7 @@ describe('toEntryFormValues', () => {
     const values = toEntryFormValues(
       null,
       toOwnerOptions([TANZGARDE], false),
-      new Date(2027, 0, 20),
+      '2027-01-20',
     );
 
     expect(values.ownerId).toBe('7');
@@ -191,13 +191,13 @@ describe('toEntryFormValues', () => {
   });
 
   it('reads an open end off an existing calendar entry', () => {
-    const values = toEntryFormValues(entry({ endsAt: null }), [], new Date(2027, 0, 20));
+    const values = toEntryFormValues(entry({ endsAt: null }), [], '2027-01-20');
 
     expect(values.endDay).toBe('');
   });
 
   it('carries the venue of an existing calendar entry into the form', () => {
-    const values = toEntryFormValues(entry({ venueId: 4 }), [], new Date(2027, 0, 20));
+    const values = toEntryFormValues(entry({ venueId: 4 }), [], '2027-01-20');
 
     expect(values.venueId).toBe('4');
   });

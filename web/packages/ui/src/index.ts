@@ -149,6 +149,13 @@ export type { KkMentionAnchor, KkMentionSection } from './KkMentionPicker/KkMent
 export { KkMentionPicker, kkMentionOptionId } from './KkMentionPicker/KkMentionPicker';
 export type { KkMetaTone } from './KkMeta';
 export { KkMeta } from './KkMeta';
+export type {
+  KkMonthBoardBarData,
+  KkMonthBoardDayData,
+  KkMonthBoardDayMark,
+  KkMonthBoardTravel,
+} from './KkMonthBoard/internal/logic/month-board-types';
+export { KkMonthBoard } from './KkMonthBoard/KkMonthBoard';
 export { logoSourceOf } from './KkMottoStage/internal/logic/logo-source';
 export type { KkMottoStageState } from './KkMottoStage/internal/motto-stage-state';
 export { KkMottoStage } from './KkMottoStage/KkMottoStage';

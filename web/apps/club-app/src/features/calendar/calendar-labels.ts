@@ -15,6 +15,7 @@ import {
   toEventStatusShortLabel,
 } from '@/lib/event-copy';
 import type { CalendarOwnerOption } from './calendar-authoring';
+import type { CalendarDayMarkKey } from './calendar-board';
 import { NO_VENUE_ID } from './calendar-authoring';
 import { ALL_SCOPE_ID, CLUB_SCOPE_ID, toGroupScopeId } from './calendar-query';
 import type {
@@ -37,8 +38,18 @@ export const MONTH_VIEW_LABEL = 'Monat';
 export const LIST_VIEW_LABEL = 'Liste';
 export const PREVIOUS_MONTH_LABEL = 'Vorheriger Monat';
 export const NEXT_MONTH_LABEL = 'Nächster Monat';
-export const ALL_DAYS_LABEL = 'Alle Tage zeigen';
 export const RUNNING_CHIP_LABEL = 'läuft gerade';
+export const TODAY_LABEL = 'Heute';
+export const ADD_ON_DAY_LABEL = 'Termin an diesem Tag hinzufügen';
+
+export const DAY_MARK_LABELS: Record<CalendarDayMarkKey, string | null> = {
+  opening: 'Sessionseröffnung',
+  womensCarnivalDay: 'Weiberfastnacht',
+  roseMonday: 'Rosenmontag',
+  carnivalTuesday: 'Karnevalsdienstag',
+  ashWednesday: 'Aschermittwoch',
+  carnivalWeek: null,
+};
 
 const ALL_SCOPE_LABEL = 'Alle';
 const CLUB_SCOPE_LABEL = 'Verein';
@@ -163,7 +174,6 @@ export const toVenueOptions = (venues: readonly RunningVenue[]): KkSelectOption[
 export const toOwnerSelectOptions = (options: readonly CalendarOwnerOption[]): KkSelectOption[] =>
   options.map((option) => ({ value: option.id, label: option.label }));
 
-const TODAY_LABEL = 'Heute';
 const TOMORROW_LABEL = 'Morgen';
 
 export const toStartDayQuickChoices = (today: Date): KkDateQuickChoice[] => [

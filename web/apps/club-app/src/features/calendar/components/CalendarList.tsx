@@ -14,7 +14,6 @@ import { CalendarEntryRow } from './CalendarEntryRow';
 
 interface CalendarListProps {
   entries: readonly CalendarEntry[];
-  dayFiltered: boolean;
   isOwned: (entry: CalendarEntry) => boolean;
   linkOf: (entry: CalendarEntry) => CalendarEntryLink | null;
   mayAuthor: boolean;
@@ -23,7 +22,6 @@ interface CalendarListProps {
 
 export const CalendarList: FC<CalendarListProps> = ({
   entries,
-  dayFiltered,
   isOwned,
   linkOf,
   mayAuthor,
@@ -41,7 +39,7 @@ export const CalendarList: FC<CalendarListProps> = ({
 
   const body =
     entries.length === 0 ? (
-      <CalendarEmpty dayFiltered={dayFiltered} />
+      <CalendarEmpty dayFiltered={false} />
     ) : (
       <KkPanel variant="list">
         {entries.map((entry) => (

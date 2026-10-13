@@ -229,12 +229,11 @@ export const toEntryPayload = (form: CalendarEntryForm): CalendarEntryPayload =>
 export const toEntryFormValues = (
   entry: CalendarEntry | null,
   options: readonly CalendarOwnerOption[],
-  today: Date,
+  startDay: string,
 ): CalendarEntryForm => {
   if (entry === null) {
     const ownerId = options[0]?.id ?? CLUB_OWNER_ID;
     const ownerGroupId = options[0]?.ownerGroupId ?? null;
-    const startDay = toIsoDay(today);
 
     return {
       title: '',

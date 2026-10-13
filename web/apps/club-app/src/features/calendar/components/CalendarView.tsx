@@ -1,12 +1,12 @@
 import { KkPanelStack } from '@furria/ui';
 import type { FC } from 'react';
-import { entriesOnDay, sortRunningFirst } from '@/lib/calendar-days';
+import { sortRunningFirst } from '@/lib/calendar-days';
 import type { CalendarAuthoring } from '../hooks/use-calendar-authoring';
 import type { CalendarBoard } from '../hooks/use-calendar-board';
 import type { CalendarEntry } from '../schemas';
 import { CalendarEntrySheet } from './CalendarEntrySheet';
 import { CalendarList } from './CalendarList';
-import { CalendarMonthGrid } from './CalendarMonthGrid';
+import { CalendarMonth } from './CalendarMonth';
 
 interface CalendarViewProps {
   board: CalendarBoard;
@@ -21,24 +21,34 @@ export const CalendarView: FC<CalendarViewProps> = ({
   authoring,
   highlightedKey,
 }) => {
-  const sorted = sortRunningFirst(entries);
-  const selectedDay = board.selectedDay;
-  const visible = selectedDay === null ? sorted : entriesOnDay(sorted, selectedDay);
-  const grid =
-    board.view === 'month' ? <CalendarMonthGrid board={board} entries={entries} /> : null;
+  const sheet = <CalendarEntrySheet entries={entries} />;
+
+  if (board.view === 'list') {
+    const sorted = sortRunningFirst(entries);
+
+    return (
+      <KkPanelStack>
+        <CalendarList
+          entries={sorted}
+          isOwned={authoring.mayOwn}
+          linkOf={authoring.linkOf}
+          mayAuthor={authoring.mayAuthor}
+          highlightedKey={highlightedKey}
+        />
+        {sheet}
+      </KkPanelStack>
+    );
+  }
 
   return (
-    <KkPanelStack>
-      {grid}
-      <CalendarList
-        entries={visible}
-        dayFiltered={selectedDay !== null}
-        isOwned={authoring.mayOwn}
-        linkOf={authoring.linkOf}
-        mayAuthor={authoring.mayAuthor}
+    <>
+      <CalendarMonth
+        board={board}
+        entries={entries}
+        authoring={authoring}
         highlightedKey={highlightedKey}
       />
-      <CalendarEntrySheet entries={entries} />
-    </KkPanelStack>
+      {sheet}
+    </>
   );
 };
