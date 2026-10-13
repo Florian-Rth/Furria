@@ -18,8 +18,9 @@ which slot is data on the server, under keys the server does not interpret.**
   silently.
 - **Each position has a stable public URL** `/api/public/website-pictures/{slot}/{position}/{rendition}`
   serving whatever fills it, revalidated by ETag, 404 while empty — so static HTML can reference
-  and preload a slot (the landing hero, `og:image`) without waiting for the API. This adds a
-  key-addressed form beside ADR-0025's item-addressed public URLs.
+  and preload a slot (the landing hero) and the root route can point `og:image` at one without
+  waiting for the image. This adds a key-addressed form beside ADR-0025's item-addressed public
+  URLs.
 
 ## Considered options
 

@@ -11,10 +11,12 @@ public readonly record struct MediaOwner
     private const string GroupPrefix = "group:";
     private const string NewsPostPrefix = "news:";
     private const string WebsitePrefix = "website:";
+    private const string EventPrefix = "event:";
 
     public const double PortraitAspect = 4.0 / 5;
     public const double GroupPictureAspect = 3.0 / 2;
     public const double NewsPictureAspect = 2.0 / 1;
+    public const double EventPictureAspect = 2.0 / 1;
 
     public MediaOwnerKind Kind { get; }
 
@@ -29,6 +31,7 @@ public readonly record struct MediaOwner
             MediaOwnerKind.Group => $"{GroupPrefix}{Id}",
             MediaOwnerKind.NewsPost => $"{NewsPostPrefix}{Id}",
             MediaOwnerKind.Website => $"{WebsitePrefix}{Slot!.Value.Token}",
+            MediaOwnerKind.Event => $"{EventPrefix}{Id}",
             _ => GalleryToken,
         };
 
@@ -43,6 +46,7 @@ public readonly record struct MediaOwner
             MediaOwnerKind.Person => PortraitAspect,
             MediaOwnerKind.Group => GroupPictureAspect,
             MediaOwnerKind.NewsPost => NewsPictureAspect,
+            MediaOwnerKind.Event => EventPictureAspect,
             _ => null,
         };
 
@@ -64,12 +68,15 @@ public readonly record struct MediaOwner
     public static MediaOwner Website(PictureSlotPosition slot) =>
         new(MediaOwnerKind.Website, null, slot);
 
+    public static MediaOwner Event(int eventId) => new(MediaOwnerKind.Event, eventId);
+
     public static MediaOwner Of(MediaItem item) =>
         Of(
             item.OwnerKind,
             item.OwnerPersonId,
             item.OwnerGroupId,
             item.OwnerNewsPostId,
+            item.OwnerEventId,
             item.WebsitePicture is { } picture
                 ? new PictureSlotPosition(picture.SlotKey, picture.Position)
                 : null
@@ -80,6 +87,7 @@ public readonly record struct MediaOwner
         int? personId,
         int? groupId,
         int? newsPostId,
+        int? eventId,
         PictureSlotPosition? slot
     ) =>
         kind switch
@@ -88,6 +96,7 @@ public readonly record struct MediaOwner
             MediaOwnerKind.Group => Group(groupId!.Value),
             MediaOwnerKind.NewsPost => NewsPost(newsPostId!.Value),
             MediaOwnerKind.Website => Website(slot!.Value),
+            MediaOwnerKind.Event => Event(eventId!.Value),
             _ => Gallery,
         };
 
@@ -103,6 +112,7 @@ public readonly record struct MediaOwner
             _ when IdAfter(token, PersonPrefix) is { } personId => Person(personId),
             _ when IdAfter(token, GroupPrefix) is { } groupId => Group(groupId),
             _ when IdAfter(token, NewsPostPrefix) is { } newsPostId => NewsPost(newsPostId),
+            _ when IdAfter(token, EventPrefix) is { } eventId => Event(eventId),
             _ when SlotAfter(token) is { } slot => Website(slot),
             _ => null,
         };

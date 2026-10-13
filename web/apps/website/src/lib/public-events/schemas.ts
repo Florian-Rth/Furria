@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PictureSchema } from '@/lib/api/schemas';
 import { WallClockSchema } from '@/lib/api/wall-clock';
 import { toParagraphs } from '@/lib/paragraphs';
 
@@ -25,6 +26,13 @@ export const EventVenueSchema = z.object({
 
 export type EventVenue = z.infer<typeof EventVenueSchema>;
 
+export const EventPictureSchema = PictureSchema.extend({
+  width: z.number().int().positive(),
+  height: z.number().int().positive(),
+});
+
+export type EventPicture = z.infer<typeof EventPictureSchema>;
+
 export const EventSchema = z.object({
   eventId: z.number().int().positive(),
   title: z.string().min(1),
@@ -37,6 +45,7 @@ export const EventSchema = z.object({
   priceCents: z.number().int().nonnegative().nullable(),
   presaleStartsAt: WallClockSchema.nullable(),
   status: SalesStatusSchema,
+  picture: EventPictureSchema.nullable(),
 });
 
 export type Event = z.infer<typeof EventSchema>;

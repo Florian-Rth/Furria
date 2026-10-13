@@ -6,4 +6,5 @@ public enum PublicPictureKind
     GroupPicture = 2,
     GalleryPhoto = 3,
     NewsPicture = 4,
+    EventPicture = 5,
 }

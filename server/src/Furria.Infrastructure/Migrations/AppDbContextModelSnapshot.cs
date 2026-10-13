@@ -670,6 +670,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("time without time zone")
                         .HasColumnName("doors_open_at");
 
+                    b.Property<int?>("PictureId")
+                        .HasColumnType("integer")
+                        .HasColumnName("picture_id");
+
                     b.Property<DateTimeOffset?>("PresaleStartsAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("presale_starts_at");
@@ -700,6 +704,10 @@ namespace Furria.Infrastructure.Migrations
 
                     b.HasKey("CalendarEntryId")
                         .HasName("pk_event");
+
+                    b.HasIndex("PictureId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_event_picture_id");
 
                     b.ToTable("event", null, t =>
                         {
@@ -1581,6 +1589,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("original_file_name");
 
+                    b.Property<int?>("OwnerEventId")
+                        .HasColumnType("integer")
+                        .HasColumnName("owner_event_id");
+
                     b.Property<int?>("OwnerGroupId")
                         .HasColumnType("integer")
                         .HasColumnName("owner_group_id");
@@ -1645,6 +1657,9 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("AlbumId")
                         .HasDatabaseName("ix_media_item_album_id");
 
+                    b.HasIndex("OwnerEventId")
+                        .HasDatabaseName("ix_media_item_owner_event_id");
+
                     b.HasIndex("OwnerGroupId")
                         .HasDatabaseName("ix_media_item_owner_group_id");
 
@@ -1680,17 +1695,17 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_media_item_kind", "kind IN ('Photo', 'Video')");
 
-                            t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL)\nOR (owner_kind = 'NewsPost' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL)\nOR (owner_kind IN ('Gallery', 'Website') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)");
+                            t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL)\nOR (owner_kind = 'NewsPost' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_event_id IS NULL)\nOR (owner_kind = 'Event' AND owner_event_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)\nOR (owner_kind IN ('Gallery', 'Website') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL)");
 
-                            t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery', 'NewsPost', 'Website')");
+                            t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery', 'NewsPost', 'Website', 'Event')");
+
+                            t.HasCheckConstraint("ck_media_item_photo_only", "owner_kind NOT IN ('Website', 'Event') OR kind = 'Photo'");
 
                             t.HasCheckConstraint("ck_media_item_placed", "(album_id IS NULL) = (placed_at IS NULL)");
 
                             t.HasCheckConstraint("ck_media_item_selection", "selection_position IS NULL\nOR (selection_position > 0 AND album_id IS NOT NULL AND binned_at IS NULL AND kind = 'Photo')");
 
                             t.HasCheckConstraint("ck_media_item_state", "state IN ('Processing', 'Ready', 'Failed')");
-
-                            t.HasCheckConstraint("ck_media_item_website_photo", "owner_kind <> 'Website' OR kind = 'Photo'");
                         });
                 });
 
@@ -3035,7 +3050,15 @@ namespace Furria.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_event_calendar_entry_calendar_entry_id");
 
+                    b.HasOne("Furria.Core.Media.MediaItem", "Picture")
+                        .WithMany()
+                        .HasForeignKey("PictureId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_event_media_item_picture_id");
+
                     b.Navigation("CalendarEntry");
+
+                    b.Navigation("Picture");
                 });
 
             modelBuilder.Entity("Furria.Core.Events.TicketRequest", b =>
@@ -3249,6 +3272,12 @@ namespace Furria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_media_item_album_album_id");
 
+                    b.HasOne("Furria.Core.Events.Event", "OwnerEvent")
+                        .WithMany()
+                        .HasForeignKey("OwnerEventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_media_item_event_owner_event_id");
+
                     b.HasOne("Furria.Core.Groups.Group", "OwnerGroup")
                         .WithMany()
                         .HasForeignKey("OwnerGroupId")
@@ -3307,6 +3336,8 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Album");
 
                     b.Navigation("Crop");
+
+                    b.Navigation("OwnerEvent");
 
                     b.Navigation("OwnerGroup");
 

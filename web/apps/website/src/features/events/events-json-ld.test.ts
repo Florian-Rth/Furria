@@ -20,6 +20,7 @@ const seasonEvent = (overrides: Partial<Event>): Event => ({
   priceCents: 1400,
   presaleStartsAt: '2026-11-11T11:11',
   status: 'available',
+  picture: null,
   ...overrides,
 });
 
@@ -84,5 +85,23 @@ describe('buildEventsJsonLd', () => {
     expect(buildEventsJsonLd([seasonEvent({ doorsOpenAt: null })])[0]).not.toHaveProperty(
       'doorTime',
     );
+  });
+
+  it.each<[Partial<Event>, string[] | undefined]>([
+    [{ picture: null }, undefined],
+    [
+      {
+        picture: {
+          width: 2560,
+          height: 1280,
+          smallUrl: '/api/public/events/pictures/7/small',
+          mediumUrl: '/api/public/events/pictures/7/medium',
+          largeUrl: '/api/public/events/pictures/7/large',
+        },
+      },
+      ['/api/public/events/pictures/7/large'],
+    ],
+  ])('shows the event picture to search engines when there is one (%j)', (overrides, image) => {
+    expect(buildEventsJsonLd([seasonEvent(overrides)])[0]?.image).toEqual(image);
   });
 });

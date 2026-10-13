@@ -41,12 +41,4 @@ const heroPreloadOf = (slot: PictureSlotKey, sizes: string, media: string): Html
 export const websitePictureHeadTags = (): HtmlTagDescriptor[] => [
   heroPreloadOf('landing.hero', LANDING_HERO_SIZES, DESKTOP_MEDIA),
   heroPreloadOf('landing.heroPhone', LANDING_HERO_PHONE_SIZES, PHONE_MEDIA),
-  {
-    tag: 'meta',
-    attrs: {
-      property: 'og:image',
-      content: slotPictureUrlOf('site.shareImage', FIRST_POSITION, 'medium'),
-    },
-    injectTo: 'head',
-  },
 ];

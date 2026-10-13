@@ -6,6 +6,7 @@ import type { EventDetails } from '../schemas';
 import { EventCancellationLine } from './EventCancellationLine';
 import { EventDeletionLine } from './EventDeletionLine';
 import { EventFactsPanel } from './EventFactsPanel';
+import { EventPicturePanel } from './EventPicturePanel';
 import { EventRequestsPanel } from './EventRequestsPanel';
 import { EventTicketsPanel } from './EventTicketsPanel';
 
@@ -22,6 +23,7 @@ export const EventView: FC<EventViewProps> = ({ event }) => {
   return (
     <KkPanelStack>
       <EventFactsPanel event={event} highlightedKey={highlightedKey} />
+      <EventPicturePanel event={event} />
       <EventTicketsPanel event={event} />
       {requests}
       <EventCancellationLine event={event} />

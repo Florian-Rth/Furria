@@ -1,10 +1,13 @@
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using Furria.Application.Events;
+using Furria.Application.Media;
 using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Events;
+using Furria.Core.Media;
 using Furria.Infrastructure.Gallery;
+using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Public;
 using Microsoft.EntityFrameworkCore;
@@ -24,12 +27,19 @@ public sealed class EventService
 
     private readonly AppDbContext _dbContext;
     private readonly PublicFace _publicFace;
+    private readonly MediaPictures _pictures;
     private readonly TimeProvider _timeProvider;
 
-    public EventService(AppDbContext dbContext, PublicFace publicFace, TimeProvider timeProvider)
+    public EventService(
+        AppDbContext dbContext,
+        PublicFace publicFace,
+        MediaPictures pictures,
+        TimeProvider timeProvider
+    )
     {
         _dbContext = dbContext;
         _publicFace = publicFace;
+        _pictures = pictures;
         _timeProvider = timeProvider;
     }
 
@@ -69,11 +79,26 @@ public sealed class EventService
                 row.CancelledAt,
                 row.CalendarEntry.EndsAt == null
                     ? row.CalendarEntry.StartsAt <= openEndedCutoff
-                    : row.CalendarEntry.EndsAt <= now
+                    : row.CalendarEntry.EndsAt <= now,
+                row.PictureId,
+                row.Picture == null ? null : row.Picture.RenderedAt
             ))
             .ToListAsync(ct);
 
-        return [.. rows.Select(row => ToSummary(row, now))];
+        return
+        [
+            .. rows.Select(row =>
+                ToSummary(
+                    row,
+                    now,
+                    _pictures.Of(
+                        MediaOwner.Event(row.EventId),
+                        row.PictureId,
+                        row.PictureRenderedAt
+                    )
+                )
+            ),
+        ];
     }
 
     public async Task<EventDetails?> GetEventAsync(int eventId, CancellationToken ct)
@@ -101,11 +126,19 @@ public sealed class EventService
                 row.CancelledAt,
                 row.CalendarEntry.EndsAt == null
                     ? row.CalendarEntry.StartsAt <= openEndedCutoff
-                    : row.CalendarEntry.EndsAt <= now
+                    : row.CalendarEntry.EndsAt <= now,
+                row.Picture == null
+                    ? null
+                    : new MediaPictureRow(
+                        row.Picture.Id,
+                        row.Picture.State,
+                        row.Picture.RenderedAt,
+                        row.Picture.Crop
+                    )
             ))
             .SingleOrDefaultAsync(ct);
 
-        return row is null ? null : ToDetails(row, now);
+        return row is null ? null : ToDetails(row, now, EditingOf(row));
     }
 
     public async Task<IReadOnlyList<PublicEventSummary>> GetPublicEventsAsync(CancellationToken ct)
@@ -248,7 +281,11 @@ public sealed class EventService
             : $"Zu dieser Veranstaltung sind noch {openRequests} Kartenanfragen offen. Erledige sie, bevor du die Veranstaltung löschst.";
 
     [Pure]
-    private static EventSummary ToSummary(SummaryRow row, DateTimeOffset now) =>
+    private static EventSummary ToSummary(
+        SummaryRow row,
+        DateTimeOffset now,
+        PictureDetails? picture
+    ) =>
         new()
         {
             EventId = row.EventId,
@@ -264,10 +301,15 @@ public sealed class EventService
                 now
             ),
             IsOver = row.IsOver,
+            Picture = picture,
         };
 
     [Pure]
-    private static EventDetails ToDetails(DetailsRow row, DateTimeOffset now) =>
+    private static EventDetails ToDetails(
+        DetailsRow row,
+        DateTimeOffset now,
+        PictureEditingDetails? picture
+    ) =>
         new()
         {
             EventId = row.EventId,
@@ -291,6 +333,7 @@ public sealed class EventService
                 now
             ),
             IsOver = row.IsOver,
+            Picture = picture,
         };
 
     [Pure]
@@ -321,6 +364,13 @@ public sealed class EventService
                 row.TicketAvailability,
                 row.CancelledAt != null,
                 now
+            ),
+            Picture = PublicEventPictures.Of(
+                row.PictureId,
+                row.Picture == null ? null : row.Picture.RenderedAt,
+                row.Picture == null ? null : row.Picture.Width,
+                row.Picture == null ? null : row.Picture.Height,
+                row.Picture == null ? null : row.Picture.Crop
             ),
         };
 
@@ -354,6 +404,13 @@ public sealed class EventService
                 row.CancelledAt != null,
                 now
             ),
+            Picture = PublicEventPictures.Of(
+                row.PictureId,
+                row.Picture == null ? null : row.Picture.RenderedAt,
+                row.Picture == null ? null : row.Picture.Width,
+                row.Picture == null ? null : row.Picture.Height,
+                row.Picture == null ? null : row.Picture.Crop
+            ),
         };
 
     [Pure]
@@ -361,6 +418,11 @@ public sealed class EventService
         DateTimeOffset startsAt,
         TimeOnly? doorsOpenAt
     ) => doorsOpenAt is { } time ? ClubClock.At(ClubClock.DayOf(startsAt), time) : null;
+
+    private PictureEditingDetails? EditingOf(DetailsRow row) =>
+        row.Picture is { } picture
+            ? _pictures.EditingOf(MediaOwner.Event(row.EventId), picture)
+            : null;
 
     private Task<CalendarEntry?> TrackedEventEntryAsync(int eventId, CancellationToken ct) =>
         _dbContext
@@ -394,7 +456,9 @@ public sealed class EventService
         DateTimeOffset? PresaleStartsAt,
         TicketAvailability TicketAvailability,
         DateTimeOffset? CancelledAt,
-        bool IsOver
+        bool IsOver,
+        int? PictureId,
+        DateTimeOffset? PictureRenderedAt
     );
 
     private sealed record DetailsRow(
@@ -412,7 +476,8 @@ public sealed class EventService
         DateTimeOffset? PresaleStartsAt,
         TicketAvailability TicketAvailability,
         DateTimeOffset? CancelledAt,
-        bool IsOver
+        bool IsOver,
+        MediaPictureRow? Picture
     );
 
     private sealed record VenueStateRow(DateOnly? ArchivedOn);

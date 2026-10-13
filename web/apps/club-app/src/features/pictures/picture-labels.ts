@@ -44,6 +44,21 @@ export const PICTURE_COPY: Record<PictureKind, PictureCopy> = {
     removeExplanation:
       'Das Bild wird gelöscht. Die Gruppe zeigt wieder ihre Farbe – im Hub und auf der Website.',
   },
+  eventPicture: {
+    title: 'Veranstaltungsbild',
+    noun: 'Veranstaltungsbild',
+    guide: 'none',
+    frame: {
+      frame:
+        'Ausschnitt des Veranstaltungsbilds – ziehen zum Verschieben, Plus und Minus zum Zoomen',
+      zoom: 'Zoom',
+    },
+    emptyNote: 'Ohne Bild zeigen App und Website eine Farbfläche mit den gekreuzten Besen.',
+    removeLabel: 'Bild entfernen',
+    removeQuestion: 'Veranstaltungsbild entfernen?',
+    removeExplanation:
+      'Das Bild wird gelöscht. Die Veranstaltung zeigt wieder die Farbfläche – in der App und auf der Website.',
+  },
 };
 
 export const PICTURE_ACTION_LABELS = {

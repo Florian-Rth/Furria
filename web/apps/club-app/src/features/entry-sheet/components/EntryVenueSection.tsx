@@ -1,7 +1,7 @@
 import { KkChip, KkMeta, KkPanelSection, KkText } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import type { EntryVenueView } from '../entry-sheet';
+import type { EntryVenueView } from '../types';
 
 const SECTION_TITLE = 'Ort';
 const KEY_LABEL = 'Dein Schlüssel';

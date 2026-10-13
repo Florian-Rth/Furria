@@ -3,6 +3,7 @@ import { z } from 'zod';
 import { PictureSchema } from '@/lib/api/schemas';
 import { SessionSectionSchema } from '@/lib/api/session-section';
 import { WallClockSchema } from '@/lib/api/wall-clock';
+import { EventPictureSchema } from '@/lib/public-events/schemas';
 
 export const NEWS_CATEGORIES = ['session', 'achievements', 'club', 'groups'] as const;
 
@@ -64,6 +65,7 @@ export const NewsEventSchema = z.object({
   endsAt: WallClockSchema.nullable(),
   venueName: z.string().nullable(),
   isCancelled: z.boolean(),
+  picture: EventPictureSchema.nullable(),
 });
 
 export type NewsEvent = z.infer<typeof NewsEventSchema>;

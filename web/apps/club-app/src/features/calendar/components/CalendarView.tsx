@@ -4,6 +4,7 @@ import { entriesOnDay, sortRunningFirst } from '@/lib/calendar-days';
 import type { CalendarAuthoring } from '../hooks/use-calendar-authoring';
 import type { CalendarBoard } from '../hooks/use-calendar-board';
 import type { CalendarEntry } from '../schemas';
+import { CalendarEntrySheet } from './CalendarEntrySheet';
 import { CalendarList } from './CalendarList';
 import { CalendarMonthGrid } from './CalendarMonthGrid';
 
@@ -37,6 +38,7 @@ export const CalendarView: FC<CalendarViewProps> = ({
         mayAuthor={authoring.mayAuthor}
         highlightedKey={highlightedKey}
       />
+      <CalendarEntrySheet entries={entries} />
     </KkPanelStack>
   );
 };

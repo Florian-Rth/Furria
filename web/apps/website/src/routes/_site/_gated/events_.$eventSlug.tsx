@@ -22,6 +22,14 @@ const EventDetailErrorComponent: FC = () => {
   return <EventsUnavailable onRetry={retry} />;
 };
 
+const buildEventPictureMeta = (event: EventDetail): RouteHead['meta'] =>
+  event.picture === null
+    ? []
+    : [
+        { property: 'og:image', content: event.picture.largeUrl },
+        { property: 'og:image:alt', content: event.title },
+      ];
+
 const buildEventDetailHead = (event: EventDetail): RouteHead => {
   const title = pageTitle(buildEventDocumentTitle(event));
 
@@ -31,6 +39,7 @@ const buildEventDetailHead = (event: EventDetail): RouteHead => {
       { name: 'description', content: event.teaser },
       { property: 'og:title', content: title },
       { property: 'og:description', content: event.teaser },
+      ...buildEventPictureMeta(event),
     ],
     links: [{ rel: 'canonical', href: buildEventHref(event) }],
     scripts: [{ type: 'application/ld+json', children: JSON.stringify(buildEventJsonLd(event)) }],

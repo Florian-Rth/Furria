@@ -1,3 +1,4 @@
+import type { EntryVenueView } from '@/features/entry-sheet';
 import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
 import { toLocalIsoDay, toTimeLabel } from '@/lib/calendar-days';
 import type { StartEntry, StartGroupRef, StartVenue } from './schemas';
@@ -12,12 +13,6 @@ export type EntryOnward =
   | { kind: 'calendar'; day: string }
   | { kind: 'group'; groupId: number; name: string }
   | { kind: 'none' };
-
-export interface EntryVenueView {
-  name: string;
-  lines: string[];
-  holdsKey: boolean;
-}
 
 export type EntryRunning =
   | { kind: 'idle' }

@@ -1,4 +1,5 @@
 using FastEndpoints;
+using Furria.Api.Media;
 using Furria.Application.Events;
 using Furria.Core.Events;
 using Furria.Infrastructure.Events;
@@ -44,6 +45,7 @@ public sealed class GetPublicEvents : EndpointWithoutRequest<GetPublicEventsResp
             PriceCents = listed.PriceCents,
             PresaleStartsAt = listed.PresaleStartsAt,
             Status = listed.Status,
+            Picture = PublicEventPictureDto.From(listed.Picture),
         };
 
     private static PublicEventSummaryVenueDto ToDto(PublicEventVenue venue) =>
@@ -85,6 +87,8 @@ public sealed record PublicEventSummaryDto
     public required DateTimeOffset? PresaleStartsAt { get; init; }
 
     public required EventSalesStatus Status { get; init; }
+
+    public required PublicEventPictureDto? Picture { get; init; }
 }
 
 public sealed record PublicEventSummaryVenueDto

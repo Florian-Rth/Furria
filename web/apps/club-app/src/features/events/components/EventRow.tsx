@@ -1,13 +1,15 @@
-import { KkChip, KkFactRow } from '@furria/ui';
+import { KkChip, KkEventCover, KkFactRow } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toLandingKey } from '@/features/write';
 import { toDayNumberLabel, toWeekdayEyebrow } from '@/lib/calendar-days';
 import { EVENT_STATUS_TONES, toEventStatusShortLabel } from '@/lib/event-copy';
+import { toEventCover } from '@/lib/event-cover';
 import { toEventRowMeta } from '../events-labels';
 import type { EventSummary } from '../schemas';
 
 const LANDING_KIND = 'event';
+const THUMB_SIZES = '4rem';
 
 interface EventRowProps {
   event: EventSummary;
@@ -22,6 +24,18 @@ export const EventRow: FC<EventRowProps> = ({ event, highlightedKey }) => {
   const spanLabel = toWeekdayEyebrow(event.startsAt);
   const meta = toEventRowMeta(event);
   const params = { eventId: String(event.eventId) };
+  const cover = toEventCover(
+    { eventId: event.eventId, picture: event.picture, isCancelled: event.status === 'cancelled' },
+    THUMB_SIZES,
+  );
+  const thumb = (
+    <KkEventCover
+      image={cover.image}
+      tone={cover.tone}
+      cancelledLabel={cover.cancelledLabel}
+      size="thumb"
+    />
+  );
 
   const chip = (
     <KkChip tone={statusTone} size="small">
@@ -35,6 +49,7 @@ export const EventRow: FC<EventRowProps> = ({ event, highlightedKey }) => {
       span={span}
       spanLabel={spanLabel}
       meta={meta}
+      thumb={thumb}
       chip={chip}
       dimmed={event.isOver}
       highlight={highlightedKey === landingKey}

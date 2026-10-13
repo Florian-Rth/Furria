@@ -42,6 +42,15 @@ no-cache` with an `ETag` of the media item id and its `renderedAt` (a matching `
 answers 304). The signed URLs the club app gets for a website picture name its slot and position
 in the owner part of the signature, so moving the picture to another position retires them.
 
+**Amended 2026-10-12 with Florian (L7d event pictures):** event pictures joined the public face
+as its sixth member, item-addressed like the first four: `/api/public/events/pictures/{id}/{small|medium|large}`
+serves an **event picture** exactly while its event is shown on the website (the rule the public
+events list uses: a venue is set and the event is not over). A cancelled event is still shown, so
+its picture stays served; deleting the event deletes the picture and the URL answers 404. The
+public event list, the event page and a news article's event carry the picture's three URLs with
+the width and height of its 2:1 cut. The club app gets signed URLs whose owner part names the
+event (`event:{id}`).
+
 **Amended 2026-10-11 with Florian (gallery at scale):** the window grew from 24 h / valid 48 h to
 7 days / valid 14 days, renditions are served `immutable`, and every gallery URL carries
 `v={renderedAt}`. With a few thousand gallery items, a daily rotation made every device fetch

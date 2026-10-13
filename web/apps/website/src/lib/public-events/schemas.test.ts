@@ -15,6 +15,7 @@ describe('EventSchema', () => {
       priceCents: 1400,
       presaleStartsAt: '2026-11-11T10:11:00+00:00',
       status: 'fewLeft',
+      picture: null,
     });
 
     expect([event.startsAt, event.endsAt, event.doorsOpenAt, event.presaleStartsAt]).toEqual([

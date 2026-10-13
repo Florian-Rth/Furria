@@ -2,12 +2,15 @@ using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
 using Furria.Application.Authorization;
 using Furria.Application.Club;
+using Furria.Application.Media;
 using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Groups;
+using Furria.Core.Media;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Gallery;
+using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -42,16 +45,19 @@ public sealed class CalendarService
 
     private readonly AppDbContext _dbContext;
     private readonly PermissionAuthorizer _authorizer;
+    private readonly MediaPictures _pictures;
     private readonly TimeProvider _timeProvider;
 
     public CalendarService(
         AppDbContext dbContext,
         PermissionAuthorizer authorizer,
+        MediaPictures pictures,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
         _authorizer = authorizer;
+        _pictures = pictures;
         _timeProvider = timeProvider;
     }
 
@@ -482,7 +488,9 @@ public sealed class CalendarService
                     entry.Event.PriceCents,
                     entry.Event.PresaleStartsAt,
                     entry.Event.TicketAvailability,
-                    entry.Event.CancelledAt
+                    entry.Event.CancelledAt,
+                    entry.Event.PictureId,
+                    entry.Event.Picture == null ? null : entry.Event.Picture.RenderedAt
                 )
         );
 
@@ -562,8 +570,7 @@ public sealed class CalendarService
             Tone = row.Tone,
         };
 
-    [Pure]
-    private static CalendarEntrySummary ToSummary(
+    private CalendarEntrySummary ToSummary(
         EntryRow row,
         IReadOnlyDictionary<int, AttendanceAnswer> answers,
         DateTimeOffset now
@@ -586,11 +593,20 @@ public sealed class CalendarService
             Description = row.Description,
             ViewerAnswer = answers.TryGetValue(row.CalendarEntryId, out var answer) ? answer : null,
             IsRunning = row.IsRunning,
-            Event = row.Event is { } facts ? ToEventFacts(facts, now) : null,
+            Event = row.Event is { } facts
+                ? ToEventFacts(facts, now, EventPictureOf(row.CalendarEntryId, facts))
+                : null,
         };
 
+    private PictureDetails? EventPictureOf(int eventId, EventFactsRow facts) =>
+        _pictures.Of(MediaOwner.Event(eventId), facts.PictureId, facts.PictureRenderedAt);
+
     [Pure]
-    private static CalendarEventFacts ToEventFacts(EventFactsRow row, DateTimeOffset now) =>
+    private static CalendarEventFacts ToEventFacts(
+        EventFactsRow row,
+        DateTimeOffset now,
+        PictureDetails? picture
+    ) =>
         new()
         {
             DoorsOpenAt = row.DoorsOpenAt,
@@ -604,10 +620,10 @@ public sealed class CalendarService
                 row.CancelledAt is not null,
                 now
             ),
+            Picture = picture,
         };
 
-    [Pure]
-    private static GroupCalendarEntrySummary ToGroupSummary(
+    private GroupCalendarEntrySummary ToGroupSummary(
         EntryRow row,
         IReadOnlyDictionary<int, AttendanceAnswer> answers,
         bool viewerMayAnswer,
@@ -780,7 +796,9 @@ public sealed class CalendarService
         int? PriceCents,
         DateTimeOffset? PresaleStartsAt,
         TicketAvailability TicketAvailability,
-        DateTimeOffset? CancelledAt
+        DateTimeOffset? CancelledAt,
+        int? PictureId,
+        DateTimeOffset? PictureRenderedAt
     );
 
     private sealed record ParticipatingGroupRow(int GroupId, string Name, GroupTone? Tone);

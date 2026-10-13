@@ -1,5 +1,5 @@
 import type { KkBannerDeskActions, KkBannerDeskLabels, KkBannerState } from '@furria/ui';
-import { KkBannerDesk, KkCaptionField, KkProofSheet } from '@furria/ui';
+import { KkBannerDesk, KkCaptionField, KkNewsPoster, KkProofSheet } from '@furria/ui';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
@@ -84,6 +84,7 @@ export const NewsPictureDesk: FC<NewsPictureDeskProps> = ({
   };
   const tone = category === null ? null : CATEGORY_TONES[category];
   const posterWord = category === null ? POSTER_FALLBACK : CATEGORY_LABELS[category];
+  const poster = <KkNewsPoster tone={tone} word={posterWord} />;
   const hasNoCaption = picture === null || (isReadOnly && caption.trim().length === 0);
   const captionField = hasNoCaption ? null : (
     <KkProofSheet.Part mark={captionMark}>
@@ -106,8 +107,7 @@ export const NewsPictureDesk: FC<NewsPictureDeskProps> = ({
         <KkBannerDesk
           id="news-field-picture"
           state={state}
-          posterTone={tone}
-          posterWord={posterWord}
+          poster={poster}
           source={picture?.source ?? null}
           uncroppedSource={picture?.uncroppedSource ?? null}
           crop={picture?.crop ?? null}

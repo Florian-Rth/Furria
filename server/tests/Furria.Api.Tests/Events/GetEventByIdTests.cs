@@ -1,8 +1,10 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Events;
+using Furria.Api.Media;
 using Furria.Application.Authorization;
 using Furria.Core.Events;
+using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -90,6 +92,51 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
                 Assert.False(result.IsOver);
             }
         );
+    }
+
+    [Fact]
+    public async Task Should_ReturnThePictureReadyForRecropping_When_TheEventHasOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var eventId = ctx.Club.Events.IdOf("first-gala");
+        var pictureId = await EventPictureSteps.RenderedAsync(
+            _fixture,
+            await ctx.Identity.ClientForAsync("vera", ct),
+            eventId,
+            ct
+        );
+
+        var (_, result) = await ReadAsync(ctx, "vera", eventId);
+
+        var picture = Assert.IsType<PictureEditingDto>(result.Picture);
+        Assert.Equal(MediaItemState.Ready, picture.State);
+        Assert.StartsWith(
+            _fixture.SignedMediaUrl(pictureId, MediaOwner.Event(eventId), MediaRendition.Medium),
+            picture.Picture?.MediumUrl
+        );
+        Assert.NotNull(picture.UncroppedUrl);
+        Assert.Equal(
+            new PictureCropDto
+            {
+                Left = 0,
+                Top = 0,
+                Width = 1,
+                Height = 1,
+            },
+            picture.Crop
+        );
+    }
+
+    [Fact]
+    public async Task Should_ReturnNoPicture_When_TheEventHasNone()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var (_, result) = await ReadAsync(ctx, "vera", ctx.Club.Events.IdOf("first-gala"));
+
+        Assert.Null(result.Picture);
     }
 
     [Fact]

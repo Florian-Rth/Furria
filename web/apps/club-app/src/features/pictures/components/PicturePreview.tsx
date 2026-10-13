@@ -3,6 +3,7 @@ import { aspectRatioCss, KkPhoto, KkPhotoPlaceholder, toImageSource } from '@fur
 import type { FC } from 'react';
 import type { Picture } from '@/lib/api/schemas';
 import type { PictureKind } from '../picture-target';
+import { PICTURE_ASPECTS } from '../picture-target';
 
 const PREVIEW_SIZES = '(min-width: 900px) 32rem, 100vw';
 
@@ -21,8 +22,9 @@ export const PicturePreview: FC<PicturePreviewProps> = ({
   picture,
   tone,
 }) => {
-  const aspectRatio = aspectRatioCss(kind);
-  const image = toImageSource(picture, kind, PREVIEW_SIZES);
+  const aspect = PICTURE_ASPECTS[kind];
+  const aspectRatio = aspectRatioCss(aspect);
+  const image = toImageSource(picture, aspect, PREVIEW_SIZES);
 
   if (image === null) {
     return <KkPhotoPlaceholder label={placeholderLabel} tone={tone} aspectRatio={aspectRatio} />;

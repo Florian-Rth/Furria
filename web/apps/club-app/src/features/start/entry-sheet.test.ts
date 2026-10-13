@@ -30,6 +30,7 @@ const entry = (overrides: Partial<StartEntry>): StartEntry => ({
   viewerRuns: null,
   attendance: null,
   description: null,
+  event: null,
   ...overrides,
 });
 

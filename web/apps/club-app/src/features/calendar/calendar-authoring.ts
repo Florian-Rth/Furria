@@ -151,29 +151,24 @@ export interface CalendarEntryOwnership {
   kind: CalendarEntryKind;
 }
 
-export type CalendarEntryLink =
-  | { to: '/calendar/$calendarEntryId'; params: { calendarEntryId: string } }
-  | { to: '/events/$eventId'; params: { eventId: string } };
+export interface CalendarEntryLink {
+  to: '/calendar/$calendarEntryId';
+  params: { calendarEntryId: string };
+}
 
 export const toEntryLink = (
   entry: CalendarEntryOwnership & { calendarEntryId: number },
   owned: boolean,
-  managesEvents: boolean,
-): CalendarEntryLink | null => {
-  if (entry.kind === 'event') {
-    return managesEvents
-      ? { to: '/events/$eventId', params: { eventId: String(entry.calendarEntryId) } }
-      : null;
-  }
-  if (!owned) {
-    return null;
-  }
+): CalendarEntryLink | null =>
+  entry.kind === 'event' || !owned
+    ? null
+    : {
+        to: '/calendar/$calendarEntryId',
+        params: { calendarEntryId: String(entry.calendarEntryId) },
+      };
 
-  return {
-    to: '/calendar/$calendarEntryId',
-    params: { calendarEntryId: String(entry.calendarEntryId) },
-  };
-};
+export const opensEntrySheet = (entry: { kind: CalendarEntryKind }): boolean =>
+  entry.kind === 'event';
 
 export const mayOwnCalendarEntry = (
   options: readonly CalendarOwnerOption[],

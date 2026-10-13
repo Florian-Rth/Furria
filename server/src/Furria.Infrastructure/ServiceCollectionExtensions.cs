@@ -93,6 +93,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AnnouncementService>();
         services.AddScoped<CalendarService>();
         services.AddScoped<EventService>();
+        services.AddScoped<EventPictures>();
         services.AddScoped<TicketRequestService>();
         services.AddScoped<TicketRequestArrivalNotifier>();
         services.AddScoped<ClubRecordService>();

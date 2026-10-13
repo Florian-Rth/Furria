@@ -18,7 +18,12 @@ const NewsPostErrorComponent: FC = () => {
 };
 
 const buildShareImageMeta = (article: NewsArticle): RouteHead['meta'] =>
-  article.picture === null ? [] : [{ property: 'og:image', content: article.picture.largeUrl }];
+  article.picture === null
+    ? []
+    : [
+        { property: 'og:image', content: article.picture.largeUrl },
+        { property: 'og:image:alt', content: article.title },
+      ];
 
 const buildPostHead = (article: NewsArticle): RouteHead => {
   const title = pageTitle(article.title);

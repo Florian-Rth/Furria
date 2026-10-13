@@ -1,10 +1,12 @@
-import { KkChip, KkFactRow, KkText } from '@furria/ui';
+import { KkChip, KkFactRow, KkText, useKkSheet } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { AttendanceChoice } from '@/features/attendance';
 import { toLandingKey } from '@/features/write';
 import { toDayNumberLabel, toWeekdayEyebrow } from '@/lib/calendar-days';
+import { toPeekId } from '@/lib/peek';
 import type { CalendarEntryLink } from '../calendar-authoring';
+import { opensEntrySheet } from '../calendar-authoring';
 import { RUNNING_CHIP_LABEL, toEntryMetaLine, toEntrySales } from '../calendar-labels';
 import { toEntryTone } from '../calendar-tones';
 import type { CalendarEntry } from '../schemas';
@@ -53,7 +55,12 @@ export const CalendarEntryRow: FC<CalendarEntryRowProps> = ({
     );
 
   const eventFacts = entry.event === null ? null : <CalendarEventFactLines facts={entry.event} />;
-  const keepsSearch = link?.to === '/calendar/$calendarEntryId';
+  const sheet = useKkSheet();
+  const keepsSearch = link !== null;
+  const openSheet = (): void => {
+    sheet.open(toPeekId('entry', entry.calendarEntryId));
+  };
+  const onSelect = opensEntrySheet(entry) ? openSheet : undefined;
 
   return (
     <KkFactRow
@@ -68,6 +75,7 @@ export const CalendarEntryRow: FC<CalendarEntryRowProps> = ({
       highlight={owned && highlightedKey === landingKey}
       landing={owned ? landingKey : undefined}
       component={link === null ? undefined : Link}
+      onSelect={onSelect}
       to={link?.to}
       params={link?.params}
       search={keepsSearch ? (previous) => previous : undefined}

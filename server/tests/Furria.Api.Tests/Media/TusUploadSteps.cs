@@ -21,6 +21,8 @@ public static class TusUploadSteps
 
     public static string NewsPostOwner(int newsPostId) => $"news:{newsPostId}";
 
+    public static string EventOwner(int eventId) => $"event:{eventId}";
+
     public static string WebsiteOwner(string slotKey, int position) =>
         $"website:{slotKey}:{position.ToString(CultureInfo.InvariantCulture)}";
 

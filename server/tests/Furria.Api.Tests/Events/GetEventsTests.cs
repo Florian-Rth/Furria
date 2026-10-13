@@ -4,6 +4,7 @@ using Furria.Api.Endpoints.Events;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Core.Events;
+using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -117,6 +118,50 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
                     ],
                     result.Events.Select(listed => (listed.Title, listed.IsOver))
                 );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_ShowTheRenderedPictureOfEachEvent_When_TheKeyHolderAsks()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildSessionAsync(ct);
+                var eventId = ctx.Club.Events.IdOf("first-gala");
+                var client = await ctx.Identity.ClientForAsync("vera", ct);
+                var pictureId = await EventPictureSteps.RenderedAsync(
+                    _fixture,
+                    client,
+                    eventId,
+                    ct
+                );
+                await EventPictureSteps.UploadAsync(
+                    client,
+                    ctx.Club.Events.IdOf("second-gala"),
+                    ct
+                );
+
+                var (_, result) = await ReadAsync(ctx, "vera", ct);
+
+                var pictured = result.Events.ToDictionary(
+                    listed => listed.Title,
+                    listed => listed.Picture?.MediumUrl
+                );
+                Assert.StartsWith(
+                    _fixture.SignedMediaUrl(
+                        pictureId,
+                        MediaOwner.Event(eventId),
+                        MediaRendition.Medium
+                    ),
+                    pictured[FirstGala]
+                );
+                Assert.Null(pictured[SecondGala]);
+                Assert.Null(pictured[Opening]);
             }
         );
     }

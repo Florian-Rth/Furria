@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { CalendarCollisionSchema } from '@/features/calendar';
 import { ToDoSchema } from '@/features/to-dos';
-import { ClockTimeSchema } from '@/lib/api/schemas';
+import { ClockTimeSchema, PictureEditingSchema, PictureSchema } from '@/lib/api/schemas';
 import { EVENT_SALES_STATUS_KEYS, TICKET_AVAILABILITY_KEYS } from '@/lib/event-copy';
 import { toWrittenPriceCents } from './event-price';
 
@@ -26,6 +26,7 @@ export const EventSummarySchema = z.object({
   presaleStartsAt: z.iso.datetime({ offset: true }).nullable(),
   status: EventSalesStatusSchema,
   isOver: z.boolean(),
+  picture: PictureSchema.nullable(),
 });
 export type EventSummary = z.infer<typeof EventSummarySchema>;
 
@@ -49,8 +50,11 @@ export const EventDetailsSchema = z.object({
   cancelledAt: z.iso.datetime({ offset: true }).nullable(),
   status: EventSalesStatusSchema,
   isOver: z.boolean(),
+  picture: PictureEditingSchema.nullable(),
 });
 export type EventDetails = z.infer<typeof EventDetailsSchema>;
+
+export const EventPictureFromGallerySchema = z.object({ mediaItemId: z.number().int() });
 
 export const WrittenEventSchema = z.object({
   eventId: z.number().int(),

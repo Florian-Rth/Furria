@@ -1,6 +1,7 @@
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
+using Furria.Api.Media;
 using Furria.Application.Authorization;
 using Furria.Application.Club;
 using Furria.Core.Club;
@@ -85,6 +86,7 @@ public sealed class GetCalendar : Endpoint<GetCalendarRequest, GetCalendarRespon
             PriceCents = facts.PriceCents,
             PresaleStartsAt = facts.PresaleStartsAt,
             Status = facts.Status,
+            Picture = PictureDto.From(facts.Picture),
         };
 
     private static ParticipatingGroupDto ToDto(ParticipatingGroup group) =>
@@ -211,6 +213,8 @@ public sealed record CalendarEventFactsDto
     public required DateTimeOffset? PresaleStartsAt { get; init; }
 
     public required EventSalesStatus Status { get; init; }
+
+    public required PictureDto? Picture { get; init; }
 }
 
 public sealed record ParticipatingGroupDto

@@ -18,6 +18,7 @@ const entry = (calendarEntryId: number, attendance: StartAttendance | null): Sta
   viewerRuns: null,
   attendance,
   description: null,
+  event: null,
 });
 
 const OWED: StartAttendance = { viewerAnswer: null, isOwed: true };
