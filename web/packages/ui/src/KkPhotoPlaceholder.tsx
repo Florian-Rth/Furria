@@ -6,6 +6,8 @@ import type { KkGroupTone } from './internal/group-tone';
 import { groupToneRecipes } from './internal/group-tone';
 import type { KkScheme } from './internal/scheme-paint';
 import { applyScheme, schemeFill } from './internal/scheme-paint';
+import { KkIcon } from './KkIcon';
+import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
 const TINT_PROPERTY = '--kk-photo-tint';
@@ -30,11 +32,13 @@ const tintedSurface = (theme: Theme, tint?: string, tone?: KkGroupTone): CSSObje
     : applyScheme(theme, placeholderSurface, groupToneTint(tone));
 
 interface KkPhotoPlaceholderProps {
-  label: string;
+  label?: string;
   tint?: string;
   tone?: KkGroupTone;
   aspectRatio?: string;
   fill?: boolean;
+  broken?: boolean;
+  sx?: KkSx;
 }
 
 export const KkPhotoPlaceholder: FC<KkPhotoPlaceholderProps> = ({
@@ -43,9 +47,35 @@ export const KkPhotoPlaceholder: FC<KkPhotoPlaceholderProps> = ({
   tone,
   aspectRatio = '4 / 5',
   fill = false,
-}) => (
+  broken = false,
+  sx,
+}) => {
+  const isDecorative = label === undefined;
+  const faultMark = broken ? <KkIcon name="brokenImage" sx={{ color: TINT }} /> : null;
+  const caption =
+    label === undefined ? faultMark : (
+      <Typography
+        component="span"
+        sx={(theme) => ({
+          ...theme.typography.caption,
+          fontWeight: 800,
+          letterSpacing: kkTokens.type.tracking.display,
+          color: TINT,
+          bgcolor: `color-mix(in srgb, ${(theme.vars ?? theme).palette.background.default} 80%, transparent)`,
+          px: 1,
+          py: 0.5,
+          borderRadius: 1,
+        })}
+      >
+        {label}
+      </Typography>
+    );
+
+  return (
   <Stack
-    sx={(theme) => ({
+    aria-hidden={isDecorative}
+    data-kk-photo-placeholder
+    sx={[(theme) => ({
       width: '100%',
       ...(fill ? { height: '100%' } : { aspectRatio }),
       alignItems: 'center',
@@ -53,22 +83,9 @@ export const KkPhotoPlaceholder: FC<KkPhotoPlaceholderProps> = ({
       borderRadius: fill ? 0 : `${kkTokens.radius.base}px`,
       backgroundImage: `repeating-linear-gradient(135deg, color-mix(in srgb, ${TINT} 15%, transparent) 0 11px, color-mix(in srgb, ${TINT} 6%, transparent) 11px 22px)`,
       ...tintedSurface(theme, tint, tone),
-    })}
+    }), ...(Array.isArray(sx) ? sx : [sx])]}
   >
-    <Typography
-      component="span"
-      sx={(theme) => ({
-        ...theme.typography.caption,
-        fontWeight: 800,
-        letterSpacing: kkTokens.type.tracking.display,
-        color: TINT,
-        bgcolor: `color-mix(in srgb, ${(theme.vars ?? theme).palette.background.default} 80%, transparent)`,
-        px: 1,
-        py: 0.5,
-        borderRadius: 1,
-      })}
-    >
-      {label}
-    </Typography>
+    {caption}
   </Stack>
-);
+  );
+};

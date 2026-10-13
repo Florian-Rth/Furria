@@ -5,7 +5,7 @@ export type KkBannerState = 'empty' | 'uploading' | 'developing' | 'failed' | 'r
 
 export interface KkBannerDeskLabels {
   upload: string;
-  gallery: string;
+  gallery?: string;
   emptyNote: string;
   replace: string;
   uploading: string;
@@ -23,7 +23,7 @@ export interface KkBannerDeskLabels {
 
 export interface KkBannerDeskActions {
   onUpload: () => void;
-  onGallery: () => void;
+  onGallery?: () => void;
   onRetry: () => void;
   onCrop: () => void;
   onCropDone: () => void;

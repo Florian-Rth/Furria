@@ -1,8 +1,9 @@
 import Stack from '@mui/material/Stack';
 import type { FC, PropsWithChildren } from 'react';
 import { KkAlert } from '../../../KkAlert';
+import { kkTokens } from '../../../tokens';
 
-const FIELDS_GAP = 1.5;
+const FIELDS_GAP = kkTokens.form.sectionGap;
 
 interface KkWriteScreenFieldsProps extends PropsWithChildren {
   rejection?: string;

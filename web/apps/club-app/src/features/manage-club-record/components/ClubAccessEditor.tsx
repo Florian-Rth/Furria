@@ -1,5 +1,4 @@
-import { KkConsequenceNote, KkSelectField } from '@furria/ui';
-import Stack from '@mui/material/Stack';
+import { KkConsequenceNote, KkFormSection, KkSelectField } from '@furria/ui';
 import type { FC } from 'react';
 import { WriteScreen } from '@/features/write';
 import {
@@ -14,8 +13,7 @@ import type { ClubRecord } from '../schemas';
 const SAVE_LABEL = 'Speichern';
 const AGE_LABEL = 'Mindestalter für App und Online-Antrag';
 const AGE_HINT = 'Ab diesem Alter nutzt eine Person die App und bewirbt sich selbst online.';
-
-const FIELD_GAP = 2.25;
+const SECTION_TITLE = 'Mindestalter';
 
 interface ClubAccessEditorProps {
   record: ClubRecord;
@@ -35,7 +33,7 @@ export const ClubAccessEditor: FC<ClubAccessEditorProps> = ({ record }) => {
         primary: { label: SAVE_LABEL, onSelect: control.submit, loading: control.isSaving },
       }}
     >
-      <Stack sx={{ gap: FIELD_GAP, minWidth: 0 }}>
+      <KkFormSection title={SECTION_TITLE}>
         <KkSelectField
           name="ageOfConsent"
           label={AGE_LABEL}
@@ -46,7 +44,7 @@ export const ClubAccessEditor: FC<ClubAccessEditorProps> = ({ record }) => {
           hint={AGE_HINT}
         />
         <KkConsequenceNote>{consequence}</KkConsequenceNote>
-      </Stack>
+      </KkFormSection>
     </WriteScreen>
   );
 };

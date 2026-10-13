@@ -1,4 +1,4 @@
-import { KkDateField, KkFactRow, KkNote, KkWriteScreen } from '@furria/ui';
+import { KkDateField, KkFactRow, KkFormSection, KkNote, KkWriteScreen } from '@furria/ui';
 import type { FC } from 'react';
 import { PersonPicker } from '@/features/group-hub';
 import { WriteScreen } from '@/features/write';
@@ -8,6 +8,9 @@ import { toOfficeOrigin, toSeatChainRows } from '../manage-board-labels';
 import type { BoardSeat } from '../schemas';
 
 const CHAIN_TITLE = 'Bisherige Sitze';
+const PERSON_SECTION = 'Person';
+const SINCE_SECTION = 'Beginn';
+const END_SECTION = 'Ende';
 const PICKER_NOTE = 'Auch ohne Mitgliedschaft möglich.';
 const JOIN_EXPLANATION = 'Neue Personen werden in der Personenverwaltung angelegt.';
 const SINCE_LABEL = 'Im Vorstand ab';
@@ -42,37 +45,43 @@ export const BoardSeatEditor: FC<BoardSeatEditorProps> = ({ entry, seat }) => {
     seat === null ? (
       <>
         <KkNote>{JOIN_EXPLANATION}</KkNote>
-        <PersonPicker
-          selected={control.person}
-          onSelect={control.select}
-          onClear={control.clearPerson}
-          note={PICKER_NOTE}
-        />
+        <KkFormSection title={PERSON_SECTION}>
+          <PersonPicker
+            selected={control.person}
+            onSelect={control.select}
+            onClear={control.clearPerson}
+            note={PICKER_NOTE}
+          />
+        </KkFormSection>
         {chain}
-        <KkDateField
-          name="sinceOn"
-          label={SINCE_LABEL}
-          value={control.sinceOn}
-          onChange={control.setSinceOn}
-          required
-          error={control.sinceOnError !== undefined}
-          helperText={control.sinceOnError}
-          hint={SINCE_HINT}
-        />
+        <KkFormSection title={SINCE_SECTION}>
+          <KkDateField
+            name="sinceOn"
+            label={SINCE_LABEL}
+            value={control.sinceOn}
+            onChange={control.setSinceOn}
+            required
+            error={control.sinceOnError !== undefined}
+            helperText={control.sinceOnError}
+            hint={SINCE_HINT}
+          />
+        </KkFormSection>
       </>
     ) : (
       <>
         {chain}
-        <KkDateField
-          name="endedOn"
-          label={END_DATE_LABEL}
-          value={control.endedOn}
-          onChange={control.setEndedOn}
-          required
-          error={control.endedOnError !== undefined}
-          helperText={control.endedOnError}
-          hint={END_DATE_HINT}
-        />
+        <KkFormSection title={END_SECTION}>
+          <KkDateField
+            name="endedOn"
+            label={END_DATE_LABEL}
+            value={control.endedOn}
+            onChange={control.setEndedOn}
+            required
+            error={control.endedOnError !== undefined}
+            helperText={control.endedOnError}
+            hint={END_DATE_HINT}
+          />
+        </KkFormSection>
       </>
     );
 

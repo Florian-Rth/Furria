@@ -1,4 +1,3 @@
-import type { UseFormRegisterReturn } from 'react-hook-form';
 import { useController } from 'react-hook-form';
 import { useWriteForm } from '@/features/write';
 import type { GroupTone } from '@/lib/group-tone';
@@ -14,7 +13,8 @@ export interface GroupInfoEditorControl {
   setDescription: (value: string) => void;
   groupKindId: string;
   setGroupKindId: (value: string) => void;
-  foundedYear: UseFormRegisterReturn<'foundedYear'>;
+  foundedYear: string;
+  setFoundedYear: (value: string) => void;
   tone: GroupToneChoice;
   setTone: (value: GroupToneChoice) => void;
   foundedYearError: string | undefined;
@@ -40,6 +40,7 @@ export const useGroupInfoEditor = (hub: GroupHub): GroupInfoEditorControl => {
   });
   const description = useController({ control: write.form.control, name: 'description' });
   const groupKindId = useController({ control: write.form.control, name: 'groupKindId' });
+  const foundedYear = useController({ control: write.form.control, name: 'foundedYear' });
   const tone = useController({ control: write.form.control, name: 'tone' });
 
   return {
@@ -47,7 +48,8 @@ export const useGroupInfoEditor = (hub: GroupHub): GroupInfoEditorControl => {
     setDescription: description.field.onChange,
     groupKindId: groupKindId.field.value,
     setGroupKindId: groupKindId.field.onChange,
-    foundedYear: write.form.register('foundedYear'),
+    foundedYear: foundedYear.field.value,
+    setFoundedYear: foundedYear.field.onChange,
     tone: tone.field.value,
     setTone: tone.field.onChange,
     foundedYearError: write.form.formState.errors.foundedYear?.message,

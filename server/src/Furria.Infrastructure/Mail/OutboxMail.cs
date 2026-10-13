@@ -26,4 +26,6 @@ public sealed class OutboxMail
     public int Attempt { get; set; } = 1;
 
     public DateTimeOffset? NextAttemptAt { get; set; }
+
+    public DateTimeOffset EnqueuedAt { get; set; }
 }

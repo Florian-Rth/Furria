@@ -1,5 +1,4 @@
-import { logoSourceOf } from '@furria/ui';
-import Box from '@mui/material/Box';
+import { KkPhoto, logoSourceOf } from '@furria/ui';
 import type { FC } from 'react';
 
 interface SessionLogoMarkProps {
@@ -15,12 +14,15 @@ export const SessionLogoMark: FC<SessionLogoMarkProps> = ({ logoSvg, label, size
     return null;
   }
 
+  const image = { src: source };
+
   return (
-    <Box
-      component="img"
-      src={source}
+    <KkPhoto
       alt={label}
-      sx={{ width: size, height: size, objectFit: 'contain', flexShrink: 0 }}
+      image={image}
+      fit="contain"
+      fill
+      sx={{ width: size, height: size, flexShrink: 0 }}
     />
   );
 };

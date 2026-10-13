@@ -1,3 +1,5 @@
+using Furria.Application.Operations;
+using Furria.Infrastructure.Operations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -8,16 +10,19 @@ public sealed class SignedOutMailRequestWorker : BackgroundService
 {
     private readonly SignedOutMailRequestQueue _queue;
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly BackgroundRuns _runs;
     private readonly ILogger<SignedOutMailRequestWorker> _logger;
 
     public SignedOutMailRequestWorker(
         SignedOutMailRequestQueue queue,
         IServiceScopeFactory scopeFactory,
+        BackgroundRuns runs,
         ILogger<SignedOutMailRequestWorker> logger
     )
     {
         _queue = queue;
         _scopeFactory = scopeFactory;
+        _runs = runs;
         _logger = logger;
     }
 
@@ -31,8 +36,10 @@ public sealed class SignedOutMailRequestWorker : BackgroundService
     {
         try
         {
-            await using var scope = _scopeFactory.CreateAsyncScope();
-            await AnswerInScopeAsync(scope.ServiceProvider, request, ct);
+            await _runs.TrackAsync(
+                BackgroundJob.SignedOutMailRequestWorker,
+                () => AnswerInScopeAsync(request, ct)
+            );
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
@@ -48,7 +55,13 @@ public sealed class SignedOutMailRequestWorker : BackgroundService
         }
     }
 
-    private static Task AnswerInScopeAsync(
+    private async Task AnswerInScopeAsync(SignedOutMailRequest request, CancellationToken ct)
+    {
+        await using var scope = _scopeFactory.CreateAsyncScope();
+        await AnswerWithAsync(scope.ServiceProvider, request, ct);
+    }
+
+    private static Task AnswerWithAsync(
         IServiceProvider services,
         SignedOutMailRequest request,
         CancellationToken ct

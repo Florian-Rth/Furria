@@ -21,7 +21,7 @@ const toneInk: Record<KkFlapCountTone, string> = {
   gold: 'warning.main',
 };
 
-type KkFlapCountVariant = Extract<TypographyVariant, 'h2' | 'h3' | 'h4' | 'overline'>;
+type KkFlapCountVariant = Extract<TypographyVariant, 'h1' | 'h2' | 'h3' | 'h4' | 'overline'>;
 
 interface KkFlapCountProps {
   value: string;

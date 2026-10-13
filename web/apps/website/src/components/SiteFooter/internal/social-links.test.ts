@@ -5,8 +5,12 @@ describe('buildSocialLinks', () => {
   const club = {
     name: null,
     foundedYear: null,
+    street: null,
+    zip: null,
+    city: null,
     email: null,
     phone: null,
+    websiteUrl: null,
     instagramUrl: null,
     facebookUrl: null,
     memberCount: 0,

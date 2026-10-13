@@ -1,22 +1,24 @@
-import { KkDateField, KkNote } from '@furria/ui';
+import { KkDateField, KkFormSection, KkNote } from '@furria/ui';
 import type { FC } from 'react';
 import { WriteScreen } from '@/features/write';
-import type { PersonFormSource } from '../hooks/use-person-editor';
 import { usePersonEditor } from '../hooks/use-person-editor';
 import { PERSONS_ORIGIN, toPersonOrigin } from '../manage-persons-labels';
+import type { PersonDetails } from '../schemas';
 import { PersonAdoptionSuggestion } from './PersonAdoptionSuggestion';
 import { PersonFormFields } from './PersonFormFields';
+import { PersonPortraitSection } from './PersonPortraitSection';
 
 const EDIT_TITLE = 'Stammdaten bearbeiten';
 const CREATE_TITLE = 'Person hinzufügen';
 const CREATE_NOTE =
   'Nur der Name ist Pflicht. Die Mitgliedschaft wird anschließend im Profil der Person eingetragen.';
+const PERSONAL_SECTION_TITLE = 'Persönliches';
 const BIRTH_DATE_LABEL = 'Geburtsdatum';
 const BIRTH_DATE_HINT = 'Nur die Personenverwaltung sieht das Geburtsdatum.';
 const BIRTH_DATE_EMPTY_LABEL = 'Nicht bekannt';
 
 interface PersonEditorProps {
-  person: PersonFormSource | null;
+  person: PersonDetails | null;
 }
 
 export const PersonEditor: FC<PersonEditorProps> = ({ person }) => {
@@ -24,6 +26,7 @@ export const PersonEditor: FC<PersonEditorProps> = ({ person }) => {
   const isEdit = person !== null;
   const origin = person === null ? PERSONS_ORIGIN : toPersonOrigin(person);
   const note = isEdit ? null : <KkNote>{CREATE_NOTE}</KkNote>;
+  const portrait = person === null ? null : <PersonPortraitSection person={person} />;
   const adoptionCandidate = control.adoption.candidate;
   const emailSuggestion =
     adoptionCandidate === null ? null : (
@@ -51,15 +54,18 @@ export const PersonEditor: FC<PersonEditorProps> = ({ person }) => {
         errors={control.errors}
         emailSuggestion={emailSuggestion}
       />
-      <KkDateField
-        name="birthDate"
-        label={BIRTH_DATE_LABEL}
-        value={control.birthDate}
-        onChange={control.setBirthDate}
-        allowEmpty
-        emptyLabel={BIRTH_DATE_EMPTY_LABEL}
-        hint={BIRTH_DATE_HINT}
-      />
+      <KkFormSection title={PERSONAL_SECTION_TITLE}>
+        <KkDateField
+          name="birthDate"
+          label={BIRTH_DATE_LABEL}
+          value={control.birthDate}
+          onChange={control.setBirthDate}
+          allowEmpty
+          emptyLabel={BIRTH_DATE_EMPTY_LABEL}
+          hint={BIRTH_DATE_HINT}
+        />
+      </KkFormSection>
+      {portrait}
     </WriteScreen>
   );
 };

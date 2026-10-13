@@ -1,4 +1,12 @@
-import { KkAnswerChoice, KkEventCover, KkMeta, KkPanelSection, KkSheet, KkText } from '@furria/ui';
+import {
+  aspectRatioCss,
+  KkAnswerChoice,
+  KkMeta,
+  KkPanelSection,
+  KkPhoto,
+  KkSheet,
+  KkText,
+} from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { ATTENDANCE_LABELS } from '@/lib/calendar-copy';
@@ -9,6 +17,7 @@ import { EntryVenueSection } from './EntryVenueSection';
 const CLOSE_LABEL = 'Schließen';
 const ANSWER_TITLE = 'Deine Antwort';
 const PRE_LINE = { whiteSpace: 'pre-line' } as const;
+const COVER_ASPECT_RATIO = aspectRatioCss('banner');
 
 interface EntrySheetBodyProps {
   sheet: EntrySheetView;
@@ -19,11 +28,12 @@ export const EntrySheetBody: FC<EntrySheetBodyProps> = ({ sheet }) => {
 
   const opener =
     cover === null ? null : (
-      <KkEventCover
+      <KkPhoto
+        alt=""
         image={cover.image}
+        aspectRatio={COVER_ASPECT_RATIO}
         tone={cover.tone}
-        cancelledLabel={cover.cancelledLabel}
-        size="opener"
+        stampLabel={cover.cancelledLabel}
       />
     );
 

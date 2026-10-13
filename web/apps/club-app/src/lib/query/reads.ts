@@ -83,6 +83,9 @@ export const READ_NAMES = [
   'galleryPickAlbums',
   'galleryPickAlbum',
   'websitePictures',
+  'systemStatus',
+  'systemLogs',
+  'systemLogHead',
 ] as const;
 export type ReadName = (typeof READ_NAMES)[number];
 
@@ -137,6 +140,9 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   galleryPickAlbums: ['gallery', 'pick-albums'],
   galleryPickAlbum: ['gallery', 'pick-album'],
   websitePictures: ['website-pictures'],
+  systemStatus: ['system', 'status'],
+  systemLogs: ['system', 'logs'],
+  systemLogHead: ['system', 'log-head'],
 };
 
 const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
@@ -278,6 +284,9 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   galleryPickAlbums: ['media'],
   galleryPickAlbum: ['media'],
   websitePictures: ['websitePicture'],
+  systemStatus: [],
+  systemLogs: [],
+  systemLogHead: [],
 };
 
 export const staleReadsAfter = (changes: readonly DomainChange[]): ReadName[] =>
@@ -356,4 +365,7 @@ export const queryKeys = {
   galleryPickAlbums: READ_ROOTS.galleryPickAlbums,
   galleryPickAlbum: (albumId: number): QueryKey => keyOf('galleryPickAlbum', albumId),
   websitePictures: READ_ROOTS.websitePictures,
+  systemStatus: READ_ROOTS.systemStatus,
+  systemLogs: (filter: object): QueryKey => keyOf('systemLogs', filter),
+  systemLogHead: (filter: object): QueryKey => keyOf('systemLogHead', filter),
 } as const;

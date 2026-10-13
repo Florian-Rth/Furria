@@ -107,11 +107,24 @@ public sealed class MediaJobQueue
                 item.Id,
                 job.Attempts
             );
-            _dbContext.MediaJobs.Remove(job);
-            item.State = MediaItemState.Failed;
-            item.FailureReason = Truncated(reason, MediaItem.FailureReasonLength);
+            MarkFailed(job, item, reason);
         }
 
+        await _dbContext.SaveChangesAsync(ct);
+    }
+
+    public async Task GiveUpAsync(MediaJobLease lease, string reason, CancellationToken ct)
+    {
+        var job = await HeldJobs(lease).Include(row => row.MediaItem).SingleOrDefaultAsync(ct);
+        if (job?.MediaItem is not { } item)
+            return;
+
+        _logger.LogWarning(
+            "Media item {MediaItemId} cannot be rendered, giving up: {FailureReason}",
+            item.Id,
+            reason
+        );
+        MarkFailed(job, item, reason);
         await _dbContext.SaveChangesAsync(ct);
     }
 
@@ -200,6 +213,13 @@ public sealed class MediaJobQueue
             ),
             _ => _dbContext.MediaItems.Where(item => command.MediaItemIds.Contains(item.Id)),
         };
+
+    private void MarkFailed(MediaJob job, MediaItem item, string reason)
+    {
+        _dbContext.MediaJobs.Remove(job);
+        item.State = MediaItemState.Failed;
+        item.FailureReason = Truncated(reason, MediaItem.FailureReasonLength);
+    }
 
     private static void Release(MediaJob job, DateTimeOffset availableAt)
     {

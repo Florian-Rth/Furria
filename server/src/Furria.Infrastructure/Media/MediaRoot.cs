@@ -19,6 +19,8 @@ public sealed class MediaRoot
 
     public string OriginalPathOf(Guid storageKey) => FullPathOf(MediaPaths.OriginalOf(storageKey));
 
+    public bool HasOriginalOf(Guid storageKey) => File.Exists(OriginalPathOf(storageKey));
+
     public void PrepareStaging() => Directory.CreateDirectory(StagingPath);
 
     public void DeleteFilesOf(Guid storageKey)

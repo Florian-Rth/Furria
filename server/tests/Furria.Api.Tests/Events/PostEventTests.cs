@@ -34,7 +34,7 @@ public sealed class PostEventTests : IClassFixture<ApiTestFixture>
         0,
         TimeSpan.Zero
     );
-    private static readonly DateTimeOffset FirstGalaEnds = new(
+    private static readonly DateTimeOffset AfterTheFirstGala = new(
         2027,
         1,
         17,
@@ -96,7 +96,7 @@ public sealed class PostEventTests : IClassFixture<ApiTestFixture>
             .CalendarEntry(result.EventId)
             .ToHaveVenue(venueId)
             .CalendarEntry(result.EventId)
-            .ToHavePeriod(AtTheFirstGala, FirstGalaEnds)
+            .ToHavePeriod(AtTheFirstGala, null)
             .AssertAsync(ct);
     }
 
@@ -216,7 +216,7 @@ public sealed class PostEventTests : IClassFixture<ApiTestFixture>
             "vera",
             Gala(ctx.Club.Venues.IdOf("buergerhaus")) with
             {
-                PresaleStartsAt = FirstGalaEnds,
+                PresaleStartsAt = AfterTheFirstGala,
             }
         );
 
@@ -228,7 +228,6 @@ public sealed class PostEventTests : IClassFixture<ApiTestFixture>
         {
             Title = FirstGala,
             StartsAt = AtTheFirstGala,
-            EndsAt = FirstGalaEnds,
             DoorsOpenAt = DoorsOpenAt,
             VenueId = venueId,
             Teaser = Teaser,

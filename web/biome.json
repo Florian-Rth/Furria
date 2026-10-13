@@ -72,6 +72,17 @@
   ],
   "overrides": [
     {
+      "includes": [
+        "apps/**",
+        "packages/**",
+        "!packages/ui/src/KkImage.tsx",
+        "!packages/ui/src/KkCropPreview.tsx",
+        "!**/*.test.ts",
+        "!**/*.test.tsx"
+      ],
+      "plugins": ["./biome-plugins/noRawImage.grit"]
+    },
+    {
       "includes": ["**", "!packages/ui/src/theme.ts"],
       "plugins": ["./biome-plugins/noCustomFontSize.grit"]
     },
@@ -138,6 +149,14 @@
           }
         }
       }
+    },
+    {
+      "includes": [
+        "apps/club-app/src/features/**/components/*Editor.tsx",
+        "apps/club-app/src/features/**/components/*Fields.tsx",
+        "apps/club-app/src/features/**/components/*Section.tsx"
+      ],
+      "plugins": ["./biome-plugins/noFreeFormFields.grit"]
     },
     {
       "includes": ["apps/club-app/**", "!apps/club-app/src/features/club/stages/**"],

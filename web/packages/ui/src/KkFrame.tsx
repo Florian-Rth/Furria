@@ -11,9 +11,11 @@ import { focusRing } from './internal/focus-ring';
 import type { KkGroupTone } from './internal/group-tone';
 import { KkGreaseMark } from './KkGreaseMark';
 import { KkIcon } from './KkIcon';
-import { KkVacancyField } from './KkVacancyField';
+import { KkPhotoPlaceholder } from './KkPhotoPlaceholder';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
+import { KkImage } from './KkImage';
+import { useImageFault } from './internal/use-image-fault';
 
 export type KkFrameState = 'ready' | 'queued' | 'uploading' | 'processing' | 'failed';
 
@@ -107,7 +109,9 @@ export const KkFrame: FC<KkFrameProps> = ({
   onSelect,
   sx,
 }) => {
-  const interactive = onSelect !== undefined;
+  const imageFault = useImageFault(source ?? '');
+  const interactive = onSelect !== undefined && !imageFault.hasFailed;
+  const select = interactive ? onSelect : undefined;
   const surfaceComponent = interactive ? ButtonBase : 'div';
   const surfaceRole = interactive ? undefined : 'img';
   const showsProgress = state === 'uploading' || state === 'queued';
@@ -124,13 +128,13 @@ export const KkFrame: FC<KkFrameProps> = ({
     >
       <Box
         component={surfaceComponent}
-        onClick={onSelect}
+        onClick={select}
         aria-label={label}
         role={surfaceRole}
         sx={surfaceOf(fill, aspectRatio)}
       >
         {latent && vacancy !== undefined ? (
-          <KkVacancyField tone={vacancy} sx={{ position: 'absolute', inset: 0 }} />
+          <KkPhotoPlaceholder tone={vacancy} fill sx={{ position: 'absolute', inset: 0 }} />
         ) : null}
         {latent && vacancy === undefined ? (
           <Stack
@@ -156,8 +160,8 @@ export const KkFrame: FC<KkFrameProps> = ({
           </Stack>
         ) : null}
         {latent ? null : (
-          <Box
-            component="img"
+          <KkImage
+            faultState={imageFault}
             src={source}
             alt=""
             loading="lazy"

@@ -39,15 +39,6 @@ public sealed class PutEventTests : IClassFixture<ApiTestFixture>
         0,
         TimeSpan.Zero
     );
-    private static readonly DateTimeOffset MovedGalaEnds = new(
-        2027,
-        1,
-        31,
-        0,
-        30,
-        0,
-        TimeSpan.Zero
-    );
     private static readonly DateTimeOffset AtTheMeeting = new(2027, 1, 20, 19, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset PresaleStarted = new(
         2026,
@@ -91,7 +82,7 @@ public sealed class PutEventTests : IClassFixture<ApiTestFixture>
                     .Expected.CalendarEntry(eventId)
                     .ToHaveTitle(RenamedGala)
                     .CalendarEntry(eventId)
-                    .ToHavePeriod(AtTheMovedGala, MovedGalaEnds)
+                    .ToHavePeriod(AtTheMovedGala, null)
                     .CalendarEntry(eventId)
                     .ToHaveVenue(venueId)
                     .CalendarEntry(eventId)
@@ -172,7 +163,6 @@ public sealed class PutEventTests : IClassFixture<ApiTestFixture>
             EventId = eventId,
             Title = RenamedGala,
             StartsAt = AtTheMovedGala,
-            EndsAt = MovedGalaEnds,
             DoorsOpenAt = DoorsOpenAt,
             VenueId = venueId,
             Teaser = NewTeaser,

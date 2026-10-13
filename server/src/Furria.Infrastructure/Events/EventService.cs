@@ -261,7 +261,7 @@ public sealed class EventService
 
         entry.Title = facts.Title;
         entry.StartsAt = facts.StartsAt;
-        entry.EndsAt = facts.EndsAt;
+        entry.EndsAt = null;
         entry.VenueId = facts.VenueId;
         entry.Description = facts.Description;
         held.DoorsOpenAt = facts.DoorsOpenAt;

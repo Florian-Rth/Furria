@@ -1,4 +1,4 @@
-import { KkDateField, KkFactRow, KkNote, KkWriteScreen } from '@furria/ui';
+import { KkDateField, KkFactRow, KkFormSection, KkNote, KkWriteScreen } from '@furria/ui';
 import type { FC } from 'react';
 import { PersonPicker } from '@/features/group-hub';
 import { WriteScreen } from '@/features/write';
@@ -14,6 +14,9 @@ import {
 import type { KeyHolding, KeyVenue } from '../schemas';
 
 const CHAIN_TITLE = 'Bisherige Schlüsselübergaben';
+const PERSON_SECTION = 'Person';
+const HANDOUT_SECTION = 'Übergabe';
+const RETURN_SECTION = 'Rückgabe';
 const SINCE_LABEL = 'Ausgegeben am';
 const SINCE_HINT = 'Auch ein Datum in der Zukunft ist möglich.';
 const UNTIL_LABEL = 'Letzter Tag';
@@ -27,6 +30,8 @@ interface KeyHoldingEditorProps {
 export const KeyHoldingEditor: FC<KeyHoldingEditorProps> = ({ venue, holding }) => {
   const control = useKeyHoldingEditor({ venueId: venue.venueId, venueName: venue.name, holding });
   const today = new Date();
+  const handoutQuickChoices = toHandoutQuickChoices(today);
+  const returnQuickChoices = toReturnQuickChoices(today);
 
   const chainRows = toKeyHoldingChainRows(venue, holding?.keyHoldingId ?? null);
   const chain =
@@ -42,39 +47,45 @@ export const KeyHoldingEditor: FC<KeyHoldingEditorProps> = ({ venue, holding }) 
     holding === null ? (
       <>
         <KkNote>{HANDOUT_EXPLANATION}</KkNote>
-        <PersonPicker
-          selected={control.person}
-          onSelect={control.select}
-          onClear={control.clearPerson}
-          note={HANDOUT_PICKER_NOTE}
-        />
+        <KkFormSection title={PERSON_SECTION}>
+          <PersonPicker
+            selected={control.person}
+            onSelect={control.select}
+            onClear={control.clearPerson}
+            note={HANDOUT_PICKER_NOTE}
+          />
+        </KkFormSection>
         {chain}
-        <KkDateField
-          name="sinceOn"
-          label={SINCE_LABEL}
-          value={control.sinceOn}
-          onChange={control.setSinceOn}
-          quickChoices={toHandoutQuickChoices(today)}
-          required
-          error={control.sinceOnError !== undefined}
-          helperText={control.sinceOnError}
-          hint={SINCE_HINT}
-        />
+        <KkFormSection title={HANDOUT_SECTION}>
+          <KkDateField
+            name="sinceOn"
+            label={SINCE_LABEL}
+            value={control.sinceOn}
+            onChange={control.setSinceOn}
+            quickChoices={handoutQuickChoices}
+            required
+            error={control.sinceOnError !== undefined}
+            helperText={control.sinceOnError}
+            hint={SINCE_HINT}
+          />
+        </KkFormSection>
       </>
     ) : (
       <>
         {chain}
-        <KkDateField
-          name="untilOn"
-          label={UNTIL_LABEL}
-          value={control.untilOn}
-          onChange={control.setUntilOn}
-          quickChoices={toReturnQuickChoices(today)}
-          required
-          error={control.untilOnError !== undefined}
-          helperText={control.untilOnError}
-          hint={UNTIL_HINT}
-        />
+        <KkFormSection title={RETURN_SECTION}>
+          <KkDateField
+            name="untilOn"
+            label={UNTIL_LABEL}
+            value={control.untilOn}
+            onChange={control.setUntilOn}
+            quickChoices={returnQuickChoices}
+            required
+            error={control.untilOnError !== undefined}
+            helperText={control.untilOnError}
+            hint={UNTIL_HINT}
+          />
+        </KkFormSection>
       </>
     );
 

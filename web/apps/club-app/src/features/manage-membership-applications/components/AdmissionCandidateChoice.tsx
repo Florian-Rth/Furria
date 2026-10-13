@@ -1,4 +1,4 @@
-import { KkNote, KkPanelSection, KkRadioGroup } from '@furria/ui';
+import { KkFormSection, KkNote, KkRadioGroup } from '@furria/ui';
 import type { FC } from 'react';
 import { NEW_PERSON_CHOICE } from '../admission';
 import {
@@ -17,12 +17,14 @@ const CHOICE_NAME = 'admission-person';
 interface AdmissionCandidateChoiceProps {
   application: MembershipApplicationDetails;
   choice: string | null;
+  gapLine: string | null;
   onChoose: (choice: string) => void;
 }
 
 export const AdmissionCandidateChoice: FC<AdmissionCandidateChoiceProps> = ({
   application,
   choice,
+  gapLine,
   onChoose,
 }) => {
   if (application.candidates.length === 0) {
@@ -31,13 +33,14 @@ export const AdmissionCandidateChoice: FC<AdmissionCandidateChoiceProps> = ({
     return <KkNote>{noCandidates}</KkNote>;
   }
 
+  const gapNote = gapLine === null ? null : <KkNote tone="muted">{gapLine}</KkNote>;
   const newPersonDescription = toNewPersonDescription(application.firstName);
   const candidateOptions = application.candidates.map((candidate) => (
     <AdmissionCandidateOption key={candidate.personId} candidate={candidate} choice={choice} />
   ));
 
   return (
-    <KkPanelSection title={CANDIDATES_SECTION_TITLE}>
+    <KkFormSection title={CANDIDATES_SECTION_TITLE}>
       <KkNote tone="muted">{CANDIDATES_LEAD}</KkNote>
       <KkRadioGroup
         name={CHOICE_NAME}
@@ -52,6 +55,7 @@ export const AdmissionCandidateChoice: FC<AdmissionCandidateChoiceProps> = ({
           description={newPersonDescription}
         />
       </KkRadioGroup>
-    </KkPanelSection>
+      {gapNote}
+    </KkFormSection>
   );
 };

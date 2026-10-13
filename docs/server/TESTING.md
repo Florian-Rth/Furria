@@ -496,6 +496,15 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    `_fixture.ReferencesToPersonDisagreements()` and fails on an unclassified key, a classification
    whose delete rule the key does not carry, or one naming no key — classify a new key there.
 
+19. **The System page (2026-10-13)** — `WriteLogEntryDirectlyAsync(source, level, loggedAt,
+   message, category)` seeds a `log_entry` row and returns its id; the host's own database log sink
+   writes there too, so a test reads logs by a marker only it uses (`search=`,
+   `Expected.LogEntriesContaining(marker)` with `ToHoldExactly` / `ToHoldNone`).
+   `PurgeLogEntriesAsync` (or `PurgeLogEntriesOnAsync(host)` for a `HostWithSettings` host) runs
+   the purge once, `BeatAsMediaWorkerAsync` writes the fixture worker's heartbeat
+   (`Expected.MediaWorkerHeartbeats().ToHaveCount`), `SurveyMediaStorageAsync` surveys the media
+   root. `SystemVerdictTests` pin the verdict rules as pure tests.
+
 ### Traps worth knowing
 
 - **Mailpit is shared by every class running in parallel.** Never read mail by a fixed

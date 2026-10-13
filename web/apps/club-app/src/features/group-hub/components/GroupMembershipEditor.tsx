@@ -2,7 +2,7 @@ import {
   KkChipField,
   KkDateField,
   KkFactRow,
-  KkNote,
+  KkFormSection,
   KkSwitchRow,
   KkWriteScreen,
 } from '@furria/ui';
@@ -23,6 +23,9 @@ import { ADMIN_FUNCTION_MAX_LENGTH } from '../schemas';
 import { PersonPicker } from './PersonPicker';
 
 const CHAIN_TITLE = 'Bisherige Zeiträume';
+const PERSON_SECTION = 'Person';
+const MEMBERSHIP_SECTION = 'Zugehörigkeit';
+const END_SECTION = 'Ende der Zugehörigkeit';
 const JOIN_NOTE = 'Neue Personen werden in der Personenverwaltung angelegt.';
 const JOIN_DATE_LABEL = 'Dabei ab';
 const JOIN_DATE_HINT =
@@ -85,47 +88,52 @@ export const GroupMembershipEditor: FC<GroupMembershipEditorProps> = ({
   const fields =
     membership === null ? (
       <>
-        <KkNote>{JOIN_NOTE}</KkNote>
-        <PersonPicker
-          selected={control.person}
-          onSelect={control.select}
-          onClear={control.clearPerson}
-        />
+        <KkFormSection title={PERSON_SECTION} description={JOIN_NOTE}>
+          <PersonPicker
+            selected={control.person}
+            onSelect={control.select}
+            onClear={control.clearPerson}
+          />
+        </KkFormSection>
         {chain}
-        <KkDateField
-          name="joinedOn"
-          label={JOIN_DATE_LABEL}
-          value={control.joinedOn}
-          onChange={control.setJoinedOn}
-          quickChoices={toJoinQuickChoices(today)}
-          required
-          error={control.joinedOnError !== undefined}
-          helperText={control.joinedOnError}
-          hint={JOIN_DATE_HINT}
-        />
-        <KkSwitchRow
-          label={ADMIN_LABEL}
-          description={ADMIN_DESCRIPTION}
-          checked={control.makeAdmin}
-          onChange={control.setMakeAdmin}
-          stateLabel={ADMIN_STATE_LABEL}
-        />
-        {functionField}
+        <KkFormSection title={MEMBERSHIP_SECTION}>
+          <KkDateField
+            name="joinedOn"
+            label={JOIN_DATE_LABEL}
+            value={control.joinedOn}
+            onChange={control.setJoinedOn}
+            quickChoices={toJoinQuickChoices(today)}
+            required
+            error={control.joinedOnError !== undefined}
+            helperText={control.joinedOnError}
+            hint={JOIN_DATE_HINT}
+          />
+          <KkSwitchRow
+            label={ADMIN_LABEL}
+            description={ADMIN_DESCRIPTION}
+            checked={control.makeAdmin}
+            onChange={control.setMakeAdmin}
+            stateLabel={ADMIN_STATE_LABEL}
+          />
+          {functionField}
+        </KkFormSection>
       </>
     ) : (
       <>
         {chain}
-        <KkDateField
-          name="endedOn"
-          label={END_DATE_LABEL}
-          value={control.endedOn}
-          onChange={control.setEndedOn}
-          quickChoices={toEndQuickChoices(today)}
-          required
-          error={control.endedOnError !== undefined}
-          helperText={control.endedOnError}
-          hint={END_DATE_HINT}
-        />
+        <KkFormSection title={END_SECTION}>
+          <KkDateField
+            name="endedOn"
+            label={END_DATE_LABEL}
+            value={control.endedOn}
+            onChange={control.setEndedOn}
+            quickChoices={toEndQuickChoices(today)}
+            required
+            error={control.endedOnError !== undefined}
+            helperText={control.endedOnError}
+            hint={END_DATE_HINT}
+          />
+        </KkFormSection>
       </>
     );
 

@@ -1,4 +1,4 @@
-import { KkChip, KkEventCover, KkFactRow } from '@furria/ui';
+import { aspectRatioCss, KkChip, KkFactRow, KkPhoto } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toLandingKey } from '@/features/write';
@@ -10,6 +10,7 @@ import type { EventSummary } from '../schemas';
 
 const LANDING_KIND = 'event';
 const THUMB_SIZES = '4rem';
+const THUMB_ASPECT_RATIO = aspectRatioCss('banner');
 
 interface EventRowProps {
   event: EventSummary;
@@ -28,12 +29,15 @@ export const EventRow: FC<EventRowProps> = ({ event, highlightedKey }) => {
     { eventId: event.eventId, picture: event.picture, isCancelled: event.status === 'cancelled' },
     THUMB_SIZES,
   );
+  const isCancelled = cover.cancelledLabel !== null;
   const thumb = (
-    <KkEventCover
+    <KkPhoto
+      alt=""
       image={cover.image}
-      tone={cover.tone}
-      cancelledLabel={cover.cancelledLabel}
       size="thumb"
+      aspectRatio={THUMB_ASPECT_RATIO}
+      tone={cover.tone}
+      dimmed={isCancelled}
     />
   );
 

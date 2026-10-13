@@ -12,6 +12,8 @@ export interface SessionEditorControl {
   form: UseFormReturn<SessionRecordForm>;
   startYear: number | null;
   setStartYear: (value: number | null) => void;
+  number: string;
+  setNumber: (value: string) => void;
   logoSvg: string | null;
   logoRejection: string | null;
   takeLogoFile: (file: File | null) => void;
@@ -56,6 +58,10 @@ export const useSessionEditor = (
     form.setValue('startYear', value, { shouldValidate: true, shouldDirty: true });
   };
 
+  const setNumber = (value: string): void => {
+    form.setValue('number', value, { shouldValidate: true, shouldDirty: true });
+  };
+
   const setLogo = (value: string | null): void => {
     form.setValue('logoSvg', value, { shouldValidate: true, shouldDirty: true });
   };
@@ -95,6 +101,8 @@ export const useSessionEditor = (
     form,
     startYear: form.watch('startYear'),
     setStartYear,
+    number: write.values.number,
+    setNumber,
     logoSvg: form.watch('logoSvg'),
     logoRejection,
     takeLogoFile,

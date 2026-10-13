@@ -29,6 +29,8 @@ public readonly record struct Result
 
     public static Result Forbidden(string message) => Failed(ResultErrorKind.Forbidden, message);
 
+    public static Result Carrying<TOther>(Result<TOther> refusal) => new(refusal.Error);
+
     private static Result Failed(ResultErrorKind kind, string message) =>
         new(new ResultError { Kind = kind, Message = message });
 }

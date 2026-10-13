@@ -1,4 +1,4 @@
-import { KkCoverPicture, KkEyebrow, KkPhotoPlaceholder, kkTokens, toImageSource } from '@furria/ui';
+import { aspectRatioCss, KkEyebrow, KkPhoto, kkTokens, toImageSource } from '@furria/ui';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
@@ -17,6 +17,8 @@ import type { PublicGroup } from '@/lib/public-groups/schemas';
 import { GroupOpennessChip } from './GroupOpennessChip';
 
 const BANNER_SIZES = '(min-width: 600px) 40rem, 100vw';
+const BANNER_ASPECT_RATIO = aspectRatioCss('banner');
+const SQUARE_CORNERS = { borderRadius: 0 } as const;
 
 interface GroupModalPanelProps {
   group: PublicGroup;
@@ -34,21 +36,17 @@ export const GroupModalPanel: FC<GroupModalPanelProps> = ({ group, tint, titleId
   const kind = group.groupKindName === null ? null : <KkEyebrow>{group.groupKindName}</KkEyebrow>;
   const foundedLabel = buildFoundedLabel(group.foundedYear);
   const picture = toImageSource(group.picture, 'groupPicture', BANNER_SIZES);
-  const banner =
-    picture === null ? (
-      <KkPhotoPlaceholder
-        label={groupsLabels.photo}
-        tint={tint}
-        tone={tone}
-        aspectRatio={kkTokens.aspectRatio.banner}
-      />
-    ) : (
-      <KkCoverPicture
-        image={picture}
-        alt={group.name}
-        sx={{ aspectRatio: kkTokens.aspectRatio.banner, height: 'auto' }}
-      />
-    );
+  const banner = (
+    <KkPhoto
+      alt={group.name}
+      image={picture}
+      aspectRatio={BANNER_ASPECT_RATIO}
+      placeholderLabel={groupsLabels.photo}
+      tint={tint}
+      tone={tone}
+      sx={SQUARE_CORNERS}
+    />
+  );
   const founded =
     foundedLabel === null ? null : (
       <Typography variant="body2" sx={{ color: 'text.secondary', fontWeight: 600 }}>

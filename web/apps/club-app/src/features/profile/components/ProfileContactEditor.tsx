@@ -6,6 +6,7 @@ import type { MePerson } from '@/lib/api/schemas';
 import { useContactDetailsEditor } from '../hooks/use-contact-details-editor';
 import { CONTACT_DETAILS_EDIT_TITLE, toOwnContactChangeNote } from '../profile-labels';
 import { ProfileContactFields } from './ProfileContactFields';
+import { ProfilePortraitSection } from './ProfilePortraitSection';
 
 const SAVE_LABEL = 'Speichern';
 
@@ -35,6 +36,7 @@ export const ProfileContactEditor: FC<ProfileContactEditorProps> = ({ person }) 
     >
       {changeLine}
       <ProfileContactFields form={control.form} errors={control.errors} />
+      <ProfilePortraitSection person={person} />
     </WriteScreen>
   );
 };

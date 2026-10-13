@@ -7,6 +7,7 @@ import { KkFlapCount } from './KkFlapCount';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 import { useLetterRailScrub } from './use-letter-rail-scrub';
+import { KkImage } from './KkImage';
 
 const { gallery } = kkTokens;
 
@@ -117,8 +118,7 @@ export const KkTimeRail: FC<KkTimeRailProps> = ({ label, scenes, current, onReac
             rowGap: 0.5,
           }}
         >
-          <Box
-            component="img"
+          <KkImage
             src={shown.source}
             alt=""
             sx={{

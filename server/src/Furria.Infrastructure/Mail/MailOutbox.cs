@@ -6,16 +6,19 @@ namespace Furria.Infrastructure.Mail;
 public sealed class MailOutbox
 {
     private readonly AppDbContext _dbContext;
+    private readonly TimeProvider _timeProvider;
 
-    public MailOutbox(AppDbContext dbContext)
+    public MailOutbox(AppDbContext dbContext, TimeProvider timeProvider)
     {
         _dbContext = dbContext;
+        _timeProvider = timeProvider;
     }
 
-    public void Stage(OutgoingMail mail) => _dbContext.OutboxMails.Add(ToRow(mail));
+    public void Stage(OutgoingMail mail) =>
+        _dbContext.OutboxMails.Add(ToRow(mail, _timeProvider.GetUtcNow()));
 
     [Pure]
-    private static OutboxMail ToRow(OutgoingMail mail) =>
+    private static OutboxMail ToRow(OutgoingMail mail, DateTimeOffset enqueuedAt) =>
         new()
         {
             Template = mail.Template,
@@ -25,5 +28,6 @@ public sealed class MailOutbox
             Subject = mail.Subject,
             TextBody = mail.TextBody,
             HtmlBody = mail.HtmlBody,
+            EnqueuedAt = enqueuedAt,
         };
 }

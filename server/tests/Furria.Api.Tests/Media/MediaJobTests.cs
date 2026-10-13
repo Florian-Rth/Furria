@@ -53,6 +53,19 @@ public sealed class MediaJobTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_MarkTheItemFailedAtOnce_When_ItsOriginalIsMissing()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(_ => { }, ct);
+        var mediaItemId = await UploadAsync(ctx, "a.jpg", MediaSamples.JpegOfSize(800, 600), ct);
+        File.Delete(await _fixture.MediaFileOfAsync(mediaItemId, MediaRendition.Original, ct));
+
+        await _fixture.RunMediaWorkerAsync(ct);
+
+        await ctx.Expected.MediaItem(mediaItemId).ToHaveFailedWith("original").AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_FinishTheItem_When_TheWorkerThatClaimedItStoppedAnswering()
     {
         var ct = TestContext.Current.CancellationToken;

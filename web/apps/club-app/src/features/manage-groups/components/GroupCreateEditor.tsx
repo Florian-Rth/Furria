@@ -1,4 +1,4 @@
-import { KkNote, KkSelectField, KkTextField } from '@furria/ui';
+import { KkFormSection, KkSelectField, KkTextField } from '@furria/ui';
 import type { FC } from 'react';
 import type { RunningGroupKind } from '@/features/group-kinds';
 import {
@@ -12,7 +12,9 @@ import { MANAGE_GROUPS_ORIGIN } from '../manage-groups-labels';
 
 const TITLE = 'Gruppe hinzufügen';
 const ADD_LABEL = 'Hinzufügen';
+const SECTION_TITLE = 'Gruppe';
 const NAME_LABEL = 'Name der Gruppe';
+const NAME_HINT = 'Erscheint im Gruppenverzeichnis, auf der Gruppenseite und im Kalender.';
 const CREATE_NOTE =
   'Die Gruppe erscheint sofort im Verzeichnis. Beschreibung, Farbe und Trainingszeiten pflegen anschließend die Gruppen-Admins.';
 
@@ -41,26 +43,28 @@ export const GroupCreateEditor: FC<GroupCreateEditorProps> = ({ kinds }) => {
         },
       }}
     >
-      <KkTextField
-        name={nameField.name}
-        label={NAME_LABEL}
-        required
-        error={nameErrorText !== undefined}
-        helperText={nameErrorText}
-        onChange={nameField.onChange}
-        onBlur={nameField.onBlur}
-        inputRef={nameField.ref}
-      />
-      <KkSelectField
-        name="groupKindId"
-        label={GROUP_KIND_FIELD_LABEL}
-        value={control.groupKindId}
-        options={kindOptions}
-        onChange={control.setGroupKindId}
-        presentation="select"
-        hint={GROUP_KIND_FIELD_HINT}
-      />
-      <KkNote>{CREATE_NOTE}</KkNote>
+      <KkFormSection title={SECTION_TITLE} description={CREATE_NOTE}>
+        <KkTextField
+          name={nameField.name}
+          label={NAME_LABEL}
+          required
+          hint={NAME_HINT}
+          error={nameErrorText !== undefined}
+          helperText={nameErrorText}
+          onChange={nameField.onChange}
+          onBlur={nameField.onBlur}
+          inputRef={nameField.ref}
+        />
+        <KkSelectField
+          name="groupKindId"
+          label={GROUP_KIND_FIELD_LABEL}
+          value={control.groupKindId}
+          options={kindOptions}
+          onChange={control.setGroupKindId}
+          presentation="select"
+          hint={GROUP_KIND_FIELD_HINT}
+        />
+      </KkFormSection>
     </WriteScreen>
   );
 };

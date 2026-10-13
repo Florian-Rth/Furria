@@ -2,10 +2,13 @@ import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
 import Typography from '@mui/material/Typography';
 import type { FC, ReactNode } from 'react';
+import type { KkAspect } from '../image-aspect';
+import { aspectRatioCss } from '../image-aspect';
 import type { KkCrop } from '../image-crop';
 import { KkButton } from '../KkButton';
 import { KkCoverPicture } from '../KkCoverPicture';
-import { KkEventPictureStamp } from '../KkEventPicture/internal/ui/KkEventPictureStamp';
+import type { KkCropGuide } from '../KkCropFrame/KkCropFrame';
+import { KkPhotoStamp } from '../internal/KkPhotoStamp';
 import { kkTokens } from '../tokens';
 import type { KkBannerDeskActions, KkBannerDeskLabels, KkBannerState } from './banner-desk-types';
 import {
@@ -23,6 +26,8 @@ import { KkBannerToolbar } from './KkBannerToolbar';
 
 interface KkBannerDeskProps {
   id: string;
+  aspect?: KkAspect;
+  guide?: KkCropGuide;
   state: KkBannerState;
   poster: ReactNode;
   stampLabel?: string | null;
@@ -38,6 +43,8 @@ interface KkBannerDeskProps {
 
 export const KkBannerDesk: FC<KkBannerDeskProps> = ({
   id,
+  aspect = 'banner',
+  guide = 'none',
   state,
   poster,
   stampLabel = null,
@@ -54,6 +61,8 @@ export const KkBannerDesk: FC<KkBannerDeskProps> = ({
     return (
       <KkBannerCropDesk
         id={id}
+        aspect={aspect}
+        guide={guide}
         source={uncroppedSource}
         alt={alt}
         crop={crop}
@@ -86,7 +95,7 @@ export const KkBannerDesk: FC<KkBannerDeskProps> = ({
 
   const stamp =
     stampLabel !== null && isBannerStamped(state, readOnly) ? (
-      <KkEventPictureStamp label={stampLabel} scale="card" />
+      <KkPhotoStamp label={stampLabel} scale="card" />
     ) : null;
 
   const emptyActions =
@@ -140,7 +149,7 @@ export const KkBannerDesk: FC<KkBannerDeskProps> = ({
       sx={{
         position: 'relative',
         width: '100%',
-        aspectRatio: kkTokens.aspectRatio.banner,
+        aspectRatio: aspectRatioCss(aspect),
         borderRadius: `${kkTokens.radius.base}px`,
         border: 1,
         borderColor: 'divider',

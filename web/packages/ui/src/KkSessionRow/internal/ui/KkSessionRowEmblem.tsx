@@ -1,10 +1,10 @@
-import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { inkWash, inkWashSurface } from '../../../internal/ink-wash';
 import { logoInk } from '../../../internal/logo-ink';
 import { KkBroomMark } from '../../../KkBroomMark';
 import { emblemTile } from './emblem-tile';
+import { KkImage } from '../../../KkImage';
 
 const PLACEHOLDER_SIZE = 30;
 
@@ -17,8 +17,7 @@ export const KkSessionRowEmblem: FC<KkSessionRowEmblemProps> = ({ source }) => {
     source === null ? (
       <KkBroomMark size={PLACEHOLDER_SIZE} sx={(theme) => ({ color: inkWash(theme, '12%') })} />
     ) : (
-      <Box
-        component="img"
+      <KkImage
         src={source}
         alt=""
         sx={(theme) => ({

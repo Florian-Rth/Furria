@@ -1,3 +1,5 @@
+using Furria.Application.Operations;
+using Furria.Infrastructure.Operations;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -6,24 +8,32 @@ namespace Furria.Infrastructure.Gallery;
 
 public sealed class GalleryBinPurge : BackgroundService
 {
-    private static readonly TimeSpan PurgeInterval = TimeSpan.FromHours(1);
+    private static readonly TimeSpan PurgeInterval = BackgroundJobSchedule.Every(
+        BackgroundJob.GalleryBinPurge
+    );
 
     private readonly IServiceScopeFactory _scopeFactory;
+    private readonly BackgroundRuns _runs;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<GalleryBinPurge> _logger;
 
     public GalleryBinPurge(
         IServiceScopeFactory scopeFactory,
+        BackgroundRuns runs,
         TimeProvider timeProvider,
         ILogger<GalleryBinPurge> logger
     )
     {
         _scopeFactory = scopeFactory;
+        _runs = runs;
         _timeProvider = timeProvider;
         _logger = logger;
     }
 
-    public async Task PurgeAsync(CancellationToken ct)
+    public Task PurgeAsync(CancellationToken ct) =>
+        _runs.TrackAsync(BackgroundJob.GalleryBinPurge, () => PurgeBinAsync(ct));
+
+    private async Task PurgeBinAsync(CancellationToken ct)
     {
         await using var scope = _scopeFactory.CreateAsyncScope();
         var purged = await scope

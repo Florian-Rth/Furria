@@ -108,6 +108,19 @@ the running commit — read it before a rollback:
 curl -s https://app.<club-domain>/api/health
 ```
 
+### The System page
+
+Admins holding `system.view` see the state in the club app under *Mehr → Verwaltung → System*
+(`GET /api/system/status`, `GET /api/system/logs`): database, media worker heartbeats
+(`media_worker_heartbeat`, written every 15 s, a row unseen for 24 h is purged), the queue,
+storage (a survey of the media path 1 minute after start, then every 6 h), the background tasks
+of the running API (in memory — a restart starts them afresh), the mail outbox and the log.
+
+The log there is a copy ([ADR-0028](../adr/0028-the-app-keeps-its-recent-logs-in-its-database.md)):
+API and worker write Information and above into `log_entry`, kept 3 days (Warning and above
+30 days, at most 100 000 rows). `docker compose logs` stays the full record. Both settings are
+optional: `SystemLog__Enabled=false` stops the copy, `SystemLog__RowCap` changes the cap.
+
 ## Rollback
 
 1. Find the last good commit on `main`: `git log --first-parent --oneline main`, or the `+<sha>`

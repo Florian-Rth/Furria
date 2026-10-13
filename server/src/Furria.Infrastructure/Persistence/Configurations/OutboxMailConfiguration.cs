@@ -27,6 +27,8 @@ public sealed class OutboxMailConfiguration : IEntityTypeConfiguration<OutboxMai
         builder.Property(mail => mail.TextBody).IsRequired();
         builder.Property(mail => mail.HtmlBody).IsRequired();
 
+        builder.Property(mail => mail.EnqueuedAt).HasDefaultValueSql("now()");
+
         builder.HasIndex(mail => mail.NextAttemptAt);
     }
 }

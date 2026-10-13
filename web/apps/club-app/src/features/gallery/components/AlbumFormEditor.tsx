@@ -1,5 +1,5 @@
 import type { KkScreenActionBar, KkScreenOrigin } from '@furria/ui';
-import { KkTextArea, KkTextField } from '@furria/ui';
+import { KkFormSection, KkTextArea, KkTextField } from '@furria/ui';
 import type { FC } from 'react';
 import { GALLERY_ORIGIN } from '@/features/session';
 import { WriteScreen } from '@/features/write';
@@ -11,13 +11,17 @@ import { ALBUM_DESCRIPTION_MAX_LENGTH } from '../schemas';
 import { AlbumFormCoverField } from './AlbumFormCoverField';
 import { AlbumFormCoverSheet } from './AlbumFormCoverSheet';
 import { AlbumFormDeletionLine } from './AlbumFormDeletionLine';
-import { AlbumFormLinkFields } from './AlbumFormLinkFields';
+import { AlbumFormLinkSection } from './AlbumFormLinkSection';
 
 const CREATE_LABEL = 'Anlegen';
 const SAVE_LABEL = 'Speichern';
+const ALBUM_SECTION_TITLE = 'Album';
+const COVER_SECTION_TITLE = 'Titelbild';
 const TITLE_LABEL = 'Titel';
 const DESCRIPTION_LABEL = 'Beschreibung';
-const DESCRIPTION_PLACEHOLDER = 'Ein, zwei Sätze zum Abend — stehen auch auf der Website';
+const DESCRIPTION_PLACEHOLDER = 'Ein, zwei Sätze zum Abend';
+const DESCRIPTION_HINT =
+  'Steht über dem Album und, bei Alben mit Session, auf seiner Seite auf der Website.';
 const DESCRIPTION_ROWS = 3;
 
 const toCountLabel = (used: number, max: number): string => `${used} von ${max} Zeichen`;
@@ -42,8 +46,12 @@ export const AlbumFormEditor: FC<AlbumFormEditorProps> = ({ album, presetEntryId
   const title = control.isEditing ? EDIT_ALBUM_TITLE : NEW_ALBUM_TITLE;
   const actionLabel = control.isEditing ? SAVE_LABEL : CREATE_LABEL;
   const origin = originOf(album);
-  const coverField =
-    album === null ? null : <AlbumFormCoverField album={album} control={control} />;
+  const coverSection =
+    album === null ? null : (
+      <KkFormSection title={COVER_SECTION_TITLE}>
+        <AlbumFormCoverField album={album} control={control} />
+      </KkFormSection>
+    );
   const coverSheet =
     album === null ? null : <AlbumFormCoverSheet items={album.items} control={control} />;
   const deletionLine = album === null ? null : <AlbumFormDeletionLine album={album} />;
@@ -66,31 +74,34 @@ export const AlbumFormEditor: FC<AlbumFormEditorProps> = ({ album, presetEntryId
         isDirty={control.isDirty}
         action={action}
       >
-        <KkTextField
-          name={titleField.name}
-          label={TITLE_LABEL}
-          required
-          error={titleErrorText !== undefined}
-          helperText={titleErrorText}
-          onChange={titleField.onChange}
-          onBlur={titleField.onBlur}
-          inputRef={titleField.ref}
-        />
-        <AlbumFormLinkFields control={control} entries={entries} />
-        {coverField}
-        <KkTextArea
-          name="description"
-          label={DESCRIPTION_LABEL}
-          value={control.values.description}
-          onChange={control.setDescription}
-          rows={DESCRIPTION_ROWS}
-          maxLength={ALBUM_DESCRIPTION_MAX_LENGTH}
-          showCount
-          countLabel={toCountLabel}
-          placeholder={DESCRIPTION_PLACEHOLDER}
-          error={descriptionErrorText !== undefined}
-          helperText={descriptionErrorText}
-        />
+        <KkFormSection title={ALBUM_SECTION_TITLE}>
+          <KkTextField
+            name={titleField.name}
+            label={TITLE_LABEL}
+            required
+            error={titleErrorText !== undefined}
+            helperText={titleErrorText}
+            onChange={titleField.onChange}
+            onBlur={titleField.onBlur}
+            inputRef={titleField.ref}
+          />
+          <KkTextArea
+            name="description"
+            label={DESCRIPTION_LABEL}
+            value={control.values.description}
+            onChange={control.setDescription}
+            rows={DESCRIPTION_ROWS}
+            maxLength={ALBUM_DESCRIPTION_MAX_LENGTH}
+            showCount
+            countLabel={toCountLabel}
+            placeholder={DESCRIPTION_PLACEHOLDER}
+            hint={DESCRIPTION_HINT}
+            error={descriptionErrorText !== undefined}
+            helperText={descriptionErrorText}
+          />
+        </KkFormSection>
+        <AlbumFormLinkSection control={control} entries={entries} />
+        {coverSection}
         {deletionLine}
       </WriteScreen>
       {coverSheet}

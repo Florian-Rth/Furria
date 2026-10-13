@@ -17,8 +17,12 @@ public sealed partial class ClubService
         {
             Name = record?.Name,
             FoundedYear = record?.FoundedYear,
+            Street = record?.Street,
+            Zip = record?.Zip,
+            City = record?.City,
             Email = record?.Email,
             Phone = record?.Phone,
+            WebsiteUrl = record?.WebsiteUrl,
             InstagramUrl = record?.InstagramUrl,
             FacebookUrl = record?.FacebookUrl,
             MemberCount = await MemberCountAsync(today, ct),
@@ -56,8 +60,12 @@ public sealed partial class ClubService
             .Select(row => new PublicRecordRow(
                 row.Name,
                 row.FoundedYear,
+                row.Street,
+                row.Zip,
+                row.City,
                 row.Email,
                 row.Phone,
+                row.WebsiteUrl,
                 row.InstagramUrl,
                 row.FacebookUrl,
                 row.AgeOfConsent
@@ -83,8 +91,12 @@ public sealed partial class ClubService
     private sealed record PublicRecordRow(
         string? Name,
         int? FoundedYear,
+        string? Street,
+        string? Zip,
+        string? City,
         string? Email,
         string? Phone,
+        string? WebsiteUrl,
         string? InstagramUrl,
         string? FacebookUrl,
         int AgeOfConsent

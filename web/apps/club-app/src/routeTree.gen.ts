@@ -28,8 +28,15 @@ import { Route as AppAnnouncementsRouteImport } from './routes/_app/announcement
 import { Route as AppPersonalRouteImport } from './routes/_app/_personal'
 import { Route as AppAffiliatedRouteImport } from './routes/_app/_affiliated'
 import { Route as AppSplatRouteImport } from './routes/_app/$'
+import { Route as AppSystemIndexRouteImport } from './routes/_app/system.index'
 import { Route as AppManageIndexRouteImport } from './routes/_app/manage.index'
 import { Route as AppLabIndexRouteImport } from './routes/_app/lab.index'
+import { Route as AppSystemTasksRouteImport } from './routes/_app/system.tasks'
+import { Route as AppSystemStorageRouteImport } from './routes/_app/system.storage'
+import { Route as AppSystemMediaRouteImport } from './routes/_app/system.media'
+import { Route as AppSystemMailRouteImport } from './routes/_app/system.mail'
+import { Route as AppSystemLogRouteImport } from './routes/_app/system.log'
+import { Route as AppSystemDatabaseRouteImport } from './routes/_app/system.database'
 import { Route as AppNewsPostIdRouteImport } from './routes/_app/news_.$postId'
 import { Route as AppManageVenuesRouteImport } from './routes/_app/manage.venues'
 import { Route as AppManageSessionsRouteImport } from './routes/_app/manage.sessions'
@@ -69,19 +76,16 @@ import { Route as AppManageClubRecordAccessRouteImport } from './routes/_app/man
 import { Route as AppManageBoardNewRouteImport } from './routes/_app/manage.board_.new'
 import { Route as AppManageApplicationsMembershipApplicationIdRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId'
 import { Route as AppGroupsGroupIdTrainingsRouteImport } from './routes/_app/groups_.$groupId_.trainings'
-import { Route as AppGroupsGroupIdPictureRouteImport } from './routes/_app/groups_.$groupId_.picture'
 import { Route as AppGroupsGroupIdEditRouteImport } from './routes/_app/groups_.$groupId_.edit'
 import { Route as AppGroupsGroupIdAdministrationRouteImport } from './routes/_app/groups_.$groupId_.administration'
 import { Route as AppGalleryAlbumIdSelectionRouteImport } from './routes/_app/gallery_.$albumId_.selection'
 import { Route as AppGalleryAlbumIdEditRouteImport } from './routes/_app/gallery_.$albumId_.edit'
 import { Route as AppEventsEventIdEditRouteImport } from './routes/_app/events_.$eventId_.edit'
 import { Route as AppPersonalProfileSecurityRouteImport } from './routes/_app/_personal.profile_.security'
-import { Route as AppPersonalProfilePortraitRouteImport } from './routes/_app/_personal.profile_.portrait'
 import { Route as AppAffiliatedMembersPersonIdRouteImport } from './routes/_app/_affiliated.members_.$personId'
 import { Route as AppManageVenuesVenueIdEditRouteImport } from './routes/_app/manage.venues_.$venueId_.edit'
 import { Route as AppManageSessionsSessionIdEditRouteImport } from './routes/_app/manage.sessions_.$sessionId.edit'
 import { Route as AppManageRolesRoleIdEditRouteImport } from './routes/_app/manage.roles_.$roleId_.edit'
-import { Route as AppManagePersonsPersonIdPortraitRouteImport } from './routes/_app/manage.persons_.$personId_.portrait'
 import { Route as AppManagePersonsPersonIdEditRouteImport } from './routes/_app/manage.persons_.$personId_.edit'
 import { Route as AppManagePersonsPersonIdAccessRecoveryRouteImport } from './routes/_app/manage.persons_.$personId_.access-recovery'
 import { Route as AppManageKeysHoldingsKeyHoldingIdRouteImport } from './routes/_app/manage.keys_.holdings.$keyHoldingId'
@@ -207,6 +211,11 @@ const AppSplatRoute = AppSplatRouteImport.update({
   path: '/$',
   getParentRoute: () => AppRoute,
 } as any)
+const AppSystemIndexRoute = AppSystemIndexRouteImport.update({
+  id: '/system/',
+  path: '/system/',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppManageIndexRoute = AppManageIndexRouteImport.update({
   id: '/manage/',
   path: '/manage/',
@@ -215,6 +224,36 @@ const AppManageIndexRoute = AppManageIndexRouteImport.update({
 const AppLabIndexRoute = AppLabIndexRouteImport.update({
   id: '/lab/',
   path: '/lab/',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSystemTasksRoute = AppSystemTasksRouteImport.update({
+  id: '/system/tasks',
+  path: '/system/tasks',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSystemStorageRoute = AppSystemStorageRouteImport.update({
+  id: '/system/storage',
+  path: '/system/storage',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSystemMediaRoute = AppSystemMediaRouteImport.update({
+  id: '/system/media',
+  path: '/system/media',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSystemMailRoute = AppSystemMailRouteImport.update({
+  id: '/system/mail',
+  path: '/system/mail',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSystemLogRoute = AppSystemLogRouteImport.update({
+  id: '/system/log',
+  path: '/system/log',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSystemDatabaseRoute = AppSystemDatabaseRouteImport.update({
+  id: '/system/database',
+  path: '/system/database',
   getParentRoute: () => AppRoute,
 } as any)
 const AppNewsPostIdRoute = AppNewsPostIdRouteImport.update({
@@ -420,11 +459,6 @@ const AppGroupsGroupIdTrainingsRoute =
     path: '/groups/$groupId/trainings',
     getParentRoute: () => AppRoute,
   } as any)
-const AppGroupsGroupIdPictureRoute = AppGroupsGroupIdPictureRouteImport.update({
-  id: '/groups_/$groupId_/picture',
-  path: '/groups/$groupId/picture',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppGroupsGroupIdEditRoute = AppGroupsGroupIdEditRouteImport.update({
   id: '/groups_/$groupId_/edit',
   path: '/groups/$groupId/edit',
@@ -458,12 +492,6 @@ const AppPersonalProfileSecurityRoute =
     path: '/profile/security',
     getParentRoute: () => AppPersonalRoute,
   } as any)
-const AppPersonalProfilePortraitRoute =
-  AppPersonalProfilePortraitRouteImport.update({
-    id: '/profile_/portrait',
-    path: '/profile/portrait',
-    getParentRoute: () => AppPersonalRoute,
-  } as any)
 const AppAffiliatedMembersPersonIdRoute =
   AppAffiliatedMembersPersonIdRouteImport.update({
     id: '/members_/$personId',
@@ -486,12 +514,6 @@ const AppManageRolesRoleIdEditRoute =
   AppManageRolesRoleIdEditRouteImport.update({
     id: '/manage/roles_/$roleId_/edit',
     path: '/manage/roles/$roleId/edit',
-    getParentRoute: () => AppRoute,
-  } as any)
-const AppManagePersonsPersonIdPortraitRoute =
-  AppManagePersonsPersonIdPortraitRouteImport.update({
-    id: '/manage/persons_/$personId_/portrait',
-    path: '/manage/persons/$personId/portrait',
     getParentRoute: () => AppRoute,
   } as any)
 const AppManagePersonsPersonIdEditRoute =
@@ -729,17 +751,22 @@ export interface FileRoutesByFullPath {
   '/manage/sessions': typeof AppManageSessionsRoute
   '/manage/venues': typeof AppManageVenuesRoute
   '/news/$postId': typeof AppNewsPostIdRoute
+  '/system/database': typeof AppSystemDatabaseRoute
+  '/system/log': typeof AppSystemLogRoute
+  '/system/mail': typeof AppSystemMailRoute
+  '/system/media': typeof AppSystemMediaRoute
+  '/system/storage': typeof AppSystemStorageRoute
+  '/system/tasks': typeof AppSystemTasksRoute
   '/lab/': typeof AppLabIndexRoute
   '/manage/': typeof AppManageIndexRoute
+  '/system/': typeof AppSystemIndexRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
-  '/profile/portrait': typeof AppPersonalProfilePortraitRoute
   '/profile/security': typeof AppPersonalProfileSecurityRoute
   '/events/$eventId/edit': typeof AppEventsEventIdEditRoute
   '/gallery/$albumId/edit': typeof AppGalleryAlbumIdEditRoute
   '/gallery/$albumId/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
-  '/groups/$groupId/picture': typeof AppGroupsGroupIdPictureRoute
   '/groups/$groupId/trainings': typeof AppGroupsGroupIdTrainingsRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/new': typeof AppManageBoardNewRoute
@@ -770,7 +797,6 @@ export interface FileRoutesByFullPath {
   '/manage/keys/holdings/$keyHoldingId': typeof AppManageKeysHoldingsKeyHoldingIdRoute
   '/manage/persons/$personId/access-recovery': typeof AppManagePersonsPersonIdAccessRecoveryRoute
   '/manage/persons/$personId/edit': typeof AppManagePersonsPersonIdEditRoute
-  '/manage/persons/$personId/portrait': typeof AppManagePersonsPersonIdPortraitRoute
   '/manage/roles/$roleId/edit': typeof AppManageRolesRoleIdEditRoute
   '/manage/sessions/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
   '/manage/venues/$venueId/edit': typeof AppManageVenuesVenueIdEditRoute
@@ -833,17 +859,22 @@ export interface FileRoutesByTo {
   '/manage/sessions': typeof AppManageSessionsRoute
   '/manage/venues': typeof AppManageVenuesRoute
   '/news/$postId': typeof AppNewsPostIdRoute
+  '/system/database': typeof AppSystemDatabaseRoute
+  '/system/log': typeof AppSystemLogRoute
+  '/system/mail': typeof AppSystemMailRoute
+  '/system/media': typeof AppSystemMediaRoute
+  '/system/storage': typeof AppSystemStorageRoute
+  '/system/tasks': typeof AppSystemTasksRoute
   '/lab': typeof AppLabIndexRoute
   '/manage': typeof AppManageIndexRoute
+  '/system': typeof AppSystemIndexRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
-  '/profile/portrait': typeof AppPersonalProfilePortraitRoute
   '/profile/security': typeof AppPersonalProfileSecurityRoute
   '/events/$eventId/edit': typeof AppEventsEventIdEditRoute
   '/gallery/$albumId/edit': typeof AppGalleryAlbumIdEditRoute
   '/gallery/$albumId/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
-  '/groups/$groupId/picture': typeof AppGroupsGroupIdPictureRoute
   '/groups/$groupId/trainings': typeof AppGroupsGroupIdTrainingsRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/new': typeof AppManageBoardNewRoute
@@ -874,7 +905,6 @@ export interface FileRoutesByTo {
   '/manage/keys/holdings/$keyHoldingId': typeof AppManageKeysHoldingsKeyHoldingIdRoute
   '/manage/persons/$personId/access-recovery': typeof AppManagePersonsPersonIdAccessRecoveryRoute
   '/manage/persons/$personId/edit': typeof AppManagePersonsPersonIdEditRoute
-  '/manage/persons/$personId/portrait': typeof AppManagePersonsPersonIdPortraitRoute
   '/manage/roles/$roleId/edit': typeof AppManageRolesRoleIdEditRoute
   '/manage/sessions/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
   '/manage/venues/$venueId/edit': typeof AppManageVenuesVenueIdEditRoute
@@ -941,17 +971,22 @@ export interface FileRoutesById {
   '/_app/manage/sessions': typeof AppManageSessionsRoute
   '/_app/manage/venues': typeof AppManageVenuesRoute
   '/_app/news_/$postId': typeof AppNewsPostIdRoute
+  '/_app/system/database': typeof AppSystemDatabaseRoute
+  '/_app/system/log': typeof AppSystemLogRoute
+  '/_app/system/mail': typeof AppSystemMailRoute
+  '/_app/system/media': typeof AppSystemMediaRoute
+  '/_app/system/storage': typeof AppSystemStorageRoute
+  '/_app/system/tasks': typeof AppSystemTasksRoute
   '/_app/lab/': typeof AppLabIndexRoute
   '/_app/manage/': typeof AppManageIndexRoute
+  '/_app/system/': typeof AppSystemIndexRoute
   '/_app/_affiliated/members_/$personId': typeof AppAffiliatedMembersPersonIdRoute
-  '/_app/_personal/profile_/portrait': typeof AppPersonalProfilePortraitRoute
   '/_app/_personal/profile_/security': typeof AppPersonalProfileSecurityRoute
   '/_app/events_/$eventId_/edit': typeof AppEventsEventIdEditRoute
   '/_app/gallery_/$albumId_/edit': typeof AppGalleryAlbumIdEditRoute
   '/_app/gallery_/$albumId_/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/_app/groups_/$groupId_/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/_app/groups_/$groupId_/edit': typeof AppGroupsGroupIdEditRoute
-  '/_app/groups_/$groupId_/picture': typeof AppGroupsGroupIdPictureRoute
   '/_app/groups_/$groupId_/trainings': typeof AppGroupsGroupIdTrainingsRoute
   '/_app/manage/applications_/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/_app/manage/board_/new': typeof AppManageBoardNewRoute
@@ -982,7 +1017,6 @@ export interface FileRoutesById {
   '/_app/manage/keys_/holdings/$keyHoldingId': typeof AppManageKeysHoldingsKeyHoldingIdRoute
   '/_app/manage/persons_/$personId_/access-recovery': typeof AppManagePersonsPersonIdAccessRecoveryRoute
   '/_app/manage/persons_/$personId_/edit': typeof AppManagePersonsPersonIdEditRoute
-  '/_app/manage/persons_/$personId_/portrait': typeof AppManagePersonsPersonIdPortraitRoute
   '/_app/manage/roles_/$roleId_/edit': typeof AppManageRolesRoleIdEditRoute
   '/_app/manage/sessions_/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
   '/_app/manage/venues_/$venueId_/edit': typeof AppManageVenuesVenueIdEditRoute
@@ -1047,17 +1081,22 @@ export interface FileRouteTypes {
     | '/manage/sessions'
     | '/manage/venues'
     | '/news/$postId'
+    | '/system/database'
+    | '/system/log'
+    | '/system/mail'
+    | '/system/media'
+    | '/system/storage'
+    | '/system/tasks'
     | '/lab/'
     | '/manage/'
+    | '/system/'
     | '/members/$personId'
-    | '/profile/portrait'
     | '/profile/security'
     | '/events/$eventId/edit'
     | '/gallery/$albumId/edit'
     | '/gallery/$albumId/selection'
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
-    | '/groups/$groupId/picture'
     | '/groups/$groupId/trainings'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/new'
@@ -1088,7 +1127,6 @@ export interface FileRouteTypes {
     | '/manage/keys/holdings/$keyHoldingId'
     | '/manage/persons/$personId/access-recovery'
     | '/manage/persons/$personId/edit'
-    | '/manage/persons/$personId/portrait'
     | '/manage/roles/$roleId/edit'
     | '/manage/sessions/$sessionId/edit'
     | '/manage/venues/$venueId/edit'
@@ -1151,17 +1189,22 @@ export interface FileRouteTypes {
     | '/manage/sessions'
     | '/manage/venues'
     | '/news/$postId'
+    | '/system/database'
+    | '/system/log'
+    | '/system/mail'
+    | '/system/media'
+    | '/system/storage'
+    | '/system/tasks'
     | '/lab'
     | '/manage'
+    | '/system'
     | '/members/$personId'
-    | '/profile/portrait'
     | '/profile/security'
     | '/events/$eventId/edit'
     | '/gallery/$albumId/edit'
     | '/gallery/$albumId/selection'
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
-    | '/groups/$groupId/picture'
     | '/groups/$groupId/trainings'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/new'
@@ -1192,7 +1235,6 @@ export interface FileRouteTypes {
     | '/manage/keys/holdings/$keyHoldingId'
     | '/manage/persons/$personId/access-recovery'
     | '/manage/persons/$personId/edit'
-    | '/manage/persons/$personId/portrait'
     | '/manage/roles/$roleId/edit'
     | '/manage/sessions/$sessionId/edit'
     | '/manage/venues/$venueId/edit'
@@ -1258,17 +1300,22 @@ export interface FileRouteTypes {
     | '/_app/manage/sessions'
     | '/_app/manage/venues'
     | '/_app/news_/$postId'
+    | '/_app/system/database'
+    | '/_app/system/log'
+    | '/_app/system/mail'
+    | '/_app/system/media'
+    | '/_app/system/storage'
+    | '/_app/system/tasks'
     | '/_app/lab/'
     | '/_app/manage/'
+    | '/_app/system/'
     | '/_app/_affiliated/members_/$personId'
-    | '/_app/_personal/profile_/portrait'
     | '/_app/_personal/profile_/security'
     | '/_app/events_/$eventId_/edit'
     | '/_app/gallery_/$albumId_/edit'
     | '/_app/gallery_/$albumId_/selection'
     | '/_app/groups_/$groupId_/administration'
     | '/_app/groups_/$groupId_/edit'
-    | '/_app/groups_/$groupId_/picture'
     | '/_app/groups_/$groupId_/trainings'
     | '/_app/manage/applications_/$membershipApplicationId'
     | '/_app/manage/board_/new'
@@ -1299,7 +1346,6 @@ export interface FileRouteTypes {
     | '/_app/manage/keys_/holdings/$keyHoldingId'
     | '/_app/manage/persons_/$personId_/access-recovery'
     | '/_app/manage/persons_/$personId_/edit'
-    | '/_app/manage/persons_/$personId_/portrait'
     | '/_app/manage/roles_/$roleId_/edit'
     | '/_app/manage/sessions_/$sessionId/edit'
     | '/_app/manage/venues_/$venueId_/edit'
@@ -1465,6 +1511,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppSplatRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/system/': {
+      id: '/_app/system/'
+      path: '/system'
+      fullPath: '/system/'
+      preLoaderRoute: typeof AppSystemIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/manage/': {
       id: '/_app/manage/'
       path: '/manage'
@@ -1477,6 +1530,48 @@ declare module '@tanstack/react-router' {
       path: '/lab'
       fullPath: '/lab/'
       preLoaderRoute: typeof AppLabIndexRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/system/tasks': {
+      id: '/_app/system/tasks'
+      path: '/system/tasks'
+      fullPath: '/system/tasks'
+      preLoaderRoute: typeof AppSystemTasksRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/system/storage': {
+      id: '/_app/system/storage'
+      path: '/system/storage'
+      fullPath: '/system/storage'
+      preLoaderRoute: typeof AppSystemStorageRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/system/media': {
+      id: '/_app/system/media'
+      path: '/system/media'
+      fullPath: '/system/media'
+      preLoaderRoute: typeof AppSystemMediaRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/system/mail': {
+      id: '/_app/system/mail'
+      path: '/system/mail'
+      fullPath: '/system/mail'
+      preLoaderRoute: typeof AppSystemMailRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/system/log': {
+      id: '/_app/system/log'
+      path: '/system/log'
+      fullPath: '/system/log'
+      preLoaderRoute: typeof AppSystemLogRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/system/database': {
+      id: '/_app/system/database'
+      path: '/system/database'
+      fullPath: '/system/database'
+      preLoaderRoute: typeof AppSystemDatabaseRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/news_/$postId': {
@@ -1752,13 +1847,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGroupsGroupIdTrainingsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/groups_/$groupId_/picture': {
-      id: '/_app/groups_/$groupId_/picture'
-      path: '/groups/$groupId/picture'
-      fullPath: '/groups/$groupId/picture'
-      preLoaderRoute: typeof AppGroupsGroupIdPictureRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/groups_/$groupId_/edit': {
       id: '/_app/groups_/$groupId_/edit'
       path: '/groups/$groupId/edit'
@@ -1801,13 +1889,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppPersonalProfileSecurityRouteImport
       parentRoute: typeof AppPersonalRoute
     }
-    '/_app/_personal/profile_/portrait': {
-      id: '/_app/_personal/profile_/portrait'
-      path: '/profile/portrait'
-      fullPath: '/profile/portrait'
-      preLoaderRoute: typeof AppPersonalProfilePortraitRouteImport
-      parentRoute: typeof AppPersonalRoute
-    }
     '/_app/_affiliated/members_/$personId': {
       id: '/_app/_affiliated/members_/$personId'
       path: '/members/$personId'
@@ -1834,13 +1915,6 @@ declare module '@tanstack/react-router' {
       path: '/manage/roles/$roleId/edit'
       fullPath: '/manage/roles/$roleId/edit'
       preLoaderRoute: typeof AppManageRolesRoleIdEditRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/manage/persons_/$personId_/portrait': {
-      id: '/_app/manage/persons_/$personId_/portrait'
-      path: '/manage/persons/$personId/portrait'
-      fullPath: '/manage/persons/$personId/portrait'
-      preLoaderRoute: typeof AppManagePersonsPersonIdPortraitRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/manage/persons_/$personId_/edit': {
@@ -2086,7 +2160,6 @@ const AppAffiliatedRouteWithChildren = AppAffiliatedRoute._addFileChildren(
 
 interface AppPersonalRouteChildren {
   AppPersonalProfileRoute: typeof AppPersonalProfileRoute
-  AppPersonalProfilePortraitRoute: typeof AppPersonalProfilePortraitRoute
   AppPersonalProfileSecurityRoute: typeof AppPersonalProfileSecurityRoute
   AppPersonalProfileContactEditRoute: typeof AppPersonalProfileContactEditRoute
   AppPersonalProfileSecurityLoginEmailRoute: typeof AppPersonalProfileSecurityLoginEmailRoute
@@ -2096,7 +2169,6 @@ interface AppPersonalRouteChildren {
 
 const AppPersonalRouteChildren: AppPersonalRouteChildren = {
   AppPersonalProfileRoute: AppPersonalProfileRoute,
-  AppPersonalProfilePortraitRoute: AppPersonalProfilePortraitRoute,
   AppPersonalProfileSecurityRoute: AppPersonalProfileSecurityRoute,
   AppPersonalProfileContactEditRoute: AppPersonalProfileContactEditRoute,
   AppPersonalProfileSecurityLoginEmailRoute:
@@ -2148,14 +2220,20 @@ interface AppRouteChildren {
   AppManageSessionsRoute: typeof AppManageSessionsRoute
   AppManageVenuesRoute: typeof AppManageVenuesRoute
   AppNewsPostIdRoute: typeof AppNewsPostIdRoute
+  AppSystemDatabaseRoute: typeof AppSystemDatabaseRoute
+  AppSystemLogRoute: typeof AppSystemLogRoute
+  AppSystemMailRoute: typeof AppSystemMailRoute
+  AppSystemMediaRoute: typeof AppSystemMediaRoute
+  AppSystemStorageRoute: typeof AppSystemStorageRoute
+  AppSystemTasksRoute: typeof AppSystemTasksRoute
   AppLabIndexRoute: typeof AppLabIndexRoute
   AppManageIndexRoute: typeof AppManageIndexRoute
+  AppSystemIndexRoute: typeof AppSystemIndexRoute
   AppEventsEventIdEditRoute: typeof AppEventsEventIdEditRoute
   AppGalleryAlbumIdEditRoute: typeof AppGalleryAlbumIdEditRoute
   AppGalleryAlbumIdSelectionRoute: typeof AppGalleryAlbumIdSelectionRoute
   AppGroupsGroupIdAdministrationRoute: typeof AppGroupsGroupIdAdministrationRoute
   AppGroupsGroupIdEditRoute: typeof AppGroupsGroupIdEditRoute
-  AppGroupsGroupIdPictureRoute: typeof AppGroupsGroupIdPictureRoute
   AppGroupsGroupIdTrainingsRoute: typeof AppGroupsGroupIdTrainingsRoute
   AppManageApplicationsMembershipApplicationIdRoute: typeof AppManageApplicationsMembershipApplicationIdRoute
   AppManageBoardNewRoute: typeof AppManageBoardNewRoute
@@ -2183,7 +2261,6 @@ interface AppRouteChildren {
   AppManageKeysHoldingsKeyHoldingIdRoute: typeof AppManageKeysHoldingsKeyHoldingIdRoute
   AppManagePersonsPersonIdAccessRecoveryRoute: typeof AppManagePersonsPersonIdAccessRecoveryRoute
   AppManagePersonsPersonIdEditRoute: typeof AppManagePersonsPersonIdEditRoute
-  AppManagePersonsPersonIdPortraitRoute: typeof AppManagePersonsPersonIdPortraitRoute
   AppManageRolesRoleIdEditRoute: typeof AppManageRolesRoleIdEditRoute
   AppManageSessionsSessionIdEditRoute: typeof AppManageSessionsSessionIdEditRoute
   AppManageVenuesVenueIdEditRoute: typeof AppManageVenuesVenueIdEditRoute
@@ -2240,14 +2317,20 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageSessionsRoute: AppManageSessionsRoute,
   AppManageVenuesRoute: AppManageVenuesRoute,
   AppNewsPostIdRoute: AppNewsPostIdRoute,
+  AppSystemDatabaseRoute: AppSystemDatabaseRoute,
+  AppSystemLogRoute: AppSystemLogRoute,
+  AppSystemMailRoute: AppSystemMailRoute,
+  AppSystemMediaRoute: AppSystemMediaRoute,
+  AppSystemStorageRoute: AppSystemStorageRoute,
+  AppSystemTasksRoute: AppSystemTasksRoute,
   AppLabIndexRoute: AppLabIndexRoute,
   AppManageIndexRoute: AppManageIndexRoute,
+  AppSystemIndexRoute: AppSystemIndexRoute,
   AppEventsEventIdEditRoute: AppEventsEventIdEditRoute,
   AppGalleryAlbumIdEditRoute: AppGalleryAlbumIdEditRoute,
   AppGalleryAlbumIdSelectionRoute: AppGalleryAlbumIdSelectionRoute,
   AppGroupsGroupIdAdministrationRoute: AppGroupsGroupIdAdministrationRoute,
   AppGroupsGroupIdEditRoute: AppGroupsGroupIdEditRoute,
-  AppGroupsGroupIdPictureRoute: AppGroupsGroupIdPictureRoute,
   AppGroupsGroupIdTrainingsRoute: AppGroupsGroupIdTrainingsRoute,
   AppManageApplicationsMembershipApplicationIdRoute:
     AppManageApplicationsMembershipApplicationIdRoute,
@@ -2280,7 +2363,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppManagePersonsPersonIdAccessRecoveryRoute:
     AppManagePersonsPersonIdAccessRecoveryRoute,
   AppManagePersonsPersonIdEditRoute: AppManagePersonsPersonIdEditRoute,
-  AppManagePersonsPersonIdPortraitRoute: AppManagePersonsPersonIdPortraitRoute,
   AppManageRolesRoleIdEditRoute: AppManageRolesRoleIdEditRoute,
   AppManageSessionsSessionIdEditRoute: AppManageSessionsSessionIdEditRoute,
   AppManageVenuesVenueIdEditRoute: AppManageVenuesVenueIdEditRoute,

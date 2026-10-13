@@ -12,6 +12,14 @@ with an analyzer id.
 | Development | `Readable` | `[12:00:00 INF] Source: message` |
 | Tests (`ApiTestFixture`) | `Off` | Nothing on the console; events land in `CapturingLogSink` |
 
+Besides the console, the API and the media worker copy Information and above into the
+`log_entry` table, which the club app's System page reads
+([ADR-0028](../adr/0028-the-app-keeps-its-recent-logs-in-its-database.md)). The copy leaves out
+EF Core and Npgsql, `Microsoft.AspNetCore.*` and `System.Net.Http.*` below Warning, and the request
+event below Error; it keeps Information 3 days and Warning and above 30 days (at most
+`SystemLog:RowCap` rows, default 100 000). `SystemLog:Enabled=false` turns it off. Tests leave it
+on: every test host writes into its own database.
+
 Serilog is the only pipeline. Code in `Furria.Api/Logging` picks the sink; configuration only sets
 levels, under `Serilog:MinimumLevel`.
 
@@ -61,7 +69,8 @@ placeholders whose names end in such a word (`FirstName`, `Phone`, `Street`, `Bi
 - **See the SQL again.** EF's `Database.Command` and `Database.Connection` categories are muted
   (`Fatal`). Unmute them per deploy without rebuilding:
   `Serilog__MinimumLevel__Override__Microsoft.EntityFrameworkCore.Database.Command=Information`
-- **Retention.** The compose example rotates the API's logs (`json-file`, 5 × 10 MB).
+- **Retention.** The compose example rotates the API's logs (`json-file`, 5 × 10 MB). The database
+  copy is purged by the API every 15 minutes.
 
 ## Testing an event
 

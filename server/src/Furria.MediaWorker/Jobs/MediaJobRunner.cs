@@ -17,6 +17,7 @@ public sealed class MediaJobRunner
     private readonly MediaRoot _root;
     private readonly PhotoRenderer _photoRenderer;
     private readonly VideoRenderer _videoRenderer;
+    private readonly MediaWorkerActivity _activity;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<MediaJobRunner> _logger;
 
@@ -25,6 +26,7 @@ public sealed class MediaJobRunner
         MediaRoot root,
         PhotoRenderer photoRenderer,
         VideoRenderer videoRenderer,
+        MediaWorkerActivity activity,
         TimeProvider timeProvider,
         ILogger<MediaJobRunner> logger
     )
@@ -33,6 +35,7 @@ public sealed class MediaJobRunner
         _root = root;
         _photoRenderer = photoRenderer;
         _videoRenderer = videoRenderer;
+        _activity = activity;
         _timeProvider = timeProvider;
         _logger = logger;
     }
@@ -43,6 +46,7 @@ public sealed class MediaJobRunner
         if (job is null)
             return false;
 
+        _activity.Begin(kind, job.MediaItemId);
         using var leaseHeld = CancellationTokenSource.CreateLinkedTokenSource(ct);
         var renewal = KeepLeaseAsync(job.Lease, leaseHeld);
         try
@@ -61,6 +65,10 @@ public sealed class MediaJobRunner
                 job.MediaItemId
             );
         }
+        catch (MissingOriginalException exception)
+        {
+            await WithQueueAsync(queue => queue.GiveUpAsync(job.Lease, exception.Message, ct));
+        }
         catch (Exception exception)
         {
             await WithQueueAsync(queue => queue.FailAsync(job.Lease, ReasonOf(exception), ct));
@@ -69,6 +77,7 @@ public sealed class MediaJobRunner
         {
             await leaseHeld.CancelAsync();
             await renewal;
+            _activity.End(kind);
         }
 
         return true;
@@ -76,6 +85,9 @@ public sealed class MediaJobRunner
 
     private async Task RenderAndRecordAsync(MediaJobDetails job, CancellationToken ct)
     {
+        if (!_root.HasOriginalOf(job.StorageKey))
+            throw new MissingOriginalException();
+
         using var files = new RenditionFiles(_root, job.StorageKey);
         var rendered =
             job.Kind == MediaKind.Video

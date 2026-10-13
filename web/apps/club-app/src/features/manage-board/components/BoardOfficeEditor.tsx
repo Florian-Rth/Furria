@@ -1,4 +1,13 @@
-import { KkFieldRow, KkNote, KkSelectField, KkTextField } from '@furria/ui';
+import type { KkNumberStepLabels } from '@furria/ui';
+import {
+  KkFieldRow,
+  KkFormPair,
+  KkFormSection,
+  KkNote,
+  KkNumberField,
+  KkSelectField,
+  KkTextField,
+} from '@furria/ui';
 import type { FC } from 'react';
 import { WriteScreen } from '@/features/write';
 import { useBoardOfficeEditor } from '../hooks/use-board-office-editor';
@@ -14,9 +23,19 @@ const CREATE_TITLE = 'Vorstandsfunktion hinzufügen';
 const EDIT_TITLE = 'Vorstandsfunktion bearbeiten';
 const CREATE_EXPLANATION = 'Die Besetzung trägst du im Anschluss ein.';
 const EDIT_EXPLANATION = 'Bestehende Sitze bleiben von Änderungen unberührt.';
+const OFFICE_SECTION = 'Funktion';
+const ROLE_SECTION = 'Rolle';
 const NAME_LABEL = 'Name';
+const NAME_HINT = 'Erscheint so im Vorstand auf der Website und in der App.';
 const SORT_ORDER_LABEL = 'Platz im Vorstand';
-const SORT_ORDER_HINT = 'Legt die Reihenfolge fest. Kleinere Zahlen stehen weiter oben.';
+const SORT_ORDER_HINT = 'Kleinere Zahlen stehen weiter oben.';
+const SORT_ORDER_MIN = 1;
+const SORT_ORDER_MAX = 999;
+const SORT_ORDER_STEPS: KkNumberStepLabels = {
+  less: 'Einen Platz höher',
+  more: 'Einen Platz tiefer',
+};
+const IMPLIED_ROLE_HINT = 'Wer den Sitz innehat, bekommt diese Rolle samt ihren Rechten.';
 const CREATE_ACTION_LABEL = 'Hinzufügen';
 const EDIT_ACTION_LABEL = 'Speichern';
 
@@ -34,7 +53,6 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry }) => {
   const origin = entry === null ? BOARD_ORIGIN : toOfficeOrigin(entry);
 
   const nameField = control.form.register('name');
-  const sortOrderField = control.form.register('sortOrder');
 
   const impliedRoleError = control.impliedRoleChoicesError ?? undefined;
 
@@ -46,6 +64,7 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry }) => {
       options={control.impliedRoleChoices}
       onChange={control.setImpliedRoleValue}
       presentation="select"
+      hint={IMPLIED_ROLE_HINT}
       disabled={control.impliedRoleChoicesPending}
       error={impliedRoleError !== undefined}
       helperText={impliedRoleError}
@@ -57,7 +76,8 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry }) => {
       hint={IMPLIED_ROLE_READ_ONLY_HINT}
     />
   );
-  const impliedRoleField = entry === null ? null : impliedRoleControl;
+  const roleSection =
+    entry === null ? null : <KkFormSection title={ROLE_SECTION}>{impliedRoleControl}</KkFormSection>;
 
   return (
     <WriteScreen
@@ -75,28 +95,40 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry }) => {
       }}
     >
       <KkNote>{explanation}</KkNote>
-      <KkTextField
-        name={nameField.name}
-        label={NAME_LABEL}
-        required
-        inputRef={nameField.ref}
-        onChange={nameField.onChange}
-        onBlur={nameField.onBlur}
-        error={errors.name !== undefined}
-        helperText={errors.name?.message}
-      />
-      <KkTextField
-        name={sortOrderField.name}
-        label={SORT_ORDER_LABEL}
-        required
-        inputMode="numeric"
-        inputRef={sortOrderField.ref}
-        onChange={sortOrderField.onChange}
-        onBlur={sortOrderField.onBlur}
-        error={errors.sortOrder !== undefined}
-        helperText={errors.sortOrder?.message ?? SORT_ORDER_HINT}
-      />
-      {impliedRoleField}
+      <KkFormSection title={OFFICE_SECTION}>
+        <KkFormPair
+          balance="leading"
+          start={
+            <KkTextField
+              name={nameField.name}
+              label={NAME_LABEL}
+              required
+              hint={NAME_HINT}
+              inputRef={nameField.ref}
+              onChange={nameField.onChange}
+              onBlur={nameField.onBlur}
+              error={errors.name !== undefined}
+              helperText={errors.name?.message}
+            />
+          }
+          end={
+            <KkNumberField
+              name="sortOrder"
+              label={SORT_ORDER_LABEL}
+              required
+              value={control.sortOrder}
+              onChange={control.setSortOrder}
+              min={SORT_ORDER_MIN}
+              max={SORT_ORDER_MAX}
+              stepLabels={SORT_ORDER_STEPS}
+              hint={SORT_ORDER_HINT}
+              error={errors.sortOrder !== undefined}
+              helperText={errors.sortOrder?.message}
+            />
+          }
+        />
+      </KkFormSection>
+      {roleSection}
     </WriteScreen>
   );
 };

@@ -23,6 +23,7 @@ export const EVENTS_PATH = '/events';
 export const PROFILE_PATH = '/profile';
 export const GALLERY_PATH = '/gallery';
 export const NEWS_PATH = '/news';
+export const SYSTEM_PATH = '/system';
 
 export const START_SECTION = 'start';
 export const CLUB_SECTION = 'club';
@@ -38,6 +39,7 @@ export const PROFILE_TITLE = 'Profil';
 export const EVENTS_TITLE = 'Veranstaltungen';
 export const GALLERY_TITLE = 'Galerie';
 export const NEWS_TITLE = 'Aktuelles';
+export const SYSTEM_TITLE = 'System';
 
 export const START_ORIGIN: KkScreenOrigin = { label: START_TITLE, to: START_PATH };
 export const CLUB_ORIGIN: KkScreenOrigin = { label: CLUB_TITLE, to: CLUB_PATH };
@@ -49,6 +51,7 @@ export const MANAGE_ORIGIN: KkScreenOrigin = { label: 'Verein verwalten', to: MA
 export const EVENTS_ORIGIN: KkScreenOrigin = { label: EVENTS_TITLE, to: EVENTS_PATH };
 export const GALLERY_ORIGIN: KkScreenOrigin = { label: GALLERY_TITLE, to: GALLERY_PATH };
 export const NEWS_ORIGIN: KkScreenOrigin = { label: NEWS_TITLE, to: NEWS_PATH };
+export const SYSTEM_ORIGIN: KkScreenOrigin = { label: SYSTEM_TITLE, to: SYSTEM_PATH };
 
 export const AREA_HANDOVERS = {
   start: 'confetti',
@@ -62,6 +65,7 @@ export const AREA_HANDOVERS = {
   events: 'confetti',
   gallery: 'confetti',
   news: 'confetti',
+  system: 'confetti',
   more: 'confetti',
 } as const satisfies Record<string, KkHandoverName>;
 
@@ -90,6 +94,10 @@ export const GALLERY_KEYS: readonly [PermissionKey, ...PermissionKey[]] = [
 ];
 
 export const NEWS_KEYS: readonly [PermissionKey, ...PermissionKey[]] = [PERMISSION_KEYS.newsManage];
+
+export const SYSTEM_KEYS: readonly [PermissionKey, ...PermissionKey[]] = [
+  PERMISSION_KEYS.systemView,
+];
 
 export const GALLERY_SORT_KEYS: readonly [PermissionKey, ...PermissionKey[]] = [
   PERMISSION_KEYS.galleryUpload,
@@ -186,6 +194,14 @@ export const MANAGE_SECTIONS: AppSection[] = [
     to: NEWS_PATH,
     meta: 'Meldungen für die Website schreiben',
     permissionKeys: NEWS_KEYS,
+  },
+  {
+    id: 'system',
+    label: SYSTEM_TITLE,
+    icon: 'system',
+    to: SYSTEM_PATH,
+    meta: 'Datenbank, Medien, Speicher und Protokoll',
+    permissionKeys: SYSTEM_KEYS,
   },
 ];
 

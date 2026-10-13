@@ -1,5 +1,14 @@
 import type { KkPanelAction } from '@furria/ui';
-import { KkDateField, KkFactRow, KkNote, KkPanel, KkPanelSection, KkWriteScreen } from '@furria/ui';
+import {
+  KkDateField,
+  KkFactRow,
+  KkFormPair,
+  KkFormSection,
+  KkNote,
+  KkPanel,
+  KkPanelSection,
+  KkWriteScreen,
+} from '@furria/ui';
 import { useNavigate } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toLandingKey, useLanding, WriteScreen } from '@/features/write';
@@ -18,6 +27,7 @@ import { toClosedHistoryLine } from '../person-archive';
 import type { PersonDetails, PersonMembership } from '../schemas';
 import { PersonPauseRow } from './PersonPauseRow';
 
+const SPAN_SECTION_TITLE = 'Zeitraum';
 const START_LABEL = 'Mitglied ab';
 const START_HINT =
   'Ein Wiedereintritt ist frühestens am Tag nach dem Ende der vorherigen Mitgliedschaft möglich.';
@@ -37,6 +47,8 @@ export const PersonMembershipEditor: FC<PersonMembershipEditorProps> = ({ person
   const { highlightedKey } = useLanding();
   const navigate = useNavigate();
   const today = new Date();
+  const startQuickChoices = toMembershipQuickChoices(today);
+  const endQuickChoices = toMembershipEndQuickChoices(today);
   const isArchived = person.archive !== null;
   const closedPausesNote = isArchived
     ? toClosedHistoryLine(person.firstName, 'Ruhezeiten')
@@ -122,27 +134,35 @@ export const PersonMembershipEditor: FC<PersonMembershipEditorProps> = ({ person
       }}
     >
       {chain}
-      <KkDateField
-        name="startedOn"
-        label={START_LABEL}
-        value={control.startedOn}
-        onChange={control.setStartedOn}
-        quickChoices={toMembershipQuickChoices(today)}
-        required
-        error={control.startedOnError !== undefined}
-        helperText={control.startedOnError}
-        hint={START_HINT}
-      />
-      <KkDateField
-        name="endedOn"
-        label={END_LABEL}
-        value={control.endedOn}
-        onChange={control.setEndedOn}
-        quickChoices={toMembershipEndQuickChoices(today)}
-        allowEmpty
-        emptyLabel={END_EMPTY_LABEL}
-        hint={END_HINT}
-      />
+      <KkFormSection title={SPAN_SECTION_TITLE}>
+        <KkFormPair
+          start={
+            <KkDateField
+              name="startedOn"
+              label={START_LABEL}
+              value={control.startedOn}
+              onChange={control.setStartedOn}
+              quickChoices={startQuickChoices}
+              required
+              error={control.startedOnError !== undefined}
+              helperText={control.startedOnError}
+              hint={START_HINT}
+            />
+          }
+          end={
+            <KkDateField
+              name="endedOn"
+              label={END_LABEL}
+              value={control.endedOn}
+              onChange={control.setEndedOn}
+              quickChoices={endQuickChoices}
+              allowEmpty
+              emptyLabel={END_EMPTY_LABEL}
+              hint={END_HINT}
+            />
+          }
+        />
+      </KkFormSection>
       {pausesSection}
     </WriteScreen>
   );

@@ -2,6 +2,7 @@ using System.Diagnostics.Contracts;
 using System.Text.Json;
 using FastEndpoints;
 using Furria.Application.Management;
+using Furria.Application.Operations;
 using Furria.Application.Start;
 using Furria.Core.Events;
 using Furria.Core.Groups;
@@ -36,6 +37,20 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(NewsCategory)] = "session achievements club groups",
         [typeof(NewsPostState)] = "draft published withdrawn",
         [typeof(NewsPublicationRequirement)] = "category title teaser text",
+        [typeof(MediaKind)] = "photo video",
+        [typeof(MediaOwnerKind)] = "person group gallery newsPost website event",
+        [typeof(SystemLevel)] = "ok attention broken",
+        [typeof(SystemCheck)] = "database workers queue storage media logs services mail",
+        [typeof(SystemReasonCode)] =
+            "databaseUnreachable pendingMigrations slowDatabase workerStale noLiveWorker "
+            + "workerVersionMismatch queueWaiting diskLow storageUnmeasured mediaFailed "
+            + "errorsLogged errorBurst serviceOverdue serviceFailed mailRetrying mailStuck",
+        [typeof(BackgroundJob)] =
+            "abandonedUploadSweep mediaFileReaper galleryBinPurge mailDispatcher "
+            + "unconfirmedApplicationPurge pastTicketRequestPurge signedOutMailRequestWorker "
+            + "logEntryPurge mediaStorageSurvey",
+        [typeof(LogSource)] = "api mediaWorker",
+        [typeof(LogEntryLevel)] = "information warning error fatal",
     };
 
     private readonly ApiTestFixture _fixture;

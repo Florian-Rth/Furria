@@ -83,6 +83,10 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
     title: 'Meldungen für Aktuelles schreiben',
     line: 'Meldungen schreiben, auf der Website veröffentlichen, ändern, zurückziehen und löschen.',
   },
+  [PERMISSION_KEYS.systemView]: {
+    title: 'System einsehen',
+    line: 'Zustand von Datenbank, Medienverarbeitung, Speicher und Protokoll sehen.',
+  },
 };
 
 const KNOWN_KEYS: readonly PermissionKey[] = Object.values(PERMISSION_KEYS);

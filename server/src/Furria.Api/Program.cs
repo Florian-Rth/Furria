@@ -15,6 +15,7 @@ using Furria.Api.Proxies;
 using Furria.Api.RateLimiting;
 using Furria.Application;
 using Furria.Application.Identity;
+using Furria.Application.Operations;
 using Furria.Infrastructure;
 using Furria.Infrastructure.Logging;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -31,7 +32,7 @@ try
         builder.Configuration.GetSection(AccessTokenOptions.SectionName).Get<AccessTokenOptions>()
         ?? new AccessTokenOptions();
 
-    builder.Services.AddFurriaLogging(builder.Configuration);
+    builder.Services.AddFurriaLogging(builder.Configuration, LogSource.Api);
     builder.Services.AddFurriaProblemDetails();
     builder.Services.AddApplication();
     builder.Services.AddInfrastructure(builder.Configuration);

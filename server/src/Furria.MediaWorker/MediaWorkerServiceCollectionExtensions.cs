@@ -2,6 +2,7 @@ using Furria.Application.Media;
 using Furria.Core.Media;
 using Furria.Infrastructure;
 using Furria.Infrastructure.Media;
+using Furria.MediaWorker.Heartbeat;
 using Furria.MediaWorker.Jobs;
 using Furria.MediaWorker.Photos;
 using Furria.MediaWorker.Videos;
@@ -41,11 +42,15 @@ public static class MediaWorkerServiceCollectionExtensions
         services.AddSingleton<PhotoRenderer>();
         services.AddSingleton<VideoRenderer>();
         services.AddSingleton<MediaJobRunner>();
+        services.AddSingleton<MediaWorkerActivity>();
+        services.AddScoped<MediaWorkerHeartbeats>();
+        services.AddSingleton<MediaWorkerBeat>();
         return services;
     }
 
     public static IServiceCollection AddMediaWorkerLanes(this IServiceCollection services)
     {
+        services.AddHostedService(provider => provider.GetRequiredService<MediaWorkerBeat>());
         services.AddSingleton<IHostedService>(provider =>
             ActivatorUtilities.CreateInstance<MediaWorkerLane>(provider, MediaKind.Photo)
         );

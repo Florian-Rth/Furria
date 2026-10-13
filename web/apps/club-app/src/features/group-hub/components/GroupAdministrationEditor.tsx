@@ -1,4 +1,4 @@
-import { KkSelectField, KkTextField } from '@furria/ui';
+import { KkFormSection, KkSelectField, KkTextField } from '@furria/ui';
 import type { FC } from 'react';
 import {
   GROUP_KIND_FIELD_HINT,
@@ -17,7 +17,9 @@ import { GroupEditorSkeleton } from './GroupEditorSkeleton';
 
 const TITLE = 'Name und Gruppenart bearbeiten';
 const SAVE_LABEL = 'Speichern';
+const SECTION_TITLE = 'Gruppe';
 const NAME_LABEL = 'Name';
+const NAME_HINT = 'Erscheint im Gruppenverzeichnis, auf der Gruppenseite und im Kalender.';
 
 interface GroupAdministrationEditorProps {
   hub: GroupHub;
@@ -67,25 +69,28 @@ export const GroupAdministrationEditor: FC<GroupAdministrationEditorProps> = ({ 
         },
       }}
     >
-      <KkTextField
-        name={control.name.name}
-        label={NAME_LABEL}
-        required
-        onChange={control.name.onChange}
-        onBlur={control.name.onBlur}
-        inputRef={control.name.ref}
-        error={control.nameError !== undefined}
-        helperText={control.nameError}
-      />
-      <KkSelectField
-        name="groupKindId"
-        label={GROUP_KIND_FIELD_LABEL}
-        value={control.groupKindId}
-        options={kindOptions}
-        onChange={control.setGroupKindId}
-        presentation="select"
-        hint={GROUP_KIND_FIELD_HINT}
-      />
+      <KkFormSection title={SECTION_TITLE}>
+        <KkTextField
+          name={control.name.name}
+          label={NAME_LABEL}
+          required
+          hint={NAME_HINT}
+          onChange={control.name.onChange}
+          onBlur={control.name.onBlur}
+          inputRef={control.name.ref}
+          error={control.nameError !== undefined}
+          helperText={control.nameError}
+        />
+        <KkSelectField
+          name="groupKindId"
+          label={GROUP_KIND_FIELD_LABEL}
+          value={control.groupKindId}
+          options={kindOptions}
+          onChange={control.setGroupKindId}
+          presentation="select"
+          hint={GROUP_KIND_FIELD_HINT}
+        />
+      </KkFormSection>
     </WriteScreen>
   );
 };

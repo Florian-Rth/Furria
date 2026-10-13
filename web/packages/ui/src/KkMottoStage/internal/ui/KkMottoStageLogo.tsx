@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import { logoInk } from '../../../internal/logo-ink';
+import { KkImage } from '../../../KkImage';
 
 const FADE = 'linear-gradient(to right, transparent 6%, #000 62%)';
 const WIDTH = { xs: '74%', desktop: '56%' };
@@ -24,8 +25,8 @@ export const KkMottoStageLogo: FC<KkMottoStageLogoProps> = ({ source }) => (
       zIndex: 0,
     }}
   >
-    <Box
-      component="img"
+    <KkImage
+      fault="hide"
       src={source}
       alt=""
       sx={(theme) => ({

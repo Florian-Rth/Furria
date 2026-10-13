@@ -1,3 +1,5 @@
+using Furria.Application.Operations;
+using Furria.Infrastructure.Operations;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -10,23 +12,28 @@ public sealed class MediaFileReaper : BackgroundService
 {
     private const int BatchSize = 100;
 
-    private static readonly TimeSpan PollInterval = TimeSpan.FromMinutes(1);
+    private static readonly TimeSpan PollInterval = BackgroundJobSchedule.Every(
+        BackgroundJob.MediaFileReaper
+    );
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly MediaRoot _root;
     private readonly MediaFileReaperSignal _signal;
+    private readonly BackgroundRuns _runs;
     private readonly ILogger<MediaFileReaper> _logger;
 
     public MediaFileReaper(
         IServiceScopeFactory scopeFactory,
         MediaRoot root,
         MediaFileReaperSignal signal,
+        BackgroundRuns runs,
         ILogger<MediaFileReaper> logger
     )
     {
         _scopeFactory = scopeFactory;
         _root = root;
         _signal = signal;
+        _runs = runs;
         _logger = logger;
     }
 
@@ -34,7 +41,7 @@ public sealed class MediaFileReaper : BackgroundService
     {
         try
         {
-            while (await ReapBatchAsync(ct)) { }
+            await _runs.TrackAsync(BackgroundJob.MediaFileReaper, () => ReapAllAsync(ct));
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
@@ -52,6 +59,11 @@ public sealed class MediaFileReaper : BackgroundService
             await ReapAsync(stoppingToken);
             await _signal.WaitAsync(PollInterval, stoppingToken);
         }
+    }
+
+    private async Task ReapAllAsync(CancellationToken ct)
+    {
+        while (await ReapBatchAsync(ct)) { }
     }
 
     private async Task<bool> ReapBatchAsync(CancellationToken ct)

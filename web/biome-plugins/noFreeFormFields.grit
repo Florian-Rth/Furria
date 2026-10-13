@@ -1,0 +1,14 @@
+language js
+
+JsxElement(opening_element = $open, children = $children) where {
+  $open <: r"<(?:WriteScreen|Grid|Stack|Box|KkPanel|KkPanelSection)\b[\s\S]*",
+  $children <: some or {
+    JsxSelfClosingElement() as $field where {
+      $field <: r"<Kk(?:TextField|TextArea|SelectField|MultiSelectField|DateField|TimeField|PriceField|ChipField|SessionField|NumberField|SwitchRow|CheckboxRow|RadioGroup)\b[\s\S]*"
+    },
+    JsxElement() as $field where {
+      $field <: r"<Kk(?:TextField|TextArea|SelectField|MultiSelectField|DateField|TimeField|PriceField|ChipField|SessionField|NumberField|SwitchRow|CheckboxRow|RadioGroup)\b[\s\S]*"
+    }
+  },
+  register_diagnostic(span=$open, message="Form fields are laid out by `KkFormSection` and `KkFormPair` only — never by the screen, Grid, Stack, Box or a panel (ADR-0029).")
+}

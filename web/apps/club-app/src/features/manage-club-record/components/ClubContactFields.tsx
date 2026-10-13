@@ -1,5 +1,4 @@
-import { KkTextField } from '@furria/ui';
-import Grid from '@mui/material/Grid';
+import { KkFormPair, KkFormSection, KkTextField } from '@furria/ui';
 import type { FC } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
 import type { ClubContactForm } from '../schemas';
@@ -12,7 +11,15 @@ const PHONE_LABEL = 'Telefon';
 const WEBSITE_LABEL = 'Website';
 const INSTAGRAM_LABEL = 'Instagram';
 const FACEBOOK_LABEL = 'Facebook';
-const LINK_HINT = 'Die ganze Adresse, mit https://.';
+const ADDRESS_SECTION_TITLE = 'Anschrift';
+const ADDRESS_SECTION_DESCRIPTION = 'Die Postanschrift des Vereins. Steht im Impressum der Website.';
+const REACH_SECTION_TITLE = 'Erreichbarkeit';
+const EMAIL_HINT = 'Steht im Impressum und überall auf der Website, wo Gäste dem Verein schreiben können.';
+const PHONE_HINT = 'Steht im Impressum und auf der Website unter „Mitglied werden“.';
+const WEB_SECTION_TITLE = 'Im Netz';
+const WEBSITE_HINT = 'Die ganze Adresse, mit https://. Steht im Impressum der Website.';
+const INSTAGRAM_HINT = 'Die ganze Adresse, mit https://. Verlinkt in der Fußzeile der Website.';
+const FACEBOOK_HINT = 'Die ganze Adresse, mit https://. Verlinkt in der Fußzeile der Website.';
 
 interface ClubContactFieldsProps {
   form: UseFormReturn<ClubContactForm>;
@@ -39,8 +46,8 @@ export const ClubContactFields: FC<ClubContactFieldsProps> = ({ form, errors }) 
   const facebookUrlError = errors.facebookUrl?.message;
 
   return (
-    <Grid container spacing={1.5} sx={{ minWidth: 0 }}>
-      <Grid size={12} sx={{ minWidth: 0 }}>
+    <>
+      <KkFormSection title={ADDRESS_SECTION_TITLE} description={ADDRESS_SECTION_DESCRIPTION}>
         <KkTextField
           name={street.name}
           label={STREET_LABEL}
@@ -51,94 +58,101 @@ export const ClubContactFields: FC<ClubContactFieldsProps> = ({ form, errors }) 
           onBlur={street.onBlur}
           inputRef={street.ref}
         />
-      </Grid>
-      <Grid size={4} sx={{ minWidth: 0 }}>
-        <KkTextField
-          name={zip.name}
-          label={ZIP_LABEL}
-          inputMode="numeric"
-          autoComplete="postal-code"
-          error={zipError !== undefined}
-          helperText={zipError}
-          onChange={zip.onChange}
-          onBlur={zip.onBlur}
-          inputRef={zip.ref}
+        <KkFormPair
+          balance="trailing"
+          start={
+            <KkTextField
+              name={zip.name}
+              label={ZIP_LABEL}
+              inputMode="numeric"
+              autoComplete="postal-code"
+              error={zipError !== undefined}
+              helperText={zipError}
+              onChange={zip.onChange}
+              onBlur={zip.onBlur}
+              inputRef={zip.ref}
+            />
+          }
+          end={
+            <KkTextField
+              name={city.name}
+              label={CITY_LABEL}
+              autoComplete="address-level2"
+              error={cityError !== undefined}
+              helperText={cityError}
+              onChange={city.onChange}
+              onBlur={city.onBlur}
+              inputRef={city.ref}
+            />
+          }
         />
-      </Grid>
-      <Grid size={8} sx={{ minWidth: 0 }}>
-        <KkTextField
-          name={city.name}
-          label={CITY_LABEL}
-          autoComplete="address-level2"
-          error={cityError !== undefined}
-          helperText={cityError}
-          onChange={city.onChange}
-          onBlur={city.onBlur}
-          inputRef={city.ref}
-        />
-      </Grid>
-      <Grid size={12} sx={{ minWidth: 0 }}>
+      </KkFormSection>
+      <KkFormSection title={REACH_SECTION_TITLE}>
         <KkTextField
           name={email.name}
           label={EMAIL_LABEL}
           type="email"
+          inputMode="email"
           autoComplete="email"
+          hint={EMAIL_HINT}
           error={emailError !== undefined}
           helperText={emailError}
           onChange={email.onChange}
           onBlur={email.onBlur}
           inputRef={email.ref}
         />
-      </Grid>
-      <Grid size={12} sx={{ minWidth: 0 }}>
         <KkTextField
           name={phone.name}
           label={PHONE_LABEL}
           type="tel"
+          inputMode="tel"
           autoComplete="tel"
+          hint={PHONE_HINT}
           error={phoneError !== undefined}
           helperText={phoneError}
           onChange={phone.onChange}
           onBlur={phone.onBlur}
           inputRef={phone.ref}
         />
-      </Grid>
-      <Grid size={12} sx={{ minWidth: 0 }}>
+      </KkFormSection>
+      <KkFormSection title={WEB_SECTION_TITLE}>
         <KkTextField
           name={websiteUrl.name}
           label={WEBSITE_LABEL}
           type="url"
+          inputMode="url"
+          hint={WEBSITE_HINT}
           error={websiteUrlError !== undefined}
-          helperText={websiteUrlError ?? LINK_HINT}
+          helperText={websiteUrlError}
           onChange={websiteUrl.onChange}
           onBlur={websiteUrl.onBlur}
           inputRef={websiteUrl.ref}
         />
-      </Grid>
-      <Grid size={12} sx={{ minWidth: 0 }}>
         <KkTextField
           name={instagramUrl.name}
           label={INSTAGRAM_LABEL}
           type="url"
+          inputMode="url"
+          hint={INSTAGRAM_HINT}
           error={instagramUrlError !== undefined}
           helperText={instagramUrlError}
           onChange={instagramUrl.onChange}
           onBlur={instagramUrl.onBlur}
           inputRef={instagramUrl.ref}
         />
-      </Grid>
-      <Grid size={12} sx={{ minWidth: 0 }}>
         <KkTextField
           name={facebookUrl.name}
           label={FACEBOOK_LABEL}
           type="url"
+          inputMode="url"
+          hint={FACEBOOK_HINT}
           error={facebookUrlError !== undefined}
           helperText={facebookUrlError}
           onChange={facebookUrl.onChange}
           onBlur={facebookUrl.onBlur}
           inputRef={facebookUrl.ref}
         />
-      </Grid>
-    </Grid>
+      </KkFormSection>
+    </>
   );
 };

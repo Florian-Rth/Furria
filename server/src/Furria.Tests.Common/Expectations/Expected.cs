@@ -117,6 +117,10 @@ public sealed class Expected
 
     public MediaItemSetExpectations MediaItems() => new(this);
 
+    public LogEntrySetExpectations LogEntriesContaining(string marker) => new(this, marker);
+
+    public MediaWorkerHeartbeatSetExpectations MediaWorkerHeartbeats() => new(this);
+
     public AlbumExpectations Album(int albumId) => new(this, albumId);
 
     public GalleryItemExpectations GalleryItem(int mediaItemId) => new(this, mediaItemId);

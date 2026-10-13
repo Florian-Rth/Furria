@@ -24,8 +24,9 @@ export const KkBannerToolbar: FC<KkBannerToolbarProps> = ({ labels, actions }) =
   };
   const chooseGallery = (): void => {
     toolbar.closeReplace();
-    actions.onGallery();
+    actions.onGallery?.();
   };
+  const replace = actions.onGallery === undefined ? actions.onUpload : toolbar.openReplace;
   const confirmRemoval = (): void => {
     toolbar.disarmRemoval();
     actions.onRemove();
@@ -51,7 +52,7 @@ export const KkBannerToolbar: FC<KkBannerToolbarProps> = ({ labels, actions }) =
     <KkBannerPanel>
       <KkBannerTool icon="crop" label={labels.crop} onClick={actions.onCrop} />
       <Box component="span" ref={toolbar.replaceRef} sx={{ display: 'inline-flex' }}>
-        <KkBannerTool icon="image" label={labels.replace} onClick={toolbar.openReplace} />
+        <KkBannerTool icon="image" label={labels.replace} onClick={replace} />
       </Box>
       {removal}
       <Menu

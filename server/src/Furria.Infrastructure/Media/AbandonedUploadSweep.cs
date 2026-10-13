@@ -1,4 +1,6 @@
 using System.Diagnostics.Contracts;
+using Furria.Application.Operations;
+using Furria.Infrastructure.Operations;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 
@@ -8,20 +10,25 @@ public sealed class AbandonedUploadSweep : BackgroundService
 {
     private const char SidecarSeparator = '.';
 
-    private static readonly TimeSpan SweepInterval = TimeSpan.FromHours(1);
+    private const BackgroundJob Job = BackgroundJob.AbandonedUploadSweep;
+
+    private static readonly TimeSpan SweepInterval = BackgroundJobSchedule.Every(Job);
     private static readonly TimeSpan AbandonedAfter = TimeSpan.FromHours(24);
 
     private readonly MediaRoot _root;
+    private readonly BackgroundRuns _runs;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<AbandonedUploadSweep> _logger;
 
     public AbandonedUploadSweep(
         MediaRoot root,
+        BackgroundRuns runs,
         TimeProvider timeProvider,
         ILogger<AbandonedUploadSweep> logger
     )
     {
         _root = root;
+        _runs = runs;
         _timeProvider = timeProvider;
         _logger = logger;
     }
@@ -30,10 +37,7 @@ public sealed class AbandonedUploadSweep : BackgroundService
     {
         try
         {
-            var abandonedBefore = _timeProvider.GetUtcNow().UtcDateTime - AbandonedAfter;
-            foreach (var upload in StagedUploads().Where(IsUntouchedSince(abandonedBefore)))
-            foreach (var file in upload)
-                file.Delete();
+            _runs.Track(Job, DeleteAbandonedUploads);
         }
         catch (IOException exception)
         {
@@ -51,6 +55,14 @@ public sealed class AbandonedUploadSweep : BackgroundService
         {
             Sweep();
         } while (await timer.WaitForNextTickAsync(stoppingToken));
+    }
+
+    private void DeleteAbandonedUploads()
+    {
+        var abandonedBefore = _timeProvider.GetUtcNow().UtcDateTime - AbandonedAfter;
+        foreach (var upload in StagedUploads().Where(IsUntouchedSince(abandonedBefore)))
+        foreach (var file in upload)
+            file.Delete();
     }
 
     private IEnumerable<IGrouping<string, FileInfo>> StagedUploads()

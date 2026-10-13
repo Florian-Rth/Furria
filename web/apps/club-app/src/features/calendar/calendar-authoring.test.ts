@@ -13,7 +13,6 @@ import {
   toOwnerOptions,
   toParticipatingGroupChoices,
   toParticipatingGroupIds,
-  toTimeChoices,
   toToggledParticipation,
 } from './calendar-authoring';
 import type { CalendarEntry, CalendarEntryForm } from './schemas';
@@ -130,18 +129,6 @@ describe('toDefaultVisibility', () => {
     [7, 'performance', 'group'],
   ] as const)('reads owner %s and kind %s as %s', (ownerGroupId, kind, expected) => {
     expect(toDefaultVisibility(ownerGroupId, kind)).toBe(expected);
-  });
-});
-
-describe('toTimeChoices', () => {
-  it('steps through the whole day in quarter hours', () => {
-    const choices = toTimeChoices();
-
-    expect(choices).toHaveLength(96);
-    expect(choices[0]).toBe('00:00');
-    expect(choices[1]).toBe('00:15');
-    expect(choices[76]).toBe('19:00');
-    expect(choices[95]).toBe('23:45');
   });
 });
 

@@ -3,7 +3,7 @@ import type { KkImageSource } from '../image-source';
 import type { KkGroupTone } from '../internal/group-tone';
 import type { KkNewsLink } from '../internal/news-surface/news-link';
 import { KkCard } from '../KkCard/KkCard';
-import { KkEventPicture } from '../KkEventPicture/KkEventPicture';
+import { KkPhoto } from '../KkPhoto';
 import { KkEventTie } from '../KkEventTie';
 import { KkEyebrow } from '../KkEyebrow';
 import type { KkSx } from '../kk-sx';
@@ -39,7 +39,7 @@ export const KkNewsEventCard: FC<KkNewsEventCardProps> = ({
 }) => {
   const media = (
     <KkCard.Media>
-      <KkEventPicture image={image} tone={tone} cancelledLabel={cancelledLabel} />
+      <KkPhoto alt="" image={image} tone={tone} stampLabel={cancelledLabel} fill />
     </KkCard.Media>
   );
 

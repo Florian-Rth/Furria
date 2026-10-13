@@ -6,11 +6,13 @@ using Furria.Infrastructure.Events;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Groups;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Management;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.MembershipApplications;
 using Furria.Infrastructure.News;
+using Furria.Infrastructure.Operations;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Public;
 using Furria.Infrastructure.Registry;
@@ -144,6 +146,15 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<SignedOutMailRequestWorker>();
         services.AddHostedService<UnconfirmedApplicationPurge>();
         services.AddHostedService<PastTicketRequestPurge>();
+
+        services.AddSingleton<HostStart>();
+        services.AddSingleton<BackgroundRuns>();
+        services.AddSingleton<MediaStorageSnapshot>();
+        services.AddScoped<DatabaseProbe>();
+        services.AddScoped<SystemStatusService>();
+        services.AddScoped<SystemLogService>();
+        services.AddHostedService<LogEntryPurge>();
+        services.AddHostedService<MediaStorageSurvey>();
         services.Configure<DataProtectionTokenProviderOptions>(options =>
             options.TokenLifespan = PasswordResetService.LinkLifetime
         );

@@ -1,5 +1,6 @@
 import type { KkAspect } from '@furria/ui';
 import type { UploadOwner } from '@/lib/media/media-upload';
+import type { DomainChange } from '@/lib/query/reads';
 
 export type PictureKind = 'portrait' | 'groupPicture' | 'eventPicture';
 
@@ -14,6 +15,18 @@ export const PICTURE_ASPECTS: Record<PictureKind, KkAspect> = {
   portrait: 'portrait',
   groupPicture: 'groupPicture',
   eventPicture: 'banner',
+};
+
+export const PICTURE_DESK_IDS: Record<PictureKind, string> = {
+  portrait: 'portrait',
+  groupPicture: 'group-picture',
+  eventPicture: 'event-picture',
+};
+
+export const PICTURE_CHANGES: Record<PictureKind, readonly DomainChange[]> = {
+  portrait: ['picture'],
+  groupPicture: ['picture'],
+  eventPicture: ['event'],
 };
 
 const OWNER_KINDS: Record<PictureKind, 'person' | 'group' | 'event'> = {

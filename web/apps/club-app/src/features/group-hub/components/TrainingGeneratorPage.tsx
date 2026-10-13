@@ -1,4 +1,4 @@
-import { KkAlert, KkDateField, KkScreen, KkTextField } from '@furria/ui';
+import { KkAlert, KkDateField, KkFormSection, KkScreen, KkTextField, kkTokens } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { ChangeEvent, FC } from 'react';
 import { useGoBackTo } from '@/lib/use-go-back-to';
@@ -16,6 +16,9 @@ import {
 import type { GroupHub } from '../schemas';
 import { TrainingGeneratorBody } from './TrainingGeneratorBody';
 import { TrainingGeneratorSkeleton } from './TrainingGeneratorSkeleton';
+
+const SECTION_TITLE = 'Termine';
+const FORM_SX = { gap: kkTokens.form.sectionGap, minWidth: 0 } as const;
 
 interface TrainingGeneratorPageProps {
   hub: GroupHub;
@@ -43,23 +46,25 @@ export const TrainingGeneratorPage: FC<TrainingGeneratorPageProps> = ({ hub }) =
   const form = control.isLoading ? (
     <TrainingGeneratorSkeleton />
   ) : (
-    <Stack sx={{ gap: 2, minWidth: 0 }}>
-      <KkTextField
-        name="trainingTitle"
-        label={GENERATOR_TITLE_LABEL}
-        value={control.title}
-        onChange={changeTitle}
-        error={control.title.trim() === ''}
-        helperText={GENERATOR_TITLE_HINT}
-      />
-      <KkDateField
-        name="endsOn"
-        label={GENERATOR_END_LABEL}
-        value={control.endsOn}
-        onChange={control.setEndsOn}
-        quickChoices={control.quickChoices}
-        hint={GENERATOR_END_HINT}
-      />
+    <Stack sx={FORM_SX}>
+      <KkFormSection title={SECTION_TITLE}>
+        <KkTextField
+          name="trainingTitle"
+          label={GENERATOR_TITLE_LABEL}
+          value={control.title}
+          onChange={changeTitle}
+          error={control.title.trim() === ''}
+          hint={GENERATOR_TITLE_HINT}
+        />
+        <KkDateField
+          name="endsOn"
+          label={GENERATOR_END_LABEL}
+          value={control.endsOn}
+          onChange={control.setEndsOn}
+          quickChoices={control.quickChoices}
+          hint={GENERATOR_END_HINT}
+        />
+      </KkFormSection>
       <TrainingGeneratorBody control={control} hasRhythm={hasRhythm} />
       {rejection}
     </Stack>

@@ -2659,6 +2659,78 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Furria.Infrastructure.Logging.LogEntry", b =>
+                {
+                    b.Property<long>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("bigint")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<long>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("category");
+
+                    b.Property<string>("Exception")
+                        .HasMaxLength(8000)
+                        .HasColumnType("character varying(8000)")
+                        .HasColumnName("exception");
+
+                    b.Property<string>("Instance")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("instance");
+
+                    b.Property<string>("Level")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("level");
+
+                    b.Property<DateTimeOffset>("LoggedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("logged_at");
+
+                    b.Property<string>("Message")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("message");
+
+                    b.Property<string>("Source")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("source");
+
+                    b.Property<string>("Template")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("template");
+
+                    b.Property<string>("TraceId")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("trace_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_log_entry");
+
+                    b.HasIndex("LoggedAt")
+                        .HasDatabaseName("ix_log_entry_logged_at");
+
+                    b.HasIndex("Source", "Level", "Id")
+                        .IsDescending(false, false, true)
+                        .HasDatabaseName("ix_log_entry_source_level_id");
+
+                    b.ToTable("log_entry", (string)null);
+                });
+
             modelBuilder.Entity("Furria.Infrastructure.Mail.OutboxMail", b =>
                 {
                     b.Property<long>("Id")
@@ -2671,6 +2743,12 @@ namespace Furria.Infrastructure.Migrations
                     b.Property<int>("Attempt")
                         .HasColumnType("integer")
                         .HasColumnName("attempt");
+
+                    b.Property<DateTimeOffset>("EnqueuedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("enqueued_at")
+                        .HasDefaultValueSql("now()");
 
                     b.Property<string>("HtmlBody")
                         .IsRequired()
@@ -2786,6 +2864,52 @@ namespace Furria.Infrastructure.Migrations
                         .HasDatabaseName("ix_media_file_tombstone_buried_at");
 
                     b.ToTable("media_file_tombstone", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Infrastructure.Media.MediaWorkerHeartbeat", b =>
+                {
+                    b.Property<Guid>("InstanceId")
+                        .HasColumnType("uuid")
+                        .HasColumnName("instance_id");
+
+                    b.Property<string>("HardwareAcceleration")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("hardware_acceleration");
+
+                    b.Property<string>("HostName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("host_name");
+
+                    b.Property<DateTimeOffset>("LastSeenAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_seen_at");
+
+                    b.Property<int?>("PhotoMediaItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("photo_media_item_id");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.Property<string>("Version")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("version");
+
+                    b.Property<int?>("VideoMediaItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("video_media_item_id");
+
+                    b.HasKey("InstanceId")
+                        .HasName("pk_media_worker_heartbeat");
+
+                    b.ToTable("media_worker_heartbeat", (string)null);
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>
