@@ -94,6 +94,26 @@ public sealed class PostEventPictureFromGalleryTests : IClassFixture<ApiTestFixt
     }
 
     [Fact]
+    public async Task Should_RefuseThePick_When_ThePhotosOriginalIsMissing()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(GalaAndGallery(), ct);
+        var client = await ctx.Identity.ClientForAsync(EventPictureSeeds.Keeper, ct);
+        var eventId = ctx.Club.Events.IdOf(EventPictureSeeds.Gala);
+        var photoId = ctx.Gallery.Items.IdOf("gala-photo");
+
+        var (response, _) = await PickAsync(client, eventId, photoId);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        await ctx
+            .Expected.Event(eventId)
+            .ToShowPicture(null)
+            .MediaItems()
+            .ToHaveCount(3)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_AnswerNotFound_When_TheIdNamesACalendarEntryOfAnotherKind()
     {
         var ct = TestContext.Current.CancellationToken;

@@ -10,7 +10,7 @@ export const CalendarBoardSearchSchema = AppSearchSchema.extend({
   scope: z.string().optional().catch(undefined),
   view: z.enum(['list', 'month']).optional().catch(undefined),
   month: z.string().optional().catch(undefined),
-  day: z.string().optional().catch(undefined),
+  day: z.iso.date().optional().catch(undefined),
 });
 export type CalendarBoardSearch = z.infer<typeof CalendarBoardSearchSchema>;
 

@@ -1,3 +1,4 @@
+using Furria.Application.Operations;
 using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Media;
 using Furria.MediaWorker.Jobs;
@@ -16,7 +17,7 @@ public static class MediaWorkerProgram
 
         try
         {
-            builder.Services.AddFurriaLogging(builder.Configuration);
+            builder.Services.AddFurriaLogging(builder.Configuration, LogSource.MediaWorker);
             builder.Services.AddMediaWorker(builder.Configuration);
             if (RegenerationRequest.IsRequested(args))
                 await RegenerateAsync(builder, args);

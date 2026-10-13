@@ -1,6 +1,4 @@
-import { KkNote, KkTextArea, KkTextField } from '@furria/ui';
-import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
+import { KkFormPair, KkFormSection, KkNote, KkTextArea, KkTextField } from '@furria/ui';
 import type { FC } from 'react';
 import { WriteScreen } from '@/features/write';
 import { useVenueEditor } from '../hooks/use-venue-editor';
@@ -13,20 +11,19 @@ const EDIT_TITLE = 'Ort bearbeiten';
 const ADD_LABEL = 'Hinzufügen';
 const SAVE_LABEL = 'Speichern';
 
+const PLACE_SECTION_TITLE = 'Ort';
+const ADDRESS_SECTION_TITLE = 'Anschrift';
 const NAME_LABEL = 'Name des Ortes';
+const NAME_PLACEHOLDER = 'Zum Beispiel Bürgerhaus oder Vereinsheim';
+const NAME_HINT = 'Steht bei jeder Veranstaltung an diesem Ort — auf der Website und im Kalender.';
 const STREET_LABEL = 'Straße und Hausnummer';
 const ZIP_LABEL = 'PLZ';
 const CITY_LABEL = 'Stadt';
-const HINT_LABEL = 'Hinweis';
-const HINT_PLACEHOLDER = 'Optional';
-const HINT_HINT = 'Ergänzende Hinweise zu Anfahrt oder Zugang.';
+const HINT_LABEL = 'Anfahrt & Zugang';
+const HINT_PLACEHOLDER = 'Parken, Eingang, Haltestelle';
+const HINT_HINT = 'Steht unter der Anschrift auf der Seite jeder Veranstaltung an diesem Ort.';
 const HINT_ROWS = 3;
 const CREATE_NOTE = 'Die Anschrift erscheint im Kalender, bei den Schlüsseln und auf der Website.';
-
-const FIELD_GAP = 2.25;
-const ZIP_SIZE = { xs: 4, sm: 3 };
-const CITY_SIZE = { xs: 8, sm: 9 };
-const GRID_SPACING = 2;
 
 const toCountLabel = (used: number, max: number): string => `${used} von ${max} Zeichen`;
 
@@ -76,17 +73,21 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
       }}
     >
       {intro}
-      <Stack sx={{ gap: FIELD_GAP, minWidth: 0 }}>
+      <KkFormSection title={PLACE_SECTION_TITLE}>
         <KkTextField
           name={nameField.name}
           label={NAME_LABEL}
           required
+          placeholder={NAME_PLACEHOLDER}
+          hint={NAME_HINT}
           error={nameErrorText !== undefined}
           helperText={nameErrorText}
           onChange={nameField.onChange}
           onBlur={nameField.onBlur}
           inputRef={nameField.ref}
         />
+      </KkFormSection>
+      <KkFormSection title={ADDRESS_SECTION_TITLE}>
         <KkTextField
           name={streetField.name}
           label={STREET_LABEL}
@@ -98,8 +99,9 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
           onBlur={streetField.onBlur}
           inputRef={streetField.ref}
         />
-        <Grid container spacing={GRID_SPACING} sx={{ minWidth: 0 }}>
-          <Grid size={ZIP_SIZE} sx={{ minWidth: 0 }}>
+        <KkFormPair
+          balance="trailing"
+          start={
             <KkTextField
               name={zipField.name}
               label={ZIP_LABEL}
@@ -112,8 +114,8 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
               onBlur={zipField.onBlur}
               inputRef={zipField.ref}
             />
-          </Grid>
-          <Grid size={CITY_SIZE} sx={{ minWidth: 0 }}>
+          }
+          end={
             <KkTextField
               name={cityField.name}
               label={CITY_LABEL}
@@ -125,8 +127,8 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
               onBlur={cityField.onBlur}
               inputRef={cityField.ref}
             />
-          </Grid>
-        </Grid>
+          }
+        />
         <KkTextArea
           name="hint"
           label={HINT_LABEL}
@@ -142,7 +144,7 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
           error={hintErrorText !== undefined}
           helperText={hintErrorText}
         />
-      </Stack>
+      </KkFormSection>
     </WriteScreen>
   );
 };

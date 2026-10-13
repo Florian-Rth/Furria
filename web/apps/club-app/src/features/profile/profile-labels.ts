@@ -48,11 +48,7 @@ export const PROFILE_SECTION_TITLES = {
   visibility: 'Sichtbarkeit',
   preview: 'Was andere von dir sehen',
   signIn: 'Anmeldung',
-  portrait: 'Dein Bild',
 } as const;
-
-export const PORTRAIT_TITLE = 'Porträt';
-export const PORTRAIT_PATH = '/profile/portrait';
 
 export const toPreviewContact = (person: MePerson, visible: boolean): MemberContact => {
   if (!visible) {

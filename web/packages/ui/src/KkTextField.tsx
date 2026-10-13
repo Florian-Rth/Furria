@@ -21,6 +21,8 @@ interface KkTextFieldProps {
   readOnly?: boolean;
   error?: boolean;
   helperText?: string;
+  hint?: string;
+  placeholder?: string;
   value?: string;
   endAdornment?: ReactNode;
   onChange?: OutlinedTextFieldProps['onChange'];
@@ -41,6 +43,8 @@ export const KkTextField: FC<KkTextFieldProps> = ({
   readOnly,
   error,
   helperText,
+  hint,
+  placeholder,
   value,
   endAdornment,
   onChange,
@@ -71,7 +75,8 @@ export const KkTextField: FC<KkTextFieldProps> = ({
       autoFocus={autoFocus}
       disabled={disabled}
       error={error}
-      helperText={helperText}
+      helperText={helperText ?? hint}
+      placeholder={placeholder}
       value={value}
       onChange={onChange}
       onBlur={onBlur}

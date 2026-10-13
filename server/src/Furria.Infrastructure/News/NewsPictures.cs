@@ -49,12 +49,14 @@ public sealed class NewsPictures
 
         var picture = await _dbContext.MediaItems.SingleAsync(item => item.Id == pictureId, ct);
         var placement = new Placement(post, command.CroppedByPersonId);
-        if (NewsWorkingCopy.IsLive(post) && post.PictureId == pictureId)
-            await PlaceCopyAsync(placement, picture, command.Crop, ct);
-        else
+        if (!NewsWorkingCopy.IsLive(post) || post.PictureId != pictureId)
+        {
             await RecropAsync(placement, picture, command.Crop, ct);
+            return Result.Success();
+        }
 
-        return Result.Success();
+        var copied = await PlaceCopyAsync(placement, picture, command.Crop, ct);
+        return copied.IsSuccess ? Result.Success() : Result.Carrying(copied);
     }
 
     public async Task<Result<int>> PickFromGalleryAsync(
@@ -76,13 +78,11 @@ public sealed class NewsPictures
         if (photo is null)
             return Result<int>.NotFound(UnknownGalleryPhotoMessage);
 
-        return Result<int>.Success(
-            await PlaceCopyAsync(
-                new Placement(post, command.PickedByPersonId),
-                photo,
-                command.Crop,
-                ct
-            )
+        return await PlaceCopyAsync(
+            new Placement(post, command.PickedByPersonId),
+            photo,
+            command.Crop,
+            ct
         );
     }
 
@@ -150,7 +150,7 @@ public sealed class NewsPictures
         );
     }
 
-    private Task<int> PlaceCopyAsync(
+    private Task<Result<int>> PlaceCopyAsync(
         Placement placement,
         MediaItem source,
         PictureCrop crop,

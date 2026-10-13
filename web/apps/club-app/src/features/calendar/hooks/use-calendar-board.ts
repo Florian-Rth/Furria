@@ -1,6 +1,8 @@
+import type { KkMonthBoardTravel } from '@furria/ui';
 import { getRouteApi, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { shiftMonth, startOfMonth, toMonthWindow } from '@/lib/calendar-days';
+import { shiftMonth, startOfMonth } from '@/lib/calendar-days';
+import { toBoardDay, toBoardWindow } from '../calendar-board';
 import type { CalendarQuery } from '../calendar-query';
 import {
   ALL_SCOPE_ID,
@@ -22,7 +24,9 @@ export interface CalendarBoard {
   view: CalendarViewMode;
   monthCursor: Date;
   today: Date;
-  selectedDay: string | null;
+  selectedDay: string;
+  travel: KkMonthBoardTravel;
+  showsToday: boolean;
   query: CalendarQuery;
   scopeSourceQuery: CalendarQuery;
   selectScope: (scopeId: string) => void;
@@ -30,19 +34,31 @@ export interface CalendarBoard {
   showMonth: () => void;
   showPreviousMonth: () => void;
   showNextMonth: () => void;
+  showToday: () => void;
   selectDay: (isoDay: string) => void;
-  clearDay: () => void;
+  addOnSelectedDay: () => void;
 }
+
+const travelTowards = (from: Date, to: Date): KkMonthBoardTravel => {
+  if (to.getTime() === from.getTime()) {
+    return 'none';
+  }
+
+  return to > from ? 'later' : 'earlier';
+};
 
 export const useCalendarBoard = (): CalendarBoard => {
   const [today] = useState(() => new Date());
+  const [travel, setTravel] = useState<KkMonthBoardTravel>('none');
   const search = routeApi.useSearch();
   const navigate = useNavigate();
 
   const scopeId = search.scope ?? ALL_SCOPE_ID;
-  const view: CalendarViewMode = search.view ?? 'list';
-  const monthCursor = parseMonthCursorParam(search.month, startOfMonth(today));
-  const selectedDay = search.day ?? null;
+  const view: CalendarViewMode = search.view ?? 'month';
+  const thisMonth = startOfMonth(today);
+  const monthCursor = parseMonthCursorParam(search.month, thisMonth);
+  const selectedDay = toBoardDay(monthCursor, today, search.day ?? null);
+  const showsToday = selectedDay !== toBoardDay(thisMonth, today, null);
 
   const patch = (next: Partial<CalendarBoardSearch>): void => {
     void navigate({
@@ -53,37 +69,52 @@ export const useCalendarBoard = (): CalendarBoard => {
     });
   };
 
-  const dayWindow = view === 'month' ? toMonthWindow(monthCursor) : null;
+  const dayWindow = view === 'month' ? toBoardWindow(monthCursor) : null;
   const from = dayWindow?.from ?? null;
   const to = dayWindow?.to ?? null;
   const choice = toScopeChoice(scopeId);
+
+  const showMonthOf = (cursor: Date): void => {
+    setTravel(travelTowards(monthCursor, cursor));
+    patch({
+      month: cursor.getTime() === thisMonth.getTime() ? undefined : toMonthCursorParam(cursor),
+      day: undefined,
+    });
+  };
 
   const selectScope = (nextScopeId: string): void => {
     patch({ scope: nextScopeId === ALL_SCOPE_ID ? undefined : nextScopeId });
   };
 
   const showList = (): void => {
-    patch({ view: undefined, day: undefined });
+    patch({ view: 'list' });
   };
 
   const showMonth = (): void => {
-    patch({ view: 'month' });
+    patch({ view: undefined });
   };
 
   const showPreviousMonth = (): void => {
-    patch({ month: toMonthCursorParam(shiftMonth(monthCursor, PREVIOUS_MONTH)), day: undefined });
+    showMonthOf(shiftMonth(monthCursor, PREVIOUS_MONTH));
   };
 
   const showNextMonth = (): void => {
-    patch({ month: toMonthCursorParam(shiftMonth(monthCursor, NEXT_MONTH)), day: undefined });
+    showMonthOf(shiftMonth(monthCursor, NEXT_MONTH));
+  };
+
+  const showToday = (): void => {
+    showMonthOf(thisMonth);
   };
 
   const selectDay = (isoDay: string): void => {
-    patch({ day: isoDay === selectedDay ? undefined : isoDay });
+    patch({ day: isoDay });
   };
 
-  const clearDay = (): void => {
-    patch({ day: undefined });
+  const addOnSelectedDay = (): void => {
+    void navigate({
+      to: '/calendar/new',
+      search: (previous) => ({ ...previous, day: selectedDay }),
+    });
   };
 
   return {
@@ -92,6 +123,8 @@ export const useCalendarBoard = (): CalendarBoard => {
     monthCursor,
     today,
     selectedDay,
+    travel,
+    showsToday,
     query: { scope: choice.scope, groupId: choice.groupId, from, to },
     scopeSourceQuery: { scope: 'all', groupId: null, from, to },
     selectScope,
@@ -99,7 +132,8 @@ export const useCalendarBoard = (): CalendarBoard => {
     showMonth,
     showPreviousMonth,
     showNextMonth,
+    showToday,
     selectDay,
-    clearDay,
+    addOnSelectedDay,
   };
 };

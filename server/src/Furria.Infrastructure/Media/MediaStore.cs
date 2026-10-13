@@ -19,6 +19,7 @@ public sealed class MediaStore
     private readonly GalleryService _gallery;
     private readonly NewsPictures _newsPictures;
     private readonly WebsitePictureService _websitePictures;
+    private readonly MediaJobQueue _jobQueue;
     private readonly TimeProvider _timeProvider;
 
     public MediaStore(
@@ -27,6 +28,7 @@ public sealed class MediaStore
         GalleryService gallery,
         NewsPictures newsPictures,
         WebsitePictureService websitePictures,
+        MediaJobQueue jobQueue,
         TimeProvider timeProvider
     )
     {
@@ -35,6 +37,7 @@ public sealed class MediaStore
         _gallery = gallery;
         _newsPictures = newsPictures;
         _websitePictures = websitePictures;
+        _jobQueue = jobQueue;
         _timeProvider = timeProvider;
     }
 
@@ -67,6 +70,8 @@ public sealed class MediaStore
             .MediaItems.AsNoTracking()
             .Where(row => row.Id == mediaItemId)
             .Select(row => new ServedItemRow(
+                row.Id,
+                row.State,
                 row.StorageKey,
                 MediaOwner.Of(
                     row.OwnerKind,
@@ -93,7 +98,10 @@ public sealed class MediaStore
             _root.FullPathOf(MediaPaths.RenditionOf(item.StorageKey, rendition))
         );
         if (!file.Exists)
+        {
+            await RepairLostRenditionsAsync(item, ct);
             return null;
+        }
 
         return new MediaFileDetails
         {
@@ -103,6 +111,21 @@ public sealed class MediaStore
             DownloadName = DownloadNameOf(item.OriginalFileName, rendition),
             LastModified = file.LastWriteTimeUtc,
         };
+    }
+
+    private async Task RepairLostRenditionsAsync(ServedItemRow item, CancellationToken ct)
+    {
+        if (item.State != MediaItemState.Ready)
+            return;
+
+        await _jobQueue.RegenerateAsync(
+            new RegenerateMediaCommand
+            {
+                Scope = MediaRegenerationScope.Items,
+                MediaItemIds = [item.Id],
+            },
+            ct
+        );
     }
 
     private async Task<int?> LandingAlbumIdAsync(int? albumId, CancellationToken ct) =>
@@ -237,6 +260,8 @@ public sealed class MediaStore
             : $"{Path.GetFileNameWithoutExtension(originalFileName)}{MediaRenditions.ExtensionOf(rendition)}";
 
     private sealed record ServedItemRow(
+        int Id,
+        MediaItemState State,
         Guid StorageKey,
         MediaOwner Owner,
         MediaKind Kind,

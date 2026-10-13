@@ -21,7 +21,6 @@ import {
 const toBody = (payload: EventPayload): JsonBody => ({
   title: payload.title,
   startsAt: payload.startsAt,
-  endsAt: payload.endsAt,
   doorsOpenAt: payload.doorsOpenAt,
   venueId: payload.venueId,
   teaser: payload.teaser,

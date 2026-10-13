@@ -1,4 +1,4 @@
-import { eventToneOf, KkCard, KkEventPicture, toImageSource } from '@furria/ui';
+import { eventToneOf, KkCard, KkPhoto, toImageSource } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { deriveEventDisplay } from '@/features/landing/events-teaser-content';
@@ -19,7 +19,7 @@ export const EventCard: FC<EventCardProps> = ({ event }) => {
   return (
     <KkCard>
       <KkCard.Media>
-        <KkEventPicture image={image} tone={tone} />
+        <KkPhoto alt="" image={image} tone={tone} fill />
       </KkCard.Media>
       <KkCard.Body>
         <Stack direction="row" sx={{ width: '100%', gap: 2, alignItems: 'flex-start' }}>

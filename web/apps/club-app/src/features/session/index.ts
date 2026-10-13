@@ -46,6 +46,10 @@ export {
   START_PATH,
   START_SECTION,
   START_TITLE,
+  SYSTEM_KEYS,
+  SYSTEM_ORIGIN,
+  SYSTEM_PATH,
+  SYSTEM_TITLE,
   toPermittedSections,
 } from './app-sections';
 export { AccessDenied } from './components/AccessDenied';

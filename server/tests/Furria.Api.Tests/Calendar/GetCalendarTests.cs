@@ -22,6 +22,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
     private const string KinderRehearsal = "Probe der Kindergarde";
     private const string FormerGuardReunion = "Treffen der Altgarde";
     private const string Gala = "1. Prunksitzung";
+    private const string ClubTrip = "Vereinsfahrt";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly ArchivedLastSummer = new(2026, 6, 30);
@@ -303,6 +304,47 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                 );
 
                 Assert.Equal(new[] { DanceGuardPerformance, ClubMeeting }, TitlesOf(result));
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CarryAnEntryThatStartedBeforeTheWindow_When_ItStillRunsIntoIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(
+                    builder =>
+                        builder
+                            .Identity(WholeClub)
+                            .Club(club =>
+                                club.AddCalendarEntry(
+                                        "trip",
+                                        ClubTrip,
+                                        AtTheDanceGuardTraining,
+                                        endsAt: AtTheMeeting
+                                    )
+                                    .AddCalendarEntry(
+                                        "training",
+                                        DanceGuardTraining,
+                                        AtTheDanceGuardTraining
+                                    )
+                            ),
+                    ct
+                );
+
+                var result = await ReadAsync(
+                    ctx,
+                    "alice",
+                    new GetCalendarRequest { From = TheAuftrittDay, To = TheMeetingDay },
+                    ct
+                );
+
+                Assert.Equal(new[] { ClubTrip }, TitlesOf(result));
             }
         );
     }

@@ -1,5 +1,14 @@
-import { KkConfirmDialog, KkNote, KkSessionField, KkTextField, KkWriteScreen } from '@furria/ui';
-import Stack from '@mui/material/Stack';
+import type { KkNumberStepLabels } from '@furria/ui';
+import {
+  KkConfirmDialog,
+  KkFormPair,
+  KkFormSection,
+  KkNote,
+  KkNumberField,
+  KkSessionField,
+  KkTextField,
+  KkWriteScreen,
+} from '@furria/ui';
 import type { FC } from 'react';
 import { WriteScreen } from '@/features/write';
 import { useSessionEditor } from '../hooks/use-session-editor';
@@ -26,15 +35,20 @@ const DELETE_LABEL = 'Sessionseintrag löschen';
 const CANCEL_LABEL = 'Abbrechen';
 const CLOSE_LABEL = 'Schließen';
 
+const SESSION_SECTION_TITLE = 'Session';
+const MOTTO_SECTION_TITLE = 'Motto & Logo';
 const SEASON_LABEL = 'Session';
 const NUMBER_LABEL = 'Sessionsnummer';
 const NUMBER_HINT = 'Leer lassen, wenn unbekannt.';
+const NUMBER_MIN = 1;
+const NUMBER_STEP_LABELS: KkNumberStepLabels = {
+  less: 'Eine Nummer niedriger',
+  more: 'Eine Nummer höher',
+};
 const MOTTO_LABEL = 'Motto';
-const MOTTO_HINT = 'Im originalen Wortlaut.';
+const MOTTO_HINT = 'Im originalen Wortlaut, erscheint auf der Website.';
 const CREATE_NOTE =
   'Nur das Jahr ist Pflicht. Sessionsnummer, Motto und Sessionslogo nur eintragen, wenn sie belegt sind.';
-
-const FIELD_GAP = 2.25;
 
 interface SessionEditorProps {
   record: SessionRecordSummary | null;
@@ -44,7 +58,6 @@ interface SessionEditorProps {
 export const SessionEditor: FC<SessionEditorProps> = ({ record, draftYear = null }) => {
   const control = useSessionEditor(record, draftYear);
   const removal = useSessionRemoval(record);
-  const numberField = control.form.register('number');
   const mottoField = control.form.register('motto');
   const errors = control.form.formState.errors;
 
@@ -100,32 +113,43 @@ export const SessionEditor: FC<SessionEditorProps> = ({ record, draftYear = null
       }}
     >
       {intro}
-      <Stack sx={{ gap: FIELD_GAP, minWidth: 0 }}>
-        <KkSessionField
-          name="startYear"
-          label={SEASON_LABEL}
-          value={control.startYear}
-          onChange={control.setStartYear}
-          currentSessionYear={control.currentSessionYear}
-          required
-          error={startYearErrorText !== undefined}
-          helperText={startYearErrorText}
+      <KkFormSection title={SESSION_SECTION_TITLE}>
+        <KkFormPair
+          balance="leading"
+          start={
+            <KkSessionField
+              name="startYear"
+              label={SEASON_LABEL}
+              value={control.startYear}
+              onChange={control.setStartYear}
+              currentSessionYear={control.currentSessionYear}
+              required
+              error={startYearErrorText !== undefined}
+              helperText={startYearErrorText}
+            />
+          }
+          end={
+            <KkNumberField
+              name="number"
+              label={NUMBER_LABEL}
+              value={control.number}
+              onChange={control.setNumber}
+              stepLabels={NUMBER_STEP_LABELS}
+              min={NUMBER_MIN}
+              hint={NUMBER_HINT}
+              error={numberErrorText !== undefined}
+              helperText={numberErrorText}
+            />
+          }
         />
-        <KkTextField
-          name={numberField.name}
-          label={NUMBER_LABEL}
-          inputMode="numeric"
-          error={numberErrorText !== undefined}
-          helperText={numberErrorText ?? NUMBER_HINT}
-          onChange={numberField.onChange}
-          onBlur={numberField.onBlur}
-          inputRef={numberField.ref}
-        />
+      </KkFormSection>
+      <KkFormSection title={MOTTO_SECTION_TITLE}>
         <KkTextField
           name={mottoField.name}
           label={MOTTO_LABEL}
+          hint={MOTTO_HINT}
           error={mottoErrorText !== undefined}
-          helperText={mottoErrorText ?? MOTTO_HINT}
+          helperText={mottoErrorText}
           onChange={mottoField.onChange}
           onBlur={mottoField.onBlur}
           inputRef={mottoField.ref}
@@ -137,7 +161,7 @@ export const SessionEditor: FC<SessionEditorProps> = ({ record, draftYear = null
           onPick={control.takeLogoFile}
           onClear={control.clearLogo}
         />
-      </Stack>
+      </KkFormSection>
       {danger}
       {confirm}
     </WriteScreen>

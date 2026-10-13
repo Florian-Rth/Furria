@@ -4,6 +4,7 @@ import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { useRef } from 'react';
 import { KkFlapCount } from './KkFlapCount';
+import { KkImage } from './KkImage';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 import { useLetterRailScrub } from './use-letter-rail-scrub';
@@ -68,6 +69,22 @@ export const KkTimeRail: FC<KkTimeRailProps> = ({ label, scenes, current, onReac
     </Box>
   ));
 
+  const previewSource = shown?.source;
+  const preview =
+    previewSource === undefined ? null : (
+      <KkImage
+        src={previewSource}
+        alt=""
+        sx={{
+          display: 'block',
+          width: '100%',
+          aspectRatio: '1 / 1',
+          objectFit: 'cover',
+          borderRadius: `${kkTokens.radius.base - 4}px`,
+        }}
+      />
+    );
+
   return (
     <Box
       data-kk-time-rail
@@ -117,18 +134,7 @@ export const KkTimeRail: FC<KkTimeRailProps> = ({ label, scenes, current, onReac
             rowGap: 0.5,
           }}
         >
-          <Box
-            component="img"
-            src={shown.source}
-            alt=""
-            sx={{
-              display: 'block',
-              width: '100%',
-              aspectRatio: '1 / 1',
-              objectFit: 'cover',
-              borderRadius: `${kkTokens.radius.base - 4}px`,
-            }}
-          />
+          {preview}
           <Stack direction="row" sx={{ alignItems: 'baseline', columnGap: 0.75, px: 0.5 }}>
             <KkFlapCount value={shown.time} variant="h3" tone="gold" />
             <Typography

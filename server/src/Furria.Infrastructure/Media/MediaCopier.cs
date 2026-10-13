@@ -1,4 +1,5 @@
 using System.Diagnostics.Contracts;
+using Furria.Application.Results;
 using Furria.Core.Media;
 using Furria.Infrastructure.Persistence;
 
@@ -6,6 +7,9 @@ namespace Furria.Infrastructure.Media;
 
 public sealed class MediaCopier
 {
+    private const string MissingOriginalMessage =
+        "Die Datei dieses Fotos fehlt. Wähle ein anderes.";
+
     private readonly AppDbContext _dbContext;
     private readonly MediaRoot _root;
     private readonly TimeProvider _timeProvider;
@@ -17,7 +21,7 @@ public sealed class MediaCopier
         _timeProvider = timeProvider;
     }
 
-    public async Task<int> CopyPhotoAsync(
+    public async Task<Result<int>> CopyPhotoAsync(
         MediaItem source,
         MediaOwner owner,
         PictureCrop crop,
@@ -25,6 +29,9 @@ public sealed class MediaCopier
         CancellationToken ct
     )
     {
+        if (!_root.HasOriginalOf(source.StorageKey))
+            return Result<int>.NotFound(MissingOriginalMessage);
+
         var now = _timeProvider.GetUtcNow();
         var copy = CopyOf(source, owner, crop, now);
 
@@ -42,7 +49,7 @@ public sealed class MediaCopier
             throw;
         }
 
-        return copy.Id;
+        return Result<int>.Success(copy.Id);
     }
 
     private async Task RecordAsync(

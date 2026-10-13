@@ -1,22 +1,19 @@
 import type { KkSelectOption } from '@furria/ui';
 import type { RunningVenue } from '@/features/calendar';
-import { toDayTime, toInstant, toTimeChoices } from '@/features/calendar/calendar-authoring';
+import { toDayTime, toInstant } from '@/features/calendar/calendar-authoring';
 import { toIsoDay } from '@/lib/day';
 import { toPriceCents, toPriceText } from './event-price';
 import type { EventDetails, EventForm } from './schemas';
 
 const NO_VALUE = '';
 const DEFAULT_START_TIME = '19:00';
-const DEFAULT_END_TIME = '23:30';
 const DEFAULT_PRESALE_TIME = '10:00';
 const SECONDS_SUFFIX = ':00';
-const NO_DOORS_LABEL = 'Nicht angegeben';
 const ARCHIVED_SUFFIX = ' — archiviert';
 
 export interface EventPayload {
   title: string;
   startsAt: string;
-  endsAt: string | null;
   doorsOpenAt: string | null;
   venueId: number;
   teaser: string;
@@ -35,7 +32,6 @@ const toWritten = (value: string): string | null => {
 export const toEventPayload = (form: EventForm): EventPayload => ({
   title: form.title.trim(),
   startsAt: toInstant(form.startDay, form.startTime),
-  endsAt: form.endDay === NO_VALUE ? null : toInstant(form.endDay, form.endTime),
   doorsOpenAt: form.doorsOpenAt === NO_VALUE ? null : `${form.doorsOpenAt}${SECONDS_SUFFIX}`,
   venueId: Number(form.venueId),
   teaser: form.teaser.trim(),
@@ -52,8 +48,6 @@ export const toEventFormValues = (event: EventDetails | null, today: Date): Even
       title: '',
       startDay: toIsoDay(today),
       startTime: DEFAULT_START_TIME,
-      endDay: NO_VALUE,
-      endTime: DEFAULT_END_TIME,
       doorsOpenAt: NO_VALUE,
       venueId: NO_VALUE,
       teaser: '',
@@ -66,15 +60,12 @@ export const toEventFormValues = (event: EventDetails | null, today: Date): Even
   }
 
   const start = toDayTime(event.startsAt);
-  const end = event.endsAt === null ? null : toDayTime(event.endsAt);
   const presale = event.presaleStartsAt === null ? null : toDayTime(event.presaleStartsAt);
 
   return {
     title: event.title,
     startDay: start.day,
     startTime: start.time,
-    endDay: end?.day ?? NO_VALUE,
-    endTime: end?.time ?? DEFAULT_END_TIME,
     doorsOpenAt: event.doorsOpenAt ?? NO_VALUE,
     venueId: event.venueId === null ? NO_VALUE : String(event.venueId),
     teaser: event.teaser,
@@ -102,8 +93,3 @@ export const toEventVenueOptions = (
     { value: String(heldVenueId), label: `${event?.venueName ?? ''}${ARCHIVED_SUFFIX}` },
   ];
 };
-
-export const toDoorsOptions = (): KkSelectOption[] => [
-  { value: NO_VALUE, label: NO_DOORS_LABEL },
-  ...toTimeChoices().map((time) => ({ value: time, label: time })),
-];

@@ -64,7 +64,7 @@ public sealed class GetPublicClubTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CarryHowToReachTheClub_When_TheClubHasRecordedIt()
+    public async Task Should_CarryTheAddressAndHowToReachTheClub_When_TheClubHasRecordedIt()
     {
         var ct = TestContext.Current.CancellationToken;
         await _fixture.BuildAsync(
@@ -72,8 +72,12 @@ public sealed class GetPublicClubTests : IClassFixture<ApiTestFixture>
                 builder.Club(club =>
                     club.SetClubRecord(
                         RecordedName,
+                        street: "Hauptstraße 1",
+                        zip: "99706",
+                        city: "Großfurra",
                         email: "vorstand@furria.de",
                         phone: "036334 12345",
+                        websiteUrl: "https://furria.de",
                         instagramUrl: "https://instagram.com/furria",
                         facebookUrl: "https://facebook.com/furria"
                     )
@@ -83,8 +87,12 @@ public sealed class GetPublicClubTests : IClassFixture<ApiTestFixture>
 
         var result = await ReadTheClubAsync();
 
+        Assert.Equal("Hauptstraße 1", result.Street);
+        Assert.Equal("99706", result.Zip);
+        Assert.Equal("Großfurra", result.City);
         Assert.Equal("vorstand@furria.de", result.Email);
         Assert.Equal("036334 12345", result.Phone);
+        Assert.Equal("https://furria.de", result.WebsiteUrl);
         Assert.Equal("https://instagram.com/furria", result.InstagramUrl);
         Assert.Equal("https://facebook.com/furria", result.FacebookUrl);
     }
@@ -99,8 +107,12 @@ public sealed class GetPublicClubTests : IClassFixture<ApiTestFixture>
 
         Assert.Null(result.Name);
         Assert.Null(result.FoundedYear);
+        Assert.Null(result.Street);
+        Assert.Null(result.Zip);
+        Assert.Null(result.City);
         Assert.Null(result.Email);
         Assert.Null(result.Phone);
+        Assert.Null(result.WebsiteUrl);
         Assert.Null(result.InstagramUrl);
         Assert.Null(result.FacebookUrl);
     }
@@ -258,8 +270,12 @@ public sealed class GetPublicClubTests : IClassFixture<ApiTestFixture>
             [
                 "name",
                 "foundedYear",
+                "street",
+                "zip",
+                "city",
                 "email",
                 "phone",
+                "websiteUrl",
                 "instagramUrl",
                 "facebookUrl",
                 "memberCount",

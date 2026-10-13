@@ -1,4 +1,4 @@
-import { KkChip, KkCoverPicture, KkGroupStage, toImageSource } from '@furria/ui';
+import { KkChip, KkGroupStage, KkPhoto, toImageSource } from '@furria/ui';
 import type { FC } from 'react';
 import { toGroupKindLabel, toGroupTone } from '@/features/groups';
 import { currentSessionYear } from '@/lib/club';
@@ -37,7 +37,7 @@ export const HubStage: FC<HubStageProps> = ({ groupId }) => {
   const standing = toStandingLine(group);
   const picture = toImageSource(group.picture, 'groupPicture', STAGE_SIZES);
 
-  const media = picture === null ? undefined : <KkCoverPicture image={picture} alt={group.name} />;
+  const media = picture === null ? undefined : <KkPhoto alt={group.name} image={picture} fill />;
 
   return (
     <KkGroupStage

@@ -78,7 +78,14 @@ public sealed class CalendarService
 
         var rows = await _dbContext
             .CalendarEntries.AsNoTracking()
-            .Where(entry => entry.StartsAt >= windowStart && entry.StartsAt < windowEnd)
+            .Where(entry =>
+                entry.StartsAt < windowEnd
+                && (
+                    entry.EndsAt == null
+                        ? entry.StartsAt >= windowStart
+                        : entry.EndsAt > windowStart
+                )
+            )
             .Where(entry => !clubOwnedOnly || entry.OwnerGroupId == null)
             .Where(entry => ownerGroupId == null || entry.OwnerGroupId == ownerGroupId)
             .Where(VisibleTo(personId, today))

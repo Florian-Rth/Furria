@@ -18,6 +18,7 @@ import { KkFlapCount } from '../KkFlapCount';
 import { KkGreaseMark } from '../KkGreaseMark';
 import { KkIcon } from '../KkIcon';
 import { KkIconButton } from '../KkIconButton';
+import { KkImage } from '../KkImage';
 import { KK_DARK_SCHEME_ATTRIBUTE } from '../theme';
 import { kkTokens } from '../tokens';
 import type { KkLightTableIntents } from './use-light-table-stage';
@@ -206,8 +207,7 @@ export const KkLightTable: FC<KkLightTableProps> = ({
         ...(slide.offset === 0 ? stage.arrival : SETTLED_SLIDE),
       }}
     >
-      <Box
-        component="img"
+      <KkImage
         src={slide.frame.image.src}
         srcSet={slide.frame.image.srcSet}
         sizes={slide.frame.image.sizes}
@@ -237,8 +237,7 @@ export const KkLightTable: FC<KkLightTableProps> = ({
         ...focusRing(theme),
       })}
     >
-      <Box
-        component="img"
+      <KkImage
         src={item.thumb}
         alt=""
         loading="lazy"
@@ -396,8 +395,7 @@ export const KkLightTable: FC<KkLightTableProps> = ({
             transition={departing.transition}
             style={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
           >
-            <Box
-              component="img"
+            <KkImage
               src={departure.image.src}
               srcSet={departure.image.srcSet}
               sizes={departure.image.sizes}

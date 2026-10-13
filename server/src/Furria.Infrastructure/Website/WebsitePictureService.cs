@@ -136,13 +136,11 @@ public sealed class WebsitePictureService
         if (photo is null)
             return Result<int>.NotFound(UnknownGalleryPhotoMessage);
 
-        return Result<int>.Success(
-            await PlaceCopyAsync(
-                photo,
-                new Placement(command.Slot, command.Aspect, null, command.PickedByPersonId),
-                command.Crop,
-                ct
-            )
+        return await PlaceCopyAsync(
+            photo,
+            new Placement(command.Slot, command.Aspect, null, command.PickedByPersonId),
+            command.Crop,
+            ct
         );
     }
 
@@ -159,13 +157,11 @@ public sealed class WebsitePictureService
         if (source?.MediaItem is not { State: MediaItemState.Ready } photo)
             return Result<int>.NotFound(EmptyPositionMessage);
 
-        return Result<int>.Success(
-            await PlaceCopyAsync(
-                photo,
-                new Placement(command.Slot, command.Aspect, source.Alt, command.CopiedByPersonId),
-                command.Crop,
-                ct
-            )
+        return await PlaceCopyAsync(
+            photo,
+            new Placement(command.Slot, command.Aspect, source.Alt, command.CopiedByPersonId),
+            command.Crop,
+            ct
         );
     }
 
@@ -220,7 +216,7 @@ public sealed class WebsitePictureService
         await _dbContext.SaveChangesAsync(ct);
     }
 
-    private Task<int> PlaceCopyAsync(
+    private Task<Result<int>> PlaceCopyAsync(
         MediaItem source,
         Placement placement,
         PictureCrop crop,

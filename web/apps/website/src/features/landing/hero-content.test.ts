@@ -6,8 +6,12 @@ import { buildHeroStats } from './hero-content';
 const clubOf = (foundedYear: number | null): PublicClub => ({
   name: null,
   foundedYear,
+  street: null,
+  zip: null,
+  city: null,
   email: null,
   phone: null,
+  websiteUrl: null,
   instagramUrl: null,
   facebookUrl: null,
   memberCount: 183,

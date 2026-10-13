@@ -31,7 +31,7 @@ export const SLOT_REMOVE_EXPLANATION = 'Bereits erzeugte Termine bleiben im Kale
 
 export const GENERATOR_SHEET_TITLE = 'Trainings erzeugen';
 export const GENERATOR_TITLE_LABEL = 'Titel der Termine';
-export const GENERATOR_TITLE_HINT = 'Gilt für alle erzeugten Termine.';
+export const GENERATOR_TITLE_HINT = 'Erscheint als Titel aller erzeugten Termine im Kalender.';
 export const GENERATOR_TITLE_DEFAULT = 'Training';
 export const GENERATOR_END_LABEL = 'Bis einschließlich';
 export const GENERATOR_END_HINT = 'Standardmäßig das Ende der laufenden Session.';

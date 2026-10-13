@@ -128,6 +128,28 @@ public sealed class MediaJobQueue
         await transaction.CommitAsync(ct);
     }
 
+    public async Task GiveUpAsync(MediaJobLease lease, string reason, CancellationToken ct)
+    {
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        var job = await HeldJobs(lease).SingleOrDefaultAsync(ct);
+        if (job is null)
+            return;
+
+        _logger.LogWarning(
+            "Media item {MediaItemId} cannot be rendered, giving up: {FailureReason}",
+            job.MediaItemId,
+            reason
+        );
+        _dbContext.MediaJobs.Remove(job);
+        await MarkFailedAsync(
+            _dbContext.MediaItems.Where(item => item.Id == job.MediaItemId),
+            reason,
+            ct
+        );
+        await _dbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+    }
+
     public async Task ReleaseAsync(MediaJobLease lease, CancellationToken ct)
     {
         var job = await HeldJobs(lease).SingleOrDefaultAsync(ct);

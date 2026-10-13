@@ -1,17 +1,22 @@
-import { KkDateField, KkTextArea, KkTextField, KkWriteScreen } from '@furria/ui';
+import { KkDateField, KkFormSection, KkTextArea, KkTextField, KkWriteScreen } from '@furria/ui';
 import type { FC } from 'react';
 import { WriteScreen } from '@/features/write';
 import {
   ANNOUNCEMENT_ADD_LABEL,
   ANNOUNCEMENT_BODY_FIELD_LABEL,
+  ANNOUNCEMENT_BODY_HINT,
   ANNOUNCEMENT_BODY_PLACEHOLDER,
+  ANNOUNCEMENT_CONTENT_SECTION_TITLE,
   ANNOUNCEMENT_CREATE_TITLE,
   ANNOUNCEMENT_EDIT_TITLE,
+  ANNOUNCEMENT_RUNTIME_SECTION_TITLE,
   ANNOUNCEMENT_SAVE_LABEL,
   ANNOUNCEMENT_TITLE_FIELD_LABEL,
   ANNOUNCEMENT_VALID_UNTIL_EMPTY_LABEL,
   ANNOUNCEMENT_VALID_UNTIL_FIELD_LABEL,
+  ANNOUNCEMENT_VALID_UNTIL_HINT,
   ANNOUNCEMENTS_ORIGIN,
+  toValidUntilQuickChoices,
   WITHDRAW_ANNOUNCEMENT_DANGER_LABEL,
 } from '../announcements-labels';
 import { useAnnouncementEditor } from '../hooks/use-announcement-editor';
@@ -37,6 +42,7 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
   const title = announcement === null ? ANNOUNCEMENT_CREATE_TITLE : ANNOUNCEMENT_EDIT_TITLE;
   const actionLabel = announcement === null ? ANNOUNCEMENT_ADD_LABEL : ANNOUNCEMENT_SAVE_LABEL;
   const withdrawal = useAnnouncementWithdrawal(announcement);
+  const validUntilQuickChoices = toValidUntilQuickChoices(new Date());
 
   const dangerLine =
     announcement === null ? null : (
@@ -64,41 +70,48 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
         },
       }}
     >
-      <KkTextField
-        name={titleField.name}
-        label={ANNOUNCEMENT_TITLE_FIELD_LABEL}
-        required
-        inputRef={titleField.ref}
-        onChange={titleField.onChange}
-        onBlur={titleField.onBlur}
-        error={errors.title !== undefined}
-        helperText={errors.title?.message}
-      />
-      <KkTextArea
-        name="body"
-        label={ANNOUNCEMENT_BODY_FIELD_LABEL}
-        value={control.body}
-        onChange={control.setBody}
-        onBlur={control.touchBody}
-        required
-        rows={BODY_ROWS}
-        maxLength={ANNOUNCEMENT_BODY_MAX_LENGTH}
-        showCount
-        countLabel={toCountLabel}
-        placeholder={ANNOUNCEMENT_BODY_PLACEHOLDER}
-        error={errors.body !== undefined}
-        helperText={errors.body?.message}
-      />
-      <KkDateField
-        name="validUntil"
-        label={ANNOUNCEMENT_VALID_UNTIL_FIELD_LABEL}
-        value={control.validUntil}
-        onChange={control.setValidUntil}
-        allowEmpty
-        emptyLabel={ANNOUNCEMENT_VALID_UNTIL_EMPTY_LABEL}
-        error={errors.validUntil !== undefined}
-        helperText={errors.validUntil?.message}
-      />
+      <KkFormSection title={ANNOUNCEMENT_CONTENT_SECTION_TITLE}>
+        <KkTextField
+          name={titleField.name}
+          label={ANNOUNCEMENT_TITLE_FIELD_LABEL}
+          required
+          inputRef={titleField.ref}
+          onChange={titleField.onChange}
+          onBlur={titleField.onBlur}
+          error={errors.title !== undefined}
+          helperText={errors.title?.message}
+        />
+        <KkTextArea
+          name="body"
+          label={ANNOUNCEMENT_BODY_FIELD_LABEL}
+          value={control.body}
+          onChange={control.setBody}
+          onBlur={control.touchBody}
+          required
+          rows={BODY_ROWS}
+          maxLength={ANNOUNCEMENT_BODY_MAX_LENGTH}
+          showCount
+          countLabel={toCountLabel}
+          placeholder={ANNOUNCEMENT_BODY_PLACEHOLDER}
+          hint={ANNOUNCEMENT_BODY_HINT}
+          error={errors.body !== undefined}
+          helperText={errors.body?.message}
+        />
+      </KkFormSection>
+      <KkFormSection title={ANNOUNCEMENT_RUNTIME_SECTION_TITLE}>
+        <KkDateField
+          name="validUntil"
+          label={ANNOUNCEMENT_VALID_UNTIL_FIELD_LABEL}
+          value={control.validUntil}
+          onChange={control.setValidUntil}
+          allowEmpty
+          emptyLabel={ANNOUNCEMENT_VALID_UNTIL_EMPTY_LABEL}
+          quickChoices={validUntilQuickChoices}
+          hint={ANNOUNCEMENT_VALID_UNTIL_HINT}
+          error={errors.validUntil !== undefined}
+          helperText={errors.validUntil?.message}
+        />
+      </KkFormSection>
       {dangerLine}
     </WriteScreen>
   );

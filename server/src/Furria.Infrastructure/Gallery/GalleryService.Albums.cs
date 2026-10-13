@@ -160,7 +160,7 @@ public sealed partial class GalleryService
         if (title is null)
             return null;
 
-        var originals = await LiveItemsOf(albumId)
+        var stored = await LiveItemsOf(albumId)
             .AsNoTracking()
             .InCaptureOrder()
             .Select(item => new ZipSourceRow(
@@ -169,6 +169,7 @@ public sealed partial class GalleryService
                 item.CapturedAt ?? item.UploadedAt
             ))
             .ToListAsync(ct);
+        var originals = stored.Where(row => _mediaRoot.HasOriginalOf(row.StorageKey)).ToList();
 
         return new AlbumZipDetails
         {

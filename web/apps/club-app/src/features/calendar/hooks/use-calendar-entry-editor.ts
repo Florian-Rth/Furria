@@ -1,6 +1,8 @@
+import { useSearch } from '@tanstack/react-router';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useWriteForm } from '@/features/write';
+import { toIsoDay } from '@/lib/day';
 import { useCreateCalendarEntryMutation, useUpdateCalendarEntryMutation } from '../api';
 import type { CalendarDayTime, CalendarOwnerOption } from '../calendar-authoring';
 import {
@@ -51,12 +53,13 @@ export const useCalendarEntryEditor = ({
   ownerOptions,
 }: CalendarEntryEditorInput): CalendarEntryEditorControl => {
   const [today] = useState(() => new Date());
+  const { day } = useSearch({ strict: false });
   const createMutation = useCreateCalendarEntryMutation();
   const updateMutation = useUpdateCalendarEntryMutation();
 
   const write = useWriteForm({
     schema: CalendarEntryFormSchema,
-    defaults: toEntryFormValues(entry, ownerOptions, today),
+    defaults: toEntryFormValues(entry, ownerOptions, day ?? toIsoDay(today)),
     mutate: (submitted) => {
       const payload = toEntryPayload(submitted);
 

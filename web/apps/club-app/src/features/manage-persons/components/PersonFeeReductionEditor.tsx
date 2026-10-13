@@ -1,4 +1,11 @@
-import { KkFactRow, KkSelectField, KkSessionField, KkWriteScreen } from '@furria/ui';
+import {
+  KkFactRow,
+  KkFormPair,
+  KkFormSection,
+  KkSelectField,
+  KkSessionField,
+  KkWriteScreen,
+} from '@furria/ui';
 import type { FC } from 'react';
 import { WriteScreen } from '@/features/write';
 import { usePersonFeeReductionEditor } from '../hooks/use-person-fee-reduction-editor';
@@ -10,6 +17,7 @@ import {
 } from '../manage-persons-labels';
 import type { PersonDetails, PersonFeeReduction } from '../schemas';
 
+const SECTION_TITLE = 'Ermäßigung';
 const BASIS_LABEL = 'Grundlage';
 const BASIS_HINT = 'Wird manuell angegeben, nicht aus dem Geburtsdatum berechnet.';
 const FIRST_LABEL = 'Von Session';
@@ -57,36 +65,45 @@ export const PersonFeeReductionEditor: FC<PersonFeeReductionEditorProps> = ({
       }}
     >
       {chain}
-      <KkSelectField
-        name="basis"
-        label={BASIS_LABEL}
-        value={control.basis}
-        options={FEE_REDUCTION_BASIS_OPTIONS}
-        onChange={control.selectBasis}
-        required
-        hint={BASIS_HINT}
-      />
-      <KkSessionField
-        name="firstSessionYear"
-        label={FIRST_LABEL}
-        value={control.firstSessionYear}
-        onChange={control.setFirstSessionYear}
-        currentSessionYear={control.currentSessionYear}
-        required
-        error={control.firstSessionYearError !== undefined}
-        helperText={control.firstSessionYearError}
-      />
-      <KkSessionField
-        name="lastSessionYear"
-        label={LAST_LABEL}
-        value={control.lastSessionYear}
-        onChange={control.setLastSessionYear}
-        currentSessionYear={control.currentSessionYear}
-        required
-        error={control.lastSessionYearError !== undefined}
-        helperText={control.lastSessionYearError}
-        hint={LAST_HINT}
-      />
+      <KkFormSection title={SECTION_TITLE}>
+        <KkSelectField
+          name="basis"
+          label={BASIS_LABEL}
+          value={control.basis}
+          options={FEE_REDUCTION_BASIS_OPTIONS}
+          onChange={control.selectBasis}
+          presentation="choices"
+          required
+          hint={BASIS_HINT}
+        />
+        <KkFormPair
+          start={
+            <KkSessionField
+              name="firstSessionYear"
+              label={FIRST_LABEL}
+              value={control.firstSessionYear}
+              onChange={control.setFirstSessionYear}
+              currentSessionYear={control.currentSessionYear}
+              required
+              error={control.firstSessionYearError !== undefined}
+              helperText={control.firstSessionYearError}
+            />
+          }
+          end={
+            <KkSessionField
+              name="lastSessionYear"
+              label={LAST_LABEL}
+              value={control.lastSessionYear}
+              onChange={control.setLastSessionYear}
+              currentSessionYear={control.currentSessionYear}
+              required
+              error={control.lastSessionYearError !== undefined}
+              helperText={control.lastSessionYearError}
+              hint={LAST_HINT}
+            />
+          }
+        />
+      </KkFormSection>
     </WriteScreen>
   );
 };

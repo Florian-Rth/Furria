@@ -38,14 +38,12 @@ public sealed class EventPictures
         if (photo is null)
             return Result<int>.NotFound(UnknownGalleryPhotoMessage);
 
-        return Result<int>.Success(
-            await _copier.CopyPhotoAsync(
-                photo,
-                MediaOwner.Event(command.EventId),
-                command.Crop,
-                copyId => PlaceAsync(command.EventId, copyId, ct),
-                ct
-            )
+        return await _copier.CopyPhotoAsync(
+            photo,
+            MediaOwner.Event(command.EventId),
+            command.Crop,
+            copyId => PlaceAsync(command.EventId, copyId, ct),
+            ct
         );
     }
 

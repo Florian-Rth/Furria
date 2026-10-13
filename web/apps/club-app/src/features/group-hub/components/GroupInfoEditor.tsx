@@ -1,4 +1,5 @@
-import { KkNote, KkSelectField, KkTextArea, KkTextField } from '@furria/ui';
+import type { KkNumberStepLabels } from '@furria/ui';
+import { KkFormPair, KkFormSection, KkNumberField, KkSelectField, KkTextArea } from '@furria/ui';
 import type { FC } from 'react';
 import {
   GROUP_KIND_FIELD_HINT,
@@ -7,25 +8,34 @@ import {
   toHeldGroupKind,
   useGroupKindsQuery,
 } from '@/features/group-kinds';
+import { toGroupTone } from '@/features/groups';
 import { WriteScreen } from '@/features/write';
 import { toHubEditorOrigin } from '../group-hub-labels';
 import { toEditorChoicesErrorMessage } from '../group-hub-messages';
 import { useGroupInfoEditor } from '../hooks/use-group-info-editor';
 import { useTakenTones } from '../hooks/use-taken-tones';
 import type { GroupHub } from '../schemas';
-import { DESCRIPTION_MAX_LENGTH } from '../schemas';
+import { DESCRIPTION_MAX_LENGTH, EARLIEST_FOUNDED_YEAR, LATEST_FOUNDED_YEAR } from '../schemas';
 import { GroupEditorError } from './GroupEditorError';
 import { GroupEditorSkeleton } from './GroupEditorSkeleton';
+import { GroupPictureSection } from './GroupPictureSection';
 import { HubTonePicker } from './HubTonePicker';
 
 const TITLE = 'Angaben zur Gruppe bearbeiten';
 const SAVE_LABEL = 'Speichern';
-const DESCRIPTION_LABEL = 'Über die Gruppe';
+const ABOUT_SECTION = 'Über die Gruppe';
+const FACTS_SECTION = 'Eckdaten';
+const DESCRIPTION_LABEL = 'Beschreibung';
 const DESCRIPTION_PLACEHOLDER = 'Kurzbeschreibung der Gruppe';
-const DESCRIPTION_HINT = 'Erscheint so im Gruppenverzeichnis.';
+const DESCRIPTION_HINT =
+  'Erscheint auf der Gruppenseite und in der Vorschau im Gruppenverzeichnis.';
 const DESCRIPTION_ROWS = 5;
 const FOUNDED_LABEL = 'Gründungsjahr';
 const FOUNDED_HINT = 'Nur die Jahreszahl. Die App hebt Jubiläen hervor.';
+const FOUNDED_STEP_LABELS: KkNumberStepLabels = {
+  less: 'Ein Jahr früher',
+  more: 'Ein Jahr später',
+};
 const NAME_NOTE = 'Der Name wird in der Gruppenverwaltung geändert.';
 
 const toCountLabel = (used: number, max: number): string => `${used} von ${max} Zeichen`;
@@ -66,6 +76,7 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
   }
 
   const kindOptions = toGroupKindOptions(kinds.data.kinds, heldKind);
+  const pictureTone = toGroupTone(hub.groupId, control.tone === '' ? null : control.tone);
 
   return (
     <WriteScreen
@@ -82,39 +93,52 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
         },
       }}
     >
-      <KkTextArea
-        name="description"
-        label={DESCRIPTION_LABEL}
-        value={control.description}
-        onChange={control.setDescription}
-        rows={DESCRIPTION_ROWS}
-        maxLength={DESCRIPTION_MAX_LENGTH}
-        showCount
-        countLabel={toCountLabel}
-        placeholder={DESCRIPTION_PLACEHOLDER}
-        hint={DESCRIPTION_HINT}
-      />
-      <KkSelectField
-        name="groupKindId"
-        label={GROUP_KIND_FIELD_LABEL}
-        value={control.groupKindId}
-        options={kindOptions}
-        onChange={control.setGroupKindId}
-        presentation="select"
-        hint={GROUP_KIND_FIELD_HINT}
-      />
-      <KkTextField
-        name={control.foundedYear.name}
-        label={FOUNDED_LABEL}
-        inputMode="numeric"
-        onChange={control.foundedYear.onChange}
-        onBlur={control.foundedYear.onBlur}
-        inputRef={control.foundedYear.ref}
-        error={control.foundedYearError !== undefined}
-        helperText={control.foundedYearError ?? FOUNDED_HINT}
-      />
-      <HubTonePicker value={control.tone} takenTones={takenTones} onChange={control.setTone} />
-      <KkNote>{NAME_NOTE}</KkNote>
+      <KkFormSection title={ABOUT_SECTION}>
+        <KkTextArea
+          name="description"
+          label={DESCRIPTION_LABEL}
+          value={control.description}
+          onChange={control.setDescription}
+          rows={DESCRIPTION_ROWS}
+          maxLength={DESCRIPTION_MAX_LENGTH}
+          showCount
+          countLabel={toCountLabel}
+          placeholder={DESCRIPTION_PLACEHOLDER}
+          hint={DESCRIPTION_HINT}
+        />
+      </KkFormSection>
+      <GroupPictureSection hub={hub} tone={pictureTone} />
+      <KkFormSection title={FACTS_SECTION} description={NAME_NOTE}>
+        <KkFormPair
+          balance="leading"
+          start={
+            <KkSelectField
+              name="groupKindId"
+              label={GROUP_KIND_FIELD_LABEL}
+              value={control.groupKindId}
+              options={kindOptions}
+              onChange={control.setGroupKindId}
+              presentation="select"
+              hint={GROUP_KIND_FIELD_HINT}
+            />
+          }
+          end={
+            <KkNumberField
+              name="foundedYear"
+              label={FOUNDED_LABEL}
+              value={control.foundedYear}
+              onChange={control.setFoundedYear}
+              stepLabels={FOUNDED_STEP_LABELS}
+              min={EARLIEST_FOUNDED_YEAR}
+              max={LATEST_FOUNDED_YEAR}
+              hint={FOUNDED_HINT}
+              error={control.foundedYearError !== undefined}
+              helperText={control.foundedYearError}
+            />
+          }
+        />
+        <HubTonePicker value={control.tone} takenTones={takenTones} onChange={control.setTone} />
+      </KkFormSection>
     </WriteScreen>
   );
 };

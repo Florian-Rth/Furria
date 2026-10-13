@@ -6,6 +6,8 @@ import type { KkGroupTone } from './internal/group-tone';
 import { groupToneRecipes } from './internal/group-tone';
 import type { KkScheme } from './internal/scheme-paint';
 import { applyScheme, schemeFill } from './internal/scheme-paint';
+import { KkIcon } from './KkIcon';
+import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
 const TINT_PROPERTY = '--kk-photo-tint';
@@ -35,6 +37,8 @@ interface KkPhotoPlaceholderProps {
   tone?: KkGroupTone;
   aspectRatio?: string;
   fill?: boolean;
+  broken?: boolean;
+  sx?: KkSx;
 }
 
 export const KkPhotoPlaceholder: FC<KkPhotoPlaceholderProps> = ({
@@ -43,9 +47,15 @@ export const KkPhotoPlaceholder: FC<KkPhotoPlaceholderProps> = ({
   tone,
   aspectRatio = '4 / 5',
   fill = false,
+  broken = false,
+  sx,
 }) => {
+  const isDecorative = label === undefined;
+  const faultMark = broken ? <KkIcon name="brokenImage" sx={{ color: TINT }} /> : null;
   const caption =
-    label === undefined ? null : (
+    label === undefined ? (
+      faultMark
+    ) : (
       <Typography
         component="span"
         sx={(theme) => ({
@@ -65,15 +75,20 @@ export const KkPhotoPlaceholder: FC<KkPhotoPlaceholderProps> = ({
 
   return (
     <Stack
-      sx={(theme) => ({
-        width: '100%',
-        ...(fill ? { height: '100%' } : { aspectRatio }),
-        alignItems: 'center',
-        justifyContent: 'center',
-        borderRadius: fill ? 0 : `${kkTokens.radius.base}px`,
-        backgroundImage: `repeating-linear-gradient(135deg, color-mix(in srgb, ${TINT} 15%, transparent) 0 11px, color-mix(in srgb, ${TINT} 6%, transparent) 11px 22px)`,
-        ...tintedSurface(theme, tint, tone),
-      })}
+      aria-hidden={isDecorative}
+      data-kk-photo-placeholder
+      sx={[
+        (theme) => ({
+          width: '100%',
+          ...(fill ? { height: '100%' } : { aspectRatio }),
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: fill ? 0 : `${kkTokens.radius.base}px`,
+          backgroundImage: `repeating-linear-gradient(135deg, color-mix(in srgb, ${TINT} 15%, transparent) 0 11px, color-mix(in srgb, ${TINT} 6%, transparent) 11px 22px)`,
+          ...tintedSurface(theme, tint, tone),
+        }),
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
     >
       {caption}
     </Stack>

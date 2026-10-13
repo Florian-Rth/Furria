@@ -1,4 +1,11 @@
-import { KkFactRow, KkNote, KkSessionField, KkWriteScreen } from '@furria/ui';
+import {
+  KkFactRow,
+  KkFormPair,
+  KkFormSection,
+  KkNote,
+  KkSessionField,
+  KkWriteScreen,
+} from '@furria/ui';
 import type { FC } from 'react';
 import { WriteScreen } from '@/features/write';
 import { usePersonPauseEditor } from '../hooks/use-person-pause-editor';
@@ -11,6 +18,7 @@ import {
 } from '../manage-persons-labels';
 import type { PersonDetails, PersonMembership, PersonPause } from '../schemas';
 
+const SPAN_SECTION_TITLE = 'Ruhezeit';
 const FIRST_LABEL = 'Von Session';
 const FIRST_HINT = 'Ruhezeiten gelten immer für ganze Sessions.';
 const LAST_LABEL = 'Bis Session';
@@ -31,6 +39,7 @@ export const PersonPauseEditor: FC<PersonPauseEditorProps> = ({ person, membersh
     pause,
   });
 
+  const containingMembershipNote = toContainingMembershipNote(toMembershipSpan(membership));
   const chainRows = toPauseChainRows(membership, pause?.pauseId ?? null);
   const chain =
     chainRows.length === 0 ? null : (
@@ -60,29 +69,37 @@ export const PersonPauseEditor: FC<PersonPauseEditorProps> = ({ person, membersh
         },
       }}
     >
-      <KkNote>{toContainingMembershipNote(toMembershipSpan(membership))}</KkNote>
+      <KkNote>{containingMembershipNote}</KkNote>
       {chain}
-      <KkSessionField
-        name="firstSessionYear"
-        label={FIRST_LABEL}
-        value={control.firstSessionYear}
-        onChange={control.setFirstSessionYear}
-        currentSessionYear={control.currentSessionYear}
-        required
-        error={control.firstSessionYearError !== undefined}
-        helperText={control.firstSessionYearError}
-        hint={FIRST_HINT}
-      />
-      <KkSessionField
-        name="lastSessionYear"
-        label={LAST_LABEL}
-        value={control.lastSessionYear}
-        onChange={control.setLastSessionYear}
-        currentSessionYear={control.currentSessionYear}
-        allowOpen
-        openLabel={OPEN_LABEL}
-        hint={LAST_HINT}
-      />
+      <KkFormSection title={SPAN_SECTION_TITLE}>
+        <KkFormPair
+          start={
+            <KkSessionField
+              name="firstSessionYear"
+              label={FIRST_LABEL}
+              value={control.firstSessionYear}
+              onChange={control.setFirstSessionYear}
+              currentSessionYear={control.currentSessionYear}
+              required
+              error={control.firstSessionYearError !== undefined}
+              helperText={control.firstSessionYearError}
+              hint={FIRST_HINT}
+            />
+          }
+          end={
+            <KkSessionField
+              name="lastSessionYear"
+              label={LAST_LABEL}
+              value={control.lastSessionYear}
+              onChange={control.setLastSessionYear}
+              currentSessionYear={control.currentSessionYear}
+              allowOpen
+              openLabel={OPEN_LABEL}
+              hint={LAST_HINT}
+            />
+          }
+        />
+      </KkFormSection>
     </WriteScreen>
   );
 };

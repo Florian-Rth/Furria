@@ -1,8 +1,6 @@
-import type { KkCrop } from '@furria/ui';
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { skipToken, useQuery } from '@tanstack/react-query';
 import { toEntryWriteNotice } from '@/features/calendar';
-import { requestPictureCrop, requestPictureRemoval } from '@/features/pictures';
 import type { ToDoMarkSurface } from '@/features/to-dos';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
@@ -133,32 +131,7 @@ export const useDeleteEventMutation = (event: EventDetails): UseMutationResult<v
     notice: { success: () => toEventDeletedMessage(event.title) },
   });
 
-export interface EventPictureCropInput {
-  eventId: number;
-  crop: KkCrop;
-}
-
 const EVENT_PICTURE_FAILURE = { failure: toWriteErrorMessage };
-
-export const useEventPictureCropMutation = (): UseMutationResult<
-  void,
-  Error,
-  EventPictureCropInput
-> =>
-  useApiMutation({
-    request: ({ eventId, crop }: EventPictureCropInput, accessToken) =>
-      requestPictureCrop({ kind: 'eventPicture', ownerId: eventId }, crop, accessToken),
-    changes: ['event'],
-    notice: EVENT_PICTURE_FAILURE,
-  });
-
-export const useEventPictureRemovalMutation = (): UseMutationResult<void, Error, number> =>
-  useApiMutation({
-    request: (eventId: number, accessToken) =>
-      requestPictureRemoval({ kind: 'eventPicture', ownerId: eventId }, accessToken),
-    changes: ['event'],
-    notice: EVENT_PICTURE_FAILURE,
-  });
 
 export const useEventPictureFromGalleryMutation = (): UseMutationResult<
   void,

@@ -5,9 +5,9 @@ namespace Furria.Core.Media;
 public static class MediaPaths
 {
     public const string StagingDirectory = "staging";
+    public const string OriginalsDirectory = "originals";
+    public const string RenditionsDirectory = "renditions";
 
-    private const string OriginalsDirectory = "originals";
-    private const string RenditionsDirectory = "renditions";
     private const int ShardLength = 2;
 
     [Pure]

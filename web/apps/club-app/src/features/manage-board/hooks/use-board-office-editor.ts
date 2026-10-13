@@ -26,6 +26,8 @@ const NO_ROLES: readonly ImpliedRoleOption[] = [];
 
 export interface BoardOfficeEditorControl {
   form: UseFormReturn<BoardOfficeEditorForm>;
+  sortOrder: string;
+  setSortOrder: (value: string) => void;
   canChangeRole: boolean;
   impliedRoleValue: string;
   setImpliedRoleValue: (value: string) => void;
@@ -97,9 +99,12 @@ export const useBoardOfficeEditor = (entry: BoardOfficeEntry | null): BoardOffic
     landing: (id) => ({ to: '/manage/board', mark: { kind: 'board-office', id } }),
   });
   const impliedRole = useController({ control: write.form.control, name: 'impliedRoleValue' });
+  const sortOrder = useController({ control: write.form.control, name: 'sortOrder' });
 
   return {
     ...write,
+    sortOrder: sortOrder.field.value,
+    setSortOrder: sortOrder.field.onChange,
     canChangeRole,
     impliedRoleValue: impliedRole.field.value,
     setImpliedRoleValue: impliedRole.field.onChange,

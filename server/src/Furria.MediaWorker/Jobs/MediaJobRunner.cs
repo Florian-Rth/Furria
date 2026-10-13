@@ -17,6 +17,7 @@ public sealed class MediaJobRunner
     private readonly MediaRoot _root;
     private readonly PhotoRenderer _photoRenderer;
     private readonly VideoRenderer _videoRenderer;
+    private readonly MediaWorkerActivity _activity;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<MediaJobRunner> _logger;
 
@@ -25,6 +26,7 @@ public sealed class MediaJobRunner
         MediaRoot root,
         PhotoRenderer photoRenderer,
         VideoRenderer videoRenderer,
+        MediaWorkerActivity activity,
         TimeProvider timeProvider,
         ILogger<MediaJobRunner> logger
     )
@@ -33,6 +35,7 @@ public sealed class MediaJobRunner
         _root = root;
         _photoRenderer = photoRenderer;
         _videoRenderer = videoRenderer;
+        _activity = activity;
         _timeProvider = timeProvider;
         _logger = logger;
     }
@@ -61,6 +64,10 @@ public sealed class MediaJobRunner
                 lease.JobId
             );
         }
+        catch (MissingOriginalException exception)
+        {
+            await WithQueueAsync(queue => queue.GiveUpAsync(lease, exception.Message, ct));
+        }
         catch (Exception exception)
         {
             await WithQueueAsync(queue => queue.FailAsync(lease, ReasonOf(exception), ct));
@@ -69,6 +76,7 @@ public sealed class MediaJobRunner
         {
             await leaseHeld.CancelAsync();
             await renewal;
+            _activity.End(kind);
         }
 
         return true;
@@ -79,6 +87,10 @@ public sealed class MediaJobRunner
         var job = await WithQueueAsync(queue => queue.DetailsOfAsync(lease, ct));
         if (job is null)
             return;
+
+        _activity.Begin(job.Kind, job.MediaItemId);
+        if (!_root.HasOriginalOf(job.StorageKey))
+            throw new MissingOriginalException();
 
         using var files = new RenditionFiles(_root, job.StorageKey);
         var rendered =

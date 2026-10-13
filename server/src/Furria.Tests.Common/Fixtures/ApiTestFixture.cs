@@ -7,6 +7,7 @@ using Furria.Application.ClubApp;
 using Furria.Application.Identity;
 using Furria.Application.Mail;
 using Furria.Application.Media;
+using Furria.Application.Operations;
 using Furria.Application.PreviewAccess;
 using Furria.Application.Results;
 using Furria.Application.Website;
@@ -24,6 +25,7 @@ using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
 using Furria.MediaWorker;
+using Furria.MediaWorker.Heartbeat;
 using Furria.MediaWorker.Jobs;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Expectations;
@@ -640,6 +642,52 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         db.MediaJobs.RemoveRange(db.MediaJobs.Where(job => job.MediaItemId == mediaItemId));
         await db.SaveChangesAsync(ct);
     }
+
+    public async Task<long> WriteLogEntryDirectlyAsync(
+        LogSource source,
+        LogEntryLevel level,
+        DateTimeOffset loggedAt,
+        string message,
+        string category = "Furria.Tests",
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var entry = new LogEntry
+        {
+            LoggedAt = loggedAt,
+            Source = source,
+            Instance = "furria-tests",
+            Level = level,
+            Category = category,
+            Template = message,
+            Message = message,
+        };
+        db.LogEntries.Add(entry);
+        await db.SaveChangesAsync(ct);
+        return entry.Id;
+    }
+
+    public Task PurgeLogEntriesAsync(CancellationToken ct = default) =>
+        PurgeLogEntriesOnAsync(this, ct);
+
+    public static Task PurgeLogEntriesOnAsync(
+        WebApplicationFactory<Program> host,
+        CancellationToken ct = default
+    ) =>
+        host.Services.GetServices<IHostedService>().OfType<LogEntryPurge>().Single().PurgeAsync(ct);
+
+    public Task SurveyMediaStorageAsync(CancellationToken ct = default) =>
+        Services
+            .GetServices<IHostedService>()
+            .OfType<MediaStorageSurvey>()
+            .Single()
+            .SurveyAsync(ct);
+
+    public Task BeatAsMediaWorkerAsync(CancellationToken ct = default) =>
+        MediaWorker.GetRequiredService<MediaWorkerBeat>().BeatAsync(ct);
 
     public void SweepAbandonedUploads() =>
         Services.GetServices<IHostedService>().OfType<AbandonedUploadSweep>().Single().Sweep();

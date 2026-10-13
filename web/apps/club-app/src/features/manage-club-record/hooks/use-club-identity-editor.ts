@@ -1,4 +1,5 @@
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
+import { useController } from 'react-hook-form';
 import { useWriteForm } from '@/features/write';
 import { useUpdateClubIdentityMutation } from '../api';
 import { toClubIdentity, toClubIdentityForm, toSectionLanding } from '../club-record-labels';
@@ -8,6 +9,8 @@ import { ClubIdentityFormSchema } from '../schemas';
 export interface ClubIdentityEditorControl {
   form: UseFormReturn<ClubIdentityForm>;
   errors: FieldErrors<ClubIdentityForm>;
+  foundedYear: string;
+  setFoundedYear: (value: string) => void;
   isDirty: boolean;
   canSubmit: boolean;
   isSaving: boolean;
@@ -25,5 +28,12 @@ export const useClubIdentityEditor = (record: ClubRecord): ClubIdentityEditorCon
     landing: () => toSectionLanding('identity'),
   });
 
-  return { ...write, errors: write.form.formState.errors };
+  const foundedYear = useController({ control: write.form.control, name: 'foundedYear' });
+
+  return {
+    ...write,
+    errors: write.form.formState.errors,
+    foundedYear: foundedYear.field.value,
+    setFoundedYear: foundedYear.field.onChange,
+  };
 };

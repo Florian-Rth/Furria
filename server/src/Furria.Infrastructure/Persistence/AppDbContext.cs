@@ -9,6 +9,7 @@ using Furria.Core.News;
 using Furria.Core.Roles;
 using Furria.Core.Website;
 using Furria.Infrastructure.Identity;
+using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Management;
 using Furria.Infrastructure.Media;
@@ -102,6 +103,10 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<MediaFileTombstone> MediaFileTombstones => Set<MediaFileTombstone>();
 
     public DbSet<WebsitePicture> WebsitePictures => Set<WebsitePicture>();
+
+    public DbSet<LogEntry> LogEntries => Set<LogEntry>();
+
+    public DbSet<MediaWorkerHeartbeat> MediaWorkerHeartbeats => Set<MediaWorkerHeartbeat>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }

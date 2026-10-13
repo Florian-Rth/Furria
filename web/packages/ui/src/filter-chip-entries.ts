@@ -1,7 +1,7 @@
 export interface KkFilterOption {
   id: string;
   label: string;
-  count: number;
+  count?: number;
 }
 
 export interface KkFilterChipEntry {
@@ -16,6 +16,6 @@ export const toFilterChipEntries = (
 ): KkFilterChipEntry[] =>
   options.map((option) => ({
     id: option.id,
-    text: `${option.label} ${option.count}`,
+    text: option.count === undefined ? option.label : `${option.label} ${option.count}`,
     selected: option.id === value,
   }));

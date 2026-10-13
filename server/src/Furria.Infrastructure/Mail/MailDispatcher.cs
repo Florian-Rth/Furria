@@ -1,4 +1,6 @@
 using System.Diagnostics.Contracts;
+using Furria.Application.Operations;
+using Furria.Infrastructure.Operations;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -9,11 +11,14 @@ namespace Furria.Infrastructure.Mail;
 
 public sealed class MailDispatcher : BackgroundService
 {
-    private static readonly TimeSpan PollInterval = TimeSpan.FromSeconds(5);
+    private static readonly TimeSpan PollInterval = BackgroundJobSchedule.Every(
+        BackgroundJob.MailDispatcher
+    );
 
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly MailService _mailService;
     private readonly MailOutboxSignal _signal;
+    private readonly BackgroundRuns _runs;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<MailDispatcher> _logger;
 
@@ -21,6 +26,7 @@ public sealed class MailDispatcher : BackgroundService
         IServiceScopeFactory scopeFactory,
         MailService mailService,
         MailOutboxSignal signal,
+        BackgroundRuns runs,
         TimeProvider timeProvider,
         ILogger<MailDispatcher> logger
     )
@@ -28,6 +34,7 @@ public sealed class MailDispatcher : BackgroundService
         _scopeFactory = scopeFactory;
         _mailService = mailService;
         _signal = signal;
+        _runs = runs;
         _timeProvider = timeProvider;
         _logger = logger;
     }
@@ -45,7 +52,7 @@ public sealed class MailDispatcher : BackgroundService
     {
         try
         {
-            while (await DispatchNextAsync(ct)) { }
+            await _runs.TrackAsync(BackgroundJob.MailDispatcher, () => DispatchAllDueAsync(ct));
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
@@ -54,6 +61,11 @@ public sealed class MailDispatcher : BackgroundService
                 exception.GetType().Name
             );
         }
+    }
+
+    private async Task DispatchAllDueAsync(CancellationToken ct)
+    {
+        while (await DispatchNextAsync(ct)) { }
     }
 
     private async Task<bool> DispatchNextAsync(CancellationToken ct)

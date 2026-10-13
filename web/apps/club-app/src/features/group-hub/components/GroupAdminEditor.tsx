@@ -1,4 +1,4 @@
-import { KkChipField, KkDateField, KkFactRow, KkWriteScreen } from '@furria/ui';
+import { KkChipField, KkDateField, KkFactRow, KkFormSection, KkWriteScreen } from '@furria/ui';
 import type { FC } from 'react';
 import type { GroupDetailAdmin } from '@/features/group-detail';
 import { WriteScreen } from '@/features/write';
@@ -16,6 +16,9 @@ import { ADMIN_FUNCTION_MAX_LENGTH } from '../schemas';
 import { PersonPicker } from './PersonPicker';
 
 const CHAIN_TITLE = 'Bisherige Ernennungen';
+const PERSON_SECTION = 'Person';
+const APPOINT_SECTION = 'Ernennung';
+const END_SECTION = 'Ende der Ernennung';
 const APPOINT_NOTE = 'Auch ohne Mitgliedschaft möglich.';
 const FUNCTION_LABEL = 'Funktion';
 const FUNCTION_PLACEHOLDER = 'Optional';
@@ -59,49 +62,55 @@ export const GroupAdminEditor: FC<GroupAdminEditorProps> = ({ hub, admin, prefil
   const fields =
     admin === null ? (
       <>
-        <PersonPicker
-          selected={control.person}
-          onSelect={control.select}
-          onClear={control.clearPerson}
-          note={APPOINT_NOTE}
-        />
+        <KkFormSection title={PERSON_SECTION}>
+          <PersonPicker
+            selected={control.person}
+            onSelect={control.select}
+            onClear={control.clearPerson}
+            note={APPOINT_NOTE}
+          />
+        </KkFormSection>
         {chain}
-        <KkChipField
-          name="function"
-          label={FUNCTION_LABEL}
-          value={control.functionLabel}
-          onChange={control.setFunctionLabel}
-          suggestions={ADMIN_FUNCTION_SUGGESTIONS}
-          placeholder={FUNCTION_PLACEHOLDER}
-          hint={FUNCTION_HINT}
-          maxLength={ADMIN_FUNCTION_MAX_LENGTH}
-        />
-        <KkDateField
-          name="sinceOn"
-          label={SINCE_LABEL}
-          value={control.sinceOn}
-          onChange={control.setSinceOn}
-          quickChoices={toJoinQuickChoices(today)}
-          required
-          error={control.sinceOnError !== undefined}
-          helperText={control.sinceOnError}
-          hint={SINCE_HINT}
-        />
+        <KkFormSection title={APPOINT_SECTION}>
+          <KkChipField
+            name="function"
+            label={FUNCTION_LABEL}
+            value={control.functionLabel}
+            onChange={control.setFunctionLabel}
+            suggestions={ADMIN_FUNCTION_SUGGESTIONS}
+            placeholder={FUNCTION_PLACEHOLDER}
+            hint={FUNCTION_HINT}
+            maxLength={ADMIN_FUNCTION_MAX_LENGTH}
+          />
+          <KkDateField
+            name="sinceOn"
+            label={SINCE_LABEL}
+            value={control.sinceOn}
+            onChange={control.setSinceOn}
+            quickChoices={toJoinQuickChoices(today)}
+            required
+            error={control.sinceOnError !== undefined}
+            helperText={control.sinceOnError}
+            hint={SINCE_HINT}
+          />
+        </KkFormSection>
       </>
     ) : (
       <>
         {chain}
-        <KkDateField
-          name="endedOn"
-          label={END_DATE_LABEL}
-          value={control.endedOn}
-          onChange={control.setEndedOn}
-          quickChoices={toEndQuickChoices(today)}
-          required
-          error={control.endedOnError !== undefined}
-          helperText={control.endedOnError}
-          hint={END_DATE_HINT}
-        />
+        <KkFormSection title={END_SECTION}>
+          <KkDateField
+            name="endedOn"
+            label={END_DATE_LABEL}
+            value={control.endedOn}
+            onChange={control.setEndedOn}
+            quickChoices={toEndQuickChoices(today)}
+            required
+            error={control.endedOnError !== undefined}
+            helperText={control.endedOnError}
+            hint={END_DATE_HINT}
+          />
+        </KkFormSection>
       </>
     );
 

@@ -1,5 +1,6 @@
-import type { KkScreenOrigin } from '@furria/ui';
+import type { KkDateQuickChoice, KkScreenOrigin } from '@furria/ui';
 import { ANNOUNCEMENTS_PATH } from '@/features/session';
+import { toIsoDay } from '@/lib/day';
 import { formatIsoDay } from '@/lib/membership-labels';
 
 export const ANNOUNCEMENTS_TITLE = 'Aushänge';
@@ -21,6 +22,24 @@ export const ANNOUNCEMENT_BODY_FIELD_LABEL = 'Text';
 export const ANNOUNCEMENT_VALID_UNTIL_FIELD_LABEL = 'Gültig bis';
 export const ANNOUNCEMENT_VALID_UNTIL_EMPTY_LABEL = 'hängt bis jemand ihn abnimmt';
 export const ANNOUNCEMENT_BODY_PLACEHOLDER = 'Text des Aushangs';
+export const ANNOUNCEMENT_BODY_HINT = 'Hängt für alle Mitglieder unter „Aushänge“.';
+export const ANNOUNCEMENT_VALID_UNTIL_HINT = 'Danach gilt der Aushang als abgelaufen.';
+export const ANNOUNCEMENT_CONTENT_SECTION_TITLE = 'Aushang';
+export const ANNOUNCEMENT_RUNTIME_SECTION_TITLE = 'Laufzeit';
+
+const ONE_WEEK_LABEL = 'in einer Woche';
+const FOUR_WEEKS_LABEL = 'in vier Wochen';
+const DAYS_PER_WEEK = 7;
+
+const toDayInWeeks = (today: Date, weeks: number): string =>
+  toIsoDay(
+    new Date(today.getFullYear(), today.getMonth(), today.getDate() + weeks * DAYS_PER_WEEK),
+  );
+
+export const toValidUntilQuickChoices = (today: Date): KkDateQuickChoice[] => [
+  { label: ONE_WEEK_LABEL, value: toDayInWeeks(today, 1) },
+  { label: FOUR_WEEKS_LABEL, value: toDayInWeeks(today, 4) },
+];
 
 export const ANNOUNCEMENT_CREATE_TITLE = 'Aushang hinzufügen';
 export const ANNOUNCEMENT_EDIT_TITLE = 'Aushang ändern';

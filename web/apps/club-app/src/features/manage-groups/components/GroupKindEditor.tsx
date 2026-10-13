@@ -1,4 +1,4 @@
-import { KkNote, KkTextField } from '@furria/ui';
+import { KkFormSection, KkTextField } from '@furria/ui';
 import type { FC } from 'react';
 import { WriteScreen } from '@/features/write';
 import { useGroupKindEditor } from '../hooks/use-group-kind-editor';
@@ -9,7 +9,9 @@ const CREATE_TITLE = 'Gruppenart hinzufügen';
 const EDIT_TITLE = 'Gruppenart bearbeiten';
 const ADD_LABEL = 'Hinzufügen';
 const SAVE_LABEL = 'Speichern';
+const SECTION_TITLE = 'Gruppenart';
 const NAME_LABEL = 'Name';
+const NAME_HINT = 'Erscheint bei der Auswahl der Gruppenart und im Gruppenverzeichnis.';
 const CREATE_EXPLANATION = 'Die Zuordnung erfolgt an der jeweiligen Gruppe.';
 const EDIT_EXPLANATION = 'Eine Umbenennung ändert nichts an der Zuordnung der Gruppen.';
 
@@ -41,17 +43,19 @@ export const GroupKindEditor: FC<GroupKindEditorProps> = ({ entry }) => {
         },
       }}
     >
-      <KkTextField
-        name={nameField.name}
-        label={NAME_LABEL}
-        required
-        error={nameErrorText !== undefined}
-        helperText={nameErrorText}
-        onChange={nameField.onChange}
-        onBlur={nameField.onBlur}
-        inputRef={nameField.ref}
-      />
-      <KkNote>{explanation}</KkNote>
+      <KkFormSection title={SECTION_TITLE} description={explanation}>
+        <KkTextField
+          name={nameField.name}
+          label={NAME_LABEL}
+          required
+          hint={NAME_HINT}
+          error={nameErrorText !== undefined}
+          helperText={nameErrorText}
+          onChange={nameField.onChange}
+          onBlur={nameField.onBlur}
+          inputRef={nameField.ref}
+        />
+      </KkFormSection>
     </WriteScreen>
   );
 };

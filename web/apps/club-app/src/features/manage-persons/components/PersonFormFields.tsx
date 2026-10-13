@@ -1,10 +1,13 @@
-import { KkTextField } from '@furria/ui';
-import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
+import { KkFormPair, KkFormSection, KkTextField } from '@furria/ui';
 import type { FC, ReactNode } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
 import type { PersonForm } from '../schemas';
 
+const NAME_SECTION_TITLE = 'Name';
+const CONTACT_SECTION_TITLE = 'Kontakt';
+const ADDRESS_SECTION_TITLE = 'Anschrift';
+const EMAIL_HINT =
+  'Darüber erreicht der Verein die Person. Ihre Anmelde-E-Mail bleibt davon unberührt.';
 const FIRST_NAME_LABEL = 'Vorname';
 const LAST_NAME_LABEL = 'Nachname';
 const EMAIL_LABEL = 'E-Mail';
@@ -37,65 +40,73 @@ export const PersonFormFields: FC<PersonFormFieldsProps> = ({ form, errors, emai
   const cityError = errors.city?.message;
 
   return (
-    <Grid container spacing={1.5} sx={{ minWidth: 0 }}>
-      <Grid size={{ xs: 12, desktop: 6 }} sx={{ minWidth: 0 }}>
-        <KkTextField
-          name={firstName.name}
-          label={FIRST_NAME_LABEL}
-          required
-          autoComplete="given-name"
-          error={firstNameError !== undefined}
-          helperText={firstNameError}
-          onChange={firstName.onChange}
-          onBlur={firstName.onBlur}
-          inputRef={firstName.ref}
+    <>
+      <KkFormSection title={NAME_SECTION_TITLE}>
+        <KkFormPair
+          start={
+            <KkTextField
+              name={firstName.name}
+              label={FIRST_NAME_LABEL}
+              required
+              autoComplete="given-name"
+              error={firstNameError !== undefined}
+              helperText={firstNameError}
+              onChange={firstName.onChange}
+              onBlur={firstName.onBlur}
+              inputRef={firstName.ref}
+            />
+          }
+          end={
+            <KkTextField
+              name={lastName.name}
+              label={LAST_NAME_LABEL}
+              required
+              autoComplete="family-name"
+              error={lastNameError !== undefined}
+              helperText={lastNameError}
+              onChange={lastName.onChange}
+              onBlur={lastName.onBlur}
+              inputRef={lastName.ref}
+            />
+          }
         />
-      </Grid>
-      <Grid size={{ xs: 12, desktop: 6 }} sx={{ minWidth: 0 }}>
-        <KkTextField
-          name={lastName.name}
-          label={LAST_NAME_LABEL}
-          required
-          autoComplete="family-name"
-          error={lastNameError !== undefined}
-          helperText={lastNameError}
-          onChange={lastName.onChange}
-          onBlur={lastName.onBlur}
-          inputRef={lastName.ref}
+      </KkFormSection>
+      <KkFormSection title={CONTACT_SECTION_TITLE}>
+        <KkFormPair
+          balance="leading"
+          start={
+            <KkTextField
+              name={email.name}
+              label={EMAIL_LABEL}
+              type="email"
+              inputMode="email"
+              autoComplete="email"
+              hint={EMAIL_HINT}
+              error={emailError !== undefined}
+              helperText={emailError}
+              onChange={email.onChange}
+              onBlur={email.onBlur}
+              inputRef={email.ref}
+            />
+          }
+          end={
+            <KkTextField
+              name={phone.name}
+              label={PHONE_LABEL}
+              type="tel"
+              inputMode="tel"
+              autoComplete="tel"
+              error={phoneError !== undefined}
+              helperText={phoneError}
+              onChange={phone.onChange}
+              onBlur={phone.onBlur}
+              inputRef={phone.ref}
+            />
+          }
         />
-      </Grid>
-      <Grid size={{ xs: 12, desktop: 7 }} sx={{ minWidth: 0 }}>
-        <Stack sx={{ gap: 1, minWidth: 0 }}>
-          <KkTextField
-            name={email.name}
-            label={EMAIL_LABEL}
-            type="email"
-            inputMode="email"
-            autoComplete="email"
-            error={emailError !== undefined}
-            helperText={emailError}
-            onChange={email.onChange}
-            onBlur={email.onBlur}
-            inputRef={email.ref}
-          />
-          {emailSuggestion}
-        </Stack>
-      </Grid>
-      <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
-        <KkTextField
-          name={phone.name}
-          label={PHONE_LABEL}
-          type="tel"
-          inputMode="tel"
-          autoComplete="tel"
-          error={phoneError !== undefined}
-          helperText={phoneError}
-          onChange={phone.onChange}
-          onBlur={phone.onBlur}
-          inputRef={phone.ref}
-        />
-      </Grid>
-      <Grid size={12} sx={{ minWidth: 0 }}>
+        {emailSuggestion}
+      </KkFormSection>
+      <KkFormSection title={ADDRESS_SECTION_TITLE}>
         <KkTextField
           name={street.name}
           label={STREET_LABEL}
@@ -106,32 +117,35 @@ export const PersonFormFields: FC<PersonFormFieldsProps> = ({ form, errors, emai
           onBlur={street.onBlur}
           inputRef={street.ref}
         />
-      </Grid>
-      <Grid size={{ xs: 4, desktop: 3 }} sx={{ minWidth: 0 }}>
-        <KkTextField
-          name={zip.name}
-          label={ZIP_LABEL}
-          inputMode="numeric"
-          autoComplete="postal-code"
-          error={zipError !== undefined}
-          helperText={zipError}
-          onChange={zip.onChange}
-          onBlur={zip.onBlur}
-          inputRef={zip.ref}
+        <KkFormPair
+          balance="trailing"
+          start={
+            <KkTextField
+              name={zip.name}
+              label={ZIP_LABEL}
+              inputMode="numeric"
+              autoComplete="postal-code"
+              error={zipError !== undefined}
+              helperText={zipError}
+              onChange={zip.onChange}
+              onBlur={zip.onBlur}
+              inputRef={zip.ref}
+            />
+          }
+          end={
+            <KkTextField
+              name={city.name}
+              label={CITY_LABEL}
+              autoComplete="address-level2"
+              error={cityError !== undefined}
+              helperText={cityError}
+              onChange={city.onChange}
+              onBlur={city.onBlur}
+              inputRef={city.ref}
+            />
+          }
         />
-      </Grid>
-      <Grid size={{ xs: 8, desktop: 9 }} sx={{ minWidth: 0 }}>
-        <KkTextField
-          name={city.name}
-          label={CITY_LABEL}
-          autoComplete="address-level2"
-          error={cityError !== undefined}
-          helperText={cityError}
-          onChange={city.onChange}
-          onBlur={city.onBlur}
-          inputRef={city.ref}
-        />
-      </Grid>
-    </Grid>
+      </KkFormSection>
+    </>
   );
 };

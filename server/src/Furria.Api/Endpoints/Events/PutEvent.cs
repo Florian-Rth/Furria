@@ -53,7 +53,6 @@ public sealed class PutEvent : Endpoint<PutEventRequest, PutEventResponse>
         {
             Title = req.Title,
             StartsAt = req.StartsAt,
-            EndsAt = req.EndsAt,
             DoorsOpenAt = req.DoorsOpenAt,
             VenueId = req.VenueId,
             Teaser = req.Teaser,
@@ -69,7 +68,7 @@ public sealed class PutEvent : Endpoint<PutEventRequest, PutEventResponse>
             ViewerPersonId = viewerPersonId,
             VenueId = req.VenueId,
             StartsAt = req.StartsAt,
-            EndsAt = req.EndsAt,
+            EndsAt = null,
             ExcludeCalendarEntryId = req.EventId,
         };
 
@@ -97,8 +96,6 @@ public sealed record PutEventRequest
 
     public required DateTimeOffset StartsAt { get; init; }
 
-    public required DateTimeOffset? EndsAt { get; init; }
-
     public required TimeOnly? DoorsOpenAt { get; init; }
 
     public required int VenueId { get; init; }
@@ -117,10 +114,8 @@ public sealed record PutEventRequest
 public sealed class PutEventValidator : Validator<PutEventRequest>
 {
     private const string TitleMissingMessage = "Die Veranstaltung braucht einen Titel.";
-    private const string TeaserMissingMessage = "Die Veranstaltung braucht einen Anreißer.";
+    private const string TeaserMissingMessage = "Die Veranstaltung braucht eine Kurzbeschreibung.";
     private const string UnknownVenueMessage = "Diesen Ort gibt es nicht im Verzeichnis.";
-    private const string EndsBeforeItStartsMessage =
-        "Ein Zeitraum kann nicht vor seinem Beginn enden.";
     private const string DoorsOpenAfterTheStartMessage =
         "Der Einlass liegt vor dem Beginn der Veranstaltung.";
     private const string PresaleAfterTheStartMessage =
@@ -141,10 +136,6 @@ public sealed class PutEventValidator : Validator<PutEventRequest>
         RuleFor(request => request.Description).MaximumLength(EventLimits.DescriptionLength);
         RuleFor(request => request.AgeHint).MaximumLength(EventLimits.AgeHintLength);
         RuleFor(request => request.VenueId).GreaterThan(0).WithMessage(UnknownVenueMessage);
-        RuleFor(request => request.EndsAt)
-            .GreaterThan(request => request.StartsAt)
-            .When(request => request.EndsAt is not null)
-            .WithMessage(EndsBeforeItStartsMessage);
         RuleFor(request => request.DoorsOpenAt)
             .LessThan(request => ClubClock.TimeOf(request.StartsAt))
             .When(request => request.DoorsOpenAt is not null)

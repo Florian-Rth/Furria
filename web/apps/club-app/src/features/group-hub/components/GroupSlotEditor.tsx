@@ -1,7 +1,13 @@
-import { KkConfirmDialog, KkNote, KkSelectField, KkWriteScreen } from '@furria/ui';
+import {
+  KkConfirmDialog,
+  KkFormSection,
+  KkSelectField,
+  KkTimeField,
+  KkWriteScreen,
+} from '@furria/ui';
 import type { FC } from 'react';
 import { useState } from 'react';
-import { toTimeOptions, useRunningVenuesQuery } from '@/features/calendar';
+import { useRunningVenuesQuery } from '@/features/calendar';
 import { WriteScreen } from '@/features/write';
 import { toHubEditorOrigin } from '../group-hub-labels';
 import { toEditorChoicesErrorMessage } from '../group-hub-messages';
@@ -30,6 +36,9 @@ import { GroupEditorSkeleton } from './GroupEditorSkeleton';
 const CANCEL_LABEL = 'Abbrechen';
 const CLOSE_LABEL = 'Schließen';
 const REMOVE_QUESTION = 'Trainingszeit entfernen?';
+const SECTION_TITLE = 'Trainingszeit';
+const QUICK_TIMES = ['17:00', '18:00', '19:00', '19:11'] as const;
+const DURATION_OPTIONS = toDurationOptions();
 
 interface GroupSlotEditorProps {
   hub: GroupHub;
@@ -116,42 +125,43 @@ export const GroupSlotEditor: FC<GroupSlotEditorProps> = ({ hub, slot }) => {
         },
       }}
     >
-      <KkSelectField
-        name="weekday"
-        label={SLOT_WEEKDAY_LABEL}
-        value={control.weekday}
-        options={WEEKDAY_OPTIONS}
-        onChange={control.setWeekday}
-        presentation="select"
-        required
-      />
-      <KkSelectField
-        name="startsAt"
-        label={SLOT_START_LABEL}
-        value={control.startsAt}
-        options={toTimeOptions()}
-        onChange={control.setStartsAt}
-        presentation="select"
-        required
-      />
-      <KkSelectField
-        name="durationMinutes"
-        label={SLOT_DURATION_LABEL}
-        value={control.durationMinutes}
-        options={toDurationOptions()}
-        onChange={control.setDurationMinutes}
-        presentation="select"
-        required
-      />
-      <KkSelectField
-        name="venueId"
-        label={SLOT_VENUE_LABEL}
-        value={control.venueId}
-        options={venueOptions}
-        onChange={control.setVenueId}
-        presentation="select"
-      />
-      <KkNote>{SLOT_VENUE_HINT}</KkNote>
+      <KkFormSection title={SECTION_TITLE}>
+        <KkSelectField
+          name="weekday"
+          label={SLOT_WEEKDAY_LABEL}
+          value={control.weekday}
+          options={WEEKDAY_OPTIONS}
+          onChange={control.setWeekday}
+          presentation="choices"
+          required
+        />
+        <KkTimeField
+          name="startsAt"
+          label={SLOT_START_LABEL}
+          value={control.startsAt}
+          onChange={control.setStartsAt}
+          quickTimes={QUICK_TIMES}
+          required
+        />
+        <KkSelectField
+          name="durationMinutes"
+          label={SLOT_DURATION_LABEL}
+          value={control.durationMinutes}
+          options={DURATION_OPTIONS}
+          onChange={control.setDurationMinutes}
+          presentation="choices"
+          required
+        />
+        <KkSelectField
+          name="venueId"
+          label={SLOT_VENUE_LABEL}
+          value={control.venueId}
+          options={venueOptions}
+          onChange={control.setVenueId}
+          presentation="select"
+          hint={SLOT_VENUE_HINT}
+        />
+      </KkFormSection>
       {danger}
       {confirm}
     </WriteScreen>

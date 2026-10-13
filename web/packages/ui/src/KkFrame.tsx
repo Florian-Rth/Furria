@@ -9,8 +9,10 @@ import type { KkAspect } from './image-aspect';
 import { aspectRatioCss } from './image-aspect';
 import { filmOf } from './internal/film-paint';
 import { focusRing } from './internal/focus-ring';
+import { useImageFault } from './internal/use-image-fault';
 import { KkGreaseMark } from './KkGreaseMark';
 import { KkIcon } from './KkIcon';
+import { KkImage } from './KkImage';
 import { KkPhotoPlaceholder } from './KkPhotoPlaceholder';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
@@ -107,7 +109,9 @@ export const KkFrame: FC<KkFrameProps> = ({
   onSelect,
   sx,
 }) => {
-  const interactive = onSelect !== undefined;
+  const imageFault = useImageFault(source ?? '');
+  const interactive = onSelect !== undefined && !imageFault.hasFailed;
+  const select = interactive ? onSelect : undefined;
   const surfaceComponent = interactive ? ButtonBase : 'div';
   const surfaceRole = interactive ? undefined : 'img';
   const showsProgress = state === 'uploading' || state === 'queued';
@@ -124,15 +128,13 @@ export const KkFrame: FC<KkFrameProps> = ({
     >
       <Box
         component={surfaceComponent}
-        onClick={onSelect}
+        onClick={select}
         aria-label={label}
         role={surfaceRole}
         sx={surfaceOf(fill, aspectRatio)}
       >
         {latent && placeholder ? (
-          <Box sx={{ position: 'absolute', inset: 0 }}>
-            <KkPhotoPlaceholder fill />
-          </Box>
+          <KkPhotoPlaceholder fill sx={{ position: 'absolute', inset: 0 }} />
         ) : null}
         {latent && !placeholder ? (
           <Stack
@@ -158,8 +160,8 @@ export const KkFrame: FC<KkFrameProps> = ({
           </Stack>
         ) : null}
         {latent ? null : (
-          <Box
-            component="img"
+          <KkImage
+            faultState={imageFault}
             src={source}
             alt=""
             loading="lazy"

@@ -1,5 +1,5 @@
 import type { KkPanelAction } from '@furria/ui';
-import { KkFieldRow, KkPanel, KkPanelSection } from '@furria/ui';
+import { KkAlert, KkFieldRow, KkPanel, KkPanelSection } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toLandingKey } from '@/features/write';
@@ -11,11 +11,13 @@ const EDIT_ACTION_LABEL = 'Eckdaten bearbeiten';
 const WHEN_LABEL = 'Wann';
 const DOORS_LABEL = 'Einlass';
 const VENUE_LABEL = 'Ort';
-const TEASER_LABEL = 'Anreißer';
-const DESCRIPTION_LABEL = 'Beschreibung';
+const TEASER_LABEL = 'Kurzbeschreibung';
+const DESCRIPTION_LABEL = 'Ausführliche Beschreibung';
 const AGE_HINT_LABEL = 'Altershinweis';
 const MISSING_VALUE = 'nicht angegeben';
 const LANDING_KIND = 'event';
+const MISSING_PICTURE_NOTE =
+  'Noch kein Bild. Die Website zeigt bis dahin einen Platzhalter — setz eins unter „Bearbeiten“.';
 
 interface EventFactsPanelProps {
   event: EventDetails;
@@ -30,6 +32,9 @@ export const EventFactsPanel: FC<EventFactsPanelProps> = ({ event, highlightedKe
   const descriptionLabel = event.description ?? MISSING_VALUE;
   const ageHintLabel = event.ageHint ?? MISSING_VALUE;
 
+  const missingPicture =
+    event.picture === null ? <KkAlert severity="warning">{MISSING_PICTURE_NOTE}</KkAlert> : null;
+
   const action: KkPanelAction = {
     label: EDIT_LABEL,
     icon: 'edit',
@@ -41,6 +46,7 @@ export const EventFactsPanel: FC<EventFactsPanelProps> = ({ event, highlightedKe
 
   return (
     <KkPanelSection title={EVENT_SECTION_TITLES.facts} action={action}>
+      {missingPicture}
       <KkPanel highlight={highlightedKey === landingKey} landing={landingKey}>
         <KkFieldRow label={WHEN_LABEL} value={whenLabel} />
         <KkFieldRow label={DOORS_LABEL} value={doorsLabel} />

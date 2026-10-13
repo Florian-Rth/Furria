@@ -1,4 +1,4 @@
-import { KkNote, KkTextArea, KkTextField } from '@furria/ui';
+import { KkFormSection, KkNote, KkTextArea, KkTextField } from '@furria/ui';
 import type { FC } from 'react';
 import { WriteScreen } from '@/features/write';
 import { useRoleEditor } from '../hooks/use-role-editor';
@@ -10,8 +10,10 @@ const CREATE_TITLE = 'Rolle hinzufügen';
 const EDIT_TITLE = 'Rolle bearbeiten';
 const CREATE_EXPLANATION =
   'Neue Rollen haben zunächst keine Rechte. Diese vergibst du im Anschluss.';
-const EDIT_EXPLANATION = 'Name und Beschreibung erscheinen in der Auswahl und in den Profilen.';
+const ROLE_SECTION = 'Rolle';
 const NAME_LABEL = 'Name';
+const NAME_HINT = 'Erscheint in den Profilen und überall, wo Rollen ausgewählt werden.';
+const DESCRIPTION_HINT = 'Erklärt in der Rollenübersicht, wofür die Rolle da ist.';
 const DESCRIPTION_LABEL = 'Beschreibung';
 const DESCRIPTION_PLACEHOLDER = 'Aufgabe der Rolle';
 const DESCRIPTION_ROWS = 4;
@@ -32,7 +34,7 @@ export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry }) => {
   const { errors } = control.form.formState;
 
   const title = roleEntry === null ? CREATE_TITLE : EDIT_TITLE;
-  const explanation = roleEntry === null ? CREATE_EXPLANATION : EDIT_EXPLANATION;
+  const intro = roleEntry === null ? <KkNote>{CREATE_EXPLANATION}</KkNote> : null;
   const actionLabel = roleEntry === null ? CREATE_ACTION_LABEL : EDIT_ACTION_LABEL;
   const origin = roleEntry === null ? ROLES_ORIGIN : toRoleOrigin(roleEntry);
 
@@ -53,31 +55,35 @@ export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry }) => {
         },
       }}
     >
-      <KkNote>{explanation}</KkNote>
-      <KkTextField
-        name={nameField.name}
-        label={NAME_LABEL}
-        required
-        inputRef={nameField.ref}
-        onChange={nameField.onChange}
-        onBlur={nameField.onBlur}
-        error={errors.name !== undefined}
-        helperText={errors.name?.message}
-      />
-      <KkTextArea
-        name="description"
-        label={DESCRIPTION_LABEL}
-        value={control.description}
-        onChange={control.setDescription}
-        onBlur={control.touchDescription}
-        rows={DESCRIPTION_ROWS}
-        maxLength={ROLE_DESCRIPTION_MAX_LENGTH}
-        showCount
-        countLabel={toCountLabel}
-        placeholder={DESCRIPTION_PLACEHOLDER}
-        error={errors.description !== undefined}
-        helperText={errors.description?.message}
-      />
+      {intro}
+      <KkFormSection title={ROLE_SECTION}>
+        <KkTextField
+          name={nameField.name}
+          label={NAME_LABEL}
+          required
+          hint={NAME_HINT}
+          inputRef={nameField.ref}
+          onChange={nameField.onChange}
+          onBlur={nameField.onBlur}
+          error={errors.name !== undefined}
+          helperText={errors.name?.message}
+        />
+        <KkTextArea
+          name="description"
+          label={DESCRIPTION_LABEL}
+          value={control.description}
+          onChange={control.setDescription}
+          onBlur={control.touchDescription}
+          rows={DESCRIPTION_ROWS}
+          maxLength={ROLE_DESCRIPTION_MAX_LENGTH}
+          showCount
+          countLabel={toCountLabel}
+          placeholder={DESCRIPTION_PLACEHOLDER}
+          hint={DESCRIPTION_HINT}
+          error={errors.description !== undefined}
+          helperText={errors.description?.message}
+        />
+      </KkFormSection>
     </WriteScreen>
   );
 };

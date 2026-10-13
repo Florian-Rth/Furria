@@ -2,6 +2,7 @@ import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import AlternateEmailOutlinedIcon from '@mui/icons-material/AlternateEmailOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
+import BrokenImageOutlinedIcon from '@mui/icons-material/BrokenImageOutlined';
 import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
@@ -49,6 +50,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MailOutlinedIcon from '@mui/icons-material/MailOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
+import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import NewspaperOutlinedIcon from '@mui/icons-material/NewspaperOutlined';
 import NotesOutlinedIcon from '@mui/icons-material/NotesOutlined';
@@ -61,6 +63,7 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import PolicyOutlinedIcon from '@mui/icons-material/PolicyOutlined';
 import QrCode2OutlinedIcon from '@mui/icons-material/QrCode2Outlined';
+import RemoveOutlinedIcon from '@mui/icons-material/RemoveOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import SensorsOutlinedIcon from '@mui/icons-material/SensorsOutlined';
@@ -105,6 +108,7 @@ export type KkIconName =
   | 'session'
   | 'search'
   | 'add'
+  | 'subtract'
   | 'edit'
   | 'check'
   | 'checkCircle'
@@ -146,8 +150,10 @@ export type KkIconName =
   | 'crop'
   | 'copy'
   | 'image'
+  | 'brokenImage'
   | 'lock'
-  | 'external';
+  | 'external'
+  | 'system';
 type KkIconSize = 'small' | 'medium' | 'large';
 
 interface KkIconProps {
@@ -193,6 +199,7 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   session: AutoAwesomeOutlinedIcon,
   search: SearchOutlinedIcon,
   add: AddOutlinedIcon,
+  subtract: RemoveOutlinedIcon,
   edit: EditOutlinedIcon,
   check: CheckOutlinedIcon,
   checkCircle: CheckCircleOutlineOutlinedIcon,
@@ -234,8 +241,10 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   crop: CropOutlinedIcon,
   copy: ContentCopyOutlinedIcon,
   image: ImageOutlinedIcon,
+  brokenImage: BrokenImageOutlinedIcon,
   lock: LockOutlinedIcon,
   external: OpenInNewOutlinedIcon,
+  system: MonitorHeartOutlinedIcon,
 };
 
 export const KkIcon: FC<KkIconProps> = ({ name, size = 'medium', sx }) => {

@@ -1,6 +1,5 @@
-export { PictureEditor } from './components/PictureEditor';
-export { PICTURE_COPY, toUploadFailureMessage } from './picture-labels';
-export { toGroupPictureStatusLine, toPortraitStatusLine } from './picture-status';
-export type { PictureKind, PictureTarget } from './picture-target';
+export { PictureSection } from './components/PictureSection';
+export type { PictureSectionDesk } from './hooks/use-picture-section';
+export { usePictureSection } from './hooks/use-picture-section';
+export { PICTURE_DESK_LABELS, toUploadFailureMessage } from './picture-labels';
 export { PICTURE_ACCEPT, toUploadOwner } from './picture-target';
-export { requestPictureCrop, requestPictureRemoval } from './requests';

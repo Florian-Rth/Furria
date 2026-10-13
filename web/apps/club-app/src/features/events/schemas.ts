@@ -65,7 +65,6 @@ export type WrittenEvent = z.infer<typeof WrittenEventSchema>;
 const PRICE_PATTERN = /^\d{1,4}([.,]\d{1,2})?$/;
 const NO_VALUE = '';
 
-const END_BEFORE_START_MESSAGE = 'Das Ende muss nach dem Beginn liegen.';
 const DOORS_AFTER_START_MESSAGE = 'Der Einlass liegt vor dem Beginn.';
 const PRESALE_AFTER_START_MESSAGE = 'Der Vorverkauf beginnt vor der Veranstaltung.';
 const PRICE_TOO_HIGH_MESSAGE = 'Höchstens 1000 €.';
@@ -79,14 +78,12 @@ export const EventFormSchema = z
       .max(EVENT_TITLE_MAX_LENGTH, `Höchstens ${EVENT_TITLE_MAX_LENGTH} Zeichen.`),
     startDay: z.string().min(1, 'Die Veranstaltung braucht einen Tag.'),
     startTime: z.string().min(1, 'Die Veranstaltung braucht eine Uhrzeit.'),
-    endDay: z.string(),
-    endTime: z.string(),
     doorsOpenAt: z.string(),
     venueId: z.string().min(1, 'Die Veranstaltung braucht einen Ort.'),
     teaser: z
       .string()
       .trim()
-      .min(1, 'Die Veranstaltung braucht einen Anreißer.')
+      .min(1, 'Die Veranstaltung braucht eine Kurzbeschreibung.')
       .max(EVENT_TEASER_MAX_LENGTH, `Höchstens ${EVENT_TEASER_MAX_LENGTH} Zeichen.`),
     description: z
       .string()
@@ -108,9 +105,6 @@ export const EventFormSchema = z
   .superRefine((form, ctx) => {
     const startsAt = `${form.startDay}T${form.startTime}`;
 
-    if (form.endDay !== NO_VALUE && `${form.endDay}T${form.endTime}` <= startsAt) {
-      ctx.addIssue({ code: 'custom', message: END_BEFORE_START_MESSAGE, path: ['endTime'] });
-    }
     if (form.doorsOpenAt !== NO_VALUE && form.doorsOpenAt >= form.startTime) {
       ctx.addIssue({ code: 'custom', message: DOORS_AFTER_START_MESSAGE, path: ['doorsOpenAt'] });
     }

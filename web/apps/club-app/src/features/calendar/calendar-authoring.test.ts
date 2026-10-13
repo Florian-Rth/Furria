@@ -13,7 +13,6 @@ import {
   toOwnerOptions,
   toParticipatingGroupChoices,
   toParticipatingGroupIds,
-  toTimeChoices,
   toToggledParticipation,
 } from './calendar-authoring';
 import type { CalendarEntry, CalendarEntryForm } from './schemas';
@@ -133,18 +132,6 @@ describe('toDefaultVisibility', () => {
   });
 });
 
-describe('toTimeChoices', () => {
-  it('steps through the whole day in quarter hours', () => {
-    const choices = toTimeChoices();
-
-    expect(choices).toHaveLength(96);
-    expect(choices[0]).toBe('00:00');
-    expect(choices[1]).toBe('00:15');
-    expect(choices[76]).toBe('19:00');
-    expect(choices[95]).toBe('23:45');
-  });
-});
-
 describe('toInstant', () => {
   it('carries the chosen day and time back out unchanged', () => {
     expect(toDayTime(toInstant('2027-01-20', '19:45'))).toEqual({
@@ -192,11 +179,7 @@ describe('toEntryPayload', () => {
 
 describe('toEntryFormValues', () => {
   it('fills in the only possible owner and its default visibility', () => {
-    const values = toEntryFormValues(
-      null,
-      toOwnerOptions([TANZGARDE], false),
-      new Date(2027, 0, 20),
-    );
+    const values = toEntryFormValues(null, toOwnerOptions([TANZGARDE], false), '2027-01-20');
 
     expect(values.ownerId).toBe('7');
     expect(values.visibility).toBe('group');
@@ -204,13 +187,13 @@ describe('toEntryFormValues', () => {
   });
 
   it('reads an open end off an existing calendar entry', () => {
-    const values = toEntryFormValues(entry({ endsAt: null }), [], new Date(2027, 0, 20));
+    const values = toEntryFormValues(entry({ endsAt: null }), [], '2027-01-20');
 
     expect(values.endDay).toBe('');
   });
 
   it('carries the venue of an existing calendar entry into the form', () => {
-    const values = toEntryFormValues(entry({ venueId: 4 }), [], new Date(2027, 0, 20));
+    const values = toEntryFormValues(entry({ venueId: 4 }), [], '2027-01-20');
 
     expect(values.venueId).toBe('4');
   });

@@ -1,6 +1,13 @@
-import type { KkChipTone, KkConfirmFact, KkFilterOption, KkSelectOption } from '@furria/ui';
+import type {
+  KkChipTone,
+  KkConfirmFact,
+  KkDateQuickChoice,
+  KkFilterOption,
+  KkSelectOption,
+} from '@furria/ui';
 import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
 import { toIsoDayLabel, toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
+import { toIsoDay } from '@/lib/day';
 import {
   EVENT_STATUS_TONES,
   formatPriceCents,
@@ -8,7 +15,8 @@ import {
   toEventStatusShortLabel,
 } from '@/lib/event-copy';
 import type { CalendarOwnerOption } from './calendar-authoring';
-import { NO_VENUE_ID, toTimeChoices } from './calendar-authoring';
+import { NO_VENUE_ID } from './calendar-authoring';
+import type { CalendarDayMarkKey } from './calendar-board';
 import { ALL_SCOPE_ID, CLUB_SCOPE_ID, toGroupScopeId } from './calendar-query';
 import type {
   CalendarEntry,
@@ -30,8 +38,18 @@ export const MONTH_VIEW_LABEL = 'Monat';
 export const LIST_VIEW_LABEL = 'Liste';
 export const PREVIOUS_MONTH_LABEL = 'Vorheriger Monat';
 export const NEXT_MONTH_LABEL = 'Nächster Monat';
-export const ALL_DAYS_LABEL = 'Alle Tage zeigen';
 export const RUNNING_CHIP_LABEL = 'läuft gerade';
+export const TODAY_LABEL = 'Heute';
+export const ADD_ON_DAY_LABEL = 'Termin an diesem Tag hinzufügen';
+
+export const DAY_MARK_LABELS: Record<CalendarDayMarkKey, string | null> = {
+  opening: 'Sessionseröffnung',
+  womensCarnivalDay: 'Weiberfastnacht',
+  roseMonday: 'Rosenmontag',
+  carnivalTuesday: 'Karnevalsdienstag',
+  ashWednesday: 'Aschermittwoch',
+  carnivalWeek: null,
+};
 
 const ALL_SCOPE_LABEL = 'Alle';
 const CLUB_SCOPE_LABEL = 'Verein';
@@ -156,8 +174,15 @@ export const toVenueOptions = (venues: readonly RunningVenue[]): KkSelectOption[
 export const toOwnerSelectOptions = (options: readonly CalendarOwnerOption[]): KkSelectOption[] =>
   options.map((option) => ({ value: option.id, label: option.label }));
 
-export const toTimeOptions = (): KkSelectOption[] =>
-  toTimeChoices().map((time) => ({ value: time, label: time }));
+const TOMORROW_LABEL = 'Morgen';
+
+export const toStartDayQuickChoices = (today: Date): KkDateQuickChoice[] => [
+  { label: TODAY_LABEL, value: toIsoDay(today) },
+  {
+    label: TOMORROW_LABEL,
+    value: toIsoDay(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)),
+  },
+];
 
 export const toEntryOwnerLabel = (entry: CalendarEntry): string =>
   entry.ownerGroupName ?? CLUB_OWNER_LABEL;

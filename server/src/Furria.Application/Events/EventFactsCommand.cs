@@ -6,8 +6,6 @@ public sealed record EventFactsCommand
 
     public required DateTimeOffset StartsAt { get; init; }
 
-    public required DateTimeOffset? EndsAt { get; init; }
-
     public required TimeOnly? DoorsOpenAt { get; init; }
 
     public required int VenueId { get; init; }

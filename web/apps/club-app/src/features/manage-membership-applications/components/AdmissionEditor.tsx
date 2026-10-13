@@ -1,5 +1,5 @@
 import type { KkScreenActionContext } from '@furria/ui';
-import { KkCheckboxRow, KkDateField, KkNote } from '@furria/ui';
+import { KkCheckboxRow, KkDateField, KkFormSection } from '@furria/ui';
 import type { FC } from 'react';
 import { WriteScreen } from '@/features/write';
 import {
@@ -15,6 +15,8 @@ import { useAdmissionEditor } from '../hooks/use-admission-editor';
 import { toApplicationOrigin } from '../manage-membership-applications-labels';
 import type { MembershipApplicationDetails } from '../schemas';
 import { AdmissionCandidateChoice } from './AdmissionCandidateChoice';
+
+const ADMISSION_SECTION = 'Aufnahme';
 
 interface AdmissionEditorProps {
   application: MembershipApplicationDetails;
@@ -33,8 +35,6 @@ export const AdmissionEditor: FC<AdmissionEditorProps> = ({ application }) => {
     control.admittedOn === null || !control.needsConsent
       ? null
       : toGuardianConsentDescription(application, control.admittedOn);
-
-  const gapNote = gapLine === null ? null : <KkNote tone="muted">{gapLine}</KkNote>;
 
   const guardianConsent =
     consentDescription === null ? null : (
@@ -65,21 +65,23 @@ export const AdmissionEditor: FC<AdmissionEditorProps> = ({ application }) => {
       <AdmissionCandidateChoice
         application={application}
         choice={control.choice}
+        gapLine={gapLine}
         onChoose={control.setChoice}
       />
-      {gapNote}
-      <KkDateField
-        name="admittedOn"
-        label={ADMITTED_ON_LABEL}
-        value={control.admittedOn}
-        onChange={control.setAdmittedOn}
-        quickChoices={quickChoices}
-        required
-        error={control.admittedOnError !== undefined}
-        helperText={control.admittedOnError}
-        hint={admittedOnHint}
-      />
-      {guardianConsent}
+      <KkFormSection title={ADMISSION_SECTION}>
+        <KkDateField
+          name="admittedOn"
+          label={ADMITTED_ON_LABEL}
+          value={control.admittedOn}
+          onChange={control.setAdmittedOn}
+          quickChoices={quickChoices}
+          required
+          error={control.admittedOnError !== undefined}
+          helperText={control.admittedOnError}
+          hint={admittedOnHint}
+        />
+        {guardianConsent}
+      </KkFormSection>
     </WriteScreen>
   );
 };

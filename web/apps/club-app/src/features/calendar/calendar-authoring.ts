@@ -14,9 +14,6 @@ export const CLUB_OWNER_ID = 'club';
 export const NO_VENUE_ID = '';
 
 const CLUB_OWNER_OPTION_LABEL = 'Verein';
-const MINUTES_PER_STEP = 15;
-const MINUTES_PER_DAY = 24 * 60;
-const MINUTES_PER_HOUR = 60;
 const DEFAULT_START_TIME = '19:00';
 const DEFAULT_END_TIME = '21:00';
 const ONE_COLLISION = 1;
@@ -193,18 +190,6 @@ export const toCalendarKind = (value: string): CalendarEntryKind =>
 export const toCalendarVisibility = (value: string): CalendarEntryVisibility =>
   VISIBILITY_ORDER.find((known) => known === value) ?? 'club';
 
-export const toTimeChoices = (): string[] => {
-  const choices: string[] = [];
-
-  for (let minutes = 0; minutes < MINUTES_PER_DAY; minutes += MINUTES_PER_STEP) {
-    choices.push(
-      `${pad(Math.floor(minutes / MINUTES_PER_HOUR))}:${pad(minutes % MINUTES_PER_HOUR)}`,
-    );
-  }
-
-  return choices;
-};
-
 export const toInstant = (isoDay: string, time: string): string =>
   new Date(
     Number(isoDay.slice(0, 4)),
@@ -244,12 +229,11 @@ export const toEntryPayload = (form: CalendarEntryForm): CalendarEntryPayload =>
 export const toEntryFormValues = (
   entry: CalendarEntry | null,
   options: readonly CalendarOwnerOption[],
-  today: Date,
+  startDay: string,
 ): CalendarEntryForm => {
   if (entry === null) {
     const ownerId = options[0]?.id ?? CLUB_OWNER_ID;
     const ownerGroupId = options[0]?.ownerGroupId ?? null;
-    const startDay = toIsoDay(today);
 
     return {
       title: '',
