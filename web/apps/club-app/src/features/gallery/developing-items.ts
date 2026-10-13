@@ -1,4 +1,5 @@
 import type { MediaItemState } from '@/lib/api/schemas';
+import { developingPollMsOf } from '@/lib/media/developing';
 import type { InboxItem } from './schemas';
 
 export const POLL_BATCH_LIMIT = 200;
@@ -27,6 +28,28 @@ export const pollBatchOf = (
   return [...new Set([...listed, ...uploaded])]
     .sort((left, right) => left - right)
     .slice(0, POLL_BATCH_LIMIT);
+};
+
+interface DevelopingProgress {
+  state: MediaItemState;
+  isStalled: boolean;
+}
+
+const isMoving = (item: DevelopingProgress): boolean =>
+  item.state === 'processing' && !item.isStalled;
+
+export const developingPollDelayOf = (
+  lists: readonly (readonly DevelopingProgress[])[],
+  uploadedIds: readonly number[],
+  developed: DevelopedItems,
+): number => {
+  const isAwaitingFirstAnswer = uploadedIds.some((mediaItemId) => !developed.has(mediaItemId));
+  const known = [
+    ...lists.flat(),
+    ...[...developed.values()].filter((item): item is InboxItem => item !== null),
+  ];
+  const isFresh = isAwaitingFirstAnswer || known.some(isMoving);
+  return developingPollMsOf(!isFresh);
 };
 
 const captureTimeOf = (item: InboxItem): number => Date.parse(item.capturedAt ?? item.uploadedAt);

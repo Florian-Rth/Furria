@@ -43,7 +43,7 @@ export const KkViewerFilm: FC<KkViewerFilmProps> = ({ source, poster, duration, 
           width: '100%',
           height: '100%',
           objectFit: 'contain',
-          backgroundColor: gallery.darkroom,
+          backgroundColor: 'film.base',
         }}
       />
     );

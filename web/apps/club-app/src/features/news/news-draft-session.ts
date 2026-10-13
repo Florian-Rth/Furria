@@ -1,4 +1,5 @@
-import { DEVELOPING_POLL_MS } from '@/lib/media/developing';
+import type { PictureEditing } from '@/lib/api/schemas';
+import { developingPollMsOf } from '@/lib/media/developing';
 import { isNotFoundError } from '@/lib/query-error';
 import {
   changedPartsOf,
@@ -142,9 +143,9 @@ const latestMomentOf = (left: string | null, right: string | null): string | nul
 const saverNameOf = (saver: ForeignSave['savedBy']): string | null =>
   saver === null ? null : `${saver.firstName} ${saver.lastName}`;
 
-const isDeveloping = (post: NewsPostDetails): boolean =>
-  [post.content.picture, post.pendingChanges?.picture].some(
-    (picture) => picture?.state === 'processing',
+const developingPicturesOf = (post: NewsPostDetails): PictureEditing[] =>
+  [post.content.picture, post.pendingChanges?.picture].filter(
+    (picture): picture is PictureEditing => picture?.state === 'processing',
   );
 
 const ignore = (): void => undefined;
@@ -177,7 +178,6 @@ export const createNewsDraftSession = (options: NewsDraftSessionOptions): NewsDr
   let cancelDebounce = NOTHING_TO_CANCEL;
   let cancelRetry = NOTHING_TO_CANCEL;
   let cancelPoll = NOTHING_TO_CANCEL;
-
   const viewOf = (): NewsDraftView => {
     const shownPost = heldPost ?? post;
     const working = shownPost === null ? null : workingWireOf(shownPost);
@@ -220,18 +220,37 @@ export const createNewsDraftSession = (options: NewsDraftSessionOptions): NewsDr
     revision = revision === null ? next : Math.max(revision, next);
   };
 
+  const schedulePoll = (newsPostId: number, isStalled: boolean): void => {
+    cancelPoll();
+    cancelPoll = clock.after(developingPollMsOf(isStalled), () => {
+      cancelPoll = NOTHING_TO_CANCEL;
+      refresh(newsPostId).catch(() => {
+        if (isActive) {
+          schedulePoll(newsPostId, isStalled);
+        }
+      });
+    });
+  };
+
+  const followDeveloping = (newsPostId: number, details: NewsPostDetails): void => {
+    cancelPoll();
+    cancelPoll = NOTHING_TO_CANCEL;
+    const developing = developingPicturesOf(details);
+    if (isActive && developing.length > 0) {
+      schedulePoll(
+        newsPostId,
+        developing.every((picture) => picture.isStalled),
+      );
+    }
+  };
+
   const refresh = async (newsPostId: number): Promise<NewsPostDetails> => {
     await ledger.settled(newsPostId);
     const details = await requests.read(newsPostId);
     adoptRevision(details.revision);
     post = details;
     loadError = null;
-    cancelPoll();
-    if (isActive && isDeveloping(details)) {
-      cancelPoll = clock.after(DEVELOPING_POLL_MS, () => {
-        refresh(newsPostId).catch(ignore);
-      });
-    }
+    followDeveloping(newsPostId, details);
     emit();
     return details;
   };

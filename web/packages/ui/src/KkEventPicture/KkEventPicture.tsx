@@ -3,7 +3,7 @@ import type { FC } from 'react';
 import type { KkImageSource } from '../image-source';
 import type { KkGroupTone } from '../internal/group-tone';
 import { KkCoverPicture } from '../KkCoverPicture';
-import { KkVacancyField } from '../KkVacancyField';
+import { KkPhotoPlaceholder } from '../KkPhotoPlaceholder';
 import type { KkSx } from '../kk-sx';
 import type { KkEventPictureScale } from './internal/ui/KkEventPictureStamp';
 import { KkEventPictureStamp } from './internal/ui/KkEventPictureStamp';
@@ -32,7 +32,7 @@ export const KkEventPicture: FC<KkEventPictureProps> = ({
   const photoPaint = isCancelled ? CANCELLED_PHOTO : INHERITED_CORNERS;
   const face =
     image === null ? (
-      <KkVacancyField tone={tone} sx={INHERITED_CORNERS} />
+      <KkPhotoPlaceholder tone={tone} fill />
     ) : (
       <KkCoverPicture image={image} alt="" priority={priority} sx={photoPaint} />
     );

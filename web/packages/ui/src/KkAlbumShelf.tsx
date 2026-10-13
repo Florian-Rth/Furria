@@ -40,7 +40,7 @@ export const KkAlbumShelf: FC<KkAlbumShelfProps> = ({ albums, sx }) => {
               xs: gallery.stripHeight.xs + gallery.edgeHeight,
               desktop: gallery.stripHeight.desktop + gallery.edgeHeight,
             },
-            backgroundColor: gallery.darkroomEdge,
+            backgroundColor: 'film.gutter',
             borderRadius: `${kkTokens.radius.bar}px`,
             clipPath: 'inset(0 round 3px)',
           }}

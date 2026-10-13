@@ -20,4 +20,6 @@ public static class WriteConflictMessages
         "Gerade wurde schon eine Einladung verschickt. Bitte erneut versuchen.";
     public const string ToDoMarkedMeanwhile =
         "Dieser Punkt wurde gerade schon als gesehen markiert. Bitte erneut versuchen.";
+    public const string ChangedMeanwhile =
+        "Die Daten wurden gerade anderweitig geändert. Bitte neu laden und erneut versuchen.";
 }

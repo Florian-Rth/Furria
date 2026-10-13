@@ -53,8 +53,11 @@ export const refreshAfterWrite = async ({
   }
 };
 
-export const createWriteCache = (): MutationCache =>
+export const createWriteCache = (
+  onError: (error: Error) => void = () => undefined,
+): MutationCache =>
   new MutationCache({
+    onError,
     onSettled: (_data, _error, _variables, _result, _mutation, context) =>
       refreshAfterWrite(context),
   });

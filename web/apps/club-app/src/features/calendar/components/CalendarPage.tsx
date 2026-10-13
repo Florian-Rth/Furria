@@ -37,16 +37,16 @@ export const CalendarPage: FC = () => {
 
   const viewAction = board.view === 'list' ? monthAction : listAction;
 
-  const tools =
-    scopeSource.data === undefined ? (
-      <KkSkeletonToolbar chips={TOOLBAR_CHIPS} />
-    ) : (
+  const toolbar =
+    scopeSource.data === undefined ? undefined : (
       <CalendarToolbar
         scopeId={board.scopeId}
         options={toScopeOptions(scopeSource.data.entries)}
         onScopeChange={board.selectScope}
       />
     );
+
+  const tools = scopeSource.isPending ? <KkSkeletonToolbar chips={TOOLBAR_CHIPS} /> : toolbar;
 
   return (
     <KkScreen

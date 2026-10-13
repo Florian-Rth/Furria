@@ -121,7 +121,7 @@ public sealed class PostMembershipApplicationValidator : Validator<PostMembershi
         RuleFor(request => request.Street)
             .NotEmpty()
             .MaximumLength(MembershipApplication.StreetLength);
-        RuleFor(request => request.PostalCode).Matches(PostalCodePattern);
+        RuleFor(request => request.PostalCode).NotEmpty().Matches(PostalCodePattern);
         RuleFor(request => request.City).NotEmpty().MaximumLength(MembershipApplication.CityLength);
         RuleFor(request => request.Email)
             .NotEmpty()

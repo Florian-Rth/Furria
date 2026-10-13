@@ -28,6 +28,7 @@ import {
   retryFailedUploads,
   retryUpload,
 } from '../upload/upload-store';
+import type { UploadTileLook } from '../upload/upload-tiles';
 import { isDeveloped, tileLookOf } from '../upload/upload-tiles';
 import { useUploads } from '../upload/use-uploads';
 
@@ -116,15 +117,19 @@ export const useGalleryUpload = (): GalleryUpload => {
           .flatMap((section) => section.albums)
           .find((entry) => entry.albumId === albumId)?.title ?? INBOX_TARGET);
 
+  const lookOf = (entry: UploadEntry): UploadTileLook =>
+    tileLookOf(entry, entry.mediaItemId === null ? undefined : developed.get(entry.mediaItemId));
+  const undeveloped = uploads.entries.filter(
+    (entry) => entry.phase === 'sent' && lookOf(entry).state === 'failed',
+  ).length;
+
   const tileOf = (entry: UploadEntry): UploadTile => {
-    const look = tileLookOf(
-      entry,
-      entry.mediaItemId === null ? undefined : developed.get(entry.mediaItemId),
-    );
+    const look = lookOf(entry);
     const clock = clockLabel(entry.capturedAt);
+    const note = entry.phase === 'sent' && look.state === 'failed' ? 'undeveloped' : entry.failure;
     return {
       key: entry.key,
-      label: tileLabelOf(entry.name, clock, entry.failure),
+      label: tileLabelOf(entry.name, clock, note),
       source: look.source,
       latentLabel: clock,
       state: look.state,
@@ -140,14 +145,7 @@ export const useGalleryUpload = (): GalleryUpload => {
   }));
   const scenes: UploadScene[] = scenesOf(frames).map((scene) => {
     const tiles = scene.frames.map((frame) => tileOf(frame.entry));
-    const ready = scene.frames.filter((frame) =>
-      isDeveloped(
-        tileLookOf(
-          frame.entry,
-          frame.entry.mediaItemId === null ? undefined : developed.get(frame.entry.mediaItemId),
-        ),
-      ),
-    ).length;
+    const ready = scene.frames.filter((frame) => isDeveloped(lookOf(frame.entry))).length;
     return {
       id: scene.index,
       span: sceneSpanLabel(scene),
@@ -174,7 +172,7 @@ export const useGalleryUpload = (): GalleryUpload => {
 
   return {
     counter: counterOf(status),
-    statusLine: statusLineOf(status, tally.failed, targetTitle),
+    statusLine: statusLineOf(status, tally.failed + undeveloped, targetTitle),
     mood: moodOf(status),
     thread: threadOf(status),
     actions,

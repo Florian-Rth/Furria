@@ -12,6 +12,11 @@ describe('toTicketRequestFailure', () => {
       { fields: [], noticeKind: 'blocked', offersMail: true, closesWindow: false },
     ],
     [
+      'a server that answered too slowly',
+      new ApiError({ kind: 'timedOut' }),
+      { fields: [], noticeKind: 'unavailable', offersMail: true, closesWindow: false },
+    ],
+    [
       'a server failure',
       new ApiError({ kind: 'status', status: 503 }),
       { fields: [], noticeKind: 'unavailable', offersMail: true, closesWindow: false },

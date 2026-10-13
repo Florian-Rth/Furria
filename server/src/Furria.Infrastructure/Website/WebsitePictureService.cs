@@ -68,8 +68,13 @@ public sealed class WebsitePictureService
                 )
             ))
             .ToListAsync(ct);
+        var stalledIds = await _dbContext.StalledAmongAsync(
+            rows.Select(row => row.Picture),
+            _timeProvider.GetUtcNow(),
+            ct
+        );
 
-        return [.. rows.Select(DetailsOf)];
+        return [.. rows.Select(row => DetailsOf(row, stalledIds))];
     }
 
     public async Task<Result> CropAsync(CropWebsitePictureCommand command, CancellationToken ct)
@@ -252,7 +257,7 @@ public sealed class WebsitePictureService
         picture.UpdatedByPersonId = byPersonId;
     }
 
-    private WebsitePictureDetails DetailsOf(WebsitePictureRow row)
+    private WebsitePictureDetails DetailsOf(WebsitePictureRow row, IReadOnlySet<int> stalledIds)
     {
         var slot = new PictureSlotPosition(row.SlotKey, row.Position);
         return new WebsitePictureDetails
@@ -261,7 +266,7 @@ public sealed class WebsitePictureService
             MediaItemId = row.Picture.MediaItemId,
             Aspect = row.Aspect,
             Alt = row.Alt,
-            Picture = _pictures.EditingOf(MediaOwner.Website(slot), row.Picture),
+            Picture = _pictures.EditingOf(MediaOwner.Website(slot), row.Picture, stalledIds),
             UpdatedAt = row.UpdatedAt,
             UpdatedBy = row.UpdatedBy,
         };

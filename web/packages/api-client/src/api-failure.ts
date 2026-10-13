@@ -13,6 +13,7 @@ export interface Refusal {
 
 export type ApiFailure =
   | { kind: 'unreachable' }
+  | { kind: 'timedOut' }
   | { kind: 'unauthorized' }
   | { kind: 'throttled' }
   | Refusal
@@ -91,7 +92,7 @@ const MAX_RETRY_ATTEMPTS = 1;
 const isTransient = (error: Error): boolean => {
   const failure = apiFailureOf(error);
 
-  if (failure?.kind === 'unreachable') {
+  if (failure?.kind === 'unreachable' || failure?.kind === 'timedOut') {
     return true;
   }
 

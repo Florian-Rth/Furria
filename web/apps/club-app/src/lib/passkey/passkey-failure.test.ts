@@ -10,6 +10,7 @@ describe('toPasskeyFailureKind', () => {
     { error: new ApiError({ kind: 'unauthorized' }), kind: 'rejected' },
     { error: new ApiError({ kind: 'refused', status: 400, fields: [] }), kind: 'refused' },
     { error: new ApiError({ kind: 'unreachable' }), kind: 'unreachable' },
+    { error: new ApiError({ kind: 'timedOut' }), kind: 'timed-out' },
     { error: new ApiError({ kind: 'throttled' }), kind: 'throttled' },
     { error: new ApiError({ kind: 'status', status: 500 }), kind: 'unexpected' },
   ])('reads $error.name as $kind', ({ error, kind }) => {

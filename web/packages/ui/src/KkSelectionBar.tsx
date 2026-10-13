@@ -2,11 +2,9 @@ import Stack from '@mui/material/Stack';
 import type { Theme } from '@mui/material/styles';
 import type { FC, PropsWithChildren } from 'react';
 import { KkFlapCount } from './KkFlapCount';
-import { KK_DARK_SCHEME_ATTRIBUTE } from './theme';
 import { kkTokens } from './tokens';
 
-const { gallery, shadow } = kkTokens;
-const darkScheme = { [KK_DARK_SCHEME_ATTRIBUTE]: '' };
+const { shadow } = kkTokens;
 
 interface KkSelectionBarProps extends PropsWithChildren {
   label: string;
@@ -18,7 +16,6 @@ export const KkSelectionBar: FC<KkSelectionBarProps> = ({ label, count, children
     role="toolbar"
     aria-label={label}
     data-kk-selection-bar
-    {...darkScheme}
     sx={{
       position: 'fixed',
       left: 0,
@@ -29,7 +26,7 @@ export const KkSelectionBar: FC<KkSelectionBarProps> = ({ label, count, children
       px: 2,
       pt: 1.25,
       pb: 'max(env(safe-area-inset-bottom), 12px)',
-      bgcolor: gallery.darkroom,
+      bgcolor: 'film.base',
       color: 'text.primary',
       borderTop: `${kkTokens.line.page}px solid`,
       borderColor: 'primary.main',

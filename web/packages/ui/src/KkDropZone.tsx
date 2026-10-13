@@ -1,9 +1,8 @@
 import Stack from '@mui/material/Stack';
 import type { FC, PropsWithChildren } from 'react';
+import { filmOf } from './internal/film-paint';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
-
-const { gallery } = kkTokens;
 
 interface KkDropZoneProps extends PropsWithChildren {
   active: boolean;
@@ -26,8 +25,7 @@ export const KkDropZone: FC<KkDropZoneProps> = ({ active, roomy = false, sx, chi
         borderColor: active
           ? (theme.vars ?? theme).palette.warning.main
           : (theme.vars ?? theme).palette.divider,
-        backgroundColor: active ? gallery.darkroomEdge : 'transparent',
-        color: active ? kkTokens.overlay.onPhotoText : 'inherit',
+        backgroundColor: active ? filmOf(theme).base : 'transparent',
         transform: active ? 'scale(1.01)' : 'none',
         transition:
           'border-color 160ms ease-out, background-color 200ms ease-out, transform 200ms ease-out',

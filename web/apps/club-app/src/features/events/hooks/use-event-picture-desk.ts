@@ -39,6 +39,7 @@ export const useEventPictureDesk = (event: EventDetails): EventPictureDesk => {
 
   const announce = useDevelopingPicture({
     isDeveloping: editing?.state === 'processing',
+    isStalled: editing?.isStalled ?? false,
     refresh: () => {
       void query.refetch();
     },

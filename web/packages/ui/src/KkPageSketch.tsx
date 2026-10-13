@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import type { FC } from 'react';
+import { filmOf } from './internal/film-paint';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
@@ -17,7 +18,7 @@ export interface KkSketchBlock {
   rotate?: number;
 }
 
-const { website, gallery } = kkTokens;
+const { website } = kkTokens;
 
 const DEVICE_ASPECT: Record<KkPageSketchDevice, string> = {
   desktop: '4 / 5',
@@ -33,17 +34,20 @@ const DEVICE_WIDTH: Record<KkPageSketchDevice, number> = {
 
 const percent = (value: number): string => `${value}%`;
 
+const blockOf = (theme: Theme): string => (theme.vars ?? theme).palette.divider;
+const lineOf = (theme: Theme): string => (theme.vars ?? theme).palette.text.disabled;
+
 const blockPaint: Record<KkSketchBlockKind, (theme: Theme) => CSSObject> = {
-  bar: () => ({ backgroundColor: website.sketchBlock }),
-  headline: () => ({ backgroundColor: website.sketchLine, borderRadius: '1px' }),
-  text: () => ({
-    backgroundImage: `repeating-linear-gradient(to bottom, ${website.sketchBlock} 0 1px, transparent 1px 3px)`,
+  bar: (theme) => ({ backgroundColor: blockOf(theme) }),
+  headline: (theme) => ({ backgroundColor: lineOf(theme), borderRadius: '1px' }),
+  text: (theme) => ({
+    backgroundImage: `repeating-linear-gradient(to bottom, ${blockOf(theme)} 0 1px, transparent 1px 3px)`,
   }),
-  photo: () => ({ backgroundColor: website.sketchBlock }),
-  seal: () => ({ border: `1px solid ${website.sketchLine}`, borderRadius: '50%' }),
+  photo: (theme) => ({ backgroundColor: blockOf(theme) }),
+  seal: (theme) => ({ border: `1px solid ${lineOf(theme)}`, borderRadius: '50%' }),
   lit: (theme) => ({
     backgroundColor: (theme.vars ?? theme).palette.warning.main,
-    boxShadow: `0 0 0 1px ${gallery.darkroom}, 0 0 6px ${(theme.vars ?? theme).palette.warning.main}`,
+    boxShadow: `0 0 0 1px ${filmOf(theme).base}, 0 0 6px ${(theme.vars ?? theme).palette.warning.main}`,
     zIndex: 1,
   }),
 };
@@ -85,15 +89,15 @@ export const KkPageSketch: FC<KkPageSketchProps> = ({ device, blocks, sx }) => {
       ]}
     >
       <Box
-        sx={{
+        sx={(theme) => ({
           position: 'relative',
           width: percent(DEVICE_WIDTH[device] * 100),
           aspectRatio: DEVICE_ASPECT[device],
           overflow: 'hidden',
-          backgroundColor: gallery.darkroom,
+          backgroundColor: filmOf(theme).base,
           borderRadius: `${kkTokens.radius.bar}px`,
-          boxShadow: `inset 0 0 0 1px ${gallery.darkroomEdge}`,
-        }}
+          boxShadow: `inset 0 0 0 1px ${blockOf(theme)}`,
+        })}
       >
         {shapes}
       </Box>

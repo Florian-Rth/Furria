@@ -38,7 +38,8 @@ export const PersonsPage: FC = () => {
   const canCreate = has(PERMISSION_KEYS.personsManage);
   const showsTools = isUndecided || canRead;
   const isArchiveSettled = archived.data !== undefined || archived.error !== null;
-  const isToolbarPending = listed.data === undefined || !isArchiveSettled || isUndecided;
+  const isListSettled = listed.data !== undefined || listed.error !== null;
+  const isToolbarPending = !isListSettled || !isArchiveSettled || isUndecided;
 
   const index: KkScreenIndex | undefined =
     !canRead || search.letters.length === 0
@@ -50,15 +51,16 @@ export const PersonsPage: FC = () => {
           onSelect: search.jumpTo,
         };
 
-  const toolRow = isToolbarPending ? (
-    <KkSkeletonToolbar chips={TOOLBAR_CHIPS} />
-  ) : (
-    <PersonsToolbar
-      filter={search.filter}
-      options={search.filterOptions}
-      onFilterChange={search.selectFilter}
-    />
-  );
+  const toolbar =
+    listed.data === undefined ? undefined : (
+      <PersonsToolbar
+        filter={search.filter}
+        options={search.filterOptions}
+        onFilterChange={search.selectFilter}
+      />
+    );
+
+  const toolRow = isToolbarPending ? <KkSkeletonToolbar chips={TOOLBAR_CHIPS} /> : toolbar;
 
   return (
     <KkScreen

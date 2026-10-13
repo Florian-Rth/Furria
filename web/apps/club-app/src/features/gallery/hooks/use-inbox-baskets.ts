@@ -1,8 +1,9 @@
 import type { KkSelectOption } from '@furria/ui';
+import { useKkNotice } from '@furria/ui';
 import type { ChangeEvent } from 'react';
 import { useState } from 'react';
 import { useAlbumCreation, useGalleryHubQuery } from '../api';
-import { NO_ALBUM } from '../inbox-copy';
+import { BASKET_ALBUM_FAILED, NO_ALBUM } from '../inbox-copy';
 import { defaultSlotsOf } from '../inbox-desk';
 import type { GalleryHubAlbum } from '../schemas';
 
@@ -33,6 +34,7 @@ const withAlbumIn = (slots: readonly (number | null)[], albumId: number): (numbe
 export const useInboxBaskets = (): InboxBaskets => {
   const hub = useGalleryHubQuery();
   const creation = useAlbumCreation();
+  const raiseNotice = useKkNotice();
   const [slots, setSlots] = useState<(number | null)[] | null>(null);
   const [newTitle, setNewTitle] = useState('');
   const albums = hub.data?.sections.flatMap((section) => section.albums) ?? [];
@@ -61,6 +63,9 @@ export const useInboxBaskets = (): InboxBaskets => {
         onSuccess: (created) => {
           setSlots((current) => withAlbumIn(current ?? padded([]), created.albumId));
           setNewTitle('');
+        },
+        onError: () => {
+          raiseNotice({ tone: 'error', message: BASKET_ALBUM_FAILED });
         },
       },
     );

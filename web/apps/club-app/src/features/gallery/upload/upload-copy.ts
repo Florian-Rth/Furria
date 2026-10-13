@@ -13,7 +13,10 @@ export const CLEAR_LABEL = 'Fertige ausblenden';
 export const INBOX_TARGET = 'Eingang';
 export const EMPTY_COUNTER = '0 / 0';
 
-const FAILURE_LINES: Record<UploadFailure, string> = {
+export type TileNote = UploadFailure | 'undeveloped';
+
+const FAILURE_LINES: Record<TileNote, string> = {
+  undeveloped: 'ließ sich nicht entwickeln',
   tooLarge: 'zu groß',
   notAccepted: 'kein Foto oder Video',
   notAllowed: 'nicht erlaubt',
@@ -21,7 +24,7 @@ const FAILURE_LINES: Record<UploadFailure, string> = {
   interrupted: 'abgebrochen — antippen zum Wiederholen',
 };
 
-export const failureLineOf = (failure: UploadFailure | null): string =>
+export const failureLineOf = (failure: TileNote | null): string =>
   failure === null ? '' : FAILURE_LINES[failure];
 
 export const counterOf = (status: UploadStatus): string =>
@@ -58,7 +61,7 @@ export const threadLabelOf = (status: UploadStatus): string =>
     ? ''
     : `Hochladen: ${countLabel(status.sent)} von ${countLabel(status.total)}`;
 
-export const tileLabelOf = (name: string, clock: string, failure: UploadFailure | null): string =>
+export const tileLabelOf = (name: string, clock: string, failure: TileNote | null): string =>
   [name, clock, failureLineOf(failure)].filter((part) => part !== '').join(', ');
 
 export const sceneMetaOf = (count: number, developed: number): string =>

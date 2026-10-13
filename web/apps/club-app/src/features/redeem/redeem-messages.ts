@@ -13,6 +13,7 @@ const REDEEM_FAILURE_MESSAGES: Record<RedeemFailureKind, string> = {
   throttled: 'Zu viele Versuche. Warte einen Moment und versuche es dann erneut.',
   rejected: 'Der Server hat die Anfrage abgelehnt.',
   unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
+  timedOut: 'Der Server antwortet gerade zu langsam. Versuche es gleich noch einmal.',
   unexpected: 'Das hat nicht funktioniert. Bitte versuche es erneut.',
 };
 

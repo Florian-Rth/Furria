@@ -297,7 +297,6 @@ export type { KkTimeRailScene } from './KkTimeRail';
 export { KkTimeRail } from './KkTimeRail';
 export { KkTitleHeader } from './KkTitleHeader';
 export { KkTwoToneHeadline } from './KkTwoToneHeadline';
-export { KkVacancyField } from './KkVacancyField';
 export { KkViewer } from './KkViewer/KkViewer';
 export type {
   KkViewerEntrance,

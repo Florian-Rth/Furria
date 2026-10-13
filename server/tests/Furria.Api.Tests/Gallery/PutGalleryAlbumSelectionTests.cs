@@ -53,6 +53,25 @@ public sealed class PutGalleryAlbumSelectionTests : IClassFixture<ApiTestFixture
     }
 
     [Fact]
+    public async Task Should_RefuseTheSelection_When_OnePhotoIsNull()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(Album(), ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+
+        var response = await client.PUTAsync<
+            PutGalleryAlbumSelection,
+            PutGalleryAlbumSelectionRequest
+        >(new() { AlbumId = ctx.Gallery.Albums.IdOf("gala"), Photos = [null!] });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await ctx
+            .Expected.GalleryItem(ctx.Gallery.Items.IdOf("held"))
+            .ToBeSelectedAt(1, "Einzug")
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_RefuseTheSelection_When_ItNamesAVideo()
     {
         var ct = TestContext.Current.CancellationToken;

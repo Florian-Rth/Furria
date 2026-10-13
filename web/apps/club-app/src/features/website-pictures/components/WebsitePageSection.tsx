@@ -1,9 +1,8 @@
-import { KkFilmEdge } from '@furria/ui';
-import Stack from '@mui/material/Stack';
+import { KkPanelSection } from '@furria/ui';
 import type { FC } from 'react';
 import type { SlotPositionRef } from '../types';
 import type { BoardPage } from '../website-board';
-import { fillTrailOf, pageMetaOf } from '../website-copy';
+import { pageMetaOf } from '../website-copy';
 import { WebsiteSlotRow } from './WebsiteSlotRow';
 
 interface WebsitePageSectionProps {
@@ -22,13 +21,11 @@ export const WebsitePageSection: FC<WebsitePageSectionProps> = ({ page, selected
       onSelect={onSelect}
     />
   ));
-  const meta = pageMetaOf(page.path);
-  const trail = fillTrailOf(page.filled, page.total);
+  const meta = pageMetaOf(page.path, page.filled, page.total);
 
   return (
-    <Stack component="section" aria-label={page.title} sx={{ minWidth: 0 }}>
-      <KkFilmEdge lead={page.title} meta={meta} trail={trail} tone="red" size="title" level="h2" />
+    <KkPanelSection title={page.title} meta={meta}>
       {rows}
-    </Stack>
+    </KkPanelSection>
   );
 };

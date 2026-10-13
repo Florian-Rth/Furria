@@ -4,7 +4,27 @@ import { redInk } from './internal/red-ink';
 import type { KkColorTokens } from './tokens';
 import { kkTokens } from './tokens';
 
+export interface KkFilmPalette {
+  base: string;
+  gutter: string;
+  edge: string;
+  latent: string;
+  sprocket: string;
+  number: string;
+  onEdge: string;
+  ghost: string;
+  mark: string;
+}
+
 declare module '@mui/material/styles' {
+  interface Palette {
+    film: KkFilmPalette;
+  }
+
+  interface PaletteOptions {
+    film?: KkFilmPalette;
+  }
+
   interface BreakpointOverrides {
     desktop: true;
   }
@@ -46,7 +66,33 @@ const fontSize = {
 
 const onDesktop = `@media (min-width:${KK_DESKTOP_BREAKPOINT}px)`;
 
-const buildPalette = (color: KkColorTokens): PaletteOptions => ({
+const { light: lightColor, dark: darkColor } = kkTokens.color;
+
+const contactPrintFilm: KkFilmPalette = {
+  base: lightColor.panel2,
+  gutter: lightColor.panel2,
+  edge: lightColor.ink,
+  latent: lightColor.avatar,
+  sprocket: lightColor.bg,
+  number: lightColor.gold,
+  onEdge: lightColor.bg,
+  ghost: lightColor.faint,
+  mark: lightColor.red,
+};
+
+const darkroomFilm: KkFilmPalette = {
+  base: darkColor.darkroom,
+  gutter: darkColor.darkroomEdge,
+  edge: darkColor.darkroomEdge,
+  latent: darkColor.darkroomLatent,
+  sprocket: darkColor.line,
+  number: darkColor.gold,
+  onEdge: darkColor.sub,
+  ghost: darkColor.faint,
+  mark: darkColor.gold,
+};
+
+const buildPalette = (color: KkColorTokens, film: KkFilmPalette): PaletteOptions => ({
   primary: { main: color.red, dark: color.redDk, contrastText: color.onRed },
   error: { main: color.redDk, dark: color.redDk, contrastText: color.onRedDk },
   warning: { main: color.gold },
@@ -55,6 +101,7 @@ const buildPalette = (color: KkColorTokens): PaletteOptions => ({
   text: { primary: color.ink, secondary: color.sub, disabled: color.faint },
   background: { default: color.bg, paper: color.panel },
   divider: color.line,
+  film,
 });
 
 const displayHeading = {
@@ -68,8 +115,8 @@ export const KK_DARK_SCHEME_ATTRIBUTE = 'data-dark';
 export const kkTheme = createTheme({
   cssVariables: { colorSchemeSelector: 'data' },
   colorSchemes: {
-    light: { palette: buildPalette(kkTokens.color.light) },
-    dark: { palette: buildPalette(kkTokens.color.dark) },
+    light: { palette: buildPalette(lightColor, contactPrintFilm) },
+    dark: { palette: buildPalette(darkColor, darkroomFilm) },
   },
   breakpoints: {
     values: {

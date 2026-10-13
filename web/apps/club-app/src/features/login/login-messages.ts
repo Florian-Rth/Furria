@@ -19,6 +19,7 @@ const LOGIN_ERROR_MESSAGES: Record<LoginErrorKind, string> = {
   throttled:
     'Zu viele fehlgeschlagene Anmeldungen aus diesem Netz. Warte ein paar Minuten und versuche es dann erneut.',
   unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
+  'timed-out': 'Der Server antwortet gerade zu langsam. Versuche es gleich noch einmal.',
   unexpected: 'Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.',
 };
 

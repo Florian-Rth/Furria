@@ -2,9 +2,8 @@ import Stack from '@mui/material/Stack';
 import { keyframes } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
+import { filmOf } from '../../../internal/film-paint';
 import { kkTokens } from '../../../tokens';
-
-const { gallery } = kkTokens;
 
 const develop = keyframes`
   0%, 100% { opacity: 0.35; }
@@ -19,14 +18,14 @@ export const KkViewerLatent: FC<KkViewerLatentProps> = ({ label }) => (
   <Stack
     role="img"
     aria-label={label}
-    sx={{
+    sx={(theme) => ({
       position: 'absolute',
       inset: 0,
       alignItems: 'center',
       justifyContent: 'center',
-      backgroundColor: gallery.latent,
-      backgroundImage: `radial-gradient(ellipse at 50% 46%, ${gallery.darkroomEdge} 0%, ${gallery.darkroom} 72%)`,
-    }}
+      backgroundColor: filmOf(theme).latent,
+      backgroundImage: `radial-gradient(ellipse at 50% 46%, ${filmOf(theme).edge} 0%, ${filmOf(theme).base} 72%)`,
+    })}
   >
     <Typography
       component="span"

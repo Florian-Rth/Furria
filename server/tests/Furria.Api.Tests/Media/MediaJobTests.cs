@@ -1,3 +1,4 @@
+using Furria.Api.Tests.Website;
 using Furria.Application.Media;
 using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
@@ -68,6 +69,55 @@ public sealed class MediaJobTests : IClassFixture<ApiTestFixture>
         );
 
         await ctx.Expected.MediaItem(mediaItemId).ToBeReady(800, 600).AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_MarkTheItemFailed_When_EveryWorkerThatClaimedItStoppedAnswering()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(_ => { }, ct);
+        var mediaItemId = await UploadAsync(ctx, "riesig.jpg", MediaSamples.Jpeg(4096), ct);
+        Assert.True(await _fixture.ClaimMediaJobAsync(MediaKind.Photo, ct));
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromMinutes(6),
+            async () => Assert.True(await _fixture.ClaimMediaJobAsync(MediaKind.Photo, ct))
+        );
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromMinutes(12),
+            async () => Assert.True(await _fixture.ClaimMediaJobAsync(MediaKind.Photo, ct))
+        );
+
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromMinutes(18),
+            async () => Assert.False(await _fixture.ClaimMediaJobAsync(MediaKind.Photo, ct))
+        );
+
+        await ctx.Expected.MediaItem(mediaItemId).ToHaveFailedWith("3 times").AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_MarkTheItemFailed_When_ItsJobCannotBeReadForRendering()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(builder => builder.WithGalleryPublisher(), ct);
+        var client = await ctx.Identity.ClientForAsync(WebsitePictureSeeds.Publisher, ct);
+        var mediaItemId = await WebsitePictureSteps.UploadAsync(client, "landing.hero", 1, 1.4, ct);
+        await _fixture.DetachWebsitePictureDirectlyAsync(mediaItemId, ct);
+
+        await _fixture.RunMediaWorkerAsync(ct);
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromMinutes(1),
+            () => _fixture.RunMediaWorkerAsync(ct)
+        );
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromMinutes(11),
+            () => _fixture.RunMediaWorkerAsync(ct)
+        );
+
+        await ctx
+            .Expected.MediaItem(mediaItemId)
+            .ToHaveFailedWith(nameof(InvalidOperationException))
+            .AssertAsync(ct);
     }
 
     [Fact]

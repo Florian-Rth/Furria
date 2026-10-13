@@ -5,6 +5,7 @@ import { toEventBanner } from './event-picture';
 
 const editing = (overrides: Partial<PictureEditing>): PictureEditing => ({
   state: 'ready',
+  isStalled: false,
   picture: { smallUrl: '/s', mediumUrl: '/m', largeUrl: '/l' },
   uncroppedUrl: '/u',
   crop: { left: 0, top: 0, width: 1, height: 0.5 },
@@ -47,6 +48,12 @@ describe('toEventBanner', () => {
       'developing',
     ],
     ['a recrop being rendered', editing({ state: 'processing' }), resting, 'developing'],
+    [
+      'a render no worker took up',
+      editing({ state: 'processing', picture: null, isStalled: true }),
+      resting,
+      'stalled',
+    ],
     [
       'a photo the server gave up on',
       editing({ state: 'failed', picture: null }),

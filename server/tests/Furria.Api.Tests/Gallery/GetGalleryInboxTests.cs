@@ -1,6 +1,7 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Gallery;
+using Furria.Api.Tests.Media;
 using Furria.Application.Authorization;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
@@ -72,6 +73,41 @@ public sealed class GetGalleryInboxTests : IClassFixture<ApiTestFixture>
             [ctx.Gallery.Items.IdOf("orphan")],
             result.Items.Select(item => item.MediaItemId)
         );
+    }
+
+    [Fact]
+    public async Task Should_FlagAnItemAsStalled_When_NoWorkerTookUpItsRenderingForMinutes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(_ => { }, ct);
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        await TusUploadSteps.UploadAsync(
+            client,
+            TusUploadSteps.GalleryOwner,
+            "frisch.jpg",
+            MediaSamples.Jpeg(4096),
+            4096,
+            ct
+        );
+        var (_, fresh) = await client.GETAsync<
+            GetGalleryInbox,
+            GetGalleryInboxRequest,
+            GetGalleryInboxResponse
+        >(new() { Ownerless = true });
+
+        GetGalleryInboxResponse? later = null;
+        await _fixture.AtLaterTimeAsync(
+            TimeSpan.FromMinutes(3),
+            async () =>
+                (_, later) = await client.GETAsync<
+                    GetGalleryInbox,
+                    GetGalleryInboxRequest,
+                    GetGalleryInboxResponse
+                >(new() { Ownerless = true })
+        );
+
+        Assert.False(fresh.Items.Single().IsStalled);
+        Assert.True(later!.Items.Single().IsStalled);
     }
 
     private static Action<SeedContextBuilder> Inboxes() =>

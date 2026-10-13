@@ -23,6 +23,7 @@ const positionOf = (status: PositionStatus, orphan = false): BoardPosition => ({
           alt: null,
           picture: {
             state: status === 'processing' || status === 'failed' ? status : 'ready',
+            isStalled: false,
             picture: null,
             uncroppedUrl: status === 'processing' ? null : '/u',
             crop: null,

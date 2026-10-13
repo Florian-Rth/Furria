@@ -71,11 +71,17 @@ export const PICTURE_ACTION_LABELS = {
   close: 'Schließen',
 } as const;
 
-export const PICTURE_STATE_NOTES: Record<MediaItemState, string | null> = {
+const PICTURE_STATE_NOTES: Record<MediaItemState, string | null> = {
   processing: 'Das Bild wird gerade vorbereitet. Das dauert nur einen Moment.',
   ready: null,
   failed: 'Dieses Bild ließ sich nicht verarbeiten. Wähl bitte ein anderes Foto.',
 };
+
+const STALLED_NOTE =
+  'Das Vorbereiten dauert ungewöhnlich lange. Schau später noch einmal vorbei oder wähl das Foto erneut.';
+
+export const pictureStateNoteOf = (state: MediaItemState, isStalled: boolean): string | null =>
+  isStalled ? STALLED_NOTE : PICTURE_STATE_NOTES[state];
 
 const UPLOAD_FAILURE_MESSAGES: Record<UploadFailure, string> = {
   tooLarge: 'Das Foto ist zu groß. Erlaubt sind bis zu 100 MB.',

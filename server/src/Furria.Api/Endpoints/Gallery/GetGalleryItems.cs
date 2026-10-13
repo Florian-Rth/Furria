@@ -41,6 +41,7 @@ public sealed class GetGalleryItems : Endpoint<GetGalleryItemsRequest, GetGaller
             MediaItemId = item.MediaItemId,
             Kind = item.Kind,
             State = item.State,
+            IsStalled = item.IsStalled,
             Width = item.Width,
             Height = item.Height,
             DurationSeconds = item.DurationSeconds,
@@ -81,6 +82,8 @@ public sealed record GetGalleryItemsItemDto
     public required MediaKind Kind { get; init; }
 
     public required MediaItemState State { get; init; }
+
+    public required bool IsStalled { get; init; }
 
     public required int? Width { get; init; }
 
