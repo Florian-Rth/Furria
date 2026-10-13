@@ -2,8 +2,8 @@ import Stack from '@mui/material/Stack';
 import type { Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import { redInk } from './red-ink';
 import { kkTokens } from '../tokens';
+import { redInk } from './red-ink';
 
 export type KkPhotoStampScale = 'card' | 'band';
 

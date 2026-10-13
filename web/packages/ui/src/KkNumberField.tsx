@@ -2,8 +2,8 @@ import Stack from '@mui/material/Stack';
 import type { ChangeEvent, FC } from 'react';
 import { canStep, stepNumber } from './internal/number-step';
 import { KkIconButton } from './KkIconButton';
-import type { KkSx } from './kk-sx';
 import { KkTextField } from './KkTextField';
+import type { KkSx } from './kk-sx';
 
 export interface KkNumberStepLabels {
   less: string;

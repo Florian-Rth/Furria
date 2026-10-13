@@ -15,8 +15,8 @@ import {
   toEventStatusShortLabel,
 } from '@/lib/event-copy';
 import type { CalendarOwnerOption } from './calendar-authoring';
-import type { CalendarDayMarkKey } from './calendar-board';
 import { NO_VENUE_ID } from './calendar-authoring';
+import type { CalendarDayMarkKey } from './calendar-board';
 import { ALL_SCOPE_ID, CLUB_SCOPE_ID, toGroupScopeId } from './calendar-query';
 import type {
   CalendarEntry,

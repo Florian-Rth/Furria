@@ -1,19 +1,20 @@
 import type {
+  KkChipTone,
   KkFillGaugePart,
   KkFillGaugeRest,
   KkFlapBoardFact,
   KkFlapBoardReason,
   KkFlapGridColumn,
-  KkChipTone,
   KkFlapGridRow,
-  KkIconName,
   KkHeartbeatState,
+  KkIconName,
   KkRankBar,
   KkStatusLevel,
 } from '@furria/ui';
+import { areaSummaryOf } from './area-summary';
 import type { SystemStatus } from './schemas';
 import { MEDIA_KINDS, MEDIA_STATES } from './schemas';
-import { areaSummaryOf } from './area-summary';
+import type { ReasonContext } from './system-copy';
 import {
   AREA_CALM,
   AREA_ICONS,
@@ -21,30 +22,29 @@ import {
   AREA_ORDER,
   areaPathOf,
   areaSummaryTextOf,
-  LEVEL_WORDS,
-  SECTION_TITLES,
   DATABASE_FACT_LABELS,
-  filesOf,
   figureTextOf,
+  filesOf,
   HEARTBEAT_WORDS,
+  LEVEL_WORDS,
   MEDIA_KIND_LABELS,
   MEDIA_STATE_LABELS,
   measuredAgoOf,
   NO,
   oldestWaitingOf,
   PROGRAM_FACT_LABELS,
-  reasonTextOf,
-  workerNameOf,
   ROW_WORDS,
+  reasonTextOf,
   rowsAboutOf,
-  serviceNameOf,
+  SECTION_TITLES,
   STORAGE_PART_LABELS,
+  serviceNameOf,
   UNKNOWN_VALUE,
   VERDICT_WORDS,
   workerMetaOf,
+  workerNameOf,
   YES,
 } from './system-copy';
-import type { ReasonContext } from './system-copy';
 import type { ServiceState } from './system-facts';
 import {
   boardRowsOf,
@@ -106,7 +106,11 @@ export const programFactsOf = (status: SystemStatus, moment: SystemMoment): KkFl
   const serverNow = serverNowOf(status.checkedAt, moment.fetchedAtMs, moment.nowMs);
 
   return [
-    { key: 'version', label: PROGRAM_FACT_LABELS.version, value: formatVersion(status.app.version) },
+    {
+      key: 'version',
+      label: PROGRAM_FACT_LABELS.version,
+      value: formatVersion(status.app.version),
+    },
     { key: 'environment', label: PROGRAM_FACT_LABELS.environment, value: status.app.environment },
     {
       key: 'since',

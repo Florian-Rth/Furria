@@ -6,7 +6,10 @@ export interface NumberBounds {
 const WHOLE_NUMBER = /^-?\d+$/;
 
 const clampTo = (value: number, bounds: NumberBounds): number =>
-  Math.min(Math.max(value, bounds.min ?? value), bounds.max ?? value);
+  Math.min(
+    Math.max(value, bounds.min ?? Number.NEGATIVE_INFINITY),
+    bounds.max ?? Number.POSITIVE_INFINITY,
+  );
 
 export const stepNumber = (value: string, delta: number, bounds: NumberBounds): string => {
   const trimmed = value.trim();

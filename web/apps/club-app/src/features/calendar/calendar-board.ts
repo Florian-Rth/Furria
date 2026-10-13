@@ -44,7 +44,9 @@ const LABEL_SEPARATOR = ' · ';
 const NO_ENTRIES_LABEL = 'keine Termine';
 const NO_ENTRIES = 0;
 
-export const toEntryDays = (entry: Pick<CalendarEntry, 'startsAt' | 'endsAt'>): CalendarEntryDays => {
+export const toEntryDays = (
+  entry: Pick<CalendarEntry, 'startsAt' | 'endsAt'>,
+): CalendarEntryDays => {
   const startDay = toLocalIsoDay(entry.startsAt);
 
   if (entry.endsAt === null) {
@@ -63,9 +65,7 @@ const covers = (entry: CalendarEntry, isoDay: string): boolean => {
 };
 
 const awaitsAnswer = (entry: CalendarEntry, todayIsoDay: string): boolean =>
-  entry.asksForResponse &&
-  entry.viewerAnswer === null &&
-  toEntryDays(entry).endDay >= todayIsoDay;
+  entry.asksForResponse && entry.viewerAnswer === null && toEntryDays(entry).endDay >= todayIsoDay;
 
 export const entriesOnBoardDay = (
   entries: readonly CalendarEntry[],

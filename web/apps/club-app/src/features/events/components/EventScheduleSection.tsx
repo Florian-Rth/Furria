@@ -26,55 +26,55 @@ export const EventScheduleSection: FC<EventScheduleSectionProps> = ({ control, v
 
   return (
     <KkFormSection title={SECTION_TITLE}>
-        <KkDateField
-          name="startDay"
-          label={DAY_LABEL}
-          required
-          value={control.values.startDay}
-          onChange={control.setStartDay}
-          error={startDayErrorText !== undefined}
-          helperText={startDayErrorText}
-        />
-        <KkFormPair
-          phone="side"
-          start={
-            <KkTimeField
-              name="doorsOpenAt"
-              label={DOORS_LABEL}
-              value={control.values.doorsOpenAt}
-              onChange={control.setDoorsOpenAt}
-              quickTimes={QUICK_TIMES}
-              allowEmpty
-              emptyLabel={DOORS_EMPTY_LABEL}
-              error={doorsOpenAtErrorText !== undefined}
-              helperText={doorsOpenAtErrorText}
-            />
-          }
-          end={
-            <KkTimeField
-              name="startTime"
-              label={START_LABEL}
-              required
-              value={control.values.startTime}
-              onChange={control.setStartTime}
-              quickTimes={QUICK_TIMES}
-              error={startTimeErrorText !== undefined}
-              helperText={startTimeErrorText}
-            />
-          }
-        />
-        <KkSelectField
-          name="venueId"
-          label={VENUE_LABEL}
-          required
-          value={control.values.venueId}
-          options={venueOptions}
-          onChange={control.setVenue}
-          presentation="select"
-          hint={VENUE_HINT}
-          error={venueIdErrorText !== undefined}
-          helperText={venueIdErrorText}
-        />
+      <KkDateField
+        name="startDay"
+        label={DAY_LABEL}
+        required
+        value={control.values.startDay}
+        onChange={control.setStartDay}
+        error={startDayErrorText !== undefined}
+        helperText={startDayErrorText}
+      />
+      <KkFormPair
+        phone="side"
+        start={
+          <KkTimeField
+            name="doorsOpenAt"
+            label={DOORS_LABEL}
+            value={control.values.doorsOpenAt}
+            onChange={control.setDoorsOpenAt}
+            quickTimes={QUICK_TIMES}
+            allowEmpty
+            emptyLabel={DOORS_EMPTY_LABEL}
+            error={doorsOpenAtErrorText !== undefined}
+            helperText={doorsOpenAtErrorText}
+          />
+        }
+        end={
+          <KkTimeField
+            name="startTime"
+            label={START_LABEL}
+            required
+            value={control.values.startTime}
+            onChange={control.setStartTime}
+            quickTimes={QUICK_TIMES}
+            error={startTimeErrorText !== undefined}
+            helperText={startTimeErrorText}
+          />
+        }
+      />
+      <KkSelectField
+        name="venueId"
+        label={VENUE_LABEL}
+        required
+        value={control.values.venueId}
+        options={venueOptions}
+        onChange={control.setVenue}
+        presentation="select"
+        hint={VENUE_HINT}
+        error={venueIdErrorText !== undefined}
+        helperText={venueIdErrorText}
+      />
     </KkFormSection>
   );
 };

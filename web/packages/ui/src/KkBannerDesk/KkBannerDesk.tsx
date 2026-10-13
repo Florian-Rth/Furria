@@ -4,9 +4,9 @@ import type { FC, ReactNode } from 'react';
 import type { KkAspect } from '../image-aspect';
 import { aspectRatioCss } from '../image-aspect';
 import type { KkCrop } from '../image-crop';
+import { KkPhotoStamp } from '../internal/KkPhotoStamp';
 import { KkCoverPicture } from '../KkCoverPicture';
 import type { KkCropGuide } from '../KkCropFrame/KkCropFrame';
-import { KkPhotoStamp } from '../internal/KkPhotoStamp';
 import { kkTokens } from '../tokens';
 import type { KkBannerDeskActions, KkBannerDeskLabels, KkBannerState } from './banner-desk-types';
 import {

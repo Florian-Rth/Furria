@@ -8,7 +8,11 @@ import { toUploadOwner } from '@/features/pictures';
 import { startUpload } from '@/lib/media/start-upload';
 import { useEventPictureFromGalleryMutation } from '../api';
 import { EVENT_GALLERY_SHEET_ID } from '../event-picture-copy';
-import type { StagedEventPicture, StagedPictureBanner, StagedPictureSource } from '../staged-event-picture';
+import type {
+  StagedEventPicture,
+  StagedPictureBanner,
+  StagedPictureSource,
+} from '../staged-event-picture';
 import { toStagedPictureBanner } from '../staged-event-picture';
 
 const SEND_FAILED_MESSAGE =
@@ -62,7 +66,9 @@ export const useStagedEventPicture = (): StagedEventPictureDesk => {
     },
     onCropCancel: () => {
       setStaged((held) =>
-        held === null || held.crop === null ? null : { ...held, draft: held.crop, isCropping: false },
+        held === null || held.crop === null
+          ? null
+          : { ...held, draft: held.crop, isCropping: false },
       );
     },
     onRemove: () => {

@@ -2,8 +2,8 @@ import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import type { ImageFault } from './internal/use-image-fault';
 import { useImageFault } from './internal/use-image-fault';
-import type { KkSx } from './kk-sx';
 import { KkPhotoPlaceholder } from './KkPhotoPlaceholder';
+import type { KkSx } from './kk-sx';
 
 type KkImageFault = 'picture' | 'hide';
 
@@ -48,9 +48,7 @@ export const KkImage: FC<KkImageProps> = ({
     return null;
   }
   if (imageFault.hasFailed) {
-    return (
-      <KkPhotoPlaceholder fill broken sx={[...sxList, FAULT_CENTRE]} />
-    );
+    return <KkPhotoPlaceholder fill broken sx={[...sxList, FAULT_CENTRE]} />;
   }
 
   return (

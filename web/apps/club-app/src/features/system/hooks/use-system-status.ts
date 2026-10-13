@@ -37,9 +37,7 @@ export const useSystemStatus = (): SystemStatusRead => {
   }
 
   const isConnected = !query.isError;
-  const offline = isConnected
-    ? null
-    : offlineSinceOf(formatClock(new Date(query.dataUpdatedAt)));
+  const offline = isConnected ? null : offlineSinceOf(formatClock(new Date(query.dataUpdatedAt)));
 
   return {
     kind: 'shown',

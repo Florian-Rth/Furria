@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import type { KkImageSource } from './image-source';
-import type { KkSx } from './kk-sx';
 import { KkImage } from './KkImage';
+import type { KkSx } from './kk-sx';
 
 interface KkCoverPictureProps {
   image: KkImageSource;

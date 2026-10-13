@@ -49,10 +49,7 @@ const ticksPaint = (theme: Theme): CSSObject => ({
   borderRight: `1px solid ${inkWash(theme, '34%')}`,
 });
 
-const restItem = (
-  key: 'other' | 'free',
-  rest: KkFillGaugeRest | null,
-): KkFillGaugeLegendItem[] =>
+const restItem = (key: 'other' | 'free', rest: KkFillGaugeRest | null): KkFillGaugeLegendItem[] =>
   rest === null ? [] : [{ key, label: rest.label, figure: rest.figure, swatch: { kind: key } }];
 
 const legendOf = (

@@ -29,7 +29,7 @@ const rowFrame = (theme: Theme): CSSObject => ({
   ...boardCell,
   ...boardFocusRing,
   '@media (hover: hover)': {
-    '&:hover': { backgroundColor: kkTokens.gallery.darkroomEdge },
+    '&:hover': { backgroundColor: kkTokens.color.dark.darkroomEdge },
   },
   [theme.breakpoints.up('desktop')]: { columnGap: 2, px: 1.5 },
 });
@@ -70,12 +70,7 @@ export const KkFlapBoardRow: FC<KkFlapBoardRowProps> = ({
       data-kk-flap-board-row={level}
       sx={{ perspective: '400px', minWidth: 0 }}
     >
-      <Box
-        component={link.component}
-        {...link.props}
-        aria-label={accessibleLabel}
-        sx={rowFrame}
-      >
+      <Box component={link.component} {...link.props} aria-label={accessibleLabel} sx={rowFrame}>
         <KkFlapBoardMark level={level} />
         <Typography component="span" sx={boardLabel}>
           {label}

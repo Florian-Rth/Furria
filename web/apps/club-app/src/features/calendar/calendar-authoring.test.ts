@@ -179,11 +179,7 @@ describe('toEntryPayload', () => {
 
 describe('toEntryFormValues', () => {
   it('fills in the only possible owner and its default visibility', () => {
-    const values = toEntryFormValues(
-      null,
-      toOwnerOptions([TANZGARDE], false),
-      '2027-01-20',
-    );
+    const values = toEntryFormValues(null, toOwnerOptions([TANZGARDE], false), '2027-01-20');
 
     expect(values.ownerId).toBe('7');
     expect(values.visibility).toBe('group');

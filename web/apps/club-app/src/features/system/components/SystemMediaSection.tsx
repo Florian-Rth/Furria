@@ -50,11 +50,7 @@ export const SystemMediaSection: FC<SystemMediaSectionProps> = ({ status, nowMs,
     );
 
   return (
-    <KkReadout
-      label={SECTION_TITLES.media}
-      aside={media.totalBytes}
-      dimmed={dimmed}
-    >
+    <KkReadout label={SECTION_TITLES.media} aside={media.totalBytes} dimmed={dimmed}>
       <KkSlotStrip
         label={QUEUE_LABEL}
         running={media.queue.running}

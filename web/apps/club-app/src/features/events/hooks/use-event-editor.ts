@@ -82,7 +82,15 @@ export const useEventEditor = (event: EventDetails | null): EventEditorControl =
 
   const setField =
     (
-      name: 'startTime' | 'doorsOpenAt' | 'venueId' | 'teaser' | 'description' | 'ageHint' | 'price' | 'presaleTime',
+      name:
+        | 'startTime'
+        | 'doorsOpenAt'
+        | 'venueId'
+        | 'teaser'
+        | 'description'
+        | 'ageHint'
+        | 'price'
+        | 'presaleTime',
     ) =>
     (value: string): void => {
       form.setValue(name, value, FIELD_EDIT);

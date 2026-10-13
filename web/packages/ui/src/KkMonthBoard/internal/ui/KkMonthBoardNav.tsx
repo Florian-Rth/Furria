@@ -38,10 +38,7 @@ export const KkMonthBoardNav: FC<KkMonthBoardNavProps> = ({
     <Stack
       direction="row"
       data-kk-month-board-nav
-      sx={[
-        { alignItems: 'center', gap: 0.5, minWidth: 0 },
-        ...(Array.isArray(sx) ? sx : [sx]),
-      ]}
+      sx={[{ alignItems: 'center', gap: 0.5, minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}
     >
       <KkFlapCount value={flapTitle} variant="h3" sx={{ flexGrow: 1, minWidth: 0 }} />
       {today}

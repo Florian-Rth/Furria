@@ -26,35 +26,35 @@ export const EventWebsiteTextsSection: FC<EventWebsiteTextsSectionProps> = ({ co
 
   return (
     <KkFormSection title={SECTION_TITLE}>
-        <KkTextArea
-          name="teaser"
-          label={TEASER_LABEL}
-          required
-          value={control.values.teaser}
-          onChange={control.setTeaser}
-          rows={TEASER_ROWS}
-          maxLength={EVENT_TEASER_MAX_LENGTH}
-          showCount
-          countLabel={toCountLabel}
-          placeholder={TEASER_PLACEHOLDER}
-          hint={TEASER_HINT}
-          error={teaserErrorText !== undefined}
-          helperText={teaserErrorText}
-        />
-        <KkTextArea
-          name="description"
-          label={DESCRIPTION_LABEL}
-          value={control.values.description}
-          onChange={control.setDescription}
-          rows={DESCRIPTION_ROWS}
-          maxLength={EVENT_DESCRIPTION_MAX_LENGTH}
-          showCount
-          countLabel={toCountLabel}
-          placeholder={DESCRIPTION_PLACEHOLDER}
-          hint={DESCRIPTION_HINT}
-          error={descriptionErrorText !== undefined}
-          helperText={descriptionErrorText}
-        />
+      <KkTextArea
+        name="teaser"
+        label={TEASER_LABEL}
+        required
+        value={control.values.teaser}
+        onChange={control.setTeaser}
+        rows={TEASER_ROWS}
+        maxLength={EVENT_TEASER_MAX_LENGTH}
+        showCount
+        countLabel={toCountLabel}
+        placeholder={TEASER_PLACEHOLDER}
+        hint={TEASER_HINT}
+        error={teaserErrorText !== undefined}
+        helperText={teaserErrorText}
+      />
+      <KkTextArea
+        name="description"
+        label={DESCRIPTION_LABEL}
+        value={control.values.description}
+        onChange={control.setDescription}
+        rows={DESCRIPTION_ROWS}
+        maxLength={EVENT_DESCRIPTION_MAX_LENGTH}
+        showCount
+        countLabel={toCountLabel}
+        placeholder={DESCRIPTION_PLACEHOLDER}
+        hint={DESCRIPTION_HINT}
+        error={descriptionErrorText !== undefined}
+        helperText={descriptionErrorText}
+      />
     </KkFormSection>
   );
 };

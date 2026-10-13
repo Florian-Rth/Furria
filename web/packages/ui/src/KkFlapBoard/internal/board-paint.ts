@@ -2,7 +2,7 @@ import type { CSSObject, Theme } from '@mui/material/styles';
 import { BOARD_INK } from '../../internal/status-paint';
 import { kkTokens } from '../../tokens';
 
-const { system, gallery, chrome } = kkTokens;
+const { system, chrome } = kkTokens;
 
 export const BOARD_STAGGER_SECONDS = system.rowStaggerSeconds;
 
@@ -18,14 +18,17 @@ export const boardFrame = (theme: Theme): CSSObject => ({
   borderStyle: 'solid',
   borderColor: chrome.dark.base,
   boxShadow: kkTokens.shadow.raised,
-  ...theme.applyStyles('dark', { borderColor: (theme.vars ?? theme).palette.divider, boxShadow: 'none' }),
+  ...theme.applyStyles('dark', {
+    borderColor: (theme.vars ?? theme).palette.divider,
+    boxShadow: 'none',
+  }),
 });
 
 export const boardCell: CSSObject = {
-  backgroundColor: gallery.darkroom,
+  backgroundColor: kkTokens.color.dark.darkroom,
   borderBottomWidth: kkTokens.line.hair,
   borderBottomStyle: 'solid',
-  borderBottomColor: gallery.darkroomEdge,
+  borderBottomColor: kkTokens.color.dark.darkroomEdge,
   borderRadius: `${kkTokens.radius.bar}px`,
 };
 

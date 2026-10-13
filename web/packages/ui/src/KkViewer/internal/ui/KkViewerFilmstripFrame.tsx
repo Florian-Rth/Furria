@@ -2,9 +2,9 @@ import ButtonBase from '@mui/material/ButtonBase';
 import type { Theme } from '@mui/material/styles';
 import type { FC } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
+import { KkImage } from '../../../KkImage';
 import { kkTokens } from '../../../tokens';
 import type { KkViewerItem } from '../../viewer-types';
-import { KkImage } from '../../../KkImage';
 
 const FRAME_SIZE = 52;
 const FRAME_SIZES = `${FRAME_SIZE}px`;

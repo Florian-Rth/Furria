@@ -1,9 +1,4 @@
-import type {
-  KkFilterOption,
-  KkHeartbeatState,
-  KkIconName,
-  KkStatusLevel,
-} from '@furria/ui';
+import type { KkFilterOption, KkHeartbeatState, KkIconName, KkStatusLevel } from '@furria/ui';
 import { deniedMessageOf } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import type { AreaSummary } from './area-summary';
@@ -303,7 +298,10 @@ export const UNKNOWN_VALUE = '–';
 
 export const rowsAboutOf = (rows: number): string => `ca. ${formatCount(rows)} Zeilen`;
 
-export const MAIL_FACT_LABELS = { pending: 'In Warteschlange', retrying: 'Erneuter Versuch' } as const;
+export const MAIL_FACT_LABELS = {
+  pending: 'In Warteschlange',
+  retrying: 'Erneuter Versuch',
+} as const;
 
 export const LOG_LABEL = 'Anwendungsprotokoll';
 export const LOG_SOURCE_LABEL = 'Quelle';

@@ -63,6 +63,7 @@ import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import PolicyOutlinedIcon from '@mui/icons-material/PolicyOutlined';
 import QrCode2OutlinedIcon from '@mui/icons-material/QrCode2Outlined';
+import RemoveOutlinedIcon from '@mui/icons-material/RemoveOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import SensorsOutlinedIcon from '@mui/icons-material/SensorsOutlined';
@@ -73,7 +74,6 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
 import ZoomInOutlinedIcon from '@mui/icons-material/ZoomInOutlined';
-import RemoveOutlinedIcon from '@mui/icons-material/RemoveOutlined';
 import type { FC } from 'react';
 import type { KkSx } from './kk-sx';
 

@@ -133,7 +133,12 @@ describe('toBoardDay', () => {
     ['a requested day on the board', new Date(2026, 9, 1), '2026-10-20', '2026-10-20'],
     ['today in the current month', new Date(2026, 9, 1), null, '2026-10-13'],
     ['the first of another month', new Date(2026, 11, 1), null, '2026-12-01'],
-    ['the first when the request is off the board', new Date(2026, 11, 1), '2026-10-20', '2026-12-01'],
+    [
+      'the first when the request is off the board',
+      new Date(2026, 11, 1),
+      '2026-10-20',
+      '2026-12-01',
+    ],
   ])('picks %s', (_case, cursor, requested, day) => {
     expect(toBoardDay(cursor, today, requested)).toBe(day);
   });

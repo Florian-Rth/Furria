@@ -150,11 +150,7 @@ public sealed class SystemVerdictTests
             }
         );
 
-        AssertSingleReason(
-            verdict,
-            SystemLevel.Attention,
-            SystemReasonCode.WorkerVersionMismatch
-        );
+        AssertSingleReason(verdict, SystemLevel.Attention, SystemReasonCode.WorkerVersionMismatch);
     }
 
     [Theory]

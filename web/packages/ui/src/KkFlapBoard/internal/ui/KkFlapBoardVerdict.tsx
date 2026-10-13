@@ -18,11 +18,7 @@ export const KkFlapBoardVerdict: FC<KkFlapBoardVerdictProps> = ({ label, word, l
   const delay = (after + 1) * BOARD_STAGGER_SECONDS + kkTokens.system.verdictPauseSeconds;
 
   return (
-    <Stack
-      role="status"
-      data-kk-flap-board-verdict={level}
-      sx={{ rowGap: 0.25, minWidth: 0 }}
-    >
+    <Stack role="status" data-kk-flap-board-verdict={level} sx={{ rowGap: 0.25, minWidth: 0 }}>
       <Typography component="span" sx={boardLabel}>
         {label}
       </Typography>

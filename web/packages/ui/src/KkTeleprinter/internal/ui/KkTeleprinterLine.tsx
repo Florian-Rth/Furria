@@ -119,11 +119,7 @@ export const KkTeleprinterLine: FC<KkTeleprinterLineProps> = ({
       </Box>
     ) : null;
   const repeats = repeatsOpen ? (
-    <Stack
-      component="ul"
-      id={repeatsId}
-      sx={{ m: 0, p: 0, pl: 1, listStyle: 'none', minWidth: 0 }}
-    >
+    <Stack component="ul" id={repeatsId} sx={{ m: 0, p: 0, pl: 1, listStyle: 'none', minWidth: 0 }}>
       {children}
     </Stack>
   ) : null;
@@ -151,10 +147,7 @@ export const KkTeleprinterLine: FC<KkTeleprinterLineProps> = ({
           {time}
         </Typography>
         <Stack sx={{ minWidth: 0, rowGap: 0.25 }}>
-          <Stack
-            direction="row"
-            sx={{ alignItems: 'baseline', columnGap: 0.75, minWidth: 0 }}
-          >
+          <Stack direction="row" sx={{ alignItems: 'baseline', columnGap: 0.75, minWidth: 0 }}>
             <KkChip size="small" sx={{ flexShrink: 0 }}>
               {source}
             </KkChip>

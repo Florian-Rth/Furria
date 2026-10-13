@@ -1,7 +1,10 @@
 language js
 
 or {
-  or { JsxOpeningElement() as $hit, JsxSelfClosingElement() as $hit } where {
+  or {
+    JsxOpeningElement() as $hit,
+    JsxSelfClosingElement() as $hit
+  } where {
     $hit <: r"^<(?:img|picture|source|CardMedia|ImageListItem)\b[\s\S]*",
     register_diagnostic(span=$hit, message="Pictures go through `KkPhoto` (`@furria/ui`); only `KkImage` renders an <img>.")
   },
@@ -11,16 +14,20 @@ or {
   },
   JsxAttribute() as $hit where {
     $hit <: r"^src\s*=[\s\S]*",
-    $hit <: within or { JsxOpeningElement() as $el, JsxSelfClosingElement() as $el } where {
-      $el <: r"^<Avatar\b[\s\S]*"
-    },
+    $hit <: within or {
+      JsxOpeningElement() as $el,
+      JsxSelfClosingElement() as $el
+    } where { $el <: r"^<Avatar\b[\s\S]*" } ,
     register_diagnostic(span=$hit, message="Pictures go through `KkPhoto` (`@furria/ui`); only `KkImage` renders an <img>.")
   },
-  or { JsStringLiteralExpression() as $hit, JsTemplateExpression() as $hit } where {
+  or {
+    JsStringLiteralExpression() as $hit,
+    JsTemplateExpression() as $hit
+  } where {
     $hit <: r"[\s\S]*\burl\([\s\S]*",
     $hit <: within JsPropertyObjectMember() as $member where {
       $member <: r"^['\"]?(?:background|backgroundImage|maskImage|WebkitMaskImage|borderImage|content)['\"]?\s*:[\s\S]*"
-    },
+    } ,
     register_diagnostic(span=$hit, message="No CSS image: pictures go through `KkPhoto` (`@furria/ui`).")
   }
 }

@@ -37,7 +37,11 @@ const sizePaint = (theme: Theme, frame: PhotoFrame): CSSObject => {
     };
   }
 
-  return { width: '100%', aspectRatio: frame.aspectRatio, borderRadius: `${kkTokens.radius.base}px` };
+  return {
+    width: '100%',
+    aspectRatio: frame.aspectRatio,
+    borderRadius: `${kkTokens.radius.base}px`,
+  };
 };
 
 const framePaint = (theme: Theme, frame: PhotoFrame): CSSObject => ({
@@ -118,10 +122,7 @@ export const KkPhoto: FC<KkPhotoProps> = ({
   return (
     <Box
       data-kk-photo
-      sx={[
-        (theme: Theme) => framePaint(theme, photoFrame),
-        ...(Array.isArray(sx) ? sx : [sx]),
-      ]}
+      sx={[(theme: Theme) => framePaint(theme, photoFrame), ...(Array.isArray(sx) ? sx : [sx])]}
     >
       {face}
       {stamp}

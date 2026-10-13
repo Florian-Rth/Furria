@@ -111,7 +111,10 @@ export const useCalendarBoard = (): CalendarBoard => {
   };
 
   const addOnSelectedDay = (): void => {
-    void navigate({ to: '/calendar/new', search: (previous) => ({ ...previous, day: selectedDay }) });
+    void navigate({
+      to: '/calendar/new',
+      search: (previous) => ({ ...previous, day: selectedDay }),
+    });
   };
 
   return {

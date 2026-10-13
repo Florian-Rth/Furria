@@ -77,7 +77,9 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry }) => {
     />
   );
   const roleSection =
-    entry === null ? null : <KkFormSection title={ROLE_SECTION}>{impliedRoleControl}</KkFormSection>;
+    entry === null ? null : (
+      <KkFormSection title={ROLE_SECTION}>{impliedRoleControl}</KkFormSection>
+    );
 
   return (
     <WriteScreen

@@ -1,6 +1,6 @@
 language js
 
-JsxElement(opening_element = $open, children = $children) where {
+JsxElement(opening_element=$open, children=$children) where {
   $open <: r"<(?:WriteScreen|Grid|Stack|Box|KkPanel|KkPanelSection)\b[\s\S]*",
   $children <: some or {
     JsxSelfClosingElement() as $field where {

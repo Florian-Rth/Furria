@@ -59,8 +59,16 @@ describe('workerStateOf', () => {
 
   it.each<{ label: string; worker: MediaWorker; state: string }>([
     { label: 'beats while alive', worker: worker(true, '2026-10-13T11:59:50Z'), state: 'alive' },
-    { label: 'goes quiet for minutes', worker: worker(false, '2026-10-13T11:57:00Z'), state: 'stale' },
-    { label: 'is gone after five minutes', worker: worker(false, '2026-10-13T11:50:00Z'), state: 'gone' },
+    {
+      label: 'goes quiet for minutes',
+      worker: worker(false, '2026-10-13T11:57:00Z'),
+      state: 'stale',
+    },
+    {
+      label: 'is gone after five minutes',
+      worker: worker(false, '2026-10-13T11:50:00Z'),
+      state: 'gone',
+    },
   ])('$label', ({ worker: subject, state }) => {
     expect(workerStateOf(subject, NOW)).toBe(state);
   });
@@ -86,7 +94,9 @@ describe('boardRowsOf', () => {
     checkedAt: '2026-10-13T12:00:00Z',
     verdict: {
       level: 'attention',
-      reasons: [{ check: 'storage', level: 'attention', code: 'diskLow', value: 12, subject: null }],
+      reasons: [
+        { check: 'storage', level: 'attention', code: 'diskLow', value: 12, subject: null },
+      ],
     },
     app: { version: '0.9.0', environment: 'Production', startedAt: '2026-10-13T08:00:00Z' },
     database: {
@@ -115,9 +125,9 @@ describe('boardRowsOf', () => {
   };
 
   it('reads one figure and the worst level per area', () => {
-    expect(
-      boardRowsOf(status, NOW).map((row) => [row.area, row.level, row.figure]),
-    ).toEqual<[string, string, BoardFigure][]>([
+    expect(boardRowsOf(status, NOW).map((row) => [row.area, row.level, row.figure])).toEqual<
+      [string, string, BoardFigure][]
+    >([
       ['database', 'ok', { kind: 'latency', ms: 4 }],
       ['media', 'ok', { kind: 'count', count: 5 }],
       ['storage', 'attention', { kind: 'free', share: 0.12 }],

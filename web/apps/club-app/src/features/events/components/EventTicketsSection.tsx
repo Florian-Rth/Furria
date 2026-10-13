@@ -37,50 +37,50 @@ export const EventTicketsSection: FC<EventTicketsSectionProps> = ({ control }) =
 
   return (
     <KkFormSection title={SECTION_TITLE}>
-        <KkPriceField
-          name="price"
-          label={PRICE_LABEL}
-          value={control.values.price}
-          onChange={control.setPrice}
-          placeholder={PRICE_PLACEHOLDER}
-          error={priceErrorText !== undefined}
-          helperText={priceErrorText}
-        />
-        <KkFormPair
-          balance="leading"
-          start={
-            <KkDateField
-              name="presaleDay"
-              label={PRESALE_DAY_LABEL}
-              value={control.values.presaleDay}
-              onChange={control.setPresaleDay}
-              allowEmpty
-              emptyLabel={PRESALE_DAY_EMPTY_LABEL}
-            />
-          }
-          end={
-            <KkTimeField
-              name="presaleTime"
-              label={PRESALE_TIME_LABEL}
-              value={control.values.presaleTime}
-              onChange={control.setPresaleTime}
-              quickTimes={PRESALE_QUICK_TIMES}
-              disabled={hasNoPresale}
-              error={hasPresaleError}
-              helperText={presaleHelperText}
-            />
-          }
-        />
-        <KkChipField
-          name="ageHint"
-          label={AGE_HINT_LABEL}
-          value={control.values.ageHint}
-          onChange={control.setAgeHint}
-          suggestions={AGE_HINT_SUGGESTIONS}
-          maxLength={EVENT_AGE_HINT_MAX_LENGTH}
-          error={ageHintErrorText !== undefined}
-          helperText={ageHintErrorText}
-        />
+      <KkPriceField
+        name="price"
+        label={PRICE_LABEL}
+        value={control.values.price}
+        onChange={control.setPrice}
+        placeholder={PRICE_PLACEHOLDER}
+        error={priceErrorText !== undefined}
+        helperText={priceErrorText}
+      />
+      <KkFormPair
+        balance="leading"
+        start={
+          <KkDateField
+            name="presaleDay"
+            label={PRESALE_DAY_LABEL}
+            value={control.values.presaleDay}
+            onChange={control.setPresaleDay}
+            allowEmpty
+            emptyLabel={PRESALE_DAY_EMPTY_LABEL}
+          />
+        }
+        end={
+          <KkTimeField
+            name="presaleTime"
+            label={PRESALE_TIME_LABEL}
+            value={control.values.presaleTime}
+            onChange={control.setPresaleTime}
+            quickTimes={PRESALE_QUICK_TIMES}
+            disabled={hasNoPresale}
+            error={hasPresaleError}
+            helperText={presaleHelperText}
+          />
+        }
+      />
+      <KkChipField
+        name="ageHint"
+        label={AGE_HINT_LABEL}
+        value={control.values.ageHint}
+        onChange={control.setAgeHint}
+        suggestions={AGE_HINT_SUGGESTIONS}
+        maxLength={EVENT_AGE_HINT_MAX_LENGTH}
+        error={ageHintErrorText !== undefined}
+        helperText={ageHintErrorText}
+      />
     </KkFormSection>
   );
 };

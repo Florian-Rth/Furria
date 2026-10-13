@@ -18,11 +18,11 @@ import { KkFlapCount } from '../KkFlapCount';
 import { KkGreaseMark } from '../KkGreaseMark';
 import { KkIcon } from '../KkIcon';
 import { KkIconButton } from '../KkIconButton';
+import { KkImage } from '../KkImage';
 import { KK_DARK_SCHEME_ATTRIBUTE } from '../theme';
 import { kkTokens } from '../tokens';
 import type { KkLightTableIntents } from './use-light-table-stage';
 import { useLightTableStage } from './use-light-table-stage';
-import { KkImage } from '../KkImage';
 
 const { gallery } = kkTokens;
 const { cull } = gallery;

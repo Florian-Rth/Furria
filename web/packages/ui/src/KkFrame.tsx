@@ -9,13 +9,13 @@ import type { KkAspect } from './image-aspect';
 import { aspectRatioCss } from './image-aspect';
 import { filmOf } from './internal/film-paint';
 import { focusRing } from './internal/focus-ring';
+import { useImageFault } from './internal/use-image-fault';
 import { KkGreaseMark } from './KkGreaseMark';
 import { KkIcon } from './KkIcon';
+import { KkImage } from './KkImage';
 import { KkPhotoPlaceholder } from './KkPhotoPlaceholder';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
-import { KkImage } from './KkImage';
-import { useImageFault } from './internal/use-image-fault';
 
 export type KkFrameState = 'ready' | 'queued' | 'uploading' | 'processing' | 'failed';
 

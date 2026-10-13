@@ -46,7 +46,7 @@ export const usePictureSection = ({
     notice: PICTURE_FAILURE,
   });
   const removal = useApiMutation({
-    request: (_input: void, accessToken) => requestPictureRemoval(target, accessToken),
+    request: (_input: undefined, accessToken) => requestPictureRemoval(target, accessToken),
     changes,
     notice: PICTURE_FAILURE,
   });
@@ -88,7 +88,7 @@ export const usePictureSection = ({
       const isLocalUpload = state.kind === 'uploading' || state.kind === 'failed';
       desk.dismiss();
       if (!isLocalUpload) {
-        removal.mutate();
+        removal.mutate(undefined);
       }
     },
     onCropChange: desk.changeCrop,

@@ -12,9 +12,11 @@ const WEBSITE_LABEL = 'Website';
 const INSTAGRAM_LABEL = 'Instagram';
 const FACEBOOK_LABEL = 'Facebook';
 const ADDRESS_SECTION_TITLE = 'Anschrift';
-const ADDRESS_SECTION_DESCRIPTION = 'Die Postanschrift des Vereins. Steht im Impressum der Website.';
+const ADDRESS_SECTION_DESCRIPTION =
+  'Die Postanschrift des Vereins. Steht im Impressum der Website.';
 const REACH_SECTION_TITLE = 'Erreichbarkeit';
-const EMAIL_HINT = 'Steht im Impressum und überall auf der Website, wo Gäste dem Verein schreiben können.';
+const EMAIL_HINT =
+  'Steht im Impressum und überall auf der Website, wo Gäste dem Verein schreiben können.';
 const PHONE_HINT = 'Steht im Impressum und auf der Website unter „Mitglied werden“.';
 const WEB_SECTION_TITLE = 'Im Netz';
 const WEBSITE_HINT = 'Die ganze Adresse, mit https://. Steht im Impressum der Website.';

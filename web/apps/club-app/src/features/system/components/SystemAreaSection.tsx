@@ -30,8 +30,6 @@ export const SystemAreaSection: FC<SystemAreaSectionProps> = ({ area, status, mo
     case 'mail':
       return <SystemMailSection status={status} nowMs={moment.nowMs} dimmed={dimmed} />;
     case 'log':
-      return (
-        <SystemLogSection logsSince={status.logsSince} nowMs={moment.nowMs} dimmed={dimmed} />
-      );
+      return <SystemLogSection logsSince={status.logsSince} nowMs={moment.nowMs} dimmed={dimmed} />;
   }
 };

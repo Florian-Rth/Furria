@@ -1,11 +1,7 @@
 import { KkFillGauge, KkReadout } from '@furria/ui';
 import type { FC } from 'react';
 import type { SystemStatus } from '../schemas';
-import {
-  SECTION_TITLES,
-  STORAGE_LABEL,
-  STORAGE_UNMEASURED,
-} from '../system-copy';
+import { SECTION_TITLES, STORAGE_LABEL, STORAGE_UNMEASURED } from '../system-copy';
 import { storageViewOf } from '../system-view';
 
 interface SystemStorageSectionProps {
@@ -14,11 +10,7 @@ interface SystemStorageSectionProps {
   dimmed: boolean;
 }
 
-export const SystemStorageSection: FC<SystemStorageSectionProps> = ({
-  status,
-  nowMs,
-  dimmed,
-}) => {
+export const SystemStorageSection: FC<SystemStorageSectionProps> = ({ status, nowMs, dimmed }) => {
   const storage = storageViewOf(status, nowMs);
   const isEmpty = storage.parts.length === 0 && storage.free === null;
   const gauge = isEmpty ? (
@@ -34,11 +26,7 @@ export const SystemStorageSection: FC<SystemStorageSectionProps> = ({
   );
 
   return (
-    <KkReadout
-      label={SECTION_TITLES.storage}
-      aside={storage.measured}
-      dimmed={dimmed}
-    >
+    <KkReadout label={SECTION_TITLES.storage} aside={storage.measured} dimmed={dimmed}>
       {gauge}
     </KkReadout>
   );

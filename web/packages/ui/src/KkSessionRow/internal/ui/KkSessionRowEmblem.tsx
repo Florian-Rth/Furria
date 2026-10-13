@@ -3,8 +3,8 @@ import type { FC } from 'react';
 import { inkWash, inkWashSurface } from '../../../internal/ink-wash';
 import { logoInk } from '../../../internal/logo-ink';
 import { KkBroomMark } from '../../../KkBroomMark';
-import { emblemTile } from './emblem-tile';
 import { KkImage } from '../../../KkImage';
+import { emblemTile } from './emblem-tile';
 
 const PLACEHOLDER_SIZE = 30;
 
