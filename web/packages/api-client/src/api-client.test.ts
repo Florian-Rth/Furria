@@ -108,6 +108,67 @@ describe('apiFetch', () => {
     });
   });
 
+  it('reads an empty success body as no content', async () => {
+    expect(
+      await outcomeOf(() => Promise.resolve(new Response('', { status: 200 })), z.undefined()),
+    ).toEqual({ value: undefined });
+  });
+
+  it.each<[string, (signal: AbortSignal) => Promise<Response>, Outcome]>([
+    [
+      'an answer that never comes',
+      (signal) =>
+        new Promise((_resolve, reject) => {
+          signal.addEventListener('abort', () => reject(signal.reason));
+        }),
+      { failure: { kind: 'timedOut' } },
+    ],
+    [
+      'a body that stops arriving',
+      (signal) =>
+        Promise.resolve(
+          new Response(
+            new ReadableStream({
+              start: (controller) => {
+                signal.addEventListener('abort', () => controller.error(signal.reason));
+              },
+            }),
+            { status: 200 },
+          ),
+        ),
+      { failure: { kind: 'timedOut' } },
+    ],
+    [
+      'a connection that drops mid-body',
+      () =>
+        Promise.resolve(
+          new Response(
+            new ReadableStream({
+              start: (controller) => {
+                controller.error(new TypeError('network error'));
+              },
+            }),
+            { status: 200 },
+          ),
+        ),
+      { failure: { kind: 'unreachable' } },
+    ],
+  ])('turns %s into its outcome', async (_case, answer, expected) => {
+    const { apiFetch } = createApiClient({
+      readBaseUrl: () => '',
+      timeoutMs: 5,
+      send: (_url, init) => (init.signal ? answer(init.signal) : Promise.reject(new Error())),
+      reportMismatch: () => undefined,
+    });
+
+    const outcome = await apiFetch('/api/items/1', { schema: ItemSchema }).then(
+      (value): Outcome => ({ value }),
+      (error: Error): Outcome => ({ failure: apiFailureOf(error) }),
+    );
+
+    expect(outcome).toEqual(expected);
+  });
+
   it('names the drifted request and its issues to the mismatch report', async () => {
     const reports: ResponseMismatch[] = [];
     const { apiFetch } = createApiClient({

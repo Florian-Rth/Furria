@@ -76,7 +76,7 @@ public sealed partial class GalleryService
                 .AsNoTracking()
                 .Where(item => item.UploadedByPersonId == uploaderPersonId)
                 .InCaptureOrder()
-                .Select(ItemSummary)
+                .Select(ItemSummary())
                 .ToListAsync(ct)
         );
     }
@@ -102,7 +102,7 @@ public sealed partial class GalleryService
                     )
                 )
             )
-            .Select(ItemSummary)
+            .Select(ItemSummary())
             .ToListAsync(ct);
     }
 

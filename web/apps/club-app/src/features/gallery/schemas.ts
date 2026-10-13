@@ -62,6 +62,7 @@ const GalleryItemFields = {
   mediaItemId: z.int().positive(),
   kind: MediaKindSchema,
   state: MediaItemStateSchema,
+  isStalled: z.boolean(),
   width: z.int().nullable(),
   height: z.int().nullable(),
   durationSeconds: z.number().nullable(),

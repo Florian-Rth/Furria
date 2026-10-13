@@ -10,6 +10,8 @@ public static class MediaRetrySchedule
         TimeSpan.FromMinutes(10),
     ];
 
+    public static readonly int MaxAttempts = DelaysAfterFailedAttempt.Count + 1;
+
     [Pure]
     public static TimeSpan? DelayAfterFailed(int attempt) =>
         attempt >= 1 && attempt <= DelaysAfterFailedAttempt.Count

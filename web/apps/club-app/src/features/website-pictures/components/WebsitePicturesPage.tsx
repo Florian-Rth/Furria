@@ -1,4 +1,4 @@
-import { KkButton, KkErrorState, KkScreen } from '@furria/ui';
+import { KkButton, KkErrorState, KkScreen, KkTitleHeader } from '@furria/ui';
 import type { FC } from 'react';
 import { AppListSkeleton, GALLERY_ORIGIN } from '@/features/session';
 import { useWebsiteBoard } from '../hooks/use-website-board';
@@ -7,6 +7,7 @@ import {
   LOADING_LABEL,
   RETRY_LABEL,
   toLoadErrorMessage,
+  WEBSITE_LEAD,
   WEBSITE_TITLE,
 } from '../website-copy';
 import { WebsiteBoardBody } from './WebsiteBoardBody';
@@ -27,7 +28,12 @@ export const WebsitePicturesPage: FC = () => {
     );
 
   return (
-    <KkScreen kind="working" title={WEBSITE_TITLE} origin={GALLERY_ORIGIN}>
+    <KkScreen
+      kind="working"
+      title={WEBSITE_TITLE}
+      origin={GALLERY_ORIGIN}
+      header={<KkTitleHeader title={WEBSITE_TITLE} lead={WEBSITE_LEAD} />}
+    >
       {content}
     </KkScreen>
   );

@@ -8,7 +8,13 @@ const item = (
   mediaItemId: number,
   capturedAt: string | null,
   state: DeskSource['state'] = 'ready',
-): DeskSource => ({ mediaItemId, state, capturedAt, uploadedAt: '2026-02-15T09:00:00Z' });
+): DeskSource => ({
+  mediaItemId,
+  state,
+  isStalled: false,
+  capturedAt,
+  uploadedAt: '2026-02-15T09:00:00Z',
+});
 
 describe('deskOf', () => {
   it('lays ready, unhidden items out by capture time and splits scenes at gaps', () => {
@@ -28,6 +34,23 @@ describe('deskOf', () => {
       { id: 3, scene: 1 },
     ]);
     expect(desk.developing).toBe(1);
+  });
+
+  it('tells developing, stuck and failed items apart', () => {
+    const desk = deskOf(
+      [
+        item(1, null, 'processing'),
+        { ...item(2, null, 'processing'), isStalled: true },
+        item(3, null, 'failed'),
+        item(4, null),
+      ],
+      new Set(),
+    );
+    expect({ developing: desk.developing, stalled: desk.stalled, failed: desk.failed }).toEqual({
+      developing: 1,
+      stalled: 1,
+      failed: 1,
+    });
   });
 });
 

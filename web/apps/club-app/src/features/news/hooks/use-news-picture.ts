@@ -56,14 +56,15 @@ export const useNewsPicture = (editor: NewsEditor): NewsPictureDesk => {
     onSaveFailed: failNotice,
   });
   const isLocalUpload = desk.state.kind === 'uploading' || desk.state.kind === 'failed';
+  const chooseFile = (): void => {
+    input?.click();
+  };
 
   return {
     picture,
     isCropping: desk.state.kind === 'cropping',
     fileInputRef: setInput,
-    chooseFile: () => {
-      input?.click();
-    },
+    chooseFile,
     onFileChosen: (event) => {
       const file = event.target.files?.[0];
       event.target.value = '';
@@ -102,6 +103,12 @@ export const useNewsPicture = (editor: NewsEditor): NewsPictureDesk => {
         editor.settlePicture((newsPostId) => removal.mutateAsync(newsPostId)).catch(failNotice);
       }
     },
-    retry: desk.submit,
+    retry: () => {
+      if (desk.state.kind === 'failed') {
+        desk.submit();
+      } else {
+        chooseFile();
+      }
+    },
   };
 };

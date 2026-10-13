@@ -277,11 +277,7 @@ export const useGalleryInbox = (): GalleryInbox => {
   return {
     title: inboxTitleOf(inboxOwner.ownerName),
     remaining: loaded ? countLabel(remaining) : '–',
-    tally: tallyLineOf(
-      settled.filed + tally.filed,
-      settled.rejected + tally.rejected,
-      desk.developing,
-    ),
+    tally: tallyLineOf(settled.filed + tally.filed, settled.rejected + tally.rejected, desk),
     scene: scene === undefined ? '' : `Szene ${sceneIndex + 1} · ${sceneSpanLabel(scene)}`,
     position: sceneFrames.length === 0 ? '' : `${inScene} / ${sceneFrames.length}`,
     frame,

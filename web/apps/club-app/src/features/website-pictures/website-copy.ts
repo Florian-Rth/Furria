@@ -41,11 +41,13 @@ export const CROP_LABELS: KkCropFrameLabels = {
 };
 
 export const REPLACE_NOTE = 'Ein neues Foto ersetzt das jetzige sofort auf der Website.';
-export const LIVE_NOTE = 'Jede Änderung ist sofort auf der Website zu sehen.';
+export const WEBSITE_LEAD = 'Die Bilder der Website – jede Änderung ist sofort online.';
 export const RECUT_NOTE =
   'Das Format auf der Website hat sich geändert. Schneide das Foto neu zu, sonst wird es verzerrt beschnitten.';
 export const FAILED_NOTE = 'Dieses Foto ließ sich nicht verarbeiten. Lade bitte ein anderes hoch.';
 export const PROCESSING_NOTE = 'Das Foto wird gerade aufbereitet. Das dauert nur einen Moment.';
+export const STALLED_NOTE =
+  'Das Aufbereiten dauert ungewöhnlich lange. Schau später noch einmal vorbei oder lade das Foto erneut hoch.';
 export const UNREADABLE_NOTE =
   'Dieses Foto kann hier nicht angezeigt werden. Es wird mittig zugeschnitten hochgeladen – den Ausschnitt kannst du danach ändern.';
 export const NOTICES = {
@@ -96,6 +98,7 @@ export const REMOVE_FACT = 'Platz';
 
 const FLAG_TEXTS: Record<SlotFlag, string> = {
   failed: 'Fehlgeschlagen',
+  stalled: 'Dauert ungewöhnlich lange',
   mismatch: 'Zuschnitt passt nicht mehr',
   altMissing: 'Beschreibung fehlt',
   processing: 'Wird aufbereitet',
@@ -107,6 +110,7 @@ export const flagTextOf = (flag: SlotFlag): string => FLAG_TEXTS[flag];
 const STATUS_WORDS: Record<PositionStatus, string> = {
   empty: 'leer',
   processing: 'wird aufbereitet',
+  stalled: 'Aufbereiten dauert ungewöhnlich lange',
   failed: 'fehlgeschlagen',
   ready: 'belegt',
   mismatch: 'Zuschnitt passt nicht mehr',
@@ -148,9 +152,8 @@ export const slotFactsOf = (aspects: readonly KkAspect[], filled: number): strin
   return aspects.length === 1 ? formats : `${filled} von ${aspects.length} belegt · ${formats}`;
 };
 
-export const pageMetaOf = (path: string | null): string => path ?? ALL_PAGES_PATH;
-
-export const fillTrailOf = (filled: number, total: number): string => `${filled}/${total}`;
+export const pageMetaOf = (path: string | null, filled: number, total: number): string =>
+  `${path ?? ALL_PAGES_PATH} · ${filled}/${total}`;
 
 export const summaryLineOf = ({ filled, total, altMissing, mismatched }: BoardSummary): string =>
   [
@@ -173,6 +176,3 @@ export const updatedLineOf = (name: string | null, at: string): string => {
 
 export const orphanNameOf = (slot: string, position: number): string =>
   `${slot} · Platz ${position}`;
-
-export const HUB_TRAIL = 'Bildplätze ▸';
-export const HUB_TITLE_LABEL = 'Bildplätze der Website öffnen';

@@ -2,9 +2,10 @@ import '@furria/api-client/zod-without-eval';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
+import { PageUnavailable } from '@/components/PageUnavailable';
 import { routeTree } from '@/routeTree.gen';
 
-const router = createRouter({ routeTree });
+const router = createRouter({ routeTree, defaultErrorComponent: PageUnavailable });
 
 declare module '@tanstack/react-router' {
   interface Register {

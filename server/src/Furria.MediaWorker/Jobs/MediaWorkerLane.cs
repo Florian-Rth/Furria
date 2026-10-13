@@ -43,10 +43,11 @@ public sealed class MediaWorkerLane : BackgroundService
         }
         catch (Exception exception) when (exception is not OperationCanceledException)
         {
-            _logger.LogWarning(
-                "Media queue for {MediaKind} unreachable, failure {FailureType}",
+            _logger.LogError(
+                exception,
+                "Media queue for {MediaKind} unreachable, retrying in {PollInterval}",
                 _kind,
-                exception.GetType().Name
+                PollInterval
             );
         }
     }

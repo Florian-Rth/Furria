@@ -10,6 +10,8 @@ public sealed record GalleryItemSummary
 
     public required MediaItemState State { get; init; }
 
+    public required bool IsStalled { get; init; }
+
     public required int? Width { get; init; }
 
     public required int? Height { get; init; }

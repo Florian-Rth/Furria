@@ -42,36 +42,35 @@ public sealed class MediaJobRunner
 
     public async Task<bool> RunNextAsync(MediaKind kind, CancellationToken ct)
     {
-        var job = await WithQueueAsync(queue => queue.ClaimAsync(kind, ct));
-        if (job is null)
+        var lease = await WithQueueAsync(queue => queue.ClaimAsync(kind, ct));
+        if (lease is null)
             return false;
 
-        _activity.Begin(kind, job.MediaItemId);
         using var leaseHeld = CancellationTokenSource.CreateLinkedTokenSource(ct);
-        var renewal = KeepLeaseAsync(job.Lease, leaseHeld);
+        var renewal = KeepLeaseAsync(lease, leaseHeld);
         try
         {
-            await RenderAndRecordAsync(job, leaseHeld.Token);
+            await RenderAndRecordAsync(lease, leaseHeld.Token);
         }
         catch (OperationCanceledException) when (ct.IsCancellationRequested)
         {
-            await WithQueueAsync(queue => queue.ReleaseAsync(job.Lease, CancellationToken.None));
+            await WithQueueAsync(queue => queue.ReleaseAsync(lease, CancellationToken.None));
             throw;
         }
         catch (OperationCanceledException)
         {
             _logger.LogWarning(
-                "Media item {MediaItemId} left to another worker, its lease was lost",
-                job.MediaItemId
+                "Media job {MediaJobId} left to another worker, its lease was lost",
+                lease.JobId
             );
         }
         catch (MissingOriginalException exception)
         {
-            await WithQueueAsync(queue => queue.GiveUpAsync(job.Lease, exception.Message, ct));
+            await WithQueueAsync(queue => queue.GiveUpAsync(lease, exception.Message, ct));
         }
         catch (Exception exception)
         {
-            await WithQueueAsync(queue => queue.FailAsync(job.Lease, ReasonOf(exception), ct));
+            await WithQueueAsync(queue => queue.FailAsync(lease, ReasonOf(exception), ct));
         }
         finally
         {
@@ -83,8 +82,13 @@ public sealed class MediaJobRunner
         return true;
     }
 
-    private async Task RenderAndRecordAsync(MediaJobDetails job, CancellationToken ct)
+    private async Task RenderAndRecordAsync(MediaJobLease lease, CancellationToken ct)
     {
+        var job = await WithQueueAsync(queue => queue.DetailsOfAsync(lease, ct));
+        if (job is null)
+            return;
+
+        _activity.Begin(job.Kind, job.MediaItemId);
         if (!_root.HasOriginalOf(job.StorageKey))
             throw new MissingOriginalException();
 

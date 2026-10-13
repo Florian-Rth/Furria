@@ -65,6 +65,9 @@ export const kkTokens = {
       line: 'rgba(244,246,248,0.16)',
       line2: 'rgba(244,246,248,0.09)',
       onRed: '#171A1F',
+      darkroom: '#050608',
+      darkroomEdge: '#0E1013',
+      darkroomLatent: '#2A2D33',
       onRedDk: '#FFFFFF',
       photoScrim:
         'linear-gradient(to bottom, rgba(12,13,16,0.72) 0%, rgba(12,13,16,0.24) 19%, rgba(12,13,16,0.24) 42%, rgba(12,13,16,0.82) 76%, rgba(12,13,16,0.97) 100%)',
@@ -295,8 +298,6 @@ export const kkTokens = {
   },
   website: {
     sketchWidth: { xs: 40, desktop: 52 },
-    sketchBlock: 'rgba(255,255,255,0.16)',
-    sketchLine: 'rgba(255,255,255,0.3)',
     slotFrameHeight: { xs: 64, desktop: 84 },
   },
   system: {
@@ -325,10 +326,7 @@ export const kkTokens = {
     edgeSprocketGap: 9,
     stripHeight: { xs: 92, desktop: 132 },
     columns: { xs: 4, sm: 6, desktop: 10 },
-    darkroom: '#050608',
-    darkroomEdge: '#0E1013',
     scrim: 'rgba(5,6,8,0.6)',
-    latent: '#2A2D33',
     grease: { stroke: 3.2, circleMs: 420, crossMs: 120 },
     sweep: { seconds: 1.15, band: 0.22, staggerSeconds: 0.06, rows: 7 },
     rail: { width: 30, previewWidth: 156 },

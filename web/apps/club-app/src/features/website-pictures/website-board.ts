@@ -3,9 +3,9 @@ import type { PictureSlot, SlotCatalogue, WebsitePage } from '@furria/website-pi
 import { fillOf, orphansOf, slotsByPage } from '@furria/website-pictures';
 import type { WebsitePicture } from './schemas';
 
-export type PositionStatus = 'empty' | 'processing' | 'failed' | 'ready' | 'mismatch';
+export type PositionStatus = 'empty' | 'processing' | 'stalled' | 'failed' | 'ready' | 'mismatch';
 
-export type SlotFlag = 'failed' | 'mismatch' | 'altMissing' | 'processing' | 'empty';
+export type SlotFlag = 'failed' | 'stalled' | 'mismatch' | 'altMissing' | 'processing' | 'empty';
 
 export interface BoardPosition {
   slot: string;
@@ -52,7 +52,13 @@ export interface WebsiteBoard {
   summary: BoardSummary;
 }
 
-const FLAG_ORDER: readonly SlotFlag[] = ['failed', 'mismatch', 'altMissing', 'processing'];
+const FLAG_ORDER: readonly SlotFlag[] = [
+  'failed',
+  'stalled',
+  'mismatch',
+  'altMissing',
+  'processing',
+];
 
 const statusOf = (
   state: 'empty' | 'filled' | 'aspectMismatch',
@@ -61,8 +67,11 @@ const statusOf = (
   if (picture === null || state === 'empty') {
     return 'empty';
   }
-  if (picture.picture.state !== 'ready') {
-    return picture.picture.state;
+  if (picture.picture.state === 'processing') {
+    return picture.picture.isStalled ? 'stalled' : 'processing';
+  }
+  if (picture.picture.state === 'failed') {
+    return 'failed';
   }
   return state === 'aspectMismatch' ? 'mismatch' : 'ready';
 };
@@ -182,10 +191,10 @@ export const findPosition = (
     (candidate) => candidate.slot === slot && candidate.position === position,
   ) ?? null;
 
-export const hubPositionsOf = (board: WebsiteBoard): BoardPosition[] => {
-  const declared = allPositionsOf(board).filter((position) => !position.orphan);
-  return [
-    ...declared.filter((position) => position.status !== 'empty'),
-    ...declared.filter((position) => position.status === 'empty'),
-  ];
+export const developingOf = (board: WebsiteBoard): 'none' | 'developing' | 'stalled' => {
+  const statuses = allPositionsOf(board).map((position) => position.status);
+  if (statuses.includes('processing')) {
+    return 'developing';
+  }
+  return statuses.includes('stalled') ? 'stalled' : 'none';
 };

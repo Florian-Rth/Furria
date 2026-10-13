@@ -62,6 +62,7 @@ const toDeskLabels = (copy: PictureCopy): KkBannerDeskLabels => ({
   replace: 'Ersetzen',
   uploading: 'Wird hochgeladen',
   developing: 'Wird vorbereitet',
+  stalled: 'Vorbereiten dauert ungewöhnlich lange',
   failed: 'Hochladen fehlgeschlagen',
   retry: 'Erneut',
   crop: 'Zuschnitt',

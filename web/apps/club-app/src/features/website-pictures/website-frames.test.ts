@@ -18,6 +18,7 @@ const shown: BoardPosition = {
     alt: 'Garde',
     picture: {
       state: 'ready',
+      isStalled: false,
       picture: { smallUrl: '/s', mediumUrl: '/m', largeUrl: '/l' },
       uncroppedUrl: '/u',
       crop: null,

@@ -4,7 +4,6 @@ import Stack from '@mui/material/Stack';
 import type { Theme } from '@mui/material/styles';
 import type { FC, ReactNode } from 'react';
 import { focusRing } from './internal/focus-ring';
-import type { KkGroupTone } from './internal/group-tone';
 import type { KkFilmEdgeTone } from './KkFilmEdge';
 import { KkFilmEdge } from './KkFilmEdge';
 import type { KkFrameMark } from './KkFrame';
@@ -22,7 +21,6 @@ export interface KkContactStripFrame {
   source?: string;
   edge?: string;
   mark?: KkFrameMark;
-  vacancy?: KkGroupTone;
   onSelect?: () => void;
 }
 
@@ -63,7 +61,6 @@ export const KkContactStrip: FC<KkContactStripProps> = ({
       source={frame.source}
       number={frame.edge ?? ''}
       mark={frame.mark}
-      vacancy={frame.vacancy}
       onSelect={frame.onSelect ?? onOpen}
       fill
       sx={{
@@ -101,7 +98,7 @@ export const KkContactStrip: FC<KkContactStripProps> = ({
             desktop: gallery.stripHeight.desktop + gallery.edgeHeight,
           },
           columnGap: `${gallery.gutter}px`,
-          backgroundColor: gallery.darkroomEdge,
+          backgroundColor: 'film.gutter',
           borderRadius: `${kkTokens.radius.bar}px`,
           clipPath: 'inset(0 round 3px)',
         }}

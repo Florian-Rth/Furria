@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { DevelopedItems } from './developing-items';
-import { developedAfter, mergeItems, POLL_BATCH_LIMIT, pollBatchOf } from './developing-items';
+import {
+  developedAfter,
+  developingPollDelayOf,
+  mergeItems,
+  POLL_BATCH_LIMIT,
+  pollBatchOf,
+} from './developing-items';
 import type { AlbumItem, InboxItem } from './schemas';
 
 const urls = (mediaItemId: number, version: string): InboxItem['urls'] => ({
@@ -21,6 +27,7 @@ const inboxItem = (
   mediaItemId,
   kind: 'photo',
   state,
+  isStalled: false,
   width: state === 'ready' ? 4000 : null,
   height: state === 'ready' ? 3000 : null,
   durationSeconds: null,
@@ -40,6 +47,29 @@ const albumItem = (
   uploader: { personId: 7, firstName: 'Anna', lastName: 'König' },
   selectionPosition: mediaItemId,
   caption: `Bild ${mediaItemId}`,
+});
+
+describe('developingPollDelayOf', () => {
+  const stuck = (mediaItemId: number): InboxItem => ({
+    ...inboxItem(mediaItemId, 'processing', null),
+    isStalled: true,
+  });
+
+  it.each<[string, InboxItem[], number[], DevelopedItems, number]>([
+    ['a developing item', [inboxItem(1, 'processing', null)], [], new Map(), 3_000],
+    ['only stuck items', [stuck(1), inboxItem(2, 'failed', null)], [], new Map(), 30_000],
+    [
+      'a stuck item beside a developing one',
+      [stuck(1), inboxItem(2, 'processing', null)],
+      [],
+      new Map(),
+      3_000,
+    ],
+    ['a sent file the server has not answered for yet', [stuck(1)], [5], new Map(), 3_000],
+    ['a sent file the server reports stuck', [], [5], new Map([[5, stuck(5)]]), 30_000],
+  ])('polls %s', (_, listed, uploadedIds, developed, delay) => {
+    expect(developingPollDelayOf([listed], uploadedIds, developed)).toBe(delay);
+  });
 });
 
 describe('pollBatchOf', () => {

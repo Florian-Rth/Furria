@@ -56,7 +56,7 @@ export const KkViewerFilmstripFrame: FC<KkViewerFilmstripFrameProps> = ({
       sx={(theme: Theme) => ({
         flex: `0 0 ${FRAME_SIZE}px`,
         height: FRAME_SIZE,
-        bgcolor: kkTokens.gallery.latent,
+        bgcolor: 'film.latent',
         opacity: current ? 1 : 0.55,
         outline: current ? `${kkTokens.line.section}px solid` : 'none',
         outlineColor: (theme.vars ?? theme).palette.warning.main,

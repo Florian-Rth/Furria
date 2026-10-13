@@ -12,6 +12,7 @@ export type RedeemFailureKind =
   | 'throttled'
   | 'rejected'
   | 'unreachable'
+  | 'timedOut'
   | 'unexpected';
 
 const CONFLICT_STATUS = 409;
@@ -55,6 +56,8 @@ export const toRedeemFailureKind = (error: Error | null): RedeemFailureKind | nu
   switch (failure?.kind) {
     case 'unreachable':
       return 'unreachable';
+    case 'timedOut':
+      return 'timedOut';
     case 'refused':
       return toRefusalKind(failure);
     case 'throttled':

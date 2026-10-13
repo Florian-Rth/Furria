@@ -7,8 +7,8 @@ import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import type { KkAspect } from './image-aspect';
 import { aspectRatioCss } from './image-aspect';
+import { filmOf } from './internal/film-paint';
 import { focusRing } from './internal/focus-ring';
-import type { KkGroupTone } from './internal/group-tone';
 import { KkGreaseMark } from './KkGreaseMark';
 import { KkIcon } from './KkIcon';
 import { KkPhotoPlaceholder } from './KkPhotoPlaceholder';
@@ -55,20 +55,20 @@ const surfaceOf =
     width: '100%',
     ...(fill ? { flex: 1, minHeight: 0 } : { aspectRatio }),
     overflow: 'hidden',
-    backgroundColor: gallery.latent,
+    backgroundColor: filmOf(theme).latent,
     ...focusRing(theme),
   });
 
-const edgeBand: CSSObject = {
+const edgeBand = (theme: Theme): CSSObject => ({
   height: gallery.edgeHeight,
   alignItems: 'center',
   px: 0.5,
-  backgroundColor: gallery.darkroomEdge,
-  backgroundImage: `radial-gradient(circle, rgba(255,255,255,0.16) ${gallery.edgeSprocket / 2}px, transparent ${gallery.edgeSprocket / 2 + 0.5}px)`,
+  backgroundColor: filmOf(theme).edge,
+  backgroundImage: `radial-gradient(circle, ${filmOf(theme).sprocket} ${gallery.edgeSprocket / 2}px, transparent ${gallery.edgeSprocket / 2 + 0.5}px)`,
   backgroundSize: `${gallery.edgeSprocketGap}px ${gallery.edgeHeight}px`,
   backgroundPosition: 'right center',
   backgroundRepeat: 'repeat-x',
-};
+});
 
 interface KkFrameProps {
   label: string;
@@ -84,7 +84,7 @@ interface KkFrameProps {
   focal?: string;
   fill?: boolean;
   aspect?: KkAspect;
-  vacancy?: KkGroupTone;
+  placeholder?: boolean;
   frameId?: string;
   onSelect?: () => void;
   sx?: KkSx;
@@ -104,7 +104,7 @@ export const KkFrame: FC<KkFrameProps> = ({
   focal = 'center',
   fill = false,
   aspect,
-  vacancy,
+  placeholder = false,
   frameId,
   onSelect,
   sx,
@@ -133,17 +133,17 @@ export const KkFrame: FC<KkFrameProps> = ({
         role={surfaceRole}
         sx={surfaceOf(fill, aspectRatio)}
       >
-        {latent && vacancy !== undefined ? (
-          <KkPhotoPlaceholder tone={vacancy} fill sx={{ position: 'absolute', inset: 0 }} />
+        {latent && placeholder ? (
+          <KkPhotoPlaceholder fill sx={{ position: 'absolute', inset: 0 }} />
         ) : null}
-        {latent && vacancy === undefined ? (
+        {latent && !placeholder ? (
           <Stack
             sx={{
               position: 'absolute',
               inset: 0,
               alignItems: 'center',
               justifyContent: 'center',
-              color: 'rgba(255,255,255,0.5)',
+              color: 'film.ghost',
             }}
           >
             <Typography
@@ -186,7 +186,7 @@ export const KkFrame: FC<KkFrameProps> = ({
             sx={{
               position: 'absolute',
               inset: 0,
-              backgroundColor: gallery.darkroomEdge,
+              backgroundColor: 'film.gutter',
               animation: `${breathe} 2.4s ease-in-out infinite`,
               '@media (prefers-reduced-motion: reduce)': { animation: 'none', opacity: 0.3 },
             }}
@@ -346,10 +346,11 @@ export const KkFrame: FC<KkFrameProps> = ({
               fontFamily: kkTokens.font.display,
               letterSpacing: kkTokens.type.tracking.label,
               lineHeight: 1,
-              color: 'warning.main',
+              color: filmOf(theme).number,
               opacity: 0.85,
-              pr: 0.5,
-              backgroundColor: gallery.darkroomEdge,
+              ml: -0.5,
+              px: 0.5,
+              backgroundColor: filmOf(theme).edge,
             })}
           >
             {number}

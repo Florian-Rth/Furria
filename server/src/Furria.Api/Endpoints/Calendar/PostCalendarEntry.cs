@@ -143,6 +143,7 @@ public sealed class PostCalendarEntryValidator : Validator<PostCalendarEntryRequ
             .GreaterThanOrEqualTo(request => request.StartsAt)
             .When(request => request.EndsAt is not null)
             .WithMessage(EndsBeforeItStartsMessage);
+        RuleFor(request => request.ParticipatingGroupIds).NotNull();
         RuleForEach(request => request.ParticipatingGroupIds)
             .GreaterThan(0)
             .WithMessage(UnknownGroupMessage);

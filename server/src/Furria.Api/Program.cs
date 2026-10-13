@@ -13,6 +13,7 @@ using Furria.Api.Logging;
 using Furria.Api.Media;
 using Furria.Api.Proxies;
 using Furria.Api.RateLimiting;
+using Furria.Api.Serialization;
 using Furria.Application;
 using Furria.Application.Identity;
 using Furria.Application.Operations;
@@ -97,6 +98,7 @@ try
         c.Serializer.Options.Converters.Add(
             new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
         );
+        c.Serializer.Options.Converters.Add(new UtcDateTimeOffsetConverter());
         c.Endpoints.Configurator = endpoint =>
             endpoint.PreProcessor<PermissionEnforcer>(Order.Before);
     });

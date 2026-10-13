@@ -1,5 +1,4 @@
 import { KkCropFrame, KkFrame } from '@furria/ui';
-import { vacancyToneOf } from '@furria/website-pictures';
 import type { FC } from 'react';
 import type { PositionDesk } from '../hooks/use-position-desk';
 import type { BoardPosition } from '../website-board';
@@ -37,7 +36,6 @@ export const WebsiteDeskPreview: FC<WebsiteDeskPreviewProps> = ({ position, desk
   }
 
   const frame = deskFrameOf(position, desk);
-  const vacancy = vacancyToneOf(position.slot, position.position);
 
   return (
     <KkFrame
@@ -47,7 +45,7 @@ export const WebsiteDeskPreview: FC<WebsiteDeskPreviewProps> = ({ position, desk
       progress={desk.uploadShare}
       mark={frame.mark}
       aspect={position.aspect}
-      vacancy={vacancy}
+      placeholder
     />
   );
 };

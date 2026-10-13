@@ -8,6 +8,8 @@ public sealed record PictureEditingDto
 {
     public required MediaItemState State { get; init; }
 
+    public required bool IsStalled { get; init; }
+
     public required PictureDto? Picture { get; init; }
 
     public required string? UncroppedUrl { get; init; }
@@ -21,6 +23,7 @@ public sealed record PictureEditingDto
             : new PictureEditingDto
             {
                 State = editing.State,
+                IsStalled = editing.IsStalled,
                 Picture = PictureDto.From(editing.Picture),
                 UncroppedUrl = editing.UncroppedUrl,
                 Crop = editing.Crop is { } crop

@@ -54,6 +54,7 @@ export const usePictureSection = ({
 
   const announce = useDevelopingPicture({
     isDeveloping: editing?.state === 'processing',
+    isStalled: editing?.isStalled ?? false,
     refresh,
     changes,
   });

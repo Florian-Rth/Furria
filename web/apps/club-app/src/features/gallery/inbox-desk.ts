@@ -6,6 +6,7 @@ import { startCulling, verdictOf } from './light-table';
 export interface DeskSource {
   mediaItemId: number;
   state: 'processing' | 'ready' | 'failed';
+  isStalled: boolean;
   capturedAt: string | null;
   uploadedAt: string;
 }
@@ -15,6 +16,8 @@ export interface Desk<TItem extends DeskSource> {
   frames: CullFrame[];
   scenes: GalleryScene<{ id: number; capturedAt: string | null }>[];
   developing: number;
+  stalled: number;
+  failed: number;
 }
 
 const momentOf = (item: DeskSource): string => item.capturedAt ?? item.uploadedAt;
@@ -23,6 +26,8 @@ export const deskOf = <TItem extends DeskSource>(
   items: readonly TItem[],
   hidden: ReadonlySet<number>,
 ): Desk<TItem> => {
+  const processing = items.filter((item) => item.state === 'processing');
+  const stalled = processing.filter((item) => item.isStalled).length;
   const ready = items
     .filter((item) => item.state === 'ready' && !hidden.has(item.mediaItemId))
     .sort(
@@ -38,7 +43,9 @@ export const deskOf = <TItem extends DeskSource>(
       scene.frames.map((frame) => ({ id: frame.id, scene: index })),
     ),
     scenes,
-    developing: items.filter((item) => item.state === 'processing').length,
+    developing: processing.length - stalled,
+    stalled,
+    failed: items.filter((item) => item.state === 'failed').length,
   };
 };
 

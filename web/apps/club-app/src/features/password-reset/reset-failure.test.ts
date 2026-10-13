@@ -7,6 +7,7 @@ describe('toResetFailureKind', () => {
   it.each<[string, Error | null, ResetFailureKind | null]>([
     ['no error', null, null],
     ['a blocked request', new ApiError({ kind: 'unreachable' }), 'unreachable'],
+    ['a server that answered too slowly', new ApiError({ kind: 'timedOut' }), 'timed-out'],
     [
       'a refused reset link',
       new ApiError({

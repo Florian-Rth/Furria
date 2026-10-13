@@ -23,9 +23,6 @@ const storedAt = (
 ): PublicWebsitePicture | undefined =>
   pictures.find((picture) => picture.slot === key && picture.position === position);
 
-const declaredPositionsOf = (slot: PictureSlot): number[] =>
-  slot.positions.map((_, index) => index + FIRST_POSITION);
-
 export const slotPictureOf = (
   source: WebsitePictures,
   key: string,
@@ -52,25 +49,4 @@ export const slotPictureOf = (
 
   const alt = slot.decorative ? DECORATIVE_ALT : (picture.alt ?? DECORATIVE_ALT);
   return { state: 'filled', aspect, image, alt };
-};
-
-export const filledPositionsOf = (
-  source: WebsitePictures,
-  key: string,
-  slot: PictureSlot,
-): number[] =>
-  source.status === 'ready'
-    ? declaredPositionsOf(slot).filter(
-        (position) => storedAt(source.data, key, position) !== undefined,
-      )
-    : [];
-
-export const framedPositionsOf = (
-  source: WebsitePictures,
-  key: string,
-  slot: PictureSlot,
-): number[] => {
-  const filled = filledPositionsOf(source, key, slot);
-
-  return filled.length > 0 ? filled : declaredPositionsOf(slot);
 };

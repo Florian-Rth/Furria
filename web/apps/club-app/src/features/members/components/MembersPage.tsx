@@ -33,16 +33,16 @@ export const MembersPage: FC = () => {
           onSelect: search.jumpTo,
         };
 
-  const tools =
-    members.data === undefined ? (
-      <KkSkeletonToolbar chips={TOOLBAR_CHIPS} />
-    ) : (
+  const toolbar =
+    members.data === undefined ? undefined : (
       <MembersToolbar
         state={search.state}
         options={search.filterOptions}
         onStateChange={search.selectState}
       />
     );
+
+  const tools = members.isPending ? <KkSkeletonToolbar chips={TOOLBAR_CHIPS} /> : toolbar;
 
   return (
     <KkScreen

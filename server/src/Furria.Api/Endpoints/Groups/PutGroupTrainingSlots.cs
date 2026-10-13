@@ -94,7 +94,9 @@ public sealed class PutGroupTrainingSlotsValidator : Validator<PutGroupTrainingS
             .Must(slots => slots.Count <= GroupLimits.MaxTrainingSlots)
             .WithMessage(TooManySlotsMessage)
             .When(request => request.Slots is not null);
-        RuleForEach(request => request.Slots).SetValidator(new TrainingSlotDataValidator());
+        RuleForEach(request => request.Slots)
+            .NotNull()
+            .SetValidator(new TrainingSlotDataValidator());
     }
 }
 

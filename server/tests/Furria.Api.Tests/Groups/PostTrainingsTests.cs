@@ -183,6 +183,31 @@ public sealed class PostTrainingsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_RefuseTheEvenings_When_OneOfThemIsNull()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildRhythmAsync(ct);
+        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var (response, _) = await client.POSTAsync<
+            PostTrainings,
+            PostTrainingsRequest,
+            PostTrainingsResponse
+        >(
+            new()
+            {
+                GroupId = tanzgarde,
+                Title = TrainingTitle,
+                Instants = [null!],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await ctx.Expected.TrainingsOf(tanzgarde).ToBeEmpty().AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_RefuseTheTrainingSlot_When_ItBelongsToAnotherGroup()
     {
         var ct = TestContext.Current.CancellationToken;

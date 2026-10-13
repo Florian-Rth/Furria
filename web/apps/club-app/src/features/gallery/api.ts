@@ -3,10 +3,9 @@ import { keepPreviousData, queryOptions, useQuery, useQueryClient } from '@tanst
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { useQueryCacheSnapshot } from '@/lib/api/use-query-cache-snapshot';
-import { DEVELOPING_POLL_MS } from '@/lib/media/developing';
 import { queryKeys } from '@/lib/query/reads';
 import type { DevelopedItems } from './developing-items';
-import { developedAfter, mergeItems, pollBatchOf } from './developing-items';
+import { developedAfter, developingPollDelayOf, mergeItems, pollBatchOf } from './developing-items';
 import type { AlbumFilter } from './requests';
 import {
   requestAlbum,
@@ -36,6 +35,8 @@ import type {
   InboxResponse,
 } from './schemas';
 import type { AlbumPayload, AlbumUpdatePayload, InboxOwner, SelectionPhoto } from './types';
+import type { UploadEntry } from './upload/upload-queue';
+import { readUploads } from './upload/upload-store';
 import type { DevelopedItem } from './upload/upload-tiles';
 import { useUploads } from './upload/use-uploads';
 
@@ -99,14 +100,24 @@ const pollDeveloping = async (
   return developedAfter(developedOf(queryClient), batch, answer.items);
 };
 
+const uploadedIdsOf = (entries: readonly UploadEntry[]): number[] =>
+  entries.flatMap((entry) =>
+    entry.phase === 'sent' && entry.mediaItemId !== null ? [entry.mediaItemId] : [],
+  );
+
+const pollDelayOf = (queryClient: QueryClient): number =>
+  developingPollDelayOf(
+    cachedListsOf(queryClient),
+    uploadedIdsOf(readUploads().entries),
+    developedOf(queryClient),
+  );
+
 const batchOfKey = (batchKey: string): number[] =>
   batchKey === '' ? [] : batchKey.split(',').map(Number);
 
 export const useDevelopingItems = (): void => {
   const queryClient = useQueryClient();
-  const uploadedIds = useUploads().entries.flatMap((entry) =>
-    entry.phase === 'sent' && entry.mediaItemId !== null ? [entry.mediaItemId] : [],
-  );
+  const uploadedIds = uploadedIdsOf(useUploads().entries);
   const batchKey = useQueryCacheSnapshot(() =>
     pollBatchOf(cachedListsOf(queryClient), uploadedIds, developedOf(queryClient)).join(','),
   );
@@ -116,7 +127,7 @@ export const useDevelopingItems = (): void => {
     queryKey: queryKeys.galleryDeveloping,
     queryFn: () => pollDeveloping(queryClient, batch),
     enabled: batch.length > 0,
-    refetchInterval: DEVELOPING_POLL_MS,
+    refetchInterval: () => pollDelayOf(queryClient),
   });
 };
 

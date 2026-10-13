@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { WebsitePicture } from './schemas';
-import { copySourcesOf, hubPositionsOf, websiteBoardOf } from './website-board';
+import { copySourcesOf, developingOf, websiteBoardOf } from './website-board';
 
 const pages = [
   { key: 'landing', title: 'Landing', path: '/' },
@@ -27,7 +27,12 @@ const slots = {
 const stored = (
   slot: string,
   position: number,
-  overrides: { aspect?: number; alt?: string | null; state?: 'processing' | 'ready' | 'failed' },
+  overrides: {
+    aspect?: number;
+    alt?: string | null;
+    state?: 'processing' | 'ready' | 'failed';
+    isStalled?: boolean;
+  },
 ): WebsitePicture => ({
   slot,
   position,
@@ -36,6 +41,7 @@ const stored = (
   alt: overrides.alt ?? null,
   picture: {
     state: overrides.state ?? 'ready',
+    isStalled: overrides.isStalled ?? false,
     picture: null,
     uncroppedUrl: overrides.state === 'ready' || overrides.state === undefined ? '/u' : null,
     crop: null,
@@ -72,6 +78,11 @@ describe('websiteBoardOf', () => {
       [stored('landing.hero', 1, { alt: 'Garde', state: 'processing' })],
       'processing',
     ],
+    [
+      'a picture stuck developing',
+      [stored('landing.hero', 1, { alt: 'Garde', state: 'processing', isStalled: true })],
+      'stalled',
+    ],
     ['a picture that failed', [stored('landing.hero', 1, { state: 'failed' })], 'failed'],
     ['a cut of another format', [stored('landing.hero', 1, { aspect: 4 / 5 })], 'mismatch'],
   ])('flags the slot for %s', (_, pictures, flag) => {
@@ -84,6 +95,19 @@ describe('websiteBoardOf', () => {
     const board = websiteBoardOf(pages, slots, [stored('events.strip', 2, {})]);
 
     expect(board.pages[1]?.slots[0]?.flag).toBeNull();
+  });
+});
+
+describe('developingOf', () => {
+  const developing = stored('landing.hero', 1, { state: 'processing' });
+  const stuck = stored('events.strip', 2, { state: 'processing', isStalled: true });
+
+  it.each([
+    ['nothing developing', [stored('landing.hero', 1, {})], 'none'],
+    ['only stuck pictures', [stuck], 'stalled'],
+    ['a developing picture beside a stuck one', [developing, stuck], 'developing'],
+  ])('reads %s', (_, pictures, state) => {
+    expect(developingOf(websiteBoardOf(pages, slots, pictures))).toBe(state);
   });
 });
 
@@ -103,22 +127,6 @@ describe('copySourcesOf', () => {
 
     expect(sources).toEqual([
       ['landing.hero', 1],
-      ['events.strip', 3],
-    ]);
-  });
-});
-
-describe('hubPositionsOf', () => {
-  it('leads with the filled positions in page order, then the empty ones, without orphans', () => {
-    const board = websiteBoardOf(pages, slots, [
-      stored('events.strip', 2, {}),
-      stored('retired.banner', 1, {}),
-    ]);
-
-    expect(hubPositionsOf(board).map((position) => [position.slot, position.position])).toEqual([
-      ['events.strip', 2],
-      ['landing.hero', 1],
-      ['events.strip', 1],
       ['events.strip', 3],
     ]);
   });

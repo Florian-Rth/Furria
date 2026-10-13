@@ -150,6 +150,37 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_RefuseTheChanges_When_TheParticipatingGroupsAreNull()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("chris", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(
+            new()
+            {
+                CalendarEntryId = ctx.Club.CalendarEntries.IdOf("garde-training"),
+                Title = DanceGuardPerformance,
+                Description = null,
+                OwnerGroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
+                VenueId = null,
+                StartsAt = TrainingStart,
+                EndsAt = TrainingEnd,
+                Kind = CalendarEntryKind.Performance,
+                Visibility = CalendarEntryVisibility.Group,
+                AsksForResponse = false,
+                ParticipatingGroupIds = null!,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Should_SaveTheChanges_When_TheOwnerStaysTheSame()
     {
         var ct = TestContext.Current.CancellationToken;

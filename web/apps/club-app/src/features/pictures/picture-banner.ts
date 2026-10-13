@@ -17,7 +17,7 @@ const storedStateOf = (editing: PictureEditing, desk: PictureDeskState): KkBanne
     return 'failed';
   }
   if (editing.state === 'processing' || editing.picture === null) {
-    return 'developing';
+    return editing.isStalled ? 'stalled' : 'developing';
   }
 
   return desk.kind === 'cropping' && editing.uncroppedUrl !== null ? 'cropping' : 'ready';

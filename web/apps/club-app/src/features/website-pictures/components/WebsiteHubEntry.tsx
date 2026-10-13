@@ -1,7 +1,8 @@
-import { KkContactStrip } from '@furria/ui';
+import { KkHubRow, KkPanel } from '@furria/ui';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useWebsiteHubEntry } from '../hooks/use-website-hub-entry';
-import { HUB_TITLE_LABEL, HUB_TRAIL, WEBSITE_TITLE } from '../website-copy';
+import { WEBSITE_PATH, WEBSITE_TITLE } from '../website-copy';
 
 export const WebsiteHubEntry: FC = () => {
   const entry = useWebsiteHubEntry();
@@ -11,14 +12,14 @@ export const WebsiteHubEntry: FC = () => {
   }
 
   return (
-    <KkContactStrip
-      title={WEBSITE_TITLE}
-      titleLabel={HUB_TITLE_LABEL}
-      meta={entry.meta}
-      trail={HUB_TRAIL}
-      tone="gold"
-      frames={entry.frames}
-      onOpen={entry.open}
-    />
+    <KkPanel>
+      <KkHubRow
+        label={WEBSITE_TITLE}
+        icon="image"
+        meta={entry.meta}
+        component={Link}
+        to={WEBSITE_PATH}
+      />
+    </KkPanel>
   );
 };

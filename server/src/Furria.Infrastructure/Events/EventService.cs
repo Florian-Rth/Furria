@@ -138,7 +138,11 @@ public sealed class EventService
             ))
             .SingleOrDefaultAsync(ct);
 
-        return row is null ? null : ToDetails(row, now, EditingOf(row));
+        if (row is null)
+            return null;
+
+        var stalledIds = await _dbContext.StalledAmongAsync([row.Picture], now, ct);
+        return ToDetails(row, now, EditingOf(row, stalledIds));
     }
 
     public async Task<IReadOnlyList<PublicEventSummary>> GetPublicEventsAsync(CancellationToken ct)
@@ -419,9 +423,9 @@ public sealed class EventService
         TimeOnly? doorsOpenAt
     ) => doorsOpenAt is { } time ? ClubClock.At(ClubClock.DayOf(startsAt), time) : null;
 
-    private PictureEditingDetails? EditingOf(DetailsRow row) =>
+    private PictureEditingDetails? EditingOf(DetailsRow row, IReadOnlySet<int> stalledIds) =>
         row.Picture is { } picture
-            ? _pictures.EditingOf(MediaOwner.Event(row.EventId), picture)
+            ? _pictures.EditingOf(MediaOwner.Event(row.EventId), picture, stalledIds)
             : null;
 
     private Task<CalendarEntry?> TrackedEventEntryAsync(int eventId, CancellationToken ct) =>

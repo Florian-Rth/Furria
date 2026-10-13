@@ -75,6 +75,7 @@ public sealed class PutGalleryAlbumSelectionValidator : Validator<PutGalleryAlbu
         RuleFor(request => request.AlbumId).GreaterThan(0);
         RuleFor(request => request.Photos).NotNull();
         RuleForEach(request => request.Photos)
+            .NotNull()
             .ChildRules(photo =>
             {
                 photo.RuleFor(entry => entry.MediaItemId).GreaterThan(0);

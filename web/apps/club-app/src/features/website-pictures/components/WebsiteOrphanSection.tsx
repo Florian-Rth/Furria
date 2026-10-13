@@ -1,5 +1,4 @@
-import { KkFilmEdge, KkSlotRow } from '@furria/ui';
-import Stack from '@mui/material/Stack';
+import { KkPanelSection, KkSlotRow } from '@furria/ui';
 import type { FC } from 'react';
 import type { SlotPositionRef } from '../types';
 import type { BoardPosition } from '../website-board';
@@ -54,10 +53,5 @@ export const WebsiteOrphanSection: FC<WebsiteOrphanSectionProps> = ({
     );
   });
 
-  return (
-    <Stack component="section" aria-label={ORPHANS_TITLE} sx={{ minWidth: 0 }}>
-      <KkFilmEdge lead={ORPHANS_TITLE} tone="muted" size="title" level="h2" />
-      {rows}
-    </Stack>
-  );
+  return <KkPanelSection title={ORPHANS_TITLE}>{rows}</KkPanelSection>;
 };

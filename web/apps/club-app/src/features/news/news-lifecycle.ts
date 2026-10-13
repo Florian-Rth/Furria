@@ -3,6 +3,7 @@ import type { NewsPostDetails, NewsPostState, NewsPostVersion } from './schemas'
 import type {
   NewsFields,
   NewsPicture,
+  NewsPictureState,
   NewsRequirement,
   NewsStage,
   NewsVersion,
@@ -46,14 +47,23 @@ export const pictureKeyOf = (editing: PictureEditing): string => {
   return url === null ? editing.state : `${addressOf(url)}|${crop}`;
 };
 
+const pictureStateOf = (editing: PictureEditing): NewsPictureState => {
+  if (editing.state === 'failed') {
+    return 'failed';
+  }
+  if (editing.state === 'ready' && editing.picture !== null) {
+    return 'ready';
+  }
+  return editing.state === 'processing' && editing.isStalled ? 'stalled' : 'developing';
+};
+
 export const pictureOf = (editing: PictureEditing | null): NewsPicture | null => {
   if (editing === null) {
     return null;
   }
-  const ready = editing.state === 'ready' && editing.picture !== null;
   return {
     key: pictureKeyOf(editing),
-    state: editing.state === 'failed' ? 'failed' : ready ? 'ready' : 'developing',
+    state: pictureStateOf(editing),
     progress: 1,
     uncroppedSource: editing.uncroppedUrl,
     source: editing.picture?.largeUrl ?? null,

@@ -27,6 +27,7 @@ const item = (
   mediaItemId,
   kind: 'photo',
   state: 'ready',
+  isStalled: false,
   width: 4000,
   height: 3000,
   durationSeconds: null,

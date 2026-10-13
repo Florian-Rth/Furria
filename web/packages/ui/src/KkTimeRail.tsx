@@ -110,8 +110,8 @@ export const KkTimeRail: FC<KkTimeRailProps> = ({ label, scenes, current, onReac
             right: gallery.rail.width + 6,
             top: `calc(${((scrub.held ?? 0) / Math.max(scenes.length - 1, 1)) * 100}% - ${gallery.rail.previewWidth / 2}px)`,
             width: gallery.rail.previewWidth,
-            bgcolor: gallery.darkroom,
-            color: kkTokens.overlay.onPhotoText,
+            bgcolor: 'film.edge',
+            color: 'film.onEdge',
             borderRadius: `${kkTokens.radius.base}px`,
             boxShadow: kkTokens.shadow.floating,
             p: 0.5,
@@ -136,7 +136,7 @@ export const KkTimeRail: FC<KkTimeRailProps> = ({ label, scenes, current, onReac
               sx={(theme) => ({
                 ...theme.typography.caption,
                 fontWeight: 700,
-                color: 'rgba(255,255,255,0.7)',
+                color: 'film.onEdge',
                 whiteSpace: 'nowrap',
               })}
             >

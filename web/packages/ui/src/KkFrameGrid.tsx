@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
 import type { FC, PropsWithChildren } from 'react';
+import { filmOf } from './internal/film-paint';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
@@ -29,7 +30,7 @@ export const KkFrameGrid: FC<KkFrameGridProps> = ({ density = 'regular', label, 
     aria-label={label}
     data-kk-frame-grid={density}
     sx={[
-      {
+      (theme) => ({
         display: 'grid',
         gridTemplateColumns: columnsOf(density),
         gap: `${gallery.gutter}px`,
@@ -37,10 +38,10 @@ export const KkFrameGrid: FC<KkFrameGridProps> = ({ density = 'regular', label, 
         containIntrinsicSize: 'auto 480px',
         '& > *': {
           minWidth: 0,
-          backgroundColor: gallery.darkroomEdge,
-          outline: `${gallery.gutter / 2}px solid ${gallery.darkroomEdge}`,
+          backgroundColor: filmOf(theme).gutter,
+          outline: `${gallery.gutter / 2}px solid ${filmOf(theme).gutter}`,
         },
-      },
+      }),
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}
   >

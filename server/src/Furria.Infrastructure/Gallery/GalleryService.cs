@@ -14,12 +14,16 @@ public sealed partial class GalleryService
     private const string UnknownAlbumMessage = "Dieses Album gibt es nicht.";
     private const string UnknownItemMessage = "Dieses Bild gibt es nicht in der Galerie.";
 
-    private static readonly Expression<Func<MediaItem, GalleryItemSummary>> ItemSummary =
-        item => new GalleryItemSummary
+    private static readonly Expression<Func<MediaItem, bool, GalleryItemSummary>> ItemSummaryOf = (
+        item,
+        isStalled
+    ) =>
+        new GalleryItemSummary
         {
             MediaItemId = item.Id,
             Kind = item.Kind,
             State = item.State,
+            IsStalled = isStalled,
             Width = item.Width,
             Height = item.Height,
             DurationSeconds = item.DurationSeconds,
@@ -69,6 +73,12 @@ public sealed partial class GalleryService
         _publicFace = publicFace;
         _timeProvider = timeProvider;
     }
+
+    private Expression<Func<MediaItem, GalleryItemSummary>> ItemSummary() =>
+        ExpressionComposition.Bind(
+            ItemSummaryOf,
+            MediaStalls.IsStalled(_dbContext, _timeProvider.GetUtcNow())
+        );
 
     private IQueryable<Album> LiveAlbums() =>
         _dbContext.Albums.Where(album => album.BinnedAt == null);

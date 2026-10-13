@@ -7,6 +7,7 @@ const PHOTO: AlbumItem = {
   mediaItemId: 7,
   kind: 'photo',
   state: 'ready',
+  isStalled: false,
   width: 3000,
   height: 2000,
   durationSeconds: null,

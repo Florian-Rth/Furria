@@ -25,6 +25,7 @@ const version = (fields: Partial<NewsVersion>): NewsVersion => ({
 
 const editing = (fields: Partial<PictureEditing>): PictureEditing => ({
   state: 'ready',
+  isStalled: false,
   picture: {
     smallUrl: '/api/media/7/small?exp=1&sig=a&v=100',
     mediumUrl: '/api/media/7/medium?exp=1&sig=a&v=100',
@@ -87,6 +88,11 @@ describe('pictureOf', () => {
       'processing',
       editing({ state: 'processing', picture: null, uncroppedUrl: null }),
       'developing',
+    ],
+    [
+      'stuck',
+      editing({ state: 'processing', isStalled: true, picture: null, uncroppedUrl: null }),
+      'stalled',
     ],
     ['failed', editing({ state: 'failed', picture: null, uncroppedUrl: null }), 'failed'],
   ] as const)('shows a %s picture as %s', (_, subject, expected) => {

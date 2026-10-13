@@ -2,7 +2,7 @@ import type { PublicWebsitePicture } from '@furria/api-client';
 import type { PictureSlot } from '@furria/website-pictures';
 import { describe, expect, it } from 'vitest';
 import type { PublicSource } from '@/lib/public-resource/public-source';
-import { filledPositionsOf, framedPositionsOf, slotPictureOf } from './slot-picture';
+import { slotPictureOf } from './slot-picture';
 
 const stack: PictureSlot = {
   page: 'gallery',
@@ -73,31 +73,5 @@ describe('slotPictureOf', () => {
     const picture = slotPictureOf(ready(pictureAt('s.lot', 1, alt)), 's.lot', slot, 1, '50vw');
 
     expect(picture.state === 'filled' ? picture.alt : null).toBe(expected);
-  });
-});
-
-describe('filledPositionsOf', () => {
-  it.each([
-    ['loading', loading, []],
-    ['failed', failed, []],
-    ['empty', ready(), []],
-    [
-      'partly filled',
-      ready(pictureAt('gallery.stack', 3, null), pictureAt('gallery.stack', 1, null)),
-      [1, 3],
-    ],
-    ['holding an undeclared position', ready(pictureAt('gallery.stack', 5, null)), []],
-  ])('lists the filled positions of a %s slot in order', (_, source, expected) => {
-    expect(filledPositionsOf(source, 'gallery.stack', stack)).toEqual(expected);
-  });
-});
-
-describe('framedPositionsOf', () => {
-  it.each([
-    ['loading', loading, [1, 2, 3]],
-    ['empty', ready(), [1, 2, 3]],
-    ['partly filled', ready(pictureAt('gallery.stack', 2, null)), [2]],
-  ])('frames the positions of a %s slot', (_, source, expected) => {
-    expect(framedPositionsOf(source, 'gallery.stack', stack)).toEqual(expected);
   });
 });
