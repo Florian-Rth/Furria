@@ -147,6 +147,7 @@ public sealed class PutCalendarEntryValidator : Validator<PutCalendarEntryReques
             .GreaterThanOrEqualTo(request => request.StartsAt)
             .When(request => request.EndsAt is not null)
             .WithMessage(EndsBeforeItStartsMessage);
+        RuleFor(request => request.ParticipatingGroupIds).NotNull();
         RuleForEach(request => request.ParticipatingGroupIds)
             .GreaterThan(0)
             .WithMessage(UnknownGroupMessage);

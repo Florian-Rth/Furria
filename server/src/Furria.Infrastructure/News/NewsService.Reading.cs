@@ -107,7 +107,12 @@ public sealed partial class NewsService
             ],
             ct
         );
-        return DetailsOf(row, albumCards);
+        var stalledIds = await _dbContext.StalledAmongAsync(
+            [row.Picture, row.PendingPicture],
+            _timeProvider.GetUtcNow(),
+            ct
+        );
+        return DetailsOf(row, albumCards, stalledIds);
     }
 
     public async Task<IReadOnlyList<NewsSection>> GetHubAsync(CancellationToken ct)
@@ -120,7 +125,8 @@ public sealed partial class NewsService
 
     private NewsPostDetails DetailsOf(
         PostRow row,
-        IReadOnlyDictionary<int, AlbumCard> albumCards
+        IReadOnlyDictionary<int, AlbumCard> albumCards,
+        IReadOnlySet<int> stalledIds
     ) =>
         new()
         {
@@ -141,7 +147,7 @@ public sealed partial class NewsService
                 Category = row.Category,
                 Event = row.Event,
                 Album = TieOf(row.Album, albumCards),
-                Picture = PictureOf(row.NewsPostId, row.Picture),
+                Picture = PictureOf(row.NewsPostId, row.Picture, stalledIds),
                 PictureCaption = row.PictureCaption,
             },
             PendingSavedAt = row.PendingSavedAt,
@@ -155,13 +161,19 @@ public sealed partial class NewsService
                     Category = row.PendingCategory,
                     Event = row.PendingEvent,
                     Album = TieOf(row.PendingAlbum, albumCards),
-                    Picture = PictureOf(row.NewsPostId, row.PendingPicture),
+                    Picture = PictureOf(row.NewsPostId, row.PendingPicture, stalledIds),
                     PictureCaption = row.PendingPictureCaption,
                 },
         };
 
-    private PictureEditingDetails? PictureOf(int newsPostId, MediaPictureRow? picture) =>
-        picture is null ? null : _pictures.EditingOf(MediaOwner.NewsPost(newsPostId), picture);
+    private PictureEditingDetails? PictureOf(
+        int newsPostId,
+        MediaPictureRow? picture,
+        IReadOnlySet<int> stalledIds
+    ) =>
+        picture is null
+            ? null
+            : _pictures.EditingOf(MediaOwner.NewsPost(newsPostId), picture, stalledIds);
 
     private NewsPostSummary SummaryOf(PostRow row)
     {

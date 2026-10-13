@@ -182,6 +182,32 @@ public sealed class PutGroupTrainingSlotsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_RefuseTheRhythm_When_OneSlotIsNull()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var response = await client.PUTAsync<PutGroupTrainingSlots, PutGroupTrainingSlotsRequest>(
+            new() { GroupId = ctx.Groups.Groups.IdOf("tanzgarde"), Slots = [null!] }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Should_AllowTheHigherInstance_When_TheCallerHoldsGroupsManage()
     {
         var ct = TestContext.Current.CancellationToken;

@@ -33,10 +33,15 @@ public sealed class MediaPictures
             LargeUrl = GalleryUrlOf(mediaItemId, MediaRendition.Large, renderedAt),
         };
 
-    public PictureEditingDetails EditingOf(MediaOwner owner, MediaPictureRow picture) =>
+    public PictureEditingDetails EditingOf(
+        MediaOwner owner,
+        MediaPictureRow picture,
+        IReadOnlySet<int> stalledIds
+    ) =>
         new()
         {
             State = picture.State,
+            IsStalled = stalledIds.Contains(picture.MediaItemId),
             Picture = Of(owner, picture.MediaItemId, picture.RenderedAt),
             UncroppedUrl = UncroppedUrlOf(owner, picture.MediaItemId, picture.RenderedAt),
             Crop = picture.Crop is { } crop ? MediaCrops.ToDetails(crop) : null,

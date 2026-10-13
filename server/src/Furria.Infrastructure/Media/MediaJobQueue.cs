@@ -9,6 +9,9 @@ namespace Furria.Infrastructure.Media;
 
 public sealed class MediaJobQueue
 {
+    private static readonly string AbandonedReason =
+        $"Rendering stopped without an answer {MediaRetrySchedule.MaxAttempts} times";
+
     public static readonly TimeSpan LeaseDuration = TimeSpan.FromMinutes(5);
 
     private readonly AppDbContext _dbContext;
@@ -26,26 +29,29 @@ public sealed class MediaJobQueue
         _logger = logger;
     }
 
-    public async Task<MediaJobDetails?> ClaimAsync(MediaKind kind, CancellationToken ct)
+    public async Task<MediaJobLease?> ClaimAsync(MediaKind kind, CancellationToken ct)
     {
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         var now = _timeProvider.GetUtcNow();
+        await FailAbandonedJobsAsync(kind, now, ct);
         var job = await ClaimableJobAsync(kind, now, ct);
-        if (job is null)
-            return null;
-
-        job.ClaimedAt = now;
-        job.LeaseId = Guid.NewGuid();
-        job.LeaseExpiresAt = now + LeaseDuration;
-        job.Attempts++;
+        if (job is not null)
+            Lease(job, now);
         await _dbContext.SaveChangesAsync(ct);
-        var item = await _dbContext
-            .MediaItems.AsNoTracking()
-            .Include(row => row.WebsitePicture)
-            .SingleAsync(row => row.Id == job.MediaItemId, ct);
         await transaction.CommitAsync(ct);
 
-        return DetailsOf(job, item);
+        return job is null ? null : new MediaJobLease(job.Id, job.LeaseId!.Value);
+    }
+
+    public async Task<MediaJobDetails?> DetailsOfAsync(MediaJobLease lease, CancellationToken ct)
+    {
+        var job = await HeldJobs(lease)
+            .AsNoTracking()
+            .Include(row => row.MediaItem!)
+                .ThenInclude(item => item.WebsitePicture)
+            .SingleOrDefaultAsync(ct);
+
+        return job?.MediaItem is { } item ? DetailsOf(job, item) : null;
     }
 
     public async Task<bool> RenewLeaseAsync(MediaJobLease lease, CancellationToken ct)
@@ -86,33 +92,40 @@ public sealed class MediaJobQueue
 
     public async Task FailAsync(MediaJobLease lease, string reason, CancellationToken ct)
     {
-        var job = await HeldJobs(lease).Include(row => row.MediaItem).SingleOrDefaultAsync(ct);
-        if (job?.MediaItem is not { } item)
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        var job = await HeldJobs(lease).SingleOrDefaultAsync(ct);
+        if (job is null)
             return;
 
         if (MediaRetrySchedule.DelayAfterFailed(job.Attempts) is { } delay)
         {
             _logger.LogWarning(
-                "Media item {MediaItemId} failed on attempt {AttemptNumber}, retrying in {RetryDelay}",
-                item.Id,
+                "Media item {MediaItemId} failed on attempt {AttemptNumber}, retrying in {RetryDelay}: {FailureReason}",
+                job.MediaItemId,
                 job.Attempts,
-                delay
+                delay,
+                reason
             );
             Release(job, _timeProvider.GetUtcNow() + delay);
         }
         else
         {
-            _logger.LogWarning(
-                "Media item {MediaItemId} failed after {AttemptCount} attempts",
-                item.Id,
-                job.Attempts
+            _logger.LogError(
+                "Media item {MediaItemId} failed after {AttemptCount} attempts: {FailureReason}",
+                job.MediaItemId,
+                job.Attempts,
+                reason
             );
             _dbContext.MediaJobs.Remove(job);
-            item.State = MediaItemState.Failed;
-            item.FailureReason = Truncated(reason, MediaItem.FailureReasonLength);
+            await MarkFailedAsync(
+                _dbContext.MediaItems.Where(item => item.Id == job.MediaItemId),
+                reason,
+                ct
+            );
         }
 
         await _dbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
     }
 
     public async Task ReleaseAsync(MediaJobLease lease, CancellationToken ct)
@@ -167,7 +180,10 @@ public sealed class MediaJobQueue
                 JOIN media_item AS item ON item.id = job.media_item_id
                 WHERE item.kind = {kind.ToString()}
                   AND job.available_at <= {now}
-                  AND (job.claimed_at IS NULL OR job.lease_expires_at < {now})
+                  AND (
+                    job.claimed_at IS NULL
+                    OR (job.lease_expires_at < {now} AND job.attempts < {MediaRetrySchedule.MaxAttempts})
+                  )
                   AND NOT EXISTS (
                     SELECT 1 FROM media_job AS other
                     WHERE other.media_item_id = job.media_item_id
@@ -181,6 +197,35 @@ public sealed class MediaJobQueue
                 """
             )
             .SingleOrDefaultAsync(ct);
+
+    private async Task FailAbandonedJobsAsync(
+        MediaKind kind,
+        DateTimeOffset now,
+        CancellationToken ct
+    )
+    {
+        var abandoned = _dbContext.MediaJobs.Where(job =>
+            job.MediaItem!.Kind == kind
+            && job.ClaimedAt != null
+            && job.LeaseExpiresAt < now
+            && job.Attempts >= MediaRetrySchedule.MaxAttempts
+        );
+        var failed = await MarkFailedAsync(
+            _dbContext.MediaItems.Where(item => abandoned.Any(job => job.MediaItemId == item.Id)),
+            AbandonedReason,
+            ct
+        );
+        if (failed == 0)
+            return;
+
+        await abandoned.ExecuteDeleteAsync(ct);
+        _logger.LogError(
+            "{MediaItemCount} {MediaKind} media items failed, their rendering stopped without an answer {AttemptCount} times",
+            failed,
+            kind,
+            MediaRetrySchedule.MaxAttempts
+        );
+    }
 
     private IQueryable<MediaJob> HeldJobs(MediaJobLease lease) =>
         _dbContext.MediaJobs.Where(job => job.Id == lease.JobId && job.LeaseId == lease.LeaseId);
@@ -200,6 +245,30 @@ public sealed class MediaJobQueue
             ),
             _ => _dbContext.MediaItems.Where(item => command.MediaItemIds.Contains(item.Id)),
         };
+
+    private static Task<int> MarkFailedAsync(
+        IQueryable<MediaItem> items,
+        string reason,
+        CancellationToken ct
+    )
+    {
+        var failureReason = Truncated(reason, MediaItem.FailureReasonLength);
+        return items.ExecuteUpdateAsync(
+            setters =>
+                setters
+                    .SetProperty(item => item.State, MediaItemState.Failed)
+                    .SetProperty(item => item.FailureReason, failureReason),
+            ct
+        );
+    }
+
+    private static void Lease(MediaJob job, DateTimeOffset now)
+    {
+        job.ClaimedAt = now;
+        job.LeaseId = Guid.NewGuid();
+        job.LeaseExpiresAt = now + LeaseDuration;
+        job.Attempts++;
+    }
 
     private static void Release(MediaJob job, DateTimeOffset availableAt)
     {

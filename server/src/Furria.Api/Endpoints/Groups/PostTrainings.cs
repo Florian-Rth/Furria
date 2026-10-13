@@ -120,7 +120,9 @@ public sealed class PostTrainingsValidator : Validator<PostTrainingsRequest>
             .Must(instants => instants.Count <= GroupLimits.MaxTrainingInstants)
             .WithMessage(TooManyMessage)
             .When(request => request.Instants is not null);
-        RuleForEach(request => request.Instants).SetValidator(new TrainingInstantDataValidator());
+        RuleForEach(request => request.Instants)
+            .NotNull()
+            .SetValidator(new TrainingInstantDataValidator());
     }
 }
 

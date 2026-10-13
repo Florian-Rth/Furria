@@ -106,6 +106,71 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_WriteTheSameInstants_When_TheTimesCarryALocalOffset()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var berlinWinter = TimeSpan.FromHours(1);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            new()
+            {
+                Title = ClubMeeting,
+                Description = null,
+                OwnerGroupId = null,
+                VenueId = ctx.Club.Venues.IdOf("buehnenhaus"),
+                StartsAt = MeetingStart.ToOffset(berlinWinter),
+                EndsAt = MeetingEnd.ToOffset(berlinWinter),
+                Kind = CalendarEntryKind.Meeting,
+                Visibility = CalendarEntryVisibility.Club,
+                AsksForResponse = false,
+                ParticipatingGroupIds = [],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(result.CalendarEntryId)
+            .ToHavePeriod(MeetingStart, MeetingEnd)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheEntry_When_TheParticipatingGroupsAreNull()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            new()
+            {
+                Title = ClubMeeting,
+                Description = null,
+                OwnerGroupId = null,
+                VenueId = null,
+                StartsAt = MeetingStart,
+                EndsAt = MeetingEnd,
+                Kind = CalendarEntryKind.Meeting,
+                Visibility = CalendarEntryVisibility.Club,
+                AsksForResponse = false,
+                ParticipatingGroupIds = null!,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Should_ReturnForbidden_When_TheClubEntryComesFromAGroupAdmin()
     {
         var ct = TestContext.Current.CancellationToken;

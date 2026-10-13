@@ -299,6 +299,30 @@ public sealed class PostMembershipApplicationTests : IClassFixture<ApiTestFixtur
     }
 
     [Fact]
+    public async Task Should_RefuseThePostalCode_When_ItIsNull()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+        var client = _fixture.CreateClient();
+
+        var response = await MembershipApplicationSteps.SubmitAsync(
+            client,
+            AdultApplication() with
+            {
+                PostalCode = null!,
+                Altcha = await MembershipApplicationSteps.SolvedAltchaAsync(client),
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        Assert.Equal(
+            ["postalCode"],
+            await MembershipApplicationSteps.RefusedFieldsAsync(response, ct)
+        );
+        await ctx.Expected.MembershipApplications().ToHaveCount(0).AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_AcceptTheApplication_When_ItGivesNoPhone()
     {
         var ct = TestContext.Current.CancellationToken;

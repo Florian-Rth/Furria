@@ -13,12 +13,19 @@ public sealed class PictureService
     private readonly AppDbContext _dbContext;
     private readonly MediaPictures _pictures;
     private readonly MediaJobQueue _jobQueue;
+    private readonly TimeProvider _timeProvider;
 
-    public PictureService(AppDbContext dbContext, MediaPictures pictures, MediaJobQueue jobQueue)
+    public PictureService(
+        AppDbContext dbContext,
+        MediaPictures pictures,
+        MediaJobQueue jobQueue,
+        TimeProvider timeProvider
+    )
     {
         _dbContext = dbContext;
         _pictures = pictures;
         _jobQueue = jobQueue;
+        _timeProvider = timeProvider;
     }
 
     public async Task<PictureEditingDetails?> EditingOfAsync(MediaOwner owner, CancellationToken ct)
@@ -28,7 +35,15 @@ public sealed class PictureService
             .Select(item => new MediaPictureRow(item.Id, item.State, item.RenderedAt, item.Crop))
             .SingleOrDefaultAsync(ct);
 
-        return picture is null ? null : _pictures.EditingOf(owner, picture);
+        if (picture is null)
+            return null;
+
+        var stalledIds = await _dbContext.StalledAmongAsync(
+            [picture],
+            _timeProvider.GetUtcNow(),
+            ct
+        );
+        return _pictures.EditingOf(owner, picture, stalledIds);
     }
 
     public async Task<Result> CropAsync(MediaOwner owner, PictureCrop crop, CancellationToken ct)

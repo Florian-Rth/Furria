@@ -65,7 +65,7 @@ public sealed partial class GalleryService
                     || item.UploadedByPersonId == query.UploaderPersonId
                 )
                 .InCaptureOrder()
-                .Select(ItemSummary)
+                .Select(ItemSummary())
                 .ToListAsync(ct),
         };
     }

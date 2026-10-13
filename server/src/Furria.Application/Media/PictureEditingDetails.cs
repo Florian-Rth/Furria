@@ -6,6 +6,8 @@ public sealed record PictureEditingDetails
 {
     public required MediaItemState State { get; init; }
 
+    public required bool IsStalled { get; init; }
+
     public required PictureDetails? Picture { get; init; }
 
     public required string? UncroppedUrl { get; init; }

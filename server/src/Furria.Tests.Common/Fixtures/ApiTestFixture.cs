@@ -527,6 +527,20 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await db.Database.ExecuteSqlAsync($"DELETE FROM media_item WHERE id = {mediaItemId}", ct);
     }
 
+    public async Task DetachWebsitePictureDirectlyAsync(
+        int mediaItemId,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"DELETE FROM website_picture WHERE media_item_id = {mediaItemId}",
+            ct
+        );
+    }
+
     public async Task<int> PendingNewsPictureOfAsync(int newsPostId, CancellationToken ct = default)
     {
         await using var scope = Services.CreateAsyncScope();
