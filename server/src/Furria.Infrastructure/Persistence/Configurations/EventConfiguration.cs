@@ -51,6 +51,14 @@ public sealed class EventConfiguration : IEntityTypeConfiguration<Event>
             .HasConstraintName("fk_event_calendar_entry_calendar_entry_id")
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder
+            .HasOne(row => row.Picture)
+            .WithMany()
+            .HasForeignKey(row => row.PictureId)
+            .HasConstraintName("fk_event_media_item_picture_id")
+            .OnDelete(DeleteBehavior.SetNull);
+        builder.HasIndex(row => row.PictureId).IsUnique();
+
         builder.Property(row => row.CreatedAt).HasDefaultValueSql("now()");
         builder.Property(row => row.UpdatedAt).HasDefaultValueSql("now()");
     }

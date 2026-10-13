@@ -15,6 +15,7 @@ const eveningWith = (overrides: Partial<Event>): Event => ({
   priceCents: 1400,
   presaleStartsAt: '2026-11-11T11:11',
   status: 'available',
+  picture: null,
   ...overrides,
 });
 

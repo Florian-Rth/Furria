@@ -40,6 +40,10 @@ public sealed class PublicPictures
                 "news",
                 face => face.NewsPosts.Select(post => post.PictureId)
             ),
+            [PublicPictureKind.EventPicture] = new(
+                "events",
+                face => face.Events.Select(row => row.PictureId)
+            ),
         }.ToFrozenDictionary();
 
     private static readonly FrozenDictionary<string, PublicPictureRoute> RoutesBySegment =

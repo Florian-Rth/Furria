@@ -11,6 +11,7 @@ import { EventClosingBand } from './internal/ui/EventClosingBand';
 import { EventDetailBackLink } from './internal/ui/EventDetailBackLink';
 import { EventDetailHeadline } from './internal/ui/EventDetailHeadline';
 import { EventDetailIntro } from './internal/ui/EventDetailIntro';
+import { EventDetailPicture } from './internal/ui/EventDetailPicture';
 import { EventDetailStats } from './internal/ui/EventDetailStats';
 import { EventStickyCta } from './internal/ui/EventStickyCta';
 
@@ -25,6 +26,7 @@ export const EventDetailPage: FC<EventDetailPageProps> = ({ event }) => (
         <EventDetailBackLink />
         <EventIdentityLayout>
           <EventIdentityMain>
+            <EventDetailPicture event={event} />
             <EventDetailHeadline event={event} />
             <EventDetailIntro event={event} />
             <EventDetailStats event={event} />

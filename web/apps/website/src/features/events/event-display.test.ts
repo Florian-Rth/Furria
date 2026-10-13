@@ -15,6 +15,7 @@ const eventStartingAt = (eventId: number, startsAt: string): Event => ({
   priceCents: 1400,
   presaleStartsAt: null,
   status: 'announced',
+  picture: null,
 });
 
 describe('selectEventsByDate', () => {

@@ -1,6 +1,7 @@
+import type { KkAspect } from '@furria/ui';
 import type { UploadOwner } from '@/lib/media/media-upload';
 
-export type PictureKind = 'portrait' | 'groupPicture';
+export type PictureKind = 'portrait' | 'groupPicture' | 'eventPicture';
 
 export interface PictureTarget {
   kind: PictureKind;
@@ -9,12 +10,30 @@ export interface PictureTarget {
 
 export const PICTURE_ACCEPT = 'image/jpeg,image/png,image/webp,image/heic,image/heif,.heic,.heif';
 
-export const toPicturePath = (target: PictureTarget): string =>
-  target.kind === 'portrait'
-    ? `/api/persons/${target.ownerId}/portrait`
-    : `/api/groups/${target.ownerId}/picture`;
+export const PICTURE_ASPECTS: Record<PictureKind, KkAspect> = {
+  portrait: 'portrait',
+  groupPicture: 'groupPicture',
+  eventPicture: 'banner',
+};
+
+const OWNER_KINDS: Record<PictureKind, 'person' | 'group' | 'event'> = {
+  portrait: 'person',
+  groupPicture: 'group',
+  eventPicture: 'event',
+};
+
+export const toPicturePath = (target: PictureTarget): string => {
+  switch (target.kind) {
+    case 'portrait':
+      return `/api/persons/${target.ownerId}/portrait`;
+    case 'groupPicture':
+      return `/api/groups/${target.ownerId}/picture`;
+    case 'eventPicture':
+      return `/api/events/${target.ownerId}/picture`;
+  }
+};
 
 export const toUploadOwner = (target: PictureTarget): UploadOwner => ({
-  kind: target.kind === 'portrait' ? 'person' : 'group',
+  kind: OWNER_KINDS[target.kind],
   id: target.ownerId,
 });

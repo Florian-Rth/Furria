@@ -1,8 +1,10 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Calendar;
+using Furria.Api.Tests.Events;
 using Furria.Core.Club;
 using Furria.Core.Events;
+using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -448,6 +450,53 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                 Assert.Equal(CalendarEntryKind.Event, gala.Kind);
                 Assert.Equal(CalendarEntryVisibility.Public, gala.Visibility);
                 Assert.Null(gala.OwnerGroupId);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CarryTheEventsPicture_When_AnyMemberReadsTheEventsEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(
+                    builder =>
+                        builder
+                            .Identity(WholeClub)
+                            .Club(club =>
+                                club.AddVenue("buergerhaus", "Bürgerhaus")
+                                    .AddEvent("gala", Gala, AtTheMeeting, "buergerhaus")
+                            ),
+                    ct
+                );
+                var eventId = ctx.Club.Events.IdOf("gala");
+                var pictureId = await EventPictureSteps.RenderedAsync(
+                    _fixture,
+                    await ctx.Identity.ManagingLoginClientAsync(ct),
+                    eventId,
+                    ct
+                );
+
+                var result = await ReadAsync(
+                    ctx,
+                    "alice",
+                    new GetCalendarRequest { Scope = CalendarScope.Club },
+                    ct
+                );
+
+                var gala = Assert.Single(result.Entries);
+                Assert.StartsWith(
+                    _fixture.SignedMediaUrl(
+                        pictureId,
+                        MediaOwner.Event(eventId),
+                        MediaRendition.Medium
+                    ),
+                    gala.Event?.Picture?.MediumUrl
+                );
             }
         );
     }

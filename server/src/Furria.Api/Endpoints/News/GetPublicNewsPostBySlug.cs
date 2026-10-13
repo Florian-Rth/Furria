@@ -81,7 +81,7 @@ public sealed class GetPublicNewsPostBySlug
             Portrait = PictureDto.From(person.Portrait),
         };
 
-    private static PublicNewsEventDto ToDto(NewsEventTie tiedEvent) =>
+    private static PublicNewsEventDto ToDto(PublicNewsEvent tiedEvent) =>
         new()
         {
             EventId = tiedEvent.EventId,
@@ -90,6 +90,7 @@ public sealed class GetPublicNewsPostBySlug
             EndsAt = tiedEvent.EndsAt,
             VenueName = tiedEvent.VenueName,
             IsCancelled = tiedEvent.IsCancelled,
+            Picture = PublicEventPictureDto.From(tiedEvent.Picture),
         };
 
     private static PublicNewsAlbumDto ToDto(PublicNewsAlbum album) =>
@@ -203,6 +204,8 @@ public sealed record PublicNewsEventDto
     public required string? VenueName { get; init; }
 
     public required bool IsCancelled { get; init; }
+
+    public required PublicEventPictureDto? Picture { get; init; }
 }
 
 public sealed record PublicNewsAlbumDto

@@ -27,7 +27,7 @@ public sealed record PublicNewsDetails
 
     public required IReadOnlyList<MentionablePerson> MentionedPersons { get; init; }
 
-    public required NewsEventTie? Event { get; init; }
+    public required PublicNewsEvent? Event { get; init; }
 
     public required PublicNewsAlbum? Album { get; init; }
 }

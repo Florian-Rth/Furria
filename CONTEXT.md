@@ -1048,14 +1048,15 @@ message, chat, bulletin board, category, attachment, read receipt
 
 **Media store**:
 The platform's one store for uploaded pictures and videos, with no screen of its own. It holds
-**media items**; every use (a **portrait**, a **group picture**, a **news picture**, the
-**gallery**, a **website picture**) owns its items.
+**media items**; every use (a **portrait**, a **group picture**, a **news picture**, an **event
+picture**, the **gallery**, a **website picture**) owns its items.
 _Avoid_: media library, file store, uploads (as a noun)
 
 **Media item** (`MediaItem`):
 One uploaded photo or video together with everything derived from it. It has **exactly one
 owner** — a person (her **portrait**), a group (its **group picture**), a **news post** (its
-**news picture**), the **gallery** or the website (a **website picture**). Using
+**news picture**), an **event** (its **event picture**), the **gallery** or the website (a
+**website picture**). Using
 one owner's picture for another *copies* it into a new media item, so a takedown or deletion in
 one use never breaks another.
 _Avoid_: file, asset, attachment, media (as a countable noun)
@@ -1121,6 +1122,18 @@ decorative. Set by whoever releases photos to the public (`gallery.publish`) (de
 L7c shaping).
 _UI copy_: Websitebild
 _Avoid_: hero image, site asset, stock photo
+
+**Event picture**:
+The **one** photo of an **event**, a **media item** the event owns, cut to **2:1** the same
+non-destructive way as a group picture. It shows wherever the event appears as a card or a page —
+on the website (the landing's event cards, the event page, a news article's event card, the link
+preview) and in the club app (the events workbench, the event's calendar entry). Uploaded or picked
+from the **gallery** — picking copies. Without one the event shows the website's branded surface.
+Set in the **events workbench** by `events.manage`, live at once, gone with the event; a
+**cancelled** event keeps it (decided 2026-10-12, L7d shaping).
+_UI copy_: Veranstaltungsbild
+_Avoid_: poster, flyer (a poster is advertising material, not the event's picture), key visual,
+cover, event photo (photos *of* the evening belong in its album)
 
 ### Money
 

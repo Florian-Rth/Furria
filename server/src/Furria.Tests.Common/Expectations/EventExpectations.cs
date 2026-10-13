@@ -73,6 +73,12 @@ public sealed class EventExpectations
             async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).CancelledAt)
         );
 
+    public Expected ToShowPicture(int? mediaItemId) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(mediaItemId, (await SingleAsync(dbContext, ct)).PictureId)
+        );
+
     private Task<Event> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
         dbContext.Events.AsNoTracking().SingleAsync(row => row.CalendarEntryId == _eventId, ct);
 }

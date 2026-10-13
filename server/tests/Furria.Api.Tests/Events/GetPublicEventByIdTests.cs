@@ -104,6 +104,35 @@ public sealed class GetPublicEventByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_CarryTheEventsPictureAtItsCut_When_TheEventHasOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildClubAsync(ct);
+                var eventId = ctx.Club.Events.IdOf("first-gala");
+                var pictureId = await EventPictureSteps.RenderedAsync(
+                    _fixture,
+                    await ctx.Identity.ManagingLoginClientAsync(ct),
+                    eventId,
+                    ct
+                );
+
+                var (_, result) = await ReadAsync(eventId);
+
+                Assert.Equal((800, 400), (result.Picture?.Width, result.Picture?.Height));
+                Assert.StartsWith(
+                    $"/api/public/events/pictures/{pictureId}/medium?v=",
+                    result.Picture?.MediumUrl
+                );
+            }
+        );
+    }
+
+    [Fact]
     public async Task Should_ReturnNotFound_When_TheIdNamesAPublicEntryOfAnotherKind()
     {
         var ct = TestContext.Current.CancellationToken;

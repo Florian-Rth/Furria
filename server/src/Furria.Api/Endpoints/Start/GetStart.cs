@@ -122,7 +122,11 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
             ViewerRuns = entry.ViewerRuns is null ? null : ToDto(entry.ViewerRuns),
             Attendance = entry.Attendance is null ? null : ToDto(entry.Attendance),
             Description = entry.Description,
+            Event = entry.Event is { } tiedEvent ? ToDto(tiedEvent) : null,
         };
+
+    private static StartEventDto ToDto(StartEvent tiedEvent) =>
+        new() { IsCancelled = tiedEvent.IsCancelled, Picture = PictureDto.From(tiedEvent.Picture) };
 
     private static StartVenueDto ToDto(StartVenue venue) =>
         new()
@@ -301,6 +305,15 @@ public sealed record StartEntryDto
     public required StartAttendanceDto? Attendance { get; init; }
 
     public required string? Description { get; init; }
+
+    public required StartEventDto? Event { get; init; }
+}
+
+public sealed record StartEventDto
+{
+    public required bool IsCancelled { get; init; }
+
+    public required PictureDto? Picture { get; init; }
 }
 
 public sealed record StartVenueDto

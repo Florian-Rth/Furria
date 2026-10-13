@@ -27,4 +27,6 @@ public sealed record PublicEventDetails
     public required DateTimeOffset? PresaleStartsAt { get; init; }
 
     public required EventSalesStatus Status { get; init; }
+
+    public required PublicEventPicture? Picture { get; init; }
 }

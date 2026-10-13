@@ -13,7 +13,7 @@ import {
   UNREADABLE_PHOTO_NOTE,
 } from '../picture-labels';
 import type { PictureTarget } from '../picture-target';
-import { PICTURE_ACCEPT } from '../picture-target';
+import { PICTURE_ACCEPT, PICTURE_ASPECTS } from '../picture-target';
 import { PicturePreview } from './PicturePreview';
 
 interface PictureEditorProps {
@@ -38,6 +38,7 @@ export const PictureEditor: FC<PictureEditorProps> = ({
   const control = usePictureEditor({ target, editing, refresh });
   const inputRef = useRef<HTMLInputElement | null>(null);
   const copy = PICTURE_COPY[target.kind];
+  const aspect = PICTURE_ASPECTS[target.kind];
   const { phase, removal } = control;
   const currentPicture = editing?.picture ?? null;
 
@@ -84,7 +85,7 @@ export const PictureEditor: FC<PictureEditorProps> = ({
         key={phase.source}
         source={phase.source}
         alt={alt}
-        aspect={target.kind}
+        aspect={aspect}
         initialCrop={control.initialCrop}
         guide={copy.guide}
         labels={copy.frame}

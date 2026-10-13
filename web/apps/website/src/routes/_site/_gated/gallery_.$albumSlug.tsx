@@ -24,7 +24,10 @@ const AlbumErrorComponent: FC = () => {
 };
 
 const buildShareImageMeta = (album: AlbumDetail): RouteHead['meta'] =>
-  album.photos.slice(0, 1).map((photo) => ({ property: 'og:image', content: photo.largeUrl }));
+  album.photos.slice(0, 1).flatMap((photo) => [
+    { property: 'og:image', content: photo.largeUrl },
+    { property: 'og:image:alt', content: album.title },
+  ]);
 
 const buildAlbumHead = (album: AlbumDetail): RouteHead => {
   const title = pageTitle(buildAlbumDocumentTitle(album));

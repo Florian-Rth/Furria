@@ -7,6 +7,7 @@ using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Core.News;
 using Furria.Infrastructure.Club;
+using Furria.Infrastructure.Events;
 using Furria.Infrastructure.Public;
 using Microsoft.EntityFrameworkCore;
 
@@ -127,16 +128,23 @@ public sealed partial class NewsService
         return PublicPersonsOf(seats);
     }
 
-    private Task<NewsEventTie?> ShownEventAsync(int eventId, CancellationToken ct) =>
+    private Task<PublicNewsEvent?> ShownEventAsync(int eventId, CancellationToken ct) =>
         _publicFace
             .Events.Where(row => row.CalendarEntryId == eventId)
-            .Select(row => new NewsEventTie(
+            .Select(row => new PublicNewsEvent(
                 row.CalendarEntryId,
                 row.CalendarEntry!.Title,
                 row.CalendarEntry.StartsAt,
                 row.CalendarEntry.EndsAt,
                 row.CalendarEntry.Venue!.Name,
-                row.CancelledAt != null
+                row.CancelledAt != null,
+                PublicEventPictures.Of(
+                    row.PictureId,
+                    row.Picture == null ? null : row.Picture.RenderedAt,
+                    row.Picture == null ? null : row.Picture.Width,
+                    row.Picture == null ? null : row.Picture.Height,
+                    row.Picture == null ? null : row.Picture.Crop
+                )
             ))
             .SingleOrDefaultAsync(ct);
 

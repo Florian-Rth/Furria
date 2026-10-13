@@ -18,6 +18,7 @@ const entry = (calendarEntryId: number, title: string): StartEntry => ({
   viewerRuns: null,
   attendance: { viewerAnswer: null, isOwed: true },
   description: null,
+  event: null,
 });
 
 const announcement = (announcementId: number, title: string): StartAnnouncement => ({

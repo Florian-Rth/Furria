@@ -4,6 +4,7 @@ import { AppSkeletonRegion } from '@/features/session';
 import { EVENT_SECTION_TITLES } from '../events-labels';
 
 const FACTS_LINES = 5;
+const PICTURE_LINES = 4;
 const TICKETS_LINES = 3;
 const LOADING_LABEL = 'Die Veranstaltung wird geladen';
 
@@ -13,6 +14,11 @@ export const EventSkeleton: FC = () => (
       <KkPanelSection title={EVENT_SECTION_TITLES.facts}>
         <KkPanel variant="block">
           <KkSkeletonBlock lines={FACTS_LINES} />
+        </KkPanel>
+      </KkPanelSection>
+      <KkPanelSection title={EVENT_SECTION_TITLES.picture}>
+        <KkPanel variant="block">
+          <KkSkeletonBlock lines={PICTURE_LINES} />
         </KkPanel>
       </KkPanelSection>
       <KkPanelSection title={EVENT_SECTION_TITLES.tickets}>

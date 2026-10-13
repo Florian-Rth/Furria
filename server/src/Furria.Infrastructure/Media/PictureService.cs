@@ -87,6 +87,9 @@ public sealed class PictureService
             MediaOwnerKind.Group => _dbContext
                 .Groups.Where(group => group.Id == owner.Id && group.Picture != null)
                 .Select(group => group.Picture!),
+            MediaOwnerKind.Event => _dbContext
+                .Events.Where(row => row.CalendarEntryId == owner.Id && row.Picture != null)
+                .Select(row => row.Picture!),
             _ => _dbContext.MediaItems.Where(_ => false),
         };
 }

@@ -1,3 +1,4 @@
+using Furria.Application.Media;
 using Furria.Core.Events;
 
 namespace Furria.Application.Events;
@@ -35,4 +36,6 @@ public sealed record EventDetails
     public required EventSalesStatus Status { get; init; }
 
     public required bool IsOver { get; init; }
+
+    public required PictureEditingDetails? Picture { get; init; }
 }

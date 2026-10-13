@@ -12,6 +12,7 @@ public sealed class MediaOwnerAccess
     private const string UnknownPerson = "There is no such person.";
     private const string UnknownGroup = "There is no such group.";
     private const string UnknownNewsPost = "There is no such news post.";
+    private const string UnknownEvent = "There is no such event.";
     private const string NotPermitted = "The caller may not add media to this owner.";
 
     private readonly AppDbContext _dbContext;
@@ -37,6 +38,11 @@ public sealed class MediaOwnerAccess
                 ct
             ),
             MediaOwnerKind.NewsPost => await MayUploadNewsPictureAsync(
+                accountId,
+                owner.Id!.Value,
+                ct
+            ),
+            MediaOwnerKind.Event => await MayUploadEventPictureAsync(
                 accountId,
                 owner.Id!.Value,
                 ct
@@ -87,6 +93,20 @@ public sealed class MediaOwnerAccess
 
         return PermittedIf(
             await _authorizer.IsGrantedAsync(accountId, FurriaPermissions.NewsManage, ct)
+        );
+    }
+
+    private async Task<Result> MayUploadEventPictureAsync(
+        int accountId,
+        int eventId,
+        CancellationToken ct
+    )
+    {
+        if (!await _dbContext.Events.AnyAsync(row => row.CalendarEntryId == eventId, ct))
+            return Result.NotFound(UnknownEvent);
+
+        return PermittedIf(
+            await _authorizer.IsGrantedAsync(accountId, FurriaPermissions.EventsManage, ct)
         );
     }
 

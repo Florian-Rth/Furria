@@ -14,3 +14,5 @@ export const ticketPanelNotes = {
   soldOut: 'Für diesen Abend sind alle Karten vergeben.',
   cancelled: 'Dieser Abend fällt aus.',
 } as const;
+
+export const eventCancelledStamp = 'Abgesagt';

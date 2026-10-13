@@ -38,6 +38,7 @@ const entry = (calendarEntryId: number, startsAt: string): StartEntry => ({
   viewerRuns: null,
   attendance: null,
   description: null,
+  event: null,
 });
 
 const mine = (subjectId: number, until = '2027-01-30'): StartMine => ({

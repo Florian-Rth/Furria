@@ -1,6 +1,7 @@
 using System.Diagnostics.Contracts;
 using Furria.Application.Start;
 using Furria.Core.Club;
+using Furria.Core.Media;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Start;
@@ -21,7 +22,8 @@ public sealed partial class StartService
     private static StartEntrySummary ToEntrySummary(
         StartEntryRow row,
         AttendanceAnswer? answer,
-        Viewer viewer
+        Viewer viewer,
+        StartEvent? tiedEvent
     )
     {
         var facts = row.ToFacts();
@@ -48,6 +50,7 @@ public sealed partial class StartService
                 ? AttendanceOf(row, answer, viewer.Ties.Concerns(facts), viewer.Moment.Now)
                 : null,
             Description = row.Description,
+            Event = tiedEvent,
         };
     }
 
@@ -121,10 +124,28 @@ public sealed partial class StartService
                     )
                 )
                 .Select(row =>
-                    ToEntrySummary(row, answers.GetValueOrDefault(row.CalendarEntryId), viewer)
+                    ToEntrySummary(
+                        row,
+                        answers.GetValueOrDefault(row.CalendarEntryId),
+                        viewer,
+                        EventOf(row)
+                    )
                 ),
         ];
     }
+
+    private StartEvent? EventOf(StartEntryRow row) =>
+        row.Event is { } tiedEvent
+            ? new StartEvent
+            {
+                IsCancelled = tiedEvent.IsCancelled,
+                Picture = _pictures.Of(
+                    MediaOwner.Event(row.CalendarEntryId),
+                    tiedEvent.PictureId,
+                    tiedEvent.PictureRenderedAt
+                ),
+            }
+            : null;
 
     private Task<List<StartEntryRow>> EntryRowsAsync(Viewer viewer, CancellationToken ct)
     {

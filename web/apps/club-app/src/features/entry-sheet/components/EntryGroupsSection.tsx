@@ -1,7 +1,7 @@
 import { KkChip, KkGroupToneChip, KkPanelSection } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import type { EntryGroupChip } from '../hooks/use-entry-sheet';
+import type { EntryGroupChip } from '../types';
 
 const OWNER_TITLE = 'Veranstaltet von';
 const PARTICIPATING_TITLE = 'Mitwirkende Gruppen';

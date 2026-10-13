@@ -115,6 +115,9 @@ export const groupToneRecipes: Record<KkGroupTone, KkGroupToneRecipe> = {
 export const isKkGroupTone = (value: string): value is KkGroupTone =>
   (GROUP_TONES as readonly string[]).includes(value);
 
+export const eventToneOf = (eventId: number): KkGroupTone =>
+  GROUP_TONES[eventId % GROUP_TONES.length] ?? GROUP_TONES[0];
+
 export const groupToneFieldScheme = (tone: KkGroupTone): KkScheme =>
   schemeFill(groupToneRecipes[tone].fieldLight, groupToneRecipes[tone].fieldDark);
 

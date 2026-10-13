@@ -1,9 +1,13 @@
-import type { KkAnswer, KkGroupTone, KkSheetAction } from '@furria/ui';
+import type { KkSheetAction } from '@furria/ui';
 import { Link, useNavigate } from '@tanstack/react-router';
+import type { EntryGroupChip, EntrySheetView } from '@/features/entry-sheet';
+import { toEventEditAction } from '@/features/entry-sheet';
 import { toGroupTone } from '@/features/groups';
+import { usePermissions } from '@/features/session';
+import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { toEventCover } from '@/lib/event-cover';
 import { toPeekId } from '@/lib/peek';
 import { usePeek } from '@/lib/use-peek';
-import type { EntryVenueView } from '../entry-sheet';
 import {
   toEntryGroups,
   toEntryHeadline,
@@ -17,38 +21,11 @@ import { entriesOf } from '../start-sheets';
 import { useEntryAnswer } from './use-entry-answer';
 import type { StartBoard } from './use-start-view';
 
-export interface EntryGroupChip {
-  groupId: number;
-  name: string;
-  tone: KkGroupTone;
-}
-
-export interface EntrySheetAnswer {
-  label: string;
-  value: KkAnswer | null;
-  choose: (answer: KkAnswer) => void;
-  error: string | undefined;
-  disabled: boolean;
-}
-
-export interface EntrySheetView {
-  sheetId: string;
-  title: string;
-  headline: string;
-  runningNote: string | null;
-  venue: EntryVenueView | null;
-  owner: EntryGroupChip | null;
-  participating: EntryGroupChip[];
-  runsLine: string | null;
-  description: string | null;
-  answer: EntrySheetAnswer | null;
-  onward: KkSheetAction | undefined;
-}
-
 const CALENDAR_ROUTE = '/calendar';
 const GROUP_ROUTE = '/groups/$groupId';
 const CALENDAR_LABEL = 'Im Kalender';
 const LIST_VIEW = 'list';
+const COVER_SIZES = '(min-width: 900px) 32rem, 100vw';
 
 const toEntryId = (entry: StartEntry): number => entry.calendarEntryId;
 
@@ -64,6 +41,7 @@ export const useEntryPeek = (board: StartBoard): StartEntry | null =>
   usePeek('entry', entriesOf(board.start), toEntryId);
 
 export const useEntrySheet = (entry: StartEntry, board: StartBoard): EntrySheetView => {
+  const managesEvents = usePermissions().has(PERMISSION_KEYS.eventsManage);
   const navigate = useNavigate();
   const { calendarEntryId } = entry;
   const answer = useEntryAnswer({ calendarEntryId, onTouch: board.touch, onHeld: settled });
@@ -97,6 +75,17 @@ export const useEntrySheet = (entry: StartEntry, board: StartBoard): EntrySheetV
   return {
     sheetId: toPeekId('entry', calendarEntryId),
     title: entry.title,
+    cover:
+      entry.event === null
+        ? null
+        : toEventCover(
+            {
+              eventId: calendarEntryId,
+              picture: entry.event.picture,
+              isCancelled: entry.event.isCancelled,
+            },
+            COVER_SIZES,
+          ),
     headline: toEntryHeadline(entry),
     runningNote: toRunningNote(entry, board.now),
     venue: toEntryVenue(entry.venue, entry.viewerHoldsVenueKey),
@@ -104,6 +93,7 @@ export const useEntrySheet = (entry: StartEntry, board: StartBoard): EntrySheetV
     participating: groups.participating.map(chipOf),
     runsLine: toRunsLine(entry),
     description: description === '' ? null : description,
+    details: null,
     answer:
       entry.attendance === null
         ? null
@@ -114,6 +104,8 @@ export const useEntrySheet = (entry: StartEntry, board: StartBoard): EntrySheetV
             error: answer.failure,
             disabled: answer.dims,
           },
-    onward: onwardAction(),
+    primary: onwardAction(),
+    secondary:
+      entry.event !== null && managesEvents ? toEventEditAction(calendarEntryId) : undefined,
   };
 };

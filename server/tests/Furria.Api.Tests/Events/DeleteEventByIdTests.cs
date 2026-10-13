@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Events;
 using Furria.Application.Authorization;
+using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -47,6 +48,28 @@ public sealed class DeleteEventByIdTests : IClassFixture<ApiTestFixture>
             .CalendarEntry(eventId)
             .ToNotExist()
             .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_DeleteTheEventsPictureWithIt_When_TheKeyHolderDeletesTheEvent()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var eventId = ctx.Club.Events.IdOf("first-gala");
+        var pictureId = await EventPictureSteps.RenderedAsync(
+            _fixture,
+            await ctx.Identity.ClientForAsync("vera", ct),
+            eventId,
+            ct
+        );
+        var original = await _fixture.MediaFileOfAsync(pictureId, MediaRendition.Original, ct);
+
+        var response = await DeleteAsync(ctx, "vera", eventId);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx.Expected.MediaItem(pictureId).ToBeGone().AssertAsync(ct);
+        await _fixture.MediaFilesReapedAsync(ct);
+        Assert.False(File.Exists(original));
     }
 
     [Fact]

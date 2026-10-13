@@ -1,4 +1,5 @@
 using Furria.Core.Club;
+using Furria.Core.Media;
 
 namespace Furria.Core.Events;
 
@@ -20,9 +21,13 @@ public sealed class Event : ITimestamped
 
     public DateTimeOffset? CancelledAt { get; set; }
 
+    public int? PictureId { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
 
     public CalendarEntry? CalendarEntry { get; set; }
+
+    public MediaItem? Picture { get; set; }
 }

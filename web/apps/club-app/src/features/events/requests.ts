@@ -1,4 +1,5 @@
 import type { JsonBody } from '@furria/api-client';
+import type { KkCrop } from '@furria/ui';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type { EventPayload } from './event-form';
@@ -11,6 +12,7 @@ import type {
 } from './schemas';
 import {
   EventDetailsSchema,
+  EventPictureFromGallerySchema,
   EventsResponseSchema,
   TicketRequestsResponseSchema,
   WrittenEventSchema,
@@ -101,3 +103,21 @@ export const requestTicketRequestHandled = (
     schema: NoContentSchema,
     accessToken,
   });
+
+export interface EventGalleryPick {
+  eventId: number;
+  galleryItemId: number;
+  crop: KkCrop;
+}
+
+export const requestEventPictureFromGallery = async (
+  { eventId, galleryItemId, crop }: EventGalleryPick,
+  accessToken: string,
+): Promise<void> => {
+  await apiFetch(`/api/events/${eventId}/picture/from-gallery`, {
+    method: 'POST',
+    body: { galleryItemId, left: crop.left, top: crop.top, width: crop.width, height: crop.height },
+    schema: EventPictureFromGallerySchema,
+    accessToken,
+  });
+};

@@ -1,13 +1,17 @@
 import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import type { KkCrop } from '../image-crop';
 import { KkCoverPicture } from '../KkCoverPicture';
-import { KkNewsPoster } from '../KkNewsPoster';
-import type { KkNewsTone } from '../KkNewsProof/news-proof-types';
+import { KkEventPictureStamp } from '../KkEventPicture/internal/ui/KkEventPictureStamp';
 import { kkTokens } from '../tokens';
 import type { KkBannerDeskActions, KkBannerDeskLabels, KkBannerState } from './banner-desk-types';
-import { bannerSourceOf, isBannerEditable, uploadPercentOf } from './banner-desk-view';
+import {
+  bannerSourceOf,
+  isBannerEditable,
+  isBannerStamped,
+  uploadPercentOf,
+} from './banner-desk-view';
 import { KkBannerCropDesk } from './KkBannerCropDesk';
 import { KkBannerEmptyActions } from './KkBannerEmptyActions';
 import { KkBannerOverlay } from './KkBannerOverlay';
@@ -18,8 +22,8 @@ import { KkBannerTrouble } from './KkBannerTrouble';
 interface KkBannerDeskProps {
   id: string;
   state: KkBannerState;
-  posterTone: KkNewsTone | null;
-  posterWord: string;
+  poster: ReactNode;
+  stampLabel?: string | null;
   source: string | null;
   uncroppedSource: string | null;
   crop: KkCrop | null;
@@ -33,8 +37,8 @@ interface KkBannerDeskProps {
 export const KkBannerDesk: FC<KkBannerDeskProps> = ({
   id,
   state,
-  posterTone,
-  posterWord,
+  poster,
+  stampLabel = null,
   source,
   uncroppedSource,
   crop,
@@ -62,11 +66,7 @@ export const KkBannerDesk: FC<KkBannerDeskProps> = ({
   const uploadLine = `${labels.uploading} · ${percent} %`;
   const media =
     shownSource === null ? (
-      <KkNewsPoster
-        tone={posterTone}
-        word={posterWord}
-        sx={{ borderRadius: `${kkTokens.radius.base}px` }}
-      />
+      poster
     ) : (
       <KkCoverPicture
         image={{ src: shownSource }}
@@ -84,6 +84,11 @@ export const KkBannerDesk: FC<KkBannerDeskProps> = ({
         })}
       />
     );
+
+  const stamp =
+    stampLabel !== null && isBannerStamped(state, readOnly) ? (
+      <KkEventPictureStamp label={stampLabel} scale="card" />
+    ) : null;
 
   const emptyActions =
     state === 'empty' && !readOnly ? (
@@ -148,6 +153,7 @@ export const KkBannerDesk: FC<KkBannerDeskProps> = ({
       }}
     >
       {media}
+      {stamp}
       {emptyActions}
       {readyActions}
       {uploadStatus}

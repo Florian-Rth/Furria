@@ -26,7 +26,7 @@ public sealed class MediaUploadEvents
     private const string ConcatenationRefused = "Uploads are not concatenated.";
     private const string LengthRequired = "An upload declares its length up front.";
     private const string OwnerRequired =
-        "An upload names its owner: gallery, person:{id}, group:{id}, news:{id} or website:{slot}:{position}.";
+        "An upload names its owner: gallery, person:{id}, group:{id}, news:{id}, event:{id} or website:{slot}:{position}.";
     private const string FileNameRequired = "An upload names its file.";
     private const string TooLarge = "The upload exceeds what its owner accepts.";
     private const string NotAcceptedMedia =
@@ -35,7 +35,7 @@ public sealed class MediaUploadEvents
     private const string AlbumOfGalleryOnly = "Only a gallery upload goes into an album.";
     private const string AlbumUnknown = "There is no such album.";
     private const string CropRefused =
-        "A crop is left, top, width and height as fractions of a portrait, group, news or website picture.";
+        "A crop is left, top, width and height as fractions of a portrait, group, news, event or website picture.";
     private const string AspectRefused =
         "A website picture names the aspect of its position; no other upload names one.";
 

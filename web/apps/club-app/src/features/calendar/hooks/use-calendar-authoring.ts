@@ -41,7 +41,6 @@ export const useCalendarAuthoring = (): CalendarAuthoringLoad => {
     has(PERMISSION_KEYS.calendarManageClub),
   );
 
-  const managesEvents = has(PERMISSION_KEYS.eventsManage);
   const mayOwn = (entry: CalendarEntry): boolean => mayOwnCalendarEntry(ownerOptions, entry);
 
   return {
@@ -49,7 +48,7 @@ export const useCalendarAuthoring = (): CalendarAuthoringLoad => {
       ownerOptions,
       mayAuthor: ownerOptions.length > 0,
       mayOwn,
-      linkOf: (entry) => toEntryLink(entry, mayOwn(entry), managesEvents),
+      linkOf: (entry) => toEntryLink(entry, mayOwn(entry)),
     },
     error: null,
     retry,

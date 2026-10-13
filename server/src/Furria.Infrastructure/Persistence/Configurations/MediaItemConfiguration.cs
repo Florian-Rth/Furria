@@ -27,15 +27,16 @@ public sealed class MediaItemConfiguration : IEntityTypeConfiguration<MediaItem>
                 table.HasCheckConstraint(
                     "ck_media_item_owner",
                     $"""
-                    (owner_kind = '{MediaOwnerKind.Person}' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)
-                    OR (owner_kind = '{MediaOwnerKind.Group}' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL)
-                    OR (owner_kind = '{MediaOwnerKind.NewsPost}' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL)
-                    OR (owner_kind IN ('{MediaOwnerKind.Gallery}', '{MediaOwnerKind.Website}') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)
+                    (owner_kind = '{MediaOwnerKind.Person}' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL)
+                    OR (owner_kind = '{MediaOwnerKind.Group}' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL)
+                    OR (owner_kind = '{MediaOwnerKind.NewsPost}' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_event_id IS NULL)
+                    OR (owner_kind = '{MediaOwnerKind.Event}' AND owner_event_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)
+                    OR (owner_kind IN ('{MediaOwnerKind.Gallery}', '{MediaOwnerKind.Website}') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL)
                     """
                 );
                 table.HasCheckConstraint(
-                    "ck_media_item_website_photo",
-                    $"owner_kind <> '{MediaOwnerKind.Website}' OR kind = '{MediaKind.Photo}'"
+                    "ck_media_item_photo_only",
+                    $"owner_kind NOT IN ('{MediaOwnerKind.Website}', '{MediaOwnerKind.Event}') OR kind = '{MediaKind.Photo}'"
                 );
                 table.HasCheckConstraint("ck_media_item_byte_size", "byte_size > 0");
                 table.HasCheckConstraint(
@@ -99,6 +100,12 @@ public sealed class MediaItemConfiguration : IEntityTypeConfiguration<MediaItem>
             .HasConstraintName("fk_media_item_news_post_owner_news_post_id")
             .OnDelete(DeleteBehavior.Cascade);
         builder
+            .HasOne(item => item.OwnerEvent)
+            .WithMany()
+            .HasForeignKey(item => item.OwnerEventId)
+            .HasConstraintName("fk_media_item_event_owner_event_id")
+            .OnDelete(DeleteBehavior.Cascade);
+        builder
             .HasOne(item => item.UploadedBy)
             .WithMany()
             .HasForeignKey(item => item.UploadedByPersonId)
@@ -123,6 +130,7 @@ public sealed class MediaItemConfiguration : IEntityTypeConfiguration<MediaItem>
         builder.HasIndex(item => item.OwnerPersonId);
         builder.HasIndex(item => item.OwnerGroupId);
         builder.HasIndex(item => item.OwnerNewsPostId);
+        builder.HasIndex(item => item.OwnerEventId);
         builder.HasIndex(item => item.UploadedByPersonId);
 
         builder.Property(item => item.CreatedAt).HasDefaultValueSql("now()");

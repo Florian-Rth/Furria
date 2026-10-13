@@ -16,6 +16,7 @@ export const EVENT_EYEBROW = 'Veranstaltung';
 
 export const EVENT_SECTION_TITLES = {
   facts: 'Eckdaten',
+  picture: 'Bild',
   tickets: 'Karten',
 } as const;
 

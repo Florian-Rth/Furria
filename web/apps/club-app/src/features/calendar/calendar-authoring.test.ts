@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { MyGroupSummary } from '@/features/group-hub';
 import {
   mayOwnCalendarEntry,
+  opensEntrySheet,
   toDayTime,
   toDefaultVisibility,
   toEndKeptInStep,
@@ -101,44 +102,24 @@ describe('mayOwnCalendarEntry', () => {
 });
 
 describe('toEntryLink', () => {
-  it.each<{
-    label: string;
-    kind: 'meeting' | 'event';
-    owned: boolean;
-    managesEvents: boolean;
-    to: string | null;
-  }>([
-    {
-      label: 'an owned entry',
-      kind: 'meeting',
-      owned: true,
-      managesEvents: false,
-      to: '/calendar/$calendarEntryId',
-    },
-    { label: 'a foreign entry', kind: 'meeting', owned: false, managesEvents: true, to: null },
-    {
-      label: 'an event for its keeper',
-      kind: 'event',
-      owned: false,
-      managesEvents: true,
-      to: '/events/$eventId',
-    },
-    { label: 'an event for a member', kind: 'event', owned: false, managesEvents: false, to: null },
-    {
-      label: 'an event for the club calendar',
-      kind: 'event',
-      owned: true,
-      managesEvents: false,
-      to: null,
-    },
-  ])('opens $label', ({ kind, owned, managesEvents, to }) => {
-    const link = toEntryLink(
-      { calendarEntryId: 4, ownerGroupId: null, kind },
-      owned,
-      managesEvents,
-    );
+  it.each<{ label: string; kind: 'meeting' | 'event'; owned: boolean; to: string | null }>([
+    { label: 'an owned entry', kind: 'meeting', owned: true, to: '/calendar/$calendarEntryId' },
+    { label: 'a foreign entry', kind: 'meeting', owned: false, to: null },
+    { label: 'an event of the club calendar', kind: 'event', owned: true, to: null },
+  ])('opens $label', ({ kind, owned, to }) => {
+    const link = toEntryLink({ calendarEntryId: 4, ownerGroupId: null, kind }, owned);
 
     expect(link?.to ?? null).toBe(to);
+  });
+});
+
+describe('opensEntrySheet', () => {
+  it.each([
+    ['event', true],
+    ['meeting', false],
+    ['training', false],
+  ] as const)('opens a %s in the entry sheet: %s', (kind, opens) => {
+    expect(opensEntrySheet({ kind })).toBe(opens);
   });
 });
 

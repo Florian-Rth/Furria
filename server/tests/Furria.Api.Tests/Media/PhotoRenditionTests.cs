@@ -200,6 +200,37 @@ public sealed class PhotoRenditionTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_FrameTheEventPictureAtTwoByOne_When_ItArrivesUncropped()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Club(club =>
+                    club.AddVenue("buergerhaus", "Bürgerhaus")
+                        .AddEvent(
+                            "gala",
+                            "1. Prunksitzung",
+                            new DateTimeOffset(2027, 1, 16, 18, 11, 0, TimeSpan.Zero),
+                            "buergerhaus"
+                        )
+                ),
+            ct
+        );
+        var mediaItemId = await TusUploadSteps.UploadAsync(
+            await ctx.Identity.ManagingLoginClientAsync(ct),
+            TusUploadSteps.EventOwner(ctx.Club.Events.IdOf("gala")),
+            "Gala.jpg",
+            MediaSamples.JpegOfSize(3000, 3000),
+            ChunkLength,
+            ct
+        );
+
+        await _fixture.RunMediaWorkerAsync(ct);
+
+        Assert.Equal((2560, 1280), await RenditionSizeAsync(mediaItemId, MediaRendition.Large, ct));
+    }
+
+    [Fact]
     public async Task Should_FrameTheWebsitePictureAtTheAspectOfItsPosition_When_ItArrivesUncropped()
     {
         var ct = TestContext.Current.CancellationToken;

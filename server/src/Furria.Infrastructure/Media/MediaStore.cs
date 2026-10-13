@@ -73,6 +73,7 @@ public sealed class MediaStore
                     row.OwnerPersonId,
                     row.OwnerGroupId,
                     row.OwnerNewsPostId,
+                    row.OwnerEventId,
                     row.WebsitePicture == null
                         ? null
                         : new PictureSlotPosition(
@@ -147,6 +148,11 @@ public sealed class MediaStore
                     item.OwnerKind == MediaOwnerKind.Group && item.OwnerGroupId == owner.Id
                 )
                 .ToListAsync(ct),
+            MediaOwnerKind.Event => await _dbContext
+                .MediaItems.Where(item =>
+                    item.OwnerKind == MediaOwnerKind.Event && item.OwnerEventId == owner.Id
+                )
+                .ToListAsync(ct),
             _ => [],
         };
 
@@ -167,6 +173,12 @@ public sealed class MediaStore
                 .Groups.Where(group => group.Id == command.Owner.Id)
                 .ExecuteUpdateAsync(
                     setters => setters.SetProperty(group => group.PictureId, mediaItemId),
+                    ct
+                ),
+            MediaOwnerKind.Event => _dbContext
+                .Events.Where(row => row.CalendarEntryId == command.Owner.Id)
+                .ExecuteUpdateAsync(
+                    setters => setters.SetProperty(row => row.PictureId, mediaItemId),
                     ct
                 ),
             MediaOwnerKind.NewsPost => _newsPictures.PlaceAsync(
@@ -205,6 +217,7 @@ public sealed class MediaStore
             OwnerGroupId = command.Owner.Kind == MediaOwnerKind.Group ? command.Owner.Id : null,
             OwnerNewsPostId =
                 command.Owner.Kind == MediaOwnerKind.NewsPost ? command.Owner.Id : null,
+            OwnerEventId = command.Owner.Kind == MediaOwnerKind.Event ? command.Owner.Id : null,
             Kind = command.Format.Kind,
             State = MediaItemState.Processing,
             OriginalFileName = command.OriginalFileName,
