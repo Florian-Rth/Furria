@@ -4,6 +4,8 @@ import type { AlbumDetails, AlbumItem } from './schemas';
 
 export const ALL_FILTER = 'all';
 
+export const ALBUM_EYEBROW = 'Album';
+
 export const ZIP_LABEL = 'ZIP';
 export const SELECT_LABEL = 'Auswählen';
 export const SELECT_DONE_LABEL = 'Fertig';
@@ -64,6 +66,19 @@ export const albumDateLine = (album: AlbumDetails): string =>
   album.calendarEntry === null
     ? NO_DATE_LABEL
     : WEEKDAY_DATE.format(new Date(album.calendarEntry.startsAt));
+
+const photosLabel = (count: number): string =>
+  count === 1 ? '1 Foto' : `${countLabel(count)} Fotos`;
+
+const videosLabel = (count: number): string =>
+  count === 1 ? '1 Video' : `${countLabel(count)} Videos`;
+
+export const mediaCountLine = (album: AlbumDetails): string => {
+  if (album.videos === 0) {
+    return photosLabel(album.photos);
+  }
+  return `${photosLabel(album.photos)} · ${videosLabel(album.videos)}`;
+};
 
 export const photographersLine = (album: AlbumDetails): string | null => {
   const names = album.uploaders.flatMap((entry) =>

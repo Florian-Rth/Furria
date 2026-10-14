@@ -4,6 +4,8 @@ import { de } from 'date-fns/locale/de';
 import { formatCountdown } from '@/lib/countdown';
 
 export const SECURITY_TITLE = 'Anmeldung & Sicherheit';
+export const SECURITY_LEAD = 'Wie du dich anmeldest und wo du angemeldet bist.';
+export const PASSKEY_EYEBROW = 'Passkey';
 export const SECURITY_PATH = '/profile/security';
 export const SECURITY_ORIGIN: KkScreenOrigin = { label: SECURITY_TITLE, to: SECURITY_PATH };
 
@@ -53,3 +55,8 @@ export const formatPasskeyDay = (addedAt: string, today: Date): string => {
 
   return format(added, pattern, { locale: de });
 };
+
+const PASSKEY_ADDED_PREFIX = 'Hinzugefügt am ';
+
+export const toPasskeyAddedLine = (addedAt: string, today: Date): string =>
+  `${PASSKEY_ADDED_PREFIX}${formatPasskeyDay(addedAt, today)}`;

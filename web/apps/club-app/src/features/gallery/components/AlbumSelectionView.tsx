@@ -2,7 +2,9 @@ import type { KkScreenOrigin, KkShowcaseLabels } from '@furria/ui';
 import { KkAlert, KkMeta, KkPublishCeremony, KkScreen, KkShowcase } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { AREA_HANDOVERS } from '@/features/session';
 import { PUBLISH_ANNOUNCEMENTS } from '@/lib/publish-copy';
+import { bulkCountLine } from '../album-labels';
 import { SELECTION_TITLE } from '../gallery-copy';
 import { countLabel } from '../gallery-view';
 import { useAlbumPhotoPicker } from '../hooks/use-album-photo-picker';
@@ -13,7 +15,7 @@ import { selectionBarOf } from '../selection-bar';
 import { pickableItemsOf, SOFT_SELECTION_SIZE, selectionSlotsOf } from '../selection-draft';
 import { selectionPiecesOf } from '../selection-pieces';
 import { AlbumPhotoPickerSheet } from './AlbumPhotoPickerSheet';
-import { AlbumSelectionMarquee } from './AlbumSelectionMarquee';
+import { AlbumSelectionHeader } from './AlbumSelectionHeader';
 
 const PICKER_SHEET_ID = 'gallery-selection-picker';
 const SHOWCASE_LABELS: KkShowcaseLabels = {
@@ -26,8 +28,6 @@ const HINT =
 interface AlbumSelectionViewProps {
   album: AlbumDetails;
 }
-
-const leadOf = (count: number): string => `${SELECTION_TITLE} · ${countLabel(count)}`;
 
 const metaOf = (count: number): string =>
   count > SOFT_SELECTION_SIZE
@@ -56,20 +56,29 @@ export const AlbumSelectionView: FC<AlbumSelectionViewProps> = ({ album }) => {
   });
   const rejection = selection.rejection === null ? null : <KkAlert>{selection.rejection}</KkAlert>;
   const isPublished = selection.publication.kind === 'published';
-  const lead = leadOf(slots.length);
+  const lead = bulkCountLine(slots.length);
   const meta = metaOf(slots.length);
   const nothingToAdd = pickable.length === 0;
+  const header = (
+    <AlbumSelectionHeader
+      isPublished={isPublished}
+      hangKey={selection.hangKey}
+      lead={lead}
+      meta={meta}
+    />
+  );
 
   return (
-    <KkScreen kind="working" title={SELECTION_TITLE} origin={origin} action={bar}>
+    <KkScreen
+      kind="working"
+      title={SELECTION_TITLE}
+      origin={origin}
+      action={bar}
+      header={header}
+      handover={AREA_HANDOVERS.gallery}
+    >
       <KkPublishCeremony stage={selection.ceremony} announcements={PUBLISH_ANNOUNCEMENTS}>
         <Stack sx={{ rowGap: 2, pb: 4, minWidth: 0 }}>
-          <AlbumSelectionMarquee
-            isPublished={isPublished}
-            hangKey={selection.hangKey}
-            lead={lead}
-            meta={meta}
-          />
           {rejection}
           <KkShowcase
             pieces={pieces}

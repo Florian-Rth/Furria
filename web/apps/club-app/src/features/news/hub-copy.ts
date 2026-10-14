@@ -1,3 +1,4 @@
+export const NEWS_LEAD = 'Meldungen des Vereins für die Website.';
 export const DRAFTS_TITLE = 'Entwürfe';
 export const PLAN_LABEL = 'Meldungen im Lauf der Sessions';
 export const READY_FACT = 'bereit';

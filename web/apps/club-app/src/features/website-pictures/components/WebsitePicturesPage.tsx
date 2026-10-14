@@ -1,6 +1,6 @@
 import { KkButton, KkErrorState, KkScreen, KkTitleHeader } from '@furria/ui';
 import type { FC } from 'react';
-import { AppListSkeleton, GALLERY_ORIGIN } from '@/features/session';
+import { AppListSkeleton, AREA_HANDOVERS, GALLERY_ORIGIN } from '@/features/session';
 import { useWebsiteBoard } from '../hooks/use-website-board';
 import {
   LOAD_ERROR_TITLE,
@@ -33,6 +33,7 @@ export const WebsitePicturesPage: FC = () => {
       title={WEBSITE_TITLE}
       origin={GALLERY_ORIGIN}
       header={<KkTitleHeader title={WEBSITE_TITLE} lead={WEBSITE_LEAD} />}
+      handover={AREA_HANDOVERS.gallery}
     >
       {content}
     </KkScreen>

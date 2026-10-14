@@ -2,6 +2,7 @@ import type { QueryErrorKind } from '@/lib/query-error';
 import { toQueryErrorMessage } from '@/lib/query-error';
 import type { HubAlbumMark } from './hub-view';
 
+export const GALLERY_LEAD = 'Die Abende des Vereins in Fotos und Videos.';
 export const HUB_LOADING_LABEL = 'Galerie wird geladen';
 export const HUB_ERROR_TITLE = 'GALERIE NICHT GELADEN';
 export const HUB_RETRY_LABEL = 'Erneut laden';

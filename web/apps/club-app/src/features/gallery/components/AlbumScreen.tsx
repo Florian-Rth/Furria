@@ -1,9 +1,10 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
 import type { FC } from 'react';
 import { AREA_HANDOVERS, GALLERY_ORIGIN, GALLERY_TITLE } from '@/features/session';
 import { useAlbum } from '../hooks/use-album';
 import { AlbumBody } from './AlbumBody';
 import { AlbumFilters } from './AlbumFilters';
+import { AlbumHeader } from './AlbumHeader';
 
 interface AlbumScreenProps {
   albumId: number;
@@ -23,6 +24,8 @@ export const AlbumScreen: FC<AlbumScreenProps> = ({ albumId }) => {
         onUploader={screen.setUploader}
       />
     );
+  const pendingHeader = screen.status === 'loading' ? <KkScreenHeaderSkeleton /> : null;
+  const header = screen.album === undefined ? pendingHeader : <AlbumHeader album={screen.album} />;
 
   return (
     <KkScreen
@@ -31,6 +34,7 @@ export const AlbumScreen: FC<AlbumScreenProps> = ({ albumId }) => {
       origin={GALLERY_ORIGIN}
       actions={screen.actions}
       tools={tools}
+      header={header}
       handover={AREA_HANDOVERS.gallery}
     >
       <AlbumBody albumId={albumId} screen={screen} />

@@ -3,6 +3,7 @@ import type { TeaserSurface } from './teaser-cuts';
 import type { NewsMentionKind } from './types';
 
 export const NEW_POST_TITLE = 'Neue Meldung';
+export const EDITOR_EYEBROW = 'Meldung';
 export const EDITOR_LOADING = 'Die Meldung wird geladen';
 export const EDITOR_ERROR_TITLE = 'MELDUNG NICHT GELADEN';
 export const TITLE_PLACEHOLDER = 'Titel der Meldung';

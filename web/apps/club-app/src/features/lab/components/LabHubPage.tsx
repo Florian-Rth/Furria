@@ -8,7 +8,7 @@ import {
 } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { MANAGE_ORIGIN } from '@/features/session';
+import { AREA_HANDOVERS, MANAGE_ORIGIN } from '@/features/session';
 import {
   LAB_GREETINGS,
   LAB_LEAD,
@@ -41,7 +41,13 @@ export const LabHubPage: FC = () => {
   });
 
   return (
-    <KkScreen kind="detail" title={LAB_TITLE} origin={MANAGE_ORIGIN} header={header}>
+    <KkScreen
+      kind="detail"
+      title={LAB_TITLE}
+      origin={MANAGE_ORIGIN}
+      header={header}
+      handover={AREA_HANDOVERS.manage}
+    >
       <KkPanelStack>{sections}</KkPanelStack>
     </KkScreen>
   );

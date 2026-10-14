@@ -30,6 +30,12 @@ export const SLOT_REMOVE_EYEBROW = 'Trainingszeit entfernen';
 export const SLOT_REMOVE_EXPLANATION = 'Bereits erzeugte Termine bleiben im Kalender erhalten.';
 
 export const GENERATOR_SHEET_TITLE = 'Trainings erzeugen';
+
+const GENERATOR_LEAD_PREFIX = 'Trainingstermine für ';
+const GENERATOR_LEAD_SUFFIX = ' aus den Trainingszeiten anlegen.';
+
+export const toGeneratorLead = (groupName: string): string =>
+  `${GENERATOR_LEAD_PREFIX}${groupName}${GENERATOR_LEAD_SUFFIX}`;
 export const GENERATOR_TITLE_LABEL = 'Titel der Termine';
 export const GENERATOR_TITLE_HINT = 'Erscheint als Titel aller erzeugten Termine im Kalender.';
 export const GENERATOR_TITLE_DEFAULT = 'Training';

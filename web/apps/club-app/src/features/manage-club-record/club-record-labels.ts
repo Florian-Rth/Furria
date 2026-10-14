@@ -14,6 +14,7 @@ import { OLDEST_AGE_OF_CONSENT, YOUNGEST_AGE_OF_CONSENT } from './schemas';
 export type ClubRecordSection = 'identity' | 'contact' | 'access';
 
 export const CLUB_RECORD_TITLE = 'Vereinsdaten';
+export const CLUB_RECORD_LEAD = 'Name, Anschrift und Zugang zur App.';
 export const CLUB_RECORD_SAVED_MESSAGE = 'Vereinsdaten gespeichert.';
 export const MISSING_VALUE = 'nicht hinterlegt';
 

@@ -1,6 +1,15 @@
-import { KkAlert, KkDateField, KkFormSection, KkScreen, KkTextField, kkTokens } from '@furria/ui';
+import {
+  KkAlert,
+  KkDateField,
+  KkFormSection,
+  KkScreen,
+  KkTextField,
+  KkTitleHeader,
+  kkTokens,
+} from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { ChangeEvent, FC } from 'react';
+import { AREA_HANDOVERS } from '@/features/session';
 import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toHubEditorOrigin } from '../group-hub-labels';
 import { useTrainingGenerator } from '../hooks/use-training-generator';
@@ -12,6 +21,7 @@ import {
   GENERATOR_SHEET_TITLE,
   GENERATOR_TITLE_HINT,
   GENERATOR_TITLE_LABEL,
+  toGeneratorLead,
 } from '../rhythm-labels';
 import type { GroupHub } from '../schemas';
 import { TrainingGeneratorBody } from './TrainingGeneratorBody';
@@ -28,6 +38,7 @@ export const TrainingGeneratorPage: FC<TrainingGeneratorPageProps> = ({ hub }) =
   const control = useTrainingGenerator(hub.groupId);
   const goBackTo = useGoBackTo();
   const hasRhythm = hub.trainingSlots.length > 0;
+  const lead = toGeneratorLead(hub.name);
 
   const changeTitle = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
     control.setTitle(event.target.value);
@@ -75,6 +86,8 @@ export const TrainingGeneratorPage: FC<TrainingGeneratorPageProps> = ({ hub }) =
       kind="working"
       title={GENERATOR_SHEET_TITLE}
       origin={toHubEditorOrigin(hub)}
+      header={<KkTitleHeader title={GENERATOR_SHEET_TITLE} lead={lead} />}
+      handover={AREA_HANDOVERS.groups}
       action={{
         primary: {
           label: GENERATOR_CONFIRM_LABEL,
