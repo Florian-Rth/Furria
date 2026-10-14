@@ -168,13 +168,12 @@ describe('toApiMutationOptions', () => {
     expect(harness.notices).toEqual([]);
   });
 
-  it('fails an offline-failing write at once without an optimistic write', async () => {
+  it('fails a write at once while offline without an optimistic write', async () => {
     const harness = createHarness();
     onlineManager.setOnline(false);
     let failure: Error | null = null;
 
     await harness.mutate('new', {
-      offline: 'fail',
       notice: {
         failure: (error) => {
           failure = error;

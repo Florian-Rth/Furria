@@ -53,11 +53,13 @@ import type {
 export const usePersonsQuery = (
   access: PersonAccessFilter | null,
   archived: boolean,
+  enabled = true,
 ): UseQueryResult<PersonsResponse, Error> =>
   useQuery({
     queryKey: queryKeys.persons(access, archived),
     queryFn: () =>
       withFreshAccessToken((accessToken) => requestPersons(access, archived, accessToken)),
+    enabled,
   });
 
 export const usePersonQuery = (personId: number | null): UseQueryResult<PersonDetails, Error> => {

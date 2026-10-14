@@ -8,10 +8,12 @@ export const BOOT_FAILURE_MESSAGE =
 
 export const BOOT_RETRY_LABEL = 'Erneut versuchen';
 
+export const BOOT_RELOGIN_LABEL = 'Neu anmelden';
+
 export const CONNECTION_LOST_MESSAGE = 'Keine Verbindung';
 
 export const CONNECTION_LOST_DETAIL =
-  'Du bist offline. Die App lädt weiter, sobald die Verbindung wiederhergestellt ist.';
+  'Du bist offline. Speichern klappt erst wieder mit Verbindung – dann lädt die App von selbst weiter.';
 
 export const NOTICE_DISMISS_LABEL = 'Schließen';
 
@@ -23,8 +25,15 @@ export const SCREEN_FAILURE_BAR_TITLE = 'Da hakt es';
 
 export const SCREEN_FAILURE_TITLE = 'SEITE NICHT VERFÜGBAR';
 
-export const SCREEN_FAILURE_DESCRIPTION =
-  'Die Seite konnte nicht angezeigt werden. Versuche es erneut.';
+const SCREEN_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
+  unreachable:
+    'Keine Verbindung zum Server. Prüfe deine Internetverbindung und versuche es erneut.',
+  unexpected: 'Die Seite konnte nicht angezeigt werden. Versuche es erneut.',
+  rejected: 'Der Server hat die Anfrage für diese Seite abgelehnt.',
+};
+
+export const toScreenErrorMessage = (error: Error): string =>
+  toQueryErrorMessage(error, SCREEN_ERROR_MESSAGES) ?? SCREEN_ERROR_MESSAGES.unexpected;
 
 export const SCREEN_NOT_FOUND_BAR_TITLE = 'Nicht gefunden';
 
@@ -32,8 +41,15 @@ export const SCREEN_NOT_FOUND_TITLE = 'HIER IST NICHTS';
 
 export const SCREEN_NOT_FOUND_DESCRIPTION = 'Diese Seite gibt es nicht.';
 
-export const APP_FAILURE_MESSAGE =
-  'Die Anfrage konnte nicht verarbeitet werden. Versuche es erneut.';
+const APP_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
+  unreachable:
+    'Keine Verbindung zum Server. Prüfe deine Internetverbindung und versuche es erneut.',
+  unexpected: 'Die Anfrage konnte nicht verarbeitet werden. Versuche es erneut.',
+  rejected: 'Der Server hat die Anfrage abgelehnt.',
+};
+
+export const toAppErrorMessage = (error: Error): string =>
+  toQueryErrorMessage(error, APP_ERROR_MESSAGES) ?? APP_ERROR_MESSAGES.unexpected;
 
 export const APP_NOT_FOUND_MESSAGE = 'Diese Seite gibt es nicht.';
 

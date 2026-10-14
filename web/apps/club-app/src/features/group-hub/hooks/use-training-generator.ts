@@ -3,6 +3,7 @@ import { useState } from 'react';
 import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useGenerateTrainingsMutation, useTrainingPreviewQuery } from '../api';
+import { toPreviewErrorMessage } from '../group-hub-messages';
 import { GENERATOR_SESSION_CHOICE, GENERATOR_TITLE_DEFAULT } from '../rhythm-labels';
 import type { TrainingPreviewEntry } from '../training-preview';
 import {
@@ -25,6 +26,7 @@ export interface TrainingGeneratorControl {
   quickChoices: readonly KkDateQuickChoice[];
   isLoading: boolean;
   errorMessage: string | null;
+  isRetrying: boolean;
   retry: () => void;
   entries: readonly TrainingPreviewEntry[];
   summary: string;
@@ -33,6 +35,7 @@ export interface TrainingGeneratorControl {
   tickAll: () => void;
   tickNone: () => void;
   isSaving: boolean;
+  canSubmit: boolean;
   rejection: string | null;
   submit: () => void;
 }
@@ -75,18 +78,26 @@ export const useTrainingGenerator = (groupId: number): TrainingGeneratorControl 
     void preview.refetch();
   };
 
+  const errorMessage = toPreviewErrorMessage(preview.error);
+  const tickedCount = toTickedCount(entries);
+  const isPreviewSettled =
+    !preview.isLoading && !preview.isPlaceholderData && errorMessage === null;
+  const canSubmit = isPreviewSettled && tickedCount > 0 && title.trim() !== '';
+
   const submit = (): void => {
-    generate.mutate(
-      { title, instants: toTickedInstants(entries) },
-      {
-        onSuccess: () => {
-          void goBackTo({
-            to: '/groups/$groupId',
-            params: { groupId: String(groupId) },
-            ignoreBlocker: true,
-          });
-        },
+    if (!canSubmit) {
+      return;
+    }
+
+    void generate.mutateAsync({ title, instants: toTickedInstants(entries) }).then(
+      () => {
+        void goBackTo({
+          to: '/groups/$groupId',
+          params: { groupId: String(groupId) },
+          ignoreBlocker: true,
+        });
       },
+      () => undefined,
     );
   };
 
@@ -97,15 +108,17 @@ export const useTrainingGenerator = (groupId: number): TrainingGeneratorControl 
     setEndsOn,
     quickChoices,
     isLoading: preview.isLoading,
-    errorMessage: toWriteErrorMessage(preview.error),
+    errorMessage,
+    isRetrying: preview.isFetching,
     retry,
     entries,
     summary: toPreviewSummary(entries),
-    tickedCount: toTickedCount(entries),
+    tickedCount,
     toggle,
     tickAll,
     tickNone,
     isSaving: generate.isPending,
+    canSubmit,
     rejection: toWriteErrorMessage(generate.error),
     submit,
   };

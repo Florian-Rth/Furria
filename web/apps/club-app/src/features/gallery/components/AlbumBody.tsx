@@ -18,7 +18,7 @@ export const AlbumBody: FC<AlbumBodyProps> = ({ albumId, screen }) => {
     return <AlbumMissing />;
   }
   if (screen.status === 'failed') {
-    return <AlbumFailed onRetry={screen.retry} />;
+    return <AlbumFailed error={screen.error} retrying={screen.retrying} onRetry={screen.retry} />;
   }
 
   return <AlbumSkeleton />;

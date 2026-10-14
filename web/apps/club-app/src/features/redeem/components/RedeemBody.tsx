@@ -1,5 +1,6 @@
 import type { FC } from 'react';
 import type { RedeemScreenControl } from '../hooks/use-redeem-screen';
+import { RedeemAccountReady } from './RedeemAccountReady';
 import { RedeemChecking } from './RedeemChecking';
 import { RedeemClaimForm } from './RedeemClaimForm';
 import { RedeemConfirmForm } from './RedeemConfirmForm';
@@ -19,6 +20,9 @@ export const RedeemBody: FC<RedeemBodyProps> = ({ control }) => {
   if (control.isOfferingPasskey) {
     return <RedeemPasskeyOffer onDone={control.enterApp} />;
   }
+  if (stage.kind === 'accountReady') {
+    return <RedeemAccountReady />;
+  }
   if (stage.kind === 'dead') {
     return <RedeemDead />;
   }
@@ -26,7 +30,13 @@ export const RedeemBody: FC<RedeemBodyProps> = ({ control }) => {
     return <RedeemSignedIn />;
   }
   if (stage.kind === 'failed') {
-    return <RedeemFailed failure={stage.failure} onRetry={control.retryLookup} />;
+    return (
+      <RedeemFailed
+        failure={stage.failure}
+        isRetrying={control.isRetryingLookup}
+        onRetry={control.retryLookup}
+      />
+    );
   }
   if (stage.kind === 'checking') {
     return <RedeemChecking />;

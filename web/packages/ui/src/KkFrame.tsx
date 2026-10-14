@@ -110,8 +110,8 @@ export const KkFrame: FC<KkFrameProps> = ({
   sx,
 }) => {
   const imageFault = useImageFault(source ?? '');
-  const interactive = onSelect !== undefined && !imageFault.hasFailed;
-  const select = interactive ? onSelect : undefined;
+  const interactive = onSelect !== undefined;
+  const select = onSelect;
   const surfaceComponent = interactive ? ButtonBase : 'div';
   const surfaceRole = interactive ? undefined : 'img';
   const showsProgress = state === 'uploading' || state === 'queued';

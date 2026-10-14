@@ -8,6 +8,7 @@ import { toUploadFailureMessage } from '@/features/pictures';
 import { usePictureDesk } from '@/lib/media/use-picture-desk';
 import { useNewsPictureCrop, useNewsPictureFromGallery, useNewsPictureRemoval } from '../api';
 import { GALLERY_SHEET_ID, PICTURE_ACTION_FAILED } from '../editor-copy';
+import { newsFailureMessageOf } from '../news-failure';
 import { uploadOverlayOf } from '../news-picture';
 import type { NewsPicture } from '../types';
 import type { NewsEditor } from './use-news-editor';
@@ -37,8 +38,11 @@ export const useNewsPicture = (editor: NewsEditor): NewsPictureDesk => {
   const [input, setInput] = useState<HTMLInputElement | null>(null);
   const picture = editor.version.picture;
 
-  const failNotice = (): void => {
-    raiseNotice({ tone: 'error', message: PICTURE_ACTION_FAILED });
+  const failNotice = (error: Error): void => {
+    const message = newsFailureMessageOf(error, PICTURE_ACTION_FAILED);
+    if (message !== null) {
+      raiseNotice({ tone: 'error', message });
+    }
   };
 
   const desk = usePictureDesk({

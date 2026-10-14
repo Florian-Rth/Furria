@@ -313,6 +313,27 @@ describe('toRedeemStage', () => {
       { kind: 'dead' },
     ],
     [
+      'a redemption whose session could not be kept',
+      {
+        credential: { kind: 'code', code: 'K7M4-Q2XP' },
+        isSignedIn: false,
+        lookup: {
+          status: 'live',
+          firstName: 'Anna',
+          loginEmail: 'anna@web.de',
+          contactEmailTaken: false,
+          purpose: 'onboarding',
+          claimableLoginEmail: null,
+        },
+        lookupFailure: null,
+        redeemFailure: 'sessionLost',
+        pendingClaim: null,
+        hasDeclinedClaim: false,
+        pendingConfirmation: null,
+      },
+      { kind: 'accountReady' },
+    ],
+    [
       'a failed lookup',
       {
         credential: { kind: 'token', token: 'abc' },

@@ -1,6 +1,6 @@
 import type { SessionFarewell } from '@/lib/api/session/session-store';
 import type { LoginErrorKind } from '@/lib/login-error';
-import { toLoginErrorKind } from '@/lib/login-error';
+import { SESSION_NOT_KEPT_MESSAGE, toLoginErrorKind } from '@/lib/login-error';
 
 export const SESSION_EXPIRED_MESSAGE = 'Deine Sitzung ist abgelaufen. Bitte melde dich neu an.';
 
@@ -20,6 +20,7 @@ const LOGIN_ERROR_MESSAGES: Record<LoginErrorKind, string> = {
     'Zu viele fehlgeschlagene Anmeldungen aus diesem Netz. Warte ein paar Minuten und versuche es dann erneut.',
   unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
   'timed-out': 'Der Server antwortet gerade zu langsam. Versuche es gleich noch einmal.',
+  'session-not-kept': SESSION_NOT_KEPT_MESSAGE,
   unexpected: 'Ein unerwarteter Fehler ist aufgetreten. Bitte versuche es erneut.',
 };
 

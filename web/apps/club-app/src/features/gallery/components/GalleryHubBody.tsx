@@ -1,4 +1,4 @@
-import { KkButton, KkErrorState, KkExposureSweep } from '@furria/ui';
+import { KkButton, KkErrorState, KkExposureSweep, KkRetryAlert } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { WebsiteHubEntry } from '@/features/website-pictures';
@@ -23,7 +23,11 @@ export const GalleryHubBody: FC<GalleryHubBodyProps> = ({ state }) => {
 
   if (hub.data === undefined) {
     if (errorMessage !== null) {
-      const retry = <KkButton onClick={reload}>{HUB_RETRY_LABEL}</KkButton>;
+      const retry = (
+        <KkButton loading={hub.isFetching} onClick={reload}>
+          {HUB_RETRY_LABEL}
+        </KkButton>
+      );
       return <KkErrorState title={HUB_ERROR_TITLE} description={errorMessage} action={retry} />;
     }
     return <GalleryHubSkeleton />;
@@ -53,7 +57,17 @@ export const GalleryHubBody: FC<GalleryHubBodyProps> = ({ state }) => {
       onOpen={state.openAlbum}
     />
   ));
-  const isEmpty = hub.data.sections.length === 0 && state.inboxes.length === 0;
+  const inboxFailure =
+    state.inboxFailure === null ? null : (
+      <KkRetryAlert
+        message={state.inboxFailure}
+        retrying={state.inboxRetrying}
+        onRetry={state.retryInboxes}
+        retryLabel={HUB_RETRY_LABEL}
+      />
+    );
+  const isEmpty =
+    hub.data.sections.length === 0 && state.inboxes.length === 0 && state.inboxFailure === null;
   const empty = isEmpty ? (
     <GalleryHubEmpty sorts={state.sorts} onUpload={state.openUpload} />
   ) : null;
@@ -61,6 +75,7 @@ export const GalleryHubBody: FC<GalleryHubBodyProps> = ({ state }) => {
   return (
     <KkExposureSweep scope="viewport">
       <Stack sx={{ rowGap: 3.5, pb: 4 }}>
+        {inboxFailure}
         {rolls}
         {newAlbum}
         {sections}

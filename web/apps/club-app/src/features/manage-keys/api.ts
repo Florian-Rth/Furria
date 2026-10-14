@@ -22,10 +22,11 @@ export interface KeyReturnInput {
   untilOn: string;
 }
 
-export const useManagedKeysQuery = (): UseQueryResult<KeyHoldingsResponse, Error> =>
+export const useManagedKeysQuery = (enabled = true): UseQueryResult<KeyHoldingsResponse, Error> =>
   useQuery({
     queryKey: queryKeys.managedKeys,
     queryFn: () => withFreshAccessToken(requestKeyHoldings),
+    enabled,
   });
 
 export const useHandOutKeyMutation = (): UseMutationResult<

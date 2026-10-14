@@ -32,7 +32,7 @@ export const EventBody: FC<EventBodyProps> = ({ eventId }) => {
     return <EventNotFound />;
   }
   if (errorMessage !== null) {
-    return <EventError message={errorMessage} onRetry={reload} />;
+    return <EventError message={errorMessage} isRetrying={event.isFetching} onRetry={reload} />;
   }
 
   return <EventSkeleton />;

@@ -12,7 +12,7 @@ export const RequireMe: FC<PropsWithChildren> = ({ children }) => {
   };
 
   if (me.data === undefined && errorMessage !== null) {
-    return <MeFailure message={errorMessage} onRetry={reload} />;
+    return <MeFailure message={errorMessage} retrying={me.isFetching} onRetry={reload} />;
   }
 
   return children;

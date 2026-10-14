@@ -1,3 +1,5 @@
+import type { QueryErrorKind } from '@/lib/query-error';
+import { toQueryErrorMessage } from '@/lib/query-error';
 import type { NewsTextBlockKind } from './news-text-editor';
 import type { TeaserSurface } from './teaser-cuts';
 import type { NewsMentionKind } from './types';
@@ -44,6 +46,15 @@ export const MENTION_KIND_WORDS: Record<NewsMentionKind, string> = {
   person: 'Vorstand',
 };
 export const MENTION_EMPTY = 'Niemand gefunden';
+
+const MENTION_LOAD_ERRORS: Record<QueryErrorKind, string> = {
+  unreachable: 'Keine Verbindung zum Server – Gruppen und Vorstand fehlen gerade.',
+  unexpected: 'Gruppen und Vorstand konnten nicht geladen werden.',
+  rejected: 'Der Server hat die Anfrage abgelehnt.',
+};
+
+export const mentionLoadErrorOf = (error: Error | null): string | null =>
+  toQueryErrorMessage(error, MENTION_LOAD_ERRORS);
 export const MENTION_LIST_LABEL = 'Erwähnen';
 export const MENTION_LABEL_FIELD = 'So steht es im Satz';
 export const MENTION_TARGET = 'Verweist auf';
@@ -95,6 +106,18 @@ export const TIE_DROPPED = 'fällt auf der Website weg';
 export const TIE_PHOTOS = 'Fotos';
 export const TIE_CANCELLED = 'abgesagt';
 export const SHEET_CLOSE = 'Schließen';
+export const TIE_LOADING = 'Auswahl wird geladen';
+export const TIE_EVENT_NONE = 'Keine Veranstaltung zum Anheften.';
+export const TIE_ALBUM_NONE = 'Kein veröffentlichtes Album zum Anheften.';
+
+const TIE_LOAD_ERRORS: Record<QueryErrorKind, string> = {
+  unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
+  unexpected: 'Veranstaltungen und Alben konnten nicht geladen werden.',
+  rejected: 'Der Server hat die Anfrage abgelehnt.',
+};
+
+export const tieLoadErrorOf = (error: Error | null): string | null =>
+  toQueryErrorMessage(error, TIE_LOAD_ERRORS);
 
 export const SAVED_AT = 'gespeichert';
 export const SAVING = 'speichert …';
@@ -118,9 +141,15 @@ export const GONE_TITLE = 'Diese Meldung wurde gelöscht';
 export const GONE_TEXT =
   'Jemand hat sie gelöscht, während du geschrieben hast. Kopiere deinen Text, bevor du gehst.';
 export const GONE_COPY = 'Text kopieren';
+export const MISSING_TITLE = 'DIESE MELDUNG GIBT ES NICHT';
+export const MISSING_TEXT =
+  'Diese Meldung gibt es nicht oder nicht mehr. Vielleicht wurde sie gelöscht.';
+export const MISSING_BACK = 'Zu den Meldungen';
 
 export const PUBLISH_FAILED = 'Veröffentlichen fehlgeschlagen – nichts ist live gegangen.';
 export const ACTION_FAILED = 'Das hat nicht geklappt. Versuch es noch einmal.';
+export const UNSAVED_FAILED =
+  'Deine letzten Änderungen sind noch nicht gespeichert. Warte kurz und versuch es noch einmal.';
 
 export interface LifecycleCopy {
   eyebrow: string;

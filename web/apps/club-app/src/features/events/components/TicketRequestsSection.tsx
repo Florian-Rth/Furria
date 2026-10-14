@@ -32,7 +32,13 @@ export const TicketRequestsSection: FC<TicketRequestsSectionProps> = ({ linksToE
     );
   }
   if (errorMessage !== null) {
-    return <TicketRequestsError message={errorMessage} onRetry={reload} />;
+    return (
+      <TicketRequestsError
+        message={errorMessage}
+        isRetrying={ticketRequests.isFetching}
+        onRetry={reload}
+      />
+    );
   }
 
   return <AppListSkeleton label={LOADING_LABEL} listShape="rows" />;

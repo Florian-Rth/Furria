@@ -6,7 +6,7 @@ import type { Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { ChangeEvent, FC } from 'react';
 import { focusRing } from '../../internal/focus-ring';
-import type { KkFrameMark } from '../../KkFrame';
+import type { KkFrameMark, KkFrameState } from '../../KkFrame';
 import { KkFrame } from '../../KkFrame';
 import { KkIcon } from '../../KkIcon';
 import { KkIconButton } from '../../KkIconButton';
@@ -22,7 +22,8 @@ const SETTLE_EASE = 'cubic-bezier(0.2, 0.9, 0.3, 1.25)';
 export interface KkShowcasePieceData {
   id: string;
   label: string;
-  source: string;
+  source?: string;
+  state?: KkFrameState;
   badge?: string;
   caption: string;
   captionPlaceholder: string;
@@ -93,7 +94,7 @@ export const KkShowcasePiece: FC<KkShowcasePieceProps> = ({
       }}
     >
       <Box sx={{ position: 'relative' }}>
-        <KkFrame label={piece.label} source={piece.source} mark={mark} />
+        <KkFrame label={piece.label} source={piece.source} state={piece.state} mark={mark} />
         {badge}
       </Box>
       <InputBase

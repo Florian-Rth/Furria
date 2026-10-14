@@ -28,28 +28,16 @@ export const useRoleLifecycle = ({
 
   const archive = (): void => {
     setRejection(null);
-    archiveMutation.mutate(
-      { roleName: role.name },
-      {
-        onSuccess: onArchived,
-        onError: (error) => {
-          setRejection(toWriteErrorMessage(error));
-        },
-      },
-    );
+    void archiveMutation.mutateAsync({ roleName: role.name }).then(onArchived, (error: Error) => {
+      setRejection(toWriteErrorMessage(error));
+    });
   };
 
   const restore = (): void => {
     setRejection(null);
-    restoreMutation.mutate(
-      { roleName: role.name },
-      {
-        onSuccess: onRestored,
-        onError: (error) => {
-          setRejection(toWriteErrorMessage(error));
-        },
-      },
-    );
+    void restoreMutation.mutateAsync({ roleName: role.name }).then(onRestored, (error: Error) => {
+      setRejection(toWriteErrorMessage(error));
+    });
   };
 
   return {

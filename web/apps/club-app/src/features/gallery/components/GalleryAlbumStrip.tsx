@@ -1,8 +1,8 @@
 import type { KkContactStripFrame } from '@furria/ui';
 import { KkContactStrip } from '@furria/ui';
 import type { FC } from 'react';
-import { clockLabel, shownSourceOf } from '../gallery-view';
-import { markTrailOf } from '../hub-copy';
+import { clockLabel, frameStateOf, shownSourceOf } from '../gallery-view';
+import { latentNoteOf, markTrailOf } from '../hub-copy';
 import type { HubAlbumMark } from '../hub-view';
 import { albumMetaOf, stripMediaOf } from '../hub-view';
 import type { GalleryHubAlbum } from '../schemas';
@@ -18,6 +18,8 @@ export const GalleryAlbumStrip: FC<GalleryAlbumStripProps> = ({ album, mark, onO
     id: String(media.mediaItemId),
     label: `${album.title}, Bild ${position + 1}`,
     source: shownSourceOf(media),
+    state: frameStateOf(media),
+    latentLabel: latentNoteOf(media.state),
     edge: clockLabel(media.capturedAt),
     onSelect: () => onOpen(album.albumId, media.mediaItemId),
   }));

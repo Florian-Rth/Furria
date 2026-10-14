@@ -17,7 +17,9 @@ export const AccountSecurityBody: FC = () => {
     return <AccountSecurityPanels loginEmail={me.data.email} passkeys={me.data.passkeys} />;
   }
   if (errorMessage !== null) {
-    return <AccountSecurityError message={errorMessage} onRetry={reload} />;
+    return (
+      <AccountSecurityError message={errorMessage} retrying={me.isFetching} onRetry={reload} />
+    );
   }
 
   return <AccountSecuritySkeleton />;

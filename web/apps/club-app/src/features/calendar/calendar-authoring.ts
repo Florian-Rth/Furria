@@ -319,14 +319,3 @@ export const toEntryWriteNotice = (
     ? { tone: 'success', message: baseMessage }
     : { tone: 'info', message: `${baseMessage} ${sentence}` };
 };
-
-export const findCalendarEntry = (
-  entries: readonly CalendarEntry[],
-  calendarEntryId: number | null,
-): CalendarEntry | null => {
-  if (calendarEntryId === null) {
-    return null;
-  }
-
-  return entries.find((entry) => entry.calendarEntryId === calendarEntryId) ?? null;
-};

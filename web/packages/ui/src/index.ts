@@ -251,6 +251,7 @@ export type { KkRegisterMarkState } from './KkRegisterMark';
 export { KkRegisterMark } from './KkRegisterMark';
 export { KkRegisterRow } from './KkRegisterRow';
 export { KkReservedSlot } from './KkReservedSlot';
+export { KkRetryAlert } from './KkRetryAlert';
 export { KkRule } from './KkRule';
 export type { KkScreenHeaderTitleTransform } from './KkScreenHeader/internal/ui/KkScreenHeaderTitle';
 export { KkScreenHeader } from './KkScreenHeader/KkScreenHeader';
@@ -331,6 +332,7 @@ export { KkViewer } from './KkViewer/KkViewer';
 export type {
   KkViewerEntrance,
   KkViewerItem,
+  KkViewerItemState,
   KkViewerKeys,
   KkViewerLabels,
   KkViewerStepDelta,

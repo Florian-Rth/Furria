@@ -6,14 +6,36 @@ import { toTakenTones } from '../group-hub-labels';
 
 const NO_TONE_HOLDERS: readonly GroupToneHolder[] = [];
 
-export const useTakenTones = (groupId: number, canPick: boolean): ReadonlySet<GroupTone> | null => {
+export type TakenTonesState =
+  | { kind: 'pending' }
+  | { kind: 'failed'; error: Error }
+  | { kind: 'ready'; tones: ReadonlySet<GroupTone> };
+
+export interface TakenTonesControl {
+  state: TakenTonesState;
+  isRetrying: boolean;
+  retry: () => void;
+}
+
+export const useTakenTones = (groupId: number, canPick: boolean): TakenTonesControl => {
   const { isAffiliated, isUndecided } = usePermissions();
   const readsDirectory = canPick && isAffiliated;
   const groups = useGroupsQuery(readsDirectory);
 
-  if (isUndecided || (readsDirectory && groups.isPending)) {
-    return null;
-  }
+  const retry = (): void => {
+    void groups.refetch();
+  };
 
-  return toTakenTones(groups.data?.groups ?? NO_TONE_HOLDERS, groupId);
+  const toState = (): TakenTonesState => {
+    if (readsDirectory && groups.data === undefined && groups.error !== null) {
+      return { kind: 'failed', error: groups.error };
+    }
+    if (isUndecided || (readsDirectory && groups.isPending)) {
+      return { kind: 'pending' };
+    }
+
+    return { kind: 'ready', tones: toTakenTones(groups.data?.groups ?? NO_TONE_HOLDERS, groupId) };
+  };
+
+  return { state: toState(), isRetrying: groups.isFetching, retry };
 };

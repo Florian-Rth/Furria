@@ -16,6 +16,7 @@ export interface GalleryBinControl {
   bin: GalleryBin | undefined;
   error: Error | null;
   reload: () => void;
+  reloading: boolean;
   now: Date;
   groups: BinGroup<BinnedItem>[];
   picked: ReadonlySet<number>;
@@ -82,6 +83,7 @@ export const useGalleryBin = (): GalleryBinControl => {
     reload: () => {
       void query.refetch();
     },
+    reloading: query.isFetching,
     now,
     groups: binGroupsOf(query.data?.items ?? []),
     picked,

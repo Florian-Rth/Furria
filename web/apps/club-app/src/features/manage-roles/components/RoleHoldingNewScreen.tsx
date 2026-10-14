@@ -19,7 +19,7 @@ export const RoleHoldingNewScreen: FC = () => {
   const { roleId } = useParams({ from: ROUTE_ID });
   const { has, isUndecided } = usePermissions();
   const id = parsePositiveId(roleId);
-  const role = useRoleQuery(id);
+  const role = useRoleQuery(has(PERMISSION_KEYS.rolesManage) ? id : null);
   const errorMessage = toRoleErrorMessage(role.error);
 
   const reload = (): void => {

@@ -12,8 +12,8 @@ export interface ClubSectionGate {
 
 export const useClubSectionGate = (): ClubSectionGate => {
   const permissions = usePermissions();
-  const clubRecord = useClubRecordQuery();
   const isGranted = !permissions.isUndecided && permissions.has(PERMISSION_KEYS.clubManage);
+  const clubRecord = useClubRecordQuery(isGranted);
 
   return {
     record: isGranted ? (clubRecord.data ?? null) : null,

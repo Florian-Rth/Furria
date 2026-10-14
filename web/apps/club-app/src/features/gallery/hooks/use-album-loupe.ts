@@ -1,5 +1,6 @@
 import type { KkViewerItem, KkViewerKeys, KkViewerStepDelta } from '@furria/ui';
 import { useState } from 'react';
+import { saveFile } from '@/lib/media/save-file';
 import type { AlbumFrame } from '../album-frames';
 import { sceneIndexOfFrame } from '../album-frames';
 import { loupeFacts, loupeSceneLine } from '../album-labels';
@@ -22,6 +23,7 @@ export interface AlbumLoupe {
   keys: KkViewerKeys;
   show: (index: number) => void;
   sceneStep: (delta: KkViewerStepDelta) => void;
+  canDownload: boolean;
   download: () => void;
 }
 
@@ -80,9 +82,11 @@ export const useAlbumLoupe = ({
     }
   };
 
+  const canDownload = lastShown?.item.state === 'ready';
+
   const download = (): void => {
-    if (lastShown !== null) {
-      window.location.assign(lastShown.item.urls.download);
+    if (lastShown !== null && canDownload) {
+      saveFile(lastShown.item.urls.download);
     }
   };
 
@@ -97,6 +101,7 @@ export const useAlbumLoupe = ({
     },
     show,
     sceneStep,
+    canDownload,
     download,
   };
 };

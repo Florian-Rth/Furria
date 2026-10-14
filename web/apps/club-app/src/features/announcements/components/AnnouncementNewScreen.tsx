@@ -20,7 +20,13 @@ export const AnnouncementNewScreen: FC = () => {
 
   if (isUndecided) {
     if (errorMessage !== null) {
-      return <AnnouncementEditorError message={errorMessage} onRetry={reload} />;
+      return (
+        <AnnouncementEditorError
+          message={errorMessage}
+          isRetrying={me.isFetching}
+          onRetry={reload}
+        />
+      );
     }
 
     return <AnnouncementEditorSkeleton title={TITLE} />;

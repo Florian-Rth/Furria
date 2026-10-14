@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { sortRunningFirst } from '@/lib/calendar-days';
 import { useGroupCalendarQuery } from '../api';
 import { toCalendarEntryWindow } from '../group-calendar-entries';
-import { toHubErrorMessage } from '../group-hub-messages';
+import { toCalendarErrorMessage } from '../group-hub-messages';
 import type { GroupCalendarEntry } from '../schemas';
 
 const NO_ENTRIES: readonly GroupCalendarEntry[] = [];
@@ -26,7 +26,7 @@ export const useGroupCalendarEntries = (groupId: number): GroupCalendarEntries =
     return {
       entries: NO_ENTRIES,
       isLoading: calendar.error === null,
-      errorMessage: toHubErrorMessage(calendar.error),
+      errorMessage: toCalendarErrorMessage(calendar.error),
       retry,
     };
   }

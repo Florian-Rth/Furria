@@ -51,6 +51,7 @@ export const TrainingGeneratorPage: FC<TrainingGeneratorPageProps> = ({ hub }) =
     });
   };
 
+  const canConfirm = hasRhythm && control.canSubmit;
   const rejection =
     control.rejection === null ? null : <KkAlert severity="error">{control.rejection}</KkAlert>;
 
@@ -93,7 +94,7 @@ export const TrainingGeneratorPage: FC<TrainingGeneratorPageProps> = ({ hub }) =
           label: GENERATOR_CONFIRM_LABEL,
           onSelect: control.submit,
           loading: control.isSaving,
-          disabled: control.isLoading,
+          disabled: !canConfirm,
         },
         secondary: { label: GENERATOR_CANCEL_LABEL, onSelect: cancel },
       }}

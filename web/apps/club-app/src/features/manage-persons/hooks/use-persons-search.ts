@@ -37,6 +37,7 @@ export interface PersonsSearch {
 export const usePersonsSearch = (
   listed: readonly PersonSummary[],
   archived: readonly PersonSummary[],
+  isArchiveUnavailable: boolean,
 ): PersonsSearch => {
   const query = useSearchQuery();
   const archivedView = usePersonsArchivedView();
@@ -78,11 +79,11 @@ export const usePersonsSearch = (
     jumpTo,
     sections,
     visibleCount: visible.length,
-    isRegisterEmpty: listed.length === 0 && archived.length === 0,
+    isRegisterEmpty: listed.length === 0 && archived.length === 0 && !isArchiveUnavailable,
     totals: countPersonsByState(listed),
     filterOptions: toPersonFilterOptions(
       countPersonsByState(searched),
-      { total: archived.length, matching: searchedArchived.length },
+      isArchiveUnavailable ? null : { total: archived.length, matching: searchedArchived.length },
       isArchivedView,
     ),
     letters: availablePersonLetters(visible),

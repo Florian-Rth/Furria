@@ -350,6 +350,15 @@ export const toMemberAddedAsAdminMessage = (
     ? `${personName} ist ab dem ${formatIsoDay(joinedOn)} dabei und Gruppen-Admin.`
     : `${personName} ist aufgenommen und Gruppen-Admin.`;
 
+export const toMemberAddedAdminFailedMessage = (
+  personName: string,
+  joinedOn: string,
+  todayIsoDay: string,
+): string =>
+  isFutureDay(joinedOn, todayIsoDay)
+    ? `${personName} ist ab dem ${formatIsoDay(joinedOn)} dabei, wurde aber nicht Gruppen-Admin. Ernenne die Person bitte noch einmal.`
+    : `${personName} ist aufgenommen, wurde aber nicht Gruppen-Admin. Ernenne die Person bitte noch einmal.`;
+
 export const toMembershipEndedMessage = (
   personName: string,
   endedOn: string,

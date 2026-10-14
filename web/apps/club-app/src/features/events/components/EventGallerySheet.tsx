@@ -17,13 +17,20 @@ export const EventGallerySheet: FC<EventGallerySheetProps> = ({ onPick }) => {
   const { openSheetId } = useKkSheet();
   const albums = usePickableAlbumsQuery(openSheetId === EVENT_GALLERY_SHEET_ID);
 
+  const reloadAlbums = (): void => {
+    void albums.refetch();
+  };
+
   return (
     <GalleryPickSheet
       id={EVENT_GALLERY_SHEET_ID}
       title={EVENT_GALLERY_TITLE}
       note={EVENT_GALLERY_NOTE}
       emptyNote={EVENT_GALLERY_EMPTY}
-      albums={albums.data ?? []}
+      albums={albums.data}
+      albumsError={albums.error}
+      isReloading={albums.isFetching}
+      onReload={reloadAlbums}
       onPick={onPick}
     />
   );

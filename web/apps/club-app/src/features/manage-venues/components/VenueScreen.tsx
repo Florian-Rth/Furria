@@ -39,15 +39,19 @@ const HANDOVER = AREA_HANDOVERS.manage;
 export const VenueScreen: FC = () => {
   const { venueId } = useParams({ from: ROUTE_ID });
   const id = parsePositiveId(venueId);
-  const venues = useManagedVenuesQuery();
   const permissions = usePermissions();
+  const canManage = permissions.has(PERMISSION_KEYS.clubManage);
+  const venues = useManagedVenuesQuery(canManage);
   const errorMessage = toManagedVenuesErrorMessage(venues.error);
+  const isDenied =
+    (!permissions.isUndecided && !canManage) ||
+    (venues.data === undefined && isForbiddenError(venues.error));
 
   const reload = (): void => {
     void venues.refetch();
   };
 
-  if (venues.data === undefined && isForbiddenError(venues.error)) {
+  if (isDenied) {
     return (
       <KkScreen kind="detail" title={VENUES_ORIGIN.label} origin={VENUES_ORIGIN}>
         <AccessDenied message={VENUE_EDITOR_DENIED_MESSAGE} />
@@ -92,20 +96,6 @@ export const VenueScreen: FC = () => {
   }
 
   const header = <VenueHeader venue={venue} />;
-
-  if (!permissions.isUndecided && !permissions.has(PERMISSION_KEYS.clubManage)) {
-    return (
-      <KkScreen
-        kind="detail"
-        title={venue.name}
-        origin={VENUES_ORIGIN}
-        header={header}
-        handover={HANDOVER}
-      >
-        <AccessDenied message={VENUE_EDITOR_DENIED_MESSAGE} />
-      </KkScreen>
-    );
-  }
 
   return (
     <KkScreen

@@ -8,16 +8,17 @@ const RETRY_LABEL = 'Erneut versuchen';
 
 interface RedeemFailedProps {
   failure: RedeemFailureKind;
+  isRetrying: boolean;
   onRetry: () => void;
 }
 
-export const RedeemFailed: FC<RedeemFailedProps> = ({ failure, onRetry }) => {
+export const RedeemFailed: FC<RedeemFailedProps> = ({ failure, isRetrying, onRetry }) => {
   const message = toRedeemFailureMessage(failure);
 
   return (
     <Stack sx={{ gap: 2.5, minWidth: 0 }}>
       <KkAlert severity="warning">{message}</KkAlert>
-      <KkButton variant="outlined" fullWidth onClick={onRetry}>
+      <KkButton variant="outlined" fullWidth loading={isRetrying} onClick={onRetry}>
         {RETRY_LABEL}
       </KkButton>
     </Stack>

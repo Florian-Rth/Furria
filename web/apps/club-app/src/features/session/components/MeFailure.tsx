@@ -5,15 +5,20 @@ import { BOOT_RETRY_LABEL, ME_FAILURE_TITLE, SCREEN_FAILURE_BAR_TITLE } from '..
 
 interface MeFailureProps {
   message: string;
+  retrying: boolean;
   onRetry: () => void;
 }
 
-export const MeFailure: FC<MeFailureProps> = ({ message, onRetry }) => (
+export const MeFailure: FC<MeFailureProps> = ({ message, retrying, onRetry }) => (
   <KkScreen kind="fullscreen" title={SCREEN_FAILURE_BAR_TITLE} origin={START_ORIGIN}>
     <KkErrorState
       title={ME_FAILURE_TITLE}
       description={message}
-      action={<KkButton onClick={onRetry}>{BOOT_RETRY_LABEL}</KkButton>}
+      action={
+        <KkButton loading={retrying} onClick={onRetry}>
+          {BOOT_RETRY_LABEL}
+        </KkButton>
+      }
     />
   </KkScreen>
 );

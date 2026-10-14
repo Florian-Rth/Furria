@@ -47,7 +47,12 @@ describe('redeemErrorPlacementOf', () => {
       new DOMException('insecure', 'SecurityError'),
       { slot: 'claimPasskey', failure: 'claimPasskeyRejected', fromServer: false },
     ],
-    ['a passkey ceremony she cancelled', new DOMException('cancelled', 'NotAllowedError'), null],
+    [
+      'a passkey ceremony she dismissed or let time out',
+      new DOMException('dismissed', 'NotAllowedError'),
+      { slot: 'claimPasskey', failure: 'passkeyDismissed', fromServer: false },
+    ],
+    ['a passkey ceremony the app aborted', new DOMException('aborted', 'AbortError'), null],
     [
       'a rejected password',
       new ApiError({

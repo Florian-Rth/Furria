@@ -5,11 +5,16 @@ import { AnnouncementsError } from './AnnouncementsError';
 
 interface AnnouncementEditorErrorProps {
   message: string;
+  isRetrying: boolean;
   onRetry: () => void;
 }
 
-export const AnnouncementEditorError: FC<AnnouncementEditorErrorProps> = ({ message, onRetry }) => (
+export const AnnouncementEditorError: FC<AnnouncementEditorErrorProps> = ({
+  message,
+  isRetrying,
+  onRetry,
+}) => (
   <KkScreen kind="fullscreen" title={ANNOUNCEMENTS_TITLE} origin={ANNOUNCEMENTS_ORIGIN}>
-    <AnnouncementsError message={message} onRetry={onRetry} />
+    <AnnouncementsError message={message} isRetrying={isRetrying} onRetry={onRetry} />
   </KkScreen>
 );

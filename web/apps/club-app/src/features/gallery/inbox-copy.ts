@@ -1,4 +1,6 @@
 import type { KkLightTableLabels } from '@furria/ui';
+import type { QueryErrorKind } from '@/lib/query-error';
+import { toQueryErrorMessage } from '@/lib/query-error';
 import { countLabel } from './gallery-view';
 import type { CommitPlan } from './inbox-desk';
 import { committedIdsOf } from './inbox-desk';
@@ -24,12 +26,9 @@ export const EMPTY_BASKET = 'Leerer Korb';
 export const NO_ALBUM = 'Kein Album';
 export const NEW_ALBUM_FIELD = 'Neues Album';
 export const NEW_ALBUM_ACTION = 'Anlegen';
-export const BASKET_ALBUM_FAILED =
-  'Das Album konnte nicht angelegt werden. Versuch es noch einmal.';
 export const MY_INBOX = 'Mein Eingang';
 export const OWNERLESS_INBOX = 'Ohne Besitzer';
 export const DONE_HEADLINE = 'EINGANG LEER';
-export const COMMIT_FAILED = 'Abschließen hat nicht geklappt. Deine Entscheidungen sind noch da.';
 
 export const basketFieldOf = (slot: number): string => `Korb ${slot + 1}`;
 
@@ -88,3 +87,22 @@ export const inboxOptionLabelOf = (name: string, count: number): string =>
   `${name} · ${countLabel(count)}`;
 
 export const stampOf = (title: string): string => title.split(' ')[0] ?? title;
+
+export const INBOX_ERROR_TITLE = 'EINGANG NICHT GELADEN';
+export const INBOX_RETRY_LABEL = 'Erneut laden';
+
+const INBOX_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
+  unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
+  unexpected: 'Der Eingang konnte nicht geladen werden.',
+  rejected: 'Der Server hat die Anfrage abgelehnt.',
+};
+
+export const toInboxErrorMessage = (error: Error | null): string | null =>
+  toQueryErrorMessage(error, INBOX_ERROR_MESSAGES);
+
+export const failedItemsLineOf = (count: number): string =>
+  count === 1
+    ? '1 Datei ließ sich nicht verarbeiten.'
+    : `${countLabel(count)} Dateien ließen sich nicht verarbeiten.`;
+
+export const DISCARD_FAILED_LABEL = 'Verwerfen';

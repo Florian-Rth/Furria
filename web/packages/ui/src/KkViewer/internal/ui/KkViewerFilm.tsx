@@ -8,6 +8,7 @@ import { focusRing } from '../../../internal/focus-ring';
 import { KkIcon } from '../../../KkIcon';
 import { kkTokens } from '../../../tokens';
 import { VIEWER_CONTROL_ATTRIBUTE } from '../logic/viewer-control';
+import { KkViewerFault } from './KkViewerFault';
 
 const { gallery, overlay } = kkTokens;
 const control = { [VIEWER_CONTROL_ATTRIBUTE]: '' };
@@ -18,14 +19,30 @@ interface KkViewerFilmProps {
   poster: string;
   duration: string;
   playLabel: string;
+  failedLabel: string;
 }
 
-export const KkViewerFilm: FC<KkViewerFilmProps> = ({ source, poster, duration, playLabel }) => {
+export const KkViewerFilm: FC<KkViewerFilmProps> = ({
+  source,
+  poster,
+  duration,
+  playLabel,
+  failedLabel,
+}) => {
   const [rolling, setRolling] = useState(false);
+  const [broken, setBroken] = useState(false);
 
   const roll = (): void => {
     setRolling(true);
   };
+
+  const breakFilm = (): void => {
+    setBroken(true);
+  };
+
+  if (broken) {
+    return <KkViewerFault label={failedLabel} />;
+  }
 
   if (rolling) {
     return (
@@ -37,6 +54,7 @@ export const KkViewerFilm: FC<KkViewerFilmProps> = ({ source, poster, duration, 
         controls
         autoPlay
         playsInline
+        onError={breakFilm}
         sx={{
           position: 'absolute',
           inset: 0,

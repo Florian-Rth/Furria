@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { safeLocalStorage } from '@/lib/browser-storage';
 import { CHANGELOG_ENTRIES } from '../changelog-content';
 import { readReadEntryIds, writeReadEntryIds } from '../changelog-storage';
 import {
@@ -19,7 +20,7 @@ interface ChangelogReadStatus {
 }
 
 export const useChangelogReadStatus = (): ChangelogReadStatus => {
-  const [readEntryIds, setReadEntryIds] = useState(() => readReadEntryIds(window.localStorage));
+  const [readEntryIds, setReadEntryIds] = useState(() => readReadEntryIds(safeLocalStorage));
 
   const entries = sortEntriesByDateDesc(CHANGELOG_ENTRIES);
 
@@ -30,7 +31,7 @@ export const useChangelogReadStatus = (): ChangelogReadStatus => {
 
     const nextReadEntryIds = addReadEntryId(readEntryIds, entryId);
 
-    writeReadEntryIds(window.localStorage, nextReadEntryIds);
+    writeReadEntryIds(safeLocalStorage, nextReadEntryIds);
     setReadEntryIds(nextReadEntryIds);
   };
 

@@ -7,12 +7,17 @@ const RETRY_LABEL = 'Erneut versuchen';
 interface StartErrorProps {
   message: string;
   onRetry: () => void;
+  retrying: boolean;
 }
 
-export const StartError: FC<StartErrorProps> = ({ message, onRetry }) => (
+export const StartError: FC<StartErrorProps> = ({ message, onRetry, retrying }) => (
   <KkErrorState
     title={TITLE}
     description={message}
-    action={<KkButton onClick={onRetry}>{RETRY_LABEL}</KkButton>}
+    action={
+      <KkButton onClick={onRetry} loading={retrying}>
+        {RETRY_LABEL}
+      </KkButton>
+    }
   />
 );

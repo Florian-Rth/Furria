@@ -1,3 +1,4 @@
+import type { MediaItemState } from '@/lib/api/schemas';
 import type { QueryErrorKind } from '@/lib/query-error';
 import { toQueryErrorMessage } from '@/lib/query-error';
 import type { HubAlbumMark } from './hub-view';
@@ -15,6 +16,9 @@ export const NEW_ALBUM_LABEL = 'Neues Album';
 export const INBOX_OPEN_TRAIL = 'Sichten ▸';
 export const OWNERLESS_INBOX = 'ohne Fotograf';
 export const PROCESSING_NOTE = 'entwickelt sich';
+
+export const latentNoteOf = (state: MediaItemState): string | undefined =>
+  state === 'processing' ? PROCESSING_NOTE : undefined;
 
 const HUB_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
   unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',

@@ -48,24 +48,20 @@ export const useMembershipApplicationDecline = (
 
   const submit = (): void => {
     setRejection(null);
-    mutation.mutate(
-      {
+    void mutation
+      .mutateAsync({
         membershipApplicationId: application.membershipApplicationId,
         applicantName: toApplicantName(application),
-      },
-      {
-        onSuccess: leave,
-        onError: (error) => {
-          if (isNotFoundError(error)) {
-            raiseNotice({ tone: 'info', message: ALREADY_DECIDED_MESSAGE });
-            leave();
-            return;
-          }
+      })
+      .then(leave, (error: Error) => {
+        if (isNotFoundError(error)) {
+          raiseNotice({ tone: 'info', message: ALREADY_DECIDED_MESSAGE });
+          leave();
+          return;
+        }
 
-          setRejection(toWriteErrorMessage(error));
-        },
-      },
-    );
+        setRejection(toWriteErrorMessage(error));
+      });
   };
 
   return { isOpen, open, close, rejection, isSaving: mutation.isPending, submit };

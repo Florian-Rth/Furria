@@ -4,6 +4,7 @@ import {
   readAnswersFromSession,
   writeAnswersToSession,
 } from '@/features/group-matcher/session-storage';
+import { safeSessionStorage } from '@/lib/browser-storage';
 import type { GroupMatcher } from '@/lib/seed/group-matcher';
 import type { MatcherProgress } from './matcher-progress';
 import {
@@ -28,11 +29,11 @@ export interface MatcherProgressControls extends MatcherStepView {
 export const useMatcherProgress = (matcher: GroupMatcher): MatcherProgressControls => {
   const questionIds = selectQuestionIds(matcher);
   const [progress, setProgress] = useState(() =>
-    startMatcherProgress(questionIds, readAnswersFromSession(window.sessionStorage)),
+    startMatcherProgress(questionIds, readAnswersFromSession(safeSessionStorage)),
   );
 
   const commit = (next: MatcherProgress): void => {
-    writeAnswersToSession(window.sessionStorage, next.answers);
+    writeAnswersToSession(safeSessionStorage, next.answers);
     setProgress(next);
   };
 
@@ -43,7 +44,7 @@ export const useMatcherProgress = (matcher: GroupMatcher): MatcherProgressContro
     goToPreviousQuestion: (): void => setProgress(withPreviousQuestion(progress)),
     finishQuestions: (): void => setProgress(withFinishedQuestions(progress)),
     restart: (): void => {
-      clearAnswersInSession(window.sessionStorage);
+      clearAnswersInSession(safeSessionStorage);
       setProgress(emptyMatcherProgress());
     },
   };

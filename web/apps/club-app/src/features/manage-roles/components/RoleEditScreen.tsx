@@ -19,7 +19,7 @@ export const RoleEditScreen: FC = () => {
   const { roleId } = useParams({ from: ROUTE_ID });
   const { has, isUndecided } = usePermissions();
   const id = parsePositiveId(roleId);
-  const role = useRoleQuery(id);
+  const role = useRoleQuery(has(PERMISSION_KEYS.rolesManage) ? id : null);
   const errorMessage = toRoleErrorMessage(role.error);
 
   const reload = (): void => {
@@ -32,7 +32,7 @@ export const RoleEditScreen: FC = () => {
   if (id === null || isNotFoundError(role.error)) {
     return <RoleEditorNotFound />;
   }
-  if (role.data !== undefined) {
+  if (role.data !== undefined && !role.isPlaceholderData) {
     return <RoleEditor roleEntry={role.data} />;
   }
   if (errorMessage !== null) {

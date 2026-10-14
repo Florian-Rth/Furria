@@ -15,15 +15,15 @@ export const useRecruitingSwitch = (hub: GroupHub): RecruitingSwitchControl => {
   const raiseNotice = useKkNotice();
 
   const onChange = (next: boolean): void => {
-    mutation.mutate(toGroupInfoFormValues(hub, { isRecruiting: next }), {
-      onError: (error) => {
+    void mutation
+      .mutateAsync(toGroupInfoFormValues(hub, { isRecruiting: next }))
+      .catch((error: Error) => {
         const message = toWriteErrorMessage(error);
 
         if (message !== null) {
           raiseNotice({ tone: 'error', message });
         }
-      },
-    });
+      });
   };
 
   return { checked: hub.isRecruiting, busy: mutation.isPending, onChange };

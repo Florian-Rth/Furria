@@ -8,6 +8,8 @@ export const TICKET_REQUESTS_PANEL_TITLE = 'Kartenanfragen';
 export const EVENT_REQUESTS_PANEL_TITLE = 'Anfragen';
 export const TICKET_REQUESTS_EMPTY_NOTE =
   'Keine offenen Kartenanfragen. Neue kommen über die Seiten der Veranstaltungen auf der Website.';
+export const EVENT_REQUESTS_LOADING_LABEL = 'Die Anfragen werden geladen';
+export const EVENT_REQUESTS_RETRY_LABEL = 'Erneut laden';
 export const EVENT_REQUESTS_EMPTY_NOTE = 'Für diesen Abend ist keine Anfrage offen.';
 
 export const HANDLE_REQUEST_LABEL = 'Erledigt';

@@ -23,9 +23,9 @@ const MIN_OFFERED_FILTERS = 2;
 
 export const ManagedGroupsPage: FC = () => {
   const searchMode = useScreenSearch(SEARCH_PLACEHOLDER);
-  const groups = useManagedGroupsQuery();
-  const listing = useManagedGroupsListing(groups.data?.groups);
   const permissions = usePermissions();
+  const groups = useManagedGroupsQuery(permissions.has(PERMISSION_KEYS.groupsManage));
+  const listing = useManagedGroupsListing(groups.data?.groups);
   const canManage = permissions.isUndecided || permissions.has(PERMISSION_KEYS.groupsManage);
   const isLoading = canManage && groups.isPending;
 

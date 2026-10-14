@@ -22,7 +22,11 @@ export const NewsHubBody: FC<NewsHubBodyProps> = ({ hub }) => {
 
   if (query.data === undefined) {
     if (errorMessage !== null) {
-      const retry = <KkButton onClick={reload}>{HUB_RETRY}</KkButton>;
+      const retry = (
+        <KkButton loading={query.isFetching} onClick={reload}>
+          {HUB_RETRY}
+        </KkButton>
+      );
       return <KkErrorState title={HUB_ERROR_TITLE} description={errorMessage} action={retry} />;
     }
     return <AppListSkeleton label={HUB_LOADING} listShape="rows" />;

@@ -6,13 +6,18 @@ const RETRY_LABEL = 'Erneut laden';
 
 interface MembersErrorProps {
   message: string;
+  isRetrying: boolean;
   onRetry: () => void;
 }
 
-export const MembersError: FC<MembersErrorProps> = ({ message, onRetry }) => (
+export const MembersError: FC<MembersErrorProps> = ({ message, isRetrying, onRetry }) => (
   <KkErrorState
     title={TITLE}
     description={message}
-    action={<KkButton onClick={onRetry}>{RETRY_LABEL}</KkButton>}
+    action={
+      <KkButton loading={isRetrying} onClick={onRetry}>
+        {RETRY_LABEL}
+      </KkButton>
+    }
   />
 );

@@ -20,6 +20,7 @@ export const NEWS_PICKER_LIST_ID = 'news-mention-list';
 export interface NewsEditorPageState {
   editor: NewsEditor;
   mentionables: readonly NewsMentionable[];
+  mentionEmptyLabel: string;
   text: ProseText;
   teaser: ProseTeaser;
   picture: NewsPictureDesk;
@@ -34,7 +35,7 @@ export const useNewsEditorPage = (routePostId: string): NewsEditorPageState => {
   const editor = useNewsEditor(routePostId);
   const raiseNotice = useKkNotice();
   const isWide = useIsWideScreen();
-  const mentionables = useNewsMentionables();
+  const { list: mentionables, emptyLabel: mentionEmptyLabel } = useNewsMentionables();
   const { version } = editor;
   const text = useProseText({
     text: version.text,
@@ -59,6 +60,7 @@ export const useNewsEditorPage = (routePostId: string): NewsEditorPageState => {
   return {
     editor,
     mentionables,
+    mentionEmptyLabel,
     text,
     teaser,
     picture,

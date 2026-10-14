@@ -17,10 +17,16 @@ export const ClubBody: FC = () => {
   const clubHub = useClubHubQuery();
   const me = useMeQuery();
   const isReady = clubHub.data !== undefined && me.data !== undefined;
-  const errorMessage = toClubHubErrorMessage(clubHub.error);
+  const errorMessage = toClubHubErrorMessage(clubHub.error ?? me.error);
+  const isRetrying = clubHub.isFetching || me.isFetching;
 
   const reload = (): void => {
-    void clubHub.refetch();
+    if (clubHub.isError) {
+      void clubHub.refetch();
+    }
+    if (me.isError) {
+      void me.refetch();
+    }
   };
 
   if (isReady) {
@@ -37,7 +43,7 @@ export const ClubBody: FC = () => {
     );
   }
   if (errorMessage !== null) {
-    return <ClubError message={errorMessage} onRetry={reload} />;
+    return <ClubError message={errorMessage} isRetrying={isRetrying} onRetry={reload} />;
   }
 
   return <ClubSkeleton />;

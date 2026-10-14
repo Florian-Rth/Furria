@@ -1,10 +1,9 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { parsePositiveId } from '@/lib/positive-id';
-import { useCalendarQuery } from '../api';
-import { findCalendarEntry } from '../calendar-authoring';
+import { isNotFoundError } from '@/lib/query-error';
+import { useCalendarEntryQuery } from '../api';
 import { toCalendarErrorMessage } from '../calendar-messages';
-import { ALL_CALENDAR_ENTRIES_QUERY } from '../calendar-query';
 import { useCalendarAuthoring } from '../hooks/use-calendar-authoring';
 import { useCalendarEntrySupplies } from '../hooks/use-calendar-entry-supplies';
 import { CalendarEntryDenied } from './CalendarEntryDenied';
@@ -20,31 +19,35 @@ const DENIED_MESSAGE = 'Nur der Eigentümer kann diesen Termin bearbeiten.';
 export const CalendarEntryScreen: FC = () => {
   const { calendarEntryId } = useParams({ from: ROUTE_ID });
   const id = parsePositiveId(calendarEntryId);
-  const entries = useCalendarQuery(ALL_CALENDAR_ENTRIES_QUERY);
-  const { authoring, error: authoringError, retry: retryAuthoring } = useCalendarAuthoring();
-  const { supplies, error: suppliesError, retry: retrySupplies } = useCalendarEntrySupplies();
-  const errorMessage = toCalendarErrorMessage(entries.error ?? authoringError ?? suppliesError);
+  const entryQuery = useCalendarEntryQuery(id);
+  const authoringLoad = useCalendarAuthoring();
+  const suppliesLoad = useCalendarEntrySupplies();
+  const { authoring } = authoringLoad;
+  const { supplies } = suppliesLoad;
+  const entry = entryQuery.data?.entry;
+  const isMissing = id === null || isNotFoundError(entryQuery.error);
+  const errorMessage = toCalendarErrorMessage(
+    entryQuery.error ?? authoringLoad.error ?? suppliesLoad.error,
+  );
+  const isRetrying = entryQuery.isFetching || authoringLoad.isRetrying || suppliesLoad.isRetrying;
 
   const reload = (): void => {
-    if (entries.isError) {
-      void entries.refetch();
+    if (entryQuery.isError) {
+      void entryQuery.refetch();
     }
-    retryAuthoring();
-    retrySupplies();
+    authoringLoad.retry();
+    suppliesLoad.retry();
   };
 
-  if (entries.data === undefined || authoring === null || supplies === null) {
+  if (isMissing) {
+    return <CalendarEntryNotFound />;
+  }
+  if (entry === undefined || authoring === null || supplies === null) {
     if (errorMessage !== null) {
-      return <CalendarEntryError message={errorMessage} onRetry={reload} />;
+      return <CalendarEntryError message={errorMessage} isRetrying={isRetrying} onRetry={reload} />;
     }
 
     return <CalendarEntryEditorSkeleton title={TITLE} />;
-  }
-
-  const entry = findCalendarEntry(entries.data.entries, id);
-
-  if (entry === null) {
-    return <CalendarEntryNotFound />;
   }
   if (!authoring.mayOwn(entry)) {
     return <CalendarEntryDenied title={TITLE} message={DENIED_MESSAGE} />;
@@ -55,6 +58,7 @@ export const CalendarEntryScreen: FC = () => {
       entry={entry}
       ownerOptions={authoring.ownerOptions}
       clubGroups={supplies.clubGroups}
+      clubGroupsReload={supplies.clubGroupsReload}
       venues={supplies.venues}
     />
   );

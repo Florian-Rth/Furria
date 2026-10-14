@@ -2,8 +2,10 @@ import type { KkSelectOption } from '@furria/ui';
 import { useKkNotice } from '@furria/ui';
 import type { ChangeEvent } from 'react';
 import { useState } from 'react';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import { useAlbumCreation, useGalleryHubQuery } from '../api';
-import { BASKET_ALBUM_FAILED, NO_ALBUM } from '../inbox-copy';
+import { toHubErrorMessage } from '../hub-copy';
+import { NO_ALBUM } from '../inbox-copy';
 import { defaultSlotsOf } from '../inbox-desk';
 import type { GalleryHubAlbum } from '../schemas';
 
@@ -20,6 +22,9 @@ export interface InboxBaskets {
   onNewTitle: (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => void;
   creating: boolean;
   createAlbum: () => void;
+  albumsFailure: string | null;
+  albumsRetrying: boolean;
+  retryAlbums: () => void;
 }
 
 const padded = (albumIds: readonly number[]): (number | null)[] =>
@@ -64,8 +69,11 @@ export const useInboxBaskets = (): InboxBaskets => {
           setSlots((current) => withAlbumIn(current ?? padded([]), created.albumId));
           setNewTitle('');
         },
-        onError: () => {
-          raiseNotice({ tone: 'error', message: BASKET_ALBUM_FAILED });
+        onError: (error) => {
+          const message = toWriteErrorMessage(error);
+          if (message !== null) {
+            raiseNotice({ tone: 'error', message });
+          }
         },
       },
     );
@@ -87,5 +95,10 @@ export const useInboxBaskets = (): InboxBaskets => {
     onNewTitle: (event) => setNewTitle(event.target.value),
     creating: creation.isPending,
     createAlbum,
+    albumsFailure: hub.data === undefined ? toHubErrorMessage(hub.error) : null,
+    albumsRetrying: hub.isFetching,
+    retryAlbums: () => {
+      void hub.refetch();
+    },
   };
 };

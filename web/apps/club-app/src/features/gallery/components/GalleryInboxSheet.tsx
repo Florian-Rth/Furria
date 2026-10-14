@@ -1,6 +1,14 @@
-import { KkButton, KkFilmEdge, KkSelectField, KkSheet, KkTextField } from '@furria/ui';
+import {
+  KkButton,
+  KkFilmEdge,
+  KkRetryAlert,
+  KkSelectField,
+  KkSheet,
+  KkTextField,
+} from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { GALLERY_RETRY_LABEL } from '../gallery-copy';
 import { INBOX_SHEET_ID } from '../hooks/use-gallery-inbox';
 import type { InboxBaskets } from '../hooks/use-inbox-baskets';
 import { BASKET_COUNT } from '../hooks/use-inbox-baskets';
@@ -49,6 +57,15 @@ export const GalleryInboxSheet: FC<GalleryInboxSheetProps> = ({ baskets, inboxOw
     );
   });
   const cannotCreate = baskets.newTitle.trim() === '';
+  const albumsFailure =
+    baskets.albumsFailure === null ? null : (
+      <KkRetryAlert
+        message={baskets.albumsFailure}
+        retrying={baskets.albumsRetrying}
+        onRetry={baskets.retryAlbums}
+        retryLabel={GALLERY_RETRY_LABEL}
+      />
+    );
 
   return (
     <KkSheet id={INBOX_SHEET_ID} title={SHEET_TITLE} closeLabel={SHEET_CLOSE}>
@@ -56,6 +73,7 @@ export const GalleryInboxSheet: FC<GalleryInboxSheetProps> = ({ baskets, inboxOw
         <Stack sx={{ rowGap: 2 }}>
           {ownerField}
           <KkFilmEdge lead={BASKETS_TITLE} tone="gold" level="h3" sprockets />
+          {albumsFailure}
           {slotFields}
           <Stack direction="row" sx={{ columnGap: 1, alignItems: 'flex-end' }}>
             <KkTextField

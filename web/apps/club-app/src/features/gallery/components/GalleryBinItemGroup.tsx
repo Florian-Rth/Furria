@@ -4,7 +4,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { BinGroup } from '../bin-countdown';
 import { countdownEdge, countdownLabel, purgeCountdownOf } from '../bin-countdown';
-import { countLabel, thumbSourceOf } from '../gallery-view';
+import { countLabel, frameStateOf, shownSourceOf } from '../gallery-view';
 import type { BinnedItem } from '../schemas';
 
 const REJECT_MARK: KkFrameMark = { kind: 'reject' };
@@ -30,7 +30,8 @@ export const GalleryBinItemGroup: FC<GalleryBinItemGroupProps> = ({
     const toggle = (): void => onToggle(entry.item.mediaItemId);
     const countdown = purgeCountdownOf(entry.purgesAt, now);
     const label = `${entry.originalFileName}, ${countdownLabel(countdown)}`;
-    const source = thumbSourceOf(entry.item.urls);
+    const source = shownSourceOf(entry.item);
+    const frameState = frameStateOf(entry.item);
     const edge = countdownEdge(countdown);
     const isPicked = picked.has(entry.item.mediaItemId);
     return (
@@ -38,6 +39,7 @@ export const GalleryBinItemGroup: FC<GalleryBinItemGroupProps> = ({
         key={entry.item.mediaItemId}
         label={label}
         source={source}
+        state={frameState}
         number={edge}
         mark={REJECT_MARK}
         selected={isPicked}

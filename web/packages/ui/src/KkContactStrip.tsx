@@ -6,7 +6,7 @@ import type { FC, ReactNode } from 'react';
 import { focusRing } from './internal/focus-ring';
 import type { KkFilmEdgeTone } from './KkFilmEdge';
 import { KkFilmEdge } from './KkFilmEdge';
-import type { KkFrameMark } from './KkFrame';
+import type { KkFrameMark, KkFrameState } from './KkFrame';
 import { KkFrame } from './KkFrame';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
@@ -19,6 +19,8 @@ export interface KkContactStripFrame {
   id: string;
   label: string;
   source?: string;
+  state?: KkFrameState;
+  latentLabel?: string;
   edge?: string;
   mark?: KkFrameMark;
   onSelect?: () => void;
@@ -59,6 +61,8 @@ export const KkContactStrip: FC<KkContactStripProps> = ({
       key={frame.id}
       label={frame.label}
       source={frame.source}
+      state={frame.state}
+      latentLabel={frame.latentLabel}
       number={frame.edge ?? ''}
       mark={frame.mark}
       onSelect={frame.onSelect ?? onOpen}

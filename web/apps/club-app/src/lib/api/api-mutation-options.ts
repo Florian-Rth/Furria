@@ -21,7 +21,6 @@ export interface ApiMutation<TInput, TResult> {
   notice?: ApiMutationNotice<TInput, TResult>;
   afterSuccess?: (result: TResult, input: TInput) => void;
   key?: MutationKey;
-  offline?: 'fail';
 }
 
 export type Authorize = <TResult>(
@@ -46,8 +45,7 @@ const toNotice = (
   tone: KkNoticeRequest['tone'],
 ): KkNoticeRequest => (typeof notice === 'string' ? { tone, message: notice } : notice);
 
-const isHeldOffline = (definition: { offline?: 'fail' }): boolean =>
-  definition.offline === 'fail' && !onlineManager.isOnline();
+const isHeldOffline = (): boolean => !onlineManager.isOnline();
 
 export const toApiMutationOptions = <TInput, TResult>(
   { queryClient, raiseNotice, authorize }: ApiMutationRuntime,
@@ -59,13 +57,13 @@ export const toApiMutationOptions = <TInput, TResult>(
     mutationKey: key,
     meta: { changes, settlesWhenFresh: true },
     scope: key === undefined ? undefined : { id: hashKey(key) },
-    networkMode: definition.offline === 'fail' ? 'always' : 'online',
+    networkMode: 'always',
     mutationFn: (input) =>
-      isHeldOffline(definition)
+      isHeldOffline()
         ? Promise.reject(new OfflineWriteError())
         : authorize((accessToken) => request(input, accessToken)),
     onMutate: async (input) => {
-      const opened = isHeldOffline(definition) ? [] : optimistic;
+      const opened = isHeldOffline() ? [] : optimistic;
 
       await Promise.all(opened.map((patch) => openPatch(queryClient, patch, input)));
 

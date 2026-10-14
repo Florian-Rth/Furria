@@ -15,7 +15,6 @@ export const useAttendanceResponseMutation = (
 ): UseMutationResult<void, Error, AttendanceResponse> =>
   useApiMutation({
     key: attendanceResponseMutationKey(calendarEntryId),
-    offline: 'fail',
     request: requestAttendanceResponse,
     changes: ['attendanceResponse'],
   });
