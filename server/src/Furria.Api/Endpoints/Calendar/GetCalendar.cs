@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
@@ -53,49 +54,7 @@ public sealed class GetCalendar : Endpoint<GetCalendarRequest, GetCalendarRespon
     }
 
     private static GetCalendarResponse ToResponse(IReadOnlyList<CalendarEntrySummary> entries) =>
-        new() { Entries = [.. entries.Select(ToDto)] };
-
-    private static CalendarEntryDto ToDto(CalendarEntrySummary entry) =>
-        new()
-        {
-            CalendarEntryId = entry.CalendarEntryId,
-            Title = entry.Title,
-            StartsAt = entry.StartsAt,
-            EndsAt = entry.EndsAt,
-            Kind = entry.Kind,
-            VenueId = entry.VenueId,
-            VenueName = entry.VenueName,
-            OwnerGroupId = entry.OwnerGroupId,
-            OwnerGroupName = entry.OwnerGroupName,
-            OwnerGroupTone = entry.OwnerGroupTone,
-            ParticipatingGroups = [.. entry.ParticipatingGroups.Select(ToDto)],
-            Visibility = entry.Visibility,
-            AsksForResponse = entry.AsksForResponse,
-            Description = entry.Description,
-            ViewerAnswer = entry.ViewerAnswer,
-            IsRunning = entry.IsRunning,
-            Event = entry.Event is { } facts ? ToDto(facts) : null,
-        };
-
-    private static CalendarEventFactsDto ToDto(CalendarEventFacts facts) =>
-        new()
-        {
-            DoorsOpenAt = facts.DoorsOpenAt,
-            Teaser = facts.Teaser,
-            AgeHint = facts.AgeHint,
-            PriceCents = facts.PriceCents,
-            PresaleStartsAt = facts.PresaleStartsAt,
-            Status = facts.Status,
-            Picture = PictureDto.From(facts.Picture),
-        };
-
-    private static ParticipatingGroupDto ToDto(ParticipatingGroup group) =>
-        new()
-        {
-            GroupId = group.GroupId,
-            Name = group.Name,
-            Tone = group.Tone,
-        };
+        new() { Entries = [.. entries.Select(CalendarEntryDto.From)] };
 }
 
 public sealed record GetCalendarRequest
@@ -198,6 +157,29 @@ public sealed record CalendarEntryDto
     public required bool IsRunning { get; init; }
 
     public required CalendarEventFactsDto? Event { get; init; }
+
+    [Pure]
+    public static CalendarEntryDto From(CalendarEntrySummary entry) =>
+        new()
+        {
+            CalendarEntryId = entry.CalendarEntryId,
+            Title = entry.Title,
+            StartsAt = entry.StartsAt,
+            EndsAt = entry.EndsAt,
+            Kind = entry.Kind,
+            VenueId = entry.VenueId,
+            VenueName = entry.VenueName,
+            OwnerGroupId = entry.OwnerGroupId,
+            OwnerGroupName = entry.OwnerGroupName,
+            OwnerGroupTone = entry.OwnerGroupTone,
+            ParticipatingGroups = [.. entry.ParticipatingGroups.Select(ParticipatingGroupDto.From)],
+            Visibility = entry.Visibility,
+            AsksForResponse = entry.AsksForResponse,
+            Description = entry.Description,
+            ViewerAnswer = entry.ViewerAnswer,
+            IsRunning = entry.IsRunning,
+            Event = entry.Event is { } facts ? CalendarEventFactsDto.From(facts) : null,
+        };
 }
 
 public sealed record CalendarEventFactsDto
@@ -215,6 +197,19 @@ public sealed record CalendarEventFactsDto
     public required EventSalesStatus Status { get; init; }
 
     public required PictureDto? Picture { get; init; }
+
+    [Pure]
+    public static CalendarEventFactsDto From(CalendarEventFacts facts) =>
+        new()
+        {
+            DoorsOpenAt = facts.DoorsOpenAt,
+            Teaser = facts.Teaser,
+            AgeHint = facts.AgeHint,
+            PriceCents = facts.PriceCents,
+            PresaleStartsAt = facts.PresaleStartsAt,
+            Status = facts.Status,
+            Picture = PictureDto.From(facts.Picture),
+        };
 }
 
 public sealed record ParticipatingGroupDto
@@ -224,4 +219,13 @@ public sealed record ParticipatingGroupDto
     public required string Name { get; init; }
 
     public required GroupTone? Tone { get; init; }
+
+    [Pure]
+    public static ParticipatingGroupDto From(ParticipatingGroup group) =>
+        new()
+        {
+            GroupId = group.GroupId,
+            Name = group.Name,
+            Tone = group.Tone,
+        };
 }

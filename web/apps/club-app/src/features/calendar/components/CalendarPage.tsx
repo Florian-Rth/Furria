@@ -1,25 +1,18 @@
 import type { KkQuietScreenAction } from '@furria/ui';
-import { KkScreen, KkSkeletonToolbar, KkTitleHeader } from '@furria/ui';
+import { KkScreen, KkTitleHeader } from '@furria/ui';
 import type { FC } from 'react';
 import { AREA_HANDOVERS, CALENDAR_SECTION, CALENDAR_TITLE } from '@/features/session';
 import { useLanding } from '@/features/write';
-import { useCalendarQuery } from '../api';
-import {
-  CALENDAR_LEAD,
-  LIST_VIEW_LABEL,
-  MONTH_VIEW_LABEL,
-  toScopeOptions,
-} from '../calendar-labels';
+import { CALENDAR_LEAD, LIST_VIEW_LABEL, MONTH_VIEW_LABEL } from '../calendar-labels';
 import { useCalendarBoard } from '../hooks/use-calendar-board';
+import { useCalendarScopeTools } from '../hooks/use-calendar-scope-tools';
 import { CalendarBody } from './CalendarBody';
-import { CalendarToolbar } from './CalendarToolbar';
-
-const TOOLBAR_CHIPS = 3;
+import { CalendarScopeBar } from './CalendarScopeBar';
 
 export const CalendarPage: FC = () => {
   const board = useCalendarBoard();
   const { highlightedKey } = useLanding();
-  const scopeSource = useCalendarQuery(board.scopeSourceQuery);
+  const scopeTools = useCalendarScopeTools(board);
 
   const monthAction: KkQuietScreenAction = {
     id: 'calendar-month-view',
@@ -37,16 +30,13 @@ export const CalendarPage: FC = () => {
 
   const viewAction = board.view === 'list' ? monthAction : listAction;
 
-  const toolbar =
-    scopeSource.data === undefined ? undefined : (
-      <CalendarToolbar
-        scopeId={board.scopeId}
-        options={toScopeOptions(scopeSource.data.entries)}
-        onScopeChange={board.selectScope}
-      />
-    );
-
-  const tools = scopeSource.isPending ? <KkSkeletonToolbar chips={TOOLBAR_CHIPS} /> : toolbar;
+  const tools = (
+    <CalendarScopeBar
+      tools={scopeTools}
+      scopeId={board.scopeId}
+      onScopeChange={board.selectScope}
+    />
+  );
 
   return (
     <KkScreen

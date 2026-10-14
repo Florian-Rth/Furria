@@ -1,23 +1,19 @@
 import { KkButton } from '@furria/ui';
 import type { ErrorComponentProps } from '@tanstack/react-router';
-import { useRouter } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { APP_FAILURE_MESSAGE, BOOT_RETRY_LABEL } from '../session-messages';
+import { useRouteRetry } from '../hooks/use-route-retry';
+import { BOOT_RETRY_LABEL, toAppErrorMessage } from '../session-messages';
 import { StageFailure } from './StageFailure';
 
-export const AppFailure: FC<ErrorComponentProps> = ({ reset }) => {
-  const router = useRouter();
-
-  const retry = (): void => {
-    reset();
-    void router.invalidate();
-  };
+export const AppFailure: FC<ErrorComponentProps> = ({ error, reset }) => {
+  const { retry, isRetrying } = useRouteRetry(reset);
+  const message = toAppErrorMessage(error);
 
   const action = (
-    <KkButton variant="outlined" onClick={retry}>
+    <KkButton variant="outlined" loading={isRetrying} onClick={retry}>
       {BOOT_RETRY_LABEL}
     </KkButton>
   );
 
-  return <StageFailure message={APP_FAILURE_MESSAGE} action={action} />;
+  return <StageFailure message={message} action={action} />;
 };

@@ -10,6 +10,7 @@ import { NewsProofSheet } from '../proofs/NewsProofSheet';
 import { NewsArticle } from './NewsArticle';
 import { NewsEditorFailure } from './NewsEditorFailure';
 import { NewsEditorLayout } from './NewsEditorLayout';
+import { NewsEditorMissing } from './NewsEditorMissing';
 import { NewsEditorSkeleton } from './NewsEditorSkeleton';
 import { NewsGallerySheet } from './NewsGallerySheet';
 import { NewsGoneNotice } from './NewsGoneNotice';
@@ -27,6 +28,9 @@ export const NewsEditorPage: FC<NewsEditorPageProps> = ({ postId }) => {
   const page = useNewsEditorPage(postId);
   const { editor, text, picture } = page;
 
+  if (editor.isMissing) {
+    return <NewsEditorMissing />;
+  }
   if (editor.isLoading) {
     return <NewsEditorSkeleton />;
   }
@@ -64,7 +68,12 @@ export const NewsEditorPage: FC<NewsEditorPageProps> = ({ postId }) => {
       foot={<NewsPressFoot editor={editor} text={text} />}
     >
       <NewsEditorLayout main={main} aside={aside} />
-      <NewsMentionLayer text={text} mentionables={page.mentionables} listId={NEWS_PICKER_LIST_ID} />
+      <NewsMentionLayer
+        text={text}
+        mentionables={page.mentionables}
+        emptyLabel={page.mentionEmptyLabel}
+        listId={NEWS_PICKER_LIST_ID}
+      />
       <NewsLinkSheet text={text} />
       <NewsGallerySheet onPick={picture.pickPhoto} />
       <NewsTieSheets ties={page.ties} />

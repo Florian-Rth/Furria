@@ -6,13 +6,22 @@ const RETRY_LABEL = 'Erneut laden';
 
 interface TicketRequestsErrorProps {
   message: string;
+  isRetrying: boolean;
   onRetry: () => void;
 }
 
-export const TicketRequestsError: FC<TicketRequestsErrorProps> = ({ message, onRetry }) => (
+export const TicketRequestsError: FC<TicketRequestsErrorProps> = ({
+  message,
+  isRetrying,
+  onRetry,
+}) => (
   <KkErrorState
     title={TITLE}
     description={message}
-    action={<KkButton onClick={onRetry}>{RETRY_LABEL}</KkButton>}
+    action={
+      <KkButton loading={isRetrying} onClick={onRetry}>
+        {RETRY_LABEL}
+      </KkButton>
+    }
   />
 );

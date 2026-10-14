@@ -1,5 +1,5 @@
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { keepPreviousData, useQuery } from '@tanstack/react-query';
+import { keepPreviousData, skipToken, useQuery } from '@tanstack/react-query';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { queryKeys } from '@/lib/query/reads';
@@ -13,18 +13,38 @@ import {
 import type { CalendarQuery } from './calendar-query';
 import {
   requestCalendar,
+  requestCalendarEntry,
   requestCalendarEntryCreation,
   requestCalendarEntryDeletion,
   requestCalendarEntryUpdate,
   requestRunningVenues,
 } from './requests';
-import type { CalendarResponse, RunningVenuesResponse, WrittenCalendarEntry } from './schemas';
+import type {
+  CalendarEntryResponse,
+  CalendarResponse,
+  RunningVenuesResponse,
+  WrittenCalendarEntry,
+} from './schemas';
 
 export const useCalendarQuery = (query: CalendarQuery): UseQueryResult<CalendarResponse, Error> =>
   useQuery({
     queryKey: queryKeys.calendar(query.scope, query.groupId, query.from, query.to),
     queryFn: () => withFreshAccessToken((accessToken) => requestCalendar(query, accessToken)),
     placeholderData: keepPreviousData,
+  });
+
+export const useCalendarEntryQuery = (
+  calendarEntryId: number | null,
+): UseQueryResult<CalendarEntryResponse, Error> =>
+  useQuery({
+    queryKey: queryKeys.calendarEntry(calendarEntryId),
+    queryFn:
+      calendarEntryId === null
+        ? skipToken
+        : () =>
+            withFreshAccessToken((accessToken) =>
+              requestCalendarEntry(calendarEntryId, accessToken),
+            ),
   });
 
 export const useRunningVenuesQuery = (): UseQueryResult<RunningVenuesResponse, Error> =>

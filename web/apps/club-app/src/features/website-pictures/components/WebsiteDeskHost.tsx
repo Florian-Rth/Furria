@@ -49,6 +49,9 @@ export const WebsiteDeskHost: FC<WebsiteDeskHostProps> = ({
   const name = positionNameOf(position.slotTitle, position.position, position.count);
   const galleryTitle = galleryTitleOf(name);
   const removeFacts = [{ label: REMOVE_FACT, value: name }];
+  const reloadAlbums = (): void => {
+    void albums.refetch();
+  };
   const body = (
     <WebsitePositionDesk
       position={position}
@@ -82,7 +85,10 @@ export const WebsiteDeskHost: FC<WebsiteDeskHostProps> = ({
         title={galleryTitle}
         note={GALLERY_NOTE}
         emptyNote={GALLERY_EMPTY}
-        albums={albums.data ?? []}
+        albums={albums.data}
+        albumsError={albums.error}
+        isReloading={albums.isFetching}
+        onReload={reloadAlbums}
         onPick={desk.pickPhoto}
       />
       <WebsiteCopySheet sources={copySources} onPick={desk.copyFrom} />

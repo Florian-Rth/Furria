@@ -15,7 +15,7 @@ export const SystemBody: FC = () => {
     case 'denied':
       return <AccessDenied message={SYSTEM_DENIED_MESSAGE} />;
     case 'failed':
-      return <SystemError onRetry={read.retry} />;
+      return <SystemError message={read.message} retrying={read.retrying} onRetry={read.retry} />;
     case 'shown':
       return <SystemOverview status={read.status} moment={read.moment} offline={read.offline} />;
   }

@@ -4,7 +4,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { PurgeCountdown } from '../bin-countdown';
 import { countdownEdge, countdownLabel } from '../bin-countdown';
-import { countLabel, thumbSourceOf } from '../gallery-view';
+import { countLabel, frameStateOf, shownSourceOf } from '../gallery-view';
 import type { BinnedAlbum } from '../schemas';
 
 const REJECT_MARK: KkFrameMark = { kind: 'reject' };
@@ -24,7 +24,8 @@ export const GalleryBinAlbumCard: FC<GalleryBinAlbumCardProps> = ({
   isRestoring,
   onRestore,
 }) => {
-  const source = album.cover === null ? undefined : thumbSourceOf(album.cover.urls);
+  const source = album.cover === null ? undefined : shownSourceOf(album.cover);
+  const frameState = album.cover === null ? undefined : frameStateOf(album.cover);
   const restore = (): void => onRestore(album.albumId);
   const facts = `${countLabel(album.itemCount)} Bilder · ${countdownLabel(countdown)}`;
   const factsTone = countdown.urgency === 'urgent' ? 'accent' : 'muted';
@@ -35,6 +36,7 @@ export const GalleryBinAlbumCard: FC<GalleryBinAlbumCardProps> = ({
       <KkFrame
         label={album.title}
         source={source}
+        state={frameState}
         latentLabel={album.title}
         number={edge}
         mark={REJECT_MARK}

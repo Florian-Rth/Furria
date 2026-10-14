@@ -5,7 +5,6 @@ import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toIsoDay } from '@/lib/day';
 import { queryKeys } from '@/lib/query/reads';
-import { toWriteErrorMessage } from '@/lib/write-error';
 import {
   toImpliedRoleSavedMessage,
   toOfficeArchivedMessage,
@@ -16,7 +15,6 @@ import {
   toSeatEndedMessage,
   toSeatOpenedMessage,
 } from './manage-board-labels';
-import { toPublicationErrorMessage } from './manage-board-messages';
 import {
   requestArchiveBoardOffice,
   requestBoard,
@@ -77,10 +75,11 @@ const applyPublication = (
         ),
       };
 
-export const useBoardQuery = (): UseQueryResult<BoardResponse, Error> =>
+export const useBoardQuery = (enabled = true): UseQueryResult<BoardResponse, Error> =>
   useQuery({
     queryKey: queryKeys.board,
     queryFn: () => withFreshAccessToken(requestBoard),
+    enabled,
   });
 
 export const useImpliedRoleOptionsQuery = (
@@ -141,7 +140,6 @@ export const useSetImpliedRoleMutation = (
     changes: ['boardOffice'],
     notice: {
       success: (input) => toImpliedRoleSavedMessage(input.officeName, input.impliedRoleName),
-      failure: toWriteErrorMessage,
     },
   });
 
@@ -159,7 +157,6 @@ export const useSetOfficePublicationMutation = (
     changes: ['boardOffice'],
     notice: {
       success: (input) => toPublicationSavedMessage(input.officeName, input.isPublic),
-      failure: toPublicationErrorMessage,
     },
   });
 

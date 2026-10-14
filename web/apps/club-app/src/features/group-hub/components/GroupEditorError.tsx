@@ -10,6 +10,7 @@ interface GroupEditorErrorProps {
   origin: KkScreenOrigin;
   message: string;
   onRetry: () => void;
+  isRetrying?: boolean;
 }
 
 export const GroupEditorError: FC<GroupEditorErrorProps> = ({
@@ -17,12 +18,17 @@ export const GroupEditorError: FC<GroupEditorErrorProps> = ({
   origin,
   message,
   onRetry,
-}) => (
-  <KkScreen kind="fullscreen" title={title} origin={origin}>
-    <KkErrorState
-      title={ERROR_TITLE}
-      description={message}
-      action={<KkButton onClick={onRetry}>{RETRY_LABEL}</KkButton>}
-    />
-  </KkScreen>
-);
+  isRetrying = false,
+}) => {
+  const retry = (
+    <KkButton onClick={onRetry} loading={isRetrying}>
+      {RETRY_LABEL}
+    </KkButton>
+  );
+
+  return (
+    <KkScreen kind="fullscreen" title={title} origin={origin}>
+      <KkErrorState title={ERROR_TITLE} description={message} action={retry} />
+    </KkScreen>
+  );
+};

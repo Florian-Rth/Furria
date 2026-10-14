@@ -34,16 +34,13 @@ export const useSessionRemoval = (record: SessionRecordSummary | null): SessionR
     }
 
     setRejection(null);
-    mutation.mutate(
-      { sessionId: record.sessionId, startYear: record.startYear },
-      {
-        onSuccess: () => {
-          setIsOpen(false);
-          void goBackTo({ to: '/manage/sessions', ignoreBlocker: true });
-        },
-        onError: (error) => {
-          setRejection(toWriteErrorMessage(error));
-        },
+    void mutation.mutateAsync({ sessionId: record.sessionId, startYear: record.startYear }).then(
+      () => {
+        setIsOpen(false);
+        void goBackTo({ to: '/manage/sessions', ignoreBlocker: true });
+      },
+      (error: Error) => {
+        setRejection(toWriteErrorMessage(error));
       },
     );
   };

@@ -12,7 +12,7 @@ const TITLE = 'Gruppe hinzufügen';
 
 export const GroupCreateScreen: FC = () => {
   const permissions = usePermissions();
-  const kinds = useGroupKindsQuery();
+  const kinds = useGroupKindsQuery(permissions.has(PERMISSION_KEYS.groupsManage));
   const errorMessage = toGroupKindsErrorMessage(kinds.error);
 
   const reload = (): void => {

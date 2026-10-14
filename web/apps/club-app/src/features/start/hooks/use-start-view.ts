@@ -25,8 +25,8 @@ export interface StartBoard {
 }
 
 export type StartView =
-  | { screen: 'waiting' | 'offline' | 'skeleton' | 'inactive' | 'empty' }
-  | { screen: 'error'; message: string; retry: () => void }
+  | { screen: 'waiting' | 'skeleton' | 'inactive' | 'empty' }
+  | { screen: 'error'; message: string; retry: () => void; retrying: boolean }
   | { screen: 'board'; board: StartBoard };
 
 const NO_DIMMED_KEYS: ReadonlySet<string> = new Set();
@@ -42,8 +42,7 @@ export const useStartView = (): StartView => {
   const pendingAnswers = usePendingAnswers();
   const ready = visit !== null && me.data !== undefined;
   const errorMessage = visit === null ? toStartErrorMessage(query.error) : null;
-  const paused = visit === null && query.isPaused;
-  const skeletonDue = useSkeletonDelay(!ready && errorMessage === null && !paused);
+  const skeletonDue = useSkeletonDelay(!ready && errorMessage === null);
   const start = ready
     ? withPendingAnswers(withoutQuiet(visit.start, memory, touched), pendingAnswers)
     : null;
@@ -58,7 +57,6 @@ export const useStartView = (): StartView => {
   const screen = startScreenOf({
     start,
     failed: errorMessage !== null,
-    paused,
     skeletonDue,
   });
 
@@ -78,7 +76,12 @@ export const useStartView = (): StartView => {
     };
   }
   if (screen.kind === 'error') {
-    return { screen: screen.kind, message: errorMessage ?? '', retry: refetch };
+    return {
+      screen: screen.kind,
+      message: errorMessage ?? '',
+      retry: refetch,
+      retrying: query.isFetching,
+    };
   }
 
   return { screen: screen.kind };

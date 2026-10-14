@@ -1,4 +1,4 @@
-import { KkAlert, KkMeta, KkPanel, KkSkeletonRow } from '@furria/ui';
+import { KkMeta, KkPanel, KkRetryAlert, KkSkeletonRow } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { PersonRef } from '@/lib/api/schemas';
@@ -8,6 +8,7 @@ import { PersonPickerRow } from './PersonPickerRow';
 
 const SKELETON_ROWS = 3;
 const TYPE_MORE_LINE = 'Gib mindestens zwei Zeichen ein.';
+const RETRY_LABEL = 'Erneut suchen';
 
 interface PersonPickerResultsProps {
   search: PersonSearchControl;
@@ -16,7 +17,14 @@ interface PersonPickerResultsProps {
 
 export const PersonPickerResults: FC<PersonPickerResultsProps> = ({ search, onSelect }) => {
   if (search.errorMessage !== null) {
-    return <KkAlert severity="error">{search.errorMessage}</KkAlert>;
+    return (
+      <KkRetryAlert
+        message={search.errorMessage}
+        retrying={search.isRetrying}
+        onRetry={search.retry}
+        retryLabel={RETRY_LABEL}
+      />
+    );
   }
   if (search.isSearching) {
     return (

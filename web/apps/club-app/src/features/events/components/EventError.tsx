@@ -6,13 +6,18 @@ const RETRY_LABEL = 'Erneut laden';
 
 interface EventErrorProps {
   message: string;
+  isRetrying: boolean;
   onRetry: () => void;
 }
 
-export const EventError: FC<EventErrorProps> = ({ message, onRetry }) => (
+export const EventError: FC<EventErrorProps> = ({ message, isRetrying, onRetry }) => (
   <KkErrorState
     title={TITLE}
     description={message}
-    action={<KkButton onClick={onRetry}>{RETRY_LABEL}</KkButton>}
+    action={
+      <KkButton loading={isRetrying} onClick={onRetry}>
+        {RETRY_LABEL}
+      </KkButton>
+    }
   />
 );

@@ -1,6 +1,8 @@
 import type { KkFilterOption, KkHeartbeatState, KkIconName, KkStatusLevel } from '@furria/ui';
 import { deniedMessageOf } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import type { QueryErrorKind } from '@/lib/query-error';
+import { toQueryErrorMessage } from '@/lib/query-error';
 import type { AreaSummary } from './area-summary';
 import type { LogDay, LogTime } from './log-lines';
 import type { LogSource, MediaKind, MediaState, VerdictReason } from './schemas';
@@ -20,8 +22,23 @@ export const SYSTEM_LEAD =
 export const BOARD_LABEL = 'Gesamtzustand';
 export const STATUS_LOADING_LABEL = 'Betriebszustand wird geladen';
 export const STATUS_FAILED_TITLE = 'BETRIEBSZUSTAND NICHT VERFÜGBAR';
-export const STATUS_FAILED_MESSAGE =
-  'Der Server hat den Betriebszustand nicht geliefert. Verbindung prüfen und erneut laden.';
+const STATUS_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
+  unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung und lade erneut.',
+  unexpected: 'Der Server hat den Betriebszustand nicht geliefert. Lade erneut.',
+  rejected: 'Der Server hat die Anfrage nach dem Betriebszustand abgelehnt.',
+};
+
+const LOG_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
+  unreachable: 'Keine Verbindung zum Server. Das Protokoll konnte nicht geladen werden.',
+  unexpected: 'Das Protokoll konnte nicht geladen werden.',
+  rejected: 'Der Server hat die Anfrage nach dem Protokoll abgelehnt.',
+};
+
+export const toStatusErrorMessage = (error: Error | null): string =>
+  toQueryErrorMessage(error, STATUS_ERROR_MESSAGES) ?? STATUS_ERROR_MESSAGES.unexpected;
+
+export const toLogErrorMessage = (error: Error | null): string =>
+  toQueryErrorMessage(error, LOG_ERROR_MESSAGES) ?? LOG_ERROR_MESSAGES.unexpected;
 export const RETRY_LABEL = 'Erneut laden';
 export const SYSTEM_DENIED_MESSAGE = deniedMessageOf(PERMISSION_KEYS.systemView);
 export const STAMP_LABEL = 'STÖRUNG';
@@ -312,7 +329,8 @@ export const LOG_MORE_LABEL = 'Ältere laden';
 export const LOG_EXCEPTION_LABEL = 'Fehlerdetails';
 export const LOG_EMPTY_TITLE = 'Keine Einträge';
 export const LOG_EMPTY_DESCRIPTION = 'Für diese Auswahl gibt es keine Einträge.';
-export const LOG_FAILED = 'Das Protokoll konnte nicht geladen werden.';
+export const LOG_OLDER_FAILED = 'Ältere Einträge konnten nicht geladen werden.';
+export const LOG_OLDER_RETRY_LABEL = 'Ältere erneut laden';
 export const LOG_LOADING_LABEL = 'Protokoll wird geladen';
 
 export const LOG_SOURCE_OPTIONS: readonly KkFilterOption[] = [

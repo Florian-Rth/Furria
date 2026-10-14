@@ -17,6 +17,7 @@ export const albumViewerItemOf = (frame: AlbumFrame, albumTitle: string): KkView
   key: String(frame.id),
   alt: frame.item.caption ?? loupeAlt(albumTitle, frame.number),
   image: imageOf(frame.item),
+  state: frame.item.state,
   size: viewSizeOf(frame.item),
   caption: frame.item.caption ?? undefined,
   video: videoOf(frame.item),

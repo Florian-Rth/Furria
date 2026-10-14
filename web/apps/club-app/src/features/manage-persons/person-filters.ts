@@ -64,11 +64,14 @@ export interface ArchivedPersonsCount {
 
 export const toPersonFilterOptions = (
   stateCounts: Record<MembershipState, number>,
-  archived: ArchivedPersonsCount,
+  archived: ArchivedPersonsCount | null,
   isArchivedView: boolean,
 ): KkFilterOption[] => {
   const stateOptions = toStateFilterOptions(stateCounts);
 
+  if (archived === null) {
+    return [...stateOptions, { id: ARCHIVED_PERSONS_FILTER_ID, label: ARCHIVED_CHIP.label }];
+  }
   if (archived.total === 0 && !isArchivedView) {
     return stateOptions;
   }

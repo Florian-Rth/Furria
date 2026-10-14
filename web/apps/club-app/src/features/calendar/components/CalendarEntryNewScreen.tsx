@@ -11,13 +11,16 @@ const TITLE = 'Termin hinzufügen';
 const DENIED_MESSAGE = 'Dir fehlt die Berechtigung, Termine anzulegen.';
 
 export const CalendarEntryNewScreen: FC = () => {
-  const { authoring, error: authoringError, retry: retryAuthoring } = useCalendarAuthoring();
-  const { supplies, error: suppliesError, retry: retrySupplies } = useCalendarEntrySupplies();
-  const errorMessage = toCalendarErrorMessage(authoringError ?? suppliesError);
+  const authoringLoad = useCalendarAuthoring();
+  const suppliesLoad = useCalendarEntrySupplies();
+  const { authoring } = authoringLoad;
+  const { supplies } = suppliesLoad;
+  const errorMessage = toCalendarErrorMessage(authoringLoad.error ?? suppliesLoad.error);
+  const isRetrying = authoringLoad.isRetrying || suppliesLoad.isRetrying;
 
   const reload = (): void => {
-    retryAuthoring();
-    retrySupplies();
+    authoringLoad.retry();
+    suppliesLoad.retry();
   };
 
   if (authoring !== null && !authoring.mayAuthor) {
@@ -29,12 +32,13 @@ export const CalendarEntryNewScreen: FC = () => {
         entry={null}
         ownerOptions={authoring.ownerOptions}
         clubGroups={supplies.clubGroups}
+        clubGroupsReload={supplies.clubGroupsReload}
         venues={supplies.venues}
       />
     );
   }
   if (errorMessage !== null) {
-    return <CalendarEntryError message={errorMessage} onRetry={reload} />;
+    return <CalendarEntryError message={errorMessage} isRetrying={isRetrying} onRetry={reload} />;
   }
 
   return <CalendarEntryEditorSkeleton title={TITLE} />;

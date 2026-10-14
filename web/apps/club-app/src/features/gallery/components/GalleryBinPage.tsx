@@ -13,7 +13,11 @@ const LOADING_LABEL = 'Papierkorb wird geladen';
 export const GalleryBinPage: FC = () => {
   const control = useGalleryBin();
   const errorMessage = toAlbumErrorMessage(control.error);
-  const retry = <KkButton onClick={control.reload}>{RETRY_LABEL}</KkButton>;
+  const retry = (
+    <KkButton loading={control.reloading} onClick={control.reload}>
+      {RETRY_LABEL}
+    </KkButton>
+  );
   const failure =
     errorMessage === null ? null : (
       <KkErrorState title={FAILURE_TITLE} description={errorMessage} action={retry} />

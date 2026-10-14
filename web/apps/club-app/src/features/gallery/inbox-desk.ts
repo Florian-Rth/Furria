@@ -18,6 +18,7 @@ export interface Desk<TItem extends DeskSource> {
   developing: number;
   stalled: number;
   failed: number;
+  failedIds: number[];
 }
 
 const momentOf = (item: DeskSource): string => item.capturedAt ?? item.uploadedAt;
@@ -28,6 +29,9 @@ export const deskOf = <TItem extends DeskSource>(
 ): Desk<TItem> => {
   const processing = items.filter((item) => item.state === 'processing');
   const stalled = processing.filter((item) => item.isStalled).length;
+  const failedIds = items
+    .filter((item) => item.state === 'failed' && !hidden.has(item.mediaItemId))
+    .map((item) => item.mediaItemId);
   const ready = items
     .filter((item) => item.state === 'ready' && !hidden.has(item.mediaItemId))
     .sort(
@@ -45,9 +49,15 @@ export const deskOf = <TItem extends DeskSource>(
     scenes,
     developing: processing.length - stalled,
     stalled,
-    failed: items.filter((item) => item.state === 'failed').length,
+    failed: failedIds.length,
+    failedIds,
   };
 };
+
+export const isDeskCleared = (
+  desk: Pick<Desk<DeskSource>, 'developing' | 'failed'>,
+  openFrames: number,
+): boolean => openFrames === 0 && desk.developing === 0 && desk.failed === 0;
 
 export const deskKeyOf = (frames: readonly CullFrame[]): string =>
   frames.map((frame) => `${frame.id}:${frame.scene}`).join(',');

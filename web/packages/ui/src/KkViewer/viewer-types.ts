@@ -6,10 +6,13 @@ export interface KkViewerVideo {
   duration: string;
 }
 
+export type KkViewerItemState = 'ready' | 'processing' | 'failed';
+
 export interface KkViewerItem {
   key: string;
   alt: string;
   image: KkImageSource | null;
+  state?: KkViewerItemState;
   size?: KkSize;
   caption?: string;
   video?: KkViewerVideo;
@@ -22,6 +25,7 @@ export interface KkViewerLabels {
   next: string;
   counterJoin: string;
   developing: string;
+  failed: string;
   play: string;
   previousScene?: string;
   nextScene?: string;

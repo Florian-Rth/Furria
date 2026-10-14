@@ -29,7 +29,7 @@ export const MemberBody: FC<MemberBodyProps> = ({ personId }) => {
     return <MemberNotFound />;
   }
   if (errorMessage !== null) {
-    return <MemberError message={errorMessage} onRetry={reload} />;
+    return <MemberError message={errorMessage} isRetrying={member.isFetching} onRetry={reload} />;
   }
 
   return <MemberSkeleton />;

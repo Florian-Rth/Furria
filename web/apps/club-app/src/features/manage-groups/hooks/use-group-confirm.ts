@@ -36,15 +36,11 @@ export const useGroupConfirm = ({
 
   const submit = (): void => {
     setRejection(null);
-    mutation.mutate(
-      { groupId: group.groupId, name: group.name },
-      {
-        onSuccess: onDone,
-        onError: (error) => {
-          setRejection(toWriteErrorMessage(error));
-        },
-      },
-    );
+    void mutation
+      .mutateAsync({ groupId: group.groupId, name: group.name })
+      .then(onDone, (error: Error) => {
+        setRejection(toWriteErrorMessage(error));
+      });
   };
 
   return { rejection, isSaving: mutation.isPending, submit };

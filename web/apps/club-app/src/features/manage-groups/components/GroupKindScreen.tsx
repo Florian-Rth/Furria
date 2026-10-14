@@ -25,8 +25,8 @@ const DENIED_MESSAGE = 'Dir fehlt die Berechtigung für die Gruppenverwaltung.';
 export const GroupKindScreen: FC = () => {
   const { groupKindId } = useParams({ from: ROUTE_ID });
   const id = parsePositiveId(groupKindId);
-  const groups = useManagedGroupsQuery();
   const permissions = usePermissions();
+  const groups = useManagedGroupsQuery(permissions.has(PERMISSION_KEYS.groupsManage));
   const { highlightedKey } = useLanding();
   const errorMessage = toManagedGroupsErrorMessage(groups.error);
   const canManage = permissions.isUndecided || permissions.has(PERMISSION_KEYS.groupsManage);

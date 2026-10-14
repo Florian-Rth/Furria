@@ -106,6 +106,11 @@ export const usePositionDesk = (
     sheet.open(DESK_SHEET_ID);
   };
 
+  const rejectOnDesk = (message: string | null): void => {
+    setRejection(message);
+    reopenDesk();
+  };
+
   const saveCut = (crop: KkCrop): Promise<void> => {
     switch (intent.kind) {
       case 'recrop':
@@ -129,10 +134,10 @@ export const usePositionDesk = (
         .then(announce),
     saveCrop: (crop) => saveCut(crop).then(announce),
     onUploadFailed: (failure) => {
-      setRejection(toUploadFailureMessage(failure));
+      rejectOnDesk(toUploadFailureMessage(failure));
     },
     onSaveFailed: (error) => {
-      setRejection(toWriteErrorMessage(error));
+      rejectOnDesk(toWriteErrorMessage(error));
     },
   });
   const { state } = desk;
@@ -222,15 +227,13 @@ export const usePositionDesk = (
     },
     transferTo: (target) => {
       sheet.close();
-      transfer.mutate(
-        { from: at, to: target },
-        {
-          onSuccess: () => {
-            onMoved(target);
-          },
-          onError: (error) => {
-            setRejection(toWriteErrorMessage(error));
-          },
+      setRejection(null);
+      void transfer.mutateAsync({ from: at, to: target }).then(
+        () => {
+          onMoved(target);
+        },
+        (error: Error) => {
+          rejectOnDesk(toWriteErrorMessage(error));
         },
       );
     },

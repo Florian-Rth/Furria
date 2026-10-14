@@ -1,17 +1,22 @@
 import { KkSheet, KkText, useKkSheet } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { GALLERY_PICK_CLOSE } from '../gallery-pick-copy';
+import { ALBUMS_LOADING, albumsLoadErrorOf, GALLERY_PICK_CLOSE } from '../gallery-pick-copy';
+import { pickListPhaseOf } from '../pick-list';
 import type { GalleryPhoto } from '../schemas';
 import type { PickableAlbum } from '../types';
 import { GalleryPickAlbum } from './GalleryPickAlbum';
+import { PickListStatus } from './PickListStatus';
 
 interface GalleryPickSheetProps {
   id: string;
   title: string;
   note: string;
   emptyNote: string;
-  albums: readonly PickableAlbum[];
+  albums: readonly PickableAlbum[] | undefined;
+  albumsError: Error | null;
+  isReloading: boolean;
+  onReload: () => void;
   onPick: (photo: GalleryPhoto) => void;
 }
 
@@ -21,14 +26,18 @@ export const GalleryPickSheet: FC<GalleryPickSheetProps> = ({
   note,
   emptyNote,
   albums,
+  albumsError,
+  isReloading,
+  onReload,
   onPick,
 }) => {
   const { openSheetId } = useKkSheet();
   const isOpen = openSheetId === id;
-  const sections = albums.map((album) => (
+  const sections = (albums ?? []).map((album) => (
     <GalleryPickAlbum key={album.albumId} album={album} isOpen={isOpen} onPick={onPick} />
   ));
-  const empty = albums.length === 0 ? <KkText variant="body2">{emptyNote}</KkText> : null;
+  const phase = pickListPhaseOf(albums?.length, albumsError);
+  const errorMessage = albumsLoadErrorOf(albumsError);
 
   return (
     <KkSheet id={id} title={title} closeLabel={GALLERY_PICK_CLOSE}>
@@ -36,7 +45,14 @@ export const GalleryPickSheet: FC<GalleryPickSheetProps> = ({
         <KkText variant="caption">{note}</KkText>
         <Stack sx={{ gap: 2 }}>
           {sections}
-          {empty}
+          <PickListStatus
+            phase={phase}
+            loadingLabel={ALBUMS_LOADING}
+            errorMessage={errorMessage}
+            emptyNote={emptyNote}
+            isRetrying={isReloading}
+            onRetry={onReload}
+          />
         </Stack>
       </KkSheet.Body>
     </KkSheet>

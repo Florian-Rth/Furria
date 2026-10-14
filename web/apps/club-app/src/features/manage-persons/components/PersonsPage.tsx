@@ -27,14 +27,16 @@ const NO_PERSONS: readonly PersonSummary[] = [];
 export const PersonsPage: FC = () => {
   const searchMode = useScreenSearch(SEARCH_PLACEHOLDER);
   const access = usePersonsAccess();
-  const listed = usePersonsQuery(access.filter, false);
-  const archived = usePersonsQuery(access.filter, true);
+  const { has, isUndecided } = usePermissions();
+  const canRead = PERSON_READ_KEYS.some((key) => has(key));
+  const listed = usePersonsQuery(access.filter, false, canRead);
+  const archived = usePersonsQuery(access.filter, true, canRead);
+  const isArchiveUnavailable = archived.data === undefined && archived.error !== null;
   const search = usePersonsSearch(
     listed.data?.persons ?? NO_PERSONS,
     archived.data?.persons ?? NO_PERSONS,
+    isArchiveUnavailable,
   );
-  const { has, isUndecided } = usePermissions();
-  const canRead = PERSON_READ_KEYS.some((key) => has(key));
   const canCreate = has(PERMISSION_KEYS.personsManage);
   const showsTools = isUndecided || canRead;
   const isArchiveSettled = archived.data !== undefined || archived.error !== null;

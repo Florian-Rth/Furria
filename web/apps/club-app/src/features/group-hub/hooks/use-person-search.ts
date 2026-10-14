@@ -17,6 +17,8 @@ export interface PersonSearchControl {
   isEmpty: boolean;
   capLine: string | null;
   errorMessage: string | null;
+  isRetrying: boolean;
+  retry: () => void;
 }
 
 export const usePersonSearch = (): PersonSearchControl => {
@@ -40,5 +42,9 @@ export const usePersonSearch = (): PersonSearchControl => {
     isEmpty: term !== null && !isBehindTheTyping && errorMessage === null && persons.length === 0,
     capLine: toSearchCapLine(persons.length),
     errorMessage,
+    isRetrying: search.isFetching,
+    retry: () => {
+      void search.refetch();
+    },
   };
 };

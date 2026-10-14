@@ -13,6 +13,7 @@ import {
   GALLERY_UPLOAD_PATH,
   UPLOAD_TITLE,
 } from '../gallery-copy';
+import { toHubErrorMessage } from '../hub-copy';
 import { ownInboxFirst } from '../hub-view';
 import type { GalleryHub, InboxSummary } from '../schemas';
 import type { InboxOwner } from '../types';
@@ -21,6 +22,9 @@ import { useGalleryUploadThread } from './use-gallery-upload-thread';
 export interface GalleryHubState {
   hub: UseQueryResult<GalleryHub, Error>;
   inboxes: InboxSummary[];
+  inboxFailure: string | null;
+  inboxRetrying: boolean;
+  retryInboxes: () => void;
   sorts: boolean;
   showsSelection: boolean;
   actions: KkScreenActions | undefined;
@@ -83,6 +87,11 @@ export const useGalleryHub = (): GalleryHubState => {
   return {
     hub,
     inboxes,
+    inboxFailure: inboxQuery.data === undefined ? toHubErrorMessage(inboxQuery.error) : null,
+    inboxRetrying: inboxQuery.isFetching,
+    retryInboxes: () => {
+      void inboxQuery.refetch();
+    },
     sorts,
     showsSelection: has(PERMISSION_KEYS.galleryPublish),
     actions: sorts ? sorterActions : undefined,

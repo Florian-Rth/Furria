@@ -1,4 +1,4 @@
-import { KkHubRow, KkNote, KkPanel, KkPanelSection, KkSkeletonRow } from '@furria/ui';
+import { KkHubRow, KkPanel, KkPanelSection, KkRetryAlert, KkSkeletonRow } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
@@ -10,6 +10,7 @@ import { InvitationRoundAction } from './InvitationRoundAction';
 
 const PERSONS_ROUTE = '/manage/persons';
 const PREVIEW_FAILED_NOTE = 'Die Zahlen für Alle einladen und Erinnern sind gerade nicht abrufbar.';
+const PREVIEW_RETRY_LABEL = 'Erneut laden';
 const ROUND_SKELETON_ROWS = 2;
 const ACCESS_LANDING = 'access';
 
@@ -21,6 +22,10 @@ export const ManageAccessPanel: FC<ManageAccessPanelProps> = ({ accounts }) => {
   const preview = useInvitationRoundPreviewQuery();
   const { highlightedKey } = useLanding();
   const isLanded = highlightedKey === ACCESS_LANDING;
+
+  const reloadPreview = (): void => {
+    void preview.refetch();
+  };
 
   const rows = toAccessRows(accounts).map((row) => (
     <KkHubRow
@@ -48,9 +53,13 @@ export const ManageAccessPanel: FC<ManageAccessPanelProps> = ({ accounts }) => {
 
   const roundsBlock =
     preview.error !== null && preview.data === undefined ? (
-      <KkNote tone="hint" icon="info">
-        {PREVIEW_FAILED_NOTE}
-      </KkNote>
+      <KkRetryAlert
+        severity="warning"
+        message={PREVIEW_FAILED_NOTE}
+        retrying={preview.isFetching}
+        onRetry={reloadPreview}
+        retryLabel={PREVIEW_RETRY_LABEL}
+      />
     ) : (
       rounds
     );

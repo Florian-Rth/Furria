@@ -81,21 +81,21 @@ export const useRolePermissions = (
 
     setBusyKeys((keys) => [...keys, key]);
     setRejections((current) => without(current, key));
-    mutation.mutate(
-      { key, enabled, permissionKeys },
-      {
-        onError: (error) => {
+    void mutation
+      .mutateAsync({ key, enabled, permissionKeys })
+      .then(
+        () => undefined,
+        (error: Error) => {
           const message = toWriteErrorMessage(error);
 
           if (message !== null) {
             setRejections((current) => [...without(current, key), { key, message }]);
           }
         },
-        onSettled: () => {
-          setBusyKeys((keys) => dropOnce(keys, key));
-        },
-      },
-    );
+      )
+      .finally(() => {
+        setBusyKeys((keys) => dropOnce(keys, key));
+      });
   };
 
   const toggle = (key: PermissionKey, enabled: boolean): void => {

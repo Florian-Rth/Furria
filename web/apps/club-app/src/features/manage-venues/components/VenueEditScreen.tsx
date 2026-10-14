@@ -19,14 +19,18 @@ const TITLE = 'Ort bearbeiten';
 export const VenueEditScreen: FC = () => {
   const { venueId } = useParams({ from: ROUTE_ID });
   const id = parsePositiveId(venueId);
-  const venues = useManagedVenuesQuery();
   const permissions = usePermissions();
+  const canManage = permissions.has(PERMISSION_KEYS.clubManage);
+  const venues = useManagedVenuesQuery(canManage);
   const errorMessage = toManagedVenuesErrorMessage(venues.error);
 
   const reload = (): void => {
     void venues.refetch();
   };
 
+  if (!permissions.isUndecided && !canManage) {
+    return <VenueEditorDenied title={TITLE} origin={VENUES_ORIGIN} />;
+  }
   if (venues.data === undefined) {
     if (isForbiddenError(venues.error)) {
       return <VenueEditorDenied title={TITLE} origin={VENUES_ORIGIN} />;
@@ -42,16 +46,6 @@ export const VenueEditScreen: FC = () => {
 
   if (venue === null || venue.archivedOn !== null) {
     return <VenueEditorNotFound />;
-  }
-
-  const origin = {
-    label: venue.name,
-    to: '/manage/venues/$venueId',
-    params: { venueId: String(venue.venueId) },
-  };
-
-  if (!permissions.isUndecided && !permissions.has(PERMISSION_KEYS.clubManage)) {
-    return <VenueEditorDenied title={TITLE} origin={origin} />;
   }
 
   return <VenueEditor venue={venue} />;

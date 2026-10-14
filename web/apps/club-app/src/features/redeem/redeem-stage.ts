@@ -33,6 +33,7 @@ export type RedeemStage =
   | { kind: 'checking' }
   | { kind: 'signedIn' }
   | { kind: 'dead' }
+  | { kind: 'accountReady' }
   | { kind: 'failed'; failure: RedeemFailureKind }
   | ({ kind: 'live'; step: RedeemStep } & LiveInvitation);
 
@@ -92,6 +93,9 @@ export const toRedeemStage = ({
   pendingClaim,
   hasDeclinedClaim,
 }: RedeemStageInput): RedeemStage => {
+  if (redeemFailure === 'sessionLost') {
+    return { kind: 'accountReady' };
+  }
   if (credential === null || redeemFailure === 'dead' || lookup?.status === 'dead') {
     return { kind: 'dead' };
   }

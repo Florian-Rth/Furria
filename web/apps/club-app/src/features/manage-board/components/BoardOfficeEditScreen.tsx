@@ -20,7 +20,7 @@ export const BoardOfficeEditScreen: FC = () => {
   const { boardOfficeId } = useParams({ from: ROUTE_ID });
   const { has, isUndecided } = usePermissions();
   const id = parsePositiveId(boardOfficeId);
-  const board = useBoardQuery();
+  const board = useBoardQuery(has(PERMISSION_KEYS.boardManage));
   const errorMessage = toBoardErrorMessage(board.error);
 
   const reload = (): void => {

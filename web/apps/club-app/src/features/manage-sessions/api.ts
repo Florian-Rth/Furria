@@ -27,10 +27,13 @@ export interface RemoveSessionRecordInput {
   startYear: number;
 }
 
-export const useSessionRecordsQuery = (): UseQueryResult<SessionRecordsResponse, Error> =>
+export const useSessionRecordsQuery = (
+  enabled = true,
+): UseQueryResult<SessionRecordsResponse, Error> =>
   useQuery({
     queryKey: queryKeys.sessionRecords,
     queryFn: () => withFreshAccessToken(requestSessionRecords),
+    enabled,
   });
 
 export const useCreateSessionRecordMutation = (): UseMutationResult<

@@ -28,7 +28,12 @@ export const TrainingGeneratorBody: FC<TrainingGeneratorBodyProps> = ({ control,
 
   if (control.errorMessage !== null) {
     const retry = (
-      <KkButton size="small" variant="outlined" onClick={control.retry}>
+      <KkButton
+        size="small"
+        variant="outlined"
+        onClick={control.retry}
+        loading={control.isRetrying}
+      >
         {RETRY_LABEL}
       </KkButton>
     );

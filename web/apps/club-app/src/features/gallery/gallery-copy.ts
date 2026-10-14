@@ -16,6 +16,7 @@ export const NEW_ALBUM_TITLE = 'Neues Album';
 export const EDIT_ALBUM_TITLE = 'Album bearbeiten';
 export const FREE_TITLE = 'Ohne Session';
 export const SESSION_WORD = 'Session';
+export const GALLERY_RETRY_LABEL = 'Erneut laden';
 
 export const AlbumKindFilterSchema = z.enum(['photo', 'video']);
 export type AlbumKindFilter = z.infer<typeof AlbumKindFilterSchema>;

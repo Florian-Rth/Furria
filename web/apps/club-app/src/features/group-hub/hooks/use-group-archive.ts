@@ -30,16 +30,13 @@ export const useGroupArchive = (hub: GroupHub): GroupArchiveControl => {
 
   const submit = (): void => {
     setRejection(null);
-    mutation.mutate(
-      { name: hub.name },
-      {
-        onSuccess: () => {
-          setIsOpen(false);
-          void goBackTo({ to: '/groups', ignoreBlocker: true });
-        },
-        onError: (error) => {
-          setRejection(toWriteErrorMessage(error));
-        },
+    void mutation.mutateAsync({ name: hub.name }).then(
+      () => {
+        setIsOpen(false);
+        void goBackTo({ to: '/groups', ignoreBlocker: true });
+      },
+      (error: Error) => {
+        setRejection(toWriteErrorMessage(error));
       },
     );
   };

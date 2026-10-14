@@ -1,6 +1,14 @@
 import { useKkSheet } from '@furria/ui';
+import type { PickListPhase } from '@/features/gallery-pick';
+import { pickListPhaseOf } from '@/features/gallery-pick';
 import { useNewsTieCandidatesQuery } from '../api';
-import { TIE_ALBUM_SHEET_ID, TIE_CANCELLED, TIE_EVENT_SHEET_ID, TIE_PHOTOS } from '../editor-copy';
+import {
+  TIE_ALBUM_SHEET_ID,
+  TIE_CANCELLED,
+  TIE_EVENT_SHEET_ID,
+  TIE_PHOTOS,
+  tieLoadErrorOf,
+} from '../editor-copy';
 import type { NewsAlbumTie, NewsEventTie, TieableAlbum } from '../schemas';
 import type { EventTieLines } from '../tie-lines';
 import { albumTieLineOf, eventTieLinesOf } from '../tie-lines';
@@ -13,6 +21,11 @@ export interface NewsTies {
   albumLine: string | null;
   eventChoices: readonly NewsEventTie[];
   albumChoices: readonly TieableAlbum[];
+  eventPhase: PickListPhase;
+  albumPhase: PickListPhase;
+  loadError: string | null;
+  isReloading: boolean;
+  reload: () => void;
   chooseEvent: () => void;
   chooseAlbum: () => void;
   tieEvent: (eventId: number) => void;
@@ -76,6 +89,13 @@ export const useNewsTies = (
     albumLine: album === null ? null : albumTieLineOf(album.photoCount, TIE_PHOTOS),
     eventChoices,
     albumChoices,
+    eventPhase: pickListPhaseOf(candidates.data?.events.length, candidates.error),
+    albumPhase: pickListPhaseOf(candidates.data?.albums.length, candidates.error),
+    loadError: tieLoadErrorOf(candidates.error),
+    isReloading: candidates.isFetching,
+    reload: () => {
+      void candidates.refetch();
+    },
     chooseEvent: () => {
       sheet.open(TIE_EVENT_SHEET_ID);
     },

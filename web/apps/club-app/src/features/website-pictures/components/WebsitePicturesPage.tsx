@@ -15,7 +15,11 @@ import { WebsiteBoardBody } from './WebsiteBoardBody';
 export const WebsitePicturesPage: FC = () => {
   const state = useWebsiteBoard();
   const errorMessage = toLoadErrorMessage(state.query.error);
-  const retry = <KkButton onClick={state.reload}>{RETRY_LABEL}</KkButton>;
+  const retry = (
+    <KkButton loading={state.query.isFetching} onClick={state.reload}>
+      {RETRY_LABEL}
+    </KkButton>
+  );
   const failure =
     errorMessage === null ? null : (
       <KkErrorState title={LOAD_ERROR_TITLE} description={errorMessage} action={retry} />

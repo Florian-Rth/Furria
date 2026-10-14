@@ -302,6 +302,8 @@ const keyOf = (read: ReadName, ...parts: readonly QueryKeyPart[]): QueryKey => [
 
 type QueryKeyPart = string | number | boolean | null | object;
 
+const CALENDAR_ENTRY_PART = 'entry';
+
 export const queryKeys = {
   me: READ_ROOTS.me,
   invitationLookup: (credentialKey: string | null): QueryKey =>
@@ -316,6 +318,8 @@ export const queryKeys = {
     from: string | null,
     to: string | null,
   ): QueryKey => keyOf('calendar', scope, groupId, from, to),
+  calendarEntry: (calendarEntryId: number | null): QueryKey =>
+    keyOf('calendar', CALENDAR_ENTRY_PART, calendarEntryId),
   runningVenues: READ_ROOTS.runningVenues,
   groups: READ_ROOTS.groups,
   groupHub: (groupId: number | null): QueryKey => keyOf('groupHub', groupId),

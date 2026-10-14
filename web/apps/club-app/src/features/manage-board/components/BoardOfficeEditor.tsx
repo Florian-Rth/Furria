@@ -1,5 +1,6 @@
 import type { KkNumberStepLabels } from '@furria/ui';
 import {
+  KkButton,
   KkFieldRow,
   KkFormPair,
   KkFormSection,
@@ -38,6 +39,7 @@ const SORT_ORDER_STEPS: KkNumberStepLabels = {
 const IMPLIED_ROLE_HINT = 'Wer den Sitz innehat, bekommt diese Rolle samt ihren Rechten.';
 const CREATE_ACTION_LABEL = 'Hinzufügen';
 const EDIT_ACTION_LABEL = 'Speichern';
+const RETRY_ROLES_LABEL = 'Rollen erneut laden';
 
 interface BoardOfficeEditorProps {
   entry: BoardOfficeEntry | null;
@@ -76,9 +78,23 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry }) => {
       hint={IMPLIED_ROLE_READ_ONLY_HINT}
     />
   );
+  const impliedRoleRetry =
+    impliedRoleError === undefined ? null : (
+      <KkButton
+        size="small"
+        variant="outlined"
+        onClick={control.retryImpliedRoleChoices}
+        loading={control.impliedRoleChoicesRetrying}
+      >
+        {RETRY_ROLES_LABEL}
+      </KkButton>
+    );
   const roleSection =
     entry === null ? null : (
-      <KkFormSection title={ROLE_SECTION}>{impliedRoleControl}</KkFormSection>
+      <KkFormSection title={ROLE_SECTION}>
+        {impliedRoleControl}
+        {impliedRoleRetry}
+      </KkFormSection>
     );
 
   return (

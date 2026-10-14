@@ -23,6 +23,7 @@ export const InvitationRoundDialog: FC<InvitationRoundDialogProps> = ({
   eligibleWithoutEmailCount,
   control,
 }) => {
+  const isBusy = control.isSending || control.isRefreshing;
   const facts: KkConfirmFact[] = [
     { label: WITHOUT_EMAIL_LABEL, value: toWithoutEmailFact(eligibleWithoutEmailCount) },
   ];
@@ -41,7 +42,7 @@ export const InvitationRoundDialog: FC<InvitationRoundDialogProps> = ({
       confirmLabel={act.confirmLabel}
       cancelLabel={ROUND_CANCEL_LABEL}
       closeLabel={ROUND_CLOSE_LABEL}
-      busy={control.isSending}
+      busy={isBusy}
     />
   );
 };

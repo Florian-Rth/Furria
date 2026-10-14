@@ -16,3 +16,4 @@ export {
 } from './gallery-copy';
 export { useGalleryUploadThread } from './hooks/use-gallery-upload-thread';
 export { useNewestAlbumsShelf } from './hooks/use-newest-albums-shelf';
+export { toHubErrorMessage } from './hub-copy';

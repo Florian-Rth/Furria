@@ -26,7 +26,14 @@ export const EventNewScreen: FC = () => {
     return <EventEditor event={null} venues={venues.data.venues} />;
   }
   if (errorMessage !== null) {
-    return <EventEditorError title={TITLE} message={errorMessage} onRetry={reload} />;
+    return (
+      <EventEditorError
+        title={TITLE}
+        message={errorMessage}
+        isRetrying={venues.isFetching}
+        onRetry={reload}
+      />
+    );
   }
 
   return <EventEditorSkeleton title={TITLE} />;

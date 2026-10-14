@@ -35,9 +35,7 @@ export const FILTERED_EMPTY_DESCRIPTION = 'Für diese Auswahl gibt es in diesem 
 export const NOT_FOUND_TITLE = 'Album nicht gefunden';
 export const NOT_FOUND_DESCRIPTION = 'Es wurde gelöscht oder hat nie existiert.';
 export const FAILED_TITLE = 'Album lädt nicht';
-export const FAILED_DESCRIPTION = 'Die Verbindung hat nicht geklappt.';
 export const RETRY_LABEL = 'Nochmal';
-export const WRITE_FAILED = 'Das hat nicht geklappt. Bitte nochmal versuchen.';
 
 export const LOUPE_LABELS: KkViewerLabels = {
   dialog: 'Bildansicht',
@@ -49,6 +47,7 @@ export const LOUPE_LABELS: KkViewerLabels = {
   nextScene: 'Nächste Szene',
   play: 'Video abspielen',
   developing: 'Entwickelt sich',
+  failed: 'Verarbeitung fehlgeschlagen',
 };
 
 export const LOUPE_DOWNLOAD_LABEL = 'Original';

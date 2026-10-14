@@ -37,7 +37,7 @@ export const PasskeyScreen: FC<PasskeyScreenProps> = ({ passkeyId }) => {
     errorMessage === null ? (
       <AccountSecuritySkeleton />
     ) : (
-      <AccountSecurityError message={errorMessage} onRetry={reload} />
+      <AccountSecurityError message={errorMessage} retrying={me.isFetching} onRetry={reload} />
     );
 
   return (

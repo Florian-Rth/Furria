@@ -11,6 +11,7 @@ import {
   logDayTextOf,
   logTimeTextOf,
   repeatTextOf,
+  toLogErrorMessage,
 } from '../system-copy';
 import { formatClock, formatDate } from '../system-format';
 import type { LogLevelFilter, LogSourceFilter } from '../types';
@@ -47,11 +48,15 @@ export interface SystemLog {
   onMinimumLevel: (id: string) => void;
   onSearch: (value: string) => void;
   body: LogBodyState;
+  failure: string | null;
+  isRetrying: boolean;
+  onRetry: () => void;
   rows: LogRowView[];
   fresh: string | null;
   onReveal: () => void;
   hasOlder: boolean;
   isLoadingOlder: boolean;
+  olderFailed: boolean;
   onLoadOlder: () => void;
 }
 
@@ -142,6 +147,10 @@ export const useSystemLog = (nowMs: number): SystemLog => {
     void logs.fetchNextPage();
   };
 
+  const onRetry = (): void => {
+    void logs.refetch();
+  };
+
   const body = bodyStateOf(logs.data === undefined, logs.isError, entries.length);
 
   return {
@@ -152,11 +161,15 @@ export const useSystemLog = (nowMs: number): SystemLog => {
     onMinimumLevel,
     onSearch: setSearch,
     body,
+    failure: body === 'failed' ? toLogErrorMessage(logs.error) : null,
+    isRetrying: logs.isFetching,
+    onRetry,
     rows,
     fresh: freshCount > 0 ? freshLabelOf(freshCount) : null,
     onReveal,
     hasOlder: logs.hasNextPage,
     isLoadingOlder: logs.isFetchingNextPage,
+    olderFailed: logs.isFetchNextPageError,
     onLoadOlder,
   };
 };

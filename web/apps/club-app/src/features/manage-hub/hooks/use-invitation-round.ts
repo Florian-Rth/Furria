@@ -3,12 +3,16 @@ import { toWriteErrorMessage } from '@/lib/write-error';
 import { useInvitationRoundMutation, useInvitationRoundPreviewQuery } from '../api';
 import type { InvitationRoundKind } from '../invitation-round-labels';
 
+const STALE_COUNTS_MESSAGE =
+  'Die Zahlen konnten nicht aktualisiert werden und sind eventuell nicht mehr aktuell.';
+
 export interface InvitationRoundControl {
   isOpen: boolean;
   open: () => void;
   close: () => void;
   submit: () => void;
   isSending: boolean;
+  isRefreshing: boolean;
   rejection: string | null;
 }
 
@@ -30,13 +34,20 @@ export const useInvitationRound = (kind: InvitationRoundKind): InvitationRoundCo
 
   const submit = (): void => {
     setRejection(null);
-    mutation.mutate(undefined, {
-      onSuccess: close,
-      onError: (error) => {
-        setRejection(toWriteErrorMessage(error));
-      },
+    void mutation.mutateAsync().then(close, (error: Error) => {
+      setRejection(toWriteErrorMessage(error));
     });
   };
 
-  return { isOpen, open, close, submit, isSending: mutation.isPending, rejection };
+  const staleNotice = preview.isRefetchError ? STALE_COUNTS_MESSAGE : null;
+
+  return {
+    isOpen,
+    open,
+    close,
+    submit,
+    isSending: mutation.isPending,
+    isRefreshing: preview.isFetching,
+    rejection: rejection ?? staleNotice,
+  };
 };

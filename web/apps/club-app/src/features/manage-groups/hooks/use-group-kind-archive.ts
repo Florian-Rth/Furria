@@ -30,16 +30,13 @@ export const useGroupKindArchive = (entry: GroupKindEntry): GroupKindArchiveCont
 
   const submit = (): void => {
     setRejection(null);
-    mutation.mutate(
-      { kindName: entry.name },
-      {
-        onSuccess: () => {
-          setIsOpen(false);
-          void goBackTo({ to: '/manage/groups', ignoreBlocker: true });
-        },
-        onError: (error) => {
-          setRejection(toWriteErrorMessage(error));
-        },
+    void mutation.mutateAsync({ kindName: entry.name }).then(
+      () => {
+        setIsOpen(false);
+        void goBackTo({ to: '/manage/groups', ignoreBlocker: true });
+      },
+      (error: Error) => {
+        setRejection(toWriteErrorMessage(error));
       },
     );
   };

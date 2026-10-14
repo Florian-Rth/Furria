@@ -9,6 +9,7 @@ interface AlbumScreenFailureProps {
   title: string;
   origin: KkScreenOrigin;
   message: string;
+  retrying: boolean;
   onRetry: () => void;
 }
 
@@ -16,13 +17,18 @@ export const AlbumScreenFailure: FC<AlbumScreenFailureProps> = ({
   title,
   origin,
   message,
+  retrying,
   onRetry,
 }) => (
   <KkScreen kind="fullscreen" title={title} origin={origin}>
     <KkErrorState
       title={FAILURE_TITLE}
       description={message}
-      action={<KkButton onClick={onRetry}>{RETRY_LABEL}</KkButton>}
+      action={
+        <KkButton loading={retrying} onClick={onRetry}>
+          {RETRY_LABEL}
+        </KkButton>
+      }
     />
   </KkScreen>
 );

@@ -34,6 +34,8 @@ export interface BoardOfficeEditorControl {
   impliedRoleChoices: KkSelectOption[];
   impliedRoleChoicesPending: boolean;
   impliedRoleChoicesError: string | null;
+  impliedRoleChoicesRetrying: boolean;
+  retryImpliedRoleChoices: () => void;
   impliedRoleStatement: string;
   isDirty: boolean;
   canSubmit: boolean;
@@ -76,7 +78,7 @@ export const useBoardOfficeEditor = (entry: BoardOfficeEntry | null): BoardOffic
   ): Promise<number> => {
     await update.mutateAsync(values);
 
-    if (!canChangeRole) {
+    if (!canChangeRole || chosenValue === initialImpliedRoleValue) {
       return officeId;
     }
 
@@ -109,8 +111,12 @@ export const useBoardOfficeEditor = (entry: BoardOfficeEntry | null): BoardOffic
     impliedRoleValue: impliedRole.field.value,
     setImpliedRoleValue: impliedRole.field.onChange,
     impliedRoleChoices,
-    impliedRoleChoicesPending: roleOptions.data === undefined,
+    impliedRoleChoicesPending: roleOptions.isLoading,
     impliedRoleChoicesError: toImpliedRoleOptionsErrorMessage(roleOptions.error),
+    impliedRoleChoicesRetrying: roleOptions.isFetching,
+    retryImpliedRoleChoices: () => {
+      void roleOptions.refetch();
+    },
     impliedRoleStatement: toImpliedRoleStatement(entry?.impliedRoleName ?? null),
   };
 };

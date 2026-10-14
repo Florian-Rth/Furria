@@ -1,8 +1,15 @@
 import type { KkSelectOption } from '@furria/ui';
-import { KkFormSection, KkMultiSelectField, KkSelectField, KkSwitchRow } from '@furria/ui';
+import {
+  KkButton,
+  KkFormSection,
+  KkMultiSelectField,
+  KkSelectField,
+  KkSwitchRow,
+} from '@furria/ui';
 import type { FC } from 'react';
 import { CALENDAR_VISIBILITY_OPTIONS } from '../calendar-labels';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
+import type { CalendarEntryReload } from '../hooks/use-calendar-entry-supplies';
 
 const SECTION_TITLE = 'Wer & wie';
 const OWNER_LABEL = 'Eigentümer';
@@ -12,6 +19,7 @@ const PARTICIPANTS_HINT = 'Der Termin erscheint zusätzlich bei diesen Gruppen.'
 const VISIBILITY_LABEL = 'Sichtbarkeit';
 const VISIBILITY_HINT = 'Legt fest, wer den Termin im Kalender sieht.';
 const RESPONSE_LABEL = 'Nach Zu-/Absage fragen';
+const PARTICIPANTS_RELOAD_LABEL = 'Gruppen neu laden';
 const RESPONSE_DESCRIPTION = 'Alle, die den Termin sehen, können zu- oder absagen.';
 
 interface CalendarEntryAudienceSectionProps {
@@ -19,6 +27,7 @@ interface CalendarEntryAudienceSectionProps {
   ownerOptions: readonly KkSelectOption[];
   participantOptions: readonly KkSelectOption[];
   participantsEmptyLabel: string;
+  participantsReload: CalendarEntryReload | null;
 }
 
 export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps> = ({
@@ -26,6 +35,7 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
   ownerOptions,
   participantOptions,
   participantsEmptyLabel,
+  participantsReload,
 }) => {
   const participantsErrorText = control.form.formState.errors.participatingGroupIds?.message;
 
@@ -42,6 +52,19 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
       />
     );
 
+  const participantsReloadButton =
+    participantsReload === null ? null : (
+      <KkButton
+        variant="outlined"
+        size="small"
+        loading={participantsReload.isRetrying}
+        onClick={participantsReload.retry}
+        sx={{ alignSelf: 'flex-start' }}
+      >
+        {PARTICIPANTS_RELOAD_LABEL}
+      </KkButton>
+    );
+
   return (
     <KkFormSection title={SECTION_TITLE}>
       {ownerField}
@@ -56,6 +79,7 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
         error={participantsErrorText !== undefined}
         helperText={participantsErrorText}
       />
+      {participantsReloadButton}
       <KkSelectField
         name="visibility"
         label={VISIBILITY_LABEL}

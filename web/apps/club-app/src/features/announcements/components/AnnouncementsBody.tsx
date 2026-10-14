@@ -20,6 +20,7 @@ export const AnnouncementsBody: FC<AnnouncementsBodyProps> = ({ highlightedKey }
   const lastSeenAt = useSeenBaseline(me.data?.lastSeenAnnouncementAt);
   const mayPost = has(PERMISSION_KEYS.announcementsPost);
   const errorMessage = toAnnouncementsErrorMessage(announcements.error ?? me.error);
+  const isRetrying = announcements.isFetching || me.isFetching;
 
   useLastSeenMark(announcements.data !== undefined && lastSeenAt !== undefined);
 
@@ -43,7 +44,7 @@ export const AnnouncementsBody: FC<AnnouncementsBodyProps> = ({ highlightedKey }
     );
   }
   if (errorMessage !== null) {
-    return <AnnouncementsError message={errorMessage} onRetry={reload} />;
+    return <AnnouncementsError message={errorMessage} isRetrying={isRetrying} onRetry={reload} />;
   }
 
   return <AppListSkeleton label={ANNOUNCEMENTS_LOADING_LABEL} listShape="cards" />;

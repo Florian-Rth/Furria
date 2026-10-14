@@ -37,6 +37,7 @@ export const AlbumScreenLoad: FC<AlbumScreenLoadProps> = ({ albumId, title, chil
         title={title}
         origin={GALLERY_ORIGIN}
         message={errorMessage}
+        retrying={album.isFetching}
         onRetry={reload}
       />
     );

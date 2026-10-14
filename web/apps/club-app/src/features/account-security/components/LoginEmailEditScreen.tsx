@@ -23,7 +23,7 @@ export const LoginEmailEditScreen: FC = () => {
     errorMessage === null ? (
       <AccountSecuritySkeleton />
     ) : (
-      <AccountSecurityError message={errorMessage} onRetry={reload} />
+      <AccountSecurityError message={errorMessage} retrying={me.isFetching} onRetry={reload} />
     );
 
   return (

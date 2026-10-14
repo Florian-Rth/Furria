@@ -18,8 +18,8 @@ const TITLE = 'Gruppenart bearbeiten';
 export const GroupKindEditScreen: FC = () => {
   const { groupKindId } = useParams({ from: ROUTE_ID });
   const id = parsePositiveId(groupKindId);
-  const groups = useManagedGroupsQuery();
   const permissions = usePermissions();
+  const groups = useManagedGroupsQuery(permissions.has(PERMISSION_KEYS.groupsManage));
   const errorMessage = toManagedGroupsErrorMessage(groups.error);
 
   const reload = (): void => {

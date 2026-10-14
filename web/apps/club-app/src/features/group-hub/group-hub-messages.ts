@@ -34,3 +34,25 @@ const EDITOR_CHOICES_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
 export const toEditorChoicesErrorMessage = (error: Error): string =>
   toQueryErrorMessage(error, EDITOR_CHOICES_ERROR_MESSAGES) ??
   EDITOR_CHOICES_ERROR_MESSAGES.unexpected;
+
+const CALENDAR_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
+  unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
+  unexpected: 'Die Termine konnten nicht geladen werden.',
+  rejected: 'Der Server hat die Anfrage abgelehnt.',
+};
+
+export const toCalendarErrorMessage = (error: Error | null): string | null =>
+  error === null
+    ? null
+    : (toQueryErrorMessage(error, CALENDAR_ERROR_MESSAGES) ?? CALENDAR_ERROR_MESSAGES.unexpected);
+
+const PREVIEW_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
+  unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
+  unexpected: 'Die Vorschau konnte nicht geladen werden.',
+  rejected: 'Der Server hat die Anfrage abgelehnt.',
+};
+
+export const toPreviewErrorMessage = (error: Error | null): string | null =>
+  error === null
+    ? null
+    : (toQueryErrorMessage(error, PREVIEW_ERROR_MESSAGES) ?? PREVIEW_ERROR_MESSAGES.unexpected);

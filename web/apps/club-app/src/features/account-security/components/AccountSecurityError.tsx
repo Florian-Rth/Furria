@@ -6,13 +6,22 @@ const RETRY_LABEL = 'Erneut laden';
 
 interface AccountSecurityErrorProps {
   message: string;
+  retrying: boolean;
   onRetry: () => void;
 }
 
-export const AccountSecurityError: FC<AccountSecurityErrorProps> = ({ message, onRetry }) => (
+export const AccountSecurityError: FC<AccountSecurityErrorProps> = ({
+  message,
+  retrying,
+  onRetry,
+}) => (
   <KkErrorState
     title={TITLE}
     description={message}
-    action={<KkButton onClick={onRetry}>{RETRY_LABEL}</KkButton>}
+    action={
+      <KkButton loading={retrying} onClick={onRetry}>
+        {RETRY_LABEL}
+      </KkButton>
+    }
   />
 );

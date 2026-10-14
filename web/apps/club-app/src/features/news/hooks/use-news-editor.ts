@@ -4,8 +4,11 @@ import { useState } from 'react';
 import { MANAGING_LOGIN_NAME, NEWS_PATH, useMeQuery } from '@/features/session';
 import { toQueryErrorMessage } from '@/lib/query-error';
 import { ACTION_FAILED, PUBLISH_FAILED } from '../editor-copy';
+import type { EditorTarget } from '../editor-target';
+import { editorTargetOf } from '../editor-target';
 import { HUB_ERROR_MESSAGES } from '../hub-copy';
-import { NEW_POST_ID, NEWS_EDITOR_ROUTE } from '../news-copy';
+import { NEWS_EDITOR_ROUTE } from '../news-copy';
+import { newsFailureMessageOf } from '../news-failure';
 import { revealNewsField } from '../news-fields';
 import { missingOf } from '../news-lifecycle';
 import type { SaveState } from '../press-bar-facts';
@@ -39,6 +42,7 @@ export interface NewsEditor {
   loadError: string | null;
   reload: () => void;
   isGone: boolean;
+  isMissing: boolean;
   version: NewsVersion;
   live: NewsVersion | null;
   isReadOnly: boolean;
@@ -77,10 +81,8 @@ const NO_KEY = 0;
 const nameOf = (person: PersonName | null): string | null =>
   person === null ? null : `${person.firstName} ${person.lastName}`;
 
-const postIdOf = (routePostId: string): number | null => {
-  const parsed = Number(routePostId);
-  return routePostId === NEW_POST_ID || !Number.isInteger(parsed) || parsed <= 0 ? null : parsed;
-};
+const postIdOf = (target: EditorTarget): number | null =>
+  target.kind === 'post' ? target.postId : null;
 
 const isSettling = (picture: NewsPicture | null): boolean => picture?.state === 'uploading';
 
@@ -89,11 +91,19 @@ export const useNewsEditor = (routePostId: string): NewsEditor => {
   const raiseNotice = useKkNotice();
   const me = useMeQuery();
 
-  const raiseActionFailure = (): void => {
-    raiseNotice({ tone: 'error', message: ACTION_FAILED });
+  const raiseFailure = (error: Error, unexpected: string): void => {
+    const message = newsFailureMessageOf(error, unexpected);
+    if (message !== null) {
+      raiseNotice({ tone: 'error', message });
+    }
   };
 
-  const { sessionKey, session, view } = useNewsDraft(postIdOf(routePostId), {
+  const raiseActionFailure = (error: Error): void => {
+    raiseFailure(error, ACTION_FAILED);
+  };
+
+  const target = editorTargetOf(routePostId);
+  const { sessionKey, session, view } = useNewsDraft(postIdOf(target), {
     onCreated: (newsPostId) => {
       void navigate({
         to: NEWS_EDITOR_ROUTE,
@@ -132,9 +142,9 @@ export const useNewsEditor = (routePostId: string): NewsEditor => {
       setLiveKey((key) => key + 1);
       setWithdrawKey(NO_KEY);
     },
-    onFailed: () => {
+    onFailed: (error) => {
       session.release();
-      raiseNotice({ tone: 'error', message: PUBLISH_FAILED });
+      raiseFailure(error, PUBLISH_FAILED);
     },
   });
 
@@ -197,6 +207,7 @@ export const useNewsEditor = (routePostId: string): NewsEditor => {
       void session.open();
     },
     isGone,
+    isMissing: target.kind === 'invalid' || (isGone && post === null),
     version: showsLive && live !== null ? live : version,
     live,
     isReadOnly: isGone || isPressing || (showsLive && live !== null),

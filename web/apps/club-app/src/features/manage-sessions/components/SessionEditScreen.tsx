@@ -18,9 +18,9 @@ const TITLE = 'Sessionseintrag bearbeiten';
 export const SessionEditScreen: FC = () => {
   const { sessionId } = useParams({ from: ROUTE_ID });
   const id = parsePositiveId(sessionId);
-  const sessions = useSessionRecordsQuery();
-  const me = useMeQuery();
   const permissions = usePermissions();
+  const sessions = useSessionRecordsQuery(permissions.has(PERMISSION_KEYS.clubManage));
+  const me = useMeQuery();
   const errorMessage = toSessionRecordsErrorMessage(sessions.error ?? me.error);
 
   const reload = (): void => {

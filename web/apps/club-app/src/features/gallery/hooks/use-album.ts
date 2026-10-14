@@ -3,6 +3,7 @@ import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useState } from 'react';
 import { usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { saveFile } from '@/lib/media/save-file';
 import { isNotFoundError } from '@/lib/query-error';
 import type { AlbumFrame } from '../album-frames';
 import { albumFramesOf } from '../album-frames';
@@ -39,6 +40,8 @@ export interface AlbumRights {
 
 export interface AlbumScreen {
   status: AlbumStatus;
+  error: Error | null;
+  retrying: boolean;
   album: AlbumDetails | undefined;
   frames: AlbumFrame[];
   scenes: GalleryScene<AlbumFrame>[];
@@ -178,7 +181,7 @@ export const useAlbum = (albumId: number): AlbumScreen => {
 
   const downloadZip = (): void => {
     if (album !== undefined) {
-      window.location.assign(album.zipUrl);
+      saveFile(album.zipUrl);
     }
   };
 
@@ -199,6 +202,8 @@ export const useAlbum = (albumId: number): AlbumScreen => {
 
   return {
     status: statusOf(album, query.error),
+    error: query.error,
+    retrying: query.isFetching,
     album,
     frames,
     scenes,

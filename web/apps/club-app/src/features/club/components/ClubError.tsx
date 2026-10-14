@@ -1,18 +1,23 @@
 import { KkButton, KkErrorState } from '@furria/ui';
 import type { FC } from 'react';
+import { CLUB_RETRY_LABEL } from '../club-labels';
 
 const TITLE = 'VEREIN NICHT GELADEN';
-const RETRY_LABEL = 'Erneut laden';
 
 interface ClubErrorProps {
   message: string;
+  isRetrying: boolean;
   onRetry: () => void;
 }
 
-export const ClubError: FC<ClubErrorProps> = ({ message, onRetry }) => (
+export const ClubError: FC<ClubErrorProps> = ({ message, isRetrying, onRetry }) => (
   <KkErrorState
     title={TITLE}
     description={message}
-    action={<KkButton onClick={onRetry}>{RETRY_LABEL}</KkButton>}
+    action={
+      <KkButton loading={isRetrying} onClick={onRetry}>
+        {CLUB_RETRY_LABEL}
+      </KkButton>
+    }
   />
 );

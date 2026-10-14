@@ -13,7 +13,7 @@ export const StartBody: FC = () => {
     return <StartPanels board={view.board} />;
   }
   if (view.screen === 'error') {
-    return <StartError message={view.message} onRetry={view.retry} />;
+    return <StartError message={view.message} onRetry={view.retry} retrying={view.retrying} />;
   }
   if (view.screen === 'skeleton') {
     return <StartSkeleton />;

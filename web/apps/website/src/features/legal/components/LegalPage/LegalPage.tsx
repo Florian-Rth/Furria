@@ -1,14 +1,14 @@
 import { PageLayout } from '@furria/ui';
 import Typography from '@mui/material/Typography';
-import type { FC } from 'react';
+import type { FC, PropsWithChildren } from 'react';
 import type { LegalDocument } from '../../types';
 import { LegalSectionBlock } from './internal/LegalSectionBlock';
 
-interface LegalPageProps {
+interface LegalPageProps extends PropsWithChildren {
   legalDocument: LegalDocument;
 }
 
-export const LegalPage: FC<LegalPageProps> = ({ legalDocument }) => (
+export const LegalPage: FC<LegalPageProps> = ({ legalDocument, children }) => (
   <PageLayout>
     <PageLayout.Prose>
       <Typography variant="h1" component="h1">
@@ -17,6 +17,7 @@ export const LegalPage: FC<LegalPageProps> = ({ legalDocument }) => (
       {legalDocument.sections.map((section) => (
         <LegalSectionBlock key={section.heading} section={section} />
       ))}
+      {children}
     </PageLayout.Prose>
   </PageLayout>
 );
