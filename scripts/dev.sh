@@ -29,14 +29,14 @@ DB_CONNECTION="Host=localhost;Port=5432;Database=furria;Username=furria;Password
 mkdir -p "$STATE" "$DEV_MEDIA"
 
 port_busy() { ss -ltn "sport = :$1" | grep -q LISTEN; }
-container_running() { [ "$(docker inspect -f '{{.State.Running}}' "$1" 2>/dev/null)" = "true" ]; }
+container_running() { [ "$(docker inspect --type container -f '{{.State.Running}}' "$1" 2>/dev/null)" = "true" ]; }
 
 ensure_container() { # name, port, docker run args...
   local name=$1 port=$2
   shift 2
   if container_running "$name"; then
     echo "✓ $name running"
-  elif docker inspect "$name" >/dev/null 2>&1; then
+  elif docker inspect --type container "$name" >/dev/null 2>&1; then
     docker start "$name" >/dev/null && echo "▶ $name started"
   elif port_busy "$port"; then
     echo "✓ :$port already in use — assuming $name is provided elsewhere"
