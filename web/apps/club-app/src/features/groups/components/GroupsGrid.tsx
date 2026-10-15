@@ -7,7 +7,7 @@ import { GroupCard } from './GroupCard';
 
 const FULL_HEIGHT = { height: '100%' } as const;
 const CARD_STYLE: CSSProperties = { height: '100%' };
-const CARD_SIZE = { xs: 6, sm: 4, desktop: 3 };
+const CARD_SIZE = { xs: 12, sm: 6, desktop: 4 };
 const GRID_SPACING = { xs: 1.5, desktop: 2.5 };
 
 interface GroupsGridProps {

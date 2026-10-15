@@ -212,6 +212,8 @@ export const kkTokens = {
     watermarkBand: 0.055,
     watermarkBandDark: 0.035,
     onAccentWash: 0.12,
+    groupCrest: 0.26,
+    groupCrestDark: 0.2,
     dimmed: 0.72,
   },
   letterRail: {

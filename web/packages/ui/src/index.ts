@@ -127,6 +127,8 @@ export type { KkGreetingPart, KkGreetingPartRole } from './KkGreeting/internal/l
 export type { KkGreetingPlay, KkGreetingTempo } from './KkGreeting/internal/logic/flap-schedule';
 export { KkGreeting } from './KkGreeting/KkGreeting';
 export { KkGreetingSkeleton } from './KkGreeting/KkGreetingSkeleton';
+export { KkGroupCard } from './KkGroupCard/KkGroupCard';
+export { KkGroupCardSkeleton } from './KkGroupCard/KkGroupCardSkeleton';
 export { KkGroupCover } from './KkGroupCover';
 export type { KkGroupStageAnniversary } from './KkGroupStage/internal/group-stage-anniversary';
 export { KkGroupStage } from './KkGroupStage/KkGroupStage';

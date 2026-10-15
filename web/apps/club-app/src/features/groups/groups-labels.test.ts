@@ -8,8 +8,10 @@ import {
   noGroupMatchOf,
   RECRUITING_FILTER_ID,
   SETTLED_FILTER_ID,
+  toCardKindName,
   toGroupsSections,
   toRecruitingFilterOptions,
+  toShortName,
 } from './groups-labels';
 import type { GroupSummary } from './schemas';
 
@@ -130,5 +132,27 @@ describe('toGroupsSections', () => {
     ],
   ])('racks the groups of %s', (_case, groups, expected) => {
     expect(sectionsOf(groups)).toEqual(expected);
+  });
+});
+
+describe('toShortName', () => {
+  it.each([
+    ['Florian', 'Rätsch', 'F. Rätsch'],
+    ['  Anna', 'Maier', 'A. Maier'],
+    ['', 'Becker', 'Becker'],
+  ])('shortens %s %s', (firstName, lastName, expected) => {
+    expect(toShortName({ personId: 1, firstName, lastName })).toBe(expected);
+  });
+});
+
+describe('toCardKindName', () => {
+  it.each([
+    ['Männerballett', 'Männerballett', null],
+    ['Großes Mannerballett', 'Männerballett', null],
+    ['Die Hupfdohlen', 'Showtanz', 'Showtanz'],
+    ['Die Hupfdohlen', '  ', null],
+    ['Die Hupfdohlen', null, null],
+  ])('keeps the kind of %s only when the name lacks it', (name, kind, expected) => {
+    expect(toCardKindName(name, kind)).toBe(expected);
   });
 });
