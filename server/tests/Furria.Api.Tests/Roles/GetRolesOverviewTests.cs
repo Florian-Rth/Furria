@@ -3,6 +3,7 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
+using Furria.Core.Groups;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -137,7 +138,7 @@ public sealed class GetRolesOverviewTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CarryTheIconAndTheHoldersHonours_When_AMemberOpensAllRoles()
+    public async Task Should_CarryTheCoinAndTheHoldersHonours_When_AMemberOpensAllRoles()
     {
         var ct = TestContext.Current.CancellationToken;
         var relevantYear = ClubSession.RelevantYearOf(_fixture.Today);
@@ -155,7 +156,12 @@ public sealed class GetRolesOverviewTests : IClassFixture<ApiTestFixture>
                     )
                     .Roles(roles =>
                         roles
-                            .AddRoleWithIcon("notenwart", "Notenwart", ClubIcon.MusicNote)
+                            .AddRoleWithCoin(
+                                "notenwart",
+                                "Notenwart",
+                                ClubIcon.MusicNote,
+                                GroupTone.Iris
+                            )
                             .AddRoleHolding(
                                 "nadine-notenwart",
                                 "notenwart",
@@ -169,7 +175,10 @@ public sealed class GetRolesOverviewTests : IClassFixture<ApiTestFixture>
         var (_, result) = await OverviewForAsync(ctx, ct);
 
         var notenwart = Single(result, "Notenwart");
-        Assert.Equal(ClubIcon.MusicNote, notenwart.Icon);
+        Assert.Equal(
+            new RoleCoinDto { Icon = ClubIcon.MusicNote, Tone = GroupTone.Iris },
+            notenwart.Coin
+        );
         var nadine = Assert.Single(notenwart.Holders);
         Assert.Equal(1, nadine.Honours.Sessions);
         Assert.Equal("Notenwart", Assert.Single(nadine.Honours.Functions).Name);

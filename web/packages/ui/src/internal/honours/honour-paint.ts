@@ -89,7 +89,7 @@ export const coinPaint =
         boxShadow: edgeOf(palette(theme).warning.main),
       };
     }
-    if (entry.kind === 'admin' && entry.tone !== undefined) {
+    if (entry.tone !== undefined) {
       return { ...groupToneFieldPaint(theme, entry.tone), boxShadow: 'none' };
     }
 

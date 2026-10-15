@@ -6,6 +6,7 @@ using Furria.Api.Tests.Media;
 using Furria.Application.Authorization;
 using Furria.Application.Registry;
 using Furria.Core.Club;
+using Furria.Core.Groups;
 using Furria.Tests.Common.Fixtures;
 using Furria.Tests.Common.WebAuthn;
 using Xunit;
@@ -92,7 +93,12 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
                     )
                     .Roles(roles =>
                         roles
-                            .AddRoleWithIcon("zeugwart", "Zeugwart", ClubIcon.Wrench)
+                            .AddRoleWithCoin(
+                                "zeugwart",
+                                "Zeugwart",
+                                ClubIcon.Wrench,
+                                GroupTone.Teal
+                            )
                             .AddRoleHolding("alice-zeugwart", "zeugwart", "alice")
                     ),
             ct

@@ -1,4 +1,4 @@
-using Furria.Core.Club;
+using System.Diagnostics.Contracts;
 using Furria.Core.Roles;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -28,9 +28,9 @@ public sealed class RoleExpectations
                 Assert.Equal(description, (await SingleAsync(dbContext, ct)).Description)
         );
 
-    public Expected ToHaveIcon(ClubIcon? icon) =>
+    public Expected ToHaveCoin(RoleCoin? coin) =>
         _expected.Enqueue(
-            async (dbContext, ct) => Assert.Equal(icon, (await SingleAsync(dbContext, ct)).Icon)
+            async (dbContext, ct) => Assert.Equal(coin, CoinOf(await SingleAsync(dbContext, ct)))
         );
 
     public Expected ToBeArchivedOn(DateOnly? archivedOn) =>
@@ -78,6 +78,10 @@ public sealed class RoleExpectations
             async (dbContext, ct) =>
                 Assert.Equal(updatedAt, (await SingleAsync(dbContext, ct)).UpdatedAt)
         );
+
+    [Pure]
+    private static RoleCoin? CoinOf(Role role) =>
+        role.Icon is { } icon && role.Tone is { } tone ? new RoleCoin(icon, tone) : null;
 
     private Task<Role> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
         dbContext.Roles.AsNoTracking().SingleAsync(row => row.Id == _roleId, ct);

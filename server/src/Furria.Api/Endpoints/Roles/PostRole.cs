@@ -4,7 +4,6 @@ using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Authorization;
 using Furria.Application.Roles;
-using Furria.Core.Club;
 using Furria.Infrastructure.Roles;
 
 namespace Furria.Api.Endpoints.Roles;
@@ -41,7 +40,7 @@ public sealed class PostRole : Endpoint<PostRoleRequest, PostRoleResponse>
         {
             Name = req.Name,
             Description = req.Description,
-            Icon = req.Icon,
+            Coin = RoleCoinDto.ToCoin(req.Coin),
         };
 
     private static PostRoleResponse ToResponse(int roleId) => new() { RoleId = roleId };
@@ -53,7 +52,7 @@ public sealed record PostRoleRequest
 
     public required string Description { get; init; }
 
-    public ClubIcon? Icon { get; init; }
+    public RoleCoinDto? Coin { get; init; }
 }
 
 public sealed class PostRoleValidator : Validator<PostRoleRequest>
@@ -64,7 +63,9 @@ public sealed class PostRoleValidator : Validator<PostRoleRequest>
         RuleFor(request => request.Description)
             .NotNull()
             .MaximumLength(RoleLimits.DescriptionLength);
-        RuleFor(request => request.Icon).IsInEnum().When(request => request.Icon is not null);
+        RuleFor(request => request.Coin!)
+            .SetValidator(new RoleCoinValidator())
+            .When(request => request.Coin is not null);
     }
 }
 

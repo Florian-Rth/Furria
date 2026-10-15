@@ -129,13 +129,14 @@ public sealed class PersonHonoursQuery
             .RoleHoldings.AsNoTracking()
             .Where(Conferring.RoleHoldings(today))
             .Where(holding => personIds.Contains(holding.PersonId))
+            .Where(holding => holding.Role!.Icon != null && holding.Role!.Tone != null)
             .OrderBy(holding => holding.SinceOn)
             .ThenBy(holding => holding.Id)
             .Select(holding => new FunctionRow(
                 holding.PersonId,
                 holding.Role!.Name,
                 holding.Role!.Icon,
-                null
+                holding.Role!.Tone
             ))
             .ToListAsync(ct);
 

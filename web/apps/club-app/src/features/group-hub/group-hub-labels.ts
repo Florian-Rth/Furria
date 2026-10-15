@@ -13,6 +13,7 @@ import type { ClubIcon } from '@/lib/club-icon';
 import { isFutureDay, toIsoDay } from '@/lib/day';
 import { toGroupAdminsLabel, toGroupMembersLabel } from '@/lib/group-sections';
 import type { GroupTone } from '@/lib/group-tone';
+import { toToneLabel } from '@/lib/group-tone';
 import { formatIsoDay, formatPeriod, formatSinceSession } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
 import { toRecruitingChip } from '@/lib/state-chips';
@@ -255,21 +256,6 @@ export const toTakenTones = (
   return taken;
 };
 
-const TONE_LABELS: Record<GroupTone, string> = {
-  clay: 'Ton',
-  olive: 'Oliv',
-  lime: 'Limette',
-  fern: 'Farn',
-  teal: 'Petrol',
-  indigo: 'Indigo',
-  iris: 'Iris',
-  violet: 'Violett',
-  orchid: 'Orchidee',
-  rose: 'Rosé',
-};
-
-export const toToneLabel = (tone: GroupTone): string => TONE_LABELS[tone];
-
 export const toToneWarning = (
   tone: GroupTone | '',
   takenTones: ReadonlySet<GroupTone>,
@@ -278,7 +264,7 @@ export const toToneWarning = (
     return null;
   }
 
-  return `${TONE_LABELS[tone]} ist bereits einer anderen Gruppe zugewiesen.`;
+  return `${toToneLabel(tone)} ist bereits einer anderen Gruppe zugewiesen.`;
 };
 
 const SEARCH_TERM_MIN_LENGTH = 2;

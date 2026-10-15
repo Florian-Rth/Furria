@@ -4,6 +4,8 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
+using Furria.Core.Groups;
+using Furria.Core.Roles;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -32,7 +34,7 @@ public sealed class PutRoleTests : IClassFixture<ApiTestFixture>
         int roleId,
         string name,
         string description,
-        ClubIcon? icon = null
+        RoleCoinDto? coin = null
     ) =>
         client.PUTAsync<PutRole, PutRoleRequest>(
             new PutRoleRequest
@@ -40,12 +42,12 @@ public sealed class PutRoleTests : IClassFixture<ApiTestFixture>
                 RoleId = roleId,
                 Name = name,
                 Description = description,
-                Icon = icon,
+                Coin = coin,
             }
         );
 
     [Fact]
-    public async Task Should_SetTheIcon_When_AManagerPicksOne()
+    public async Task Should_SetTheCoin_When_AManagerConfiguresOne()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildWithEquipmentWardenAsync(ct);
@@ -56,23 +58,25 @@ public sealed class PutRoleTests : IClassFixture<ApiTestFixture>
             ctx.Roles.Roles.IdOf("zeugwart"),
             "Zeugwart",
             "Die alte Beschreibung.",
-            ClubIcon.Key
+            new RoleCoinDto { Icon = ClubIcon.Key, Tone = GroupTone.Rose }
         );
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx
             .Expected.Role(ctx.Roles.Roles.IdOf("zeugwart"))
-            .ToHaveIcon(ClubIcon.Key)
+            .ToHaveCoin(new RoleCoin(ClubIcon.Key, GroupTone.Rose))
             .AssertAsync(ct);
     }
 
     [Fact]
-    public async Task Should_ClearTheIcon_When_AManagerRemovesIt()
+    public async Task Should_ClearTheCoin_When_AManagerSwitchesItOff()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
             builder =>
-                builder.Roles(roles => roles.AddRoleWithIcon("zeugwart", "Zeugwart", ClubIcon.Key)),
+                builder.Roles(roles =>
+                    roles.AddRoleWithCoin("zeugwart", "Zeugwart", ClubIcon.Key, GroupTone.Teal)
+                ),
             ct
         );
 
@@ -82,11 +86,11 @@ public sealed class PutRoleTests : IClassFixture<ApiTestFixture>
             ctx.Roles.Roles.IdOf("zeugwart"),
             "Zeugwart",
             "",
-            icon: null
+            coin: null
         );
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx.Expected.Role(ctx.Roles.Roles.IdOf("zeugwart")).ToHaveIcon(null).AssertAsync(ct);
+        await ctx.Expected.Role(ctx.Roles.Roles.IdOf("zeugwart")).ToHaveCoin(null).AssertAsync(ct);
     }
 
     [Fact]

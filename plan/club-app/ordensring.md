@@ -22,6 +22,9 @@ see a hairline status ring. The internal name „Ordensring" never appears in UI
 - Function display: one **sash** (first public board seat; black, gold edges, office icon +
   short name) and up to three **coins** for all other functions. Chosen over pins, ribbon bar.
 - Each role, board office and group carries a club-chosen **icon** from a fixed set.
+- (2026-10-15) A role shows a coin **only when the club configured one** for it: a switch in the
+  role editor turns the coin on, then a colour (group tone set) and an icon are picked. Roles
+  without a coin never appear in honours.
 
 ## 1. Domain rules
 
@@ -55,7 +58,7 @@ private predicate; `SessionOrdinal.Of` becomes `count if current counts else nul
 |---|---|---|---|---|---|
 | `boardSeat` | open board seat of a **public**, non-archived office | office name | office icon | — | board display order |
 | `groupAdmin` | open group-admin tenure in a non-archived group | group name | group icon | group tone | since asc |
-| `role` | open role holding of a non-archived role | role name | role icon | — | since asc |
+| `role` | open role holding of a non-archived role **with a coin** | role name | coin icon | coin tone | since asc |
 
 Non-public board offices never appear in honours. Keys and plain group memberships are not
 functions.
@@ -68,17 +71,18 @@ serialized camelCase like every enum. Web union `KkClubIcon` with the identical 
 `crown, euro, bolt, shield, camera, sparkle, mic, musicNote, drum, mask, megaphone, star,
 trophy, flag, key, shirt, pen, wrench, palette, heart, mug, calendar, whistle, broom`
 
-Nullable on `Role.Icon`, `BoardOffice.Icon`, `Group.Icon`, stored exactly like `Group.Tone`
+Nullable on `Role.Icon` (paired with `Role.Tone`, both set or both null — `ck_role_coin`), `BoardOffice.Icon`, `Group.Icon`, stored exactly like `Group.Tone`
 (string conversion, max length, check constraint from `Enum.GetNames`). Fallback when null
 (applied on the **web** by the mapper, never stored): board seat → `crown`, group admin →
-`sparkle`, role → `shield`.
+`sparkle`; a role function always carries its coin icon.
 
 ## 2. API
 
 ### 2.1 Icon fields (writable)
 
 - Role create/edit (`POST /api/manage/roles`, `PUT /api/manage/roles/{id}` — existing routes):
-  optional `icon: ClubIcon | null`; returned by role details + role list/overview items.
+  optional `coin: { icon: ClubIcon, tone: GroupTone } | null`; returned by role details + role
+  list/overview items.
 - Board office create/edit (existing `PostBoardOffice`/`PutBoardOffice`): optional `icon`;
   returned by `GET /api/manage/board` offices.
 - Group: `icon` on group create (manage-groups) and `PUT groups/{id}/info` beside `tone`;

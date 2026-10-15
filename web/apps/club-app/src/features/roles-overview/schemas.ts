@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { HonoursSchema } from '@/lib/api/schemas';
 import { ClubIconSchema } from '@/lib/club-icon';
+import { GroupToneSchema } from '@/lib/group-tone';
 
 export const RoleOverviewHolderSchema = z.object({
   personId: z.number().int(),
@@ -15,7 +16,7 @@ export const RoleOverviewSchema = z.object({
   roleId: z.number().int(),
   name: z.string(),
   description: z.string(),
-  icon: ClubIconSchema.nullable(),
+  coin: z.object({ icon: ClubIconSchema, tone: GroupToneSchema }).nullable(),
   holders: z.array(RoleOverviewHolderSchema),
 });
 export type RoleOverview = z.infer<typeof RoleOverviewSchema>;

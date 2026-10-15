@@ -4,7 +4,6 @@ using Furria.Api.Honours;
 using Furria.Application.Authorization;
 using Furria.Application.Registry;
 using Furria.Application.Roles;
-using Furria.Core.Club;
 using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.Roles;
 
@@ -49,7 +48,7 @@ public sealed class GetRolesOverview : EndpointWithoutRequest<GetRolesOverviewRe
             RoleId = role.RoleId,
             Name = role.Name,
             Description = role.Description,
-            Icon = role.Icon,
+            Coin = RoleCoinDto.From(role.Coin),
             Holders = [.. role.Holders.Select(holder => ToDto(holder, honours))],
         };
 
@@ -80,7 +79,7 @@ public sealed record RoleOverviewDto
 
     public required string Description { get; init; }
 
-    public required ClubIcon? Icon { get; init; }
+    public required RoleCoinDto? Coin { get; init; }
 
     public required IReadOnlyList<RoleOverviewHolderDto> Holders { get; init; }
 }

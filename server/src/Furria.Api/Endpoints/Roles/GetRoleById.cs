@@ -6,7 +6,6 @@ using Furria.Api.Results;
 using Furria.Application.Authorization;
 using Furria.Application.Registry;
 using Furria.Application.Roles;
-using Furria.Core.Club;
 using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.Roles;
 
@@ -52,7 +51,7 @@ public sealed class GetRoleById : Endpoint<GetRoleByIdRequest, GetRoleByIdRespon
             RoleId = role.RoleId,
             Name = role.Name,
             Description = role.Description,
-            Icon = role.Icon,
+            Coin = RoleCoinDto.From(role.Coin),
             ArchivedOn = role.ArchivedOn,
             PermissionKeys = role.PermissionKeys,
             Holders = [.. role.Holders.Select(holder => ToDto(holder, honours))],
@@ -96,7 +95,7 @@ public sealed record GetRoleByIdResponse
 
     public required string Description { get; init; }
 
-    public required ClubIcon? Icon { get; init; }
+    public required RoleCoinDto? Coin { get; init; }
 
     public required DateOnly? ArchivedOn { get; init; }
 

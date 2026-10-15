@@ -3,6 +3,8 @@ using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
 using Furria.Core.Club;
+using Furria.Core.Groups;
+using Furria.Core.Roles;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -26,19 +28,19 @@ public sealed class PostRoleTests : IClassFixture<ApiTestFixture>
         HttpClient client,
         string name,
         string description,
-        ClubIcon? icon = null
+        RoleCoinDto? coin = null
     ) =>
         client.POSTAsync<PostRole, PostRoleRequest, PostRoleResponse>(
             new PostRoleRequest
             {
                 Name = name,
                 Description = description,
-                Icon = icon,
+                Coin = coin,
             }
         );
 
     [Fact]
-    public async Task Should_KeepTheIcon_When_AManagerPicksOne()
+    public async Task Should_KeepTheCoin_When_AManagerConfiguresOne()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(ct);
@@ -48,11 +50,14 @@ public sealed class PostRoleTests : IClassFixture<ApiTestFixture>
             client,
             "Zeugwart",
             "Hütet das Material des Vereins.",
-            ClubIcon.Wrench
+            new RoleCoinDto { Icon = ClubIcon.Wrench, Tone = GroupTone.Teal }
         );
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx.Expected.Role(result.RoleId).ToHaveIcon(ClubIcon.Wrench).AssertAsync(ct);
+        await ctx
+            .Expected.Role(result.RoleId)
+            .ToHaveCoin(new RoleCoin(ClubIcon.Wrench, GroupTone.Teal))
+            .AssertAsync(ct);
     }
 
     [Fact]

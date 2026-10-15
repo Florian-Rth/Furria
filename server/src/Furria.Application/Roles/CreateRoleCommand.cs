@@ -1,4 +1,4 @@
-using Furria.Core.Club;
+using Furria.Core.Roles;
 
 namespace Furria.Application.Roles;
 
@@ -8,5 +8,5 @@ public sealed record CreateRoleCommand
 
     public required string Description { get; init; }
 
-    public required ClubIcon? Icon { get; init; }
+    public required RoleCoin? Coin { get; init; }
 }

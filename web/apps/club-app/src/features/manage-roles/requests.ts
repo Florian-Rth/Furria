@@ -1,5 +1,6 @@
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
+import { toRoleCoin } from './role-coin';
 import type {
   AddRoleHoldingForm,
   CreatedRole,
@@ -25,7 +26,7 @@ export const requestRole = (roleId: number, accessToken: string): Promise<RoleDe
 export const requestCreateRole = (form: RoleForm, accessToken: string): Promise<CreatedRole> =>
   apiFetch('/api/manage/roles', {
     method: 'POST',
-    body: { name: form.name, description: form.description, icon: form.icon },
+    body: { name: form.name, description: form.description, coin: toRoleCoin(form) },
     schema: CreatedRoleSchema,
     accessToken,
   });
@@ -37,7 +38,7 @@ export const requestUpdateRole = (
 ): Promise<void> =>
   apiFetch(`/api/manage/roles/${roleId}`, {
     method: 'PUT',
-    body: { name: form.name, description: form.description, icon: form.icon },
+    body: { name: form.name, description: form.description, coin: toRoleCoin(form) },
     schema: NoContentSchema,
     accessToken,
   });

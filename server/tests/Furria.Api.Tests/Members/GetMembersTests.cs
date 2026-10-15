@@ -588,7 +588,7 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListHerRunningFunctionsInRank_When_SheHoldsSeatsTenuresAndRoles()
+    public async Task Should_ListHerRunningFunctionsInRank_When_SheHoldsSeatsTenuresAndCoinedRoles()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -639,10 +639,27 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
                     )
                     .Roles(roles =>
                         roles
-                            .AddRoleWithIcon("zeugwart", "Zeugwart", ClubIcon.Wrench)
-                            .AddRoleWithIcon("webmaster", "Webmaster", ClubIcon.Key)
-                            .AddRoleWithIcon("chronik", "Chronik", ClubIcon.Pen, ArchivedIn2021)
+                            .AddRoleWithCoin(
+                                "zeugwart",
+                                "Zeugwart",
+                                ClubIcon.Wrench,
+                                GroupTone.Teal
+                            )
+                            .AddRoleWithCoin(
+                                "webmaster",
+                                "Webmaster",
+                                ClubIcon.Key,
+                                GroupTone.Indigo
+                            )
+                            .AddRoleWithCoin(
+                                "chronik",
+                                "Chronik",
+                                ClubIcon.Pen,
+                                GroupTone.Clay,
+                                ArchivedIn2021
+                            )
                             .AddRole("kasse", "Kasse")
+                            .AddRole("beisitz", "Beisitz")
                             .AddRoleHolding(
                                 "alice-zeugwart",
                                 "zeugwart",
@@ -660,6 +677,12 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
                                 "chronik",
                                 "alice",
                                 new DateOnly(2016, 1, 1)
+                            )
+                            .AddRoleHolding(
+                                "alice-beisitz",
+                                "beisitz",
+                                "alice",
+                                new DateOnly(2013, 1, 1)
                             )
                             .AddRoleHolding(
                                 "alice-kasse",
@@ -746,14 +769,14 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
                     Kind = PersonFunctionKind.Role,
                     Name = "Webmaster",
                     Icon = ClubIcon.Key,
-                    Tone = null,
+                    Tone = GroupTone.Indigo,
                 },
                 new PersonFunctionDto
                 {
                     Kind = PersonFunctionKind.Role,
                     Name = "Zeugwart",
                     Icon = ClubIcon.Wrench,
-                    Tone = null,
+                    Tone = GroupTone.Teal,
                 },
             ],
             alice.Honours.Functions

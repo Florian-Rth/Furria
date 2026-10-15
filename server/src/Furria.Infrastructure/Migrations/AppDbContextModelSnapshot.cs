@@ -2130,6 +2130,11 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("name")
                         .UseCollation("de-DE-x-icu");
 
+                    b.Property<string>("Tone")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("tone");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -2144,7 +2149,11 @@ namespace Furria.Infrastructure.Migrations
 
                     b.ToTable("role", null, t =>
                         {
+                            t.HasCheckConstraint("ck_role_coin", "(icon IS NULL) = (tone IS NULL)");
+
                             t.HasCheckConstraint("ck_role_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom')");
+
+                            t.HasCheckConstraint("ck_role_tone", "tone IS NULL OR tone IN ('Clay', 'Olive', 'Lime', 'Fern', 'Teal', 'Indigo', 'Iris', 'Violet', 'Orchid', 'Rose')");
                         });
                 });
 

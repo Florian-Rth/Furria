@@ -2,7 +2,8 @@ import { GROUP_TONES, KkEyebrow, KkGroupToneSwatch, KkNote } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { GroupTone } from '@/features/groups';
-import { toToneLabel, toToneWarning } from '../group-hub-labels';
+import { toToneLabel } from '@/lib/group-tone';
+import { toToneWarning } from '../group-hub-labels';
 
 const PICKER_LABEL = 'Gruppenfarbe';
 const PICKER_HINT = 'Kennzeichnet die Gruppe in App und Kalender.';

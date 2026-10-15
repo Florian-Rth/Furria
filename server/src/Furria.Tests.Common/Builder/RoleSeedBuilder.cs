@@ -1,4 +1,6 @@
 using Furria.Core.Club;
+using Furria.Core.Groups;
+using Furria.Core.Roles;
 
 namespace Furria.Tests.Common.Builder;
 
@@ -16,14 +18,15 @@ public sealed class RoleSeedBuilder
     public RoleSeedBuilder AddRole(string alias, string name, params string[] permissionKeys) =>
         AddRoleWithDetails(alias, name, "", archivedOn: null, permissionKeys);
 
-    public RoleSeedBuilder AddRoleWithIcon(
+    public RoleSeedBuilder AddRoleWithCoin(
         string alias,
         string name,
         ClubIcon icon,
+        GroupTone tone,
         DateOnly? archivedOn = null
     )
     {
-        _roles.Add(new RoleIntent(alias, name, "", archivedOn, [], icon));
+        _roles.Add(new RoleIntent(alias, name, "", archivedOn, [], new RoleCoin(icon, tone)));
         return this;
     }
 
@@ -67,7 +70,7 @@ public sealed class RoleSeedBuilder
         string Description,
         DateOnly? ArchivedOn,
         IReadOnlyList<string> PermissionKeys,
-        ClubIcon? Icon
+        RoleCoin? Coin
     );
 
     internal sealed record RoleHoldingIntent(

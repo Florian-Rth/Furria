@@ -3,6 +3,7 @@ using System.Linq.Expressions;
 using Furria.Application.Results;
 using Furria.Application.Roles;
 using Furria.Core.Club;
+using Furria.Core.Groups;
 using Furria.Core.Identity;
 using Furria.Core.Roles;
 using Furria.Core.Ties;
@@ -38,6 +39,7 @@ public sealed class RoleService
             role.Name,
             role.Description,
             role.Icon,
+            role.Tone,
             role.ArchivedOn,
             role.Permissions.OrderBy(permission => permission.PermissionKey)
                 .Select(permission => permission.PermissionKey)
@@ -139,7 +141,8 @@ public sealed class RoleService
         {
             Name = command.Name,
             Description = command.Description,
-            Icon = command.Icon,
+            Icon = command.Coin?.Icon,
+            Tone = command.Coin?.Tone,
         };
 
         _dbContext.Roles.Add(role);
@@ -166,7 +169,8 @@ public sealed class RoleService
 
         role.Name = command.Name;
         role.Description = command.Description;
-        role.Icon = command.Icon;
+        role.Icon = command.Coin?.Icon;
+        role.Tone = command.Coin?.Tone;
 
         return await _dbContext.SaveOrConflictAsync(ct);
     }
@@ -375,7 +379,7 @@ public sealed class RoleService
             RoleId = row.Id,
             Name = row.Name,
             Description = row.Description,
-            Icon = row.Icon,
+            Coin = row.Coin,
             ArchivedOn = row.ArchivedOn,
             PermissionKeys = row.PermissionKeys,
             Holders =
@@ -397,7 +401,7 @@ public sealed class RoleService
             RoleId = row.Id,
             Name = row.Name,
             Description = row.Description,
-            Icon = row.Icon,
+            Coin = row.Coin,
             Holders =
             [
                 .. RunningRows(row.Holdings, today)
@@ -428,7 +432,7 @@ public sealed class RoleService
             RoleId = row.Id,
             Name = row.Name,
             Description = row.Description,
-            Icon = row.Icon,
+            Coin = row.Coin,
             ArchivedOn = row.ArchivedOn,
             PermissionKeys = row.PermissionKeys,
             Holders =
@@ -487,10 +491,14 @@ public sealed class RoleService
         string Name,
         string Description,
         ClubIcon? Icon,
+        GroupTone? Tone,
         DateOnly? ArchivedOn,
         IReadOnlyList<string> PermissionKeys,
         IReadOnlyList<HoldingRow> Holdings
-    );
+    )
+    {
+        public RoleCoin? Coin => Icon is { } icon && Tone is { } tone ? new(icon, tone) : null;
+    }
 
     private sealed record HoldingRow(
         int RowId,

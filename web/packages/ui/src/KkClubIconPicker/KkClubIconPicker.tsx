@@ -10,7 +10,7 @@ interface KkClubIconPickerProps {
   onChange: (icon: KkClubIcon | null) => void;
   label: string;
   iconLabel: (icon: KkClubIcon) => string;
-  noneLabel: string;
+  noneLabel?: string;
   sx?: KkSx;
 }
 
@@ -31,7 +31,10 @@ export const KkClubIconPicker: FC<KkClubIconPickerProps> = ({
     );
   });
 
-  const noneSelected = value === null;
+  const noneSwatch =
+    noneLabel === undefined ? null : (
+      <KkClubIconSwatch icon={null} label={noneLabel} selected={value === null} onPick={onChange} />
+    );
 
   return (
     <Stack
@@ -41,7 +44,7 @@ export const KkClubIconPicker: FC<KkClubIconPickerProps> = ({
       data-kk-club-icon-picker
       sx={[{ gap: 1, flexWrap: 'wrap', minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}
     >
-      <KkClubIconSwatch icon={null} label={noneLabel} selected={noneSelected} onPick={onChange} />
+      {noneSwatch}
       {swatches}
     </Stack>
   );
