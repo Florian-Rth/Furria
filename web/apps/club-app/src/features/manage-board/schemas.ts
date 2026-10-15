@@ -1,5 +1,6 @@
 import { z } from 'zod';
-import { PersonRefSchema } from '@/lib/api/schemas';
+import { HonoursSchema, PersonRefSchema } from '@/lib/api/schemas';
+import { ClubIconSchema } from '@/lib/club-icon';
 import { requiredDay, requiredPerson } from '@/lib/required-fields';
 
 const NAME_REQUIRED_MESSAGE = 'Gib der Vorstandsfunktion einen Namen.';
@@ -11,6 +12,7 @@ export const BoardSeatSchema = PersonRefSchema.extend({
   boardSeatId: z.number().int(),
   sinceOn: z.iso.date(),
   untilOn: z.iso.date().nullable(),
+  honours: HonoursSchema,
 });
 export type BoardSeat = z.infer<typeof BoardSeatSchema>;
 
@@ -21,6 +23,7 @@ export const BoardOfficeSchema = z.object({
   impliedRoleId: z.number().int().nullable(),
   impliedRoleName: z.string().nullable(),
   isPublic: z.boolean(),
+  icon: ClubIconSchema.nullable(),
   archivedOn: z.iso.date().nullable(),
   seats: z.array(BoardSeatSchema),
   pastSeats: z.array(BoardSeatSchema),
@@ -51,6 +54,7 @@ export type CreatedBoardSeat = z.infer<typeof CreatedBoardSeatSchema>;
 export const BoardOfficeFormSchema = z.object({
   name: z.string().trim().min(1, NAME_REQUIRED_MESSAGE).max(80, NAME_TOO_LONG_MESSAGE),
   sortOrder: z.string().trim().regex(SORT_ORDER_PATTERN, SORT_ORDER_MESSAGE),
+  icon: ClubIconSchema.nullable(),
 });
 export type BoardOfficeForm = z.infer<typeof BoardOfficeFormSchema>;
 

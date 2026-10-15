@@ -9,6 +9,8 @@ export type { KkCrop } from './image-crop';
 export { centredCrop } from './image-crop';
 export type { KkImageSource, KkPictureUrls } from './image-source';
 export { toImageSource } from './image-source';
+export type { KkClubIcon } from './internal/club-icon';
+export { isKkClubIcon, KK_CLUB_ICONS } from './internal/club-icon';
 export type { KkGroupTone, KkGroupToneRecipe } from './internal/group-tone';
 export {
   eventToneOf,
@@ -21,6 +23,18 @@ export {
   groupToneRecipes,
   isKkGroupTone,
 } from './internal/group-tone';
+export {
+  isLapClosingAt as isKkLapClosingAt,
+  nextLapCloseOf as kkNextLapCloseOf,
+} from './internal/honours/honour-laps';
+export type {
+  KkAvatarFunction,
+  KkAvatarFunctionKind,
+  KkHonours,
+  KkStanding,
+  KkStandingApp,
+  KkStandingMembership,
+} from './internal/honours/honour-types';
 export type { KkPhotoStampScale } from './internal/KkPhotoStamp';
 export type { KkNewsCategory } from './internal/news-surface/news-category';
 export type { KkNewsFit } from './internal/news-surface/news-fit';
@@ -32,7 +46,8 @@ export { KkAlbumTie } from './KkAlbumTie';
 export { KkAlert } from './KkAlert';
 export type { KkAnswer, KkAnswerChoiceLabels } from './KkAnswerChoice';
 export { KkAnswerChoice } from './KkAnswerChoice';
-export { KkAvatar } from './KkAvatar';
+export type { KkAvatarSize } from './KkAvatar/KkAvatar';
+export { KkAvatar } from './KkAvatar/KkAvatar';
 export { KkAvatarStack } from './KkAvatarStack';
 export { KkBandSection } from './KkBandSection/KkBandSection';
 export { KkBandWatermark } from './KkBandWatermark';
@@ -54,6 +69,8 @@ export type { KkChipTone } from './KkChip';
 export { KkChip } from './KkChip';
 export { KkChipField } from './KkChipField';
 export { KkChipScroller } from './KkChipScroller';
+export { KkClubIconGlyph } from './KkClubIconGlyph';
+export { KkClubIconPicker } from './KkClubIconPicker/KkClubIconPicker';
 export { KkConfettiBurst } from './KkConfettiBurst';
 export { KkConfettiRain } from './KkConfettiRain';
 export type { KkConfirmFact } from './KkConfirmDialog';
@@ -110,13 +127,13 @@ export type { KkGreetingPart, KkGreetingPartRole } from './KkGreeting/internal/l
 export type { KkGreetingPlay, KkGreetingTempo } from './KkGreeting/internal/logic/flap-schedule';
 export { KkGreeting } from './KkGreeting/KkGreeting';
 export { KkGreetingSkeleton } from './KkGreeting/KkGreetingSkeleton';
+export { KkGroupCover } from './KkGroupCover';
 export type { KkGroupStageAnniversary } from './KkGroupStage/internal/group-stage-anniversary';
 export { KkGroupStage } from './KkGroupStage/KkGroupStage';
 export { KkGroupTile } from './KkGroupTile';
 export { KkGroupToneChip } from './KkGroupToneChip';
 export { KkGroupToneDot } from './KkGroupToneDot';
 export { KkGroupToneEdge } from './KkGroupToneEdge';
-export { KkGroupToneField } from './KkGroupToneField';
 export { KkGroupToneSwatch } from './KkGroupToneSwatch';
 export { KkHeading } from './KkHeading';
 export { KkHeadlineField } from './KkHeadlineField';
@@ -133,6 +150,7 @@ export { KkImageViewer } from './KkImageViewer/KkImageViewer';
 export { KkInlineLink } from './KkInlineLink';
 export type { KkKickerOption } from './KkKickerMenu';
 export { KkKickerMenu } from './KkKickerMenu';
+export { KkLapClosing } from './KkLapClosing/KkLapClosing';
 export { KkLead } from './KkLead';
 export { KkLetterDivider } from './KkLetterDivider';
 export { KkLetterIndex } from './KkLetterIndex';
@@ -172,7 +190,6 @@ export { KkNewsMedia } from './KkNewsMedia';
 export { KkNewsMention } from './KkNewsMention';
 export type { KkNewsMentionCardFace } from './KkNewsMentionCard/KkNewsMentionCard';
 export { KkNewsMentionCard } from './KkNewsMentionCard/KkNewsMentionCard';
-export { KkNewsPoster } from './KkNewsPoster';
 export { KkNewsImposition } from './KkNewsProof/KkNewsImposition';
 export { KkNewsProofPanels } from './KkNewsProof/KkNewsProofPanels';
 export { KkNewsProofStrip } from './KkNewsProof/KkNewsProofStrip';
@@ -222,11 +239,19 @@ export type {
   KkReadinessSlot,
 } from './KkPressBar/KkPressBar';
 export { KkPressBar } from './KkPressBar/KkPressBar';
-export type { KkPressPlanSegmentData, KkPressPlanTickData } from './KkPressPlan/KkPressPlan';
-export { KkPressPlan } from './KkPressPlan/KkPressPlan';
 export type { KkPressRowCategory, KkPressRowFact } from './KkPressRow/KkPressRow';
 export { KkPressRow } from './KkPressRow/KkPressRow';
 export type { KkPressFactTone, KkPressTone } from './KkPressRow/press-tone';
+export { KkPressRuler } from './KkPressRuler/KkPressRuler';
+export type {
+  KkPressRulerAxisKind,
+  KkPressRulerAxisLabel,
+  KkPressRulerLabels,
+  KkPressRulerLane,
+  KkPressRulerLegendEntry,
+  KkPressRulerMark,
+  KkPressRulerMarkState,
+} from './KkPressRuler/press-ruler-data';
 export { KkPriceField } from './KkPriceField';
 export type { KkProofMarkKind } from './KkProofSheet/KkProofSheet';
 export { KkProofSheet } from './KkProofSheet/KkProofSheet';
@@ -294,6 +319,7 @@ export type {
 } from './KkShell/screen-declaration';
 export type { KkScreenMove } from './KkShell/screen-move';
 export type { KkShellDestination } from './KkShell/shell-destination';
+export type { KkShellProfile } from './KkShell/shell-profile';
 export type { KkShowcasePieceData } from './KkShowcase/internal/KkShowcasePiece';
 export type { KkShowcaseLabels } from './KkShowcase/KkShowcase';
 export { KkShowcase } from './KkShowcase/KkShowcase';
@@ -307,6 +333,8 @@ export { KkSlotRow } from './KkSlotRow';
 export { KkSlotStrip } from './KkSlotStrip/KkSlotStrip';
 export { useKkPaneOpen } from './KkSplitLayout/internal/logic/split-layout-sheet-context';
 export { KkSplitLayout } from './KkSplitLayout/KkSplitLayout';
+export type { KkStateTone } from './KkStateRail/internal/state-rail-paint';
+export { KkStateRail } from './KkStateRail/KkStateRail';
 export { KkStatRow } from './KkStatRow/KkStatRow';
 export type { KkSummaryFact } from './KkSummaryRow';
 export { KkSummaryRow } from './KkSummaryRow';

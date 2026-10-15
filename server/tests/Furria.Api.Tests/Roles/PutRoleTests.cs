@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
 using Furria.Application.Authorization;
+using Furria.Core.Club;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -30,7 +31,8 @@ public sealed class PutRoleTests : IClassFixture<ApiTestFixture>
         HttpClient client,
         int roleId,
         string name,
-        string description
+        string description,
+        ClubIcon? icon = null
     ) =>
         client.PUTAsync<PutRole, PutRoleRequest>(
             new PutRoleRequest
@@ -38,8 +40,54 @@ public sealed class PutRoleTests : IClassFixture<ApiTestFixture>
                 RoleId = roleId,
                 Name = name,
                 Description = description,
+                Icon = icon,
             }
         );
+
+    [Fact]
+    public async Task Should_SetTheIcon_When_AManagerPicksOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithEquipmentWardenAsync(ct);
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await RenameRoleAsync(
+            client,
+            ctx.Roles.Roles.IdOf("zeugwart"),
+            "Zeugwart",
+            "Die alte Beschreibung.",
+            ClubIcon.Key
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Role(ctx.Roles.Roles.IdOf("zeugwart"))
+            .ToHaveIcon(ClubIcon.Key)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ClearTheIcon_When_AManagerRemovesIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Roles(roles => roles.AddRoleWithIcon("zeugwart", "Zeugwart", ClubIcon.Key)),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await RenameRoleAsync(
+            client,
+            ctx.Roles.Roles.IdOf("zeugwart"),
+            "Zeugwart",
+            "",
+            icon: null
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx.Expected.Role(ctx.Roles.Roles.IdOf("zeugwart")).ToHaveIcon(null).AssertAsync(ct);
+    }
 
     [Fact]
     public async Task Should_RenameTheRole_When_AManagerEditsIt()

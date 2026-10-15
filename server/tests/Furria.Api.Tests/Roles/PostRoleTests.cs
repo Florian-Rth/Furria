@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
+using Furria.Core.Club;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -24,11 +25,35 @@ public sealed class PostRoleTests : IClassFixture<ApiTestFixture>
     private static Task<TestResult<PostRoleResponse>> CreateRoleAsync(
         HttpClient client,
         string name,
-        string description
+        string description,
+        ClubIcon? icon = null
     ) =>
         client.POSTAsync<PostRole, PostRoleRequest, PostRoleResponse>(
-            new PostRoleRequest { Name = name, Description = description }
+            new PostRoleRequest
+            {
+                Name = name,
+                Description = description,
+                Icon = icon,
+            }
         );
+
+    [Fact]
+    public async Task Should_KeepTheIcon_When_AManagerPicksOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await CreateRoleAsync(
+            client,
+            "Zeugwart",
+            "Hütet das Material des Vereins.",
+            ClubIcon.Wrench
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx.Expected.Role(result.RoleId).ToHaveIcon(ClubIcon.Wrench).AssertAsync(ct);
+    }
 
     [Fact]
     public async Task Should_CreateTheRoleWithoutKeys_When_AManagerAddsOne()

@@ -13,6 +13,7 @@ interface KkPanelSectionProps extends PropsWithChildren {
   description?: string;
   groupTone?: KkGroupTone;
   titleRef?: Ref<HTMLHeadingElement>;
+  landing?: string;
   sx?: KkSx;
 }
 
@@ -23,6 +24,7 @@ export const KkPanelSection: FC<KkPanelSectionProps> = ({
   description,
   groupTone,
   titleRef,
+  landing,
   sx,
   children,
 }) => {
@@ -31,6 +33,7 @@ export const KkPanelSection: FC<KkPanelSectionProps> = ({
   return (
     <Stack
       data-kk-panel-section
+      data-kk-landing={landing}
       sx={[{ gap: 1.5, minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}
     >
       <Stack sx={{ gap: 0.875, minWidth: 0 }}>

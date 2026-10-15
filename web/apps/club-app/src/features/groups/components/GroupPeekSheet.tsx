@@ -2,7 +2,7 @@ import {
   KkAvatarStack,
   KkChip,
   KkEyebrow,
-  KkGroupToneField,
+  KkGroupCover,
   KkMeta,
   KkPanelSection,
   KkSheet,
@@ -65,6 +65,7 @@ export const GroupPeekSheet: FC<GroupPeekSheetProps> = ({ groups }) => {
     toImageSource(person.portrait ?? null, 'portrait'),
   );
   const kindLabel = toGroupKindLabel(group.groupKindName);
+  const cover = toImageSource(group.picture, 'groupPicture');
 
   const kindEyebrow =
     kindLabel === null ? undefined : <KkEyebrow tone="onAccent">{kindLabel}</KkEyebrow>;
@@ -76,9 +77,10 @@ export const GroupPeekSheet: FC<GroupPeekSheetProps> = ({ groups }) => {
       closeLabel={GROUP_PEEK_CLOSE_LABEL}
     >
       <KkSheet.Body>
-        <KkGroupToneField
+        <KkGroupCover
           tone={tone}
           name={group.name}
+          image={cover}
           eyebrow={kindEyebrow}
           aspectRatio={FIELD_RATIO}
           sx={FIELD_RADIUS}

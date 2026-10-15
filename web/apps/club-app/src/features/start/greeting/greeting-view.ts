@@ -1,9 +1,15 @@
-import type { KkGreetingPart, KkGreetingPlay } from '@furria/ui';
+import type { KkGreetingPart, KkGreetingPlay, KkHonours, KkImageSource } from '@furria/ui';
 import type { GreetingAct } from './greeting-act';
 import { toGreetingCopy } from './greeting-copy';
 import { greetingPlayOf } from './greeting-play';
 import type { GreetingStage } from './greeting-stage';
 import { toGreetingStage } from './greeting-stage';
+
+export interface GreetingHolder {
+  initials: string;
+  image: KkImageSource | null;
+  honours: KkHonours;
+}
 
 export interface GreetingView extends GreetingStage {
   key: string;
@@ -13,6 +19,7 @@ export interface GreetingView extends GreetingStage {
   follows: boolean;
   parts: readonly KkGreetingPart[];
   line: string | null;
+  lapClosing: GreetingHolder | null;
 }
 
 export interface GreetingViewRequest {
@@ -20,6 +27,7 @@ export interface GreetingViewRequest {
   firstName: string;
   reducedMotion: boolean;
   follows: boolean;
+  holder: GreetingHolder | null;
 }
 
 export const toGreetingView = ({
@@ -27,6 +35,7 @@ export const toGreetingView = ({
   firstName,
   reducedMotion,
   follows,
+  holder,
 }: GreetingViewRequest): GreetingView => {
   const copy = toGreetingCopy(act, firstName);
   const decision = greetingPlayOf(act, reducedMotion);
@@ -40,5 +49,6 @@ export const toGreetingView = ({
     follows,
     parts: copy.parts,
     line: copy.line,
+    lapClosing: act.lapClose === null ? null : holder,
   };
 };

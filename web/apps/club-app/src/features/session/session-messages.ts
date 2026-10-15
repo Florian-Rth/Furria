@@ -66,3 +66,5 @@ const ME_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
 
 export const toMeErrorMessage = (error: Error | null): string | null =>
   toQueryErrorMessage(error, ME_ERROR_MESSAGES);
+
+export const SHELL_PROFILE_LABEL = 'Mein Profil';

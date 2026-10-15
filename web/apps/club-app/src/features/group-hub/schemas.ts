@@ -4,6 +4,7 @@ import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/grou
 import { AppSearchSchema } from '@/features/session';
 import { PersonRefSchema, PictureEditingSchema, PictureSchema } from '@/lib/api/schemas';
 import { CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
+import { ClubIconSchema } from '@/lib/club-icon';
 import { GroupToneSchema } from '@/lib/group-tone';
 import { requiredDay, requiredPerson } from '@/lib/required-fields';
 
@@ -101,6 +102,7 @@ export const GroupHubSchema = z.object({
   groupKindName: z.string().nullable(),
   foundedYear: z.number().int().nullable(),
   tone: GroupToneSchema.nullable(),
+  icon: ClubIconSchema.nullable(),
   trainingSlots: z.array(TrainingSlotSchema),
   admins: z.array(GroupDetailAdminSchema),
   members: z.array(GroupDetailMemberSchema),
@@ -158,6 +160,7 @@ export const GroupInfoFormSchema = z.object({
     .refine(isFoundedYearInRange, FOUNDED_YEAR_MESSAGE)
     .or(z.literal('')),
   tone: GroupToneSchema.or(z.literal('')),
+  icon: ClubIconSchema.nullable(),
 });
 export type GroupInfoForm = z.infer<typeof GroupInfoFormSchema>;
 

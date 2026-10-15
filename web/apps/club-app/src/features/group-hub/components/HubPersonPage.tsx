@@ -12,7 +12,7 @@ import {
   PERSON_SCREEN_UNREACHABLE_NOTE,
   toHubEditorOrigin,
 } from '../group-hub-labels';
-import { toHubPeople, toHubPortrait, toPrefillPerson } from '../hub-people';
+import { toHubHonours, toHubPeople, toHubPortrait, toPrefillPerson } from '../hub-people';
 import type { GroupHub } from '../schemas';
 import { HubPersonHeader } from './HubPersonHeader';
 
@@ -33,6 +33,7 @@ export const HubPersonPage: FC<HubPersonPageProps> = ({ hub, personId }) => {
   const people = toHubPeople(hub.members, hub.admins);
   const person = toPrefillPerson(people, personId);
   const portrait = toHubPortrait(people, personId);
+  const honours = toHubHonours(people, personId);
   const name = person === null ? '' : `${person.firstName} ${person.lastName}`;
   const initials = toInitials(person?.firstName ?? '', person?.lastName ?? '');
   const canOpenProfile = isAffiliated && hub.members.some((member) => member.personId === personId);
@@ -126,6 +127,7 @@ export const HubPersonPage: FC<HubPersonPageProps> = ({ hub, personId }) => {
       name={name}
       initials={initials}
       portrait={portrait}
+      honours={honours}
       personId={personId}
       canOpenProfile={canOpenProfile}
     />

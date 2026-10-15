@@ -1,4 +1,3 @@
-import { KkPhoto } from '@furria/ui';
 import type { FC } from 'react';
 import { PictureSection, usePictureSection } from '@/features/pictures';
 import { usePersonalMe } from '@/features/session';
@@ -17,8 +16,7 @@ export const ProfilePortraitSection: FC<ProfilePortraitSectionProps> = ({ person
     refresh: me.refetch,
   });
   const initials = toInitials(person.firstName, person.lastName);
-  const poster = <KkPhoto alt="" placeholderLabel={initials} fill />;
   const name = `${person.firstName} ${person.lastName}`;
 
-  return <PictureSection desk={desk} poster={poster} alt={name} />;
+  return <PictureSection desk={desk} placeholderLabel={initials} alt={name} />;
 };

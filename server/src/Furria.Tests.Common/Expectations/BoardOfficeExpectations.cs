@@ -32,6 +32,11 @@ public sealed class BoardOfficeExpectations
             async (dbContext, ct) => Assert.Equal(name, (await SingleAsync(dbContext, ct)).Name)
         );
 
+    public Expected ToHaveIcon(ClubIcon? icon) =>
+        _expected.Enqueue(
+            async (dbContext, ct) => Assert.Equal(icon, (await SingleAsync(dbContext, ct)).Icon)
+        );
+
     public Expected ToHaveSortOrder(int sortOrder) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

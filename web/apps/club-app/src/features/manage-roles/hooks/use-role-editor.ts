@@ -1,6 +1,7 @@
 import type { UseFormReturn } from 'react-hook-form';
 import { useController } from 'react-hook-form';
 import { useWriteForm } from '@/features/write';
+import type { ClubIcon } from '@/lib/club-icon';
 import { useCreateRoleMutation, useUpdateRoleMutation } from '../api';
 import type { RoleForm } from '../schemas';
 import { RoleFormSchema } from '../schemas';
@@ -17,6 +18,8 @@ export interface RoleEditorControl {
   description: string;
   setDescription: (value: string) => void;
   touchDescription: () => void;
+  icon: ClubIcon | null;
+  setIcon: (value: ClubIcon | null) => void;
   isDirty: boolean;
   canSubmit: boolean;
   isSaving: boolean;
@@ -38,11 +41,14 @@ export const useRoleEditor = ({ roleId, initial }: RoleEditorInput): RoleEditorC
     landing: (id) => ({ to: '/manage/roles', search: { role: id }, mark: { kind: 'role', id } }),
   });
   const description = useController({ control: write.form.control, name: 'description' });
+  const icon = useController({ control: write.form.control, name: 'icon' });
 
   return {
     ...write,
     description: description.field.value,
     setDescription: description.field.onChange,
     touchDescription: description.field.onBlur,
+    icon: icon.field.value,
+    setIcon: icon.field.onChange,
   };
 };

@@ -3,6 +3,7 @@ import type { Theme } from '@mui/material/styles';
 import type { FC } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { KkImage } from '../../../KkImage';
+import { KkPhoto } from '../../../KkPhoto';
 import { kkTokens } from '../../../tokens';
 import type { KkViewerItem } from '../../viewer-types';
 
@@ -34,7 +35,9 @@ export const KkViewerFilmstripFrame: FC<KkViewerFilmstripFrameProps> = ({
   };
 
   const thumbnail =
-    item.image === null ? null : (
+    item.image === null ? (
+      <KkPhoto alt="" fill />
+    ) : (
       <KkImage
         src={item.image.src}
         srcSet={item.image.srcSet}

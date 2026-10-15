@@ -289,6 +289,7 @@ internal static class ClubSeedMaterializer
                 SortOrder = intent.SortOrder,
                 ArchivedOn = intent.ArchivedOn,
                 IsPublic = intent.IsPublic,
+                Icon = intent.Icon,
                 ImpliedRoleId = intent.ImpliedRoleAlias is { } roleAlias
                     ? SeedAliases.RequireId(roleIds, roleAlias, "Role")
                     : null,

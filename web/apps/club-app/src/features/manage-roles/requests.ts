@@ -25,7 +25,7 @@ export const requestRole = (roleId: number, accessToken: string): Promise<RoleDe
 export const requestCreateRole = (form: RoleForm, accessToken: string): Promise<CreatedRole> =>
   apiFetch('/api/manage/roles', {
     method: 'POST',
-    body: { name: form.name, description: form.description },
+    body: { name: form.name, description: form.description, icon: form.icon },
     schema: CreatedRoleSchema,
     accessToken,
   });
@@ -37,7 +37,7 @@ export const requestUpdateRole = (
 ): Promise<void> =>
   apiFetch(`/api/manage/roles/${roleId}`, {
     method: 'PUT',
-    body: { name: form.name, description: form.description },
+    body: { name: form.name, description: form.description, icon: form.icon },
     schema: NoContentSchema,
     accessToken,
   });

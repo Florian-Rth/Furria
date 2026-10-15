@@ -27,6 +27,7 @@ const hubMember = (overrides: Partial<GroupDetailMember>): GroupDetailMember => 
   leftOn: null,
   since: '2017-09-01',
   isAffiliated: true,
+  honours: { sessions: 0, functions: [] },
   ...overrides,
 });
 
@@ -41,6 +42,7 @@ const hubAdmin = (overrides: Partial<GroupDetailAdmin>): GroupDetailAdmin => ({
   untilOn: null,
   since: '2019-01-01',
   isAffiliated: true,
+  honours: { sessions: 0, functions: [] },
   ...overrides,
 });
 
@@ -55,6 +57,7 @@ const groupHub = (overrides: Partial<GroupHub>): GroupHub => ({
   groupKindName: null,
   foundedYear: null,
   tone: null,
+  icon: null,
   trainingSlots: [],
   admins: [],
   members: [],
@@ -72,6 +75,7 @@ const groupPerson = (overrides: Partial<HubPerson>): HubPerson => ({
   firstName: 'Mara',
   lastName: 'Lenz',
   portrait: null,
+  honours: { sessions: 0, functions: [] },
   isAffiliated: true,
   groupMembershipId: 7,
   memberSince: '2017-09-01',
@@ -172,6 +176,7 @@ describe('toGroupInfoPayload', () => {
         groupKindId: '',
         foundedYear: '',
         tone: '',
+        icon: null,
       }),
     ).toEqual({
       description: 'Die Garde tanzt.',
@@ -179,6 +184,7 @@ describe('toGroupInfoPayload', () => {
       groupKindId: null,
       foundedYear: null,
       tone: null,
+      icon: null,
     });
   });
 
@@ -190,6 +196,7 @@ describe('toGroupInfoPayload', () => {
         groupKindId: '7',
         foundedYear: '1974',
         tone: 'teal',
+        icon: 'drum',
       }),
     ).toEqual({
       description: '',
@@ -197,6 +204,7 @@ describe('toGroupInfoPayload', () => {
       groupKindId: 7,
       foundedYear: 1974,
       tone: 'teal',
+      icon: 'drum',
     });
   });
 });
@@ -211,6 +219,7 @@ describe('toGroupInfoFormValues', () => {
           groupKindId: 7,
           foundedYear: 1974,
           tone: 'teal',
+          icon: 'drum',
         }),
       ),
     ).toEqual({
@@ -219,6 +228,7 @@ describe('toGroupInfoFormValues', () => {
       groupKindId: '7',
       foundedYear: '1974',
       tone: 'teal',
+      icon: 'drum',
     });
   });
 

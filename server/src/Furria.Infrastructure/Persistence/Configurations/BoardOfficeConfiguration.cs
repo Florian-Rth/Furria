@@ -7,10 +7,23 @@ namespace Furria.Infrastructure.Persistence.Configurations;
 public sealed class BoardOfficeConfiguration : IEntityTypeConfiguration<BoardOffice>
 {
     private const int NameLength = 80;
+    private const int EnumLength = 32;
+
+    private static readonly string KnownIcons = string.Join(
+        ", ",
+        Enum.GetNames<ClubIcon>().Select(name => $"'{name}'")
+    );
 
     public void Configure(EntityTypeBuilder<BoardOffice> builder)
     {
-        builder.ToTable("board_office");
+        builder.ToTable(
+            "board_office",
+            table =>
+                table.HasCheckConstraint(
+                    "ck_board_office_icon",
+                    $"icon IS NULL OR icon IN ({KnownIcons})"
+                )
+        );
         builder.HasKey(office => office.Id);
 
         builder
@@ -27,6 +40,7 @@ public sealed class BoardOfficeConfiguration : IEntityTypeConfiguration<BoardOff
             .UseCollation(GermanCollation.Name);
 
         builder.Property(office => office.IsPublic).HasDefaultValue(false);
+        builder.Property(office => office.Icon).HasConversion<string>().HasMaxLength(EnumLength);
 
         builder.HasIndex(office => office.Name).HasDatabaseName("ix_board_office_name").IsUnique();
 

@@ -1,5 +1,6 @@
 import { KkAvatar, KkChip, KkEyebrow, KkScreenHeader, toImageSource } from '@furria/ui';
 import type { FC } from 'react';
+import { toAvatarHonours } from '@/lib/honours';
 import { toMemberHeadline } from '../members-labels';
 import type { MemberDetails } from '../schemas';
 
@@ -15,6 +16,7 @@ export const MemberHeader: FC<MemberHeaderProps> = ({ member, isSelf }) => {
   const headline = toMemberHeadline(member);
   const eyebrow = isSelf ? SELF_EYEBROW : EYEBROW;
   const portrait = toImageSource(member?.portrait ?? null, 'portrait');
+  const honours = member === undefined ? undefined : toAvatarHonours(member.honours);
 
   const stateRow =
     headline.state === null ? null : (
@@ -28,7 +30,7 @@ export const MemberHeader: FC<MemberHeaderProps> = ({ member, isSelf }) => {
   return (
     <KkScreenHeader>
       <KkScreenHeader.Visual>
-        <KkAvatar initials={headline.initials} image={portrait} size="large" />
+        <KkAvatar initials={headline.initials} image={portrait} size="header" honours={honours} />
       </KkScreenHeader.Visual>
       <KkScreenHeader.Text>
         <KkEyebrow tone="accent">{eyebrow}</KkEyebrow>

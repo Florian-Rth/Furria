@@ -99,7 +99,6 @@ export const NewsArticle: FC<NewsArticleProps> = ({
       <NewsPictureDesk
         desk={picture}
         state={facts.bannerState}
-        category={version.category}
         caption={version.pictureCaption}
         pictureMark={facts.pictureMark}
         captionMark={facts.captionMark}

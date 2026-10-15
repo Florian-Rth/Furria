@@ -25,6 +25,7 @@ const person = (overrides: Partial<PersonSummary> & { personId: number }): Perso
   groups: [],
   roles: [],
   accessState: 'none',
+  feeReduced: false,
   ...overrides,
 });
 

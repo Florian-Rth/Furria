@@ -4,6 +4,7 @@ import { useController } from 'react-hook-form';
 import { usePermissions } from '@/features/session';
 import { useWriteForm } from '@/features/write';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import type { ClubIcon } from '@/lib/club-icon';
 import {
   useCreateBoardOfficeMutation,
   useImpliedRoleOptionsQuery,
@@ -28,6 +29,8 @@ export interface BoardOfficeEditorControl {
   form: UseFormReturn<BoardOfficeEditorForm>;
   sortOrder: string;
   setSortOrder: (value: string) => void;
+  icon: ClubIcon | null;
+  setIcon: (value: ClubIcon | null) => void;
   canChangeRole: boolean;
   impliedRoleValue: string;
   setImpliedRoleValue: (value: string) => void;
@@ -49,10 +52,11 @@ export const useBoardOfficeEditor = (entry: BoardOfficeEntry | null): BoardOffic
   const initialImpliedRoleValue = toImpliedRoleValue(entry?.impliedRoleId ?? null);
   const initial: BoardOfficeEditorForm =
     entry === null
-      ? { name: '', sortOrder: '1', impliedRoleValue: initialImpliedRoleValue }
+      ? { name: '', sortOrder: '1', icon: null, impliedRoleValue: initialImpliedRoleValue }
       : {
           name: entry.name,
           sortOrder: String(entry.sortOrder),
+          icon: entry.icon,
           impliedRoleValue: initialImpliedRoleValue,
         };
 
@@ -102,11 +106,14 @@ export const useBoardOfficeEditor = (entry: BoardOfficeEntry | null): BoardOffic
   });
   const impliedRole = useController({ control: write.form.control, name: 'impliedRoleValue' });
   const sortOrder = useController({ control: write.form.control, name: 'sortOrder' });
+  const icon = useController({ control: write.form.control, name: 'icon' });
 
   return {
     ...write,
     sortOrder: sortOrder.field.value,
     setSortOrder: sortOrder.field.onChange,
+    icon: icon.field.value,
+    setIcon: icon.field.onChange,
     canChangeRole,
     impliedRoleValue: impliedRole.field.value,
     setImpliedRoleValue: impliedRole.field.onChange,

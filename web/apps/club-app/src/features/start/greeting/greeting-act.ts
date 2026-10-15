@@ -11,6 +11,7 @@ import {
   sessionOpeningAt,
 } from '@/lib/club';
 import { toIsoDay } from '@/lib/day';
+import { lapClosingAt } from './greeting-lap';
 
 export type GreetingMoment =
   | 'openingCountdown'
@@ -56,6 +57,7 @@ export type GreetingAct = GreetingOccasion & {
   key: string;
   sessionYear: number;
   ordinal: number | null;
+  lapClose: number | null;
 };
 
 const MS_PER_SECOND = 1000;
@@ -258,5 +260,6 @@ export const greetingActAt = (now: Date, viewer: GreetingViewer): GreetingAct =>
     key: `${occasion.moment}:${toIsoDay(now)}`,
     sessionYear,
     ordinal,
+    lapClose: lapClosingAt(now, viewer.relevantSession),
   };
 };

@@ -25,6 +25,7 @@ import { KkShellSkipLink } from './internal/ui/KkShellSkipLink';
 import type { KkScreenOrigin } from './screen-declaration';
 import type { KkScreenMove } from './screen-move';
 import type { KkShellDestination } from './shell-destination';
+import type { KkShellProfile } from './shell-profile';
 
 const { gutter, barHeight, screen } = kkTokens.shell;
 
@@ -36,6 +37,7 @@ interface KkShellProps extends PropsWithChildren {
   link: ElementType;
   goBackTo: (origin: KkScreenOrigin) => void;
   destinations: readonly KkShellDestination[];
+  profile?: KkShellProfile;
   path: string;
   move: KkScreenMove;
   sx?: KkSx;
@@ -45,6 +47,7 @@ export const KkShell: FC<KkShellProps> = ({
   link,
   goBackTo,
   destinations,
+  profile,
   path,
   move,
   sx,
@@ -85,6 +88,7 @@ export const KkShell: FC<KkShellProps> = ({
         link,
         goBackTo,
         destinations,
+        profile: profile ?? null,
         keyboardInset,
         path,
         move,

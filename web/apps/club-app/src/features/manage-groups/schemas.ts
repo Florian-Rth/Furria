@@ -1,7 +1,7 @@
 import { z } from 'zod';
-import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/group-detail';
 import { AppSearchSchema } from '@/features/session';
 import { PortraitPersonRefSchema } from '@/lib/api/schemas';
+import { ClubIconSchema } from '@/lib/club-icon';
 import { GroupToneSchema } from '@/lib/group-tone';
 
 export const GROUP_NAME_MAX_LENGTH = 80;
@@ -24,6 +24,7 @@ export const ManagedGroupSummarySchema = z.object({
   groupKindId: z.number().int().nullable(),
   groupKindName: z.string().nullable(),
   tone: GroupToneSchema.nullable().default(null),
+  icon: ClubIconSchema.nullable(),
   archivedOn: z.iso.date().nullable(),
   memberCount: z.number().int(),
   admins: z.array(PortraitPersonRefSchema),
@@ -43,19 +44,6 @@ export const ManagedGroupsResponseSchema = z.object({
   kinds: z.array(ManagedGroupKindSchema),
 });
 export type ManagedGroupsResponse = z.infer<typeof ManagedGroupsResponseSchema>;
-
-export const ManagedGroupDetailsSchema = z.object({
-  groupId: z.number().int(),
-  name: z.string(),
-  description: z.string(),
-  isRecruiting: z.boolean(),
-  archivedOn: z.iso.date().nullable(),
-  members: z.array(GroupDetailMemberSchema),
-  admins: z.array(GroupDetailAdminSchema),
-  pastMembers: z.array(GroupDetailMemberSchema),
-  pastAdmins: z.array(GroupDetailAdminSchema),
-});
-export type ManagedGroupDetails = z.infer<typeof ManagedGroupDetailsSchema>;
 
 export const CreatedGroupSchema = z.object({ groupId: z.number().int() });
 export type CreatedGroup = z.infer<typeof CreatedGroupSchema>;
@@ -79,5 +67,6 @@ export const GroupFormSchema = z.object({
     .min(1, 'Die Gruppe braucht einen Namen.')
     .max(GROUP_NAME_MAX_LENGTH, `Höchstens ${GROUP_NAME_MAX_LENGTH} Zeichen.`),
   groupKindId: z.string(),
+  icon: ClubIconSchema.nullable(),
 });
 export type GroupForm = z.infer<typeof GroupFormSchema>;

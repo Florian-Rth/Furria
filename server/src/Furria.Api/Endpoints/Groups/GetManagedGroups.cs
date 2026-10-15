@@ -3,6 +3,7 @@ using Furria.Api.Authorization;
 using Furria.Api.Media;
 using Furria.Application.Authorization;
 using Furria.Application.Groups;
+using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Infrastructure.Groups;
 
@@ -57,6 +58,7 @@ public sealed class GetManagedGroups : EndpointWithoutRequest<GetManagedGroupsRe
             GroupKindId = group.GroupKindId,
             GroupKindName = group.GroupKindName,
             Tone = group.Tone,
+            Icon = group.Icon,
             ArchivedOn = group.ArchivedOn,
             MemberCount = group.MemberCount,
             Admins = [.. group.Admins.Select(ToDto)],
@@ -105,6 +107,8 @@ public sealed record ManagedGroupSummaryDto
     public required string? GroupKindName { get; init; }
 
     public required GroupTone? Tone { get; init; }
+
+    public required ClubIcon? Icon { get; init; }
 
     public required DateOnly? ArchivedOn { get; init; }
 

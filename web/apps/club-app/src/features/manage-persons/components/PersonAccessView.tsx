@@ -3,6 +3,7 @@ import type { FC, ReactNode } from 'react';
 import { AccessPanel } from '@/features/account-access';
 import { useLanding } from '@/features/write';
 import type { PersonDetails } from '../schemas';
+import { PersonStateRail } from './PersonStateRail';
 
 interface PersonAccessViewProps {
   person: PersonDetails;
@@ -14,6 +15,7 @@ export const PersonAccessView: FC<PersonAccessViewProps> = ({ person, deletionLi
 
   return (
     <KkPanelStack>
+      <PersonStateRail person={person} />
       <AccessPanel subject={person} highlightedKey={highlightedKey} />
       {deletionLine}
     </KkPanelStack>

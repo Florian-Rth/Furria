@@ -19,6 +19,7 @@ const DAILY: GreetingAct = {
   key: 'daily:2027-01-19',
   sessionYear: 2026,
   ordinal: 12,
+  lapClose: null,
 };
 const CALL: GreetingAct = {
   moment: 'carnivalCall',
@@ -27,6 +28,7 @@ const CALL: GreetingAct = {
   key: 'carnivalCall:2026-11-11',
   sessionYear: 2026,
   ordinal: 12,
+  lapClose: null,
 };
 const COUNTDOWN: GreetingAct = {
   moment: 'openingCountdown',
@@ -36,6 +38,7 @@ const COUNTDOWN: GreetingAct = {
   key: 'openingCountdown:2026-11-11',
   sessionYear: 2026,
   ordinal: 12,
+  lapClose: null,
 };
 const ROUND_JOIN: GreetingAct = {
   moment: 'joinAnniversary',
@@ -45,6 +48,7 @@ const ROUND_JOIN: GreetingAct = {
   key: 'joinAnniversary:2027-01-19',
   sessionYear: 2026,
   ordinal: 12,
+  lapClose: null,
 };
 
 describe('greetingPlayOf', () => {

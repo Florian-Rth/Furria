@@ -1,3 +1,4 @@
+using Furria.Core.Club;
 using Furria.Core.Groups;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
@@ -14,6 +15,11 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
         Enum.GetNames<GroupTone>().Select(name => $"'{name}'")
     );
 
+    private static readonly string KnownIcons = string.Join(
+        ", ",
+        Enum.GetNames<ClubIcon>().Select(name => $"'{name}'")
+    );
+
     public void Configure(EntityTypeBuilder<Group> builder)
     {
         builder.ToTable(
@@ -28,6 +34,10 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
                     "ck_group_tone",
                     $"tone IS NULL OR tone IN ({KnownTones})"
                 );
+                table.HasCheckConstraint(
+                    "ck_group_icon",
+                    $"icon IS NULL OR icon IN ({KnownIcons})"
+                );
             }
         );
         builder.HasKey(group => group.Id);
@@ -40,6 +50,7 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
         builder.Property(group => group.Description).HasMaxLength(400).IsRequired();
         builder.Property(group => group.IsRecruiting).HasDefaultValue(false);
         builder.Property(group => group.Tone).HasConversion<string>().HasMaxLength(EnumLength);
+        builder.Property(group => group.Icon).HasConversion<string>().HasMaxLength(EnumLength);
 
         builder
             .HasOne(group => group.GroupKind)

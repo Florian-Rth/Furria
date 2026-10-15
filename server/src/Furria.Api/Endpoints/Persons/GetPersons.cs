@@ -61,6 +61,7 @@ public sealed class GetPersons : Endpoint<GetPersonsRequest, GetPersonsResponse>
             Groups = [.. person.Groups.Select(ToDto)],
             Roles = [.. person.Roles.Select(ToDto)],
             AccessState = person.AccessState,
+            FeeReduced = person.FeeReduced,
         };
 
     private static GroupRefDto ToDto(GroupReference group) =>
@@ -130,6 +131,8 @@ public sealed record PersonSummaryDto
     public required IReadOnlyList<RoleRefDto> Roles { get; init; }
 
     public required RegisterAccessState AccessState { get; init; }
+
+    public required bool FeeReduced { get; init; }
 }
 
 public sealed record GroupRefDto

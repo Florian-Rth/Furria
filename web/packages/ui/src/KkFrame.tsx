@@ -13,7 +13,7 @@ import { useImageFault } from './internal/use-image-fault';
 import { KkGreaseMark } from './KkGreaseMark';
 import { KkIcon } from './KkIcon';
 import { KkImage } from './KkImage';
-import { KkPhotoPlaceholder } from './KkPhotoPlaceholder';
+import { KkPhoto } from './KkPhoto';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
@@ -134,7 +134,7 @@ export const KkFrame: FC<KkFrameProps> = ({
         sx={surfaceOf(fill, aspectRatio)}
       >
         {latent && placeholder ? (
-          <KkPhotoPlaceholder fill sx={{ position: 'absolute', inset: 0 }} />
+          <KkPhoto alt="" fill sx={{ position: 'absolute', inset: 0 }} />
         ) : null}
         {latent && !placeholder ? (
           <Stack

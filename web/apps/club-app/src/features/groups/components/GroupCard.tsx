@@ -4,8 +4,8 @@ import {
   KkCard,
   KkChip,
   KkEyebrow,
+  KkGroupCover,
   KkGroupToneEdge,
-  KkGroupToneField,
   KkMeta,
   kkTokens,
   toImageSource,
@@ -45,6 +45,7 @@ export const GroupCard: FC<GroupCardProps> = ({ group, sx }) => {
     toImageSource(person.portrait ?? null, 'portrait'),
   );
   const kindLabel = toGroupKindLabel(group.groupKindName);
+  const cover = toImageSource(group.picture, 'groupPicture');
 
   const kindEyebrow = kindLabel === null ? null : <KkEyebrow tone="muted">{kindLabel}</KkEyebrow>;
 
@@ -56,7 +57,7 @@ export const GroupCard: FC<GroupCardProps> = ({ group, sx }) => {
     <KkCard sx={sx}>
       <KkCard.Action onClick={openPeek} aria-label={toGroupCardLabel(group.name)}>
         <KkCard.Media aspectRatio={FACE_RATIO}>
-          <KkGroupToneField tone={tone} name={group.name} sx={FACE_FILL} />
+          <KkGroupCover tone={tone} name={group.name} image={cover} sx={FACE_FILL} />
         </KkCard.Media>
         <KkGroupToneEdge tone={tone} />
         <KkCard.Body>

@@ -1,5 +1,6 @@
 import { z } from 'zod';
 import { PictureSchema, PortraitPersonRefSchema } from '@/lib/api/schemas';
+import { ClubIconSchema } from '@/lib/club-icon';
 import { GroupToneSchema } from '@/lib/group-tone';
 
 export const GroupSummarySchema = z.object({
@@ -11,6 +12,7 @@ export const GroupSummarySchema = z.object({
   groupKindName: z.string().nullable(),
   foundedYear: z.number().int().nullable(),
   tone: GroupToneSchema.nullable(),
+  icon: ClubIconSchema.nullable(),
   memberCount: z.number().int(),
   memberPreview: z.array(PortraitPersonRefSchema),
   admins: z.array(PortraitPersonRefSchema),

@@ -15,6 +15,7 @@ const greetingOf = (slug: string): LabGreeting => ({
     appSince: null,
   },
   firstName: 'Lena',
+  holder: { initials: 'LB', image: null, honours: { sessions: 0, functions: [] } },
   still: false,
 });
 

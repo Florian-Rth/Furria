@@ -9,6 +9,7 @@ import { toGroupKindId, toGroupKindValue } from '@/features/group-kinds/group-ki
 import { toAnniversary, toFoundedLine } from '@/features/groups/group-identity';
 import { GROUPS_ORIGIN, MANAGE_ORIGIN, PROFILE_ORIGIN } from '@/features/session/app-sections';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
+import type { ClubIcon } from '@/lib/club-icon';
 import { isFutureDay, toIsoDay } from '@/lib/day';
 import { toGroupAdminsLabel, toGroupMembersLabel } from '@/lib/group-sections';
 import type { GroupTone } from '@/lib/group-tone';
@@ -206,6 +207,7 @@ export type GroupInfoPayload = {
   groupKindId: number | null;
   foundedYear: number | null;
   tone: GroupTone | null;
+  icon: ClubIcon | null;
 };
 
 export const toGroupInfoPayload = (form: GroupInfoForm): GroupInfoPayload => ({
@@ -214,6 +216,7 @@ export const toGroupInfoPayload = (form: GroupInfoForm): GroupInfoPayload => ({
   groupKindId: toGroupKindId(form.groupKindId),
   foundedYear: form.foundedYear === '' ? null : Number(form.foundedYear),
   tone: form.tone === '' ? null : form.tone,
+  icon: form.icon,
 });
 
 export interface GroupInfoFormOverrides {
@@ -229,6 +232,7 @@ export const toGroupInfoFormValues = (
   groupKindId: toGroupKindValue(hub.groupKindId),
   foundedYear: hub.foundedYear === null ? '' : String(hub.foundedYear),
   tone: hub.tone ?? '',
+  icon: hub.icon,
 });
 
 export interface GroupToneHolder {

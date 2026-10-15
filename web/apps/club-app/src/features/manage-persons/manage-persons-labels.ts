@@ -41,8 +41,6 @@ export const PERSON_SECTION_TITLES = {
   masterData: 'Stammdaten',
   memberships: 'Mitgliedschaft',
   feeReductions: 'Beitragsermäßigung',
-  groups: 'Gruppen',
-  roles: 'Rollen',
 } as const;
 
 export const toContactChangeNote = (
@@ -53,10 +51,6 @@ export const toContactChangeNote = (
   change === null
     ? undefined
     : `Kontaktdaten ${toContactChangeLine(change, viewerPersonId, today)}`;
-
-export const GROUPS_POINTER =
-  'Gruppen werden von den Gruppen-Admins oder der Gruppenverwaltung gepflegt.';
-export const ROLES_POINTER = 'Rollen werden unter „Rollen & Rechte“ vergeben.';
 
 export const VISIBILITY_DESCRIPTION =
   'Nur auf Wunsch der Person setzen. Mit eigenem Account entscheidet sie selbst in „Mein Profil“.';
@@ -154,7 +148,7 @@ export const toPersonsEmptyDescription = (query: string, state: string): string 
   }
 };
 
-export const PERSONS_LEAD = 'Stammdaten, Mitgliedschaften und Beitragsermäßigungen aller Personen.';
+export const PERSONS_LEAD = 'Stammdaten, Mitgliedschaften und Zugänge aller Personen.';
 export const PERSON_EYEBROW = 'Person';
 
 export interface PersonHeadline {

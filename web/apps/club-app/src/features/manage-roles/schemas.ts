@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { AppSearchSchema } from '@/features/session';
-import { PersonRefSchema } from '@/lib/api/schemas';
+import { HonoursSchema, PersonRefSchema } from '@/lib/api/schemas';
+import { ClubIconSchema } from '@/lib/club-icon';
 import { requiredDay, requiredPerson } from '@/lib/required-fields';
 
 const NAME_REQUIRED_MESSAGE = 'Gib der Rolle einen Namen.';
@@ -19,6 +20,7 @@ export const RoleSummarySchema = z.object({
   roleId: z.number().int(),
   name: z.string(),
   description: z.string(),
+  icon: ClubIconSchema.nullable(),
   archivedOn: z.iso.date().nullable(),
   permissionKeys: z.array(z.string()),
   holders: z.array(PersonRefSchema),
@@ -37,6 +39,7 @@ export const RoleHolderSchema = PersonRefSchema.extend({
   untilOn: z.iso.date().nullable(),
   since: z.iso.date(),
   isAffiliated: z.boolean(),
+  honours: HonoursSchema,
 });
 export type RoleHolder = z.infer<typeof RoleHolderSchema>;
 
@@ -44,6 +47,7 @@ export const RoleDetailsSchema = z.object({
   roleId: z.number().int(),
   name: z.string(),
   description: z.string(),
+  icon: ClubIconSchema.nullable(),
   archivedOn: z.iso.date().nullable(),
   permissionKeys: z.array(z.string()),
   holders: z.array(RoleHolderSchema),
@@ -60,6 +64,7 @@ export type CreatedRoleHolding = z.infer<typeof CreatedRoleHoldingSchema>;
 export const RoleFormSchema = z.object({
   name: z.string().trim().min(1, NAME_REQUIRED_MESSAGE).max(80, NAME_TOO_LONG_MESSAGE),
   description: z.string().trim().max(400, DESCRIPTION_TOO_LONG_MESSAGE),
+  icon: ClubIconSchema.nullable(),
 });
 export type RoleForm = z.infer<typeof RoleFormSchema>;
 

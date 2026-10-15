@@ -1,7 +1,7 @@
 import type { KkIconName } from '@furria/ui';
 import type { ManageBankId, ManagePanelDefinition, ManagePanelId } from './manage-hub-panels';
 import { MANAGE_BANKS, MANAGE_PANELS } from './manage-hub-panels';
-import type { ManageHub } from './schemas';
+import type { ManageAccountsPanel, ManageHub, ManagePersonsPanel } from './schemas';
 
 export const MANAGE_TITLE = 'Verein verwalten';
 export const MANAGE_LEAD = 'Personen, Gruppen, Ämter und Schlüssel des Vereins verwalten.';
@@ -87,18 +87,48 @@ const toMissingFactsLabel = (missingFactCount: number): string | null => {
   return missingFactCount === 1 ? '1 Angabe fehlt' : `${missingFactCount} Angaben fehlen`;
 };
 
+const toRegisterParts = (persons: ManagePersonsPanel | null): string[] =>
+  persons === null
+    ? []
+    : [
+        toCount(persons.personCount, 'Person', 'Personen'),
+        toCount(persons.memberCount, 'Mitglied', 'Mitglieder'),
+      ];
+
+const toAppParts = (accounts: ManageAccountsPanel | null): string[] =>
+  accounts === null ? [] : [`${accounts.withAccessCount} mit App`];
+
+const toAppAttention = (accounts: ManageAccountsPanel | null): string | null => {
+  if (accounts === null) {
+    return null;
+  }
+  if (accounts.openInvitationCount > 0) {
+    return toCount(accounts.openInvitationCount, 'Einladung offen', 'Einladungen offen');
+  }
+  if (accounts.eligibleWithoutEmailCount > 0) {
+    return `${accounts.eligibleWithoutEmailCount} ohne E-Mail`;
+  }
+
+  return null;
+};
+
+const toPersonsFacts = (
+  persons: ManagePersonsPanel | null,
+  accounts: ManageAccountsPanel | null,
+): ManageRowFacts | null => {
+  if (persons === null && accounts === null) {
+    return null;
+  }
+
+  return {
+    isEmpty: persons?.personCount === 0,
+    summaryParts: [...toRegisterParts(persons), ...toAppParts(accounts)],
+    attention: toAppAttention(accounts),
+  };
+};
+
 const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
-  persons: ({ hub }) =>
-    hub.persons === null
-      ? null
-      : {
-          isEmpty: hub.persons.personCount === 0,
-          summaryParts: [
-            toCount(hub.persons.personCount, 'Person', 'Personen'),
-            toCount(hub.persons.memberCount, 'Mitglied', 'Mitglieder'),
-          ],
-          attention: null,
-        },
+  persons: ({ hub }) => toPersonsFacts(hub.persons, hub.accounts),
   applications: ({ hub }) =>
     hub.applications === null
       ? null

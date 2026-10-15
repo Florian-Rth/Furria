@@ -3,7 +3,7 @@ import type { FC } from 'react';
 import { sessionYearsLabelOf } from '@/lib/club';
 import { DRAFTS_TITLE } from '../../hub-copy';
 import type { HubSection } from '../../hub-view';
-import { sectionMetaOf } from './hub-lines';
+import { sectionLandingOf, sectionMetaOf } from './hub-lines';
 import { NewsHubRow } from './NewsHubRow';
 
 const ROWS_PER_SECTION_STAGGER = 4;
@@ -23,6 +23,7 @@ export const NewsHubSection: FC<NewsHubSectionProps> = ({
 }) => {
   const title = section.startYear === null ? DRAFTS_TITLE : sessionYearsLabelOf(section.startYear);
   const meta = sectionMetaOf(section);
+  const landing = sectionLandingOf(section.key);
   const rows = section.rows.map((row, index) => (
     <NewsHubRow
       key={row.id}
@@ -34,7 +35,7 @@ export const NewsHubSection: FC<NewsHubSectionProps> = ({
   ));
 
   return (
-    <KkPanelSection title={title} meta={meta}>
+    <KkPanelSection title={title} meta={meta} landing={landing}>
       <KkPanel variant="list">{rows}</KkPanel>
     </KkPanelSection>
   );

@@ -3,29 +3,30 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';
 import { useNewsHubQuery } from '../../api';
-import type { HubSection, PlanSession } from '../../hub-view';
-import { hubSectionsOf, pressPlanOf } from '../../hub-view';
+import type { HubSection } from '../../hub-view';
+import { hubSectionsOf } from '../../hub-view';
 import { NEW_POST_ID, NEW_POST_LABEL, NEWS_EDITOR_ROUTE } from '../../news-copy';
+import type { PressRulerView } from '../../press-ruler';
+import { pressRulerOf } from '../../press-ruler';
 import type { NewsHub } from '../../schemas';
+import { sectionLandingOf } from './hub-lines';
 
 const HIGHLIGHT_MS = 1800;
 const ROW_SELECTOR = 'data-kk-press-row';
+const LANDING_SELECTOR = 'data-kk-landing';
 
 export interface NewsHubState {
   query: UseQueryResult<NewsHub, Error>;
   sections: HubSection[];
-  plan: PlanSession[];
-  titles: ReadonlyMap<string, string>;
+  ruler: PressRulerView;
   isEmpty: boolean;
   highlightedId: string | null;
   actions: KkScreenActions;
   openPost: (postId: string) => void;
   openNew: () => void;
   revealPost: (postId: string) => void;
+  revealSection: (sectionKey: string) => void;
 }
-
-const titlesOf = (sections: readonly HubSection[]): Map<string, string> =>
-  new Map(sections.flatMap((section) => section.rows.map((row) => [String(row.id), row.title])));
 
 export const useNewsHub = (): NewsHubState => {
   const navigate = useNavigate();
@@ -61,6 +62,12 @@ export const useNewsHub = (): NewsHubState => {
     }, HIGHLIGHT_MS);
   };
 
+  const revealSection = (sectionKey: string): void => {
+    document
+      .querySelector(`[${LANDING_SELECTOR}="${sectionLandingOf(sectionKey)}"]`)
+      ?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   const openNew = (): void => {
     openPost(NEW_POST_ID);
   };
@@ -72,13 +79,13 @@ export const useNewsHub = (): NewsHubState => {
   return {
     query,
     sections,
-    plan: pressPlanOf(sections, new Date()),
-    titles: titlesOf(sections),
+    ruler: pressRulerOf(sections, new Date()),
     isEmpty: sections.length === 0,
     highlightedId,
     actions,
     openPost,
     openNew,
     revealPost,
+    revealSection,
   };
 };

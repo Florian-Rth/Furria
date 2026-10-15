@@ -7,7 +7,7 @@ import type { KkImageSource } from './image-source';
 import { inkWashScheme } from './internal/ink-wash';
 import type { KkScheme } from './internal/scheme-paint';
 import { applyScheme } from './internal/scheme-paint';
-import { KkAvatar } from './KkAvatar';
+import { KkAvatar } from './KkAvatar/KkAvatar';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 

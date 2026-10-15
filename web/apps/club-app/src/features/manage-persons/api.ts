@@ -8,6 +8,8 @@ import { toIsoDay } from '@/lib/day';
 import { DOMAIN_CHANGES, queryKeys } from '@/lib/query/reads';
 import { refreshAfter } from '@/lib/query/refresh-after';
 import { isNotFoundError } from '@/lib/query-error';
+import type { InvitationRoundKind } from './invitation-round-labels';
+import { toRoundSentMessage } from './invitation-round-labels';
 import {
   FEE_REDUCTION_ADDED_MESSAGE,
   FEE_REDUCTION_SAVED_MESSAGE,
@@ -23,8 +25,11 @@ import type { PersonAccessFilter } from './person-access-filter';
 import { toPersonArchivedMessage, toPersonRestoredMessage } from './person-archive';
 import {
   requestAdoptionCandidate,
+  requestBulkInvitation,
   requestFeeReductionCreate,
   requestFeeReductionUpdate,
+  requestInvitationReminders,
+  requestInvitationRoundPreview,
   requestMembershipCreate,
   requestMembershipUpdate,
   requestPauseCreate,
@@ -43,6 +48,8 @@ import type {
   CreatedPause,
   CreatedPerson,
   FeeReductionForm,
+  InvitationRoundPreview,
+  InvitationRoundSent,
   MembershipForm,
   PauseForm,
   PersonDetails,
@@ -272,3 +279,29 @@ export const useAdoptionCandidateQuery = (
 
   return useQuery({ queryKey: queryKeys.adoptionCandidate(email), queryFn: load });
 };
+
+export const useInvitationRoundPreviewQuery = (
+  enabled = true,
+): UseQueryResult<InvitationRoundPreview, Error> =>
+  useQuery({
+    queryKey: queryKeys.invitationRoundPreview,
+    queryFn: () => withFreshAccessToken(requestInvitationRoundPreview),
+    enabled,
+  });
+
+const ROUND_REQUESTS: Record<
+  InvitationRoundKind,
+  (accessToken: string) => Promise<InvitationRoundSent>
+> = {
+  invite: requestBulkInvitation,
+  remind: requestInvitationReminders,
+};
+
+export const useInvitationRoundMutation = (
+  kind: InvitationRoundKind,
+): UseMutationResult<InvitationRoundSent, Error, void> =>
+  useApiMutation({
+    request: (_input, accessToken) => ROUND_REQUESTS[kind](accessToken),
+    changes: ['account'],
+    notice: { success: (_input, sent) => toRoundSentMessage(kind, sent.sentCount) },
+  });

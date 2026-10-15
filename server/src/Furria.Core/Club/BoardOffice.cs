@@ -14,6 +14,8 @@ public sealed class BoardOffice : ITimestamped
 
     public bool IsPublic { get; set; }
 
+    public ClubIcon? Icon { get; set; }
+
     public DateOnly? ArchivedOn { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }

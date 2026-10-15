@@ -1,4 +1,4 @@
-import type { KkSx } from '@furria/ui';
+import type { KkGroupTone, KkSx } from '@furria/ui';
 import { KkBannerDesk, KkPanelSection } from '@furria/ui';
 import Box from '@mui/material/Box';
 import type { FC, ReactNode } from 'react';
@@ -8,7 +8,8 @@ import { PICTURE_ACCEPT, PICTURE_ASPECTS, PICTURE_DESK_IDS } from '../picture-ta
 
 interface PictureSectionProps {
   desk: PictureSectionDesk;
-  poster: ReactNode;
+  placeholderLabel?: string;
+  tone?: KkGroupTone;
   alt: string;
   title?: string;
   stampLabel?: string | null;
@@ -18,7 +19,8 @@ interface PictureSectionProps {
 
 export const PictureSection: FC<PictureSectionProps> = ({
   desk,
-  poster,
+  placeholderLabel,
+  tone,
   alt,
   title,
   stampLabel = null,
@@ -35,7 +37,8 @@ export const PictureSection: FC<PictureSectionProps> = ({
         aspect={PICTURE_ASPECTS[kind]}
         guide={copy.guide}
         state={banner.state}
-        poster={poster}
+        placeholderLabel={placeholderLabel}
+        tone={tone}
         stampLabel={stampLabel}
         source={banner.source}
         uncroppedSource={banner.uncroppedSource}

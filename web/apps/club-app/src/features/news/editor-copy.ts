@@ -70,7 +70,7 @@ export const LINK_REMOVE = 'Link entfernen';
 export const LINK_INVALID = 'Nur Adressen mit https:// oder http://';
 
 export const PICTURE_UPLOAD = 'Hochladen';
-export const PICTURE_EMPTY_NOTE = 'Ohne Bild zeigt die Website dieses Plakat.';
+export const PICTURE_EMPTY_NOTE = 'Ohne Bild zeigt die Website einen Platzhalter.';
 export const PICTURE_FROM_GALLERY = 'Aus der Galerie';
 export const PICTURE_CROP = 'Zuschnitt';
 export const PICTURE_CROP_DONE = 'Übernehmen';

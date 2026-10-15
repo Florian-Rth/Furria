@@ -1,3 +1,4 @@
+using Furria.Core.Club;
 using Furria.Core.Groups;
 
 namespace Furria.Tests.Common.Builder;
@@ -33,7 +34,8 @@ public sealed class GroupSeedBuilder
         DateOnly? archivedOn = null,
         string? groupKindAlias = null,
         int? foundedYear = null,
-        GroupTone? tone = null
+        GroupTone? tone = null,
+        ClubIcon? icon = null
     )
     {
         _groups.Add(
@@ -45,7 +47,8 @@ public sealed class GroupSeedBuilder
                 archivedOn,
                 groupKindAlias,
                 foundedYear,
-                tone
+                tone,
+                icon
             )
         );
         return this;
@@ -103,7 +106,8 @@ public sealed class GroupSeedBuilder
         DateOnly? ArchivedOn,
         string? GroupKindAlias,
         int? FoundedYear,
-        GroupTone? Tone
+        GroupTone? Tone,
+        ClubIcon? Icon
     );
 
     internal sealed record GroupMembershipIntent(

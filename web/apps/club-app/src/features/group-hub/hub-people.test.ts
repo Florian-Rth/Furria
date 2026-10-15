@@ -12,6 +12,7 @@ const member = (over: Partial<GroupDetailMember>): GroupDetailMember => ({
   leftOn: null,
   since: '2016-11-11',
   isAffiliated: true,
+  honours: { sessions: 0, functions: [] },
   ...over,
 });
 
@@ -26,6 +27,7 @@ const admin = (over: Partial<GroupDetailAdmin>): GroupDetailAdmin => ({
   untilOn: null,
   since: '2020-11-11',
   isAffiliated: true,
+  honours: { sessions: 0, functions: [] },
   ...over,
 });
 
@@ -39,6 +41,7 @@ describe('toHubPeople', () => {
         firstName: 'Anna',
         lastName: 'Bauer',
         portrait: null,
+        honours: { sessions: 0, functions: [] },
         isAffiliated: true,
         groupMembershipId: 11,
         memberSince: '2016-11-11',

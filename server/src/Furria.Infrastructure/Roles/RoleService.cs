@@ -37,6 +37,7 @@ public sealed class RoleService
             role.Id,
             role.Name,
             role.Description,
+            role.Icon,
             role.ArchivedOn,
             role.Permissions.OrderBy(permission => permission.PermissionKey)
                 .Select(permission => permission.PermissionKey)
@@ -134,7 +135,12 @@ public sealed class RoleService
         if (await NameIsTakenAsync(command.Name, NoRoleId, ct))
             return Result<int>.Conflict(DuplicateNameMessage);
 
-        var role = new Role { Name = command.Name, Description = command.Description };
+        var role = new Role
+        {
+            Name = command.Name,
+            Description = command.Description,
+            Icon = command.Icon,
+        };
 
         _dbContext.Roles.Add(role);
 
@@ -160,6 +166,7 @@ public sealed class RoleService
 
         role.Name = command.Name;
         role.Description = command.Description;
+        role.Icon = command.Icon;
 
         return await _dbContext.SaveOrConflictAsync(ct);
     }
@@ -368,6 +375,7 @@ public sealed class RoleService
             RoleId = row.Id,
             Name = row.Name,
             Description = row.Description,
+            Icon = row.Icon,
             ArchivedOn = row.ArchivedOn,
             PermissionKeys = row.PermissionKeys,
             Holders =
@@ -389,6 +397,7 @@ public sealed class RoleService
             RoleId = row.Id,
             Name = row.Name,
             Description = row.Description,
+            Icon = row.Icon,
             Holders =
             [
                 .. RunningRows(row.Holdings, today)
@@ -419,6 +428,7 @@ public sealed class RoleService
             RoleId = row.Id,
             Name = row.Name,
             Description = row.Description,
+            Icon = row.Icon,
             ArchivedOn = row.ArchivedOn,
             PermissionKeys = row.PermissionKeys,
             Holders =
@@ -476,6 +486,7 @@ public sealed class RoleService
         int Id,
         string Name,
         string Description,
+        ClubIcon? Icon,
         DateOnly? ArchivedOn,
         IReadOnlyList<string> PermissionKeys,
         IReadOnlyList<HoldingRow> Holdings

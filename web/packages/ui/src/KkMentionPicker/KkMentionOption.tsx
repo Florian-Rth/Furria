@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import type { FC, MouseEvent } from 'react';
 import type { KkImageSource } from '../image-source';
 import type { KkGroupTone } from '../internal/group-tone';
-import { KkAvatar } from '../KkAvatar';
+import { KkAvatar } from '../KkAvatar/KkAvatar';
 
 export interface KkMentionChoice {
   id: string;

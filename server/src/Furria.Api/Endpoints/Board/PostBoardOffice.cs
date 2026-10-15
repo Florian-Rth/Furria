@@ -4,6 +4,7 @@ using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Authorization;
 using Furria.Application.Club;
+using Furria.Core.Club;
 using Furria.Infrastructure.Club;
 
 namespace Furria.Api.Endpoints.Board;
@@ -36,7 +37,12 @@ public sealed class PostBoardOffice : Endpoint<PostBoardOfficeRequest, PostBoard
     }
 
     private static BoardOfficeCreateCommand ToCommand(PostBoardOfficeRequest req) =>
-        new() { Name = req.Name, SortOrder = req.SortOrder };
+        new()
+        {
+            Name = req.Name,
+            SortOrder = req.SortOrder,
+            Icon = req.Icon,
+        };
 
     private static PostBoardOfficeResponse ToResponse(int boardOfficeId) =>
         new() { BoardOfficeId = boardOfficeId };
@@ -47,6 +53,8 @@ public sealed record PostBoardOfficeRequest
     public required string Name { get; init; }
 
     public required int SortOrder { get; init; }
+
+    public ClubIcon? Icon { get; init; }
 }
 
 public sealed class PostBoardOfficeValidator : Validator<PostBoardOfficeRequest>
@@ -56,6 +64,7 @@ public sealed class PostBoardOfficeValidator : Validator<PostBoardOfficeRequest>
         RuleFor(request => request.Name).NotEmpty().MaximumLength(BoardLimits.NameLength);
         RuleFor(request => request.SortOrder)
             .InclusiveBetween(BoardLimits.MinSortOrder, BoardLimits.MaxSortOrder);
+        RuleFor(request => request.Icon).IsInEnum().When(request => request.Icon is not null);
     }
 }
 

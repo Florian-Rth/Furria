@@ -1,5 +1,6 @@
 import { useController } from 'react-hook-form';
 import { useWriteForm } from '@/features/write';
+import type { ClubIcon } from '@/lib/club-icon';
 import type { GroupTone } from '@/lib/group-tone';
 import { useUpdateGroupInfoMutation } from '../api';
 import { toGroupInfoFormValues } from '../group-hub-labels';
@@ -17,6 +18,8 @@ export interface GroupInfoEditorControl {
   setFoundedYear: (value: string) => void;
   tone: GroupToneChoice;
   setTone: (value: GroupToneChoice) => void;
+  icon: ClubIcon | null;
+  setIcon: (value: ClubIcon | null) => void;
   foundedYearError: string | undefined;
   isDirty: boolean;
   canSubmit: boolean;
@@ -42,6 +45,7 @@ export const useGroupInfoEditor = (hub: GroupHub): GroupInfoEditorControl => {
   const groupKindId = useController({ control: write.form.control, name: 'groupKindId' });
   const foundedYear = useController({ control: write.form.control, name: 'foundedYear' });
   const tone = useController({ control: write.form.control, name: 'tone' });
+  const icon = useController({ control: write.form.control, name: 'icon' });
 
   return {
     description: description.field.value,
@@ -52,6 +56,8 @@ export const useGroupInfoEditor = (hub: GroupHub): GroupInfoEditorControl => {
     setFoundedYear: foundedYear.field.onChange,
     tone: tone.field.value,
     setTone: tone.field.onChange,
+    icon: icon.field.value,
+    setIcon: icon.field.onChange,
     foundedYearError: write.form.formState.errors.foundedYear?.message,
     isDirty: write.isDirty,
     canSubmit: write.canSubmit,

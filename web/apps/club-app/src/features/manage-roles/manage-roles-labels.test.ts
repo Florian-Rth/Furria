@@ -23,6 +23,7 @@ import type { RoleDetails, RoleHolder, RoleSummary } from './schemas';
 
 const role = (overrides: Partial<RoleSummary> & { roleId: number; name: string }): RoleSummary => ({
   description: '',
+  icon: null,
   archivedOn: null,
   permissionKeys: [],
   holders: [],
@@ -186,6 +187,7 @@ describe('toRoleSeed', () => {
       roleId: 2,
       name: 'Präsidentin',
       description: '',
+      icon: null,
       archivedOn: null,
       permissionKeys: ['groups.manage'],
       holders: [],
@@ -341,6 +343,7 @@ describe('toRoleHoldingChainRows', () => {
     untilOn: null,
     since: '2020-01-01',
     isAffiliated: true,
+    honours: { sessions: 0, functions: [] },
     ...overrides,
   });
 
@@ -348,6 +351,7 @@ describe('toRoleHoldingChainRows', () => {
     roleId: 3,
     name: 'Finanzen',
     description: '',
+    icon: null,
     archivedOn: null,
     permissionKeys: [],
     holders: [],

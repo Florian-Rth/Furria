@@ -1,12 +1,14 @@
 import Box from '@mui/material/Box';
 import LinearProgress from '@mui/material/LinearProgress';
-import type { FC, ReactNode } from 'react';
+import type { FC } from 'react';
 import type { KkAspect } from '../image-aspect';
 import { aspectRatioCss } from '../image-aspect';
 import type { KkCrop } from '../image-crop';
+import type { KkGroupTone } from '../internal/group-tone';
 import { KkPhotoStamp } from '../internal/KkPhotoStamp';
-import { KkCoverPicture } from '../KkCoverPicture';
 import type { KkCropGuide } from '../KkCropFrame/KkCropFrame';
+import { KkCropPreview } from '../KkCropPreview';
+import { KkPhoto } from '../KkPhoto';
 import { kkTokens } from '../tokens';
 import type { KkBannerDeskActions, KkBannerDeskLabels, KkBannerState } from './banner-desk-types';
 import {
@@ -22,12 +24,19 @@ import { KkBannerStatusLine } from './KkBannerStatusLine';
 import { KkBannerToolbar } from './KkBannerToolbar';
 import { KkBannerTrouble } from './KkBannerTrouble';
 
+export interface KkBannerPreview {
+  source: string;
+  crop: KkCrop;
+}
+
 interface KkBannerDeskProps {
   id: string;
   aspect?: KkAspect;
   guide?: KkCropGuide;
   state: KkBannerState;
-  poster: ReactNode;
+  placeholderLabel?: string;
+  tone?: KkGroupTone;
+  preview?: KkBannerPreview | null;
   stampLabel?: string | null;
   source: string | null;
   uncroppedSource: string | null;
@@ -44,7 +53,9 @@ export const KkBannerDesk: FC<KkBannerDeskProps> = ({
   aspect = 'banner',
   guide = 'none',
   state,
-  poster,
+  placeholderLabel,
+  tone,
+  preview = null,
   stampLabel = null,
   source,
   uncroppedSource,
@@ -73,25 +84,30 @@ export const KkBannerDesk: FC<KkBannerDeskProps> = ({
   const shownSource = bannerSourceOf(state, { source, uncroppedSource });
   const percent = uploadPercentOf(progress);
   const uploadLine = `${labels.uploading} · ${percent} %`;
+  const shownImage = shownSource === null ? null : { src: shownSource };
+  const photo = (
+    <KkPhoto
+      alt={alt}
+      image={shownImage}
+      placeholderLabel={placeholderLabel}
+      tone={tone}
+      fill
+      sx={(theme) => ({
+        borderRadius: `${kkTokens.radius.base}px`,
+        filter:
+          state === 'developing' || state === 'stalled' ? kkTokens.banner.developingFilter : 'none',
+        transition: theme.transitions.create('filter', {
+          duration: kkTokens.banner.revealMs,
+          easing: theme.transitions.easing.easeOut,
+        }),
+      })}
+    />
+  );
   const media =
-    shownSource === null ? (
-      poster
+    preview === null || shownSource !== null ? (
+      photo
     ) : (
-      <KkCoverPicture
-        image={{ src: shownSource }}
-        alt={alt}
-        sx={(theme) => ({
-          borderRadius: `${kkTokens.radius.base}px`,
-          filter:
-            state === 'developing' || state === 'stalled'
-              ? kkTokens.banner.developingFilter
-              : 'none',
-          transition: theme.transitions.create('filter', {
-            duration: kkTokens.banner.revealMs,
-            easing: theme.transitions.easing.easeOut,
-          }),
-        })}
-      />
+      <KkCropPreview source={preview.source} crop={preview.crop} />
     );
 
   const stamp =

@@ -6,7 +6,7 @@ import { toQueryErrorMessage } from '@/lib/query-error';
 import { HUB_ERROR_MESSAGES, HUB_ERROR_TITLE, HUB_LOADING, HUB_RETRY } from '../../hub-copy';
 import { NewsHubEmpty } from './NewsHubEmpty';
 import { NewsHubSection } from './NewsHubSection';
-import { NewsPressPlan } from './NewsPressPlan';
+import { NewsPressRuler } from './NewsPressRuler';
 import type { NewsHubState } from './use-news-hub';
 
 interface NewsHubBodyProps {
@@ -47,7 +47,7 @@ export const NewsHubBody: FC<NewsHubBodyProps> = ({ hub }) => {
 
   return (
     <Stack sx={{ rowGap: 3, minWidth: 0 }}>
-      <NewsPressPlan plan={hub.plan} titles={hub.titles} onReveal={hub.revealPost} />
+      <NewsPressRuler ruler={hub.ruler} onReveal={hub.revealPost} onSection={hub.revealSection} />
       {sections}
     </Stack>
   );

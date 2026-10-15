@@ -6,6 +6,8 @@ import { scrollElementIntoView } from '@/lib/scroll-to';
 import { ALL_STATES_FILTER_ID } from '@/lib/state-chips';
 import { useLetterPosition } from '@/lib/use-letter-position';
 import { toLetterAnchorId, toLetterAnchors } from '../letter-anchors';
+import type { AppStat } from '../person-app-state';
+import { toAppStats } from '../person-app-state';
 import type { PersonLetterSection } from '../person-filters';
 import {
   ARCHIVED_PERSONS_FILTER_ID,
@@ -30,6 +32,7 @@ export interface PersonsSearch {
   visibleCount: number;
   isRegisterEmpty: boolean;
   totals: Record<MembershipState, number>;
+  appStats: AppStat[];
   filterOptions: KkFilterOption[];
   letters: KkLetterIndexEntry[];
 }
@@ -81,6 +84,7 @@ export const usePersonsSearch = (
     visibleCount: visible.length,
     isRegisterEmpty: listed.length === 0 && archived.length === 0 && !isArchiveUnavailable,
     totals: countPersonsByState(listed),
+    appStats: toAppStats(listed),
     filterOptions: toPersonFilterOptions(
       countPersonsByState(searched),
       isArchiveUnavailable ? null : { total: archived.length, matching: searchedArchived.length },

@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { GreetingAct } from './greeting-act';
 import { greetingTickDelayOf, toGreetingStage } from './greeting-stage';
 
-const STAGING = { festive: false, key: 'k', sessionYear: 2026, ordinal: 12 };
+const STAGING = { festive: false, key: 'k', sessionYear: 2026, ordinal: 12, lapClose: null };
 const CLAUSE = { kind: 'sessionDay', day: 70 } as const;
 
 describe('toGreetingStage', () => {

@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PortraitPersonRefSchema } from '@/lib/api/schemas';
+import { HonoursSchema, PortraitPersonRefSchema } from '@/lib/api/schemas';
 
 export const GroupDetailMemberSchema = PortraitPersonRefSchema.extend({
   groupMembershipId: z.number().int(),
@@ -7,6 +7,7 @@ export const GroupDetailMemberSchema = PortraitPersonRefSchema.extend({
   leftOn: z.iso.date().nullable(),
   since: z.iso.date(),
   isAffiliated: z.boolean(),
+  honours: HonoursSchema,
 });
 export type GroupDetailMember = z.infer<typeof GroupDetailMemberSchema>;
 
@@ -17,6 +18,7 @@ export const GroupDetailAdminSchema = PortraitPersonRefSchema.extend({
   untilOn: z.iso.date().nullable(),
   since: z.iso.date(),
   isAffiliated: z.boolean(),
+  honours: HonoursSchema,
 });
 export type GroupDetailAdmin = z.infer<typeof GroupDetailAdminSchema>;
 

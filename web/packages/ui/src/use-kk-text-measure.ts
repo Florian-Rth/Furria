@@ -1,22 +1,11 @@
 import { useTheme } from '@mui/material/styles';
+import { typePixelsOf } from './internal/type-pixels';
 
 export type KkMeasuredVariant = 'body1' | 'body2';
 
 export type KkTextMeasure = (text: string, variant: KkMeasuredVariant) => number;
 
-const REM_PIXELS = 16;
 const FALLBACK_WEIGHT = 500;
-
-const pixelsOf = (size: string | number | undefined): number => {
-  if (typeof size === 'number') {
-    return size;
-  }
-  if (size === undefined) {
-    return REM_PIXELS;
-  }
-  const value = Number.parseFloat(size);
-  return size.endsWith('rem') ? value * REM_PIXELS : value;
-};
 
 export const useKkTextMeasure = (): KkTextMeasure => {
   const theme = useTheme();
@@ -28,7 +17,7 @@ export const useKkTextMeasure = (): KkTextMeasure => {
       return 0;
     }
     const face = theme.typography[variant];
-    context.font = `${face.fontWeight ?? FALLBACK_WEIGHT} ${pixelsOf(face.fontSize)}px ${face.fontFamily ?? theme.typography.fontFamily}`;
+    context.font = `${face.fontWeight ?? FALLBACK_WEIGHT} ${typePixelsOf(face.fontSize)}px ${face.fontFamily ?? theme.typography.fontFamily}`;
     return context.measureText(text).width;
   };
 };

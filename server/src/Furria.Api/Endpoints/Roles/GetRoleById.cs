@@ -1,9 +1,13 @@
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
+using Furria.Api.Honours;
 using Furria.Api.Results;
 using Furria.Application.Authorization;
+using Furria.Application.Registry;
 using Furria.Application.Roles;
+using Furria.Core.Club;
+using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.Roles;
 
 namespace Furria.Api.Endpoints.Roles;
@@ -11,10 +15,12 @@ namespace Furria.Api.Endpoints.Roles;
 public sealed class GetRoleById : Endpoint<GetRoleByIdRequest, GetRoleByIdResponse>
 {
     private readonly RoleService _roleService;
+    private readonly PersonHonoursQuery _honoursQuery;
 
-    public GetRoleById(RoleService roleService)
+    public GetRoleById(RoleService roleService, PersonHonoursQuery honoursQuery)
     {
         _roleService = roleService;
+        _honoursQuery = honoursQuery;
     }
 
     public override void Configure()
@@ -32,22 +38,28 @@ public sealed class GetRoleById : Endpoint<GetRoleByIdRequest, GetRoleByIdRespon
             return;
         }
 
-        await Send.OkAsync(ToResponse(result.Value), cancellation: ct);
+        var honours = await _honoursQuery.OfAsync(
+            result.Value.Holders.Concat(result.Value.PastHolders).Select(holder => holder.PersonId),
+            ct
+        );
+
+        await Send.OkAsync(ToResponse(result.Value, honours), cancellation: ct);
     }
 
-    private static GetRoleByIdResponse ToResponse(RoleDetails role) =>
+    private static GetRoleByIdResponse ToResponse(RoleDetails role, PersonHonoursLookup honours) =>
         new()
         {
             RoleId = role.RoleId,
             Name = role.Name,
             Description = role.Description,
+            Icon = role.Icon,
             ArchivedOn = role.ArchivedOn,
             PermissionKeys = role.PermissionKeys,
-            Holders = [.. role.Holders.Select(ToDto)],
-            PastHolders = [.. role.PastHolders.Select(ToDto)],
+            Holders = [.. role.Holders.Select(holder => ToDto(holder, honours))],
+            PastHolders = [.. role.PastHolders.Select(holder => ToDto(holder, honours))],
         };
 
-    private static RoleHolderDto ToDto(RoleHolder holder) =>
+    private static RoleHolderDto ToDto(RoleHolder holder, PersonHonoursLookup honours) =>
         new()
         {
             RoleHoldingId = holder.RoleHoldingId,
@@ -58,6 +70,7 @@ public sealed class GetRoleById : Endpoint<GetRoleByIdRequest, GetRoleByIdRespon
             UntilOn = holder.UntilOn,
             Since = holder.Since,
             IsAffiliated = holder.IsAffiliated,
+            Honours = PersonHonoursDto.From(honours.Of(holder.PersonId)),
         };
 }
 
@@ -82,6 +95,8 @@ public sealed record GetRoleByIdResponse
     public required string Name { get; init; }
 
     public required string Description { get; init; }
+
+    public required ClubIcon? Icon { get; init; }
 
     public required DateOnly? ArchivedOn { get; init; }
 
@@ -109,4 +124,6 @@ public sealed record RoleHolderDto
     public required DateOnly Since { get; init; }
 
     public required bool IsAffiliated { get; init; }
+
+    public required PersonHonoursDto Honours { get; init; }
 }

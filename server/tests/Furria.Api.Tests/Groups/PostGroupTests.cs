@@ -4,6 +4,7 @@ using System.Net.Mime;
 using System.Text;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
+using Furria.Core.Club;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -49,6 +50,23 @@ public sealed class PostGroupTests : IClassFixture<ApiTestFixture>
             .Group(result.GroupId)
             .ToBeArchivedOn(null)
             .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepTheIcon_When_TheKeyHolderPicksOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await client.POSTAsync<
+            PostGroup,
+            PostGroupRequest,
+            PostGroupResponse
+        >(new() { Name = "Musik & Kapelle", Icon = ClubIcon.MusicNote });
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx.Expected.Group(result.GroupId).ToHaveIcon(ClubIcon.MusicNote).AssertAsync(ct);
     }
 
     [Fact]

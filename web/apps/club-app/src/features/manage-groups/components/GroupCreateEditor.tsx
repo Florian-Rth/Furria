@@ -6,7 +6,7 @@ import {
   GROUP_KIND_FIELD_LABEL,
   toGroupKindOptions,
 } from '@/features/group-kinds';
-import { WriteScreen } from '@/features/write';
+import { ClubIconField, WriteScreen } from '@/features/write';
 import { useGroupCreateEditor } from '../hooks/use-group-create-editor';
 import { MANAGE_GROUPS_ORIGIN } from '../manage-groups-labels';
 
@@ -64,6 +64,7 @@ export const GroupCreateEditor: FC<GroupCreateEditorProps> = ({ kinds }) => {
           presentation="select"
           hint={GROUP_KIND_FIELD_HINT}
         />
+        <ClubIconField value={control.icon} onChange={control.setIcon} />
       </KkFormSection>
     </WriteScreen>
   );

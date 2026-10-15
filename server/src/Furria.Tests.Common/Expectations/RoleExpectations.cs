@@ -1,3 +1,4 @@
+using Furria.Core.Club;
 using Furria.Core.Roles;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,11 @@ public sealed class RoleExpectations
         _expected.Enqueue(
             async (dbContext, ct) =>
                 Assert.Equal(description, (await SingleAsync(dbContext, ct)).Description)
+        );
+
+    public Expected ToHaveIcon(ClubIcon? icon) =>
+        _expected.Enqueue(
+            async (dbContext, ct) => Assert.Equal(icon, (await SingleAsync(dbContext, ct)).Icon)
         );
 
     public Expected ToBeArchivedOn(DateOnly? archivedOn) =>

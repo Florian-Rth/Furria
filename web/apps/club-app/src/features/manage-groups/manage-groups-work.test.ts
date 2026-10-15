@@ -31,6 +31,7 @@ const group = (overrides: Partial<ManagedGroupSummary>): ManagedGroupSummary => 
   groupKindId: 2,
   groupKindName: 'Garde',
   tone: null,
+  icon: null,
   archivedOn: null,
   memberCount: 18,
   admins: [admin(8)],

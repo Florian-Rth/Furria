@@ -20,7 +20,6 @@ interface KkNewsLeadProps {
   category: KkNewsCategory | null;
   date: string;
   photo: ReactNode;
-  posterWord: string;
   readMoreLabel: string;
   readingTime: string | null;
   link?: KkNewsLink;
@@ -33,14 +32,12 @@ export const KkNewsLead: FC<KkNewsLeadProps> = ({
   category,
   date,
   photo,
-  posterWord,
   readMoreLabel,
   readingTime,
   link,
   fit = 'page',
 }) => {
   const label = title ?? '';
-  const tone = category?.tone ?? null;
   const mediaSx = {
     aspectRatio: kkTokens.aspectRatio.banner,
     typography: fitted(fit, { xs: 'h1', md: 'display' }),
@@ -52,7 +49,7 @@ export const KkNewsLead: FC<KkNewsLeadProps> = ({
   return (
     <KkNewsLeadRoot label={label} link={link} fit={fit}>
       <KkNewsLeadMediaColumn fit={fit}>
-        <KkNewsMedia photo={photo} tone={tone} posterWord={posterWord} sx={mediaSx} />
+        <KkNewsMedia photo={photo} sx={mediaSx} />
       </KkNewsLeadMediaColumn>
       <KkNewsLeadTextColumn fit={fit}>
         <KkNewsMeta category={category}>

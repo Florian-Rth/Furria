@@ -1,3 +1,5 @@
+using Furria.Core.Club;
+
 namespace Furria.Application.Roles;
 
 public sealed record RoleSummary
@@ -7,6 +9,8 @@ public sealed record RoleSummary
     public required string Name { get; init; }
 
     public required string Description { get; init; }
+
+    public required ClubIcon? Icon { get; init; }
 
     public required DateOnly? ArchivedOn { get; init; }
 

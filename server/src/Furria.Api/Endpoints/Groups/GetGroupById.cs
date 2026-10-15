@@ -1,16 +1,20 @@
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
+using Furria.Api.Honours;
 using Furria.Api.Media;
 using Furria.Api.Results;
 using Furria.Application.Authorization;
 using Furria.Application.Groups;
 using Furria.Application.Media;
+using Furria.Application.Registry;
+using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Core.Media;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Groups;
 using Furria.Infrastructure.Media;
+using Furria.Infrastructure.Registry;
 
 namespace Furria.Api.Endpoints.Groups;
 
@@ -19,16 +23,19 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
     private readonly GroupService _groupService;
     private readonly PermissionAuthorizer _authorizer;
     private readonly PictureService _pictureService;
+    private readonly PersonHonoursQuery _honoursQuery;
 
     public GetGroupById(
         GroupService groupService,
         PermissionAuthorizer authorizer,
-        PictureService pictureService
+        PictureService pictureService,
+        PersonHonoursQuery honoursQuery
     )
     {
         _groupService = groupService;
         _authorizer = authorizer;
         _pictureService = pictureService;
+        _honoursQuery = honoursQuery;
     }
 
     public override void Configure()
@@ -70,11 +77,19 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
             ? await _pictureService.EditingOfAsync(MediaOwner.Group(req.GroupId), ct)
             : null;
 
+        var honours = await _honoursQuery.OfAsync(RosterOf(group.Value), ct);
+
         await Send.OkAsync(
-            ToResponse(group.Value, viewerMayManage, pictureEditing),
+            ToResponse(group.Value, viewerMayManage, pictureEditing, honours),
             cancellation: ct
         );
     }
+
+    private static IEnumerable<int> RosterOf(GroupDetails group) =>
+        group
+            .Admins.Concat(group.PastAdmins)
+            .Select(admin => admin.PersonId)
+            .Concat(group.Members.Concat(group.PastMembers).Select(member => member.PersonId));
 
     private async Task<bool> MayReadAsync(int accountId, int groupId, CancellationToken ct) =>
         await _authorizer.IsAffiliatedAsync(accountId, ct)
@@ -83,7 +98,8 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
     private static GetGroupByIdResponse ToResponse(
         GroupDetails group,
         bool viewerMayManage,
-        PictureEditingDetails? pictureEditing
+        PictureEditingDetails? pictureEditing,
+        PersonHonoursLookup honours
     ) =>
         new()
         {
@@ -97,15 +113,20 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
             GroupKindName = group.GroupKindName,
             FoundedYear = group.FoundedYear,
             Tone = group.Tone,
+            Icon = group.Icon,
             TrainingSlots = [.. group.TrainingSlots.Select(ToDto)],
-            Admins = [.. group.Admins.Select(ToDto)],
-            Members = [.. group.Members.Select(ToDto)],
+            Admins = [.. group.Admins.Select(admin => ToDto(admin, honours))],
+            Members = [.. group.Members.Select(member => ToDto(member, honours))],
             ViewerIsMember = group.ViewerIsMember,
             ViewerIsAdmin = group.ViewerIsAdmin,
             ViewerMayManage = viewerMayManage,
             ViewerSince = group.ViewerSince,
-            PastMembers = viewerMayManage ? [.. group.PastMembers.Select(ToDto)] : [],
-            PastAdmins = viewerMayManage ? [.. group.PastAdmins.Select(ToDto)] : [],
+            PastMembers = viewerMayManage
+                ? [.. group.PastMembers.Select(member => ToDto(member, honours))]
+                : [],
+            PastAdmins = viewerMayManage
+                ? [.. group.PastAdmins.Select(admin => ToDto(admin, honours))]
+                : [],
         };
 
     private static GroupTrainingSlotDto ToDto(GroupTrainingSlotDetails slot) =>
@@ -119,7 +140,7 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
             VenueName = slot.VenueName,
         };
 
-    private static HubMemberDto ToDto(HubMember member) =>
+    private static HubMemberDto ToDto(HubMember member, PersonHonoursLookup honours) =>
         new()
         {
             GroupMembershipId = member.GroupMembershipId,
@@ -131,9 +152,10 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
             LeftOn = member.LeftOn,
             Since = member.Since,
             IsAffiliated = member.IsAffiliated,
+            Honours = PersonHonoursDto.From(honours.Of(member.PersonId)),
         };
 
-    private static HubAdminDto ToDto(HubAdministrator admin) =>
+    private static HubAdminDto ToDto(HubAdministrator admin, PersonHonoursLookup honours) =>
         new()
         {
             GroupAdminId = admin.GroupAdminId,
@@ -146,6 +168,7 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
             UntilOn = admin.UntilOn,
             Since = admin.Since,
             IsAffiliated = admin.IsAffiliated,
+            Honours = PersonHonoursDto.From(honours.Of(admin.PersonId)),
         };
 }
 
@@ -184,6 +207,8 @@ public sealed record GetGroupByIdResponse
     public required int? FoundedYear { get; init; }
 
     public required GroupTone? Tone { get; init; }
+
+    public required ClubIcon? Icon { get; init; }
 
     public required IReadOnlyList<GroupTrainingSlotDto> TrainingSlots { get; init; }
 
@@ -238,6 +263,8 @@ public sealed record HubMemberDto
     public required DateOnly Since { get; init; }
 
     public required bool IsAffiliated { get; init; }
+
+    public required PersonHonoursDto Honours { get; init; }
 }
 
 public sealed record HubAdminDto
@@ -261,4 +288,6 @@ public sealed record HubAdminDto
     public required DateOnly Since { get; init; }
 
     public required bool IsAffiliated { get; init; }
+
+    public required PersonHonoursDto Honours { get; init; }
 }

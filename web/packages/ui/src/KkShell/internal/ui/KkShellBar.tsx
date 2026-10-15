@@ -1,3 +1,4 @@
+import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { KkChrome } from '../../../internal/KkChrome';
 import { kkTokens } from '../../../tokens';
@@ -11,6 +12,7 @@ import type {
 import { useKkShell } from '../logic/shell-context';
 import { useBarScene } from '../logic/use-bar-scene';
 import type { KkShellBarLead } from './KkShellBarLeading';
+import { KkShellBarProfile } from './KkShellBarProfile';
 import { KkShellBarRest } from './KkShellBarRest';
 import { KkShellBarSearch } from './KkShellBarSearch';
 import { KkShellThread } from './KkShellThread';
@@ -37,17 +39,25 @@ export const KkShellBar: FC<KkShellBarProps> = ({
   search,
   thread,
 }) => {
-  const { path } = useKkShell();
+  const { path, profile } = useKkShell();
   const scene = useBarScene({ path, kind, lead, title, origin: origin ?? null });
   const threadLine = thread === undefined ? null : <KkShellThread thread={thread} />;
 
   const searching = search !== undefined && search.query !== null;
+  const shownProfile = searching || kind === 'fullscreen' ? null : profile;
+  const profileLink = shownProfile === null ? null : <KkShellBarProfile profile={shownProfile} />;
 
   const row =
     searching && search !== undefined ? (
       <KkShellBarSearch search={search} />
     ) : (
-      <KkShellBarRest key={scene.current.path} actions={actions} search={search} scene={scene} />
+      <KkShellBarRest
+        key={scene.current.path}
+        actions={actions}
+        search={search}
+        scene={scene}
+        divided={shownProfile !== null}
+      />
     );
 
   return (
@@ -60,7 +70,10 @@ export const KkShellBar: FC<KkShellBarProps> = ({
         px: BAR_PADDING_X,
       }}
     >
-      {row}
+      <Stack direction="row" sx={{ alignItems: 'center', gap: 0.25, minWidth: 0 }}>
+        {row}
+        {profileLink}
+      </Stack>
       {threadLine}
     </KkChrome>
   );

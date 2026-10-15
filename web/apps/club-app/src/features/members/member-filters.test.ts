@@ -17,6 +17,7 @@ const member = (
   membershipState,
   groups: groups.map((name, index) => ({ groupId: personId * 10 + index, name })),
   roles: roles.map((name, index) => ({ roleId: personId * 100 + index, name })),
+  honours: { sessions: 0, functions: [] },
 });
 
 const PAULA = member(1, 'Paula', 'Brendel', 'active', ['Tanzgarde'], []);

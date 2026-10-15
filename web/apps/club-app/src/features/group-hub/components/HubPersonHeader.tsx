@@ -1,4 +1,4 @@
-import type { KkImageSource } from '@furria/ui';
+import type { KkHonours, KkImageSource } from '@furria/ui';
 import { KkAvatar, KkButton, KkEyebrow, KkScreenHeader } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
@@ -11,6 +11,7 @@ interface HubPersonHeaderProps {
   name: string;
   initials: string;
   portrait: KkImageSource | null;
+  honours: KkHonours | undefined;
   personId: number;
   canOpenProfile: boolean;
 }
@@ -20,6 +21,7 @@ export const HubPersonHeader: FC<HubPersonHeaderProps> = ({
   name,
   initials,
   portrait,
+  honours,
   personId,
   canOpenProfile,
 }) => {
@@ -40,7 +42,7 @@ export const HubPersonHeader: FC<HubPersonHeaderProps> = ({
   return (
     <KkScreenHeader>
       <KkScreenHeader.Visual>
-        <KkAvatar initials={initials} image={portrait} size="large" />
+        <KkAvatar initials={initials} image={portrait} size="header" honours={honours} />
       </KkScreenHeader.Visual>
       <KkScreenHeader.Text>
         <KkEyebrow tone="accent">{groupName}</KkEyebrow>

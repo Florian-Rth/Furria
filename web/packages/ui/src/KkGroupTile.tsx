@@ -5,10 +5,11 @@ import type { KkImageSource } from './image-source';
 import { focusRing } from './internal/focus-ring';
 import type { KkGroupTone } from './internal/group-tone';
 import { groupToneInkPaint } from './internal/group-tone';
+import type { KkHonours } from './internal/honours/honour-types';
 import { lineClamp } from './internal/line-clamp';
 import { redInk } from './internal/red-ink';
 import { responsiveTypography } from './internal/responsive-typography';
-import { KkAvatar } from './KkAvatar';
+import { KkAvatar } from './KkAvatar/KkAvatar';
 import { KkMeta } from './KkMeta';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
@@ -22,6 +23,7 @@ interface KkGroupTileProps {
   tone: KkGroupTone;
   initials: string;
   portrait?: KkImageSource | null;
+  honours?: KkHonours;
   name: string;
   accent?: string;
   meta?: string;
@@ -36,6 +38,7 @@ export const KkGroupTile: FC<KkGroupTileProps> = ({
   tone,
   initials,
   portrait,
+  honours,
   name,
   accent,
   meta,
@@ -105,6 +108,7 @@ export const KkGroupTile: FC<KkGroupTileProps> = ({
       <KkAvatar
         initials={initials}
         image={portrait}
+        honours={honours}
         size="large"
         component="span"
         tone={isAccented ? tone : undefined}

@@ -9,7 +9,7 @@ import {
   useGroupKindsQuery,
 } from '@/features/group-kinds';
 import { toGroupTone } from '@/features/groups';
-import { WriteScreen } from '@/features/write';
+import { ClubIconField, WriteScreen } from '@/features/write';
 import { toHubEditorOrigin } from '../group-hub-labels';
 import { toEditorChoicesErrorMessage } from '../group-hub-messages';
 import { useGroupInfoEditor } from '../hooks/use-group-info-editor';
@@ -156,6 +156,7 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
           takenTones={takenTones.state.tones}
           onChange={control.setTone}
         />
+        <ClubIconField value={control.icon} onChange={control.setIcon} />
       </KkFormSection>
     </WriteScreen>
   );

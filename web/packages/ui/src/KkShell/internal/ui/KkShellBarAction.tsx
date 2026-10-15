@@ -1,20 +1,27 @@
 import type { FC } from 'react';
 import { KkIconButton } from '../../../KkIconButton';
 import type { KkSx } from '../../../kk-sx';
-import { kkTokens } from '../../../tokens';
 import type { KkScreenAction } from '../../screen-declaration';
+import { barMarkInset, barSlot } from '../logic/bar-slot';
 
-const target: KkSx = { minWidth: kkTokens.tapTarget, minHeight: kkTokens.tapTarget };
-
-const quietPaint: KkSx = [target, { color: 'text.secondary' }];
+const quietPaint: KkSx = [barSlot, { color: 'text.secondary' }];
 
 const loudPaint: KkSx = [
-  target,
+  barSlot,
   {
+    isolation: 'isolate',
     color: 'primary.contrastText',
-    backgroundColor: 'primary.main',
+    '&::before': {
+      content: '""',
+      position: 'absolute',
+      inset: barMarkInset,
+      zIndex: -1,
+      borderRadius: '50%',
+      backgroundColor: 'primary.main',
+    },
     '@media (hover: hover)': {
-      '&:hover': { backgroundColor: 'primary.dark' },
+      '&:hover': { backgroundColor: 'transparent' },
+      '&:hover::before': { backgroundColor: 'primary.dark' },
     },
   },
 ];
@@ -23,11 +30,18 @@ interface KkShellBarActionProps {
   action: KkScreenAction;
 }
 
-export const KkShellBarAction: FC<KkShellBarActionProps> = ({ action }) => (
-  <KkIconButton
-    label={action.label}
-    icon={action.icon}
-    onClick={action.onSelect}
-    sx={action.emphasis === true ? loudPaint : quietPaint}
-  />
-);
+export const KkShellBarAction: FC<KkShellBarActionProps> = ({ action }) => {
+  const loud = action.emphasis === true;
+  const iconSize = loud ? 'small' : 'medium';
+  const paint = loud ? loudPaint : quietPaint;
+
+  return (
+    <KkIconButton
+      label={action.label}
+      icon={action.icon}
+      size={iconSize}
+      onClick={action.onSelect}
+      sx={paint}
+    />
+  );
+};

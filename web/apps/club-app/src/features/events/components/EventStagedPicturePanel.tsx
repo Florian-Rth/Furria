@@ -1,5 +1,5 @@
 import type { KkSx } from '@furria/ui';
-import { KkBannerDesk, KkCropPreview, KkPanelSection, KkPhoto } from '@furria/ui';
+import { KkBannerDesk, KkPanelSection } from '@furria/ui';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import { PICTURE_ACCEPT, PICTURE_DESK_LABELS } from '@/features/pictures';
@@ -14,19 +14,13 @@ interface EventStagedPicturePanelProps {
 
 export const EventStagedPicturePanel: FC<EventStagedPicturePanelProps> = ({ desk, sx }) => {
   const { banner } = desk;
-  const poster =
-    banner.preview === null ? (
-      <KkPhoto alt="" fill />
-    ) : (
-      <KkCropPreview source={banner.preview.source} crop={banner.preview.crop} />
-    );
 
   return (
     <KkPanelSection title={EVENT_SECTION_TITLES.picture} sx={sx}>
       <KkBannerDesk
         id="event-picture"
         state={banner.state}
-        poster={poster}
+        preview={banner.preview}
         source={null}
         uncroppedSource={banner.uncroppedSource}
         crop={banner.crop}

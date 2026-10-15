@@ -33,6 +33,7 @@ internal static class RoleSeedMaterializer
                 Name = intent.Name,
                 Description = intent.Description,
                 ArchivedOn = intent.ArchivedOn,
+                Icon = intent.Icon,
             },
             StringComparer.Ordinal
         );

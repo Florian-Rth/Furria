@@ -1,5 +1,5 @@
 import type { KkBannerDeskActions, KkBannerDeskLabels, KkBannerState } from '@furria/ui';
-import { KkBannerDesk, KkCaptionField, KkNewsPoster, KkProofSheet } from '@furria/ui';
+import { KkBannerDesk, KkCaptionField, KkProofSheet } from '@furria/ui';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
@@ -26,10 +26,7 @@ import {
   PICTURE_UPLOADING,
 } from '../../editor-copy';
 import type { NewsPictureDesk as PictureDesk } from '../../hooks/use-news-picture';
-import { CATEGORY_LABELS, CATEGORY_TONES } from '../../news-copy';
 import type { PartMark } from '../../part-marks';
-import { POSTER_FALLBACK } from '../../proof-copy';
-import type { NewsCategory } from '../../types';
 
 const LABELS: KkBannerDeskLabels = {
   upload: PICTURE_UPLOAD,
@@ -53,7 +50,6 @@ const LABELS: KkBannerDeskLabels = {
 interface NewsPictureDeskProps {
   desk: PictureDesk;
   state: KkBannerState;
-  category: NewsCategory | null;
   caption: string;
   pictureMark: PartMark;
   captionMark: PartMark;
@@ -65,7 +61,6 @@ interface NewsPictureDeskProps {
 export const NewsPictureDesk: FC<NewsPictureDeskProps> = ({
   desk,
   state,
-  category,
   caption,
   pictureMark,
   captionMark,
@@ -84,9 +79,6 @@ export const NewsPictureDesk: FC<NewsPictureDeskProps> = ({
     onRemove: desk.remove,
     onCropChange: desk.onCropChange,
   };
-  const tone = category === null ? null : CATEGORY_TONES[category];
-  const posterWord = category === null ? POSTER_FALLBACK : CATEGORY_LABELS[category];
-  const poster = <KkNewsPoster tone={tone} word={posterWord} />;
   const hasNoCaption = picture === null || (isReadOnly && caption.trim().length === 0);
   const captionField = hasNoCaption ? null : (
     <KkProofSheet.Part mark={captionMark}>
@@ -109,7 +101,6 @@ export const NewsPictureDesk: FC<NewsPictureDeskProps> = ({
         <KkBannerDesk
           id="news-field-picture"
           state={state}
-          poster={poster}
           source={picture?.source ?? null}
           uncroppedSource={picture?.uncroppedSource ?? null}
           crop={picture?.crop ?? null}

@@ -1,5 +1,7 @@
 import { createMediaSchemas } from '@furria/api-client';
 import { z } from 'zod';
+import { ClubIconSchema } from '@/lib/club-icon';
+import { GroupToneSchema } from '@/lib/group-tone';
 import { apiUrlOf } from './api-fetch';
 
 export const SessionTokensSchema = z.object({
@@ -63,6 +65,23 @@ export type GroupRef = z.infer<typeof GroupRefSchema>;
 export const RoleRefSchema = z.object({ roleId: z.number().int(), name: z.string() });
 export type RoleRef = z.infer<typeof RoleRefSchema>;
 
+export const PersonFunctionKindSchema = z.enum(['boardSeat', 'groupAdmin', 'role']);
+export type PersonFunctionKind = z.infer<typeof PersonFunctionKindSchema>;
+
+export const PersonFunctionSchema = z.object({
+  kind: PersonFunctionKindSchema,
+  name: z.string(),
+  icon: ClubIconSchema.nullable(),
+  tone: GroupToneSchema.nullable(),
+});
+export type PersonFunction = z.infer<typeof PersonFunctionSchema>;
+
+export const HonoursSchema = z.object({
+  sessions: z.number().int(),
+  functions: z.array(PersonFunctionSchema),
+});
+export type Honours = z.infer<typeof HonoursSchema>;
+
 export const ContactChangeSchema = z.object({
   at: z.iso.datetime({ offset: true }),
   changedBy: PersonRefSchema.nullable(),
@@ -114,6 +133,7 @@ export const MeSchema = z.object({
   lastSeenAnnouncementAt: z.iso.datetime({ offset: true }).nullable(),
   appSince: z.iso.date().nullable(),
   passkeys: z.array(MePasskeySchema),
+  honours: HonoursSchema,
 });
 export type Me = z.infer<typeof MeSchema>;
 

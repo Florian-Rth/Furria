@@ -83,6 +83,23 @@
       "plugins": ["./biome-plugins/noRawImage.grit"]
     },
     {
+      "includes": [
+        "apps/**",
+        "packages/**",
+        "!packages/ui/src/KkPhoto.tsx",
+        "!packages/ui/src/KkImage.tsx",
+        "!packages/ui/src/KkFrame.tsx",
+        "!packages/ui/src/KkTimeRail.tsx",
+        "!packages/ui/src/KkLightTable/KkLightTable.tsx",
+        "!packages/ui/src/KkMottoStage/internal/ui/KkMottoStageLogo.tsx",
+        "!packages/ui/src/KkSessionRow/internal/ui/KkSessionRowEmblem.tsx",
+        "!packages/ui/src/KkViewer/internal/ui/KkViewerFilmstripFrame.tsx",
+        "!**/*.test.ts",
+        "!**/*.test.tsx"
+      ],
+      "plugins": ["./biome-plugins/noPictureBypass.grit"]
+    },
+    {
       "includes": ["**", "!packages/ui/src/theme.ts"],
       "plugins": ["./biome-plugins/noCustomFontSize.grit"]
     },

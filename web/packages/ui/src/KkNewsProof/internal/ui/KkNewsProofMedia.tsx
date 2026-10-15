@@ -6,13 +6,12 @@ import { proofSurfaceOf } from '../logic/proof-surface';
 
 interface KkNewsProofMediaProps {
   facts: KkNewsProofFacts;
-  labels: Pick<KkNewsProofLabels, 'posterFallback' | 'untitled'>;
+  labels: Pick<KkNewsProofLabels, 'untitled'>;
   sx?: KkSx;
 }
 
 export const KkNewsProofMedia: FC<KkNewsProofMediaProps> = ({ facts, labels, sx }) => {
   const surface = proofSurfaceOf(facts, labels);
-  const tone = surface.category?.tone ?? null;
 
-  return <KkNewsMedia photo={surface.photo} tone={tone} posterWord={surface.posterWord} sx={sx} />;
+  return <KkNewsMedia photo={surface.photo} sx={sx} />;
 };

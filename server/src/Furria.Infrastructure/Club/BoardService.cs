@@ -41,6 +41,7 @@ public sealed class BoardService
             office.Id,
             office.Name,
             office.SortOrder,
+            office.Icon,
             office.ImpliedRoleId,
             office.ImpliedRole == null ? null : office.ImpliedRole.Name,
             office.IsPublic,
@@ -106,7 +107,12 @@ public sealed class BoardService
         if (await NameIsTakenAsync(command.Name, NoBoardOfficeId, ct))
             return Result<int>.Conflict(DuplicateNameMessage);
 
-        var office = new BoardOffice { Name = command.Name, SortOrder = command.SortOrder };
+        var office = new BoardOffice
+        {
+            Name = command.Name,
+            SortOrder = command.SortOrder,
+            Icon = command.Icon,
+        };
 
         _dbContext.BoardOffices.Add(office);
 
@@ -135,6 +141,7 @@ public sealed class BoardService
 
         office.Name = command.Name;
         office.SortOrder = command.SortOrder;
+        office.Icon = command.Icon;
 
         return await _dbContext.SaveOrConflictAsync(ct);
     }
@@ -371,6 +378,7 @@ public sealed class BoardService
             BoardOfficeId = office.Id,
             Name = office.Name,
             SortOrder = office.SortOrder,
+            Icon = office.Icon,
             ImpliedRoleId = office.ImpliedRoleId,
             ImpliedRoleName = office.ImpliedRoleName,
             IsPublic = office.IsPublic,
@@ -400,6 +408,7 @@ public sealed class BoardService
         int Id,
         string Name,
         int SortOrder,
+        ClubIcon? Icon,
         int? ImpliedRoleId,
         string? ImpliedRoleName,
         bool IsPublic,

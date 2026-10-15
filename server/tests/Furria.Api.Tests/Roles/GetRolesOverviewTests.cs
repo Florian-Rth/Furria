@@ -2,6 +2,7 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
 using Furria.Application.Authorization;
+using Furria.Core.Club;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -133,6 +134,45 @@ public sealed class GetRolesOverviewTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Empty(Single(result, "Notenwart").Holders);
+    }
+
+    [Fact]
+    public async Task Should_CarryTheIconAndTheHoldersHonours_When_AMemberOpensAllRoles()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var relevantYear = ClubSession.RelevantYearOf(_fixture.Today);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        MemberNamedMira(identity)
+                            .AddPerson("nadine", "Nadine", "Wolters")
+                            .AddMembership(
+                                "nadine-first",
+                                "nadine",
+                                ClubSession.OpeningOf(relevantYear)
+                            )
+                    )
+                    .Roles(roles =>
+                        roles
+                            .AddRoleWithIcon("notenwart", "Notenwart", ClubIcon.MusicNote)
+                            .AddRoleHolding(
+                                "nadine-notenwart",
+                                "notenwart",
+                                "nadine",
+                                HeldSince2020
+                            )
+                    ),
+            ct
+        );
+
+        var (_, result) = await OverviewForAsync(ctx, ct);
+
+        var notenwart = Single(result, "Notenwart");
+        Assert.Equal(ClubIcon.MusicNote, notenwart.Icon);
+        var nadine = Assert.Single(notenwart.Holders);
+        Assert.Equal(1, nadine.Honours.Sessions);
+        Assert.Equal("Notenwart", Assert.Single(nadine.Honours.Functions).Name);
     }
 
     private static IdentitySeedBuilder MemberNamedMira(IdentitySeedBuilder identity) =>

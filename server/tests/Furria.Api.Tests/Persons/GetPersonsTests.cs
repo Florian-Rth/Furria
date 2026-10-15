@@ -438,6 +438,7 @@ public sealed class GetPersonsTests : IClassFixture<ApiTestFixture>
                 "groups",
                 "roles",
                 "accessState",
+                "feeReduced",
             ],
             fields
         );
@@ -834,5 +835,51 @@ public sealed class GetPersonsTests : IClassFixture<ApiTestFixture>
             { Reason: null } => PersonAccessFilters.None,
             _ => PersonAccessFilters.NotInvitable,
         };
+    }
+
+    [Fact]
+    public async Task Should_MarkTheFeeReduction_When_OneRunsThisSession()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var sessionYear = _fixture.CurrentSessionYear;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("lena", "Lena", "Studentin")
+                        .AddFeeReduction(
+                            "lena-studies",
+                            "lena",
+                            FeeReductionBasis.Studies,
+                            sessionYear - 1,
+                            sessionYear
+                        )
+                        .AddPerson("otto", "Otto", "Ehemals")
+                        .AddFeeReduction(
+                            "otto-school",
+                            "otto",
+                            FeeReductionBasis.School,
+                            sessionYear - 3,
+                            sessionYear - 1
+                        )
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (_, result) = await client.GETAsync<GetPersons, GetPersonsRequest, GetPersonsResponse>(
+            new GetPersonsRequest()
+        );
+
+        Assert.True(
+            result
+                .Persons.Single(person => person.PersonId == ctx.Identity.People.IdOf("lena"))
+                .FeeReduced
+        );
+        Assert.False(
+            result
+                .Persons.Single(person => person.PersonId == ctx.Identity.People.IdOf("otto"))
+                .FeeReduced
+        );
     }
 }

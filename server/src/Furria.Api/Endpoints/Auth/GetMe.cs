@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
+using Furria.Api.Honours;
 using Furria.Api.Media;
 using Furria.Api.Results;
 using Furria.Application.Identity;
@@ -9,6 +10,7 @@ using Furria.Core.Club;
 using Furria.Core.Media;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Media;
+using Furria.Infrastructure.Registry;
 
 namespace Furria.Api.Endpoints.Auth;
 
@@ -16,11 +18,17 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
 {
     private readonly AccountService _accountService;
     private readonly PictureService _pictureService;
+    private readonly PersonHonoursQuery _honoursQuery;
 
-    public GetMe(AccountService accountService, PictureService pictureService)
+    public GetMe(
+        AccountService accountService,
+        PictureService pictureService,
+        PersonHonoursQuery honoursQuery
+    )
     {
         _accountService = accountService;
         _pictureService = pictureService;
+        _honoursQuery = honoursQuery;
     }
 
     public override void Configure()
@@ -48,12 +56,17 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
             ? await _pictureService.EditingOfAsync(MediaOwner.Person(person.Id), ct)
             : null;
 
-        await Send.OkAsync(ToResponse(account.Value, portrait), cancellation: ct);
+        var honours = account.Value.Person is { } holder
+            ? await _honoursQuery.OfPersonAsync(holder.Id, ct)
+            : PersonHonoursDetails.None;
+
+        await Send.OkAsync(ToResponse(account.Value, portrait, honours), cancellation: ct);
     }
 
     private static GetMeResponse ToResponse(
         AccountDetails account,
-        PictureEditingDetails? portrait
+        PictureEditingDetails? portrait,
+        PersonHonoursDetails honours
     ) =>
         new()
         {
@@ -66,6 +79,7 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
             LastSeenAnnouncementAt = account.LastSeenAnnouncementAt,
             AppSince = account.AppSince,
             Passkeys = [.. account.Passkeys.Select(ToDto)],
+            Honours = PersonHonoursDto.From(honours),
         };
 
     private static MePasskeyDto ToDto(PasskeyDetails passkey) =>
@@ -140,6 +154,8 @@ public sealed record GetMeResponse
     public required DateOnly? AppSince { get; init; }
 
     public required IReadOnlyList<MePasskeyDto> Passkeys { get; init; }
+
+    public required PersonHonoursDto Honours { get; init; }
 }
 
 public sealed record MePasskeyDto

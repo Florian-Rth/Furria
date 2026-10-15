@@ -2,6 +2,8 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
 using Furria.Application.Authorization;
+using Furria.Application.Registry;
+using Furria.Core.Club;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -193,5 +195,37 @@ public sealed class GetRoleByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Empty(result.Holders);
         Assert.Empty(result.PastHolders);
+    }
+
+    [Fact]
+    public async Task Should_CarryTheIconAndTheHoldersHonours_When_ARoleIsRead()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddPerson("ilka", "Ilka", "Reineke"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("kapelle", "Kapelle")
+                            .AddGroupAdmin("ilka-kapelle", "kapelle", "ilka")
+                    )
+                    .Roles(roles =>
+                        roles
+                            .AddRoleWithIcon("chronik", "Chronik", ClubIcon.Pen)
+                            .AddRoleHolding("ilka-chronik", "chronik", "ilka", HeldSince2017)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (_, result) = await ReadRoleAsync(client, ctx.Roles.Roles.IdOf("chronik"));
+
+        Assert.Equal(ClubIcon.Pen, result.Icon);
+        var ilka = Assert.Single(result.Holders);
+        Assert.Equal(
+            [PersonFunctionKind.GroupAdmin, PersonFunctionKind.Role],
+            ilka.Honours.Functions.Select(function => function.Kind)
+        );
     }
 }

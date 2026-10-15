@@ -1,9 +1,9 @@
 import { KkFormSection, KkNote, KkTextArea, KkTextField } from '@furria/ui';
 import type { FC } from 'react';
-import { WriteScreen } from '@/features/write';
+import { ClubIconField, WriteScreen } from '@/features/write';
 import { useRoleEditor } from '../hooks/use-role-editor';
 import { ROLES_ORIGIN, toRoleOrigin } from '../manage-roles-labels';
-import type { RoleDetails } from '../schemas';
+import type { RoleDetails, RoleForm } from '../schemas';
 import { ROLE_DESCRIPTION_MAX_LENGTH } from '../schemas';
 
 const CREATE_TITLE = 'Rolle hinzufügen';
@@ -19,7 +19,7 @@ const DESCRIPTION_PLACEHOLDER = 'Aufgabe der Rolle';
 const DESCRIPTION_ROWS = 4;
 const CREATE_ACTION_LABEL = 'Hinzufügen';
 const EDIT_ACTION_LABEL = 'Speichern';
-const EMPTY_FORM = { name: '', description: '' };
+const EMPTY_FORM: RoleForm = { name: '', description: '', icon: null };
 
 const toCountLabel = (used: number, max: number): string => `${used} von ${max} Zeichen`;
 
@@ -28,8 +28,10 @@ interface RoleEditorProps {
 }
 
 export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry }) => {
-  const initial =
-    roleEntry === null ? EMPTY_FORM : { name: roleEntry.name, description: roleEntry.description };
+  const initial: RoleForm =
+    roleEntry === null
+      ? EMPTY_FORM
+      : { name: roleEntry.name, description: roleEntry.description, icon: roleEntry.icon };
   const control = useRoleEditor({ roleId: roleEntry?.roleId ?? null, initial });
   const { errors } = control.form.formState;
 
@@ -83,6 +85,7 @@ export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry }) => {
           error={errors.description !== undefined}
           helperText={errors.description?.message}
         />
+        <ClubIconField value={control.icon} onChange={control.setIcon} />
       </KkFormSection>
     </WriteScreen>
   );

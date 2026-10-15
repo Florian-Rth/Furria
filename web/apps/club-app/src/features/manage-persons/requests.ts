@@ -13,6 +13,8 @@ import type {
   CreatedPause,
   CreatedPerson,
   FeeReductionForm,
+  InvitationRoundPreview,
+  InvitationRoundSent,
   MembershipForm,
   PauseForm,
   PersonDetails,
@@ -25,6 +27,8 @@ import {
   CreatedMembershipSchema,
   CreatedPauseSchema,
   CreatedPersonSchema,
+  InvitationRoundPreviewSchema,
+  InvitationRoundSentSchema,
   PersonDetailsSchema,
   PersonsResponseSchema,
 } from './schemas';
@@ -202,3 +206,25 @@ export const requestAdoptionCandidate = async (
     throw error;
   }
 };
+
+export const requestInvitationRoundPreview = (
+  accessToken: string,
+): Promise<InvitationRoundPreview> =>
+  apiFetch('/api/manage/invitations/preview', {
+    schema: InvitationRoundPreviewSchema,
+    accessToken,
+  });
+
+export const requestBulkInvitation = (accessToken: string): Promise<InvitationRoundSent> =>
+  apiFetch('/api/manage/invitations/bulk', {
+    method: 'POST',
+    schema: InvitationRoundSentSchema,
+    accessToken,
+  });
+
+export const requestInvitationReminders = (accessToken: string): Promise<InvitationRoundSent> =>
+  apiFetch('/api/manage/invitations/reminders', {
+    method: 'POST',
+    schema: InvitationRoundSentSchema,
+    accessToken,
+  });

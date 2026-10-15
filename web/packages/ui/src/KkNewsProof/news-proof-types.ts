@@ -30,6 +30,5 @@ export interface KkNewsProofLabels {
   untitled: string;
   teaserPlaceholder: string;
   readMore: string;
-  posterFallback: string;
   readMark: string;
 }

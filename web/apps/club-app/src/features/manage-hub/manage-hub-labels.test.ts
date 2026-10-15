@@ -51,6 +51,27 @@ describe('toManageRows', () => {
     { hub: hubWith({ sessions: { entryCount: 3, hasCurrentEntry: false } }) },
     { hub: hubWith({ clubRecord: { name: null, missingFactCount: 1 } }) },
     { hub: hubWith({ applications: { undecidedCount: 2, minorCount: 1 } }) },
+    {
+      hub: hubWith({
+        persons: { personCount: 20, memberCount: 16 },
+        accounts: {
+          withAccessCount: 7,
+          ofCount: 16,
+          openInvitationCount: 3,
+          eligibleWithoutEmailCount: 0,
+        },
+      }),
+    },
+    {
+      hub: hubWith({
+        accounts: {
+          withAccessCount: 7,
+          ofCount: 16,
+          openInvitationCount: 0,
+          eligibleWithoutEmailCount: 2,
+        },
+      }),
+    },
   ])('flags a row that needs attention', ({ hub }) => {
     expect(onlyRow(hub).status?.tone).toBe('gold');
   });
@@ -61,6 +82,17 @@ describe('toManageRows', () => {
     { hub: hubWith({ sessions: { entryCount: 3, hasCurrentEntry: true } }) },
     { hub: hubWith({ clubRecord: { name: 'GCC e.V.', missingFactCount: 0 } }) },
     { hub: hubWith({ persons: { personCount: 184, memberCount: 121 } }) },
+    {
+      hub: hubWith({
+        persons: { personCount: 20, memberCount: 16 },
+        accounts: {
+          withAccessCount: 16,
+          ofCount: 16,
+          openInvitationCount: 0,
+          eligibleWithoutEmailCount: 0,
+        },
+      }),
+    },
     { hub: hubWith({ keys: { issuedCount: 3, holdingCount: 3, holderCount: 2 } }) },
     { hub: hubWith({ applications: { undecidedCount: 0, minorCount: 0 } }) },
   ])('flags nothing on a settled row', ({ hub }) => {
@@ -92,6 +124,25 @@ describe('toManageRows', () => {
     { hub: hubWith({ applications: { undecidedCount: 0, minorCount: 0 } }) },
   ])('keeps a register with only history as filled', ({ hub }) => {
     expect(onlyRow(hub).isEmpty).toBe(false);
+  });
+
+  it('builds the persons row from the access facts alone when the register is hidden', () => {
+    const row = onlyRow(
+      hubWith({
+        accounts: {
+          withAccessCount: 0,
+          ofCount: 0,
+          openInvitationCount: 0,
+          eligibleWithoutEmailCount: 0,
+        },
+      }),
+    );
+
+    expect({ id: row.id, isEmpty: row.isEmpty, hasSummary: row.summary !== undefined }).toEqual({
+      id: 'persons',
+      isEmpty: false,
+      hasSummary: true,
+    });
   });
 
   it('builds no row for a panel the viewer may not see', () => {

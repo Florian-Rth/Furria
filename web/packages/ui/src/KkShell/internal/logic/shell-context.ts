@@ -3,6 +3,7 @@ import { createContext, useContext } from 'react';
 import type { KkScreenOrigin } from '../../screen-declaration';
 import type { KkScreenMove } from '../../screen-move';
 import type { KkShellDestination } from '../../shell-destination';
+import type { KkShellProfile } from '../../shell-profile';
 import type { KkBarMemory } from './bar-memory';
 import type { KkScreenStance } from './screen-stance';
 
@@ -10,6 +11,7 @@ export interface KkShellState {
   link: ElementType;
   goBackTo: (origin: KkScreenOrigin) => void;
   destinations: readonly KkShellDestination[];
+  profile: KkShellProfile | null;
   keyboardInset: number;
   path: string;
   move: KkScreenMove;

@@ -27,6 +27,7 @@ describe('accessActionsOf', () => {
         vouchesForAge: false,
         recovery: false,
         lock: null,
+        birthDateEntry: false,
       },
     ],
     [
@@ -56,6 +57,7 @@ describe('accessActionsOf', () => {
         vouchesForAge: false,
         recovery: false,
         lock: null,
+        birthDateEntry: false,
       },
     ],
     [
@@ -79,6 +81,7 @@ describe('accessActionsOf', () => {
         vouchesForAge: false,
         recovery: false,
         lock: null,
+        birthDateEntry: false,
       },
     ],
     [
@@ -102,6 +105,7 @@ describe('accessActionsOf', () => {
         vouchesForAge: false,
         recovery: false,
         lock: null,
+        birthDateEntry: false,
       },
     ],
     [
@@ -125,6 +129,7 @@ describe('accessActionsOf', () => {
         vouchesForAge: false,
         recovery: false,
         lock: null,
+        birthDateEntry: true,
       },
     ],
     [
@@ -148,6 +153,7 @@ describe('accessActionsOf', () => {
         vouchesForAge: true,
         recovery: false,
         lock: null,
+        birthDateEntry: true,
       },
     ],
     [
@@ -171,6 +177,7 @@ describe('accessActionsOf', () => {
         vouchesForAge: true,
         recovery: false,
         lock: null,
+        birthDateEntry: true,
       },
     ],
     [
@@ -194,6 +201,7 @@ describe('accessActionsOf', () => {
         vouchesForAge: false,
         recovery: false,
         lock: null,
+        birthDateEntry: false,
       },
     ],
     [
@@ -217,6 +225,7 @@ describe('accessActionsOf', () => {
         vouchesForAge: false,
         recovery: false,
         lock: null,
+        birthDateEntry: false,
       },
     ],
     [
@@ -240,6 +249,7 @@ describe('accessActionsOf', () => {
         vouchesForAge: false,
         recovery: false,
         lock: null,
+        birthDateEntry: false,
       },
     ],
     [
@@ -263,6 +273,7 @@ describe('accessActionsOf', () => {
         vouchesForAge: false,
         recovery: true,
         lock: 'disable',
+        birthDateEntry: false,
       },
     ],
     [
@@ -286,6 +297,7 @@ describe('accessActionsOf', () => {
         vouchesForAge: false,
         recovery: true,
         lock: null,
+        birthDateEntry: false,
       },
     ],
     [
@@ -309,6 +321,7 @@ describe('accessActionsOf', () => {
         vouchesForAge: false,
         recovery: false,
         lock: 'enable',
+        birthDateEntry: false,
       },
     ],
   ])('offers the right acts for %s', (_case, input, expected) => {

@@ -6,10 +6,11 @@ import type { ElementType, FC, ReactNode } from 'react';
 import type { KkImageSource } from './image-source';
 import { focusRing } from './internal/focus-ring';
 import { highlightMark, highlightPaint } from './internal/highlight-paint';
+import type { KkHonours, KkStanding } from './internal/honours/honour-types';
 import { personRowMetrics } from './internal/person-row-metrics';
 import { redInk } from './internal/red-ink';
 import { rowDividerTop } from './internal/row-divider';
-import { KkAvatar } from './KkAvatar';
+import { KkAvatar } from './KkAvatar/KkAvatar';
 import { KkIcon } from './KkIcon';
 import type { KkLinkSearch } from './kk-link-search';
 import type { KkSx } from './kk-sx';
@@ -29,6 +30,8 @@ const clampedLine = {
 interface KkPersonRowProps {
   initials: string;
   portrait?: KkImageSource | null;
+  honours?: KkHonours;
+  standing?: KkStanding;
   name: string;
   accent?: string;
   meta?: string;
@@ -58,6 +61,8 @@ const hoverPaint = (theme: Theme): CSSObject => ({
 export const KkPersonRow: FC<KkPersonRowProps> = ({
   initials,
   portrait,
+  honours,
+  standing,
   name,
   accent,
   meta,
@@ -127,7 +132,13 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
     trailing === undefined ? null : (
       <Box
         component="span"
-        sx={{ display: { xs: 'inline-flex', desktop: 'none' }, flexShrink: 0, ml: 'auto' }}
+        sx={{
+          display: { xs: 'inline-flex', desktop: 'none' },
+          flexShrink: 1,
+          minWidth: 0,
+          maxWidth: '100%',
+          ml: 'auto',
+        }}
       >
         {trailing}
       </Box>
@@ -205,6 +216,8 @@ export const KkPersonRow: FC<KkPersonRowProps> = ({
       <KkAvatar
         initials={initials}
         image={portrait}
+        honours={honours}
+        standing={standing}
         component="span"
         sx={{ flexShrink: 0, opacity: dimmed ? kkTokens.opacity.dimmed : 1 }}
       />

@@ -1,4 +1,5 @@
 import type { KkConfirmFact, KkScreenOrigin, KkSelectOption } from '@furria/ui';
+import type { ClubIcon } from '@/lib/club-icon';
 import { isFutureDay } from '@/lib/day';
 import { formatIsoDay, formatPeriod } from '@/lib/membership-labels';
 import type { BoardOffice, BoardSeat, ImpliedRoleOption } from './schemas';
@@ -36,6 +37,7 @@ export interface BoardOfficeEntry {
   impliedRoleId: number | null;
   impliedRoleName: string | null;
   isPublic: boolean;
+  icon: ClubIcon | null;
   archivedOn: string | null;
   isArchived: boolean;
   isVacant: boolean;
@@ -50,6 +52,7 @@ const toOfficeEntry = (office: BoardOffice, todayIsoDay: string): BoardOfficeEnt
   impliedRoleId: office.impliedRoleId,
   impliedRoleName: office.impliedRoleName,
   isPublic: office.isPublic,
+  icon: office.icon,
   archivedOn: office.archivedOn,
   isArchived: office.archivedOn !== null,
   isVacant: isVacantOn(office.seats, todayIsoDay),

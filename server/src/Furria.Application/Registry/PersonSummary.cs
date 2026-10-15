@@ -36,4 +36,6 @@ public sealed record PersonSummary
     public required IReadOnlyList<RoleReference> Roles { get; init; }
 
     public required RegisterAccessState AccessState { get; init; }
+
+    public required bool FeeReduced { get; init; }
 }

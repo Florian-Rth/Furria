@@ -10,6 +10,8 @@ public sealed class Role : ITimestamped
 
     public string Description { get; set; } = "";
 
+    public ClubIcon? Icon { get; set; }
+
     public DateOnly? ArchivedOn { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }

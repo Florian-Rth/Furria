@@ -1,6 +1,7 @@
 import { KkAvatar, KkChip, KkEyebrow, KkScreenHeader, toImageSource } from '@furria/ui';
 import type { FC } from 'react';
 import type { PersonalMe } from '@/lib/api/schemas';
+import { toAvatarHonours } from '@/lib/honours';
 import { PROFILE_EYEBROW, toProfileHeadline } from '../profile-labels';
 
 interface ProfileHeaderProps {
@@ -10,6 +11,7 @@ interface ProfileHeaderProps {
 export const ProfileHeader: FC<ProfileHeaderProps> = ({ me }) => {
   const headline = toProfileHeadline(me);
   const portrait = toImageSource(me?.person.portrait?.picture ?? null, 'portrait');
+  const honours = me === undefined ? undefined : toAvatarHonours(me.honours);
 
   const stateRow =
     headline.state === null ? null : (
@@ -23,7 +25,13 @@ export const ProfileHeader: FC<ProfileHeaderProps> = ({ me }) => {
   return (
     <KkScreenHeader>
       <KkScreenHeader.Visual>
-        <KkAvatar initials={headline.initials} image={portrait} size="large" />
+        <KkAvatar
+          initials={headline.initials}
+          image={portrait}
+          size="header"
+          honours={honours}
+          arrival
+        />
       </KkScreenHeader.Visual>
       <KkScreenHeader.Text>
         <KkEyebrow tone="accent">{PROFILE_EYEBROW}</KkEyebrow>

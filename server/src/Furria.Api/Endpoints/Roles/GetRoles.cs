@@ -2,6 +2,7 @@ using FastEndpoints;
 using Furria.Api.Authorization;
 using Furria.Application.Authorization;
 using Furria.Application.Roles;
+using Furria.Core.Club;
 using Furria.Infrastructure.Roles;
 
 namespace Furria.Api.Endpoints.Roles;
@@ -37,6 +38,7 @@ public sealed class GetRoles : EndpointWithoutRequest<GetRolesResponse>
             RoleId = role.RoleId,
             Name = role.Name,
             Description = role.Description,
+            Icon = role.Icon,
             ArchivedOn = role.ArchivedOn,
             PermissionKeys = role.PermissionKeys,
             Holders = [.. role.Holders.Select(ToDto)],
@@ -65,6 +67,8 @@ public sealed record RoleSummaryDto
     public required string Name { get; init; }
 
     public required string Description { get; init; }
+
+    public required ClubIcon? Icon { get; init; }
 
     public required DateOnly? ArchivedOn { get; init; }
 

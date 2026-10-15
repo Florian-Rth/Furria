@@ -2,8 +2,7 @@ import Box from '@mui/material/Box';
 import type { Theme } from '@mui/material/styles';
 import type { FC } from 'react';
 import type { KkImageSource } from '../image-source';
-import { KkCoverPicture } from '../KkCoverPicture';
-import { KkNewsPoster } from '../KkNewsPoster';
+import { KkPhoto } from '../KkPhoto';
 import { kkTokens } from '../tokens';
 
 const STRUCK_FILTER = 'grayscale(1)';
@@ -15,12 +14,7 @@ interface KkPressRowThumbProps {
 }
 
 export const KkPressRowThumb: FC<KkPressRowThumbProps> = ({ picture, struck }) => {
-  const image =
-    picture === null ? (
-      <KkNewsPoster tone={null} word="" />
-    ) : (
-      <KkCoverPicture image={{ ...picture, sizes: picture.sizes ?? THUMB_SIZES }} alt="" />
-    );
+  const image = picture === null ? null : { ...picture, sizes: picture.sizes ?? THUMB_SIZES };
 
   return (
     <Box
@@ -37,10 +31,9 @@ export const KkPressRowThumb: FC<KkPressRowThumbProps> = ({ picture, struck }) =
         outlineOffset: -kkTokens.line.hair,
         filter: struck ? STRUCK_FILTER : 'none',
         opacity: struck ? kkTokens.opacity.dimmed : 1,
-        '& > img': { borderRadius: 1 },
       })}
     >
-      {image}
+      <KkPhoto alt="" image={image} fill />
     </Box>
   );
 };

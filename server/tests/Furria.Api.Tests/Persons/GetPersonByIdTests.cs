@@ -4,6 +4,7 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Persons;
 using Furria.Api.Tests.Auth;
 using Furria.Application.Authorization;
+using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Core.Identity;
 using Furria.Tests.Common.Fixtures;
@@ -763,6 +764,7 @@ public sealed class GetPersonByIdTests : IClassFixture<ApiTestFixture>
                 "unendedBoardSeats",
                 "unendedKeyHoldings",
                 "access",
+                "honours",
             ],
             fields
         );
@@ -1137,5 +1139,45 @@ public sealed class GetPersonByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.True(result.Access.Rights.CanInvite);
         Assert.False(result.Access.Rights.CanManageAccount);
+    }
+
+    [Fact]
+    public async Task Should_CarryHerPublicBoardSeat_When_SheSitsOnTheBoard()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("bea", "Bea", "Kassier")
+                            .AddMembership("bea-first", "bea", JoinedIn2017)
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice(
+                                "kassenwart",
+                                "Kassenwart",
+                                1,
+                                isPublic: true,
+                                icon: ClubIcon.Euro
+                            )
+                            .AddBoardOffice("beisitzer", "Beisitzer", 2)
+                            .AddBoardSeat("bea-kassenwart", "kassenwart", "bea")
+                            .AddBoardSeat("bea-beisitzer", "beisitzer", "bea")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (_, result) = await client.GETAsync<
+            GetPersonById,
+            GetPersonByIdRequest,
+            GetPersonByIdResponse
+        >(new GetPersonByIdRequest { PersonId = ctx.Identity.People.IdOf("bea") });
+
+        var seat = Assert.Single(result.Honours.Functions);
+        Assert.Equal(PersonFunctionKind.BoardSeat, seat.Kind);
+        Assert.Equal("Kassenwart", seat.Name);
+        Assert.Equal(ClubIcon.Euro, seat.Icon);
     }
 }

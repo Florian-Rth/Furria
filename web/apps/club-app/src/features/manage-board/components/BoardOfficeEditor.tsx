@@ -10,7 +10,7 @@ import {
   KkTextField,
 } from '@furria/ui';
 import type { FC } from 'react';
-import { WriteScreen } from '@/features/write';
+import { ClubIconField, WriteScreen } from '@/features/write';
 import { useBoardOfficeEditor } from '../hooks/use-board-office-editor';
 import type { BoardOfficeEntry } from '../manage-board-labels';
 import {
@@ -145,6 +145,7 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry }) => {
             />
           }
         />
+        <ClubIconField value={control.icon} onChange={control.setIcon} />
       </KkFormSection>
       {roleSection}
     </WriteScreen>

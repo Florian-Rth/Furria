@@ -28,7 +28,7 @@ export const requestCreateBoardOffice = (
 ): Promise<CreatedBoardOffice> =>
   apiFetch('/api/manage/board/offices', {
     method: 'POST',
-    body: { name: form.name, sortOrder: Number(form.sortOrder) },
+    body: { name: form.name, sortOrder: Number(form.sortOrder), icon: form.icon },
     schema: CreatedBoardOfficeSchema,
     accessToken,
   });
@@ -40,7 +40,7 @@ export const requestUpdateBoardOffice = (
 ): Promise<void> =>
   apiFetch(`/api/manage/board/offices/${boardOfficeId}`, {
     method: 'PUT',
-    body: { name: form.name, sortOrder: Number(form.sortOrder) },
+    body: { name: form.name, sortOrder: Number(form.sortOrder), icon: form.icon },
     schema: NoContentSchema,
     accessToken,
   });
