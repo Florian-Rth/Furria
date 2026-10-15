@@ -6,7 +6,6 @@ import type { PermissionKey } from '@/lib/api/schemas';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toIsoDay } from '@/lib/day';
 import { queryKeys } from '@/lib/query/reads';
-import { toWriteErrorMessage } from '@/lib/write-error';
 import {
   toHolderAddedMessage,
   toHoldingEndedMessage,
@@ -82,10 +81,11 @@ const applyListPermissions = (
   };
 };
 
-export const useRolesQuery = (): UseQueryResult<RolesResponse, Error> =>
+export const useRolesQuery = (enabled = true): UseQueryResult<RolesResponse, Error> =>
   useQuery({
     queryKey: queryKeys.roles,
     queryFn: () => withFreshAccessToken(requestRoles),
+    enabled,
   });
 
 export const useRoleQuery = (roleId: number | null): UseQueryResult<RoleDetails, Error> => {
@@ -134,10 +134,7 @@ export const useRestoreRoleMutation = (
   useApiMutation({
     request: (_input: RoleNameInput, accessToken) => requestRestoreRole(roleId, accessToken),
     changes: ['role'],
-    notice: {
-      success: (input) => toRoleRestoredMessage(input.roleName),
-      failure: toWriteErrorMessage,
-    },
+    notice: { success: (input) => toRoleRestoredMessage(input.roleName) },
   });
 
 export const useSetRolePermissionsMutation = (
@@ -155,10 +152,10 @@ export const useSetRolePermissionsMutation = (
       ),
     ],
     changes: ['role'],
+    key: ['role-permissions', roleId],
     notice: {
       success: (input) =>
         toPermissionSavedMessage(toPermissionCopy(input.key).title, input.enabled),
-      failure: toWriteErrorMessage,
     },
   });
 

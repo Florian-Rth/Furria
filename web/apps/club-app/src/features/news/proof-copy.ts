@@ -1,8 +1,6 @@
 import type { KkNewsProofLabels } from '@furria/ui';
 import { CHANGED_MARK, UNTITLED } from './news-copy';
 
-export const POSTER_FALLBACK = 'Meldung';
-
 export const PEEK_SHEET_ID = 'news-proof-peek';
 export const PEEK_SHEET_TITLE = 'So erscheint sie';
 export const PEEK_CLOSE_LABEL = 'Schließen';
@@ -29,6 +27,5 @@ export const PROOF_LABELS: KkNewsProofLabels = {
   untitled: UNTITLED,
   teaserPlaceholder: 'Noch kein Vorspann',
   readMore: 'Ganze Meldung lesen →',
-  posterFallback: POSTER_FALLBACK,
   readMark: '✓✓',
 };

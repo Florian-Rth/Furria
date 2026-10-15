@@ -2,7 +2,7 @@ import { ApiError } from '@furria/api-client';
 import { describe, expect, it } from 'vitest';
 import { OfflineWriteError } from '@/lib/api/offline-write-error';
 import type { AttendanceAttempt, AttendanceFailure } from './attendance-answer';
-import { latestAnswerErrorOf, toAttendanceFailureOf } from './attendance-answer';
+import { latestAnswerErrorOf, resubmitsAfter, toAttendanceFailureOf } from './attendance-answer';
 
 describe('toAttendanceFailureOf', () => {
   it.each<{ label: string; error: Error | null; expected: AttendanceFailure | null }>([
@@ -49,6 +49,31 @@ describe('toAttendanceFailureOf', () => {
     },
   ])('is $expected when $label', ({ error, expected }) => {
     expect(toAttendanceFailureOf(error)).toBe(expected);
+  });
+});
+
+describe('resubmitsAfter', () => {
+  it.each<{ label: string; error: Error; isResubmission: boolean; expected: boolean }>([
+    {
+      label: 'her first answer collided with a parallel one',
+      error: new ApiError({ kind: 'refused', status: 409, fields: [] }),
+      isResubmission: false,
+      expected: true,
+    },
+    {
+      label: 'the resubmission collided again',
+      error: new ApiError({ kind: 'refused', status: 409, fields: [] }),
+      isResubmission: true,
+      expected: false,
+    },
+    {
+      label: 'the server broke',
+      error: new ApiError({ kind: 'status', status: 500 }),
+      isResubmission: false,
+      expected: false,
+    },
+  ])('is $expected when $label', ({ error, isResubmission, expected }) => {
+    expect(resubmitsAfter(error, isResubmission)).toBe(expected);
   });
 });
 

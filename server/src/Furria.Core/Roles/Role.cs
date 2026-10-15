@@ -1,4 +1,5 @@
 using Furria.Core.Club;
+using Furria.Core.Groups;
 
 namespace Furria.Core.Roles;
 
@@ -9,6 +10,10 @@ public sealed class Role : ITimestamped
     public string Name { get; set; } = "";
 
     public string Description { get; set; } = "";
+
+    public ClubIcon? Icon { get; set; }
+
+    public GroupTone? Tone { get; set; }
 
     public DateOnly? ArchivedOn { get; set; }
 

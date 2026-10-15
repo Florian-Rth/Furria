@@ -29,6 +29,7 @@ export const CALENDAR_LIST_SECTION_TITLE = 'Termine';
 export const CALENDAR_LOADING_LABEL = 'Der Kalender wird geladen';
 export const CALENDAR_ERROR_TITLE = 'KALENDER NICHT GELADEN';
 export const CALENDAR_RETRY_LABEL = 'Noch einmal';
+export const SCOPES_ERROR_MESSAGE = 'Die Bereiche konnten nicht geladen werden.';
 export const CALENDAR_EMPTY_TITLE = 'NICHTS IM KALENDER';
 export const CALENDAR_EMPTY_LINE = 'In diesem Zeitraum gibt es keine Termine.';
 export const CALENDAR_DAY_EMPTY_TITLE = 'AN DIESEM TAG NICHTS';
@@ -140,6 +141,25 @@ export const toScopeOptions = (entries: readonly CalendarEntry[]): KkFilterOptio
     { id: CLUB_SCOPE_ID, label: CLUB_SCOPE_LABEL, count: clubCount },
     ...groupOptions,
   ];
+};
+
+const UNNAMED_GROUP_SCOPE_LABEL = 'Gruppe';
+
+export const toUnloadedScopeOptions = (
+  scopeId: string,
+  known: readonly KkFilterOption[] | null,
+): KkFilterOption[] => {
+  const base = known ?? [
+    { id: ALL_SCOPE_ID, label: ALL_SCOPE_LABEL },
+    { id: CLUB_SCOPE_ID, label: CLUB_SCOPE_LABEL },
+  ];
+  const options = base.map(({ id, label }) => ({ id, label }));
+
+  if (options.some((option) => option.id === scopeId)) {
+    return options;
+  }
+
+  return [...options, { id: scopeId, label: UNNAMED_GROUP_SCOPE_LABEL }];
 };
 
 export const ADD_ENTRY_PILL_LABEL = 'Termin';

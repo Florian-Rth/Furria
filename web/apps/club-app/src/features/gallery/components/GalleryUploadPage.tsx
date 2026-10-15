@@ -1,8 +1,8 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen, KkTitleHeader } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { GALLERY_ORIGIN } from '@/features/session';
-import { UPLOAD_TITLE } from '../gallery-copy';
+import { AREA_HANDOVERS, GALLERY_ORIGIN } from '@/features/session';
+import { UPLOAD_LEAD, UPLOAD_TITLE } from '../gallery-copy';
 import { useGalleryUpload } from '../hooks/use-gallery-upload';
 import { GalleryUploadCounter } from './GalleryUploadCounter';
 import { GalleryUploadDropZone } from './GalleryUploadDropZone';
@@ -19,6 +19,8 @@ export const GalleryUploadPage: FC = () => {
       origin={GALLERY_ORIGIN}
       thread={upload.thread}
       actions={upload.actions}
+      header={<KkTitleHeader title={UPLOAD_TITLE} lead={UPLOAD_LEAD} />}
+      handover={AREA_HANDOVERS.gallery}
     >
       <Stack
         onDragEnter={upload.onDragEnter}

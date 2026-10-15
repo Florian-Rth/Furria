@@ -12,6 +12,7 @@ import {
   toAdminEndedMessage,
   toGroupAdministrationSavedMessage,
   toGroupArchivedFromHubMessage,
+  toMemberAddedAdminFailedMessage,
   toMemberAddedAsAdminMessage,
   toMemberAddedMessage,
   toMembershipEndedMessage,
@@ -37,7 +38,6 @@ import type { TrainingSlotPayload } from './rhythm-labels';
 import { RHYTHM_SAVED_MESSAGE, toTrainingsCreatedMessage } from './rhythm-labels';
 import type {
   AddedGroupAdmin,
-  AddedGroupMembership,
   GeneratedTrainings,
   GroupAdministrationForm,
   GroupCalendarResponse,
@@ -162,34 +162,70 @@ export const useArchiveGroupFromHubMutation = (
     notice: { success: (input) => toGroupArchivedFromHubMessage(input.name) },
   });
 
-const requestMembershipWithAdmin = async (
+export type AdminAppointmentOutcome = 'none' | 'appointed' | 'failed';
+
+export interface MemberAdmission {
+  groupMembershipId: number;
+  adminAppointment: AdminAppointmentOutcome;
+}
+
+const requestAdminAppointment = async (
   groupId: number,
   input: AddMemberInput,
   accessToken: string,
-): Promise<AddedGroupMembership> => {
-  const added = await requestAddGroupMembership(
-    groupId,
-    { personId: input.personId, joinedOn: input.joinedOn },
-    accessToken,
-  );
+): Promise<AdminAppointmentOutcome> => {
+  if (input.admin === null) {
+    return 'none';
+  }
 
-  if (input.admin !== null) {
+  try {
     await requestAddGroupAdmin(
       groupId,
       { personId: input.personId, function: input.admin.function, sinceOn: input.joinedOn },
       accessToken,
     );
-  }
 
-  return added;
+    return 'appointed';
+  } catch {
+    return 'failed';
+  }
 };
 
-const toMemberAddedNotice = (input: AddMemberInput): string => {
+const requestMembershipWithAdmin = async (
+  groupId: number,
+  input: AddMemberInput,
+  accessToken: string,
+): Promise<MemberAdmission> => {
+  const added = await requestAddGroupMembership(
+    groupId,
+    { personId: input.personId, joinedOn: input.joinedOn },
+    accessToken,
+  );
+  const adminAppointment = await requestAdminAppointment(groupId, input, accessToken);
+
+  return { groupMembershipId: added.groupMembershipId, adminAppointment };
+};
+
+const toMemberAddedNotice = (input: AddMemberInput, result: MemberAdmission): KkNoticeRequest => {
   const today = toIsoDay(new Date());
 
-  return input.admin === null
-    ? toMemberAddedMessage(input.personName, input.joinedOn, today)
-    : toMemberAddedAsAdminMessage(input.personName, input.joinedOn, today);
+  switch (result.adminAppointment) {
+    case 'none':
+      return {
+        tone: 'success',
+        message: toMemberAddedMessage(input.personName, input.joinedOn, today),
+      };
+    case 'appointed':
+      return {
+        tone: 'success',
+        message: toMemberAddedAsAdminMessage(input.personName, input.joinedOn, today),
+      };
+    case 'failed':
+      return {
+        tone: 'error',
+        message: toMemberAddedAdminFailedMessage(input.personName, input.joinedOn, today),
+      };
+  }
 };
 
 const toAdminEndedNotice = (input: EndAdminInput): KkNoticeRequest => {
@@ -202,7 +238,7 @@ const toAdminEndedNotice = (input: EndAdminInput): KkNoticeRequest => {
 
 export const useAddGroupMembershipMutation = (
   groupId: number,
-): UseMutationResult<AddedGroupMembership, Error, AddMemberInput> =>
+): UseMutationResult<MemberAdmission, Error, AddMemberInput> =>
   useApiMutation({
     request: (input: AddMemberInput, accessToken) =>
       requestMembershipWithAdmin(groupId, input, accessToken),

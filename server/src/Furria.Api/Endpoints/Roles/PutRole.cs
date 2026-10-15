@@ -41,6 +41,7 @@ public sealed class PutRole : Endpoint<PutRoleRequest>
             RoleId = req.RoleId,
             Name = req.Name,
             Description = req.Description,
+            Coin = RoleCoinDto.ToCoin(req.Coin),
         };
 }
 
@@ -52,6 +53,8 @@ public sealed record PutRoleRequest
     public required string Name { get; init; }
 
     public required string Description { get; init; }
+
+    public required RoleCoinDto? Coin { get; init; }
 }
 
 public sealed class PutRoleValidator : Validator<PutRoleRequest>
@@ -63,5 +66,8 @@ public sealed class PutRoleValidator : Validator<PutRoleRequest>
         RuleFor(request => request.Description)
             .NotNull()
             .MaximumLength(RoleLimits.DescriptionLength);
+        RuleFor(request => request.Coin!)
+            .SetValidator(new RoleCoinValidator())
+            .When(request => request.Coin is not null);
     }
 }

@@ -54,6 +54,7 @@ type GroupTone =
   | 'violet'
   | 'orchid'
   | 'rose';
+type ClubIcon = 'crown' | 'euro' | 'key' | 'camera' | 'wrench' | 'star' | 'heart' | 'mask' | 'flag';
 type EntryKind = 'training' | 'rehearsal' | 'performance' | 'meeting' | 'party' | 'other';
 type EntryVisibility = 'group' | 'club' | 'public';
 
@@ -89,6 +90,7 @@ interface GroupSpec {
   readonly name: string;
   readonly kind: string | null;
   readonly tone: GroupTone;
+  readonly icon: ClubIcon;
   readonly foundedYear: number;
   readonly isRecruiting: boolean;
   readonly description: string;
@@ -125,12 +127,20 @@ interface RoleSpec {
   readonly name: string;
   readonly description: string;
   readonly permissionKeys: readonly string[];
+  readonly icon: ClubIcon;
 }
 
 interface BoardOfficeSpec {
   readonly name: string;
   readonly sortOrder: number;
   readonly impliedRole: string | null;
+  readonly icon: ClubIcon;
+}
+
+interface RoleHoldingSpec {
+  readonly role: string;
+  readonly person: string;
+  readonly sinceOn: IsoDay;
 }
 
 interface BoardSeatSpec {
@@ -484,6 +494,7 @@ const GROUPS: readonly GroupSpec[] = [
     name: 'Tanzgarde',
     kind: 'Tanzgarde',
     tone: 'rose',
+    icon: 'star',
     foundedYear: 2001,
     isRecruiting: true,
     description:
@@ -493,6 +504,7 @@ const GROUPS: readonly GroupSpec[] = [
     name: 'Kindergarde',
     kind: null,
     tone: 'teal',
+    icon: 'heart',
     foundedYear: 1996,
     isRecruiting: true,
     description:
@@ -502,6 +514,7 @@ const GROUPS: readonly GroupSpec[] = [
     name: 'Männerballett',
     kind: 'Männerballett',
     tone: 'indigo',
+    icon: 'mask',
     foundedYear: 2011,
     isRecruiting: true,
     description:
@@ -511,6 +524,7 @@ const GROUPS: readonly GroupSpec[] = [
     name: 'Elferrat',
     kind: 'Organisation',
     tone: 'clay',
+    icon: 'flag',
     foundedYear: 1971,
     isRecruiting: false,
     description:
@@ -542,12 +556,31 @@ const ROLES: readonly RoleSpec[] = [
       'calendar.manage_club',
       'key_holdings.manage',
     ],
+    icon: 'key',
+  },
+  {
+    name: 'Fotografie',
+    description: 'Hält Sitzungen, Umzüge und Trainings in Bildern fest.',
+    permissionKeys: [],
+    icon: 'camera',
+  },
+  {
+    name: 'Technik',
+    description: 'Ton, Licht und Bühne bei allen Veranstaltungen.',
+    permissionKeys: [],
+    icon: 'wrench',
   },
 ];
 
+const ROLE_HOLDINGS: readonly RoleHoldingSpec[] = [
+  { role: 'Fotografie', person: 'lena', sinceOn: '2023-11-11' },
+  { role: 'Technik', person: 'thomas', sinceOn: '2014-11-11' },
+  { role: 'Technik', person: 'dirk', sinceOn: '2019-11-11' },
+];
+
 const BOARD_OFFICES: readonly BoardOfficeSpec[] = [
-  { name: 'Präsident', sortOrder: 1, impliedRole: 'Präsidium' },
-  { name: 'Schatzmeister', sortOrder: 2, impliedRole: null },
+  { name: 'Präsident', sortOrder: 1, impliedRole: 'Präsidium', icon: 'crown' },
+  { name: 'Schatzmeister', sortOrder: 2, impliedRole: null, icon: 'euro' },
 ];
 
 const groupMembershipsOf = (moment: Moment): GroupMembershipSpec[] => [
@@ -807,7 +840,7 @@ const ensureGroups = async (admin: Session): Promise<Map<string, number>> => {
       const created = await postJson(
         'manage/groups',
         admin,
-        { name: group.name, groupKindId },
+        { name: group.name, groupKindId, icon: group.icon },
         CreatedGroupSchema,
       );
       groupIds.set(group.name, created.groupId);
@@ -818,6 +851,7 @@ const ensureGroups = async (admin: Session): Promise<Map<string, number>> => {
       groupKindId,
       foundedYear: group.foundedYear,
       tone: group.tone,
+      icon: group.icon,
     });
   }
   log(`groups: ${GROUPS.map((group) => group.name).join(', ')}`);
@@ -848,11 +882,16 @@ const ensureRoles = async (admin: Session): Promise<Map<string, number>> => {
       const created = await postJson(
         'manage/roles',
         admin,
-        { name: role.name, description: role.description },
+        { name: role.name, description: role.description, icon: role.icon },
         CreatedRoleSchema,
       );
       roleIds.set(role.name, created.roleId);
     }
+    await send('PUT', `manage/roles/${lookUp(roleIds, role.name, 'role')}`, admin, {
+      name: role.name,
+      description: role.description,
+      icon: role.icon,
+    });
     await send('PUT', `manage/roles/${lookUp(roleIds, role.name, 'role')}/permissions`, admin, {
       permissionKeys: role.permissionKeys,
     });
@@ -874,11 +913,20 @@ const ensureBoardOffices = async (
       const created = await postJson(
         'manage/board/offices',
         admin,
-        { name: office.name, sortOrder: office.sortOrder },
+        { name: office.name, sortOrder: office.sortOrder, icon: office.icon },
         CreatedBoardOfficeSchema,
       );
       officeIds.set(office.name, created.boardOfficeId);
     }
+    const boardOfficeId = lookUp(officeIds, office.name, 'board office');
+    await send('PUT', `manage/board/offices/${boardOfficeId}`, admin, {
+      name: office.name,
+      sortOrder: office.sortOrder,
+      icon: office.icon,
+    });
+    await send('PUT', `manage/board/offices/${boardOfficeId}/publication`, admin, {
+      isPublic: true,
+    });
     const impliedRoleId =
       office.impliedRole === null ? null : lookUp(roleIds, office.impliedRole, 'role');
     await send(
@@ -1055,6 +1103,28 @@ const ensureBoardSeats = async (
     }
   }
   log('board seats: in place');
+};
+
+const ensureRoleHoldings = async (
+  admin: Session,
+  roleIds: ReadonlyMap<string, number>,
+  personIds: ReadonlyMap<string, number>,
+): Promise<void> => {
+  const roles = await getJson('manage/roles', admin, RolesSchema);
+  for (const holding of ROLE_HOLDINGS) {
+    const roleId = lookUp(roleIds, holding.role, 'role');
+    const personId = lookUp(personIds, holding.person, 'person');
+    const holds = roles.roles.some(
+      (role) => role.roleId === roleId && hasPerson(role.holders, personId),
+    );
+    if (!holds) {
+      await send('POST', `manage/roles/${roleId}/holdings`, admin, {
+        personId,
+        sinceOn: holding.sinceOn,
+      });
+    }
+  }
+  log('role holdings: in place');
 };
 
 const pause = (ms: number): Promise<void> =>
@@ -1389,6 +1459,7 @@ const run = async (): Promise<void> => {
   await ensureGroupTies(admin, moment, groupIds, personIds);
   await ensureKeys(admin, moment, venueIds, personIds);
   await ensureBoardSeats(admin, moment, officeIds, personIds);
+  await ensureRoleHoldings(admin, roleIds, personIds);
   await ensureAccounts(admin, moment, specsByKey, personIds, groupIds);
 
   const viewers = new Map<string, Session>();

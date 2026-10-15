@@ -10,6 +10,7 @@ import {
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { toAvatarHonours } from '@/lib/honours';
 import { toInitials } from '@/lib/initials';
 import { toPeekId } from '@/lib/peek';
 import { toMembershipStateChip } from '@/lib/state-chips';
@@ -45,6 +46,7 @@ export const MemberPeekSheet: FC<MemberPeekSheetProps> = ({ members }) => {
   const name = `${member.firstName} ${member.lastName}`;
   const initials = toInitials(member.firstName, member.lastName);
   const portrait = toImageSource(member.portrait ?? null, 'portrait');
+  const honours = toAvatarHonours(member.honours);
   const state = toMembershipStateChip(member.membershipState);
   const params = { personId: String(member.personId) };
 
@@ -56,7 +58,7 @@ export const MemberPeekSheet: FC<MemberPeekSheetProps> = ({ members }) => {
     >
       <KkSheet.Body>
         <Stack direction="row" sx={{ alignItems: 'center', gap: HEAD_GAP, minWidth: 0 }}>
-          <KkAvatar initials={initials} image={portrait} />
+          <KkAvatar initials={initials} image={portrait} size="large" honours={honours} />
           <KkChip tone={state.tone} dot={state.dot}>
             {state.label}
           </KkChip>

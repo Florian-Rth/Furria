@@ -19,6 +19,7 @@ export const requestGroupCreation = (form: GroupForm, accessToken: string): Prom
     body: {
       name: form.name,
       groupKindId: toGroupKindId(form.groupKindId),
+      icon: form.icon,
     },
     schema: CreatedGroupSchema,
     accessToken,

@@ -57,6 +57,7 @@ export const photoViewerLabels: KkViewerLabels = {
   next: 'Nächstes Foto',
   counterJoin: 'von',
   developing: 'Foto wird geladen',
+  failed: 'Foto nicht verfügbar',
   play: 'Video abspielen',
 };
 

@@ -21,7 +21,7 @@ export const BoardSeatScreen: FC = () => {
   const { has, isUndecided } = usePermissions();
   const id = parsePositiveId(boardOfficeId);
   const seatId = parsePositiveId(boardSeatId);
-  const board = useBoardQuery();
+  const board = useBoardQuery(has(PERMISSION_KEYS.boardManage));
   const errorMessage = toBoardErrorMessage(board.error);
 
   const reload = (): void => {

@@ -3,7 +3,7 @@ import { useMutationState } from '@tanstack/react-query';
 import { useState } from 'react';
 import { attendanceResponseMutationKey, useAttendanceResponseMutation } from '../api';
 import type { AttendanceAttempt, AttendanceFailure } from '../attendance-answer';
-import { latestAnswerErrorOf, toAttendanceFailureOf } from '../attendance-answer';
+import { latestAnswerErrorOf, resubmitsAfter, toAttendanceFailureOf } from '../attendance-answer';
 import type { AttendanceAnswer } from '../schemas';
 
 export interface AttendanceAnswerOptions {
@@ -31,15 +31,24 @@ export const useAttendanceAnswer = (
     select: toAttempt,
   });
 
-  const choose = (answer: AttendanceAnswer): void => {
+  const submit = (answer: AttendanceAnswer, isResubmission: boolean): void => {
     mutation.mutate(
       { calendarEntryId, answer },
       {
         onSuccess: () => {
           onSaved?.(answer);
         },
+        onError: (error) => {
+          if (resubmitsAfter(error, isResubmission)) {
+            submit(answer, true);
+          }
+        },
       },
     );
+  };
+
+  const choose = (answer: AttendanceAnswer): void => {
+    submit(answer, false);
   };
 
   return { choose, failure: toAttendanceFailureOf(latestAnswerErrorOf(attempts, mountedAt)) };

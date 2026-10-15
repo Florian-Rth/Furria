@@ -7,6 +7,12 @@ const FAILURE_BY_STATUS: Record<number, UploadFailure> = {
   415: 'notAccepted',
 };
 
+const GONE_STATUS = 404;
+const CREATION_METHOD = 'POST';
+
+export const transferStatusOf = (status: number | null, method: string | null): number | null =>
+  status === GONE_STATUS && method !== CREATION_METHOD ? null : status;
+
 export const failureOfStatus = (status: number | null): UploadFailure =>
   (status === null ? undefined : FAILURE_BY_STATUS[status]) ?? 'interrupted';
 

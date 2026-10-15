@@ -23,6 +23,7 @@ export const EventEditScreen: FC = () => {
   const event = useEventQuery(id);
   const venues = useRunningVenuesQuery();
   const errorMessage = toEventErrorMessage(event.error ?? venues.error);
+  const isRetrying = event.isFetching || venues.isFetching;
 
   const reload = (): void => {
     if (event.isError) {
@@ -43,7 +44,14 @@ export const EventEditScreen: FC = () => {
     return <EventEditor event={event.data} venues={venues.data.venues} />;
   }
   if (errorMessage !== null) {
-    return <EventEditorError title={TITLE} message={errorMessage} onRetry={reload} />;
+    return (
+      <EventEditorError
+        title={TITLE}
+        message={errorMessage}
+        isRetrying={isRetrying}
+        onRetry={reload}
+      />
+    );
   }
 
   return <EventEditorSkeleton title={TITLE} />;

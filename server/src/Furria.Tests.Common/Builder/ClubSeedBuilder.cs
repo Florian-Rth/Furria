@@ -142,11 +142,20 @@ public sealed class ClubSeedBuilder
         int sortOrder = 1,
         string? impliedRoleAlias = null,
         DateOnly? archivedOn = null,
-        bool isPublic = false
+        bool isPublic = false,
+        ClubIcon? icon = null
     )
     {
         _boardOffices.Add(
-            new BoardOfficeIntent(alias, name, sortOrder, impliedRoleAlias, archivedOn, isPublic)
+            new BoardOfficeIntent(
+                alias,
+                name,
+                sortOrder,
+                impliedRoleAlias,
+                archivedOn,
+                isPublic,
+                icon
+            )
         );
         return this;
     }
@@ -356,7 +365,8 @@ public sealed class ClubSeedBuilder
         int SortOrder,
         string? ImpliedRoleAlias,
         DateOnly? ArchivedOn,
-        bool IsPublic
+        bool IsPublic,
+        ClubIcon? Icon
     );
 
     internal sealed record BoardSeatIntent(

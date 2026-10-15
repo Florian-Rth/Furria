@@ -12,6 +12,7 @@ const pastMember = (overrides: Partial<GroupDetailMember>): GroupDetailMember =>
   leftOn: '2019-02-28',
   since: '2017-09-01',
   isAffiliated: true,
+  honours: { sessions: 0, functions: [] },
   ...overrides,
 });
 
@@ -26,6 +27,7 @@ const pastAdmin = (overrides: Partial<GroupDetailAdmin>): GroupDetailAdmin => ({
   untilOn: '2021-02-28',
   since: '2019-01-01',
   isAffiliated: true,
+  honours: { sessions: 0, functions: [] },
   ...overrides,
 });
 

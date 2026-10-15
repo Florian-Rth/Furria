@@ -1,4 +1,3 @@
-import { KkPhoto } from '@furria/ui';
 import type { FC } from 'react';
 import type { GroupTone } from '@/features/groups';
 import { PictureSection, usePictureSection } from '@/features/pictures';
@@ -17,7 +16,6 @@ export const GroupPictureSection: FC<GroupPictureSectionProps> = ({ hub, tone })
     editing: hub.pictureEditing,
     refresh: query.refetch,
   });
-  const poster = <KkPhoto alt="" placeholderLabel={hub.name} tone={tone} fill />;
 
-  return <PictureSection desk={desk} poster={poster} alt={hub.name} />;
+  return <PictureSection desk={desk} placeholderLabel={hub.name} tone={tone} alt={hub.name} />;
 };

@@ -1,6 +1,7 @@
 import type { KkIconName } from '@furria/ui';
 import { useKkNotice, useKkSheetCommands } from '@furria/ui';
 import { useNavigate } from '@tanstack/react-router';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import { selectionWith, selectionWithout } from '../album-frames';
 import {
   ADD_TO_SELECTION_LABEL,
@@ -15,7 +16,6 @@ import {
   restoredMessage,
   selectionChangedMessage,
   UNDO_LABEL,
-  WRITE_FAILED,
 } from '../album-labels';
 import {
   useFullAlbumFetch,
@@ -69,8 +69,11 @@ export const useAlbumBulk = ({
   const busy =
     placement.isPending || deletion.isPending || selectionWrite.isPending || restoration.isPending;
 
-  const failed = (): void => {
-    raiseNotice({ tone: 'error', message: WRITE_FAILED });
+  const failed = (error: Error): void => {
+    const message = toWriteErrorMessage(error);
+    if (message !== null) {
+      raiseNotice({ tone: 'error', message });
+    }
   };
 
   const restore = (restored: readonly number[]): void => {

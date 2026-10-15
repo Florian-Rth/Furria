@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { CommitPlan, DeskSource } from './inbox-desk';
-import { commitPlanOf, defaultSlotsOf, deskOf, reconcileCulling } from './inbox-desk';
+import {
+  commitPlanOf,
+  defaultSlotsOf,
+  deskOf,
+  isDeskCleared,
+  reconcileCulling,
+} from './inbox-desk';
 import type { CullState, CullVerdict } from './light-table';
 import { cull, startCulling } from './light-table';
 
@@ -51,6 +57,25 @@ describe('deskOf', () => {
       stalled: 1,
       failed: 1,
     });
+  });
+
+  it('lists failed items that are not hidden yet', () => {
+    const desk = deskOf(
+      [item(1, null, 'failed'), item(2, null, 'failed'), item(3, null)],
+      new Set([2]),
+    );
+    expect(desk.failedIds).toEqual([1]);
+  });
+});
+
+describe('isDeskCleared', () => {
+  it.each<[string, { developing: number; failed: number }, number, boolean]>([
+    ['nothing left', { developing: 0, failed: 0 }, 0, true],
+    ['open frames', { developing: 0, failed: 0 }, 2, false],
+    ['developing items', { developing: 1, failed: 0 }, 0, false],
+    ['failed items', { developing: 0, failed: 1 }, 0, false],
+  ])('decides with %s', (_, desk, openFrames, cleared) => {
+    expect(isDeskCleared(desk, openFrames)).toBe(cleared);
   });
 });
 

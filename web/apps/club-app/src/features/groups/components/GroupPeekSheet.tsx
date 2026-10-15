@@ -2,7 +2,7 @@ import {
   KkAvatarStack,
   KkChip,
   KkEyebrow,
-  KkGroupToneField,
+  KkGroupCover,
   KkMeta,
   KkPanelSection,
   KkSheet,
@@ -17,7 +17,6 @@ import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import { toInitials } from '@/lib/initials';
 import { toPeekId } from '@/lib/peek';
 import { toRecruitingChip } from '@/lib/state-chips';
-import { usePeek } from '@/lib/use-peek';
 import { toGroupTone } from '../group-identity';
 import {
   GROUP_PEEK_CLOSE_LABEL,
@@ -27,7 +26,9 @@ import {
   toGroupSizeLine,
   toGroupStandingChips,
 } from '../groups-labels';
+import { useGroupPeek } from '../hooks/use-group-peek';
 import type { GroupSummary } from '../schemas';
+import { GroupPeekMissing } from './GroupPeekMissing';
 
 const GROUP_PATH = '/groups/$groupId';
 const DESCRIPTION_LINES = 4;
@@ -36,18 +37,21 @@ const MEMBERS_GAP = 1.25;
 const FIELD_RATIO = kkTokens.aspectRatio.banner;
 const FIELD_RADIUS = { borderRadius: `${kkTokens.radius.base}px` } as const;
 
-const toGroupId = (group: GroupSummary): number => group.groupId;
-
 interface GroupPeekSheetProps {
   groups: readonly GroupSummary[];
 }
 
 export const GroupPeekSheet: FC<GroupPeekSheetProps> = ({ groups }) => {
-  const group = usePeek('group', groups, toGroupId);
+  const peek = useGroupPeek(groups);
 
-  if (group === null) {
+  if (peek.kind === 'closed') {
     return null;
   }
+  if (peek.kind === 'missing') {
+    return <GroupPeekMissing groupId={peek.groupId} />;
+  }
+
+  const { group } = peek;
 
   const tone = toGroupTone(group.groupId, group.tone);
   const openness = toRecruitingChip(group.isRecruiting);
@@ -61,6 +65,7 @@ export const GroupPeekSheet: FC<GroupPeekSheetProps> = ({ groups }) => {
     toImageSource(person.portrait ?? null, 'portrait'),
   );
   const kindLabel = toGroupKindLabel(group.groupKindName);
+  const cover = toImageSource(group.picture, 'groupPicture');
 
   const kindEyebrow =
     kindLabel === null ? undefined : <KkEyebrow tone="onAccent">{kindLabel}</KkEyebrow>;
@@ -72,9 +77,10 @@ export const GroupPeekSheet: FC<GroupPeekSheetProps> = ({ groups }) => {
       closeLabel={GROUP_PEEK_CLOSE_LABEL}
     >
       <KkSheet.Body>
-        <KkGroupToneField
+        <KkGroupCover
           tone={tone}
           name={group.name}
+          image={cover}
           eyebrow={kindEyebrow}
           aspectRatio={FIELD_RATIO}
           sx={FIELD_RADIUS}

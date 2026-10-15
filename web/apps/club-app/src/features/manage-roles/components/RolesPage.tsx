@@ -25,10 +25,10 @@ const NO_ROLES: readonly RoleSummary[] = [];
 
 export const RolesPage: FC = () => {
   const searchMode = useScreenSearch(SEARCH_PLACEHOLDER);
-  const roles = useRolesQuery();
+  const { has, isUndecided } = usePermissions();
+  const roles = useRolesQuery(has(PERMISSION_KEYS.rolesManage));
   const rows = roles.data?.roles ?? NO_ROLES;
   const search = useRoleSearch(rows);
-  const { has, isUndecided } = usePermissions();
   const canManage = isUndecided || has(PERMISSION_KEYS.rolesManage);
 
   const toolbar =

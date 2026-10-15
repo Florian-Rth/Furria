@@ -2,6 +2,7 @@ import { KkAvatar, KkSinceRow } from '@furria/ui';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toLandingKey } from '@/features/write';
+import { toAvatarHonours } from '@/lib/honours';
 import { toInitials } from '@/lib/initials';
 import { toHolderSinceValue, toPersonName } from '../manage-roles-labels';
 import type { RoleHolder } from '../schemas';
@@ -19,13 +20,10 @@ export const RoleHolderRow: FC<RoleHolderRowProps> = ({ roleId, holder, highligh
   const name = toPersonName(holder);
   const landing = toLandingKey('role-holding', holder.roleHoldingId);
 
-  const avatar = (
-    <KkAvatar
-      initials={toInitials(holder.firstName, holder.lastName)}
-      size="small"
-      component="span"
-    />
-  );
+  const initials = toInitials(holder.firstName, holder.lastName);
+  const honours = toAvatarHonours(holder.honours);
+
+  const avatar = <KkAvatar initials={initials} honours={honours} component="span" />;
 
   return (
     <KkSinceRow

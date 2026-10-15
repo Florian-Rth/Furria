@@ -9,7 +9,7 @@ import {
   useGroupKindsQuery,
 } from '@/features/group-kinds';
 import { toGroupTone } from '@/features/groups';
-import { WriteScreen } from '@/features/write';
+import { ClubIconField, WriteScreen } from '@/features/write';
 import { toHubEditorOrigin } from '../group-hub-labels';
 import { toEditorChoicesErrorMessage } from '../group-hub-messages';
 import { useGroupInfoEditor } from '../hooks/use-group-info-editor';
@@ -68,10 +68,24 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
         origin={origin}
         message={kindsErrorMessage}
         onRetry={reloadKinds}
+        isRetrying={kinds.isFetching}
       />
     );
   }
-  if (takenTones === null) {
+  if (takenTones.state.kind === 'failed') {
+    const tonesErrorMessage = toEditorChoicesErrorMessage(takenTones.state.error);
+
+    return (
+      <GroupEditorError
+        title={TITLE}
+        origin={origin}
+        message={tonesErrorMessage}
+        onRetry={takenTones.retry}
+        isRetrying={takenTones.isRetrying}
+      />
+    );
+  }
+  if (takenTones.state.kind === 'pending') {
     return <GroupEditorSkeleton />;
   }
 
@@ -137,7 +151,12 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
             />
           }
         />
-        <HubTonePicker value={control.tone} takenTones={takenTones} onChange={control.setTone} />
+        <HubTonePicker
+          value={control.tone}
+          takenTones={takenTones.state.tones}
+          onChange={control.setTone}
+        />
+        <ClubIconField value={control.icon} onChange={control.setIcon} />
       </KkFormSection>
     </WriteScreen>
   );

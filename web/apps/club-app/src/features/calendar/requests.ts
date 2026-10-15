@@ -3,8 +3,14 @@ import { NoContentSchema } from '@/lib/api/schemas';
 import type { CalendarEntryPayload } from './calendar-authoring';
 import type { CalendarQuery } from './calendar-query';
 import { toCalendarPath } from './calendar-query';
-import type { CalendarResponse, RunningVenuesResponse, WrittenCalendarEntry } from './schemas';
+import type {
+  CalendarEntryResponse,
+  CalendarResponse,
+  RunningVenuesResponse,
+  WrittenCalendarEntry,
+} from './schemas';
 import {
+  CalendarEntryResponseSchema,
   CalendarResponseSchema,
   RunningVenuesResponseSchema,
   WrittenCalendarEntrySchema,
@@ -15,6 +21,15 @@ export const requestCalendar = (
   accessToken: string,
 ): Promise<CalendarResponse> =>
   apiFetch(toCalendarPath(query), { schema: CalendarResponseSchema, accessToken });
+
+export const requestCalendarEntry = (
+  calendarEntryId: number,
+  accessToken: string,
+): Promise<CalendarEntryResponse> =>
+  apiFetch(`/api/calendar/entries/${calendarEntryId}`, {
+    schema: CalendarEntryResponseSchema,
+    accessToken,
+  });
 
 export const requestRunningVenues = (accessToken: string): Promise<RunningVenuesResponse> =>
   apiFetch('/api/venues', { schema: RunningVenuesResponseSchema, accessToken });

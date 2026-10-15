@@ -13,13 +13,6 @@ export interface CalendarQuery extends CalendarScopeChoice {
 export const ALL_SCOPE_ID = 'all';
 export const CLUB_SCOPE_ID = 'club';
 
-export const ALL_CALENDAR_ENTRIES_QUERY: CalendarQuery = {
-  scope: 'all',
-  groupId: null,
-  from: null,
-  to: null,
-};
-
 const GROUP_SCOPE_PREFIX = 'group-';
 const GROUP_SCOPE_PATTERN = /^group-([1-9]\d*)$/;
 const CALENDAR_ENDPOINT = '/api/calendar';

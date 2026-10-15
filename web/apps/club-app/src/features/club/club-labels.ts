@@ -19,6 +19,9 @@ const ONE_DAY_LEFT_LABEL = 'noch 1 Tag';
 const ONE_DAY = 1;
 
 export const MOTTO_PENDING_LABEL = 'Das Motto steht noch aus';
+export const CLUB_RETRY_LABEL = 'Erneut laden';
+export const STALE_NOTE = 'Nicht aktualisiert – du siehst den letzten Stand.';
+export const MOTTO_UNLOADED_LABEL = 'Das Motto ist gerade nicht abrufbar';
 
 export const CLUB_LOADING_LABEL = 'Der Verein wird geladen';
 

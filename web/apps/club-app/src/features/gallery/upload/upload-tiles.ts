@@ -15,6 +15,9 @@ export interface UploadTileLook {
 }
 
 const sentLook = (entry: UploadEntry, developed: DevelopedItem | undefined): UploadTileLook => {
+  if (entry.mediaItemId === null) {
+    return { state: 'ready', progress: 1, source: entry.preview, retryable: false };
+  }
   switch (developed?.state) {
     case 'ready':
       return { state: 'ready', progress: 1, source: developed.source, retryable: false };

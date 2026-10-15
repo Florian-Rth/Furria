@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { EntryReach } from './calendar-labels';
-import { entryReachOf, toScopeOptions, toStartDayQuickChoices } from './calendar-labels';
+import {
+  entryReachOf,
+  toScopeOptions,
+  toStartDayQuickChoices,
+  toUnloadedScopeOptions,
+} from './calendar-labels';
 import type { CalendarEntry, CalendarEntryVisibility } from './schemas';
 
 const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
@@ -51,6 +56,53 @@ describe('toScopeOptions', () => {
       { id: 'group-1', count: 1 },
       { id: 'group-3', count: 2 },
     ]);
+  });
+});
+
+describe('toUnloadedScopeOptions', () => {
+  it.each<{
+    label: string;
+    scopeId: string;
+    known: { id: string; label: string; count?: number }[] | null;
+    expected: { id: string; count: number | undefined }[];
+  }>([
+    {
+      label: 'nothing was ever loaded',
+      scopeId: 'all',
+      known: null,
+      expected: [
+        { id: 'all', count: undefined },
+        { id: 'club', count: undefined },
+      ],
+    },
+    {
+      label: 'the chosen group was never loaded',
+      scopeId: 'group-7',
+      known: null,
+      expected: [
+        { id: 'all', count: undefined },
+        { id: 'club', count: undefined },
+        { id: 'group-7', count: undefined },
+      ],
+    },
+    {
+      label: 'an earlier month named the groups',
+      scopeId: 'group-3',
+      known: [
+        { id: 'all', label: 'Alle', count: 4 },
+        { id: 'club', label: 'Verein', count: 1 },
+        { id: 'group-3', label: 'Garde', count: 3 },
+      ],
+      expected: [
+        { id: 'all', count: undefined },
+        { id: 'club', count: undefined },
+        { id: 'group-3', count: undefined },
+      ],
+    },
+  ])('keeps every scope without stale counts when $label', ({ scopeId, known, expected }) => {
+    const options = toUnloadedScopeOptions(scopeId, known);
+
+    expect(options.map(({ id, count }) => ({ id, count }))).toEqual(expected);
   });
 });
 

@@ -1,9 +1,11 @@
 import { motion } from 'motion/react';
 import type { CSSProperties, FC, SyntheticEvent } from 'react';
 import type { KkSize } from '../../../image-aspect';
+import { useImageFault } from '../../../internal/use-image-fault';
 import { kkTokens } from '../../../tokens';
 import type { ViewerSlide } from '../logic/viewer-context';
 import { useViewer } from '../logic/viewer-context';
+import { KkViewerFault } from './KkViewerFault';
 import { KkViewerFilm } from './KkViewerFilm';
 import { KkViewerLatent } from './KkViewerLatent';
 
@@ -32,6 +34,8 @@ interface KkViewerSlideProps {
 export const KkViewerSlide: FC<KkViewerSlideProps> = ({ slide }) => {
   const viewer = useViewer();
   const { item } = slide;
+  const imageFault = useImageFault(item.image?.src ?? '');
+  const failed = item.state === 'failed' || imageFault.hasFailed;
   const current = slide.offset === 0;
   const slideMotion = current
     ? { opacity: viewer.arrival.opacity, y: viewer.arrival.pullY, scale: viewer.arrival.pullScale }
@@ -55,10 +59,11 @@ export const KkViewerSlide: FC<KkViewerSlideProps> = ({ slide }) => {
     viewer.onImageLoad(item.key, event);
   };
 
+  const fault = failed ? <KkViewerFault label={viewer.labels.failed} /> : null;
+  const developing =
+    !failed && item.image === null ? <KkViewerLatent label={viewer.labels.developing} /> : null;
   const picture =
-    item.image === null ? (
-      <KkViewerLatent label={viewer.labels.developing} />
-    ) : (
+    failed || item.image === null ? null : (
       <motion.img
         src={item.image.src}
         srcSet={item.image.srcSet}
@@ -67,17 +72,19 @@ export const KkViewerSlide: FC<KkViewerSlideProps> = ({ slide }) => {
         draggable={false}
         decoding="async"
         onLoad={handleLoad}
+        onError={imageFault.onError}
         style={{ ...IMAGE_STYLE, ...sizedStyle, ...imageMotion }}
       />
     );
   const film =
-    current && item.video !== undefined && item.image !== null ? (
+    current && !failed && item.video !== undefined && item.image !== null ? (
       <KkViewerFilm
         key={item.video.src}
         source={item.video.src}
         poster={item.image.src}
         duration={item.video.duration}
         playLabel={viewer.labels.play}
+        failedLabel={viewer.labels.failed}
       />
     ) : null;
 
@@ -87,6 +94,8 @@ export const KkViewerSlide: FC<KkViewerSlideProps> = ({ slide }) => {
       data-kk-viewer-slide={slide.slot}
       style={slideStyle}
     >
+      {fault}
+      {developing}
       {picture}
       {film}
     </motion.div>

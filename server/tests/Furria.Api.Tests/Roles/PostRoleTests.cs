@@ -2,6 +2,9 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
+using Furria.Core.Club;
+using Furria.Core.Groups;
+using Furria.Core.Roles;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -24,11 +27,38 @@ public sealed class PostRoleTests : IClassFixture<ApiTestFixture>
     private static Task<TestResult<PostRoleResponse>> CreateRoleAsync(
         HttpClient client,
         string name,
-        string description
+        string description,
+        RoleCoinDto? coin = null
     ) =>
         client.POSTAsync<PostRole, PostRoleRequest, PostRoleResponse>(
-            new PostRoleRequest { Name = name, Description = description }
+            new PostRoleRequest
+            {
+                Name = name,
+                Description = description,
+                Coin = coin,
+            }
         );
+
+    [Fact]
+    public async Task Should_KeepTheCoin_When_AManagerConfiguresOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await CreateRoleAsync(
+            client,
+            "Zeugwart",
+            "Hütet das Material des Vereins.",
+            new RoleCoinDto { Icon = ClubIcon.Wrench, Tone = GroupTone.Teal }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.Role(result.RoleId)
+            .ToHaveCoin(new RoleCoin(ClubIcon.Wrench, GroupTone.Teal))
+            .AssertAsync(ct);
+    }
 
     [Fact]
     public async Task Should_CreateTheRoleWithoutKeys_When_AManagerAddsOne()

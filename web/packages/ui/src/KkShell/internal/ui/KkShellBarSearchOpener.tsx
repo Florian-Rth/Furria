@@ -1,8 +1,8 @@
 import IconButton from '@mui/material/IconButton';
 import type { FC } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
-import { kkTokens } from '../../../tokens';
 import type { KkScreenSearch } from '../../screen-declaration';
+import { barSlot } from '../logic/bar-slot';
 import { KkShellBarGlass } from './KkShellBarGlass';
 
 interface KkShellBarSearchOpenerProps {
@@ -15,12 +15,7 @@ export const KkShellBarSearchOpener: FC<KkShellBarSearchOpenerProps> = ({ search
     type="button"
     onClick={search.onOpen}
     data-kk-shell-bar-search-opener
-    sx={(theme) => ({
-      minWidth: kkTokens.tapTarget,
-      minHeight: kkTokens.tapTarget,
-      flexShrink: 0,
-      ...focusRing(theme),
-    })}
+    sx={[barSlot, focusRing]}
   >
     <KkShellBarGlass />
   </IconButton>

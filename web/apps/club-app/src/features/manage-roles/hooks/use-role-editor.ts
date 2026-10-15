@@ -1,7 +1,10 @@
 import type { UseFormReturn } from 'react-hook-form';
 import { useController } from 'react-hook-form';
 import { useWriteForm } from '@/features/write';
+import type { ClubIcon } from '@/lib/club-icon';
+import type { GroupTone } from '@/lib/group-tone';
 import { useCreateRoleMutation, useUpdateRoleMutation } from '../api';
+import { toShownCoin } from '../role-coin';
 import type { RoleForm } from '../schemas';
 import { RoleFormSchema } from '../schemas';
 
@@ -17,6 +20,12 @@ export interface RoleEditorControl {
   description: string;
   setDescription: (value: string) => void;
   touchDescription: () => void;
+  showsCoin: boolean;
+  setShowsCoin: (shows: boolean) => void;
+  coinIcon: ClubIcon | null;
+  setCoinIcon: (icon: ClubIcon | null) => void;
+  coinTone: GroupTone | null;
+  setCoinTone: (tone: GroupTone) => void;
   isDirty: boolean;
   canSubmit: boolean;
   isSaving: boolean;
@@ -38,11 +47,30 @@ export const useRoleEditor = ({ roleId, initial }: RoleEditorInput): RoleEditorC
     landing: (id) => ({ to: '/manage/roles', search: { role: id }, mark: { kind: 'role', id } }),
   });
   const description = useController({ control: write.form.control, name: 'description' });
+  const showsCoin = useController({ control: write.form.control, name: 'showsCoin' });
+  const coinIcon = useController({ control: write.form.control, name: 'coinIcon' });
+  const coinTone = useController({ control: write.form.control, name: 'coinTone' });
+
+  const setShowsCoin = (shows: boolean): void => {
+    showsCoin.field.onChange(shows);
+
+    if (shows) {
+      const shown = toShownCoin(coinIcon.field.value, coinTone.field.value);
+      coinIcon.field.onChange(shown.icon);
+      coinTone.field.onChange(shown.tone);
+    }
+  };
 
   return {
     ...write,
     description: description.field.value,
     setDescription: description.field.onChange,
     touchDescription: description.field.onBlur,
+    showsCoin: showsCoin.field.value,
+    setShowsCoin,
+    coinIcon: coinIcon.field.value,
+    setCoinIcon: coinIcon.field.onChange,
+    coinTone: coinTone.field.value,
+    setCoinTone: coinTone.field.onChange,
   };
 };

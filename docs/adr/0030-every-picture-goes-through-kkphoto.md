@@ -21,6 +21,14 @@ renders an `<img>`. A lint rule enforces both.**
 - **Enforcement:** `web/biome-plugins/noRawImage.grit` fails on `<img>`, `<picture>`, `<source>`,
   `CardMedia`, `ImageListItem`, `component="img"`, `Avatar src` and CSS `url(…)` images in every
   app and package — except `KkImage.tsx` and `KkCropPreview.tsx`.
+- **One missing-picture look** (Florian, 2026-10-15): a missing picture shows the striped `KkPhoto`
+  placeholder everywhere — the coloured news poster (`KkNewsPoster`), icon tiles, initials fields
+  the broom-mark emblem and the solid group-colour field (`KkGroupToneField`, now `KkGroupCover`:
+  group picture or striped placeholder under a name scrim) are gone, and `KkCoverPicture` with them. `KkBannerDesk` takes only the
+  placeholder's `placeholderLabel`/`tone` (and a staged `preview`), never a poster node.
+  `web/biome-plugins/noPictureBypass.grit` fails on `<KkImage>` and `<KkPhotoPlaceholder>` outside
+  `KkPhoto`, `KkImage` and the picture kits `KkFrame`, `KkTimeRail`, `KkLightTable`,
+  `KkMottoStageLogo`, `KkSessionRowEmblem` and `KkViewerFilmstripFrame`.
 
 ## Considered options
 

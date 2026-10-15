@@ -1,6 +1,9 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Board;
+using Furria.Application.Registry;
+using Furria.Core.Club;
+using Furria.Core.Groups;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -224,4 +227,47 @@ public sealed class GetBoardTests : IClassFixture<ApiTestFixture>
 
     private static BoardOfficeDto OfficeOf(GetBoardResponse response, int boardOfficeId) =>
         response.Offices.Single(office => office.BoardOfficeId == boardOfficeId);
+
+    [Fact]
+    public async Task Should_CarryTheIconAndTheHoldersHonours_When_TheBoardIsRead()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddPerson("bernd", "Bernd", "Abt"))
+                    .Roles(roles =>
+                        roles
+                            .AddRoleWithCoin(
+                                "zeugwart",
+                                "Zeugwart",
+                                ClubIcon.Wrench,
+                                GroupTone.Teal
+                            )
+                            .AddRoleHolding("bernd-zeugwart", "zeugwart", "bernd")
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice(
+                                "praesident",
+                                "Präsident",
+                                1,
+                                isPublic: true,
+                                icon: ClubIcon.Crown
+                            )
+                            .AddBoardSeat("bernd-praesident", "praesident", "bernd", Elected2020)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (_, result) = await ReadBoardAsync(client);
+
+        var president = OfficeOf(result, ctx.Club.BoardOffices.IdOf("praesident"));
+        Assert.Equal(ClubIcon.Crown, president.Icon);
+        var bernd = Assert.Single(president.Seats);
+        Assert.Equal(
+            [PersonFunctionKind.BoardSeat, PersonFunctionKind.Role],
+            bernd.Honours.Functions.Select(function => function.Kind)
+        );
+    }
 }

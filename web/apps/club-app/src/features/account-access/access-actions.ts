@@ -11,6 +11,7 @@ export interface AccessActions {
   vouchesForAge: boolean;
   recovery: boolean;
   lock: AccountLockAct | null;
+  birthDateEntry: boolean;
 }
 
 interface AccessActionsInput {
@@ -26,6 +27,7 @@ const NO_ACTIONS: AccessActions = {
   vouchesForAge: false,
   recovery: false,
   lock: null,
+  birthDateEntry: false,
 };
 
 const hasAccount = (access: PersonAccess): boolean =>
@@ -36,9 +38,12 @@ const hasAddress = (email: string | null): boolean => email !== null && email.tr
 const isInvitable = (access: PersonAccess): boolean =>
   access.reason === null || (access.reason === 'noBirthDate' && access.rights.canManageAccount);
 
+const needsBirthDate = (access: PersonAccess): boolean =>
+  access.reason === 'noBirthDate' && access.rights.canInvite;
+
 const invitationActsOf = (access: PersonAccess, email: string | null): AccessActions => {
   if (!access.rights.canInvite || !isInvitable(access)) {
-    return NO_ACTIONS;
+    return { ...NO_ACTIONS, birthDateEntry: needsBirthDate(access) };
   }
 
   const isReissue = access.invitation !== null || access.state === 'invited';
@@ -51,6 +56,7 @@ const invitationActsOf = (access: PersonAccess, email: string | null): AccessAct
     inPersonInvitation: true,
     lacksMailAddress: !canBeMailed,
     vouchesForAge: access.reason === 'noBirthDate',
+    birthDateEntry: needsBirthDate(access),
   };
 };
 

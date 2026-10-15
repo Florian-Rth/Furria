@@ -2,7 +2,7 @@ import type { KkSheetAction } from '@furria/ui';
 import { KkFrame, KkFrameGrid, KkMeta, KkSheet } from '@furria/ui';
 import type { FC } from 'react';
 import { AUTOMATIC_COVER } from '../album-form';
-import { thumbSourceOf } from '../gallery-view';
+import { shownSourceOf } from '../gallery-view';
 import type { AlbumFormControl } from '../hooks/use-album-form';
 import { COVER_SHEET_ID } from '../hooks/use-album-form';
 import type { AlbumItem } from '../schemas';
@@ -22,7 +22,7 @@ export const AlbumFormCoverSheet: FC<AlbumFormCoverSheetProps> = ({ items, contr
   const frames = photos.map((item, index) => {
     const choose = (): void => control.chooseCover(String(item.mediaItemId));
     const label = `Foto ${index + 1} als Titelbild`;
-    const source = thumbSourceOf(item.urls);
+    const source = shownSourceOf(item);
     const isChosen = control.values.cover === String(item.mediaItemId);
     return (
       <KkFrame

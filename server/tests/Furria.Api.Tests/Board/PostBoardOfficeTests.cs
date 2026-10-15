@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Board;
+using Furria.Core.Club;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -25,11 +26,33 @@ public sealed class PostBoardOfficeTests : IClassFixture<ApiTestFixture>
     private static Task<TestResult<PostBoardOfficeResponse>> CreateOfficeAsync(
         HttpClient client,
         string name,
-        int sortOrder
+        int sortOrder,
+        ClubIcon? icon = null
     ) =>
         client.POSTAsync<PostBoardOffice, PostBoardOfficeRequest, PostBoardOfficeResponse>(
-            new PostBoardOfficeRequest { Name = name, SortOrder = sortOrder }
+            new PostBoardOfficeRequest
+            {
+                Name = name,
+                SortOrder = sortOrder,
+                Icon = icon,
+            }
         );
+
+    [Fact]
+    public async Task Should_KeepTheIcon_When_AManagerPicksOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await CreateOfficeAsync(client, "Kassenwart", 2, ClubIcon.Euro);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.BoardOffice(result.BoardOfficeId)
+            .ToHaveIcon(ClubIcon.Euro)
+            .AssertAsync(ct);
+    }
 
     [Fact]
     public async Task Should_RecordTheOffice_When_AManagerAddsItToTheBand()

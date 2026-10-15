@@ -15,6 +15,9 @@ interface NewsGallerySheetProps {
 
 export const NewsGallerySheet: FC<NewsGallerySheetProps> = ({ onPick }) => {
   const candidates = useNewsTieCandidatesQuery(true);
+  const reload = (): void => {
+    void candidates.refetch();
+  };
 
   return (
     <GalleryPickSheet
@@ -22,7 +25,10 @@ export const NewsGallerySheet: FC<NewsGallerySheetProps> = ({ onPick }) => {
       title={GALLERY_SHEET_TITLE}
       note={GALLERY_COPY_NOTE}
       emptyNote={GALLERY_EMPTY}
-      albums={candidates.data?.albums ?? []}
+      albums={candidates.data?.albums}
+      albumsError={candidates.error}
+      isReloading={candidates.isFetching}
+      onReload={reload}
       onPick={onPick}
     />
   );

@@ -17,6 +17,7 @@ const seat = (overrides: Partial<BoardSeat> & { boardSeatId: number }): BoardSea
   lastName: 'Reineke',
   sinceOn: '2016-11-11',
   untilOn: null,
+  honours: { sessions: 0, functions: [] },
   ...overrides,
 });
 
@@ -27,6 +28,7 @@ const office = (
   impliedRoleId: null,
   impliedRoleName: null,
   isPublic: false,
+  icon: null,
   archivedOn: null,
   seats: [],
   pastSeats: [],

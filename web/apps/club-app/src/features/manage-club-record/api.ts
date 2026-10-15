@@ -12,10 +12,11 @@ import {
 } from './requests';
 import type { ClubContact, ClubIdentity, ClubRecord } from './schemas';
 
-export const useClubRecordQuery = (): UseQueryResult<ClubRecord, Error> =>
+export const useClubRecordQuery = (enabled = true): UseQueryResult<ClubRecord, Error> =>
   useQuery({
     queryKey: queryKeys.clubRecord,
     queryFn: () => withFreshAccessToken(requestClubRecord),
+    enabled,
   });
 
 const useClubRecordWrite = <TChange>(

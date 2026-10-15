@@ -21,7 +21,6 @@ interface KkNewsCardProps {
   category: KkNewsCategory | null;
   date: string;
   photo: ReactNode;
-  posterWord: string;
   link?: KkNewsLink;
   fit?: KkNewsFit;
   sx?: KkSx;
@@ -33,13 +32,11 @@ export const KkNewsCard: FC<KkNewsCardProps> = ({
   category,
   date,
   photo,
-  posterWord,
   link,
   fit = 'page',
   sx,
 }) => {
   const label = title ?? '';
-  const tone = category?.tone ?? null;
   const mediaSx = { height: '100%', typography: fitted(fit, { xs: 'h3', md: 'h2' }) };
   const chip =
     category === null ? null : <KkNewsCategoryChip tone={category.tone} label={category.label} />;
@@ -48,7 +45,7 @@ export const KkNewsCard: FC<KkNewsCardProps> = ({
     <KkCard sx={sx}>
       <KkNewsCardFace label={label} link={link}>
         <KkCard.Media>
-          <KkNewsMedia photo={photo} tone={tone} posterWord={posterWord} sx={mediaSx} />
+          <KkNewsMedia photo={photo} sx={mediaSx} />
         </KkCard.Media>
         <KkCard.Body>
           <KkCard.Meta>

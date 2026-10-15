@@ -1,35 +1,25 @@
-import {
-  KkAvatar,
-  KkButton,
-  KkFactRow,
-  KkNote,
-  KkPanel,
-  KkPanelSection,
-  KkScreen,
-} from '@furria/ui';
+import { KkFactRow, KkNote, KkPanel, KkPanelSection, KkScreen } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC, ReactNode } from 'react';
-import { usePermissions } from '@/features/session';
+import { AREA_HANDOVERS, usePermissions } from '@/features/session';
 import { toInitials } from '@/lib/initials';
 import { formatPeriod } from '@/lib/membership-labels';
 import {
   PERSON_SCREEN_ADD_ADMIN_LABEL,
   PERSON_SCREEN_ADD_MEMBERSHIP_LABEL,
   PERSON_SCREEN_CONTACT_NOTE,
-  PERSON_SCREEN_OPEN_LABEL,
   PERSON_SCREEN_UNREACHABLE_NOTE,
   toHubEditorOrigin,
 } from '../group-hub-labels';
-import { toHubPeople, toHubPortrait, toPrefillPerson } from '../hub-people';
+import { toHubHonours, toHubPeople, toHubPortrait, toPrefillPerson } from '../hub-people';
 import type { GroupHub } from '../schemas';
+import { HubPersonHeader } from './HubPersonHeader';
 
-const MEMBER_PATH = '/members/$personId';
 const NEW_MEMBERSHIP_ROUTE = '/groups/$groupId/memberships/new';
 const NEW_ADMIN_ROUTE = '/groups/$groupId/admins/new';
 const MEMBERSHIP_ROUTE = '/groups/$groupId/memberships/$membershipId';
 const ADMIN_ROUTE = '/groups/$groupId/admins/$adminId';
-const HEAD_GAP = 1.5;
 const MEMBERSHIP_SECTION_TITLE = 'Zugehörigkeit';
 const ADMIN_SECTION_TITLE = 'Gruppen-Admin';
 
@@ -43,7 +33,9 @@ export const HubPersonPage: FC<HubPersonPageProps> = ({ hub, personId }) => {
   const people = toHubPeople(hub.members, hub.admins);
   const person = toPrefillPerson(people, personId);
   const portrait = toHubPortrait(people, personId);
+  const honours = toHubHonours(people, personId);
   const name = person === null ? '' : `${person.firstName} ${person.lastName}`;
+  const initials = toInitials(person?.firstName ?? '', person?.lastName ?? '');
   const canOpenProfile = isAffiliated && hub.members.some((member) => member.personId === personId);
 
   const runningMembership = hub.members.find((member) => member.personId === personId) ?? null;
@@ -129,29 +121,27 @@ export const HubPersonPage: FC<HubPersonPageProps> = ({ hub, personId }) => {
   }
 
   const unreachableNote = canOpenProfile ? null : <KkNote>{PERSON_SCREEN_UNREACHABLE_NOTE}</KkNote>;
-  const openProfile = canOpenProfile ? (
-    <KkButton
-      variant="text"
-      size="small"
-      component={Link}
-      to={MEMBER_PATH}
-      params={{ personId: String(personId) }}
-    >
-      {PERSON_SCREEN_OPEN_LABEL}
-    </KkButton>
-  ) : null;
+  const header = (
+    <HubPersonHeader
+      groupName={hub.name}
+      name={name}
+      initials={initials}
+      portrait={portrait}
+      honours={honours}
+      personId={personId}
+      canOpenProfile={canOpenProfile}
+    />
+  );
 
   return (
-    <KkScreen kind="detail" title={name} origin={toHubEditorOrigin(hub)}>
+    <KkScreen
+      kind="detail"
+      title={name}
+      origin={toHubEditorOrigin(hub)}
+      header={header}
+      handover={AREA_HANDOVERS.groups}
+    >
       <Stack sx={{ gap: 2, minWidth: 0 }}>
-        <Stack direction="row" sx={{ alignItems: 'center', gap: HEAD_GAP, minWidth: 0 }}>
-          <KkAvatar
-            initials={toInitials(person?.firstName ?? '', person?.lastName ?? '')}
-            image={portrait}
-            size="large"
-          />
-          {openProfile}
-        </Stack>
         <KkNote>{PERSON_SCREEN_CONTACT_NOTE}</KkNote>
         {unreachableNote}
         <KkPanelSection title={MEMBERSHIP_SECTION_TITLE}>

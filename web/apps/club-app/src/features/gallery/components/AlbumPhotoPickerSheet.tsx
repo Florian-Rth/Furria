@@ -1,7 +1,7 @@
 import type { KkSheetAction } from '@furria/ui';
 import { KkFrame, KkFrameGrid, KkMeta, KkSheet } from '@furria/ui';
 import type { FC } from 'react';
-import { thumbSourceOf } from '../gallery-view';
+import { frameStateOf, shownSourceOf } from '../gallery-view';
 import type { AlbumPhotoPicker } from '../hooks/use-album-photo-picker';
 import type { AlbumItem } from '../schemas';
 
@@ -21,13 +21,15 @@ export const AlbumPhotoPickerSheet: FC<AlbumPhotoPickerSheetProps> = ({ picker, 
   const frames = items.map((item, index) => {
     const toggle = (): void => picker.toggle(item.mediaItemId);
     const label = `Foto ${index + 1}`;
-    const source = thumbSourceOf(item.urls);
+    const source = shownSourceOf(item);
+    const frameState = frameStateOf(item);
     const isPicked = picker.picked.has(item.mediaItemId);
     return (
       <KkFrame
         key={item.mediaItemId}
         label={label}
         source={source}
+        state={frameState}
         selected={isPicked}
         onSelect={toggle}
       />

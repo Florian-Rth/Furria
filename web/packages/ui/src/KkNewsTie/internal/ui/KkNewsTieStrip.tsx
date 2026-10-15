@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import type { KkImageSource, KkPictureUrls } from '../../../image-source';
 import { toImageSource } from '../../../image-source';
-import { KkCoverPicture } from '../../../KkCoverPicture';
+import { KkPhoto } from '../../../KkPhoto';
 import { kkTokens } from '../../../tokens';
 
 export interface KkNewsStripPhoto {
@@ -54,21 +54,13 @@ export const KkNewsTieStrip: FC<KkNewsTieStripProps> = ({ photos }) => {
       }}
     >
       {tiles.map((tile) => (
-        <Box
+        <KkPhoto
           key={tile.key}
-          sx={{
-            display: tile.display,
-            aspectRatio: '1 / 1',
-            bgcolor: 'action.hover',
-            borderRadius: `${kkTokens.radius.bar}px`,
-          }}
-        >
-          <KkCoverPicture
-            image={tile.image}
-            alt=""
-            sx={{ borderRadius: `${kkTokens.radius.bar}px` }}
-          />
-        </Box>
+          alt=""
+          image={tile.image}
+          aspectRatio="1 / 1"
+          sx={{ display: tile.display, borderRadius: `${kkTokens.radius.bar}px` }}
+        />
       ))}
     </Box>
   );

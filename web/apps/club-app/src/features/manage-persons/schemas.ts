@@ -4,6 +4,7 @@ import { AppSearchSchema } from '@/features/session';
 import {
   ContactChangeSchema,
   GroupRefSchema,
+  HonoursSchema,
   MembershipStateSchema,
   PersonRefSchema,
   PictureEditingSchema,
@@ -46,6 +47,7 @@ export const PersonSummarySchema = z
     groups: z.array(GroupRefSchema),
     roles: z.array(RoleRefSchema),
     accessState: RegisterAccessStateSchema,
+    feeReduced: z.boolean(),
   })
   .extend(PersonContactSchema.shape);
 export type PersonSummary = z.infer<typeof PersonSummarySchema>;
@@ -147,6 +149,7 @@ export const PersonDetailsSchema = z
     access: PersonAccessSchema,
     contactChange: ContactChangeSchema.nullable(),
     archive: PersonArchiveSchema.nullable(),
+    honours: HonoursSchema,
   })
   .extend(PersonContactSchema.shape);
 export type PersonDetails = z.infer<typeof PersonDetailsSchema>;
@@ -158,6 +161,16 @@ export const AdoptionCandidateSchema = z.object({
   hasAccount: z.boolean(),
 });
 export type AdoptionCandidate = z.infer<typeof AdoptionCandidateSchema>;
+
+export const InvitationRoundPreviewSchema = z.object({
+  inviteCount: z.number().int(),
+  remindCount: z.number().int(),
+  eligibleWithoutEmailCount: z.number().int(),
+});
+export type InvitationRoundPreview = z.infer<typeof InvitationRoundPreviewSchema>;
+
+export const InvitationRoundSentSchema = z.object({ sentCount: z.number().int() });
+export type InvitationRoundSent = z.infer<typeof InvitationRoundSentSchema>;
 
 export const CreatedPersonSchema = z.object({ personId: z.number().int() });
 export type CreatedPerson = z.infer<typeof CreatedPersonSchema>;

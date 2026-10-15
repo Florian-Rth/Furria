@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
+using Furria.Api.Honours;
 using Furria.Api.Media;
 using Furria.Application.Registry;
 using Furria.Core.Club;
@@ -10,10 +11,12 @@ namespace Furria.Api.Endpoints.Members;
 public sealed class GetMembers : EndpointWithoutRequest<GetMembersResponse>
 {
     private readonly PersonService _personService;
+    private readonly PersonHonoursQuery _honoursQuery;
 
-    public GetMembers(PersonService personService)
+    public GetMembers(PersonService personService, PersonHonoursQuery honoursQuery)
     {
         _personService = personService;
+        _honoursQuery = honoursQuery;
     }
 
     public override void Configure()
@@ -25,14 +28,17 @@ public sealed class GetMembers : EndpointWithoutRequest<GetMembersResponse>
     public override async Task HandleAsync(CancellationToken ct)
     {
         var members = await _personService.GetMembersAsync(ct);
+        var honours = await _honoursQuery.OfAsync(members.Select(member => member.PersonId), ct);
 
-        await Send.OkAsync(ToResponse(members), cancellation: ct);
+        await Send.OkAsync(ToResponse(members, honours), cancellation: ct);
     }
 
-    private static GetMembersResponse ToResponse(IReadOnlyList<MemberSummary> members) =>
-        new() { Members = [.. members.Select(ToDto)] };
+    private static GetMembersResponse ToResponse(
+        IReadOnlyList<MemberSummary> members,
+        PersonHonoursLookup honours
+    ) => new() { Members = [.. members.Select(member => ToDto(member, honours))] };
 
-    private static MemberSummaryDto ToDto(MemberSummary member) =>
+    private static MemberSummaryDto ToDto(MemberSummary member, PersonHonoursLookup honours) =>
         new()
         {
             PersonId = member.PersonId,
@@ -42,6 +48,7 @@ public sealed class GetMembers : EndpointWithoutRequest<GetMembersResponse>
             MembershipState = member.MembershipState,
             Groups = [.. member.Groups.Select(ToDto)],
             Roles = [.. member.Roles.Select(ToDto)],
+            Honours = PersonHonoursDto.From(honours.Of(member.PersonId)),
         };
 
     private static GroupRefDto ToDto(GroupReference group) =>
@@ -71,6 +78,8 @@ public sealed record MemberSummaryDto
     public required IReadOnlyList<GroupRefDto> Groups { get; init; }
 
     public required IReadOnlyList<RoleRefDto> Roles { get; init; }
+
+    public required PersonHonoursDto Honours { get; init; }
 }
 
 public sealed record GroupRefDto

@@ -1,3 +1,4 @@
+import type { KkChipTone } from '@furria/ui';
 import type { NewsCategory, NewsRequirement, NewsStage, NewsVersionPart } from './types';
 
 export const NEWS_EDITOR_ROUTE = '/news/$postId';
@@ -10,6 +11,13 @@ export const STAGE_WORDS: Record<NewsStage, string> = {
   live: 'Live',
   pending: 'Änderungen offen',
   withdrawn: 'Zurückgezogen',
+};
+
+export const STAGE_TONES: Record<NewsStage, KkChipTone> = {
+  draft: 'neutral',
+  live: 'green',
+  pending: 'gold',
+  withdrawn: 'ink',
 };
 
 export const REQUIREMENT_WORDS: Record<NewsRequirement, string> = {

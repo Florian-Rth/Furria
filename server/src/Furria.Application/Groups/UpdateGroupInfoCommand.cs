@@ -1,3 +1,4 @@
+using Furria.Core.Club;
 using Furria.Core.Groups;
 
 namespace Furria.Application.Groups;
@@ -15,4 +16,6 @@ public sealed record UpdateGroupInfoCommand
     public required int? FoundedYear { get; init; }
 
     public required GroupTone? Tone { get; init; }
+
+    public required ClubIcon? Icon { get; init; }
 }

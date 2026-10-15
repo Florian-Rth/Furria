@@ -25,6 +25,7 @@ const person = (overrides: Partial<PersonSummary> & { personId: number }): Perso
   groups: [],
   roles: [],
   accessState: 'none',
+  feeReduced: false,
   ...overrides,
 });
 
@@ -143,5 +144,13 @@ describe('toPersonFilterOptions', () => {
     const archived = options.find((option) => option.id === ARCHIVED_PERSONS_FILTER_ID);
 
     expect(archived === undefined ? null : archived.count).toBe(offered ? matching : null);
+  });
+
+  it('offers the archived filter without a count while the archive is unavailable', () => {
+    const options = toPersonFilterOptions(counts, null, false);
+    const archived = options.find((option) => option.id === ARCHIVED_PERSONS_FILTER_ID);
+
+    expect(archived?.count).toBeUndefined();
+    expect(archived?.id).toBe(ARCHIVED_PERSONS_FILTER_ID);
   });
 });

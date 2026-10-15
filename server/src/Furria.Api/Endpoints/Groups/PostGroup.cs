@@ -4,6 +4,7 @@ using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Authorization;
 using Furria.Application.Groups;
+using Furria.Core.Club;
 using Furria.Infrastructure.Groups;
 
 namespace Furria.Api.Endpoints.Groups;
@@ -36,7 +37,12 @@ public sealed class PostGroup : Endpoint<PostGroupRequest, PostGroupResponse>
     }
 
     private static CreateGroupCommand ToCommand(PostGroupRequest req) =>
-        new() { Name = req.Name, GroupKindId = req.GroupKindId };
+        new()
+        {
+            Name = req.Name,
+            GroupKindId = req.GroupKindId,
+            Icon = req.Icon,
+        };
 
     private static PostGroupResponse ToResponse(int groupId) => new() { GroupId = groupId };
 }
@@ -46,6 +52,8 @@ public sealed record PostGroupRequest
     public required string Name { get; init; }
 
     public int? GroupKindId { get; init; }
+
+    public ClubIcon? Icon { get; init; }
 }
 
 public sealed class PostGroupValidator : Validator<PostGroupRequest>
@@ -56,6 +64,7 @@ public sealed class PostGroupValidator : Validator<PostGroupRequest>
         RuleFor(request => request.GroupKindId)
             .GreaterThan(0)
             .When(request => request.GroupKindId is not null);
+        RuleFor(request => request.Icon).IsInEnum().When(request => request.Icon is not null);
     }
 }
 

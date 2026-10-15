@@ -6,7 +6,7 @@ import type { RunningGroupKind } from '@/features/group-kinds';
 import { GROUP_KIND_FIELD_LABEL, NO_GROUP_KIND_LABEL } from '@/features/group-kinds';
 import type { GroupTone } from '@/features/groups';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
-import { toToneLabel } from '../group-hub-labels';
+import { toToneLabel } from '@/lib/group-tone';
 import { useRecruitingSwitch } from '../hooks/use-recruiting-switch';
 import type { GroupHub } from '../schemas';
 

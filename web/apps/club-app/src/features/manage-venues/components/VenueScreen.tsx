@@ -1,7 +1,19 @@
-import { KkEmptyState, KkPanel, KkPanelStack, KkScreen, KkSkeletonBlock } from '@furria/ui';
+import {
+  KkEmptyState,
+  KkPanel,
+  KkPanelStack,
+  KkScreen,
+  KkScreenHeaderSkeleton,
+  KkSkeletonBlock,
+} from '@furria/ui';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { AccessDenied, AppSkeletonRegion, usePermissions } from '@/features/session';
+import {
+  AccessDenied,
+  AppSkeletonRegion,
+  AREA_HANDOVERS,
+  usePermissions,
+} from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { parsePositiveId } from '@/lib/positive-id';
 import { isForbiddenError } from '@/lib/query-error';
@@ -16,23 +28,30 @@ import {
 import { toManagedVenuesErrorMessage } from '../manage-venues-messages';
 import { ManagedVenuesError } from './ManagedVenuesError';
 import { VenueDetailPanel } from './VenueDetailPanel';
+import { VenueHeader } from './VenueHeader';
 
 const ROUTE_ID = '/_app/manage/venues_/$venueId';
 const LOADING_LABEL = 'Wird geladen';
 const SKELETON_LINES = 4;
+const SKELETON_HEADER = <KkScreenHeaderSkeleton />;
+const HANDOVER = AREA_HANDOVERS.manage;
 
 export const VenueScreen: FC = () => {
   const { venueId } = useParams({ from: ROUTE_ID });
   const id = parsePositiveId(venueId);
-  const venues = useManagedVenuesQuery();
   const permissions = usePermissions();
+  const canManage = permissions.has(PERMISSION_KEYS.clubManage);
+  const venues = useManagedVenuesQuery(canManage);
   const errorMessage = toManagedVenuesErrorMessage(venues.error);
+  const isDenied =
+    (!permissions.isUndecided && !canManage) ||
+    (venues.data === undefined && isForbiddenError(venues.error));
 
   const reload = (): void => {
     void venues.refetch();
   };
 
-  if (venues.data === undefined && isForbiddenError(venues.error)) {
+  if (isDenied) {
     return (
       <KkScreen kind="detail" title={VENUES_ORIGIN.label} origin={VENUES_ORIGIN}>
         <AccessDenied message={VENUE_EDITOR_DENIED_MESSAGE} />
@@ -48,7 +67,13 @@ export const VenueScreen: FC = () => {
   }
   if (venues.data === undefined) {
     return (
-      <KkScreen kind="detail" title={VENUES_ORIGIN.label} origin={VENUES_ORIGIN}>
+      <KkScreen
+        kind="detail"
+        title={VENUES_ORIGIN.label}
+        origin={VENUES_ORIGIN}
+        header={SKELETON_HEADER}
+        handover={HANDOVER}
+      >
         <AppSkeletonRegion label={LOADING_LABEL}>
           <KkPanelStack>
             <KkPanel variant="block">
@@ -70,16 +95,16 @@ export const VenueScreen: FC = () => {
     );
   }
 
-  if (!permissions.isUndecided && !permissions.has(PERMISSION_KEYS.clubManage)) {
-    return (
-      <KkScreen kind="detail" title={venue.name} origin={VENUES_ORIGIN}>
-        <AccessDenied message={VENUE_EDITOR_DENIED_MESSAGE} />
-      </KkScreen>
-    );
-  }
+  const header = <VenueHeader venue={venue} />;
 
   return (
-    <KkScreen kind="detail" title={venue.name} origin={VENUES_ORIGIN}>
+    <KkScreen
+      kind="detail"
+      title={venue.name}
+      origin={VENUES_ORIGIN}
+      header={header}
+      handover={HANDOVER}
+    >
       <VenueDetailPanel venue={venue} />
     </KkScreen>
   );

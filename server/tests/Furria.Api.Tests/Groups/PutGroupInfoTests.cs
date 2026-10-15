@@ -3,6 +3,7 @@ using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
 using Furria.Application.Authorization;
+using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -57,6 +58,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                 GroupKindId = null,
                 FoundedYear = null,
                 Tone = null,
+                Icon = null,
             }
         );
 
@@ -99,6 +101,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                 GroupKindId = null,
                 FoundedYear = null,
                 Tone = null,
+                Icon = null,
             }
         );
 
@@ -139,6 +142,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                 GroupKindId = null,
                 FoundedYear = null,
                 Tone = null,
+                Icon = null,
             }
         );
 
@@ -178,6 +182,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                 GroupKindId = null,
                 FoundedYear = null,
                 Tone = null,
+                Icon = null,
             }
         );
 
@@ -221,6 +226,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                 GroupKindId = null,
                 FoundedYear = null,
                 Tone = null,
+                Icon = null,
             }
         );
 
@@ -263,6 +269,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                 GroupKindId = null,
                 FoundedYear = null,
                 Tone = null,
+                Icon = null,
             }
         );
 
@@ -302,6 +309,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                 GroupKindId = null,
                 FoundedYear = null,
                 Tone = null,
+                Icon = null,
             }
         );
 
@@ -345,6 +353,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                 GroupKindId = null,
                 FoundedYear = null,
                 Tone = null,
+                Icon = null,
             }
         );
 
@@ -384,6 +393,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                 GroupKindId = ctx.Groups.GroupKinds.IdOf("garden"),
                 FoundedYear = FoundedIn1971,
                 Tone = GroupTone.Rose,
+                Icon = ClubIcon.Drum,
             }
         );
 
@@ -395,6 +405,8 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
             .ToHaveFoundedYear(FoundedIn1971)
             .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
             .ToHaveTone(GroupTone.Rose)
+            .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+            .ToHaveIcon(ClubIcon.Drum)
             .AssertAsync(ct);
     }
 
@@ -417,7 +429,8 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                                 OldDescription,
                                 groupKindAlias: "garden",
                                 foundedYear: FoundedIn1971,
-                                tone: GroupTone.Teal
+                                tone: GroupTone.Teal,
+                                icon: ClubIcon.Drum
                             )
                             .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
                     ),
@@ -434,6 +447,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                 GroupKindId = null,
                 FoundedYear = null,
                 Tone = null,
+                Icon = null,
             }
         );
 
@@ -445,6 +459,8 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
             .ToHaveFoundedYear(null)
             .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
             .ToHaveTone(null)
+            .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
+            .ToHaveIcon(null)
             .AssertAsync(ct);
     }
 
@@ -476,6 +492,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                 GroupKindId = UnknownGroupKindId,
                 FoundedYear = null,
                 Tone = null,
+                Icon = null,
             }
         );
 
@@ -514,6 +531,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                 GroupKindId = null,
                 FoundedYear = _fixture.Today.Year + 1,
                 Tone = null,
+                Icon = null,
             }
         );
 
@@ -557,6 +575,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                 GroupKindId = null,
                 FoundedYear = 1799,
                 Tone = null,
+                Icon = null,
             }
         );
 
@@ -600,6 +619,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                 GroupKindId = null,
                 FoundedYear = 2101,
                 Tone = null,
+                Icon = null,
             }
         );
 
@@ -648,6 +668,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                 GroupKindId = ctx.Groups.GroupKinds.IdOf("spielmannszug"),
                 FoundedYear = null,
                 Tone = null,
+                Icon = null,
             }
         );
 

@@ -1,5 +1,6 @@
 import { ApiError } from '@furria/api-client';
 import { describe, expect, it } from 'vitest';
+import { SessionPersistenceError } from './api/session/session-error';
 import { type LoginErrorKind, toLoginErrorKind } from './login-error';
 
 describe('toLoginErrorKind', () => {
@@ -13,6 +14,7 @@ describe('toLoginErrorKind', () => {
       new ApiError({ kind: 'throttled' }),
       'throttled',
     ],
+    ['a sign-in the device could not keep', new SessionPersistenceError(), 'session-not-kept'],
     ['a server failure', new ApiError({ kind: 'status', status: 500 }), 'unexpected'],
   ])('maps %s to %s', (_case, error, expected) => {
     expect(toLoginErrorKind(error)).toBe(expected);

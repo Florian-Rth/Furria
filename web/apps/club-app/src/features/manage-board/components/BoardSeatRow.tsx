@@ -3,6 +3,7 @@ import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toLandingKey } from '@/features/write';
 import { toIsoDay } from '@/lib/day';
+import { toAvatarHonours } from '@/lib/honours';
 import { toInitials } from '@/lib/initials';
 import { SEAT_PERIOD_LABEL, toPersonName, toSeatPeriodLabel } from '../manage-board-labels';
 import type { BoardSeat } from '../schemas';
@@ -19,9 +20,10 @@ export const BoardSeatRow: FC<BoardSeatRowProps> = ({ boardOfficeId, seat, highl
   const name = toPersonName(seat);
   const landing = toLandingKey('board-seat', seat.boardSeatId);
 
-  const avatar = (
-    <KkAvatar initials={toInitials(seat.firstName, seat.lastName)} size="small" component="span" />
-  );
+  const initials = toInitials(seat.firstName, seat.lastName);
+  const honours = toAvatarHonours(seat.honours);
+
+  const avatar = <KkAvatar initials={initials} honours={honours} component="span" />;
 
   return (
     <KkSinceRow

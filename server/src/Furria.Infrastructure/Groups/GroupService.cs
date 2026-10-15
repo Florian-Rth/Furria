@@ -65,6 +65,7 @@ public sealed class GroupService
             group.GroupKind!.Name,
             group.FoundedYear,
             group.Tone,
+            group.Icon,
             group.ArchivedOn,
             group
                 .TrainingSlots.OrderBy(slot => slot.Weekday)
@@ -162,6 +163,7 @@ public sealed class GroupService
                 group.GroupKind!.Name,
                 group.FoundedYear,
                 group.Tone,
+                group.Icon,
                 group
                     .Memberships.AsQueryable()
                     .Where(Running.GroupMemberships(today))
@@ -402,6 +404,7 @@ public sealed class GroupService
                 group.GroupKindId,
                 group.GroupKind!.Name,
                 group.Tone,
+                group.Icon,
                 group.ArchivedOn,
                 group
                     .Memberships.AsQueryable()
@@ -463,7 +466,12 @@ public sealed class GroupService
         if (await GroupKindRefusalAsync(command.GroupKindId, ct) is { } kindRefusal)
             return Result<int>.Carrying(kindRefusal);
 
-        var group = new Group { Name = command.Name, GroupKindId = command.GroupKindId };
+        var group = new Group
+        {
+            Name = command.Name,
+            GroupKindId = command.GroupKindId,
+            Icon = command.Icon,
+        };
 
         _dbContext.Groups.Add(group);
 
@@ -564,6 +572,7 @@ public sealed class GroupService
         group.GroupKindId = command.GroupKindId;
         group.FoundedYear = command.FoundedYear;
         group.Tone = command.Tone;
+        group.Icon = command.Icon;
 
         return await _dbContext.SaveOrConflictAsync(ct);
     }
@@ -919,6 +928,7 @@ public sealed class GroupService
             GroupKindName = row.GroupKindName,
             FoundedYear = row.FoundedYear,
             Tone = row.Tone,
+            Icon = row.Icon,
             TrainingSlots = [.. row.TrainingSlots.Select(ToSlotDetails)],
             Admins =
             [
@@ -956,6 +966,7 @@ public sealed class GroupService
             GroupKindId = row.GroupKindId,
             GroupKindName = row.GroupKindName,
             Tone = row.Tone,
+            Icon = row.Icon,
             ArchivedOn = row.ArchivedOn,
             MemberCount = OnePerPerson(row.Members).Count,
             Admins = OnePerPerson(row.Admins),
@@ -1021,6 +1032,7 @@ public sealed class GroupService
             GroupKindName = row.GroupKindName,
             FoundedYear = row.FoundedYear,
             Tone = row.Tone,
+            Icon = row.Icon,
             MemberCount = members.Count,
             MemberPreview = [.. members.Take(MemberPreviewSize)],
             Admins = OnePerPerson(row.Admins),
@@ -1041,6 +1053,7 @@ public sealed class GroupService
         string? GroupKindName,
         int? FoundedYear,
         GroupTone? Tone,
+        ClubIcon? Icon,
         bool ViewerIsMember,
         bool ViewerIsAdmin,
         IReadOnlyList<PersonReference> Members,
@@ -1056,6 +1069,7 @@ public sealed class GroupService
         string? GroupKindName,
         int? FoundedYear,
         GroupTone? Tone,
+        ClubIcon? Icon,
         DateOnly? ArchivedOn,
         IReadOnlyList<SlotRow> TrainingSlots,
         IReadOnlyList<TieRow> Members,
@@ -1079,6 +1093,7 @@ public sealed class GroupService
         int? GroupKindId,
         string? GroupKindName,
         GroupTone? Tone,
+        ClubIcon? Icon,
         DateOnly? ArchivedOn,
         IReadOnlyList<PersonReference> Members,
         IReadOnlyList<PersonReference> Admins

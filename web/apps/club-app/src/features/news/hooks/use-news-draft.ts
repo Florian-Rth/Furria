@@ -7,7 +7,7 @@ import { createNewsDraftSession, createNewsSaveLedger } from '../news-draft-sess
 
 export interface NewsDraftHandlers {
   onCreated: (newsPostId: number) => void;
-  onCreationFailed: () => void;
+  onCreationFailed: (error: Error) => void;
 }
 
 export interface NewsDraft {
@@ -58,8 +58,8 @@ export const useNewsDraft = (postId: number | null, handlers: NewsDraftHandlers)
         created: (createdId) => {
           latest.current.handlers.onCreated(createdId);
         },
-        creationFailed: () => {
-          latest.current.handlers.onCreationFailed();
+        creationFailed: (error) => {
+          latest.current.handlers.onCreationFailed(error);
         },
       },
       myPersonId: () => latest.current.myPersonId,

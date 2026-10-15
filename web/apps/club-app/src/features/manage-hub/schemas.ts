@@ -66,16 +66,6 @@ export const ManageApplicationsPanelSchema = z.object({
 });
 export type ManageApplicationsPanel = z.infer<typeof ManageApplicationsPanelSchema>;
 
-export const InvitationRoundPreviewSchema = z.object({
-  inviteCount: z.number().int(),
-  remindCount: z.number().int(),
-  eligibleWithoutEmailCount: z.number().int(),
-});
-export type InvitationRoundPreview = z.infer<typeof InvitationRoundPreviewSchema>;
-
-export const InvitationRoundSentSchema = z.object({ sentCount: z.number().int() });
-export type InvitationRoundSent = z.infer<typeof InvitationRoundSentSchema>;
-
 export const ManageHubSchema = z.object({
   persons: ManagePersonsPanelSchema.nullable(),
   groups: ManageGroupsPanelSchema.nullable(),

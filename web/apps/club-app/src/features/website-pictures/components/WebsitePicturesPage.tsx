@@ -1,6 +1,6 @@
 import { KkButton, KkErrorState, KkScreen, KkTitleHeader } from '@furria/ui';
 import type { FC } from 'react';
-import { AppListSkeleton, GALLERY_ORIGIN } from '@/features/session';
+import { AppListSkeleton, AREA_HANDOVERS, GALLERY_ORIGIN } from '@/features/session';
 import { useWebsiteBoard } from '../hooks/use-website-board';
 import {
   LOAD_ERROR_TITLE,
@@ -15,7 +15,11 @@ import { WebsiteBoardBody } from './WebsiteBoardBody';
 export const WebsitePicturesPage: FC = () => {
   const state = useWebsiteBoard();
   const errorMessage = toLoadErrorMessage(state.query.error);
-  const retry = <KkButton onClick={state.reload}>{RETRY_LABEL}</KkButton>;
+  const retry = (
+    <KkButton loading={state.query.isFetching} onClick={state.reload}>
+      {RETRY_LABEL}
+    </KkButton>
+  );
   const failure =
     errorMessage === null ? null : (
       <KkErrorState title={LOAD_ERROR_TITLE} description={errorMessage} action={retry} />
@@ -33,6 +37,7 @@ export const WebsitePicturesPage: FC = () => {
       title={WEBSITE_TITLE}
       origin={GALLERY_ORIGIN}
       header={<KkTitleHeader title={WEBSITE_TITLE} lead={WEBSITE_LEAD} />}
+      handover={AREA_HANDOVERS.gallery}
     >
       {content}
     </KkScreen>

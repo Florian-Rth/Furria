@@ -274,6 +274,10 @@ export const restoreSession = async (): Promise<void> => {
   }
 };
 
+export const markSessionUnavailable = (): void => {
+  publish('unavailable', false);
+};
+
 export const endSessionWithFarewell = (farewell: SessionFarewell): void => {
   broadcastSessionEnd(false);
   finishSession(false, farewell);

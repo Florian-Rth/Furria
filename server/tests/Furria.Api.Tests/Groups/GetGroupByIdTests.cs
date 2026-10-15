@@ -5,6 +5,7 @@ using Furria.Api.Endpoints.Groups;
 using Furria.Api.Media;
 using Furria.Api.Tests.Media;
 using Furria.Application.Authorization;
+using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
@@ -1002,7 +1003,8 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
                                 "Die Garde tanzt seit 1971.",
                                 groupKindAlias: "tanz",
                                 foundedYear: FoundedIn1971,
-                                tone: GroupTone.Iris
+                                tone: GroupTone.Iris,
+                                icon: ClubIcon.Drum
                             )
                             .AddGroupAdmin(
                                 "anna-tanzgarde",
@@ -1053,6 +1055,7 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
                 "groupKindName",
                 "foundedYear",
                 "tone",
+                "icon",
                 "trainingSlots",
                 "admins",
                 "members",
@@ -1066,6 +1069,7 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
             document.RootElement.EnumerateObject().Select(field => field.Name)
         );
         Assert.Equal("iris", document.RootElement.GetProperty("tone").GetString());
+        Assert.Equal("drum", document.RootElement.GetProperty("icon").GetString());
         Assert.Equal(JsonValueKind.Null, document.RootElement.GetProperty("viewerSince").ValueKind);
         var slot = document.RootElement.GetProperty("trainingSlots").EnumerateArray().Single();
         Assert.Equal(
@@ -1093,6 +1097,7 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
                 "leftOn",
                 "since",
                 "isAffiliated",
+                "honours",
             ],
             mara.EnumerateObject().Select(field => field.Name)
         );
@@ -1111,8 +1116,13 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
                 "untilOn",
                 "since",
                 "isAffiliated",
+                "honours",
             ],
             anna.EnumerateObject().Select(field => field.Name)
+        );
+        Assert.Equal(
+            """{"sessions":0,"functions":[{"kind":"groupAdmin","name":"Tanzgarde","icon":"drum","tone":"iris"}]}""",
+            anna.GetProperty("honours").GetRawText()
         );
         var katrin = document.RootElement.GetProperty("pastMembers").EnumerateArray().Single();
         Assert.Equal("2020-03-01", katrin.GetProperty("leftOn").GetString());

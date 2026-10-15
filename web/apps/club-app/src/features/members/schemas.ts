@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import {
   GroupRefSchema,
+  HonoursSchema,
   MembershipStateSchema,
   PictureSchema,
   RoleRefSchema,
@@ -14,6 +15,7 @@ export const MemberSummarySchema = z.object({
   membershipState: MembershipStateSchema,
   groups: z.array(GroupRefSchema),
   roles: z.array(RoleRefSchema),
+  honours: HonoursSchema,
 });
 export type MemberSummary = z.infer<typeof MemberSummarySchema>;
 
@@ -49,5 +51,6 @@ export const MemberDetailsSchema = z.object({
   groups: z.array(MemberGroupSchema),
   roles: z.array(MemberRoleSchema),
   contact: MemberContactSchema,
+  honours: HonoursSchema,
 });
 export type MemberDetails = z.infer<typeof MemberDetailsSchema>;

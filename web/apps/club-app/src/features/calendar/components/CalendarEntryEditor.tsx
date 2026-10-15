@@ -13,6 +13,7 @@ import {
 } from '../calendar-labels';
 import { useCalendarEntryEditor } from '../hooks/use-calendar-entry-editor';
 import { useCalendarEntryRemoval } from '../hooks/use-calendar-entry-removal';
+import type { CalendarEntryReload } from '../hooks/use-calendar-entry-supplies';
 import type { CalendarEntry, ParticipatingGroup, RunningVenue } from '../schemas';
 import { CalendarEntryAudienceSection } from './CalendarEntryAudienceSection';
 import { CalendarEntryBasicsSection } from './CalendarEntryBasicsSection';
@@ -29,6 +30,7 @@ interface CalendarEntryEditorProps {
   entry: CalendarEntry | null;
   ownerOptions: readonly CalendarOwnerOption[];
   clubGroups: CalendarParticipantPool;
+  clubGroupsReload: CalendarEntryReload;
   venues: readonly RunningVenue[];
 }
 
@@ -36,6 +38,7 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
   entry,
   ownerOptions,
   clubGroups,
+  clubGroupsReload,
   venues,
 }) => {
   const control = useCalendarEntryEditor({ entry, ownerOptions });
@@ -50,6 +53,7 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
     control.values.ownerId,
   );
   const participantsEmptyLabel = toParticipantsEmptyLabel(clubGroups);
+  const participantsReload = clubGroups.state === 'failed' ? clubGroupsReload : null;
   const ownerSelectOptions = toOwnerSelectOptions(ownerOptions);
   const venueOptions = toVenueOptions(venues);
 
@@ -85,6 +89,7 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
         ownerOptions={ownerSelectOptions}
         participantOptions={participantOptions}
         participantsEmptyLabel={participantsEmptyLabel}
+        participantsReload={participantsReload}
       />
       {dangerLine}
     </WriteScreen>

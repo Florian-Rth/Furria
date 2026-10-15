@@ -44,6 +44,7 @@ export const HubPersonTile: FC<HubPersonTileProps> = ({
         tone={tone}
         initials={toInitials(person.firstName, person.lastName)}
         portrait={person.portrait}
+        honours={person.honours}
         name={name}
         accent={toPersonAccent(person)}
         meta={toPersonMetaLine(person, canManage)}

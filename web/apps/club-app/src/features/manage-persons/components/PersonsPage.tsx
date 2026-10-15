@@ -13,6 +13,7 @@ import { usePersonsQuery } from '../api';
 import { usePersonsAccess } from '../hooks/use-persons-access';
 import { usePersonsSearch } from '../hooks/use-persons-search';
 import { LETTER_INDEX_LABEL, PERSONS_LEAD, PERSONS_TITLE } from '../manage-persons-labels';
+import { toAppFilterValue } from '../person-app-state';
 import { PERSON_READ_KEYS } from '../person-read-keys';
 import type { PersonSummary } from '../schemas';
 import { PersonsBody } from './PersonsBody';
@@ -20,26 +21,29 @@ import { PersonsToolbar } from './PersonsToolbar';
 
 const SEARCH_PLACEHOLDER = 'Name, Adresse, E-Mail';
 
-const TOOLBAR_CHIPS = 5;
+const TOOLBAR_CHIPS = 8;
 
 const NO_PERSONS: readonly PersonSummary[] = [];
 
 export const PersonsPage: FC = () => {
   const searchMode = useScreenSearch(SEARCH_PLACEHOLDER);
   const access = usePersonsAccess();
-  const listed = usePersonsQuery(access.filter, false);
-  const archived = usePersonsQuery(access.filter, true);
+  const { has, isUndecided } = usePermissions();
+  const canRead = PERSON_READ_KEYS.some((key) => has(key));
+  const listed = usePersonsQuery(access.filter, false, canRead);
+  const archived = usePersonsQuery(access.filter, true, canRead);
+  const isArchiveUnavailable = archived.data === undefined && archived.error !== null;
   const search = usePersonsSearch(
     listed.data?.persons ?? NO_PERSONS,
     archived.data?.persons ?? NO_PERSONS,
+    isArchiveUnavailable,
   );
-  const { has, isUndecided } = usePermissions();
-  const canRead = PERSON_READ_KEYS.some((key) => has(key));
   const canCreate = has(PERMISSION_KEYS.personsManage);
   const showsTools = isUndecided || canRead;
   const isArchiveSettled = archived.data !== undefined || archived.error !== null;
   const isListSettled = listed.data !== undefined || listed.error !== null;
   const isToolbarPending = !isListSettled || !isArchiveSettled || isUndecided;
+  const appFilter = toAppFilterValue(access.filter);
 
   const index: KkScreenIndex | undefined =
     !canRead || search.letters.length === 0
@@ -57,6 +61,8 @@ export const PersonsPage: FC = () => {
         filter={search.filter}
         options={search.filterOptions}
         onFilterChange={search.selectFilter}
+        appFilter={appFilter}
+        onAppFilterChange={access.choose}
       />
     );
 
@@ -74,7 +80,7 @@ export const PersonsPage: FC = () => {
       handover={AREA_HANDOVERS.manage}
     >
       <RequireAnyPermission permissionKeys={PERSON_READ_KEYS}>
-        <PersonsBody search={search} canCreate={canCreate} />
+        <PersonsBody search={search} canCreate={canCreate} canInvite={canCreate} />
       </RequireAnyPermission>
     </KkScreen>
   );

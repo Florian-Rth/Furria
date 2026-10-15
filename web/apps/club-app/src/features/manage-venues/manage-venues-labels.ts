@@ -3,6 +3,7 @@ import { formatIsoDay } from '@/lib/membership-labels';
 import type { ManagedVenue } from './schemas';
 
 export const MANAGE_VENUES_TITLE = 'Orte';
+export const VENUE_EYEBROW = 'Ort';
 export const MANAGE_VENUES_CREATE_LABEL = 'Ort hinzufügen';
 
 export const VENUES_ORIGIN: KkScreenOrigin = { label: MANAGE_VENUES_TITLE, to: '/manage/venues' };

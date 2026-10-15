@@ -98,12 +98,23 @@ export interface KkScreenSearch {
 interface KkScreenShared {
   title: string;
   sceneKey?: string;
-  header?: ReactNode;
-  headerKind?: KkScreenHeaderKind;
   thread?: KkScreenThread;
-  handover?: KkHandoverName;
   children?: ReactNode;
 }
+
+interface KkHeadedScreen {
+  header: ReactNode;
+  headerKind?: KkScreenHeaderKind;
+  handover: KkHandoverName;
+}
+
+interface KkHeadlessScreen {
+  header?: never;
+  headerKind?: never;
+  handover?: never;
+}
+
+type KkScreenHeading = KkHeadedScreen | KkHeadlessScreen;
 
 interface KkSearchingScreen {
   search: KkScreenSearch;
@@ -181,7 +192,9 @@ interface KkFullscreenScreen extends KkScreenShared {
 
 type KkNarrowableScreen = KkRootListScreen | KkNestedListScreen | KkWorkingScreen;
 
-export type KkScreenProps =
+export type KkScreenProps = (
   | ((KkOverviewScreen | KkDetailScreen) & KkUnsearchableScreen)
   | (KkNarrowableScreen & KkScreenTrailing)
-  | KkFullscreenScreen;
+  | KkFullscreenScreen
+) &
+  KkScreenHeading;

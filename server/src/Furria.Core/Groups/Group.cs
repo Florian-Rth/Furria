@@ -19,6 +19,8 @@ public sealed class Group : ITimestamped
 
     public GroupTone? Tone { get; set; }
 
+    public ClubIcon? Icon { get; set; }
+
     public int? PictureId { get; set; }
 
     public DateOnly? ArchivedOn { get; set; }

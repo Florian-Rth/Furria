@@ -2,8 +2,7 @@ import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import type { KkPictureUrls } from '../../../image-source';
 import { toImageSource } from '../../../image-source';
-import { KkAvatar } from '../../../KkAvatar';
-import { KkCoverPicture } from '../../../KkCoverPicture';
+import { KkPhoto } from '../../../KkPhoto';
 import { kkTokens } from '../../../tokens';
 
 const PORTRAIT_WIDTH = 72;
@@ -17,9 +16,7 @@ interface KkNewsMentionPortraitProps {
 export const KkNewsMentionPortrait: FC<KkNewsMentionPortraitProps> = ({ initials, picture }) => {
   const image = toImageSource(picture, 'portrait', PORTRAIT_SIZES);
 
-  return image === null ? (
-    <KkAvatar initials={initials} size="large" />
-  ) : (
+  return (
     <Box
       data-kk-news-mention-face="person"
       sx={{
@@ -31,7 +28,7 @@ export const KkNewsMentionPortrait: FC<KkNewsMentionPortraitProps> = ({ initials
         borderColor: 'divider',
       }}
     >
-      <KkCoverPicture image={image} alt="" sx={{ borderRadius: `${kkTokens.radius.base}px` }} />
+      <KkPhoto alt="" image={image} placeholderLabel={initials} fill />
     </Box>
   );
 };

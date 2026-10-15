@@ -27,7 +27,7 @@ export const SystemAreaBody: FC<SystemAreaBodyProps> = ({ area }) => {
     case 'denied':
       return <AccessDenied message={SYSTEM_DENIED_MESSAGE} />;
     case 'failed':
-      return <SystemError onRetry={read.retry} />;
+      return <SystemError message={read.message} retrying={read.retrying} onRetry={read.retry} />;
     case 'shown':
       return <SystemAreaSection area={area} status={read.status} moment={read.moment} />;
   }

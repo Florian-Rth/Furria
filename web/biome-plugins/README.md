@@ -107,6 +107,16 @@ The `border.*` regex also flags `borderCollapse` and `font.*` flags every `font*
 regex also flags a `px`/`rem` dimension under a layout key such as `width: '240px'`. That is
 intended bluntness: theme tokens, not raw dimensions.
 
+## `noRawImage.grit` and `noPictureBypass.grit`
+
+Every picture goes through `KkPhoto` ([ADR-0030](../../docs/adr/0030-every-picture-goes-through-kkphoto.md)).
+`noRawImage` fails on `<img>`, `<picture>`, `<source>`, `CardMedia`, `ImageListItem`,
+`component="img"`, `Avatar src` and CSS `url(…)` images outside `KkImage.tsx` and
+`KkCropPreview.tsx`. `noPictureBypass` fails on `<KkImage>` and `<KkPhotoPlaceholder>` outside
+`KkPhoto.tsx`, `KkImage.tsx` and the picture kits listed in its `biome.json` override, so a
+missing picture always shows the striped `KkPhoto` placeholder — no coloured poster, icon or
+initials tile of its own. A new picture kit is added to that list only together with ADR-0030.
+
 ## `noCustomFontSize.grit`
 
 Flags any `fontSize` / `font-size` object key, a `font` shorthand string, and any JSX `fontSize` attribute other than

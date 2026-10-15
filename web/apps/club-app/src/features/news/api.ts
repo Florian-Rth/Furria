@@ -2,6 +2,7 @@ import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/r
 import { useQuery } from '@tanstack/react-query';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
+import { refreshPermissionsWhenForbidden } from '@/lib/query/permission-refresh';
 import { queryKeys } from '@/lib/query/reads';
 import { refreshAfter } from '@/lib/query/refresh-after';
 import type { NewsDraftRequests } from './news-draft-session';
@@ -55,15 +56,28 @@ export const useNewsPictureRemoval = (): UseMutationResult<void, Error, number> 
 export const useNewsPictureFromGallery = (): UseMutationResult<void, Error, GalleryPickPayload> =>
   useNewsMutation(requestNewsPictureFromGallery);
 
+const refreshingPermissionsWhenForbidden = <T>(
+  queryClient: QueryClient,
+  work: Promise<T>,
+): Promise<T> =>
+  work.catch((error: Error) => {
+    refreshPermissionsWhenForbidden(queryClient, error);
+    throw error;
+  });
+
 const refreshingAfter = <T>(queryClient: QueryClient, work: Promise<T>): Promise<T> =>
-  work.finally(() => {
+  refreshingPermissionsWhenForbidden(queryClient, work).finally(() => {
     void refreshAfter(queryClient, ['newsPost']);
   });
 
 export const newsDraftRequestsOf = (queryClient: QueryClient): NewsDraftRequests => {
   const postAfter = <T>(work: Promise<T>): Promise<T> => refreshingAfter(queryClient, work);
   return {
-    read: (newsPostId) => withFreshAccessToken((token) => requestNewsPost(newsPostId, token)),
+    read: (newsPostId) =>
+      refreshingPermissionsWhenForbidden(
+        queryClient,
+        withFreshAccessToken((token) => requestNewsPost(newsPostId, token)),
+      ),
     create: (content) =>
       postAfter(withFreshAccessToken((token) => requestNewsPostCreation(content, token))),
     save: (payload) =>

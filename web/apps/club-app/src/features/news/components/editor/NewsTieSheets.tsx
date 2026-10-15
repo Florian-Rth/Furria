@@ -1,13 +1,17 @@
 import { KkSelectRow, KkSheet } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { PickListStatus } from '@/features/gallery-pick';
 import {
   SHEET_CLOSE,
+  TIE_ALBUM_NONE,
   TIE_ALBUM_SHEET_ID,
   TIE_ALBUM_SHEET_TITLE,
   TIE_CANCELLED,
+  TIE_EVENT_NONE,
   TIE_EVENT_SHEET_ID,
   TIE_EVENT_SHEET_TITLE,
+  TIE_LOADING,
   TIE_PHOTOS,
 } from '../../editor-copy';
 import type { NewsTies } from '../../hooks/use-news-ties';
@@ -53,11 +57,27 @@ export const NewsTieSheets: FC<NewsTieSheetsProps> = ({ ties }) => {
       <KkSheet id={TIE_EVENT_SHEET_ID} title={TIE_EVENT_SHEET_TITLE} closeLabel={SHEET_CLOSE}>
         <KkSheet.Body>
           <Stack>{eventRows}</Stack>
+          <PickListStatus
+            phase={ties.eventPhase}
+            loadingLabel={TIE_LOADING}
+            errorMessage={ties.loadError}
+            emptyNote={TIE_EVENT_NONE}
+            isRetrying={ties.isReloading}
+            onRetry={ties.reload}
+          />
         </KkSheet.Body>
       </KkSheet>
       <KkSheet id={TIE_ALBUM_SHEET_ID} title={TIE_ALBUM_SHEET_TITLE} closeLabel={SHEET_CLOSE}>
         <KkSheet.Body>
           <Stack>{albumRows}</Stack>
+          <PickListStatus
+            phase={ties.albumPhase}
+            loadingLabel={TIE_LOADING}
+            errorMessage={ties.loadError}
+            emptyNote={TIE_ALBUM_NONE}
+            isRetrying={ties.isReloading}
+            onRetry={ties.reload}
+          />
         </KkSheet.Body>
       </KkSheet>
     </>

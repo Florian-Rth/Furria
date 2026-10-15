@@ -5,8 +5,9 @@ import { queryKeys } from '@/lib/query/reads';
 import { requestGroupKinds } from './requests';
 import type { GroupKindsResponse } from './schemas';
 
-export const useGroupKindsQuery = (): UseQueryResult<GroupKindsResponse, Error> =>
+export const useGroupKindsQuery = (enabled = true): UseQueryResult<GroupKindsResponse, Error> =>
   useQuery({
     queryKey: queryKeys.groupKinds,
     queryFn: () => withFreshAccessToken(requestGroupKinds),
+    enabled,
   });

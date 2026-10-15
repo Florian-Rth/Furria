@@ -41,6 +41,13 @@ export const kkTokens = {
       line2: 'rgba(20,22,26,0.07)',
       onRed: '#FFFFFF',
       onRedDk: '#FFFFFF',
+      onyx: '#1A1411',
+      metal: {
+        bronze: { shadow: '#6E4320', mid: '#A0622D', highlight: '#D49A63' },
+        silver: { shadow: '#4E5661', mid: '#7D8794', highlight: '#D5DBE2' },
+        gold: { shadow: '#7E5C00', mid: '#B78300', highlight: '#F4D060' },
+        brilliant: { shadow: '#8A6A1E', mid: '#E0BC55', highlight: '#FFF6D8' },
+      },
       photoScrim:
         'linear-gradient(to bottom, rgba(12,13,16,0.58) 0%, rgba(12,13,16,0.12) 19%, rgba(12,13,16,0.12) 42%, rgba(12,13,16,0.72) 76%, rgba(12,13,16,0.94) 100%)',
     },
@@ -69,6 +76,13 @@ export const kkTokens = {
       darkroomEdge: '#0E1013',
       darkroomLatent: '#2A2D33',
       onRedDk: '#FFFFFF',
+      onyx: '#0E0B09',
+      metal: {
+        bronze: { shadow: '#8A5A2B', mid: '#C48450', highlight: '#E8B184' },
+        silver: { shadow: '#6F7884', mid: '#A7B0BB', highlight: '#EEF1F4' },
+        gold: { shadow: '#B8860B', mid: '#FFC42E', highlight: '#FFE38A' },
+        brilliant: { shadow: '#B8962E', mid: '#F6DE8C', highlight: '#FFFBEA' },
+      },
       photoScrim:
         'linear-gradient(to bottom, rgba(12,13,16,0.72) 0%, rgba(12,13,16,0.24) 19%, rgba(12,13,16,0.24) 42%, rgba(12,13,16,0.82) 76%, rgba(12,13,16,0.97) 100%)',
     },
@@ -96,6 +110,7 @@ export const kkTokens = {
     gutter: 12,
     chromeGap: 8,
     barHeight: 52,
+    barMark: '2rem',
     toolRowHeight: 44,
     navHeight: 64,
     nav: {
@@ -197,6 +212,8 @@ export const kkTokens = {
     watermarkBand: 0.055,
     watermarkBandDark: 0.035,
     onAccentWash: 0.12,
+    groupCrest: 0.26,
+    groupCrestDark: 0.2,
     dimmed: 0.72,
   },
   letterRail: {

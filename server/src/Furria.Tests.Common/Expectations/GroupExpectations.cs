@@ -1,3 +1,4 @@
+using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -48,6 +49,11 @@ public sealed class GroupExpectations
     public Expected ToHaveTone(GroupTone? tone) =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Equal(tone, (await SingleAsync(dbContext, ct)).Tone)
+        );
+
+    public Expected ToHaveIcon(ClubIcon? icon) =>
+        _expected.Enqueue(
+            async (dbContext, ct) => Assert.Equal(icon, (await SingleAsync(dbContext, ct)).Icon)
         );
 
     public Expected ToBeArchivedOn(DateOnly? archivedOn) =>

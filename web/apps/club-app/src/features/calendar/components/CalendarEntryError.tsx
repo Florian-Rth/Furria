@@ -5,11 +5,16 @@ import { CalendarError } from './CalendarError';
 
 interface CalendarEntryErrorProps {
   message: string;
+  isRetrying: boolean;
   onRetry: () => void;
 }
 
-export const CalendarEntryError: FC<CalendarEntryErrorProps> = ({ message, onRetry }) => (
+export const CalendarEntryError: FC<CalendarEntryErrorProps> = ({
+  message,
+  isRetrying,
+  onRetry,
+}) => (
   <KkScreen kind="fullscreen" title={CALENDAR_TITLE} origin={CALENDAR_ORIGIN}>
-    <CalendarError message={message} onRetry={onRetry} />
+    <CalendarError message={message} isRetrying={isRetrying} onRetry={onRetry} />
   </KkScreen>
 );

@@ -1,6 +1,7 @@
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
+using Furria.Api.Honours;
 using Furria.Api.Media;
 using Furria.Api.Results;
 using Furria.Application.Registry;
@@ -12,10 +13,12 @@ namespace Furria.Api.Endpoints.Members;
 public sealed class GetMemberById : Endpoint<GetMemberByIdRequest, GetMemberByIdResponse>
 {
     private readonly PersonService _personService;
+    private readonly PersonHonoursQuery _honoursQuery;
 
-    public GetMemberById(PersonService personService)
+    public GetMemberById(PersonService personService, PersonHonoursQuery honoursQuery)
     {
         _personService = personService;
+        _honoursQuery = honoursQuery;
     }
 
     public override void Configure()
@@ -40,10 +43,15 @@ public sealed class GetMemberById : Endpoint<GetMemberByIdRequest, GetMemberById
             return;
         }
 
-        await Send.OkAsync(ToResponse(member.Value), cancellation: ct);
+        var honours = await _honoursQuery.OfPersonAsync(req.PersonId, ct);
+
+        await Send.OkAsync(ToResponse(member.Value, honours), cancellation: ct);
     }
 
-    private static GetMemberByIdResponse ToResponse(MemberDetails member) =>
+    private static GetMemberByIdResponse ToResponse(
+        MemberDetails member,
+        PersonHonoursDetails honours
+    ) =>
         new()
         {
             PersonId = member.PersonId,
@@ -55,6 +63,7 @@ public sealed class GetMemberById : Endpoint<GetMemberByIdRequest, GetMemberById
             Groups = [.. member.Groups.Select(ToDto)],
             Roles = [.. member.Roles.Select(ToDto)],
             Contact = ToDto(member.Contact),
+            Honours = PersonHonoursDto.From(honours),
         };
 
     private static MemberGroupDto ToDto(MemberGroup group) =>
@@ -118,6 +127,8 @@ public sealed record GetMemberByIdResponse
     public required IReadOnlyList<MemberRoleDto> Roles { get; init; }
 
     public required MemberContactDto Contact { get; init; }
+
+    public required PersonHonoursDto Honours { get; init; }
 }
 
 public sealed record MemberGroupDto

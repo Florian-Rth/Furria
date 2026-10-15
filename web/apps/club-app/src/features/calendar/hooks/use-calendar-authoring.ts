@@ -15,6 +15,7 @@ export interface CalendarAuthoring {
 export interface CalendarAuthoringLoad {
   authoring: CalendarAuthoring | null;
   error: Error | null;
+  isRetrying: boolean;
   retry: () => void;
 }
 
@@ -22,6 +23,7 @@ export const useCalendarAuthoring = (): CalendarAuthoringLoad => {
   const me = useMeQuery();
   const { has, isUndecided } = usePermissions();
   const myGroups = useMyGroupsQuery();
+  const isRetrying = me.isFetching || myGroups.isFetching;
 
   const retry = (): void => {
     if (me.isError) {
@@ -33,7 +35,7 @@ export const useCalendarAuthoring = (): CalendarAuthoringLoad => {
   };
 
   if (isUndecided || myGroups.data === undefined) {
-    return { authoring: null, error: me.error ?? myGroups.error, retry };
+    return { authoring: null, error: me.error ?? myGroups.error, isRetrying, retry };
   }
 
   const ownerOptions = toOwnerOptions(
@@ -51,6 +53,7 @@ export const useCalendarAuthoring = (): CalendarAuthoringLoad => {
       linkOf: (entry) => toEntryLink(entry, mayOwn(entry)),
     },
     error: null,
+    isRetrying,
     retry,
   };
 };

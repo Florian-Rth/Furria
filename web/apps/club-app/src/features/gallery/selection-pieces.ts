@@ -1,5 +1,5 @@
 import type { KkShowcasePieceData } from '@furria/ui';
-import { thumbSourceOf } from './gallery-view';
+import { frameStateOf, shownSourceOf } from './gallery-view';
 import type { AlbumDetails } from './schemas';
 import type { SelectionSlot } from './selection-draft';
 import { altFallbackOf, marksTitlePhoto } from './selection-draft';
@@ -16,7 +16,8 @@ export const selectionPiecesOf = (
     return {
       id: String(entry.mediaItemId),
       label: caption === '' ? altFallback : caption,
-      source: thumbSourceOf(item.urls),
+      source: shownSourceOf(item),
+      state: frameStateOf(item),
       badge: marksTitlePhoto(album, position) ? TITLE_PHOTO_BADGE : undefined,
       caption: entry.caption,
       captionPlaceholder: altFallback,

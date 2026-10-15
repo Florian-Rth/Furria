@@ -1,8 +1,8 @@
-import { KkButton, KkErrorState, KkScreen } from '@furria/ui';
+import { KkButton, KkErrorState, KkScreen, KkTitleHeader } from '@furria/ui';
 import type { FC } from 'react';
-import { AppListSkeleton, GALLERY_ORIGIN } from '@/features/session';
+import { AppListSkeleton, AREA_HANDOVERS, GALLERY_ORIGIN } from '@/features/session';
 import { toAlbumErrorMessage } from '../album-form-messages';
-import { BIN_TITLE } from '../gallery-copy';
+import { BIN_LEAD, BIN_TITLE } from '../gallery-copy';
 import { useGalleryBin } from '../hooks/use-gallery-bin';
 import { GalleryBinBody } from './GalleryBinBody';
 
@@ -13,7 +13,11 @@ const LOADING_LABEL = 'Papierkorb wird geladen';
 export const GalleryBinPage: FC = () => {
   const control = useGalleryBin();
   const errorMessage = toAlbumErrorMessage(control.error);
-  const retry = <KkButton onClick={control.reload}>{RETRY_LABEL}</KkButton>;
+  const retry = (
+    <KkButton loading={control.reloading} onClick={control.reload}>
+      {RETRY_LABEL}
+    </KkButton>
+  );
   const failure =
     errorMessage === null ? null : (
       <KkErrorState title={FAILURE_TITLE} description={errorMessage} action={retry} />
@@ -26,7 +30,14 @@ export const GalleryBinPage: FC = () => {
     );
 
   return (
-    <KkScreen kind="working" title={BIN_TITLE} origin={GALLERY_ORIGIN} action={control.action}>
+    <KkScreen
+      kind="working"
+      title={BIN_TITLE}
+      origin={GALLERY_ORIGIN}
+      action={control.action}
+      header={<KkTitleHeader title={BIN_TITLE} lead={BIN_LEAD} />}
+      handover={AREA_HANDOVERS.gallery}
+    >
       {content}
     </KkScreen>
   );

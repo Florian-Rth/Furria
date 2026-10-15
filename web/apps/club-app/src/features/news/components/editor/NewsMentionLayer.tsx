@@ -3,7 +3,6 @@ import { KkMentionEditor, KkMentionPicker } from '@furria/ui';
 import type { FC } from 'react';
 import {
   MENTION_DONE,
-  MENTION_EMPTY,
   MENTION_LABEL_FIELD,
   MENTION_LIST_LABEL,
   MENTION_REMOVE,
@@ -16,6 +15,7 @@ import type { NewsMentionable } from '../../types';
 interface NewsMentionLayerProps {
   text: ProseText;
   mentionables: readonly NewsMentionable[];
+  emptyLabel: string;
   listId: string;
 }
 
@@ -26,7 +26,12 @@ const EDITOR_LABELS: KkMentionEditorLabels = {
   done: MENTION_DONE,
 };
 
-export const NewsMentionLayer: FC<NewsMentionLayerProps> = ({ text, mentionables, listId }) => {
+export const NewsMentionLayer: FC<NewsMentionLayerProps> = ({
+  text,
+  mentionables,
+  emptyLabel,
+  listId,
+}) => {
   const layer = useMentionLayer(text, mentionables);
 
   return (
@@ -34,7 +39,7 @@ export const NewsMentionLayer: FC<NewsMentionLayerProps> = ({ text, mentionables
       <KkMentionPicker
         listId={listId}
         label={MENTION_LIST_LABEL}
-        emptyLabel={MENTION_EMPTY}
+        emptyLabel={emptyLabel}
         anchor={layer.pickerAnchor}
         sections={layer.sections}
         activeId={layer.activeId}

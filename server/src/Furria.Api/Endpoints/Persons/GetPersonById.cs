@@ -1,6 +1,7 @@
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
+using Furria.Api.Honours;
 using Furria.Api.Media;
 using Furria.Api.Results;
 using Furria.Application.Authorization;
@@ -26,13 +27,15 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
     private readonly PermissionAuthorizer _authorizer;
     private readonly ClubRecordService _clubRecordService;
     private readonly PictureService _pictureService;
+    private readonly PersonHonoursQuery _honoursQuery;
 
     public GetPersonById(
         PersonService personService,
         AccountAccessService accountAccessService,
         PermissionAuthorizer authorizer,
         ClubRecordService clubRecordService,
-        PictureService pictureService
+        PictureService pictureService,
+        PersonHonoursQuery honoursQuery
     )
     {
         _personService = personService;
@@ -40,6 +43,7 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
         _authorizer = authorizer;
         _clubRecordService = clubRecordService;
         _pictureService = pictureService;
+        _honoursQuery = honoursQuery;
     }
 
     public override void Configure()
@@ -70,9 +74,10 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
 
         var viewer = await ViewerOfAccessAsync(ct);
         var portrait = await _pictureService.EditingOfAsync(MediaOwner.Person(req.PersonId), ct);
+        var honours = await _honoursQuery.OfPersonAsync(req.PersonId, ct);
 
         await Send.OkAsync(
-            ToResponse(person.Value, access.Value, viewer, portrait),
+            ToResponse(person.Value, access.Value, viewer, portrait, honours),
             cancellation: ct
         );
     }
@@ -95,7 +100,8 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
         ManagedPersonDetails person,
         AccountAccessDetails access,
         AccessViewer viewer,
-        PictureEditingDetails? portrait
+        PictureEditingDetails? portrait,
+        PersonHonoursDetails honours
     ) =>
         new()
         {
@@ -125,6 +131,7 @@ public sealed class GetPersonById : Endpoint<GetPersonByIdRequest, GetPersonById
             UnendedBoardSeats = [.. person.UnendedBoardSeats.Select(ToDto)],
             UnendedKeyHoldings = [.. person.UnendedKeyHoldings.Select(ToDto)],
             Access = ToDto(access, viewer),
+            Honours = PersonHonoursDto.From(honours),
         };
 
     private static PersonContactChangeDto ToDto(ContactChangeDetails change) =>
@@ -358,6 +365,8 @@ public sealed record GetPersonByIdResponse
     public required IReadOnlyList<PersonKeyHoldingDto> UnendedKeyHoldings { get; init; }
 
     public required PersonAccessDto Access { get; init; }
+
+    public required PersonHonoursDto Honours { get; init; }
 }
 
 public sealed record PersonContactChangeDto

@@ -3,6 +3,7 @@ import { DetailedError, defaultOptions, Upload } from 'tus-js-client';
 import { apiUrlOf } from '@/lib/api/api-fetch';
 import { ensureFreshAccessToken, expireSession } from '@/lib/api/session/session-store';
 import type { UploadTransport } from './media-upload';
+import { transferStatusOf } from './upload-failure';
 
 const UPLOADS_PATH = '/api/media/uploads';
 const MEDIA_ITEM_HEADER = 'Media-Item-Id';
@@ -10,7 +11,12 @@ const CHUNK_BYTES = 16 * 1024 * 1024;
 const RETRY_DELAYS_MS = [0, 1_000, 3_000, 5_000, 10_000];
 
 const statusOf = (error: Error): number | null =>
-  error instanceof DetailedError ? (error.originalResponse?.getStatus() ?? null) : null;
+  error instanceof DetailedError
+    ? transferStatusOf(
+        error.originalResponse?.getStatus() ?? null,
+        error.originalRequest?.getMethod() ?? null,
+      )
+    : null;
 
 const isSameMetadata = (left: Record<string, string>, right: Record<string, string>): boolean =>
   Object.keys(left).length === Object.keys(right).length &&

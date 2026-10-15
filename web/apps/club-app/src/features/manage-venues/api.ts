@@ -28,10 +28,13 @@ export interface UpdateVenueInput {
   form: VenueForm;
 }
 
-export const useManagedVenuesQuery = (): UseQueryResult<ManagedVenuesResponse, Error> =>
+export const useManagedVenuesQuery = (
+  enabled = true,
+): UseQueryResult<ManagedVenuesResponse, Error> =>
   useQuery({
     queryKey: queryKeys.managedVenues,
     queryFn: () => withFreshAccessToken(requestManagedVenues),
+    enabled,
   });
 
 export const useCreateVenueMutation = (): UseMutationResult<CreatedVenue, Error, VenueForm> =>

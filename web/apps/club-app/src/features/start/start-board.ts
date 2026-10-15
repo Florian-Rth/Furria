@@ -5,13 +5,12 @@ import type { StartVisit } from './start-visit';
 import { itemKeyOf, reconcileFrozenVisit, toStartVisit } from './start-visit';
 
 export type StartScreen =
-  | { kind: 'waiting' | 'skeleton' | 'offline' | 'error' | 'inactive' | 'empty' }
+  | { kind: 'waiting' | 'skeleton' | 'error' | 'inactive' | 'empty' }
   | { kind: 'board'; start: Start };
 
 export interface StartScreenInput {
   start: Start | null;
   failed: boolean;
-  paused: boolean;
   skeletonDue: boolean;
 }
 
@@ -31,12 +30,7 @@ export interface CalendarRow {
 const VISIT_IDLE_MS = 10 * 60 * 1000;
 const SINGLE_HIDDEN = 1;
 
-export const startScreenOf = ({
-  start,
-  failed,
-  paused,
-  skeletonDue,
-}: StartScreenInput): StartScreen => {
+export const startScreenOf = ({ start, failed, skeletonDue }: StartScreenInput): StartScreen => {
   if (start !== null) {
     if (!start.viewerIsActiveInClub) {
       return { kind: 'inactive' };
@@ -46,9 +40,6 @@ export const startScreenOf = ({
   }
   if (failed) {
     return { kind: 'error' };
-  }
-  if (paused) {
-    return { kind: 'offline' };
   }
 
   return { kind: skeletonDue ? 'skeleton' : 'waiting' };

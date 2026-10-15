@@ -1,4 +1,5 @@
 export { requestActiveLeave } from './active-guard';
+export { ClubIconField } from './components/ClubIconField';
 export { WriteLeaveDialog } from './components/WriteLeaveDialog';
 export type { LandingState } from './hooks/use-landing';
 export { useLanding } from './hooks/use-landing';

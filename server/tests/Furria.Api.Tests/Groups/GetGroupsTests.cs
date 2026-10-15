@@ -401,6 +401,7 @@ public sealed class GetGroupsTests : IClassFixture<ApiTestFixture>
                 "groupKindName",
                 "foundedYear",
                 "tone",
+                "icon",
                 "memberCount",
                 "memberPreview",
                 "admins",

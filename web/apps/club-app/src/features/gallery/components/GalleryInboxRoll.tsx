@@ -2,8 +2,15 @@ import type { KkContactStripFrame } from '@furria/ui';
 import { KkContactStrip } from '@furria/ui';
 import type { FC } from 'react';
 import { INBOX_TITLE } from '../gallery-copy';
-import { clockLabel, countLabel, dayLabel, personNameOf, shownSourceOf } from '../gallery-view';
-import { INBOX_OPEN_TRAIL, OWNERLESS_INBOX } from '../hub-copy';
+import {
+  clockLabel,
+  countLabel,
+  dayLabel,
+  frameStateOf,
+  personNameOf,
+  shownSourceOf,
+} from '../gallery-view';
+import { INBOX_OPEN_TRAIL, latentNoteOf, OWNERLESS_INBOX } from '../hub-copy';
 import { inboxOwnerOf } from '../hub-view';
 import type { InboxSummary } from '../schemas';
 import type { InboxOwner } from '../types';
@@ -25,6 +32,8 @@ export const GalleryInboxRoll: FC<GalleryInboxRollProps> = ({ inbox, onOpen }) =
     id: String(item.mediaItemId),
     label: `${INBOX_TITLE}, Bild ${position + 1}`,
     source: shownSourceOf(item),
+    state: frameStateOf(item),
+    latentLabel: latentNoteOf(item.state),
     edge: clockLabel(item.capturedAt) || `#${position + 1}`,
   }));
   const open = (): void => onOpen(owner);

@@ -18,7 +18,7 @@ export interface NewsPress {
 interface NewsPressOptions {
   signer: string;
   onPublished: (post: NewsPublication) => void;
-  onFailed: () => void;
+  onFailed: (error: Error) => void;
 }
 
 export const useNewsPress = ({ signer, onPublished, onFailed }: NewsPressOptions): NewsPress => {

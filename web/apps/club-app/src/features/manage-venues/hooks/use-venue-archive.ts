@@ -30,16 +30,13 @@ export const useVenueArchive = (venue: ManagedVenue): VenueArchiveControl => {
 
   const submit = (): void => {
     setRejection(null);
-    mutation.mutate(
-      { venueId: venue.venueId, name: venue.name },
-      {
-        onSuccess: () => {
-          setIsOpen(false);
-          void navigate({ to: '/manage/venues' });
-        },
-        onError: (error) => {
-          setRejection(toWriteErrorMessage(error));
-        },
+    void mutation.mutateAsync({ venueId: venue.venueId, name: venue.name }).then(
+      () => {
+        setIsOpen(false);
+        void navigate({ to: '/manage/venues' });
+      },
+      (error: Error) => {
+        setRejection(toWriteErrorMessage(error));
       },
     );
   };

@@ -18,5 +18,6 @@ export const useLabGreeting = (greeting: LabGreeting): GreetingView | null => {
     firstName: greeting.firstName,
     reducedMotion: greeting.still,
     follows,
+    holder: greeting.holder,
   });
 };

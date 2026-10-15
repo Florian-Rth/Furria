@@ -57,18 +57,8 @@ export const toGroupStandingChips = (group: GroupSummary): StateChip[] => {
   return chips;
 };
 
-export const toGroupCardChips = (group: GroupSummary): StateChip[] => {
-  const chips: StateChip[] = [];
-
-  if (group.isRecruiting) {
-    chips.push(toRecruitingChip(true));
-  }
-  if (group.viewerIsAdmin) {
-    chips.push(GROUP_ADMIN_CHIP);
-  }
-
-  return chips;
-};
+export const toGroupCardSignal = (group: GroupSummary): string | null =>
+  group.isRecruiting ? toRecruitingChip(true).label : null;
 
 export const toGroupKindLabel = (groupKindName: string | null): string | null => {
   if (groupKindName === null) {
@@ -126,6 +116,44 @@ export const toGroupLeadLine = (admins: readonly PersonRef[]): string => {
   const rest = roster.furtherCount + NAMED_LEAD;
 
   return `${LED_BY_PREFIX}${toFullName(roster.first)}${LED_BY_PAIR}${rest}${FURTHER_LEADS_SUFFIX}`;
+};
+
+const LEAD_PREFIX = 'Leitung: ';
+const LEAD_SEPARATOR = ', ';
+const FURTHER_LEADS_MARK = ' +';
+
+export const toShortName = (person: PersonRef): string => {
+  const initial = person.firstName.trim().charAt(0);
+
+  return initial === '' ? person.lastName : `${initial}. ${person.lastName}`;
+};
+
+export const toGroupCardLeadLine = (admins: readonly PersonRef[]): string => {
+  const roster = adminRosterOf(admins);
+
+  if (roster.kind === 'none') {
+    return NO_LEAD_LINE;
+  }
+  if (roster.kind === 'one') {
+    return `${LEAD_PREFIX}${toFullName(roster.first)}`;
+  }
+
+  const pair = `${toShortName(roster.first)}${LEAD_SEPARATOR}${toShortName(roster.second)}`;
+  const further = roster.kind === 'more' ? `${FURTHER_LEADS_MARK}${roster.furtherCount}` : '';
+
+  return `${LEAD_PREFIX}${pair}${further}`;
+};
+
+const META_SEPARATOR = ' · ';
+
+export const toCardKindName = (name: string, groupKindName: string | null): string | null => {
+  const kind = toGroupKindLabel(groupKindName);
+
+  if (kind === null) {
+    return null;
+  }
+
+  return normalizeForSearch(name).includes(normalizeForSearch(kind)) ? null : kind;
 };
 
 export const toPersonUnitLabel = (count: number): string => (count === 1 ? 'Person' : 'Personen');
@@ -200,13 +228,14 @@ export const toRecruitingContactLine = (admins: readonly PersonRef[]): string =>
 export const toGroupContactLine = (group: GroupSummary): string =>
   group.isRecruiting ? toRecruitingContactLine(group.admins) : toGroupLeadLine(group.admins);
 
-const CARD_LABEL_SUFFIX = ' – Kurzansicht öffnen';
-
-export const toGroupCardLabel = (name: string): string => `${name}${CARD_LABEL_SUFFIX}`;
-
 export const GROUP_PEEK_CLOSE_LABEL = 'Kurzansicht schließen';
 export const GROUP_PEEK_OPEN_LABEL = 'Ganze Seite öffnen';
 export const toGroupSizeLine = (count: number): string => `${count} ${toPersonUnitLabel(count)}`;
+
+export const toGroupCardSizeLine = (count: number, foundedLine: string | null): string =>
+  foundedLine === null
+    ? toGroupSizeLine(count)
+    : `${toGroupSizeLine(count)}${META_SEPARATOR}${foundedLine}`;
 
 const ONE_GROUP_LABEL = '1 Gruppe';
 const GROUP_UNIT_LABEL = 'Gruppen';

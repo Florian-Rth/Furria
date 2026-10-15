@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react';
 import type { KkNewsCategory } from '../../../internal/news-surface/news-category';
-import { KkCoverPicture } from '../../../KkCoverPicture';
+import { KkPhoto } from '../../../KkPhoto';
 import type { KkNewsProofFacts, KkNewsProofLabels } from '../../news-proof-types';
 
 export interface KkNewsProofSurface {
@@ -8,14 +8,11 @@ export interface KkNewsProofSurface {
   teaser: string | null;
   category: KkNewsCategory | null;
   photo: ReactNode;
-  posterWord: string;
 }
-
-const PICTURE_FIT = { borderRadius: 'inherit' };
 
 export const proofSurfaceOf = (
   facts: KkNewsProofFacts,
-  labels: Pick<KkNewsProofLabels, 'posterFallback' | 'untitled'>,
+  labels: Pick<KkNewsProofLabels, 'untitled'>,
 ): KkNewsProofSurface => ({
   title: facts.title,
   teaser: facts.teaser,
@@ -25,11 +22,6 @@ export const proofSurfaceOf = (
       : { label: facts.categoryLabel, tone: facts.categoryTone },
   photo:
     facts.pictureSource === null ? null : (
-      <KkCoverPicture
-        image={{ src: facts.pictureSource }}
-        alt={facts.title ?? labels.untitled}
-        sx={PICTURE_FIT}
-      />
+      <KkPhoto image={{ src: facts.pictureSource }} alt={facts.title ?? labels.untitled} fill />
     ),
-  posterWord: facts.categoryLabel ?? labels.posterFallback,
 });

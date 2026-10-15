@@ -1,5 +1,6 @@
 import { ApiError } from '@furria/api-client';
 import { describe, expect, it } from 'vitest';
+import { SessionPersistenceError } from '@/lib/api/session/session-error';
 import type { RedeemFailureKind } from './redeem-failure';
 import { toRedeemFailureKind } from './redeem-failure';
 
@@ -50,11 +51,13 @@ describe('toRedeemFailureKind', () => {
       }),
       'claimPasskeyRejected',
     ],
+    ['an aborted passkey ceremony', new DOMException('aborted', 'AbortError'), 'passkeyCancelled'],
     [
-      'a cancelled passkey ceremony',
-      new DOMException('cancelled', 'NotAllowedError'),
-      'passkeyCancelled',
+      'a dismissed or timed out passkey ceremony',
+      new DOMException('dismissed', 'NotAllowedError'),
+      'passkeyDismissed',
     ],
+    ['an account whose session could not be kept', new SessionPersistenceError(), 'sessionLost'],
     [
       'a failed passkey ceremony',
       new DOMException('insecure', 'SecurityError'),

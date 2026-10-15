@@ -5,6 +5,7 @@ import type { FC } from 'react';
 import { toLandingKey } from '@/features/write';
 import { ADD_FEE_REDUCTION_ACTION_LABEL, PERSON_SECTION_TITLES } from '../manage-persons-labels';
 import { toClosedHistoryLine } from '../person-archive';
+import { toSectionLandingKey } from '../person-identity';
 import type { PersonDetails } from '../schemas';
 import { PersonFeeReductionRow } from './PersonFeeReductionRow';
 
@@ -49,6 +50,7 @@ export const PersonFeeReductionsPanel: FC<PersonFeeReductionsPanelProps> = ({
   ));
 
   const isEmpty = rows.length === 0;
+  const landingKey = toSectionLandingKey('feeReductions', person.personId);
   const body = isEmpty ? (
     <KkEmptyState size="panel" title={EMPTY_TITLE} description={EMPTY_DESCRIPTION} />
   ) : (
@@ -61,7 +63,13 @@ export const PersonFeeReductionsPanel: FC<PersonFeeReductionsPanelProps> = ({
       action={action}
       description={closedNote}
     >
-      <KkPanel variant={isEmpty ? 'block' : 'list'}>{body}</KkPanel>
+      <KkPanel
+        variant={isEmpty ? 'block' : 'list'}
+        highlight={highlightedKey === landingKey}
+        landing={landingKey}
+      >
+        {body}
+      </KkPanel>
     </KkPanelSection>
   );
 };

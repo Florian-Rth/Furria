@@ -5,6 +5,7 @@ using Furria.Api.Endpoints.Members;
 using Furria.Application.Authorization;
 using Furria.Application.Registry;
 using Furria.Core.Club;
+using Furria.Core.Groups;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -688,6 +689,7 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
                 "groups",
                 "roles",
                 "contact",
+                "honours",
             ],
             fields
         );
@@ -727,5 +729,47 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal(ContactVisibility.Hidden, result.Contact.Visibility);
         Assert.Null(result.Contact.Phone);
         Assert.Null(result.Contact.Email);
+    }
+
+    [Fact]
+    public async Task Should_CarryHerGroupAdminTenure_When_SheRunsAGroup()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("paula", "Paula", "Brendel")
+                            .AddMembership("paula-first", "paula", JoinedIn2017)
+                            .AddPerson("alice", "Alice", "Muster")
+                            .AddAccount("alice")
+                            .AddMembership("alice-first", "alice", JoinedIn2017)
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup(
+                                "tanzgarde",
+                                "Tanzgarde",
+                                tone: GroupTone.Iris,
+                                icon: ClubIcon.Star
+                            )
+                            .AddGroupAdmin("paula-tanzgarde", "tanzgarde", "paula", "Trainerin")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (_, result) = await client.GETAsync<
+            GetMemberById,
+            GetMemberByIdRequest,
+            GetMemberByIdResponse
+        >(new GetMemberByIdRequest { PersonId = ctx.Identity.People.IdOf("paula") });
+
+        var tenure = Assert.Single(result.Honours.Functions);
+        Assert.Equal(PersonFunctionKind.GroupAdmin, tenure.Kind);
+        Assert.Equal("Tanzgarde", tenure.Name);
+        Assert.Equal(ClubIcon.Star, tenure.Icon);
+        Assert.Equal(GroupTone.Iris, tenure.Tone);
     }
 }

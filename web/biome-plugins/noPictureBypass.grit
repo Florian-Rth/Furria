@@ -1,0 +1,9 @@
+language js
+
+or {
+  JsxOpeningElement() as $hit,
+  JsxSelfClosingElement() as $hit
+} where {
+  $hit <: r"^<(?:KkImage|KkPhotoPlaceholder)\b[\s\S]*",
+  register_diagnostic(span=$hit, message="Pictures and their missing-picture placeholder come from `KkPhoto`; only the picture kits of ADR-0030 build on `KkImage`.")
+}

@@ -1,10 +1,12 @@
-import { KkFormSection, KkNote, KkTextArea, KkTextField } from '@furria/ui';
+import { KkFormSection, KkNote, KkSwitchRow, KkTextArea, KkTextField } from '@furria/ui';
 import type { FC } from 'react';
 import { WriteScreen } from '@/features/write';
 import { useRoleEditor } from '../hooks/use-role-editor';
 import { ROLES_ORIGIN, toRoleOrigin } from '../manage-roles-labels';
-import type { RoleDetails } from '../schemas';
+import { toRoleCoinForm } from '../role-coin';
+import type { RoleDetails, RoleForm } from '../schemas';
 import { ROLE_DESCRIPTION_MAX_LENGTH } from '../schemas';
+import { RoleCoinFields } from './RoleCoinFields';
 
 const CREATE_TITLE = 'Rolle hinzufügen';
 const EDIT_TITLE = 'Rolle bearbeiten';
@@ -19,7 +21,17 @@ const DESCRIPTION_PLACEHOLDER = 'Aufgabe der Rolle';
 const DESCRIPTION_ROWS = 4;
 const CREATE_ACTION_LABEL = 'Hinzufügen';
 const EDIT_ACTION_LABEL = 'Speichern';
-const EMPTY_FORM = { name: '', description: '' };
+const COIN_SECTION = 'Abzeichen';
+const COIN_SWITCH_LABEL = 'Abzeichen am Profilbild';
+const COIN_SWITCH_DESCRIPTION =
+  'Wer die Rolle innehat, trägt am Profilbild ein Abzeichen in dieser Farbe mit diesem Symbol.';
+const EMPTY_FORM: RoleForm = {
+  name: '',
+  description: '',
+  showsCoin: false,
+  coinIcon: null,
+  coinTone: null,
+};
 
 const toCountLabel = (used: number, max: number): string => `${used} von ${max} Zeichen`;
 
@@ -28,8 +40,14 @@ interface RoleEditorProps {
 }
 
 export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry }) => {
-  const initial =
-    roleEntry === null ? EMPTY_FORM : { name: roleEntry.name, description: roleEntry.description };
+  const initial: RoleForm =
+    roleEntry === null
+      ? EMPTY_FORM
+      : {
+          name: roleEntry.name,
+          description: roleEntry.description,
+          ...toRoleCoinForm(roleEntry.coin),
+        };
   const control = useRoleEditor({ roleId: roleEntry?.roleId ?? null, initial });
   const { errors } = control.form.formState;
 
@@ -39,6 +57,14 @@ export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry }) => {
   const origin = roleEntry === null ? ROLES_ORIGIN : toRoleOrigin(roleEntry);
 
   const nameField = control.form.register('name');
+  const coinFields = control.showsCoin ? (
+    <RoleCoinFields
+      icon={control.coinIcon}
+      onIconChange={control.setCoinIcon}
+      tone={control.coinTone}
+      onToneChange={control.setCoinTone}
+    />
+  ) : null;
 
   return (
     <WriteScreen
@@ -83,6 +109,15 @@ export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry }) => {
           error={errors.description !== undefined}
           helperText={errors.description?.message}
         />
+      </KkFormSection>
+      <KkFormSection title={COIN_SECTION}>
+        <KkSwitchRow
+          label={COIN_SWITCH_LABEL}
+          description={COIN_SWITCH_DESCRIPTION}
+          checked={control.showsCoin}
+          onChange={control.setShowsCoin}
+        />
+        {coinFields}
       </KkFormSection>
     </WriteScreen>
   );

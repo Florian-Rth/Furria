@@ -30,7 +30,7 @@ export const MembersBody: FC<MembersBodyProps> = ({ search }) => {
     );
   }
   if (errorMessage !== null) {
-    return <MembersError message={errorMessage} onRetry={reload} />;
+    return <MembersError message={errorMessage} isRetrying={members.isFetching} onRetry={reload} />;
   }
 
   return <AppListSkeleton label={LOADING_LABEL} listShape="rows" />;

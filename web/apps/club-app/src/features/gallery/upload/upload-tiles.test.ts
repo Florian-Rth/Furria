@@ -42,6 +42,12 @@ describe('tileLookOf', () => {
       { state: 'processing', progress: 1, source: 'blob:local', retryable: false },
     ],
     [
+      'sent without a trackable item',
+      { ...entry('sent', 200), mediaItemId: null },
+      undefined,
+      { state: 'ready', progress: 1, source: 'blob:local', retryable: false },
+    ],
+    [
       'developing on the server',
       entry('sent', 200),
       { state: 'processing', source: 'https://x/s' },

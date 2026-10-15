@@ -24,7 +24,13 @@ export const AnnouncementScreen: FC = () => {
 
   if (announcements.data === undefined) {
     if (errorMessage !== null) {
-      return <AnnouncementEditorError message={errorMessage} onRetry={reload} />;
+      return (
+        <AnnouncementEditorError
+          message={errorMessage}
+          isRetrying={announcements.isFetching}
+          onRetry={reload}
+        />
+      );
     }
 
     return <AnnouncementEditorSkeleton title={TITLE} />;

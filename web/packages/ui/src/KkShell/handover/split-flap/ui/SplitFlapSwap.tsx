@@ -42,7 +42,7 @@ export const SplitFlapSwap: FC<KkHandoverSwapProps> = ({ rest, title, restText, 
   return (
     <Box
       ref={swap.stageRef}
-      data-kk-splitFlap
+      data-kk-split-flap
       sx={{ position: 'relative', display: 'grid', alignItems: 'center', minWidth: 0 }}
     >
       <motion.div ref={swap.restRef} style={{ ...STACKED_STYLE, opacity: swap.restOpacity }}>

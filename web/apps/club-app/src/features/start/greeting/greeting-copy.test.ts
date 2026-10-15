@@ -31,7 +31,7 @@ interface CopyCase {
   expected: CopySummary;
 }
 
-const STAGE = { festive: false, key: 'daily:2027-01-19', sessionYear: 2026 };
+const STAGE = { festive: false, key: 'daily:2027-01-19', sessionYear: 2026, lapClose: null };
 
 const claused = (
   moment: ClausedMoment,

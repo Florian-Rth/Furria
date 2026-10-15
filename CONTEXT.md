@@ -445,10 +445,10 @@ she cannot be invited, when she cannot: under age, birth date missing, not affil
 *invited* (an invitation is live), *active*, or *disabled*; plus the history of who invited,
 reminded, recovered or disabled her, and when. **The club never sees when she last signed in** —
 access is recorded, use is not (ruled 2026-09-25).
-The persons register, filtered by access, shows the same state on each row — plus *nicht
-einladbar* for no access with a reason — and there an active account reads *Account aktiv*, so it
+The persons register shows the same state on each row, next to the membership chip — plus *nicht
+einladbar* for no access with a reason — and there an active account reads *App aktiv*, so it
 is never mistaken for an active membership (built 2026-09-27).
-_UI copy_: *kein Zugang* · *eingeladen* · *aktiv* · *gesperrt*; in the register *Account aktiv* ·
+_UI copy_: *kein Zugang* · *eingeladen* · *aktiv* · *gesperrt*; in the register *App eingeladen* · *App aktiv* · *App gesperrt* ·
 *nicht einladbar*
 _Avoid_: last seen, activity (as something the club watches)
 

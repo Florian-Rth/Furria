@@ -52,7 +52,7 @@ export interface NewsDraftClock {
 
 export interface NewsDraftEvents {
   created: (newsPostId: number) => void;
-  creationFailed: () => void;
+  creationFailed: (error: Error) => void;
 }
 
 export interface NewsDraftView {
@@ -373,7 +373,9 @@ export const createNewsDraftSession = (options: NewsDraftSessionOptions): NewsDr
       creation = null;
       status = 'failed';
       emit();
-      events.creationFailed();
+      if (error instanceof Error) {
+        events.creationFailed(error);
+      }
       throw error;
     }
   };
@@ -419,6 +421,10 @@ export const createNewsDraftSession = (options: NewsDraftSessionOptions): NewsDr
         return;
       }
       const untouched = fields;
+      if (loadError !== null) {
+        loadError = null;
+        emit();
+      }
       try {
         const details = await refresh(postId);
         if (!isSeeded) {

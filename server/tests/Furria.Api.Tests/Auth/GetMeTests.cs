@@ -4,7 +4,9 @@ using Furria.Api.Endpoints.Auth;
 using Furria.Api.Media;
 using Furria.Api.Tests.Media;
 using Furria.Application.Authorization;
+using Furria.Application.Registry;
 using Furria.Core.Club;
+using Furria.Core.Groups;
 using Furria.Tests.Common.Fixtures;
 using Furria.Tests.Common.WebAuthn;
 using Xunit;
@@ -69,6 +71,46 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
         Assert.Equal(joinedOn, result.Membership.MemberSince);
         Assert.Equal(joinedOn, result.Membership.CurrentStartedOn);
         Assert.Null(result.Membership.CurrentEndedOn);
+    }
+
+    [Fact]
+    public async Task Should_CarryHerHonours_When_SheServedSessionsAndHoldsARole()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var relevantYear = ClubSession.RelevantYearOf(_fixture.Today);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("alice", "Alice", "Muster")
+                            .AddAccount("alice")
+                            .AddMembership(
+                                "alice-first",
+                                "alice",
+                                ClubSession.OpeningOf(relevantYear - 10)
+                            )
+                    )
+                    .Roles(roles =>
+                        roles
+                            .AddRoleWithCoin(
+                                "zeugwart",
+                                "Zeugwart",
+                                ClubIcon.Wrench,
+                                GroupTone.Teal
+                            )
+                            .AddRoleHolding("alice-zeugwart", "zeugwart", "alice")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (_, result) = await client.GETAsync<GetMe, GetMeResponse>();
+
+        Assert.Equal(11, result.Honours.Sessions);
+        var zeugwart = Assert.Single(result.Honours.Functions);
+        Assert.Equal(PersonFunctionKind.Role, zeugwart.Kind);
+        Assert.Equal("Zeugwart", zeugwart.Name);
     }
 
     [Fact]

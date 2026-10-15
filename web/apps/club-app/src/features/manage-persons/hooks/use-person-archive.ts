@@ -29,17 +29,16 @@ export const usePersonArchive = (person: PersonDetails): PersonArchiveControl =>
 
   const submit = (): void => {
     setRejection(null);
-    mutation.mutate(
-      { isArchived: person.archive === null, personName: toPersonName(person) },
-      {
-        onSuccess: () => {
+    void mutation
+      .mutateAsync({ isArchived: person.archive === null, personName: toPersonName(person) })
+      .then(
+        () => {
           setIsOpen(false);
         },
-        onError: (error) => {
+        (error: Error) => {
           setRejection(toWriteErrorMessage(error));
         },
-      },
-    );
+      );
   };
 
   return { isOpen, open, close, rejection, isSaving: mutation.isPending, submit };

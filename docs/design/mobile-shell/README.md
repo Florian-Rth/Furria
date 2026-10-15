@@ -99,7 +99,9 @@ for the handover anyway — and `header` as any node. **The shell wraps that nod
 and the drift**, so a custom header is ordinary JSX that knows nothing about scroll, and §8's
 "screens receive the scroll state; they do not read or manage it" holds by construction. The
 corollary: a header fades as one block, and cannot move its visual and its title at different
-rates.
+rates. **A `header` always comes with a `handover`** (the area's animation from `AREA_HANDOVERS`)
+and a `handover` never comes without a `header` — `KkScreenProps` makes both-or-neither a type
+error, so no page can ship a silent header or an animation that never plays.
 
 `@furria/ui` ships a standard header plus the parts custom headers are built from — eyebrow,
 leading visual, title, lead, meta row — so a bespoke header (the Profil page's identity header is

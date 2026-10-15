@@ -1,32 +1,18 @@
 import type { KkSx } from '@furria/ui';
-import {
-  KkAvatarStack,
-  KkCard,
-  KkChip,
-  KkEyebrow,
-  KkGroupToneEdge,
-  KkGroupToneField,
-  KkMeta,
-  kkTokens,
-  toImageSource,
-  useKkSheetCommands,
-} from '@furria/ui';
+import { KkAvatarStack, KkGroupCard, toImageSource, useKkSheetCommands } from '@furria/ui';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
 import { toPeekId } from '@/lib/peek';
-import { toGroupTone } from '../group-identity';
+import { toFoundedLine, toGroupTone } from '../group-identity';
 import {
-  toGroupCardChips,
-  toGroupCardLabel,
-  toGroupKindLabel,
-  toGroupLeadLine,
-  toGroupSizeLine,
+  toCardKindName,
+  toGroupCardLeadLine,
+  toGroupCardSignal,
+  toGroupCardSizeLine,
 } from '../groups-labels';
 import type { GroupSummary } from '../schemas';
 
-const FACE_RATIO = kkTokens.aspectRatio.landscape;
 const AVATAR_MAX = 3;
-const FACE_FILL = { position: 'absolute', inset: 0 } as const;
 const NO_SHRINK = { flexShrink: 0 } as const;
 
 interface GroupCardProps {
@@ -37,50 +23,35 @@ interface GroupCardProps {
 export const GroupCard: FC<GroupCardProps> = ({ group, sx }) => {
   const sheet = useKkSheetCommands();
   const tone = toGroupTone(group.groupId, group.tone);
-  const chips = toGroupCardChips(group);
-  const initials = group.memberPreview.map((person) =>
-    toInitials(person.firstName, person.lastName),
-  );
+  const initials = group.memberPreview
+    .slice(0, AVATAR_MAX)
+    .map((person) => toInitials(person.firstName, person.lastName));
   const portraits = group.memberPreview.map((person) =>
     toImageSource(person.portrait ?? null, 'portrait'),
   );
-  const kindLabel = toGroupKindLabel(group.groupKindName);
+  const sizeLine = toGroupCardSizeLine(group.memberCount, toFoundedLine(group.foundedYear));
 
-  const kindEyebrow = kindLabel === null ? null : <KkEyebrow tone="muted">{kindLabel}</KkEyebrow>;
+  const avatars = (
+    <KkAvatarStack initials={initials} portraits={portraits} max={AVATAR_MAX} sx={NO_SHRINK} />
+  );
 
   const openPeek = (): void => {
     sheet.open(toPeekId('group', group.groupId));
   };
 
   return (
-    <KkCard sx={sx}>
-      <KkCard.Action onClick={openPeek} aria-label={toGroupCardLabel(group.name)}>
-        <KkCard.Media aspectRatio={FACE_RATIO}>
-          <KkGroupToneField tone={tone} name={group.name} sx={FACE_FILL} />
-        </KkCard.Media>
-        <KkGroupToneEdge tone={tone} />
-        <KkCard.Body>
-          {kindEyebrow}
-          <KkCard.Meta>
-            {chips.map((chip) => (
-              <KkChip key={chip.label} tone={chip.tone} dot={chip.dot} size="small">
-                {chip.label}
-              </KkChip>
-            ))}
-          </KkCard.Meta>
-          <KkMeta>{toGroupLeadLine(group.admins)}</KkMeta>
-          <KkCard.Footer>
-            <KkAvatarStack
-              initials={initials}
-              portraits={portraits}
-              max={AVATAR_MAX}
-              total={group.memberCount}
-              sx={NO_SHRINK}
-            />
-            <KkMeta>{toGroupSizeLine(group.memberCount)}</KkMeta>
-          </KkCard.Footer>
-        </KkCard.Body>
-      </KkCard.Action>
-    </KkCard>
+    <KkGroupCard
+      tone={tone}
+      icon={group.icon}
+      image={toImageSource(group.picture, 'groupPicture')}
+      name={group.name}
+      kind={toCardKindName(group.name, group.groupKindName)}
+      signal={toGroupCardSignal(group)}
+      lead={toGroupCardLeadLine(group.admins)}
+      avatars={avatars}
+      memberLine={sizeLine}
+      onSelect={openPeek}
+      sx={sx}
+    />
   );
 };

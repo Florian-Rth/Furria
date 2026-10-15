@@ -1,27 +1,19 @@
 import type { PublicWebsitePicture } from '@furria/api-client';
-import '@furria/ui/fonts';
-import { KkThemeProvider } from '@furria/ui';
-import { QueryClientProvider } from '@tanstack/react-query';
 import { createRootRoute, HeadContent, Outlet } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { NotFoundScreen } from '@/components/NotFoundScreen';
 import { ThemeColorMeta } from '@/components/ThemeColorMeta/ThemeColorMeta';
 import { PreviewAccessProvider } from '@/features/preview-access';
-import { queryClient } from '@/lib/query-client';
 import type { RouteHead } from '@/lib/seo';
 import { publicWebsitePictures } from '@/lib/website-pictures/api';
 import { siteShareImageMeta } from '@/lib/website-pictures/share-image-meta';
 
 const RootComponent: FC = () => (
-  <KkThemeProvider>
-    <QueryClientProvider client={queryClient}>
-      <PreviewAccessProvider>
-        <HeadContent />
-        <ThemeColorMeta />
-        <Outlet />
-      </PreviewAccessProvider>
-    </QueryClientProvider>
-  </KkThemeProvider>
+  <PreviewAccessProvider>
+    <HeadContent />
+    <ThemeColorMeta />
+    <Outlet />
+  </PreviewAccessProvider>
 );
 
 const loadWebsitePictures = (): Promise<PublicWebsitePicture[]> =>

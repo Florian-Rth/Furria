@@ -2,7 +2,7 @@ import { isForbiddenError } from '@/lib/query-error';
 import { useNow } from '@/lib/use-now';
 import { useSystemStatusQuery } from '../api';
 import type { SystemStatus } from '../schemas';
-import { offlineSinceOf } from '../system-copy';
+import { offlineSinceOf, toStatusErrorMessage } from '../system-copy';
 import { formatClock } from '../system-format';
 import type { SystemMoment } from '../system-view';
 
@@ -11,7 +11,7 @@ const TICK_MS = 1000;
 export type SystemStatusRead =
   | { kind: 'loading'; nowMs: number }
   | { kind: 'denied'; nowMs: number }
-  | { kind: 'failed'; nowMs: number; retry: () => void }
+  | { kind: 'failed'; nowMs: number; message: string; retry: () => void; retrying: boolean }
   | {
       kind: 'shown';
       nowMs: number;
@@ -33,7 +33,15 @@ export const useSystemStatus = (): SystemStatusRead => {
       return { kind: 'denied', nowMs };
     }
 
-    return query.isError ? { kind: 'failed', nowMs, retry } : { kind: 'loading', nowMs };
+    return query.isError
+      ? {
+          kind: 'failed',
+          nowMs,
+          message: toStatusErrorMessage(query.error),
+          retry,
+          retrying: query.isFetching,
+        }
+      : { kind: 'loading', nowMs };
   }
 
   const isConnected = !query.isError;

@@ -206,6 +206,7 @@ export const toRoleSeed = (
     roleId: match.roleId,
     name: match.name,
     description: match.description,
+    coin: match.coin,
     archivedOn: match.archivedOn,
     permissionKeys: match.permissionKeys,
     holders: [],

@@ -45,6 +45,9 @@ export const toAttendanceFailureOf = (error: Error | null): AttendanceFailure | 
   return 'unsaved';
 };
 
+export const resubmitsAfter = (error: Error, isResubmission: boolean): boolean =>
+  !isResubmission && toAttendanceFailureOf(error) === 'conflict';
+
 export interface AttendanceAttempt {
   submittedAt: number;
   error: Error | null;

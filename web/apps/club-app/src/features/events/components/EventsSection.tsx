@@ -19,7 +19,7 @@ export const EventsSection: FC = () => {
     return <EventsPanel events={events.data.events} />;
   }
   if (errorMessage !== null) {
-    return <EventsError message={errorMessage} onRetry={reload} />;
+    return <EventsError message={errorMessage} isRetrying={events.isFetching} onRetry={reload} />;
   }
 
   return <AppListSkeleton label={LOADING_LABEL} listShape="rows" />;

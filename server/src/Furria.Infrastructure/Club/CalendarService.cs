@@ -103,6 +103,31 @@ public sealed class CalendarService
         return [.. rows.Select(row => ToSummary(row, answers, now))];
     }
 
+    public async Task<CalendarEntrySummary?> GetEntryAsync(
+        int personId,
+        int calendarEntryId,
+        CancellationToken ct
+    )
+    {
+        var now = _timeProvider.GetUtcNow();
+        var today = ClubClock.Today(_timeProvider);
+        var openEndedCutoff = now.AddHours(-CalendarDefaults.OpenEndedHours);
+
+        var row = await _dbContext
+            .CalendarEntries.AsNoTracking()
+            .Where(entry => entry.Id == calendarEntryId)
+            .Where(VisibleTo(personId, today))
+            .Select(RowProjection(now, openEndedCutoff))
+            .SingleOrDefaultAsync(ct);
+
+        if (row is null)
+            return null;
+
+        var answers = await AnswersOfAsync(personId, [row.CalendarEntryId], ct);
+
+        return ToSummary(row, answers, now);
+    }
+
     public async Task<IReadOnlyList<GroupCalendarEntrySummary>> GetGroupEntriesAsync(
         int? personId,
         int groupId,

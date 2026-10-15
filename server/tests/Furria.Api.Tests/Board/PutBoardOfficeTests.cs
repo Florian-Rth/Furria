@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Board;
+using Furria.Core.Club;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -29,7 +30,8 @@ public sealed class PutBoardOfficeTests : IClassFixture<ApiTestFixture>
         HttpClient client,
         int boardOfficeId,
         string name,
-        int sortOrder
+        int sortOrder,
+        ClubIcon? icon = null
     ) =>
         client.PUTAsync<PutBoardOffice, PutBoardOfficeRequest>(
             new PutBoardOfficeRequest
@@ -37,8 +39,31 @@ public sealed class PutBoardOfficeTests : IClassFixture<ApiTestFixture>
                 BoardOfficeId = boardOfficeId,
                 Name = name,
                 SortOrder = sortOrder,
+                Icon = icon,
             }
         );
+
+    [Fact]
+    public async Task Should_SetTheIcon_When_AManagerPicksOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithBandAsync(ct);
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await RenameOfficeAsync(
+            client,
+            ctx.Club.BoardOffices.IdOf("praesident"),
+            "Präsident",
+            1,
+            ClubIcon.Crown
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.BoardOffice(ctx.Club.BoardOffices.IdOf("praesident"))
+            .ToHaveIcon(ClubIcon.Crown)
+            .AssertAsync(ct);
+    }
 
     [Fact]
     public async Task Should_RenameTheOffice_When_AManagerCorrectsTheWording()

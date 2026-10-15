@@ -14,7 +14,7 @@ import type {
 } from './schemas';
 import type { InPersonPurpose } from './types';
 
-export const ACCESS_SECTION_TITLE = 'Zugang';
+export const ACCESS_SECTION_TITLE = 'App';
 export const ACCESS_STATE_LABEL = 'Status';
 export const INVITATION_LABEL = 'Einladung';
 export const HISTORY_TITLE = 'Verlauf';
@@ -122,6 +122,9 @@ export const toInvitationSentMessage = (firstName: string): string =>
   `Einladung an ${firstName} ist unterwegs.`;
 
 export const IN_PERSON_ACT_LABEL = 'Vor Ort zeigen';
+export const BIRTH_DATE_ACT_LABEL = 'Geburtsdatum eintragen';
+export const BIRTH_DATE_ROW_META = 'Ohne Geburtsdatum gibt es keine Einladung';
+export const MAIL_ROW_META_FALLBACK = 'Link 14 Tage gültig';
 export const RECOVERY_ACT_LABEL = 'Zugang wiederherstellen';
 export const RECOVERY_ROW_META = 'Neues Passwort vor Ort, QR-Code und Code 15 Minuten gültig';
 export const IN_PERSON_ROW_META = 'QR-Code und Code aufs Handy, 15 Minuten gültig';
@@ -148,6 +151,13 @@ export const IN_PERSON_VALIDITY_NOTES: Record<InPersonPurpose, string> = {
 
 export const toInPersonHref = (personId: number): string =>
   `/manage/persons/${personId}/invitations/in-person`;
+
+export const toPersonEditHref = (personId: number): string => `/manage/persons/${personId}/edit`;
+
+export const toMailRowMeta = (email: string | null): string => email ?? MAIL_ROW_META_FALLBACK;
+
+export const toInviteHref = (personId: number): string =>
+  `/manage/persons/${personId}/invitations/new`;
 
 export const toRecoveryHref = (personId: number): string =>
   `/manage/persons/${personId}/access-recovery`;

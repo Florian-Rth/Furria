@@ -25,6 +25,7 @@ const person = (overrides: Partial<PersonSummary> & { personId: number }): Perso
   groups: [],
   roles: [],
   accessState: 'none',
+  feeReduced: false,
   ...overrides,
 });
 
@@ -61,6 +62,7 @@ const personDetails = (
   unendedGroupAdminTenures: [],
   unendedBoardSeats: [],
   unendedKeyHoldings: [],
+  honours: { sessions: 0, functions: [] },
   access: {
     state: 'noAccess',
     reason: null,

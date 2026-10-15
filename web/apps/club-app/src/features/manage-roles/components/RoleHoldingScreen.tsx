@@ -4,6 +4,7 @@ import { usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { parsePositiveId } from '@/lib/positive-id';
 import { isNotFoundError } from '@/lib/query-error';
+import { useLastSeen } from '@/lib/use-last-seen';
 import { useRoleQuery } from '../api';
 import { toRoleErrorMessage } from '../manage-roles-messages';
 import { RoleEditorDenied } from './RoleEditorDenied';
@@ -20,27 +21,28 @@ export const RoleHoldingScreen: FC = () => {
   const { has, isUndecided } = usePermissions();
   const id = parsePositiveId(roleId);
   const holdingId = parsePositiveId(roleHoldingId);
-  const role = useRoleQuery(id);
+  const role = useRoleQuery(has(PERMISSION_KEYS.rolesManage) ? id : null);
   const errorMessage = toRoleErrorMessage(role.error);
+  const loadedRole = role.isPlaceholderData ? undefined : role.data;
+  const held = useLastSeen(
+    loadedRole,
+    (role) => role.holders.find((entry) => entry.roleHoldingId === holdingId) ?? null,
+  );
+  const isMissing =
+    id === null || holdingId === null || isNotFoundError(role.error) || loadedRole !== undefined;
 
   const reload = (): void => {
     void role.refetch();
   };
 
+  if (held !== null) {
+    return <RoleHoldingEditor role={held.source} holder={held.entry} prefillPersonId={null} />;
+  }
   if (!isUndecided && !has(PERMISSION_KEYS.rolesManage)) {
     return <RoleEditorDenied title={TITLE} />;
   }
-  if (id === null || holdingId === null || isNotFoundError(role.error)) {
+  if (isMissing) {
     return <RoleEditorNotFound />;
-  }
-  if (role.data !== undefined && !role.isPlaceholderData) {
-    const holder = role.data.holders.find((entry) => entry.roleHoldingId === holdingId) ?? null;
-
-    if (holder === null) {
-      return <RoleEditorNotFound />;
-    }
-
-    return <RoleHoldingEditor role={role.data} holder={holder} prefillPersonId={null} />;
   }
   if (errorMessage !== null) {
     return <RoleEditorError message={errorMessage} onRetry={reload} />;

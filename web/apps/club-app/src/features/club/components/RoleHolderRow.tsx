@@ -1,6 +1,7 @@
 import { KkAvatar, KkSinceRow } from '@furria/ui';
 import type { FC } from 'react';
 import type { RoleOverviewHolder } from '@/features/roles-overview';
+import { toAvatarHonours } from '@/lib/honours';
 import { toInitials } from '@/lib/initials';
 import { formatIsoDay } from '@/lib/membership-labels';
 
@@ -13,7 +14,8 @@ interface RoleHolderRowProps {
 export const RoleHolderRow: FC<RoleHolderRowProps> = ({ holder }) => {
   const name = `${holder.firstName} ${holder.lastName}`;
   const initials = toInitials(holder.firstName, holder.lastName);
-  const avatar = <KkAvatar initials={initials} size="small" />;
+  const honours = toAvatarHonours(holder.honours);
+  const avatar = <KkAvatar initials={initials} honours={honours} />;
 
   return (
     <KkSinceRow

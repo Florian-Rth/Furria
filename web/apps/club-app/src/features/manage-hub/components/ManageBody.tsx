@@ -7,7 +7,6 @@ import { formatSessionLabel } from '@/lib/membership-labels';
 import { useManageHubQuery } from '../api';
 import { isBoardEmpty, MANAGE_EMPTY_NOTE, toManageBanks, toManageRows } from '../manage-hub-labels';
 import { toManageHubErrorMessage } from '../manage-hub-messages';
-import { ManageAccessPanel } from './ManageAccessPanel';
 import { ManageBank } from './ManageBank';
 import { ManageError } from './ManageError';
 import { ManageSkeleton } from './ManageSkeleton';
@@ -16,8 +15,6 @@ import { ManageToDosPanel } from './ManageToDosPanel';
 const BANK_SPACING = { xs: 3.5, desktop: 3 };
 const BANK_SIZE = { xs: 12, desktop: 4 };
 const CELL_SX = { minWidth: 0 } as const;
-const ACCESS_BANK_ID = 'belonging';
-const ACCESS_CELL_KEY = 'accounts';
 const TO_DOS_CELL_KEY = 'to-dos';
 
 export const ManageBody: FC = () => {
@@ -32,25 +29,18 @@ export const ManageBody: FC = () => {
   if (manageHub.data !== undefined) {
     const rows = toManageRows(manageHub.data, sessionLabel);
     const banks = toManageBanks(rows);
-    const { accounts, toDos } = manageHub.data;
+    const { toDos } = manageHub.data;
     const toDosCell =
       toDos.length === 0 ? null : (
         <Grid key={TO_DOS_CELL_KEY} size={BANK_SIZE} sx={CELL_SX}>
           <ManageToDosPanel toDos={toDos} />
         </Grid>
       );
-    const accessCell =
-      accounts === null ? null : (
-        <Grid key={ACCESS_CELL_KEY} size={BANK_SIZE} sx={CELL_SX}>
-          <ManageAccessPanel accounts={accounts} />
-        </Grid>
-      );
-    const bankCells = banks.flatMap((bank) => [
+    const bankCells = banks.map((bank) => (
       <Grid key={bank.id} size={BANK_SIZE} sx={CELL_SX}>
         <ManageBank bank={bank} />
-      </Grid>,
-      bank.id === ACCESS_BANK_ID ? accessCell : null,
-    ]);
+      </Grid>
+    ));
     const emptyNote = isBoardEmpty(rows) ? (
       <KkNote tone="hint" icon="info">
         {MANAGE_EMPTY_NOTE}

@@ -42,10 +42,13 @@ export interface UpdateGroupKindInput {
   form: GroupKindForm;
 }
 
-export const useManagedGroupsQuery = (): UseQueryResult<ManagedGroupsResponse, Error> =>
+export const useManagedGroupsQuery = (
+  enabled = true,
+): UseQueryResult<ManagedGroupsResponse, Error> =>
   useQuery({
     queryKey: queryKeys.managedGroups,
     queryFn: () => withFreshAccessToken(requestManagedGroups),
+    enabled,
   });
 
 export const useCreateGroupMutation = (): UseMutationResult<CreatedGroup, Error, GroupForm> =>

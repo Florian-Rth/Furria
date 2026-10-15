@@ -69,16 +69,15 @@ export const useReauthentication = <TResult>(
 
   const handleConfirm = form.handleSubmit((values) => {
     setRejection(null);
-    mutation.mutate(
-      { kind: 'password', password: values.password },
-      { onSuccess: finish, onError: showFailure },
-    );
+    void mutation
+      .mutateAsync({ kind: 'password', password: values.password })
+      .then(finish, showFailure);
   });
 
   const confirmWithPasskey = (): void => {
     setRejection(null);
     form.clearErrors();
-    mutation.mutate({ kind: 'passkey' }, { onSuccess: finish, onError: showPasskeyFailure });
+    void mutation.mutateAsync({ kind: 'passkey' }).then(finish, showPasskeyFailure);
   };
 
   return {

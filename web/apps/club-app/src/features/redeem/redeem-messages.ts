@@ -10,6 +10,10 @@ const REDEEM_FAILURE_MESSAGES: Record<RedeemFailureKind, string> = {
   claimRejected: 'Das Passwort passt nicht zu diesem Zugang.',
   claimPasskeyRejected: 'Mit dem Passkey hat es nicht geklappt. Versuch es noch einmal.',
   passkeyCancelled: 'Die Bestätigung mit dem Passkey wurde abgebrochen.',
+  passkeyDismissed:
+    'Keine Bestätigung mit dem Passkey erhalten – abgebrochen oder abgelaufen. Versuch es noch einmal oder nimm dein Passwort.',
+  sessionLost:
+    'Dein Zugang ist angelegt, aber die Anmeldung ließ sich auf diesem Gerät nicht speichern. Melde dich jetzt an.',
   throttled: 'Zu viele Versuche. Warte einen Moment und versuche es dann erneut.',
   rejected: 'Der Server hat die Anfrage abgelehnt.',
   unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
@@ -49,6 +53,7 @@ const FIELD_SLOTS: Partial<Record<RedeemFailureKind, RedeemErrorSlot>> = {
   codeRejected: 'confirmationCode',
   claimRejected: 'claimPassword',
   claimPasskeyRejected: 'claimPasskey',
+  passkeyDismissed: 'claimPasskey',
 };
 
 const SERVER_WORDED_FAILURES: ReadonlySet<RedeemFailureKind> = new Set<RedeemFailureKind>([

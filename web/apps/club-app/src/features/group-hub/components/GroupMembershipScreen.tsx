@@ -1,8 +1,10 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { parsePositiveId } from '@/lib/positive-id';
+import { useLastSeen } from '@/lib/use-last-seen';
 import { useGroupHubQuery } from '../api';
 import { EDITOR_DENIED_MESSAGE } from '../group-hub-labels';
+import { managedEntryOf } from '../managed-entry';
 import { GroupEditorNotFound } from './GroupEditorNotFound';
 import { GroupEditorUnloaded } from './GroupEditorUnloaded';
 import { GroupMembershipEditor } from './GroupMembershipEditor';
@@ -16,7 +18,18 @@ export const GroupMembershipScreen: FC = () => {
   const id = parsePositiveId(groupId);
   const entryId = parsePositiveId(membershipId);
   const hub = useGroupHubQuery(id);
+  const held = useLastSeen(
+    hub.data,
+    managedEntryOf(
+      (data) => data.members.find((member) => member.groupMembershipId === entryId) ?? null,
+    ),
+  );
 
+  if (held !== null) {
+    return (
+      <GroupMembershipEditor hub={held.source} membership={held.entry} prefillPersonId={null} />
+    );
+  }
   if (hub.data === undefined) {
     return <GroupEditorUnloaded groupId={id} />;
   }
@@ -24,14 +37,5 @@ export const GroupMembershipScreen: FC = () => {
     return <HubEditorDenied hub={hub.data} title={TITLE} message={EDITOR_DENIED_MESSAGE} />;
   }
 
-  const membership =
-    entryId === null
-      ? null
-      : (hub.data.members.find((member) => member.groupMembershipId === entryId) ?? null);
-
-  if (membership === null) {
-    return <GroupEditorNotFound />;
-  }
-
-  return <GroupMembershipEditor hub={hub.data} membership={membership} prefillPersonId={null} />;
+  return <GroupEditorNotFound />;
 };

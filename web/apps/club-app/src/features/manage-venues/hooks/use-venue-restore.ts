@@ -28,15 +28,12 @@ export const useVenueRestore = (venue: ManagedVenue): VenueRestoreControl => {
 
   const submit = (): void => {
     setRejection(null);
-    mutation.mutate(
-      { venueId: venue.venueId, name: venue.name },
-      {
-        onSuccess: () => {
-          setIsOpen(false);
-        },
-        onError: (error) => {
-          setRejection(toWriteErrorMessage(error));
-        },
+    void mutation.mutateAsync({ venueId: venue.venueId, name: venue.name }).then(
+      () => {
+        setIsOpen(false);
+      },
+      (error: Error) => {
+        setRejection(toWriteErrorMessage(error));
       },
     );
   };

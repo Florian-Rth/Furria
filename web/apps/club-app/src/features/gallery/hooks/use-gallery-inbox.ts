@@ -11,10 +11,10 @@ import { useKkNotice, useKkSheetCommands } from '@furria/ui';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { GALLERY_PATH } from '@/features/session';
+import { toWriteErrorMessage } from '@/lib/write-error';
 import { useInboxQuery, useItemDeletion, usePlacement } from '../api';
 import { countLabel, sceneSpanLabel, thumbSourceOf } from '../gallery-view';
 import {
-  COMMIT_FAILED,
   closeQuestionOf,
   commitLabelOf,
   DONE_HEADLINE,
@@ -24,6 +24,7 @@ import {
   sceneQuestionOf,
   stampOf,
   tallyLineOf,
+  toInboxErrorMessage,
 } from '../inbox-copy';
 import type { CommitPlan } from '../inbox-desk';
 import {
@@ -31,6 +32,7 @@ import {
   committedIdsOf,
   deskKeyOf,
   deskOf,
+  isDeskCleared,
   isEmptyPlan,
   reconcileCulling,
 } from '../inbox-desk';
@@ -48,7 +50,21 @@ const HURRY_MS = 260;
 const STRIP_REACH = 14;
 const PRELOAD_OFFSETS = [2, -2] as const;
 
+export interface GalleryInboxFailure {
+  message: string;
+  retrying: boolean;
+  retry: () => void;
+}
+
+export interface GalleryInboxFailedItems {
+  count: number;
+  discarding: boolean;
+  discard: () => void;
+}
+
 export interface GalleryInbox {
+  failure: GalleryInboxFailure | null;
+  failedItems: GalleryInboxFailedItems | null;
   title: string;
   remaining: string;
   tally: string;
@@ -135,6 +151,23 @@ export const useGalleryInbox = (): GalleryInbox => {
     void navigate({ to: GALLERY_PATH });
   };
 
+  const raiseFailure = (error: Error): void => {
+    const message = toWriteErrorMessage(error);
+    if (message !== null) {
+      raiseNotice({ tone: 'error', message });
+    }
+  };
+
+  const discardFailed = (): void => {
+    const failedIds = desk.failedIds;
+    deletion.mutate(failedIds, {
+      onSuccess: () => {
+        setHidden((current) => new Set([...current, ...failedIds]));
+      },
+      onError: raiseFailure,
+    });
+  };
+
   const commit = async (afterwards: () => void): Promise<void> => {
     if (isEmptyPlan(plan) || committing) {
       afterwards();
@@ -156,8 +189,8 @@ export const useGalleryInbox = (): GalleryInbox => {
         rejected: current.rejected + plan.rejects.length,
       }));
       afterwards();
-    } catch {
-      raiseNotice({ tone: 'error', message: COMMIT_FAILED });
+    } catch (error) {
+      raiseFailure(error instanceof Error ? error : new Error(String(error)));
     } finally {
       setCommitting(false);
       setClosing(false);
@@ -176,7 +209,8 @@ export const useGalleryInbox = (): GalleryInbox => {
   const inScene = sceneFrames.findIndex((frame) => frame.id === currentFrame?.id) + 1;
   const scene = desk.scenes[sceneIndex];
   const loaded = inbox.data !== undefined;
-  const isDone = loaded && state.frames.length === 0 && desk.developing === 0;
+  const isDone = loaded && isDeskCleared(desk, state.frames.length);
+  const loadMessage = inbox.data === undefined ? toInboxErrorMessage(inbox.error) : null;
 
   const departedItem = state.departure === null ? undefined : itemOf(state.departure.id);
   const departure: KkLightTableDeparture | null =
@@ -275,6 +309,20 @@ export const useGalleryInbox = (): GalleryInbox => {
   };
 
   return {
+    failure:
+      loadMessage === null
+        ? null
+        : {
+            message: loadMessage,
+            retrying: inbox.isFetching,
+            retry: () => {
+              void inbox.refetch();
+            },
+          },
+    failedItems:
+      desk.failed === 0
+        ? null
+        : { count: desk.failed, discarding: deletion.isPending, discard: discardFailed },
     title: inboxTitleOf(inboxOwner.ownerName),
     remaining: loaded ? countLabel(remaining) : '–',
     tally: tallyLineOf(settled.filed + tally.filed, settled.rejected + tally.rejected, desk),

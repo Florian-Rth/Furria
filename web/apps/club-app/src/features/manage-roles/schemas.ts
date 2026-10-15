@@ -1,14 +1,24 @@
 import { z } from 'zod';
 import { AppSearchSchema } from '@/features/session';
-import { PersonRefSchema } from '@/lib/api/schemas';
+import { HonoursSchema, PersonRefSchema } from '@/lib/api/schemas';
+import { ClubIconSchema } from '@/lib/club-icon';
+import { GroupToneSchema } from '@/lib/group-tone';
 import { requiredDay, requiredPerson } from '@/lib/required-fields';
 
 const NAME_REQUIRED_MESSAGE = 'Gib der Rolle einen Namen.';
 const NAME_TOO_LONG_MESSAGE = 'Der Name darf höchstens 80 Zeichen haben.';
 const DESCRIPTION_TOO_LONG_MESSAGE = 'Die Beschreibung darf höchstens 400 Zeichen haben.';
+const COIN_ICON_MISSING_MESSAGE = 'Wähle ein Symbol für das Abzeichen.';
+const COIN_TONE_MISSING_MESSAGE = 'Wähle eine Farbe für das Abzeichen.';
 
 export const ROLE_NAME_MAX_LENGTH = 80;
 export const ROLE_DESCRIPTION_MAX_LENGTH = 400;
+
+export const RoleCoinSchema = z.object({
+  icon: ClubIconSchema,
+  tone: GroupToneSchema,
+});
+export type RoleCoin = z.infer<typeof RoleCoinSchema>;
 
 export const RolesSearchSchema = AppSearchSchema.extend({
   role: z.coerce.number().int().positive().optional().catch(undefined),
@@ -19,6 +29,7 @@ export const RoleSummarySchema = z.object({
   roleId: z.number().int(),
   name: z.string(),
   description: z.string(),
+  coin: RoleCoinSchema.nullable(),
   archivedOn: z.iso.date().nullable(),
   permissionKeys: z.array(z.string()),
   holders: z.array(PersonRefSchema),
@@ -37,6 +48,7 @@ export const RoleHolderSchema = PersonRefSchema.extend({
   untilOn: z.iso.date().nullable(),
   since: z.iso.date(),
   isAffiliated: z.boolean(),
+  honours: HonoursSchema,
 });
 export type RoleHolder = z.infer<typeof RoleHolderSchema>;
 
@@ -44,6 +56,7 @@ export const RoleDetailsSchema = z.object({
   roleId: z.number().int(),
   name: z.string(),
   description: z.string(),
+  coin: RoleCoinSchema.nullable(),
   archivedOn: z.iso.date().nullable(),
   permissionKeys: z.array(z.string()),
   holders: z.array(RoleHolderSchema),
@@ -57,10 +70,22 @@ export type CreatedRole = z.infer<typeof CreatedRoleSchema>;
 export const CreatedRoleHoldingSchema = z.object({ roleHoldingId: z.number().int() });
 export type CreatedRoleHolding = z.infer<typeof CreatedRoleHoldingSchema>;
 
-export const RoleFormSchema = z.object({
-  name: z.string().trim().min(1, NAME_REQUIRED_MESSAGE).max(80, NAME_TOO_LONG_MESSAGE),
-  description: z.string().trim().max(400, DESCRIPTION_TOO_LONG_MESSAGE),
-});
+export const RoleFormSchema = z
+  .object({
+    name: z.string().trim().min(1, NAME_REQUIRED_MESSAGE).max(80, NAME_TOO_LONG_MESSAGE),
+    description: z.string().trim().max(400, DESCRIPTION_TOO_LONG_MESSAGE),
+    showsCoin: z.boolean(),
+    coinIcon: ClubIconSchema.nullable(),
+    coinTone: GroupToneSchema.nullable(),
+  })
+  .refine((form) => !form.showsCoin || form.coinIcon !== null, {
+    message: COIN_ICON_MISSING_MESSAGE,
+    path: ['coinIcon'],
+  })
+  .refine((form) => !form.showsCoin || form.coinTone !== null, {
+    message: COIN_TONE_MISSING_MESSAGE,
+    path: ['coinTone'],
+  });
 export type RoleForm = z.infer<typeof RoleFormSchema>;
 
 export const AddRoleHoldingFormSchema = z.object({

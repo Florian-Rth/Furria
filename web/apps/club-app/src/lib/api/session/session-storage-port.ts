@@ -54,3 +54,9 @@ export const createLocalStorageSessionStoragePort = (): SessionStoragePort => ({
       }, undefined),
     ),
 });
+
+export const createUnavailableSessionStoragePort = (): SessionStoragePort => ({
+  readRefreshToken: (): Promise<string | null> => Promise.resolve(null),
+  writeRefreshToken: (): Promise<boolean> => Promise.resolve(false),
+  clearRefreshToken: (): Promise<void> => Promise.resolve(),
+});

@@ -12,10 +12,13 @@ export const INBOX_TITLE = 'Eingang';
 export const BIN_TITLE = 'Papierkorb';
 export const SELECTION_TITLE = 'Auswahl';
 export const UPLOAD_TITLE = 'Hochladen';
+export const BIN_LEAD = 'Gelöschtes liegt hier 30 Tage, dann ist es endgültig weg.';
+export const UPLOAD_LEAD = 'Fotos, Videos oder ganze Ordner vom Abend hochladen.';
 export const NEW_ALBUM_TITLE = 'Neues Album';
 export const EDIT_ALBUM_TITLE = 'Album bearbeiten';
 export const FREE_TITLE = 'Ohne Session';
 export const SESSION_WORD = 'Session';
+export const GALLERY_RETRY_LABEL = 'Erneut laden';
 
 export const AlbumKindFilterSchema = z.enum(['photo', 'video']);
 export type AlbumKindFilter = z.infer<typeof AlbumKindFilterSchema>;

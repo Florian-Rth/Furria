@@ -53,6 +53,7 @@ export interface RedeemScreenControl {
   changeLoginEmail: () => void;
   clearRefusal: () => void;
   retryLookup: () => void;
+  isRetryingLookup: boolean;
   enterApp: () => void;
 }
 
@@ -198,6 +199,7 @@ export const useRedeemScreen = (): RedeemScreenControl => {
     changeLoginEmail,
     clearRefusal,
     retryLookup,
+    isRetryingLookup: lookup.isFetching,
     enterApp,
   };
 };

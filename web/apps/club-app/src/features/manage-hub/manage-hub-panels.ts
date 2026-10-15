@@ -36,7 +36,7 @@ export const MANAGE_PANELS: readonly ManagePanelDefinition[] = [
   {
     id: 'persons',
     bank: 'belonging',
-    title: 'Personen & Mitgliedschaften',
+    title: 'Personen & Zugänge',
     icon: 'person',
     to: '/manage/persons',
   },

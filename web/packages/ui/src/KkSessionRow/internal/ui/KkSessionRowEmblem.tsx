@@ -1,12 +1,10 @@
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { inkWash, inkWashSurface } from '../../../internal/ink-wash';
+import { inkWashSurface } from '../../../internal/ink-wash';
 import { logoInk } from '../../../internal/logo-ink';
-import { KkBroomMark } from '../../../KkBroomMark';
 import { KkImage } from '../../../KkImage';
+import { KkPhoto } from '../../../KkPhoto';
 import { emblemTile } from './emblem-tile';
-
-const PLACEHOLDER_SIZE = 30;
 
 interface KkSessionRowEmblemProps {
   source: string | null;
@@ -15,7 +13,7 @@ interface KkSessionRowEmblemProps {
 export const KkSessionRowEmblem: FC<KkSessionRowEmblemProps> = ({ source }) => {
   const content =
     source === null ? (
-      <KkBroomMark size={PLACEHOLDER_SIZE} sx={(theme) => ({ color: inkWash(theme, '12%') })} />
+      <KkPhoto alt="" fill />
     ) : (
       <KkImage
         src={source}

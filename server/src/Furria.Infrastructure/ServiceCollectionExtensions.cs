@@ -79,6 +79,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<PasskeyService>();
         services.AddScoped<PermissionAuthorizer>();
         services.AddScoped<AffiliationLookup>();
+        services.AddScoped<PersonHonoursQuery>();
         services.AddScoped<PersonService>();
         services.AddScoped<MembershipService>();
         services.AddScoped<FeeReductionService>();

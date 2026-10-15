@@ -74,7 +74,9 @@ export const KeyHoldingsSchema = z.object({
 });
 
 export const RolesSchema = z.object({
-  roles: z.array(z.object({ roleId: z.number().int(), name: z.string() })),
+  roles: z.array(
+    z.object({ roleId: z.number().int(), name: z.string(), holders: z.array(PersonIdSchema) }),
+  ),
 });
 
 export const BoardSchema = z.object({

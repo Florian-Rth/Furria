@@ -24,15 +24,9 @@ export const useBoardOfficeConfirm = ({
 
   const submit = (): void => {
     setRejection(null);
-    mutation.mutate(
-      { officeName },
-      {
-        onSuccess: onDone,
-        onError: (error) => {
-          setRejection(toWriteErrorMessage(error));
-        },
-      },
-    );
+    void mutation.mutateAsync({ officeName }).then(onDone, (error: Error) => {
+      setRejection(toWriteErrorMessage(error));
+    });
   };
 
   return { rejection, isSaving: mutation.isPending, submit };

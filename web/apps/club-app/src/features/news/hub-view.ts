@@ -1,6 +1,5 @@
 import type { KkImageSource } from '@furria/ui';
 import { toImageSource } from '@furria/ui';
-import { sessionAt, sessionOpeningAt } from '@/lib/club';
 import { stageOf } from './news-lifecycle';
 import type { NewsHub, NewsPostSummary } from './schemas';
 import type { NewsCategory, NewsRequirement, NewsStage } from './types';
@@ -28,17 +27,6 @@ export interface HubSection {
   startYear: number | null;
   sessionNumber: number | null;
   rows: HubRow[];
-}
-
-export interface PlanTick {
-  id: number;
-  stage: NewsStage;
-  position: number;
-}
-
-export interface PlanSession {
-  startYear: number;
-  ticks: PlanTick[];
 }
 
 const DRAFTS_KEY = 'drafts';
@@ -85,31 +73,3 @@ export const hubSectionsOf = (hub: NewsHub): HubSection[] =>
         rows,
       };
     });
-
-const sessionPositionOf = (iso: string, startYear: number): number => {
-  const opening = sessionOpeningAt(startYear).getTime();
-  const next = sessionOpeningAt(startYear + 1).getTime();
-  return Math.min(Math.max((Date.parse(iso) - opening) / (next - opening), 0), 1);
-};
-
-const sessionYearOf = (iso: string): number => sessionAt(new Date(iso)).startYear;
-
-export const pressPlanOf = (sections: readonly HubSection[], now: Date): PlanSession[] => {
-  const currentYear = sessionAt(now).startYear;
-  const rows = sections.flatMap((section) => section.rows);
-  const yearOfRow = (row: HubRow): number =>
-    row.stage === 'draft' ? currentYear : sessionYearOf(row.date);
-  const firstYear = Math.min(currentYear, ...rows.map(yearOfRow));
-  return Array.from({ length: currentYear - firstYear + 1 }, (_, offset) => {
-    const startYear = firstYear + offset;
-    const ticks = rows
-      .filter((row) => yearOfRow(row) === startYear)
-      .map((row) => ({
-        id: row.id,
-        stage: row.stage,
-        position: sessionPositionOf(row.date, startYear),
-      }))
-      .sort((left, right) => left.position - right.position);
-    return { startYear, ticks };
-  });
-};

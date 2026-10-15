@@ -17,15 +17,15 @@ export const useContactVisibilitySwitch = (
   const raiseNotice = useKkNotice();
 
   const onChange = (next: boolean): void => {
-    mutation.mutate(toPersonFormValues(person, { contactVisibleToMembers: next }), {
-      onError: (error) => {
+    void mutation
+      .mutateAsync(toPersonFormValues(person, { contactVisibleToMembers: next }))
+      .catch((error: Error) => {
         const message = toWriteErrorMessage(error);
 
         if (message !== null) {
           raiseNotice({ tone: 'error', message });
         }
-      },
-    });
+      });
   };
 
   return { checked: person.contactVisibleToMembers, busy: mutation.isPending, onChange };

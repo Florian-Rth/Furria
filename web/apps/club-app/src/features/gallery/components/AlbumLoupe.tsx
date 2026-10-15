@@ -20,6 +20,7 @@ interface AlbumLoupeProps {
 export const AlbumLoupe: FC<AlbumLoupeProps> = ({ onClose, ...input }) => {
   const loupe = useAlbumLoupe(input);
   const { facts } = loupe;
+  const downloadBlocked = !loupe.canDownload;
 
   if (facts === null) {
     return null;
@@ -44,6 +45,7 @@ export const AlbumLoupe: FC<AlbumLoupeProps> = ({ onClose, ...input }) => {
           variant="outlined"
           size="small"
           startIcon={<KkIcon name="download" size="small" />}
+          disabled={downloadBlocked}
           onClick={loupe.download}
         >
           {LOUPE_DOWNLOAD_LABEL}

@@ -59,6 +59,9 @@ export type CalendarEntry = z.infer<typeof CalendarEntrySchema>;
 export const CalendarResponseSchema = z.object({ entries: z.array(CalendarEntrySchema) });
 export type CalendarResponse = z.infer<typeof CalendarResponseSchema>;
 
+export const CalendarEntryResponseSchema = z.object({ entry: CalendarEntrySchema });
+export type CalendarEntryResponse = z.infer<typeof CalendarEntryResponseSchema>;
+
 export const RunningVenueSchema = z.object({
   venueId: z.number().int(),
   name: z.string(),

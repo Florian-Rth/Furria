@@ -1,5 +1,6 @@
 import { KkChip, KkPersonRow, toImageSource, useKkSheetCommands } from '@furria/ui';
 import type { FC } from 'react';
+import { toAvatarHonours } from '@/lib/honours';
 import { toInitials } from '@/lib/initials';
 import { toPeekId } from '@/lib/peek';
 import { NO_AFFILIATION_META, toPersonRowAffiliation } from '@/lib/person-rows';
@@ -17,6 +18,7 @@ export const MemberRow: FC<MemberRowProps> = ({ member }) => {
   const peek = toPeekId('member', member.personId);
   const name = `${member.firstName} ${member.lastName}`;
   const portrait = toImageSource(member.portrait ?? null, 'portrait');
+  const honours = toAvatarHonours(member.honours);
 
   const openPeek = (): void => {
     sheet.open(peek);
@@ -32,6 +34,7 @@ export const MemberRow: FC<MemberRowProps> = ({ member }) => {
     <KkPersonRow
       initials={toInitials(member.firstName, member.lastName)}
       portrait={portrait}
+      honours={honours}
       name={name}
       accent={accent}
       meta={meta}

@@ -3,6 +3,9 @@ using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
 using Furria.Application.Authorization;
+using Furria.Core.Club;
+using Furria.Core.Groups;
+using Furria.Core.Roles;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -30,7 +33,8 @@ public sealed class PutRoleTests : IClassFixture<ApiTestFixture>
         HttpClient client,
         int roleId,
         string name,
-        string description
+        string description,
+        RoleCoinDto? coin = null
     ) =>
         client.PUTAsync<PutRole, PutRoleRequest>(
             new PutRoleRequest
@@ -38,8 +42,56 @@ public sealed class PutRoleTests : IClassFixture<ApiTestFixture>
                 RoleId = roleId,
                 Name = name,
                 Description = description,
+                Coin = coin,
             }
         );
+
+    [Fact]
+    public async Task Should_SetTheCoin_When_AManagerConfiguresOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithEquipmentWardenAsync(ct);
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await RenameRoleAsync(
+            client,
+            ctx.Roles.Roles.IdOf("zeugwart"),
+            "Zeugwart",
+            "Die alte Beschreibung.",
+            new RoleCoinDto { Icon = ClubIcon.Key, Tone = GroupTone.Rose }
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Role(ctx.Roles.Roles.IdOf("zeugwart"))
+            .ToHaveCoin(new RoleCoin(ClubIcon.Key, GroupTone.Rose))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ClearTheCoin_When_AManagerSwitchesItOff()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Roles(roles =>
+                    roles.AddRoleWithCoin("zeugwart", "Zeugwart", ClubIcon.Key, GroupTone.Teal)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await RenameRoleAsync(
+            client,
+            ctx.Roles.Roles.IdOf("zeugwart"),
+            "Zeugwart",
+            "",
+            coin: null
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx.Expected.Role(ctx.Roles.Roles.IdOf("zeugwart")).ToHaveCoin(null).AssertAsync(ct);
+    }
 
     [Fact]
     public async Task Should_RenameTheRole_When_AManagerEditsIt()

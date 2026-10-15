@@ -1,7 +1,7 @@
 import { KkPublishCeremony, KkScreen } from '@furria/ui';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { NEWS_ORIGIN } from '@/features/session';
+import { AREA_HANDOVERS, NEWS_ORIGIN } from '@/features/session';
 import { PUBLISH_ANNOUNCEMENTS } from '@/lib/publish-copy';
 import { NEWS_PICKER_LIST_ID, useNewsEditorPage } from '../../hooks/use-news-editor-page';
 import { NewsImposition } from '../proofs/NewsImposition';
@@ -9,7 +9,9 @@ import { NewsProofPeek } from '../proofs/NewsProofPeek';
 import { NewsProofSheet } from '../proofs/NewsProofSheet';
 import { NewsArticle } from './NewsArticle';
 import { NewsEditorFailure } from './NewsEditorFailure';
+import { NewsEditorHeader } from './NewsEditorHeader';
 import { NewsEditorLayout } from './NewsEditorLayout';
+import { NewsEditorMissing } from './NewsEditorMissing';
 import { NewsEditorSkeleton } from './NewsEditorSkeleton';
 import { NewsGallerySheet } from './NewsGallerySheet';
 import { NewsGoneNotice } from './NewsGoneNotice';
@@ -27,6 +29,9 @@ export const NewsEditorPage: FC<NewsEditorPageProps> = ({ postId }) => {
   const page = useNewsEditorPage(postId);
   const { editor, text, picture } = page;
 
+  if (editor.isMissing) {
+    return <NewsEditorMissing />;
+  }
   if (editor.isLoading) {
     return <NewsEditorSkeleton />;
   }
@@ -37,6 +42,10 @@ export const NewsEditorPage: FC<NewsEditorPageProps> = ({ postId }) => {
   const gone = editor.isGone ? <NewsGoneNotice onCopy={page.copyText} /> : null;
   const peek = page.isWide ? null : <NewsProofPeek {...page.proofProps} />;
   const aside = page.isWide ? <NewsImposition {...page.proofProps} /> : null;
+
+  const header = (
+    <NewsEditorHeader title={page.title} stage={editor.stage} authorName={editor.authorName} />
+  );
 
   const main = (
     <Stack sx={{ gap: 2 }}>
@@ -61,10 +70,17 @@ export const NewsEditorPage: FC<NewsEditorPageProps> = ({ postId }) => {
       title={page.title}
       sceneKey={editor.sceneKey}
       origin={NEWS_ORIGIN}
+      header={header}
+      handover={AREA_HANDOVERS.news}
       foot={<NewsPressFoot editor={editor} text={text} />}
     >
       <NewsEditorLayout main={main} aside={aside} />
-      <NewsMentionLayer text={text} mentionables={page.mentionables} listId={NEWS_PICKER_LIST_ID} />
+      <NewsMentionLayer
+        text={text}
+        mentionables={page.mentionables}
+        emptyLabel={page.mentionEmptyLabel}
+        listId={NEWS_PICKER_LIST_ID}
+      />
       <NewsLinkSheet text={text} />
       <NewsGallerySheet onPick={picture.pickPhoto} />
       <NewsTieSheets ties={page.ties} />

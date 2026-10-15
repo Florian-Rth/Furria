@@ -2,8 +2,11 @@ using System.Net;
 using System.Text.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Members;
+using Furria.Api.Honours;
 using Furria.Application.Authorization;
+using Furria.Application.Registry;
 using Furria.Core.Club;
+using Furria.Core.Groups;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -537,8 +540,246 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
         var member = document.RootElement.GetProperty("members").EnumerateArray().First();
         var fields = member.EnumerateObject().Select(field => field.Name).ToArray();
         Assert.Equal(
-            ["personId", "firstName", "lastName", "portrait", "membershipState", "groups", "roles"],
+            [
+                "personId",
+                "firstName",
+                "lastName",
+                "portrait",
+                "membershipState",
+                "groups",
+                "roles",
+                "honours",
+            ],
             fields
+        );
+    }
+
+    [Fact]
+    public async Task Should_CountUnpausedSessions_When_HerMembershipHadAPause()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var relevantYear = ClubSession.RelevantYearOf(_fixture.Today);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Identity(identity =>
+                    identity
+                        .AddPerson("alice", "Alice", "Muster")
+                        .AddAccount("alice")
+                        .AddMembership(
+                            "alice-first",
+                            "alice",
+                            ClubSession.OpeningOf(relevantYear - 4)
+                        )
+                        .AddMembershipPause(
+                            "alice-pause",
+                            "alice-first",
+                            relevantYear - 2,
+                            relevantYear - 2
+                        )
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (_, result) = await client.GETAsync<GetMembers, GetMembersResponse>();
+
+        var alice = Assert.Single(result.Members);
+        Assert.Equal(4, alice.Honours.Sessions);
+    }
+
+    [Fact]
+    public async Task Should_ListHerRunningFunctionsInRank_When_SheHoldsSeatsTenuresAndCoinedRoles()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("alice", "Alice", "Muster")
+                            .AddAccount("alice")
+                            .AddMembership("alice-first", "alice", JoinedIn2017)
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup(
+                                "tanzgarde",
+                                "Tanzgarde",
+                                tone: GroupTone.Teal,
+                                icon: ClubIcon.Drum
+                            )
+                            .AddGroup("kapelle", "Kapelle", tone: GroupTone.Rose)
+                            .AddGroup("alte-garde", "Alte Garde", archivedOn: ArchivedIn2021)
+                            .AddGroup("funken", "Funken")
+                            .AddGroupAdmin(
+                                "alice-tanzgarde",
+                                "tanzgarde",
+                                "alice",
+                                sinceOn: new DateOnly(2019, 1, 1)
+                            )
+                            .AddGroupAdmin(
+                                "alice-kapelle",
+                                "kapelle",
+                                "alice",
+                                sinceOn: new DateOnly(2015, 1, 1)
+                            )
+                            .AddGroupAdmin(
+                                "alice-alte-garde",
+                                "alte-garde",
+                                "alice",
+                                sinceOn: new DateOnly(2010, 1, 1)
+                            )
+                            .AddGroupAdmin(
+                                "alice-funken",
+                                "funken",
+                                "alice",
+                                sinceOn: new DateOnly(2012, 1, 1),
+                                untilOn: LeftIn2020
+                            )
+                    )
+                    .Roles(roles =>
+                        roles
+                            .AddRoleWithCoin(
+                                "zeugwart",
+                                "Zeugwart",
+                                ClubIcon.Wrench,
+                                GroupTone.Teal
+                            )
+                            .AddRoleWithCoin(
+                                "webmaster",
+                                "Webmaster",
+                                ClubIcon.Key,
+                                GroupTone.Indigo
+                            )
+                            .AddRoleWithCoin(
+                                "chronik",
+                                "Chronik",
+                                ClubIcon.Pen,
+                                GroupTone.Clay,
+                                ArchivedIn2021
+                            )
+                            .AddRole("kasse", "Kasse")
+                            .AddRole("beisitz", "Beisitz")
+                            .AddRoleHolding(
+                                "alice-zeugwart",
+                                "zeugwart",
+                                "alice",
+                                new DateOnly(2021, 1, 1)
+                            )
+                            .AddRoleHolding(
+                                "alice-webmaster",
+                                "webmaster",
+                                "alice",
+                                new DateOnly(2018, 1, 1)
+                            )
+                            .AddRoleHolding(
+                                "alice-chronik",
+                                "chronik",
+                                "alice",
+                                new DateOnly(2016, 1, 1)
+                            )
+                            .AddRoleHolding(
+                                "alice-beisitz",
+                                "beisitz",
+                                "alice",
+                                new DateOnly(2013, 1, 1)
+                            )
+                            .AddRoleHolding(
+                                "alice-kasse",
+                                "kasse",
+                                "alice",
+                                new DateOnly(2014, 1, 1),
+                                LeftIn2020
+                            )
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice(
+                                "praesident",
+                                "Präsident",
+                                1,
+                                isPublic: true,
+                                icon: ClubIcon.Crown
+                            )
+                            .AddBoardOffice(
+                                "kassenwart",
+                                "Kassenwart",
+                                2,
+                                isPublic: true,
+                                icon: ClubIcon.Euro
+                            )
+                            .AddBoardOffice("schriftfuehrer", "Schriftführer", 3)
+                            .AddBoardSeat(
+                                "alice-kassenwart",
+                                "kassenwart",
+                                "alice",
+                                new DateOnly(2016, 1, 1)
+                            )
+                            .AddBoardSeat(
+                                "alice-praesident",
+                                "praesident",
+                                "alice",
+                                new DateOnly(2022, 1, 1)
+                            )
+                            .AddBoardSeat(
+                                "alice-schriftfuehrer",
+                                "schriftfuehrer",
+                                "alice",
+                                new DateOnly(2014, 1, 1)
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (_, result) = await client.GETAsync<GetMembers, GetMembersResponse>();
+
+        var alice = Assert.Single(result.Members);
+        Assert.Equal(
+            [
+                new PersonFunctionDto
+                {
+                    Kind = PersonFunctionKind.BoardSeat,
+                    Name = "Präsident",
+                    Icon = ClubIcon.Crown,
+                    Tone = null,
+                },
+                new PersonFunctionDto
+                {
+                    Kind = PersonFunctionKind.BoardSeat,
+                    Name = "Kassenwart",
+                    Icon = ClubIcon.Euro,
+                    Tone = null,
+                },
+                new PersonFunctionDto
+                {
+                    Kind = PersonFunctionKind.GroupAdmin,
+                    Name = "Kapelle",
+                    Icon = null,
+                    Tone = GroupTone.Rose,
+                },
+                new PersonFunctionDto
+                {
+                    Kind = PersonFunctionKind.GroupAdmin,
+                    Name = "Tanzgarde",
+                    Icon = ClubIcon.Drum,
+                    Tone = GroupTone.Teal,
+                },
+                new PersonFunctionDto
+                {
+                    Kind = PersonFunctionKind.Role,
+                    Name = "Webmaster",
+                    Icon = ClubIcon.Key,
+                    Tone = GroupTone.Indigo,
+                },
+                new PersonFunctionDto
+                {
+                    Kind = PersonFunctionKind.Role,
+                    Name = "Zeugwart",
+                    Icon = ClubIcon.Wrench,
+                    Tone = GroupTone.Teal,
+                },
+            ],
+            alice.Honours.Functions
         );
     }
 }

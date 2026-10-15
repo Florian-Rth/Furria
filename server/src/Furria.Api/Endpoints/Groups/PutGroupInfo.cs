@@ -3,6 +3,7 @@ using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Groups;
+using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Groups;
@@ -59,6 +60,7 @@ public sealed class PutGroupInfo : Endpoint<PutGroupInfoRequest>
             GroupKindId = req.GroupKindId,
             FoundedYear = req.FoundedYear,
             Tone = req.Tone,
+            Icon = req.Icon,
         };
 }
 
@@ -76,6 +78,8 @@ public sealed record PutGroupInfoRequest
     public required int? FoundedYear { get; init; }
 
     public required GroupTone? Tone { get; init; }
+
+    public required ClubIcon? Icon { get; init; }
 }
 
 public sealed class PutGroupInfoValidator : Validator<PutGroupInfoRequest>
@@ -97,5 +101,6 @@ public sealed class PutGroupInfoValidator : Validator<PutGroupInfoRequest>
             .WithMessage(FoundedYearOutOfRangeMessage)
             .When(request => request.FoundedYear is not null);
         RuleFor(request => request.Tone).IsInEnum().When(request => request.Tone is not null);
+        RuleFor(request => request.Icon).IsInEnum().When(request => request.Icon is not null);
     }
 }

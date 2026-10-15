@@ -15,6 +15,10 @@ import { EventRow } from './internal/ui/EventRow';
 export const EventsTeaser: FC = () => {
   const events = useTeaserEvents();
 
+  if (events === null) {
+    return null;
+  }
+
   return (
     <KkSection>
       <KkSection.Header

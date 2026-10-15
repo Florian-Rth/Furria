@@ -3,7 +3,9 @@ using System.Text.Json;
 using FastEndpoints;
 using Furria.Application.Management;
 using Furria.Application.Operations;
+using Furria.Application.Registry;
 using Furria.Application.Start;
+using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Groups;
 using Furria.Core.Media;
@@ -29,6 +31,10 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             "neverInvited reminderDue inPersonOnly birthDateUnknown keyToTakeBack "
             + "clubRecordGap applicationWaiting ticketRequestWaiting",
         [typeof(GroupTone)] = "clay olive lime fern teal indigo iris violet orchid rose",
+        [typeof(ClubIcon)] =
+            "crown euro bolt shield camera sparkle mic musicNote drum mask megaphone star "
+            + "trophy flag key shirt pen wrench palette heart mug calendar whistle broom",
+        [typeof(PersonFunctionKind)] = "boardSeat groupAdmin role",
         [typeof(DayOfWeek)] = "sunday monday tuesday wednesday thursday friday saturday",
         [typeof(TrainingPreviewState)] = "creatable venueTaken alreadyExists venueArchived",
         [typeof(EventSalesStatus)] =

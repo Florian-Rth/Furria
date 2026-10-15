@@ -7,6 +7,7 @@ import { useGoBackTo } from '@/lib/use-go-back-to';
 import type { WriteLanding } from '../landing-target';
 import { toLandingNavigation } from '../landing-target';
 import { toWriteFailure } from '../write-failure';
+import { useWriteDraft } from './use-write-draft';
 
 type WriteFormContext = undefined;
 
@@ -51,6 +52,7 @@ export const useWriteForm = <TValues extends FieldValues, TSubmitted, TResult>({
     mode: 'onTouched',
   });
   const { isDirty, isValid } = form.formState;
+  useWriteDraft(form);
   const values = useWatch({ control: form.control, compute: (all: TValues) => all });
 
   useEffect(() => {

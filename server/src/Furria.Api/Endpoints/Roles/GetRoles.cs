@@ -37,6 +37,7 @@ public sealed class GetRoles : EndpointWithoutRequest<GetRolesResponse>
             RoleId = role.RoleId,
             Name = role.Name,
             Description = role.Description,
+            Coin = RoleCoinDto.From(role.Coin),
             ArchivedOn = role.ArchivedOn,
             PermissionKeys = role.PermissionKeys,
             Holders = [.. role.Holders.Select(ToDto)],
@@ -65,6 +66,8 @@ public sealed record RoleSummaryDto
     public required string Name { get; init; }
 
     public required string Description { get; init; }
+
+    public required RoleCoinDto? Coin { get; init; }
 
     public required DateOnly? ArchivedOn { get; init; }
 

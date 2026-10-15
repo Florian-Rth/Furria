@@ -1,7 +1,7 @@
-import { KkEmptyState, KkScreen } from '@furria/ui';
+import { KkEmptyState, KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
 import { useParams } from '@tanstack/react-router';
 import type { FC, ReactNode } from 'react';
-import { AccessDenied, usePermissions } from '@/features/session';
+import { AccessDenied, AREA_HANDOVERS, usePermissions } from '@/features/session';
 import { toLandingKey, useLanding } from '@/features/write';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { parsePositiveId } from '@/lib/positive-id';
@@ -13,6 +13,7 @@ import {
   toGroupKindEntries,
 } from '../manage-groups-labels';
 import { toManagedGroupsErrorMessage } from '../manage-groups-messages';
+import { GroupKindHeader } from './GroupKindHeader';
 import { GroupKindPage } from './GroupKindPage';
 import { GroupKindSkeleton } from './GroupKindSkeleton';
 import { ManagedGroupsError } from './ManagedGroupsError';
@@ -25,8 +26,8 @@ const DENIED_MESSAGE = 'Dir fehlt die Berechtigung für die Gruppenverwaltung.';
 export const GroupKindScreen: FC = () => {
   const { groupKindId } = useParams({ from: ROUTE_ID });
   const id = parsePositiveId(groupKindId);
-  const groups = useManagedGroupsQuery();
   const permissions = usePermissions();
+  const groups = useManagedGroupsQuery(permissions.has(PERMISSION_KEYS.groupsManage));
   const { highlightedKey } = useLanding();
   const errorMessage = toManagedGroupsErrorMessage(groups.error);
   const canManage = permissions.isUndecided || permissions.has(PERMISSION_KEYS.groupsManage);
@@ -41,10 +42,12 @@ export const GroupKindScreen: FC = () => {
   };
 
   let body: ReactNode;
+  let header: ReactNode = null;
 
   if (!canManage) {
     body = <AccessDenied message={DENIED_MESSAGE} />;
   } else if (isReady && openEntry !== null) {
+    header = <GroupKindHeader entry={openEntry} />;
     body = (
       <GroupKindPage
         entry={openEntry}
@@ -56,11 +59,18 @@ export const GroupKindScreen: FC = () => {
   } else if (groups.data === undefined && errorMessage !== null) {
     body = <ManagedGroupsError message={errorMessage} onRetry={reload} />;
   } else {
+    header = <KkScreenHeaderSkeleton />;
     body = <GroupKindSkeleton />;
   }
 
   return (
-    <KkScreen kind="detail" title={title} origin={MANAGE_GROUPS_ORIGIN}>
+    <KkScreen
+      kind="detail"
+      title={title}
+      origin={MANAGE_GROUPS_ORIGIN}
+      header={header}
+      handover={AREA_HANDOVERS.manage}
+    >
       {body}
     </KkScreen>
   );

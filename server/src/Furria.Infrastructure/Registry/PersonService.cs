@@ -107,6 +107,13 @@ public sealed class PersonService
                     holding.UntilOn
                 ))
                 .ToList(),
+            person
+                .FeeReductions.Select(reduction => new SessionSpan
+                {
+                    FirstYear = reduction.FirstSessionYear,
+                    LastYear = reduction.LastSessionYear,
+                })
+                .ToList(),
             accessState
         );
 
@@ -793,6 +800,7 @@ public sealed class PersonService
                     .Select(tie => new RoleReference { RoleId = tie.Id, Name = tie.Name }),
             ],
             AccessState = row.AccessState,
+            FeeReduced = row.FeeReductions.Any(span => span.Contains(ClubSession.YearOf(today))),
         };
     }
 
@@ -833,6 +841,7 @@ public sealed class PersonService
         IReadOnlyList<MembershipPeriodRow> Memberships,
         IReadOnlyList<TieRow> Groups,
         IReadOnlyList<TieRow> Roles,
+        IReadOnlyList<SessionSpan> FeeReductions,
         RegisterAccessState AccessState
     );
 

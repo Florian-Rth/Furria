@@ -1,3 +1,5 @@
+using Furria.Core.Roles;
+
 namespace Furria.Application.Roles;
 
 public sealed record RoleDetails
@@ -7,6 +9,8 @@ public sealed record RoleDetails
     public required string Name { get; init; }
 
     public required string Description { get; init; }
+
+    public required RoleCoin? Coin { get; init; }
 
     public required DateOnly? ArchivedOn { get; init; }
 

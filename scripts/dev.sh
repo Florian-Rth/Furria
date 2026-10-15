@@ -1,14 +1,17 @@
 #!/usr/bin/env bash
 # Start/stop the local dev stack, reachable from other devices (vite --host).
 #
-#   scripts/dev.sh up       # postgres + mailpit + API + website + club-app
+#   scripts/dev.sh up       # postgres + mailpit + media worker + API + website + club-app
+#   scripts/dev.sh worker-build # rebuild the media worker image from this worktree
 #   scripts/dev.sh down     # stop API + vite servers (postgres/mailpit keep running)
-#   scripts/dev.sh down-all # also stop postgres + mailpit
+#   scripts/dev.sh down-all # also stop media worker + postgres + mailpit
 #   scripts/dev.sh status
 #   scripts/dev.sh logs [api|website|club-app]
 #
-# Env overrides: WEBSITE_PORT (3010), CLUB_APP_PORT (3011).
+# Env overrides: WEBSITE_PORT (3010), CLUB_APP_PORT (3011), DEV_MEDIA (~/furria-dev-media).
 # The vite proxies target the API on :5100, so the API port is fixed.
+# The dev database is shared by all worktrees, so media files are too: API and the one
+# media worker use DEV_MEDIA (not under ~/.herdr — snap docker cannot mount hidden dirs).
 set -euo pipefail
 
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
@@ -18,18 +21,22 @@ SLUG="$(basename "$ROOT" | tr -c 'a-zA-Z0-9\n' '-')"
 WEBSITE_PORT="${WEBSITE_PORT:-3010}"
 CLUB_APP_PORT="${CLUB_APP_PORT:-3011}"
 API_PORT=5100
+DEV_MEDIA="${DEV_MEDIA:-$HOME/furria-dev-media}"
+WORKER_IMAGE=furria-dev-media-worker:latest
+WORKER=furria-dev-media-worker
+DB_CONNECTION="Host=localhost;Port=5432;Database=furria;Username=furria;Password=furria"
 
-mkdir -p "$STATE"
+mkdir -p "$STATE" "$DEV_MEDIA"
 
 port_busy() { ss -ltn "sport = :$1" | grep -q LISTEN; }
-container_running() { [ "$(docker inspect -f '{{.State.Running}}' "$1" 2>/dev/null)" = "true" ]; }
+container_running() { [ "$(docker inspect --type container -f '{{.State.Running}}' "$1" 2>/dev/null)" = "true" ]; }
 
 ensure_container() { # name, port, docker run args...
   local name=$1 port=$2
   shift 2
   if container_running "$name"; then
     echo "✓ $name running"
-  elif docker inspect "$name" >/dev/null 2>&1; then
+  elif docker inspect --type container "$name" >/dev/null 2>&1; then
     docker start "$name" >/dev/null && echo "▶ $name started"
   elif port_busy "$port"; then
     echo "✓ :$port already in use — assuming $name is provided elsewhere"
@@ -59,7 +66,7 @@ start_api() {
   fi
   if port_busy "$API_PORT"; then echo "✓ :$API_PORT already in use — assuming API runs elsewhere"; return; fi
   # exec: $! is the session leader, so `down` can kill dotnet run + the API as one group
-  (cd "$ROOT/server" && exec setsid dotnet run --project src/Furria.Api >"$STATE/api.log" 2>&1 </dev/null) &
+  (cd "$ROOT/server" && Media__RootPath="$DEV_MEDIA" exec setsid dotnet run --project src/Furria.Api >"$STATE/api.log" 2>&1 </dev/null) &
   echo $! >"$STATE/api.pid"
   echo "▶ api on :$API_PORT (log: .dev/api.log)"
 }
@@ -70,6 +77,22 @@ stop_api() {
   pid="$(cat "$STATE/api.pid")"
   kill -- "-$pid" 2>/dev/null && echo "■ api stopped" || true
   rm -f "$STATE/api.pid"
+}
+
+build_worker() { # snap docker cannot read ~/.herdr, so the build context is piped as a tar
+  echo "… building $WORKER_IMAGE"
+  (cd "$ROOT/server" && tar -c --exclude=bin --exclude=obj --exclude=.media --exclude=tests . |
+    docker build -q -f src/Furria.MediaWorker/Dockerfile -t "$WORKER_IMAGE" - >/dev/null)
+}
+
+start_worker() {
+  docker image inspect "$WORKER_IMAGE" >/dev/null 2>&1 || build_worker
+  local stray
+  stray="$(docker ps --format '{{.Names}}' | grep '^furria-dev-media-worker-' || true)"
+  [ -z "$stray" ] || echo "⚠ other dev media workers steal jobs into their own folders — remove: $stray"
+  ensure_container "$WORKER" 0 --restart unless-stopped --network host --user "$(id -u):$(id -g)" \
+    -e Media__RootPath=/media -e "ConnectionStrings__AppDb=$DB_CONNECTION" \
+    -v "$DEV_MEDIA:/media" "$WORKER_IMAGE"
 }
 
 up() {
@@ -83,6 +106,7 @@ up() {
     node_run --rm "$NODE_IMAGE" sh -c "corepack pnpm config set store-dir /tmp/store && corepack pnpm install --frozen-lockfile"
   fi
 
+  start_worker
   start_api
   start_vite website "$WEBSITE_PORT"
   start_vite club-app "$CLUB_APP_PORT"
@@ -104,11 +128,12 @@ down() {
 
 down_all() {
   down
-  docker stop furria-dev-postgres furria-dev-mailpit >/dev/null 2>&1 && echo "■ postgres + mailpit stopped" || true
+  docker stop "$WORKER" furria-dev-postgres furria-dev-mailpit >/dev/null 2>&1 &&
+    echo "■ media worker + postgres + mailpit stopped" || true
 }
 
 status() {
-  for c in furria-dev-postgres furria-dev-mailpit "furria-dev-website-$SLUG" "furria-dev-club-app-$SLUG"; do
+  for c in furria-dev-postgres furria-dev-mailpit "$WORKER" "furria-dev-website-$SLUG" "furria-dev-club-app-$SLUG"; do
     container_running "$c" && echo "● $c" || echo "○ $c"
   done
   if [ -f "$STATE/api.pid" ] && kill -0 "$(cat "$STATE/api.pid")" 2>/dev/null; then
@@ -131,7 +156,8 @@ case "${1:-}" in
   down) down ;;
   down-all) down_all ;;
   restart) down; up ;;
+  worker-build) build_worker; docker rm -f "$WORKER" >/dev/null 2>&1 || true; start_worker ;;
   status) status ;;
   logs) logs "${2:-}" ;;
-  *) sed -n '2,11p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
+  *) sed -n '2,14p' "$0" | sed 's/^# \{0,1\}//'; exit 1 ;;
 esac

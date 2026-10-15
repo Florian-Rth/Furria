@@ -4,6 +4,7 @@ using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Authorization;
 using Furria.Application.Club;
+using Furria.Core.Club;
 using Furria.Infrastructure.Club;
 
 namespace Furria.Api.Endpoints.Board;
@@ -41,6 +42,7 @@ public sealed class PutBoardOffice : Endpoint<PutBoardOfficeRequest>
             BoardOfficeId = req.BoardOfficeId,
             Name = req.Name,
             SortOrder = req.SortOrder,
+            Icon = req.Icon,
         };
 }
 
@@ -52,6 +54,8 @@ public sealed record PutBoardOfficeRequest
     public required string Name { get; init; }
 
     public required int SortOrder { get; init; }
+
+    public required ClubIcon? Icon { get; init; }
 }
 
 public sealed class PutBoardOfficeValidator : Validator<PutBoardOfficeRequest>
@@ -62,5 +66,6 @@ public sealed class PutBoardOfficeValidator : Validator<PutBoardOfficeRequest>
         RuleFor(request => request.Name).NotEmpty().MaximumLength(BoardLimits.NameLength);
         RuleFor(request => request.SortOrder)
             .InclusiveBetween(BoardLimits.MinSortOrder, BoardLimits.MaxSortOrder);
+        RuleFor(request => request.Icon).IsInEnum().When(request => request.Icon is not null);
     }
 }

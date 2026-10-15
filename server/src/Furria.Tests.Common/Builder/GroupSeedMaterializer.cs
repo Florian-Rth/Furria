@@ -64,6 +64,7 @@ internal static class GroupSeedMaterializer
                 GroupKindId = OptionalId(groupKindIds, intent.GroupKindAlias, "GroupKind"),
                 FoundedYear = intent.FoundedYear,
                 Tone = intent.Tone,
+                Icon = intent.Icon,
             },
             StringComparer.Ordinal
         );

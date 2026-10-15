@@ -24,15 +24,9 @@ export const useGroupKindConfirm = ({
 
   const submit = (): void => {
     setRejection(null);
-    mutation.mutate(
-      { kindName },
-      {
-        onSuccess: onDone,
-        onError: (error) => {
-          setRejection(toWriteErrorMessage(error));
-        },
-      },
-    );
+    void mutation.mutateAsync({ kindName }).then(onDone, (error: Error) => {
+      setRejection(toWriteErrorMessage(error));
+    });
   };
 
   return { rejection, isSaving: mutation.isPending, submit };

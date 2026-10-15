@@ -2,10 +2,12 @@ import type { KkIconName, KkSummaryFact } from '@furria/ui';
 import type { GreetingViewer } from '@/features/start/greeting/greeting-act';
 import { greetingActAt } from '@/features/start/greeting/greeting-act';
 import { toGreetingCopy, toGreetingText } from '@/features/start/greeting/greeting-copy';
-import type { GreetingView } from '@/features/start/greeting/greeting-view';
+import type { GreetingHolder, GreetingView } from '@/features/start/greeting/greeting-view';
 import { toGreetingView } from '@/features/start/greeting/greeting-view';
 import type { MembershipState } from '@/lib/api/schemas';
 import { relevantSessionYear } from '@/lib/club';
+import { toAvatarHonours } from '@/lib/honours';
+import { toInitials } from '@/lib/initials';
 
 export type LabGreetingBank = 'season' | 'opening' | 'carnival' | 'personal';
 
@@ -18,6 +20,7 @@ export interface LabGreeting {
   at: string;
   viewer: GreetingViewer;
   firstName: string;
+  holder: GreetingHolder;
   still: boolean;
 }
 
@@ -47,6 +50,7 @@ export const REPLAY_LABEL = 'Nochmal';
 export const NEXT_LABEL = 'Weiter';
 
 const PERSONA = 'Lena';
+const PERSONA_LAST_NAME = 'Brendel';
 const LONG_NAME = 'Maximiliane-Sophie';
 const ORDINAL = 12;
 const BIRTH_DATE = '1994-06-02';
@@ -170,6 +174,13 @@ const SPECS: readonly LabGreetingSpec[] = [
     traits: { memberSince: '2026-01-19' },
   },
   {
+    slug: 'runde-geschlossen',
+    bank: 'personal',
+    title: 'Runde geschlossen',
+    at: '2026-11-20T09:30',
+    traits: { ordinal: 22 },
+  },
+  {
     slug: 'willkommen',
     bank: 'personal',
     title: 'Erster Tag in der App',
@@ -191,8 +202,15 @@ const viewerOf = (at: string, traits: LabViewerTraits): GreetingViewer => {
   };
 };
 
+const holderOf = (firstName: string, viewer: GreetingViewer): GreetingHolder => ({
+  initials: toInitials(firstName, PERSONA_LAST_NAME),
+  image: null,
+  honours: toAvatarHonours({ sessions: viewer.relevantSession?.ordinal ?? 0, functions: [] }),
+});
+
 const labGreetingOfSpec = (spec: LabGreetingSpec): LabGreeting => {
   const viewer = viewerOf(spec.at, spec.traits ?? {});
+  const firstName = spec.firstName ?? PERSONA;
 
   return {
     slug: spec.slug,
@@ -200,7 +218,8 @@ const labGreetingOfSpec = (spec: LabGreetingSpec): LabGreeting => {
     title: spec.title,
     at: spec.at,
     viewer,
-    firstName: spec.firstName ?? PERSONA,
+    firstName,
+    holder: holderOf(firstName, viewer),
     still: spec.still === true,
   };
 };
@@ -249,6 +268,7 @@ export const labViewOf = (greeting: LabGreeting): GreetingView =>
     firstName: greeting.firstName,
     reducedMotion: greeting.still,
     follows: false,
+    holder: greeting.holder,
   });
 
 export const labTileOf = (view: Pick<GreetingView, 'festive' | 'burst'>): LabGreetingTile =>

@@ -240,6 +240,8 @@ const anniversaryPhrase =
       : [value(String(years)), since, plain(', '), named(name), plain('!')];
   };
 
+const lapClosingLine = (sessions: number): string => `${sessions} Sessionen. Gross - Furria!`;
+
 const fixed =
   (text: string): Phrase =>
   () => [plain(text)];
@@ -319,7 +321,7 @@ export const toGreetingCopy = (act: GreetingAct, firstName: string): GreetingCop
 
   return {
     parts: withValuesGlued(title.parts),
-    line: composition.line,
+    line: act.lapClose === null ? composition.line : lapClosingLine(act.lapClose),
     nameForm: title.nameForm,
     deck: deckOf(act),
   };

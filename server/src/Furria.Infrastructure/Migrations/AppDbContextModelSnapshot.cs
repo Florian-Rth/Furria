@@ -149,6 +149,11 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<string>("Icon")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("icon");
+
                     b.Property<int?>("ImpliedRoleId")
                         .HasColumnType("integer")
                         .HasColumnName("implied_role_id");
@@ -186,7 +191,10 @@ namespace Furria.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_board_office_name");
 
-                    b.ToTable("board_office", (string)null);
+                    b.ToTable("board_office", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_board_office_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom')");
+                        });
                 });
 
             modelBuilder.Entity("Furria.Core.Club.BoardSeat", b =>
@@ -876,6 +884,11 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("group_kind_id");
 
+                    b.Property<string>("Icon")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("icon");
+
                     b.Property<bool>("IsRecruiting")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("boolean")
@@ -920,6 +933,8 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("group", null, t =>
                         {
                             t.HasCheckConstraint("ck_group_founded_year", "founded_year IS NULL OR founded_year >= 1800");
+
+                            t.HasCheckConstraint("ck_group_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom')");
 
                             t.HasCheckConstraint("ck_group_tone", "tone IS NULL OR tone IN ('Clay', 'Olive', 'Lime', 'Fern', 'Teal', 'Indigo', 'Iris', 'Violet', 'Orchid', 'Rose')");
                         });
@@ -2103,12 +2118,22 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(400)")
                         .HasColumnName("description");
 
+                    b.Property<string>("Icon")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("icon");
+
                     b.Property<string>("Name")
                         .IsRequired()
                         .HasMaxLength(80)
                         .HasColumnType("character varying(80)")
                         .HasColumnName("name")
                         .UseCollation("de-DE-x-icu");
+
+                    b.Property<string>("Tone")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("tone");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -2122,7 +2147,14 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("Name")
                         .HasDatabaseName("ix_role_name_lookup");
 
-                    b.ToTable("role", (string)null);
+                    b.ToTable("role", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_role_coin", "(icon IS NULL) = (tone IS NULL)");
+
+                            t.HasCheckConstraint("ck_role_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom')");
+
+                            t.HasCheckConstraint("ck_role_tone", "tone IS NULL OR tone IN ('Clay', 'Olive', 'Lime', 'Fern', 'Teal', 'Indigo', 'Iris', 'Violet', 'Orchid', 'Rose')");
+                        });
                 });
 
             modelBuilder.Entity("Furria.Core.Roles.RoleHolding", b =>

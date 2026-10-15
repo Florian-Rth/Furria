@@ -20,7 +20,6 @@ interface KkNewsRowProps {
   shortDate: string;
   longDate: string;
   photo: ReactNode;
-  posterWord: string;
   link?: KkNewsLink;
   fit?: KkNewsFit;
 }
@@ -32,12 +31,10 @@ export const KkNewsRow: FC<KkNewsRowProps> = ({
   shortDate,
   longDate,
   photo,
-  posterWord,
   link,
   fit = 'page',
 }) => {
   const label = title ?? '';
-  const tone = category?.tone ?? null;
   const longDateSx = { display: fitted(fit, { xs: 'block', desktop: 'none' }) };
   const mediaSx = {
     flexShrink: 0,
@@ -59,7 +56,7 @@ export const KkNewsRow: FC<KkNewsRowProps> = ({
         <KkNewsRowHeadline title={title} fit={fit} />
         <KkNewsRowTeaser teaser={teaser} />
       </KkNewsRowText>
-      <KkNewsMedia photo={photo} tone={tone} posterWord={posterWord} sx={mediaSx} />
+      <KkNewsMedia photo={photo} sx={mediaSx} />
     </KkNewsRowRoot>
   );
 };

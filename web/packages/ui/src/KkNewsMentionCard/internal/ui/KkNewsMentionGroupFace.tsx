@@ -1,10 +1,8 @@
-import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { KkPictureUrls } from '../../../image-source';
 import { toImageSource } from '../../../image-source';
 import type { KkGroupTone } from '../../../internal/group-tone';
-import { groupToneFieldPaint } from '../../../internal/group-tone';
-import { KkCoverPicture } from '../../../KkCoverPicture';
+import { KkPhoto } from '../../../KkPhoto';
 import { kkTokens } from '../../../tokens';
 
 const CARD_SIZES = '18rem';
@@ -21,26 +19,16 @@ export const KkNewsMentionGroupFace: FC<KkNewsMentionGroupFaceProps> = ({
   picture,
 }) => {
   const image = toImageSource(picture, 'groupPicture', CARD_SIZES);
-  const face = image === null ? initials : <KkCoverPicture image={image} alt="" />;
+  const placeholderTone = tone ?? undefined;
 
   return (
-    <Stack
-      data-kk-news-mention-face="group"
-      sx={(theme) => ({
-        aspectRatio: kkTokens.aspectRatio.groupPicture,
-        alignItems: 'center',
-        justifyContent: 'center',
-        typography: 'display',
-        fontFamily: kkTokens.font.display,
-        fontWeight: kkTokens.font.displayWeight,
-        letterSpacing: kkTokens.type.tracking.display,
-        bgcolor: 'action.hover',
-        borderBottom: kkTokens.line.hair,
-        borderColor: 'divider',
-        ...(tone === null || image !== null ? {} : groupToneFieldPaint(theme, tone)),
-      })}
-    >
-      {face}
-    </Stack>
+    <KkPhoto
+      alt=""
+      image={image}
+      aspectRatio={kkTokens.aspectRatio.groupPicture}
+      placeholderLabel={initials}
+      tone={placeholderTone}
+      sx={{ borderRadius: 0, borderBottom: kkTokens.line.hair, borderColor: 'divider' }}
+    />
   );
 };
