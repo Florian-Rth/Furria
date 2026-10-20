@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { EventsPage } from '@/features/events';
+import { EventsPage, EventsSearchSchema } from '@/features/events';
 import {
   EVENTS_KEYS,
   EVENTS_TITLE,
@@ -18,4 +18,7 @@ const EventsRoute: FC = () => (
   </RequireAnyScreenPermission>
 );
 
-export const Route = createFileRoute('/_app/events')({ component: EventsRoute });
+export const Route = createFileRoute('/_app/events')({
+  validateSearch: EventsSearchSchema,
+  component: EventsRoute,
+});

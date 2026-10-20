@@ -48,7 +48,8 @@ internal static class SeedMaterializer
             dbContext,
             recorded.RecordedGallery,
             identity.PersonIds,
-            club.CalendarEntryIds,
+            club.CalendarEntryIds.Concat(club.EventIds)
+                .ToDictionary(entry => entry.Key, entry => entry.Value, StringComparer.Ordinal),
             scope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow(),
             ct
         );

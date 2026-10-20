@@ -38,4 +38,10 @@ public sealed record EventDetails
     public required bool IsOver { get; init; }
 
     public required PictureEditingDetails? Picture { get; init; }
+
+    public required DateTimeOffset? PublishedAt { get; init; }
+
+    public required DateTimeOffset CreatedAt { get; init; }
+
+    public required EventPlanning Planning { get; init; }
 }

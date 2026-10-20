@@ -21,6 +21,8 @@ public sealed class Event : ITimestamped
 
     public DateTimeOffset? CancelledAt { get; set; }
 
+    public DateTimeOffset? PublishedAt { get; set; }
+
     public int? PictureId { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }

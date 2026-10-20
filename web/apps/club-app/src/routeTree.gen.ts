@@ -80,6 +80,7 @@ import { Route as AppGroupsGroupIdEditRouteImport } from './routes/_app/groups_.
 import { Route as AppGroupsGroupIdAdministrationRouteImport } from './routes/_app/groups_.$groupId_.administration'
 import { Route as AppGalleryAlbumIdSelectionRouteImport } from './routes/_app/gallery_.$albumId_.selection'
 import { Route as AppGalleryAlbumIdEditRouteImport } from './routes/_app/gallery_.$albumId_.edit'
+import { Route as AppEventsEventIdManageRouteImport } from './routes/_app/events_.$eventId_.manage'
 import { Route as AppEventsEventIdEditRouteImport } from './routes/_app/events_.$eventId_.edit'
 import { Route as AppPersonalProfileSecurityRouteImport } from './routes/_app/_personal.profile_.security'
 import { Route as AppAffiliatedMembersPersonIdRouteImport } from './routes/_app/_affiliated.members_.$personId'
@@ -481,6 +482,11 @@ const AppGalleryAlbumIdEditRoute = AppGalleryAlbumIdEditRouteImport.update({
   path: '/gallery/$albumId/edit',
   getParentRoute: () => AppRoute,
 } as any)
+const AppEventsEventIdManageRoute = AppEventsEventIdManageRouteImport.update({
+  id: '/events_/$eventId_/manage',
+  path: '/events/$eventId/manage',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppEventsEventIdEditRoute = AppEventsEventIdEditRouteImport.update({
   id: '/events_/$eventId_/edit',
   path: '/events/$eventId/edit',
@@ -763,6 +769,7 @@ export interface FileRoutesByFullPath {
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/profile/security': typeof AppPersonalProfileSecurityRoute
   '/events/$eventId/edit': typeof AppEventsEventIdEditRoute
+  '/events/$eventId/manage': typeof AppEventsEventIdManageRoute
   '/gallery/$albumId/edit': typeof AppGalleryAlbumIdEditRoute
   '/gallery/$albumId/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
@@ -871,6 +878,7 @@ export interface FileRoutesByTo {
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/profile/security': typeof AppPersonalProfileSecurityRoute
   '/events/$eventId/edit': typeof AppEventsEventIdEditRoute
+  '/events/$eventId/manage': typeof AppEventsEventIdManageRoute
   '/gallery/$albumId/edit': typeof AppGalleryAlbumIdEditRoute
   '/gallery/$albumId/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
@@ -983,6 +991,7 @@ export interface FileRoutesById {
   '/_app/_affiliated/members_/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/_app/_personal/profile_/security': typeof AppPersonalProfileSecurityRoute
   '/_app/events_/$eventId_/edit': typeof AppEventsEventIdEditRoute
+  '/_app/events_/$eventId_/manage': typeof AppEventsEventIdManageRoute
   '/_app/gallery_/$albumId_/edit': typeof AppGalleryAlbumIdEditRoute
   '/_app/gallery_/$albumId_/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/_app/groups_/$groupId_/administration': typeof AppGroupsGroupIdAdministrationRoute
@@ -1093,6 +1102,7 @@ export interface FileRouteTypes {
     | '/members/$personId'
     | '/profile/security'
     | '/events/$eventId/edit'
+    | '/events/$eventId/manage'
     | '/gallery/$albumId/edit'
     | '/gallery/$albumId/selection'
     | '/groups/$groupId/administration'
@@ -1201,6 +1211,7 @@ export interface FileRouteTypes {
     | '/members/$personId'
     | '/profile/security'
     | '/events/$eventId/edit'
+    | '/events/$eventId/manage'
     | '/gallery/$albumId/edit'
     | '/gallery/$albumId/selection'
     | '/groups/$groupId/administration'
@@ -1312,6 +1323,7 @@ export interface FileRouteTypes {
     | '/_app/_affiliated/members_/$personId'
     | '/_app/_personal/profile_/security'
     | '/_app/events_/$eventId_/edit'
+    | '/_app/events_/$eventId_/manage'
     | '/_app/gallery_/$albumId_/edit'
     | '/_app/gallery_/$albumId_/selection'
     | '/_app/groups_/$groupId_/administration'
@@ -1875,6 +1887,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGalleryAlbumIdEditRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/events_/$eventId_/manage': {
+      id: '/_app/events_/$eventId_/manage'
+      path: '/events/$eventId/manage'
+      fullPath: '/events/$eventId/manage'
+      preLoaderRoute: typeof AppEventsEventIdManageRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/events_/$eventId_/edit': {
       id: '/_app/events_/$eventId_/edit'
       path: '/events/$eventId/edit'
@@ -2230,6 +2249,7 @@ interface AppRouteChildren {
   AppManageIndexRoute: typeof AppManageIndexRoute
   AppSystemIndexRoute: typeof AppSystemIndexRoute
   AppEventsEventIdEditRoute: typeof AppEventsEventIdEditRoute
+  AppEventsEventIdManageRoute: typeof AppEventsEventIdManageRoute
   AppGalleryAlbumIdEditRoute: typeof AppGalleryAlbumIdEditRoute
   AppGalleryAlbumIdSelectionRoute: typeof AppGalleryAlbumIdSelectionRoute
   AppGroupsGroupIdAdministrationRoute: typeof AppGroupsGroupIdAdministrationRoute
@@ -2327,6 +2347,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageIndexRoute: AppManageIndexRoute,
   AppSystemIndexRoute: AppSystemIndexRoute,
   AppEventsEventIdEditRoute: AppEventsEventIdEditRoute,
+  AppEventsEventIdManageRoute: AppEventsEventIdManageRoute,
   AppGalleryAlbumIdEditRoute: AppGalleryAlbumIdEditRoute,
   AppGalleryAlbumIdSelectionRoute: AppGalleryAlbumIdSelectionRoute,
   AppGroupsGroupIdAdministrationRoute: AppGroupsGroupIdAdministrationRoute,

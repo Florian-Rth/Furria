@@ -73,6 +73,17 @@ public sealed class EventExpectations
             async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).CancelledAt)
         );
 
+    public Expected ToBePublishedAt(DateTimeOffset publishedAt) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(publishedAt, (await SingleAsync(dbContext, ct)).PublishedAt)
+        );
+
+    public Expected ToBeUnpublished() =>
+        _expected.Enqueue(
+            async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).PublishedAt)
+        );
+
     public Expected ToShowPicture(int? mediaItemId) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

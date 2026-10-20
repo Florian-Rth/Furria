@@ -39,6 +39,9 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(TrainingPreviewState)] = "creatable venueTaken alreadyExists venueArchived",
         [typeof(EventSalesStatus)] =
             "announced presaleScheduled available fewLeft soldOut cancelled",
+        [typeof(EventStep)] = "details tickets review",
+        [typeof(EventStepState)] = "done overdue open waiting",
+        [typeof(MissingEventDetail)] = "venue doorsOpenAt description picture published",
         [typeof(MediaItemState)] = "processing ready failed",
         [typeof(NewsCategory)] = "session achievements club groups",
         [typeof(NewsPostState)] = "draft published withdrawn",

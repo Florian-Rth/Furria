@@ -84,7 +84,8 @@ public sealed class PublicFace
         var openEndedCutoff = now.AddHours(-CalendarDefaults.OpenEndedHours);
 
         return row =>
-            row.CalendarEntry!.Venue != null
+            row.PublishedAt != null
+            && row.CalendarEntry!.Venue != null
             && (
                 row.CalendarEntry.EndsAt == null
                     ? row.CalendarEntry.StartsAt > openEndedCutoff

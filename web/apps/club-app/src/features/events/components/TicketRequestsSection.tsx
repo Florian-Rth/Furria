@@ -8,11 +8,7 @@ import { TicketRequestToDos } from './TicketRequestToDos';
 
 const LOADING_LABEL = 'Die Kartenanfragen werden geladen';
 
-interface TicketRequestsSectionProps {
-  linksToEvents: boolean;
-}
-
-export const TicketRequestsSection: FC<TicketRequestsSectionProps> = ({ linksToEvents }) => {
+export const TicketRequestsSection: FC = () => {
   const ticketRequests = useTicketRequestsQuery(true);
   const errorMessage = toTicketRequestsErrorMessage(ticketRequests.error);
 
@@ -27,7 +23,7 @@ export const TicketRequestsSection: FC<TicketRequestsSectionProps> = ({ linksToE
     return (
       <>
         {toDos}
-        <TicketRequestsPanel requests={requests} linksToEvents={linksToEvents} />
+        <TicketRequestsPanel requests={requests} />
       </>
     );
   }

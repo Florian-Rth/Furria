@@ -134,6 +134,7 @@ public sealed class TicketRequestService
     private Task<RequestableEvent?> RequestableEventAsync(int eventId, CancellationToken ct) =>
         _dbContext
             .Events.AsNoTracking()
+            .Where(PublishedEvents.IsPublished)
             .Where(row => row.CalendarEntryId == eventId)
             .Select(row => new RequestableEvent(
                 row.CalendarEntry!.Title,

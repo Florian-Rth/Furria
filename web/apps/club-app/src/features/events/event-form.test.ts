@@ -23,6 +23,13 @@ const event = (overrides: Partial<EventDetails>): EventDetails => ({
   status: 'presaleScheduled',
   isOver: false,
   picture: null,
+  publishedAt: null,
+  createdAt: at(2026, 10, 1, 10),
+  detailsMissing: ['description', 'picture', 'published'],
+  ticketRequests: { open: 0, cards: 0, oldestRequestedAt: null },
+  review: { publishedAlbums: 0, publishedNews: 0 },
+  steps: [],
+  currentStep: null,
   ...overrides,
 });
 

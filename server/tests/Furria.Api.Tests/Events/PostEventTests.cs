@@ -101,6 +101,22 @@ public sealed class PostEventTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_KeepTheEventInPreparation_When_TheKeyHolderCreatesTheEvent()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var (response, result) = await CreateAsync(
+            ctx,
+            "vera",
+            Gala(ctx.Club.Venues.IdOf("buergerhaus"))
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx.Expected.Event(result.EventId).ToBeUnpublished().AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_KeepTheEventsOwnFacts_When_TheKeyHolderCreatesTheEvent()
     {
         var ct = TestContext.Current.CancellationToken;

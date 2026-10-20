@@ -9,6 +9,7 @@ using Furria.Core.Events;
 using Furria.Core.Groups;
 using Furria.Core.Media;
 using Furria.Infrastructure.Authorization;
+using Furria.Infrastructure.Events;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
@@ -89,6 +90,7 @@ public sealed class CalendarService
             .Where(entry => !clubOwnedOnly || entry.OwnerGroupId == null)
             .Where(entry => ownerGroupId == null || entry.OwnerGroupId == ownerGroupId)
             .Where(VisibleTo(personId, today))
+            .Where(PublishedEvents.IsListedEntry)
             .OrderBy(entry => entry.StartsAt)
             .ThenBy(entry => entry.Id)
             .Select(RowProjection(now, openEndedCutoff))
@@ -117,6 +119,7 @@ public sealed class CalendarService
             .CalendarEntries.AsNoTracking()
             .Where(entry => entry.Id == calendarEntryId)
             .Where(VisibleTo(personId, today))
+            .Where(PublishedEvents.IsListedEntry)
             .Select(RowProjection(now, openEndedCutoff))
             .SingleOrDefaultAsync(ct);
 
@@ -151,6 +154,7 @@ public sealed class CalendarService
                 || entry.ParticipatingGroups.Any(link => link.GroupId == groupId)
             )
             .Where(VisibleTo(personId, today))
+            .Where(PublishedEvents.IsListedEntry)
             .OrderBy(entry => entry.StartsAt)
             .ThenBy(entry => entry.Id)
             .Select(RowProjection(now, openEndedCutoff))

@@ -65,6 +65,8 @@ English rendering anywhere else, so two translations never drift apart.
 | chronicle | Chronik | — |
 | session medal | Orden | — |
 | event | Veranstaltung | `Event` |
+| in preparation / published | in Vorbereitung / veröffentlicht | `Event.PublishedAt` |
+| event step / current step | Schritt / aktueller Schritt | `EventStep`, `EventReadiness` |
 | running order | Ablauf | — |
 | live direction | Live-Regie | — |
 | calendar entry | Kalendereintrag | `CalendarEntry` |
@@ -766,14 +768,32 @@ is **narrow**: unticketed happenings (e.g. the Rose Monday parade) are not event
 and are not listed on the website (the 2026-08-13 narrowing, carried over from the retired
 "programme").
 
-An event is a **calendar entry** of the kind *event* and is **always public** — its visibility is
-not chosen. Public is not the same as event: a public calendar entry of another kind (the Rose
-Monday parade) stays off the website. An event is kept, whole, in the **events workbench** —
-its date and venue as much as what the website says about it — and nowhere else (ruled
-2026-10-07, L6 shaping).
+An event is a **calendar entry** of the kind *event* and is **public once published** — its
+visibility is not chosen. It starts **in preparation** (*in Vorbereitung*): seen only in the
+**events workbench**, absent from the website, ticket requests, the members' calendar, Start and
+the club hub. It is **published** (*veröffentlicht*, `PublishedAt`) once, when its key facts are
+complete — title, date, venue, teaser, doors-open time, description and **event picture** — and it
+is neither cancelled nor over; there is no unpublishing (ruled 2026-10-17, event planner v2).
+Public is not the same as event: a public calendar entry of another kind (the Rose Monday parade)
+stays off the website. An event is kept, whole, in the **events workbench** — its date and venue
+as much as what the website says about it — and nowhere else (ruled 2026-10-07, L6 shaping).
 _UI copy_: Veranstaltung
 _Avoid_: **programme** (retired — see flagged note), appointment (as the entity name), "Event" (in
 German copy), **public event** (an event is public by definition; "public" alone is a visibility)
+
+**Event step** (`EventStep`):
+One piece of an event's preparation, computed from the event's data, never ticked off by hand:
+**details** (*Eckdaten* — every key fact set and published, due 90 days before), **tickets**
+(*Karten* — price and presale start set and no **ticket request** waiting longer than three days,
+due 60 days before) and **review** (*Nachbereitung* — a published album of the evening, opens the
+day after, due 14 days after). A step is *done*, *overdue*, *open* or *waiting* (its window not
+open yet). Due dates are never retroactive: no step falls due earlier than 14 days after the event
+was created, and none before the evening later than the day before it. The **current step** is
+the one to do next — the earliest overdue, else the open one due soonest; a cancelled event has
+none, and once an event is over only its review can be current (ruled 2026-10-17, event planner
+v2).
+_UI copy_: Schritt; Eckdaten, Karten, Nachbereitung
+_Avoid_: task, phase, milestone, checklist item (a checklist item is an *Aufgabe*, later)
 
 **Running order**:
 The order of acts within a single event — a per-event ordering the club app manages. Not a list

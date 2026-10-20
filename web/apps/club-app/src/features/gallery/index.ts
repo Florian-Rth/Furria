@@ -1,4 +1,5 @@
-export { useGalleryHubQuery } from './api';
+export type { EntryAlbums } from './api';
+export { useEntryAlbums, useGalleryHubQuery } from './api';
 export { AlbumEditScreen } from './components/AlbumEditScreen';
 export { AlbumNewScreen } from './components/AlbumNewScreen';
 export { AlbumPage } from './components/AlbumPage';

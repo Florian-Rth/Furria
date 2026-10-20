@@ -153,6 +153,29 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
         );
     }
 
+    [Fact]
+    public async Task Should_AnswerNotFound_When_TheEventIsStillInPreparation()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+
+                var (response, _) = await ReadAsync(
+                    ctx,
+                    "alice",
+                    ctx.Club.Events.IdOf("in-preparation"),
+                    ct
+                );
+
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            }
+        );
+    }
+
     private static void WholeClub(IdentitySeedBuilder identity) =>
         identity
             .AddPerson("alice", "Alice", "Muster")
@@ -195,6 +218,14 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                                 visibility: CalendarEntryVisibility.Public
                             )
                             .AddCalendarEntry("festival", NextSummerFestival, AtNextSummerFestival)
+                            .AddVenue("buergerhaus", "Bürgerhaus")
+                            .AddEvent(
+                                "in-preparation",
+                                "Kappenabend",
+                                AtTheMeeting.AddDays(1),
+                                "buergerhaus",
+                                unpublished: true
+                            )
                             .AddAttendanceResponse(
                                 "bea-says-yes",
                                 "club-meeting",

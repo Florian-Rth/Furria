@@ -58,6 +58,32 @@ public sealed class PublicFaceTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_LeaveOutEventsInPreparation_When_TheWebsiteReadsEvents()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = _fixture.TimeProvider.GetUtcNow();
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Club(club =>
+                    club.AddVenue("saal", "Bürgerhaus")
+                        .AddEvent("published", "Kinderball", now.AddDays(30), "saal")
+                        .AddEvent(
+                            "in-preparation",
+                            "Prunksitzung",
+                            now.AddDays(40),
+                            "saal",
+                            unpublished: true
+                        )
+                ),
+            ct
+        );
+
+        var shown = await ShownAsync(face => face.Events.Select(row => row.CalendarEntryId), ct);
+
+        Assert.Equal(IdsOf(ctx.Club.Events, "published"), shown);
+    }
+
+    [Fact]
     public async Task Should_ShowOnlyGroupsThatAreNotArchived_When_TheWebsiteReadsGroups()
     {
         var ct = TestContext.Current.CancellationToken;

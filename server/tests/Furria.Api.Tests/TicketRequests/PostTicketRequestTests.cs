@@ -305,6 +305,31 @@ public sealed class PostTicketRequestTests : IClassFixture<ApiTestFixture>
         );
     }
 
+    [Fact]
+    public async Task Should_ReturnNotFound_When_TheEventIsStillInPreparation()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildClubAsync(ct);
+
+                var response = await TicketRequestSteps.RequestAsync(
+                    _fixture.CreateClient(),
+                    TicketRequestSteps.RequestOf(
+                        ctx.Club.Events.IdOf("in-preparation"),
+                        InvitationSteps.UniqueContactEmail("mia")
+                    )
+                );
+
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+                await ctx.Expected.TicketRequests().ToHaveCount(0).AssertAsync(ct);
+            }
+        );
+    }
+
     [Theory]
     [InlineData("")]
     [InlineData("bm8tY2hhbGxlbmdl")]
@@ -491,6 +516,14 @@ public sealed class PostTicketRequestTests : IClassFixture<ApiTestFixture>
                                 "buergerhaus",
                                 presaleStartsAt: PresaleStarted,
                                 cancelledAt: PresaleStarted
+                            )
+                            .AddEvent(
+                                "in-preparation",
+                                "Kappenabend",
+                                AtTheFirstGala.AddDays(3),
+                                "buergerhaus",
+                                presaleStartsAt: PresaleStarted,
+                                unpublished: true
                             )
                             .AddCalendarEntry("club-meeting", "Vereinssitzung", AtTheMeeting)
                     ),

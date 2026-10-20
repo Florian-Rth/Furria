@@ -1,18 +1,27 @@
-import { KkScreen, KkTitleHeader } from '@furria/ui';
+import type { KkScreenActions } from '@furria/ui';
+import { KkScreen } from '@furria/ui';
+import { useNavigate } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, EVENTS_TITLE, MORE_SECTION } from '@/features/session';
-import { EVENTS_LEAD } from '../events-labels';
+import { EVENTS_TITLE, MORE_SECTION } from '@/features/session';
+import { NEW_EVENT_ACTION_LABEL } from '../event-board-copy';
 import { EventsBody } from './EventsBody';
 
-export const EventsPage: FC = () => (
-  <KkScreen
-    kind="overview"
-    section={MORE_SECTION}
-    title={EVENTS_TITLE}
-    header={<KkTitleHeader title={EVENTS_TITLE} lead={EVENTS_LEAD} />}
-    handover={AREA_HANDOVERS.events}
-    headerKind="title"
-  >
-    <EventsBody />
-  </KkScreen>
-);
+export const EventsPage: FC = () => {
+  const navigate = useNavigate();
+  const actions: KkScreenActions = [
+    {
+      id: 'new-event',
+      label: NEW_EVENT_ACTION_LABEL,
+      icon: 'add',
+      onSelect: () => {
+        void navigate({ to: '/events/new' });
+      },
+    },
+  ];
+
+  return (
+    <KkScreen kind="overview" section={MORE_SECTION} title={EVENTS_TITLE} actions={actions}>
+      <EventsBody />
+    </KkScreen>
+  );
+};

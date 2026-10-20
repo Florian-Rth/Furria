@@ -1,30 +1,46 @@
-import { KkChip, KkEyebrow, KkMeta, KkScreenHeader } from '@furria/ui';
+import { KkProgressRing, KkRecordHead, KkStatePill } from '@furria/ui';
 import type { FC } from 'react';
-import { EVENT_STATUS_TONES, toEventStatusLabel } from '@/lib/event-copy';
-import { EVENT_EYEBROW, toEventPlaceLine } from '../events-labels';
+import type { EventHeadView } from '../event-pane-copy';
 import type { EventDetails } from '../schemas';
+import { EventThumb } from './EventThumb';
 
 interface EventHeaderProps {
   event: EventDetails;
+  view: EventHeadView;
 }
 
-export const EventHeader: FC<EventHeaderProps> = ({ event }) => {
-  const statusTone = EVENT_STATUS_TONES[event.status];
-  const statusLabel = toEventStatusLabel(event);
-  const placeLine = toEventPlaceLine(event);
+export const EventHeader: FC<EventHeaderProps> = ({ event, view }) => {
+  const picture = event.picture?.picture ?? null;
+  const chips = view.chips.map((chip) => (
+    <KkStatePill key={chip.key} state={chip.state} label={chip.label} sx={{ ml: 0 }} />
+  ));
+
+  const progress = view.cancelled ? undefined : (
+    <KkProgressRing
+      parts={view.tally.parts}
+      label={view.tally.label}
+      value={view.tally.value}
+      total={view.tally.total}
+      size="large"
+    />
+  );
 
   return (
-    <KkScreenHeader>
-      <KkScreenHeader.Text>
-        <KkEyebrow tone="accent">{EVENT_EYEBROW}</KkEyebrow>
-        <KkScreenHeader.Title transform="none">{event.title}</KkScreenHeader.Title>
-        <KkScreenHeader.Meta>
-          <KkChip tone={statusTone} dot>
-            {statusLabel}
-          </KkChip>
-          <KkMeta>{placeLine}</KkMeta>
-        </KkScreenHeader.Meta>
-      </KkScreenHeader.Text>
-    </KkScreenHeader>
+    <KkRecordHead
+      eyebrow={view.eyebrow}
+      title={event.title}
+      cancelled={view.cancelled}
+      media={
+        <EventThumb
+          eventId={event.eventId}
+          picture={picture}
+          cancelled={view.cancelled}
+          shape="adaptive"
+          size="large"
+        />
+      }
+      chips={chips}
+      progress={progress}
+    />
   );
 };

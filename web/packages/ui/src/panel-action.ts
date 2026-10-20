@@ -1,5 +1,6 @@
 import type { ElementType } from 'react';
 import type { KkIconName } from './KkIcon';
+import type { KkLinkSearch } from './kk-link-search';
 
 export type KkPanelActionEmphasis = 'strong' | 'quiet';
 
@@ -11,6 +12,7 @@ export interface KkPanelAction {
   component?: ElementType;
   to?: string;
   params?: Record<string, string>;
+  search?: KkLinkSearch;
   disabled?: boolean;
   ariaLabel?: string;
 }
