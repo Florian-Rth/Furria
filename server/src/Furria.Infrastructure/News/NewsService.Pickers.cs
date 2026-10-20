@@ -4,6 +4,7 @@ using Furria.Core.Club;
 using Furria.Core.Gallery;
 using Furria.Core.Groups;
 using Furria.Infrastructure.Club;
+using Furria.Infrastructure.Events;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Public;
 using Microsoft.EntityFrameworkCore;
@@ -39,6 +40,7 @@ public sealed partial class NewsService
     {
         var events = await _dbContext
             .Events.AsNoTracking()
+            .Where(PublishedEvents.IsPublished)
             .OrderByDescending(row => row.CalendarEntry!.StartsAt)
             .ThenByDescending(row => row.CalendarEntryId)
             .Select(row => new NewsEventTie(

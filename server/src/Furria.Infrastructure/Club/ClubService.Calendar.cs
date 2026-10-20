@@ -1,6 +1,7 @@
 using System.Diagnostics.Contracts;
 using Furria.Application.Club;
 using Furria.Core.Club;
+using Furria.Infrastructure.Events;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
@@ -19,6 +20,7 @@ public sealed partial class ClubService
         var rows = await _dbContext
             .CalendarEntries.AsNoTracking()
             .Where(entry => entry.OwnerGroupId == null)
+            .Where(PublishedEvents.IsListedEntry)
             .Where(entry =>
                 entry.EndsAt == null ? entry.StartsAt > openEndedCutoff : entry.EndsAt > now
             )

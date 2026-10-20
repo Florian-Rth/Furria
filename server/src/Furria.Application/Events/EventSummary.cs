@@ -22,4 +22,14 @@ public sealed record EventSummary
     public required bool IsOver { get; init; }
 
     public required PictureDetails? Picture { get; init; }
+
+    public required TimeOnly? DoorsOpenAt { get; init; }
+
+    public required int? PriceCents { get; init; }
+
+    public required DateTimeOffset? PublishedAt { get; init; }
+
+    public required DateTimeOffset CreatedAt { get; init; }
+
+    public required EventPlanning Planning { get; init; }
 }

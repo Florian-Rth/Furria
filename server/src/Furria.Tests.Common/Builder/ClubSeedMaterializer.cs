@@ -424,6 +424,7 @@ internal static class ClubSeedMaterializer
                     PresaleStartsAt = intent.PresaleStartsAt,
                     TicketAvailability = intent.TicketAvailability,
                     CancelledAt = intent.CancelledAt,
+                    PublishedAt = intent.Unpublished ? null : DefaultPublishedAt,
                 },
             },
             StringComparer.Ordinal

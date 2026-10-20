@@ -12,6 +12,7 @@ import {
   toEventCancelledMessage,
   toEventCreatedMessage,
   toEventDeletedMessage,
+  toEventPublishedMessage,
   toEventRestoredMessage,
   toEventSavedMessage,
   toTicketAvailabilityMessage,
@@ -23,6 +24,7 @@ import {
   requestEventCreation,
   requestEventDeletion,
   requestEventPictureFromGallery,
+  requestEventPublished,
   requestEvents,
   requestEventUpdate,
   requestTicketAvailability,
@@ -121,6 +123,14 @@ export const useEventCancelledMutation = (
       success: ({ isCancelled }) =>
         isCancelled ? toEventCancelledMessage(event.title) : toEventRestoredMessage(event.title),
     },
+  });
+
+export const useEventPublishedMutation = (): UseMutationResult<void, Error, EventDetails> =>
+  useApiMutation({
+    request: (event: EventDetails, accessToken) =>
+      requestEventPublished(event.eventId, accessToken),
+    changes: ['event'],
+    notice: { success: (event) => toEventPublishedMessage(event.title) },
   });
 
 export const useDeleteEventMutation = (event: EventDetails): UseMutationResult<void, Error, void> =>

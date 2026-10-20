@@ -68,6 +68,7 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
           component={action.component}
           to={action.to}
           params={action.params}
+          search={action.search}
           onClick={action.onClick}
           disabled={action.disabled}
           ariaLabel={action.ariaLabel}

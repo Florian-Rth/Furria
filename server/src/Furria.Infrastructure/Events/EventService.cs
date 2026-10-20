@@ -24,6 +24,21 @@ public sealed class EventService
         "Die Kartenlage lässt sich erst setzen, wenn der Vorverkauf begonnen hat.";
     private const string AlreadyCancelledMessage = "Diese Veranstaltung ist bereits abgesagt.";
     private const string NotCancelledMessage = "Diese Veranstaltung ist nicht abgesagt.";
+    private const string AlreadyPublishedMessage =
+        "Diese Veranstaltung ist bereits veröffentlicht.";
+    private const string CancelledUnpublishableMessage =
+        "Eine abgesagte Veranstaltung wird nicht veröffentlicht.";
+    private const string OverMessage = "Diese Veranstaltung ist schon vorbei.";
+    private const string MissingDetailsLead = "Für die Veröffentlichung fehlen noch: ";
+
+    private static readonly IReadOnlyDictionary<MissingEventDetail, string> DetailLabels =
+        new Dictionary<MissingEventDetail, string>
+        {
+            [MissingEventDetail.Venue] = "Ort",
+            [MissingEventDetail.DoorsOpenAt] = "Einlass",
+            [MissingEventDetail.Description] = "Beschreibung",
+            [MissingEventDetail.Picture] = "Bild",
+        };
 
     private readonly AppDbContext _dbContext;
     private readonly PublicFace _publicFace;
@@ -81,9 +96,16 @@ public sealed class EventService
                     ? row.CalendarEntry.StartsAt <= openEndedCutoff
                     : row.CalendarEntry.EndsAt <= now,
                 row.PictureId,
-                row.Picture == null ? null : row.Picture.RenderedAt
+                row.Picture == null ? null : row.Picture.RenderedAt,
+                row.DoorsOpenAt,
+                row.PriceCents,
+                row.CalendarEntry.VenueId != null,
+                row.CalendarEntry.Description != null && row.CalendarEntry.Description.Trim() != "",
+                row.CreatedAt,
+                row.PublishedAt
             ))
             .ToListAsync(ct);
+        var tallies = await TalliesOfAsync([.. rows.Select(row => row.EventId)], ct);
 
         return
         [
@@ -95,7 +117,8 @@ public sealed class EventService
                         MediaOwner.Event(row.EventId),
                         row.PictureId,
                         row.PictureRenderedAt
-                    )
+                    ),
+                    PlanningOf(PlanningInputsOf(row), tallies.GetValueOrDefault(row.EventId), now)
                 )
             ),
         ];
@@ -134,7 +157,9 @@ public sealed class EventService
                         row.Picture.State,
                         row.Picture.RenderedAt,
                         row.Picture.Crop
-                    )
+                    ),
+                row.CreatedAt,
+                row.PublishedAt
             ))
             .SingleOrDefaultAsync(ct);
 
@@ -142,7 +167,13 @@ public sealed class EventService
             return null;
 
         var stalledIds = await _dbContext.StalledAmongAsync([row.Picture], now, ct);
-        return ToDetails(row, now, EditingOf(row, stalledIds));
+        var tallies = await TalliesOfAsync([row.EventId], ct);
+        var planning = PlanningOf(
+            PlanningInputsOf(row),
+            tallies.GetValueOrDefault(row.EventId),
+            now
+        );
+        return ToDetails(row, now, EditingOf(row, stalledIds), planning);
     }
 
     public async Task<IReadOnlyList<PublicEventSummary>> GetPublicEventsAsync(CancellationToken ct)
@@ -238,6 +269,23 @@ public sealed class EventService
         return Result.Success();
     }
 
+    public async Task<Result> PublishAsync(int eventId, CancellationToken ct)
+    {
+        var entry = await TrackedEventEntryAsync(eventId, ct);
+
+        if (entry is null)
+            return Result.NotFound(UnknownEventMessage);
+
+        var now = _timeProvider.GetUtcNow();
+        if (PublishRefusalOf(entry, now) is { } refusal)
+            return Result.Conflict(refusal);
+
+        entry.Event!.PublishedAt = now;
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+
     public async Task<Result> DeleteAsync(int eventId, CancellationToken ct)
     {
         var entry = await TrackedEventEntryAsync(eventId, ct);
@@ -279,6 +327,47 @@ public sealed class EventService
     }
 
     [Pure]
+    private static string? PublishRefusalOf(CalendarEntry entry, DateTimeOffset now)
+    {
+        var held = entry.Event!;
+
+        if (held.PublishedAt is not null)
+            return AlreadyPublishedMessage;
+
+        if (held.CancelledAt is not null)
+            return CancelledUnpublishableMessage;
+
+        if (IsOver(entry.StartsAt, entry.EndsAt, now))
+            return OverMessage;
+
+        var missing = EventDetailsCheck.MissingBeforePublishingOf(DetailsFactsOf(entry));
+
+        return missing.Count == 0 ? null : MissingDetailsMessage(missing);
+    }
+
+    [Pure]
+    private static EventDetailsFacts DetailsFactsOf(CalendarEntry entry) =>
+        new()
+        {
+            HasVenue = entry.VenueId is not null,
+            HasDoorsOpenAt = entry.Event!.DoorsOpenAt is not null,
+            HasDescription = !string.IsNullOrWhiteSpace(entry.Description),
+            HasPicture = entry.Event.PictureId is not null,
+            IsPublished = entry.Event.PublishedAt is not null,
+        };
+
+    [Pure]
+    private static string MissingDetailsMessage(IReadOnlyList<MissingEventDetail> missing) =>
+        $"{MissingDetailsLead}{string.Join(", ", missing.Select(detail => DetailLabels[detail]))}.";
+
+    [Pure]
+    private static bool IsOver(
+        DateTimeOffset startsAt,
+        DateTimeOffset? endsAt,
+        DateTimeOffset now
+    ) => (endsAt ?? startsAt.AddHours(CalendarDefaults.OpenEndedHours)) <= now;
+
+    [Pure]
     private static string OpenRequestsMessage(int openRequests) =>
         openRequests == 1
             ? "Zu dieser Veranstaltung ist noch 1 Kartenanfrage offen. Erledige sie, bevor du die Veranstaltung löschst."
@@ -288,7 +377,8 @@ public sealed class EventService
     private static EventSummary ToSummary(
         SummaryRow row,
         DateTimeOffset now,
-        PictureDetails? picture
+        PictureDetails? picture,
+        EventPlanning planning
     ) =>
         new()
         {
@@ -306,13 +396,19 @@ public sealed class EventService
             ),
             IsOver = row.IsOver,
             Picture = picture,
+            DoorsOpenAt = row.DoorsOpenAt,
+            PriceCents = row.PriceCents,
+            PublishedAt = row.PublishedAt,
+            CreatedAt = row.CreatedAt,
+            Planning = planning,
         };
 
     [Pure]
     private static EventDetails ToDetails(
         DetailsRow row,
         DateTimeOffset now,
-        PictureEditingDetails? picture
+        PictureEditingDetails? picture,
+        EventPlanning planning
     ) =>
         new()
         {
@@ -338,7 +434,84 @@ public sealed class EventService
             ),
             IsOver = row.IsOver,
             Picture = picture,
+            PublishedAt = row.PublishedAt,
+            CreatedAt = row.CreatedAt,
+            Planning = planning,
         };
+
+    [Pure]
+    private static PlanningInputs PlanningInputsOf(SummaryRow row) =>
+        new(
+            row.StartsAt,
+            row.CreatedAt,
+            row.CancelledAt is not null,
+            row.IsOver,
+            new EventDetailsFacts
+            {
+                HasVenue = row.HasVenue,
+                HasDoorsOpenAt = row.DoorsOpenAt is not null,
+                HasDescription = row.HasDescription,
+                HasPicture = row.PictureId is not null,
+                IsPublished = row.PublishedAt is not null,
+            },
+            row.PriceCents is not null && row.PresaleStartsAt is not null
+        );
+
+    [Pure]
+    private static PlanningInputs PlanningInputsOf(DetailsRow row) =>
+        new(
+            row.StartsAt,
+            row.CreatedAt,
+            row.CancelledAt is not null,
+            row.IsOver,
+            new EventDetailsFacts
+            {
+                HasVenue = row.VenueId is not null,
+                HasDoorsOpenAt = row.DoorsOpenAt is not null,
+                HasDescription = !string.IsNullOrWhiteSpace(row.Description),
+                HasPicture = row.Picture is not null,
+                IsPublished = row.PublishedAt is not null,
+            },
+            row.PriceCents is not null && row.PresaleStartsAt is not null
+        );
+
+    [Pure]
+    private static EventPlanning PlanningOf(
+        PlanningInputs inputs,
+        TallyRow? tally,
+        DateTimeOffset now
+    )
+    {
+        var detailsMissing = EventDetailsCheck.MissingOf(inputs.Details);
+        var facts = new EventReadinessFacts
+        {
+            EventDay = ClubClock.DayOf(inputs.StartsAt),
+            CreatedDay = ClubClock.DayOf(inputs.CreatedAt),
+            IsCancelled = inputs.IsCancelled,
+            IsOver = inputs.IsOver,
+            AreDetailsDone = detailsMissing.Count == 0,
+            AreTicketsSet = inputs.AreTicketsSet,
+            OldestOpenRequestAt = tally?.OldestRequestedAt,
+            HasPublishedAlbum = tally?.PublishedAlbums > 0,
+        };
+
+        return new EventPlanning
+        {
+            DetailsMissing = detailsMissing,
+            TicketRequests = new EventTicketRequestTally
+            {
+                Open = tally?.OpenRequests ?? 0,
+                Cards = tally?.Cards ?? 0,
+                OldestRequestedAt = tally?.OldestRequestedAt,
+            },
+            Review = new EventReviewTally
+            {
+                PublishedAlbums = tally?.PublishedAlbums ?? 0,
+                PublishedNews = tally?.PublishedNews ?? 0,
+            },
+            Readiness = EventSteps.ReadinessOf(facts, now),
+        };
+    }
 
     [Pure]
     private static Expression<Func<Event, PublicEventSummary>> PublicSummaryAt(
@@ -428,6 +601,33 @@ public sealed class EventService
             ? _pictures.EditingOf(MediaOwner.Event(row.EventId), picture, stalledIds)
             : null;
 
+    private async Task<IReadOnlyDictionary<int, TallyRow>> TalliesOfAsync(
+        IReadOnlyList<int> eventIds,
+        CancellationToken ct
+    )
+    {
+        var requests = _dbContext.TicketRequests.AsNoTracking();
+        var albums = _publicFace.Albums;
+        var posts = _publicFace.NewsPosts;
+
+        return await _dbContext
+            .Events.AsNoTracking()
+            .Where(row => eventIds.Contains(row.CalendarEntryId))
+            .Select(row => new TallyRow(
+                row.CalendarEntryId,
+                requests.Count(request => request.EventId == row.CalendarEntryId),
+                requests
+                    .Where(request => request.EventId == row.CalendarEntryId)
+                    .Sum(request => request.TicketCount),
+                requests
+                    .Where(request => request.EventId == row.CalendarEntryId)
+                    .Min(request => (DateTimeOffset?)request.RequestedAt),
+                albums.Count(album => album.CalendarEntryId == row.CalendarEntryId),
+                posts.Count(post => post.EventId == row.CalendarEntryId)
+            ))
+            .ToDictionaryAsync(tally => tally.EventId, ct);
+    }
+
     private Task<CalendarEntry?> TrackedEventEntryAsync(int eventId, CancellationToken ct) =>
         _dbContext
             .CalendarEntries.Include(entry => entry.Event)
@@ -462,7 +662,13 @@ public sealed class EventService
         DateTimeOffset? CancelledAt,
         bool IsOver,
         int? PictureId,
-        DateTimeOffset? PictureRenderedAt
+        DateTimeOffset? PictureRenderedAt,
+        TimeOnly? DoorsOpenAt,
+        int? PriceCents,
+        bool HasVenue,
+        bool HasDescription,
+        DateTimeOffset CreatedAt,
+        DateTimeOffset? PublishedAt
     );
 
     private sealed record DetailsRow(
@@ -481,7 +687,27 @@ public sealed class EventService
         TicketAvailability TicketAvailability,
         DateTimeOffset? CancelledAt,
         bool IsOver,
-        MediaPictureRow? Picture
+        MediaPictureRow? Picture,
+        DateTimeOffset CreatedAt,
+        DateTimeOffset? PublishedAt
+    );
+
+    private sealed record PlanningInputs(
+        DateTimeOffset StartsAt,
+        DateTimeOffset CreatedAt,
+        bool IsCancelled,
+        bool IsOver,
+        EventDetailsFacts Details,
+        bool AreTicketsSet
+    );
+
+    private sealed record TallyRow(
+        int EventId,
+        int OpenRequests,
+        int Cards,
+        DateTimeOffset? OldestRequestedAt,
+        int PublishedAlbums,
+        int PublishedNews
     );
 
     private sealed record VenueStateRow(DateOnly? ArchivedOn);

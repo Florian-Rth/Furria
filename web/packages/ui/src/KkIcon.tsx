@@ -6,6 +6,7 @@ import BrokenImageOutlinedIcon from '@mui/icons-material/BrokenImageOutlined';
 import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
+import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import ChecklistOutlinedIcon from '@mui/icons-material/ChecklistOutlined';
@@ -16,12 +17,15 @@ import ChevronRightIcon from '@mui/icons-material/ChevronRight';
 import CloseIcon from '@mui/icons-material/Close';
 import CloudOffOutlinedIcon from '@mui/icons-material/CloudOffOutlined';
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
+import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import CropOutlinedIcon from '@mui/icons-material/CropOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import Diversity3Icon from '@mui/icons-material/Diversity3';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
+import DoorFrontOutlinedIcon from '@mui/icons-material/DoorFrontOutlined';
 import DragIndicatorIcon from '@mui/icons-material/DragIndicator';
+import EditNoteOutlinedIcon from '@mui/icons-material/EditNoteOutlined';
 import EditOutlinedIcon from '@mui/icons-material/EditOutlined';
 import ErrorOutlineOutlinedIcon from '@mui/icons-material/ErrorOutlineOutlined';
 import EuroOutlinedIcon from '@mui/icons-material/EuroOutlined';
@@ -42,9 +46,11 @@ import HandshakeOutlinedIcon from '@mui/icons-material/HandshakeOutlined';
 import HomeIcon from '@mui/icons-material/Home';
 import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
+import InboxOutlinedIcon from '@mui/icons-material/InboxOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import KeyOutlinedIcon from '@mui/icons-material/KeyOutlined';
+import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -64,12 +70,18 @@ import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import PolicyOutlinedIcon from '@mui/icons-material/PolicyOutlined';
 import QrCode2OutlinedIcon from '@mui/icons-material/QrCode2Outlined';
 import RemoveOutlinedIcon from '@mui/icons-material/RemoveOutlined';
+import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import SensorsOutlinedIcon from '@mui/icons-material/SensorsOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
+import ShortTextOutlinedIcon from '@mui/icons-material/ShortTextOutlined';
+import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
+import TableRestaurantOutlinedIcon from '@mui/icons-material/TableRestaurantOutlined';
+import TheaterComedyOutlinedIcon from '@mui/icons-material/TheaterComedyOutlined';
 import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
 import UndoOutlinedIcon from '@mui/icons-material/UndoOutlined';
+import ViewTimelineOutlinedIcon from '@mui/icons-material/ViewTimelineOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
@@ -153,7 +165,19 @@ export type KkIconName =
   | 'brokenImage'
   | 'lock'
   | 'external'
-  | 'system';
+  | 'system'
+  | 'website'
+  | 'tickets'
+  | 'inbox'
+  | 'factSheet'
+  | 'clock'
+  | 'door'
+  | 'storefront'
+  | 'teaser'
+  | 'tables'
+  | 'campaign'
+  | 'timeline'
+  | 'stage';
 type KkIconSize = 'small' | 'medium' | 'large';
 
 interface KkIconProps {
@@ -245,6 +269,18 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   lock: LockOutlinedIcon,
   external: OpenInNewOutlinedIcon,
   system: MonitorHeartOutlinedIcon,
+  website: LanguageOutlinedIcon,
+  tickets: ConfirmationNumberOutlinedIcon,
+  inbox: InboxOutlinedIcon,
+  factSheet: EditNoteOutlinedIcon,
+  clock: ScheduleOutlinedIcon,
+  door: DoorFrontOutlinedIcon,
+  storefront: StorefrontOutlinedIcon,
+  teaser: ShortTextOutlinedIcon,
+  tables: TableRestaurantOutlinedIcon,
+  campaign: CampaignOutlinedIcon,
+  timeline: ViewTimelineOutlinedIcon,
+  stage: TheaterComedyOutlinedIcon,
 };
 
 export const KkIcon: FC<KkIconProps> = ({ name, size = 'medium', sx }) => {

@@ -2,6 +2,7 @@ using System.Diagnostics.Contracts;
 using Furria.Application.Start;
 using Furria.Core.Club;
 using Furria.Core.Media;
+using Furria.Infrastructure.Events;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Start;
@@ -168,6 +169,7 @@ public sealed partial class StartService
                 entry.EndsAt == null ? entry.StartsAt > openEndedCutoff : entry.EndsAt > now
             )
             .Where(entry => entry.StartsAt < reachEnd)
+            .Where(PublishedEvents.IsListedEntry)
             .OrderBy(entry => entry.StartsAt)
             .ThenBy(entry => entry.Id)
             .Select(StartEntryRows.Projection)

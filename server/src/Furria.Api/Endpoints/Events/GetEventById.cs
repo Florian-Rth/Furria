@@ -56,6 +56,13 @@ public sealed class GetEventById : Endpoint<GetEventByIdRequest, GetEventByIdRes
             Status = details.Status,
             IsOver = details.IsOver,
             Picture = PictureEditingDto.From(details.Picture),
+            PublishedAt = details.PublishedAt,
+            CreatedAt = details.CreatedAt,
+            DetailsMissing = details.Planning.DetailsMissing,
+            TicketRequests = EventTicketRequestsDto.From(details.Planning.TicketRequests),
+            Review = EventReviewDto.From(details.Planning.Review),
+            Steps = [.. details.Planning.Readiness.Steps.Select(EventStepDto.From)],
+            CurrentStep = details.Planning.Readiness.CurrentStep,
         };
 }
 
@@ -108,4 +115,18 @@ public sealed record GetEventByIdResponse
     public required bool IsOver { get; init; }
 
     public required PictureEditingDto? Picture { get; init; }
+
+    public required DateTimeOffset? PublishedAt { get; init; }
+
+    public required DateTimeOffset CreatedAt { get; init; }
+
+    public required IReadOnlyList<MissingEventDetail> DetailsMissing { get; init; }
+
+    public required EventTicketRequestsDto TicketRequests { get; init; }
+
+    public required EventReviewDto Review { get; init; }
+
+    public required IReadOnlyList<EventStepDto> Steps { get; init; }
+
+    public required EventStep? CurrentStep { get; init; }
 }

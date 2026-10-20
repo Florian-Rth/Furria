@@ -20,7 +20,7 @@ public sealed class GetNewsTieCandidatesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_OfferEveryEventAndOnlyAlbumsOnTheWebsite_When_TheWriterTiesThePost()
+    public async Task Should_OfferOnlyPublishedEventsAndAlbumsOnTheWebsite_When_TheWriterTiesThePost()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(Club(), ct);
@@ -69,6 +69,13 @@ public sealed class GetNewsTieCandidatesTests : IClassFixture<ApiTestFixture>
                     club.AddVenue("saal", "Bürgerhaus")
                         .AddEvent("gala", "Prunksitzung", Gala, "saal", endsAt: Gala.AddHours(5))
                         .AddEvent("opening", "Sessionseröffnung", Gala.AddMonths(-3), "saal")
+                        .AddEvent(
+                            "in-preparation",
+                            "Kappenabend",
+                            Gala.AddDays(7),
+                            "saal",
+                            unpublished: true
+                        )
                         .AddCalendarEntry("probe", "Probe", Gala.AddDays(-2))
                 )
                 .Gallery(gallery =>

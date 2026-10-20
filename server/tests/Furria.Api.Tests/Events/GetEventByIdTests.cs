@@ -95,6 +95,48 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_LeaveNoCurrentStep_When_DetailsAndTicketsAreDoneBeforeTheEvening()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildClubAsync(ct);
+                var eventId = ctx.Club.Events.IdOf("first-gala");
+                await EventPictureSteps.UploadAsync(
+                    await ctx.Identity.ClientForAsync("vera", ct),
+                    eventId,
+                    ct
+                );
+
+                var (_, result) = await ReadAsync(ctx, "vera", eventId);
+
+                Assert.Empty(result.DetailsMissing);
+                Assert.Equal(
+                    new EventTicketRequestsDto
+                    {
+                        Open = 1,
+                        Cards = 2,
+                        OldestRequestedAt = Now.AddDays(-1),
+                    },
+                    result.TicketRequests
+                );
+                Assert.Equal(
+                    new EventReviewDto { PublishedAlbums = 0, PublishedNews = 0 },
+                    result.Review
+                );
+                Assert.Equal(
+                    [EventStepState.Done, EventStepState.Done, EventStepState.Waiting],
+                    result.Steps.Select(status => status.State)
+                );
+                Assert.Null(result.CurrentStep);
+            }
+        );
+    }
+
+    [Fact]
     public async Task Should_ReturnThePictureReadyForRecropping_When_TheEventHasOne()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -206,6 +248,14 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
                                 priceCents: PriceCents,
                                 presaleStartsAt: PresaleStarted,
                                 ticketAvailability: TicketAvailability.SoldOut
+                            )
+                            .AddTicketRequest(
+                                "mia-gala",
+                                "first-gala",
+                                "Mia Gast",
+                                "mia@guest.test",
+                                ticketCount: 2,
+                                requestedAt: Now.AddDays(-1)
                             )
                             .AddCalendarEntry("club-meeting", "Vereinssitzung", AtTheMeeting)
                     ),

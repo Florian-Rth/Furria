@@ -1,4 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { EventPage } from '@/features/events';
+import type { FC } from 'react';
+import { EventPage, EventSearchSchema } from '@/features/events';
 
-export const Route = createFileRoute('/_app/events_/$eventId')({ component: EventPage });
+const EventRoute: FC = () => {
+  const { eventId } = Route.useParams();
+
+  return <EventPage eventId={eventId} />;
+};
+
+export const Route = createFileRoute('/_app/events_/$eventId')({
+  validateSearch: EventSearchSchema,
+  component: EventRoute,
+});

@@ -1,5 +1,11 @@
 import type { QueryClient, UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { keepPreviousData, queryOptions, useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  keepPreviousData,
+  queryOptions,
+  useQueries,
+  useQuery,
+  useQueryClient,
+} from '@tanstack/react-query';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { useQueryCacheSnapshot } from '@/lib/api/use-query-cache-snapshot';
@@ -216,4 +222,43 @@ export const useFullAlbumFetch = (): ((albumId: number) => Promise<AlbumDetails>
       queryKey: queryKeys.album(albumId, UNFILTERED),
       queryFn: () => withFreshAccessToken((token) => requestAlbum(albumId, UNFILTERED, token)),
     });
+};
+
+export interface EntryAlbums {
+  albums: AlbumDetails[];
+  isPending: boolean;
+  error: Error | null;
+}
+
+const isSameInstant = (left: string | null, right: string): boolean =>
+  left !== null && new Date(left).getTime() === new Date(right).getTime();
+
+export const useEntryAlbums = (
+  calendarEntryId: number,
+  startsAt: string,
+  isEnabled: boolean,
+): EntryAlbums => {
+  const hub = useQuery({
+    queryKey: queryKeys.galleryHub,
+    queryFn: () => withFreshAccessToken(requestGalleryHub),
+    enabled: isEnabled,
+  });
+  const candidates = (hub.data?.sections ?? [])
+    .flatMap((section) => section.albums)
+    .filter((album) => isSameInstant(album.entryStartsAt, startsAt));
+  const details = useQueries({
+    queries: candidates.map((album) => albumQueryOptions(album.albumId, UNFILTERED)),
+  });
+  const albums = details
+    .map((query) => query.data)
+    .filter(
+      (album): album is AlbumDetails =>
+        album !== undefined && album.calendarEntry?.calendarEntryId === calendarEntryId,
+    );
+
+  return {
+    albums,
+    isPending: (isEnabled && hub.isPending) || details.some((query) => query.isPending),
+    error: hub.error ?? details.find((query) => query.error !== null)?.error ?? null,
+  };
 };

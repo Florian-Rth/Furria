@@ -12,10 +12,9 @@ import { TicketRequestRow } from './TicketRequestRow';
 
 interface TicketRequestsPanelProps {
   requests: readonly TicketRequest[];
-  linksToEvents: boolean;
 }
 
-export const TicketRequestsPanel: FC<TicketRequestsPanelProps> = ({ requests, linksToEvents }) => {
+export const TicketRequestsPanel: FC<TicketRequestsPanelProps> = ({ requests }) => {
   const groups = groupTicketRequests(requests);
   const meta = requests.length === 0 ? undefined : toRequestsTally(requests);
 
@@ -25,7 +24,7 @@ export const TicketRequestsPanel: FC<TicketRequestsPanelProps> = ({ requests, li
     ) : (
       groups.map((group) => (
         <KkPanel key={group.eventId} variant="list">
-          <TicketRequestEventRow group={group} linksToEvent={linksToEvents} />
+          <TicketRequestEventRow group={group} />
           {group.requests.map((request) => (
             <TicketRequestRow key={request.ticketRequestId} request={request} />
           ))}

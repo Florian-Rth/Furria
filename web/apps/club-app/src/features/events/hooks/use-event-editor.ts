@@ -1,21 +1,17 @@
-import type { KkPublishCeremonyRun, KkPublishStamp } from '@furria/ui';
-import { useKkPublishCeremony } from '@furria/ui';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useSignerName } from '@/features/session';
 import { useWriteForm } from '@/features/write';
-import { PUBLISHED_STAMP, websiteAddressOf } from '@/lib/publish-copy';
 import { useCreateEventMutation, useUpdateEventMutation } from '../api';
 import { toEventFormValues, toEventPayload } from '../event-form';
-import type { EventDetails, EventForm, WrittenEvent } from '../schemas';
+import type { EventDetails, EventForm } from '../schemas';
 import { EventFormSchema } from '../schemas';
 import type { StagedEventPictureDesk } from './use-staged-event-picture';
 import { useStagedEventPicture } from './use-staged-event-picture';
 
 const LANDING_KIND = 'event';
+const DETAILS_STEP = { step: 'details' } as const;
 const FIELD_EDIT = { shouldDirty: true, shouldValidate: true } as const;
 const NO_DAY = '';
-const PUBLIC_EVENTS_PATH = '/events/';
 const START_DEPENDENTS: (keyof EventForm)[] = ['doorsOpenAt', 'presaleTime'];
 
 export interface EventEditorControl {
@@ -35,7 +31,6 @@ export interface EventEditorControl {
   isDirty: boolean;
   canSubmit: boolean;
   isSaving: boolean;
-  ceremony: KkPublishCeremonyRun<WrittenEvent>;
   stagedPicture: StagedEventPictureDesk;
   rejection: string | null;
   submit: () => void;
@@ -45,17 +40,7 @@ export const useEventEditor = (event: EventDetails | null): EventEditorControl =
   const [today] = useState(() => new Date());
   const createMutation = useCreateEventMutation();
   const updateMutation = useUpdateEventMutation();
-  const signer = useSignerName();
   const stagedPicture = useStagedEventPicture();
-
-  const stampOf = (written: WrittenEvent, stampedAt: string): KkPublishStamp => ({
-    title: PUBLISHED_STAMP,
-    signer,
-    at: stampedAt,
-    address: websiteAddressOf(`${PUBLIC_EVENTS_PATH}${written.eventId}`),
-  });
-
-  const ceremony = useKkPublishCeremony({ stampOf });
 
   const write = useWriteForm({
     schema: EventFormSchema,
@@ -64,8 +49,7 @@ export const useEventEditor = (event: EventDetails | null): EventEditorControl =
       const payload = toEventPayload(submitted);
 
       return event === null
-        ? ceremony.perform(async () => {
-            const written = await createMutation.mutateAsync(payload);
+        ? createMutation.mutateAsync(payload).then(async (written) => {
             await stagedPicture.sendTo(written.eventId);
 
             return written;
@@ -75,6 +59,7 @@ export const useEventEditor = (event: EventDetails | null): EventEditorControl =
     landing: ({ eventId }) => ({
       to: '/events/$eventId',
       params: { eventId },
+      search: event === null ? undefined : DETAILS_STEP,
       mark: { kind: LANDING_KIND, id: eventId },
     }),
   });
@@ -125,7 +110,6 @@ export const useEventEditor = (event: EventDetails | null): EventEditorControl =
     isDirty: write.isDirty,
     canSubmit: write.canSubmit,
     isSaving: write.isSaving,
-    ceremony,
     stagedPicture,
     rejection: write.rejection,
     submit: write.submit,

@@ -249,6 +249,34 @@ public sealed class GetClubHubCalendarTests : IClassFixture<ApiTestFixture>
         );
     }
 
+    [Fact]
+    public async Task Should_LeaveOutAnEvent_When_ItIsStillInPreparation()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var result = await ReadTheHubAsync(
+                    club =>
+                        club.AddVenue("buergerhaus", "Bürgerhaus")
+                            .AddEvent(
+                                "in-preparation",
+                                "Kappenabend",
+                                Tomorrow,
+                                "buergerhaus",
+                                unpublished: true
+                            )
+                            .AddCalendarEntry("uebermorgen", "Stellprobe", DayAfterTomorrow),
+                    ct
+                );
+
+                Assert.Equal(["Stellprobe"], result.Calendar.Select(entry => entry.Title));
+            }
+        );
+    }
+
     private async Task<GetClubHubResponse> ReadTheHubAsync(
         Action<ClubSeedBuilder> club,
         CancellationToken ct

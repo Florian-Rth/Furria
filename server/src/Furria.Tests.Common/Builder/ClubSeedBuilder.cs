@@ -260,7 +260,8 @@ public sealed class ClubSeedBuilder
         int? priceCents = null,
         DateTimeOffset? presaleStartsAt = null,
         TicketAvailability ticketAvailability = TicketAvailability.Available,
-        DateTimeOffset? cancelledAt = null
+        DateTimeOffset? cancelledAt = null,
+        bool unpublished = false
     )
     {
         _events.Add(
@@ -277,7 +278,8 @@ public sealed class ClubSeedBuilder
                 priceCents,
                 presaleStartsAt,
                 ticketAvailability,
-                cancelledAt
+                cancelledAt,
+                unpublished
             )
         );
         return this;
@@ -420,7 +422,8 @@ public sealed class ClubSeedBuilder
         int? PriceCents,
         DateTimeOffset? PresaleStartsAt,
         TicketAvailability TicketAvailability,
-        DateTimeOffset? CancelledAt
+        DateTimeOffset? CancelledAt,
+        bool Unpublished
     );
 
     internal sealed record TicketRequestIntent(

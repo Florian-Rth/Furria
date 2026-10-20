@@ -83,6 +83,13 @@ export const requestEventCancelled = (
     accessToken,
   });
 
+export const requestEventPublished = (eventId: number, accessToken: string): Promise<void> =>
+  apiFetch(`/api/events/${eventId}/published`, {
+    method: 'PUT',
+    schema: NoContentSchema,
+    accessToken,
+  });
+
 export const requestEventDeletion = (eventId: number, accessToken: string): Promise<void> =>
   apiFetch(`/api/events/${eventId}`, {
     method: 'DELETE',

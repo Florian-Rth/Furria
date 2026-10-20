@@ -497,6 +497,45 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_LeaveOutTheEvent_When_ItIsStillInPreparation()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(
+                    builder =>
+                        builder
+                            .Identity(WholeClub)
+                            .Club(club =>
+                                club.AddVenue("buergerhaus", "Bürgerhaus")
+                                    .AddEvent("gala", Gala, AtTheMeeting, "buergerhaus")
+                                    .AddEvent(
+                                        "in-preparation",
+                                        "Kappenabend",
+                                        AtTheMeeting.AddDays(1),
+                                        "buergerhaus",
+                                        unpublished: true
+                                    )
+                            ),
+                    ct
+                );
+
+                var result = await ReadAsync(
+                    ctx,
+                    "alice",
+                    new GetCalendarRequest { Scope = CalendarScope.Club },
+                    ct
+                );
+
+                Assert.Equal([Gala], TitlesOf(result));
+            }
+        );
+    }
+
+    [Fact]
     public async Task Should_CarryTheEventsPicture_When_AnyMemberReadsTheEventsEntry()
     {
         var ct = TestContext.Current.CancellationToken;

@@ -45,6 +45,15 @@ public sealed class GetEvents : EndpointWithoutRequest<GetEventsResponse>
             Status = listed.Status,
             IsOver = listed.IsOver,
             Picture = PictureDto.From(listed.Picture),
+            PublishedAt = listed.PublishedAt,
+            CreatedAt = listed.CreatedAt,
+            PriceCents = listed.PriceCents,
+            DoorsOpenAt = listed.DoorsOpenAt,
+            DetailsMissing = listed.Planning.DetailsMissing,
+            TicketRequests = EventTicketRequestsDto.From(listed.Planning.TicketRequests),
+            Review = EventReviewDto.From(listed.Planning.Review),
+            Steps = [.. listed.Planning.Readiness.Steps.Select(EventStepDto.From)],
+            CurrentStep = listed.Planning.Readiness.CurrentStep,
         };
 }
 
@@ -72,4 +81,22 @@ public sealed record EventSummaryDto
     public required bool IsOver { get; init; }
 
     public required PictureDto? Picture { get; init; }
+
+    public required DateTimeOffset? PublishedAt { get; init; }
+
+    public required DateTimeOffset CreatedAt { get; init; }
+
+    public required int? PriceCents { get; init; }
+
+    public required TimeOnly? DoorsOpenAt { get; init; }
+
+    public required IReadOnlyList<MissingEventDetail> DetailsMissing { get; init; }
+
+    public required EventTicketRequestsDto TicketRequests { get; init; }
+
+    public required EventReviewDto Review { get; init; }
+
+    public required IReadOnlyList<EventStepDto> Steps { get; init; }
+
+    public required EventStep? CurrentStep { get; init; }
 }

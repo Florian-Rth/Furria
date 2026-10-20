@@ -5,6 +5,7 @@ using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Media;
+using Furria.Core.News;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -19,6 +20,8 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
     private const string LastSessionGala = "Prunksitzung 2026";
     private const string NextSessionOpening = "Sessionseröffnung 2027";
     private const string GuardParty = "Gardefeier";
+    private const string Carnival = "Kappenabend";
+    private const int PriceCents = 2_200;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
 
@@ -237,6 +240,121 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
         );
     }
 
+    [Fact]
+    public async Task Should_LayOutTheStepsOfAnEventInPreparation_When_TheKeyHolderAsks()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildPlanningAsync(ct);
+
+                var (_, result) = await ReadAsync(ctx, "vera", ct);
+
+                var planned = Assert.Single(result.Events, listed => listed.Title == Carnival);
+                Assert.Null(planned.PublishedAt);
+                Assert.Equal(Now, planned.CreatedAt);
+                Assert.Equal(PriceCents, planned.PriceCents);
+                Assert.Null(planned.DoorsOpenAt);
+                Assert.Equal(
+                    [
+                        MissingEventDetail.DoorsOpenAt,
+                        MissingEventDetail.Description,
+                        MissingEventDetail.Picture,
+                        MissingEventDetail.Published,
+                    ],
+                    planned.DetailsMissing
+                );
+                Assert.Equal(
+                    [
+                        new EventStepDto
+                        {
+                            Step = EventStep.Details,
+                            State = EventStepState.Open,
+                            DueOn = new DateOnly(2027, 1, 24),
+                            OpensOn = null,
+                        },
+                        new EventStepDto
+                        {
+                            Step = EventStep.Tickets,
+                            State = EventStepState.Open,
+                            DueOn = new DateOnly(2027, 1, 24),
+                            OpensOn = null,
+                        },
+                        new EventStepDto
+                        {
+                            Step = EventStep.Review,
+                            State = EventStepState.Waiting,
+                            DueOn = new DateOnly(2027, 4, 3),
+                            OpensOn = new DateOnly(2027, 3, 21),
+                        },
+                    ],
+                    planned.Steps
+                );
+                Assert.Equal(EventStep.Details, planned.CurrentStep);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_HoldTheTicketsBack_When_GuestsWaitLongerThanThreeDays()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildPlanningAsync(ct);
+
+                var (_, result) = await ReadAsync(ctx, "vera", ct);
+
+                var gala = Assert.Single(result.Events, listed => listed.Title == FirstGala);
+                Assert.Equal(
+                    new EventTicketRequestsDto
+                    {
+                        Open = 2,
+                        Cards = 5,
+                        OldestRequestedAt = Now.AddDays(-5),
+                    },
+                    gala.TicketRequests
+                );
+                Assert.Equal(
+                    EventStepState.Open,
+                    gala.Steps.Single(status => status.Step == EventStep.Tickets).State
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CountOnlyWhatTheWebsiteShows_When_TheEventIsReviewed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildPlanningAsync(ct);
+
+                var (_, result) = await ReadAsync(ctx, "vera", ct);
+
+                var opening = Assert.Single(result.Events, listed => listed.Title == Opening);
+                Assert.Equal(
+                    new EventReviewDto { PublishedAlbums = 1, PublishedNews = 1 },
+                    opening.Review
+                );
+                Assert.Equal(
+                    EventStepState.Done,
+                    opening.Steps.Single(status => status.Step == EventStep.Review).State
+                );
+            }
+        );
+    }
+
     private static async Task<TestResult<GetEventsResponse>> ReadAsync(
         SeededContext ctx,
         string alias,
@@ -322,6 +440,90 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
                                 visibility: CalendarEntryVisibility.Public,
                                 venueAlias: "buergerhaus"
                             )
+                    ),
+            ct
+        );
+
+    private Task<SeededContext> BuildPlanningAsync(CancellationToken ct) =>
+        _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("vera", "Vera", "Anstalter")
+                            .AddAccount("vera")
+                            .AddMembership("vera-first", "vera", JoinedIn2017)
+                    )
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "veranstaltungen",
+                            "vera-veranstaltungen",
+                            "Veranstaltungen",
+                            "vera",
+                            FurriaPermissions.EventsManage
+                        )
+                    )
+                    .Club(club =>
+                        club.AddVenue("buergerhaus", "Bürgerhaus")
+                            .AddEvent(
+                                "carnival",
+                                Carnival,
+                                new DateTimeOffset(2027, 3, 20, 18, 0, 0, TimeSpan.Zero),
+                                "buergerhaus",
+                                priceCents: PriceCents,
+                                unpublished: true
+                            )
+                            .AddEvent(
+                                "first-gala",
+                                FirstGala,
+                                AtTheFirstGala,
+                                "buergerhaus",
+                                priceCents: PriceCents,
+                                presaleStartsAt: PresaleStarted
+                            )
+                            .AddTicketRequest(
+                                "mia-gala",
+                                "first-gala",
+                                "Mia Gast",
+                                "mia@guest.test",
+                                ticketCount: 2,
+                                requestedAt: Now.AddDays(-5)
+                            )
+                            .AddTicketRequest(
+                                "tom-gala",
+                                "first-gala",
+                                "Tom Gast",
+                                "tom@guest.test",
+                                ticketCount: 3,
+                                requestedAt: Now.AddDays(-1)
+                            )
+                            .AddEvent("opening", Opening, AtTheOpening, "buergerhaus")
+                    )
+                    .Gallery(gallery =>
+                        gallery
+                            .AddAlbum(
+                                "opening-album",
+                                Opening,
+                                calendarEntryAlias: "opening",
+                                publishedAt: Now.AddDays(-30)
+                            )
+                            .AddAlbum(
+                                "opening-outtakes",
+                                "Ausschnitte",
+                                calendarEntryAlias: "opening"
+                            )
+                    )
+                    .News(news =>
+                        news.AddNewsPost(
+                                "opening-report",
+                                title: "Session eröffnet",
+                                teaser: "Der Auftakt.",
+                                text: "Ein langer Abend.",
+                                category: NewsCategory.Session,
+                                eventAlias: "opening",
+                                publishedAt: Now.AddDays(-40)
+                            )
+                            .AddNewsPost("opening-draft", title: "Nachlese", eventAlias: "opening")
                     ),
             ct
         );

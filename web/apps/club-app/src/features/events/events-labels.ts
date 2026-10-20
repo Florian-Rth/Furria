@@ -1,28 +1,13 @@
 import type { KkConfirmFact } from '@furria/ui';
 import { toIsoDayLabel, toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
 import type { TicketAvailabilityKey } from '@/lib/event-copy';
-import {
-  formatPriceCents,
-  TICKET_AVAILABILITY_LABELS,
-  toPresaleStartLabel,
-} from '@/lib/event-copy';
+import { TICKET_AVAILABILITY_LABELS, toPresaleStartLabel } from '@/lib/event-copy';
 import type { EventDetails, EventSummary } from './schemas';
 
-export const EVENTS_LEAD = 'Die Abende des Vereins mit Karten — so, wie die Website sie zeigt.';
-export const EVENTS_PANEL_TITLE = 'Veranstaltungen';
-export const ADD_EVENT_PILL_LABEL = 'Veranstaltung';
-export const ADD_EVENT_ACTION_LABEL = 'Veranstaltung anlegen';
-export const EVENT_EYEBROW = 'Veranstaltung';
+export const EVENT_MANAGE_TITLE = 'Bild, Absage, Löschen';
 
 export const EVENT_SECTION_TITLES = {
-  facts: 'Eckdaten',
   picture: 'Bild',
-  tickets: 'Karten',
-} as const;
-
-export const EVENTS_EMPTY = {
-  title: 'NOCH KEINE VERANSTALTUNG',
-  description: 'Lege den ersten Abend der Session an. Er steht sofort auf der Website.',
 } as const;
 
 export const EVENT_NOT_FOUND = {
@@ -30,26 +15,8 @@ export const EVENT_NOT_FOUND = {
   description: 'Die Veranstaltung wurde gelöscht oder hat nie existiert.',
 } as const;
 
-const OVER_FOLD_LABEL = 'Vorbei';
 const LABEL_SEPARATOR = ' · ';
 const NO_VENUE_LABEL = 'Ohne Ort';
-
-export interface EventsPartition {
-  upcoming: EventSummary[];
-  over: EventSummary[];
-  overLabel: string;
-}
-
-export const partitionEvents = (events: readonly EventSummary[]): EventsPartition => {
-  const upcoming = events.filter((event) => !event.isOver);
-  const over = events.filter((event) => event.isOver);
-
-  return {
-    upcoming,
-    over,
-    overLabel: `${OVER_FOLD_LABEL}${LABEL_SEPARATOR}${over.length}`,
-  };
-};
 
 export interface EventMoment {
   startsAt: string;
@@ -59,19 +26,15 @@ export interface EventMoment {
 export const toEventWhenLabel = (event: EventMoment): string =>
   `${toIsoDayLabel(toLocalIsoDay(event.startsAt))}, ${toTimeSpanLabel(event.startsAt, event.endsAt)}`;
 
-export const toEventRowMeta = (event: EventSummary): string =>
+export const toEventRowMeta = (
+  event: Pick<EventSummary, 'startsAt' | 'endsAt' | 'venueName'>,
+): string =>
   [toTimeSpanLabel(event.startsAt, event.endsAt), event.venueName ?? NO_VENUE_LABEL].join(
     LABEL_SEPARATOR,
   );
 
-export const toEventPlaceLine = (event: EventDetails): string =>
-  [toEventWhenLabel(event), event.venueName ?? NO_VENUE_LABEL].join(LABEL_SEPARATOR);
-
 export const toClockLabel = (clockTime: string | null): string | null =>
   clockTime === null ? null : `${clockTime} Uhr`;
-
-export const toPriceLabel = (priceCents: number | null): string | null =>
-  priceCents === null ? null : formatPriceCents(priceCents);
 
 export type AvailabilityState = 'settable' | 'beforePresale' | 'cancelled';
 
@@ -81,7 +44,7 @@ const SETTABLE_STATUSES: ReadonlySet<EventDetails['status']> = new Set([
   'soldOut',
 ]);
 
-export const toAvailabilityState = (event: EventDetails): AvailabilityState => {
+export const toAvailabilityState = (event: Pick<EventDetails, 'status'>): AvailabilityState => {
   if (event.status === 'cancelled') {
     return 'cancelled';
   }
@@ -111,6 +74,9 @@ export const toPresaleLine = (presaleStartsAt: string | null): string =>
   presaleStartsAt === null ? 'Noch nicht festgelegt' : `Ab ${toPresaleStartLabel(presaleStartsAt)}`;
 
 export const toEventCreatedMessage = (title: string): string =>
+  `„${title}“ ist angelegt und in Vorbereitung.`;
+
+export const toEventPublishedMessage = (title: string): string =>
   `„${title}“ steht jetzt auf der Website.`;
 
 export const toEventSavedMessage = (title: string): string => `„${title}“ ist gespeichert.`;

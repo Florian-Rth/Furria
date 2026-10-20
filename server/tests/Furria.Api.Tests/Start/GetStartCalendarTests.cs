@@ -195,6 +195,48 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_LeaveOutAnEvent_When_ItIsStillInPreparation()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            TuesdayEvening,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(
+                    builder =>
+                        builder
+                            .Identity(identity =>
+                                identity
+                                    .AddPerson("lena", "Lena", "Garde")
+                                    .AddAccount("lena")
+                                    .AddMembership("lena-member", "lena", JoinedIn2015)
+                            )
+                            .Club(club =>
+                                club.AddVenue("buergerhaus", "Bürgerhaus")
+                                    .AddEvent(
+                                        "in-preparation",
+                                        "Kappenabend",
+                                        InBerlin(1, 20, 19, 11),
+                                        "buergerhaus",
+                                        unpublished: true
+                                    )
+                            ),
+                    ct
+                );
+                var client = await ctx.Identity.ClientForAsync("lena", ct);
+
+                var (_, start) = await client.GETAsync<GetStart, GetStartResponse>();
+
+                Assert.DoesNotContain(
+                    EntriesOf(start),
+                    entry => entry.CalendarEntryId == ctx.Club.Events.IdOf("in-preparation")
+                );
+            }
+        );
+    }
+
+    [Fact]
     public async Task Should_LeaveTheEventOut_When_TheEntryIsNoEvent()
     {
         await OnTuesdayEveningAsync(
