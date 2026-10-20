@@ -24,7 +24,6 @@ import type { StartBoard } from './use-start-view';
 const CALENDAR_ROUTE = '/calendar';
 const GROUP_ROUTE = '/groups/$groupId';
 const CALENDAR_LABEL = 'Im Kalender';
-const LIST_VIEW = 'list';
 const COVER_SIZES = '(min-width: 900px) 32rem, 100vw';
 
 const toEntryId = (entry: StartEntry): number => entry.calendarEntryId;
@@ -52,7 +51,7 @@ export const useEntrySheet = (entry: StartEntry, board: StartBoard): EntrySheetV
   const toCalendar = (day: string): KkSheetAction => ({
     label: CALENDAR_LABEL,
     onClick: () => {
-      void navigate({ to: CALENDAR_ROUTE, search: { view: LIST_VIEW, day } });
+      void navigate({ to: CALENDAR_ROUTE, search: { day } });
     },
   });
 

@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { CalendarBoardSearchSchema, CalendarEntryNewScreen } from '@/features/calendar';
+import { CalendarEntryNewScreen, CalendarSearchSchema } from '@/features/calendar';
 import { CALENDAR_ORIGIN, CALENDAR_TITLE, RequireScreenPermission } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 
@@ -16,5 +16,5 @@ const CalendarEntryNewRoute: FC = () => (
 
 export const Route = createFileRoute('/_app/calendar_/new')({
   component: CalendarEntryNewRoute,
-  validateSearch: CalendarBoardSearchSchema,
+  validateSearch: CalendarSearchSchema,
 });

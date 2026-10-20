@@ -891,6 +891,7 @@ const ensureRoles = async (admin: Session): Promise<Map<string, number>> => {
       name: role.name,
       description: role.description,
       icon: role.icon,
+      coin: null,
     });
     await send('PUT', `manage/roles/${lookUp(roleIds, role.name, 'role')}/permissions`, admin, {
       permissionKeys: role.permissionKeys,
