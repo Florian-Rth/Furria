@@ -11,7 +11,9 @@ Two steps run back to back:
 
 1. `src/generate.ts` rasterises the mark from `src/brand-mark.ts` into
    `apps/club-app/assets/` — `icon-only.png`, `icon-background.png`, `icon-foreground.png`,
-   `splash.png` and `splash-dark.png`.
+   `splash.png` and `splash-dark.png` — plus the web app icons in `apps/club-app/public/`
+   (`app-icon-192.png`, `app-icon-512.png`, `app-icon-maskable-512.png`, `apple-touch-icon.png`)
+   that the installed home-screen app uses.
 2. `capacitor-assets` fans those sources out into `apps/club-app/android/app/src/main/res/`.
 
 Both the sources and the generated Android resources are committed, so a plain checkout builds

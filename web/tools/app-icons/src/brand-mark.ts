@@ -16,6 +16,7 @@ const BROOM_HANDLE_LENGTH = 66;
 const BROOM_ROTATIONS = [-122, 122];
 const BRISTLE_TEXTURE_LINES = 8;
 const ADAPTIVE_SAFE_ZONE_SCALE = 0.86;
+const MASKABLE_SAFE_ZONE_SCALE = 0.74;
 const SPLASH_TILE_SIZE = 900;
 
 const bristleTexture = Array.from({ length: BRISTLE_TEXTURE_LINES }, (_line, index) => {
@@ -58,6 +59,18 @@ export const iconBackgroundSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBo
 
 export const iconForegroundSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${TILE_VIEW_BOX} ${TILE_VIEW_BOX}">
   <g transform="translate(${tileCentre} ${tileCentre}) scale(${ADAPTIVE_SAFE_ZONE_SCALE})">${crossedBrooms}</g>
+</svg>`;
+
+export const iconRoundedSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${TILE_VIEW_BOX} ${TILE_VIEW_BOX}">
+  <defs>${tileGradient}</defs>
+  <rect width="${TILE_VIEW_BOX}" height="${TILE_VIEW_BOX}" rx="${TILE_VIEW_BOX * SQUIRCLE_RADIUS_RATIO}" fill="url(#tile)" />
+  <g transform="translate(${tileCentre} ${tileCentre})">${crossedBrooms}</g>
+</svg>`;
+
+export const iconMaskableSvg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${TILE_VIEW_BOX} ${TILE_VIEW_BOX}">
+  <defs>${tileGradient}</defs>
+  <rect width="${TILE_VIEW_BOX}" height="${TILE_VIEW_BOX}" fill="url(#tile)" />
+  <g transform="translate(${tileCentre} ${tileCentre}) scale(${MASKABLE_SAFE_ZONE_SCALE})">${crossedBrooms}</g>
 </svg>`;
 
 const splashTileOffset = (SPLASH_VIEW_BOX - SPLASH_TILE_SIZE) / 2;
