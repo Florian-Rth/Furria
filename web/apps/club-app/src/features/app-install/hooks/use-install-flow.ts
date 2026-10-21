@@ -1,6 +1,6 @@
 import { useState, useSyncExternalStore } from 'react';
 import type { InstallTarget } from '../install-browser';
-import { INSTALL_TARGET } from '../install-environment';
+import { readInstallTarget } from '../install-environment';
 import type { InstallGuide } from '../install-guide';
 import { installGuideOf } from '../install-guide';
 import { readInstallConfirmed, rememberInstallConfirmed } from '../install-memory';
@@ -30,12 +30,13 @@ export const useInstallFlow = (): InstallFlow => {
   const prompt = useSyncExternalStore(subscribeToInstall, readInstallPrompt, noPrompt);
   const hasInstalledNow = useSyncExternalStore(subscribeToInstall, readAppInstalled, notInstalled);
   const isKnownInstalled = useInstalledElsewhere();
+  const [target] = useState(readInstallTarget);
   const [wasConfirmed] = useState(readInstallConfirmed);
   const [promptOutcome, setPromptOutcome] = useState<PromptOutcome>('none');
   const [hasConfirmedNow, setHasConfirmedNow] = useState(false);
   const [isGuideReopened, setIsGuideReopened] = useState(false);
 
-  const guide = installGuideOf(INSTALL_TARGET, prompt !== null);
+  const guide = installGuideOf(target, prompt !== null);
   const phase = installPhaseOf({
     promptOutcome,
     hasInstalledNow,
@@ -66,5 +67,5 @@ export const useInstallFlow = (): InstallFlow => {
     setHasConfirmedNow(false);
   };
 
-  return { target: INSTALL_TARGET, guide, phase, install, confirmDone, reopenGuide };
+  return { target, guide, phase, install, confirmDone, reopenGuide };
 };

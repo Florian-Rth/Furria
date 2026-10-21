@@ -7,4 +7,4 @@ const readBrowserTraits = (): BrowserTraits => ({
   mobileHint: navigator.userAgentData?.mobile ?? null,
 });
 
-export const INSTALL_TARGET: InstallTarget = installTargetOf(readBrowserTraits());
+export const readInstallTarget = (): InstallTarget => installTargetOf(readBrowserTraits());

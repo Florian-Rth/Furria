@@ -1,8 +1,8 @@
 import { Capacitor } from '@capacitor/core';
 import { useLocation } from '@tanstack/react-router';
-import { useSyncExternalStore } from 'react';
+import { useState, useSyncExternalStore } from 'react';
 import { readBrowserMode, subscribeToBrowserMode } from '../browser-mode-store';
-import { INSTALL_TARGET } from '../install-environment';
+import { readInstallTarget } from '../install-environment';
 import { isInstallGateClosed } from '../install-gate';
 import { readStandalone, subscribeToStandalone } from '../standalone-store';
 
@@ -15,17 +15,18 @@ export interface InstallGate {
 
 export const useInstallGate = (): InstallGate => {
   const { pathname } = useLocation();
+  const [{ device }] = useState(readInstallTarget);
   const isStandalone = useSyncExternalStore(subscribeToStandalone, readStandalone, assumeOff);
   const isBrowserMode = useSyncExternalStore(subscribeToBrowserMode, readBrowserMode, assumeOff);
   const isClosed = isInstallGateClosed({
-    device: INSTALL_TARGET.device,
+    device,
     isNative: Capacitor.isNativePlatform(),
     isStandalone,
     isBrowserMode,
     pathname,
   });
 
-  const showsBrowserModeTag = isBrowserMode && !isStandalone && INSTALL_TARGET.device !== 'desktop';
+  const showsBrowserModeTag = isBrowserMode && !isStandalone && device !== 'desktop';
 
   return { isClosed, showsBrowserModeTag };
 };
