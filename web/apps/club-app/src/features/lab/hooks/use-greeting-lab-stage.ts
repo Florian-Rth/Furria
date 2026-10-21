@@ -1,10 +1,12 @@
 import type { KkScreenActionBar, KkSummaryFact } from '@furria/ui';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import type { StartLook } from '@/features/start';
 import type { LabGreeting } from '../lab-greetings';
 import {
   LAB_GREETINGS,
   labFactsOf,
+  labLookOf,
   labViewOf,
   NEXT_LABEL,
   nextLabGreetingOf,
@@ -15,6 +17,7 @@ export interface GreetingLabStage {
   take: string;
   facts: KkSummaryFact[];
   action: KkScreenActionBar;
+  look: StartLook;
 }
 
 export const useGreetingLabStage = (greeting: LabGreeting): GreetingLabStage => {
@@ -35,6 +38,7 @@ export const useGreetingLabStage = (greeting: LabGreeting): GreetingLabStage => 
   return {
     take: `${greeting.slug}:${takes}`,
     facts: labFactsOf(greeting, labViewOf(greeting)),
+    look: labLookOf(greeting),
     action: {
       primary: { label: NEXT_LABEL, onSelect: advance },
       secondary: { label: REPLAY_LABEL, onSelect: replay },

@@ -13,6 +13,7 @@ export const START_CALENDAR_SHEET = 'start-calendar';
 export const START_ANNOUNCEMENTS_SHEET = 'start-announcements';
 export const START_MINE_SHEET = 'start-mine';
 export const START_GROUPS_SHEET = 'start-groups';
+export const START_OWED_SHEET = 'start-owed';
 
 export type StartSheet =
   | { kind: 'entry'; calendarEntryId: number }
@@ -22,6 +23,7 @@ export type StartSheet =
   | { kind: 'office'; boardOfficeId: number }
   | { kind: 'mine' }
   | { kind: 'groups' }
+  | { kind: 'owed' }
   | { kind: 'foreign' };
 
 const FIXED_SHEETS: Readonly<Record<string, StartSheet>> = {
@@ -29,6 +31,7 @@ const FIXED_SHEETS: Readonly<Record<string, StartSheet>> = {
   [START_ANNOUNCEMENTS_SHEET]: { kind: 'announcements', announcementId: null },
   [START_MINE_SHEET]: { kind: 'mine' },
   [START_GROUPS_SHEET]: { kind: 'groups' },
+  [START_OWED_SHEET]: { kind: 'owed' },
 };
 
 const FOREIGN: StartSheet = { kind: 'foreign' };
@@ -92,7 +95,7 @@ const opensOn = (sheet: StartSheet, start: Start): boolean => {
   if (sheet.kind === 'entry') {
     return entriesOf(start).some((entry) => entry.calendarEntryId === sheet.calendarEntryId);
   }
-  if (sheet.kind === 'calendar') {
+  if (sheet.kind === 'calendar' || sheet.kind === 'owed') {
     return entriesOf(start).length > 0;
   }
   if (sheet.kind === 'announcements') {

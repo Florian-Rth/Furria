@@ -1,16 +1,20 @@
 import { KkPageWatermark } from '@furria/ui';
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import { NotAffiliatedState } from '@/features/session';
-import { useStartView } from '../hooks/use-start-view';
+import type { StartView } from '../hooks/use-start-view';
 import { StartError } from './StartError';
-import { StartPanels } from './StartPanels';
 import { StartSkeleton } from './StartSkeleton';
+import { StartTiles } from './StartTiles';
 
-export const StartBody: FC = () => {
-  const view = useStartView();
+interface StartBodyProps {
+  view: StartView;
+  focusedDay: string | null;
+  strip: ReactNode;
+}
 
+export const StartBody: FC<StartBodyProps> = ({ view, focusedDay, strip }) => {
   if (view.screen === 'board') {
-    return <StartPanels board={view.board} />;
+    return <StartTiles board={view.board} focusedDay={focusedDay} strip={strip} />;
   }
   if (view.screen === 'error') {
     return <StartError message={view.message} onRetry={view.retry} retrying={view.retrying} />;

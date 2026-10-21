@@ -240,7 +240,24 @@ const anniversaryPhrase =
       : [value(String(years)), since, plain(', '), named(name), plain('!')];
   };
 
-const lapClosingLine = (sessions: number): string => `${sessions} Sessionen. Gross - Furria!`;
+export interface LapClosing {
+  sessions: number;
+  withCall: boolean;
+}
+
+const CALLING_MOMENTS: ReadonlySet<GreetingAct['moment']> = new Set([
+  'carnivalCall',
+  'womensCarnivalDay',
+  'roseMonday',
+]);
+
+export const lapClosingOf = (act: GreetingAct): LapClosing | null =>
+  act.lapClose === null
+    ? null
+    : { sessions: act.lapClose, withCall: !CALLING_MOMENTS.has(act.moment) };
+
+const lapClosingLine = ({ sessions, withCall }: LapClosing): string =>
+  withCall ? `${sessions} Sessionen. Gross - Furria!` : `${sessions} Sessionen.`;
 
 const fixed =
   (text: string): Phrase =>
@@ -318,10 +335,11 @@ export const toGreetingCopy = (act: GreetingAct, firstName: string): GreetingCop
   const name = usableName(firstName);
   const composition = compositionOf(act, name);
   const title = choose(composition.title, name);
+  const lap = lapClosingOf(act);
 
   return {
     parts: withValuesGlued(title.parts),
-    line: act.lapClose === null ? composition.line : lapClosingLine(act.lapClose),
+    line: lap === null ? composition.line : lapClosingLine(lap),
     nameForm: title.nameForm,
     deck: deckOf(act),
   };

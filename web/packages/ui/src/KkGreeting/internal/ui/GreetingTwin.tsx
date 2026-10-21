@@ -1,6 +1,7 @@
 import Box from '@mui/material/Box';
 import type { MotionValue } from 'motion/react';
 import type { FC } from 'react';
+import type { FlapGlyphVariant } from '../../../internal/flap/FlapGlyph';
 import type { TwinBoard } from '../logic/greeting-twin';
 import { GreetingTwinCell } from './GreetingTwinCell';
 
@@ -14,15 +15,16 @@ const TWIN_LAYER = {
 interface GreetingTwinProps {
   twin: TwinBoard | null;
   clock: MotionValue<number>;
+  glyph: FlapGlyphVariant;
 }
 
-export const GreetingTwin: FC<GreetingTwinProps> = ({ twin, clock }) => {
+export const GreetingTwin: FC<GreetingTwinProps> = ({ twin, clock, glyph }) => {
   if (twin === null) {
     return null;
   }
 
   const cells = twin.cells.map((cell) => (
-    <GreetingTwinCell key={cell.key} cell={cell} tone={twin.tone} clock={clock} />
+    <GreetingTwinCell key={cell.key} cell={cell} tone={twin.tone} clock={clock} glyph={glyph} />
   ));
 
   return (

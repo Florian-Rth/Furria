@@ -618,16 +618,25 @@ _Avoid_: settings (it is the club's record, not an app's configuration)
 **Start**:
 The club app's hub for *me, now* — the one hub that varies per viewer, and the default first
 destination ([ADR-0010](docs/adr/0010-club-app-is-a-set-of-scope-hubs.md)). Built in L2
-(`plan/launch/l2-start-hub.md`): a split-flap **greeting** that says where her season stands in
-her own terms („40 Tage bis zu deiner 13. Session, Lena.") and a column of **panels, one per kind**
-— her dates, the Aushänge new to her, what is new on her own record, her groups' jubilees, and
-club work — each one fact line per item, detail in sheets. Which panels exist, their order and
-their caps are decided by the server per viewer and moment; an empty panel is absent, never
-zero. Nothing on Start is dismissed by hand: every item ends by itself — the one thing Start honours from
-elsewhere is a to-do **marked seen** where its work is done (ruled 2026-10-06, L3). A **frozen visit**: after
-her first touch nothing on Start is added, removed or reordered — it only changes state in place;
-device memory may only quiet, never add (ruled 2026-10-02, L2).
-_UI copy_: Start (nav, the first default destination since L3); panels KALENDER · AUSHÄNGE · DU · GRUPPEN · ZU ERLEDIGEN;
+(`plan/launch/l2-start-hub.md`), reworked 2026-10. A member's Start opens with her **greeting**: a
+split-flap headline that says where her season stands in her own terms („Tage bis zu deiner 13.
+Session, Lena.") with its number as one big flap number beside it — days to go, the countdown to
+11:11, the session day, her age on her birthday, her years on her join day, a star when there is
+no number — and one line of facts (member since, her functions, a round join anniversary, a closed
+lap of sessions). It flips in full on every visit. Below: her **week** (seven days and „später",
+one mark per date; a day opens the calendar on that day) and **one tile per kind** — her dates, the
+Aushänge new to her, what is new on her own record, her groups' jubilees, the gallery, club work —
+each one fact line per item, detail in sheets. Answers she still owes show as one ring on the dates
+tile and are given together in one sheet. Tiles are frosted panes over a poster that follows the
+season (run-up to the 11.11., the 11.11., the hall season, the hot days, Aschermittwoch, the off
+season, evening, gold on her birthday); shaking the phone fills it with confetti. Which tiles
+exist, their order and their caps are decided by the server per viewer and moment; an empty tile
+is absent, never zero. A managing login's Start is a titled to-do overview instead. Nothing on
+Start is dismissed by hand: every item ends by itself — the one thing Start honours from
+elsewhere is a to-do **marked seen** where its work is done (ruled 2026-10-06, L3). A **frozen
+visit**: after her first touch nothing on Start is added, removed or reordered — it only changes
+state in place; device memory may only quiet, never add (ruled 2026-10-02, L2).
+_UI copy_: Start (nav, the first default destination since L3); tiles KALENDER · AUSHÄNGE · DU · GRUPPEN · GALERIE · ZU ERLEDIGEN; *Deine offenen Antworten*;
 Zusage · Vielleicht · Absage, always in this order
 _Avoid_: dashboard, feed, inbox, „Termin", „Programm"
 

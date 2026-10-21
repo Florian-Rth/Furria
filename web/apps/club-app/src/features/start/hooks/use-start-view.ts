@@ -54,11 +54,7 @@ export const useStartView = (): StartView => {
   useReshapeRefetch(query.data?.reshapeAt ?? null, refetch);
   useStraySheet(start);
 
-  const screen = startScreenOf({
-    start,
-    failed: errorMessage !== null,
-    skeletonDue,
-  });
+  const screen = startScreenOf({ start, failed: errorMessage !== null, skeletonDue });
 
   if (screen.kind === 'board') {
     return {

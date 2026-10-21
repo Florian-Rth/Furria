@@ -882,7 +882,7 @@ const ensureRoles = async (admin: Session): Promise<Map<string, number>> => {
       const created = await postJson(
         'manage/roles',
         admin,
-        { name: role.name, description: role.description, icon: role.icon },
+        { name: role.name, description: role.description, coin: { icon: role.icon, tone: 'iris' } },
         CreatedRoleSchema,
       );
       roleIds.set(role.name, created.roleId);

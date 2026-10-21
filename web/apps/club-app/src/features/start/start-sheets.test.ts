@@ -77,6 +77,7 @@ describe('parseStartSheet', () => {
   it.each<{ sheetId: string | null; expected: object | null }>([
     { sheetId: null, expected: null },
     { sheetId: 'start-calendar', expected: { kind: 'calendar' } },
+    { sheetId: 'start-owed', expected: { kind: 'owed' } },
     { sheetId: 'start-announcements', expected: { kind: 'announcements', announcementId: null } },
     { sheetId: 'start-announcements-12', expected: { kind: 'announcements', announcementId: 12 } },
     { sheetId: 'entry-811', expected: { kind: 'entry', calendarEntryId: 811 } },
@@ -94,6 +95,7 @@ describe('isStrayStartSheet', () => {
     { sheetId: 'entry-811', expected: false },
     { sheetId: 'entry-999', expected: true },
     { sheetId: 'start-calendar', expected: false },
+    { sheetId: 'start-owed', expected: false },
     { sheetId: 'start-announcements', expected: false },
     { sheetId: 'start-announcements-12', expected: false },
     { sheetId: 'start-announcements-13', expected: true },
@@ -105,6 +107,10 @@ describe('isStrayStartSheet', () => {
     { sheetId: 'venue-2', expected: true },
   ])('treats $sheetId as stray: $expected', ({ sheetId, expected }) => {
     expect(isStrayStartSheet(sheetId, board)).toBe(expected);
+  });
+
+  it('drops the owed answers sheet once the calendar is gone', () => {
+    expect(isStrayStartSheet('start-owed', start([]))).toBe(true);
   });
 });
 

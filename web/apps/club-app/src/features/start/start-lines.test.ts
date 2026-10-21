@@ -5,7 +5,6 @@ import {
   isRoundYears,
   joinDayOf,
   pastDayKindOf,
-  toAnnouncementLineState,
   toCalendarTick,
   toEntryLineState,
   toEntryMeta,
@@ -180,20 +179,5 @@ describe('toEntryLineState', () => {
     { running: false, dimmed: false, expected: 'plain' },
   ])('is $expected when running $running and dimmed $dimmed', ({ running, dimmed, expected }) => {
     expect(toEntryLineState(running, dimmed)).toBe(expected);
-  });
-});
-
-describe('toAnnouncementLineState', () => {
-  it.each([
-    {
-      label: 'she read them and a refetch left them out',
-      read: true,
-      dimmed: true,
-      expected: 'read',
-    },
-    { label: 'a refetch left out an unread one', read: false, dimmed: true, expected: 'dimmed' },
-    { label: 'it is new and still there', read: false, dimmed: false, expected: 'plain' },
-  ])('is $expected when $label', ({ read, dimmed, expected }) => {
-    expect(toAnnouncementLineState(read, dimmed)).toBe(expected);
   });
 });

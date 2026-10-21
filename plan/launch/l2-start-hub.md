@@ -87,6 +87,26 @@ the viewer and the moment; nothing is ever shown as zero, teased or stubbed.
 - `web/tools/screenshot`: `seed-start.ts` (personas Lena, Frank, Sabine, Kevin, Gerd, Jana),
   `--reduced-motion`, `--text-scale`, `--filmstrip`.
 
+### 2026-10 rework (member Start)
+Chosen in the lab (three Start variants → three looks → three poster variants → three header
+variants), then promoted into `features/start` and the lab drafts deleted. Rulings:
+- **Member Start only** — the managing login keeps its title header and to-do counts.
+- **The greeting flip stays and plays in full every visit** (flips + confetti); it now sits in a
+  compact head: one big split-flap number (days, countdown with live seconds, session day, age,
+  years; ✶ when the sentence has no number) spanning the full head height beside the headline
+  and the facts line (seit …, functions, milestone badge, lap ring). Pure split: `greeting/head-split.ts`.
+- **No header handover on Start** — `headerKind="banner"` keeps the head in place.
+- **Glass + poster**: tiles, week strip and head are frosted panes over a halftone poster that
+  follows the season (`start-season.ts` → run-up, 11.11., hall, hot days, Aschermittwoch, off
+  season, evening, birthday gold); a poster closes the page on the phone. Entrance prints in
+  once; any input settles everything at once; reduced motion → still frame.
+- Body: week strip (day tap → calendar sheet on that day), one tile per panel kind in a mosaic,
+  owed answers as a ring on the calendar tile → batch sheet `start-owed`.
+- **Shake confetti**: shaking the phone fills the screen with confetti that lands on the panes —
+  ladder 5 / 8 / 12 / 16 / 140 pieces per shake within 20 s. Device motion needs HTTPS and, on
+  iOS, a permission tap (on the big number). `?globe=sim` simulates it in dev builds only.
+- Copy fix: on the call days the lap-closing line no longer repeats „Gross - Furria!".
+
 ---
 
 ## Accepted risks

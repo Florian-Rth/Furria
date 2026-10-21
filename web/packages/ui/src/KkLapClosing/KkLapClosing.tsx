@@ -7,7 +7,7 @@ import { KkAvatarKit } from '../KkAvatar/internal/KkAvatarKit';
 import type { KkSx } from '../kk-sx';
 import { useLapClosing } from './internal/use-lap-closing';
 
-type KkLapClosingSize = 'header' | 'portrait';
+type KkLapClosingSize = 'large' | 'header' | 'portrait';
 
 interface KkLapClosingProps {
   initials: string;
