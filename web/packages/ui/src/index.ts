@@ -63,6 +63,36 @@ export { KkBrandStage } from './KkBrandStage/KkBrandStage';
 export { KkBroomMark } from './KkBroomMark';
 export type { KkButtonTone } from './KkButton';
 export { KkButton } from './KkButton';
+export type { KkCalendarLineGroup } from './KkCalendarAgenda/internal/ui/KkCalendarAgendaLine';
+export type { KkCalendarTimeTone } from './KkCalendarAgenda/internal/ui/KkCalendarAgendaTime';
+export { KkCalendarAgenda } from './KkCalendarAgenda/KkCalendarAgenda';
+export { KkCalendarDesk } from './KkCalendarDesk/KkCalendarDesk';
+export { KkCalendarDetail } from './KkCalendarDetail/KkCalendarDetail';
+export {
+  hoursAxisOf,
+  hoursMinuteOf,
+  placeHourBlocks,
+} from './KkCalendarHours/internal/logic/calendar-hours-geometry';
+export type {
+  KkCalendarHoursAxis,
+  KkCalendarHoursBadge,
+  KkCalendarHoursBlockData,
+  KkCalendarHoursDayData,
+  KkCalendarHoursPlacement,
+  KkCalendarHoursSpan,
+  KkCalendarHoursTint,
+} from './KkCalendarHours/internal/logic/calendar-hours-types';
+export { KkCalendarHours } from './KkCalendarHours/KkCalendarHours';
+export { KkCalendarMonth } from './KkCalendarMonth/KkCalendarMonth';
+export type { KkCalendarHeadUnder } from './KkCalendarStrip/calendar-sticky';
+export { KK_CALENDAR_HEAD_TOP } from './KkCalendarStrip/calendar-sticky';
+export type {
+  KkCalendarDayData,
+  KkCalendarPull,
+  KkCalendarStripMode,
+  KkCalendarTravel,
+} from './KkCalendarStrip/calendar-strip-types';
+export { KkCalendarStrip } from './KkCalendarStrip/KkCalendarStrip';
 export { KkCaptionField } from './KkCaptionField';
 export { KkCard } from './KkCard/KkCard';
 export { KkCheckboxRow } from './KkCheckboxRow';
@@ -98,6 +128,7 @@ export { KkDiagonalStamp } from './KkDiagonalStamp';
 export { KkDropZone } from './KkDropZone';
 export { KkDueChip } from './KkDueChip/KkDueChip';
 export { KkEmptyState } from './KkEmptyState';
+export type { KkEntryKindGlyphKind } from './KkEntryKindGlyph';
 export { KkErrorState } from './KkErrorState';
 export { KkEventTie } from './KkEventTie';
 export { KkExposureSweep } from './KkExposureSweep';
@@ -185,13 +216,6 @@ export type { KkMentionAnchor, KkMentionSection } from './KkMentionPicker/KkMent
 export { KkMentionPicker, kkMentionOptionId } from './KkMentionPicker/KkMentionPicker';
 export type { KkMetaTone } from './KkMeta';
 export { KkMeta } from './KkMeta';
-export type {
-  KkMonthBoardBarData,
-  KkMonthBoardDayData,
-  KkMonthBoardDayMark,
-  KkMonthBoardTravel,
-} from './KkMonthBoard/internal/logic/month-board-types';
-export { KkMonthBoard } from './KkMonthBoard/KkMonthBoard';
 export { logoSourceOf } from './KkMottoStage/internal/logic/logo-source';
 export type { KkMottoStageState } from './KkMottoStage/internal/motto-stage-state';
 export { KkMottoStage } from './KkMottoStage/KkMottoStage';

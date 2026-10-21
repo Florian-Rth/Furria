@@ -1,5 +1,5 @@
 import { useSearch } from '@tanstack/react-router';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useWriteForm } from '@/features/write';
 import { toIsoDay } from '@/lib/day';
@@ -56,6 +56,7 @@ export const useCalendarEntryEditor = ({
   const { day } = useSearch({ strict: false });
   const createMutation = useCreateCalendarEntryMutation();
   const updateMutation = useUpdateCalendarEntryMutation();
+  const landedDay = useRef(day ?? toIsoDay(today));
 
   const write = useWriteForm({
     schema: CalendarEntryFormSchema,
@@ -63,12 +64,15 @@ export const useCalendarEntryEditor = ({
     mutate: (submitted) => {
       const payload = toEntryPayload(submitted);
 
+      landedDay.current = submitted.startDay;
+
       return entry === null
         ? createMutation.mutateAsync({ payload })
         : updateMutation.mutateAsync({ calendarEntryId: entry.calendarEntryId, payload });
     },
     landing: ({ calendarEntryId }) => ({
       to: '/calendar',
+      search: { day: landedDay.current },
       mark: { kind: LANDING_KIND, id: calendarEntryId },
     }),
   });
