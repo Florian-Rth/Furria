@@ -33,6 +33,40 @@ public sealed class GetRoleByIdTests : IClassFixture<ApiTestFixture>
         );
 
     [Fact]
+    public async Task Should_CarryTheImplyingOfficesWithSeatedCount_When_ARunningSeatImpliesTheRole()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var today = _fixture.Today;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddPerson("ilka", "Ilka", "Reineke"))
+                    .Roles(roles => roles.AddRole("vorstand", "Vorstand"))
+                    .Club(club =>
+                        club.AddBoardOffice("beisitz", "Beisitz", impliedRoleAlias: "vorstand")
+                            .AddBoardOffice(
+                                "alt",
+                                "Altamt",
+                                sortOrder: 2,
+                                impliedRoleAlias: "vorstand",
+                                archivedOn: ArchivedIn2021
+                            )
+                            .AddBoardSeat("ilka-beisitz", "beisitz", "ilka", today.AddDays(-3))
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await ReadRoleAsync(client, ctx.Roles.Roles.IdOf("vorstand"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var office = Assert.Single(result.ImpliedBy);
+        Assert.Equal(ctx.Club.BoardOffices.IdOf("beisitz"), office.BoardOfficeId);
+        Assert.Equal("Beisitz", office.Name);
+        Assert.Equal(1, office.SeatedCount);
+    }
+
+    [Fact]
     public async Task Should_SplitRunningAndPastHolder_When_ARoleIsRead()
     {
         var ct = TestContext.Current.CancellationToken;

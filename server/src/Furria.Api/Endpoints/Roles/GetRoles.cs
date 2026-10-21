@@ -41,6 +41,7 @@ public sealed class GetRoles : EndpointWithoutRequest<GetRolesResponse>
             ArchivedOn = role.ArchivedOn,
             PermissionKeys = role.PermissionKeys,
             Holders = [.. role.Holders.Select(ToDto)],
+            ImpliedBy = [.. role.ImpliedBy.Select(RoleImpliedByOfficeDto.From)],
         };
 
     private static PersonRefDto ToDto(RoleHolderReference holder) =>
@@ -74,6 +75,25 @@ public sealed record RoleSummaryDto
     public required IReadOnlyList<string> PermissionKeys { get; init; }
 
     public required IReadOnlyList<PersonRefDto> Holders { get; init; }
+
+    public required IReadOnlyList<RoleImpliedByOfficeDto> ImpliedBy { get; init; }
+}
+
+public sealed record RoleImpliedByOfficeDto
+{
+    public required int BoardOfficeId { get; init; }
+
+    public required string Name { get; init; }
+
+    public required int SeatedCount { get; init; }
+
+    public static RoleImpliedByOfficeDto From(RoleImpliedByOffice office) =>
+        new()
+        {
+            BoardOfficeId = office.BoardOfficeId,
+            Name = office.Name,
+            SeatedCount = office.SeatedCount,
+        };
 }
 
 public sealed record PersonRefDto
