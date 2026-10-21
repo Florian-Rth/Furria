@@ -68,3 +68,7 @@ export const toMeErrorMessage = (error: Error | null): string | null =>
   toQueryErrorMessage(error, ME_ERROR_MESSAGES);
 
 export const SHELL_PROFILE_LABEL = 'Mein Profil';
+
+export const APP_UPDATE_MESSAGE = 'Neue Version da';
+export const APP_UPDATE_DETAIL = 'Einmal neu laden, dann ist alles aktuell.';
+export const APP_UPDATE_ACTION = 'Neu laden';

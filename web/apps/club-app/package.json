@@ -42,6 +42,7 @@
     "react-dom": "catalog:",
     "react-hook-form": "catalog:",
     "tus-js-client": "catalog:",
+    "workbox-window": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
@@ -58,6 +59,8 @@
     "babel-plugin-react-compiler": "catalog:",
     "typescript": "catalog:",
     "vite": "catalog:",
-    "vitest": "catalog:"
+    "vite-plugin-pwa": "catalog:",
+    "vitest": "catalog:",
+    "workbox-build": "catalog:"
   }
 }

@@ -1,3 +1,4 @@
+import AddBoxOutlinedIcon from '@mui/icons-material/AddBoxOutlined';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import AlternateEmailOutlinedIcon from '@mui/icons-material/AlternateEmailOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
@@ -48,7 +49,9 @@ import HomeOutlinedIcon from '@mui/icons-material/HomeOutlined';
 import ImageOutlinedIcon from '@mui/icons-material/ImageOutlined';
 import InboxOutlinedIcon from '@mui/icons-material/InboxOutlined';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
+import InstallMobileOutlinedIcon from '@mui/icons-material/InstallMobileOutlined';
 import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
+import IosShareIcon from '@mui/icons-material/IosShare';
 import KeyOutlinedIcon from '@mui/icons-material/KeyOutlined';
 import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined';
@@ -58,9 +61,11 @@ import MailOutlinedIcon from '@mui/icons-material/MailOutlined';
 import MenuIcon from '@mui/icons-material/Menu';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
 import NewspaperOutlinedIcon from '@mui/icons-material/NewspaperOutlined';
 import NotesOutlinedIcon from '@mui/icons-material/NotesOutlined';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
+import OpenInBrowserOutlinedIcon from '@mui/icons-material/OpenInBrowserOutlined';
 import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
@@ -177,7 +182,12 @@ export type KkIconName =
   | 'tables'
   | 'campaign'
   | 'timeline'
-  | 'stage';
+  | 'stage'
+  | 'share'
+  | 'menuVertical'
+  | 'addToHome'
+  | 'installApp'
+  | 'openInBrowser';
 type KkIconSize = 'small' | 'medium' | 'large';
 
 interface KkIconProps {
@@ -196,6 +206,11 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   home: HomeIcon,
   logout: LogoutIcon,
   menu: MenuIcon,
+  menuVertical: MoreVertIcon,
+  share: IosShareIcon,
+  addToHome: AddBoxOutlinedIcon,
+  installApp: InstallMobileOutlinedIcon,
+  openInBrowser: OpenInBrowserOutlinedIcon,
   close: CloseIcon,
   visibility: VisibilityIcon,
   visibilityOff: VisibilityOffIcon,
