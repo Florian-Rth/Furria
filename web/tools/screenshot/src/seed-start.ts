@@ -882,7 +882,7 @@ const ensureRoles = async (admin: Session): Promise<Map<string, number>> => {
       const created = await postJson(
         'manage/roles',
         admin,
-        { name: role.name, description: role.description, icon: role.icon },
+        { name: role.name, description: role.description, coin: { icon: role.icon, tone: 'iris' } },
         CreatedRoleSchema,
       );
       roleIds.set(role.name, created.roleId);
@@ -890,7 +890,7 @@ const ensureRoles = async (admin: Session): Promise<Map<string, number>> => {
     await send('PUT', `manage/roles/${lookUp(roleIds, role.name, 'role')}`, admin, {
       name: role.name,
       description: role.description,
-      icon: role.icon,
+      coin: { icon: role.icon, tone: 'iris' },
     });
     await send('PUT', `manage/roles/${lookUp(roleIds, role.name, 'role')}/permissions`, admin, {
       permissionKeys: role.permissionKeys,

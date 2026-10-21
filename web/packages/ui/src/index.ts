@@ -46,6 +46,7 @@ export { KkAlbumTie } from './KkAlbumTie';
 export { KkAlert } from './KkAlert';
 export type { KkAnswer, KkAnswerChoiceLabels } from './KkAnswerChoice';
 export { KkAnswerChoice } from './KkAnswerChoice';
+export { KkAnswerRow } from './KkAnswerRow';
 export type { KkAvatarSize } from './KkAvatar/KkAvatar';
 export { KkAvatar } from './KkAvatar/KkAvatar';
 export { KkAvatarStack } from './KkAvatarStack';
@@ -74,6 +75,26 @@ export { KkChipScroller } from './KkChipScroller';
 export { KkClubIconGlyph } from './KkClubIconGlyph';
 export { KkClubIconPicker } from './KkClubIconPicker/KkClubIconPicker';
 export { KkConfettiBurst } from './KkConfettiBurst';
+export type { KkGlobeFeed } from './KkConfettiGlobe/globe-feed';
+export { createKkGlobeFeed } from './KkConfettiGlobe/globe-feed';
+export type { KkShakeSample, KkShakeState } from './KkConfettiGlobe/globe-shake';
+export {
+  KK_SHAKE_REST,
+  senseShake,
+  shakeForceOf,
+  simulateShake,
+} from './KkConfettiGlobe/globe-shake';
+export type { KkGravity, KkMotionSign } from './KkConfettiGlobe/globe-tilt';
+export {
+  calibrateMotionSign,
+  easeGravity,
+  globeGravityOf,
+  KK_UPRIGHT,
+  motionGravity,
+  orientationGravity,
+  toScreenGravity,
+} from './KkConfettiGlobe/globe-tilt';
+export { KkConfettiGlobe } from './KkConfettiGlobe/KkConfettiGlobe';
 export { KkConfettiRain } from './KkConfettiRain';
 export type { KkConfirmFact } from './KkConfirmDialog';
 export { KkConfirmDialog } from './KkConfirmDialog';
@@ -81,6 +102,7 @@ export { KkConsequenceNote } from './KkConsequenceNote';
 export type { KkContactStripFrame } from './KkContactStrip';
 export { KkContactStrip } from './KkContactStrip';
 export { KkCountdownFuse } from './KkCountdownFuse/KkCountdownFuse';
+export { KkCountHead } from './KkCountHead/KkCountHead';
 export type { KkCoverThumbShape, KkCoverThumbSize } from './KkCoverThumb/KkCoverThumb';
 export { KkCoverThumb } from './KkCoverThumb/KkCoverThumb';
 export type { KkCropFrameLabels, KkCropGuide } from './KkCropFrame/KkCropFrame';
@@ -132,6 +154,7 @@ export type { KkGreaseMarkKind } from './KkGreaseMark';
 export { KkGreaseMark } from './KkGreaseMark';
 export type { KkGreetingPart, KkGreetingPartRole } from './KkGreeting/internal/logic/flap-cells';
 export type { KkGreetingPlay, KkGreetingTempo } from './KkGreeting/internal/logic/flap-schedule';
+export type { KkGreetingBeat } from './KkGreeting/internal/logic/greeting-context';
 export { KkGreeting } from './KkGreeting/KkGreeting';
 export { KkGreetingSkeleton } from './KkGreeting/KkGreetingSkeleton';
 export { KkGroupCard } from './KkGroupCard/KkGroupCard';
@@ -246,6 +269,8 @@ export { KkPanelStack } from './KkPanelStack';
 export { KkPersonRow } from './KkPersonRow';
 export type { KkPhotoFit, KkPhotoSize } from './KkPhoto';
 export { KkPhoto } from './KkPhoto';
+export type { KkPosterPhase } from './KkPosterBackdrop/internal/logic/poster-composition';
+export { KkPosterBackdrop } from './KkPosterBackdrop/KkPosterBackdrop';
 export type {
   KkPressLineTone,
   KkPressMoreItem,
@@ -350,6 +375,12 @@ export { KkSlotRow } from './KkSlotRow';
 export { KkSlotStrip } from './KkSlotStrip/KkSlotStrip';
 export { useKkPaneOpen } from './KkSplitLayout/internal/logic/split-layout-sheet-context';
 export { KkSplitLayout } from './KkSplitLayout/KkSplitLayout';
+export type { KkStartTileReach } from './KkStartTile/internal/reach';
+export type { KkStartTileCoinTone } from './KkStartTile/internal/ui/KkStartTileCoin';
+export type { KkStartTileCover } from './KkStartTile/internal/ui/KkStartTileCovers';
+export type { KkStartTileMarkKind } from './KkStartTile/internal/ui/KkStartTileMark';
+export type { KkStartTileWhenTone } from './KkStartTile/internal/when-tone';
+export { KkStartTile } from './KkStartTile/KkStartTile';
 export { KkStateBadge } from './KkStateBadge/KkStateBadge';
 export { KkStateCard } from './KkStateCard/KkStateCard';
 export type { KkStateGridColumn } from './KkStateGrid/internal/layout/KkStateGridRoot';
@@ -394,6 +425,9 @@ export type {
   KkViewerVideo,
 } from './KkViewer/viewer-types';
 export { KkVisuallyHidden } from './KkVisuallyHidden';
+export type { KkWeekStripDayTone } from './KkWeekStrip/internal/ui/KkWeekStripDay';
+export type { KkWeekStripMarkState } from './KkWeekStrip/internal/ui/KkWeekStripMark';
+export { KkWeekStrip } from './KkWeekStrip/KkWeekStrip';
 export { KkWriteScreen } from './KkWriteScreen/KkWriteScreen';
 export { KK_LANDING_ATTRIBUTE } from './kk-landing';
 export type { KkLinkSearch, KkLinkSearchValues } from './kk-link-search';

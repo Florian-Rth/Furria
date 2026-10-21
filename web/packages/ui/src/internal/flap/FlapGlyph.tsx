@@ -6,7 +6,7 @@ import { redInk } from '../red-ink';
 import { applyScheme, schemeInk } from '../scheme-paint';
 import { toneRecipes } from '../tone';
 
-export type FlapGlyphVariant = 'bar' | 'h1' | 'caption';
+export type FlapGlyphVariant = 'bar' | 'h1' | 'h3' | 'caption';
 export type FlapGlyphTone = 'ink' | 'muted' | 'accent' | 'inverse' | 'gold' | 'onGold';
 
 const { light, dark } = kkTokens.color;
@@ -24,6 +24,12 @@ const glyphFaces: Record<FlapGlyphVariant, CSSObject> = {
   bar: { typography: 'h4', letterSpacing: tracking.display, lineHeight: 1.2 },
   h1: {
     typography: 'h1',
+    letterSpacing: tracking.display,
+    lineHeight: 1.1,
+    textTransform: 'uppercase',
+  },
+  h3: {
+    typography: 'h3',
     letterSpacing: tracking.display,
     lineHeight: 1.1,
     textTransform: 'uppercase',

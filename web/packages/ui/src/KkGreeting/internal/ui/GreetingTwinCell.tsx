@@ -1,6 +1,7 @@
 import type { MotionValue } from 'motion/react';
 import { motion } from 'motion/react';
 import type { CSSProperties, FC } from 'react';
+import type { FlapGlyphVariant } from '../../../internal/flap/FlapGlyph';
 import { FlapGlyph } from '../../../internal/flap/FlapGlyph';
 import { FlapLeaf } from '../../../internal/flap/FlapLeaf';
 import { FlapShade } from '../../../internal/flap/FlapShade';
@@ -18,9 +19,10 @@ interface GreetingTwinCellProps {
   cell: TwinCell;
   tone: FlapTileTone;
   clock: MotionValue<number>;
+  glyph: FlapGlyphVariant;
 }
 
-export const GreetingTwinCell: FC<GreetingTwinCellProps> = ({ cell, tone, clock }) => {
+export const GreetingTwinCell: FC<GreetingTwinCellProps> = ({ cell, tone, clock, glyph }) => {
   const flap = useFlapLeaf(clock, trackPoseOf(cell.track));
   const faces = useTwinFaces(clock, cell.track, cell.faces);
   const tileInk = tone === 'gold' ? 'onGold' : 'inverse';
@@ -33,22 +35,22 @@ export const GreetingTwinCell: FC<GreetingTwinCellProps> = ({ cell, tone, clock 
   };
 
   const fromGlyph = (
-    <FlapGlyph variant="h1" tone={cell.glyph}>
+    <FlapGlyph variant={glyph} tone={cell.glyph}>
       <motion.span>{faces.fromFace}</motion.span>
     </FlapGlyph>
   );
   const fromOnTile = (
-    <FlapGlyph variant="h1" tone={tileInk}>
+    <FlapGlyph variant={glyph} tone={tileInk}>
       <motion.span>{faces.fromFace}</motion.span>
     </FlapGlyph>
   );
   const toGlyph = (
-    <FlapGlyph variant="h1" tone={cell.glyph}>
+    <FlapGlyph variant={glyph} tone={cell.glyph}>
       <motion.span>{faces.toFace}</motion.span>
     </FlapGlyph>
   );
   const toOnTile = (
-    <FlapGlyph variant="h1" tone={tileInk}>
+    <FlapGlyph variant={glyph} tone={tileInk}>
       <motion.span>{faces.toFace}</motion.span>
     </FlapGlyph>
   );

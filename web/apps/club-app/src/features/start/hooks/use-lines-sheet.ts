@@ -1,6 +1,6 @@
+import type { StartLineRow } from '../start-rows';
+import { toGroupRows, toMineRows } from '../start-rows';
 import { groupMomentsOf, mineOf, START_GROUPS_SHEET, START_MINE_SHEET } from '../start-sheets';
-import type { StartLineRow } from './use-line-panels';
-import { toGroupRows, toMineRows } from './use-line-panels';
 import type { StartBoard } from './use-start-view';
 
 export type LinesSheetKind = 'mine' | 'groups';

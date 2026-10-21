@@ -1,4 +1,6 @@
 import type { FC } from 'react';
+import type { FlapGlyphVariant } from '../../../internal/flap/FlapGlyph';
+import type { KkScreenHeaderTitleSize } from '../../../KkScreenHeader/internal/ui/KkScreenHeaderTitle';
 import { KkScreenHeader } from '../../../KkScreenHeader/KkScreenHeader';
 import { SHOWN_CUE } from '../logic/greeting-cues';
 import type { GreetingBoardProps } from '../logic/use-greeting-board';
@@ -6,7 +8,16 @@ import { useGreetingBoard } from '../logic/use-greeting-board';
 import { GreetingInkCell } from './GreetingInkCell';
 import { GreetingTwin } from './GreetingTwin';
 
-export const KkGreetingHeadline: FC<GreetingBoardProps> = (props) => {
+const TWIN_GLYPHS: Record<KkScreenHeaderTitleSize, FlapGlyphVariant> = {
+  page: 'h1',
+  compact: 'h3',
+};
+
+interface KkGreetingHeadlineProps extends GreetingBoardProps {
+  size?: KkScreenHeaderTitleSize;
+}
+
+export const KkGreetingHeadline: FC<KkGreetingHeadlineProps> = ({ size = 'page', ...props }) => {
   const board = useGreetingBoard(props);
   const ink = board.cells.map((cell, index) => (
     <GreetingInkCell
@@ -20,8 +31,8 @@ export const KkGreetingHeadline: FC<GreetingBoardProps> = (props) => {
 
   return (
     <>
-      <KkScreenHeader.Title>{ink}</KkScreenHeader.Title>
-      <GreetingTwin twin={board.twin} clock={board.clock} />
+      <KkScreenHeader.Title size={size}>{ink}</KkScreenHeader.Title>
+      <GreetingTwin twin={board.twin} clock={board.clock} glyph={TWIN_GLYPHS[size]} />
     </>
   );
 };

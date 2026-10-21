@@ -8,7 +8,7 @@ import { applyScheme } from '../scheme-paint';
 import type { FlapTileFit } from './flap-tile-bounds';
 import { flapHingeShiftOf, flapTileBoundsOf } from './flap-tile-bounds';
 
-export type FlapTileTone = 'ink' | 'gold';
+export type FlapTileTone = 'ink' | 'gold' | 'deep';
 
 const { light, dark } = kkTokens.color;
 const { material } = kkTokens.shell;
@@ -47,6 +47,7 @@ const boardScheme = (
 const tileFills: Record<FlapTileTone, [string, string]> = {
   ink: [light.ink, dark.ink],
   gold: [light.gold, dark.gold],
+  deep: [light.ink, dark.darkroom],
 };
 
 const tilePaintOf =

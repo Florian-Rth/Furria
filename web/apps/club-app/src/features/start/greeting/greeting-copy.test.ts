@@ -3,6 +3,7 @@ import type { GreetingAct, SeasonClause } from './greeting-act';
 import type { GreetingCopy, GreetingNameForm, GreetingPart } from './greeting-copy';
 import {
   GREETING_MAX_LENGTH,
+  lapClosingOf,
   toGreetingCopy,
   toGreetingText,
   withValuesGlued,
@@ -316,5 +317,41 @@ describe('the greeting budget at worst-case inputs', () => {
 
   it.each(texts)('keeps "%s" within the budget', (text) => {
     expect(text.length).toBeLessThanOrEqual(GREETING_MAX_LENGTH);
+  });
+});
+
+describe('lapClosingOf', () => {
+  it('leaves an act without a closed lap alone', () => {
+    expect(
+      lapClosingOf({ ...STAGE, moment: 'carnivalCall', clause: null, ordinal: 33 }),
+    ).toBeNull();
+  });
+
+  it.each<{ moment: PlainMoment; withCall: boolean }>([
+    { moment: 'carnivalCall', withCall: false },
+    { moment: 'womensCarnivalDay', withCall: false },
+    { moment: 'roseMonday', withCall: false },
+    { moment: 'carnivalTuesday', withCall: true },
+    { moment: 'ashWednesday', withCall: true },
+  ])(
+    'repeats the call on $moment only when the headline lacks it: $withCall',
+    ({ moment, withCall }) => {
+      expect(lapClosingOf({ ...STAGE, moment, clause: null, ordinal: 33, lapClose: 33 })).toEqual({
+        sessions: 33,
+        withCall,
+      });
+    },
+  );
+
+  it('calls on a daily greeting', () => {
+    expect(
+      lapClosingOf({
+        ...STAGE,
+        moment: 'daily',
+        clause: { kind: 'sessionDay', day: 12 },
+        ordinal: 22,
+        lapClose: 22,
+      })?.withCall,
+    ).toBe(true);
   });
 });

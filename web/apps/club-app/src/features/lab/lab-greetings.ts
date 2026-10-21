@@ -1,9 +1,20 @@
 import type { KkIconName, KkSummaryFact } from '@furria/ui';
-import type { GreetingViewer } from '@/features/start/greeting/greeting-act';
-import { greetingActAt } from '@/features/start/greeting/greeting-act';
-import { toGreetingCopy, toGreetingText } from '@/features/start/greeting/greeting-copy';
-import type { GreetingHolder, GreetingView } from '@/features/start/greeting/greeting-view';
-import { toGreetingView } from '@/features/start/greeting/greeting-view';
+import type {
+  GreetingAct,
+  GreetingHolder,
+  GreetingView,
+  GreetingViewer,
+  StartLook,
+  StartMine,
+} from '@/features/start';
+import {
+  greetingActAt,
+  isRoundYears,
+  startSeasonAt,
+  toGreetingCopy,
+  toGreetingText,
+  toGreetingView,
+} from '@/features/start';
 import type { MembershipState } from '@/lib/api/schemas';
 import { relevantSessionYear } from '@/lib/club';
 import { toAvatarHonours } from '@/lib/honours';
@@ -56,6 +67,7 @@ const ORDINAL = 12;
 const BIRTH_DATE = '1994-06-02';
 const MEMBER_SINCE = '2015-09-01';
 const APP_SINCE = '2026-09-01';
+const ISO_DAY_LENGTH = 10;
 
 const BANKS: readonly { bank: LabGreetingBank; title: string; icon: KkIconName }[] = [
   { bank: 'season', title: 'Saison', icon: 'calendar' },
@@ -270,6 +282,37 @@ export const labViewOf = (greeting: LabGreeting): GreetingView =>
     follows: false,
     holder: greeting.holder,
   });
+
+export const labMilestoneOf = (act: GreetingAct, at: string): StartMine | null => {
+  if (act.moment !== 'joinAnniversary' || !isRoundYears(act.years)) {
+    return null;
+  }
+
+  const day = at.slice(0, ISO_DAY_LENGTH);
+
+  return {
+    kind: 'milestone',
+    subjectId: null,
+    on: day,
+    until: day,
+    name: null,
+    groupTone: null,
+    function: null,
+    changedBy: null,
+    sessionStartYear: null,
+    years: act.years,
+    permissionKeys: null,
+  };
+};
+
+export const labLookOf = (greeting: LabGreeting): StartLook => {
+  const moment = new Date(greeting.at);
+
+  return {
+    ...startSeasonAt(moment),
+    foil: greetingActAt(moment, greeting.viewer).moment === 'birthday',
+  };
+};
 
 export const labTileOf = (view: Pick<GreetingView, 'festive' | 'burst'>): LabGreetingTile =>
   view.festive || view.burst ? 'gold' : 'ink';

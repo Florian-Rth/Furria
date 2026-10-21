@@ -1,9 +1,9 @@
-import { KkFactRow, KkPanel, KkScreen } from '@furria/ui';
+import { KkFactRow, KkPanel, KkPosterBackdrop, KkScreen } from '@furria/ui';
 import type { FC } from 'react';
 import { useGreetingLabStage } from '../hooks/use-greeting-lab-stage';
 import type { LabGreeting } from '../lab-greetings';
 import { LAB_ORIGIN } from '../lab-greetings';
-import { GreetingLabBoard } from './GreetingLabBoard';
+import { GreetingLabHead } from './GreetingLabHead';
 
 interface GreetingLabPageProps {
   greeting: LabGreeting;
@@ -11,21 +11,30 @@ interface GreetingLabPageProps {
 
 export const GreetingLabPage: FC<GreetingLabPageProps> = ({ greeting }) => {
   const stage = useGreetingLabStage(greeting);
-  const board = <GreetingLabBoard key={stage.take} greeting={greeting} />;
+  const { look } = stage;
+  const head = <GreetingLabHead key={stage.take} greeting={greeting} />;
   const facts = stage.facts.map((fact) => (
     <KkFactRow key={fact.label} title={fact.label} span={fact.value} />
   ));
 
   return (
-    <KkScreen
-      kind="detail"
-      title={greeting.title}
-      origin={LAB_ORIGIN}
-      header={board}
-      handover="confetti"
-      action={stage.action}
+    <KkPosterBackdrop
+      key={stage.take}
+      phase={look.phase}
+      runUp={look.runUp}
+      evening={look.evening}
+      foil={look.foil}
     >
-      <KkPanel>{facts}</KkPanel>
-    </KkScreen>
+      <KkScreen
+        kind="detail"
+        title={greeting.title}
+        origin={LAB_ORIGIN}
+        header={head}
+        handover="confetti"
+        action={stage.action}
+      >
+        <KkPanel>{facts}</KkPanel>
+      </KkScreen>
+    </KkPosterBackdrop>
   );
 };

@@ -3,6 +3,12 @@ import { createContext, useContext } from 'react';
 import type { FlapSchedule, KkGreetingPlay } from './flap-schedule';
 import type { GreetingPhase } from './greeting-cues';
 
+export interface KkGreetingBeat {
+  phase: GreetingPhase;
+  clock: MotionValue<number>;
+  festive: boolean;
+}
+
 export interface GreetingStage {
   play: KkGreetingPlay;
   festive: boolean;

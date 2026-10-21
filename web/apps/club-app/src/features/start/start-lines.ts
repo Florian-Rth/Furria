@@ -402,11 +402,3 @@ export const toEntryLineState = (running: boolean, dimmed: boolean): KkDenseLine
 
   return running ? 'live' : 'plain';
 };
-
-export const toAnnouncementLineState = (read: boolean, dimmed: boolean): KkDenseLineState => {
-  if (read) {
-    return 'read';
-  }
-
-  return dimmed ? 'dimmed' : 'plain';
-};
