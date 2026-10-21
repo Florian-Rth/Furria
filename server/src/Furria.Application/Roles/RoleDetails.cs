@@ -19,4 +19,6 @@ public sealed record RoleDetails
     public required IReadOnlyList<RoleHolder> Holders { get; init; }
 
     public required IReadOnlyList<RoleHolder> PastHolders { get; init; }
+
+    public required IReadOnlyList<RoleImpliedByOffice> ImpliedBy { get; init; }
 }

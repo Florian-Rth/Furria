@@ -64,6 +64,36 @@ export { KkBrandStage } from './KkBrandStage/KkBrandStage';
 export { KkBroomMark } from './KkBroomMark';
 export type { KkButtonTone } from './KkButton';
 export { KkButton } from './KkButton';
+export type { KkCalendarLineGroup } from './KkCalendarAgenda/internal/ui/KkCalendarAgendaLine';
+export type { KkCalendarTimeTone } from './KkCalendarAgenda/internal/ui/KkCalendarAgendaTime';
+export { KkCalendarAgenda } from './KkCalendarAgenda/KkCalendarAgenda';
+export { KkCalendarDesk } from './KkCalendarDesk/KkCalendarDesk';
+export { KkCalendarDetail } from './KkCalendarDetail/KkCalendarDetail';
+export {
+  hoursAxisOf,
+  hoursMinuteOf,
+  placeHourBlocks,
+} from './KkCalendarHours/internal/logic/calendar-hours-geometry';
+export type {
+  KkCalendarHoursAxis,
+  KkCalendarHoursBadge,
+  KkCalendarHoursBlockData,
+  KkCalendarHoursDayData,
+  KkCalendarHoursPlacement,
+  KkCalendarHoursSpan,
+  KkCalendarHoursTint,
+} from './KkCalendarHours/internal/logic/calendar-hours-types';
+export { KkCalendarHours } from './KkCalendarHours/KkCalendarHours';
+export { KkCalendarMonth } from './KkCalendarMonth/KkCalendarMonth';
+export type { KkCalendarHeadUnder } from './KkCalendarStrip/calendar-sticky';
+export { KK_CALENDAR_HEAD_TOP } from './KkCalendarStrip/calendar-sticky';
+export type {
+  KkCalendarDayData,
+  KkCalendarPull,
+  KkCalendarStripMode,
+  KkCalendarTravel,
+} from './KkCalendarStrip/calendar-strip-types';
+export { KkCalendarStrip } from './KkCalendarStrip/KkCalendarStrip';
 export { KkCaptionField } from './KkCaptionField';
 export { KkCard } from './KkCard/KkCard';
 export { KkCheckboxRow } from './KkCheckboxRow';
@@ -120,10 +150,12 @@ export { KkDiagonalStamp } from './KkDiagonalStamp';
 export { KkDropZone } from './KkDropZone';
 export { KkDueChip } from './KkDueChip/KkDueChip';
 export { KkEmptyState } from './KkEmptyState';
+export type { KkEntryKindGlyphKind } from './KkEntryKindGlyph';
 export { KkErrorState } from './KkErrorState';
 export { KkEventTie } from './KkEventTie';
 export { KkExposureSweep } from './KkExposureSweep';
 export { KkEyebrow } from './KkEyebrow';
+export { KkFactLine } from './KkFactLine';
 export { KkFactRow } from './KkFactRow';
 export { KkFactStrip } from './KkFactStrip/KkFactStrip';
 export { KkFieldRow } from './KkFieldRow';
@@ -208,13 +240,6 @@ export type { KkMentionAnchor, KkMentionSection } from './KkMentionPicker/KkMent
 export { KkMentionPicker, kkMentionOptionId } from './KkMentionPicker/KkMentionPicker';
 export type { KkMetaTone } from './KkMeta';
 export { KkMeta } from './KkMeta';
-export type {
-  KkMonthBoardBarData,
-  KkMonthBoardDayData,
-  KkMonthBoardDayMark,
-  KkMonthBoardTravel,
-} from './KkMonthBoard/internal/logic/month-board-types';
-export { KkMonthBoard } from './KkMonthBoard/KkMonthBoard';
 export { logoSourceOf } from './KkMottoStage/internal/logic/logo-source';
 export type { KkMottoStageState } from './KkMottoStage/internal/motto-stage-state';
 export { KkMottoStage } from './KkMottoStage/KkMottoStage';
@@ -258,6 +283,9 @@ export type {
 export { KkNoticeProvider, useKkNotice } from './KkNotice/KkNotice';
 export type { KkNumberStepLabels } from './KkNumberField';
 export { KkNumberField } from './KkNumberField';
+export { KkOfficeHead } from './KkOfficeHead';
+export type { KkOfficeMarkState } from './KkOfficeMark';
+export { KkOfficeMark } from './KkOfficeMark';
 export type { KkPageSketchDevice, KkSketchBlock, KkSketchBlockKind } from './KkPageSketch';
 export { KkPageSketch } from './KkPageSketch';
 export { KkPageWatermark } from './KkPageWatermark';
@@ -306,6 +334,7 @@ export type {
 } from './KkPublishCeremony/use-publish-ceremony';
 export { useKkPublishCeremony } from './KkPublishCeremony/use-publish-ceremony';
 export { KkQrCode } from './KkQrCode';
+export { KkQuietFold } from './KkQuietFold';
 export { KkRadioGroup } from './KkRadioGroup/KkRadioGroup';
 export type { KkRankBar } from './KkRankBars';
 export { KkRankBars } from './KkRankBars';
@@ -319,12 +348,18 @@ export { KkRegisterMark } from './KkRegisterMark';
 export { KkRegisterRow } from './KkRegisterRow';
 export { KkReservedSlot } from './KkReservedSlot';
 export { KkRetryAlert } from './KkRetryAlert';
+export type { KkRoleMarkCoin, KkRoleMarkState } from './KkRoleMark';
+export { KkRoleMark } from './KkRoleMark';
+export { KkRoster } from './KkRoster/KkRoster';
 export { KkRule } from './KkRule';
 export type { KkScreenHeaderTitleTransform } from './KkScreenHeader/internal/ui/KkScreenHeaderTitle';
 export { KkScreenHeader } from './KkScreenHeader/KkScreenHeader';
 export { KkScreenHeaderSkeleton } from './KkScreenHeader/KkScreenHeaderSkeleton';
 export { KkSeal } from './KkSeal';
 export { KkSearchField } from './KkSearchField';
+export type { KkSeatTone } from './KkSeatLine';
+export { KkSeatLine } from './KkSeatLine';
+export { KkSeatList } from './KkSeatList';
 export { KkSection } from './KkSection/KkSection';
 export { KkSectionHeader } from './KkSectionHeader/KkSectionHeader';
 export type { KkSelectOption } from './KkSelectField';
@@ -394,11 +429,18 @@ export { KkStatRow } from './KkStatRow/KkStatRow';
 export type { KkStepLaterItem } from './KkStepList/internal/ui/KkStepListLater';
 export { KkStepList } from './KkStepList/KkStepList';
 export { KkStepPane } from './KkStepPane/KkStepPane';
+export type { KkStickyFootSurface } from './KkStickyFoot';
+export { KkStickyFoot } from './KkStickyFoot';
+export { KkSuccession } from './KkSuccession';
 export type { KkSummaryFact } from './KkSummaryRow';
 export { KkSummaryRow } from './KkSummaryRow';
 export { KkSwitchRow } from './KkSwitchRow';
+export { KkTallyStrip } from './KkTallyStrip/KkTallyStrip';
 export type { KkTeleprinterLevel } from './KkTeleprinter/internal/teleprinter-paint';
 export { KkTeleprinter } from './KkTeleprinter/KkTeleprinter';
+export { KkTenureChain } from './KkTenureChain';
+export type { KkTenureState } from './KkTenureChainRow';
+export { KkTenureChainRow } from './KkTenureChainRow';
 export { KkText } from './KkText';
 export { KkTextArea } from './KkTextArea';
 export { KkTextField } from './KkTextField';
@@ -428,6 +470,7 @@ export { KkVisuallyHidden } from './KkVisuallyHidden';
 export type { KkWeekStripDayTone } from './KkWeekStrip/internal/ui/KkWeekStripDay';
 export type { KkWeekStripMarkState } from './KkWeekStrip/internal/ui/KkWeekStripMark';
 export { KkWeekStrip } from './KkWeekStrip/KkWeekStrip';
+export { KkWorkQueue } from './KkWorkQueue/KkWorkQueue';
 export { KkWriteScreen } from './KkWriteScreen/KkWriteScreen';
 export { KK_LANDING_ATTRIBUTE } from './kk-landing';
 export type { KkLinkSearch, KkLinkSearchValues } from './kk-link-search';

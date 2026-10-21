@@ -1,4 +1,4 @@
-import { useParams } from '@tanstack/react-router';
+import { useParams, useSearch } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
@@ -17,6 +17,8 @@ const TITLE = 'Rolle bearbeiten';
 
 export const RoleEditScreen: FC = () => {
   const { roleId } = useParams({ from: ROUTE_ID });
+  const { from } = useSearch({ from: ROUTE_ID });
+  const returnTo = from === 'role' ? 'role' : 'hub';
   const { has, isUndecided } = usePermissions();
   const id = parsePositiveId(roleId);
   const role = useRoleQuery(has(PERMISSION_KEYS.rolesManage) ? id : null);
@@ -33,7 +35,7 @@ export const RoleEditScreen: FC = () => {
     return <RoleEditorNotFound />;
   }
   if (role.data !== undefined && !role.isPlaceholderData) {
-    return <RoleEditor roleEntry={role.data} />;
+    return <RoleEditor roleEntry={role.data} returnTo={returnTo} />;
   }
   if (errorMessage !== null) {
     return <RoleEditorError message={errorMessage} onRetry={reload} />;

@@ -11,6 +11,6 @@ export { CalendarEntryScreen } from './components/CalendarEntryScreen';
 export { CalendarPage } from './components/CalendarPage';
 export type { RunningVenue } from './schemas';
 export {
-  CalendarBoardSearchSchema,
   CalendarCollisionSchema,
+  CalendarSearchSchema,
 } from './schemas';

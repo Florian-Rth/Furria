@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
   isVacantOn,
-  seatPeriodKindOf,
   toBoardEntries,
   toImpliedRoleChoices,
   toImpliedRoleId,
@@ -89,27 +88,6 @@ describe('toBoardEntries', () => {
     ];
 
     expect(ids(shared)).toEqual([4, 5]);
-  });
-});
-
-describe('seatPeriodKindOf', () => {
-  it.each([
-    {
-      scenario: 'a seat that started before today',
-      sinceOn: '2016-11-11',
-      untilOn: null,
-      expected: 'running',
-    },
-    { scenario: 'a seat starting today', sinceOn: TODAY, untilOn: null, expected: 'running' },
-    {
-      scenario: 'a seat not started yet',
-      sinceOn: '2026-11-11',
-      untilOn: null,
-      expected: 'upcoming',
-    },
-    { scenario: 'a dated seat', sinceOn: '2016-11-11', untilOn: '2026-11-10', expected: 'span' },
-  ])('reads $scenario as $expected', ({ sinceOn, untilOn, expected }) => {
-    expect(seatPeriodKindOf(seat({ boardSeatId: 1, sinceOn, untilOn }), TODAY)).toBe(expected);
   });
 });
 

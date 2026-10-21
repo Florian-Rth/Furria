@@ -1,7 +1,7 @@
 import { KkHealthStrip } from '@furria/ui';
 import type { FC } from 'react';
 import type { FilterView, TallyView } from '../event-board-copy';
-import { FILTER_LABEL, HEALTH_LABEL, QUIET_NOTE, SUMMARY_TITLE } from '../event-board-copy';
+import { FILTER_LABEL, HEALTH_LABEL, QUIET_NOTE } from '../event-board-copy';
 import type { BoardFilter } from '../schemas';
 import { EventsFilterChip } from './EventsFilterChip';
 
@@ -31,10 +31,9 @@ export const EventsHealthStrip: FC<EventsHealthStripProps> = ({
   return (
     <KkHealthStrip label={HEALTH_LABEL}>
       <KkHealthStrip.Summary
-        title={SUMMARY_TITLE}
+        title={tally.caption}
         ringLabel={tally.label}
         value={tally.value}
-        total={tally.total}
         parts={tally.parts}
         legend={tally.legend}
       />

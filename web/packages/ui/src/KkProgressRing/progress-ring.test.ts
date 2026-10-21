@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { ringSegmentsOf } from './progress-ring';
+import { ringSegmentsOf, ringValueFitOf } from './progress-ring';
 
 describe('ringSegmentsOf', () => {
   it('draws nothing without parts', () => {
@@ -26,5 +26,15 @@ describe('ringSegmentsOf', () => {
       { state: 'done', dash: '48 52', offset: -1 },
       { state: 'overdue', dash: '23 77', offset: -51 },
     ]);
+  });
+});
+
+describe('ringValueFitOf', () => {
+  it.each([
+    { value: '6', expected: 'full' },
+    { value: '19', expected: 'full' },
+    { value: '124', expected: 'compact' },
+  ])('sets $value as $expected', ({ value, expected }) => {
+    expect(ringValueFitOf(value)).toBe(expected);
   });
 });

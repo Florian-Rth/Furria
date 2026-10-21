@@ -1,66 +1,77 @@
-import type { KkMonthBoardTravel } from '@furria/ui';
 import { getRouteApi, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { shiftMonth, startOfMonth } from '@/lib/calendar-days';
-import { toBoardDay, toBoardWindow } from '../calendar-board';
-import type { CalendarQuery } from '../calendar-query';
+import type { AttendanceAnswer } from '@/features/attendance';
+import { usePendingAnswers } from '@/features/attendance';
+import { useLanding } from '@/features/write';
+import { toIsoDay } from '@/lib/day';
+import { useCalendarQuery } from '../api';
+import type { CalendarLine, CalendarSection, CalendarWindow } from '../calendar-agenda';
 import {
-  ALL_SCOPE_ID,
-  parseMonthCursorParam,
-  toMonthCursorParam,
-  toScopeChoice,
-} from '../calendar-query';
-import type { CalendarBoardSearch } from '../schemas';
-
-export type CalendarViewMode = 'list' | 'month';
+  earlierWindowOf,
+  fetchSpanOf,
+  initialWindowOf,
+  laterWindowOf,
+  leadEntryOf,
+  linesByDay,
+  monthStartOf,
+  owedIdsOf,
+  toCalendarSections,
+  windowCovering,
+} from '../calendar-agenda';
+import { gridSpanOf } from '../calendar-fold';
+import type { CalendarEntry, CalendarSearch } from '../schemas';
 
 const routeApi = getRouteApi('/_app/calendar');
+const NO_ENTRIES: readonly CalendarEntry[] = [];
 
-const NEXT_MONTH = 1;
-const PREVIOUS_MONTH = -1;
+export type CalendarPhase = 'loading' | 'failed' | 'ready';
 
 export interface CalendarBoard {
-  scopeId: string;
-  view: CalendarViewMode;
-  monthCursor: Date;
-  today: Date;
-  selectedDay: string;
-  travel: KkMonthBoardTravel;
-  showsToday: boolean;
-  query: CalendarQuery;
-  scopeSourceQuery: CalendarQuery;
-  selectScope: (scopeId: string) => void;
-  showList: () => void;
-  showMonth: () => void;
-  showPreviousMonth: () => void;
-  showNextMonth: () => void;
-  showToday: () => void;
-  selectDay: (isoDay: string) => void;
-  addOnSelectedDay: () => void;
+  phase: CalendarPhase;
+  isFetching: boolean;
+  retry: () => void;
+  todayDay: string;
+  nowMs: number;
+  window: CalendarWindow;
+  entries: readonly CalendarEntry[];
+  allEntries: readonly CalendarEntry[];
+  pending: ReadonlyMap<number, AttendanceAnswer>;
+  sections: readonly CalendarSection[];
+  byDay: ReadonlyMap<string, readonly CalendarLine[]>;
+  owedIds: ReadonlySet<number>;
+  landingDay: string | null;
+  highlightedKey: string | null;
+  selectedId: number | null;
+  leadId: number | null;
+  canEarlier: boolean;
+  canLater: boolean;
+  loadEarlier: () => void;
+  loadLater: () => void;
+  cover: (isoDay: string) => void;
+  peek: (month: string) => void;
+  select: (calendarEntryId: number) => void;
+  close: () => void;
 }
 
-const travelTowards = (from: Date, to: Date): KkMonthBoardTravel => {
-  if (to.getTime() === from.getTime()) {
-    return 'none';
-  }
-
-  return to > from ? 'later' : 'earlier';
-};
-
 export const useCalendarBoard = (): CalendarBoard => {
-  const [today] = useState(() => new Date());
-  const [travel, setTravel] = useState<KkMonthBoardTravel>('none');
   const search = routeApi.useSearch();
   const navigate = useNavigate();
+  const [today] = useState(() => new Date());
+  const todayDay = toIsoDay(today);
+  const nowMs = today.getTime();
+  const landingDay = search.day ?? null;
+  const [window, setWindow] = useState(() => initialWindowOf(todayDay, landingDay));
+  const [peeked, setPeeked] = useState(() => gridSpanOf(monthStartOf(landingDay ?? todayDay)));
+  const span = fetchSpanOf(window, peeked);
+  const query = useCalendarQuery({ scope: 'all', groupId: null, from: span.from, to: span.to });
+  const pending = usePendingAnswers();
+  const { highlightedKey } = useLanding();
+  const all = query.data?.entries ?? NO_ENTRIES;
+  const owedIds = owedIdsOf(all, nowMs, pending);
 
-  const scopeId = search.scope ?? ALL_SCOPE_ID;
-  const view: CalendarViewMode = search.view ?? 'month';
-  const thisMonth = startOfMonth(today);
-  const monthCursor = parseMonthCursorParam(search.month, thisMonth);
-  const selectedDay = toBoardDay(monthCursor, today, search.day ?? null);
-  const showsToday = selectedDay !== toBoardDay(thisMonth, today, null);
+  const entries = all;
 
-  const patch = (next: Partial<CalendarBoardSearch>): void => {
+  const patch = (next: Partial<CalendarSearch>): void => {
     void navigate({
       to: '.',
       search: (previous) => ({ ...previous, ...next }),
@@ -69,71 +80,64 @@ export const useCalendarBoard = (): CalendarBoard => {
     });
   };
 
-  const dayWindow = view === 'month' ? toBoardWindow(monthCursor) : null;
-  const from = dayWindow?.from ?? null;
-  const to = dayWindow?.to ?? null;
-  const choice = toScopeChoice(scopeId);
-
-  const showMonthOf = (cursor: Date): void => {
-    setTravel(travelTowards(monthCursor, cursor));
-    patch({
-      month: cursor.getTime() === thisMonth.getTime() ? undefined : toMonthCursorParam(cursor),
-      day: undefined,
-    });
-  };
-
-  const selectScope = (nextScopeId: string): void => {
-    patch({ scope: nextScopeId === ALL_SCOPE_ID ? undefined : nextScopeId });
-  };
-
-  const showList = (): void => {
-    patch({ view: 'list' });
-  };
-
-  const showMonth = (): void => {
-    patch({ view: undefined });
-  };
-
-  const showPreviousMonth = (): void => {
-    showMonthOf(shiftMonth(monthCursor, PREVIOUS_MONTH));
-  };
-
-  const showNextMonth = (): void => {
-    showMonthOf(shiftMonth(monthCursor, NEXT_MONTH));
-  };
-
-  const showToday = (): void => {
-    showMonthOf(thisMonth);
-  };
-
-  const selectDay = (isoDay: string): void => {
-    patch({ day: isoDay });
-  };
-
-  const addOnSelectedDay = (): void => {
-    void navigate({
-      to: '/calendar/new',
-      search: (previous) => ({ ...previous, day: selectedDay }),
-    });
-  };
+  const phase: CalendarPhase =
+    query.data !== undefined ? 'ready' : query.isError ? 'failed' : 'loading';
+  const earlier = earlierWindowOf(window);
+  const later = laterWindowOf(window);
 
   return {
-    scopeId,
-    view,
-    monthCursor,
-    today,
-    selectedDay,
-    travel,
-    showsToday,
-    query: { scope: choice.scope, groupId: choice.groupId, from, to },
-    scopeSourceQuery: { scope: 'all', groupId: null, from, to },
-    selectScope,
-    showList,
-    showMonth,
-    showPreviousMonth,
-    showNextMonth,
-    showToday,
-    selectDay,
-    addOnSelectedDay,
+    phase,
+    isFetching: query.isFetching,
+    retry: () => {
+      void query.refetch();
+    },
+    todayDay,
+    nowMs,
+    window,
+    entries,
+    allEntries: all,
+    pending,
+    sections: toCalendarSections(entries, window, todayDay),
+    byDay: linesByDay(entries, span),
+    owedIds: new Set(owedIds),
+    landingDay,
+    highlightedKey,
+    selectedId: search.entry ?? null,
+    leadId: leadEntryOf(entries, nowMs, landingDay)?.calendarEntryId ?? null,
+    canEarlier: earlier !== null,
+    canLater: later !== null,
+    loadEarlier: () => {
+      if (earlier !== null) {
+        setWindow(earlier);
+      }
+    },
+    loadLater: () => {
+      if (later !== null && !query.isFetching) {
+        setWindow(later);
+      }
+    },
+    cover: (isoDay) => {
+      const next = windowCovering(window, isoDay);
+
+      if (next.from !== window.from || next.to !== window.to) {
+        setWindow(next);
+      }
+    },
+    peek: (month) => {
+      const grid = gridSpanOf(month);
+
+      if (grid.from < peeked.from || grid.to > peeked.to) {
+        setPeeked({
+          from: grid.from < peeked.from ? grid.from : peeked.from,
+          to: grid.to > peeked.to ? grid.to : peeked.to,
+        });
+      }
+    },
+    select: (calendarEntryId) => {
+      patch({ entry: calendarEntryId });
+    },
+    close: () => {
+      patch({ entry: undefined });
+    },
   };
 };

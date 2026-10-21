@@ -27,7 +27,7 @@ describe('staleReadsAfter', () => {
     {
       label: 'a board seat opens or ends',
       change: 'boardSeat',
-      stale: ['board', 'clubHub', 'me', 'person'],
+      stale: ['board', 'clubHub', 'me', 'person', 'roles', 'role'],
     },
     {
       label: 'a venue changes',

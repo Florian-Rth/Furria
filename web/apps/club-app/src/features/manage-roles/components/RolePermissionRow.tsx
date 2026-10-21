@@ -7,18 +7,11 @@ import type { RolePermissionEntry } from '../manage-roles-labels';
 interface RolePermissionRowProps {
   entry: RolePermissionEntry;
   busy: boolean;
-  disabled: boolean;
   error?: string;
   onToggle: (key: PermissionKey, enabled: boolean) => void;
 }
 
-export const RolePermissionRow: FC<RolePermissionRowProps> = ({
-  entry,
-  busy,
-  disabled,
-  error,
-  onToggle,
-}) => {
+export const RolePermissionRow: FC<RolePermissionRowProps> = ({ entry, busy, error, onToggle }) => {
   const change = (enabled: boolean): void => {
     onToggle(entry.key, enabled);
   };
@@ -32,7 +25,6 @@ export const RolePermissionRow: FC<RolePermissionRowProps> = ({
       stateLabel={SWITCH_STATE_LABELS}
       stateChip={false}
       busy={busy}
-      disabled={disabled}
       error={error}
     />
   );

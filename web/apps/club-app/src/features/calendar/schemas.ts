@@ -6,13 +6,11 @@ import { ClockTimeSchema, PictureSchema } from '@/lib/api/schemas';
 import { EVENT_SALES_STATUS_KEYS } from '@/lib/event-copy';
 import { GroupToneSchema } from '@/lib/group-tone';
 
-export const CalendarBoardSearchSchema = AppSearchSchema.extend({
-  scope: z.string().optional().catch(undefined),
-  view: z.enum(['list', 'month']).optional().catch(undefined),
-  month: z.string().optional().catch(undefined),
+export const CalendarSearchSchema = AppSearchSchema.extend({
   day: z.iso.date().optional().catch(undefined),
+  entry: z.number().int().positive().optional().catch(undefined),
 });
-export type CalendarBoardSearch = z.infer<typeof CalendarBoardSearchSchema>;
+export type CalendarSearch = z.infer<typeof CalendarSearchSchema>;
 
 export const CalendarEntryVisibilitySchema = z.enum(['group', 'club', 'public']);
 export type CalendarEntryVisibility = z.infer<typeof CalendarEntryVisibilitySchema>;

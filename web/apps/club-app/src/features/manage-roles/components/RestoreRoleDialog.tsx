@@ -2,6 +2,7 @@ import { KkConfirmDialog } from '@furria/ui';
 import type { FC } from 'react';
 import { toIsoDay } from '@/lib/day';
 import type { RoleLifecycleControl } from '../hooks/use-role-lifecycle';
+import type { ArchivableRole } from '../manage-roles-labels';
 import {
   RESTORE_ROLE_EXPLANATION,
   RESTORE_ROLE_EYEBROW,
@@ -9,14 +10,13 @@ import {
   toRestoreRoleFacts,
   toRestoreRoleQuestion,
 } from '../manage-roles-labels';
-import type { RoleDetails } from '../schemas';
 
 const CLOSE_LABEL = 'Schließen';
 const CANCEL_LABEL = 'Abbrechen';
 const CONFIRM_LABEL = 'Aktivieren';
 
 interface RestoreRoleDialogProps {
-  role: RoleDetails;
+  role: ArchivableRole;
   open: boolean;
   onClose: () => void;
   lifecycle: RoleLifecycleControl;

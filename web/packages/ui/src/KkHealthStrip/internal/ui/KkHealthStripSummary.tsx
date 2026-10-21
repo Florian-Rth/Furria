@@ -16,7 +16,6 @@ interface KkHealthStripSummaryProps {
   title: string;
   ringLabel: string;
   value: string;
-  total: string;
   parts: readonly KkProgressRingPart[];
   legend: readonly KkHealthLegendEntry[];
 }
@@ -25,7 +24,6 @@ export const KkHealthStripSummary: FC<KkHealthStripSummaryProps> = ({
   title,
   ringLabel,
   value,
-  total,
   parts,
   legend,
 }) => {
@@ -47,7 +45,7 @@ export const KkHealthStripSummary: FC<KkHealthStripSummaryProps> = ({
       data-kk-health-strip-summary
       sx={{ alignItems: 'center', gap: 1.5, minWidth: 0, px: 1.5, py: 1.25, flexShrink: 0 }}
     >
-      <KkProgressRing parts={parts} label={ringLabel} value={value} total={total} />
+      <KkProgressRing parts={parts} label={ringLabel} value={value} />
       <Stack sx={{ minWidth: 0, gap: 0.5 }}>
         <Box component="span" sx={stepLabel}>
           {title}

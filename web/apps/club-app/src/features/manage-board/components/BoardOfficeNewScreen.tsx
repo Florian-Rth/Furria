@@ -13,5 +13,5 @@ export const BoardOfficeNewScreen: FC = () => {
     return <BoardEditorDenied title={TITLE} />;
   }
 
-  return <BoardOfficeEditor entry={null} />;
+  return <BoardOfficeEditor entry={null} returnTo="new" />;
 };

@@ -1,35 +1,82 @@
+import { KkMasterDetail, KkMeta, KkRetryAlert } from '@furria/ui';
+import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { AppListSkeleton } from '@/features/session';
-import { useRolesQuery } from '../api';
-import type { RoleSearchControl } from '../hooks/use-role-search';
-import { useSelectedRole } from '../hooks/use-selected-role';
+import { useRolesHub } from '../hooks/use-roles-hub';
 import { toRolesErrorMessage } from '../manage-roles-messages';
-import { RolesError } from './RolesError';
-import { RolesView } from './RolesView';
+import { LOADING_LABEL, NO_ROLES_NOTE, RETRY_LABEL } from '../roles-hub-copy';
+import { RolesArchived } from './RolesArchived';
+import { RolesList } from './RolesList';
+import { RolesRights } from './RolesRights';
+import { RolesSide } from './RolesSide';
+import { RolesViewSwitch } from './RolesViewSwitch';
 
-const LOADING_LABEL = 'Rollen werden geladen';
+export const RolesBody: FC = () => {
+  const hub = useRolesHub();
 
-interface RolesBodyProps {
-  search: RoleSearchControl;
-}
+  if (hub.query.data === undefined) {
+    const message = toRolesErrorMessage(hub.query.error);
 
-export const RolesBody: FC<RolesBodyProps> = ({ search }) => {
-  const roles = useRolesQuery();
-  const { roleId } = useSelectedRole();
-  const errorMessage = toRolesErrorMessage(roles.error);
-
-  const reload = (): void => {
-    void roles.refetch();
-  };
-
-  if (roles.data !== undefined) {
-    return (
-      <RolesView roles={roles.data.roles} catalogue={roles.data.permissionKeys} search={search} />
+    return message === null ? (
+      <AppListSkeleton label={LOADING_LABEL} listShape="rows" />
+    ) : (
+      <KkRetryAlert
+        message={message}
+        retrying={hub.query.isFetching}
+        onRetry={hub.reload}
+        retryLabel={RETRY_LABEL}
+      />
     );
   }
-  if (errorMessage !== null) {
-    return <RolesError message={errorMessage} onRetry={reload} />;
+
+  if (hub.roles.length === 0) {
+    return <KkMeta>{NO_ROLES_NOTE}</KkMeta>;
   }
 
-  return <AppListSkeleton label={LOADING_LABEL} listShape="cards" hasSelection={roleId !== null} />;
+  const isSideOpen = hub.isWide && (hub.selected !== null || hub.form.target !== null);
+  const masterSpan = isSideOpen ? 7 : 12;
+  const selectedId = hub.form.target?.roleId ?? hub.selected?.roleId ?? null;
+  const lens =
+    hub.view === 'roles' ? (
+      <>
+        <RolesList
+          roles={hub.list}
+          totalKeys={hub.catalogue.length}
+          compact={isSideOpen}
+          selectedId={selectedId}
+          highlightedKey={hub.highlightedKey}
+          onOpen={hub.open}
+        />
+        <RolesArchived
+          roles={hub.archived}
+          compact={isSideOpen}
+          selectedId={selectedId}
+          highlightedKey={hub.highlightedKey}
+          onOpen={hub.open}
+        />
+      </>
+    ) : (
+      <RolesRights groups={hub.rightGroups} selectedId={selectedId} onOpen={hub.open} />
+    );
+
+  return (
+    <Stack sx={{ gap: 2, minWidth: 0 }}>
+      <RolesViewSwitch view={hub.view} onChoose={hub.chooseView} />
+      <KkMasterDetail>
+        <KkMasterDetail.Master span={masterSpan}>
+          <Stack sx={{ gap: 2.5, minWidth: 0 }}>{lens}</Stack>
+        </KkMasterDetail.Master>
+        <RolesSide
+          roles={hub.roles}
+          catalogue={hub.catalogue}
+          selected={hub.selected}
+          request={hub.request}
+          form={hub.form}
+          isWide={hub.isWide}
+          today={hub.today}
+          onClose={hub.closePane}
+        />
+      </KkMasterDetail>
+    </Stack>
+  );
 };
