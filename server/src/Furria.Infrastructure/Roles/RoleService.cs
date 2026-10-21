@@ -90,7 +90,9 @@ public sealed class RoleService
             .Select(RolePageProjection)
             .ToListAsync(ct);
 
-        return [.. rows.Select(row => ToSummary(row, today))];
+        var impliedBy = await ImpliedByOfficesAsync(null, today, ct);
+
+        return [.. rows.Select(row => ToSummary(row, today, impliedBy[row.Id]))];
     }
 
     public async Task<IReadOnlyList<RoleOverviewSummary>> GetRolesOverviewAsync(
@@ -129,7 +131,9 @@ public sealed class RoleService
             ct
         );
 
-        return Result<RoleDetails>.Success(ToDetails(row, today, affiliated));
+        var impliedBy = await ImpliedByOfficesAsync(roleId, today, ct);
+
+        return Result<RoleDetails>.Success(ToDetails(row, today, affiliated, impliedBy[roleId]));
     }
 
     public async Task<Result<int>> CreateAsync(CreateRoleCommand command, CancellationToken ct)
@@ -319,6 +323,35 @@ public sealed class RoleService
         }
     }
 
+    private async Task<ILookup<int, RoleImpliedByOffice>> ImpliedByOfficesAsync(
+        int? roleId,
+        DateOnly today,
+        CancellationToken ct
+    )
+    {
+        var rows = await _dbContext
+            .BoardOffices.AsNoTracking()
+            .Where(office => office.ArchivedOn == null && office.ImpliedRoleId != null)
+            .Where(office => roleId == null || office.ImpliedRoleId == roleId)
+            .OrderBy(office => office.SortOrder)
+            .ThenBy(office => office.Id)
+            .Select(office => new ImpliedOfficeRow(
+                office.ImpliedRoleId!.Value,
+                new RoleImpliedByOffice(
+                    office.Id,
+                    office.Name,
+                    _dbContext.BoardSeats.Count(seat =>
+                        seat.BoardOfficeId == office.Id
+                        && seat.SinceOn <= today
+                        && (seat.UntilOn == null || seat.UntilOn >= today)
+                    )
+                )
+            ))
+            .ToListAsync(ct);
+
+        return rows.ToLookup(row => row.RoleId, row => row.Office);
+    }
+
     private Task<Role?> TrackedRoleAsync(int roleId, CancellationToken ct) =>
         _dbContext.Roles.SingleOrDefaultAsync(row => row.Id == roleId, ct);
 
@@ -373,7 +406,11 @@ public sealed class RoleService
         return chain.Any(row => opened.Overlaps(row.AsPeriod));
     }
 
-    private static RoleSummary ToSummary(RolePageRow row, DateOnly today) =>
+    private static RoleSummary ToSummary(
+        RolePageRow row,
+        DateOnly today,
+        IEnumerable<RoleImpliedByOffice> impliedBy
+    ) =>
         new()
         {
             RoleId = row.Id,
@@ -393,6 +430,7 @@ public sealed class RoleService
                         LastName = holding.LastName,
                     }),
             ],
+            ImpliedBy = [.. impliedBy],
         };
 
     private static RoleOverviewSummary ToOverview(RolePageRow row, DateOnly today) =>
@@ -422,7 +460,8 @@ public sealed class RoleService
     private static RoleDetails ToDetails(
         RolePageRow row,
         DateOnly today,
-        IReadOnlySet<int> affiliated
+        IReadOnlySet<int> affiliated,
+        IEnumerable<RoleImpliedByOffice> impliedBy
     )
     {
         var chainStarts = ChainStarts(row.Holdings);
@@ -449,6 +488,7 @@ public sealed class RoleService
                         ToHolder(holding, chainStarts[holding.PersonId], affiliated)
                     ),
             ],
+            ImpliedBy = [.. impliedBy],
         };
     }
 
@@ -512,6 +552,8 @@ public sealed class RoleService
         [Pure]
         public DatePeriod Period => new() { Start = SinceOn, End = UntilOn };
     }
+
+    private sealed record ImpliedOfficeRow(int RoleId, RoleImpliedByOffice Office);
 
     private sealed record RoleState(DateOnly? ArchivedOn);
 

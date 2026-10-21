@@ -16,7 +16,7 @@ const SINCE_LABEL = 'seit';
 const PAST_META = 'früher';
 const GROUP_PATH = '/groups/$groupId';
 const ROLES_PATH = '/manage/roles';
-const BOARD_PATH = '/manage/board';
+const BOARD_OFFICE_PATH = '/manage/board/$boardOfficeId';
 
 interface PersonTiesPanelProps {
   person: PersonDetails;
@@ -66,7 +66,13 @@ export const PersonTiesPanel: FC<PersonTiesPanelProps> = ({ person, highlightedK
   });
 
   const seatRows = person.unendedBoardSeats.map((seat) => {
-    const linkProps = mayOpenBoard ? { component: Link, to: BOARD_PATH } : {};
+    const linkProps = mayOpenBoard
+      ? {
+          component: Link,
+          to: BOARD_OFFICE_PATH,
+          params: { boardOfficeId: String(seat.boardOfficeId) },
+        }
+      : {};
 
     return (
       <KkSinceRow

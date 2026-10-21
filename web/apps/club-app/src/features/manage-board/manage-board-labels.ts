@@ -1,25 +1,15 @@
 import type { KkConfirmFact, KkScreenOrigin, KkSelectOption } from '@furria/ui';
 import type { ClubIcon } from '@/lib/club-icon';
 import { isFutureDay } from '@/lib/day';
-import { formatIsoDay, formatPeriod } from '@/lib/membership-labels';
+import { formatIsoDay } from '@/lib/membership-labels';
 import type { BoardOffice, BoardSeat, ImpliedRoleOption } from './schemas';
 
 export const BOARD_TITLE = 'Vorstand';
 
 export const BOARD_ORIGIN: KkScreenOrigin = { label: BOARD_TITLE, to: '/manage/board' };
 
-export const OFFICE_EYEBROW = 'Vorstandsfunktion';
-
-export const PAST_SEATS_LABEL = 'Frühere Sitze';
-
-export const ARCHIVED_OFFICE_NOTE =
-  'Diese Vorstandsfunktion ist archiviert. Aktiviere sie, um sie zu bearbeiten oder zu besetzen.';
-
-export const toArchivedOfficeMeta = (archivedOn: string | null): string | undefined =>
-  archivedOn === null ? undefined : `Archiviert am ${formatIsoDay(archivedOn)}`;
-
 export const NO_IMPLIED_ROLE_VALUE = '';
-export const NO_IMPLIED_ROLE_LABEL = 'keine Rolle';
+const NO_IMPLIED_ROLE_LABEL = 'keine Rolle';
 
 export const toPersonName = (person: { firstName: string; lastName: string }): string =>
   `${person.firstName} ${person.lastName}`;
@@ -77,57 +67,18 @@ export const toBoardEntries = (
 ): BoardOfficeEntry[] =>
   offices.map((office) => toOfficeEntry(office, todayIsoDay)).sort(inBandOrder);
 
-export const toOfficeOrigin = (entry: { boardOfficeId: number; name: string }): KkScreenOrigin => ({
-  label: entry.name,
-  to: '/manage/board',
-});
+export const toOfficeOrigin = (
+  entry: { boardOfficeId: number; name: string },
+  returnTo: 'new' | 'hub' | 'office',
+): KkScreenOrigin =>
+  returnTo === 'office'
+    ? {
+        label: entry.name,
+        to: '/manage/board/$boardOfficeId',
+        params: { boardOfficeId: String(entry.boardOfficeId) },
+      }
+    : { label: BOARD_TITLE, to: '/manage/board' };
 
-export interface SeatChainRow {
-  key: string;
-  span: string;
-  isEdited: boolean;
-}
-
-export const toSeatChainRows = (
-  entry: BoardOfficeEntry,
-  editedSeatId: number | null,
-): SeatChainRow[] => {
-  const toRow = (seat: BoardSeat): SeatChainRow => ({
-    key: String(seat.boardSeatId),
-    span: formatPeriod(seat.sinceOn, seat.untilOn),
-    isEdited: seat.boardSeatId === editedSeatId,
-  });
-
-  return [...entry.seats.map(toRow), ...entry.pastSeats.map(toRow)];
-};
-
-export type SeatPeriodKind = 'span' | 'upcoming' | 'running';
-
-export const seatPeriodKindOf = (seat: BoardSeat, todayIsoDay: string): SeatPeriodKind => {
-  if (seat.untilOn !== null) {
-    return 'span';
-  }
-  if (isFutureDay(seat.sinceOn, todayIsoDay)) {
-    return 'upcoming';
-  }
-
-  return 'running';
-};
-
-const SEAT_PERIOD_PREFIXES: Record<Exclude<SeatPeriodKind, 'span'>, string> = {
-  upcoming: 'ab',
-  running: 'seit',
-};
-
-export const toSeatPeriodLabel = (seat: BoardSeat, todayIsoDay: string): string => {
-  const kind = seatPeriodKindOf(seat, todayIsoDay);
-
-  return kind === 'span'
-    ? formatPeriod(seat.sinceOn, seat.untilOn)
-    : `${SEAT_PERIOD_PREFIXES[kind]} ${formatIsoDay(seat.sinceOn)}`;
-};
-
-export const BOARD_LEAD = 'Vorstandsfunktionen und ihre Besetzung.';
 export const toImpliedRoleChoices = (
   roles: readonly ImpliedRoleOption[],
   impliedRoleId: number | null,
@@ -153,16 +104,10 @@ export const toImpliedRoleValue = (impliedRoleId: number | null): string =>
 
 export const IMPLIED_ROLE_LABEL = 'Verknüpfte Rolle';
 export const IMPLIED_ROLE_READ_ONLY_HINT = 'Nur mit der Berechtigung für Rollen & Rechte änderbar.';
-export const NO_IMPLIED_ROLE_VALUE_LABEL = 'keine';
+const NO_IMPLIED_ROLE_VALUE_LABEL = 'keine';
 
 export const toImpliedRoleStatement = (impliedRoleName: string | null): string =>
   impliedRoleName === null ? NO_IMPLIED_ROLE_VALUE_LABEL : impliedRoleName;
-
-export const SEAT_PERIOD_LABEL = 'Sitz';
-
-export const VACANT_TITLE = 'UNBESETZT';
-
-export const toVacantDescription = (name: string): string => `${name} ist derzeit nicht besetzt.`;
 
 export const toOfficeCreatedMessage = (name: string): string =>
   `Die Vorstandsfunktion ${name} ist angelegt.`;
@@ -179,11 +124,6 @@ export const toImpliedRoleSavedMessage = (name: string, roleName: string | null)
   roleName === null
     ? `${name} ist mit keiner Rolle mehr verknüpft.`
     : `${name} ist jetzt mit ${roleName} verknüpft.`;
-
-export const PUBLICATION_SWITCH_LABEL = 'Auf der Website zeigen';
-
-export const PUBLICATION_EXPLANATION =
-  'Wer diese Funktion innehat, steht mit Name, Funktion und Porträt im Vorstand auf der Vereinswebsite.';
 
 export const toPublicationSavedMessage = (name: string, isPublic: boolean): string =>
   isPublic ? `${name} steht jetzt auf der Website.` : `${name} steht nicht mehr auf der Website.`;
@@ -244,12 +184,6 @@ export const toEndSeatConsequence = (
 
   return `${opening} Danach entfallen die Rechte von ${impliedRoleName}.`;
 };
-
-export const ARCHIVE_OFFICE_BLOCKED_NOTE =
-  'Eine besetzte Vorstandsfunktion lässt sich nicht archivieren.';
-
-export const isOfficeArchivable = (entry: BoardOfficeEntry): boolean =>
-  !entry.isArchived && entry.seats.length === 0;
 
 export const ARCHIVE_OFFICE_EYEBROW = 'Vorstandsfunktion archivieren';
 

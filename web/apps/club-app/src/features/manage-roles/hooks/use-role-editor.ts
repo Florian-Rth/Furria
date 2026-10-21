@@ -5,6 +5,8 @@ import type { ClubIcon } from '@/lib/club-icon';
 import type { GroupTone } from '@/lib/group-tone';
 import { useCreateRoleMutation, useUpdateRoleMutation } from '../api';
 import { toShownCoin } from '../role-coin';
+import type { EditorReturn } from '../roles-hub';
+import { toEditorLanding } from '../roles-hub';
 import type { RoleForm } from '../schemas';
 import { RoleFormSchema } from '../schemas';
 
@@ -13,6 +15,7 @@ const NO_ROLE = 0;
 interface RoleEditorInput {
   roleId: number | null;
   initial: RoleForm;
+  returnTo: EditorReturn;
 }
 
 export interface RoleEditorControl {
@@ -33,7 +36,11 @@ export interface RoleEditorControl {
   submit: () => void;
 }
 
-export const useRoleEditor = ({ roleId, initial }: RoleEditorInput): RoleEditorControl => {
+export const useRoleEditor = ({
+  roleId,
+  initial,
+  returnTo,
+}: RoleEditorInput): RoleEditorControl => {
   const create = useCreateRoleMutation();
   const update = useUpdateRoleMutation(roleId ?? NO_ROLE);
 
@@ -44,7 +51,7 @@ export const useRoleEditor = ({ roleId, initial }: RoleEditorInput): RoleEditorC
       roleId === null
         ? create.mutateAsync(values).then((created) => created.roleId)
         : update.mutateAsync(values).then(() => roleId),
-    landing: (id) => ({ to: '/manage/roles', search: { role: id }, mark: { kind: 'role', id } }),
+    landing: (id) => toEditorLanding(id, returnTo),
   });
   const description = useController({ control: write.form.control, name: 'description' });
   const showsCoin = useController({ control: write.form.control, name: 'showsCoin' });

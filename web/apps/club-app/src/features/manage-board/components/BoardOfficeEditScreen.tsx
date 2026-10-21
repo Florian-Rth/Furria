@@ -1,4 +1,4 @@
-import { useParams } from '@tanstack/react-router';
+import { useParams, useSearch } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { usePermissions } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
@@ -18,6 +18,8 @@ const TITLE = 'Vorstandsfunktion bearbeiten';
 
 export const BoardOfficeEditScreen: FC = () => {
   const { boardOfficeId } = useParams({ from: ROUTE_ID });
+  const { from } = useSearch({ from: ROUTE_ID });
+  const returnTo = from === 'office' ? 'office' : 'hub';
   const { has, isUndecided } = usePermissions();
   const id = parsePositiveId(boardOfficeId);
   const board = useBoardQuery(has(PERMISSION_KEYS.boardManage));
@@ -42,7 +44,7 @@ export const BoardOfficeEditScreen: FC = () => {
       return <BoardEditorNotFound />;
     }
 
-    return <BoardOfficeEditor entry={entry} />;
+    return <BoardOfficeEditor entry={entry} returnTo={returnTo} />;
   }
   if (errorMessage !== null) {
     return <BoardEditorError message={errorMessage} onRetry={reload} />;

@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { AppSearchSchema } from '@/features/session';
 import { HonoursSchema, PersonRefSchema } from '@/lib/api/schemas';
 import { ClubIconSchema } from '@/lib/club-icon';
 import { GroupToneSchema } from '@/lib/group-tone';
@@ -20,10 +19,29 @@ export const RoleCoinSchema = z.object({
 });
 export type RoleCoin = z.infer<typeof RoleCoinSchema>;
 
-export const RolesSearchSchema = AppSearchSchema.extend({
+export const ImpliedByOfficeSchema = z.object({
+  boardOfficeId: z.number().int(),
+  name: z.string(),
+  seatedCount: z.number().int(),
+});
+export type ImpliedByOffice = z.infer<typeof ImpliedByOfficeSchema>;
+
+export const RolesViewSchema = z.enum(['roles', 'rights']);
+export type RolesView = z.infer<typeof RolesViewSchema>;
+
+export const RolesSearchSchema = z.object({
   role: z.coerce.number().int().positive().optional().catch(undefined),
+  lens: RolesViewSchema.optional().catch(undefined),
 });
 export type RolesSearch = z.infer<typeof RolesSearchSchema>;
+
+export const RolePaneTabSchema = z.enum(['rights', 'holders', 'settings']);
+export type RolePaneTab = z.infer<typeof RolePaneTabSchema>;
+
+export const RoleEditSearchSchema = z.object({
+  from: z.enum(['role']).optional().catch(undefined),
+});
+export type RoleEditSearch = z.infer<typeof RoleEditSearchSchema>;
 
 export const RoleSummarySchema = z.object({
   roleId: z.number().int(),
@@ -33,6 +51,7 @@ export const RoleSummarySchema = z.object({
   archivedOn: z.iso.date().nullable(),
   permissionKeys: z.array(z.string()),
   holders: z.array(PersonRefSchema),
+  impliedBy: z.array(ImpliedByOfficeSchema),
 });
 export type RoleSummary = z.infer<typeof RoleSummarySchema>;
 
@@ -61,6 +80,7 @@ export const RoleDetailsSchema = z.object({
   permissionKeys: z.array(z.string()),
   holders: z.array(RoleHolderSchema),
   pastHolders: z.array(RoleHolderSchema),
+  impliedBy: z.array(ImpliedByOfficeSchema),
 });
 export type RoleDetails = z.infer<typeof RoleDetailsSchema>;
 

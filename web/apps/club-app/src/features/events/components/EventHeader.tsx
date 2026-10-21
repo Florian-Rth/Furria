@@ -1,4 +1,5 @@
-import { KkProgressRing, KkRecordHead, KkStatePill } from '@furria/ui';
+import { KkMeta, KkProgressRing, KkRecordHead, KkStatePill } from '@furria/ui';
+import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { EventHeadView } from '../event-pane-copy';
 import type { EventDetails } from '../schemas';
@@ -16,13 +17,15 @@ export const EventHeader: FC<EventHeaderProps> = ({ event, view }) => {
   ));
 
   const progress = view.cancelled ? undefined : (
-    <KkProgressRing
-      parts={view.tally.parts}
-      label={view.tally.label}
-      value={view.tally.value}
-      total={view.tally.total}
-      size="large"
-    />
+    <Stack sx={{ alignItems: 'center', gap: 0.5, flexShrink: 0 }}>
+      <KkProgressRing
+        parts={view.tally.parts}
+        label={view.tally.label}
+        value={view.tally.value}
+        size="large"
+      />
+      <KkMeta>{view.tally.caption}</KkMeta>
+    </Stack>
   );
 
   return (

@@ -56,6 +56,7 @@ public sealed class GetRoleById : Endpoint<GetRoleByIdRequest, GetRoleByIdRespon
             PermissionKeys = role.PermissionKeys,
             Holders = [.. role.Holders.Select(holder => ToDto(holder, honours))],
             PastHolders = [.. role.PastHolders.Select(holder => ToDto(holder, honours))],
+            ImpliedBy = [.. role.ImpliedBy.Select(RoleImpliedByOfficeDto.From)],
         };
 
     private static RoleHolderDto ToDto(RoleHolder holder, PersonHonoursLookup honours) =>
@@ -104,6 +105,8 @@ public sealed record GetRoleByIdResponse
     public required IReadOnlyList<RoleHolderDto> Holders { get; init; }
 
     public required IReadOnlyList<RoleHolderDto> PastHolders { get; init; }
+
+    public required IReadOnlyList<RoleImpliedByOfficeDto> ImpliedBy { get; init; }
 }
 
 public sealed record RoleHolderDto

@@ -9,7 +9,7 @@ import { stepFigures } from '../KkStatePill/state-paint';
 import type { KkStepState } from '../KkStatePill/step-state';
 import type { KkSx } from '../kk-sx';
 import type { KkProgressRingPart } from './progress-ring';
-import { RING_LENGTH, ringSegmentsOf } from './progress-ring';
+import { RING_LENGTH, ringSegmentsOf, ringValueFitOf } from './progress-ring';
 
 export type KkProgressRingSize = 'small' | 'medium' | 'large';
 
@@ -77,7 +77,6 @@ interface KkProgressRingProps {
   parts: readonly KkProgressRingPart[];
   label: string;
   value?: string;
-  total?: string;
   size?: KkProgressRingSize;
   sx?: KkSx;
 }
@@ -86,7 +85,6 @@ export const KkProgressRing: FC<KkProgressRingProps> = ({
   parts,
   label,
   value,
-  total,
   size = 'medium',
   sx,
 }) => {
@@ -106,41 +104,20 @@ export const KkProgressRing: FC<KkProgressRingProps> = ({
       strokeDashoffset={segment.offset}
     />
   ));
-  const totalLine =
-    total === undefined ? null : (
-      <Box
-        component="span"
-        sx={{
-          ...stepFigures,
-          typography: 'caption',
-          fontWeight: 800,
-          lineHeight: 1,
-          color: 'text.secondary',
-        }}
-      >
-        {total}
-      </Box>
-    );
+  const fit = value === undefined ? 'full' : ringValueFitOf(value);
   const center =
     value === undefined ? null : (
       <Stack
         aria-hidden
-        sx={{
-          position: 'absolute',
-          inset: 0,
-          alignItems: 'center',
-          justifyContent: 'center',
-          rowGap: 0.25,
-        }}
+        sx={{ position: 'absolute', inset: 0, alignItems: 'center', justifyContent: 'center' }}
       >
         <Typography
           component="span"
-          variant={VALUE_VARIANTS[size]}
-          sx={{ ...stepFigures, lineHeight: 1 }}
+          variant={fit === 'full' ? VALUE_VARIANTS[size] : 'caption'}
+          sx={{ ...stepFigures, lineHeight: 1, fontWeight: 800 }}
         >
           {value}
         </Typography>
-        {totalLine}
       </Stack>
     );
 

@@ -192,8 +192,6 @@ export const toCellStateLabel = (cell: BoardCell): string =>
 export const toCellAriaLabel = (eventTitle: string, cell: BoardCell): string =>
   `${eventTitle}, ${COLUMN_TITLES[cell.column]}: ${toCellStateLabel(cell)}, ${toCellFactLabel(cell.fact)}`;
 
-export const SUMMARY_TITLE = 'Schritte erledigt';
-
 const LEGEND_WORDS: Record<KkStepState, string> = {
   done: 'fertig',
   current: 'jetzt dran',
@@ -205,7 +203,7 @@ const LEGEND_WORDS: Record<KkStepState, string> = {
 
 export interface TallyView {
   value: string;
-  total: string;
+  caption: string;
   label: string;
   parts: KkProgressRingPart[];
   legend: KkHealthLegendEntry[];
@@ -213,7 +211,7 @@ export interface TallyView {
 
 export const toTallyView = (tally: StateTally): TallyView => ({
   value: String(tally.counts.done),
-  total: `/ ${tally.total}`,
+  caption: `von ${tally.total} Schritten erledigt`,
   label: `${tally.counts.done} von ${tally.total} Schritten erledigt`,
   parts: COUNTED_STATES.map((state) => ({ state, count: tally.counts[state] })),
   legend: COUNTED_STATES.filter((state) => state !== 'done' && tally.counts[state] > 0).map(

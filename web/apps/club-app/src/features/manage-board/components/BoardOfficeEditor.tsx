@@ -11,6 +11,7 @@ import {
 } from '@furria/ui';
 import type { FC } from 'react';
 import { ClubIconField, WriteScreen } from '@/features/write';
+import type { EditorReturn } from '../board-hub';
 import { useBoardOfficeEditor } from '../hooks/use-board-office-editor';
 import type { BoardOfficeEntry } from '../manage-board-labels';
 import {
@@ -43,16 +44,17 @@ const RETRY_ROLES_LABEL = 'Rollen erneut laden';
 
 interface BoardOfficeEditorProps {
   entry: BoardOfficeEntry | null;
+  returnTo: EditorReturn;
 }
 
-export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry }) => {
-  const control = useBoardOfficeEditor(entry);
+export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry, returnTo }) => {
+  const control = useBoardOfficeEditor(entry, returnTo);
   const { errors } = control.form.formState;
 
   const title = entry === null ? CREATE_TITLE : EDIT_TITLE;
   const explanation = entry === null ? CREATE_EXPLANATION : EDIT_EXPLANATION;
   const actionLabel = entry === null ? CREATE_ACTION_LABEL : EDIT_ACTION_LABEL;
-  const origin = entry === null ? BOARD_ORIGIN : toOfficeOrigin(entry);
+  const origin = entry === null ? BOARD_ORIGIN : toOfficeOrigin(entry, returnTo);
 
   const nameField = control.form.register('name');
 

@@ -157,6 +157,146 @@ public sealed class GetRolesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_ListTheOfficeWithItsSeatedCount_When_ARunningSeatImpliesTheRole()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var today = _fixture.Today;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("ilka", "Ilka", "Reineke")
+                            .AddPerson("katrin", "Katrin", "Adam")
+                    )
+                    .Roles(roles => roles.AddRole("vorstand", "Vorstand"))
+                    .Club(club =>
+                        club.AddBoardOffice(
+                                "beisitz",
+                                "Beisitz",
+                                sortOrder: 2,
+                                impliedRoleAlias: "vorstand"
+                            )
+                            .AddBoardOffice(
+                                "praesidium",
+                                "Präsidium",
+                                sortOrder: 1,
+                                impliedRoleAlias: "vorstand"
+                            )
+                            .AddBoardSeat("ilka-beisitz", "beisitz", "ilka", today.AddDays(-30))
+                            .AddBoardSeat("katrin-beisitz", "beisitz", "katrin", today.AddDays(-5))
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var offices = Single(result, "Vorstand").ImpliedBy;
+        Assert.Collection(
+            offices,
+            first =>
+            {
+                Assert.Equal(ctx.Club.BoardOffices.IdOf("praesidium"), first.BoardOfficeId);
+                Assert.Equal("Präsidium", first.Name);
+                Assert.Equal(0, first.SeatedCount);
+            },
+            second =>
+            {
+                Assert.Equal(ctx.Club.BoardOffices.IdOf("beisitz"), second.BoardOfficeId);
+                Assert.Equal("Beisitz", second.Name);
+                Assert.Equal(2, second.SeatedCount);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CountNoSeat_When_TheSeatHasEndedOrNotYetBegun()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var today = _fixture.Today;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("ilka", "Ilka", "Reineke")
+                            .AddPerson("katrin", "Katrin", "Adam")
+                    )
+                    .Roles(roles => roles.AddRole("vorstand", "Vorstand"))
+                    .Club(club =>
+                        club.AddBoardOffice("beisitz", "Beisitz", impliedRoleAlias: "vorstand")
+                            .AddBoardSeat(
+                                "ilka-beisitz",
+                                "beisitz",
+                                "ilka",
+                                today.AddDays(-60),
+                                today.AddDays(-1)
+                            )
+                            .AddBoardSeat("katrin-beisitz", "beisitz", "katrin", today.AddDays(1))
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var office = Assert.Single(Single(result, "Vorstand").ImpliedBy);
+        Assert.Equal(0, office.SeatedCount);
+    }
+
+    [Fact]
+    public async Task Should_OmitTheOffice_When_ItIsArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Roles(roles => roles.AddRole("vorstand", "Vorstand"))
+                    .Club(club =>
+                        club.AddBoardOffice(
+                            "beisitz",
+                            "Beisitz",
+                            impliedRoleAlias: "vorstand",
+                            archivedOn: ArchivedIn2021
+                        )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Empty(Single(result, "Vorstand").ImpliedBy);
+    }
+
+    [Fact]
+    public async Task Should_CarryNoOffices_When_NoOfficeImpliesTheRole()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Roles(roles =>
+                        roles.AddRole("vorstand", "Vorstand").AddRole("zeugwart", "Zeugwart")
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice("beisitz", "Beisitz", impliedRoleAlias: "vorstand")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await client.GETAsync<GetRoles, GetRolesResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Empty(Single(result, "Zeugwart").ImpliedBy);
+    }
+
+    [Fact]
     public async Task Should_SortUmlautsAsGerman_When_ListingRoles()
     {
         var ct = TestContext.Current.CancellationToken;

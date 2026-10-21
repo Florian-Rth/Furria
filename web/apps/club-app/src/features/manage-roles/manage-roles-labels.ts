@@ -1,165 +1,28 @@
-import type { KkConfirmFact, KkDateQuickChoice, KkFilterOption, KkScreenOrigin } from '@furria/ui';
+import type { KkConfirmFact, KkDateQuickChoice, KkScreenOrigin } from '@furria/ui';
 import type { PermissionKey } from '@/lib/api/schemas';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { isFutureDay, toIsoDay } from '@/lib/day';
-import { toInitials } from '@/lib/initials';
-import { formatIsoDay, formatPeriod, formatSinceSession } from '@/lib/membership-labels';
-import { UNARCHIVED_LABEL, UNHELD_CHIP } from '@/lib/state-chips';
-import { normalizeForSearch } from '@/lib/text';
+import { formatIsoDay } from '@/lib/membership-labels';
+import { UNHELD_CHIP } from '@/lib/state-chips';
 import { isPermissionKey, toPermissionCopy } from './role-permission-copy';
-import type { RoleDetails, RoleHolder, RoleSummary, RolesResponse } from './schemas';
+import type { EditorReturn } from './roles-hub';
+import type { RoleDetails, RoleSummary, RolesResponse } from './schemas';
 
 export const toPersonName = (person: { firstName: string; lastName: string }): string =>
   `${person.firstName} ${person.lastName}`;
 
 export const ROLES_ORIGIN: KkScreenOrigin = { label: 'Rollen & Rechte', to: '/manage/roles' };
 
-export const toRoleOrigin = (role: { roleId: number; name: string }): KkScreenOrigin => ({
-  label: role.name,
-  to: '/manage/roles?role=$roleId',
-  params: { roleId: String(role.roleId) },
-});
-
-export interface RoleHoldingChainRow {
-  key: string;
-  span: string;
-  isEdited: boolean;
-}
-
-export const toRoleHoldingChainRows = (
-  role: RoleDetails,
-  personId: number,
-  editedHoldingId: number | null,
-): RoleHoldingChainRow[] => {
-  const toRow = (holder: RoleHolder): RoleHoldingChainRow => ({
-    key: String(holder.roleHoldingId),
-    span: formatPeriod(holder.sinceOn, holder.untilOn),
-    isEdited: holder.roleHoldingId === editedHoldingId,
-  });
-
-  return [
-    ...role.holders.filter((holder) => holder.personId === personId).map(toRow),
-    ...role.pastHolders.filter((holder) => holder.personId === personId).map(toRow),
-  ];
-};
-
-export const toHoldersMeta = (
-  holders: readonly { firstName: string; lastName: string }[],
-): string | null => {
-  const [first] = holders;
-
-  if (first === undefined) {
-    return null;
-  }
-  if (holders.length === 1) {
-    return toPersonName(first);
-  }
-
-  const further = holders.length - 1;
-
-  if (further === 1) {
-    return `${toPersonName(first)} und 1 weitere Person`;
-  }
-
-  return `${toPersonName(first)} und ${further} weitere Personen`;
-};
-
-export const ROLE_SECTION_TITLES = {
-  holders: 'Inhaber',
-  permissions: 'Rechte',
-  history: 'Geschichte',
-} as const;
+export const toRoleOrigin = (
+  role: { roleId: number; name: string },
+  returnTo: EditorReturn,
+): KkScreenOrigin =>
+  returnTo === 'role'
+    ? { label: role.name, to: '/manage/roles/$roleId', params: { roleId: String(role.roleId) } }
+    : ROLES_ORIGIN;
 
 export const ROLES_LEAD = 'Rollen, ihre Rechte und Inhaber.';
-export const toRoleSearchTerm = (raw: string): string | null => {
-  const trimmed = raw.trim();
-
-  return trimmed === '' ? null : trimmed;
-};
-
-const matchesRole = (role: RoleSummary, term: string): boolean => {
-  const haystack = normalizeForSearch(`${role.name} ${role.description}`);
-
-  return normalizeForSearch(term)
-    .split(/\s+/)
-    .every((part) => haystack.includes(part));
-};
-
-export interface RoleMasterEntry {
-  roleId: number;
-  name: string;
-  description: string;
-  meta: string | null;
-  holderInitials: string[];
-  holderCount: number;
-  isArchived: boolean;
-  isUnheld: boolean;
-}
-
-const toMasterEntry = (role: RoleSummary): RoleMasterEntry => ({
-  roleId: role.roleId,
-  name: role.name,
-  description: role.description,
-  meta: toHoldersMeta(role.holders),
-  holderInitials: role.holders.map((holder) => toInitials(holder.firstName, holder.lastName)),
-  holderCount: role.holders.length,
-  isArchived: role.archivedOn !== null,
-  isUnheld: role.holders.length === 0,
-});
-
-const archivedLast = (left: RoleMasterEntry, right: RoleMasterEntry): number => {
-  if (left.isArchived === right.isArchived) {
-    return 0;
-  }
-
-  return left.isArchived ? 1 : -1;
-};
-
-export const ALL_ROLES_FILTER_ID = 'all';
-export const ACTIVE_ROLES_FILTER_ID = 'active';
-export const ARCHIVED_ROLES_FILTER_ID = 'archived';
-
-const ALL_ROLES_LABEL = 'Alle';
-const ACTIVE_ROLES_LABEL = UNARCHIVED_LABEL;
-const ARCHIVED_ROLES_LABEL = 'archiviert';
-const ALL_ROLES_SUGGESTION = 'Wähle „Alle“, um alle anzuzeigen.';
-
-const isArchivedRole = (role: RoleSummary): boolean => role.archivedOn !== null;
-
-export const toRoleStatusFilterOptions = (roles: readonly RoleSummary[]): KkFilterOption[] => {
-  const archived = roles.filter(isArchivedRole).length;
-
-  return [
-    { id: ALL_ROLES_FILTER_ID, label: ALL_ROLES_LABEL, count: roles.length },
-    { id: ACTIVE_ROLES_FILTER_ID, label: ACTIVE_ROLES_LABEL, count: roles.length - archived },
-    { id: ARCHIVED_ROLES_FILTER_ID, label: ARCHIVED_ROLES_LABEL, count: archived },
-  ];
-};
-
-const matchesRoleStatus = (role: RoleSummary, status: string): boolean => {
-  if (status === ACTIVE_ROLES_FILTER_ID) {
-    return !isArchivedRole(role);
-  }
-  if (status === ARCHIVED_ROLES_FILTER_ID) {
-    return isArchivedRole(role);
-  }
-
-  return true;
-};
-
-export const toMasterEntries = (
-  roles: readonly RoleSummary[],
-  query: string,
-  status: string,
-): RoleMasterEntry[] => {
-  const term = toRoleSearchTerm(query);
-  const matching = roles.filter(
-    (role) => matchesRoleStatus(role, status) && (term === null || matchesRole(role, term)),
-  );
-
-  return matching.map(toMasterEntry).sort(archivedLast);
-};
 
 export interface RolePermissionEntry {
   key: PermissionKey;
@@ -188,6 +51,18 @@ export const toNextPermissionKeys = (
   return enabled ? [...without, key] : without;
 };
 
+export const toRoleDetailsSeed = (role: RoleSummary): RoleDetails => ({
+  roleId: role.roleId,
+  name: role.name,
+  description: role.description,
+  coin: role.coin,
+  archivedOn: role.archivedOn,
+  permissionKeys: role.permissionKeys,
+  holders: [],
+  pastHolders: [],
+  impliedBy: role.impliedBy,
+});
+
 export const toRoleSeed = (
   roles: RolesResponse | undefined,
   roleId: number | null,
@@ -198,24 +73,8 @@ export const toRoleSeed = (
 
   const match = roles.roles.find((role) => role.roleId === roleId);
 
-  if (match === undefined) {
-    return undefined;
-  }
-
-  return {
-    roleId: match.roleId,
-    name: match.name,
-    description: match.description,
-    coin: match.coin,
-    archivedOn: match.archivedOn,
-    permissionKeys: match.permissionKeys,
-    holders: [],
-    pastHolders: [],
-  };
+  return match === undefined ? undefined : toRoleDetailsSeed(match);
 };
-
-export const toArchivedMeta = (archivedOn: string | null): string | undefined =>
-  archivedOn === null ? undefined : `Archiviert am ${formatIsoDay(archivedOn)}`;
 
 export const toHolderCountLabel = (count: number): string => {
   if (count === 0) {
@@ -226,48 +85,6 @@ export const toHolderCountLabel = (count: number): string => {
   }
 
   return `${count} Inhaberschaften`;
-};
-
-export const toHolderSinceValue = (holder: RoleHolder): string => formatSinceSession(holder.since);
-
-export const toHolderUnitLabel = (count: number): string =>
-  count === 1 ? 'Inhaberschaft' : 'Inhaberschaften';
-
-export const NO_ROLE_SEARCH_RESULT_TITLE = 'KEINE ROLLE GEFUNDEN';
-
-const NO_ROLE_MATCH_LINES: Record<string, string> = {
-  [ACTIVE_ROLES_FILTER_ID]: `Gerade steht keine Rolle ${UNARCHIVED_LABEL}.`,
-  [ARCHIVED_ROLES_FILTER_ID]: 'Gerade ist keine Rolle archiviert.',
-};
-
-export type NoRoleMatchCase =
-  | { kind: 'query'; term: string }
-  | { kind: 'status'; statusLine: string }
-  | { kind: 'cold' };
-
-export const noRoleMatchCaseOf = (query: string, status: string): NoRoleMatchCase => {
-  const term = toRoleSearchTerm(query);
-
-  if (term !== null) {
-    return { kind: 'query', term };
-  }
-
-  const statusLine = NO_ROLE_MATCH_LINES[status];
-
-  return statusLine === undefined ? { kind: 'cold' } : { kind: 'status', statusLine };
-};
-
-export const toNoRoleMatchLine = (query: string, status: string): string => {
-  const noMatch = noRoleMatchCaseOf(query, status);
-
-  switch (noMatch.kind) {
-    case 'query':
-      return `Keine Rolle passt zu „${noMatch.term}“.`;
-    case 'status':
-      return `${noMatch.statusLine} ${ALL_ROLES_SUGGESTION}`;
-    case 'cold':
-      return 'Es gibt noch keine Rolle.';
-  }
 };
 
 export const toNoDescriptionLine = (name: string): string =>
@@ -401,6 +218,8 @@ export const toSelfLockoutFacts = (roleName: string, permissionTitle: string): K
   { label: 'Recht', value: permissionTitle },
 ];
 
+export type ArchivableRole = Pick<RoleSummary, 'name' | 'holders'>;
+
 export const toArchiveRoleQuestion = (name: string): string => `${name} archivieren?`;
 
 export const ARCHIVE_ROLE_EXPLANATION =
@@ -413,7 +232,7 @@ export const toArchiveRoleConsequence = (
 ): string =>
   `Ab heute, dem ${formatIsoDay(todayIsoDay)}, entfallen die Rechte von ${name}. Die ${toHolderCountLabel(holderCount)} bleiben bestehen.`;
 
-export const toArchiveRoleFacts = (role: RoleDetails, todayIsoDay: string): KkConfirmFact[] => [
+export const toArchiveRoleFacts = (role: ArchivableRole, todayIsoDay: string): KkConfirmFact[] => [
   { label: 'Rolle', value: role.name },
   { label: 'Archiviert am', value: formatIsoDay(todayIsoDay) },
   { label: 'Inhaberschaften', value: toHolderCountLabel(role.holders.length) },
@@ -429,7 +248,7 @@ export const RESTORE_ROLE_EXPLANATION =
 export const toRestoreRoleConsequence = (name: string, todayIsoDay: string): string =>
   `Ab heute, dem ${formatIsoDay(todayIsoDay)}, gelten die Rechte von ${name} wieder.`;
 
-export const toRestoreRoleFacts = (role: RoleDetails, todayIsoDay: string): KkConfirmFact[] => [
+export const toRestoreRoleFacts = (role: ArchivableRole, todayIsoDay: string): KkConfirmFact[] => [
   { label: 'Rolle', value: role.name },
   { label: 'Aktiviert am', value: formatIsoDay(todayIsoDay) },
   { label: 'Inhaberschaften', value: toHolderCountLabel(role.holders.length) },

@@ -17,4 +17,6 @@ public sealed record RoleSummary
     public required IReadOnlyList<string> PermissionKeys { get; init; }
 
     public required IReadOnlyList<RoleHolderReference> Holders { get; init; }
+
+    public required IReadOnlyList<RoleImpliedByOffice> ImpliedBy { get; init; }
 }
