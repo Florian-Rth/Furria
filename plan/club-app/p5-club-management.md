@@ -254,6 +254,34 @@ website all read off one row.
 - The implied-role field renders **read-only** without `roles.manage`: she sees that president
   implies *Vereinsleitung*, she just cannot change it.
 
+**Reworked 2026-10-20 (page-rework, variant "work list" plus parts of the other two).**
+- `/manage/board` is a work hub. At the top is one strip: a ring for running/active offices,
+  counters that double as filters (unbesetzt · endet · Wechsel geplant · nicht auf der Website)
+  and the next change. Below it, "Offen" lists the open work (vacant office, seat ending without
+  a successor, planned handover), with the action on each row. "Besetzt" is a dense roster with
+  one line per seat. Archived offices sit behind a quiet fold.
+- An office opens as a bottom drawer on phone and as a side pane on wide desktop
+  (`?office=`), or as its own page at `/manage/board/$boardOfficeId`. It has three tabs:
+  Besetzung, Verlauf and Einstellungen, plus one contextual primary action
+  (Sitz eintragen / Nachfolge eintragen).
+- Entering and ending a seat happen in that drawer or pane. The separate screens
+  `…/seats/new` and `…/seats/$boardSeatId` are removed. The office editor (`/manage/board/new`,
+  `…/$boardOfficeId/edit`) stays.
+
+**Roles & rights reworked 2026-10-20 (role-based, not a staffing list).**
+- `/manage/roles` is about the roles and their rights; a role without holders is normal and the
+  page has no strip, counters or filters. A segmented switch (`?lens=roles|rights`) picks the
+  lens. "Rollen" lists the active roles alphabetically, one dense row each: coin, name,
+  description (two lines at most), the holders by name (two, then "+ N weitere"), rights in words
+  ("3 Rechte", "keine Rechte", "alle Rechte") and, only when present, "über Präsident" from
+  `impliedBy`. "Rechte" lists the 19 rights in groups, each with the roles that grant it; a role
+  chip opens that role's pane on the Rechte tab. Archived roles sit behind a quiet fold.
+- A role opens as a bottom drawer on phone, as a side pane on desktop (`?role=`) or as its own
+  page at `/manage/roles/$roleId`, with tabs Rechte (default), Inhaber and Einstellungen. Entering
+  and ending a holding happen there; `…/holdings/new` and `…/holdings/$roleHoldingId` are removed.
+  An archived role shows its rights as a plain read-only list. Creating and editing a role keep
+  `/manage/roles/new` and `…/$roleId/edit`.
+
 ---
 
 ### E6 — the calendar gets its `+`

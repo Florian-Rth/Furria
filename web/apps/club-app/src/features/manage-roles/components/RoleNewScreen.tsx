@@ -13,5 +13,5 @@ export const RoleNewScreen: FC = () => {
     return <RoleEditorDenied title={TITLE} />;
   }
 
-  return <RoleEditor roleEntry={null} />;
+  return <RoleEditor roleEntry={null} returnTo="new" />;
 };

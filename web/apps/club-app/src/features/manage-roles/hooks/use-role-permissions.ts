@@ -15,6 +15,8 @@ import {
 } from '../manage-roles-labels';
 import type { RoleDetails, RoleSummary, RolesResponse } from '../schemas';
 
+type EditedRole = Pick<RoleSummary, 'roleId' | 'permissionKeys'>;
+
 const NO_ROLES: readonly RoleSummary[] = [];
 
 const dropOnce = (keys: readonly PermissionKey[], key: PermissionKey): PermissionKey[] => {
@@ -47,7 +49,7 @@ export interface RolePermissionsControl {
 }
 
 export const useRolePermissions = (
-  role: RoleDetails,
+  role: EditedRole,
   catalogue: readonly string[],
 ): RolePermissionsControl => {
   const queryClient = useQueryClient();

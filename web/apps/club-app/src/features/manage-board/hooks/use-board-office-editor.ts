@@ -11,6 +11,8 @@ import {
   useSetImpliedRoleMutation,
   useUpdateBoardOfficeMutation,
 } from '../api';
+import type { EditorReturn } from '../board-hub';
+import { toEditorLanding } from '../board-hub';
 import type { BoardOfficeEntry } from '../manage-board-labels';
 import {
   toImpliedRoleChoices,
@@ -47,7 +49,10 @@ export interface BoardOfficeEditorControl {
   submit: () => void;
 }
 
-export const useBoardOfficeEditor = (entry: BoardOfficeEntry | null): BoardOfficeEditorControl => {
+export const useBoardOfficeEditor = (
+  entry: BoardOfficeEntry | null,
+  returnTo: EditorReturn,
+): BoardOfficeEditorControl => {
   const boardOfficeId = entry?.boardOfficeId ?? null;
   const initialImpliedRoleValue = toImpliedRoleValue(entry?.impliedRoleId ?? null);
   const initial: BoardOfficeEditorForm =
@@ -102,7 +107,7 @@ export const useBoardOfficeEditor = (entry: BoardOfficeEntry | null): BoardOffic
       boardOfficeId === null
         ? create.mutateAsync(values).then((created) => created.boardOfficeId)
         : saveOffice(boardOfficeId, chosenValue, values),
-    landing: (id) => ({ to: '/manage/board', mark: { kind: 'board-office', id } }),
+    landing: (id) => toEditorLanding(id, returnTo),
   });
   const impliedRole = useController({ control: write.form.control, name: 'impliedRoleValue' });
   const sortOrder = useController({ control: write.form.control, name: 'sortOrder' });

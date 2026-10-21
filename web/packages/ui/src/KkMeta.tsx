@@ -17,6 +17,7 @@ interface KkMetaProps extends PropsWithChildren {
   tone?: KkMetaTone;
   italic?: boolean;
   component?: ElementType;
+  lines?: number;
   sx?: KkSx;
 }
 
@@ -24,6 +25,7 @@ export const KkMeta: FC<KkMetaProps> = ({
   tone = 'muted',
   italic = false,
   component = 'p',
+  lines,
   sx,
   children,
 }) => (
@@ -40,6 +42,14 @@ export const KkMeta: FC<KkMetaProps> = ({
         lineHeight: 1.35,
         minWidth: 0,
         textWrap: 'pretty',
+        ...(lines === undefined
+          ? {}
+          : {
+              display: '-webkit-box',
+              WebkitLineClamp: lines,
+              WebkitBoxOrient: 'vertical',
+              overflow: 'hidden',
+            }),
       }),
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}

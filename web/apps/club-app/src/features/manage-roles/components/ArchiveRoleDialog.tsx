@@ -2,13 +2,13 @@ import { KkConfirmDialog } from '@furria/ui';
 import type { FC } from 'react';
 import { toIsoDay } from '@/lib/day';
 import type { RoleLifecycleControl } from '../hooks/use-role-lifecycle';
+import type { ArchivableRole } from '../manage-roles-labels';
 import {
   ARCHIVE_ROLE_EXPLANATION,
   toArchiveRoleConsequence,
   toArchiveRoleFacts,
   toArchiveRoleQuestion,
 } from '../manage-roles-labels';
-import type { RoleDetails } from '../schemas';
 
 const EYEBROW = 'Rolle archivieren';
 const CLOSE_LABEL = 'Schließen';
@@ -16,7 +16,7 @@ const CANCEL_LABEL = 'Abbrechen';
 const CONFIRM_LABEL = 'Archivieren';
 
 interface ArchiveRoleDialogProps {
-  role: RoleDetails;
+  role: ArchivableRole;
   open: boolean;
   onClose: () => void;
   lifecycle: RoleLifecycleControl;

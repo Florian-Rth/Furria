@@ -79,8 +79,6 @@ export const toRecruitingChip = (isRecruiting: boolean): StateChip =>
 
 export const ARCHIVED_CHIP: StateChip = { label: 'archiviert', tone: 'neutral', dot: false };
 
-export const UNARCHIVED_LABEL = 'im Verein';
-
 export const UNHELD_CHIP: StateChip = { label: 'unbesetzt', tone: 'gold', dot: false };
 
 export const GROUP_ADMIN_CHIP: StateChip = { label: 'Gruppen-Admin', tone: 'accent', dot: false };

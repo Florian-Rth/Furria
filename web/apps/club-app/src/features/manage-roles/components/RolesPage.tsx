@@ -1,59 +1,39 @@
-import { KkScreen, KkSkeletonToolbar, KkTitleHeader } from '@furria/ui';
+import type { KkScreenActions } from '@furria/ui';
+import { KkScreen, KkTitleHeader } from '@furria/ui';
+import { useNavigate } from '@tanstack/react-router';
 import type { FC } from 'react';
-import {
-  AREA_HANDOVERS,
-  MANAGE_ORIGIN,
-  RequirePermission,
-  usePermissions,
-  useScreenSearch,
-} from '@/features/session';
+import { AREA_HANDOVERS, MANAGE_ORIGIN, RequirePermission } from '@/features/session';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
-import { useRolesQuery } from '../api';
-import { useRoleSearch } from '../hooks/use-role-search';
 import { ROLES_LEAD } from '../manage-roles-labels';
-import type { RoleSummary } from '../schemas';
+import { NEW_ROLE_LABEL, NEW_ROLE_PATH, ROLES_TITLE } from '../roles-hub-copy';
 import { RolesBody } from './RolesBody';
-import { RolesToolbar } from './RolesToolbar';
 
-const ROLES_TITLE = 'Rollen & Rechte';
-
-const SEARCH_PLACEHOLDER = 'Name oder Aufgabe';
-
-const TOOLBAR_CHIPS = 3;
-
-const NO_ROLES: readonly RoleSummary[] = [];
+const header = <KkTitleHeader title={ROLES_TITLE} lead={ROLES_LEAD} />;
 
 export const RolesPage: FC = () => {
-  const searchMode = useScreenSearch(SEARCH_PLACEHOLDER);
-  const { has, isUndecided } = usePermissions();
-  const roles = useRolesQuery(has(PERMISSION_KEYS.rolesManage));
-  const rows = roles.data?.roles ?? NO_ROLES;
-  const search = useRoleSearch(rows);
-  const canManage = isUndecided || has(PERMISSION_KEYS.rolesManage);
-
-  const toolbar =
-    roles.data === undefined ? undefined : (
-      <RolesToolbar
-        status={search.status}
-        options={search.filterOptions}
-        onStatusChange={search.selectStatus}
-      />
-    );
-
-  const toolRow = roles.isPending ? <KkSkeletonToolbar chips={TOOLBAR_CHIPS} /> : toolbar;
+  const navigate = useNavigate();
+  const actions: KkScreenActions = [
+    {
+      id: 'new-role',
+      label: NEW_ROLE_LABEL,
+      icon: 'add',
+      onSelect: () => {
+        void navigate({ to: NEW_ROLE_PATH });
+      },
+    },
+  ];
 
   return (
     <KkScreen
       kind="list"
-      search={searchMode}
-      tools={canManage ? toolRow : undefined}
       title={ROLES_TITLE}
       origin={MANAGE_ORIGIN}
-      header={<KkTitleHeader title={ROLES_TITLE} lead={ROLES_LEAD} />}
+      header={header}
       handover={AREA_HANDOVERS.manage}
+      actions={actions}
     >
       <RequirePermission permissionKey={PERMISSION_KEYS.rolesManage}>
-        <RolesBody search={search} />
+        <RolesBody />
       </RequirePermission>
     </KkScreen>
   );

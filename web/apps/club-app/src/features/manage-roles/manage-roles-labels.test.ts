@@ -3,23 +3,15 @@ import type { PersonRef } from '@/lib/api/schemas';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import type { SelfLockoutInput } from './manage-roles-labels';
 import {
-  ACTIVE_ROLES_FILTER_ID,
-  ALL_ROLES_FILTER_ID,
-  ARCHIVED_ROLES_FILTER_ID,
   isPermissionHandover,
   isSelfLockout,
-  noRoleMatchCaseOf,
   toEndQuickChoices,
-  toMasterEntries,
   toNextPermissionKeys,
   toPermissionEntries,
-  toRoleHoldingChainRows,
-  toRoleSearchTerm,
   toRoleSeed,
-  toRoleStatusFilterOptions,
   toStartQuickChoices,
 } from './manage-roles-labels';
-import type { RoleDetails, RoleHolder, RoleSummary } from './schemas';
+import type { RoleSummary } from './schemas';
 
 const role = (overrides: Partial<RoleSummary> & { roleId: number; name: string }): RoleSummary => ({
   description: '',
@@ -27,110 +19,8 @@ const role = (overrides: Partial<RoleSummary> & { roleId: number; name: string }
   archivedOn: null,
   permissionKeys: [],
   holders: [],
+  impliedBy: [],
   ...overrides,
-});
-
-describe('toRoleSearchTerm', () => {
-  it.each([
-    ['   ', null],
-    ['  Kasse ', 'Kasse'],
-  ])('maps %j to %j', (raw, expected) => {
-    expect(toRoleSearchTerm(raw)).toBe(expected);
-  });
-});
-
-describe('toMasterEntries', () => {
-  const roles: readonly RoleSummary[] = [
-    role({ roleId: 1, name: 'Admin' }),
-    role({ roleId: 9, name: 'Pressewartin', archivedOn: '2026-09-12' }),
-    role({
-      roleId: 3,
-      name: 'Finanzen',
-      description: 'Führt die Kasse und die Beiträge.',
-      holders: [{ personId: 4, firstName: 'Lukas', lastName: 'Schmitt' }],
-    }),
-  ];
-
-  const ids = (query: string, status: string): number[] =>
-    toMasterEntries(roles, query, status).map((entry) => entry.roleId);
-
-  it('keeps the server order but moves archived roles last', () => {
-    expect(ids('', ALL_ROLES_FILTER_ID)).toEqual([1, 3, 9]);
-  });
-
-  it('folds umlauts when matching the name', () => {
-    expect(ids('pressewartin', ALL_ROLES_FILTER_ID)).toEqual([9]);
-  });
-
-  it('matches the description as well as the name', () => {
-    expect(ids('kasse', ALL_ROLES_FILTER_ID)).toEqual([3]);
-  });
-
-  it('requires every word of the query to match', () => {
-    expect(toMasterEntries(roles, 'kasse beitraege', ALL_ROLES_FILTER_ID)).toEqual([]);
-    expect(ids('kasse beitrage', ALL_ROLES_FILTER_ID)).toEqual([3]);
-  });
-
-  it('drops the archived role under the in-use filter', () => {
-    expect(ids('', ACTIVE_ROLES_FILTER_ID)).toEqual([1, 3]);
-  });
-
-  it('keeps only the archived role under the archived filter', () => {
-    expect(ids('', ARCHIVED_ROLES_FILTER_ID)).toEqual([9]);
-  });
-
-  it('applies the query inside the chosen status', () => {
-    expect(ids('pressewartin', ACTIVE_ROLES_FILTER_ID)).toEqual([]);
-  });
-});
-
-describe('toRoleStatusFilterOptions', () => {
-  const roles: readonly RoleSummary[] = [
-    role({ roleId: 1, name: 'Admin' }),
-    role({ roleId: 9, name: 'Pressewartin', archivedOn: '2026-09-12' }),
-    role({ roleId: 3, name: 'Finanzen' }),
-  ];
-
-  it('counts every role, the ones in the club and the archived ones', () => {
-    expect(toRoleStatusFilterOptions(roles).map((option) => [option.id, option.count])).toEqual([
-      [ALL_ROLES_FILTER_ID, 3],
-      [ACTIVE_ROLES_FILTER_ID, 2],
-      [ARCHIVED_ROLES_FILTER_ID, 1],
-    ]);
-  });
-});
-
-describe('noRoleMatchCaseOf', () => {
-  it.each([
-    {
-      scenario: 'a query under a status',
-      query: '  Kasse ',
-      status: ARCHIVED_ROLES_FILTER_ID,
-      expected: 'query',
-    },
-    {
-      scenario: 'the archived chip alone',
-      query: '',
-      status: ARCHIVED_ROLES_FILTER_ID,
-      expected: 'status',
-    },
-    {
-      scenario: 'the non-archived chip alone',
-      query: '',
-      status: ACTIVE_ROLES_FILTER_ID,
-      expected: 'status',
-    },
-    { scenario: 'Alle', query: ' ', status: ALL_ROLES_FILTER_ID, expected: 'cold' },
-  ])('reads $scenario as $expected', ({ query, status, expected }) => {
-    expect(noRoleMatchCaseOf(query, status).kind).toBe(expected);
-  });
-
-  it('carries the trimmed query', () => {
-    expect(noRoleMatchCaseOf('  Kasse ', ALL_ROLES_FILTER_ID)).toEqual({
-      kind: 'query',
-      term: 'Kasse',
-    });
-  });
 });
 
 describe('toPermissionEntries', () => {
@@ -192,6 +82,7 @@ describe('toRoleSeed', () => {
       permissionKeys: ['groups.manage'],
       holders: [],
       pastHolders: [],
+      impliedBy: [],
     });
   });
 
@@ -331,44 +222,6 @@ describe('isPermissionHandover', () => {
     },
   ])('is $expected when $case', ({ input, expected }) => {
     expect(isPermissionHandover(input)).toBe(expected);
-  });
-});
-
-describe('toRoleHoldingChainRows', () => {
-  const holder = (overrides: Partial<RoleHolder> & { roleHoldingId: number }): RoleHolder => ({
-    personId: 4,
-    firstName: 'Lukas',
-    lastName: 'Schmitt',
-    sinceOn: '2020-01-01',
-    untilOn: null,
-    since: '2020-01-01',
-    isAffiliated: true,
-    honours: { sessions: 0, functions: [] },
-    ...overrides,
-  });
-
-  const details = (overrides: Partial<RoleDetails> = {}): RoleDetails => ({
-    roleId: 3,
-    name: 'Finanzen',
-    description: '',
-    coin: null,
-    archivedOn: null,
-    permissionKeys: [],
-    holders: [],
-    pastHolders: [],
-    ...overrides,
-  });
-
-  it('keeps only the picked person, running before past', () => {
-    const role = details({
-      holders: [
-        holder({ roleHoldingId: 1, personId: 4 }),
-        holder({ roleHoldingId: 2, personId: 9 }),
-      ],
-      pastHolders: [holder({ roleHoldingId: 3, personId: 4, untilOn: '2019-12-31' })],
-    });
-
-    expect(toRoleHoldingChainRows(role, 4, null).map((row) => row.key)).toEqual(['1', '3']);
   });
 });
 

@@ -48,3 +48,10 @@ export const ringSegmentsOf = (
 
   return segments;
 };
+
+export type RingValueFit = 'full' | 'compact';
+
+const FULL_DIGITS = 2;
+
+export const ringValueFitOf = (value: string): RingValueFit =>
+  value.length <= FULL_DIGITS ? 'full' : 'compact';

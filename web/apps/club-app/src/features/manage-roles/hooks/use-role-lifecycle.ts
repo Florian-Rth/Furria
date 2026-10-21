@@ -1,10 +1,10 @@
 import { useState } from 'react';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useArchiveRoleMutation, useRestoreRoleMutation } from '../api';
-import type { RoleDetails } from '../schemas';
+import type { RoleSummary } from '../schemas';
 
 interface RoleLifecycleInput {
-  role: RoleDetails;
+  role: Pick<RoleSummary, 'roleId' | 'name'>;
   onArchived: () => void;
   onRestored: () => void;
 }

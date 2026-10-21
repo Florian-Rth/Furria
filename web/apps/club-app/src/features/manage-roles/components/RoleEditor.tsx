@@ -4,6 +4,7 @@ import { WriteScreen } from '@/features/write';
 import { useRoleEditor } from '../hooks/use-role-editor';
 import { ROLES_ORIGIN, toRoleOrigin } from '../manage-roles-labels';
 import { toRoleCoinForm } from '../role-coin';
+import type { EditorReturn } from '../roles-hub';
 import type { RoleDetails, RoleForm } from '../schemas';
 import { ROLE_DESCRIPTION_MAX_LENGTH } from '../schemas';
 import { RoleCoinFields } from './RoleCoinFields';
@@ -37,9 +38,10 @@ const toCountLabel = (used: number, max: number): string => `${used} von ${max} 
 
 interface RoleEditorProps {
   roleEntry: RoleDetails | null;
+  returnTo: EditorReturn;
 }
 
-export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry }) => {
+export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry, returnTo }) => {
   const initial: RoleForm =
     roleEntry === null
       ? EMPTY_FORM
@@ -48,13 +50,13 @@ export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry }) => {
           description: roleEntry.description,
           ...toRoleCoinForm(roleEntry.coin),
         };
-  const control = useRoleEditor({ roleId: roleEntry?.roleId ?? null, initial });
+  const control = useRoleEditor({ roleId: roleEntry?.roleId ?? null, initial, returnTo });
   const { errors } = control.form.formState;
 
   const title = roleEntry === null ? CREATE_TITLE : EDIT_TITLE;
   const intro = roleEntry === null ? <KkNote>{CREATE_EXPLANATION}</KkNote> : null;
   const actionLabel = roleEntry === null ? CREATE_ACTION_LABEL : EDIT_ACTION_LABEL;
-  const origin = roleEntry === null ? ROLES_ORIGIN : toRoleOrigin(roleEntry);
+  const origin = roleEntry === null ? ROLES_ORIGIN : toRoleOrigin(roleEntry, returnTo);
 
   const nameField = control.form.register('name');
   const coinFields = control.showsCoin ? (

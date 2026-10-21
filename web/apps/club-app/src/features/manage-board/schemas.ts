@@ -83,3 +83,20 @@ export const BoardSeatOpenFormSchema = z.object({
 export const BoardSeatEndFormSchema = z.object({
   endedOn: requiredDay('Der letzte Tag fehlt.'),
 });
+
+export const BoardFilterSchema = z.enum(['all', 'vacant', 'handover', 'ending', 'offline']);
+export type BoardFilter = z.infer<typeof BoardFilterSchema>;
+
+export const BoardSearchSchema = z.object({
+  office: z.coerce.number().int().positive().optional().catch(undefined),
+  filter: BoardFilterSchema.optional().catch(undefined),
+});
+export type BoardSearch = z.infer<typeof BoardSearchSchema>;
+
+export const OfficePaneSectionSchema = z.enum(['seats', 'history', 'settings']);
+export type OfficePaneSection = z.infer<typeof OfficePaneSectionSchema>;
+
+export const BoardOfficeEditSearchSchema = z.object({
+  from: z.enum(['office']).optional().catch(undefined),
+});
+export type BoardOfficeEditSearch = z.infer<typeof BoardOfficeEditSearchSchema>;

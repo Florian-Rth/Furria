@@ -27,6 +27,7 @@ export const usePaneSelection = (): PaneSelectionControl => {
 
   const close = (): void => {
     void navigate({
+      from: EVENTS_PATH,
       to: EVENTS_PATH,
       search: (previous) => ({ ...previous, event: undefined, step: undefined }),
       replace: true,
@@ -41,6 +42,7 @@ export const usePaneSelection = (): PaneSelectionControl => {
     isWide,
     select: (next) => {
       void navigate({
+        from: EVENTS_PATH,
         to: EVENTS_PATH,
         search: (previous) => ({ ...previous, event: next.eventId, step: next.pane }),
         replace: selection !== null,
