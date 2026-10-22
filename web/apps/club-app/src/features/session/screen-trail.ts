@@ -12,11 +12,7 @@ const LAST = -1;
 const rootIndexOf = (path: string | undefined, roots: readonly string[]): number =>
   path === undefined ? NOT_FOUND : roots.indexOf(path);
 
-export const advanceTrail = (
-  trail: ScreenTrail,
-  next: string,
-  roots: readonly string[],
-): ScreenTrail => {
+const stepTrail = (trail: ScreenTrail, next: string, roots: readonly string[]): ScreenTrail => {
   const current = trail.paths.at(LAST);
 
   if (current === undefined || current === next) {
@@ -41,4 +37,19 @@ export const advanceTrail = (
   }
 
   return { paths: [...trail.paths, next], move: 'deeper' };
+};
+
+export const advanceTrail = (
+  trail: ScreenTrail,
+  next: string,
+  roots: readonly string[],
+  restoredBySystem = false,
+): ScreenTrail => {
+  const stepped = stepTrail(trail, next, roots);
+
+  if (restoredBySystem && stepped.move !== 'still') {
+    return { ...stepped, move: 'restored' };
+  }
+
+  return stepped;
 };

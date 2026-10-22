@@ -25,6 +25,7 @@ applyBrowserModeParam();
 const router = createRouter({
   routeTree,
   history: withBackStack(createBrowserHistory()),
+  scrollRestoration: true,
   defaultErrorComponent: lazyRouteComponent(
     () => import('@/features/session/components/ScreenFailure'),
     'ScreenFailure',

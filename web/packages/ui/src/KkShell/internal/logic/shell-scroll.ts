@@ -5,6 +5,7 @@ import type { KkChromeMotion } from '../../../internal/chrome-density';
 export interface KkShellScroll {
   scrollY: MotionValue<number>;
   motion: KkChromeMotion;
+  ledByUser: () => boolean;
 }
 
 export const KkShellScrollContext = createContext<KkShellScroll | null>(null);

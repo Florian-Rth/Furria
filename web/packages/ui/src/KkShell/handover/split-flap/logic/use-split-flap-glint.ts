@@ -3,6 +3,7 @@ import { animate, useMotionValue, useMotionValueEvent, useTransform } from 'moti
 import type { RefObject } from 'react';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useReducedMotion } from '../../../../internal/use-reduced-motion';
+import { useKkShellScroll } from '../../../internal/logic/shell-scroll';
 
 export interface SplitFlapGlint {
   host: HTMLElement | null;
@@ -23,6 +24,7 @@ export const useSplitFlapGlint = (
   progress: MotionValue<number>,
 ): SplitFlapGlint => {
   const reduced = useReducedMotion();
+  const { ledByUser } = useKkShellScroll();
   const [host, setHost] = useState<HTMLElement | null>(null);
   const sweep = useMotionValue(0);
   const landedRef = useRef(progress.get() >= 1);
@@ -37,7 +39,7 @@ export const useSplitFlapGlint = (
   useMotionValueEvent(progress, 'change', (value) => {
     const landed = value >= 1;
 
-    if (landed && !landedRef.current && !reduced) {
+    if (landed && !landedRef.current && !reduced && ledByUser()) {
       void animate(sweep, [0, 1], SWEEP);
     }
 

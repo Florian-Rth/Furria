@@ -9,7 +9,9 @@ import { TRACK_EDGE } from '../track-edge';
 const TRACK_PADDING_X = 2.5;
 const ARRIVING_BLOCK = '& [data-kk-shell-entrance] > * > *';
 const HELD_BODY_BLOCK = '& [data-kk-shell-entrance][data-kk-body-held] > * ~ * > *';
+const RESTORED_BLOCK = '& [data-kk-shell-entrance][data-kk-restored] > * > *';
 const HELD = { animationPlayState: 'paused' } as const;
+const RESTORED = { animation: 'none' } as const;
 
 interface KkShellTrackProps extends PropsWithChildren {
   headClearance: number;
@@ -48,6 +50,7 @@ export const KkShellTrack: FC<KkShellTrackProps> = ({
         transition: kkTokens.motion.clearance,
         ...arrivalCascade,
         [HELD_BODY_BLOCK]: HELD,
+        [RESTORED_BLOCK]: RESTORED,
       })}
     >
       {children}

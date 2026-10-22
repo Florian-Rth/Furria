@@ -29,7 +29,7 @@ export interface Confetti {
 }
 
 export const useConfetti = (): Confetti => {
-  const { scrollY } = useKkShellScroll();
+  const { scrollY, ledByUser } = useKkShellScroll();
   const values = useDockValues();
   const slotRef = useRef<HTMLDivElement>(null);
   const geometryRef = useRef<DockGeometry | null>(null);
@@ -75,7 +75,11 @@ export const useConfetti = (): Confetti => {
       values.headlineScale.set(flight.scale);
     }
 
-    if (current !== null && landingDue(previousRef.current, progress, landedRef.current)) {
+    if (
+      current !== null &&
+      ledByUser() &&
+      landingDue(previousRef.current, progress, landedRef.current)
+    ) {
       land();
     }
 

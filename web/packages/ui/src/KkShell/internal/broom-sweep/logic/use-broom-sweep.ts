@@ -3,6 +3,7 @@ import type { RefObject } from 'react';
 import { useLayoutEffect, useRef, useState } from 'react';
 import { useKkShellScroll } from '../../../internal/logic/shell-scroll';
 import type { KkBarScene } from '../../logic/bar-scene';
+import { arrivesInPlace } from '../../logic/in-place-move';
 import type { BroomSweepMode } from './broom-sweep-frame';
 import { broomSweepFrameOf, durationOf } from './broom-sweep-frame';
 import type { BroomSweepPlan } from './broom-sweep-plan';
@@ -24,7 +25,7 @@ const modeOfDevice = (): BroomSweepMode =>
 export const useBroomSweep = (scene: KkBarScene, debut: boolean): BroomSweep => {
   const { scrollY, motion } = useKkShellScroll();
   const [plan] = useState<BroomSweepPlan | null>(() =>
-    !debut || scene.previous === null || scene.move === 'still'
+    !debut || scene.previous === null || arrivesInPlace(scene.move)
       ? null
       : planBroomSweep({
           previous: scene.previous,
