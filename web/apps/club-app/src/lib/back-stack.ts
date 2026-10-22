@@ -13,9 +13,11 @@ interface StepBack {
 const SHEET_PARAM = 'sheet';
 const QUERY_AND_HASH = /[?#].*$/s;
 const ONE_ENTRY = 1;
+const TRAVERSALS: readonly string[] = ['BACK', 'FORWARD'];
 
 const pathnamesByIndex = new Map<number, string>();
 let pendingStep: StepBack | null = null;
+let systemLandingKey: string | undefined;
 
 export const toPathname = (href: string): string => href.replace(QUERY_AND_HASH, '');
 
@@ -28,6 +30,9 @@ export const leavesSheetOverScreen = (
   new URLSearchParams(current.search).has(SHEET_PARAM) &&
   toPathname(nextHref) !== current.pathname;
 
+export const landedBySystem = (state: HistoryLocation['state']): boolean =>
+  systemLandingKey !== undefined && state.__TSR_key === systemLandingKey;
+
 const remember = (location: HistoryLocation): void => {
   pathnamesByIndex.set(location.state.__TSR_index, location.pathname);
 };
@@ -39,8 +44,12 @@ export const withBackStack = (history: RouterHistory): RouterHistory => {
   const { push, replace } = history;
 
   remember(history.location);
-  history.subscribe(({ location }) => {
+  history.subscribe(({ location, action }) => {
     remember(location);
+    systemLandingKey =
+      TRAVERSALS.includes(action.type) && pendingStep === null
+        ? location.state.__TSR_key
+        : undefined;
   });
 
   const pushPastSheet: RouterHistory['push'] = (path, state, options) => {

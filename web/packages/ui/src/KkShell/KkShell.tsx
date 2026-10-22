@@ -18,6 +18,7 @@ import type { KkScreenStance } from './internal/logic/screen-stance';
 import { KkShellContext } from './internal/logic/shell-context';
 import { KkShellScrollContext } from './internal/logic/shell-scroll';
 import { useKeyboardInset } from './internal/logic/use-keyboard-inset';
+import { useScrollLead } from './internal/logic/use-scroll-lead';
 import { useShellHost } from './internal/logic/use-shell-host';
 import { KkShellNav } from './internal/ui/KkShellNav';
 import { KkShellNotice } from './internal/ui/KkShellNotice';
@@ -61,9 +62,10 @@ export const KkShell: FC<KkShellProps> = ({
   const index = useShellHost();
   const [stance, holdStance] = useState<KkScreenStance | null>(null);
   const [barMemory] = useState(createBarMemory);
+  const ledByUser = useScrollLead(path);
 
   const motion: KkChromeMotion = reducedMotion ? 'instant' : 'ramped';
-  const scroll = { scrollY, motion };
+  const scroll = { scrollY, motion, ledByUser };
 
   const section = stance?.section ?? null;
   const headClearance = stance?.headClearance ?? BAR_CLEARANCE;

@@ -23,6 +23,7 @@ export const KkShellEntrance: FC<KkShellEntranceProps> = ({
   const reducedMotion = useReducedMotion();
   const entrance = screenEntranceOf(move, reducedMotion);
   const heldMark = bodyHeld ? true : undefined;
+  const restoredMark = move === 'restored' ? true : undefined;
 
   const trackStyle: CSSProperties = {
     display: 'flex',
@@ -37,6 +38,7 @@ export const KkShellEntrance: FC<KkShellEntranceProps> = ({
       key={path}
       data-kk-shell-entrance
       data-kk-body-held={heldMark}
+      data-kk-restored={restoredMark}
       style={trackStyle}
       initial={entrance.from}
       animate={entrance.to}

@@ -1,6 +1,7 @@
 import type { TargetAndTransition, Transition } from 'motion/react';
 import { kkTokens } from '../../../tokens';
 import type { KkScreenMove } from '../../screen-move';
+import { arrivesInPlace } from './in-place-move';
 
 const { screen } = kkTokens.shell;
 
@@ -18,6 +19,7 @@ const NONE: Transition = { duration: 0 };
 
 const ARRIVAL: Record<KkScreenMove, TargetAndTransition> = {
   still: SETTLED,
+  restored: SETTLED,
   'lateral-forward': { opacity: 0, x: screen.lateralTravel, scale: 1 },
   'lateral-back': { opacity: 0, x: -screen.lateralTravel, scale: 1 },
   deeper: { opacity: 0, x: screen.deeperTravel, scale: screen.deeperScale },
@@ -27,7 +29,7 @@ const ARRIVAL: Record<KkScreenMove, TargetAndTransition> = {
 const FADED: TargetAndTransition = { opacity: 0, x: 0, scale: 1 };
 
 export const screenEntranceOf = (move: KkScreenMove, reducedMotion: boolean): KkScreenEntrance => {
-  if (move === 'still') {
+  if (arrivesInPlace(move)) {
     return { from: SETTLED, to: SETTLED, transition: NONE };
   }
 

@@ -94,7 +94,7 @@ const settleRow = (
 };
 
 export const useSway = (restText: string | null, titleText: string): Sway => {
-  const { scrollY } = useKkShellScroll();
+  const { scrollY, ledByUser } = useKkShellScroll();
   const slotRef = useRef<HTMLDivElement>(null);
   const restRef = useRef<HTMLDivElement>(null);
   const flightRef = useRef<HTMLDivElement>(null);
@@ -206,8 +206,13 @@ export const useSway = (restText: string | null, titleText: string): Sway => {
 
       if (swapsCase(letter) && due !== motion.lowered.at(index)) {
         motion.lowered[index] = due;
-        motion.dipUntil = now + DIP_MILLISECONDS + count * RIPPLE_MILLISECONDS;
-        flipCase(values, due, index);
+
+        if (quiet) {
+          values.lower.jump(lowerMixOf(letter, due));
+        } else {
+          motion.dipUntil = now + DIP_MILLISECONDS + count * RIPPLE_MILLISECONDS;
+          flipCase(values, due, index);
+        }
       }
     });
 
@@ -311,13 +316,22 @@ export const useSway = (restText: string | null, titleText: string): Sway => {
   };
 
   const follow = (scrollOffset: number): void => {
-    place(scrollOffset, false);
+    if (ledByUser()) {
+      place(scrollOffset, false);
+      return;
+    }
+
+    snap(scrollOffset);
+  };
+
+  const snap = (scrollOffset: number): void => {
+    motionRef.current.progress = handoverProgressAt(scrollOffset, TRAVEL);
+    remeasure();
+    place(scrollOffset, true);
   };
 
   const refresh = useEffectEvent((): void => {
-    motionRef.current.progress = handoverProgressAt(scrollY.get(), TRAVEL);
-    remeasure();
-    place(scrollY.get(), true);
+    snap(scrollY.get());
   });
 
   useMotionValueEvent(scrollY, 'change', follow);

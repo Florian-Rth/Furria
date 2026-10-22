@@ -2,8 +2,13 @@ import { describe, expect, it } from 'vitest';
 import { screenEntranceOf } from './screen-entrance';
 
 describe('screenEntranceOf', () => {
-  it.each([false, true])('lets an unchanged screen stay put with reduced motion %s', (reduced) => {
-    const entrance = screenEntranceOf('still', reduced);
+  it.each([
+    ['still', false],
+    ['still', true],
+    ['restored', false],
+    ['restored', true],
+  ] as const)('lets a %s screen stay put with reduced motion %s', (move, reduced) => {
+    const entrance = screenEntranceOf(move, reduced);
 
     expect(entrance.from).toEqual(entrance.to);
     expect(entrance.transition).toEqual({ duration: 0 });

@@ -53,4 +53,24 @@ describe('advanceTrail', () => {
       move: 'still',
     });
   });
+
+  it.each([
+    ['/club', '/members'],
+    ['/members', '/club'],
+    ['/more', '/club'],
+  ])('lands %s → %s in place when the device itself stepped through history', (from, to) => {
+    const restored = advanceTrail(trailOf('/club', from), to, ROOTS, true);
+
+    expect(restored.move).toBe('restored');
+  });
+
+  it('keeps the trail it walked even when the device stepped back', () => {
+    const deep = trailOf('/club', '/members', '/members/3');
+
+    expect(advanceTrail(deep, '/members', ROOTS, true).paths).toEqual(['/club', '/members']);
+  });
+
+  it('starts still on the first screen even when the device restored it', () => {
+    expect(advanceTrail({ paths: [], move: 'still' }, '/club', ROOTS, true).move).toBe('still');
+  });
 });
