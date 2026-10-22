@@ -1,4 +1,7 @@
-import { KkChip, KkPersonRow, toImageSource, useKkSheetCommands } from '@furria/ui';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkPersonRow } from '@furria/ui/KkPersonRow';
+import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import type { FC } from 'react';
 import { toAvatarHonours } from '@/lib/honours';
 import { toInitials } from '@/lib/initials';

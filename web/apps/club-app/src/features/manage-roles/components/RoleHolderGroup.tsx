@@ -1,4 +1,7 @@
-import { KkMeta, KkPanelSection, KkSeatList, KkSkeletonRow } from '@furria/ui';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSeatList } from '@furria/ui/KkSeatList';
+import { KkSkeletonRow } from '@furria/ui/KkSkeletonRow';
 import type { FC } from 'react';
 import type { RoleHolder } from '../schemas';
 import { RoleHolderLine } from './RoleHolderLine';

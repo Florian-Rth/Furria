@@ -1,4 +1,7 @@
-import { eventToneOf, KkCard, KkPhoto, toImageSource } from '@furria/ui';
+import { eventToneOf } from '@furria/ui/group-tone';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkCard } from '@furria/ui/KkCard';
+import { KkPhoto } from '@furria/ui/KkPhoto';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { deriveEventDisplay } from '@/features/landing/events-teaser-content';

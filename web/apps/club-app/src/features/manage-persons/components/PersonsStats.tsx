@@ -1,4 +1,7 @@
-import { KkNote, KkPanelHeader, KkRule, KkStatRow } from '@furria/ui';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanelHeader } from '@furria/ui/KkPanelHeader';
+import { KkRule } from '@furria/ui/KkRule';
+import { KkStatRow } from '@furria/ui/KkStatRow';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { MembershipState } from '@/lib/api/schemas';

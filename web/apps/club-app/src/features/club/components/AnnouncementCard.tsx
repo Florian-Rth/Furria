@@ -1,7 +1,9 @@
-import { KkChip, KkHeading, KkText } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkHeading } from '@furria/ui/KkHeading';
+import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { AnnouncementAuthorLine } from '@/features/announcements';
+import { AnnouncementAuthorLine } from '@/features/announcements/components/AnnouncementAuthorLine';
 import { ANNOUNCEMENT_NEW_LABEL } from '@/lib/announcements';
 import type { ClubAnnouncement } from '../schemas';
 

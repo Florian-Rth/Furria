@@ -1,4 +1,8 @@
-import { KkAvatar, KkChip, KkEyebrow, KkScreenHeader, toImageSource } from '@furria/ui';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkAvatar } from '@furria/ui/KkAvatar';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkScreenHeader } from '@furria/ui/KkScreenHeader';
 import type { FC } from 'react';
 import { toAvatarHonours } from '@/lib/honours';
 import { toMemberHeadline } from '../members-labels';

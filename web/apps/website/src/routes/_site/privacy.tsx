@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { LegalPage, privacyContent } from '@/features/legal';
+import { LegalPage } from '@/features/legal/components/LegalPage/LegalPage';
+import { privacyContent } from '@/features/legal/privacy-content';
 import type { RouteHead } from '@/lib/seo';
 import { pageTitle } from '@/lib/seo';
 

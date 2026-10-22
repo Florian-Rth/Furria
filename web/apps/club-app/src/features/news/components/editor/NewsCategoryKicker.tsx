@@ -1,5 +1,5 @@
-import type { KkKickerOption } from '@furria/ui';
-import { KkKickerMenu } from '@furria/ui';
+import type { KkKickerOption } from '@furria/ui/KkKickerMenu';
+import { KkKickerMenu } from '@furria/ui/KkKickerMenu';
 import type { FC } from 'react';
 import { CATEGORY_CHOOSE, CATEGORY_MENU_LABEL } from '../../editor-copy';
 import { CATEGORY_LABELS } from '../../news-copy';

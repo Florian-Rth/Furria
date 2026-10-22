@@ -1,16 +1,14 @@
-import type { KkNumberStepLabels } from '@furria/ui';
-import {
-  KkConfirmDialog,
-  KkFormPair,
-  KkFormSection,
-  KkNote,
-  KkNumberField,
-  KkSessionField,
-  KkTextField,
-  KkWriteScreen,
-} from '@furria/ui';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
+import { KkFormPair } from '@furria/ui/KkFormPair';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkNote } from '@furria/ui/KkNote';
+import type { KkNumberStepLabels } from '@furria/ui/KkNumberField';
+import { KkNumberField } from '@furria/ui/KkNumberField';
+import { KkSessionField } from '@furria/ui/KkSessionField';
+import { KkTextField } from '@furria/ui/KkTextField';
+import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
-import { WriteScreen } from '@/features/write';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { useSessionEditor } from '../hooks/use-session-editor';
 import { useSessionRemoval } from '../hooks/use-session-removal';
 import {

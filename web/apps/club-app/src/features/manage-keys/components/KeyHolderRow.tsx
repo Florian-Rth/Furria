@@ -1,7 +1,9 @@
-import { KkAvatar, KkChip, KkSinceRow } from '@furria/ui';
+import { KkAvatar } from '@furria/ui/KkAvatar';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkSinceRow } from '@furria/ui/KkSinceRow';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { toLandingKey } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
 import { toInitials } from '@/lib/initials';
 import { formatIsoDay } from '@/lib/membership-labels';
 import { isKeyToTakeBack, NOT_ACTIVE_IN_CLUB_CHIP, toPersonName } from '../manage-keys-labels';

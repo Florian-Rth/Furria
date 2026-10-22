@@ -1,7 +1,9 @@
-import { KkMasterDetail, KkRetryAlert, KkSkeletonBlock } from '@furria/ui';
+import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { AppSkeletonRegion } from '@/features/session';
+import { AppSkeletonRegion } from '@/features/session/components/AppSkeletonRegion';
 import { isNotFoundError } from '@/lib/query-error';
 import { EVENT_LOADING_LABEL } from '../event-board-copy';
 import { toEventErrorMessage } from '../events-messages';

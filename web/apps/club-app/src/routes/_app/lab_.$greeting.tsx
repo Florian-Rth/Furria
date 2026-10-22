@@ -1,6 +1,7 @@
 import { createFileRoute, notFound } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { GreetingLabPage, labGreetingOf } from '@/features/lab';
+import { GreetingLabPage } from '@/features/lab/components/GreetingLabPage';
+import { labGreetingOf } from '@/features/lab/lab-greetings';
 
 const GreetingLabRoute: FC = () => {
   const { greeting } = Route.useLoaderData();

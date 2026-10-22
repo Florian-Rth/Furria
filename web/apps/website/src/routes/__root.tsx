@@ -3,7 +3,7 @@ import { createRootRoute, HeadContent, Outlet } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { NotFoundScreen } from '@/components/NotFoundScreen';
 import { ThemeColorMeta } from '@/components/ThemeColorMeta/ThemeColorMeta';
-import { PreviewAccessProvider } from '@/features/preview-access';
+import { PreviewAccessProvider } from '@/features/preview-access/components/PreviewAccessProvider';
 import type { RouteHead } from '@/lib/seo';
 import { publicWebsitePictures } from '@/lib/website-pictures/api';
 import { siteShareImageMeta } from '@/lib/website-pictures/share-image-meta';

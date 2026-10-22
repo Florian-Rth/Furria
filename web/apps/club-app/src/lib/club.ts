@@ -1,4 +1,4 @@
-import type { KkMottoStageState } from '@furria/ui';
+import type { KkMottoStageState } from '@furria/ui/motto-stage-state';
 
 export const SESSION_OPENING_MONTH = 11;
 export const SESSION_OPENING_DAY = 11;

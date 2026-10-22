@@ -1,4 +1,4 @@
-import type { KkStampTone } from '@furria/ui';
+import type { KkStampTone } from '@furria/ui/KkDensePanelStampEyebrow';
 import type { CalendarLineInput, CalendarLineView } from './use-calendar-line';
 import { useCalendarLine } from './use-calendar-line';
 

@@ -1,4 +1,6 @@
-import { KkFormSection, KkNote, KkRadioGroup } from '@furria/ui';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkRadioGroup } from '@furria/ui/KkRadioGroup';
 import type { FC } from 'react';
 import { NEW_PERSON_CHOICE } from '../admission';
 import {

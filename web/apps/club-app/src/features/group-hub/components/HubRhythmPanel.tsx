@@ -1,19 +1,17 @@
-import type { KkPanelAction } from '@furria/ui';
-import {
-  KkButton,
-  KkEmptyState,
-  KkIcon,
-  KkLead,
-  KkMeta,
-  KkNote,
-  KkPanel,
-  KkPanelSection,
-} from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkIcon } from '@furria/ui/KkIcon';
+import { KkLead } from '@furria/ui/KkLead';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import type { KkPanelAction } from '@furria/ui/panel-action';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import type { GroupTone } from '@/features/groups';
-import { toRhythmSentence } from '@/features/groups';
+import type { GroupTone } from '@/features/groups/group-identity';
+import { toRhythmSentence } from '@/features/groups/group-identity';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import { useRhythmSlotsInfo } from '../hooks/use-rhythm-slots-info';
 import {

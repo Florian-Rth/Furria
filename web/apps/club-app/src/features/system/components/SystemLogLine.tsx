@@ -1,4 +1,4 @@
-import { KkTeleprinter } from '@furria/ui';
+import { KkTeleprinter } from '@furria/ui/KkTeleprinter';
 import type { FC } from 'react';
 import type { LogGroupView } from '../hooks/use-system-log';
 import { LOG_EXCEPTION_LABEL } from '../system-copy';

@@ -1,8 +1,13 @@
-import { KkFactRow, KkNote, KkPanel, KkPanelSection, KkScreen } from '@furria/ui';
+import { KkFactRow } from '@furria/ui/KkFactRow';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkScreen } from '@furria/ui/KkScreen';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC, ReactNode } from 'react';
-import { AREA_HANDOVERS, usePermissions } from '@/features/session';
+import { AREA_HANDOVERS } from '@/features/session/app-sections';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { toInitials } from '@/lib/initials';
 import { formatPeriod } from '@/lib/membership-labels';
 import {

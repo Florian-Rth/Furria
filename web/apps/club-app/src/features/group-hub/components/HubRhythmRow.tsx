@@ -1,4 +1,4 @@
-import { KkFactRow } from '@furria/ui';
+import { KkFactRow } from '@furria/ui/KkFactRow';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toClockValue, toDurationLabel, toSlotVenueLine, toWeekdayLabel } from '../rhythm-labels';

@@ -1,4 +1,5 @@
-import { KkDensePanel, KkSheet } from '@furria/ui';
+import { KkDensePanel } from '@furria/ui/KkDensePanel';
+import { KkSheet } from '@furria/ui/KkSheet';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import { useCalendarSheetDays } from '../hooks/use-calendar-sheet-days';

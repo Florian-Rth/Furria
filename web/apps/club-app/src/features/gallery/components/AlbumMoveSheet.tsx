@@ -1,4 +1,8 @@
-import { KkMeta, KkRetryAlert, KkSelectRow, KkSheet, KkSkeletonRow } from '@furria/ui';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
+import { KkSelectRow } from '@furria/ui/KkSelectRow';
+import { KkSheet } from '@furria/ui/KkSheet';
+import { KkSkeletonRow } from '@furria/ui/KkSkeletonRow';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { MOVE_SHEET_ID, MOVE_SHEET_TITLE, SHEET_CLOSE_LABEL } from '../album-labels';

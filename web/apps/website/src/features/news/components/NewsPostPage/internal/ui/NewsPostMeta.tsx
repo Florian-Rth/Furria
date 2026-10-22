@@ -1,4 +1,4 @@
-import { KkNewsCategoryChip } from '@furria/ui';
+import { KkNewsCategoryChip } from '@furria/ui/KkNewsCategoryChip';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';

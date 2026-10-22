@@ -1,4 +1,4 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
 import { BOARD_ORIGIN } from '../manage-board-labels';
 import { BoardError } from './BoardError';

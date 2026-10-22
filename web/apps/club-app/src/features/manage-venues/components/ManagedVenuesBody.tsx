@@ -1,5 +1,6 @@
 import type { FC } from 'react';
-import { AccessDenied, AppListSkeleton } from '@/features/session';
+import { AccessDenied } from '@/features/session/components/AccessDenied';
+import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import { isForbiddenError } from '@/lib/query-error';
 import { useManagedVenuesQuery } from '../api';
 import { VENUE_EDITOR_DENIED_MESSAGE } from '../manage-venues-labels';

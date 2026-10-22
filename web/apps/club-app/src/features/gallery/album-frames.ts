@@ -1,4 +1,4 @@
-import type { KkFrameMark } from '@furria/ui';
+import type { KkFrameMark } from '@furria/ui/KkFrame';
 import type { GalleryScene } from './gallery-scenes';
 import type { AlbumItem } from './schemas';
 import type { SelectionPhoto } from './types';

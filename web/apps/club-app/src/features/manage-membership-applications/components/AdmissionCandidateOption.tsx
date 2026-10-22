@@ -1,4 +1,5 @@
-import { KkChip, KkRadioGroup } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkRadioGroup } from '@furria/ui/KkRadioGroup';
 import type { FC } from 'react';
 import { toCandidateChoice } from '../admission';
 import { THIS_IS_HER_CHIP, toCandidateDescription } from '../admission-labels';

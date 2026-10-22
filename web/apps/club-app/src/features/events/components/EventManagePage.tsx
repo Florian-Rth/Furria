@@ -1,7 +1,8 @@
-import type { KkScreenOrigin } from '@furria/ui';
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
-import { EVENTS_KEYS, RequireAnyPermission } from '@/features/session';
+import { EVENTS_KEYS } from '@/features/session/app-sections';
+import { RequireAnyPermission } from '@/features/session/components/RequireAnyPermission';
 import { parsePositiveId } from '@/lib/positive-id';
 import { useEventQuery } from '../api';
 import { EVENT_FALLBACK_TITLE } from '../event-board-copy';

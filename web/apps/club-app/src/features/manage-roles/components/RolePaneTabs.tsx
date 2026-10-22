@@ -1,4 +1,4 @@
-import { KkStepPane } from '@furria/ui';
+import { KkStepPane } from '@furria/ui/KkStepPane';
 import type { FC } from 'react';
 import { toTabState } from '../roles-hub';
 import { TABS, TABS_LABEL } from '../roles-hub-copy';

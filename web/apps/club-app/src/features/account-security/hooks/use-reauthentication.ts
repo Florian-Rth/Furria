@@ -3,7 +3,7 @@ import type { UseMutationResult } from '@tanstack/react-query';
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
-import { toWriteFailure } from '@/features/write';
+import { toWriteFailure } from '@/features/write/write-failure';
 import { toPasskeyErrorMessage } from '@/lib/passkey/passkey-messages';
 import { usePasskeySupport } from '@/lib/passkey/use-passkey-support';
 import type { ReauthenticationForm } from '../schemas';

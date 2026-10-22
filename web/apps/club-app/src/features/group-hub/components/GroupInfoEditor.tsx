@@ -1,15 +1,20 @@
-import type { KkNumberStepLabels } from '@furria/ui';
-import { KkFormPair, KkFormSection, KkNumberField, KkSelectField, KkTextArea } from '@furria/ui';
+import { KkFormPair } from '@furria/ui/KkFormPair';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import type { KkNumberStepLabels } from '@furria/ui/KkNumberField';
+import { KkNumberField } from '@furria/ui/KkNumberField';
+import { KkSelectField } from '@furria/ui/KkSelectField';
+import { KkTextArea } from '@furria/ui/KkTextArea';
 import type { FC } from 'react';
+import { useGroupKindsQuery } from '@/features/group-kinds/api';
 import {
   GROUP_KIND_FIELD_HINT,
   GROUP_KIND_FIELD_LABEL,
   toGroupKindOptions,
   toHeldGroupKind,
-  useGroupKindsQuery,
-} from '@/features/group-kinds';
-import { toGroupTone } from '@/features/groups';
-import { ClubIconField, WriteScreen } from '@/features/write';
+} from '@/features/group-kinds/group-kinds-labels';
+import { toGroupTone } from '@/features/groups/group-identity';
+import { ClubIconField } from '@/features/write/components/ClubIconField';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { toHubEditorOrigin } from '../group-hub-labels';
 import { toEditorChoicesErrorMessage } from '../group-hub-messages';
 import { useGroupInfoEditor } from '../hooks/use-group-info-editor';

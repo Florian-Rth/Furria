@@ -1,4 +1,4 @@
-import { KkCheckLine } from '@furria/ui';
+import { KkCheckLine } from '@furria/ui/KkCheckLine';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { QUIET_NOTE } from '../event-board-copy';

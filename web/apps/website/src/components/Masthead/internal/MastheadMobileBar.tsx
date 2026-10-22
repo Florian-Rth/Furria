@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import Box from '@mui/material/Box';
 import IconButton from '@mui/material/IconButton';
 import Link from '@mui/material/Link';

@@ -1,5 +1,5 @@
-import type { KkGreetingBeat } from '@furria/ui';
-import { KkCountHead } from '@furria/ui';
+import type { KkGreetingBeat } from '@furria/ui/greeting-context';
+import { KkCountHead } from '@furria/ui/KkCountHead';
 import type { FC } from 'react';
 import type { HeadSplit } from '../greeting/head-split';
 

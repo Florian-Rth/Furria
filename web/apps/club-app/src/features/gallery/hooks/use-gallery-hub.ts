@@ -1,7 +1,8 @@
-import type { KkScreenActions, KkScreenThread } from '@furria/ui';
+import type { KkScreenActions, KkScreenThread } from '@furria/ui/screen-declaration';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { useMeQuery, usePermissions } from '@/features/session';
+import { useMeQuery } from '@/features/session/api';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { useGalleryHubQuery, useInboxesQuery } from '../api';
 import {

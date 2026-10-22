@@ -1,4 +1,8 @@
-import { KkButton, KkEmptyState, KkErrorState, KkLead, KkPanel } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkErrorState } from '@furria/ui/KkErrorState';
+import { KkLead } from '@furria/ui/KkLead';
+import { KkPanel } from '@furria/ui/KkPanel';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { TrainingGeneratorControl } from '../hooks/use-training-generator';

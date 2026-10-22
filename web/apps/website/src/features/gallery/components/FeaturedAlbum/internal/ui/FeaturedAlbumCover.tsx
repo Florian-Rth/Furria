@@ -1,4 +1,5 @@
-import { KkPhoto, toImageSource } from '@furria/ui';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkPhoto } from '@furria/ui/KkPhoto';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import {

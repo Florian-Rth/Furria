@@ -1,5 +1,8 @@
-import type { KkAnswer, KkGroupTone, KkIconName, KkImageSource } from '@furria/ui';
-import { toImageSource } from '@furria/ui';
+import type { KkGroupTone } from '@furria/ui/group-tone';
+import type { KkImageSource } from '@furria/ui/image-source';
+import { toImageSource } from '@furria/ui/image-source';
+import type { KkAnswer } from '@furria/ui/KkAnswerChoice';
+import type { KkIconName } from '@furria/ui/KkIcon';
 import { toTimeLabel } from '@/lib/calendar-days';
 import { entryIconOf, entryToneOf, toEntryMetaLine } from '../calendar-tile';
 import type { StartEntry } from '../schemas';

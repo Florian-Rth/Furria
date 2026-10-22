@@ -1,12 +1,12 @@
+import type { KkPressRowFact } from '@furria/ui/KkPressRow';
+import type { KkRegisterMarkState } from '@furria/ui/KkRegisterMark';
 import type {
-  KkPressFactTone,
-  KkPressRowFact,
   KkPressRulerAxisLabel,
   KkPressRulerLane,
   KkPressRulerLegendEntry,
   KkPressRulerMarkState,
-  KkRegisterMarkState,
-} from '@furria/ui';
+} from '@furria/ui/press-ruler-data';
+import type { KkPressFactTone } from '@furria/ui/press-tone';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { sessionYearsLabelOf } from '@/lib/club';

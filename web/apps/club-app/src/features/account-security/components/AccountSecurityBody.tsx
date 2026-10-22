@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { useMeQuery } from '@/features/session';
+import { useMeQuery } from '@/features/session/api';
 import { toSecurityErrorMessage } from '../account-security-messages';
 import { AccountSecurityError } from './AccountSecurityError';
 import { AccountSecurityPanels } from './AccountSecurityPanels';

@@ -1,4 +1,4 @@
-import { KkStartTile } from '@furria/ui';
+import { KkStartTile } from '@furria/ui/KkStartTile';
 import type { FC } from 'react';
 import { useToDosTile } from '../hooks/use-to-dos-tile';
 import type { StartPanelOf } from '../start-board';

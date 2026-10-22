@@ -1,12 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { GalleryHubPage } from '@/features/gallery';
-import {
-  GALLERY_KEYS,
-  GALLERY_TITLE,
-  MORE_SECTION,
-  RequireAnyScreenPermission,
-} from '@/features/session';
+import { GalleryHubPage } from '@/features/gallery/components/GalleryHubPage';
+import { GALLERY_KEYS, GALLERY_TITLE, MORE_SECTION } from '@/features/session/app-sections';
+import { RequireAnyScreenPermission } from '@/features/session/components/RequireAnyScreenPermission';
 
 const GalleryHubPageRoute: FC = () => (
   <RequireAnyScreenPermission

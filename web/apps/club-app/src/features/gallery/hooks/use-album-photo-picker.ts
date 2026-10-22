@@ -1,4 +1,4 @@
-import { useKkSheetCommands } from '@furria/ui';
+import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import { useState } from 'react';
 import { toggleId } from '../selection-draft';
 

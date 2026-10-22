@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { AppListSkeleton } from '@/features/session';
+import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import { useMembersQuery } from '../api';
 import type { MemberSearch } from '../hooks/use-member-search';
 import { toMembersErrorMessage } from '../members-messages';

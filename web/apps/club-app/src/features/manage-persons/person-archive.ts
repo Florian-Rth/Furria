@@ -1,4 +1,4 @@
-import type { KkConfirmFact } from '@furria/ui';
+import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
 import { toActLine } from '@/lib/act-line';
 import { fromIsoDay } from '@/lib/day';
 import { formatIsoDay, toMembershipStateLabel } from '@/lib/membership-labels';

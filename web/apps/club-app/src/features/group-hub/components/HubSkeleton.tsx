@@ -1,6 +1,9 @@
-import { KkPanel, KkPanelSection, KkPanelStack, KkSkeletonBlock } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
 import type { FC } from 'react';
-import { AppSkeletonRegion } from '@/features/session';
+import { AppSkeletonRegion } from '@/features/session/components/AppSkeletonRegion';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 
 const DESCRIPTION_LINES = 3;

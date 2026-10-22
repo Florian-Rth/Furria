@@ -1,4 +1,4 @@
-import { KkBroomMark } from '@furria/ui';
+import { KkBroomMark } from '@furria/ui/KkBroomMark';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 

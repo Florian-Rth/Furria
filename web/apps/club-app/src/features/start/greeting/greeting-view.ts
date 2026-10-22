@@ -1,4 +1,7 @@
-import type { KkGreetingPart, KkGreetingPlay, KkHonours, KkImageSource } from '@furria/ui';
+import type { KkGreetingPart } from '@furria/ui/flap-cells';
+import type { KkGreetingPlay } from '@furria/ui/flap-schedule';
+import type { KkHonours } from '@furria/ui/honour-types';
+import type { KkImageSource } from '@furria/ui/image-source';
 import type { GreetingAct } from './greeting-act';
 import { toGreetingCopy } from './greeting-copy';
 import { greetingPlayOf } from './greeting-play';

@@ -1,4 +1,6 @@
-import { KkFactLine, KkIcon, KkMeta } from '@furria/ui';
+import { KkFactLine } from '@furria/ui/KkFactLine';
+import { KkIcon } from '@furria/ui/KkIcon';
+import { KkMeta } from '@furria/ui/KkMeta';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { RolePermissionEntry } from '../manage-roles-labels';

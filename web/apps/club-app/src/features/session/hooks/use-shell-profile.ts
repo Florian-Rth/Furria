@@ -1,5 +1,5 @@
-import type { KkShellProfile } from '@furria/ui';
-import { toImageSource } from '@furria/ui';
+import { toImageSource } from '@furria/ui/image-source';
+import type { KkShellProfile } from '@furria/ui/shell-profile';
 import { toAvatarHonours } from '@/lib/honours';
 import { toInitials } from '@/lib/initials';
 import { PROFILE_PATH } from '../app-sections';

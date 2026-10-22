@@ -1,4 +1,5 @@
-import { KkDiagonalStamp, KkFlapBoard } from '@furria/ui';
+import { KkDiagonalStamp } from '@furria/ui/KkDiagonalStamp';
+import { KkFlapBoard } from '@furria/ui/KkFlapBoard';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useBrokenStamp } from '../hooks/use-broken-stamp';

@@ -1,7 +1,7 @@
 import { Capacitor } from '@capacitor/core';
 import { SplashScreen } from '@capacitor/splash-screen';
 import { useEffect } from 'react';
-import { useSessionSnapshot } from '@/features/session';
+import { useSessionSnapshot } from '@/features/session/hooks/use-session-snapshot';
 
 export const useSplashScreen = (): void => {
   const { status } = useSessionSnapshot();

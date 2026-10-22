@@ -1,4 +1,4 @@
-import type { KkNoticeRequest } from '@furria/ui';
+import type { KkNoticeRequest } from '@furria/ui/KkNotice';
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { keepPreviousData, skipToken, useQuery } from '@tanstack/react-query';
 import { useApiMutation } from '@/lib/api/api-mutation';

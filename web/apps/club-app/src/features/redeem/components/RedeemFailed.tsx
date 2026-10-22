@@ -1,4 +1,5 @@
-import { KkAlert, KkButton } from '@furria/ui';
+import { KkAlert } from '@furria/ui/KkAlert';
+import { KkButton } from '@furria/ui/KkButton';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { RedeemFailureKind } from '../redeem-failure';

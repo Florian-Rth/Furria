@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import Alert from '@mui/material/Alert';
 import Button from '@mui/material/Button';
 import Dialog from '@mui/material/Dialog';

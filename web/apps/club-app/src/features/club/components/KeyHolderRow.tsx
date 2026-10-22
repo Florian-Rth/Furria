@@ -1,4 +1,6 @@
-import { KkAvatar, KkButton, KkSinceRow } from '@furria/ui';
+import { KkAvatar } from '@furria/ui/KkAvatar';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkSinceRow } from '@furria/ui/KkSinceRow';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { KeyHolderEntry } from '@/lib/key-holders';

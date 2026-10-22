@@ -1,4 +1,6 @@
-import { KkPhoto, kkTokens, toImageSource } from '@furria/ui';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkPhoto } from '@furria/ui/KkPhoto';
+import { kkTokens } from '@furria/ui/tokens';
 import type { FC } from 'react';
 import type { AlbumPhotoEntry } from '@/features/gallery/gallery-content';
 import { photoTileSizes } from '@/features/gallery/gallery-content';

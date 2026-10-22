@@ -1,4 +1,7 @@
-import { KkFormSection, KkSelectField, KkTextArea, KkTextField } from '@furria/ui';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkSelectField } from '@furria/ui/KkSelectField';
+import { KkTextArea } from '@furria/ui/KkTextArea';
+import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
 import { CALENDAR_KIND_OPTIONS } from '../calendar-labels';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';

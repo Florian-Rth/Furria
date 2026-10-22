@@ -1,4 +1,5 @@
-import { KkNewsMention, KkNewsMentionCard } from '@furria/ui';
+import { KkNewsMention } from '@furria/ui/KkNewsMention';
+import { KkNewsMentionCard } from '@furria/ui/KkNewsMentionCard';
 import type { FC } from 'react';
 import { personInitialsOf, personNameOf } from '@/features/news/news-mentions';
 import type { NewsMentionedPerson } from '@/lib/public-news/schemas';

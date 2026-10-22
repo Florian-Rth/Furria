@@ -1,7 +1,8 @@
-import type { KkAnswer } from '@furria/ui';
-import { kkTokens } from '@furria/ui';
+import type { KkAnswer } from '@furria/ui/KkAnswerChoice';
+import { kkTokens } from '@furria/ui/tokens';
 import { useEffect, useEffectEvent, useState } from 'react';
-import { ATTENDANCE_FAILURE_EFFECTS, useAttendanceAnswer } from '@/features/attendance';
+import { ATTENDANCE_FAILURE_EFFECTS } from '@/features/attendance/attendance-answer';
+import { useAttendanceAnswer } from '@/features/attendance/hooks/use-attendance-answer';
 import { itemKeyOf } from '../start-visit';
 
 export interface EntryAnswerInput {

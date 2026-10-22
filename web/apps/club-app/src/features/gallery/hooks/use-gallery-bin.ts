@@ -1,5 +1,5 @@
-import type { KkScreenActionBar } from '@furria/ui';
-import { useKkNotice } from '@furria/ui';
+import { useKkNotice } from '@furria/ui/KkNotice';
+import type { KkScreenActionBar } from '@furria/ui/screen-declaration';
 import { useState } from 'react';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useAlbumRestoration, useGalleryBinQuery, useItemRestoration } from '../api';

@@ -1,4 +1,6 @@
-import { KkExposureSweep, KkNote, kkTokens } from '@furria/ui';
+import { KkExposureSweep } from '@furria/ui/KkExposureSweep';
+import { KkNote } from '@furria/ui/KkNote';
+import { kkTokens } from '@furria/ui/tokens';
 import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';

@@ -1,4 +1,4 @@
-import { useKkNotice } from '@furria/ui';
+import { useKkNotice } from '@furria/ui/KkNotice';
 import { useState } from 'react';
 import { isNotFoundError } from '@/lib/query-error';
 import { useGoBackTo } from '@/lib/use-go-back-to';

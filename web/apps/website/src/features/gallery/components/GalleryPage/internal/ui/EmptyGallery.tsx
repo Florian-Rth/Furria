@@ -1,4 +1,4 @@
-import { KkEmptyState } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
 import type { FC } from 'react';
 import { emptyGalleryDescription, emptyGalleryTitle } from '@/features/gallery/gallery-content';
 import type { AlbumSummary } from '@/lib/public-gallery/schemas';

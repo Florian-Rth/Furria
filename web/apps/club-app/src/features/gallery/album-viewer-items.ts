@@ -1,4 +1,5 @@
-import type { KkImageSource, KkViewerItem, KkViewerVideo } from '@furria/ui';
+import type { KkImageSource } from '@furria/ui/image-source';
+import type { KkViewerItem, KkViewerVideo } from '@furria/ui/viewer-types';
 import type { AlbumFrame } from './album-frames';
 import { loupeAlt } from './album-labels';
 import { durationLabel } from './gallery-view';

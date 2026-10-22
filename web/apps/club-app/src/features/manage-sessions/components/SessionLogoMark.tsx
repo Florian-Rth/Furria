@@ -1,4 +1,5 @@
-import { KkPhoto, logoSourceOf } from '@furria/ui';
+import { KkPhoto } from '@furria/ui/KkPhoto';
+import { logoSourceOf } from '@furria/ui/logo-source';
 import type { FC } from 'react';
 
 interface SessionLogoMarkProps {

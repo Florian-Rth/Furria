@@ -1,12 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { GalleryUploadPage, UploadSearchSchema } from '@/features/gallery';
-import {
-  GALLERY_SORT_KEYS,
-  GALLERY_TITLE,
-  MORE_SECTION,
-  RequireAnyScreenPermission,
-} from '@/features/session';
+import { GalleryUploadPage } from '@/features/gallery/components/GalleryUploadPage';
+import { UploadSearchSchema } from '@/features/gallery/gallery-copy';
+import { GALLERY_SORT_KEYS, GALLERY_TITLE, MORE_SECTION } from '@/features/session/app-sections';
+import { RequireAnyScreenPermission } from '@/features/session/components/RequireAnyScreenPermission';
 
 const GalleryUploadPageRoute: FC = () => (
   <RequireAnyScreenPermission

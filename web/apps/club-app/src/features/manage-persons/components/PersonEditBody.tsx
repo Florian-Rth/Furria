@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { usePermissions } from '@/features/session';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { isNotFoundError } from '@/lib/query-error';
 import { usePersonQuery } from '../api';
 import { toPersonErrorMessage } from '../manage-persons-messages';

@@ -1,4 +1,6 @@
-import type { KkAnswer, KkGroupTone, KkSheetAction } from '@furria/ui';
+import type { KkGroupTone } from '@furria/ui/group-tone';
+import type { KkAnswer } from '@furria/ui/KkAnswerChoice';
+import type { KkSheetAction } from '@furria/ui/sheet-actions';
 import type { EventCover } from '@/lib/event-cover';
 
 export interface EntryGroupChip {

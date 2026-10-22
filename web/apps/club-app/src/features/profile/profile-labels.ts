@@ -1,4 +1,4 @@
-import type { MemberContact } from '@/features/members';
+import type { MemberContact } from '@/features/members/schemas';
 import type { ContactChange, MePerson, PersonalMe } from '@/lib/api/schemas';
 import { toContactChangeLine } from '@/lib/contact-change';
 import { toInitials } from '@/lib/initials';

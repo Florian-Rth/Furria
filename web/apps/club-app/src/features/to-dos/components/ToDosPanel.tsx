@@ -1,4 +1,6 @@
-import { KkPanel, KkPanelFold, KkPanelSection } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelFold } from '@furria/ui/KkPanelFold';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import type { ToDosBoardView } from '../hooks/use-to-dos-board';
 import { TO_DOS_PANEL_TITLE } from '../to-do-board';

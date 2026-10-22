@@ -1,4 +1,5 @@
-import { KkConfirmDialog, KkCornerTag } from '@furria/ui';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
+import { KkCornerTag } from '@furria/ui/KkCornerTag';
 import type { FC } from 'react';
 import { useBrowserModeLeave } from '../hooks/use-browser-mode-leave';
 import {

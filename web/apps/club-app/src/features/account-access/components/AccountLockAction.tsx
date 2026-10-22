@@ -1,4 +1,6 @@
-import { KkButton, KkConfirmDialog, KkWriteScreen } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
+import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
 import type { AccountLockAct } from '../access-actions';
 import {

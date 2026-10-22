@@ -1,6 +1,10 @@
-import { KkChip, KkGroupStage, KkPhoto, toImageSource } from '@furria/ui';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkGroupStage } from '@furria/ui/KkGroupStage';
+import { KkPhoto } from '@furria/ui/KkPhoto';
 import type { FC } from 'react';
-import { toGroupKindLabel, toGroupTone } from '@/features/groups';
+import { toGroupTone } from '@/features/groups/group-identity';
+import { toGroupKindLabel } from '@/features/groups/groups-labels';
 import { currentSessionYear } from '@/lib/club';
 import { useGroupHubQuery } from '../api';
 import {

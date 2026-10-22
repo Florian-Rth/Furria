@@ -1,4 +1,4 @@
-import { KkCalendarStrip } from '@furria/ui';
+import { KkCalendarStrip } from '@furria/ui/KkCalendarStrip';
 import type { FC } from 'react';
 import {
   CLOSE_HOURS_LABEL,

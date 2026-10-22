@@ -1,4 +1,5 @@
-import { KkFactLine, KkInlineLink } from '@furria/ui';
+import { KkFactLine } from '@furria/ui/KkFactLine';
+import { KkInlineLink } from '@furria/ui/KkInlineLink';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { BOARD_OFFICE_PATH, toSeatedLabel } from '../roles-hub-copy';

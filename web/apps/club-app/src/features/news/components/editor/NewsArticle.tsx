@@ -1,6 +1,10 @@
-import { KkDateline, KkFormatRail, KkHeadlineField, KkProofSheet, KkProseField } from '@furria/ui';
+import { KkDateline } from '@furria/ui/KkDateline';
+import { KkFormatRail } from '@furria/ui/KkFormatRail';
+import { KkHeadlineField } from '@furria/ui/KkHeadlineField';
+import { KkProofSheet } from '@furria/ui/KkProofSheet';
+import { KkProseField } from '@furria/ui/KkProseField';
 import type { FC } from 'react';
-import { NEWS_TITLE } from '@/features/session';
+import { NEWS_TITLE } from '@/features/session/app-sections';
 import {
   RAIL_LABEL,
   TEASER_PLACEHOLDER,

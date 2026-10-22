@@ -1,12 +1,14 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import Stack from '@mui/material/Stack';
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useState } from 'react';
 import { LegalLinks } from '@/components/LegalLinks';
-import { LandingPage } from '@/features/landing';
-import { NewsTeaser } from '@/features/news';
-import { PreviewAccessDialog, PreviewTeaser, usePreviewAccess } from '@/features/preview-access';
+import { LandingPage } from '@/features/landing/components/LandingPage';
+import { NewsTeaser } from '@/features/news/components/NewsTeaser/NewsTeaser';
+import { PreviewAccessDialog } from '@/features/preview-access/components/PreviewAccessDialog';
+import { PreviewTeaser } from '@/features/preview-access/components/PreviewTeaser/PreviewTeaser';
+import { usePreviewAccess } from '@/features/preview-access/hooks/use-preview-access';
 import type { RouteHead } from '@/lib/seo';
 
 const HOME_TITLE = 'FURRIA · Gross - Furria!';

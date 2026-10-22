@@ -1,11 +1,9 @@
-import type { KkSelectOption } from '@furria/ui';
-import {
-  KkButton,
-  KkFormSection,
-  KkMultiSelectField,
-  KkSelectField,
-  KkSwitchRow,
-} from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkMultiSelectField } from '@furria/ui/KkMultiSelectField';
+import type { KkSelectOption } from '@furria/ui/KkSelectField';
+import { KkSelectField } from '@furria/ui/KkSelectField';
+import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import type { FC } from 'react';
 import { CALENDAR_VISIBILITY_OPTIONS } from '../calendar-labels';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';

@@ -1,7 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { MORE_SECTION, RequireScreenPermission, SYSTEM_TITLE } from '@/features/session';
-import { SystemPage } from '@/features/system';
+import { MORE_SECTION, SYSTEM_TITLE } from '@/features/session/app-sections';
+import { RequireScreenPermission } from '@/features/session/components/RequireScreenPermission';
+import { SystemPage } from '@/features/system/components/SystemPage';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 
 const SystemRoute: FC = () => (

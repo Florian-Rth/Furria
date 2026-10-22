@@ -1,6 +1,8 @@
-import { KkScreen, KkTitleHeader, useIsWideScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
+import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, CALENDAR_SECTION, CALENDAR_TITLE } from '@/features/session';
+import { AREA_HANDOVERS, CALENDAR_SECTION, CALENDAR_TITLE } from '@/features/session/app-sections';
 import { CALENDAR_LEAD } from '../calendar-labels';
 import { useCalendarAdd } from '../hooks/use-calendar-add';
 import { useCalendarBoard } from '../hooks/use-calendar-board';

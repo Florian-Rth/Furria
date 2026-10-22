@@ -1,4 +1,5 @@
-import { KkPanel, KkPanelSection } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import { sessionYearsLabelOf } from '@/lib/club';
 import { DRAFTS_TITLE } from '../../hub-copy';

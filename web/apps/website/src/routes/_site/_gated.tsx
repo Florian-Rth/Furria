@@ -1,6 +1,6 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import { NotFoundPage } from '@/components/NotFoundPage';
-import { readGrantedFromSession } from '@/features/preview-access';
+import { readGrantedFromSession } from '@/features/preview-access/session-storage';
 import { safeSessionStorage } from '@/lib/browser-storage';
 
 export const Route = createFileRoute('/_site/_gated')({

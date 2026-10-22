@@ -77,10 +77,9 @@ speed, but so the suite only fails when behaviour is wrong.
    screen kind may and may not declare is a union in `KkShell/screen-declaration.ts`, so a
    forbidden layer is a type error, not a failing assertion. See *The shell* below.
 9. **A tested module is a leaf.** It imports no React, MUI, motion, React Query or router at
-   runtime and never the `@furria/ui` barrel — only `import type`, or a leaf subpath
-   (`@furria/ui/tokens`, `@furria/ui/group-tone`, `@furria/ui/theme`). One runtime barrel
-   import drags 126 components into the test worker. Pure logic a hook uses lives in its own
-   module; the hook imports it, the test imports it.
+   runtime, and from `@furria/ui` only leaf modules without React (`@furria/ui/tokens`,
+   `@furria/ui/group-tone`, `@furria/ui/theme`) or `import type`. Pure logic a hook uses lives
+   in its own module; the hook imports it, the test imports it.
 10. **One concept, one implementation, one test.** When the same rule exists twice (an id
    parser, a row affiliation, a motion ramp), the copies are merged into one shared module
    and that module is tested once — `lib/positive-id.ts`, `lib/person-rows.ts`,

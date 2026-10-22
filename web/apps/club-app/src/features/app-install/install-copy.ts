@@ -1,4 +1,4 @@
-import type { KkIconName } from '@furria/ui';
+import type { KkIconName } from '@furria/ui/KkIcon';
 import type {
   InstallBrowser,
   InstallDevice,

@@ -1,4 +1,4 @@
-import { KkLead } from '@furria/ui';
+import { KkLead } from '@furria/ui/KkLead';
 import { ConfirmScreenActions } from './internal/layout/ConfirmScreenActions';
 import { ConfirmScreenRoot } from './internal/layout/ConfirmScreenRoot';
 import { ConfirmScreenProgress } from './internal/ui/ConfirmScreenProgress';

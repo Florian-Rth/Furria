@@ -1,4 +1,6 @@
-import type { KkChipTone, KkConfirmFact, KkScreenOrigin } from '@furria/ui';
+import type { KkChipTone } from '@furria/ui/KkChip';
+import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import { toGroupKindLabel } from '@/features/groups/groups-labels';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toGroupMembersLabel } from '@/lib/group-sections';

@@ -1,6 +1,7 @@
-import { KkAvatar, KkSinceRow } from '@furria/ui';
+import { KkAvatar } from '@furria/ui/KkAvatar';
+import { KkSinceRow } from '@furria/ui/KkSinceRow';
 import type { FC } from 'react';
-import type { RoleOverviewHolder } from '@/features/roles-overview';
+import type { RoleOverviewHolder } from '@/features/roles-overview/schemas';
 import { toAvatarHonours } from '@/lib/honours';
 import { toInitials } from '@/lib/initials';
 import { formatIsoDay } from '@/lib/membership-labels';

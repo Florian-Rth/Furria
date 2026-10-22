@@ -1,6 +1,10 @@
-import { KkDateField, KkFormSection, KkTextArea, KkTextField, KkWriteScreen } from '@furria/ui';
+import { KkDateField } from '@furria/ui/KkDateField';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkTextArea } from '@furria/ui/KkTextArea';
+import { KkTextField } from '@furria/ui/KkTextField';
+import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
-import { WriteScreen } from '@/features/write';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import {
   ANNOUNCEMENT_ADD_LABEL,
   ANNOUNCEMENT_BODY_FIELD_LABEL,

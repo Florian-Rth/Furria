@@ -1,6 +1,6 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
-import { useMeQuery } from '@/features/session';
+import { useMeQuery } from '@/features/session/api';
 import { LOGIN_EMAIL_EDIT_TITLE, SECURITY_ORIGIN } from '../account-security-labels';
 import { toSecurityErrorMessage } from '../account-security-messages';
 import { AccountSecurityError } from './AccountSecurityError';

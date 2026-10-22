@@ -1,4 +1,5 @@
-import { KkLead, kkTokens } from '@furria/ui';
+import { KkLead } from '@furria/ui/KkLead';
+import { kkTokens } from '@furria/ui/tokens';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';

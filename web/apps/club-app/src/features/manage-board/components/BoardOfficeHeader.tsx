@@ -1,4 +1,5 @@
-import { KkOfficeMark, KkScreenHeader } from '@furria/ui';
+import { KkOfficeMark } from '@furria/ui/KkOfficeMark';
+import { KkScreenHeader } from '@furria/ui/KkScreenHeader';
 import type { FC } from 'react';
 import { isOfficeVacant, toOfficeMarkState } from '../board-hub';
 import type { BoardOffice } from '../schemas';

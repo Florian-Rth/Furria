@@ -1,4 +1,6 @@
-import { KkHeading, KkNote, KkPanel } from '@furria/ui';
+import { KkHeading } from '@furria/ui/KkHeading';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { toRedeemedLine, toRedeemedTitle } from '../account-access-labels';

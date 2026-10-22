@@ -1,5 +1,6 @@
-import type { KkGravity, KkShakeSample } from '@furria/ui';
-import { simulateShake } from '@furria/ui';
+import type { KkShakeSample } from '@furria/ui/globe-shake';
+import { simulateShake } from '@furria/ui/globe-shake';
+import type { KkGravity } from '@furria/ui/globe-tilt';
 import { useEffect } from 'react';
 
 const SHAKE_KEY = 's';

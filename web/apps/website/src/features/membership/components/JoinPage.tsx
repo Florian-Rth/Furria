@@ -1,4 +1,4 @@
-import { PageLayout } from '@furria/ui';
+import { PageLayout } from '@furria/ui/PageLayout';
 import type { FC, PropsWithChildren } from 'react';
 import { JoinClosingBand } from './JoinClosingBand/JoinClosingBand';
 import { JoinHero } from './JoinHero/JoinHero';

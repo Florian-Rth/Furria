@@ -1,7 +1,9 @@
-import { KkPanel, KkPanelSection, KkSkeletonBlock } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
-import { AppSkeletonRegion } from '@/features/session';
+import { AppSkeletonRegion } from '@/features/session/components/AppSkeletonRegion';
 import {
   APPLICANT_SECTION_TITLE,
   INTAKE_SECTION_TITLE,

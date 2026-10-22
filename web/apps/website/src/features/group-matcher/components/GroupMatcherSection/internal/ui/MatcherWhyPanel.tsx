@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import Accordion from '@mui/material/Accordion';
 import AccordionDetails from '@mui/material/AccordionDetails';

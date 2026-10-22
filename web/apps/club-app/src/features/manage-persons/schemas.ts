@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { PersonAccessSchema } from '@/features/account-access';
-import { AppSearchSchema } from '@/features/session';
+import { PersonAccessSchema } from '@/features/account-access/schemas';
+import { AppSearchSchema } from '@/features/session/schemas';
 import {
   ContactChangeSchema,
   GroupRefSchema,

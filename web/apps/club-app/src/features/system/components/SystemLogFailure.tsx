@@ -1,4 +1,5 @@
-import { KkButton, KkReadout } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkReadout } from '@furria/ui/KkReadout';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { RETRY_LABEL } from '../system-copy';

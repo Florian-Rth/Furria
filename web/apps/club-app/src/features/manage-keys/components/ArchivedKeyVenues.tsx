@@ -1,4 +1,4 @@
-import { KkEyebrow } from '@furria/ui';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { KEY_SECTION_TITLES } from '../manage-keys-labels';

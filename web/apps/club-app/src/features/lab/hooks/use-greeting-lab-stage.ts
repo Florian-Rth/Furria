@@ -1,7 +1,8 @@
-import type { KkScreenActionBar, KkSummaryFact } from '@furria/ui';
+import type { KkSummaryFact } from '@furria/ui/KkSummaryRow';
+import type { KkScreenActionBar } from '@furria/ui/screen-declaration';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import type { StartLook } from '@/features/start';
+import type { StartLook } from '@/features/start/hooks/use-start-look';
 import type { LabGreeting } from '../lab-greetings';
 import {
   LAB_GREETINGS,

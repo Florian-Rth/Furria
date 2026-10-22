@@ -1,4 +1,6 @@
-import { KkEyebrow, KkHeading, KkPanel } from '@furria/ui';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkHeading } from '@furria/ui/KkHeading';
+import { KkPanel } from '@furria/ui/KkPanel';
 import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';
 

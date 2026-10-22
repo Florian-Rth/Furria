@@ -1,4 +1,5 @@
-import { KkPanelSection, KkSlotRow } from '@furria/ui';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSlotRow } from '@furria/ui/KkSlotRow';
 import type { FC } from 'react';
 import type { SlotPositionRef } from '../types';
 import type { BoardPosition } from '../website-board';

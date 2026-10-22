@@ -61,6 +61,11 @@ description: Mandatory rules for all React/TypeScript frontend work. Invoke befo
 - Schemas live in a `schemas.ts` with their `z.infer<>` types exported right beside them; a separate `types.ts` exists only for shared types that have no schema
 - Form schemas end with `...FormSchema`, form types end with `...Form`
 
+### Imports
+- Never import through a large barrel — import from the module that defines the symbol: `@furria/ui/<Module>` (one subpath per module, listed in its `package.json` `exports`) and `@/features/<feature>/<file>`; `@furria/ui` and features have no `index.ts` — lint-enforced. Vite dev serves every module a barrel re-exports, so one barrel import compiled the whole package on first page load
+- A new public `@furria/ui` module gets its own entry in the package's `exports`
+- Route files keep their eager part (`validateSearch`, `beforeLoad`, `loader`) on light modules (`schemas.ts`, pure helpers) — the route tree imports every route file at startup; only the split component may pull in screens
+
 ### Code Style
 - Biome for linting and formatting — not Prettier, not ESLint
 - Zero warnings policy — treat all lint and TypeScript warnings as errors

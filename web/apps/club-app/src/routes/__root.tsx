@@ -1,8 +1,10 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { InstallGate } from '@/features/app-install';
-import { NativeChrome } from '@/features/native';
-import { AppFailure, AppNotFound, SessionBoot } from '@/features/session';
+import { InstallGate } from '@/features/app-install/components/InstallGate';
+import { NativeChrome } from '@/features/native/components/NativeChrome';
+import { AppFailure } from '@/features/session/components/AppFailure';
+import { AppNotFound } from '@/features/session/components/AppNotFound';
+import { SessionBoot } from '@/features/session/components/SessionBoot';
 
 const RootComponent: FC = () => (
   <>

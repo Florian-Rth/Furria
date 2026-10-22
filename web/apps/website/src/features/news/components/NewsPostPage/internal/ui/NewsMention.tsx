@@ -1,4 +1,4 @@
-import type { KkNewsTextMentionProps } from '@furria/ui';
+import type { KkNewsTextMentionProps } from '@furria/ui/news-text-mention-view';
 import type { FC } from 'react';
 import { mentionCardOf } from '@/features/news/news-mentions';
 import { useNewsMentionCards } from '../logic/news-mention-context';

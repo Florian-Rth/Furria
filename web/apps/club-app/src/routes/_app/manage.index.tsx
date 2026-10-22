@@ -1,7 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { MANAGE_TITLE, ManagePage } from '@/features/manage-hub';
-import { MANAGE_KEYS, MORE_SECTION, RequireAnyScreenPermission } from '@/features/session';
+import { ManagePage } from '@/features/manage-hub/components/ManagePage';
+import { MANAGE_TITLE } from '@/features/manage-hub/manage-hub-labels';
+import { MANAGE_KEYS, MORE_SECTION } from '@/features/session/app-sections';
+import { RequireAnyScreenPermission } from '@/features/session/components/RequireAnyScreenPermission';
 
 const ManageRoute: FC = () => (
   <RequireAnyScreenPermission

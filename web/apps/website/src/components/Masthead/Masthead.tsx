@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import AppBar from '@mui/material/AppBar';
 import { alpha } from '@mui/material/styles';
 import type { FC } from 'react';

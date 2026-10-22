@@ -1,6 +1,6 @@
 import { useLocation, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
-import { RESET_PASSWORD_PATH } from '@/features/login';
+import { RESET_PASSWORD_PATH } from '@/features/login/signed-out-paths';
 import { readPasswordReset } from '../reset-fragment';
 
 export const usePasswordResetFragment = (): string | null => {

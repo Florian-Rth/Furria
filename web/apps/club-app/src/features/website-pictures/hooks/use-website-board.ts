@@ -1,4 +1,5 @@
-import { useIsWideScreen, useKkSheet } from '@furria/ui';
+import { useKkSheet } from '@furria/ui/sheet-store';
+import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import { WEBSITE_PAGES, WEBSITE_PICTURE_SLOTS } from '@furria/website-pictures';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useState } from 'react';

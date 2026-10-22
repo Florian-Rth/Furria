@@ -1,4 +1,4 @@
-import type { KkScreenOrigin } from '@furria/ui';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 
 export const toOriginHref = (origin: KkScreenOrigin): string => {
   const params = origin.params ?? {};

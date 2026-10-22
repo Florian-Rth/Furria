@@ -1,4 +1,4 @@
-import { useKkNotice } from '@furria/ui';
+import { useKkNotice } from '@furria/ui/KkNotice';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useUpdateGroupInfoMutation } from '../api';
 import { toGroupInfoFormValues } from '../group-hub-labels';

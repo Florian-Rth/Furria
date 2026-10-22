@@ -1,5 +1,5 @@
-import type { KkConfirmFact } from '@furria/ui';
-import { KkConfirmDialog } from '@furria/ui';
+import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
 import type { FC } from 'react';
 import type { InvitationRoundControl } from '../hooks/use-invitation-round';
 import type { InvitationRoundAct } from '../invitation-round-labels';

@@ -1,8 +1,9 @@
-import type { KkScreenOrigin } from '@furria/ui';
-import { KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkScreenHeaderSkeleton } from '@furria/ui/KkScreenHeaderSkeleton';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { AREA_HANDOVERS } from '@/features/session';
+import { AREA_HANDOVERS } from '@/features/session/app-sections';
 import { parsePositiveId } from '@/lib/positive-id';
 import { useMemberQuery } from '../api';
 import { useIsSelf } from '../hooks/use-is-self';

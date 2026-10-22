@@ -1,4 +1,5 @@
-import { KkQuietFold, KkRoster } from '@furria/ui';
+import { KkQuietFold } from '@furria/ui/KkQuietFold';
+import { KkRoster } from '@furria/ui/KkRoster';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import {

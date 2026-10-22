@@ -1,10 +1,10 @@
-import { KkPanelStack } from '@furria/ui';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import type { FC } from 'react';
-import { GroupHistoryPanel } from '@/features/group-detail';
-import { toHeldGroupKind } from '@/features/group-kinds';
-import { toGroupTone } from '@/features/groups';
-import { usePermissions } from '@/features/session';
-import { useLanding } from '@/features/write';
+import { GroupHistoryPanel } from '@/features/group-detail/components/GroupHistoryPanel';
+import { toHeldGroupKind } from '@/features/group-kinds/group-kinds-labels';
+import { toGroupTone } from '@/features/groups/group-identity';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
+import { useLanding } from '@/features/write/hooks/use-landing';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toHubPeople } from '../hub-people';
 import type { GroupHub } from '../schemas';

@@ -1,4 +1,4 @@
-import { KkPanelHeader } from '@furria/ui';
+import { KkPanelHeader } from '@furria/ui/KkPanelHeader';
 import type { FC } from 'react';
 import { toGroupCountLabel } from '../groups-labels';
 

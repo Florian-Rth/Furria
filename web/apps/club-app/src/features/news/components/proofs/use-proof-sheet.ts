@@ -1,4 +1,4 @@
-import { useKkSheetCommands } from '@furria/ui';
+import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import { PEEK_SHEET_ID } from '../../proof-copy';
 
 export const useProofSheet = (): (() => void) => {

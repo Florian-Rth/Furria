@@ -1,7 +1,8 @@
-import { KkNote, KkWriteScreen } from '@furria/ui';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
-import { CALENDAR_ORIGIN } from '@/features/session';
-import { WriteScreen } from '@/features/write';
+import { CALENDAR_ORIGIN } from '@/features/session/app-sections';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import type { CalendarOwnerOption, CalendarParticipantPool } from '../calendar-authoring';
 import { toParticipantsEmptyLabel, toParticipatingGroupOptions } from '../calendar-authoring';
 import {

@@ -1,7 +1,9 @@
-import { useKkNotice } from '@furria/ui';
+import { useKkNotice } from '@furria/ui/KkNotice';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { MANAGING_LOGIN_NAME, NEWS_PATH, useMeQuery } from '@/features/session';
+import { useMeQuery } from '@/features/session/api';
+import { NEWS_PATH } from '@/features/session/app-sections';
+import { MANAGING_LOGIN_NAME } from '@/features/session/hooks/use-signer-name';
 import { toQueryErrorMessage } from '@/lib/query-error';
 import { ACTION_FAILED, PUBLISH_FAILED } from '../editor-copy';
 import type { EditorTarget } from '../editor-target';

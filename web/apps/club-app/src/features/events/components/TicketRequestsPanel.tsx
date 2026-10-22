@@ -1,4 +1,6 @@
-import { KkNote, KkPanel, KkPanelSection } from '@furria/ui';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import type { TicketRequest } from '../schemas';
 import {

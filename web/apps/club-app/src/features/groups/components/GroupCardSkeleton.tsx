@@ -1,4 +1,4 @@
-import { KkGroupCardSkeleton } from '@furria/ui';
+import { KkGroupCardSkeleton } from '@furria/ui/KkGroupCardSkeleton';
 import type { FC } from 'react';
 
 const FULL_HEIGHT = { height: '100%' } as const;

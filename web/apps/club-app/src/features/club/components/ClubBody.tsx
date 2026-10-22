@@ -1,6 +1,6 @@
-import { KkPanelStack } from '@furria/ui';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import type { FC } from 'react';
-import { useMeQuery } from '@/features/session';
+import { useMeQuery } from '@/features/session/api';
 import { useClubHubQuery } from '../api';
 import { toClubHubErrorMessage } from '../club-messages';
 import { AnnouncementsPanel } from './AnnouncementsPanel';

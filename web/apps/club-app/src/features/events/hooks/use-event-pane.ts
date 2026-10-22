@@ -1,5 +1,7 @@
-import type { KkIconName, KkStepState } from '@furria/ui';
-import { GALLERY_SORT_KEYS, usePermissions } from '@/features/session';
+import type { KkIconName } from '@furria/ui/KkIcon';
+import type { KkStepState } from '@furria/ui/step-state';
+import { GALLERY_SORT_KEYS } from '@/features/session/app-sections';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { useEventQuery } from '../api';
 import type { BoardCell } from '../event-board';
 import { cellOf, paneCellsOf } from '../event-board';

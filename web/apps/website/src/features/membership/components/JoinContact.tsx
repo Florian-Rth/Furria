@@ -1,4 +1,5 @@
-import { KkCard, KkSection } from '@furria/ui';
+import { KkCard } from '@furria/ui/KkCard';
+import { KkSection } from '@furria/ui/KkSection';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { ClubMailButton } from '@/components/ClubMailButton';

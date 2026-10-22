@@ -1,5 +1,6 @@
-import type { KkRoleMarkState, KkStepState } from '@furria/ui';
-import type { WriteLanding } from '@/features/write';
+import type { KkRoleMarkState } from '@furria/ui/KkRoleMark';
+import type { KkStepState } from '@furria/ui/step-state';
+import type { WriteLanding } from '@/features/write/landing-target';
 import type { PermissionKey } from '@/lib/api/schemas';
 import { isPermissionKey } from './role-permission-copy';
 import type { ImpliedByOffice, RoleHolder, RolePaneTab, RoleSummary } from './schemas';

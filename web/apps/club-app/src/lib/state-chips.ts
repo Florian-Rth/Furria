@@ -1,4 +1,5 @@
-import type { KkChipTone, KkFilterOption } from '@furria/ui';
+import type { KkFilterOption } from '@furria/ui/filter-chip-entries';
+import type { KkChipTone } from '@furria/ui/KkChip';
 import type { MembershipState } from '@/lib/api/schemas';
 import { toMembershipStateLabel } from '@/lib/membership-labels';
 

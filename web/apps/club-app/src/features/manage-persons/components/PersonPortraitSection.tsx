@@ -1,5 +1,6 @@
 import type { FC } from 'react';
-import { PictureSection, usePictureSection } from '@/features/pictures';
+import { PictureSection } from '@/features/pictures/components/PictureSection';
+import { usePictureSection } from '@/features/pictures/hooks/use-picture-section';
 import { toInitials } from '@/lib/initials';
 import { usePersonQuery } from '../api';
 import { toPersonName } from '../manage-persons-labels';

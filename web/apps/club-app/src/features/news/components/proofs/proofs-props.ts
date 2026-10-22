@@ -1,4 +1,4 @@
-import type { KkSx } from '@furria/ui';
+import type { KkSx } from '@furria/ui/kk-sx';
 import type { NewsVersion, NewsVersionPart } from '../../types';
 
 export interface NewsProofsProps {

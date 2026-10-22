@@ -1,7 +1,9 @@
-import { KkMasterDetail, KkMeta, KkRetryAlert } from '@furria/ui';
+import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { AppListSkeleton } from '@/features/session';
+import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import { useRolesHub } from '../hooks/use-roles-hub';
 import { toRolesErrorMessage } from '../manage-roles-messages';
 import { LOADING_LABEL, NO_ROLES_NOTE, RETRY_LABEL } from '../roles-hub-copy';

@@ -1,17 +1,17 @@
-import type { KkGlobeFeed, KkGravity, KkMotionSign, KkShakeSample, KkShakeState } from '@furria/ui';
+import type { KkGlobeFeed } from '@furria/ui/globe-feed';
+import { createKkGlobeFeed } from '@furria/ui/globe-feed';
+import type { KkShakeSample, KkShakeState } from '@furria/ui/globe-shake';
+import { KK_SHAKE_REST, senseShake, shakeForceOf } from '@furria/ui/globe-shake';
+import type { KkGravity, KkMotionSign } from '@furria/ui/globe-tilt';
 import {
   calibrateMotionSign,
-  createKkGlobeFeed,
   easeGravity,
   globeGravityOf,
-  KK_SHAKE_REST,
   KK_UPRIGHT,
   motionGravity,
   orientationGravity,
-  senseShake,
-  shakeForceOf,
   toScreenGravity,
-} from '@furria/ui';
+} from '@furria/ui/globe-tilt';
 import type { RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useGlobeSimulator } from './use-globe-simulator';

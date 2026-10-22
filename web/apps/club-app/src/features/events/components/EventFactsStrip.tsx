@@ -1,4 +1,4 @@
-import { KkFactStrip } from '@furria/ui';
+import { KkFactStrip } from '@furria/ui/KkFactStrip';
 import type { FC } from 'react';
 import { FACTS_LABEL } from '../event-board-copy';
 import { toEventFacts } from '../event-pane-copy';

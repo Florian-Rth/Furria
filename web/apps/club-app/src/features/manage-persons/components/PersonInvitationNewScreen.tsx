@@ -1,6 +1,6 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { MailInvitationEditor } from '@/features/account-access';
+import { MailInvitationEditor } from '@/features/account-access/components/MailInvitationEditor';
 import { parsePositiveId } from '@/lib/positive-id';
 import { usePersonEditorGate } from '../hooks/use-person-editor-gate';
 import { toPersonOrigin } from '../manage-persons-labels';

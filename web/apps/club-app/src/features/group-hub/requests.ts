@@ -1,4 +1,4 @@
-import { toGroupKindId } from '@/features/group-kinds';
+import { toGroupKindId } from '@/features/group-kinds/group-kinds-labels';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import { toGroupInfoPayload } from './group-hub-labels';

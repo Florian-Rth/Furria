@@ -1,5 +1,8 @@
-import type { KkFrameMark } from '@furria/ui';
-import { KkButton, KkFrame, KkMeta, KkText } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import type { KkFrameMark } from '@furria/ui/KkFrame';
+import { KkFrame } from '@furria/ui/KkFrame';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { PurgeCountdown } from '../bin-countdown';

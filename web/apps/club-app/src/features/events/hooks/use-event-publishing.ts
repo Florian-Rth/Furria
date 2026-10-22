@@ -1,12 +1,9 @@
-import type {
-  KkPublishCeremonyRun,
-  KkPublishStamp,
-  KkScreenActionBar,
-  KkScreenDeedHold,
-} from '@furria/ui';
-import { useKkPublishCeremony } from '@furria/ui';
+import type { KkPublishStamp } from '@furria/ui/publish-stamp';
+import type { KkScreenActionBar, KkScreenDeedHold } from '@furria/ui/screen-declaration';
+import type { KkPublishCeremonyRun } from '@furria/ui/use-publish-ceremony';
+import { useKkPublishCeremony } from '@furria/ui/use-publish-ceremony';
 import { useState } from 'react';
-import { useSignerName } from '@/features/session';
+import { useSignerName } from '@/features/session/hooks/use-signer-name';
 import {
   PUBLISH_HOLD_HINT,
   PUBLISHED_STAMP,

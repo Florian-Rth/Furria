@@ -1,4 +1,5 @@
-import { KkBandWatermark, kkTokens } from '@furria/ui';
+import { KkBandWatermark } from '@furria/ui/KkBandWatermark';
+import { kkTokens } from '@furria/ui/tokens';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { JoinInCopy } from './internal/ui/JoinInCopy';

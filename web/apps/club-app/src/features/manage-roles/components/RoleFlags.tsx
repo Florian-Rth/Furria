@@ -1,4 +1,4 @@
-import { KkRoster } from '@furria/ui';
+import { KkRoster } from '@furria/ui/KkRoster';
 import type { FC } from 'react';
 import type { RoleFacts } from '../roles-hub';
 import { toBoardFlag } from '../roles-hub-copy';

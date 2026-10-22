@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
+import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail/schemas';
 import { countGroupAdmins, toHubPeople } from './hub-people';
 
 const member = (over: Partial<GroupDetailMember>): GroupDetailMember => ({

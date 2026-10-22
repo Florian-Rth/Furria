@@ -1,13 +1,11 @@
-import {
-  KkFactRow,
-  KkFormPair,
-  KkFormSection,
-  KkSelectField,
-  KkSessionField,
-  KkWriteScreen,
-} from '@furria/ui';
+import { KkFactRow } from '@furria/ui/KkFactRow';
+import { KkFormPair } from '@furria/ui/KkFormPair';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkSelectField } from '@furria/ui/KkSelectField';
+import { KkSessionField } from '@furria/ui/KkSessionField';
+import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
-import { WriteScreen } from '@/features/write';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { usePersonFeeReductionEditor } from '../hooks/use-person-fee-reduction-editor';
 import {
   FEE_REDUCTION_BASIS_OPTIONS,

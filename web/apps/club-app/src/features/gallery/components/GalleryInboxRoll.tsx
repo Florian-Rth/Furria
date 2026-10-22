@@ -1,5 +1,5 @@
-import type { KkContactStripFrame } from '@furria/ui';
-import { KkContactStrip } from '@furria/ui';
+import type { KkContactStripFrame } from '@furria/ui/KkContactStrip';
+import { KkContactStrip } from '@furria/ui/KkContactStrip';
 import type { FC } from 'react';
 import { INBOX_TITLE } from '../gallery-copy';
 import {

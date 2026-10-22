@@ -1,4 +1,6 @@
-import { KkEyebrow, KkMeta, KkScreenHeader } from '@furria/ui';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkScreenHeader } from '@furria/ui/KkScreenHeader';
 import type { FC } from 'react';
 import { ALBUM_EYEBROW, albumDateLine, mediaCountLine } from '../album-labels';
 import type { AlbumDetails } from '../schemas';

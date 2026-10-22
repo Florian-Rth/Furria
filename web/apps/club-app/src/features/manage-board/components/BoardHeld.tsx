@@ -1,4 +1,6 @@
-import { KkMeta, KkPanelSection, KkRoster } from '@furria/ui';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkRoster } from '@furria/ui/KkRoster';
 import type { FC } from 'react';
 import { FILTER_EMPTY, HELD_TITLE, ROSTER_LABEL } from '../board-hub-copy';
 import type { BoardOffice } from '../schemas';

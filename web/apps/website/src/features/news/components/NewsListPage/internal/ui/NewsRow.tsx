@@ -1,4 +1,4 @@
-import { KkNewsRow } from '@furria/ui';
+import { KkNewsRow } from '@furria/ui/KkNewsRow';
 import type { FC } from 'react';
 import { newsLinkOf } from '@/features/news/components/news-link';
 import { newsPhotoOf } from '@/features/news/components/news-photo';

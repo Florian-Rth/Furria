@@ -1,5 +1,5 @@
 import type { FC, ReactNode } from 'react';
-import { GALLERY_ORIGIN } from '@/features/session';
+import { GALLERY_ORIGIN } from '@/features/session/app-sections';
 import { isNotFoundError } from '@/lib/query-error';
 import { toAlbumErrorMessage } from '../album-form-messages';
 import { useAlbumQuery } from '../api';

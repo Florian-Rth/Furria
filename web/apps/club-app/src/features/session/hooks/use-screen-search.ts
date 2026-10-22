@@ -1,4 +1,4 @@
-import type { KkScreenSearch } from '@furria/ui';
+import type { KkScreenSearch } from '@furria/ui/screen-declaration';
 import { useNavigate, useRouter } from '@tanstack/react-router';
 import { stepOffLayer } from '@/lib/back-stack';
 import { appRouteApi } from '../app-route';

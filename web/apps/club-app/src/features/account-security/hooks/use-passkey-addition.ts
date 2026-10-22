@@ -1,6 +1,6 @@
-import { useKkNotice } from '@furria/ui';
+import { useKkNotice } from '@furria/ui/KkNotice';
 import { useState } from 'react';
-import { toLandingKey } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
 import type { MePasskey } from '@/lib/api/schemas';
 import { toPasskeyErrorMessage } from '@/lib/passkey/passkey-messages';
 import { usePasskeySupport } from '@/lib/passkey/use-passkey-support';

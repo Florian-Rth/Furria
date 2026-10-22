@@ -1,4 +1,7 @@
-import { KkButton, KkEmptyState, KkMeta, KkPanel } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanel } from '@furria/ui/KkPanel';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import {

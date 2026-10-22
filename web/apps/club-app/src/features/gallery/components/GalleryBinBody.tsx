@@ -1,4 +1,6 @@
-import { KkAlert, KkEmptyState, KkFilmEdge } from '@furria/ui';
+import { KkAlert } from '@furria/ui/KkAlert';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkFilmEdge } from '@furria/ui/KkFilmEdge';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';

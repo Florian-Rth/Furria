@@ -1,4 +1,4 @@
-import { useKkNotice } from '@furria/ui';
+import { useKkNotice } from '@furria/ui/KkNotice';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useTicketAvailabilityMutation } from '../api';
 import type { EventDetails, TicketAvailability } from '../schemas';

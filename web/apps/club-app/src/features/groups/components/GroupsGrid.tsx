@@ -1,4 +1,4 @@
-import { kkMotion } from '@furria/ui';
+import { kkMotion } from '@furria/ui/kk-motion';
 import Grid from '@mui/material/Grid';
 import { motion } from 'motion/react';
 import type { CSSProperties, FC } from 'react';

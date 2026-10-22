@@ -1,4 +1,4 @@
-import type { KkSheetAction } from '@furria/ui';
+import type { KkSheetAction } from '@furria/ui/sheet-actions';
 import { Link } from '@tanstack/react-router';
 import { toPeekId } from '@/lib/peek';
 import { usePeek } from '@/lib/use-peek';

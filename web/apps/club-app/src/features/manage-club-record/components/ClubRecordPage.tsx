@@ -1,6 +1,8 @@
-import { KkScreen, KkTitleHeader } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, RequirePermission } from '@/features/session';
+import { AREA_HANDOVERS } from '@/features/session/app-sections';
+import { RequirePermission } from '@/features/session/components/RequirePermission';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { CLUB_RECORD_LEAD, CLUB_RECORD_TITLE, MANAGE_ORIGIN } from '../club-record-labels';
 import { ClubRecordBody } from './ClubRecordBody';

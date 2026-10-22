@@ -1,5 +1,8 @@
-import type { KkDenseFacet, KkDenseLineState, KkGroupTone, KkLinkSearchValues } from '@furria/ui';
-import { useKkSheetCommands } from '@furria/ui';
+import type { KkDenseFacet } from '@furria/ui/facet-pieces';
+import type { KkGroupTone } from '@furria/ui/group-tone';
+import type { KkDenseLineState } from '@furria/ui/KkDensePanelLine';
+import type { KkLinkSearchValues } from '@furria/ui/kk-link-search';
+import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import { Link } from '@tanstack/react-router';
 import type { ElementType } from 'react';
 import type { StartLineView } from '../start-lines';

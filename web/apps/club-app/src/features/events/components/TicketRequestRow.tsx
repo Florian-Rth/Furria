@@ -1,4 +1,7 @@
-import { KkButton, KkConfirmDialog, KkFactRow, KkIcon } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
+import { KkFactRow } from '@furria/ui/KkFactRow';
+import { KkIcon } from '@furria/ui/KkIcon';
 import type { FC } from 'react';
 import { useTicketRequestHandling } from '../hooks/use-ticket-request-handling';
 import type { TicketRequest } from '../schemas';

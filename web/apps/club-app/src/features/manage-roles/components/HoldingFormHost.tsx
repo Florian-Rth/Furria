@@ -1,4 +1,5 @@
-import { KkBottomDrawer, KkMasterDetail } from '@furria/ui';
+import { KkBottomDrawer } from '@furria/ui/KkBottomDrawer';
+import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
 import type { FC } from 'react';
 import type { HoldingFormTarget } from '../hooks/use-holding-form-target';
 import { CLOSE_LABEL, OPEN_HOLDING_TITLE } from '../roles-hub-copy';

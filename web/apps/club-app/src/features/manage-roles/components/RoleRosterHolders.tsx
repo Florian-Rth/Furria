@@ -1,4 +1,5 @@
-import { KkMeta, KkRoster } from '@furria/ui';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkRoster } from '@furria/ui/KkRoster';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
 import { toPersonName } from '../manage-roles-labels';

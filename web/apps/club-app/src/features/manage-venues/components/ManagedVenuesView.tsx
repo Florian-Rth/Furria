@@ -1,4 +1,4 @@
-import { KkNote } from '@furria/ui';
+import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { MANAGE_VENUES_FOOTNOTE, partitionVenues } from '../manage-venues-labels';

@@ -1,4 +1,4 @@
-import type { KkClubIcon } from '@furria/ui';
+import type { KkClubIcon } from '@furria/ui/club-icon';
 import type { PersonFunction } from '@/lib/api/schemas';
 import type { StartMine } from '../schemas';
 import { isRoundYears, joinDayOf } from '../start-lines';

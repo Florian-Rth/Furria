@@ -1,4 +1,4 @@
-import { KkMeta } from '@furria/ui';
+import { KkMeta } from '@furria/ui/KkMeta';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { toArchivedSinceLabel, VACANT_NOTE } from '../board-hub-copy';

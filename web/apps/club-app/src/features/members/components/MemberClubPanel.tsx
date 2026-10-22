@@ -1,4 +1,8 @@
-import { KkChip, KkFieldRow, KkNote, KkPanel, KkPanelSection } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import { formatIsoDay, toMemberSinceLabel } from '@/lib/membership-labels';
 import { toMembershipStateChip } from '@/lib/state-chips';

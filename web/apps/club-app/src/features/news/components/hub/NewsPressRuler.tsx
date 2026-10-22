@@ -1,5 +1,5 @@
-import type { KkPressRulerLabels } from '@furria/ui';
-import { KkPressRuler } from '@furria/ui';
+import { KkPressRuler } from '@furria/ui/KkPressRuler';
+import type { KkPressRulerLabels } from '@furria/ui/press-ruler-data';
 import type { FC } from 'react';
 import { sessionYearsLabelOf } from '@/lib/club';
 import {

@@ -1,4 +1,5 @@
-import { KkEmptyState, KkSheet } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkSheet } from '@furria/ui/KkSheet';
 import type { FC } from 'react';
 import { toPeekId } from '@/lib/peek';
 import { GROUP_PEEK_CLOSE_LABEL } from '../groups-labels';

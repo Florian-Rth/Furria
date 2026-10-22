@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { AppListSkeleton } from '@/features/session';
+import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import { useSessionRecordsQuery } from '../api';
 import { MANAGE_SESSIONS_LOADING_LABEL } from '../manage-sessions-labels';
 import { toSessionRecordsErrorMessage } from '../manage-sessions-messages';

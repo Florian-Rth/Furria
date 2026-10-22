@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { EventManagePage } from '@/features/events';
+import { EventManagePage } from '@/features/events/components/EventManagePage';
 
 const EventManageRoute: FC = () => {
   const { eventId } = Route.useParams();

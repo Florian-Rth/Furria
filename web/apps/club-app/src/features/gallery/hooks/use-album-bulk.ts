@@ -1,5 +1,6 @@
-import type { KkIconName } from '@furria/ui';
-import { useKkNotice, useKkSheetCommands } from '@furria/ui';
+import type { KkIconName } from '@furria/ui/KkIcon';
+import { useKkNotice } from '@furria/ui/KkNotice';
+import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import { useNavigate } from '@tanstack/react-router';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { selectionWith, selectionWithout } from '../album-frames';

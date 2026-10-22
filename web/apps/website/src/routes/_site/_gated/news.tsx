@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { NewsScreen } from '@/features/news';
+import { NewsScreen } from '@/features/news/components/NewsScreen';
 import { publicNews } from '@/lib/public-news/api';
 import type { NewsSection } from '@/lib/public-news/schemas';
 import type { RouteHead } from '@/lib/seo';

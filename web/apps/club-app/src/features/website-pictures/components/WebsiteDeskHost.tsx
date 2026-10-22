@@ -1,8 +1,11 @@
-import { KkConfirmDialog, KkSheet, useKkSheet } from '@furria/ui';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
+import { KkSheet } from '@furria/ui/KkSheet';
+import { useKkSheet } from '@furria/ui/sheet-store';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
-import { GalleryPickSheet, usePickableAlbumsQuery } from '@/features/gallery-pick';
-import { PICTURE_ACCEPT } from '@/features/pictures';
+import { usePickableAlbumsQuery } from '@/features/gallery-pick/api';
+import { GalleryPickSheet } from '@/features/gallery-pick/components/GalleryPickSheet';
+import { PICTURE_ACCEPT } from '@/features/pictures/picture-target';
 import { usePositionDesk } from '../hooks/use-position-desk';
 import type { TransferTarget } from '../transfer-targets';
 import type { SlotPositionRef } from '../types';

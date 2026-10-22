@@ -1,4 +1,6 @@
-import type { KkConfirmFact, KkDateQuickChoice, KkScreenOrigin } from '@furria/ui';
+import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
+import type { KkDateQuickChoice } from '@furria/ui/KkDateField';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { PermissionKey } from '@/lib/api/schemas';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';

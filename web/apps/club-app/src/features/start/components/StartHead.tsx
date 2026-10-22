@@ -1,5 +1,8 @@
-import type { KkGreetingBeat } from '@furria/ui';
-import { KkCountHead, KkGreeting, KkGreetingSkeleton, KkLapClosing } from '@furria/ui';
+import type { KkGreetingBeat } from '@furria/ui/greeting-context';
+import { KkCountHead } from '@furria/ui/KkCountHead';
+import { KkGreeting } from '@furria/ui/KkGreeting';
+import { KkGreetingSkeleton } from '@furria/ui/KkGreetingSkeleton';
+import { KkLapClosing } from '@furria/ui/KkLapClosing';
 import type { FC, ReactNode } from 'react';
 import type { StartHeadView } from '../greeting/head-view';
 import { StartCount } from './StartCount';

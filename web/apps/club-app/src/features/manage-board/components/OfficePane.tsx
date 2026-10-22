@@ -1,5 +1,5 @@
-import type { KkStickyFootSurface } from '@furria/ui';
-import { KkStepPane } from '@furria/ui';
+import { KkStepPane } from '@furria/ui/KkStepPane';
+import type { KkStickyFootSurface } from '@furria/ui/KkStickyFoot';
 import type { FC, ReactNode } from 'react';
 import { useOfficePane } from '../hooks/use-office-pane';
 import type { BoardOffice } from '../schemas';

@@ -1,4 +1,5 @@
-import { KkEmptyState, KkPanel } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkPanel } from '@furria/ui/KkPanel';
 import type { FC } from 'react';
 import type { PersonAccessFilter } from '../person-access-filter';
 import { toPersonsEmptyLine } from '../person-access-filter';

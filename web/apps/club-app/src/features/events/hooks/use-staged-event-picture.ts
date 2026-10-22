@@ -1,10 +1,13 @@
-import type { KkBannerDeskActions, KkCrop } from '@furria/ui';
-import { centredCrop, useKkNotice, useKkSheet } from '@furria/ui';
+import type { KkBannerDeskActions } from '@furria/ui/banner-desk-types';
+import type { KkCrop } from '@furria/ui/image-crop';
+import { centredCrop } from '@furria/ui/image-crop';
+import { useKkNotice } from '@furria/ui/KkNotice';
+import { useKkSheet } from '@furria/ui/sheet-store';
 import type { ChangeEvent } from 'react';
 import { useEffect, useState } from 'react';
-import type { GalleryPhoto } from '@/features/gallery-pick';
-import { photoSizeOf } from '@/features/gallery-pick';
-import { toUploadOwner } from '@/features/pictures';
+import { photoSizeOf } from '@/features/gallery-pick/gallery-photo';
+import type { GalleryPhoto } from '@/features/gallery-pick/schemas';
+import { toUploadOwner } from '@/features/pictures/picture-target';
 import { startUpload } from '@/lib/media/start-upload';
 import { useEventPictureFromGalleryMutation } from '../api';
 import { EVENT_GALLERY_SHEET_ID } from '../event-picture-copy';

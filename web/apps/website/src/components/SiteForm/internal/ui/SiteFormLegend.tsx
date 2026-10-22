@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import type { FC, PropsWithChildren } from 'react';

@@ -1,7 +1,9 @@
-import { KkNote, KkPageWatermark, KkPanelStack } from '@furria/ui';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPageWatermark } from '@furria/ui/KkPageWatermark';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
-import { LabEntryRow } from '@/features/lab';
+import { LabEntryRow } from '@/features/lab/components/LabEntryRow';
 import { relevantSessionYear } from '@/lib/club';
 import { formatSessionLabel } from '@/lib/membership-labels';
 import { useManageHubQuery } from '../api';

@@ -1,6 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { ImprintClubError, LegalPage, useImprintDocument } from '@/features/legal';
+import { ImprintClubError } from '@/features/legal/components/ImprintClubError';
+import { LegalPage } from '@/features/legal/components/LegalPage/LegalPage';
+import { useImprintDocument } from '@/features/legal/hooks/use-imprint-document';
 import type { RouteHead } from '@/lib/seo';
 import { pageTitle } from '@/lib/seo';
 

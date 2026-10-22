@@ -1,7 +1,10 @@
-import { GROUP_TONES, KkEyebrow, KkGroupToneSwatch, KkNote } from '@furria/ui';
+import { GROUP_TONES } from '@furria/ui/group-tone';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkGroupToneSwatch } from '@furria/ui/KkGroupToneSwatch';
+import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import type { GroupTone } from '@/features/groups';
+import type { GroupTone } from '@/features/groups/group-identity';
 import { toToneLabel } from '@/lib/group-tone';
 import { toToneWarning } from '../group-hub-labels';
 

@@ -1,4 +1,4 @@
-import { usePermissions } from '@/features/session';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 
 export interface EventsWorkbenchKeys {

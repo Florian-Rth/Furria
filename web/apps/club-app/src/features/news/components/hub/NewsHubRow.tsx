@@ -1,4 +1,4 @@
-import { KkPressRow } from '@furria/ui';
+import { KkPressRow } from '@furria/ui/KkPressRow';
 import type { FC } from 'react';
 import type { HubRow } from '../../hub-view';
 import { CATEGORY_LABELS, CATEGORY_TONES, STAGE_WORDS } from '../../news-copy';

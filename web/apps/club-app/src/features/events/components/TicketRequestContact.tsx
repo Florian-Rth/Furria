@@ -1,4 +1,5 @@
-import { KkInlineLink, KkText } from '@furria/ui';
+import { KkInlineLink } from '@furria/ui/KkInlineLink';
+import { KkText } from '@furria/ui/KkText';
 import type { FC } from 'react';
 import type { TicketRequest } from '../schemas';
 import { toMailHref, toPhoneHref, toQuotedMessage } from '../ticket-requests-labels';

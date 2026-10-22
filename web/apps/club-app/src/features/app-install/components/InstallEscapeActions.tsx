@@ -1,4 +1,6 @@
-import { KkButton, KkIcon, KkInstallStage } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkIcon } from '@furria/ui/KkIcon';
+import { KkInstallStage } from '@furria/ui/KkInstallStage';
 import type { FC } from 'react';
 import { useCopyLink } from '../hooks/use-copy-link';
 import { COPY_LINK_ACTION, EXIT_ACTIONS, LINK_COPIED } from '../install-copy';

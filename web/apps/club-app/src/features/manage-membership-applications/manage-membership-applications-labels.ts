@@ -1,4 +1,5 @@
-import type { KkConfirmFact, KkScreenOrigin } from '@furria/ui';
+import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import { toIsoDay } from '@/lib/day';
 import { formatAddress, formatIsoDay } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';

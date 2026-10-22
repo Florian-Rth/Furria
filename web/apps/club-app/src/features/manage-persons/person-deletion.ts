@@ -1,4 +1,4 @@
-import type { KkConfirmFact } from '@furria/ui';
+import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
 import { toMembershipStateLabel } from '@/lib/membership-labels';
 import { toPersonName } from './manage-persons-labels';
 import type { RunningTie } from './person-archive';

@@ -1,4 +1,9 @@
-import { KkAlbumTie, KkEventTie, KkText, KkTieOffer, KkTieSlot, toImageSource } from '@furria/ui';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkAlbumTie } from '@furria/ui/KkAlbumTie';
+import { KkEventTie } from '@furria/ui/KkEventTie';
+import { KkText } from '@furria/ui/KkText';
+import { KkTieOffer } from '@furria/ui/KkTieOffer';
+import { KkTieSlot } from '@furria/ui/KkTieSlot';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import {

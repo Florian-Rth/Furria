@@ -1,4 +1,4 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
 import { KEYS_ORIGIN, MANAGE_KEYS_TITLE } from '../manage-keys-labels';
 import { ManagedKeysError } from './ManagedKeysError';

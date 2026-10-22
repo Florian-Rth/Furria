@@ -1,6 +1,6 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, SYSTEM_ORIGIN } from '@/features/session';
+import { AREA_HANDOVERS, SYSTEM_ORIGIN } from '@/features/session/app-sections';
 import { SECTION_TITLES } from '../system-copy';
 import type { SystemArea } from '../types';
 import { SystemAreaBody } from './SystemAreaBody';

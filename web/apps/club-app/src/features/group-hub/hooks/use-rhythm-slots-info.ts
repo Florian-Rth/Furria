@@ -1,4 +1,4 @@
-import { useRunningVenuesQuery } from '@/features/calendar';
+import { useRunningVenuesQuery } from '@/features/calendar/api';
 import { toUnavailableVenueIds } from '../rhythm-labels';
 import type { TrainingSlot } from '../schemas';
 import { MAX_TRAINING_SLOTS } from '../schemas';

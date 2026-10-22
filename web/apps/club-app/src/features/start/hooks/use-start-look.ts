@@ -1,4 +1,4 @@
-import { usePersonalMe } from '@/features/session';
+import { usePersonalMe } from '@/features/session/hooks/use-personal-me';
 import { useMinuteNow } from '@/lib/use-minute-now';
 import { greetingActAt, toGreetingViewer } from '../greeting/greeting-act';
 import type { StartSeason } from '../start-season';

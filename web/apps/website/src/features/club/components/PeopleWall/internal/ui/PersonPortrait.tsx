@@ -1,4 +1,6 @@
-import { KkEyebrow, KkPhoto, kkTokens } from '@furria/ui';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkPhoto } from '@furria/ui/KkPhoto';
+import { kkTokens } from '@furria/ui/tokens';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';

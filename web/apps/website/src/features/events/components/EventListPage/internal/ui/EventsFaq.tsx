@@ -1,4 +1,4 @@
-import { KkSection } from '@furria/ui';
+import { KkSection } from '@furria/ui/KkSection';
 import type { FC } from 'react';
 import { EVENTS_FAQ, eventsFaqKicker, eventsFaqTitle } from '@/features/events/faq-content';
 import { EventsFaqList } from '../layout/EventsFaqList';

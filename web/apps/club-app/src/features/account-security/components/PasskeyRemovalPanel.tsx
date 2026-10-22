@@ -1,4 +1,5 @@
-import { KkConfirmDialog, KkWriteScreen } from '@furria/ui';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
+import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
 import type { MePasskey } from '@/lib/api/schemas';
 import { usePasskeyRemoval } from '../hooks/use-passkey-removal';

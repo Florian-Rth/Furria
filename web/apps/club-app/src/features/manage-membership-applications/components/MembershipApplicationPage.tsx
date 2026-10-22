@@ -1,8 +1,10 @@
-import type { KkScreenActionBar } from '@furria/ui';
-import { KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkScreenHeaderSkeleton } from '@furria/ui/KkScreenHeaderSkeleton';
+import type { KkScreenActionBar } from '@furria/ui/screen-declaration';
 import { useNavigate, useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, RequirePermission } from '@/features/session';
+import { AREA_HANDOVERS } from '@/features/session/app-sections';
+import { RequirePermission } from '@/features/session/components/RequirePermission';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { parsePositiveId } from '@/lib/positive-id';
 import { ADMIT_LABEL, toCandidatesContext } from '../admission-labels';

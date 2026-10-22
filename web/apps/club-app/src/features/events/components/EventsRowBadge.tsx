@@ -1,4 +1,4 @@
-import { KkChip } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
 import type { FC } from 'react';
 import { CANCELLED_BADGE, IN_PREPARATION_BADGE } from '../event-board-copy';
 import { isCancelledEvent, isInPreparation } from '../event-plan';

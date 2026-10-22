@@ -1,4 +1,8 @@
-import { KkAvatar, KkChip, KkEyebrow, KkMeta, KkScreenHeader } from '@furria/ui';
+import { KkAvatar } from '@furria/ui/KkAvatar';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkScreenHeader } from '@furria/ui/KkScreenHeader';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
 import {

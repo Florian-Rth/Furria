@@ -1,6 +1,8 @@
-import { KkPanel, KkPanelStack, KkSkeletonBlock } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
 import type { FC } from 'react';
-import { AppSkeletonRegion } from '@/features/session';
+import { AppSkeletonRegion } from '@/features/session/components/AppSkeletonRegion';
 
 const LOADING_LABEL = 'Deine Kontaktdaten werden geladen';
 const SKELETON_LINES = 4;

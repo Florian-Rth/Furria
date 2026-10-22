@@ -1,4 +1,7 @@
-import { KkHeading, KkMeta, KkNote, KkPanel } from '@furria/ui';
+import { KkHeading } from '@furria/ui/KkHeading';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
 import Stack from '@mui/material/Stack';
 import type { ElementType, FC, ReactNode } from 'react';
 import { VENUE_WITHOUT_ADDRESS } from '../manage-venues-labels';

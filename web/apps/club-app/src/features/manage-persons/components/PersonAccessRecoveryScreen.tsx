@@ -1,6 +1,6 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { InPersonInvitationScreen } from '@/features/account-access';
+import { InPersonInvitationScreen } from '@/features/account-access/components/InPersonInvitationScreen';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { parsePositiveId } from '@/lib/positive-id';
 import { usePersonEditorGate } from '../hooks/use-person-editor-gate';

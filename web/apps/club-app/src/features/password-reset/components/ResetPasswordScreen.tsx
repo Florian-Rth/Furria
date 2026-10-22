@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { SignedOutFrame } from '@/features/login';
+import { SignedOutFrame } from '@/features/login/components/SignedOutFrame';
 import { usePasswordResetFragment } from '../hooks/use-password-reset-fragment';
 import { useResetPassword } from '../hooks/use-reset-password';
 import { ResetLinkDead } from './ResetLinkDead';

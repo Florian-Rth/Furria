@@ -1,8 +1,10 @@
-import { KkEyebrow, KkFactRow, KkPanel } from '@furria/ui';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkFactRow } from '@furria/ui/KkFactRow';
+import { KkPanel } from '@furria/ui/KkPanel';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { toLandingKey } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
 import { KEY_SECTION_TITLES, toHoldingPeriodLabel, toPersonName } from '../manage-keys-labels';
 import type { KeyHolding } from '../schemas';
 

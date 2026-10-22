@@ -1,7 +1,9 @@
-import { KkButton, KkEmptyState, KkScreen } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkScreen } from '@furria/ui/KkScreen';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { NEWS_ORIGIN, NEWS_PATH, NEWS_TITLE } from '@/features/session';
+import { NEWS_ORIGIN, NEWS_PATH, NEWS_TITLE } from '@/features/session/app-sections';
 import { MISSING_BACK, MISSING_TEXT, MISSING_TITLE } from '../../editor-copy';
 
 export const NewsEditorMissing: FC = () => {

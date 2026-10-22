@@ -1,4 +1,4 @@
-import type { KkIconName } from '@furria/ui';
+import type { KkIconName } from '@furria/ui/KkIcon';
 import type { ToDo, ToDoKind } from './schemas';
 import { TO_DO_ICONS, toToDoLabel } from './to-do-labels';
 import type { ToDoLink } from './to-do-links';

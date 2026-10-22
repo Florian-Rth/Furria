@@ -1,6 +1,7 @@
-import type { KkHonours, KkImageSource } from '@furria/ui';
-import { toImageSource } from '@furria/ui';
-import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
+import type { KkHonours } from '@furria/ui/honour-types';
+import type { KkImageSource } from '@furria/ui/image-source';
+import { toImageSource } from '@furria/ui/image-source';
+import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail/schemas';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toAvatarHonours } from '@/lib/honours';
 

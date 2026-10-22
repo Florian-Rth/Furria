@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { usePermissions } from '@/features/session';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { useClubRecordQuery } from '../api';
 import { toClubRecordErrorMessage } from '../club-record-messages';
 import { ClubRecordError } from './ClubRecordError';

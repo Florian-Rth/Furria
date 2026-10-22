@@ -1,7 +1,7 @@
 import { useController } from 'react-hook-form';
-import type { Weekday } from '@/features/groups';
-import type { WriteLanding } from '@/features/write';
-import { useWriteForm } from '@/features/write';
+import type { Weekday } from '@/features/groups/group-identity';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
+import type { WriteLanding } from '@/features/write/landing-target';
 import { useSetTrainingSlotsMutation } from '../api';
 import { toSlotFormValues, toSlotPayload, toSlotPayloadOf } from '../rhythm-labels';
 import type { TrainingSlot } from '../schemas';

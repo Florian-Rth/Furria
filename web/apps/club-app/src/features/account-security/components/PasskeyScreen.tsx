@@ -1,6 +1,9 @@
-import { KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkScreenHeaderSkeleton } from '@furria/ui/KkScreenHeaderSkeleton';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, ScreenNotFound, useMeQuery } from '@/features/session';
+import { useMeQuery } from '@/features/session/api';
+import { AREA_HANDOVERS } from '@/features/session/app-sections';
+import { ScreenNotFound } from '@/features/session/components/ScreenNotFound';
 import { PASSKEY_EYEBROW, SECURITY_ORIGIN } from '../account-security-labels';
 import { toSecurityErrorMessage } from '../account-security-messages';
 import { AccountSecurityError } from './AccountSecurityError';

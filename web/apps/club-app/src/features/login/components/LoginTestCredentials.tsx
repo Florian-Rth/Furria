@@ -1,4 +1,5 @@
-import { KkEyebrow, KkText } from '@furria/ui';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 

@@ -1,6 +1,6 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { usePermissions } from '@/features/session';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { parsePositiveId } from '@/lib/positive-id';
 import { useGroupHubQuery } from '../api';
 import { toHubPeople } from '../hub-people';

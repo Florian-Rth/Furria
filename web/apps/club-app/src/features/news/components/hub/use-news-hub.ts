@@ -1,4 +1,4 @@
-import type { KkScreenActions } from '@furria/ui';
+import type { KkScreenActions } from '@furria/ui/screen-declaration';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useEffect, useRef, useState } from 'react';

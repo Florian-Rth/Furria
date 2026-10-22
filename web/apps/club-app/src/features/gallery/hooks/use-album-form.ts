@@ -1,6 +1,6 @@
-import { useKkSheetCommands } from '@furria/ui';
+import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import type { UseFormReturn } from 'react-hook-form';
-import { useWriteForm } from '@/features/write';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import { toAlbumFormValues, toAlbumPayload, toAlbumUpdatePayload } from '../album-form';
 import { useAlbumCreation, useAlbumUpdate } from '../api';
 import { ALBUM_ROUTE } from '../gallery-copy';

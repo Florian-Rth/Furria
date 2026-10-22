@@ -1,4 +1,4 @@
-import { KkNote } from '@furria/ui';
+import { KkNote } from '@furria/ui/KkNote';
 import type { FC, PropsWithChildren } from 'react';
 import { useFormContext } from 'react-hook-form';
 

@@ -1,4 +1,8 @@
-import { KkFieldRow, KkHubRow, KkNote, KkPanel, KkPanelSection } from '@furria/ui';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkHubRow } from '@furria/ui/KkHubRow';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';

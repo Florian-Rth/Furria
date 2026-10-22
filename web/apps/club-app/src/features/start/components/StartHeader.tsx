@@ -1,6 +1,7 @@
-import { KkTitleHeader } from '@furria/ui';
+import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import type { FC, ReactNode } from 'react';
-import { START_TITLE, usePermissions } from '@/features/session';
+import { START_TITLE } from '@/features/session/app-sections';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { START_MANAGING_LEAD } from '../start-messages';
 import { MemberHead } from './MemberHead';
 import { StartHeaderRow } from './StartHeaderRow';

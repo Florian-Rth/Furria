@@ -1,7 +1,8 @@
-import { KkIconButton, KkTextField } from '@furria/ui';
+import { KkIconButton } from '@furria/ui/KkIconButton';
+import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { usePasswordVisibility } from '@/features/login';
+import { usePasswordVisibility } from '@/features/login/hooks/use-password-visibility';
 import type { ReauthenticationForm } from '../schemas';
 
 const PASSWORD_LABEL = 'Dein Passwort';

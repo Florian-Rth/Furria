@@ -1,6 +1,10 @@
-import { KkPanel, KkScreen, KkScreenHeaderSkeleton, KkSkeletonBlock } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkScreenHeaderSkeleton } from '@furria/ui/KkScreenHeaderSkeleton';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
 import type { FC } from 'react';
-import { AppSkeletonRegion, AREA_HANDOVERS, NEWS_ORIGIN } from '@/features/session';
+import { AREA_HANDOVERS, NEWS_ORIGIN } from '@/features/session/app-sections';
+import { AppSkeletonRegion } from '@/features/session/components/AppSkeletonRegion';
 import { EDITOR_LOADING, NEW_POST_TITLE } from '../../editor-copy';
 
 const SKELETON_LINES = 10;

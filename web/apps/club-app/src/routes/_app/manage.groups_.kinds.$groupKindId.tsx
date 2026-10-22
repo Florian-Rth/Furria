@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { GroupKindScreen } from '@/features/manage-groups';
+import { GroupKindScreen } from '@/features/manage-groups/components/GroupKindScreen';
 
 export const Route = createFileRoute('/_app/manage/groups_/kinds/$groupKindId')({
   component: GroupKindScreen,

@@ -1,4 +1,7 @@
-import type { KkIconName, KkOfficeMarkState, KkScreenOrigin, KkTenureState } from '@furria/ui';
+import type { KkIconName } from '@furria/ui/KkIcon';
+import type { KkOfficeMarkState } from '@furria/ui/KkOfficeMark';
+import type { KkTenureState } from '@furria/ui/KkTenureChainRow';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import { formatIsoDay, formatPeriod } from '@/lib/membership-labels';
 import type {
   NextChange,

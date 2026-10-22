@@ -1,4 +1,4 @@
-import { KkRadioGroup } from '@furria/ui';
+import { KkRadioGroup } from '@furria/ui/KkRadioGroup';
 import type { FC } from 'react';
 import { TICKET_AVAILABILITY_KEYS, TICKET_AVAILABILITY_LABELS } from '@/lib/event-copy';
 import { useTicketAvailability } from '../hooks/use-ticket-availability';

@@ -1,4 +1,5 @@
-import { KkLead, KkSection } from '@furria/ui';
+import { KkLead } from '@furria/ui/KkLead';
+import { KkSection } from '@furria/ui/KkSection';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
 import {

@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { AppListSkeleton } from '@/features/session';
+import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import { useManagedGroupsQuery } from '../api';
 import type { ManagedGroupsListing } from '../hooks/use-managed-groups-listing';
 import { toManagedGroupsErrorMessage } from '../manage-groups-messages';

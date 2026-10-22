@@ -1,4 +1,5 @@
-import { KkRoleMark, KkScreenHeader } from '@furria/ui';
+import { KkRoleMark } from '@furria/ui/KkRoleMark';
+import { KkScreenHeader } from '@furria/ui/KkScreenHeader';
 import type { FC } from 'react';
 import { toRoleMarkState } from '../roles-hub';
 import type { RoleSummary } from '../schemas';

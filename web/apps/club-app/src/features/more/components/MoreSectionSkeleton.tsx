@@ -1,6 +1,8 @@
-import { KkPanel, KkPanelSection, KkSkeletonRow } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSkeletonRow } from '@furria/ui/KkSkeletonRow';
 import type { FC } from 'react';
-import { AppSkeletonRegion } from '@/features/session';
+import { AppSkeletonRegion } from '@/features/session/components/AppSkeletonRegion';
 
 const LOADING_LABEL = 'Wird geladen';
 

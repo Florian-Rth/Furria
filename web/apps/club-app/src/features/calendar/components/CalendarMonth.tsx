@@ -1,4 +1,4 @@
-import { KkCalendarMonth } from '@furria/ui';
+import { KkCalendarMonth } from '@furria/ui/KkCalendarMonth';
 import type { FC } from 'react';
 import {
   MONTH_LABEL,

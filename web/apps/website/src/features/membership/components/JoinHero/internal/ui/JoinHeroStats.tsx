@@ -1,4 +1,4 @@
-import { KkStatRow } from '@furria/ui';
+import { KkStatRow } from '@furria/ui/KkStatRow';
 import type { FC } from 'react';
 import { useJoinStats } from '@/features/membership/hooks/use-join-stats';
 

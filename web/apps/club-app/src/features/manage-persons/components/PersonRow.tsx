@@ -1,4 +1,6 @@
-import { KkChip, KkPersonRow, toImageSource } from '@furria/ui';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkPersonRow } from '@furria/ui/KkPersonRow';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';

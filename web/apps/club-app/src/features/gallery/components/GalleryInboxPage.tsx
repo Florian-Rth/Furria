@@ -1,6 +1,9 @@
-import { KkButton, KkErrorState, KkLightTable, KkScreen } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkErrorState } from '@furria/ui/KkErrorState';
+import { KkLightTable } from '@furria/ui/KkLightTable';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
-import { GALLERY_ORIGIN } from '@/features/session';
+import { GALLERY_ORIGIN } from '@/features/session/app-sections';
 import { INBOX_TITLE } from '../gallery-copy';
 import { useGalleryInbox } from '../hooks/use-gallery-inbox';
 import { INBOX_ERROR_TITLE, INBOX_RETRY_LABEL, KEY_HINT, LIGHT_TABLE_LABELS } from '../inbox-copy';

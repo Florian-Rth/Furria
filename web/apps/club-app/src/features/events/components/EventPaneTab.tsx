@@ -1,4 +1,4 @@
-import { KkStepPane } from '@furria/ui';
+import { KkStepPane } from '@furria/ui/KkStepPane';
 import type { FC } from 'react';
 import type { BoardCell } from '../event-board';
 import { PANE_ICONS, toCellAriaLabel } from '../event-board-copy';

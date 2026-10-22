@@ -1,6 +1,6 @@
-import type { KkStartTileReach } from '@furria/ui';
-import { useKkSheetCommands } from '@furria/ui';
-import { usePersonalMe } from '@/features/session';
+import type { KkStartTileReach } from '@furria/ui/reach';
+import { useKkSheetCommands } from '@furria/ui/sheet-store';
+import { usePersonalMe } from '@/features/session/hooks/use-personal-me';
 import type { PersonFunction } from '@/lib/api/schemas';
 import type { MineCoin } from '../mine-tile';
 import { needsAttention, tileFactsOf, toMineCoin } from '../mine-tile';

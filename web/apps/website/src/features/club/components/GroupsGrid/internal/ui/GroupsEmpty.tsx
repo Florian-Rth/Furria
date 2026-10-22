@@ -1,4 +1,4 @@
-import { KkEmptyState } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
 import type { FC } from 'react';
 import { ClubMailKkButton } from '@/components/ClubMailKkButton';
 import { groupsLabels } from '@/features/club/groups-content';

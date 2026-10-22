@@ -1,5 +1,6 @@
-import type { KkCalendarLineGroup } from '@furria/ui';
-import { KkChip, KkGroupToneChip } from '@furria/ui';
+import type { KkCalendarLineGroup } from '@furria/ui/KkCalendarAgendaLine';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkGroupToneChip } from '@furria/ui/KkGroupToneChip';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 

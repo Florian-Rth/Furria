@@ -1,4 +1,4 @@
-import { KkCard } from '@furria/ui';
+import { KkCard } from '@furria/ui/KkCard';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { deriveEventDisplay } from '@/features/landing/events-teaser-content';

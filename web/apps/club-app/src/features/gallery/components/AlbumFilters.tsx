@@ -1,5 +1,5 @@
-import type { KkFilterOption } from '@furria/ui';
-import { KkFilterChips } from '@furria/ui';
+import type { KkFilterOption } from '@furria/ui/filter-chip-entries';
+import { KkFilterChips } from '@furria/ui/KkFilterChips';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { KIND_FILTER_LABEL, UPLOADER_FILTER_LABEL } from '../album-labels';

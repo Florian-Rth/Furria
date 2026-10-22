@@ -1,13 +1,11 @@
-import {
-  KkFactRow,
-  KkFormPair,
-  KkFormSection,
-  KkNote,
-  KkSessionField,
-  KkWriteScreen,
-} from '@furria/ui';
+import { KkFactRow } from '@furria/ui/KkFactRow';
+import { KkFormPair } from '@furria/ui/KkFormPair';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkSessionField } from '@furria/ui/KkSessionField';
+import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
-import { WriteScreen } from '@/features/write';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { usePersonPauseEditor } from '../hooks/use-person-pause-editor';
 import {
   PAUSE_CHAIN_TITLE,

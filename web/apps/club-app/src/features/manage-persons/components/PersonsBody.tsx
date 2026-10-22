@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { AppListSkeleton } from '@/features/session';
+import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import { usePersonsQuery } from '../api';
 import { usePersonsAccess } from '../hooks/use-persons-access';
 import type { PersonsSearch } from '../hooks/use-persons-search';

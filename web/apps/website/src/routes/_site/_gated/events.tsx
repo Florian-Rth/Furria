@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { buildEventsJsonLd, EventsScreen } from '@/features/events';
+import { EventsScreen } from '@/features/events/components/EventsScreen';
+import { buildEventsJsonLd } from '@/features/events/events-json-ld';
 import { publicEvents } from '@/lib/public-events/api';
 import type { Event } from '@/lib/public-events/schemas';
 import type { RouteHead } from '@/lib/seo';

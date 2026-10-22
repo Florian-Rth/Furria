@@ -1,5 +1,7 @@
 import type { FC } from 'react';
-import { AppListSkeleton, useMeQuery, usePermissions } from '@/features/session';
+import { useMeQuery } from '@/features/session/api';
+import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { ANNOUNCEMENTS_LOADING_LABEL } from '../announcements-labels';
 import { toAnnouncementsErrorMessage } from '../announcements-messages';

@@ -1,4 +1,5 @@
-import { KkButton, KkInstallStage } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkInstallStage } from '@furria/ui/KkInstallStage';
 import type { FC } from 'react';
 import { CONFIRM_DONE_ACTION } from '../install-copy';
 import type { InstallGuide } from '../install-guide';

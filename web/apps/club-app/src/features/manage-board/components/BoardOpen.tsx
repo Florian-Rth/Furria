@@ -1,4 +1,6 @@
-import { KkMeta, KkPanelSection, KkWorkQueue } from '@furria/ui';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkWorkQueue } from '@furria/ui/KkWorkQueue';
 import type { FC } from 'react';
 import type { QueueItem } from '../board-hub';
 import { canSeatOffice } from '../board-hub';

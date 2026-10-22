@@ -1,4 +1,7 @@
-import { KkButton, KkConfirmDialog, KkIcon, KkPanelSection } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
+import { KkIcon } from '@furria/ui/KkIcon';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import { useLogoutEverywhere } from '../hooks/use-logout-everywhere';
 

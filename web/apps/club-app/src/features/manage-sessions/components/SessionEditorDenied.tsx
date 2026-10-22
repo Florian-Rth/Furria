@@ -1,6 +1,6 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
-import { AccessDenied } from '@/features/session';
+import { AccessDenied } from '@/features/session/components/AccessDenied';
 import { SESSION_EDITOR_DENIED_MESSAGE, SESSIONS_ORIGIN } from '../manage-sessions-labels';
 
 interface SessionEditorDeniedProps {

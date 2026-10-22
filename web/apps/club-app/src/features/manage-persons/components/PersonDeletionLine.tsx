@@ -1,6 +1,7 @@
-import { KkConfirmDialog, KkWriteScreen } from '@furria/ui';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
+import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
-import { ReauthenticationProofFields } from '@/features/account-security';
+import { ReauthenticationProofFields } from '@/features/account-security/components/ReauthenticationProofFields';
 import { toIsoDay } from '@/lib/day';
 import { usePersonDeletion } from '../hooks/use-person-deletion';
 import { toRunningTies } from '../person-archive';

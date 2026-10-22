@@ -1,7 +1,9 @@
-import type { KkNumberStepLabels } from '@furria/ui';
-import { KkFormSection, KkNumberField, KkTextField } from '@furria/ui';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import type { KkNumberStepLabels } from '@furria/ui/KkNumberField';
+import { KkNumberField } from '@furria/ui/KkNumberField';
+import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
-import { WriteScreen } from '@/features/write';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { CLUB_RECORD_ORIGIN, CLUB_RECORD_SECTION_TITLES } from '../club-record-labels';
 import { useClubIdentityEditor } from '../hooks/use-club-identity-editor';
 import type { ClubRecord } from '../schemas';

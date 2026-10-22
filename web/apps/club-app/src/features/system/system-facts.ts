@@ -1,4 +1,4 @@
-import type { KkHeartbeatState } from '@furria/ui';
+import type { KkHeartbeatState } from '@furria/ui/KkHeartbeat';
 import type {
   BackgroundService,
   MediaFacts,

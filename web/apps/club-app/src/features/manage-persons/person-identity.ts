@@ -1,5 +1,6 @@
-import type { KkStateTone } from '@furria/ui';
-import type { AccessActions, PersonAccess } from '@/features/account-access';
+import type { KkStateTone } from '@furria/ui/state-rail-paint';
+import type { AccessActions } from '@/features/account-access/access-actions';
+import type { PersonAccess } from '@/features/account-access/schemas';
 import { sessionAt } from '@/lib/club';
 import { fromIsoDay, toIsoDay } from '@/lib/day';
 import { formatIsoDay, formatSessionLabel } from '@/lib/membership-labels';

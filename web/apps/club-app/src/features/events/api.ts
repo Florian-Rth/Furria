@@ -1,7 +1,7 @@
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { skipToken, useQuery } from '@tanstack/react-query';
-import { toEntryWriteNotice } from '@/features/calendar';
-import type { ToDoMarkSurface } from '@/features/to-dos';
+import { toEntryWriteNotice } from '@/features/calendar/calendar-authoring';
+import type { ToDoMarkSurface } from '@/features/to-dos/api';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { queryKeys } from '@/lib/query/reads';

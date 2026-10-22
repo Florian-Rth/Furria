@@ -1,4 +1,4 @@
-import { useIsWideScreen } from '@furria/ui';
+import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import { useNavigate, useParams, useSearch } from '@tanstack/react-router';
 import type { EventPaneKey } from '../schemas';
 

@@ -1,6 +1,6 @@
 import '@furria/api-client/zod-without-eval';
 import '@furria/ui/fonts';
-import { KkThemeProvider } from '@furria/ui';
+import { KkThemeProvider } from '@furria/ui/KkThemeProvider';
 import { QueryClientProvider } from '@tanstack/react-query';
 import { createRouter, RouterProvider } from '@tanstack/react-router';
 import { StrictMode } from 'react';

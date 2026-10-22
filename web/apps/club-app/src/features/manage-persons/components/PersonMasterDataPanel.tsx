@@ -1,9 +1,12 @@
-import type { KkPanelAction } from '@furria/ui';
-import { KkFieldRow, KkPanel, KkPanelSection, KkSwitchRow } from '@furria/ui';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
+import type { KkPanelAction } from '@furria/ui/panel-action';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { useMeQuery } from '@/features/session';
-import { toLandingKey } from '@/features/write';
+import { useMeQuery } from '@/features/session/api';
+import { toLandingKey } from '@/features/write/landing-target';
 import { formatAddress, formatIsoDay } from '@/lib/membership-labels';
 import { useContactVisibilitySwitch } from '../hooks/use-contact-visibility-switch';
 import {

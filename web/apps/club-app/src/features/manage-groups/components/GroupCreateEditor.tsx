@@ -1,12 +1,15 @@
-import { KkFormSection, KkSelectField, KkTextField } from '@furria/ui';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkSelectField } from '@furria/ui/KkSelectField';
+import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
-import type { RunningGroupKind } from '@/features/group-kinds';
 import {
   GROUP_KIND_FIELD_HINT,
   GROUP_KIND_FIELD_LABEL,
   toGroupKindOptions,
-} from '@/features/group-kinds';
-import { ClubIconField, WriteScreen } from '@/features/write';
+} from '@/features/group-kinds/group-kinds-labels';
+import type { RunningGroupKind } from '@/features/group-kinds/schemas';
+import { ClubIconField } from '@/features/write/components/ClubIconField';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { useGroupCreateEditor } from '../hooks/use-group-create-editor';
 import { MANAGE_GROUPS_ORIGIN } from '../manage-groups-labels';
 

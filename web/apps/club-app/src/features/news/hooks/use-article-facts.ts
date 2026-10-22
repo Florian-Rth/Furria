@@ -1,4 +1,5 @@
-import type { KkBannerState, KkProseMentionTone } from '@furria/ui';
+import type { KkBannerState } from '@furria/ui/banner-desk-types';
+import type { KkProseMentionTone } from '@furria/ui/KkProseField';
 import { WEBSITE_HOST } from '@/lib/publish-copy';
 import {
   ADDRESS_FIXED,

@@ -1,4 +1,4 @@
-import { PageLayout } from '@furria/ui';
+import { PageLayout } from '@furria/ui/PageLayout';
 import type { FC } from 'react';
 import { CarnivalCallBand } from './CarnivalCallBand/CarnivalCallBand';
 import { ChronicleTimeline } from './ChronicleTimeline/ChronicleTimeline';

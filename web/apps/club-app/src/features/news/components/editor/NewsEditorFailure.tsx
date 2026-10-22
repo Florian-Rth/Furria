@@ -1,6 +1,8 @@
-import { KkButton, KkErrorState, KkScreen } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkErrorState } from '@furria/ui/KkErrorState';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
-import { NEWS_ORIGIN } from '@/features/session';
+import { NEWS_ORIGIN } from '@/features/session/app-sections';
 import { EDITOR_ERROR_TITLE, NEW_POST_TITLE } from '../../editor-copy';
 import { HUB_RETRY } from '../../hub-copy';
 

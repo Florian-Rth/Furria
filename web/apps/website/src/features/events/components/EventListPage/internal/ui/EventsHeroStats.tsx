@@ -1,4 +1,4 @@
-import { KkStatRow } from '@furria/ui';
+import { KkStatRow } from '@furria/ui/KkStatRow';
 import type { FC } from 'react';
 import { deriveHeroStats } from '@/features/events/hero-display';
 import type { Event } from '@/lib/public-events/schemas';

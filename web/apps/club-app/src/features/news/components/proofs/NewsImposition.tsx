@@ -1,4 +1,4 @@
-import { KkNewsImposition } from '@furria/ui';
+import { KkNewsImposition } from '@furria/ui/KkNewsImposition';
 import type { FC } from 'react';
 import { PROOF_LABELS } from '../../proof-copy';
 import type { NewsProofsProps } from './proofs-props';

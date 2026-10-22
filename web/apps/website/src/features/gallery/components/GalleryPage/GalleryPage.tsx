@@ -1,4 +1,5 @@
-import { KkRule, PageLayout } from '@furria/ui';
+import { KkRule } from '@furria/ui/KkRule';
+import { PageLayout } from '@furria/ui/PageLayout';
 import type { FC } from 'react';
 import { GalleryEventsBand } from '@/features/gallery/components/GalleryEventsBand/GalleryEventsBand';
 import { GalleryHeader } from '@/features/gallery/components/GalleryHeader/GalleryHeader';

@@ -1,4 +1,4 @@
-import type { KkScreenOrigin } from '@furria/ui';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 
 interface RootScreenFrame {
   section: string;

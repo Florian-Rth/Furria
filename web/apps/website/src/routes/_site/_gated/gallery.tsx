@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { GalleryScreen } from '@/features/gallery';
+import { GalleryScreen } from '@/features/gallery/components/GalleryScreen';
 import { publicGallery } from '@/lib/public-gallery/api';
 import type { GallerySection } from '@/lib/public-gallery/schemas';
 import type { RouteHead } from '@/lib/seo';

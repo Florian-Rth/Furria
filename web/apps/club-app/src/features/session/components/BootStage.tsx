@@ -1,4 +1,4 @@
-import { KkBrandStage } from '@furria/ui';
+import { KkBrandStage } from '@furria/ui/KkBrandStage';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { BOOT_STATUS_MESSAGE } from '../session-messages';

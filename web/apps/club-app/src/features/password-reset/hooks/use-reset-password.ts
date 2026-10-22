@@ -3,7 +3,7 @@ import { useNavigate } from '@tanstack/react-router';
 import type { FormEvent } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useForm } from 'react-hook-form';
-import { PASSWORD_RESET_FLAG } from '@/features/login';
+import { PASSWORD_RESET_FLAG } from '@/features/login/schemas';
 import { LOGIN_PATH } from '@/lib/return-to';
 import { useResetPasswordMutation } from '../api';
 import { toResetFailureKind } from '../reset-failure';

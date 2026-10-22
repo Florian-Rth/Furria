@@ -1,6 +1,6 @@
-import { KkPanelStack } from '@furria/ui';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import type { FC } from 'react';
-import { useLanding } from '@/features/write';
+import { useLanding } from '@/features/write/hooks/use-landing';
 import type { ClubRecord } from '../schemas';
 import { ClubAccessPanel } from './ClubAccessPanel';
 import { ClubContactPanel } from './ClubContactPanel';

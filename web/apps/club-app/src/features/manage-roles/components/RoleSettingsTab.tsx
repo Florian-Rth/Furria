@@ -1,4 +1,7 @@
-import { KkFactLine, KkMeta, KkPanelSection, KkText } from '@furria/ui';
+import { KkFactLine } from '@furria/ui/KkFactLine';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { RolePaneControl } from '../hooks/use-role-pane';

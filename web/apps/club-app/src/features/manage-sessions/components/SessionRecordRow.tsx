@@ -1,7 +1,11 @@
-import { KkChip, KkMeta, KkSessionRow, logoSourceOf } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkSessionRow } from '@furria/ui/KkSessionRow';
+import { logoSourceOf } from '@furria/ui/logo-source';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { toLandingKey, useLanding } from '@/features/write';
+import { useLanding } from '@/features/write/hooks/use-landing';
+import { toLandingKey } from '@/features/write/landing-target';
 import {
   toSessionNumberLabel,
   toSessionRowChip,

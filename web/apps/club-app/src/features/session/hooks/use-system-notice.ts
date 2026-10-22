@@ -1,5 +1,6 @@
-import type { KkSystemNotice } from '@furria/ui';
-import { applyAppUpdate, useAppUpdateReady } from '@/features/app-install';
+import type { KkSystemNotice } from '@furria/ui/KkNotice';
+import { applyAppUpdate } from '@/features/app-install/app-update-store';
+import { useAppUpdateReady } from '@/features/app-install/hooks/use-app-update-ready';
 import { useIsOnline } from '@/lib/use-is-online';
 import {
   APP_UPDATE_ACTION,

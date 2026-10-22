@@ -1,6 +1,8 @@
-import { KkPanel, KkPanelSection, KkSkeletonRow } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSkeletonRow } from '@furria/ui/KkSkeletonRow';
 import type { FC } from 'react';
-import { AppSkeletonRegion } from '@/features/session';
+import { AppSkeletonRegion } from '@/features/session/components/AppSkeletonRegion';
 import { GROUP_KIND_SECTION_TITLE } from '../manage-groups-labels';
 
 const LOADING_LABEL = 'Die Gruppenart wird geladen';

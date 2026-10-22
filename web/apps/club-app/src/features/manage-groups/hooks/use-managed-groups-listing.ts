@@ -1,7 +1,7 @@
-import type { KkFilterOption } from '@furria/ui';
+import type { KkFilterOption } from '@furria/ui/filter-chip-entries';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useEffect } from 'react';
-import { useSearchQuery } from '@/features/session';
+import { useSearchQuery } from '@/features/session/hooks/use-search-query';
 import type { GroupRegisterBands, GroupWorkFacets, GroupWorkFilterId } from '../manage-groups-work';
 import {
   ALL_GROUPS_FILTER_ID,

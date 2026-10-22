@@ -1,4 +1,4 @@
-import type { KkAspect } from '@furria/ui';
+import type { KkAspect } from '@furria/ui/image-aspect';
 import type { UploadOwner } from '@/lib/media/media-upload';
 import type { DomainChange } from '@/lib/query/reads';
 

@@ -1,5 +1,5 @@
-import type { KkImageSource } from '@furria/ui';
-import { toImageSource } from '@furria/ui';
+import type { KkImageSource } from '@furria/ui/image-source';
+import { toImageSource } from '@furria/ui/image-source';
 import type { Picture } from '@/lib/api/schemas';
 import { formatIsoDay } from '@/lib/membership-labels';
 import { toInitials } from './initials';

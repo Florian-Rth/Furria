@@ -1,4 +1,4 @@
-import { KkFactRow } from '@furria/ui';
+import { KkFactRow } from '@furria/ui/KkFactRow';
 import type { FC } from 'react';
 import { toDayNumberLabel, toWeekdayEyebrow } from '@/lib/calendar-days';
 import type { TicketRequestGroup } from '../ticket-requests-labels';

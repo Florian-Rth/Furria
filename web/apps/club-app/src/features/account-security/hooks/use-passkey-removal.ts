@@ -1,4 +1,4 @@
-import { useKkNotice } from '@furria/ui';
+import { useKkNotice } from '@furria/ui/KkNotice';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useRefreshAfter } from '@/lib/query/use-refresh-after';

@@ -1,4 +1,4 @@
-import { KkLead } from '@furria/ui';
+import { KkLead } from '@furria/ui/KkLead';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { groupsLabels } from '@/features/club/groups-content';

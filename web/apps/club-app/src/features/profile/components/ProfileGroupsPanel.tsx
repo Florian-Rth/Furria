@@ -1,13 +1,11 @@
-import {
-  KkButton,
-  KkEmptyState,
-  KkErrorState,
-  KkPanel,
-  KkPanelSection,
-  KkSkeletonBlock,
-} from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkErrorState } from '@furria/ui/KkErrorState';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
 import type { FC } from 'react';
-import { useMyGroupsQuery } from '@/features/group-hub';
+import { useMyGroupsQuery } from '@/features/group-hub/api';
 import { PROFILE_SECTION_TITLES } from '../profile-labels';
 import { toProfileGroupsErrorMessage } from '../profile-messages';
 import { ProfileGroupRow } from './ProfileGroupRow';

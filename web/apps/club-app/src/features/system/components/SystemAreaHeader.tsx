@@ -1,4 +1,8 @@
-import { KkChip, KkEyebrow, KkMeta, KkScreenHeader, KkScreenHeaderSkeleton } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkScreenHeader } from '@furria/ui/KkScreenHeader';
+import { KkScreenHeaderSkeleton } from '@furria/ui/KkScreenHeaderSkeleton';
 import type { FC } from 'react';
 import { useSystemStatus } from '../hooks/use-system-status';
 import { HEADER_EYEBROW, SECTION_TITLES } from '../system-copy';

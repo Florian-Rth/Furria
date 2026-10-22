@@ -1,13 +1,13 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { AlbumPage } from '@/features/gallery/components/AlbumPage/AlbumPage';
+import { GalleryUnavailable } from '@/features/gallery/components/GalleryUnavailable';
 import {
-  AlbumPage,
-  AlbumSearchSchema,
   buildAlbumDescription,
   buildAlbumDocumentTitle,
   buildAlbumHref,
-  GalleryUnavailable,
-} from '@/features/gallery';
+} from '@/features/gallery/gallery-content';
+import { AlbumSearchSchema } from '@/features/gallery/schemas';
 import { publicGallery } from '@/lib/public-gallery/api';
 import type { AlbumDetail } from '@/lib/public-gallery/schemas';
 import { loadCanonicalDetail } from '@/lib/public-resource/canonical-detail';

@@ -1,5 +1,5 @@
-import type { KkCalendarHeadUnder } from '@furria/ui';
-import { KkCalendarAgenda } from '@furria/ui';
+import type { KkCalendarHeadUnder } from '@furria/ui/calendar-sticky';
+import { KkCalendarAgenda } from '@furria/ui/KkCalendarAgenda';
 import type { FC } from 'react';
 import type { CalendarDayItem } from '../calendar-agenda';
 import { toGapView } from '../calendar-agenda-view';

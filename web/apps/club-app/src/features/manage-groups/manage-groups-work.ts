@@ -1,4 +1,4 @@
-import type { KkFilterOption } from '@furria/ui';
+import type { KkFilterOption } from '@furria/ui/filter-chip-entries';
 import { normalizeForSearch } from '@/lib/text';
 import type { ManagedGroupSummary } from './schemas';
 

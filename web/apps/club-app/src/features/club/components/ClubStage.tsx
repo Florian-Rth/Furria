@@ -1,4 +1,5 @@
-import { KkMottoStage, KkMottoStageSkeleton } from '@furria/ui';
+import { KkMottoStage } from '@furria/ui/KkMottoStage';
+import { KkMottoStageSkeleton } from '@furria/ui/KkMottoStageSkeleton';
 import type { FC } from 'react';
 import {
   daysUntilOpening,

@@ -1,5 +1,5 @@
-import type { KkProseMentionTone } from '@furria/ui';
-import { toImageSource } from '@furria/ui';
+import { toImageSource } from '@furria/ui/image-source';
+import type { KkProseMentionTone } from '@furria/ui/KkProseField';
 import type { NewsInline } from '@furria/ui/news-text';
 import { newsMentionKeyOf, readNewsText } from '@furria/ui/news-text';
 import type { NewsMentionables } from './schemas';

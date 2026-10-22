@@ -1,8 +1,9 @@
-import { centredCrop, useKkSheet } from '@furria/ui';
-import type { GalleryPhoto } from '@/features/gallery-pick';
-import { photoSizeOf } from '@/features/gallery-pick';
-import type { PictureSectionDesk } from '@/features/pictures';
-import { usePictureSection } from '@/features/pictures';
+import { centredCrop } from '@furria/ui/image-crop';
+import { useKkSheet } from '@furria/ui/sheet-store';
+import { photoSizeOf } from '@/features/gallery-pick/gallery-photo';
+import type { GalleryPhoto } from '@/features/gallery-pick/schemas';
+import type { PictureSectionDesk } from '@/features/pictures/hooks/use-picture-section';
+import { usePictureSection } from '@/features/pictures/hooks/use-picture-section';
 import { useEventPictureFromGalleryMutation, useEventQuery } from '../api';
 import { EVENT_GALLERY_SHEET_ID } from '../event-picture-copy';
 import type { EventDetails } from '../schemas';

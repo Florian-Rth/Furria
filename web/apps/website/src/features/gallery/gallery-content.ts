@@ -1,4 +1,5 @@
-import type { KkPhotoOrientation, KkViewerLabels } from '@furria/ui';
+import type { KkPhotoOrientation } from '@furria/ui/photo-frame';
+import type { KkViewerLabels } from '@furria/ui/viewer-types';
 import type { LinkProps } from '@tanstack/react-router';
 import type { NumberedSession } from '@/lib/api/session-section';
 import { sessionAt } from '@/lib/club';

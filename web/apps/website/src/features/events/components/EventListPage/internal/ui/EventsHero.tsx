@@ -1,4 +1,4 @@
-import { KkHeroSection } from '@furria/ui';
+import { KkHeroSection } from '@furria/ui/KkHeroSection';
 import Box from '@mui/material/Box';
 import type { FC, ReactNode } from 'react';
 import { deriveHeroIntro, deriveSessionEyebrow } from '@/features/events/hero-display';

@@ -1,4 +1,6 @@
-import { KkButton, KkErrorState, KkScreen } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkErrorState } from '@furria/ui/KkErrorState';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
 import { PERSONS_ORIGIN } from '../manage-persons-labels';
 

@@ -1,4 +1,4 @@
-import type { KkLetterPace } from '@furria/ui';
+import type { KkLetterPace } from '@furria/ui/letter-pace';
 
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 

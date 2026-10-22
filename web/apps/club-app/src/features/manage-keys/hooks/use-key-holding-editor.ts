@@ -1,6 +1,6 @@
 import { useController } from 'react-hook-form';
-import type { WriteLanding } from '@/features/write';
-import { useWriteForm } from '@/features/write';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
+import type { WriteLanding } from '@/features/write/landing-target';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
 import { useHandOutKeyMutation, useTakeBackKeyMutation } from '../api';

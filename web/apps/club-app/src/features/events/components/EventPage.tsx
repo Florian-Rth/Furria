@@ -1,6 +1,7 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
-import { EVENTS_KEYS, EVENTS_ORIGIN, RequireAnyPermission } from '@/features/session';
+import { EVENTS_KEYS, EVENTS_ORIGIN } from '@/features/session/app-sections';
+import { RequireAnyPermission } from '@/features/session/components/RequireAnyPermission';
 import { EVENT_FALLBACK_TITLE } from '../event-board-copy';
 import { useEventPage } from '../hooks/use-event-page';
 import { EventBody } from './EventBody';

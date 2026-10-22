@@ -1,4 +1,4 @@
-import { useKkSheet } from '@furria/ui';
+import { useKkSheet } from '@furria/ui/sheet-store';
 import { useState } from 'react';
 import type { PeekKind } from './peek';
 import { toPeekedId } from './peek';

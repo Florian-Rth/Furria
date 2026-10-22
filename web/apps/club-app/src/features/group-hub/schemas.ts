@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { AttendanceAnswerSchema } from '@/features/attendance/schemas';
-import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/group-detail';
-import { AppSearchSchema } from '@/features/session';
+import { GroupDetailAdminSchema, GroupDetailMemberSchema } from '@/features/group-detail/schemas';
+import { AppSearchSchema } from '@/features/session/schemas';
 import { PersonRefSchema, PictureEditingSchema, PictureSchema } from '@/lib/api/schemas';
 import { CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
 import { ClubIconSchema } from '@/lib/club-icon';

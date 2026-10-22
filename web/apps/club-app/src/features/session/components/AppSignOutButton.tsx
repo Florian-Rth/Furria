@@ -1,4 +1,5 @@
-import { KkButton, KkIcon } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkIcon } from '@furria/ui/KkIcon';
 import type { FC } from 'react';
 import { useSignOut } from '../hooks/use-sign-out';
 

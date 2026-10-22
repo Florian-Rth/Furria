@@ -1,4 +1,6 @@
-import { KkButton, KkIcon, KkSelectionBar } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkIcon } from '@furria/ui/KkIcon';
+import { KkSelectionBar } from '@furria/ui/KkSelectionBar';
 import type { FC } from 'react';
 import { BULK_LABEL } from '../album-labels';
 import type { AlbumBulk } from '../hooks/use-album-bulk';

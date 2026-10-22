@@ -1,4 +1,4 @@
-import type { KkFormatRailItem } from '@furria/ui';
+import type { KkFormatRailItem } from '@furria/ui/KkFormatRail';
 import { BLOCK_WORDS, BOLD_WORD, LINK_WORD, MENTION_WORD } from '../editor-copy';
 import type { NewsTextCommand } from '../news-text-editor';
 import type { ProseText } from './use-prose-text';

@@ -1,4 +1,4 @@
-import type { KkSize } from '@furria/ui';
+import type { KkSize } from '@furria/ui/image-aspect';
 import type { GalleryPhoto, PickableAlbums } from './schemas';
 import type { PickableAlbum } from './types';
 

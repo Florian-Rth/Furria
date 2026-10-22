@@ -1,6 +1,7 @@
-import { KkFormSection, KkTextField } from '@furria/ui';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
-import { WriteScreen } from '@/features/write';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { useGroupKindEditor } from '../hooks/use-group-kind-editor';
 import type { GroupKindEntry } from '../manage-groups-labels';
 import { toGroupKindEditorOrigin } from '../manage-groups-labels';

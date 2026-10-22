@@ -1,4 +1,4 @@
-import { KkRoster } from '@furria/ui';
+import { KkRoster } from '@furria/ui/KkRoster';
 import type { FC } from 'react';
 import { OFFLINE_FLAG, PUBLIC_FLAG, toRoleFlag } from '../board-hub-copy';
 import type { BoardOffice } from '../schemas';

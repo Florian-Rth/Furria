@@ -1,7 +1,8 @@
-import { KkButton, KkEmptyState } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { GALLERY_PATH, GALLERY_TITLE } from '@/features/session';
+import { GALLERY_PATH, GALLERY_TITLE } from '@/features/session/app-sections';
 import { NOT_FOUND_DESCRIPTION, NOT_FOUND_TITLE } from '../album-labels';
 
 const backToGallery = (

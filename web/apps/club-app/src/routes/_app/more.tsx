@@ -1,4 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { MorePage } from '@/features/more';
+import { MorePage } from '@/features/more/components/MorePage';
 
 export const Route = createFileRoute('/_app/more')({ component: MorePage });

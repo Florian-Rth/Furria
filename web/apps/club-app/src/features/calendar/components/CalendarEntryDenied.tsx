@@ -1,6 +1,7 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
-import { AccessDenied, CALENDAR_ORIGIN } from '@/features/session';
+import { CALENDAR_ORIGIN } from '@/features/session/app-sections';
+import { AccessDenied } from '@/features/session/components/AccessDenied';
 
 interface CalendarEntryDeniedProps {
   title: string;

@@ -1,4 +1,5 @@
-import { KkChip, KkSessionRow } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkSessionRow } from '@furria/ui/KkSessionRow';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import {

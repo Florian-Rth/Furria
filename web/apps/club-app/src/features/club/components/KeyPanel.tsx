@@ -1,4 +1,4 @@
-import { KkPanelSection } from '@furria/ui';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
 import { useClubHubQuery } from '../api';

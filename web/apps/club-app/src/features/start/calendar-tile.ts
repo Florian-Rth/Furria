@@ -1,6 +1,9 @@
-import type { KkGroupTone, KkIconName, KkStartTileMarkKind, KkStartTileWhenTone } from '@furria/ui';
-import { eventToneOf } from '@furria/ui';
-import { toGroupTone } from '@/features/groups';
+import type { KkGroupTone } from '@furria/ui/group-tone';
+import { eventToneOf } from '@furria/ui/group-tone';
+import type { KkIconName } from '@furria/ui/KkIcon';
+import type { KkStartTileMarkKind } from '@furria/ui/KkStartTileMark';
+import type { KkStartTileWhenTone } from '@furria/ui/when-tone';
+import { toGroupTone } from '@/features/groups/group-identity';
 import type { CalendarKindKey } from '@/lib/calendar-copy';
 import type { StartEntry } from './schemas';
 import { toEntryFacets, toFacetText, toStampOf } from './start-labels';

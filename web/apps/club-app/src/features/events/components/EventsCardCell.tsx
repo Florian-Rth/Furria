@@ -1,4 +1,4 @@
-import { KkStateCard } from '@furria/ui';
+import { KkStateCard } from '@furria/ui/KkStateCard';
 import type { FC } from 'react';
 import type { BoardCell } from '../event-board';
 import { PANE_ICONS, toCellAriaLabel, toCellShortFact } from '../event-board-copy';

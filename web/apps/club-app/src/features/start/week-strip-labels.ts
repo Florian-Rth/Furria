@@ -1,4 +1,5 @@
-import type { KkWeekStripDayTone, KkWeekStripMarkState } from '@furria/ui';
+import type { KkWeekStripDayTone } from '@furria/ui/KkWeekStripDay';
+import type { KkWeekStripMarkState } from '@furria/ui/KkWeekStripMark';
 import { formatDayMonth } from './start-lines';
 import type { StripDay, StripMark, StripSlot } from './week-strip';
 

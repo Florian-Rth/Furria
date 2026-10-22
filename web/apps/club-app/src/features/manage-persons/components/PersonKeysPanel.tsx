@@ -1,7 +1,9 @@
-import { KkPanel, KkPanelSection, KkSinceRow } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSinceRow } from '@furria/ui/KkSinceRow';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { usePermissions } from '@/features/session';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { formatIsoDay } from '@/lib/membership-labels';
 import { toSectionLandingKey } from '../person-identity';

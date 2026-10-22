@@ -1,4 +1,6 @@
-import { KkAnswerChoice, KkDensePanel, KkStartTile } from '@furria/ui';
+import { KkAnswerChoice } from '@furria/ui/KkAnswerChoice';
+import { KkDensePanel } from '@furria/ui/KkDensePanel';
+import { KkStartTile } from '@furria/ui/KkStartTile';
 import type { FC } from 'react';
 import { ATTENDANCE_LABELS } from '@/lib/calendar-copy';
 import type { CalendarSheetLineInput } from '../hooks/use-calendar-sheet-line';

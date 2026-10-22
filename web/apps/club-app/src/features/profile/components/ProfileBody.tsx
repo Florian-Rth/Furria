@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { usePersonalMe } from '@/features/session';
+import { usePersonalMe } from '@/features/session/hooks/use-personal-me';
 import { toProfileErrorMessage } from '../profile-messages';
 import { ProfileError } from './ProfileError';
 import { ProfilePanels } from './ProfilePanels';

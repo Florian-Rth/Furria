@@ -1,4 +1,5 @@
-import { KkRule, PageLayout } from '@furria/ui';
+import { KkRule } from '@furria/ui/KkRule';
+import { PageLayout } from '@furria/ui/PageLayout';
 import type { FC } from 'react';
 import { EventList } from '@/features/events/components/EventList/EventList';
 import { NextEventCard } from '@/features/events/components/NextEventCard/NextEventCard';

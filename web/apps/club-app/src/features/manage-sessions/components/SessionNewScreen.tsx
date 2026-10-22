@@ -1,6 +1,7 @@
 import { useSearch } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { useMeQuery, usePermissions } from '@/features/session';
+import { useMeQuery } from '@/features/session/api';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toSessionRecordsErrorMessage } from '../manage-sessions-messages';
 import { SessionEditor } from './SessionEditor';

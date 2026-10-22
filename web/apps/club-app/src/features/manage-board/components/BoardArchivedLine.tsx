@@ -1,6 +1,7 @@
-import { KkOfficeMark, KkRoster } from '@furria/ui';
+import { KkOfficeMark } from '@furria/ui/KkOfficeMark';
+import { KkRoster } from '@furria/ui/KkRoster';
 import type { FC } from 'react';
-import { toLandingKey } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
 import { OFFICE_LANDING_KIND } from '../board-hub';
 import { OPEN_OFFICE_LABEL, toArchivedSinceLabel } from '../board-hub-copy';
 import type { BoardOffice } from '../schemas';

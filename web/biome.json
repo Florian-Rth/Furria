@@ -54,8 +54,15 @@
                 "importNames": ["Box", "Stack", "Grid", "Typography"],
                 "message": "Import components from `@mui/material/<Component>`."
               },
-              "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel."
-            }
+              "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel.",
+              "@furria/ui": "Import from the leaf subpath `@furria/ui/<Module>`; the package has no barrel (it made Vite dev load every module)."
+            },
+            "patterns": [
+              {
+                "group": ["@/features/*"],
+                "message": "Import from the defining module `@/features/<feature>/<file>`; features have no barrels (they made Vite dev load whole features)."
+              }
+            ]
           }
         }
       },
@@ -123,12 +130,17 @@
               "options": {
                 "paths": {
                   "@mui/material": "Import defaults from `@mui/material/<Component>`, never the barrel.",
-                  "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel."
+                  "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel.",
+                  "@furria/ui": "Import from the leaf subpath `@furria/ui/<Module>`; the package has no barrel (it made Vite dev load every module)."
                 },
                 "patterns": [
                   {
                     "group": ["@/routes/**"],
                     "message": "Dependency flow is lib/components → features → routes: a feature never imports a route."
+                  },
+                  {
+                    "group": ["@/features/*"],
+                    "message": "Import from the defining module `@/features/<feature>/<file>`; features have no barrels (they made Vite dev load whole features)."
                   }
                 ]
               }
@@ -153,12 +165,17 @@
               "options": {
                 "paths": {
                   "@mui/material": "Import defaults from `@mui/material/<Component>`, never the barrel.",
-                  "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel."
+                  "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel.",
+                  "@furria/ui": "Import from the leaf subpath `@furria/ui/<Module>`; the package has no barrel (it made Vite dev load every module)."
                 },
                 "patterns": [
                   {
                     "group": ["@/features/**", "@/routes/**"],
                     "message": "Dependency flow is lib/components → features → routes: shared code never imports a feature or route."
+                  },
+                  {
+                    "group": ["@/features/*"],
+                    "message": "Import from the defining module `@/features/<feature>/<file>`; features have no barrels (they made Vite dev load whole features)."
                   }
                 ]
               }
@@ -186,7 +203,8 @@
               "options": {
                 "paths": {
                   "@mui/material": "Import defaults from `@mui/material/<Component>`, never the barrel.",
-                  "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel."
+                  "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel.",
+                  "@furria/ui": "Import from the leaf subpath `@furria/ui/<Module>`; the package has no barrel (it made Vite dev load every module)."
                 },
                 "patterns": [
                   {
@@ -205,6 +223,10 @@
                   {
                     "group": ["@emotion/**"],
                     "message": "Styling lives in `@furria/ui` (ADR-0007): the Club-App never authors CSS with Emotion."
+                  },
+                  {
+                    "group": ["@/features/*"],
+                    "message": "Import from the defining module `@/features/<feature>/<file>`; features have no barrels (they made Vite dev load whole features)."
                   }
                 ]
               }
@@ -228,7 +250,8 @@
               "options": {
                 "paths": {
                   "@mui/material": "Import defaults from `@mui/material/<Component>`, never the barrel.",
-                  "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel."
+                  "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel.",
+                  "@furria/ui": "Import from the leaf subpath `@furria/ui/<Module>`; the package has no barrel (it made Vite dev load every module)."
                 },
                 "patterns": [
                   {
@@ -251,6 +274,10 @@
                   {
                     "group": ["@/routes/**"],
                     "message": "Dependency flow is lib/components → features → routes: a feature never imports a route."
+                  },
+                  {
+                    "group": ["@/features/*"],
+                    "message": "Import from the defining module `@/features/<feature>/<file>`; features have no barrels (they made Vite dev load whole features)."
                   }
                 ]
               }
@@ -275,7 +302,8 @@
               "options": {
                 "paths": {
                   "@mui/material": "Import defaults from `@mui/material/<Component>`, never the barrel.",
-                  "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel."
+                  "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel.",
+                  "@furria/ui": "Import from the leaf subpath `@furria/ui/<Module>`; the package has no barrel (it made Vite dev load every module)."
                 },
                 "patterns": [
                   {
@@ -298,6 +326,10 @@
                   {
                     "group": ["@/features/**", "@/routes/**"],
                     "message": "Dependency flow is lib/components → features → routes: shared code never imports a feature or route."
+                  },
+                  {
+                    "group": ["@/features/*"],
+                    "message": "Import from the defining module `@/features/<feature>/<file>`; features have no barrels (they made Vite dev load whole features)."
                   }
                 ]
               }
@@ -321,12 +353,17 @@
               "level": "error",
               "options": {
                 "paths": {
-                  "@mui/material": "Import defaults from `@mui/material/<Component>`, never the barrel."
+                  "@mui/material": "Import defaults from `@mui/material/<Component>`, never the barrel.",
+                  "@furria/ui": "Import from the leaf subpath `@furria/ui/<Module>`; the package has no barrel (it made Vite dev load every module)."
                 },
                 "patterns": [
                   {
                     "group": ["@/routes/**"],
                     "message": "Dependency flow is lib/components → features → routes: a feature never imports a route."
+                  },
+                  {
+                    "group": ["@/features/*"],
+                    "message": "Import from the defining module `@/features/<feature>/<file>`; features have no barrels (they made Vite dev load whole features)."
                   }
                 ]
               }

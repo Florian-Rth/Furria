@@ -1,6 +1,6 @@
-import { KkRetryAlert } from '@furria/ui';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
 import type { FC } from 'react';
-import { AppListSkeleton } from '@/features/session';
+import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import { ERROR_MESSAGE, LOADING_LABEL, RETRY_LABEL } from '../calendar-agenda-copy';
 import type { CalendarBoard } from '../hooks/use-calendar-board';
 import type { CalendarScroll } from '../hooks/use-calendar-scroll';

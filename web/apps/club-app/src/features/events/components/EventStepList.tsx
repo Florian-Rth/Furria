@@ -1,4 +1,5 @@
-import { KkStepList, useKkSheetCommands } from '@furria/ui';
+import { KkStepList } from '@furria/ui/KkStepList';
+import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import type { FC } from 'react';
 import type { BoardCell } from '../event-board';
 import { LATER_EYEBROW, LATER_ITEMS, STEPS_LABEL } from '../event-board-copy';

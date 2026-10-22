@@ -1,4 +1,4 @@
-import { KkMeta } from '@furria/ui';
+import { KkMeta } from '@furria/ui/KkMeta';
 import type { FC } from 'react';
 
 const EMPTY_VALUE = 'nicht hinterlegt';

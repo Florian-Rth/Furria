@@ -1,4 +1,4 @@
-import type { KkFrameState } from '@furria/ui';
+import type { KkFrameState } from '@furria/ui/KkFrame';
 import type { MediaItemState } from '@/lib/api/schemas';
 import type { UploadEntry } from './upload-queue';
 

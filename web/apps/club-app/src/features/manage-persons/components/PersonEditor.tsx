@@ -1,6 +1,8 @@
-import { KkDateField, KkFormSection, KkNote } from '@furria/ui';
+import { KkDateField } from '@furria/ui/KkDateField';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkNote } from '@furria/ui/KkNote';
 import type { FC } from 'react';
-import { WriteScreen } from '@/features/write';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { usePersonEditor } from '../hooks/use-person-editor';
 import { PERSONS_ORIGIN, toPersonOrigin } from '../manage-persons-labels';
 import type { PersonDetails } from '../schemas';

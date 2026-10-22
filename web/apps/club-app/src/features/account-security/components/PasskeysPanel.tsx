@@ -1,5 +1,8 @@
-import type { KkPanelAction } from '@furria/ui';
-import { KkAlert, KkNote, KkPanel, KkPanelSection } from '@furria/ui';
+import { KkAlert } from '@furria/ui/KkAlert';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import type { KkPanelAction } from '@furria/ui/panel-action';
 import type { FC } from 'react';
 import type { MePasskey } from '@/lib/api/schemas';
 import { usePasskeyAddition } from '../hooks/use-passkey-addition';

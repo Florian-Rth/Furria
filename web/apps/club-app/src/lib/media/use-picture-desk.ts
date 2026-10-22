@@ -1,4 +1,4 @@
-import type { KkCrop } from '@furria/ui';
+import type { KkCrop } from '@furria/ui/image-crop';
 import { useEffect, useRef, useState } from 'react';
 import type { UploadHandle, UploadOwner } from './media-upload';
 import type { PictureDeskEffect, PictureDeskEvent, PictureDeskState } from './picture-desk';

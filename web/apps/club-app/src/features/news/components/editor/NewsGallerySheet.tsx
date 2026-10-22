@@ -1,6 +1,6 @@
 import type { FC } from 'react';
-import type { GalleryPhoto } from '@/features/gallery-pick';
-import { GalleryPickSheet } from '@/features/gallery-pick';
+import { GalleryPickSheet } from '@/features/gallery-pick/components/GalleryPickSheet';
+import type { GalleryPhoto } from '@/features/gallery-pick/schemas';
 import { useNewsTieCandidatesQuery } from '../../api';
 import {
   GALLERY_COPY_NOTE,

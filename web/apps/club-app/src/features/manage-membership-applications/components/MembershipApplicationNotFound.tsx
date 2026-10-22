@@ -1,4 +1,5 @@
-import { KkButton, KkEmptyState } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import {

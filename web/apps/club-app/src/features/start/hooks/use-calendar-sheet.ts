@@ -1,6 +1,6 @@
-import type { KkSheetAction } from '@furria/ui';
+import type { KkSheetAction } from '@furria/ui/sheet-actions';
 import { Link } from '@tanstack/react-router';
-import { CALENDAR_PATH } from '@/features/session';
+import { CALENDAR_PATH } from '@/features/session/app-sections';
 import { byStartsAt, toCalendarRows } from '../start-board';
 import { entriesOf } from '../start-sheets';
 import type { CalendarLinesView } from './use-calendar-lines';

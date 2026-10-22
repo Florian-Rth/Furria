@@ -1,7 +1,7 @@
-import { KkPanelStack } from '@furria/ui';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import type { FC, ReactNode } from 'react';
-import { AccessPanel } from '@/features/account-access';
-import { useLanding } from '@/features/write';
+import { AccessPanel } from '@/features/account-access/components/AccessPanel';
+import { useLanding } from '@/features/write/hooks/use-landing';
 import type { PersonDetails } from '../schemas';
 import { PersonStateRail } from './PersonStateRail';
 

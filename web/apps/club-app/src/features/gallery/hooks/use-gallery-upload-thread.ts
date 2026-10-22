@@ -1,4 +1,4 @@
-import type { KkScreenThread } from '@furria/ui';
+import type { KkScreenThread } from '@furria/ui/screen-declaration';
 import { threadLabelOf } from '../upload/upload-copy';
 import { tallyOf } from '../upload/upload-queue';
 import { uploadStatusOf } from '../upload/upload-status';

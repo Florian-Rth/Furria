@@ -1,4 +1,5 @@
-import type { KkClubIcon, KkIconName } from '@furria/ui';
+import type { KkClubIcon } from '@furria/ui/club-icon';
+import type { KkIconName } from '@furria/ui/KkIcon';
 import { formatFullDay } from '../start-lines';
 import type { GreetingAct } from './greeting-act';
 import type { GreetingBadge, GreetingFact, GreetingFactsSource } from './greeting-facts';

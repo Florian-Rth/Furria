@@ -1,7 +1,9 @@
-import type { KkScreenActionContext } from '@furria/ui';
-import { KkCheckboxRow, KkDateField, KkFormSection } from '@furria/ui';
+import { KkCheckboxRow } from '@furria/ui/KkCheckboxRow';
+import { KkDateField } from '@furria/ui/KkDateField';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import type { KkScreenActionContext } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
-import { WriteScreen } from '@/features/write';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import {
   ADMISSION_ACTION_LABEL,
   ADMITTED_ON_LABEL,

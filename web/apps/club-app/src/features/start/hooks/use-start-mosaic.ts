@@ -1,4 +1,4 @@
-import { useIsMobile } from '@furria/ui';
+import { useIsMobile } from '@furria/ui/use-is-mobile';
 import type { StartPanel } from '../schemas';
 import type { MosaicTile, TileSpan } from '../start-mosaic';
 import { toMosaic } from '../start-mosaic';

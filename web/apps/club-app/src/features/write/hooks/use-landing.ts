@@ -1,4 +1,5 @@
-import { KK_LANDING_ATTRIBUTE, kkTokens } from '@furria/ui';
+import { KK_LANDING_ATTRIBUTE } from '@furria/ui/kk-landing';
+import { kkTokens } from '@furria/ui/tokens';
 import { getRouteApi, useNavigate } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { scrollElementIntoView } from '@/lib/scroll-to';

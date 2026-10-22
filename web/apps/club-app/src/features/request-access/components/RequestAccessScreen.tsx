@@ -1,8 +1,12 @@
-import { KkButton, KkHeading, KkNote } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkHeading } from '@furria/ui/KkHeading';
+import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { MailRequestForm, MailRequestSent, SignedOutFrame } from '@/features/login';
+import { MailRequestForm } from '@/features/login/components/MailRequestForm';
+import { MailRequestSent } from '@/features/login/components/MailRequestSent';
+import { SignedOutFrame } from '@/features/login/components/SignedOutFrame';
 import { LOGIN_PATH } from '@/lib/return-to';
 import { useRequestAccess } from '../hooks/use-request-access';
 

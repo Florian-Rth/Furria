@@ -1,4 +1,4 @@
-import type { KkLetterIndexEntry } from '@furria/ui';
+import type { KkLetterIndexEntry } from '@furria/ui/letter-index-cells';
 import type { MembershipState } from '@/lib/api/schemas';
 import { ALL_STATES_FILTER_ID } from '@/lib/state-chips';
 import { normalizeForSearch, OTHER_INDEX_LETTER, toIndexLetter } from '@/lib/text';

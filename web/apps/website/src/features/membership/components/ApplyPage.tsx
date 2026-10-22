@@ -1,4 +1,4 @@
-import { PageLayout } from '@furria/ui';
+import { PageLayout } from '@furria/ui/PageLayout';
 import type { FC } from 'react';
 import { useApplyForm } from '@/features/membership/hooks/use-apply-form';
 import { ApplyBody } from './ApplyBody';

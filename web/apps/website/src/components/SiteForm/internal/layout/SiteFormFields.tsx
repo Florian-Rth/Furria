@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import Grid from '@mui/material/Grid';
 import type { FC, PropsWithChildren } from 'react';
 

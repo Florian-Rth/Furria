@@ -1,4 +1,5 @@
-import { KkHubRow, KkIconButton } from '@furria/ui';
+import { KkHubRow } from '@furria/ui/KkHubRow';
+import { KkIconButton } from '@furria/ui/KkIconButton';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { ToDoRowModel } from '../to-do-board';

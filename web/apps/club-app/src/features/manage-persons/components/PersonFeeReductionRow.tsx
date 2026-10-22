@@ -1,7 +1,8 @@
-import { KkChip, KkFactRow } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkFactRow } from '@furria/ui/KkFactRow';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { toLandingKey } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
 import { currentSessionYear } from '@/lib/club';
 import { toSessionPeriodChip } from '@/lib/state-chips';
 import {

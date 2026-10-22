@@ -1,6 +1,7 @@
-import type { KkStartTileCover, KkStartTileReach } from '@furria/ui';
+import type { KkStartTileCover } from '@furria/ui/KkStartTileCovers';
+import type { KkStartTileReach } from '@furria/ui/reach';
 import { Link, useNavigate } from '@tanstack/react-router';
-import { GALLERY_PATH } from '@/features/session';
+import { GALLERY_PATH } from '@/features/session/app-sections';
 import type { StartAlbum } from '../schemas';
 import type { StartPanelOf } from '../start-board';
 import { toGalleryShelfEdge } from '../start-labels';

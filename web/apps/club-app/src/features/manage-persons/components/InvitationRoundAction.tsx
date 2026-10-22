@@ -1,4 +1,5 @@
-import { KkButton, KkNote } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useInvitationRound } from '../hooks/use-invitation-round';

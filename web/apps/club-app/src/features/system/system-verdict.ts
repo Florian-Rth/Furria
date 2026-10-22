@@ -1,4 +1,5 @@
-import type { KkChipTone, KkStatusLevel } from '@furria/ui';
+import type { KkChipTone } from '@furria/ui/KkChip';
+import type { KkStatusLevel } from '@furria/ui/status-paint';
 import type { VerdictLevel, VerdictReason } from './schemas';
 import type { SystemArea } from './types';
 

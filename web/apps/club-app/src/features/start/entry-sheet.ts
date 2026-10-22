@@ -1,4 +1,4 @@
-import type { EntryVenueView } from '@/features/entry-sheet';
+import type { EntryVenueView } from '@/features/entry-sheet/types';
 import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
 import { toLocalIsoDay, toTimeLabel } from '@/lib/calendar-days';
 import type { StartEntry, StartGroupRef, StartVenue } from './schemas';

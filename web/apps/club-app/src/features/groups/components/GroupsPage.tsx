@@ -1,6 +1,9 @@
-import { KkScreen, KkSkeletonToolbar, KkTitleHeader } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkSkeletonToolbar } from '@furria/ui/KkSkeletonToolbar';
+import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, GROUPS_SECTION, GROUPS_TITLE, useScreenSearch } from '@/features/session';
+import { AREA_HANDOVERS, GROUPS_SECTION, GROUPS_TITLE } from '@/features/session/app-sections';
+import { useScreenSearch } from '@/features/session/hooks/use-screen-search';
 import { useGroupsQuery } from '../api';
 import { GROUPS_LEAD } from '../groups-labels';
 import { useGroupsSearch } from '../hooks/use-groups-search';

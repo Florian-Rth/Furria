@@ -1,4 +1,7 @@
-import { KkMeta, KkPanelSection, KkSheet, KkText } from '@furria/ui';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSheet } from '@furria/ui/KkSheet';
+import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useRoleSheet } from '../hooks/use-role-sheet';

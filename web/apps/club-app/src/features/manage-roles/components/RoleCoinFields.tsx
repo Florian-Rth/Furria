@@ -1,4 +1,7 @@
-import { GROUP_TONES, KkClubIconPicker, KkEyebrow, KkGroupToneSwatch } from '@furria/ui';
+import { GROUP_TONES } from '@furria/ui/group-tone';
+import { KkClubIconPicker } from '@furria/ui/KkClubIconPicker';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkGroupToneSwatch } from '@furria/ui/KkGroupToneSwatch';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { ClubIcon } from '@/lib/club-icon';

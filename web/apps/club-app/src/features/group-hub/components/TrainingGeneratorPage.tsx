@@ -1,15 +1,13 @@
-import {
-  KkAlert,
-  KkDateField,
-  KkFormSection,
-  KkScreen,
-  KkTextField,
-  KkTitleHeader,
-  kkTokens,
-} from '@furria/ui';
+import { KkAlert } from '@furria/ui/KkAlert';
+import { KkDateField } from '@furria/ui/KkDateField';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkTextField } from '@furria/ui/KkTextField';
+import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
+import { kkTokens } from '@furria/ui/tokens';
 import Stack from '@mui/material/Stack';
 import type { ChangeEvent, FC } from 'react';
-import { AREA_HANDOVERS } from '@/features/session';
+import { AREA_HANDOVERS } from '@/features/session/app-sections';
 import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toHubEditorOrigin } from '../group-hub-labels';
 import { useTrainingGenerator } from '../hooks/use-training-generator';

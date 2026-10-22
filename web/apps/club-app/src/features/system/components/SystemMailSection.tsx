@@ -1,4 +1,4 @@
-import { KkReadout } from '@furria/ui';
+import { KkReadout } from '@furria/ui/KkReadout';
 import type { FC } from 'react';
 import type { SystemStatus } from '../schemas';
 import { MAIL_FACT_LABELS, SECTION_TITLES } from '../system-copy';

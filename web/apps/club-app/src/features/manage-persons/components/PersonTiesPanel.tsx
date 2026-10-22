@@ -1,8 +1,12 @@
-import { KkFactRow, KkNote, KkPanel, KkPanelSection, KkSinceRow } from '@furria/ui';
+import { KkFactRow } from '@furria/ui/KkFactRow';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSinceRow } from '@furria/ui/KkSinceRow';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { usePermissions } from '@/features/session';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { formatPeriod, formatSinceSession } from '@/lib/membership-labels';
 import { splitPersonGroups, splitPersonRoles } from '../manage-persons-labels';

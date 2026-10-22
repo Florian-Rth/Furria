@@ -1,4 +1,4 @@
-import { KkTallyStrip } from '@furria/ui';
+import { KkTallyStrip } from '@furria/ui/KkTallyStrip';
 import type { FC } from 'react';
 import type { BoardSummary, QueueCounts } from '../board-hub';
 import { formatQueueDay } from '../board-hub';

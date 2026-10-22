@@ -1,14 +1,12 @@
-import {
-  KkHubRow,
-  KkPanel,
-  KkPanelSection,
-  KkPanelStack,
-  KkScreen,
-  KkTitleHeader,
-} from '@furria/ui';
+import { KkHubRow } from '@furria/ui/KkHubRow';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, MANAGE_ORIGIN } from '@/features/session';
+import { AREA_HANDOVERS, MANAGE_ORIGIN } from '@/features/session/app-sections';
 import {
   LAB_GREETINGS,
   LAB_LEAD,

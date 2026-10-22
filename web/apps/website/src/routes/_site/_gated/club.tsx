@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { ClubPage, ClubSearchSchema } from '@/features/club';
+import { ClubPage } from '@/features/club/components/ClubPage';
+import { ClubSearchSchema } from '@/features/club/schemas';
 import type { RouteHead } from '@/lib/seo';
 import { pageTitle } from '@/lib/seo';
 

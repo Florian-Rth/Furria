@@ -1,6 +1,7 @@
-import { KkRoleMark, KkRoster } from '@furria/ui';
+import { KkRoleMark } from '@furria/ui/KkRoleMark';
+import { KkRoster } from '@furria/ui/KkRoster';
 import type { FC } from 'react';
-import { toLandingKey } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
 import { ROLE_LANDING_KIND, toRoleMarkState } from '../roles-hub';
 import { OPEN_ROLE_LABEL } from '../roles-hub-copy';
 import type { RolePaneTab, RoleSummary } from '../schemas';

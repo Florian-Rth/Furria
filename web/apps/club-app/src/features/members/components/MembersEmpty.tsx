@@ -1,4 +1,5 @@
-import { KkEmptyState, KkPanel } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkPanel } from '@furria/ui/KkPanel';
 import type { FC } from 'react';
 import { toEmptyDescription } from '../members-labels';
 

@@ -1,4 +1,4 @@
-import { toMailRequestFailureMessage } from '@/features/login';
+import { toMailRequestFailureMessage } from '@/features/login/mail-request-failure';
 import { useRequestAccessMutation } from '../api';
 
 interface RequestAccessControl {

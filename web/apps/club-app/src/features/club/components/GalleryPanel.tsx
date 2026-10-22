@@ -1,9 +1,14 @@
-import { KkAlbumShelf, KkButton, KkPanelSection, KkRetryAlert } from '@furria/ui';
+import { KkAlbumShelf } from '@furria/ui/KkAlbumShelf';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { toHubErrorMessage, useGalleryHubQuery, useNewestAlbumsShelf } from '@/features/gallery';
-import { GALLERY_PATH, GALLERY_TITLE } from '@/features/session';
+import { useGalleryHubQuery } from '@/features/gallery/api';
+import { useNewestAlbumsShelf } from '@/features/gallery/hooks/use-newest-albums-shelf';
+import { toHubErrorMessage } from '@/features/gallery/hub-copy';
+import { GALLERY_PATH, GALLERY_TITLE } from '@/features/session/app-sections';
 import { CLUB_RETRY_LABEL } from '../club-labels';
 
 const SHELF_ALBUMS = 4;

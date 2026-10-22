@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { usePermissions } from '@/features/session';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { VENUES_ORIGIN } from '../manage-venues-labels';
 import { VenueEditor } from './VenueEditor';

@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { useEyebrowLabel } from '@/features/landing/hooks/use-eyebrow-label';

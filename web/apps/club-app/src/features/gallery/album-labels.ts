@@ -1,4 +1,5 @@
-import type { KkFilterOption, KkViewerLabels } from '@furria/ui';
+import type { KkFilterOption } from '@furria/ui/filter-chip-entries';
+import type { KkViewerLabels } from '@furria/ui/viewer-types';
 import { countLabel, dayLabel, personNameOf, sessionLabel } from './gallery-view';
 import type { AlbumDetails, AlbumItem } from './schemas';
 

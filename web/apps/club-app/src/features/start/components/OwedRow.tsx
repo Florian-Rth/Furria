@@ -1,4 +1,5 @@
-import { KkAnswerChoice, KkAnswerRow } from '@furria/ui';
+import { KkAnswerChoice } from '@furria/ui/KkAnswerChoice';
+import { KkAnswerRow } from '@furria/ui/KkAnswerRow';
 import type { FC } from 'react';
 import { ATTENDANCE_LABELS } from '@/lib/calendar-copy';
 import { useOwedRow } from '../hooks/use-owed-row';

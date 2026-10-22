@@ -1,4 +1,6 @@
-import type { KkDateQuickChoice, KkScreenOrigin, KkSelectOption } from '@furria/ui';
+import type { KkDateQuickChoice } from '@furria/ui/KkDateField';
+import type { KkSelectOption } from '@furria/ui/KkSelectField';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { ContactChange } from '@/lib/api/schemas';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import { toContactChangeLine } from '@/lib/contact-change';

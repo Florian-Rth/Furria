@@ -1,5 +1,6 @@
-import { useMyGroupsQuery } from '@/features/group-hub';
-import { useMeQuery, usePermissions } from '@/features/session';
+import { useMyGroupsQuery } from '@/features/group-hub/api';
+import { useMeQuery } from '@/features/session/api';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import type { CalendarEntryLink, CalendarOwnerOption } from '../calendar-authoring';
 import { mayOwnCalendarEntry, toEntryLink, toOwnerOptions } from '../calendar-authoring';

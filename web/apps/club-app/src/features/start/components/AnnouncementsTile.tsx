@@ -1,4 +1,5 @@
-import { KkMeta, KkStartTile } from '@furria/ui';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkStartTile } from '@furria/ui/KkStartTile';
 import type { FC } from 'react';
 import { useAnnouncementsTile } from '../hooks/use-announcements-tile';
 import type { StartBoard } from '../hooks/use-start-view';

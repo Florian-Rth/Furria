@@ -1,4 +1,4 @@
-import { KkImageViewer } from '@furria/ui';
+import { KkImageViewer } from '@furria/ui/KkImageViewer';
 import type { FC } from 'react';
 import type { AlbumPhotoEntry } from '@/features/gallery/gallery-content';
 import { photoViewerLabels } from '@/features/gallery/gallery-content';

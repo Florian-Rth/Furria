@@ -1,13 +1,15 @@
-import { KkFormSection, KkSelectField, KkTextField } from '@furria/ui';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkSelectField } from '@furria/ui/KkSelectField';
+import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
+import { useGroupKindsQuery } from '@/features/group-kinds/api';
 import {
   GROUP_KIND_FIELD_HINT,
   GROUP_KIND_FIELD_LABEL,
   toGroupKindOptions,
   toHeldGroupKind,
-  useGroupKindsQuery,
-} from '@/features/group-kinds';
-import { WriteScreen } from '@/features/write';
+} from '@/features/group-kinds/group-kinds-labels';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { toHubEditorOrigin } from '../group-hub-labels';
 import { toEditorChoicesErrorMessage } from '../group-hub-messages';
 import { useGroupAdministrationEditor } from '../hooks/use-group-administration-editor';

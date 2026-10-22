@@ -1,4 +1,4 @@
-import { KkEmptyState } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
 import type { FC, ReactNode } from 'react';
 
 const ACCESS_DENIED_TITLE = 'KEIN ZUGANG';

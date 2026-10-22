@@ -1,4 +1,4 @@
-import { KkPanelSection } from '@furria/ui';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { RightGroup } from '../roles-hub';

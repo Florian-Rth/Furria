@@ -1,4 +1,5 @@
-import { KkRetryAlert, KkSkeletonRow } from '@furria/ui';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
+import { KkSkeletonRow } from '@furria/ui/KkSkeletonRow';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useInvitationRoundPreviewQuery } from '../api';

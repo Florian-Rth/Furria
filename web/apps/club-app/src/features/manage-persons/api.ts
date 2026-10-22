@@ -1,7 +1,7 @@
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { skipToken, useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import type { ReauthenticationProof } from '@/features/account-security';
-import { resolveReauthenticationProof } from '@/features/account-security';
+import { resolveReauthenticationProof } from '@/features/account-security/reauthentication';
+import type { ReauthenticationProof } from '@/features/account-security/types';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { endSessionWithFarewell, withFreshAccessToken } from '@/lib/api/session/session-store';
 import { toIsoDay } from '@/lib/day';

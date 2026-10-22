@@ -1,4 +1,5 @@
-import { KkFlapBoardSkeleton, KkReadoutSkeleton } from '@furria/ui';
+import { KkFlapBoardSkeleton } from '@furria/ui/KkFlapBoardSkeleton';
+import { KkReadoutSkeleton } from '@furria/ui/KkReadoutSkeleton';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { AREAS_TITLE, SECTION_TITLES, STATUS_LOADING_LABEL } from '../system-copy';

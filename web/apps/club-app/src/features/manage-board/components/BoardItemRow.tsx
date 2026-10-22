@@ -1,6 +1,8 @@
-import { KkOfficeMark, KkSuccession, KkWorkQueue } from '@furria/ui';
+import { KkOfficeMark } from '@furria/ui/KkOfficeMark';
+import { KkSuccession } from '@furria/ui/KkSuccession';
+import { KkWorkQueue } from '@furria/ui/KkWorkQueue';
 import type { FC } from 'react';
-import { toLandingKey } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
 import { toInitials } from '@/lib/initials';
 import type { QueueItem } from '../board-hub';
 import { firstDayAfter, OFFICE_LANDING_KIND, queueActionOf } from '../board-hub';

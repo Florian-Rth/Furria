@@ -1,4 +1,6 @@
-import { KkAlert, KkRetryAlert, KkSkeletonBlock } from '@furria/ui';
+import { KkAlert } from '@furria/ui/KkAlert';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
 import type { FC } from 'react';
 import { isNotFoundError } from '@/lib/query-error';
 import { useMemberQuery } from '../api';

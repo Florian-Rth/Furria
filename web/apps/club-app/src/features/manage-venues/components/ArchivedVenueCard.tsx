@@ -1,4 +1,5 @@
-import { KkButton, KkConfirmDialog } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
 import type { FC } from 'react';
 import { toIsoDay } from '@/lib/day';
 import { formatIsoDay } from '@/lib/membership-labels';

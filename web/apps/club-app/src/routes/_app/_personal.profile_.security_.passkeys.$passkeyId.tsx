@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { PasskeyScreen } from '@/features/account-security';
+import { PasskeyScreen } from '@/features/account-security/components/PasskeyScreen';
 
 const PasskeyComponent: FC = () => {
   const { passkeyId } = Route.useParams();

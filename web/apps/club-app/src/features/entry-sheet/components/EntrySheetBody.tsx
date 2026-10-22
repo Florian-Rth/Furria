@@ -1,12 +1,10 @@
-import {
-  aspectRatioCss,
-  KkAnswerChoice,
-  KkMeta,
-  KkPanelSection,
-  KkPhoto,
-  KkSheet,
-  KkText,
-} from '@furria/ui';
+import { aspectRatioCss } from '@furria/ui/image-aspect';
+import { KkAnswerChoice } from '@furria/ui/KkAnswerChoice';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkPhoto } from '@furria/ui/KkPhoto';
+import { KkSheet } from '@furria/ui/KkSheet';
+import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { ATTENDANCE_LABELS } from '@/lib/calendar-copy';

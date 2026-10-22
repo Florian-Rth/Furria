@@ -1,4 +1,5 @@
-import type { KkBannerState, KkCrop } from '@furria/ui';
+import type { KkBannerState } from '@furria/ui/banner-desk-types';
+import type { KkCrop } from '@furria/ui/image-crop';
 
 export interface StagedPictureSource {
   source: string;

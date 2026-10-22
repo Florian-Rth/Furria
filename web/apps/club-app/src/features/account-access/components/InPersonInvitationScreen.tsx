@@ -1,5 +1,6 @@
-import type { KkScreenOrigin } from '@furria/ui';
-import { KkPanelStack, KkScreen } from '@furria/ui';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
+import { KkScreen } from '@furria/ui/KkScreen';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
 import { IN_PERSON_TITLES } from '../account-access-labels';
 import { useInPersonInvitation } from '../hooks/use-in-person-invitation';

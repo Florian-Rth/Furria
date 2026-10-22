@@ -1,7 +1,11 @@
-import { KkButton } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { toInPersonHref, toInviteHref, toPersonEditHref } from '@/features/account-access';
+import {
+  toInPersonHref,
+  toInviteHref,
+  toPersonEditHref,
+} from '@/features/account-access/account-access-labels';
 import type { AppAct } from '../person-identity';
 
 const ACT_LABELS: Record<AppAct, string> = {

@@ -1,4 +1,6 @@
-import { KkAlert, KkNote, KkSkeletonBlock } from '@furria/ui';
+import { KkAlert } from '@furria/ui/KkAlert';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
 import type { FC } from 'react';
 import { IN_PERSON_VALIDITY_NOTES } from '../account-access-labels';
 import type { InPersonPhase } from '../in-person-phase';

@@ -1,6 +1,8 @@
 import { useState } from 'react';
-import type { StartHeadView } from '@/features/start';
-import { toStartHeadView, useGreetingAct, useGreetingFollows } from '@/features/start';
+import type { StartHeadView } from '@/features/start/greeting/head-view';
+import { toStartHeadView } from '@/features/start/greeting/head-view';
+import { useGreetingAct } from '@/features/start/hooks/use-greeting-act';
+import { useGreetingFollows } from '@/features/start/hooks/use-greeting-follows';
 import type { LabGreeting } from '../lab-greetings';
 import { labMilestoneOf, labShiftOf } from '../lab-greetings';
 

@@ -1,4 +1,6 @@
-import type { KkCalendarDayData, KkCalendarLineGroup, KkCalendarTimeTone } from '@furria/ui';
+import type { KkCalendarDayData } from '@furria/ui/calendar-strip-types';
+import type { KkCalendarLineGroup } from '@furria/ui/KkCalendarAgendaLine';
+import type { KkCalendarTimeTone } from '@furria/ui/KkCalendarAgendaTime';
 import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
 import { toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
 import { formatPriceCents, toDoorsOpenLabel, toEventStatusLabel } from '@/lib/event-copy';

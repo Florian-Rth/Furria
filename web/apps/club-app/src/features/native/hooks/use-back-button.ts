@@ -2,7 +2,7 @@ import { App } from '@capacitor/app';
 import { Capacitor } from '@capacitor/core';
 import { useRouter } from '@tanstack/react-router';
 import { useEffect } from 'react';
-import { requestActiveLeave } from '@/features/write';
+import { requestActiveLeave } from '@/features/write/active-guard';
 
 export const useBackButton = (): void => {
   const router = useRouter();

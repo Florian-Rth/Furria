@@ -1,4 +1,4 @@
-import type { KkChipTone } from '@furria/ui';
+import type { KkChipTone } from '@furria/ui/KkChip';
 import type { NewsCategory, NewsRequirement, NewsStage, NewsVersionPart } from './types';
 
 export const NEWS_EDITOR_ROUTE = '/news/$postId';

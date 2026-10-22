@@ -1,8 +1,10 @@
-import type { KkScreenActionBar, KkScreenOrigin } from '@furria/ui';
-import { KkFormSection, KkTextArea, KkTextField } from '@furria/ui';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkTextArea } from '@furria/ui/KkTextArea';
+import { KkTextField } from '@furria/ui/KkTextField';
+import type { KkScreenActionBar, KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
-import { GALLERY_ORIGIN } from '@/features/session';
-import { WriteScreen } from '@/features/write';
+import { GALLERY_ORIGIN } from '@/features/session/app-sections';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { EDIT_ALBUM_TITLE, NEW_ALBUM_TITLE } from '../gallery-copy';
 import { useAlbumForm } from '../hooks/use-album-form';
 import { useAlbumFormEntries } from '../hooks/use-album-form-entries';

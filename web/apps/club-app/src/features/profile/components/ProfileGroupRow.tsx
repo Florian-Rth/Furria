@@ -1,7 +1,8 @@
-import { KkChip, KkSummaryRow } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkSummaryRow } from '@furria/ui/KkSummaryRow';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import type { MyGroupSummary } from '@/features/group-hub';
+import type { MyGroupSummary } from '@/features/group-hub/schemas';
 import { GROUP_ADMIN_CHIP } from '@/lib/state-chips';
 
 const HUB_PATH = '/groups/$groupId';

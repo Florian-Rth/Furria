@@ -1,4 +1,4 @@
-import { PageLayout } from '@furria/ui';
+import { PageLayout } from '@furria/ui/PageLayout';
 import Typography from '@mui/material/Typography';
 import type { FC, PropsWithChildren } from 'react';
 import type { LegalDocument } from '../../types';

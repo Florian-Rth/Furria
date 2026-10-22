@@ -1,4 +1,4 @@
-import { KkConfettiBurst } from '@furria/ui';
+import { KkConfettiBurst } from '@furria/ui/KkConfettiBurst';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import type { NavBurst } from './nav-burst';

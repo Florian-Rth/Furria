@@ -1,4 +1,5 @@
-import { KkFieldRow, KkSheet } from '@furria/ui';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkSheet } from '@furria/ui/KkSheet';
 import type { FC } from 'react';
 import {
   LATER_SHEET_ID,

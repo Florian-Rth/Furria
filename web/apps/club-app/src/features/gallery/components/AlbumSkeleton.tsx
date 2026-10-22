@@ -1,4 +1,6 @@
-import { KkFrame, KkFrameGrid, KkSkeletonBlock } from '@furria/ui';
+import { KkFrame } from '@furria/ui/KkFrame';
+import { KkFrameGrid } from '@furria/ui/KkFrameGrid';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 

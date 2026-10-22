@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useState } from 'react';
-import { useMeQuery } from '@/features/session';
+import { useMeQuery } from '@/features/session/api';
 import type { PermissionKey } from '@/lib/api/schemas';
 import { queryKeys } from '@/lib/query/reads';
 import { toWriteErrorMessage } from '@/lib/write-error';

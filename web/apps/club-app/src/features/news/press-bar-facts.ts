@@ -1,4 +1,5 @@
-import type { KkPressLineTone, KkReadinessSlot, KkRegisterMarkState } from '@furria/ui';
+import type { KkPressLineTone, KkReadinessSlot } from '@furria/ui/KkPressBar';
+import type { KkRegisterMarkState } from '@furria/ui/KkRegisterMark';
 import type { PressKind } from './press-kind';
 import { STAGE_BEFORE_PRESS } from './press-kind';
 import type { NewsRequirement, NewsStage } from './types';

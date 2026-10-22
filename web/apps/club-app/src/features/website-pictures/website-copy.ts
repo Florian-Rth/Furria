@@ -1,5 +1,6 @@
-import type { KkAspect, KkCropFrameLabels } from '@furria/ui';
-import { aspectOf } from '@furria/ui';
+import type { KkAspect } from '@furria/ui/image-aspect';
+import { aspectOf } from '@furria/ui/image-aspect';
+import type { KkCropFrameLabels } from '@furria/ui/KkCropFrame';
 import type { QueryErrorKind } from '@/lib/query-error';
 import { toQueryErrorMessage } from '@/lib/query-error';
 import type { BoardSummary, PositionStatus, SlotFlag } from './website-board';

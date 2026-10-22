@@ -1,4 +1,4 @@
-import type { KkFrameState } from '@furria/ui';
+import type { KkFrameState } from '@furria/ui/KkFrame';
 import type { GalleryScene } from './gallery-scenes';
 import { frameNumberOf } from './gallery-scenes';
 import type { GalleryMedia, GalleryMediaUrls } from './schemas';

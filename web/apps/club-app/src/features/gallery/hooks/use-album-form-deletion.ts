@@ -1,7 +1,7 @@
-import { useKkNotice } from '@furria/ui';
+import { useKkNotice } from '@furria/ui/KkNotice';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { GALLERY_PATH } from '@/features/session';
+import { GALLERY_PATH } from '@/features/session/app-sections';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useAlbumDeletion } from '../api';
 

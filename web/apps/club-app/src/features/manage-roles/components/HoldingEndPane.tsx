@@ -1,13 +1,11 @@
-import type { KkDateQuickChoice } from '@furria/ui';
-import {
-  KkAlert,
-  KkButton,
-  KkDateField,
-  KkNote,
-  KkSeatLine,
-  KkSeatList,
-  KkStepPane,
-} from '@furria/ui';
+import { KkAlert } from '@furria/ui/KkAlert';
+import { KkButton } from '@furria/ui/KkButton';
+import type { KkDateQuickChoice } from '@furria/ui/KkDateField';
+import { KkDateField } from '@furria/ui/KkDateField';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkSeatLine } from '@furria/ui/KkSeatLine';
+import { KkSeatList } from '@furria/ui/KkSeatList';
+import { KkStepPane } from '@furria/ui/KkStepPane';
 import type { FC } from 'react';
 import { toAvatarHonours } from '@/lib/honours';
 import { toInitials } from '@/lib/initials';

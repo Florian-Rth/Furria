@@ -1,4 +1,4 @@
-import { usePermissions } from '@/features/session';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import type { PermissionKey } from '@/lib/api/schemas';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { isForbiddenError, isNotFoundError } from '@/lib/query-error';

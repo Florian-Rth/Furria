@@ -1,4 +1,5 @@
-import type { KkHoldConfirm, KkPublishAnnouncements } from '@furria/ui';
+import type { KkHoldConfirm } from '@furria/ui/KkHoldButton';
+import type { KkPublishAnnouncements } from '@furria/ui/publish-stamp';
 
 export const WEBSITE_HOST = 'furria.de';
 

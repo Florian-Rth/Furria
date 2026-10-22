@@ -1,6 +1,7 @@
-import { KkScreen, KkTitleHeader } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, MORE_SECTION, SYSTEM_TITLE } from '@/features/session';
+import { AREA_HANDOVERS, MORE_SECTION, SYSTEM_TITLE } from '@/features/session/app-sections';
 import { SYSTEM_LEAD } from '../system-copy';
 import { SystemBody } from './SystemBody';
 

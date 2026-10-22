@@ -1,6 +1,8 @@
-import { KkPanelStack } from '@furria/ui';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import type { FC } from 'react';
-import { AccessDenied, AppListSkeleton, deniedMessageOf } from '@/features/session';
+import { AccessDenied } from '@/features/session/components/AccessDenied';
+import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
+import { deniedMessageOf } from '@/features/session/permission-denials';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { LOADING_LABEL } from '../event-board-copy';
 import { useEventsWorkbench } from '../hooks/use-events-workbench';

@@ -1,12 +1,8 @@
-import type {
-  KkHoldConfirm,
-  KkPressLineTone,
-  KkPressToggleOption,
-  KkReadinessSlot,
-  KkRegisterMarkState,
-} from '@furria/ui';
-import { useIsMobile } from '@furria/ui';
-import { MANAGING_LOGIN_NAME } from '@/features/session';
+import type { KkHoldConfirm } from '@furria/ui/KkHoldButton';
+import type { KkPressLineTone, KkPressToggleOption, KkReadinessSlot } from '@furria/ui/KkPressBar';
+import type { KkRegisterMarkState } from '@furria/ui/KkRegisterMark';
+import { useIsMobile } from '@furria/ui/use-is-mobile';
+import { MANAGING_LOGIN_NAME } from '@/features/session/hooks/use-signer-name';
 import { publishConfirmOf } from '@/lib/publish-copy';
 import {
   DELETE,

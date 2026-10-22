@@ -1,6 +1,6 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, MORE_SECTION } from '@/features/session';
+import { AREA_HANDOVERS, MORE_SECTION } from '@/features/session/app-sections';
 import { MANAGE_TITLE } from '../manage-hub-labels';
 import { ManageBody } from './ManageBody';
 import { ManageHeader } from './ManageHeader';

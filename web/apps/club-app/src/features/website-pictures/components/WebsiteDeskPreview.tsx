@@ -1,4 +1,5 @@
-import { KkCropFrame, KkFrame } from '@furria/ui';
+import { KkCropFrame } from '@furria/ui/KkCropFrame';
+import { KkFrame } from '@furria/ui/KkFrame';
 import type { FC } from 'react';
 import type { PositionDesk } from '../hooks/use-position-desk';
 import type { BoardPosition } from '../website-board';

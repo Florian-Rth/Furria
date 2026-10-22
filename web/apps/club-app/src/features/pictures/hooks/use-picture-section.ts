@@ -1,5 +1,6 @@
-import type { KkBannerDeskActions, KkCrop } from '@furria/ui';
-import { useKkNotice } from '@furria/ui';
+import type { KkBannerDeskActions } from '@furria/ui/banner-desk-types';
+import type { KkCrop } from '@furria/ui/image-crop';
+import { useKkNotice } from '@furria/ui/KkNotice';
 import type { ChangeEvent } from 'react';
 import { useState } from 'react';
 import { useApiMutation } from '@/lib/api/api-mutation';

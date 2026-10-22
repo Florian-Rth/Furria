@@ -1,4 +1,7 @@
-import { KkFlapGrid, KkHeartbeat, KkReadout, KkSlotStrip } from '@furria/ui';
+import { KkFlapGrid } from '@furria/ui/KkFlapGrid';
+import { KkHeartbeat } from '@furria/ui/KkHeartbeat';
+import { KkReadout } from '@furria/ui/KkReadout';
+import { KkSlotStrip } from '@furria/ui/KkSlotStrip';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { SystemStatus } from '../schemas';

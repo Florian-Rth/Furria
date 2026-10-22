@@ -1,6 +1,6 @@
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
-import { AppSkeletonRegion } from '@/features/session';
+import { AppSkeletonRegion } from '@/features/session/components/AppSkeletonRegion';
 import { GroupCardSkeleton } from './GroupCardSkeleton';
 
 const LOADING_LABEL = 'Gruppen werden geladen';

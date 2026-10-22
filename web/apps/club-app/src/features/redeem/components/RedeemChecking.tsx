@@ -1,4 +1,4 @@
-import { KkSkeletonText } from '@furria/ui';
+import { KkSkeletonText } from '@furria/ui/KkSkeletonText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 

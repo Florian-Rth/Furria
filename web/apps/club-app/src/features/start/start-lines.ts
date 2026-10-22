@@ -1,12 +1,10 @@
-import type {
-  KkDenseFacet,
-  KkDenseLineState,
-  KkIconName,
-  KkImageSource,
-  KkLinkSearchValues,
-} from '@furria/ui';
-import { toImageSource } from '@furria/ui';
-import type { AttendanceAnswer } from '@/features/attendance';
+import type { KkDenseFacet } from '@furria/ui/facet-pieces';
+import type { KkImageSource } from '@furria/ui/image-source';
+import { toImageSource } from '@furria/ui/image-source';
+import type { KkDenseLineState } from '@furria/ui/KkDensePanelLine';
+import type { KkIconName } from '@furria/ui/KkIcon';
+import type { KkLinkSearchValues } from '@furria/ui/kk-link-search';
+import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import { toGroupTone } from '@/features/groups/group-identity';
 import { toLocalIsoDay } from '@/lib/calendar-days';
 import { calendarDaysBetween, sessionYearsLabelOf } from '@/lib/club';

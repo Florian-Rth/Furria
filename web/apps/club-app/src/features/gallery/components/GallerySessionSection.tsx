@@ -1,4 +1,5 @@
-import { KkFilmEdge, KkFlapCount } from '@furria/ui';
+import { KkFilmEdge } from '@furria/ui/KkFilmEdge';
+import { KkFlapCount } from '@furria/ui/KkFlapCount';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';

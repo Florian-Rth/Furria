@@ -1,4 +1,5 @@
-import { KkButton, KkRoleMark } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkRoleMark } from '@furria/ui/KkRoleMark';
 import type { FC } from 'react';
 import type { RoleLike } from '../roles-hub';
 import { toRoleMarkState } from '../roles-hub';

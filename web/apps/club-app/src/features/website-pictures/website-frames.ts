@@ -1,10 +1,5 @@
-import type {
-  KkFrameMark,
-  KkFrameState,
-  KkSlotFlag,
-  KkSlotFlagTone,
-  KkSlotRowPosition,
-} from '@furria/ui';
+import type { KkFrameMark, KkFrameState } from '@furria/ui/KkFrame';
+import type { KkSlotFlag, KkSlotFlagTone, KkSlotRowPosition } from '@furria/ui/KkSlotRow';
 import type { DeskPhase } from './hooks/use-position-desk';
 import type { SlotPositionRef } from './types';
 import type { BoardPosition, PositionStatus, SlotFlag } from './website-board';

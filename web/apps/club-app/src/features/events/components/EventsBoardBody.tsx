@@ -1,7 +1,9 @@
-import { KkMasterDetail, KkNote, KkRetryAlert } from '@furria/ui';
+import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { AppListSkeleton } from '@/features/session';
+import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import { EMPTY_FILTER_NOTE, LOADING_LABEL } from '../event-board-copy';
 import { toEventsErrorMessage } from '../events-messages';
 import { useEventsBoard } from '../hooks/use-events-board';

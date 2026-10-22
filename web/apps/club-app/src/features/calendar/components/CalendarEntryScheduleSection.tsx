@@ -1,5 +1,9 @@
-import type { KkSelectOption } from '@furria/ui';
-import { KkDateField, KkFormPair, KkFormSection, KkSelectField, KkTimeField } from '@furria/ui';
+import { KkDateField } from '@furria/ui/KkDateField';
+import { KkFormPair } from '@furria/ui/KkFormPair';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import type { KkSelectOption } from '@furria/ui/KkSelectField';
+import { KkSelectField } from '@furria/ui/KkSelectField';
+import { KkTimeField } from '@furria/ui/KkTimeField';
 import type { FC } from 'react';
 import { toStartDayQuickChoices } from '../calendar-labels';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';

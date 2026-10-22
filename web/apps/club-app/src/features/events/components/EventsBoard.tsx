@@ -1,4 +1,4 @@
-import { KkStateGrid } from '@furria/ui';
+import { KkStateGrid } from '@furria/ui/KkStateGrid';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import {

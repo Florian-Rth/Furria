@@ -1,14 +1,12 @@
-import {
-  KkChipField,
-  KkDateField,
-  KkFactRow,
-  KkFormSection,
-  KkSwitchRow,
-  KkWriteScreen,
-} from '@furria/ui';
+import { KkChipField } from '@furria/ui/KkChipField';
+import { KkDateField } from '@furria/ui/KkDateField';
+import { KkFactRow } from '@furria/ui/KkFactRow';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
+import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
-import type { GroupDetailMember } from '@/features/group-detail';
-import { WriteScreen } from '@/features/write';
+import type { GroupDetailMember } from '@/features/group-detail/schemas';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import {
   ADMIN_FUNCTION_SUGGESTIONS,
   toEndQuickChoices,

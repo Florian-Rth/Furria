@@ -1,5 +1,8 @@
-import type { KkSx } from '@furria/ui';
-import { KkAvatarStack, KkGroupCard, toImageSource, useKkSheetCommands } from '@furria/ui';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkAvatarStack } from '@furria/ui/KkAvatarStack';
+import { KkGroupCard } from '@furria/ui/KkGroupCard';
+import type { KkSx } from '@furria/ui/kk-sx';
+import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
 import { toPeekId } from '@/lib/peek';

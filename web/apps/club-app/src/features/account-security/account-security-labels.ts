@@ -1,4 +1,4 @@
-import type { KkScreenOrigin } from '@furria/ui';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale/de';
 import { formatCountdown } from '@/lib/countdown';

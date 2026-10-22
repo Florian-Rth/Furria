@@ -1,6 +1,6 @@
-import type { KkFilterOption } from '@furria/ui';
+import type { KkFilterOption } from '@furria/ui/filter-chip-entries';
 import { useState } from 'react';
-import { useSearchQuery } from '@/features/session';
+import { useSearchQuery } from '@/features/session/hooks/use-search-query';
 import type { GroupsSection } from '../groups-labels';
 import {
   ALL_GROUPS_FILTER_ID,

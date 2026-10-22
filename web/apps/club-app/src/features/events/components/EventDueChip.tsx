@@ -1,4 +1,4 @@
-import { KkDueChip } from '@furria/ui';
+import { KkDueChip } from '@furria/ui/KkDueChip';
 import type { FC } from 'react';
 import type { DueView } from '../event-board-copy';
 

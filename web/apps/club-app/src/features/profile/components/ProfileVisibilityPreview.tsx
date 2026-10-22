@@ -1,6 +1,6 @@
-import { KkPanelSection } from '@furria/ui';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
-import { MemberContactPanel } from '@/features/members';
+import { MemberContactPanel } from '@/features/members/components/MemberContactPanel';
 import type { MePerson } from '@/lib/api/schemas';
 import {
   PROFILE_SECTION_TITLES,

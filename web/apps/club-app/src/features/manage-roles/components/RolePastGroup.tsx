@@ -1,4 +1,5 @@
-import { KkPanelSection, KkTenureChain } from '@furria/ui';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkTenureChain } from '@furria/ui/KkTenureChain';
 import type { FC } from 'react';
 import { PAST_TITLE } from '../roles-hub-copy';
 import type { RoleHolder } from '../schemas';

@@ -1,4 +1,6 @@
-import { KkLead, KkSection, kkTokens } from '@furria/ui';
+import { KkLead } from '@furria/ui/KkLead';
+import { KkSection } from '@furria/ui/KkSection';
+import { kkTokens } from '@furria/ui/tokens';
 import type { FC } from 'react';
 import { MASTHEAD_HEIGHT_CSS_VAR } from '@/components/Masthead/masthead-height';
 import { groupMatcher } from '@/features/group-matcher/api';

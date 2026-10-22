@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
-import { toAccessLandingKey, useAccessActions } from '@/features/account-access';
-import { usePermissions } from '@/features/session';
+import { toAccessLandingKey } from '@/features/account-access/account-access-labels';
+import { useAccessActions } from '@/features/account-access/hooks/use-access-actions';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import type { AppAct, AppLead, IdentitySection, IdentityTile } from '../person-identity';
 import { toAppAct, toAppLead, toIdentityTiles, toSectionLandingKey } from '../person-identity';

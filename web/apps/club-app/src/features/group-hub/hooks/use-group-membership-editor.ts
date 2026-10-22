@@ -1,7 +1,7 @@
 import { useController } from 'react-hook-form';
-import type { GroupDetailMember } from '@/features/group-detail';
-import type { WriteLanding } from '@/features/write';
-import { useWriteForm } from '@/features/write';
+import type { GroupDetailMember } from '@/features/group-detail/schemas';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
+import type { WriteLanding } from '@/features/write/landing-target';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
 import { useAddGroupMembershipMutation, useEndGroupMembershipMutation } from '../api';

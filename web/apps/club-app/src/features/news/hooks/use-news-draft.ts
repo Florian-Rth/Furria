@@ -1,6 +1,6 @@
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
-import { useMeQuery } from '@/features/session';
+import { useMeQuery } from '@/features/session/api';
 import { newsDraftRequestsOf } from '../api';
 import type { NewsDraftClock, NewsDraftSession, NewsDraftView } from '../news-draft-session';
 import { createNewsDraftSession, createNewsSaveLedger } from '../news-draft-session';

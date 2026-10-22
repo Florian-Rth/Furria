@@ -1,4 +1,5 @@
-import { KkLetterDivider, kkMotion } from '@furria/ui';
+import { KkLetterDivider } from '@furria/ui/KkLetterDivider';
+import { kkMotion } from '@furria/ui/kk-motion';
 import { motion } from 'motion/react';
 import type { CSSProperties, FC } from 'react';
 import { toLetterAnchorId } from '../members-labels';

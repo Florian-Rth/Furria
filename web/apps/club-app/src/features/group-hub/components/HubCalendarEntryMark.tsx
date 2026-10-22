@@ -1,4 +1,5 @@
-import { KkChip, KkGroupToneChip } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkGroupToneChip } from '@furria/ui/KkGroupToneChip';
 import type { FC } from 'react';
 import type { CalendarEntryMark } from '../group-calendar-entries';
 

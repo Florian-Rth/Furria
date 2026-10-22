@@ -1,6 +1,6 @@
-import type { KkSelectOption } from '@furria/ui';
+import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { usePermissions } from '@/features/session';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { useInboxesQuery } from '../api';
 import { GALLERY_INBOX_PATH } from '../gallery-copy';

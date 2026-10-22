@@ -1,7 +1,7 @@
-import { KkPanelSection } from '@furria/ui';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
-import { GroupDescriptionPanel } from '@/features/group-detail';
-import type { GroupTone } from '@/features/groups';
+import { GroupDescriptionPanel } from '@/features/group-detail/components/GroupDescriptionPanel';
+import type { GroupTone } from '@/features/groups/group-identity';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 
 interface HubDescriptionPanelProps {

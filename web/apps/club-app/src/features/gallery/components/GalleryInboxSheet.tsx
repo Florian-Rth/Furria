@@ -1,11 +1,9 @@
-import {
-  KkButton,
-  KkFilmEdge,
-  KkRetryAlert,
-  KkSelectField,
-  KkSheet,
-  KkTextField,
-} from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkFilmEdge } from '@furria/ui/KkFilmEdge';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
+import { KkSelectField } from '@furria/ui/KkSelectField';
+import { KkSheet } from '@furria/ui/KkSheet';
+import { KkTextField } from '@furria/ui/KkTextField';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { GALLERY_RETRY_LABEL } from '../gallery-copy';

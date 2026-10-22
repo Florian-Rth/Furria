@@ -1,6 +1,7 @@
-import { KkScreen, KkTitleHeader } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, PROFILE_ORIGIN } from '@/features/session';
+import { AREA_HANDOVERS, PROFILE_ORIGIN } from '@/features/session/app-sections';
 import { SECURITY_LEAD, SECURITY_TITLE } from '../account-security-labels';
 import { AccountSecurityBody } from './AccountSecurityBody';
 

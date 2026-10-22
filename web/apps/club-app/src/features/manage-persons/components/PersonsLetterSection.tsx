@@ -1,4 +1,4 @@
-import { KkLetterDivider } from '@furria/ui';
+import { KkLetterDivider } from '@furria/ui/KkLetterDivider';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { toLetterAnchorId } from '../letter-anchors';

@@ -1,4 +1,4 @@
-import { KkEyebrow } from '@furria/ui';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
 import type { FC } from 'react';
 import { shareLabel } from '@/features/news/news-content';
 

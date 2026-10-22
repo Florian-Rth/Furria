@@ -1,4 +1,4 @@
-import { KkTimetable } from '@furria/ui';
+import { KkTimetable } from '@furria/ui/KkTimetable';
 import type { FC } from 'react';
 import { ON_DEMAND_LABEL, SERVICES_LABEL } from '../system-copy';
 import type { ServiceRowView } from '../system-view';

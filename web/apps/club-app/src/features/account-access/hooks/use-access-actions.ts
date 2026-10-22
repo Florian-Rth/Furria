@@ -1,4 +1,4 @@
-import { useMeQuery } from '@/features/session';
+import { useMeQuery } from '@/features/session/api';
 import type { AccessActions } from '../access-actions';
 import { accessActionsOf } from '../access-actions';
 import type { AccessSubject } from '../types';

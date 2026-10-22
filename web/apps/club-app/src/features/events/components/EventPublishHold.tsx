@@ -1,4 +1,5 @@
-import { KkAlert, KkHoldButton } from '@furria/ui';
+import { KkAlert } from '@furria/ui/KkAlert';
+import { KkHoldButton } from '@furria/ui/KkHoldButton';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { EventPublishing } from '../hooks/use-event-publishing';

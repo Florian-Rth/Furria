@@ -1,4 +1,4 @@
-import { KkFieldRow } from '@furria/ui';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
 import type { FC } from 'react';
 import { MISSING_VALUE } from '../club-record-labels';
 import type { ClubRecord } from '../schemas';

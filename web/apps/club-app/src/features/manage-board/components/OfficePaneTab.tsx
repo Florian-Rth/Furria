@@ -1,5 +1,5 @@
-import type { KkStepState } from '@furria/ui';
-import { KkStepPane } from '@furria/ui';
+import { KkStepPane } from '@furria/ui/KkStepPane';
+import type { KkStepState } from '@furria/ui/step-state';
 import type { FC } from 'react';
 import type { TabView } from '../board-hub-copy';
 import type { OfficePaneSection } from '../schemas';

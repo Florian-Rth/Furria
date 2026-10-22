@@ -1,4 +1,4 @@
-import { KkSheet } from '@furria/ui';
+import { KkSheet } from '@furria/ui/KkSheet';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useOwedSheet } from '../hooks/use-owed-sheet';

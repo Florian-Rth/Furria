@@ -1,4 +1,4 @@
-import { toLandingKey } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
 import { formatIsoDay } from '@/lib/membership-labels';

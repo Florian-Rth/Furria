@@ -1,4 +1,7 @@
-import { KkFieldRow, KkNote, KkPanel, KkPanelSection } from '@furria/ui';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import {
   APPLICANT_SECTION_TITLE,

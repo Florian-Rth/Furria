@@ -1,4 +1,4 @@
-import { KkSection } from '@furria/ui';
+import { KkSection } from '@furria/ui/KkSection';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';

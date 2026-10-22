@@ -1,7 +1,9 @@
-import { eventToneOf, KkNewsEventCard, toImageSource } from '@furria/ui';
+import { eventToneOf } from '@furria/ui/group-tone';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkNewsEventCard } from '@furria/ui/KkNewsEventCard';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { buildEventHref } from '@/features/events';
+import { buildEventHref } from '@/features/events/event-display';
 import { buildEventTieLine, newsTiesLabels } from '@/features/news/news-content';
 import { formatDayOfMonth, formatMonthAbbreviation } from '@/lib/date';
 import type { NewsEvent } from '@/lib/public-news/schemas';

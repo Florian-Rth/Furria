@@ -1,4 +1,5 @@
-import { KkPanel, KkPanelSection } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import { SESSION_SECTION_TITLES } from '../manage-sessions-labels';
 import type { SessionRecordSummary } from '../schemas';

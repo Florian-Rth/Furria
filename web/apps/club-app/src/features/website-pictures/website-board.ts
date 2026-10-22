@@ -1,4 +1,4 @@
-import type { KkAspect } from '@furria/ui';
+import type { KkAspect } from '@furria/ui/image-aspect';
 import type { PictureSlot, SlotCatalogue, WebsitePage } from '@furria/website-pictures';
 import { fillOf, orphansOf, slotsByPage } from '@furria/website-pictures';
 import type { WebsitePicture } from './schemas';

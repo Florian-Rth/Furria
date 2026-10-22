@@ -1,7 +1,8 @@
-import { KkHubRow, KkPanel } from '@furria/ui';
+import { KkHubRow } from '@furria/ui/KkHubRow';
+import { KkPanel } from '@furria/ui/KkPanel';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { CLUB_SECTIONS } from '@/features/session';
+import { CLUB_SECTIONS } from '@/features/session/app-sections';
 
 export const ClubLinks: FC = () => {
   const rows = CLUB_SECTIONS.map((section) => (

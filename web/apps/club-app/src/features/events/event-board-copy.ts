@@ -1,12 +1,10 @@
-import type {
-  KkHealthFilterTone,
-  KkHealthLegendEntry,
-  KkIconName,
-  KkProgressRingPart,
-  KkStateGridColumn,
-  KkStepLaterItem,
-  KkStepState,
-} from '@furria/ui';
+import type { KkHealthFilterTone } from '@furria/ui/KkHealthStripFilter';
+import type { KkHealthLegendEntry } from '@furria/ui/KkHealthStripSummary';
+import type { KkIconName } from '@furria/ui/KkIcon';
+import type { KkStateGridColumn } from '@furria/ui/KkStateGridRoot';
+import type { KkStepLaterItem } from '@furria/ui/KkStepListLater';
+import type { KkProgressRingPart } from '@furria/ui/progress-ring';
+import type { KkStepState } from '@furria/ui/step-state';
 import { toDayNumberLabel, toWeekdayEyebrow } from '@/lib/calendar-days';
 import { formatPriceCents, toEventStatusShortLabel } from '@/lib/event-copy';
 import type { BoardCell, BoardColumn, CellFact, StateTally } from './event-board';

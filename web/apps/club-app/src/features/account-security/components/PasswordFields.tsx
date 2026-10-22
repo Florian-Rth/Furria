@@ -1,7 +1,9 @@
-import { KkFormSection, KkIconButton, KkTextField } from '@furria/ui';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkIconButton } from '@furria/ui/KkIconButton';
+import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
-import { usePasswordVisibility } from '@/features/login';
+import { usePasswordVisibility } from '@/features/login/hooks/use-password-visibility';
 import { PASSWORD_RULE_HINT } from '@/lib/password-rule';
 import type { PasswordForm } from '../schemas';
 

@@ -1,4 +1,6 @@
-import { KkFieldRow, KkPanel, KkPanelSection } from '@furria/ui';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import { formatInstantDay, INTAKE_SECTION_TITLE } from '../manage-membership-applications-labels';
 import type { MembershipApplicationDetails } from '../schemas';

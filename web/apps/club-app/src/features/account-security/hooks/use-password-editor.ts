@@ -1,6 +1,6 @@
-import { useKkNotice } from '@furria/ui';
+import { useKkNotice } from '@furria/ui/KkNotice';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
-import { useWriteForm } from '@/features/write';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import {
   PASSWORD_SAVED_MESSAGE,
   SECURITY_LANDINGS,

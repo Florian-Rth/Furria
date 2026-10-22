@@ -1,4 +1,4 @@
-import { KkTicker } from '@furria/ui';
+import { KkTicker } from '@furria/ui/KkTicker';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';

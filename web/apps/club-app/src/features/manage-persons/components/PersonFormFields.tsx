@@ -1,4 +1,6 @@
-import { KkFormPair, KkFormSection, KkTextField } from '@furria/ui';
+import { KkFormPair } from '@furria/ui/KkFormPair';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC, ReactNode } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
 import type { PersonForm } from '../schemas';

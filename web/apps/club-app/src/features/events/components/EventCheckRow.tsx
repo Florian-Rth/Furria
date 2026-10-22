@@ -1,4 +1,5 @@
-import { KkButton, KkCheckLine } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkCheckLine } from '@furria/ui/KkCheckLine';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { PaneCheck } from '../detail-checks';

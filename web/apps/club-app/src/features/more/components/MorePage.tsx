@@ -1,6 +1,8 @@
-import { KkScreen, KkTitleHeader } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, MORE_SECTION, usePermissions } from '@/features/session';
+import { AREA_HANDOVERS, MORE_SECTION } from '@/features/session/app-sections';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { MORE_LEAD, MORE_MANAGING_LEAD, MORE_TITLE } from '../more-labels';
 import { MoreBody } from './MoreBody';
 

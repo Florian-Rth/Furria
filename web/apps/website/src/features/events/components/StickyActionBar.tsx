@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import Stack from '@mui/material/Stack';
 import type { SxProps, Theme } from '@mui/material/styles';
 import type { FC, PropsWithChildren } from 'react';

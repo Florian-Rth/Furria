@@ -1,4 +1,6 @@
-import { KkAlert, KkButton, KkText } from '@furria/ui';
+import { KkAlert } from '@furria/ui/KkAlert';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { GONE_COPY, GONE_TEXT, GONE_TITLE } from '../../editor-copy';

@@ -1,4 +1,5 @@
-import { KkPanelFold, KkReadout } from '@furria/ui';
+import { KkPanelFold } from '@furria/ui/KkPanelFold';
+import { KkReadout } from '@furria/ui/KkReadout';
 import type { FC } from 'react';
 import type { SystemStatus } from '../schemas';
 import { punctualFoldOf, SECTION_TITLES } from '../system-copy';

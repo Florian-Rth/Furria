@@ -1,4 +1,6 @@
-import { KkRule, KkSection, PageLayout } from '@furria/ui';
+import { KkRule } from '@furria/ui/KkRule';
+import { KkSection } from '@furria/ui/KkSection';
+import { PageLayout } from '@furria/ui/PageLayout';
 import type { FC } from 'react';
 import { NewsHeader } from '@/features/news/components/NewsHeader/NewsHeader';
 import { NewsLead } from '@/features/news/components/NewsLead';

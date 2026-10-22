@@ -1,5 +1,5 @@
-import type { ToDoMark } from '@/features/to-dos';
-import { withToDoMark } from '@/features/to-dos';
+import type { ToDoMark } from '@/features/to-dos/to-do-board';
+import { withToDoMark } from '@/features/to-dos/to-do-board';
 import type { ManageHub } from './schemas';
 
 export const withManageToDoMark = (

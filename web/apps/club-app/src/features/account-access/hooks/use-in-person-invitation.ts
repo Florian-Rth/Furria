@@ -1,4 +1,4 @@
-import type { KkScreenActionBar } from '@furria/ui';
+import type { KkScreenActionBar } from '@furria/ui/screen-declaration';
 import { useEffect, useRef, useState } from 'react';
 import { useRefreshAfter } from '@/lib/query/use-refresh-after';
 import { useGoBackTo } from '@/lib/use-go-back-to';

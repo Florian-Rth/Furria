@@ -1,6 +1,6 @@
-import type { KkSelectOption } from '@furria/ui';
+import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import { useState } from 'react';
-import { useCalendarQuery } from '@/features/calendar';
+import { useCalendarQuery } from '@/features/calendar/api';
 import { entryWindowOf, toEntryOptions } from '../album-form';
 import type { AlbumEntry } from '../schemas';
 
