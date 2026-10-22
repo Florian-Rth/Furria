@@ -1,4 +1,5 @@
-import { KkCard, KkSkeletonBlock } from '@furria/ui';
+import { KkCard } from '@furria/ui/KkCard';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 

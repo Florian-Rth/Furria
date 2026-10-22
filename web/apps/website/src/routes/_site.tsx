@@ -2,8 +2,8 @@ import { createFileRoute, Outlet, useLocation } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { NotFoundPage } from '@/components/NotFoundPage';
 import { SiteChrome } from '@/components/SiteChrome';
-import { TesterChangelog } from '@/features/changelog';
-import { usePreviewAccess } from '@/features/preview-access';
+import { TesterChangelog } from '@/features/changelog/components/TesterChangelog/TesterChangelog';
+import { usePreviewAccess } from '@/features/preview-access/hooks/use-preview-access';
 
 const SiteLayout: FC = () => {
   const { granted } = usePreviewAccess();

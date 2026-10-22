@@ -1,12 +1,10 @@
-import {
-  KkAppTile,
-  KkConfettiBurst,
-  KkDiagonalStamp,
-  KkEyebrow,
-  KkInstallStage,
-  KkNote,
-  KkTwoToneHeadline,
-} from '@furria/ui';
+import { KkAppTile } from '@furria/ui/KkAppTile';
+import { KkConfettiBurst } from '@furria/ui/KkConfettiBurst';
+import { KkDiagonalStamp } from '@furria/ui/KkDiagonalStamp';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkInstallStage } from '@furria/ui/KkInstallStage';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkTwoToneHeadline } from '@furria/ui/KkTwoToneHeadline';
 import type { FC } from 'react';
 import { useInstallScreen } from '../hooks/use-install-screen';
 import { CELEBRATION_CALL, CLUB_LABEL, SECRET_TILE_LABEL } from '../install-copy';

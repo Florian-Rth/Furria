@@ -1,8 +1,13 @@
-import { KkAlert, KkButton, KkHeading, KkIconButton, KkNote, KkTextField } from '@furria/ui';
+import { KkAlert } from '@furria/ui/KkAlert';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkHeading } from '@furria/ui/KkHeading';
+import { KkIconButton } from '@furria/ui/KkIconButton';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkTextField } from '@furria/ui/KkTextField';
 import Stack from '@mui/material/Stack';
 import type { ChangeEvent, FC, FormEvent } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { usePasswordVisibility } from '@/features/login';
+import { usePasswordVisibility } from '@/features/login/hooks/use-password-visibility';
 import { PASSWORD_RULE_HINT } from '@/lib/password-rule';
 import type { ResetErrorMessages } from '../reset-messages';
 import type { ResetPasswordForm as ResetPasswordValues } from '../schemas';

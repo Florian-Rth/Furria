@@ -1,6 +1,8 @@
-import { KkEmptyState, KkRetryAlert, KkSkeletonRow } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
+import { KkSkeletonRow } from '@furria/ui/KkSkeletonRow';
 import type { FC } from 'react';
-import type { RoleOverview } from '@/features/roles-overview';
+import type { RoleOverview } from '@/features/roles-overview/schemas';
 import { CLUB_RETRY_LABEL, STALE_NOTE } from '../club-labels';
 import { RoleOverviewBlock } from './RoleOverviewBlock';
 

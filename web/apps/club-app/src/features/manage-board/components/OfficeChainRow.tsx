@@ -1,4 +1,4 @@
-import { KkTenureChainRow } from '@furria/ui';
+import { KkTenureChainRow } from '@furria/ui/KkTenureChainRow';
 import type { FC } from 'react';
 import { seatPhaseOf } from '../board-hub';
 import { toChainSpan, toChainState, toChainStateLabel } from '../board-hub-copy';

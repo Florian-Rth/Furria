@@ -1,7 +1,7 @@
-import { KkNote } from '@furria/ui';
+import { KkNote } from '@furria/ui/KkNote';
 import type { FC } from 'react';
-import { PROFILE_ORIGIN } from '@/features/session';
-import { WriteScreen } from '@/features/write';
+import { PROFILE_ORIGIN } from '@/features/session/app-sections';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import type { MePerson } from '@/lib/api/schemas';
 import { useContactDetailsEditor } from '../hooks/use-contact-details-editor';
 import { CONTACT_DETAILS_EDIT_TITLE, toOwnContactChangeNote } from '../profile-labels';

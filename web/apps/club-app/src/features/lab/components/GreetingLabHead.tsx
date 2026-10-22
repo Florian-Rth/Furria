@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { StartHead } from '@/features/start';
+import { StartHead } from '@/features/start/components/StartHead';
 import { useLabHead } from '../hooks/use-lab-head';
 import type { LabGreeting } from '../lab-greetings';
 

@@ -1,7 +1,8 @@
-import { useKkSheet } from '@furria/ui';
+import { useKkSheet } from '@furria/ui/sheet-store';
 import type { FC } from 'react';
-import type { GalleryPhoto } from '@/features/gallery-pick';
-import { GalleryPickSheet, usePickableAlbumsQuery } from '@/features/gallery-pick';
+import { usePickableAlbumsQuery } from '@/features/gallery-pick/api';
+import { GalleryPickSheet } from '@/features/gallery-pick/components/GalleryPickSheet';
+import type { GalleryPhoto } from '@/features/gallery-pick/schemas';
 import {
   EVENT_GALLERY_EMPTY,
   EVENT_GALLERY_NOTE,

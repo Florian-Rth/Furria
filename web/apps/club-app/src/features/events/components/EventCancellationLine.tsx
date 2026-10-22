@@ -1,4 +1,5 @@
-import { KkConfirmDialog, KkWriteScreen } from '@furria/ui';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
+import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
 import { toEventCancellationCopy, toEventFacts } from '../events-labels';
 import { useEventCancellation } from '../hooks/use-event-cancellation';

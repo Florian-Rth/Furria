@@ -1,8 +1,10 @@
-import { KkButton, KkHeading, KkNote } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkHeading } from '@furria/ui/KkHeading';
+import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { FORGOT_PASSWORD_PATH } from '@/features/login';
+import { FORGOT_PASSWORD_PATH } from '@/features/login/signed-out-paths';
 import { LOGIN_PATH } from '@/lib/return-to';
 
 const DEAD_TITLE = 'DIESER LINK GILT NICHT MEHR';

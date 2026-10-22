@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { EntrySheetBody } from '@/features/entry-sheet';
+import { EntrySheetBody } from '@/features/entry-sheet/components/EntrySheetBody';
 import { useEntrySheet } from '../hooks/use-entry-sheet';
 import type { StartBoard } from '../hooks/use-start-view';
 import type { StartEntry } from '../schemas';

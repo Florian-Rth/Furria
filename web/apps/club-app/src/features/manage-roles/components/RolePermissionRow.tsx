@@ -1,4 +1,4 @@
-import { KkSwitchRow } from '@furria/ui';
+import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import type { FC } from 'react';
 import type { PermissionKey } from '@/lib/api/schemas';
 import { SWITCH_STATE_LABELS } from '@/lib/state-chips';

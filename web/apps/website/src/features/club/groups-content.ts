@@ -1,4 +1,4 @@
-import type { KkChipTone } from '@furria/ui';
+import type { KkChipTone } from '@furria/ui/KkChip';
 import type { PublicGroup } from '@/lib/public-groups/schemas';
 
 export const groupsChapter = {

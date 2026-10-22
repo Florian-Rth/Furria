@@ -1,4 +1,4 @@
-import { KkNewsLead } from '@furria/ui';
+import { KkNewsLead } from '@furria/ui/KkNewsLead';
 import type { FC } from 'react';
 import { deriveReadingTime, newsCategoryOf, readMoreLabel } from '@/features/news/news-content';
 import { formatLongDate } from '@/lib/date';

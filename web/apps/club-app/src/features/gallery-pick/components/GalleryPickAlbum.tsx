@@ -1,4 +1,6 @@
-import { KkFrame, KkFrameGrid, KkPanelSection } from '@furria/ui';
+import { KkFrame } from '@furria/ui/KkFrame';
+import { KkFrameGrid } from '@furria/ui/KkFrameGrid';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import { useGalleryAlbumPhotosQuery } from '../api';
 import { isPickablePhoto } from '../gallery-photo';

@@ -1,4 +1,4 @@
-import type { KkIconName } from '@furria/ui';
+import type { KkIconName } from '@furria/ui/KkIcon';
 import type { ManageBankId, ManagePanelDefinition, ManagePanelId } from './manage-hub-panels';
 import { MANAGE_BANKS, MANAGE_PANELS } from './manage-hub-panels';
 import type { ManageAccountsPanel, ManageHub, ManagePersonsPanel } from './schemas';

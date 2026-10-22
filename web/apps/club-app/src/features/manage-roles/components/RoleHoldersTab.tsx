@@ -1,4 +1,5 @@
-import { KkNote, KkRetryAlert } from '@furria/ui';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
 import type { FC } from 'react';
 import type { RolePaneControl } from '../hooks/use-role-pane';
 import { isRoleArchived, toSeatedOffices } from '../roles-hub';

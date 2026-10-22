@@ -1,4 +1,5 @@
-import { KkFillGauge, KkReadout } from '@furria/ui';
+import { KkFillGauge } from '@furria/ui/KkFillGauge';
+import { KkReadout } from '@furria/ui/KkReadout';
 import type { FC } from 'react';
 import type { SystemStatus } from '../schemas';
 import { SECTION_TITLES, STORAGE_LABEL, STORAGE_UNMEASURED } from '../system-copy';

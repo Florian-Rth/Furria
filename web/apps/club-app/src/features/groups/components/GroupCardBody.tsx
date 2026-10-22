@@ -1,5 +1,10 @@
-import type { KkSx } from '@furria/ui';
-import { KkAvatarStack, KkEyebrow, KkHeading, KkMeta, KkPanel, KkText } from '@furria/ui';
+import { KkAvatarStack } from '@furria/ui/KkAvatarStack';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkHeading } from '@furria/ui/KkHeading';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkText } from '@furria/ui/KkText';
+import type { KkSx } from '@furria/ui/kk-sx';
 import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';
 

@@ -1,4 +1,8 @@
-import { KkButton, KkFilmEdge, KkFrame, KkMeta, KkRetryAlert } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkFilmEdge } from '@furria/ui/KkFilmEdge';
+import { KkFrame } from '@furria/ui/KkFrame';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';

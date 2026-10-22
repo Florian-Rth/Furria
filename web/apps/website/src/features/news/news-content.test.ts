@@ -1,4 +1,4 @@
-import type { KkNewsTone } from '@furria/ui';
+import type { KkNewsTone } from '@furria/ui/news-proof-types';
 import { describe, expect, it } from 'vitest';
 import type { NewsCategory, NewsEvent, NewsPost, NewsSection } from '@/lib/public-news/schemas';
 import {

@@ -1,7 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { ANNOUNCEMENTS_TITLE, AnnouncementsPage } from '@/features/announcements';
-import { CLUB_ORIGIN, RequireScreenPermission } from '@/features/session';
+import { ANNOUNCEMENTS_TITLE } from '@/features/announcements/announcements-labels';
+import { AnnouncementsPage } from '@/features/announcements/components/AnnouncementsPage';
+import { CLUB_ORIGIN } from '@/features/session/app-sections';
+import { RequireScreenPermission } from '@/features/session/components/RequireScreenPermission';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 
 const AnnouncementsRoute: FC = () => (

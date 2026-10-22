@@ -1,6 +1,6 @@
 import { useParams, useSearch } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { usePermissions } from '@/features/session';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
 import { parsePositiveId } from '@/lib/positive-id';

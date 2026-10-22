@@ -1,12 +1,12 @@
-import { KkPanelStack } from '@furria/ui';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import type { FC } from 'react';
 import {
-  AppSignOutButton,
   GALLERY_SECTION,
   MANAGE_SECTIONS,
   toPermittedSections,
-  usePermissions,
-} from '@/features/session';
+} from '@/features/session/app-sections';
+import { AppSignOutButton } from '@/features/session/components/AppSignOutButton';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { MORE_PANEL_TITLES } from '../more-labels';
 import { MoreProfilePanel } from './MoreProfilePanel';
 import { MoreSectionPanel } from './MoreSectionPanel';

@@ -1,11 +1,11 @@
+import { hoursAxisOf, placeHourBlocks } from '@furria/ui/calendar-hours-geometry';
 import type {
   KkCalendarHoursAxis,
   KkCalendarHoursBlockData,
   KkCalendarHoursDayData,
   KkCalendarHoursPlacement,
   KkCalendarHoursTint,
-} from '@furria/ui';
-import { hoursAxisOf, placeHourBlocks } from '@furria/ui';
+} from '@furria/ui/calendar-hours-types';
 import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import { toTimeLabel, toTimeSpanLabel } from '@/lib/calendar-days';
 import { dayMarkAt, markOf } from './calendar-agenda';

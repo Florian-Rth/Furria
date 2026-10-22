@@ -1,4 +1,4 @@
-import { KkCalendarStrip } from '@furria/ui';
+import { KkCalendarStrip } from '@furria/ui/KkCalendarStrip';
 import type { FC } from 'react';
 import { WEEKDAY_HEADERS } from '../calendar-agenda-copy';
 import type { CalendarFold } from '../hooks/use-calendar-fold';

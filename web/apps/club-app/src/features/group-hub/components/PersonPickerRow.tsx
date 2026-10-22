@@ -1,4 +1,4 @@
-import { KkPersonRow } from '@furria/ui';
+import { KkPersonRow } from '@furria/ui/KkPersonRow';
 import type { FC } from 'react';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toInitials } from '@/lib/initials';

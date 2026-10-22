@@ -1,4 +1,4 @@
-import { KkTwoToneHeadline } from '@furria/ui';
+import { KkTwoToneHeadline } from '@furria/ui/KkTwoToneHeadline';
 import type { FC } from 'react';
 
 export const HeroHeadline: FC = () => (

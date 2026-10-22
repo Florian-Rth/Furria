@@ -1,5 +1,6 @@
-import { useIsWideScreen, useKkNotice } from '@furria/ui';
+import { useKkNotice } from '@furria/ui/KkNotice';
 import { newsPlainTextOf } from '@furria/ui/news-text';
+import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import type { NewsProofsProps } from '../components/proofs/proofs-props';
 import { ACTION_FAILED, NEW_POST_TITLE } from '../editor-copy';
 import type { NewsMentionable } from '../types';

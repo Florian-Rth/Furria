@@ -1,6 +1,7 @@
 import type { FC } from 'react';
-import { useRunningVenuesQuery } from '@/features/calendar';
-import { EVENTS_ORIGIN, usePermissions } from '@/features/session';
+import { useRunningVenuesQuery } from '@/features/calendar/api';
+import { EVENTS_ORIGIN } from '@/features/session/app-sections';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toEventErrorMessage } from '../events-messages';
 import { EventEditor } from './EventEditor';

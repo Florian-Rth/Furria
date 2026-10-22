@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { WriteScreen } from '@/features/write';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { CLUB_RECORD_ORIGIN, CLUB_RECORD_SECTION_TITLES } from '../club-record-labels';
 import { useClubContactEditor } from '../hooks/use-club-contact-editor';
 import type { ClubRecord } from '../schemas';

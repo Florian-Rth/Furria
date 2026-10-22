@@ -1,14 +1,12 @@
-import {
-  KkConfirmDialog,
-  KkFormSection,
-  KkSelectField,
-  KkTimeField,
-  KkWriteScreen,
-} from '@furria/ui';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkSelectField } from '@furria/ui/KkSelectField';
+import { KkTimeField } from '@furria/ui/KkTimeField';
+import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
 import { useState } from 'react';
-import { useRunningVenuesQuery } from '@/features/calendar';
-import { WriteScreen } from '@/features/write';
+import { useRunningVenuesQuery } from '@/features/calendar/api';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { toHubEditorOrigin } from '../group-hub-labels';
 import { toEditorChoicesErrorMessage } from '../group-hub-messages';
 import { useGroupSlotEditor } from '../hooks/use-group-slot-editor';

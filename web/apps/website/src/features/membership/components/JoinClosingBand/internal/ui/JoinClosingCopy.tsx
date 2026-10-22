@@ -1,4 +1,4 @@
-import { KkEyebrow } from '@furria/ui';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';

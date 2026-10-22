@@ -1,17 +1,17 @@
-import type { KkPanelAction } from '@furria/ui';
-import {
-  KkDateField,
-  KkFactRow,
-  KkFormPair,
-  KkFormSection,
-  KkNote,
-  KkPanel,
-  KkPanelSection,
-  KkWriteScreen,
-} from '@furria/ui';
+import { KkDateField } from '@furria/ui/KkDateField';
+import { KkFactRow } from '@furria/ui/KkFactRow';
+import { KkFormPair } from '@furria/ui/KkFormPair';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
+import type { KkPanelAction } from '@furria/ui/panel-action';
 import { useNavigate } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { toLandingKey, useLanding, WriteScreen } from '@/features/write';
+import { useLanding } from '@/features/write/hooks/use-landing';
+import { toLandingKey } from '@/features/write/landing-target';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { usePersonMembershipEditor } from '../hooks/use-person-membership-editor';
 import {
   ADD_PAUSE_ACTION_LABEL,

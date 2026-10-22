@@ -1,4 +1,4 @@
-import type { KkNoticePublisher, KkNoticeRequest } from '@furria/ui';
+import type { KkNoticePublisher, KkNoticeRequest } from '@furria/ui/KkNotice';
 import type { MutationKey, MutationOptions, QueryClient, QueryKey } from '@tanstack/react-query';
 import { hashKey, onlineManager } from '@tanstack/react-query';
 import type { DomainChange } from '@/lib/query/reads';

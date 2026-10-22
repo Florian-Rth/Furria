@@ -1,9 +1,12 @@
-import { KkButton, KkChip, KkPanel, KkRecordName } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkRecordName } from '@furria/ui/KkRecordName';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useState } from 'react';
-import { toLandingKey } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
 import type { GroupKindEntry } from '../manage-groups-labels';
 import { toGroupKindUsageBadge } from '../manage-groups-labels';
 import { RestoreGroupKindDialog } from './RestoreGroupKindDialog';

@@ -1,4 +1,7 @@
-import { KkFieldRow, KkPanel, KkPanelSection, KkPanelStack } from '@furria/ui';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import type { FC } from 'react';
 import type { MePasskey } from '@/lib/api/schemas';
 import { formatPasskeyDay } from '../account-security-labels';

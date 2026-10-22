@@ -1,4 +1,5 @@
-import { KkSection, kkTokens } from '@furria/ui';
+import { KkSection } from '@furria/ui/KkSection';
+import { kkTokens } from '@furria/ui/tokens';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
 import { SectionActionLink } from '@/components/SectionActionLink';

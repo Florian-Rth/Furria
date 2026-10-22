@@ -1,4 +1,4 @@
-import { KkConfettiBurst } from '@furria/ui';
+import { KkConfettiBurst } from '@furria/ui/KkConfettiBurst';
 import Box from '@mui/material/Box';
 import Link from '@mui/material/Link';
 import type { LinkProps } from '@tanstack/react-router';

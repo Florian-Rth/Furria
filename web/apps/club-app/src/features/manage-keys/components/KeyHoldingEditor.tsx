@@ -1,7 +1,11 @@
-import { KkDateField, KkFactRow, KkFormSection, KkNote, KkWriteScreen } from '@furria/ui';
+import { KkDateField } from '@furria/ui/KkDateField';
+import { KkFactRow } from '@furria/ui/KkFactRow';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
-import { PersonPicker } from '@/features/group-hub';
-import { WriteScreen } from '@/features/write';
+import { PersonPicker } from '@/features/group-hub/components/PersonPicker';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { useKeyHoldingEditor } from '../hooks/use-key-holding-editor';
 import {
   HANDOUT_EXPLANATION,

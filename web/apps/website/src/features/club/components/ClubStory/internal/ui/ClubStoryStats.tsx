@@ -1,4 +1,4 @@
-import { KkStatRow } from '@furria/ui';
+import { KkStatRow } from '@furria/ui/KkStatRow';
 import type { FC } from 'react';
 import { useStoryStats } from '../logic/use-story-stats';
 

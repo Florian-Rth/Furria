@@ -1,4 +1,8 @@
-import { KkButton, KkFactLine, KkIcon, KkNote, KkSwitchRow } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkFactLine } from '@furria/ui/KkFactLine';
+import { KkIcon } from '@furria/ui/KkIcon';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';

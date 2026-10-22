@@ -1,4 +1,5 @@
-import { KkSection, PageLayout } from '@furria/ui';
+import { KkSection } from '@furria/ui/KkSection';
+import { PageLayout } from '@furria/ui/PageLayout';
 import type { FC } from 'react';
 import { NextAlbum } from '@/features/gallery/components/NextAlbum/NextAlbum';
 import { PhotoGrid } from '@/features/gallery/components/PhotoGrid/PhotoGrid';

@@ -1,4 +1,4 @@
-import type { KkLightTableLabels } from '@furria/ui';
+import type { KkLightTableLabels } from '@furria/ui/KkLightTable';
 import type { QueryErrorKind } from '@/lib/query-error';
 import { toQueryErrorMessage } from '@/lib/query-error';
 import { countLabel } from './gallery-view';

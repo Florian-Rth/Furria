@@ -1,6 +1,8 @@
-import { KkMasterDetail, KkNote, KkRetryAlert } from '@furria/ui';
+import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
 import type { FC } from 'react';
-import { AppListSkeleton } from '@/features/session';
+import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import { LOADING_LABEL, NOT_FOUND_TITLE, RETRY_LABEL } from '../board-hub-copy';
 import type { BoardOfficePageControl } from '../hooks/use-board-office-page';
 import { toBoardErrorMessage } from '../manage-board-messages';

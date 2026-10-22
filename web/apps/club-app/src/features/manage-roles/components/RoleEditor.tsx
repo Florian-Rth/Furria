@@ -1,6 +1,10 @@
-import { KkFormSection, KkNote, KkSwitchRow, KkTextArea, KkTextField } from '@furria/ui';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
+import { KkTextArea } from '@furria/ui/KkTextArea';
+import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
-import { WriteScreen } from '@/features/write';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { useRoleEditor } from '../hooks/use-role-editor';
 import { ROLES_ORIGIN, toRoleOrigin } from '../manage-roles-labels';
 import { toRoleCoinForm } from '../role-coin';

@@ -1,8 +1,10 @@
-import { KkFormSection, KkNote, KkTextField } from '@furria/ui';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
-import type { RunningVenue } from '@/features/calendar';
-import { EVENTS_ORIGIN } from '@/features/session';
-import { WriteScreen } from '@/features/write';
+import type { RunningVenue } from '@/features/calendar/schemas';
+import { EVENTS_ORIGIN } from '@/features/session/app-sections';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { toEventVenueOptions } from '../event-form';
 import { useEventEditor } from '../hooks/use-event-editor';
 import type { EventDetails } from '../schemas';

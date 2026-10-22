@@ -1,7 +1,12 @@
-import type { KkDateQuickChoice } from '@furria/ui';
-import { KkAlert, KkButton, KkDateField, KkMeta, KkNote, KkStepPane } from '@furria/ui';
+import { KkAlert } from '@furria/ui/KkAlert';
+import { KkButton } from '@furria/ui/KkButton';
+import type { KkDateQuickChoice } from '@furria/ui/KkDateField';
+import { KkDateField } from '@furria/ui/KkDateField';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkStepPane } from '@furria/ui/KkStepPane';
 import type { FC } from 'react';
-import { PersonPicker } from '@/features/group-hub';
+import { PersonPicker } from '@/features/group-hub/components/PersonPicker';
 import {
   OPEN_SEAT_TITLE,
   PICKER_NOTE,

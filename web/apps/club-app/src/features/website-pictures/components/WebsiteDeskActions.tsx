@@ -1,5 +1,6 @@
-import type { KkIconName } from '@furria/ui';
-import { KkButton, KkIcon } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import type { KkIconName } from '@furria/ui/KkIcon';
+import { KkIcon } from '@furria/ui/KkIcon';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { DeskAction } from '../desk-actions';

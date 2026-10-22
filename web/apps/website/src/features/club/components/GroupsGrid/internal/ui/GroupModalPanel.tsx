@@ -1,4 +1,8 @@
-import { aspectRatioCss, KkEyebrow, KkPhoto, kkTokens, toImageSource } from '@furria/ui';
+import { aspectRatioCss } from '@furria/ui/image-aspect';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkPhoto } from '@furria/ui/KkPhoto';
+import { kkTokens } from '@furria/ui/tokens';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';

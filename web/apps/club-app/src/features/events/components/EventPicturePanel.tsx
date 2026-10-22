@@ -1,7 +1,7 @@
-import type { KkSx } from '@furria/ui';
-import { eventToneOf } from '@furria/ui';
+import { eventToneOf } from '@furria/ui/group-tone';
+import type { KkSx } from '@furria/ui/kk-sx';
 import type { FC } from 'react';
-import { PictureSection } from '@/features/pictures';
+import { PictureSection } from '@/features/pictures/components/PictureSection';
 import { EVENT_CANCELLED_STAMP } from '@/lib/event-cover';
 import { EVENT_SECTION_TITLES } from '../events-labels';
 import { useEventPictureDesk } from '../hooks/use-event-picture-desk';

@@ -1,4 +1,4 @@
-import { KkCalendarStrip } from '@furria/ui';
+import { KkCalendarStrip } from '@furria/ui/KkCalendarStrip';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import {

@@ -1,9 +1,13 @@
-import type { KkPanelAction } from '@furria/ui';
-import { KkNote, KkPanel, KkPanelSection, KkSkeletonRow } from '@furria/ui';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSkeletonRow } from '@furria/ui/KkSkeletonRow';
+import type { KkPanelAction } from '@furria/ui/panel-action';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { useEntryAlbums } from '@/features/gallery';
-import { GALLERY_KEYS, GALLERY_SORT_KEYS, usePermissions } from '@/features/session';
+import { useEntryAlbums } from '@/features/gallery/api';
+import { GALLERY_KEYS, GALLERY_SORT_KEYS } from '@/features/session/app-sections';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { toAlbumsCountNote } from '../event-review-copy';
 import type { EventDetails } from '../schemas';
 import { EventReviewAlbumRow } from './EventReviewAlbumRow';

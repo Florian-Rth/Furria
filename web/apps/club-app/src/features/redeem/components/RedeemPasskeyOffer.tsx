@@ -1,4 +1,8 @@
-import { KkAlert, KkButton, KkHeading, KkIcon, KkNote } from '@furria/ui';
+import { KkAlert } from '@furria/ui/KkAlert';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkHeading } from '@furria/ui/KkHeading';
+import { KkIcon } from '@furria/ui/KkIcon';
+import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { usePasskeyOffer } from '../hooks/use-passkey-offer';

@@ -1,4 +1,6 @@
-import type { KkNewsCategory, KkNewsStripPhoto, KkNewsTone } from '@furria/ui';
+import type { KkNewsStripPhoto } from '@furria/ui/KkNewsTieStrip';
+import type { KkNewsCategory } from '@furria/ui/news-category';
+import type { KkNewsTone } from '@furria/ui/news-proof-types';
 import { newsReadingMinutesOf } from '@furria/ui/news-text';
 import type { LinkProps } from '@tanstack/react-router';
 import type { NumberedSession } from '@/lib/api/session-section';

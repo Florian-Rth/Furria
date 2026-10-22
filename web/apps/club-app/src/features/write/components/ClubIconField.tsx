@@ -1,4 +1,5 @@
-import { KkClubIconPicker, KkEyebrow } from '@furria/ui';
+import { KkClubIconPicker } from '@furria/ui/KkClubIconPicker';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { ClubIcon } from '@/lib/club-icon';

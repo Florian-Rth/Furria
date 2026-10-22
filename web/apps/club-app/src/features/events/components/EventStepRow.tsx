@@ -1,4 +1,4 @@
-import { KkStepList } from '@furria/ui';
+import { KkStepList } from '@furria/ui/KkStepList';
 import type { FC } from 'react';
 import type { BoardCell } from '../event-board';
 import { PANE_ICONS, PANE_TITLES, toCellFactLabel, toCellStateLabel } from '../event-board-copy';

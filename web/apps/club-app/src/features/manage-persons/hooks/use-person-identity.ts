@@ -1,6 +1,7 @@
-import type { KkImageSource, KkStanding } from '@furria/ui';
-import { toImageSource } from '@furria/ui';
-import { useMeQuery } from '@/features/session';
+import type { KkStanding } from '@furria/ui/honour-types';
+import type { KkImageSource } from '@furria/ui/image-source';
+import { toImageSource } from '@furria/ui/image-source';
+import { useMeQuery } from '@/features/session/api';
 import { sessionAt } from '@/lib/club';
 import { toStanding } from '@/lib/honours';
 import { toInitials } from '@/lib/initials';

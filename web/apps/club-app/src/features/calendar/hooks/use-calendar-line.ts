@@ -1,6 +1,6 @@
 import { useState } from 'react';
-import type { AttendanceAnswer } from '@/features/attendance';
-import { useAttendanceChoice } from '@/features/attendance';
+import { useAttendanceChoice } from '@/features/attendance/hooks/use-attendance-choice';
+import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import { isOver } from '../calendar-agenda';
 import type { CalendarEntry } from '../schemas';
 

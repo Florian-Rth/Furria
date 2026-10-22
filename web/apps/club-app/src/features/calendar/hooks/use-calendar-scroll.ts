@@ -1,5 +1,5 @@
-import type { KkCalendarHeadUnder } from '@furria/ui';
-import { KK_CALENDAR_HEAD_TOP } from '@furria/ui';
+import type { KkCalendarHeadUnder } from '@furria/ui/calendar-sticky';
+import { KK_CALENDAR_HEAD_TOP } from '@furria/ui/calendar-sticky';
 import { useEffect, useRef, useState } from 'react';
 import { anchorKeyOf } from '../calendar-agenda';
 import type { CalendarBoard } from './use-calendar-board';

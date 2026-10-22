@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { EVENTS_PATH } from '@/features/session';
+import { EVENTS_PATH } from '@/features/session/app-sections';
 import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useDeleteEventMutation } from '../api';

@@ -1,4 +1,4 @@
-import { KkNote } from '@furria/ui';
+import { KkNote } from '@furria/ui/KkNote';
 import type { FC } from 'react';
 import { DETAIL_EMPTY, DETAIL_MISSING } from '../calendar-agenda-copy';
 import type { CalendarSelection } from '../hooks/use-calendar-selection';

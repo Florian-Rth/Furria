@@ -1,4 +1,6 @@
-import { KkHeroSection, KkRule, PageLayout } from '@furria/ui';
+import { KkHeroSection } from '@furria/ui/KkHeroSection';
+import { KkRule } from '@furria/ui/KkRule';
+import { PageLayout } from '@furria/ui/PageLayout';
 import Button from '@mui/material/Button';
 import type { LinkProps } from '@tanstack/react-router';
 import { Link as RouterLink } from '@tanstack/react-router';

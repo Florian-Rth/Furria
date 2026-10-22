@@ -1,4 +1,5 @@
-import { KkButton, KkMeta } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkMeta } from '@furria/ui/KkMeta';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { GalleryInboxFailedItems } from '../hooks/use-gallery-inbox';

@@ -1,4 +1,5 @@
-import { KkSheet, KkTextField } from '@furria/ui';
+import { KkSheet } from '@furria/ui/KkSheet';
+import { KkTextField } from '@furria/ui/KkTextField';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import {

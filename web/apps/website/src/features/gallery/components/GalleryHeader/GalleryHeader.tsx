@@ -1,4 +1,4 @@
-import { KkHeroSection } from '@furria/ui';
+import { KkHeroSection } from '@furria/ui/KkHeroSection';
 import type { FC } from 'react';
 import { PhotoStack } from '@/features/gallery/components/PhotoStack/PhotoStack';
 import {

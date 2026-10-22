@@ -1,5 +1,8 @@
-import type { KkFilterOption, KkHeartbeatState, KkIconName, KkStatusLevel } from '@furria/ui';
-import { deniedMessageOf } from '@/features/session';
+import type { KkFilterOption } from '@furria/ui/filter-chip-entries';
+import type { KkHeartbeatState } from '@furria/ui/KkHeartbeat';
+import type { KkIconName } from '@furria/ui/KkIcon';
+import type { KkStatusLevel } from '@furria/ui/status-paint';
+import { deniedMessageOf } from '@/features/session/permission-denials';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import type { QueryErrorKind } from '@/lib/query-error';
 import { toQueryErrorMessage } from '@/lib/query-error';

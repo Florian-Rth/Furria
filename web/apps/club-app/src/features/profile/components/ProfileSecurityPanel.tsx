@@ -1,7 +1,9 @@
-import { KkHubRow, KkPanel, KkPanelSection } from '@furria/ui';
+import { KkHubRow } from '@furria/ui/KkHubRow';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { SECURITY_PATH, SECURITY_TITLE } from '@/features/account-security';
+import { SECURITY_PATH, SECURITY_TITLE } from '@/features/account-security/account-security-labels';
 import { PROFILE_SECTION_TITLES } from '../profile-labels';
 
 interface ProfileSecurityPanelProps {

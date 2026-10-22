@@ -1,11 +1,9 @@
-import {
-  KkChipField,
-  KkDateField,
-  KkFormPair,
-  KkFormSection,
-  KkPriceField,
-  KkTimeField,
-} from '@furria/ui';
+import { KkChipField } from '@furria/ui/KkChipField';
+import { KkDateField } from '@furria/ui/KkDateField';
+import { KkFormPair } from '@furria/ui/KkFormPair';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkPriceField } from '@furria/ui/KkPriceField';
+import { KkTimeField } from '@furria/ui/KkTimeField';
 import type { FC } from 'react';
 import type { EventEditorControl } from '../hooks/use-event-editor';
 import { EVENT_AGE_HINT_MAX_LENGTH } from '../schemas';

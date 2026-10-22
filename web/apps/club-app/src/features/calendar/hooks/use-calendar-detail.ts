@@ -1,6 +1,6 @@
-import type { AttendanceAnswer } from '@/features/attendance';
-import { useAttendanceChoice } from '@/features/attendance';
-import { usePermissions } from '@/features/session';
+import { useAttendanceChoice } from '@/features/attendance/hooks/use-attendance-choice';
+import type { AttendanceAnswer } from '@/features/attendance/schemas';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toAttendanceChoiceLabel } from '@/lib/calendar-copy';
 import type { CalendarDetailView } from '../calendar-agenda-view';

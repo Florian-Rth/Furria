@@ -1,4 +1,4 @@
-import { useGroupsQuery } from '@/features/groups';
+import { useGroupsQuery } from '@/features/groups/api';
 import { useRunningVenuesQuery } from '../api';
 import type { CalendarParticipantPool } from '../calendar-authoring';
 import { toParticipantPool } from '../calendar-authoring';

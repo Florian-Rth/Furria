@@ -1,5 +1,5 @@
-import type { KkSx } from '@furria/ui';
-import { KkButton } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import type { KkSx } from '@furria/ui/kk-sx';
 import type { FC, PropsWithChildren } from 'react';
 import { buildMailHref } from '@/lib/public-club/club-facts';
 import { useClubEmail } from '@/lib/public-club/use-club-email';

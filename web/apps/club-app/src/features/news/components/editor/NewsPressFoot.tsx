@@ -1,4 +1,7 @@
-import { KkButton, KkFormatRail, KkHoldButton, KkPressBar } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkFormatRail } from '@furria/ui/KkFormatRail';
+import { KkHoldButton } from '@furria/ui/KkHoldButton';
+import { KkPressBar } from '@furria/ui/KkPressBar';
 import type { FC } from 'react';
 import { PUBLISH_HOLD_HINT } from '@/lib/publish-copy';
 import { RAIL_LABEL, READINESS_LABEL } from '../../editor-copy';

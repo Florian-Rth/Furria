@@ -1,4 +1,4 @@
-import { KkPanelStack } from '@furria/ui';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
 import type { MembershipApplicationDetails } from '../schemas';

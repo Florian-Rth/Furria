@@ -1,4 +1,5 @@
-import { KkButton, KkStepPane } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkStepPane } from '@furria/ui/KkStepPane';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';

@@ -1,4 +1,5 @@
-import { KkAlert, KkBrandStage } from '@furria/ui';
+import { KkAlert } from '@furria/ui/KkAlert';
+import { KkBrandStage } from '@furria/ui/KkBrandStage';
 import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';
 

@@ -1,5 +1,7 @@
-import type { KkImageSource, KkStartTileReach } from '@furria/ui';
-import { toImageSource, useKkSheetCommands } from '@furria/ui';
+import type { KkImageSource } from '@furria/ui/image-source';
+import { toImageSource } from '@furria/ui/image-source';
+import type { KkStartTileReach } from '@furria/ui/reach';
+import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import { authorGroupsOf, isUnread } from '../announcement-authors';
 import type { StartPanelOf } from '../start-board';
 import { hiddenCountOf, shownItemsOf } from '../start-board';

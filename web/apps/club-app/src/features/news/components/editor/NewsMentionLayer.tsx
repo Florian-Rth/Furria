@@ -1,5 +1,6 @@
-import type { KkMentionEditorLabels } from '@furria/ui';
-import { KkMentionEditor, KkMentionPicker } from '@furria/ui';
+import type { KkMentionEditorLabels } from '@furria/ui/KkMentionEditor';
+import { KkMentionEditor } from '@furria/ui/KkMentionEditor';
+import { KkMentionPicker } from '@furria/ui/KkMentionPicker';
 import type { FC } from 'react';
 import {
   MENTION_DONE,

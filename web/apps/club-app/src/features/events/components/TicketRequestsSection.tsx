@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { AppListSkeleton } from '@/features/session';
+import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import { useTicketRequestsQuery } from '../api';
 import { toTicketRequestsErrorMessage } from '../events-messages';
 import { TicketRequestsError } from './TicketRequestsError';

@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { PersonsPage, PersonsSearchSchema } from '@/features/manage-persons';
+import { PersonsPage } from '@/features/manage-persons/components/PersonsPage';
+import { PersonsSearchSchema } from '@/features/manage-persons/schemas';
 
 export const Route = createFileRoute('/_app/manage/persons')({
   component: PersonsPage,

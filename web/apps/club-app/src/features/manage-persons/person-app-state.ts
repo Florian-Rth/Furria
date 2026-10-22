@@ -1,4 +1,4 @@
-import type { KkFilterOption } from '@furria/ui';
+import type { KkFilterOption } from '@furria/ui/filter-chip-entries';
 import type { StateChip } from '@/lib/state-chips';
 import type { PersonAccessFilter } from './person-access-filter';
 import { parsePersonAccessFilter } from './person-access-filter';

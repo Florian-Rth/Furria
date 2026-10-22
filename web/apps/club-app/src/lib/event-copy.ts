@@ -1,4 +1,4 @@
-import type { KkChipTone } from '@furria/ui';
+import type { KkChipTone } from '@furria/ui/KkChip';
 import { toDayNumberLabel, toLocalIsoDay, toTimeLabel } from './calendar-days';
 import { formatIsoDay } from './membership-labels';
 

@@ -1,5 +1,7 @@
-import type { KkPublishCeremonyStage, KkScreenActionBar, KkScreenOrigin } from '@furria/ui';
-import { KkPublishCeremony, KkWriteScreen } from '@furria/ui';
+import { KkPublishCeremony } from '@furria/ui/KkPublishCeremony';
+import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
+import type { KkScreenActionBar, KkScreenOrigin } from '@furria/ui/screen-declaration';
+import type { KkPublishCeremonyStage } from '@furria/ui/use-publish-ceremony';
 import type { FC, PropsWithChildren } from 'react';
 import { PUBLISH_ANNOUNCEMENTS } from '@/lib/publish-copy';
 import { WriteLeaveDialog } from './components/WriteLeaveDialog';

@@ -1,7 +1,7 @@
 import type { UseFormRegisterReturn } from 'react-hook-form';
 import { useController } from 'react-hook-form';
-import { toGroupKindValue } from '@/features/group-kinds';
-import { useWriteForm } from '@/features/write';
+import { toGroupKindValue } from '@/features/group-kinds/group-kinds-labels';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import { useUpdateGroupAdministrationMutation } from '../api';
 import type { GroupHub } from '../schemas';
 import { GroupAdministrationFormSchema } from '../schemas';

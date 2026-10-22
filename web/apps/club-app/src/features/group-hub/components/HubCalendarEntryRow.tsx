@@ -1,6 +1,7 @@
-import { KkFactRow, KkText } from '@furria/ui';
+import { KkFactRow } from '@furria/ui/KkFactRow';
+import { KkText } from '@furria/ui/KkText';
 import type { FC } from 'react';
-import { AttendanceChoice } from '@/features/attendance';
+import { AttendanceChoice } from '@/features/attendance/components/AttendanceChoice';
 import { toDayNumberLabel, toWeekdayEyebrow } from '@/lib/calendar-days';
 import { toCalendarEntryMark, toCalendarEntryMetaLine } from '../group-calendar-entries';
 import type { GroupCalendarEntry } from '../schemas';

@@ -1,4 +1,4 @@
-import { KkDensePanel } from '@furria/ui';
+import { KkDensePanel } from '@furria/ui/KkDensePanel';
 import type { FC } from 'react';
 import type { StartLineInput } from '../hooks/use-start-line';
 import { useStartLine } from '../hooks/use-start-line';

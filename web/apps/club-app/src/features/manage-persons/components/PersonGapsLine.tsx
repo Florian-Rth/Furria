@@ -1,4 +1,5 @@
-import { KkInlineLink, KkNote } from '@furria/ui';
+import { KkInlineLink } from '@furria/ui/KkInlineLink';
+import { KkNote } from '@furria/ui/KkNote';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { PersonGap } from '../person-identity';

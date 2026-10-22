@@ -1,4 +1,6 @@
-import type { KkCrop, KkGroupTone, KkImageSource } from '@furria/ui';
+import type { KkGroupTone } from '@furria/ui/group-tone';
+import type { KkCrop } from '@furria/ui/image-crop';
+import type { KkImageSource } from '@furria/ui/image-source';
 import type { NewsAlbumTie, NewsCategory, NewsEventTie, PublishedNewsPost } from './schemas';
 import { NewsCategorySchema } from './schemas';
 

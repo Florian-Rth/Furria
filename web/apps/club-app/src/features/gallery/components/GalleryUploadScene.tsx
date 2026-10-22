@@ -1,4 +1,6 @@
-import { KkFilmEdge, KkFrame, KkFrameGrid } from '@furria/ui';
+import { KkFilmEdge } from '@furria/ui/KkFilmEdge';
+import { KkFrame } from '@furria/ui/KkFrame';
+import { KkFrameGrid } from '@furria/ui/KkFrameGrid';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { UploadScene } from '../hooks/use-gallery-upload';

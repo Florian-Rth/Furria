@@ -1,4 +1,4 @@
-import type { KkShowcasePieceData } from '@furria/ui';
+import type { KkShowcasePieceData } from '@furria/ui/KkShowcasePiece';
 import { frameStateOf, shownSourceOf } from './gallery-view';
 import type { AlbumDetails } from './schemas';
 import type { SelectionSlot } from './selection-draft';

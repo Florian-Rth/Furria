@@ -1,7 +1,7 @@
-import type { KkContactStripFrame } from '@furria/ui';
-import { KkContactStrip } from '@furria/ui';
+import type { KkContactStripFrame } from '@furria/ui/KkContactStrip';
+import { KkContactStrip } from '@furria/ui/KkContactStrip';
 import type { FC } from 'react';
-import { AppSkeletonRegion } from '@/features/session';
+import { AppSkeletonRegion } from '@/features/session/components/AppSkeletonRegion';
 import { HUB_LOADING_LABEL } from '../hub-copy';
 
 const LATENT_FRAMES: KkContactStripFrame[] = Array.from({ length: 8 }, (_, position) => ({

@@ -1,11 +1,9 @@
-import {
-  aspectRatioCss,
-  KkButton,
-  KkCalendarAgenda,
-  KkCalendarDetail,
-  KkIcon,
-  KkPhoto,
-} from '@furria/ui';
+import { aspectRatioCss } from '@furria/ui/image-aspect';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkCalendarAgenda } from '@furria/ui/KkCalendarAgenda';
+import { KkCalendarDetail } from '@furria/ui/KkCalendarDetail';
+import { KkIcon } from '@furria/ui/KkIcon';
+import { KkPhoto } from '@furria/ui/KkPhoto';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';

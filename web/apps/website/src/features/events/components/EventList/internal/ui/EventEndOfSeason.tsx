@@ -1,4 +1,4 @@
-import { KkEyebrow } from '@furria/ui';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
 import Button from '@mui/material/Button';
 import Card from '@mui/material/Card';
 import Stack from '@mui/material/Stack';

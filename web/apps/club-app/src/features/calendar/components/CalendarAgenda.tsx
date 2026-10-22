@@ -1,5 +1,6 @@
-import type { KkCalendarHeadUnder } from '@furria/ui';
-import { KkCalendarAgenda, KkNote } from '@furria/ui';
+import type { KkCalendarHeadUnder } from '@furria/ui/calendar-sticky';
+import { KkCalendarAgenda } from '@furria/ui/KkCalendarAgenda';
+import { KkNote } from '@furria/ui/KkNote';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import { BOARD_LABEL, EARLIER_LABEL, LATER_LABEL, NOTHING_HERE } from '../calendar-agenda-copy';

@@ -1,8 +1,10 @@
-import type { KkSx } from '@furria/ui';
-import { KkBannerDesk, KkPanelSection } from '@furria/ui';
+import { KkBannerDesk } from '@furria/ui/KkBannerDesk';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import type { KkSx } from '@furria/ui/kk-sx';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
-import { PICTURE_ACCEPT, PICTURE_DESK_LABELS } from '@/features/pictures';
+import { PICTURE_DESK_LABELS } from '@/features/pictures/picture-labels';
+import { PICTURE_ACCEPT } from '@/features/pictures/picture-target';
 import { EVENT_SECTION_TITLES } from '../events-labels';
 import type { StagedEventPictureDesk } from '../hooks/use-staged-event-picture';
 import { EventGallerySheet } from './EventGallerySheet';

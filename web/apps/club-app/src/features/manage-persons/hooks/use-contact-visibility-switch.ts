@@ -1,4 +1,4 @@
-import { useKkNotice } from '@furria/ui';
+import { useKkNotice } from '@furria/ui/KkNotice';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useUpdatePersonMutation } from '../api';
 import type { PersonDetails } from '../schemas';

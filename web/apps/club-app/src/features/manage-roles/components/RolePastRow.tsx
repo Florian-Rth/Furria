@@ -1,4 +1,4 @@
-import { KkTenureChainRow } from '@furria/ui';
+import { KkTenureChainRow } from '@furria/ui/KkTenureChainRow';
 import type { FC } from 'react';
 import { formatPeriod } from '@/lib/membership-labels';
 import { toPersonName } from '../manage-roles-labels';

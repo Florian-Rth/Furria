@@ -1,4 +1,4 @@
-import { KkAnswerChoice } from '@furria/ui';
+import { KkAnswerChoice } from '@furria/ui/KkAnswerChoice';
 import type { FC } from 'react';
 import { ATTENDANCE_LABELS, toAttendanceChoiceLabel } from '@/lib/calendar-copy';
 import type { AnswerableEntry } from '../hooks/use-attendance-choice';

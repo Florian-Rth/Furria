@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import Container from '@mui/material/Container';
 import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';

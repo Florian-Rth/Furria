@@ -1,4 +1,4 @@
-import { KkEyebrow } from '@furria/ui';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
 import type { FC } from 'react';
 import { buildAlbumMeta } from '@/features/gallery/gallery-content';
 import type { AlbumDetail } from '@/lib/public-gallery/schemas';

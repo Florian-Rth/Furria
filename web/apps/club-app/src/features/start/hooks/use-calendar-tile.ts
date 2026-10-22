@@ -1,12 +1,11 @@
-import type {
-  KkGroupTone,
-  KkIconName,
-  KkImageSource,
-  KkStartTileMarkKind,
-  KkStartTileReach,
-  KkStartTileWhenTone,
-} from '@furria/ui';
-import { toImageSource, useKkSheetCommands } from '@furria/ui';
+import type { KkGroupTone } from '@furria/ui/group-tone';
+import type { KkImageSource } from '@furria/ui/image-source';
+import { toImageSource } from '@furria/ui/image-source';
+import type { KkIconName } from '@furria/ui/KkIcon';
+import type { KkStartTileMarkKind } from '@furria/ui/KkStartTileMark';
+import type { KkStartTileReach } from '@furria/ui/reach';
+import { useKkSheetCommands } from '@furria/ui/sheet-store';
+import type { KkStartTileWhenTone } from '@furria/ui/when-tone';
 import { ATTENDANCE_LABELS } from '@/lib/calendar-copy';
 import { toPeekId } from '@/lib/peek';
 import {

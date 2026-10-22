@@ -1,5 +1,7 @@
-import type { KkNoticeLabels } from '@furria/ui';
-import { KkNoticeProvider, KkSheetProvider, KkShell } from '@furria/ui';
+import type { KkNoticeLabels } from '@furria/ui/KkNotice';
+import { KkNoticeProvider } from '@furria/ui/KkNotice';
+import { KkSheetProvider } from '@furria/ui/KkSheetProvider';
+import { KkShell } from '@furria/ui/KkShell';
 import { Link } from '@tanstack/react-router';
 import type { FC, PropsWithChildren } from 'react';
 import { useAppDestinations } from '../hooks/use-app-destinations';

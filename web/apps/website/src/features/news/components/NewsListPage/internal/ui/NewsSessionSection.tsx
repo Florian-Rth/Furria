@@ -1,4 +1,4 @@
-import { KkSection } from '@furria/ui';
+import { KkSection } from '@furria/ui/KkSection';
 import type { FC } from 'react';
 import { buildSessionLabel } from '@/features/news/news-content';
 import type { NewsSection } from '@/lib/public-news/schemas';

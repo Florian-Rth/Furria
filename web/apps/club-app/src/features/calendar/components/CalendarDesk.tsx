@@ -1,4 +1,4 @@
-import { KkCalendarDesk } from '@furria/ui';
+import { KkCalendarDesk } from '@furria/ui/KkCalendarDesk';
 import type { FC } from 'react';
 import { DETAIL_LABEL } from '../calendar-agenda-copy';
 import type { CalendarBoard } from '../hooks/use-calendar-board';

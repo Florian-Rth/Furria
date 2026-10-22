@@ -1,4 +1,7 @@
-import { KkMeta, KkProgressRing, KkRecordHead, KkStatePill } from '@furria/ui';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkProgressRing } from '@furria/ui/KkProgressRing';
+import { KkRecordHead } from '@furria/ui/KkRecordHead';
+import { KkStatePill } from '@furria/ui/KkStatePill';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { EventHeadView } from '../event-pane-copy';

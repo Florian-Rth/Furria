@@ -1,4 +1,7 @@
-import { KkBandSection, KkBandWatermark, KkEyebrow, kkTokens } from '@furria/ui';
+import { KkBandSection } from '@furria/ui/KkBandSection';
+import { KkBandWatermark } from '@furria/ui/KkBandWatermark';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { kkTokens } from '@furria/ui/tokens';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';

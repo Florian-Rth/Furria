@@ -1,4 +1,4 @@
-import type { KkAlbumShelfAlbum } from '@furria/ui';
+import type { KkAlbumShelfAlbum } from '@furria/ui/KkAlbumShelf';
 import { useNavigate } from '@tanstack/react-router';
 import { sceneMeta } from '../album-labels';
 import { useGalleryHubQuery } from '../api';

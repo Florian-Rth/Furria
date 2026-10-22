@@ -1,4 +1,5 @@
-import { KkSection, PageLayout } from '@furria/ui';
+import { KkSection } from '@furria/ui/KkSection';
+import { PageLayout } from '@furria/ui/PageLayout';
 import type { FC } from 'react';
 import { EventTicketPanel } from '@/features/events/components/EventTicketPanel/EventTicketPanel';
 import { TicketRequestCta } from '@/features/events/components/TicketRequestCta';

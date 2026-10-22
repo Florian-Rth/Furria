@@ -1,6 +1,7 @@
-import { KkPanelStack } from '@furria/ui';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import type { FC } from 'react';
-import { AccessDenied, deniedMessageOf } from '@/features/session';
+import { AccessDenied } from '@/features/session/components/AccessDenied';
+import { deniedMessageOf } from '@/features/session/permission-denials';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { isForbiddenError, isNotFoundError } from '@/lib/query-error';
 import { useEventQuery } from '../api';

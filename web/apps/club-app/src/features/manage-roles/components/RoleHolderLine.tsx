@@ -1,5 +1,6 @@
-import type { KkSeatTone } from '@furria/ui';
-import { KkButton, KkSeatLine } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import type { KkSeatTone } from '@furria/ui/KkSeatLine';
+import { KkSeatLine } from '@furria/ui/KkSeatLine';
 import type { FC } from 'react';
 import { toAvatarHonours } from '@/lib/honours';
 import { toInitials } from '@/lib/initials';

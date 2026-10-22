@@ -1,10 +1,13 @@
-import type { KkCrop } from '@furria/ui';
-import { aspectOf, centredCrop, useKkNotice, useKkSheet } from '@furria/ui';
+import { aspectOf } from '@furria/ui/image-aspect';
+import type { KkCrop } from '@furria/ui/image-crop';
+import { centredCrop } from '@furria/ui/image-crop';
+import { useKkNotice } from '@furria/ui/KkNotice';
+import { useKkSheet } from '@furria/ui/sheet-store';
 import type { ChangeEvent } from 'react';
 import { useState } from 'react';
-import type { GalleryPhoto } from '@/features/gallery-pick';
-import { photoSizeOf } from '@/features/gallery-pick';
-import { toUploadFailureMessage } from '@/features/pictures';
+import { photoSizeOf } from '@/features/gallery-pick/gallery-photo';
+import type { GalleryPhoto } from '@/features/gallery-pick/schemas';
+import { toUploadFailureMessage } from '@/features/pictures/picture-labels';
 import type { PictureDeskState } from '@/lib/media/picture-desk';
 import { deskSourceOf } from '@/lib/media/picture-desk';
 import { usePictureDesk } from '@/lib/media/use-picture-desk';

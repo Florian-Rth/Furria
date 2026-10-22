@@ -1,4 +1,4 @@
-import { KkConfettiRain } from '@furria/ui';
+import { KkConfettiRain } from '@furria/ui/KkConfettiRain';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import { MASTHEAD_HEIGHT_CSS_VAR } from '@/components/Masthead/masthead-height';

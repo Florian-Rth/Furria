@@ -1,5 +1,5 @@
 import { useController } from 'react-hook-form';
-import { useWriteForm } from '@/features/write';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import type { ClubIcon } from '@/lib/club-icon';
 import type { GroupTone } from '@/lib/group-tone';
 import { useUpdateGroupInfoMutation } from '../api';

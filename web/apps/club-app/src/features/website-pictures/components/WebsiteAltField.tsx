@@ -1,4 +1,6 @@
-import { KkButton, KkNote, KkTextArea } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkTextArea } from '@furria/ui/KkTextArea';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useAltDraft } from '../hooks/use-alt-draft';

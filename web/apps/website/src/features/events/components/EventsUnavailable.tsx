@@ -1,4 +1,7 @@
-import { KkButton, KkErrorState, KkSection, PageLayout } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkErrorState } from '@furria/ui/KkErrorState';
+import { KkSection } from '@furria/ui/KkSection';
+import { PageLayout } from '@furria/ui/PageLayout';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { ClubMailKkButton } from '@/components/ClubMailKkButton';

@@ -1,4 +1,7 @@
-import { KkEmptyState, KkPanel, KkPanelSection, KkSinceRow } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSinceRow } from '@furria/ui/KkSinceRow';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { formatSinceSession } from '@/lib/membership-labels';

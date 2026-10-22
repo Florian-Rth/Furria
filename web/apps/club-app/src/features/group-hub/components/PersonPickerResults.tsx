@@ -1,4 +1,7 @@
-import { KkMeta, KkPanel, KkRetryAlert, KkSkeletonRow } from '@furria/ui';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
+import { KkSkeletonRow } from '@furria/ui/KkSkeletonRow';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { PersonRef } from '@/lib/api/schemas';

@@ -1,6 +1,6 @@
-import type { KkScreenActionBar } from '@furria/ui';
+import type { KkScreenActionBar } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
-import { WriteScreen } from '@/features/write';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { LOGIN_EMAIL_EDIT_TITLE, SECURITY_ORIGIN } from '../account-security-labels';
 import { useLoginEmailEditor } from '../hooks/use-login-email-editor';
 import { LoginEmailAddressFields } from './LoginEmailAddressFields';

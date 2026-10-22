@@ -1,5 +1,5 @@
 import { WEBSITE_PAGES, WEBSITE_PICTURE_SLOTS } from '@furria/website-pictures';
-import { usePermissions } from '@/features/session';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { useWebsitePicturesQuery } from '../api';
 import { websiteBoardOf } from '../website-board';

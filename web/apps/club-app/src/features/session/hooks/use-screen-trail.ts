@@ -1,4 +1,4 @@
-import type { KkScreenMove } from '@furria/ui';
+import type { KkScreenMove } from '@furria/ui/screen-move';
 import { useRouterState } from '@tanstack/react-router';
 import { useState } from 'react';
 import { APP_DESTINATIONS } from '../app-sections';

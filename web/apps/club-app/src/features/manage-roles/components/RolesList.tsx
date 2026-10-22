@@ -1,4 +1,4 @@
-import { KkRoster } from '@furria/ui';
+import { KkRoster } from '@furria/ui/KkRoster';
 import type { FC } from 'react';
 import { ROSTER_LABEL } from '../roles-hub-copy';
 import type { RolePaneTab, RoleSummary } from '../schemas';

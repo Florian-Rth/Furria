@@ -1,5 +1,5 @@
 import { Capacitor, SystemBars } from '@capacitor/core';
-import { useKkColorScheme } from '@furria/ui';
+import { useKkColorScheme } from '@furria/ui/use-kk-color-scheme';
 import { useEffect } from 'react';
 import { systemBarsStyleFor } from '../system-bars-style';
 

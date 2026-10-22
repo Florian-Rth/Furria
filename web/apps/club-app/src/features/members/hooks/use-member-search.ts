@@ -1,6 +1,8 @@
-import type { KkFilterOption, KkLetterIndexEntry, KkLetterPace } from '@furria/ui';
+import type { KkFilterOption } from '@furria/ui/filter-chip-entries';
+import type { KkLetterIndexEntry } from '@furria/ui/letter-index-cells';
+import type { KkLetterPace } from '@furria/ui/letter-pace';
 import { useState } from 'react';
-import { useSearchQuery } from '@/features/session';
+import { useSearchQuery } from '@/features/session/hooks/use-search-query';
 import type { MembershipState } from '@/lib/api/schemas';
 import { scrollElementIntoView } from '@/lib/scroll-to';
 import { ALL_STATES_FILTER_ID, toStateFilterOptions } from '@/lib/state-chips';

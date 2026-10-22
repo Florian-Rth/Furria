@@ -75,6 +75,9 @@ export default defineConfig(({ mode }) => ({
     },
   },
   server: {
+    warmup: {
+      clientFiles: ['./index.html', './src/**/*.{ts,tsx}', '!./src/**/*.test.{ts,tsx}'],
+    },
     port: 3001,
     strictPort: true,
     watch: {

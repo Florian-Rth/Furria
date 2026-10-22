@@ -1,4 +1,4 @@
-import { KkHeroSection } from '@furria/ui';
+import { KkHeroSection } from '@furria/ui/KkHeroSection';
 import type { FC } from 'react';
 import { newsDescription, newsEyebrow, newsHeading } from '@/features/news/news-content';
 import { NewsHeroMark } from './internal/ui/NewsHeroMark';

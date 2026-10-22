@@ -1,4 +1,4 @@
-import { useKkSheet } from '@furria/ui';
+import { useKkSheet } from '@furria/ui/sheet-store';
 import { toPeekedId } from '@/lib/peek';
 import { usePeek } from '@/lib/use-peek';
 import type { GroupSummary } from '../schemas';

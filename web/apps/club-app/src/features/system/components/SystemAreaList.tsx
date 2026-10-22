@@ -1,4 +1,6 @@
-import { KkHubRow, KkPanel, KkPanelSection } from '@furria/ui';
+import { KkHubRow } from '@furria/ui/KkHubRow';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { SystemStatus } from '../schemas';

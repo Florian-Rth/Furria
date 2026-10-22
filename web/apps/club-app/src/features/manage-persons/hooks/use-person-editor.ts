@@ -1,6 +1,6 @@
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
 import { useController, useWatch } from 'react-hook-form';
-import { useWriteForm } from '@/features/write';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import { useCreatePersonMutation, useUpdatePersonMutation } from '../api';
 import type { PersonForm } from '../schemas';
 import { PersonFormSchema } from '../schemas';

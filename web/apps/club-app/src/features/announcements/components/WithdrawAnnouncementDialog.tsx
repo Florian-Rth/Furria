@@ -1,5 +1,5 @@
-import type { KkConfirmFact } from '@furria/ui';
-import { KkConfirmDialog } from '@furria/ui';
+import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
 import type { FC } from 'react';
 import { formatPublishedDay } from '@/lib/announcements';
 import {

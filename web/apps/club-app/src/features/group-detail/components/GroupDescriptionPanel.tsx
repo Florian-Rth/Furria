@@ -1,4 +1,6 @@
-import { KkMeta, KkPanel, KkText } from '@furria/ui';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkText } from '@furria/ui/KkText';
 import type { FC } from 'react';
 import { toNoDescriptionLine } from '../group-detail-labels';
 

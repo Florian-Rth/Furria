@@ -1,6 +1,6 @@
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { useMeQuery } from '@/features/session';
+import { useMeQuery } from '@/features/session/api';
 import { parsePositiveId } from '@/lib/positive-id';
 import { useLastSeen } from '@/lib/use-last-seen';
 import { useGroupHubQuery } from '../api';

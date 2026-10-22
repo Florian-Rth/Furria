@@ -1,9 +1,16 @@
-import type { KkPanelAction } from '@furria/ui';
-import { KkConfirmDialog, KkFieldRow, KkPanel, KkPanelSection, KkWriteScreen } from '@furria/ui';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
+import type { KkPanelAction } from '@furria/ui/panel-action';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { GROUP_KIND_FIELD_LABEL, NO_GROUP_KIND_LABEL } from '@/features/group-kinds';
-import type { GroupTone } from '@/features/groups';
+import {
+  GROUP_KIND_FIELD_LABEL,
+  NO_GROUP_KIND_LABEL,
+} from '@/features/group-kinds/group-kinds-labels';
+import type { GroupTone } from '@/features/groups/group-identity';
 import { toIsoDay } from '@/lib/day';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import { formatIsoDay } from '@/lib/membership-labels';

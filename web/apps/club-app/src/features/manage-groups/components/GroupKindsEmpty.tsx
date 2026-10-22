@@ -1,4 +1,4 @@
-import { KkEmptyState } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
 import type { FC } from 'react';
 import { GROUP_KINDS_EMPTY_DESCRIPTION, GROUP_KINDS_EMPTY_TITLE } from '../manage-groups-labels';
 

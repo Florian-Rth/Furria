@@ -1,4 +1,4 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
 import { SESSIONS_ORIGIN } from '../manage-sessions-labels';
 import { ManageSessionsError } from './ManageSessionsError';

@@ -1,4 +1,7 @@
-import type { KkHandoverName, KkIconName, KkScreenOrigin, KkShellDestination } from '@furria/ui';
+import type { KkHandoverName } from '@furria/ui/handover-stage';
+import type { KkIconName } from '@furria/ui/KkIcon';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
+import type { KkShellDestination } from '@furria/ui/shell-destination';
 import type { PermissionKey } from '@/lib/api/schemas';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 

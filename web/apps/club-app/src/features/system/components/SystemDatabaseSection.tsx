@@ -1,4 +1,7 @@
-import { KkPanelFold, KkRankBars, KkReadout, useIsMobile } from '@furria/ui';
+import { KkPanelFold } from '@furria/ui/KkPanelFold';
+import { KkRankBars } from '@furria/ui/KkRankBars';
+import { KkReadout } from '@furria/ui/KkReadout';
+import { useIsMobile } from '@furria/ui/use-is-mobile';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { SystemStatus } from '../schemas';

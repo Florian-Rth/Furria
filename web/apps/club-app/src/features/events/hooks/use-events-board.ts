@@ -1,4 +1,4 @@
-import { useIsMobile } from '@furria/ui';
+import { useIsMobile } from '@furria/ui/use-is-mobile';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useEventsQuery } from '../api';

@@ -1,4 +1,8 @@
-import { KkAlert, KkButton, KkHeading, KkNote, KkTextField } from '@furria/ui';
+import { KkAlert } from '@furria/ui/KkAlert';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkHeading } from '@furria/ui/KkHeading';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkTextField } from '@furria/ui/KkTextField';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';

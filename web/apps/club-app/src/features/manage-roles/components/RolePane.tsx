@@ -1,5 +1,5 @@
-import type { KkStickyFootSurface } from '@furria/ui';
-import { KkStepPane } from '@furria/ui';
+import { KkStepPane } from '@furria/ui/KkStepPane';
+import type { KkStickyFootSurface } from '@furria/ui/KkStickyFoot';
 import type { FC, ReactNode } from 'react';
 import { useRolePane } from '../hooks/use-role-pane';
 import type { RolePaneTab, RoleSummary } from '../schemas';

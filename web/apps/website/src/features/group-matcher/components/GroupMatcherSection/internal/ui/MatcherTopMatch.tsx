@@ -1,4 +1,4 @@
-import { KkEyebrow } from '@furria/ui';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { matcherResultLabels } from '@/features/group-matcher/matcher-content';

@@ -1,7 +1,9 @@
-import type { KkFilterOption, KkScreenActions, KkTimeRailScene } from '@furria/ui';
+import type { KkFilterOption } from '@furria/ui/filter-chip-entries';
+import type { KkTimeRailScene } from '@furria/ui/KkTimeRail';
+import type { KkScreenActions } from '@furria/ui/screen-declaration';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useState } from 'react';
-import { usePermissions } from '@/features/session';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { saveFile } from '@/lib/media/save-file';
 import { isNotFoundError } from '@/lib/query-error';

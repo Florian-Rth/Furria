@@ -1,4 +1,4 @@
-import { useMeQuery } from '@/features/session';
+import { useMeQuery } from '@/features/session/api';
 
 export const useIsSelf = (personId: number | null): boolean | undefined => {
   const me = useMeQuery();

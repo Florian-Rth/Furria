@@ -1,4 +1,6 @@
-import { KkButton, KkDropZone, KkFilmEdge } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkDropZone } from '@furria/ui/KkDropZone';
+import { KkFilmEdge } from '@furria/ui/KkFilmEdge';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { ChangeEvent, FC, RefCallback } from 'react';

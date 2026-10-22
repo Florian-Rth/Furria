@@ -1,6 +1,7 @@
 import type { FC } from 'react';
-import type { GroupTone } from '@/features/groups';
-import { PictureSection, usePictureSection } from '@/features/pictures';
+import type { GroupTone } from '@/features/groups/group-identity';
+import { PictureSection } from '@/features/pictures/components/PictureSection';
+import { usePictureSection } from '@/features/pictures/hooks/use-picture-section';
 import { useGroupHubQuery } from '../api';
 import type { GroupHub } from '../schemas';
 

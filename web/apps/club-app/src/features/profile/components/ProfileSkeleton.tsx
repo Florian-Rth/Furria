@@ -1,7 +1,10 @@
-import { KkPanel, KkPanelSection, KkPanelStack, KkSkeletonBlock } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
-import { AppSkeletonRegion } from '@/features/session';
+import { AppSkeletonRegion } from '@/features/session/components/AppSkeletonRegion';
 import { PROFILE_SECTION_TITLES, VISIBILITY_PREVIEW_CAPTION } from '../profile-labels';
 
 const CONTACT_LINES = 3;

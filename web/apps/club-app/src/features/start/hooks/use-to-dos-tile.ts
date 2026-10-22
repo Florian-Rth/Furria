@@ -1,6 +1,8 @@
-import type { KkIconName, KkStartTileReach } from '@furria/ui';
+import type { KkIconName } from '@furria/ui/KkIcon';
+import type { KkStartTileReach } from '@furria/ui/reach';
 import { Link } from '@tanstack/react-router';
-import { TO_DO_ICONS, TO_DO_LINKS, toToDoLabel } from '@/features/to-dos';
+import { TO_DO_ICONS, toToDoLabel } from '@/features/to-dos/to-do-labels';
+import { TO_DO_LINKS } from '@/features/to-dos/to-do-links';
 import type { StartPanelOf } from '../start-board';
 
 export interface ToDoCounter {

@@ -1,4 +1,8 @@
-import { KkAvatar, KkHeading, KkMeta, KkRule, KkText } from '@furria/ui';
+import { KkAvatar } from '@furria/ui/KkAvatar';
+import { KkHeading } from '@furria/ui/KkHeading';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkRule } from '@furria/ui/KkRule';
+import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { AnnouncementSheetBlock } from '../hooks/use-announcements-sheet';

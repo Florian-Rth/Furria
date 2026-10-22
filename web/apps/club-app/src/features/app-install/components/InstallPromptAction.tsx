@@ -1,4 +1,7 @@
-import { KkButton, KkIcon, KkInstallStage, KkNote } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkIcon } from '@furria/ui/KkIcon';
+import { KkInstallStage } from '@furria/ui/KkInstallStage';
+import { KkNote } from '@furria/ui/KkNote';
 import type { FC } from 'react';
 import { PROMPT_ACTION, PROMPT_HINT } from '../install-copy';
 

@@ -1,6 +1,6 @@
-import type { KkSelectOption } from '@furria/ui';
-import type { CalendarEntryKind } from '@/features/club';
-import type { MyGroupSummary } from '@/features/group-hub';
+import type { KkSelectOption } from '@furria/ui/KkSelectField';
+import type { CalendarEntryKind } from '@/features/club/schemas';
+import type { MyGroupSummary } from '@/features/group-hub/schemas';
 import { toDayNumberLabel, toTimeSpanLabel } from '@/lib/calendar-days';
 import { toIsoDay } from '@/lib/day';
 import type {

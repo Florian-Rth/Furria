@@ -1,4 +1,6 @@
-import { KkEyebrow, KkFactRow, KkPanel } from '@furria/ui';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkFactRow } from '@furria/ui/KkFactRow';
+import { KkPanel } from '@furria/ui/KkPanel';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import {

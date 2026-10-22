@@ -1,14 +1,12 @@
 import { createFileRoute, Navigate, Outlet, redirect, useLocation } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { GalleryDevelopingPoller } from '@/features/gallery';
-import { buildLoginSearch } from '@/features/login';
-import {
-  AppFailure,
-  AppSearchSchema,
-  AppShell,
-  ScreenNotFound,
-  useSessionSnapshot,
-} from '@/features/session';
+import { GalleryDevelopingPoller } from '@/features/gallery/components/GalleryDevelopingPoller';
+import { buildLoginSearch } from '@/features/login/login-redirect';
+import { AppFailure } from '@/features/session/components/AppFailure';
+import { AppShell } from '@/features/session/components/AppShell';
+import { ScreenNotFound } from '@/features/session/components/ScreenNotFound';
+import { useSessionSnapshot } from '@/features/session/hooks/use-session-snapshot';
+import { AppSearchSchema } from '@/features/session/schemas';
 import { getSessionSnapshot } from '@/lib/api/session/session-store';
 import { LOGIN_PATH } from '@/lib/return-to';
 

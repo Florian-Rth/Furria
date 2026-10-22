@@ -1,6 +1,6 @@
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
 import { useController } from 'react-hook-form';
-import { useWriteForm } from '@/features/write';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import { useUpdateClubIdentityMutation } from '../api';
 import { toClubIdentity, toClubIdentityForm, toSectionLanding } from '../club-record-labels';
 import type { ClubIdentityForm, ClubRecord } from '../schemas';

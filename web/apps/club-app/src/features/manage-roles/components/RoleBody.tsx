@@ -1,6 +1,8 @@
-import { KkMasterDetail, KkNote, KkRetryAlert } from '@furria/ui';
+import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
 import type { FC } from 'react';
-import { AppListSkeleton } from '@/features/session';
+import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import type { RolePageControl } from '../hooks/use-role-page';
 import { toRolesErrorMessage } from '../manage-roles-messages';
 import { LOADING_LABEL, NOT_FOUND_TITLE, RETRY_LABEL } from '../roles-hub-copy';

@@ -1,5 +1,6 @@
-import type { KkDateQuickChoice, KkScreenOrigin } from '@furria/ui';
-import { ANNOUNCEMENTS_PATH } from '@/features/session';
+import type { KkDateQuickChoice } from '@furria/ui/KkDateField';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
+import { ANNOUNCEMENTS_PATH } from '@/features/session/app-sections';
 import { toIsoDay } from '@/lib/day';
 import { formatIsoDay } from '@/lib/membership-labels';
 

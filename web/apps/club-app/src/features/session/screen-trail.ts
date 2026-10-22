@@ -1,4 +1,4 @@
-import type { KkScreenMove } from '@furria/ui';
+import type { KkScreenMove } from '@furria/ui/screen-move';
 
 export interface ScreenTrail {
   paths: readonly string[];

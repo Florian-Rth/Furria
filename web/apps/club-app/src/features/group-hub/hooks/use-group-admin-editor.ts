@@ -1,8 +1,8 @@
 import { useController } from 'react-hook-form';
-import type { GroupDetailAdmin } from '@/features/group-detail';
-import { useMeQuery } from '@/features/session';
-import type { WriteLanding } from '@/features/write';
-import { useWriteForm } from '@/features/write';
+import type { GroupDetailAdmin } from '@/features/group-detail/schemas';
+import { useMeQuery } from '@/features/session/api';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
+import type { WriteLanding } from '@/features/write/landing-target';
 import type { PersonRef } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
 import { useAddGroupAdminMutation, useEndGroupAdminMutation } from '../api';

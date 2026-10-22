@@ -1,5 +1,5 @@
-import type { KkViewerItem } from '@furria/ui';
-import { toImageSource } from '@furria/ui';
+import { toImageSource } from '@furria/ui/image-source';
+import type { KkViewerItem } from '@furria/ui/viewer-types';
 import type { AlbumPhotoEntry } from '@/features/gallery/gallery-content';
 import { viewerPhotoSizes } from '@/features/gallery/gallery-content';
 

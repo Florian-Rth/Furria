@@ -1,4 +1,4 @@
-import { KkNote } from '@furria/ui';
+import { KkNote } from '@furria/ui/KkNote';
 import type { FC } from 'react';
 import { ARCHIVED_NOTE, CURRENT_TITLE, PLANNED_TITLE } from '../board-hub-copy';
 import type { OfficePaneControl } from '../hooks/use-office-pane';

@@ -1,5 +1,5 @@
-import type { KkSelectOption } from '@furria/ui';
-import { useKkNotice } from '@furria/ui';
+import { useKkNotice } from '@furria/ui/KkNotice';
+import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import type { ChangeEvent } from 'react';
 import { useState } from 'react';
 import { toWriteErrorMessage } from '@/lib/write-error';

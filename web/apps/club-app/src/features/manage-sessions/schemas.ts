@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AppSearchSchema } from '@/features/session';
+import { AppSearchSchema } from '@/features/session/schemas';
 import { SESSION_LOGO_MAX_LENGTH } from './session-logo-file';
 
 export const SESSION_MOTTO_MAX_LENGTH = 160;

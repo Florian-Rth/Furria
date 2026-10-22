@@ -1,4 +1,6 @@
-import { KkAlert, KkHeading, KkNote } from '@furria/ui';
+import { KkAlert } from '@furria/ui/KkAlert';
+import { KkHeading } from '@furria/ui/KkHeading';
+import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { SessionFarewell } from '@/lib/api/session/session-store';

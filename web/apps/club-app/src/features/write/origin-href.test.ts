@@ -1,4 +1,4 @@
-import type { KkScreenOrigin } from '@furria/ui';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import { describe, expect, it } from 'vitest';
 import { toOriginHref } from './origin-href';
 

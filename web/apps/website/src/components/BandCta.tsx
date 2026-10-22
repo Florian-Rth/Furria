@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import Button from '@mui/material/Button';
 import type { LinkProps } from '@tanstack/react-router';
 import { Link as RouterLink } from '@tanstack/react-router';

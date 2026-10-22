@@ -1,5 +1,5 @@
 import { useController } from 'react-hook-form';
-import { useWriteForm } from '@/features/write';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import { useUpdateClubAccessMutation } from '../api';
 import { toClubAccessForm, toSectionLanding } from '../club-record-labels';
 import type { ClubRecord } from '../schemas';

@@ -1,4 +1,8 @@
-import { KkBroomMark, KkConfettiRain, KkEyebrow, KkTwoToneHeadline, kkTokens } from '@furria/ui';
+import { KkBroomMark } from '@furria/ui/KkBroomMark';
+import { KkConfettiRain } from '@furria/ui/KkConfettiRain';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkTwoToneHeadline } from '@furria/ui/KkTwoToneHeadline';
+import { kkTokens } from '@furria/ui/tokens';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import Container from '@mui/material/Container';

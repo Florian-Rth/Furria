@@ -1,6 +1,8 @@
-import { KkPanel, KkSkeletonBlock, KkSkeletonRow } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
+import { KkSkeletonRow } from '@furria/ui/KkSkeletonRow';
 import type { FC } from 'react';
-import { AppSkeletonRegion } from '@/features/session';
+import { AppSkeletonRegion } from '@/features/session/components/AppSkeletonRegion';
 
 const LOADING_LABEL = 'Die Vorschau wird geladen';
 const FORM_GAP = 2;

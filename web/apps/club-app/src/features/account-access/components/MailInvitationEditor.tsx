@@ -1,7 +1,11 @@
-import type { KkScreenOrigin } from '@furria/ui';
-import { KkFactRow, KkFieldRow, KkNote, KkPanel, KkWriteScreen } from '@furria/ui';
+import { KkFactRow } from '@furria/ui/KkFactRow';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
-import { WriteScreen } from '@/features/write';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import {
   INVITATION_CHAIN_TITLE,
   MAIL_INVITATION_VALIDITY_NOTE,

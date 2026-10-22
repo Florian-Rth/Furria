@@ -1,6 +1,10 @@
-import { KkButton, KkErrorState, KkScreen, KkTitleHeader } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkErrorState } from '@furria/ui/KkErrorState';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import type { FC } from 'react';
-import { AppListSkeleton, AREA_HANDOVERS, GALLERY_ORIGIN } from '@/features/session';
+import { AREA_HANDOVERS, GALLERY_ORIGIN } from '@/features/session/app-sections';
+import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import { useWebsiteBoard } from '../hooks/use-website-board';
 import {
   LOAD_ERROR_TITLE,

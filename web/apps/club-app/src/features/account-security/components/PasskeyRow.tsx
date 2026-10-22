@@ -1,7 +1,7 @@
-import { KkSinceRow } from '@furria/ui';
+import { KkSinceRow } from '@furria/ui/KkSinceRow';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { toLandingKey } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
 import type { MePasskey } from '@/lib/api/schemas';
 import { formatPasskeyDay, PASSKEY_LANDING_KIND, PASSKEY_PATH } from '../account-security-labels';
 

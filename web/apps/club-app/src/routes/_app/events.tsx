@@ -1,12 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { EventsPage, EventsSearchSchema } from '@/features/events';
-import {
-  EVENTS_KEYS,
-  EVENTS_TITLE,
-  MORE_SECTION,
-  RequireAnyScreenPermission,
-} from '@/features/session';
+import { EventsPage } from '@/features/events/components/EventsPage';
+import { EventsSearchSchema } from '@/features/events/schemas';
+import { EVENTS_KEYS, EVENTS_TITLE, MORE_SECTION } from '@/features/session/app-sections';
+import { RequireAnyScreenPermission } from '@/features/session/components/RequireAnyScreenPermission';
 
 const EventsRoute: FC = () => (
   <RequireAnyScreenPermission

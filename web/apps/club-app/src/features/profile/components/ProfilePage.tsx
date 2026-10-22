@@ -1,6 +1,8 @@
-import { KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkScreenHeaderSkeleton } from '@furria/ui/KkScreenHeaderSkeleton';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, MORE_ORIGIN, usePersonalMe } from '@/features/session';
+import { AREA_HANDOVERS, MORE_ORIGIN } from '@/features/session/app-sections';
+import { usePersonalMe } from '@/features/session/hooks/use-personal-me';
 import { toProfileHeadline } from '../profile-labels';
 import { ProfileBody } from './ProfileBody';
 import { ProfileHeader } from './ProfileHeader';

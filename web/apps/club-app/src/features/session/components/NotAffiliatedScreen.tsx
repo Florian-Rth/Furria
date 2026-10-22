@@ -1,4 +1,4 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
 import type { ScreenFrame } from '../screen-frame';
 import { NotAffiliatedState } from './NotAffiliatedState';

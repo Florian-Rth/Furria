@@ -1,4 +1,4 @@
-import type { KkTeleprinterLevel } from '@furria/ui';
+import type { KkTeleprinterLevel } from '@furria/ui/teleprinter-paint';
 import { useState } from 'react';
 import { useDebouncedValue } from '@/lib/use-debounced-value';
 import { useSystemLogHeadQuery, useSystemLogsQuery } from '../api';

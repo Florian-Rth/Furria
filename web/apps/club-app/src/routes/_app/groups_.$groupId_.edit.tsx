@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { GroupInfoScreen } from '@/features/group-hub';
+import { GroupInfoScreen } from '@/features/group-hub/components/GroupInfoScreen';
 
 export const Route = createFileRoute('/_app/groups_/$groupId_/edit')({
   component: GroupInfoScreen,

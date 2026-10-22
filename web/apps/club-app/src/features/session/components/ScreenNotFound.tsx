@@ -1,4 +1,5 @@
-import { KkEmptyState, KkScreen } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
 import { START_ORIGIN } from '../app-sections';
 import {

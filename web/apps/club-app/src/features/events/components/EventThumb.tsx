@@ -1,5 +1,6 @@
-import type { KkCoverThumbShape, KkCoverThumbSize, KkPictureUrls } from '@furria/ui';
-import { KkCoverThumb } from '@furria/ui';
+import type { KkPictureUrls } from '@furria/ui/image-source';
+import type { KkCoverThumbShape, KkCoverThumbSize } from '@furria/ui/KkCoverThumb';
+import { KkCoverThumb } from '@furria/ui/KkCoverThumb';
 import type { FC } from 'react';
 import { toEventCover } from '@/lib/event-cover';
 

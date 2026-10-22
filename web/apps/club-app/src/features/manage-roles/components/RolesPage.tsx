@@ -1,8 +1,10 @@
-import type { KkScreenActions } from '@furria/ui';
-import { KkScreen, KkTitleHeader } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
+import type { KkScreenActions } from '@furria/ui/screen-declaration';
 import { useNavigate } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, MANAGE_ORIGIN, RequirePermission } from '@/features/session';
+import { AREA_HANDOVERS, MANAGE_ORIGIN } from '@/features/session/app-sections';
+import { RequirePermission } from '@/features/session/components/RequirePermission';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { ROLES_LEAD } from '../manage-roles-labels';
 import { NEW_ROLE_LABEL, NEW_ROLE_PATH, ROLES_TITLE } from '../roles-hub-copy';

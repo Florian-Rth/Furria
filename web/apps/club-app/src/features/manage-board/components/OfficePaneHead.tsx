@@ -1,4 +1,5 @@
-import { KkOfficeHead, KkOfficeMark } from '@furria/ui';
+import { KkOfficeHead } from '@furria/ui/KkOfficeHead';
+import { KkOfficeMark } from '@furria/ui/KkOfficeMark';
 import type { FC, ReactNode } from 'react';
 import { toOfficeMarkState } from '../board-hub';
 import type { BoardOffice } from '../schemas';

@@ -1,4 +1,4 @@
-import { KkHealthStrip } from '@furria/ui';
+import { KkHealthStrip } from '@furria/ui/KkHealthStrip';
 import type { FC } from 'react';
 import type { FilterView } from '../event-board-copy';
 import type { BoardFilter } from '../schemas';

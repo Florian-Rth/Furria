@@ -1,4 +1,8 @@
-import { KkNote, KkPanel, KkPanelSection, KkRetryAlert, KkSkeletonRow } from '@furria/ui';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
+import { KkSkeletonRow } from '@furria/ui/KkSkeletonRow';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useTicketRequestsQuery } from '../api';

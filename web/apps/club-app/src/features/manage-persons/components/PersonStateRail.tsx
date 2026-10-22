@@ -1,4 +1,4 @@
-import { KkStateRail } from '@furria/ui';
+import { KkStateRail } from '@furria/ui/KkStateRail';
 import type { FC } from 'react';
 import { usePersonStateRail } from '../hooks/use-person-state-rail';
 import type { PersonDetails } from '../schemas';

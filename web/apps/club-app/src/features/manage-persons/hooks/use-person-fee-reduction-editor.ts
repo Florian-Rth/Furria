@@ -1,5 +1,5 @@
 import { useController } from 'react-hook-form';
-import { useWriteForm } from '@/features/write';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import { sessionAt } from '@/lib/club';
 import { useCreateFeeReductionMutation, useUpdateFeeReductionMutation } from '../api';
 import {

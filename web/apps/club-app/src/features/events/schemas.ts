@@ -1,6 +1,6 @@
 import { z } from 'zod';
-import { CalendarCollisionSchema } from '@/features/calendar';
-import { ToDoSchema } from '@/features/to-dos';
+import { CalendarCollisionSchema } from '@/features/calendar/schemas';
+import { ToDoSchema } from '@/features/to-dos/schemas';
 import { ClockTimeSchema, PictureEditingSchema, PictureSchema } from '@/lib/api/schemas';
 import { EVENT_SALES_STATUS_KEYS, TICKET_AVAILABILITY_KEYS } from '@/lib/event-copy';
 import { toWrittenPriceCents } from './event-price';

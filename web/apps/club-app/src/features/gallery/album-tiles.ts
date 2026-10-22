@@ -1,4 +1,4 @@
-import type { KkFrameMark, KkFrameState } from '@furria/ui';
+import type { KkFrameMark, KkFrameState } from '@furria/ui/KkFrame';
 import type { AlbumFrame } from './album-frames';
 import { frameMarkOf } from './album-frames';
 import { frameCaption } from './album-labels';

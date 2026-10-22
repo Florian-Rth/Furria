@@ -1,4 +1,4 @@
-import type { KkDateQuickChoice } from '@furria/ui';
+import type { KkDateQuickChoice } from '@furria/ui/KkDateField';
 import { useState } from 'react';
 import { useGoBackTo } from '@/lib/use-go-back-to';
 import { toWriteErrorMessage } from '@/lib/write-error';

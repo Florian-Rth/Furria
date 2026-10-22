@@ -1,4 +1,4 @@
-import type { KkViewerItem, KkViewerKeys, KkViewerStepDelta } from '@furria/ui';
+import type { KkViewerItem, KkViewerKeys, KkViewerStepDelta } from '@furria/ui/viewer-types';
 import { useState } from 'react';
 import { saveFile } from '@/lib/media/save-file';
 import type { AlbumFrame } from '../album-frames';

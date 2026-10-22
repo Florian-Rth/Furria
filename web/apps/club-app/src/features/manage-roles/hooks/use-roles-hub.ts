@@ -1,9 +1,9 @@
-import { useIsWideScreen } from '@furria/ui';
+import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useCloseOnEscape } from '@/features/events/hooks/use-close-on-escape';
-import { useLanding } from '@/features/write';
+import { useLanding } from '@/features/write/hooks/use-landing';
 import { toIsoDay } from '@/lib/day';
 import { useRolesQuery } from '../api';
 import type { RightGroup } from '../roles-hub';

@@ -1,9 +1,11 @@
-import type { KkPanelAction } from '@furria/ui';
-import { KkNote, KkPanelSection } from '@furria/ui';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import type { KkPanelAction } from '@furria/ui/panel-action';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { NEW_POST_ID } from '@/features/news';
-import { NEWS_KEYS, usePermissions } from '@/features/session';
+import { NEW_POST_ID } from '@/features/news/news-copy';
+import { NEWS_KEYS } from '@/features/session/app-sections';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { toNewsCountNote } from '../event-review-copy';
 import type { EventDetails } from '../schemas';
 

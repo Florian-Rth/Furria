@@ -1,4 +1,4 @@
-import type { KkSheetAction } from '@furria/ui';
+import type { KkSheetAction } from '@furria/ui/sheet-actions';
 import { toDayRuns } from '../week-strip';
 import type { CalendarLineRow } from './use-calendar-lines';
 import { useCalendarSheet } from './use-calendar-sheet';

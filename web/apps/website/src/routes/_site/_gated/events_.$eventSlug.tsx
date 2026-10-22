@@ -1,12 +1,10 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import type { FC } from 'react';
-import {
-  buildEventDocumentTitle,
-  buildEventHref,
-  buildEventJsonLd,
-  EventDetailPage,
-  EventsUnavailable,
-} from '@/features/events';
+import { EventDetailPage } from '@/features/events/components/EventDetailPage/EventDetailPage';
+import { EventsUnavailable } from '@/features/events/components/EventsUnavailable';
+import { buildEventDocumentTitle } from '@/features/events/event-detail-display';
+import { buildEventHref } from '@/features/events/event-display';
+import { buildEventJsonLd } from '@/features/events/events-json-ld';
 import { publicEvents } from '@/lib/public-events/api';
 import type { EventDetail } from '@/lib/public-events/schemas';
 import { loadCanonicalDetail } from '@/lib/public-resource/canonical-detail';

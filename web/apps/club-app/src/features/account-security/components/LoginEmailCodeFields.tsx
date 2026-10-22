@@ -1,4 +1,7 @@
-import { KkButton, KkFormSection, KkNote, KkTextField } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { secondsUntil } from '@/lib/countdown';

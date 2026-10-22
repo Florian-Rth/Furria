@@ -1,4 +1,4 @@
-import type { KkScreenOrigin } from '@furria/ui';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import { useBlocker, useRouter } from '@tanstack/react-router';
 import { useEffect, useState } from 'react';
 import { useGoBackTo } from '@/lib/use-go-back-to';

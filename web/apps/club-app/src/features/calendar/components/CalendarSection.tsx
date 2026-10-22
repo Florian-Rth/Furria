@@ -1,5 +1,6 @@
-import type { KkCalendarHeadUnder } from '@furria/ui';
-import { KkCalendarAgenda, KkPanelSection } from '@furria/ui';
+import type { KkCalendarHeadUnder } from '@furria/ui/calendar-sticky';
+import { KkCalendarAgenda } from '@furria/ui/KkCalendarAgenda';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import type { CalendarSection as CalendarSectionData } from '../calendar-agenda';
 import { toSectionView } from '../calendar-agenda-view';

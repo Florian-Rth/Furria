@@ -1,4 +1,6 @@
-import { KkEyebrow, KkMeta, KkScreenHeader } from '@furria/ui';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkScreenHeader } from '@furria/ui/KkScreenHeader';
 import type { FC } from 'react';
 import type { GroupKindEntry } from '../manage-groups-labels';
 import { GROUP_KIND_SECTION_TITLE, toGroupKindUsageLine } from '../manage-groups-labels';

@@ -1,4 +1,7 @@
-import { KkFrame, KkSelectRow, KkSheet, KkText } from '@furria/ui';
+import { KkFrame } from '@furria/ui/KkFrame';
+import { KkSelectRow } from '@furria/ui/KkSelectRow';
+import { KkSheet } from '@furria/ui/KkSheet';
+import { KkText } from '@furria/ui/KkText';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';

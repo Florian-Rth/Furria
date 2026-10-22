@@ -1,4 +1,4 @@
-import { kkMentionOptionId } from '@furria/ui';
+import { kkMentionOptionId } from '@furria/ui/KkMentionPicker';
 import { EditorView } from 'prosemirror-view';
 import { TEXT_FIELD_LABEL } from '../editor-copy';
 import type { NewsTextCommand } from './news-text-commands';

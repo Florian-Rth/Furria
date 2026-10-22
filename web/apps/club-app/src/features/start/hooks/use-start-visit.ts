@@ -1,4 +1,4 @@
-import { useKkSheet } from '@furria/ui';
+import { useKkSheet } from '@furria/ui/sheet-store';
 import { useEffect, useState } from 'react';
 import type { Start } from '../schemas';
 import type { VisitHold } from '../start-board';

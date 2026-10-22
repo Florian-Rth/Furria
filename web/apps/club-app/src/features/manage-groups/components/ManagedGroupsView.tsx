@@ -1,6 +1,6 @@
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
-import { useLanding } from '@/features/write';
+import { useLanding } from '@/features/write/hooks/use-landing';
 import type { ManagedGroupsListing } from '../hooks/use-managed-groups-listing';
 import type { ManagedGroupKind } from '../schemas';
 import { GroupKindsPanel } from './GroupKindsPanel';

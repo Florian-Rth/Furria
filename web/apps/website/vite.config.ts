@@ -27,6 +27,9 @@ export default defineConfig({
     },
   },
   server: {
+    warmup: {
+      clientFiles: ['./index.html', './src/**/*.{ts,tsx}', '!./src/**/*.test.{ts,tsx}'],
+    },
     port: 3000,
     strictPort: true,
     proxy: {

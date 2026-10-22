@@ -1,6 +1,6 @@
-import { useKkSheet } from '@furria/ui';
-import type { PickListPhase } from '@/features/gallery-pick';
-import { pickListPhaseOf } from '@/features/gallery-pick';
+import { useKkSheet } from '@furria/ui/sheet-store';
+import type { PickListPhase } from '@/features/gallery-pick/pick-list';
+import { pickListPhaseOf } from '@/features/gallery-pick/pick-list';
 import { useNewsTieCandidatesQuery } from '../api';
 import {
   TIE_ALBUM_SHEET_ID,

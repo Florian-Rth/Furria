@@ -1,4 +1,4 @@
-import type { ToDoKind } from '@/features/to-dos';
+import type { ToDoKind } from '@/features/to-dos/schemas';
 import type {
   Start,
   StartGroupMomentKind,

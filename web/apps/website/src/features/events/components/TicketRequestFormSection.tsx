@@ -1,4 +1,5 @@
-import { KkEyebrow, KkSection } from '@furria/ui';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkSection } from '@furria/ui/KkSection';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
 import { TicketRequestFormKit } from '@/features/events/components/TicketRequestFormKit/TicketRequestFormKit';

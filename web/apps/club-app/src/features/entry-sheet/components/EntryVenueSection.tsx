@@ -1,4 +1,7 @@
-import { KkChip, KkMeta, KkPanelSection, KkText } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { EntryVenueView } from '../types';

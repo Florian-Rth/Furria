@@ -1,4 +1,4 @@
-import { KkConfirmDialog } from '@furria/ui';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
 import type { FC } from 'react';
 import { DIALOG_CANCEL, DIALOG_CLOSE, LIFECYCLE_COPY, WITHDRAW_ADOPTS } from '../../editor-copy';
 import type { EditorDialogState } from '../../hooks/use-news-editor';

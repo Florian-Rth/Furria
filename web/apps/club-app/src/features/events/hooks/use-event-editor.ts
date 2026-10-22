@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useWriteForm } from '@/features/write';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import { useCreateEventMutation, useUpdateEventMutation } from '../api';
 import { toEventFormValues, toEventPayload } from '../event-form';
 import type { EventDetails, EventForm } from '../schemas';

@@ -1,5 +1,6 @@
-import type { KkPublishCeremonyRun, KkPublishStamp } from '@furria/ui';
-import { useKkPublishCeremony } from '@furria/ui';
+import type { KkPublishStamp } from '@furria/ui/publish-stamp';
+import type { KkPublishCeremonyRun } from '@furria/ui/use-publish-ceremony';
+import { useKkPublishCeremony } from '@furria/ui/use-publish-ceremony';
 import { useState } from 'react';
 import { WEBSITE_HOST } from '@/lib/publish-copy';
 import { PUBLIC_NEWS_PATH } from '../news-copy';

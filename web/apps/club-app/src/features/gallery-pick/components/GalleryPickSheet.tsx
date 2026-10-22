@@ -1,4 +1,6 @@
-import { KkSheet, KkText, useKkSheet } from '@furria/ui';
+import { KkSheet } from '@furria/ui/KkSheet';
+import { KkText } from '@furria/ui/KkText';
+import { useKkSheet } from '@furria/ui/sheet-store';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { ALBUMS_LOADING, albumsLoadErrorOf, GALLERY_PICK_CLOSE } from '../gallery-pick-copy';

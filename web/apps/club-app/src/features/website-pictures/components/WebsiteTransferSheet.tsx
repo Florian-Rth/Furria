@@ -1,4 +1,6 @@
-import { KkSelectRow, KkSheet, KkText } from '@furria/ui';
+import { KkSelectRow } from '@furria/ui/KkSelectRow';
+import { KkSheet } from '@furria/ui/KkSheet';
+import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { TransferTarget } from '../transfer-targets';

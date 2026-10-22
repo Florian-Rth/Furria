@@ -1,4 +1,4 @@
-import type { KkIconName } from '@furria/ui';
+import type { KkIconName } from '@furria/ui/KkIcon';
 import type { ClubIcon } from '@/lib/club-icon';
 import { toClubIconLabel } from '@/lib/club-icon';
 import type { GroupTone } from '@/lib/group-tone';

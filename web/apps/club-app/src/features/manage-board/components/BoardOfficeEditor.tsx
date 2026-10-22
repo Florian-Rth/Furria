@@ -1,16 +1,15 @@
-import type { KkNumberStepLabels } from '@furria/ui';
-import {
-  KkButton,
-  KkFieldRow,
-  KkFormPair,
-  KkFormSection,
-  KkNote,
-  KkNumberField,
-  KkSelectField,
-  KkTextField,
-} from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkFormPair } from '@furria/ui/KkFormPair';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkNote } from '@furria/ui/KkNote';
+import type { KkNumberStepLabels } from '@furria/ui/KkNumberField';
+import { KkNumberField } from '@furria/ui/KkNumberField';
+import { KkSelectField } from '@furria/ui/KkSelectField';
+import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
-import { ClubIconField, WriteScreen } from '@/features/write';
+import { ClubIconField } from '@/features/write/components/ClubIconField';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import type { EditorReturn } from '../board-hub';
 import { useBoardOfficeEditor } from '../hooks/use-board-office-editor';
 import type { BoardOfficeEntry } from '../manage-board-labels';

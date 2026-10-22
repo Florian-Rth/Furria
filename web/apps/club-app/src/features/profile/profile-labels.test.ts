@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { MemberContact } from '@/features/members';
+import type { MemberContact } from '@/features/members/schemas';
 import type { MePerson } from '@/lib/api/schemas';
 import { toPreviewContact } from './profile-labels';
 

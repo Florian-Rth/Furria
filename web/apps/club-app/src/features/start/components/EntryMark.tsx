@@ -1,4 +1,4 @@
-import { KkStartTile } from '@furria/ui';
+import { KkStartTile } from '@furria/ui/KkStartTile';
 import type { FC } from 'react';
 import type { EntryMarkView } from '../hooks/use-calendar-tile';
 

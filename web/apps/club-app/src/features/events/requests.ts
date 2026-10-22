@@ -1,5 +1,5 @@
 import type { JsonBody } from '@furria/api-client';
-import type { KkCrop } from '@furria/ui';
+import type { KkCrop } from '@furria/ui/image-crop';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type { EventPayload } from './event-form';

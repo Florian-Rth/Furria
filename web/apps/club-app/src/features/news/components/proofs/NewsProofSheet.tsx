@@ -1,4 +1,5 @@
-import { KkNewsProofPanels, KkSheet } from '@furria/ui';
+import { KkNewsProofPanels } from '@furria/ui/KkNewsProofPanels';
+import { KkSheet } from '@furria/ui/KkSheet';
 import type { FC } from 'react';
 import { PEEK_CLOSE_LABEL, PEEK_SHEET_ID, PEEK_SHEET_TITLE, PROOF_LABELS } from '../../proof-copy';
 import type { NewsProofsProps } from './proofs-props';

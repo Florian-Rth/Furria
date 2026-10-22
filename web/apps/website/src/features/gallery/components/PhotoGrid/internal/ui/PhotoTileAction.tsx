@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import ButtonBase from '@mui/material/ButtonBase';
 import type { FC, PropsWithChildren } from 'react';
 import { buildPhotoOpenLabel } from '@/features/gallery/gallery-content';

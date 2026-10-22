@@ -1,4 +1,4 @@
-import { KkNewsCard } from '@furria/ui';
+import { KkNewsCard } from '@furria/ui/KkNewsCard';
 import type { SxProps, Theme } from '@mui/material/styles';
 import type { FC } from 'react';
 import { newsCategoryOf } from '@/features/news/news-content';

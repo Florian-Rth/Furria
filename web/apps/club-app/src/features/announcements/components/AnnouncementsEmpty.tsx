@@ -1,4 +1,4 @@
-import { KkEmptyState } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
 import type { FC } from 'react';
 import { NO_ANNOUNCEMENTS_LINE, NO_ANNOUNCEMENTS_TITLE } from '../announcements-labels';
 

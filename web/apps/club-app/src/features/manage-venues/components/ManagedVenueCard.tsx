@@ -1,6 +1,7 @@
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { toLandingKey, useLanding } from '@/features/write';
+import { useLanding } from '@/features/write/hooks/use-landing';
+import { toLandingKey } from '@/features/write/landing-target';
 import { toVenueAddressLine } from '../manage-venues-labels';
 import type { ManagedVenue } from '../schemas';
 import { VenueRecord } from './VenueRecord';

@@ -1,4 +1,5 @@
-import { KkExposureSweep, KkTimeRail } from '@furria/ui';
+import { KkExposureSweep } from '@furria/ui/KkExposureSweep';
+import { KkTimeRail } from '@furria/ui/KkTimeRail';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { RAIL_LABEL } from '../album-labels';

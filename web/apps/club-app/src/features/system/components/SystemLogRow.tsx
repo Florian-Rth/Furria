@@ -1,4 +1,4 @@
-import { KkTeleprinter } from '@furria/ui';
+import { KkTeleprinter } from '@furria/ui/KkTeleprinter';
 import type { FC } from 'react';
 import type { LogRowView } from '../hooks/use-system-log';
 import { SystemLogLine } from './SystemLogLine';

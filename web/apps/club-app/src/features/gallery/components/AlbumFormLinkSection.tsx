@@ -1,5 +1,7 @@
-import type { KkSelectOption } from '@furria/ui';
-import { KkFormSection, KkSelectField, KkSessionField } from '@furria/ui';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import type { KkSelectOption } from '@furria/ui/KkSelectField';
+import { KkSelectField } from '@furria/ui/KkSelectField';
+import { KkSessionField } from '@furria/ui/KkSessionField';
 import type { FC } from 'react';
 import { currentSessionYear } from '@/lib/club';
 import type { AlbumFormControl } from '../hooks/use-album-form';

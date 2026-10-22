@@ -1,8 +1,12 @@
-import { KkChip, KkHeading, KkMeta, KkPanel, KkText } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkHeading } from '@furria/ui/KkHeading';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { toLandingKey } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
 import { ANNOUNCEMENT_NEW_LABEL } from '@/lib/announcements';
 import { ANNOUNCEMENT_EXPIRED_LABEL, toValidUntilLabel } from '../announcements-labels';
 import type { Announcement } from '../schemas';

@@ -1,4 +1,8 @@
-import { KkButton, KkFilmEdge, KkFrameFacts, KkIcon, KkViewer } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkFilmEdge } from '@furria/ui/KkFilmEdge';
+import { KkFrameFacts } from '@furria/ui/KkFrameFacts';
+import { KkIcon } from '@furria/ui/KkIcon';
+import { KkViewer } from '@furria/ui/KkViewer';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { AlbumFrame } from '../album-frames';

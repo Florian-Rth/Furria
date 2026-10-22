@@ -1,6 +1,6 @@
 import type { FC } from 'react';
-import { useGroupKindsQuery } from '@/features/group-kinds';
-import { usePermissions } from '@/features/session';
+import { useGroupKindsQuery } from '@/features/group-kinds/api';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toGroupKindsErrorMessage } from '../manage-groups-messages';
 import { GroupCreateEditor } from './GroupCreateEditor';

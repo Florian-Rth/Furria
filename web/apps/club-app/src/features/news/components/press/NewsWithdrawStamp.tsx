@@ -1,4 +1,4 @@
-import { KkDiagonalStamp } from '@furria/ui';
+import { KkDiagonalStamp } from '@furria/ui/KkDiagonalStamp';
 import type { FC } from 'react';
 import { WITHDRAWN_STAMP } from '../../press-copy';
 

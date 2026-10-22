@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import Modal from '@mui/material/Modal';
 import Stack from '@mui/material/Stack';
 import { useTheme } from '@mui/material/styles';

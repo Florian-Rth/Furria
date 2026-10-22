@@ -1,4 +1,4 @@
-import { KkEmptyState } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
 import type { FC } from 'react';
 
 const COLD_EMPTY_TITLE = 'NOCH KEINE PERSON';

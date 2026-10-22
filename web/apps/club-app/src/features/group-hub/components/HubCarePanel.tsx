@@ -1,10 +1,16 @@
-import type { KkPanelAction } from '@furria/ui';
-import { KkFieldRow, KkPanel, KkPanelSection, KkSwitchRow } from '@furria/ui';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
+import type { KkPanelAction } from '@furria/ui/panel-action';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import type { RunningGroupKind } from '@/features/group-kinds';
-import { GROUP_KIND_FIELD_LABEL, NO_GROUP_KIND_LABEL } from '@/features/group-kinds';
-import type { GroupTone } from '@/features/groups';
+import {
+  GROUP_KIND_FIELD_LABEL,
+  NO_GROUP_KIND_LABEL,
+} from '@/features/group-kinds/group-kinds-labels';
+import type { RunningGroupKind } from '@/features/group-kinds/schemas';
+import type { GroupTone } from '@/features/groups/group-identity';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import { toToneLabel } from '@/lib/group-tone';
 import { useRecruitingSwitch } from '../hooks/use-recruiting-switch';

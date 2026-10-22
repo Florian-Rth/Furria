@@ -1,6 +1,8 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { buildTicketRequestHref, EventsUnavailable, TicketRequestPage } from '@/features/events';
+import { EventsUnavailable } from '@/features/events/components/EventsUnavailable';
+import { TicketRequestPage } from '@/features/events/components/TicketRequestPage';
+import { buildTicketRequestHref } from '@/features/events/event-display';
 import { publicEvents } from '@/lib/public-events/api';
 import type { EventDetail } from '@/lib/public-events/schemas';
 import { loadCanonicalDetail } from '@/lib/public-resource/canonical-detail';

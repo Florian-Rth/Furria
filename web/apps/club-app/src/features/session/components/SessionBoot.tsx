@@ -1,4 +1,4 @@
-import { KkButton } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
 import type { FC, PropsWithChildren } from 'react';
 import { bootSession } from '@/lib/api/session/session-boot';
 import { expireSession } from '@/lib/api/session/session-store';

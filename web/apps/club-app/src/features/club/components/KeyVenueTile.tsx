@@ -1,5 +1,9 @@
-import type { KkSx } from '@furria/ui';
-import { KkAvatarStack, KkHeading, KkMeta, KkPanel, useKkSheetCommands } from '@furria/ui';
+import { KkAvatarStack } from '@furria/ui/KkAvatarStack';
+import { KkHeading } from '@furria/ui/KkHeading';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanel } from '@furria/ui/KkPanel';
+import type { KkSx } from '@furria/ui/kk-sx';
+import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { toKeyVenueSummary } from '@/lib/key-holders';

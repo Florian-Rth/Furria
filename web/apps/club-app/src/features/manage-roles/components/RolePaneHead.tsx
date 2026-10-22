@@ -1,4 +1,5 @@
-import { KkOfficeHead, KkRoleMark } from '@furria/ui';
+import { KkOfficeHead } from '@furria/ui/KkOfficeHead';
+import { KkRoleMark } from '@furria/ui/KkRoleMark';
 import type { FC, ReactNode } from 'react';
 import { toRoleMarkState } from '../roles-hub';
 import type { RoleSummary } from '../schemas';

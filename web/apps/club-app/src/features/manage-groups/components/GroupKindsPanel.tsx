@@ -1,9 +1,10 @@
-import type { KkPanelAction } from '@furria/ui';
-import { KkPanel, KkPanelSection } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import type { KkPanelAction } from '@furria/ui/panel-action';
 import Grid from '@mui/material/Grid';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { toLandingKey } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
 import {
   CREATE_GROUP_KIND_LABEL,
   CREATE_GROUP_KIND_PILL_LABEL,

@@ -1,4 +1,5 @@
-import { KkMeta, KkStartTile } from '@furria/ui';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkStartTile } from '@furria/ui/KkStartTile';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useMineTile } from '../hooks/use-mine-tile';

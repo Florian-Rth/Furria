@@ -1,5 +1,8 @@
-import type { KkClubIcon, KkGroupTone, KkIconName, KkStartTileCoinTone } from '@furria/ui';
-import { toGroupTone } from '@/features/groups';
+import type { KkClubIcon } from '@furria/ui/club-icon';
+import type { KkGroupTone } from '@furria/ui/group-tone';
+import type { KkIconName } from '@furria/ui/KkIcon';
+import type { KkStartTileCoinTone } from '@furria/ui/KkStartTileCoin';
+import { toGroupTone } from '@/features/groups/group-identity';
 import type { PersonFunction } from '@/lib/api/schemas';
 import type { StartMine, StartMineKind } from './schemas';
 

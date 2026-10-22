@@ -1,7 +1,8 @@
-import { KkMasterDetail, KkRetryAlert } from '@furria/ui';
+import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { AppListSkeleton } from '@/features/session';
+import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import { LOADING_LABEL, RETRY_LABEL } from '../board-hub-copy';
 import { useBoardHub } from '../hooks/use-board-hub';
 import { toBoardErrorMessage } from '../manage-board-messages';

@@ -1,7 +1,8 @@
-import { KkPublishCeremony, KkScreen } from '@furria/ui';
+import { KkPublishCeremony } from '@furria/ui/KkPublishCeremony';
+import { KkScreen } from '@furria/ui/KkScreen';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, NEWS_ORIGIN } from '@/features/session';
+import { AREA_HANDOVERS, NEWS_ORIGIN } from '@/features/session/app-sections';
 import { PUBLISH_ANNOUNCEMENTS } from '@/lib/publish-copy';
 import { NEWS_PICKER_LIST_ID, useNewsEditorPage } from '../../hooks/use-news-editor-page';
 import { NewsImposition } from '../proofs/NewsImposition';

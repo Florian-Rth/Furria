@@ -1,5 +1,5 @@
-import type { KkCalendarTravel } from '@furria/ui';
-import { hoursMinuteOf } from '@furria/ui';
+import { hoursMinuteOf } from '@furria/ui/calendar-hours-geometry';
+import type { KkCalendarTravel } from '@furria/ui/calendar-strip-types';
 import { useNow } from '@/lib/use-now';
 import { toClock } from '../calendar-hours';
 import type { CalendarHoursWeek } from '../calendar-hours-view';

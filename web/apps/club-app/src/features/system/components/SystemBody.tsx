@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { AccessDenied } from '@/features/session';
+import { AccessDenied } from '@/features/session/components/AccessDenied';
 import { useSystemStatus } from '../hooks/use-system-status';
 import { SYSTEM_DENIED_MESSAGE } from '../system-copy';
 import { SystemError } from './SystemError';

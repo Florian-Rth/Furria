@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import Badge from '@mui/material/Badge';
 import Button from '@mui/material/Button';
 import type { FC } from 'react';

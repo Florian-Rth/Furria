@@ -1,8 +1,8 @@
-import type { KkSelectOption } from '@furria/ui';
+import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import type { UseFormReturn } from 'react-hook-form';
 import { useController } from 'react-hook-form';
-import { usePermissions } from '@/features/session';
-import { useWriteForm } from '@/features/write';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import type { ClubIcon } from '@/lib/club-icon';
 import {

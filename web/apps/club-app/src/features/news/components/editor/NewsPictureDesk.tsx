@@ -1,9 +1,15 @@
-import type { KkBannerDeskActions, KkBannerDeskLabels, KkBannerState } from '@furria/ui';
-import { KkBannerDesk, KkCaptionField, KkProofSheet } from '@furria/ui';
+import type {
+  KkBannerDeskActions,
+  KkBannerDeskLabels,
+  KkBannerState,
+} from '@furria/ui/banner-desk-types';
+import { KkBannerDesk } from '@furria/ui/KkBannerDesk';
+import { KkCaptionField } from '@furria/ui/KkCaptionField';
+import { KkProofSheet } from '@furria/ui/KkProofSheet';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { PICTURE_ACCEPT } from '@/features/pictures';
+import { PICTURE_ACCEPT } from '@/features/pictures/picture-target';
 import {
   CAPTION_LABEL,
   CAPTION_PLACEHOLDER,

@@ -1,7 +1,8 @@
-import { KkScreen, KkTitleHeader } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, CLUB_ORIGIN } from '@/features/session';
-import { useLanding } from '@/features/write';
+import { AREA_HANDOVERS, CLUB_ORIGIN } from '@/features/session/app-sections';
+import { useLanding } from '@/features/write/hooks/use-landing';
 import { ANNOUNCEMENTS_LEAD, ANNOUNCEMENTS_TITLE } from '../announcements-labels';
 import { AnnouncementsBody } from './AnnouncementsBody';
 

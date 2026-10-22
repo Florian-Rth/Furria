@@ -1,7 +1,8 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, usePermissions } from '@/features/session';
+import { AREA_HANDOVERS } from '@/features/session/app-sections';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { parsePositiveId } from '@/lib/positive-id';
 import { useGroupHubQuery } from '../api';
 import { toHubOrigin, toHubTitle } from '../group-hub-labels';

@@ -1,4 +1,7 @@
-import { aspectRatioCss, eventToneOf, KkPhoto, toImageSource } from '@furria/ui';
+import { eventToneOf } from '@furria/ui/group-tone';
+import { aspectRatioCss } from '@furria/ui/image-aspect';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkPhoto } from '@furria/ui/KkPhoto';
 import type { FC } from 'react';
 import { eventCancelledStamp } from '@/features/events/event-detail-content';
 import type { EventDetail } from '@/lib/public-events/schemas';

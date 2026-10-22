@@ -1,4 +1,6 @@
-import { KkEyebrow, KkMeta, KkScreenHeader } from '@furria/ui';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkScreenHeader } from '@furria/ui/KkScreenHeader';
 import type { FC } from 'react';
 import type { MePasskey } from '@/lib/api/schemas';
 import { PASSKEY_EYEBROW, toPasskeyAddedLine } from '../account-security-labels';

@@ -1,4 +1,4 @@
-import type { WriteLanding } from '@/features/write';
+import type { WriteLanding } from '@/features/write/landing-target';
 import { fromIsoDay, toIsoDay } from '@/lib/day';
 import type { BoardFilter, BoardOffice, BoardSeat } from './schemas';
 

@@ -1,4 +1,6 @@
-import { KkEmptyState, KkPanel, KkScreen } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
 import { BOARD_ORIGIN } from '../manage-board-labels';
 

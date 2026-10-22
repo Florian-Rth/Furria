@@ -1,5 +1,7 @@
 import type { FC } from 'react';
-import { AccessDenied, AppListSkeleton, deniedMessageOf } from '@/features/session';
+import { AccessDenied } from '@/features/session/components/AccessDenied';
+import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
+import { deniedMessageOf } from '@/features/session/permission-denials';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { isForbiddenError } from '@/lib/query-error';
 import { useMembershipApplicationsQuery } from '../api';

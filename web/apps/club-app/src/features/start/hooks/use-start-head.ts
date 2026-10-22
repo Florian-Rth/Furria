@@ -1,5 +1,5 @@
-import { toImageSource } from '@furria/ui';
-import { usePersonalMe } from '@/features/session';
+import { toImageSource } from '@furria/ui/image-source';
+import { usePersonalMe } from '@/features/session/hooks/use-personal-me';
 import { toAvatarHonours } from '@/lib/honours';
 import { toInitials } from '@/lib/initials';
 import { useMinuteNow } from '@/lib/use-minute-now';

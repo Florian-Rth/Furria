@@ -1,4 +1,5 @@
-import { KkMeta, KkTenureChain } from '@furria/ui';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkTenureChain } from '@furria/ui/KkTenureChain';
 import type { FC } from 'react';
 import { toSeatChain } from '../board-hub';
 import { HISTORY_EMPTY, HISTORY_TITLE } from '../board-hub-copy';

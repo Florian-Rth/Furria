@@ -1,4 +1,4 @@
-import { KkScreenHeader } from '@furria/ui';
+import { KkScreenHeader } from '@furria/ui/KkScreenHeader';
 import type { FC } from 'react';
 import { SELECTION_TITLE } from '../gallery-copy';
 import { AlbumSelectionMarquee } from './AlbumSelectionMarquee';

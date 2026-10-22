@@ -1,4 +1,4 @@
-import type { KkEntryKindGlyphKind } from '@furria/ui';
+import type { KkEntryKindGlyphKind } from '@furria/ui/KkEntryKindGlyph';
 import type { CalendarKindKey } from '@/lib/calendar-copy';
 import type {
   CalendarLandmark,

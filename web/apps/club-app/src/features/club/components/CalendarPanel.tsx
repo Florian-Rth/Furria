@@ -1,8 +1,9 @@
-import type { KkPanelAction } from '@furria/ui';
-import { KkPanel, KkPanelSection } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import type { KkPanelAction } from '@furria/ui/panel-action';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { CALENDAR_PATH } from '@/features/session';
+import { CALENDAR_PATH } from '@/features/session/app-sections';
 import { useClubHubQuery } from '../api';
 import { CalendarRow } from './CalendarRow';
 

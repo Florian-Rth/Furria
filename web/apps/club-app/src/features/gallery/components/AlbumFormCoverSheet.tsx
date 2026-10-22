@@ -1,5 +1,8 @@
-import type { KkSheetAction } from '@furria/ui';
-import { KkFrame, KkFrameGrid, KkMeta, KkSheet } from '@furria/ui';
+import { KkFrame } from '@furria/ui/KkFrame';
+import { KkFrameGrid } from '@furria/ui/KkFrameGrid';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkSheet } from '@furria/ui/KkSheet';
+import type { KkSheetAction } from '@furria/ui/sheet-actions';
 import type { FC } from 'react';
 import { AUTOMATIC_COVER } from '../album-form';
 import { shownSourceOf } from '../gallery-view';

@@ -1,4 +1,4 @@
-import { KkButton } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
 import { useRouter } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { START_PATH } from '../app-sections';

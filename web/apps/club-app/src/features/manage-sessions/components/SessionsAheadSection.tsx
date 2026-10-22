@@ -1,5 +1,6 @@
-import type { KkPanelAction } from '@furria/ui';
-import { KkPanel, KkPanelSection } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import type { KkPanelAction } from '@furria/ui/panel-action';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { MANAGE_SESSIONS_CREATE_LABEL, SESSION_SECTION_TITLES } from '../manage-sessions-labels';

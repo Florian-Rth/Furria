@@ -1,6 +1,7 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
-import { GROUPS_ORIGIN, NotAffiliatedState } from '@/features/session';
+import { GROUPS_ORIGIN } from '@/features/session/app-sections';
+import { NotAffiliatedState } from '@/features/session/components/NotAffiliatedState';
 import { isForbiddenError, isNotFoundError } from '@/lib/query-error';
 import { useGroupHubQuery } from '../api';
 import { toHubErrorMessage } from '../group-hub-messages';

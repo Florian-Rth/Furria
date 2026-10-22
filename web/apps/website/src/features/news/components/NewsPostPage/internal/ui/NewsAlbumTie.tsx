@@ -1,7 +1,7 @@
-import { KkNewsAlbumCard } from '@furria/ui';
+import { KkNewsAlbumCard } from '@furria/ui/KkNewsAlbumCard';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { buildAlbumHref } from '@/features/gallery';
+import { buildAlbumHref } from '@/features/gallery/gallery-content';
 import { albumStripOf, buildPhotoCountLabel, newsTiesLabels } from '@/features/news/news-content';
 import type { NewsAlbum } from '@/lib/public-news/schemas';
 

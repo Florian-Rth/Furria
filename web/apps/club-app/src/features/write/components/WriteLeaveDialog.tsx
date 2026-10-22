@@ -1,4 +1,4 @@
-import { KkConfirmDialog } from '@furria/ui';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
 import type { FC } from 'react';
 import type { WriteScreenGuard } from '../hooks/use-write-screen';
 import {

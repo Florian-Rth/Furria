@@ -1,6 +1,6 @@
-import { useKkSheet } from '@furria/ui';
+import { useKkSheet } from '@furria/ui/sheet-store';
 import { useEffect, useRef } from 'react';
-import { useLastSeenAnnouncementMutation } from '@/features/announcements';
+import { useLastSeenAnnouncementMutation } from '@/features/announcements/api';
 import type { StartAnnouncement } from '../schemas';
 import { toSeenUpTo } from '../start-seen';
 import { isAnnouncementsSheet } from '../start-sheets';

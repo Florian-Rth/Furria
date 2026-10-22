@@ -1,6 +1,6 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
-import { AccessDenied } from '@/features/session';
+import { AccessDenied } from '@/features/session/components/AccessDenied';
 import { ROLES_ORIGIN } from '../manage-roles-labels';
 
 const DENIED_MESSAGE = 'Dir fehlt die Berechtigung für Rollen & Rechte.';

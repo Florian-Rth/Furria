@@ -1,4 +1,4 @@
-import { KkHeroSection } from '@furria/ui';
+import { KkHeroSection } from '@furria/ui/KkHeroSection';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import { Link as RouterLink } from '@tanstack/react-router';

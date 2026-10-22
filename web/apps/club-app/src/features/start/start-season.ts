@@ -1,4 +1,4 @@
-import type { KkPosterPhase } from '@furria/ui';
+import type { KkPosterPhase } from '@furria/ui/poster-composition';
 import {
   carnivalDaysOf,
   daysUntilOpening,

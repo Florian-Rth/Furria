@@ -1,4 +1,5 @@
-import { KkMeta, KkStartTile } from '@furria/ui';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkStartTile } from '@furria/ui/KkStartTile';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useCalendarTile } from '../hooks/use-calendar-tile';

@@ -1,5 +1,7 @@
-import type { KkGroupTone } from '@furria/ui';
-import { KkCard, KkPhoto, toImageSource } from '@furria/ui';
+import type { KkGroupTone } from '@furria/ui/group-tone';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkCard } from '@furria/ui/KkCard';
+import { KkPhoto } from '@furria/ui/KkPhoto';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import {

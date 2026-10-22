@@ -1,4 +1,6 @@
-import { KkFilmEdge, KkNote, KkText } from '@furria/ui';
+import { KkFilmEdge } from '@furria/ui/KkFilmEdge';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { deskActionsOf } from '../desk-actions';

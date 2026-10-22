@@ -1,4 +1,6 @@
-import { KkButton, KkFieldRow, KkFrame } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkFrame } from '@furria/ui/KkFrame';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';

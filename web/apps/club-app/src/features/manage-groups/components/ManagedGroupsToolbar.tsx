@@ -1,5 +1,5 @@
-import type { KkFilterOption } from '@furria/ui';
-import { KkFilterChips } from '@furria/ui';
+import type { KkFilterOption } from '@furria/ui/filter-chip-entries';
+import { KkFilterChips } from '@furria/ui/KkFilterChips';
 import type { FC } from 'react';
 
 const FILTER_LABEL = 'Die Arbeit filtern';

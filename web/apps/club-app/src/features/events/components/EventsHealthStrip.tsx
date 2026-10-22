@@ -1,4 +1,4 @@
-import { KkHealthStrip } from '@furria/ui';
+import { KkHealthStrip } from '@furria/ui/KkHealthStrip';
 import type { FC } from 'react';
 import type { FilterView, TallyView } from '../event-board-copy';
 import { FILTER_LABEL, HEALTH_LABEL, QUIET_NOTE } from '../event-board-copy';

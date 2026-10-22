@@ -1,6 +1,6 @@
 import type { UseFormReturn } from 'react-hook-form';
 import { useController } from 'react-hook-form';
-import { useWriteForm } from '@/features/write';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import type { ClubIcon } from '@/lib/club-icon';
 import { useCreateGroupMutation } from '../api';
 import type { GroupForm } from '../schemas';

@@ -1,4 +1,4 @@
-import { useKkSheet } from '@furria/ui';
+import { useKkSheet } from '@furria/ui/sheet-store';
 import type { ChangeEvent } from 'react';
 import { useEffect, useEffectEvent, useState } from 'react';
 import { LINK_SHEET_ID } from '../editor-copy';

@@ -1,4 +1,4 @@
-import { KkInstallStage } from '@furria/ui';
+import { KkInstallStage } from '@furria/ui/KkInstallStage';
 import type { FC } from 'react';
 import { INSTALL_STEPS, STEPS_LABEL } from '../install-copy';
 import type { InstallStepKey } from '../install-guide';

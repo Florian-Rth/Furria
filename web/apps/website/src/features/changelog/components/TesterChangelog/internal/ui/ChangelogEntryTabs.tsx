@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import Tab from '@mui/material/Tab';
 import Tabs from '@mui/material/Tabs';
 import type { FC } from 'react';

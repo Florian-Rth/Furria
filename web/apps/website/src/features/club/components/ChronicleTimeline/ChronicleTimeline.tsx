@@ -1,4 +1,4 @@
-import { KkSection } from '@furria/ui';
+import { KkSection } from '@furria/ui/KkSection';
 import { useTheme } from '@mui/material/styles';
 import type { FC } from 'react';
 import {

@@ -1,4 +1,5 @@
-import { KkChip, KkTickRow } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkTickRow } from '@furria/ui/KkTickRow';
 import type { FC } from 'react';
 import { toDayNumberLabel, toTimeSpanLabel, toWeekdayEyebrow } from '@/lib/calendar-days';
 import type { TrainingPreviewEntry } from '../training-preview';

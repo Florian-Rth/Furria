@@ -1,8 +1,8 @@
 import { getRouteApi, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import type { AttendanceAnswer } from '@/features/attendance';
-import { usePendingAnswers } from '@/features/attendance';
-import { useLanding } from '@/features/write';
+import { usePendingAnswers } from '@/features/attendance/hooks/use-pending-answers';
+import type { AttendanceAnswer } from '@/features/attendance/schemas';
+import { useLanding } from '@/features/write/hooks/use-landing';
 import { toIsoDay } from '@/lib/day';
 import { useCalendarQuery } from '../api';
 import type { CalendarLine, CalendarSection, CalendarWindow } from '../calendar-agenda';

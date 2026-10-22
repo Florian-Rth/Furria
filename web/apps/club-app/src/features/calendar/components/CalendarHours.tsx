@@ -1,4 +1,4 @@
-import { KkCalendarHours } from '@furria/ui';
+import { KkCalendarHours } from '@furria/ui/KkCalendarHours';
 import type { FC } from 'react';
 import { HOURS_LABEL } from '../calendar-agenda-copy';
 import type { CalendarBoard } from '../hooks/use-calendar-board';

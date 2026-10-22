@@ -1,4 +1,5 @@
-import { KkFormSection, KkTextArea } from '@furria/ui';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkTextArea } from '@furria/ui/KkTextArea';
 import type { FC } from 'react';
 import type { EventEditorControl } from '../hooks/use-event-editor';
 import { EVENT_DESCRIPTION_MAX_LENGTH, EVENT_TEASER_MAX_LENGTH } from '../schemas';

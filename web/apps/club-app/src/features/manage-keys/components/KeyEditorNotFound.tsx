@@ -1,4 +1,6 @@
-import { KkButton, KkEmptyState, KkScreen } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkScreen } from '@furria/ui/KkScreen';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { KEYS_ORIGIN, MANAGE_KEYS_TITLE } from '../manage-keys-labels';

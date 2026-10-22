@@ -1,6 +1,7 @@
 import type { FC } from 'react';
-import { useRunningVenuesQuery } from '@/features/calendar';
-import { NotAffiliatedState, useMeQuery } from '@/features/session';
+import { useRunningVenuesQuery } from '@/features/calendar/api';
+import { useMeQuery } from '@/features/session/api';
+import { NotAffiliatedState } from '@/features/session/components/NotAffiliatedState';
 import { isForbiddenError, isNotFoundError } from '@/lib/query-error';
 import { useGroupHubQuery } from '../api';
 import { toHubErrorMessage } from '../group-hub-messages';

@@ -1,9 +1,9 @@
-import type { KkSheetAction } from '@furria/ui';
+import type { KkSheetAction } from '@furria/ui/sheet-actions';
 import { Link, useNavigate } from '@tanstack/react-router';
-import type { EntryGroupChip, EntrySheetView } from '@/features/entry-sheet';
-import { toEventEditAction } from '@/features/entry-sheet';
-import { toGroupTone } from '@/features/groups';
-import { usePermissions } from '@/features/session';
+import { toEventEditAction } from '@/features/entry-sheet/event-edit-action';
+import type { EntryGroupChip, EntrySheetView } from '@/features/entry-sheet/types';
+import { toGroupTone } from '@/features/groups/group-identity';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toEventCover } from '@/lib/event-cover';
 import { toPeekId } from '@/lib/peek';

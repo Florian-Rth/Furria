@@ -1,4 +1,7 @@
-import { KkButton, KkFilmEdge, KkIcon, KkText } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkFilmEdge } from '@furria/ui/KkFilmEdge';
+import { KkIcon } from '@furria/ui/KkIcon';
+import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';

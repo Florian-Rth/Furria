@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
-import { useWriteForm } from '@/features/write';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import { relevantSessionYear } from '@/lib/club';
 import { useCreateSessionRecordMutation, useUpdateSessionRecordMutation } from '../api';
 import type { SessionRecordForm, SessionRecordSummary } from '../schemas';

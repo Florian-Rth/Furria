@@ -1,4 +1,4 @@
-import { KkWeekStrip } from '@furria/ui';
+import { KkWeekStrip } from '@furria/ui/KkWeekStrip';
 import type { FC } from 'react';
 import type { StripCell } from '../hooks/use-week-strip';
 import { STRIP_LABEL } from '../week-strip-labels';

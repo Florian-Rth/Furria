@@ -1,4 +1,7 @@
-import { KkHeading, KkMeta, KkPhoto, toImageSource } from '@furria/ui';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkHeading } from '@furria/ui/KkHeading';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPhoto } from '@furria/ui/KkPhoto';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';

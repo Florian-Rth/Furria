@@ -1,4 +1,5 @@
-import type { KkConfirmFact, KkScreenOrigin } from '@furria/ui';
+import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import { formatIsoDay } from '@/lib/membership-labels';
 import type { ManagedVenue } from './schemas';
 

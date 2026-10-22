@@ -1,7 +1,8 @@
-import { KkScreen, KkTitleHeader } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, GALLERY_ORIGIN } from '@/features/session';
+import { AREA_HANDOVERS, GALLERY_ORIGIN } from '@/features/session/app-sections';
 import { UPLOAD_LEAD, UPLOAD_TITLE } from '../gallery-copy';
 import { useGalleryUpload } from '../hooks/use-gallery-upload';
 import { GalleryUploadCounter } from './GalleryUploadCounter';

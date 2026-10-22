@@ -1,4 +1,6 @@
-import { KkCheckLine, KkNote, KkPanelSection } from '@furria/ui';
+import { KkCheckLine } from '@furria/ui/KkCheckLine';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { websiteAddressOf } from '@/lib/publish-copy';

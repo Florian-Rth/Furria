@@ -1,4 +1,4 @@
-import type { KkConfirmFact } from '@furria/ui';
+import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
 import { toIsoDayLabel, toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
 import type { TicketAvailabilityKey } from '@/lib/event-copy';
 import { TICKET_AVAILABILITY_LABELS, toPresaleStartLabel } from '@/lib/event-copy';

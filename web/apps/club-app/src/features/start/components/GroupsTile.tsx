@@ -1,4 +1,4 @@
-import { KkStartTile } from '@furria/ui';
+import { KkStartTile } from '@furria/ui/KkStartTile';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useGroupsTile } from '../hooks/use-groups-tile';

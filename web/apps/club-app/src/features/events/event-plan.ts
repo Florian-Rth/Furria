@@ -1,4 +1,4 @@
-import type { KkStepState } from '@furria/ui';
+import type { KkStepState } from '@furria/ui/step-state';
 import { fromIsoDay, toIsoDay } from '@/lib/day';
 import type {
   EventStepKey,

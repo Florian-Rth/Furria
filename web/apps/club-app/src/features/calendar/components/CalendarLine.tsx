@@ -1,6 +1,7 @@
-import { KkCalendarAgenda, KkCoverThumb } from '@furria/ui';
+import { KkCalendarAgenda } from '@furria/ui/KkCalendarAgenda';
+import { KkCoverThumb } from '@furria/ui/KkCoverThumb';
 import type { FC } from 'react';
-import { toLandingKey } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
 import { ATTENDANCE_LABELS, toAttendanceChoiceLabel } from '@/lib/calendar-copy';
 import type { CalendarLine as CalendarLineData } from '../calendar-agenda';
 import { toBadgeSpoken } from '../calendar-agenda-copy';

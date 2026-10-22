@@ -1,4 +1,6 @@
-import { KkBrandStage, KkEyebrow, KkSplitLayout } from '@furria/ui';
+import { KkBrandStage } from '@furria/ui/KkBrandStage';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkSplitLayout } from '@furria/ui/KkSplitLayout';
 import type { FC, PropsWithChildren } from 'react';
 import { buildLoginStageMeta } from '../stage-meta';
 

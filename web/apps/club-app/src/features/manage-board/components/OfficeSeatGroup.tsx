@@ -1,4 +1,6 @@
-import { KkMeta, KkPanelSection, KkSeatList } from '@furria/ui';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSeatList } from '@furria/ui/KkSeatList';
 import type { FC } from 'react';
 import type { BoardSeat } from '../schemas';
 import { OfficeSeatLine } from './OfficeSeatLine';

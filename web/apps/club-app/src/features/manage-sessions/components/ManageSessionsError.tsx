@@ -1,4 +1,5 @@
-import { KkButton, KkErrorState } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkErrorState } from '@furria/ui/KkErrorState';
 import type { FC } from 'react';
 import {
   MANAGE_SESSIONS_ERROR_TITLE,

@@ -1,4 +1,4 @@
-import { KkCountHead } from '@furria/ui';
+import { KkCountHead } from '@furria/ui/KkCountHead';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { GreetingBadgeView, GreetingFactView } from '../greeting/head-view';

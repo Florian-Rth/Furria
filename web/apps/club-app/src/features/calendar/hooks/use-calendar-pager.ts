@@ -1,4 +1,4 @@
-import type { KkCalendarDayData, KkCalendarTravel } from '@furria/ui';
+import type { KkCalendarDayData, KkCalendarTravel } from '@furria/ui/calendar-strip-types';
 import { useState } from 'react';
 import {
   mondayOf,

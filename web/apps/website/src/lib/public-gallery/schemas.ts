@@ -1,4 +1,4 @@
-import type { KkPhotoOrientation } from '@furria/ui';
+import type { KkPhotoOrientation } from '@furria/ui/photo-frame';
 import { z } from 'zod';
 import { PictureSchema } from '@/lib/api/schemas';
 import { SessionSectionSchema } from '@/lib/api/session-section';

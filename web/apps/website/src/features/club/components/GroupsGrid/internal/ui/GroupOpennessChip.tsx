@@ -1,4 +1,4 @@
-import { KkChip } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
 import type { FC } from 'react';
 import type { GroupOpenness } from '@/features/club/groups-content';
 

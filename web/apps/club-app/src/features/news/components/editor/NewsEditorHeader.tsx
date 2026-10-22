@@ -1,4 +1,7 @@
-import { KkChip, KkEyebrow, KkMeta, KkScreenHeader } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkScreenHeader } from '@furria/ui/KkScreenHeader';
 import type { FC } from 'react';
 import { BYLINE_AUTHOR, EDITOR_EYEBROW } from '../../editor-copy';
 import { STAGE_TONES, STAGE_WORDS } from '../../news-copy';

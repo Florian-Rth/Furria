@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { AccessActions, PersonAccess } from '@/features/account-access';
+import type { AccessActions } from '@/features/account-access/access-actions';
+import type { PersonAccess } from '@/features/account-access/schemas';
 import type { AppAct, AppStatus } from './person-identity';
 import {
   ageOn,

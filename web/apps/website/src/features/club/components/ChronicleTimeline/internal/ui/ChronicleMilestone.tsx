@@ -1,4 +1,5 @@
-import { KkCard, kkTokens } from '@furria/ui';
+import { KkCard } from '@furria/ui/KkCard';
+import { kkTokens } from '@furria/ui/tokens';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';

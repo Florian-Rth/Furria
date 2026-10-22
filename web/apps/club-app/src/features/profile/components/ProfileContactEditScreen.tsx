@@ -1,6 +1,7 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
-import { PROFILE_ORIGIN, usePersonalMe } from '@/features/session';
+import { PROFILE_ORIGIN } from '@/features/session/app-sections';
+import { usePersonalMe } from '@/features/session/hooks/use-personal-me';
 import { CONTACT_DETAILS_EDIT_TITLE } from '../profile-labels';
 import { toProfileErrorMessage } from '../profile-messages';
 import { ProfileContactEditor } from './ProfileContactEditor';

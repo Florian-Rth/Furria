@@ -1,4 +1,4 @@
-import type { KkNewsProofLabels } from '@furria/ui';
+import type { KkNewsProofLabels } from '@furria/ui/news-proof-types';
 import { CHANGED_MARK, UNTITLED } from './news-copy';
 
 export const PEEK_SHEET_ID = 'news-proof-peek';

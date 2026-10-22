@@ -1,4 +1,4 @@
-import type { KkGroupTone } from '@furria/ui';
+import type { KkGroupTone } from '@furria/ui/group-tone';
 import { useTheme } from '@mui/material/styles';
 import {
   buildGroupBadge,

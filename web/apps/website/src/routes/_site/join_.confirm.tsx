@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { ConfirmPage } from '@/features/membership';
+import { ConfirmPage } from '@/features/membership/components/ConfirmPage';
 import type { RouteHead } from '@/lib/seo';
 import { NO_INDEX_META, pageTitle } from '@/lib/seo';
 

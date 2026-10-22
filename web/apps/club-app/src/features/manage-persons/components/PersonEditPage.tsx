@@ -1,7 +1,9 @@
-import { KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkScreenHeaderSkeleton } from '@furria/ui/KkScreenHeaderSkeleton';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, RequireAnyPermission } from '@/features/session';
+import { AREA_HANDOVERS } from '@/features/session/app-sections';
+import { RequireAnyPermission } from '@/features/session/components/RequireAnyPermission';
 import { parsePositiveId } from '@/lib/positive-id';
 import { usePersonQuery } from '../api';
 import { PERSONS_ORIGIN, toPersonHeadline } from '../manage-persons-labels';

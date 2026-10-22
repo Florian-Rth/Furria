@@ -1,5 +1,5 @@
-import type { KkContactStripFrame } from '@furria/ui';
-import { KkContactStrip } from '@furria/ui';
+import type { KkContactStripFrame } from '@furria/ui/KkContactStrip';
+import { KkContactStrip } from '@furria/ui/KkContactStrip';
 import type { FC } from 'react';
 import { clockLabel, frameStateOf, shownSourceOf } from '../gallery-view';
 import { latentNoteOf, markTrailOf } from '../hub-copy';

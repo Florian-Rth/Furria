@@ -1,6 +1,6 @@
-import { KkReadoutSkeleton } from '@furria/ui';
+import { KkReadoutSkeleton } from '@furria/ui/KkReadoutSkeleton';
 import type { FC } from 'react';
-import { AccessDenied } from '@/features/session';
+import { AccessDenied } from '@/features/session/components/AccessDenied';
 import { useSystemStatus } from '../hooks/use-system-status';
 import { SECTION_TITLES, SYSTEM_DENIED_MESSAGE } from '../system-copy';
 import type { SystemArea } from '../types';

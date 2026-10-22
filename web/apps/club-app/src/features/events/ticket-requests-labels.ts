@@ -1,4 +1,4 @@
-import type { KkConfirmFact } from '@furria/ui';
+import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
 import type { ToDoMark } from '@/features/to-dos/to-do-board';
 import { withToDoMark } from '@/features/to-dos/to-do-board';
 import { toDayNumberLabel, toIsoDayLabel, toLocalIsoDay, toTimeLabel } from '@/lib/calendar-days';

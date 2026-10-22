@@ -1,6 +1,10 @@
-import { KkFormPair, KkFormSection, KkNote, KkTextArea, KkTextField } from '@furria/ui';
+import { KkFormPair } from '@furria/ui/KkFormPair';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkTextArea } from '@furria/ui/KkTextArea';
+import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
-import { WriteScreen } from '@/features/write';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import { useVenueEditor } from '../hooks/use-venue-editor';
 import { VENUES_ORIGIN } from '../manage-venues-labels';
 import type { ManagedVenue } from '../schemas';

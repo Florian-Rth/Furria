@@ -1,4 +1,5 @@
-import { KkCheckLine, KkNote } from '@furria/ui';
+import { KkCheckLine } from '@furria/ui/KkCheckLine';
+import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { toEventStatusLabel } from '@/lib/event-copy';

@@ -1,16 +1,12 @@
-import type {
-  KkChipTone,
-  KkFillGaugePart,
-  KkFillGaugeRest,
-  KkFlapBoardFact,
-  KkFlapBoardReason,
-  KkFlapGridColumn,
-  KkFlapGridRow,
-  KkHeartbeatState,
-  KkIconName,
-  KkRankBar,
-  KkStatusLevel,
-} from '@furria/ui';
+import type { KkChipTone } from '@furria/ui/KkChip';
+import type { KkFillGaugePart, KkFillGaugeRest } from '@furria/ui/KkFillGauge';
+import type { KkFlapBoardFact } from '@furria/ui/KkFlapBoardMasthead';
+import type { KkFlapBoardReason } from '@furria/ui/KkFlapBoardReasons';
+import type { KkFlapGridColumn, KkFlapGridRow } from '@furria/ui/KkFlapGrid';
+import type { KkHeartbeatState } from '@furria/ui/KkHeartbeat';
+import type { KkIconName } from '@furria/ui/KkIcon';
+import type { KkRankBar } from '@furria/ui/KkRankBars';
+import type { KkStatusLevel } from '@furria/ui/status-paint';
 import { areaSummaryOf } from './area-summary';
 import type { SystemStatus } from './schemas';
 import { MEDIA_KINDS, MEDIA_STATES } from './schemas';

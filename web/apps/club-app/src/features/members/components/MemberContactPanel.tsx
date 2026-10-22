@@ -1,4 +1,8 @@
-import { KkFieldRow, KkNote, KkPanel, KkPanelSection, KkRule } from '@furria/ui';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkRule } from '@furria/ui/KkRule';
 import type { FC } from 'react';
 import { formatAddress } from '@/lib/membership-labels';
 import { MEMBER_SECTION_TITLES } from '../members-labels';

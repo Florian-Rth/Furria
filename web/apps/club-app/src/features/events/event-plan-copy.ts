@@ -1,4 +1,4 @@
-import type { KkStepState } from '@furria/ui';
+import type { KkStepState } from '@furria/ui/step-state';
 import type { FactDetail } from './event-plan';
 import type { EventStepKey } from './schemas';
 

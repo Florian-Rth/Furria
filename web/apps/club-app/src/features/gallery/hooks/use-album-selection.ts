@@ -1,7 +1,9 @@
-import type { KkPublishCeremonyRun, KkPublishStamp } from '@furria/ui';
-import { useKkNotice, useKkPublishCeremony } from '@furria/ui';
+import { useKkNotice } from '@furria/ui/KkNotice';
+import type { KkPublishStamp } from '@furria/ui/publish-stamp';
+import type { KkPublishCeremonyRun } from '@furria/ui/use-publish-ceremony';
+import { useKkPublishCeremony } from '@furria/ui/use-publish-ceremony';
 import { useState } from 'react';
-import { useSignerName } from '@/features/session';
+import { useSignerName } from '@/features/session/hooks/use-signer-name';
 import { PUBLISHED_STAMP, websiteAddressOf } from '@/lib/publish-copy';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { usePublication, useSelectionWrite, useUnpublication } from '../api';

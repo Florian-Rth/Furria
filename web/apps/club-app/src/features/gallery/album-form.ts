@@ -1,4 +1,4 @@
-import type { KkSelectOption } from '@furria/ui';
+import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import { toIsoDay } from '@/lib/day';
 import type { AlbumDetails, AlbumEntry, AlbumForm, AlbumLink } from './schemas';
 import type { AlbumPayload, AlbumUpdatePayload } from './types';

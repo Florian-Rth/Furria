@@ -1,4 +1,5 @@
-import { KkButton, KkEmptyState } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
 import type { FC } from 'react';
 import { UPLOAD_TITLE } from '../gallery-copy';
 import { HUB_EMPTY_DESCRIPTION, HUB_EMPTY_SORTER_DESCRIPTION, HUB_EMPTY_TITLE } from '../hub-copy';

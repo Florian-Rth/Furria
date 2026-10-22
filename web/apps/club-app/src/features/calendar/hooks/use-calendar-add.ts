@@ -1,4 +1,4 @@
-import type { KkScreenActions } from '@furria/ui';
+import type { KkScreenActions } from '@furria/ui/screen-declaration';
 import { useNavigate } from '@tanstack/react-router';
 import { ADD_LABEL } from '../calendar-agenda-copy';
 import { useCalendarAuthoring } from './use-calendar-authoring';

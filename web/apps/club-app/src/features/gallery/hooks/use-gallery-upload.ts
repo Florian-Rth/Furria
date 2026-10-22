@@ -1,4 +1,5 @@
-import type { KkFrameState, KkScreenActions, KkScreenThread } from '@furria/ui';
+import type { KkFrameState } from '@furria/ui/KkFrame';
+import type { KkScreenActions, KkScreenThread } from '@furria/ui/screen-declaration';
 import { useSearch } from '@tanstack/react-router';
 import type { ChangeEvent, DragEvent, RefCallback } from 'react';
 import { useRef, useState } from 'react';

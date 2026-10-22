@@ -1,4 +1,6 @@
-import { KkAvatarStack, KkMeta, toImageSource } from '@furria/ui';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkAvatarStack } from '@furria/ui/KkAvatarStack';
+import { KkMeta } from '@furria/ui/KkMeta';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { PortraitPersonRef } from '@/lib/api/schemas';

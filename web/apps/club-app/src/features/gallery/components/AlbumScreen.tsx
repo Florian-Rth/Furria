@@ -1,6 +1,7 @@
-import { KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkScreenHeaderSkeleton } from '@furria/ui/KkScreenHeaderSkeleton';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, GALLERY_ORIGIN, GALLERY_TITLE } from '@/features/session';
+import { AREA_HANDOVERS, GALLERY_ORIGIN, GALLERY_TITLE } from '@/features/session/app-sections';
 import { useAlbum } from '../hooks/use-album';
 import { AlbumBody } from './AlbumBody';
 import { AlbumFilters } from './AlbumFilters';

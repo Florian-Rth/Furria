@@ -1,4 +1,6 @@
-import { KkPublishCeremony, KkSkeletonBlock, KkStepPane } from '@furria/ui';
+import { KkPublishCeremony } from '@furria/ui/KkPublishCeremony';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
+import { KkStepPane } from '@furria/ui/KkStepPane';
 import type { FC, ReactNode } from 'react';
 import { PUBLISH_ANNOUNCEMENTS } from '@/lib/publish-copy';
 import { PANE_TITLES } from '../event-board-copy';

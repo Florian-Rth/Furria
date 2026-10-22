@@ -1,4 +1,4 @@
-import type { KkSelectOption } from '@furria/ui';
+import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import type { Weekday } from '@/features/groups/group-identity';
 import { WEEKDAY_VALUES } from '@/features/groups/group-identity';
 import type { TrainingSlot, TrainingSlotForm } from './schemas';

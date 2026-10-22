@@ -1,7 +1,10 @@
-import { KkFieldRow, KkPanel, KkPanelSection, KkPanelStack } from '@furria/ui';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
-import { useLanding } from '@/features/write';
+import { useLanding } from '@/features/write/hooks/use-landing';
 import type { PersonalMe } from '@/lib/api/schemas';
 import { formatIsoDay } from '@/lib/membership-labels';
 import { PROFILE_SECTION_TITLES } from '../profile-labels';

@@ -1,4 +1,4 @@
-import { KkButton } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
 import type { ErrorComponentProps } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useRouteRetry } from '../hooks/use-route-retry';

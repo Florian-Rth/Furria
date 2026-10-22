@@ -1,12 +1,10 @@
-import {
-  KkAvatar,
-  KkChip,
-  KkFieldRow,
-  KkPanel,
-  KkPanelSection,
-  KkSheet,
-  toImageSource,
-} from '@furria/ui';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkAvatar } from '@furria/ui/KkAvatar';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSheet } from '@furria/ui/KkSheet';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';

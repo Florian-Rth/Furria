@@ -1,4 +1,7 @@
-import { KkCard, KkPhoto, kkTokens, toImageSource } from '@furria/ui';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkCard } from '@furria/ui/KkCard';
+import { KkPhoto } from '@furria/ui/KkPhoto';
+import { kkTokens } from '@furria/ui/tokens';
 import Typography from '@mui/material/Typography';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';

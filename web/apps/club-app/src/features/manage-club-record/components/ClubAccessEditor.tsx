@@ -1,6 +1,8 @@
-import { KkConsequenceNote, KkFormSection, KkSelectField } from '@furria/ui';
+import { KkConsequenceNote } from '@furria/ui/KkConsequenceNote';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkSelectField } from '@furria/ui/KkSelectField';
 import type { FC } from 'react';
-import { WriteScreen } from '@/features/write';
+import { WriteScreen } from '@/features/write/WriteScreen';
 import {
   AGE_OF_CONSENT_OPTIONS,
   CLUB_RECORD_ORIGIN,

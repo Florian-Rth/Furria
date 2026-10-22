@@ -1,4 +1,5 @@
-import { KkChip, KkPersonRow } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkPersonRow } from '@furria/ui/KkPersonRow';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';

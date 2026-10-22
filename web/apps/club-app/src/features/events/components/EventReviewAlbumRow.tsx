@@ -1,4 +1,4 @@
-import { KkFactRow } from '@furria/ui';
+import { KkFactRow } from '@furria/ui/KkFactRow';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { ReviewAlbumFacts } from '../event-review-copy';

@@ -1,4 +1,4 @@
-import { KkChip } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { GroupRegisterFlag } from '../manage-groups-labels';

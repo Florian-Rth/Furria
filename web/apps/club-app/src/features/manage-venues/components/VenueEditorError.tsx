@@ -1,4 +1,4 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
 import { VENUES_ORIGIN } from '../manage-venues-labels';
 import { ManagedVenuesError } from './ManagedVenuesError';

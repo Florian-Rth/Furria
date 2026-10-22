@@ -1,8 +1,10 @@
-import type { KkPanelAction } from '@furria/ui';
-import { KkEmptyState, KkPanel, KkPanelSection } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import type { KkPanelAction } from '@furria/ui/panel-action';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { toLandingKey } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
 import { ADD_FEE_REDUCTION_ACTION_LABEL, PERSON_SECTION_TITLES } from '../manage-persons-labels';
 import { toClosedHistoryLine } from '../person-archive';
 import { toSectionLandingKey } from '../person-identity';

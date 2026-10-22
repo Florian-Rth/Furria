@@ -1,9 +1,9 @@
-import { KkGroupTile } from '@furria/ui';
+import { KkGroupTile } from '@furria/ui/KkGroupTile';
 import Box from '@mui/material/Box';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import type { GroupTone } from '@/features/groups';
-import { toLandingKey } from '@/features/write';
+import type { GroupTone } from '@/features/groups/group-identity';
+import { toLandingKey } from '@/features/write/landing-target';
 import { toInitials } from '@/lib/initials';
 import { toPersonAccent, toPersonMetaLine } from '../group-hub-labels';
 import type { HubPerson } from '../hub-people';

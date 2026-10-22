@@ -1,4 +1,4 @@
-import { KkSection } from '@furria/ui';
+import { KkSection } from '@furria/ui/KkSection';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { deriveScheduleRangeLabel, selectEventsByDate } from '@/features/events/event-display';

@@ -1,4 +1,4 @@
-import { KkSheet } from '@furria/ui';
+import { KkSheet } from '@furria/ui/KkSheet';
 import type { FC } from 'react';
 import { useAnnouncementsSheet } from '../hooks/use-announcements-sheet';
 import type { StartBoard } from '../hooks/use-start-view';

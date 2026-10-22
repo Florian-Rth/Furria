@@ -1,4 +1,6 @@
-import { KkButton, KkErrorState, KkScreen } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkErrorState } from '@furria/ui/KkErrorState';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
 import { ROLES_ORIGIN } from '../manage-roles-labels';
 import { RETRY_LABEL } from '../roles-hub-copy';

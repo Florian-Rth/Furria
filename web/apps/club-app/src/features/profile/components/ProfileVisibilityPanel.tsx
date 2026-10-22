@@ -1,4 +1,7 @@
-import { KkNote, KkPanel, KkPanelSection, KkSwitchRow } from '@furria/ui';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import type { FC } from 'react';
 import type { MePerson } from '@/lib/api/schemas';
 import { SWITCH_STATE_LABELS } from '@/lib/state-chips';

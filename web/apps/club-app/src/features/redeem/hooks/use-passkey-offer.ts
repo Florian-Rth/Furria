@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useAddPasskeyMutation } from '@/features/account-security';
+import { useAddPasskeyMutation } from '@/features/account-security/api';
 import { toPasskeyErrorMessage } from '@/lib/passkey/passkey-messages';
 
 export interface PasskeyOfferControl {

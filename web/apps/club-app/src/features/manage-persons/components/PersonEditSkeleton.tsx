@@ -1,8 +1,11 @@
-import { KkPanel, KkPanelSection, KkPanelStack, KkSkeletonBlock } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
-import { ACCESS_SECTION_TITLE } from '@/features/account-access';
-import { AppSkeletonRegion } from '@/features/session';
+import { ACCESS_SECTION_TITLE } from '@/features/account-access/account-access-labels';
+import { AppSkeletonRegion } from '@/features/session/components/AppSkeletonRegion';
 import { PERSON_SECTION_TITLES } from '../manage-persons-labels';
 
 const WIDE_LINES = 4;

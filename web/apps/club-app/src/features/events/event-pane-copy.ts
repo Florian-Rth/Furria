@@ -1,4 +1,5 @@
-import type { KkIconName, KkStepState } from '@furria/ui';
+import type { KkIconName } from '@furria/ui/KkIcon';
+import type { KkStepState } from '@furria/ui/step-state';
 import {
   toDayNumberLabel,
   toLocalIsoDay,

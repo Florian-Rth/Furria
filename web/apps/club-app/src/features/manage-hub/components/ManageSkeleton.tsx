@@ -1,7 +1,10 @@
-import { KkPanel, KkPanelSection, KkPanelStack, KkSkeletonRow } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
+import { KkSkeletonRow } from '@furria/ui/KkSkeletonRow';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
-import { AppSkeletonRegion } from '@/features/session';
+import { AppSkeletonRegion } from '@/features/session/components/AppSkeletonRegion';
 import { MANAGE_LOADING_LABEL } from '../manage-hub-labels';
 import type { ManageBankId } from '../manage-hub-panels';
 import { MANAGE_BANKS, MANAGE_PANELS } from '../manage-hub-panels';

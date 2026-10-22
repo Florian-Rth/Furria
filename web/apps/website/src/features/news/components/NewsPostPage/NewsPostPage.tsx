@@ -1,4 +1,5 @@
-import { KkNewsText, PageLayout } from '@furria/ui';
+import { KkNewsText } from '@furria/ui/KkNewsText';
+import { PageLayout } from '@furria/ui/PageLayout';
 import type { FC } from 'react';
 import { newTabNote } from '@/features/news/news-content';
 import { collectMentionCards } from '@/features/news/news-mentions';

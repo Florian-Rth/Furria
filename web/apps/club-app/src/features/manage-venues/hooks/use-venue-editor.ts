@@ -1,6 +1,6 @@
 import type { UseFormReturn } from 'react-hook-form';
 import { useController } from 'react-hook-form';
-import { useWriteForm } from '@/features/write';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import { useCreateVenueMutation, useUpdateVenueMutation } from '../api';
 import type { ManagedVenue, VenueForm } from '../schemas';
 import { VenueFormSchema } from '../schemas';

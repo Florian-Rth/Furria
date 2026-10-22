@@ -1,7 +1,7 @@
-import { useIsWideScreen } from '@furria/ui';
+import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useParams } from '@tanstack/react-router';
-import { usePermissions } from '@/features/session';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
 import { parsePositiveId } from '@/lib/positive-id';

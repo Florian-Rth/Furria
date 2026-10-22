@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { MyGroupSummary } from '@/features/group-hub';
+import type { MyGroupSummary } from '@/features/group-hub/schemas';
 import {
   mayOwnCalendarEntry,
   opensEntrySheet,

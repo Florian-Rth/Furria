@@ -1,6 +1,6 @@
-import { useKkNotice } from '@furria/ui';
+import { useKkNotice } from '@furria/ui/KkNotice';
 import { useController } from 'react-hook-form';
-import { useWriteForm } from '@/features/write';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import { toIsoDay } from '@/lib/day';
 import { isNotFoundError } from '@/lib/query-error';
 import {

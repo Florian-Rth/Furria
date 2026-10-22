@@ -1,4 +1,4 @@
-import { KkNote } from '@furria/ui';
+import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { MANAGE_SESSIONS_FOOTNOTE, partitionSessionRecords } from '../manage-sessions-labels';

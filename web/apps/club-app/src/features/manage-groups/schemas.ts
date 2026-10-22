@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { AppSearchSchema } from '@/features/session';
+import { AppSearchSchema } from '@/features/session/schemas';
 import { PortraitPersonRefSchema } from '@/lib/api/schemas';
 import { ClubIconSchema } from '@/lib/club-icon';
 import { GroupToneSchema } from '@/lib/group-tone';

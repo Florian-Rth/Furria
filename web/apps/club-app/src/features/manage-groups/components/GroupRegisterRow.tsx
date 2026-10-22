@@ -1,10 +1,12 @@
-import { KkButton, KkRecordName, KkRegisterRow } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkRecordName } from '@furria/ui/KkRecordName';
+import { KkRegisterRow } from '@furria/ui/KkRegisterRow';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useState } from 'react';
-import { toGroupTone } from '@/features/groups';
-import { toLandingKey } from '@/features/write';
+import { toGroupTone } from '@/features/groups/group-identity';
+import { toLandingKey } from '@/features/write/landing-target';
 import { toGroupFactsLine, toGroupRegisterFlags } from '../manage-groups-labels';
 import type { ManagedGroupSummary } from '../schemas';
 import { GroupRegisterFacts } from './GroupRegisterFacts';

@@ -1,13 +1,12 @@
-import type { KkScreenIndex } from '@furria/ui';
-import { KkScreen, KkSkeletonToolbar, KkTitleHeader } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkSkeletonToolbar } from '@furria/ui/KkSkeletonToolbar';
+import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
+import type { KkScreenIndex } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
-import {
-  AREA_HANDOVERS,
-  MANAGE_ORIGIN,
-  RequireAnyPermission,
-  usePermissions,
-  useScreenSearch,
-} from '@/features/session';
+import { AREA_HANDOVERS, MANAGE_ORIGIN } from '@/features/session/app-sections';
+import { RequireAnyPermission } from '@/features/session/components/RequireAnyPermission';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
+import { useScreenSearch } from '@/features/session/hooks/use-screen-search';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { usePersonsQuery } from '../api';
 import { usePersonsAccess } from '../hooks/use-persons-access';

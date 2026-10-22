@@ -1,4 +1,4 @@
-import type { KkGreetingTempo } from '@furria/ui';
+import type { KkGreetingTempo } from '@furria/ui/flap-schedule';
 import { msUntilNextMinute } from '@/lib/minute-clock';
 import type { GreetingAct } from './greeting-act';
 import type { GreetingCopy } from './greeting-copy';

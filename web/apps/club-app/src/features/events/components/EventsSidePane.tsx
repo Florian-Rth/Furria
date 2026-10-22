@@ -1,4 +1,6 @@
-import { KkBottomDrawer, KkIconButton, KkMasterDetail } from '@furria/ui';
+import { KkBottomDrawer } from '@furria/ui/KkBottomDrawer';
+import { KkIconButton } from '@furria/ui/KkIconButton';
+import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { CLOSE_LABEL, OPEN_EVENT_LABEL, PANE_TITLES } from '../event-board-copy';

@@ -1,16 +1,17 @@
+import type { KkImageSource } from '@furria/ui/image-source';
 import type {
-  KkImageSource,
   KkLightTableCommit,
   KkLightTableDeparture,
   KkLightTableDone,
   KkLightTableFrame,
   KkLightTableStripFrame,
   KkLightTableTarget,
-} from '@furria/ui';
-import { useKkNotice, useKkSheetCommands } from '@furria/ui';
+} from '@furria/ui/KkLightTable';
+import { useKkNotice } from '@furria/ui/KkNotice';
+import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { GALLERY_PATH } from '@/features/session';
+import { GALLERY_PATH } from '@/features/session/app-sections';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import { useInboxQuery, useItemDeletion, usePlacement } from '../api';
 import { countLabel, sceneSpanLabel, thumbSourceOf } from '../gallery-view';

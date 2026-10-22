@@ -1,4 +1,4 @@
-import { KkNewsCategoryChip } from '@furria/ui';
+import { KkNewsCategoryChip } from '@furria/ui/KkNewsCategoryChip';
 import type { FC } from 'react';
 import { CATEGORY_LABELS, CATEGORY_TONES } from '../../news-copy';
 import type { NewsCategory } from '../../types';

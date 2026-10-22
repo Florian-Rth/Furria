@@ -1,6 +1,7 @@
-import { KkSheet } from '@furria/ui';
+import { KkSheet } from '@furria/ui/KkSheet';
 import type { FC } from 'react';
-import { toRolesOverviewErrorMessage, useRolesOverviewQuery } from '@/features/roles-overview';
+import { useRolesOverviewQuery } from '@/features/roles-overview/api';
+import { toRolesOverviewErrorMessage } from '@/features/roles-overview/roles-overview-messages';
 import { RolesSheetContent } from './RolesSheetContent';
 
 export const CLUB_ROLES_SHEET_ID = 'club-roles';

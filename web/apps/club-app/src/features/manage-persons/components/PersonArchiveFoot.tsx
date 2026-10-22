@@ -1,4 +1,4 @@
-import { KkNote } from '@furria/ui';
+import { KkNote } from '@furria/ui/KkNote';
 import type { FC } from 'react';
 import { toIsoDay } from '@/lib/day';
 import { toArchiveBlockedLine, toRunningTies } from '../person-archive';

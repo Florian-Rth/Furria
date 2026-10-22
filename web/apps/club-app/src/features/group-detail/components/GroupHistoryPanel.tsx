@@ -1,5 +1,9 @@
-import type { KkGroupTone } from '@furria/ui';
-import { KkChip, KkEmptyState, KkFactRow, KkPanel, KkPanelSection } from '@furria/ui';
+import type { KkGroupTone } from '@furria/ui/group-tone';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkFactRow } from '@furria/ui/KkFactRow';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import {

@@ -1,4 +1,7 @@
-import { KkHeading, KkNote, KkPanel, KkQrCode } from '@furria/ui';
+import { KkHeading } from '@furria/ui/KkHeading';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkQrCode } from '@furria/ui/KkQrCode';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { formatCountdown } from '@/lib/countdown';

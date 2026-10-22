@@ -1,6 +1,6 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, CLUB_SECTION } from '@/features/session';
+import { AREA_HANDOVERS, CLUB_SECTION } from '@/features/session/app-sections';
 import { ClubBody } from './ClubBody';
 import { ClubStage } from './ClubStage';
 

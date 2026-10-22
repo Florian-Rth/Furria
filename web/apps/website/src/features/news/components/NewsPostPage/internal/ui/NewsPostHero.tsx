@@ -1,4 +1,5 @@
-import { KkNewsMedia, kkTokens } from '@furria/ui';
+import { KkNewsMedia } from '@furria/ui/KkNewsMedia';
+import { kkTokens } from '@furria/ui/tokens';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';

@@ -1,6 +1,6 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
-import { CALENDAR_ORIGIN, CALENDAR_TITLE } from '@/features/session';
+import { CALENDAR_ORIGIN, CALENDAR_TITLE } from '@/features/session/app-sections';
 import { CalendarError } from './CalendarError';
 
 interface CalendarEntryErrorProps {

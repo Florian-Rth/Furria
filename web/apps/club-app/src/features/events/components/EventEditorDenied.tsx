@@ -1,7 +1,8 @@
-import type { KkScreenOrigin } from '@furria/ui';
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
-import { AccessDenied, deniedMessageOf } from '@/features/session';
+import { AccessDenied } from '@/features/session/components/AccessDenied';
+import { deniedMessageOf } from '@/features/session/permission-denials';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 
 const DENIED_MESSAGE = deniedMessageOf(PERMISSION_KEYS.eventsManage);

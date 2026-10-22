@@ -1,7 +1,10 @@
-import { KkButton, KkErrorState, KkExposureSweep, KkRetryAlert } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkErrorState } from '@furria/ui/KkErrorState';
+import { KkExposureSweep } from '@furria/ui/KkExposureSweep';
+import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { WebsiteHubEntry } from '@/features/website-pictures';
+import { WebsiteHubEntry } from '@/features/website-pictures/components/WebsiteHubEntry';
 import type { GalleryHubState } from '../hooks/use-gallery-hub';
 import { HUB_ERROR_TITLE, HUB_RETRY_LABEL, NEW_ALBUM_LABEL, toHubErrorMessage } from '../hub-copy';
 import { inboxKeyOf, inboxOwnerOf } from '../hub-view';

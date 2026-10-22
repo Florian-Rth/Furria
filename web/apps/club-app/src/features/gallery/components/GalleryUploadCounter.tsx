@@ -1,5 +1,8 @@
-import type { KkFlapCountTone, KkMetaTone } from '@furria/ui';
-import { KkFlapCount, KkIcon, KkMeta } from '@furria/ui';
+import type { KkFlapCountTone } from '@furria/ui/KkFlapCount';
+import { KkFlapCount } from '@furria/ui/KkFlapCount';
+import { KkIcon } from '@furria/ui/KkIcon';
+import type { KkMetaTone } from '@furria/ui/KkMeta';
+import { KkMeta } from '@furria/ui/KkMeta';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { UploadMood } from '../hooks/use-gallery-upload';

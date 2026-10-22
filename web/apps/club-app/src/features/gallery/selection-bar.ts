@@ -1,4 +1,4 @@
-import type { KkScreenActionBar, KkScreenDeedHold } from '@furria/ui';
+import type { KkScreenActionBar, KkScreenDeedHold } from '@furria/ui/screen-declaration';
 import { PUBLISH_HOLD_HINT, publishConfirmOf } from '@/lib/publish-copy';
 import { countLabel } from './gallery-view';
 import type { PublicationState } from './selection-draft';

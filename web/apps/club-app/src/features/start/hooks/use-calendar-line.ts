@@ -1,5 +1,8 @@
-import type { KkAnswer, KkDenseFacet, KkDenseLineState, KkGroupTone } from '@furria/ui';
-import { useKkSheetCommands } from '@furria/ui';
+import type { KkDenseFacet } from '@furria/ui/facet-pieces';
+import type { KkGroupTone } from '@furria/ui/group-tone';
+import type { KkAnswer } from '@furria/ui/KkAnswerChoice';
+import type { KkDenseLineState } from '@furria/ui/KkDensePanelLine';
+import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import { useId, useState } from 'react';
 import { ATTENDANCE_LABELS } from '@/lib/calendar-copy';
 import { toPeekId } from '@/lib/peek';

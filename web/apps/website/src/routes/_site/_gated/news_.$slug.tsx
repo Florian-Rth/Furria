@@ -1,6 +1,8 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { buildPostHref, NewsPostPage, NewsUnavailable } from '@/features/news';
+import { NewsPostPage } from '@/features/news/components/NewsPostPage/NewsPostPage';
+import { NewsUnavailable } from '@/features/news/components/NewsUnavailable';
+import { buildPostHref } from '@/features/news/news-content';
 import { formatBerlinIsoWithOffset } from '@/lib/date';
 import { publicNews } from '@/lib/public-news/api';
 import type { NewsArticle } from '@/lib/public-news/schemas';

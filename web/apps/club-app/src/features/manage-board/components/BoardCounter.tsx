@@ -1,4 +1,4 @@
-import { KkTallyStrip } from '@furria/ui';
+import { KkTallyStrip } from '@furria/ui/KkTallyStrip';
 import type { FC } from 'react';
 import type { CounterView } from '../board-hub-copy';
 import { toCounterAria } from '../board-hub-copy';

@@ -1,4 +1,4 @@
-import { KkChipScroller } from '@furria/ui';
+import { KkChipScroller } from '@furria/ui/KkChipScroller';
 import type { FC, PropsWithChildren } from 'react';
 
 export const ChipNavScroller: FC<PropsWithChildren> = ({ children }) => (

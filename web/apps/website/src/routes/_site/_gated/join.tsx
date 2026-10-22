@@ -1,7 +1,10 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { GroupMatcherSection } from '@/features/group-matcher';
-import { JoinContact, JoinFaq, JoinPage, JoinSteps } from '@/features/membership';
+import { GroupMatcherSection } from '@/features/group-matcher/components/GroupMatcherSection/GroupMatcherSection';
+import { JoinContact } from '@/features/membership/components/JoinContact';
+import { JoinFaq } from '@/features/membership/components/JoinFaq/JoinFaq';
+import { JoinPage } from '@/features/membership/components/JoinPage';
+import { JoinSteps } from '@/features/membership/components/JoinSteps/JoinSteps';
 import type { RouteHead } from '@/lib/seo';
 import { pageTitle } from '@/lib/seo';
 

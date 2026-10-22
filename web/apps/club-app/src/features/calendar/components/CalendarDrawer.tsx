@@ -1,4 +1,4 @@
-import { KkBottomDrawer } from '@furria/ui';
+import { KkBottomDrawer } from '@furria/ui/KkBottomDrawer';
 import type { FC } from 'react';
 import { CLOSE_LABEL, DETAIL_LABEL } from '../calendar-agenda-copy';
 import type { CalendarSelection } from '../hooks/use-calendar-selection';

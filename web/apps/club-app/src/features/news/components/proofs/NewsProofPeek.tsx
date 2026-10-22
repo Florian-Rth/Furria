@@ -1,4 +1,4 @@
-import { KkNewsProofStrip } from '@furria/ui';
+import { KkNewsProofStrip } from '@furria/ui/KkNewsProofStrip';
 import type { FC } from 'react';
 import { PROOF_LABELS } from '../../proof-copy';
 import type { NewsProofsProps } from './proofs-props';

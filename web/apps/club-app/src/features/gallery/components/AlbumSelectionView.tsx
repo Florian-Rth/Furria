@@ -1,8 +1,13 @@
-import type { KkScreenOrigin, KkShowcaseLabels } from '@furria/ui';
-import { KkAlert, KkMeta, KkPublishCeremony, KkScreen, KkShowcase } from '@furria/ui';
+import { KkAlert } from '@furria/ui/KkAlert';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPublishCeremony } from '@furria/ui/KkPublishCeremony';
+import { KkScreen } from '@furria/ui/KkScreen';
+import type { KkShowcaseLabels } from '@furria/ui/KkShowcase';
+import { KkShowcase } from '@furria/ui/KkShowcase';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { AREA_HANDOVERS } from '@/features/session';
+import { AREA_HANDOVERS } from '@/features/session/app-sections';
 import { PUBLISH_ANNOUNCEMENTS } from '@/lib/publish-copy';
 import { bulkCountLine } from '../album-labels';
 import { SELECTION_TITLE } from '../gallery-copy';

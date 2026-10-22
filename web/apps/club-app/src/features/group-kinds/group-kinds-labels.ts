@@ -1,4 +1,4 @@
-import type { KkSelectOption } from '@furria/ui';
+import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import type { RunningGroupKind } from './schemas';
 
 export const NO_GROUP_KIND_VALUE = '';

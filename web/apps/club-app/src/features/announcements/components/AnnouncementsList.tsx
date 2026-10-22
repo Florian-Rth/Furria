@@ -1,5 +1,6 @@
-import type { KkPanelAction } from '@furria/ui';
-import { KkPanelSection, KkPanelStack } from '@furria/ui';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
+import type { KkPanelAction } from '@furria/ui/panel-action';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { isAnnouncementExpired, isAnnouncementNew } from '@/lib/announcements';

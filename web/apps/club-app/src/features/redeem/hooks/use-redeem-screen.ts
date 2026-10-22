@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { useSessionSnapshot } from '@/features/session';
+import { useSessionSnapshot } from '@/features/session/hooks/use-session-snapshot';
 import { usePasskeySupport } from '@/lib/passkey/use-passkey-support';
 import { DEFAULT_RETURN_TO } from '@/lib/return-to';
 import { useInvitationLookupQuery, useRedeemInvitationMutation } from '../api';

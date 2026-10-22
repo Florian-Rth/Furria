@@ -1,14 +1,12 @@
-import {
-  KkButton,
-  KkEmptyState,
-  KkErrorState,
-  KkMeta,
-  KkPanel,
-  KkPanelSection,
-  KkSkeletonRow,
-} from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkErrorState } from '@furria/ui/KkErrorState';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSkeletonRow } from '@furria/ui/KkSkeletonRow';
 import type { FC } from 'react';
-import type { GroupTone } from '@/features/groups';
+import type { GroupTone } from '@/features/groups/group-identity';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import { toCalendarEntryMeta } from '../group-calendar-entries';
 import {

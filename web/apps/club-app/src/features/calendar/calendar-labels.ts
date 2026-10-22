@@ -1,4 +1,6 @@
-import type { KkConfirmFact, KkDateQuickChoice, KkSelectOption } from '@furria/ui';
+import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
+import type { KkDateQuickChoice } from '@furria/ui/KkDateField';
+import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
 import { toIsoDayLabel, toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
 import { toIsoDay } from '@/lib/day';

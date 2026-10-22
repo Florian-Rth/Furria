@@ -1,7 +1,10 @@
-import type { KkScreenIndex } from '@furria/ui';
-import { KkScreen, KkSkeletonToolbar, KkTitleHeader } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkSkeletonToolbar } from '@furria/ui/KkSkeletonToolbar';
+import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
+import type { KkScreenIndex } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, CLUB_ORIGIN, useScreenSearch } from '@/features/session';
+import { AREA_HANDOVERS, CLUB_ORIGIN } from '@/features/session/app-sections';
+import { useScreenSearch } from '@/features/session/hooks/use-screen-search';
 import { useMembersQuery } from '../api';
 import { useMemberSearch } from '../hooks/use-member-search';
 import { LETTER_INDEX_LABEL, MEMBERS_LEAD } from '../members-labels';

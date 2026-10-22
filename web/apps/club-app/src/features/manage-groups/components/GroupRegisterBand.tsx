@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { toLandingKey } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
 import type { ManagedGroupSummary } from '../schemas';
 import { GroupRegisterRow } from './GroupRegisterRow';
 

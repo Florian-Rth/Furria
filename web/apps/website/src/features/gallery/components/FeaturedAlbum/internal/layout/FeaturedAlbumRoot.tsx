@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import CardActionArea from '@mui/material/CardActionArea';
 import { Link } from '@tanstack/react-router';
 import type { FC, PropsWithChildren } from 'react';

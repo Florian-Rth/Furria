@@ -1,5 +1,5 @@
-import { useGroupsQuery } from '@/features/groups';
-import { usePermissions } from '@/features/session';
+import { useGroupsQuery } from '@/features/groups/api';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import type { GroupTone } from '@/lib/group-tone';
 import type { GroupToneHolder } from '../group-hub-labels';
 import { toTakenTones } from '../group-hub-labels';

@@ -1,5 +1,7 @@
-import type { KkPanelAction } from '@furria/ui';
-import { KkEmptyState, KkPanel, KkPanelSection } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import type { KkPanelAction } from '@furria/ui/panel-action';
 import Grid from '@mui/material/Grid';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
@@ -8,8 +10,8 @@ import {
   ADD_MEMBER_LABEL,
   NO_MEMBERS_TITLE,
   toNoMembersLine,
-} from '@/features/group-detail';
-import type { GroupTone } from '@/features/groups';
+} from '@/features/group-detail/group-detail-labels';
+import type { GroupTone } from '@/features/groups/group-identity';
 import { GROUP_SECTION_TITLES, toGroupPeopleNote } from '@/lib/group-sections';
 import type { HubPerson } from '../hub-people';
 import { countGroupAdmins } from '../hub-people';

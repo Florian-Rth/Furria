@@ -1,4 +1,4 @@
-import { PageLayout } from '@furria/ui';
+import { PageLayout } from '@furria/ui/PageLayout';
 import type { FC } from 'react';
 import type { EventDetail } from '@/lib/public-events/schemas';
 import { TicketRequestBody } from './TicketRequestBody';

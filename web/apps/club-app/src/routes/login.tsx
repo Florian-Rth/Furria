@@ -1,12 +1,9 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
 import type { FC } from 'react';
-import {
-  EXPIRED_FLAG,
-  LoginScreen,
-  LoginSearchSchema,
-  PASSWORD_RESET_FLAG,
-} from '@/features/login';
-import { AppFailure, useAuthenticatedRedirect } from '@/features/session';
+import { LoginScreen } from '@/features/login/components/LoginScreen';
+import { EXPIRED_FLAG, LoginSearchSchema, PASSWORD_RESET_FLAG } from '@/features/login/schemas';
+import { AppFailure } from '@/features/session/components/AppFailure';
+import { useAuthenticatedRedirect } from '@/features/session/hooks/use-authenticated-redirect';
 import { getSessionSnapshot } from '@/lib/api/session/session-store';
 import { sanitizeReturnTo } from '@/lib/return-to';
 

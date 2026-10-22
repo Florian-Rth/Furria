@@ -1,5 +1,5 @@
-import type { KkImageSource } from '@furria/ui';
-import { toImageSource } from '@furria/ui';
+import type { KkImageSource } from '@furria/ui/image-source';
+import { toImageSource } from '@furria/ui/image-source';
 import type { GalleryMedia } from './schemas';
 
 const VIEW_SIZES = '100vw';

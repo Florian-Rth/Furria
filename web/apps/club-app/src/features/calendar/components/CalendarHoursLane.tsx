@@ -1,4 +1,4 @@
-import { KkCalendarHours } from '@furria/ui';
+import { KkCalendarHours } from '@furria/ui/KkCalendarHours';
 import type { FC } from 'react';
 import { toNowLabel } from '../calendar-agenda-copy';
 import type { CalendarHoursLane as CalendarHoursLaneData } from '../calendar-hours-view';

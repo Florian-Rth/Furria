@@ -1,6 +1,6 @@
-import type { KkSelectOption } from '@furria/ui';
-import type { RunningVenue } from '@/features/calendar';
+import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import { toDayTime, toInstant } from '@/features/calendar/calendar-authoring';
+import type { RunningVenue } from '@/features/calendar/schemas';
 import { toIsoDay } from '@/lib/day';
 import { toPriceCents, toPriceText } from './event-price';
 import type { EventDetails, EventForm } from './schemas';

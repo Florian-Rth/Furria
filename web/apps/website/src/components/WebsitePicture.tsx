@@ -1,4 +1,6 @@
-import { aspectRatioCss, KkPhoto, kkTokens } from '@furria/ui';
+import { aspectRatioCss } from '@furria/ui/image-aspect';
+import { KkPhoto } from '@furria/ui/KkPhoto';
+import { kkTokens } from '@furria/ui/tokens';
 import type { PictureSlotKey } from '@furria/website-pictures';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';

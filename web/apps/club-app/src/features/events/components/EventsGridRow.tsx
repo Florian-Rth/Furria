@@ -1,4 +1,4 @@
-import { KkStateGrid } from '@furria/ui';
+import { KkStateGrid } from '@furria/ui/KkStateGrid';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toRowView } from '../event-board-copy';

@@ -1,5 +1,7 @@
-import type { KkScreenOrigin } from '@furria/ui';
-import { KkButton, KkErrorState, KkScreen } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkErrorState } from '@furria/ui/KkErrorState';
+import { KkScreen } from '@furria/ui/KkScreen';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
 
 const FAILURE_TITLE = 'ALBUM NICHT GELADEN';

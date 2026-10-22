@@ -1,7 +1,12 @@
-import { KkAlert, KkButton, KkHeading, KkIconButton, KkNote, KkTextField } from '@furria/ui';
+import { KkAlert } from '@furria/ui/KkAlert';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkHeading } from '@furria/ui/KkHeading';
+import { KkIconButton } from '@furria/ui/KkIconButton';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkTextField } from '@furria/ui/KkTextField';
 import Stack from '@mui/material/Stack';
 import type { ChangeEvent, FC } from 'react';
-import { usePasswordVisibility } from '@/features/login';
+import { usePasswordVisibility } from '@/features/login/hooks/use-password-visibility';
 import { useClaimForm } from '../hooks/use-claim-form';
 import { toGreeting } from '../redeem-messages';
 import type { LiveInvitation } from '../redeem-stage';

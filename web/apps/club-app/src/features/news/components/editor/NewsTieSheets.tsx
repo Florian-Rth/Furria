@@ -1,7 +1,8 @@
-import { KkSelectRow, KkSheet } from '@furria/ui';
+import { KkSelectRow } from '@furria/ui/KkSelectRow';
+import { KkSheet } from '@furria/ui/KkSheet';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { PickListStatus } from '@/features/gallery-pick';
+import { PickListStatus } from '@/features/gallery-pick/components/PickListStatus';
 import {
   SHEET_CLOSE,
   TIE_ALBUM_NONE,

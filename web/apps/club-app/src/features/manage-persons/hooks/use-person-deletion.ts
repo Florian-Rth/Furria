@@ -1,7 +1,7 @@
-import { useKkNotice } from '@furria/ui';
-import type { ReauthenticationControl } from '@/features/account-security';
-import { useReauthentication } from '@/features/account-security';
-import { useMeQuery } from '@/features/session';
+import { useKkNotice } from '@furria/ui/KkNotice';
+import type { ReauthenticationControl } from '@/features/account-security/hooks/use-reauthentication';
+import { useReauthentication } from '@/features/account-security/hooks/use-reauthentication';
+import { useMeQuery } from '@/features/session/api';
 import { useGoBackTo } from '@/lib/use-go-back-to';
 import type { PersonErasureOutcome } from '../api';
 import { useForgetErasedPerson, usePersonErasureMutation } from '../api';

@@ -1,9 +1,10 @@
-import { useKkNotice } from '@furria/ui';
+import { useKkNotice } from '@furria/ui/KkNotice';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useState } from 'react';
 import type { UseControllerReturn, UseFormReturn } from 'react-hook-form';
 import { useController, useForm } from 'react-hook-form';
-import { toLandingKey, toWriteFailure } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
+import { toWriteFailure } from '@/features/write/write-failure';
 import { useGoBackTo } from '@/lib/use-go-back-to';
 import {
   SECURITY_LANDINGS,

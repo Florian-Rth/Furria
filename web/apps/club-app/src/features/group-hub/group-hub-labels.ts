@@ -1,10 +1,8 @@
-import type {
-  KkConfirmFact,
-  KkDateQuickChoice,
-  KkGroupStageAnniversary,
-  KkScreenOrigin,
-} from '@furria/ui';
-import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
+import type { KkGroupStageAnniversary } from '@furria/ui/group-stage-anniversary';
+import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
+import type { KkDateQuickChoice } from '@furria/ui/KkDateField';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
+import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail/schemas';
 import { toGroupKindId, toGroupKindValue } from '@/features/group-kinds/group-kinds-labels';
 import { toAnniversary, toFoundedLine } from '@/features/groups/group-identity';
 import { GROUPS_ORIGIN, MANAGE_ORIGIN, PROFILE_ORIGIN } from '@/features/session/app-sections';

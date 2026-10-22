@@ -1,4 +1,5 @@
-import type { KkFilterOption, KkLetterIndexEntry } from '@furria/ui';
+import type { KkFilterOption } from '@furria/ui/filter-chip-entries';
+import type { KkLetterIndexEntry } from '@furria/ui/letter-index-cells';
 import type { MembershipState } from '@/lib/api/schemas';
 import { formatAddress } from '@/lib/membership-labels';
 import { ALL_STATES_FILTER_ID, ARCHIVED_CHIP, toStateFilterOptions } from '@/lib/state-chips';

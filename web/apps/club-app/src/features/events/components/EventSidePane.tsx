@@ -1,4 +1,5 @@
-import { KkBottomDrawer, KkMasterDetail } from '@furria/ui';
+import { KkBottomDrawer } from '@furria/ui/KkBottomDrawer';
+import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
 import type { FC } from 'react';
 import { CLOSE_LABEL, PANE_TITLES } from '../event-board-copy';
 import type { EventPaneKey } from '../schemas';

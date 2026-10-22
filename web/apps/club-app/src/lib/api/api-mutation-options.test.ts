@@ -1,4 +1,4 @@
-import type { KkNoticeRequest } from '@furria/ui';
+import type { KkNoticeRequest } from '@furria/ui/KkNotice';
 import type { QueryKey } from '@tanstack/react-query';
 import { MutationObserver, onlineManager, QueryClient } from '@tanstack/react-query';
 import { afterEach, describe, expect, it, vi } from 'vitest';

@@ -1,4 +1,4 @@
-import { kkTokens } from '@furria/ui';
+import { kkTokens } from '@furria/ui/tokens';
 import Button from '@mui/material/Button';
 import type { FC } from 'react';
 import { buildWhatsAppShareUrl, whatsAppShareLabel } from '@/features/news/news-content';

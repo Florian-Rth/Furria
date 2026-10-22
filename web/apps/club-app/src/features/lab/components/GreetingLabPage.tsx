@@ -1,4 +1,7 @@
-import { KkFactRow, KkPanel, KkPosterBackdrop, KkScreen } from '@furria/ui';
+import { KkFactRow } from '@furria/ui/KkFactRow';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPosterBackdrop } from '@furria/ui/KkPosterBackdrop';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
 import { useGreetingLabStage } from '../hooks/use-greeting-lab-stage';
 import type { LabGreeting } from '../lab-greetings';

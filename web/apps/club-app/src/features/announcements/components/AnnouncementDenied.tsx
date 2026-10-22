@@ -1,6 +1,6 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
-import { AccessDenied } from '@/features/session';
+import { AccessDenied } from '@/features/session/components/AccessDenied';
 import { ANNOUNCEMENTS_ORIGIN } from '../announcements-labels';
 
 const DENIED_MESSAGE = 'Dir fehlt die Berechtigung, Aushänge zu veröffentlichen.';

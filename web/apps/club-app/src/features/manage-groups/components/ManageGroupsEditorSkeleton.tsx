@@ -1,6 +1,9 @@
-import { KkPanel, KkPanelStack, KkScreen, KkSkeletonBlock } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
 import type { FC } from 'react';
-import { AppSkeletonRegion } from '@/features/session';
+import { AppSkeletonRegion } from '@/features/session/components/AppSkeletonRegion';
 import { MANAGE_GROUPS_ORIGIN } from '../manage-groups-labels';
 
 const LOADING_LABEL = 'Wird geladen';

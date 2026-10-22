@@ -1,4 +1,7 @@
-import { KkIconButton, KkMeta, KkOfficeHead, KkRoleMark } from '@furria/ui';
+import { KkIconButton } from '@furria/ui/KkIconButton';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkOfficeHead } from '@furria/ui/KkOfficeHead';
+import { KkRoleMark } from '@furria/ui/KkRoleMark';
 import type { FC } from 'react';
 import { toRoleMarkState } from '../roles-hub';
 import { CLOSE_LABEL } from '../roles-hub-copy';

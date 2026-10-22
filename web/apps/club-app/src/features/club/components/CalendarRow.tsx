@@ -1,4 +1,5 @@
-import { KkChip, KkFactRow } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkFactRow } from '@furria/ui/KkFactRow';
 import type { FC } from 'react';
 import { toDayNumberLabel, toWeekdayEyebrow } from '@/lib/calendar-days';
 import type { ClubCalendarEntry } from '../schemas';

@@ -1,4 +1,6 @@
-import { KkPanel, KkSkeletonBlock, KkSkeletonRow } from '@furria/ui';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
+import { KkSkeletonRow } from '@furria/ui/KkSkeletonRow';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
 import { AppSkeletonRegion } from './AppSkeletonRegion';

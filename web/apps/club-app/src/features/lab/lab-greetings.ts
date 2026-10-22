@@ -1,20 +1,14 @@
-import type { KkIconName, KkSummaryFact } from '@furria/ui';
-import type {
-  GreetingAct,
-  GreetingHolder,
-  GreetingView,
-  GreetingViewer,
-  StartLook,
-  StartMine,
-} from '@/features/start';
-import {
-  greetingActAt,
-  isRoundYears,
-  startSeasonAt,
-  toGreetingCopy,
-  toGreetingText,
-  toGreetingView,
-} from '@/features/start';
+import type { KkIconName } from '@furria/ui/KkIcon';
+import type { KkSummaryFact } from '@furria/ui/KkSummaryRow';
+import type { GreetingAct, GreetingViewer } from '@/features/start/greeting/greeting-act';
+import { greetingActAt } from '@/features/start/greeting/greeting-act';
+import { toGreetingCopy, toGreetingText } from '@/features/start/greeting/greeting-copy';
+import type { GreetingHolder, GreetingView } from '@/features/start/greeting/greeting-view';
+import { toGreetingView } from '@/features/start/greeting/greeting-view';
+import type { StartLook } from '@/features/start/hooks/use-start-look';
+import type { StartMine } from '@/features/start/schemas';
+import { isRoundYears } from '@/features/start/start-lines';
+import { startSeasonAt } from '@/features/start/start-season';
 import type { MembershipState } from '@/lib/api/schemas';
 import { relevantSessionYear } from '@/lib/club';
 import { toAvatarHonours } from '@/lib/honours';

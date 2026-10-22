@@ -1,7 +1,8 @@
-import { KkButton, KkErrorState } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkErrorState } from '@furria/ui/KkErrorState';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { AppListSkeleton } from '@/features/session';
+import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import { toQueryErrorMessage } from '@/lib/query-error';
 import { HUB_ERROR_MESSAGES, HUB_ERROR_TITLE, HUB_LOADING, HUB_RETRY } from '../../hub-copy';
 import { NewsHubEmpty } from './NewsHubEmpty';

@@ -1,4 +1,4 @@
-import type { KkLinkSearchValues } from '@furria/ui';
+import type { KkLinkSearchValues } from '@furria/ui/kk-link-search';
 import type { FileRouteTypes } from '@/routeTree.gen';
 import type { ToDoKind } from './schemas';
 

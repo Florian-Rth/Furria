@@ -1,4 +1,7 @@
-import { KkMeta, KkPhoto, KkText, toImageSource } from '@furria/ui';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPhoto } from '@furria/ui/KkPhoto';
+import { KkText } from '@furria/ui/KkText';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';

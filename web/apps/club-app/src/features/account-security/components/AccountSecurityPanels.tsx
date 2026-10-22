@@ -1,6 +1,6 @@
-import { KkPanelStack } from '@furria/ui';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import type { FC } from 'react';
-import { useLanding } from '@/features/write';
+import { useLanding } from '@/features/write/hooks/use-landing';
 import type { MePasskey } from '@/lib/api/schemas';
 import { AccountDeletionPanel } from './AccountDeletionPanel';
 import { LoginEmailPanel } from './LoginEmailPanel';

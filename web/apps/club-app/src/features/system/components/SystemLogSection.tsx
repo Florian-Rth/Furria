@@ -1,4 +1,6 @@
-import { KkFilterChips, KkReadout, KkSearchField } from '@furria/ui';
+import { KkFilterChips } from '@furria/ui/KkFilterChips';
+import { KkReadout } from '@furria/ui/KkReadout';
+import { KkSearchField } from '@furria/ui/KkSearchField';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useSystemLog } from '../hooks/use-system-log';

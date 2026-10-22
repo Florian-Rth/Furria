@@ -1,5 +1,7 @@
-import type { KkFrameMark } from '@furria/ui';
-import { KkFilmEdge, KkFrame, KkFrameGrid } from '@furria/ui';
+import { KkFilmEdge } from '@furria/ui/KkFilmEdge';
+import type { KkFrameMark } from '@furria/ui/KkFrame';
+import { KkFrame } from '@furria/ui/KkFrame';
+import { KkFrameGrid } from '@furria/ui/KkFrameGrid';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { BinGroup } from '../bin-countdown';

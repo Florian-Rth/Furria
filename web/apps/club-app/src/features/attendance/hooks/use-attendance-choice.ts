@@ -1,4 +1,4 @@
-import { useKkNotice } from '@furria/ui';
+import { useKkNotice } from '@furria/ui/KkNotice';
 import { toAttendanceSavedMessage } from '@/lib/calendar-copy';
 import { ATTENDANCE_FAILURE_EFFECTS } from '../attendance-answer';
 import type { AttendanceAnswer } from '../schemas';

@@ -1,4 +1,6 @@
-import { KkInlineLink, KkNewsMention, KkNewsMentionCard } from '@furria/ui';
+import { KkInlineLink } from '@furria/ui/KkInlineLink';
+import { KkNewsMention } from '@furria/ui/KkNewsMention';
+import { KkNewsMentionCard } from '@furria/ui/KkNewsMentionCard';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { newsMentionLabels } from '@/features/news/news-content';

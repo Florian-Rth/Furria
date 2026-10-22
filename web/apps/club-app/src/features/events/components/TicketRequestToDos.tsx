@@ -1,6 +1,7 @@
 import type { FC } from 'react';
-import type { ToDo } from '@/features/to-dos';
-import { ToDosPanel, useToDosBoard } from '@/features/to-dos';
+import { ToDosPanel } from '@/features/to-dos/components/ToDosPanel';
+import { useToDosBoard } from '@/features/to-dos/hooks/use-to-dos-board';
+import type { ToDo } from '@/features/to-dos/schemas';
 import { TICKET_REQUEST_TO_DO_SURFACE } from '../api';
 
 interface TicketRequestToDosProps {

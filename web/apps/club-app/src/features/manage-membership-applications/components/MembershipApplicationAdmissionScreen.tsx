@@ -1,7 +1,7 @@
-import { KkScreen } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { RequirePermission } from '@/features/session';
+import { RequirePermission } from '@/features/session/components/RequirePermission';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { parsePositiveId } from '@/lib/positive-id';
 import { ADMISSION_ACTION_LABEL } from '../admission-labels';

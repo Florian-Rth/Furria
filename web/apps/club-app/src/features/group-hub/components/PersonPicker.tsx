@@ -1,4 +1,8 @@
-import { KkButton, KkMeta, KkPanel, KkPersonRow, KkSearchField } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPersonRow } from '@furria/ui/KkPersonRow';
+import { KkSearchField } from '@furria/ui/KkSearchField';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { PersonRef } from '@/lib/api/schemas';

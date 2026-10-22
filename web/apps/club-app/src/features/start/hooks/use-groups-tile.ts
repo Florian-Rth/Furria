@@ -1,7 +1,8 @@
-import type { KkGroupTone, KkStartTileReach } from '@furria/ui';
-import { useKkSheetCommands } from '@furria/ui';
+import type { KkGroupTone } from '@furria/ui/group-tone';
+import type { KkStartTileReach } from '@furria/ui/reach';
+import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import { Link } from '@tanstack/react-router';
-import { toGroupTone } from '@/features/groups';
+import { toGroupTone } from '@/features/groups/group-identity';
 import type { StartPanelOf } from '../start-board';
 import { START_GROUPS_SHEET } from '../start-sheets';
 

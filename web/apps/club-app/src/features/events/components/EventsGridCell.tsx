@@ -1,4 +1,4 @@
-import { KkStateGrid } from '@furria/ui';
+import { KkStateGrid } from '@furria/ui/KkStateGrid';
 import type { FC } from 'react';
 import type { BoardCell } from '../event-board';
 import { PANE_ICONS, toCellAriaLabel, toCellGridFact } from '../event-board-copy';

@@ -1,4 +1,6 @@
-import type { KkConfirmFact, KkScreenOrigin, KkSelectOption } from '@furria/ui';
+import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
+import type { KkSelectOption } from '@furria/ui/KkSelectField';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { ClubIcon } from '@/lib/club-icon';
 import { isFutureDay } from '@/lib/day';
 import { formatIsoDay } from '@/lib/membership-labels';

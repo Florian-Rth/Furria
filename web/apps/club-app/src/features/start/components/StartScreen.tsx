@@ -1,6 +1,8 @@
-import { KkConfettiGlobe, KkPosterBackdrop, KkScreen } from '@furria/ui';
+import { KkConfettiGlobe } from '@furria/ui/KkConfettiGlobe';
+import { KkPosterBackdrop } from '@furria/ui/KkPosterBackdrop';
+import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, START_SECTION, START_TITLE } from '@/features/session';
+import { AREA_HANDOVERS, START_SECTION, START_TITLE } from '@/features/session/app-sections';
 import { useStartScreen } from '../hooks/use-start-screen';
 import { StartBody } from './StartBody';
 import { StartHeader } from './StartHeader';

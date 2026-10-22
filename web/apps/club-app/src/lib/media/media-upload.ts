@@ -1,4 +1,4 @@
-import type { KkCrop } from '@furria/ui';
+import type { KkCrop } from '@furria/ui/image-crop';
 import type { UploadFailure } from './upload-failure';
 import { failureOfStatus } from './upload-failure';
 

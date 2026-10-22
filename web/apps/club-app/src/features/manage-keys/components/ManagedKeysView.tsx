@@ -1,7 +1,9 @@
-import { KkEmptyState, KkNote, KkPanel } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { useLanding } from '@/features/write';
+import { useLanding } from '@/features/write/hooks/use-landing';
 import {
   MANAGE_KEYS_FOOTNOTE,
   NO_VENUES_DESCRIPTION,

@@ -1,13 +1,19 @@
 import '@furria/api-client/zod-without-eval';
 import '@furria/ui/fonts';
-import { KkAppFeel, KkThemeColorMeta, KkThemeProvider } from '@furria/ui';
+import { KkAppFeel } from '@furria/ui/KkAppFeel';
+import { KkThemeColorMeta } from '@furria/ui/KkThemeColorMeta';
+import { KkThemeProvider } from '@furria/ui/KkThemeProvider';
 import { QueryClientProvider } from '@tanstack/react-query';
-import { createBrowserHistory, createRouter, RouterProvider } from '@tanstack/react-router';
+import {
+  createBrowserHistory,
+  createRouter,
+  lazyRouteComponent,
+  RouterProvider,
+} from '@tanstack/react-router';
 import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
-import { applyBrowserModeParam } from '@/features/app-install';
 import { startAppUpdates } from '@/features/app-install/app-update-start';
-import { ScreenFailure } from '@/features/session';
+import { applyBrowserModeParam } from '@/features/app-install/browser-mode-store';
 import { startSession } from '@/lib/api/session/session-boot';
 import { markSessionUnavailable } from '@/lib/api/session/session-store';
 import { withBackStack } from '@/lib/back-stack';
@@ -19,7 +25,10 @@ applyBrowserModeParam();
 const router = createRouter({
   routeTree,
   history: withBackStack(createBrowserHistory()),
-  defaultErrorComponent: ScreenFailure,
+  defaultErrorComponent: lazyRouteComponent(
+    () => import('@/features/session/components/ScreenFailure'),
+    'ScreenFailure',
+  ),
 });
 
 declare module '@tanstack/react-router' {

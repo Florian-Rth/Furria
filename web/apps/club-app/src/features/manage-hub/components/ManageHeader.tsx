@@ -1,4 +1,5 @@
-import { KkLead, KkScreenHeader } from '@furria/ui';
+import { KkLead } from '@furria/ui/KkLead';
+import { KkScreenHeader } from '@furria/ui/KkScreenHeader';
 import type { FC } from 'react';
 import { MANAGE_LEAD, MANAGE_TITLE } from '../manage-hub-labels';
 

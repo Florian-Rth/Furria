@@ -1,15 +1,13 @@
-import {
-  KkAvatarStack,
-  KkChip,
-  KkEyebrow,
-  KkGroupCover,
-  KkMeta,
-  KkPanelSection,
-  KkSheet,
-  KkText,
-  kkTokens,
-  toImageSource,
-} from '@furria/ui';
+import { toImageSource } from '@furria/ui/image-source';
+import { KkAvatarStack } from '@furria/ui/KkAvatarStack';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkGroupCover } from '@furria/ui/KkGroupCover';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSheet } from '@furria/ui/KkSheet';
+import { KkText } from '@furria/ui/KkText';
+import { kkTokens } from '@furria/ui/tokens';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';

@@ -1,5 +1,6 @@
-import type { KkSlotRowPosition } from '@furria/ui';
-import { KkPageSketch, KkSlotRow } from '@furria/ui';
+import { KkPageSketch } from '@furria/ui/KkPageSketch';
+import type { KkSlotRowPosition } from '@furria/ui/KkSlotRow';
+import { KkSlotRow } from '@furria/ui/KkSlotRow';
 import type { FC } from 'react';
 import type { SlotPositionRef } from '../types';
 import type { BoardSlot } from '../website-board';

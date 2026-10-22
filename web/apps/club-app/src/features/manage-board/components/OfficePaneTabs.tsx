@@ -1,4 +1,4 @@
-import { KkStepPane } from '@furria/ui';
+import { KkStepPane } from '@furria/ui/KkStepPane';
 import type { FC } from 'react';
 import { TABS, TABS_LABEL } from '../board-hub-copy';
 import type { OfficePaneSection } from '../schemas';

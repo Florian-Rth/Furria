@@ -1,4 +1,4 @@
-import { useKkSheet } from '@furria/ui';
+import { useKkSheet } from '@furria/ui/sheet-store';
 import { useEffect, useEffectEvent } from 'react';
 import type { Start } from '../schemas';
 import { isStrayStartSheet } from '../start-sheets';

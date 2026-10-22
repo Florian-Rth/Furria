@@ -1,4 +1,4 @@
-import { KkCountdownFuse } from '@furria/ui';
+import { KkCountdownFuse } from '@furria/ui/KkCountdownFuse';
 import type { FC } from 'react';
 import type { RowView } from '../event-board-copy';
 

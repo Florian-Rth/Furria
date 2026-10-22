@@ -1,4 +1,5 @@
-import { KkButton, KkEmptyState } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
 import type { FC } from 'react';
 import { HUB_EMPTY_DESCRIPTION, HUB_EMPTY_TITLE } from '../../hub-copy';
 import { NEW_POST_LABEL } from '../../news-copy';

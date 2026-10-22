@@ -1,4 +1,4 @@
-import { KkFieldRow } from '@furria/ui';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
 import type { FC } from 'react';
 import { formatAddress } from '@/lib/membership-labels';
 import { MISSING_VALUE } from '../club-record-labels';

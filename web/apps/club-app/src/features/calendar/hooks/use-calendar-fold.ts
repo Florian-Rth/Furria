@@ -3,8 +3,8 @@ import type {
   KkCalendarPull,
   KkCalendarStripMode,
   KkCalendarTravel,
-} from '@furria/ui';
-import { kkTokens } from '@furria/ui';
+} from '@furria/ui/calendar-strip-types';
+import { kkTokens } from '@furria/ui/tokens';
 import { useEffect, useRef, useState } from 'react';
 import {
   mondayOf,

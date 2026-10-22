@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail';
+import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail/schemas';
 import type { PersonMeta, ViewerStanding } from './group-hub-labels';
 import {
   personMetaOf,

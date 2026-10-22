@@ -1,4 +1,4 @@
-import { KkVisuallyHidden } from '@furria/ui';
+import { KkVisuallyHidden } from '@furria/ui/KkVisuallyHidden';
 import Stack from '@mui/material/Stack';
 import type { FC, PropsWithChildren } from 'react';
 

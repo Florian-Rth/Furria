@@ -1,4 +1,4 @@
-import { KkSection } from '@furria/ui';
+import { KkSection } from '@furria/ui/KkSection';
 import type { FC } from 'react';
 import type { AlbumSessionGroup } from '@/features/gallery/gallery-content';
 import { olderSessionsHeading } from '@/features/gallery/gallery-content';

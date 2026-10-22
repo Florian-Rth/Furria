@@ -1,6 +1,6 @@
-import { KkPageWatermark } from '@furria/ui';
+import { KkPageWatermark } from '@furria/ui/KkPageWatermark';
 import type { FC, ReactNode } from 'react';
-import { NotAffiliatedState } from '@/features/session';
+import { NotAffiliatedState } from '@/features/session/components/NotAffiliatedState';
 import type { StartView } from '../hooks/use-start-view';
 import { StartError } from './StartError';
 import { StartSkeleton } from './StartSkeleton';

@@ -1,4 +1,4 @@
-import { KkCard } from '@furria/ui';
+import { KkCard } from '@furria/ui/KkCard';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import type { SeasonStep as SeasonStepData } from '@/features/club/season-content';

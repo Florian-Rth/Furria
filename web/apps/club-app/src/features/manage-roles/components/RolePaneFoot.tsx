@@ -1,5 +1,7 @@
-import type { KkStickyFootSurface } from '@furria/ui';
-import { KkButton, KkIcon, KkStickyFoot } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkIcon } from '@furria/ui/KkIcon';
+import type { KkStickyFootSurface } from '@furria/ui/KkStickyFoot';
+import { KkStickyFoot } from '@furria/ui/KkStickyFoot';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';

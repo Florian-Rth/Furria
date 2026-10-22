@@ -1,6 +1,6 @@
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
-import { PROFILE_PATH } from '@/features/session';
-import { useWriteForm } from '@/features/write';
+import { PROFILE_PATH } from '@/features/session/app-sections';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import type { MePerson } from '@/lib/api/schemas';
 import { useGoBackTo } from '@/lib/use-go-back-to';
 import { useUpdateContactDetailsMutation } from '../api';

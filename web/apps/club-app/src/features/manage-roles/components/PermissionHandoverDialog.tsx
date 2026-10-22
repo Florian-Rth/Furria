@@ -1,4 +1,4 @@
-import { KkConfirmDialog } from '@furria/ui';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
 import type { FC } from 'react';
 import type { RolePermissionEntry } from '../manage-roles-labels';
 import {

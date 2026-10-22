@@ -1,4 +1,7 @@
-import { KkChip, KkFieldRow, KkPanel, KkPanelSection } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import type { MeMembership } from '@/lib/api/schemas';
 import { formatIsoDay, formatPeriod } from '@/lib/membership-labels';

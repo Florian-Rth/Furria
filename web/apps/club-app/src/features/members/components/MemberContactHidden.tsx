@@ -1,4 +1,8 @@
-import { KkInlineLink, KkNote, KkPanel, KkRedactedValue, KkText } from '@furria/ui';
+import { KkInlineLink } from '@furria/ui/KkInlineLink';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkRedactedValue } from '@furria/ui/KkRedactedValue';
+import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';

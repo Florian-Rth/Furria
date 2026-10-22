@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { ManagedVenuesPage } from '@/features/manage-venues';
+import { ManagedVenuesPage } from '@/features/manage-venues/components/ManagedVenuesPage';
 
 export const Route = createFileRoute('/_app/manage/venues')({
   component: ManagedVenuesPage,

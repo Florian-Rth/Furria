@@ -1,5 +1,6 @@
-import { usePendingAnswers } from '@/features/attendance';
-import { useMeQuery, usePermissions } from '@/features/session';
+import { usePendingAnswers } from '@/features/attendance/hooks/use-pending-answers';
+import { useMeQuery } from '@/features/session/api';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { useMinuteNow } from '@/lib/use-minute-now';
 import { useStartQuery } from '../api';

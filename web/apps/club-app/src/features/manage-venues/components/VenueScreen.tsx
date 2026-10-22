@@ -1,19 +1,15 @@
-import {
-  KkEmptyState,
-  KkPanel,
-  KkPanelStack,
-  KkScreen,
-  KkScreenHeaderSkeleton,
-  KkSkeletonBlock,
-} from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkScreenHeaderSkeleton } from '@furria/ui/KkScreenHeaderSkeleton';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
 import { useParams } from '@tanstack/react-router';
 import type { FC } from 'react';
-import {
-  AccessDenied,
-  AppSkeletonRegion,
-  AREA_HANDOVERS,
-  usePermissions,
-} from '@/features/session';
+import { AREA_HANDOVERS } from '@/features/session/app-sections';
+import { AccessDenied } from '@/features/session/components/AccessDenied';
+import { AppSkeletonRegion } from '@/features/session/components/AppSkeletonRegion';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { parsePositiveId } from '@/lib/positive-id';
 import { isForbiddenError } from '@/lib/query-error';

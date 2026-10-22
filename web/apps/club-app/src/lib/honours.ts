@@ -1,12 +1,12 @@
+import type { KkClubIcon } from '@furria/ui/club-icon';
 import type {
   KkAvatarFunction,
   KkAvatarFunctionKind,
-  KkClubIcon,
   KkHonours,
   KkStanding,
   KkStandingApp,
   KkStandingMembership,
-} from '@furria/ui';
+} from '@furria/ui/honour-types';
 import type {
   Honours,
   MembershipState,

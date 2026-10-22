@@ -1,6 +1,8 @@
-import { KkMeta, KkPanel, KkPanelSection } from '@furria/ui';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
-import type { RoleOverview } from '@/features/roles-overview';
+import type { RoleOverview } from '@/features/roles-overview/schemas';
 import { RoleHolderRow } from './RoleHolderRow';
 
 const NO_HOLDER_LINE = 'Diese Rolle ist unbesetzt.';

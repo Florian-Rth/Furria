@@ -1,6 +1,6 @@
 import type { JsonBody } from '@furria/api-client';
-import type { ResolvedReauthenticationProof } from '@/features/account-security';
-import { toReauthenticationBody } from '@/features/account-security';
+import { toReauthenticationBody } from '@/features/account-security/reauthentication';
+import type { ResolvedReauthenticationProof } from '@/features/account-security/types';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import { isNotFoundError } from '@/lib/query-error';

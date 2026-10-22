@@ -1,7 +1,9 @@
-import { KkButton, KkEmptyState, KkScreen } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkScreen } from '@furria/ui/KkScreen';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { GALLERY_ORIGIN, GALLERY_PATH } from '@/features/session';
+import { GALLERY_ORIGIN, GALLERY_PATH } from '@/features/session/app-sections';
 
 const NOT_FOUND_TITLE = 'ALBUM NICHT GEFUNDEN';
 const NOT_FOUND_DESCRIPTION = 'Das Album gibt es nicht mehr oder es liegt im Papierkorb.';

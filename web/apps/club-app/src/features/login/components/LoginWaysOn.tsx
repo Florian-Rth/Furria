@@ -1,4 +1,4 @@
-import { KkButton } from '@furria/ui';
+import { KkButton } from '@furria/ui/KkButton';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';

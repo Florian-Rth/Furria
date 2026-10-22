@@ -1,5 +1,6 @@
-import type { KkPanelAction } from '@furria/ui';
-import { KkPanelSection, useKkSheetCommands } from '@furria/ui';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import type { KkPanelAction } from '@furria/ui/panel-action';
+import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
 import { useClubHubQuery } from '../api';

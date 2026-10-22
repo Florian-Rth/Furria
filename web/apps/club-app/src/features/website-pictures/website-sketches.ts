@@ -1,4 +1,4 @@
-import type { KkPageSketchDevice, KkSketchBlock } from '@furria/ui';
+import type { KkPageSketchDevice, KkSketchBlock } from '@furria/ui/KkPageSketch';
 
 interface SketchShape extends Omit<KkSketchBlock, 'kind'> {
   kind: KkSketchBlock['kind'];

@@ -1,8 +1,13 @@
-import { KkEmptyState, KkScreen, KkScreenHeaderSkeleton } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkScreenHeaderSkeleton } from '@furria/ui/KkScreenHeaderSkeleton';
 import { useParams } from '@tanstack/react-router';
 import type { FC, ReactNode } from 'react';
-import { AccessDenied, AREA_HANDOVERS, usePermissions } from '@/features/session';
-import { toLandingKey, useLanding } from '@/features/write';
+import { AREA_HANDOVERS } from '@/features/session/app-sections';
+import { AccessDenied } from '@/features/session/components/AccessDenied';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
+import { useLanding } from '@/features/write/hooks/use-landing';
+import { toLandingKey } from '@/features/write/landing-target';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { parsePositiveId } from '@/lib/positive-id';
 import { useManagedGroupsQuery } from '../api';

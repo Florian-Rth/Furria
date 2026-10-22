@@ -1,9 +1,9 @@
-import { KkPanelStack } from '@furria/ui';
+import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
-import { AccessPanel } from '@/features/account-access';
-import { usePermissions } from '@/features/session';
-import { useLanding } from '@/features/write';
+import { AccessPanel } from '@/features/account-access/components/AccessPanel';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
+import { useLanding } from '@/features/write/hooks/use-landing';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toPersonGaps } from '../person-identity';
 import type { PersonDetails } from '../schemas';

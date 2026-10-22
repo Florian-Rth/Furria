@@ -1,4 +1,5 @@
-import type { KkScreenOrigin, KkSelectOption } from '@furria/ui';
+import type { KkSelectOption } from '@furria/ui/KkSelectField';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { WriteLanding } from '@/features/write/landing-target';
 import { toLandingKey } from '@/features/write/landing-target';
 import type {

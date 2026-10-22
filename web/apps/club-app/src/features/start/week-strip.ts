@@ -1,4 +1,4 @@
-import type { KkWeekStripMarkState } from '@furria/ui';
+import type { KkWeekStripMarkState } from '@furria/ui/KkWeekStripMark';
 import type { CalendarKindKey } from '@/lib/calendar-copy';
 import { toLocalIsoDay, toTimeLabel } from '@/lib/calendar-days';
 import { toIsoDay } from '@/lib/day';

@@ -1,8 +1,10 @@
-import type { KkImageSource, KkSheetAction } from '@furria/ui';
-import { toImageSource, useKkSheet } from '@furria/ui';
+import type { KkImageSource } from '@furria/ui/image-source';
+import { toImageSource } from '@furria/ui/image-source';
+import type { KkSheetAction } from '@furria/ui/sheet-actions';
+import { useKkSheet } from '@furria/ui/sheet-store';
 import { Link } from '@tanstack/react-router';
 import { useState } from 'react';
-import { ANNOUNCEMENTS_PATH } from '@/features/session';
+import { ANNOUNCEMENTS_PATH } from '@/features/session/app-sections';
 import type { StartAnnouncement } from '../schemas';
 import { toAnnouncementByline, toAuthorInitials } from '../start-lines';
 import {

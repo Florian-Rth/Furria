@@ -1,5 +1,9 @@
-import type { KkHonours, KkImageSource } from '@furria/ui';
-import { KkAvatar, KkButton, KkEyebrow, KkScreenHeader } from '@furria/ui';
+import type { KkHonours } from '@furria/ui/honour-types';
+import type { KkImageSource } from '@furria/ui/image-source';
+import { KkAvatar } from '@furria/ui/KkAvatar';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkEyebrow } from '@furria/ui/KkEyebrow';
+import { KkScreenHeader } from '@furria/ui/KkScreenHeader';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { PERSON_SCREEN_OPEN_LABEL } from '../group-hub-labels';

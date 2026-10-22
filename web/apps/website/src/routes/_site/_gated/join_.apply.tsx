@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router';
-import { ApplyPage } from '@/features/membership';
+import { ApplyPage } from '@/features/membership/components/ApplyPage';
 import type { RouteHead } from '@/lib/seo';
 import { pageTitle } from '@/lib/seo';
 

@@ -1,4 +1,4 @@
-import { KkRoster } from '@furria/ui';
+import { KkRoster } from '@furria/ui/KkRoster';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
 import { toRosterSince } from '../board-hub-copy';

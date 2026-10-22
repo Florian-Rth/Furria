@@ -1,4 +1,6 @@
-import { KkChip, KkGroupToneChip, KkPanelSection } from '@furria/ui';
+import { KkChip } from '@furria/ui/KkChip';
+import { KkGroupToneChip } from '@furria/ui/KkGroupToneChip';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { EntryGroupChip } from '../types';

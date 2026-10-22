@@ -1,6 +1,7 @@
-import { KkScreen, KkTitleHeader } from '@furria/ui';
+import { KkScreen } from '@furria/ui/KkScreen';
+import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import type { FC } from 'react';
-import { AREA_HANDOVERS, GALLERY_TITLE, MORE_SECTION } from '@/features/session';
+import { AREA_HANDOVERS, GALLERY_TITLE, MORE_SECTION } from '@/features/session/app-sections';
 import { useGalleryHub } from '../hooks/use-gallery-hub';
 import { GALLERY_LEAD } from '../hub-copy';
 import { GalleryHubBody } from './GalleryHubBody';

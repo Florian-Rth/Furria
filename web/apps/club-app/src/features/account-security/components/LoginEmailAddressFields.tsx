@@ -1,4 +1,7 @@
-import { KkCheckboxRow, KkFieldRow, KkFormSection, KkTextField } from '@furria/ui';
+import { KkCheckboxRow } from '@furria/ui/KkCheckboxRow';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkFormSection } from '@furria/ui/KkFormSection';
+import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
 import type { UseControllerReturn, UseFormReturn } from 'react-hook-form';
 import type { LoginEmailForm } from '../schemas';

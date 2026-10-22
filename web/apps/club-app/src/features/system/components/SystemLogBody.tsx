@@ -1,4 +1,7 @@
-import { KkEmptyState, KkReadout, KkSkeletonBlock, KkTeleprinter } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkReadout } from '@furria/ui/KkReadout';
+import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
+import { KkTeleprinter } from '@furria/ui/KkTeleprinter';
 import type { FC } from 'react';
 import type { SystemLog } from '../hooks/use-system-log';
 import {

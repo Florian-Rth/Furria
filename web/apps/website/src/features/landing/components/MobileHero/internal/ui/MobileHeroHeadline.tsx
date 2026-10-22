@@ -1,4 +1,5 @@
-import { KkTwoToneHeadline, kkTokens } from '@furria/ui';
+import { KkTwoToneHeadline } from '@furria/ui/KkTwoToneHeadline';
+import { kkTokens } from '@furria/ui/tokens';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 

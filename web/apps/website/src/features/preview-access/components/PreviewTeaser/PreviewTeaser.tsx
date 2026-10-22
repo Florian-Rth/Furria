@@ -1,4 +1,5 @@
-import { KkConfettiRain, KkTwoToneHeadline } from '@furria/ui';
+import { KkConfettiRain } from '@furria/ui/KkConfettiRain';
+import { KkTwoToneHeadline } from '@furria/ui/KkTwoToneHeadline';
 import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';

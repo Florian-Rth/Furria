@@ -1,4 +1,4 @@
-import { KkStateCard } from '@furria/ui';
+import { KkStateCard } from '@furria/ui/KkStateCard';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toRowView } from '../event-board-copy';

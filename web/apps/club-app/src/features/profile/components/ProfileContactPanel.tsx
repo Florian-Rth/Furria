@@ -1,8 +1,10 @@
-import type { KkPanelAction } from '@furria/ui';
-import { KkFieldRow, KkPanel, KkPanelSection } from '@furria/ui';
+import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import type { KkPanelAction } from '@furria/ui/panel-action';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { toLandingKey } from '@/features/write';
+import { toLandingKey } from '@/features/write/landing-target';
 import type { MePerson } from '@/lib/api/schemas';
 import { formatAddress } from '@/lib/membership-labels';
 import {

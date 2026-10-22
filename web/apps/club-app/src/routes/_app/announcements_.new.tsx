@@ -3,9 +3,9 @@ import type { FC } from 'react';
 import {
   ANNOUNCEMENTS_ORIGIN,
   ANNOUNCEMENTS_TITLE,
-  AnnouncementNewScreen,
-} from '@/features/announcements';
-import { RequireScreenPermission } from '@/features/session';
+} from '@/features/announcements/announcements-labels';
+import { AnnouncementNewScreen } from '@/features/announcements/components/AnnouncementNewScreen';
+import { RequireScreenPermission } from '@/features/session/components/RequireScreenPermission';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 
 const AnnouncementNewRoute: FC = () => (

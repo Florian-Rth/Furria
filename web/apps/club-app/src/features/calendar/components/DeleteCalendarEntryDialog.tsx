@@ -1,4 +1,4 @@
-import { KkConfirmDialog } from '@furria/ui';
+import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
 import type { FC } from 'react';
 import { toDeleteConsequence, toEntryFacts } from '../calendar-labels';
 import type { CalendarEntryRemovalControl } from '../hooks/use-calendar-entry-removal';

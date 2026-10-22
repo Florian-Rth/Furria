@@ -1,4 +1,7 @@
-import { KkIconButton, KkMeta, KkOfficeHead, KkOfficeMark } from '@furria/ui';
+import { KkIconButton } from '@furria/ui/KkIconButton';
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkOfficeHead } from '@furria/ui/KkOfficeHead';
+import { KkOfficeMark } from '@furria/ui/KkOfficeMark';
 import type { FC } from 'react';
 import { CLOSE_LABEL } from '../board-hub-copy';
 import type { BoardOffice } from '../schemas';

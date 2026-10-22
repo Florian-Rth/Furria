@@ -1,5 +1,7 @@
-import type { KkGroupTone, KkSx } from '@furria/ui';
-import { KkBannerDesk, KkPanelSection } from '@furria/ui';
+import type { KkGroupTone } from '@furria/ui/group-tone';
+import { KkBannerDesk } from '@furria/ui/KkBannerDesk';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import type { KkSx } from '@furria/ui/kk-sx';
 import Box from '@mui/material/Box';
 import type { FC, ReactNode } from 'react';
 import type { PictureSectionDesk } from '../hooks/use-picture-section';

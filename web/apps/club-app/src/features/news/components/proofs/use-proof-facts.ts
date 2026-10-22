@@ -1,4 +1,4 @@
-import type { KkNewsProofFacts } from '@furria/ui';
+import type { KkNewsProofFacts } from '@furria/ui/news-proof-types';
 import { WEBSITE_HOST } from '@/lib/publish-copy';
 import { CATEGORY_LABELS, CATEGORY_TONES } from '../../news-copy';
 import {

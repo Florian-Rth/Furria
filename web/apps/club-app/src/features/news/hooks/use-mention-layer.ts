@@ -1,4 +1,4 @@
-import type { KkMentionSection } from '@furria/ui';
+import type { KkMentionSection } from '@furria/ui/KkMentionPicker';
 import { MENTION_BOARD, MENTION_GROUPS, MENTION_NOT_PUBLIC } from '../editor-copy';
 import type { CaretAnchor } from '../news-text-editor';
 import type { NewsMentionable } from '../types';

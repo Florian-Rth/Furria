@@ -1,4 +1,6 @@
-import { KkEmptyState, KkPanel, KkSheet } from '@furria/ui';
+import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkPanel } from '@furria/ui/KkPanel';
+import { KkSheet } from '@furria/ui/KkSheet';
 import type { FC } from 'react';
 import { toKeyHolderEntries } from '@/lib/key-holders';
 import { toPeekId } from '@/lib/peek';

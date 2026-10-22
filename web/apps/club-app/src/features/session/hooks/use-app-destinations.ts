@@ -1,4 +1,4 @@
-import type { KkShellDestination } from '@furria/ui';
+import type { KkShellDestination } from '@furria/ui/shell-destination';
 import { APP_DESTINATIONS, MANAGING_LOGIN_DESTINATIONS } from '../app-sections';
 import { usePermissions } from './use-permissions';
 
