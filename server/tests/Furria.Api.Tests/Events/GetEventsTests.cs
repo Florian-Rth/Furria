@@ -9,6 +9,7 @@ using Furria.Core.News;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
+using static Furria.Api.Tests.RunningOrders.RunningOrderSteps;
 
 namespace Furria.Api.Tests.Events;
 
@@ -285,6 +286,13 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
                         },
                         new EventStepDto
                         {
+                            Step = EventStep.RunningOrder,
+                            State = EventStepState.Waiting,
+                            DueOn = new DateOnly(2027, 3, 6),
+                            OpensOn = new DateOnly(2027, 2, 20),
+                        },
+                        new EventStepDto
+                        {
                             Step = EventStep.Review,
                             State = EventStepState.Waiting,
                             DueOn = new DateOnly(2027, 4, 3),
@@ -350,6 +358,45 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
                 Assert.Equal(
                     EventStepState.Done,
                     opening.Steps.Single(status => status.Step == EventStep.Review).State
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_FinishOnlyTheRunningOrderThatStands_When_SeveralEventsAreListed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildPlanningAsync(ct);
+                var client = await ctx.Identity.ClientForAsync("vera", ct);
+                var lied = await CreateActAsync(client, "Lied");
+                var galaId = ctx.Club.Events.IdOf("first-gala");
+                var carnivalId = ctx.Club.Events.IdOf("carnival");
+                await SavedAsync(client, galaId, null, [Line(lied, 0)]);
+                await ConfirmAsync(client, galaId, confirmed: true);
+                await SavedAsync(client, carnivalId, null, [Line(lied, 0)]);
+
+                var (_, result) = await ReadAsync(ctx, "vera", ct);
+
+                Assert.Equal(
+                    [
+                        (FirstGala, EventStepState.Done),
+                        (Carnival, EventStepState.Waiting),
+                        (Opening, EventStepState.Open),
+                    ],
+                    result.Events.Select(listed =>
+                        (
+                            listed.Title,
+                            listed
+                                .Steps.Single(status => status.Step == EventStep.RunningOrder)
+                                .State
+                        )
+                    )
                 );
             }
         );

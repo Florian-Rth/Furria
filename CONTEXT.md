@@ -794,14 +794,16 @@ German copy), **public event** (an event is public by definition; "public" alone
 One piece of an event's preparation, computed from the event's data, never ticked off by hand:
 **details** (*Eckdaten* — every key fact set and published, due 90 days before), **tickets**
 (*Karten* — price and presale start set and no **ticket request** waiting longer than three days,
-due 60 days before) and **review** (*Nachbereitung* — a published album of the evening, opens the
-day after, due 14 days after). A step is *done*, *overdue*, *open* or *waiting* (its window not
+due 60 days before), **running order** (*Ablauf* — the evening has a running order, every act is
+placed, it has no conflicts and it is confirmed and unchanged since; opens 28 days before, due 14
+days before) and **review** (*Nachbereitung* — a published album of the evening, opens the day
+after, due 14 days after). A step is *done*, *overdue*, *open* or *waiting* (its window not
 open yet). Due dates are never retroactive: no step falls due earlier than 14 days after the event
 was created, and none before the evening later than the day before it. The **current step** is
 the one to do next — the earliest overdue, else the open one due soonest; a cancelled event has
 none, and once an event is over only its review can be current (ruled 2026-10-17, event planner
 v2).
-_UI copy_: Schritt; Eckdaten, Karten, Nachbereitung
+_UI copy_: Schritt; Eckdaten, Karten, Ablauf, Nachbereitung
 _Avoid_: task, phase, milestone, checklist item (a checklist item is an *Aufgabe*, later)
 
 **Running order**:

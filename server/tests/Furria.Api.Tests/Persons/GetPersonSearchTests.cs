@@ -282,6 +282,41 @@ public sealed class GetPersonSearchTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_AllowTheSearch_When_TheCallerPlansRunningOrders()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("katrin", "Katrin", "Sommer")
+                            .AddPerson("paula", "Paula", "Brendel")
+                            .AddAccount("katrin")
+                    )
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "ablauf",
+                            "ablauf-holding",
+                            "Ablauf",
+                            "katrin",
+                            FurriaPermissions.EventsRunningOrder
+                        )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("katrin", ct);
+        var (response, result) = await SearchAsync(client, "bren");
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            [ctx.Identity.People.IdOf("paula")],
+            result.Persons.Select(person => person.PersonId)
+        );
+    }
+
+    [Fact]
     public async Task Should_ReturnBadRequest_When_TheQueryIsASingleCharacter()
     {
         var ct = TestContext.Current.CancellationToken;

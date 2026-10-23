@@ -63,6 +63,10 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
     title: 'Veranstaltungen pflegen',
     line: 'Veranstaltungen anlegen, ihre Eckdaten für die Website pflegen, die Kartenlage setzen und absagen.',
   },
+  [PERMISSION_KEYS.eventsRunningOrder]: {
+    title: 'Ablauf planen',
+    line: 'Auftritte pflegen und den Ablauf einer Veranstaltung zusammenstellen, prüfen und bestätigen.',
+  },
   [PERMISSION_KEYS.ticketRequestsHandle]: {
     title: 'Kartenanfragen bearbeiten',
     line: 'Kartenanfragen von der Website sehen und erledigen.',

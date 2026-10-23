@@ -25,3 +25,11 @@ export const toEventErrorMessage = (error: Error | null): string | null =>
 
 export const toTicketRequestsErrorMessage = (error: Error | null): string | null =>
   toQueryErrorMessage(error, TICKET_REQUESTS_ERROR_MESSAGES);
+
+const RUNNING_ORDER_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
+  ...EVENTS_ERROR_MESSAGES,
+  unexpected: 'Der Ablauf konnte nicht geladen werden.',
+};
+
+export const toRunningOrderErrorMessage = (error: Error | null): string | null =>
+  toQueryErrorMessage(error, RUNNING_ORDER_ERROR_MESSAGES);

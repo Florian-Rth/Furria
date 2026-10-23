@@ -2,6 +2,7 @@ import AddBoxOutlinedIcon from '@mui/icons-material/AddBoxOutlined';
 import AddOutlinedIcon from '@mui/icons-material/AddOutlined';
 import AlternateEmailOutlinedIcon from '@mui/icons-material/AlternateEmailOutlined';
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
+import AutoFixHighOutlinedIcon from '@mui/icons-material/AutoFixHighOutlined';
 import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
 import BrokenImageOutlinedIcon from '@mui/icons-material/BrokenImageOutlined';
 import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
@@ -33,6 +34,7 @@ import EuroOutlinedIcon from '@mui/icons-material/EuroOutlined';
 import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import FingerprintOutlinedIcon from '@mui/icons-material/FingerprintOutlined';
+import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
 import FolderZipOutlinedIcon from '@mui/icons-material/FolderZipOutlined';
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
 import FormatListBulletedIcon from '@mui/icons-material/FormatListBulleted';
@@ -54,6 +56,7 @@ import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import KeyOutlinedIcon from '@mui/icons-material/KeyOutlined';
 import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
+import LinkOffOutlinedIcon from '@mui/icons-material/LinkOffOutlined';
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
@@ -62,6 +65,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
+import MusicNoteOutlinedIcon from '@mui/icons-material/MusicNoteOutlined';
 import NewspaperOutlinedIcon from '@mui/icons-material/NewspaperOutlined';
 import NotesOutlinedIcon from '@mui/icons-material/NotesOutlined';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
@@ -73,6 +77,8 @@ import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import PolicyOutlinedIcon from '@mui/icons-material/PolicyOutlined';
+import PushPinIcon from '@mui/icons-material/PushPin';
+import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import QrCode2OutlinedIcon from '@mui/icons-material/QrCode2Outlined';
 import RemoveOutlinedIcon from '@mui/icons-material/RemoveOutlined';
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
@@ -85,7 +91,9 @@ import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import TableRestaurantOutlinedIcon from '@mui/icons-material/TableRestaurantOutlined';
 import TheaterComedyOutlinedIcon from '@mui/icons-material/TheaterComedyOutlined';
 import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
+import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
 import UndoOutlinedIcon from '@mui/icons-material/UndoOutlined';
+import ViewAgendaOutlinedIcon from '@mui/icons-material/ViewAgendaOutlined';
 import ViewTimelineOutlinedIcon from '@mui/icons-material/ViewTimelineOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
@@ -187,7 +195,16 @@ export type KkIconName =
   | 'menuVertical'
   | 'addToHome'
   | 'installApp'
-  | 'openInBrowser';
+  | 'openInBrowser'
+  | 'pin'
+  | 'pinFilled'
+  | 'block'
+  | 'unblock'
+  | 'wish'
+  | 'suggest'
+  | 'music'
+  | 'flag'
+  | 'sparkle';
 type KkIconSize = 'small' | 'medium' | 'large';
 
 interface KkIconProps {
@@ -296,6 +313,15 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   campaign: CampaignOutlinedIcon,
   timeline: ViewTimelineOutlinedIcon,
   stage: TheaterComedyOutlinedIcon,
+  pin: PushPinOutlinedIcon,
+  pinFilled: PushPinIcon,
+  block: ViewAgendaOutlinedIcon,
+  unblock: LinkOffOutlinedIcon,
+  wish: TuneRoundedIcon,
+  suggest: AutoFixHighOutlinedIcon,
+  music: MusicNoteOutlinedIcon,
+  flag: FlagOutlinedIcon,
+  sparkle: AutoAwesomeOutlinedIcon,
 };
 
 export const KkIcon: FC<KkIconProps> = ({ name, size = 'medium', sx }) => {

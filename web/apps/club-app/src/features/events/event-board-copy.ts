@@ -28,12 +28,14 @@ export const FACTS_LABEL = 'Eckdaten des Abends';
 export const OPEN_EVENT_LABEL = 'Ganze Seite';
 export const EMPTY_FILTER_NOTE = 'Kein Abend in dieser Auswahl.';
 export const NEW_EVENT_ACTION_LABEL = 'Veranstaltung anlegen';
+export const ACTS_ACTION_LABEL = 'Auftritte';
 
 export const COLUMN_TITLES: Record<BoardColumn, string> = {
   website: 'Website',
   details: 'Eckdaten',
   tickets: 'Karten',
   requests: 'Anfragen',
+  runningOrder: 'Ablauf',
   review: 'Nachbereitung',
   deadline: 'Nächste Frist',
 };
@@ -43,6 +45,7 @@ export const PANE_ICONS: Record<EventPaneKey, KkIconName> = {
   details: 'factSheet',
   tickets: 'tickets',
   requests: 'inbox',
+  runningOrder: 'timeline',
   review: 'gallery',
 };
 
@@ -56,6 +59,7 @@ export const PANE_TITLES: Record<EventPaneKey, string> = {
   details: 'Eckdaten',
   tickets: 'Karten',
   requests: 'Kartenanfragen',
+  runningOrder: 'Ablauf',
   review: 'Nachbereitung',
 };
 
@@ -172,6 +176,10 @@ export const toCellFactLabel = (fact: CellFact): string => {
         : join([plural(fact.albums, 'Album', 'Alben'), plural(fact.news, 'Meldung', 'Meldungen')]);
     case 'reviewOpens':
       return `ab ${toShortDay(fact.opensOn)}`;
+    case 'runningOrder':
+      return fact.stands ? 'steht' : 'noch offen';
+    case 'runningOrderOpens':
+      return `ab ${toShortDay(fact.opensOn)}`;
     case 'deadline':
       return join([STEP_TITLES[fact.step], toShortDay(fact.dueOn)]);
     case 'allDone':
@@ -232,7 +240,6 @@ export const LATER_EYEBROW = 'Kommt noch';
 export const LATER_ITEMS: readonly KkStepLaterItem[] = [
   { icon: 'stage', label: 'Besetzung' },
   { icon: 'tables', label: 'Saal & Tische' },
-  { icon: 'timeline', label: 'Ablauf' },
   { icon: 'select', label: 'Aufgaben' },
   { icon: 'campaign', label: 'Werbung' },
   { icon: 'live', label: 'Live-Regie' },
@@ -315,6 +322,10 @@ export const toCellShortFact = (fact: CellFact): string => {
           : 'noch nichts';
     case 'reviewOpens':
       return `ab ${toShortDay(fact.opensOn)}`;
+    case 'runningOrder':
+      return fact.stands ? 'steht' : 'noch offen';
+    case 'runningOrderOpens':
+      return `ab ${toShortDay(fact.opensOn)}`;
     case 'deadline':
       return toShortDay(fact.dueOn);
     case 'allDone':
@@ -376,6 +387,7 @@ export const SECONDARY_LINKS: Record<EventPaneKey, readonly SecondaryLink[]> = {
   details: [EDIT_LINK, MANAGE_LINK],
   tickets: [EDIT_LINK],
   requests: [],
+  runningOrder: [],
   review: [],
 };
 

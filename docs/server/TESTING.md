@@ -273,6 +273,8 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    `venueAlias` is optional — a group may state a habit without naming a hall.
    **`AddCalendarEntry` takes `participatingGroupAliases`** as its last parameter, which is how a
    test arranges participating groups.
+   **`AddAttendanceResponse` may name an `AddEvent` alias** as its calendar entry — events are
+   inserted before the answers — which is how a test arranges an absence from an evening.
    `AddAccount` and `AddPersonContact` create the Person under the same alias unless `AddPerson`
    already declared it. **Every dated fact carries its own alias first and names its parent by
    alias** — `AddMembership("alice-first", "alice", startedOn)` — so a Person can hold several
@@ -479,6 +481,12 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    `ToBeBinnedAt`, `ToBeOutOfTheBin`, `ToNotExist`) and `Expected.GalleryItem(id)`
    (`ToSitInTheInboxOf(personId | null)`, `ToBePlacedIn`, `ToBeBinnedFrom`, `ToBeSelectedAt`,
    `ToBeUnselected`, `ToNotExist`) read the result; `PurgeGalleryBinAsync` runs the bin's purge once.
+   Acts and running orders (2026-10-22) are arranged over the real API through `RunningOrderSteps`
+   (`Furria.Api.Tests/RunningOrders`; `RunningOrderSeeds.PlannerWithGala` seeds the planner, the
+   group and the evening) and read through `Expected.Act(id)` (`ToHaveName`, `ToBelongTo`,
+   `ToBeArchivedAt`, `ToBeInUse`, `ToChangeTheCastExactly`, `ToWishExactly`) and
+   `Expected.RunningOrder(eventId)` (`ToHaveVersion`, `ToNotExist`). The checks and the suggestion
+   are pure (`RunningOrderReviewTests`, `RunningOrderSuggestionTests`).
 16. **Portraits and group pictures (L7a S3)** — `PictureSteps` (`Furria.Api.Tests/Media`) uploads
    a picture over tus (`UploadedPortraitAsync`) or uploads it and stands in for the worker
    (`RenderedPortraitAsync`, `RenderedGroupPictureAsync` → `RenderMediaItemDirectlyAsync`: *ready*,

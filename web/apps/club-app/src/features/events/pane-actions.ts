@@ -9,6 +9,8 @@ import {
 } from './event-plan';
 import type { EventPaneKey } from './schemas';
 
+export type RunningOrderPresence = 'hidden' | 'none' | 'exists';
+
 export type PaneAction =
   | { kind: 'publish' }
   | { kind: 'view' }
@@ -16,6 +18,8 @@ export type PaneAction =
   | { kind: 'editDetails' }
   | { kind: 'editTickets' }
   | { kind: 'album' }
+  | { kind: 'planRunningOrder' }
+  | { kind: 'openRunningOrder' }
   | { kind: 'step'; pane: EventPaneKey }
   | { kind: 'none' };
 
@@ -31,11 +35,23 @@ const WEBSITE_ACTIONS: Record<PublishState, PaneAction> = {
   closed: NONE,
 };
 
+const runningOrderActionOf = (presence: RunningOrderPresence, isOver: boolean): PaneAction => {
+  switch (presence) {
+    case 'hidden':
+      return NONE;
+    case 'exists':
+      return { kind: 'openRunningOrder' };
+    case 'none':
+      return isOver ? NONE : { kind: 'planRunningOrder' };
+  }
+};
+
 export interface PaneActionInput {
   event: PlannedEvent;
   pane: EventPaneKey;
   todayIsoDay: string;
   addsAlbums: boolean;
+  runningOrder: RunningOrderPresence;
 }
 
 export const paneActionOf = ({
@@ -43,6 +59,7 @@ export const paneActionOf = ({
   pane,
   todayIsoDay,
   addsAlbums,
+  runningOrder,
 }: PaneActionInput): PaneAction => {
   if (isCancelledEvent(event)) {
     return NONE;
@@ -72,6 +89,8 @@ export const paneActionOf = ({
         : next();
     case 'requests':
       return event.ticketRequests.open > 0 ? NONE : next();
+    case 'runningOrder':
+      return runningOrderActionOf(runningOrder, event.isOver);
     case 'review': {
       const state = stepStatusOf(event, 'review')?.state;
 

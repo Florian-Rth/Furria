@@ -1,4 +1,5 @@
 using Furria.Application.Authorization;
+using Furria.Application.RunningOrders;
 
 namespace Furria.Application.Registry;
 
@@ -14,5 +15,6 @@ public static class PersonSearchKeys
         FurriaPermissions.BoardManage,
         FurriaPermissions.CalendarManageClub,
         FurriaPermissions.AccountsManage,
+        .. RunningOrderKeys.Planners,
     ];
 }

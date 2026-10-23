@@ -5,6 +5,7 @@ using Furria.Core.Identity;
 using Furria.Core.Media;
 using Furria.Core.News;
 using Furria.Core.Roles;
+using Furria.Core.RunningOrders;
 using Furria.Core.Website;
 using Furria.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,7 @@ public static class ReferencesToPerson
         HerOwn<KeyHolding>(nameof(KeyHolding.PersonId)),
         HerOwn<AttendanceResponse>(nameof(AttendanceResponse.PersonId)),
         HerOwn<NewsPostMention>(nameof(NewsPostMention.PersonId)),
+        HerOwn<ActCastChange>(nameof(ActCastChange.PersonId)),
         Reference<Announcement>(
             nameof(Announcement.AuthorPersonId),
             OnAbsorption.BlocksIt,
