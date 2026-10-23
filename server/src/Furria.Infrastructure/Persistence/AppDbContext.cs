@@ -7,6 +7,7 @@ using Furria.Core.Media;
 using Furria.Core.MembershipApplications;
 using Furria.Core.News;
 using Furria.Core.Roles;
+using Furria.Core.RunningOrders;
 using Furria.Core.Website;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Logging;
@@ -107,6 +108,21 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<LogEntry> LogEntries => Set<LogEntry>();
 
     public DbSet<MediaWorkerHeartbeat> MediaWorkerHeartbeats => Set<MediaWorkerHeartbeat>();
+
+    public DbSet<Act> Acts => Set<Act>();
+
+    public DbSet<ActCastChange> ActCastChanges => Set<ActCastChange>();
+
+    public DbSet<ActWish> ActWishes => Set<ActWish>();
+
+    public DbSet<RunningOrder> RunningOrders => Set<RunningOrder>();
+
+    public DbSet<RunningOrderLine> RunningOrderLines => Set<RunningOrderLine>();
+
+    public DbSet<RunningOrderRule> RunningOrderRules => Set<RunningOrderRule>();
+
+    public DbSet<RunningOrderSuspendedWish> RunningOrderSuspendedWishes =>
+        Set<RunningOrderSuspendedWish>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }

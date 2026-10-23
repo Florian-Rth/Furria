@@ -65,6 +65,7 @@ export const FIX_LABELS = { edit: 'Ergänzen', picture: 'Bild setzen' } as const
 const PANE_STEPS: Partial<Record<EventPaneKey, EventStepKey>> = {
   details: 'details',
   tickets: 'tickets',
+  runningOrder: 'runningOrder',
   review: 'review',
 };
 

@@ -18,6 +18,21 @@ describe('toOriginHref', () => {
       },
       expected: '/groups/4/people/9',
     },
+    {
+      label: 'a path param and a search',
+      origin: {
+        label: 'Sitzung',
+        to: '/events/$eventId',
+        params: { eventId: '16' },
+        search: { step: 'runningOrder' },
+      },
+      expected: '/events/16?step=runningOrder',
+    },
+    {
+      label: 'an empty search',
+      origin: { label: 'Verein', to: '/club', search: {} },
+      expected: '/club',
+    },
   ])('resolves $label', ({ origin, expected }) => {
     expect(toOriginHref(origin)).toBe(expected);
   });

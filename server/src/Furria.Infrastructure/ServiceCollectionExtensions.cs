@@ -17,6 +17,7 @@ using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Public;
 using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.Roles;
+using Furria.Infrastructure.RunningOrders;
 using Furria.Infrastructure.Start;
 using Furria.Infrastructure.Website;
 using Microsoft.AspNetCore.DataProtection;
@@ -96,6 +97,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<AnnouncementService>();
         services.AddScoped<CalendarService>();
         services.AddScoped<EventService>();
+        services.AddScoped<ActCatalogue>();
+        services.AddScoped<ActService>();
+        services.AddScoped<ActAccess>();
+        services.AddScoped<RunningOrderService>();
         services.AddScoped<EventPictures>();
         services.AddScoped<TicketRequestService>();
         services.AddScoped<TicketRequestArrivalNotifier>();

@@ -8,6 +8,7 @@ using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
+using static Furria.Api.Tests.RunningOrders.RunningOrderSteps;
 
 namespace Furria.Api.Tests.Events;
 
@@ -95,7 +96,7 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LeaveNoCurrentStep_When_DetailsAndTicketsAreDoneBeforeTheEvening()
+    public async Task Should_PointAtTheRunningOrder_When_DetailsAndTicketsAreDoneButNoRunningOrderExists()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -128,10 +129,136 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
                     result.Review
                 );
                 Assert.Equal(
-                    [EventStepState.Done, EventStepState.Done, EventStepState.Waiting],
+                    [
+                        EventStepState.Done,
+                        EventStepState.Done,
+                        EventStepState.Open,
+                        EventStepState.Waiting,
+                    ],
                     result.Steps.Select(status => status.State)
                 );
-                Assert.Null(result.CurrentStep);
+                Assert.Equal(EventStep.RunningOrder, result.CurrentStep);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_FinishTheRunningOrder_When_EveryActIsPlacedConflictFreeAndConfirmed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildClubAsync(ct);
+                var client = await ctx.Identity.ClientForAsync("vera", ct);
+                var eventId = ctx.Club.Events.IdOf("first-gala");
+                var max = ctx.Identity.People.IdOf("max");
+                var rede = await CreateActAsync(client, "Büttenrede", added: [max]);
+                var lied = await CreateActAsync(client, "Lied");
+                await SavedAsync(client, eventId, null, [Line(rede, 0), Line(lied, 1)]);
+                await ConfirmAsync(client, eventId, confirmed: true);
+
+                var (_, result) = await ReadAsync(ctx, "vera", eventId);
+
+                Assert.Equal(EventStepState.Done, RunningOrderStateOf(result));
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_KeepTheRunningOrderOpen_When_ItChangedSinceTheConfirmation()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildClubAsync(ct);
+                var client = await ctx.Identity.ClientForAsync("vera", ct);
+                var eventId = ctx.Club.Events.IdOf("first-gala");
+                var rede = await CreateActAsync(client, "Büttenrede");
+                var lied = await CreateActAsync(client, "Lied");
+                var saved = await SavedAsync(client, eventId, null, [Line(rede, 0), Line(lied, 1)]);
+                await ConfirmAsync(client, eventId, confirmed: true);
+                await SavedAsync(client, eventId, saved.Version, [Line(lied, 0), Line(rede, 1)]);
+
+                var (_, result) = await ReadAsync(ctx, "vera", eventId);
+
+                Assert.Equal(EventStepState.Open, RunningOrderStateOf(result));
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_KeepTheRunningOrderOpen_When_TheConfirmedOrderHasNoActs()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildClubAsync(ct);
+                var client = await ctx.Identity.ClientForAsync("vera", ct);
+                var eventId = ctx.Club.Events.IdOf("first-gala");
+                await SavedAsync(client, eventId, null, []);
+                await ConfirmAsync(client, eventId, confirmed: true);
+
+                var (_, result) = await ReadAsync(ctx, "vera", eventId);
+
+                Assert.Equal(EventStepState.Open, RunningOrderStateOf(result));
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_KeepTheRunningOrderOpen_When_AnActIsNotPlacedYet()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildClubAsync(ct);
+                var client = await ctx.Identity.ClientForAsync("vera", ct);
+                var eventId = ctx.Club.Events.IdOf("first-gala");
+                var rede = await CreateActAsync(client, "Büttenrede");
+                var lied = await CreateActAsync(client, "Lied");
+                await SavedAsync(client, eventId, null, [Line(rede, 0), Line(lied, null)]);
+                await ConfirmAsync(client, eventId, confirmed: true);
+
+                var (_, result) = await ReadAsync(ctx, "vera", eventId);
+
+                Assert.Equal(EventStepState.Open, RunningOrderStateOf(result));
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_KeepTheRunningOrderOpen_When_TheConfirmedOrderHasAConflict()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildClubAsync(ct);
+                var client = await ctx.Identity.ClientForAsync("vera", ct);
+                var eventId = ctx.Club.Events.IdOf("first-gala");
+                var max = ctx.Identity.People.IdOf("max");
+                var rede = await CreateActAsync(client, "Büttenrede", added: [max]);
+                var lied = await CreateActAsync(client, "Lied", added: [max]);
+                await SavedAsync(client, eventId, null, [Line(rede, 0), Line(lied, 1)]);
+                await ConfirmAsync(client, eventId, confirmed: true);
+
+                var (_, result) = await ReadAsync(ctx, "vera", eventId);
+
+                Assert.Equal(EventStepState.Open, RunningOrderStateOf(result));
             }
         );
     }
@@ -195,6 +322,9 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+    private static EventStepState RunningOrderStateOf(GetEventByIdResponse result) =>
+        result.Steps.Single(status => status.Step == EventStep.RunningOrder).State;
 
     private static async Task<TestResult<GetEventByIdResponse>> ReadAsync(
         SeededContext ctx,

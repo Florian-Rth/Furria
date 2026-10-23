@@ -3,6 +3,7 @@ import type { EventDetails, EventPaneKey } from '../schemas';
 import { EventPaneDetails } from './EventPaneDetails';
 import { EventPaneRequests } from './EventPaneRequests';
 import { EventPaneReview } from './EventPaneReview';
+import { EventPaneRunningOrder } from './EventPaneRunningOrder';
 import { EventPaneTickets } from './EventPaneTickets';
 import { EventPaneWebsite } from './EventPaneWebsite';
 
@@ -21,6 +22,8 @@ export const EventPaneBody: FC<EventPaneBodyProps> = ({ event, pane }) => {
       return <EventPaneTickets event={event} />;
     case 'requests':
       return <EventPaneRequests event={event} />;
+    case 'runningOrder':
+      return <EventPaneRunningOrder event={event} />;
     case 'review':
       return <EventPaneReview event={event} />;
   }

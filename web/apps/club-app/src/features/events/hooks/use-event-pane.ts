@@ -13,6 +13,7 @@ import type { EventDetails, EventPaneKey } from '../schemas';
 import type { EventPublishing } from './use-event-publishing';
 import { useEventPublishing } from './use-event-publishing';
 import { usePlanClock } from './use-plan-clock';
+import { useRunningOrderStep } from './use-running-order-step';
 
 const PUBLISHING_PANES: ReadonlySet<EventPaneKey> = new Set(['website', 'details']);
 
@@ -39,6 +40,7 @@ export const useEventPane = (eventId: number, pane: EventPaneKey): EventPaneStat
   const { today } = usePlanClock();
   const event = query.data;
   const publishing = useEventPublishing(PUBLISHING_PANES.has(pane) ? event : undefined);
+  const runningOrder = useRunningOrderStep(eventId, pane === 'runningOrder');
 
   if (event === undefined) {
     return { event, head: null, tabs: [], action: { kind: 'none' }, publishing };
@@ -55,6 +57,7 @@ export const useEventPane = (eventId: number, pane: EventPaneKey): EventPaneStat
       pane,
       todayIsoDay: today,
       addsAlbums: GALLERY_SORT_KEYS.some(permissions.has),
+      runningOrder: runningOrder.presence,
     }),
     head: {
       icon: PANE_ICONS[pane],

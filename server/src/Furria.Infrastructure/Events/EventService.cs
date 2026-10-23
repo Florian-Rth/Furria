@@ -10,6 +10,7 @@ using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Public;
+using Furria.Infrastructure.RunningOrders;
 using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Events;
@@ -43,18 +44,21 @@ public sealed class EventService
     private readonly AppDbContext _dbContext;
     private readonly PublicFace _publicFace;
     private readonly MediaPictures _pictures;
+    private readonly RunningOrderService _runningOrders;
     private readonly TimeProvider _timeProvider;
 
     public EventService(
         AppDbContext dbContext,
         PublicFace publicFace,
         MediaPictures pictures,
+        RunningOrderService runningOrders,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
         _publicFace = publicFace;
         _pictures = pictures;
+        _runningOrders = runningOrders;
         _timeProvider = timeProvider;
     }
 
@@ -105,7 +109,9 @@ public sealed class EventService
                 row.PublishedAt
             ))
             .ToListAsync(ct);
-        var tallies = await TalliesOfAsync([.. rows.Select(row => row.EventId)], ct);
+        var eventIds = rows.Select(row => row.EventId).ToList();
+        var tallies = await TalliesOfAsync(eventIds, ct);
+        var settled = await _runningOrders.SettledEventIdsAsync(eventIds, ct);
 
         return
         [
@@ -118,7 +124,12 @@ public sealed class EventService
                         row.PictureId,
                         row.PictureRenderedAt
                     ),
-                    PlanningOf(PlanningInputsOf(row), tallies.GetValueOrDefault(row.EventId), now)
+                    PlanningOf(
+                        PlanningInputsOf(row),
+                        tallies.GetValueOrDefault(row.EventId),
+                        settled.Contains(row.EventId),
+                        now
+                    )
                 )
             ),
         ];
@@ -168,9 +179,11 @@ public sealed class EventService
 
         var stalledIds = await _dbContext.StalledAmongAsync([row.Picture], now, ct);
         var tallies = await TalliesOfAsync([row.EventId], ct);
+        var settled = await _runningOrders.SettledEventIdsAsync([row.EventId], ct);
         var planning = PlanningOf(
             PlanningInputsOf(row),
             tallies.GetValueOrDefault(row.EventId),
+            settled.Contains(row.EventId),
             now
         );
         return ToDetails(row, now, EditingOf(row, stalledIds), planning);
@@ -479,6 +492,7 @@ public sealed class EventService
     private static EventPlanning PlanningOf(
         PlanningInputs inputs,
         TallyRow? tally,
+        bool isRunningOrderSettled,
         DateTimeOffset now
     )
     {
@@ -492,6 +506,7 @@ public sealed class EventService
             AreDetailsDone = detailsMissing.Count == 0,
             AreTicketsSet = inputs.AreTicketsSet,
             OldestOpenRequestAt = tally?.OldestRequestedAt,
+            IsRunningOrderDone = isRunningOrderSettled,
             HasPublishedAlbum = tally?.PublishedAlbums > 0,
         };
 

@@ -2259,6 +2259,288 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("role_permission", (string)null);
                 });
 
+            modelBuilder.Entity("Furria.Core.RunningOrders.Act", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset?>("ArchivedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("archived_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int?>("GroupId")
+                        .HasColumnType("integer")
+                        .HasColumnName("group_id");
+
+                    b.Property<string>("Kind")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("name")
+                        .UseCollation("de-DE-x-icu");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_act");
+
+                    b.HasIndex("GroupId")
+                        .HasDatabaseName("ix_act_group_id");
+
+                    b.ToTable("act", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_act_kind", "kind IS NULL OR kind IN ('Dance', 'Speech', 'Music', 'Show', 'Point')");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.ActCastChange", b =>
+                {
+                    b.Property<int>("ActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("act_id");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<string>("Change")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("change");
+
+                    b.HasKey("ActId", "PersonId")
+                        .HasName("pk_act_cast_change");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_act_cast_change_person_id");
+
+                    b.ToTable("act_cast_change", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_act_cast_change_change", "change IN ('Added', 'Removed')");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.ActWish", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("act_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Strength")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("strength");
+
+                    b.HasKey("Id")
+                        .HasName("pk_act_wish");
+
+                    b.HasIndex("ActId", "Kind")
+                        .IsUnique()
+                        .HasDatabaseName("ix_act_wish_act_id_kind");
+
+                    b.ToTable("act_wish", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_act_wish_kind", "kind IN ('First', 'Last', 'FirstHalf', 'SecondHalf', 'Early', 'Late')");
+
+                            t.HasCheckConstraint("ck_act_wish_strength", "strength IN ('Must', 'Prefer')");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrder", b =>
+                {
+                    b.Property<int>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<bool>("ChangedSinceConfirmed")
+                        .HasColumnType("boolean")
+                        .HasColumnName("changed_since_confirmed");
+
+                    b.Property<DateTimeOffset?>("ConfirmedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("confirmed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("CalendarEntryId")
+                        .HasName("pk_running_order");
+
+                    b.ToTable("running_order", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrderLine", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("act_id");
+
+                    b.Property<int?>("BlockKey")
+                        .HasColumnType("integer")
+                        .HasColumnName("block_key");
+
+                    b.Property<int>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<bool>("IsPinned")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_pinned");
+
+                    b.Property<int?>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.HasKey("Id")
+                        .HasName("pk_running_order_line");
+
+                    b.HasIndex("ActId")
+                        .HasDatabaseName("ix_running_order_line_act_id");
+
+                    b.HasIndex("CalendarEntryId", "ActId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_running_order_line_calendar_entry_id_act_id");
+
+                    b.ToTable("running_order_line", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_running_order_line_position", "position IS NULL OR position >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrderRule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("ActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("act_id");
+
+                    b.Property<string>("ActKind")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("act_kind");
+
+                    b.Property<int>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("kind");
+
+                    b.Property<int?>("OtherActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("other_act_id");
+
+                    b.Property<string>("Strength")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("strength");
+
+                    b.HasKey("Id")
+                        .HasName("pk_running_order_rule");
+
+                    b.HasIndex("ActId")
+                        .HasDatabaseName("ix_running_order_rule_act_id");
+
+                    b.HasIndex("CalendarEntryId")
+                        .HasDatabaseName("ix_running_order_rule_calendar_entry_id");
+
+                    b.HasIndex("OtherActId")
+                        .HasDatabaseName("ix_running_order_rule_other_act_id");
+
+                    b.ToTable("running_order_rule", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_running_order_rule_act_kind", "act_kind IS NULL OR act_kind IN ('Dance', 'Speech', 'Music', 'Show', 'Point')");
+
+                            t.HasCheckConstraint("ck_running_order_rule_kind", "kind IN ('First', 'Last', 'FirstHalf', 'SecondHalf', 'Early', 'Late', 'Before', 'After', 'Apart', 'KindSpread')");
+
+                            t.HasCheckConstraint("ck_running_order_rule_strength", "strength IN ('Must', 'Prefer')");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrderSuspendedWish", b =>
+                {
+                    b.Property<int>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<int>("ActWishId")
+                        .HasColumnType("integer")
+                        .HasColumnName("act_wish_id");
+
+                    b.HasKey("CalendarEntryId", "ActWishId")
+                        .HasName("pk_running_order_suspended_wish");
+
+                    b.HasIndex("ActWishId")
+                        .HasDatabaseName("ix_running_order_suspended_wish_act_wish_id");
+
+                    b.ToTable("running_order_suspended_wish", (string)null);
+                });
+
             modelBuilder.Entity("Furria.Core.Website.WebsitePicture", b =>
                 {
                     b.Property<string>("SlotKey")
@@ -3648,6 +3930,132 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Role");
                 });
 
+            modelBuilder.Entity("Furria.Core.RunningOrders.Act", b =>
+                {
+                    b.HasOne("Furria.Core.Groups.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_act_group_group_id");
+
+                    b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.ActCastChange", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
+                        .WithMany("CastChanges")
+                        .HasForeignKey("ActId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_cast_change_act_act_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_cast_change_person_person_id");
+
+                    b.Navigation("Act");
+
+                    b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.ActWish", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
+                        .WithMany("Wishes")
+                        .HasForeignKey("ActId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_wish_act_act_id");
+
+                    b.Navigation("Act");
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrder", b =>
+                {
+                    b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
+                        .WithOne()
+                        .HasForeignKey("Furria.Core.RunningOrders.RunningOrder", "CalendarEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_running_order_calendar_entry_calendar_entry_id");
+
+                    b.Navigation("CalendarEntry");
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrderLine", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
+                        .WithMany()
+                        .HasForeignKey("ActId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_running_order_line_act_act_id");
+
+                    b.HasOne("Furria.Core.RunningOrders.RunningOrder", "RunningOrder")
+                        .WithMany("Lines")
+                        .HasForeignKey("CalendarEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_running_order_line_running_order_calendar_entry_id");
+
+                    b.Navigation("Act");
+
+                    b.Navigation("RunningOrder");
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrderRule", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
+                        .WithMany()
+                        .HasForeignKey("ActId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_running_order_rule_act_act_id");
+
+                    b.HasOne("Furria.Core.RunningOrders.RunningOrder", "RunningOrder")
+                        .WithMany("Rules")
+                        .HasForeignKey("CalendarEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_running_order_rule_running_order_calendar_entry_id");
+
+                    b.HasOne("Furria.Core.RunningOrders.Act", "OtherAct")
+                        .WithMany()
+                        .HasForeignKey("OtherActId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_running_order_rule_act_other_act_id");
+
+                    b.Navigation("Act");
+
+                    b.Navigation("OtherAct");
+
+                    b.Navigation("RunningOrder");
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrderSuspendedWish", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.ActWish", "ActWish")
+                        .WithMany()
+                        .HasForeignKey("ActWishId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_running_order_suspended_wish_act_wish_act_wish_id");
+
+                    b.HasOne("Furria.Core.RunningOrders.RunningOrder", "RunningOrder")
+                        .WithMany("SuspendedWishes")
+                        .HasForeignKey("CalendarEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_running_order_suspended_wish_running_order_calendar_entry_id");
+
+                    b.Navigation("ActWish");
+
+                    b.Navigation("RunningOrder");
+                });
+
             modelBuilder.Entity("Furria.Core.Website.WebsitePicture", b =>
                 {
                     b.HasOne("Furria.Core.Media.MediaItem", "MediaItem")
@@ -3890,6 +4298,22 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Holdings");
 
                     b.Navigation("Permissions");
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.Act", b =>
+                {
+                    b.Navigation("CastChanges");
+
+                    b.Navigation("Wishes");
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrder", b =>
+                {
+                    b.Navigation("Lines");
+
+                    b.Navigation("Rules");
+
+                    b.Navigation("SuspendedWishes");
                 });
 #pragma warning restore 612, 618
         }

@@ -17,11 +17,18 @@ export type EventSalesStatus = z.infer<typeof EventSalesStatusSchema>;
 export const TicketAvailabilitySchema = z.enum(TICKET_AVAILABILITY_KEYS);
 export type TicketAvailability = z.infer<typeof TicketAvailabilitySchema>;
 
-export const EVENT_STEP_KEYS = ['details', 'tickets', 'review'] as const;
+export const EVENT_STEP_KEYS = ['details', 'tickets', 'runningOrder', 'review'] as const;
 export const EventStepKeySchema = z.enum(EVENT_STEP_KEYS);
 export type EventStepKey = z.infer<typeof EventStepKeySchema>;
 
-export const EVENT_PANE_KEYS = ['website', 'details', 'tickets', 'requests', 'review'] as const;
+export const EVENT_PANE_KEYS = [
+  'website',
+  'details',
+  'tickets',
+  'requests',
+  'runningOrder',
+  'review',
+] as const;
 export const EventPaneKeySchema = z.enum(EVENT_PANE_KEYS);
 export type EventPaneKey = z.infer<typeof EventPaneKeySchema>;
 

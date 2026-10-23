@@ -125,6 +125,48 @@ describe('cellOf steps', () => {
     expect(cell.fact).toEqual({ kind: 'reviewOpens', opensOn: '2027-01-17' });
     expect(cell.state).toBe('waiting');
   });
+
+  it.each([
+    {
+      name: 'waiting shows its opening day',
+      status: { state: 'waiting' as const, opensOn: '2026-12-19' },
+      fact: { kind: 'runningOrderOpens', opensOn: '2026-12-19' },
+      state: 'waiting',
+    },
+    {
+      name: 'done stands',
+      status: { state: 'done' as const, opensOn: '2026-12-19' },
+      fact: { kind: 'runningOrder', stands: true },
+      state: 'done',
+    },
+    {
+      name: 'open does not stand yet',
+      status: { state: 'open' as const, opensOn: '2026-12-19' },
+      fact: { kind: 'runningOrder', stands: false },
+      state: 'open',
+    },
+    {
+      name: 'overdue does not stand',
+      status: { state: 'overdue' as const, opensOn: null },
+      fact: { kind: 'runningOrder', stands: false },
+      state: 'overdue',
+    },
+  ])('running order: $name', ({ status, fact, state }) => {
+    const event = planned({
+      steps: [{ step: 'runningOrder', dueOn: '2027-01-02', ...status }],
+      currentStep: null,
+    });
+    const cell = cellOf(event, 'runningOrder', TODAY);
+
+    expect(cell.fact).toEqual(fact);
+    expect(cell.state).toBe(state);
+  });
+
+  it('shows no running order step as off', () => {
+    const cell = cellOf(planned(), 'runningOrder', TODAY);
+
+    expect(cell.state).toBe('off');
+  });
 });
 
 describe('cellOf requests', () => {

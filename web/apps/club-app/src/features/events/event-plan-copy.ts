@@ -5,6 +5,7 @@ import type { EventStepKey } from './schemas';
 export const STEP_TITLES: Record<EventStepKey, string> = {
   details: 'Eckdaten',
   tickets: 'Karten',
+  runningOrder: 'Ablauf',
   review: 'Nachbereitung',
 };
 
@@ -58,10 +59,6 @@ export const LATER_STEPS: readonly { title: string; line: string }[] = [
   {
     title: 'Saal & Tische',
     line: 'Der Saal mit Tischreihen, Stühlen und Bereichen — gezeichnet am Rechner, nachgeschlagen am Handy.',
-  },
-  {
-    title: 'Ablauf',
-    line: 'Die Reihenfolge der Auftritte mit Uhrzeiten, Umziehzeiten und Pause.',
   },
   {
     title: 'Aufgaben',

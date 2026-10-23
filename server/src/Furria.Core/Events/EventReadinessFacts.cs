@@ -16,5 +16,7 @@ public sealed record EventReadinessFacts
 
     public required DateTimeOffset? OldestOpenRequestAt { get; init; }
 
+    public required bool IsRunningOrderDone { get; init; }
+
     public required bool HasPublishedAlbum { get; init; }
 }

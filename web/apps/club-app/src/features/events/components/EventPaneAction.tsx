@@ -6,6 +6,7 @@ import { websiteAddressOf } from '@/lib/publish-copy';
 import { ACTION_LABELS, PANE_ICONS, toStepActionLabel } from '../event-board-copy';
 import type { EventPublishing } from '../hooks/use-event-publishing';
 import type { PaneAction } from '../pane-actions';
+import { ACTION_OPEN_LABEL, ACTION_PLAN_LABEL } from '../running-order-step-copy';
 import type { EventDetails, EventPaneKey } from '../schemas';
 import { EventPublishHold } from './EventPublishHold';
 
@@ -97,6 +98,32 @@ export const EventPaneAction: FC<EventPaneActionProps> = ({
           startIcon={<KkIcon name="gallery" size="small" />}
         >
           {ACTION_LABELS.album}
+        </KkButton>
+      );
+    case 'planRunningOrder':
+      return (
+        <KkButton
+          size="large"
+          fullWidth
+          component={Link}
+          to="/events/$eventId/ablauf"
+          params={params}
+          startIcon={<KkIcon name="timeline" size="small" />}
+        >
+          {ACTION_PLAN_LABEL}
+        </KkButton>
+      );
+    case 'openRunningOrder':
+      return (
+        <KkButton
+          size="large"
+          fullWidth
+          component={Link}
+          to="/events/$eventId/ablauf"
+          params={params}
+          startIcon={<KkIcon name="timeline" size="small" />}
+        >
+          {ACTION_OPEN_LABEL}
         </KkButton>
       );
     case 'step': {

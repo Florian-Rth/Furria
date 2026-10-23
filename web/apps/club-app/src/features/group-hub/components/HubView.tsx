@@ -8,6 +8,7 @@ import { useLanding } from '@/features/write/hooks/use-landing';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toHubPeople } from '../hub-people';
 import type { GroupHub } from '../schemas';
+import { HubActsPanel } from './HubActsPanel';
 import { HubAdministrationPanel } from './HubAdministrationPanel';
 import { HubCalendarEntriesPanel } from './HubCalendarEntriesPanel';
 import { HubCarePanel } from './HubCarePanel';
@@ -46,6 +47,14 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
     />
   ) : null;
 
+  const plansRunningOrder =
+    permissions.has(PERMISSION_KEYS.eventsRunningOrder) ||
+    permissions.has(PERMISSION_KEYS.eventsManage);
+  const acts =
+    hub.viewerIsAdmin || plansRunningOrder ? (
+      <HubActsPanel groupId={hub.groupId} tone={tone} />
+    ) : null;
+
   const administration = permissions.has(PERMISSION_KEYS.groupsManage) ? (
     <HubAdministrationPanel hub={hub} tone={tone} />
   ) : null;
@@ -69,6 +78,7 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
         canManage={hub.viewerMayManage}
       />
       {care}
+      {acts}
       {history}
       {administration}
     </KkPanelStack>

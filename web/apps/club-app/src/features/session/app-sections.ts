@@ -26,6 +26,7 @@ export const EVENTS_PATH = '/events';
 export const PROFILE_PATH = '/profile';
 export const GALLERY_PATH = '/gallery';
 export const NEWS_PATH = '/news';
+export const ACTS_PATH = '/acts';
 export const SYSTEM_PATH = '/system';
 
 export const START_SECTION = 'start';
@@ -94,6 +95,11 @@ export const GALLERY_KEYS: readonly [PermissionKey, ...PermissionKey[]] = [
   PERMISSION_KEYS.galleryUpload,
   PERMISSION_KEYS.galleryManage,
   PERMISSION_KEYS.galleryPublish,
+];
+
+export const ACTS_KEYS: readonly [PermissionKey, ...PermissionKey[]] = [
+  PERMISSION_KEYS.eventsRunningOrder,
+  PERMISSION_KEYS.eventsManage,
 ];
 
 export const NEWS_KEYS: readonly [PermissionKey, ...PermissionKey[]] = [PERMISSION_KEYS.newsManage];
@@ -189,6 +195,14 @@ export const MANAGE_SECTIONS: AppSection[] = [
     to: EVENTS_PATH,
     meta: 'Abende mit Karten für die Website',
     permissionKeys: EVENTS_KEYS,
+  },
+  {
+    id: 'acts',
+    label: 'Auftritte',
+    icon: 'stage',
+    to: ACTS_PATH,
+    meta: 'Tänze, Reden und Ablaufpunkte mit Besetzung',
+    permissionKeys: ACTS_KEYS,
   },
   {
     id: 'news',

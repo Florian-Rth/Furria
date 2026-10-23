@@ -22,6 +22,7 @@ public sealed class PermissionAuthorizer
     private HashSet<string>? _grantedKeys;
     private bool? _isAffiliated;
     private bool? _canSearchPersons;
+    private List<int>? _administeredGroupIds;
 
     public PermissionAuthorizer(AppDbContext dbContext, TimeProvider timeProvider)
     {
@@ -190,6 +191,29 @@ public sealed class PermissionAuthorizer
             || await IsGrantedAsync(accountId, FurriaPermissions.GroupsManage, ct);
     }
 
+    public async Task<IReadOnlyList<int>> AdministeredGroupIdsAsync(
+        int accountId,
+        CancellationToken ct
+    )
+    {
+        BindTo(accountId);
+        if (_administeredGroupIds is not null)
+            return _administeredGroupIds;
+
+        var personId = await PersonIdAsync(accountId, ct);
+        if (personId is null)
+            return _administeredGroupIds = [];
+
+        var today = ClubClock.Today(_timeProvider);
+        return _administeredGroupIds = await _dbContext
+            .GroupAdmins.AsNoTracking()
+            .Where(Running.GroupAdmins(today))
+            .Where(admin => admin.PersonId == personId.Value)
+            .Select(admin => admin.GroupId)
+            .Distinct()
+            .ToListAsync(ct);
+    }
+
     private void BindTo(int accountId)
     {
         if (_boundAccountId is { } bound && bound != accountId)
@@ -198,18 +222,8 @@ public sealed class PermissionAuthorizer
         _boundAccountId = accountId;
     }
 
-    private async Task<bool> AdministersAnyGroupAsync(int accountId, CancellationToken ct)
-    {
-        var personId = await PersonIdAsync(accountId, ct);
-        if (personId is null)
-            return false;
-
-        var today = ClubClock.Today(_timeProvider);
-        return await _dbContext
-            .GroupAdmins.AsNoTracking()
-            .Where(Running.GroupAdmins(today))
-            .AnyAsync(admin => admin.PersonId == personId.Value, ct);
-    }
+    private async Task<bool> AdministersAnyGroupAsync(int accountId, CancellationToken ct) =>
+        (await AdministeredGroupIdsAsync(accountId, ct)).Count > 0;
 
     private async Task<GroupTies> GroupTiesAsync(int accountId, int groupId, CancellationToken ct)
     {
