@@ -1,25 +1,21 @@
 import Stack from '@mui/material/Stack';
-import { motion } from 'motion/react';
 import type { FC } from 'react';
 import { useReducedMotion } from '../../../internal/use-reduced-motion';
+import { useScrollDriven } from '../../../internal/use-scroll-driven';
 import type { KkHandoverHeaderProps } from '../../handover-stage';
 import { KkShellHeader } from '../../internal/layout/KkShellHeader';
+import { ConfettiHeaderFollowFade } from './ConfettiHeaderFollowFade';
+import { ConfettiHeaderScrollFade } from './ConfettiHeaderScrollFade';
 import { ConfettiDockContext, useConfettiDockLink } from './confetti-dock-context';
-import { useDockHeaderFade } from './use-dock-header-fade';
+import { DOCK_HEADLINE_VISIBILITY } from './dock-headline-visibility';
 
 const HEADER_GAP = 1.25;
-const HEADLINE_VISIBILITY = '--kk-dock-headline';
 
 export const ConfettiHeader: FC<KkHandoverHeaderProps> = ({ kind, children }) => {
   const reducedMotion = useReducedMotion();
-  const fade = useDockHeaderFade();
+  const scrollDriven = useScrollDriven();
   const dock = useConfettiDockLink();
-
-  const headerStyle = {
-    opacity: fade.opacity,
-    y: fade.drift,
-    [HEADLINE_VISIBILITY]: fade.headlineOpacity,
-  };
+  const Fade = scrollDriven ? ConfettiHeaderScrollFade : ConfettiHeaderFollowFade;
 
   if (kind === 'banner' || reducedMotion) {
     return <KkShellHeader kind={kind}>{children}</KkShellHeader>;
@@ -31,18 +27,18 @@ export const ConfettiHeader: FC<KkHandoverHeaderProps> = ({ kind, children }) =>
 
   return (
     <ConfettiDockContext.Provider value={dock}>
-      <motion.div data-kk-dock-header style={headerStyle}>
+      <Fade>
         <Stack
           sx={{
             minWidth: 0,
             gap: HEADER_GAP,
             pointerEvents: 'none',
-            '& [data-kk-screen-header-title]': { opacity: `var(${HEADLINE_VISIBILITY})` },
+            '& [data-kk-screen-header-title]': { opacity: `var(${DOCK_HEADLINE_VISIBILITY})` },
           }}
         >
           {children}
         </Stack>
-      </motion.div>
+      </Fade>
     </ConfettiDockContext.Provider>
   );
 };

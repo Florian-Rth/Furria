@@ -1,10 +1,10 @@
 import Stack from '@mui/material/Stack';
-import { motion } from 'motion/react';
 import type { FC, Ref } from 'react';
-import { CHROME_DENSITY_PROPERTY } from '../../../internal/chrome-density';
 import { safeArea } from '../../../internal/safe-area';
+import { useScrollDriven } from '../../../internal/use-scroll-driven';
 import { kkTokens } from '../../../tokens';
-import { useChromeDensity } from '../logic/use-chrome-density';
+import { KkShellChromeDensity } from './KkShellChromeDensity';
+import { KkShellChromeScrollDensity } from './KkShellChromeScrollDensity';
 
 const { gutter } = kkTokens.shell;
 
@@ -13,8 +13,8 @@ interface KkShellChromeProps {
 }
 
 export const KkShellChrome: FC<KkShellChromeProps> = ({ ref }) => {
-  const density = useChromeDensity();
-  const densityStyle = { minWidth: 0, [CHROME_DENSITY_PROPERTY]: density };
+  const scrollDriven = useScrollDriven();
+  const Density = scrollDriven ? KkShellChromeScrollDensity : KkShellChromeDensity;
 
   return (
     <Stack
@@ -28,7 +28,7 @@ export const KkShellChrome: FC<KkShellChromeProps> = ({ ref }) => {
         minWidth: 0,
       })}
     >
-      <motion.div ref={ref} style={densityStyle} />
+      <Density ref={ref} />
     </Stack>
   );
 };

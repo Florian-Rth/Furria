@@ -42,6 +42,12 @@ const DOCK_SHARE = 0.8;
 export const DOCK_TRAVEL = kkTokens.shell.scrollTravel * DOCK_SHARE;
 
 const HEADER_LEAVE_END = 0.5;
+
+export const DOCK_HEADER_TURNS: readonly number[] = [
+  0,
+  DOCK_TRAVEL * HEADER_LEAVE_END,
+  DOCK_TRAVEL,
+];
 const SHOVE_FROM = 0.2;
 const SHOVE_TO = 0.5;
 const PLAIN_TITLE_FROM = 0.55;
