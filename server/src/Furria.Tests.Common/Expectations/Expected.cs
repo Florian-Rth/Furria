@@ -95,6 +95,10 @@ public sealed class Expected
 
     public EventExpectations Event(int eventId) => new(this, eventId);
 
+    public ActExpectations Act(int actId) => new(this, actId);
+
+    public RunningOrderExpectations RunningOrder(int eventId) => new(this, eventId);
+
     public TrainingSetExpectations TrainingsOf(int groupId) => new(this, groupId);
 
     public EmailConfirmationSetExpectations EmailConfirmationsOfAccount(int accountId) =>

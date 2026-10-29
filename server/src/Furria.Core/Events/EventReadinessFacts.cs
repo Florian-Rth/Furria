@@ -14,5 +14,7 @@ public sealed record EventReadinessFacts
 
     public required bool AreTicketsSet { get; init; }
 
+    public required bool IsRunningOrderDone { get; init; }
+
     public required bool HasPublishedAlbum { get; init; }
 }

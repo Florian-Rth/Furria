@@ -18,7 +18,7 @@ interface KkShellBarCloseProps {
 
 export const KkShellBarClose: FC<KkShellBarCloseProps> = ({ origin, title }) => {
   const { link, goBackTo } = useKkShell();
-  const routeProps = { to: origin.to, params: origin.params };
+  const routeProps = { to: origin.to, params: origin.params, search: origin.search };
 
   const goBack = (event: MouseEvent): void => {
     event.preventDefault();

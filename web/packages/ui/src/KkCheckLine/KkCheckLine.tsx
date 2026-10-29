@@ -2,8 +2,12 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import type { FC, ReactNode } from 'react';
+import { goldInkOf } from '../internal/gold-ink';
+import { redInk } from '../internal/red-ink';
 import type { KkIconName } from '../KkIcon';
 import { KkIcon } from '../KkIcon';
+import type { KkSeverity } from '../KkSeverityGlyph';
+import { KkSeverityGlyph } from '../KkSeverityGlyph';
 import { KkStateGlyph } from '../KkStatePill/KkStateGlyph';
 import { stepFigures, stepStateInk } from '../KkStatePill/state-paint';
 import type { KkStepState } from '../KkStatePill/step-state';
@@ -13,8 +17,26 @@ import { kkTokens } from '../tokens';
 const ICON_EXTENT = '1.125rem';
 const LABEL_WIDTH = { xs: '6.75rem', sm: '7.5rem' };
 
+const severityInk = (theme: Theme, severity: KkSeverity): CSSObject => {
+  switch (severity) {
+    case 'conflict':
+      return { ...redInk(theme), fontWeight: 700 };
+    case 'hint':
+      return { ...goldInkOf(theme), fontWeight: 700 };
+    case 'met':
+      return { color: 'text.primary' };
+    case 'off':
+      return { color: 'text.secondary' };
+  }
+};
+
+const stateInk = (theme: Theme, state: KkStepState): CSSObject =>
+  state === 'done'
+    ? { color: 'text.primary' }
+    : { ...stepStateInk(theme, state === 'open' ? 'open' : state), fontWeight: 700 };
+
 const valuePaint =
-  (state: KkStepState, lines: number | undefined) =>
+  (state: KkStepState, severity: KkSeverity | undefined, lines: number | undefined) =>
   (theme: Theme): CSSObject => ({
     ...stepFigures,
     flex: 1,
@@ -22,9 +44,7 @@ const valuePaint =
     typography: 'body2',
     lineHeight: 1.35,
     overflowWrap: 'anywhere',
-    ...(state === 'done'
-      ? { color: 'text.primary' }
-      : { ...stepStateInk(theme, state === 'open' ? 'open' : state), fontWeight: 700 }),
+    ...(severity === undefined ? stateInk(theme, state) : severityInk(theme, severity)),
     ...(lines === undefined
       ? {}
       : {
@@ -39,6 +59,7 @@ interface KkCheckLineProps {
   label: string;
   value: string;
   state: KkStepState;
+  severity?: KkSeverity;
   icon?: KkIconName;
   lines?: number;
   action?: ReactNode;
@@ -49,6 +70,7 @@ export const KkCheckLine: FC<KkCheckLineProps> = ({
   label,
   value,
   state,
+  severity,
   icon,
   lines,
   action,
@@ -72,7 +94,13 @@ export const KkCheckLine: FC<KkCheckLineProps> = ({
         }}
       />
     );
-  const glyph = state === 'done' ? null : <KkStateGlyph state={state} sx={{ mt: 0.375 }} />;
+  const stepGlyph = state === 'done' ? null : <KkStateGlyph state={state} sx={{ mt: 0.375 }} />;
+  const glyph =
+    severity === undefined ? (
+      stepGlyph
+    ) : (
+      <KkSeverityGlyph state={severity} size="medium" sx={{ mt: 0.25 }} />
+    );
 
   return (
     <Stack
@@ -109,7 +137,7 @@ export const KkCheckLine: FC<KkCheckLineProps> = ({
       </Box>
       <Stack direction="row" sx={{ flex: 1, minWidth: 0, gap: 0.625, alignItems: 'flex-start' }}>
         {glyph}
-        <Box component="span" sx={valuePaint(state, lines)}>
+        <Box component="span" sx={valuePaint(state, severity, lines)}>
           {value}
         </Box>
       </Stack>

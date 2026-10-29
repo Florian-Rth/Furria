@@ -7,6 +7,8 @@ public static class EventSteps
 {
     private const int DetailsLeadDays = 90;
     private const int TicketsLeadDays = 60;
+    private const int RunningOrderOpensDays = 28;
+    private const int RunningOrderLeadDays = 14;
     private const int ReviewDaysAfter = 14;
     private const int FewestDaysSinceCreation = 14;
 
@@ -24,6 +26,7 @@ public static class EventSteps
                 today
             ),
             PreEventStatusOf(EventStep.Tickets, TicketsLeadDays, facts.AreTicketsSet, facts, today),
+            RunningOrderStatusOf(facts, today),
             ReviewStatusOf(facts, today),
         ];
 
@@ -46,6 +49,29 @@ public static class EventSteps
             : EventStepState.Open;
 
         return new EventStepStatus(step, state, dueOn, null);
+    }
+
+    [Pure]
+    private static EventStepStatus RunningOrderStatusOf(EventReadinessFacts facts, DateOnly today)
+    {
+        var opensOn = facts.EventDay.AddDays(-RunningOrderOpensDays);
+        var status = PreEventStatusOf(
+            EventStep.RunningOrder,
+            RunningOrderLeadDays,
+            facts.IsRunningOrderDone,
+            facts,
+            today
+        );
+        var state =
+            status.State != EventStepState.Done && today < opensOn
+                ? EventStepState.Waiting
+                : status.State;
+
+        return status with
+        {
+            State = state,
+            OpensOn = opensOn,
+        };
     }
 
     [Pure]

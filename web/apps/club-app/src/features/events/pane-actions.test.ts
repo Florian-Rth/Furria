@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { PlannedEvent } from './event-plan';
+import type { RunningOrderPresence } from './pane-actions';
 import { paneActionOf } from './pane-actions';
 
 const TODAY = '2026-10-19';
@@ -95,13 +96,25 @@ describe('paneActionOf', () => {
     },
   ])('$name', ({ pane, overrides, kind }) => {
     expect(
-      paneActionOf({ event: planned(overrides), pane, todayIsoDay: TODAY, addsAlbums: true }).kind,
+      paneActionOf({
+        event: planned(overrides),
+        pane,
+        todayIsoDay: TODAY,
+        addsAlbums: true,
+        runningOrder: 'hidden',
+      }).kind,
     ).toBe(kind);
   });
 
   it('moves on to the next pending step once a step is done', () => {
     expect(
-      paneActionOf({ event: planned(), pane: 'details', todayIsoDay: TODAY, addsAlbums: true }),
+      paneActionOf({
+        event: planned(),
+        pane: 'details',
+        todayIsoDay: TODAY,
+        addsAlbums: true,
+        runningOrder: 'hidden',
+      }),
     ).toEqual({ kind: 'step', pane: 'tickets' });
   });
 
@@ -117,7 +130,15 @@ describe('paneActionOf', () => {
       currentStep: null,
     });
 
-    expect(paneActionOf({ event, pane: 'tickets', todayIsoDay: TODAY, addsAlbums: true })).toEqual({
+    expect(
+      paneActionOf({
+        event,
+        pane: 'tickets',
+        todayIsoDay: TODAY,
+        addsAlbums: true,
+        runningOrder: 'hidden',
+      }),
+    ).toEqual({
       kind: 'step',
       pane: 'website',
     });
@@ -129,7 +150,36 @@ describe('paneActionOf', () => {
     });
 
     expect(
-      paneActionOf({ event, pane: 'review', todayIsoDay: TODAY, addsAlbums: false }).kind,
+      paneActionOf({
+        event,
+        pane: 'review',
+        todayIsoDay: TODAY,
+        addsAlbums: false,
+        runningOrder: 'hidden',
+      }).kind,
     ).not.toBe('album');
+  });
+
+  it.each<{ name: string; presence: RunningOrderPresence; isOver: boolean; kind: string }>([
+    { name: 'no Ablauf yet → plan it', presence: 'none', isOver: false, kind: 'planRunningOrder' },
+    { name: 'an Ablauf → open it', presence: 'exists', isOver: false, kind: 'openRunningOrder' },
+    {
+      name: 'an Ablauf after the evening → open it',
+      presence: 'exists',
+      isOver: true,
+      kind: 'openRunningOrder',
+    },
+    { name: 'no Ablauf after the evening → nothing', presence: 'none', isOver: true, kind: 'none' },
+    { name: 'not a planner → nothing', presence: 'hidden', isOver: false, kind: 'none' },
+  ])('running order: $name', ({ presence, isOver, kind }) => {
+    expect(
+      paneActionOf({
+        event: planned({ isOver }),
+        pane: 'runningOrder',
+        todayIsoDay: TODAY,
+        addsAlbums: true,
+        runningOrder: presence,
+      }).kind,
+    ).toBe(kind);
   });
 });

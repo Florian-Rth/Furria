@@ -43,6 +43,8 @@ export type CellFact =
     }
   | { kind: 'review'; albums: number; news: number }
   | { kind: 'reviewOpens'; opensOn: string }
+  | { kind: 'runningOrder'; stands: boolean }
+  | { kind: 'runningOrderOpens'; opensOn: string }
   | { kind: 'deadline'; step: EventStepKey; dueOn: string; daysLeft: number }
   | { kind: 'allDone' }
   | { kind: 'cancelled' };
@@ -57,6 +59,7 @@ export interface BoardCell {
 const STEP_PANES: Record<EventStepKey, EventPaneKey> = {
   details: 'details',
   tickets: 'tickets',
+  runningOrder: 'runningOrder',
   review: 'review',
 };
 
@@ -141,6 +144,21 @@ const reviewCellOf = (event: PlannedEvent): BoardCell => {
   };
 };
 
+const runningOrderCellOf = (event: PlannedEvent): BoardCell => {
+  const status = stepStatusOf(event, 'runningOrder');
+  const opens = status?.state === 'waiting' && status.opensOn !== null ? status.opensOn : null;
+
+  return {
+    column: 'runningOrder',
+    pane: 'runningOrder',
+    state: stepStateOf(event, 'runningOrder'),
+    fact:
+      opens === null
+        ? { kind: 'runningOrder', stands: status?.state === 'done' }
+        : { kind: 'runningOrderOpens', opensOn: opens },
+  };
+};
+
 const STATE_RANK: Record<EventStepState, number> = { overdue: 0, open: 1, waiting: 2, done: 3 };
 
 export const nextDeadlineOf = (
@@ -200,6 +218,8 @@ export const cellOf = (
       return detailsCellOf(event);
     case 'tickets':
       return ticketsCellOf(event);
+    case 'runningOrder':
+      return runningOrderCellOf(event);
     case 'review':
       return reviewCellOf(event);
     case 'deadline':

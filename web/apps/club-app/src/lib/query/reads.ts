@@ -28,6 +28,8 @@ export const DOMAIN_CHANGES = [
   'media',
   'newsPost',
   'websitePicture',
+  'act',
+  'runningOrder',
 ] as const;
 export type DomainChange = (typeof DOMAIN_CHANGES)[number];
 
@@ -84,6 +86,9 @@ export const READ_NAMES = [
   'systemStatus',
   'systemLogs',
   'systemLogHead',
+  'acts',
+  'runningOrder',
+  'runningOrders',
 ] as const;
 export type ReadName = (typeof READ_NAMES)[number];
 
@@ -140,6 +145,9 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   systemStatus: ['system', 'status'],
   systemLogs: ['system', 'logs'],
   systemLogHead: ['system', 'log-head'],
+  acts: ['running-order', 'acts'],
+  runningOrder: ['running-order', 'detail'],
+  runningOrders: ['running-order', 'list'],
 };
 
 const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
@@ -219,8 +227,8 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   members: ['person', 'picture', 'membership', 'group', 'groupMembership', 'role', 'roleHolding'],
   member: ['person', 'picture', 'membership', 'group', 'groupMembership', 'role', 'roleHolding'],
   rolesOverview: ['role', 'roleHolding', 'person'],
-  events: ['event', 'venue', 'media', 'newsPost'],
-  event: ['event', 'venue', 'media', 'newsPost'],
+  events: ['event', 'venue', 'media', 'newsPost', 'runningOrder', 'act'],
+  event: ['event', 'venue', 'media', 'newsPost', 'runningOrder', 'act'],
   galleryHub: ['media'],
   album: ['media'],
   inbox: ['media'],
@@ -282,6 +290,18 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   systemStatus: [],
   systemLogs: [],
   systemLogHead: [],
+  acts: ['act', 'group', 'groupMembership', 'person', 'picture'],
+  runningOrder: [
+    'act',
+    'group',
+    'groupMembership',
+    'person',
+    'picture',
+    'attendanceResponse',
+    'calendarEntry',
+    'event',
+  ],
+  runningOrders: ['runningOrder', 'act', 'event', 'calendarEntry'],
 };
 
 export const staleReadsAfter = (changes: readonly DomainChange[]): ReadName[] =>
@@ -366,4 +386,7 @@ export const queryKeys = {
   systemStatus: READ_ROOTS.systemStatus,
   systemLogs: (filter: object): QueryKey => keyOf('systemLogs', filter),
   systemLogHead: (filter: object): QueryKey => keyOf('systemLogHead', filter),
+  acts: READ_ROOTS.acts,
+  runningOrder: (eventId: number): QueryKey => keyOf('runningOrder', eventId),
+  runningOrders: READ_ROOTS.runningOrders,
 } as const;

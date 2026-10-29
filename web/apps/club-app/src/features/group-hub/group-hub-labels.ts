@@ -504,3 +504,13 @@ export const toArchiveGroupFacts = (hub: GroupHub, todayLabel: string): KkConfir
 ];
 
 export const toGroupArchivedFromHubMessage = (name: string): string => `${name} ist archiviert.`;
+
+export const toHubActsMeta = (count: number | null): string | undefined => {
+  if (count === null) {
+    return undefined;
+  }
+
+  return count === 0
+    ? 'noch keine'
+    : `${count} ${count === 1 ? 'Auftritt' : 'Auftritte'} mit Besetzung`;
+};

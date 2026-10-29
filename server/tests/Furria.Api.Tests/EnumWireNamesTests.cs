@@ -10,6 +10,7 @@ using Furria.Core.Events;
 using Furria.Core.Groups;
 using Furria.Core.Media;
 using Furria.Core.News;
+using Furria.Core.RunningOrders;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -39,7 +40,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(TrainingPreviewState)] = "creatable venueTaken alreadyExists venueArchived",
         [typeof(EventSalesStatus)] =
             "announced presaleScheduled available fewLeft soldOut cancelled",
-        [typeof(EventStep)] = "details tickets review",
+        [typeof(EventStep)] = "details tickets review runningOrder",
         [typeof(EventStepState)] = "done overdue open waiting",
         [typeof(MissingEventDetail)] = "venue doorsOpenAt description picture published",
         [typeof(MediaItemState)] = "processing ready failed",
@@ -60,6 +61,17 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             + "logEntryPurge mediaStorageSurvey",
         [typeof(LogSource)] = "api mediaWorker",
         [typeof(LogEntryLevel)] = "information warning error fatal",
+        [typeof(ActKind)] = "dance speech music show point",
+        [typeof(RunningOrderRuleKind)] =
+            "first last firstHalf secondHalf early late before after apart kindSpread",
+        [typeof(RuleStrength)] = "must prefer",
+        [typeof(FindingKind)] =
+            "noChangeover tightChangeover mustRuleBroken preferRuleMissed sameKindAdjacent "
+            + "nobodyThere absences unplaced",
+        [typeof(FindingSeverity)] = "conflict hint",
+        [typeof(RunningOrderCostStep)] =
+            "noChangeover tightChangeover mustRules preferRules sameKind unplaced changeoverRoom",
+        [typeof(RunningOrderHoldKind)] = "pin block mustRule mustWish",
     };
 
     private readonly ApiTestFixture _fixture;

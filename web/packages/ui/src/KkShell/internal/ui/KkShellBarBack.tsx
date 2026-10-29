@@ -15,7 +15,7 @@ interface KkShellBarBackProps extends PropsWithChildren {
 
 export const KkShellBarBack: FC<KkShellBarBackProps> = ({ origin, children }) => {
   const { link, goBackTo } = useKkShell();
-  const routeProps = { to: origin.to, params: origin.params };
+  const routeProps = { to: origin.to, params: origin.params, search: origin.search };
 
   const goBack = (event: MouseEvent): void => {
     event.preventDefault();

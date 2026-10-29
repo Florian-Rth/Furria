@@ -14,6 +14,7 @@ export interface KkScreenOrigin {
   label: string;
   to: string;
   params?: Record<string, string>;
+  search?: Record<string, string>;
 }
 
 interface KkScreenActionBase {

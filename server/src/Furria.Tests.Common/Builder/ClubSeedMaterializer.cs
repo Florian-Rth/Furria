@@ -53,15 +53,14 @@ internal static class ClubSeedMaterializer
             groupIds,
             ct
         );
+        var events = await InsertEventsAsync(dbContext, recorded, venues, ct);
         var attendanceResponses = await InsertAttendanceResponsesAsync(
             dbContext,
             recorded,
-            calendarEntries,
+            calendarEntries.Concat(events).ToDictionary(StringComparer.Ordinal),
             personIds,
             ct
         );
-
-        var events = await InsertEventsAsync(dbContext, recorded, venues, ct);
 
         return new SeededClub(
             sessions,
