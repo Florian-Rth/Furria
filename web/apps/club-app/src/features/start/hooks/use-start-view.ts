@@ -1,10 +1,13 @@
+import { useMyActsQuery } from '@/features/acts/api';
+import type { MyAct } from '@/features/acts/schemas';
 import { usePendingAnswers } from '@/features/attendance/hooks/use-pending-answers';
 import { useMeQuery } from '@/features/session/api';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { useMinuteNow } from '@/lib/use-minute-now';
 import { useStartQuery } from '../api';
-import type { Start } from '../schemas';
+import { boardPanelsOf } from '../practice-tile';
+import type { BoardPanel, Start } from '../schemas';
 import { withPendingAnswers } from '../start-answer';
 import { startScreenOf, withoutQuiet } from '../start-board';
 import { toStartErrorMessage } from '../start-messages';
@@ -16,6 +19,7 @@ import { useStraySheet } from './use-stray-sheet';
 
 export interface StartBoard {
   start: Start;
+  panels: BoardPanel[];
   dimmedKeys: ReadonlySet<string>;
   now: Date;
   canReadClub: boolean;
@@ -31,6 +35,7 @@ export type StartView =
   | { screen: 'board'; board: StartBoard };
 
 const NO_DIMMED_KEYS: ReadonlySet<string> = new Set();
+const NO_ACTS: readonly MyAct[] = [];
 
 export const useStartView = (): StartView => {
   const query = useStartQuery();
@@ -41,6 +46,7 @@ export const useStartView = (): StartView => {
   const personId = me.data?.person?.id ?? null;
   const { memory, quiet } = useQuietMemory(personId);
   const pendingAnswers = usePendingAnswers();
+  const practised = useMyActsQuery().data?.acts ?? NO_ACTS;
   const ready = visit !== null && me.data !== undefined;
   const errorMessage = visit === null ? toStartErrorMessage(query.error) : null;
   const skeletonDue = useSkeletonDelay(!ready && errorMessage === null);
@@ -55,13 +61,19 @@ export const useStartView = (): StartView => {
   useReshapeRefetch(query.data?.reshapeAt ?? null, refetch);
   useStraySheet(start);
 
-  const screen = startScreenOf({ start, failed: errorMessage !== null, skeletonDue });
+  const screen = startScreenOf({
+    start,
+    practised: practised.length > 0,
+    failed: errorMessage !== null,
+    skeletonDue,
+  });
 
   if (screen.kind === 'board') {
     return {
       screen: screen.kind,
       board: {
         start: screen.start,
+        panels: boardPanelsOf(screen.start.panels, practised),
         dimmedKeys: visit?.dimmedKeys ?? NO_DIMMED_KEYS,
         now,
         canReadClub: permissions.has(PERMISSION_KEYS.clubRead),

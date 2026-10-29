@@ -96,13 +96,14 @@ describe('startScreenOf', () => {
   it.each<{ label: string; input: StartScreenInput; expected: string }>([
     {
       label: 'the visit holds panels',
-      input: { start: board, failed: true, skeletonDue: true },
+      input: { start: board, practised: false, failed: true, skeletonDue: true },
       expected: 'board',
     },
     {
       label: 'the viewer is not active in the club',
       input: {
         start: start([], { viewerIsActiveInClub: false }),
+        practised: false,
         failed: false,
         skeletonDue: false,
       },
@@ -110,22 +111,27 @@ describe('startScreenOf', () => {
     },
     {
       label: 'the active viewer has no panels',
-      input: { start: start([]), failed: false, skeletonDue: false },
+      input: { start: start([]), practised: false, failed: false, skeletonDue: false },
       expected: 'empty',
     },
     {
+      label: 'the viewer only has acts to practise',
+      input: { start: start([]), practised: true, failed: false, skeletonDue: false },
+      expected: 'board',
+    },
+    {
       label: 'the first load failed',
-      input: { start: null, failed: true, skeletonDue: true },
+      input: { start: null, practised: false, failed: true, skeletonDue: true },
       expected: 'error',
     },
     {
       label: 'the first load runs past the skeleton delay',
-      input: { start: null, failed: false, skeletonDue: true },
+      input: { start: null, practised: false, failed: false, skeletonDue: true },
       expected: 'skeleton',
     },
     {
       label: 'the first load is still young',
-      input: { start: null, failed: false, skeletonDue: false },
+      input: { start: null, practised: false, failed: false, skeletonDue: false },
       expected: 'waiting',
     },
   ])('shows $expected when $label', ({ input, expected }) => {

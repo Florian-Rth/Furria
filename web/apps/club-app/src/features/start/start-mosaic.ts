@@ -1,7 +1,7 @@
 import { tileFactsOf } from './mine-tile';
-import type { Start, StartPanel } from './schemas';
+import type { BoardPanel } from './schemas';
 
-export type TileKind = StartPanel['kind'];
+export type TileKind = BoardPanel['kind'];
 
 export interface TileSpan {
   xs: number;
@@ -49,14 +49,14 @@ const shownOf = (count: number, cap: number): number => Math.min(count, cap);
 
 const furtherOf = (count: number, cap: number): number => (count > cap ? FURTHER_WEIGHT : 0);
 
-const distinctAuthorCount = (panel: StartPanel & { kind: 'announcements' }): number =>
+const distinctAuthorCount = (panel: BoardPanel & { kind: 'announcements' }): number =>
   new Set(
     panel.announcements
       .slice(0, panel.shownCount)
       .map((announcement) => announcement.author?.personId ?? null),
   ).size;
 
-export const weightOf = (panel: StartPanel, countersPerRow: number = COUNTERS_PER_ROW): number => {
+export const weightOf = (panel: BoardPanel, countersPerRow: number = COUNTERS_PER_ROW): number => {
   if (panel.kind === 'calendar') {
     const rows = Math.max(0, shownOf(panel.entries.length, panel.shownCount) - 1);
 
@@ -86,11 +86,18 @@ export const weightOf = (panel: StartPanel, countersPerRow: number = COUNTERS_PE
   if (panel.kind === 'groups') {
     return HEAD_WEIGHT + shownOf(panel.groupMoments.length, panel.shownCount) * JUBILEE_WEIGHT;
   }
+  if (panel.kind === 'practice') {
+    return (
+      HEAD_WEIGHT +
+      shownOf(panel.acts.length, panel.shownCount) * ROW_WEIGHT +
+      furtherOf(panel.acts.length, panel.shownCount)
+    );
+  }
 
   return HEAD_WEIGHT + COVERS_WEIGHT + ROW_WEIGHT;
 };
 
-const hasTileContent = (panel: StartPanel): boolean =>
+const hasTileContent = (panel: BoardPanel): boolean =>
   panel.kind !== 'mine' || tileFactsOf(panel.mine).length > 0;
 
 export const restSpansOf = (count: number): number[] => {
@@ -113,7 +120,7 @@ export const restSpansOf = (count: number): number[] => {
   ];
 };
 
-const sideCountOf = (lead: StartPanel, others: readonly StartPanel[]): number => {
+const sideCountOf = (lead: BoardPanel, others: readonly BoardPanel[]): number => {
   const goal = weightOf(lead);
   let filled = 0;
   let taken = 0;
@@ -131,7 +138,7 @@ const sideCountOf = (lead: StartPanel, others: readonly StartPanel[]): number =>
 };
 
 export const fittedCalendarCount = (
-  calendar: StartPanel & { kind: 'calendar' },
+  calendar: BoardPanel & { kind: 'calendar' },
   sideWeight: number,
 ): number => {
   const shown = shownOf(calendar.entries.length, calendar.shownCount);
@@ -146,8 +153,8 @@ export const fittedCalendarCount = (
 };
 
 const leadCountOf = (
-  lead: StartPanel,
-  sidePanels: readonly StartPanel[],
+  lead: BoardPanel,
+  sidePanels: readonly BoardPanel[],
   lightSide: boolean,
 ): number | null => {
   if (!lightSide || lead.kind !== LEAD_KIND) {
@@ -162,8 +169,8 @@ const leadCountOf = (
   return fittedCalendarCount(lead, narrowWeight);
 };
 
-export const toMosaic = (start: Start): Mosaic => {
-  const panels = start.panels.filter(hasTileContent);
+export const toMosaic = (board: readonly BoardPanel[]): Mosaic => {
+  const panels = board.filter(hasTileContent);
   const lead = panels.find((panel) => panel.kind === LEAD_KIND) ?? null;
   const others = panels.filter((panel) => panel.kind !== LEAD_KIND);
   const sideCount = lead === null ? 0 : sideCountOf(lead, others);

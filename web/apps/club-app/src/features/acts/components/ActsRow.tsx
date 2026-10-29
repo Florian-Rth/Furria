@@ -17,7 +17,7 @@ interface ActsRowProps {
 export const ActsRow: FC<ActsRowProps> = ({ act, hub }) => {
   const overlap = hub.overlaps.get(act.actId) ?? { shared: 0, total: act.cast.length };
   const spotlight = spotlightOf(act, hub.spotlight?.person.personId ?? null);
-  const roomy = hub.isWide && hub.selection === null;
+  const roomy = hub.isWide && !hub.isSideOpen;
   const open = (): void => {
     hub.open(act.actId);
   };
@@ -41,7 +41,6 @@ export const ActsRow: FC<ActsRowProps> = ({ act, hub }) => {
   );
   const runs = hub.runs.get(act.actId) ?? 0;
   const fact = <ActsRowFact act={act} runs={runs} />;
-  const selected = hub.selection === act.actId;
   const chips = act.wishes.length === 0 ? null : <ActWishChips wishes={act.wishes} />;
 
   return (
@@ -53,7 +52,6 @@ export const ActsRow: FC<ActsRowProps> = ({ act, hub }) => {
       chips={chips}
       trailing={gauge}
       spotlight={spotlight}
-      selected={selected}
       openLabel={OPEN_LABEL}
       onOpen={open}
     />

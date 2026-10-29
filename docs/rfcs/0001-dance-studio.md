@@ -225,11 +225,34 @@ Done 2026-10-29. Decisions taken in the phase:
 
 ### Phase 5 — Act page, settings, co-editors, entry points
 Goal: `/acts/$actId` exists with access rules; members and editors can reach it.
-- [ ] `GET /api/acts/{id}/studio` (everything the page needs, access per cast / group admin / co-editor)
-- [ ] Act page shell `/acts/$actId` with the settings moved from the old editor pane (name, kind, group, cast, wishes)
-- [ ] Co-editors: grant/revoke by group admins (endpoints + settings UI)
-- [ ] Group hub section *Auftritte* (this session's acts; past seasons below); Start tile *Üben*
-- [ ] Catalogue rows link to the act page; planners see no studio content
+- [x] `GET /api/acts/{id}/studio` (everything the page needs, access per cast / group admin / co-editor)
+- [x] Act page shell `/acts/$actId` with the settings moved from the old editor pane (name, kind, group, cast, wishes)
+- [x] Co-editors: grant/revoke by group admins (endpoints + settings UI)
+- [x] Group hub section *Auftritte* (this session's acts; past seasons below); Start tile *Üben*
+- [x] Catalogue rows link to the act page; planners see no studio content
+
+Done 2026-10-29. Decisions taken in the phase:
+- `GET /api/acts/{id}/studio` returns the act (the catalogue shape), the viewer's rights, the
+  co-editors and the whole studio read: music (working mix, or the adopted final file), songs and
+  final files with signed audio URLs, steps and parts tiled on the music (adrift ones last),
+  spots, videos with their place on the music and signed URLs, the session choreography. It is
+  read in one repeatable-read snapshot.
+- Who sees what: the cast, the group's admins and co-editors see the training material; planners
+  and the group's other members get the act without it; anyone else 403. A co-editor counts only
+  while in the cast. Rights are reported as flags (`canEditSettings`, `canEditStudio`,
+  `canGrantCoEditors`); a closed act offers none, an archived one only the settings (to restore).
+- Co-editors: `PUT`/`DELETE /api/acts/{id}/co-editors/{personId}` by the group's admins only;
+  granting needs a cast member and an open, unarchived act and is idempotent; revoking is always
+  allowed. Co-editors may upload act media.
+- `GET /api/acts/mine` (relevant session, cast or co-edited) feeds the Start tile *Üben*;
+  `GET /api/groups/{id}/acts` (non-archived session acts, `viewerInCast`) feeds the group hub
+  section for members, admins and planners. Person references of co-editors and spots are
+  classified for absorption/erasure.
+- The act page shows the act's facts and a studio overview (music length, songs, own spot, steps,
+  parts, spots, videos) until the player arrives in phase 7; settings open as the old editor pane
+  (side pane / bottom drawer). The catalogue keeps its pane only for creating; rows open the page.
+- The studio read has no endpoint tests with content yet (no write path exists); the phases that
+  add the writes test the read through it.
 
 ### Phase 6 — ⚖ The one screen: lab variants
 Goal: Florian picks the layout of the player/editor screen before the editors are built into it.

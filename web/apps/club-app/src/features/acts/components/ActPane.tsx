@@ -14,8 +14,6 @@ interface ActPaneProps {
   acts: readonly CatalogueAct[];
   fixedGroupId: number | null;
   framed: boolean;
-  spotlightId: number | null;
-  onToggleSpotlight: (personId: number) => void;
   onCreated: (actId: number, sessionYear: number | null) => void;
   onClose: () => void;
 }
@@ -25,8 +23,6 @@ export const ActPane: FC<ActPaneProps> = ({
   acts,
   fixedGroupId,
   framed,
-  spotlightId,
-  onToggleSpotlight,
   onCreated,
   onClose,
 }) => {
@@ -41,11 +37,7 @@ export const ActPane: FC<ActPaneProps> = ({
         {groupSection}
         <ActCastSection editor={editor} />
         <ActWishesSection editor={editor} />
-        <ActSharedSection
-          shared={editor.shared}
-          spotlightId={spotlightId}
-          onToggleSpotlight={onToggleSpotlight}
-        />
+        <ActSharedSection shared={editor.shared} />
       </KkStepPane.Body>
       <ActPaneFoot editor={editor} />
     </KkStepPane>

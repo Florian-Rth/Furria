@@ -29,6 +29,7 @@ export const DOMAIN_CHANGES = [
   'newsPost',
   'websitePicture',
   'act',
+  'actCoEditor',
   'runningOrder',
 ] as const;
 export type DomainChange = (typeof DOMAIN_CHANGES)[number];
@@ -87,6 +88,9 @@ export const READ_NAMES = [
   'systemLogs',
   'systemLogHead',
   'acts',
+  'actStudio',
+  'groupActs',
+  'myActs',
   'runningOrder',
   'runningOrders',
 ] as const;
@@ -146,6 +150,9 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   systemLogs: ['system', 'logs'],
   systemLogHead: ['system', 'log-head'],
   acts: ['running-order', 'acts'],
+  actStudio: ['acts', 'studio'],
+  groupActs: ['acts', 'group'],
+  myActs: ['acts', 'mine'],
   runningOrder: ['running-order', 'detail'],
   runningOrders: ['running-order', 'list'],
 };
@@ -291,6 +298,20 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   systemLogs: [],
   systemLogHead: [],
   acts: ['act', 'group', 'groupMembership', 'person', 'picture'],
+  actStudio: [
+    'act',
+    'actCoEditor',
+    'group',
+    'groupMembership',
+    'groupAdmin',
+    'role',
+    'roleHolding',
+    'person',
+    'picture',
+    'media',
+  ],
+  groupActs: ['act', 'groupMembership', 'groupAdmin', 'role', 'roleHolding'],
+  myActs: ['act', 'actCoEditor', 'group', 'groupMembership', 'picture'],
   runningOrder: [
     'act',
     'group',
@@ -387,6 +408,9 @@ export const queryKeys = {
   systemLogs: (filter: object): QueryKey => keyOf('systemLogs', filter),
   systemLogHead: (filter: object): QueryKey => keyOf('systemLogHead', filter),
   acts: (sessionYear: number | null): QueryKey => keyOf('acts', sessionYear),
+  actStudio: (actId: number | null): QueryKey => keyOf('actStudio', actId),
+  groupActs: (groupId: number): QueryKey => keyOf('groupActs', groupId),
+  myActs: READ_ROOTS.myActs,
   runningOrder: (eventId: number): QueryKey => keyOf('runningOrder', eventId),
   runningOrders: READ_ROOTS.runningOrders,
 } as const;

@@ -6,6 +6,7 @@ import { toGroupTone } from '@/features/groups/group-identity';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { useLanding } from '@/features/write/hooks/use-landing';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { useHubActsAccess } from '../hooks/use-hub-acts-access';
 import { toHubPeople } from '../hub-people';
 import type { GroupHub } from '../schemas';
 import { HubActsPanel } from './HubActsPanel';
@@ -24,6 +25,7 @@ interface HubViewProps {
 
 export const HubView: FC<HubViewProps> = ({ hub }) => {
   const permissions = usePermissions();
+  const actsAccess = useHubActsAccess(hub);
   const { highlightedKey } = useLanding();
   const tone = toGroupTone(hub.groupId, hub.tone);
   const heldKind = toHeldGroupKind(hub.groupKindId, hub.groupKindName);
@@ -47,13 +49,9 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
     />
   ) : null;
 
-  const plansRunningOrder =
-    permissions.has(PERMISSION_KEYS.eventsRunningOrder) ||
-    permissions.has(PERMISSION_KEYS.eventsManage);
-  const acts =
-    hub.viewerIsAdmin || plansRunningOrder ? (
-      <HubActsPanel groupId={hub.groupId} tone={tone} />
-    ) : null;
+  const acts = actsAccess.sees ? (
+    <HubActsPanel groupId={hub.groupId} tone={tone} canManage={actsAccess.manages} />
+  ) : null;
 
   const administration = permissions.has(PERMISSION_KEYS.groupsManage) ? (
     <HubAdministrationPanel hub={hub} tone={tone} />

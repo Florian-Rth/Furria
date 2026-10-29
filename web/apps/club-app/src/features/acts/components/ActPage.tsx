@@ -1,0 +1,33 @@
+import { KkScreen } from '@furria/ui/KkScreen';
+import type { FC } from 'react';
+import { AccessDeniedScreen } from '@/features/session/components/AccessDeniedScreen';
+import { ScreenNotFound } from '@/features/session/components/ScreenNotFound';
+import { isForbiddenError, isNotFoundError } from '@/lib/query-error';
+import { ACT_DENIED_MESSAGE } from '../act-page-copy';
+import { useActPage } from '../hooks/use-act-page';
+import type { ActPageSearch } from '../schemas';
+import { ActPageBody } from './ActPageBody';
+
+interface ActPageProps {
+  actId: string;
+  search: ActPageSearch;
+}
+
+export const ActPage: FC<ActPageProps> = ({ actId, search }) => {
+  const page = useActPage(actId, search);
+
+  if (page.actId === null || isNotFoundError(page.query.error)) {
+    return <ScreenNotFound />;
+  }
+  if (isForbiddenError(page.query.error)) {
+    return (
+      <AccessDeniedScreen title={page.title} origin={page.origin} message={ACT_DENIED_MESSAGE} />
+    );
+  }
+
+  return (
+    <KkScreen kind="detail" title={page.title} origin={page.origin} actions={page.actions}>
+      <ActPageBody page={page} />
+    </KkScreen>
+  );
+};

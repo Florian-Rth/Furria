@@ -1,9 +1,9 @@
 import type { FC } from 'react';
 import { useGroupHubQuery } from '@/features/group-hub/api';
+import { usePlansRunningOrder } from '@/features/running-order/hooks/use-plans-running-order';
 import { AccessDeniedScreen } from '@/features/session/components/AccessDeniedScreen';
 import { ScreenNotFound } from '@/features/session/components/ScreenNotFound';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
-import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { parsePositiveId } from '@/lib/positive-id';
 import { isNotFoundError } from '@/lib/query-error';
 import { GROUP_ACTS_TITLE } from '../acts-copy';
@@ -23,14 +23,12 @@ export const GroupActsPage: FC<GroupActsPageProps> = ({ groupId, search }) => {
   const id = parsePositiveId(groupId);
   const hub = useGroupHubQuery(id);
   const permissions = usePermissions();
+  const plans = usePlansRunningOrder();
 
   if (id === null || isNotFoundError(hub.error)) {
     return <ScreenNotFound />;
   }
 
-  const plans =
-    permissions.has(PERMISSION_KEYS.eventsRunningOrder) ||
-    permissions.has(PERMISSION_KEYS.eventsManage);
   const origin = groupOriginOf(id, hub.data?.name ?? GROUP_ACTS_TITLE);
   const decided = hub.data !== undefined && !permissions.isUndecided;
   const allowed = plans || hub.data?.viewerIsAdmin === true;

@@ -93,7 +93,7 @@ const fiveToDos: StartPanel = {
 };
 
 const layoutOf = (start: Start) => {
-  const mosaic = toMosaic(start);
+  const mosaic = toMosaic(start.panels);
 
   return {
     lead: mosaic.lead === null ? null : [mosaic.lead.kind, mosaic.lead.span.md],
@@ -160,19 +160,19 @@ describe('toMosaic', () => {
   });
 
   it('widens the calendar when little sits beside it', () => {
-    const mosaic = toMosaic(startOf([calendar, toDos]));
+    const mosaic = toMosaic(startOf([calendar, toDos]).panels);
 
     expect([mosaic.lead?.span.md, mosaic.sideSpan.md]).toEqual([8, 4]);
   });
 
   it('shortens a wide calendar to the height of a light side', () => {
-    const mosaic = toMosaic(startOf([calendar, fiveToDos, oneSeat]));
+    const mosaic = toMosaic(startOf([calendar, fiveToDos, oneSeat]).panels);
 
     expect([mosaic.lead?.span.md, mosaic.lead?.shownCount]).toEqual([8, 3]);
   });
 
   it('keeps the server count when the side balances the calendar', () => {
-    const mosaic = toMosaic(startOf([calendar, mineFacts, toDos, groups, gallery]));
+    const mosaic = toMosaic(startOf([calendar, mineFacts, toDos, groups, gallery]).panels);
 
     expect(mosaic.lead?.shownCount).toBeNull();
   });

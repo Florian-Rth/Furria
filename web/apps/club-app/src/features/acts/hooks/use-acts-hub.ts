@@ -11,12 +11,12 @@ import { useNow } from '@/lib/use-now';
 import type { ActSection, ActsScope } from '../acts-catalogue';
 import { filterCountsOf, scopedActsOf, visibleSectionsOf } from '../acts-catalogue';
 import { toClosedSessionNote, toSessionLabel } from '../acts-copy';
-import { PLANNER_PATH } from '../acts-origin';
+import { ACT_PAGE_PATH, actPageSearchOf, PLANNER_PATH } from '../acts-origin';
 import type { ActOverlap, PersonLoad } from '../acts-overlap';
 import { carriersAmongOf, overlapsOf, personInActsOf, personLoadsOf } from '../acts-overlap';
 import { upcomingRunsOf } from '../acts-runs';
 import { isSessionClosed, sessionSearchOf } from '../acts-session';
-import type { ActSelection, ActsFilter, ActsSearch } from '../schemas';
+import type { ActsFilter, ActsSearch } from '../schemas';
 import { NEW_ACT } from '../schemas';
 
 const NO_ACTS: readonly CatalogueAct[] = [];
@@ -39,10 +39,8 @@ export interface ActsHub {
   people: number;
   carriers: PersonLoad[];
   spotlight: PersonLoad | null;
-  selection: ActSelection | null;
-  selectedAct: CatalogueAct | null;
+  isCreating: boolean;
   isWide: boolean;
-  fromEventId: number | null;
   chooseFilter: (filter: ActsFilter) => void;
   chooseSession: (value: string) => void;
   open: (actId: number) => void;
@@ -64,9 +62,7 @@ export const useActsHub = (scope: ActsScope, search: ActsSearch): ActsHub => {
   const all = query.data?.acts ?? NO_ACTS;
   const acts = scopedActsOf(all, scope);
   const filter = search.filter ?? 'all';
-  const selection = search.act ?? null;
-  const selectedAct =
-    typeof selection === 'number' ? (acts.find((act) => act.actId === selection) ?? null) : null;
+  const isCreating = search.act === NEW_ACT;
   const spotlightId = search.person ?? null;
   const sessionYear = query.data?.sessionYear ?? null;
   const relevantYear = relevantSessionYear(now);
@@ -87,7 +83,16 @@ export const useActsHub = (scope: ActsScope, search: ActsSearch): ActsHub => {
     go({ act: undefined }, true);
   };
 
-  useCloseOnEscape(isWide && selection !== null, close);
+  const openAct = (actId: number, replace: boolean): void => {
+    void navigate({
+      to: ACT_PAGE_PATH,
+      params: { actId: String(actId) },
+      search: actPageSearchOf(scope, search),
+      replace,
+    });
+  };
+
+  useCloseOnEscape(isWide && isCreating, close);
 
   return {
     query,
@@ -99,7 +104,7 @@ export const useActsHub = (scope: ActsScope, search: ActsSearch): ActsHub => {
       sessionYear !== null && isSessionClosed(sessionYear, relevantYear)
         ? toClosedSessionNote(sessionYear)
         : null,
-    isSideOpen: isWide && (selection === NEW_ACT || selectedAct !== null),
+    isSideOpen: isWide && isCreating,
     acts,
     filter,
     counts: filterCountsOf(acts),
@@ -109,10 +114,8 @@ export const useActsHub = (scope: ActsScope, search: ActsSearch): ActsHub => {
     people: personLoadsOf(acts).length,
     carriers: carriersAmongOf(all, acts),
     spotlight: personInActsOf(spotlightId, all),
-    selection,
-    selectedAct,
+    isCreating,
     isWide,
-    fromEventId: search.from ?? null,
     chooseFilter: (next) => {
       go({ filter: next === 'all' ? undefined : next }, true);
     },
@@ -120,15 +123,15 @@ export const useActsHub = (scope: ActsScope, search: ActsSearch): ActsHub => {
       go({ session: sessionSearchOf(Number(value), relevantYear), act: undefined }, true);
     },
     open: (actId) => {
-      go({ act: actId }, selection !== null);
+      openAct(actId, false);
     },
     openNew: () => {
-      go({ act: NEW_ACT }, selection !== null);
+      go({ act: NEW_ACT }, false);
     },
     close,
-    created: (actId, createdIn) => {
+    created: (actId) => {
       if (search.from === undefined) {
-        go({ act: actId, session: sessionSearchOf(createdIn, relevantYear) }, true);
+        openAct(actId, true);
         return;
       }
 

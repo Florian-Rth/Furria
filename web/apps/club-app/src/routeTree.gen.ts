@@ -62,6 +62,7 @@ import { Route as AppCalendarNewRouteImport } from './routes/_app/calendar_.new'
 import { Route as AppCalendarCalendarEntryIdRouteImport } from './routes/_app/calendar_.$calendarEntryId'
 import { Route as AppAnnouncementsNewRouteImport } from './routes/_app/announcements_.new'
 import { Route as AppAnnouncementsAnnouncementIdRouteImport } from './routes/_app/announcements_.$announcementId'
+import { Route as AppActsActIdRouteImport } from './routes/_app/acts_.$actId'
 import { Route as AppPersonalProfileRouteImport } from './routes/_app/_personal.profile'
 import { Route as AppAffiliatedMembersRouteImport } from './routes/_app/_affiliated.members'
 import { Route as AppManageVenuesNewRouteImport } from './routes/_app/manage.venues_.new'
@@ -386,6 +387,11 @@ const AppAnnouncementsAnnouncementIdRoute =
     path: '/announcements/$announcementId',
     getParentRoute: () => AppRoute,
   } as any)
+const AppActsActIdRoute = AppActsActIdRouteImport.update({
+  id: '/acts_/$actId',
+  path: '/acts/$actId',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPersonalProfileRoute = AppPersonalProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -744,6 +750,7 @@ export interface FileRoutesByFullPath {
   '/invitation/code': typeof InvitationCodeRoute
   '/members': typeof AppAffiliatedMembersRoute
   '/profile': typeof AppPersonalProfileRoute
+  '/acts/$actId': typeof AppActsActIdRoute
   '/announcements/$announcementId': typeof AppAnnouncementsAnnouncementIdRoute
   '/announcements/new': typeof AppAnnouncementsNewRoute
   '/calendar/$calendarEntryId': typeof AppCalendarCalendarEntryIdRoute
@@ -855,6 +862,7 @@ export interface FileRoutesByTo {
   '/invitation/code': typeof InvitationCodeRoute
   '/members': typeof AppAffiliatedMembersRoute
   '/profile': typeof AppPersonalProfileRoute
+  '/acts/$actId': typeof AppActsActIdRoute
   '/announcements/$announcementId': typeof AppAnnouncementsAnnouncementIdRoute
   '/announcements/new': typeof AppAnnouncementsNewRoute
   '/calendar/$calendarEntryId': typeof AppCalendarCalendarEntryIdRoute
@@ -970,6 +978,7 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/_affiliated/members': typeof AppAffiliatedMembersRoute
   '/_app/_personal/profile': typeof AppPersonalProfileRoute
+  '/_app/acts_/$actId': typeof AppActsActIdRoute
   '/_app/announcements_/$announcementId': typeof AppAnnouncementsAnnouncementIdRoute
   '/_app/announcements_/new': typeof AppAnnouncementsNewRoute
   '/_app/calendar_/$calendarEntryId': typeof AppCalendarCalendarEntryIdRoute
@@ -1083,6 +1092,7 @@ export interface FileRouteTypes {
     | '/invitation/code'
     | '/members'
     | '/profile'
+    | '/acts/$actId'
     | '/announcements/$announcementId'
     | '/announcements/new'
     | '/calendar/$calendarEntryId'
@@ -1194,6 +1204,7 @@ export interface FileRouteTypes {
     | '/invitation/code'
     | '/members'
     | '/profile'
+    | '/acts/$actId'
     | '/announcements/$announcementId'
     | '/announcements/new'
     | '/calendar/$calendarEntryId'
@@ -1308,6 +1319,7 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/_affiliated/members'
     | '/_app/_personal/profile'
+    | '/_app/acts_/$actId'
     | '/_app/announcements_/$announcementId'
     | '/_app/announcements_/new'
     | '/_app/calendar_/$calendarEntryId'
@@ -1783,6 +1795,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAnnouncementsAnnouncementIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/acts_/$actId': {
+      id: '/_app/acts_/$actId'
+      path: '/acts/$actId'
+      fullPath: '/acts/$actId'
+      preLoaderRoute: typeof AppActsActIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/_personal/profile': {
       id: '/_app/_personal/profile'
       path: '/profile'
@@ -2252,6 +2271,7 @@ interface AppRouteChildren {
   AppMoreRoute: typeof AppMoreRoute
   AppNewsRoute: typeof AppNewsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppActsActIdRoute: typeof AppActsActIdRoute
   AppAnnouncementsAnnouncementIdRoute: typeof AppAnnouncementsAnnouncementIdRoute
   AppAnnouncementsNewRoute: typeof AppAnnouncementsNewRoute
   AppCalendarCalendarEntryIdRoute: typeof AppCalendarCalendarEntryIdRoute
@@ -2352,6 +2372,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMoreRoute: AppMoreRoute,
   AppNewsRoute: AppNewsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppActsActIdRoute: AppActsActIdRoute,
   AppAnnouncementsAnnouncementIdRoute: AppAnnouncementsAnnouncementIdRoute,
   AppAnnouncementsNewRoute: AppAnnouncementsNewRoute,
   AppCalendarCalendarEntryIdRoute: AppCalendarCalendarEntryIdRoute,

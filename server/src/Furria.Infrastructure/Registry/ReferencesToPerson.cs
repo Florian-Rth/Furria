@@ -6,6 +6,7 @@ using Furria.Core.Media;
 using Furria.Core.News;
 using Furria.Core.Roles;
 using Furria.Core.RunningOrders;
+using Furria.Core.Studio;
 using Furria.Core.Website;
 using Furria.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -29,6 +30,9 @@ public static class ReferencesToPerson
         HerOwn<ActCastChange>(nameof(ActCastChange.PersonId)),
         HerOwn<FrozenCastMember>(nameof(FrozenCastMember.PersonId)),
         HerOwn<AppearanceCastChange>(nameof(AppearanceCastChange.PersonId)),
+        HerOwn<ActCoEditor>(nameof(ActCoEditor.PersonId)),
+        Reference<Spot>(nameof(Spot.PersonId), OnAbsorption.BlocksIt, OnErasure.KeptNamingNobody),
+        HerOwn<AppearanceSpot>(nameof(AppearanceSpot.PersonId)),
         Reference<Announcement>(
             nameof(Announcement.AuthorPersonId),
             OnAbsorption.BlocksIt,
@@ -67,6 +71,7 @@ public static class ReferencesToPerson
         HerAct<MediaItem>(nameof(MediaItem.UploadedByPersonId)),
         HerAct<NewsPost>(nameof(NewsPost.LastSavedByPersonId)),
         HerAct<WebsitePicture>(nameof(WebsitePicture.UpdatedByPersonId)),
+        HerAct<ActCoEditor>(nameof(ActCoEditor.GrantedByPersonId)),
     ];
 
     [Pure]

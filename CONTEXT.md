@@ -839,9 +839,13 @@ _Avoid_: performance (that is the calendar entry kind), show, gig, line (for the
 
 **Co-editor** (act):
 A **cast** member a **group admin** has entrusted with one **act**'s training material — she edits
-it like the group admin does, but never the act's cast or group. Only the cast and the group's
-admins see an act's training material at all (ruled 2026-10-29, group-year grilling).
-_UI copy_: — (open)
+it like the group admin does, but never the act's cast or group. Only the cast, the co-editors and
+the group's admins see an act's training material at all (ruled 2026-10-29, group-year grilling).
+Only someone in the cast can be made a co-editor, and only while the act is neither archived nor
+closed. Planners and the group's other members open the act page too, but see the act without its
+training material; anyone else is refused. A co-editor who leaves the cast loses the training
+material with it (built 2026-10-29, RFC 0001 phase 5).
+_UI copy_: *Bearbeiten mit*, *mitbearbeiten*
 _Avoid_: choreographer, owner, moderator
 
 **Working mix**, **final file** (act):

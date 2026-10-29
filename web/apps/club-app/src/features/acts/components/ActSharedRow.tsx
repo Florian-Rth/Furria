@@ -1,28 +1,22 @@
 import { toImageSource } from '@furria/ui/image-source';
-import type { KkFaceToggle } from '@furria/ui/KkFaceToggles';
-import { KkFaceToggles } from '@furria/ui/KkFaceToggles';
+import { KkAvatarStack } from '@furria/ui/KkAvatarStack';
 import { KkPictureMark } from '@furria/ui/KkPictureMark';
 import { KkSpotlightList } from '@furria/ui/KkSpotlightList';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
-import { KIND_ICONS, SPOTLIGHT_PRESS_LABEL, toSharedActMeta, toShortName } from '../acts-copy';
+import { KIND_ICONS, toSharedActMeta } from '../acts-copy';
 import type { SharedAct } from '../acts-overlap';
-import { spotlightOf } from '../acts-overlap';
+
+const FACES = 6;
 
 interface ActSharedRowProps {
   shared: SharedAct;
-  spotlightId: number | null;
-  onToggleSpotlight: (personId: number) => void;
 }
 
-export const ActSharedRow: FC<ActSharedRowProps> = ({ shared, spotlightId, onToggleSpotlight }) => {
+export const ActSharedRow: FC<ActSharedRowProps> = ({ shared }) => {
   const { act, people } = shared;
-  const faces: KkFaceToggle[] = people.map((person) => ({
-    id: person.personId,
-    name: toShortName(person.firstName, person.lastName),
-    initials: toInitials(person.firstName, person.lastName),
-    portrait: toImageSource(person.portrait, 'portrait'),
-  }));
+  const initials = people.map((person) => toInitials(person.firstName, person.lastName));
+  const portraits = people.map((person) => toImageSource(person.portrait, 'portrait'));
   const mark = (
     <KkPictureMark
       image={null}
@@ -33,15 +27,7 @@ export const ActSharedRow: FC<ActSharedRowProps> = ({ shared, spotlightId, onTog
     />
   );
   const meta = <span data-kk-fact>{toSharedActMeta(people.length)}</span>;
-  const toggles = (
-    <KkFaceToggles
-      label={act.name}
-      faces={faces}
-      selectedId={spotlightId}
-      pressLabel={SPOTLIGHT_PRESS_LABEL}
-      onToggle={onToggleSpotlight}
-    />
-  );
+  const faces = <KkAvatarStack initials={initials} portraits={portraits} max={FACES} />;
 
   return (
     <KkSpotlightList.Row
@@ -49,8 +35,7 @@ export const ActSharedRow: FC<ActSharedRowProps> = ({ shared, spotlightId, onTog
       mark={mark}
       title={act.name}
       fact={meta}
-      chips={toggles}
-      spotlight={spotlightOf(act, spotlightId)}
+      chips={faces}
     />
   );
 };

@@ -9,6 +9,8 @@ import { usePrintRun } from '../../../internal/print-in/print-run';
 import { PRINT_EASE, PRINT_STILL, REDUCED_MOTION } from '../../../internal/print-in/print-stamp';
 import { redInk } from '../../../internal/red-ink';
 import { kkTokens } from '../../../tokens';
+import type { KkStartTileReach } from '../reach';
+import { tileReachPropsOf } from '../reach';
 import { TILE_INNER_RADIUS, tilePressFill } from '../tile-paint';
 
 const LINE_FRAME: CSSObject = {
@@ -82,6 +84,7 @@ interface KkStartTileLineProps {
   unread?: boolean;
   label?: string;
   onClick?: () => void;
+  reach?: KkStartTileReach;
 }
 
 export const KkStartTileLine: FC<KkStartTileLineProps> = ({
@@ -92,6 +95,7 @@ export const KkStartTileLine: FC<KkStartTileLineProps> = ({
   unread = false,
   label,
   onClick,
+  reach,
 }) => {
   const { settled } = usePrintRun();
   const metaLine =
@@ -115,6 +119,19 @@ export const KkStartTileLine: FC<KkStartTileLineProps> = ({
       {unreadDot}
     </>
   );
+
+  if (reach !== undefined) {
+    return (
+      <ButtonBase
+        data-kk-start-tile-control
+        data-kk-start-tile-line
+        {...tileReachPropsOf(reach)}
+        sx={pressPaint}
+      >
+        {content}
+      </ButtonBase>
+    );
+  }
 
   if (onClick === undefined) {
     return (

@@ -10,6 +10,7 @@ export type StartScreen =
 
 export interface StartScreenInput {
   start: Start | null;
+  practised: boolean;
   failed: boolean;
   skeletonDue: boolean;
 }
@@ -30,13 +31,18 @@ export interface CalendarRow {
 const VISIT_IDLE_MS = 10 * 60 * 1000;
 const SINGLE_HIDDEN = 1;
 
-export const startScreenOf = ({ start, failed, skeletonDue }: StartScreenInput): StartScreen => {
+export const startScreenOf = ({
+  start,
+  practised,
+  failed,
+  skeletonDue,
+}: StartScreenInput): StartScreen => {
   if (start !== null) {
     if (!start.viewerIsActiveInClub) {
       return { kind: 'inactive' };
     }
 
-    return start.panels.length === 0 ? { kind: 'empty' } : { kind: 'board', start };
+    return start.panels.length === 0 && !practised ? { kind: 'empty' } : { kind: 'board', start };
   }
   if (failed) {
     return { kind: 'error' };

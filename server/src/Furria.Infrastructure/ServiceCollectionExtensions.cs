@@ -19,6 +19,7 @@ using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.Roles;
 using Furria.Infrastructure.RunningOrders;
 using Furria.Infrastructure.Start;
+using Furria.Infrastructure.Studio;
 using Furria.Infrastructure.Website;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -100,6 +101,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ActCatalogue>();
         services.AddScoped<ActService>();
         services.AddScoped<ActAccess>();
+        services.AddScoped<ActStudioReader>();
+        services.AddScoped<ActStudioService>();
         services.AddScoped<RunningOrderService>();
         services.AddScoped<EventPictures>();
         services.AddScoped<ClubRecordService>();

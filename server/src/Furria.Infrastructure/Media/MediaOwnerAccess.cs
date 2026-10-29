@@ -129,10 +129,19 @@ public sealed class MediaOwnerAccess
             return Result.Conflict(ArchivedAct);
 
         return PermittedIf(
-            act.GroupId is { } groupId
+            (
+                act.GroupId is { } groupId
                 && await _authorizer.CanAdministerGroupAsync(accountId, groupId, ct)
+            ) || await IsCoEditorAsync(accountId, actId, ct)
         );
     }
+
+    private async Task<bool> IsCoEditorAsync(int accountId, int actId, CancellationToken ct) =>
+        await _authorizer.ActivePersonIdAsync(accountId, ct) is { } personId
+        && await _dbContext.ActCoEditors.AnyAsync(
+            editor => editor.ActId == actId && editor.PersonId == personId,
+            ct
+        );
 
     private static Result PermittedIf(bool isPermitted) =>
         isPermitted ? Result.Success() : Result.Forbidden(NotPermitted);

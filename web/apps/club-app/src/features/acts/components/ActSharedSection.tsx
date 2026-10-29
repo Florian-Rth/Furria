@@ -8,24 +8,11 @@ import { ActSharedRow } from './ActSharedRow';
 
 interface ActSharedSectionProps {
   shared: readonly SharedAct[];
-  spotlightId: number | null;
-  onToggleSpotlight: (personId: number) => void;
 }
 
-export const ActSharedSection: FC<ActSharedSectionProps> = ({
-  shared,
-  spotlightId,
-  onToggleSpotlight,
-}) => {
+export const ActSharedSection: FC<ActSharedSectionProps> = ({ shared }) => {
   const meta = shared.length === 0 ? NONE : String(shared.length);
-  const rows = shared.map((entry) => (
-    <ActSharedRow
-      key={entry.act.actId}
-      shared={entry}
-      spotlightId={spotlightId}
-      onToggleSpotlight={onToggleSpotlight}
-    />
-  ));
+  const rows = shared.map((entry) => <ActSharedRow key={entry.act.actId} shared={entry} />);
   const content =
     rows.length === 0 ? null : <KkSpotlightList label={SHARED_ACTS_LABEL}>{rows}</KkSpotlightList>;
 
