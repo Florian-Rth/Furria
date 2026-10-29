@@ -16,6 +16,11 @@ namespace Furria.Api.Tests.Studio;
 [SeedsAliases]
 public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
 {
+    private const string StageArtwork =
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 21 14\">"
+        + "<rect width=\"21\" height=\"14\" />"
+        + "</svg>";
+
     private readonly ApiTestFixture _fixture;
 
     public GetActStudioTests(ApiTestFixture fixture)
@@ -46,6 +51,38 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
         Assert.NotNull(studio.Studio);
         Assert.Equal(0, studio.Studio.Music.LengthSeconds);
         Assert.Empty(studio.Studio.Songs);
+        Assert.Null(studio.Studio.Stage);
+    }
+
+    [Fact]
+    public async Task Should_DrawOurStage_When_TheClubHasSetItUp()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+            {
+                GardeWithDancers(_fixture.Today)(builder);
+                builder.Club(club =>
+                    club.SetClubRecord(stage: new ClubStageIntent(10.5m, 7m, StageArtwork))
+                );
+            },
+            ct
+        );
+        var actId = await GardetanzAsync(ctx, ct);
+        var anna = await ctx.Identity.ClientForAsync(Anna, ct);
+
+        var studio = await StudioOfAsync(anna, actId);
+
+        Assert.NotNull(studio.Studio);
+        Assert.Equal(
+            new StudioStageDto
+            {
+                WidthMetres = 10.5,
+                DepthMetres = 7,
+                ArtworkSvg = StageArtwork,
+            },
+            studio.Studio.Stage
+        );
     }
 
     [Fact]

@@ -1,3 +1,5 @@
+using Furria.Application.Club;
+
 namespace Furria.Application.Studio;
 
 public sealed record ActStudioContent
@@ -17,4 +19,6 @@ public sealed record ActStudioContent
     public required IReadOnlyList<StudioVideoDetails> Videos { get; init; }
 
     public required StudioChoreographyDetails? Choreography { get; init; }
+
+    public required ClubStageDetails? Stage { get; init; }
 }

@@ -256,10 +256,31 @@ Done 2026-10-29. Decisions taken in the phase:
 
 ### Phase 6 — ⚖ The one screen: lab variants
 Goal: Florian picks the layout of the player/editor screen before the editors are built into it.
-- [ ] Seed a realistic studio (songs, steps, parts, 12 spots with keyframes, a video) for the lab
-- [ ] Three divergent variants of the one screen in the lab (one based on the Inspiration mock) at 390 px and desktop: music + video + stage, steps/parts, loop/speed/mirror, own dot
-- [ ] Client playback engine: one clock from the working mix (gapless song cuts), video slaved to it, keyframe interpolation (pure, tested)
+- [x] Seed a realistic studio (songs, steps, parts, 12 spots with keyframes, a video) for the lab
+- [x] Three divergent variants of the one screen in the lab (one based on the Inspiration mock) at 390 px and desktop: music + video + stage, steps/parts, loop/speed/mirror, own dot
+- [x] Client playback engine: one clock from the working mix (gapless song cuts), video slaved to it, keyframe interpolation (pure, tested)
 - [ ] Pitch + Florian's pick; the rulings recorded in the RFC
+
+Built 2026-10-29, awaiting Florian's pick. Decisions taken in the phase:
+- The studio read also returns **our stage** (`studio.stage`: width, depth, drawing), read through the
+  club record service; the player needs it and planners/admins-only club endpoints can't serve members.
+- **Engine** (`features/act-player/`): one shared Web Audio context is the clock. The working mix is
+  scheduled as back-to-back buffer pieces (sample-exact song cuts); a loop schedules its next passes
+  ahead. Decoded music is cached per media item (renditions are immutable). The trainer video is muted
+  and follows the clock (seek beyond 0.3 s drift, otherwise a small playback-rate nudge). Frame-rate
+  values reach only small leaf components through one per-player frame store.
+- **Keyframes**: a move eases by the *arriving* keyframe's easing; a **bend is the point the path passes
+  through half way** (quadratic curve). **Right** = right as seen from the audience; **facing 0° = facing
+  the audience**, clockwise. Viewpoints: *audience* (front edge at the bottom) and *dancers* (turned 180°).
+- **Speed** uses the playback rate, so pitch is not kept yet; keeping it needs a time-stretch stage in
+  phase 7.
+- Seed for the lab: `scripts/studio-seed/` (synthetic songs and trainer videos made with the worker's
+  ffmpeg, steps, parts, spots, choreography, stage), run against a branch database (`furria_rfc52`) so
+  the shared dev database never gets this branch's migrations.
+- Lab variants at `/lab/studio-a|b|c/$actId` (entries on `/lab`): **A** layers video, stage, a sticky
+  count/music/transport deck and the step list (from the Inspiration mock); **B** makes the step list the
+  screen, the current step opening in place as the practice card; **C** runs lanes (part, step, counts,
+  music, video, formation points, your moves) under a fixed playhead, the later editors' home.
 
 ### Phase 7 — Player promoted
 Goal: members practise on the chosen screen with real data.

@@ -31,6 +31,22 @@ public sealed class ClubRecordService
         return ToDetails(record ?? new ClubRecord());
     }
 
+    public async Task<ClubStageDetails?> StageOfClubAsync(CancellationToken ct)
+    {
+        var record = await _dbContext
+            .ClubRecords.AsNoTracking()
+            .Where(row => row.Id == ClubRecord.TheOnlyId)
+            .Select(row => new ClubRecord
+            {
+                StageWidthMetres = row.StageWidthMetres,
+                StageDepthMetres = row.StageDepthMetres,
+                StageArtworkSvg = row.StageArtworkSvg,
+            })
+            .SingleOrDefaultAsync(ct);
+
+        return record is null ? null : StageOf(record);
+    }
+
     public async Task<Result> UpdateIdentityAsync(
         UpdateClubIdentityCommand command,
         CancellationToken ct

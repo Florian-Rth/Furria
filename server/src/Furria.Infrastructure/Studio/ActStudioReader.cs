@@ -3,6 +3,7 @@ using Furria.Application.RunningOrders;
 using Furria.Application.Studio;
 using Furria.Core.Media;
 using Furria.Core.Studio;
+using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.RunningOrders;
@@ -15,12 +16,19 @@ public sealed class ActStudioReader
     private readonly AppDbContext _dbContext;
     private readonly ActCatalogue _catalogue;
     private readonly MediaUrlSigner _signer;
+    private readonly ClubRecordService _clubRecords;
 
-    public ActStudioReader(AppDbContext dbContext, ActCatalogue catalogue, MediaUrlSigner signer)
+    public ActStudioReader(
+        AppDbContext dbContext,
+        ActCatalogue catalogue,
+        MediaUrlSigner signer,
+        ClubRecordService clubRecords
+    )
     {
         _dbContext = dbContext;
         _catalogue = catalogue;
         _signer = signer;
+        _clubRecords = clubRecords;
     }
 
     public async Task<ActStudioContent> ContentOfAsync(int actId, CancellationToken ct)
@@ -55,6 +63,7 @@ public sealed class ActStudioReader
             Spots = await SpotsOfAsync(actId, ct),
             Videos = await VideosOfAsync(actId, owner, music, ct),
             Choreography = await ChoreographyOfAsync(actId, ct),
+            Stage = await _clubRecords.StageOfClubAsync(ct),
         };
     }
 

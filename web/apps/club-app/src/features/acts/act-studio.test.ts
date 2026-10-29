@@ -28,6 +28,7 @@ const studio = (patch: Partial<Studio>): Studio => ({
   spots: [],
   videos: [],
   choreography: null,
+  stage: null,
   ...patch,
 });
 

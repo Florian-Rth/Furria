@@ -143,6 +143,13 @@ export const ChoreographySchema = z.object({
 });
 export type Choreography = z.infer<typeof ChoreographySchema>;
 
+export const StudioStageSchema = z.object({
+  widthMetres: z.number(),
+  depthMetres: z.number(),
+  artworkSvg: z.string().nullable(),
+});
+export type StudioStage = z.infer<typeof StudioStageSchema>;
+
 export const StudioSchema = z.object({
   music: z.object({
     lengthSeconds: z.number(),
@@ -155,6 +162,7 @@ export const StudioSchema = z.object({
   spots: z.array(StudioSpotSchema),
   videos: z.array(StudioVideoSchema),
   choreography: ChoreographySchema.nullable(),
+  stage: StudioStageSchema.nullable(),
 });
 export type Studio = z.infer<typeof StudioSchema>;
 

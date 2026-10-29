@@ -3,6 +3,7 @@ using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Media;
 using Furria.Api.Results;
+using Furria.Application.Club;
 using Furria.Application.Studio;
 using Furria.Core.Media;
 using Furria.Core.Studio;
@@ -83,6 +84,15 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
             Spots = [.. content.Spots.Select(ToDto)],
             Videos = [.. content.Videos.Select(ToDto)],
             Choreography = content.Choreography is { } choreography ? ToDto(choreography) : null,
+            Stage = content.Stage is { } stage ? ToDto(stage) : null,
+        };
+
+    private static StudioStageDto ToDto(ClubStageDetails stage) =>
+        new()
+        {
+            WidthMetres = (double)stage.WidthMetres,
+            DepthMetres = (double)stage.DepthMetres,
+            ArtworkSvg = stage.ArtworkSvg,
         };
 
     private static StudioSongDto ToDto(StudioSongDetails song) =>
@@ -259,6 +269,17 @@ public sealed record StudioDto
     public required IReadOnlyList<StudioVideoDto> Videos { get; init; }
 
     public required StudioChoreographyDto? Choreography { get; init; }
+
+    public required StudioStageDto? Stage { get; init; }
+}
+
+public sealed record StudioStageDto
+{
+    public required double WidthMetres { get; init; }
+
+    public required double DepthMetres { get; init; }
+
+    public required string? ArtworkSvg { get; init; }
 }
 
 public sealed record StudioMusicDto
