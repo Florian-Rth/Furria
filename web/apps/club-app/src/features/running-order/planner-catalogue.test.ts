@@ -46,6 +46,7 @@ const line = (actId: number, placed: boolean): DraftLine => ({
   placed,
   pinned: false,
   blockKey: null,
+  eveningChanged: false,
 });
 
 const draftOf = (lines: DraftLine[]): RunningOrderDraft => ({

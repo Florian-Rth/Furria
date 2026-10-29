@@ -137,6 +137,7 @@ export const RunningOrderLineSchema = z.object({
   position: z.number().int().nonnegative().nullable(),
   pinned: z.boolean(),
   blockKey: z.number().int().nullable(),
+  eveningChanged: z.boolean(),
 });
 export type RunningOrderLine = z.infer<typeof RunningOrderLineSchema>;
 

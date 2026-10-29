@@ -7,6 +7,7 @@ export interface DraftLine {
   placed: boolean;
   pinned: boolean;
   blockKey: number | null;
+  eveningChanged: boolean;
 }
 
 export type RuleKey = `rule:${number}` | `draft:${number}`;

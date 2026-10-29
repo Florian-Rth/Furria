@@ -1,6 +1,8 @@
+using Furria.Core.Club;
+
 namespace Furria.Core.RunningOrders;
 
-public sealed class RunningOrderLine
+public sealed class Appearance
 {
     public int Id { get; set; }
 
@@ -14,7 +16,9 @@ public sealed class RunningOrderLine
 
     public int? BlockKey { get; set; }
 
-    public RunningOrder? RunningOrder { get; set; }
+    public CalendarEntry? CalendarEntry { get; set; }
 
     public Act? Act { get; set; }
+
+    public ICollection<AppearanceCastChange> CastChanges { get; set; } = [];
 }

@@ -23,6 +23,7 @@ interface LineOptions {
   pinned?: boolean;
   blockKey?: number | null;
   cast?: number[];
+  eveningChanged?: boolean;
 }
 
 const act = (actId: number, options: LineOptions = {}): DraftLine => ({
@@ -44,6 +45,7 @@ const act = (actId: number, options: LineOptions = {}): DraftLine => ({
   placed: options.placed ?? true,
   pinned: options.pinned ?? false,
   blockKey: options.blockKey ?? null,
+  eveningChanged: options.eveningChanged ?? false,
 });
 
 const evening = (lines: DraftLine[], actWishes: ActWish[] = []): RunningOrderDraft => ({
@@ -86,6 +88,7 @@ describe('draftOf and bodyOf', () => {
         position: 1,
         pinned: true,
         blockKey: null,
+        eveningChanged: false,
       },
       {
         lineId: 13,
@@ -93,6 +96,7 @@ describe('draftOf and bodyOf', () => {
         position: 0,
         pinned: false,
         blockKey: null,
+        eveningChanged: false,
       },
       {
         lineId: 14,
@@ -100,6 +104,7 @@ describe('draftOf and bodyOf', () => {
         position: null,
         pinned: false,
         blockKey: null,
+        eveningChanged: false,
       },
     ],
     rules: [
@@ -441,6 +446,12 @@ describe('dropAct', () => {
       dropped.actWishes,
       dropped.suspendedActWishIds,
     ]).toEqual([['act:2'], [], [], []]);
+  });
+
+  it('keeps a line the evening has changed', () => {
+    const draft = evening([act(1, { eveningChanged: true }), act(2)]);
+
+    expect(orderOf(dropAct(draft, 1))).toEqual(['act:1', 'act:2']);
   });
 });
 

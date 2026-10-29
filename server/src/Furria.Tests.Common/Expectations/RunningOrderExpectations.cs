@@ -38,4 +38,18 @@ public sealed class RunningOrderExpectations
                     ).Version
                 )
         );
+
+    public Expected ToHaveAppearancesOf(params int[] actIds) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    actIds.Order(),
+                    await dbContext
+                        .Appearances.AsNoTracking()
+                        .Where(row => row.CalendarEntryId == _eventId)
+                        .Select(row => row.ActId)
+                        .OrderBy(actId => actId)
+                        .ToListAsync(ct)
+                )
+        );
 }

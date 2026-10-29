@@ -121,7 +121,9 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<RunningOrder> RunningOrders => Set<RunningOrder>();
 
-    public DbSet<RunningOrderLine> RunningOrderLines => Set<RunningOrderLine>();
+    public DbSet<Appearance> Appearances => Set<Appearance>();
+
+    public DbSet<AppearanceCastChange> AppearanceCastChanges => Set<AppearanceCastChange>();
 
     public DbSet<RunningOrderRule> RunningOrderRules => Set<RunningOrderRule>();
 

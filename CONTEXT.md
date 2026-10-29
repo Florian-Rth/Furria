@@ -826,7 +826,12 @@ One **act** at one **calendar entry** — the gala evening's guard dance. It inh
 and choreography and keeps only what differs that evening: people in or out, who stands on which
 spot, optionally its own copy of the choreography; it holds that evening's pictures. Its place in
 the evening's **running order** belongs to it — there is no separate running-order line (ruled
-2026-10-29, group-year grilling).
+2026-10-29, group-year grilling). The evening is planned and checked with its **evening cast** —
+the act's cast on that day, plus and minus the appearance's own changes. An act joins an evening
+only from that evening's session (or timeless) and never once its session has ended. Taking an act
+out of the running order deletes its appearance; while the appearance still holds evening changes
+that is refused, so nothing an evening was adjusted for gets lost silently (built 2026-10-29,
+RFC 0001 phase 2).
 _UI copy_: always in context — *Auftritt am 11.11.*, *an diesem Abend*
 _Avoid_: performance (that is the calendar entry kind), show, gig, line (for the running-order place)
 

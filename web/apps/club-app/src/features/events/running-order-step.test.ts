@@ -11,6 +11,7 @@ const lineAt = (
   position,
   pinned: false,
   blockKey: null,
+  eveningChanged: false,
 });
 
 const conflict: RunningOrderResponse['findings'][number] = {

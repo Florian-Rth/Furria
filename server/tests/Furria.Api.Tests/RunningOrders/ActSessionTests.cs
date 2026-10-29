@@ -80,6 +80,30 @@ public sealed class ActSessionTests
         Assert.Equal(closed, ActSession.IsClosed(2025, new DateOnly(year, month, day)));
     }
 
+    [Theory]
+    [InlineData(null, 2025, 11, 20, null)]
+    [InlineData(2025, 2025, 11, 20, null)]
+    [InlineData(2025, 2026, 6, 20, AppearanceSessionProblem.OtherSession)]
+    [InlineData(2026, 2026, 6, 20, null)]
+    [InlineData(2024, 2025, 1, 20, AppearanceSessionProblem.SessionEnded)]
+    public void Should_JudgeTheActsSession_When_ItAppearsOnAnEvening(
+        int? sessionYear,
+        int year,
+        int month,
+        int day,
+        AppearanceSessionProblem? expected
+    )
+    {
+        Assert.Equal(
+            expected,
+            ActSession.AppearanceProblemOf(
+                sessionYear,
+                new DateOnly(year, month, day),
+                InTheRunningSession
+            )
+        );
+    }
+
     [Fact]
     public void Should_FreezeTheCastOnAshWednesday_When_TheSessionCloses()
     {

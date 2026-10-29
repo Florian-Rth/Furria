@@ -1,3 +1,4 @@
+import { useKkNotice } from '@furria/ui/KkNotice';
 import { useIsMediumScreen } from '@furria/ui/use-is-medium-screen';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
@@ -8,6 +9,7 @@ import { useActsQuery, useRunningOrdersQuery } from '@/features/running-order/ap
 import {
   dissolveBlock,
   dropAct,
+  isDroppable,
   moveUnit,
   pickActs,
   removeRule,
@@ -30,6 +32,7 @@ import type { CatalogueRowState, CatalogueSection, PreviousEvening } from '../pl
 import { catalogueRowStateOf, catalogueSectionsOf, previousEveningsOf } from '../planner-catalogue';
 import {
   toAllPlacedMessage,
+  toKeptForEveningMessage,
   toPickedMessage,
   toPlacedMessage,
   toRemovedMessage,
@@ -132,11 +135,19 @@ export const useRunningOrderPlanner = (eventId: number): RunningOrderPlanner => 
   );
   const runningOrders = useRunningOrdersQuery();
   const store = usePlannerDraft(eventId);
+  const notify = useKkNotice();
   const { draft, apply } = store;
   const drag = usePlannerDrag(draft, apply);
   const bracket = usePlannerBracket(draft, drag.listRef, apply);
   const lineNameOf = (key: LineKey): string =>
     draft.lines.find((candidate) => candidate.key === key)?.act.name ?? '';
+  const dropLine = (line: DraftLine): void => {
+    if (!isDroppable(line)) {
+      notify({ tone: 'info', message: toKeptForEveningMessage(line.act.name) });
+      return;
+    }
+    apply(dropAct(draft, line.act.actId), toRemovedMessage(line.act.name));
+  };
   const suggestion = usePlannerSuggestion(eventId, draft, store.findings, apply, lineNameOf);
   const [selectedKey, setSelectedKey] = useState<LineKey | null>(null);
   const [personId, setPersonId] = useState<number | null>(null);
@@ -284,7 +295,7 @@ export const useRunningOrderPlanner = (eventId: number): RunningOrderPlanner => 
         apply(pickActs(draft, catalogueActs, [actId]));
         return;
       }
-      apply(dropAct(draft, actId), toRemovedMessage(line.act.name));
+      dropLine(line);
     },
     pickMany: (actIds) => {
       const picked = pickActs(draft, catalogueActs, actIds);
@@ -295,10 +306,9 @@ export const useRunningOrderPlanner = (eventId: number): RunningOrderPlanner => 
     drop: (key) => {
       const line = draft.lines.find((candidate) => candidate.key === key);
 
-      if (line === undefined) {
-        return;
+      if (line !== undefined) {
+        dropLine(line);
       }
-      apply(dropAct(draft, line.act.actId), toRemovedMessage(line.act.name));
     },
     place: (key) => {
       const next = placeAtBest(draft, key);

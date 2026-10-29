@@ -28,6 +28,7 @@ public static class ReferencesToPerson
         HerOwn<NewsPostMention>(nameof(NewsPostMention.PersonId)),
         HerOwn<ActCastChange>(nameof(ActCastChange.PersonId)),
         HerOwn<FrozenCastMember>(nameof(FrozenCastMember.PersonId)),
+        HerOwn<AppearanceCastChange>(nameof(AppearanceCastChange.PersonId)),
         Reference<Announcement>(
             nameof(Announcement.AuthorPersonId),
             OnAbsorption.BlocksIt,

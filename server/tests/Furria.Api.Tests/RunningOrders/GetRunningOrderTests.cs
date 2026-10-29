@@ -90,6 +90,46 @@ public sealed class GetRunningOrderTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_CastTheEveningAndCheckIt_When_TheAppearanceChangesTheCastForTheEvening()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(Planner, ct);
+        var people = ctx.Identity.People;
+        var eventId = ctx.Club.Events.IdOf(Gala);
+        var tanz = await CreateActAsync(client, "Gardetanz", ctx.Groups.Groups.IdOf(Garde));
+        var rede = await CreateActAsync(client, "Büttenrede", added: [people.IdOf(Clara)]);
+        await SavedAsync(client, eventId, null, [Line(tanz, 0), Line(rede, 1)]);
+        await _fixture.ChangeEveningCastDirectlyAsync(
+            eventId,
+            tanz,
+            people.IdOf(Clara),
+            CastChange.Added,
+            ct
+        );
+        await _fixture.ChangeEveningCastDirectlyAsync(
+            eventId,
+            tanz,
+            people.IdOf(Anna),
+            CastChange.Removed,
+            ct
+        );
+
+        var (_, result) = await GetAsync(client, eventId);
+
+        var dance = result.Lines.Single(line => line.Act.ActId == tanz);
+        Assert.True(dance.EveningChanged);
+        Assert.Equal(
+            [people.IdOf(Clara), people.IdOf(Dora)],
+            dance.Act.Cast.Select(person => person.PersonId)
+        );
+        Assert.False(result.Lines.Single(line => line.Act.ActId == rede).EveningChanged);
+        var finding = Assert.Single(result.Findings);
+        Assert.Equal(FindingKind.NoChangeover, finding.Kind);
+        Assert.Equal([people.IdOf(Clara)], finding.PersonIds);
+    }
+
+    [Fact]
     public async Task Should_ReturnNotFound_When_TheEventHasNoRunningOrder()
     {
         var ct = TestContext.Current.CancellationToken;

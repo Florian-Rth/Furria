@@ -240,6 +240,9 @@ export const toPlaceChange = (delta: FindingTally): string | null => {
 
 export const toRemovedMessage = (name: string): string => `${name} aus dem Abend genommen.`;
 
+export const toKeptForEveningMessage = (name: string): string =>
+  `${name} ist für diesen Abend angepasst und bleibt im Ablauf, solange die Anpassung besteht.`;
+
 export const toPickedMessage = (count: number): string => `${toActsLabel(count)} übernommen.`;
 
 export const SUGGESTION_TAKEN = 'Vorschlag übernommen.';

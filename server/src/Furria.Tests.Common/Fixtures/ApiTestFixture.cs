@@ -16,6 +16,7 @@ using Furria.Core.Groups;
 using Furria.Core.Identity;
 using Furria.Core.Media;
 using Furria.Core.Roles;
+using Furria.Core.RunningOrders;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Identity;
@@ -721,6 +722,34 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         await db.Database.ExecuteSqlAsync($"DELETE FROM person WHERE id = {personId}", ct);
+    }
+
+    public async Task ChangeEveningCastDirectlyAsync(
+        int eventId,
+        int actId,
+        int personId,
+        CastChange change,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var appearanceId = await db
+            .Appearances.Where(appearance =>
+                appearance.CalendarEntryId == eventId && appearance.ActId == actId
+            )
+            .Select(appearance => appearance.Id)
+            .SingleAsync(ct);
+        db.AppearanceCastChanges.Add(
+            new AppearanceCastChange
+            {
+                AppearanceId = appearanceId,
+                PersonId = personId,
+                Change = change,
+            }
+        );
+        await db.SaveChangesAsync(ct);
     }
 
     public async Task AddRolePermissionDirectlyAsync(

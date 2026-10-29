@@ -11,4 +11,6 @@ public sealed record RunningOrderLineDetails
     public required bool IsPinned { get; init; }
 
     public required int? BlockKey { get; init; }
+
+    public required bool IsEveningChanged { get; init; }
 }

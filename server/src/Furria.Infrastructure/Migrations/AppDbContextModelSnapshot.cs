@@ -2441,6 +2441,79 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Furria.Core.RunningOrders.Appearance", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("act_id");
+
+                    b.Property<int?>("BlockKey")
+                        .HasColumnType("integer")
+                        .HasColumnName("block_key");
+
+                    b.Property<int>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<bool>("IsPinned")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_pinned");
+
+                    b.Property<int?>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.HasKey("Id")
+                        .HasName("pk_appearance");
+
+                    b.HasIndex("ActId")
+                        .HasDatabaseName("ix_appearance_act_id");
+
+                    b.HasIndex("CalendarEntryId", "ActId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_appearance_calendar_entry_id_act_id");
+
+                    b.ToTable("appearance", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_appearance_position", "position IS NULL OR position >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.AppearanceCastChange", b =>
+                {
+                    b.Property<int>("AppearanceId")
+                        .HasColumnType("integer")
+                        .HasColumnName("appearance_id");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<string>("Change")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("change");
+
+                    b.HasKey("AppearanceId", "PersonId")
+                        .HasName("pk_appearance_cast_change");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_appearance_cast_change_person_id");
+
+                    b.ToTable("appearance_cast_change", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_appearance_cast_change_change", "change IN ('Added', 'Removed')");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.RunningOrders.FrozenCastMember", b =>
                 {
                     b.Property<int>("ActId")
@@ -2495,51 +2568,6 @@ namespace Furria.Infrastructure.Migrations
                         .HasName("pk_running_order");
 
                     b.ToTable("running_order", (string)null);
-                });
-
-            modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrderLine", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("ActId")
-                        .HasColumnType("integer")
-                        .HasColumnName("act_id");
-
-                    b.Property<int?>("BlockKey")
-                        .HasColumnType("integer")
-                        .HasColumnName("block_key");
-
-                    b.Property<int>("CalendarEntryId")
-                        .HasColumnType("integer")
-                        .HasColumnName("calendar_entry_id");
-
-                    b.Property<bool>("IsPinned")
-                        .HasColumnType("boolean")
-                        .HasColumnName("is_pinned");
-
-                    b.Property<int?>("Position")
-                        .HasColumnType("integer")
-                        .HasColumnName("position");
-
-                    b.HasKey("Id")
-                        .HasName("pk_running_order_line");
-
-                    b.HasIndex("ActId")
-                        .HasDatabaseName("ix_running_order_line_act_id");
-
-                    b.HasIndex("CalendarEntryId", "ActId")
-                        .IsUnique()
-                        .HasDatabaseName("ix_running_order_line_calendar_entry_id_act_id");
-
-                    b.ToTable("running_order_line", null, t =>
-                        {
-                            t.HasCheckConstraint("ck_running_order_line_position", "position IS NULL OR position >= 0");
-                        });
                 });
 
             modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrderRule", b =>
@@ -4136,6 +4164,48 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Act");
                 });
 
+            modelBuilder.Entity("Furria.Core.RunningOrders.Appearance", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
+                        .WithMany()
+                        .HasForeignKey("ActId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_appearance_act_act_id");
+
+                    b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
+                        .WithMany()
+                        .HasForeignKey("CalendarEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_appearance_calendar_entry_calendar_entry_id");
+
+                    b.Navigation("Act");
+
+                    b.Navigation("CalendarEntry");
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.AppearanceCastChange", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Appearance", "Appearance")
+                        .WithMany("CastChanges")
+                        .HasForeignKey("AppearanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_appearance_cast_change_appearance_appearance_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_appearance_cast_change_person_person_id");
+
+                    b.Navigation("Appearance");
+
+                    b.Navigation("Person");
+                });
+
             modelBuilder.Entity("Furria.Core.RunningOrders.FrozenCastMember", b =>
                 {
                     b.HasOne("Furria.Core.RunningOrders.Act", "Act")
@@ -4167,27 +4237,6 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_running_order_calendar_entry_calendar_entry_id");
 
                     b.Navigation("CalendarEntry");
-                });
-
-            modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrderLine", b =>
-                {
-                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
-                        .WithMany()
-                        .HasForeignKey("ActId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired()
-                        .HasConstraintName("fk_running_order_line_act_act_id");
-
-                    b.HasOne("Furria.Core.RunningOrders.RunningOrder", "RunningOrder")
-                        .WithMany("Lines")
-                        .HasForeignKey("CalendarEntryId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
-                        .HasConstraintName("fk_running_order_line_running_order_calendar_entry_id");
-
-                    b.Navigation("Act");
-
-                    b.Navigation("RunningOrder");
                 });
 
             modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrderRule", b =>
@@ -4502,10 +4551,13 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Wishes");
                 });
 
+            modelBuilder.Entity("Furria.Core.RunningOrders.Appearance", b =>
+                {
+                    b.Navigation("CastChanges");
+                });
+
             modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrder", b =>
                 {
-                    b.Navigation("Lines");
-
                     b.Navigation("Rules");
 
                     b.Navigation("SuspendedWishes");

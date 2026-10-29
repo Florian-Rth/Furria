@@ -161,12 +161,29 @@ Done 2026-10-29. Decisions taken in the phase:
 
 ### Phase 2 — Appearance replaces the running-order line
 Goal: one appearance per act and calendar entry; planner and Leitstand step unchanged in behaviour.
-- [ ] `Appearance` entity (act × calendar entry, unique; position?, pinned, block key?) replacing `RunningOrderLine`; migration moving lines into appearances
-- [ ] `AppearanceCastChange` (evening cast in/out) feeding the effective cast used by review, suggestion and findings
-- [ ] Running-order service, review input, suggestion and endpoints switched to appearances (wire shape kept where possible; adjust the client schemas where not)
-- [ ] Removing an act from the Ablauf deletes its appearance only without evening differences; otherwise 409 with what would be lost
-- [ ] Planner tray lists unplaced appearances (including those a group created)
-- [ ] Endpoint tests migrated/extended; planner client updated
+- [x] `Appearance` entity (act × calendar entry, unique; position?, pinned, block key?) replacing `RunningOrderLine`; migration moving lines into appearances
+- [x] `AppearanceCastChange` (evening cast in/out) feeding the effective cast used by review, suggestion and findings
+- [x] Running-order service, review input, suggestion and endpoints switched to appearances (wire shape kept where possible; adjust the client schemas where not)
+- [x] Removing an act from the Ablauf deletes its appearance only without evening differences; otherwise 409 with what would be lost
+- [x] Planner tray lists unplaced appearances (including those a group created)
+- [x] Endpoint tests migrated/extended; planner client updated
+
+Done 2026-10-29. Decisions taken in the phase:
+- `appearance` belongs to the calendar entry, not to the running order; the running order keeps
+  only version, confirmation, rules and switched-off wishes. The migration moves every line into an
+  appearance with its id, so finding line ids stay stable. The wire keeps `lines`/`lineId`; a line
+  gains `eveningChanged`.
+- The evening cast is the act's cast on that day ± the appearance's cast changes; review,
+  suggestion, findings and the planner's cast all use it. No endpoint edits it yet (phase 15).
+- A new appearance refuses an act of an ended session or of another session than the evening's
+  (relevant session of the evening's day); acts already on the evening stay, like archived ones.
+  The planner now loads the acts of the evening's *relevant* session (a summer evening plans the
+  coming session).
+- Taking an act out (PUT) or deleting the running order with evening changes is a 409 naming the
+  acts; the planner keeps such a line and says why instead of dropping it.
+- The tray already lists every unplaced line. A group creating an appearance (phase 15) goes
+  through the running-order service, which creates the running order if missing and bumps its
+  version, so the planner sees it in the tray and an open draft reloads.
 
 ### Phase 3 — Audio in the media store
 Goal: an act can own media; audio is a first-class media kind with analysis.

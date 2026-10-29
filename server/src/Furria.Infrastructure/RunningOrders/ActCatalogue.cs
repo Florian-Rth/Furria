@@ -191,7 +191,7 @@ public sealed class ActCatalogue
             .ToListAsync(ct);
     }
 
-    private async Task<IReadOnlyList<CastMember>> PersonsInNameOrderAsync(
+    public async Task<IReadOnlyList<CastMember>> PersonsInNameOrderAsync(
         IReadOnlyCollection<int> personIds,
         CancellationToken ct
     )

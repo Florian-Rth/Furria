@@ -24,6 +24,17 @@ public static class ActSession
         sessionYear is { } year && year < ClubSession.RelevantYearOf(today);
 
     [Pure]
+    public static AppearanceSessionProblem? AppearanceProblemOf(
+        int? sessionYear,
+        DateOnly eveningDay,
+        DateOnly today
+    ) =>
+        sessionYear is not { } year ? null
+        : IsClosed(year, today) ? AppearanceSessionProblem.SessionEnded
+        : year != ClubSession.RelevantYearOf(eveningDay) ? AppearanceSessionProblem.OtherSession
+        : null;
+
+    [Pure]
     public static DateOnly CastFreezeDayOf(int sessionYear) =>
         ClubSession.AshWednesdayOf(sessionYear + 1);
 }

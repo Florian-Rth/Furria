@@ -18,8 +18,6 @@ public sealed class RunningOrder : ITimestamped
 
     public CalendarEntry? CalendarEntry { get; set; }
 
-    public ICollection<RunningOrderLine> Lines { get; set; } = [];
-
     public ICollection<RunningOrderRule> Rules { get; set; } = [];
 
     public ICollection<RunningOrderSuspendedWish> SuspendedWishes { get; set; } = [];

@@ -13,6 +13,8 @@ describe('actsSessionOfEvening', () => {
     ['an evening of the next session', eveningOn(2027, 11, 20), IN_THE_RUNNING_SESSION, 2027],
     ['an evening of an ended session', eveningOn(2026, 1, 17), IN_THE_RUNNING_SESSION, 2025],
     ['the coming opening between sessions', eveningOn(2027, 11, 20), BETWEEN_SESSIONS, null],
+    ['a summer evening between sessions', eveningOn(2027, 6, 20), BETWEEN_SESSIONS, null],
+    ['a summer evening of an earlier year', eveningOn(2026, 6, 20), BETWEEN_SESSIONS, 2026],
     [
       'an evening of the ended session between sessions',
       eveningOn(2027, 1, 16),
