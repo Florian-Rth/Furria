@@ -121,6 +121,19 @@ reference; this RFC is the v1 build.
   **training mode** plays the music over the hall speaker with the current step, counts and
   formation in large type, and loops a step with one tap.
 
+## Inspiration
+
+Phone-only mock of the whole v1 studio (2026-10-29, liked by Florian):
+[Auftritt Studio artifact](https://claude.ai/artifact/Y6x1BH1De244kSNPe61xzM), source kept in
+`docs/design/dance-studio/auftritt-studio.html` (open it in a browser; sample data).
+It shows the synced player (video + stage + timeline on one clock), the step manual, music cutting,
+final-file matching, the stage and movement editor with the count bar, video alignment, evening
+adjustments, training mode and offline.
+
+It is **design direction, not spec**, the same as `docs/design/` ("READ FIRST"). Tokens and
+primitives stay binding, and the layouts and copy may be improved. Phase 6 starts from it as one of
+its three variants.
+
 ## Phases
 
 Each phase leaves the system intact (builds, tests green, migrations complete, every endpoint has a
@@ -172,7 +185,7 @@ Goal: `/acts/$actId` exists with access rules; members and editors can reach it.
 ### Phase 6 — ⚖ The one screen: lab variants
 Goal: Florian picks the layout of the player/editor screen before the editors are built into it.
 - [ ] Seed a realistic studio (songs, steps, parts, 12 spots with keyframes, a video) for the lab
-- [ ] Three divergent variants of the one screen in the lab at 390 px and desktop: music + video + stage, steps/parts, loop/speed/mirror, own dot
+- [ ] Three divergent variants of the one screen in the lab (one based on the Inspiration mock) at 390 px and desktop: music + video + stage, steps/parts, loop/speed/mirror, own dot
 - [ ] Client playback engine: one clock from the working mix (gapless song cuts), video slaved to it, keyframe interpolation (pure, tested)
 - [ ] Pitch + Florian's pick; the rulings recorded in the RFC
 

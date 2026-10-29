@@ -1,0 +1,876 @@
+<title>Auftritt Studio</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Anton&family=Archivo:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap">
+<style>
+/* Layout: one phone-width column; each feature is a live app screen with a short note under it. KK tokens from @furria/ui. */
+:root{
+  --bg:#F1F2F4; --panel:#FAFBFC; --panel2:#FFFFFF; --ink:#14161A; --sub:rgba(20,22,26,.62); --faint:rgba(20,22,26,.42);
+  --line:rgba(20,22,26,.12); --line2:rgba(20,22,26,.07);
+  --red:#E11D2A; --redInk:#B3101C; --onRed:#FFFFFF; --gold:#F4B400; --goldInk:#7E5C00; --green:#2E9E5B; --greenInk:#1C7140; --blue:#2F6DA8; --blueInk:#255A8C;
+  --stage:#E6E8EC; --stageLine:rgba(20,22,26,.10); --video:#121418; --videoInk:#F4F6F8;
+  --song1:#2F6DA8; --song2:#E11D2A; --song3:#F4B400;
+  --lift:0 10px 26px rgba(16,18,22,.08);
+  --display:"Anton","Impact","Arial Narrow",sans-serif;
+  --body:"Archivo","Helvetica Neue",Arial,sans-serif;
+  --mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --r:14px;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#101216; --panel:#171A1F; --panel2:#1F232A; --ink:#F4F6F8; --sub:rgba(244,246,248,.62); --faint:rgba(244,246,248,.42);
+  --line:rgba(244,246,248,.16); --line2:rgba(244,246,248,.09);
+  --red:#FF3B47; --redInk:#FF7079; --onRed:#171A1F; --gold:#FFC42E; --goldInk:#FFC42E; --green:#2E9E5B; --greenInk:#4FBF7E; --blue:#5896D0; --blueInk:#7FB2E0;
+  --stage:#1B1F26; --stageLine:rgba(244,246,248,.10); --video:#050608; --videoInk:#F4F6F8;
+  --song1:#5896D0; --song2:#FF3B47; --song3:#FFC42E;
+  --lift:0 12px 30px rgba(0,0,0,.45); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#101216; --panel:#171A1F; --panel2:#1F232A; --ink:#F4F6F8; --sub:rgba(244,246,248,.62); --faint:rgba(244,246,248,.42);
+  --line:rgba(244,246,248,.16); --line2:rgba(244,246,248,.09);
+  --red:#FF3B47; --redInk:#FF7079; --onRed:#171A1F; --gold:#FFC42E; --goldInk:#FFC42E; --green:#2E9E5B; --greenInk:#4FBF7E; --blue:#5896D0; --blueInk:#7FB2E0;
+  --stage:#1B1F26; --stageLine:rgba(244,246,248,.10); --video:#050608; --videoInk:#F4F6F8;
+  --song1:#5896D0; --song2:#FF3B47; --song3:#FFC42E;
+  --lift:0 12px 30px rgba(0,0,0,.45); color-scheme:dark}
+*{box-sizing:border-box}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 64px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--bg)}
+.wrap{max-width:420px;margin:0 auto;display:flex;flex-direction:column;gap:40px}
+button{font:inherit;color:inherit;cursor:pointer;border:0;background:none}
+button:focus-visible,[tabindex]:focus-visible{outline:2px solid var(--red);outline-offset:2px;border-radius:8px}
+.eyebrow{font-size:11px;font-weight:700;letter-spacing:.2em;text-transform:uppercase;color:var(--redInk)}
+.display{font-family:var(--display);font-weight:400;letter-spacing:.03em;text-transform:uppercase;line-height:.95}
+.mono{font-family:var(--mono);font-variant-numeric:tabular-nums}
+
+/* hero */
+.hero{display:flex;flex-direction:column;gap:12px}
+.hero h1{font-size:46px;margin:0;text-wrap:balance}
+.hero h1 em{font-style:normal;color:var(--red)}
+.hero p{margin:0;color:var(--sub);max-width:36ch}
+.legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.legend span{font-size:12px;font-weight:600;padding:5px 10px;border-radius:20px;background:var(--panel2);border:1px solid var(--line)}
+
+.nav{position:sticky;top:env(safe-area-inset-top,0px);z-index:5;margin-inline:-16px;padding:10px 16px;background:color-mix(in srgb,var(--bg) 88%,transparent);backdrop-filter:blur(10px);display:flex;gap:6px;overflow-x:auto;scrollbar-width:none}
+.nav::-webkit-scrollbar{display:none}
+.nav a{flex:none;text-decoration:none;color:var(--ink);font-size:13px;font-weight:600;padding:7px 12px;border-radius:20px;border:1px solid var(--line);background:var(--panel)}
+.nav a.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+
+/* feature section */
+.feature{display:flex;flex-direction:column;gap:14px;scroll-margin-top:64px}
+.fhead{display:flex;flex-direction:column;gap:4px}
+.fhead h2{font-size:30px;margin:0}
+.fhead p{margin:0;color:var(--sub);font-size:14px}
+.notes{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;font-size:13.5px;color:var(--sub)}
+.notes li{display:grid;grid-template-columns:18px 1fr;gap:6px}
+.notes li::before{content:"";width:6px;height:6px;border-radius:2px;background:var(--red);margin-top:7px;margin-left:4px}
+.notes b{color:var(--ink);font-weight:700}
+
+/* phone screen */
+.phone{background:var(--panel);border:1px solid var(--line);border-radius:28px;box-shadow:var(--lift);overflow:hidden;display:flex;flex-direction:column}
+.bar{height:52px;display:flex;align-items:center;gap:10px;padding:0 12px;border-bottom:1px solid var(--line2)}
+.bar .back{width:32px;height:32px;border-radius:10px;display:grid;place-items:center;color:var(--sub)}
+.bar .t{display:flex;flex-direction:column;min-width:0;flex:1}
+.bar .t b{font-family:var(--display);font-weight:400;font-size:19px;letter-spacing:.03em;text-transform:uppercase;line-height:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bar .t small{font-size:11.5px;color:var(--sub)}
+.bar .act{display:flex;gap:4px}
+.ico{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;color:var(--ink);border:1px solid var(--line);background:var(--panel2)}
+.ico svg{width:18px;height:18px}
+.seg{display:flex;background:var(--line2);border-radius:20px;padding:3px;gap:2px}
+.seg button{font-size:12px;font-weight:700;padding:5px 10px;border-radius:16px;color:var(--sub)}
+.seg button.on{background:var(--panel2);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,.12)}
+.chip{display:inline-flex;align-items:center;gap:5px;font-size:11.5px;font-weight:700;padding:3px 9px;border-radius:20px;border:1px solid var(--line);background:var(--panel2);white-space:nowrap}
+.chip.red{border-color:transparent;background:color-mix(in srgb,var(--red) 14%,transparent);color:var(--redInk)}
+.chip.gold{border-color:transparent;background:color-mix(in srgb,var(--gold) 22%,transparent);color:var(--goldInk)}
+.chip.green{border-color:transparent;background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--greenInk)}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-weight:800;font-size:14px;padding:11px 16px;border-radius:var(--r);background:var(--red);color:var(--onRed)}
+.btn.ghost{background:var(--panel2);color:var(--ink);border:1px solid var(--line)}
+.sub{color:var(--sub)} .faint{color:var(--faint)}
+
+/* player */
+.video{position:relative;background:var(--video);aspect-ratio:16/9;max-width:100%}
+.video canvas{width:100%;height:100%;display:block}
+.vtag{position:absolute;left:10px;top:10px;display:flex;gap:6px}
+.vtag span{font-size:11px;font-weight:700;color:var(--videoInk);background:rgba(0,0,0,.45);padding:3px 8px;border-radius:20px;backdrop-filter:blur(6px)}
+.vswitch{position:absolute;right:10px;top:10px;font-size:11px;font-weight:700;color:var(--videoInk);background:rgba(255,255,255,.14);padding:4px 9px;border-radius:20px}
+.stepcard{display:flex;align-items:center;gap:12px;padding:10px 14px;border-bottom:1px solid var(--line2)}
+.stepno{font-family:var(--display);font-size:34px;line-height:1;color:var(--red);min-width:34px;text-align:center}
+.stepcard .info{flex:1;min-width:0;display:flex;flex-direction:column}
+.stepcard .info b{font-size:16px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.stepcard .info small{font-size:12px;color:var(--sub)}
+.counts{display:flex;gap:3px}
+.counts i{width:16px;height:22px;border-radius:5px;background:var(--line2);display:grid;place-items:center;font-style:normal;font-size:10px;font-weight:800;color:var(--faint);font-family:var(--mono);transition:background .08s,color .08s}
+.counts i.on{background:var(--red);color:var(--onRed)}
+.counts i.done{background:color-mix(in srgb,var(--red) 22%,transparent);color:var(--redInk)}
+.stagebox{position:relative;background:var(--panel)}
+.stagebox canvas{display:block;width:100%;touch-action:none}
+.youtag{position:absolute;right:12px;top:10px;display:flex;align-items:center;gap:6px;font-size:12px;font-weight:700;background:var(--panel2);border:1px solid var(--line);padding:4px 10px 4px 6px;border-radius:20px}
+.youtag i{width:14px;height:14px;border-radius:50%;background:var(--red);box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 25%,transparent)}
+.where{position:absolute;left:12px;bottom:28px;font-size:12px;font-weight:700;background:var(--ink);color:var(--bg);padding:5px 10px;border-radius:10px;max-width:70%}
+.timeline{padding:6px 0 0;border-top:1px solid var(--line2)}
+.timeline canvas{display:block;width:100%;touch-action:none}
+.transport{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:10px 12px 14px}
+.play{width:56px;height:56px;border-radius:50%;background:var(--red);color:var(--onRed);display:grid;place-items:center;box-shadow:0 6px 18px color-mix(in srgb,var(--red) 35%,transparent)}
+.play svg{width:24px;height:24px}
+.tbtn{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;font-weight:700;color:var(--sub);min-width:44px}
+.tbtn .ico{width:38px;height:38px}
+.tbtn.on{color:var(--redInk)} .tbtn.on .ico{border-color:var(--red);color:var(--redInk);background:color-mix(in srgb,var(--red) 10%,transparent)}
+.time{display:flex;justify-content:space-between;padding:0 12px;font-size:11px;color:var(--faint)}
+
+/* lists */
+.list{display:flex;flex-direction:column}
+.row{display:flex;align-items:center;gap:12px;padding:11px 14px;border-bottom:1px solid var(--line2)}
+.row:last-child{border-bottom:0}
+.row .grow{flex:1;min-width:0;display:flex;flex-direction:column;gap:2px}
+.row .grow b{font-size:14.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.row .grow small{font-size:12px;color:var(--sub);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.thumb{width:64px;height:40px;border-radius:8px;background:var(--stage);flex:none;display:block}
+.sechead{display:flex;align-items:baseline;justify-content:space-between;padding:14px 14px 6px}
+.sechead b{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--sub)}
+.partlabel{padding:10px 14px 4px;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;display:flex;gap:8px;align-items:center}
+.partlabel::after{content:"";flex:1;height:1px;background:var(--line)}
+
+/* start tile */
+.tile{margin:12px;border-radius:18px;padding:14px;background:linear-gradient(135deg,var(--red),color-mix(in srgb,var(--red) 70%,#000));color:#fff;display:grid;grid-template-columns:1fr auto;gap:10px;position:relative;overflow:hidden}
+.tile .k{font-size:11px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;opacity:.85}
+.tile .n{font-family:var(--display);font-size:30px;line-height:1;text-transform:uppercase;letter-spacing:.03em}
+.tile small{opacity:.9;font-size:12.5px}
+.tile canvas{width:96px;height:64px;border-radius:10px;background:rgba(255,255,255,.12);align-self:center}
+.tile .go{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;background:rgba(255,255,255,.16);border-radius:12px;padding:8px 12px;font-weight:800;font-size:13px}
+
+/* music editor */
+.song{display:grid;grid-template-columns:22px 1fr;gap:10px;padding:12px 14px;border-bottom:1px solid var(--line2);align-items:start}
+.grip{display:grid;grid-template-columns:repeat(2,4px);gap:3px;padding-top:6px}
+.grip i{width:4px;height:4px;border-radius:50%;background:var(--faint)}
+.song .top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.song .top b{font-size:13.5px;font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.song canvas{width:100%;height:46px;display:block;margin-top:6px;touch-action:none}
+.song .cut{display:flex;justify-content:space-between;font-size:11px;color:var(--sub);margin-top:4px}
+.align canvas{width:100%;height:120px;display:block}
+.confidence{display:flex;align-items:center;gap:10px;padding:10px 14px}
+.meter{flex:1;height:8px;border-radius:4px;background:var(--line2);overflow:hidden}
+.meter i{display:block;height:100%;background:var(--green);border-radius:4px;transition:width 1.2s cubic-bezier(.2,.8,.2,1)}
+.toast{margin:10px 14px 14px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--green) 14%,transparent);color:var(--greenInk);font-size:13px;font-weight:700}
+
+/* editor */
+.tools{display:flex;gap:6px;padding:10px 12px;overflow-x:auto;scrollbar-width:none;border-bottom:1px solid var(--line2)}
+.tools::-webkit-scrollbar{display:none}
+.tool{flex:none;display:flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:7px 11px;border-radius:12px;border:1px solid var(--line);background:var(--panel2)}
+.tool svg{width:16px;height:16px}
+.tool.on{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.countbar{padding:10px 12px 14px;border-top:1px solid var(--line2)}
+.countbar canvas{width:100%;height:84px;display:block;touch-action:none}
+.cbhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;font-size:12px;font-weight:700}
+
+/* training mode */
+.dark{background:#0B0D10;color:#F4F6F8;border-color:#1F232A}
+.dark .bar{border-color:rgba(255,255,255,.08)}
+.dark .bar .t small{color:rgba(244,246,248,.6)}
+.dark .ico{background:#171A1F;border-color:rgba(255,255,255,.12);color:#F4F6F8}
+.bigcount{display:grid;grid-template-columns:auto 1fr;align-items:center;gap:16px;padding:18px 18px 6px}
+.bigcount .num{font-family:var(--display);font-size:120px;line-height:.8;color:#FF3B47;min-width:80px;text-align:center}
+.bigcount .meta b{font-family:var(--display);font-size:28px;letter-spacing:.03em;text-transform:uppercase;display:block;line-height:1}
+.bigcount .meta small{color:rgba(244,246,248,.6);font-size:13px}
+.beats{display:grid;grid-template-columns:repeat(8,1fr);gap:4px;padding:6px 18px 12px}
+.beats i{height:10px;border-radius:5px;background:rgba(255,255,255,.1)}
+.beats i.on{background:#FF3B47}
+.beats i.done{background:rgba(255,59,71,.35)}
+.openbanner{margin:0 14px;padding:10px 12px;border-radius:12px;background:rgba(255,196,46,.12);color:#FFC42E;font-size:13px;font-weight:700;display:flex;gap:8px;align-items:center}
+.trainstage canvas{display:block;width:100%}
+.bigbtns{display:grid;grid-template-columns:1fr 1.4fr 1fr;gap:8px;padding:12px 14px 16px}
+.bigbtns button{border-radius:16px;padding:14px 8px;font-weight:800;font-size:13px;background:#171A1F;border:1px solid rgba(255,255,255,.1);color:#F4F6F8}
+.bigbtns button.main{background:#FF3B47;color:#0B0D10;border-color:transparent;font-size:15px}
+
+/* sheet */
+.sheet{margin:0;border-top:1px solid var(--line);border-radius:22px 22px 0 0;background:var(--panel2);padding:8px 16px 16px;display:flex;flex-direction:column;gap:12px}
+.handle{width:40px;height:5px;border-radius:3px;background:var(--line);align-self:center}
+.storage{height:12px;border-radius:6px;background:var(--line2);display:flex;overflow:hidden}
+.storage i{display:block;height:100%}
+.check{display:flex;align-items:center;gap:10px;font-size:13.5px}
+.check .dot{width:22px;height:22px;border-radius:50%;display:grid;place-items:center;background:color-mix(in srgb,var(--green) 16%,transparent);color:var(--greenInk);flex:none}
+.check .dot svg{width:14px;height:14px}
+.dimbg{padding:14px;display:flex;flex-direction:column;gap:8px;opacity:.5;pointer-events:none}
+.dimbg div{height:44px;border-radius:12px;background:var(--line2)}
+
+.foot{font-size:12.5px;color:var(--faint);text-align:center}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+
+<header class="hero">
+  <span class="eyebrow">RFC 0001 · Entwurf</span>
+  <h1 class="display">Jeder Schritt.<br><em>Auf die Musik.</em></h1>
+  <p>How the dance studio could look in the club app. Every screen below is a working mock with sample data. Press play in the player: the stage, the trainer video, the counts and the training mode all run on one clock.</p>
+  <div class="legend"><span>Phone only · 390 px</span><span>KK tokens</span><span>Light + dark</span><span>Sample data</span></div>
+</header>
+
+<nav class="nav" id="nav" aria-label="Screens">
+  <a href="#einstieg">Einstieg</a><a href="#ueben">Üben</a><a href="#schritte">Schritte</a><a href="#musik">Musik</a><a href="#endfassung">Endfassung</a><a href="#buehne">Bühne</a><a href="#video">Video</a><a href="#abend">Abend</a><a href="#training">Training</a><a href="#offline">Offline</a>
+</nav>
+
+<!-- 1 Entry -->
+<section class="feature" id="einstieg">
+  <div class="fhead"><span class="eyebrow">01 · Way in</span><h2 class="display">Start und Gruppe</h2><p>Members reach their dance in one tap, from Start or from their group.</p></div>
+  <div class="phone">
+    <div class="bar"><div class="t"><b>Start</b><small>Mi, 29. Okt.</small></div></div>
+    <div class="tile">
+      <div style="display:flex;flex-direction:column;gap:4px"><span class="k">Üben</span><span class="n">Gardetanz</span><small>Weiter bei Schritt 5 · Kreis bilden</small></div>
+      <canvas id="tileStage" width="192" height="128" aria-hidden="true"></canvas>
+      <div class="go"><span>Weiter üben</span><span class="mono">0:15 / 0:30</span></div>
+    </div>
+    <div class="sechead"><b>Prinzengarde · Auftritte</b><span class="chip">Session 2026/27</span></div>
+    <div class="list">
+      <div class="row"><canvas class="thumb" data-thumb="4" width="128" height="80"></canvas><div class="grow"><b>Gardetanz</b><small>Tanz · 8 Schritte · 12 Plätze · gestern geändert</small></div><span class="chip red">Du: Platz 7</span></div>
+      <div class="row"><canvas class="thumb" data-thumb="6" width="128" height="80"></canvas><div class="grow"><b>Mittelpunkt des Universums</b><small>Show · 14 Schritte · Musik fehlt noch</small></div><span class="chip">Platz 3</span></div>
+      <div class="row" style="opacity:.6"><canvas class="thumb" data-thumb="2" width="128" height="80"></canvas><div class="grow"><b>Gardetanz 2025/26</b><small>Vergangene Session · nur ansehen</small></div></div>
+    </div>
+  </div>
+  <ul class="notes">
+    <li><span>The <b>Start tile</b> shows only acts you are in, and remembers your last step on this device.</span></li>
+    <li><span>The <b>group hub</b> lists this session's acts for the cast and the group's admins. Past seasons stay below, read-only.</span></li>
+  </ul>
+</section>
+
+<!-- 2 Player -->
+<section class="feature" id="ueben">
+  <div class="fhead"><span class="eyebrow">02 · The one screen</span><h2 class="display">Üben</h2><p>Music, trainer video and stage on one screen. Your dot glows, the counts run along, and you can loop any step or part.</p></div>
+  <div class="phone" id="player">
+    <div class="bar">
+      <button class="back" aria-label="Zurück"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <div class="t"><b>Gardetanz</b><small>Prinzengarde · 2026/27</small></div>
+      <div class="act"><div class="seg" role="tablist"><button class="on">Üben</button><button>Bearbeiten</button></div></div>
+    </div>
+    <div class="video"><canvas id="videoCanvas" width="780" height="439" aria-label="Trainervideo"></canvas>
+      <div class="vtag"><span>Jana · Vorne</span><span id="mirrorTag">Gespiegelt</span></div>
+      <button class="vswitch" id="viewSwitch">Seite ›</button>
+    </div>
+    <div class="stepcard">
+      <div class="stepno" id="stepNo">1</div>
+      <div class="info"><b id="stepName">Einmarsch links</b><small id="stepMeta">Einmarsch · 0:00–0:03,8</small></div>
+      <div class="counts" id="counts"></div>
+    </div>
+    <div class="stagebox">
+      <canvas id="stage" width="780" height="520" aria-label="Bühne mit Formation"></canvas>
+      <div class="youtag"><i></i>Du · Platz 7</div>
+      <div class="where" id="where">2. Reihe, links von der Mitte</div>
+    </div>
+    <div class="timeline"><canvas id="timeline" width="780" height="236" aria-label="Musik mit Teilen und Schritten"></canvas></div>
+    <div class="time mono"><span id="tNow">0:00,0</span><span id="tRate">100 %</span><span>0:30,0</span></div>
+    <div class="transport">
+      <button class="tbtn" id="loopBtn"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 12a6 6 0 016-6h8m0 0l-3-3m3 3l-3 3M20 12a6 6 0 01-6 6H6m0 0l3 3m-3-3l3-3"/></svg></span><span id="loopLbl">Schleife</span></button>
+      <button class="tbtn" id="speedBtn"><span class="ico mono" style="font-size:12px;font-weight:700" id="speedIco">1×</span><span>Tempo</span></button>
+      <button class="play" id="playBtn" aria-label="Abspielen"><svg id="playIco" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg></button>
+      <button class="tbtn on" id="mirrorBtn"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M8 7L3 12l5 5V7zM16 7l5 5-5 5V7z"/></svg></span><span>Spiegeln</span></button>
+      <button class="tbtn" id="pathBtn"><span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="3 3"><path d="M4 18c4-10 12 0 16-10"/></svg></span><span>Mein Weg</span></button>
+    </div>
+  </div>
+  <ul class="notes">
+    <li><span><b>One clock:</b> the video follows the music, the dots move between their positions in time with the counts, and the step card flips as each step starts.</span></li>
+    <li><span><b>Tap</b> a part in the strip to loop it. Tap a step to jump there. Tempo cycles through 50, 75 and 100 % with the pitch kept.</span></li>
+    <li><span><b>Mein Weg</b> draws your own path for the next two steps. The label under the stage says where you stand in words dancers use.</span></li>
+  </ul>
+</section>
+
+<!-- 3 Steps -->
+<section class="feature" id="schritte">
+  <div class="fhead"><span class="eyebrow">03 · The manual</span><h2 class="display">Schrittfolge</h2><p>The whole dance as a step-by-step manual: music range, formation and video part per step.</p></div>
+  <div class="phone">
+    <div class="bar"><div class="t"><b>Schrittfolge</b><small>Gardetanz · 8 Schritte · 5 Teile</small></div><div class="act"><span class="chip">0:30</span></div></div>
+    <div class="list" id="manual"></div>
+  </div>
+  <ul class="notes">
+    <li><span>Steps cover the music <b>without gaps</b>: setting a mark splits a step in two. Part borders always sit on step borders.</span></li>
+    <li><span>The thumbnail is the formation at the end of the step. A tap opens the player at that step.</span></li>
+  </ul>
+</section>
+
+<!-- 4 Music -->
+<section class="feature" id="musik">
+  <div class="fhead"><span class="eyebrow">04 · Working music</span><h2 class="display">Musik schneiden</h2><p>While the dance is being made: several files, put in order, each cut to a start and an end point.</p></div>
+  <div class="phone">
+    <div class="bar"><div class="t"><b>Musik</b><small>3 Dateien · zusammen 0:30,0</small></div><div class="act"><button class="ico" aria-label="Datei hinzufügen"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M12 5v14M5 12h14"/></svg></button></div></div>
+    <div id="songs"></div>
+    <div style="padding:12px 14px;display:flex;gap:8px;align-items:center"><span class="chip gold">Zählzeiten</span><span class="sub" style="font-size:12.5px">128 BPM erkannt · erste 1 bei 0:00,2</span></div>
+  </div>
+  <ul class="notes">
+    <li><span>Drag the <b>handles</b> on a waveform to cut. When one file reaches its end point, playback jumps straight to the next file's start point.</span></li>
+    <li><span>Steps and movements stay tied to <b>their moment in the song</b>. Re-cutting moves them along; anything in a cut-away range gets flagged.</span></li>
+    <li><span>The worker finds the beat, so the editor can snap to <b>counts 1–8</b>. The first "1" and the tempo can be corrected by hand.</span></li>
+  </ul>
+</section>
+
+<!-- 5 Final file -->
+<section class="feature" id="endfassung">
+  <div class="fhead"><span class="eyebrow">05 · Final file</span><h2 class="display">Endfassung übernehmen</h2><p>The final file is matched to the working music by comparing the sound. Steps, formations and videos then move onto it.</p></div>
+  <div class="phone">
+    <div class="bar"><div class="t"><b>Endfassung</b><small>Gardetanz_final_v4.mp3 · 0:29,6</small></div></div>
+    <div class="align"><canvas id="alignCanvas" width="780" height="240" aria-label="Abgleich der Wellenformen"></canvas></div>
+    <div class="confidence"><span style="font-size:12.5px;font-weight:700">Passt</span><div class="meter"><i id="confBar" style="width:0%"></i></div><span class="mono" style="font-size:12.5px;font-weight:700" id="confVal">0 %</span></div>
+    <div class="list">
+      <div class="row"><span class="chip" style="background:color-mix(in srgb,var(--song1) 18%,transparent);border-color:transparent">1</span><div class="grow"><b>Trommelintro</b><small>liegt bei 0:00,0 · 98 % sicher</small></div><span class="chip green">✓</span></div>
+      <div class="row"><span class="chip" style="background:color-mix(in srgb,var(--song2) 18%,transparent);border-color:transparent">2</span><div class="grow"><b>Gardemarsch</b><small>liegt bei 0:07,3 · 96 % sicher</small></div><span class="chip green">✓</span></div>
+      <div class="row"><span class="chip" style="background:color-mix(in srgb,var(--song3) 22%,transparent);border-color:transparent">3</span><div class="grow"><b>Finale-Hit</b><small>liegt bei 0:22,1 · 91 % · 0,4 s gekürzt</small></div><span class="chip gold">prüfen</span></div>
+    </div>
+    <div style="padding:4px 14px 14px;display:grid;grid-template-columns:1fr 1.6fr;gap:8px"><button class="btn ghost" id="alignReplay">Neu abgleichen</button><button class="btn" id="adoptBtn">Endfassung übernehmen</button></div>
+    <div class="toast" id="adoptToast" hidden>8 Schritte, alle Bewegungen und 2 Videos liegen jetzt auf der Endfassung. Nichts fehlt.</div>
+  </div>
+  <ul class="notes">
+    <li><span><b>Automatic first, then by hand:</b> each working song gets an offset into the final file, suggested from the sound and nudged in 0,1 s steps.</span></li>
+    <li><span>After the takeover, the members' player plays <b>exactly what tech plays</b> on the evening.</span></li>
+  </ul>
+</section>
+
+<!-- 6 Stage editor -->
+<section class="feature" id="buehne">
+  <div class="fhead"><span class="eyebrow">06 · Formation and movement</span><h2 class="display">Bühne bearbeiten</h2><p>Place spots, drag them, and set from which count to which count they move.</p></div>
+  <div class="phone">
+    <div class="bar"><div class="t"><b>Schritt 4 · Kreis bilden</b><small>Teil A · Zählzeit 1–8</small></div><div class="act"><div class="seg"><button>Üben</button><button class="on">Bearbeiten</button></div></div></div>
+    <div class="tools" id="tools">
+      <button class="tool" data-tool="mirror"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v18M8 7L3 12l5 5V7zM16 7l5 5-5 5V7z"/></svg>Spiegeln</button>
+      <button class="tool" data-tool="line"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="5" cy="12" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/></svg>Linie</button>
+      <button class="tool" data-tool="circle"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="7"/></svg>Kreis</button>
+      <button class="tool" data-tool="block"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="7" cy="7" r="2"/><circle cx="17" cy="7" r="2"/><circle cx="7" cy="17" r="2"/><circle cx="17" cy="17" r="2"/></svg>Block</button>
+      <button class="tool on" data-tool="onion"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-dasharray="2 2"><circle cx="12" cy="12" r="7"/></svg>Vorher zeigen</button>
+    </div>
+    <div class="stagebox"><canvas id="editStage" width="780" height="520" aria-label="Bühne bearbeiten"></canvas>
+      <div class="youtag" id="selTag" style="left:12px;right:auto"><i style="background:var(--gold);box-shadow:0 0 0 3px color-mix(in srgb,var(--gold) 30%,transparent)"></i><span id="selLbl">6 ausgewählt</span></div>
+    </div>
+    <div class="countbar">
+      <div class="cbhead"><span>Bewegung der Auswahl</span><span class="mono" id="cbLbl">Zählzeit 1 – 4</span></div>
+      <canvas id="countCanvas" width="780" height="168" aria-label="Zählzeiten der Bewegung"></canvas>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px"><button class="btn ghost" id="previewBtn">Vorschau</button><button class="btn" id="saveBtn">Speichern</button></div>
+    </div>
+  </div>
+  <ul class="notes">
+    <li><span><b>Spots, not names:</b> the choreography uses Platz 1–12, and people are assigned to spots. A stand-in only swaps the person.</span></li>
+    <li><span><b>Drag</b> a dot to place it. A tap adds or removes a dot from the selection. Grab a curve's middle to bend it.</span></li>
+    <li><span><b>Pull the bar</b> to set when the selection moves: drag either end, and it snaps to the counts. Preview plays it with the music.</span></li>
+    <li><span>The stage background is <b>our real stage</b>, drawn in Inkscape: size, floor marks 1–9 and the stairs, as on the real one.</span></li>
+  </ul>
+</section>
+
+<!-- 7 Video -->
+<section class="feature" id="video">
+  <div class="fhead"><span class="eyebrow">07 · Trainer video</span><h2 class="display">Video anlegen</h2><p>The trainer films while the music plays. The app finds where the video sits in the music.</p></div>
+  <div class="phone">
+    <div class="bar"><div class="t"><b>Neues Video</b><small>IMG_4211.mov · 1:12 · Halle</small></div></div>
+    <div class="align"><canvas id="videoAlign" width="780" height="240" aria-label="Video wird auf die Musik gelegt"></canvas></div>
+    <div class="row"><div class="grow"><b id="vaTitle">Läuft ab 0:11,3 in der Musik</b><small>94 % sicher · Zählen und Hallgeräusche herausgefiltert</small></div></div>
+    <div style="display:flex;gap:8px;padding:0 14px 12px;align-items:center"><button class="btn ghost" id="vaMinus" style="padding:9px 12px">−0,1 s</button><button class="btn ghost" id="vaPlus" style="padding:9px 12px">+0,1 s</button><span class="sub mono" style="font-size:12px;margin-left:auto" id="vaOffset">±0,0 s</span></div>
+    <div class="sechead"><b>Hauptvideo für</b></div>
+    <div style="display:flex;gap:6px;padding:0 14px 14px;flex-wrap:wrap"><span class="chip red">Teil A</span><span class="chip red">Hebung</span><span class="chip">Teil B</span><span class="chip gold">ersetzt Video vom 12.09.</span></div>
+  </div>
+  <ul class="notes">
+    <li><span>Matching uses the <b>sound of the hall</b>: music from the speaker, with the trainer counting over it. Videos shot without music are placed by hand.</span></li>
+    <li><span>Each part has one <b>main video</b>, and other angles are offered as alternatives. A newer video marks the old one as outdated; it is kept, not deleted.</span></li>
+  </ul>
+</section>
+
+<!-- 8 Evening -->
+<section class="feature" id="abend">
+  <div class="fhead"><span class="eyebrow">08 · One evening</span><h2 class="display">An diesem Abend</h2><p>An evening keeps the session's dance and stores only what differs.</p></div>
+  <div class="phone">
+    <div class="bar"><div class="t"><b>Galaabend</b><small>Sa, 18. Jan. · Gardetanz</small></div><div class="act"><span class="chip">Nr. 4 im Ablauf</span></div></div>
+    <div class="stagebox"><canvas id="eveStage" width="780" height="440" aria-label="Formation an diesem Abend"></canvas></div>
+    <div class="sechead"><b>Anders als in der Session</b><span class="chip">2</span></div>
+    <div class="list">
+      <div class="row"><span class="chip red">Platz 7</span><div class="grow"><b>Jana tanzt für Lea</b><small>Lea hat abgesagt · Jana aus der Jugendgarde, als Gast</small></div></div>
+      <div class="row"><span class="chip">Bühne</span><div class="grow"><b>Eigene Fassung der Bewegungen</b><small>Kreis enger gezogen · seit 9. Jan.</small></div></div>
+    </div>
+    <div style="margin:4px 14px 14px;padding:10px 12px;border-radius:12px;background:color-mix(in srgb,var(--gold) 16%,transparent);color:var(--goldInk);font-size:13px;font-weight:700;display:flex;justify-content:space-between;gap:10px;align-items:center"><span>Die Session-Fassung wurde am 12. Jan. geändert.</span><span style="text-decoration:underline">Ansehen</span></div>
+  </div>
+  <ul class="notes">
+    <li><span>Cast in or out, <b>who stands where</b>, and optionally a copy of the movements just for this evening. Music and steps stay the same.</span></li>
+    <li><span>No automatic merge. A <b>notice</b> appears when the session version changes after the copy was made.</span></li>
+  </ul>
+</section>
+
+<!-- 9 Training -->
+<section class="feature" id="training">
+  <div class="fhead"><span class="eyebrow">09 · In the hall</span><h2 class="display">Trainingsmodus</h2><p>The trainer's phone plays the music over the hall speaker. The screen shows the step, the count and the formation, readable from across the hall.</p></div>
+  <div class="phone dark">
+    <div class="bar"><div class="t"><b style="color:#F4F6F8">Training · Do 30. Okt.</b><small>11 von 12 da</small></div><div class="act"><span class="ico" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 9v6h4l5 4V5L8 9H4zM16 8a5 5 0 010 8M19 5a9 9 0 010 14"/></svg></span></div></div>
+    <div class="bigcount"><div class="num" id="tcNum">1</div><div class="meta"><b id="tcStep">Einmarsch links</b><small id="tcMeta">Schritt 1 von 8 · Einmarsch</small></div></div>
+    <div class="beats" id="tcBeats"></div>
+    <div class="openbanner"><span>●</span><span>Heute offen: Platz 7 (Lea, Absage) · betrifft Schritt 3, 5, 8</span></div>
+    <div class="trainstage"><canvas id="trainStage" width="780" height="440" aria-label="Formation im Training"></canvas></div>
+    <div class="bigbtns"><button id="tcPrev">‹ Schritt</button><button class="main" id="tcPlay">Abspielen</button><button id="tcLoop">Schritt wiederholen</button></div>
+  </div>
+  <ul class="notes">
+    <li><span>Uses the <b>same clock</b> as the player: start it here or above and both run.</span></li>
+    <li><span><b>Open spots</b> come from the Zu-/Absagen for this training. The trainer sees right away which steps have a hole.</span></li>
+  </ul>
+</section>
+
+<!-- 10 Offline -->
+<section class="feature" id="offline">
+  <div class="fhead"><span class="eyebrow">10 · No signal</span><h2 class="display">Offline</h2><p>The music and the dance itself are always on your phone. Videos only when you ask.</p></div>
+  <div class="phone">
+    <div class="bar"><div class="t"><b>Gardetanz</b><small>Prinzengarde · 2026/27</small></div></div>
+    <div class="dimbg"><div></div><div style="height:120px"></div><div></div></div>
+    <div class="sheet">
+      <div class="handle"></div>
+      <div style="display:flex;justify-content:space-between;align-items:baseline"><b class="display" style="font-size:22px">Offline dabei</b><span class="mono sub" style="font-size:12px" id="stTotal">4 MB</span></div>
+      <div class="check"><span class="dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M5 12l5 5 9-10"/></svg></span><span>Musik, Schritte und Bühne · automatisch</span></div>
+      <div class="storage"><i style="width:3%;background:var(--green)"></i><i id="stVid" style="width:0%;background:var(--red);transition:width .8s"></i></div>
+      <div class="row" style="padding:6px 0;border:0"><div class="grow"><b>3 Hauptvideos</b><small>Für Handys verkleinert · 138 MB</small></div><button class="btn" id="offBtn" style="padding:9px 14px">Für offline speichern</button></div>
+      <span class="faint" style="font-size:12px">Bearbeiten geht nur mit Netz.</span>
+    </div>
+  </div>
+</section>
+
+<p class="foot">Sample data · Prinzengarde · Gardetanz 2026/27 · RFC 0001 (#52)</p>
+</div>
+
+<script>
+(()=>{
+const css=n=>getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+const reduce=matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+/* ---------- dance data ---------- */
+const BPM=128, BEAT=60/BPM, STEP=8*BEAT, NSTEPS=8, TOTAL=STEP*NSTEPS;
+const W=10, D=6;
+const names=['Anna','Mia','Sophie','Emma','Hannah','Lina','Lea','Marie','Clara','Nele','Paula','Ida'];
+const ME=6;
+const steps=[
+ {name:'Einmarsch links',part:0,desc:'In zwei Reihen auf die Bühne, Blick nach vorn'},
+ {name:'Diagonale',part:0,desc:'Reihe zieht in die Diagonale, Arme hoch auf 8'},
+ {name:'Zwei Reihen',part:1,desc:'Versetzt, Kicks auf 2, 4, 6, 8'},
+ {name:'Kreis bilden',part:1,desc:'Erst Plätze 1–6, dann 7–12'},
+ {name:'Hebung',part:2,desc:'V-Formation, Hebung auf 5 an der Spitze'},
+ {name:'Kreuz',part:3,desc:'Zwei Diagonalen kreuzen sich'},
+ {name:'Block',part:3,desc:'Drei Reihen, Wechselschritt'},
+ {name:'Schlusslinie',part:4,desc:'Alle nach vorn, Schlusspose auf 8'}
+];
+const parts=[{name:'Einmarsch',a:0,b:2},{name:'Teil A',a:2,b:4},{name:'Hebung',a:4,b:5},{name:'Teil B',a:5,b:7},{name:'Finale',a:7,b:8}];
+const songs=[{name:'Trommelintro.mp3',a:0,b:2,c:'--song1',len:'0:21,4',cut:'0:03,2 – 0:10,7'},{name:'Gardemarsch_Schnitt3.mp3',a:2,b:6,c:'--song2',len:'3:02,0',cut:'0:41,0 – 0:56,0'},{name:'Finale-Hit.wav',a:6,b:8,c:'--song3',len:'2:48,5',cut:'2:31,2 – 2:38,7'}];
+const range=(n,f)=>Array.from({length:n},(_,i)=>f(i));
+const lineF=(y,x0,x1)=>range(12,i=>[x0+(x1-x0)*i/11,y]);
+const F=[];
+F[0]=range(12,i=>[i<6?-4.7:-3.9, 0.9+(i%6)*0.8]);
+F[1]=range(12,i=>[-4+i*0.62, 5-i*0.36]);
+F[2]=range(12,i=>i<6?[-3.75+i*1.5,1.5]:[-3+(i-6)*1.5,3.3]);
+F[3]=range(12,i=>{const a=Math.PI/2+i/12*Math.PI*2;return[Math.cos(a)*2.2,3+Math.sin(a)*1.9]});
+F[4]=range(12,i=>{const s=i<6?-1:1,k=i<6?5-i:i-6;return[s*(0.35+k*0.75),1.1+k*0.68]});
+F[5]=range(12,i=>{const k=i%6,s=i<6?1:-1;return[-3.4+k*1.36, s>0?1+k*0.7:4.5-k*0.7]});
+F[6]=range(12,i=>[-2.4+(i%4)*1.6,1.3+Math.floor(i/4)*1.4]);
+F[7]=range(12,i=>[-2.6+(i%4)*1.75,1.6+Math.floor(i/4)*1.25+(i%2)*0.25]);
+F[8]=lineF(1.0,-4.2,4.2);
+const timing=(s,i)=>{
+  if(s===3) return i<6?[0,.5,0.35]:[.5,1,0.35];
+  if(s===4) return [0,.75,0.15];
+  if(s===5) return [0,1,i<6?0.25:-0.25];
+  if(s===7) return [.25,.875,0];
+  if(s===0) return [0,1,0.1];
+  return [0,1,0];
+};
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const clamp=(v,a,b)=>Math.max(a,Math.min(b,v));
+function posAt(t,i,form){
+  const fm=form||F;
+  t=clamp(t,0,TOTAL-1e-6);
+  const s=Math.floor(t/STEP), u=(t-s*STEP)/STEP;
+  const [t0,t1,bend]=timing(s,i);
+  const e=ease(clamp((u-t0)/(t1-t0),0,1));
+  const [x0,y0]=fm[s][i],[x1,y1]=fm[s+1][i];
+  const mx=(x0+x1)/2, my=(y0+y1)/2, dx=x1-x0, dy=y1-y0;
+  const cx=mx-dy*bend, cy=my+dx*bend;
+  const a=(1-e)*(1-e), b=2*(1-e)*e, c=e*e;
+  return [a*x0+b*cx+c*x1, a*y0+b*cy+c*y1];
+}
+const fmt=t=>{const m=Math.floor(t/60), s=t-m*60;return m+':'+(s<10?'0':'')+s.toFixed(1).replace('.',',')};
+
+/* ---------- canvas helpers ---------- */
+function setup(c){const r=c.getContext('2d');return r}
+function stageMap(c,pad){
+  const w=c.width,h=c.height,p=pad||28;
+  const sw=w-p*2, sh=Math.min(h-p*2-18, sw*D/W);
+  const ox=p, oy=(h-18-sh)/2+4;
+  return {x:x=>ox+(x+W/2)/W*sw, y:y=>oy+sh-(y/D)*sh, sw,sh,ox,oy,u:sw/W};
+}
+function drawStage(g,c,m,opts){
+  opts=opts||{};
+  g.clearRect(0,0,c.width,c.height);
+  const stage=css('--stage'), line=css('--stageLine'), sub=css('--faint'), ink=css('--ink');
+  g.fillStyle=stage; roundRect(g,m.ox,m.oy,m.sw,m.sh,18); g.fill();
+  g.save(); roundRect(g,m.ox,m.oy,m.sw,m.sh,18); g.clip();
+  g.strokeStyle=line; g.lineWidth=1;
+  for(let k=1;k<12;k++){const y=m.oy+k*m.sh/12;g.beginPath();g.moveTo(m.ox,y);g.lineTo(m.ox+m.sw,y);g.stroke()}
+  g.fillStyle=line; g.fillRect(m.ox,m.oy,m.sw,m.u*0.35);
+  g.restore();
+  g.setLineDash([6,6]); g.strokeStyle=sub; g.lineWidth=1.5;
+  g.beginPath(); g.moveTo(m.x(0),m.oy+6); g.lineTo(m.x(0),m.oy+m.sh-6); g.stroke();
+  g.setLineDash([2,6]);
+  [-W/4,W/4].forEach(x=>{g.beginPath();g.moveTo(m.x(x),m.oy+m.sh*0.55);g.lineTo(m.x(x),m.oy+m.sh-6);g.stroke()});
+  g.setLineDash([]);
+  g.fillStyle=sub; g.font='600 '+Math.round(m.u*0.22)+'px Archivo, sans-serif'; g.textAlign='center'; g.textBaseline='top';
+  for(let k=1;k<=9;k++){const x=m.x(-W/2+k*W/10);g.fillRect(x-1,m.oy+m.sh-8,2,8);g.fillText(String(k),x,m.oy+m.sh+4)}
+  g.fillStyle=line; roundRect(g,m.ox-2,m.oy+m.sh*0.35,m.u*0.28,m.sh*0.3,4); g.fill();
+  if(!opts.noLabel){g.fillStyle=sub;g.font='700 '+Math.round(m.u*0.2)+'px Archivo, sans-serif';g.textAlign='left';g.textBaseline='top';g.fillText('HINTEN',m.ox+10,m.oy+8)}
+}
+function roundRect(g,x,y,w,h,r){g.beginPath();g.moveTo(x+r,y);g.arcTo(x+w,y,x+w,y+h,r);g.arcTo(x+w,y+h,x,y+h,r);g.arcTo(x,y+h,x,y,r);g.arcTo(x,y,x+w,y,r);g.closePath()}
+function dot(g,x,y,r,label,kind,pulse){
+  const red=css('--red'), ink=css('--ink'), panel=css('--panel2'), gold=css('--gold'), faint=css('--faint');
+  if(kind==='me'){
+    const pr=r+6+(pulse||0)*6;
+    g.fillStyle=red; g.globalAlpha=.18; g.beginPath(); g.arc(x,y,pr,0,7); g.fill(); g.globalAlpha=1;
+    g.fillStyle=red; g.beginPath(); g.arc(x,y,r,0,7); g.fill();
+    g.fillStyle='#fff';
+  } else if(kind==='sel'){
+    g.fillStyle=gold; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); g.fillStyle='#14161A';
+  } else if(kind==='open'){
+    g.setLineDash([4,4]); g.strokeStyle=faint; g.lineWidth=2; g.beginPath(); g.arc(x,y,r,0,7); g.stroke(); g.setLineDash([]); g.fillStyle=faint;
+  } else if(kind==='guest'){
+    g.fillStyle=gold; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); g.fillStyle='#14161A';
+  } else if(kind==='ghost'){
+    g.globalAlpha=.35; g.strokeStyle=ink; g.lineWidth=1.5; g.beginPath(); g.arc(x,y,r,0,7); g.stroke(); g.globalAlpha=1; return;
+  } else {
+    g.fillStyle=panel; g.beginPath(); g.arc(x,y,r,0,7); g.fill(); g.strokeStyle=ink; g.lineWidth=2; g.stroke(); g.fillStyle=ink;
+  }
+  g.font='800 '+Math.round(r*0.95)+'px Archivo, sans-serif'; g.textAlign='center'; g.textBaseline='middle'; g.fillText(label,x,y+1);
+}
+
+/* ---------- waveform ---------- */
+const WN=600;
+const wave=range(WN,i=>{const t=i/WN*TOTAL;const beat=(t/BEAT)%1;const env=0.35+0.65*Math.exp(-beat*5);const song=t<2*STEP?0.55:t<6*STEP?0.85:1;let r=Math.sin(i*12.9898)*43758.5453;r=r-Math.floor(r);return clamp(song*env*(0.55+0.45*r),0.06,1)});
+
+/* ---------- engine ---------- */
+const st={t:0,playing:false,rate:1,loop:'off',mirror:true,path:false,view:'Vorne',last:performance.now(),lastBeat:-1};
+let actx=null, noiseBuf=null;
+function audio(){
+  if(actx) return actx;
+  try{actx=new (window.AudioContext||window.webkitAudioContext)();
+    noiseBuf=actx.createBuffer(1,actx.sampleRate*0.05,actx.sampleRate);const d=noiseBuf.getChannelData(0);for(let i=0;i<d.length;i++)d[i]=Math.random()*2-1;
+  }catch(e){actx=null}
+  return actx;
+}
+function tick(accent){
+  if(!actx) return; const n=actx.currentTime;
+  const o=actx.createOscillator(), g=actx.createGain();
+  o.frequency.setValueAtTime(accent?180:140,n); o.frequency.exponentialRampToValueAtTime(42,n+0.13);
+  g.gain.setValueAtTime(accent?0.55:0.38,n); g.gain.exponentialRampToValueAtTime(0.001,n+0.16);
+  o.connect(g).connect(actx.destination); o.start(n); o.stop(n+0.17);
+  if(accent){const c=actx.createOscillator(),cg=actx.createGain();c.type='square';c.frequency.value=1320;cg.gain.setValueAtTime(0.05,n);cg.gain.exponentialRampToValueAtTime(0.001,n+0.05);c.connect(cg).connect(actx.destination);c.start(n);c.stop(n+0.06)}
+}
+function hat(){
+  if(!actx||!noiseBuf) return; const n=actx.currentTime;
+  const s=actx.createBufferSource(), f=actx.createBiquadFilter(), g=actx.createGain();
+  s.buffer=noiseBuf; f.type='highpass'; f.frequency.value=7000; g.gain.setValueAtTime(0.08,n); g.gain.exponentialRampToValueAtTime(0.001,n+0.04);
+  s.connect(f).connect(g).connect(actx.destination); s.start(n);
+}
+function loopRange(){
+  const s=Math.floor(st.t/STEP);
+  if(st.loop==='step') return [s*STEP,(s+1)*STEP];
+  if(st.loop==='part'){const p=parts.find(p=>s>=p.a&&s<p.b);return [p.a*STEP,p.b*STEP]}
+  return null;
+}
+let loopLock=null;
+function setPlaying(p){
+  st.playing=p; if(p){audio(); if(actx&&actx.state==='suspended') actx.resume()}
+  if(p) loopLock=st.loop==='off'?null:loopRange();
+  document.getElementById('playIco').innerHTML=p?'<path d="M7 5h4v14H7zM13 5h4v14h-4z"/>':'<path d="M8 5v14l11-7z"/>';
+  document.getElementById('playBtn').setAttribute('aria-label',p?'Pause':'Abspielen');
+  document.getElementById('tcPlay').textContent=p?'Pause':'Abspielen';
+}
+function seek(t){st.t=clamp(t,0,TOTAL-0.001);st.lastBeat=Math.floor(st.t/(BEAT/2))-1;loopLock=st.loop==='off'?null:loopRange()}
+function frame(now){
+  const dt=Math.min(0.1,(now-st.last)/1000); st.last=now;
+  if(st.playing){
+    st.t+=dt*st.rate;
+    if(loopLock&&st.t>=loopLock[1]){st.t=loopLock[0];st.lastBeat=Math.floor(st.t/(BEAT/2))-1}
+    if(st.t>=TOTAL){st.t=0;setPlaying(false)}
+    const hb=Math.floor(st.t/(BEAT/2));
+    if(hb!==st.lastBeat){st.lastBeat=hb; if(hb%2===0) tick((hb/2)%8===0); else hat();}
+  }
+  render(now);
+  requestAnimationFrame(frame);
+}
+
+/* ---------- player rendering ---------- */
+const stage=document.getElementById('stage'), sg=setup(stage);
+const vid=document.getElementById('videoCanvas'), vg=setup(vid);
+const tl=document.getElementById('timeline'), tg=setup(tl);
+const countsEl=document.getElementById('counts');
+countsEl.innerHTML=range(8,i=>'<i>'+(i+1)+'</i>').join('');
+const countIs=[...countsEl.children];
+const where=document.getElementById('where');
+function describe(x,y){
+  const row=y<2?'Vorne':y<3.6?'Mitte':'Hinten';
+  const side=Math.abs(x)<0.6?'in der Mitte':x<0?(x<-2.5?'links außen':'links'):(x>2.5?'rechts außen':'rechts');
+  const mark=clamp(Math.round((x+W/2)/(W/10)),1,9);
+  return row+', '+side+' · über Marke '+mark;
+}
+let lastStep=-1;
+function render(now){
+  const t=st.t, s=Math.min(NSTEPS-1,Math.floor(t/STEP)), beatIn=Math.floor((t-s*STEP)/BEAT), beatPhase=((t/BEAT)%1);
+  if(s!==lastStep){lastStep=s;
+    document.getElementById('stepNo').textContent=s+1;
+    document.getElementById('stepName').textContent=steps[s].name;
+    document.getElementById('stepMeta').textContent=parts[steps[s].part].name+' · '+fmt(s*STEP)+'–'+fmt((s+1)*STEP);
+    document.getElementById('tcStep').textContent=steps[s].name;
+    document.getElementById('tcMeta').textContent='Schritt '+(s+1)+' von 8 · '+parts[steps[s].part].name;
+  }
+  countIs.forEach((el,i)=>{el.className=i<beatIn?'done':i===beatIn?'on':''});
+  tcBeatEls.forEach((el,i)=>{el.className=i<beatIn?'done':i===beatIn?'on':''});
+  document.getElementById('tcNum').textContent=beatIn+1;
+  document.getElementById('tNow').textContent=fmt(t);
+  const pulse=reduce?0:Math.exp(-beatPhase*4);
+  // stage
+  const m=stageMap(stage); drawStage(sg,stage,m);
+  if(st.path){
+    sg.strokeStyle=css('--red'); sg.lineWidth=3; sg.setLineDash([2,7]); sg.lineCap='round'; sg.beginPath();
+    for(let k=0;k<=80;k++){const tt=Math.min(TOTAL-0.01,t+k/80*STEP*2);const [x,y]=posAt(tt,ME);k?sg.lineTo(m.x(x),m.y(y)):sg.moveTo(m.x(x),m.y(y))}
+    sg.stroke(); sg.setLineDash([]);
+    const [ex,ey]=posAt(Math.min(TOTAL-0.01,t+STEP*2),ME); dot(sg,m.x(ex),m.y(ey),m.u*0.24,'7','ghost');
+  }
+  for(let i=0;i<12;i++){if(i===ME)continue;const [x,y]=posAt(t,i);dot(sg,m.x(x),m.y(y),m.u*0.24,String(i+1),'n')}
+  const [mx,my]=posAt(t,ME); dot(sg,m.x(mx),m.y(my),m.u*0.27,'7','me',pulse);
+  where.textContent=describe(mx,my);
+  drawVideo(t,beatPhase);
+  drawTimeline(t);
+  drawTrain(t,pulse);
+}
+function drawVideo(t,phase){
+  const w=vid.width,h=vid.height; const g=vg;
+  const grd=g.createLinearGradient(0,0,0,h); grd.addColorStop(0,'#24272E'); grd.addColorStop(1,'#0D0F12');
+  g.fillStyle=grd; g.fillRect(0,0,w,h);
+  g.fillStyle='rgba(255,255,255,.05)'; for(let k=0;k<9;k++){g.fillRect(k*w/9,h*0.62,1,h*0.38)}
+  g.fillStyle='rgba(255,255,255,.06)'; g.fillRect(0,h*0.62,w,2);
+  g.fillStyle='rgba(255,255,255,.04)'; g.fillRect(w*0.06,h*0.1,w*0.22,h*0.34);
+  g.save();
+  if(st.mirror){g.translate(w,0);g.scale(-1,1)}
+  const s=Math.floor(t/STEP), u=(t-s*STEP)/STEP, side=st.view==='Seite';
+  const cx=w*(0.5+0.12*Math.sin(t*0.9)), base=h*0.86, k=h/440;
+  const sw=Math.sin(phase*Math.PI*2), kick=s===2?Math.max(0,Math.sin(phase*Math.PI*2)):0, up=s===4?Math.max(0,Math.sin(u*Math.PI)):0;
+  const lift=up*40*k;
+  g.strokeStyle='#F4F6F8'; g.lineWidth=14*k; g.lineCap='round'; g.lineJoin='round';
+  const hip=[cx,base-150*k-lift], neck=[cx+(side?6:0)*k,base-260*k-lift];
+  const line=(a,b)=>{g.beginPath();g.moveTo(a[0],a[1]);g.lineTo(b[0],b[1]);g.stroke()};
+  line(hip,neck);
+  const armA=s===1||s===7?-1.2:-0.6+sw*0.5, armB=s===1||s===7?-1.2:-0.6-sw*0.5;
+  const sh=[neck[0],neck[1]+12*k];
+  const el1=[sh[0]-60*k*Math.cos(armA)*(side?.4:1),sh[1]+60*k*Math.sin(-armA)*-1];
+  line(sh,[sh[0]-70*k*(side?.4:1),sh[1]+70*k*Math.sin(armA)]);
+  line(sh,[sh[0]+70*k*(side?.4:1),sh[1]+70*k*Math.sin(armB)]);
+  line(hip,[hip[0]-28*k,base-lift*0.2]);
+  line(hip,[hip[0]+(28+kick*70)*k,base-kick*95*k-lift*0.2]);
+  g.fillStyle='#F4F6F8'; g.beginPath(); g.arc(neck[0],neck[1]-34*k,24*k,0,7); g.fill();
+  g.fillStyle='#E11D2A'; g.fillRect(hip[0]-22*k,hip[1]-8*k,44*k,14*k);
+  g.restore();
+  g.fillStyle='rgba(0,0,0,.5)'; roundRect(g,w-150,h-46,136,30,15); g.fill();
+  g.fillStyle='#F4F6F8'; g.font='600 16px JetBrains Mono, monospace'; g.textAlign='center'; g.textBaseline='middle';
+  g.fillText('▶ '+fmt(t+11.3),w-82,h-30);
+}
+const TLROWS={part:[8,34],song:[42,62],wave:[72,200],counts:[204,226]};
+function drawTimeline(t){
+  const g=tg,w=tl.width,h=tl.height,px=14, iw=w-px*2, X=v=>px+v/TOTAL*iw;
+  g.clearRect(0,0,w,h);
+  const ink=css('--ink'), sub=css('--sub'), faint=css('--faint'), line=css('--line'), red=css('--red'), panel=css('--panel2');
+  const lr=loopLock||(st.loop!=='off'?loopRange():null);
+  if(lr){g.fillStyle=red;g.globalAlpha=.08;g.fillRect(X(lr[0]),0,X(lr[1])-X(lr[0]),h);g.globalAlpha=1}
+  parts.forEach(p=>{const a=X(p.a*STEP)+1,b=X(p.b*STEP)-1,cur=t>=p.a*STEP&&t<p.b*STEP;
+    g.fillStyle=cur?ink:panel; roundRect(g,a,TLROWS.part[0],b-a,TLROWS.part[1]-TLROWS.part[0],8); g.fill();
+    g.strokeStyle=line; g.lineWidth=1; g.stroke();
+    g.fillStyle=cur?css('--bg'):ink; g.font='800 15px Archivo, sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+    g.fillText(p.name,(a+b)/2,(TLROWS.part[0]+TLROWS.part[1])/2+1)});
+  songs.forEach(s=>{const a=X(s.a*STEP)+1,b=X(s.b*STEP)-1;g.fillStyle=css(s.c);g.globalAlpha=.85;roundRect(g,a,TLROWS.song[0],b-a,TLROWS.song[1]-TLROWS.song[0],5);g.fill();g.globalAlpha=1;
+    g.fillStyle='#fff';g.font='700 12px Archivo, sans-serif';g.textAlign='left';g.textBaseline='middle';g.save();g.beginPath();g.rect(a,TLROWS.song[0],b-a,20);g.clip();g.fillText(s.name,a+8,(TLROWS.song[0]+TLROWS.song[1])/2+1);g.restore()});
+  const mid=(TLROWS.wave[0]+TLROWS.wave[1])/2, amp=(TLROWS.wave[1]-TLROWS.wave[0])/2;
+  for(let i=0;i<WN;i++){const x=px+i/WN*iw, tt=i/WN*TOTAL, a=wave[i]*amp;g.fillStyle=tt<t?red:faint;g.globalAlpha=tt<t?.9:.55;g.fillRect(x,mid-a,Math.max(1,iw/WN-0.6),a*2)}
+  g.globalAlpha=1;
+  for(let s=1;s<NSTEPS;s++){const x=X(s*STEP);g.strokeStyle=ink;g.lineWidth=2;g.beginPath();g.moveTo(x,TLROWS.wave[0]);g.lineTo(x,TLROWS.wave[1]);g.stroke()}
+  for(let s=0;s<NSTEPS;s++){const x=X(s*STEP)+4;g.fillStyle=panel;roundRect(g,x,TLROWS.wave[0]+2,22,20,6);g.fill();g.fillStyle=ink;g.font='800 13px Archivo, sans-serif';g.textAlign='center';g.textBaseline='middle';g.fillText(String(s+1),x+11,TLROWS.wave[0]+13)}
+  for(let b=0;b<NSTEPS*8;b++){const x=X(b*BEAT), one=b%8===0;g.fillStyle=one?ink:faint;g.fillRect(x,TLROWS.counts[0]+(one?0:6),one?2:1,one?16:10)}
+  g.fillStyle=faint;g.font='600 11px JetBrains Mono, monospace';g.textAlign='left';g.textBaseline='top';
+  const x=X(t); g.fillStyle=red; g.fillRect(x-1.5,0,3,h); g.beginPath(); g.moveTo(x-7,0); g.lineTo(x+7,0); g.lineTo(x,9); g.closePath(); g.fill();
+}
+tl.addEventListener('pointerdown',e=>{
+  const r=tl.getBoundingClientRect(), x=(e.clientX-r.left)/r.width*tl.width, y=(e.clientY-r.top)/r.height*tl.height;
+  const t=clamp((x-14)/(tl.width-28)*TOTAL,0,TOTAL-0.01);
+  if(y<TLROWS.part[1]+2){const s=Math.floor(t/STEP);const p=parts.find(p=>s>=p.a&&s<p.b);seek(p.a*STEP);st.loop='part';loopLock=[p.a*STEP,p.b*STEP];updLoop();return}
+  if(y<TLROWS.wave[0]+26){seek(Math.floor(t/STEP)*STEP);return}
+  seek(t);
+});
+function updLoop(){const l=document.getElementById('loopLbl'),b=document.getElementById('loopBtn');l.textContent=st.loop==='off'?'Schleife':st.loop==='step'?'Schritt':'Teil';b.classList.toggle('on',st.loop!=='off')}
+document.getElementById('playBtn').onclick=()=>setPlaying(!st.playing);
+document.getElementById('loopBtn').onclick=()=>{st.loop=st.loop==='off'?'step':st.loop==='step'?'part':'off';loopLock=st.loop==='off'?null:loopRange();updLoop()};
+document.getElementById('speedBtn').onclick=()=>{st.rate=st.rate===1?0.5:st.rate===0.5?0.75:1;document.getElementById('speedIco').textContent=st.rate===1?'1×':st.rate===0.5?'½×':'¾×';document.getElementById('tRate').textContent=Math.round(st.rate*100)+' %';document.getElementById('speedBtn').classList.toggle('on',st.rate!==1)};
+document.getElementById('mirrorBtn').onclick=e=>{st.mirror=!st.mirror;e.currentTarget.classList.toggle('on',st.mirror);document.getElementById('mirrorTag').hidden=!st.mirror};
+document.getElementById('pathBtn').onclick=e=>{st.path=!st.path;e.currentTarget.classList.toggle('on',st.path)};
+document.getElementById('viewSwitch').onclick=e=>{st.view=st.view==='Vorne'?'Seite':'Vorne';e.currentTarget.textContent=(st.view==='Vorne'?'Seite':'Vorne')+' ›';document.querySelector('.vtag span').textContent='Jana · '+st.view};
+
+/* ---------- training mode ---------- */
+const tcBeats=document.getElementById('tcBeats'); tcBeats.innerHTML=range(8,()=>'<i></i>').join(''); const tcBeatEls=[...tcBeats.children];
+const ts=document.getElementById('trainStage'), tsg=setup(ts);
+function drawTrain(t,pulse){
+  const m=stageMap(ts,24);
+  tsg.clearRect(0,0,ts.width,ts.height);
+  tsg.fillStyle='#14171C'; roundRect(tsg,m.ox,m.oy,m.sw,m.sh,18); tsg.fill();
+  tsg.strokeStyle='rgba(255,255,255,.08)'; tsg.setLineDash([6,6]); tsg.beginPath(); tsg.moveTo(m.x(0),m.oy+6); tsg.lineTo(m.x(0),m.oy+m.sh-6); tsg.stroke(); tsg.setLineDash([]);
+  tsg.fillStyle='rgba(255,255,255,.35)'; tsg.font='600 15px Archivo, sans-serif'; tsg.textAlign='center'; tsg.textBaseline='top';
+  for(let k=1;k<=9;k++){const x=m.x(-W/2+k*W/10);tsg.fillRect(x-1,m.oy+m.sh-8,2,8);tsg.fillText(String(k),x,m.oy+m.sh+4)}
+  for(let i=0;i<12;i++){const [x,y]=posAt(t,i), r=m.u*0.26, X=m.x(x), Y=m.y(y);
+    if(i===ME){tsg.setLineDash([5,5]);tsg.strokeStyle='#FFC42E';tsg.lineWidth=2.5;tsg.beginPath();tsg.arc(X,Y,r,0,7);tsg.stroke();tsg.setLineDash([]);tsg.fillStyle='#FFC42E'}
+    else{tsg.fillStyle='#F4F6F8';tsg.beginPath();tsg.arc(X,Y,r,0,7);tsg.fill();tsg.fillStyle='#0B0D10'}
+    tsg.font='800 '+Math.round(r)+'px Archivo, sans-serif';tsg.textAlign='center';tsg.textBaseline='middle';tsg.fillText(String(i+1),X,Y+1)}
+}
+document.getElementById('tcPlay').onclick=()=>setPlaying(!st.playing);
+document.getElementById('tcPrev').onclick=()=>seek(Math.max(0,(Math.floor(st.t/STEP)-1)*STEP));
+document.getElementById('tcLoop').onclick=()=>{st.loop='step';seek(Math.floor(st.t/STEP)*STEP);updLoop();if(!st.playing)setPlaying(true)};
+
+/* ---------- thumbnails ---------- */
+function thumb(c,form,meIdx,mono){
+  const g=c.getContext('2d'), w=c.width,h=c.height;
+  g.clearRect(0,0,w,h);
+  const sx=x=>(x+W/2)/W*(w-12)+6, sy=y=>h-6-(y/D)*(h-12);
+  for(let i=0;i<12;i++){const [x,y]=form[i];g.fillStyle=i===meIdx?css('--red'):(mono||css('--ink'));g.globalAlpha=i===meIdx?1:.75;g.beginPath();g.arc(sx(x),sy(y),Math.max(2.5,w/34),0,7);g.fill()}
+  g.globalAlpha=1;
+}
+function drawThumbs(){
+  document.querySelectorAll('canvas[data-thumb]').forEach(c=>thumb(c,F[+c.dataset.thumb],ME));
+  const tc=document.getElementById('tileStage'); thumb(tc,F[4],ME,'rgba(255,255,255,.9)');
+  document.querySelectorAll('#manual canvas').forEach(c=>thumb(c,F[+c.dataset.f],ME));
+}
+const man=document.getElementById('manual');
+let html='';
+parts.forEach((p,pi)=>{html+='<div class="partlabel">'+p.name+'</div>';
+  for(let s=p.a;s<p.b;s++){html+='<button class="row" style="text-align:left;width:100%" data-step="'+s+'"><span class="stepno" style="font-size:26px;min-width:26px">'+(s+1)+'</span><canvas class="thumb" data-f="'+(s+1)+'" width="128" height="80"></canvas><span class="grow"><b>'+steps[s].name+'</b><small>'+fmt(s*STEP)+'–'+fmt((s+1)*STEP)+' · '+steps[s].desc+'</small></span>'+(s===2||s===4?'<span class="chip red">Video</span>':s===3?'<span class="chip gold">2 Videos</span>':'')+'</button>'}
+});
+man.innerHTML=html;
+man.addEventListener('click',e=>{const b=e.target.closest('[data-step]');if(!b)return;seek(+b.dataset.step*STEP);document.getElementById('ueben').scrollIntoView({behavior:reduce?'auto':'smooth'})});
+
+/* ---------- songs editor ---------- */
+const songsEl=document.getElementById('songs');
+songsEl.innerHTML=songs.map((s,i)=>'<div class="song"><div class="grip"><i></i><i></i><i></i><i></i><i></i><i></i></div><div><div class="top"><b>'+s.name+'</b><span class="chip" style="background:color-mix(in srgb,var('+s.c+') 18%,transparent);border-color:transparent">'+(i+1)+'</span></div><canvas data-song="'+i+'" width="680" height="92"></canvas><div class="cut mono"><span>Länge '+s.len+'</span><span data-cut="'+i+'">'+s.cut+'</span></div></div></div>').join('');
+const songState=songs.map((s,i)=>({a:[.18,.22,.88][i],b:[.52,.31,.93][i]}));
+const songWaves=songs.map((s,i)=>range(180,k=>{let r=Math.sin((k+i*999)*78.233)*43758.5453;r-=Math.floor(r);return clamp(.25+.75*Math.abs(Math.sin(k*.21+i))*(.5+.5*r),.08,1)}));
+function drawSong(i){
+  const c=songsEl.querySelector('[data-song="'+i+'"]'), g=c.getContext('2d'), w=c.width,h=c.height, s=songState[i];
+  g.clearRect(0,0,w,h); const col=css(songs[i].c), faint=css('--faint'), ink=css('--ink');
+  songWaves[i].forEach((v,k)=>{const x=k/180*w, inside=k/180>=s.a&&k/180<=s.b;g.fillStyle=inside?col:faint;g.globalAlpha=inside?.95:.35;const a=v*(h/2-6);g.fillRect(x,h/2-a,w/180-1.5,a*2)});
+  g.globalAlpha=1;
+  [s.a,s.b].forEach((v,j)=>{const x=v*w;g.fillStyle=ink;g.fillRect(x-1.5,0,3,h);g.beginPath();roundRect(g,x-9,h/2-14,18,28,6);g.fill();g.fillStyle=css('--panel2');g.fillRect(x-1,h/2-7,2,14)});
+}
+songs.forEach((_,i)=>{drawSong(i);const c=songsEl.querySelector('[data-song="'+i+'"]');let drag=null;
+  c.addEventListener('pointerdown',e=>{const r=c.getBoundingClientRect(),v=(e.clientX-r.left)/r.width,s=songState[i];drag=Math.abs(v-s.a)<Math.abs(v-s.b)?'a':'b';c.setPointerCapture(e.pointerId)});
+  c.addEventListener('pointermove',e=>{if(!drag)return;const r=c.getBoundingClientRect(),v=clamp((e.clientX-r.left)/r.width,0,1),s=songState[i];if(drag==='a')s.a=Math.min(v,s.b-.04);else s.b=Math.max(v,s.a+.04);drawSong(i);
+    const len=[21.4,182,168.5][i];songsEl.querySelector('[data-cut="'+i+'"]').textContent=fmt(s.a*len)+' – '+fmt(s.b*len)});
+  c.addEventListener('pointerup',()=>drag=null);
+});
+
+/* ---------- alignment ---------- */
+function alignAnim(canvas,offsetFrac,label2,done){
+  const g=canvas.getContext('2d'), w=canvas.width,h=canvas.height; let start=null;
+  const A=range(220,k=>{let r=Math.sin(k*12.9898)*43758.5453;r-=Math.floor(r);return clamp(.2+.8*Math.abs(Math.sin(k*.19))*(.45+.55*r),.06,1)});
+  function draw(p){
+    g.clearRect(0,0,w,h); const ink=css('--ink'), faint=css('--faint'), red=css('--red'), green=css('--green');
+    g.font='700 13px Archivo, sans-serif'; g.fillStyle=css('--sub'); g.textAlign='left'; g.textBaseline='top';
+    g.fillText('ARBEITSMUSIK',14,10); g.fillText(label2,14,h/2+10);
+    const off=(1-ease(p))*offsetFrac*w;
+    const r1=h/4+14, r2=h*3/4+6;
+    A.forEach((v,k)=>{const x=14+k/220*(w-28); g.fillStyle=ink; g.globalAlpha=.75; const a=v*(h/4-22); g.fillRect(x,r1-a,(w-28)/220-1.2,a*2)});
+    A.forEach((v,k)=>{const x=14+k/220*(w-28)+off; if(x<14||x>w-14)return; const n=Math.sin(k*3.1)*.15; g.fillStyle=p>=1?green:red; g.globalAlpha=.8; const a=clamp(v*.8+n,.05,1)*(h/4-22); g.fillRect(x,r2-a,(w-28)/220-1.2,a*2)});
+    g.globalAlpha=1;
+    if(p>=1){g.strokeStyle=green;g.lineWidth=1.5;g.setLineDash([3,5]);[.18,.42,.66,.88].forEach(f=>{const x=14+f*(w-28);g.beginPath();g.moveTo(x,r1+h/4-20);g.lineTo(x,r2-h/4+18);g.stroke()});g.setLineDash([])}
+  }
+  if(reduce){draw(1);done&&done();return}
+  function step(now){if(start===null)start=now;const p=Math.min(1,(now-start)/1600);draw(p);if(p<1)requestAnimationFrame(step);else done&&done()}
+  requestAnimationFrame(step);
+}
+const ac=document.getElementById('alignCanvas');
+function runAlign(){document.getElementById('confBar').style.width='0%';document.getElementById('confVal').textContent='…';alignAnim(ac,.32,'ENDFASSUNG',()=>{document.getElementById('confBar').style.width='96%';document.getElementById('confVal').textContent='96 %'})}
+document.getElementById('alignReplay').onclick=runAlign;
+document.getElementById('adoptBtn').onclick=e=>{document.getElementById('adoptToast').hidden=false;e.currentTarget.textContent='Übernommen';e.currentTarget.disabled=true};
+const va=document.getElementById('videoAlign'); let vaOff=0;
+function runVA(){alignAnim(va,-.24,'TON AUS DEM VIDEO',()=>{})}
+document.getElementById('vaMinus').onclick=()=>{vaOff-=.1;updVA()};document.getElementById('vaPlus').onclick=()=>{vaOff+=.1;updVA()};
+function updVA(){document.getElementById('vaOffset').textContent=(vaOff>=0?'+':'−')+Math.abs(vaOff).toFixed(1).replace('.',',')+' s';document.getElementById('vaTitle').textContent='Läuft ab '+fmt(11.3+vaOff)+' in der Musik'}
+
+/* ---------- editor ---------- */
+const es=document.getElementById('editStage'), eg=setup(es);
+const prevForm=F[3].map(p=>p.slice());
+let editForm=F[4].map(p=>p.slice());
+let sel=new Set([0,1,2,3,4,5]); let onion=true; let mv={a:0,b:4}; let preview=null;
+function drawEdit(now){
+  const m=stageMap(es); drawStage(eg,es,m);
+  let pv=null;
+  if(preview!==null){const el=(now-preview)/1000, u=el/STEP; if(u>=1){preview=null}else pv=u}
+  if(onion) prevForm.forEach((p,i)=>dot(eg,m.x(p[0]),m.y(p[1]),m.u*0.24,'','ghost'));
+  editForm.forEach((p,i)=>{const q=prevForm[i];
+    eg.strokeStyle=sel.has(i)?css('--gold'):css('--faint'); eg.lineWidth=sel.has(i)?2.5:1.5; eg.setLineDash([4,5]);
+    const mx=(q[0]+p[0])/2-(p[1]-q[1])*0.25, my=(q[1]+p[1])/2+(p[0]-q[0])*0.25;
+    eg.beginPath(); eg.moveTo(m.x(q[0]),m.y(q[1])); eg.quadraticCurveTo(m.x(mx),m.y(my),m.x(p[0]),m.y(p[1])); eg.stroke(); eg.setLineDash([]);
+    let x=p[0], y=p[1];
+    if(pv!==null){const a=sel.has(i)?mv.a/8:0, b=sel.has(i)?mv.b/8:1;const e=ease(clamp((pv-a)/(b-a),0,1));const A=(1-e)*(1-e),B=2*(1-e)*e,C=e*e;x=A*q[0]+B*mx+C*p[0];y=A*q[1]+B*my+C*p[1]}
+    dot(eg,m.x(x),m.y(y),m.u*0.25,String(i+1),sel.has(i)?'sel':i===ME?'me':'n',0)});
+  document.getElementById('selLbl').textContent=sel.size?sel.size+' ausgewählt':'Nichts ausgewählt';
+  drawCounts(pv);
+  requestAnimationFrame(drawEdit);
+}
+let edrag=null;
+es.addEventListener('pointerdown',e=>{
+  const m=stageMap(es), r=es.getBoundingClientRect(), x=(e.clientX-r.left)/r.width*es.width, y=(e.clientY-r.top)/r.height*es.height;
+  let hit=-1,best=1e9; editForm.forEach((p,i)=>{const d=Math.hypot(m.x(p[0])-x,m.y(p[1])-y);if(d<best){best=d;hit=i}});
+  if(best<m.u*0.45){edrag={i:hit,moved:false,x0:x,y0:y};es.setPointerCapture(e.pointerId)}
+});
+es.addEventListener('pointermove',e=>{if(!edrag)return;const m=stageMap(es),r=es.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*es.width,y=(e.clientY-r.top)/r.height*es.height;
+  if(Math.hypot(x-edrag.x0,y-edrag.y0)>6)edrag.moved=true;
+  if(edrag.moved){const sx=Math.round(((x-m.ox)/m.sw*W-W/2)*4)/4, sy=Math.round(((m.oy+m.sh-y)/m.sh*D)*4)/4;editForm[edrag.i]=[clamp(sx,-W/2+.3,W/2-.3),clamp(sy,.3,D-.3)]}});
+es.addEventListener('pointerup',()=>{if(edrag&&!edrag.moved){sel.has(edrag.i)?sel.delete(edrag.i):sel.add(edrag.i)}edrag=null});
+function presetTo(target){const ids=sel.size?[...sel]:range(12,i=>i);const from=ids.map(i=>editForm[i].slice());const to=target(ids.length);let s0=null;
+  function an(now){if(s0===null)s0=now;const p=reduce?1:Math.min(1,(now-s0)/420),e=ease(p);ids.forEach((id,k)=>{editForm[id]=[from[k][0]+(to[k][0]-from[k][0])*e,from[k][1]+(to[k][1]-from[k][1])*e]});if(p<1)requestAnimationFrame(an)}requestAnimationFrame(an)}
+document.getElementById('tools').addEventListener('click',e=>{const b=e.target.closest('[data-tool]');if(!b)return;const t=b.dataset.tool;
+  if(t==='onion'){onion=!onion;b.classList.toggle('on',onion);return}
+  if(t==='mirror'){const ids=sel.size?[...sel]:range(12,i=>i);ids.forEach(i=>editForm[i]=[-editForm[i][0],editForm[i][1]]);return}
+  const cy=sel.size?([...sel].reduce((a,i)=>a+editForm[i][1],0)/sel.size):3;
+  if(t==='line')presetTo(n=>range(n,k=>[-3.6+(n>1?7.2*k/(n-1):0),clamp(cy,.6,5.4)]));
+  if(t==='circle')presetTo(n=>range(n,k=>{const a=Math.PI/2+k/n*Math.PI*2;return[Math.cos(a)*1.8,3+Math.sin(a)*1.6]}));
+  if(t==='block')presetTo(n=>range(n,k=>[-1.6+(k%3)*1.6,1.6+Math.floor(k/3)*1.3]));
+});
+const cc=document.getElementById('countCanvas'), cg=setup(cc);
+function drawCounts(pv){
+  const g=cg,w=cc.width,h=cc.height,px=16,cw=(w-px*2)/8;
+  g.clearRect(0,0,w,h); const ink=css('--ink'),faint=css('--faint'),line=css('--line'),gold=css('--gold'),panel=css('--panel2');
+  for(let k=0;k<8;k++){const x=px+k*cw;g.fillStyle=k%2?css('--line2'):'transparent';g.fillRect(x,0,cw,h);g.fillStyle=k===0?ink:faint;g.font='800 22px Archivo, sans-serif';g.textAlign='center';g.textBaseline='top';g.fillText(String(k+1),x+cw/2,8)}
+  const by=56,bh=40, xa=px+mv.a*cw, xb=px+mv.b*cw;
+  g.fillStyle=gold; roundRect(g,xa,by,xb-xa,bh,12); g.fill();
+  g.fillStyle='#14161A'; g.font='800 17px Archivo, sans-serif'; g.textAlign='center'; g.textBaseline='middle';
+  g.fillText(sel.size+' Plätze laufen',(xa+xb)/2,by+bh/2+1);
+  [xa,xb].forEach(x=>{g.fillStyle=ink;roundRect(g,x-7,by-6,14,bh+12,6);g.fill()});
+  if(pv!==null){const x=px+pv*8*cw;g.fillStyle=css('--red');g.fillRect(x-1.5,0,3,h)}
+  document.getElementById('cbLbl').textContent='Zählzeit '+(mv.a+1)+' – '+mv.b;
+}
+let cdrag=null;
+cc.addEventListener('pointerdown',e=>{const r=cc.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*cc.width,cw=(cc.width-32)/8,xa=16+mv.a*cw,xb=16+mv.b*cw;cdrag=Math.abs(x-xa)<Math.abs(x-xb)?'a':'b';cc.setPointerCapture(e.pointerId)});
+cc.addEventListener('pointermove',e=>{if(!cdrag)return;const r=cc.getBoundingClientRect(),x=(e.clientX-r.left)/r.width*cc.width,cw=(cc.width-32)/8,v=clamp(Math.round((x-16)/cw),0,8);if(cdrag==='a')mv.a=Math.min(v,mv.b-1);else mv.b=Math.max(v,mv.a+1)});
+cc.addEventListener('pointerup',()=>cdrag=null);
+document.getElementById('previewBtn').onclick=()=>{preview=performance.now()};
+document.getElementById('saveBtn').onclick=e=>{e.currentTarget.textContent='Gespeichert';setTimeout(()=>e.currentTarget.textContent='Speichern',1400)};
+
+/* ---------- evening ---------- */
+function drawEvening(){
+  const c=document.getElementById('eveStage'), g=c.getContext('2d'), m=stageMap(c,24); drawStage(g,c,m,{noLabel:true});
+  const tight=F[3].map(p=>[p[0]*0.8,3+(p[1]-3)*0.8]);
+  F[3].forEach((p,i)=>dot(g,m.x(p[0]),m.y(p[1]),m.u*0.22,'','ghost'));
+  tight.forEach((p,i)=>dot(g,m.x(p[0]),m.y(p[1]),m.u*0.25,i===ME?'J':String(i+1),i===ME?'guest':'n'));
+  g.fillStyle=css('--sub'); g.font='700 15px Archivo, sans-serif'; g.textAlign='left'; g.textBaseline='top';
+  g.fillText('Schritt 4 · enger als in der Session',m.ox+12,m.oy+10);
+}
+
+/* ---------- offline ---------- */
+document.getElementById('offBtn').onclick=e=>{document.getElementById('stVid').style.width='62%';document.getElementById('stTotal').textContent='142 MB';e.currentTarget.textContent='Gespeichert';e.currentTarget.classList.add('ghost')};
+
+/* ---------- nav ---------- */
+const links=[...document.querySelectorAll('#nav a')];
+const io=new IntersectionObserver(es=>{es.forEach(en=>{if(en.isIntersecting){links.forEach(l=>l.classList.toggle('on',l.getAttribute('href')==='#'+en.target.id)); const a=links.find(l=>l.classList.contains('on')); a&&a.scrollIntoView({block:'nearest',inline:'center'})}})},{rootMargin:'-45% 0px -50% 0px'});
+document.querySelectorAll('.feature').forEach(s=>io.observe(s));
+
+/* ---------- boot ---------- */
+function redrawStatic(){drawThumbs();songs.forEach((_,i)=>drawSong(i));drawEvening()}
+seek(4*STEP+1.2);
+redrawStatic(); runAlign(); runVA(); updLoop();
+matchMedia('(prefers-color-scheme: dark)').addEventListener('change',redrawStatic);
+new MutationObserver(redrawStatic).observe(document.documentElement,{attributes:true,attributeFilter:['data-theme']});
+document.fonts&&document.fonts.ready.then(redrawStatic);
+requestAnimationFrame(frame); requestAnimationFrame(drawEdit);
+})();
+</script>
