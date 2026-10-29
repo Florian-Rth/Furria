@@ -806,6 +806,32 @@ v2).
 _UI copy_: Schritt; Eckdaten, Karten, Ablauf, Nachbereitung
 _Avoid_: task, phase, milestone, checklist item (a checklist item is an *Aufgabe*, later)
 
+**Act** (`Act`):
+One piece a group (or, without a group, the club itself — an *Ablaufpunkt*) puts on stage in one
+**session**: a dance, a speech, a show. Its **act kind** (dance, speech, music, show, point) decides
+which training the act gets — not the **group kind**, which only suggests the kind of a group's
+new acts (ruled 2026-10-29, group-year grilling). A piece the group keeps is continued into the
+next session as a new act that **follows on** the previous one; the chain is the piece's lineage.
+_UI copy_: Auftritt; kinds Tanz, Rede, Musik, Show, Ablaufpunkt
+_Avoid_: **Nummer** (retired 2026-10-22), number, routine, piece (as an entity name); deriving the
+training from the group kind
+
+**Appearance** (`Appearance`):
+One **act** at one **calendar entry** — the gala evening's guard dance. It inherits the act's cast
+and choreography and keeps only what differs that evening: people in or out, who stands on which
+spot, optionally its own copy of the choreography; it holds that evening's pictures. Its place in
+the evening's **running order** belongs to it — there is no separate running-order line (ruled
+2026-10-29, group-year grilling).
+_UI copy_: always in context — *Auftritt am 11.11.*, *an diesem Abend*
+_Avoid_: performance (that is the calendar entry kind), show, gig, line (for the running-order place)
+
+**Co-editor** (act):
+A **cast** member a **group admin** has entrusted with one **act**'s training material — she edits
+it like the group admin does, but never the act's cast or group. Only the cast and the group's
+admins see an act's training material at all (ruled 2026-10-29, group-year grilling).
+_UI copy_: — (open)
+_Avoid_: choreographer, owner, moderator
+
 **Running order**:
 The order of acts within a single event — a per-event ordering the club app manages. Not a list
 of events. It is planned late: the responsible person assembles it roughly **two to three weeks
