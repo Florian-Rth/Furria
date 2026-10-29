@@ -17,20 +17,18 @@ public sealed class RenditionFiles : IDisposable
         _storageKey = storageKey;
     }
 
-    public string ScratchFileFor(MediaRendition rendition, string extension)
-    {
-        var target = TargetOf(rendition);
-        Directory.CreateDirectory(Path.GetDirectoryName(target)!);
-        var scratch = Path.Combine(
-            Path.GetDirectoryName(target)!,
-            $".{Path.GetFileNameWithoutExtension(target)}.{Guid.NewGuid():N}{extension}"
-        );
-        _scratchFiles.Add(scratch);
-        return scratch;
-    }
+    public string ScratchFileFor(MediaRendition rendition, string extension) =>
+        ScratchFileBeside(TargetOf(rendition), extension);
+
+    public string ScratchFileForSoundProfile() => ScratchFileBeside(SoundProfilePath, ".bin");
+
+    public string ScratchFileForSound() => ScratchFileBeside(SoundProfilePath, ".pcm");
 
     public void Publish(string scratchFile, MediaRendition rendition) =>
         File.Move(scratchFile, TargetOf(rendition), overwrite: true);
+
+    public void PublishSoundProfile(string scratchFile) =>
+        File.Move(scratchFile, SoundProfilePath, overwrite: true);
 
     public void DeleteAll()
     {
@@ -43,6 +41,19 @@ public sealed class RenditionFiles : IDisposable
     {
         foreach (var scratch in _scratchFiles.Where(File.Exists))
             File.Delete(scratch);
+    }
+
+    private string SoundProfilePath => _root.FullPathOf(MediaPaths.SoundProfileOf(_storageKey));
+
+    private string ScratchFileBeside(string target, string extension)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(target)!);
+        var scratch = Path.Combine(
+            Path.GetDirectoryName(target)!,
+            $".{Path.GetFileNameWithoutExtension(target)}.{Guid.NewGuid():N}{extension}"
+        );
+        _scratchFiles.Add(scratch);
+        return scratch;
     }
 
     private string TargetOf(MediaRendition rendition) =>

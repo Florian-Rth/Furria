@@ -1,4 +1,5 @@
 using Furria.MediaWorker;
+using Furria.MediaWorker.Sound;
 using Furria.MediaWorker.Videos;
 using Microsoft.Extensions.Options;
 using NetVips;
@@ -26,6 +27,30 @@ public static class RenditionProbe
             ct
         );
 
+    public static async Task<(string Codec, string SampleRate)> SoundOf(
+        string soundPath,
+        CancellationToken ct
+    )
+    {
+        var report = await MediaTool.RunAsync(
+            "ffprobe",
+            [
+                "-v",
+                "error",
+                "-select_streams",
+                "a:0",
+                "-show_entries",
+                "stream=codec_name,sample_rate",
+                "-of",
+                "csv=p=0",
+                soundPath,
+            ],
+            ct
+        );
+        var fields = report.Trim().Split(',');
+        return (fields[0], fields[1]);
+    }
+
     public static async Task<bool> StartsFastAsync(string videoPath, CancellationToken ct)
     {
         var bytes = await File.ReadAllBytesAsync(videoPath, ct);
@@ -35,5 +60,8 @@ public static class RenditionProbe
     }
 
     public static Task<VideoFacts> VideoFactsOf(string videoPath, CancellationToken ct) =>
-        new VideoRenderer(Options.Create(new MediaWorkerOptions())).ProbeAsync(videoPath, ct);
+        new VideoRenderer(
+            Options.Create(new MediaWorkerOptions()),
+            new SoundAnalyser(Options.Create(new MediaWorkerOptions()))
+        ).ProbeAsync(videoPath, ct);
 }

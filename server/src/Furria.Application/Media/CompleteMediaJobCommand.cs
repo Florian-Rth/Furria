@@ -6,9 +6,9 @@ public sealed record CompleteMediaJobCommand
 
     public required int MediaItemId { get; init; }
 
-    public required int Width { get; init; }
+    public required int? Width { get; init; }
 
-    public required int Height { get; init; }
+    public required int? Height { get; init; }
 
     public required double? DurationSeconds { get; init; }
 
@@ -17,4 +17,6 @@ public sealed record CompleteMediaJobCommand
     public required string? Camera { get; init; }
 
     public MediaCropDetails? AppliedCrop { get; init; }
+
+    public MediaAudioFactsDetails? Audio { get; init; }
 }

@@ -79,6 +79,7 @@ public sealed class MediaStore
                     row.OwnerGroupId,
                     row.OwnerNewsPostId,
                     row.OwnerEventId,
+                    row.OwnerActId,
                     row.WebsitePicture == null
                         ? null
                         : new PictureSlotPosition(
@@ -241,6 +242,7 @@ public sealed class MediaStore
             OwnerNewsPostId =
                 command.Owner.Kind == MediaOwnerKind.NewsPost ? command.Owner.Id : null,
             OwnerEventId = command.Owner.Kind == MediaOwnerKind.Event ? command.Owner.Id : null,
+            OwnerActId = command.Owner.Kind == MediaOwnerKind.Act ? command.Owner.Id : null,
             Kind = command.Format.Kind,
             State = MediaItemState.Processing,
             OriginalFileName = command.OriginalFileName,

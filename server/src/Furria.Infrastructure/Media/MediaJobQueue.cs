@@ -83,6 +83,8 @@ public sealed class MediaJobQueue
         item.RenderedAt = _timeProvider.GetUtcNow();
         if (item.Crop is null && command.AppliedCrop is { } appliedCrop)
             item.Crop = MediaCrops.ToEntity(appliedCrop);
+        item.Audio =
+            item.Kind == MediaKind.Audio && command.Audio is { } audio ? AudioFactsOf(audio) : null;
         item.State = await HasFurtherJobsAsync(job, ct)
             ? MediaItemState.Processing
             : MediaItemState.Ready;
@@ -302,6 +304,10 @@ public sealed class MediaJobQueue
 
     [Pure]
     private static MediaJobDetails DetailsOf(MediaJob job, MediaItem item) =>
+        DetailsOf(job, item, MediaOwner.Of(item));
+
+    [Pure]
+    private static MediaJobDetails DetailsOf(MediaJob job, MediaItem item, MediaOwner owner) =>
         new()
         {
             Lease = new MediaJobLease(job.Id, job.LeaseId!.Value),
@@ -309,8 +315,21 @@ public sealed class MediaJobQueue
             StorageKey = item.StorageKey,
             Kind = item.Kind,
             Crop = item.Crop is { } crop ? MediaCrops.ToDetails(crop) : null,
-            PictureAspect = item.WebsitePicture?.Aspect ?? MediaOwner.Of(item).PictureAspect,
+            PictureAspect = item.WebsitePicture?.Aspect ?? owner.PictureAspect,
             Attempt = job.Attempts,
+            KeepsSoundProfile = owner.KeepsSoundProfiles,
+        };
+
+    [Pure]
+    private static MediaAudioFacts AudioFactsOf(MediaAudioFactsDetails audio) =>
+        new()
+        {
+            SampleRate = audio.SampleRate,
+            LoudnessLufs = audio.LoudnessLufs,
+            TruePeakDbtp = audio.TruePeakDbtp,
+            LeadingSilenceSeconds = audio.LeadingSilenceSeconds,
+            FirstBeatSeconds = audio.FirstBeatSeconds,
+            TempoBpm = audio.TempoBpm,
         };
 
     [Pure]

@@ -47,8 +47,8 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(NewsCategory)] = "session achievements club groups",
         [typeof(NewsPostState)] = "draft published withdrawn",
         [typeof(NewsPublicationRequirement)] = "category title teaser text",
-        [typeof(MediaKind)] = "photo video",
-        [typeof(MediaOwnerKind)] = "person group gallery newsPost website event",
+        [typeof(MediaKind)] = "photo video audio",
+        [typeof(MediaOwnerKind)] = "person group gallery newsPost website event act",
         [typeof(SystemLevel)] = "ok attention broken",
         [typeof(SystemCheck)] = "database workers queue storage media logs services mail",
         [typeof(SystemReasonCode)] =

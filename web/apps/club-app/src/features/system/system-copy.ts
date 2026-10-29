@@ -230,7 +230,11 @@ export const reasonTextOf = (reason: VerdictReason, context: ReasonContext): str
   }
 };
 
-export const MEDIA_KIND_LABELS: Record<MediaKind, string> = { photo: 'Fotos', video: 'Videos' };
+export const MEDIA_KIND_LABELS: Record<MediaKind, string> = {
+  photo: 'Fotos',
+  video: 'Videos',
+  audio: 'Musik',
+};
 
 export const MEDIA_STATE_LABELS: Record<MediaState, string> = {
   ready: 'Bereit',
@@ -267,18 +271,20 @@ export const workerMetaOf = (
   acceleration: string | null,
   photoItem: number | null,
   videoItem: number | null,
+  audioItem: number | null,
 ): string[] => [
   `Host ${hostName}`,
   `Version ${version}`,
   acceleration === null ? ACCELERATION_NONE : `Hardware-Kodierung ${acceleration}`,
   ...(photoItem === null ? [] : [`verarbeitet Foto #${photoItem}`]),
   ...(videoItem === null ? [] : [`verarbeitet Video #${videoItem}`]),
+  ...(audioItem === null ? [] : [`verarbeitet Musik #${audioItem}`]),
 ];
 
 export const STORAGE_LABEL = 'Speicherbelegung des Medienverzeichnisses';
 export const STORAGE_PART_LABELS = {
   originals: 'Originale',
-  renditions: 'Bildgrößen & Videofassungen',
+  renditions: 'Bild-, Video- & Musikfassungen',
   staging: 'Laufende Uploads',
   other: 'Sonstiges',
   free: 'Frei',

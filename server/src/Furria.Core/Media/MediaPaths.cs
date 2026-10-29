@@ -9,6 +9,7 @@ public static class MediaPaths
     public const string RenditionsDirectory = "renditions";
 
     private const int ShardLength = 2;
+    private const string SoundProfileFileName = "sound-profile.bin";
 
     [Pure]
     public static string OriginalOf(Guid storageKey) =>
@@ -26,6 +27,10 @@ public static class MediaPaths
                 RenditionsOf(storageKey),
                 $"{rendition.ToString().ToLowerInvariant()}{MediaRenditions.ExtensionOf(rendition)}"
             );
+
+    [Pure]
+    public static string SoundProfileOf(Guid storageKey) =>
+        Path.Combine(RenditionsOf(storageKey), SoundProfileFileName);
 
     [Pure]
     private static string ShardOf(Guid storageKey) => KeyOf(storageKey)[..ShardLength];

@@ -4,9 +4,9 @@ namespace Furria.MediaWorker.Renditions;
 
 public sealed record RenderedMedia
 {
-    public required int Width { get; init; }
+    public int? Width { get; init; }
 
-    public required int Height { get; init; }
+    public int? Height { get; init; }
 
     public double? DurationSeconds { get; init; }
 
@@ -15,4 +15,6 @@ public sealed record RenderedMedia
     public string? Camera { get; init; }
 
     public MediaCropDetails? AppliedCrop { get; init; }
+
+    public MediaAudioFactsDetails? Audio { get; init; }
 }

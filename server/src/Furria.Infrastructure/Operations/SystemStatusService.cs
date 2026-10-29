@@ -199,5 +199,6 @@ public sealed class SystemStatusService
             IsAlive = MediaWorkerLiveness.IsAlive(heartbeat.LastSeenAt, now),
             PhotoMediaItemId = heartbeat.PhotoMediaItemId,
             VideoMediaItemId = heartbeat.VideoMediaItemId,
+            AudioMediaItemId = heartbeat.AudioMediaItemId,
         };
 }

@@ -1630,6 +1630,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(255)")
                         .HasColumnName("original_file_name");
 
+                    b.Property<int?>("OwnerActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("owner_act_id");
+
                     b.Property<int?>("OwnerEventId")
                         .HasColumnType("integer")
                         .HasColumnName("owner_event_id");
@@ -1698,6 +1702,9 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("AlbumId")
                         .HasDatabaseName("ix_media_item_album_id");
 
+                    b.HasIndex("OwnerActId")
+                        .HasDatabaseName("ix_media_item_owner_act_id");
+
                     b.HasIndex("OwnerEventId")
                         .HasDatabaseName("ix_media_item_owner_event_id");
 
@@ -1726,7 +1733,13 @@ namespace Furria.Infrastructure.Migrations
 
                     b.ToTable("media_item", null, t =>
                         {
+                            t.HasCheckConstraint("ck_media_item_act_media", "owner_kind <> 'Act' OR kind IN ('Audio', 'Video')");
+
                             t.HasCheckConstraint("ck_media_item_album_owner", "album_id IS NULL OR owner_kind = 'Gallery'");
+
+                            t.HasCheckConstraint("ck_media_item_audio_facts", "(audio_sample_rate IS NULL AND audio_loudness_lufs IS NULL AND audio_true_peak_dbtp IS NULL AND audio_leading_silence_seconds IS NULL AND audio_first_beat_seconds IS NULL AND audio_tempo_bpm IS NULL)\nOR (kind = 'Audio' AND audio_sample_rate > 0 AND audio_loudness_lufs IS NOT NULL AND audio_true_peak_dbtp IS NOT NULL AND audio_leading_silence_seconds >= 0\n    AND (audio_first_beat_seconds IS NULL) = (audio_tempo_bpm IS NULL)\n    AND (audio_first_beat_seconds IS NULL OR audio_first_beat_seconds >= 0)\n    AND (audio_tempo_bpm IS NULL OR audio_tempo_bpm > 0))");
+
+                            t.HasCheckConstraint("ck_media_item_audio_of_act", "kind <> 'Audio' OR owner_kind = 'Act'");
 
                             t.HasCheckConstraint("ck_media_item_binned", "binned_at IS NULL OR album_id IS NOT NULL");
 
@@ -1734,11 +1747,11 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_media_item_caption", "caption IS NULL OR selection_position IS NOT NULL");
 
-                            t.HasCheckConstraint("ck_media_item_kind", "kind IN ('Photo', 'Video')");
+                            t.HasCheckConstraint("ck_media_item_kind", "kind IN ('Photo', 'Video', 'Audio')");
 
-                            t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL)\nOR (owner_kind = 'NewsPost' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_event_id IS NULL)\nOR (owner_kind = 'Event' AND owner_event_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL)\nOR (owner_kind IN ('Gallery', 'Website') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL)");
+                            t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL)\nOR (owner_kind = 'NewsPost' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL)\nOR (owner_kind = 'Event' AND owner_event_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_act_id IS NULL)\nOR (owner_kind = 'Act' AND owner_act_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL)\nOR (owner_kind IN ('Gallery', 'Website') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL)");
 
-                            t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery', 'NewsPost', 'Website', 'Event')");
+                            t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery', 'NewsPost', 'Website', 'Event', 'Act')");
 
                             t.HasCheckConstraint("ck_media_item_photo_only", "owner_kind NOT IN ('Website', 'Event') OR kind = 'Photo'");
 
@@ -3257,6 +3270,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("uuid")
                         .HasColumnName("instance_id");
 
+                    b.Property<int?>("AudioMediaItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("audio_media_item_id");
+
                     b.Property<string>("HardwareAcceleration")
                         .IsRequired()
                         .HasMaxLength(16)
@@ -3802,6 +3819,12 @@ namespace Furria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("fk_media_item_album_album_id");
 
+                    b.HasOne("Furria.Core.RunningOrders.Act", "OwnerAct")
+                        .WithMany()
+                        .HasForeignKey("OwnerActId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_media_item_act_owner_act_id");
+
                     b.HasOne("Furria.Core.Events.Event", "OwnerEvent")
                         .WithMany()
                         .HasForeignKey("OwnerEventId")
@@ -3831,6 +3854,45 @@ namespace Furria.Infrastructure.Migrations
                         .HasForeignKey("UploadedByPersonId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_media_item_person_uploaded_by_person_id");
+
+                    b.OwnsOne("Furria.Core.Media.MediaAudioFacts", "Audio", b1 =>
+                        {
+                            b1.Property<int>("MediaItemId")
+                                .HasColumnType("integer")
+                                .HasColumnName("id");
+
+                            b1.Property<double?>("FirstBeatSeconds")
+                                .HasColumnType("double precision")
+                                .HasColumnName("audio_first_beat_seconds");
+
+                            b1.Property<double>("LeadingSilenceSeconds")
+                                .HasColumnType("double precision")
+                                .HasColumnName("audio_leading_silence_seconds");
+
+                            b1.Property<double>("LoudnessLufs")
+                                .HasColumnType("double precision")
+                                .HasColumnName("audio_loudness_lufs");
+
+                            b1.Property<int>("SampleRate")
+                                .HasColumnType("integer")
+                                .HasColumnName("audio_sample_rate");
+
+                            b1.Property<double?>("TempoBpm")
+                                .HasColumnType("double precision")
+                                .HasColumnName("audio_tempo_bpm");
+
+                            b1.Property<double>("TruePeakDbtp")
+                                .HasColumnType("double precision")
+                                .HasColumnName("audio_true_peak_dbtp");
+
+                            b1.HasKey("MediaItemId");
+
+                            b1.ToTable("media_item");
+
+                            b1.WithOwner()
+                                .HasForeignKey("MediaItemId")
+                                .HasConstraintName("fk_media_item_media_item_id");
+                        });
 
                     b.OwnsOne("Furria.Core.Media.MediaCrop", "Crop", b1 =>
                         {
@@ -3865,7 +3927,11 @@ namespace Furria.Infrastructure.Migrations
 
                     b.Navigation("Album");
 
+                    b.Navigation("Audio");
+
                     b.Navigation("Crop");
+
+                    b.Navigation("OwnerAct");
 
                     b.Navigation("OwnerEvent");
 

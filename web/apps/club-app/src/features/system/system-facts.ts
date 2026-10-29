@@ -70,6 +70,7 @@ export const mediaTallyOf = (counts: MediaFacts['counts']): MediaTally => {
   const tally: MediaTally = {
     photo: { ready: 0, processing: 0, failed: 0 },
     video: { ready: 0, processing: 0, failed: 0 },
+    audio: { ready: 0, processing: 0, failed: 0 },
   };
 
   for (const entry of counts) {

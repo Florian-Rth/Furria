@@ -8,4 +8,5 @@ public enum MediaOwnerKind
     NewsPost = 4,
     Website = 5,
     Event = 6,
+    Act = 7,
 }

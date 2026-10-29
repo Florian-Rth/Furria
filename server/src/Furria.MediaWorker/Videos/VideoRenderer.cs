@@ -1,6 +1,7 @@
 using Furria.Core.Media;
 using Furria.MediaWorker.Photos;
 using Furria.MediaWorker.Renditions;
+using Furria.MediaWorker.Sound;
 using Microsoft.Extensions.Options;
 using NetVips;
 
@@ -8,26 +9,24 @@ namespace Furria.MediaWorker.Videos;
 
 public sealed class VideoRenderer
 {
-    private static readonly string[] ProbeArguments =
-    [
-        "-v",
-        "error",
-        "-print_format",
-        "json",
-        "-show_format",
-        "-show_streams",
-    ];
-
     private readonly MediaWorkerOptions _options;
+    private readonly SoundAnalyser _analyser;
 
-    public VideoRenderer(IOptions<MediaWorkerOptions> options)
+    public VideoRenderer(IOptions<MediaWorkerOptions> options, SoundAnalyser analyser)
     {
         _options = options.Value;
+        _analyser = analyser;
     }
 
-    public async Task<RenderedMedia> RenderAsync(RenditionFiles files, CancellationToken ct)
+    public async Task<RenderedMedia> RenderAsync(
+        RenditionFiles files,
+        bool keepsSoundProfile,
+        CancellationToken ct
+    )
     {
         var facts = await ProbeAsync(files.OriginalPath, ct);
+        if (keepsSoundProfile && facts.AudioCodec is not null)
+            await _analyser.KeepSoundtrackProfileAsync(files, ct);
         var video = files.ScratchFileFor(MediaRendition.Video, ".mp4");
         await MediaTool.RunAsync(
             _options.FfmpegPath,
@@ -55,7 +54,7 @@ public sealed class VideoRenderer
 
     public async Task<VideoFacts> ProbeAsync(string path, CancellationToken ct)
     {
-        var report = await MediaTool.RunAsync(_options.FfprobePath, [.. ProbeArguments, path], ct);
+        var report = await MediaTool.ProbeAsync(_options.FfprobePath, path, ct);
         return FfprobeReport.FactsOf(report)
             ?? throw new MediaRenderingException("The video has no picture stream");
     }

@@ -170,12 +170,12 @@ Goal: one appearance per act and calendar entry; planner and Leitstand step unch
 
 ### Phase 3 — Audio in the media store
 Goal: an act can own media; audio is a first-class media kind with analysis.
-- [ ] `MediaOwnerKind.Act` + `OwnerActId`; `MediaOwner.Accepts` becomes per owner kind (act: audio + video; photos later)
-- [ ] `MediaKind.Audio`: sniffing (MP3, WAV, AIFF, FLAC, M4A), limits, never public; access = cast + group admins (+ co-editors)
-- [ ] Worker audio lane: `Original`, `Normalised` (two-pass loudness), `Preview`, `Peaks` (JSON); facts: duration, loudness, true peak, leading silence, sample rate
-- [ ] Worker analysis: beat grid (first beat + tempo) and comparison profile per audio item; comparison profile of a video's soundtrack
-- [ ] Pure profile comparison (offset + confidence) in Core, tested on fixtures (same song, trimmed song, hall recording with noise)
-- [ ] Docs: media ADR addendum (owner kind act, audio)
+- [x] `MediaOwnerKind.Act` + `OwnerActId`; `MediaOwner.Accepts` becomes per owner kind (act: audio + video; photos later)
+- [x] `MediaKind.Audio`: sniffing (MP3, WAV, AIFF, FLAC, M4A), limits, never public; access = cast + group admins (+ co-editors) — uploads by the act's group admins (archived acts refuse); listening is granted by the signed URLs the studio endpoint issues (phase 5), co-editors join with phase 4/5
+- [x] Worker audio lane: `Original`, `Normalised` (two-pass loudness), `Preview`, `Peaks` (JSON); facts: duration, loudness, true peak, leading silence, sample rate
+- [x] Worker analysis: beat grid (first beat + tempo) and comparison profile per audio item; comparison profile of a video's soundtrack
+- [x] Pure profile comparison (offset + confidence) in Core, tested on fixtures (same song, trimmed song, hall recording with noise)
+- [x] Docs: media ADR addendum (owner kind act, audio)
 
 ### Phase 4 — Studio data model and our stage
 Goal: every studio entity exists with its invariants; our stage is configurable.

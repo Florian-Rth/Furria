@@ -5,6 +5,7 @@ using Furria.Infrastructure.Media;
 using Furria.MediaWorker.Heartbeat;
 using Furria.MediaWorker.Jobs;
 using Furria.MediaWorker.Photos;
+using Furria.MediaWorker.Sound;
 using Furria.MediaWorker.Videos;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -41,6 +42,8 @@ public static class MediaWorkerServiceCollectionExtensions
         services.AddScoped<MediaJobQueue>();
         services.AddSingleton<PhotoRenderer>();
         services.AddSingleton<VideoRenderer>();
+        services.AddSingleton<AudioRenderer>();
+        services.AddSingleton<SoundAnalyser>();
         services.AddSingleton<MediaJobRunner>();
         services.AddSingleton<MediaWorkerActivity>();
         services.AddScoped<MediaWorkerHeartbeats>();
@@ -56,6 +59,9 @@ public static class MediaWorkerServiceCollectionExtensions
         );
         services.AddSingleton<IHostedService>(provider =>
             ActivatorUtilities.CreateInstance<MediaWorkerLane>(provider, MediaKind.Video)
+        );
+        services.AddSingleton<IHostedService>(provider =>
+            ActivatorUtilities.CreateInstance<MediaWorkerLane>(provider, MediaKind.Audio)
         );
         return services;
     }
