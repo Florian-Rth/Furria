@@ -99,6 +99,9 @@ internal static class ClubSeedMaterializer
                 Phone = intent.Phone,
                 InstagramUrl = intent.InstagramUrl,
                 FacebookUrl = intent.FacebookUrl,
+                StageWidthMetres = intent.Stage?.WidthMetres,
+                StageDepthMetres = intent.Stage?.DepthMetres,
+                StageArtworkSvg = intent.Stage?.ArtworkSvg,
             }
         );
         await dbContext.SaveChangesAsync(ct);

@@ -15,6 +15,11 @@ public sealed class ClubRecord : ITimestamped
     public const int EmailLength = 256;
     public const int PhoneLength = 64;
     public const int LinkLength = 256;
+    public const int StageArtworkLength = 500_000;
+    public const int StageSidePrecision = 4;
+    public const int StageSideScale = 2;
+    public const decimal SmallestStageSideMetres = 2m;
+    public const decimal LargestStageSideMetres = 40m;
 
     public int Id { get; set; } = TheOnlyId;
 
@@ -41,6 +46,12 @@ public sealed class ClubRecord : ITimestamped
     public string? FacebookUrl { get; set; }
 
     public int AgeOfConsent { get; set; } = DefaultAgeOfConsent;
+
+    public decimal? StageWidthMetres { get; set; }
+
+    public decimal? StageDepthMetres { get; set; }
+
+    public string? StageArtworkSvg { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
 

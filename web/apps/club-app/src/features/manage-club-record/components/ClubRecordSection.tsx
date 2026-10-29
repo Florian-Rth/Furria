@@ -12,6 +12,7 @@ const EDIT_ROUTES = {
   identity: '/manage/club-record/identity',
   contact: '/manage/club-record/contact',
   access: '/manage/club-record/access',
+  stage: '/manage/club-record/stage',
 } as const satisfies Record<Section, string>;
 
 interface ClubRecordSectionProps extends PropsWithChildren {

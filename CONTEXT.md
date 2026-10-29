@@ -605,14 +605,16 @@ _UI copy_: Veranstaltungen
 _Avoid_: event hub, event admin, a management page for events
 
 **Club record**:
-The club's own facts about itself — there is exactly one, kept in three sections, each written on
+The club's own facts about itself — there is exactly one, kept in four sections, each written on
 its own: **name & founding** (official name as registered, short name, **founded year**),
 **address & contact** (address, email, phone, website and social links — what the imprint and
 every "reach the club" place show) and **access** (the **age of consent**, the age from which a
 person acts for herself on the platform — holds an account, sends a **membership application** —
-16 unless the club says otherwise; widened 2026-10-02, L4 shaping). Written in club management, read
-wherever the club describes itself (ruled 2026-09-25, accounts shaping; widened the same day).
-_UI copy_: Vereinsdaten; *Name & Gründung*; *Anschrift & Kontakt*; *Zugang zur App*;
+16 unless the club says otherwise; widened 2026-10-02, L4 shaping) and **our stage** (width × depth
+in metres and an optional stage drawing, the backdrop every formation is planned on; RFC 0001
+phase 4). Written in club management, read wherever the club describes itself (ruled 2026-09-25,
+accounts shaping; widened the same day).
+_UI copy_: Vereinsdaten; *Name & Gründung*; *Anschrift & Kontakt*; *Zugang zur App*; *Bühne*;
 *Vereinsname*; *Kurzname*; *Gründungsjahr*; *Mindestalter für App und Online-Antrag*
 _Avoid_: settings (it is the club's record, not an app's configuration)
 
@@ -841,6 +843,38 @@ it like the group admin does, but never the act's cast or group. Only the cast a
 admins see an act's training material at all (ruled 2026-10-29, group-year grilling).
 _UI copy_: — (open)
 _Avoid_: choreographer, owner, moderator
+
+**Working mix**, **final file** (act):
+A dance act's music. The **working mix** is the group's songs in order, each cut to a start and an
+end point, played as one gapless timeline. The **final file** is the one file the group uploads
+for the stage — versioned; adopting it moves everything that hangs on the music onto it once.
+_UI copy_: Musik; *Endfassung*
+_Avoid_: playlist, track list, render
+
+**Anchor** (act music):
+Where something sits in the music: a song (or the final file) and a moment in it — never a moment
+of the mix. Re-cutting a song therefore moves what hangs on it along; whatever its cut leaves out
+is flagged, never moved or deleted (RFC 0001 phase 4).
+_UI copy_: — (invisible)
+_Avoid_: timestamp, mix position
+
+**Step**, **part** (act):
+The manual of a dance laid over its music. **Steps** tile the music without gaps — a step ends
+where the next begins, the first reaches back to the start, and a new mark splits the step it
+falls in. **Parts** group consecutive steps; a part always begins on a step, the parts tile the
+steps the same way, and a part may name its main trainer video.
+_UI copy_: Schritt, Teil
+_Avoid_: section, scene, figure, sequence
+
+**Spot**, **choreography** (act):
+A **spot** is a numbered place in the formation (*Platz 1…n*), held by at most one person — at
+most one spot per person; a stand-in takes the spot and the choreography stays. The
+**choreography** is where every spot stands and moves: keyframes per spot on the music, in metres
+from the centre of the stage front, so a later change of the stage size never distorts it. It is
+saved whole with a version (a stale save is refused). An **appearance** may hold its own copy and
+its own spot holders; everything else it inherits from the act.
+_UI copy_: Platz, Aufstellung, Bewegung
+_Avoid_: position (for the spot), dancer slot, formation (for the whole document)
 
 **Running order**:
 The order of acts within a single event — a per-event ordering the club app manages. Not a list

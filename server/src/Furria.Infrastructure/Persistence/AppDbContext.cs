@@ -8,6 +8,7 @@ using Furria.Core.MembershipApplications;
 using Furria.Core.News;
 using Furria.Core.Roles;
 using Furria.Core.RunningOrders;
+using Furria.Core.Studio;
 using Furria.Core.Website;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Logging;
@@ -129,6 +130,26 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<RunningOrderSuspendedWish> RunningOrderSuspendedWishes =>
         Set<RunningOrderSuspendedWish>();
+
+    public DbSet<ActSong> ActSongs => Set<ActSong>();
+
+    public DbSet<ActFinalTrack> ActFinalTracks => Set<ActFinalTrack>();
+
+    public DbSet<ActFinalTrackAlignment> ActFinalTrackAlignments => Set<ActFinalTrackAlignment>();
+
+    public DbSet<ActStep> ActSteps => Set<ActStep>();
+
+    public DbSet<ActPart> ActParts => Set<ActPart>();
+
+    public DbSet<ActVideo> ActVideos => Set<ActVideo>();
+
+    public DbSet<Spot> Spots => Set<Spot>();
+
+    public DbSet<AppearanceSpot> AppearanceSpots => Set<AppearanceSpot>();
+
+    public DbSet<Choreography> Choreographies => Set<Choreography>();
+
+    public DbSet<ActCoEditor> ActCoEditors => Set<ActCoEditor>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }

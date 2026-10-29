@@ -21,6 +21,10 @@ public sealed class ClubRecordConfiguration : IEntityTypeConfiguration<ClubRecor
                     "ck_club_record_age_of_consent",
                     $"age_of_consent BETWEEN {ClubRecord.YoungestAgeOfConsent} AND {ClubRecord.OldestAgeOfConsent}"
                 );
+                table.HasCheckConstraint(
+                    "ck_club_record_stage_size",
+                    $"(stage_width_metres IS NULL AND stage_depth_metres IS NULL AND stage_artwork_svg IS NULL) OR (stage_width_metres IS NOT NULL AND stage_depth_metres IS NOT NULL AND stage_width_metres BETWEEN {ClubRecord.SmallestStageSideMetres} AND {ClubRecord.LargestStageSideMetres} AND stage_depth_metres BETWEEN {ClubRecord.SmallestStageSideMetres} AND {ClubRecord.LargestStageSideMetres})"
+                );
             }
         );
         builder.HasKey(record => record.Id);
@@ -36,6 +40,15 @@ public sealed class ClubRecordConfiguration : IEntityTypeConfiguration<ClubRecor
         builder.Property(record => record.WebsiteUrl).HasMaxLength(ClubRecord.LinkLength);
         builder.Property(record => record.InstagramUrl).HasMaxLength(ClubRecord.LinkLength);
         builder.Property(record => record.FacebookUrl).HasMaxLength(ClubRecord.LinkLength);
+        builder
+            .Property(record => record.StageWidthMetres)
+            .HasPrecision(ClubRecord.StageSidePrecision, ClubRecord.StageSideScale);
+        builder
+            .Property(record => record.StageDepthMetres)
+            .HasPrecision(ClubRecord.StageSidePrecision, ClubRecord.StageSideScale);
+        builder
+            .Property(record => record.StageArtworkSvg)
+            .HasMaxLength(ClubRecord.StageArtworkLength);
 
         builder.Property(record => record.CreatedAt).HasDefaultValueSql("now()");
         builder.Property(record => record.UpdatedAt).HasDefaultValueSql("now()");

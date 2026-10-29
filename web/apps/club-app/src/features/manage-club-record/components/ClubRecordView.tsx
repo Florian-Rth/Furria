@@ -5,6 +5,7 @@ import type { ClubRecord } from '../schemas';
 import { ClubAccessPanel } from './ClubAccessPanel';
 import { ClubContactPanel } from './ClubContactPanel';
 import { ClubIdentityPanel } from './ClubIdentityPanel';
+import { ClubStagePanel } from './ClubStagePanel';
 
 interface ClubRecordViewProps {
   record: ClubRecord;
@@ -18,6 +19,7 @@ export const ClubRecordView: FC<ClubRecordViewProps> = ({ record }) => {
       <ClubIdentityPanel record={record} highlightedKey={highlightedKey} />
       <ClubContactPanel record={record} highlightedKey={highlightedKey} />
       <ClubAccessPanel record={record} highlightedKey={highlightedKey} />
+      <ClubStagePanel record={record} highlightedKey={highlightedKey} />
     </KkPanelStack>
   );
 };

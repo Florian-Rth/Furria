@@ -4,6 +4,8 @@ import {
   toClubContactForm,
   toClubIdentity,
   toClubIdentityForm,
+  toClubStage,
+  toClubStageForm,
 } from './club-record-labels';
 import { ClubIdentityFormSchema, isWebLinkOrEmpty } from './schemas';
 
@@ -20,6 +22,7 @@ const emptyRecord = {
   instagramUrl: null,
   facebookUrl: null,
   ageOfConsent: 16,
+  stage: null,
 };
 
 describe('toClubIdentityForm', () => {
@@ -87,5 +90,50 @@ describe('isWebLinkOrEmpty', () => {
     { value: 'ftp://furria.de', expected: false },
   ])('judges "$value" as $expected', ({ value, expected }) => {
     expect(isWebLinkOrEmpty(value)).toBe(expected);
+  });
+});
+
+describe('toClubStageForm', () => {
+  it.each([
+    { stage: null, expected: { widthMetres: '', depthMetres: '', artworkSvg: null } },
+    {
+      stage: { widthMetres: 12.5, depthMetres: 8, artworkSvg: '<svg/>' },
+      expected: { widthMetres: '12,5', depthMetres: '8', artworkSvg: '<svg/>' },
+    },
+    {
+      stage: { widthMetres: 10.25, depthMetres: 6.4, artworkSvg: null },
+      expected: { widthMetres: '10,25', depthMetres: '6,4', artworkSvg: null },
+    },
+  ])('turns stage $stage into $expected', ({ stage, expected }) => {
+    expect(toClubStageForm({ ...emptyRecord, stage })).toEqual(expected);
+  });
+});
+
+describe('toClubStage', () => {
+  it.each([
+    {
+      form: { widthMetres: '12,5', depthMetres: '8', artworkSvg: '<svg/>' },
+      expected: { widthMetres: 12.5, depthMetres: 8, artworkSvg: '<svg/>' },
+    },
+    {
+      form: { widthMetres: '10.25', depthMetres: ' 6,40 ', artworkSvg: null },
+      expected: { widthMetres: 10.25, depthMetres: 6.4, artworkSvg: null },
+    },
+    { form: { widthMetres: '', depthMetres: '8', artworkSvg: null }, expected: null },
+    { form: { widthMetres: '1,5', depthMetres: '8', artworkSvg: null }, expected: null },
+    { form: { widthMetres: '12', depthMetres: '41', artworkSvg: null }, expected: null },
+    { form: { widthMetres: '12,345', depthMetres: '8', artworkSvg: null }, expected: null },
+  ])('turns form $form into $expected', ({ form, expected }) => {
+    expect(toClubStage(form)).toEqual(expected);
+  });
+
+  it.each([
+    { widthMetres: 12.5, depthMetres: 8 },
+    { widthMetres: 10.25, depthMetres: 6.4 },
+    { widthMetres: 2, depthMetres: 40 },
+  ])('keeps $widthMetres × $depthMetres through the form', (size) => {
+    const stage = { ...size, artworkSvg: null };
+
+    expect(toClubStage(toClubStageForm({ ...emptyRecord, stage }))).toEqual(stage);
   });
 });

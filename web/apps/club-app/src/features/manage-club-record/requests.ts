@@ -1,6 +1,6 @@
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
-import type { ClubContact, ClubIdentity, ClubRecord } from './schemas';
+import type { ClubContact, ClubIdentity, ClubRecord, ClubStage } from './schemas';
 import { ClubRecordSchema } from './schemas';
 
 const CLUB_RECORD_PATH = '/api/manage/club-record';
@@ -47,6 +47,18 @@ export const requestClubAccessUpdate = (ageOfConsent: number, accessToken: strin
   apiFetch(`${CLUB_RECORD_PATH}/access`, {
     method: 'PUT',
     body: { ageOfConsent },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestClubStageUpdate = (stage: ClubStage, accessToken: string): Promise<void> =>
+  apiFetch(`${CLUB_RECORD_PATH}/stage`, {
+    method: 'PUT',
+    body: {
+      widthMetres: stage.widthMetres,
+      depthMetres: stage.depthMetres,
+      artworkSvg: stage.artworkSvg,
+    },
     schema: NoContentSchema,
     accessToken,
   });

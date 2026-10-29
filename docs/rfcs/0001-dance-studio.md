@@ -196,10 +196,32 @@ Goal: an act can own media; audio is a first-class media kind with analysis.
 
 ### Phase 4 — Studio data model and our stage
 Goal: every studio entity exists with its invariants; our stage is configurable.
-- [ ] Entities + migration: `ActSong`, `ActFinalTrack` (+ alignment), `ActStep`, `ActPart`, `Spot`, `AppearanceSpot`, `Choreography` (`jsonb`), `ActVideo`, `ActCoEditor`
-- [ ] Core rules: anchors; gapless steps (marks split a step); part borders on step borders; choreography document validation (known spots, keyframes inside the stage, monotonic per spot); one person per spot
-- [ ] Club record: stage width × depth + stage SVG (sanitised; aspect mismatch warning)
-- [ ] Club management: stage settings (size + SVG upload with preview inside the configured stage area)
+- [x] Entities + migration: `ActSong`, `ActFinalTrack` (+ alignment), `ActStep`, `ActPart`, `Spot`, `AppearanceSpot`, `Choreography` (`jsonb`), `ActVideo`, `ActCoEditor`
+- [x] Core rules: anchors; gapless steps (marks split a step); part borders on step borders; choreography document validation (known spots, keyframes inside the stage, monotonic per spot); one person per spot
+- [x] Club record: stage width × depth + stage SVG (sanitised; aspect mismatch warning)
+- [x] Club management: stage settings (size + SVG upload with preview inside the configured stage area)
+
+Done 2026-10-29. Decisions taken in the phase:
+- No studio endpoints yet: every entity, check constraint and index exists, but endpoints come with
+  the phase whose screen calls them (backend rule: no endpoint without a caller).
+- An **anchor** is stored as (source media item, seconds) columns; `ActMusic` places it on the
+  working mix (or the adopted final file) as *on the timeline*, *cut away* or *music missing*.
+  Nothing about being cut away or missing is stored; it is derived on read.
+- Steps: the first step reaches back to the start of the music; a first mark set later also opens
+  a step at the start. Parts tile the steps the same way. Steps and parts whose music is gone are
+  returned *adrift*, never deleted.
+- Choreography: keyframes are metres right of centre / back from the front edge, with an optional
+  bend point, easing (camelCase names in the document) and facing 0–359°. The check reports
+  problems (unknown spot, spot twice, unknown music, off the stage, against the music, facing). It
+  orders keyframes only where their music is still on the timeline. `Version` is the concurrency
+  token; the write path in phase 11 raises it.
+- Our stage: 2–40 m per side to the centimetre, all or nothing on the club record. Setting it
+  again without a drawing removes the drawing; there is no "remove stage". The aspect-mismatch
+  warning is a client rule (the drawing is still saved, stretched to fill). The drawing is
+  rendered as an image, never inline.
+- Carried forward: the services of later phases must keep cross-act references consistent (a
+  part's first step and main video, an appearance spot's spot, an evening choreography's act),
+  must keep song positions unique when reordering, and must raise the choreography version.
 
 ### Phase 5 — Act page, settings, co-editors, entry points
 Goal: `/acts/$actId` exists with access rules; members and editors can reach it.

@@ -440,6 +440,21 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(40)")
                         .HasColumnName("short_name");
 
+                    b.Property<string>("StageArtworkSvg")
+                        .HasMaxLength(500000)
+                        .HasColumnType("character varying(500000)")
+                        .HasColumnName("stage_artwork_svg");
+
+                    b.Property<decimal?>("StageDepthMetres")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("numeric(4,2)")
+                        .HasColumnName("stage_depth_metres");
+
+                    b.Property<decimal?>("StageWidthMetres")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("numeric(4,2)")
+                        .HasColumnName("stage_width_metres");
+
                     b.Property<string>("Street")
                         .HasMaxLength(120)
                         .HasColumnType("character varying(120)")
@@ -471,6 +486,8 @@ namespace Furria.Infrastructure.Migrations
                             t.HasCheckConstraint("ck_club_record_founded_year", "founded_year IS NULL OR founded_year >= 1800");
 
                             t.HasCheckConstraint("ck_club_record_single", "id = 1");
+
+                            t.HasCheckConstraint("ck_club_record_stage_size", "(stage_width_metres IS NULL AND stage_depth_metres IS NULL AND stage_artwork_svg IS NULL) OR (stage_width_metres IS NOT NULL AND stage_depth_metres IS NOT NULL AND stage_width_metres BETWEEN 2 AND 40 AND stage_depth_metres BETWEEN 2 AND 40)");
                         });
                 });
 
@@ -2649,6 +2666,458 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("running_order_suspended_wish", (string)null);
                 });
 
+            modelBuilder.Entity("Furria.Core.Studio.ActCoEditor", b =>
+                {
+                    b.Property<int>("ActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("act_id");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateTimeOffset>("GrantedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("granted_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int?>("GrantedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("granted_by_person_id");
+
+                    b.HasKey("ActId", "PersonId")
+                        .HasName("pk_act_co_editor");
+
+                    b.HasIndex("GrantedByPersonId")
+                        .HasDatabaseName("ix_act_co_editor_granted_by_person_id");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_act_co_editor_person_id");
+
+                    b.ToTable("act_co_editor", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.ActFinalTrack", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("act_id");
+
+                    b.Property<DateTimeOffset?>("AdoptedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("adopted_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<double?>("FirstBeatSeconds")
+                        .HasColumnType("double precision")
+                        .HasColumnName("first_beat_seconds");
+
+                    b.Property<int>("MediaItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("media_item_id");
+
+                    b.Property<double?>("TempoBpm")
+                        .HasColumnType("double precision")
+                        .HasColumnName("tempo_bpm");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_act_final_track");
+
+                    b.HasIndex("MediaItemId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_act_final_track_media_item_id");
+
+                    b.HasIndex("ActId", "Version")
+                        .IsUnique()
+                        .HasDatabaseName("ix_act_final_track_act_id_version");
+
+                    b.ToTable("act_final_track", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_act_final_track_beat_grid", "(first_beat_seconds IS NULL OR first_beat_seconds >= 0) AND (tempo_bpm IS NULL OR tempo_bpm > 0)");
+
+                            t.HasCheckConstraint("ck_act_final_track_version", "version >= 1");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.ActFinalTrackAlignment", b =>
+                {
+                    b.Property<int>("FinalTrackId")
+                        .HasColumnType("integer")
+                        .HasColumnName("final_track_id");
+
+                    b.Property<int>("SourceMediaItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("source_media_item_id");
+
+                    b.Property<double>("OffsetSeconds")
+                        .HasColumnType("double precision")
+                        .HasColumnName("offset_seconds");
+
+                    b.HasKey("FinalTrackId", "SourceMediaItemId")
+                        .HasName("pk_act_final_track_alignment");
+
+                    b.HasIndex("SourceMediaItemId")
+                        .HasDatabaseName("ix_act_final_track_alignment_source_media_item_id");
+
+                    b.ToTable("act_final_track_alignment", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.ActPart", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("act_id");
+
+                    b.Property<int>("FirstStepId")
+                        .HasColumnType("integer")
+                        .HasColumnName("first_step_id");
+
+                    b.Property<int?>("MainVideoId")
+                        .HasColumnType("integer")
+                        .HasColumnName("main_video_id");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("name");
+
+                    b.HasKey("Id")
+                        .HasName("pk_act_part");
+
+                    b.HasIndex("ActId")
+                        .HasDatabaseName("ix_act_part_act_id");
+
+                    b.HasIndex("FirstStepId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_act_part_first_step_id");
+
+                    b.HasIndex("MainVideoId")
+                        .HasDatabaseName("ix_act_part_main_video_id");
+
+                    b.ToTable("act_part", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.ActSong", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("act_id");
+
+                    b.Property<double?>("EndSeconds")
+                        .HasColumnType("double precision")
+                        .HasColumnName("end_seconds");
+
+                    b.Property<double?>("FirstBeatSeconds")
+                        .HasColumnType("double precision")
+                        .HasColumnName("first_beat_seconds");
+
+                    b.Property<int>("MediaItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("media_item_id");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<double>("StartSeconds")
+                        .HasColumnType("double precision")
+                        .HasColumnName("start_seconds");
+
+                    b.Property<double?>("TempoBpm")
+                        .HasColumnType("double precision")
+                        .HasColumnName("tempo_bpm");
+
+                    b.HasKey("Id")
+                        .HasName("pk_act_song");
+
+                    b.HasIndex("ActId")
+                        .HasDatabaseName("ix_act_song_act_id");
+
+                    b.HasIndex("MediaItemId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_act_song_media_item_id");
+
+                    b.ToTable("act_song", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_act_song_beat_grid", "(first_beat_seconds IS NULL OR first_beat_seconds >= 0) AND (tempo_bpm IS NULL OR tempo_bpm > 0)");
+
+                            t.HasCheckConstraint("ck_act_song_cut", "start_seconds >= 0 AND (end_seconds IS NULL OR end_seconds > start_seconds)");
+
+                            t.HasCheckConstraint("ck_act_song_position", "position >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.ActStep", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("act_id");
+
+                    b.Property<string>("Description")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("name");
+
+                    b.Property<double>("StartSeconds")
+                        .HasColumnType("double precision")
+                        .HasColumnName("start_seconds");
+
+                    b.Property<int>("StartSourceMediaItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("start_source_media_item_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_act_step");
+
+                    b.HasIndex("ActId")
+                        .HasDatabaseName("ix_act_step_act_id");
+
+                    b.HasIndex("StartSourceMediaItemId")
+                        .HasDatabaseName("ix_act_step_start_source_media_item_id");
+
+                    b.ToTable("act_step", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_act_step_start", "start_seconds >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.ActVideo", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("act_id");
+
+                    b.Property<int>("MediaItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("media_item_id");
+
+                    b.Property<string>("Name")
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("name");
+
+                    b.Property<DateTimeOffset?>("OutdatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("outdated_at");
+
+                    b.Property<double?>("StartSeconds")
+                        .HasColumnType("double precision")
+                        .HasColumnName("start_seconds");
+
+                    b.Property<int?>("StartSourceMediaItemId")
+                        .HasColumnType("integer")
+                        .HasColumnName("start_source_media_item_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_act_video");
+
+                    b.HasIndex("ActId")
+                        .HasDatabaseName("ix_act_video_act_id");
+
+                    b.HasIndex("MediaItemId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_act_video_media_item_id");
+
+                    b.HasIndex("StartSourceMediaItemId")
+                        .HasDatabaseName("ix_act_video_start_source_media_item_id");
+
+                    b.ToTable("act_video", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_act_video_start", "(start_source_media_item_id IS NULL) = (start_seconds IS NULL) AND (start_seconds IS NULL OR start_seconds >= 0)");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.AppearanceSpot", b =>
+                {
+                    b.Property<int>("AppearanceId")
+                        .HasColumnType("integer")
+                        .HasColumnName("appearance_id");
+
+                    b.Property<int>("SpotId")
+                        .HasColumnType("integer")
+                        .HasColumnName("spot_id");
+
+                    b.Property<int?>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.HasKey("AppearanceId", "SpotId")
+                        .HasName("pk_appearance_spot");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_appearance_spot_person_id");
+
+                    b.HasIndex("SpotId")
+                        .HasDatabaseName("ix_appearance_spot_spot_id");
+
+                    b.ToTable("appearance_spot", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.Choreography", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("act_id");
+
+                    b.Property<int?>("AppearanceId")
+                        .HasColumnType("integer")
+                        .HasColumnName("appearance_id");
+
+                    b.Property<int?>("CopiedFromVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("copied_from_version");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Document")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("document");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_choreography");
+
+                    b.HasIndex("ActId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_choreography_act_id_session")
+                        .HasFilter("appearance_id IS NULL");
+
+                    b.HasIndex("AppearanceId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_choreography_appearance_id");
+
+                    b.ToTable("choreography", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_choreography_copied_from_version", "copied_from_version IS NULL OR appearance_id IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_choreography_document", "jsonb_typeof(document) = 'object' AND jsonb_typeof(document -> 'tracks') = 'array'");
+
+                            t.HasCheckConstraint("ck_choreography_version", "version >= 1");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.Spot", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("act_id");
+
+                    b.Property<int>("Number")
+                        .HasColumnType("integer")
+                        .HasColumnName("number");
+
+                    b.Property<int?>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_spot");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_spot_person_id");
+
+                    b.HasIndex("ActId", "Number")
+                        .IsUnique()
+                        .HasDatabaseName("ix_spot_act_id_number");
+
+                    b.HasIndex("ActId", "PersonId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_spot_act_id_person_id")
+                        .HasFilter("person_id IS NOT NULL");
+
+                    b.ToTable("spot", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_spot_number", "number >= 1");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.Website.WebsitePicture", b =>
                 {
                     b.Property<string>("SlotKey")
@@ -4288,6 +4757,246 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("RunningOrder");
                 });
 
+            modelBuilder.Entity("Furria.Core.Studio.ActCoEditor", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
+                        .WithMany()
+                        .HasForeignKey("ActId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_co_editor_act_act_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "GrantedBy")
+                        .WithMany()
+                        .HasForeignKey("GrantedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_act_co_editor_person_granted_by_person_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_co_editor_person_person_id");
+
+                    b.Navigation("Act");
+
+                    b.Navigation("GrantedBy");
+
+                    b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.ActFinalTrack", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
+                        .WithMany()
+                        .HasForeignKey("ActId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_final_track_act_act_id");
+
+                    b.HasOne("Furria.Core.Media.MediaItem", "MediaItem")
+                        .WithMany()
+                        .HasForeignKey("MediaItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_final_track_media_item_media_item_id");
+
+                    b.Navigation("Act");
+
+                    b.Navigation("MediaItem");
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.ActFinalTrackAlignment", b =>
+                {
+                    b.HasOne("Furria.Core.Studio.ActFinalTrack", "FinalTrack")
+                        .WithMany("Alignments")
+                        .HasForeignKey("FinalTrackId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_final_track_alignment_act_final_track_final_track_id");
+
+                    b.HasOne("Furria.Core.Media.MediaItem", "SourceMediaItem")
+                        .WithMany()
+                        .HasForeignKey("SourceMediaItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_final_track_alignment_media_item_source_media_item_id");
+
+                    b.Navigation("FinalTrack");
+
+                    b.Navigation("SourceMediaItem");
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.ActPart", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
+                        .WithMany()
+                        .HasForeignKey("ActId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_part_act_act_id");
+
+                    b.HasOne("Furria.Core.Studio.ActStep", "FirstStep")
+                        .WithMany()
+                        .HasForeignKey("FirstStepId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_part_act_step_first_step_id");
+
+                    b.HasOne("Furria.Core.Studio.ActVideo", "MainVideo")
+                        .WithMany()
+                        .HasForeignKey("MainVideoId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_act_part_act_video_main_video_id");
+
+                    b.Navigation("Act");
+
+                    b.Navigation("FirstStep");
+
+                    b.Navigation("MainVideo");
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.ActSong", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
+                        .WithMany()
+                        .HasForeignKey("ActId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_song_act_act_id");
+
+                    b.HasOne("Furria.Core.Media.MediaItem", "MediaItem")
+                        .WithMany()
+                        .HasForeignKey("MediaItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_song_media_item_media_item_id");
+
+                    b.Navigation("Act");
+
+                    b.Navigation("MediaItem");
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.ActStep", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
+                        .WithMany()
+                        .HasForeignKey("ActId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_step_act_act_id");
+
+                    b.HasOne("Furria.Core.Media.MediaItem", "StartSource")
+                        .WithMany()
+                        .HasForeignKey("StartSourceMediaItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_step_media_item_start_source_media_item_id");
+
+                    b.Navigation("Act");
+
+                    b.Navigation("StartSource");
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.ActVideo", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
+                        .WithMany()
+                        .HasForeignKey("ActId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_video_act_act_id");
+
+                    b.HasOne("Furria.Core.Media.MediaItem", "MediaItem")
+                        .WithMany()
+                        .HasForeignKey("MediaItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_video_media_item_media_item_id");
+
+                    b.HasOne("Furria.Core.Media.MediaItem", "StartSource")
+                        .WithMany()
+                        .HasForeignKey("StartSourceMediaItemId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .HasConstraintName("fk_act_video_media_item_start_source_media_item_id");
+
+                    b.Navigation("Act");
+
+                    b.Navigation("MediaItem");
+
+                    b.Navigation("StartSource");
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.AppearanceSpot", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Appearance", "Appearance")
+                        .WithMany()
+                        .HasForeignKey("AppearanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_appearance_spot_appearance_appearance_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_appearance_spot_person_person_id");
+
+                    b.HasOne("Furria.Core.Studio.Spot", "Spot")
+                        .WithMany()
+                        .HasForeignKey("SpotId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_appearance_spot_spot_spot_id");
+
+                    b.Navigation("Appearance");
+
+                    b.Navigation("Person");
+
+                    b.Navigation("Spot");
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.Choreography", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
+                        .WithMany()
+                        .HasForeignKey("ActId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_choreography_act_act_id");
+
+                    b.HasOne("Furria.Core.RunningOrders.Appearance", "Appearance")
+                        .WithMany()
+                        .HasForeignKey("AppearanceId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_choreography_appearance_appearance_id");
+
+                    b.Navigation("Act");
+
+                    b.Navigation("Appearance");
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.Spot", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
+                        .WithMany()
+                        .HasForeignKey("ActId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_spot_act_act_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_spot_person_person_id");
+
+                    b.Navigation("Act");
+
+                    b.Navigation("Person");
+                });
+
             modelBuilder.Entity("Furria.Core.Website.WebsitePicture", b =>
                 {
                     b.HasOne("Furria.Core.Media.MediaItem", "MediaItem")
@@ -4561,6 +5270,11 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Rules");
 
                     b.Navigation("SuspendedWishes");
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.ActFinalTrack", b =>
+                {
+                    b.Navigation("Alignments");
                 });
 #pragma warning restore 612, 618
         }
