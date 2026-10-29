@@ -7,6 +7,7 @@ import { ACT_DENIED_MESSAGE } from '../act-page-copy';
 import { useActPage } from '../hooks/use-act-page';
 import type { ActPageSearch } from '../schemas';
 import { ActPageBody } from './ActPageBody';
+import { ActPracticeBody } from './ActPracticeBody';
 
 interface ActPageProps {
   actId: string;
@@ -22,6 +23,19 @@ export const ActPage: FC<ActPageProps> = ({ actId, search }) => {
   if (isForbiddenError(page.query.error)) {
     return (
       <AccessDeniedScreen title={page.title} origin={page.origin} message={ACT_DENIED_MESSAGE} />
+    );
+  }
+
+  if (page.mode === 'practice') {
+    return (
+      <KkScreen
+        kind="fullscreen"
+        title={page.title}
+        origin={page.origin}
+        actions={page.practiceActions}
+      >
+        <ActPracticeBody page={page} />
+      </KkScreen>
     );
   }
 

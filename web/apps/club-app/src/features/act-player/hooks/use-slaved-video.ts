@@ -60,6 +60,7 @@ export const useSlavedVideo = (
 
     return () => {
       cancelAnimationFrame(frame);
+      elementRef.current?.pause();
     };
   }, [player, video, elementRef]);
 };

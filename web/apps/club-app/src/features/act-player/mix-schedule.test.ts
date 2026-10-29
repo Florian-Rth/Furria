@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { MixRun } from './mix-schedule';
-import { mixPiecesOf, playRangeOf, positionInRuns } from './mix-schedule';
+import { mixPiecesOf, pitchCorrectionOf, playRangeOf, positionInRuns } from './mix-schedule';
 import type { MusicSegment } from './music-timeline';
 
 const segment = (patch: Partial<MusicSegment>): MusicSegment => ({
@@ -59,5 +59,15 @@ describe('playRangeOf', () => {
     [20, { start: 8, end: 16 }, { start: 8, end: 16 }],
   ])('plays from %s with loop %o through %o', (from, loop, expected) => {
     expect(playRangeOf(from, loop, 30)).toEqual(expected);
+  });
+});
+
+describe('pitchCorrectionOf', () => {
+  it.each([
+    [1, 0],
+    [0.5, 12],
+    [Math.SQRT1_2, 6],
+  ])('lifts music slowed to %s by %s semitones', (rate, semitones) => {
+    expect(pitchCorrectionOf(rate)).toBeCloseTo(semitones, 6);
   });
 });

@@ -19,6 +19,7 @@ export const ACT_FACTS_LABEL = 'Eckdaten des Auftritts';
 export const ACT_DENIED_MESSAGE =
   'Diesen Auftritt sehen seine Besetzung, die Gruppenleitung und die Ablaufplanung.';
 export const SETTINGS_LABEL = 'Bearbeiten';
+export const DETAILS_LABEL = 'Über den Auftritt';
 export const SETTINGS_TITLE = 'Auftritt bearbeiten';
 export const STUDIO_TITLE = 'Zum Üben';
 export const STUDIO_FACTS_LABEL = 'Was es zum Üben gibt';

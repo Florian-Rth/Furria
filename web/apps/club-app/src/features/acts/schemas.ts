@@ -41,6 +41,7 @@ export const ActPageSearchSchema = z.object({
   person: z.coerce.number().int().positive().optional().catch(undefined),
   session: z.coerce.number().int().positive().optional().catch(undefined),
   settings: z.boolean().optional().catch(undefined),
+  view: z.enum(['details']).optional().catch(undefined),
 });
 export type ActPageSearch = z.infer<typeof ActPageSearchSchema>;
 

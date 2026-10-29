@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import type { CastPerson } from '@/features/running-order/schemas';
-import { canChangeCoEditors, coEditorCandidatesOf, studioOverviewOf } from './act-studio';
+import {
+  actPageModeOf,
+  canChangeCoEditors,
+  coEditorCandidatesOf,
+  studioOverviewOf,
+} from './act-studio';
 import type { CoEditor, Studio } from './schemas';
 
 const urls = { normalised: '/n', preview: '/p', peaks: '/k' };
@@ -146,5 +151,33 @@ describe('canChangeCoEditors', () => {
     [true, false, true, false],
   ])('grant %s, closed %s, archived %s → %s', (canGrant, closed, archived, expected) => {
     expect(canChangeCoEditors(canGrant, { closed, archived })).toBe(expected);
+  });
+});
+
+describe('actPageModeOf', () => {
+  const playable = studio({
+    songs: [song(1)],
+    music: { lengthSeconds: 60, source: 'workingMix' },
+  });
+  const processing = studio({
+    songs: [{ ...song(1), state: 'processing' as const }],
+    music: { lengthSeconds: 60, source: 'workingMix' },
+  });
+
+  it.each([
+    ['practises a studio with music that plays', playable, {}, 'practice'],
+    ['shows the details when the viewer sees no studio', null, {}, 'details'],
+    ['shows the details while no music is ready', processing, {}, 'details'],
+    ['shows the details when asked for them', playable, { view: 'details' as const }, 'details'],
+    ['shows the details while the settings are open', playable, { settings: true }, 'details'],
+    ['expects practice while the studio loads', undefined, {}, 'practice'],
+    [
+      'expects the details while loading when asked',
+      undefined,
+      { view: 'details' as const },
+      'details',
+    ],
+  ])('%s', (_case, shown, search, expected) => {
+    expect(actPageModeOf(shown, search)).toBe(expected);
   });
 });

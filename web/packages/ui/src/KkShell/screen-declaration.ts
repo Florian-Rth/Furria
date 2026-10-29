@@ -184,7 +184,7 @@ interface KkFullscreenScreen extends KkScreenShared {
   section?: never;
   origin: KkScreenOrigin;
   search?: never;
-  actions?: never;
+  actions?: readonly [KkQuietScreenAction];
   tools?: never;
   action?: KkScreenActionBar;
   index?: never;

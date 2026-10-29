@@ -1,6 +1,7 @@
 import type { MusicSegment, TimelineRange } from './music-timeline';
 
 const MIN_PIECE_SECONDS = 0.001;
+const SEMITONES_PER_OCTAVE = 12;
 
 export interface MixPiece {
   mediaItemId: number;
@@ -64,3 +65,6 @@ export const playRangeOf = (
 
   return { start: insideLoop ? from : loop.start, end: loop.end };
 };
+
+export const pitchCorrectionOf = (rate: number): number =>
+  rate <= 0 || rate >= 1 ? 0 : -SEMITONES_PER_OCTAVE * Math.log2(rate);

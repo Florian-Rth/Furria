@@ -180,15 +180,6 @@ const countMarksIn = (segment: MusicSegment): CountMark[] => {
 export const countMarksOf = (segments: readonly MusicSegment[]): CountMark[] =>
   segments.flatMap(countMarksIn);
 
-export const stepAt = (steps: readonly StudioStep[], seconds: number): StudioStep | null =>
-  steps.find(
-    (step) =>
-      step.startSeconds !== null &&
-      step.endSeconds !== null &&
-      seconds >= step.startSeconds &&
-      seconds < step.endSeconds,
-  ) ?? null;
-
 export const stepRangeOf = (step: StudioStep): TimelineRange | null =>
   step.startSeconds === null || step.endSeconds === null
     ? null

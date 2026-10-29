@@ -1,5 +1,4 @@
-import type { StudioPart, StudioStep, StudioVideo } from '@/features/acts/schemas';
-import { partOfStep, stepAt } from './music-timeline';
+import type { StudioVideo } from '@/features/acts/schemas';
 
 const SEEK_THRESHOLD_SECONDS = 0.3;
 const HOLD_THRESHOLD_SECONDS = 0.04;
@@ -25,26 +24,6 @@ export const videoSecondsAt = (video: StudioVideo, seconds: number): number | nu
   const inVideo = seconds - video.startSeconds;
 
   return inVideo >= 0 && inVideo < video.durationSeconds ? inVideo : null;
-};
-
-const coversMoment = (video: StudioVideo, seconds: number): boolean =>
-  videoSecondsAt(video, seconds) !== null;
-
-export const videoAt = (
-  videos: readonly StudioVideo[],
-  parts: readonly StudioPart[],
-  steps: readonly StudioStep[],
-  seconds: number,
-): StudioVideo | null => {
-  const step = stepAt(steps, seconds);
-  const part = step === null ? null : partOfStep(parts, step.stepId);
-  const main = videos.find((video) => video.videoId === part?.mainVideoId);
-
-  if (main !== undefined && coversMoment(main, seconds)) {
-    return main;
-  }
-
-  return videos.find((video) => coversMoment(video, seconds)) ?? null;
 };
 
 export const videoCorrectionOf = (

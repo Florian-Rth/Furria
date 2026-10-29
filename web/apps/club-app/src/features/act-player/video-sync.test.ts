@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { StudioPart, StudioStep, StudioVideo } from '@/features/acts/schemas';
-import { videoAt, videoCorrectionOf, videoSecondsAt } from './video-sync';
+import type { StudioVideo } from '@/features/acts/schemas';
+import { videoCorrectionOf, videoSecondsAt } from './video-sync';
 
 const video = (videoId: number, patch: Partial<StudioVideo> = {}): StudioVideo => ({
   videoId,
@@ -15,15 +15,6 @@ const video = (videoId: number, patch: Partial<StudioVideo> = {}): StudioVideo =
   ...patch,
 });
 
-const step = (stepId: number, startSeconds: number, endSeconds: number): StudioStep => ({
-  stepId,
-  name: 'Schritt',
-  description: null,
-  startSeconds,
-  endSeconds,
-  placement: 'onTimeline',
-});
-
 describe('videoSecondsAt', () => {
   it.each([
     [video(1), 15, 5],
@@ -33,27 +24,6 @@ describe('videoSecondsAt', () => {
     [video(1, { placement: 'unaligned', startSeconds: null }), 15, null],
   ])('shows %o at %s seconds of the music at %s', (shown, seconds, expected) => {
     expect(videoSecondsAt(shown, seconds)).toBe(expected);
-  });
-});
-
-describe('videoAt', () => {
-  const steps = [step(1, 0, 20), step(2, 20, 40)];
-  const parts: StudioPart[] = [
-    { partId: 1, name: 'Marsch', stepIds: [1], mainVideoId: 2, adrift: false },
-    { partId: 2, name: 'Polka', stepIds: [2], mainVideoId: null, adrift: false },
-  ];
-  const videos = [
-    video(1, { startSeconds: 0, durationSeconds: 40 }),
-    video(2, { startSeconds: 5 }),
-  ];
-
-  it.each([
-    [2, 1],
-    [6, 2],
-    [25, 1],
-    [45, null],
-  ])('shows at %s seconds video %s, the main video of the part first', (seconds, expected) => {
-    expect(videoAt(videos, parts, steps, seconds)?.videoId ?? null).toBe(expected);
   });
 });
 

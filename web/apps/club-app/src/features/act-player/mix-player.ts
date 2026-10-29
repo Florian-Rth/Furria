@@ -1,8 +1,16 @@
 import { audioBufferOf, sharedAudioContext } from './audio-buffers';
 import type { MixRun } from './mix-schedule';
-import { mixPiecesOf, playRangeOf, positionInRuns, runEndOf } from './mix-schedule';
+import {
+  mixPiecesOf,
+  pitchCorrectionOf,
+  playRangeOf,
+  positionInRuns,
+  runEndOf,
+} from './mix-schedule';
 import type { MusicSegment, TimelineRange } from './music-timeline';
 import { musicLengthOf } from './music-timeline';
+import type { PitchKeeper } from './pitch-keeper';
+import { pitchKeeperOf } from './pitch-keeper';
 
 const START_LATENCY_SECONDS = 0.05;
 const LOOKAHEAD_SECONDS = 3;
@@ -32,6 +40,11 @@ export interface MixPlayer {
   dispose: () => void;
 }
 
+interface MixRoute {
+  output: AudioNode;
+  delaySeconds: number;
+}
+
 const clampTo = (seconds: number, length: number): number => Math.min(Math.max(0, seconds), length);
 
 export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer => {
@@ -42,6 +55,8 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
   let runs: MixRun[] = [];
   let watch: ReturnType<typeof setInterval> | null = null;
   let restingAt = 0;
+  let keeper: PitchKeeper | null = null;
+  let route: MixRoute | null = null;
   let current: MixPlayerState = { load: 'idle', playing: false, loop: null, rate: 1, length };
 
   const publish = (next: Partial<MixPlayerState>): void => {
@@ -66,15 +81,28 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
     }
     sources = [];
     runs = [];
+    keeper?.release();
     if (watch !== null) {
       clearInterval(watch);
       watch = null;
     }
   };
 
+  const routeFor = (audio: AudioContext, rate: number): MixRoute => {
+    const correction = pitchCorrectionOf(rate);
+
+    if (keeper === null || correction === 0) {
+      return { output: audio.destination, delaySeconds: 0 };
+    }
+
+    keeper.engage(correction);
+    return { output: keeper.input, delaySeconds: keeper.latencySeconds };
+  };
+
   const scheduleRun = (from: number, to: number, contextStart: number): MixRun => {
     const audio = sharedAudioContext();
     const run: MixRun = { contextStart, from, to, rate: current.rate };
+    const { output, delaySeconds } = route ?? { output: audio.destination, delaySeconds: 0 };
 
     for (const piece of mixPiecesOf(segments, from, to)) {
       const buffer = buffers.get(piece.mediaItemId);
@@ -83,9 +111,9 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
         const source = audio.createBufferSource();
         source.buffer = buffer;
         source.playbackRate.value = run.rate;
-        source.connect(audio.destination);
+        source.connect(output);
         source.start(
-          contextStart + (piece.timelineStart - from) / run.rate,
+          contextStart - delaySeconds + (piece.timelineStart - from) / run.rate,
           piece.sourceOffset,
           piece.duration,
         );
@@ -139,7 +167,12 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
 
     restingAt = range.start;
     void audio.resume();
-    scheduleRun(range.start, range.end, audio.currentTime + START_LATENCY_SECONDS);
+    route = routeFor(audio, current.rate);
+    scheduleRun(
+      range.start,
+      range.end,
+      audio.currentTime + START_LATENCY_SECONDS + route.delaySeconds,
+    );
     watch = setInterval(keepGoing, WATCH_INTERVAL_MS);
     publish({ playing: true });
   };
@@ -151,6 +184,12 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
       }
 
       publish({ load: 'loading' });
+      void pitchKeeperOf(sharedAudioContext()).then((ready) => {
+        keeper = ready;
+        if (ready !== null && current.playing && pitchCorrectionOf(current.rate) !== 0) {
+          startFrom(position());
+        }
+      });
       try {
         await Promise.all(
           segments

@@ -310,9 +310,32 @@ Done 2026-10-29 (Florian picked E after two rounds). Decisions taken in the phas
 
 ### Phase 7 — Player promoted
 Goal: members practise on the chosen screen with real data.
-- [ ] Chosen variant promoted onto `/acts/$actId` (player mode); lab route removed
-- [ ] Loop step/part, speed 50–100 % with pitch kept, mirror default on, own dot pulsing, main video per part, alternatives
-- [ ] Last practised step remembered per device; Start *Üben* opens there
+- [x] Chosen variant promoted onto `/acts/$actId` (player mode); lab route removed
+- [x] Loop step/part, speed 50–100 % with pitch kept, mirror default on, own dot pulsing, main video per part, alternatives
+- [x] Last practised step remembered per device; Start *Üben* opens there
+
+Done 2026-10-29. Decisions taken in the phase:
+- **Promotion**: the lab feature became `features/act-practice` and the primitives `KkPractice*`
+  (`KkPracticeView`, `-Screen`, `-Stage`, `-Steps`, `-Segments`, `-Transport`, `-Count`,
+  `-StepName`, `-Description`). The lab route `/lab/studio-e/$actId` and the lab entries are gone.
+- **Page modes**: `/acts/$actId` opens the practice view (fullscreen screen) whenever the viewer
+  sees the studio and some music is ready. Its one header action *Über den Auftritt* opens
+  `?view=details`, the former page (facts, studio overview, co-editors, settings pane), which
+  offers *Üben* back and *Bearbeiten*. Planners, viewers without the studio and acts without
+  ready music get the details directly. Fullscreen screens may now carry one quiet action.
+- **Pitch kept**: when slowed, the mix runs through the Signalsmith Stretch AudioWorklet
+  (`signalsmith-stretch`, MIT, WASM) in live-input mode, transposing up by −12·log2(rate)
+  semitones. Sources start earlier by the node's latency, so the clock (and video and stage)
+  stays on what is heard. The node is only connected while slowed. If it cannot load, slowed
+  music plays at a lower pitch. **Open**: production's CSP (`web/deploy/security-headers.conf`)
+  needs `'wasm-unsafe-eval'` in `script-src` for the WASM to compile; until Florian approves
+  that change, the fallback applies in production. The worklet file is precached (`mjs`).
+- **Alternatives**: the takes offered at a moment are the playable videos covering it, the
+  part's main video first. A chip *1/2* in the video corner cycles them; the choice holds
+  while it covers the moment, otherwise the main video shows.
+- **Remembered step**: per device *and* person (`furria.practice.<person>.<act>.step`), written
+  while the music plays, restored once when the page opens; the Start tile *Üben* links to the
+  act page, so it opens there.
 
 ### Phase 7b — ⚖ Edit mode: lab variants
 Goal: decide the shell of edit mode before the editors (phases 8–13) are built into it: how editors enter

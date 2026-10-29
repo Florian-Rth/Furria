@@ -7,7 +7,6 @@ import {
   musicSegmentsOf,
   partRangeOf,
   segmentAt,
-  stepAt,
   timelineSecondsOf,
 } from './music-timeline';
 
@@ -177,19 +176,6 @@ describe('countMarksOf', () => {
       { seconds: 2, count: 1 },
       { seconds: 3, count: 2 },
     ]);
-  });
-});
-
-describe('stepAt', () => {
-  const steps = [step(1, 0, 8), step(2, 8, 16), step(3, null, null)];
-
-  it.each([
-    [0, 1],
-    [7.99, 1],
-    [8, 2],
-    [16, null],
-  ])('finds the step running at %s seconds', (seconds, expected) => {
-    expect(stepAt(steps, seconds)?.stepId ?? null).toBe(expected);
   });
 });
 
