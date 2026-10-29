@@ -7,7 +7,6 @@ public enum BackgroundJob
     GalleryBinPurge = 3,
     MailDispatcher = 4,
     UnconfirmedApplicationPurge = 5,
-    PastTicketRequestPurge = 6,
     SignedOutMailRequestWorker = 7,
     LogEntryPurge = 8,
     MediaStorageSurvey = 9,

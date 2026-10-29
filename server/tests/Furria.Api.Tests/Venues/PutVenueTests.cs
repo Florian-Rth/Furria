@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Venues;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -16,6 +17,10 @@ public sealed class PutVenueTests : IClassFixture<ApiTestFixture>
     private const int UnknownVenueId = 999_999;
 
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
+    private static readonly TimeOnly Nine = new(9, 0);
+    private static readonly TimeOnly Noon = new(12, 0);
+    private static readonly TimeOnly Two = new(14, 0);
+    private static readonly TimeOnly Six = new(18, 0);
 
     private readonly ApiTestFixture _fixture;
 
@@ -53,6 +58,7 @@ public sealed class PutVenueTests : IClassFixture<ApiTestFixture>
                 Zip = Zip,
                 City = City,
                 Hint = null,
+                OpeningHours = [],
             }
         );
 
@@ -64,6 +70,108 @@ public sealed class PutVenueTests : IClassFixture<ApiTestFixture>
             .ToHaveAddress(Street, Zip, City)
             .Venue(ctx.Club.Venues.IdOf("halle"))
             .ToHaveHint(null)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepTheOpeningHours_When_TheVenueIsSavedWithThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Club(club => club.AddVenue("baeckerei", "Bäckerei Schmidt")),
+            ct
+        );
+
+        var response = await SaveOpeningHoursAsync(
+            ctx,
+            "baeckerei",
+            [
+                Slot(DayOfWeek.Monday, Nine, Noon),
+                Slot(DayOfWeek.Monday, Two, Six),
+                Slot(DayOfWeek.Saturday, Nine, Noon),
+            ]
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Venue(ctx.Club.Venues.IdOf("baeckerei"))
+            .ToHaveOpeningHours(
+                (DayOfWeek.Monday, Nine, Noon),
+                (DayOfWeek.Monday, Two, Six),
+                (DayOfWeek.Saturday, Nine, Noon)
+            )
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReplaceTheOpeningHoursAsAWhole_When_TheVenueIsSavedAgain()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildBakeryOpenOnTuesdayAndWednesdayAsync(ct);
+
+        var response = await SaveOpeningHoursAsync(
+            ctx,
+            "baeckerei",
+            [Slot(DayOfWeek.Friday, Two, Six)]
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Venue(ctx.Club.Venues.IdOf("baeckerei"))
+            .ToHaveOpeningHours((DayOfWeek.Friday, Two, Six))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ClearTheOpeningHours_When_TheVenueIsSavedWithoutThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildBakeryOpenOnTuesdayAndWednesdayAsync(ct);
+
+        var response = await SaveOpeningHoursAsync(ctx, "baeckerei", []);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Venue(ctx.Club.Venues.IdOf("baeckerei"))
+            .ToHaveOpeningHours()
+            .AssertAsync(ct);
+    }
+
+    [Theory]
+    [InlineData("closes-before-opens")]
+    [InlineData("closes-when-opens")]
+    [InlineData("overlap-on-one-day")]
+    [InlineData("fifteen-slots")]
+    public async Task Should_RefuseTheOpeningHours_When_TheyCannotBeKept(string flaw)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildBakeryOpenOnTuesdayAndWednesdayAsync(ct);
+
+        var response = await SaveOpeningHoursAsync(ctx, "baeckerei", FlawedHoursOf(flaw));
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await ctx
+            .Expected.Venue(ctx.Club.Venues.IdOf("baeckerei"))
+            .ToHaveOpeningHours((DayOfWeek.Tuesday, Nine, Noon), (DayOfWeek.Wednesday, Nine, Noon))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepTouchingSlots_When_OneClosesWhenTheNextOpens()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildBakeryOpenOnTuesdayAndWednesdayAsync(ct);
+
+        var response = await SaveOpeningHoursAsync(
+            ctx,
+            "baeckerei",
+            [Slot(DayOfWeek.Monday, Noon, Two), Slot(DayOfWeek.Monday, Nine, Noon)]
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Venue(ctx.Club.Venues.IdOf("baeckerei"))
+            .ToHaveOpeningHours((DayOfWeek.Monday, Nine, Noon), (DayOfWeek.Monday, Noon, Two))
             .AssertAsync(ct);
     }
 
@@ -89,6 +197,7 @@ public sealed class PutVenueTests : IClassFixture<ApiTestFixture>
                 Zip = Zip,
                 City = City,
                 Hint = null,
+                OpeningHours = [],
             }
         );
 
@@ -120,6 +229,7 @@ public sealed class PutVenueTests : IClassFixture<ApiTestFixture>
                 Zip = Zip,
                 City = City,
                 Hint = null,
+                OpeningHours = [],
             }
         );
 
@@ -152,6 +262,7 @@ public sealed class PutVenueTests : IClassFixture<ApiTestFixture>
                 Zip = Zip,
                 City = City,
                 Hint = null,
+                OpeningHours = [],
             }
         );
 
@@ -183,10 +294,71 @@ public sealed class PutVenueTests : IClassFixture<ApiTestFixture>
                 Zip = Zip,
                 City = City,
                 Hint = null,
+                OpeningHours = [],
             }
         );
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    private Task<SeededContext> BuildBakeryOpenOnTuesdayAndWednesdayAsync(CancellationToken ct) =>
+        _fixture.BuildAsync(
+            builder =>
+                builder.Club(club =>
+                    club.AddVenue("baeckerei", "Bäckerei Schmidt")
+                        .AddVenueOpeningSlot("baeckerei", DayOfWeek.Tuesday, Nine, Noon)
+                        .AddVenueOpeningSlot("baeckerei", DayOfWeek.Wednesday, Nine, Noon)
+                ),
+            ct
+        );
+
+    private static IReadOnlyList<OpeningSlotDataDto> FlawedHoursOf(string flaw) =>
+        flaw switch
+        {
+            "closes-before-opens" => [Slot(DayOfWeek.Monday, Noon, Nine)],
+            "closes-when-opens" => [Slot(DayOfWeek.Monday, Nine, Nine)],
+            "overlap-on-one-day" =>
+            [
+                Slot(DayOfWeek.Monday, Nine, Two),
+                Slot(DayOfWeek.Monday, Noon, Six),
+            ],
+            _ =>
+            [
+                .. Enum.GetValues<DayOfWeek>()
+                    .SelectMany(day => new[] { Slot(day, Nine, Noon), Slot(day, Two, Six) }),
+                Slot(DayOfWeek.Sunday, new TimeOnly(19, 0), new TimeOnly(20, 0)),
+            ],
+        };
+
+    private static OpeningSlotDataDto Slot(DayOfWeek weekday, TimeOnly opens, TimeOnly closes) =>
+        new()
+        {
+            Weekday = weekday,
+            Opens = opens,
+            Closes = closes,
+        };
+
+    private static async Task<HttpResponseMessage> SaveOpeningHoursAsync(
+        SeededContext ctx,
+        string venueAlias,
+        IReadOnlyList<OpeningSlotDataDto> openingHours
+    )
+    {
+        var client = await ctx.Identity.ManagingLoginClientAsync(
+            TestContext.Current.CancellationToken
+        );
+        return await client.PUTAsync<PutVenue, PutVenueRequest>(
+            new()
+            {
+                VenueId = ctx.Club.Venues.IdOf(venueAlias),
+                Name = "Bäckerei Schmidt",
+                Street = Street,
+                Zip = Zip,
+                City = City,
+                Hint = null,
+                OpeningHours = openingHours,
+            }
+        );
     }
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(

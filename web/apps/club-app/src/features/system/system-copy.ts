@@ -153,7 +153,6 @@ export const SERVICE_NAMES: Readonly<Record<string, string>> = {
   galleryBinPurge: 'Galerie-Papierkorb leeren',
   mailDispatcher: 'E-Mails versenden',
   unconfirmedApplicationPurge: 'Unbestätigte Mitgliedsanträge löschen',
-  pastTicketRequestPurge: 'Abgelaufene Kartenanfragen löschen',
   signedOutMailRequestWorker: 'Anmelde-E-Mails ohne Sitzung versenden',
   logEntryPurge: 'Protokoll bereinigen',
   mediaStorageSurvey: 'Speicherbelegung messen',

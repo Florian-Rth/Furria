@@ -15,8 +15,6 @@ const DENIED_MESSAGES: Partial<Record<PermissionKey, string>> = {
   [PERMISSION_KEYS.membershipApplicationsDecide]:
     'Dir fehlt die Berechtigung, über Beitrittsanträge zu entscheiden.',
   [PERMISSION_KEYS.eventsManage]: 'Dir fehlt die Berechtigung, Veranstaltungen zu pflegen.',
-  [PERMISSION_KEYS.ticketRequestsHandle]:
-    'Dir fehlt die Berechtigung, Kartenanfragen zu bearbeiten.',
   [PERMISSION_KEYS.systemView]: 'Dir fehlt die Berechtigung, den Zustand des Systems zu sehen.',
 };
 

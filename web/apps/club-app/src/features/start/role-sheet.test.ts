@@ -33,8 +33,8 @@ describe('toRoleSheet', () => {
       workbench: '/manage',
     },
     {
-      label: 'only handles ticket requests',
-      keys: ['ticket_requests.handle'],
+      label: 'only manages events',
+      keys: ['events.manage'],
       permissions: 1,
       workbench: '/events',
     },

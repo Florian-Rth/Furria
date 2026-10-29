@@ -9,6 +9,13 @@ public static class EventSales
         presaleStartsAt is { } startsAt && startsAt <= now;
 
     [Pure]
+    public static bool ShowsPresalePlaces(
+        EventSalesStatus status,
+        DateTimeOffset startsAt,
+        DateTimeOffset now
+    ) => SellsTickets(status) && now < startsAt;
+
+    [Pure]
     public static EventSalesStatus StatusOf(
         DateTimeOffset? presaleStartsAt,
         TicketAvailability availability,
@@ -33,4 +40,11 @@ public static class EventSales
                 "No sales status is defined for this ticket availability."
             ),
         };
+
+    [Pure]
+    private static bool SellsTickets(EventSalesStatus status) =>
+        status
+            is EventSalesStatus.PresaleScheduled
+                or EventSalesStatus.Available
+                or EventSalesStatus.FewLeft;
 }

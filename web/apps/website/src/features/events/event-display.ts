@@ -15,9 +15,6 @@ export interface EventAddress {
 export const buildEventHref = (address: EventAddress): string =>
   `/events/${publicEvents.slugOf(address)}`;
 
-export const buildTicketRequestHref = (address: EventAddress): string =>
-  `${buildEventHref(address)}/anfrage`;
-
 export const buildEventAnchorId = (eventId: number): string => `event-${eventId}`;
 
 export const selectEventsByDate = <TEvent extends Event>(events: TEvent[]): TEvent[] =>

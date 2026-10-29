@@ -60,11 +60,6 @@ describe('staleReadsAfter', () => {
       stale: ['newsHub'],
     },
     {
-      label: 'a ticket request is handled, which moves the event steps',
-      change: 'ticketRequest',
-      stale: ['ticketRequests', 'events', 'event'],
-    },
-    {
       label: 'an album of the evening is published',
       change: 'media',
       stale: ['events', 'event'],

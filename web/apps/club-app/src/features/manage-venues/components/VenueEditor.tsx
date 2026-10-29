@@ -9,6 +9,7 @@ import { useVenueEditor } from '../hooks/use-venue-editor';
 import { VENUES_ORIGIN } from '../manage-venues-labels';
 import type { ManagedVenue } from '../schemas';
 import { VENUE_HINT_MAX_LENGTH } from '../schemas';
+import { VenueOpeningHoursSection } from './VenueOpeningHoursSection';
 
 const CREATE_TITLE = 'Ort hinzufügen';
 const EDIT_TITLE = 'Ort bearbeiten';
@@ -18,7 +19,7 @@ const SAVE_LABEL = 'Speichern';
 const PLACE_SECTION_TITLE = 'Ort';
 const ADDRESS_SECTION_TITLE = 'Anschrift';
 const NAME_LABEL = 'Name des Ortes';
-const NAME_PLACEHOLDER = 'Zum Beispiel Bürgerhaus oder Vereinsheim';
+const NAME_PLACEHOLDER = 'Zum Beispiel Bürgerhaus, Vereinsheim oder Bäckerei';
 const NAME_HINT = 'Steht bei jeder Veranstaltung an diesem Ort — auf der Website und im Kalender.';
 const STREET_LABEL = 'Straße und Hausnummer';
 const ZIP_LABEL = 'PLZ';
@@ -27,7 +28,8 @@ const HINT_LABEL = 'Anfahrt & Zugang';
 const HINT_PLACEHOLDER = 'Parken, Eingang, Haltestelle';
 const HINT_HINT = 'Steht unter der Anschrift auf der Seite jeder Veranstaltung an diesem Ort.';
 const HINT_ROWS = 3;
-const CREATE_NOTE = 'Die Anschrift erscheint im Kalender, bei den Schlüsseln und auf der Website.';
+const CREATE_NOTE =
+  'Ein Ort ist ein Saal, das Vereinsheim oder ein Geschäft mit Kartenvorverkauf. Die Anschrift erscheint im Kalender, bei den Schlüsseln und auf der Website.';
 
 const toCountLabel = (used: number, max: number): string => `${used} von ${max} Zeichen`;
 
@@ -149,6 +151,7 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
           helperText={hintErrorText}
         />
       </KkFormSection>
+      <VenueOpeningHoursSection control={control} />
     </WriteScreen>
   );
 };

@@ -50,7 +50,6 @@ public sealed class GetEvents : EndpointWithoutRequest<GetEventsResponse>
             PriceCents = listed.PriceCents,
             DoorsOpenAt = listed.DoorsOpenAt,
             DetailsMissing = listed.Planning.DetailsMissing,
-            TicketRequests = EventTicketRequestsDto.From(listed.Planning.TicketRequests),
             Review = EventReviewDto.From(listed.Planning.Review),
             Steps = [.. listed.Planning.Readiness.Steps.Select(EventStepDto.From)],
             CurrentStep = listed.Planning.Readiness.CurrentStep,
@@ -91,8 +90,6 @@ public sealed record EventSummaryDto
     public required TimeOnly? DoorsOpenAt { get; init; }
 
     public required IReadOnlyList<MissingEventDetail> DetailsMissing { get; init; }
-
-    public required EventTicketRequestsDto TicketRequests { get; init; }
 
     public required EventReviewDto Review { get; init; }
 

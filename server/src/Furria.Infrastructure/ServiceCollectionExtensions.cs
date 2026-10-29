@@ -102,8 +102,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ActAccess>();
         services.AddScoped<RunningOrderService>();
         services.AddScoped<EventPictures>();
-        services.AddScoped<TicketRequestService>();
-        services.AddScoped<TicketRequestArrivalNotifier>();
         services.AddScoped<ClubRecordService>();
         services.AddScoped<ManagementService>();
         services.AddScoped<ToDoService>();
@@ -151,7 +149,6 @@ public static class ServiceCollectionExtensions
         services.AddSingleton<PasswordResetMailThrottle>();
         services.AddHostedService<SignedOutMailRequestWorker>();
         services.AddHostedService<UnconfirmedApplicationPurge>();
-        services.AddHostedService<PastTicketRequestPurge>();
 
         services.AddSingleton<HostStart>();
         services.AddSingleton<BackgroundRuns>();

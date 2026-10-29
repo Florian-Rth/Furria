@@ -41,6 +41,62 @@ public sealed class GetVenuesTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_ListTheOpeningHoursFromMondayOn_When_TheVenueKeepsThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var nine = new TimeOnly(9, 0);
+        var noon = new TimeOnly(12, 0);
+        var two = new TimeOnly(14, 0);
+        var six = new TimeOnly(18, 0);
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Club(club =>
+                    club.AddVenue("baeckerei", "Bäckerei Schmidt")
+                        .AddVenueOpeningSlot("baeckerei", DayOfWeek.Sunday, nine, noon)
+                        .AddVenueOpeningSlot("baeckerei", DayOfWeek.Monday, two, six)
+                        .AddVenueOpeningSlot("baeckerei", DayOfWeek.Saturday, nine, noon)
+                        .AddVenueOpeningSlot("baeckerei", DayOfWeek.Monday, nine, noon)
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await client.GETAsync<GetVenues, GetVenuesResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var venue = Assert.Single(result.Venues);
+        Assert.Equal(
+            [
+                new OpeningSlotDto
+                {
+                    Weekday = DayOfWeek.Monday,
+                    Opens = nine,
+                    Closes = noon,
+                },
+                new OpeningSlotDto
+                {
+                    Weekday = DayOfWeek.Monday,
+                    Opens = two,
+                    Closes = six,
+                },
+                new OpeningSlotDto
+                {
+                    Weekday = DayOfWeek.Saturday,
+                    Opens = nine,
+                    Closes = noon,
+                },
+                new OpeningSlotDto
+                {
+                    Weekday = DayOfWeek.Sunday,
+                    Opens = nine,
+                    Closes = noon,
+                },
+            ],
+            venue.OpeningHours
+        );
+    }
+
+    [Fact]
     public async Task Should_CarryTheArchivedVenueWithItsArchiveDate_When_TheVenueWasArchived()
     {
         var ct = TestContext.Current.CancellationToken;

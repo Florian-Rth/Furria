@@ -27,3 +27,5 @@ web/tools/screenshot/out/
 # Harness scratch worktrees (never commit)
 .claude/worktrees/
 .dev/
+
+.pnpm-store/

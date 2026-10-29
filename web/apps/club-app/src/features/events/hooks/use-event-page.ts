@@ -26,7 +26,7 @@ export const useEventPage = (rawEventId: string): EventPageState => {
   const { today } = usePlanClock();
   const step = useEventStep();
   const event = query.data;
-  const fallback = event === undefined || !step.isWide ? null : defaultPaneOf(event, today);
+  const fallback = event === undefined || !step.isWide ? null : defaultPaneOf(event);
 
   return {
     eventId,

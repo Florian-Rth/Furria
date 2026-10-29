@@ -19,4 +19,6 @@ public sealed record EventFactsCommand
     public required int? PriceCents { get; init; }
 
     public required DateTimeOffset? PresaleStartsAt { get; init; }
+
+    public required IReadOnlyList<int> PresaleVenueIds { get; init; }
 }

@@ -653,6 +653,59 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("venue", (string)null);
                 });
 
+            modelBuilder.Entity("Furria.Core.Club.VenueOpeningSlot", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<TimeOnly>("Closes")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("closes");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<TimeOnly>("Opens")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("opens");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("VenueId")
+                        .HasColumnType("integer")
+                        .HasColumnName("venue_id");
+
+                    b.Property<string>("Weekday")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("weekday");
+
+                    b.HasKey("Id")
+                        .HasName("pk_venue_opening_slot");
+
+                    b.HasIndex("VenueId")
+                        .HasDatabaseName("ix_venue_opening_slot_venue_id");
+
+                    b.ToTable("venue_opening_slot", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_venue_opening_slot_span", "closes > opens");
+
+                            t.HasCheckConstraint("ck_venue_opening_slot_weekday", "weekday IN ('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.Events.Event", b =>
                 {
                     b.Property<int>("CalendarEntryId")
@@ -729,60 +782,29 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Furria.Core.Events.TicketRequest", b =>
+            modelBuilder.Entity("Furria.Core.Events.EventPresalePlace", b =>
                 {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer")
-                        .HasColumnName("id");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Email")
-                        .IsRequired()
-                        .HasMaxLength(254)
-                        .HasColumnType("character varying(254)")
-                        .HasColumnName("email");
-
                     b.Property<int>("EventId")
                         .HasColumnType("integer")
                         .HasColumnName("event_id");
 
-                    b.Property<string>("Message")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("message");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(80)
-                        .HasColumnType("character varying(80)")
-                        .HasColumnName("name")
-                        .UseCollation("de-DE-x-icu");
-
-                    b.Property<string>("Phone")
-                        .IsRequired()
-                        .HasMaxLength(31)
-                        .HasColumnType("character varying(31)")
-                        .HasColumnName("phone");
-
-                    b.Property<DateTimeOffset>("RequestedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("requested_at");
-
-                    b.Property<int>("TicketCount")
+                    b.Property<int>("VenueId")
                         .HasColumnType("integer")
-                        .HasColumnName("ticket_count");
+                        .HasColumnName("venue_id");
 
-                    b.HasKey("Id")
-                        .HasName("pk_ticket_request");
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
 
-                    b.HasIndex("EventId")
-                        .HasDatabaseName("ix_ticket_request_event_id");
+                    b.HasKey("EventId", "VenueId")
+                        .HasName("pk_event_presale_place");
 
-                    b.ToTable("ticket_request", null, t =>
+                    b.HasIndex("VenueId")
+                        .HasDatabaseName("ix_event_presale_place_venue_id");
+
+                    b.ToTable("event_presale_place", null, t =>
                         {
-                            t.HasCheckConstraint("ck_ticket_request_ticket_count", "ticket_count BETWEEN 1 AND 10");
+                            t.HasCheckConstraint("ck_event_presale_place_sort_order", "sort_order >= 0");
                         });
                 });
 
@@ -3159,7 +3181,7 @@ namespace Furria.Infrastructure.Migrations
 
                     b.ToTable("to_do_mark", null, t =>
                         {
-                            t.HasCheckConstraint("ck_to_do_mark_kind", "kind IN ('NeverInvited', 'ReminderDue', 'InPersonOnly', 'BirthDateUnknown', 'KeyToTakeBack', 'ClubRecordGap', 'ApplicationWaiting', 'TicketRequestWaiting')");
+                            t.HasCheckConstraint("ck_to_do_mark_kind", "kind IN ('NeverInvited', 'ReminderDue', 'InPersonOnly', 'BirthDateUnknown', 'KeyToTakeBack', 'ClubRecordGap', 'ApplicationWaiting')");
                         });
                 });
 
@@ -3483,6 +3505,18 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Venue");
                 });
 
+            modelBuilder.Entity("Furria.Core.Club.VenueOpeningSlot", b =>
+                {
+                    b.HasOne("Furria.Core.Club.Venue", "Venue")
+                        .WithMany("OpeningSlots")
+                        .HasForeignKey("VenueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_venue_opening_slot_venue_venue_id");
+
+                    b.Navigation("Venue");
+                });
+
             modelBuilder.Entity("Furria.Core.Events.Event", b =>
                 {
                     b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
@@ -3503,16 +3537,25 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Picture");
                 });
 
-            modelBuilder.Entity("Furria.Core.Events.TicketRequest", b =>
+            modelBuilder.Entity("Furria.Core.Events.EventPresalePlace", b =>
                 {
                     b.HasOne("Furria.Core.Events.Event", "Event")
-                        .WithMany()
+                        .WithMany("PresalePlaces")
                         .HasForeignKey("EventId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_event_presale_place_event_event_id");
+
+                    b.HasOne("Furria.Core.Club.Venue", "Venue")
+                        .WithMany()
+                        .HasForeignKey("VenueId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .IsRequired()
-                        .HasConstraintName("fk_ticket_request_event_event_id");
+                        .HasConstraintName("fk_event_presale_place_venue_venue_id");
 
                     b.Navigation("Event");
+
+                    b.Navigation("Venue");
                 });
 
             modelBuilder.Entity("Furria.Core.Gallery.Album", b =>
@@ -4249,6 +4292,16 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Event");
 
                     b.Navigation("ParticipatingGroups");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.Venue", b =>
+                {
+                    b.Navigation("OpeningSlots");
+                });
+
+            modelBuilder.Entity("Furria.Core.Events.Event", b =>
+                {
+                    b.Navigation("PresalePlaces");
                 });
 
             modelBuilder.Entity("Furria.Core.Gallery.Album", b =>

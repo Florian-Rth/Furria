@@ -3,7 +3,7 @@ import { toDayTime, toInstant } from '@/features/calendar/calendar-authoring';
 import type { RunningVenue } from '@/features/calendar/schemas';
 import { toIsoDay } from '@/lib/day';
 import { toPriceCents, toPriceText } from './event-price';
-import type { EventDetails, EventForm } from './schemas';
+import type { EventDetails, EventForm, EventPresalePlace } from './schemas';
 
 const NO_VALUE = '';
 const DEFAULT_START_TIME = '19:00';
@@ -21,6 +21,7 @@ export interface EventPayload {
   ageHint: string | null;
   priceCents: number | null;
   presaleStartsAt: string | null;
+  presaleVenueIds: number[];
 }
 
 const toWritten = (value: string): string | null => {
@@ -40,6 +41,7 @@ export const toEventPayload = (form: EventForm): EventPayload => ({
   priceCents: toPriceCents(form.price),
   presaleStartsAt:
     form.presaleDay === NO_VALUE ? null : toInstant(form.presaleDay, form.presaleTime),
+  presaleVenueIds: form.presaleVenueIds,
 });
 
 export const toEventFormValues = (event: EventDetails | null, today: Date): EventForm => {
@@ -56,6 +58,7 @@ export const toEventFormValues = (event: EventDetails | null, today: Date): Even
       price: '',
       presaleDay: NO_VALUE,
       presaleTime: DEFAULT_PRESALE_TIME,
+      presaleVenueIds: [],
     };
   }
 
@@ -74,6 +77,7 @@ export const toEventFormValues = (event: EventDetails | null, today: Date): Even
     price: toPriceText(event.priceCents),
     presaleDay: presale?.day ?? NO_VALUE,
     presaleTime: presale?.time ?? DEFAULT_PRESALE_TIME,
+    presaleVenueIds: event.presalePlaces.map((place) => place.venueId),
   };
 };
 
@@ -93,3 +97,54 @@ export const toEventVenueOptions = (
     { value: String(heldVenueId), label: `${event?.venueName ?? ''}${ARCHIVED_SUFFIX}` },
   ];
 };
+
+export interface PresalePlaceChoice {
+  venueId: number;
+  name: string;
+  position: number | null;
+  isArchived: boolean;
+}
+
+export const togglePresaleVenue = (picked: readonly number[], venueId: number): number[] =>
+  picked.includes(venueId) ? picked.filter((id) => id !== venueId) : [...picked, venueId];
+
+const positionOf = (picked: readonly number[], venueId: number): number | null => {
+  const index = picked.indexOf(venueId);
+
+  return index === -1 ? null : index + 1;
+};
+
+export const presalePlaceChoicesOf = (
+  venues: readonly RunningVenue[],
+  held: readonly EventPresalePlace[],
+  picked: readonly number[],
+): PresalePlaceChoice[] => {
+  const running = venues.map((venue) => ({
+    venueId: venue.venueId,
+    name: venue.name,
+    position: positionOf(picked, venue.venueId),
+    isArchived: false,
+  }));
+  const archived = held
+    .filter(
+      (place) =>
+        picked.includes(place.venueId) && !venues.some((venue) => venue.venueId === place.venueId),
+    )
+    .map((place) => ({
+      venueId: place.venueId,
+      name: place.name,
+      position: positionOf(picked, place.venueId),
+      isArchived: true,
+    }));
+
+  return [...running, ...archived];
+};
+
+const toPresalePlaceLabel = (choice: PresalePlaceChoice): string => {
+  const name = choice.isArchived ? `${choice.name}${ARCHIVED_SUFFIX}` : choice.name;
+
+  return choice.position === null ? name : `${choice.position}. ${name}`;
+};
+
+export const toPresalePlaceOptions = (choices: readonly PresalePlaceChoice[]): KkSelectOption[] =>
+  choices.map((choice) => ({ value: String(choice.venueId), label: toPresalePlaceLabel(choice) }));

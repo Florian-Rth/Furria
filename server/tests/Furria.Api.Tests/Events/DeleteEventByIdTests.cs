@@ -73,36 +73,6 @@ public sealed class DeleteEventByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseTheDeletionNamingTheCount_When_TicketRequestsAreOpen()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildClubAsync(
-            ct,
-            club =>
-                club.AddTicketRequest("mia-gala", "first-gala", "Mia Gast", "mia@guest.test")
-                    .AddTicketRequest("ole-gala", "first-gala", "Ole Gast", "ole@guest.test")
-        );
-        var eventId = ctx.Club.Events.IdOf("first-gala");
-
-        var response = await DeleteAsync(ctx, "vera", eventId);
-
-        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
-        var failures = await response.Content.ReadFromJsonAsync<ErrorResponse>(ct);
-        Assert.Equal(
-            [
-                "Zu dieser Veranstaltung sind noch 2 Kartenanfragen offen. Erledige sie, bevor du die Veranstaltung löschst.",
-            ],
-            failures!.Errors["conflict"]
-        );
-        await ctx
-            .Expected.Event(eventId)
-            .ToHaveTeaser("Der Abend, auf den die Session hinfiebert.")
-            .TicketRequests()
-            .ToHaveCount(2)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
     public async Task Should_ReturnNotFound_When_TheIdNamesACalendarEntryOfAnotherKind()
     {
         var ct = TestContext.Current.CancellationToken;

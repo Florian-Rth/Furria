@@ -1,3 +1,4 @@
+using System.Diagnostics.Contracts;
 using Furria.Application.Club;
 using Furria.Application.Results;
 using Furria.Core.Club;
@@ -24,8 +25,9 @@ public sealed class VenueService
         _timeProvider = timeProvider;
     }
 
-    public async Task<IReadOnlyList<VenueSummary>> GetVenuesAsync(CancellationToken ct) =>
-        await _dbContext
+    public async Task<IReadOnlyList<VenueSummary>> GetVenuesAsync(CancellationToken ct)
+    {
+        var venues = await _dbContext
             .Venues.AsNoTracking()
             .OrderBy(venue => venue.ArchivedOn != null)
             .ThenBy(venue => venue.Name)
@@ -39,8 +41,27 @@ public sealed class VenueService
                 City = venue.City,
                 Hint = venue.Hint,
                 ArchivedOn = venue.ArchivedOn,
+                OpeningHours = venue
+                    .OpeningSlots.Select(slot => new VenueOpeningSlotDetails
+                    {
+                        Weekday = slot.Weekday,
+                        Opens = slot.Opens,
+                        Closes = slot.Closes,
+                    })
+                    .ToList(),
             })
             .ToListAsync(ct);
+
+        return
+        [
+            .. venues.Select(venue =>
+                venue with
+                {
+                    OpeningHours = OpeningHoursOrder.InWeekOrder(venue.OpeningHours),
+                }
+            ),
+        ];
+    }
 
     public async Task<IReadOnlyList<RunningVenueSummary>> GetRunningVenuesAsync(
         CancellationToken ct
@@ -65,6 +86,7 @@ public sealed class VenueService
             Zip = command.Zip,
             City = command.City,
             Hint = command.Hint,
+            OpeningSlots = [.. command.OpeningHours.Select(ToSlot)],
         };
 
         _dbContext.Venues.Add(venue);
@@ -78,7 +100,9 @@ public sealed class VenueService
 
     public async Task<Result> UpdateAsync(UpdateVenueCommand command, CancellationToken ct)
     {
-        var venue = await TrackedVenueAsync(command.VenueId, ct);
+        var venue = await _dbContext
+            .Venues.Include(row => row.OpeningSlots)
+            .SingleOrDefaultAsync(row => row.Id == command.VenueId, ct);
 
         if (venue is null)
             return Result.NotFound(UnknownVenueMessage);
@@ -94,6 +118,7 @@ public sealed class VenueService
         venue.Zip = command.Zip;
         venue.City = command.City;
         venue.Hint = command.Hint;
+        ReplaceOpeningSlots(venue, command.OpeningHours);
 
         return await _dbContext.SaveOrConflictAsync(ct);
     }
@@ -129,6 +154,25 @@ public sealed class VenueService
 
         return Result.Success();
     }
+
+    private static void ReplaceOpeningSlots(
+        Venue venue,
+        IReadOnlyList<VenueOpeningSlotInput> openingHours
+    )
+    {
+        venue.OpeningSlots.Clear();
+        foreach (var input in openingHours)
+            venue.OpeningSlots.Add(ToSlot(input));
+    }
+
+    [Pure]
+    private static VenueOpeningSlot ToSlot(VenueOpeningSlotInput input) =>
+        new()
+        {
+            Weekday = input.Weekday,
+            Opens = input.Opens,
+            Closes = input.Closes,
+        };
 
     private Task<Venue?> TrackedVenueAsync(int venueId, CancellationToken ct) =>
         _dbContext.Venues.SingleOrDefaultAsync(row => row.Id == venueId, ct);

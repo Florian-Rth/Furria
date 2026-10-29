@@ -29,4 +29,6 @@ public sealed record PublicEventDetails
     public required EventSalesStatus Status { get; init; }
 
     public required PublicEventPicture? Picture { get; init; }
+
+    public required IReadOnlyList<PublicPresalePlace> PresalePlaces { get; init; }
 }

@@ -13,4 +13,6 @@ public sealed record UpdateVenueCommand
     public required string City { get; init; }
 
     public required string? Hint { get; init; }
+
+    public required IReadOnlyList<VenueOpeningSlotInput> OpeningHours { get; init; }
 }

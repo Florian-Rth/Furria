@@ -1,6 +1,7 @@
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Media;
+using Furria.Application.Club;
 using Furria.Application.Events;
 using Furria.Core.Events;
 using Furria.Infrastructure.Events;
@@ -51,6 +52,26 @@ public sealed class GetPublicEventById
             PresaleStartsAt = details.PresaleStartsAt,
             Status = details.Status,
             Picture = PublicEventPictureDto.From(details.Picture),
+            PresalePlaces = [.. details.PresalePlaces.Select(ToDto)],
+        };
+
+    private static PublicPresalePlaceDto ToDto(PublicPresalePlace place) =>
+        new()
+        {
+            Name = place.Name,
+            Street = place.Street,
+            Zip = place.Zip,
+            City = place.City,
+            Hint = place.Hint,
+            OpeningHours = [.. place.OpeningHours.Select(ToDto)],
+        };
+
+    private static PublicOpeningSlotDto ToDto(VenueOpeningSlotDetails slot) =>
+        new()
+        {
+            Weekday = slot.Weekday,
+            Opens = slot.Opens,
+            Closes = slot.Closes,
         };
 
     private static PublicEventVenueDetailsDto ToDto(PublicEventVenue venue) =>
@@ -105,6 +126,32 @@ public sealed record GetPublicEventByIdResponse
     public required EventSalesStatus Status { get; init; }
 
     public required PublicEventPictureDto? Picture { get; init; }
+
+    public required IReadOnlyList<PublicPresalePlaceDto> PresalePlaces { get; init; }
+}
+
+public sealed record PublicPresalePlaceDto
+{
+    public required string Name { get; init; }
+
+    public required string Street { get; init; }
+
+    public required string Zip { get; init; }
+
+    public required string City { get; init; }
+
+    public required string? Hint { get; init; }
+
+    public required IReadOnlyList<PublicOpeningSlotDto> OpeningHours { get; init; }
+}
+
+public sealed record PublicOpeningSlotDto
+{
+    public required DayOfWeek Weekday { get; init; }
+
+    public required TimeOnly Opens { get; init; }
+
+    public required TimeOnly Closes { get; init; }
 }
 
 public sealed record PublicEventVenueDetailsDto

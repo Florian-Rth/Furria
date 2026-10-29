@@ -31,6 +31,8 @@ public sealed record EventDetails
 
     public required TicketAvailability TicketAvailability { get; init; }
 
+    public required IReadOnlyList<EventPresalePlaceSummary> PresalePlaces { get; init; }
+
     public required DateTimeOffset? CancelledAt { get; init; }
 
     public required EventSalesStatus Status { get; init; }

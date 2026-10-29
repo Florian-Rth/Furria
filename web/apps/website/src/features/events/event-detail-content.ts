@@ -15,4 +15,10 @@ export const ticketPanelNotes = {
   cancelled: 'Dieser Abend fällt aus.',
 } as const;
 
+export const presalePlacesHeading = 'Karten gibt es bei';
+
+export const presalePlacesAnchorId = 'vorverkaufsstellen';
+
+export const presalePlacesJumpLabel = 'Wo gibt’s Karten?';
+
 export const eventCancelledStamp = 'Abgesagt';

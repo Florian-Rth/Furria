@@ -99,8 +99,6 @@ public sealed class Expected
 
     public RunningOrderExpectations RunningOrder(int eventId) => new(this, eventId);
 
-    public TicketRequestSetExpectations TicketRequests() => new(this);
-
     public TrainingSetExpectations TrainingsOf(int groupId) => new(this, groupId);
 
     public EmailConfirmationSetExpectations EmailConfirmationsOfAccount(int accountId) =>

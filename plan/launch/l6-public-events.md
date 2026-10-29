@@ -3,6 +3,7 @@ status: shaped 2026-10-07 — S1, S2, S3 built 2026-10-07, S4, S5 built 2026-10-
 phase: L6 — Events, public face (plan/launch.md)
 shaped_with: Florian, 2026-10-07 (grill-with-docs)
 base: main with L5b merged
+superseded_in_part: rulings 10–17 (ticket requests) by plan/club-app/presale-places.md, 2026-10-22
 ---
 
 # L6 — Events, public face

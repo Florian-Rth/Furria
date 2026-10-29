@@ -24,7 +24,6 @@ import { Route as SiteGatedNewsSlugRouteImport } from './routes/_site/_gated/new
 import { Route as SiteGatedJoinApplyRouteImport } from './routes/_site/_gated/join_.apply'
 import { Route as SiteGatedGalleryAlbumSlugRouteImport } from './routes/_site/_gated/gallery_.$albumSlug'
 import { Route as SiteGatedEventsEventSlugRouteImport } from './routes/_site/_gated/events_.$eventSlug'
-import { Route as SiteGatedEventsEventSlugAnfrageRouteImport } from './routes/_site/_gated/events_.$eventSlug_.anfrage'
 
 const SiteRoute = SiteRouteImport.update({
   id: '/_site',
@@ -101,12 +100,6 @@ const SiteGatedEventsEventSlugRoute =
     path: '/events/$eventSlug',
     getParentRoute: () => SiteGatedRoute,
   } as any)
-const SiteGatedEventsEventSlugAnfrageRoute =
-  SiteGatedEventsEventSlugAnfrageRouteImport.update({
-    id: '/events_/$eventSlug_/anfrage',
-    path: '/events/$eventSlug/anfrage',
-    getParentRoute: () => SiteGatedRoute,
-  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
@@ -122,7 +115,6 @@ export interface FileRoutesByFullPath {
   '/gallery/$albumSlug': typeof SiteGatedGalleryAlbumSlugRoute
   '/join/apply': typeof SiteGatedJoinApplyRoute
   '/news/$slug': typeof SiteGatedNewsSlugRoute
-  '/events/$eventSlug/anfrage': typeof SiteGatedEventsEventSlugAnfrageRoute
 }
 export interface FileRoutesByTo {
   '/': typeof SiteIndexRoute
@@ -138,7 +130,6 @@ export interface FileRoutesByTo {
   '/gallery/$albumSlug': typeof SiteGatedGalleryAlbumSlugRoute
   '/join/apply': typeof SiteGatedJoinApplyRoute
   '/news/$slug': typeof SiteGatedNewsSlugRoute
-  '/events/$eventSlug/anfrage': typeof SiteGatedEventsEventSlugAnfrageRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -157,7 +148,6 @@ export interface FileRoutesById {
   '/_site/_gated/gallery_/$albumSlug': typeof SiteGatedGalleryAlbumSlugRoute
   '/_site/_gated/join_/apply': typeof SiteGatedJoinApplyRoute
   '/_site/_gated/news_/$slug': typeof SiteGatedNewsSlugRoute
-  '/_site/_gated/events_/$eventSlug_/anfrage': typeof SiteGatedEventsEventSlugAnfrageRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -175,7 +165,6 @@ export interface FileRouteTypes {
     | '/gallery/$albumSlug'
     | '/join/apply'
     | '/news/$slug'
-    | '/events/$eventSlug/anfrage'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -191,7 +180,6 @@ export interface FileRouteTypes {
     | '/gallery/$albumSlug'
     | '/join/apply'
     | '/news/$slug'
-    | '/events/$eventSlug/anfrage'
   id:
     | '__root__'
     | '/_site'
@@ -209,7 +197,6 @@ export interface FileRouteTypes {
     | '/_site/_gated/gallery_/$albumSlug'
     | '/_site/_gated/join_/apply'
     | '/_site/_gated/news_/$slug'
-    | '/_site/_gated/events_/$eventSlug_/anfrage'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -323,13 +310,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteGatedEventsEventSlugRouteImport
       parentRoute: typeof SiteGatedRoute
     }
-    '/_site/_gated/events_/$eventSlug_/anfrage': {
-      id: '/_site/_gated/events_/$eventSlug_/anfrage'
-      path: '/events/$eventSlug/anfrage'
-      fullPath: '/events/$eventSlug/anfrage'
-      preLoaderRoute: typeof SiteGatedEventsEventSlugAnfrageRouteImport
-      parentRoute: typeof SiteGatedRoute
-    }
   }
 }
 
@@ -343,7 +323,6 @@ interface SiteGatedRouteChildren {
   SiteGatedGalleryAlbumSlugRoute: typeof SiteGatedGalleryAlbumSlugRoute
   SiteGatedJoinApplyRoute: typeof SiteGatedJoinApplyRoute
   SiteGatedNewsSlugRoute: typeof SiteGatedNewsSlugRoute
-  SiteGatedEventsEventSlugAnfrageRoute: typeof SiteGatedEventsEventSlugAnfrageRoute
 }
 
 const SiteGatedRouteChildren: SiteGatedRouteChildren = {
@@ -356,7 +335,6 @@ const SiteGatedRouteChildren: SiteGatedRouteChildren = {
   SiteGatedGalleryAlbumSlugRoute: SiteGatedGalleryAlbumSlugRoute,
   SiteGatedJoinApplyRoute: SiteGatedJoinApplyRoute,
   SiteGatedNewsSlugRoute: SiteGatedNewsSlugRoute,
-  SiteGatedEventsEventSlugAnfrageRoute: SiteGatedEventsEventSlugAnfrageRoute,
 }
 
 const SiteGatedRouteWithChildren = SiteGatedRoute._addFileChildren(

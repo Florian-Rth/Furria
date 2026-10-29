@@ -1,11 +1,9 @@
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { skipToken, useQuery } from '@tanstack/react-query';
 import { toEntryWriteNotice } from '@/features/calendar/calendar-authoring';
-import type { ToDoMarkSurface } from '@/features/to-dos/api';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { queryKeys } from '@/lib/query/reads';
-import { isNotFoundError } from '@/lib/query-error';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import type { EventPayload } from './event-form';
 import {
@@ -28,22 +26,8 @@ import {
   requestEvents,
   requestEventUpdate,
   requestTicketAvailability,
-  requestTicketRequestHandled,
-  requestTicketRequests,
 } from './requests';
-import type {
-  EventDetails,
-  EventsResponse,
-  TicketAvailability,
-  TicketRequest,
-  TicketRequestsResponse,
-  WrittenEvent,
-} from './schemas';
-import {
-  REQUEST_ALREADY_HANDLED_MESSAGE,
-  toRequestHandledMessage,
-  withTicketRequestToDoMark,
-} from './ticket-requests-labels';
+import type { EventDetails, EventsResponse, TicketAvailability, WrittenEvent } from './schemas';
 
 export interface EventUpdateInput {
   eventId: number;
@@ -152,32 +136,4 @@ export const useEventPictureFromGalleryMutation = (): UseMutationResult<
     request: requestEventPictureFromGallery,
     changes: ['event'],
     notice: EVENT_PICTURE_FAILURE,
-  });
-
-export const useTicketRequestsQuery = (
-  isEnabled: boolean,
-): UseQueryResult<TicketRequestsResponse, Error> =>
-  useQuery({
-    queryKey: queryKeys.ticketRequests,
-    queryFn: () => withFreshAccessToken(requestTicketRequests),
-    enabled: isEnabled,
-  });
-
-export const TICKET_REQUEST_TO_DO_SURFACE: ToDoMarkSurface<TicketRequestsResponse> = {
-  queryKey: queryKeys.ticketRequests,
-  withMark: withTicketRequestToDoMark,
-};
-
-export const useTicketRequestHandledMutation = (
-  request: TicketRequest,
-): UseMutationResult<void, Error, void> =>
-  useApiMutation({
-    request: (_input, accessToken) =>
-      requestTicketRequestHandled(request.ticketRequestId, accessToken),
-    changes: ['ticketRequest'],
-    notice: {
-      success: () => toRequestHandledMessage(request),
-      failure: (error) =>
-        isNotFoundError(error) ? { tone: 'info', message: REQUEST_ALREADY_HANDLED_MESSAGE } : null,
-    },
   });

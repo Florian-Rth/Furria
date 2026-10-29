@@ -17,6 +17,10 @@ public sealed class GetPublicEventByIdTests : IClassFixture<ApiTestFixture>
     private const int PriceCents = 2_200;
 
     private static readonly TimeOnly DoorsOpenAt = new(17, 30);
+    private static readonly TimeOnly Nine = new(9, 0);
+    private static readonly TimeOnly Noon = new(12, 0);
+    private static readonly TimeOnly Two = new(14, 0);
+    private static readonly TimeOnly Six = new(18, 0);
 
     private static readonly DateTimeOffset Now = new(2027, 1, 10, 12, 0, 0, TimeSpan.Zero);
     private static readonly DateTimeOffset AtTheFirstGala = new(
@@ -104,6 +108,59 @@ public sealed class GetPublicEventByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_ShowTheRunningPresalePlacesWithTheirHours_When_TicketsAreOnSale()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildClubAsync(ct);
+
+                var (_, result) = await ReadAsync(ctx.Club.Events.IdOf("kids-carnival"));
+
+                Assert.Equal(EventSalesStatus.Available, result.Status);
+                Assert.Equal(
+                    ["Bäckerei Schmidt", "Bürgerhaus"],
+                    result.PresalePlaces.Select(place => place.Name)
+                );
+                var bakery = result.PresalePlaces[0];
+                Assert.Equal(
+                    ("Marktplatz 2", "99713", "Großfurra", "Karten an der Kasse"),
+                    (bakery.Street, bakery.Zip, bakery.City, bakery.Hint)
+                );
+                Assert.Equal(
+                    [
+                        (DayOfWeek.Monday, Nine, Noon),
+                        (DayOfWeek.Monday, Two, Six),
+                        (DayOfWeek.Saturday, Nine, Noon),
+                    ],
+                    bakery.OpeningHours.Select(slot => (slot.Weekday, slot.Opens, slot.Closes))
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_ShowNoPresalePlace_When_TheEveningIsSoldOut()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildClubAsync(ct);
+
+                var (_, result) = await ReadAsync(ctx.Club.Events.IdOf("first-gala"));
+
+                Assert.Empty(result.PresalePlaces);
+            }
+        );
+    }
+
+    [Fact]
     public async Task Should_CarryTheEventsPictureAtItsCut_When_TheEventHasOne()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -162,6 +219,22 @@ public sealed class GetPublicEventByIdTests : IClassFixture<ApiTestFixture>
             builder =>
                 builder.Club(club =>
                     club.AddVenue("buergerhaus", "Bürgerhaus")
+                        .AddVenue(
+                            "baeckerei",
+                            "Bäckerei Schmidt",
+                            street: "Marktplatz 2",
+                            zip: "99713",
+                            city: "Großfurra",
+                            hint: "Karten an der Kasse"
+                        )
+                        .AddVenueOpeningSlot("baeckerei", DayOfWeek.Saturday, Nine, Noon)
+                        .AddVenueOpeningSlot("baeckerei", DayOfWeek.Monday, Two, Six)
+                        .AddVenueOpeningSlot("baeckerei", DayOfWeek.Monday, Nine, Noon)
+                        .AddVenue(
+                            "zeitungsladen",
+                            "Zeitungsladen",
+                            archivedOn: new DateOnly(2026, 6, 1)
+                        )
                         .AddEvent(
                             "first-gala",
                             FirstGala,
@@ -175,6 +248,19 @@ public sealed class GetPublicEventByIdTests : IClassFixture<ApiTestFixture>
                             presaleStartsAt: PresaleStarted,
                             ticketAvailability: TicketAvailability.SoldOut
                         )
+                        .AddEventPresalePlace("first-gala", "baeckerei")
+                        .AddEvent(
+                            "kids-carnival",
+                            "Kinderfasching",
+                            AtTheFirstGala.AddDays(7),
+                            "buergerhaus",
+                            Teaser,
+                            priceCents: PriceCents,
+                            presaleStartsAt: PresaleStarted
+                        )
+                        .AddEventPresalePlace("kids-carnival", "baeckerei")
+                        .AddEventPresalePlace("kids-carnival", "zeitungsladen")
+                        .AddEventPresalePlace("kids-carnival", "buergerhaus")
                         .AddEvent("opening", "Sessionseröffnung", AtTheOpening, "buergerhaus")
                         .AddCalendarEntry(
                             "guard-party",

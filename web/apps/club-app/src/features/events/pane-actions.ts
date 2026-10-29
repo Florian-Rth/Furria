@@ -87,8 +87,6 @@ export const paneActionOf = ({
       return ticketFactsOf(event).length > 0 && event.status !== 'soldOut'
         ? { kind: 'editTickets' }
         : next();
-    case 'requests':
-      return event.ticketRequests.open > 0 ? NONE : next();
     case 'runningOrder':
       return runningOrderActionOf(runningOrder, event.isOver);
     case 'review': {

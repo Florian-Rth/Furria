@@ -1,5 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { toEventFormValues, toEventPayload, toEventVenueOptions } from './event-form';
+import {
+  presalePlaceChoicesOf,
+  toEventFormValues,
+  toEventPayload,
+  toEventVenueOptions,
+  togglePresaleVenue,
+} from './event-form';
 import type { EventDetails, EventForm } from './schemas';
 
 const at = (year: number, month: number, day: number, hour: number, minute = 0): string =>
@@ -19,6 +25,7 @@ const event = (overrides: Partial<EventDetails>): EventDetails => ({
   priceCents: 2_250,
   presaleStartsAt: at(2026, 12, 1, 10),
   ticketAvailability: 'available',
+  presalePlaces: [],
   cancelledAt: null,
   status: 'presaleScheduled',
   isOver: false,
@@ -26,7 +33,6 @@ const event = (overrides: Partial<EventDetails>): EventDetails => ({
   publishedAt: null,
   createdAt: at(2026, 10, 1, 10),
   detailsMissing: ['description', 'picture', 'published'],
-  ticketRequests: { open: 0, cards: 0, oldestRequestedAt: null },
   review: { publishedAlbums: 0, publishedNews: 0 },
   steps: [],
   currentStep: null,
@@ -45,6 +51,7 @@ const form = (overrides: Partial<EventForm>): EventForm => ({
   price: '',
   presaleDay: '',
   presaleTime: '10:00',
+  presaleVenueIds: [],
   ...overrides,
 });
 
@@ -60,6 +67,7 @@ describe('toEventPayload', () => {
       ageHint: null,
       priceCents: null,
       presaleStartsAt: null,
+      presaleVenueIds: [],
     });
   });
 
@@ -79,6 +87,10 @@ describe('toEventPayload', () => {
     expect(payload.presaleStartsAt).toBe(at(2026, 12, 1, 10));
     expect(payload.ageHint).toBe('ab 16');
   });
+
+  it('keeps the presale places in the order they were picked', () => {
+    expect(toEventPayload(form({ presaleVenueIds: [7, 2, 5] })).presaleVenueIds).toEqual([7, 2, 5]);
+  });
 });
 
 describe('toEventFormValues', () => {
@@ -94,6 +106,20 @@ describe('toEventFormValues', () => {
       presaleDay: '2026-12-01',
       presaleTime: '10:00',
     });
+  });
+
+  it('reads the presale places back in their order', () => {
+    const values = toEventFormValues(
+      event({
+        presalePlaces: [
+          { venueId: 5, name: 'Bäckerei Schmitz', isArchived: false },
+          { venueId: 2, name: 'Bürgerhaus', isArchived: true },
+        ],
+      }),
+      new Date(2026, 9, 7),
+    );
+
+    expect(values.presaleVenueIds).toEqual([5, 2]);
   });
 
   it('starts a new event today, without venue, doors or presale', () => {
@@ -119,5 +145,51 @@ describe('toEventVenueOptions', () => {
     const options = toEventVenueOptions(venues, event({ venueId: 9, venueName: 'Alte Halle' }));
 
     expect(options.map((option) => option.value)).toEqual(['2', '9']);
+  });
+});
+
+describe('togglePresaleVenue', () => {
+  it.each([
+    { name: 'adds a place at the end', picked: [5, 2], venueId: 7, expected: [5, 2, 7] },
+    { name: 'removes a picked place', picked: [5, 2, 7], venueId: 2, expected: [5, 7] },
+    { name: 'starts the list', picked: [], venueId: 3, expected: [3] },
+  ])('$name', ({ picked, venueId, expected }) => {
+    expect(togglePresaleVenue(picked, venueId)).toEqual(expected);
+  });
+});
+
+describe('presalePlaceChoicesOf', () => {
+  const venues = [
+    { venueId: 2, name: 'Bürgerhaus' },
+    { venueId: 5, name: 'Bäckerei Schmitz' },
+  ];
+
+  it('numbers the running places in pick order', () => {
+    const choices = presalePlaceChoicesOf(venues, [], [5, 2]);
+
+    expect(choices.map(({ venueId, position }) => ({ venueId, position }))).toEqual([
+      { venueId: 2, position: 2 },
+      { venueId: 5, position: 1 },
+    ]);
+  });
+
+  it('keeps a picked archived place, marked, until it is removed', () => {
+    const held = [
+      { venueId: 9, name: 'Alte Sparkasse', isArchived: true },
+      { venueId: 2, name: 'Bürgerhaus', isArchived: false },
+    ];
+
+    expect(
+      presalePlaceChoicesOf(venues, held, [9]).map(({ venueId, position, isArchived }) => ({
+        venueId,
+        position,
+        isArchived,
+      })),
+    ).toEqual([
+      { venueId: 2, position: null, isArchived: false },
+      { venueId: 5, position: null, isArchived: false },
+      { venueId: 9, position: 1, isArchived: true },
+    ]);
+    expect(presalePlaceChoicesOf(venues, held, []).map((choice) => choice.venueId)).toEqual([2, 5]);
   });
 });

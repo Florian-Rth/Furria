@@ -57,6 +57,7 @@ public sealed class PostEvent : Endpoint<PostEventRequest, PostEventResponse>
             AgeHint = req.AgeHint,
             PriceCents = req.PriceCents,
             PresaleStartsAt = req.PresaleStartsAt,
+            PresaleVenueIds = req.PresaleVenueIds,
         };
 
     private static VenueCollisionQuery ToCollisionQuery(
@@ -107,6 +108,8 @@ public sealed record PostEventRequest
     public required int? PriceCents { get; init; }
 
     public required DateTimeOffset? PresaleStartsAt { get; init; }
+
+    public required IReadOnlyList<int> PresaleVenueIds { get; init; }
 }
 
 public sealed class PostEventValidator : Validator<PostEventRequest>
@@ -145,6 +148,10 @@ public sealed class PostEventValidator : Validator<PostEventRequest>
             .InclusiveBetween(0, EventLimits.MaxPriceCents)
             .When(request => request.PriceCents is not null)
             .WithMessage(PriceOutOfRangeMessage);
+        RuleFor(request => request.PresaleVenueIds).NotNull();
+        RuleFor(request => request.PresaleVenueIds)
+            .SetValidator(new PresaleVenueIdsValidator())
+            .When(request => request.PresaleVenueIds is not null);
     }
 }
 

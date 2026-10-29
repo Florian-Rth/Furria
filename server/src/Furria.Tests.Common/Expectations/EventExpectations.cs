@@ -27,6 +27,20 @@ public sealed class EventExpectations
                 )
         );
 
+    public Expected ToSellAt(params int[] venueIds) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    venueIds,
+                    await dbContext
+                        .EventPresalePlaces.AsNoTracking()
+                        .Where(place => place.EventId == _eventId)
+                        .OrderBy(place => place.SortOrder)
+                        .Select(place => place.VenueId)
+                        .ToListAsync(ct)
+                )
+        );
+
     public Expected ToHaveTeaser(string teaser) =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Equal(teaser, (await SingleAsync(dbContext, ct)).Teaser)

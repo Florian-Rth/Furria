@@ -12,8 +12,6 @@ public static class EventSteps
     private const int ReviewDaysAfter = 14;
     private const int FewestDaysSinceCreation = 14;
 
-    private static readonly TimeSpan LongestRequestWait = TimeSpan.FromDays(3);
-
     [Pure]
     public static EventReadiness ReadinessOf(EventReadinessFacts facts, DateTimeOffset now)
     {
@@ -27,13 +25,7 @@ public static class EventSteps
                 facts,
                 today
             ),
-            PreEventStatusOf(
-                EventStep.Tickets,
-                TicketsLeadDays,
-                AreTicketsDone(facts, now),
-                facts,
-                today
-            ),
+            PreEventStatusOf(EventStep.Tickets, TicketsLeadDays, facts.AreTicketsSet, facts, today),
             RunningOrderStatusOf(facts, today),
             ReviewStatusOf(facts, today),
         ];
@@ -119,11 +111,6 @@ public static class EventSteps
         IEnumerable<EventStepStatus> steps,
         EventStepState state
     ) => steps.Where(status => status.State == state).MinBy(status => status.DueOn);
-
-    [Pure]
-    private static bool AreTicketsDone(EventReadinessFacts facts, DateTimeOffset now) =>
-        facts.AreTicketsSet
-        && !(facts.OldestOpenRequestAt is { } oldest && now - oldest > LongestRequestWait);
 
     [Pure]
     private static DateOnly DueOf(DateOnly plannedDue, EventReadinessFacts facts)

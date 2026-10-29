@@ -32,4 +32,6 @@ public sealed class Event : ITimestamped
     public CalendarEntry? CalendarEntry { get; set; }
 
     public MediaItem? Picture { get; set; }
+
+    public ICollection<EventPresalePlace> PresalePlaces { get; set; } = [];
 }

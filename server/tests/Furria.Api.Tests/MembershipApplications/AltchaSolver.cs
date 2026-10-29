@@ -3,7 +3,6 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Text.Json;
 using Furria.Api.Endpoints.MembershipApplications;
-using Furria.Api.Endpoints.TicketRequests;
 
 namespace Furria.Api.Tests.MembershipApplications;
 
@@ -24,19 +23,6 @@ internal static class AltchaSolver
         GetMembershipApplicationChallengeResponse challenge,
         AltchaSolution solution
     ) => PayloadOf(challenge.Parameters, challenge.Signature, solution);
-
-    public static string SolvedPayloadOf(GetTicketRequestChallengeResponse challenge) =>
-        PayloadOf(
-            challenge.Parameters,
-            challenge.Signature,
-            SolutionOf(
-                challenge.Parameters.Nonce,
-                challenge.Parameters.Salt,
-                challenge.Parameters.Cost,
-                challenge.Parameters.KeyLength,
-                challenge.Parameters.KeyPrefix
-            )
-        );
 
     private static AltchaSolution SolutionOf(
         string nonceHex,

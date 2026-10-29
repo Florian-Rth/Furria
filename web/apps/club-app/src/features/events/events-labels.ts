@@ -109,7 +109,7 @@ export const toEventCancellationCopy = (event: EventDetails): EventCancellationC
         lineLabel: 'Absagen',
         question: `„${event.title}“ absagen?`,
         explanation:
-          'Die Veranstaltung bleibt auf der Website stehen und zeigt die Absage, damit geteilte Links und Flyer ehrlich bleiben. Anfragen nach Karten sind dann nicht mehr möglich.',
+          'Die Veranstaltung bleibt auf der Website stehen und zeigt die Absage, damit geteilte Links und Flyer ehrlich bleiben.',
         consequence: `Die Website zeigt „${event.title}“ ab sofort als abgesagt.`,
         confirmLabel: 'Absagen',
       }

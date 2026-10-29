@@ -1,11 +1,13 @@
 using System.Diagnostics.Contracts;
 using System.Linq.Expressions;
+using Furria.Application.Club;
 using Furria.Application.Events;
 using Furria.Application.Media;
 using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Media;
+using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
@@ -106,7 +108,8 @@ public sealed class EventService
                 row.CalendarEntry.VenueId != null,
                 row.CalendarEntry.Description != null && row.CalendarEntry.Description.Trim() != "",
                 row.CreatedAt,
-                row.PublishedAt
+                row.PublishedAt,
+                row.PresalePlaces.Any(place => place.Venue!.ArchivedOn == null)
             ))
             .ToListAsync(ct);
         var eventIds = rows.Select(row => row.EventId).ToList();
@@ -170,7 +173,15 @@ public sealed class EventService
                         row.Picture.Crop
                     ),
                 row.CreatedAt,
-                row.PublishedAt
+                row.PublishedAt,
+                row.PresalePlaces.OrderBy(place => place.SortOrder)
+                    .Select(place => new EventPresalePlaceSummary
+                    {
+                        VenueId = place.VenueId,
+                        Name = place.Venue!.Name,
+                        IsArchived = place.Venue.ArchivedOn != null,
+                    })
+                    .ToList()
             ))
             .SingleOrDefaultAsync(ct);
 
@@ -204,15 +215,17 @@ public sealed class EventService
     {
         var now = _timeProvider.GetUtcNow();
 
-        return await _publicFace
+        var details = await _publicFace
             .Events.Where(row => row.CalendarEntryId == eventId)
             .Select(PublicDetailsAt(now))
             .SingleOrDefaultAsync(ct);
+
+        return details is null ? null : WithShownPresalePlaces(details, now);
     }
 
     public async Task<Result<int>> CreateAsync(EventFactsCommand facts, CancellationToken ct)
     {
-        if (await VenueRefusalAsync(facts.VenueId, ct) is { } refusal)
+        if (await VenueRefusalAsync(facts, ct) is { } refusal)
             return Result<int>.Validation(refusal);
 
         var entry = new CalendarEntry
@@ -237,7 +250,7 @@ public sealed class EventService
         if (entry is null)
             return Result.NotFound(UnknownEventMessage);
 
-        if (await VenueRefusalAsync(command.Facts.VenueId, ct) is { } refusal)
+        if (await VenueRefusalAsync(command.Facts, ct) is { } refusal)
             return Result.Validation(refusal);
 
         Apply(entry, command.Facts, _timeProvider.GetUtcNow());
@@ -306,13 +319,6 @@ public sealed class EventService
         if (entry is null)
             return Result.NotFound(UnknownEventMessage);
 
-        var openRequests = await _dbContext.TicketRequests.CountAsync(
-            request => request.EventId == eventId,
-            ct
-        );
-        if (openRequests > 0)
-            return Result.Conflict(OpenRequestsMessage(openRequests));
-
         await _dbContext.KeepSessionOfAlbumsOnAsync(entry, ct);
         _dbContext.CalendarEntries.Remove(entry);
         await _dbContext.SaveChangesAsync(ct);
@@ -334,9 +340,29 @@ public sealed class EventService
         held.AgeHint = facts.AgeHint;
         held.PriceCents = facts.PriceCents;
         held.PresaleStartsAt = facts.PresaleStartsAt;
+        ReplacePresalePlaces(held, facts.PresaleVenueIds);
 
         if (!EventSales.HasPresaleBegun(facts.PresaleStartsAt, now))
             held.TicketAvailability = TicketAvailability.Available;
+    }
+
+    private static void ReplacePresalePlaces(Event held, IReadOnlyList<int> venueIds)
+    {
+        foreach (
+            var dropped in held.PresalePlaces.Where(p => !venueIds.Contains(p.VenueId)).ToList()
+        )
+            held.PresalePlaces.Remove(dropped);
+
+        foreach (var (venueId, sortOrder) in venueIds.Select((venueId, index) => (venueId, index)))
+        {
+            var kept = held.PresalePlaces.SingleOrDefault(place => place.VenueId == venueId);
+            if (kept is null)
+                held.PresalePlaces.Add(
+                    new EventPresalePlace { VenueId = venueId, SortOrder = sortOrder }
+                );
+            else
+                kept.SortOrder = sortOrder;
+        }
     }
 
     [Pure]
@@ -379,12 +405,6 @@ public sealed class EventService
         DateTimeOffset? endsAt,
         DateTimeOffset now
     ) => (endsAt ?? startsAt.AddHours(CalendarDefaults.OpenEndedHours)) <= now;
-
-    [Pure]
-    private static string OpenRequestsMessage(int openRequests) =>
-        openRequests == 1
-            ? "Zu dieser Veranstaltung ist noch 1 Kartenanfrage offen. Erledige sie, bevor du die Veranstaltung löschst."
-            : $"Zu dieser Veranstaltung sind noch {openRequests} Kartenanfragen offen. Erledige sie, bevor du die Veranstaltung löschst.";
 
     [Pure]
     private static EventSummary ToSummary(
@@ -438,6 +458,7 @@ public sealed class EventService
             PriceCents = row.PriceCents,
             PresaleStartsAt = row.PresaleStartsAt,
             TicketAvailability = row.TicketAvailability,
+            PresalePlaces = row.PresalePlaces,
             CancelledAt = row.CancelledAt,
             Status = EventSales.StatusOf(
                 row.PresaleStartsAt,
@@ -467,7 +488,7 @@ public sealed class EventService
                 HasPicture = row.PictureId is not null,
                 IsPublished = row.PublishedAt is not null,
             },
-            row.PriceCents is not null && row.PresaleStartsAt is not null
+            AreTicketsSet(row.PriceCents, row.PresaleStartsAt, row.HasRunningPresalePlace)
         );
 
     [Pure]
@@ -485,8 +506,19 @@ public sealed class EventService
                 HasPicture = row.Picture is not null,
                 IsPublished = row.PublishedAt is not null,
             },
-            row.PriceCents is not null && row.PresaleStartsAt is not null
+            AreTicketsSet(
+                row.PriceCents,
+                row.PresaleStartsAt,
+                row.PresalePlaces.Any(place => !place.IsArchived)
+            )
         );
+
+    [Pure]
+    private static bool AreTicketsSet(
+        int? priceCents,
+        DateTimeOffset? presaleStartsAt,
+        bool hasRunningPresalePlace
+    ) => priceCents is not null && presaleStartsAt is not null && hasRunningPresalePlace;
 
     [Pure]
     private static EventPlanning PlanningOf(
@@ -505,7 +537,6 @@ public sealed class EventService
             IsOver = inputs.IsOver,
             AreDetailsDone = detailsMissing.Count == 0,
             AreTicketsSet = inputs.AreTicketsSet,
-            OldestOpenRequestAt = tally?.OldestRequestedAt,
             IsRunningOrderDone = isRunningOrderSettled,
             HasPublishedAlbum = tally?.PublishedAlbums > 0,
         };
@@ -513,12 +544,6 @@ public sealed class EventService
         return new EventPlanning
         {
             DetailsMissing = detailsMissing,
-            TicketRequests = new EventTicketRequestTally
-            {
-                Open = tally?.OpenRequests ?? 0,
-                Cards = tally?.Cards ?? 0,
-                OldestRequestedAt = tally?.OldestRequestedAt,
-            },
             Review = new EventReviewTally
             {
                 PublishedAlbums = tally?.PublishedAlbums ?? 0,
@@ -587,6 +612,26 @@ public sealed class EventService
             },
             Teaser = row.Teaser,
             Description = row.CalendarEntry.Description,
+            PresalePlaces = row
+                .PresalePlaces.Where(place => place.Venue!.ArchivedOn == null)
+                .OrderBy(place => place.SortOrder)
+                .Select(place => new PublicPresalePlace
+                {
+                    Name = place.Venue!.Name,
+                    Street = place.Venue.Street,
+                    Zip = place.Venue.Zip,
+                    City = place.Venue.City,
+                    Hint = place.Venue.Hint,
+                    OpeningHours = place
+                        .Venue.OpeningSlots.Select(slot => new VenueOpeningSlotDetails
+                        {
+                            Weekday = slot.Weekday,
+                            Opens = slot.Opens,
+                            Closes = slot.Closes,
+                        })
+                        .ToList(),
+                })
+                .ToList(),
             AgeHint = row.AgeHint,
             PriceCents = row.PriceCents,
             PresaleStartsAt = row.PresaleStartsAt,
@@ -606,6 +651,26 @@ public sealed class EventService
         };
 
     [Pure]
+    private static PublicEventDetails WithShownPresalePlaces(
+        PublicEventDetails details,
+        DateTimeOffset now
+    ) =>
+        details with
+        {
+            PresalePlaces = EventSales.ShowsPresalePlaces(details.Status, details.StartsAt, now)
+                ?
+                [
+                    .. details.PresalePlaces.Select(place =>
+                        place with
+                        {
+                            OpeningHours = OpeningHoursOrder.InWeekOrder(place.OpeningHours),
+                        }
+                    ),
+                ]
+                : [],
+        };
+
+    [Pure]
     private static DateTimeOffset? DoorsOpenInstantOf(
         DateTimeOffset startsAt,
         TimeOnly? doorsOpenAt
@@ -621,7 +686,6 @@ public sealed class EventService
         CancellationToken ct
     )
     {
-        var requests = _dbContext.TicketRequests.AsNoTracking();
         var albums = _publicFace.Albums;
         var posts = _publicFace.NewsPosts;
 
@@ -630,13 +694,6 @@ public sealed class EventService
             .Where(row => eventIds.Contains(row.CalendarEntryId))
             .Select(row => new TallyRow(
                 row.CalendarEntryId,
-                requests.Count(request => request.EventId == row.CalendarEntryId),
-                requests
-                    .Where(request => request.EventId == row.CalendarEntryId)
-                    .Sum(request => request.TicketCount),
-                requests
-                    .Where(request => request.EventId == row.CalendarEntryId)
-                    .Min(request => (DateTimeOffset?)request.RequestedAt),
                 albums.Count(album => album.CalendarEntryId == row.CalendarEntryId),
                 posts.Count(post => post.EventId == row.CalendarEntryId)
             ))
@@ -646,24 +703,35 @@ public sealed class EventService
     private Task<CalendarEntry?> TrackedEventEntryAsync(int eventId, CancellationToken ct) =>
         _dbContext
             .CalendarEntries.Include(entry => entry.Event)
+                .ThenInclude(held => held!.PresalePlaces)
             .Where(entry => entry.Kind == CalendarEntryKind.Event && entry.Event != null)
             .SingleOrDefaultAsync(entry => entry.Id == eventId, ct);
 
     private Task<Event?> TrackedEventAsync(int eventId, CancellationToken ct) =>
         _dbContext.Events.SingleOrDefaultAsync(row => row.CalendarEntryId == eventId, ct);
 
-    private async Task<string?> VenueRefusalAsync(int venueId, CancellationToken ct)
+    private async Task<string?> VenueRefusalAsync(EventFactsCommand facts, CancellationToken ct)
     {
-        var archivedOn = await _dbContext
+        int[] venueIds = [facts.VenueId, .. facts.PresaleVenueIds];
+        var states = await _dbContext
             .Venues.AsNoTracking()
-            .Where(venue => venue.Id == venueId)
-            .Select(venue => new VenueStateRow(venue.ArchivedOn))
-            .SingleOrDefaultAsync(ct);
+            .Where(venue => venueIds.Contains(venue.Id))
+            .Select(venue => new VenueStateRow(venue.Id, venue.ArchivedOn))
+            .ToListAsync(ct);
 
-        if (archivedOn is null)
+        return VenueRefusalOf(venueIds, states);
+    }
+
+    [Pure]
+    private static string? VenueRefusalOf(
+        IReadOnlyList<int> venueIds,
+        IReadOnlyList<VenueStateRow> states
+    )
+    {
+        if (venueIds.Any(venueId => states.All(state => state.VenueId != venueId)))
             return UnknownVenueMessage;
 
-        return archivedOn.ArchivedOn is null ? null : ArchivedVenueMessage;
+        return states.Any(state => state.ArchivedOn is not null) ? ArchivedVenueMessage : null;
     }
 
     private sealed record SummaryRow(
@@ -683,7 +751,8 @@ public sealed class EventService
         bool HasVenue,
         bool HasDescription,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? PublishedAt
+        DateTimeOffset? PublishedAt,
+        bool HasRunningPresalePlace
     );
 
     private sealed record DetailsRow(
@@ -704,7 +773,8 @@ public sealed class EventService
         bool IsOver,
         MediaPictureRow? Picture,
         DateTimeOffset CreatedAt,
-        DateTimeOffset? PublishedAt
+        DateTimeOffset? PublishedAt,
+        IReadOnlyList<EventPresalePlaceSummary> PresalePlaces
     );
 
     private sealed record PlanningInputs(
@@ -716,14 +786,7 @@ public sealed class EventService
         bool AreTicketsSet
     );
 
-    private sealed record TallyRow(
-        int EventId,
-        int OpenRequests,
-        int Cards,
-        DateTimeOffset? OldestRequestedAt,
-        int PublishedAlbums,
-        int PublishedNews
-    );
+    private sealed record TallyRow(int EventId, int PublishedAlbums, int PublishedNews);
 
-    private sealed record VenueStateRow(DateOnly? ArchivedOn);
+    private sealed record VenueStateRow(int VenueId, DateOnly? ArchivedOn);
 }

@@ -52,6 +52,7 @@ public sealed class GetEventById : Endpoint<GetEventByIdRequest, GetEventByIdRes
             PriceCents = details.PriceCents,
             PresaleStartsAt = details.PresaleStartsAt,
             TicketAvailability = details.TicketAvailability,
+            PresalePlaces = [.. details.PresalePlaces.Select(EventPresalePlaceDto.From)],
             CancelledAt = details.CancelledAt,
             Status = details.Status,
             IsOver = details.IsOver,
@@ -59,7 +60,6 @@ public sealed class GetEventById : Endpoint<GetEventByIdRequest, GetEventByIdRes
             PublishedAt = details.PublishedAt,
             CreatedAt = details.CreatedAt,
             DetailsMissing = details.Planning.DetailsMissing,
-            TicketRequests = EventTicketRequestsDto.From(details.Planning.TicketRequests),
             Review = EventReviewDto.From(details.Planning.Review),
             Steps = [.. details.Planning.Readiness.Steps.Select(EventStepDto.From)],
             CurrentStep = details.Planning.Readiness.CurrentStep,
@@ -108,6 +108,8 @@ public sealed record GetEventByIdResponse
 
     public required TicketAvailability TicketAvailability { get; init; }
 
+    public required IReadOnlyList<EventPresalePlaceDto> PresalePlaces { get; init; }
+
     public required DateTimeOffset? CancelledAt { get; init; }
 
     public required EventSalesStatus Status { get; init; }
@@ -121,8 +123,6 @@ public sealed record GetEventByIdResponse
     public required DateTimeOffset CreatedAt { get; init; }
 
     public required IReadOnlyList<MissingEventDetail> DetailsMissing { get; init; }
-
-    public required EventTicketRequestsDto TicketRequests { get; init; }
 
     public required EventReviewDto Review { get; init; }
 

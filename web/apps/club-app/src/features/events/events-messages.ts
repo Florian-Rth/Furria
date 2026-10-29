@@ -12,19 +12,11 @@ const EVENT_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
   unexpected: 'Die Veranstaltung konnte nicht geladen werden.',
 };
 
-const TICKET_REQUESTS_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
-  ...EVENTS_ERROR_MESSAGES,
-  unexpected: 'Die Kartenanfragen konnten nicht geladen werden.',
-};
-
 export const toEventsErrorMessage = (error: Error | null): string | null =>
   toQueryErrorMessage(error, EVENTS_ERROR_MESSAGES);
 
 export const toEventErrorMessage = (error: Error | null): string | null =>
   toQueryErrorMessage(error, EVENT_ERROR_MESSAGES);
-
-export const toTicketRequestsErrorMessage = (error: Error | null): string | null =>
-  toQueryErrorMessage(error, TICKET_REQUESTS_ERROR_MESSAGES);
 
 const RUNNING_ORDER_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
   ...EVENTS_ERROR_MESSAGES,

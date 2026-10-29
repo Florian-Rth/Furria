@@ -19,7 +19,6 @@ export type PlannedEvent = Pick<
   | 'priceCents'
   | 'presaleStartsAt'
   | 'detailsMissing'
-  | 'ticketRequests'
   | 'review'
   | 'steps'
   | 'currentStep'
@@ -28,7 +27,7 @@ export type PlannedEvent = Pick<
 const MS_PER_DAY = 86_400_000;
 
 export type FactDetail = Exclude<MissingEventDetail, 'published'>;
-export type TicketFact = 'price' | 'presale';
+export type TicketFact = 'price' | 'presale' | 'places';
 
 const dayStartOf = (isoDay: string): number => fromIsoDay(isoDay).getTime();
 
@@ -79,9 +78,10 @@ export const factDetailsOf = (missing: readonly MissingEventDetail[]): FactDetai
   missing.filter((detail): detail is FactDetail => detail !== 'published');
 
 export const ticketFactsOf = (
-  event: Pick<PlannedEvent, 'priceCents' | 'presaleStartsAt'>,
+  event: Pick<PlannedEvent, 'priceCents' | 'presaleStartsAt' | 'steps'>,
 ): TicketFact[] => {
   const missing: TicketFact[] = [];
+  const ticketsStep = stepStatusOf(event, 'tickets');
 
   if (event.priceCents === null) {
     missing.push('price');
@@ -89,14 +89,12 @@ export const ticketFactsOf = (
   if (event.presaleStartsAt === null) {
     missing.push('presale');
   }
+  if (missing.length === 0 && ticketsStep !== null && ticketsStep.state !== 'done') {
+    missing.push('places');
+  }
 
   return missing;
 };
-
-export const waitingDaysOf = (oldestRequestedAt: string | null, todayIsoDay: string): number =>
-  oldestRequestedAt === null
-    ? 0
-    : Math.max(daysBetween(toIsoDay(new Date(oldestRequestedAt)), todayIsoDay), 0);
 
 export type PublishState = 'published' | 'ready' | 'blocked' | 'closed';
 

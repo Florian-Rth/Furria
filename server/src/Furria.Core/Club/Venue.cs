@@ -21,4 +21,6 @@ public sealed class Venue : ITimestamped
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
+
+    public ICollection<VenueOpeningSlot> OpeningSlots { get; set; } = [];
 }

@@ -73,7 +73,7 @@ errorsPerHour: int[24]   (oldest hour first, Error+Fatal from log_entry)
 logsSince: datetime|null (oldest stored log entry)
 ```
 `job` keys: `abandonedUploadSweep, mediaFileReaper, galleryBinPurge, mailDispatcher,
-unconfirmedApplicationPurge, pastTicketRequestPurge, signedOutMailRequestWorker, logEntryPurge,
+unconfirmedApplicationPurge, signedOutMailRequestWorker, logEntryPurge,
 mediaStorageSurvey`.
 
 `GET /api/system/logs?source=api|mediaWorker&minimumLevel=information|warning|error&search=&before=&take=`

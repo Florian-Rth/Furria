@@ -1,4 +1,7 @@
+import type { OpeningSlot, OpeningWeekday } from '@furria/api-client/opening-hours';
+import { formatOpeningHours, OPENING_WEEKDAYS } from '@furria/api-client/opening-hours';
 import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
+import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import { formatIsoDay } from '@/lib/membership-labels';
 import type { ManagedVenue } from './schemas';
@@ -82,7 +85,8 @@ export const findManagedVenue = (
   return venues.find((venue) => venue.venueId === venueId) ?? null;
 };
 
-export const MANAGE_VENUES_LEAD = 'Orte für Termine, Trainings und Schlüssel.';
+export const MANAGE_VENUES_LEAD =
+  'Orte für Termine, Trainings, Schlüssel und den Kartenvorverkauf.';
 export const toArchivedSinceLine = (archivedOn: string): string =>
   `Archiviert am ${formatIsoDay(archivedOn)}. Aktiviere den Ort, um ihn zu bearbeiten.`;
 
@@ -123,3 +127,25 @@ export const toVenueSavedMessage = (name: string): string => `${name} ist gespei
 export const toVenueArchivedMessage = (name: string): string => `${name} ist archiviert.`;
 
 export const toVenueRestoredMessage = (name: string): string => `${name} steht wieder zur Auswahl.`;
+
+const WEEKDAY_NAMES: Record<OpeningWeekday, string> = {
+  monday: 'Montag',
+  tuesday: 'Dienstag',
+  wednesday: 'Mittwoch',
+  thursday: 'Donnerstag',
+  friday: 'Freitag',
+  saturday: 'Samstag',
+  sunday: 'Sonntag',
+};
+
+export const OPENING_WEEKDAY_OPTIONS: readonly KkSelectOption[] = OPENING_WEEKDAYS.map(
+  (weekday) => ({ value: weekday, label: WEEKDAY_NAMES[weekday] }),
+);
+
+const OPENING_LINE_SEPARATOR = '; ';
+
+export const toOpeningHoursText = (slots: readonly OpeningSlot[]): string | null => {
+  const lines = formatOpeningHours(slots).map((line) => `${line.days} ${line.times}`);
+
+  return lines.length === 0 ? null : lines.join(OPENING_LINE_SEPARATOR);
+};

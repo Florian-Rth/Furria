@@ -8,6 +8,7 @@ import {
   RESTORE_EXPLANATION,
   RESTORE_EYEBROW,
   toArchivedSinceLine,
+  toOpeningHoursText,
   toRestoreConsequence,
   toRestoreQuestion,
   toVenueAddressLine,
@@ -27,6 +28,7 @@ interface ArchivedVenueCardProps {
 export const ArchivedVenueCard: FC<ArchivedVenueCardProps> = ({ venue }) => {
   const restore = useVenueRestore(venue);
   const today = formatIsoDay(toIsoDay(new Date()));
+  const openingHours = toOpeningHoursText(venue.openingHours);
   const note = venue.archivedOn === null ? null : toArchivedSinceLine(venue.archivedOn);
 
   const actions = (
@@ -41,6 +43,7 @@ export const ArchivedVenueCard: FC<ArchivedVenueCardProps> = ({ venue }) => {
         name={venue.name}
         addressLine={toVenueAddressLine(venue)}
         hint={venue.hint}
+        openingHours={openingHours}
         note={note}
         dimmed
         actions={actions}

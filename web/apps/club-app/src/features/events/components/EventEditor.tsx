@@ -5,7 +5,7 @@ import type { FC } from 'react';
 import type { RunningVenue } from '@/features/calendar/schemas';
 import { EVENTS_ORIGIN } from '@/features/session/app-sections';
 import { WriteScreen } from '@/features/write/WriteScreen';
-import { toEventVenueOptions } from '../event-form';
+import { presalePlaceChoicesOf, toEventVenueOptions, toPresalePlaceOptions } from '../event-form';
 import { useEventEditor } from '../hooks/use-event-editor';
 import type { EventDetails } from '../schemas';
 import { EventPicturePanel } from './EventPicturePanel';
@@ -45,6 +45,9 @@ export const EventEditor: FC<EventEditorProps> = ({ event, venues }) => {
           params: { eventId: String(event.eventId) },
         };
   const venueOptions = toEventVenueOptions(venues, event);
+  const presalePlaceOptions = toPresalePlaceOptions(
+    presalePlaceChoicesOf(venues, event?.presalePlaces ?? [], control.values.presaleVenueIds),
+  );
   const intro = control.isEditing ? null : <KkNote>{CREATE_NOTE}</KkNote>;
   const picture =
     event === null ? (
@@ -84,7 +87,7 @@ export const EventEditor: FC<EventEditorProps> = ({ event, venues }) => {
       {picture}
       <EventScheduleSection control={control} venueOptions={venueOptions} />
       <EventWebsiteTextsSection control={control} />
-      <EventTicketsSection control={control} />
+      <EventTicketsSection control={control} presalePlaceOptions={presalePlaceOptions} />
     </WriteScreen>
   );
 };

@@ -1,19 +1,26 @@
+import Button from '@mui/material/Button';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { StickyActionBar } from '@/features/events/components/StickyActionBar';
-import { TicketRequestCta } from '@/features/events/components/TicketRequestCta';
-import { ticketPanelPriceLabel } from '@/features/events/event-detail-content';
-import { useTicketRequestWindow } from '@/features/events/hooks/use-ticket-request-window';
+import {
+  presalePlacesAnchorId,
+  presalePlacesJumpLabel,
+  ticketPanelPriceLabel,
+} from '@/features/events/event-detail-content';
+import { usePresalePlacesJump } from '@/features/events/hooks/use-presale-places-jump';
 import { formatEuros } from '@/lib/money';
-import type { Event } from '@/lib/public-events/schemas';
+import type { EventDetail } from '@/lib/public-events/schemas';
+
+const PRESALE_PLACES_HREF = `#${presalePlacesAnchorId}`;
 
 interface EventStickyCtaProps {
-  event: Event;
+  event: EventDetail;
 }
 
 export const EventStickyCta: FC<EventStickyCtaProps> = ({ event }) => {
-  const isWindowOpen = useTicketRequestWindow(event);
-  if (!isWindowOpen) {
+  const jumpToPresalePlaces = usePresalePlacesJump();
+
+  if (event.presalePlaces.length === 0) {
     return null;
   }
 
@@ -28,9 +35,19 @@ export const EventStickyCta: FC<EventStickyCtaProps> = ({ event }) => {
     );
 
   return (
-    <StickyActionBar sx={{ display: { desktop: 'none' }, justifyContent: 'space-between' }}>
+    <StickyActionBar hideFrom="desktop" sx={{ justifyContent: 'space-between' }}>
       {priceLine}
-      <TicketRequestCta event={event} sx={{ flexGrow: 1, maxWidth: '14rem' }} />
+      <Button
+        component="a"
+        href={PRESALE_PLACES_HREF}
+        onClick={jumpToPresalePlaces}
+        variant="contained"
+        color="primary"
+        size="large"
+        sx={{ flexGrow: 1, maxWidth: '14rem' }}
+      >
+        {presalePlacesJumpLabel}
+      </Button>
     </StickyActionBar>
   );
 };

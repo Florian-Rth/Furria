@@ -63,6 +63,32 @@ public sealed class VenueExpectations
             async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).ArchivedOn)
         );
 
+    public Expected ToHaveOpeningHours(
+        params (DayOfWeek Weekday, TimeOnly Opens, TimeOnly Closes)[] slots
+    ) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var stored = await dbContext
+                    .VenueOpeningSlots.AsNoTracking()
+                    .Where(slot => slot.VenueId == _venueId)
+                    .Select(slot => new
+                    {
+                        slot.Weekday,
+                        slot.Opens,
+                        slot.Closes,
+                    })
+                    .ToListAsync(ct);
+                Assert.Equal(
+                    slots.OrderBy(slot => slot.Weekday).ThenBy(slot => slot.Opens),
+                    stored
+                        .Select(slot => (slot.Weekday, slot.Opens, slot.Closes))
+                        .OrderBy(slot => slot.Weekday)
+                        .ThenBy(slot => slot.Opens)
+                );
+            }
+        );
+
     private Task<Venue> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
         dbContext.Venues.AsNoTracking().SingleAsync(row => row.Id == _venueId, ct);
 }

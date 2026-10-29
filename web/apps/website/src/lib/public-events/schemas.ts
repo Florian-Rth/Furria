@@ -1,3 +1,4 @@
+import { OpeningSlotSchema } from '@furria/api-client/opening-hours';
 import { z } from 'zod';
 import { PictureSchema } from '@/lib/api/schemas';
 import { WallClockSchema } from '@/lib/api/wall-clock';
@@ -25,6 +26,12 @@ export const EventVenueSchema = z.object({
 });
 
 export type EventVenue = z.infer<typeof EventVenueSchema>;
+
+export const PresalePlaceSchema = EventVenueSchema.extend({
+  openingHours: z.array(OpeningSlotSchema),
+});
+
+export type PresalePlace = z.infer<typeof PresalePlaceSchema>;
 
 export const EventPictureSchema = PictureSchema.extend({
   width: z.number().int().positive(),
@@ -56,6 +63,7 @@ export const EventsResponseSchema = z.object({
 
 export const EventDetailSchema = EventSchema.extend({
   description: z.string().nullable().transform(toParagraphs),
+  presalePlaces: z.array(PresalePlaceSchema),
 });
 
 export type EventDetail = z.infer<typeof EventDetailSchema>;

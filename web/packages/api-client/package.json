@@ -8,6 +8,7 @@
   ],
   "exports": {
     ".": "./src/index.ts",
+    "./opening-hours": "./src/opening-hours.ts",
     "./zod-without-eval": "./src/zod-without-eval.ts"
   },
   "scripts": {

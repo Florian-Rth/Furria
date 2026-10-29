@@ -15,7 +15,7 @@ import { toCellFactLabel, toTallyView } from './event-board-copy';
 import { boardStateOf, daysBetween, stepStatusOf } from './event-plan';
 import { toDueLabel, toShortDay } from './event-plan-copy';
 import { toClockLabel, toEventWhenLabel } from './events-labels';
-import type { EventDetails, EventPaneKey, EventStepKey } from './schemas';
+import type { EventDetails, EventPaneKey, EventPresalePlace, EventStepKey } from './schemas';
 
 export const CHECK_LABELS: Record<DetailCheck, string> = {
   when: 'Wann',
@@ -108,13 +108,18 @@ export const toPriceValue = (priceCents: number | null): string =>
 export const toCountValue = (count: number, one: string, many: string): string =>
   `${count} ${count === 1 ? one : many}`;
 
-export const toWaitingValue = (days: number | null): string => {
-  if (days === null) {
-    return '—';
-  }
+const ARCHIVED_FLAG = ' (archiviert)';
+const PLACE_SEPARATOR = ' · ';
 
-  return days === 0 ? 'seit heute' : `seit ${days} ${days === 1 ? 'Tag' : 'Tagen'}`;
-};
+export const toPresalePlacesValue = (places: readonly EventPresalePlace[]): string =>
+  places.length === 0
+    ? MISSING
+    : places
+        .map((place) => (place.isArchived ? `${place.name}${ARCHIVED_FLAG}` : place.name))
+        .join(PLACE_SEPARATOR);
+
+export const ARCHIVED_PLACES_NOTE =
+  'Archivierte Orte zeigt die Website nicht. Entferne sie in der Bearbeitung oder aktiviere sie wieder.';
 
 export const toStepDue = (event: EventDetails, cell: BoardCell): string | undefined => {
   const step = PANE_STEPS[cell.pane];

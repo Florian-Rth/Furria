@@ -17,6 +17,8 @@ public sealed class PutEventTests : IClassFixture<ApiTestFixture>
     private const string Teaser = "Der närrische Höhepunkt der Session.";
     private const string NewTeaser = "Fünf Stunden Bütt, Garde und Elferrat.";
 
+    private const int UnknownVenueId = 999_999;
+
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly TimeOnly DoorsOpenAt = new(17, 0);
 
@@ -153,6 +155,79 @@ public sealed class PutEventTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
+    [Fact]
+    public async Task Should_SellAtThePickedPlacesInPickOrder_When_ThePlacesAreReplaced()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var eventId = ctx.Club.Events.IdOf("first-gala");
+        var sparkasse = ctx.Club.Venues.IdOf("sparkasse");
+        var festzelt = ctx.Club.Venues.IdOf("festzelt");
+        var baeckerei = ctx.Club.Venues.IdOf("baeckerei");
+
+        var (response, _) = await EditAsync(
+            ctx,
+            "vera",
+            Moved(eventId, festzelt, PresaleStarted) with
+            {
+                PresaleVenueIds = [sparkasse, festzelt, baeckerei],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx.Expected.Event(eventId).ToSellAt(sparkasse, festzelt, baeckerei).AssertAsync(ct);
+    }
+
+    [Theory]
+    [InlineData("alte-post")]
+    [InlineData(null)]
+    public async Task Should_KeepThePlaces_When_APickedPlaceIsArchivedOrUnknown(string? venueAlias)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var eventId = ctx.Club.Events.IdOf("first-gala");
+        var festzelt = ctx.Club.Venues.IdOf("festzelt");
+        var refused = venueAlias is null ? UnknownVenueId : ctx.Club.Venues.IdOf(venueAlias);
+
+        var (response, _) = await EditAsync(
+            ctx,
+            "vera",
+            Moved(eventId, festzelt, PresaleStarted) with
+            {
+                PresaleVenueIds = [ctx.Club.Venues.IdOf("sparkasse"), refused],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await ctx.Expected.Event(eventId).ToSellAt(festzelt).AssertAsync(ct);
+    }
+
+    [Theory]
+    [InlineData(2, true)]
+    [InlineData(11, false)]
+    public async Task Should_RefuseThePlaces_When_TheyRepeatOrAreTooMany(int count, bool repeated)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var eventId = ctx.Club.Events.IdOf("first-gala");
+        var festzelt = ctx.Club.Venues.IdOf("festzelt");
+
+        var (response, _) = await EditAsync(
+            ctx,
+            "vera",
+            Moved(eventId, festzelt, PresaleStarted) with
+            {
+                PresaleVenueIds =
+                [
+                    .. Enumerable.Range(1, count).Select(index => repeated ? festzelt : index),
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await ctx.Expected.Event(eventId).ToSellAt(festzelt).AssertAsync(ct);
+    }
+
     private static PutEventRequest Moved(
         int eventId,
         int venueId,
@@ -170,6 +245,7 @@ public sealed class PutEventTests : IClassFixture<ApiTestFixture>
             AgeHint = null,
             PriceCents = null,
             PresaleStartsAt = presaleStartsAt,
+            PresaleVenueIds = [],
         };
 
     private static async Task<TestResult<PutEventResponse>> EditAsync(
@@ -210,6 +286,13 @@ public sealed class PutEventTests : IClassFixture<ApiTestFixture>
                     .Club(club =>
                         club.AddVenue("buergerhaus", "Bürgerhaus")
                             .AddVenue("festzelt", "Festzelt")
+                            .AddVenue("baeckerei", "Bäckerei Schmidt")
+                            .AddVenue("sparkasse", "Sparkasse")
+                            .AddVenue(
+                                "alte-post",
+                                "Alte Post",
+                                archivedOn: new DateOnly(2026, 1, 1)
+                            )
                             .AddEvent(
                                 "first-gala",
                                 FirstGala,
@@ -221,6 +304,7 @@ public sealed class PutEventTests : IClassFixture<ApiTestFixture>
                                 presaleStartsAt: PresaleStarted,
                                 ticketAvailability: TicketAvailability.SoldOut
                             )
+                            .AddEventPresalePlace("first-gala", "festzelt")
                             .AddCalendarEntry("club-meeting", "Vereinssitzung", AtTheMeeting)
                     ),
             ct

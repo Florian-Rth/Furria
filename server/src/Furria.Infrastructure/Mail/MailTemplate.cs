@@ -11,6 +11,4 @@ public enum MailTemplate
     MembershipApplicationConfirmation = 7,
     MembershipApplicationArrival = 8,
     PersonErasureNotice = 9,
-    TicketRequestReceipt = 10,
-    TicketRequestArrival = 11,
 }

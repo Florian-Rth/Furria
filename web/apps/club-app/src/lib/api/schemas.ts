@@ -156,7 +156,6 @@ export const PERMISSION_KEYS = {
   membershipApplicationsDecide: 'membership_applications.decide',
   eventsManage: 'events.manage',
   eventsRunningOrder: 'events.running_order',
-  ticketRequestsHandle: 'ticket_requests.handle',
   galleryUpload: 'gallery.upload',
   galleryManage: 'gallery.manage',
   galleryPublish: 'gallery.publish',
