@@ -1,5 +1,6 @@
 import type { KkIconName } from '@furria/ui/KkIcon';
 import type { ActKind, ActWishKind, Strength } from '@/features/running-order/schemas';
+import { sessionYearsLabelOf } from '@/lib/club';
 import type { CastTally, CastTileState } from './act-cast';
 import type { NameIssue } from './act-editor';
 import type { ActsFilter } from './schemas';
@@ -27,6 +28,19 @@ export const SPOTLIGHT_CLEAR_LABEL = 'Aufheben';
 export const NAME_LABEL = 'Name des Auftritts';
 export const NAME_PLACEHOLDER = 'Name des Auftritts';
 export const KIND_CHOICE_LABEL = 'Art des Auftritts';
+export const SESSION_CHOICE_LABEL = 'Session des Auftritts';
+export const SESSIONS_LABEL = 'Session wählen';
+
+export const toSessionLabel = (sessionYear: number): string =>
+  `Session ${sessionYearsLabelOf(sessionYear)}`;
+
+export const toClosedActNote = (sessionYear: number | null): string =>
+  sessionYear === null
+    ? 'Dieser Auftritt bleibt, wie er war.'
+    : `Die Session ${sessionYearsLabelOf(sessionYear)} ist vorbei – der Auftritt bleibt, wie er war.`;
+
+export const toClosedSessionNote = (sessionYear: number): string =>
+  `Die Session ${sessionYearsLabelOf(sessionYear)} ist vorbei – ihre Auftritte bleiben, wie sie waren.`;
 export const GROUP_TITLE = 'Gruppe';
 export const GROUP_FIELD_LABEL = 'Gruppe';
 export const NO_GROUP_OPTION = 'Keine Gruppe';

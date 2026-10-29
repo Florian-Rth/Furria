@@ -94,6 +94,8 @@ export const FindingSchema = z.object({
 export type Finding = z.infer<typeof FindingSchema>;
 
 export const CatalogueActSchema = ActRefSchema.extend({
+  sessionYear: z.number().int().nullable(),
+  closed: z.boolean(),
   archived: z.boolean(),
   cast: z.array(CastPersonSchema),
   added: z.array(PortraitPersonRefSchema),
@@ -102,7 +104,11 @@ export const CatalogueActSchema = ActRefSchema.extend({
 });
 export type CatalogueAct = z.infer<typeof CatalogueActSchema>;
 
-export const ActsResponseSchema = z.object({ acts: z.array(CatalogueActSchema) });
+export const ActsResponseSchema = z.object({
+  sessionYear: z.number().int(),
+  sessionYears: z.array(z.number().int()),
+  acts: z.array(CatalogueActSchema),
+});
 export type ActsResponse = z.infer<typeof ActsResponseSchema>;
 
 export const ActWishBodySchema = z.object({ kind: ActWishKindSchema, strength: StrengthSchema });
@@ -112,6 +118,7 @@ export const ActFormSchema = z.object({
   name: z.string().trim().min(1).max(ACT_NAME_MAX_LENGTH),
   groupId: z.number().int().nullable(),
   kind: ActKindSchema.nullable(),
+  sessionYear: z.number().int().nullable(),
   addedPersonIds: z.array(z.number().int()),
   removedPersonIds: z.array(z.number().int()),
   wishes: z.array(ActWishBodySchema),

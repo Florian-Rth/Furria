@@ -28,6 +28,15 @@ public sealed class ActService
         "Auftritte anderer Gruppen lassen sich hier nicht bearbeiten.";
     private const string UnknownWishMessage = "Diesen Wunsch gibt es für einen Auftritt nicht.";
     private const string RepeatedWishMessage = "Jeder Wunsch steht nur einmal an einem Auftritt.";
+    private const string ClosedSessionMessage =
+        "Die Session dieses Auftritts ist vorbei, er bleibt so, wie er war.";
+
+    private static readonly IReadOnlyDictionary<ActSessionProblem, string> SessionMessages =
+        new Dictionary<ActSessionProblem, string>
+        {
+            [ActSessionProblem.PastSession] = "Eine vergangene Session lässt sich nicht wählen.",
+            [ActSessionProblem.SessionOnTimelessAct] = "Ein Ablaufpunkt gehört zu keiner Session.",
+        };
 
     private readonly AppDbContext _dbContext;
     private readonly ActCatalogue _catalogue;
@@ -40,8 +49,55 @@ public sealed class ActService
         _timeProvider = timeProvider;
     }
 
-    public Task<IReadOnlyList<ActSummary>> GetActsAsync(ActScope scope, CancellationToken ct) =>
-        _catalogue.ActsOnAsync(WithinScope(scope), ClubClock.Today(_timeProvider), ct);
+    public async Task<SessionActsDetails> GetActsAsync(
+        ActScope scope,
+        int? sessionYear,
+        CancellationToken ct
+    )
+    {
+        var today = ClubClock.Today(_timeProvider);
+        var relevantYear = ClubSession.RelevantYearOf(today);
+        var shownYear = sessionYear ?? relevantYear;
+        var withTimeless = !ActSession.IsClosed(shownYear, today);
+        var recordedYears = await _dbContext
+            .Acts.AsNoTracking()
+            .Where(WithinScope(scope))
+            .Where(act => act.SessionYear != null)
+            .Select(act => act.SessionYear!.Value)
+            .Distinct()
+            .ToListAsync(ct);
+
+        return new SessionActsDetails
+        {
+            SessionYear = shownYear,
+            SessionYears =
+            [
+                .. recordedYears
+                    .Append(relevantYear)
+                    .Append(shownYear)
+                    .Distinct()
+                    .OrderDescending(),
+            ],
+            Acts = await _catalogue.ActsOnAsync(ShownIn(scope, shownYear, withTimeless), today, ct),
+        };
+    }
+
+    public async Task FreezeClosedCastsAsync(CancellationToken ct)
+    {
+        var relevantYear = ClubSession.RelevantYearOf(ClubClock.Today(_timeProvider));
+        var due = await _dbContext
+            .Acts.Where(act =>
+                act.SessionYear != null
+                && act.SessionYear < relevantYear
+                && act.CastFrozenAt == null
+            )
+            .ToListAsync(ct);
+
+        foreach (var session in due.GroupBy(act => act.SessionYear!.Value))
+            await FreezeAsync(session.Key, [.. session], ct);
+
+        await _dbContext.SaveChangesAsync(ct);
+    }
 
     public async Task<Result<int>> CreateAsync(
         ActScope scope,
@@ -52,12 +108,13 @@ public sealed class ActService
         if (!scope.Covers(facts.GroupId))
             return Result<int>.Forbidden(ForeignGroupMessage);
 
-        var refusal = await RefusalOfAsync(facts, null, ct);
+        var today = ClubClock.Today(_timeProvider);
+        var refusal = await RefusalOfAsync(facts, null, today, ct);
         if (refusal is { } refused)
             return Result<int>.Validation(refused);
 
         var act = new Act();
-        Apply(act, facts);
+        Apply(act, facts, today);
         _dbContext.Acts.Add(act);
         await _dbContext.SaveChangesAsync(ct);
 
@@ -81,11 +138,22 @@ public sealed class ActService
         if (act.ArchivedAt is not null)
             return Result.Conflict(ArchivedActMessage);
 
-        var refusal = await RefusalOfAsync(command.Facts, act.GroupId, ct);
+        var today = ClubClock.Today(_timeProvider);
+        if (ActSession.IsClosed(act.SessionYear, today))
+            return Result.Conflict(ClosedSessionMessage);
+
+        var refusal = await RefusalOfAsync(command.Facts, act.GroupId, today, ct);
         if (refusal is { } refused)
             return Result.Validation(refused);
 
-        Apply(act, command.Facts);
+        Apply(
+            act,
+            command.Facts with
+            {
+                SessionYear = command.Facts.SessionYear ?? act.SessionYear,
+            },
+            today
+        );
         await _dbContext.SaveChangesAsync(ct);
 
         return Result.Success();
@@ -102,6 +170,8 @@ public sealed class ActService
             return Result.NotFound(UnknownActMessage);
         if (!scope.Covers(act.GroupId))
             return Result.Forbidden(ForeignGroupMessage);
+        if (ActSession.IsClosed(act.SessionYear, ClubClock.Today(_timeProvider)))
+            return Result.Conflict(ClosedSessionMessage);
         if (command.Archived == act.ArchivedAt is not null)
             return Result.Conflict(command.Archived ? AlreadyArchivedMessage : NotArchivedMessage);
 
@@ -114,11 +184,52 @@ public sealed class ActService
     private async Task<string?> RefusalOfAsync(
         ActFactsCommand facts,
         int? currentGroupId,
+        DateOnly today,
         CancellationToken ct
     ) =>
         ShapeRefusalOf(facts)
+        ?? SessionRefusalOf(facts, today)
         ?? await GroupRefusalOfAsync(facts.GroupId, currentGroupId, ct)
         ?? await PersonRefusalOfAsync(facts, ct);
+
+    private async Task FreezeAsync(int sessionYear, IReadOnlyList<Act> acts, CancellationToken ct)
+    {
+        var actIds = acts.Select(act => act.Id).ToList();
+        var casts = await _catalogue.ActsOnAsync(
+            act => actIds.Contains(act.Id),
+            ActSession.CastFreezeDayOf(sessionYear),
+            ct
+        );
+        var castOfAct = casts.ToDictionary(cast => cast.ActId, cast => cast.Cast);
+        var frozenAt = _timeProvider.GetUtcNow();
+
+        foreach (var act in acts)
+        {
+            act.CastFrozenAt = frozenAt;
+            foreach (var member in castOfAct[act.Id])
+                act.FrozenCast.Add(new FrozenCastMember { PersonId = member.PersonId });
+        }
+    }
+
+    [Pure]
+    private static Expression<Func<Act, bool>> ShownIn(
+        ActScope scope,
+        int sessionYear,
+        bool withTimeless
+    )
+    {
+        var groupIds = scope.GroupIds;
+
+        return act =>
+            (groupIds == null || (act.GroupId != null && groupIds.Contains(act.GroupId.Value)))
+            && (act.SessionYear == sessionYear || (withTimeless && act.SessionYear == null));
+    }
+
+    [Pure]
+    private static string? SessionRefusalOf(ActFactsCommand facts, DateOnly today) =>
+        ActSession.ProblemOf(facts.Kind, facts.SessionYear, today) is { } problem
+            ? SessionMessages[problem]
+            : null;
 
     [Pure]
     private static Expression<Func<Act, bool>> WithinScope(ActScope scope) =>
@@ -164,11 +275,12 @@ public sealed class ActService
         return known == personIds.Count ? null : UnknownPersonMessage;
     }
 
-    private static void Apply(Act act, ActFactsCommand facts)
+    private static void Apply(Act act, ActFactsCommand facts, DateOnly today)
     {
         act.Name = facts.Name.Trim();
         act.GroupId = facts.GroupId;
         act.Kind = facts.Kind;
+        act.SessionYear = ActSession.YearFor(facts.Kind, facts.SessionYear, today);
         SyncCastChanges(act, facts);
         SyncWishes(act, facts.Wishes);
     }

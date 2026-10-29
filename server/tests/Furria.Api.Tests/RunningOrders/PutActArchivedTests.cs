@@ -1,6 +1,7 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Acts;
+using Furria.Core.RunningOrders;
 using Furria.Tests.Common;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
@@ -101,6 +102,36 @@ public sealed class PutActArchivedTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         await ctx.Expected.Act(actId).ToBeInUse().AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnConflict_When_TheActsSessionHasEnded()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        SeededContext? ctx = null;
+        var actId = 0;
+        await _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
+            {
+                ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+                var client = await ctx.Identity.ClientForAsync(Planner, ct);
+                actId = await CreateActAsync(client, "Gardetanz", kind: ActKind.Dance);
+            }
+        );
+
+        await _fixture.AtInstantAsync(
+            AfterItsAshWednesday,
+            async () =>
+            {
+                var client = await ctx!.Identity.SignInAgainAsync(Planner, ct);
+
+                var response = await SetAsync(client, actId, archived: true);
+
+                Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+                await ctx.Expected.Act(actId).ToBeInUse().AssertAsync(ct);
+            }
+        );
     }
 
     private static Task<HttpResponseMessage> SetAsync(

@@ -10,6 +10,10 @@ public sealed record ActSummary
 
     public required ActKind? Kind { get; init; }
 
+    public required int? SessionYear { get; init; }
+
+    public required bool IsClosed { get; init; }
+
     public required ActGroupReference? Group { get; init; }
 
     public required bool IsArchived { get; init; }

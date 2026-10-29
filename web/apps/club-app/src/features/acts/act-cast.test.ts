@@ -29,6 +29,8 @@ describe('membersOfAct', () => {
       name: 'Marsch',
       kind: 'dance',
       group: { groupId: 1, name: 'Garde', tone: null, icon: null, picture: null },
+      sessionYear: null,
+      closed: false,
       archived: false,
       cast: [
         { ...person(3, 'Carla'), absent: false },

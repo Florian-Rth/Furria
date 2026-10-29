@@ -15,11 +15,13 @@ public sealed class ActCatalogue
 {
     private readonly AppDbContext _dbContext;
     private readonly PictureLookup _pictures;
+    private readonly TimeProvider _timeProvider;
 
-    public ActCatalogue(AppDbContext dbContext, PictureLookup pictures)
+    public ActCatalogue(AppDbContext dbContext, PictureLookup pictures, TimeProvider timeProvider)
     {
         _dbContext = dbContext;
         _pictures = pictures;
+        _timeProvider = timeProvider;
     }
 
     public async Task<IReadOnlyList<ActSummary>> ActsOnAsync(
@@ -37,6 +39,7 @@ public sealed class ActCatalogue
                 act.Id,
                 act.Name,
                 act.Kind,
+                act.SessionYear,
                 act.ArchivedAt != null,
                 act.GroupId,
                 act.Group == null ? null : act.Group.Name,
@@ -44,6 +47,8 @@ public sealed class ActCatalogue
                 act.Group == null ? null : act.Group.Icon,
                 act.CastChanges.Select(change => new ChangeRow(change.PersonId, change.Change))
                     .ToList(),
+                act.CastFrozenAt != null,
+                act.FrozenCast.Select(member => member.PersonId).ToList(),
                 act.Wishes.Select(wish => new ActWishDetails
                     {
                         ActWishId = wish.Id,
@@ -58,9 +63,14 @@ public sealed class ActCatalogue
         var groupIds = acts.Where(act => act.GroupId is not null)
             .Select(act => act.GroupId!.Value)
             .ToHashSet();
-        var members = await MembersOnAsync(groupIds, day, ct);
-        var personIds = members
-            .SelectMany(group => group.Value)
+        var memberships = await MembershipsOfAsync(groupIds, ct);
+        var today = ClubClock.Today(_timeProvider);
+        var casts = acts.ToDictionary(
+            act => act.ActId,
+            act => CastOf(act, memberships, CastDayOf(act, day, today))
+        );
+        var personIds = casts
+            .Values.SelectMany(cast => cast)
             .Concat(acts.SelectMany(act => act.Changes.Select(change => change.PersonId)))
             .ToHashSet();
         var persons = await PersonsInNameOrderAsync(personIds, ct);
@@ -69,7 +79,13 @@ public sealed class ActCatalogue
         return
         [
             .. acts.Select(act =>
-                SummaryOf(act, members, persons, groupPictures.GetValueOrDefault(act.GroupId ?? 0))
+                SummaryOf(
+                    act,
+                    casts[act.ActId],
+                    persons,
+                    groupPictures.GetValueOrDefault(act.GroupId ?? 0),
+                    today
+                )
             ),
         ];
     }
@@ -77,21 +93,22 @@ public sealed class ActCatalogue
     [Pure]
     private static ActSummary SummaryOf(
         ActRow act,
-        IReadOnlyDictionary<int, IReadOnlyList<int>> members,
+        IReadOnlySet<int> cast,
         IReadOnlyList<CastMember> persons,
-        PictureDetails? groupPicture
+        PictureDetails? groupPicture,
+        DateOnly today
     )
     {
         var added = PersonsChanged(act, CastChange.Added);
         var removed = PersonsChanged(act, CastChange.Removed);
-        var groupMembers = act.GroupId is { } groupId ? members.GetValueOrDefault(groupId, []) : [];
-        var cast = groupMembers.Concat(added).Except(removed).ToHashSet();
 
         return new ActSummary
         {
             ActId = act.ActId,
             Name = act.Name,
             Kind = act.Kind,
+            SessionYear = act.SessionYear,
+            IsClosed = ActSession.IsClosed(act.SessionYear, today),
             IsArchived = act.IsArchived,
             Group = act.GroupId is { } id
                 ? new ActGroupReference
@@ -111,6 +128,35 @@ public sealed class ActCatalogue
     }
 
     [Pure]
+    private static DateOnly CastDayOf(ActRow act, DateOnly day, DateOnly today) =>
+        act.SessionYear is { } sessionYear && ActSession.IsClosed(sessionYear, today)
+            ? Earlier(day, ActSession.CastFreezeDayOf(sessionYear))
+            : day;
+
+    [Pure]
+    private static DateOnly Earlier(DateOnly day, DateOnly other) => day < other ? day : other;
+
+    [Pure]
+    private static IReadOnlySet<int> CastOf(
+        ActRow act,
+        IReadOnlyList<MembershipRow> memberships,
+        DateOnly castDay
+    )
+    {
+        if (act.IsCastFrozen)
+            return act.FrozenCast.ToHashSet();
+
+        var groupMembers = memberships
+            .Where(membership => membership.GroupId == act.GroupId && membership.HeldOn(castDay))
+            .Select(membership => membership.PersonId);
+
+        return groupMembers
+            .Concat(PersonsChanged(act, CastChange.Added))
+            .Except(PersonsChanged(act, CastChange.Removed))
+            .ToHashSet();
+    }
+
+    [Pure]
     private static IReadOnlySet<int> PersonsChanged(ActRow act, CastChange change) =>
         act.Changes.Where(row => row.Change == change).Select(row => row.PersonId).ToHashSet();
 
@@ -125,30 +171,24 @@ public sealed class ActCatalogue
         return [.. persons.Where(person => wanted.Contains(person.PersonId))];
     }
 
-    private async Task<IReadOnlyDictionary<int, IReadOnlyList<int>>> MembersOnAsync(
+    private async Task<IReadOnlyList<MembershipRow>> MembershipsOfAsync(
         IReadOnlyCollection<int> groupIds,
-        DateOnly day,
         CancellationToken ct
     )
     {
         if (groupIds.Count == 0)
-            return new Dictionary<int, IReadOnlyList<int>>();
+            return [];
 
-        var rows = await _dbContext
+        return await _dbContext
             .GroupMemberships.AsNoTracking()
-            .Where(membership =>
-                groupIds.Contains(membership.GroupId)
-                && membership.JoinedOn <= day
-                && (membership.LeftOn == null || membership.LeftOn >= day)
-            )
-            .Select(membership => new { membership.GroupId, membership.PersonId })
+            .Where(membership => groupIds.Contains(membership.GroupId))
+            .Select(membership => new MembershipRow(
+                membership.GroupId,
+                membership.PersonId,
+                membership.JoinedOn,
+                membership.LeftOn
+            ))
             .ToListAsync(ct);
-
-        return rows.GroupBy(row => row.GroupId)
-            .ToDictionary(
-                group => group.Key,
-                group => (IReadOnlyList<int>)[.. group.Select(row => row.PersonId).Distinct()]
-            );
     }
 
     private async Task<IReadOnlyList<CastMember>> PersonsInNameOrderAsync(
@@ -191,14 +231,28 @@ public sealed class ActCatalogue
         int ActId,
         string Name,
         ActKind? Kind,
+        int? SessionYear,
         bool IsArchived,
         int? GroupId,
         string? GroupName,
         GroupTone? GroupTone,
         ClubIcon? GroupIcon,
         List<ChangeRow> Changes,
+        bool IsCastFrozen,
+        List<int> FrozenCast,
         List<ActWishDetails> Wishes
     );
 
     private sealed record ChangeRow(int PersonId, CastChange Change);
+
+    private sealed record MembershipRow(
+        int GroupId,
+        int PersonId,
+        DateOnly JoinedOn,
+        DateOnly? LeftOn
+    )
+    {
+        [Pure]
+        public bool HeldOn(DateOnly day) => JoinedOn <= day && (LeftOn is null || LeftOn >= day);
+    }
 }

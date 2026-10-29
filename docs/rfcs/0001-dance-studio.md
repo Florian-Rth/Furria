@@ -1,7 +1,7 @@
 ---
 rfc: 0001
 title: Dance studio — the Auftritt becomes the group's year (v1)
-status: draft
+status: in progress
 github_issue: 52
 branch: feat/rfc-52-dance-studio
 created: 2026-10-29
@@ -142,12 +142,22 @@ verdict from Florian are marked ⚖.
 
 ### Phase 1 — Act per session
 Goal: acts carry a session and lineage, past sessions are read-only, the catalogue filters by session.
-- [ ] `Act.SessionYear?` + `Act.FollowsActId?`, migration (existing group acts with a training kind → relevant session; *Ablaufpunkte* and acts without a kind → timeless)
-- [ ] Core rules: a new act defaults to the relevant session; never set to a past session; timeless when the kind is *Ablaufpunkt* or unset
-- [ ] Read-only after the session closes (studio, cast, wishes, appearances) — endpoint tests
-- [ ] Materialise the default cast at Ash Wednesday (lazy on first read/write after the close, or a hosted job — decide in phase)
-- [ ] `GET /api/acts` session filter; `/acts` and `/groups/$groupId/acts` default to the relevant session + timeless, past sessions by filter
-- [ ] CONTEXT.md / docs touched where behaviour changed
+- [x] `Act.SessionYear?` + `Act.FollowsActId?`, migration (existing group acts with a training kind → relevant session; *Ablaufpunkte* and acts without a kind → timeless)
+- [x] Core rules: a new act defaults to the relevant session; never set to a past session; timeless when the kind is *Ablaufpunkt* or unset
+- [x] Read-only after the session closes (studio, cast, wishes, appearances) — endpoint tests
+- [x] Materialise the default cast at Ash Wednesday (lazy on first read/write after the close, or a hosted job — decide in phase)
+- [x] `GET /api/acts` session filter; `/acts` and `/groups/$groupId/acts` default to the relevant session + timeless, past sessions by filter
+- [x] CONTEXT.md / docs touched where behaviour changed
+
+Done 2026-10-29. Decisions taken in the phase:
+- The cast is frozen by an hourly hosted job (`ActCastFreeze`) into `act_frozen_cast_member`; until
+  it runs, a closed act's cast is already read as of Ash Wednesday, so nothing shifts when it does.
+- A closed act refuses edits *and* archiving (409). An edit without a session keeps the act's
+  session; only a new act (or a kind turning into a training kind) defaults to the relevant one.
+- Timeless acts are listed with the relevant and coming sessions, not with ended ones.
+- The planner loads the acts of the evening's session.
+- Carried into phase 2: the running order does not yet refuse acts of another or an ended session
+  (the appearance owns that check); an act created from the planner takes the relevant session.
 
 ### Phase 2 — Appearance replaces the running-order line
 Goal: one appearance per act and calendar entry; planner and Leitstand step unchanged in behaviour.

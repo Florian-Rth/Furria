@@ -2294,11 +2294,19 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("archived_at");
 
+                    b.Property<DateTimeOffset?>("CastFrozenAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cast_frozen_at");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
+
+                    b.Property<int?>("FollowsActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("follows_act_id");
 
                     b.Property<int?>("GroupId")
                         .HasColumnType("integer")
@@ -2316,6 +2324,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("name")
                         .UseCollation("de-DE-x-icu");
 
+                    b.Property<int?>("SessionYear")
+                        .HasColumnType("integer")
+                        .HasColumnName("session_year");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -2325,12 +2337,26 @@ namespace Furria.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_act");
 
+                    b.HasIndex("FollowsActId")
+                        .HasDatabaseName("ix_act_follows_act_id");
+
                     b.HasIndex("GroupId")
                         .HasDatabaseName("ix_act_group_id");
 
+                    b.HasIndex("SessionYear")
+                        .HasDatabaseName("ix_act_session_year");
+
                     b.ToTable("act", null, t =>
                         {
+                            t.HasCheckConstraint("ck_act_follows_other_act", "follows_act_id IS NULL OR follows_act_id <> id");
+
+                            t.HasCheckConstraint("ck_act_frozen_cast_dated", "cast_frozen_at IS NULL OR session_year IS NOT NULL");
+
                             t.HasCheckConstraint("ck_act_kind", "kind IS NULL OR kind IN ('Dance', 'Speech', 'Music', 'Show', 'Point')");
+
+                            t.HasCheckConstraint("ck_act_session_year", "session_year IS NULL OR session_year >= 1971");
+
+                            t.HasCheckConstraint("ck_act_timeless_kind", "session_year IS NULL OR (kind IS NOT NULL AND kind <> 'Point')");
                         });
                 });
 
@@ -2400,6 +2426,25 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_act_wish_strength", "strength IN ('Must', 'Prefer')");
                         });
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.FrozenCastMember", b =>
+                {
+                    b.Property<int>("ActId")
+                        .HasColumnType("integer")
+                        .HasColumnName("act_id");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.HasKey("ActId", "PersonId")
+                        .HasName("pk_act_frozen_cast_member");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_act_frozen_cast_member_person_id");
+
+                    b.ToTable("act_frozen_cast_member", (string)null);
                 });
 
             modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrder", b =>
@@ -3975,11 +4020,19 @@ namespace Furria.Infrastructure.Migrations
 
             modelBuilder.Entity("Furria.Core.RunningOrders.Act", b =>
                 {
+                    b.HasOne("Furria.Core.RunningOrders.Act", "FollowsAct")
+                        .WithMany()
+                        .HasForeignKey("FollowsActId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_act_act_follows_act_id");
+
                     b.HasOne("Furria.Core.Groups.Group", "Group")
                         .WithMany()
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_act_group_group_id");
+
+                    b.Navigation("FollowsAct");
 
                     b.Navigation("Group");
                 });
@@ -4015,6 +4068,27 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_act_wish_act_act_id");
 
                     b.Navigation("Act");
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.FrozenCastMember", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Act", "Act")
+                        .WithMany("FrozenCast")
+                        .HasForeignKey("ActId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_frozen_cast_member_act_act_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_frozen_cast_member_person_person_id");
+
+                    b.Navigation("Act");
+
+                    b.Navigation("Person");
                 });
 
             modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrder", b =>
@@ -4356,6 +4430,8 @@ namespace Furria.Infrastructure.Migrations
             modelBuilder.Entity("Furria.Core.RunningOrders.Act", b =>
                 {
                     b.Navigation("CastChanges");
+
+                    b.Navigation("FrozenCast");
 
                     b.Navigation("Wishes");
                 });

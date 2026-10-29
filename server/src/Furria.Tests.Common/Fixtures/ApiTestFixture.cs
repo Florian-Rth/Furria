@@ -24,6 +24,7 @@ using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
+using Furria.Infrastructure.RunningOrders;
 using Furria.MediaWorker;
 using Furria.MediaWorker.Heartbeat;
 using Furria.MediaWorker.Jobs;
@@ -691,6 +692,9 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     public void SweepAbandonedUploads() =>
         Services.GetServices<IHostedService>().OfType<AbandonedUploadSweep>().Single().Sweep();
+
+    public Task FreezeActCastsAsync(CancellationToken ct = default) =>
+        Services.GetServices<IHostedService>().OfType<ActCastFreeze>().Single().FreezeAsync(ct);
 
     public Task PurgeGalleryBinAsync(CancellationToken ct = default) =>
         Services.GetServices<IHostedService>().OfType<GalleryBinPurge>().Single().PurgeAsync(ct);

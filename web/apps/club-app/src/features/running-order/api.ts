@@ -1,5 +1,5 @@
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { skipToken, useQuery, useQueryClient } from '@tanstack/react-query';
+import { keepPreviousData, skipToken, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { queryKeys } from '@/lib/query/reads';
@@ -51,10 +51,16 @@ export interface ActMutations {
   archive: UseMutationResult<void, Error, ActArchivedInput>;
 }
 
-export const useActsQuery = (): UseQueryResult<ActsResponse, Error> =>
+export const useActsQuery = (
+  sessionYear: number | null = null,
+  isKnown = true,
+): UseQueryResult<ActsResponse, Error> =>
   useQuery({
-    queryKey: queryKeys.acts,
-    queryFn: () => withFreshAccessToken(requestActs),
+    queryKey: queryKeys.acts(sessionYear),
+    queryFn: isKnown
+      ? () => withFreshAccessToken((accessToken) => requestActs(sessionYear, accessToken))
+      : skipToken,
+    placeholderData: keepPreviousData,
   });
 
 export const useActMutations = (): ActMutations => {

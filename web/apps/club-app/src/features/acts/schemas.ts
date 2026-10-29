@@ -21,6 +21,7 @@ export const ActsSearchSchema = z.object({
   act: ActSelectionSchema.optional().catch(undefined),
   filter: ActsFilterSchema.optional().catch(undefined),
   person: z.coerce.number().int().positive().optional().catch(undefined),
+  session: z.coerce.number().int().positive().optional().catch(undefined),
   from: z.coerce.number().int().positive().optional().catch(undefined),
 });
 export type ActsSearch = z.infer<typeof ActsSearchSchema>;

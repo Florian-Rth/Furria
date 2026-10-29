@@ -59,6 +59,8 @@ const catalogueAct = (actId: number, wishes: ActWish[] = []): CatalogueAct => ({
   name: `Auftritt ${actId}`,
   kind: 'dance',
   group: null,
+  sessionYear: null,
+  closed: false,
   archived: false,
   cast: [],
   added: [],

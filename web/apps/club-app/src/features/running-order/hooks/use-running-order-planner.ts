@@ -25,6 +25,7 @@ import type {
   RuleKey,
   RunningOrderDraft,
 } from '@/features/running-order/types';
+import { useNow } from '@/lib/use-now';
 import type { CatalogueRowState, CatalogueSection, PreviousEvening } from '../planner-catalogue';
 import { catalogueRowStateOf, catalogueSectionsOf, previousEveningsOf } from '../planner-catalogue';
 import {
@@ -42,6 +43,7 @@ import type { PersonTimeline } from '../planner-person';
 import { personTimelineOf } from '../planner-person';
 import type { PlannerEntry, RailView } from '../planner-rows';
 import { placeNumberOf, plannerEntriesOf, visibleEntriesOf } from '../planner-rows';
+import { actsSessionOfEvening } from '../planner-session';
 import type { LineWish } from '../planner-wishes';
 import { eveningWishesOf, wishCountOf } from '../planner-wishes';
 import type { PlannerMode } from '../schemas';
@@ -57,6 +59,7 @@ import { usePlannerSuggestion } from './use-planner-suggestion';
 const ROUTE_ID = '/_app/events_/$eventId_/ablauf';
 const NO_ACTS: readonly CatalogueAct[] = [];
 const DEFAULT_MODE: PlannerMode = 'pick';
+const CLOCK_MS = 60_000;
 const RAIL_VIEWS: Record<PlannerMode, RailView> = {
   pick: 'none',
   order: 'all',
@@ -122,7 +125,11 @@ export const useRunningOrderPlanner = (eventId: number): RunningOrderPlanner => 
   const navigate = useNavigate();
   const isWide = useIsMediumScreen();
   const event = useEventQuery(eventId);
-  const acts = useActsQuery();
+  const now = useNow(CLOCK_MS);
+  const acts = useActsQuery(
+    actsSessionOfEvening(event.data?.startsAt ?? null, now),
+    event.data !== undefined,
+  );
   const runningOrders = useRunningOrdersQuery();
   const store = usePlannerDraft(eventId);
   const { draft, apply } = store;
@@ -198,7 +205,7 @@ export const useRunningOrderPlanner = (eventId: number): RunningOrderPlanner => 
     unplaced: unplacedLinesOf(shown),
     counts: modeCountsOf(draft, store.findings),
     catalogue: catalogueSectionsOf(catalogueActs),
-    catalogueReady: acts.data !== undefined,
+    catalogueReady: event.data !== undefined && acts.data !== undefined && !acts.isPlaceholderData,
     previous: previousEveningsOf(
       runningOrders.data?.runningOrders ?? [],
       eventId,

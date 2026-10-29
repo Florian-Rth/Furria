@@ -16,7 +16,7 @@ interface ActPaneProps {
   framed: boolean;
   spotlightId: number | null;
   onToggleSpotlight: (personId: number) => void;
-  onCreated: (actId: number) => void;
+  onCreated: (actId: number, sessionYear: number | null) => void;
   onClose: () => void;
 }
 

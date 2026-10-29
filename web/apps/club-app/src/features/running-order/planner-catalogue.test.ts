@@ -18,6 +18,8 @@ const catalogueAct = (
   name,
   kind: group === null ? 'point' : 'dance',
   group: group === null ? null : { ...group, tone: null, icon: null, picture: null },
+  sessionYear: null,
+  closed: false,
   archived,
   cast: [],
   added: [],

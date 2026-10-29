@@ -73,6 +73,7 @@ public sealed class GetRunningOrderTests : IClassFixture<ApiTestFixture>
                 Name = "Lied",
                 GroupId = null,
                 Kind = ActKind.Music,
+                SessionYear = null,
                 AddedPersonIds = [clara],
                 RemovedPersonIds = [],
                 Wishes = [],

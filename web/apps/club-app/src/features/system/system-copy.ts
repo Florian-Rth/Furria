@@ -156,6 +156,7 @@ export const SERVICE_NAMES: Readonly<Record<string, string>> = {
   signedOutMailRequestWorker: 'Anmelde-E-Mails ohne Sitzung versenden',
   logEntryPurge: 'Protokoll bereinigen',
   mediaStorageSurvey: 'Speicherbelegung messen',
+  actCastFreeze: 'Besetzungen zu Aschermittwoch festschreiben',
 };
 
 export const serviceNameOf = (job: string): string => SERVICE_NAMES[job] ?? job;

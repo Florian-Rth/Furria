@@ -115,6 +115,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<ActCastChange> ActCastChanges => Set<ActCastChange>();
 
+    public DbSet<FrozenCastMember> FrozenCastMembers => Set<FrozenCastMember>();
+
     public DbSet<ActWish> ActWishes => Set<ActWish>();
 
     public DbSet<RunningOrder> RunningOrders => Set<RunningOrder>();

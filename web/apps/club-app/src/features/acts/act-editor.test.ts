@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { CatalogueAct } from '@/features/running-order/schemas';
+import type { ActKind, CatalogueAct } from '@/features/running-order/schemas';
 import type { ActDraft } from './act-editor';
 import {
   actBodyOf,
@@ -7,7 +7,9 @@ import {
   editorStateOf,
   nameIssueOf,
   newActDraft,
+  sessionYearsToChoose,
   withGroup,
+  withKind,
   withoutWish,
   withWish,
 } from './act-editor';
@@ -17,6 +19,8 @@ const act: CatalogueAct = {
   name: 'Showtanz',
   kind: 'dance',
   group: { groupId: 1, name: 'Garde', tone: null, icon: null, picture: null },
+  sessionYear: 2026,
+  closed: false,
   archived: false,
   cast: [],
   added: [{ personId: 9, firstName: 'Zoe', lastName: 'Gast', portrait: null }],
@@ -69,8 +73,14 @@ describe('editorStateOf', () => {
       false,
       { dirty: true, canSave: true },
     ],
+    [
+      'moved to the next session',
+      { ...initial, sessionYear: 2027 },
+      false,
+      { dirty: true, canSave: true },
+    ],
   ])('%s', (_label, draft, isNew, expected) => {
-    const state = editorStateOf(initial, draft, isNew);
+    const state = editorStateOf(initial, draft, isNew, false);
 
     expect({ dirty: state.dirty, canSave: state.canSave }).toEqual(expected);
   });
@@ -78,8 +88,54 @@ describe('editorStateOf', () => {
   it('lets a named new act be saved', () => {
     const blank = newActDraft(null);
 
-    expect(editorStateOf(blank, { ...blank, name: 'Tombola' }, true).canSave).toBe(true);
-    expect(editorStateOf(blank, blank, true).canSave).toBe(false);
+    expect(editorStateOf(blank, { ...blank, name: 'Tombola' }, true, false).canSave).toBe(true);
+    expect(editorStateOf(blank, blank, true, false).canSave).toBe(false);
+  });
+
+  it('never saves an act whose session has ended', () => {
+    expect(editorStateOf(initial, { ...initial, name: 'Gardetanz' }, false, true).canSave).toBe(
+      false,
+    );
+  });
+});
+
+describe('withKind', () => {
+  const blank = newActDraft(null);
+
+  it.each<[string, ActDraft, ActKind, { kind: ActKind | null; sessionYear: number | null }]>([
+    [
+      'a new dance takes the relevant session',
+      blank,
+      'dance',
+      { kind: 'dance', sessionYear: 2026 },
+    ],
+    ['an Ablaufpunkt stays timeless', blank, 'point', { kind: 'point', sessionYear: null }],
+    [
+      'a show keeps its chosen session when it becomes a dance',
+      { ...blank, kind: 'show', sessionYear: 2027 },
+      'dance',
+      { kind: 'dance', sessionYear: 2027 },
+    ],
+    [
+      'choosing the kind again clears it and the session',
+      { ...blank, kind: 'dance', sessionYear: 2026 },
+      'dance',
+      { kind: null, sessionYear: null },
+    ],
+  ])('%s', (_label, draft, kind, expected) => {
+    const next = withKind(draft, kind, 2026);
+
+    expect({ kind: next.kind, sessionYear: next.sessionYear }).toEqual(expected);
+  });
+});
+
+describe('sessionYearsToChoose', () => {
+  it.each<[number | null, number[]]>([
+    [null, [2026, 2027]],
+    [2027, [2026, 2027]],
+    [2029, [2026, 2027, 2029]],
+  ])('chosen %s → %j', (chosen, expected) => {
+    expect(sessionYearsToChoose(2026, chosen)).toEqual(expected);
   });
 });
 
@@ -112,6 +168,7 @@ describe('actBodyOf', () => {
       name: 'Showtanz',
       groupId: 1,
       kind: 'dance',
+      sessionYear: 2026,
       addedPersonIds: [9],
       removedPersonIds: [2],
       wishes: [

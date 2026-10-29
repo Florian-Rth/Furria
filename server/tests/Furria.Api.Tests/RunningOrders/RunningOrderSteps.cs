@@ -16,7 +16,8 @@ internal static class RunningOrderSteps
         ActKind? kind = null,
         IReadOnlyList<int>? added = null,
         IReadOnlyList<int>? removed = null,
-        IReadOnlyList<ActWishDataDto>? wishes = null
+        IReadOnlyList<ActWishDataDto>? wishes = null,
+        int? sessionYear = null
     )
     {
         var (response, result) = await client.POSTAsync<PostAct, PostActRequest, PostActResponse>(
@@ -25,6 +26,7 @@ internal static class RunningOrderSteps
                 Name = name,
                 GroupId = groupId,
                 Kind = kind,
+                SessionYear = sessionYear,
                 AddedPersonIds = added ?? [],
                 RemovedPersonIds = removed ?? [],
                 Wishes = wishes ?? [],

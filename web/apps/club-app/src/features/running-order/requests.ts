@@ -33,8 +33,14 @@ export const isRunningOrderConflict = (error: Error | null): boolean =>
 
 const runningOrderPathOf = (eventId: number): string => `/api/events/${eventId}/running-order`;
 
-export const requestActs = (accessToken: string): Promise<ActsResponse> =>
-  apiFetch('/api/acts', { schema: ActsResponseSchema, accessToken });
+const actsPathOf = (sessionYear: number | null): string =>
+  sessionYear === null ? '/api/acts' : `/api/acts?session=${sessionYear}`;
+
+export const requestActs = (
+  sessionYear: number | null,
+  accessToken: string,
+): Promise<ActsResponse> =>
+  apiFetch(actsPathOf(sessionYear), { schema: ActsResponseSchema, accessToken });
 
 export const requestActCreation = (form: ActForm, accessToken: string): Promise<CreatedAct> =>
   apiFetch('/api/acts', { method: 'POST', body: form, schema: CreatedActSchema, accessToken });

@@ -38,7 +38,9 @@ public sealed class GetActsTests : IClassFixture<ApiTestFixture>
             wishes: [Wish(RunningOrderRuleKind.Early, RuleStrength.Prefer)]
         );
 
-        var (response, result) = await client.GETAsync<GetActs, GetActsResponse>();
+        var (response, result) = await client.GETAsync<GetActs, GetActsRequest, GetActsResponse>(
+            new()
+        );
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var act = Assert.Single(result.Acts);
@@ -49,6 +51,75 @@ public sealed class GetActsTests : IClassFixture<ApiTestFixture>
         Assert.Equal(
             [(RunningOrderRuleKind.Early, RuleStrength.Prefer)],
             act.Wishes.Select(wish => (wish.Kind, wish.Strength))
+        );
+    }
+
+    [Fact]
+    public async Task Should_ListTheRelevantSessionAndTheTimelessActs_When_NoSessionIsAsked()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+                var client = await ctx.Identity.ClientForAsync(Planner, ct);
+                await CreateActAsync(client, "Gardetanz", kind: ActKind.Dance);
+                await CreateActAsync(client, "Einmarsch", kind: ActKind.Point);
+                await CreateActAsync(
+                    client,
+                    "Neuer Tanz",
+                    kind: ActKind.Dance,
+                    sessionYear: RunningSessionYear + 1
+                );
+
+                var (_, result) = await client.GETAsync<GetActs, GetActsRequest, GetActsResponse>(
+                    new()
+                );
+
+                Assert.Equal(RunningSessionYear, result.SessionYear);
+                Assert.Equal([RunningSessionYear + 1, RunningSessionYear], result.SessionYears);
+                Assert.Equal(
+                    [("Einmarsch", null, false), ("Gardetanz", RunningSessionYear, false)],
+                    result.Acts.Select(act => (act.Name, act.SessionYear, act.Closed))
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_ListOnlyThatSessionsActsAsClosed_When_AnEndedSessionIsAsked()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        SeededContext? ctx = null;
+        await _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
+            {
+                ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+                var client = await ctx.Identity.ClientForAsync(Planner, ct);
+                await CreateActAsync(client, "Gardetanz", kind: ActKind.Dance);
+                await CreateActAsync(client, "Einmarsch", kind: ActKind.Point);
+            }
+        );
+
+        await _fixture.AtInstantAsync(
+            AfterItsAshWednesday,
+            async () =>
+            {
+                var client = await ctx!.Identity.SignInAgainAsync(Planner, ct);
+                await CreateActAsync(client, "Neuer Tanz", kind: ActKind.Dance);
+
+                var (_, result) = await client.GETAsync<GetActs, GetActsRequest, GetActsResponse>(
+                    new() { Session = RunningSessionYear }
+                );
+
+                Assert.Equal(RunningSessionYear, result.SessionYear);
+                Assert.Equal([RunningSessionYear + 1, RunningSessionYear], result.SessionYears);
+                var act = Assert.Single(result.Acts);
+                Assert.Equal(("Gardetanz", true), (act.Name, act.Closed));
+            }
         );
     }
 
@@ -65,7 +136,7 @@ public sealed class GetActsTests : IClassFixture<ApiTestFixture>
             new() { ActId = tombola, Archived = true }
         );
 
-        var (_, result) = await client.GETAsync<GetActs, GetActsResponse>();
+        var (_, result) = await client.GETAsync<GetActs, GetActsRequest, GetActsResponse>(new());
 
         Assert.Equal(
             [("Einmarsch", false, "Albers Dreher"), ("Tombola", true, "")],
@@ -92,7 +163,9 @@ public sealed class GetActsTests : IClassFixture<ApiTestFixture>
         await CreateActAsync(planner, "Tombola");
         var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
 
-        var (response, result) = await admin.GETAsync<GetActs, GetActsResponse>();
+        var (response, result) = await admin.GETAsync<GetActs, GetActsRequest, GetActsResponse>(
+            new()
+        );
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(["Gardetanz"], result.Acts.Select(act => act.Name));
@@ -109,7 +182,7 @@ public sealed class GetActsTests : IClassFixture<ApiTestFixture>
         );
         var member = await ctx.Identity.ClientForAsync(Anna, ct);
 
-        var response = await member.GETAsync<GetActs, GetActsResponse>();
+        var response = await member.GETAsync<GetActs, GetActsRequest, GetActsResponse>(new());
 
         Assert.Equal(HttpStatusCode.Forbidden, response.Response.StatusCode);
     }

@@ -1,4 +1,3 @@
-import type { KkChoiceChip } from '@furria/ui/KkChoiceChips';
 import { KkChoiceChips } from '@furria/ui/KkChoiceChips';
 import { KkHeadlineField } from '@furria/ui/KkHeadlineField';
 import { KkIconButton } from '@furria/ui/KkIconButton';
@@ -7,25 +6,18 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useId } from 'react';
 import { PlannerLineMark } from '@/features/running-order/components/PlannerLineMark';
-import { toActKindLabel } from '@/features/running-order/running-order-copy';
-import { ACT_KINDS, ActKindSchema } from '@/features/running-order/schemas';
+import { ActKindSchema } from '@/features/running-order/schemas';
 import {
   CLOSE_LABEL,
   KIND_CHOICE_LABEL,
-  KIND_ICONS,
   NAME_LABEL,
   NAME_PLACEHOLDER,
   POINT_CONTEXT,
+  SESSION_CHOICE_LABEL,
   toNameIssueText,
   toPaneTitle,
 } from '../acts-copy';
 import type { ActEditor } from '../hooks/use-act-editor';
-
-const KIND_CHOICES: KkChoiceChip[] = ACT_KINDS.map((kind) => ({
-  id: kind,
-  label: toActKindLabel(kind),
-  icon: KIND_ICONS[kind],
-}));
 
 interface ActPaneHeadProps {
   editor: ActEditor;
@@ -45,6 +37,15 @@ export const ActPaneHead: FC<ActPaneHeadProps> = ({ editor, onClose }) => {
     editor.showsNameIssue && editor.state.nameIssue !== null ? (
       <KkMeta tone="accent">{toNameIssueText(editor.state.nameIssue)}</KkMeta>
     ) : null;
+  const sessionValue = String(editor.draft.sessionYear);
+  const session = editor.showsSession ? (
+    <KkChoiceChips
+      label={SESSION_CHOICE_LABEL}
+      choices={editor.sessionChoices}
+      value={sessionValue}
+      onChange={editor.chooseSession}
+    />
+  ) : null;
   const chooseKind = (id: string): void => {
     const parsed = ActKindSchema.safeParse(id);
 
@@ -65,6 +66,7 @@ export const ActPaneHead: FC<ActPaneHeadProps> = ({ editor, onClose }) => {
             placeholder={NAME_PLACEHOLDER}
             value={editor.draft.name}
             size="pane"
+            readOnly={editor.closed}
             onChange={editor.rename}
           />
         </Stack>
@@ -73,10 +75,11 @@ export const ActPaneHead: FC<ActPaneHeadProps> = ({ editor, onClose }) => {
       {issue}
       <KkChoiceChips
         label={KIND_CHOICE_LABEL}
-        choices={KIND_CHOICES}
+        choices={editor.kindChoices}
         value={editor.draft.kind}
         onChange={chooseKind}
       />
+      {session}
     </Stack>
   );
 };

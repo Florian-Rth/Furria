@@ -158,6 +158,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<SystemLogService>();
         services.AddHostedService<LogEntryPurge>();
         services.AddHostedService<MediaStorageSurvey>();
+        services.AddHostedService<ActCastFreeze>();
         services.Configure<DataProtectionTokenProviderOptions>(options =>
             options.TokenLifespan = PasswordResetService.LinkLifetime
         );

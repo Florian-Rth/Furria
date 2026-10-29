@@ -18,8 +18,18 @@ internal static class RunningOrderSeeds
     internal const string Gala = "gala";
     internal const string SummerParty = "sommerfest";
     internal const int GalaInDays = 30;
+    internal const int RunningSessionYear = 2026;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
+
+    internal static readonly DateTimeOffset InTheRunningSession = ClubClock.At(
+        new DateOnly(2026, 12, 1),
+        new TimeOnly(12, 0)
+    );
+    internal static readonly DateTimeOffset AfterItsAshWednesday = ClubClock.At(
+        new DateOnly(2027, 3, 1),
+        new TimeOnly(12, 0)
+    );
 
     internal static Action<SeedContextBuilder> PlannerWithGala(
         DateOnly today,

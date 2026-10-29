@@ -386,7 +386,7 @@ export const queryKeys = {
   systemStatus: READ_ROOTS.systemStatus,
   systemLogs: (filter: object): QueryKey => keyOf('systemLogs', filter),
   systemLogHead: (filter: object): QueryKey => keyOf('systemLogHead', filter),
-  acts: READ_ROOTS.acts,
+  acts: (sessionYear: number | null): QueryKey => keyOf('acts', sessionYear),
   runningOrder: (eventId: number): QueryKey => keyOf('runningOrder', eventId),
   runningOrders: READ_ROOTS.runningOrders,
 } as const;

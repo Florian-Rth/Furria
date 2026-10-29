@@ -812,6 +812,11 @@ One piece a group (or, without a group, the club itself — an *Ablaufpunkt*) pu
 which training the act gets — not the **group kind**, which only suggests the kind of a group's
 new acts (ruled 2026-10-29, group-year grilling). A piece the group keeps is continued into the
 next session as a new act that **follows on** the previous one; the chain is the piece's lineage.
+A new act belongs to the **relevant session** unless another coming session is chosen — never an
+ended one. An *Ablaufpunkt* or an act without a kind is **timeless**: it belongs to no session and
+is reused until archived. Once its session has ended (the day after Ash Wednesday) an act is
+**read-only** — no edit, no archiving — and its **cast is frozen** as it stood on Ash Wednesday, so
+later group changes never rewrite who danced that season (built 2026-10-29, RFC 0001 phase 1).
 _UI copy_: Auftritt; kinds Tanz, Rede, Musik, Show, Ablaufpunkt
 _Avoid_: **Nummer** (retired 2026-10-22), number, routine, piece (as an entity name); deriving the
 training from the group kind

@@ -1,14 +1,16 @@
 using FastEndpoints;
+using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Endpoints.RunningOrders;
 using Furria.Api.Media;
 using Furria.Application.RunningOrders;
+using Furria.Core.Club;
 using Furria.Core.RunningOrders;
 using Furria.Infrastructure.RunningOrders;
 
 namespace Furria.Api.Endpoints.Acts;
 
-public sealed class GetActs : EndpointWithoutRequest<GetActsResponse>
+public sealed class GetActs : Endpoint<GetActsRequest, GetActsResponse>
 {
     private readonly ActService _actService;
     private readonly ActAccess _actAccess;
@@ -24,7 +26,7 @@ public sealed class GetActs : EndpointWithoutRequest<GetActsResponse>
         Get("acts");
     }
 
-    public override async Task HandleAsync(CancellationToken ct)
+    public override async Task HandleAsync(GetActsRequest req, CancellationToken ct)
     {
         var accountId = User.AccountId();
         if (accountId is null)
@@ -40,10 +42,15 @@ public sealed class GetActs : EndpointWithoutRequest<GetActsResponse>
             return;
         }
 
-        var acts = await _actService.GetActsAsync(scope, ct);
+        var shown = await _actService.GetActsAsync(scope, req.Session, ct);
 
         await Send.OkAsync(
-            new GetActsResponse { Acts = [.. acts.Select(ToDto)] },
+            new GetActsResponse
+            {
+                SessionYear = shown.SessionYear,
+                SessionYears = shown.SessionYears,
+                Acts = [.. shown.Acts.Select(ToDto)],
+            },
             cancellation: ct
         );
     }
@@ -54,6 +61,8 @@ public sealed class GetActs : EndpointWithoutRequest<GetActsResponse>
             ActId = act.ActId,
             Name = act.Name,
             Kind = act.Kind,
+            SessionYear = act.SessionYear,
+            Closed = act.IsClosed,
             Group = ActGroupDto.From(act.Group),
             Archived = act.IsArchived,
             Cast = [.. act.Cast.Select(CastPersonDto.From)],
@@ -72,8 +81,26 @@ public sealed class GetActs : EndpointWithoutRequest<GetActsResponse>
         };
 }
 
+public sealed record GetActsRequest
+{
+    [QueryParam]
+    public int? Session { get; init; }
+}
+
+public sealed class GetActsValidator : Validator<GetActsRequest>
+{
+    public GetActsValidator()
+    {
+        RuleFor(request => request.Session).GreaterThanOrEqualTo(ClubSession.EarliestSessionYear);
+    }
+}
+
 public sealed record GetActsResponse
 {
+    public required int SessionYear { get; init; }
+
+    public required IReadOnlyList<int> SessionYears { get; init; }
+
     public required IReadOnlyList<ActSummaryDto> Acts { get; init; }
 }
 
@@ -84,6 +111,10 @@ public sealed record ActSummaryDto
     public required string Name { get; init; }
 
     public required ActKind? Kind { get; init; }
+
+    public required int? SessionYear { get; init; }
+
+    public required bool Closed { get; init; }
 
     public required ActGroupDto? Group { get; init; }
 
