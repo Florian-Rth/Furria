@@ -1,13 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { StudioStep } from '@/features/acts/schemas';
-import {
-  loopShareOf,
-  nextRateOf,
-  progressStopsOf,
-  shownStepOf,
-  skipTargetOf,
-  snappedSeekOf,
-} from './studio-e-practice';
+import { nextRateOf, shownStepOf, skipTargetOf } from './studio-e-practice';
 
 const step = (
   stepId: number,
@@ -65,43 +58,9 @@ describe('nextRateOf', () => {
     [0.85, 0.7],
     [0.7, 0.5],
     [0.5, 1],
-    [0.6, 1],
+    [0.6, 0.5],
+    [0.75, 0.7],
   ])('after %s comes %s', (rate, next) => {
     expect(nextRateOf(rate)).toBe(next);
-  });
-});
-
-describe('progressStopsOf', () => {
-  it('places the timed steps as shares of the music', () => {
-    expect(progressStopsOf(steps, 40)).toEqual([
-      { stepId: 1, start: 0.05, end: 0.25 },
-      { stepId: 2, start: 0.25, end: 0.5 },
-      { stepId: 3, start: 0.6, end: 0.75 },
-    ]);
-  });
-
-  it('places nothing without music', () => {
-    expect(progressStopsOf(steps, 0)).toEqual([]);
-  });
-});
-
-describe('snappedSeekOf', () => {
-  it.each([
-    [0.3, 10],
-    [0.55, 22],
-    [-1, 0],
-    [2, 40],
-  ])('a tap at %s lands on %s s', (share, seconds) => {
-    expect(snappedSeekOf(steps, share, 40)).toBe(seconds);
-  });
-});
-
-describe('loopShareOf', () => {
-  it('turns the loop into shares of the music', () => {
-    expect(loopShareOf({ start: 10, end: 20 }, 40)).toEqual({ start: 0.25, end: 0.5 });
-  });
-
-  it('has no share without a loop', () => {
-    expect(loopShareOf(null, 40)).toBeNull();
   });
 });

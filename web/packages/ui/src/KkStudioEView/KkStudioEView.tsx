@@ -1,12 +1,14 @@
-import { KkStudioEViewFoot } from './internal/layout/KkStudioEViewFoot';
+import { KkStudioEViewControls } from './internal/layout/KkStudioEViewControls';
 import { KkStudioEViewHead } from './internal/layout/KkStudioEViewHead';
-import { KkStudioEViewMiddle } from './internal/layout/KkStudioEViewMiddle';
-import { KkStudioEViewNote } from './internal/layout/KkStudioEViewNote';
+import { KkStudioEViewHero } from './internal/layout/KkStudioEViewHero';
 import { KkStudioEViewRoot } from './internal/layout/KkStudioEViewRoot';
+import { KkStudioEViewSide } from './internal/layout/KkStudioEViewSide';
+import { KkStudioEViewTitles } from './internal/layout/KkStudioEViewTitles';
 
 export const KkStudioEView = Object.assign(KkStudioEViewRoot, {
   Head: KkStudioEViewHead,
-  Middle: KkStudioEViewMiddle,
-  Note: KkStudioEViewNote,
-  Foot: KkStudioEViewFoot,
+  Titles: KkStudioEViewTitles,
+  Hero: KkStudioEViewHero,
+  Side: KkStudioEViewSide,
+  Controls: KkStudioEViewControls,
 });

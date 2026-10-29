@@ -259,9 +259,9 @@ Goal: Florian picks the layout of the player/editor screen before the editors ar
 - [x] Seed a realistic studio (songs, steps, parts, 12 spots with keyframes, a video) for the lab
 - [x] Three divergent variants of the one screen in the lab (one based on the Inspiration mock) at 390 px and desktop: music + video + stage, steps/parts, loop/speed/mirror, own dot
 - [x] Client playback engine: one clock from the working mix (gapless song cuts), video slaved to it, keyframe interpolation (pure, tested)
-- [ ] Pitch + Florian's pick; the rulings recorded in the RFC
+- [x] Pitch + Florian's pick; the rulings recorded in the RFC
 
-Built 2026-10-29, awaiting Florian's pick. Decisions taken in the phase:
+Done 2026-10-29 (Florian picked E after two rounds). Decisions taken in the phase:
 - The studio read also returns **our stage** (`studio.stage`: width, depth, drawing), read through the
   club record service; the player needs it and planners/admins-only club endpoints can't serve members.
 - **Engine** (`features/act-player/`): one shared Web Audio context is the clock. The working mix is
@@ -291,12 +291,36 @@ Built 2026-10-29, awaiting Florian's pick. Decisions taken in the phase:
   **E** the stage from the dancer's view is the screen, your dot large with the next move drawn ahead and
   counted down ("in 3"), the video behind one tap; **F** one step at a time like a lesson, looping by
   default, story-style step progress, video or stage in one fixed frame.
+- **Pick: E** (2026-10-29), refined in the lab as `/lab/studio-e/$actId` (D and F removed). Rulings:
+  - The **trainer video is the hero** while training, not the formation.
+  - The **formation is always visible next to the video**, never behind a tap or toggle; it may be
+    smaller and keeps E's large red own dot and the next-move countdown.
+  - The **controls are worked out properly** (creative and professional); where a part has no video the
+    formation takes the hero slot without a layout jump.
+  - The **step list** (part headers, one dense row per step with a formation thumbnail) is an
+    **openable menu**, never on the main screen: a bottom sheet on phone, a collapsible side panel on
+    landscape/desktop, overlaying without moving the layout; it opens from the step name or the step
+    bar, and tapping a step jumps there (and can loop it) without stopping the music.
+  - **Controls**: the **step bar** is the scheme (segments per step, gaps between parts; tap a segment to
+    loop the step, hold to loop its part; a slim pill with previous, play, next and speed 50–100 %),
+    with **gestures as extra shortcuts** on the video/stage: tap = play/pause, double-tap left/right or
+    a horizontal swipe = previous/next step, vertical swipe = speed. The thumb ring and a gesture-only
+    scheme were built and dropped; count-in and a haptic tick on "1" were left out (the player can't
+    pause before a loop restarts; iOS has no vibration).
 
 ### Phase 7 — Player promoted
 Goal: members practise on the chosen screen with real data.
 - [ ] Chosen variant promoted onto `/acts/$actId` (player mode); lab route removed
 - [ ] Loop step/part, speed 50–100 % with pitch kept, mirror default on, own dot pulsing, main video per part, alternatives
 - [ ] Last practised step remembered per device; Start *Üben* opens there
+
+### Phase 7b — ⚖ Edit mode: lab variants
+Goal: decide the shell of edit mode before the editors (phases 8–13) are built into it: how editors enter
+edit mode from the player, where the tools live, and how music, steps, formation and video share the
+screen. The native-app rules of the practice view apply (fixed viewport, nothing jumps, calm).
+- [ ] Three divergent edit-mode variants in the lab on the seeded studio (390 px + desktop)
+- [ ] Pitch + Florian's pick; the rulings recorded in the RFC
+- [ ] Phases 8–13 task wording adjusted to build into the chosen shell
 
 ### Phase 8 — Music editor
 Goal: editors build the working mix.

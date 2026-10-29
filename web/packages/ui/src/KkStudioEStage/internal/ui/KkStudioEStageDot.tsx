@@ -13,10 +13,12 @@ const HALO_SECONDS = 2.4;
 
 const palette = (theme: Theme) => (theme.vars ?? theme).palette;
 
-const sizes: Record<KkStudioEStageDotKind, { xs: string; desktop: string }> = {
-  own: { xs: '2.25rem', desktop: '3rem' },
-  cast: { xs: '1.25rem', desktop: '1.625rem' },
-  open: { xs: '1.25rem', desktop: '1.625rem' },
+const NARROW_FIELD = '@container (max-width: 17rem)';
+
+const sizes: Record<KkStudioEStageDotKind, { xs: string; desktop: string; narrow: string }> = {
+  own: { xs: '2.25rem', desktop: '3rem', narrow: '1.75rem' },
+  cast: { xs: '1.25rem', desktop: '1.625rem', narrow: '0.75rem' },
+  open: { xs: '1.25rem', desktop: '1.625rem', narrow: '0.75rem' },
 };
 
 const dotPaints: Record<KkStudioEStageDotKind, (theme: Theme) => CSSObject> = {
@@ -122,6 +124,11 @@ export const KkStudioEStageDot: FC<KkStudioEStageDotProps> = ({
           width: sizes[kind].desktop,
           height: sizes[kind].desktop,
         },
+        [NARROW_FIELD]: {
+          width: sizes[kind].narrow,
+          height: sizes[kind].narrow,
+          '& [data-kk-studio-e-dot-number]': { display: own ? 'inline' : 'none' },
+        },
         ...dotPaints[kind](theme),
       })}
     >
@@ -129,6 +136,7 @@ export const KkStudioEStageDot: FC<KkStudioEStageDotProps> = ({
       {notch}
       <Typography
         component="span"
+        data-kk-studio-e-dot-number
         variant={numberVariant}
         sx={{
           position: 'relative',

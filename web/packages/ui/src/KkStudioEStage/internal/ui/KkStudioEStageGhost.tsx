@@ -67,6 +67,7 @@ export const KkStudioEStageGhost: FC<KkStudioEStageGhostProps> = ({ points, aspe
           top: 0,
           width: { xs: '2.25rem', desktop: '3rem' },
           height: { xs: '2.25rem', desktop: '3rem' },
+          '@container (max-width: 17rem)': { width: '1.75rem', height: '1.75rem' },
           borderRadius: '50%',
           border: `${kkTokens.line.section}px dashed ${palette(theme).primary.main}`,
           backgroundColor: `color-mix(in srgb, ${palette(theme).primary.main} 14%, transparent)`,

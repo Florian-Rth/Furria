@@ -1,18 +1,18 @@
+import { KkStudioETransportPill } from './internal/layout/KkStudioETransportPill';
 import { KkStudioETransportRoot } from './internal/layout/KkStudioETransportRoot';
-import { KkStudioETransportRow } from './internal/layout/KkStudioETransportRow';
-import { KkStudioETransportPill } from './internal/ui/KkStudioETransportPill';
+import { KkStudioETransportDivider } from './internal/ui/KkStudioETransportDivider';
 import { KkStudioETransportPlay } from './internal/ui/KkStudioETransportPlay';
-import { KkStudioETransportProgress } from './internal/ui/KkStudioETransportProgress';
+import { KkStudioETransportRate } from './internal/ui/KkStudioETransportRate';
 import { KkStudioETransportSkip } from './internal/ui/KkStudioETransportSkip';
+import { KkStudioETransportStatus } from './internal/ui/KkStudioETransportStatus';
 
-export type { KkStudioETransportPillGlyph } from './internal/ui/KkStudioETransportPill';
-export type { KkStudioETransportShare } from './internal/ui/KkStudioETransportProgress';
 export type { KkStudioETransportSkipDirection } from './internal/ui/KkStudioETransportSkip';
 
 export const KkStudioETransport = Object.assign(KkStudioETransportRoot, {
-  Row: KkStudioETransportRow,
+  Pill: KkStudioETransportPill,
+  Divider: KkStudioETransportDivider,
   Play: KkStudioETransportPlay,
   Skip: KkStudioETransportSkip,
-  Pill: KkStudioETransportPill,
-  Progress: KkStudioETransportProgress,
+  Rate: KkStudioETransportRate,
+  Status: KkStudioETransportStatus,
 });

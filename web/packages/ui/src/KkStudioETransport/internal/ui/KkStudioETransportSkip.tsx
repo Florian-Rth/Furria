@@ -9,13 +9,13 @@ import { kkTokens } from '../../../tokens';
 export type KkStudioETransportSkipDirection = 'back' | 'forward';
 
 const GLYPHS: Record<KkStudioETransportSkipDirection, ReactNode> = {
-  back: <SkipPreviousRoundedIcon fontSize="large" />,
-  forward: <SkipNextRoundedIcon fontSize="large" />,
+  back: <SkipPreviousRoundedIcon />,
+  forward: <SkipNextRoundedIcon />,
 };
 
 const skipPaint = (theme: Theme): CSSObject => ({
-  width: '3.25rem',
-  height: '3.25rem',
+  width: kkTokens.tapTarget,
+  height: kkTokens.tapTarget,
   flexShrink: 0,
   borderRadius: `${kkTokens.radius.pill}px`,
   color: (theme.vars ?? theme).palette.text.primary,

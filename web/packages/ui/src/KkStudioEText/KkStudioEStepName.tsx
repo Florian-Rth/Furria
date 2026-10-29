@@ -12,10 +12,7 @@ interface KkStudioEStepNameProps {
 export const KkStudioEStepName: FC<KkStudioEStepNameProps> = ({ stepKey, name, sx }) => (
   <KkStudioEFade
     fadeKey={stepKey}
-    sx={[
-      { flex: 1, height: { xs: '2.25rem', desktop: '2.75rem' } },
-      ...(Array.isArray(sx) ? sx : [sx]),
-    ]}
+    sx={[{ height: { xs: '2.25rem', desktop: '2.75rem' } }, ...(Array.isArray(sx) ? sx : [sx])]}
   >
     <Typography
       component="h2"

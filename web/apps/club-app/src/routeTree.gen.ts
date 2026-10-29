@@ -80,9 +80,7 @@ import { Route as AppManageClubRecordAccessRouteImport } from './routes/_app/man
 import { Route as AppManageBoardNewRouteImport } from './routes/_app/manage.board_.new'
 import { Route as AppManageBoardBoardOfficeIdRouteImport } from './routes/_app/manage.board_.$boardOfficeId'
 import { Route as AppManageApplicationsMembershipApplicationIdRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId'
-import { Route as AppLabStudioFActIdRouteImport } from './routes/_app/lab_.studio-f.$actId'
 import { Route as AppLabStudioEActIdRouteImport } from './routes/_app/lab_.studio-e.$actId'
-import { Route as AppLabStudioDActIdRouteImport } from './routes/_app/lab_.studio-d.$actId'
 import { Route as AppGroupsGroupIdTrainingsRouteImport } from './routes/_app/groups_.$groupId_.trainings'
 import { Route as AppGroupsGroupIdEditRouteImport } from './routes/_app/groups_.$groupId_.edit'
 import { Route as AppGroupsGroupIdAdministrationRouteImport } from './routes/_app/groups_.$groupId_.administration'
@@ -487,19 +485,9 @@ const AppManageApplicationsMembershipApplicationIdRoute =
     path: '/manage/applications/$membershipApplicationId',
     getParentRoute: () => AppRoute,
   } as any)
-const AppLabStudioFActIdRoute = AppLabStudioFActIdRouteImport.update({
-  id: '/lab_/studio-f/$actId',
-  path: '/lab/studio-f/$actId',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppLabStudioEActIdRoute = AppLabStudioEActIdRouteImport.update({
   id: '/lab_/studio-e/$actId',
   path: '/lab/studio-e/$actId',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLabStudioDActIdRoute = AppLabStudioDActIdRouteImport.update({
-  id: '/lab_/studio-d/$actId',
-  path: '/lab/studio-d/$actId',
   getParentRoute: () => AppRoute,
 } as any)
 const AppGroupsGroupIdTrainingsRoute =
@@ -813,9 +801,7 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
   '/groups/$groupId/trainings': typeof AppGroupsGroupIdTrainingsRoute
-  '/lab/studio-d/$actId': typeof AppLabStudioDActIdRoute
   '/lab/studio-e/$actId': typeof AppLabStudioEActIdRoute
-  '/lab/studio-f/$actId': typeof AppLabStudioFActIdRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
   '/manage/board/new': typeof AppManageBoardNewRoute
@@ -928,9 +914,7 @@ export interface FileRoutesByTo {
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
   '/groups/$groupId/trainings': typeof AppGroupsGroupIdTrainingsRoute
-  '/lab/studio-d/$actId': typeof AppLabStudioDActIdRoute
   '/lab/studio-e/$actId': typeof AppLabStudioEActIdRoute
-  '/lab/studio-f/$actId': typeof AppLabStudioFActIdRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
   '/manage/board/new': typeof AppManageBoardNewRoute
@@ -1047,9 +1031,7 @@ export interface FileRoutesById {
   '/_app/groups_/$groupId_/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/_app/groups_/$groupId_/edit': typeof AppGroupsGroupIdEditRoute
   '/_app/groups_/$groupId_/trainings': typeof AppGroupsGroupIdTrainingsRoute
-  '/_app/lab_/studio-d/$actId': typeof AppLabStudioDActIdRoute
   '/_app/lab_/studio-e/$actId': typeof AppLabStudioEActIdRoute
-  '/_app/lab_/studio-f/$actId': typeof AppLabStudioFActIdRoute
   '/_app/manage/applications_/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/_app/manage/board_/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
   '/_app/manage/board_/new': typeof AppManageBoardNewRoute
@@ -1164,9 +1146,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
     | '/groups/$groupId/trainings'
-    | '/lab/studio-d/$actId'
     | '/lab/studio-e/$actId'
-    | '/lab/studio-f/$actId'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
     | '/manage/board/new'
@@ -1279,9 +1259,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
     | '/groups/$groupId/trainings'
-    | '/lab/studio-d/$actId'
     | '/lab/studio-e/$actId'
-    | '/lab/studio-f/$actId'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
     | '/manage/board/new'
@@ -1397,9 +1375,7 @@ export interface FileRouteTypes {
     | '/_app/groups_/$groupId_/administration'
     | '/_app/groups_/$groupId_/edit'
     | '/_app/groups_/$groupId_/trainings'
-    | '/_app/lab_/studio-d/$actId'
     | '/_app/lab_/studio-e/$actId'
-    | '/_app/lab_/studio-f/$actId'
     | '/_app/manage/applications_/$membershipApplicationId'
     | '/_app/manage/board_/$boardOfficeId'
     | '/_app/manage/board_/new'
@@ -1957,25 +1933,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageApplicationsMembershipApplicationIdRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/lab_/studio-f/$actId': {
-      id: '/_app/lab_/studio-f/$actId'
-      path: '/lab/studio-f/$actId'
-      fullPath: '/lab/studio-f/$actId'
-      preLoaderRoute: typeof AppLabStudioFActIdRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/lab_/studio-e/$actId': {
       id: '/_app/lab_/studio-e/$actId'
       path: '/lab/studio-e/$actId'
       fullPath: '/lab/studio-e/$actId'
       preLoaderRoute: typeof AppLabStudioEActIdRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/lab_/studio-d/$actId': {
-      id: '/_app/lab_/studio-d/$actId'
-      path: '/lab/studio-d/$actId'
-      fullPath: '/lab/studio-d/$actId'
-      preLoaderRoute: typeof AppLabStudioDActIdRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/groups_/$groupId_/trainings': {
@@ -2371,9 +2333,7 @@ interface AppRouteChildren {
   AppGroupsGroupIdAdministrationRoute: typeof AppGroupsGroupIdAdministrationRoute
   AppGroupsGroupIdEditRoute: typeof AppGroupsGroupIdEditRoute
   AppGroupsGroupIdTrainingsRoute: typeof AppGroupsGroupIdTrainingsRoute
-  AppLabStudioDActIdRoute: typeof AppLabStudioDActIdRoute
   AppLabStudioEActIdRoute: typeof AppLabStudioEActIdRoute
-  AppLabStudioFActIdRoute: typeof AppLabStudioFActIdRoute
   AppManageApplicationsMembershipApplicationIdRoute: typeof AppManageApplicationsMembershipApplicationIdRoute
   AppManageBoardBoardOfficeIdRoute: typeof AppManageBoardBoardOfficeIdRoute
   AppManageBoardNewRoute: typeof AppManageBoardNewRoute
@@ -2475,9 +2435,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppGroupsGroupIdAdministrationRoute: AppGroupsGroupIdAdministrationRoute,
   AppGroupsGroupIdEditRoute: AppGroupsGroupIdEditRoute,
   AppGroupsGroupIdTrainingsRoute: AppGroupsGroupIdTrainingsRoute,
-  AppLabStudioDActIdRoute: AppLabStudioDActIdRoute,
   AppLabStudioEActIdRoute: AppLabStudioEActIdRoute,
-  AppLabStudioFActIdRoute: AppLabStudioFActIdRoute,
   AppManageApplicationsMembershipApplicationIdRoute:
     AppManageApplicationsMembershipApplicationIdRoute,
   AppManageBoardBoardOfficeIdRoute: AppManageBoardBoardOfficeIdRoute,

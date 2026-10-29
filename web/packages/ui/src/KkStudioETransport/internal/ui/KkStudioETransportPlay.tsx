@@ -7,17 +7,15 @@ import { focusRing } from '../../../internal/focus-ring';
 import { kkTokens } from '../../../tokens';
 
 const discPaint = (theme: Theme): CSSObject => ({
-  width: '4.25rem',
-  height: '4.25rem',
+  width: '3rem',
+  height: '3rem',
   flexShrink: 0,
   borderRadius: `${kkTokens.radius.pill}px`,
   backgroundColor: (theme.vars ?? theme).palette.primary.main,
   color: (theme.vars ?? theme).palette.primary.contrastText,
-  boxShadow: kkTokens.shadow.floating,
   transition: kkTokens.motion.press,
   '&:active': { transform: 'scale(0.94)' },
-  '&.Mui-disabled': { opacity: kkTokens.opacity.dimmed, boxShadow: 'none' },
-  [theme.breakpoints.up('desktop')]: { width: '4.75rem', height: '4.75rem' },
+  '&.Mui-disabled': { opacity: kkTokens.opacity.dimmed },
   ...focusRing(theme),
 });
 
@@ -34,11 +32,7 @@ export const KkStudioETransportPlay: FC<KkStudioETransportPlayProps> = ({
   disabled = false,
   onToggle,
 }) => {
-  const glyph = playing ? (
-    <PauseRoundedIcon fontSize="large" />
-  ) : (
-    <PlayArrowRoundedIcon fontSize="large" />
-  );
+  const glyph = playing ? <PauseRoundedIcon /> : <PlayArrowRoundedIcon />;
 
   return (
     <ButtonBase

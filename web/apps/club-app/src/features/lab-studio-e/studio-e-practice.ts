@@ -1,19 +1,10 @@
-import type { TimelineRange } from '@/features/act-player/music-timeline';
 import type { StudioStep } from '@/features/acts/schemas';
 
 const RESTART_GRACE_SECONDS = 1.5;
 const PRACTICE_RATES: readonly number[] = [1, 0.85, 0.7, 0.5];
+const RATE_TOLERANCE = 1e-6;
 
 export type SkipDirection = 'back' | 'forward';
-
-export interface ShareRange {
-  start: number;
-  end: number;
-}
-
-export interface ProgressStop extends ShareRange {
-  stepId: number;
-}
 
 const startOf = (step: StudioStep): number => step.startSeconds ?? 0;
 
@@ -60,35 +51,7 @@ export const skipTargetOf = (
   return before ?? current ?? timed[0] ?? null;
 };
 
-export const nextRateOf = (rate: number): number => {
-  const index = PRACTICE_RATES.indexOf(rate);
-
-  return PRACTICE_RATES[(index + 1) % PRACTICE_RATES.length] ?? 1;
-};
+export const nextRateOf = (rate: number): number =>
+  PRACTICE_RATES.find((candidate) => candidate < rate - RATE_TOLERANCE) ?? 1;
 
 export const ratePercentOf = (rate: number): number => Math.round(rate * 100);
-
-export const progressStopsOf = (steps: readonly StudioStep[], length: number): ProgressStop[] =>
-  length <= 0
-    ? []
-    : steps.filter(isTimed).map((step) => ({
-        stepId: step.stepId,
-        start: Math.min(1, Math.max(0, startOf(step) / length)),
-        end: Math.min(1, Math.max(0, endOf(step) / length)),
-      }));
-
-export const snappedSeekOf = (
-  steps: readonly StudioStep[],
-  share: number,
-  length: number,
-): number => {
-  const seconds = Math.min(1, Math.max(0, share)) * length;
-  const step = currentStepOf(steps, seconds);
-
-  return step === null ? seconds : startOf(step);
-};
-
-export const loopShareOf = (loop: TimelineRange | null, length: number): ShareRange | null =>
-  loop === null || length <= 0
-    ? null
-    : { start: Math.max(0, loop.start / length), end: Math.min(1, loop.end / length) };

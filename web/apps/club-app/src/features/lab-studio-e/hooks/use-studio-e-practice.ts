@@ -1,8 +1,10 @@
-import type { KkStudioETransportShare } from '@furria/ui/KkStudioETransport';
 import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import { stepRangeOf } from '@/features/act-player/music-timeline';
+import type { TimelineRange } from '@/features/act-player/music-timeline';
+import { partOfStep, partRangeOf, stepRangeOf } from '@/features/act-player/music-timeline';
 import type { StudioStep } from '@/features/acts/schemas';
+import type { LoopKind } from '../studio-e-controls';
+import { loopKindOf, loopRangeOf } from '../studio-e-controls';
 import {
   rateLabelOf,
   rateTextOf,
@@ -12,104 +14,120 @@ import {
   STUDIO_E_PLAY,
 } from '../studio-e-copy';
 import type { SkipDirection } from '../studio-e-practice';
-import {
-  currentStepOf,
-  loopShareOf,
-  nextRateOf,
-  progressStopsOf,
-  ratePercentOf,
-  shownStepOf,
-  skipTargetOf,
-  snappedSeekOf,
-} from '../studio-e-practice';
+import { nextRateOf, ratePercentOf, shownStepOf, skipTargetOf } from '../studio-e-practice';
 
 const NO_STEP_KEY = 'none';
 
 export interface StudioEPractice {
+  step: StudioStep | null;
   stepKey: string;
   stepName: string;
   note: string | null;
+  partName: string | null;
   playing: boolean;
   playLabel: string;
   canPlay: boolean;
-  looping: boolean;
-  canLoop: boolean;
+  canStep: boolean;
+  loop: TimelineRange | null;
+  loopKind: LoopKind;
+  rate: number;
+  percent: number;
   rateText: string;
   rateLabel: string;
   slowed: boolean;
-  stops: KkStudioETransportShare[];
-  loop: KkStudioETransportShare | null;
   toggle: () => void;
-  skipBack: () => void;
-  skipForward: () => void;
-  toggleLoop: () => void;
+  skip: (direction: SkipDirection) => void;
   slowDown: () => void;
-  seekShare: (share: number) => void;
+  setRate: (rate: number) => void;
+  jumpTo: (stepId: number) => void;
+  loopStep: (stepId: number) => void;
+  loopPart: (stepId: number) => void;
 }
 
+const sameRange = (left: TimelineRange | null, right: TimelineRange | null): boolean =>
+  left !== null && right !== null && left.start === right.start && left.end === right.end;
+
 export const useStudioEPractice = (playback: StudioPlayback): StudioEPractice => {
-  const { player, steps, state, length, controls } = playback;
+  const { player, steps, parts, state, controls } = playback;
   const stepId = usePlaybackSelection(
     player,
     (seconds) => shownStepOf(steps, seconds)?.stepId ?? null,
   );
   const step = steps.find((candidate) => candidate.stepId === stepId) ?? null;
-  const looping = state.loop !== null;
+  const part = step === null ? null : partOfStep(parts, step.stepId);
+  const loopKind = loopKindOf(state.loop, step, parts, steps);
   const percent = ratePercentOf(state.rate);
-  const loopShare = loopShareOf(state.loop, length);
+  const stepOf = (id: number): StudioStep | null =>
+    steps.find((candidate) => candidate.stepId === id) ?? null;
 
-  const land = (target: StudioStep | null, seconds: number): void => {
-    const range = target === null ? null : stepRangeOf(target);
-    if (looping && range !== null) {
-      player.setLoop(range);
+  const land = (target: StudioStep): void => {
+    const kind = loopKindOf(
+      player.state().loop,
+      shownStepOf(steps, player.position()),
+      parts,
+      steps,
+    );
+    if (kind !== 'off') {
+      player.setLoop(loopRangeOf(kind, target, parts, steps));
     }
-    player.seek(seconds);
+    player.seek(target.startSeconds ?? 0);
   };
 
-  const skip = (direction: SkipDirection): void => {
-    const target = skipTargetOf(steps, player.position(), direction);
-    if (target !== null) {
-      land(target, target.startSeconds ?? 0);
+  const loopTo = (range: TimelineRange | null, target: StudioStep): void => {
+    if (range === null || sameRange(player.state().loop, range)) {
+      player.setLoop(null);
+      return;
     }
+    player.setLoop(range);
+    player.seek(target.startSeconds ?? range.start);
   };
 
   return {
+    step,
     stepKey: step === null ? NO_STEP_KEY : String(step.stepId),
     stepName: step?.name ?? STUDIO_E_NO_STEPS,
     note: state.load === 'failed' ? STUDIO_E_LOAD_FAILED : (step?.description ?? null),
+    partName: part?.name ?? null,
     playing: state.playing,
     playLabel: state.playing ? STUDIO_E_PAUSE : STUDIO_E_PLAY,
     canPlay: state.load === 'ready',
-    looping,
-    canLoop: step !== null,
+    canStep: step !== null,
+    loop: state.loop,
+    loopKind,
+    rate: state.rate,
+    percent,
     rateText: rateTextOf(percent),
     rateLabel: rateLabelOf(percent),
     slowed: state.rate < 1,
-    stops: progressStopsOf(steps, length).map((stop) => ({ ...stop, key: String(stop.stepId) })),
-    loop: loopShare === null ? null : { ...loopShare, key: 'loop' },
     toggle: controls.toggle,
-    skipBack: () => {
-      skip('back');
-    },
-    skipForward: () => {
-      skip('forward');
-    },
-    toggleLoop: () => {
-      if (looping) {
-        controls.clearLoop();
-        return;
-      }
-      const target = shownStepOf(steps, player.position());
+    skip: (direction) => {
+      const target = skipTargetOf(steps, player.position(), direction);
       if (target !== null) {
-        controls.loopStep(target);
+        land(target);
       }
     },
     slowDown: () => {
-      controls.setRate(nextRateOf(state.rate));
+      controls.setRate(nextRateOf(player.state().rate));
     },
-    seekShare: (share) => {
-      const seconds = snappedSeekOf(steps, share, length);
-      land(currentStepOf(steps, seconds), seconds);
+    setRate: controls.setRate,
+    jumpTo: (id) => {
+      const target = stepOf(id);
+      if (target !== null) {
+        land(target);
+      }
+    },
+    loopStep: (id) => {
+      const target = stepOf(id);
+      if (target !== null) {
+        loopTo(stepRangeOf(target), target);
+      }
+    },
+    loopPart: (id) => {
+      const target = stepOf(id);
+      const owner = target === null ? null : partOfStep(parts, target.stepId);
+      if (target !== null) {
+        loopTo(owner === null ? stepRangeOf(target) : partRangeOf(owner, steps), target);
+      }
     },
   };
 };
