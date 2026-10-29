@@ -55,6 +55,7 @@ describe('workerStateOf', () => {
     isAlive,
     photoMediaItemId: null,
     videoMediaItemId: null,
+    audioMediaItemId: null,
   });
 
   it.each<{ label: string; worker: MediaWorker; state: string }>([
@@ -85,6 +86,7 @@ describe('mediaTallyOf', () => {
     ).toEqual({
       photo: { ready: 120, processing: 0, failed: 2 },
       video: { ready: 0, processing: 1, failed: 0 },
+      audio: { ready: 0, processing: 0, failed: 0 },
     });
   });
 });

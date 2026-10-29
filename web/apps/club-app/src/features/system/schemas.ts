@@ -53,7 +53,7 @@ export const StorageFactsSchema = z.object({
 });
 export type StorageFacts = z.infer<typeof StorageFactsSchema>;
 
-export const MEDIA_KINDS = ['photo', 'video'] as const;
+export const MEDIA_KINDS = ['photo', 'video', 'audio'] as const;
 export const MediaKindSchema = z.enum(MEDIA_KINDS);
 export type MediaKind = z.infer<typeof MediaKindSchema>;
 
@@ -95,6 +95,7 @@ export const MediaWorkerSchema = z.object({
   isAlive: z.boolean(),
   photoMediaItemId: z.number().nullable(),
   videoMediaItemId: z.number().nullable(),
+  audioMediaItemId: z.number().nullable(),
 });
 export type MediaWorker = z.infer<typeof MediaWorkerSchema>;
 

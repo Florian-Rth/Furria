@@ -3,6 +3,7 @@ using Furria.Core.Media;
 using Furria.Infrastructure.Media;
 using Furria.MediaWorker.Photos;
 using Furria.MediaWorker.Renditions;
+using Furria.MediaWorker.Sound;
 using Furria.MediaWorker.Videos;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -17,6 +18,7 @@ public sealed class MediaJobRunner
     private readonly MediaRoot _root;
     private readonly PhotoRenderer _photoRenderer;
     private readonly VideoRenderer _videoRenderer;
+    private readonly AudioRenderer _audioRenderer;
     private readonly MediaWorkerActivity _activity;
     private readonly TimeProvider _timeProvider;
     private readonly ILogger<MediaJobRunner> _logger;
@@ -26,6 +28,7 @@ public sealed class MediaJobRunner
         MediaRoot root,
         PhotoRenderer photoRenderer,
         VideoRenderer videoRenderer,
+        AudioRenderer audioRenderer,
         MediaWorkerActivity activity,
         TimeProvider timeProvider,
         ILogger<MediaJobRunner> logger
@@ -35,6 +38,7 @@ public sealed class MediaJobRunner
         _root = root;
         _photoRenderer = photoRenderer;
         _videoRenderer = videoRenderer;
+        _audioRenderer = audioRenderer;
         _activity = activity;
         _timeProvider = timeProvider;
         _logger = logger;
@@ -93,10 +97,12 @@ public sealed class MediaJobRunner
             throw new MissingOriginalException();
 
         using var files = new RenditionFiles(_root, job.StorageKey);
-        var rendered =
-            job.Kind == MediaKind.Video
-                ? await _videoRenderer.RenderAsync(files, ct)
-                : _photoRenderer.Render(files, job.Crop, job.PictureAspect);
+        var rendered = job.Kind switch
+        {
+            MediaKind.Video => await _videoRenderer.RenderAsync(files, job.KeepsSoundProfile, ct),
+            MediaKind.Audio => await _audioRenderer.RenderAsync(files, ct),
+            _ => _photoRenderer.Render(files, job.Crop, job.PictureAspect),
+        };
 
         var itemExists = await WithQueueAsync(queue =>
             queue.CompleteAsync(CompletionOf(job, rendered), ct)
@@ -143,6 +149,7 @@ public sealed class MediaJobRunner
             CapturedAt = rendered.CapturedAt,
             Camera = rendered.Camera,
             AppliedCrop = rendered.AppliedCrop,
+            Audio = rendered.Audio,
         };
 
     private static string ReasonOf(Exception exception) =>

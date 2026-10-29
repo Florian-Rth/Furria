@@ -450,6 +450,7 @@ public sealed class SystemVerdictTests
             IsAlive = MediaWorkerLiveness.IsAlive(lastSeenAt, Now),
             PhotoMediaItemId = null,
             VideoMediaItemId = null,
+            AudioMediaItemId = null,
         };
 
     private static BackgroundRunSummary Run(BackgroundJob job, DateTimeOffset lastRunAt)

@@ -21,6 +21,17 @@ public sealed class MediaSnifferTests
                 [0x00, 0x00, 0x00, 0x08, .. "wide"u8, 0, 0, 0, 0, .. "mdat"u8],
                 "video/quicktime"
             },
+            {
+                "MP3 with ID3 tag",
+                [.. "ID3"u8, 0x04, 0x00, 0x00, 0x00, 0x00, 0x10, 0x00],
+                "audio/mpeg"
+            },
+            { "bare MP3 frame", [0xFF, 0xFB, 0x90, 0x64, 0x00, 0x00, 0x00, 0x00], "audio/mpeg" },
+            { "WAV", [.. "RIFF"u8, 0x24, 0x08, 0x00, 0x00, .. "WAVEfmt "u8], "audio/wav" },
+            { "AIFF", [.. "FORM"u8, 0x00, 0x00, 0x10, 0x00, .. "AIFFCOMM"u8], "audio/aiff" },
+            { "AIFF-C", [.. "FORM"u8, 0x00, 0x00, 0x10, 0x00, .. "AIFCFVER"u8], "audio/aiff" },
+            { "FLAC", [.. "fLaC"u8, 0x00, 0x00, 0x00, 0x22, 0x10, 0x00], "audio/flac" },
+            { "iPhone M4A", FileTypeBox("M4A ", "M4A ", "isom", "mp42"), "audio/mp4" },
         };
 
     public static TheoryData<string, byte[]> RefusedFiles =>
@@ -50,6 +61,8 @@ public sealed class MediaSnifferTests
             },
             { "PDF", [.. "%PDF-1.7\n%"u8, 0xE2, 0xE3, 0xCF, 0xD3, 0x0A, 0x0A] },
             { "too short to tell", [0x00, 0x00] },
+            { "ADTS AAC stream", [0xFF, 0xF1, 0x50, 0x80, 0x02, 0x1F, 0xFC, 0x00] },
+            { "RIFF AVI", [.. "RIFF"u8, 0x24, 0x08, 0x00, 0x00, .. "AVI LIST"u8] },
         };
 
     [Theory]

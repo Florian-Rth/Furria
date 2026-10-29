@@ -21,4 +21,6 @@ public sealed class MediaWorkerHeartbeat
     public int? PhotoMediaItemId { get; set; }
 
     public int? VideoMediaItemId { get; set; }
+
+    public int? AudioMediaItemId { get; set; }
 }

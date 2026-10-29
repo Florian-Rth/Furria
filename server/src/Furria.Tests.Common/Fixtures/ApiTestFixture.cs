@@ -570,6 +570,18 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         return Path.Combine(_mediaRoot, MediaPaths.RenditionOf(storageKey, rendition));
     }
 
+    public async Task<string> SoundProfileOfAsync(int mediaItemId, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var storageKey = await db
+            .MediaItems.Where(item => item.Id == mediaItemId)
+            .Select(item => item.StorageKey)
+            .SingleAsync(ct);
+        return Path.Combine(_mediaRoot, MediaPaths.SoundProfileOf(storageKey));
+    }
+
     public async Task PlaceRenditionAsync(
         int mediaItemId,
         MediaRendition rendition,
@@ -588,6 +600,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         while (
             await runner.RunNextAsync(MediaKind.Photo, ct)
             | await runner.RunNextAsync(MediaKind.Video, ct)
+            | await runner.RunNextAsync(MediaKind.Audio, ct)
         ) { }
     }
 

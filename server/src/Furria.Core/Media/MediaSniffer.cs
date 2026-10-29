@@ -20,11 +20,22 @@ public static class MediaSniffer
     private static readonly MediaFormat Heif = new(MediaKind.Photo, "image/heif");
     private static readonly MediaFormat Mp4 = new(MediaKind.Video, "video/mp4");
     private static readonly MediaFormat QuickTime = new(MediaKind.Video, "video/quicktime");
+    private static readonly MediaFormat Mp3 = new(MediaKind.Audio, "audio/mpeg");
+    private static readonly MediaFormat Wav = new(MediaKind.Audio, "audio/wav");
+    private static readonly MediaFormat Aiff = new(MediaKind.Audio, "audio/aiff");
+    private static readonly MediaFormat Flac = new(MediaKind.Audio, "audio/flac");
+    private static readonly MediaFormat M4a = new(MediaKind.Audio, "audio/mp4");
 
     private static readonly byte[] JpegSignature = [0xFF, 0xD8, 0xFF];
     private static readonly byte[] PngSignature = [0x89, 0x50, 0x4E, 0x47, 0x0D, 0x0A, 0x1A, 0x0A];
     private static readonly byte[] Riff = "RIFF"u8.ToArray();
     private static readonly byte[] WebPMarker = "WEBP"u8.ToArray();
+    private static readonly byte[] WaveMarker = "WAVE"u8.ToArray();
+    private static readonly byte[] Form = "FORM"u8.ToArray();
+    private static readonly byte[] AiffMarker = "AIFF"u8.ToArray();
+    private static readonly byte[] AifcMarker = "AIFC"u8.ToArray();
+    private static readonly byte[] FlacSignature = "fLaC"u8.ToArray();
+    private static readonly byte[] Id3Tag = "ID3"u8.ToArray();
     private static readonly byte[] FileTypeBox = "ftyp"u8.ToArray();
 
     private static readonly HashSet<string> HeicBrands =
@@ -68,6 +79,8 @@ public static class MediaSniffer
 
     private static readonly HashSet<string> QuickTimeBrands = ["qt  "];
 
+    private static readonly HashSet<string> M4aBrands = ["M4A ", "M4B "];
+
     private static readonly HashSet<string> QuickTimeLeadingAtoms =
     [
         "moov",
@@ -82,12 +95,32 @@ public static class MediaSniffer
     public static MediaFormat? Sniff(ReadOnlySpan<byte> head) =>
         head.StartsWith(JpegSignature) ? Jpeg
         : head.StartsWith(PngSignature) ? Png
-        : IsWebP(head) ? WebP
+        : IsRiffOf(head, WebPMarker) ? WebP
+        : IsRiffOf(head, WaveMarker) ? Wav
+        : IsAiff(head) ? Aiff
+        : head.StartsWith(FlacSignature) ? Flac
+        : IsMp3(head) ? Mp3
         : IsoMediaFormatOf(head);
 
     [Pure]
-    private static bool IsWebP(ReadOnlySpan<byte> head) =>
-        head.Length >= 12 && head.StartsWith(Riff) && head.Slice(8, 4).SequenceEqual(WebPMarker);
+    private static bool IsRiffOf(ReadOnlySpan<byte> head, ReadOnlySpan<byte> marker) =>
+        head.Length >= 12 && head.StartsWith(Riff) && head.Slice(8, 4).SequenceEqual(marker);
+
+    [Pure]
+    private static bool IsAiff(ReadOnlySpan<byte> head) =>
+        head.Length >= 12
+        && head.StartsWith(Form)
+        && (
+            head.Slice(8, 4).SequenceEqual(AiffMarker) || head.Slice(8, 4).SequenceEqual(AifcMarker)
+        );
+
+    [Pure]
+    private static bool IsMp3(ReadOnlySpan<byte> head) =>
+        head.StartsWith(Id3Tag) || IsMpegLayerThreeFrame(head);
+
+    [Pure]
+    private static bool IsMpegLayerThreeFrame(ReadOnlySpan<byte> head) =>
+        head.Length >= 2 && head[0] == 0xFF && (head[1] & 0xE0) == 0xE0 && (head[1] & 0x06) == 0x02;
 
     [Pure]
     private static MediaFormat? IsoMediaFormatOf(ReadOnlySpan<byte> head)
@@ -109,6 +142,7 @@ public static class MediaSniffer
                 ? null
                 : Heif,
             _ when QuickTimeBrands.Contains(majorBrand) => QuickTime,
+            _ when M4aBrands.Contains(majorBrand) => M4a,
             _ when Mp4Brands.Contains(majorBrand) => Mp4,
             _ => null,
         };

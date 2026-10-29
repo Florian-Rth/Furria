@@ -44,6 +44,7 @@ const status: SystemStatus = {
       isAlive: true,
       photoMediaItemId: 12,
       videoMediaItemId: null,
+      audioMediaItemId: null,
     },
     {
       instanceId: 'b',
@@ -55,6 +56,7 @@ const status: SystemStatus = {
       isAlive: false,
       photoMediaItemId: null,
       videoMediaItemId: null,
+      audioMediaItemId: null,
     },
   ],
   services: [

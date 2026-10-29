@@ -19,4 +19,6 @@ public sealed record MediaWorkerSummary
     public required int? PhotoMediaItemId { get; init; }
 
     public required int? VideoMediaItemId { get; init; }
+
+    public required int? AudioMediaItemId { get; init; }
 }

@@ -4,6 +4,7 @@ using Furria.Core.Gallery;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
 using Furria.Core.News;
+using Furria.Core.RunningOrders;
 using Furria.Core.Website;
 
 namespace Furria.Core.Media;
@@ -30,6 +31,8 @@ public sealed class MediaItem : ITimestamped
 
     public int? OwnerEventId { get; set; }
 
+    public int? OwnerActId { get; set; }
+
     public MediaKind Kind { get; set; }
 
     public MediaItemState State { get; set; }
@@ -53,6 +56,8 @@ public sealed class MediaItem : ITimestamped
     public string? Camera { get; set; }
 
     public MediaCrop? Crop { get; set; }
+
+    public MediaAudioFacts? Audio { get; set; }
 
     public DateTimeOffset? RenderedAt { get; set; }
 
@@ -81,6 +86,8 @@ public sealed class MediaItem : ITimestamped
     public NewsPost? OwnerNewsPost { get; set; }
 
     public Event? OwnerEvent { get; set; }
+
+    public Act? OwnerAct { get; set; }
 
     public Person? UploadedBy { get; set; }
 

@@ -17,4 +17,6 @@ public sealed record MediaJobDetails
     public required double? PictureAspect { get; init; }
 
     public required int Attempt { get; init; }
+
+    public required bool KeepsSoundProfile { get; init; }
 }

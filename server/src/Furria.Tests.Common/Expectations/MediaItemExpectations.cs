@@ -61,6 +61,23 @@ public sealed class MediaItemExpectations
             }
         );
 
+    public Expected ToBeAnalysedAs(int sampleRate, double leadingSilenceSeconds, double tempoBpm) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var item = await SingleAsync(dbContext, ct);
+                Assert.Equal(MediaItemState.Ready, item.State);
+                Assert.Equal((null, null), (item.Width, item.Height));
+                Assert.NotNull(item.Audio);
+                Assert.Equal(sampleRate, item.Audio.SampleRate);
+                Assert.Equal(leadingSilenceSeconds, item.Audio.LeadingSilenceSeconds, 0.05);
+                Assert.NotNull(item.Audio.TempoBpm);
+                Assert.Equal(tempoBpm, item.Audio.TempoBpm.Value, 0.5);
+                Assert.NotNull(item.Audio.FirstBeatSeconds);
+                Assert.True(double.IsFinite(item.Audio.LoudnessLufs));
+            }
+        );
+
     public Expected ToLastAbout(double seconds) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
