@@ -1,7 +1,7 @@
 import type { MyAct } from '@/features/acts/schemas';
 
 export interface LabStudioVariant {
-  slug: 'studio-a' | 'studio-b' | 'studio-c';
+  slug: 'studio-d' | 'studio-e' | 'studio-f';
   title: string;
   lead: string;
 }
@@ -9,9 +9,9 @@ export interface LabStudioVariant {
 export const LAB_STUDIO_TITLE = 'Auftritt üben';
 
 export const LAB_STUDIO_VARIANTS: readonly LabStudioVariant[] = [
-  { slug: 'studio-a', title: 'Variante A', lead: 'Video, Bühne und Musik übereinander' },
-  { slug: 'studio-b', title: 'Variante B', lead: 'Die Schrittfolge ist der Bildschirm' },
-  { slug: 'studio-c', title: 'Variante C', lead: 'Alle Spuren auf einer Zeitleiste' },
+  { slug: 'studio-d', title: 'Variante D', lead: 'Das Trainervideo füllt den Bildschirm' },
+  { slug: 'studio-e', title: 'Variante E', lead: 'Dein Platz und dein Weg auf der Bühne' },
+  { slug: 'studio-f', title: 'Variante F', lead: 'Ein Schritt nach dem anderen' },
 ];
 
 export const labStudioPathOf = (variant: LabStudioVariant, actId: number): string =>

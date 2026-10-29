@@ -277,10 +277,20 @@ Built 2026-10-29, awaiting Florian's pick. Decisions taken in the phase:
 - Seed for the lab: `scripts/studio-seed/` (synthetic songs and trainer videos made with the worker's
   ffmpeg, steps, parts, spots, choreography, stage), run against a branch database (`furria_rfc52`) so
   the shared dev database never gets this branch's migrations.
-- Lab variants at `/lab/studio-a|b|c/$actId` (entries on `/lab`): **A** layers video, stage, a sticky
-  count/music/transport deck and the step list (from the Inspiration mock); **B** makes the step list the
-  screen, the current step opening in place as the practice card; **C** runs lanes (part, step, counts,
-  music, video, formation points, your moves) under a fixed playhead, the later editors' home.
+- **Round 1 rejected** (A stacked layers, B step list with an expanding card, C editor lanes). Florian's
+  rulings for the practice view, binding for phase 7 on:
+  - It behaves like a **native app**: one fixed viewport, **no page scrolling**, and **nothing jumps
+    while the music runs** (no auto-scroll, no layout change; only content inside fixed boxes changes).
+  - **Show less**: practising is calm and focused, every element earns its place; secondary things sit
+    behind one tap as an overlay.
+  - Scope is the **cast member's practice view only**; editing, configuration and planning come with
+    their own phases and leave no hints or lanes here.
+  - "Perfect professional UI/UX"; motion is judged by filming playback, not by stills.
+- **Round 2** lab variants at `/lab/studio-d|e|f/$actId` (entries on `/lab`): **D** the mirrored trainer
+  video fills the screen like a native player, controls fade while playing, a small stage inset;
+  **E** the stage from the dancer's view is the screen, your dot large with the next move drawn ahead and
+  counted down ("in 3"), the video behind one tap; **F** one step at a time like a lesson, looping by
+  default, story-style step progress, video or stage in one fixed frame.
 
 ### Phase 7 — Player promoted
 Goal: members practise on the chosen screen with real data.
