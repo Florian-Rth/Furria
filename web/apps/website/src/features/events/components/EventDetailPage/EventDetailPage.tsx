@@ -2,7 +2,7 @@ import { KkSection } from '@furria/ui/KkSection';
 import { PageLayout } from '@furria/ui/PageLayout';
 import type { FC } from 'react';
 import { EventTicketPanel } from '@/features/events/components/EventTicketPanel/EventTicketPanel';
-import { TicketRequestCta } from '@/features/events/components/TicketRequestCta';
+import { PresalePlacesBlock } from '@/features/events/components/PresalePlacesBlock';
 import { VenueBlock } from '@/features/events/components/VenueBlock';
 import type { EventDetail } from '@/lib/public-events/schemas';
 import { EventIdentityAside } from './internal/layout/EventIdentityAside';
@@ -33,10 +33,11 @@ export const EventDetailPage: FC<EventDetailPageProps> = ({ event }) => (
             <EventDetailStats event={event} />
           </EventIdentityMain>
           <EventIdentityAside>
-            <EventTicketPanel event={event} action={<TicketRequestCta event={event} />} />
+            <EventTicketPanel event={event} />
           </EventIdentityAside>
         </EventIdentityLayout>
       </KkSection>
+      <PresalePlacesBlock event={event} />
       <VenueBlock venue={event.venue} />
     </PageLayout.Body>
     <EventClosingBand event={event} />

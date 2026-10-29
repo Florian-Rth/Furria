@@ -29,7 +29,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(StartGroupMomentKind)] = "jubilee",
         [typeof(ToDoKind)] =
             "neverInvited reminderDue inPersonOnly birthDateUnknown keyToTakeBack "
-            + "clubRecordGap applicationWaiting ticketRequestWaiting",
+            + "clubRecordGap applicationWaiting",
         [typeof(GroupTone)] = "clay olive lime fern teal indigo iris violet orchid rose",
         [typeof(ClubIcon)] =
             "crown euro bolt shield camera sparkle mic musicNote drum mask megaphone star "
@@ -56,7 +56,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             + "errorsLogged errorBurst serviceOverdue serviceFailed mailRetrying mailStuck",
         [typeof(BackgroundJob)] =
             "abandonedUploadSweep mediaFileReaper galleryBinPurge mailDispatcher "
-            + "unconfirmedApplicationPurge pastTicketRequestPurge signedOutMailRequestWorker "
+            + "unconfirmedApplicationPurge signedOutMailRequestWorker "
             + "logEntryPurge mediaStorageSurvey",
         [typeof(LogSource)] = "api mediaWorker",
         [typeof(LogEntryLevel)] = "information warning error fatal",

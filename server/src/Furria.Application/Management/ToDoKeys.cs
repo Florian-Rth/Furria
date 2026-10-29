@@ -22,7 +22,6 @@ public static class ToDoKeys
         [ToDoKind.KeyToTakeBack] = [FurriaPermissions.KeyHoldingsManage],
         [ToDoKind.ClubRecordGap] = [FurriaPermissions.ClubManage],
         [ToDoKind.ApplicationWaiting] = [FurriaPermissions.MembershipApplicationsDecide],
-        [ToDoKind.TicketRequestWaiting] = [FurriaPermissions.TicketRequestsHandle],
     }.ToFrozenDictionary();
 
     public static readonly string[] Openers =

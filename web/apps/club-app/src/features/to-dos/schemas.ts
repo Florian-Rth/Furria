@@ -8,7 +8,6 @@ export const TO_DO_KINDS = [
   'keyToTakeBack',
   'clubRecordGap',
   'applicationWaiting',
-  'ticketRequestWaiting',
 ] as const;
 export type ToDoKind = (typeof TO_DO_KINDS)[number];
 

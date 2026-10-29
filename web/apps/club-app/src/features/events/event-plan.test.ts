@@ -12,7 +12,6 @@ const planned = (overrides: Partial<PlannedEvent> = {}): PlannedEvent => ({
   priceCents: 1900,
   presaleStartsAt: '2026-11-14T10:00:00Z',
   detailsMissing: [],
-  ticketRequests: { open: 0, cards: 0, oldestRequestedAt: null },
   review: { publishedAlbums: 0, publishedNews: 0 },
   steps: [
     { step: 'details', state: 'done', dueOn: '2026-10-18', opensOn: null },

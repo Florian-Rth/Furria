@@ -33,7 +33,6 @@ export const COLUMN_TITLES: Record<BoardColumn, string> = {
   website: 'Website',
   details: 'Eckdaten',
   tickets: 'Karten',
-  requests: 'Anfragen',
   review: 'Nachbereitung',
   deadline: 'Nächste Frist',
 };
@@ -42,7 +41,6 @@ export const PANE_ICONS: Record<EventPaneKey, KkIconName> = {
   website: 'website',
   details: 'factSheet',
   tickets: 'tickets',
-  requests: 'inbox',
   review: 'gallery',
 };
 
@@ -55,7 +53,6 @@ export const PANE_TITLES: Record<EventPaneKey, string> = {
   website: 'Website',
   details: 'Eckdaten',
   tickets: 'Karten',
-  requests: 'Kartenanfragen',
   review: 'Nachbereitung',
 };
 
@@ -79,7 +76,6 @@ const FILTER_LOOKS: Record<BoardFilter, FilterLook> = {
   overdue: { icon: 'alert', label: 'Überfällig', tone: 'overdue' },
   dueSoon: { icon: 'clock', label: 'Bald fällig', tone: 'ink' },
   offline: { icon: 'website', label: 'Nicht online', tone: 'ink' },
-  requests: { icon: 'inbox', label: 'Anfragen', tone: 'current' },
   past: { icon: 'archive', label: 'Vergangen', tone: 'ink' },
 };
 
@@ -126,7 +122,7 @@ export const toRelativeDays = (days: number): string => {
   return days > 0 ? `in ${days} T` : `seit ${-days} T`;
 };
 
-const TICKET_FACT_NAMES = { price: 'Preis', presale: 'VVK-Start' } as const;
+const TICKET_FACT_NAMES = { price: 'Preis', presale: 'VVK-Start', places: 'VVK-Stelle' } as const;
 
 const salesLabelOf = (fact: Extract<CellFact, { kind: 'sales' }>): string => {
   const status = toEventStatusShortLabel({
@@ -159,13 +155,6 @@ export const toCellFactLabel = (fact: CellFact): string => {
         : 'Preis und VVK fehlen';
     case 'sales':
       return salesLabelOf(fact);
-    case 'requests':
-      return join([
-        `${fact.open} offen`,
-        fact.waitingDays === 0 ? 'seit heute' : `seit ${fact.waitingDays} T`,
-      ]);
-    case 'noRequests':
-      return 'keine offen';
     case 'review':
       return fact.albums === 0 && fact.news === 0
         ? 'noch nichts'
@@ -277,7 +266,11 @@ export const toRowView = (
   };
 };
 
-const SHORT_TICKET_FACTS = { price: 'Preis fehlt', presale: 'VVK fehlt' } as const;
+const SHORT_TICKET_FACTS = {
+  price: 'Preis fehlt',
+  presale: 'VVK fehlt',
+  places: 'VVK-Stelle fehlt',
+} as const;
 
 export const toCellShortFact = (fact: CellFact): string => {
   switch (fact.kind) {
@@ -303,10 +296,6 @@ export const toCellShortFact = (fact: CellFact): string => {
       return fact.priceCents === null
         ? toEventStatusShortLabel({ status: fact.status, presaleStartsAt: fact.presaleStartsAt })
         : formatPriceCents(fact.priceCents);
-    case 'requests':
-      return `${fact.open} offen`;
-    case 'noRequests':
-      return QUIET_NOTE;
     case 'review':
       return fact.albums > 0
         ? plural(fact.albums, 'Album', 'Alben')
@@ -357,7 +346,7 @@ export const ACTION_LABELS = {
   view: 'Auf der Website ansehen',
   picture: 'Bild setzen',
   editDetails: 'Angaben ergänzen',
-  editTickets: 'Preis und Vorverkauf setzen',
+  editTickets: 'Karten einrichten',
   album: 'Album anlegen',
 } as const;
 
@@ -375,7 +364,6 @@ export const SECONDARY_LINKS: Record<EventPaneKey, readonly SecondaryLink[]> = {
   website: [],
   details: [EDIT_LINK, MANAGE_LINK],
   tickets: [EDIT_LINK],
-  requests: [],
   review: [],
 };
 

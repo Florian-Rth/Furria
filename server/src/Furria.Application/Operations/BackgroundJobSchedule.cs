@@ -14,7 +14,6 @@ public static class BackgroundJobSchedule
         [BackgroundJob.GalleryBinPurge] = TimeSpan.FromHours(1),
         [BackgroundJob.MailDispatcher] = TimeSpan.FromSeconds(5),
         [BackgroundJob.UnconfirmedApplicationPurge] = TimeSpan.FromMinutes(15),
-        [BackgroundJob.PastTicketRequestPurge] = TimeSpan.FromMinutes(15),
         [BackgroundJob.LogEntryPurge] = TimeSpan.FromMinutes(15),
         [BackgroundJob.MediaStorageSurvey] = TimeSpan.FromHours(6),
     };

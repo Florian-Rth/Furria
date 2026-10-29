@@ -3,18 +3,11 @@ import type { KkCrop } from '@furria/ui/image-crop';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type { EventPayload } from './event-form';
-import type {
-  EventDetails,
-  EventsResponse,
-  TicketAvailability,
-  TicketRequestsResponse,
-  WrittenEvent,
-} from './schemas';
+import type { EventDetails, EventsResponse, TicketAvailability, WrittenEvent } from './schemas';
 import {
   EventDetailsSchema,
   EventPictureFromGallerySchema,
   EventsResponseSchema,
-  TicketRequestsResponseSchema,
   WrittenEventSchema,
 } from './schemas';
 
@@ -28,6 +21,7 @@ const toBody = (payload: EventPayload): JsonBody => ({
   ageHint: payload.ageHint,
   priceCents: payload.priceCents,
   presaleStartsAt: payload.presaleStartsAt,
+  presaleVenueIds: payload.presaleVenueIds,
 });
 
 export const requestEvents = (accessToken: string): Promise<EventsResponse> =>
@@ -92,19 +86,6 @@ export const requestEventPublished = (eventId: number, accessToken: string): Pro
 
 export const requestEventDeletion = (eventId: number, accessToken: string): Promise<void> =>
   apiFetch(`/api/events/${eventId}`, {
-    method: 'DELETE',
-    schema: NoContentSchema,
-    accessToken,
-  });
-
-export const requestTicketRequests = (accessToken: string): Promise<TicketRequestsResponse> =>
-  apiFetch('/api/ticket-requests', { schema: TicketRequestsResponseSchema, accessToken });
-
-export const requestTicketRequestHandled = (
-  ticketRequestId: number,
-  accessToken: string,
-): Promise<void> =>
-  apiFetch(`/api/ticket-requests/${ticketRequestId}`, {
     method: 'DELETE',
     schema: NoContentSchema,
     accessToken,

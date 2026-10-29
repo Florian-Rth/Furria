@@ -1,14 +1,20 @@
+import type { JsonBody } from '@furria/api-client';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type { CreatedVenue, ManagedVenuesResponse, VenueForm } from './schemas';
 import { CreatedVenueSchema, ManagedVenuesResponseSchema } from './schemas';
 
-const toBody = (form: VenueForm): Record<string, string | null> => ({
+const toBody = (form: VenueForm): JsonBody => ({
   name: form.name,
   street: form.street,
   zip: form.zip,
   city: form.city,
   hint: form.hint === '' ? null : form.hint,
+  openingHours: form.openingHours.map((slot) => ({
+    weekday: slot.weekday,
+    opens: slot.opens,
+    closes: slot.closes,
+  })),
 });
 
 export const requestManagedVenues = (accessToken: string): Promise<ManagedVenuesResponse> =>

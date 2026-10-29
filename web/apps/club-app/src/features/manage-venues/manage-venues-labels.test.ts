@@ -10,6 +10,7 @@ const venue = (overrides: Partial<ManagedVenue>): ManagedVenue => ({
   city: 'Großfurra',
   hint: null,
   archivedOn: null,
+  openingHours: [],
   ...overrides,
 });
 

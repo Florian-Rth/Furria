@@ -1,23 +1,25 @@
-import type { FC, ReactNode } from 'react';
+import type { FC } from 'react';
+import { derivePresalePlaces } from '@/features/events/presale-places-display';
 import {
   deriveTicketPanelFace,
   deriveTicketPanelNote,
 } from '@/features/events/ticket-panel-display';
-import type { Event } from '@/lib/public-events/schemas';
+import type { EventDetail } from '@/lib/public-events/schemas';
 import { TicketPanelShell } from './internal/layout/TicketPanelShell';
 import { TicketPanelAvailability } from './internal/ui/TicketPanelAvailability';
 import { TicketPanelCountdown } from './internal/ui/TicketPanelCountdown';
 import { TicketPanelNote } from './internal/ui/TicketPanelNote';
+import { TicketPanelPlaces } from './internal/ui/TicketPanelPlaces';
 import { TicketPanelPrice } from './internal/ui/TicketPanelPrice';
 
 interface EventTicketPanelProps {
-  event: Event;
-  action?: ReactNode;
+  event: EventDetail;
 }
 
-export const EventTicketPanel: FC<EventTicketPanelProps> = ({ event, action }) => {
+export const EventTicketPanel: FC<EventTicketPanelProps> = ({ event }) => {
   const face = deriveTicketPanelFace(event);
   const note = deriveTicketPanelNote(face);
+  const presalePlaces = derivePresalePlaces(event);
   const priceCents = face.kind === 'cancelled' ? null : event.priceCents;
 
   const countdown =
@@ -28,13 +30,16 @@ export const EventTicketPanel: FC<EventTicketPanelProps> = ({ event, action }) =
 
   const noteLine = note === null ? null : <TicketPanelNote>{note}</TicketPanelNote>;
 
+  const placesBlock =
+    presalePlaces === null ? null : <TicketPanelPlaces presalePlaces={presalePlaces} />;
+
   return (
     <TicketPanelShell>
       <TicketPanelPrice priceCents={priceCents} />
       {countdown}
       {availability}
       {noteLine}
-      {action}
+      {placesBlock}
     </TicketPanelShell>
   );
 };

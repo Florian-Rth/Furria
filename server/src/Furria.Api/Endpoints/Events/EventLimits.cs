@@ -7,4 +7,5 @@ internal static class EventLimits
     internal const int DescriptionLength = 2_000;
     internal const int AgeHintLength = 40;
     internal const int MaxPriceCents = 100_000;
+    internal const int MaxPresalePlaces = 10;
 }

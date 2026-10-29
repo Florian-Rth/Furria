@@ -24,7 +24,6 @@ const planned = (overrides: Partial<PlannedEvent> = {}): PlannedEvent => ({
   priceCents: 1900,
   presaleStartsAt: '2026-11-14T10:00:00Z',
   detailsMissing: [],
-  ticketRequests: { open: 0, cards: 0, oldestRequestedAt: null },
   review: { publishedAlbums: 0, publishedNews: 0 },
   steps: [
     { step: 'details', state: 'done', dueOn: '2026-10-18', opensOn: null },
@@ -108,6 +107,24 @@ describe('cellOf steps', () => {
     expect(cell.fact).toEqual({ kind: 'ticketFactsMissing', facts: ['price'] });
   });
 
+  it('names a missing presale place once price and presale are set but the step is open', () => {
+    const cell = cellOf(planned(), 'tickets', TODAY);
+
+    expect(cell.fact).toEqual({ kind: 'ticketFactsMissing', facts: ['places'] });
+  });
+
+  it('shows the sales status once the tickets step is done', () => {
+    const cell = cellOf(
+      planned({
+        steps: [{ step: 'tickets', state: 'done', dueOn: '2026-11-17', opensOn: null }],
+      }),
+      'tickets',
+      TODAY,
+    );
+
+    expect(cell.fact.kind).toBe('sales');
+  });
+
   it('shows a sold-out evening as sales even without a price', () => {
     const cell = cellOf(planned({ priceCents: null, status: 'soldOut' }), 'tickets', TODAY);
 
@@ -124,19 +141,6 @@ describe('cellOf steps', () => {
 
     expect(cell.fact).toEqual({ kind: 'reviewOpens', opensOn: '2027-01-17' });
     expect(cell.state).toBe('waiting');
-  });
-});
-
-describe('cellOf requests', () => {
-  it.each([
-    { open: 0, oldest: null, state: 'off' },
-    { open: 2, oldest: '2026-10-18T09:00:00Z', state: 'current' },
-    { open: 2, oldest: '2026-10-16T09:00:00Z', state: 'current' },
-    { open: 1, oldest: '2026-10-15T09:00:00Z', state: 'overdue' },
-  ])('$open open since $oldest is $state', ({ open, oldest, state }) => {
-    const event = planned({ ticketRequests: { open, cards: open * 2, oldestRequestedAt: oldest } });
-
-    expect(cellOf(event, 'requests', TODAY).state).toBe(state);
   });
 });
 
@@ -185,14 +189,6 @@ describe('event filters', () => {
   it.each([
     { name: 'a calm evening', overrides: {}, overdue: false, dueSoon: false },
     {
-      name: 'late requests',
-      overrides: {
-        ticketRequests: { open: 1, cards: 2, oldestRequestedAt: '2026-10-01T09:00:00Z' },
-      },
-      overdue: true,
-      dueSoon: false,
-    },
-    {
       name: 'an open step due within two weeks',
       overrides: {
         steps: [
@@ -236,10 +232,7 @@ describe('event filters', () => {
   ])('$name', ({ overrides, overdue, dueSoon }) => {
     const event = planned(overrides);
 
-    expect([isOverdueEvent(event, TODAY), isDueSoonEvent(event, TODAY)]).toEqual([
-      overdue,
-      dueSoon,
-    ]);
+    expect([isOverdueEvent(event), isDueSoonEvent(event, TODAY)]).toEqual([overdue, dueSoon]);
   });
 });
 
@@ -285,7 +278,6 @@ describe('filterEvents', () => {
       overdue: 1,
       dueSoon: 0,
       offline: 1,
-      requests: 0,
       past: 2,
     });
   });
@@ -303,14 +295,13 @@ describe('sessionTallyOf', () => {
         { step: 'review', state: 'waiting', dueOn: '2027-01-30', opensOn: '2027-01-17' },
       ],
       currentStep: 'details',
-      ticketRequests: { open: 2, cards: 5, oldestRequestedAt: '2026-10-18T09:00:00Z' },
     });
     const cancelled = planned({ eventId: 3, status: 'cancelled' });
     const past = planned({ eventId: 4, isOver: true });
 
     expect(sessionTallyOf([planned(), late, cancelled, past], TODAY)).toEqual({
-      counts: { done: 2, overdue: 2, current: 2, open: 1, waiting: 2 },
-      total: 9,
+      counts: { done: 2, overdue: 2, current: 1, open: 1, waiting: 2 },
+      total: 8,
     });
   });
 });
@@ -340,18 +331,11 @@ describe('defaultPaneOf', () => {
       expected: 'website',
     },
     {
-      name: 'late requests first',
-      overrides: {
-        ticketRequests: { open: 1, cards: 2, oldestRequestedAt: '2026-10-01T09:00:00Z' },
-      },
-      expected: 'requests',
-    },
-    {
       name: 'the website when nothing is current',
       overrides: { currentStep: null },
       expected: 'website',
     },
   ])('$name', ({ overrides, expected }) => {
-    expect(defaultPaneOf(planned(overrides), TODAY)).toBe(expected);
+    expect(defaultPaneOf(planned(overrides))).toBe(expected);
   });
 });

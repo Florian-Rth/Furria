@@ -12,7 +12,6 @@ import {
   publishStateOf,
   stepStatusOf,
   ticketFactsOf,
-  waitingDaysOf,
 } from './event-plan';
 import type {
   BoardFilter,
@@ -26,7 +25,6 @@ import { EVENT_PANE_KEYS } from './schemas';
 export const BOARD_COLUMNS = [...EVENT_PANE_KEYS, 'deadline'] as const;
 export type BoardColumn = (typeof BOARD_COLUMNS)[number];
 
-export const REQUEST_PATIENCE_DAYS = 3;
 export const DUE_SOON_DAYS = 14;
 
 export type CellFact =
@@ -43,8 +41,6 @@ export type CellFact =
       priceCents: number | null;
       presaleStartsAt: string | null;
     }
-  | { kind: 'requests'; open: number; cards: number; waitingDays: number }
-  | { kind: 'noRequests' }
   | { kind: 'review'; albums: number; news: number }
   | { kind: 'reviewOpens'; opensOn: string }
   | { kind: 'deadline'; step: EventStepKey; dueOn: string; daysLeft: number }
@@ -126,23 +122,6 @@ const ticketsCellOf = (event: PlannedEvent): BoardCell => {
   };
 };
 
-const requestsCellOf = (event: PlannedEvent, todayIsoDay: string): BoardCell => {
-  const { open, cards, oldestRequestedAt } = event.ticketRequests;
-  const base = { column: 'requests', pane: 'requests' } as const;
-
-  if (open === 0) {
-    return { ...base, state: 'off', fact: { kind: 'noRequests' } };
-  }
-
-  const waitingDays = waitingDaysOf(oldestRequestedAt, todayIsoDay);
-
-  return {
-    ...base,
-    state: waitingDays > REQUEST_PATIENCE_DAYS ? 'overdue' : 'current',
-    fact: { kind: 'requests', open, cards, waitingDays },
-  };
-};
-
 const reviewCellOf = (event: PlannedEvent): BoardCell => {
   const status = stepStatusOf(event, 'review');
   const opens = status?.state === 'waiting' && status.opensOn !== null ? status.opensOn : null;
@@ -221,8 +200,6 @@ export const cellOf = (
       return detailsCellOf(event);
     case 'tickets':
       return ticketsCellOf(event);
-    case 'requests':
-      return requestsCellOf(event, todayIsoDay);
     case 'review':
       return reviewCellOf(event);
     case 'deadline':
@@ -244,9 +221,6 @@ export const pressingDayOf = (event: PlannedEvent, todayIsoDay: string): string 
     .filter((status) => status.state === 'overdue' || status.state === 'open')
     .map((status) => status.dueOn);
 
-  if (event.ticketRequests.oldestRequestedAt !== null) {
-    days.push(toIsoDay(new Date(event.ticketRequests.oldestRequestedAt)));
-  }
   if (publishStateOf(event) === 'ready') {
     days.push(todayIsoDay);
   }
@@ -263,10 +237,8 @@ const byPressingDay =
     pressingDayOf(left, todayIsoDay).localeCompare(pressingDayOf(right, todayIsoDay)) ||
     byStart(left, right);
 
-export const isOverdueEvent = (event: PlannedEvent, todayIsoDay: string): boolean =>
-  !isCancelledEvent(event) &&
-  (event.steps.some((status) => status.state === 'overdue') ||
-    requestsCellOf(event, todayIsoDay).state === 'overdue');
+export const isOverdueEvent = (event: PlannedEvent): boolean =>
+  !isCancelledEvent(event) && event.steps.some((status) => status.state === 'overdue');
 
 export const isDueSoonEvent = (event: PlannedEvent, todayIsoDay: string): boolean =>
   !isCancelledEvent(event) &&
@@ -275,9 +247,6 @@ export const isDueSoonEvent = (event: PlannedEvent, todayIsoDay: string): boolea
       (status.state === 'open' || status.state === 'waiting') &&
       isDueSoon(status.dueOn, todayIsoDay),
   );
-
-const hasOpenRequests = (event: PlannedEvent): boolean =>
-  !isCancelledEvent(event) && event.ticketRequests.open > 0;
 
 export const filterEvents = <TEvent extends PlannedEvent>(
   events: readonly TEvent[],
@@ -294,17 +263,13 @@ export const filterEvents = <TEvent extends PlannedEvent>(
     case 'all':
       return [...coming, ...past];
     case 'overdue':
-      return events
-        .filter((event) => isOverdueEvent(event, todayIsoDay))
-        .sort(byPressingDay(todayIsoDay));
+      return events.filter(isOverdueEvent).sort(byPressingDay(todayIsoDay));
     case 'dueSoon':
       return events
         .filter((event) => isDueSoonEvent(event, todayIsoDay))
         .sort(byPressingDay(todayIsoDay));
     case 'offline':
       return coming.filter(isInPreparation);
-    case 'requests':
-      return events.filter(hasOpenRequests).sort(byPressingDay(todayIsoDay));
     case 'past':
       return past;
   }
@@ -318,7 +283,6 @@ export const filterCountsOf = (
   overdue: filterEvents(events, 'overdue', todayIsoDay).length,
   dueSoon: filterEvents(events, 'dueSoon', todayIsoDay).length,
   offline: filterEvents(events, 'offline', todayIsoDay).length,
-  requests: filterEvents(events, 'requests', todayIsoDay).length,
   past: filterEvents(events, 'past', todayIsoDay).length,
 });
 
@@ -386,16 +350,11 @@ export const leadRemainingOf = (
   now: Date,
 ): number | null => (event.isOver || isCancelledEvent(event) ? null : 1 - leadShareOf(event, now));
 
-export const defaultPaneOf = (event: PlannedEvent, todayIsoDay: string): EventPaneKey => {
+export const defaultPaneOf = (event: PlannedEvent): EventPaneKey => {
   if (isCancelledEvent(event)) {
     return 'details';
   }
 
-  const requests = cellOf(event, 'requests', todayIsoDay);
-
-  if (requests.state === 'overdue') {
-    return 'requests';
-  }
   if (publishStateOf(event) === 'ready') {
     return 'website';
   }

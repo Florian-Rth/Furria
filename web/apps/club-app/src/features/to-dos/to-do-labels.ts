@@ -21,7 +21,6 @@ const TO_DO_LABELS: Record<ToDoKind, ToDoLabel> = {
   keyToTakeBack: { one: 'Schlüssel zurückholen', other: 'Schlüssel zurückholen' },
   clubRecordGap: { one: 'Lücke in Vereinsdaten', other: 'Lücken in Vereinsdaten' },
   applicationWaiting: { one: 'Beitrittsantrag offen', other: 'Beitrittsanträge offen' },
-  ticketRequestWaiting: { one: 'Kartenanfrage offen', other: 'Kartenanfragen offen' },
 };
 
 export const TO_DO_ICONS: Record<ToDoKind, KkIconName> = {
@@ -32,7 +31,6 @@ export const TO_DO_ICONS: Record<ToDoKind, KkIconName> = {
   keyToTakeBack: 'key',
   clubRecordGap: 'club',
   applicationWaiting: 'mail',
-  ticketRequestWaiting: 'events',
 };
 
 export const toToDoLabel = ({ kind, count }: ToDoCount): string => {

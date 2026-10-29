@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { CalendarCollisionSchema } from '@/features/calendar/schemas';
-import { ToDoSchema } from '@/features/to-dos/schemas';
 import { ClockTimeSchema, PictureEditingSchema, PictureSchema } from '@/lib/api/schemas';
 import { EVENT_SALES_STATUS_KEYS, TICKET_AVAILABILITY_KEYS } from '@/lib/event-copy';
 import { toWrittenPriceCents } from './event-price';
@@ -10,6 +9,7 @@ export const EVENT_TEASER_MAX_LENGTH = 160;
 export const EVENT_DESCRIPTION_MAX_LENGTH = 2000;
 export const EVENT_AGE_HINT_MAX_LENGTH = 40;
 export const EVENT_MAX_PRICE_CENTS = 100_000;
+export const EVENT_PRESALE_PLACES_MAX = 10;
 
 export const EventSalesStatusSchema = z.enum(EVENT_SALES_STATUS_KEYS);
 export type EventSalesStatus = z.infer<typeof EventSalesStatusSchema>;
@@ -21,11 +21,11 @@ export const EVENT_STEP_KEYS = ['details', 'tickets', 'review'] as const;
 export const EventStepKeySchema = z.enum(EVENT_STEP_KEYS);
 export type EventStepKey = z.infer<typeof EventStepKeySchema>;
 
-export const EVENT_PANE_KEYS = ['website', 'details', 'tickets', 'requests', 'review'] as const;
+export const EVENT_PANE_KEYS = ['website', 'details', 'tickets', 'review'] as const;
 export const EventPaneKeySchema = z.enum(EVENT_PANE_KEYS);
 export type EventPaneKey = z.infer<typeof EventPaneKeySchema>;
 
-export const BOARD_FILTERS = ['all', 'overdue', 'dueSoon', 'offline', 'requests', 'past'] as const;
+export const BOARD_FILTERS = ['all', 'overdue', 'dueSoon', 'offline', 'past'] as const;
 export const BoardFilterSchema = z.enum(BOARD_FILTERS);
 export type BoardFilter = z.infer<typeof BoardFilterSchema>;
 
@@ -63,13 +63,6 @@ export const EventStepStatusSchema = z.object({
 });
 export type EventStepStatus = z.infer<typeof EventStepStatusSchema>;
 
-export const EventTicketRequestTallySchema = z.object({
-  open: z.number().int().nonnegative(),
-  cards: z.number().int().nonnegative(),
-  oldestRequestedAt: z.iso.datetime({ offset: true }).nullable(),
-});
-export type EventTicketRequestTally = z.infer<typeof EventTicketRequestTallySchema>;
-
 export const EventReviewTallySchema = z.object({
   publishedAlbums: z.number().int().nonnegative(),
   publishedNews: z.number().int().nonnegative(),
@@ -80,7 +73,6 @@ const EventPlanningFields = {
   publishedAt: z.iso.datetime({ offset: true }).nullable(),
   createdAt: z.iso.datetime({ offset: true }),
   detailsMissing: z.array(MissingEventDetailSchema),
-  ticketRequests: EventTicketRequestTallySchema,
   review: EventReviewTallySchema,
   steps: z.array(EventStepStatusSchema),
   currentStep: EventStepKeySchema.nullable(),
@@ -105,6 +97,13 @@ export type EventSummary = z.infer<typeof EventSummarySchema>;
 export const EventsResponseSchema = z.object({ events: z.array(EventSummarySchema) });
 export type EventsResponse = z.infer<typeof EventsResponseSchema>;
 
+export const EventPresalePlaceSchema = z.object({
+  venueId: z.number().int(),
+  name: z.string(),
+  isArchived: z.boolean(),
+});
+export type EventPresalePlace = z.infer<typeof EventPresalePlaceSchema>;
+
 export const EventDetailsSchema = z.object({
   eventId: z.number().int(),
   title: z.string(),
@@ -119,6 +118,7 @@ export const EventDetailsSchema = z.object({
   priceCents: z.number().int().nullable(),
   presaleStartsAt: z.iso.datetime({ offset: true }).nullable(),
   ticketAvailability: TicketAvailabilitySchema,
+  presalePlaces: z.array(EventPresalePlaceSchema),
   cancelledAt: z.iso.datetime({ offset: true }).nullable(),
   status: EventSalesStatusSchema,
   isOver: z.boolean(),
@@ -174,6 +174,9 @@ export const EventFormSchema = z
       ),
     presaleDay: z.string(),
     presaleTime: z.string(),
+    presaleVenueIds: z
+      .array(z.number().int())
+      .max(EVENT_PRESALE_PLACES_MAX, `Höchstens ${EVENT_PRESALE_PLACES_MAX} Vorverkaufsstellen.`),
   })
   .superRefine((form, ctx) => {
     const startsAt = `${form.startDay}T${form.startTime}`;
@@ -193,23 +196,3 @@ export const EventFormSchema = z
     }
   });
 export type EventForm = z.infer<typeof EventFormSchema>;
-
-export const TicketRequestSchema = z.object({
-  ticketRequestId: z.number().int(),
-  eventId: z.number().int(),
-  eventTitle: z.string(),
-  eventStartsAt: z.iso.datetime({ offset: true }),
-  ticketCount: z.number().int().positive(),
-  name: z.string(),
-  phone: z.string(),
-  email: z.string(),
-  message: z.string().nullable(),
-  requestedAt: z.iso.datetime({ offset: true }),
-});
-export type TicketRequest = z.infer<typeof TicketRequestSchema>;
-
-export const TicketRequestsResponseSchema = z.object({
-  ticketRequests: z.array(TicketRequestSchema),
-  toDo: ToDoSchema.nullable(),
-});
-export type TicketRequestsResponse = z.infer<typeof TicketRequestsResponseSchema>;

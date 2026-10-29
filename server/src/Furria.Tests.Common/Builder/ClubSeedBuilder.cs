@@ -9,12 +9,12 @@ public sealed class ClubSeedBuilder
     private const string DefaultZip = "99713";
     private const string DefaultCity = "Großfurra";
     private const string DefaultTeaser = "Der Abend, auf den die Session hinfiebert.";
-    private const string DefaultGuestPhone = "0171 2345678";
 
     private static readonly DateOnly DefaultSinceOn = new(2020, 11, 11);
 
     private readonly List<SessionIntent> _sessions = [];
     private readonly List<VenueIntent> _venues = [];
+    private readonly List<VenueOpeningSlotIntent> _venueOpeningSlots = [];
     private readonly List<AnnouncementIntent> _announcements = [];
     private readonly List<KeyHoldingIntent> _keyHoldings = [];
     private readonly List<BoardOfficeIntent> _boardOffices = [];
@@ -23,12 +23,14 @@ public sealed class ClubSeedBuilder
     private readonly List<CalendarEntryIntent> _calendarEntries = [];
     private readonly List<AttendanceResponseIntent> _attendanceResponses = [];
     private readonly List<EventIntent> _events = [];
-    private readonly List<TicketRequestIntent> _ticketRequests = [];
+    private readonly List<EventPresalePlaceIntent> _eventPresalePlaces = [];
     private ClubRecordIntent? _clubRecord;
 
     internal IReadOnlyList<SessionIntent> Sessions => _sessions;
 
     internal IReadOnlyList<VenueIntent> Venues => _venues;
+
+    internal IReadOnlyList<VenueOpeningSlotIntent> VenueOpeningSlots => _venueOpeningSlots;
 
     internal IReadOnlyList<AnnouncementIntent> Announcements => _announcements;
 
@@ -46,7 +48,7 @@ public sealed class ClubSeedBuilder
 
     internal IReadOnlyList<EventIntent> Events => _events;
 
-    internal IReadOnlyList<TicketRequestIntent> TicketRequests => _ticketRequests;
+    internal IReadOnlyList<EventPresalePlaceIntent> EventPresalePlaces => _eventPresalePlaces;
 
     internal ClubRecordIntent? ClubRecord => _clubRecord;
 
@@ -104,6 +106,23 @@ public sealed class ClubSeedBuilder
     )
     {
         _venues.Add(new VenueIntent(alias, name, sortOrder, street, zip, city, hint, archivedOn));
+        return this;
+    }
+
+    public ClubSeedBuilder AddEventPresalePlace(string eventAlias, string venueAlias)
+    {
+        _eventPresalePlaces.Add(new EventPresalePlaceIntent(eventAlias, venueAlias));
+        return this;
+    }
+
+    public ClubSeedBuilder AddVenueOpeningSlot(
+        string venueAlias,
+        DayOfWeek weekday,
+        TimeOnly opens,
+        TimeOnly closes
+    )
+    {
+        _venueOpeningSlots.Add(new VenueOpeningSlotIntent(venueAlias, weekday, opens, closes));
         return this;
     }
 
@@ -285,32 +304,6 @@ public sealed class ClubSeedBuilder
         return this;
     }
 
-    public ClubSeedBuilder AddTicketRequest(
-        string alias,
-        string eventAlias,
-        string name,
-        string email,
-        int ticketCount = 2,
-        string phone = DefaultGuestPhone,
-        string? message = null,
-        DateTimeOffset? requestedAt = null
-    )
-    {
-        _ticketRequests.Add(
-            new TicketRequestIntent(
-                alias,
-                eventAlias,
-                name,
-                email,
-                ticketCount,
-                phone,
-                message,
-                requestedAt
-            )
-        );
-        return this;
-    }
-
     internal sealed record SessionIntent(
         string Alias,
         int StartYear,
@@ -342,6 +335,15 @@ public sealed class ClubSeedBuilder
         string City,
         string? Hint,
         DateOnly? ArchivedOn
+    );
+
+    internal sealed record EventPresalePlaceIntent(string EventAlias, string VenueAlias);
+
+    internal sealed record VenueOpeningSlotIntent(
+        string VenueAlias,
+        DayOfWeek Weekday,
+        TimeOnly Opens,
+        TimeOnly Closes
     );
 
     internal sealed record AnnouncementIntent(
@@ -424,16 +426,5 @@ public sealed class ClubSeedBuilder
         TicketAvailability TicketAvailability,
         DateTimeOffset? CancelledAt,
         bool Unpublished
-    );
-
-    internal sealed record TicketRequestIntent(
-        string Alias,
-        string EventAlias,
-        string Name,
-        string Email,
-        int TicketCount,
-        string Phone,
-        string? Message,
-        DateTimeOffset? RequestedAt
     );
 }

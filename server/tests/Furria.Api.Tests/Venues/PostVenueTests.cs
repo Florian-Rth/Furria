@@ -43,6 +43,7 @@ public sealed class PostVenueTests : IClassFixture<ApiTestFixture>
                 Zip = Zip,
                 City = City,
                 Hint = Hint,
+                OpeningHours = [],
             }
         );
 
@@ -56,6 +57,46 @@ public sealed class PostVenueTests : IClassFixture<ApiTestFixture>
             .ToHaveHint(Hint)
             .Venue(result.VenueId)
             .ToBeOpen()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RecordTheOpeningHours_When_TheShopIsCreatedWithThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(ct);
+        var nine = new TimeOnly(9, 0);
+        var one = new TimeOnly(13, 0);
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await client.POSTAsync<
+            PostVenue,
+            PostVenueRequest,
+            PostVenueResponse
+        >(
+            new()
+            {
+                Name = "Bäckerei Schmidt",
+                Street = Street,
+                Zip = Zip,
+                City = City,
+                Hint = null,
+                OpeningHours =
+                [
+                    new()
+                    {
+                        Weekday = DayOfWeek.Saturday,
+                        Opens = nine,
+                        Closes = one,
+                    },
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.Venue(result.VenueId)
+            .ToHaveOpeningHours((DayOfWeek.Saturday, nine, one))
             .AssertAsync(ct);
     }
 
@@ -78,6 +119,7 @@ public sealed class PostVenueTests : IClassFixture<ApiTestFixture>
                 Zip = Zip,
                 City = City,
                 Hint = null,
+                OpeningHours = [],
             }
         );
 
@@ -103,6 +145,7 @@ public sealed class PostVenueTests : IClassFixture<ApiTestFixture>
                 Zip = Zip,
                 City = City,
                 Hint = null,
+                OpeningHours = [],
             }
         );
 
@@ -132,6 +175,7 @@ public sealed class PostVenueTests : IClassFixture<ApiTestFixture>
                 Zip = Zip,
                 City = City,
                 Hint = null,
+                OpeningHours = [],
             }
         );
 
@@ -157,6 +201,7 @@ public sealed class PostVenueTests : IClassFixture<ApiTestFixture>
                 Zip = "",
                 City = "",
                 Hint = null,
+                OpeningHours = [],
             }
         );
 

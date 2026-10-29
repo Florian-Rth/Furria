@@ -10,6 +10,7 @@ interface VenueRecordProps {
   name: string;
   addressLine: string | null;
   hint: string | null;
+  openingHours: string | null;
   note: string | null;
   dimmed: boolean;
   actions?: ReactNode;
@@ -24,6 +25,7 @@ export const VenueRecord: FC<VenueRecordProps> = ({
   name,
   addressLine,
   hint,
+  openingHours,
   note,
   dimmed,
   actions,
@@ -35,6 +37,7 @@ export const VenueRecord: FC<VenueRecordProps> = ({
 }) => {
   const addressText = addressLine ?? VENUE_WITHOUT_ADDRESS;
   const hintLine = hint === null ? null : <KkMeta italic>{hint}</KkMeta>;
+  const openingHoursLine = openingHours === null ? null : <KkMeta>{openingHours}</KkMeta>;
   const noteLine = note === null ? null : <KkNote>{note}</KkNote>;
 
   return (
@@ -62,6 +65,7 @@ export const VenueRecord: FC<VenueRecordProps> = ({
             {name}
           </KkHeading>
           <KkMeta>{addressText}</KkMeta>
+          {openingHoursLine}
           {hintLine}
           {noteLine}
         </Stack>

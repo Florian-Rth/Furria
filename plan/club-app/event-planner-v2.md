@@ -6,6 +6,7 @@ scope: events workbench v2 — the Veranstaltungen overview, per-event page with
 supersedes: plan/launch.md "absent, never a disabled button" (event page only, as one folded line);
   plan/club-app/floor-plan.md seating-editor cut
 shaped_with: Florian (pending); team: IA, act planner, table planner, visual/motion, carnival practice, critic
+superseded_in_part: every Kartenanfrage / requests pane / ticket_requests.handle part by plan/club-app/presale-places.md, 2026-10-22
 ---
 
 # Event planner v2

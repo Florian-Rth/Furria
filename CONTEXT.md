@@ -78,7 +78,8 @@ English rendering anywhere else, so two translations never drift apart.
 | wardrobe | Klamotten | — |
 | ticket | Karte | `Ticket…` |
 | order | Bestellung | `Order` |
-| online sales / ticket request | Online-Kartenverkauf / Kartenanfrage | — |
+| online sales | Online-Kartenverkauf | — |
+| presale place / opening hours | Vorverkaufsstelle / Öffnungszeiten | `EventPresalePlace`, `VenueOpeningSlot` |
 | presale | Vorverkauf (VVK) | — |
 | ticket exchange | Kartenbörse | — |
 | news / news post / news category | Aktuelles / Meldung / Kategorie | `NewsPost`, `NewsCategory` |
@@ -779,8 +780,7 @@ and are not listed on the website (the 2026-08-13 narrowing, carried over from t
 
 An event is a **calendar entry** of the kind *event* and is **public once published** — its
 visibility is not chosen. It starts **in preparation** (*in Vorbereitung*): seen only in the
-**events workbench**, absent from the website, ticket requests, the members' calendar, Start and
-the club hub. It is **published** (*veröffentlicht*, `PublishedAt`) once, when its key facts are
+**events workbench**, absent from the website, the members' calendar, Start and the club hub. It is **published** (*veröffentlicht*, `PublishedAt`) once, when its key facts are
 complete — title, date, venue, teaser, doors-open time, description and **event picture** — and it
 is neither cancelled nor over; there is no unpublishing (ruled 2026-10-17, event planner v2).
 Public is not the same as event: a public calendar entry of another kind (the Rose Monday parade)
@@ -793,8 +793,8 @@ German copy), **public event** (an event is public by definition; "public" alone
 **Event step** (`EventStep`):
 One piece of an event's preparation, computed from the event's data, never ticked off by hand:
 **details** (*Eckdaten* — every key fact set and published, due 90 days before), **tickets**
-(*Karten* — price and presale start set and no **ticket request** waiting longer than three days,
-due 60 days before) and **review** (*Nachbereitung* — a published album of the evening, opens the
+(*Karten* — price, presale start and at least one **presale place** set, due 60 days before;
+widened 2026-10-22) and **review** (*Nachbereitung* — a published album of the evening, opens the
 day after, due 14 days after). A step is *done*, *overdue*, *open* or *waiting* (its window not
 open yet). Due dates are never retroactive: no step falls due earlier than 14 days after the event
 was created, and none before the evening later than the day before it. The **current step** is
@@ -873,8 +873,9 @@ participating groups into the owner, participant (that is one person's attendanc
 guest group
 
 **Venue** (`Venue`):
-One of the club's few places — the sports hall, the clubroom, the storeroom. A club-managed list,
-not free text on an entry: a **calendar entry** happens at a venue, and a **key holding** is held
+One of the few places the club names — the sports hall, the clubroom, the storeroom, and the
+outside shops that sell its tickets (widened 2026-10-22). A club-managed list, not free text on an
+entry: a **calendar entry** happens at a venue, and a **key holding** is held
 for one. Because two entries at one venue at one time is a real collision, the venue is what
 makes that collision findable (decided 2026-09-19).
 
@@ -887,11 +888,16 @@ deleted** — last season's entries still happened there (extended 2026-09-20, C
 
 **Capacity is not a venue's**: the club sells tickets for an *evening*, and one hall is laid out
 differently for a gala session and a children's carnival — it belongs to the **event**, and it
-waits on the open **seat allocation** question. Nor are **coordinates** (the address is the one
+waits on the open **seat allocation** question.
+
+A venue may carry its **opening hours** (*Öffnungszeiten*, `VenueOpeningSlot`): weekday, opens,
+closes — several per day for split hours, never past midnight. They are the venue's own, written
+once and shown wherever it is a **presale place** (ruled 2026-10-22). Nor are **coordinates** (the address is the one
 truth; a link is built from it) or a **public flag** (a venue is public exactly when a public
 event happens there — derived, as ever, never stored).
 _UI copy_: Ort; Straße, PLZ, Stadt; Hinweis
-_Avoid_: room (too narrow — the sports hall is not the club's), location, place, free-text
+_Avoid_: room (too narrow — the sports hall is not the club's), location, place (alone — a
+**presale place** is a venue in one role), free-text
 places, **venue** as the name of an address's city field (that is **city**)
 
 **Key holding** (`KeyHolding`):
@@ -950,18 +956,20 @@ _Avoid_: "Order" (in German copy), cart (there is no persistent cart), booking
 **Online sales**:
 Whether an **event**'s tickets can be bought on the website — a channel, chosen per event, never a
 synonym for **presale** (an event without online sales still has a presale, just not on the web).
-An event without online sales takes **ticket requests** instead (ruled 2026-10-07, L6 shaping).
+An event without online sales is sold at its **presale places** (ruled 2026-10-22; the ticket
+requests of L6 were removed the same day — the club does not want them).
 _UI copy_: Online-Kartenverkauf
 _Avoid_: online presale (presale is the window, not the channel)
 
-**Ticket request**:
-A guest's request, sent from the website, for a number of **tickets** to one **event** that has no
-**online sales**. It is **not an order** — nothing is paid, reserved or issued — and it is answered
-outside the app (phone, WhatsApp), where the guest gets her physical tickets. A ticket request
-**lives only until it is handled**: handling it deletes it, and the club keeps no list of who
-asked (ruled 2026-10-07, L6 shaping).
-_UI copy_: Kartenanfrage
-_Avoid_: order, reservation, booking, ticket order
+**Presale place** (`EventPresalePlace`):
+A **venue** where an **event**'s tickets can be bought in person — the clubroom, a bakery, a bank
+branch. An event names none, one or several, in the order the club picks them; the website shows
+them, with each venue's **opening hours**, only while tickets can be bought there (presale
+scheduled or running, not sold out, not cancelled, evening not begun) and never an archived venue.
+Nothing is requested, reserved or counted in the app (ruled 2026-10-22, replacing the L6 ticket
+request).
+_UI copy_: Vorverkaufsstelle; *Karten gibt es bei*; *Ab {Datum} bei*
+_Avoid_: ticket request, Kartenanfrage (removed), outlet, shop (a presale place is a venue)
 
 **Presale** (short **VVK** in copy):
 The window in which tickets for an event can be bought, before the evening itself. An event's

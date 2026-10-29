@@ -86,7 +86,6 @@ export const MANAGE_KEYS: readonly PermissionKey[] = [
 
 export const EVENTS_KEYS: readonly [PermissionKey, ...PermissionKey[]] = [
   PERMISSION_KEYS.eventsManage,
-  PERMISSION_KEYS.ticketRequestsHandle,
 ];
 
 export const GALLERY_KEYS: readonly [PermissionKey, ...PermissionKey[]] = [

@@ -62,7 +62,6 @@ internal static class ClubSeedMaterializer
         );
 
         var events = await InsertEventsAsync(dbContext, recorded, venues, ct);
-        var ticketRequests = await InsertTicketRequestsAsync(dbContext, recorded, events, ct);
 
         return new SeededClub(
             sessions,
@@ -74,8 +73,7 @@ internal static class ClubSeedMaterializer
             trainingSlots,
             calendarEntries,
             attendanceResponses,
-            events,
-            ticketRequests
+            events
         );
     }
 
@@ -188,6 +186,17 @@ internal static class ClubSeedMaterializer
                 Hint = intent.Hint,
                 SortOrder = intent.SortOrder,
                 ArchivedOn = intent.ArchivedOn,
+                OpeningSlots =
+                [
+                    .. recorded
+                        .VenueOpeningSlots.Where(slot => slot.VenueAlias == intent.Alias)
+                        .Select(slot => new VenueOpeningSlot
+                        {
+                            Weekday = slot.Weekday,
+                            Opens = slot.Opens,
+                            Closes = slot.Closes,
+                        }),
+                ],
             },
             StringComparer.Ordinal
         );
@@ -425,6 +434,23 @@ internal static class ClubSeedMaterializer
                     TicketAvailability = intent.TicketAvailability,
                     CancelledAt = intent.CancelledAt,
                     PublishedAt = intent.Unpublished ? null : DefaultPublishedAt,
+                    PresalePlaces =
+                    [
+                        .. recorded
+                            .EventPresalePlaces.Where(place => place.EventAlias == intent.Alias)
+                            .Select(
+                                (place, index) =>
+                                    new EventPresalePlace
+                                    {
+                                        VenueId = SeedAliases.RequireId(
+                                            venueIds,
+                                            place.VenueAlias,
+                                            "Venue"
+                                        ),
+                                        SortOrder = index,
+                                    }
+                            ),
+                    ],
                 },
             },
             StringComparer.Ordinal
@@ -439,41 +465,6 @@ internal static class ClubSeedMaterializer
         return entries.ToDictionary(
             entry => entry.Key,
             entry => entry.Value.Id,
-            StringComparer.Ordinal
-        );
-    }
-
-    private static async Task<Dictionary<string, int>> InsertTicketRequestsAsync(
-        AppDbContext dbContext,
-        ClubSeedBuilder recorded,
-        IReadOnlyDictionary<string, int> eventIds,
-        CancellationToken ct
-    )
-    {
-        var requests = recorded.TicketRequests.ToDictionary(
-            intent => intent.Alias,
-            intent => new TicketRequest
-            {
-                EventId = SeedAliases.RequireId(eventIds, intent.EventAlias, "Event"),
-                TicketCount = intent.TicketCount,
-                Name = intent.Name,
-                Phone = intent.Phone,
-                Email = intent.Email,
-                Message = intent.Message,
-                RequestedAt = intent.RequestedAt ?? DefaultPublishedAt,
-            },
-            StringComparer.Ordinal
-        );
-
-        if (requests.Count > 0)
-        {
-            dbContext.TicketRequests.AddRange(requests.Values);
-            await dbContext.SaveChangesAsync(ct);
-        }
-
-        return requests.ToDictionary(
-            request => request.Key,
-            request => request.Value.Id,
             StringComparer.Ordinal
         );
     }

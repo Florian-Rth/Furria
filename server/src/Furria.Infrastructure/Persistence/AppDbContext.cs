@@ -62,6 +62,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<Venue> Venues => Set<Venue>();
 
+    public DbSet<VenueOpeningSlot> VenueOpeningSlots => Set<VenueOpeningSlot>();
+
     public DbSet<Announcement> Announcements => Set<Announcement>();
 
     public DbSet<KeyHolding> KeyHoldings => Set<KeyHolding>();
@@ -78,7 +80,7 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<Event> Events => Set<Event>();
 
-    public DbSet<TicketRequest> TicketRequests => Set<TicketRequest>();
+    public DbSet<EventPresalePlace> EventPresalePlaces => Set<EventPresalePlace>();
 
     public DbSet<ClubRecord> ClubRecords => Set<ClubRecord>();
 

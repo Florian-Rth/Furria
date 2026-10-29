@@ -189,7 +189,7 @@ export const RIGHT_GROUP_DEFINITIONS: readonly RightGroupDefinition[] = [
       'calendar.manage_club',
     ],
   },
-  { id: 'events', keys: ['events.manage', 'ticket_requests.handle'] },
+  { id: 'events', keys: ['events.manage'] },
   {
     id: 'media',
     keys: ['gallery.upload', 'gallery.manage', 'gallery.publish', 'news.manage'],

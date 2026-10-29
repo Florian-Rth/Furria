@@ -95,6 +95,58 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_ListThePresalePlacesInPickOrder_When_TheEventNamesThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var (_, result) = await ReadAsync(ctx, "vera", ctx.Club.Events.IdOf("first-gala"));
+
+        Assert.Equal(
+            [
+                new EventPresalePlaceDto
+                {
+                    VenueId = ctx.Club.Venues.IdOf("zeitungsladen"),
+                    Name = "Zeitungsladen",
+                    IsArchived = true,
+                },
+                new EventPresalePlaceDto
+                {
+                    VenueId = ctx.Club.Venues.IdOf("buergerhaus"),
+                    Name = "Bürgerhaus",
+                    IsArchived = false,
+                },
+            ],
+            result.PresalePlaces
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveTheTicketsOpen_When_NoPresalePlaceIsNamed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildClubAsync(ct);
+
+                var (_, result) = await ReadAsync(
+                    ctx,
+                    "vera",
+                    ctx.Club.Events.IdOf("kids-carnival")
+                );
+
+                Assert.NotEqual(
+                    EventStepState.Done,
+                    result.Steps.Single(status => status.Step == EventStep.Tickets).State
+                );
+            }
+        );
+    }
+
+    [Fact]
     public async Task Should_LeaveNoCurrentStep_When_DetailsAndTicketsAreDoneBeforeTheEvening()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -114,15 +166,6 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
                 var (_, result) = await ReadAsync(ctx, "vera", eventId);
 
                 Assert.Empty(result.DetailsMissing);
-                Assert.Equal(
-                    new EventTicketRequestsDto
-                    {
-                        Open = 1,
-                        Cards = 2,
-                        OldestRequestedAt = Now.AddDays(-1),
-                    },
-                    result.TicketRequests
-                );
                 Assert.Equal(
                     new EventReviewDto { PublishedAlbums = 0, PublishedNews = 0 },
                     result.Review
@@ -235,6 +278,11 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
                     )
                     .Club(club =>
                         club.AddVenue("buergerhaus", "Bürgerhaus")
+                            .AddVenue(
+                                "zeitungsladen",
+                                "Zeitungsladen",
+                                archivedOn: new DateOnly(2026, 6, 1)
+                            )
                             .AddEvent(
                                 "first-gala",
                                 FirstGala,
@@ -249,13 +297,18 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
                                 presaleStartsAt: PresaleStarted,
                                 ticketAvailability: TicketAvailability.SoldOut
                             )
-                            .AddTicketRequest(
-                                "mia-gala",
-                                "first-gala",
-                                "Mia Gast",
-                                "mia@guest.test",
-                                ticketCount: 2,
-                                requestedAt: Now.AddDays(-1)
+                            .AddEventPresalePlace("first-gala", "zeitungsladen")
+                            .AddEventPresalePlace("first-gala", "buergerhaus")
+                            .AddEvent(
+                                "kids-carnival",
+                                "Kinderfasching",
+                                AtTheFirstGala.AddDays(7),
+                                "buergerhaus",
+                                Teaser,
+                                doorsOpenAt: DoorsOpenAt,
+                                description: Description,
+                                priceCents: PriceCents,
+                                presaleStartsAt: PresaleStarted
                             )
                             .AddCalendarEntry("club-meeting", "Vereinssitzung", AtTheMeeting)
                     ),

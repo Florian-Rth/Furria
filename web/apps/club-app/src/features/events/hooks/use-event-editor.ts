@@ -2,7 +2,7 @@ import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import { useCreateEventMutation, useUpdateEventMutation } from '../api';
-import { toEventFormValues, toEventPayload } from '../event-form';
+import { toEventFormValues, toEventPayload, togglePresaleVenue } from '../event-form';
 import type { EventDetails, EventForm } from '../schemas';
 import { EventFormSchema } from '../schemas';
 import type { StagedEventPictureDesk } from './use-staged-event-picture';
@@ -27,6 +27,7 @@ export interface EventEditorControl {
   setPrice: (value: string) => void;
   setPresaleDay: (value: string | null) => void;
   setPresaleTime: (value: string) => void;
+  togglePresaleVenue: (value: string) => void;
   isEditing: boolean;
   isDirty: boolean;
   canSubmit: boolean;
@@ -106,6 +107,13 @@ export const useEventEditor = (event: EventDetails | null): EventEditorControl =
     setPrice: setField('price'),
     setPresaleDay: setDay('presaleDay'),
     setPresaleTime: setField('presaleTime'),
+    togglePresaleVenue: (value) => {
+      form.setValue(
+        'presaleVenueIds',
+        togglePresaleVenue(values.presaleVenueIds, Number(value)),
+        FIELD_EDIT,
+      );
+    },
     isEditing: event !== null,
     isDirty: write.isDirty,
     canSubmit: write.canSubmit,

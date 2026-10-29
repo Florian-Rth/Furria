@@ -299,37 +299,6 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_HoldTheTicketsBack_When_GuestsWaitLongerThanThreeDays()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildPlanningAsync(ct);
-
-                var (_, result) = await ReadAsync(ctx, "vera", ct);
-
-                var gala = Assert.Single(result.Events, listed => listed.Title == FirstGala);
-                Assert.Equal(
-                    new EventTicketRequestsDto
-                    {
-                        Open = 2,
-                        Cards = 5,
-                        OldestRequestedAt = Now.AddDays(-5),
-                    },
-                    gala.TicketRequests
-                );
-                Assert.Equal(
-                    EventStepState.Open,
-                    gala.Steps.Single(status => status.Step == EventStep.Tickets).State
-                );
-            }
-        );
-    }
-
-    [Fact]
     public async Task Should_CountOnlyWhatTheWebsiteShows_When_TheEventIsReviewed()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -480,22 +449,6 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
                                 "buergerhaus",
                                 priceCents: PriceCents,
                                 presaleStartsAt: PresaleStarted
-                            )
-                            .AddTicketRequest(
-                                "mia-gala",
-                                "first-gala",
-                                "Mia Gast",
-                                "mia@guest.test",
-                                ticketCount: 2,
-                                requestedAt: Now.AddDays(-5)
-                            )
-                            .AddTicketRequest(
-                                "tom-gala",
-                                "first-gala",
-                                "Tom Gast",
-                                "tom@guest.test",
-                                ticketCount: 3,
-                                requestedAt: Now.AddDays(-1)
                             )
                             .AddEvent("opening", Opening, AtTheOpening, "buergerhaus")
                     )

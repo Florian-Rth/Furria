@@ -43,6 +43,15 @@ public sealed class PostVenue : Endpoint<PostVenueRequest, PostVenueResponse>
             Zip = req.Zip,
             City = req.City,
             Hint = req.Hint,
+            OpeningHours = [.. req.OpeningHours.Select(ToInput)],
+        };
+
+    private static VenueOpeningSlotInput ToInput(OpeningSlotDataDto slot) =>
+        new()
+        {
+            Weekday = slot.Weekday,
+            Opens = slot.Opens,
+            Closes = slot.Closes,
         };
 
     private static PostVenueResponse ToResponse(int venueId) => new() { VenueId = venueId };
@@ -59,6 +68,8 @@ public sealed record PostVenueRequest
     public required string City { get; init; }
 
     public required string? Hint { get; init; }
+
+    public required IReadOnlyList<OpeningSlotDataDto> OpeningHours { get; init; }
 }
 
 public sealed class PostVenueValidator : Validator<PostVenueRequest>
@@ -70,6 +81,10 @@ public sealed class PostVenueValidator : Validator<PostVenueRequest>
         RuleFor(request => request.Zip).NotEmpty().MaximumLength(VenueLimits.ZipLength);
         RuleFor(request => request.City).NotEmpty().MaximumLength(VenueLimits.CityLength);
         RuleFor(request => request.Hint).MaximumLength(VenueLimits.HintLength);
+        RuleFor(request => request.OpeningHours).NotNull();
+        RuleFor(request => request.OpeningHours)
+            .SetValidator(new OpeningHoursValidator())
+            .When(request => request.OpeningHours is not null);
     }
 }
 

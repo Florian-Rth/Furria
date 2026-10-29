@@ -70,8 +70,6 @@ export const paneActionOf = ({
       return ticketFactsOf(event).length > 0 && event.status !== 'soldOut'
         ? { kind: 'editTickets' }
         : next();
-    case 'requests':
-      return event.ticketRequests.open > 0 ? NONE : next();
     case 'review': {
       const state = stepStatusOf(event, 'review')?.state;
 

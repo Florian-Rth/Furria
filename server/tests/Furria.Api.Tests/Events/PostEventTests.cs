@@ -166,6 +166,27 @@ public sealed class PostEventTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_SellAtThePickedPlacesInPickOrder_When_TheEventIsCreatedWithThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var buergerhaus = ctx.Club.Venues.IdOf("buergerhaus");
+        var baeckerei = ctx.Club.Venues.IdOf("baeckerei");
+
+        var (response, result) = await CreateAsync(
+            ctx,
+            "vera",
+            Gala(buergerhaus) with
+            {
+                PresaleVenueIds = [baeckerei, buergerhaus],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx.Expected.Event(result.EventId).ToSellAt(baeckerei, buergerhaus).AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_RefuseTheVenue_When_ItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -251,6 +272,7 @@ public sealed class PostEventTests : IClassFixture<ApiTestFixture>
             AgeHint = AgeHint,
             PriceCents = PriceCents,
             PresaleStartsAt = PresaleStarts,
+            PresaleVenueIds = [],
         };
 
     private static async Task<TestResult<PostEventResponse>> CreateAsync(
@@ -299,6 +321,7 @@ public sealed class PostEventTests : IClassFixture<ApiTestFixture>
                     .Club(club =>
                         club.AddVenue("buergerhaus", "Bürgerhaus")
                             .AddVenue("altes-lager", "Altes Lager", archivedOn: ArchivedIn2026)
+                            .AddVenue("baeckerei", "Bäckerei Schmidt")
                             .AddCalendarEntry(
                                 "rehearsal",
                                 "Generalprobe",

@@ -20,7 +20,6 @@ public sealed class EventStepsTests
         IsOver = false,
         AreDetailsDone = false,
         AreTicketsSet = false,
-        OldestOpenRequestAt = null,
         HasPublishedAlbum = false,
     };
 
@@ -101,28 +100,6 @@ public sealed class EventStepsTests
 
         Assert.Equal([details, tickets, review], readiness.Steps.Select(status => status.State));
         Assert.Equal(current, readiness.CurrentStep);
-    }
-
-    [Theory]
-    [InlineData(72, Done)]
-    [InlineData(73, Open)]
-    public void Should_HoldTheTicketsBack_When_ARequestWaitsLongerThanThreeDays(
-        int waitingHours,
-        EventStepState tickets
-    )
-    {
-        var now = Noon("2026-10-01");
-
-        var readiness = EventSteps.ReadinessOf(
-            NothingDone with
-            {
-                AreTicketsSet = true,
-                OldestOpenRequestAt = now.AddHours(-waitingHours),
-            },
-            now
-        );
-
-        Assert.Equal(tickets, readiness.Steps[1].State);
     }
 
     [Fact]

@@ -15,5 +15,4 @@ export const TO_DO_LINKS: Record<ToDoKind, ToDoLink> = {
   keyToTakeBack: { to: '/manage/keys', search: {} },
   clubRecordGap: { to: '/manage/club-record', search: {} },
   applicationWaiting: { to: '/manage/applications', search: {} },
-  ticketRequestWaiting: { to: '/events', search: { filter: 'requests' } },
 };

@@ -63,10 +63,6 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
     title: 'Veranstaltungen pflegen',
     line: 'Veranstaltungen anlegen, ihre Eckdaten für die Website pflegen, die Kartenlage setzen und absagen.',
   },
-  [PERMISSION_KEYS.ticketRequestsHandle]: {
-    title: 'Kartenanfragen bearbeiten',
-    line: 'Kartenanfragen von der Website sehen und erledigen.',
-  },
   [PERMISSION_KEYS.galleryUpload]: {
     title: 'Fotos und Videos hochladen',
     line: 'In den eigenen Eingang hochladen, ihn sichten und Alben anlegen. Was im Eingang liegt, sieht niemand sonst.',

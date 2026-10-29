@@ -7,4 +7,5 @@ internal static class VenueLimits
     internal const int ZipLength = 10;
     internal const int CityLength = 80;
     internal const int HintLength = 200;
+    internal const int MaxOpeningSlots = 14;
 }

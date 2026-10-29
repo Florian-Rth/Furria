@@ -15,4 +15,6 @@ public sealed record VenueSummary
     public required string? Hint { get; init; }
 
     public required DateOnly? ArchivedOn { get; init; }
+
+    public required IReadOnlyList<VenueOpeningSlotDetails> OpeningHours { get; init; }
 }

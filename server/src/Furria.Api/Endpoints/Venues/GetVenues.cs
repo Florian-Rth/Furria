@@ -41,6 +41,7 @@ public sealed class GetVenues : EndpointWithoutRequest<GetVenuesResponse>
             City = venue.City,
             Hint = venue.Hint,
             ArchivedOn = venue.ArchivedOn,
+            OpeningHours = [.. venue.OpeningHours.Select(OpeningSlotDto.From)],
         };
 }
 
@@ -64,4 +65,6 @@ public sealed record VenueSummaryDto
     public required string? Hint { get; init; }
 
     public required DateOnly? ArchivedOn { get; init; }
+
+    public required IReadOnlyList<OpeningSlotDto> OpeningHours { get; init; }
 }

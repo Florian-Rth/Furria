@@ -15,7 +15,6 @@ public static class FurriaPermissions
     public const string AccountsManage = "accounts.manage";
     public const string MembershipApplicationsDecide = "membership_applications.decide";
     public const string EventsManage = "events.manage";
-    public const string TicketRequestsHandle = "ticket_requests.handle";
     public const string GalleryUpload = "gallery.upload";
     public const string GalleryManage = "gallery.manage";
     public const string GalleryPublish = "gallery.publish";
@@ -38,7 +37,6 @@ public static class FurriaPermissions
         AccountsManage,
         MembershipApplicationsDecide,
         EventsManage,
-        TicketRequestsHandle,
         GalleryUpload,
         GalleryManage,
         GalleryPublish,

@@ -68,8 +68,11 @@ const VENUE_FACT_LABELS: Record<VenueFactKind, string> = {
 const joinPresent = (parts: string[], separator: string): string =>
   parts.filter((part) => part.length > 0).join(separator);
 
+export const deriveVenueAddress = (venue: EventVenue): string =>
+  joinPresent([venue.street, joinPresent([venue.zip, venue.city], ' ')], ', ');
+
 export const deriveVenueFacts = (venue: EventVenue): VenueFact[] => {
-  const address = joinPresent([venue.street, joinPresent([venue.zip, venue.city], ' ')], ', ');
+  const address = deriveVenueAddress(venue);
   const facts: VenueFact[] = [];
 
   if (address.length > 0) {

@@ -115,9 +115,6 @@ public sealed class ToDoService
         if (ToDoKeys.Shows(ToDoKind.ApplicationWaiting, granted))
             work.Add(await WaitingApplicationsAsync(ct));
 
-        if (ToDoKeys.Shows(ToDoKind.TicketRequestWaiting, granted))
-            work.Add(await WaitingTicketRequestsAsync(ct));
-
         return
         [
             .. work.Where(item => item.Subjects.Count > 0 && ToDoKeys.Shows(item.Kind, granted))
@@ -199,12 +196,6 @@ public sealed class ToDoService
                 .UndecidedApplications()
                 .Select(application => application.Id)
                 .ToListAsync(ct)
-        );
-
-    private async Task<ToDoWork> WaitingTicketRequestsAsync(CancellationToken ct) =>
-        WorkOf(
-            ToDoKind.TicketRequestWaiting,
-            await _dbContext.TicketRequests.Select(request => request.Id).ToListAsync(ct)
         );
 
     private async Task<ToDoWork> ClubRecordGapsAsync(CancellationToken ct) =>
