@@ -392,6 +392,8 @@ Goal: every screen of the studio and planner passes the bar.
 Goal: one home for the music rules, a clean database, docs in sync.
 - [ ] #52 gap: music-timeline and music-cut rules in one Core module used by writes and reads; tests moved onto it
 - [ ] Remove the UI-test data: acts 14–34 "PT …", event 66 "PT Probeabend", the running orders on evenings 19/20, *Wir tanzen hier* and cast changes on 16/17/20, act 5's partial build and waiting final file, act 3 part *Marsch* id 1→4
+- [ ] Choreography history retention: thin out old versions (keep every version of the last 14 days, then one per day) and page the version list
+- [ ] Media rendition read: check the signature before the lost-rendition repair, so unsigned requests can't queue regeneration jobs
 - [ ] CONTEXT.md, docs and `plan/club-app/group-year.md` status updated
 
 ## Risks & alternatives
