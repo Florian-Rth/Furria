@@ -55,12 +55,12 @@ public sealed class GetCalendarEntryLive
             return;
         }
 
+        var live = await _liveDirectionService.GetAsync(req.CalendarEntryId, ct);
         var evening = await _runningOrderService.GetEveningLiveAsync(
             req.CalendarEntryId,
             User.PersonId(),
             ct
         );
-        var live = await _liveDirectionService.GetAsync(req.CalendarEntryId, ct);
         var canDirect = await _authorizer.IsGrantedAnyAsync(
             accountId.Value,
             RunningOrderKeys.Planners,
@@ -83,11 +83,11 @@ public sealed class GetCalendarEntryLive
             StartsAt = evening.StartsAt,
             CanDirect = canDirect,
             Live = live is null ? null : LiveDirectionDto.From(live),
-            Lines = [.. evening.Lines.Select(ToDto)],
+            Lines = [.. evening.Lines.Select(line => ToDto(line, canDirect))],
         };
 
     [Pure]
-    private static LiveLineDto ToDto(EveningLiveLineDetails line) =>
+    private static LiveLineDto ToDto(EveningLiveLineDetails line, bool canDirect) =>
         new()
         {
             AppearanceId = line.AppearanceId,
@@ -97,10 +97,17 @@ public sealed class GetCalendarEntryLive
             Group = ActGroupDto.From(line.Group),
             Position = line.Position,
             Own = line.IsOwn,
-            Cast = [.. line.Cast.Select(member => LivePersonDto.From(member, line.StandInIds))],
+            Cast =
+            [
+                .. line.Cast.Select(member =>
+                    LivePersonDto.From(member, line.StandInIds, canDirect)
+                ),
+            ],
             Missing =
             [
-                .. line.Missing.Select(member => LivePersonDto.From(member, line.StandInIds)),
+                .. line.Missing.Select(member =>
+                    LivePersonDto.From(member, line.StandInIds, canDirect)
+                ),
             ],
         };
 }
@@ -170,14 +177,36 @@ public sealed record LivePersonDto
     public required bool StandsIn { get; init; }
 
     [Pure]
-    public static LivePersonDto From(CastMember member, IReadOnlySet<int> standInIds) =>
+    public static LivePersonDto From(
+        CastMember member,
+        IReadOnlySet<int> standInIds,
+        bool showsAbsence
+    ) =>
         new()
         {
             PersonId = member.PersonId,
             FirstName = member.FirstName,
             LastName = member.LastName,
             Portrait = PictureDto.From(member.Portrait),
-            Absent = member.IsAbsent,
+            Absent = showsAbsence && member.IsAbsent,
             StandsIn = standInIds.Contains(member.PersonId),
+        };
+}
+
+public sealed record LiveDirectionDto
+{
+    public required int? AppearanceId { get; init; }
+
+    public required DateTimeOffset StartedAt { get; init; }
+
+    public required DateTimeOffset MovedAt { get; init; }
+
+    [Pure]
+    public static LiveDirectionDto From(LiveDirectionDetails live) =>
+        new()
+        {
+            AppearanceId = live.AppearanceId,
+            StartedAt = live.StartedAt,
+            MovedAt = live.MovedAt,
         };
 }

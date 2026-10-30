@@ -54,7 +54,7 @@ public sealed class LiveDirectionService
         if (live?.AppearanceId != command.From)
             return Result<LiveDirectionDetails>.Conflict(MovedMeanwhileMessage);
 
-        var now = _timeProvider.GetUtcNow();
+        var now = ToMicroseconds(_timeProvider.GetUtcNow());
         live ??= Started(command.EventId, now);
         live.AppearanceId = command.To;
         live.MovedAt = now;
@@ -88,13 +88,17 @@ public sealed class LiveDirectionService
         {
             await _dbContext.SaveChangesAsync(ct);
         }
-        catch (DbUpdateException)
+        catch (DbUpdateException exception) when (LostWriteRace.Caused(exception))
         {
             return Result<LiveDirectionDetails>.Conflict(MovedMeanwhileMessage);
         }
 
         return Result<LiveDirectionDetails>.Success(DetailsOf(live));
     }
+
+    [Pure]
+    private static DateTimeOffset ToMicroseconds(DateTimeOffset moment) =>
+        moment.AddTicks(-(moment.Ticks % TimeSpan.TicksPerMicrosecond));
 
     [Pure]
     private static LiveDirectionDetails DetailsOf(LiveDirection live) =>

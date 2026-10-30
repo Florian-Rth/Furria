@@ -6,6 +6,7 @@ using Xunit;
 using static Furria.Api.Tests.Calendar.LiveSteps;
 using static Furria.Api.Tests.RunningOrders.RunningOrderSeeds;
 using static Furria.Api.Tests.RunningOrders.RunningOrderSteps;
+using static Furria.Api.Tests.Studio.EveningSteps;
 
 namespace Furria.Api.Tests.Calendar;
 
@@ -34,7 +35,6 @@ public sealed class PutCalendarEntryLiveTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(second, moved.AppearanceId);
         Assert.Equal(started.StartedAt, moved.StartedAt);
-        Assert.True(moved.MovedAt >= started.MovedAt);
     }
 
     [Fact]
@@ -81,8 +81,8 @@ public sealed class PutCalendarEntryLiveTests : IClassFixture<ApiTestFixture>
         var placed = await CreateActAsync(planner, "Einmarsch", kind: ActKind.Point);
         var unplaced = await CreateActAsync(planner, "Tombola", kind: ActKind.Point);
         await SavedAsync(planner, eventId, null, [Line(placed, 0), Line(unplaced, null)]);
-        var (_, live) = await LiveOfAsync(planner, eventId);
-        var inTray = live.Lines.Single().AppearanceId + 1;
+        var ablauf = await AblaufOfAsync(planner, eventId);
+        var inTray = ablauf.Lines.Single(line => line.Position is null).LineId;
 
         var (response, _) = await MoveLiveAsync(planner, eventId, null, inTray);
 

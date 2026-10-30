@@ -69,6 +69,9 @@ public sealed class PutCalendarEntryLiveValidator : Validator<PutCalendarEntryLi
         RuleFor(request => request.CalendarEntryId).GreaterThan(0);
         RuleFor(request => request.From).GreaterThan(0);
         RuleFor(request => request.To).GreaterThan(0);
+        RuleFor(request => request.To)
+            .NotEqual(request => request.From)
+            .WithMessage("Die Regie bleibt sonst, wo sie ist.");
     }
 }
 

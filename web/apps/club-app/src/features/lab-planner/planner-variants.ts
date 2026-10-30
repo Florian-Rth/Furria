@@ -19,15 +19,15 @@ export const LAB_SEASON_TITLE = 'Saison planen';
 export const LAB_HEUTE_TITLE = 'Heute am Abend';
 
 export const SEASON_VARIANTS: readonly PlannerVariant[] = [
-  { slug: 'a', title: 'Saison A', lead: 'Raster: Auftritte × Abende' },
-  { slug: 'b', title: 'Saison B', lead: 'Abend für Abend' },
-  { slug: 'c', title: 'Saison C', lead: 'Bereitschaft zuerst' },
+  { slug: 'a', title: 'Saison A', lead: 'Auftritte × Abende als Raster' },
+  { slug: 'b', title: 'Saison B', lead: 'Jeder Abend als eigene Spalte' },
+  { slug: 'c', title: 'Saison C', lead: 'Nach Stand sortiert, Abende als Punkte' },
 ];
 
 export const HEUTE_VARIANTS: readonly PlannerVariant[] = [
-  { slug: 'a', title: 'Heute A', lead: 'Jetzt groß, Weiter-Taste' },
-  { slug: 'b', title: 'Heute B', lead: 'Laufband mit Rufliste' },
-  { slug: 'c', title: 'Heute C', lead: 'Inspizienten-Pult' },
+  { slug: 'a', title: 'Heute A', lead: 'Jetzt groß, darunter Weiter' },
+  { slug: 'b', title: 'Heute B', lead: 'Ablauf als Leiste, Rufen rechts' },
+  { slug: 'c', title: 'Heute C', lead: 'Ganzer Ablauf links, Bühne mittig' },
 ];
 
 export const seasonPathOf = (variant: PlannerVariant): string => `/lab/season-${variant.slug}`;

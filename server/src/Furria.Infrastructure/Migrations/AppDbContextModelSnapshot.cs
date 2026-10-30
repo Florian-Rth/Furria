@@ -2625,6 +2625,7 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("calendar_entry_id");
 
                     b.Property<int?>("AppearanceId")
+                        .IsConcurrencyToken()
                         .HasColumnType("integer")
                         .HasColumnName("appearance_id");
 

@@ -235,14 +235,14 @@ public sealed class ActSeasonReader
             Position = appearance.Position,
             Changes =
             [
-                .. new[]
+                .. new (bool Applies, EveningChange Change)[]
                 {
                     (appearance.CastChanges.Count > 0, EveningChange.Cast),
                     (hasSpotChanges, EveningChange.Spots),
                     (hasOwnChoreography, EveningChange.Choreography),
                 }
-                    .Where(pair => pair.Item1)
-                    .Select(pair => pair.Item2),
+                    .Where(pair => pair.Applies)
+                    .Select(pair => pair.Change),
             ],
             Added = [.. people.Where(person => added.Contains(person.PersonId))],
             Removed = [.. people.Where(person => removed.Contains(person.PersonId))],

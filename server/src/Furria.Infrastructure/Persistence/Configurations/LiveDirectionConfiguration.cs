@@ -11,6 +11,7 @@ public sealed class LiveDirectionConfiguration : IEntityTypeConfiguration<LiveDi
         builder.ToTable("live_direction");
         builder.HasKey(live => live.CalendarEntryId);
         builder.Property(live => live.CalendarEntryId).ValueGeneratedNever();
+        builder.Property(live => live.AppearanceId).IsConcurrencyToken();
         builder.Property(live => live.MovedAt).IsConcurrencyToken();
 
         builder
