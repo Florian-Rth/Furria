@@ -36,6 +36,7 @@ export const DOMAIN_CHANGES = [
   'actVideos',
   'actEvening',
   'runningOrder',
+  'liveDirection',
 ] as const;
 export type DomainChange = (typeof DOMAIN_CHANGES)[number];
 
@@ -101,6 +102,8 @@ export const READ_NAMES = [
   'runningOrder',
   'runningOrders',
   'eveningRunningOrder',
+  'actSeason',
+  'eveningLive',
 ] as const;
 export type ReadName = (typeof READ_NAMES)[number];
 
@@ -166,6 +169,8 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   runningOrder: ['running-order', 'detail'],
   runningOrders: ['running-order', 'list'],
   eveningRunningOrder: ['running-order', 'evening'],
+  actSeason: ['running-order', 'season'],
+  eveningLive: ['running-order', 'live'],
 };
 
 const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
@@ -373,6 +378,34 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'groupAdmin',
     'membership',
   ],
+  actSeason: [
+    'act',
+    'actMusic',
+    'actChoreography',
+    'actSteps',
+    'actVideos',
+    'actEvening',
+    'runningOrder',
+    'event',
+    'calendarEntry',
+    'group',
+    'groupMembership',
+    'person',
+    'picture',
+  ],
+  eveningLive: [
+    'liveDirection',
+    'runningOrder',
+    'actEvening',
+    'act',
+    'attendanceResponse',
+    'event',
+    'calendarEntry',
+    'group',
+    'groupMembership',
+    'person',
+    'picture',
+  ],
 };
 
 export const staleReadsAfter = (changes: readonly DomainChange[]): ReadName[] =>
@@ -468,4 +501,6 @@ export const queryKeys = {
   runningOrders: READ_ROOTS.runningOrders,
   eveningRunningOrder: (calendarEntryId: number | null): QueryKey =>
     keyOf('eveningRunningOrder', calendarEntryId),
+  actSeason: (sessionYear: number | null): QueryKey => keyOf('actSeason', sessionYear),
+  eveningLive: (calendarEntryId: number): QueryKey => keyOf('eveningLive', calendarEntryId),
 } as const;

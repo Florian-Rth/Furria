@@ -2618,6 +2618,34 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("act_frozen_cast_member", (string)null);
                 });
 
+            modelBuilder.Entity("Furria.Core.RunningOrders.LiveDirection", b =>
+                {
+                    b.Property<int>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<int?>("AppearanceId")
+                        .HasColumnType("integer")
+                        .HasColumnName("appearance_id");
+
+                    b.Property<DateTimeOffset>("MovedAt")
+                        .IsConcurrencyToken()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("moved_at");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.HasKey("CalendarEntryId")
+                        .HasName("pk_live_direction");
+
+                    b.HasIndex("AppearanceId")
+                        .HasDatabaseName("ix_live_direction_appearance_id");
+
+                    b.ToTable("live_direction", (string)null);
+                });
+
             modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrder", b =>
                 {
                     b.Property<int>("CalendarEntryId")
@@ -4867,6 +4895,26 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Act");
 
                     b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Furria.Core.RunningOrders.LiveDirection", b =>
+                {
+                    b.HasOne("Furria.Core.RunningOrders.Appearance", "Appearance")
+                        .WithMany()
+                        .HasForeignKey("AppearanceId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_live_direction_appearance_appearance_id");
+
+                    b.HasOne("Furria.Core.RunningOrders.RunningOrder", "RunningOrder")
+                        .WithOne()
+                        .HasForeignKey("Furria.Core.RunningOrders.LiveDirection", "CalendarEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_live_direction_running_order_calendar_entry_id");
+
+                    b.Navigation("Appearance");
+
+                    b.Navigation("RunningOrder");
                 });
 
             modelBuilder.Entity("Furria.Core.RunningOrders.RunningOrder", b =>
