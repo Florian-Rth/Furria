@@ -430,10 +430,27 @@ Goal: an empty act guides its editors to a first playable version. Follows 14 an
 
 ### Phase 17 — ⚖ Lab: season grid and *Heute*
 Goal: Florian picks the planner's season view and the backstage view.
-- [ ] Server: season read (acts × evenings: position, in tray, adjusted; readiness derived per act) and the live pointer for live direction (advance, read)
-- [ ] Season-grid variants (dense, sticky first column, one evening per swipe on phones, one-click add/remove, readiness meter, inline evening cast)
-- [ ] *Heute* variants (fixed viewport, landscape-first: now/next/after, missing and standing in, people to call, *Weiter*, Wake Lock)
-- [ ] Pitch + Florian's pick; rulings recorded
+- [x] Server: season read (acts × evenings: position, in tray, adjusted; readiness derived per act) and the live pointer for live direction (advance, read)
+- [x] Season-grid variants (dense, sticky first column, one evening per swipe on phones, one-click add/remove, readiness meter, inline evening cast)
+- [x] *Heute* variants (fixed viewport, landscape-first: now/next/after, missing and standing in, people to call, *Weiter*, Wake Lock)
+- [ ] Pitch + Florian's pick; rulings recorded (lab built; pick open)
+- Notes (lab built 2026-10-30, awaiting the pick):
+  - **Server.** `GET acts/season?session=` (planners) returns the session's evenings (has an Ablauf, confirmed) and per act the readiness checks plus one cell per evening: position or tray, evening changes, who is in and out. Readiness is pure Core (`ActReadiness`): *Tanz*/*Show* check music, steps, formation (every spot held and placed), videos, final file and cast; every other kind checks the cast only. The live pointer is a `live_direction` row per running order: the act on stage, started at, moved at. `PUT calendar/entries/{id}/live {from, to}` (planners) is a compare-and-set on the act on stage: a stale `from` → 409, `to: null` ends the night, a removed act clears the pointer. `GET calendar/entries/{id}/live` (everyone who sees the evening) returns the placed lines with evening cast, stand-ins and who is missing; per-person absences only for the operator.
+  - **Client data.** `features/season` (query, `readinessOf`/`cellOf`, one-click toggle through the running-order save with *Rückgängig*) and `features/live` (query polling every 4 s, move mutation, `liveFlowOf`, forward/back moves, people to call, elapsed time). The lab hub has *Saison planen* (`/lab/season-{a,b,c}`) and *Heute am Abend* (`/lab/heute-{a,b,c}/{eventId}`, one row per evening with an Ablauf).
+  - **Season A — acts × evenings as a grid.** Rows are acts, grouped by group or ordered by readiness or A–Z; columns are evenings. The first column and the header are truly sticky because the parts scroll in sync. Cells show *Nr. n*, *Ablage* and a gold dot for adjusted; one click adds or removes. The details pane (side pane on desktop, sheet on phone) follows the keyboard focus and holds the evening cast. The phone shows one evening per swipe. The densest answer to "which act, which evening"; not a true ARIA grid (every cell is a tab stop).
+  - **Season B — each evening as its own column.** Each column holds the evening's Ablauf in order, then the tray, then *Nicht dabei* with +. An act index on the left highlights an act in every column. The cast opens inline in the column. Reads like the real running order of each evening. Only 4½ evenings fit at 1440 px, and the index rows don't line up with the columns.
+  - **Season C — sorted by readiness, evenings as dots.** Least-ready acts come first, with filter chips (*Nicht fertig*, *Alle*, per group). There are six check columns from tablet width, dot columns per evening and an inspector for readiness, evenings and cast. Answers "who is behind" first. The header doesn't stick (it would need an opaque sticky surface in `@furria/ui`), and at 200 % text the names are cut hard.
+  - **Heute A — now big, Weiter below.** The act on stage has a huge name and big minutes that change once a minute. *Als Nächstes* and *Danach* cards, then *Bitte rufen* (people coming straight off stage in gold), then a strip of who is missing (struck) and who stands in. One dominant *Weiter* key. The calmest of the three.
+  - **Heute B — the Ablauf as a strip, calling on the right.** A chip strip of the whole Ablauf (done acts shrink to their number, the act on stage red, the next gold); the act on stage and the next one in the centre; *Jetzt rufen* grouped by act on the right. Shows the whole night and who to call without turning the device.
+  - **Heute C — whole Ablauf on the left, stage in the middle.** Three panes: the Ablauf list in its own box, the act on stage and the next one with their cast by name, and a call list with *gerufen* ticks kept on the device. The fullest view for the person calling cast; at 200 % text it is barely usable.
+  - All three Heute variants run on `KkHall`: fixed viewport, Wake Lock, Space/Enter/→ forward, ← back, the 409 shown inline in red, followers without keys. No page scroll in any view.
+  - Found for the promotion (18a/18b):
+    - **Unpublished evenings.** The live read goes through the calendar's visibility, so an unpublished evening (66, 18 in the lab data) is 404 even for the planner. Planners need to see their evening.
+    - **The 4-second poll rebuilds the whole evening** (about 15 queries). Split it: poll a pointer-only read and refetch the lines only when the pointer or the running order changed.
+    - **Planners can't change the evening cast.** The evening-cast writes are for the act's editors only, so the planner's inline cast change is refused. 18a widens that.
+    - **Primitives.** `KkHall.Key` hides its caption in portrait and `KkHall.Step` doesn't wrap a long name. A grid kit with opaque sticky surfaces is missing, and so is one tab stop for the grid.
+    - **Undo of a remove.** Undo re-adds the act at the end, not at its old number.
+  - Shots (gitignored): `web/tools/screenshot/out/planner-lab/{a,b,c}/`.
 
 ### Phase 18a — Promote the season grid (∥ F)
 Goal: the planner answers "which act, which evening, ready?" on one screen.
