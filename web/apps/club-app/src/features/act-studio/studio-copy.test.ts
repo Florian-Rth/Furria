@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { fineClockOf, offsetTextOf } from './studio-copy';
+import { fineClockOf, offsetTextOf, spotMetaOf } from './studio-copy';
 
 describe('time formatters', () => {
   it.each([
@@ -16,5 +16,15 @@ describe('time formatters', () => {
     [0, '±0,00 s'],
   ])('offsetTextOf(%s)', (seconds, text) => {
     expect(offsetTextOf(seconds)).toBe(text);
+  });
+});
+
+describe('spotMetaOf', () => {
+  it.each([
+    [0, 'Mitte · 2,0 m hinten · 0 Wegpunkte'],
+    [1, 'Mitte · 2,0 m hinten · 1 Wegpunkt'],
+    [3, 'Mitte · 2,0 m hinten · 3 Wegpunkte'],
+  ])('counts %s waypoints', (keys, text) => {
+    expect(spotMetaOf(0, 2, keys)).toBe(text);
   });
 });

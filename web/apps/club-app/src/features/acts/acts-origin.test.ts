@@ -1,7 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { CatalogueAct } from '@/features/running-order/schemas';
 import type { ActPageReturn, ActsCatalogueAccess, ActsCatalogueReturn } from './acts-origin';
-import { actPageReturnOf, actPageSearchOf, actsCatalogueReturnOf } from './acts-origin';
+import {
+  actPageReturnOf,
+  actPageSearchOf,
+  actsCatalogueReturnOf,
+  playerOriginOf,
+} from './acts-origin';
 import type { ActPageSearch } from './schemas';
 
 const act = (groupId: number | null): CatalogueAct => ({
@@ -49,6 +54,33 @@ describe('actPageReturnOf', () => {
     ['no origin, act without group', {}, act(null), { kind: 'start' }],
   ])('%s', (_label, search, given, expected) => {
     expect(actPageReturnOf(search, given)).toEqual(expected);
+  });
+});
+
+describe('playerOriginOf', () => {
+  const away = { label: 'Start', to: '/' };
+
+  it('closes back to the act details it was opened from, keeping how the act was reached', () => {
+    const origin = playerOriginOf(
+      5,
+      { from: 'start', evening: 9, edit: true, training: 4, view: 'training' },
+      { pathname: '/acts/5', search: '?from=start&view=details' },
+      away,
+    );
+
+    expect([origin.params, origin.search]).toEqual([
+      { actId: '5' },
+      { from: 'start', evening: '9', view: 'details' },
+    ]);
+  });
+
+  it.each([
+    ['opened directly', undefined],
+    ['opened from elsewhere', { pathname: '/groups/1', search: '' }],
+    ['opened from the same act playing', { pathname: '/acts/5', search: '?from=start' }],
+    ['opened from another act', { pathname: '/acts/6', search: '?view=details' }],
+  ])('closes to where the act was reached from when %s', (_, behind) => {
+    expect(playerOriginOf(5, { from: 'start' }, behind, away)).toBe(away);
   });
 });
 

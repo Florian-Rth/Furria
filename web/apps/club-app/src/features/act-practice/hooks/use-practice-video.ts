@@ -52,11 +52,13 @@ export const usePracticeVideo = (studio: Studio, playback: StudioPlayback): Prac
   );
   const videoId = shownVideoIdOf(choiceIds, chosenId);
   const video = studio.videos.find((candidate) => candidate.videoId === videoId) ?? null;
-  const [shown, setShown] = useState(video);
+  const [shownId, setShownId] = useState(videoId);
 
-  if (video !== null && video !== shown) {
-    setShown(video);
+  if (videoId !== null && videoId !== shownId) {
+    setShownId(videoId);
   }
+
+  const shown = studio.videos.find((candidate) => candidate.videoId === shownId) ?? null;
 
   useSlavedVideo(player, video, ref);
 

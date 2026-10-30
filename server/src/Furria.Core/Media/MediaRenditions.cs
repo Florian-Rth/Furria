@@ -48,6 +48,10 @@ public static class MediaRenditions
         RenditionsOf(kind).Contains(rendition);
 
     [Pure]
+    public static MediaRendition? StandInFor(MediaRendition rendition) =>
+        rendition == MediaRendition.Compact ? MediaRendition.Video : null;
+
+    [Pure]
     public static string ContentTypeOf(MediaRendition rendition, string originalContentType) =>
         rendition switch
         {

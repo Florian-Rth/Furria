@@ -2,6 +2,7 @@ import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-s
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import type { TimelineRange } from '@/features/act-player/music-timeline';
 import { partOfStep, partRangeOf, stepRangeOf } from '@/features/act-player/music-timeline';
+import { shownStepNameOf, stepNumberOf } from '@/features/act-player/step-names';
 import type { StudioStep } from '@/features/acts/schemas';
 import type { LoopKind } from '../practice-controls';
 import { loopKindOf, loopRangeOf } from '../practice-controls';
@@ -85,7 +86,10 @@ export const usePractice = (playback: StudioPlayback): Practice => {
   return {
     step,
     stepKey: step === null ? NO_STEP_KEY : String(step.stepId),
-    stepName: step?.name ?? PRACTICE_NO_STEPS,
+    stepName:
+      step === null
+        ? PRACTICE_NO_STEPS
+        : shownStepNameOf(step.name, stepNumberOf(steps, step.stepId)),
     note: state.load === 'failed' ? PRACTICE_LOAD_FAILED : (step?.description ?? null),
     partName: part?.name ?? null,
     playing: state.playing,

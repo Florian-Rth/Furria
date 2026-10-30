@@ -10,6 +10,7 @@ import {
   PRACTICE_VIDEO_TITLE,
 } from '@/features/act-practice/practice-copy';
 import type { ActStudioStage } from '../hooks/use-act-studio-stage';
+import { useStudioHints } from '../hooks/use-studio-hints';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import { ActStudioStageEditor } from './ActStudioStageEditor';
 import { ActStudioWaveLayer } from './ActStudioWaveLayer';
@@ -27,8 +28,8 @@ interface ActStudioHeroProps {
 export const ActStudioHero: FC<ActStudioHeroProps> = ({ screen, editor }) => {
   const { practice, video, frame, mode, studio, playback } = screen;
   const gestures = usePracticeGestures(practice);
+  const hinted = useStudioHints(screen);
   const surface = mode.editing ? undefined : gestures.surface;
-  const hinted = !mode.editing && !practice.playing && practice.canPlay;
   const take =
     video.take === null ? null : (
       <KkPracticeScreen.Take

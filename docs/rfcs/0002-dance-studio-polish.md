@@ -220,12 +220,13 @@ in the listed order.
 
 ### Phase 1 — Player and media bugs (∥ A)
 Goal: the player and media never crash, freeze or jump.
-- [ ] B1: tapping a waiting final file no longer loops renders; *Probehören* and *Endfassung übernehmen* are reachable (act 5)
-- [ ] B2: a missing compact rendition falls back to the original (no 404 freeze on phones); find the stale media reference (`/api/media/20/compact`); no layout swap ~4 s into play; the studio read stops polling once nothing is processing
-- [ ] B7: a double tap left/right no longer toggles play; the step-name block keeps a fixed height (no 5–6 px jump)
-- [ ] B11 (player): the count shows 1 at a step start; unnamed steps get *Schritt n*, never blank or "…: dorthin springen"; "1 Wegpunkt" plural rule
-- [ ] Landscape: gesture hints never cover the stage, and they show only for the first 3 visits with clearer copy; X close respects `from=` / history
-- [ ] Regression tests for the engine fixes (count, step naming); browser check of B1/B2/B7 at 390 px
+- [x] B1: tapping a waiting final file no longer loops renders; *Probehören* and *Endfassung übernehmen* are reachable (act 5)
+- [x] B2: a missing compact rendition falls back to the original (no 404 freeze on phones); find the stale media reference (`/api/media/20/compact`); no layout swap ~4 s into play; the studio read stops polling once nothing is processing
+- [x] B7: a double tap left/right no longer toggles play; the step-name block keeps a fixed height (no 5–6 px jump)
+- [x] B11 (player): the count shows 1 at a step start; unnamed steps get *Schritt n*, never blank or "…: dorthin springen"; "1 Wegpunkt" plural rule
+- [x] Landscape: gesture hints never cover the stage, and they show only for the first 3 visits with clearer copy; X close respects `from=` / history
+- [x] Regression tests for the engine fixes (count, step naming); browser check of B1/B2/B7 at 390 px
+- Notes: B1 was a render-phase `setState` comparing video objects that the final-file preview rebuilds every render. B2's `/api/media/20/compact` came from videos rendered by a media worker that predates the phone rendition; each 404 queued a repair that flipped the video to *Processing*, causing the polling and the layout swap. The server now serves the full video for a missing phone rendition (not cached as immutable) and only repairs when both are gone. The count reads 1 at a step start because a step start stored a hair before its beat (7.619 vs 7.61905) now counts as that beat.
 
 ### Phase 2 — Studio editor data safety (∥ A)
 Goal: no editor write is lost or applied to the wrong thing.

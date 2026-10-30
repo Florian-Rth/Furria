@@ -1,4 +1,5 @@
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
+import { shownStepNameOf, stepNumberOf } from '@/features/act-player/step-names';
 import type { StudioStep } from '@/features/acts/schemas';
 import { isLooped, segmentGroupsOf } from '../practice-controls';
 import { segmentLabelOf } from '../practice-copy';
@@ -38,7 +39,9 @@ export const usePracticeSegments = (
               stepId: step.stepId,
               step,
               grow: segment.grow,
-              label: segmentLabelOf(step.name),
+              label: segmentLabelOf(
+                shownStepNameOf(step.name, stepNumberOf(playback.steps, step.stepId)),
+              ),
               current: step.stepId === currentId,
               looped: isLooped(step, practice.loop),
             },

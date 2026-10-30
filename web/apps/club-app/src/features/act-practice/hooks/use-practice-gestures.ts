@@ -17,7 +17,7 @@ import {
 import { ratePercentOf } from '../practice-stepping';
 import type { Practice } from './use-practice';
 
-const DOUBLE_TAP_MS = 280;
+const DOUBLE_TAP_MS = 350;
 
 interface Touch {
   x: number;
@@ -26,6 +26,7 @@ interface Touch {
   height: number;
   share: number;
   drag: Drag;
+  second: boolean;
 }
 
 interface LastTap {
@@ -81,24 +82,40 @@ export const usePracticeGestures = (practice: Practice): PracticeGestures => {
   const riseOf = (event: PointerEvent<HTMLDivElement>, start: Touch): number =>
     start.height <= 0 ? 0 : (start.y - event.clientY) / start.height;
 
-  const tap = (zone: TapZone): void => {
-    const now = performance.now();
+  const isSecondTap = (zone: TapZone, now: number): boolean => {
     const previous = lastTap.current;
-    lastTap.current = { zone, at: now };
 
-    if (zone === 'middle') {
-      clear(tapTimer);
+    return (
+      tapTimer.current !== null &&
+      previous !== null &&
+      previous.zone === zone &&
+      now - previous.at < DOUBLE_TAP_MS
+    );
+  };
+
+  const keepFirstTap = (start: Touch): void => {
+    if (start.second) {
+      lastTap.current = null;
       toggle();
-      return;
     }
-    if (previous !== null && previous.zone === zone && now - previous.at < DOUBLE_TAP_MS) {
-      clear(tapTimer);
+  };
+
+  const tap = (zone: TapZone, second: boolean): void => {
+    clear(tapTimer);
+    if (second) {
+      lastTap.current = null;
       skip(zone);
       return;
     }
-    clear(tapTimer);
+    if (zone === 'middle') {
+      lastTap.current = null;
+      toggle();
+      return;
+    }
+    lastTap.current = { zone, at: performance.now() };
     tapTimer.current = setTimeout(() => {
       tapTimer.current = null;
+      lastTap.current = null;
       toggle();
     }, DOUBLE_TAP_MS);
   };
@@ -109,13 +126,19 @@ export const usePracticeGestures = (practice: Practice): PracticeGestures => {
       onPointerDown: (event) => {
         const box = event.currentTarget.getBoundingClientRect();
         event.currentTarget.setPointerCapture(event.pointerId);
+        const share = box.width <= 0 ? 0.5 : (event.clientX - box.left) / box.width;
+        const second = isSecondTap(tapZoneOf(share), performance.now());
+        if (second) {
+          clear(tapTimer);
+        }
         touch.current = {
           x: event.clientX,
           y: event.clientY,
           width: box.width,
           height: box.height,
-          share: box.width <= 0 ? 0.5 : (event.clientX - box.left) / box.width,
+          share,
           drag: 'none',
+          second,
         };
       },
       onPointerMove: (event) => {
@@ -147,6 +170,9 @@ export const usePracticeGestures = (practice: Practice): PracticeGestures => {
         if (start === null) {
           return;
         }
+        if (start.drag !== 'none') {
+          keepFirstTap(start);
+        }
         if (start.drag === 'vertical') {
           const rate = swipedRateOf(practice.rate, riseOf(event, start));
           practice.setRate(rate);
@@ -157,10 +183,14 @@ export const usePracticeGestures = (practice: Practice): PracticeGestures => {
           skip(event.clientX < start.x ? 'forward' : 'back');
           return;
         }
-        tap(tapZoneOf(start.share));
+        tap(tapZoneOf(start.share), start.second);
       },
       onPointerCancel: () => {
+        const start = touch.current;
         touch.current = null;
+        if (start !== null) {
+          keepFirstTap(start);
+        }
       },
     },
   };
