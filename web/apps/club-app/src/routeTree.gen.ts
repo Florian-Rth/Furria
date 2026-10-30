@@ -80,6 +80,9 @@ import { Route as AppManageClubRecordAccessRouteImport } from './routes/_app/man
 import { Route as AppManageBoardNewRouteImport } from './routes/_app/manage.board_.new'
 import { Route as AppManageBoardBoardOfficeIdRouteImport } from './routes/_app/manage.board_.$boardOfficeId'
 import { Route as AppManageApplicationsMembershipApplicationIdRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId'
+import { Route as AppLabEditorCActIdRouteImport } from './routes/_app/lab_.editor-c.$actId'
+import { Route as AppLabEditorBActIdRouteImport } from './routes/_app/lab_.editor-b.$actId'
+import { Route as AppLabEditorAActIdRouteImport } from './routes/_app/lab_.editor-a.$actId'
 import { Route as AppLabActCActIdRouteImport } from './routes/_app/lab_.act-c.$actId'
 import { Route as AppLabActBActIdRouteImport } from './routes/_app/lab_.act-b.$actId'
 import { Route as AppLabActAActIdRouteImport } from './routes/_app/lab_.act-a.$actId'
@@ -105,6 +108,9 @@ import { Route as AppManageGroupsKindsGroupKindIdRouteImport } from './routes/_a
 import { Route as AppManageBoardBoardOfficeIdEditRouteImport } from './routes/_app/manage.board_.$boardOfficeId_.edit'
 import { Route as AppManageApplicationsMembershipApplicationIdAdmissionRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId_.admission'
 import { Route as AppLabHallVariantActIdRouteImport } from './routes/_app/lab_.hall.$variant.$actId'
+import { Route as AppLabEditorCActIdMusikRouteImport } from './routes/_app/lab_.editor-c.$actId_.musik'
+import { Route as AppLabEditorBActIdMusikRouteImport } from './routes/_app/lab_.editor-b.$actId_.musik'
+import { Route as AppLabEditorAActIdMusikRouteImport } from './routes/_app/lab_.editor-a.$actId_.musik'
 import { Route as AppLabActCGroupGroupIdRouteImport } from './routes/_app/lab_.act-c.group.$groupId'
 import { Route as AppLabActBGroupGroupIdRouteImport } from './routes/_app/lab_.act-b.group.$groupId'
 import { Route as AppLabActAGroupGroupIdRouteImport } from './routes/_app/lab_.act-a.group.$groupId'
@@ -491,6 +497,21 @@ const AppManageApplicationsMembershipApplicationIdRoute =
     path: '/manage/applications/$membershipApplicationId',
     getParentRoute: () => AppRoute,
   } as any)
+const AppLabEditorCActIdRoute = AppLabEditorCActIdRouteImport.update({
+  id: '/lab_/editor-c/$actId',
+  path: '/lab/editor-c/$actId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLabEditorBActIdRoute = AppLabEditorBActIdRouteImport.update({
+  id: '/lab_/editor-b/$actId',
+  path: '/lab/editor-b/$actId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLabEditorAActIdRoute = AppLabEditorAActIdRouteImport.update({
+  id: '/lab_/editor-a/$actId',
+  path: '/lab/editor-a/$actId',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLabActCActIdRoute = AppLabActCActIdRouteImport.update({
   id: '/lab_/act-c/$actId',
   path: '/lab/act-c/$actId',
@@ -628,6 +649,21 @@ const AppManageApplicationsMembershipApplicationIdAdmissionRoute =
 const AppLabHallVariantActIdRoute = AppLabHallVariantActIdRouteImport.update({
   id: '/lab_/hall/$variant/$actId',
   path: '/lab/hall/$variant/$actId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLabEditorCActIdMusikRoute = AppLabEditorCActIdMusikRouteImport.update({
+  id: '/lab_/editor-c/$actId_/musik',
+  path: '/lab/editor-c/$actId/musik',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLabEditorBActIdMusikRoute = AppLabEditorBActIdMusikRouteImport.update({
+  id: '/lab_/editor-b/$actId_/musik',
+  path: '/lab/editor-b/$actId/musik',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLabEditorAActIdMusikRoute = AppLabEditorAActIdMusikRouteImport.update({
+  id: '/lab_/editor-a/$actId_/musik',
+  path: '/lab/editor-a/$actId/musik',
   getParentRoute: () => AppRoute,
 } as any)
 const AppLabActCGroupGroupIdRoute = AppLabActCGroupGroupIdRouteImport.update({
@@ -840,6 +876,9 @@ export interface FileRoutesByFullPath {
   '/lab/act-a/$actId': typeof AppLabActAActIdRoute
   '/lab/act-b/$actId': typeof AppLabActBActIdRoute
   '/lab/act-c/$actId': typeof AppLabActCActIdRoute
+  '/lab/editor-a/$actId': typeof AppLabEditorAActIdRoute
+  '/lab/editor-b/$actId': typeof AppLabEditorBActIdRoute
+  '/lab/editor-c/$actId': typeof AppLabEditorCActIdRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
   '/manage/board/new': typeof AppManageBoardNewRoute
@@ -868,6 +907,9 @@ export interface FileRoutesByFullPath {
   '/lab/act-a/group/$groupId': typeof AppLabActAGroupGroupIdRoute
   '/lab/act-b/group/$groupId': typeof AppLabActBGroupGroupIdRoute
   '/lab/act-c/group/$groupId': typeof AppLabActCGroupGroupIdRoute
+  '/lab/editor-a/$actId/musik': typeof AppLabEditorAActIdMusikRoute
+  '/lab/editor-b/$actId/musik': typeof AppLabEditorBActIdMusikRoute
+  '/lab/editor-c/$actId/musik': typeof AppLabEditorCActIdMusikRoute
   '/lab/hall/$variant/$actId': typeof AppLabHallVariantActIdRoute
   '/manage/applications/$membershipApplicationId/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/manage/board/$boardOfficeId/edit': typeof AppManageBoardBoardOfficeIdEditRoute
@@ -959,6 +1001,9 @@ export interface FileRoutesByTo {
   '/lab/act-a/$actId': typeof AppLabActAActIdRoute
   '/lab/act-b/$actId': typeof AppLabActBActIdRoute
   '/lab/act-c/$actId': typeof AppLabActCActIdRoute
+  '/lab/editor-a/$actId': typeof AppLabEditorAActIdRoute
+  '/lab/editor-b/$actId': typeof AppLabEditorBActIdRoute
+  '/lab/editor-c/$actId': typeof AppLabEditorCActIdRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
   '/manage/board/new': typeof AppManageBoardNewRoute
@@ -987,6 +1032,9 @@ export interface FileRoutesByTo {
   '/lab/act-a/group/$groupId': typeof AppLabActAGroupGroupIdRoute
   '/lab/act-b/group/$groupId': typeof AppLabActBGroupGroupIdRoute
   '/lab/act-c/group/$groupId': typeof AppLabActCGroupGroupIdRoute
+  '/lab/editor-a/$actId/musik': typeof AppLabEditorAActIdMusikRoute
+  '/lab/editor-b/$actId/musik': typeof AppLabEditorBActIdMusikRoute
+  '/lab/editor-c/$actId/musik': typeof AppLabEditorCActIdMusikRoute
   '/lab/hall/$variant/$actId': typeof AppLabHallVariantActIdRoute
   '/manage/applications/$membershipApplicationId/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/manage/board/$boardOfficeId/edit': typeof AppManageBoardBoardOfficeIdEditRoute
@@ -1082,6 +1130,9 @@ export interface FileRoutesById {
   '/_app/lab_/act-a/$actId': typeof AppLabActAActIdRoute
   '/_app/lab_/act-b/$actId': typeof AppLabActBActIdRoute
   '/_app/lab_/act-c/$actId': typeof AppLabActCActIdRoute
+  '/_app/lab_/editor-a/$actId': typeof AppLabEditorAActIdRoute
+  '/_app/lab_/editor-b/$actId': typeof AppLabEditorBActIdRoute
+  '/_app/lab_/editor-c/$actId': typeof AppLabEditorCActIdRoute
   '/_app/manage/applications_/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/_app/manage/board_/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
   '/_app/manage/board_/new': typeof AppManageBoardNewRoute
@@ -1110,6 +1161,9 @@ export interface FileRoutesById {
   '/_app/lab_/act-a/group/$groupId': typeof AppLabActAGroupGroupIdRoute
   '/_app/lab_/act-b/group/$groupId': typeof AppLabActBGroupGroupIdRoute
   '/_app/lab_/act-c/group/$groupId': typeof AppLabActCGroupGroupIdRoute
+  '/_app/lab_/editor-a/$actId_/musik': typeof AppLabEditorAActIdMusikRoute
+  '/_app/lab_/editor-b/$actId_/musik': typeof AppLabEditorBActIdMusikRoute
+  '/_app/lab_/editor-c/$actId_/musik': typeof AppLabEditorCActIdMusikRoute
   '/_app/lab_/hall/$variant/$actId': typeof AppLabHallVariantActIdRoute
   '/_app/manage/applications_/$membershipApplicationId_/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/_app/manage/board_/$boardOfficeId_/edit': typeof AppManageBoardBoardOfficeIdEditRoute
@@ -1203,6 +1257,9 @@ export interface FileRouteTypes {
     | '/lab/act-a/$actId'
     | '/lab/act-b/$actId'
     | '/lab/act-c/$actId'
+    | '/lab/editor-a/$actId'
+    | '/lab/editor-b/$actId'
+    | '/lab/editor-c/$actId'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
     | '/manage/board/new'
@@ -1231,6 +1288,9 @@ export interface FileRouteTypes {
     | '/lab/act-a/group/$groupId'
     | '/lab/act-b/group/$groupId'
     | '/lab/act-c/group/$groupId'
+    | '/lab/editor-a/$actId/musik'
+    | '/lab/editor-b/$actId/musik'
+    | '/lab/editor-c/$actId/musik'
     | '/lab/hall/$variant/$actId'
     | '/manage/applications/$membershipApplicationId/admission'
     | '/manage/board/$boardOfficeId/edit'
@@ -1322,6 +1382,9 @@ export interface FileRouteTypes {
     | '/lab/act-a/$actId'
     | '/lab/act-b/$actId'
     | '/lab/act-c/$actId'
+    | '/lab/editor-a/$actId'
+    | '/lab/editor-b/$actId'
+    | '/lab/editor-c/$actId'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
     | '/manage/board/new'
@@ -1350,6 +1413,9 @@ export interface FileRouteTypes {
     | '/lab/act-a/group/$groupId'
     | '/lab/act-b/group/$groupId'
     | '/lab/act-c/group/$groupId'
+    | '/lab/editor-a/$actId/musik'
+    | '/lab/editor-b/$actId/musik'
+    | '/lab/editor-c/$actId/musik'
     | '/lab/hall/$variant/$actId'
     | '/manage/applications/$membershipApplicationId/admission'
     | '/manage/board/$boardOfficeId/edit'
@@ -1444,6 +1510,9 @@ export interface FileRouteTypes {
     | '/_app/lab_/act-a/$actId'
     | '/_app/lab_/act-b/$actId'
     | '/_app/lab_/act-c/$actId'
+    | '/_app/lab_/editor-a/$actId'
+    | '/_app/lab_/editor-b/$actId'
+    | '/_app/lab_/editor-c/$actId'
     | '/_app/manage/applications_/$membershipApplicationId'
     | '/_app/manage/board_/$boardOfficeId'
     | '/_app/manage/board_/new'
@@ -1472,6 +1541,9 @@ export interface FileRouteTypes {
     | '/_app/lab_/act-a/group/$groupId'
     | '/_app/lab_/act-b/group/$groupId'
     | '/_app/lab_/act-c/group/$groupId'
+    | '/_app/lab_/editor-a/$actId_/musik'
+    | '/_app/lab_/editor-b/$actId_/musik'
+    | '/_app/lab_/editor-c/$actId_/musik'
     | '/_app/lab_/hall/$variant/$actId'
     | '/_app/manage/applications_/$membershipApplicationId_/admission'
     | '/_app/manage/board_/$boardOfficeId_/edit'
@@ -2005,6 +2077,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageApplicationsMembershipApplicationIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/lab_/editor-c/$actId': {
+      id: '/_app/lab_/editor-c/$actId'
+      path: '/lab/editor-c/$actId'
+      fullPath: '/lab/editor-c/$actId'
+      preLoaderRoute: typeof AppLabEditorCActIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lab_/editor-b/$actId': {
+      id: '/_app/lab_/editor-b/$actId'
+      path: '/lab/editor-b/$actId'
+      fullPath: '/lab/editor-b/$actId'
+      preLoaderRoute: typeof AppLabEditorBActIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lab_/editor-a/$actId': {
+      id: '/_app/lab_/editor-a/$actId'
+      path: '/lab/editor-a/$actId'
+      fullPath: '/lab/editor-a/$actId'
+      preLoaderRoute: typeof AppLabEditorAActIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/lab_/act-c/$actId': {
       id: '/_app/lab_/act-c/$actId'
       path: '/lab/act-c/$actId'
@@ -2178,6 +2271,27 @@ declare module '@tanstack/react-router' {
       path: '/lab/hall/$variant/$actId'
       fullPath: '/lab/hall/$variant/$actId'
       preLoaderRoute: typeof AppLabHallVariantActIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lab_/editor-c/$actId_/musik': {
+      id: '/_app/lab_/editor-c/$actId_/musik'
+      path: '/lab/editor-c/$actId/musik'
+      fullPath: '/lab/editor-c/$actId/musik'
+      preLoaderRoute: typeof AppLabEditorCActIdMusikRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lab_/editor-b/$actId_/musik': {
+      id: '/_app/lab_/editor-b/$actId_/musik'
+      path: '/lab/editor-b/$actId/musik'
+      fullPath: '/lab/editor-b/$actId/musik'
+      preLoaderRoute: typeof AppLabEditorBActIdMusikRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lab_/editor-a/$actId_/musik': {
+      id: '/_app/lab_/editor-a/$actId_/musik'
+      path: '/lab/editor-a/$actId/musik'
+      fullPath: '/lab/editor-a/$actId/musik'
+      preLoaderRoute: typeof AppLabEditorAActIdMusikRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/lab_/act-c/group/$groupId': {
@@ -2450,6 +2564,9 @@ interface AppRouteChildren {
   AppLabActAActIdRoute: typeof AppLabActAActIdRoute
   AppLabActBActIdRoute: typeof AppLabActBActIdRoute
   AppLabActCActIdRoute: typeof AppLabActCActIdRoute
+  AppLabEditorAActIdRoute: typeof AppLabEditorAActIdRoute
+  AppLabEditorBActIdRoute: typeof AppLabEditorBActIdRoute
+  AppLabEditorCActIdRoute: typeof AppLabEditorCActIdRoute
   AppManageApplicationsMembershipApplicationIdRoute: typeof AppManageApplicationsMembershipApplicationIdRoute
   AppManageBoardBoardOfficeIdRoute: typeof AppManageBoardBoardOfficeIdRoute
   AppManageBoardNewRoute: typeof AppManageBoardNewRoute
@@ -2475,6 +2592,9 @@ interface AppRouteChildren {
   AppLabActAGroupGroupIdRoute: typeof AppLabActAGroupGroupIdRoute
   AppLabActBGroupGroupIdRoute: typeof AppLabActBGroupGroupIdRoute
   AppLabActCGroupGroupIdRoute: typeof AppLabActCGroupGroupIdRoute
+  AppLabEditorAActIdMusikRoute: typeof AppLabEditorAActIdMusikRoute
+  AppLabEditorBActIdMusikRoute: typeof AppLabEditorBActIdMusikRoute
+  AppLabEditorCActIdMusikRoute: typeof AppLabEditorCActIdMusikRoute
   AppLabHallVariantActIdRoute: typeof AppLabHallVariantActIdRoute
   AppManageApplicationsMembershipApplicationIdAdmissionRoute: typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   AppManageBoardBoardOfficeIdEditRoute: typeof AppManageBoardBoardOfficeIdEditRoute
@@ -2558,6 +2678,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppLabActAActIdRoute: AppLabActAActIdRoute,
   AppLabActBActIdRoute: AppLabActBActIdRoute,
   AppLabActCActIdRoute: AppLabActCActIdRoute,
+  AppLabEditorAActIdRoute: AppLabEditorAActIdRoute,
+  AppLabEditorBActIdRoute: AppLabEditorBActIdRoute,
+  AppLabEditorCActIdRoute: AppLabEditorCActIdRoute,
   AppManageApplicationsMembershipApplicationIdRoute:
     AppManageApplicationsMembershipApplicationIdRoute,
   AppManageBoardBoardOfficeIdRoute: AppManageBoardBoardOfficeIdRoute,
@@ -2585,6 +2708,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppLabActAGroupGroupIdRoute: AppLabActAGroupGroupIdRoute,
   AppLabActBGroupGroupIdRoute: AppLabActBGroupGroupIdRoute,
   AppLabActCGroupGroupIdRoute: AppLabActCGroupGroupIdRoute,
+  AppLabEditorAActIdMusikRoute: AppLabEditorAActIdMusikRoute,
+  AppLabEditorBActIdMusikRoute: AppLabEditorBActIdMusikRoute,
+  AppLabEditorCActIdMusikRoute: AppLabEditorCActIdMusikRoute,
   AppLabHallVariantActIdRoute: AppLabHallVariantActIdRoute,
   AppManageApplicationsMembershipApplicationIdAdmissionRoute:
     AppManageApplicationsMembershipApplicationIdAdmissionRoute,

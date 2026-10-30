@@ -351,10 +351,29 @@ Goal: one hall mode replaces training mode and the landscape player; the player 
 
 ### Phase 13 — ⚖ Lab: editor rework
 Goal: Florian picks the timeline desk, the phone step cards and the set-up checklist. Follows phase 6.
-- [ ] Timeline desk variants (tablet/desktop): lanes for parts, steps, waveform with beat ticks, videos, paths; zoom, snap to counts, centred playhead, keyboard
-- [ ] Phone step-card variants: name, big stage with named dots, labelled formation chips, count bar, *Rückgängig*; *Musik & Video* page
-- [ ] Set-up checklist variants for an empty act and its progress chip
-- [ ] All on real data with undo and the evening band from phase 6; pitch + Florian's pick; rulings recorded
+- [x] Timeline desk variants (tablet/desktop): lanes for parts, steps, waveform with beat ticks, videos, paths; zoom, snap to counts, centred playhead, keyboard
+- [x] Phone step-card variants: name, big stage with named dots, labelled formation chips, count bar, *Rückgängig*; *Musik & Video* page
+- [x] Set-up checklist variants for an empty act and its progress chip
+- [ ] All on real data with undo and the evening band from phase 6; pitch + Florian's pick; rulings recorded (lab built on real data with undo and band; pick open)
+- Notes (lab built 2026-10-30, awaiting the pick): the lab hub section *Auftritt bearbeiten* links `/lab/editor-{a,b,c}/{actId}` (`?evening=` shows the gold band) and each variant's *Musik & Video* page at `…/{actId}/musik`. Data is the RFC 0001 database: Lena edits act 3 *Marschtanz*, Sabine edits act 5 (partly built) and act 14 (empty, so it shows the checklist). All three variants run on the phase-6 act-studio hooks. Every write goes through the existing mutations and the undo service, and Ctrl/Cmd+Z works. In all three, edits snap to counts, dots are named and can be moved with the arrow keys, the page itself never scrolls (`scrollHeight ≤ innerHeight` holds on every view and in both films), and the music page reuses the existing song, final-file and video lists and desks.
+  - **A — lanes under the stage** (`KkLane*`): works like video-editing software. The top bar has the transport, a time and count readout, zoom, undo/redo, *Musik & Video* and a ring chip *5/6*. Below it, the stage takes ~60 % and an inspector shows the one selected thing, with three tabs: *Auswahl*, *Verlauf* and *Einrichten*. At the bottom are full-width lanes *Zeit · Teile · Schritte · Musik* (eight numbers) *· Video · Wege*, with a fixed centred playhead and a snap hint (*Achter 3 · 5 · 0:09,5*). On the phone, steps are cards that you swipe sideways. An empty act shows a dense six-row checklist. Strongest desk; the inspector gives every selection a precise home. Weak spots: step names get cut at whole-act zoom, count cells on the phone are narrower than 44 px, and video bars don't snap.
+  - **B — eights stacked down the page** (`KkEights*`): time runs from top to bottom. Each row is one eight: eight count cells, each with a slice of the waveform, a beat tick and a keyframe mark. The columns are *Teil | Schritt | 1–8 | Video | Wege*. Borders are grips between cells. While playing, the current row stays in the middle. Density switches between ½ · 1 · 2 eights per row and *Alles*. The stage is pinned on the right, under the selected step's chips. On the phone, step cards stack and you swipe up/down. An empty act shows a six-segment rail with one *Als Nächstes* panel. This one reads most like how trainers count. Weak spots: the sheet of repeated count cells is visually heavy, cells are under 44 px at density 2 and *Alles*, there's no auto-scroll while dragging a border, and video bars are read-only.
+  - **C — stage first, overview and detail** (`KkFocus*`): an outline of parts and steps on the left, the stage as the hero, and a context bar of labelled actions under the stage. Below that, a strip of the whole act with a bracket you can drag and resize, and count-level detail lanes for the bracketed window. On the phone, the stage stays fixed and a strip of step cards snaps below it. On an empty act, the editor itself is the checklist: every empty lane shows its numbered set-up action, and a chip shows *0 von 6*. Best overview of the whole act and the most guided empty act. Weak spots: the context bar scrolls sideways at ≤ 1440 px, the phone at 844 px leaves empty space around the stage, and there's no *Rückgängig* in the phone top bar.
+  - Recommendation: A's desk (inspector + lanes), with B's eights as the count bar on phone cards and C's overview strip as the act-wide row of A's lanes. For the empty act, C's in-place set-up actions, with A's checklist as the chip's sheet. Rulings needed: inspector vs context bar; horizontal vs vertical time on the desk; cards swiped sideways, swiped up/down, or as a strip under a fixed stage on the phone; the checklist as its own screen or inside the editor.
+  - act-studio gaps found (left for phases 14–16):
+    - `useStudioVisit` clears the visit history when a page unmounts, so going to *Musik & Video* wipes it.
+    - `useActStudioMarks` only exposes the borders of the current step (C rebuilt dragging all of them).
+    - Keyframes have no write that moves them in time.
+    - `useStepTexts` only edits the current step.
+    - The desks need `mode.tool` set to their tool.
+    - Each keyboard nudge is its own write, with its own undo notice.
+    - *Aufstellung* only edits at the step start.
+  - Left for the promotion of the chosen variant (from the lab review):
+    - **Undo:** one way to wire undo — a history-keeping `useStudioVisit` on the editor and its *Musik & Video* page. Today B and C bind their own Ctrl+Z and never forget the history.
+    - **Mode:** a starting tool in `ActStudioModeStart`, instead of each lab page calling `mode.choose` while rendering.
+    - **Shared primitives:** one swipe-carousel root and one desk breakpoint hook (the three variants each copied them).
+    - **Copied logic:** the border drag/nudge code is copied three times.
+  - Shots and films (gitignored): `web/tools/screenshot/out/editor-lab/{a,b,c}/`.
 
 ### Phase 14 — Promote the timeline desk (∥ E)
 Goal: editing on tablet and desktop runs on the timeline desk.
