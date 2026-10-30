@@ -4,7 +4,7 @@ internal sealed class OrderSearch
 {
     private readonly RunningOrderCostPipeline _pipeline;
     private readonly UnitLayout _layout;
-    private readonly int _nodeBudget;
+    private readonly SearchControl _control;
     private readonly PartialOrder _partial;
     private readonly List<PlanUnit> _chosen = [];
     private readonly List<long> _addedCosts = [];
@@ -19,14 +19,14 @@ internal sealed class OrderSearch
     private bool _isRoomCounted;
     private int _phaseBudget;
 
-    private bool IsExhausted => _nodes >= _phaseBudget;
+    private bool IsExhausted => _nodes >= _phaseBudget || _control.Stop.IsCancellationRequested;
 
-    private OrderSearch(RunningOrderCostPipeline pipeline, UnitLayout layout, int nodeBudget)
+    private OrderSearch(RunningOrderCostPipeline pipeline, UnitLayout layout, SearchControl control)
     {
         _pipeline = pipeline;
         _layout = layout;
-        _nodeBudget = nodeBudget;
-        _phaseBudget = nodeBudget / 4 * 3;
+        _control = control;
+        _phaseBudget = control.NodeBudget / 4 * 3;
         _used = new bool[layout.UnitCount];
         _partial = new PartialOrder(pipeline.Facts);
         _changeoverBound = new ChangeoverBound(pipeline.Facts);
@@ -35,10 +35,10 @@ internal sealed class OrderSearch
     public static SearchOutcome Run(
         RunningOrderCostPipeline pipeline,
         UnitLayout layout,
-        int nodeBudget
+        SearchControl control
     )
     {
-        var search = new OrderSearch(pipeline, layout, nodeBudget);
+        var search = new OrderSearch(pipeline, layout, control);
         search.Seed();
         search.Visit();
         var isCostProven = !search.IsExhausted;
@@ -59,12 +59,35 @@ internal sealed class OrderSearch
 
         _best = _layout.Arrange(movableOrder)!;
         _limit = CostOf(_best);
+        if (SeededOrder() is { } seeded && CostOf(seeded) < _limit)
+        {
+            _best = seeded;
+            _limit = CostOf(seeded);
+        }
+
+        Report();
     }
+
+    private IReadOnlyList<PlanUnit>? SeededOrder()
+    {
+        var seed = _control.Seed.Distinct().ToList();
+        if (seed.Count != _layout.Length)
+            return null;
+
+        var rank = seed.Select((key, index) => (key, index))
+            .ToDictionary(pair => pair.key, pair => pair.index);
+        if (_layout.Movable.Any(unit => !rank.ContainsKey(unit.Lines[0].Key)))
+            return null;
+
+        return _layout.Arrange([.. _layout.Movable.OrderBy(unit => rank[unit.Lines[0].Key])]);
+    }
+
+    private void Report() => _control.Improved?.Invoke(Solution.KeysOf(_best));
 
     private void GiveMoreRoomAtTheSameCost()
     {
         _isRoomCounted = true;
-        _phaseBudget = _nodeBudget;
+        _phaseBudget = _control.NodeBudget;
         _limit = CostOf(_best);
         Visit();
     }
@@ -135,6 +158,7 @@ internal sealed class OrderSearch
         _best = [.. _chosen];
         _limit = _cost;
         _isSettled = _isCanonicalPass;
+        Report();
     }
 
     private IReadOnlyList<(PlanUnit Unit, long Bound)> ChildrenAt(int position)

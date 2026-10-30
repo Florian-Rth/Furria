@@ -247,6 +247,15 @@ export const SuggestionSchema = z.object({
 });
 export type Suggestion = z.infer<typeof SuggestionSchema>;
 
+export const SuggestionLineSchema = SuggestionSchema.extend({ final: z.boolean() });
+export type SuggestionLine = z.infer<typeof SuggestionLineSchema>;
+
+export const SuggestionBodySchema = RunningOrderBodySchema.extend({
+  seedActIds: z.array(z.number().int()),
+  searchSeconds: z.number().int().positive(),
+});
+export type SuggestionBody = z.infer<typeof SuggestionBodySchema>;
+
 export const ConfirmationBodySchema = z.object({ confirmed: z.boolean() });
 export type ConfirmationBody = z.infer<typeof ConfirmationBodySchema>;
 

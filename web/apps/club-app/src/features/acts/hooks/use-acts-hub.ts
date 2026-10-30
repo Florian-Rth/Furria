@@ -9,7 +9,7 @@ import { appRouteApi } from '@/features/session/app-route';
 import { relevantSessionYear } from '@/lib/club';
 import { useNow } from '@/lib/use-now';
 import type { ActSection, ActsScope } from '../acts-catalogue';
-import { filterCountsOf, scopedActsOf, visibleSectionsOf } from '../acts-catalogue';
+import { filterCountsOf, matchesQuery, scopedActsOf, visibleSectionsOf } from '../acts-catalogue';
 import { toClosedSessionNote, toSessionLabel } from '../acts-copy';
 import { ACT_PAGE_PATH, actPageSearchOf, PLANNER_PATH } from '../acts-origin';
 import type { ActOverlap, PersonLoad } from '../acts-overlap';
@@ -61,6 +61,7 @@ export const useActsHub = (scope: ActsScope, search: ActsSearch): ActsHub => {
   const now = useNow(CLOCK_MS);
   const all = query.data?.acts ?? NO_ACTS;
   const acts = scopedActsOf(all, scope);
+  const searched = acts.filter((act) => matchesQuery(act, q ?? null));
   const filter = search.filter ?? 'all';
   const isCreating = search.act === NEW_ACT;
   const spotlightId = search.person ?? null;
@@ -107,12 +108,12 @@ export const useActsHub = (scope: ActsScope, search: ActsSearch): ActsHub => {
     isSideOpen: isWide && isCreating,
     acts,
     filter,
-    counts: filterCountsOf(acts),
+    counts: filterCountsOf(searched),
     sections: visibleSectionsOf(acts, filter, q ?? null),
     overlaps: overlapsOf(all),
     runs: upcomingRunsOf(runningOrders.data?.runningOrders ?? [], now),
-    people: personLoadsOf(acts).length,
-    carriers: carriersAmongOf(all, acts),
+    people: personLoadsOf(searched).length,
+    carriers: carriersAmongOf(all, searched),
     spotlight: personInActsOf(spotlightId, all),
     isCreating,
     isWide,

@@ -38,6 +38,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -501,6 +503,13 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     {
         var seeder = Services.GetServices<IHostedService>().OfType<ManagingLoginSeeder>().Single();
         await seeder.StartAsync(ct);
+    }
+
+    public async Task MigrateDatabaseToAsync(string migration, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await db.GetService<IMigrator>().MigrateAsync(migration, cancellationToken: ct);
     }
 
     public Task RunDatabaseMigratorAsync(CancellationToken ct = default) =>

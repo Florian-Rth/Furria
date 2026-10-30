@@ -52,9 +52,10 @@ export const PlannerLineRow: FC<PlannerLineRowProps> = ({ entry }) => {
   const movedFrom = dragNumber === null ? (row?.from ?? null) : entry.index;
   const numberFrom = movedFrom === null ? null : String(movedFrom + 1);
   const dropEdge = planner.drag.drop?.key === entry.key ? planner.drag.drop.edge : null;
+  const proposing = planner.suggestion.isActive || planner.suggestion.isLoading;
   const trailing =
     row === null ? (
-      trailingOf(planner.mode, entry, planner.suggestion.isActive)
+      trailingOf(planner.mode, entry, proposing)
     ) : (
       <PlannerProposalTake lineKey={entry.key} />
     );
@@ -68,6 +69,7 @@ export const PlannerLineRow: FC<PlannerLineRowProps> = ({ entry }) => {
       cast={act.cast}
       compact={compact}
       eveningChanges={entry.line.eveningChanges}
+      archived={planner.isArchived(act.actId)}
     />
   );
   const mark = showsPictureOf(planner.mode, planner.isWide) ? <PlannerLineMark act={act} /> : null;

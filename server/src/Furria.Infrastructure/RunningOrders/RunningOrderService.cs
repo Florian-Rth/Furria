@@ -231,6 +231,7 @@ public sealed class RunningOrderService
 
     public async Task<Result<RunningOrderProposal>> SuggestAsync(
         SuggestRunningOrderCommand command,
+        Action<RunningOrderProposal> improved,
         CancellationToken ct
     )
     {
@@ -275,7 +276,18 @@ public sealed class RunningOrderService
             command.State.SuspendedActWishIds.ToHashSet()
         );
 
-        return Result<RunningOrderProposal>.Success(RunningOrderSuggestion.ProposalFor(input));
+        using var searchTime = new CancellationTokenSource(command.SearchTime, _timeProvider);
+        using var stop = CancellationTokenSource.CreateLinkedTokenSource(searchTime.Token, ct);
+        var search = new SuggestionSearch
+        {
+            Seed = [.. command.SeedActIds.Select(LineKey.OfAct)],
+            Stop = stop.Token,
+            Improved = improved,
+        };
+
+        return Result<RunningOrderProposal>.Success(
+            RunningOrderSuggestion.ProposalFor(input, search)
+        );
     }
 
     public async Task<Result<int>> AppearanceForAsync(
@@ -335,6 +347,80 @@ public sealed class RunningOrderService
 
         return Result.Success();
     }
+
+    public async Task<Result> WithdrawFromOpenEveningsAsync(int actId, CancellationToken ct)
+    {
+        if (!await _dbContext.Acts.AnyAsync(act => act.Id == actId, ct))
+            return Result.NotFound(UnknownActMessage);
+
+        var today = ClubClock.Today(_timeProvider);
+        var evenings = await _dbContext
+            .Appearances.Where(appearance => appearance.ActId == actId)
+            .Select(appearance => new
+            {
+                appearance.CalendarEntryId,
+                appearance.CalendarEntry!.StartsAt,
+            })
+            .ToListAsync(ct);
+        var wishIds = await _dbContext
+            .ActWishes.Where(wish => wish.ActId == actId)
+            .Select(wish => wish.Id)
+            .ToListAsync(ct);
+
+        foreach (
+            var evening in evenings.Where(evening => ClubClock.DayOf(evening.StartsAt) >= today)
+        )
+            await WithdrawAsync(evening.CalendarEntryId, actId, wishIds, ct);
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+
+    private async Task WithdrawAsync(
+        int eventId,
+        int actId,
+        IReadOnlyList<int> wishIds,
+        CancellationToken ct
+    )
+    {
+        var appearances = await AppearancesOfAsync(eventId, ct, tracked: true);
+        var leaving = appearances.Single(appearance => appearance.ActId == actId);
+        _dbContext.Appearances.Remove(leaving);
+        CloseGap([.. appearances.Where(appearance => appearance != leaving)], leaving);
+
+        if (await LoadAsync(eventId, ct, tracked: true) is not { } order)
+            return;
+
+        MarkChanged(order);
+        foreach (var rule in order.Rules.Where(rule => Names(rule, actId)).ToList())
+            order.Rules.Remove(rule);
+        foreach (
+            var suspended in order
+                .SuspendedWishes.Where(suspended => wishIds.Contains(suspended.ActWishId))
+                .ToList()
+        )
+            order.SuspendedWishes.Remove(suspended);
+    }
+
+    private static void CloseGap(IReadOnlyList<Appearance> remaining, Appearance leaving)
+    {
+        if (leaving.Position is { } gap)
+        {
+            foreach (var appearance in remaining.Where(appearance => appearance.Position > gap))
+                appearance.Position--;
+        }
+
+        if (leaving.BlockKey is not { } blockKey)
+            return;
+
+        var blockLeft = remaining.Where(appearance => appearance.BlockKey == blockKey).ToList();
+        if (blockLeft.Count == 1)
+            blockLeft[0].BlockKey = null;
+    }
+
+    [Pure]
+    private static bool Names(RunningOrderRule rule, int actId) =>
+        rule.ActId == actId || rule.OtherActId == actId;
 
     private Task<bool> IsEventAsync(int eventId, CancellationToken ct) =>
         _dbContext.Events.AnyAsync(row => row.CalendarEntryId == eventId, ct);

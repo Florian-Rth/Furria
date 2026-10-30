@@ -95,7 +95,15 @@ export const SUGGESTION_TITLE = 'Vorschlag';
 export const SUGGESTION_EMPTY = 'Schon die beste Reihenfolge.';
 export const AUTO_ORDER_LABEL = 'Automatisch ordnen';
 export const NOT_PROVEN = 'Beste gefundene Reihenfolge';
+export const SEARCH_ON_LABEL = 'Weiter suchen';
+export const SEARCH_STOP_LABEL = 'Abbrechen';
+export const TAKE_NOW_LABEL = 'Jetzt nehmen';
+export const SEARCHING_NOTICE = 'Sucht die beste Reihenfolge …';
+
+export const toSearchNotice = (tally: { before: number; after: number } | null): string =>
+  tally === null ? SEARCHING_NOTICE : `Sucht … Konflikte ${tally.before} → ${tally.after}`;
 export const NEWLY_PLACED = 'neu eingeplant';
+export const ARCHIVED_FACT = 'archiviert';
 export const PLACE_ALL_LABEL = 'Alle einplanen';
 export const PROPOSAL_SHIFTS_LABEL = 'Was sich ändert';
 export const CONFLICT_RELOAD =
@@ -258,7 +266,15 @@ export const toRemovedMessage = (name: string): string => `${name} aus dem Abend
 export const toKeptForEveningMessage = (name: string): string =>
   `${name} ist für diesen Abend angepasst und bleibt im Ablauf, solange die Anpassung besteht.`;
 
-export const toPickedMessage = (count: number): string => `${toActsLabel(count)} übernommen.`;
+export const toPickedMessage = (count: number, archivedLeftOut = 0): string =>
+  archivedLeftOut === 0
+    ? `${toActsLabel(count)} übernommen.`
+    : `${toActsLabel(count)} übernommen · ${toArchivedActsLabel(archivedLeftOut)} nicht übernommen.`;
+
+export const toArchivedActsLabel = (count: number): string =>
+  count === 1 ? '1 archivierter Auftritt' : `${count} archivierte Auftritte`;
+
+export const toSaveFailedMessage = (reason: string): string => `Nicht gespeichert. ${reason}`;
 
 export const SUGGESTION_TAKEN = 'Vorschlag übernommen.';
 

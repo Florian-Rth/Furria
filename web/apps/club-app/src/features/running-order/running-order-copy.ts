@@ -205,5 +205,10 @@ export const toActSavedMessage = (name: string): string => `${name} gespeichert.
 export const toActArchivedMessage = (name: string, archived: boolean): string =>
   archived ? `${name} archiviert.` : `${name} wiederhergestellt.`;
 
+export const toActWithdrawnMessage = (name: string): string =>
+  `${name} steht in keinem offenen Abend mehr.`;
+
+export const WITHDRAW_LABEL = 'Aus allen offenen Abenden nehmen';
+
 export const toConfirmationMessage = (confirmed: boolean): string =>
   confirmed ? 'Ablauf steht.' : 'Ablauf wieder offen.';

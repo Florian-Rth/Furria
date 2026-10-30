@@ -10,7 +10,14 @@ import { bodyOf, draftOf, EMPTY_DRAFT } from '@/features/running-order/running-o
 import { reviewRunningOrder } from '@/features/running-order/running-order-review';
 import type { RunningOrderResponse } from '@/features/running-order/schemas';
 import type { ReviewFinding, RunningOrderDraft } from '@/features/running-order/types';
-import { CONFLICT_RELOAD, RELOAD_LABEL, UNDO_LABEL } from '../planner-copy';
+import { toWriteErrorMessage } from '@/lib/write-error';
+import {
+  CONFLICT_RELOAD,
+  RELOAD_LABEL,
+  RETRY_LABEL,
+  toSaveFailedMessage,
+  UNDO_LABEL,
+} from '../planner-copy';
 import type { HistoryStep, Rewind } from '../planner-history';
 import { pushStep, rewindLatest, rewindTo } from '../planner-history';
 
@@ -43,16 +50,44 @@ export interface PlannerDraft {
   confirm: (confirmed: boolean) => void;
 }
 
+interface PendingUndo {
+  stepId: number;
+  revision: number;
+  message: string;
+}
+
 const SAVE_DELAY_MS = 700;
 
-const freshState = (response: RunningOrderResponse | null): DraftState => ({
+const freshState = (response: RunningOrderResponse | null, revision: number): DraftState => ({
   draft: response === null ? EMPTY_DRAFT : draftOf(response),
   history: [],
-  revision: 0,
-  savedRevision: 0,
+  revision,
+  savedRevision: revision,
   failed: false,
   conflict: false,
 });
+
+type Pick = (history: readonly HistoryStep[]) => Rewind | null;
+
+const rewoundState = (
+  previous: DraftState | null,
+  pick: Pick,
+  revision: number,
+): DraftState | null => {
+  const rewound = previous === null ? null : pick(previous.history);
+
+  if (previous === null || rewound === null) {
+    return previous;
+  }
+
+  return {
+    ...previous,
+    draft: { ...rewound.draft, version: previous.draft.version },
+    history: rewound.history,
+    revision,
+    failed: false,
+  };
+};
 
 const saveStateOf = (state: DraftState | null, exists: boolean, saving: boolean): SaveState => {
   if (state?.conflict === true) {
@@ -75,11 +110,14 @@ export const usePlannerDraft = (eventId: number): PlannerDraft => {
   const notify = useKkNotice();
   const [state, setState] = useState<DraftState | null>(null);
   const stepCounter = useRef(0);
+  const revisionCounter = useRef(0);
+  const pendingUndo = useRef<PendingUndo | null>(null);
+  const failing = useRef(false);
   const { mutate: saveBody, isPending: saving } = save;
   const { refetch } = query;
 
   if (state === null && query.data !== undefined) {
-    setState(freshState(query.data));
+    setState(freshState(query.data, 0));
   }
 
   const isDirty =
@@ -87,10 +125,24 @@ export const usePlannerDraft = (eventId: number): PlannerDraft => {
   const pendingRevision = state?.revision ?? 0;
   const pendingDraft = state?.draft ?? null;
 
+  const nextRevision = (): number => {
+    revisionCounter.current += 1;
+
+    return revisionCounter.current;
+  };
+
+  const rewind = (pick: Pick): void => {
+    const revision = nextRevision();
+
+    setState((previous) => rewoundState(previous, pick, revision));
+  };
+
   const reload = (): void => {
     void refetch().then((result) => {
       if (result.data !== undefined) {
-        setState(freshState(result.data));
+        failing.current = false;
+        pendingUndo.current = null;
+        setState(freshState(result.data, revisionCounter.current));
       }
     });
   };
@@ -100,10 +152,51 @@ export const usePlannerDraft = (eventId: number): PlannerDraft => {
       return;
     }
 
+    const reloadFresh = (): void => {
+      void refetch().then((result) => {
+        if (result.data !== undefined) {
+          failing.current = false;
+          pendingUndo.current = null;
+          setState(freshState(result.data, revisionCounter.current));
+        }
+      });
+    };
+    const retry = (): void => {
+      failing.current = false;
+      setState((previous) => (previous === null ? previous : { ...previous, failed: false }));
+    };
+    const raiseUndo = (undo: PendingUndo): void => {
+      notify({
+        tone: 'info',
+        message: undo.message,
+        icon: 'undo',
+        actions: [
+          {
+            id: 'undo',
+            label: UNDO_LABEL,
+            onSelect: () => {
+              revisionCounter.current += 1;
+              const revision = revisionCounter.current;
+
+              setState((previous) =>
+                rewoundState(previous, (history) => rewindTo(history, undo.stepId), revision),
+              );
+            },
+          },
+        ],
+      });
+    };
     const body = bodyOf(pendingDraft);
     const timer = window.setTimeout(() => {
       saveBody(body, {
         onSuccess: (saved) => {
+          const undo = pendingUndo.current;
+
+          failing.current = false;
+          if (undo !== null && undo.revision <= pendingRevision) {
+            pendingUndo.current = null;
+            raiseUndo(undo);
+          }
           setState((previous) =>
             previous === null
               ? previous
@@ -117,7 +210,11 @@ export const usePlannerDraft = (eventId: number): PlannerDraft => {
         },
         onError: (error) => {
           const conflict = isRunningOrderConflict(error);
+          const reason = toWriteErrorMessage(error);
 
+          if ((pendingUndo.current?.revision ?? 0) <= pendingRevision) {
+            pendingUndo.current = null;
+          }
           setState((previous) =>
             previous === null ? previous : { ...previous, conflict, failed: !conflict },
           );
@@ -125,18 +222,18 @@ export const usePlannerDraft = (eventId: number): PlannerDraft => {
             notify({
               tone: 'error',
               message: CONFLICT_RELOAD,
+              actions: [{ id: 'reload', label: RELOAD_LABEL, onSelect: reloadFresh }],
+            });
+            return;
+          }
+          if (reason !== null && !failing.current) {
+            failing.current = true;
+            notify({
+              tone: 'error',
+              message: toSaveFailedMessage(reason),
               actions: [
-                {
-                  id: 'reload',
-                  label: RELOAD_LABEL,
-                  onSelect: () => {
-                    void refetch().then((result) => {
-                      if (result.data !== undefined) {
-                        setState(freshState(result.data));
-                      }
-                    });
-                  },
-                },
+                { id: 'retry', label: RETRY_LABEL, onSelect: retry },
+                { id: 'reload', label: RELOAD_LABEL, onSelect: reloadFresh },
               ],
             });
           }
@@ -149,30 +246,13 @@ export const usePlannerDraft = (eventId: number): PlannerDraft => {
     };
   }, [isDirty, saving, pendingDraft, pendingRevision, saveBody, notify, refetch]);
 
-  const rewind = (pick: (history: readonly HistoryStep[]) => Rewind | null): void => {
-    setState((previous) => {
-      const rewound = previous === null ? null : pick(previous.history);
-
-      if (previous === null || rewound === null) {
-        return previous;
-      }
-
-      return {
-        ...previous,
-        draft: { ...rewound.draft, version: previous.draft.version },
-        history: rewound.history,
-        revision: previous.revision + 1,
-        failed: false,
-      };
-    });
-  };
-
   const undo = (): void => {
     rewind(rewindLatest);
   };
 
   const apply = (next: RunningOrderDraft, undoMessage?: string): void => {
     const stepId = stepCounter.current + 1;
+    const revision = nextRevision();
 
     stepCounter.current = stepId;
 
@@ -183,25 +263,12 @@ export const usePlannerDraft = (eventId: number): PlannerDraft => {
             ...previous,
             draft: { ...next, version: previous.draft.version },
             history: pushStep(previous.history, { stepId, before: previous.draft }),
-            revision: previous.revision + 1,
+            revision,
             failed: false,
           },
     );
-    if (undoMessage !== undefined) {
-      notify({
-        tone: 'info',
-        message: undoMessage,
-        icon: 'undo',
-        actions: [
-          {
-            id: 'undo',
-            label: UNDO_LABEL,
-            onSelect: () => {
-              rewind((history) => rewindTo(history, stepId));
-            },
-          },
-        ],
-      });
+    if (undoMessage !== undefined && state !== null && !state.conflict) {
+      pendingUndo.current = { stepId, revision, message: undoMessage };
     }
   };
 

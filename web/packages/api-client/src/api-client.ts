@@ -25,6 +25,18 @@ export type ApiFetch = <TResponse>(
   request: ApiRequest<TResponse>,
 ) => Promise<TResponse>;
 
+export interface ApiStreamRequest<TLine> extends ApiRequest<TLine> {
+  signal: AbortSignal;
+  onLine: (line: TLine) => void;
+}
+
+export type ApiStream = <TLine>(path: string, request: ApiStreamRequest<TLine>) => Promise<void>;
+
+export interface TakenLines {
+  lines: string[];
+  rest: string;
+}
+
 export interface ApiClientConfig {
   readBaseUrl: () => string;
   timeoutMs: number;
@@ -34,6 +46,7 @@ export interface ApiClientConfig {
 
 export interface ApiClient {
   apiFetch: ApiFetch;
+  apiStream: ApiStream;
   apiUrlOf: (path: string) => string;
 }
 
@@ -82,6 +95,19 @@ const readText = async (response: Response, init: RequestInit): Promise<string> 
   }
 };
 
+const readChunk = async (
+  reader: ReadableStreamDefaultReader<string>,
+  init: RequestInit,
+): Promise<string | null> => {
+  try {
+    const { done, value } = await reader.read();
+
+    return done ? null : value;
+  } catch {
+    throw new ApiError(failureOfTransport(init.signal));
+  }
+};
+
 type BodyText = { parsed: true; value: JsonBody | undefined } | { parsed: false };
 
 const parseJson = (text: string): BodyText => {
@@ -122,6 +148,13 @@ const readBody = async <TResponse>(
   const body = parseJson(await readText(response, init));
 
   return body.parsed ? parseBody(schema, body.value) : { readable: false, issues: [] };
+};
+
+export const takeLines = (pending: string): TakenLines => {
+  const parts = pending.split('\n');
+  const rest = parts.pop() ?? '';
+
+  return { lines: parts.filter((line) => line.trim().length > 0), rest };
 };
 
 const toRequestInit = (
@@ -190,5 +223,60 @@ export const createApiClient = ({
     return reading.value;
   };
 
-  return { apiFetch, apiUrlOf };
+  const readLine = <TLine>(
+    path: string,
+    method: ApiMethod,
+    schema: ZodType<TLine>,
+    text: string,
+  ): TLine => {
+    const body = parseJson(text);
+    const reading: BodyReading<TLine> = body.parsed
+      ? parseBody(schema, body.value)
+      : { readable: false, issues: [] };
+
+    if (!reading.readable) {
+      reportMismatch({ method, path, issues: reading.issues });
+      throw new ApiError({ kind: 'mismatch' });
+    }
+
+    return reading.value;
+  };
+
+  const apiStream: ApiStream = async (
+    path,
+    { schema, method = 'GET', body, accessToken, signal, onLine },
+  ) => {
+    const init = { ...toRequestInit(method, body, accessToken, timeoutMs), signal };
+    const response = await sendOrFail(apiUrlOf(path), init);
+
+    if (!response.ok) {
+      throw new ApiError(await failureOfResponse(response));
+    }
+
+    if (response.body === null) {
+      throw new ApiError({ kind: 'mismatch' });
+    }
+
+    const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+    let pending = '';
+
+    try {
+      for (let chunk = await readChunk(reader, init); chunk !== null; ) {
+        const taken = takeLines(pending + chunk);
+
+        pending = taken.rest;
+        for (const line of taken.lines) {
+          onLine(readLine(path, method, schema, line));
+        }
+        chunk = await readChunk(reader, init);
+      }
+      if (pending.trim().length > 0) {
+        onLine(readLine(path, method, schema, pending));
+      }
+    } finally {
+      void reader.cancel().catch(() => undefined);
+    }
+  };
+
+  return { apiFetch, apiStream, apiUrlOf };
 };

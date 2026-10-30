@@ -2,7 +2,8 @@ import type { KkChoiceChip } from '@furria/ui/KkChoiceChips';
 import { useState } from 'react';
 import { useGroupHubQuery } from '@/features/group-hub/api';
 import { useGroupsQuery } from '@/features/groups/api';
-import { useActMutations } from '@/features/running-order/api';
+import { useActMutations, useRunningOrdersQuery } from '@/features/running-order/api';
+import { usePlansRunningOrder } from '@/features/running-order/hooks/use-plans-running-order';
 import { toActKindLabel } from '@/features/running-order/running-order-copy';
 import type {
   ActGroup,
@@ -42,6 +43,7 @@ import { knownGroupsOf } from '../acts-catalogue';
 import { KIND_ICONS, NO_GROUP_OPTION, toSessionLabel } from '../acts-copy';
 import type { SharedAct } from '../acts-overlap';
 import { sharedActsOf } from '../acts-overlap';
+import { upcomingRunsOf } from '../acts-runs';
 
 const NO_MEMBERS: readonly PortraitPersonRef[] = [];
 
@@ -53,6 +55,7 @@ const kindChoicesOf = (closed: boolean): KkChoiceChip[] =>
     disabled: closed,
   }));
 const CLOCK_MS = 60_000;
+const DEFAULT_WISH_STRENGTH: Strength = 'must';
 
 export interface ActEditor {
   act: CatalogueAct | null;
@@ -73,7 +76,7 @@ export interface ActEditor {
   tally: CastTally;
   shared: SharedAct[];
   isAdding: boolean;
-  wishStrength: Strength;
+  wishStrength: Strength | null;
   isSaving: boolean;
   isArchiving: boolean;
   rename: (name: string) => void;
@@ -131,11 +134,13 @@ export const useActEditor = ({
   const [draft, setDraft] = useState<ActDraft>(initial);
   const [touched, setTouched] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-  const [wishStrength, setWishStrength] = useState<Strength>('must');
+  const [wishStrength, setWishStrength] = useState<Strength | null>(null);
   const canChooseGroup = fixedGroupId === null;
   const groups = useGroupsQuery(canChooseGroup);
   const hub = useGroupHubQuery(draft.groupId);
   const mutations = useActMutations();
+  const plans = usePlansRunningOrder();
+  const runningOrders = useRunningOrdersQuery(plans);
   const grouped = draft.groupId !== null;
   const hubData = hub.data?.groupId === draft.groupId ? hub.data : undefined;
   const fallbackMembers =
@@ -246,7 +251,10 @@ export const useActEditor = ({
       setWishStrength(strength);
     },
     addWish: (kind) => {
-      update((current) => withWish(current, kind, wishStrength));
+      const strength = wishStrength ?? DEFAULT_WISH_STRENGTH;
+
+      setWishStrength(strength);
+      update((current) => withWish(current, kind, strength));
     },
     removeWish: (kind) => {
       update((current) => withoutWish(current, kind));
@@ -275,7 +283,14 @@ export const useActEditor = ({
         return;
       }
 
-      mutations.archive.mutate({ actId: act.actId, name: act.name, archived: !act.archived });
+      const runs = upcomingRunsOf(runningOrders.data?.runningOrders ?? [], now).get(act.actId);
+
+      mutations.archive.mutate({
+        actId: act.actId,
+        name: act.name,
+        archived: !act.archived,
+        offersWithdrawal: !act.archived && plans && runs !== undefined,
+      });
     },
   };
 };

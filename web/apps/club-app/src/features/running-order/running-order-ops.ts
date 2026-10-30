@@ -407,7 +407,7 @@ export const pickActs = (
   const picked = actIds.flatMap((actId) => {
     const act = catalogue.find((candidate) => candidate.actId === actId);
 
-    return act === undefined || present.includes(actLineKeyOf(actId)) ? [] : [act];
+    return act === undefined || act.archived || present.includes(actLineKeyOf(actId)) ? [] : [act];
   });
 
   if (picked.length === 0) {

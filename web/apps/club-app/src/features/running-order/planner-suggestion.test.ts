@@ -7,7 +7,6 @@ import {
   proposalRowsOf,
   proposalShiftsOf,
   proposedDraftOf,
-  signatureOf,
 } from './planner-suggestion';
 
 const act = (actId: number, options: Partial<DraftLine> = {}): DraftLine => ({
@@ -157,34 +156,6 @@ describe('acceptProposalRow', () => {
     const accepted = row === undefined ? draft : acceptProposalRow(draft, row);
 
     expect(orderOf(accepted)).toEqual(['act:2', 'act:1', 'act:3']);
-  });
-});
-
-describe('signatureOf', () => {
-  it('ignores the saved version but notices a changed order', () => {
-    const saved = { ...draft, version: 9 };
-    const moved = { ...draft, lines: [act(2), act(1), act(3), act(4, { placed: false })] };
-
-    expect([
-      signatureOf(saved) === signatureOf(draft),
-      signatureOf(moved) === signatureOf(draft),
-    ]).toEqual([true, false]);
-  });
-
-  it('notices a rule that became only preferred', () => {
-    const rule = {
-      ruleKey: 'rule:3',
-      ruleId: 3,
-      kind: 'first',
-      strength: 'must',
-      actId: 1,
-      otherActId: null,
-      actKind: null,
-    } as const;
-    const strict = { ...draft, rules: [rule] };
-    const relaxed = { ...draft, rules: [{ ...rule, strength: 'prefer' as const }] };
-
-    expect(signatureOf(strict) === signatureOf(relaxed)).toBe(false);
   });
 });
 

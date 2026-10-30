@@ -1,8 +1,12 @@
 using System.Diagnostics.Contracts;
+using System.Text.Json;
+using System.Text.Json.Serialization;
+using System.Threading.Channels;
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
+using Furria.Application.Results;
 using Furria.Application.RunningOrders;
 using Furria.Core.RunningOrders;
 using Furria.Infrastructure.RunningOrders;
@@ -12,6 +16,12 @@ namespace Furria.Api.Endpoints.RunningOrders;
 public sealed class PostRunningOrderSuggestion
     : Endpoint<PostRunningOrderSuggestionRequest, PostRunningOrderSuggestionResponse>
 {
+    private const string LinesContentType = "application/x-ndjson";
+    private const int LatestProposalOnly = 1;
+
+    private static readonly JsonSerializerOptions LineJson = LineJsonOptions();
+    private static readonly byte[] LineBreak = "\n"u8.ToArray();
+
     private readonly RunningOrderService _runningOrderService;
 
     public PostRunningOrderSuggestion(RunningOrderService runningOrderService)
@@ -30,14 +40,84 @@ public sealed class PostRunningOrderSuggestion
         CancellationToken ct
     )
     {
-        var result = await _runningOrderService.SuggestAsync(ToCommand(req), ct);
+        var found = Channel.CreateBounded<RunningOrderProposal>(
+            new BoundedChannelOptions(LatestProposalOnly)
+            {
+                FullMode = BoundedChannelFullMode.DropOldest,
+                SingleReader = true,
+            }
+        );
+        using var searchStop = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        var search = SearchAsync(req, found.Writer, searchStop.Token);
+        try
+        {
+            await foreach (var interim in found.Reader.ReadAllAsync(ct))
+                await WriteLineAsync(ToResponse(interim, isFinal: false), ct);
+        }
+        catch
+        {
+            await searchStop.CancelAsync();
+            await Task.WhenAny(search);
+            throw;
+        }
+
+        var result = await search;
         if (!result.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(result.Error, ct);
             return;
         }
 
-        await Send.OkAsync(ToResponse(result.Value), cancellation: ct);
+        await WriteLineAsync(ToResponse(result.Value, isFinal: true), ct);
+    }
+
+    private async Task<Result<RunningOrderProposal>> SearchAsync(
+        PostRunningOrderSuggestionRequest req,
+        ChannelWriter<RunningOrderProposal> found,
+        CancellationToken ct
+    )
+    {
+        try
+        {
+            return await Task.Run(
+                () =>
+                    _runningOrderService.SuggestAsync(
+                        ToCommand(req),
+                        proposal => found.TryWrite(proposal),
+                        ct
+                    ),
+                ct
+            );
+        }
+        finally
+        {
+            found.TryComplete();
+        }
+    }
+
+    private async Task WriteLineAsync(PostRunningOrderSuggestionResponse line, CancellationToken ct)
+    {
+        var response = HttpContext.Response;
+        if (!response.HasStarted)
+        {
+            response.StatusCode = StatusCodes.Status200OK;
+            response.ContentType = LinesContentType;
+            response.Headers.CacheControl = "no-store";
+            response.Headers["X-Accel-Buffering"] = "no";
+            await response.StartAsync(ct);
+        }
+
+        await JsonSerializer.SerializeAsync(response.Body, line, LineJson, ct);
+        await response.Body.WriteAsync(LineBreak, ct);
+        await response.Body.FlushAsync(ct);
+    }
+
+    private static JsonSerializerOptions LineJsonOptions()
+    {
+        var options = new JsonSerializerOptions(JsonSerializerDefaults.Web);
+        options.Converters.Add(new JsonStringEnumConverter(JsonNamingPolicy.CamelCase));
+
+        return options;
     }
 
     private static SuggestRunningOrderCommand ToCommand(PostRunningOrderSuggestionRequest req) =>
@@ -50,11 +130,17 @@ public sealed class PostRunningOrderSuggestion
                 Rules = [.. req.Rules.Select(rule => rule.ToDraft())],
                 SuspendedActWishIds = req.SuspendedActWishIds,
             },
+            SeedActIds = req.SeedActIds,
+            SearchTime = TimeSpan.FromSeconds(req.SearchSeconds),
         };
 
-    private static PostRunningOrderSuggestionResponse ToResponse(RunningOrderProposal proposal) =>
+    private static PostRunningOrderSuggestionResponse ToResponse(
+        RunningOrderProposal proposal,
+        bool isFinal
+    ) =>
         new()
         {
+            Final = isFinal,
             Order = [.. proposal.Order.Select(LineKeyText)],
             Moves = [.. proposal.Moves.Select(ToDto)],
             ConflictsBefore = proposal.ConflictsBefore,
@@ -121,13 +207,22 @@ public sealed record PostRunningOrderSuggestionRequest
     public required IReadOnlyList<RunningOrderRuleDataDto> Rules { get; init; }
 
     public required IReadOnlyList<int> SuspendedActWishIds { get; init; }
+
+    public IReadOnlyList<int> SeedActIds { get; init; } = [];
+
+    public int SearchSeconds { get; init; } =
+        PostRunningOrderSuggestionValidator.DefaultSearchSeconds;
 }
 
 public sealed class PostRunningOrderSuggestionValidator
     : Validator<PostRunningOrderSuggestionRequest>
 {
+    public const int DefaultSearchSeconds = 5;
+
     private const int MostLines = 200;
     private const int MostRules = 200;
+    private const int FewestSearchSeconds = 1;
+    private const int MostSearchSeconds = 60;
 
     public PostRunningOrderSuggestionValidator()
     {
@@ -141,11 +236,19 @@ public sealed class PostRunningOrderSuggestionValidator
             .NotNull()
             .Must(rules => rules.Count <= MostRules);
         RuleFor(request => request.SuspendedActWishIds).NotNull();
+        RuleFor(request => request.SeedActIds)
+            .Cascade(CascadeMode.Stop)
+            .NotNull()
+            .Must(seed => seed.Count <= MostLines);
+        RuleFor(request => request.SearchSeconds)
+            .InclusiveBetween(FewestSearchSeconds, MostSearchSeconds);
     }
 }
 
 public sealed record PostRunningOrderSuggestionResponse
 {
+    public required bool Final { get; init; }
+
     public required IReadOnlyList<string> Order { get; init; }
 
     public required IReadOnlyList<RunningOrderMoveDto> Moves { get; init; }

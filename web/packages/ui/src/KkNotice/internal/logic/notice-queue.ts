@@ -41,3 +41,19 @@ export const finishNoticeExit = (queue: KkNoticeQueue): KkNoticeQueue => {
 
   return { entries: remaining, isOpen: remaining.length > 0 };
 };
+
+const isBoundToScreen = (entry: KkNoticeEntry): boolean => entry.actions !== undefined;
+
+export const leaveScreen = (queue: KkNoticeQueue): KkNoticeQueue => {
+  const [showing, ...waiting] = queue.entries;
+  const kept = waiting.filter((entry) => !isBoundToScreen(entry));
+
+  if (showing === undefined) {
+    return queue;
+  }
+  if (isBoundToScreen(showing)) {
+    return { entries: [showing, ...kept], isOpen: false };
+  }
+
+  return { entries: [showing, ...kept], isOpen: queue.isOpen };
+};

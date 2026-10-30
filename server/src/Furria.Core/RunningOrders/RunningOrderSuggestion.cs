@@ -9,19 +9,32 @@ public static class RunningOrderSuggestion
 
     [Pure]
     public static RunningOrderProposal ProposalFor(RunningOrderReviewInput input) =>
-        ProposalFor(input, NodeBudget);
+        ProposalFor(input, new SuggestionSearch());
 
     [Pure]
-    public static RunningOrderProposal ProposalFor(RunningOrderReviewInput input, int nodeBudget)
+    public static RunningOrderProposal ProposalFor(RunningOrderReviewInput input, int nodeBudget) =>
+        ProposalFor(input, new SuggestionSearch { NodeBudget = nodeBudget });
+
+    public static RunningOrderProposal ProposalFor(
+        RunningOrderReviewInput input,
+        SuggestionSearch search
+    )
     {
-        var solution = Solution.Of(input, nodeBudget);
+        var solution = Solution.Of(input, ControlOf(input, search));
         var (holds, isUnavoidable) = HoldSearch.Run(
             input,
             solution,
-            nodeBudget / 6 + nodeBudget - solution.NodesUsed
+            search.NodeBudget / 6 + search.NodeBudget - solution.NodesUsed,
+            search.Stop
         );
 
-        return ProposalOf(input, solution) with
+        return ProposalOf(
+            input,
+            solution.Pipeline,
+            solution.OriginalOrder,
+            solution.Order,
+            solution.IsProven
+        ) with
         {
             Holds = holds,
             HoldsUnavoidable = isUnavoidable,
@@ -29,19 +42,41 @@ public static class RunningOrderSuggestion
     }
 
     [Pure]
-    private static RunningOrderProposal ProposalOf(RunningOrderReviewInput input, Solution solution)
+    private static SearchControl ControlOf(RunningOrderReviewInput input, SuggestionSearch search)
     {
-        var pipeline = solution.Pipeline;
-        var findingsBefore = pipeline.FindingsOf(solution.OriginalOrder);
-        var findingsAfter = pipeline.FindingsOf(solution.Order);
-        var costsBefore = pipeline.CostsOf(solution.OriginalOrder);
-        var costsAfter = pipeline.CostsOf(solution.Order);
+        if (search.Improved is not { } improved)
+            return new SearchControl(search.NodeBudget, search.Seed, search.Stop, null);
+
+        var pipeline = RunningOrderCostPipeline.For(input);
+        var originalOrder = Solution.OriginalOrderOf(input);
+
+        return new SearchControl(
+            search.NodeBudget,
+            search.Seed,
+            search.Stop,
+            order => improved(ProposalOf(input, pipeline, originalOrder, order, isProven: false))
+        );
+    }
+
+    [Pure]
+    private static RunningOrderProposal ProposalOf(
+        RunningOrderReviewInput input,
+        RunningOrderCostPipeline pipeline,
+        IReadOnlyList<LineKey> originalOrder,
+        IReadOnlyList<LineKey> order,
+        bool isProven
+    )
+    {
+        var findingsBefore = pipeline.FindingsOf(originalOrder);
+        var findingsAfter = pipeline.FindingsOf(order);
+        var costsBefore = pipeline.CostsOf(originalOrder);
+        var costsAfter = pipeline.CostsOf(order);
 
         return new RunningOrderProposal
         {
-            Order = solution.Order,
+            Order = order,
             Moves = MovesOf(
-                new ChangeoverGaps(input, solution.OriginalOrder, solution.Order),
+                new ChangeoverGaps(input, originalOrder, order),
                 findingsBefore,
                 findingsAfter
             ),
@@ -60,7 +95,7 @@ public static class RunningOrderSuggestion
                     (before, after) => new CostStepComparison(before.Step, before.Cost, after.Cost)
                 ),
             ],
-            Proven = solution.IsProven,
+            Proven = isProven,
             Holds = [],
             HoldsUnavoidable = false,
         };
