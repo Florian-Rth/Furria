@@ -312,9 +312,16 @@ Goal: members land on their act card; each kind has its template.
 
 ### Phase 11 — ⚖ Lab: hall mode (∥ C)
 Goal: Florian picks the trainer's hall view.
-- [ ] Count-in engine (pure, tested): before play and before every loop pass, tempo 75/100
-- [ ] Three divergent landscape-first lab variants on real data (dark, huge count, step + next step, stage with named dots and today's absences, keys, video off by default, Wake Lock); filmed playback at 60 fps
+- [x] Count-in engine (pure, tested): before play and before every loop pass, tempo 75/100
+- [x] Three divergent landscape-first lab variants on real data (dark, huge count, step + next step, stage with named dots and today's absences, keys, video off by default, Wake Lock); filmed playback at 60 fps
 - [ ] Pitch + Florian's pick; rulings recorded in the RFC
+- Notes (lab built 2026-10-30, awaiting the pick): `/lab/hall/{a,b,c}/{actId}?training=` (lab hub section *Training in der Halle*, act 3 *Marschtanz* on the RFC 0001 database). All three are dark, fill the whole screen above the shell, keep the screen awake, and count in four beats before play and before every loop pass. The count-in is gold, with a click on each beat (the first one higher). Dots that move right now turn red. Absent people show as gold dashed dots with their names struck through, plus chips (*Fehlt Di., 03.11.*). *Video* swaps the stage for the trainer video and is off by default. Tempo toggles between 100 % and 75 %. Names alternate below and above the dots so a line never overlaps.
+  - **A — count wall:** the count fills the left two fifths. Below it are the step, *Danach: …* and who is missing. The stage is on the right from the dancers' view (front on top). One key row runs along the bottom. It reads best from 3 m, but the key row costs about a fifth of the height.
+  - **B — two thumbs:** the left thumb column holds the count, *Zurück* and *Schleife*. The right thumb column holds *Start*, *Weiter*, tempo and video. The stage sits between them from the trainer's view (front at the bottom, as she faces the group). It has the biggest stage and the thumbs never cross it, but the count is the smallest of the three.
+  - **C — count band:** eight count cells run across the top, with the current one red and the count-in gold. The step card is the play key. It is the only one that shows where you are inside the eight, but the stage is the smallest and names get shortened on phones.
+  - Recommendation: A, with the viewpoint as an open ruling. Rulings needed: dancers' or trainer's view of the stage; four or eight beats of count-in, always on or with a switch; whether a loop pass counts in again or loops seamlessly.
+  - Engine: `count-in.ts` (pure, tested) and `MixPlayer.setCountIn`/`leadCount`. Loop passes are scheduled with a count-in gap, and `positionInRuns` holds the loop start during the gap. Absences in the lab come from the training's open spots. Until phase 7 makes trainings ask, the films inject two absences in the browser.
+  - Films: `~/furria-hall-lab-film/hall-{a,b,c}.mp4` plus contact sheets and stills (landscape 844×390 and portrait 390×844). Headless Chromium's screencast delivered about 32 fps, not 60, so motion was checked frame by frame on the contact sheets: nothing jumps, and the count-in flows into count 1.
 
 ### Phase 12 — Promote hall mode, step rail, large-text player (∥ D, after 11)
 Goal: one hall mode replaces training mode and the landscape player; the player is usable at 200 % text.

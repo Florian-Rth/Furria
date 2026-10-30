@@ -101,6 +101,7 @@ import { Route as AppManageGroupsKindsNewRouteImport } from './routes/_app/manag
 import { Route as AppManageGroupsKindsGroupKindIdRouteImport } from './routes/_app/manage.groups_.kinds.$groupKindId'
 import { Route as AppManageBoardBoardOfficeIdEditRouteImport } from './routes/_app/manage.board_.$boardOfficeId_.edit'
 import { Route as AppManageApplicationsMembershipApplicationIdAdmissionRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId_.admission'
+import { Route as AppLabHallVariantActIdRouteImport } from './routes/_app/lab_.hall.$variant.$actId'
 import { Route as AppGroupsGroupIdSlotsNewRouteImport } from './routes/_app/groups_.$groupId_.slots.new'
 import { Route as AppGroupsGroupIdSlotsSlotIdRouteImport } from './routes/_app/groups_.$groupId_.slots.$slotId'
 import { Route as AppGroupsGroupIdPeoplePersonIdRouteImport } from './routes/_app/groups_.$groupId_.people.$personId'
@@ -603,6 +604,11 @@ const AppManageApplicationsMembershipApplicationIdAdmissionRoute =
     path: '/manage/applications/$membershipApplicationId/admission',
     getParentRoute: () => AppRoute,
   } as any)
+const AppLabHallVariantActIdRoute = AppLabHallVariantActIdRouteImport.update({
+  id: '/lab_/hall/$variant/$actId',
+  path: '/lab/hall/$variant/$actId',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGroupsGroupIdSlotsNewRoute =
   AppGroupsGroupIdSlotsNewRouteImport.update({
     id: '/groups_/$groupId_/slots/new',
@@ -820,6 +826,7 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId/people/$personId': typeof AppGroupsGroupIdPeoplePersonIdRoute
   '/groups/$groupId/slots/$slotId': typeof AppGroupsGroupIdSlotsSlotIdRoute
   '/groups/$groupId/slots/new': typeof AppGroupsGroupIdSlotsNewRoute
+  '/lab/hall/$variant/$actId': typeof AppLabHallVariantActIdRoute
   '/manage/applications/$membershipApplicationId/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/manage/board/$boardOfficeId/edit': typeof AppManageBoardBoardOfficeIdEditRoute
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
@@ -932,6 +939,7 @@ export interface FileRoutesByTo {
   '/groups/$groupId/people/$personId': typeof AppGroupsGroupIdPeoplePersonIdRoute
   '/groups/$groupId/slots/$slotId': typeof AppGroupsGroupIdSlotsSlotIdRoute
   '/groups/$groupId/slots/new': typeof AppGroupsGroupIdSlotsNewRoute
+  '/lab/hall/$variant/$actId': typeof AppLabHallVariantActIdRoute
   '/manage/applications/$membershipApplicationId/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/manage/board/$boardOfficeId/edit': typeof AppManageBoardBoardOfficeIdEditRoute
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
@@ -1048,6 +1056,7 @@ export interface FileRoutesById {
   '/_app/groups_/$groupId_/people/$personId': typeof AppGroupsGroupIdPeoplePersonIdRoute
   '/_app/groups_/$groupId_/slots/$slotId': typeof AppGroupsGroupIdSlotsSlotIdRoute
   '/_app/groups_/$groupId_/slots/new': typeof AppGroupsGroupIdSlotsNewRoute
+  '/_app/lab_/hall/$variant/$actId': typeof AppLabHallVariantActIdRoute
   '/_app/manage/applications_/$membershipApplicationId_/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/_app/manage/board_/$boardOfficeId_/edit': typeof AppManageBoardBoardOfficeIdEditRoute
   '/_app/manage/groups_/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
@@ -1162,6 +1171,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/people/$personId'
     | '/groups/$groupId/slots/$slotId'
     | '/groups/$groupId/slots/new'
+    | '/lab/hall/$variant/$actId'
     | '/manage/applications/$membershipApplicationId/admission'
     | '/manage/board/$boardOfficeId/edit'
     | '/manage/groups/kinds/$groupKindId'
@@ -1274,6 +1284,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/people/$personId'
     | '/groups/$groupId/slots/$slotId'
     | '/groups/$groupId/slots/new'
+    | '/lab/hall/$variant/$actId'
     | '/manage/applications/$membershipApplicationId/admission'
     | '/manage/board/$boardOfficeId/edit'
     | '/manage/groups/kinds/$groupKindId'
@@ -1389,6 +1400,7 @@ export interface FileRouteTypes {
     | '/_app/groups_/$groupId_/people/$personId'
     | '/_app/groups_/$groupId_/slots/$slotId'
     | '/_app/groups_/$groupId_/slots/new'
+    | '/_app/lab_/hall/$variant/$actId'
     | '/_app/manage/applications_/$membershipApplicationId_/admission'
     | '/_app/manage/board_/$boardOfficeId_/edit'
     | '/_app/manage/groups_/kinds/$groupKindId'
@@ -2068,6 +2080,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageApplicationsMembershipApplicationIdAdmissionRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/lab_/hall/$variant/$actId': {
+      id: '/_app/lab_/hall/$variant/$actId'
+      path: '/lab/hall/$variant/$actId'
+      fullPath: '/lab/hall/$variant/$actId'
+      preLoaderRoute: typeof AppLabHallVariantActIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/groups_/$groupId_/slots/new': {
       id: '/_app/groups_/$groupId_/slots/new'
       path: '/groups/$groupId/slots/new'
@@ -2336,6 +2355,7 @@ interface AppRouteChildren {
   AppGroupsGroupIdPeoplePersonIdRoute: typeof AppGroupsGroupIdPeoplePersonIdRoute
   AppGroupsGroupIdSlotsSlotIdRoute: typeof AppGroupsGroupIdSlotsSlotIdRoute
   AppGroupsGroupIdSlotsNewRoute: typeof AppGroupsGroupIdSlotsNewRoute
+  AppLabHallVariantActIdRoute: typeof AppLabHallVariantActIdRoute
   AppManageApplicationsMembershipApplicationIdAdmissionRoute: typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   AppManageBoardBoardOfficeIdEditRoute: typeof AppManageBoardBoardOfficeIdEditRoute
   AppManageGroupsKindsGroupKindIdRoute: typeof AppManageGroupsKindsGroupKindIdRoute
@@ -2439,6 +2459,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppGroupsGroupIdPeoplePersonIdRoute: AppGroupsGroupIdPeoplePersonIdRoute,
   AppGroupsGroupIdSlotsSlotIdRoute: AppGroupsGroupIdSlotsSlotIdRoute,
   AppGroupsGroupIdSlotsNewRoute: AppGroupsGroupIdSlotsNewRoute,
+  AppLabHallVariantActIdRoute: AppLabHallVariantActIdRoute,
   AppManageApplicationsMembershipApplicationIdAdmissionRoute:
     AppManageApplicationsMembershipApplicationIdAdmissionRoute,
   AppManageBoardBoardOfficeIdEditRoute: AppManageBoardBoardOfficeIdEditRoute,

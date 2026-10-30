@@ -3,7 +3,7 @@ import type { Studio, StudioPart, StudioStep } from '@/features/acts/schemas';
 const SECONDS_PER_MINUTE = 60;
 const COUNTS_PER_EIGHT = 8;
 export const EDGE_TOLERANCE_SECONDS = 1e-6;
-const BEAT_ROUNDING_SECONDS = 0.01;
+export const BEAT_ROUNDING_SECONDS = 0.01;
 
 export interface MusicSegment {
   mediaItemId: number;
@@ -118,7 +118,7 @@ export const timelineSecondsOf = (
     : segment.timelineStart + Math.max(0, anchor.seconds - segment.sourceStart);
 };
 
-const beatSecondsOf = (segment: MusicSegment): number | null =>
+export const beatSecondsOf = (segment: MusicSegment): number | null =>
   segment.tempoBpm === null || segment.tempoBpm <= 0 ? null : SECONDS_PER_MINUTE / segment.tempoBpm;
 
 const beatIndexAt = (segment: MusicSegment, sourceSeconds: number): number | null => {
@@ -131,7 +131,7 @@ const beatIndexAt = (segment: MusicSegment, sourceSeconds: number): number | nul
   return Math.floor((sourceSeconds + BEAT_ROUNDING_SECONDS - segment.firstBeatSeconds) / beat);
 };
 
-const countOfBeat = (beatIndex: number): number =>
+export const countOfBeat = (beatIndex: number): number =>
   (((beatIndex % COUNTS_PER_EIGHT) + COUNTS_PER_EIGHT) % COUNTS_PER_EIGHT) + 1;
 
 export const countAt = (segments: readonly MusicSegment[], seconds: number): CountAt | null => {

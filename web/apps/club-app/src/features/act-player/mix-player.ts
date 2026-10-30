@@ -1,4 +1,6 @@
 import { audioBufferOf, sharedAudioContext } from './audio-buffers';
+import type { CountIn } from './count-in';
+import { countInAt, countInOf } from './count-in';
 import type { MixRun } from './mix-schedule';
 import {
   mixPiecesOf,
@@ -16,6 +18,11 @@ const START_LATENCY_SECONDS = 0.05;
 const LOOKAHEAD_SECONDS = 3;
 const WATCH_INTERVAL_MS = 200;
 const FINISHED_RUN_GRACE_SECONDS = 1;
+const CLICK_SECONDS = 0.06;
+const CLICK_PEAK_GAIN = 0.6;
+const CLICK_SILENT_GAIN = 0.0001;
+const CLICK_HERTZ = 1046;
+const ACCENT_CLICK_HERTZ = 1568;
 
 export type MixLoadState = 'idle' | 'loading' | 'ready' | 'failed';
 
@@ -25,6 +32,7 @@ export interface MixPlayerState {
   loop: TimelineRange | null;
   rate: number;
   length: number;
+  countInBeats: number;
 }
 
 export interface MixPlayer {
@@ -34,7 +42,9 @@ export interface MixPlayer {
   seek: (seconds: number) => void;
   setLoop: (range: TimelineRange | null) => void;
   setRate: (rate: number) => void;
+  setCountIn: (beats: number) => void;
   position: () => number;
+  leadCount: () => number | null;
   state: () => MixPlayerState;
   subscribe: (listener: () => void) => () => void;
   dispose: () => void;
@@ -45,6 +55,37 @@ interface MixRoute {
   delaySeconds: number;
 }
 
+interface MixClick {
+  tone: OscillatorNode;
+  endsAt: number;
+}
+
+interface MixLead {
+  musicStart: number;
+  countIn: CountIn;
+}
+
+const leadStartOf = (lead: MixLead): number => lead.musicStart - lead.countIn.leadSeconds;
+
+const scheduleClick = (audio: AudioContext, at: number, accent: boolean): MixClick => {
+  const tone = audio.createOscillator();
+  const level = audio.createGain();
+  tone.frequency.value = accent ? ACCENT_CLICK_HERTZ : CLICK_HERTZ;
+  level.gain.setValueAtTime(CLICK_SILENT_GAIN, at);
+  level.gain.exponentialRampToValueAtTime(CLICK_PEAK_GAIN, at + CLICK_SECONDS / 6);
+  level.gain.exponentialRampToValueAtTime(CLICK_SILENT_GAIN, at + CLICK_SECONDS);
+  tone.connect(level);
+  level.connect(audio.destination);
+  tone.start(at);
+  tone.stop(at + CLICK_SECONDS);
+  tone.onended = () => {
+    tone.disconnect();
+    level.disconnect();
+  };
+
+  return { tone, endsAt: at + CLICK_SECONDS };
+};
+
 const clampTo = (seconds: number, length: number): number => Math.min(Math.max(0, seconds), length);
 
 export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer => {
@@ -52,12 +93,21 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
   const listeners = new Set<() => void>();
   const buffers = new Map<number, AudioBuffer>();
   let sources: AudioBufferSourceNode[] = [];
+  let clicks: MixClick[] = [];
+  let leads: MixLead[] = [];
   let runs: MixRun[] = [];
   let watch: ReturnType<typeof setInterval> | null = null;
   let restingAt = 0;
   let keeper: PitchKeeper | null = null;
   let route: MixRoute | null = null;
-  let current: MixPlayerState = { load: 'idle', playing: false, loop: null, rate: 1, length };
+  let current: MixPlayerState = {
+    load: 'idle',
+    playing: false,
+    loop: null,
+    rate: 1,
+    length,
+    countInBeats: 0,
+  };
 
   const publish = (next: Partial<MixPlayerState>): void => {
     current = { ...current, ...next };
@@ -80,6 +130,12 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
       source.disconnect();
     }
     sources = [];
+    for (const { tone } of clicks) {
+      tone.stop();
+      tone.disconnect();
+    }
+    clicks = [];
+    leads = [];
     runs = [];
     keeper?.release();
     if (watch !== null) {
@@ -97,6 +153,30 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
 
     keeper.engage(correction);
     return { output: keeper.input, delaySeconds: keeper.latencySeconds };
+  };
+
+  const leadBefore = (from: number, musicStart: number): number => {
+    const countIn = countInOf(segments, from, current.rate, current.countInBeats);
+
+    if (countIn === null) {
+      return musicStart;
+    }
+
+    const audio = sharedAudioContext();
+    const counted = musicStart + countIn.leadSeconds;
+    const keptSince = audio.currentTime - FINISHED_RUN_GRACE_SECONDS;
+    clicks = [
+      ...clicks.filter((click) => click.endsAt >= keptSince),
+      ...countIn.clicks.map((click, index) =>
+        scheduleClick(audio, musicStart + click.offsetSeconds, index === 0),
+      ),
+    ];
+    leads = [
+      ...leads.filter((kept) => kept.musicStart >= keptSince),
+      { musicStart: counted, countIn },
+    ];
+
+    return counted;
   };
 
   const scheduleRun = (from: number, to: number, contextStart: number): MixRun => {
@@ -142,7 +222,9 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
     if (loop !== null && loop.end > loop.start) {
       let scheduledUntil = runEndOf(last);
       while (scheduledUntil - audio.currentTime < LOOKAHEAD_SECONDS) {
-        scheduledUntil = runEndOf(scheduleRun(loop.start, loop.end, scheduledUntil));
+        scheduledUntil = runEndOf(
+          scheduleRun(loop.start, loop.end, leadBefore(loop.start, scheduledUntil)),
+        );
       }
       return;
     }
@@ -154,7 +236,7 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
     }
   };
 
-  const startFrom = (from: number): void => {
+  const startFrom = (from: number, counted = true): void => {
     const audio = sharedAudioContext();
     silence();
     const range = playRangeOf(clampTo(from, length), current.loop, length);
@@ -171,7 +253,9 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
     scheduleRun(
       range.start,
       range.end,
-      audio.currentTime + START_LATENCY_SECONDS + route.delaySeconds,
+      counted
+        ? leadBefore(range.start, audio.currentTime + START_LATENCY_SECONDS + route.delaySeconds)
+        : audio.currentTime + START_LATENCY_SECONDS + route.delaySeconds,
     );
     watch = setInterval(keepGoing, WATCH_INTERVAL_MS);
     publish({ playing: true });
@@ -187,7 +271,7 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
       void pitchKeeperOf(sharedAudioContext()).then((ready) => {
         keeper = ready;
         if (ready !== null && current.playing && pitchCorrectionOf(current.rate) !== 0) {
-          startFrom(position());
+          startFrom(position(), false);
         }
       });
       try {
@@ -239,10 +323,25 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
       const at = position();
       publish({ rate });
       if (current.playing) {
-        startFrom(at);
+        startFrom(at, false);
       }
     },
+    setCountIn: (beats) => {
+      publish({ countInBeats: beats });
+    },
     position,
+    leadCount: () => {
+      if (!current.playing) {
+        return null;
+      }
+
+      const now = sharedAudioContext().currentTime;
+      const lead = leads.find(
+        (candidate) => now >= leadStartOf(candidate) && now < candidate.musicStart,
+      );
+
+      return lead === undefined ? null : countInAt(lead.countIn, now - leadStartOf(lead));
+    },
     state: () => current,
     subscribe: (listener) => {
       listeners.add(listener);

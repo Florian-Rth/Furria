@@ -42,13 +42,26 @@ describe('positionInRuns', () => {
   ];
 
   it.each([
-    [99, null],
+    [99, 8],
     [104, 10],
     [116, 8],
     [131, 15.5],
     [140, 16],
   ])('is at %s on the audio clock at %s on the music', (clock, expected) => {
     expect(positionInRuns(runs, clock)).toBe(expected);
+  });
+
+  it('waits at the start of the next pass while its count-in runs', () => {
+    const counted: MixRun[] = [
+      { contextStart: 100, from: 8, to: 16, rate: 0.5 },
+      { contextStart: 118, from: 8, to: 16, rate: 0.5 },
+    ];
+
+    expect(positionInRuns(counted, 117)).toBe(8);
+  });
+
+  it('knows no position before anything is scheduled', () => {
+    expect(positionInRuns([], 10)).toBeNull();
   });
 });
 

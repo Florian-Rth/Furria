@@ -14,7 +14,7 @@ const followOnce = (element: HTMLVideoElement, player: MixPlayer, video: StudioV
   const target = videoSecondsAt(video, player.position());
   const { playing, rate } = player.state();
 
-  if (target === null || !playing) {
+  if (target === null || !playing || player.leadCount() !== null) {
     if (!element.paused) {
       element.pause();
     }

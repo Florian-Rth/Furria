@@ -47,6 +47,12 @@ export const positionInRuns = (runs: readonly MixRun[], contextSeconds: number):
     return run.from + (contextSeconds - run.contextStart) * run.rate;
   }
 
+  const upcoming = runs.find((candidate) => candidate.contextStart > contextSeconds);
+
+  if (upcoming !== undefined) {
+    return upcoming.from;
+  }
+
   const finished = runs.filter((candidate) => runEndOf(candidate) <= contextSeconds).at(-1);
 
   return finished === undefined ? null : finished.to;

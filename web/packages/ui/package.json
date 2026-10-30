@@ -137,6 +137,7 @@
     "./KkGroupToneDot": "./src/KkGroupToneDot.tsx",
     "./KkGroupToneEdge": "./src/KkGroupToneEdge.tsx",
     "./KkGroupToneSwatch": "./src/KkGroupToneSwatch.tsx",
+    "./KkHall": "./src/KkHall/KkHall.tsx",
     "./KkHeading": "./src/KkHeading.tsx",
     "./KkHeadlineField": "./src/KkHeadlineField.tsx",
     "./KkHealthStrip": "./src/KkHealthStrip/KkHealthStrip.tsx",
