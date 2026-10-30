@@ -150,6 +150,7 @@
     "./KkLaneDot": "./src/KkLaneDot.tsx",
     "./KkLaneGlyph": "./src/KkLaneGlyph.tsx",
     "./KkLaneInspector": "./src/KkLaneInspector/KkLaneInspector.tsx",
+    "./KkLaneOverview": "./src/KkLaneOverview/KkLaneOverview.tsx",
     "./KkLanePhone": "./src/KkLanePhone/KkLanePhone.tsx",
     "./KkLaneProgress": "./src/KkLaneProgress.tsx",
     "./KkLaneTrack": "./src/KkLaneTrack/KkLaneTrack.tsx",

@@ -412,9 +412,18 @@ Goal: Florian picks the timeline desk, the phone step cards and the set-up check
 
 ### Phase 14 — Promote the timeline desk (∥ E)
 Goal: editing on tablet and desktop runs on the timeline desk.
-- [ ] Lanes, zoom, snap to counts, centred playhead
-- [ ] Space / arrows / Ctrl+Z, drag on every lane through the undo service
-- [ ] The old desktop edit panes for these tools removed; browser check at 1024 and 1440 px
+- [x] Lanes, zoom, snap to counts, centred playhead
+- [x] Space / arrows / Ctrl+Z, drag on every lane through the undo service
+- [x] The old desktop edit panes for these tools removed; browser check at 1024 and 1440 px
+- Notes (built 2026-10-30):
+  - **Where it lives.** The desk is `features/act-desk` (`ActDeskView`). It runs on the act page in edit mode at ≥ 840 px (`useKkLaneWide`). It reuses the screen, stage editor and takes that `ActStudioBody` already builds, so undo, the evening band and evening writes work as before.
+  - **Mode.** `StudioModeStart` gained `desk`, so the lab's `mode.choose` during render is gone. On the desk the tools are *Musik · Aufstellung · Bewegung · Video*. *Schritte* lives in the lanes, so a desk opens on *Aufstellung*. `mode.onDesk` is true for *Aufstellung* and *Bewegung*. *Musik & Video* on the desk opens the music tool. Music, final file and video uploads stay on the existing music/video screen until phase 15 builds the *Musik & Video* page, which then replaces that screen on the desk too. The tool tabs there lead back to the desk.
+  - **What the desk has.** A top bar with transport, a time + count readout, speed, zoom, undo/redo, *Musik & Video* and *Fertig* (leaves edit mode). A stage with *Aufstellung/Wege/Mehrere/Vorher/Platz*. The inspector has the tabs *Auswahl* and *Verlauf*; *Einrichten* and the progress chip come in phase 16. Below that, C's whole-act strip is the top lane (`KkLaneOverview`): part bands, a waveform, the playhead, and a bracket for the visible window. Drag the bracket to pan, drag its edges to zoom, tap the strip to jump there; arrow keys also pan and zoom. Under the strip are the lanes *Zeit · Teile · Schritte · Musik · Video · Wege*. Ctrl/Cmd + wheel zooms.
+  - **Snapping and drag.** Step borders and keyframes snap to counts. Video bars deliberately don't: their start is the recording's sync to the music, not a beat. Keyframe diamonds can now be dragged in time and nudged one count with ←/→ (`keyShiftedTracksOf`: every shown spot keyed at that moment moves, each stops short of its neighbouring keys). This goes through the tracks write, so it is undoable. Borders, video bars and diamonds all go through the undo service.
+  - **Keys.** Space plays (not while a button has focus); ← → step; Shift+← → count; + − zoom; Ctrl/Cmd+Z / Shift+Z through the act page's `useStudioVisit`.
+  - **Old panes.** On ≥ 840 px the old step rail, mark strip, count strip, cast side and stage-editor hero are no longer reachable. The components stay because phones use them until phase 15 removes them.
+  - **Browser check (Lena, act 3; Sabine, acts 5 and 14), 1024×768 and 1440×900, light and dark.** The page never scrolls. Selecting a step, playing (the playhead stays centred), zooming, panning the bracket, a ←/→ nudge of a diamond (*Verlauf 1*, Ctrl+Z undoes it), *Musik & Video* → *Aufstellung* back to the desk and *Fertig* all work. Act 14 (no music) opens on the music tool. Its guided set-up comes in phase 16. At 1024 px the inspector scrolls inside its panel.
+  - **Left open.** Diamonds are 20 px wide (44 px tall); a wider target would overlap at whole-act zoom. Keyboard nudge is the alternative. Phase 19 decides.
 
 ### Phase 15 — Promote phone step cards and *Musik & Video* (∥ E)
 Goal: editing on phones runs on step cards.

@@ -37,6 +37,7 @@ export interface StudioEveningContext {
   evening: StudioEvening | null;
   startEditing: boolean;
   startHall: (() => void) | null;
+  desk?: boolean;
 }
 
 export interface StudioScreen {
@@ -67,12 +68,13 @@ export const useStudioScreen = (
   viewerId: number | null,
   canEdit: boolean,
   cast: readonly CastPerson[],
-  { evening, startEditing, startHall }: StudioEveningContext,
+  { evening, startEditing, startHall, desk = false }: StudioEveningContext,
 ): StudioScreen => {
   const mode = useActStudioMode(canEdit, {
     silent: !canPractise(source),
     evening: evening !== null,
     editing: startEditing,
+    desk,
   });
   const music = useSongMutations(actId);
   const stageWrites = useEveningStageMutations(

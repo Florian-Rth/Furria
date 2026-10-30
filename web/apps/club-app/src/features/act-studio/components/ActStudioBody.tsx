@@ -1,6 +1,7 @@
 import { KkPracticeView } from '@furria/ui/KkPracticeView';
 import { KkStudioView } from '@furria/ui/KkStudioView';
 import type { FC } from 'react';
+import { ActDeskView } from '@/features/act-desk/components/ActDeskView';
 import { PracticeSteps } from '@/features/act-practice/components/PracticeSteps';
 import type { Studio } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
@@ -47,12 +48,18 @@ export const ActStudioBody: FC<ActStudioBodyProps> = ({
   const songs = useActStudioSongs(screen);
   const finalList = useActStudioFinal(screen);
   const stepTool = useActStudioStepTool(screen);
+  const deskBand =
+    screen.eveningBand === null ? null : <KkStudioView.BandNote text={screen.eveningBand} />;
   const band =
     screen.eveningBand === null ? null : (
       <KkStudioView.Band>
         <KkStudioView.BandNote text={screen.eveningBand} />
       </KkStudioView.Band>
     );
+
+  if (screen.mode.onDesk) {
+    return <ActDeskView screen={screen} editor={editor} takes={takes} band={deskBand} />;
+  }
 
   const side = screen.large.on ? null : (
     <KkPracticeView.Side>

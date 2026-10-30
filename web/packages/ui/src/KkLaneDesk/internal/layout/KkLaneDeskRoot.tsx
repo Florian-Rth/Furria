@@ -29,9 +29,10 @@ export const KkLaneDeskRoot: FC<KkLaneDeskRootProps> = ({ label, children }) => 
         display: 'grid',
         width: '100%',
         height: '100%',
-        gridTemplateAreas: '"band band" "bar bar" "stage inspector" "lanes lanes"',
+        gridTemplateAreas:
+          '"band band" "bar bar" "stage inspector" "overview overview" "lanes lanes"',
         gridTemplateColumns: 'minmax(0, 1fr) clamp(17rem, 32cqw, 24rem)',
-        gridTemplateRows: `auto auto minmax(0, 1fr) ${LANES_ROW}`,
+        gridTemplateRows: `auto auto minmax(0, 1fr) auto ${LANES_ROW}`,
         gap: 1,
       }}
     >

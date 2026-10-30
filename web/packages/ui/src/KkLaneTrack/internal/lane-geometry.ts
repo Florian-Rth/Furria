@@ -1,4 +1,5 @@
-export const LANE_HEAD = '6.5rem';
+export const LANE_HEAD_REM = 6.5;
+export const LANE_HEAD = `${LANE_HEAD_REM}rem`;
 export const LANE_WIDTH_VAR = '--kk-lane-width';
 export const LANE_HEAD_VAR = '--kk-lane-head';
 export const PERCENT = 100;
