@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { CatalogueAct } from '@/features/running-order/schemas';
-import type { ActPageReturn } from './acts-origin';
-import { actPageReturnOf, actPageSearchOf } from './acts-origin';
+import type { ActPageReturn, ActsCatalogueAccess, ActsCatalogueReturn } from './acts-origin';
+import { actPageReturnOf, actPageSearchOf, actsCatalogueReturnOf } from './acts-origin';
 import type { ActPageSearch } from './schemas';
 
 const act = (groupId: number | null): CatalogueAct => ({
@@ -64,5 +64,20 @@ describe('actPageSearchOf', () => {
       groupId: 3,
       list: { from: '12', filter: 'show', person: '4', session: '2025' },
     });
+  });
+});
+
+describe('actsCatalogueReturnOf', () => {
+  const planner: ActsCatalogueAccess = { plans: true, managesEvents: false };
+  const eventManager: ActsCatalogueAccess = { plans: true, managesEvents: true };
+  const outsider: ActsCatalogueAccess = { plans: false, managesEvents: false };
+
+  it.each<[string, number | undefined, ActsCatalogueAccess, ActsCatalogueReturn]>([
+    ['a planner coming from an evening', 12, planner, { kind: 'planner', eventId: 12 }],
+    ['an event manager without an evening', undefined, eventManager, { kind: 'events' }],
+    ['a planner who may not manage events', undefined, planner, { kind: 'more' }],
+    ['someone without planner rights', 12, outsider, { kind: 'start' }],
+  ])('%s', (_label, from, access, expected) => {
+    expect(actsCatalogueReturnOf(from, access)).toEqual(expected);
   });
 });

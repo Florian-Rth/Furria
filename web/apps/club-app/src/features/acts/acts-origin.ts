@@ -1,6 +1,11 @@
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { CatalogueAct } from '@/features/running-order/schemas';
-import { GROUPS_TITLE, START_ORIGIN } from '@/features/session/app-sections';
+import {
+  EVENTS_ORIGIN,
+  GROUPS_TITLE,
+  MORE_ORIGIN,
+  START_ORIGIN,
+} from '@/features/session/app-sections';
 import type { ActsScope } from './acts-catalogue';
 import { ACTS_TITLE, GROUP_ACTS_TITLE } from './acts-copy';
 import type { ActPageOrigin, ActPageSearch, ActsSearch } from './schemas';
@@ -37,7 +42,7 @@ export const actPageLinkOf = (
 export const groupActsPathOf = (groupId: number): string =>
   GROUP_ACTS_PATH.replace('$groupId', String(groupId));
 
-export const plannerOriginOf = (eventId: number): KkScreenOrigin => ({
+const plannerOriginOf = (eventId: number): KkScreenOrigin => ({
   label: 'Ablauf',
   to: PLANNER_PATH,
   params: { eventId: String(eventId) },
@@ -116,4 +121,42 @@ export const actPageOriginOf = (
   }
 
   return START_ORIGIN;
+};
+
+export interface ActsCatalogueAccess {
+  plans: boolean;
+  managesEvents: boolean;
+}
+
+export type ActsCatalogueReturn =
+  | { kind: 'planner'; eventId: number }
+  | { kind: 'events' }
+  | { kind: 'more' }
+  | { kind: 'start' };
+
+export const actsCatalogueReturnOf = (
+  from: number | undefined,
+  access: ActsCatalogueAccess,
+): ActsCatalogueReturn => {
+  if (!access.plans) {
+    return { kind: 'start' };
+  }
+  if (from !== undefined) {
+    return { kind: 'planner', eventId: from };
+  }
+
+  return access.managesEvents ? { kind: 'events' } : { kind: 'more' };
+};
+
+export const actsCatalogueOriginOf = (target: ActsCatalogueReturn): KkScreenOrigin => {
+  switch (target.kind) {
+    case 'planner':
+      return plannerOriginOf(target.eventId);
+    case 'events':
+      return EVENTS_ORIGIN;
+    case 'more':
+      return MORE_ORIGIN;
+    case 'start':
+      return START_ORIGIN;
+  }
 };

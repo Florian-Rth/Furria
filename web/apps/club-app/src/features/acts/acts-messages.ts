@@ -5,3 +5,9 @@ export const ACTS_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
   unexpected: 'Die Auftritte konnten nicht geladen werden.',
   rejected: 'Der Server hat die Anfrage abgelehnt.',
 };
+
+export const ACT_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
+  unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
+  unexpected: 'Der Auftritt konnte nicht geladen werden.',
+  rejected: 'Der Server hat die Anfrage abgelehnt.',
+};

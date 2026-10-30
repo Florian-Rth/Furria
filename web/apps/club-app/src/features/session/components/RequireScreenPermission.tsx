@@ -4,28 +4,24 @@ import { usePermissions } from '../hooks/use-permissions';
 import { deniedMessageOf } from '../permission-denials';
 import type { AccessDeniedFrame } from './AccessDeniedScreen';
 import { AccessDeniedScreen } from './AccessDeniedScreen';
+import { AccessPendingScreen } from './AccessPendingScreen';
 
 type RequireScreenPermissionProps = PropsWithChildren<{ permissionKey: PermissionKey }> &
   AccessDeniedFrame;
 
 export const RequireScreenPermission: FC<RequireScreenPermissionProps> = ({
   permissionKey,
-  title,
-  section,
-  origin,
   children,
+  ...frame
 }) => {
   const { has, isUndecided } = usePermissions();
 
-  if (isUndecided || has(permissionKey)) {
+  if (has(permissionKey)) {
     return children;
   }
-
-  const message = deniedMessageOf(permissionKey);
-
-  if (section === undefined) {
-    return <AccessDeniedScreen title={title} origin={origin} message={message} />;
+  if (isUndecided) {
+    return <AccessPendingScreen {...frame} />;
   }
 
-  return <AccessDeniedScreen title={title} section={section} message={message} />;
+  return <AccessDeniedScreen {...frame} message={deniedMessageOf(permissionKey)} />;
 };

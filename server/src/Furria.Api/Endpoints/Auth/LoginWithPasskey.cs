@@ -27,7 +27,7 @@ public sealed class LoginWithPasskey : Endpoint<LoginWithPasskeyRequest, LoginWi
     public override async Task HandleAsync(LoginWithPasskeyRequest req, CancellationToken ct)
     {
         var client = HttpContext.Connection.RemoteIpAddress;
-        if (_failureLimiter.HasFailedTooOften(SignInFailureScope.Login, client))
+        if (_failureLimiter.HasLoginFailedTooOften(client))
         {
             await Send.StatusCodeAsync(StatusCodes.Status429TooManyRequests, ct);
             return;
@@ -36,7 +36,7 @@ public sealed class LoginWithPasskey : Endpoint<LoginWithPasskeyRequest, LoginWi
         var session = await _accountService.LoginWithPasskeyAsync(ToAssertion(req), ct);
         if (!session.IsSuccess)
         {
-            _failureLimiter.CountFailure(SignInFailureScope.Login, client);
+            _failureLimiter.CountLoginFailure(client);
             await Send.UnauthorizedAsync(ct);
             return;
         }

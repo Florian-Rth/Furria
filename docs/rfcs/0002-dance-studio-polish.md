@@ -248,11 +248,20 @@ Goal: the planner never claims a success it doesn't have and never throws work a
 
 ### Phase 4 — Auth, permissions and dead ends (∥ A)
 Goal: nobody is locked out or sees a 403 they didn't cause.
-- [ ] B6: the rejected-refresh rate limit is keyed per token family or device, not per IP; 429 gets its own copy in `@furria/api-client` failure classification
-- [ ] B9: the calendar works for group admins without `scope=all`; Start, settings and the act pane only query what the user may read (no 403 on `/running-orders`, `/acts`, `/groups`)
-- [ ] *Kein Zugang* pages offer *Zur Startseite* / *Zu meinen Auftritten*, never a back link to another forbidden page
-- [ ] Copy: *Der Auftritt konnte nicht geladen werden*; an unknown group id reads *Diese Gruppe gibt es nicht*; the act page keeps its back chevron and title on error and renders header + skeleton on a cold load
-- [ ] Endpoint tests for the rate-limit key and the new permission rules
+- [x] B6: the rejected-refresh rate limit is keyed per token family or device, not per IP; 429 gets its own copy in `@furria/api-client` failure classification
+- [x] B9: the calendar works for group admins without `scope=all`; Start, settings and the act pane only query what the user may read (no 403 on `/running-orders`, `/acts`, `/groups`)
+- [x] *Kein Zugang* pages offer *Zur Startseite* / *Zu meinen Auftritten*, never a back link to another forbidden page
+- [x] Copy: *Der Auftritt konnte nicht geladen werden*; an unknown group id reads *Diese Gruppe gibt es nicht*; the act page keeps its back chevron and title on error and renders header + skeleton on a cold load
+- [x] Endpoint tests for the rate-limit key and the new permission rules
+
+Done 2026-10-30. Rejected refreshes count per presented refresh token (its digest), so one stale
+phone only locks itself out (`RateLimits:SignIn:RejectedRefreshesPerToken`, 20); a wide per-IP
+backstop (`RejectedRefreshesPerIp`, 200) still caps token guessing. A 429 at
+boot reads *Zu viele Versuche – gleich noch einmal*. `GET /calendar` and `/calendar/entries/{id}`
+need a person instead of `club.read`; without `club.read` only entries tied to her groups show
+(CONTEXT.md). `GET /groups` admits group admins and the managing login. Permission-gated screens
+show their header and a skeleton until the permissions are known, so they never fire a query
+that 403s.
 
 ### Phase 5 — Choreography history and merge (server) (∥ B)
 Goal: choreography saves merge per spot and keyframe and can be restored.

@@ -26,7 +26,7 @@ public sealed class Login : Endpoint<LoginRequest, LoginResponse>
     public override async Task HandleAsync(LoginRequest req, CancellationToken ct)
     {
         var client = HttpContext.Connection.RemoteIpAddress;
-        if (_failureLimiter.HasFailedTooOften(SignInFailureScope.Login, client))
+        if (_failureLimiter.HasLoginFailedTooOften(client))
         {
             await Send.StatusCodeAsync(StatusCodes.Status429TooManyRequests, ct);
             return;
@@ -35,7 +35,7 @@ public sealed class Login : Endpoint<LoginRequest, LoginResponse>
         var session = await _accountService.LoginAsync(ToCommand(req), ct);
         if (!session.IsSuccess)
         {
-            _failureLimiter.CountFailure(SignInFailureScope.Login, client);
+            _failureLimiter.CountLoginFailure(client);
             await Send.UnauthorizedAsync(ct);
             return;
         }

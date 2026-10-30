@@ -13,11 +13,12 @@ interface ActsScreenProps {
   search: ActsSearch;
   title: string;
   origin: KkScreenOrigin;
+  mayRead: boolean;
 }
 
-export const ActsScreen: FC<ActsScreenProps> = ({ scope, search, title, origin }) => {
+export const ActsScreen: FC<ActsScreenProps> = ({ scope, search, title, origin, mayRead }) => {
   const screenSearch = useScreenSearch(SEARCH_PLACEHOLDER);
-  const hub = useActsHub(scope, search);
+  const hub = useActsHub(scope, search, mayRead);
   const actions = [
     { id: 'new-act', label: NEW_ACT_LABEL, icon: 'add', emphasis: true, onSelect: hub.openNew },
   ] as const;

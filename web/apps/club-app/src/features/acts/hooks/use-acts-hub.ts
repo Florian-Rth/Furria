@@ -4,6 +4,7 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useCloseOnEscape } from '@/features/events/hooks/use-close-on-escape';
 import { useActsQuery, useRunningOrdersQuery } from '@/features/running-order/api';
+import { usePlansRunningOrder } from '@/features/running-order/hooks/use-plans-running-order';
 import type { ActsResponse, CatalogueAct } from '@/features/running-order/schemas';
 import { appRouteApi } from '@/features/session/app-route';
 import { relevantSessionYear } from '@/lib/club';
@@ -52,9 +53,10 @@ export interface ActsHub {
   reload: () => void;
 }
 
-export const useActsHub = (scope: ActsScope, search: ActsSearch): ActsHub => {
-  const query = useActsQuery(search.session ?? null);
-  const runningOrders = useRunningOrdersQuery();
+export const useActsHub = (scope: ActsScope, search: ActsSearch, mayRead: boolean): ActsHub => {
+  const plans = usePlansRunningOrder();
+  const query = useActsQuery(search.session ?? null, mayRead);
+  const runningOrders = useRunningOrdersQuery(mayRead && plans);
   const { q } = appRouteApi.useSearch();
   const navigate = useNavigate();
   const isWide = useIsWideScreen();

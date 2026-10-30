@@ -271,15 +271,45 @@ public sealed class RefreshTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnTooManyRequests_When_HerAddressPresentedTooManyRejectedTokens()
+    public async Task Should_ReturnTooManyRequests_When_TheSameTokenWasRejectedTooOften()
+    {
+        await using var host = SignInLimitSteps.HostAllowingFewFailures(_fixture);
+        var client = host.CreateClientForwardedFor("203.0.113.70");
+        const string staleToken = "stale-refresh-token";
+
+        for (var attempt = 0; attempt < SignInLimitSteps.FailuresAllowed; attempt++)
+            await SignInLimitSteps.RefreshAsync(client, staleToken);
+        var (response, _) = await SignInLimitSteps.RefreshAsync(client, staleToken);
+
+        Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnANewPair_When_OtherDevicesOnHerAddressPresentedTooManyRejectedTokens()
     {
         var ct = TestContext.Current.CancellationToken;
         var (_, session) = await LoggedInAsync(ct);
         await using var host = SignInLimitSteps.HostAllowingFewFailures(_fixture);
-        var client = host.CreateClientForwardedFor("203.0.113.70");
+        var client = host.CreateClientForwardedFor("203.0.113.72");
 
+        for (var device = 0; device <= SignInLimitSteps.FailuresAllowed; device++)
         for (var attempt = 0; attempt < SignInLimitSteps.FailuresAllowed; attempt++)
-            await SignInLimitSteps.RefreshAsync(client, $"unknown-refresh-token-{attempt}");
+            await SignInLimitSteps.RefreshAsync(client, $"stale-refresh-token-{device}");
+        var (response, _) = await SignInLimitSteps.RefreshAsync(client, session.RefreshToken);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnTooManyRequests_When_HerAddressPresentedFarTooManyRejectedTokens()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (_, session) = await LoggedInAsync(ct);
+        await using var host = SignInLimitSteps.HostAllowingFewFailures(_fixture);
+        var client = host.CreateClientForwardedFor("203.0.113.73");
+
+        for (var token = 0; token < SignInLimitSteps.RefreshRejectionsAllowedPerAddress; token++)
+            await SignInLimitSteps.RefreshAsync(client, $"guessed-refresh-token-{token}");
         var (response, _) = await SignInLimitSteps.RefreshAsync(client, session.RefreshToken);
 
         Assert.Equal(HttpStatusCode.TooManyRequests, response.StatusCode);

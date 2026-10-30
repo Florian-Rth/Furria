@@ -3,7 +3,7 @@ using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Media;
-using Furria.Application.Authorization;
+using Furria.Api.Results;
 using Furria.Application.Club;
 using Furria.Core.Club;
 using Furria.Core.Events;
@@ -26,13 +26,12 @@ public sealed class GetCalendar : Endpoint<GetCalendarRequest, GetCalendarRespon
     public override void Configure()
     {
         Get("calendar");
-        Definition.RequirePermission(FurriaPermissions.ClubRead);
     }
 
     public override async Task HandleAsync(GetCalendarRequest req, CancellationToken ct)
     {
-        var personId = User.PersonId();
-        if (personId is null)
+        var accountId = User.AccountId();
+        if (accountId is null)
         {
             await Send.UnauthorizedAsync(ct);
             return;
@@ -42,15 +41,23 @@ public sealed class GetCalendar : Endpoint<GetCalendarRequest, GetCalendarRespon
         var to = req.To ?? from.AddDays(CalendarLimits.DefaultWindowDays);
 
         var entries = await _calendarService.GetEntriesAsync(
-            personId.Value,
-            req.Scope == CalendarScope.Club,
-            req.GroupId,
-            from,
-            to,
+            new CalendarWindowQuery
+            {
+                ViewerAccountId = accountId.Value,
+                ClubOwnedOnly = req.Scope == CalendarScope.Club,
+                OwnerGroupId = req.GroupId,
+                From = from,
+                To = to,
+            },
             ct
         );
+        if (!entries.IsSuccess)
+        {
+            await HttpContext.Response.SendFailureAsync(entries.Error, ct);
+            return;
+        }
 
-        await Send.OkAsync(ToResponse(entries), cancellation: ct);
+        await Send.OkAsync(ToResponse(entries.Value), cancellation: ct);
     }
 
     private static GetCalendarResponse ToResponse(IReadOnlyList<CalendarEntrySummary> entries) =>

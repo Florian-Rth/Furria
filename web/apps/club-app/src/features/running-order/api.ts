@@ -166,8 +166,10 @@ export const useConfirmRunningOrderMutation = (
   });
 };
 
-export const useRunningOrdersQuery = (): UseQueryResult<RunningOrdersResponse, Error> =>
+export const useRunningOrdersQuery = (
+  mayRead = true,
+): UseQueryResult<RunningOrdersResponse, Error> =>
   useQuery({
     queryKey: queryKeys.runningOrders,
-    queryFn: () => withFreshAccessToken(requestRunningOrders),
+    queryFn: mayRead ? () => withFreshAccessToken(requestRunningOrders) : skipToken,
   });

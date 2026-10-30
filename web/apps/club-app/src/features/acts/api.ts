@@ -39,10 +39,10 @@ export const useGroupActsQuery = (groupId: number): UseQueryResult<GroupActsResp
     queryFn: () => withFreshAccessToken((accessToken) => requestGroupActs(groupId, accessToken)),
   });
 
-export const useMyActsQuery = (): UseQueryResult<MyActsResponse, Error> =>
+export const useMyActsQuery = (mayRead = true): UseQueryResult<MyActsResponse, Error> =>
   useQuery({
     queryKey: queryKeys.myActs,
-    queryFn: () => withFreshAccessToken(requestMyActs),
+    queryFn: mayRead ? () => withFreshAccessToken(requestMyActs) : skipToken,
   });
 
 export const useCoEditorMutations = (actId: number): CoEditorMutations => {

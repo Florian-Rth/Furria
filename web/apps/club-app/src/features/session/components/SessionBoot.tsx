@@ -3,12 +3,13 @@ import type { FC, PropsWithChildren } from 'react';
 import { bootSession } from '@/lib/api/session/session-boot';
 import { expireSession } from '@/lib/api/session/session-store';
 import { useSessionSnapshot } from '../hooks/use-session-snapshot';
-import { BOOT_FAILURE_MESSAGE, BOOT_RELOGIN_LABEL, BOOT_RETRY_LABEL } from '../session-messages';
+import { BOOT_RELOGIN_LABEL, BOOT_RETRY_LABEL, bootFailureMessageOf } from '../session-messages';
 import { BootStage } from './BootStage';
 import { StageFailure } from './StageFailure';
 
 export const SessionBoot: FC<PropsWithChildren> = ({ children }) => {
-  const { status } = useSessionSnapshot();
+  const { status, stall } = useSessionSnapshot();
+  const failureMessage = bootFailureMessageOf(stall);
 
   const retryBoot = (): void => {
     void bootSession();
@@ -29,7 +30,7 @@ export const SessionBoot: FC<PropsWithChildren> = ({ children }) => {
     return <BootStage />;
   }
   if (status === 'unavailable') {
-    return <StageFailure message={BOOT_FAILURE_MESSAGE} action={actions} />;
+    return <StageFailure message={failureMessage} action={actions} />;
   }
 
   return children;
