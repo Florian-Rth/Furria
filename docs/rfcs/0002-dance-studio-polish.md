@@ -342,12 +342,13 @@ Goal: Florian picks the trainer's hall view.
 
 ### Phase 12 — Promote hall mode, step rail, large-text player (∥ D, after 11)
 Goal: one hall mode replaces training mode and the landscape player; the player is usable at 200 % text.
-- [ ] Hall mode replaces `?view=training` and the landscape player (one view, Wake Lock, absences of the chosen training)
-- [ ] Step rail in the player (≥ 44 px, part labels as buttons, scroll inside a fixed box, no jumps)
-- [ ] Large-text layout (≥ 150 % text or < 360 px): step name → stage → play → 2×2 keys
-- [ ] Keyboard in player and hall mode: Space, ←/→ step, ↑/↓ tempo, L loop; listed in the ⓘ sheet
-- [ ] Stage ARIA names the own spot and open spots; dot numbers hide below 18 px
-- [ ] Old training kit and lab variants removed; filmed check at 390 px portrait and 844×390 landscape
+- [x] Hall mode replaces `?view=training` and the landscape player (one view, Wake Lock, absences of the chosen training)
+- [x] Step rail in the player (≥ 44 px, part labels as buttons, scroll inside a fixed box, no jumps)
+- [x] Large-text layout (≥ 150 % text or < 360 px): step name → stage → play → 2×2 keys
+- [x] Keyboard in player and hall mode: Space, ←/→ step, ↑/↓ tempo, L loop; listed in the ⓘ sheet
+- [x] Stage ARIA names the own spot and open spots; dot numbers hide below 18 px
+- [x] Old training kit and lab variants removed; filmed check at 390 px portrait and 844×390 landscape
+- Notes (done 2026-10-30): hall mode is variant A (`features/act-hall`, `KkHall` with the wall layout only). It uses the dancers' view, front on top, with the stage about 60 % wide. A four-beat count-in runs before play and before every loop pass. It is on by default, and the *Einzählen* key switches it off. `?view=training` opens it, and without `training=` the next training's absences are shown. *Training beenden* steps back in history when the act page is behind, otherwise it opens the act page. Editors and trainers (`canEditStudio`) start it from the player's step sheet (*Training starten* next to the title); group admins also start it from the training row. The landscape player is no longer the trainer's tool, but members keep its layout for practising. The transport pill had no room for an extra key at 844×390. In portrait the hall keys show icons only, and their names stay in the accessibility tree. The step rail (`KkPracticeSegments`) has 44 px numbered tiles with proportional widths. A part key in front of each part loops the whole part, as a button instead of a long-press. The rail scrolls inside its box, and the current tile scrolls into view only when it leaves the box. Large text (root font ≥ 150 % or < 360 px wide, `lib/large-text.ts`) stacks the player: the step name, the stage (or the video via the *Video* key), one *Abspielen* key, then *Schritt zurück / Schritt vor / Tempo / Video*. It never applies while editing. Keyboard: `practice-keys.ts` (pure, tested). Space is left to a focused button, and arrows are left to a focused slider. Player tempo steps through 100/85/70/50 %, hall tempo through 100/75 %. On keyboard devices the keys are listed at the foot of the step sheet and behind a keyboard button in the hall. Stage labels read e.g. *Du stehst auf Platz 1. Plätze 11 und 12 frei*, and in the hall also *Es fehlt Lena auf Platz 1*. Hall dot numbers hide when a dot is under 18 px. `KkTrainingView`, `ActTrainingBody`, `use-act-training`, `/lab/hall/*` and the lab's thumbs and band layouts are gone. Left for phase 19: at 200 % text the large-text stage overlaps the play key by a few pixels.
 
 ### Phase 13 — ⚖ Lab: editor rework
 Goal: Florian picks the timeline desk, the phone step cards and the set-up checklist. Follows phase 6.

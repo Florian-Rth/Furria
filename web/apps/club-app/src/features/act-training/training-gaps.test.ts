@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SpotPath, TimedKeyframe } from '@/features/act-player/choreography-motion';
-import type { Studio, StudioSpot, StudioStep, StudioTraining } from '@/features/acts/schemas';
-import { movingStepNumbersOf, trainingGapsOf, trainingStudioOf } from './training-gaps';
+import type { StudioSpot, StudioStep, StudioTraining } from '@/features/acts/schemas';
+import { movingStepNumbersOf, trainingGapsOf } from './training-gaps';
 
 const step = (stepId: number, startSeconds: number, endSeconds: number): StudioStep => ({
   stepId,
@@ -76,27 +76,5 @@ describe('trainingGapsOf', () => {
       { spotId: 2, number: 2, firstName: 'Ben', stepNumbers: [2] },
       { spotId: 4, number: 4, firstName: 'Clara', stepNumbers: [] },
     ]);
-  });
-});
-
-describe('trainingStudioOf', () => {
-  const studio: Studio = {
-    music: { lengthSeconds: 40, source: 'workingMix' },
-    songs: [],
-    finalTracks: [],
-    steps: [],
-    parts: [],
-    spots: [spot(1, 1, 'Anna'), spot(2, 2, 'Ben')],
-    videos: [],
-    choreography: null,
-    stage: null,
-    evenings: [],
-    trainings: [],
-  };
-
-  it('shows the spots of an Absage open on the stage', () => {
-    expect(
-      trainingStudioOf(studio, training([2])).spots.map((entry) => entry.person?.firstName ?? null),
-    ).toEqual(['Anna', null]);
   });
 });

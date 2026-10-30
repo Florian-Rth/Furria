@@ -104,7 +104,6 @@ import { Route as AppManageGroupsKindsNewRouteImport } from './routes/_app/manag
 import { Route as AppManageGroupsKindsGroupKindIdRouteImport } from './routes/_app/manage.groups_.kinds.$groupKindId'
 import { Route as AppManageBoardBoardOfficeIdEditRouteImport } from './routes/_app/manage.board_.$boardOfficeId_.edit'
 import { Route as AppManageApplicationsMembershipApplicationIdAdmissionRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId_.admission'
-import { Route as AppLabHallVariantActIdRouteImport } from './routes/_app/lab_.hall.$variant.$actId'
 import { Route as AppLabActCGroupGroupIdRouteImport } from './routes/_app/lab_.act-c.group.$groupId'
 import { Route as AppLabActBGroupGroupIdRouteImport } from './routes/_app/lab_.act-b.group.$groupId'
 import { Route as AppLabActAGroupGroupIdRouteImport } from './routes/_app/lab_.act-a.group.$groupId'
@@ -625,11 +624,6 @@ const AppManageApplicationsMembershipApplicationIdAdmissionRoute =
     path: '/manage/applications/$membershipApplicationId/admission',
     getParentRoute: () => AppRoute,
   } as any)
-const AppLabHallVariantActIdRoute = AppLabHallVariantActIdRouteImport.update({
-  id: '/lab_/hall/$variant/$actId',
-  path: '/lab/hall/$variant/$actId',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppLabActCGroupGroupIdRoute = AppLabActCGroupGroupIdRouteImport.update({
   id: '/lab_/act-c/group/$groupId',
   path: '/lab/act-c/group/$groupId',
@@ -868,7 +862,6 @@ export interface FileRoutesByFullPath {
   '/lab/act-a/group/$groupId': typeof AppLabActAGroupGroupIdRoute
   '/lab/act-b/group/$groupId': typeof AppLabActBGroupGroupIdRoute
   '/lab/act-c/group/$groupId': typeof AppLabActCGroupGroupIdRoute
-  '/lab/hall/$variant/$actId': typeof AppLabHallVariantActIdRoute
   '/manage/applications/$membershipApplicationId/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/manage/board/$boardOfficeId/edit': typeof AppManageBoardBoardOfficeIdEditRoute
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
@@ -987,7 +980,6 @@ export interface FileRoutesByTo {
   '/lab/act-a/group/$groupId': typeof AppLabActAGroupGroupIdRoute
   '/lab/act-b/group/$groupId': typeof AppLabActBGroupGroupIdRoute
   '/lab/act-c/group/$groupId': typeof AppLabActCGroupGroupIdRoute
-  '/lab/hall/$variant/$actId': typeof AppLabHallVariantActIdRoute
   '/manage/applications/$membershipApplicationId/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/manage/board/$boardOfficeId/edit': typeof AppManageBoardBoardOfficeIdEditRoute
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
@@ -1110,7 +1102,6 @@ export interface FileRoutesById {
   '/_app/lab_/act-a/group/$groupId': typeof AppLabActAGroupGroupIdRoute
   '/_app/lab_/act-b/group/$groupId': typeof AppLabActBGroupGroupIdRoute
   '/_app/lab_/act-c/group/$groupId': typeof AppLabActCGroupGroupIdRoute
-  '/_app/lab_/hall/$variant/$actId': typeof AppLabHallVariantActIdRoute
   '/_app/manage/applications_/$membershipApplicationId_/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/_app/manage/board_/$boardOfficeId_/edit': typeof AppManageBoardBoardOfficeIdEditRoute
   '/_app/manage/groups_/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
@@ -1231,7 +1222,6 @@ export interface FileRouteTypes {
     | '/lab/act-a/group/$groupId'
     | '/lab/act-b/group/$groupId'
     | '/lab/act-c/group/$groupId'
-    | '/lab/hall/$variant/$actId'
     | '/manage/applications/$membershipApplicationId/admission'
     | '/manage/board/$boardOfficeId/edit'
     | '/manage/groups/kinds/$groupKindId'
@@ -1350,7 +1340,6 @@ export interface FileRouteTypes {
     | '/lab/act-a/group/$groupId'
     | '/lab/act-b/group/$groupId'
     | '/lab/act-c/group/$groupId'
-    | '/lab/hall/$variant/$actId'
     | '/manage/applications/$membershipApplicationId/admission'
     | '/manage/board/$boardOfficeId/edit'
     | '/manage/groups/kinds/$groupKindId'
@@ -1472,7 +1461,6 @@ export interface FileRouteTypes {
     | '/_app/lab_/act-a/group/$groupId'
     | '/_app/lab_/act-b/group/$groupId'
     | '/_app/lab_/act-c/group/$groupId'
-    | '/_app/lab_/hall/$variant/$actId'
     | '/_app/manage/applications_/$membershipApplicationId_/admission'
     | '/_app/manage/board_/$boardOfficeId_/edit'
     | '/_app/manage/groups_/kinds/$groupKindId'
@@ -2173,13 +2161,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageApplicationsMembershipApplicationIdAdmissionRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/lab_/hall/$variant/$actId': {
-      id: '/_app/lab_/hall/$variant/$actId'
-      path: '/lab/hall/$variant/$actId'
-      fullPath: '/lab/hall/$variant/$actId'
-      preLoaderRoute: typeof AppLabHallVariantActIdRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/lab_/act-c/group/$groupId': {
       id: '/_app/lab_/act-c/group/$groupId'
       path: '/lab/act-c/group/$groupId'
@@ -2475,7 +2456,6 @@ interface AppRouteChildren {
   AppLabActAGroupGroupIdRoute: typeof AppLabActAGroupGroupIdRoute
   AppLabActBGroupGroupIdRoute: typeof AppLabActBGroupGroupIdRoute
   AppLabActCGroupGroupIdRoute: typeof AppLabActCGroupGroupIdRoute
-  AppLabHallVariantActIdRoute: typeof AppLabHallVariantActIdRoute
   AppManageApplicationsMembershipApplicationIdAdmissionRoute: typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   AppManageBoardBoardOfficeIdEditRoute: typeof AppManageBoardBoardOfficeIdEditRoute
   AppManageGroupsKindsGroupKindIdRoute: typeof AppManageGroupsKindsGroupKindIdRoute
@@ -2585,7 +2565,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppLabActAGroupGroupIdRoute: AppLabActAGroupGroupIdRoute,
   AppLabActBGroupGroupIdRoute: AppLabActBGroupGroupIdRoute,
   AppLabActCGroupGroupIdRoute: AppLabActCGroupGroupIdRoute,
-  AppLabHallVariantActIdRoute: AppLabHallVariantActIdRoute,
   AppManageApplicationsMembershipApplicationIdAdmissionRoute:
     AppManageApplicationsMembershipApplicationIdAdmissionRoute,
   AppManageBoardBoardOfficeIdEditRoute: AppManageBoardBoardOfficeIdEditRoute,

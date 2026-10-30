@@ -26,10 +26,14 @@ export const ActStudioHead: FC<ActStudioHeadProps> = ({ screen }) => {
     </KkPracticeSteps.Trigger>
   );
 
+  const count = screen.large.on ? null : (
+    <PracticeCountLive player={playback.player} segments={playback.segments} />
+  );
+
   return (
     <KkPracticeView.Head>
       {titles}
-      <PracticeCountLive player={playback.player} segments={playback.segments} />
+      {count}
     </KkPracticeView.Head>
   );
 };

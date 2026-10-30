@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SpotPath } from '@/features/act-player/choreography-motion';
 import type { StudioSpot, StudioStage } from '@/features/acts/schemas';
-import { cueSideOf, stageDotsAt, viewRouteOf } from './practice-stage';
+import { cueSideOf, stageDotsAt, stageSummaryOf, viewRouteOf } from './practice-stage';
 
 const stage: StudioStage = { widthMetres: 10, depthMetres: 8, artworkSvg: null };
 
@@ -70,5 +70,21 @@ describe('cueSideOf', () => {
     [{ x: 0.5, y: 0.1 }, [], 'below'],
   ] as const)('at %o heading to %o the cue sits %s', (own, route, side) => {
     expect(cueSideOf(own, route)).toBe(side);
+  });
+});
+
+describe('stageSummaryOf', () => {
+  it('names her own spot and the open spots in number order', () => {
+    const shuffled: StudioSpot[] = [
+      { spotId: 9, number: 12, person: null },
+      ...spots,
+      { spotId: 8, number: 11, person: null },
+    ];
+
+    expect(stageSummaryOf(shuffled, 2)).toEqual({ own: 2, open: [3, 11, 12] });
+  });
+
+  it('has no own spot for a viewer outside the cast', () => {
+    expect(stageSummaryOf(spots, null)).toEqual({ own: null, open: [3] });
   });
 });

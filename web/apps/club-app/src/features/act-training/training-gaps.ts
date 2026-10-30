@@ -3,7 +3,7 @@ import type {
   StagePoint,
   TimedKeyframe,
 } from '@/features/act-player/choreography-motion';
-import type { Studio, StudioSpot, StudioStep, StudioTraining } from '@/features/acts/schemas';
+import type { StudioSpot, StudioStep, StudioTraining } from '@/features/acts/schemas';
 
 export interface TrainingGap {
   spotId: number;
@@ -70,22 +70,3 @@ export const trainingGapsOf = (
           },
         ],
   );
-
-export const trainingStudioOf = (studio: Studio, training: StudioTraining | null): Studio =>
-  training === null || training.openSpotIds.length === 0
-    ? studio
-    : {
-        ...studio,
-        spots: studio.spots.map((spot) =>
-          isOpenAt(spot, training) ? { ...spot, person: null } : spot,
-        ),
-      };
-
-export const stepPositionOf = (
-  timedSteps: readonly StudioStep[],
-  stepId: number | null,
-): number | null => {
-  const index = timedSteps.findIndex((step) => step.stepId === stepId);
-
-  return index < 0 ? null : index + 1;
-};

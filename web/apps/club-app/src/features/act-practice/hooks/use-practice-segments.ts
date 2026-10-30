@@ -2,21 +2,29 @@ import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-play
 import { shownStepNameOf, stepNumberOf } from '@/features/act-player/step-names';
 import type { StudioStep } from '@/features/acts/schemas';
 import { isLooped, segmentGroupsOf } from '../practice-controls';
-import { segmentLabelOf } from '../practice-copy';
+import { partLoopLabelOf, segmentLabelOf } from '../practice-copy';
 import type { Practice } from './use-practice';
 
 export interface PracticeSegmentRow {
   stepId: number;
   step: StudioStep;
+  number: number;
   grow: number;
   label: string;
   current: boolean;
   looped: boolean;
 }
 
+export interface PracticePartKey {
+  name: string;
+  label: string;
+  firstStepId: number;
+  looped: boolean;
+}
+
 export interface PracticeSegmentGroupRow {
   key: string;
-  name: string | null;
+  part: PracticePartKey | null;
   grow: number;
   current: boolean;
   segments: PracticeSegmentRow[];
@@ -32,27 +40,39 @@ export const usePracticeSegments = (
     const segments = group.steps.flatMap((segment) => {
       const step = playback.steps.find((candidate) => candidate.stepId === segment.stepId);
 
-      return step === undefined
-        ? []
-        : [
-            {
-              stepId: step.stepId,
-              step,
-              grow: segment.grow,
-              label: segmentLabelOf(
-                shownStepNameOf(step.name, stepNumberOf(playback.steps, step.stepId)),
-              ),
-              current: step.stepId === currentId,
-              looped: isLooped(step, practice.loop),
-            },
-          ];
+      if (step === undefined) {
+        return [];
+      }
+      const number = stepNumberOf(playback.steps, step.stepId);
+
+      return [
+        {
+          stepId: step.stepId,
+          step,
+          number,
+          grow: segment.grow,
+          label: segmentLabelOf(shownStepNameOf(step.name, number)),
+          current: step.stepId === currentId,
+          looped: isLooped(step, practice.loop),
+        },
+      ];
     });
+    const current = segments.some((segment) => segment.current);
+    const firstStepId = segments[0]?.stepId ?? null;
 
     return {
       key: group.key,
-      name: group.name,
+      part:
+        group.name === null || firstStepId === null
+          ? null
+          : {
+              name: group.name,
+              label: partLoopLabelOf(group.name),
+              firstStepId,
+              looped: practice.loopKind === 'part' && current,
+            },
       grow: group.grow,
-      current: segments.some((segment) => segment.current),
+      current,
       segments,
     };
   });

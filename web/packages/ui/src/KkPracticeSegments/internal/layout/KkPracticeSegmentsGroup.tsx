@@ -6,7 +6,11 @@ interface KkPracticeSegmentsGroupProps extends PropsWithChildren {
 }
 
 export const KkPracticeSegmentsGroup: FC<KkPracticeSegmentsGroupProps> = ({ grow, children }) => (
-  <Stack style={{ flexGrow: grow }} sx={{ flexBasis: 0, minWidth: 0, gap: 0.25 }}>
+  <Stack
+    direction="row"
+    style={{ flexGrow: grow }}
+    sx={{ flexShrink: 0, flexBasis: 'auto', minWidth: 0, gap: '0.1875rem' }}
+  >
     {children}
   </Stack>
 );

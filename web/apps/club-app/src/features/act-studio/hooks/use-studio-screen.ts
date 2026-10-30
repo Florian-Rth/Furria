@@ -1,5 +1,6 @@
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
+import { usePlayerKeys } from '@/features/act-practice/hooks/use-player-keys';
 import type { Practice } from '@/features/act-practice/hooks/use-practice';
 import { usePractice } from '@/features/act-practice/hooks/use-practice';
 import { usePracticeMemory } from '@/features/act-practice/hooks/use-practice-memory';
@@ -10,6 +11,7 @@ import { usePracticeVideo } from '@/features/act-practice/hooks/use-practice-vid
 import { canPractise } from '@/features/acts/act-studio';
 import type { Studio, StudioEvening } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
+import { useLargeText } from '@/lib/use-large-text';
 import type { SongMutations, StepMutations, VideoMutations } from '../api';
 import { useSongMutations, useStepMutations, useVideoMutations } from '../api';
 import { useEveningStageMutations } from '../evening-api';
@@ -19,7 +21,7 @@ import { eveningBandOf } from '../studio-copy';
 import { workedPathsOf, workedStepsOf, workedStudioOf } from '../studio-edits';
 import { eveningStudioOf } from '../studio-evening';
 import type { ActStudioFrame } from '../studio-layout';
-import { studioFrameOf } from '../studio-layout';
+import { largeTextFrameOf, studioFrameOf } from '../studio-layout';
 import type { ActStudioEdits } from './use-act-studio-edits';
 import { useActStudioEdits, useKeptPosition } from './use-act-studio-edits';
 import type { ActStudioMode } from './use-act-studio-mode';
@@ -27,11 +29,14 @@ import { useActStudioMode } from './use-act-studio-mode';
 import { useStudioDeveloping } from './use-studio-developing';
 import type { StudioFinal } from './use-studio-final';
 import { useStudioFinal } from './use-studio-final';
+import type { StudioLargeText } from './use-studio-large-text';
+import { useStudioLargeText } from './use-studio-large-text';
 import { useVideoAutoAlign } from './use-video-auto-align';
 
 export interface StudioEveningContext {
   evening: StudioEvening | null;
   startEditing: boolean;
+  startHall: (() => void) | null;
 }
 
 export interface StudioScreen {
@@ -46,6 +51,8 @@ export interface StudioScreen {
   final: StudioFinal;
   mode: ActStudioMode;
   frame: ActStudioFrame;
+  large: StudioLargeText;
+  startHall: (() => void) | null;
   edits: ActStudioEdits;
   studio: Studio;
   playback: StudioPlayback;
@@ -60,7 +67,7 @@ export const useStudioScreen = (
   viewerId: number | null,
   canEdit: boolean,
   cast: readonly CastPerson[],
-  { evening, startEditing }: StudioEveningContext,
+  { evening, startEditing, startHall }: StudioEveningContext,
 ): StudioScreen => {
   const mode = useActStudioMode(canEdit, {
     silent: !canPractise(source),
@@ -95,6 +102,8 @@ export const useStudioScreen = (
   const video = usePracticeVideo(studio, playback);
   const steps = usePracticeSteps(studio, playback, practice);
   usePracticeMemory({ actId, personId: viewerId }, playback, practice.step?.stepId ?? null);
+  const large = useStudioLargeText(useLargeText() && !mode.editing);
+  usePlayerKeys(practice, !mode.editing && !steps.open);
 
   return {
     actId,
@@ -108,7 +117,11 @@ export const useStudioScreen = (
     manual,
     videos,
     final,
-    frame: studioFrameOf(mode.editing, mode.tool, video.hero),
+    frame: large.on
+      ? largeTextFrameOf(video.hero, large.videoShown)
+      : studioFrameOf(mode.editing, mode.tool, video.hero),
+    large,
+    startHall,
     edits,
     studio,
     playback,

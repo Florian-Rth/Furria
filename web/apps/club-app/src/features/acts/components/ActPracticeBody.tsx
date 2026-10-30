@@ -17,7 +17,14 @@ export const ActPracticeBody: FC<ActPracticeBodyProps> = ({ page }) => {
   }
 
   const screenKey = `${page.actId}:${page.evening?.eventId ?? SESSION_KEY}`;
-  const context = { evening: page.evening, startEditing: page.startEditing };
+  const startHall = (): void => {
+    page.startTraining(undefined);
+  };
+  const context = {
+    evening: page.evening,
+    startEditing: page.startEditing,
+    startHall: page.canEditStudio ? startHall : null,
+  };
 
   return (
     <ActStudioBody

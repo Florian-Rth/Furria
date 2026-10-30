@@ -1,4 +1,6 @@
+import AvTimerRoundedIcon from '@mui/icons-material/AvTimerRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
+import KeyboardRoundedIcon from '@mui/icons-material/KeyboardRounded';
 import PauseRoundedIcon from '@mui/icons-material/PauseRounded';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import RepeatOneRoundedIcon from '@mui/icons-material/RepeatOneRounded';
@@ -16,18 +18,22 @@ export type KkHallGlyph =
   | 'next'
   | 'loop'
   | 'tempo'
+  | 'countIn'
   | 'video'
   | 'videoOff'
-  | 'close';
+  | 'close'
+  | 'keys';
 
 export const HALL_GLYPHS: Record<KkHallGlyph, ReactNode> = {
-  back: <SkipPreviousRoundedIcon fontSize="medium" />,
-  play: <PlayArrowRoundedIcon fontSize="large" />,
-  pause: <PauseRoundedIcon fontSize="large" />,
-  next: <SkipNextRoundedIcon fontSize="medium" />,
-  loop: <RepeatOneRoundedIcon fontSize="medium" />,
-  tempo: <SpeedRoundedIcon fontSize="medium" />,
-  video: <VideocamRoundedIcon fontSize="medium" />,
-  videoOff: <VideocamOffRoundedIcon fontSize="medium" />,
-  close: <CloseRoundedIcon fontSize="medium" />,
+  back: <SkipPreviousRoundedIcon aria-hidden fontSize="medium" />,
+  play: <PlayArrowRoundedIcon aria-hidden fontSize="large" />,
+  pause: <PauseRoundedIcon aria-hidden fontSize="large" />,
+  next: <SkipNextRoundedIcon aria-hidden fontSize="medium" />,
+  loop: <RepeatOneRoundedIcon aria-hidden fontSize="medium" />,
+  tempo: <SpeedRoundedIcon aria-hidden fontSize="medium" />,
+  countIn: <AvTimerRoundedIcon aria-hidden fontSize="medium" />,
+  video: <VideocamRoundedIcon aria-hidden fontSize="medium" />,
+  videoOff: <VideocamOffRoundedIcon aria-hidden fontSize="medium" />,
+  close: <CloseRoundedIcon aria-hidden fontSize="medium" />,
+  keys: <KeyboardRoundedIcon aria-hidden fontSize="medium" />,
 };

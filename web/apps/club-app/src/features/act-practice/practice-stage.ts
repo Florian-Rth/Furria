@@ -89,3 +89,19 @@ export const cueSideOf = (own: ViewShare, route: readonly ViewShare[]): CueSide 
 
   return own.y < NEAR_FRONT_SHARE ? 'below' : 'above';
 };
+
+export interface StageSummary {
+  own: number | null;
+  open: number[];
+}
+
+export const stageSummaryOf = (
+  spots: readonly StudioSpot[],
+  ownSpotId: number | null,
+): StageSummary => ({
+  own: spots.find((spot) => spot.spotId === ownSpotId)?.number ?? null,
+  open: spots
+    .filter((spot) => spot.person === null && spot.spotId !== ownSpotId)
+    .map((spot) => spot.number)
+    .sort((left, right) => left - right),
+});

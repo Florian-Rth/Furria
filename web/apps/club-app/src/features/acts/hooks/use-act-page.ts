@@ -60,7 +60,7 @@ export interface ActPageState {
   openEvening: (eventId: number) => void;
   closeEvening: () => void;
   closeRoll: () => void;
-  startTraining: (calendarEntryId: number) => void;
+  startTraining: (calendarEntryId: number | undefined) => void;
   practiseEvening: (eventId: number, edit: boolean) => void;
   reload: () => void;
 }

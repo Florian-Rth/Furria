@@ -58,8 +58,8 @@ export const ActStudioControls: FC<ActStudioControlsProps> = ({
           <PracticeSegmentsLive
             playback={playback}
             practice={practice}
-            onPress={practice.loopStep}
-            onHold={practice.loopPart}
+            onLoopStep={practice.loopStep}
+            onLoopPart={practice.loopPart}
           />
           <KkPracticeTransport.Status
             statusKey={practice.loopKind}

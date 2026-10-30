@@ -9,29 +9,30 @@ import { PracticeSegmentFillLive } from './PracticeSegmentFillLive';
 interface PracticeSegmentsLiveProps {
   playback: StudioPlayback;
   practice: Practice;
-  onPress: (stepId: number) => void;
-  onHold: (stepId: number) => void;
+  onLoopStep: (stepId: number) => void;
+  onLoopPart: (stepId: number) => void;
 }
 
 export const PracticeSegmentsLive: FC<PracticeSegmentsLiveProps> = ({
   playback,
   practice,
-  onPress,
-  onHold,
+  onLoopStep,
+  onLoopPart,
 }) => {
   const groups = usePracticeSegments(playback, practice).map((group) => {
     const segments = group.segments.map((segment) => {
       const press = (): void => {
-        onPress(segment.stepId);
+        onLoopStep(segment.stepId);
       };
       const hold = (): void => {
-        onHold(segment.stepId);
+        onLoopPart(segment.stepId);
       };
 
       return (
         <KkPracticeSegments.Segment
           key={segment.stepId}
           grow={segment.grow}
+          number={segment.number}
           label={segment.label}
           current={segment.current}
           looped={segment.looped}
@@ -46,15 +47,27 @@ export const PracticeSegmentsLive: FC<PracticeSegmentsLiveProps> = ({
         </KkPracticeSegments.Segment>
       );
     });
-    const name =
-      group.name !== null ? (
-        <KkPracticeSegments.Label text={group.name} current={group.current} />
-      ) : null;
+    const { part } = group;
+    const loopPart = (): void => {
+      if (part !== null) {
+        onLoopPart(part.firstStepId);
+      }
+    };
+    const partKey =
+      part === null ? null : (
+        <KkPracticeSegments.Part
+          name={part.name}
+          label={part.label}
+          current={group.current}
+          looped={part.looped}
+          onPress={loopPart}
+        />
+      );
 
     return (
       <KkPracticeSegments.Group key={group.key} grow={group.grow}>
-        <KkPracticeSegments.Track>{segments}</KkPracticeSegments.Track>
-        {name}
+        {partKey}
+        {segments}
       </KkPracticeSegments.Group>
     );
   });

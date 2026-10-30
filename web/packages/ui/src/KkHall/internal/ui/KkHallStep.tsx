@@ -2,16 +2,13 @@ import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 
-export type KkHallStepSize = 'large' | 'compact';
-
 interface KkHallStepProps {
   name: string;
   meta: string | null;
   next: string | null;
-  size?: KkHallStepSize;
 }
 
-export const KkHallStep: FC<KkHallStepProps> = ({ name, meta, next, size = 'large' }) => {
+export const KkHallStep: FC<KkHallStepProps> = ({ name, meta, next }) => {
   const metaLine =
     meta === null ? null : (
       <Typography variant="overline" component="p" sx={{ color: 'text.secondary' }} noWrap>
@@ -28,7 +25,7 @@ export const KkHallStep: FC<KkHallStepProps> = ({ name, meta, next, size = 'larg
   return (
     <Stack sx={{ minWidth: 0, gap: 0.25, width: '100%' }}>
       {metaLine}
-      <Typography variant={size === 'large' ? 'h1' : 'h2'} component="p" aria-live="polite" noWrap>
+      <Typography variant="h1" component="p" aria-live="polite" noWrap>
         {name}
       </Typography>
       {nextLine}

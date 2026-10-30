@@ -1,5 +1,8 @@
 import type { FC } from 'react';
-import { ActTrainingBody } from '@/features/act-training/components/ActTrainingBody';
+import { HallBody } from '@/features/act-hall/components/HallBody';
+import { hallTrainingOf } from '@/features/act-hall/hall-scene';
+import { useGoBackTo } from '@/lib/use-go-back-to';
+import { actPagePathOf } from '../acts-origin';
 import type { ActPageState } from '../hooks/use-act-page';
 import { ActPageLoading } from './ActPageLoading';
 
@@ -10,21 +13,19 @@ interface ActTrainingPageBodyProps {
 const FREE_KEY = 'free';
 
 export const ActTrainingPageBody: FC<ActTrainingPageBodyProps> = ({ page }) => {
-  const data = page.query.data;
-  const studio = data?.studio;
+  const goBackTo = useGoBackTo();
+  const studio = page.query.data?.studio;
+  const { actId } = page;
 
-  if (data === undefined || studio === undefined || studio === null || page.actId === null) {
+  if (studio === undefined || studio === null || actId === null) {
     return <ActPageLoading page={page} />;
   }
 
-  const screenKey = `${page.actId}:${page.training?.calendarEntryId ?? FREE_KEY}`;
+  const training = hallTrainingOf(studio.trainings, page.training?.calendarEntryId);
+  const screenKey = `${actId}:${training?.calendarEntryId ?? FREE_KEY}`;
+  const close = (): void => {
+    void goBackTo({ href: actPagePathOf(actId) });
+  };
 
-  return (
-    <ActTrainingBody
-      key={screenKey}
-      studio={studio}
-      training={page.training}
-      cast={data.act.cast}
-    />
-  );
+  return <HallBody key={screenKey} studio={studio} training={training} onClose={close} />;
 };
