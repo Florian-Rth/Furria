@@ -9,6 +9,13 @@ const act = (actId: number): MyAct => ({
   kind: 'dance',
   sessionYear: 2026,
   group: null,
+  viewerInCast: true,
+  viewerLeads: false,
+  playable: true,
+  cast: [],
+  editors: [],
+  nextEvening: null,
+  nextTraining: null,
 });
 
 const calendar: StartPanel = { kind: 'calendar', shownCount: 0, entries: [] };

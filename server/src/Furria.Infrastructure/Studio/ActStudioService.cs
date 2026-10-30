@@ -25,6 +25,7 @@ public sealed class ActStudioService
     private readonly AppDbContext _dbContext;
     private readonly ActCatalogue _catalogue;
     private readonly ActStudioReader _reader;
+    private readonly ActGlanceReader _glances;
     private readonly ActStudioGate _gate;
     private readonly ActAccess _actAccess;
     private readonly PermissionAuthorizer _authorizer;
@@ -34,6 +35,7 @@ public sealed class ActStudioService
         AppDbContext dbContext,
         ActCatalogue catalogue,
         ActStudioReader reader,
+        ActGlanceReader glances,
         ActStudioGate gate,
         ActAccess actAccess,
         PermissionAuthorizer authorizer,
@@ -43,6 +45,7 @@ public sealed class ActStudioService
         _dbContext = dbContext;
         _catalogue = catalogue;
         _reader = reader;
+        _glances = glances;
         _gate = gate;
         _actAccess = actAccess;
         _authorizer = authorizer;
@@ -151,36 +154,34 @@ public sealed class ActStudioService
             return [];
 
         var today = ClubClock.Today(_timeProvider);
-        var relevantYear = ClubSession.RelevantYearOf(today);
-        var coEdited = await CoEditedActIdsAsync(personId.Value, ct);
-        var viewerId = personId.Value;
+        var viewer = new ActGlanceViewer(
+            personId.Value,
+            await _authorizer.AdministeredGroupIdsAsync(accountId, ct),
+            await CoEditedActIdsAsync(personId.Value, ct),
+            today,
+            ClubSession.RelevantYearOf(today)
+        );
         var acts = await _catalogue.ActsOnAsync(
             act =>
-                act.SessionYear == relevantYear
+                act.SessionYear == viewer.SessionYear
                 && act.ArchivedAt == null
                 && (
-                    coEdited.Contains(act.Id)
-                    || act.CastChanges.Any(change => change.PersonId == viewerId)
+                    viewer.CoEditedActIds.Contains(act.Id)
+                    || (act.GroupId != null && viewer.LedGroupIds.Contains(act.GroupId.Value))
+                    || act.CastChanges.Any(change => change.PersonId == viewer.PersonId)
                     || _dbContext.GroupMemberships.Any(membership =>
-                        membership.GroupId == act.GroupId && membership.PersonId == viewerId
+                        membership.GroupId == act.GroupId && membership.PersonId == viewer.PersonId
                     )
                 ),
             today,
             ct
         );
 
-        return
-        [
-            .. acts.Where(act => Involves(act, viewerId, coEdited))
-                .Select(act => new MyActSummary
-                {
-                    ActId = act.ActId,
-                    Name = act.Name,
-                    Kind = act.Kind,
-                    SessionYear = relevantYear,
-                    Group = act.Group,
-                }),
-        ];
+        return await _glances.GlancesOfAsync(
+            [.. acts.Where(act => Involves(act, viewer))],
+            viewer,
+            ct
+        );
     }
 
     public async Task<Result<GroupActsDetails>> GetGroupActsAsync(
@@ -264,6 +265,8 @@ public sealed class ActStudioService
     }
 
     [Pure]
-    private static bool Involves(ActSummary act, int personId, IReadOnlyList<int> coEdited) =>
-        coEdited.Contains(act.ActId) || act.Cast.Any(member => member.PersonId == personId);
+    private static bool Involves(ActSummary act, ActGlanceViewer viewer) =>
+        viewer.CoEditedActIds.Contains(act.ActId)
+        || (act.Group is { } group && viewer.LedGroupIds.Contains(group.GroupId))
+        || act.Cast.Any(member => member.PersonId == viewer.PersonId);
 }
