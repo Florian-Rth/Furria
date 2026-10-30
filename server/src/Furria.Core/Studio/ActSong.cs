@@ -5,6 +5,8 @@ namespace Furria.Core.Studio;
 
 public sealed class ActSong
 {
+    public const int MostPerAct = 100;
+
     public int Id { get; set; }
 
     public int ActId { get; set; }

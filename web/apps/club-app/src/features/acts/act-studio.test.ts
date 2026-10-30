@@ -165,19 +165,33 @@ describe('actPageModeOf', () => {
   });
 
   it.each([
-    ['practises a studio with music that plays', playable, {}, 'practice'],
-    ['shows the details when the viewer sees no studio', null, {}, 'details'],
-    ['shows the details while no music is ready', processing, {}, 'details'],
-    ['shows the details when asked for them', playable, { view: 'details' as const }, 'details'],
-    ['shows the details while the settings are open', playable, { settings: true }, 'details'],
-    ['expects practice while the studio loads', undefined, {}, 'practice'],
+    ['practises a studio with music that plays', playable, false, {}, 'practice'],
+    ['shows the details when the viewer sees no studio', null, false, {}, 'details'],
+    ['shows the details while no music is ready', processing, false, {}, 'details'],
+    ['opens the studio to an editor while no music is ready', processing, true, {}, 'practice'],
     [
-      'expects the details while loading when asked',
-      undefined,
+      'shows the details when asked for them',
+      playable,
+      true,
       { view: 'details' as const },
       'details',
     ],
-  ])('%s', (_case, shown, search, expected) => {
-    expect(actPageModeOf(shown, search)).toBe(expected);
+    [
+      'shows the details while the settings are open',
+      playable,
+      false,
+      { settings: true },
+      'details',
+    ],
+    ['expects practice while the studio loads', undefined, false, {}, 'practice'],
+    [
+      'expects the details while loading when asked',
+      undefined,
+      false,
+      { view: 'details' as const },
+      'details',
+    ],
+  ])('%s', (_case, shown, canEditStudio, search, expected) => {
+    expect(actPageModeOf(shown, canEditStudio, search)).toBe(expected);
   });
 });

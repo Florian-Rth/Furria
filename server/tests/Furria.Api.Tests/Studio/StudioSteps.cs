@@ -1,6 +1,7 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Acts;
+using Furria.Api.Tests.Media;
 using Furria.Core.RunningOrders;
 using Furria.Tests.Common.Builder;
 using Xunit;
@@ -11,6 +12,8 @@ namespace Furria.Api.Tests.Studio;
 
 internal static class StudioSteps
 {
+    private const int SongLength = 4096;
+
     internal static async Task<int> GardetanzAsync(
         SeededContext ctx,
         CancellationToken ct,
@@ -50,4 +53,37 @@ internal static class StudioSteps
         );
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
+
+    internal static Task<int> UploadSongAsync(
+        HttpClient client,
+        int actId,
+        CancellationToken ct,
+        string fileName = "Gardemarsch.wav"
+    ) =>
+        TusUploadSteps.UploadAsync(
+            client,
+            TusUploadSteps.ActOwner(actId),
+            fileName,
+            MediaSamples.Wav(SongLength),
+            SongLength,
+            ct
+        );
+
+    internal static async Task<int> AddSongAsync(HttpClient client, int actId, int mediaItemId)
+    {
+        var (response, result) = await client.POSTAsync<
+            PostActSong,
+            PostActSongRequest,
+            PostActSongResponse
+        >(new() { ActId = actId, MediaItemId = mediaItemId });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        return result.SongId;
+    }
+
+    internal static async Task<int> AddedSongAsync(
+        HttpClient client,
+        int actId,
+        CancellationToken ct
+    ) => await AddSongAsync(client, actId, await UploadSongAsync(client, actId, ct));
 }

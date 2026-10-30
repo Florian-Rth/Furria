@@ -56,11 +56,16 @@ export const canPractise = (studio: Studio | null): boolean =>
 
 export const actPageModeOf = (
   studio: Studio | null | undefined,
+  canEditStudio: boolean,
   search: Pick<ActPageSearch, 'view' | 'settings'>,
 ): ActPageMode => {
   if (search.view === 'details' || search.settings === true) {
     return 'details';
   }
 
-  return studio === undefined || canPractise(studio) ? 'practice' : 'details';
+  if (studio === undefined) {
+    return 'practice';
+  }
+
+  return studio !== null && (canEditStudio || canPractise(studio)) ? 'practice' : 'details';
 };

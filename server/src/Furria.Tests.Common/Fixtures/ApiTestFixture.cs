@@ -17,6 +17,7 @@ using Furria.Core.Identity;
 using Furria.Core.Media;
 using Furria.Core.Roles;
 using Furria.Core.RunningOrders;
+using Furria.Core.Studio;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Identity;
@@ -655,6 +656,43 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             Height = 1,
         };
         db.MediaJobs.RemoveRange(db.MediaJobs.Where(job => job.MediaItemId == mediaItemId));
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task RenderSongDirectlyAsync(
+        int mediaItemId,
+        double durationSeconds,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var item = await db.MediaItems.SingleAsync(row => row.Id == mediaItemId, ct);
+        item.State = MediaItemState.Ready;
+        item.DurationSeconds = durationSeconds;
+        item.RenderedAt = TimeProvider.GetUtcNow();
+        db.MediaJobs.RemoveRange(db.MediaJobs.Where(job => job.MediaItemId == mediaItemId));
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task AddFinalTrackDirectlyAsync(
+        int actId,
+        int mediaItemId,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        db.ActFinalTracks.Add(
+            new ActFinalTrack
+            {
+                ActId = actId,
+                MediaItemId = mediaItemId,
+                Version = 1,
+            }
+        );
         await db.SaveChangesAsync(ct);
     }
 

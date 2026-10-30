@@ -15,14 +15,9 @@ namespace Furria.Infrastructure.Studio;
 
 public sealed class ActStudioService
 {
-    private const string UnknownActMessage = "Diesen Auftritt gibt es nicht.";
     private const string NoTieMessage = "Dieser Auftritt gehört nicht zu deinen Gruppen.";
     private const string NotGroupAdminMessage =
         "Mitbearbeiter ernennt nur die Leitung der Gruppe des Auftritts.";
-    private const string ArchivedActMessage =
-        "Ein archivierter Auftritt lässt sich nicht bearbeiten.";
-    private const string ClosedSessionMessage =
-        "Die Session dieses Auftritts ist vorbei, er bleibt so, wie er war.";
     private const string NotInCastMessage = "Mitbearbeiten kann nur, wer im Auftritt mitmacht.";
     private const string NoCoEditorMessage = "Diese Person bearbeitet den Auftritt nicht mit.";
     private const string UnknownGroupMessage = "Diese Gruppe gibt es nicht.";
@@ -30,6 +25,7 @@ public sealed class ActStudioService
     private readonly AppDbContext _dbContext;
     private readonly ActCatalogue _catalogue;
     private readonly ActStudioReader _reader;
+    private readonly ActStudioGate _gate;
     private readonly ActAccess _actAccess;
     private readonly PermissionAuthorizer _authorizer;
     private readonly TimeProvider _timeProvider;
@@ -38,6 +34,7 @@ public sealed class ActStudioService
         AppDbContext dbContext,
         ActCatalogue catalogue,
         ActStudioReader reader,
+        ActStudioGate gate,
         ActAccess actAccess,
         PermissionAuthorizer authorizer,
         TimeProvider timeProvider
@@ -46,6 +43,7 @@ public sealed class ActStudioService
         _dbContext = dbContext;
         _catalogue = catalogue;
         _reader = reader;
+        _gate = gate;
         _actAccess = actAccess;
         _authorizer = authorizer;
         _timeProvider = timeProvider;
@@ -57,19 +55,15 @@ public sealed class ActStudioService
         CancellationToken ct
     )
     {
-        var act = await ActAsync(actId, ct);
+        var act = await _gate.ActAsync(actId, ct);
         if (act is null)
-            return Result<ActStudioDetails>.NotFound(UnknownActMessage);
+            return Result<ActStudioDetails>.NotFound(ActStudioGate.UnknownActMessage);
 
-        var personId = await _authorizer.ActivePersonIdAsync(accountId, ct);
-        var inCast = personId is { } id && act.Cast.Any(member => member.PersonId == id);
-        var isCoEditor =
-            inCast && personId is { } editorId && await IsCoEditorAsync(actId, editorId, ct);
-        var leadsGroup = await LeadsGroupAsync(accountId, act, ct);
+        var editorship = await _gate.EditorshipOfAsync(accountId, act, ct);
         var scope = await _actAccess.ScopeOfAsync(accountId, ct);
         var canEditSettings = scope is not null && scope.Covers(act.Group?.GroupId);
-        var seesStudio = inCast || leadsGroup;
-        var editable = !act.IsArchived && !act.IsClosed;
+        var seesStudio = editorship.InCast || editorship.LeadsGroup;
+        var editable = ActStudioGate.IsEditable(act);
         if (!seesStudio && !canEditSettings && !await BelongsToGroupAsync(accountId, act, ct))
             return Result<ActStudioDetails>.Forbidden(NoTieMessage);
 
@@ -84,10 +78,10 @@ public sealed class ActStudioService
                 Act = act,
                 Viewer = new ActStudioViewer
                 {
-                    InCast = inCast,
+                    InCast = editorship.InCast,
                     CanEditSettings = !act.IsClosed && canEditSettings,
-                    CanEditStudio = editable && (isCoEditor || leadsGroup),
-                    CanGrantCoEditors = editable && leadsGroup,
+                    CanEditStudio = editable && editorship.MayEditStudio,
+                    CanGrantCoEditors = editable && editorship.LeadsGroup,
                 },
                 CoEditors = seesStudio ? await CoEditorsOfAsync(actId, ct) : [],
                 Content = seesStudio ? await _reader.ContentOfAsync(actId, ct) : null,
@@ -101,12 +95,12 @@ public sealed class ActStudioService
         CancellationToken ct
     )
     {
-        var act = await ActAsync(command.ActId, ct);
+        var act = await _gate.ActAsync(command.ActId, ct);
         if (act is null)
-            return Result.NotFound(UnknownActMessage);
-        if (!await LeadsGroupAsync(accountId, act, ct))
+            return Result.NotFound(ActStudioGate.UnknownActMessage);
+        if (!await _gate.LeadsGroupAsync(accountId, act, ct))
             return Result.Forbidden(NotGroupAdminMessage);
-        if (ReadOnlyRefusalOf(act) is { } refused)
+        if (ActStudioGate.ReadOnlyRefusalOf(act) is { } refused)
             return refused;
         if (act.Cast.All(member => member.PersonId != command.PersonId))
             return Result.Conflict(NotInCastMessage);
@@ -131,10 +125,10 @@ public sealed class ActStudioService
         CancellationToken ct
     )
     {
-        var act = await ActAsync(command.ActId, ct);
+        var act = await _gate.ActAsync(command.ActId, ct);
         if (act is null)
-            return Result.NotFound(UnknownActMessage);
-        if (!await LeadsGroupAsync(accountId, act, ct))
+            return Result.NotFound(ActStudioGate.UnknownActMessage);
+        if (!await _gate.LeadsGroupAsync(accountId, act, ct))
             return Result.Forbidden(NotGroupAdminMessage);
 
         var revoked = await _dbContext
@@ -233,20 +227,6 @@ public sealed class ActStudioService
         );
     }
 
-    private async Task<ActSummary?> ActAsync(int actId, CancellationToken ct) =>
-        (
-            await _catalogue.ActsOnAsync(act => act.Id == actId, ClubClock.Today(_timeProvider), ct)
-        ).SingleOrDefault();
-
-    [Pure]
-    private static Result? ReadOnlyRefusalOf(ActSummary act) =>
-        act.IsArchived ? Result.Conflict(ArchivedActMessage)
-        : act.IsClosed ? Result.Conflict(ClosedSessionMessage)
-        : null;
-
-    private async Task<bool> LeadsGroupAsync(int accountId, ActSummary act, CancellationToken ct) =>
-        act.Group is { } group && await _authorizer.IsGroupAdminAsync(accountId, group.GroupId, ct);
-
     private async Task<bool> BelongsToGroupAsync(
         int accountId,
         ActSummary act,
@@ -254,12 +234,6 @@ public sealed class ActStudioService
     ) =>
         act.Group is { } group
         && await _authorizer.IsGroupMemberOrAdminAsync(accountId, group.GroupId, ct);
-
-    private Task<bool> IsCoEditorAsync(int actId, int personId, CancellationToken ct) =>
-        _dbContext.ActCoEditors.AnyAsync(
-            editor => editor.ActId == actId && editor.PersonId == personId,
-            ct
-        );
 
     private async Task<List<int>> CoEditedActIdsAsync(int personId, CancellationToken ct) =>
         await _dbContext

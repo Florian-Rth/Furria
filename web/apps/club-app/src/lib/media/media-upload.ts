@@ -3,7 +3,7 @@ import type { UploadFailure } from './upload-failure';
 import { failureOfStatus } from './upload-failure';
 
 export type UploadOwner =
-  | { kind: 'person' | 'group' | 'news' | 'event'; id: number }
+  | { kind: 'person' | 'group' | 'news' | 'event' | 'act'; id: number }
   | { kind: 'gallery'; albumId: number | null }
   | { kind: 'website'; slot: string; position: number; aspect: number };
 

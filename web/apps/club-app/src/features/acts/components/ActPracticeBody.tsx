@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import { PracticeBody } from '@/features/act-practice/components/PracticeBody';
+import { ActStudioBody } from '@/features/act-studio/components/ActStudioBody';
 import type { ActPageState } from '../hooks/use-act-page';
 import { ActPageLoading } from './ActPageLoading';
 
@@ -15,6 +15,12 @@ export const ActPracticeBody: FC<ActPracticeBodyProps> = ({ page }) => {
   }
 
   return (
-    <PracticeBody key={page.actId} actId={page.actId} studio={studio} viewerId={page.viewerId} />
+    <ActStudioBody
+      key={page.actId}
+      actId={page.actId}
+      studio={studio}
+      viewerId={page.viewerId}
+      canEdit={page.canEditStudio}
+    />
   );
 };

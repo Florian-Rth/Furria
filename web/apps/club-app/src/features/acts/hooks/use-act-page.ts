@@ -14,7 +14,12 @@ import { usePlansRunningOrder } from '@/features/running-order/hooks/use-plans-r
 import type { CatalogueAct } from '@/features/running-order/schemas';
 import { useMeQuery } from '@/features/session/api';
 import { parsePositiveId } from '@/lib/positive-id';
-import { ACT_FALLBACK_TITLE, DETAILS_LABEL, SETTINGS_LABEL } from '../act-page-copy';
+import {
+  ACT_FALLBACK_TITLE,
+  DETAILS_LABEL,
+  SETTINGS_LABEL,
+  STUDIO_MUSIC_LABEL,
+} from '../act-page-copy';
 import type { ActPageMode } from '../act-studio';
 import { actPageModeOf, canPractise } from '../act-studio';
 import { actPageOriginOf, actPageReturnOf } from '../acts-origin';
@@ -34,6 +39,7 @@ export interface ActPageState {
   actions: KkScreenActions | undefined;
   practiceActions: readonly [KkQuietScreenAction];
   viewerId: number | null;
+  canEditStudio: boolean;
   isSettingsOpen: boolean;
   isWide: boolean;
   masterSpan: KkMasterDetailSpan;
@@ -70,7 +76,8 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
   const catalogue = useActsQuery(act?.sessionYear ?? null, isSettingsOpen);
 
   const studio = query.data?.studio;
-  const mode = actPageModeOf(studio, search);
+  const canEditStudio = query.data?.viewer.canEditStudio === true;
+  const mode = actPageModeOf(studio, canEditStudio, search);
 
   const showView = (view: 'details' | undefined): void => {
     void navigate({
@@ -104,10 +111,11 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
       showView('details');
     },
   };
+  const practisable = canPractise(studio ?? null);
   const practiceAction: KkQuietScreenAction = {
     id: 'practice',
-    label: PRACTICE_LABEL,
-    icon: 'play',
+    label: practisable ? PRACTICE_LABEL : STUDIO_MUSIC_LABEL,
+    icon: practisable ? 'play' : 'music',
     onSelect: () => {
       showView(undefined);
     },
@@ -118,9 +126,8 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
     icon: 'edit',
     onSelect: openSettings,
   };
-  const practisable = canPractise(studio ?? null);
   const detailActions = detailActionsOf(
-    practisable ? practiceAction : null,
+    practisable || canEditStudio ? practiceAction : null,
     canEditSettings ? settingsAction : null,
   );
 
@@ -133,6 +140,7 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
     actions: detailActions,
     practiceActions: [detailsAction],
     viewerId: me.data?.person?.id ?? null,
+    canEditStudio,
     isSettingsOpen,
     isWide,
     masterSpan: isWide && isSettingsOpen ? SIDE_OPEN_SPAN : FULL_SPAN,

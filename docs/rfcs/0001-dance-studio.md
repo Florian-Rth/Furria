@@ -371,10 +371,37 @@ Done 2026-10-30 (Florian picked H plus two parts of I). Decisions taken in the p
 
 ### Phase 8 — Edit-mode shell and music editor
 Goal: editors enter edit mode on the act page and build the working mix.
-- [ ] Promote the H shell onto `/acts/$actId`: pencil in the transport pill → edit mode → *Fertig*, the tool bar (phone) / rail (desktop) with the five tools, the fixed boxes re-cast per tool; the lab route and `KkStudioH*` names removed
-- [ ] Musik tool: upload several songs, reorder, set start/end on the hero waveform; gapless preview; *Endfassung* slot in the side box
-- [ ] Re-cutting moves anchors; cut-away steps/keyframes/videos flagged
-- [ ] Counts 1–8 from the beat grid; correct the first "1" and the tempo per song
+- [x] Promote the H shell onto `/acts/$actId`: pencil in the transport pill → edit mode → *Fertig*, the tool bar (phone) / rail (desktop) with the five tools, the fixed boxes re-cast per tool; the lab route and `KkStudioH*` names removed
+- [x] Musik tool: upload several songs, reorder, set start/end on the hero waveform; gapless preview; *Endfassung* slot in the side box
+- [x] Re-cutting moves anchors; cut-away steps/keyframes/videos flagged
+- [x] Counts 1–8 from the beat grid; correct the first "1" and the tempo per song
+
+Done 2026-10-30. Decisions taken in the phase:
+- **Promotion**: the lab feature became `features/act-studio` (`ActStudio*` components, `useStudioScreen`)
+  and the primitives `KkStudio*` (`KkStudioView`, `-Edit`, `-Tools`, `-Wave`, `-List`, …); the lab route
+  `/lab/studio-h/$actId`, `features/lab-studio` and the lab entries are gone. The act page's practice
+  mode now renders the studio screen for everyone; the old `PracticeBody`/`-Hero`/`-Side`/`-BarControls`
+  were removed (the studio screen without edit rights is exactly the practice view).
+- **Entry without music**: editors (`canEditStudio`) get the studio screen even before any music plays;
+  it then opens straight in edit mode on *Musik*. Their details page offers *Musik anlegen* back.
+- **Endpoints** (one shared rule `ActStudioGate`: group admin of the act's group or a co-editor in the
+  cast; archived/closed acts 409): `POST /api/acts/{id}/songs` `{mediaItemId}` → 200 `{songId}` (an
+  audio item of this act, not yet a song or final file; at most 100 songs), `PUT …/songs/order`
+  `{songIds}` (exactly the act's songs, else 409), `PUT …/songs/{songId}` `{startSeconds, endSeconds,
+  firstBeatSeconds, tempoBpm}` (cut ≥ 2 s; end/first "1" past a known duration 422; tempo 40–300;
+  null beat values fall back to the analysis), `DELETE …/songs/{songId}` (the media item stays, so
+  anchors on it read as *music missing*).
+- **Musik tool**: songs upload by tus (owner `act:{id}`, several at once, progress rows) and are added
+  on completion; the song under the playhead is *selected* — tapping it again opens the song desk (the
+  same sheet/side panel as the spots): tempo ±0.1/±1 BPM, the first "1" nudged by 20 ms or put on the
+  playhead, *Nach vorn/Nach hinten*, *Lied entfernen* (second tap confirms). Cuts on the hero waveform
+  save on release. All song writes are optimistic patches of the studio read, serialised in one
+  mutation scope; the playhead keeps its place when the mix is rebuilt. The waveform shows a line on
+  every "1"; the head's live count follows the corrected grid at once.
+- **Cut-away**: anchors live in source time, so re-cutting moves them without a rewrite; what falls
+  outside the music (steps, videos, keyframes) is counted in the side box as *Außerhalb der Musik*.
+- **Still local in the shell**: the Schritte, Aufstellung, Bewegung and Video tools keep the lab's
+  in-memory edits until their phases (9, 11–13) persist them.
 
 ### Phase 9 — Steps and parts
 Goal: the manual exists on the music, in the Schritte tool.
