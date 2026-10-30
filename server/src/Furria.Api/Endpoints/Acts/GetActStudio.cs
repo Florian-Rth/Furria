@@ -227,7 +227,8 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
         new()
         {
             AppearanceId = appearance.AppearanceId,
-            Placed = appearance.IsPlaced,
+            Position = appearance.Position,
+            StageStartsAt = appearance.StageStartsAt,
             Added = [.. appearance.Added.Select(ActPersonDto.From)],
             RemovedPersonIds = appearance.RemovedPersonIds,
             SpotChanges =
@@ -365,7 +366,9 @@ public sealed record StudioAppearanceDto
 {
     public required int AppearanceId { get; init; }
 
-    public required bool Placed { get; init; }
+    public required int? Position { get; init; }
+
+    public required DateTimeOffset? StageStartsAt { get; init; }
 
     public required IReadOnlyList<ActPersonDto> Added { get; init; }
 

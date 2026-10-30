@@ -23,7 +23,8 @@ const UNSAVED_COPY_VERSION = 0;
 
 export const EMPTY_APPEARANCE: StudioAppearance = {
   appearanceId: 0,
-  placed: false,
+  position: null,
+  stageStartsAt: null,
   added: [],
   removedPersonIds: [],
   spotChanges: [],

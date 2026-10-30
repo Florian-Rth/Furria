@@ -30,6 +30,27 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_GiveEachPlacedEveningItsPositionAndApproximateStageTime_When_ACastMemberOpensTheAct()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+        var planner = await ctx.Identity.ClientForAsync(Planner, ct);
+        var gala = ctx.Club.Events.IdOf(Gala);
+        var actId = await GardetanzAsync(ctx, ct);
+        var rede = await CreateActAsync(planner, "Büttenrede", kind: ActKind.Speech);
+        await SavedAsync(planner, gala, null, [Line(rede, 0), Line(actId, 1)]);
+        var anna = await ctx.Identity.ClientForAsync(Anna, ct);
+
+        var evening = Assert.Single(
+            (await StudioOfAsync(anna, actId)).Studio!.Evenings,
+            evening => evening.EventId == gala
+        );
+
+        Assert.Equal(1, evening.Appearance?.Position);
+        Assert.Equal(evening.StartsAt.AddMinutes(12), evening.Appearance?.StageStartsAt);
+    }
+
+    [Fact]
     public async Task Should_OpenTheStudioReadOnly_When_ACastMemberOpensTheAct()
     {
         var ct = TestContext.Current.CancellationToken;

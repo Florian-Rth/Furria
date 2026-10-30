@@ -99,6 +99,7 @@ export const READ_NAMES = [
   'myActs',
   'runningOrder',
   'runningOrders',
+  'eveningRunningOrder',
 ] as const;
 export type ReadName = (typeof READ_NAMES)[number];
 
@@ -162,6 +163,7 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   myActs: ['acts', 'mine'],
   runningOrder: ['running-order', 'detail'],
   runningOrders: ['running-order', 'list'],
+  eveningRunningOrder: ['running-order', 'evening'],
 };
 
 const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
@@ -339,6 +341,18 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'event',
   ],
   runningOrders: ['runningOrder', 'actEvening', 'act', 'event', 'calendarEntry'],
+  eveningRunningOrder: [
+    'runningOrder',
+    'actEvening',
+    'act',
+    'actMusic',
+    'event',
+    'calendarEntry',
+    'group',
+    'groupMembership',
+    'groupAdmin',
+    'membership',
+  ],
 };
 
 export const staleReadsAfter = (changes: readonly DomainChange[]): ReadName[] =>
@@ -430,4 +444,6 @@ export const queryKeys = {
   myActs: READ_ROOTS.myActs,
   runningOrder: (eventId: number): QueryKey => keyOf('runningOrder', eventId),
   runningOrders: READ_ROOTS.runningOrders,
+  eveningRunningOrder: (calendarEntryId: number | null): QueryKey =>
+    keyOf('eveningRunningOrder', calendarEntryId),
 } as const;

@@ -1,6 +1,8 @@
+import type { KkChipTone } from '@furria/ui/KkChip';
 import type { EveningChoreographyState } from '@/features/act-studio/studio-evening';
 import { EVENING_CHANGE_WORDS } from '@/features/running-order/planner-copy';
 import type { EveningChange } from '@/features/running-order/schemas';
+import { toStageTime } from '@/features/running-order/stage-time';
 import type { EveningEntryState } from './act-evenings';
 import type { StudioEvening } from './schemas';
 
@@ -37,6 +39,17 @@ const STATE_LINES: Record<EveningEntryState, string> = {
   placed: 'steht im Ablauf',
 };
 
+export interface EveningStateChip {
+  label: string;
+  tone: KkChipTone;
+}
+
+const STATE_CHIPS: Record<EveningEntryState, EveningStateChip> = {
+  open: { label: 'nicht angemeldet', tone: 'neutral' },
+  joined: { label: 'noch offen', tone: 'neutral' },
+  placed: { label: 'im Ablauf', tone: 'green' },
+};
+
 const FORMATION_LINES: Record<EveningChoreographyState, string> = {
   session: 'Wie in der Session. Was dort geändert wird, gilt auch an diesem Abend.',
   own: 'Eigene Aufstellung für diesen Abend.',
@@ -49,8 +62,22 @@ export const toEveningDay = (startsAt: string): string => DAY.format(new Date(st
 export const toEveningLabel = (evening: StudioEvening): string =>
   `${evening.title}, ${toEveningDay(evening.startsAt)}`;
 
-export const toEveningMeta = (evening: StudioEvening, state: EveningEntryState): string =>
-  `${toEveningDay(evening.startsAt)} · ${STATE_LINES[state]}`;
+const toStagePlace = (position: number, stageStartsAt: string | null): string =>
+  stageStartsAt === null
+    ? `Platz ${position + 1}`
+    : `Platz ${position + 1} · ${toStageTime(position, stageStartsAt)}`;
+
+export const toEveningMeta = (evening: StudioEvening): string => {
+  const day = toEveningDay(evening.startsAt);
+  const position = evening.appearance?.position ?? null;
+
+  return position === null
+    ? day
+    : `${day} · ${toStagePlace(position, evening.appearance?.stageStartsAt ?? null)}`;
+};
+
+export const toEveningStateChip = (state: EveningEntryState): EveningStateChip =>
+  STATE_CHIPS[state];
 
 export const toEveningStateLine = (state: EveningEntryState): string => STATE_LINES[state];
 

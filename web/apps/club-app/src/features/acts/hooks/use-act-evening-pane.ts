@@ -16,7 +16,6 @@ import {
   toEveningDay,
   toEveningLabel,
   toEveningLeaveLoss,
-  toEveningMeta,
   toEveningStateLine,
   toFormationLine,
 } from '../act-evenings-copy';
@@ -38,7 +37,6 @@ export interface ActEveningPaneState {
   day: string;
   state: KkStepState;
   stateLabel: string;
-  meta: string;
   changesLine: string | null;
   tiles: KkCastTile[];
   toggle: (personId: number) => void;
@@ -94,7 +92,6 @@ export const useActEveningPane = (
     day: toEveningDay(evening.startsAt),
     state: STEP_STATES[entry.state],
     stateLabel: toEveningStateLine(entry.state),
-    meta: toEveningMeta(evening, entry.state),
     changesLine: toEveningChangesLine(entry.changes),
     tiles: castTiles.map(({ person, state }) => ({
       id: person.personId,

@@ -3,6 +3,7 @@ using Furria.Application.Results;
 using Furria.Application.RunningOrders;
 using Furria.Core.Club;
 using Furria.Core.RunningOrders;
+using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -62,16 +63,19 @@ public sealed class RunningOrderService
 
     private readonly AppDbContext _dbContext;
     private readonly ActCatalogue _catalogue;
+    private readonly EveningStageTimes _stageTimes;
     private readonly TimeProvider _timeProvider;
 
     public RunningOrderService(
         AppDbContext dbContext,
         ActCatalogue catalogue,
+        EveningStageTimes stageTimes,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
         _catalogue = catalogue;
+        _stageTimes = stageTimes;
         _timeProvider = timeProvider;
     }
 
@@ -127,6 +131,55 @@ public sealed class RunningOrderService
             await AppearancesOfAsync(eventId, ct, tracked: false),
             ct
         );
+    }
+
+    public async Task<EveningRunningOrderDetails> GetEveningRunningOrderAsync(
+        int eventId,
+        int viewerPersonId,
+        CancellationToken ct
+    )
+    {
+        var order = await _dbContext
+            .RunningOrders.AsNoTracking()
+            .Where(row => row.CalendarEntryId == eventId)
+            .Select(row => new { row.ConfirmedAt, row.ChangedSinceConfirmed })
+            .SingleOrDefaultAsync(ct);
+        var placed = order is null
+            ? []
+            : InOrder(await AppearancesOfAsync(eventId, ct, tracked: false))
+                .Where(line => line.Position is not null)
+                .ToList();
+        var evening = await EveningOfAsync(eventId, placed, ct);
+        var eveningStart = await _dbContext
+            .CalendarEntries.Where(entry => entry.Id == eventId)
+            .Select(entry => entry.StartsAt)
+            .SingleAsync(ct);
+        var stageStarts = await _stageTimes.StartsInOrderAsync(
+            eveningStart,
+            [.. placed.Select(line => evening.Acts[line.ActId])],
+            ct
+        );
+        var viewerGroupIds = await _dbContext
+            .TiedGroupIds(viewerPersonId, ClubClock.Today(_timeProvider))
+            .ToHashSetAsync(ct);
+
+        return new EveningRunningOrderDetails
+        {
+            EventId = eventId,
+            IsConfirmed = order is { ConfirmedAt: not null, ChangedSinceConfirmed: false },
+            Lines =
+            [
+                .. placed.Select(
+                    (line, index) =>
+                        EveningLineOf(
+                            evening.Acts[line.ActId],
+                            index,
+                            stageStarts[index],
+                            IsOwn(evening.Acts[line.ActId], viewerPersonId, viewerGroupIds)
+                        )
+                ),
+            ],
+        };
     }
 
     public async Task<IReadOnlySet<int>> SettledEventIdsAsync(
@@ -934,6 +987,33 @@ public sealed class RunningOrderService
             BlockKey = line.BlockKey,
             EveningChanges = changes,
         };
+
+    [Pure]
+    private static EveningRunningOrderLineDetails EveningLineOf(
+        ActSummary act,
+        int position,
+        DateTimeOffset stageStartsAt,
+        bool isOwn
+    ) =>
+        new()
+        {
+            ActId = act.ActId,
+            Name = act.Name,
+            Kind = act.Kind,
+            Group = act.Group,
+            Position = position,
+            StageStartsAt = stageStartsAt,
+            IsOwn = isOwn,
+        };
+
+    [Pure]
+    private static bool IsOwn(
+        ActSummary act,
+        int viewerPersonId,
+        IReadOnlySet<int> viewerGroupIds
+    ) =>
+        act.Group is { } group && viewerGroupIds.Contains(group.GroupId)
+        || act.Cast.Any(member => member.PersonId == viewerPersonId);
 
     [Pure]
     private static RunningOrderActDetails ActDetailsOf(ActSummary act) =>

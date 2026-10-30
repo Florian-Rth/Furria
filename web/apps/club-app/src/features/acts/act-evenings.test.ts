@@ -13,7 +13,8 @@ const person = (
 
 const appearance = (patch: Partial<StudioAppearance>): StudioAppearance => ({
   appearanceId: 3,
-  placed: false,
+  position: null,
+  stageStartsAt: null,
   added: [],
   removedPersonIds: [],
   spotChanges: [],
@@ -32,7 +33,7 @@ describe('eveningStateOf', () => {
   it.each([
     [null, 'open'],
     [appearance({}), 'joined'],
-    [appearance({ placed: true }), 'placed'],
+    [appearance({ position: 0, stageStartsAt: '2026-11-29T18:11:00+00:00' }), 'placed'],
   ] as const)('reads %j as %s', (shown, state) => {
     expect(eveningStateOf(evening(shown))).toBe(state);
   });
