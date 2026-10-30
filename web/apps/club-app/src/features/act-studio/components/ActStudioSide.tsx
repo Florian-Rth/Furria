@@ -11,10 +11,12 @@ import {
 import { useActStudioSideVideo } from '../hooks/use-act-studio-side-video';
 import type { ActStudioSongs } from '../hooks/use-act-studio-songs';
 import type { ActStudioStage } from '../hooks/use-act-studio-stage';
+import type { ActStudioStepTool } from '../hooks/use-act-studio-step-tool';
 import type { ActStudioTakes } from '../hooks/use-act-studio-takes';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import { ActStudioCastList } from './ActStudioCastList';
 import { ActStudioSongList } from './ActStudioSongList';
+import { ActStudioStepRail } from './ActStudioStepRail';
 import { ActStudioTakeList } from './ActStudioTakeList';
 
 interface ActStudioSideProps {
@@ -22,9 +24,16 @@ interface ActStudioSideProps {
   editor: ActStudioStage;
   takes: ActStudioTakes;
   songs: ActStudioSongs;
+  stepTool: ActStudioStepTool;
 }
 
-export const ActStudioSide: FC<ActStudioSideProps> = ({ screen, editor, takes, songs }) => {
+export const ActStudioSide: FC<ActStudioSideProps> = ({
+  screen,
+  editor,
+  takes,
+  songs,
+  stepTool,
+}) => {
   const { practice, frame, studio, playback, video } = screen;
   const sideVideo = useActStudioSideVideo(screen);
   const eyebrow = noVideoEyebrowOf(practice.partName);
@@ -59,6 +68,9 @@ export const ActStudioSide: FC<ActStudioSideProps> = ({ screen, editor, takes, s
       </KkPracticeScreen.Layer>
       <KkPracticeScreen.Layer shown={frame.side === 'songs'} tone="paper">
         <ActStudioSongList screen={screen} songs={songs} />
+      </KkPracticeScreen.Layer>
+      <KkPracticeScreen.Layer shown={frame.side === 'rail'} tone="paper">
+        <ActStudioStepRail screen={screen} tool={stepTool} />
       </KkPracticeScreen.Layer>
       <KkPracticeScreen.Layer shown={frame.side === 'takes'} tone="paper">
         <ActStudioTakeList takes={takes} />

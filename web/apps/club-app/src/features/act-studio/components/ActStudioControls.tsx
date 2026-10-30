@@ -10,6 +10,7 @@ import {
   PRACTICE_TRANSPORT_LABEL,
 } from '@/features/act-practice/practice-copy';
 import type { ActStudioStage } from '../hooks/use-act-studio-stage';
+import type { ActStudioStepTool } from '../hooks/use-act-studio-step-tool';
 import type { ActStudioTakes } from '../hooks/use-act-studio-takes';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import { STUDIO_DONE, STUDIO_EDIT } from '../studio-copy';
@@ -21,9 +22,15 @@ interface ActStudioControlsProps {
   screen: StudioScreen;
   editor: ActStudioStage;
   takes: ActStudioTakes;
+  stepTool: ActStudioStepTool;
 }
 
-export const ActStudioControls: FC<ActStudioControlsProps> = ({ screen, editor, takes }) => {
+export const ActStudioControls: FC<ActStudioControlsProps> = ({
+  screen,
+  editor,
+  takes,
+  stepTool,
+}) => {
   const { playback, practice, mode, frame } = screen;
   const status = barStatusOf(practice.loopKind, practice.partName);
   const back = (): void => {
@@ -61,7 +68,7 @@ export const ActStudioControls: FC<ActStudioControlsProps> = ({ screen, editor, 
           />
         </KkStudioView.Layer>
         <KkStudioView.Layer shown={frame.strip === 'marks'}>
-          <ActStudioMarkStrip screen={screen} />
+          <ActStudioMarkStrip screen={screen} tool={stepTool} />
         </KkStudioView.Layer>
         <KkStudioView.Layer shown={frame.strip === 'counts'}>
           <ActStudioCountStrip screen={screen} editor={editor} />

@@ -405,9 +405,37 @@ Done 2026-10-30. Decisions taken in the phase:
 
 ### Phase 9 — Steps and parts
 Goal: the manual exists on the music, in the Schritte tool.
-- [ ] Schritte tool: set/move/delete step marks on the mark strip (gapless), name + description inline in the head
-- [ ] Part strip above the marks (name, borders on step borders), main video per part
-- [ ] Step rail as the tool's overview: steps grouped by part with number, name, counts and formation thumbnail
+- [x] Schritte tool: set/move/delete step marks on the mark strip (gapless), name + description inline in the head
+- [x] Part strip above the marks (name, borders on step borders), main video per part
+- [x] Step rail as the tool's overview: steps grouped by part with number, name, counts and formation thumbnail
+
+Done 2026-10-30. Decisions taken in the phase:
+- **Endpoints** (all behind `ActStudioGate`; positions are seconds on the music the studio plays):
+  `POST /api/acts/{id}/steps` `{atSeconds}` → `{stepIds}` (splits the step there; the first mark set
+  later also opens a step at the start, so 1 or 2 ids; on a border or outside the music 422),
+  `PUT …/steps/{stepId}` `{name, description}` (trimmed, blank description stored as none),
+  `PUT …/steps/{stepId}/start` `{atSeconds}` (only strictly between the previous step's start and the
+  step's own end; the first step always starts with the music; a step adrift 422), `DELETE …/steps/{stepId}`
+  (its music goes to the previous step; a part stored on it moves to another of its steps, or is
+  removed when that was its only step). `POST /api/acts/{id}/parts` `{firstStepId, name}` → `{partId}`
+  (409 when a part already begins there or the step is adrift), `PUT …/parts/{partId}` `{name,
+  firstStepId, mainVideoId}` (the start only between the neighbouring parts' starts, the first part never
+  moves; a video of another act 404), `DELETE …/parts/{partId}` (its steps go to the previous part).
+- **The first part reaches back** to the first step. When a new part opens on the step the first part is
+  stored on, the first part is re-anchored on its first shown step, so what the editor sees stays true.
+  The same happens when the next part's start moves onto that step. Renaming the first part with its
+  shown first step does not move it.
+- **Anchors** are rewritten on a border move (`ActTimelineReader` builds the music + tilings for writes).
+- **Schritte tool**: the side box shows the **step rail** (the practice step list with part headers,
+  formation thumbnails, loop buttons) with the action *Neuer Schritt hier* in its head — it marks at the
+  playhead, snapped to the nearest count, so marks can be tapped along while the music plays. Tapping the
+  current step (on the mark strip or in the rail) opens the **step desk** (sheet on phone, side panel on
+  desktop): *Schritt entfernen* (second tap confirms), *Neuer Teil ab hier* / part name, *Beginnt früher /
+  später* (one step), *Teil auflösen*, and the part's *Hauptvideo* (any act video or none).
+- Border drags preview locally and save on release; name/description save on blur or Enter (every open
+  text draft is flushed, so a draft survives the playhead moving on); drafts clear when their write settles. All step and
+  part writes are optimistic patches of the studio read (marks and new parts wait for their ids), in one
+  mutation scope with the domain change `actSteps`.
 
 ### Phase 10 — Final file
 Goal: the members' player plays exactly what tech will play; built into the Musik tool.

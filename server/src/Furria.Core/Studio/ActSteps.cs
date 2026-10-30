@@ -50,6 +50,46 @@ public static class ActSteps
     }
 
     [Pure]
+    public static StepMark MoveTo(
+        StepTiling tiling,
+        int stepId,
+        double timelineSeconds,
+        ActMusic music
+    )
+    {
+        var index = IndexOf(tiling, stepId);
+        if (index < 0)
+            return StepMark.Refused(StepMarkRefusal.Adrift);
+        if (index == 0)
+            return StepMark.Refused(StepMarkRefusal.FirstStep);
+        if (!LiesBetweenNeighbours(tiling, index, timelineSeconds))
+            return StepMark.Refused(StepMarkRefusal.BeyondANeighbour);
+
+        return music.AnchorAt(timelineSeconds) is { } start
+            ? StepMark.Starting(start)
+            : StepMark.Refused(StepMarkRefusal.OutsideTheMusic);
+    }
+
+    [Pure]
+    private static int IndexOf(StepTiling tiling, int stepId)
+    {
+        for (var index = 0; index < tiling.Spans.Count; index++)
+            if (tiling.Spans[index].StepId == stepId)
+                return index;
+
+        return -1;
+    }
+
+    [Pure]
+    private static bool LiesBetweenNeighbours(
+        StepTiling tiling,
+        int index,
+        double timelineSeconds
+    ) =>
+        timelineSeconds > tiling.Spans[index - 1].StartSeconds + BorderToleranceSeconds
+        && timelineSeconds < tiling.Spans[index].EndSeconds - BorderToleranceSeconds;
+
+    [Pure]
     private static List<StepSpan> SpansOf(
         IReadOnlyList<(int StepId, double Seconds)> ordered,
         double lengthSeconds

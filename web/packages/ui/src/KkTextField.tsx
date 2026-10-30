@@ -23,6 +23,7 @@ interface KkTextFieldProps {
   helperText?: string;
   hint?: string;
   placeholder?: string;
+  maxLength?: number;
   value?: string;
   endAdornment?: ReactNode;
   onChange?: OutlinedTextFieldProps['onChange'];
@@ -45,6 +46,7 @@ export const KkTextField: FC<KkTextFieldProps> = ({
   helperText,
   hint,
   placeholder,
+  maxLength,
   value,
   endAdornment,
   onChange,
@@ -84,7 +86,10 @@ export const KkTextField: FC<KkTextFieldProps> = ({
       variant="outlined"
       fullWidth
       data-kk-text-field
-      slotProps={{ htmlInput: { inputMode, readOnly }, input: { endAdornment: adornment } }}
+      slotProps={{
+        htmlInput: { inputMode, readOnly, maxLength },
+        input: { endAdornment: adornment },
+      }}
       sx={sx}
     />
   );

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { partRangeOf } from '@/features/act-player/music-timeline';
 import { borderLabelOf, fineClockOf, markLabelOf } from '../studio-copy';
 import { borderMovedOf } from '../studio-edits';
+import type { ActStudioStepTool } from './use-act-studio-step-tool';
 import type { StudioScreen } from './use-studio-screen';
 
 export interface ActStudioMarkPart {
@@ -38,8 +39,11 @@ export interface ActStudioMarks {
   borders: ActStudioMarkBorder[];
 }
 
-export const useActStudioMarks = (screen: StudioScreen): ActStudioMarks => {
-  const { playback, practice, edits } = screen;
+export const useActStudioMarks = (
+  screen: StudioScreen,
+  tool: ActStudioStepTool,
+): ActStudioMarks => {
+  const { playback, practice, edits, manual } = screen;
   const { steps, parts, length, countMarks } = playback;
   const [activeId, setActiveId] = useState<number | null>(null);
   const shareOf = (seconds: number | null): number =>
@@ -78,6 +82,10 @@ export const useActStudioMarks = (screen: StudioScreen): ActStudioMarks => {
       label: markLabelOf(index + 1, step.name),
       current: index === currentIndex,
       press: () => {
+        if (index === currentIndex) {
+          tool.openDesk();
+          return;
+        }
         practice.jumpTo(step.stepId);
       },
     })),
@@ -93,6 +101,16 @@ export const useActStudioMarks = (screen: StudioScreen): ActStudioMarks => {
       },
       end: () => {
         setActiveId(null);
+        const moved = edits.value.bounds[after.stepId];
+        if (moved === undefined) {
+          return;
+        }
+        const clear = (): void => {
+          edits.clearBounds([before.stepId, after.stepId]);
+        };
+        void manual.move
+          .mutateAsync({ stepId: after.stepId, atSeconds: moved.start })
+          .then(clear, clear);
       },
     })),
   };

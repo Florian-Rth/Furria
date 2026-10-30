@@ -10,8 +10,8 @@ import { usePracticeVideo } from '@/features/act-practice/hooks/use-practice-vid
 import { canPractise } from '@/features/acts/act-studio';
 import type { Studio } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
-import type { SongMutations } from '../api';
-import { useSongMutations } from '../api';
+import type { SongMutations, StepMutations } from '../api';
+import { useSongMutations, useStepMutations } from '../api';
 import type { StageMutations } from '../stage-api';
 import { useStageMutations } from '../stage-api';
 import { workedPathsOf, workedStepsOf, workedStudioOf } from '../studio-edits';
@@ -27,6 +27,7 @@ export interface StudioScreen {
   music: SongMutations;
   stageWrites: StageMutations;
   cast: readonly CastPerson[];
+  manual: StepMutations;
   mode: ActStudioMode;
   frame: ActStudioFrame;
   edits: ActStudioEdits;
@@ -47,6 +48,7 @@ export const useStudioScreen = (
   const mode = useActStudioMode(canEdit, !canPractise(source));
   const music = useSongMutations(actId);
   const stageWrites = useStageMutations(actId);
+  const manual = useStepMutations(actId);
   const edits = useActStudioEdits();
   const studio = workedStudioOf(source, edits.value);
   const base = useStudioPlayback(studio, viewerId);
@@ -67,6 +69,7 @@ export const useStudioScreen = (
     music,
     stageWrites,
     cast,
+    manual,
     frame: studioFrameOf(mode.editing, mode.tool, video.hero),
     edits,
     studio,

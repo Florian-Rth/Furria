@@ -2,7 +2,7 @@ import type { HeroKind } from '@/features/act-practice/practice-controls';
 import type { StudioTool } from './studio-copy';
 
 export type ActStudioHeroKind = 'video' | 'stage' | 'wave' | 'editor';
-export type ActStudioSideKind = 'stage' | 'note' | 'songs' | 'takes' | 'cast';
+export type ActStudioSideKind = 'stage' | 'note' | 'songs' | 'rail' | 'takes' | 'cast';
 export type ActStudioStripKind = 'segments' | 'marks' | 'counts' | 'placement';
 
 export interface ActStudioFrame {
@@ -29,7 +29,7 @@ export const studioFrameOf = (
     case 'music':
       return { hero: 'wave', side: 'songs', strip: 'segments' };
     case 'steps':
-      return { ...practiceFrameOf(filmed), strip: 'marks' };
+      return { ...practiceFrameOf(filmed), side: 'rail', strip: 'marks' };
     case 'formation':
       return { hero: 'editor', side: 'cast', strip: 'segments' };
     case 'movement':

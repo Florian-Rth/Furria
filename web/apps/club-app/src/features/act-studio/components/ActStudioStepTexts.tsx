@@ -1,12 +1,15 @@
 import { KkPracticeView } from '@furria/ui/KkPracticeView';
 import { KkStudioInlineText } from '@furria/ui/KkStudioInlineText';
 import type { FC } from 'react';
+import { useStepTexts } from '../hooks/use-step-texts';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import {
   STUDIO_NAME_LABEL,
   STUDIO_NAME_PLACEHOLDER,
   STUDIO_NOTE_LABEL,
   STUDIO_NOTE_PLACEHOLDER,
+  STUDIO_STEP_NAME_LENGTH,
+  STUDIO_STEP_NOTE_LENGTH,
 } from '../studio-copy';
 
 interface ActStudioStepTextsProps {
@@ -14,35 +17,27 @@ interface ActStudioStepTextsProps {
 }
 
 export const ActStudioStepTexts: FC<ActStudioStepTextsProps> = ({ screen }) => {
-  const step = screen.practice.step;
-  const name = step?.name ?? '';
-  const description = step?.description ?? '';
-  const rename = (value: string): void => {
-    if (step !== null) {
-      screen.edits.setText(step.stepId, { name: value, description });
-    }
-  };
-  const describe = (value: string): void => {
-    if (step !== null) {
-      screen.edits.setText(step.stepId, { name, description: value });
-    }
-  };
+  const texts = useStepTexts(screen);
 
   return (
     <KkPracticeView.Titles>
       <KkStudioInlineText
         variant="name"
-        value={name}
+        value={texts.name}
         label={STUDIO_NAME_LABEL}
         placeholder={STUDIO_NAME_PLACEHOLDER}
-        onChange={rename}
+        maxLength={STUDIO_STEP_NAME_LENGTH}
+        onChange={texts.rename}
+        onCommit={texts.commit}
       />
       <KkStudioInlineText
         variant="note"
-        value={description}
+        value={texts.description}
         label={STUDIO_NOTE_LABEL}
         placeholder={STUDIO_NOTE_PLACEHOLDER}
-        onChange={describe}
+        maxLength={STUDIO_STEP_NOTE_LENGTH}
+        onChange={texts.describe}
+        onCommit={texts.commit}
       />
     </KkPracticeView.Titles>
   );
