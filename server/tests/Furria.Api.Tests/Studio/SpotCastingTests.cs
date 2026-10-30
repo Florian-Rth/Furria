@@ -40,4 +40,36 @@ public sealed class SpotCastingTests
 
         Assert.Empty(SpotCasting.PeopleOnSeveralSpots(evening));
     }
+
+    [Fact]
+    public void Should_StoreTheStandIn_When_TheEveningPutsHerOnASpot()
+    {
+        var changes = SpotCasting.EveningChangesAfter(Session, [], new(2, Carla));
+
+        Assert.Equal([new(2, Carla)], changes);
+    }
+
+    [Fact]
+    public void Should_FreeHerSessionSpot_When_TheEveningMovesHerToAnotherSpot()
+    {
+        var changes = SpotCasting.EveningChangesAfter(Session, [], new(3, Anna));
+
+        Assert.Equal([new(1, null), new(3, Anna)], changes);
+    }
+
+    [Fact]
+    public void Should_ForgetTheChange_When_TheEveningReturnsToTheSessionPerson()
+    {
+        var changes = SpotCasting.EveningChangesAfter(Session, [new(2, Carla)], new(2, Ben));
+
+        Assert.Empty(changes);
+    }
+
+    [Fact]
+    public void Should_FreeHerOtherEveningSpot_When_TheStandInMovesThatEvening()
+    {
+        var changes = SpotCasting.EveningChangesAfter(Session, [new(3, Carla)], new(2, Carla));
+
+        Assert.Equal([new(2, Carla)], changes);
+    }
 }

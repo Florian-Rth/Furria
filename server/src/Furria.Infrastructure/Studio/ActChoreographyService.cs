@@ -14,7 +14,8 @@ public sealed class ActChoreographyService
 {
     private const string StaleVersionMessage =
         "Die Aufstellung wurde inzwischen woanders geändert. Lade sie neu und ändere sie erneut.";
-    private const string ProblemsMessage =
+
+    public const string ProblemsMessage =
         "Die Aufstellung passt nicht zu den Plätzen, der Musik oder der Bühne des Auftritts.";
 
     private readonly AppDbContext _dbContext;
@@ -62,6 +63,14 @@ public sealed class ActChoreographyService
         return Result<int>.Success(saved.Version);
     }
 
+    public async Task<ChoreographyFrame> FrameOfAsync(int actId, CancellationToken ct) =>
+        new(
+            await SpotIdsOfAsync(actId, ct),
+            await MusicSourceIdsOfAsync(actId, ct),
+            await MusicOfAsync(actId, ct),
+            StageSizeOf(await _clubRecords.StageOfClubAsync(ct))
+        );
+
     private Choreography AddedChoreography(int actId)
     {
         var choreography = new Choreography { ActId = actId };
@@ -77,14 +86,6 @@ public sealed class ActChoreographyService
 
         choreography.Document = document;
     }
-
-    private async Task<ChoreographyFrame> FrameOfAsync(int actId, CancellationToken ct) =>
-        new(
-            await SpotIdsOfAsync(actId, ct),
-            await MusicSourceIdsOfAsync(actId, ct),
-            await MusicOfAsync(actId, ct),
-            StageSizeOf(await _clubRecords.StageOfClubAsync(ct))
-        );
 
     private async Task<IReadOnlySet<int>> SpotIdsOfAsync(int actId, CancellationToken ct) =>
         (

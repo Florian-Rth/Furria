@@ -84,7 +84,7 @@ public sealed class ActStudioService
                     CanGrantCoEditors = editable && editorship.LeadsGroup,
                 },
                 CoEditors = seesStudio ? await CoEditorsOfAsync(actId, ct) : [],
-                Content = seesStudio ? await _reader.ContentOfAsync(actId, ct) : null,
+                Content = seesStudio ? await _reader.ContentOfAsync(act, ct) : null,
             }
         );
     }

@@ -29,7 +29,7 @@ const act = (actId: number, cast: CastPerson[], options: ActOptions = {}): Draft
   placed: options.placed ?? true,
   pinned: false,
   blockKey: null,
-  eveningChanged: false,
+  eveningChanges: [],
 });
 
 const evening = (

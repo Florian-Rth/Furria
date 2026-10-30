@@ -8,12 +8,14 @@ import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { PRACTICE_LABEL } from '@/features/act-practice/practice-copy';
+import { eveningCastOf } from '@/features/act-studio/studio-evening';
 import { useCloseOnEscape } from '@/features/events/hooks/use-close-on-escape';
 import { useActsQuery } from '@/features/running-order/api';
 import { usePlansRunningOrder } from '@/features/running-order/hooks/use-plans-running-order';
-import type { CatalogueAct } from '@/features/running-order/schemas';
+import type { CastPerson, CatalogueAct } from '@/features/running-order/schemas';
 import { useMeQuery } from '@/features/session/api';
 import { parsePositiveId } from '@/lib/positive-id';
+import { toEveningLabel } from '../act-evenings-copy';
 import {
   ACT_FALLBACK_TITLE,
   DETAILS_LABEL,
@@ -24,7 +26,7 @@ import type { ActPageMode } from '../act-studio';
 import { actPageModeOf, canPractise } from '../act-studio';
 import { actPageOriginOf, actPageReturnOf } from '../acts-origin';
 import { useActStudioQuery } from '../api';
-import type { ActPageSearch, ActStudioResponse } from '../schemas';
+import type { ActPageSearch, ActStudioResponse, StudioEvening } from '../schemas';
 
 const NO_ACTS: readonly CatalogueAct[] = [];
 const SIDE_OPEN_SPAN: KkMasterDetailSpan = 7;
@@ -40,14 +42,24 @@ export interface ActPageState {
   practiceActions: readonly [KkQuietScreenAction];
   viewerId: number | null;
   canEditStudio: boolean;
+  evening: StudioEvening | null;
+  eveningCast: readonly CastPerson[];
+  startEditing: boolean;
   isSettingsOpen: boolean;
+  isEveningOpen: boolean;
   isWide: boolean;
   masterSpan: KkMasterDetailSpan;
   acts: readonly CatalogueAct[];
   fixedGroupId: number | null;
   closeSettings: () => void;
+  openEvening: (eventId: number) => void;
+  closeEvening: () => void;
+  practiseEvening: (eventId: number, edit: boolean) => void;
   reload: () => void;
 }
+
+const titleOf = (name: string, evening: StudioEvening | null, mode: ActPageMode): string =>
+  evening === null || mode !== 'practice' ? name : `${name} · ${toEveningLabel(evening)}`;
 
 const detailActionsOf = (
   practice: KkQuietScreenAction | null,
@@ -78,6 +90,9 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
   const studio = query.data?.studio;
   const canEditStudio = query.data?.viewer.canEditStudio === true;
   const mode = actPageModeOf(studio, canEditStudio, search);
+  const evening =
+    studio?.evenings.find((candidate) => candidate.eventId === search.evening) ?? null;
+  const isEveningOpen = mode === 'details' && !isSettingsOpen && canEditStudio && evening !== null;
 
   const showView = (view: 'details' | undefined): void => {
     void navigate({
@@ -89,7 +104,20 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
   const showSettings = (settings: true | undefined): void => {
     void navigate({
       to: '.',
-      search: (previous) => ({ ...previous, view: 'details', settings }),
+      search: (previous) => ({ ...previous, view: 'details', settings, evening: undefined }),
+      replace: true,
+      resetScroll: false,
+    });
+  };
+  const showEvening = (eventId: number | undefined): void => {
+    void navigate({
+      to: '.',
+      search: (previous) => ({
+        ...previous,
+        view: 'details',
+        settings: undefined,
+        evening: eventId,
+      }),
       replace: true,
       resetScroll: false,
     });
@@ -101,14 +129,23 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
     showSettings(undefined);
   };
 
+  const closeEvening = (): void => {
+    showEvening(undefined);
+  };
+
   useCloseOnEscape(isWide && isSettingsOpen, closeSettings);
+  useCloseOnEscape(isWide && isEveningOpen, closeEvening);
 
   const detailsAction: KkQuietScreenAction = {
     id: 'details',
     label: DETAILS_LABEL,
     icon: 'info',
     onSelect: () => {
-      showView('details');
+      void navigate({
+        to: '.',
+        search: (previous) => ({ ...previous, view: 'details', edit: undefined }),
+        resetScroll: true,
+      });
     },
   };
   const practisable = canPractise(studio ?? null);
@@ -120,6 +157,7 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
       showView(undefined);
     },
   };
+  const sidePaneOpen = isSettingsOpen || isEveningOpen;
   const settingsAction: KkQuietScreenAction = {
     id: 'settings',
     label: SETTINGS_LABEL,
@@ -134,19 +172,38 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
   return {
     actId,
     query,
-    title: act?.name ?? ACT_FALLBACK_TITLE,
+    title: titleOf(act?.name ?? ACT_FALLBACK_TITLE, evening, mode),
     origin: actPageOriginOf(actPageReturnOf(search, act), act),
     mode,
     actions: detailActions,
     practiceActions: [detailsAction],
     viewerId: me.data?.person?.id ?? null,
     canEditStudio,
+    evening,
+    eveningCast: eveningCastOf(act?.cast ?? [], evening?.appearance ?? null),
+    startEditing: search.edit === true,
     isSettingsOpen,
+    isEveningOpen,
     isWide,
-    masterSpan: isWide && isSettingsOpen ? SIDE_OPEN_SPAN : FULL_SPAN,
+    masterSpan: isWide && sidePaneOpen ? SIDE_OPEN_SPAN : FULL_SPAN,
     acts: catalogue.data?.acts ?? NO_ACTS,
     fixedGroupId: plans ? null : (act?.group?.groupId ?? null),
     closeSettings,
+    openEvening: showEvening,
+    closeEvening,
+    practiseEvening: (eventId, edit) => {
+      void navigate({
+        to: '.',
+        search: (previous) => ({
+          ...previous,
+          view: undefined,
+          settings: undefined,
+          evening: eventId,
+          edit: edit ? true : undefined,
+        }),
+        resetScroll: true,
+      });
+    },
     reload: () => {
       void query.refetch();
     },

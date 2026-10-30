@@ -516,10 +516,47 @@ Ruling 2026-10-30 (Florian): offline is not needed for v1. Practising needs a co
 
 ### Phase 15 — Evening adjustments
 Goal: an evening can differ from the session without touching it.
-- [ ] *Wir tanzen hier* / *Für diesen Abend anpassen* on evenings the group takes part in (creates the appearance → planner tray)
-- [ ] Evening cast in/out, spot reassignment / empty spot
-- [ ] Evening copy of the choreography; notice when the session version changed after the copy
-- [ ] Player and planner show the evening's version
+- [x] *Wir tanzen hier* / *Für diesen Abend anpassen* on evenings the group takes part in (creates the appearance → planner tray)
+- [x] Evening cast in/out, spot reassignment / empty spot
+- [x] Evening copy of the choreography; notice when the session version changed after the copy
+- [x] Player and planner show the evening's version
+
+Done 2026-10-30. Decisions taken in the phase:
+- **Which evenings**: events carry no participating groups (they live in the workbench), so the
+  evenings offered are the club's coming, not cancelled **events of the act's session**, plus every
+  evening the act already appears at. The appearance itself is the group's "we take part".
+- **Endpoints** (all behind `ActStudioGate`; an unknown or cancelled event 404, a past evening 409;
+  every write is checked before anything is stored and then creates the appearance when missing through `RunningOrderService`, which creates the running
+  order if needed and raises its version, so it lands unplaced in the tray and an open draft reloads):
+  `PUT /api/acts/{id}/evenings/{eventId}` (*Wir tanzen hier*; 409 for another session's evening),
+  `DELETE …/evenings/{eventId}` (withdraw; 409 once the planner placed it),
+  `PUT …/evenings/{eventId}/cast/{personId}` `{dances}` (stores only the difference from the
+  session cast: in the cast and not dancing = *out*, outside it and dancing = *stand-in*; it raises
+  the running order's version, since the evening cast feeds the review),
+  `PUT …/evenings/{eventId}/spots/{spotId}` `{personId}` (only people dancing that evening; the
+  person's other spot that evening is freed; only spots that differ from the session are stored —
+  choosing the session's holder again forgets the change), `PUT …/evenings/{eventId}/choreography`
+  `{expectedVersion, sessionVersion, tracks}` (the first save creates the copy and must name the
+  session version it was made from, 409 when the session moved on meanwhile; then a version token
+  like the session's) and `DELETE …/evenings/{eventId}/choreography` (back to the session live).
+- The studio read carries `studio.evenings` (event, title, start, appearance: placed, stand-ins,
+  people out, spot changes, the copy with `copiedFromVersion`). *Behind* = the copy was made from
+  another version than the session's current one (removing a spot also counts, it raises every version).
+- **Player**: `/acts/$actId?evening=<eventId>` plays the evening's version — evening spot holders,
+  spots of people sitting the evening out shown open, the copy (or the session live); the title reads
+  *Gardetanz · Prunksitzung, Sa., 29.11.*. Editing there offers only *Aufstellung* and *Bewegung*
+  (music and steps stay session-wide), saves go to the evening, spots can't be added or removed.
+- **Details page**: section *Abende* (state, *angepasst*, *Wir tanzen hier* per open evening); editors
+  open the **evening pane** (`?view=details&evening=…`, side pane / bottom drawer): cast grid with
+  in/out and stand-ins, the formation state with *Für diesen Abend anpassen* (opens the studio in
+  evening edit mode, `&edit=true`) and *Wieder wie in der Session* (second tap), *Diese Fassung üben*,
+  *Wir tanzen hier nicht* (second tap; replaced by a note once placed). Cast members open the
+  evening's version directly.
+- Withdrawing (*Wir tanzen hier nicht*) drops the evening's own adjustments with it (second tap in
+  the pane); the planner's 409 guard stays for the planner's own removals.
+- **Planner**: a line's `eveningChanged` became `eveningChanges` (`cast`, `spots`, `choreography`),
+  shown as *für den Abend angepasst* in the line facts; the 409 on taking an adjusted act out names
+  what would be lost (*Besetzung, Plätze, Aufstellung*).
 
 ### Phase 16 — Training
 Goal: the studio is used every week.

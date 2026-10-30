@@ -50,25 +50,8 @@ public sealed class PutActChoreography
         {
             ActId = req.ActId,
             ExpectedVersion = req.ExpectedVersion,
-            Document = new ChoreographyDocument([
-                .. req.Tracks.Select(track => new SpotTrack(
-                    track.SpotId,
-                    [.. track.Keyframes.Select(ToKeyframe)]
-                )),
-            ]),
+            Document = ChoreographyTrackDataDto.DocumentOf(req.Tracks),
         };
-
-    private static Keyframe ToKeyframe(ChoreographyKeyframeDataDto keyframe) =>
-        new(
-            new MusicAnchor(keyframe.SourceMediaItemId, keyframe.Seconds),
-            ToPoint(keyframe.Position),
-            keyframe.Bend is { } bend ? ToPoint(bend) : null,
-            keyframe.Easing,
-            keyframe.FacingDegrees
-        );
-
-    private static StagePoint ToPoint(ChoreographyPointDataDto point) =>
-        new(point.RightMetres, point.BackMetres);
 }
 
 public sealed record PutActChoreographyRequest
@@ -81,39 +64,8 @@ public sealed record PutActChoreographyRequest
     public required IReadOnlyList<ChoreographyTrackDataDto> Tracks { get; init; }
 }
 
-public sealed record ChoreographyTrackDataDto
-{
-    public required int SpotId { get; init; }
-
-    public required IReadOnlyList<ChoreographyKeyframeDataDto> Keyframes { get; init; }
-}
-
-public sealed record ChoreographyKeyframeDataDto
-{
-    public required int SourceMediaItemId { get; init; }
-
-    public required double Seconds { get; init; }
-
-    public required ChoreographyPointDataDto Position { get; init; }
-
-    public required ChoreographyPointDataDto? Bend { get; init; }
-
-    public required KeyframeEasing Easing { get; init; }
-
-    public required double? FacingDegrees { get; init; }
-}
-
-public sealed record ChoreographyPointDataDto
-{
-    public required double RightMetres { get; init; }
-
-    public required double BackMetres { get; init; }
-}
-
 public sealed class PutActChoreographyValidator : Validator<PutActChoreographyRequest>
 {
-    private const int MostKeyframesPerTrack = 2000;
-
     public PutActChoreographyValidator()
     {
         RuleFor(request => request.ActId).GreaterThan(0);
@@ -122,28 +74,7 @@ public sealed class PutActChoreographyValidator : Validator<PutActChoreographyRe
             .Cascade(CascadeMode.Stop)
             .NotNull()
             .Must(tracks => tracks.Count <= Spot.MostPerAct);
-        RuleForEach(request => request.Tracks)
-            .ChildRules(track =>
-            {
-                track.RuleFor(row => row.SpotId).GreaterThan(0);
-                track
-                    .RuleFor(row => row.Keyframes)
-                    .Cascade(CascadeMode.Stop)
-                    .NotNull()
-                    .Must(keyframes => keyframes.Count <= MostKeyframesPerTrack);
-                track.RuleForEach(row => row.Keyframes).ChildRules(KeyframeRules);
-            });
-    }
-
-    private static void KeyframeRules(InlineValidator<ChoreographyKeyframeDataDto> keyframe)
-    {
-        keyframe.RuleFor(row => row.SourceMediaItemId).GreaterThan(0);
-        keyframe.RuleFor(row => row.Seconds).GreaterThanOrEqualTo(0).Must(double.IsFinite);
-        keyframe.RuleFor(row => row.Position).NotNull();
-        keyframe.RuleFor(row => row.Easing).IsInEnum();
-        keyframe
-            .RuleFor(row => row.FacingDegrees)
-            .Must(facing => facing is not { } degrees || double.IsFinite(degrees));
+        RuleForEach(request => request.Tracks).SetValidator(new ChoreographyTrackDataValidator());
     }
 }
 

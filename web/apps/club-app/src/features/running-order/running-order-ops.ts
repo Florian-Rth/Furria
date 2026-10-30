@@ -371,7 +371,7 @@ const lineOfAct = (act: CatalogueAct): DraftLine => ({
   placed: true,
   pinned: false,
   blockKey: null,
-  eveningChanged: false,
+  eveningChanges: [],
 });
 
 const lastIndexOf = (draft: RunningOrderDraft): number => placedLinesOf(draft).length - 1;
@@ -434,7 +434,7 @@ export const pickActs = (
     : moveUnit(wished, trailingLast, lastIndexOf(wished));
 };
 
-export const isDroppable = (line: DraftLine): boolean => !line.eveningChanged;
+export const isDroppable = (line: DraftLine): boolean => line.eveningChanges.length === 0;
 
 export const dropAct = (draft: RunningOrderDraft, actId: number): RunningOrderDraft => {
   const key = actLineKeyOf(actId);
@@ -539,7 +539,7 @@ const draftLineOf = (line: RunningOrderLine): DraftLine => ({
   placed: line.position !== null,
   pinned: line.position !== null && line.pinned,
   blockKey: line.position === null ? null : line.blockKey,
-  eveningChanged: line.eveningChanged,
+  eveningChanges: line.eveningChanges,
 });
 
 export const draftOf = (response: RunningOrderResponse): RunningOrderDraft => {

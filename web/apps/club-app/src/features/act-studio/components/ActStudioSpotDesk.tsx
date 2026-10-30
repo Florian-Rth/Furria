@@ -26,6 +26,16 @@ export const ActStudioSpotDesk: FC<ActStudioSpotDeskProps> = ({ desk }) => {
   ));
   const freeVariant = desk.open ? 'contained' : 'outlined';
   const removeText = desk.removing ? STUDIO_SPOT_REMOVE_SURE : STUDIO_SPOT_REMOVE;
+  const removal = desk.removable ? (
+    <KkStudioDesk.Line>
+      <KkStudioDesk.Title text={desk.title} />
+      <KkStudioDesk.Controls>
+        <KkButton variant="outlined" tone="danger" size="small" onClick={desk.remove}>
+          {removeText}
+        </KkButton>
+      </KkStudioDesk.Controls>
+    </KkStudioDesk.Line>
+  ) : null;
 
   return (
     <KkStudioDesk label={desk.title}>
@@ -38,14 +48,7 @@ export const ActStudioSpotDesk: FC<ActStudioSpotDeskProps> = ({ desk }) => {
           </KkButton>
         </KkStudioDesk.Controls>
       </KkStudioDesk.Line>
-      <KkStudioDesk.Line>
-        <KkStudioDesk.Title text={desk.title} />
-        <KkStudioDesk.Controls>
-          <KkButton variant="outlined" tone="danger" size="small" onClick={desk.remove}>
-            {removeText}
-          </KkButton>
-        </KkStudioDesk.Controls>
-      </KkStudioDesk.Line>
+      {removal}
     </KkStudioDesk>
   );
 };

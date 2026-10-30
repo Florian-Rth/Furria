@@ -18,7 +18,7 @@ const line = (actId: number, cast: CastPerson[], placed = true): DraftLine => ({
   placed,
   pinned: false,
   blockKey: null,
-  eveningChanged: false,
+  eveningChanges: [],
 });
 
 const draftOf = (lines: DraftLine[]): RunningOrderDraft => ({

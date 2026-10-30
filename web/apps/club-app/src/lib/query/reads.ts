@@ -34,6 +34,7 @@ export const DOMAIN_CHANGES = [
   'actChoreography',
   'actSteps',
   'actVideos',
+  'actEvening',
   'runningOrder',
 ] as const;
 export type DomainChange = (typeof DOMAIN_CHANGES)[number];
@@ -311,6 +312,9 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'actChoreography',
     'actSteps',
     'actVideos',
+    'actEvening',
+    'runningOrder',
+    'event',
     'group',
     'groupMembership',
     'groupAdmin',
@@ -325,6 +329,7 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   myActs: ['act', 'actCoEditor', 'group', 'groupMembership', 'picture'],
   runningOrder: [
     'act',
+    'actEvening',
     'group',
     'groupMembership',
     'person',
@@ -333,7 +338,7 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'calendarEntry',
     'event',
   ],
-  runningOrders: ['runningOrder', 'act', 'event', 'calendarEntry'],
+  runningOrders: ['runningOrder', 'actEvening', 'act', 'event', 'calendarEntry'],
 };
 
 export const staleReadsAfter = (changes: readonly DomainChange[]): ReadName[] =>

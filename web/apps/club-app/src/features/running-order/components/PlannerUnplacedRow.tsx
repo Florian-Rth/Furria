@@ -62,7 +62,14 @@ export const PlannerUnplacedRow: FC<PlannerUnplacedRowProps> = ({ line }) => {
       number={null}
       mark={mark}
       title={act.name}
-      fact={<PlannerLineFact act={act} cast={act.cast} compact={!planner.isWide || ordering} />}
+      fact={
+        <PlannerLineFact
+          act={act}
+          cast={act.cast}
+          compact={!planner.isWide || ordering}
+          eveningChanges={line.eveningChanges}
+        />
+      }
       openLabel={OPEN_LABEL}
       onOpen={open}
       trailing={action}

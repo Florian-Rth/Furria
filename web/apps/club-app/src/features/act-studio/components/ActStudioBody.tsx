@@ -8,6 +8,7 @@ import { useActStudioSongs } from '../hooks/use-act-studio-songs';
 import { useActStudioStage } from '../hooks/use-act-studio-stage';
 import { useActStudioStepTool } from '../hooks/use-act-studio-step-tool';
 import { useActStudioTakes } from '../hooks/use-act-studio-takes';
+import type { StudioEveningContext } from '../hooks/use-studio-screen';
 import { useStudioScreen } from '../hooks/use-studio-screen';
 import { STUDIO_LABEL } from '../studio-copy';
 import { ActStudioControls } from './ActStudioControls';
@@ -26,6 +27,7 @@ interface ActStudioBodyProps {
   viewerId: number | null;
   canEdit: boolean;
   cast: readonly CastPerson[];
+  context: StudioEveningContext;
 }
 
 export const ActStudioBody: FC<ActStudioBodyProps> = ({
@@ -34,8 +36,9 @@ export const ActStudioBody: FC<ActStudioBodyProps> = ({
   viewerId,
   canEdit,
   cast,
+  context,
 }) => {
-  const screen = useStudioScreen(actId, studio, viewerId, canEdit, cast);
+  const screen = useStudioScreen(actId, studio, viewerId, canEdit, cast, context);
   const editor = useActStudioStage(screen);
   const takes = useActStudioTakes(screen);
   const songs = useActStudioSongs(screen);

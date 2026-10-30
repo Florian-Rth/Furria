@@ -24,7 +24,7 @@ export const PlannerRowDetailHead: FC<PlannerRowDetailHeadProps> = ({ line }) =>
         pinned={line.pinned}
         mark={<PlannerLineMark act={act} />}
         title={act.name}
-        fact={<PlannerLineFact act={act} cast={act.cast} />}
+        fact={<PlannerLineFact act={act} cast={act.cast} eveningChanges={line.eveningChanges} />}
         arrive={false}
         openLabel={OPEN_LABEL}
       />

@@ -17,22 +17,26 @@ public sealed class ActStudioReader
     private readonly ActCatalogue _catalogue;
     private readonly MediaUrlSigner _signer;
     private readonly ClubRecordService _clubRecords;
+    private readonly ActEveningReader _evenings;
 
     public ActStudioReader(
         AppDbContext dbContext,
         ActCatalogue catalogue,
         MediaUrlSigner signer,
-        ClubRecordService clubRecords
+        ClubRecordService clubRecords,
+        ActEveningReader evenings
     )
     {
         _dbContext = dbContext;
         _catalogue = catalogue;
         _signer = signer;
         _clubRecords = clubRecords;
+        _evenings = evenings;
     }
 
-    public async Task<ActStudioContent> ContentOfAsync(int actId, CancellationToken ct)
+    public async Task<ActStudioContent> ContentOfAsync(ActSummary act, CancellationToken ct)
     {
+        var actId = act.ActId;
         var owner = MediaOwner.Act(actId);
         var songs = await SongsOfAsync(actId, owner, ct);
         var finalTracks = await FinalTracksOfAsync(actId, owner, ct);
@@ -64,6 +68,7 @@ public sealed class ActStudioReader
             Videos = await VideosOfAsync(actId, owner, music, ct),
             Choreography = await ChoreographyOfAsync(actId, ct),
             Stage = await _clubRecords.StageOfClubAsync(ct),
+            Evenings = await _evenings.EveningsOfAsync(act, ct),
         };
     }
 

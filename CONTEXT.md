@@ -833,7 +833,11 @@ the act's cast on that day, plus and minus the appearance's own changes. An act 
 only from that evening's session (or timeless) and never once its session has ended. Taking an act
 out of the running order deletes its appearance; while the appearance still holds evening changes
 that is refused, so nothing an evening was adjusted for gets lost silently (built 2026-10-29,
-RFC 0001 phase 2).
+RFC 0001 phase 2). The group's editors create an appearance themselves (*Wir tanzen hier*, or any
+adjustment for that evening): it lands unplaced in the planner's tray and the group may withdraw it
+until the planner has placed it. Without its own copy the evening plays the session choreography
+live; with a copy, later session changes do not reach it — the evening only shows that the
+session moved on (built 2026-10-30, RFC 0001 phase 15).
 _UI copy_: always in context — *Auftritt am 11.11.*, *an diesem Abend*
 _Avoid_: performance (that is the calendar entry kind), show, gig, line (for the running-order place)
 

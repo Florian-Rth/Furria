@@ -1,4 +1,12 @@
-import type { ActWish, FindingKind, LineAct, LineKey, RuleBody, Severity } from './schemas';
+import type {
+  ActWish,
+  EveningChange,
+  FindingKind,
+  LineAct,
+  LineKey,
+  RuleBody,
+  Severity,
+} from './schemas';
 
 export interface DraftLine {
   key: LineKey;
@@ -7,7 +15,7 @@ export interface DraftLine {
   placed: boolean;
   pinned: boolean;
   blockKey: number | null;
-  eveningChanged: boolean;
+  eveningChanges: EveningChange[];
 }
 
 export type RuleKey = `rule:${number}` | `draft:${number}`;

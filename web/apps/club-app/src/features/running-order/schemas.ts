@@ -131,13 +131,17 @@ export type CreatedAct = z.infer<typeof CreatedActSchema>;
 export const LineActSchema = ActRefSchema.extend({ cast: z.array(CastPersonSchema) });
 export type LineAct = z.infer<typeof LineActSchema>;
 
+export const EVENING_CHANGES = ['cast', 'spots', 'choreography'] as const;
+export const EveningChangeSchema = z.enum(EVENING_CHANGES);
+export type EveningChange = z.infer<typeof EveningChangeSchema>;
+
 export const RunningOrderLineSchema = z.object({
   lineId: z.number().int(),
   act: LineActSchema,
   position: z.number().int().nonnegative().nullable(),
   pinned: z.boolean(),
   blockKey: z.number().int().nullable(),
-  eveningChanged: z.boolean(),
+  eveningChanges: z.array(EveningChangeSchema),
 });
 export type RunningOrderLine = z.infer<typeof RunningOrderLineSchema>;
 

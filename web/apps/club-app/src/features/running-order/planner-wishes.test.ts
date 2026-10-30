@@ -21,7 +21,7 @@ const act = (
   placed: true,
   pinned: options.pinned ?? false,
   blockKey: options.blockKey ?? null,
-  eveningChanged: false,
+  eveningChanges: [],
 });
 
 const draft: RunningOrderDraft = {

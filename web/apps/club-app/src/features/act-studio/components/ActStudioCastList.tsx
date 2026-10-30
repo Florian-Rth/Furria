@@ -12,6 +12,15 @@ interface ActStudioCastListProps {
 
 export const ActStudioCastList: FC<ActStudioCastListProps> = ({ screen, editor }) => {
   const cast = useActStudioCast(screen, editor);
+  const addSpot =
+    screen.evening === null ? (
+      <KkStudioList.Action
+        icon="add"
+        text={STUDIO_SPOT_ADD}
+        disabled={screen.stageWrites.addSpot.isPending}
+        onPress={editor.addSpot}
+      />
+    ) : null;
   const rows = cast.map((row) => (
     <KkStudioList.Row
       key={row.key}
@@ -30,12 +39,7 @@ export const ActStudioCastList: FC<ActStudioCastListProps> = ({ screen, editor }
     <KkStudioList label={STUDIO_SPOTS}>
       <KkStudioList.Head text={editor.formationText} aside={null} />
       {rows}
-      <KkStudioList.Action
-        icon="add"
-        text={STUDIO_SPOT_ADD}
-        disabled={screen.stageWrites.addSpot.isPending}
-        onPress={editor.addSpot}
-      />
+      {addSpot}
     </KkStudioList>
   );
 };

@@ -63,7 +63,12 @@ export const PlannerLineRow: FC<PlannerLineRowProps> = ({ entry }) => {
   const fact = leads ? (
     <PlannerDragReadout />
   ) : (
-    <PlannerLineFact act={act} cast={act.cast} compact={compact} />
+    <PlannerLineFact
+      act={act}
+      cast={act.cast}
+      compact={compact}
+      eveningChanges={entry.line.eveningChanges}
+    />
   );
   const mark = showsPictureOf(planner.mode, planner.isWide) ? <PlannerLineMark act={act} /> : null;
   const open = (): void => {

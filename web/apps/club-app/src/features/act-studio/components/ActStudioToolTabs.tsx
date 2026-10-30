@@ -8,7 +8,7 @@ interface ActStudioToolTabsProps {
 }
 
 export const ActStudioToolTabs: FC<ActStudioToolTabsProps> = ({ mode }) => {
-  const tools = STUDIO_TOOLS.map((entry) => {
+  const tools = STUDIO_TOOLS.filter((entry) => mode.tools.includes(entry.tool)).map((entry) => {
     const select = (): void => {
       mode.choose(entry.tool);
     };

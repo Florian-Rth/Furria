@@ -42,6 +42,8 @@ export const ActPageSearchSchema = z.object({
   session: z.coerce.number().int().positive().optional().catch(undefined),
   settings: z.boolean().optional().catch(undefined),
   view: z.enum(['details']).optional().catch(undefined),
+  evening: z.coerce.number().int().positive().optional().catch(undefined),
+  edit: z.boolean().optional().catch(undefined),
 });
 export type ActPageSearch = z.infer<typeof ActPageSearchSchema>;
 
@@ -151,6 +153,35 @@ export const StudioStageSchema = z.object({
 });
 export type StudioStage = z.infer<typeof StudioStageSchema>;
 
+export const StudioSpotChangeSchema = z.object({
+  spotId: z.int(),
+  person: StudioPersonSchema.nullable(),
+});
+export type StudioSpotChange = z.infer<typeof StudioSpotChangeSchema>;
+
+export const EveningChoreographySchema = ChoreographySchema.extend({
+  copiedFromVersion: z.int().nullable(),
+});
+export type EveningChoreography = z.infer<typeof EveningChoreographySchema>;
+
+export const StudioAppearanceSchema = z.object({
+  appearanceId: z.int(),
+  placed: z.boolean(),
+  added: z.array(StudioPersonSchema),
+  removedPersonIds: z.array(z.int()),
+  spotChanges: z.array(StudioSpotChangeSchema),
+  choreography: EveningChoreographySchema.nullable(),
+});
+export type StudioAppearance = z.infer<typeof StudioAppearanceSchema>;
+
+export const StudioEveningSchema = z.object({
+  eventId: z.int(),
+  title: z.string(),
+  startsAt: z.iso.datetime({ offset: true }),
+  appearance: StudioAppearanceSchema.nullable(),
+});
+export type StudioEvening = z.infer<typeof StudioEveningSchema>;
+
 export const StudioSchema = z.object({
   music: z.object({
     lengthSeconds: z.number(),
@@ -164,6 +195,7 @@ export const StudioSchema = z.object({
   videos: z.array(StudioVideoSchema),
   choreography: ChoreographySchema.nullable(),
   stage: StudioStageSchema.nullable(),
+  evenings: z.array(StudioEveningSchema),
 });
 export type Studio = z.infer<typeof StudioSchema>;
 

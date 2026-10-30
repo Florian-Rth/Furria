@@ -15,6 +15,7 @@ export interface SpotDesk {
   choices: SpotDeskChoice[];
   open: boolean;
   free: () => void;
+  removable: boolean;
   removing: boolean;
   remove: () => void;
 }
@@ -74,6 +75,7 @@ export const useActStudioSpotDesk = (
     free: () => {
       stageWrites.assign.mutate({ spotId: spot.spotId, person: null });
     },
+    removable: screen.evening === null,
     removing: removingId === spot.spotId,
     remove: () => {
       if (removingId !== spot.spotId) {

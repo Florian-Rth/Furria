@@ -271,3 +271,87 @@ export const requestVideoRemoval = (
     schema: NoContentSchema,
     accessToken,
   });
+
+const eveningPathOf = (actId: number, eventId: number): string =>
+  `/api/acts/${actId}/evenings/${eventId}`;
+
+export const requestEveningJoin = (
+  actId: number,
+  eventId: number,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(eveningPathOf(actId, eventId), {
+    method: 'PUT',
+    body: {},
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestEveningLeave = (
+  actId: number,
+  eventId: number,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(eveningPathOf(actId, eventId), {
+    method: 'DELETE',
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestEveningDancer = (
+  actId: number,
+  eventId: number,
+  personId: number,
+  dances: boolean,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${eveningPathOf(actId, eventId)}/cast/${personId}`, {
+    method: 'PUT',
+    body: { dances },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestEveningSpot = (
+  actId: number,
+  eventId: number,
+  spotId: number,
+  personId: number | null,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${eveningPathOf(actId, eventId)}/spots/${spotId}`, {
+    method: 'PUT',
+    body: { personId },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export type EveningChoreographyBody = {
+  expectedVersion: number | null;
+  sessionVersion: number | null;
+  tracks: Choreography['tracks'];
+};
+
+export const requestEveningChoreographySave = (
+  actId: number,
+  eventId: number,
+  body: EveningChoreographyBody,
+  accessToken: string,
+): Promise<SavedChoreography> =>
+  apiFetch(`${eveningPathOf(actId, eventId)}/choreography`, {
+    method: 'PUT',
+    body,
+    schema: SavedChoreographySchema,
+    accessToken,
+  });
+
+export const requestEveningCopyDrop = (
+  actId: number,
+  eventId: number,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${eveningPathOf(actId, eventId)}/choreography`, {
+    method: 'DELETE',
+    schema: NoContentSchema,
+    accessToken,
+  });

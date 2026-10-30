@@ -118,12 +118,12 @@ public sealed class GetRunningOrderTests : IClassFixture<ApiTestFixture>
         var (_, result) = await GetAsync(client, eventId);
 
         var dance = result.Lines.Single(line => line.Act.ActId == tanz);
-        Assert.True(dance.EveningChanged);
+        Assert.Equal([EveningChange.Cast], dance.EveningChanges);
         Assert.Equal(
             [people.IdOf(Clara), people.IdOf(Dora)],
             dance.Act.Cast.Select(person => person.PersonId)
         );
-        Assert.False(result.Lines.Single(line => line.Act.ActId == rede).EveningChanged);
+        Assert.Empty(result.Lines.Single(line => line.Act.ActId == rede).EveningChanges);
         var finding = Assert.Single(result.Findings);
         Assert.Equal(FindingKind.NoChangeover, finding.Kind);
         Assert.Equal([people.IdOf(Clara)], finding.PersonIds);

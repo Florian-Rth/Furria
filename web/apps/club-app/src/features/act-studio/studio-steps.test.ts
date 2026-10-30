@@ -39,6 +39,7 @@ const responseOf = (parts: StudioPart[]): { studio: Studio } => ({
     videos: [],
     choreography: null,
     stage: null,
+    evenings: [],
   },
 });
 

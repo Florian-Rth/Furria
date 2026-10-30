@@ -18,7 +18,7 @@ const act = (actId: number, options: Partial<DraftLine> = {}): DraftLine => ({
   placed: true,
   pinned: false,
   blockKey: null,
-  eveningChanged: false,
+  eveningChanges: [],
   ...options,
 });
 

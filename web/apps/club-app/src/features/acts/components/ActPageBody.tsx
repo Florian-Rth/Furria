@@ -5,6 +5,8 @@ import type { FC } from 'react';
 import { CAST_ONLY_NOTE } from '../act-page-copy';
 import type { ActPageState } from '../hooks/use-act-page';
 import { ActCoEditorsSection } from './ActCoEditorsSection';
+import { ActEveningPanel } from './ActEveningPanel';
+import { ActEveningsSection } from './ActEveningsSection';
 import { ActFacts } from './ActFacts';
 import { ActPageLoading } from './ActPageLoading';
 import { ActSettingsSide } from './ActSettingsSide';
@@ -28,6 +30,18 @@ export const ActPageBody: FC<ActPageBodyProps> = ({ page }) => {
       <ActStudioOverview studio={data.studio} viewerId={page.viewerId} />
     );
   const coEditors = data.studio === null ? null : <ActCoEditorsSection page={data} />;
+  const evenings =
+    data.studio === null ? null : <ActEveningsSection data={data} studio={data.studio} />;
+  const eveningPanel =
+    data.studio === null || page.evening === null || !page.isEveningOpen ? null : (
+      <ActEveningPanel
+        key={page.evening.eventId}
+        page={page}
+        data={data}
+        studio={data.studio}
+        evening={page.evening}
+      />
+    );
 
   return (
     <KkMasterDetail>
@@ -35,10 +49,12 @@ export const ActPageBody: FC<ActPageBodyProps> = ({ page }) => {
         <Stack sx={{ gap: 2, minWidth: 0 }}>
           <ActFacts act={data.act} />
           {studio}
+          {evenings}
           {coEditors}
         </Stack>
       </KkMasterDetail.Master>
       <ActSettingsSide page={page} act={data.act} />
+      {eveningPanel}
     </KkMasterDetail>
   );
 };

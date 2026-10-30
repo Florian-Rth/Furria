@@ -26,7 +26,7 @@ import type { HoldRow } from './planner-holds';
 import type { StepBlock } from './planner-modes';
 import type { PersonGap, PersonTimeline } from './planner-person';
 import type { LineWish, WishState, WishTally } from './planner-wishes';
-import type { PlannerMode } from './schemas';
+import type { EveningChange, PlannerMode } from './schemas';
 
 export const FACT_SEPARATOR = '\u00a0· ';
 
@@ -179,6 +179,21 @@ export const toActsLabel = (count: number): string =>
 
 export const toCastFact = (present: number, absent: number): string =>
   absent === 0 ? `${present} dabei` : `${present} dabei${FACT_SEPARATOR}${absent} abgesagt`;
+
+export const EVENING_CHANGE_WORDS: Record<EveningChange, string> = {
+  cast: 'Besetzung',
+  spots: 'Plätze',
+  choreography: 'Aufstellung',
+};
+const EVENING_CHANGED = 'für den Abend angepasst';
+
+export const toEveningChangesFact = (
+  changes: readonly EveningChange[],
+  compact: boolean,
+): string =>
+  compact
+    ? EVENING_CHANGED
+    : `${EVENING_CHANGED}: ${changes.map((change) => EVENING_CHANGE_WORDS[change]).join(', ')}`;
 
 export const toKindFact = (kind: ActKind | null): string | null =>
   kind === null ? null : toActKindLabel(kind);

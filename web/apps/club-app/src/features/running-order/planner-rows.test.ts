@@ -19,7 +19,7 @@ const act = (
   placed: options.placed ?? true,
   pinned: false,
   blockKey: options.blockKey ?? null,
-  eveningChanged: false,
+  eveningChanges: [],
 });
 
 const evening = (lines: DraftLine[]): RunningOrderDraft => ({
