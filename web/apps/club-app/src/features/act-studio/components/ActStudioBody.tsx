@@ -2,22 +2,24 @@ import { KkPracticeView } from '@furria/ui/KkPracticeView';
 import { KkStudioView } from '@furria/ui/KkStudioView';
 import type { FC } from 'react';
 import { ActDeskView } from '@/features/act-desk/components/ActDeskView';
+import { LessonBody } from '@/features/act-lesson/components/LessonBody';
+import { LessonEmpty } from '@/features/act-lesson/components/LessonEmpty';
 import { PracticeSteps } from '@/features/act-practice/components/PracticeSteps';
+import { canPractise } from '@/features/acts/act-studio';
 import type { Studio } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
 import { useActStudioStage } from '../hooks/use-act-studio-stage';
 import type { StudioEveningContext } from '../hooks/use-studio-screen';
 import { useStudioScreen } from '../hooks/use-studio-screen';
 import { STUDIO_LABEL } from '../studio-copy';
-import { ActStudioControls } from './ActStudioControls';
 import { ActStudioHead } from './ActStudioHead';
 import { ActStudioHero } from './ActStudioHero';
 import { ActStudioLargeKeys } from './ActStudioLargeKeys';
-import { ActStudioSide } from './ActStudioSide';
 import { StepCardsView } from './StepCardsView';
 
 interface ActStudioBodyProps {
   actId: number;
+  title: string;
   studio: Studio;
   viewerId: number | null;
   canEdit: boolean;
@@ -27,6 +29,7 @@ interface ActStudioBodyProps {
 
 export const ActStudioBody: FC<ActStudioBodyProps> = ({
   actId,
+  title,
   studio,
   viewerId,
   canEdit,
@@ -43,25 +46,22 @@ export const ActStudioBody: FC<ActStudioBodyProps> = ({
     return <ActDeskView screen={screen} editor={editor} />;
   }
 
-  const side = screen.large.on ? null : (
-    <KkPracticeView.Side>
-      <ActStudioSide screen={screen} />
-    </KkPracticeView.Side>
-  );
-  const controls = screen.large.on ? (
-    <ActStudioLargeKeys screen={screen} />
-  ) : (
-    <ActStudioControls screen={screen} />
-  );
+  if (!screen.mode.editing && !canPractise(screen.studio)) {
+    return <LessonEmpty title={title} mode={screen.mode} />;
+  }
+  if (!screen.large.on) {
+    return <LessonBody title={title} screen={screen} />;
+  }
 
   return (
-    <KkStudioView label={STUDIO_LABEL} editing={false} largeText={screen.large.on}>
+    <KkStudioView label={STUDIO_LABEL} editing={false} largeText>
       <ActStudioHead screen={screen} />
       <KkPracticeView.Hero>
         <ActStudioHero screen={screen} />
       </KkPracticeView.Hero>
-      {side}
-      <KkPracticeView.Controls>{controls}</KkPracticeView.Controls>
+      <KkPracticeView.Controls>
+        <ActStudioLargeKeys screen={screen} />
+      </KkPracticeView.Controls>
       <PracticeSteps steps={screen.steps} onTraining={screen.startHall} />
     </KkStudioView>
   );

@@ -1,14 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { largeTextFrameOf, practiceFrameOf } from './studio-layout';
-
-describe('practiceFrameOf', () => {
-  it.each([
-    ['video', { hero: 'video', side: 'stage' }],
-    ['stage', { hero: 'stage', side: 'note' }],
-  ] as const)('a %s part', (filmed, frame) => {
-    expect(practiceFrameOf(filmed)).toEqual(frame);
-  });
-});
+import { largeTextFrameOf } from './studio-layout';
 
 describe('largeTextFrameOf', () => {
   it.each([

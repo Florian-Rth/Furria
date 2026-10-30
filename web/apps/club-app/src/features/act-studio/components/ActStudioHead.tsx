@@ -14,10 +14,6 @@ interface ActStudioHeadProps {
 export const ActStudioHead: FC<ActStudioHeadProps> = ({ screen }) => {
   const { practice, steps, playback } = screen;
 
-  const count = screen.large.on ? null : (
-    <PracticeCountLive player={playback.player} segments={playback.segments} />
-  );
-
   return (
     <KkPracticeView.Head>
       <KkPracticeSteps.Trigger
@@ -30,7 +26,7 @@ export const ActStudioHead: FC<ActStudioHeadProps> = ({ screen }) => {
           <KkPracticeDescription stepKey={practice.stepKey} text={practice.note} />
         </KkPracticeView.Titles>
       </KkPracticeSteps.Trigger>
-      {count}
+      <PracticeCountLive player={playback.player} segments={playback.segments} />
     </KkPracticeView.Head>
   );
 };

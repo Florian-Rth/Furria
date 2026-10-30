@@ -1,3 +1,4 @@
+import { KkKeyHelp } from '../KkKeyHelp/KkKeyHelp';
 import { KkHallArea } from './internal/layout/KkHallArea';
 import { KkHallCorner } from './internal/layout/KkHallCorner';
 import { KkHallKeyGroup } from './internal/layout/KkHallKeyGroup';
@@ -6,7 +7,6 @@ import { KkHallAbsent } from './internal/ui/KkHallAbsent';
 import { KkHallClose } from './internal/ui/KkHallClose';
 import { KkHallCount } from './internal/ui/KkHallCount';
 import { KkHallDot } from './internal/ui/KkHallDot';
-import { KkHallHelp } from './internal/ui/KkHallHelp';
 import { KkHallKey } from './internal/ui/KkHallKey';
 import { KkHallStage } from './internal/ui/KkHallStage';
 import { KkHallStep } from './internal/ui/KkHallStep';
@@ -25,7 +25,7 @@ export const KkHall = Object.assign(KkHallRoot, {
   Close: KkHallClose,
   Count: KkHallCount,
   Dot: KkHallDot,
-  Help: KkHallHelp,
+  Help: KkKeyHelp,
   Key: KkHallKey,
   Step: KkHallStep,
 });

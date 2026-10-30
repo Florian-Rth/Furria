@@ -23,7 +23,7 @@ export const ActPracticeBody: FC<ActPracticeBodyProps> = ({ page }) => {
   const context = {
     evening: page.evening,
     startEditing: page.startEditing,
-    startHall: page.canEditStudio ? startHall : null,
+    startHall,
     stageEditor: true,
   };
 
@@ -31,6 +31,7 @@ export const ActPracticeBody: FC<ActPracticeBodyProps> = ({ page }) => {
     <ActStudioBody
       key={screenKey}
       actId={page.actId}
+      title={page.title}
       studio={studio}
       viewerId={page.viewerId}
       canEdit={page.canEditStudio}

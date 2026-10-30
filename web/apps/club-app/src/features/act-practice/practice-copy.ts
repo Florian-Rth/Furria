@@ -1,5 +1,4 @@
 import type { KkKeyListEntry } from '@furria/ui/KkKeyList';
-import type { LoopKind } from './practice-controls';
 import type { StageSummary } from './practice-stage';
 import { clockOf } from './practice-step-list';
 import type { OwnCue } from './practice-way';
@@ -12,17 +11,14 @@ export const PRACTICE_NO_STEPS = 'Noch keine Schritte';
 export const PRACTICE_LOAD_FAILED = 'Die Musik lädt gerade nicht. Versuch es gleich noch einmal.';
 export const PRACTICE_STAGE_LABEL = 'Bühne aus deiner Sicht, das Publikum oben';
 export const PRACTICE_FRONT = 'Publikum';
-export const PRACTICE_TRANSPORT_LABEL = 'Abspielen und üben';
 export const PRACTICE_SEGMENTS_LABEL = 'Schritte';
 export const PRACTICE_PLAY = 'Abspielen';
 export const PRACTICE_PAUSE = 'Anhalten';
 export const PRACTICE_BACK = 'Zum Anfang des Schritts';
 export const PRACTICE_FORWARD = 'Nächster Schritt';
 export const PRACTICE_VIDEO_TITLE = 'Trainervideo';
-export const PRACTICE_SIDE_LABEL = 'Deine Bühne';
 export const PRACTICE_MIRRORED = 'Gespiegelt';
 export const PRACTICE_NO_VIDEO = 'ohne Video';
-export const PRACTICE_NO_VIDEO_NOTE = 'Folge deinem Weg auf der Bühne.';
 export const PRACTICE_NOW = 'jetzt';
 export const PRACTICE_RUNNING = 'Läuft';
 export const PRACTICE_PAUSED = 'Pause';
@@ -41,8 +37,6 @@ export const rateLabelOf = (percent: number): string => `Tempo ${percent} %, tip
 
 export const cueTextOf = (cue: OwnCue): string =>
   cue.tone === 'now' ? PRACTICE_NOW : `in ${cue.counts}`;
-
-export const segmentLabelOf = (name: string): string => `${name}: springen oder wiederholen`;
 
 export const partLoopLabelOf = (name: string): string => `Teil „${name}“ wiederholen`;
 
@@ -86,17 +80,6 @@ export const PRACTICE_TEMPO = 'Tempo';
 
 export const noVideoEyebrowOf = (part: string | null): string =>
   part === null ? PRACTICE_NO_VIDEO : `${part} · ${PRACTICE_NO_VIDEO}`;
-
-export const barStatusOf = (kind: LoopKind, part: string | null): string => {
-  if (kind === 'step') {
-    return 'Schritt wird wiederholt · nochmal tippen spielt weiter';
-  }
-  if (kind === 'part') {
-    return `${part ?? 'Teil'} wird wiederholt · nochmal halten spielt weiter`;
-  }
-
-  return 'Schritt antippen: wiederholen · Teil antippen: ganzer Teil';
-};
 
 export const PRACTICE_STEPS_TITLE = 'Schritte';
 export const PRACTICE_STEPS_OPEN = 'Alle Schritte zeigen';

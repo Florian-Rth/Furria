@@ -5,6 +5,7 @@ import { trackEdgeOf } from '../../../KkShell/internal/track-edge';
 import type { KkSx } from '../../../kk-sx';
 
 const WIDE = '@container kk-practice (min-aspect-ratio: 5/4)';
+const NARROW = '@container kk-practice (max-aspect-ratio: 5/4)';
 const WIDE_TALL = '@container kk-practice (min-aspect-ratio: 5/4) and (min-height: 34rem)';
 const SIDE = 'clamp(18rem, 34cqw, 30rem)';
 const COMPOSED_HEIGHT = `min(100%, calc((100cqw - ${SIDE} - 2rem) * 9 / 16 + 10rem))`;
@@ -45,6 +46,10 @@ const LARGE_TEXT_GRID: CSSObject = {
   gridTemplateAreas: '"head" "hero" "controls"',
   gridTemplateColumns: 'minmax(0, 1fr)',
   gridTemplateRows: 'auto minmax(0, 1fr) auto',
+  [NARROW]: {
+    '& [data-kk-practice-head]': { flexWrap: 'wrap', rowGap: 0.5 },
+    '& [data-kk-practice-head] > [data-kk-practice-count]': { flexBasis: '100%' },
+  },
   [WITH_BAND]: {
     gridTemplateAreas: '"band" "head" "hero" "controls"',
     gridTemplateRows: 'auto auto minmax(0, 1fr) auto',

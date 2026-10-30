@@ -7,13 +7,15 @@ const RADIUS = `${kkTokens.radius.base}px`;
 
 interface KkLessonPictureProps extends PropsWithChildren {
   label: string;
+  paired: boolean;
 }
 
-export const KkLessonPicture: FC<KkLessonPictureProps> = ({ label, children }) => (
+export const KkLessonPicture: FC<KkLessonPictureProps> = ({ label, paired, children }) => (
   <Box
     role="group"
     aria-label={label}
     data-kk-lesson-picture
+    data-kk-lesson-paired={paired}
     sx={{
       gridArea: 'picture',
       position: 'relative',
