@@ -1,4 +1,4 @@
-import { moveUnit, orderOf, placedLinesOf } from '@/features/running-order/running-order-ops';
+import { moveUnit, orderOf } from '@/features/running-order/running-order-ops';
 import type { FindingKind, LineKey, Severity, Suggestion } from '@/features/running-order/schemas';
 import type { ReviewFinding, RunningOrderDraft } from '@/features/running-order/types';
 import { unitLeadOf } from './planner-fixes';
@@ -19,6 +19,7 @@ export interface ProposalShift {
   after: number;
 }
 
+const ACT_KEY_PREFIX = 'act:';
 const CHANGEOVER_KINDS: readonly FindingKind[] = ['noChangeover', 'tightChangeover'];
 
 const stayingKeysOf = (current: readonly LineKey[], proposed: readonly LineKey[]): LineKey[] => {
@@ -84,13 +85,13 @@ export const proposedDraftOf = (
 export const acceptProposalRow = (draft: RunningOrderDraft, row: ProposalRow): RunningOrderDraft =>
   moveUnit(draft, unitLeadOf(draft, row.key), row.to);
 
-export const signatureOf = (draft: RunningOrderDraft): string =>
-  JSON.stringify([
-    placedLinesOf(draft).map((line) => [line.key, line.pinned, line.blockKey]),
-    draft.lines.filter((line) => !line.placed).map((line) => line.key),
-    draft.rules.map((rule) => [rule.ruleKey, rule.strength]),
-    draft.suspendedActWishIds,
-  ]);
+export interface SearchTally {
+  before: number;
+  after: number;
+}
+
+export const seedOf = (suggestion: Suggestion): number[] =>
+  suggestion.order.map((key) => Number(key.slice(ACT_KEY_PREFIX.length)));
 
 const countOf = (findings: readonly ReviewFinding[], kind: FindingKind): number =>
   findings.filter((finding) => finding.kind === kind).length;

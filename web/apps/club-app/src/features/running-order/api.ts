@@ -1,3 +1,4 @@
+import type { KkNoticeRequest } from '@furria/ui/KkNotice';
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { keepPreviousData, skipToken, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApiMutation } from '@/lib/api/api-mutation';
@@ -5,9 +6,9 @@ import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { queryKeys } from '@/lib/query/reads';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import {
-  isRunningOrderConflict,
   requestActArchived,
   requestActCreation,
+  requestActOpenAppearancesRemoval,
   requestActs,
   requestActUpdate,
   requestRunningOrder,
@@ -15,14 +16,15 @@ import {
   requestRunningOrderDeletion,
   requestRunningOrderSave,
   requestRunningOrders,
-  requestSuggestion,
 } from './requests';
 import {
   RUNNING_ORDER_DELETED_MESSAGE,
   toActArchivedMessage,
   toActCreatedMessage,
   toActSavedMessage,
+  toActWithdrawnMessage,
   toConfirmationMessage,
+  WITHDRAW_LABEL,
 } from './running-order-copy';
 import type {
   ActForm,
@@ -31,7 +33,6 @@ import type {
   RunningOrderBody,
   RunningOrderResponse,
   RunningOrdersResponse,
-  Suggestion,
 } from './schemas';
 
 export interface ActUpdateInput {
@@ -43,6 +44,12 @@ export interface ActArchivedInput {
   actId: number;
   name: string;
   archived: boolean;
+  offersWithdrawal: boolean;
+}
+
+export interface ActWithdrawalInput {
+  actId: number;
+  name: string;
 }
 
 export interface ActMutations {
@@ -63,7 +70,20 @@ export const useActsQuery = (
     placeholderData: keepPreviousData,
   });
 
+const archivedNoticeOf = (
+  { name, archived, offersWithdrawal }: ActArchivedInput,
+  withdraw: () => void,
+): KkNoticeRequest =>
+  offersWithdrawal
+    ? {
+        tone: 'success',
+        message: toActArchivedMessage(name, archived),
+        actions: [{ id: 'withdraw', label: WITHDRAW_LABEL, onSelect: withdraw }],
+      }
+    : { tone: 'success', message: toActArchivedMessage(name, archived) };
+
 export const useActMutations = (): ActMutations => {
+  const withdrawal = useActWithdrawalMutation();
   const create = useApiMutation({
     request: requestActCreation,
     changes: ['act'],
@@ -86,7 +106,10 @@ export const useActMutations = (): ActMutations => {
       requestActArchived(actId, archived, accessToken),
     changes: ['act'],
     notice: {
-      success: ({ name, archived }: ActArchivedInput) => toActArchivedMessage(name, archived),
+      success: (input: ActArchivedInput) =>
+        archivedNoticeOf(input, () => {
+          withdrawal.mutate({ actId: input.actId, name: input.name });
+        }),
       failure: toWriteErrorMessage,
     },
   });
@@ -105,9 +128,6 @@ export const useRunningOrderQuery = (
         : () => withFreshAccessToken((accessToken) => requestRunningOrder(eventId, accessToken)),
   });
 
-const saveFailureOf = (error: Error): string | null =>
-  isRunningOrderConflict(error) ? null : toWriteErrorMessage(error);
-
 export const useSaveRunningOrderMutation = (
   eventId: number,
 ): UseMutationResult<RunningOrderResponse, Error, RunningOrderBody> => {
@@ -118,7 +138,6 @@ export const useSaveRunningOrderMutation = (
       requestRunningOrderSave(eventId, body, accessToken),
     changes: ['runningOrder'],
     key: queryKeys.runningOrder(eventId),
-    notice: { failure: saveFailureOf },
     afterSuccess: (saved) => {
       queryClient.setQueryData(queryKeys.runningOrder(eventId), saved);
     },
@@ -140,13 +159,15 @@ export const useDeleteRunningOrderMutation = (
   });
 };
 
-export const useSuggestionMutation = (
-  eventId: number,
-): UseMutationResult<Suggestion, Error, RunningOrderBody> =>
+export const useActWithdrawalMutation = (): UseMutationResult<void, Error, ActWithdrawalInput> =>
   useApiMutation({
-    request: (body: RunningOrderBody, accessToken) => requestSuggestion(eventId, body, accessToken),
-    changes: [],
-    notice: { failure: toWriteErrorMessage },
+    request: ({ actId }: ActWithdrawalInput, accessToken) =>
+      requestActOpenAppearancesRemoval(actId, accessToken),
+    changes: ['runningOrder'],
+    notice: {
+      success: ({ name }: ActWithdrawalInput) => toActWithdrawnMessage(name),
+      failure: toWriteErrorMessage,
+    },
   });
 
 export const useConfirmRunningOrderMutation = (
@@ -166,8 +187,10 @@ export const useConfirmRunningOrderMutation = (
   });
 };
 
-export const useRunningOrdersQuery = (): UseQueryResult<RunningOrdersResponse, Error> =>
+export const useRunningOrdersQuery = (
+  enabled = true,
+): UseQueryResult<RunningOrdersResponse, Error> =>
   useQuery({
     queryKey: queryKeys.runningOrders,
-    queryFn: () => withFreshAccessToken(requestRunningOrders),
+    queryFn: enabled ? () => withFreshAccessToken(requestRunningOrders) : skipToken,
   });

@@ -8,6 +8,7 @@ import {
   EMPTY_NOTICE_QUEUE,
   enqueueNotice,
   finishNoticeExit,
+  leaveScreen,
   noticeLifetimeMs,
 } from './notice-queue';
 
@@ -16,10 +17,23 @@ const ID_PREFIX = 'kk-notice-';
 interface KkNoticeProviderProps extends PropsWithChildren {
   labels: KkNoticeLabels;
   systemNotice: KkSystemNotice | null;
+  screen?: string;
 }
 
-export const KkNoticeProvider: FC<KkNoticeProviderProps> = ({ labels, systemNotice, children }) => {
+export const KkNoticeProvider: FC<KkNoticeProviderProps> = ({
+  labels,
+  systemNotice,
+  screen = '',
+  children,
+}) => {
   const [queue, setQueue] = useState(EMPTY_NOTICE_QUEUE);
+  const [shownScreen, setShownScreen] = useState(screen);
+
+  if (shownScreen !== screen) {
+    setShownScreen(screen);
+    setQueue(leaveScreen);
+  }
+
   const lastIdRef = useRef(0);
   const current = currentNotice(queue);
   const lifetime = noticeLifetimeMs(queue);

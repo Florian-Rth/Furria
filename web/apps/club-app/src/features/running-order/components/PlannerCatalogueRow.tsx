@@ -36,7 +36,7 @@ export const PlannerCatalogueRow: FC<PlannerCatalogueRowProps> = ({ act }) => {
       rowKey={actLineKeyOf(act.actId)}
       mark={<PlannerLineMark act={act} />}
       title={act.name}
-      fact={<PlannerLineFact act={act} cast={act.cast} withGroup={false} />}
+      fact={<PlannerLineFact act={act} cast={act.cast} withGroup={false} archived={act.archived} />}
       check={check}
       openLabel={ADD_LABEL}
       onOpen={toggle}

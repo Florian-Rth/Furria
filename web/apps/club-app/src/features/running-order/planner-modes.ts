@@ -139,14 +139,32 @@ export type FootForward =
   | { kind: 'reopen' };
 
 export type FootPlan =
+  | { kind: 'searching' }
   | { kind: 'proposal' }
   | { kind: 'steps'; back: PlannerMode | null; forward: FootForward; block: StepBlock | null };
 
-export type ModeTool = 'wishes' | 'autoOrder' | 'suggest';
+export type ModeTool = 'wishes' | 'autoOrder' | 'suggest' | 'searchOn';
+
+export type ProposalStage = 'none' | 'searching' | 'shown' | 'unproven';
+
+export const proposalStageOf = (
+  searching: boolean,
+  shown: boolean,
+  proven: boolean,
+): ProposalStage => {
+  if (searching) {
+    return 'searching';
+  }
+  if (!shown) {
+    return 'none';
+  }
+
+  return proven ? 'shown' : 'unproven';
+};
 
 interface FootSituation {
   mode: PlannerMode;
-  proposing: boolean;
+  proposal: ProposalStage;
   confirmed: boolean;
   picked: number;
   unplaced: number;
@@ -188,7 +206,10 @@ const forwardOf = (mode: PlannerMode, confirmed: boolean): FootForward => {
 };
 
 export const footPlanOf = (situation: FootSituation): FootPlan => {
-  if (situation.proposing) {
+  if (situation.proposal === 'searching') {
+    return { kind: 'searching' };
+  }
+  if (situation.proposal !== 'none') {
     return { kind: 'proposal' };
   }
 
@@ -208,8 +229,14 @@ const MODE_TOOLS: Record<PlannerMode, readonly ModeTool[]> = {
   check: ['suggest'],
 };
 
-export const modeToolsOf = (mode: PlannerMode, proposing: boolean): readonly ModeTool[] =>
-  proposing ? [] : MODE_TOOLS[mode];
+const PROPOSAL_TOOLS: Record<Exclude<ProposalStage, 'none'>, readonly ModeTool[]> = {
+  searching: [],
+  shown: [],
+  unproven: ['searchOn'],
+};
+
+export const modeToolsOf = (mode: PlannerMode, proposal: ProposalStage): readonly ModeTool[] =>
+  proposal === 'none' ? MODE_TOOLS[mode] : PROPOSAL_TOOLS[proposal];
 
 export type PaneView = 'catalogue' | 'findings' | 'wishes';
 

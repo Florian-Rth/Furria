@@ -6,10 +6,18 @@ import {
   EMPTY_NOTICE_QUEUE,
   enqueueNotice,
   finishNoticeExit,
+  leaveScreen,
   noticeLifetimeMs,
 } from './notice-queue';
 
 const entry = (id: string): KkNoticeEntry => ({ id, tone: 'success', message: id });
+
+const undoable = (id: string): KkNoticeEntry => ({
+  id,
+  tone: 'info',
+  message: id,
+  actions: [{ id: 'undo', label: 'u', onSelect: (): void => {} }],
+});
 
 const showing = (...ids: readonly string[]): KkNoticeQueue => ({
   entries: ids.map(entry),
@@ -108,5 +116,28 @@ describe('noticeLifetimeMs', () => {
     { name: 'an empty queue', queue: EMPTY_NOTICE_QUEUE, expires: false },
   ])('expires $name: $expires', ({ queue, expires }) => {
     expect(noticeLifetimeMs(queue) !== null).toBe(expires);
+  });
+});
+
+describe('leaveScreen', () => {
+  it.each<{ name: string; queue: KkNoticeQueue; ids: string[]; isOpen: boolean }>([
+    {
+      name: 'closes a shown undo and drops waiting ones',
+      queue: { entries: [undoable('a'), entry('b'), undoable('c')], isOpen: true },
+      ids: ['a', 'b'],
+      isOpen: false,
+    },
+    {
+      name: 'keeps a shown plain notice open',
+      queue: { entries: [entry('a'), undoable('b')], isOpen: true },
+      ids: ['a'],
+      isOpen: true,
+    },
+    { name: 'leaves an empty queue', queue: EMPTY_NOTICE_QUEUE, ids: [], isOpen: false },
+  ])('$name', ({ queue, ids, isOpen }) => {
+    const left = leaveScreen(queue);
+
+    expect(left.entries.map((kept) => kept.id)).toEqual(ids);
+    expect(left.isOpen).toBe(isOpen);
   });
 });

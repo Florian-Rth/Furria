@@ -1,5 +1,5 @@
 import { apiStatusOf } from '@furria/api-client';
-import { apiFetch } from '@/lib/api/api-fetch';
+import { apiFetch, apiStream } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import { isNotFoundError } from '@/lib/query-error';
 import type {
@@ -9,14 +9,15 @@ import type {
   RunningOrderBody,
   RunningOrderResponse,
   RunningOrdersResponse,
-  Suggestion,
+  SuggestionBody,
+  SuggestionLine,
 } from './schemas';
 import {
   ActsResponseSchema,
   CreatedActSchema,
   RunningOrderResponseSchema,
   RunningOrdersResponseSchema,
-  SuggestionSchema,
+  SuggestionLineSchema,
 } from './schemas';
 
 const CONFLICT_STATUS = 409;
@@ -113,15 +114,33 @@ export const requestRunningOrderDeletion = (eventId: number, accessToken: string
     accessToken,
   });
 
-export const requestSuggestion = (
+export interface SuggestionSearchRequest {
+  body: SuggestionBody;
+  signal: AbortSignal;
+  onLine: (line: SuggestionLine) => void;
+}
+
+export const requestSuggestionSearch = (
   eventId: number,
-  body: RunningOrderBody,
+  { body, signal, onLine }: SuggestionSearchRequest,
   accessToken: string,
-): Promise<Suggestion> =>
-  apiFetch(`${runningOrderPathOf(eventId)}/suggestion`, {
+): Promise<void> =>
+  apiStream(`${runningOrderPathOf(eventId)}/suggestion`, {
     method: 'POST',
     body,
-    schema: SuggestionSchema,
+    schema: SuggestionLineSchema,
+    accessToken,
+    signal,
+    onLine,
+  });
+
+export const requestActOpenAppearancesRemoval = (
+  actId: number,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/acts/${actId}/open-appearances`, {
+    method: 'DELETE',
+    schema: NoContentSchema,
     accessToken,
   });
 

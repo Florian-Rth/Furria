@@ -30,8 +30,9 @@ export const PlannerUnplacedRow: FC<PlannerUnplacedRowProps> = ({ line }) => {
     planner.drag.nudge(line.key, event);
   };
   const ordering = planner.mode === 'order';
+  const proposing = planner.suggestion.isActive || planner.suggestion.isLoading;
   const grip =
-    ordering && !planner.suggestion.isActive ? (
+    ordering && !proposing ? (
       <KkDragGrip
         icon="drag"
         label={DRAG_LABEL}
@@ -49,7 +50,7 @@ export const PlannerUnplacedRow: FC<PlannerUnplacedRowProps> = ({ line }) => {
     </KkButton>
   );
   const mark = planner.isWide ? <PlannerLineMark act={act} /> : null;
-  const action = planner.suggestion.isActive ? null : (
+  const action = proposing ? null : (
     <>
       {placeButton}
       {grip}
@@ -68,6 +69,7 @@ export const PlannerUnplacedRow: FC<PlannerUnplacedRowProps> = ({ line }) => {
           cast={act.cast}
           compact={!planner.isWide || ordering}
           eveningChanges={line.eveningChanges}
+          archived={planner.isArchived(act.actId)}
         />
       }
       openLabel={OPEN_LABEL}

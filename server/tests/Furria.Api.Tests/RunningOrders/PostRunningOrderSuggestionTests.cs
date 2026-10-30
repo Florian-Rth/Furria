@@ -1,5 +1,7 @@
 using System.Net;
-using FastEndpoints;
+using System.Net.Http.Json;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 using Furria.Api.Endpoints.RunningOrders;
 using Furria.Core.RunningOrders;
 using Furria.Tests.Common;
@@ -14,6 +16,11 @@ namespace Furria.Api.Tests.RunningOrders;
 [SeedsAliases]
 public sealed class PostRunningOrderSuggestionTests : IClassFixture<ApiTestFixture>
 {
+    private static readonly JsonSerializerOptions LineJson = new(JsonSerializerDefaults.Web)
+    {
+        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
+    };
+
     private readonly ApiTestFixture _fixture;
 
     public PostRunningOrderSuggestionTests(ApiTestFixture fixture)
@@ -62,6 +69,36 @@ public sealed class PostRunningOrderSuggestionTests : IClassFixture<ApiTestFixtu
         Assert.Empty(result.Holds);
         Assert.False(result.HoldsUnavoidable);
         await ctx.Expected.RunningOrder(eventId).ToNotExist().AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_StreamTheCheaperOrdersBeforeTheFinalOne_When_TheSearchImprovesOnTheDraft()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(Planner, ct);
+        var anna = ctx.Identity.People.IdOf(Anna);
+        var ben = ctx.Identity.People.IdOf(Ben);
+        var einmarsch = await CreateActAsync(client, "Einmarsch", added: [anna]);
+        var rede = await CreateActAsync(client, "Büttenrede", added: [anna]);
+        var tanz = await CreateActAsync(client, "Showtanz", added: [ben]);
+        var lied = await CreateActAsync(client, "Lied", added: [ben]);
+        var finale = await CreateActAsync(client, "Finale");
+
+        var (response, lines) = await StreamAsync(
+            client,
+            ctx.Club.Events.IdOf(Gala),
+            [Line(einmarsch, 0), Line(rede, 1), Line(tanz, 2), Line(lied, 3), Line(finale, 4)]
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal("application/x-ndjson", response.Content.Headers.ContentType?.MediaType);
+        Assert.True(lines.Count >= 2);
+        Assert.All(lines.SkipLast(1), interim => Assert.False(interim.Final || interim.Proven));
+        var final = lines[^1];
+        Assert.True(final.Final && final.Proven);
+        Assert.Equal((2, 0), (final.ConflictsBefore, final.ConflictsAfter));
+        Assert.Equal(final.Order, lines[^2].Order);
     }
 
     [Fact]
@@ -134,22 +171,50 @@ public sealed class PostRunningOrderSuggestionTests : IClassFixture<ApiTestFixtu
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 
-    private static Task<TestResult<PostRunningOrderSuggestionResponse>> SuggestAsync(
-        HttpClient client,
-        int eventId,
-        IReadOnlyList<RunningOrderLineDataDto> lines
-    ) =>
-        client.POSTAsync<
-            PostRunningOrderSuggestion,
-            PostRunningOrderSuggestionRequest,
-            PostRunningOrderSuggestionResponse
-        >(
-            new()
+    private static async Task<(
+        HttpResponseMessage Response,
+        PostRunningOrderSuggestionResponse Result
+    )> SuggestAsync(HttpClient client, int eventId, IReadOnlyList<RunningOrderLineDataDto> lines)
+    {
+        var (response, streamed) = await StreamAsync(client, eventId, lines);
+
+        return (response, streamed.LastOrDefault()!);
+    }
+
+    private static async Task<(
+        HttpResponseMessage Response,
+        IReadOnlyList<PostRunningOrderSuggestionResponse> Lines
+    )> StreamAsync(HttpClient client, int eventId, IReadOnlyList<RunningOrderLineDataDto> lines)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var response = await client.PostAsJsonAsync(
+            $"api/events/{eventId}/running-order/suggestion",
+            new PostRunningOrderSuggestionRequest
             {
                 EventId = eventId,
                 Lines = lines,
                 Rules = [],
                 SuspendedActWishIds = [],
-            }
+            },
+            LineJson,
+            ct
         );
+        if (!response.IsSuccessStatusCode)
+            return (response, []);
+
+        var body = await response.Content.ReadAsStringAsync(ct);
+
+        return (
+            response,
+            [
+                .. body.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                    .Select(line =>
+                        JsonSerializer.Deserialize<PostRunningOrderSuggestionResponse>(
+                            line,
+                            LineJson
+                        )!
+                    ),
+            ]
+        );
+    }
 }

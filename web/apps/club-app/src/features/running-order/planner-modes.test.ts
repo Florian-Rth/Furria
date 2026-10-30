@@ -8,6 +8,7 @@ import {
   modeToolsOf,
   nearestBoundaryOf,
   paneViewOf,
+  proposalStageOf,
   showsPictureOf,
 } from './planner-modes';
 
@@ -144,7 +145,7 @@ describe('showsPictureOf', () => {
 
 describe('footPlanOf', () => {
   const calm = {
-    proposing: false,
+    proposal: 'none' as const,
     confirmed: false,
     picked: 3,
     unplaced: 0,
@@ -198,22 +199,38 @@ describe('footPlanOf', () => {
     expect(footPlanOf({ ...calm, ...change, mode })).toEqual({ kind: 'steps', ...plan });
   });
 
-  it('hands the bar to the proposal while one is shown', () => {
-    expect(footPlanOf({ ...calm, mode: 'check', proposing: true })).toEqual({
-      kind: 'proposal',
-    });
+  it.each([
+    ['searching', 'searching'],
+    ['shown', 'proposal'],
+    ['unproven', 'proposal'],
+  ] as const)('hands the bar over while a proposal is %s', (proposal, kind) => {
+    expect(footPlanOf({ ...calm, mode: 'check', proposal })).toEqual({ kind });
   });
 });
 
 describe('modeToolsOf', () => {
   it.each([
-    ['pick', false, []],
-    ['order', false, ['wishes', 'autoOrder']],
-    ['order', true, []],
-    ['check', false, ['suggest']],
-    ['check', true, []],
-  ] as const)('%s (proposing %s) offers %o', (mode, proposing, tools) => {
-    expect(modeToolsOf(mode, proposing)).toEqual(tools);
+    ['pick', 'none', []],
+    ['order', 'none', ['wishes', 'autoOrder']],
+    ['order', 'searching', []],
+    ['order', 'shown', []],
+    ['order', 'unproven', ['searchOn']],
+    ['check', 'none', ['suggest']],
+    ['check', 'shown', []],
+  ] as const)('%s (proposal %s) offers %o', (mode, proposal, tools) => {
+    expect(modeToolsOf(mode, proposal)).toEqual(tools);
+  });
+});
+
+describe('proposalStageOf', () => {
+  it.each([
+    [true, false, false, 'searching'],
+    [true, true, true, 'searching'],
+    [false, false, true, 'none'],
+    [false, true, true, 'shown'],
+    [false, true, false, 'unproven'],
+  ] as const)('searching %s, shown %s, proven %s is %s', (searching, shown, proven, stage) => {
+    expect(proposalStageOf(searching, shown, proven)).toBe(stage);
   });
 });
 

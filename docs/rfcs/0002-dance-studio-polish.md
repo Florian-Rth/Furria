@@ -239,12 +239,13 @@ Goal: no editor write is lost or applied to the wrong thing.
 
 ### Phase 3 — Planner bugs and the appearance migration (∥ A)
 Goal: the planner never claims a success it doesn't have and never throws work away.
-- [ ] B3: an evening copy leaves archived acts out and says *n archivierte Auftritte nicht übernommen*; any 422 shows as a red sticky banner with the reason; the success toast only follows a confirmed save
-- [ ] Archived acts are marked *archiviert* in the tray and in *Wählen*; archiving offers *Aus allen offenen Abenden nehmen*
-- [ ] B8: auto-order streams the best order found so far with a live conflict counter and *Jetzt nehmen*, capped at ~5 s by default; the suggestion is its own state until *Übernehmen* / *Verwerfen*, and opening a line never discards it
-- [ ] B11: snackbars are scoped to their route and dismissed on navigation (global)
-- [ ] Minors: *Muss* is not preselected without a wish; `/acts` counts follow the search; the toolbar wraps at 390×664; badges move to their own row in the event header on phones
-- [ ] #52 gap: test for the phase-2 data migration from running-order line to appearance (positions, pins, blocks, cast)
+- [x] B3: an evening copy leaves archived acts out and says *n archivierte Auftritte nicht übernommen*; any 422 shows as a red sticky banner with the reason; the success toast only follows a confirmed save
+- [x] Archived acts are marked *archiviert* in the tray and in *Wählen*; archiving offers *Aus allen offenen Abenden nehmen*
+- [x] B8: auto-order streams the best order found so far with a live conflict counter and *Jetzt nehmen*, capped at ~5 s by default; the suggestion is its own state until *Übernehmen* / *Verwerfen*, and opening a line never discards it
+- [x] B11: snackbars are scoped to their route and dismissed on navigation (global)
+- [x] Minors: *Muss* is not preselected without a wish; `/acts` counts follow the search; the toolbar wraps at 390×664; badges move to their own row in the event header on phones
+- [x] #52 gap: test for the phase-2 data migration from running-order line to appearance (positions, pins, blocks, cast)
+- Notes: auto-order answers as an NDJSON stream (`POST …/suggestion` with `seedActIds`, `searchSeconds` 1–60, default 5); *Weiter suchen* seeds 30 s from the best order so far. *Aus allen offenen Abenden nehmen* = `DELETE /api/acts/{actId}/open-appearances` (planners; evenings from today on; closes the position gap, drops rules and suspended wishes naming the act, evening adjustments go with it). Notices with actions close on navigation; a failed planner save shows a sticky red notice with the reason, *Erneut versuchen* and *Neu laden*.
 
 ### Phase 4 — Auth, permissions and dead ends (∥ A)
 Goal: nobody is locked out or sees a 403 they didn't cause.

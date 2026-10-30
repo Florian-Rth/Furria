@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { CatalogueAct } from '@/features/running-order/schemas';
 import type { DraftLine, RunningOrderDraft } from '@/features/running-order/types';
 import {
+  archivedLeftOutOf,
   catalogueRowStateOf,
   catalogueSectionsOf,
   pickedInSectionOf,
@@ -62,7 +63,7 @@ const draft = draftOf([line(4, true)]);
 describe('catalogueSectionsOf', () => {
   it('lists every live act, groups by name, Ablaufpunkte last', () => {
     expect(
-      catalogueSectionsOf(acts).map((section) => [
+      catalogueSectionsOf(acts, draft).map((section) => [
         section.id,
         section.acts.map((act) => act.actId),
       ]),
@@ -71,6 +72,28 @@ describe('catalogueSectionsOf', () => {
       ['group:1', [1, 4]],
       ['points', [6, 3]],
     ]);
+  });
+
+  it('keeps an archived act listed while it still sits in the evening', () => {
+    const withArchived = draftOf([line(5, false)]);
+
+    expect(
+      catalogueSectionsOf(acts, withArchived).flatMap((section) =>
+        section.acts.map((act) => act.actId),
+      ),
+    ).toEqual([2, 5, 1, 4, 6, 3]);
+  });
+});
+
+describe('archivedLeftOutOf', () => {
+  it.each([
+    { picks: [1, 5], evening: [], leftOut: 1 },
+    { picks: [1, 2], evening: [], leftOut: 0 },
+    { picks: [5], evening: [5], leftOut: 0 },
+  ])('counts $leftOut archived of $picks', ({ picks, evening, leftOut }) => {
+    expect(archivedLeftOutOf(acts, draftOf(evening.map((actId) => line(actId, true))), picks)).toBe(
+      leftOut,
+    );
   });
 });
 
@@ -89,7 +112,7 @@ describe('catalogueRowStateOf', () => {
 
 describe('pickedInSectionOf', () => {
   it('counts the section acts already in the evening', () => {
-    const [, gardeSection] = catalogueSectionsOf(acts);
+    const [, gardeSection] = catalogueSectionsOf(acts, draft);
 
     expect(gardeSection === undefined ? null : pickedInSectionOf(gardeSection, draft)).toBe(1);
   });

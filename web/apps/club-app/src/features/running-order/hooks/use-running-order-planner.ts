@@ -29,7 +29,13 @@ import type {
 } from '@/features/running-order/types';
 import { useNow } from '@/lib/use-now';
 import type { CatalogueRowState, CatalogueSection, PreviousEvening } from '../planner-catalogue';
-import { catalogueRowStateOf, catalogueSectionsOf, previousEveningsOf } from '../planner-catalogue';
+import {
+  archivedActIdsOf,
+  archivedLeftOutOf,
+  catalogueRowStateOf,
+  catalogueSectionsOf,
+  previousEveningsOf,
+} from '../planner-catalogue';
 import {
   toAllPlacedMessage,
   toKeptForEveningMessage,
@@ -90,6 +96,7 @@ export interface RunningOrderPlanner {
   catalogueReady: boolean;
   previous: PreviousEvening[];
   rowStateOf: (actId: number) => CatalogueRowState;
+  isArchived: (actId: number) => boolean;
   eveningWishes: LineWish[];
   selectedKey: LineKey | null;
   person: PersonTimeline | null;
@@ -153,6 +160,7 @@ export const useRunningOrderPlanner = (eventId: number): RunningOrderPlanner => 
   const [personId, setPersonId] = useState<number | null>(null);
   const [wishesOpen, setWishesOpen] = useState(false);
   const catalogueActs = acts.data?.acts ?? NO_ACTS;
+  const archivedActIds = archivedActIdsOf(catalogueActs);
   const shown = bracket.shownDraft ?? suggestion.preview ?? draft;
   const findings = suggestion.previewFindings ?? store.findings;
   const allEntries = plannerEntriesOf(shown, findings);
@@ -215,7 +223,7 @@ export const useRunningOrderPlanner = (eventId: number): RunningOrderPlanner => 
     allEntries,
     unplaced: unplacedLinesOf(shown),
     counts: modeCountsOf(draft, store.findings),
-    catalogue: catalogueSectionsOf(catalogueActs),
+    catalogue: catalogueSectionsOf(catalogueActs, draft),
     catalogueReady: event.data !== undefined && acts.data !== undefined && !acts.isPlaceholderData,
     previous: previousEveningsOf(
       runningOrders.data?.runningOrders ?? [],
@@ -224,6 +232,7 @@ export const useRunningOrderPlanner = (eventId: number): RunningOrderPlanner => 
       draft,
     ),
     rowStateOf: (actId) => catalogueRowStateOf(draft, actId),
+    isArchived: (actId) => archivedActIds.has(actId),
     eveningWishes: eveningWishesOf(draft, store.findings),
     selectedKey,
     person,
@@ -261,7 +270,6 @@ export const useRunningOrderPlanner = (eventId: number): RunningOrderPlanner => 
         ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     },
     setMode: (next) => {
-      suggestion.discard();
       setWishesOpen(false);
       void navigate({
         to: '/events/$eventId/ablauf',
@@ -300,8 +308,13 @@ export const useRunningOrderPlanner = (eventId: number): RunningOrderPlanner => 
     pickMany: (actIds) => {
       const picked = pickActs(draft, catalogueActs, actIds);
       const added = picked.lines.length - draft.lines.length;
+      const leftOut = archivedLeftOutOf(catalogueActs, draft, actIds);
 
-      apply(picked, toPickedMessage(added));
+      if (picked === draft) {
+        notify({ tone: 'info', message: toPickedMessage(0, leftOut) });
+        return;
+      }
+      apply(picked, toPickedMessage(added, leftOut));
     },
     drop: (key) => {
       const line = draft.lines.find((candidate) => candidate.key === key);

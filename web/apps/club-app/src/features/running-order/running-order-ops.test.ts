@@ -423,6 +423,13 @@ describe('pickActs', () => {
       picks: [3, 4],
       order: ['act:1', 'act:2', 'act:4', 'act:3'],
     },
+    {
+      label: 'leaves archived acts out of a copied evening',
+      draft: evening([act(1)]),
+      catalogue: [catalogueAct(2), { ...catalogueAct(3), archived: true }],
+      picks: [2, 3],
+      order: ['act:1', 'act:2'],
+    },
   ])('$label', ({ draft, catalogue, picks, order }) => {
     expect(orderOf(pickActs(draft, catalogue, picks))).toEqual(order);
   });

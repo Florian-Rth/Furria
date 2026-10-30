@@ -523,6 +523,55 @@ public sealed class RunningOrderSuggestionTests
         Assert.True(proposal.CostAfter < proposal.CostBefore);
     }
 
+    [Fact]
+    public void Should_ReportEachCheaperOrderAsItIsFound_When_TheSearchRuns()
+    {
+        var found = new List<RunningOrderProposal>();
+
+        var proposal = RunningOrderSuggestion.ProposalFor(
+            new() { Lines = MessyEvening(), Rules = [] },
+            new SuggestionSearch { Improved = found.Add }
+        );
+
+        Assert.NotEmpty(found);
+        Assert.All(found, interim => Assert.False(interim.Proven));
+        Assert.True(
+            found.Zip(found.Skip(1)).All(pair => pair.Second.CostAfter <= pair.First.CostAfter)
+        );
+        Assert.Equal(proposal.Order, found[^1].Order);
+        Assert.True(proposal.Proven);
+    }
+
+    [Fact]
+    public void Should_HandBackTheBestOrderSoFarUnproven_When_TheSearchIsStopped()
+    {
+        var proposal = RunningOrderSuggestion.ProposalFor(
+            new() { Lines = MessyEvening(), Rules = [] },
+            new SuggestionSearch { Stop = new CancellationToken(canceled: true) }
+        );
+
+        Assert.False(proposal.Proven);
+        Assert.Equal(12, proposal.Order.Count);
+        Assert.True(proposal.CostAfter < proposal.CostBefore);
+        Assert.Empty(proposal.Holds);
+        Assert.False(proposal.HoldsUnavoidable);
+    }
+
+    [Fact]
+    public void Should_GoOnFromTheSeed_When_AnEarlierSearchFoundACheaperOrder()
+    {
+        var input = new RunningOrderReviewInput { Lines = MessyEvening(), Rules = [] };
+        var best = RunningOrderSuggestion.ProposalFor(input);
+
+        var proposal = RunningOrderSuggestion.ProposalFor(
+            input,
+            new SuggestionSearch { Seed = best.Order, Stop = new CancellationToken(canceled: true) }
+        );
+
+        Assert.Equal(best.Order, proposal.Order);
+        Assert.Equal((best.CostBefore, best.CostAfter), (proposal.CostBefore, proposal.CostAfter));
+    }
+
     private static RunningOrderProposal ProposalFor(
         IReadOnlyList<ReviewLine> lines,
         IReadOnlyList<ReviewRule>? rules = null
