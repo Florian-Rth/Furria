@@ -1,5 +1,7 @@
 import { KkLaneTrack } from '@furria/ui/KkLaneTrack';
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
+import type { StudioSetup } from '@/features/act-studio/hooks/use-studio-setup';
+import type { SetupKey } from '@/features/act-studio/studio-setup';
 import {
   DESK_LANES,
   DESK_MUSIC,
@@ -15,15 +17,17 @@ import type { ActDesk } from '../hooks/use-act-desk';
 import type { DeskBorders } from '../hooks/use-desk-borders';
 import { useDeskRows } from '../hooks/use-desk-rows';
 import type { DeskZoom } from '../hooks/use-desk-zoom';
+import { DeskLaneSetup } from './DeskLaneSetup';
 import { DeskPlayheadLive } from './DeskPlayheadLive';
 
 interface DeskLanesProps {
   desk: ActDesk;
   zoom: DeskZoom;
   borders: DeskBorders;
+  setup: StudioSetup;
 }
 
-export const DeskLanes: FC<DeskLanesProps> = ({ desk, zoom, borders }) => {
+export const DeskLanes: FC<DeskLanesProps> = ({ desk, zoom, borders, setup }) => {
   const rows = useDeskRows(desk, zoom);
   const { playback, practice, evening } = desk.screen;
   const movable = evening === null;
@@ -107,10 +111,17 @@ export const DeskLanes: FC<DeskLanesProps> = ({ desk, zoom, borders }) => {
     />
   ));
   const none = <KkLaneTrack.Empty text={DESK_NONE} />;
+  const setupIn = (key: SetupKey): ReactNode => {
+    const row = setup.rowOf(key);
+
+    return row === null ? null : <DeskLaneSetup row={row} />;
+  };
+  const emptyLane = (key: SetupKey): ReactNode => setupIn(key) ?? none;
   const partLane = parts.length === 0 ? none : parts;
-  const stepLane = steps.length === 0 ? none : steps;
-  const videoLane = videos.length === 0 ? none : videos;
-  const keyLane = keys.length === 0 ? none : keys;
+  const stepLane = steps.length === 0 ? emptyLane('steps') : steps;
+  const musicSetup = setupIn('music');
+  const videoLane = videos.length === 0 ? emptyLane('video') : videos;
+  const keyLane = keys.length === 0 ? emptyLane('formation') : keys;
 
   return (
     <KkLaneTrack label={DESK_LANES} width={zoom.width} scrollerRef={zoom.attach} onZoom={zoom.zoom}>
@@ -129,6 +140,7 @@ export const DeskLanes: FC<DeskLanesProps> = ({ desk, zoom, borders }) => {
         <KkLaneTrack.Wave values={rows.wave} />
         <KkLaneTrack.Ticks ticks={rows.beats} edge="bottom" />
         <KkLaneTrack.Scrub label={DESK_SEEK} onSeek={rows.seek} />
+        {musicSetup}
       </KkLaneTrack.Row>
       <KkLaneTrack.Row label={DESK_VIDEO} aside={null} size="lane">
         {videoLane}

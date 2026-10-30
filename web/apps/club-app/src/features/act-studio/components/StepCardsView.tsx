@@ -7,6 +7,7 @@ import { useActStudioStepTool } from '../hooks/use-act-studio-step-tool';
 import { useStepCardKeys } from '../hooks/use-step-card-keys';
 import { useStepCardTools } from '../hooks/use-step-card-tools';
 import { useStepCards } from '../hooks/use-step-cards';
+import { useStepCardsSetup } from '../hooks/use-step-cards-setup';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import { useVisitHistory } from '../hooks/use-visit-history';
 import { STEP_CARDS_LABEL, STEP_CARDS_LIST } from '../step-cards-copy';
@@ -14,8 +15,10 @@ import { ActStudioSpotSheet } from './ActStudioSpotSheet';
 import { ActStudioStepDesk } from './ActStudioStepDesk';
 import { StepCardsEmpty } from './StepCardsEmpty';
 import { StepCardsHead } from './StepCardsHead';
+import { StepCardsSetupPanel } from './StepCardsSetupPanel';
 import { StepCardsTransport } from './StepCardsTransport';
 import { StepCardView } from './StepCardView';
+import { StudioSetupInputs } from './StudioSetupInputs';
 
 interface StepCardsViewProps {
   screen: StudioScreen;
@@ -27,7 +30,8 @@ export const StepCardsView: FC<StepCardsViewProps> = ({ screen, editor }) => {
   const cards = useStepCards(screen, editor);
   const tools = useStepCardTools(screen, editor);
   const history = useVisitHistory(screen.actId, screen.studio);
-  useStepCardKeys(screen, !editor.sheetOpen && !stepTool.deskOpen);
+  const cardsSetup = useStepCardsSetup(screen, editor);
+  useStepCardKeys(screen, !editor.sheetOpen && !stepTool.deskOpen && !cardsSetup.open);
   const band =
     screen.eveningBand === null ? null : <KkStudioView.BandNote text={screen.eveningBand} />;
   const views = cards.cards.map((card) => (
@@ -42,7 +46,7 @@ export const StepCardsView: FC<StepCardsViewProps> = ({ screen, editor }) => {
       history={history}
     />
   ));
-  const body =
+  const cardsBody =
     views.length === 0 ? (
       <StepCardsEmpty screen={screen} stepTool={stepTool} />
     ) : (
@@ -50,12 +54,13 @@ export const StepCardsView: FC<StepCardsViewProps> = ({ screen, editor }) => {
         {views}
       </KkLaneCards>
     );
+  const body = cardsSetup.open ? <StepCardsSetupPanel cardsSetup={cardsSetup} /> : cardsBody;
 
   return (
     <KkLanePhone label={STEP_CARDS_LABEL}>
       <KkLanePhone.Area area="band">{band}</KkLanePhone.Area>
       <KkLanePhone.Area area="head">
-        <StepCardsHead screen={screen} history={history} />
+        <StepCardsHead screen={screen} history={history} cardsSetup={cardsSetup} />
       </KkLanePhone.Area>
       <KkLanePhone.Area area="cards">{body}</KkLanePhone.Area>
       <KkLanePhone.Area area="transport">
@@ -63,6 +68,7 @@ export const StepCardsView: FC<StepCardsViewProps> = ({ screen, editor }) => {
       </KkLanePhone.Area>
       <ActStudioSpotSheet screen={screen} editor={editor} />
       <ActStudioStepDesk screen={screen} tool={stepTool} />
+      <StudioSetupInputs setup={cardsSetup.setup} />
     </KkLanePhone>
   );
 };

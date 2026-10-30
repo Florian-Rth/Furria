@@ -27,7 +27,7 @@ export const KkLaneChecklistRoot: FC<KkLaneChecklistRootProps> = ({ title, aside
         {aside}
       </Typography>
     </Stack>
-    <Box component="ol" aria-label={title} sx={{ m: 0, p: 0, listStyle: 'none' }}>
+    <Box component="ol" role="list" aria-label={title} sx={{ m: 0, p: 0, listStyle: 'none' }}>
       {children}
     </Box>
   </Stack>

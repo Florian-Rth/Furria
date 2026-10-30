@@ -519,9 +519,28 @@ Goal: editing on phones runs on step cards.
 
 ### Phase 16 — Promote the set-up checklist
 Goal: an empty act guides its editors to a first playable version. Follows 14 and 15.
-- [ ] Checklist *Musik → Schritte → Plätze → Aufstellung → Video → Endfassung*, each row opening its tool with the action prepared (desk and step cards)
-- [ ] Progress chip once the act has started; state derived from the studio read (pure, tested)
-- [ ] Lab variants removed
+- [x] Checklist *Musik → Schritte → Plätze → Aufstellung → Video → Endfassung*, each row opening its tool with the action prepared (desk and step cards)
+- [x] Progress chip once the act has started; state derived from the studio read (pure, tested)
+- [x] Lab variants removed
+- Notes (built 2026-10-30):
+  - **One state, one action set.** `act-studio/studio-setup.ts` (`setupOf`, tested) derives each row from the studio read: done, next or open, plus whether it can run yet (*Schritte* and *Video* need music, *Aufstellung* needs spots and a timed step). Music counts as done with a song or an adopted final file; only steps on the music count. `useStudioSetup` turns the rows into actions, shared by desk and step cards:
+    - *Lied hochladen* and *Video hochladen* open the file picker directly.
+    - *Ersten Schritt setzen* sets a step at the start of the music (undoable). Once steps exist the row reads *Zu den Schritten* and only jumps to step 1.
+    - *Platz hinzufügen* switches to *Aufstellung* and adds a spot (desk: spot selected; phone: the spot sheet opens).
+    - *Aufstellen* switches to *Aufstellung* on step 1.
+    - *Endfassung* opens *Musik & Video* on the music tab.
+  - **Desk.** The inspector gained the *Einrichten* tab (A's checklist). An act with nothing set up opens on it. The ring chip *n/6* in the top bar toggles the tab. Empty lanes show their numbered set-up step in place (C): *Musik* 1, *Schritte* 2, *Wege* 4, *Video* 5; *Teile* keeps *keine*. Rows that can't run yet show disabled.
+  - **Phone.** An act with nothing set up opens on the checklist instead of the cards, with *Zum Bearbeiten*. The chip in the head brings it back. While the chip shows, *Musik & Video* in the head is icon-only so the head fits at 390 px.
+  - Chip, tab and lane buttons disappear once all six are done, and while editing an evening.
+  - `@furria/ui`: C's in-place button became `KkLaneTrack.Setup`. `KkLaneChecklist.Row` gained `disabled`. All `KkFocus*` modules and the lab-only `KkEights*` modules and `use-kk-eights-wide` are gone; `KkEightsReel` stays (step-card count bar). The lab routes `/lab/editor-{a,b,c}`, their features and the lab hub section are removed, so the count/eight helper copies in the labs are gone too.
+  - Review fixes:
+    - Only finished media count: a failed or still-processing song, video or final file doesn't tick its row.
+    - Rows that can't run yet say why (*Geht, sobald Musik da ist.*).
+    - The open checklist (phone) and *Einrichten* tab (desk) close themselves when the set-up is complete or an evening is edited (`setupShownOf`, `setupStartsOpen`, tested).
+    - "wartet/warten" by count.
+    - The checklist `ol` keeps `role="list"`.
+  - Left open: `complete` needs a trainer video and an adopted final file. An act that never gets either keeps the chip. If the owner wants those two to be optional, that ruling would change `setupOf`.
+  - Browser check (Sabine; act 14 empty, act 5 at 5/6) at 1440×900 light, 1024×768 dark and 390×844 light/dark: no page scroll, chip toggles the tab and the phone checklist, *Zu den Schritten* lands on *Auswahl*, *Endfassung* opens `/acts/5/musik?tool=music`. Upload and step-setting actions weren't clicked, to keep the shared dev data as it is.
 
 ### Phase 17 — ⚖ Lab: season grid and *Heute*
 Goal: Florian picks the planner's season view and the backstage view.

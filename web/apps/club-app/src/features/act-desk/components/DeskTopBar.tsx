@@ -1,7 +1,9 @@
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
 import { KkLaneButton } from '@furria/ui/KkLaneButton';
 import type { FC } from 'react';
+import { StudioSetupChip } from '@/features/act-studio/components/StudioSetupChip';
 import { useStudioMusicRoute } from '@/features/act-studio/hooks/use-studio-music-route';
+import type { StudioSetup } from '@/features/act-studio/hooks/use-studio-setup';
 import { useVisitHistory } from '@/features/act-studio/hooks/use-visit-history';
 import {
   DESK_BACK,
@@ -28,9 +30,10 @@ import { DeskReadoutLive } from './DeskReadoutLive';
 interface DeskTopBarProps {
   desk: ActDesk;
   zoom: DeskZoom;
+  setup: StudioSetup;
 }
 
-export const DeskTopBar: FC<DeskTopBarProps> = ({ desk, zoom }) => {
+export const DeskTopBar: FC<DeskTopBarProps> = ({ desk, zoom, setup }) => {
   const { screen } = desk;
   const { practice, playback, mode } = screen;
   const history = useVisitHistory(screen.actId, screen.studio);
@@ -62,6 +65,7 @@ export const DeskTopBar: FC<DeskTopBarProps> = ({ desk, zoom }) => {
   const zoomOutLocked = !zoom.canOut;
   const undoLocked = !history.canUndo;
   const redoLocked = !history.canRedo;
+  const setupOpen = desk.tab === 'setup';
 
   return (
     <KkLaneBar label={DESK_BAR_LABEL}>
@@ -129,6 +133,7 @@ export const DeskTopBar: FC<DeskTopBarProps> = ({ desk, zoom }) => {
           onPress={history.redo}
         />
         {musicButton}
+        <StudioSetupChip setup={setup} expanded={setupOpen} onToggle={desk.toggleSetup} />
         <KkLaneButton
           text={DESK_DONE}
           glyph="check"

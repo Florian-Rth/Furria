@@ -13,6 +13,8 @@ export const ROW_HEIGHTS: Record<KkLaneTrackRowSize, string> = {
   wave: '4.25rem',
 };
 
+export const LANE_STICKY_LEFT = `calc(var(${LANE_HEAD_VAR}) + 0.75rem)`;
+
 export const LANE_PAD = `calc((100cqw - var(${LANE_HEAD_VAR})) / 2)`;
 
 export const percentOf = (share: number): string => `${share * PERCENT}%`;

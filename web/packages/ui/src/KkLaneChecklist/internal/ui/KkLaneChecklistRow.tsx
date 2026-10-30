@@ -35,6 +35,7 @@ interface KkLaneChecklistRowProps {
   title: string;
   fact: string;
   actionText: string;
+  disabled: boolean;
   onAction: () => void;
 }
 
@@ -46,6 +47,7 @@ export const KkLaneChecklistRow: FC<KkLaneChecklistRowProps> = ({
   title,
   fact,
   actionText,
+  disabled,
   onAction,
 }) => {
   const mark =
@@ -109,6 +111,7 @@ export const KkLaneChecklistRow: FC<KkLaneChecklistRowProps> = ({
       <KkLaneButton
         text={actionText}
         tone={state === 'next' ? 'accent' : 'quiet'}
+        disabled={disabled}
         onPress={onAction}
       />
     </Stack>

@@ -1,9 +1,11 @@
 import { KkLaneDesk } from '@furria/ui/KkLaneDesk';
 import { KkStudioView } from '@furria/ui/KkStudioView';
 import type { FC } from 'react';
+import { StudioSetupInputs } from '@/features/act-studio/components/StudioSetupInputs';
 import type { ActStudioStage } from '@/features/act-studio/hooks/use-act-studio-stage';
 import { useActStudioTakes } from '@/features/act-studio/hooks/use-act-studio-takes';
 import type { StudioScreen } from '@/features/act-studio/hooks/use-studio-screen';
+import { useStudioSetup } from '@/features/act-studio/hooks/use-studio-setup';
 import { DESK_INSPECTOR, DESK_LABEL, DESK_LANES, DESK_STAGE } from '../desk-copy';
 import { useActDesk } from '../hooks/use-act-desk';
 import { useDeskBorders } from '../hooks/use-desk-borders';
@@ -28,6 +30,13 @@ export const ActDeskView: FC<ActDeskViewProps> = ({ screen, editor }) => {
   const zoom = useDeskZoom(playback.length, playback.countMarks, playback.player.position);
   const borders = useDeskBorders(screen);
   useDeskKeys(screen, zoom.zoom);
+  const setup = useStudioSetup(screen, editor, {
+    leave: () => {
+      desk.chooseTab('selection');
+    },
+    showStep: desk.focusStep,
+    showSpots: desk.focusSpots,
+  });
   const band =
     screen.eveningBand === null ? null : <KkStudioView.BandNote text={screen.eveningBand} />;
 
@@ -35,7 +44,7 @@ export const ActDeskView: FC<ActDeskViewProps> = ({ screen, editor }) => {
     <KkLaneDesk label={DESK_LABEL}>
       <KkLaneDesk.Area area="band">{band}</KkLaneDesk.Area>
       <KkLaneDesk.Area area="bar">
-        <DeskTopBar desk={desk} zoom={zoom} />
+        <DeskTopBar desk={desk} zoom={zoom} setup={setup} />
       </KkLaneDesk.Area>
       <KkLaneDesk.Area area="stage">
         <KkLaneDesk.Panel label={DESK_STAGE} kind="region" padded>
@@ -45,7 +54,7 @@ export const ActDeskView: FC<ActDeskViewProps> = ({ screen, editor }) => {
       </KkLaneDesk.Area>
       <KkLaneDesk.Area area="inspector">
         <KkLaneDesk.Panel label={DESK_INSPECTOR} kind="complementary">
-          <DeskInspectorPane desk={desk} borders={borders} />
+          <DeskInspectorPane desk={desk} borders={borders} setup={setup} />
         </KkLaneDesk.Panel>
       </KkLaneDesk.Area>
       <KkLaneDesk.Area area="overview">
@@ -53,9 +62,10 @@ export const ActDeskView: FC<ActDeskViewProps> = ({ screen, editor }) => {
       </KkLaneDesk.Area>
       <KkLaneDesk.Area area="lanes">
         <KkLaneDesk.Panel label={DESK_LANES} kind="region">
-          <DeskLanes desk={desk} zoom={zoom} borders={borders} />
+          <DeskLanes desk={desk} zoom={zoom} borders={borders} setup={setup} />
         </KkLaneDesk.Panel>
       </KkLaneDesk.Area>
+      <StudioSetupInputs setup={setup} />
     </KkLaneDesk>
   );
 };
