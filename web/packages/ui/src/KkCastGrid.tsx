@@ -83,15 +83,17 @@ const addPaint = (theme: Theme): CSSObject => ({
   },
 });
 
-interface KkCastGridProps {
+type KkCastGridAddTile =
+  | { addLabel: string; onAdd: () => void }
+  | { addLabel?: never; onAdd?: never };
+
+type KkCastGridProps = KkCastGridAddTile & {
   label: string;
   tiles: readonly KkCastTile[];
-  addLabel: string;
   onToggle: (id: number) => void;
-  onAdd: () => void;
   readOnly?: boolean;
   sx?: KkSx;
-}
+};
 
 export const KkCastGrid: FC<KkCastGridProps> = ({
   label,
@@ -178,21 +180,22 @@ export const KkCastGrid: FC<KkCastGridProps> = ({
       </Stack>
     );
   });
-  const addTile = readOnly ? null : (
-    <Stack component="li" sx={{ minWidth: 0 }}>
-      <ButtonBase onClick={onAdd} data-kk-cast-add-tile sx={addPaint}>
-        <Stack component="span" data-kk-cast-add>
-          <KkIcon name="add" size="small" />
-        </Stack>
-        <Box
-          component="span"
-          sx={{ typography: 'caption', fontWeight: 800, lineHeight: 1.15, textAlign: 'center' }}
-        >
-          {addLabel}
-        </Box>
-      </ButtonBase>
-    </Stack>
-  );
+  const addTile =
+    readOnly || onAdd === undefined ? null : (
+      <Stack component="li" sx={{ minWidth: 0 }}>
+        <ButtonBase onClick={onAdd} data-kk-cast-add-tile sx={addPaint}>
+          <Stack component="span" data-kk-cast-add>
+            <KkIcon name="add" size="small" />
+          </Stack>
+          <Box
+            component="span"
+            sx={{ typography: 'caption', fontWeight: 800, lineHeight: 1.15, textAlign: 'center' }}
+          >
+            {addLabel}
+          </Box>
+        </ButtonBase>
+      </Stack>
+    );
 
   return (
     <Box

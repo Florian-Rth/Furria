@@ -12,6 +12,7 @@ internal static class EntryFactsRows
             entry.OwnerGroupId,
             entry.ParticipatingGroups.Select(link => link.GroupId).ToList(),
             entry.Visibility,
+            entry.Kind,
             entry.StartsAt,
             entry.AsksForResponse
         );
@@ -22,11 +23,12 @@ internal sealed record EntryFactsRow(
     int? OwnerGroupId,
     IReadOnlyList<int> ParticipatingGroupIds,
     CalendarEntryVisibility Visibility,
+    CalendarEntryKind Kind,
     DateTimeOffset StartsAt,
     bool AsksForResponse
 )
 {
     [Pure]
     public CalendarEntryFacts ToFacts() =>
-        CalendarEntryFacts.Of(OwnerGroupId, ParticipatingGroupIds, Visibility, StartsAt);
+        CalendarEntryFacts.Of(OwnerGroupId, ParticipatingGroupIds, Visibility, Kind, StartsAt);
 }

@@ -30,7 +30,7 @@ const DETAILS_VIEW = 'details';
 
 const searchOf =
   (eventId: number, opensPane: boolean): KkLinkSearch =>
-  ({ view: _view, settings: _settings, edit: _edit, ...kept }) =>
+  ({ view: _view, settings: _settings, edit: _edit, roll: _roll, ...kept }) =>
     opensPane ? { ...kept, view: DETAILS_VIEW, evening: eventId } : { ...kept, evening: eventId };
 
 export const useActEvenings = (data: ActStudioResponse, studio: Studio): ActEvenings => {

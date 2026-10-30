@@ -4,6 +4,8 @@ import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playba
 import { countAt } from '@/features/act-player/music-timeline';
 import { usePractice } from '@/features/act-practice/hooks/use-practice';
 import type { Studio, StudioTraining } from '@/features/acts/schemas';
+import type { CastPerson } from '@/features/running-order/schemas';
+import { attendanceTallyOf, castAttendanceOf } from '../training-attendance';
 import {
   TRAINING_BACK,
   TRAINING_LOOP,
@@ -16,7 +18,7 @@ import {
   trainingTallyOf,
   trainingTitleOf,
 } from '../training-copy';
-import { stepPositionOf, trainingRollOf, trainingStudioOf } from '../training-gaps';
+import { stepPositionOf, trainingGapsOf, trainingStudioOf } from '../training-gaps';
 import { useScreenWakeLock } from './use-screen-wake-lock';
 
 const NO_VIEWER = null;
@@ -43,7 +45,11 @@ export interface ActTraining {
   loop: () => void;
 }
 
-export const useActTraining = (source: Studio, training: StudioTraining | null): ActTraining => {
+export const useActTraining = (
+  source: Studio,
+  training: StudioTraining | null,
+  cast: readonly CastPerson[],
+): ActTraining => {
   useScreenWakeLock();
   const studio = trainingStudioOf(source, training);
   const playback = useStudioPlayback(studio, NO_VIEWER);
@@ -52,15 +58,18 @@ export const useActTraining = (source: Studio, training: StudioTraining | null):
     playback.player,
     (seconds) => countAt(playback.segments, seconds)?.count ?? null,
   );
-  const roll = trainingRollOf(training, source.spots, playback.paths, playback.steps);
+  const gaps = trainingGapsOf(training, source.spots, playback.paths, playback.steps);
   const looping = practice.loopKind === 'step';
 
   return {
     studio,
     playback,
     title: trainingTitleOf(training),
-    tally: trainingTallyOf(training, roll),
-    gaps: trainingGapsTextOf(roll.gaps),
+    tally:
+      training === null
+        ? null
+        : trainingTallyOf(attendanceTallyOf(castAttendanceOf(cast, training))),
+    gaps: trainingGapsTextOf(gaps),
     count,
     countLabel: trainingCountLabelOf(count),
     stepName: practice.step?.name ?? TRAINING_NO_STEP,

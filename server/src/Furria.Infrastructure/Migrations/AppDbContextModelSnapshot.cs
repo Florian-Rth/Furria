@@ -104,9 +104,19 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<bool>("IsRecordedOnBehalf")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_recorded_on_behalf");
+
                     b.Property<int>("PersonId")
                         .HasColumnType("integer")
                         .HasColumnName("person_id");
+
+                    b.Property<int?>("RecordedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("recorded_by_person_id");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -120,6 +130,9 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("PersonId")
                         .HasDatabaseName("ix_attendance_response_person_id");
 
+                    b.HasIndex("RecordedByPersonId")
+                        .HasDatabaseName("ix_attendance_response_recorded_by_person_id");
+
                     b.HasIndex("CalendarEntryId", "PersonId")
                         .IsUnique()
                         .HasDatabaseName("ix_attendance_response_calendar_entry_id_person_id");
@@ -127,6 +140,61 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("attendance_response", null, t =>
                         {
                             t.HasCheckConstraint("ck_attendance_response_answer", "answer IN ('Yes', 'No', 'Maybe')");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.AttendanceResponseChange", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Answer")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("answer");
+
+                    b.Property<int>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<bool>("IsRecordedOnBehalf")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_recorded_on_behalf");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateTimeOffset>("RecordedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("recorded_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int?>("RecordedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("recorded_by_person_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_attendance_response_change");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_attendance_response_change_person_id");
+
+                    b.HasIndex("RecordedByPersonId")
+                        .HasDatabaseName("ix_attendance_response_change_recorded_by_person_id");
+
+                    b.HasIndex("CalendarEntryId", "PersonId")
+                        .HasDatabaseName("ix_attendance_response_change_calendar_entry_id_person_id");
+
+                    b.ToTable("attendance_response_change", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_attendance_response_change_answer", "answer IN ('Yes', 'No', 'Maybe')");
                         });
                 });
 
@@ -4034,9 +4102,46 @@ namespace Furria.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_attendance_response_person_person_id");
 
+                    b.HasOne("Furria.Core.Identity.Person", "RecordedBy")
+                        .WithMany()
+                        .HasForeignKey("RecordedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_attendance_response_person_recorded_by_person_id");
+
                     b.Navigation("CalendarEntry");
 
                     b.Navigation("Person");
+
+                    b.Navigation("RecordedBy");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.AttendanceResponseChange", b =>
+                {
+                    b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
+                        .WithMany()
+                        .HasForeignKey("CalendarEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_attendance_response_change_calendar_entry_calendar_entry_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_attendance_response_change_person_person_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "RecordedBy")
+                        .WithMany()
+                        .HasForeignKey("RecordedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_attendance_response_change_person_recorded_by_person_id");
+
+                    b.Navigation("CalendarEntry");
+
+                    b.Navigation("Person");
+
+                    b.Navigation("RecordedBy");
                 });
 
             modelBuilder.Entity("Furria.Core.Club.BoardOffice", b =>

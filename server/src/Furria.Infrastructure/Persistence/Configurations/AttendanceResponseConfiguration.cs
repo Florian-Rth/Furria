@@ -44,6 +44,18 @@ public sealed class AttendanceResponseConfiguration : IEntityTypeConfiguration<A
             .HasConstraintName("fk_attendance_response_person_person_id")
             .OnDelete(DeleteBehavior.Cascade);
 
+        builder.Property(response => response.IsRecordedOnBehalf).HasDefaultValue(false);
+
+        builder
+            .HasOne(response => response.RecordedBy)
+            .WithMany()
+            .HasForeignKey(response => response.RecordedByPersonId)
+            .HasConstraintName("fk_attendance_response_person_recorded_by_person_id")
+            .OnDelete(DeleteBehavior.SetNull);
+        builder
+            .HasIndex(response => response.RecordedByPersonId)
+            .HasDatabaseName("ix_attendance_response_recorded_by_person_id");
+
         builder
             .HasIndex(response => new { response.CalendarEntryId, response.PersonId })
             .HasDatabaseName("ix_attendance_response_calendar_entry_id_person_id")

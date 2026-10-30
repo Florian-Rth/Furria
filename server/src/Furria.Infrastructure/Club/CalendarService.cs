@@ -41,6 +41,8 @@ public sealed class CalendarService
     private static readonly IReadOnlyDictionary<int, AttendanceAnswer> NoAnswers =
         new Dictionary<int, AttendanceAnswer>();
 
+    private static readonly IReadOnlySet<GroupSession> NoActSessions = new HashSet<GroupSession>();
+
     private static readonly IReadOnlyDictionary<
         VenueCollisionQuery,
         IReadOnlyList<CalendarEntrySummary>
@@ -103,8 +105,10 @@ public sealed class CalendarService
             ct
         );
 
+        var actSessions = await ActSessionsOfAsync(rows, ct);
+
         return Result<IReadOnlyList<CalendarEntrySummary>>.Success([
-            .. rows.Select(row => ToSummary(row, answers, now)),
+            .. rows.Select(row => ToSummary(row, answers, actSessions, now)),
         ]);
     }
 
@@ -134,7 +138,9 @@ public sealed class CalendarService
 
         var answers = await AnswersOfAsync(viewer.PersonId, [row.CalendarEntryId], ct);
 
-        return Result<CalendarEntrySummary>.Success(ToSummary(row, answers, now));
+        return Result<CalendarEntrySummary>.Success(
+            ToSummary(row, answers, await ActSessionsOfAsync([row], ct), now)
+        );
     }
 
     public async Task<IReadOnlyList<GroupCalendarEntrySummary>> GetGroupEntriesAsync(
@@ -172,11 +178,15 @@ public sealed class CalendarService
             ct
         );
         var ties = await _dbContext.CalendarTiesOfAsync(personId, today, ct);
+        var actSessions = await ActSessionsOfAsync(rows, ct);
 
         return
         [
             .. rows.Select(row =>
-                ToGroupSummary(row, answers, MayAnswer(row, ties, holdsClubRead), now)
+                ToGroupSummary(
+                    ToSummary(row, answers, actSessions, now),
+                    MayAnswer(row, ties, actSessions, holdsClubRead)
+                )
             ),
         ];
     }
@@ -234,7 +244,7 @@ public sealed class CalendarService
                 found[probe] =
                 [
                     .. rows.Where(row => Collides(row, probe))
-                        .Select(row => ToSummary(row, NoAnswers, now)),
+                        .Select(row => ToSummary(row, NoAnswers, NoActSessions, now)),
                 ];
             }
         }
@@ -459,35 +469,29 @@ public sealed class CalendarService
                 : Result.Forbidden(NotYoursMessage);
         }
 
-        if (!entry.AsksForResponse)
+        if (!await AsksForResponseAsync(entry, ct))
             return Result.Validation(NoResponseWantedMessage);
 
-        var recorded = await _dbContext.AttendanceResponses.SingleOrDefaultAsync(
-            response =>
-                response.CalendarEntryId == command.CalendarEntryId
-                && response.PersonId == personId,
-            ct
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        _dbContext.Record(
+            await _dbContext.LockedResponseAsync(command.CalendarEntryId, personId, ct),
+            new AttendanceRecord(
+                command.CalendarEntryId,
+                personId,
+                command.Answer,
+                IsRecordedOnBehalf: false,
+                RecordedByPersonId: null
+            ),
+            _timeProvider.GetUtcNow()
         );
 
-        if (recorded is null)
-        {
-            _dbContext.AttendanceResponses.Add(
-                new AttendanceResponse
-                {
-                    CalendarEntryId = command.CalendarEntryId,
-                    PersonId = personId,
-                    Answer = command.Answer,
-                }
-            );
-        }
-        else
-        {
-            recorded.Answer = command.Answer;
-        }
-
         var saved = await _dbContext.SaveOrConflictAsync(ct);
+        if (!saved.IsSuccess)
+            return Result.Conflict(DuplicateResponseMessage);
 
-        return saved.IsSuccess ? Result.Success() : Result.Conflict(DuplicateResponseMessage);
+        await transaction.CommitAsync(ct);
+
+        return Result.Success();
     }
 
     [Pure]
@@ -537,8 +541,14 @@ public sealed class CalendarService
         );
 
     [Pure]
-    private static bool MayAnswer(EntryRow row, CalendarTies ties, bool holdsClubRead) =>
-        row.AsksForResponse && ties.Sees(FactsOf(row), holdsClubRead);
+    private static bool MayAnswer(
+        EntryRow row,
+        CalendarTies ties,
+        IReadOnlySet<GroupSession> actSessions,
+        bool holdsClubRead
+    ) =>
+        (row.AsksForResponse || FactsOf(row).AsksTheCastOf(actSessions))
+        && ties.Sees(FactsOf(row), holdsClubRead);
 
     [Pure]
     private static CalendarEntryFacts FactsOf(EntryRow row) =>
@@ -546,6 +556,7 @@ public sealed class CalendarService
             row.OwnerGroupId,
             [.. row.ParticipatingGroups.Select(group => group.GroupId)],
             row.Visibility,
+            row.Kind,
             row.StartsAt
         );
 
@@ -615,6 +626,7 @@ public sealed class CalendarService
     private CalendarEntrySummary ToSummary(
         EntryRow row,
         IReadOnlyDictionary<int, AttendanceAnswer> answers,
+        IReadOnlySet<GroupSession> actSessions,
         DateTimeOffset now
     ) =>
         new()
@@ -632,6 +644,7 @@ public sealed class CalendarService
             ParticipatingGroups = [.. row.ParticipatingGroups.Select(ToParticipatingGroup)],
             Visibility = row.Visibility,
             AsksForResponse = row.AsksForResponse,
+            AsksTheCast = FactsOf(row).AsksTheCastOf(actSessions),
             Description = row.Description,
             ViewerAnswer = answers.TryGetValue(row.CalendarEntryId, out var answer) ? answer : null,
             IsRunning = row.IsRunning,
@@ -665,12 +678,34 @@ public sealed class CalendarService
             Picture = picture,
         };
 
-    private GroupCalendarEntrySummary ToGroupSummary(
-        EntryRow row,
-        IReadOnlyDictionary<int, AttendanceAnswer> answers,
-        bool viewerMayAnswer,
-        DateTimeOffset now
-    ) => new() { Entry = ToSummary(row, answers, now), ViewerMayAnswer = viewerMayAnswer };
+    [Pure]
+    private static GroupCalendarEntrySummary ToGroupSummary(
+        CalendarEntrySummary entry,
+        bool viewerMayAnswer
+    ) => new() { Entry = entry, ViewerMayAnswer = viewerMayAnswer };
+
+    private Task<IReadOnlySet<GroupSession>> ActSessionsOfAsync(
+        IReadOnlyList<EntryRow> rows,
+        CancellationToken ct
+    ) =>
+        _dbContext.ActSessionsOfAsync(
+            [
+                .. rows.Where(row => CastAttendance.AsksTheCastOn(row.Kind))
+                    .SelectMany(row => FactsOf(row).GroupIds())
+                    .Distinct(),
+            ],
+            ct
+        );
+
+    private async Task<bool> AsksForResponseAsync(EntryFactsRow entry, CancellationToken ct)
+    {
+        if (entry.AsksForResponse)
+            return true;
+
+        var facts = entry.ToFacts();
+
+        return facts.AsksTheCastOf(await _dbContext.ActSessionsOfAsync([.. facts.GroupIds()], ct));
+    }
 
     private Task<bool> MayOwnAsync(int actorAccountId, int? ownerGroupId, CancellationToken ct) =>
         ownerGroupId is { } groupId
@@ -802,13 +837,22 @@ public sealed class CalendarService
     )
     {
         var tiedGroupIds = _dbContext.TiedGroupIds(personId, today);
+        var castGroupIds = _dbContext.CastGroupIds(personId, today);
+        var castKinds = CastAttendance.Kinds;
 
         return entry =>
             (
                 entry.OwnerGroupId != null && tiedGroupIds.Contains(entry.OwnerGroupId.Value)
                 || entry.ParticipatingGroups.Any(link => tiedGroupIds.Contains(link.GroupId))
             )
-            || holdsClubRead && entry.Visibility != CalendarEntryVisibility.Group;
+            || holdsClubRead && entry.Visibility != CalendarEntryVisibility.Group
+            || (
+                castKinds.Contains(entry.Kind)
+                && (
+                    (entry.OwnerGroupId != null && castGroupIds.Contains(entry.OwnerGroupId.Value))
+                    || entry.ParticipatingGroups.Any(link => castGroupIds.Contains(link.GroupId))
+                )
+            );
     }
 
     private async Task<IReadOnlyDictionary<int, AttendanceAnswer>> AnswersOfAsync(

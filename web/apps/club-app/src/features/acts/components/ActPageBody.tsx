@@ -2,6 +2,7 @@ import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
 import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { ActTrainingRollPanel } from '@/features/act-training/components/ActTrainingRollPanel';
 import { ActTrainingsSection } from '@/features/act-training/components/ActTrainingsSection';
 import { CAST_ONLY_NOTE } from '../act-page-copy';
 import type { ActPageState } from '../hooks/use-act-page';
@@ -30,7 +31,8 @@ export const ActPageBody: FC<ActPageBodyProps> = ({ page }) => {
     ) : (
       <ActStudioOverview studio={data.studio} viewerId={page.viewerId} />
     );
-  const trainings = data.studio === null ? null : <ActTrainingsSection studio={data.studio} />;
+  const trainings =
+    data.studio === null ? null : <ActTrainingsSection studio={data.studio} cast={data.act.cast} />;
   const coEditors = data.studio === null ? null : <ActCoEditorsSection page={data} />;
   const evenings =
     data.studio === null ? null : <ActEveningsSection data={data} studio={data.studio} />;
@@ -42,6 +44,17 @@ export const ActPageBody: FC<ActPageBodyProps> = ({ page }) => {
         data={data}
         studio={data.studio}
         evening={page.evening}
+      />
+    );
+
+  const rollPanel =
+    data.studio === null || page.rollTraining === null || !page.isRollOpen ? null : (
+      <ActTrainingRollPanel
+        key={page.rollTraining.calendarEntryId}
+        page={page}
+        data={data}
+        studio={data.studio}
+        training={page.rollTraining}
       />
     );
 
@@ -58,6 +71,7 @@ export const ActPageBody: FC<ActPageBodyProps> = ({ page }) => {
       </KkMasterDetail.Master>
       <ActSettingsSide page={page} act={data.act} />
       {eveningPanel}
+      {rollPanel}
     </KkMasterDetail>
   );
 };

@@ -46,6 +46,8 @@ export interface ActPageState {
   canEditStudio: boolean;
   evening: StudioEvening | null;
   training: StudioTraining | null;
+  rollTraining: StudioTraining | null;
+  isRollOpen: boolean;
   eveningCast: readonly CastPerson[];
   startEditing: boolean;
   isSettingsOpen: boolean;
@@ -57,6 +59,8 @@ export interface ActPageState {
   closeSettings: () => void;
   openEvening: (eventId: number) => void;
   closeEvening: () => void;
+  closeRoll: () => void;
+  startTraining: (calendarEntryId: number) => void;
   practiseEvening: (eventId: number, edit: boolean) => void;
   reload: () => void;
 }
@@ -105,18 +109,34 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
   const training =
     studio?.trainings.find((candidate) => candidate.calendarEntryId === search.training) ?? null;
   const isEveningOpen = mode === 'details' && !isSettingsOpen && canEditStudio && evening !== null;
+  const rollTraining =
+    studio?.trainings.find((candidate) => candidate.calendarEntryId === search.roll) ?? null;
+  const isRollOpen =
+    mode === 'details' && !isSettingsOpen && !isEveningOpen && rollTraining !== null;
 
   const showView = (view: 'details' | undefined): void => {
     void navigate({
       to: '.',
-      search: (previous) => ({ ...previous, view, settings: undefined, training: undefined }),
+      search: (previous) => ({
+        ...previous,
+        view,
+        settings: undefined,
+        training: undefined,
+        roll: undefined,
+      }),
       resetScroll: true,
     });
   };
   const showSettings = (settings: true | undefined): void => {
     void navigate({
       to: '.',
-      search: (previous) => ({ ...previous, view: 'details', settings, evening: undefined }),
+      search: (previous) => ({
+        ...previous,
+        view: 'details',
+        settings,
+        evening: undefined,
+        roll: undefined,
+      }),
       replace: true,
       resetScroll: false,
     });
@@ -129,6 +149,7 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
         view: 'details',
         settings: undefined,
         evening: eventId,
+        roll: undefined,
       }),
       replace: true,
       resetScroll: false,
@@ -144,9 +165,18 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
   const closeEvening = (): void => {
     showEvening(undefined);
   };
+  const closeRoll = (): void => {
+    void navigate({
+      to: '.',
+      search: (previous) => ({ ...previous, roll: undefined }),
+      replace: true,
+      resetScroll: false,
+    });
+  };
 
   useCloseOnEscape(isWide && isSettingsOpen, closeSettings);
   useCloseOnEscape(isWide && isEveningOpen, closeEvening);
+  useCloseOnEscape(isWide && isRollOpen, closeRoll);
 
   const detailsAction: KkQuietScreenAction = {
     id: 'details',
@@ -174,7 +204,7 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
       showView(undefined);
     },
   };
-  const sidePaneOpen = isSettingsOpen || isEveningOpen;
+  const sidePaneOpen = isSettingsOpen || isEveningOpen || isRollOpen;
   const settingsAction: KkQuietScreenAction = {
     id: 'settings',
     label: SETTINGS_LABEL,
@@ -199,6 +229,8 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
     canEditStudio,
     evening,
     training,
+    rollTraining,
+    isRollOpen,
     eveningCast: eveningCastOf(act?.cast ?? [], evening?.appearance ?? null),
     startEditing: search.edit === true,
     isSettingsOpen,
@@ -210,6 +242,22 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
     closeSettings,
     openEvening: showEvening,
     closeEvening,
+    closeRoll,
+    startTraining: (calendarEntryId) => {
+      void navigate({
+        to: '.',
+        search: (previous) => ({
+          ...previous,
+          view: 'training',
+          settings: undefined,
+          evening: undefined,
+          edit: undefined,
+          roll: undefined,
+          training: calendarEntryId,
+        }),
+        resetScroll: true,
+      });
+    },
     practiseEvening: (eventId, edit) => {
       void navigate({
         to: '.',
@@ -217,6 +265,7 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
           ...previous,
           view: undefined,
           settings: undefined,
+          roll: undefined,
           evening: eventId,
           edit: edit ? true : undefined,
         }),

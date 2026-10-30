@@ -2,16 +2,18 @@ import { KkTrainingView } from '@furria/ui/KkTrainingView';
 import type { FC } from 'react';
 import { PracticeStageLayer } from '@/features/act-practice/components/PracticeStageLayer';
 import type { Studio, StudioTraining } from '@/features/acts/schemas';
+import type { CastPerson } from '@/features/running-order/schemas';
 import { useActTraining } from '../hooks/use-act-training';
 import { TRAINING_SCREEN_LABEL } from '../training-copy';
 
 interface ActTrainingBodyProps {
   studio: Studio;
   training: StudioTraining | null;
+  cast: readonly CastPerson[];
 }
 
-export const ActTrainingBody: FC<ActTrainingBodyProps> = ({ studio, training }) => {
-  const view = useActTraining(studio, training);
+export const ActTrainingBody: FC<ActTrainingBodyProps> = ({ studio, training, cast }) => {
+  const view = useActTraining(studio, training, cast);
   const gaps =
     view.gaps === null ? null : (
       <KkTrainingView.Gaps>

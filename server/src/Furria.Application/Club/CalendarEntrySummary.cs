@@ -31,6 +31,8 @@ public sealed record CalendarEntrySummary
 
     public required bool AsksForResponse { get; init; }
 
+    public required bool AsksTheCast { get; init; }
+
     public required string? Description { get; init; }
 
     public required AttendanceAnswer? ViewerAnswer { get; init; }

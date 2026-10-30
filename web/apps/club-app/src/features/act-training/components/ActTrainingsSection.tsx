@@ -6,15 +6,17 @@ import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { Studio } from '@/features/acts/schemas';
+import type { CastPerson } from '@/features/running-order/schemas';
 import { useActTrainings } from '../hooks/use-act-trainings';
 import { TRAININGS_EMPTY, TRAININGS_NOTE, TRAININGS_TITLE } from '../training-copy';
 
 interface ActTrainingsSectionProps {
   studio: Studio;
+  cast: readonly CastPerson[];
 }
 
-export const ActTrainingsSection: FC<ActTrainingsSectionProps> = ({ studio }) => {
-  const trainings = useActTrainings(studio);
+export const ActTrainingsSection: FC<ActTrainingsSectionProps> = ({ studio, cast }) => {
+  const trainings = useActTrainings(studio, cast);
   const rows = trainings.rows.map((row) => (
     <KkHubRow
       key={row.calendarEntryId}

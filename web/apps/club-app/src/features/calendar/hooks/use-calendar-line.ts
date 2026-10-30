@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useAttendanceChoice } from '@/features/attendance/hooks/use-attendance-choice';
 import type { AttendanceAnswer } from '@/features/attendance/schemas';
-import { isOver } from '../calendar-agenda';
+import { asksForAnswer, isOver } from '../calendar-agenda';
 import type { CalendarEntry } from '../schemas';
 
 export type CalendarLineAnswerState = 'none' | 'choice' | 'badge';
@@ -23,7 +23,7 @@ const stateOf = (
   nowMs: number,
   primary: boolean,
 ): CalendarLineAnswerState => {
-  if (!entry.asksForResponse || !primary) {
+  if (!asksForAnswer(entry) || !primary) {
     return 'none';
   }
   if (answer === null) {

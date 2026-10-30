@@ -896,15 +896,17 @@ _UI copy_: Platz, Aufstellung, Bewegung, Fassung
 _Avoid_: position (for the spot), dancer slot, formation (for the whole document)
 
 **Open spot** (training):
-A **spot** whose holder sent an *Absage* (*Nein*) to one of the group's coming trainings or
-rehearsals — the group owns the calendar entry or takes part in it. For that training the spot
+A **spot** whose holder's answer to one of the group's coming trainings or rehearsals is *Nein*
+(*Absage*) — the group owns the calendar entry or takes part in it, and the *Nein* is hers or a
+group admin's mark for her (every training asks its cast, ruled 2026-10-30). For that training the spot
 shows open on the stage, and the training names the **steps** in which the open spot moves, since
 that is where the others lose their reference. *Vielleicht* and no answer leave the spot held;
 trainings are always the session's version — the evening's changes never reach them. The
 **training mode** plays the act on the trainer's phone for the whole hall: the music over the
 speaker, the current step with its count and the formation large, the open spots of the chosen
 training marked, one tap to repeat a step (built 2026-10-30, RFC 0001 phase 16).
-_UI copy_: *offen*, *x von y da*, *Training starten*, *Schritt wiederholen*
+_UI copy_: *offen*, *x von y da*, *Platz n offen*, *Wer ist da*, *eingetragen von …*,
+*Training starten*, *Schritt wiederholen*
 _Avoid_: missing, gap (in copy), absence (that is the evening review's word)
 
 **Running order**:
@@ -978,6 +980,15 @@ Made precise when L2 was built (ruled 2026-10-02):
   Start.
 - **Owed horizon.** Start asks from 14 days before a training, rehearsal or meeting and from 42
   days before any other kind. The horizon limits what Start asks, not what is owed.
+- **Every training asks its cast** (ruled 2026-10-30, RFC 0002 phase 7;
+  [ADR-0032](docs/adr/0032-every-training-asks-its-cast.md)). A training or rehearsal that a group
+  owns or takes part in asks for a response whenever that group has an act (not archived) in the
+  entry's relevant session, switch or no switch. It **concerns** the act's whole cast, a guest from
+  another group included, so it is owed on her Start and she may answer it.
+- **Recorded on behalf.** A group admin of the act's group may mark a cast member present or absent
+  on one of the act's coming trainings — kids without accounts too. The mark is stored as her
+  response, naming who recorded it; the latest answer wins (her own answer replaces a mark), and
+  the training's trail shows both. Undoing a mark restores the answer before it.
 _UI copy_: Kalendereintrag; Eigentümer; Sichtbarkeit (Gruppe / Verein / Öffentlich); Mitwirkende
 Gruppen; Zu-/Absage
 _Avoid_: **appointment**, **group appointment**, schedule, calling it an event, collapsing
