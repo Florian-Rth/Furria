@@ -2,7 +2,6 @@ import type { KkChipTone } from '@furria/ui/KkChip';
 import type { EveningChoreographyState } from '@/features/act-studio/studio-evening';
 import { EVENING_CHANGE_WORDS } from '@/features/running-order/planner-copy';
 import type { EveningChange } from '@/features/running-order/schemas';
-import { toStageTime } from '@/features/running-order/stage-time';
 import type { EveningEntryState } from './act-evenings';
 import type { StudioEvening } from './schemas';
 
@@ -62,18 +61,11 @@ export const toEveningDay = (startsAt: string): string => DAY.format(new Date(st
 export const toEveningLabel = (evening: StudioEvening): string =>
   `${evening.title}, ${toEveningDay(evening.startsAt)}`;
 
-const toStagePlace = (position: number, stageStartsAt: string | null): string =>
-  stageStartsAt === null
-    ? `Platz ${position + 1}`
-    : `Platz ${position + 1} · ${toStageTime(position, stageStartsAt)}`;
-
 export const toEveningMeta = (evening: StudioEvening): string => {
   const day = toEveningDay(evening.startsAt);
   const position = evening.appearance?.position ?? null;
 
-  return position === null
-    ? day
-    : `${day} · ${toStagePlace(position, evening.appearance?.stageStartsAt ?? null)}`;
+  return position === null ? day : `${day} · Nr. ${position + 1}`;
 };
 
 export const toEveningStateChip = (state: EveningEntryState): EveningStateChip =>

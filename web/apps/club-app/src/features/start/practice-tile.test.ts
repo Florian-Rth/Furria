@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { MyAct } from '@/features/acts/schemas';
-import { boardPanelsOf, practiceReachOf } from './practice-tile';
+import { boardPanelsOf, practiceMetaOf, practiceReachOf, practisableActsOf } from './practice-tile';
 import type { StartPanel } from './schemas';
 
 const act = (actId: number): MyAct => ({
@@ -64,5 +64,55 @@ describe('practiceReachOf', () => {
 
   it('lets the viewer choose among several acts', () => {
     expect(practiceReachOf([act(4), act(5)])).toEqual({ kind: 'sheet' });
+  });
+});
+
+describe('practisableActsOf', () => {
+  it.each<[string, Partial<MyAct>, boolean]>([
+    ['a playable cast act', { playable: true, viewerInCast: true }, true],
+    [
+      'a playable act the viewer leads',
+      { playable: true, viewerInCast: false, viewerLeads: true },
+      true,
+    ],
+    ['an act without music', { playable: false, viewerInCast: true }, false],
+    ['a led act without music', { playable: false, viewerInCast: false, viewerLeads: true }, false],
+  ])('keeps %s: %s', (_, overrides, kept) => {
+    const candidate = { ...act(7), ...overrides };
+
+    expect(practisableActsOf([candidate]).map((each) => each.actId)).toEqual(kept ? [7] : []);
+  });
+});
+
+describe('practiceMetaOf', () => {
+  it.each<[string, Partial<MyAct>, { group: string | null; kind: MyAct['kind'] }]>([
+    ['no group', { group: null }, { group: null, kind: 'dance' }],
+    [
+      'a group named apart',
+      {
+        name: 'Polka',
+        group: { groupId: 1, name: 'Garde', tone: null, icon: null, picture: null },
+      },
+      { group: 'Garde', kind: 'dance' },
+    ],
+    [
+      'a group named like the act',
+      {
+        name: 'Männerballett',
+        group: { groupId: 1, name: 'Männerballett', tone: null, icon: null, picture: null },
+      },
+      { group: null, kind: 'dance' },
+    ],
+    [
+      'a group named like the act in other case and spacing',
+      {
+        name: 'männerballett ',
+        group: { groupId: 1, name: 'Männerballett', tone: null, icon: null, picture: null },
+      },
+      { group: null, kind: 'dance' },
+    ],
+    ['no kind', { kind: null, group: null }, { group: null, kind: null }],
+  ])('names %s', (_, overrides, expected) => {
+    expect(practiceMetaOf({ ...act(3), ...overrides })).toEqual(expected);
   });
 });

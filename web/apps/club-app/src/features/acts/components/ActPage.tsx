@@ -1,5 +1,6 @@
 import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
+import { ActCardScreenBody } from '@/features/act-card/components/ActCardScreenBody';
 import { useStudioVisit } from '@/features/act-studio/hooks/use-studio-visit';
 import { START_ORIGIN } from '@/features/session/app-sections';
 import { AccessDeniedScreen } from '@/features/session/components/AccessDeniedScreen';
@@ -35,6 +36,14 @@ export const ActPage: FC<ActPageProps> = ({ actId, search }) => {
     return (
       <KkScreen kind="detail" title={page.title} origin={page.origin}>
         <ActPageLoading page={page} />
+      </KkScreen>
+    );
+  }
+
+  if (page.mode === 'card') {
+    return (
+      <KkScreen kind="detail" title={page.title} origin={page.origin} actions={page.actions}>
+        <ActCardScreenBody data={page.query.data} viewerId={page.viewerId} search={page.search} />
       </KkScreen>
     );
   }

@@ -915,12 +915,10 @@ of events. It is planned late: the responsible person assembles it roughly **two
 before** the evening, so for most of an event's public life there is no running order at all.
 What the public website shows of it is the **order only, never times** — the sequence is stable
 enough to publish, the clock is not. Inside the club app everyone who sees the evening sees its
-placed acts read-only, her own group's and her own acts marked, each with an **approximate stage
-time**: the evening's start plus, for every act before it, its length and a two-minute changeover.
-An act's length is its music (the adopted final file, else the working mix); without music it is
-the typical length of its kind (dance 6, show 8, music 5, speech 10, point or no kind 5 minutes).
-The first act shows the evening's start, every later one *ca.* rounded to five minutes. Planner
-wishes, rules and findings stay with the planners (built 2026-10-30, RFC #53 phase 8).
+placed acts read-only, her own group's and her own acts marked, each with its **position only**
+(*Nr. 5*) — the club app shows no stage times either (ruling 2026-10-30, RFC #53 phase 10). An
+order still being planned stays visible with a note that it can change. Planner wishes, rules and
+findings stay with the planners.
 _UI copy_: Ablauf
 _Avoid_: **programme** (retired), setlist
 

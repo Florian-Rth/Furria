@@ -42,7 +42,7 @@ export const ActPageSearchSchema = z.object({
   person: z.coerce.number().int().positive().optional().catch(undefined),
   session: z.coerce.number().int().positive().optional().catch(undefined),
   settings: z.boolean().optional().catch(undefined),
-  view: z.enum(['details', 'training']).optional().catch(undefined),
+  view: z.enum(['play', 'details', 'training']).optional().catch(undefined),
   evening: z.coerce.number().int().positive().optional().catch(undefined),
   training: z.coerce.number().int().positive().optional().catch(undefined),
   roll: z.coerce.number().int().positive().optional().catch(undefined),
@@ -174,7 +174,6 @@ export type EveningChoreography = z.infer<typeof EveningChoreographySchema>;
 export const StudioAppearanceSchema = z.object({
   appearanceId: z.int(),
   position: z.int().nullable(),
-  stageStartsAt: z.iso.datetime({ offset: true }).nullable(),
   added: z.array(StudioPersonSchema),
   removedPersonIds: z.array(z.int()),
   spotChanges: z.array(StudioSpotChangeSchema),
@@ -277,7 +276,6 @@ export const MyActEveningSchema = z.object({
   title: z.string(),
   startsAt: z.iso.datetime({ offset: true }),
   position: z.int().nullable(),
-  stageStartsAt: z.iso.datetime({ offset: true }).nullable(),
 });
 export type MyActEvening = z.infer<typeof MyActEveningSchema>;
 

@@ -59,6 +59,7 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
 
   return (
     <KkPanelStack>
+      {acts}
       <HubDescriptionPanel tone={tone} groupName={hub.name} description={hub.description} />
       <HubPeoplePanel
         tone={tone}
@@ -76,7 +77,6 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
         canManage={hub.viewerMayManage}
       />
       {care}
-      {acts}
       {history}
       {administration}
     </KkPanelStack>

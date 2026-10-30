@@ -1,21 +1,21 @@
 import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
+import { KkMeta } from '@furria/ui/KkMeta';
 import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { ActTrainingRollPanel } from '@/features/act-training/components/ActTrainingRollPanel';
+import { ActCardDetailsHead } from '@/features/act-card/components/ActCardDetailsHead';
 import { ChoreographyVersionsSection } from '@/features/act-studio/components/ChoreographyVersionsSection';
 import { StudioHistorySection } from '@/features/act-studio/components/StudioHistorySection';
 import { VERSIONS_TITLE } from '@/features/act-studio/undo-copy';
+import { ActTrainingRollPanel } from '@/features/act-training/components/ActTrainingRollPanel';
 import { ActTrainingsSection } from '@/features/act-training/components/ActTrainingsSection';
-import { CAST_ONLY_NOTE } from '../act-page-copy';
+import { CAST_ONLY_NOTE, toActStateNote } from '../act-page-copy';
 import type { ActPageState } from '../hooks/use-act-page';
 import { ActCoEditorsSection } from './ActCoEditorsSection';
 import { ActEveningPanel } from './ActEveningPanel';
 import { ActEveningsSection } from './ActEveningsSection';
-import { ActFacts } from './ActFacts';
 import { ActPageLoading } from './ActPageLoading';
 import { ActSettingsSide } from './ActSettingsSide';
-import { ActStudioOverview } from './ActStudioOverview';
 
 interface ActPageBodyProps {
   page: ActPageState;
@@ -28,12 +28,9 @@ export const ActPageBody: FC<ActPageBodyProps> = ({ page }) => {
     return <ActPageLoading page={page} />;
   }
 
-  const studio =
-    data.studio === null ? (
-      <KkNote>{CAST_ONLY_NOTE}</KkNote>
-    ) : (
-      <ActStudioOverview studio={data.studio} viewerId={page.viewerId} />
-    );
+  const studio = data.studio === null ? <KkNote>{CAST_ONLY_NOTE}</KkNote> : null;
+  const stateNote = toActStateNote(data.act);
+  const state = stateNote === null ? null : <KkMeta tone="accent">{stateNote}</KkMeta>;
   const trainings =
     data.studio === null ? null : <ActTrainingsSection studio={data.studio} cast={data.act.cast} />;
   const coEditors = data.studio === null ? null : <ActCoEditorsSection page={data} />;
@@ -78,7 +75,8 @@ export const ActPageBody: FC<ActPageBodyProps> = ({ page }) => {
     <KkMasterDetail>
       <KkMasterDetail.Master span={page.masterSpan}>
         <Stack sx={{ gap: 2, minWidth: 0 }}>
-          <ActFacts act={data.act} />
+          <ActCardDetailsHead data={data} viewerId={page.viewerId} search={page.search} />
+          {state}
           {studio}
           {evenings}
           {trainings}

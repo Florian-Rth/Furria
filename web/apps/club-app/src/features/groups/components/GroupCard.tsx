@@ -2,10 +2,9 @@ import { toImageSource } from '@furria/ui/image-source';
 import { KkAvatarStack } from '@furria/ui/KkAvatarStack';
 import { KkGroupCard } from '@furria/ui/KkGroupCard';
 import type { KkSx } from '@furria/ui/kk-sx';
-import { useKkSheetCommands } from '@furria/ui/sheet-store';
+import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { toInitials } from '@/lib/initials';
-import { toPeekId } from '@/lib/peek';
 import { toFoundedLine, toGroupTone } from '../group-identity';
 import {
   toCardKindName,
@@ -15,6 +14,7 @@ import {
 } from '../groups-labels';
 import type { GroupSummary } from '../schemas';
 
+const GROUP_PATH = '/groups/$groupId';
 const AVATAR_MAX = 3;
 const NO_SHRINK = { flexShrink: 0 } as const;
 
@@ -24,7 +24,6 @@ interface GroupCardProps {
 }
 
 export const GroupCard: FC<GroupCardProps> = ({ group, sx }) => {
-  const sheet = useKkSheetCommands();
   const tone = toGroupTone(group.groupId, group.tone);
   const initials = group.memberPreview
     .slice(0, AVATAR_MAX)
@@ -38,9 +37,7 @@ export const GroupCard: FC<GroupCardProps> = ({ group, sx }) => {
     <KkAvatarStack initials={initials} portraits={portraits} max={AVATAR_MAX} sx={NO_SHRINK} />
   );
 
-  const openPeek = (): void => {
-    sheet.open(toPeekId('group', group.groupId));
-  };
+  const params = { groupId: String(group.groupId) };
 
   return (
     <KkGroupCard
@@ -53,7 +50,9 @@ export const GroupCard: FC<GroupCardProps> = ({ group, sx }) => {
       lead={toGroupCardLeadLine(group.admins)}
       avatars={avatars}
       memberLine={sizeLine}
-      onSelect={openPeek}
+      component={Link}
+      to={GROUP_PATH}
+      params={params}
       sx={sx}
     />
   );

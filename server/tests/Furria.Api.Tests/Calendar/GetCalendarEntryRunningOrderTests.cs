@@ -16,8 +16,6 @@ namespace Furria.Api.Tests.Calendar;
 public sealed class GetCalendarEntryRunningOrderTests : IClassFixture<ApiTestFixture>
 {
     private const string Mia = "mia";
-    private const int ChangeoverMinutes = 2;
-    private const int SongSeconds = 240;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
 
@@ -29,16 +27,14 @@ public sealed class GetCalendarEntryRunningOrderTests : IClassFixture<ApiTestFix
     }
 
     [Fact]
-    public async Task Should_ShowThePlacedActsWithTheirApproximateStageTime_When_AMemberOpensTheEvening()
+    public async Task Should_ShowThePlacedActsInOrder_When_AMemberOpensTheEvening()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(EveningWithMembers(_fixture.Today), ct);
         var planner = await ctx.Identity.ClientForAsync(Planner, ct);
-        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
         var eventId = ctx.Club.Events.IdOf(Gala);
         var rede = await CreateActAsync(planner, "Büttenrede", kind: ActKind.Speech);
         var tanz = await GardetanzAsync(ctx, ct);
-        await SongOfAsync(_fixture, admin, tanz, SongSeconds, ct);
         var lied = await CreateActAsync(planner, "Lied", kind: ActKind.Music);
         await SavedAsync(planner, eventId, null, [Line(tanz, 0), Line(rede, 1), Line(lied, null)]);
         var member = await ctx.Identity.ClientForAsync(Mia, ct);
@@ -46,14 +42,10 @@ public sealed class GetCalendarEntryRunningOrderTests : IClassFixture<ApiTestFix
         var (response, result) = await GetAsync(member, eventId);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var eveningStart = await EveningStartOfAsync(planner, eventId);
         Assert.False(result.Confirmed);
         Assert.Equal(
-            [
-                (tanz, 0, eveningStart),
-                (rede, 1, eveningStart.AddSeconds(SongSeconds).AddMinutes(ChangeoverMinutes)),
-            ],
-            result.Lines.Select(line => (line.ActId, line.Position, line.StageStartsAt))
+            [(tanz, 0), (rede, 1)],
+            result.Lines.Select(line => (line.ActId, line.Position))
         );
     }
 
@@ -138,18 +130,6 @@ public sealed class GetCalendarEntryRunningOrderTests : IClassFixture<ApiTestFix
                     .AddAccount(Ben)
             );
         };
-
-    private static async Task<DateTimeOffset> EveningStartOfAsync(HttpClient client, int eventId)
-    {
-        var (response, result) = await client.GETAsync<
-            GetCalendarEntryById,
-            GetCalendarEntryByIdRequest,
-            GetCalendarEntryByIdResponse
-        >(new() { CalendarEntryId = eventId });
-        response.EnsureSuccessStatusCode();
-
-        return result.Entry.StartsAt;
-    }
 
     private static Task<TestResult<GetCalendarEntryRunningOrderResponse>> GetAsync(
         HttpClient client,

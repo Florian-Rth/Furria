@@ -1,7 +1,6 @@
 import type { KkFilterOption } from '@furria/ui/filter-chip-entries';
 import type { PersonRef } from '@/lib/api/schemas';
-import type { StateChip } from '@/lib/state-chips';
-import { GROUP_ADMIN_CHIP, MY_GROUP_CHIP, toRecruitingChip } from '@/lib/state-chips';
+import { toRecruitingChip } from '@/lib/state-chips';
 import { normalizeForSearch } from '@/lib/text';
 import type { GroupSummary } from './schemas';
 
@@ -44,19 +43,6 @@ export const toGroupsSections = (groups: readonly GroupSummary[]): readonly Grou
   ];
 };
 
-export const toGroupStandingChips = (group: GroupSummary): StateChip[] => {
-  const chips: StateChip[] = [];
-
-  if (group.viewerIsMember) {
-    chips.push(MY_GROUP_CHIP);
-  }
-  if (group.viewerIsAdmin) {
-    chips.push(GROUP_ADMIN_CHIP);
-  }
-
-  return chips;
-};
-
 export const toGroupCardSignal = (group: GroupSummary): string | null =>
   group.isRecruiting ? toRecruitingChip(true).label : null;
 
@@ -70,11 +56,7 @@ export const toGroupKindLabel = (groupKindName: string | null): string | null =>
   return named === '' ? null : named;
 };
 
-const LED_BY_PREFIX = 'Geleitet von ';
-const LED_BY_PAIR = ' und ';
 const NO_LEAD_LINE = 'Noch ohne Gruppen-Admin';
-const FURTHER_LEADS_SUFFIX = ' weitere';
-const NAMED_LEAD = 1;
 
 const toFullName = (person: PersonRef): string => `${person.firstName} ${person.lastName}`;
 
@@ -98,24 +80,6 @@ export const adminRosterOf = (admins: readonly PersonRef[]): AdminRoster => {
   }
 
   return { kind: 'more', first, second, furtherCount: further.length };
-};
-
-export const toGroupLeadLine = (admins: readonly PersonRef[]): string => {
-  const roster = adminRosterOf(admins);
-
-  if (roster.kind === 'none') {
-    return NO_LEAD_LINE;
-  }
-  if (roster.kind === 'one') {
-    return `${LED_BY_PREFIX}${toFullName(roster.first)}`;
-  }
-  if (roster.kind === 'two') {
-    return `${LED_BY_PREFIX}${toFullName(roster.first)}${LED_BY_PAIR}${toFullName(roster.second)}`;
-  }
-
-  const rest = roster.furtherCount + NAMED_LEAD;
-
-  return `${LED_BY_PREFIX}${toFullName(roster.first)}${LED_BY_PAIR}${rest}${FURTHER_LEADS_SUFFIX}`;
 };
 
 const LEAD_PREFIX = 'Leitung: ';
@@ -158,78 +122,6 @@ export const toCardKindName = (name: string, groupKindName: string | null): stri
 
 export const toPersonUnitLabel = (count: number): string => (count === 1 ? 'Person' : 'Personen');
 
-export interface RecruitingContactTextSegment {
-  kind: 'text';
-  text: string;
-}
-
-export interface RecruitingContactPersonSegment {
-  kind: 'person';
-  personId: number;
-  firstName: string;
-  lastName: string;
-}
-
-export type RecruitingContactSegment =
-  | RecruitingContactTextSegment
-  | RecruitingContactPersonSegment;
-
-const text = (value: string): RecruitingContactTextSegment => ({ kind: 'text', text: value });
-
-const name = (person: PersonRef): RecruitingContactPersonSegment => ({
-  kind: 'person',
-  personId: person.personId,
-  firstName: person.firstName,
-  lastName: person.lastName,
-});
-
-export const toContactPersonName = (segment: RecruitingContactPersonSegment): string =>
-  `${segment.firstName} ${segment.lastName}`;
-
-const CONTACT_OPENING = 'Melde dich bei ';
-const NO_CONTACT_LINE = 'Diese Gruppe hat noch keine Ansprechperson.';
-
-export const toRecruitingContactSegments = (
-  admins: readonly PersonRef[],
-): RecruitingContactSegment[] => {
-  const roster = adminRosterOf(admins);
-
-  if (roster.kind === 'none') {
-    return [text(NO_CONTACT_LINE)];
-  }
-  if (roster.kind === 'one') {
-    return [text(CONTACT_OPENING), name(roster.first), text('.')];
-  }
-  if (roster.kind === 'two') {
-    return [
-      text(CONTACT_OPENING),
-      name(roster.first),
-      text(' oder '),
-      name(roster.second),
-      text('.'),
-    ];
-  }
-
-  return [
-    text(CONTACT_OPENING),
-    name(roster.first),
-    text(', '),
-    name(roster.second),
-    text(' oder einer der anderen Gruppen-Admins.'),
-  ];
-};
-
-const toSegmentText = (segment: RecruitingContactSegment): string =>
-  segment.kind === 'text' ? segment.text : toContactPersonName(segment);
-
-export const toRecruitingContactLine = (admins: readonly PersonRef[]): string =>
-  toRecruitingContactSegments(admins).map(toSegmentText).join('');
-
-export const toGroupContactLine = (group: GroupSummary): string =>
-  group.isRecruiting ? toRecruitingContactLine(group.admins) : toGroupLeadLine(group.admins);
-
-export const GROUP_PEEK_CLOSE_LABEL = 'Kurzansicht schließen';
-export const GROUP_PEEK_OPEN_LABEL = 'Ganze Seite öffnen';
 export const toGroupSizeLine = (count: number): string => `${count} ${toPersonUnitLabel(count)}`;
 
 export const toGroupCardSizeLine = (count: number, foundedLine: string | null): string =>

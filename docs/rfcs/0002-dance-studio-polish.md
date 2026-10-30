@@ -319,12 +319,34 @@ Goal: Florian picks how members see their act and how each act kind looks.
 
 ### Phase 10 — Promote the member's act and templates (∥ D, after 9)
 Goal: members land on their act card; each kind has its template.
-- [ ] Act page by kind (*Tanz*/*Show* studio, *Rede*, *Ablaufpunkt*); stats, co-editors, wishes and session facts behind *Details* for editors
-- [ ] Member act card = variant C refined (see phase 9 ruling) on the act page and in the group hub (*Auftritte* directly under the header); group cards become links
-- [ ] No stage times in v1: drop `stageStartsAt`/*ca.* times from the member running order, act page *Abende*, `nextEvening` and the calendar sheet (server + client, incl. `StageClock`); position only. Unconfirmed running orders stay visible with the *wird noch geplant* note
-- [ ] Start *Üben* tile: playable acts only, trainer-led acts included, *+n weitere* as a button
-- [ ] Cast as a named list in the accessibility tree; no repeated act/group name; jargon replaced (no planner wishes for cast)
-- [ ] Lab variants removed; browser check light/dark at 390 px
+- [x] Act page by kind (*Tanz*/*Show* studio, *Rede*, *Ablaufpunkt*); stats, co-editors, wishes and session facts behind *Details* for editors
+- [x] Member act card = variant C refined (see phase 9 ruling) on the act page and in the group hub (*Auftritte* directly under the header); group cards become links
+- [x] No stage times in v1: drop `stageStartsAt`/*ca.* times from the member running order, act page *Abende*, `nextEvening` and the calendar sheet (server + client, incl. `StageClock`); position only. Unconfirmed running orders stay visible with the *wird noch geplant* note
+- [x] Start *Üben* tile: playable acts only, trainer-led acts included, *+n weitere* as a button
+- [x] Cast as a named list in the accessibility tree; no repeated act/group name; jargon replaced (no planner wishes for cast)
+- [x] Lab variants removed; browser check light/dark at 390 px
+
+Done 2026-10-30. `/acts/$actId` now lands everyone on the act card (variant C refined); the player is
+`?view=play` (studio editing `?view=play&edit=true`), the editors' page `?view=details`. The card
+(`features/act-card`) fills the first phone screen with its tiles (`KkFacetStage` + `KkFacetGrid fill`),
+no scroll for members; on wide screens the tiles sit above a pane + side pane. Doors by kind: *Tanz*/
+*Show* = Abend · Training · Üben · Besetzung, *Rede*/*Musik* = Abend · Sprecher/Mitwirkende · Text,
+*Ablaufpunkt* = Abend only, full width; viewers without the studio (planners outside the cast) see
+the cast only. *Details* (header action for studio editors, group admins, planners) = header + stat
+tiles (Musik, Schritte, Plätze, Videos only for *Tanz*/*Show*; Mitbearbeitung, Wünsche, Session)
+above the existing evenings, trainings, history, versions and co-editor sections; cast members
+asking for `view=details` stay on the card. Back from the player goes to the card or Details it was
+opened from. Group hub: *Auftritte* is the first section; her own acts (cast or led) are wide tiles
+(Abend · Training · Üben), the group's other current acts rows. Groups list cards are real links to
+the hub (`KkGroupCard` takes `component`/`to`/`params`; the peek sheet is gone). Start *Üben*: only
+playable acts (cast or led), `+n weitere` is a button opening the chooser, links go to
+`?view=play&from=start`, no kind line repeating a group name. Stage times removed end to end
+(`StageClock`, `EveningStageTimes`, `MusicLengthsOfAsync`, every `stageStartsAt`); the calendar
+sheet and the act's evenings show *Nr.* only and the copy no longer says times are approximate.
+Cast tile carries a hidden named list (`KkFacetTile.Names`); the header drops the group link when it
+equals the act name and shows the session only to Details viewers; *Gruppen-Admins* → *Gruppenleitung*.
+Labs A/B/C, `/lab` drafts and `KkPass*`, `KkAgenda*`, `KkFacetFold` removed. Browser-checked at 390 px
+light/dark (Kevin act 6, Sabine act 3 and hub, admin act 3 card + Details) and 1440 px.
 
 ### Phase 11 — ⚖ Lab: hall mode (∥ C)
 Goal: Florian picks the trainer's hall view.

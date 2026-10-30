@@ -7,7 +7,7 @@ import {
   START_ORIGIN,
 } from '@/features/session/app-sections';
 import type { BackStackSpot } from '@/lib/back-stack';
-import { DETAILS_LABEL } from './act-page-copy';
+import { ACT_DETAILS_LABEL } from './act-page-copy';
 import type { ActsScope } from './acts-catalogue';
 import { ACTS_TITLE, GROUP_ACTS_TITLE } from './acts-copy';
 import type { ActPageOrigin, ActPageSearch, ActsSearch } from './schemas';
@@ -15,6 +15,7 @@ import type { ActPageOrigin, ActPageSearch, ActsSearch } from './schemas';
 export const CLUB_SCOPE: ActsScope = { kind: 'club' };
 
 const DETAILS_VIEW = 'details';
+const CARD_VIEW = 'card';
 
 export const PLANNER_PATH = '/events/$eventId/ablauf';
 export const GROUP_HUB_PATH = '/groups/$groupId';
@@ -174,22 +175,56 @@ const detailsSearchOf = (search: ActPageSearch): Record<string, string> => {
   );
 };
 
-const isActDetails = (spot: BackStackSpot | undefined, actId: number): boolean =>
-  spot !== undefined &&
-  spot.pathname === actPagePathOf(actId) &&
-  new URLSearchParams(spot.search).get('view') === DETAILS_VIEW;
+const cardSearchOf = (search: ActPageSearch): Record<string, string> => {
+  const kept = {
+    from: search.from,
+    group: search.group,
+    event: search.event,
+    filter: search.filter,
+    person: search.person,
+    session: search.session,
+  };
+
+  return Object.fromEntries(
+    Object.entries(kept).flatMap(([key, value]) =>
+      value === undefined ? [] : [[key, String(value)]],
+    ),
+  );
+};
+
+const viewBehindOf = (spot: BackStackSpot | undefined, actId: number): string | null =>
+  spot === undefined || spot.pathname !== actPagePathOf(actId)
+    ? null
+    : (new URLSearchParams(spot.search).get('view') ?? CARD_VIEW);
+
+export const actCardOriginOf = (
+  actId: number,
+  search: ActPageSearch,
+  name: string,
+): KkScreenOrigin => ({
+  label: name,
+  to: ACT_PAGE_PATH,
+  params: { actId: String(actId) },
+  search: cardSearchOf(search),
+});
 
 export const playerOriginOf = (
   actId: number,
   search: ActPageSearch,
   behind: BackStackSpot | undefined,
   away: KkScreenOrigin,
-): KkScreenOrigin =>
-  isActDetails(behind, actId)
-    ? {
-        label: DETAILS_LABEL,
-        to: ACT_PAGE_PATH,
-        params: { actId: String(actId) },
-        search: detailsSearchOf(search),
-      }
-    : away;
+  name: string,
+): KkScreenOrigin => {
+  const view = viewBehindOf(behind, actId);
+
+  if (view === DETAILS_VIEW) {
+    return {
+      label: ACT_DETAILS_LABEL,
+      to: ACT_PAGE_PATH,
+      params: { actId: String(actId) },
+      search: detailsSearchOf(search),
+    };
+  }
+
+  return view === CARD_VIEW ? actCardOriginOf(actId, search, name) : away;
+};

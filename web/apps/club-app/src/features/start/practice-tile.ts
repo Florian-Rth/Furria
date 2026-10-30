@@ -3,19 +3,29 @@ import type { ActPageLink } from '@/features/acts/acts-origin';
 import { ACT_PAGE_PATH, actPageLinkOf } from '@/features/acts/acts-origin';
 import type { MyAct } from '@/features/acts/schemas';
 import { toActKindLabel } from '@/features/running-order/running-order-copy';
+import type { ActKind } from '@/features/running-order/schemas';
 import type { BoardPanel, StartPanel, StartPracticePanel } from './schemas';
 import { toShownCount } from './start-board';
 
 export const PRACTICE_SHOWN = 3;
 const PRACTICE_ORIGIN = 'start';
+const PRACTICE_VIEW = 'play';
 
 export type PracticeReach = { kind: 'act'; act: MyAct } | { kind: 'sheet' };
 
 export interface PracticeTarget {
   to: typeof ACT_PAGE_PATH;
   params: { actId: string };
-  search: { from: typeof PRACTICE_ORIGIN };
+  search: { view: typeof PRACTICE_VIEW; from: typeof PRACTICE_ORIGIN };
 }
+
+export interface PracticeMeta {
+  group: string | null;
+  kind: ActKind | null;
+}
+
+export const practisableActsOf = (acts: readonly MyAct[]): MyAct[] =>
+  acts.filter((act) => act.playable);
 
 export const boardPanelsOf = (
   panels: readonly StartPanel[],
@@ -47,17 +57,25 @@ export const practiceReachOf = (acts: readonly MyAct[]): PracticeReach => {
 export const practiceTargetOf = (act: MyAct): PracticeTarget => ({
   to: ACT_PAGE_PATH,
   params: { actId: String(act.actId) },
-  search: { from: PRACTICE_ORIGIN },
+  search: { view: PRACTICE_VIEW, from: PRACTICE_ORIGIN },
 });
 
 export const practiceLinkOf = (act: MyAct): ActPageLink =>
   actPageLinkOf(act.actId, practiceTargetOf(act).search);
 
+const sameName = (left: string, right: string): boolean =>
+  left.trim().localeCompare(right.trim(), undefined, { sensitivity: 'base' }) === 0;
+
+export const practiceMetaOf = (act: MyAct): PracticeMeta => ({
+  group: act.group === null || sameName(act.group.name, act.name) ? null : act.group.name,
+  kind: act.kind,
+});
+
 export const toPracticeMeta = (act: MyAct): string | undefined => {
-  const parts = [
-    act.group?.name ?? null,
-    act.kind === null ? null : toActKindLabel(act.kind),
-  ].filter((part): part is string => part !== null);
+  const meta = practiceMetaOf(act);
+  const parts = [meta.group, meta.kind === null ? null : toActKindLabel(meta.kind)].filter(
+    (part): part is string => part !== null,
+  );
 
   return parts.length === 0 ? undefined : parts.join(META_SEPARATOR);
 };
