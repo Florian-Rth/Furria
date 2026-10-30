@@ -41,6 +41,41 @@ public sealed record SoundProfile(int FramesPerSecond, float[][] Bands)
     }
 
     [Pure]
+    public SoundProfile Excerpt(double startSeconds, double endSeconds)
+    {
+        var first = (int)Math.Round(startSeconds * FramesPerSecond);
+        var length = Math.Max(0, (int)Math.Round(endSeconds * FramesPerSecond) - first);
+        return new SoundProfile(
+            FramesPerSecond,
+            [.. Bands.Select(band => FramesOf(band, first, length))]
+        );
+    }
+
+    [Pure]
+    public static SoundProfile? Joined(IReadOnlyList<SoundProfile> profiles)
+    {
+        if (profiles.Count == 0)
+            return null;
+        var head = profiles[0];
+        if (
+            profiles.Any(profile =>
+                profile.FramesPerSecond != head.FramesPerSecond
+                || profile.Bands.Length != head.Bands.Length
+            )
+        )
+            return null;
+
+        return new SoundProfile(
+            head.FramesPerSecond,
+            [
+                .. Enumerable
+                    .Range(0, head.Bands.Length)
+                    .Select(band => profiles.SelectMany(profile => profile.Bands[band]).ToArray()),
+            ]
+        );
+    }
+
+    [Pure]
     public static SoundProfile? Parse(ReadOnlySpan<byte> bytes)
     {
         if (bytes.Length < HeaderLength || !bytes.StartsWith(Magic))
@@ -79,6 +114,17 @@ public sealed record SoundProfile(int FramesPerSecond, float[][] Bands)
         }
 
         return bands;
+    }
+
+    [Pure]
+    private static float[] FramesOf(float[] band, int first, int length)
+    {
+        var frames = new float[length];
+        var from = Math.Clamp(first, 0, band.Length);
+        var to = Math.Clamp(first + length, from, band.Length);
+        if (to > from)
+            band.AsSpan(from, to - from).CopyTo(frames.AsSpan(from - first));
+        return frames;
     }
 
     [Pure]

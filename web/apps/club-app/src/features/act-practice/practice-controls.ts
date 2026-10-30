@@ -115,6 +115,14 @@ export const nextVideoIdOf = (
   return choiceIds[(index + 1) % choiceIds.length] ?? null;
 };
 
+export const videoSourceOf = (
+  video: StudioVideo,
+  compact: boolean,
+): { video: string; poster: string } => ({
+  video: compact ? video.urls.compact : video.urls.video,
+  poster: video.urls.poster,
+});
+
 export const heroOf = (video: StudioVideo | null): HeroKind => (video === null ? 'stage' : 'video');
 
 export const swipedRateOf = (rate: number, riseShare: number): number => {

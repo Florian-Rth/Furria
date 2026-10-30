@@ -73,7 +73,7 @@ export const ActStudioSide: FC<ActStudioSideProps> = ({
         <ActStudioStepRail screen={screen} tool={stepTool} />
       </KkPracticeScreen.Layer>
       <KkPracticeScreen.Layer shown={frame.side === 'takes'} tone="paper">
-        <ActStudioTakeList takes={takes} />
+        <ActStudioTakeList screen={screen} takes={takes} />
       </KkPracticeScreen.Layer>
       <KkPracticeScreen.Layer shown={frame.side === 'cast'} tone="clear">
         <KkStudioSide>

@@ -12,6 +12,7 @@ import {
   shownVideoIdOf,
   swipedRateOf,
   tapZoneOf,
+  videoSourceOf,
 } from './practice-controls';
 
 const step = (
@@ -44,7 +45,7 @@ const video = (videoId: number, startSeconds: number, durationSeconds: number): 
   startSeconds,
   placement: 'onTimeline',
   outdated: false,
-  urls: { video: '/v', poster: '/p' },
+  urls: { video: '/v', compact: '/c', poster: '/p' },
 });
 
 const steps = [step(1, 0, 10), step(2, 10, 20), step(3, 20, 30), step(4, 30, 40)];
@@ -217,5 +218,14 @@ describe('isLooped', () => {
     [null, false],
   ])('step 2 inside %o is %s', (loop, looped) => {
     expect(isLooped(step(2, 10, 20), loop)).toBe(looped);
+  });
+});
+
+describe('videoSourceOf', () => {
+  it.each([
+    [true, '/c'],
+    [false, '/v'],
+  ])('plays the phone rendition when compact is %s', (compact, url) => {
+    expect(videoSourceOf(video(1, 0, 10), compact).video).toBe(url);
   });
 });

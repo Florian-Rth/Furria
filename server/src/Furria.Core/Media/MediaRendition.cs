@@ -12,4 +12,5 @@ public enum MediaRendition
     Normalised = 8,
     Preview = 9,
     Peaks = 10,
+    Compact = 11,
 }

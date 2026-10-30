@@ -26,6 +26,33 @@ public sealed class VideoEncodingTests
         int expectedHeight
     )
     {
-        Assert.Equal((expectedWidth, expectedHeight), VideoEncoding.TargetSizeOf(width, height));
+        Assert.Equal(
+            (expectedWidth, expectedHeight),
+            VideoEncoding.TargetSizeOf(width, height, VideoBox.Full)
+        );
+    }
+
+    public static TheoryData<string, int, int, int, int> CompactSizes =>
+        new()
+        {
+            { "1080p landscape", 1920, 1080, 1280, 720 },
+            { "phone portrait", 1080, 1920, 720, 1280 },
+            { "already small", 640, 360, 640, 360 },
+        };
+
+    [Theory]
+    [MemberData(nameof(CompactSizes))]
+    public void Should_FitTheVideoInto720p_When_ThePhoneRenditionIsTranscoded(
+        string _,
+        int width,
+        int height,
+        int expectedWidth,
+        int expectedHeight
+    )
+    {
+        Assert.Equal(
+            (expectedWidth, expectedHeight),
+            VideoEncoding.TargetSizeOf(width, height, VideoBox.Compact)
+        );
     }
 }

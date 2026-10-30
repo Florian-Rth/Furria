@@ -99,7 +99,7 @@ public sealed class MediaJobRunner
         using var files = new RenditionFiles(_root, job.StorageKey);
         var rendered = job.Kind switch
         {
-            MediaKind.Video => await _videoRenderer.RenderAsync(files, job.KeepsSoundProfile, ct),
+            MediaKind.Video => await _videoRenderer.RenderAsync(files, VideoKeepingOf(job), ct),
             MediaKind.Audio => await _audioRenderer.RenderAsync(files, ct),
             _ => _photoRenderer.Render(files, job.Crop, job.PictureAspect),
         };
@@ -134,6 +134,9 @@ public sealed class MediaJobRunner
         await using var scope = _scopeFactory.CreateAsyncScope();
         await operation(scope.ServiceProvider.GetRequiredService<MediaJobQueue>());
     }
+
+    private static VideoKeeping VideoKeepingOf(MediaJobDetails job) =>
+        new(job.KeepsSoundProfile, job.KeepsCompactVideo);
 
     private static CompleteMediaJobCommand CompletionOf(
         MediaJobDetails job,

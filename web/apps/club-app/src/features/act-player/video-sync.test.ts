@@ -11,7 +11,7 @@ const video = (videoId: number, patch: Partial<StudioVideo> = {}): StudioVideo =
   startSeconds: 10,
   placement: 'onTimeline',
   outdated: false,
-  urls: { video: '/v', poster: '/p' },
+  urls: { video: '/v', compact: '/c', poster: '/p' },
   ...patch,
 });
 

@@ -318,6 +318,7 @@ public sealed class MediaJobQueue
             PictureAspect = item.WebsitePicture?.Aspect ?? owner.PictureAspect,
             Attempt = job.Attempts,
             KeepsSoundProfile = owner.KeepsSoundProfiles,
+            KeepsCompactVideo = owner.KeepsCompactVideos,
         };
 
     [Pure]

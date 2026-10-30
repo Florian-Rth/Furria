@@ -15,7 +15,7 @@ public sealed class ActTimelineReader
 
     public async Task<ActTimeline> TimelineOfAsync(int actId, CancellationToken ct)
     {
-        var music = new ActMusic(await CutsOfAsync(actId, ct));
+        var music = new ActMusic((await MusicOfAsync(actId, ct)).Select(source => source.Cut));
         var stepStarts = await _dbContext
             .ActSteps.Where(step => step.ActId == actId)
             .Select(step => new
@@ -47,15 +47,26 @@ public sealed class ActTimelineReader
         );
     }
 
-    private async Task<IReadOnlyList<MusicCut>> CutsOfAsync(int actId, CancellationToken ct)
+    public async Task<IReadOnlyList<MusicSource>> MusicOfAsync(int actId, CancellationToken ct)
     {
         var adopted = await _dbContext
             .ActFinalTracks.Where(track => track.ActId == actId && track.AdoptedAt != null)
             .OrderByDescending(track => track.AdoptedAt)
-            .Select(track => new { track.MediaItemId, track.MediaItem!.DurationSeconds })
+            .Select(track => new
+            {
+                track.MediaItemId,
+                track.MediaItem!.StorageKey,
+                track.MediaItem.DurationSeconds,
+            })
             .FirstOrDefaultAsync(ct);
         if (adopted is not null)
-            return [new MusicCut(adopted.MediaItemId, 0, adopted.DurationSeconds ?? 0)];
+            return
+            [
+                new MusicSource(
+                    new MusicCut(adopted.MediaItemId, 0, adopted.DurationSeconds ?? 0),
+                    adopted.StorageKey
+                ),
+            ];
 
         var songs = await _dbContext
             .ActSongs.Where(song => song.ActId == actId)
@@ -66,16 +77,20 @@ public sealed class ActTimelineReader
                 song.MediaItemId,
                 song.StartSeconds,
                 song.EndSeconds,
-                song.MediaItem!.DurationSeconds,
+                song.MediaItem!.StorageKey,
+                song.MediaItem.DurationSeconds,
             })
             .ToListAsync(ct);
 
         return
         [
-            .. songs.Select(song => new MusicCut(
-                song.MediaItemId,
-                song.StartSeconds,
-                song.EndSeconds ?? song.DurationSeconds ?? song.StartSeconds
+            .. songs.Select(song => new MusicSource(
+                new MusicCut(
+                    song.MediaItemId,
+                    song.StartSeconds,
+                    song.EndSeconds ?? song.DurationSeconds ?? song.StartSeconds
+                ),
+                song.StorageKey
             )),
         ];
     }

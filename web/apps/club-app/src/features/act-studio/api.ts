@@ -16,8 +16,13 @@ import {
   requestStepRemoval,
   requestStepStart,
   requestStepText,
+  requestVideoAdd,
+  requestVideoAlignment,
+  requestVideoName,
+  requestVideoRemoval,
+  requestVideoStart,
 } from './requests';
-import type { AddedPart, AddedSong, MarkedSteps } from './schemas';
+import type { AddedPart, AddedSong, AddedVideo, MarkedSteps, VideoAlignment } from './schemas';
 import type { SongSettingsInput } from './studio-music';
 import { withoutSong, withSongOrder, withSongSettings } from './studio-music';
 import type { PartOpening, PartSettingsInput, StepStartInput, StepTextInput } from './studio-steps';
@@ -28,6 +33,8 @@ import {
   withStepStart,
   withStepText,
 } from './studio-steps';
+import type { VideoNameInput, VideoStartInput } from './studio-videos';
+import { withoutVideo, withVideoName, withVideoStart } from './studio-videos';
 
 export interface SongMutations {
   add: UseMutationResult<AddedSong, Error, number>;
@@ -143,4 +150,60 @@ export const useStepMutations = (actId: number): StepMutations => {
   });
 
   return { mark, describe, move, remove, addPart, settlePart, removePart };
+};
+
+export interface VideoMutations {
+  add: UseMutationResult<AddedVideo, Error, number>;
+  rename: UseMutationResult<void, Error, VideoNameInput>;
+  place: UseMutationResult<void, Error, VideoStartInput>;
+  align: UseMutationResult<VideoAlignment, Error, number>;
+  autoAlign: UseMutationResult<VideoAlignment, Error, number>;
+  remove: UseMutationResult<void, Error, number>;
+}
+
+export const useVideoMutations = (actId: number): VideoMutations => {
+  const studioKey = queryKeys.actStudio(actId);
+  const key = ['actVideos', actId];
+  const failure = { failure: toWriteErrorMessage };
+
+  const add = useApiMutation({
+    request: (mediaItemId: number, accessToken) => requestVideoAdd(actId, mediaItemId, accessToken),
+    changes: ['actVideos'],
+    notice: failure,
+    key,
+  });
+  const rename = useApiMutation({
+    request: (input: VideoNameInput, accessToken) => requestVideoName(actId, input, accessToken),
+    changes: ['actVideos'],
+    optimistic: [optimisticPatch<ActStudioResponse, VideoNameInput>(studioKey, withVideoName)],
+    notice: failure,
+    key,
+  });
+  const place = useApiMutation({
+    request: (input: VideoStartInput, accessToken) => requestVideoStart(actId, input, accessToken),
+    changes: ['actVideos'],
+    optimistic: [optimisticPatch<ActStudioResponse, VideoStartInput>(studioKey, withVideoStart)],
+    notice: failure,
+    key,
+  });
+  const align = useApiMutation({
+    request: (videoId: number, accessToken) => requestVideoAlignment(actId, videoId, accessToken),
+    changes: ['actVideos'],
+    notice: failure,
+    key,
+  });
+  const autoAlign = useApiMutation({
+    request: (videoId: number, accessToken) => requestVideoAlignment(actId, videoId, accessToken),
+    changes: ['actVideos'],
+    key,
+  });
+  const remove = useApiMutation({
+    request: (videoId: number, accessToken) => requestVideoRemoval(actId, videoId, accessToken),
+    changes: ['actVideos'],
+    optimistic: [optimisticPatch<ActStudioResponse, number>(studioKey, withoutVideo)],
+    notice: failure,
+    key,
+  });
+
+  return { add, rename, place, align, autoAlign, remove };
 };

@@ -1,8 +1,11 @@
 import { clockOf } from '@/features/act-practice/practice-step-list';
+import type { StudioVideo } from '@/features/acts/schemas';
 import type { MediaItemState } from '@/lib/api/schemas';
 import type { UploadFailure } from '@/lib/media/upload-failure';
 import type { OutsideMusic } from './studio-music';
 import type { CountSpanView } from './studio-timing';
+
+type VideoPlacement = StudioVideo['placement'];
 
 export type StudioTool = 'music' | 'steps' | 'formation' | 'movement' | 'video';
 
@@ -99,6 +102,33 @@ export const STUDIO_ALTERNATIVE = 'Alternative';
 export const STUDIO_OUTDATED = 'veraltet';
 export const STUDIO_NO_VIDEO = 'kein Video';
 export const STUDIO_NO_VIDEO_HERE = 'Hier liegt kein Video';
+export const STUDIO_VIDEOS_UNPLACED = 'Noch nicht auf der Musik';
+export const STUDIO_VIDEO_ADD = 'Videos hinzufügen';
+export const STUDIO_VIDEO_ACCEPT = 'video/*';
+export const STUDIO_VIDEO_DESK = 'Video bearbeiten';
+export const STUDIO_VIDEO_DESK_CLOSE = 'Video schließen';
+export const STUDIO_VIDEO_NAME = 'Name';
+export const STUDIO_VIDEO_NAME_LENGTH = 80;
+export const STUDIO_VIDEO_NAME_HINT = 'z. B. Seite oder Probe 21.10.';
+export const STUDIO_VIDEO_PLACE = 'Auf der Musik';
+export const STUDIO_VIDEO_ALIGN = 'Automatisch anlegen';
+export const STUDIO_VIDEO_ALIGNING = 'Wird angelegt …';
+export const STUDIO_VIDEO_START_HERE = 'Beginnt hier';
+export const STUDIO_VIDEO_MAIN_FOR = 'Hauptvideo für';
+export const STUDIO_VIDEO_REMOVE = 'Video entfernen';
+export const STUDIO_VIDEO_REMOVE_SURE = 'Wirklich entfernen?';
+
+const SHELF_META: Record<'processing' | 'failed' | VideoPlacement, string> = {
+  processing: 'wird vorbereitet',
+  failed: 'ließ sich nicht vorbereiten',
+  unaligned: 'noch nicht angelegt',
+  cutAway: 'Musik dazu weggeschnitten',
+  musicMissing: 'Lied dazu entfernt',
+  onTimeline: 'auf der Musik',
+};
+
+export const shelfMetaOf = (state: MediaItemState, placement: VideoPlacement): string =>
+  state === 'ready' ? SHELF_META[placement] : SHELF_META[state];
 
 export const fineClockOf = (seconds: number): string => {
   const sign = seconds < 0 ? '-' : '';
@@ -188,8 +218,10 @@ export const countSpanTextOf = (view: CountSpanView | null, eights: number): str
 export const movedDotsTextOf = (count: number): string =>
   count === 1 ? '1 Platz' : `${count} Plätze`;
 
-export const placementTextOf = (name: string, start: number, offset: number): string =>
-  `${name} · ab ${fineClockOf(start)} · Versatz ${offsetTextOf(offset)}`;
+export const placementTextOf = (name: string, start: number, shift: number | null): string =>
+  shift === null
+    ? `${name} · ab ${fineClockOf(start)}`
+    : `${name} · ab ${fineClockOf(start)} · Versatz ${offsetTextOf(shift)}`;
 
 export const videoBarLabelOf = (name: string): string => `${name}: wählen und verschieben`;
 
@@ -235,21 +267,37 @@ export const songStateMetaOf = (state: MediaItemState): string | null => {
 
 export const songEditLabelOf = (name: string): string => `${name} bearbeiten`;
 
-const UPLOAD_FAILURES: Record<UploadFailure, string> = {
+export type UploadKind = 'song' | 'video';
+
+const UPLOAD_FAILURES: Record<Exclude<UploadFailure, 'notAccepted'>, string> = {
   tooLarge: 'zu groß',
-  notAccepted: 'keine Musikdatei',
   notAllowed: 'nicht erlaubt',
   gone: 'Auftritt gibt es nicht mehr',
   interrupted: 'abgebrochen',
 };
 
-export const uploadMetaOf = (share: number, failure: UploadFailure | null): string =>
-  failure === null ? `${Math.round(share * 100)} %` : UPLOAD_FAILURES[failure];
+const NOT_ACCEPTED: Record<UploadKind, string> = {
+  song: 'keine Musikdatei',
+  video: 'keine Videodatei',
+};
 
-export const uploadLabelOf = (name: string, failure: UploadFailure | null): string =>
+const failureTextOf = (failure: UploadFailure, kind: UploadKind): string =>
+  failure === 'notAccepted' ? NOT_ACCEPTED[kind] : UPLOAD_FAILURES[failure];
+
+export const uploadMetaOf = (
+  share: number,
+  failure: UploadFailure | null,
+  kind: UploadKind,
+): string => (failure === null ? `${Math.round(share * 100)} %` : failureTextOf(failure, kind));
+
+export const uploadLabelOf = (
+  name: string,
+  failure: UploadFailure | null,
+  kind: UploadKind,
+): string =>
   failure === null
     ? `${name} wird hochgeladen`
-    : `${name}: ${UPLOAD_FAILURES[failure]}, antippen zum Ausblenden`;
+    : `${name}: ${failureTextOf(failure, kind)}, antippen zum Ausblenden`;
 
 const countOf = (count: number, one: string, many: string): string | null => {
   if (count === 0) {

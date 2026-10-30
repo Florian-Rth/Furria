@@ -13,7 +13,8 @@ export interface ActStudioEdits {
   setText: (stepId: number, text: StepText) => void;
   clearText: (stepId: number, committed: StepText) => void;
   setTracks: (tracks: Record<number, readonly TimedKeyframe[]>) => void;
-  setOffset: (videoId: number, seconds: number) => void;
+  setStart: (videoId: number, seconds: number) => void;
+  clearStart: (videoId: number, committed: number) => void;
   keepPosition: (seconds: number) => void;
 }
 
@@ -43,8 +44,15 @@ export const useActStudioEdits = (): ActStudioEdits => {
     setTracks: (tracks) => {
       setValue((current) => ({ ...current, tracks: { ...current.tracks, ...tracks } }));
     },
-    setOffset: (videoId, seconds) => {
-      setValue((current) => ({ ...current, offsets: { ...current.offsets, [videoId]: seconds } }));
+    setStart: (videoId, seconds) => {
+      setValue((current) => ({ ...current, starts: { ...current.starts, [videoId]: seconds } }));
+    },
+    clearStart: (videoId, committed) => {
+      setValue((current) =>
+        current.starts[videoId] === committed
+          ? { ...current, starts: withoutKeys(current.starts, [videoId]) }
+          : current,
+      );
     },
     keepPosition: (seconds) => {
       keep.current = seconds;

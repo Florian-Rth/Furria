@@ -1,19 +1,22 @@
 import type { KkStudioListBadgeTone } from '@furria/ui/KkStudioList';
 import type { KkStudioNudgeDirection } from '@furria/ui/KkStudioPlacement';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import { partRangeOf } from '@/features/act-player/music-timeline';
 import type { StudioVideo } from '@/features/acts/schemas';
 import {
   placementTextOf,
   STUDIO_ALTERNATIVE,
+  STUDIO_EDIT,
   STUDIO_MAIN,
   STUDIO_NO_VIDEO_HERE,
   STUDIO_OUTDATED,
+  shelfMetaOf,
   takeMetaOf,
   videoBarLabelOf,
+  videoNameOf,
 } from '../studio-copy';
 import type { StageShare } from '../studio-edits';
-import { offsetOf } from '../studio-edits';
+import { clampedVideoStartOf, overlapsRange, videoShelfOf } from '../studio-videos';
 import type { StudioScreen } from './use-studio-screen';
 
 const NUDGE_SECONDS = 0.1;
@@ -55,36 +58,56 @@ export interface ActStudioTakes {
   canNudge: boolean;
   nudge: (direction: KkStudioNudgeDirection) => void;
   groups: ActStudioTakeGroup[];
+  shelf: ActStudioTakeRow[];
+  selected: StudioVideo | null;
+  deskOpen: boolean;
+  closeDesk: () => void;
 }
 
 interface Grab {
   x: number;
-  offset: number;
+  start: number;
 }
 
-const placed = (video: StudioVideo): boolean =>
-  video.placement === 'onTimeline' && video.startSeconds !== null && video.durationSeconds !== null;
+const placedOf = (video: StudioVideo): boolean =>
+  videoShelfOf(video) === 'placed' && video.durationSeconds !== null;
 
 export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
-  const { playback, studio, video, edits } = screen;
+  const { playback, studio, video, edits, videos: writes, mode } = screen;
   const { player, length, parts, steps } = playback;
   const [chosenId, setChosenId] = useState<number | null>(null);
-  const grab = useRef<Grab | null>(null);
+  const [deskOpen, setDeskOpen] = useState(false);
+  const [grab, setGrab] = useState<Grab | null>(null);
+  const onVideo = mode.editing && mode.tool === 'video';
+  if (deskOpen && !onVideo) {
+    setDeskOpen(false);
+  }
   const shareOf = (seconds: number): number => (length <= 0 ? 0 : seconds / length);
-  const videos = studio.videos.filter(placed);
-  const shownId =
-    studio.videos.find((candidate) => candidate.urls.video === video.source?.video)?.videoId ??
-    null;
+  const placed = studio.videos.filter(placedOf);
+  const nameOf = (candidate: StudioVideo): string =>
+    videoNameOf(candidate.name, studio.videos.indexOf(candidate) + 1);
   const selected =
-    videos.find((candidate) => candidate.videoId === chosenId) ??
-    videos.find((candidate) => candidate.videoId === shownId) ??
-    videos[0] ??
+    studio.videos.find((candidate) => candidate.videoId === chosenId) ??
+    placed.find((candidate) => candidate.videoId === video.shownId) ??
+    placed[0] ??
     null;
-  const offsetFor = (videoId: number): number => edits.value.offsets[videoId] ?? 0;
-  const baseStartOf = (candidate: StudioVideo): number =>
-    (candidate.startSeconds ?? 0) - offsetFor(candidate.videoId);
-  const select = (candidate: StudioVideo): void => {
+  const draftStart = selected === null ? undefined : edits.value.starts[selected.videoId];
+  const saveStart = (candidate: StudioVideo, start: number): void => {
+    const startSeconds = clampedVideoStartOf(start, candidate.durationSeconds ?? 0, length);
+    const clear = (): void => {
+      edits.clearStart(candidate.videoId, start);
+    };
+    void writes.place.mutateAsync({ videoId: candidate.videoId, startSeconds }).then(clear, clear);
+  };
+  const pressRow = (candidate: StudioVideo, seekTo: number | null): void => {
+    if (candidate.videoId === selected?.videoId) {
+      setDeskOpen(onVideo);
+      return;
+    }
     setChosenId(candidate.videoId);
+    if (seekTo !== null) {
+      player.seek(seekTo);
+    }
   };
 
   return {
@@ -101,61 +124,72 @@ export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
             },
           ];
     }),
-    bars: videos.map((candidate) => {
+    bars: placed.map((candidate) => {
       const start = candidate.startSeconds ?? 0;
       return {
         key: String(candidate.videoId),
         start: shareOf(start),
         end: shareOf(start + (candidate.durationSeconds ?? 0)),
-        label: videoBarLabelOf(candidate.name ?? STUDIO_MAIN),
+        label: videoBarLabelOf(nameOf(candidate)),
         selected: candidate.videoId === selected?.videoId,
         press: (share) => {
-          select(candidate);
-          grab.current = { x: share.x, offset: offsetFor(candidate.videoId) };
+          setChosenId(candidate.videoId);
+          setGrab({ x: share.x, start });
         },
         move: (share) => {
-          const held = grab.current;
-          if (held === null) {
+          if (grab === null) {
             return;
           }
-          edits.setOffset(
+          edits.setStart(
             candidate.videoId,
-            offsetOf(held.offset + (share.x - held.x) * length, baseStartOf(candidate), length),
+            clampedVideoStartOf(
+              grab.start + (share.x - grab.x) * length,
+              candidate.durationSeconds ?? 0,
+              length,
+            ),
           );
         },
         finish: () => {
-          grab.current = null;
+          setGrab(null);
+          const moved = edits.value.starts[candidate.videoId];
+          if (moved === undefined) {
+            return;
+          }
+          if (grab !== null && moved !== grab.start) {
+            saveStart(candidate, moved);
+            return;
+          }
+          edits.clearStart(candidate.videoId, moved);
         },
       };
     }),
     text:
-      selected === null
+      selected === null || selected.startSeconds === null
         ? STUDIO_NO_VIDEO_HERE
         : placementTextOf(
-            selected.name ?? STUDIO_MAIN,
-            selected.startSeconds ?? 0,
-            offsetFor(selected.videoId),
+            nameOf(selected),
+            selected.startSeconds,
+            draftStart === undefined || grab === null ? null : draftStart - grab.start,
           ),
-    changed: selected !== null && offsetFor(selected.videoId) !== 0,
-    canNudge: selected !== null,
+    changed: draftStart !== undefined,
+    canNudge: selected !== null && placedOf(selected),
     nudge: (direction) => {
-      if (selected === null) {
+      if (selected === null || selected.startSeconds === null) {
         return;
       }
       const delta = direction === 'later' ? NUDGE_SECONDS : -NUDGE_SECONDS;
-      edits.setOffset(
-        selected.videoId,
-        offsetOf(offsetFor(selected.videoId) + delta, baseStartOf(selected), length),
-      );
+      writes.place.mutate({
+        videoId: selected.videoId,
+        startSeconds: clampedVideoStartOf(
+          selected.startSeconds + delta,
+          selected.durationSeconds ?? 0,
+          length,
+        ),
+      });
     },
     groups: parts.map((part) => {
       const range = partRangeOf(part, steps);
-      const takes = videos.filter(
-        (candidate) =>
-          range !== null &&
-          (candidate.startSeconds ?? 0) < range.end &&
-          (candidate.startSeconds ?? 0) + (candidate.durationSeconds ?? 0) > range.start,
-      );
+      const takes = placed.filter((candidate) => range !== null && overlapsRange(candidate, range));
       const ordered = [
         ...takes.filter((candidate) => candidate.videoId === part.mainVideoId),
         ...takes.filter((candidate) => candidate.videoId !== part.mainVideoId),
@@ -167,6 +201,7 @@ export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
         aside: ordered.length === 0 ? STUDIO_NO_VIDEO_HERE : null,
         rows: ordered.map((candidate, index) => {
           const main = candidate.videoId === part.mainVideoId;
+          const isSelected = candidate.videoId === selected?.videoId;
           const badge = candidate.outdated
             ? STUDIO_OUTDATED
             : main
@@ -175,18 +210,39 @@ export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
           return {
             key: `${part.partId}-${candidate.videoId}`,
             lead: String(index + 1),
-            title: candidate.name ?? STUDIO_MAIN,
+            title: nameOf(candidate),
             meta: takeMetaOf(candidate.startSeconds, candidate.durationSeconds),
-            badge,
-            badgeTone: candidate.outdated ? 'gold' : main ? 'ink' : 'quiet',
-            selected: candidate.videoId === selected?.videoId,
+            badge: isSelected && onVideo ? STUDIO_EDIT : badge,
+            badgeTone: candidate.outdated ? 'gold' : main || isSelected ? 'ink' : 'quiet',
+            selected: isSelected,
             press: () => {
-              select(candidate);
-              player.seek(Math.max(range?.start ?? 0, candidate.startSeconds ?? 0));
+              pressRow(candidate, Math.max(range?.start ?? 0, candidate.startSeconds ?? 0));
             },
           };
         }),
       };
     }),
+    shelf: studio.videos
+      .filter((candidate) => !placedOf(candidate))
+      .map((candidate, index) => {
+        const isSelected = candidate.videoId === selected?.videoId;
+        return {
+          key: String(candidate.videoId),
+          lead: String(index + 1),
+          title: nameOf(candidate),
+          meta: shelfMetaOf(candidate.state, candidate.placement),
+          badge: isSelected && onVideo ? STUDIO_EDIT : null,
+          badgeTone: 'ink',
+          selected: isSelected,
+          press: () => {
+            pressRow(candidate, null);
+          },
+        };
+      }),
+    selected,
+    deskOpen,
+    closeDesk: () => {
+      setDeskOpen(false);
+    },
   };
 };

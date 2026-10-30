@@ -9,8 +9,8 @@ import type { PracticeVideo } from '@/features/act-practice/hooks/use-practice-v
 import { usePracticeVideo } from '@/features/act-practice/hooks/use-practice-video';
 import { canPractise } from '@/features/acts/act-studio';
 import type { Studio } from '@/features/acts/schemas';
-import type { SongMutations, StepMutations } from '../api';
-import { useSongMutations, useStepMutations } from '../api';
+import type { SongMutations, StepMutations, VideoMutations } from '../api';
+import { useSongMutations, useStepMutations, useVideoMutations } from '../api';
 import { workedPathsOf, workedStepsOf, workedStudioOf } from '../studio-edits';
 import type { ActStudioFrame } from '../studio-layout';
 import { studioFrameOf } from '../studio-layout';
@@ -18,11 +18,14 @@ import type { ActStudioEdits } from './use-act-studio-edits';
 import { useActStudioEdits, useKeptPosition } from './use-act-studio-edits';
 import type { ActStudioMode } from './use-act-studio-mode';
 import { useActStudioMode } from './use-act-studio-mode';
+import { useStudioDeveloping } from './use-studio-developing';
+import { useVideoAutoAlign } from './use-video-auto-align';
 
 export interface StudioScreen {
   actId: number;
   music: SongMutations;
   manual: StepMutations;
+  videos: VideoMutations;
   mode: ActStudioMode;
   frame: ActStudioFrame;
   edits: ActStudioEdits;
@@ -42,6 +45,9 @@ export const useStudioScreen = (
   const mode = useActStudioMode(canEdit, !canPractise(source));
   const music = useSongMutations(actId);
   const manual = useStepMutations(actId);
+  const videos = useVideoMutations(actId);
+  useVideoAutoAlign(source, canEdit, videos);
+  useStudioDeveloping(actId, source);
   const edits = useActStudioEdits();
   const studio = workedStudioOf(source, edits.value);
   const base = useStudioPlayback(studio, viewerId);
@@ -61,6 +67,7 @@ export const useStudioScreen = (
     mode,
     music,
     manual,
+    videos,
     frame: studioFrameOf(mode.editing, mode.tool, video.hero),
     edits,
     studio,

@@ -65,7 +65,7 @@ public sealed class AudioRenditionTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepTheSoundtrackProfile_When_AVideoIsUploadedToAnAct()
+    public async Task Should_KeepTheSoundtrackProfileAndAPhoneRendition_When_AVideoIsUploadedToAnAct()
     {
         var ct = TestContext.Current.CancellationToken;
         var (ctx, actId) = await GardeWithDanceAsync(ct);
@@ -96,6 +96,9 @@ public sealed class AudioRenditionTests : IClassFixture<ApiTestFixture>
         await ctx.Expected.MediaItem(mediaItemId).ToBeReady(640, 360).AssertAsync(ct);
         var profile = await SoundProfileOfAsync(mediaItemId, ct);
         Assert.Equal(4, profile.DurationSeconds, 0.1);
+        Assert.True(
+            File.Exists(await _fixture.MediaFileOfAsync(mediaItemId, MediaRendition.Compact, ct))
+        );
     }
 
     private async Task<WaveformPeaks> PeaksOfAsync(int mediaItemId, CancellationToken ct)

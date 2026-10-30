@@ -122,7 +122,7 @@ export const StudioVideoSchema = z.object({
   startSeconds: z.number().nullable(),
   placement: VideoPlacementSchema,
   outdated: z.boolean(),
-  urls: z.object({ video: MediaUrlSchema, poster: MediaUrlSchema }),
+  urls: z.object({ video: MediaUrlSchema, compact: MediaUrlSchema, poster: MediaUrlSchema }),
 });
 export type StudioVideo = z.infer<typeof StudioVideoSchema>;
 

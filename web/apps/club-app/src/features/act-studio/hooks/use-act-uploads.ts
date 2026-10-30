@@ -2,30 +2,32 @@ import type { ChangeEvent } from 'react';
 import { useRef, useState } from 'react';
 import { startUpload } from '@/lib/media/start-upload';
 import type { UploadFailure } from '@/lib/media/upload-failure';
-import type { SongMutations } from '../api';
 import { songNameOf } from '../studio-copy';
 
-export interface SongUpload {
+export interface ActUpload {
   key: string;
   name: string;
   share: number;
   failure: UploadFailure | null;
 }
 
-export interface SongUploads {
-  rows: readonly SongUpload[];
+export interface ActUploads {
+  rows: readonly ActUpload[];
   fileInput: (node: HTMLInputElement | null) => void;
   choose: () => void;
   onChosen: (event: ChangeEvent<HTMLInputElement>) => void;
   dismiss: (key: string) => void;
 }
 
-export const useSongUploads = (actId: number, music: SongMutations): SongUploads => {
-  const [rows, setRows] = useState<readonly SongUpload[]>([]);
+export const useActUploads = <TAdded>(
+  actId: number,
+  add: (mediaItemId: number) => Promise<TAdded>,
+): ActUploads => {
+  const [rows, setRows] = useState<readonly ActUpload[]>([]);
   const [input, setInput] = useState<HTMLInputElement | null>(null);
   const counter = useRef(0);
 
-  const change = (key: string, patch: Partial<SongUpload>): void => {
+  const change = (key: string, patch: Partial<ActUpload>): void => {
     setRows((current) => current.map((row) => (row.key === key ? { ...row, ...patch } : row)));
   };
   const drop = (key: string): void => {
@@ -53,8 +55,7 @@ export const useSongUploads = (actId: number, music: SongMutations): SongUploads
         drop(key);
         return;
       }
-      void music.add
-        .mutateAsync(outcome.mediaItemId)
+      void add(outcome.mediaItemId)
         .catch(() => undefined)
         .finally(() => {
           drop(key);

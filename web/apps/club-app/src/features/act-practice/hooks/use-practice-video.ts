@@ -1,4 +1,5 @@
 import type { KkPracticeScreenVideoSource } from '@furria/ui/KkPracticeScreen';
+import { useIsMobile } from '@furria/ui/use-is-mobile';
 import type { RefObject } from 'react';
 import { useRef, useState } from 'react';
 import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
@@ -6,7 +7,13 @@ import { useSlavedVideo } from '@/features/act-player/hooks/use-slaved-video';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import type { Studio } from '@/features/acts/schemas';
 import type { HeroKind } from '../practice-controls';
-import { heroOf, nextVideoIdOf, partVideosOf, shownVideoIdOf } from '../practice-controls';
+import {
+  heroOf,
+  nextVideoIdOf,
+  partVideosOf,
+  shownVideoIdOf,
+  videoSourceOf,
+} from '../practice-controls';
 import { takeLabelOf, takeTextOf } from '../practice-copy';
 
 const ID_SEPARATOR = ',';
@@ -19,6 +26,7 @@ export interface PracticeTake {
 
 export interface PracticeVideo {
   ref: RefObject<HTMLVideoElement | null>;
+  shownId: number | null;
   source: KkPracticeScreenVideoSource | null;
   hero: HeroKind;
   mirrored: boolean;
@@ -32,6 +40,7 @@ const idsOf = (joined: string): number[] =>
 export const usePracticeVideo = (studio: Studio, playback: StudioPlayback): PracticeVideo => {
   const { player, parts, steps } = playback;
   const ref = useRef<HTMLVideoElement>(null);
+  const compact = useIsMobile();
   const [mirrored, setMirrored] = useState(true);
   const [chosenId, setChosenId] = useState<number | null>(null);
   const choiceIds = idsOf(
@@ -55,7 +64,8 @@ export const usePracticeVideo = (studio: Studio, playback: StudioPlayback): Prac
 
   return {
     ref,
-    source: shown === null ? null : { video: shown.urls.video, poster: shown.urls.poster },
+    shownId: shown?.videoId ?? null,
+    source: shown === null ? null : videoSourceOf(shown, compact),
     hero: heroOf(video),
     mirrored,
     take:

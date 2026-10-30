@@ -108,6 +108,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ActTimelineReader>();
         services.AddScoped<ActStepService>();
         services.AddScoped<ActPartService>();
+        services.AddScoped<ActVideoService>();
         services.AddScoped<RunningOrderService>();
         services.AddScoped<EventPictures>();
         services.AddScoped<ClubRecordService>();

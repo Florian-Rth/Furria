@@ -40,6 +40,25 @@ public sealed class ActMusic
     }
 
     [Pure]
+    public VideoAnchor? VideoAnchorAt(double videoStartSeconds) =>
+        videoStartSeconds >= LengthSeconds ? null
+        : videoStartSeconds >= 0 ? VideoAnchorOf(AnchorAt(videoStartSeconds), 0)
+        : VideoAnchorOf(AnchorAt(0), -videoStartSeconds);
+
+    [Pure]
+    public AnchorPlace LocateVideo(VideoAnchor anchor)
+    {
+        var place = Locate(anchor.Music);
+        return place.TimelineSeconds is { } seconds
+            ? AnchorPlace.At(seconds - anchor.VideoSeconds)
+            : place;
+    }
+
+    [Pure]
+    private static VideoAnchor? VideoAnchorOf(MusicAnchor? music, double videoSeconds) =>
+        music is { } anchor ? new VideoAnchor(anchor, videoSeconds) : null;
+
+    [Pure]
     private PlacedCut? LastCutEndingAt(double timelineSeconds) =>
         _placedCuts.Count > 0 && _placedCuts[^1].EndsAtSeconds == timelineSeconds
             ? _placedCuts[^1]

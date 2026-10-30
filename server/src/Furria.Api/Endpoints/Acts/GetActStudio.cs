@@ -171,7 +171,12 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
             StartSeconds = video.StartSeconds,
             Placement = video.Placement,
             Outdated = video.IsOutdated,
-            Urls = new StudioVideoUrlsDto { Video = video.Urls.Video, Poster = video.Urls.Poster },
+            Urls = new StudioVideoUrlsDto
+            {
+                Video = video.Urls.Video,
+                Compact = video.Urls.Compact,
+                Poster = video.Urls.Poster,
+            },
         };
 
     private static StudioChoreographyDto ToDto(StudioChoreographyDetails choreography) =>
@@ -380,6 +385,8 @@ public sealed record StudioSpotDto
 public sealed record StudioVideoUrlsDto
 {
     public required string Video { get; init; }
+
+    public required string Compact { get; init; }
 
     public required string Poster { get; init; }
 }

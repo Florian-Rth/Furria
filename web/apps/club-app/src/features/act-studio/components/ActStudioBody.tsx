@@ -17,6 +17,7 @@ import { ActStudioSongDesk } from './ActStudioSongDesk';
 import { ActStudioSpotSheet } from './ActStudioSpotSheet';
 import { ActStudioStepDesk } from './ActStudioStepDesk';
 import { ActStudioToolTabs } from './ActStudioToolTabs';
+import { ActStudioVideoDesk } from './ActStudioVideoDesk';
 
 interface ActStudioBodyProps {
   actId: number;
@@ -57,6 +58,7 @@ export const ActStudioBody: FC<ActStudioBodyProps> = ({ actId, studio, viewerId,
       <ActStudioSpotSheet screen={screen} editor={editor} />
       <ActStudioSongDesk screen={screen} songs={songs} />
       <ActStudioStepDesk screen={screen} tool={stepTool} />
+      <ActStudioVideoDesk screen={screen} takes={takes} />
     </KkStudioView>
   );
 };

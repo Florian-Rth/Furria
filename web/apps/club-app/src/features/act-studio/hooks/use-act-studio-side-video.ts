@@ -12,8 +12,7 @@ export interface ActStudioSideVideo {
 export const useActStudioSideVideo = (screen: StudioScreen): ActStudioSideVideo => {
   const { studio, video, playback, frame } = screen;
   const ref = useRef<HTMLVideoElement>(null);
-  const shown =
-    studio.videos.find((candidate) => candidate.urls.video === video.source?.video) ?? null;
+  const shown = studio.videos.find((candidate) => candidate.videoId === video.shownId) ?? null;
   const active = frame.side === 'cast';
 
   useSlavedVideo(playback.player, active ? shown : null, ref);

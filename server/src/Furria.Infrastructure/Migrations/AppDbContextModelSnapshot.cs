@@ -2954,10 +2954,6 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(80)")
                         .HasColumnName("name");
 
-                    b.Property<DateTimeOffset?>("OutdatedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("outdated_at");
-
                     b.Property<double?>("StartSeconds")
                         .HasColumnType("double precision")
                         .HasColumnName("start_seconds");
@@ -2965,6 +2961,10 @@ namespace Furria.Infrastructure.Migrations
                     b.Property<int?>("StartSourceMediaItemId")
                         .HasColumnType("integer")
                         .HasColumnName("start_source_media_item_id");
+
+                    b.Property<double>("StartVideoSeconds")
+                        .HasColumnType("double precision")
+                        .HasColumnName("start_video_seconds");
 
                     b.HasKey("Id")
                         .HasName("pk_act_video");
@@ -2981,7 +2981,7 @@ namespace Furria.Infrastructure.Migrations
 
                     b.ToTable("act_video", null, t =>
                         {
-                            t.HasCheckConstraint("ck_act_video_start", "(start_source_media_item_id IS NULL) = (start_seconds IS NULL) AND (start_seconds IS NULL OR start_seconds >= 0)");
+                            t.HasCheckConstraint("ck_act_video_start", "(start_source_media_item_id IS NULL) = (start_seconds IS NULL) AND (start_seconds IS NULL OR start_seconds >= 0) AND start_video_seconds >= 0");
                         });
                 });
 

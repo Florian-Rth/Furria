@@ -13,7 +13,7 @@ public sealed class ActVideoConfiguration : IEntityTypeConfiguration<ActVideo>
             table =>
                 table.HasCheckConstraint(
                     "ck_act_video_start",
-                    "(start_source_media_item_id IS NULL) = (start_seconds IS NULL) AND (start_seconds IS NULL OR start_seconds >= 0)"
+                    "(start_source_media_item_id IS NULL) = (start_seconds IS NULL) AND (start_seconds IS NULL OR start_seconds >= 0) AND start_video_seconds >= 0"
                 )
         );
         builder.HasKey(video => video.Id);

@@ -134,7 +134,7 @@ describe('outsideMusicOf', () => {
           startSeconds: null,
           placement: 'musicMissing',
           outdated: false,
-          urls: { video: '/v', poster: '/p' },
+          urls: { video: '/v', compact: '/c', poster: '/p' },
         },
         {
           videoId: 2,
@@ -145,7 +145,7 @@ describe('outsideMusicOf', () => {
           startSeconds: null,
           placement: 'unaligned',
           outdated: false,
-          urls: { video: '/v', poster: '/p' },
+          urls: { video: '/v', compact: '/c', poster: '/p' },
         },
       ],
       choreography: {

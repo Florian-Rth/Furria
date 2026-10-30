@@ -32,6 +32,7 @@ export const DOMAIN_CHANGES = [
   'actCoEditor',
   'actMusic',
   'actSteps',
+  'actVideos',
   'runningOrder',
 ] as const;
 export type DomainChange = (typeof DOMAIN_CHANGES)[number];
@@ -307,6 +308,7 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'actCoEditor',
     'actMusic',
     'actSteps',
+    'actVideos',
     'group',
     'groupMembership',
     'groupAdmin',

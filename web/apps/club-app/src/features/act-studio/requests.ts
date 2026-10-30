@@ -1,13 +1,21 @@
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
-import type { AddedPart, AddedSong, MarkedSteps } from './schemas';
-import { AddedPartSchema, AddedSongSchema, MarkedStepsSchema } from './schemas';
+import type { AddedPart, AddedSong, AddedVideo, MarkedSteps, VideoAlignment } from './schemas';
+import {
+  AddedPartSchema,
+  AddedSongSchema,
+  AddedVideoSchema,
+  MarkedStepsSchema,
+  VideoAlignmentSchema,
+} from './schemas';
 import type { SongSettings } from './studio-music';
 import type { PartOpening, PartSettingsInput, StepStartInput, StepTextInput } from './studio-steps';
+import type { VideoNameInput, VideoStartInput } from './studio-videos';
 
 const songsPathOf = (actId: number): string => `/api/acts/${actId}/songs`;
 const stepsPathOf = (actId: number): string => `/api/acts/${actId}/steps`;
 const partsPathOf = (actId: number): string => `/api/acts/${actId}/parts`;
+const videosPathOf = (actId: number): string => `/api/acts/${actId}/videos`;
 
 export const requestSongAdd = (
   actId: number,
@@ -143,6 +151,64 @@ export const requestPartRemoval = (
   accessToken: string,
 ): Promise<void> =>
   apiFetch(`${partsPathOf(actId)}/${partId}`, {
+    method: 'DELETE',
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestVideoAdd = (
+  actId: number,
+  mediaItemId: number,
+  accessToken: string,
+): Promise<AddedVideo> =>
+  apiFetch(videosPathOf(actId), {
+    method: 'POST',
+    body: { mediaItemId },
+    schema: AddedVideoSchema,
+    accessToken,
+  });
+
+export const requestVideoName = (
+  actId: number,
+  { videoId, name }: VideoNameInput,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${videosPathOf(actId)}/${videoId}`, {
+    method: 'PUT',
+    body: { name },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestVideoStart = (
+  actId: number,
+  { videoId, startSeconds }: VideoStartInput,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${videosPathOf(actId)}/${videoId}/start`, {
+    method: 'PUT',
+    body: { atSeconds: startSeconds },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestVideoAlignment = (
+  actId: number,
+  videoId: number,
+  accessToken: string,
+): Promise<VideoAlignment> =>
+  apiFetch(`${videosPathOf(actId)}/${videoId}/alignment`, {
+    method: 'POST',
+    schema: VideoAlignmentSchema,
+    accessToken,
+  });
+
+export const requestVideoRemoval = (
+  actId: number,
+  videoId: number,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${videosPathOf(actId)}/${videoId}`, {
     method: 'DELETE',
     schema: NoContentSchema,
     accessToken,

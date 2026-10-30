@@ -14,6 +14,8 @@ public static class MediaRenditions
     public const int LargeLongEdge = 2560;
     public const int VideoLongEdge = 1920;
     public const int VideoShortEdge = 1080;
+    public const int CompactLongEdge = 1280;
+    public const int CompactShortEdge = 720;
 
     private static readonly HashSet<MediaRendition> PhotoRenditions =
     [
@@ -30,6 +32,7 @@ public static class MediaRenditions
         MediaRendition.Small,
         MediaRendition.Poster,
         MediaRendition.Video,
+        MediaRendition.Compact,
     ];
 
     private static readonly HashSet<MediaRendition> AudioRenditions =
@@ -49,7 +52,7 @@ public static class MediaRenditions
         rendition switch
         {
             MediaRendition.Original => originalContentType,
-            MediaRendition.Video => Mp4ContentType,
+            MediaRendition.Video or MediaRendition.Compact => Mp4ContentType,
             MediaRendition.Normalised or MediaRendition.Preview => M4aContentType,
             MediaRendition.Peaks => JsonContentType,
             _ => WebPContentType,
@@ -59,7 +62,7 @@ public static class MediaRenditions
     public static string ExtensionOf(MediaRendition rendition) =>
         rendition switch
         {
-            MediaRendition.Video => ".mp4",
+            MediaRendition.Video or MediaRendition.Compact => ".mp4",
             MediaRendition.Normalised or MediaRendition.Preview => ".m4a",
             MediaRendition.Peaks => ".json",
             _ => ".webp",

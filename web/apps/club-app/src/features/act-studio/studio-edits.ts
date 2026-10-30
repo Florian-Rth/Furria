@@ -26,10 +26,10 @@ export interface StudioEdits {
   bounds: Readonly<Record<number, TimeSpan>>;
   texts: Readonly<Record<number, StepText>>;
   tracks: Readonly<Record<number, readonly TimedKeyframe[]>>;
-  offsets: Readonly<Record<number, number>>;
+  starts: Readonly<Record<number, number>>;
 }
 
-export const NO_EDITS: StudioEdits = { bounds: {}, texts: {}, tracks: {}, offsets: {} };
+export const NO_EDITS: StudioEdits = { bounds: {}, texts: {}, tracks: {}, starts: {} };
 
 export const withoutKeys = <TValue>(
   record: Readonly<Record<number, TValue>>,
@@ -40,11 +40,9 @@ export const withoutKeys = <TValue>(
 export const workedStudioOf = (studio: Studio, edits: StudioEdits): Studio => ({
   ...studio,
   videos: studio.videos.map((video) => {
-    const offset = edits.offsets[video.videoId];
+    const start = edits.starts[video.videoId];
 
-    return offset === undefined || video.startSeconds === null
-      ? video
-      : { ...video, startSeconds: video.startSeconds + offset };
+    return start === undefined ? video : { ...video, startSeconds: start };
   }),
 });
 
@@ -283,12 +281,4 @@ export const draggedPointOf = (
     rightMetres: Math.min(half, Math.max(-half, snap(right))),
     backMetres: Math.min(stage.depthMetres, Math.max(0, snap(back))),
   };
-};
-
-const OFFSET_GRAIN_SECONDS = 0.05;
-
-export const offsetOf = (offset: number, start: number, length: number): number => {
-  const rounded = Math.round(offset / OFFSET_GRAIN_SECONDS) * OFFSET_GRAIN_SECONDS;
-
-  return Math.min(length - start, Math.max(-start, Number(rounded.toFixed(2))));
 };

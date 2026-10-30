@@ -51,6 +51,8 @@ public readonly record struct MediaOwner
 
     public bool KeepsSoundProfiles => Kind == MediaOwnerKind.Act;
 
+    public bool KeepsCompactVideos => Kind == MediaOwnerKind.Act;
+
     public long MaxBytes => AcceptedKinds.Max(MediaLimits.MaxBytesOf);
 
     public double? PictureAspect =>

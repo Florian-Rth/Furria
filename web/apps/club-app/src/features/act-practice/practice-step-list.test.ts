@@ -25,7 +25,7 @@ const video = (startSeconds: number, durationSeconds: number, outdated = false):
   startSeconds,
   placement: 'onTimeline',
   outdated,
-  urls: { video: '/v', poster: '/p' },
+  urls: { video: '/v', compact: '/c', poster: '/p' },
 });
 
 const marks: CountMark[] = Array.from({ length: 40 }, (_, index) => ({

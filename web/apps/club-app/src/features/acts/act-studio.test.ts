@@ -99,7 +99,7 @@ describe('studioOverviewOf', () => {
       startSeconds: 0,
       placement: 'onTimeline' as const,
       outdated,
-      urls: { video: '/v', poster: '/p' },
+      urls: { video: '/v', compact: '/c', poster: '/p' },
     });
     const overview = studioOverviewOf(
       studio({

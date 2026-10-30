@@ -14,6 +14,7 @@ namespace Furria.Api.Tests.Studio;
 internal static class StudioSteps
 {
     private const int SongLength = 4096;
+    private const int VideoLength = 4096;
 
     internal static async Task<int> GardetanzAsync(
         SeededContext ctx,
@@ -169,4 +170,72 @@ internal static class StudioSteps
                 (step.StartSeconds, step.EndSeconds)
             ),
         ];
+
+    internal static Task<int> UploadVideoAsync(
+        HttpClient client,
+        int actId,
+        CancellationToken ct,
+        string fileName = "Probe.mp4"
+    ) =>
+        TusUploadSteps.UploadAsync(
+            client,
+            TusUploadSteps.ActOwner(actId),
+            fileName,
+            MediaSamples.Mp4(VideoLength),
+            VideoLength,
+            ct
+        );
+
+    internal static async Task<int> AddVideoAsync(HttpClient client, int actId, int mediaItemId)
+    {
+        var (response, result) = await client.POSTAsync<
+            PostActVideo,
+            PostActVideoRequest,
+            PostActVideoResponse
+        >(new() { ActId = actId, MediaItemId = mediaItemId });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        return result.VideoId;
+    }
+
+    internal static async Task<int> VideoOfAsync(
+        ApiTestFixture fixture,
+        HttpClient client,
+        int actId,
+        double seconds,
+        CancellationToken ct
+    )
+    {
+        var mediaItemId = await UploadVideoAsync(client, actId, ct);
+        await fixture.RenderSongDirectlyAsync(mediaItemId, seconds, ct);
+
+        return await AddVideoAsync(client, actId, mediaItemId);
+    }
+
+    internal static async Task PlaceVideoAsync(
+        HttpClient client,
+        int actId,
+        int videoId,
+        double atSeconds
+    )
+    {
+        var response = await client.PUTAsync<PutActVideoStart, PutActVideoStartRequest>(
+            new()
+            {
+                ActId = actId,
+                VideoId = videoId,
+                AtSeconds = atSeconds,
+            }
+        );
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    internal static async Task<StudioVideoDto> VideoInStudioAsync(
+        HttpClient client,
+        int actId,
+        int videoId
+    ) =>
+        (await StudioOfAsync(client, actId)).Studio!.Videos.Single(video =>
+            video.VideoId == videoId
+        );
 }

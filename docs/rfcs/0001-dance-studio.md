@@ -74,7 +74,7 @@ reference; this RFC is the v1 build.
 | `ActPart` | name, first step, main video. A gapless strip above the steps |
 | `Spot` | number, assigned person (session level) |
 | `Choreography` | **one `jsonb` document** per act (session version) or per appearance (evening copy): keyframes per spot (position in metres from the centre front, curve, easing, optional facing), version token, 409 on conflict |
-| `ActVideo` | video media item, anchor of video time 0, outdated flag |
+| `ActVideo` | video media item, anchor (the music position and the video moment playing there); *outdated* is derived |
 | `ActCoEditor` | act, person, granted by/at |
 | `AppearanceCastChange`, `AppearanceSpot` | the evening's differences |
 | club record | stage width × depth (m) + optional stage SVG (Inkscape, sanitised, rendered non-interactively in the stage area) |
@@ -458,9 +458,38 @@ Goal: "from here to there and in what time", in the Bewegung tool.
 
 ### Phase 13 — Trainer videos
 Goal: the trainer's demonstrations run in sync, set up in the Video tool.
-- [ ] Upload videos to the act; automatic alignment from the soundtrack + manual offset fine-tuning on the tool's strip
-- [ ] Main video per part, alternatives, outdated when a newer video covers the same range
-- [ ] 720p rendition for phones (and offline)
+- [x] Upload videos to the act; automatic alignment from the soundtrack + manual offset fine-tuning on the tool's strip
+- [x] Main video per part, alternatives, outdated when a newer video covers the same range
+- [x] 720p rendition for phones (and offline)
+
+Done 2026-10-30 (built in parallel to phases 10–12). Decisions taken in the phase:
+- **Endpoints** (all behind `ActStudioGate`; positions are seconds on the music the studio plays):
+  `POST /api/acts/{id}/videos` `{mediaItemId}` → `{videoId}` (a video item of this act, not yet a
+  video; at most 100), `PUT …/videos/{videoId}` `{name}` (trimmed, blank = none),
+  `PUT …/videos/{videoId}/start` `{atSeconds}` (where video time 0 lies; may be negative when the
+  recording starts before the music; 422 when the video would miss the music),
+  `POST …/videos/{videoId}/alignment` → `{startSeconds, confidence}` (409 while the video or the
+  music is still analysed or the video has no sound, 422 when the music is not found),
+  `DELETE …/videos/{videoId}` (the row and its media item; a part showing it loses its main video).
+- **Anchor**: a video stores the music anchor *and* the video moment playing there
+  (`start_video_seconds`), so a recording that starts before the music keeps its lead-in. A place
+  before the music anchors on the music's start.
+- **Matching**: the song profiles are cut to the working mix and joined into one profile, which the
+  soundtrack profile is compared with once (`VideoMatching`, confidence ≥ 0.35). Editors' clients
+  ask for it once per ready, unaligned video and state of the music (silently); the video desk offers *Automatisch anlegen*
+  again with a message.
+- **Outdated is derived on read** (`act_video.outdated_at` dropped): a video is outdated when a newer
+  one (higher id) covers its whole range within 1 s. Placing a video hands it every part it covers at
+  least half of whose main video is missing or now outdated (unless it is outdated itself).
+- **Video tool**: the side box lists the takes per part plus *Noch nicht auf der Musik* (processing,
+  unaligned, cut away, music missing) with uploads (tus, several at once) and *Videos hinzufügen*.
+  Bars on the strip drag with a local preview and save on release; the nudges save ±0.1 s at once.
+  Tapping the selected video opens the **video desk**: name, *Automatisch anlegen*, *Beginnt hier*
+  (video start at the playhead), *Hauptvideo für* each covered part, *Video entfernen* (second tap).
+  The studio polls while songs or videos are still being prepared.
+- **Compact rendition**: act videos also get `Compact` (H.264 within 1280×720); the studio read
+  returns its URL and phones/tablets (below the desktop breakpoint) play it. Existing act videos get
+  it on `regenerate`.
 
 ### Phase 14 — Offline
 Goal: practise without signal.

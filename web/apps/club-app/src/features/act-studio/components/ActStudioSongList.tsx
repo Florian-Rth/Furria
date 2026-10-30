@@ -2,7 +2,7 @@ import { KkStudioList } from '@furria/ui/KkStudioList';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import type { ActStudioSongs } from '../hooks/use-act-studio-songs';
-import { useSongUploads } from '../hooks/use-song-uploads';
+import { useActUploads } from '../hooks/use-act-uploads';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import {
   STUDIO_FINAL,
@@ -21,7 +21,7 @@ interface ActStudioSongListProps {
 }
 
 export const ActStudioSongList: FC<ActStudioSongListProps> = ({ screen, songs }) => {
-  const uploads = useSongUploads(screen.actId, screen.music);
+  const uploads = useActUploads(screen.actId, screen.music.add.mutateAsync);
   const rows = songs.rows.map((song) => (
     <KkStudioList.Row
       key={song.key}
@@ -44,10 +44,10 @@ export const ActStudioSongList: FC<ActStudioSongListProps> = ({ screen, songs })
       <KkStudioList.Upload
         key={upload.key}
         title={upload.name}
-        meta={uploadMetaOf(upload.share, upload.failure)}
+        meta={uploadMetaOf(upload.share, upload.failure, 'song')}
         share={upload.share}
         failed={upload.failure !== null}
-        label={uploadLabelOf(upload.name, upload.failure)}
+        label={uploadLabelOf(upload.name, upload.failure, 'song')}
         onPress={dismiss}
       />
     );

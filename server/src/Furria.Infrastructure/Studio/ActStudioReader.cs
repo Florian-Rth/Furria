@@ -250,19 +250,38 @@ public sealed class ActStudioReader
                 video.Name,
                 video.StartSourceMediaItemId,
                 video.StartSeconds,
-                video.OutdatedAt != null,
+                video.StartVideoSeconds,
                 video.MediaItem!.State,
                 video.MediaItem.DurationSeconds
             ))
             .ToListAsync(ct);
 
-        return [.. rows.Select(row => VideoOf(row, music, owner))];
+        var places = rows.ToDictionary(
+            row => row.VideoId,
+            row => row.StartAnchor is { } anchor ? music.LocateVideo(anchor) : (AnchorPlace?)null
+        );
+        var outdated = VideoCoverage.OutdatedOf([
+            .. rows.Select(row =>
+                    VideoCoverage.SpanOf(row.VideoId, places[row.VideoId], row.DurationSeconds)
+                )
+                .OfType<VideoSpan>(),
+        ]);
+
+        return
+        [
+            .. rows.Select(row =>
+                VideoOf(row, places[row.VideoId], outdated.Contains(row.VideoId), owner)
+            ),
+        ];
     }
 
-    private StudioVideoDetails VideoOf(VideoRow row, ActMusic music, MediaOwner owner)
+    private StudioVideoDetails VideoOf(
+        VideoRow row,
+        AnchorPlace? place,
+        bool isOutdated,
+        MediaOwner owner
+    )
     {
-        var place = row.StartAnchor is { } anchor ? music.Locate(anchor) : (AnchorPlace?)null;
-
         return new StudioVideoDetails
         {
             VideoId = row.VideoId,
@@ -272,10 +291,11 @@ public sealed class ActStudioReader
             DurationSeconds = row.DurationSeconds,
             StartSeconds = place?.TimelineSeconds,
             Placement = VideoPlacementOf(place),
-            IsOutdated = row.IsOutdated,
+            IsOutdated = isOutdated,
             Urls = new StudioVideoUrls
             {
                 Video = _signer.UrlOf(row.MediaItemId, owner, MediaRendition.Video),
+                Compact = _signer.UrlOf(row.MediaItemId, owner, MediaRendition.Compact),
                 Poster = _signer.UrlOf(row.MediaItemId, owner, MediaRendition.Poster),
             },
         };
@@ -363,14 +383,14 @@ public sealed class ActStudioReader
         string? Name,
         int? StartSourceMediaItemId,
         double? StartSeconds,
-        bool IsOutdated,
+        double StartVideoSeconds,
         MediaItemState State,
         double? DurationSeconds
     )
     {
-        public MusicAnchor? StartAnchor =>
+        public VideoAnchor? StartAnchor =>
             StartSourceMediaItemId is { } source && StartSeconds is { } seconds
-                ? new MusicAnchor(source, seconds)
+                ? new VideoAnchor(new MusicAnchor(source, seconds), StartVideoSeconds)
                 : null;
     }
 }

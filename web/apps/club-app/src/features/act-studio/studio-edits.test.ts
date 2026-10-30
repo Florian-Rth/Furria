@@ -5,7 +5,6 @@ import {
   borderMovedOf,
   draggedPointOf,
   moveIndexNear,
-  offsetOf,
   placedTrackOf,
   retimedTrackOf,
 } from './studio-edits';
@@ -118,15 +117,5 @@ describe('draggedPointOf', () => {
     ],
   ])('moves a dot by %o in the dancers view', (delta, point) => {
     expect(draggedPointOf({ rightMetres: 0, backMetres: 2 }, delta, stage)).toEqual(point);
-  });
-});
-
-describe('offsetOf', () => {
-  it.each([
-    [0.123, 10, 100, 0.1],
-    [-30, 10, 100, -10],
-    [95, 10, 100, 90],
-  ])('rounds and bounds the offset %s', (offset, start, length, result) => {
-    expect(offsetOf(offset, start, length)).toBeCloseTo(result);
   });
 });

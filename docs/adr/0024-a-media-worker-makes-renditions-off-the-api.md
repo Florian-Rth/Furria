@@ -57,6 +57,8 @@ An item still has exactly one owner.
   be measured fails; digital silence is stored at −70 LUFS and left unnormalised.
 - An act's **video** also gets a sound profile of its soundtrack, so a trainer video can be matched
   to the music.
+- An act's **video** also gets a **`Compact`** rendition (H.264 within 1280×720, phase 13), which
+  phones play and which offline saving downloads. Gallery videos do not get one.
 - The **sound profile** holds, per band (8 log-spaced bands, 100–7000 Hz), the rise in loudness
   every 10 ms, standardised. Comparing two profiles (`SoundComparison`, pure, in Core)
   cross-correlates them and returns the offset of one inside the other plus a confidence (the
