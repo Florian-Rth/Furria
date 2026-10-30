@@ -342,54 +342,68 @@ Goal: decide the shell of edit mode before the editors (phases 8–13) are built
 edit mode from the player, where the tools live, and how music, steps, formation and video share the
 screen. The native-app rules of the practice view apply (fixed viewport, nothing jumps, calm).
 - [x] Three divergent edit-mode variants in the lab on the seeded studio (390 px + desktop)
-- [ ] Pitch + Florian's pick; the rulings recorded in the RFC
-- [ ] Phases 8–13 task wording adjusted to build into the chosen shell
+- [x] Pitch + Florian's pick; the rulings recorded in the RFC
+- [x] Phases 8–13 task wording adjusted to build into the chosen shell
 
-Variants built 2026-10-30, awaiting Florian's pick. Lab at `/lab/studio-g|h|i/$actId` (entries on `/lab`),
-each opening in the practice view; Lena is a co-editor of act 3 on the branch database. All edits there are
-local only (no write endpoints yet), nothing is saved.
-- **G** one shared timeline under stage + video: fixed centre playhead, lanes for counts, music, parts,
-  steps, videos and movement; selecting any item opens an inspector (sheet on phone, side pane on desktop).
-- **H** the practice screen itself becomes the editor: a pencil in the transport pill, then a tool bar
-  (Musik · Schritte · Aufstellung · Bewegung · Video; rail on desktop) re-casts the same fixed boxes per tool.
-- **I** one page per step: a step rail with formation thumbnails (plus *Musik und Plätze* for act-wide
-  things); the page holds the step's zoomed waveform with its borders, the end formation with onion skin and
-  paths, a count bar, its video, name and description; play loops the step.
+Done 2026-10-30 (Florian picked H plus two parts of I). Decisions taken in the phase:
+- Three variants were built in the lab on act 3 (Lena made a co-editor on the branch database), each opening
+  in the practice view, edits local only: **G** one shared timeline with lanes under stage + video and an
+  inspector; **H** the practice screen itself becomes the editor, one tool at a time; **I** one page per step
+  with a step rail. G and I are removed; H stays in the lab (`/lab/studio-h/$actId`, `features/lab-studio-h`,
+  `KkStudioH*`) only until phase 8 promotes it.
+- **Pick: H** as the edit-mode shell. Rulings, binding for phases 8–13:
+  - **Entry/exit**: editors (`canEditStudio`) get a **pencil at the end of the transport pill**; in edit mode
+    the same place shows **Fertig**, which returns to practising at the same moment. Head, hero, side,
+    controls and the pill keep their place in both directions; nothing jumps, no page scroll.
+  - **One tool at a time**: *Musik · Schritte · Aufstellung · Bewegung · Video* — a bottom tab bar on phone, a
+    slim rail on the left on landscape/desktop. A tool re-casts the same fixed boxes (hero, side, strip);
+    the switch is a short morph, the transport never moves. Selection details open as a bottom sheet on phone,
+    in the side box on desktop.
+  - Per tool: **Musik** — the mix waveform with song cuts is the hero, songs + the *Endfassung* slot in the
+    side box. **Schritte** — the step bar grows into the mark strip with parts above, name + description
+    inline in the head. **Aufstellung** — the stage is the hero (grid, centre line), the video moves to the
+    side box, a contextual stage toolbar. **Bewegung** — stage hero with the selection's paths and the count
+    bar *Takt 1 – 4* under it. **Video** — the trainer video is the hero, a strip with each video's place on
+    the music and the offset.
+  - **Taken from I**: the **step rail with formation thumbnails** (grouped by part, number, name, counts) is the
+    Schritte tool's overview; the **previous formation shown faintly plus the paths** between belong to
+    Aufstellung and Bewegung.
 
-### Phase 8 — Music editor
-Goal: editors build the working mix.
-- [ ] Upload several songs, reorder, set start/end on the waveform; gapless preview
+### Phase 8 — Edit-mode shell and music editor
+Goal: editors enter edit mode on the act page and build the working mix.
+- [ ] Promote the H shell onto `/acts/$actId`: pencil in the transport pill → edit mode → *Fertig*, the tool bar (phone) / rail (desktop) with the five tools, the fixed boxes re-cast per tool; the lab route and `KkStudioH*` names removed
+- [ ] Musik tool: upload several songs, reorder, set start/end on the hero waveform; gapless preview; *Endfassung* slot in the side box
 - [ ] Re-cutting moves anchors; cut-away steps/keyframes/videos flagged
 - [ ] Counts 1–8 from the beat grid; correct the first "1" and the tempo per song
 
 ### Phase 9 — Steps and parts
-Goal: the manual exists on the music.
-- [ ] Set/move/delete step marks (gapless), name + description per step
-- [ ] Part strip (name, borders on step borders), main video per part
-- [ ] Manual view: steps in order with their music range, part, formation thumbnail
+Goal: the manual exists on the music, in the Schritte tool.
+- [ ] Schritte tool: set/move/delete step marks on the mark strip (gapless), name + description inline in the head
+- [ ] Part strip above the marks (name, borders on step borders), main video per part
+- [ ] Step rail as the tool's overview: steps grouped by part with number, name, counts and formation thumbnail
 
 ### Phase 10 — Final file
-Goal: the members' player plays exactly what tech will play.
-- [ ] Upload the final file (versioned)
+Goal: the members' player plays exactly what tech will play; built into the Musik tool.
+- [ ] Upload the final file (versioned) from the *Endfassung* slot
 - [ ] Automatic alignment suggestion per working song (profile comparison) + manual fine-tuning on the waveforms
 - [ ] *Endfassung übernehmen*: rewrite all anchors in one transaction, *Musik fehlt* markers; a newer final file aligns to the previous one
 
 ### Phase 11 — Stage editor: spots and formations
-Goal: formations per step on our stage.
-- [ ] Stage area with our size, SVG backdrop, centre/quarter/third guides, snap grid
+Goal: formations per step on our stage, in the Aufstellung tool.
+- [ ] Stage hero with our size, SVG backdrop, centre/quarter/third guides, snap grid; the video in the side box
 - [ ] Spots *Platz 1…n*: add/remove, assign cast members (one spot per person), unassigned dashed
-- [ ] Formation at step borders: select, multi-select, drag, mirror left↔right, align/distribute, copy formation from another step, presets (line, block, circle), onion skin
+- [ ] Formation at step borders via the stage toolbar: select, multi-select, drag, mirror left↔right, align/distribute, copy formation from another step, presets (line, block, circle); the previous formation shown faintly with the paths
 - [ ] Choreography document load/save with version token (409 on conflict)
 
 ### Phase 12 — Movement editor
-Goal: "from here to there and in what time".
-- [ ] Keyframes per spot on the music; select dots → drag → pull a bar from count to count
-- [ ] Bendable curves, easing, optional facing per keyframe
+Goal: "from here to there and in what time", in the Bewegung tool.
+- [ ] Keyframes per spot on the music; select dots → drag → pull the count bar *Takt 1 – 4* from count to count
+- [ ] Bendable curves, easing, optional facing per keyframe; paths and the previous formation on the stage
 - [ ] Snap to counts; scrub/play the movement against the music
 
 ### Phase 13 — Trainer videos
-Goal: the trainer's demonstrations run in sync.
-- [ ] Upload videos to the act; automatic alignment from the soundtrack + manual offset fine-tuning
+Goal: the trainer's demonstrations run in sync, set up in the Video tool.
+- [ ] Upload videos to the act; automatic alignment from the soundtrack + manual offset fine-tuning on the tool's strip
 - [ ] Main video per part, alternatives, outdated when a newer video covers the same range
 - [ ] 720p rendition for phones (and offline)
 
