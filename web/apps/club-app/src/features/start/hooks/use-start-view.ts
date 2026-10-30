@@ -6,7 +6,7 @@ import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { useMinuteNow } from '@/lib/use-minute-now';
 import { useStartQuery } from '../api';
-import { boardPanelsOf } from '../practice-tile';
+import { boardPanelsOf, practisableActsOf } from '../practice-tile';
 import type { BoardPanel, Start } from '../schemas';
 import { withPendingAnswers } from '../start-answer';
 import { startScreenOf, withoutQuiet } from '../start-board';
@@ -46,7 +46,7 @@ export const useStartView = (): StartView => {
   const personId = me.data?.person?.id ?? null;
   const { memory, quiet } = useQuietMemory(personId);
   const pendingAnswers = usePendingAnswers();
-  const practised = useMyActsQuery().data?.acts ?? NO_ACTS;
+  const practised = practisableActsOf(useMyActsQuery().data?.acts ?? NO_ACTS);
   const ready = visit !== null && me.data !== undefined;
   const errorMessage = visit === null ? toStartErrorMessage(query.error) : null;
   const skeletonDue = useSkeletonDelay(!ready && errorMessage === null);

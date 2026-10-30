@@ -77,7 +77,6 @@ public sealed class GetMyActsTests : IClassFixture<ApiTestFixture>
         Assert.True(act.Playable);
         Assert.Equal(gala, act.NextEvening?.EventId);
         Assert.Equal(1, act.NextEvening?.Position);
-        Assert.Equal(act.NextEvening?.StartsAt.AddMinutes(12), act.NextEvening?.StageStartsAt);
         Assert.Equal(training, act.NextTraining?.CalendarEntryId);
         Assert.Equal(AttendanceAnswer.No, act.NextTraining?.ViewerAnswer);
         Assert.Equal(1, act.NextTraining?.Absent);

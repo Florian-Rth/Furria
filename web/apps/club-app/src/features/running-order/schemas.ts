@@ -64,7 +64,6 @@ export type ActRef = z.infer<typeof ActRefSchema>;
 
 export const EveningRunningOrderLineSchema = ActRefSchema.extend({
   position: z.number().int().nonnegative(),
-  stageStartsAt: z.iso.datetime({ offset: true }),
   own: z.boolean(),
 });
 export type EveningRunningOrderLine = z.infer<typeof EveningRunningOrderLineSchema>;

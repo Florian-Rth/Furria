@@ -63,19 +63,16 @@ public sealed class RunningOrderService
 
     private readonly AppDbContext _dbContext;
     private readonly ActCatalogue _catalogue;
-    private readonly EveningStageTimes _stageTimes;
     private readonly TimeProvider _timeProvider;
 
     public RunningOrderService(
         AppDbContext dbContext,
         ActCatalogue catalogue,
-        EveningStageTimes stageTimes,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
         _catalogue = catalogue;
-        _stageTimes = stageTimes;
         _timeProvider = timeProvider;
     }
 
@@ -150,15 +147,6 @@ public sealed class RunningOrderService
                 .Where(line => line.Position is not null)
                 .ToList();
         var evening = await EveningOfAsync(eventId, placed, ct);
-        var eveningStart = await _dbContext
-            .CalendarEntries.Where(entry => entry.Id == eventId)
-            .Select(entry => entry.StartsAt)
-            .SingleAsync(ct);
-        var stageStarts = await _stageTimes.StartsInOrderAsync(
-            eveningStart,
-            [.. placed.Select(line => evening.Acts[line.ActId])],
-            ct
-        );
         var viewerGroupIds = await _dbContext
             .TiedGroupIds(viewerPersonId, ClubClock.Today(_timeProvider))
             .ToHashSetAsync(ct);
@@ -174,7 +162,6 @@ public sealed class RunningOrderService
                         EveningLineOf(
                             evening.Acts[line.ActId],
                             index,
-                            stageStarts[index],
                             IsOwn(evening.Acts[line.ActId], viewerPersonId, viewerGroupIds)
                         )
                 ),
@@ -992,7 +979,6 @@ public sealed class RunningOrderService
     private static EveningRunningOrderLineDetails EveningLineOf(
         ActSummary act,
         int position,
-        DateTimeOffset stageStartsAt,
         bool isOwn
     ) =>
         new()
@@ -1002,7 +988,6 @@ public sealed class RunningOrderService
             Kind = act.Kind,
             Group = act.Group,
             Position = position,
-            StageStartsAt = stageStartsAt,
             IsOwn = isOwn,
         };
 

@@ -16,8 +16,15 @@ export interface PracticeLine {
 export interface PracticeTileView {
   reach: KkStartTileReach;
   lines: PracticeLine[];
-  further: string | null;
+  further: PracticeFurther | null;
 }
+
+export interface PracticeFurther {
+  label: string;
+  open: () => void;
+}
+
+const CHOOSER_LABEL = 'Auftritt zum Üben wählen';
 
 const reachOf = (act: MyAct): KkStartTileReach => ({
   label: `${act.name} üben`,
@@ -29,24 +36,21 @@ export const usePracticeTile = (panel: StartPracticePanel): PracticeTileView => 
   const sheet = useKkSheetCommands();
   const shown = panel.acts.slice(0, panel.shownCount);
   const reach = practiceReachOf(panel.acts);
+  const hidden = panel.acts.length - shown.length;
+
+  const openChooser = (): void => {
+    sheet.open(START_PRACTICE_SHEET);
+  };
 
   return {
     reach:
-      reach.kind === 'act'
-        ? reachOf(reach.act)
-        : {
-            label: 'Auftritt zum Üben wählen',
-            onClick: () => {
-              sheet.open(START_PRACTICE_SHEET);
-            },
-          },
+      reach.kind === 'act' ? reachOf(reach.act) : { label: CHOOSER_LABEL, onClick: openChooser },
     lines: shown.map((act) => ({
       key: act.actId,
       title: act.name,
       meta: toPracticeMeta(act),
       reach: reachOf(act),
     })),
-    further:
-      panel.acts.length > shown.length ? `+${panel.acts.length - shown.length} weitere` : null,
+    further: hidden > 0 ? { label: `+${hidden} weitere`, open: openChooser } : null,
   };
 };

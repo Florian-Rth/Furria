@@ -1,5 +1,5 @@
 import Stack from '@mui/material/Stack';
-import type { FC, ReactNode } from 'react';
+import type { ElementType, FC, ReactNode } from 'react';
 import type { KkImageSource } from '../image-source';
 import type { KkClubIcon } from '../internal/club-icon';
 import type { KkGroupTone } from '../internal/group-tone';
@@ -28,7 +28,9 @@ interface KkGroupCardProps {
   lead: string;
   avatars: ReactNode;
   memberLine: string;
-  onSelect: () => void;
+  component: ElementType;
+  to: string;
+  params: Record<string, string>;
   sx?: KkSx;
 }
 
@@ -42,7 +44,9 @@ export const KkGroupCard: FC<KkGroupCardProps> = ({
   lead,
   avatars,
   memberLine,
-  onSelect,
+  component,
+  to,
+  params,
   sx,
 }) => {
   const crestIcon = icon ?? FALLBACK_ICON;
@@ -52,7 +56,7 @@ export const KkGroupCard: FC<KkGroupCardProps> = ({
 
   return (
     <KkCard sx={sx}>
-      <KkGroupCardFace onSelect={onSelect}>
+      <KkGroupCardFace component={component} to={to} params={params}>
         <KkGroupCardCrest tone={tone} icon={crestIcon} image={image} />
         <Stack sx={{ flexGrow: 1, minWidth: 0, gap: 0.5, p: BODY_INSET }}>
           <KkCard.Title clamp={NAME_LINES}>{name}</KkCard.Title>

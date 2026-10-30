@@ -1,5 +1,6 @@
 import { KkButton } from '@furria/ui/KkButton';
 import { KkErrorState } from '@furria/ui/KkErrorState';
+import { KkFacetGrid } from '@furria/ui/KkFacetGrid';
 import { KkHubRow } from '@furria/ui/KkHubRow';
 import { KkMeta } from '@furria/ui/KkMeta';
 import { KkNote } from '@furria/ui/KkNote';
@@ -9,6 +10,7 @@ import { KkSkeletonRow } from '@furria/ui/KkSkeletonRow';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { ActCardHubActTile } from '@/features/act-card/components/ActCardHubActTile';
 import type { GroupTone } from '@/features/groups/group-identity';
 import { useHubActs } from '../hooks/use-hub-acts';
 import { HubActRow } from './HubActRow';
@@ -30,7 +32,12 @@ interface HubActsPanelProps {
 
 export const HubActsPanel: FC<HubActsPanelProps> = ({ groupId, tone, canManage }) => {
   const hub = useHubActs(groupId);
-  const currentRows = (hub.acts?.current ?? []).map((act) => (
+  const cardCells = hub.cards.map((card, order) => (
+    <KkFacetGrid.Cell key={card.act.actId} reach="wide">
+      <ActCardHubActTile card={card} groupId={groupId} viewerId={hub.viewerId} order={order} />
+    </KkFacetGrid.Cell>
+  ));
+  const currentRows = hub.others.map((act) => (
     <HubActRow key={act.actId} groupId={groupId} act={act} />
   ));
   const retry = (
@@ -50,9 +57,12 @@ export const HubActsPanel: FC<HubActsPanelProps> = ({ groupId, tone, canManage }
     </KkPanel>
   ) : null;
   const emptyNote =
-    hub.acts !== null && currentRows.length === 0 ? <KkNote>{EMPTY_NOTE}</KkNote> : null;
+    hub.loaded && cardCells.length === 0 && currentRows.length === 0 ? (
+      <KkNote>{EMPTY_NOTE}</KkNote>
+    ) : null;
+  const cards = cardCells.length === 0 ? null : <KkFacetGrid>{cardCells}</KkFacetGrid>;
   const current = currentRows.length === 0 ? null : <KkPanel>{currentRows}</KkPanel>;
-  const earlier = (hub.acts?.earlier ?? []).map((session) => (
+  const earlier = hub.earlier.map((session) => (
     <HubActsSession key={session.sessionYear} groupId={groupId} session={session} />
   ));
   const manage = canManage ? (
@@ -73,6 +83,7 @@ export const HubActsPanel: FC<HubActsPanelProps> = ({ groupId, tone, canManage }
       <Stack sx={{ gap: 1.5, minWidth: 0 }}>
         {failure}
         {loading}
+        {cards}
         {current}
         {emptyNote}
         {earlier}

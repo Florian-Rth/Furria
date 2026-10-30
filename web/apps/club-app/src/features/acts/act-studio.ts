@@ -1,41 +1,8 @@
 import { musicSegmentsOf } from '@/features/act-player/music-timeline';
 import type { CastPerson } from '@/features/running-order/schemas';
-import type { ActPageSearch, CoEditor, Studio } from './schemas';
+import type { ActPageSearch, ActViewer, CoEditor, Studio } from './schemas';
 
-export type ActPageMode = 'practice' | 'details' | 'training';
-
-export interface StudioOverview {
-  hasMusic: boolean;
-  lengthSeconds: number;
-  playsFinalTrack: boolean;
-  songs: number;
-  steps: number;
-  stepsAdrift: number;
-  parts: number;
-  spots: number;
-  spotsOpen: number;
-  ownSpot: number | null;
-  videos: number;
-  videosOutdated: number;
-}
-
-export const studioOverviewOf = (studio: Studio, viewerId: number | null): StudioOverview => ({
-  hasMusic: studio.songs.length > 0 || studio.finalTracks.some((track) => track.adopted),
-  lengthSeconds: studio.music.lengthSeconds,
-  playsFinalTrack: studio.music.source === 'finalTrack',
-  songs: studio.songs.length,
-  steps: studio.steps.length,
-  stepsAdrift: studio.steps.filter((step) => step.placement !== 'onTimeline').length,
-  parts: studio.parts.length,
-  spots: studio.spots.length,
-  spotsOpen: studio.spots.filter((spot) => spot.person === null).length,
-  ownSpot:
-    viewerId === null
-      ? null
-      : (studio.spots.find((spot) => spot.person?.personId === viewerId)?.number ?? null),
-  videos: studio.videos.length,
-  videosOutdated: studio.videos.filter((video) => video.outdated).length,
-});
+export type ActPageMode = 'card' | 'practice' | 'details' | 'training';
 
 export const coEditorCandidatesOf = (
   cast: readonly CastPerson[],
@@ -54,22 +21,34 @@ export const canChangeCoEditors = (
 export const canPractise = (studio: Studio | null): boolean =>
   studio !== null && musicSegmentsOf(studio).some((segment) => segment.audible);
 
+export const seesDetailsOf = (viewer: ActViewer): boolean =>
+  viewer.canEditStudio ||
+  viewer.canEditSettings ||
+  viewer.canGrantCoEditors ||
+  viewer.canMarkAttendance;
+
+export interface ActPageViewer {
+  canEditStudio: boolean;
+  seesDetails: boolean;
+}
+
 export const actPageModeOf = (
   studio: Studio | null | undefined,
-  canEditStudio: boolean,
+  viewer: ActPageViewer,
   search: Pick<ActPageSearch, 'view' | 'settings'>,
 ): ActPageMode => {
   if (search.view === 'details' || search.settings === true) {
-    return 'details';
+    return studio === undefined || viewer.seesDetails ? 'details' : 'card';
   }
-
   if (search.view === 'training') {
-    return studio === undefined || canPractise(studio) ? 'training' : 'details';
+    return studio === undefined || canPractise(studio) ? 'training' : 'card';
   }
-
+  if (search.view !== 'play') {
+    return 'card';
+  }
   if (studio === undefined) {
     return 'practice';
   }
 
-  return studio !== null && (canEditStudio || canPractise(studio)) ? 'practice' : 'details';
+  return studio !== null && (viewer.canEditStudio || canPractise(studio)) ? 'practice' : 'card';
 };

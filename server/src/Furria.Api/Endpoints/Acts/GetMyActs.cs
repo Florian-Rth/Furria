@@ -63,7 +63,6 @@ public sealed class GetMyActs : EndpointWithoutRequest<GetMyActsResponse>
             Title = evening.Title,
             StartsAt = evening.StartsAt,
             Position = evening.Position,
-            StageStartsAt = evening.StageStartsAt,
         };
 
     private static MyActTrainingDto ToDto(MyActTrainingSummary training) =>
@@ -119,8 +118,6 @@ public sealed record MyActEveningDto
     public required DateTimeOffset StartsAt { get; init; }
 
     public required int? Position { get; init; }
-
-    public required DateTimeOffset? StageStartsAt { get; init; }
 }
 
 public sealed record MyActTrainingDto

@@ -9,6 +9,4 @@ public sealed record MyActEveningSummary
     public required DateTimeOffset StartsAt { get; init; }
 
     public required int? Position { get; init; }
-
-    public required DateTimeOffset? StageStartsAt { get; init; }
 }

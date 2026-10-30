@@ -9,13 +9,7 @@ interface CalendarRunningOrderLineProps {
 }
 
 export const CalendarRunningOrderLine: FC<CalendarRunningOrderLineProps> = ({ row }) => {
-  const group = row.groupName === null ? null : <span>{row.groupName}</span>;
-  const fact = (
-    <>
-      <span>{row.time}</span>
-      {group}
-    </>
-  );
+  const fact = row.groupName === null ? null : <span>{row.groupName}</span>;
   const chips = row.own ? (
     <KkChip tone="gold" size="small">
       {RUNNING_ORDER_OWN}
