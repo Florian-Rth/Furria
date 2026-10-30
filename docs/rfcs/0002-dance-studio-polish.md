@@ -375,9 +375,76 @@ Goal: one hall mode replaces training mode and the landscape player; the player 
 ### Phase 12b — ⚖ Lab: home training mode (∥ E)
 Goal: the dancer's *Üben* screen becomes the full training mode for practising at home; hall mode is an optional view for group trainings.
 - Ruling (2026-10-30): at group trainings in the hall the group uses hall mode (the trainer knows the steps). At home the dancer must see **everything** needed to learn the dance: trainer video, her own spot and path, step names and descriptions, count, cues (*jetzt / in 5*), tempo, loop, step rail. That holds in portrait **and** landscape (the landscape player must stay a full training view, readable and complete). Hall mode stays optional: a switch into it from the training mode, plus the trainers' entries (*Training starten*, training row). Native-app rules apply: fixed viewport, no scroll, no jumps, calm.
-- [ ] Three divergent lab variants of the home training mode on real data (act 3 as Jana/Lena; act 5 partial; empty-music act) at 390×844, 390×664, 844×390 and desktop, light/dark; filmed playback
-- [ ] Hall mode reachable as an optional switch from the training mode in every variant
-- [ ] Pitch + Florian's pick; rulings recorded in the RFC
+- [x] Three divergent lab variants of the home training mode on real data (act 3 as Jana/Lena; act 5 partial; empty-music act) at 390×844, 390×664, 844×390 and desktop, light/dark; filmed playback
+- [x] Hall mode reachable as an optional switch from the training mode in every variant
+- [ ] Pitch + Florian's pick; rulings recorded in the RFC (lab built; pick open)
+- Notes (lab built 2026-10-30, awaiting the pick):
+  - **Where:** the lab hub section *Zuhause üben* links `/lab/home-{a,b,c}/{actId}`. Data is the RFC 0001 database: Jana (spot 10) and Lena (spot 1) on act 3 *Marschtanz*, Sabine on act 5 (partly built, no own spot) and act 14 (no music: a calm *nothing to practise yet* state in the same frame, no transport).
+  - **Shared by all three:**
+    - They run on the existing playback and practice engine (`useStudioPlayback`, `usePractice`, `usePracticeVideo`, `practice-way` cues, the practice stage, `usePlayerKeys`).
+    - Every screen shows everything needed to learn the dance, in portrait and landscape:
+      - the trainer video (mirrored, with a toggle)
+      - the own dot, the own path and the cue (*in N* / *jetzt*)
+      - the step name, part and count 1–8
+      - the description, at least 2 lines, with the full text one tap away in a sheet
+      - tempo 100/85/70/50 %, loop step / loop part, back / next
+      - a step rail with part keys
+    - *Gruppentraining* switches to hall mode (`/acts/$actId?view=training`).
+    - The page never scrolls (`scrollHeight ≤ innerHeight` on every shot and film still). In the portrait and landscape films, the fixed regions keep identical boxes across 8 stills while a step border is crossed.
+  - **A — side by side** (`KkTwin`): the video and the own stage are the same size. The step (part · *Achter n/m*, cue, name, count marks + digit, description) sits between them:
+    - Portrait: video / step / stage stacked.
+    - Phone landscape: video | step | stage in a row.
+    - Desktop: the step runs as a band under both panes.
+    - A quiet bottom bar holds the rail (tap jumps, hold loops the step, part keys loop the part), back / play / next, tempo, and a repeat key (off → step → part).
+    - Strongest "everything at once" view.
+    - Weak spots:
+      - The panes get small (video 340×191 at 844×390; ~232 px wide at 390×664).
+      - At 200 % text the rail is hidden and the panes shrink to thumbnails.
+      - The other dots are faint on the dark stage.
+  - **B — one card per step** (`KkLesson`): the current step is a card.
+    - The trainer video is its picture, with the own stage as an inset; a tap swaps them.
+    - The card also holds part · *n von 13*, the name, the cue, a big count, the step's eights as a count bar, *Wiederholen*, the description and *Danach: next step*.
+    - Neighbouring steps are small cards in the rail with part keys, then the dock: *Gruppentraining*, back / play / next, tempo.
+    - Landscape: picture left, card text right, rail and dock in one row.
+    - Reads most like a manual you can play.
+    - Weak spots:
+      - In portrait the video top-aligns over a black band.
+      - The inset covers part of the video at 390×664.
+      - *Danach* is hidden on short screens and in phone landscape.
+      - At 200 % text the name truncates and the big count is hidden.
+  - **C — your way** (`KkWay*`): the own dot leads.
+    - A slow camera frames the area she moves through in this step; a key switches between the whole stage and the close-up.
+    - Her path ahead carries count numbers, with *in N* / *jetzt* at the dot. Others are grey, open spots gold.
+    - The trainer video floats as a picture you can drag to a corner, and a tap makes it big or small.
+    - Time is a ribbon of eights along the bottom: part keys loop the part, step tiles are sized by their eights and fill live, and a tap jumps.
+    - Landscape: stage and video left, step and keys right, ribbon along the bottom.
+    - Best answer to "where do I go next".
+    - Weak spots:
+      - At 390×664 and 200 % text the video covers the stage's top right.
+      - The close-up rarely kicks in for steps that cross the stage.
+      - The hall switch is an icon only.
+      - Act 14's disabled play key still looks pink.
+  - **Recommendation:** A's layout (video and stage side by side, the step between them, all of it readable in phone landscape), with C's path count numbers and close-up key on A's stage, and B's *Danach* line in A's step spine where height allows. Rulings needed:
+    - video and stage side by side, or one picture with a swappable inset
+    - the rail as tiles (A/B) or as a ribbon of eights (C)
+    - a separate repeat key, or loop by holding a tile
+    - *Gruppentraining* as a labelled key or an icon
+  - **Fixed after the lab review:** B and C now keep the screen awake and C resumes at the remembered step, as A already did. The *Gruppentraining* accessible name now starts with its visible label.
+  - **Left for 12c, from the lab review:**
+    - **Define an eight once.** A counts eights as 8 marks from the step start, so its *Achter n/m* flips mid-phrase when a step starts on 5. B and C split at count 1, each in its own way. Use one shared pure function.
+    - **Engine logic copied three times.** Count-mark range filtering, `EDGE_TOLERANCE_SECONDS` and the page shell (not found / denied / skeleton).
+    - **Step changes announced unreliably.** The live regions are remounted by their fade key; keep one stable live region.
+    - **Cue invisible to assistive tech.** It is `aria-hidden` in A and C.
+    - **Invalid nesting.** Block content inside the description buttons.
+    - **Full-screen overlay without focus containment.** Make the shell behind it inert.
+    - **C only:**
+      - the picture-in-picture ignores reduced motion
+      - the corner can only be moved by dragging
+      - the video remounts when it docks
+      - the docking breakpoint uses the viewport while the grid uses the container
+      - dots glide while the cue and ticks snap
+    - **B only:** the swap animates layout properties.
+  - **Shots and films** (gitignored): `web/tools/screenshot/out/lab12b/{a,b,c}/`. The baseline of today's player is `out/lab12b/base-{portrait,landscape}.png`.
 
 ### Phase 12c — Promote the home training mode (after 12b)
 - [ ] Chosen variant replaces the practice view (`?view=play`) in portrait and landscape; hall switch; keyboard, step rail, large-text layout kept
