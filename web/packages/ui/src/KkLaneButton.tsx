@@ -40,6 +40,7 @@ const pressedPaint = (theme: Theme): CSSObject => ({
   color: palette(theme).background.paper,
   backgroundColor: palette(theme).text.primary,
   boxShadow: 'none',
+  '&:hover': { backgroundColor: palette(theme).text.primary },
 });
 
 interface KkLaneButtonProps {

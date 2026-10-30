@@ -15,13 +15,22 @@ export interface ActStudioModeStart {
   silent: boolean;
   evening: boolean;
   editing: boolean;
+  tool: StudioTool | null;
+  stageOnly: boolean;
 }
 
 const ALL_TOOLS: readonly StudioTool[] = STUDIO_TOOLS.map((entry) => entry.tool);
-const EVENING_TOOLS: readonly StudioTool[] = ['formation', 'movement'];
+const STAGE_TOOLS: readonly StudioTool[] = ['formation', 'movement'];
 
-const firstToolOf = ({ silent, evening }: ActStudioModeStart): StudioTool => {
-  if (evening) {
+const toolsOf = ({ evening, stageOnly }: ActStudioModeStart): readonly StudioTool[] =>
+  evening || stageOnly ? STAGE_TOOLS : ALL_TOOLS;
+
+const firstToolOf = (start: ActStudioModeStart): StudioTool => {
+  const { silent, evening, stageOnly, tool } = start;
+  if (tool !== null && toolsOf(start).includes(tool)) {
+    return tool;
+  }
+  if (evening || stageOnly) {
     return 'formation';
   }
 
@@ -31,7 +40,7 @@ const firstToolOf = ({ silent, evening }: ActStudioModeStart): StudioTool => {
 export const useActStudioMode = (canEdit: boolean, start: ActStudioModeStart): ActStudioMode => {
   const [editing, setEditing] = useState(start.silent || start.editing);
   const [tool, setTool] = useState<StudioTool>(firstToolOf(start));
-  const tools = start.evening ? EVENING_TOOLS : ALL_TOOLS;
+  const tools = toolsOf(start);
 
   return {
     canEdit,

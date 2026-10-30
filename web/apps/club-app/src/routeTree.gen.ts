@@ -92,6 +92,7 @@ import { Route as AppGalleryAlbumIdEditRouteImport } from './routes/_app/gallery
 import { Route as AppEventsEventIdManageRouteImport } from './routes/_app/events_.$eventId_.manage'
 import { Route as AppEventsEventIdEditRouteImport } from './routes/_app/events_.$eventId_.edit'
 import { Route as AppEventsEventIdAblaufRouteImport } from './routes/_app/events_.$eventId_.ablauf'
+import { Route as AppActsActIdMusikRouteImport } from './routes/_app/acts_.$actId_.musik'
 import { Route as AppPersonalProfileSecurityRouteImport } from './routes/_app/_personal.profile_.security'
 import { Route as AppAffiliatedMembersPersonIdRouteImport } from './routes/_app/_affiliated.members_.$personId'
 import { Route as AppManageVenuesVenueIdEditRouteImport } from './routes/_app/manage.venues_.$venueId_.edit'
@@ -553,6 +554,11 @@ const AppEventsEventIdAblaufRoute = AppEventsEventIdAblaufRouteImport.update({
   path: '/events/$eventId/ablauf',
   getParentRoute: () => AppRoute,
 } as any)
+const AppActsActIdMusikRoute = AppActsActIdMusikRouteImport.update({
+  id: '/acts_/$actId_/musik',
+  path: '/acts/$actId/musik',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPersonalProfileSecurityRoute =
   AppPersonalProfileSecurityRouteImport.update({
     id: '/profile_/security',
@@ -822,6 +828,7 @@ export interface FileRoutesByFullPath {
   '/system/': typeof AppSystemIndexRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/profile/security': typeof AppPersonalProfileSecurityRoute
+  '/acts/$actId/musik': typeof AppActsActIdMusikRoute
   '/events/$eventId/ablauf': typeof AppEventsEventIdAblaufRoute
   '/events/$eventId/edit': typeof AppEventsEventIdEditRoute
   '/events/$eventId/manage': typeof AppEventsEventIdManageRoute
@@ -940,6 +947,7 @@ export interface FileRoutesByTo {
   '/system': typeof AppSystemIndexRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/profile/security': typeof AppPersonalProfileSecurityRoute
+  '/acts/$actId/musik': typeof AppActsActIdMusikRoute
   '/events/$eventId/ablauf': typeof AppEventsEventIdAblaufRoute
   '/events/$eventId/edit': typeof AppEventsEventIdEditRoute
   '/events/$eventId/manage': typeof AppEventsEventIdManageRoute
@@ -1062,6 +1070,7 @@ export interface FileRoutesById {
   '/_app/system/': typeof AppSystemIndexRoute
   '/_app/_affiliated/members_/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/_app/_personal/profile_/security': typeof AppPersonalProfileSecurityRoute
+  '/_app/acts_/$actId_/musik': typeof AppActsActIdMusikRoute
   '/_app/events_/$eventId_/ablauf': typeof AppEventsEventIdAblaufRoute
   '/_app/events_/$eventId_/edit': typeof AppEventsEventIdEditRoute
   '/_app/events_/$eventId_/manage': typeof AppEventsEventIdManageRoute
@@ -1182,6 +1191,7 @@ export interface FileRouteTypes {
     | '/system/'
     | '/members/$personId'
     | '/profile/security'
+    | '/acts/$actId/musik'
     | '/events/$eventId/ablauf'
     | '/events/$eventId/edit'
     | '/events/$eventId/manage'
@@ -1300,6 +1310,7 @@ export interface FileRouteTypes {
     | '/system'
     | '/members/$personId'
     | '/profile/security'
+    | '/acts/$actId/musik'
     | '/events/$eventId/ablauf'
     | '/events/$eventId/edit'
     | '/events/$eventId/manage'
@@ -1421,6 +1432,7 @@ export interface FileRouteTypes {
     | '/_app/system/'
     | '/_app/_affiliated/members_/$personId'
     | '/_app/_personal/profile_/security'
+    | '/_app/acts_/$actId_/musik'
     | '/_app/events_/$eventId_/ablauf'
     | '/_app/events_/$eventId_/edit'
     | '/_app/events_/$eventId_/manage'
@@ -2077,6 +2089,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEventsEventIdAblaufRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/acts_/$actId_/musik': {
+      id: '/_app/acts_/$actId_/musik'
+      path: '/acts/$actId/musik'
+      fullPath: '/acts/$actId/musik'
+      preLoaderRoute: typeof AppActsActIdMusikRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/_personal/profile_/security': {
       id: '/_app/_personal/profile_/security'
       path: '/profile/security'
@@ -2419,6 +2438,7 @@ interface AppRouteChildren {
   AppLabIndexRoute: typeof AppLabIndexRoute
   AppManageIndexRoute: typeof AppManageIndexRoute
   AppSystemIndexRoute: typeof AppSystemIndexRoute
+  AppActsActIdMusikRoute: typeof AppActsActIdMusikRoute
   AppEventsEventIdAblaufRoute: typeof AppEventsEventIdAblaufRoute
   AppEventsEventIdEditRoute: typeof AppEventsEventIdEditRoute
   AppEventsEventIdManageRoute: typeof AppEventsEventIdManageRoute
@@ -2526,6 +2546,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppLabIndexRoute: AppLabIndexRoute,
   AppManageIndexRoute: AppManageIndexRoute,
   AppSystemIndexRoute: AppSystemIndexRoute,
+  AppActsActIdMusikRoute: AppActsActIdMusikRoute,
   AppEventsEventIdAblaufRoute: AppEventsEventIdAblaufRoute,
   AppEventsEventIdEditRoute: AppEventsEventIdEditRoute,
   AppEventsEventIdManageRoute: AppEventsEventIdManageRoute,

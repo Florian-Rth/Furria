@@ -1,3 +1,4 @@
+import { useKkLaneWide } from '@furria/ui/KkLaneWide';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import { usePlayerKeys } from '@/features/act-practice/hooks/use-player-keys';
@@ -17,6 +18,7 @@ import { useSongMutations, useStepMutations, useVideoMutations } from '../api';
 import { useEveningStageMutations } from '../evening-api';
 import type { StageMutations } from '../stage-api';
 import { useStageMutations } from '../stage-api';
+import type { StudioTool } from '../studio-copy';
 import { eveningBandOf } from '../studio-copy';
 import { workedPathsOf, workedStepsOf, workedStudioOf } from '../studio-edits';
 import { eveningStudioOf } from '../studio-evening';
@@ -37,6 +39,8 @@ export interface StudioEveningContext {
   evening: StudioEvening | null;
   startEditing: boolean;
   startHall: (() => void) | null;
+  startTool?: StudioTool;
+  phoneCards?: boolean;
 }
 
 export interface StudioScreen {
@@ -50,6 +54,7 @@ export interface StudioScreen {
   videos: VideoMutations;
   final: StudioFinal;
   mode: ActStudioMode;
+  cards: boolean;
   frame: ActStudioFrame;
   large: StudioLargeText;
   startHall: (() => void) | null;
@@ -67,12 +72,16 @@ export const useStudioScreen = (
   viewerId: number | null,
   canEdit: boolean,
   cast: readonly CastPerson[],
-  { evening, startEditing, startHall }: StudioEveningContext,
+  { evening, startEditing, startHall, startTool, phoneCards }: StudioEveningContext,
 ): StudioScreen => {
+  const wide = useKkLaneWide();
+  const stageOnly = phoneCards === true && !wide;
   const mode = useActStudioMode(canEdit, {
     silent: !canPractise(source),
     evening: evening !== null,
     editing: startEditing,
+    tool: startTool ?? null,
+    stageOnly,
   });
   const music = useSongMutations(actId);
   const stageWrites = useEveningStageMutations(
@@ -111,6 +120,7 @@ export const useStudioScreen = (
     eveningBand:
       evening !== null && mode.editing ? eveningBandOf(evening.title, evening.startsAt) : null,
     mode,
+    cards: stageOnly && mode.editing,
     music,
     stageWrites,
     cast,

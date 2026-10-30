@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { ActPageSearchSchema } from '@/features/acts/schemas';
 import { PortraitPersonRefSchema } from '@/lib/api/schemas';
 
 export const AddedSongSchema = z.object({ songId: z.int() });
@@ -64,3 +65,11 @@ export const ChoreographyConflictSchema = z.object({
   ),
 });
 export type ChoreographyConflict = z.infer<typeof ChoreographyConflictSchema>;
+
+export const StudioMusicToolSchema = z.enum(['music', 'video']);
+export type StudioMusicTool = z.infer<typeof StudioMusicToolSchema>;
+
+export const ActMusicSearchSchema = ActPageSearchSchema.extend({
+  tool: StudioMusicToolSchema.optional().catch(undefined),
+});
+export type ActMusicSearch = z.infer<typeof ActMusicSearchSchema>;

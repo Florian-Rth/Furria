@@ -1,5 +1,6 @@
 import Box from '@mui/material/Box';
 import type { FC, PropsWithChildren } from 'react';
+import { kkTokens } from '../../../tokens';
 
 interface KkEightsReelCountsProps extends PropsWithChildren {
   label: string;
@@ -13,9 +14,9 @@ export const KkEightsReelCounts: FC<KkEightsReelCountsProps> = ({ label, childre
       flexShrink: 0,
       display: 'grid',
       gridTemplateColumns: 'repeat(8, minmax(0, 1fr))',
-      gridAutoRows: '2.25rem',
+      gridAutoRows: kkTokens.tapTarget,
       gap: 0.25,
-      maxHeight: '4.75rem',
+      maxHeight: `calc(2 * ${kkTokens.tapTarget} + 0.125rem)`,
       overflowY: 'auto',
       scrollbarWidth: 'none',
     }}

@@ -24,6 +24,7 @@ export const ActPracticeBody: FC<ActPracticeBodyProps> = ({ page }) => {
     evening: page.evening,
     startEditing: page.startEditing,
     startHall: page.canEditStudio ? startHall : null,
+    phoneCards: true,
   };
 
   return (

@@ -23,6 +23,7 @@ import { ActStudioSpotSheet } from './ActStudioSpotSheet';
 import { ActStudioStepDesk } from './ActStudioStepDesk';
 import { ActStudioToolTabs } from './ActStudioToolTabs';
 import { ActStudioVideoDesk } from './ActStudioVideoDesk';
+import { StepCardsView } from './StepCardsView';
 
 interface ActStudioBodyProps {
   actId: number;
@@ -47,6 +48,11 @@ export const ActStudioBody: FC<ActStudioBodyProps> = ({
   const songs = useActStudioSongs(screen);
   const finalList = useActStudioFinal(screen);
   const stepTool = useActStudioStepTool(screen);
+
+  if (screen.cards) {
+    return <StepCardsView screen={screen} editor={editor} stepTool={stepTool} />;
+  }
+
   const band =
     screen.eveningBand === null ? null : (
       <KkStudioView.Band>
