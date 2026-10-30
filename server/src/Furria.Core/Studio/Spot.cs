@@ -5,6 +5,9 @@ namespace Furria.Core.Studio;
 
 public sealed class Spot
 {
+    public const int FirstNumber = 1;
+    public const int MostPerAct = 60;
+
     public int Id { get; set; }
 
     public int ActId { get; set; }

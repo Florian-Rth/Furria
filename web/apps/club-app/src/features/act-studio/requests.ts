@@ -1,11 +1,22 @@
+import type { Choreography } from '@/features/acts/schemas';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
-import type { AddedPart, AddedSong, AddedVideo, MarkedSteps, VideoAlignment } from './schemas';
+import type {
+  AddedPart,
+  AddedSong,
+  AddedSpot,
+  AddedVideo,
+  MarkedSteps,
+  SavedChoreography,
+  VideoAlignment,
+} from './schemas';
 import {
   AddedPartSchema,
   AddedSongSchema,
+  AddedSpotSchema,
   AddedVideoSchema,
   MarkedStepsSchema,
+  SavedChoreographySchema,
   VideoAlignmentSchema,
 } from './schemas';
 import type { SongSettings } from './studio-music';
@@ -56,6 +67,53 @@ export const requestSongSettings = (
       tempoBpm: settings.tempoBpm,
     },
     schema: NoContentSchema,
+    accessToken,
+  });
+
+const spotsPathOf = (actId: number): string => `/api/acts/${actId}/spots`;
+
+export const requestSpotAdd = (actId: number, accessToken: string): Promise<AddedSpot> =>
+  apiFetch(spotsPathOf(actId), {
+    method: 'POST',
+    body: {},
+    schema: AddedSpotSchema,
+    accessToken,
+  });
+
+export const requestSpotAssignment = (
+  actId: number,
+  spotId: number,
+  personId: number | null,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${spotsPathOf(actId)}/${spotId}`, {
+    method: 'PUT',
+    body: { personId },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestSpotRemoval = (
+  actId: number,
+  spotId: number,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${spotsPathOf(actId)}/${spotId}`, {
+    method: 'DELETE',
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestChoreographySave = (
+  actId: number,
+  expectedVersion: number | null,
+  tracks: Choreography['tracks'],
+  accessToken: string,
+): Promise<SavedChoreography> =>
+  apiFetch(`/api/acts/${actId}/choreography`, {
+    method: 'PUT',
+    body: { expectedVersion, tracks },
+    schema: SavedChoreographySchema,
     accessToken,
   });
 

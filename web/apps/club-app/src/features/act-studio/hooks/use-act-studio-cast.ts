@@ -1,5 +1,11 @@
 import { poseAt } from '@/features/act-player/choreography-motion';
-import { dotLabelOf, STUDIO_OPEN_SPOT, STUDIO_SELECTED, spotMetaOf } from '../studio-copy';
+import {
+  dotLabelOf,
+  STUDIO_NOT_PLACED,
+  STUDIO_OPEN_SPOT,
+  STUDIO_SELECTED,
+  spotMetaOf,
+} from '../studio-copy';
 import type { ActStudioStage } from './use-act-studio-stage';
 import type { StudioScreen } from './use-studio-screen';
 
@@ -34,7 +40,7 @@ export const useActStudioCast = (
         title: name ?? STUDIO_OPEN_SPOT,
         meta:
           pose === null
-            ? STUDIO_OPEN_SPOT
+            ? STUDIO_NOT_PLACED
             : spotMetaOf(
                 pose.position.rightMetres,
                 pose.position.backMetres,

@@ -445,10 +445,10 @@ Goal: the members' player plays exactly what tech will play; built into the Musi
 
 ### Phase 11 — Stage editor: spots and formations
 Goal: formations per step on our stage, in the Aufstellung tool.
-- [ ] Stage hero with our size, SVG backdrop, centre/quarter/third guides, snap grid; the video in the side box
-- [ ] Spots *Platz 1…n*: add/remove, assign cast members (one spot per person), unassigned dashed
-- [ ] Formation at step borders via the stage toolbar: select, multi-select, drag, mirror left↔right, align/distribute, copy formation from another step, presets (line, block, circle); the previous formation shown faintly with the paths
-- [ ] Choreography document load/save with version token (409 on conflict)
+- [x] Stage hero with our size, SVG backdrop, centre/quarter/third guides, snap grid; the video in the side box
+- [x] Spots *Platz 1…n*: add/remove, assign cast members (one spot per person), unassigned dashed
+- [x] Formation at step borders via the stage toolbar: select, multi-select, drag, mirror left↔right, align/distribute, copy formation from another step, presets (line, block, circle); the previous formation shown faintly with the paths
+- [x] Choreography document load/save with version token (409 on conflict)
 
 ### Phase 12 — Movement editor
 Goal: "from here to there and in what time", in the Bewegung tool.

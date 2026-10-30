@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { TimedKeyframe } from '@/features/act-player/choreography-motion';
 import type { MixPlayer } from '@/features/act-player/mix-player';
 import type { StepText, StudioEdits, TimeSpan } from '../studio-edits';
-import { NO_EDITS, withoutKeys } from '../studio-edits';
+import { NO_EDITS, tracksWithoutOf, withoutKeys } from '../studio-edits';
 
 export interface ActStudioEdits {
   value: StudioEdits;
@@ -15,6 +15,7 @@ export interface ActStudioEdits {
   setTracks: (tracks: Record<number, readonly TimedKeyframe[]>) => void;
   setStart: (videoId: number, seconds: number) => void;
   clearStart: (videoId: number, committed: number) => void;
+  dropTracks: (tracks: Record<number, readonly TimedKeyframe[]>) => void;
   keepPosition: (seconds: number) => void;
 }
 
@@ -53,6 +54,9 @@ export const useActStudioEdits = (): ActStudioEdits => {
           ? { ...current, starts: withoutKeys(current.starts, [videoId]) }
           : current,
       );
+    },
+    dropTracks: (tracks) => {
+      setValue((current) => ({ ...current, tracks: tracksWithoutOf(current.tracks, tracks) }));
     },
     keepPosition: (seconds) => {
       keep.current = seconds;

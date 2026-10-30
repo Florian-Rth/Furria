@@ -85,9 +85,47 @@ export const STUDIO_SELECTION_OPEN = 'Auswahl zeigen';
 export const STUDIO_SPOTS = 'Plätze';
 export const STUDIO_SPOTS_CLOSE = 'Auswahl schließen';
 export const STUDIO_OPEN_SPOT = 'offen';
-export const STUDIO_LATER_TITLE = 'Ausrichten · Verteilen · Vorlagen · Von Schritt kopieren';
-export const STUDIO_LATER = 'kommt noch';
 export const STUDIO_SELECTED = 'gewählt';
+export const STUDIO_NOT_PLACED = 'nicht aufgestellt';
+export const STUDIO_SPOT_ADD = 'Platz hinzufügen';
+export const STUDIO_ARRANGE = 'Anordnen';
+export const STUDIO_ARRANGE_LABEL = 'Aufstellung anordnen';
+export const STUDIO_ALIGN = 'Ausrichten';
+export const STUDIO_ALIGN_ROW = 'In eine Reihe';
+export const STUDIO_ALIGN_COLUMN = 'Hintereinander';
+export const STUDIO_DISTRIBUTE = 'Gleich verteilen';
+export const STUDIO_DISTRIBUTE_ACROSS = 'Quer';
+export const STUDIO_DISTRIBUTE_DEEP = 'In die Tiefe';
+export const STUDIO_PRESETS = 'Vorlage';
+export const STUDIO_PRESET_LINE = 'Linie';
+export const STUDIO_PRESET_BLOCK = 'Block';
+export const STUDIO_PRESET_CIRCLE = 'Kreis';
+export const STUDIO_COPY = 'Von Schritt übernehmen';
+export const STUDIO_NO_COPY_SOURCE = '–';
+export const STUDIO_COPY_APPLY = 'Übernehmen';
+export const STUDIO_COPY_EARLIER = 'Früherer Schritt';
+export const STUDIO_COPY_LATER = 'Späterer Schritt';
+export const STUDIO_SPOT_PERSON = 'Wer steht hier';
+export const STUDIO_SPOT_FREE = 'Frei lassen';
+export const STUDIO_SPOT_REMOVE = 'Platz entfernen';
+export const STUDIO_SPOT_REMOVE_SURE = 'Wirklich entfernen';
+
+export const arrangeScopeOf = (selected: number): string =>
+  selected === 0
+    ? 'Alle Plätze'
+    : selected === 1
+      ? '1 Platz gewählt'
+      : `${selected} Plätze gewählt`;
+
+export const copySourceTextOf = (index: number): string => `Schritt ${index + 1}`;
+
+export const spotDeskTitleOf = (number: number): string => `Platz ${number}`;
+
+export const castChoiceTextOf = (
+  firstName: string,
+  lastName: string,
+  spot: number | null,
+): string => (spot === null ? `${firstName} ${lastName}` : `${firstName} ${lastName} · ${spot}`);
 
 export const STUDIO_COUNTS_LABEL = 'Zählzeiten des Schritts: von Zählzeit zu Zählzeit ziehen';
 export const STUDIO_NO_MOVE = 'Kein Weg in diesem Schritt';
