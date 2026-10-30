@@ -80,6 +80,9 @@ import { Route as AppManageClubRecordAccessRouteImport } from './routes/_app/man
 import { Route as AppManageBoardNewRouteImport } from './routes/_app/manage.board_.new'
 import { Route as AppManageBoardBoardOfficeIdRouteImport } from './routes/_app/manage.board_.$boardOfficeId'
 import { Route as AppManageApplicationsMembershipApplicationIdRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId'
+import { Route as AppLabHomeCActIdRouteImport } from './routes/_app/lab_.home-c.$actId'
+import { Route as AppLabHomeBActIdRouteImport } from './routes/_app/lab_.home-b.$actId'
+import { Route as AppLabHomeAActIdRouteImport } from './routes/_app/lab_.home-a.$actId'
 import { Route as AppLabEditorCActIdRouteImport } from './routes/_app/lab_.editor-c.$actId'
 import { Route as AppLabEditorBActIdRouteImport } from './routes/_app/lab_.editor-b.$actId'
 import { Route as AppLabEditorAActIdRouteImport } from './routes/_app/lab_.editor-a.$actId'
@@ -490,6 +493,21 @@ const AppManageApplicationsMembershipApplicationIdRoute =
     path: '/manage/applications/$membershipApplicationId',
     getParentRoute: () => AppRoute,
   } as any)
+const AppLabHomeCActIdRoute = AppLabHomeCActIdRouteImport.update({
+  id: '/lab_/home-c/$actId',
+  path: '/lab/home-c/$actId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLabHomeBActIdRoute = AppLabHomeBActIdRouteImport.update({
+  id: '/lab_/home-b/$actId',
+  path: '/lab/home-b/$actId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLabHomeAActIdRoute = AppLabHomeAActIdRouteImport.update({
+  id: '/lab_/home-a/$actId',
+  path: '/lab/home-a/$actId',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppLabEditorCActIdRoute = AppLabEditorCActIdRouteImport.update({
   id: '/lab_/editor-c/$actId',
   path: '/lab/editor-c/$actId',
@@ -834,6 +852,9 @@ export interface FileRoutesByFullPath {
   '/lab/editor-a/$actId': typeof AppLabEditorAActIdRoute
   '/lab/editor-b/$actId': typeof AppLabEditorBActIdRoute
   '/lab/editor-c/$actId': typeof AppLabEditorCActIdRoute
+  '/lab/home-a/$actId': typeof AppLabHomeAActIdRoute
+  '/lab/home-b/$actId': typeof AppLabHomeBActIdRoute
+  '/lab/home-c/$actId': typeof AppLabHomeCActIdRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
   '/manage/board/new': typeof AppManageBoardNewRoute
@@ -952,6 +973,9 @@ export interface FileRoutesByTo {
   '/lab/editor-a/$actId': typeof AppLabEditorAActIdRoute
   '/lab/editor-b/$actId': typeof AppLabEditorBActIdRoute
   '/lab/editor-c/$actId': typeof AppLabEditorCActIdRoute
+  '/lab/home-a/$actId': typeof AppLabHomeAActIdRoute
+  '/lab/home-b/$actId': typeof AppLabHomeBActIdRoute
+  '/lab/home-c/$actId': typeof AppLabHomeCActIdRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
   '/manage/board/new': typeof AppManageBoardNewRoute
@@ -1074,6 +1098,9 @@ export interface FileRoutesById {
   '/_app/lab_/editor-a/$actId': typeof AppLabEditorAActIdRoute
   '/_app/lab_/editor-b/$actId': typeof AppLabEditorBActIdRoute
   '/_app/lab_/editor-c/$actId': typeof AppLabEditorCActIdRoute
+  '/_app/lab_/home-a/$actId': typeof AppLabHomeAActIdRoute
+  '/_app/lab_/home-b/$actId': typeof AppLabHomeBActIdRoute
+  '/_app/lab_/home-c/$actId': typeof AppLabHomeCActIdRoute
   '/_app/manage/applications_/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/_app/manage/board_/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
   '/_app/manage/board_/new': typeof AppManageBoardNewRoute
@@ -1194,6 +1221,9 @@ export interface FileRouteTypes {
     | '/lab/editor-a/$actId'
     | '/lab/editor-b/$actId'
     | '/lab/editor-c/$actId'
+    | '/lab/home-a/$actId'
+    | '/lab/home-b/$actId'
+    | '/lab/home-c/$actId'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
     | '/manage/board/new'
@@ -1312,6 +1342,9 @@ export interface FileRouteTypes {
     | '/lab/editor-a/$actId'
     | '/lab/editor-b/$actId'
     | '/lab/editor-c/$actId'
+    | '/lab/home-a/$actId'
+    | '/lab/home-b/$actId'
+    | '/lab/home-c/$actId'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
     | '/manage/board/new'
@@ -1433,6 +1466,9 @@ export interface FileRouteTypes {
     | '/_app/lab_/editor-a/$actId'
     | '/_app/lab_/editor-b/$actId'
     | '/_app/lab_/editor-c/$actId'
+    | '/_app/lab_/home-a/$actId'
+    | '/_app/lab_/home-b/$actId'
+    | '/_app/lab_/home-c/$actId'
     | '/_app/manage/applications_/$membershipApplicationId'
     | '/_app/manage/board_/$boardOfficeId'
     | '/_app/manage/board_/new'
@@ -1993,6 +2029,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageApplicationsMembershipApplicationIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/lab_/home-c/$actId': {
+      id: '/_app/lab_/home-c/$actId'
+      path: '/lab/home-c/$actId'
+      fullPath: '/lab/home-c/$actId'
+      preLoaderRoute: typeof AppLabHomeCActIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lab_/home-b/$actId': {
+      id: '/_app/lab_/home-b/$actId'
+      path: '/lab/home-b/$actId'
+      fullPath: '/lab/home-b/$actId'
+      preLoaderRoute: typeof AppLabHomeBActIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lab_/home-a/$actId': {
+      id: '/_app/lab_/home-a/$actId'
+      path: '/lab/home-a/$actId'
+      fullPath: '/lab/home-a/$actId'
+      preLoaderRoute: typeof AppLabHomeAActIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/lab_/editor-c/$actId': {
       id: '/_app/lab_/editor-c/$actId'
       path: '/lab/editor-c/$actId'
@@ -2431,6 +2488,9 @@ interface AppRouteChildren {
   AppLabEditorAActIdRoute: typeof AppLabEditorAActIdRoute
   AppLabEditorBActIdRoute: typeof AppLabEditorBActIdRoute
   AppLabEditorCActIdRoute: typeof AppLabEditorCActIdRoute
+  AppLabHomeAActIdRoute: typeof AppLabHomeAActIdRoute
+  AppLabHomeBActIdRoute: typeof AppLabHomeBActIdRoute
+  AppLabHomeCActIdRoute: typeof AppLabHomeCActIdRoute
   AppManageApplicationsMembershipApplicationIdRoute: typeof AppManageApplicationsMembershipApplicationIdRoute
   AppManageBoardBoardOfficeIdRoute: typeof AppManageBoardBoardOfficeIdRoute
   AppManageBoardNewRoute: typeof AppManageBoardNewRoute
@@ -2538,6 +2598,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppLabEditorAActIdRoute: AppLabEditorAActIdRoute,
   AppLabEditorBActIdRoute: AppLabEditorBActIdRoute,
   AppLabEditorCActIdRoute: AppLabEditorCActIdRoute,
+  AppLabHomeAActIdRoute: AppLabHomeAActIdRoute,
+  AppLabHomeBActIdRoute: AppLabHomeBActIdRoute,
+  AppLabHomeCActIdRoute: AppLabHomeCActIdRoute,
   AppManageApplicationsMembershipApplicationIdRoute:
     AppManageApplicationsMembershipApplicationIdRoute,
   AppManageBoardBoardOfficeIdRoute: AppManageBoardBoardOfficeIdRoute,
