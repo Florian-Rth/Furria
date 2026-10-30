@@ -450,9 +450,31 @@ Goal: formations per step on our stage, in the Aufstellung tool.
 
 ### Phase 12 — Movement editor
 Goal: "from here to there and in what time", in the Bewegung tool.
-- [ ] Keyframes per spot on the music; select dots → drag → pull the count bar *Takt 1 – 4* from count to count
-- [ ] Bendable curves, easing, optional facing per keyframe; paths and the previous formation on the stage
-- [ ] Snap to counts; scrub/play the movement against the music
+- [x] Keyframes per spot on the music; select dots → drag → pull the count bar *Takt 1 – 4* from count to count
+- [x] Bendable curves, easing, optional facing per keyframe; paths and the previous formation on the stage
+- [x] Snap to counts; scrub/play the movement against the music
+
+Done 2026-10-30. Decisions taken in the phase:
+- **No new endpoint**: every edit saves the whole session choreography through phase 11's
+  `PUT /api/acts/{id}/choreography` (version token, optimistic patch), shared with the Aufstellung
+  tool (`useTrackCommit`). Drags preview locally and save on release.
+- **Waypoints**: dragging dots in Bewegung pauses the music, snaps the playhead to the nearest count
+  and keys the grabbed spots there: a keyframe already at that count moves, otherwise a waypoint is
+  inserted (it takes the spot's facing there and the split move's easing; the split move loses its
+  bend). On a step border this edits the formation, as Aufstellung does.
+- **The move** of a spot is the one under the playhead within the current step (a segment between
+  two keyframes that changes place or is bent). The count bar shows the selection's move; dragging
+  from count to count retimes it for every selected spot. **Retiming keeps the formations**: hold
+  keyframes are left at the old times when the move gets shorter, a hold before or after may be
+  absorbed when it gets longer, and a neighbouring move is never shortened. A tap on a count (or a
+  drag without a selection) scrubs to it.
+- **Bend** = a handle on the stage at the move's bend point (or half way); dragged back near the
+  middle it straightens. **Easing, facing, removal** sit in the selection sheet's *Weg* desk:
+  *Gleichmäßig · Langsam los · Langsam ankommen · Weich*, *Gerade ziehen*, *Blick am Ziel* in 45°
+  turns (named from the dancers' view, *frei* = none; it also applies to the hold after the arrival),
+  *Wegpunkt entfernen* when a keyframe sits on the playhead (the last keyframe of a spot stays).
+- The editor's dots show every spot's facing as a notch; *Vorher* in Bewegung shows the formation at
+  the step's start faintly. The selected spots' paths over the step are drawn with their keyframes.
 
 ### Phase 13 — Trainer videos
 Goal: the trainer's demonstrations run in sync, set up in the Video tool.

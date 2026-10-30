@@ -1,10 +1,10 @@
 import { KkStudioStage } from '@furria/ui/KkStudioStage';
 import type { FC } from 'react';
 import { usePlaybackSeconds } from '@/features/act-player/hooks/use-playback-seconds';
-import { stageDotsAt } from '@/features/act-practice/practice-stage';
 import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 import type { StudioScreen } from '../hooks/use-studio-screen';
-import { dotLabelOf } from '../studio-copy';
+import { STUDIO_BEND_LABEL } from '../studio-copy';
+import { studioDotsAt } from '../studio-dots';
 import type { StageShare } from '../studio-edits';
 
 interface ActStudioStageSceneProps {
@@ -14,31 +14,54 @@ interface ActStudioStageSceneProps {
 
 export const ActStudioStageScene: FC<ActStudioStageSceneProps> = ({ screen, editor }) => {
   const seconds = usePlaybackSeconds(screen.playback.player);
-  const someSelected = editor.selected.length > 0 && !editor.formation;
-  const dots = stageDotsAt(editor.scene, seconds).map((dot) => {
-    const spot = editor.scene.spots.find((candidate) => candidate.spotId === dot.spotId);
-    const selected = editor.selected.includes(dot.spotId);
-    const press = (share: StageShare): void => {
-      editor.press(dot.spotId, share);
+  const dots = studioDotsAt(editor.scene, seconds, editor.selected, !editor.formation).map(
+    (dot) => {
+      const press = (share: StageShare): void => {
+        editor.press(dot.spotId, share);
+      };
+
+      return (
+        <KkStudioStage.Dot
+          key={dot.spotId}
+          x={dot.x}
+          y={dot.y}
+          number={dot.number}
+          kind={dot.kind}
+          selected={dot.selected}
+          dimmed={dot.dimmed}
+          gliding={false}
+          turn={dot.turn}
+          label={dot.label}
+          onPress={press}
+          onMove={editor.move}
+          onEnd={editor.end}
+        />
+      );
+    },
+  );
+
+  const handles = editor.movement.handles.map((handle) => {
+    const press = (): void => {
+      editor.movement.bendPress(handle.spotId);
     };
 
     return (
-      <KkStudioStage.Dot
-        key={dot.spotId}
-        x={dot.x}
-        y={dot.y}
-        number={dot.number}
-        kind={dot.kind}
-        selected={selected}
-        dimmed={someSelected && !selected}
-        gliding={false}
-        label={dotLabelOf(dot.number, spot?.person?.firstName ?? null)}
+      <KkStudioStage.Handle
+        key={handle.spotId}
+        x={handle.x}
+        y={handle.y}
+        label={STUDIO_BEND_LABEL}
         onPress={press}
-        onMove={editor.move}
-        onEnd={editor.end}
+        onMove={editor.movement.bendMove}
+        onEnd={editor.movement.bendEnd}
       />
     );
   });
 
-  return <>{dots}</>;
+  return (
+    <>
+      {dots}
+      {handles}
+    </>
+  );
 };

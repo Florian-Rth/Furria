@@ -30,6 +30,15 @@ export const ActStudioStageEditor: FC<ActStudioStageEditorProps> = ({ screen, ed
     <KkStudioStage.Path key={route.key} route={route.route} keys={route.keys} aspect={aspect} />
   ));
   const mirrorLocked = !editor.canMirror;
+  const onionTool = (
+    <KkStudioToolbar.Toggle
+      glyph="onion"
+      text={STUDIO_ONION}
+      pressed={editor.onion}
+      onPress={editor.toggleOnion}
+    />
+  );
+  const movementTools = editor.moving ? onionTool : null;
   const formationTools = editor.formation ? (
     <>
       <KkStudioToolbar.Toggle
@@ -39,12 +48,7 @@ export const ActStudioStageEditor: FC<ActStudioStageEditorProps> = ({ screen, ed
         disabled={mirrorLocked}
         onPress={editor.mirror}
       />
-      <KkStudioToolbar.Toggle
-        glyph="onion"
-        text={STUDIO_ONION}
-        pressed={editor.onion}
-        onPress={editor.toggleOnion}
-      />
+      {onionTool}
       <KkStudioToolbar.Toggle
         glyph="arrange"
         text={STUDIO_ARRANGE}
@@ -64,6 +68,7 @@ export const ActStudioStageEditor: FC<ActStudioStageEditorProps> = ({ screen, ed
           onPress={editor.toggleMulti}
         />
         {formationTools}
+        {movementTools}
         <KkStudioToolbar.Selection
           text={editor.selectionText}
           label={STUDIO_SELECTION_OPEN}

@@ -39,6 +39,7 @@ interface KkStudioStageDotProps {
   selected: boolean;
   dimmed: boolean;
   gliding: boolean;
+  turn: number | null;
   label: string;
   onPress: (share: KkStudioShare) => void;
   onMove: (share: KkStudioShare) => void;
@@ -53,6 +54,7 @@ export const KkStudioStageDot: FC<KkStudioStageDotProps> = ({
   selected,
   dimmed,
   gliding,
+  turn,
   label,
   onPress,
   onMove,
@@ -63,6 +65,29 @@ export const KkStudioStageDot: FC<KkStudioStageDotProps> = ({
     transform: `translate3d(calc(${x * PERCENT}cqw - 50%), calc(${y * PERCENT}cqh - 50%), 0)`,
     transition: gliding ? GLIDE : 'none',
   };
+  const notch =
+    turn === null ? null : (
+      <Box
+        aria-hidden
+        data-kk-studio-facing
+        style={{ transform: `rotate(${turn}deg)` }}
+        sx={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
+      >
+        <Box
+          sx={(theme) => ({
+            position: 'absolute',
+            left: '50%',
+            top: '100%',
+            width: 0,
+            height: 0,
+            transform: 'translate(-50%, -0.125rem)',
+            borderLeft: '0.3125rem solid transparent',
+            borderRight: '0.3125rem solid transparent',
+            borderTop: `0.4375rem solid ${palette(theme).text.primary}`,
+          })}
+        />
+      </Box>
+    );
 
   return (
     <Box
@@ -91,6 +116,7 @@ export const KkStudioStageDot: FC<KkStudioStageDotProps> = ({
     >
       <Box
         sx={(theme) => ({
+          position: 'relative',
           width: { xs: '1.625rem', desktop: '2.125rem' },
           height: { xs: '1.625rem', desktop: '2.125rem' },
           '@container (max-width: 15rem)': { width: '1.125rem', height: '1.125rem' },
@@ -119,6 +145,7 @@ export const KkStudioStageDot: FC<KkStudioStageDotProps> = ({
         >
           {number}
         </Typography>
+        {notch}
       </Box>
     </Box>
   );

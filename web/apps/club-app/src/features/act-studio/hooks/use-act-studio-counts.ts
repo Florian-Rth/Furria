@@ -1,8 +1,6 @@
 import { useRef, useState } from 'react';
-import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
 import { countSpanTextOf, movedDotsTextOf, STUDIO_PICK_DOTS } from '../studio-copy';
 import type { StageShare } from '../studio-edits';
-import { moveIndexNear, retimedTrackOf } from '../studio-edits';
 import type { CountSpan } from '../studio-timing';
 import {
   cellIndexAt,
@@ -35,7 +33,7 @@ export interface ActStudioCounts {
   span: { start: number; end: number };
   press: (share: StageShare) => void;
   move: (share: StageShare) => void;
-  end: () => void;
+  end: (moved: boolean) => void;
 }
 
 const LABELLED_COUNTS = new Set([1, 5]);
@@ -44,28 +42,26 @@ export const useActStudioCounts = (
   screen: StudioScreen,
   editor: ActStudioStage,
 ): ActStudioCounts => {
-  const { playback, practice, edits } = screen;
-  const { countMarks, paths, player } = playback;
+  const { playback } = screen;
+  const { countMarks, player } = playback;
+  const { movement } = editor;
   const [draft, setDraft] = useState<CountSpan | null>(null);
   const anchor = useRef(0);
-  const step = practice.step;
-  const span = { start: step?.startSeconds ?? 0, end: step?.endSeconds ?? 0 };
+  const span = movement.span;
   const cells = countCellsOf(countMarks, span);
-  const selectedPaths = paths.filter((path) => editor.selected.includes(path.spotId));
-  const lead = selectedPaths[0] ?? null;
-  const moveAt = usePlaybackSelection(player, (now) => {
-    const index = lead === null ? null : moveIndexNear(lead.keyframes, span, now);
-    return index === null ? -1 : index;
-  });
-  const moveIndex = moveAt < 0 ? null : moveAt;
-  const moveFrom = moveIndex === null ? null : lead?.keyframes[moveIndex];
-  const moveTo = moveIndex === null ? null : lead?.keyframes[moveIndex + 1];
+  const lead = movement.lead;
   const stored =
-    moveFrom === undefined || moveTo === undefined || moveFrom === null || moveTo === null
-      ? null
-      : cellSpanOf(cells, { start: moveFrom.seconds, end: moveTo.seconds });
+    lead === null ? null : cellSpanOf(cells, { start: lead.fromSeconds, end: lead.toSeconds });
   const shown = draft ?? stored;
   const groups = eightsIn(cells);
+  const chosen = movement.movedSpots > 0;
+
+  const seekTo = (index: number): void => {
+    const cell = cells[index];
+    if (cell !== undefined) {
+      player.seek(cell.start);
+    }
+  };
 
   return {
     eights: groups.map((group, eight) => ({
@@ -84,44 +80,43 @@ export const useActStudioCounts = (
             ];
       }),
     })),
-    text:
-      selectedPaths.length === 0
-        ? STUDIO_PICK_DOTS
-        : countSpanTextOf(shown === null ? null : countSpanViewOf(cells, shown), groups.length),
-    aside: selectedPaths.length === 0 ? '' : movedDotsTextOf(selectedPaths.length),
-    accent: shown !== null && selectedPaths.length > 0,
+    text: chosen
+      ? countSpanTextOf(shown === null ? null : countSpanViewOf(cells, shown), groups.length)
+      : STUDIO_PICK_DOTS,
+    aside: chosen ? movedDotsTextOf(movement.movedSpots) : '',
+    accent: shown !== null && chosen,
     span,
     press: (share) => {
-      if (selectedPaths.length === 0 || cells.length === 0) {
+      if (cells.length === 0) {
         return;
       }
       anchor.current = cellIndexAt(cells, share.x);
-      setDraft({ first: anchor.current, last: anchor.current });
+      if (chosen && lead !== null) {
+        setDraft({ first: anchor.current, last: anchor.current });
+      }
     },
     move: (share) => {
-      if (selectedPaths.length === 0 || cells.length === 0) {
+      if (cells.length === 0) {
         return;
       }
-      setDraft(orderedSpanOf(anchor.current, cellIndexAt(cells, share.x)));
+      const index = cellIndexAt(cells, share.x);
+      if (chosen && lead !== null) {
+        setDraft(orderedSpanOf(anchor.current, index));
+        return;
+      }
+      seekTo(index);
     },
-    end: () => {
+    end: (moved) => {
       const first = draft === null ? undefined : cells[draft.first];
       const last = draft === null ? undefined : cells[draft.last];
-      if (first !== undefined && last !== undefined) {
-        const tracks: Record<number, ReturnType<typeof retimedTrackOf>> = {};
-        for (const path of selectedPaths) {
-          const index = moveIndexNear(path.keyframes, span, first.start);
-          if (index !== null) {
-            tracks[path.spotId] = retimedTrackOf(path.keyframes, index, {
-              start: first.start,
-              end: last.end,
-            });
-          }
-        }
-        edits.setTracks(tracks);
-        player.seek(first.start);
-      }
       setDraft(null);
+      if (!moved) {
+        seekTo(anchor.current);
+        return;
+      }
+      if (first !== undefined && last !== undefined) {
+        movement.retime({ start: first.start, end: last.end });
+      }
     },
   };
 };
