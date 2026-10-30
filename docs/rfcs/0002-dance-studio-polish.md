@@ -313,13 +313,15 @@ studio read's evening appearance carries `position` + `stageStartsAt` instead of
 Goal: Florian picks how members see their act and how each act kind looks.
 - [x] Server reads the lab needs: the member's act summary (next evening + position + time, next training + her answer, cast names, playable), the *Üben* list (playable acts incl. those a trainer leads)
 - [x] Three divergent lab variants on real data at 390 px and desktop: member act card + *Details* for editors, *Rede* template, empty-act state with whom to ask, group hub with *Auftritte* first
-- [ ] Pitch + Florian's pick; rulings recorded in the RFC
+- [x] Pitch + Florian's pick; rulings recorded in the RFC
+- Ruling (2026-10-30): **C — four tiles**, worked out further: the first view shows only what matters right now, enriched with the best of A (next-evening hero line, training answered in place, cast by name) and B (what's coming, *Bin da*/*Kann nicht* inline); no empty space under the tiles — the first screen is filled and fixed. **No stage times in v1**: position (*Nr. 5*) only, no *ca. HH:MM* anywhere.
 - Notes: `GET /acts/mine` now also lists the acts of groups she leads and carries per act `viewerInCast`, `viewerLeads`, `playable` (a song or an adopted final file), `cast`, `editors` (group admins + co-editors = whom to ask), `nextEvening` (coming, not cancelled: position, approximate stage time) and `nextTraining` (her answer, present/absent counts). It reads set-based over all her acts (`ActGlanceReader`), and it is the one read for the act card, the group hub and the Start *Üben* list. Lab: `/lab` → *Entwürfe* lists her acts and groups per variant. A `/lab/act-a/…` = one dense card per act (hero *Nr.* + time, training answer in place, red *Üben*, cast chips; *Details* drawer/side pane; hub = swipeable cards). B `/lab/act-b/…` = the act's coming trainings and evenings in time order, grouped by week, answers inline, sticky *Üben* bar, *Für mich* / *Details* switch; hub = act rows with their next item. C `/lab/act-c/…` = 2×2 tiles *Abend · Training · Üben · Besetzung*, each a door to a sheet; editors' *Details* fold; hub = one wide tile per act. Each has `/…/$actId` and `/…/group/$groupId`; primitives `KkPass*`, `KkAgenda*`, `KkFacet*`.
 
 ### Phase 10 — Promote the member's act and templates (∥ D, after 9)
 Goal: members land on their act card; each kind has its template.
 - [ ] Act page by kind (*Tanz*/*Show* studio, *Rede*, *Ablaufpunkt*); stats, co-editors, wishes and session facts behind *Details* for editors
-- [ ] Member act card on the act page and in the group hub (*Auftritte* directly under the header); group cards become links
+- [ ] Member act card = variant C refined (see phase 9 ruling) on the act page and in the group hub (*Auftritte* directly under the header); group cards become links
+- [ ] No stage times in v1: drop `stageStartsAt`/*ca.* times from the member running order, act page *Abende*, `nextEvening` and the calendar sheet (server + client, incl. `StageClock`); position only. Unconfirmed running orders stay visible with the *wird noch geplant* note
 - [ ] Start *Üben* tile: playable acts only, trainer-led acts included, *+n weitere* as a button
 - [ ] Cast as a named list in the accessibility tree; no repeated act/group name; jargon replaced (no planner wishes for cast)
 - [ ] Lab variants removed; browser check light/dark at 390 px
@@ -328,7 +330,8 @@ Goal: members land on their act card; each kind has its template.
 Goal: Florian picks the trainer's hall view.
 - [x] Count-in engine (pure, tested): before play and before every loop pass, tempo 75/100
 - [x] Three divergent landscape-first lab variants on real data (dark, huge count, step + next step, stage with named dots and today's absences, keys, video off by default, Wake Lock); filmed playback at 60 fps
-- [ ] Pitch + Florian's pick; rulings recorded in the RFC
+- [x] Pitch + Florian's pick; rulings recorded in the RFC
+- Ruling (2026-10-30): **A — count wall**, stage ~55–60 % wide; stage from the **dancers' view** (as in the player); count-in **4 beats, on by default with a switch, every loop pass counts in again**.
 - Notes (lab built 2026-10-30, awaiting the pick): `/lab/hall/{a,b,c}/{actId}?training=` (lab hub section *Training in der Halle*, act 3 *Marschtanz* on the RFC 0001 database). All three are dark, fill the whole screen above the shell, keep the screen awake, and count in four beats before play and before every loop pass. The count-in is gold, with a click on each beat (the first one higher). Dots that move right now turn red. Absent people show as gold dashed dots with their names struck through, plus chips (*Fehlt Di., 03.11.*). *Video* swaps the stage for the trainer video and is off by default. Tempo toggles between 100 % and 75 %. Names alternate below and above the dots so a line never overlaps.
   - **A — count wall:** the count fills the left two fifths. Below it are the step, *Danach: …* and who is missing. The stage is on the right from the dancers' view (front on top). One key row runs along the bottom. It reads best from 3 m, but the key row costs about a fifth of the height.
   - **B — two thumbs:** the left thumb column holds the count, *Zurück* and *Schleife*. The right thumb column holds *Start*, *Weiter*, tempo and video. The stage sits between them from the trainer's view (front at the bottom, as she faces the group). It has the biggest stage and the thumbs never cross it, but the count is the smallest of the three.
