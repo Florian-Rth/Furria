@@ -341,9 +341,20 @@ Done 2026-10-29. Decisions taken in the phase:
 Goal: decide the shell of edit mode before the editors (phases 8–13) are built into it: how editors enter
 edit mode from the player, where the tools live, and how music, steps, formation and video share the
 screen. The native-app rules of the practice view apply (fixed viewport, nothing jumps, calm).
-- [ ] Three divergent edit-mode variants in the lab on the seeded studio (390 px + desktop)
+- [x] Three divergent edit-mode variants in the lab on the seeded studio (390 px + desktop)
 - [ ] Pitch + Florian's pick; the rulings recorded in the RFC
 - [ ] Phases 8–13 task wording adjusted to build into the chosen shell
+
+Variants built 2026-10-30, awaiting Florian's pick. Lab at `/lab/studio-g|h|i/$actId` (entries on `/lab`),
+each opening in the practice view; Lena is a co-editor of act 3 on the branch database. All edits there are
+local only (no write endpoints yet), nothing is saved.
+- **G** one shared timeline under stage + video: fixed centre playhead, lanes for counts, music, parts,
+  steps, videos and movement; selecting any item opens an inspector (sheet on phone, side pane on desktop).
+- **H** the practice screen itself becomes the editor: a pencil in the transport pill, then a tool bar
+  (Musik · Schritte · Aufstellung · Bewegung · Video; rail on desktop) re-casts the same fixed boxes per tool.
+- **I** one page per step: a step rail with formation thumbnails (plus *Musik und Plätze* for act-wide
+  things); the page holds the step's zoomed waveform with its borders, the end formation with onion skin and
+  paths, a count bar, its video, name and description; play loops the step.
 
 ### Phase 8 — Music editor
 Goal: editors build the working mix.

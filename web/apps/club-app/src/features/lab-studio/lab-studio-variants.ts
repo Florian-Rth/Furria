@@ -1,0 +1,42 @@
+import type { MyAct } from '@/features/acts/schemas';
+
+export interface LabStudioVariant {
+  slug: 'studio-g' | 'studio-h' | 'studio-i';
+  title: string;
+  lead: string;
+}
+
+export const LAB_STUDIO_TITLE = 'Auftritt bearbeiten';
+
+export const LAB_STUDIO_VARIANTS: readonly LabStudioVariant[] = [
+  { slug: 'studio-g', title: 'Spuren', lead: 'Eine Zeitleiste mit Spuren unter Bühne und Video' },
+  { slug: 'studio-h', title: 'Werkzeuge', lead: 'Der Übungsbildschirm wechselt je Werkzeug' },
+  {
+    slug: 'studio-i',
+    title: 'Schritte',
+    lead: 'Jeder Schritt eine Seite mit Musik, Aufstellung, Video',
+  },
+];
+
+export const labStudioPathOf = (variant: LabStudioVariant, actId: number): string =>
+  `/lab/${variant.slug}/${actId}`;
+
+export const studioActsOf = (acts: readonly MyAct[]): MyAct[] =>
+  acts.filter((act) => act.kind === 'dance' || act.kind === 'show');
+
+export interface LabStudioEntry {
+  key: string;
+  label: string;
+  meta: string;
+  path: string;
+}
+
+export const labStudioEntriesOf = (acts: readonly MyAct[]): LabStudioEntry[] =>
+  studioActsOf(acts).flatMap((act) =>
+    LAB_STUDIO_VARIANTS.map((variant) => ({
+      key: `${act.actId}-${variant.slug}`,
+      label: `${variant.title} · ${act.name}`,
+      meta: variant.lead,
+      path: labStudioPathOf(variant, act.actId),
+    })),
+  );
