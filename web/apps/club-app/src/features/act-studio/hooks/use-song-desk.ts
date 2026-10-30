@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import {
   firstBeatTextOf,
+  songDeskTitleOf,
   songNameOf,
   tempoNudgeLabelOf,
   tempoNudgeTextOf,
@@ -74,7 +75,7 @@ export const useSongDesk = (screen: StudioScreen, songs: ActStudioSongs): SongDe
     shiftedOrderOf(studio.songs, song.songId, direction);
 
   return {
-    title: songNameOf(song.fileName),
+    title: songDeskTitleOf(current.index + 1, songNameOf(song.fileName)),
     tempoText: tempoTextOf(song.tempoBpm),
     slower: SLOWER_NUDGES.map(tempoNudgeOf),
     faster: FASTER_NUDGES.map(tempoNudgeOf),

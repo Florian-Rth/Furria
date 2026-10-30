@@ -2,6 +2,7 @@ import { useRef, useState } from 'react';
 import type { StudioPart } from '@/features/acts/schemas';
 import {
   newPartNameOf,
+  partDeskTitleOf,
   STUDIO_MAIN_VIDEO_NONE,
   stepDeskTitleOf,
   videoNameOf,
@@ -19,6 +20,7 @@ export interface StepDeskVideo {
 }
 
 export interface StepDeskPart {
+  title: string;
   name: string;
   leads: boolean;
   shiftLocked: Record<PartShift, boolean>;
@@ -49,7 +51,10 @@ const NO_VIDEO_KEY = 'none';
 export const useStepDesk = (screen: StudioScreen, tool: ActStudioStepTool): StepDesk | null => {
   const { manual, playback, practice, studio } = screen;
   const { steps, parts } = playback;
-  const step = practice.step;
+  const step =
+    tool.deskStepId === null
+      ? practice.step
+      : (steps.find((candidate) => candidate.stepId === tool.deskStepId) ?? null);
   const [removingStepId, setRemovingStepId] = useState<number | null>(null);
   const [removingPartId, setRemovingPartId] = useState<number | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -103,6 +108,9 @@ export const useStepDesk = (screen: StudioScreen, tool: ActStudioStepTool): Step
     const borderOf = (direction: PartShift): number | null =>
       partBorderStepOf(steps, parts, target.partId, direction);
     const name = draft?.partId === target.partId ? draft.name : target.name;
+    const numbers = target.stepIds
+      .map((stepId) => steps.findIndex((candidate) => candidate.stepId === stepId) + 1)
+      .filter((position) => position > 0);
     const videoOf = (videoId: number | null, text: string): StepDeskVideo => ({
       key: videoId === null ? NO_VIDEO_KEY : String(videoId),
       text,
@@ -113,6 +121,11 @@ export const useStepDesk = (screen: StudioScreen, tool: ActStudioStepTool): Step
     });
 
     return {
+      title: partDeskTitleOf(
+        target.name,
+        Math.min(...numbers, number),
+        Math.max(...numbers, number),
+      ),
       name,
       leads: startsAPart([target], step.stepId) || anchor?.stepId === step.stepId,
       shiftLocked: { earlier: borderOf('earlier') === null, later: borderOf('later') === null },

@@ -10,6 +10,7 @@ import {
   STUDIO_MAIN,
   STUDIO_NO_VIDEO_HERE,
   STUDIO_OUTDATED,
+  STUDIO_VIDEO_GONE,
   shelfMetaOf,
   takeMetaOf,
   videoBarLabelOf,
@@ -17,6 +18,7 @@ import {
 } from '../studio-copy';
 import type { StageShare } from '../studio-edits';
 import { clampedVideoStartOf, overlapsRange, videoShelfOf } from '../studio-videos';
+import { useDeskTarget } from './use-desk-target';
 import type { StudioScreen } from './use-studio-screen';
 
 const NUDGE_SECONDS = 0.1;
@@ -76,17 +78,19 @@ export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
   const { playback, studio, video, edits, videos: writes, mode } = screen;
   const { player, length, parts, steps } = playback;
   const [chosenId, setChosenId] = useState<number | null>(null);
-  const [deskOpen, setDeskOpen] = useState(false);
   const [grab, setGrab] = useState<Grab | null>(null);
   const onVideo = mode.editing && mode.tool === 'video';
-  if (deskOpen && !onVideo) {
-    setDeskOpen(false);
-  }
+  const desk = useDeskTarget(
+    studio.videos.map((candidate) => candidate.videoId),
+    onVideo,
+    STUDIO_VIDEO_GONE,
+  );
   const shareOf = (seconds: number): number => (length <= 0 ? 0 : seconds / length);
   const placed = studio.videos.filter(placedOf);
   const nameOf = (candidate: StudioVideo): string =>
     videoNameOf(candidate.name, studio.videos.indexOf(candidate) + 1);
   const selected =
+    studio.videos.find((candidate) => candidate.videoId === desk.targetId) ??
     studio.videos.find((candidate) => candidate.videoId === chosenId) ??
     placed.find((candidate) => candidate.videoId === video.shownId) ??
     placed[0] ??
@@ -101,7 +105,7 @@ export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
   };
   const pressRow = (candidate: StudioVideo, seekTo: number | null): void => {
     if (candidate.videoId === selected?.videoId) {
-      setDeskOpen(onVideo);
+      desk.open(candidate.videoId);
       return;
     }
     setChosenId(candidate.videoId);
@@ -240,9 +244,7 @@ export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
         };
       }),
     selected,
-    deskOpen,
-    closeDesk: () => {
-      setDeskOpen(false);
-    },
+    deskOpen: desk.targetId !== null,
+    closeDesk: desk.close,
   };
 };

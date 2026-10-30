@@ -16,6 +16,7 @@ export type {
   ApiFailureKind,
   ApiFieldFailure,
   Refusal,
+  RefusalReading,
   RefusalStatus,
 } from './api-failure';
 export {
@@ -25,6 +26,7 @@ export {
   isUnauthorizedStatus,
   refusalMessageOf,
   refusalOf,
+  refusalPayloadOf,
   shouldRetryRequest,
 } from './api-failure';
 export type {

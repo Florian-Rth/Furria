@@ -1,11 +1,11 @@
 import type { KkStudioListBadgeTone } from '@furria/ui/KkStudioList';
-import { useState } from 'react';
 import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
 import type { MusicSegment } from '@/features/act-player/music-timeline';
 import type { StudioSong } from '@/features/acts/schemas';
 import {
   outsideMusicTextOf,
   STUDIO_EDIT,
+  STUDIO_SONG_GONE,
   songCardMetaOf,
   songEditLabelOf,
   songNameOf,
@@ -13,6 +13,7 @@ import {
   songStateMetaOf,
 } from '../studio-copy';
 import { outsideMusicOf } from '../studio-music';
+import { useDeskTarget } from './use-desk-target';
 import type { StudioScreen } from './use-studio-screen';
 
 export interface ActStudioSongRow {
@@ -46,19 +47,21 @@ export interface ActStudioSongs {
 export const useActStudioSongs = (screen: StudioScreen): ActStudioSongs => {
   const { playback, studio, mode } = screen;
   const { player, segments } = playback;
-  const [deskOpen, setDeskOpen] = useState(false);
   const onMusic = mode.editing && mode.tool === 'music';
   const editable = studio.music.source === 'workingMix';
-  if (deskOpen && (!onMusic || !editable)) {
-    setDeskOpen(false);
-  }
+  const desk = useDeskTarget(
+    studio.songs.map((song) => song.songId),
+    onMusic && editable,
+    STUDIO_SONG_GONE,
+  );
   const songs = [...studio.songs].sort((left, right) => left.position - right.position);
   const currentIndex = usePlaybackSelection(player, (seconds) =>
     segments.findIndex(
       (segment) => seconds >= segment.timelineStart && seconds < segment.timelineEnd,
     ),
   );
-  const selectedIndex = editable ? currentIndex : -1;
+  const boundIndex = songs.findIndex((song) => song.songId === desk.targetId);
+  const selectedIndex = editable ? (boundIndex >= 0 ? boundIndex : currentIndex) : -1;
   const currentSong = songs[selectedIndex];
   const currentSegment = segments[selectedIndex];
   const outside = outsideMusicOf(studio, segments);
@@ -84,7 +87,7 @@ export const useActStudioSongs = (screen: StudioScreen): ActStudioSongs => {
             return;
           }
           if (selected) {
-            setDeskOpen(onMusic);
+            desk.open(song.songId);
             return;
           }
           player.seek(segments[index]?.timelineStart ?? 0);
@@ -98,9 +101,7 @@ export const useActStudioSongs = (screen: StudioScreen): ActStudioSongs => {
     count: String(songs.length),
     outside: outsideMusicTextOf(outside),
     locked: !editable,
-    deskOpen,
-    closeDesk: () => {
-      setDeskOpen(false);
-    },
+    deskOpen: desk.targetId !== null,
+    closeDesk: desk.close,
   };
 };

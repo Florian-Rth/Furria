@@ -64,6 +64,41 @@ describe('enqueueNotice with an open question', () => {
   });
 });
 
+describe('enqueueNotice within a group', () => {
+  const grouped = (id: string): KkNoticeEntry => ({ ...undoable(id), group: 'undo' });
+
+  it.each<{ name: string; queue: KkNoticeQueue; ids: string[]; isOpen: boolean }>([
+    {
+      name: 'replaces the shown member in place',
+      queue: { entries: [grouped('a'), entry('b')], isOpen: true },
+      ids: ['n', 'b'],
+      isOpen: true,
+    },
+    {
+      name: 'drops waiting members and queues behind the shown notice',
+      queue: { entries: [entry('a'), grouped('b'), entry('c')], isOpen: true },
+      ids: ['a', 'c', 'n'],
+      isOpen: true,
+    },
+    {
+      name: 'queues behind a leaving member',
+      queue: { entries: [grouped('a')], isOpen: false },
+      ids: ['a', 'n'],
+      isOpen: false,
+    },
+    { name: 'opens an empty queue', queue: EMPTY_NOTICE_QUEUE, ids: ['n'], isOpen: true },
+  ])('$name', ({ queue, ids, isOpen }) => {
+    const next = enqueueNotice(queue, grouped('n'));
+
+    expect(next.entries.map((kept) => kept.id)).toEqual(ids);
+    expect(next.isOpen).toBe(isOpen);
+  });
+
+  it('lets a grouped notice with actions expire', () => {
+    expect(noticeLifetimeMs({ entries: [grouped('a')], isOpen: true })).not.toBeNull();
+  });
+});
+
 describe('finishNoticeExit', () => {
   it.each([
     { entries: ['a', 'b'], expected: { entries: [entry('b')], isOpen: true } },

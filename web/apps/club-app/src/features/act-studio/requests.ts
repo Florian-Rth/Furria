@@ -7,6 +7,7 @@ import type {
   AddedSong,
   AddedSpot,
   AddedVideo,
+  ChoreographyVersions,
   FinalTrackMatches,
   MarkedSteps,
   SavedChoreography,
@@ -18,6 +19,7 @@ import {
   AddedSongSchema,
   AddedSpotSchema,
   AddedVideoSchema,
+  ChoreographyVersionsSchema,
   FinalTrackMatchesSchema,
   MarkedStepsSchema,
   SavedChoreographySchema,
@@ -347,6 +349,33 @@ export const requestEveningChoreographySave = (
   apiFetch(`${eveningPathOf(actId, eventId)}/choreography`, {
     method: 'PUT',
     body,
+    schema: SavedChoreographySchema,
+    accessToken,
+  });
+
+const choreographyPathOf = (actId: number, eventId: number | null): string =>
+  eventId === null
+    ? `/api/acts/${actId}/choreography`
+    : `${eveningPathOf(actId, eventId)}/choreography`;
+
+export const requestChoreographyVersions = (
+  actId: number,
+  eventId: number | null,
+  accessToken: string,
+): Promise<ChoreographyVersions> =>
+  apiFetch(`${choreographyPathOf(actId, eventId)}/versions`, {
+    schema: ChoreographyVersionsSchema,
+    accessToken,
+  });
+
+export const requestChoreographyRestore = (
+  actId: number,
+  eventId: number | null,
+  version: number,
+  accessToken: string,
+): Promise<SavedChoreography> =>
+  apiFetch(`${choreographyPathOf(actId, eventId)}/versions/${version}/restore`, {
+    method: 'POST',
     schema: SavedChoreographySchema,
     accessToken,
   });

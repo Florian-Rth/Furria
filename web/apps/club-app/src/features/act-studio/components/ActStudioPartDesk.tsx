@@ -5,7 +5,6 @@ import type { ChangeEvent, FC } from 'react';
 import type { StepDeskPart } from '../hooks/use-step-desk';
 import {
   STUDIO_MAIN_VIDEO,
-  STUDIO_PART,
   STUDIO_PART_EARLIER,
   STUDIO_PART_LATER,
   STUDIO_PART_NAME,
@@ -53,7 +52,7 @@ export const ActStudioPartDesk: FC<ActStudioPartDeskProps> = ({ part }) => {
   return (
     <>
       <KkStudioDesk.Line>
-        <KkStudioDesk.Title text={STUDIO_PART} />
+        <KkStudioDesk.Title text={part.title} />
         <KkTextField
           name="partName"
           label={STUDIO_PART_NAME}

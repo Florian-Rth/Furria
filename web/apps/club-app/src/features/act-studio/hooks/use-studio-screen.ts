@@ -15,6 +15,7 @@ import { useSongMutations, useStepMutations, useVideoMutations } from '../api';
 import { useEveningStageMutations } from '../evening-api';
 import type { StageMutations } from '../stage-api';
 import { useStageMutations } from '../stage-api';
+import { eveningBandOf } from '../studio-copy';
 import { workedPathsOf, workedStepsOf, workedStudioOf } from '../studio-edits';
 import { eveningStudioOf } from '../studio-evening';
 import type { ActStudioFrame } from '../studio-layout';
@@ -36,6 +37,7 @@ export interface StudioEveningContext {
 export interface StudioScreen {
   actId: number;
   evening: StudioEvening | null;
+  eveningBand: string | null;
   music: SongMutations;
   stageWrites: StageMutations;
   cast: readonly CastPerson[];
@@ -97,6 +99,8 @@ export const useStudioScreen = (
   return {
     actId,
     evening,
+    eveningBand:
+      evening !== null && mode.editing ? eveningBandOf(evening.title, evening.startsAt) : null,
     mode,
     music,
     stageWrites,

@@ -1,5 +1,6 @@
 import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
+import { useStudioVisit } from '@/features/act-studio/hooks/use-studio-visit';
 import { START_ORIGIN } from '@/features/session/app-sections';
 import { AccessDeniedScreen } from '@/features/session/components/AccessDeniedScreen';
 import { ScreenNotFound } from '@/features/session/components/ScreenNotFound';
@@ -19,6 +20,7 @@ interface ActPageProps {
 
 export const ActPage: FC<ActPageProps> = ({ actId, search }) => {
   const page = useActPage(actId, search);
+  useStudioVisit(page.actId);
 
   if (page.actId === null || isNotFoundError(page.query.error)) {
     return <ScreenNotFound />;

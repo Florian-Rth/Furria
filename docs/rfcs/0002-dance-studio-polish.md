@@ -275,13 +275,14 @@ Goal: choreography saves merge per spot and keyframe and can be restored.
 
 ### Phase 6 — Undo everywhere (club app)
 Goal: every studio write can be undone, and conflicts ask only about real overlaps. Follows phase 5.
-- [ ] Undo service: per write an inverse, a snackbar with *Rückgängig*, the visit's history list, Ctrl+Z / Ctrl+Shift+Z
-- [ ] Wire it into every studio write (music, steps, parts, spots, keyframes, videos, cast, evening changes)
-- [ ] Choreography saves send patches; a 409 opens a merge prompt naming only the overlapping spots/keyframes
-- [ ] Version history of the choreography (session and evening copy) in the act's history, with *Wiederherstellen* (phase-5 endpoints)
-- [ ] Desks bound to an entity id and titled with it; a desk closes with a message when its target disappears
-- [ ] Gold band naming the evening while editing an evening's version
-- [ ] Pure tests for inverse-building; browser check of undo, conflict and band at 390 px and desktop
+- [x] Undo service: per write an inverse, a snackbar with *Rückgängig*, the visit's history list, Ctrl+Z / Ctrl+Shift+Z
+- [x] Wire it into every studio write (music, steps, parts, spots, keyframes, videos, cast, evening changes)
+- [x] Choreography saves send patches; a 409 opens a merge prompt naming only the overlapping spots/keyframes
+- [x] Version history of the choreography (session and evening copy) in the act's history, with *Wiederherstellen* (phase-5 endpoints)
+- [x] Desks bound to an entity id and titled with it; a desk closes with a message when its target disappears
+- [x] Gold band naming the evening while editing an evening's version
+- [ ] Pure tests for inverse-building; browser check of undo, conflict and band at 390 px and desktop (pure tests done; browser check open)
+- Notes: every studio mutation remembers the cached studio before its optimistic patch (`remember` in `useApiMutation`) and records the write as data (`StudioWrite`); `inverseOf(studio, write, createdIds)` builds the inverse write, `performStudioWrite` replays it. Removals are undone by re-creating (new ids), so older history entries are re-pointed to the new ids (`studio-remap.ts`). A replay that fails part-way marks its entry as no longer reversible and reloads the studio. Writes that can't be reversed (adopting the final file, dropping an evening copy, leaving an evening that had its own cast/spots/formation) are listed as *nicht umkehrbar* and stop undo there. The visit's history lives per act in a module store, cleared when the act page closes; Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z and Ctrl+Y work outside text fields. Undo snackbars are one replacing notice group (`KkNoticeRequest.group`, expires like a plain notice). The 409 body now reaches the client (`Refusal.payload`, `refusalPayloadOf`); the prompt lists the spots with their timeline times, *Meine Fassung behalten* refetches and saves the same changes on the fresh base, *Andere übernehmen* reloads. Act page: *Verlauf* (this visit, undo/redo buttons) and *Fassungen der Aufstellung* with *Wiederherstellen* (undoable); the evening pane lists the evening copy's versions. Step, song and video desks bind to the id they were opened on; *Teil „Marsch" · Schritt 3–7*. `KkStudioView.Band` + `BandNote` put the gold evening band above the studio only while it is shown. Open: the evening dancer inverse flips `dances` without reading the old state; a step re-mark puts its texts on the last returned id.
 
 ### Phase 7 — Attendance: every training asks its cast (∥ B)
 Goal: open spots appear for every training, including kids without accounts.

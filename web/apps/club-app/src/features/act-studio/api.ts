@@ -3,6 +3,7 @@ import type { ActStudioResponse } from '@/features/acts/schemas';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import { queryKeys } from '@/lib/query/reads';
+import { useStudioUndo } from './hooks/use-studio-undo';
 import { useStudioWriteFailure } from './hooks/use-studio-write-failure';
 import {
   requestFinalTrackAdd,
@@ -63,10 +64,15 @@ export const useSongMutations = (actId: number): SongMutations => {
   const studioKey = queryKeys.actStudio(actId);
   const key = ['actSongs', actId];
   const failure = useStudioWriteFailure(actId);
+  const { undoable } = useStudioUndo(actId);
 
   const add = useApiMutation({
     request: (mediaItemId: number, accessToken) => requestSongAdd(actId, mediaItemId, accessToken),
     changes: ['actMusic'],
+    ...undoable(
+      (mediaItemId: number) => ({ kind: 'songAdd', mediaItemId }),
+      (added: AddedSong) => [added.songId],
+    ),
     notice: failure,
     key,
   });
@@ -75,6 +81,7 @@ export const useSongMutations = (actId: number): SongMutations => {
       requestSongOrder(actId, songIds, accessToken),
     changes: ['actMusic'],
     optimistic: [optimisticPatch<ActStudioResponse, readonly number[]>(studioKey, withSongOrder)],
+    ...undoable((songIds: readonly number[]) => ({ kind: 'songOrder', songIds })),
     notice: failure,
     key,
   });
@@ -85,6 +92,7 @@ export const useSongMutations = (actId: number): SongMutations => {
     optimistic: [
       optimisticPatch<ActStudioResponse, SongSettingsInput>(studioKey, withSongSettings),
     ],
+    ...undoable((input: SongSettingsInput) => ({ kind: 'songSettings', ...input })),
     notice: failure,
     key,
   });
@@ -92,6 +100,7 @@ export const useSongMutations = (actId: number): SongMutations => {
     request: (songId: number, accessToken) => requestSongRemoval(actId, songId, accessToken),
     changes: ['actMusic'],
     optimistic: [optimisticPatch<ActStudioResponse, number>(studioKey, withoutSong)],
+    ...undoable((songId: number) => ({ kind: 'songRemove', songId })),
     notice: failure,
     key,
   });
@@ -113,10 +122,15 @@ export const useStepMutations = (actId: number): StepMutations => {
   const studioKey = queryKeys.actStudio(actId);
   const key = ['actSteps', actId];
   const failure = useStudioWriteFailure(actId);
+  const { undoable } = useStudioUndo(actId);
 
   const mark = useApiMutation({
     request: (atSeconds: number, accessToken) => requestStepMark(actId, atSeconds, accessToken),
     changes: ['actSteps'],
+    ...undoable(
+      (atSeconds: number) => ({ kind: 'stepsMark', atSeconds }),
+      (marked: MarkedSteps) => marked.stepIds,
+    ),
     notice: failure,
     key,
   });
@@ -124,6 +138,7 @@ export const useStepMutations = (actId: number): StepMutations => {
     request: (input: StepTextInput, accessToken) => requestStepText(actId, input, accessToken),
     changes: ['actSteps'],
     optimistic: [optimisticPatch<ActStudioResponse, StepTextInput>(studioKey, withStepText)],
+    ...undoable((input: StepTextInput) => ({ kind: 'stepText', ...input })),
     notice: failure,
     key,
   });
@@ -131,6 +146,7 @@ export const useStepMutations = (actId: number): StepMutations => {
     request: (input: StepStartInput, accessToken) => requestStepStart(actId, input, accessToken),
     changes: ['actSteps'],
     optimistic: [optimisticPatch<ActStudioResponse, StepStartInput>(studioKey, withStepStart)],
+    ...undoable((input: StepStartInput) => ({ kind: 'stepStart', ...input })),
     notice: failure,
     key,
   });
@@ -138,12 +154,17 @@ export const useStepMutations = (actId: number): StepMutations => {
     request: (stepId: number, accessToken) => requestStepRemoval(actId, stepId, accessToken),
     changes: ['actSteps'],
     optimistic: [optimisticPatch<ActStudioResponse, number>(studioKey, withoutStep)],
+    ...undoable((stepId: number) => ({ kind: 'stepsRemove', stepIds: [stepId] })),
     notice: failure,
     key,
   });
   const addPart = useApiMutation({
     request: (opening: PartOpening, accessToken) => requestPartAdd(actId, opening, accessToken),
     changes: ['actSteps'],
+    ...undoable(
+      (opening: PartOpening) => ({ kind: 'partAdd', ...opening }),
+      (added: AddedPart) => [added.partId],
+    ),
     notice: failure,
     key,
   });
@@ -154,6 +175,7 @@ export const useStepMutations = (actId: number): StepMutations => {
     optimistic: [
       optimisticPatch<ActStudioResponse, PartSettingsInput>(studioKey, withPartSettings),
     ],
+    ...undoable((input: PartSettingsInput) => ({ kind: 'partSettings', ...input })),
     notice: failure,
     key,
   });
@@ -161,6 +183,7 @@ export const useStepMutations = (actId: number): StepMutations => {
     request: (partId: number, accessToken) => requestPartRemoval(actId, partId, accessToken),
     changes: ['actSteps'],
     optimistic: [optimisticPatch<ActStudioResponse, number>(studioKey, withoutPart)],
+    ...undoable((partId: number) => ({ kind: 'partRemove', partId })),
     notice: failure,
     key,
   });
@@ -181,10 +204,15 @@ export const useVideoMutations = (actId: number): VideoMutations => {
   const studioKey = queryKeys.actStudio(actId);
   const key = ['actVideos', actId];
   const failure = useStudioWriteFailure(actId);
+  const { undoable } = useStudioUndo(actId);
 
   const add = useApiMutation({
     request: (mediaItemId: number, accessToken) => requestVideoAdd(actId, mediaItemId, accessToken),
     changes: ['actVideos'],
+    ...undoable(
+      (mediaItemId: number) => ({ kind: 'videoAdd', mediaItemId }),
+      (added: AddedVideo) => [added.videoId],
+    ),
     notice: failure,
     key,
   });
@@ -192,6 +220,7 @@ export const useVideoMutations = (actId: number): VideoMutations => {
     request: (input: VideoNameInput, accessToken) => requestVideoName(actId, input, accessToken),
     changes: ['actVideos'],
     optimistic: [optimisticPatch<ActStudioResponse, VideoNameInput>(studioKey, withVideoName)],
+    ...undoable((input: VideoNameInput) => ({ kind: 'videoName', ...input })),
     notice: failure,
     key,
   });
@@ -199,12 +228,14 @@ export const useVideoMutations = (actId: number): VideoMutations => {
     request: (input: VideoStartInput, accessToken) => requestVideoStart(actId, input, accessToken),
     changes: ['actVideos'],
     optimistic: [optimisticPatch<ActStudioResponse, VideoStartInput>(studioKey, withVideoStart)],
+    ...undoable((input: VideoStartInput) => ({ kind: 'videoStart', ...input })),
     notice: failure,
     key,
   });
   const align = useApiMutation({
     request: (videoId: number, accessToken) => requestVideoAlignment(actId, videoId, accessToken),
     changes: ['actVideos'],
+    ...undoable((videoId: number) => ({ kind: 'videoAlign', videoId })),
     notice: failure,
     key,
   });
@@ -217,6 +248,7 @@ export const useVideoMutations = (actId: number): VideoMutations => {
     request: (videoId: number, accessToken) => requestVideoRemoval(actId, videoId, accessToken),
     changes: ['actVideos'],
     optimistic: [optimisticPatch<ActStudioResponse, number>(studioKey, withoutVideo)],
+    ...undoable((videoId: number) => ({ kind: 'videoRemove', videoId })),
     notice: failure,
     key,
   });
@@ -238,11 +270,16 @@ export const useFinalTrackMutations = (actId: number): FinalTrackMutations => {
   const studioKey = queryKeys.actStudio(actId);
   const key = ['actSongs', actId];
   const failure = useStudioWriteFailure(actId);
+  const { undoable } = useStudioUndo(actId);
 
   const add = useApiMutation({
     request: (mediaItemId: number, accessToken) =>
       requestFinalTrackAdd(actId, mediaItemId, accessToken),
     changes: ['actMusic'],
+    ...undoable(
+      (mediaItemId: number) => ({ kind: 'finalAdd', mediaItemId }),
+      (added: AddedFinalTrack) => [added.finalTrackId],
+    ),
     notice: failure,
     key,
   });
@@ -251,6 +288,7 @@ export const useFinalTrackMutations = (actId: number): FinalTrackMutations => {
       requestFinalTrackBeat(actId, input, accessToken),
     changes: ['actMusic'],
     optimistic: [optimisticPatch<ActStudioResponse, FinalBeatInput>(studioKey, withFinalBeat)],
+    ...undoable((input: FinalBeatInput) => ({ kind: 'finalBeat', ...input })),
     notice: failure,
     key,
   });
@@ -258,6 +296,7 @@ export const useFinalTrackMutations = (actId: number): FinalTrackMutations => {
     request: (finalTrackId: number, accessToken) =>
       requestFinalTrackMatch(actId, finalTrackId, accessToken),
     changes: ['actMusic'],
+    ...undoable((finalTrackId: number) => ({ kind: 'finalMatch', finalTrackId })),
     notice: failure,
     key,
   });
@@ -272,6 +311,11 @@ export const useFinalTrackMutations = (actId: number): FinalTrackMutations => {
       requestFinalTrackOffset(actId, input, accessToken),
     changes: ['actMusic'],
     optimistic: [optimisticPatch<ActStudioResponse, FinalOffsetInput>(studioKey, withFinalOffset)],
+    ...undoable(({ finalTrackId, sourceMediaItemId, offsetSeconds }: FinalOffsetInput) => ({
+      kind: 'finalOffsets',
+      finalTrackId,
+      offsets: [{ sourceMediaItemId, offsetSeconds }],
+    })),
     notice: failure,
     key,
   });
@@ -279,6 +323,7 @@ export const useFinalTrackMutations = (actId: number): FinalTrackMutations => {
     request: (finalTrackId: number, accessToken) =>
       requestFinalTrackAdoption(actId, finalTrackId, accessToken),
     changes: ['actMusic'],
+    ...undoable((finalTrackId: number) => ({ kind: 'finalAdopt', finalTrackId })),
     notice: failure,
     key,
   });
@@ -287,6 +332,7 @@ export const useFinalTrackMutations = (actId: number): FinalTrackMutations => {
       requestFinalTrackRemoval(actId, finalTrackId, accessToken),
     changes: ['actMusic'],
     optimistic: [optimisticPatch<ActStudioResponse, number>(studioKey, withoutFinalTrack)],
+    ...undoable((finalTrackId: number) => ({ kind: 'finalRemove', finalTrackId })),
     notice: failure,
     key,
   });

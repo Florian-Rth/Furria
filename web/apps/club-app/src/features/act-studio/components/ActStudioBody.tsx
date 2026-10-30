@@ -46,9 +46,16 @@ export const ActStudioBody: FC<ActStudioBodyProps> = ({
   const songs = useActStudioSongs(screen);
   const finalList = useActStudioFinal(screen);
   const stepTool = useActStudioStepTool(screen);
+  const band =
+    screen.eveningBand === null ? null : (
+      <KkStudioView.Band>
+        <KkStudioView.BandNote text={screen.eveningBand} />
+      </KkStudioView.Band>
+    );
 
   return (
     <KkStudioView label={STUDIO_LABEL} editing={screen.mode.editing}>
+      {band}
       <ActStudioHead screen={screen} />
       <KkPracticeView.Hero>
         <ActStudioHero screen={screen} editor={editor} />

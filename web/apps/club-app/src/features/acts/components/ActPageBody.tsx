@@ -2,6 +2,9 @@ import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
 import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { ChoreographyVersionsSection } from '@/features/act-studio/components/ChoreographyVersionsSection';
+import { StudioHistorySection } from '@/features/act-studio/components/StudioHistorySection';
+import { VERSIONS_TITLE } from '@/features/act-studio/undo-copy';
 import { ActTrainingsSection } from '@/features/act-training/components/ActTrainingsSection';
 import { CAST_ONLY_NOTE } from '../act-page-copy';
 import type { ActPageState } from '../hooks/use-act-page';
@@ -32,6 +35,19 @@ export const ActPageBody: FC<ActPageBodyProps> = ({ page }) => {
     );
   const trainings = data.studio === null ? null : <ActTrainingsSection studio={data.studio} />;
   const coEditors = data.studio === null ? null : <ActCoEditorsSection page={data} />;
+  const editedStudio = data.viewer.canEditStudio ? data.studio : null;
+  const history =
+    editedStudio === null ? null : (
+      <>
+        <StudioHistorySection actId={data.act.actId} studio={editedStudio} />
+        <ChoreographyVersionsSection
+          actId={data.act.actId}
+          eventId={null}
+          studio={editedStudio}
+          title={VERSIONS_TITLE}
+        />
+      </>
+    );
   const evenings =
     data.studio === null ? null : <ActEveningsSection data={data} studio={data.studio} />;
   const eveningPanel =
@@ -53,6 +69,7 @@ export const ActPageBody: FC<ActPageBodyProps> = ({ page }) => {
           {studio}
           {evenings}
           {trainings}
+          {history}
           {coEditors}
         </Stack>
       </KkMasterDetail.Master>

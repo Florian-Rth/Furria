@@ -5,6 +5,8 @@ import type { ActStudioResponse, Choreography } from '@/features/acts/schemas';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import { queryKeys } from '@/lib/query/reads';
+import { useChoreographyConflict } from './hooks/use-choreography-conflict';
+import { useStudioUndo } from './hooks/use-studio-undo';
 import { useStudioWriteFailure } from './hooks/use-studio-write-failure';
 import {
   requestChoreographySave,
@@ -36,6 +38,10 @@ export const useStageMutations = (actId: number): StageMutations => {
   const studioKey = queryKeys.actStudio(actId);
   const key = ['actStage', actId];
   const failure = useStudioWriteFailure(actId);
+  const { remember, record, undoable } = useStudioUndo(actId);
+  const conflict = useChoreographyConflict(actId, failure, (changes) => {
+    save.mutate(changes);
+  });
   const savedVersion = useRef<number | null>(null);
   const cachedChoreography = (): Choreography | null =>
     queryClient.getQueryData<ActStudioResponse>(studioKey)?.studio?.choreography ?? null;
@@ -53,19 +59,23 @@ export const useStageMutations = (actId: number): StageMutations => {
     },
     changes: ['actChoreography'],
     optimistic: [optimisticPatch<ActStudioResponse, TrackChanges>(studioKey, withTracks)],
-    afterSuccess: ({ version }) => {
+    remember,
+    afterSuccess: ({ version }, changes, before) => {
+      record(before, { kind: 'tracks', changes });
       savedVersion.current = version;
       queryClient.setQueryData<ActStudioResponse>(studioKey, (current) =>
         withChoreographyVersion(current, version),
       );
     },
-    notice: failure,
+    notice: conflict,
     key,
   });
   const addSpot = useApiMutation({
     request: (_input: undefined, accessToken) => requestSpotAdd(actId, accessToken),
     changes: ['actChoreography'],
-    afterSuccess: (added) => {
+    remember,
+    afterSuccess: (added, _input, before) => {
+      record(before, { kind: 'spotAdd' }, [added.spotId]);
       queryClient.setQueryData<ActStudioResponse>(studioKey, (current) =>
         withSpotAdded(current, added),
       );
@@ -78,6 +88,7 @@ export const useStageMutations = (actId: number): StageMutations => {
       requestSpotAssignment(actId, spotId, person?.personId ?? null, accessToken),
     changes: ['actChoreography'],
     optimistic: [optimisticPatch<ActStudioResponse, SpotAssignment>(studioKey, withSpotPerson)],
+    ...undoable((assignment: SpotAssignment) => ({ kind: 'spotAssign', ...assignment })),
     notice: failure,
     key,
   });
@@ -85,6 +96,7 @@ export const useStageMutations = (actId: number): StageMutations => {
     request: (spotId: number, accessToken) => requestSpotRemoval(actId, spotId, accessToken),
     changes: ['actChoreography'],
     optimistic: [optimisticPatch<ActStudioResponse, number>(studioKey, withoutSpot)],
+    ...undoable((spotId: number) => ({ kind: 'spotRemove', spotId })),
     notice: failure,
     key,
   });
