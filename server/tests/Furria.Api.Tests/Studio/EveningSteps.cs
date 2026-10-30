@@ -67,7 +67,7 @@ internal static class EveningSteps
         HttpClient client,
         int actId,
         int eventId,
-        int? expectedVersion,
+        int? baseVersion,
         int? sessionVersion,
         IReadOnlyList<ChoreographyTrackDataDto> tracks
     )
@@ -81,7 +81,7 @@ internal static class EveningSteps
             {
                 ActId = actId,
                 EventId = eventId,
-                ExpectedVersion = expectedVersion,
+                BaseVersion = baseVersion,
                 SessionVersion = sessionVersion,
                 Tracks = tracks,
             }
@@ -98,6 +98,45 @@ internal static class EveningSteps
         client.DELETEAsync<DeleteActEveningChoreography, DeleteActEveningChoreographyRequest>(
             new() { ActId = actId, EventId = eventId }
         );
+
+    internal static async Task<IReadOnlyList<ChoreographyVersionSummaryDto>> EveningVersionsOfAsync(
+        HttpClient client,
+        int actId,
+        int eventId
+    )
+    {
+        var (response, result) = await client.GETAsync<
+            GetActEveningChoreographyVersions,
+            GetActEveningChoreographyVersionsRequest,
+            GetActEveningChoreographyVersionsResponse
+        >(new() { ActId = actId, EventId = eventId });
+        response.EnsureSuccessStatusCode();
+
+        return result.Versions;
+    }
+
+    internal static async Task<(HttpResponseMessage Response, int Version)> RestoreEveningAsync(
+        HttpClient client,
+        int actId,
+        int eventId,
+        int version
+    )
+    {
+        var (response, result) = await client.POSTAsync<
+            RestoreActEveningChoreographyVersion,
+            RestoreActEveningChoreographyVersionRequest,
+            RestoreActEveningChoreographyVersionResponse
+        >(
+            new()
+            {
+                ActId = actId,
+                EventId = eventId,
+                Version = version,
+            }
+        );
+
+        return (response, response.IsSuccessStatusCode ? result.Version : 0);
+    }
 
     internal static async Task<StudioEveningDto> EveningOfAsync(
         HttpClient client,

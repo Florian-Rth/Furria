@@ -31,7 +31,7 @@ public sealed class DeleteActSpotByIdTests : IClassFixture<ApiTestFixture>
         var middle = await AddSpotAsync(admin, actId);
         var last = await AddSpotAsync(admin, actId);
 
-        var response = await DeleteAsync(admin, actId, middle);
+        var response = await DeleteSpotAsync(admin, actId, middle);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         var studio = await StudioOfAsync(admin, actId);
@@ -58,7 +58,7 @@ public sealed class DeleteActSpotByIdTests : IClassFixture<ApiTestFixture>
             [StandingTrack(kept, march, -1, 2), StandingTrack(removed, march, 1, 2)]
         );
 
-        await DeleteAsync(admin, actId, removed);
+        await DeleteSpotAsync(admin, actId, removed);
 
         var choreography = (await StudioOfAsync(admin, actId)).Studio!.Choreography!;
         Assert.Equal(
@@ -84,7 +84,7 @@ public sealed class DeleteActSpotByIdTests : IClassFixture<ApiTestFixture>
         );
         var untracked = await AddSpotAsync(admin, actId);
 
-        await DeleteAsync(admin, actId, untracked);
+        await DeleteSpotAsync(admin, actId, untracked);
 
         var choreography = (await StudioOfAsync(admin, actId)).Studio!.Choreography!;
         Assert.Equal(version + 1, choreography.Version);
@@ -100,17 +100,8 @@ public sealed class DeleteActSpotByIdTests : IClassFixture<ApiTestFixture>
         var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
         var foreignSpot = await AddSpotAsync(admin, otherActId);
 
-        var response = await DeleteAsync(admin, actId, foreignSpot);
+        var response = await DeleteSpotAsync(admin, actId, foreignSpot);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
-
-    private static Task<HttpResponseMessage> DeleteAsync(
-        HttpClient client,
-        int actId,
-        int spotId
-    ) =>
-        client.DELETEAsync<DeleteActSpotById, DeleteActSpotByIdRequest>(
-            new() { ActId = actId, SpotId = spotId }
-        );
 }

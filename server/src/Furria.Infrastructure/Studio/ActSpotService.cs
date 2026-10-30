@@ -16,11 +16,13 @@ public sealed class ActSpotService
 
     private readonly AppDbContext _dbContext;
     private readonly ActStudioGate _gate;
+    private readonly ChoreographyHistory _history;
 
-    public ActSpotService(AppDbContext dbContext, ActStudioGate gate)
+    public ActSpotService(AppDbContext dbContext, ActStudioGate gate, ChoreographyHistory history)
     {
         _dbContext = dbContext;
         _gate = gate;
+        _history = history;
     }
 
     public async Task<Result<AddedSpotDetails>> AddAsync(
@@ -98,7 +100,7 @@ public sealed class ActSpotService
             return Result.NotFound(UnknownSpotMessage);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        await DropTracksOfAsync(command, ct);
+        await DropTracksOfAsync(accountId, command, ct);
         await _dbContext.Spots.Where(spot => spot.Id == command.SpotId).ExecuteDeleteAsync(ct);
         await CloseNumberGapAsync(command.ActId, removedNumber, ct);
         await transaction.CommitAsync(ct);
@@ -125,17 +127,27 @@ public sealed class ActSpotService
                 ct
             );
 
-    private async Task DropTracksOfAsync(RemoveSpotCommand command, CancellationToken ct)
+    private async Task DropTracksOfAsync(
+        int accountId,
+        RemoveSpotCommand command,
+        CancellationToken ct
+    )
     {
         var choreographies = await _dbContext
             .Choreographies.Where(choreography => choreography.ActId == command.ActId)
             .ToListAsync(ct);
 
         foreach (var choreography in choreographies)
-        {
-            choreography.Document = choreography.Document.WithoutSpot(command.SpotId);
-            choreography.Version++;
-        }
+            await _history.WriteAsync(
+                choreography,
+                new ChoreographyWrite
+                {
+                    AccountId = accountId,
+                    Document = choreography.Document.WithoutSpot(command.SpotId),
+                    Kind = ChoreographyVersionKind.SpotRemoved,
+                },
+                ct
+            );
 
         await _dbContext.SaveChangesAsync(ct);
     }

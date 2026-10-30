@@ -39,18 +39,25 @@ public sealed class PutActChoreography
             return;
         }
 
-        await Send.OkAsync(
-            new PutActChoreographyResponse { Version = result.Value },
-            cancellation: ct
-        );
+        if (result.Value.Version is not { } version)
+        {
+            await ChoreographyOverlapConflict.SendAsync(
+                HttpContext.Response,
+                result.Value.Overlaps,
+                ct
+            );
+            return;
+        }
+
+        await Send.OkAsync(new PutActChoreographyResponse { Version = version }, cancellation: ct);
     }
 
     private static SaveChoreographyCommand ToCommand(PutActChoreographyRequest req) =>
         new()
         {
             ActId = req.ActId,
-            ExpectedVersion = req.ExpectedVersion,
-            Document = ChoreographyTrackDataDto.DocumentOf(req.Tracks),
+            BaseVersion = req.BaseVersion,
+            ChangedTracks = ChoreographyTrackDataDto.TracksOf(req.Tracks),
         };
 }
 
@@ -59,7 +66,7 @@ public sealed record PutActChoreographyRequest
     [RouteParam]
     public required int ActId { get; init; }
 
-    public required int? ExpectedVersion { get; init; }
+    public required int? BaseVersion { get; init; }
 
     public required IReadOnlyList<ChoreographyTrackDataDto> Tracks { get; init; }
 }
@@ -69,11 +76,12 @@ public sealed class PutActChoreographyValidator : Validator<PutActChoreographyRe
     public PutActChoreographyValidator()
     {
         RuleFor(request => request.ActId).GreaterThan(0);
-        RuleFor(request => request.ExpectedVersion).GreaterThanOrEqualTo(Choreography.FirstVersion);
+        RuleFor(request => request.BaseVersion).GreaterThanOrEqualTo(Choreography.FirstVersion);
         RuleFor(request => request.Tracks)
             .Cascade(CascadeMode.Stop)
             .NotNull()
-            .Must(tracks => tracks.Count <= Spot.MostPerAct);
+            .Must(tracks => tracks.Count <= Spot.MostPerAct)
+            .Must(ChoreographyTrackDataValidator.TracksEverySpotOnce);
         RuleForEach(request => request.Tracks).SetValidator(new ChoreographyTrackDataValidator());
     }
 }

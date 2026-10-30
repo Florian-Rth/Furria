@@ -1,4 +1,4 @@
-import type { Keyframe, StudioSpot } from '@/features/acts/schemas';
+import type { Choreography, Keyframe, StudioSpot } from '@/features/acts/schemas';
 import type { HoldsStudio } from './studio-music';
 import { withStudio } from './studio-music';
 
@@ -6,6 +6,12 @@ const NO_CHOREOGRAPHY_VERSION = 0;
 
 export type SpotPerson = NonNullable<StudioSpot['person']>;
 export type TrackChanges = Readonly<Record<number, readonly Keyframe[]>>;
+
+export const changedTracksOf = (changes: TrackChanges): Choreography['tracks'] =>
+  Object.entries(changes).map(([spotId, keyframes]) => ({
+    spotId: Number(spotId),
+    keyframes: [...keyframes],
+  }));
 
 export interface SpotAssignment {
   spotId: number;

@@ -3080,6 +3080,70 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Furria.Core.Studio.ChoreographyVersion", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("ChoreographyId")
+                        .HasColumnType("integer")
+                        .HasColumnName("choreography_id");
+
+                    b.Property<string>("Document")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("document");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("kind");
+
+                    b.Property<int?>("RestoredFromVersion")
+                        .HasColumnType("integer")
+                        .HasColumnName("restored_from_version");
+
+                    b.Property<DateTimeOffset>("SavedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("saved_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int?>("SavedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("saved_by_person_id");
+
+                    b.Property<int>("Version")
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_choreography_version");
+
+                    b.HasIndex("SavedByPersonId")
+                        .HasDatabaseName("ix_choreography_version_saved_by_person_id");
+
+                    b.HasIndex("ChoreographyId", "Version")
+                        .IsUnique()
+                        .HasDatabaseName("ix_choreography_version_choreography_id_version");
+
+                    b.ToTable("choreography_version", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_choreography_version_document", "jsonb_typeof(document) = 'object' AND jsonb_typeof(document -> 'tracks') = 'array'");
+
+                            t.HasCheckConstraint("ck_choreography_version_kind", "kind IN ('Saved', 'Restored', 'SpotRemoved', 'MusicAdopted')");
+
+                            t.HasCheckConstraint("ck_choreography_version_restored_from", "(kind = 'Restored') = (restored_from_version IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_choreography_version_version", "version >= 1");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.Studio.Spot", b =>
                 {
                     b.Property<int>("Id")
@@ -4979,6 +5043,26 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Act");
 
                     b.Navigation("Appearance");
+                });
+
+            modelBuilder.Entity("Furria.Core.Studio.ChoreographyVersion", b =>
+                {
+                    b.HasOne("Furria.Core.Studio.Choreography", "Choreography")
+                        .WithMany()
+                        .HasForeignKey("ChoreographyId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_choreography_version_choreography_choreography_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "SavedBy")
+                        .WithMany()
+                        .HasForeignKey("SavedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_choreography_version_person_saved_by_person_id");
+
+                    b.Navigation("Choreography");
+
+                    b.Navigation("SavedBy");
                 });
 
             modelBuilder.Entity("Furria.Core.Studio.Spot", b =>

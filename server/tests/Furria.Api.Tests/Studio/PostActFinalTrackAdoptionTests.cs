@@ -57,6 +57,39 @@ public sealed class PostActFinalTrackAdoptionTests : IClassFixture<ApiTestFixtur
     }
 
     [Fact]
+    public async Task Should_RefuseToBuildOnOrRestoreEarlierChoreographies_When_AnEditorAdoptsIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (admin, actId, opener, finale) = await MixAsync(ct);
+        var spotId = await AddSpotAsync(admin, actId);
+        var (_, version) = await SaveChoreographyAsync(
+            admin,
+            actId,
+            null,
+            [StandingTrack(spotId, opener, 0, 1)]
+        );
+        var (finalTrackId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 120, ct);
+        await TuneOffsetAsync(admin, actId, finalTrackId, opener, 5);
+        await TuneOffsetAsync(admin, actId, finalTrackId, finale, 55);
+        await AdoptAsync(admin, actId, finalTrackId);
+
+        var (save, _) = await SaveChoreographyAsync(
+            admin,
+            actId,
+            version,
+            [StandingTrack(spotId, opener, 2, 1)]
+        );
+        var (restore, _) = await RestoreAsync(admin, actId, version);
+
+        Assert.Equal(
+            (HttpStatusCode.Conflict, HttpStatusCode.Conflict),
+            (save.StatusCode, restore.StatusCode)
+        );
+        var versions = await VersionsOfAsync(admin, actId);
+        Assert.Equal(ChoreographyVersionKind.MusicAdopted, versions[0].Kind);
+    }
+
+    [Fact]
     public async Task Should_MoveTheStepsOnFromThePreviousFinalFile_When_ANewerOneIsAdopted()
     {
         var ct = TestContext.Current.CancellationToken;
