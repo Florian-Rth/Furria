@@ -5,7 +5,7 @@ import type { ActStudioResponse, Choreography } from '@/features/acts/schemas';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import { queryKeys } from '@/lib/query/reads';
-import { toWriteErrorMessage } from '@/lib/write-error';
+import { useStudioWriteFailure } from './hooks/use-studio-write-failure';
 import {
   requestChoreographySave,
   requestSpotAdd,
@@ -34,7 +34,7 @@ export const useStageMutations = (actId: number): StageMutations => {
   const queryClient = useQueryClient();
   const studioKey = queryKeys.actStudio(actId);
   const key = ['actStage', actId];
-  const failure = { failure: toWriteErrorMessage };
+  const failure = useStudioWriteFailure(actId);
   const savedVersion = useRef<number | null>(null);
   const cachedChoreography = (): Choreography | null =>
     queryClient.getQueryData<ActStudioResponse>(studioKey)?.studio?.choreography ?? null;

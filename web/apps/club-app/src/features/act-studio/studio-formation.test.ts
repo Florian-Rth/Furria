@@ -10,7 +10,9 @@ import {
   expectedVersionOf,
   formationPlacedOf,
   freePointOf,
+  grabbedSpotsOf,
   presetPointsOf,
+  shownSelectionOf,
 } from './studio-formation';
 
 const stage = { widthMetres: 10, depthMetres: 8 };
@@ -185,5 +187,29 @@ describe('expectedVersionOf', () => {
     [2, 4, 4],
   ])('expects version %s/%s as %s', (saved, cached, expected) => {
     expect(expectedVersionOf(saved, cached)).toBe(expected);
+  });
+});
+
+describe('grabbedSpotsOf', () => {
+  it.each<[string, readonly number[], boolean, boolean, readonly number[]]>([
+    ['the pressed spot alone', [1], false, false, [3]],
+    ['the selection when the pressed spot belongs to it', [1, 3], false, false, [1, 3]],
+    ['the selection while the music runs, never a passing spot', [1], false, true, [1]],
+    ['the pressed spot while the music runs without a selection', [], false, true, [3]],
+    ['the selection with the pressed spot added', [1], true, false, [1, 3]],
+    ['the selection without the pressed spot again', [1, 3], true, false, [1]],
+  ])('grabs %s', (_, selected, multi, playing, expected) => {
+    expect(grabbedSpotsOf({ selected, spotId: 3, multi, playing })).toEqual(expected);
+  });
+});
+
+describe('shownSelectionOf', () => {
+  it('keeps only the selected spots standing on the stage', () => {
+    const standing = new Map([
+      [1, point(0, 1)],
+      [3, point(1, 1)],
+    ]);
+
+    expect(shownSelectionOf([1, 2, 3], standing)).toEqual([1, 3]);
   });
 });

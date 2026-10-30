@@ -32,6 +32,30 @@ describe('enqueueNotice', () => {
   );
 });
 
+describe('enqueueNotice with an open question', () => {
+  const question = (id: string, message: string): KkNoticeEntry => ({
+    id,
+    tone: 'error',
+    message,
+    actions: [{ id: 'reload', label: 'r', onSelect: (): void => {} }],
+  });
+
+  it.each([
+    {
+      name: 'the same question already waits',
+      queue: [question('a', 'x')],
+      isOpen: true,
+      length: 1,
+    },
+    { name: 'the same question is leaving', queue: [question('a', 'x')], isOpen: false, length: 2 },
+    { name: 'another question waits', queue: [question('a', 'y')], isOpen: true, length: 2 },
+  ])('keeps $length notices when $name', ({ queue, isOpen, length }) => {
+    const next = enqueueNotice({ entries: queue, isOpen }, question('b', 'x'));
+
+    expect(next.entries).toHaveLength(length);
+  });
+});
+
 describe('finishNoticeExit', () => {
   it.each([
     { entries: ['a', 'b'], expected: { entries: [entry('b')], isOpen: true } },

@@ -7,14 +7,18 @@ import { REMOVE_WISH_LABEL, toStrengthStateLabel, toWishChipLabel } from '../act
 
 interface ActWishLineProps {
   wish: ActWishBody;
-  onRemove: (kind: ActWishKind) => void;
+  onRemove: ((kind: ActWishKind) => void) | null;
 }
 
 export const ActWishLine: FC<ActWishLineProps> = ({ wish, onRemove }) => {
   const remove = (): void => {
-    onRemove(wish.kind);
+    onRemove?.(wish.kind);
   };
   const state = wish.strength === 'must' ? 'conflict' : 'hint';
+  const removal =
+    onRemove === null ? null : (
+      <KkIconButton label={REMOVE_WISH_LABEL} icon="close" size="small" onClick={remove} />
+    );
 
   return (
     <Stack
@@ -28,7 +32,7 @@ export const ActWishLine: FC<ActWishLineProps> = ({ wish, onRemove }) => {
         stateLabel={toStrengthStateLabel(wish.strength)}
         marked={false}
       />
-      <KkIconButton label={REMOVE_WISH_LABEL} icon="close" size="small" onClick={remove} />
+      {removal}
     </Stack>
   );
 };

@@ -5,7 +5,7 @@ import type { ActStudioResponse, EveningChoreography } from '@/features/acts/sch
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import { queryKeys } from '@/lib/query/reads';
-import { toWriteErrorMessage } from '@/lib/write-error';
+import { useStudioWriteFailure } from './hooks/use-studio-write-failure';
 import {
   requestEveningChoreographySave,
   requestEveningCopyDrop,
@@ -51,6 +51,7 @@ export const useEveningStageMutations = (
   const studioKey = queryKeys.actStudio(actId);
   const evening = eventId ?? NO_EVENING;
   const key = ['actEvening', actId, evening];
+  const failure = useStudioWriteFailure(actId);
   const savedVersion = useRef<number | null>(null);
   const cachedCopy = (): EveningChoreography | null =>
     queryClient
@@ -89,7 +90,7 @@ export const useEveningStageMutations = (
         withEveningCopyVersion(current, evening, version),
       );
     },
-    notice: { failure: toWriteErrorMessage },
+    notice: failure,
     key,
   });
   const assign = useApiMutation({
@@ -105,7 +106,7 @@ export const useEveningStageMutations = (
         ),
       ),
     ],
-    notice: { failure: toWriteErrorMessage },
+    notice: failure,
     key,
   });
 
@@ -117,7 +118,7 @@ export const useEveningMutations = (actId: number): EveningMutations => {
   const studioKey = queryKeys.actStudio(actId);
   const sessionCast = (): readonly { personId: number }[] =>
     queryClient.getQueryData<ActStudioResponse>(studioKey)?.act.cast ?? [];
-  const failure = { failure: toWriteErrorMessage };
+  const failure = useStudioWriteFailure(actId);
   const key = ['actEvening', actId];
 
   const join = useApiMutation({

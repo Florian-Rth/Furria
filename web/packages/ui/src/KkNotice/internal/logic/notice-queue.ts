@@ -29,10 +29,23 @@ export const noticeLifetimeMs = (queue: KkNoticeQueue): number | null => {
   return lifetimes[entry.tone];
 };
 
-export const enqueueNotice = (queue: KkNoticeQueue, entry: KkNoticeEntry): KkNoticeQueue => ({
-  entries: [...queue.entries, entry],
-  isOpen: queue.entries.length === 0 ? true : queue.isOpen,
-});
+const waitsAlready = (queue: KkNoticeQueue, entry: KkNoticeEntry): boolean =>
+  awaitsAnswer(entry) &&
+  queue.entries.some(
+    (queued, index) =>
+      (index > 0 || queue.isOpen) &&
+      awaitsAnswer(queued) &&
+      queued.tone === entry.tone &&
+      queued.message === entry.message,
+  );
+
+export const enqueueNotice = (queue: KkNoticeQueue, entry: KkNoticeEntry): KkNoticeQueue =>
+  waitsAlready(queue, entry)
+    ? queue
+    : {
+        entries: [...queue.entries, entry],
+        isOpen: queue.entries.length === 0 ? true : queue.isOpen,
+      };
 
 export const closeNotice = (queue: KkNoticeQueue): KkNoticeQueue => ({ ...queue, isOpen: false });
 

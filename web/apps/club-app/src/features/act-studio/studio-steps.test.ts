@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { Studio, StudioPart, StudioStep } from '@/features/acts/schemas';
 import {
+  deskPartOf,
   markSecondsOf,
   partBorderStepOf,
   withoutPart,
@@ -61,6 +62,19 @@ describe('partBorderStepOf', () => {
     [10, 'later', null],
   ] as const)('moves the start of part %s %s', (partId, shift, expected) => {
     expect(partBorderStepOf(steps, parts, partId, shift)).toBe(expected);
+  });
+});
+
+describe('deskPartOf', () => {
+  const parts = [partOf(10, [1]), partOf(20, [2, 3]), partOf(30, [4])];
+
+  it.each([
+    ['the part of the step without an anchor', 2, null, 20],
+    ['the anchored part on the anchored step', 2, { stepId: 2, partId: 10 }, 10],
+    ['the part of the step once the step changes', 4, { stepId: 2, partId: 10 }, 30],
+    ['the part of the step once the anchored part is gone', 2, { stepId: 2, partId: 99 }, 20],
+  ] as const)('picks %s', (_, stepId, anchor, expected) => {
+    expect(deskPartOf(parts, stepId, anchor)?.partId ?? null).toBe(expected);
   });
 });
 

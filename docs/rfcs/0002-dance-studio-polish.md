@@ -229,13 +229,13 @@ Goal: the player and media never crash, freeze or jump.
 
 ### Phase 2 — Studio editor data safety (∥ A)
 Goal: no editor write is lost or applied to the wrong thing.
-- [ ] B4: the part desk stays on its part after *Beginnt später*; *Teil auflösen* hits the right part; a rename is never overwritten by a stale name
-- [ ] B5: a 409 on formation or movement shows a sticky message with *Neu laden*; it never reverts silently
-- [ ] B10: the music cut snaps to beats/counts and survives a round trip without drift; a drag during playback grabs the selected dot, never a passing one; presets act only on the visible selection
-- [ ] B11 (editor): withdrawing *Wir tanzen hier nicht* names what is lost (evening cast, own formation) and asks first
-- [ ] #52 gap: concurrent studio writes return 409 (concurrency token / unique violation mapped), never 500, with endpoint tests
-- [ ] #52 gap: a closed act's cast and wish controls render read-only (no editable look)
-- [ ] Endpoint and pure tests for every server-side fix
+- [x] B4: the part desk stays on its part after *Beginnt später*; *Teil auflösen* hits the right part; a rename is never overwritten by a stale name
+- [x] B5: a 409 on formation or movement shows a sticky message with *Neu laden*; it never reverts silently
+- [x] B10: the music cut snaps to beats/counts and survives a round trip without drift; a drag during playback grabs the selected dot, never a passing one; presets act only on the visible selection
+- [x] B11 (editor): withdrawing *Wir tanzen hier nicht* names what is lost (evening cast, own formation) and asks first
+- [x] #52 gap: concurrent studio writes return 409 (concurrency token / unique violation mapped), never 500, with endpoint tests
+- [x] #52 gap: a closed act's cast and wish controls render read-only (no editable look)
+- [x] Endpoint and pure tests for every server-side fix
 
 ### Phase 3 — Planner bugs and the appearance migration (∥ A)
 Goal: the planner never claims a success it doesn't have and never throws work away.

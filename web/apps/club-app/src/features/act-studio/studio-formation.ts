@@ -222,6 +222,36 @@ export const formationPlacedOf = (
   );
 };
 
+export interface SpotGrab {
+  selected: readonly number[];
+  spotId: number;
+  multi: boolean;
+  playing: boolean;
+}
+
+export const grabbedSpotsOf = ({
+  selected,
+  spotId,
+  multi,
+  playing,
+}: SpotGrab): readonly number[] => {
+  if (playing && selected.length > 0) {
+    return selected;
+  }
+  if (multi) {
+    return selected.includes(spotId)
+      ? selected.filter((id) => id !== spotId)
+      : [...selected, spotId];
+  }
+
+  return selected.includes(spotId) ? selected : [spotId];
+};
+
+export const shownSelectionOf = (
+  selected: readonly number[],
+  standing: ReadonlyMap<number, StagePoint>,
+): readonly number[] => selected.filter((spotId) => standing.has(spotId));
+
 export const formationAt = (
   paths: readonly SpotPath[],
   seconds: number,

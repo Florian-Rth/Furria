@@ -3,7 +3,7 @@ import type { ActStudioResponse } from '@/features/acts/schemas';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import { queryKeys } from '@/lib/query/reads';
-import { toWriteErrorMessage } from '@/lib/write-error';
+import { useStudioWriteFailure } from './hooks/use-studio-write-failure';
 import {
   requestFinalTrackAdd,
   requestFinalTrackAdoption,
@@ -62,7 +62,7 @@ export interface SongMutations {
 export const useSongMutations = (actId: number): SongMutations => {
   const studioKey = queryKeys.actStudio(actId);
   const key = ['actSongs', actId];
-  const failure = { failure: toWriteErrorMessage };
+  const failure = useStudioWriteFailure(actId);
 
   const add = useApiMutation({
     request: (mediaItemId: number, accessToken) => requestSongAdd(actId, mediaItemId, accessToken),
@@ -112,7 +112,7 @@ export interface StepMutations {
 export const useStepMutations = (actId: number): StepMutations => {
   const studioKey = queryKeys.actStudio(actId);
   const key = ['actSteps', actId];
-  const failure = { failure: toWriteErrorMessage };
+  const failure = useStudioWriteFailure(actId);
 
   const mark = useApiMutation({
     request: (atSeconds: number, accessToken) => requestStepMark(actId, atSeconds, accessToken),
@@ -180,7 +180,7 @@ export interface VideoMutations {
 export const useVideoMutations = (actId: number): VideoMutations => {
   const studioKey = queryKeys.actStudio(actId);
   const key = ['actVideos', actId];
-  const failure = { failure: toWriteErrorMessage };
+  const failure = useStudioWriteFailure(actId);
 
   const add = useApiMutation({
     request: (mediaItemId: number, accessToken) => requestVideoAdd(actId, mediaItemId, accessToken),
@@ -237,7 +237,7 @@ export interface FinalTrackMutations {
 export const useFinalTrackMutations = (actId: number): FinalTrackMutations => {
   const studioKey = queryKeys.actStudio(actId);
   const key = ['actSongs', actId];
-  const failure = { failure: toWriteErrorMessage };
+  const failure = useStudioWriteFailure(actId);
 
   const add = useApiMutation({
     request: (mediaItemId: number, accessToken) =>

@@ -24,6 +24,15 @@ public sealed class ActStepConfiguration : IEntityTypeConfiguration<ActStep>
             .HasConstraintName("fk_act_step_act_act_id")
             .OnDelete(DeleteBehavior.Cascade);
         builder.HasIndex(step => step.ActId).HasDatabaseName("ix_act_step_act_id");
+        builder
+            .HasIndex(step => new
+            {
+                step.ActId,
+                step.StartSourceMediaItemId,
+                step.StartSeconds,
+            })
+            .HasDatabaseName("ix_act_step_act_id_start")
+            .IsUnique();
 
         builder
             .HasOne(step => step.StartSource)

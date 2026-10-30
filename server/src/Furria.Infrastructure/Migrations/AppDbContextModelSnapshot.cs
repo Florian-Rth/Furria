@@ -2926,6 +2926,10 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("StartSourceMediaItemId")
                         .HasDatabaseName("ix_act_step_start_source_media_item_id");
 
+                    b.HasIndex("ActId", "StartSourceMediaItemId", "StartSeconds")
+                        .IsUnique()
+                        .HasDatabaseName("ix_act_step_act_id_start");
+
                     b.ToTable("act_step", null, t =>
                         {
                             t.HasCheckConstraint("ck_act_step_start", "start_seconds >= 0");

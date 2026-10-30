@@ -85,4 +85,39 @@ public sealed class PostActStepTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Should_KeepTheStepsGaplessOrRefuse_When_EditorsMarkAtOnce()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (admin, actId) = await MusicAsync(ct);
+
+        var responses = await Task.WhenAll(
+            new[] { 20.0, 40, 60, 80, 100, 120 }.Select(seconds =>
+                admin.POSTAsync<PostActStep, PostActStepRequest>(
+                    new() { ActId = actId, AtSeconds = seconds }
+                )
+            )
+        );
+
+        Assert.All(
+            responses,
+            response =>
+                Assert.Contains(
+                    response.StatusCode,
+                    new[] { HttpStatusCode.OK, HttpStatusCode.Conflict }
+                )
+        );
+        var added = responses.Count(response => response.StatusCode == HttpStatusCode.OK);
+        Assert.InRange(added, 1, responses.Length);
+        var spans = await StepSpansOfAsync(admin, actId);
+        Assert.Equal(
+            (added + 1, (double?)0, (double?)180),
+            (spans.Length, spans[0].Start, spans[^1].End)
+        );
+        Assert.Equal(
+            spans.Skip(1).Select(span => span.Start),
+            spans.SkipLast(1).Select(span => span.End)
+        );
+    }
 }

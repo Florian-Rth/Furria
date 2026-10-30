@@ -15,6 +15,7 @@ import {
   toEveningChangesLine,
   toEveningDay,
   toEveningLabel,
+  toEveningLeaveLoss,
   toEveningMeta,
   toEveningStateLine,
   toFormationLine,
@@ -55,6 +56,7 @@ export interface ActEveningPaneState {
   join: () => void;
   placed: boolean;
   leaveText: string;
+  leaveLoss: string | null;
   leave: () => void;
   busy: boolean;
 }
@@ -139,6 +141,7 @@ export const useActEveningPane = (
     },
     placed: entry.state === 'placed',
     leaveText: confirming === 'leave' ? EVENING_LEAVE_SURE : EVENING_LEAVE,
+    leaveLoss: confirming === 'leave' ? toEveningLeaveLoss(entry.changes) : null,
     leave: () => {
       confirm('leave', () => {
         mutations.leave.mutate(eventId);

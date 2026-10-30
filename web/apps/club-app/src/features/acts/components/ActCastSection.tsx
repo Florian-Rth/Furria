@@ -36,7 +36,7 @@ export const ActCastSection: FC<ActCastSectionProps> = ({ editor }) => {
   const meta = toCastTallyLine(editor.tally, editor.grouped);
   const addLabel = editor.grouped ? ADD_GUEST_LABEL : ADD_PERSON_LABEL;
   const loading = editor.membersLoading ? <KkMeta>{MEMBERS_LOADING}</KkMeta> : null;
-  const picker = editor.isAdding ? <ActGuestPicker editor={editor} /> : null;
+  const picker = editor.isAdding && !editor.closed ? <ActGuestPicker editor={editor} /> : null;
 
   const metaLine = <KkMeta>{meta}</KkMeta>;
 
@@ -49,6 +49,7 @@ export const ActCastSection: FC<ActCastSectionProps> = ({ editor }) => {
         addLabel={addLabel}
         onToggle={editor.toggleCast}
         onAdd={editor.openAdding}
+        readOnly={editor.closed}
       />
       {picker}
     </PlannerDetailSection>

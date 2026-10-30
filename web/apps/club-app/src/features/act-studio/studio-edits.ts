@@ -196,6 +196,22 @@ export const placedTrackOf = (
 
 export type CutEdge = 'start' | 'end';
 
+const SECONDS_PER_MINUTE = 60;
+const CUT_GRAIN = 1000;
+
+const roundedCutOf = (seconds: number): number => Math.round(seconds * CUT_GRAIN) / CUT_GRAIN;
+
+const onSongCountOf = (song: StudioSong, seconds: number): number => {
+  if (song.firstBeatSeconds === null || song.tempoBpm === null || song.tempoBpm <= 0) {
+    return roundedCutOf(seconds);
+  }
+
+  const beat = SECONDS_PER_MINUTE / song.tempoBpm;
+  const counts = Math.round((seconds - song.firstBeatSeconds) / beat);
+
+  return roundedCutOf(song.firstBeatSeconds + counts * beat);
+};
+
 export const trimmedCutOf = (
   song: StudioSong,
   segment: MusicSegment,
@@ -205,7 +221,7 @@ export const trimmedCutOf = (
   const length = songLimitOf(song);
 
   if (edge === 'end') {
-    const end = song.endSeconds + (seconds - segment.timelineEnd);
+    const end = onSongCountOf(song, song.endSeconds + (seconds - segment.timelineEnd));
 
     return {
       start: song.startSeconds,
@@ -213,7 +229,7 @@ export const trimmedCutOf = (
     };
   }
 
-  const start = song.startSeconds + (seconds - segment.timelineStart);
+  const start = onSongCountOf(song, song.startSeconds + (seconds - segment.timelineStart));
 
   return {
     start: Math.max(0, Math.min(song.endSeconds - MIN_SONG_SECONDS, start)),

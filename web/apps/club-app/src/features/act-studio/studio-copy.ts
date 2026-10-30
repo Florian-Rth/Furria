@@ -465,3 +465,7 @@ export const finalShiftNudgeLabelOf = (delta: number): string =>
 
 export const finalDeskLabelOf = (kind: 'source' | 'grid' | null): string =>
   kind === 'grid' ? STUDIO_FINAL_GRID_DESK : STUDIO_FINAL_DESK;
+
+export const STUDIO_CHANGED_ELSEWHERE =
+  'Das wurde inzwischen woanders geändert. Deine Änderung ist nicht gespeichert.';
+export const STUDIO_RELOAD = 'Neu laden';

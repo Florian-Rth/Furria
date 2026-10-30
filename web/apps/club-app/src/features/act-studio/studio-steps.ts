@@ -33,6 +33,11 @@ export interface PartSettingsInput {
 
 export type PartShift = 'earlier' | 'later';
 
+export interface PartDeskAnchor {
+  stepId: number;
+  partId: number;
+}
+
 const BORDER_TOLERANCE_SECONDS = 0.01;
 
 export const markSecondsOf = (
@@ -67,6 +72,14 @@ export const partSettingsOf = (part: StudioPart): PartSettings => ({
 
 export const partOfStep = (parts: readonly StudioPart[], stepId: number): StudioPart | null =>
   parts.find((part) => part.stepIds.includes(stepId)) ?? null;
+
+export const deskPartOf = (
+  parts: readonly StudioPart[],
+  stepId: number,
+  anchor: PartDeskAnchor | null,
+): StudioPart | null =>
+  (anchor?.stepId === stepId ? parts.find((part) => part.partId === anchor.partId) : undefined) ??
+  partOfStep(parts, stepId);
 
 export const startsAPart = (parts: readonly StudioPart[], stepId: number): boolean =>
   parts.some((part) => firstStepOf(part) === stepId);

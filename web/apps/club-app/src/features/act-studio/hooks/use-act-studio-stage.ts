@@ -15,8 +15,10 @@ import {
   formationAt,
   formationPlacedOf,
   freePointOf,
+  grabbedSpotsOf,
   mirroredOf,
   presetPointsOf,
+  shownSelectionOf,
 } from '../studio-formation';
 import type { ActStudioMovement } from './use-act-studio-movement';
 import { useActStudioMovement } from './use-act-studio-movement';
@@ -86,14 +88,13 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
   const { player, paths, stage, ownSpotId, steps, controls, length } = playback;
   const writes = useTrackCommit(screen);
   const { preview, commit } = writes;
-  const [selected, setSelected] = useState<readonly number[]>([]);
+  const [picked, setPicked] = useState<readonly number[]>([]);
   const [multi, setMulti] = useState(false);
   const [onion, setOnion] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [copyPick, setCopyPick] = useState<number | null>(null);
   const [copyPickStep, setCopyPickStep] = useState<number | undefined>(undefined);
   const grab = useRef<Grab | null>(null);
-  const movement = useActStudioMovement(screen, selected, writes);
   const formation = mode.tool === 'formation';
   const moving = mode.tool === 'movement';
   const step = practice.step;
@@ -110,6 +111,8 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
   const pathOf = (spotId: number): SpotPath | null =>
     paths.find((path) => path.spotId === spotId) ?? null;
   const current = formationAt(paths, formationSeconds);
+  const selected = shownSelectionOf(picked, current);
+  const movement = useActStudioMovement(screen, selected, writes);
   const onionSeconds = !onion
     ? null
     : formation
@@ -159,14 +162,8 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
     );
   };
 
-  const nextSelection = (spotId: number): readonly number[] => {
-    if (multi) {
-      return selected.includes(spotId)
-        ? selected.filter((id) => id !== spotId)
-        : [...selected, spotId];
-    }
-    return selected.includes(spotId) ? selected : [spotId];
-  };
+  const nextSelection = (spotId: number, playing: boolean): readonly number[] =>
+    grabbedSpotsOf({ selected, spotId, multi, playing });
 
   const single =
     selected.length === 1
@@ -206,8 +203,8 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
     copySource,
     copySteps: steps.length,
     press: (spotId, share) => {
-      const chosen = nextSelection(spotId);
-      setSelected(chosen);
+      const chosen = nextSelection(spotId, player.state().playing);
+      setPicked(chosen);
       grab.current = null;
       if (moving) {
         movement.grab(chosen, share);
@@ -247,14 +244,14 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
     },
     clear: () => {
       if (!multi) {
-        setSelected([]);
+        setPicked([]);
       }
     },
     choose: (spotId) => {
-      setSelected(nextSelection(spotId));
+      setPicked(nextSelection(spotId, false));
     },
     forget: (spotId) => {
-      setSelected((chosen) => chosen.filter((id) => id !== spotId));
+      setPicked((chosen) => chosen.filter((id) => id !== spotId));
     },
     toggleMulti: () => {
       setMulti((on) => !on);
@@ -300,7 +297,7 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
     addSpot: () => {
       const place = (added: AddedSpot): void => {
         settle(new Map([[added.spotId, freePointOf([...current.values()], stage)]]));
-        setSelected([added.spotId]);
+        setPicked([added.spotId]);
       };
       void stageWrites.addSpot.mutateAsync(undefined).then(place, () => undefined);
     },

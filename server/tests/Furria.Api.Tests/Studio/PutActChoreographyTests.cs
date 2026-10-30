@@ -11,6 +11,8 @@ namespace Furria.Api.Tests.Studio;
 [SeedsAliases]
 public sealed class PutActChoreographyTests : IClassFixture<ApiTestFixture>
 {
+    private const int Editors = 6;
+
     private readonly ApiTestFixture _fixture;
 
     public PutActChoreographyTests(ApiTestFixture fixture)
@@ -142,5 +144,95 @@ public sealed class PutActChoreographyTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_KeepOneSaveAndRefuseTheOthers_When_EditorsSaveTheSameVersionAtOnce()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+        var actId = await GardetanzAsync(ctx, ct);
+        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+        var march = await UploadSongAsync(admin, actId, ct);
+        var spotId = await AddSpotAsync(admin, actId);
+        var (_, first) = await SaveChoreographyAsync(
+            admin,
+            actId,
+            null,
+            [StandingTrack(spotId, march, 0, 1)]
+        );
+
+        var saves = await Task.WhenAll(
+            Enumerable
+                .Range(1, Editors)
+                .Select(async index =>
+                    (
+                        RightMetres: index * 0.5,
+                        Save: await SaveChoreographyAsync(
+                            admin,
+                            actId,
+                            first,
+                            [StandingTrack(spotId, march, index * 0.5, 1)]
+                        )
+                    )
+                )
+        );
+
+        var winner = Assert.Single(
+            saves,
+            save => save.Save.Response.StatusCode == HttpStatusCode.OK
+        );
+        Assert.All(
+            saves.Where(save => save != winner),
+            save => Assert.Equal(HttpStatusCode.Conflict, save.Save.Response.StatusCode)
+        );
+        var choreography = (await StudioOfAsync(admin, actId)).Studio!.Choreography!;
+        var keyframe = Assert.Single(Assert.Single(choreography.Tracks).Keyframes);
+        Assert.Equal(
+            (winner.Save.Version, winner.RightMetres),
+            (choreography.Version, keyframe.Position.RightMetres)
+        );
+    }
+
+    [Fact]
+    public async Task Should_KeepOneSaveAndRefuseTheOthers_When_EditorsSaveTheFirstVersionAtOnce()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+        var actId = await GardetanzAsync(ctx, ct);
+        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+        var march = await UploadSongAsync(admin, actId, ct);
+        var spotId = await AddSpotAsync(admin, actId);
+
+        var saves = await Task.WhenAll(
+            Enumerable
+                .Range(1, Editors)
+                .Select(async index =>
+                    (
+                        RightMetres: index * 0.5,
+                        Save: await SaveChoreographyAsync(
+                            admin,
+                            actId,
+                            null,
+                            [StandingTrack(spotId, march, index * 0.5, 1)]
+                        )
+                    )
+                )
+        );
+
+        var winner = Assert.Single(
+            saves,
+            save => save.Save.Response.StatusCode == HttpStatusCode.OK
+        );
+        Assert.All(
+            saves.Where(save => save != winner),
+            save => Assert.Equal(HttpStatusCode.Conflict, save.Save.Response.StatusCode)
+        );
+        var choreography = (await StudioOfAsync(admin, actId)).Studio!.Choreography!;
+        var keyframe = Assert.Single(Assert.Single(choreography.Tracks).Keyframes);
+        Assert.Equal(
+            (winner.Save.Version, winner.RightMetres),
+            (choreography.Version, keyframe.Position.RightMetres)
+        );
     }
 }

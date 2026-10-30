@@ -16,6 +16,8 @@ export const ActEveningPaneFoot: FC<ActEveningPaneFootProps> = ({ pane }) => {
       {DANCE_HERE}
     </KkButton>
   );
+  const leaveLoss =
+    pane.leaveLoss === null ? null : <KkMeta tone="accent">{pane.leaveLoss}</KkMeta>;
   const leave =
     pane.joined && !pane.placed ? (
       <KkButton variant="text" tone="danger" disabled={pane.busy} onClick={pane.leave}>
@@ -30,6 +32,7 @@ export const ActEveningPaneFoot: FC<ActEveningPaneFootProps> = ({ pane }) => {
       <KkButton variant="contained" fullWidth onClick={pane.practise}>
         {EVENING_PRACTISE}
       </KkButton>
+      {leaveLoss}
       {leave}
     </KkStepPane.Foot>
   );

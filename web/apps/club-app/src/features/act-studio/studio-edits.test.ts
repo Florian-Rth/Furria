@@ -1,7 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import type { TimedKeyframe } from '@/features/act-player/choreography-motion';
-import type { StudioStep } from '@/features/acts/schemas';
-import { borderMovedOf, draggedPointOf, placedTrackOf } from './studio-edits';
+import type { MusicSegment } from '@/features/act-player/music-timeline';
+import type { StudioSong, StudioStep } from '@/features/acts/schemas';
+import type { CutEdge, TimeSpan } from './studio-edits';
+import { borderMovedOf, draggedPointOf, placedTrackOf, trimmedCutOf } from './studio-edits';
 
 const step = (stepId: number, start: number, end: number): StudioStep => ({
   stepId,
@@ -78,5 +80,59 @@ describe('draggedPointOf', () => {
     ],
   ])('moves a dot by %o in the dancers view', (delta, point) => {
     expect(draggedPointOf({ rightMetres: 0, backMetres: 2 }, delta, stage)).toEqual(point);
+  });
+});
+
+describe('trimmedCutOf', () => {
+  const songOf = (firstBeat: number | null, tempo: number | null): StudioSong => ({
+    songId: 1,
+    mediaItemId: 10,
+    position: 0,
+    startSeconds: 10.25,
+    endSeconds: 70.25,
+    firstBeatSeconds: firstBeat,
+    tempoBpm: tempo,
+    state: 'ready',
+    durationSeconds: 90,
+    fileName: 'marsch.mp3',
+    urls: { normalised: '/n', preview: '/p', peaks: '/k' },
+  });
+  const segment: MusicSegment = {
+    mediaItemId: 10,
+    audioUrl: '/n',
+    peaksUrl: '/k',
+    audible: true,
+    sourceStart: 10.25,
+    sourceEnd: 70.25,
+    timelineStart: 0,
+    timelineEnd: 60,
+    firstBeatSeconds: 0.25,
+    tempoBpm: 120,
+  };
+
+  it.each<[string, CutEdge, number, number | null, number | null, TimeSpan]>([
+    [
+      'snaps the start onto the nearest count',
+      'start',
+      4.1,
+      0.25,
+      120,
+      { start: 14.25, end: 70.25 },
+    ],
+    ['snaps the end onto the nearest count', 'end', 50.43, 0.25, 120, { start: 10.25, end: 60.75 }],
+    ['keeps an untouched start on its count', 'start', 0, 0.25, 120, { start: 10.25, end: 70.25 }],
+    ['keeps an untouched end on its count', 'end', 60, 0.25, 120, { start: 10.25, end: 70.25 }],
+    [
+      'rounds to the millisecond without a beat',
+      'start',
+      4.12345,
+      null,
+      null,
+      { start: 14.373, end: 70.25 },
+    ],
+    ['keeps the end inside the song', 'end', 95, 0.25, 120, { start: 10.25, end: 90 }],
+    ['keeps the shortest cut', 'start', 59.9, 0.25, 120, { start: 68.25, end: 70.25 }],
+  ])('%s', (_, edge, seconds, firstBeat, tempo, expected) => {
+    expect(trimmedCutOf(songOf(firstBeat, tempo), segment, edge, seconds)).toEqual(expected);
   });
 });

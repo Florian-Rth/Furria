@@ -54,9 +54,15 @@ export const toEveningMeta = (evening: StudioEvening, state: EveningEntryState):
 
 export const toEveningStateLine = (state: EveningEntryState): string => STATE_LINES[state];
 
+const changeWordsOf = (changes: readonly EveningChange[]): string =>
+  changes.map((change) => EVENING_CHANGE_WORDS[change]).join(', ');
+
 export const toEveningChangesLine = (changes: readonly EveningChange[]): string | null =>
+  changes.length === 0 ? null : `Für diesen Abend angepasst: ${changeWordsOf(changes)}.`;
+
+export const toEveningLeaveLoss = (changes: readonly EveningChange[]): string | null =>
   changes.length === 0
     ? null
-    : `Für diesen Abend angepasst: ${changes.map((change) => EVENING_CHANGE_WORDS[change]).join(', ')}.`;
+    : `Beim Abmelden geht verloren, was ihr für diesen Abend angepasst habt: ${changeWordsOf(changes)}.`;
 
 export const toFormationLine = (state: EveningChoreographyState): string => FORMATION_LINES[state];

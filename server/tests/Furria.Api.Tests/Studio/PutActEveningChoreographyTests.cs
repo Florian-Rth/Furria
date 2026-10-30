@@ -14,6 +14,8 @@ namespace Furria.Api.Tests.Studio;
 [SeedsAliases]
 public sealed class PutActEveningChoreographyTests : IClassFixture<ApiTestFixture>
 {
+    private const int Editors = 6;
+
     private readonly ApiTestFixture _fixture;
 
     public PutActEveningChoreographyTests(ApiTestFixture fixture)
@@ -166,6 +168,56 @@ public sealed class PutActEveningChoreographyTests : IClassFixture<ApiTestFixtur
                 );
 
                 Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+            }
+        );
+
+    [Fact]
+    public Task Should_KeepOneCopyAndRefuseTheOthers_When_EditorsCopyTheEveningAtOnce() =>
+        _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
+            {
+                var ct = TestContext.Current.CancellationToken;
+                var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+                var actId = await GardetanzAsync(ctx, ct);
+                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+                var gala = ctx.Club.Events.IdOf(Gala);
+                var march = await UploadSongAsync(admin, actId, ct);
+                var spotId = await AddSpotAsync(admin, actId);
+
+                var saves = await Task.WhenAll(
+                    Enumerable
+                        .Range(1, Editors)
+                        .Select(async index =>
+                            (
+                                RightMetres: index * 0.5,
+                                Save: await SaveEveningChoreographyAsync(
+                                    admin,
+                                    actId,
+                                    gala,
+                                    null,
+                                    null,
+                                    [StandingTrack(spotId, march, index * 0.5, 1)]
+                                )
+                            )
+                        )
+                );
+
+                var winner = Assert.Single(
+                    saves,
+                    save => save.Save.Response.StatusCode == HttpStatusCode.OK
+                );
+                Assert.All(
+                    saves.Where(save => save != winner),
+                    save => Assert.Equal(HttpStatusCode.Conflict, save.Save.Response.StatusCode)
+                );
+                var copy = Assert
+                    .Single((await StudioOfAsync(admin, actId)).Studio!.Evenings)
+                    .Appearance!.Choreography!;
+                Assert.Equal(
+                    (winner.Save.Version, winner.RightMetres),
+                    (copy.Version, SingleKeyframeOf(copy.Tracks).Position.RightMetres)
+                );
             }
         );
 
