@@ -6,7 +6,7 @@ import { useStudioDrag } from '../../../KkStudioDrag/use-studio-drag';
 interface KkStudioCountsTrackProps extends PropsWithChildren {
   onPress: (share: KkStudioShare) => void;
   onMove: (share: KkStudioShare) => void;
-  onEnd: () => void;
+  onEnd: (moved: boolean) => void;
 }
 
 export const KkStudioCountsTrack: FC<KkStudioCountsTrackProps> = ({

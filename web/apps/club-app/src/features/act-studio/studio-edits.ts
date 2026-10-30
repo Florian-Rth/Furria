@@ -10,7 +10,6 @@ import { songLimitOf } from './studio-music';
 const MIN_STEP_SECONDS = 0.5;
 const MIN_SONG_SECONDS = 2;
 export const KEY_TOLERANCE_SECONDS = 1e-3;
-const MIN_MOVE_SECONDS = 0.1;
 
 export interface TimeSpan {
   start: number;
@@ -193,61 +192,6 @@ export const placedTrackOf = (
   return keyframes.map((keyframe, at) =>
     at >= run.start && at <= run.end ? { ...keyframe, position } : keyframe,
   );
-};
-
-const isMove = (from: TimedKeyframe, to: TimedKeyframe): boolean =>
-  !samePlace(from.position, to.position) || to.bend !== null;
-
-export const moveIndexNear = (
-  keyframes: readonly TimedKeyframe[],
-  span: TimeSpan,
-  seconds: number,
-): number | null => {
-  const moves: number[] = [];
-
-  for (let index = 0; index < keyframes.length - 1; index += 1) {
-    const from = keyframes[index];
-    const to = keyframes[index + 1];
-    if (
-      from !== undefined &&
-      to !== undefined &&
-      isMove(from, to) &&
-      to.seconds > span.start + KEY_TOLERANCE_SECONDS &&
-      from.seconds < span.end - KEY_TOLERANCE_SECONDS
-    ) {
-      moves.push(index);
-    }
-  }
-
-  return (
-    moves.find((index) => (keyframes[index + 1]?.seconds ?? 0) > seconds + KEY_TOLERANCE_SECONDS) ??
-    moves.at(-1) ??
-    null
-  );
-};
-
-export const retimedTrackOf = (
-  keyframes: readonly TimedKeyframe[],
-  index: number,
-  target: TimeSpan,
-): readonly TimedKeyframe[] => {
-  if (keyframes[index] === undefined || keyframes[index + 1] === undefined) {
-    return keyframes;
-  }
-
-  const floor = (keyframes[index - 1]?.seconds ?? Number.NEGATIVE_INFINITY) + KEY_TOLERANCE_SECONDS;
-  const ceiling =
-    (keyframes[index + 2]?.seconds ?? Number.POSITIVE_INFINITY) - KEY_TOLERANCE_SECONDS;
-  const start = Math.min(ceiling - MIN_MOVE_SECONDS, Math.max(floor, target.start));
-  const end = Math.min(ceiling, Math.max(start + MIN_MOVE_SECONDS, target.end));
-
-  return keyframes.map((keyframe, at) => {
-    if (at === index) {
-      return { ...keyframe, seconds: start };
-    }
-
-    return at === index + 1 ? { ...keyframe, seconds: end } : keyframe;
-  });
 };
 
 export type CutEdge = 'start' | 'end';

@@ -115,8 +115,6 @@ reference; this RFC is the v1 build.
 - **Group hub** gets an *Auftritte* section; **Start** gets an *Üben* tile (opens the player at the
   last step, remembered per device). The `/acts` catalogue and `/groups/$groupId/acts` are rebuilt
   for sessions and appearances.
-- **Offline**: music and studio data are cached for your acts. Videos are saved by tap as a 720p
-  rendition. Editing is online only.
 - **Training**: per training, the open spots (from Zu-/Absagen) and the steps they affect. A
   **training mode** plays the music over the hall speaker with the current step, counts and
   formation in large type, and loops a step with one tap.
@@ -128,7 +126,7 @@ Phone-only mock of the whole v1 studio (2026-10-29, liked by Florian):
 `docs/design/dance-studio/auftritt-studio.html` (open it in a browser; sample data).
 It shows the synced player (video + stage + timeline on one clock), the step manual, music cutting,
 final-file matching, the stage and movement editor with the count bar, video alignment, evening
-adjustments, training mode and offline.
+adjustments and training mode (the mock's offline is not in v1).
 
 It is **design direction, not spec**, the same as `docs/design/` ("READ FIRST"). Tokens and
 primitives stay binding, and the layouts and copy may be improved. Phase 6 starts from it as one of
@@ -484,9 +482,31 @@ Goal: formations per step on our stage, in the Aufstellung tool.
 
 ### Phase 12 — Movement editor
 Goal: "from here to there and in what time", in the Bewegung tool.
-- [ ] Keyframes per spot on the music; select dots → drag → pull the count bar *Takt 1 – 4* from count to count
-- [ ] Bendable curves, easing, optional facing per keyframe; paths and the previous formation on the stage
-- [ ] Snap to counts; scrub/play the movement against the music
+- [x] Keyframes per spot on the music; select dots → drag → pull the count bar *Takt 1 – 4* from count to count
+- [x] Bendable curves, easing, optional facing per keyframe; paths and the previous formation on the stage
+- [x] Snap to counts; scrub/play the movement against the music
+
+Done 2026-10-30. Decisions taken in the phase:
+- **No new endpoint**: every edit saves the whole session choreography through phase 11's
+  `PUT /api/acts/{id}/choreography` (version token, optimistic patch), shared with the Aufstellung
+  tool (`useTrackCommit`). Drags preview locally and save on release.
+- **Waypoints**: dragging dots in Bewegung pauses the music, snaps the playhead to the nearest count
+  and keys the grabbed spots there: a keyframe already at that count moves, otherwise a waypoint is
+  inserted (it takes the spot's facing there and the split move's easing; the split move loses its
+  bend). On a step border this edits the formation, as Aufstellung does.
+- **The move** of a spot is the one under the playhead within the current step (a segment between
+  two keyframes that changes place or is bent). The count bar shows the selection's move; dragging
+  from count to count retimes it for every selected spot. **Retiming keeps the formations**: hold
+  keyframes are left at the old times when the move gets shorter, a hold before or after may be
+  absorbed when it gets longer, and a neighbouring move is never shortened. A tap on a count (or a
+  drag without a selection) scrubs to it.
+- **Bend** = a handle on the stage at the move's bend point (or half way); dragged back near the
+  middle it straightens. **Easing, facing, removal** sit in the selection sheet's *Weg* desk:
+  *Gleichmäßig · Langsam los · Langsam ankommen · Weich*, *Gerade ziehen*, *Blick am Ziel* in 45°
+  turns (named from the dancers' view, *frei* = none; it also applies to the hold after the arrival),
+  *Wegpunkt entfernen* when a keyframe sits on the playhead (the last keyframe of a spot stays).
+- The editor's dots show every spot's facing as a notch; *Vorher* in Bewegung shows the formation at
+  the step's start faintly. The selected spots' paths over the step are drawn with their keyframes.
 
 ### Phase 13 — Trainer videos
 Goal: the trainer's demonstrations run in sync, set up in the Video tool.
@@ -523,11 +543,8 @@ Done 2026-10-30 (built in parallel to phases 10–12). Decisions taken in the ph
   returns its URL and phones/tablets (below the desktop breakpoint) play it. Existing act videos get
   it on `regenerate`.
 
-### Phase 14 — Offline
-Goal: practise without signal.
-- [ ] Cache music + studio data of your acts automatically; refresh when online
-- [ ] *Für offline speichern* for the main videos (720p) with storage shown; remove
-- [ ] Editing locked offline with a quiet note
+### Phase 14 — Offline (dropped from v1)
+Ruling 2026-10-30 (Florian): offline is not needed for v1. Practising needs a connection; moved to *Out of scope*.
 
 ### Phase 15 — Evening adjustments
 Goal: an evening can differ from the session without touching it.
@@ -550,7 +567,7 @@ Goal: the studio is used every week.
 - **Playback sync on phones.** Gapless song cuts plus a video kept in sync across iOS Safari and
   Android need a single audio clock (Web Audio) with the video slaved to it. Proven in the phase 6
   lab before the editors depend on it.
-- **Storage.** Videos are large. 720p renditions, explicit offline downloads and *outdated* instead
+- **Storage.** Videos are large. 720p renditions and *outdated* instead
   of duplicates keep this in check.
 - **Considered and rejected:**
   - a server render of the song cuts into one file (the group uploads the final file)
@@ -566,6 +583,7 @@ Goal: the studio is used every week.
 - **Text studio** for *Rede* / *Sketch*: uploaded text, your own parts highlighted, cue-line
   training mode. Other kinds (*Musik*, *Gesang*).
 - ***Weitermachen*** (carry an act into the next session).
+- **Offline practising** (cached music + studio data, *Für offline speichern* for videos, editing locked offline) — dropped from v1 on 2026-10-30.
 - **The evening**: live pointer, evening pass on Start, tech (show book, offline playback desk,
   track check), outside appearances and guest stages, pictures per appearance and their automatic
   sorting by capture time.

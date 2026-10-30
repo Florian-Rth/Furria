@@ -1,3 +1,4 @@
+import type { KeyframeEasing } from '@/features/act-player/choreography-motion';
 import { clockOf } from '@/features/act-practice/practice-step-list';
 import type { StudioVideo } from '@/features/acts/schemas';
 import type { MediaItemState } from '@/lib/api/schemas';
@@ -144,6 +145,45 @@ export const castChoiceTextOf = (
 export const STUDIO_COUNTS_LABEL = 'Zählzeiten des Schritts: von Zählzeit zu Zählzeit ziehen';
 export const STUDIO_NO_MOVE = 'Kein Weg in diesem Schritt';
 export const STUDIO_PICK_DOTS = 'Punkte auf der Bühne wählen';
+
+export const STUDIO_BEND_LABEL = 'Kurve: ziehen zum Biegen';
+export const STUDIO_MOVE_DESK = 'Weg bearbeiten';
+export const STUDIO_MOVE_NONE = 'Kein Weg an dieser Stelle';
+export const STUDIO_MOVE_CURVE = 'Kurve';
+export const STUDIO_MOVE_BENT = 'gebogen';
+export const STUDIO_MOVE_STRAIGHT = 'gerade';
+export const STUDIO_MOVE_STRAIGHTEN = 'Gerade ziehen';
+export const STUDIO_MOVE_EASING = 'Tempo';
+export const STUDIO_MOVE_FACING = 'Blick am Ziel';
+export const STUDIO_MOVE_TURN_LEFT = 'Nach links drehen';
+export const STUDIO_MOVE_TURN_RIGHT = 'Nach rechts drehen';
+export const STUDIO_MOVE_UNFACE = 'Frei';
+export const STUDIO_MOVE_KEY = 'Wegpunkt hier';
+export const STUDIO_MOVE_UNKEY = 'Wegpunkt entfernen';
+
+export const EASING_TEXT: Record<KeyframeEasing, string> = {
+  linear: 'Gleichmäßig',
+  easeIn: 'Langsam los',
+  easeOut: 'Langsam ankommen',
+  easeInOut: 'Weich',
+};
+
+const FACING_TEXT: Readonly<Record<number, string>> = {
+  0: 'nach vorn',
+  45: 'vorn rechts',
+  90: 'rechts',
+  135: 'hinten rechts',
+  180: 'nach hinten',
+  225: 'hinten links',
+  270: 'links',
+  315: 'vorn links',
+};
+
+export const facingTextOf = (degrees: number | null): string =>
+  degrees === null ? 'frei' : (FACING_TEXT[degrees] ?? `${Math.round(degrees)}°`);
+
+export const moveDeskTitleOf = (from: number, to: number): string =>
+  `Weg ${fineClockOf(from)}–${fineClockOf(to)}`;
 
 export const STUDIO_PLACEMENT_LABEL = 'Wo das Video auf der Musik liegt';
 export const STUDIO_EARLIER = 'Video früher';

@@ -1,9 +1,5 @@
 import { useRef, useState } from 'react';
-import type {
-  SpotPath,
-  StagePoint,
-  TimedKeyframe,
-} from '@/features/act-player/choreography-motion';
+import type { SpotPath, StagePoint } from '@/features/act-player/choreography-motion';
 import { poseAt } from '@/features/act-player/choreography-motion';
 import type { StageScene } from '@/features/act-practice/practice-stage';
 import { viewShareOf } from '@/features/act-practice/practice-stage';
@@ -15,7 +11,6 @@ import { draggedPointOf } from '../studio-edits';
 import type { ArrangeAxis, FormationPreset } from '../studio-formation';
 import {
   alignedOf,
-  anchoredTrackOf,
   distributedOf,
   formationAt,
   formationPlacedOf,
@@ -23,11 +18,13 @@ import {
   mirroredOf,
   presetPointsOf,
 } from '../studio-formation';
+import type { ActStudioMovement } from './use-act-studio-movement';
+import { useActStudioMovement } from './use-act-studio-movement';
 import type { StudioScreen } from './use-studio-screen';
+import type { StudioTracks } from './use-track-commit';
+import { useTrackCommit } from './use-track-commit';
 
 const AT_BORDER_SECONDS = 0.02;
-
-type Tracks = Record<number, readonly TimedKeyframe[]>;
 
 export interface ActStudioOnionPoint {
   key: string;
@@ -37,11 +34,13 @@ export interface ActStudioOnionPoint {
 
 export interface ActStudioStage {
   scene: StageScene;
+  movement: ActStudioMovement;
   selected: readonly number[];
   multi: boolean;
   onion: boolean;
   onionPoints: ActStudioOnionPoint[];
   formation: boolean;
+  moving: boolean;
   formationText: string;
   selectionText: string;
   sheetOpen: boolean;
@@ -74,7 +73,7 @@ export interface ActStudioStage {
 interface Grab {
   start: StageShare;
   origins: ReadonlyMap<number, StagePoint>;
-  placed: Tracks | null;
+  placed: StudioTracks | null;
 }
 
 const nameOf = (spot: StudioSpot | undefined): string | null => spot?.person?.firstName ?? null;
@@ -83,8 +82,10 @@ const byNumber = (spots: readonly StudioSpot[]): StudioSpot[] =>
   [...spots].sort((left, right) => left.number - right.number);
 
 export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
-  const { playback, practice, studio, edits, mode, stageWrites } = screen;
-  const { player, paths, stage, ownSpotId, steps, controls, segments, length } = playback;
+  const { playback, practice, studio, mode, stageWrites } = screen;
+  const { player, paths, stage, ownSpotId, steps, controls, length } = playback;
+  const writes = useTrackCommit(screen);
+  const { preview, commit } = writes;
   const [selected, setSelected] = useState<readonly number[]>([]);
   const [multi, setMulti] = useState(false);
   const [onion, setOnion] = useState(true);
@@ -92,7 +93,9 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
   const [copyPick, setCopyPick] = useState<number | null>(null);
   const [copyPickStep, setCopyPickStep] = useState<number | undefined>(undefined);
   const grab = useRef<Grab | null>(null);
+  const movement = useActStudioMovement(screen, selected, writes);
   const formation = mode.tool === 'formation';
+  const moving = mode.tool === 'movement';
   const step = practice.step;
   const stepIndex = steps.findIndex((candidate) => candidate.stepId === step?.stepId);
   if (copyPickStep !== step?.stepId) {
@@ -107,34 +110,22 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
   const pathOf = (spotId: number): SpotPath | null =>
     paths.find((path) => path.spotId === spotId) ?? null;
   const current = formationAt(paths, formationSeconds);
+  const onionSeconds = !onion
+    ? null
+    : formation
+      ? previousSeconds
+      : moving
+        ? formationSeconds
+        : null;
   const targets =
     selected.length > 0 ? selected : byNumber(studio.spots).map((spot) => spot.spotId);
 
-  const commit = (tracks: Tracks): void => {
-    const stored = studio.choreography?.tracks ?? [];
-    const changes = Object.fromEntries(
-      Object.entries(tracks).map(([spotId, keyframes]) => [
-        spotId,
-        anchoredTrackOf(
-          stored.find((track) => track.spotId === Number(spotId))?.keyframes ?? [],
-          keyframes,
-          segments,
-          stage,
-        ),
-      ]),
-    );
-    const drop = (): void => {
-      edits.dropTracks(tracks);
-    };
-    void stageWrites.save.mutateAsync(changes).then(drop, drop);
-  };
-
-  const placed = (moves: ReadonlyMap<number, StagePoint>): Tracks => {
-    const tracks: Tracks = {};
+  const placed = (moves: ReadonlyMap<number, StagePoint>): StudioTracks => {
+    const tracks: StudioTracks = {};
     for (const [spotId, point] of moves) {
       tracks[spotId] = formationPlacedOf(spotId, pathOf(spotId)?.keyframes ?? [], span, point);
     }
-    edits.setTracks(tracks);
+    preview(tracks);
     return tracks;
   };
 
@@ -187,14 +178,15 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
 
   return {
     scene: { paths, spots: studio.spots, ownSpotId, stage },
+    movement,
     selected,
     multi,
     onion,
     onionPoints:
-      !onion || previousSeconds === null || !formation
+      onionSeconds === null
         ? []
         : paths.flatMap((path) => {
-            const point = poseAt(path, previousSeconds)?.position ?? null;
+            const point = poseAt(path, onionSeconds)?.position ?? null;
             if (point === null) {
               return [];
             }
@@ -202,6 +194,7 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
             return [{ key: String(path.spotId), x: share.x, y: share.y }];
           }),
     formation,
+    moving,
     formationText: formationTextOf(stepIndex + 1, formationSeconds),
     selectionText: selectionTextOf(selected.length, single),
     sheetOpen,
@@ -215,8 +208,12 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
     press: (spotId, share) => {
       const chosen = nextSelection(spotId);
       setSelected(chosen);
+      grab.current = null;
+      if (moving) {
+        movement.grab(chosen, share);
+        return;
+      }
       if (!formation) {
-        grab.current = null;
         return;
       }
       if (player.state().playing) {
@@ -230,6 +227,7 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
     move: (share) => {
       const held = grab.current;
       if (held === null) {
+        movement.drag(share);
         return;
       }
       const delta = { x: share.x - held.start.x, y: share.y - held.start.y };
@@ -242,6 +240,7 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
     end: () => {
       const held = grab.current;
       grab.current = null;
+      movement.release();
       if (held !== null && held.placed !== null) {
         commit(held.placed);
       }

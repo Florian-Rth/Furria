@@ -1,13 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { TimedKeyframe } from '@/features/act-player/choreography-motion';
 import type { StudioStep } from '@/features/acts/schemas';
-import {
-  borderMovedOf,
-  draggedPointOf,
-  moveIndexNear,
-  placedTrackOf,
-  retimedTrackOf,
-} from './studio-edits';
+import { borderMovedOf, draggedPointOf, placedTrackOf } from './studio-edits';
 
 const step = (stepId: number, start: number, end: number): StudioStep => ({
   stepId,
@@ -67,39 +61,6 @@ describe('placedTrackOf', () => {
     const placed = placedTrackOf(track, 0, { rightMetres: 2, backMetres: 6 });
 
     expect(placed.map((keyframe) => keyframe.position.rightMetres)).toEqual([2, 2, -4, -4, 1]);
-  });
-});
-
-describe('moveIndexNear', () => {
-  const track = [key(0, 0, 0), key(2, 1, 0), key(4, 1, 0), key(6, 2, 0), key(10, 2, 0)];
-
-  it.each([
-    [0, 0],
-    [3, 2],
-    [9, 2],
-  ])('picks the move a playhead at %s belongs to', (seconds, index) => {
-    expect(moveIndexNear(track, { start: 0, end: 10 }, seconds)).toBe(index);
-  });
-
-  it('finds no move in a still step', () => {
-    expect(moveIndexNear(track, { start: 6.5, end: 10 }, 7)).toBeNull();
-  });
-});
-
-describe('retimedTrackOf', () => {
-  const track = [key(0, 0, 0), key(2, 0, 0), key(4, 1, 0), key(8, 1, 0)];
-
-  it('pulls the move onto the dragged counts', () => {
-    expect(retimedTrackOf(track, 1, { start: 3, end: 6 }).map((k) => k.seconds)).toEqual([
-      0, 3, 6, 8,
-    ]);
-  });
-
-  it('never runs past the neighbouring keyframes', () => {
-    const seconds = retimedTrackOf(track, 1, { start: -2, end: 12 }).map((k) => k.seconds);
-
-    expect(seconds[1]).toBeCloseTo(0.001);
-    expect(seconds[2]).toBeCloseTo(7.999);
   });
 });
 
