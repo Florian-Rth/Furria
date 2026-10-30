@@ -427,9 +427,27 @@ Goal: editing on tablet and desktop runs on the timeline desk.
 
 ### Phase 15 — Promote phone step cards and *Musik & Video* (∥ E)
 Goal: editing on phones runs on step cards.
-- [ ] Swipeable step cards with the stage editor, formation chips and count bar
-- [ ] *Musik & Video* page: music cut, final file, videos
-- [ ] The old phone edit panes removed; browser check at 390 px
+- [x] Swipeable step cards with the stage editor, formation chips and count bar
+- [x] *Musik & Video* page: music cut, final file, videos
+- [x] The old phone edit panes removed; browser check at 390 px
+- Notes (built 2026-10-30):
+  - Below 840 px, *Bearbeiten* on the act page (`?view=play&edit=true`) shows step cards instead of the studio edit layout. The card is A's card: you swipe sideways, rename the step in place and edit the stage live. Neighbouring cards show a still stage. Under the stage sits a labelled action bar: *Aufstellung · Wege · Plätze* (opens the spot sheet with cast and path tools), the formation presets, align and copy (*Vorher* when on *Wege*), *Mehrere* and *+ Platz*. B's eight-column count cells form the count bar, with keyframe marks; tapping a cell seeks there. The foot holds *Schritt hier*, *Schritt …* (the step desk: delete it or form a part) and *Rückgängig*. The head holds undo/redo, *Musik & Video* (hidden while editing an evening) and *Fertig*. Space and arrow keys work, Shift+arrow moves by one count. An act with no steps gets a panel with the next action: upload music, or set the first step.
+  - Phone editing only offers the stage tools now (`ActStudioModeStart.stageOnly`). The mode takes a starting tool (`tool`), so pages no longer call `mode.choose` while rendering.
+  - `/acts/$actId/musik` (*Musik & Video*): music and video tabs over the waveform, with the existing song, final-file and video lists and desks, and the shared transport. Its back button returns to the act editor and keeps the act page's search. Phase 14's desk can link to the same route (`useStudioMusicRoute`).
+  - The visit history survives moving between the editor and *Musik & Video*. Visits are counted per act, and the history is forgotten 5 s after the last one ends.
+  - `@furria/ui` fixes: `KkLanePhone` is the `kk-practice` container with layout containment, so practice sheets and desks inside it no longer bleed off the left edge. Pressed `KkLaneButton`s keep their ink on hover. The `KkEightsReel` count cells are 44 px tall.
+  - The old phone edit panes no longer render on phones. Their code (`ActStudioToolTabs`, the strips, the `studioFrameOf` edit frames) still serves the wide studio until phase 14 replaces it, and is removed together with it.
+  - Left open: step descriptions aren't on the cards yet (the step desk has no description field), and the setup progress chip comes with phase 16.
+  - Browser check at 390×844 light, 390×664 dark and 820×1180, on act 3 as Lena and act 14 (empty) as Sabine: no page scroll, the sheet sits inside the screen, and *Musik & Video* opens and comes back.
+  - Review fixes:
+    - Cards only show steps with times; count cells come from one sheet per render and only for the cards next to the current one.
+    - Keys ignore held-down repeats, open sheets and desks, and sliders/tabs.
+    - Cards other than the current one are `inert`.
+    - Labels start with the button's visible text.
+  - Left for 16/19:
+    - The count and eight helpers are now in three places (`lab-editor-a/lane-time`, `lab-editor-b/count-sheet` and the new `act-studio/step-cards`). The lab copies go away in 16.
+    - The 5-s visit grace in `studio-history-store` has no test.
+    - On phones, `ActStudioBody` still runs the song, final-file and video hooks (they stay idle).
 
 ### Phase 16 — Promote the set-up checklist
 Goal: an empty act guides its editors to a first playable version. Follows 14 and 15.

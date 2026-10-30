@@ -1,20 +1,21 @@
 import { describe, expect, it } from 'vitest';
 import type { StudioModeStart } from './studio-mode';
-import { firstStudioToolOf, onDeskOf, shownStudioToolOf, studioToolsOf } from './studio-mode';
+import { firstStudioToolOf, shownStudioToolOf, studioEditorOf, studioToolsOf } from './studio-mode';
 
 const startOf = (overrides: Partial<StudioModeStart>): StudioModeStart => ({
   silent: false,
   evening: false,
   editing: false,
-  desk: false,
+  stageOnly: false,
+  tool: null,
   ...overrides,
 });
 
 describe('studioToolsOf', () => {
   it.each([
-    [startOf({ desk: true }), ['music', 'formation', 'movement', 'video']],
+    [startOf({}), ['music', 'steps', 'formation', 'movement', 'video']],
+    [startOf({ stageOnly: true }), ['formation', 'movement']],
     [startOf({ evening: true }), ['formation', 'movement']],
-    [startOf({ evening: true, desk: true }), ['formation', 'movement']],
   ])('offers the tools for %o', (start, expected) => {
     expect(studioToolsOf(start)).toEqual(expected);
   });
@@ -23,33 +24,36 @@ describe('studioToolsOf', () => {
 describe('firstStudioToolOf', () => {
   it.each([
     [startOf({}), 'steps'],
-    [startOf({ desk: true }), 'formation'],
-    [startOf({ silent: true, desk: true }), 'music'],
+    [startOf({ silent: true }), 'music'],
+    [startOf({ stageOnly: true }), 'formation'],
+    [startOf({ silent: true, stageOnly: true }), 'formation'],
     [startOf({ silent: true, evening: true }), 'formation'],
-  ])('starts %o on its first tool', (start, expected) => {
+    [startOf({ tool: 'video' }), 'video'],
+    [startOf({ stageOnly: true, tool: 'movement' }), 'movement'],
+    [startOf({ stageOnly: true, tool: 'music' }), 'formation'],
+  ] as const)('starts %o on its first tool', (start, expected) => {
     expect(firstStudioToolOf(start)).toBe(expected);
   });
 });
 
 describe('shownStudioToolOf', () => {
   it.each([
-    ['steps', startOf({ desk: true }), 'formation'],
+    ['steps', startOf({ stageOnly: true }), 'formation'],
     ['steps', startOf({}), 'steps'],
     ['music', startOf({ evening: true }), 'formation'],
-    ['video', startOf({ desk: true }), 'video'],
+    ['movement', startOf({ stageOnly: true }), 'movement'],
   ] as const)('shows %s for %o', (chosen, start, expected) => {
     expect(shownStudioToolOf(chosen, start)).toBe(expected);
   });
 });
 
-describe('onDeskOf', () => {
+describe('studioEditorOf', () => {
   it.each([
-    [true, true, 'formation', true],
-    [true, true, 'movement', true],
-    [true, true, 'music', false],
-    [true, false, 'formation', false],
-    [false, true, 'formation', false],
-  ] as const)('desk %s, editing %s, %s', (desk, editing, tool, expected) => {
-    expect(onDeskOf(desk, editing, tool)).toBe(expected);
+    [true, true, true, 'desk'],
+    [true, true, false, 'cards'],
+    [true, false, true, null],
+    [false, true, true, null],
+  ] as const)('stage only %s, editing %s, wide %s', (stageOnly, editing, wide, expected) => {
+    expect(studioEditorOf(stageOnly, editing, wide)).toBe(expected);
   });
 });

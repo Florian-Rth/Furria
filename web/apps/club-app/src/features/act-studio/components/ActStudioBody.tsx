@@ -5,25 +5,16 @@ import { ActDeskView } from '@/features/act-desk/components/ActDeskView';
 import { PracticeSteps } from '@/features/act-practice/components/PracticeSteps';
 import type { Studio } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
-import { useActStudioFinal } from '../hooks/use-act-studio-final';
-import { useActStudioSongs } from '../hooks/use-act-studio-songs';
 import { useActStudioStage } from '../hooks/use-act-studio-stage';
-import { useActStudioStepTool } from '../hooks/use-act-studio-step-tool';
-import { useActStudioTakes } from '../hooks/use-act-studio-takes';
 import type { StudioEveningContext } from '../hooks/use-studio-screen';
 import { useStudioScreen } from '../hooks/use-studio-screen';
 import { STUDIO_LABEL } from '../studio-copy';
 import { ActStudioControls } from './ActStudioControls';
-import { ActStudioFinalDesk } from './ActStudioFinalDesk';
 import { ActStudioHead } from './ActStudioHead';
 import { ActStudioHero } from './ActStudioHero';
 import { ActStudioLargeKeys } from './ActStudioLargeKeys';
 import { ActStudioSide } from './ActStudioSide';
-import { ActStudioSongDesk } from './ActStudioSongDesk';
-import { ActStudioSpotSheet } from './ActStudioSpotSheet';
-import { ActStudioStepDesk } from './ActStudioStepDesk';
-import { ActStudioToolTabs } from './ActStudioToolTabs';
-import { ActStudioVideoDesk } from './ActStudioVideoDesk';
+import { StepCardsView } from './StepCardsView';
 
 interface ActStudioBodyProps {
   actId: number;
@@ -44,63 +35,34 @@ export const ActStudioBody: FC<ActStudioBodyProps> = ({
 }) => {
   const screen = useStudioScreen(actId, studio, viewerId, canEdit, cast, context);
   const editor = useActStudioStage(screen);
-  const takes = useActStudioTakes(screen);
-  const songs = useActStudioSongs(screen);
-  const finalList = useActStudioFinal(screen);
-  const stepTool = useActStudioStepTool(screen);
-  const deskBand =
-    screen.eveningBand === null ? null : <KkStudioView.BandNote text={screen.eveningBand} />;
-  const band =
-    screen.eveningBand === null ? null : (
-      <KkStudioView.Band>
-        <KkStudioView.BandNote text={screen.eveningBand} />
-      </KkStudioView.Band>
-    );
 
-  if (screen.mode.onDesk) {
-    return <ActDeskView screen={screen} editor={editor} takes={takes} band={deskBand} />;
+  if (screen.editor === 'cards') {
+    return <StepCardsView screen={screen} editor={editor} />;
+  }
+  if (screen.editor === 'desk') {
+    return <ActDeskView screen={screen} editor={editor} />;
   }
 
   const side = screen.large.on ? null : (
     <KkPracticeView.Side>
-      <ActStudioSide
-        screen={screen}
-        editor={editor}
-        takes={takes}
-        songs={songs}
-        finalList={finalList}
-        stepTool={stepTool}
-      />
+      <ActStudioSide screen={screen} />
     </KkPracticeView.Side>
   );
   const controls = screen.large.on ? (
     <ActStudioLargeKeys screen={screen} />
   ) : (
-    <ActStudioControls screen={screen} editor={editor} takes={takes} stepTool={stepTool} />
-  );
-
-  const tools = screen.large.on ? null : (
-    <KkStudioView.Tools>
-      <ActStudioToolTabs mode={screen.mode} />
-    </KkStudioView.Tools>
+    <ActStudioControls screen={screen} />
   );
 
   return (
-    <KkStudioView label={STUDIO_LABEL} editing={screen.mode.editing} largeText={screen.large.on}>
-      {band}
+    <KkStudioView label={STUDIO_LABEL} editing={false} largeText={screen.large.on}>
       <ActStudioHead screen={screen} />
       <KkPracticeView.Hero>
-        <ActStudioHero screen={screen} editor={editor} />
+        <ActStudioHero screen={screen} />
       </KkPracticeView.Hero>
       {side}
       <KkPracticeView.Controls>{controls}</KkPracticeView.Controls>
-      {tools}
       <PracticeSteps steps={screen.steps} onTraining={screen.startHall} />
-      <ActStudioSpotSheet screen={screen} editor={editor} />
-      <ActStudioSongDesk screen={screen} songs={songs} />
-      <ActStudioFinalDesk screen={screen} finalList={finalList} />
-      <ActStudioStepDesk screen={screen} tool={stepTool} />
-      <ActStudioVideoDesk screen={screen} takes={takes} />
     </KkStudioView>
   );
 };

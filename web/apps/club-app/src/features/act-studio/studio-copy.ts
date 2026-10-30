@@ -14,7 +14,6 @@ export type StudioTool = 'music' | 'steps' | 'formation' | 'movement' | 'video';
 export const STUDIO_LABEL = 'Üben und bearbeiten';
 export const STUDIO_EDIT = 'Bearbeiten';
 export const STUDIO_DONE = 'Fertig';
-export const STUDIO_TOOLS_LABEL = 'Werkzeug wählen';
 
 export const STUDIO_TOOLS: readonly { tool: StudioTool; label: string }[] = [
   { tool: 'music', label: 'Musik' },
@@ -63,15 +62,6 @@ export const STUDIO_SONG_REMOVE_SURE = 'Wirklich entfernen';
 export const STUDIO_SONG_PREPARING = 'wird vorbereitet';
 export const STUDIO_SONG_FAILED = 'ließ sich nicht vorbereiten';
 
-export const STUDIO_MARKS_LABEL = 'Schritte und Teile';
-export const STUDIO_NAME_LABEL = 'Name des Schritts';
-export const STUDIO_NAME_PLACEHOLDER = 'Name';
-export const STUDIO_NOTE_LABEL = 'Beschreibung des Schritts';
-export const STUDIO_NOTE_PLACEHOLDER = 'Beschreibung hinzufügen';
-
-export const STUDIO_RAIL_TITLE = 'Schritte';
-export const STUDIO_RAIL_LABEL = 'Alle Schritte nach Teilen';
-export const STUDIO_MARK_HERE = 'Neuer Schritt hier';
 export const STUDIO_STEP_DESK = 'Schritt bearbeiten';
 export const STUDIO_STEP_DESK_CLOSE = 'Schritt schließen';
 export const STUDIO_STEP = 'Schritt';
@@ -86,18 +76,11 @@ export const STUDIO_PART_REMOVE = 'Teil auflösen';
 export const STUDIO_PART_REMOVE_SURE = 'Wirklich auflösen';
 export const STUDIO_MAIN_VIDEO = 'Hauptvideo';
 export const STUDIO_MAIN_VIDEO_NONE = 'Keins';
-export const STUDIO_STEP_NAME_LENGTH = 80;
-export const STUDIO_STEP_NOTE_LENGTH = 2000;
 export const STUDIO_PART_NAME_LENGTH = 80;
 
-export const STUDIO_STAGE_LABEL = 'Bühne: Punkte antippen und ziehen';
 export const STUDIO_FRONT = 'Publikum';
-export const STUDIO_TOOLBAR_LABEL = 'Bühne bearbeiten';
-export const STUDIO_MULTI = 'Mehrere';
-export const STUDIO_MIRROR = 'Spiegeln';
 export const STUDIO_ONION = 'Vorher';
 export const STUDIO_NOTHING_SELECTED = 'Punkt antippen';
-export const STUDIO_SELECTION_OPEN = 'Auswahl zeigen';
 export const STUDIO_SPOTS = 'Plätze';
 export const STUDIO_SPOTS_CLOSE = 'Auswahl schließen';
 export const STUDIO_OPEN_SPOT = 'offen';
@@ -263,11 +246,6 @@ export const songRowLabelOf = (name: string): string => `${name}: an den Anfang 
 
 export const cutHandleLabelOf = (edge: 'start' | 'end', name: string): string =>
   edge === 'start' ? `Anfang von ${name} schneiden` : `Ende von ${name} schneiden`;
-
-export const markLabelOf = (number: number, name: string): string =>
-  name.trim() === ''
-    ? `${unnamedStepNameOf(number)}: dorthin springen`
-    : `${unnamedStepNameOf(number)} ${name}: dorthin springen`;
 
 export const borderLabelOf = (name: string): string => `Grenze nach ${name} verschieben`;
 

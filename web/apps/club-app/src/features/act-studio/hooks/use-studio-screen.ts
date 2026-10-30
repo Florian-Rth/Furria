@@ -1,3 +1,4 @@
+import { useKkLaneWide } from '@furria/ui/KkLaneWide';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import { usePlayerKeys } from '@/features/act-practice/hooks/use-player-keys';
@@ -17,11 +18,14 @@ import { useSongMutations, useStepMutations, useVideoMutations } from '../api';
 import { useEveningStageMutations } from '../evening-api';
 import type { StageMutations } from '../stage-api';
 import { useStageMutations } from '../stage-api';
+import type { StudioTool } from '../studio-copy';
 import { eveningBandOf } from '../studio-copy';
 import { workedPathsOf, workedStepsOf, workedStudioOf } from '../studio-edits';
 import { eveningStudioOf } from '../studio-evening';
 import type { ActStudioFrame } from '../studio-layout';
-import { largeTextFrameOf, studioFrameOf } from '../studio-layout';
+import { largeTextFrameOf, practiceFrameOf } from '../studio-layout';
+import type { StudioEditor } from '../studio-mode';
+import { studioEditorOf } from '../studio-mode';
 import type { ActStudioEdits } from './use-act-studio-edits';
 import { useActStudioEdits, useKeptPosition } from './use-act-studio-edits';
 import type { ActStudioMode } from './use-act-studio-mode';
@@ -37,7 +41,8 @@ export interface StudioEveningContext {
   evening: StudioEvening | null;
   startEditing: boolean;
   startHall: (() => void) | null;
-  desk?: boolean;
+  startTool?: StudioTool;
+  stageEditor?: boolean;
 }
 
 export interface StudioScreen {
@@ -51,6 +56,7 @@ export interface StudioScreen {
   videos: VideoMutations;
   final: StudioFinal;
   mode: ActStudioMode;
+  editor: StudioEditor | null;
   frame: ActStudioFrame;
   large: StudioLargeText;
   startHall: (() => void) | null;
@@ -68,13 +74,15 @@ export const useStudioScreen = (
   viewerId: number | null,
   canEdit: boolean,
   cast: readonly CastPerson[],
-  { evening, startEditing, startHall, desk = false }: StudioEveningContext,
+  { evening, startEditing, startHall, startTool, stageEditor = false }: StudioEveningContext,
 ): StudioScreen => {
+  const wide = useKkLaneWide();
   const mode = useActStudioMode(canEdit, {
     silent: !canPractise(source),
     evening: evening !== null,
     editing: startEditing,
-    desk,
+    stageOnly: stageEditor,
+    tool: startTool ?? null,
   });
   const music = useSongMutations(actId);
   const stageWrites = useEveningStageMutations(
@@ -113,15 +121,14 @@ export const useStudioScreen = (
     eveningBand:
       evening !== null && mode.editing ? eveningBandOf(evening.title, evening.startsAt) : null,
     mode,
+    editor: studioEditorOf(stageEditor, mode.editing, wide),
     music,
     stageWrites,
     cast,
     manual,
     videos,
     final,
-    frame: large.on
-      ? largeTextFrameOf(video.hero, large.videoShown)
-      : studioFrameOf(mode.editing, mode.tool, video.hero),
+    frame: large.on ? largeTextFrameOf(video.hero, large.videoShown) : practiceFrameOf(video.hero),
     large,
     startHall,
     edits,

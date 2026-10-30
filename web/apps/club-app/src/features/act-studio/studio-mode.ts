@@ -5,34 +5,41 @@ export interface StudioModeStart {
   silent: boolean;
   evening: boolean;
   editing: boolean;
-  desk: boolean;
+  stageOnly: boolean;
+  tool: StudioTool | null;
 }
 
+export type StudioEditor = 'cards' | 'desk';
+
 const ALL_TOOLS: readonly StudioTool[] = STUDIO_TOOLS.map((entry) => entry.tool);
-const EVENING_TOOLS: readonly StudioTool[] = ['formation', 'movement'];
-const DESK_TOOLS: readonly StudioTool[] = ['formation', 'movement'];
+const STAGE_TOOLS: readonly StudioTool[] = ['formation', 'movement'];
 
-export const studioToolsOf = ({ evening, desk }: StudioModeStart): readonly StudioTool[] => {
-  if (evening) {
-    return EVENING_TOOLS;
+export const studioToolsOf = ({ evening, stageOnly }: StudioModeStart): readonly StudioTool[] =>
+  evening || stageOnly ? STAGE_TOOLS : ALL_TOOLS;
+
+export const firstStudioToolOf = (start: StudioModeStart): StudioTool => {
+  const { silent, evening, stageOnly, tool } = start;
+  if (tool !== null && studioToolsOf(start).includes(tool)) {
+    return tool;
   }
-
-  return desk ? ALL_TOOLS.filter((tool) => tool !== 'steps') : ALL_TOOLS;
-};
-
-export const firstStudioToolOf = ({ silent, evening, desk }: StudioModeStart): StudioTool => {
-  if (evening) {
+  if (evening || stageOnly) {
     return 'formation';
   }
-  if (silent) {
-    return 'music';
-  }
 
-  return desk ? 'formation' : 'steps';
+  return silent ? 'music' : 'steps';
 };
 
 export const shownStudioToolOf = (chosen: StudioTool, start: StudioModeStart): StudioTool =>
   studioToolsOf(start).includes(chosen) ? chosen : firstStudioToolOf(start);
 
-export const onDeskOf = (desk: boolean, editing: boolean, tool: StudioTool): boolean =>
-  desk && editing && DESK_TOOLS.includes(tool);
+export const studioEditorOf = (
+  stageOnly: boolean,
+  editing: boolean,
+  wide: boolean,
+): StudioEditor | null => {
+  if (!stageOnly || !editing) {
+    return null;
+  }
+
+  return wide ? 'desk' : 'cards';
+};

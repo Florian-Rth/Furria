@@ -9,29 +9,15 @@ import {
   PRACTICE_FORWARD,
   PRACTICE_TRANSPORT_LABEL,
 } from '@/features/act-practice/practice-copy';
-import type { ActStudioStage } from '../hooks/use-act-studio-stage';
-import type { ActStudioStepTool } from '../hooks/use-act-studio-step-tool';
-import type { ActStudioTakes } from '../hooks/use-act-studio-takes';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import { STUDIO_DONE, STUDIO_EDIT } from '../studio-copy';
-import { ActStudioCountStrip } from './ActStudioCountStrip';
-import { ActStudioMarkStrip } from './ActStudioMarkStrip';
-import { ActStudioVideoStrip } from './ActStudioVideoStrip';
 
 interface ActStudioControlsProps {
   screen: StudioScreen;
-  editor: ActStudioStage;
-  takes: ActStudioTakes;
-  stepTool: ActStudioStepTool;
 }
 
-export const ActStudioControls: FC<ActStudioControlsProps> = ({
-  screen,
-  editor,
-  takes,
-  stepTool,
-}) => {
-  const { playback, practice, mode, frame } = screen;
+export const ActStudioControls: FC<ActStudioControlsProps> = ({ screen }) => {
+  const { playback, practice, mode } = screen;
   const status = barStatusOf(practice.loopKind, practice.partName);
   const back = (): void => {
     practice.skip('back');
@@ -54,7 +40,7 @@ export const ActStudioControls: FC<ActStudioControlsProps> = ({
   return (
     <KkPracticeTransport label={PRACTICE_TRANSPORT_LABEL}>
       <KkStudioView.Strip>
-        <KkStudioView.Layer shown={frame.strip === 'segments'}>
+        <KkStudioView.Layer shown>
           <PracticeSegmentsLive
             playback={playback}
             practice={practice}
@@ -66,15 +52,6 @@ export const ActStudioControls: FC<ActStudioControlsProps> = ({
             text={status}
             accent={practice.loopKind !== 'off'}
           />
-        </KkStudioView.Layer>
-        <KkStudioView.Layer shown={frame.strip === 'marks'}>
-          <ActStudioMarkStrip screen={screen} tool={stepTool} />
-        </KkStudioView.Layer>
-        <KkStudioView.Layer shown={frame.strip === 'counts'}>
-          <ActStudioCountStrip screen={screen} editor={editor} />
-        </KkStudioView.Layer>
-        <KkStudioView.Layer shown={frame.strip === 'placement'}>
-          <ActStudioVideoStrip screen={screen} takes={takes} />
         </KkStudioView.Layer>
       </KkStudioView.Strip>
       <KkPracticeTransport.Pill>

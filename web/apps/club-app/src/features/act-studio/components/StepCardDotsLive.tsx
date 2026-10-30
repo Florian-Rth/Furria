@@ -1,45 +1,37 @@
+import { KkLaneDot } from '@furria/ui/KkLaneDot';
 import { KkStudioStage } from '@furria/ui/KkStudioStage';
 import type { FC } from 'react';
 import { usePlaybackSeconds } from '@/features/act-player/hooks/use-playback-seconds';
 import type { ActStudioStage } from '../hooks/use-act-studio-stage';
+import { useStepCardDots } from '../hooks/use-step-card-dots';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import { STUDIO_BEND_LABEL } from '../studio-copy';
-import { studioDotsAt } from '../studio-dots';
-import type { StageShare } from '../studio-edits';
 
-interface ActStudioStageSceneProps {
+interface StepCardDotsLiveProps {
   screen: StudioScreen;
   editor: ActStudioStage;
 }
 
-export const ActStudioStageScene: FC<ActStudioStageSceneProps> = ({ screen, editor }) => {
+export const StepCardDotsLive: FC<StepCardDotsLiveProps> = ({ screen, editor }) => {
   const seconds = usePlaybackSeconds(screen.playback.player);
-  const dots = studioDotsAt(editor.scene, seconds, editor.selected, !editor.formation).map(
-    (dot) => {
-      const press = (share: StageShare): void => {
-        editor.press(dot.spotId, share);
-      };
-
-      return (
-        <KkStudioStage.Dot
-          key={dot.spotId}
-          x={dot.x}
-          y={dot.y}
-          number={dot.number}
-          kind={dot.kind}
-          selected={dot.selected}
-          dimmed={dot.dimmed}
-          gliding={false}
-          turn={dot.turn}
-          label={dot.label}
-          onPress={press}
-          onMove={editor.move}
-          onEnd={editor.end}
-        />
-      );
-    },
-  );
-
+  const dots = useStepCardDots(screen, editor, seconds).map((dot) => (
+    <KkLaneDot
+      key={dot.key}
+      x={dot.x}
+      y={dot.y}
+      number={dot.number}
+      name={dot.name}
+      kind={dot.kind}
+      selected={dot.selected}
+      dimmed={dot.dimmed}
+      label={dot.label}
+      nameAbove={dot.nameAbove}
+      onPress={dot.press}
+      onMove={editor.move}
+      onEnd={editor.end}
+      onNudge={dot.nudge}
+    />
+  ));
   const handles = editor.movement.handles.map((handle) => {
     const press = (): void => {
       editor.movement.bendPress(handle.spotId);

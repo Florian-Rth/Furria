@@ -1,6 +1,7 @@
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
 import { KkLaneButton } from '@furria/ui/KkLaneButton';
 import type { FC } from 'react';
+import { useStudioMusicRoute } from '@/features/act-studio/hooks/use-studio-music-route';
 import { useVisitHistory } from '@/features/act-studio/hooks/use-visit-history';
 import {
   DESK_BACK,
@@ -45,12 +46,14 @@ export const DeskTopBar: FC<DeskTopBarProps> = ({ desk, zoom }) => {
   const zoomOut = (): void => {
     zoom.zoom(-1);
   };
+  const openMusic = useStudioMusicRoute(screen.actId);
   const music = (): void => {
-    mode.choose('music');
+    openMusic('music');
   };
-  const musicButton = mode.tools.includes('music') ? (
-    <KkLaneButton text={DESK_MUSIC_PAGE} glyph="music" onPress={music} />
-  ) : null;
+  const musicButton =
+    screen.evening === null ? (
+      <KkLaneButton text={DESK_MUSIC_PAGE} glyph="music" onPress={music} />
+    ) : null;
   const playText = practice.playing ? DESK_PAUSE : DESK_PLAY;
   const playGlyph = practice.playing ? 'pause' : 'play';
   const stepLocked = !practice.canStep;

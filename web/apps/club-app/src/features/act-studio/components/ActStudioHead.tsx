@@ -6,25 +6,13 @@ import type { FC } from 'react';
 import { PracticeCountLive } from '@/features/act-practice/components/PracticeCountLive';
 import { PRACTICE_STEPS_OPEN } from '@/features/act-practice/practice-copy';
 import type { StudioScreen } from '../hooks/use-studio-screen';
-import { ActStudioStepTexts } from './ActStudioStepTexts';
 
 interface ActStudioHeadProps {
   screen: StudioScreen;
 }
 
 export const ActStudioHead: FC<ActStudioHeadProps> = ({ screen }) => {
-  const { practice, steps, playback, mode } = screen;
-  const writing = mode.editing && mode.tool === 'steps' && practice.step !== null;
-  const titles = writing ? (
-    <ActStudioStepTexts screen={screen} />
-  ) : (
-    <KkPracticeSteps.Trigger label={PRACTICE_STEPS_OPEN} expanded={steps.open} onOpen={steps.show}>
-      <KkPracticeView.Titles>
-        <KkPracticeStepName stepKey={practice.stepKey} name={practice.stepName} />
-        <KkPracticeDescription stepKey={practice.stepKey} text={practice.note} />
-      </KkPracticeView.Titles>
-    </KkPracticeSteps.Trigger>
-  );
+  const { practice, steps, playback } = screen;
 
   const count = screen.large.on ? null : (
     <PracticeCountLive player={playback.player} segments={playback.segments} />
@@ -32,7 +20,16 @@ export const ActStudioHead: FC<ActStudioHeadProps> = ({ screen }) => {
 
   return (
     <KkPracticeView.Head>
-      {titles}
+      <KkPracticeSteps.Trigger
+        label={PRACTICE_STEPS_OPEN}
+        expanded={steps.open}
+        onOpen={steps.show}
+      >
+        <KkPracticeView.Titles>
+          <KkPracticeStepName stepKey={practice.stepKey} name={practice.stepName} />
+          <KkPracticeDescription stepKey={practice.stepKey} text={practice.note} />
+        </KkPracticeView.Titles>
+      </KkPracticeSteps.Trigger>
       {count}
     </KkPracticeView.Head>
   );

@@ -1,6 +1,6 @@
 import { useEffect } from 'react';
 import { historyKeyOf } from '../studio-history-keys';
-import { forgetHistory } from '../studio-history-store';
+import { enterVisit, leaveVisit } from '../studio-history-store';
 import { useStudioHistory } from './use-studio-history';
 import { useStudioUndo } from './use-studio-undo';
 
@@ -49,12 +49,14 @@ export const useStudioVisit = (actId: number | null): void => {
     };
   }, [actId, undo, redo, canUndo, canRedo]);
 
-  useEffect(
-    () => () => {
-      if (actId !== null) {
-        forgetHistory(actId);
-      }
-    },
-    [actId],
-  );
+  useEffect(() => {
+    if (actId === null) {
+      return;
+    }
+    enterVisit(actId);
+
+    return () => {
+      leaveVisit(actId);
+    };
+  }, [actId]);
 };
