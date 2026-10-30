@@ -62,6 +62,20 @@ export const ActRefSchema = z.object({
 });
 export type ActRef = z.infer<typeof ActRefSchema>;
 
+export const EveningRunningOrderLineSchema = ActRefSchema.extend({
+  position: z.number().int().nonnegative(),
+  stageStartsAt: z.iso.datetime({ offset: true }),
+  own: z.boolean(),
+});
+export type EveningRunningOrderLine = z.infer<typeof EveningRunningOrderLineSchema>;
+
+export const EveningRunningOrderSchema = z.object({
+  calendarEntryId: z.number().int(),
+  confirmed: z.boolean(),
+  lines: z.array(EveningRunningOrderLineSchema),
+});
+export type EveningRunningOrder = z.infer<typeof EveningRunningOrderSchema>;
+
 export const CastPersonSchema = PortraitPersonRefSchema.extend({ absent: z.boolean() });
 export type CastPerson = z.infer<typeof CastPersonSchema>;
 

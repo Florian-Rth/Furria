@@ -290,10 +290,19 @@ Goal: open spots appear for every training, including kids without accounts.
 
 ### Phase 8 — Running order visible to members (∥ B)
 Goal: everyone who sees an evening sees when each act is on.
-- [ ] Server: read-only running order for everyone who sees the evening (position + approximate time from the evening's start and act lengths); planner wishes left out for non-planners
-- [ ] Calendar sheet of an evening: section with the running order, own group and acts highlighted
-- [ ] Act page *Abende*: position + approximate time, full-contrast titles, state as a chip (*im Ablauf* / *noch offen*)
-- [ ] Endpoint tests for visibility and the time derivation
+- [x] Server: read-only running order for everyone who sees the evening (position + approximate time from the evening's start and act lengths); planner wishes left out for non-planners
+- [x] Calendar sheet of an evening: section with the running order, own group and acts highlighted
+- [x] Act page *Abende*: position + approximate time, full-contrast titles, state as a chip (*im Ablauf* / *noch offen*)
+- [x] Endpoint tests for visibility and the time derivation
+
+Done 2026-10-30. `GET /calendar/entries/{id}/running-order` answers whoever sees the entry (else
+404): the placed acts with position, approximate stage time and `own` (her group or her evening
+cast), plus whether the order is confirmed; no rules, wishes or findings. Stage time = evening
+start + each earlier act's length + a 2-minute changeover; length = adopted final file, else the
+working mix, else the kind's typical length (dance 6, show 8, music 5, speech 10, point/none 5 min)
+— Core `StageClock`. The first act shows the start, later ones *ca.* rounded to 5 minutes. The
+studio read's evening appearance carries `position` + `stageStartsAt` instead of `placed`.
+`KkHubRow` gained `dimWhenInert` so the act's evening titles keep full contrast when not linked.
 
 ### Phase 9 — ⚖ Lab: the member's act, act-kind templates, *Üben* (∥ C)
 Goal: Florian picks how members see their act and how each act kind looks.

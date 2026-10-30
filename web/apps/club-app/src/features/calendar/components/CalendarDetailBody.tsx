@@ -12,6 +12,7 @@ import { EDIT_LABEL, EVENT_LINK_LABEL, FACT_LABELS } from '../calendar-agenda-co
 import { useCalendarDetail } from '../hooks/use-calendar-detail';
 import type { CalendarEntry } from '../schemas';
 import { CalendarGroupTags } from './CalendarGroupTags';
+import { CalendarRunningOrderSection } from './CalendarRunningOrderSection';
 
 const BANNER = aspectRatioCss('banner');
 
@@ -121,6 +122,7 @@ export const CalendarDetailBody: FC<CalendarDetailBodyProps> = ({ entry }) => {
           </KkCalendarDetail.Fact>
           {eventFact}
         </KkCalendarDetail.Facts>
+        <CalendarRunningOrderSection entry={entry} />
       </KkCalendarDetail.Body>
       {foot}
     </KkCalendarDetail>

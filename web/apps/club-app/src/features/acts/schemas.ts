@@ -171,7 +171,8 @@ export type EveningChoreography = z.infer<typeof EveningChoreographySchema>;
 
 export const StudioAppearanceSchema = z.object({
   appearanceId: z.int(),
-  placed: z.boolean(),
+  position: z.int().nullable(),
+  stageStartsAt: z.iso.datetime({ offset: true }).nullable(),
   added: z.array(StudioPersonSchema),
   removedPersonIds: z.array(z.int()),
   spotChanges: z.array(StudioSpotChangeSchema),

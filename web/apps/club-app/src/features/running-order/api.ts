@@ -11,6 +11,7 @@ import {
   requestActOpenAppearancesRemoval,
   requestActs,
   requestActUpdate,
+  requestEveningRunningOrder,
   requestRunningOrder,
   requestRunningOrderConfirmation,
   requestRunningOrderDeletion,
@@ -30,6 +31,7 @@ import type {
   ActForm,
   ActsResponse,
   CreatedAct,
+  EveningRunningOrder,
   RunningOrderBody,
   RunningOrderResponse,
   RunningOrdersResponse,
@@ -68,6 +70,20 @@ export const useActsQuery = (
       ? () => withFreshAccessToken((accessToken) => requestActs(sessionYear, accessToken))
       : skipToken,
     placeholderData: keepPreviousData,
+  });
+
+export const useEveningRunningOrderQuery = (
+  calendarEntryId: number | null,
+): UseQueryResult<EveningRunningOrder, Error> =>
+  useQuery({
+    queryKey: queryKeys.eveningRunningOrder(calendarEntryId),
+    queryFn:
+      calendarEntryId === null
+        ? skipToken
+        : () =>
+            withFreshAccessToken((accessToken) =>
+              requestEveningRunningOrder(calendarEntryId, accessToken),
+            ),
   });
 
 const archivedNoticeOf = (

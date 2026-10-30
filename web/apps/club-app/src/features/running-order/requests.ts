@@ -6,6 +6,7 @@ import type {
   ActForm,
   ActsResponse,
   CreatedAct,
+  EveningRunningOrder,
   RunningOrderBody,
   RunningOrderResponse,
   RunningOrdersResponse,
@@ -15,6 +16,7 @@ import type {
 import {
   ActsResponseSchema,
   CreatedActSchema,
+  EveningRunningOrderSchema,
   RunningOrderResponseSchema,
   RunningOrdersResponseSchema,
   SuggestionLineSchema,
@@ -33,6 +35,15 @@ export const isRunningOrderConflict = (error: Error | null): boolean =>
   error instanceof RunningOrderConflictError;
 
 const runningOrderPathOf = (eventId: number): string => `/api/events/${eventId}/running-order`;
+
+export const requestEveningRunningOrder = (
+  calendarEntryId: number,
+  accessToken: string,
+): Promise<EveningRunningOrder> =>
+  apiFetch(`/api/calendar/entries/${calendarEntryId}/running-order`, {
+    schema: EveningRunningOrderSchema,
+    accessToken,
+  });
 
 const actsPathOf = (sessionYear: number | null): string =>
   sessionYear === null ? '/api/acts' : `/api/acts?session=${sessionYear}`;
