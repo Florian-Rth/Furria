@@ -5,6 +5,7 @@ using Furria.Api.Media;
 using Furria.Api.Results;
 using Furria.Application.Club;
 using Furria.Application.Studio;
+using Furria.Core.Club;
 using Furria.Core.Media;
 using Furria.Core.Studio;
 using Furria.Infrastructure.Studio;
@@ -54,6 +55,7 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
                 CanEditSettings = details.Viewer.CanEditSettings,
                 CanEditStudio = details.Viewer.CanEditStudio,
                 CanGrantCoEditors = details.Viewer.CanGrantCoEditors,
+                CanMarkAttendance = details.Viewer.CanMarkAttendance,
             },
             CoEditors =
             [
@@ -210,8 +212,27 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
             CalendarEntryId = training.CalendarEntryId,
             Title = training.Title,
             StartsAt = training.StartsAt,
-            AsksForResponse = training.AsksForResponse,
             OpenSpotIds = training.OpenSpotIds,
+            Responses = [.. training.Responses.Select(ToDto)],
+        };
+
+    private static StudioAttendanceDto ToDto(StudioAttendanceDetails response) =>
+        new()
+        {
+            PersonId = response.PersonId,
+            Answer = response.Answer,
+            IsRecordedOnBehalf = response.IsRecordedOnBehalf,
+            RecordedBy = response.RecordedBy,
+            Trail = [.. response.Trail.Select(ToDto)],
+        };
+
+    private static StudioAttendanceChangeDto ToDto(StudioAttendanceChangeDetails change) =>
+        new()
+        {
+            Answer = change.Answer,
+            IsRecordedOnBehalf = change.IsRecordedOnBehalf,
+            RecordedBy = change.RecordedBy,
+            RecordedAt = change.RecordedAt,
         };
 
     private static StudioEveningDto ToDto(StudioEveningDetails evening) =>
@@ -227,7 +248,8 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
         new()
         {
             AppearanceId = appearance.AppearanceId,
-            Placed = appearance.IsPlaced,
+            Position = appearance.Position,
+            StageStartsAt = appearance.StageStartsAt,
             Added = [.. appearance.Added.Select(ActPersonDto.From)],
             RemovedPersonIds = appearance.RemovedPersonIds,
             SpotChanges =
@@ -297,6 +319,8 @@ public sealed record StudioViewerDto
     public required bool CanEditStudio { get; init; }
 
     public required bool CanGrantCoEditors { get; init; }
+
+    public required bool CanMarkAttendance { get; init; }
 }
 
 public sealed record CoEditorDto
@@ -345,9 +369,33 @@ public sealed record StudioTrainingDto
 
     public required DateTimeOffset StartsAt { get; init; }
 
-    public required bool AsksForResponse { get; init; }
-
     public required IReadOnlyList<int> OpenSpotIds { get; init; }
+
+    public required IReadOnlyList<StudioAttendanceDto> Responses { get; init; }
+}
+
+public sealed record StudioAttendanceDto
+{
+    public required int PersonId { get; init; }
+
+    public required AttendanceAnswer Answer { get; init; }
+
+    public required bool IsRecordedOnBehalf { get; init; }
+
+    public required string? RecordedBy { get; init; }
+
+    public required IReadOnlyList<StudioAttendanceChangeDto> Trail { get; init; }
+}
+
+public sealed record StudioAttendanceChangeDto
+{
+    public required AttendanceAnswer Answer { get; init; }
+
+    public required bool IsRecordedOnBehalf { get; init; }
+
+    public required string? RecordedBy { get; init; }
+
+    public required DateTimeOffset RecordedAt { get; init; }
 }
 
 public sealed record StudioEveningDto
@@ -365,7 +413,9 @@ public sealed record StudioAppearanceDto
 {
     public required int AppearanceId { get; init; }
 
-    public required bool Placed { get; init; }
+    public required int? Position { get; init; }
+
+    public required DateTimeOffset? StageStartsAt { get; init; }
 
     public required IReadOnlyList<ActPersonDto> Added { get; init; }
 

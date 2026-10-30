@@ -1,27 +1,11 @@
-using System.Text.Json;
-using System.Text.Json.Serialization;
 using Furria.Core.Studio;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.EntityFrameworkCore.ChangeTracking;
 using Microsoft.EntityFrameworkCore.Metadata.Builders;
 
 namespace Furria.Infrastructure.Persistence.Configurations;
 
 public sealed class ChoreographyConfiguration : IEntityTypeConfiguration<Choreography>
 {
-    private static readonly JsonSerializerOptions DocumentJson = new(JsonSerializerDefaults.Web)
-    {
-        Converters = { new JsonStringEnumConverter(JsonNamingPolicy.CamelCase) },
-        RespectNullableAnnotations = true,
-        RespectRequiredConstructorParameters = true,
-    };
-
-    private static readonly ValueComparer<ChoreographyDocument> DocumentComparer = new(
-        (left, right) => Serialized(left) == Serialized(right),
-        document => Serialized(document).GetHashCode(StringComparison.Ordinal),
-        document => Deserialized(Serialized(document))
-    );
-
     public void Configure(EntityTypeBuilder<Choreography> builder)
     {
         builder.ToTable(
@@ -35,17 +19,15 @@ public sealed class ChoreographyConfiguration : IEntityTypeConfiguration<Choreog
                 );
                 table.HasCheckConstraint(
                     "ck_choreography_document",
-                    "jsonb_typeof(document) = 'object' AND jsonb_typeof(document -> 'tracks') = 'array'"
+                    ChoreographyDocumentColumn.ShapeCheck
                 );
             }
         );
         builder.HasKey(choreography => choreography.Id);
 
-        builder
-            .Property(choreography => choreography.Document)
-            .HasColumnType("jsonb")
-            .HasConversion(document => Serialized(document), json => Deserialized(json))
-            .Metadata.SetValueComparer(DocumentComparer);
+        ChoreographyDocumentColumn.Configure(
+            builder.Property(choreography => choreography.Document)
+        );
         builder.Property(choreography => choreography.Version).IsConcurrencyToken();
 
         builder
@@ -77,11 +59,4 @@ public sealed class ChoreographyConfiguration : IEntityTypeConfiguration<Choreog
         builder.Property(choreography => choreography.CreatedAt).HasDefaultValueSql("now()");
         builder.Property(choreography => choreography.UpdatedAt).HasDefaultValueSql("now()");
     }
-
-    private static string Serialized(ChoreographyDocument? document) =>
-        JsonSerializer.Serialize(document ?? ChoreographyDocument.Empty, DocumentJson);
-
-    private static ChoreographyDocument Deserialized(string json) =>
-        JsonSerializer.Deserialize<ChoreographyDocument>(json, DocumentJson)
-        ?? ChoreographyDocument.Empty;
 }

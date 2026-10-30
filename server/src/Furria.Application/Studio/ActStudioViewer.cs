@@ -9,4 +9,6 @@ public sealed record ActStudioViewer
     public required bool CanEditStudio { get; init; }
 
     public required bool CanGrantCoEditors { get; init; }
+
+    public required bool CanMarkAttendance { get; init; }
 }

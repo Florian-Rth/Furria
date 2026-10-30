@@ -273,15 +273,15 @@ public sealed class PutRunningOrderTests : IClassFixture<ApiTestFixture>
                 );
 
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                var placed = new List<bool?>();
+                var positions = new List<int?>();
                 foreach (var actId in new[] { tanz, marsch })
                 {
                     var evenings = (await StudioOfAsync(garde, actId)).Studio!.Evenings;
-                    placed.Add(
-                        evenings.Single(evening => evening.EventId == gala).Appearance?.Placed
+                    positions.Add(
+                        evenings.Single(evening => evening.EventId == gala).Appearance?.Position
                     );
                 }
-                Assert.Equal([true, false], placed);
+                Assert.Equal([0, null], positions);
             }
         );
 

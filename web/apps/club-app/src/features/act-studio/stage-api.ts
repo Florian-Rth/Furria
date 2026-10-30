@@ -13,9 +13,10 @@ import {
   requestSpotRemoval,
 } from './requests';
 import type { AddedSpot, SavedChoreography } from './schemas';
-import { expectedVersionOf } from './studio-formation';
+import { baseVersionOf } from './studio-formation';
 import type { SpotAssignment, TrackChanges } from './studio-spots';
 import {
+  changedTracksOf,
   withChoreographyVersion,
   withoutSpot,
   withSpotAdded,
@@ -40,13 +41,13 @@ export const useStageMutations = (actId: number): StageMutations => {
     queryClient.getQueryData<ActStudioResponse>(studioKey)?.studio?.choreography ?? null;
 
   const save = useApiMutation({
-    request: (_changes: TrackChanges, accessToken) => {
+    request: (changes: TrackChanges, accessToken) => {
       const current = cachedChoreography();
 
       return requestChoreographySave(
         actId,
-        expectedVersionOf(savedVersion.current, current?.version ?? null),
-        current?.tracks ?? [],
+        baseVersionOf(savedVersion.current, current?.version ?? null),
+        changedTracksOf(changes),
         accessToken,
       );
     },

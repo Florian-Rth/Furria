@@ -883,22 +883,30 @@ _Avoid_: section, scene, figure, sequence
 A **spot** is a numbered place in the formation (*Platz 1…n*), held by at most one person — at
 most one spot per person; a stand-in takes the spot and the choreography stays. The
 **choreography** is where every spot stands and moves: keyframes per spot on the music, in metres
-from the centre of the stage front, so a later change of the stage size never distorts it. It is
-saved whole with a version (a stale save is refused). An **appearance** may hold its own copy and
-its own spot holders; everything else it inherits from the act.
-_UI copy_: Platz, Aufstellung, Bewegung
+from the centre of the stage front, so a later change of the stage size never distorts it. Every
+write keeps a **version** (who, when, how: saved, restored, spot removed, final file adopted); the
+history lists them, and restoring one writes a new version — never a rewind. A save names the
+version it builds on and carries only the spots it changed; it is merged per spot and keyframe
+(a keyframe is known by its place on the music) and refused only where someone else changed the
+same keyframe since — the refusal names those spots and keyframes. Adopting a final file moves
+every keyframe, so nothing can be merged onto or restored from a version before it. An
+**appearance** may hold its own copy (with its own history) and its own spot holders; everything
+else it inherits from the act.
+_UI copy_: Platz, Aufstellung, Bewegung, Fassung
 _Avoid_: position (for the spot), dancer slot, formation (for the whole document)
 
 **Open spot** (training):
-A **spot** whose holder sent an *Absage* (*Nein*) to one of the group's coming trainings or
-rehearsals — the group owns the calendar entry or takes part in it. For that training the spot
+A **spot** whose holder's answer to one of the group's coming trainings or rehearsals is *Nein*
+(*Absage*) — the group owns the calendar entry or takes part in it, and the *Nein* is hers or a
+group admin's mark for her (every training asks its cast, ruled 2026-10-30). For that training the spot
 shows open on the stage, and the training names the **steps** in which the open spot moves, since
 that is where the others lose their reference. *Vielleicht* and no answer leave the spot held;
 trainings are always the session's version — the evening's changes never reach them. The
 **training mode** plays the act on the trainer's phone for the whole hall: the music over the
 speaker, the current step with its count and the formation large, the open spots of the chosen
 training marked, one tap to repeat a step (built 2026-10-30, RFC 0001 phase 16).
-_UI copy_: *offen*, *x von y da*, *Training starten*, *Schritt wiederholen*
+_UI copy_: *offen*, *x von y da*, *Platz n offen*, *Wer ist da*, *eingetragen von …*,
+*Training starten*, *Schritt wiederholen*
 _Avoid_: missing, gap (in copy), absence (that is the evening review's word)
 
 **Running order**:
@@ -906,7 +914,13 @@ The order of acts within a single event — a per-event ordering the club app ma
 of events. It is planned late: the responsible person assembles it roughly **two to three weeks
 before** the evening, so for most of an event's public life there is no running order at all.
 What the public website shows of it is the **order only, never times** — the sequence is stable
-enough to publish, the clock is not.
+enough to publish, the clock is not. Inside the club app everyone who sees the evening sees its
+placed acts read-only, her own group's and her own acts marked, each with an **approximate stage
+time**: the evening's start plus, for every act before it, its length and a two-minute changeover.
+An act's length is its music (the adopted final file, else the working mix); without music it is
+the typical length of its kind (dance 6, show 8, music 5, speech 10, point or no kind 5 minutes).
+The first act shows the evening's start, every later one *ca.* rounded to five minutes. Planner
+wishes, rules and findings stay with the planners (built 2026-10-30, RFC #53 phase 8).
 _UI copy_: Ablauf
 _Avoid_: **programme** (retired), setlist
 
@@ -966,6 +980,15 @@ Made precise when L2 was built (ruled 2026-10-02):
   Start.
 - **Owed horizon.** Start asks from 14 days before a training, rehearsal or meeting and from 42
   days before any other kind. The horizon limits what Start asks, not what is owed.
+- **Every training asks its cast** (ruled 2026-10-30, RFC 0002 phase 7;
+  [ADR-0032](docs/adr/0032-every-training-asks-its-cast.md)). A training or rehearsal that a group
+  owns or takes part in asks for a response whenever that group has an act (not archived) in the
+  entry's relevant session, switch or no switch. It **concerns** the act's whole cast, a guest from
+  another group included, so it is owed on her Start and she may answer it.
+- **Recorded on behalf.** A group admin of the act's group may mark a cast member present or absent
+  on one of the act's coming trainings — kids without accounts too. The mark is stored as her
+  response, naming who recorded it; the latest answer wins (her own answer replaces a mark), and
+  the training's trail shows both. Undoing a mark restores the answer before it.
 _UI copy_: Kalendereintrag; Eigentümer; Sichtbarkeit (Gruppe / Verein / Öffentlich); Mitwirkende
 Gruppen; Zu-/Absage
 _Avoid_: **appointment**, **group appointment**, schedule, calling it an event, collapsing

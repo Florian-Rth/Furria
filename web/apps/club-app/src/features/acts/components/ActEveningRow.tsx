@@ -26,8 +26,10 @@ export const ActEveningRow: FC<ActEveningRowProps> = ({ row, busy, onJoin }) => 
       label={row.label}
       icon="calendar"
       meta={row.meta}
-      hint={row.hint}
-      hintTone="accent"
+      hint={row.stateLabel}
+      hintTone={row.stateTone}
+      flag={row.changedFlag}
+      dimWhenInert={false}
       component={Link}
       to={row.to}
       search={row.search}

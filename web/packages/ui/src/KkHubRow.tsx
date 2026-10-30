@@ -58,6 +58,7 @@ interface KkHubRowProps {
   hintTone?: KkChipTone;
   flag?: string;
   highlight?: boolean;
+  dimWhenInert?: boolean;
   landing?: string;
   component?: ElementType;
   to?: string | null;
@@ -74,6 +75,7 @@ export const KkHubRow: FC<KkHubRowProps> = ({
   hintTone = 'neutral',
   flag,
   highlight = false,
+  dimWhenInert = true,
   landing,
   component,
   to,
@@ -86,8 +88,9 @@ export const KkHubRow: FC<KkHubRowProps> = ({
   const rowComponent = inert ? 'div' : component;
   const searchProps = search === undefined ? {} : { search };
   const routeProps = inert ? {} : { to, ...searchProps };
-  const labelColor = inert ? 'text.disabled' : 'text.primary';
-  const iconColor = inert ? 'text.disabled' : 'text.secondary';
+  const dimmed = inert && dimWhenInert;
+  const labelColor = dimmed ? 'text.disabled' : 'text.primary';
+  const iconColor = dimmed ? 'text.disabled' : 'text.secondary';
   const callerSx = Array.isArray(sx) ? sx : [sx];
 
   const metaLine = meta === undefined ? null : <KkMeta component="span">{meta}</KkMeta>;

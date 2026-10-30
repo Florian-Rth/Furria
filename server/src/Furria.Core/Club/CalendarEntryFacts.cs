@@ -12,11 +12,16 @@ public sealed record CalendarEntryFacts
 
     public required int SessionYear { get; init; }
 
+    public required CalendarEntryKind Kind { get; init; }
+
+    public required int CastSessionYear { get; init; }
+
     [Pure]
     public static CalendarEntryFacts Of(
         int? ownerGroupId,
         IReadOnlyList<int> participatingGroupIds,
         CalendarEntryVisibility visibility,
+        CalendarEntryKind kind,
         DateTimeOffset startsAt
     ) =>
         new()
@@ -25,5 +30,15 @@ public sealed record CalendarEntryFacts
             ParticipatingGroupIds = participatingGroupIds,
             Visibility = visibility,
             SessionYear = ClubSession.YearOf(ClubClock.DayOf(startsAt)),
+            Kind = kind,
+            CastSessionYear = CastAttendance.SessionYearOf(startsAt),
         };
+
+    [Pure]
+    public IEnumerable<int> GroupIds() =>
+        OwnerGroupId is { } owner ? [owner, .. ParticipatingGroupIds] : ParticipatingGroupIds;
+
+    [Pure]
+    public bool AsksTheCastOf(IReadOnlySet<GroupSession> actSessions) =>
+        CastAttendance.AsksTheCast(Kind, GroupIds(), CastSessionYear, actSessions);
 }

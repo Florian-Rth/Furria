@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { AttendanceAnswerSchema } from '@/features/attendance/schemas';
 import {
   ActGroupSchema,
   ActKindSchema,
@@ -44,6 +45,7 @@ export const ActPageSearchSchema = z.object({
   view: z.enum(['details', 'training']).optional().catch(undefined),
   evening: z.coerce.number().int().positive().optional().catch(undefined),
   training: z.coerce.number().int().positive().optional().catch(undefined),
+  roll: z.coerce.number().int().positive().optional().catch(undefined),
   edit: z.boolean().optional().catch(undefined),
 });
 export type ActPageSearch = z.infer<typeof ActPageSearchSchema>;
@@ -171,7 +173,8 @@ export type EveningChoreography = z.infer<typeof EveningChoreographySchema>;
 
 export const StudioAppearanceSchema = z.object({
   appearanceId: z.int(),
-  placed: z.boolean(),
+  position: z.int().nullable(),
+  stageStartsAt: z.iso.datetime({ offset: true }).nullable(),
   added: z.array(StudioPersonSchema),
   removedPersonIds: z.array(z.int()),
   spotChanges: z.array(StudioSpotChangeSchema),
@@ -187,12 +190,29 @@ export const StudioEveningSchema = z.object({
 });
 export type StudioEvening = z.infer<typeof StudioEveningSchema>;
 
+export const StudioAttendanceChangeSchema = z.object({
+  answer: AttendanceAnswerSchema,
+  isRecordedOnBehalf: z.boolean(),
+  recordedBy: z.string().nullable(),
+  recordedAt: z.iso.datetime({ offset: true }),
+});
+export type StudioAttendanceChange = z.infer<typeof StudioAttendanceChangeSchema>;
+
+export const StudioAttendanceSchema = z.object({
+  personId: z.int(),
+  answer: AttendanceAnswerSchema,
+  isRecordedOnBehalf: z.boolean(),
+  recordedBy: z.string().nullable(),
+  trail: z.array(StudioAttendanceChangeSchema),
+});
+export type StudioAttendance = z.infer<typeof StudioAttendanceSchema>;
+
 export const StudioTrainingSchema = z.object({
   calendarEntryId: z.int(),
   title: z.string(),
   startsAt: z.iso.datetime({ offset: true }),
-  asksForResponse: z.boolean(),
   openSpotIds: z.array(z.int()),
+  responses: z.array(StudioAttendanceSchema),
 });
 export type StudioTraining = z.infer<typeof StudioTrainingSchema>;
 
@@ -224,6 +244,7 @@ export const ActViewerSchema = z.object({
   canEditSettings: z.boolean(),
   canEditStudio: z.boolean(),
   canGrantCoEditors: z.boolean(),
+  canMarkAttendance: z.boolean(),
 });
 export type ActViewer = z.infer<typeof ActViewerSchema>;
 

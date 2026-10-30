@@ -37,6 +37,7 @@ public sealed class ActFinalTrackService
     private readonly ActStudioGate _gate;
     private readonly ActTimelineReader _timelines;
     private readonly SoundProfiles _profiles;
+    private readonly ChoreographyHistory _history;
     private readonly TimeProvider _timeProvider;
 
     public ActFinalTrackService(
@@ -44,6 +45,7 @@ public sealed class ActFinalTrackService
         ActStudioGate gate,
         ActTimelineReader timelines,
         SoundProfiles profiles,
+        ChoreographyHistory history,
         TimeProvider timeProvider
     )
     {
@@ -51,6 +53,7 @@ public sealed class ActFinalTrackService
         _gate = gate;
         _timelines = timelines;
         _profiles = profiles;
+        _history = history;
         _timeProvider = timeProvider;
     }
 
@@ -218,7 +221,7 @@ public sealed class ActFinalTrackService
 
         await RewriteStepsAsync(command.ActId, adoption, ct);
         await RewriteVideosAsync(command.ActId, adoption, ct);
-        await RewriteChoreographiesAsync(command.ActId, adoption, ct);
+        await RewriteChoreographiesAsync(accountId, command.ActId, adoption, ct);
         track.AdoptedAt = _timeProvider.GetUtcNow();
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
@@ -290,6 +293,7 @@ public sealed class ActFinalTrackService
     }
 
     private async Task RewriteChoreographiesAsync(
+        int accountId,
         int actId,
         FinalTrackAdoption adoption,
         CancellationToken ct
@@ -303,8 +307,16 @@ public sealed class ActFinalTrackService
             ?.Version;
         foreach (var choreography in choreographies)
         {
-            choreography.Document = adoption.Rewritten(choreography.Document);
-            choreography.Version++;
+            await _history.WriteAsync(
+                choreography,
+                new ChoreographyWrite
+                {
+                    AccountId = accountId,
+                    Document = adoption.Rewritten(choreography.Document),
+                    Kind = ChoreographyVersionKind.MusicAdopted,
+                },
+                ct
+            );
             if (choreography.CopiedFromVersion is { } copied && copied == sessionVersion)
                 choreography.CopiedFromVersion = copied + 1;
         }

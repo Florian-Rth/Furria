@@ -75,15 +75,28 @@ public sealed class ActStudioGate
         CancellationToken ct
     )
     {
+        var act = await EditorsActAsync(accountId, actId, ct);
+        if (!act.IsSuccess)
+            return act;
+
+        return ReadOnlyRefusalOf(act.Value) is { } refused
+            ? Result<ActSummary>.Carrying(refused)
+            : act;
+    }
+
+    public async Task<Result<ActSummary>> EditorsActAsync(
+        int accountId,
+        int actId,
+        CancellationToken ct
+    )
+    {
         var act = await ActAsync(actId, ct);
         if (act is null)
             return Result<ActSummary>.NotFound(UnknownActMessage);
-        if (!(await EditorshipOfAsync(accountId, act, ct)).MayEditStudio)
-            return Result<ActSummary>.Forbidden(NotStudioEditorMessage);
 
-        return ReadOnlyRefusalOf(act) is { } refused
-            ? Result<ActSummary>.Carrying(refused)
-            : Result<ActSummary>.Success(act);
+        return (await EditorshipOfAsync(accountId, act, ct)).MayEditStudio
+            ? Result<ActSummary>.Success(act)
+            : Result<ActSummary>.Forbidden(NotStudioEditorMessage);
     }
 
     public async Task<bool> LeadsGroupAsync(int accountId, ActSummary act, CancellationToken ct) =>

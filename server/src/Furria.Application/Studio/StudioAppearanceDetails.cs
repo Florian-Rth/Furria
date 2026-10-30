@@ -6,7 +6,9 @@ public sealed record StudioAppearanceDetails
 {
     public required int AppearanceId { get; init; }
 
-    public required bool IsPlaced { get; init; }
+    public required int? Position { get; init; }
+
+    public required DateTimeOffset? StageStartsAt { get; init; }
 
     public required IReadOnlyList<CastMember> Added { get; init; }
 

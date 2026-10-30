@@ -25,7 +25,7 @@ export const eveningStateOf = (evening: StudioEvening): EveningEntryState => {
     return 'open';
   }
 
-  return evening.appearance.placed ? 'placed' : 'joined';
+  return evening.appearance.position === null ? 'joined' : 'placed';
 };
 
 export const eveningEntryOf = (

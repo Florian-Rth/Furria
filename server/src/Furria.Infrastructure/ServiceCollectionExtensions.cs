@@ -107,9 +107,11 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ActEveningService>();
         services.AddScoped<ActStudioGate>();
         services.AddScoped<ActStudioService>();
+        services.AddScoped<ActAttendanceService>();
         services.AddScoped<ActSongService>();
         services.AddScoped<ActSpotService>();
         services.AddScoped<ActChoreographyService>();
+        services.AddScoped<ChoreographyHistory>();
         services.AddScoped<ActTimelineReader>();
         services.AddScoped<ActStepService>();
         services.AddScoped<ActPartService>();
@@ -117,6 +119,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ActFinalTrackService>();
         services.AddSingleton<SoundProfiles>();
         services.AddScoped<RunningOrderService>();
+        services.AddScoped<EveningStageTimes>();
         services.AddScoped<EventPictures>();
         services.AddScoped<ClubRecordService>();
         services.AddScoped<ManagementService>();

@@ -82,6 +82,7 @@ public sealed class ActStudioService
                     CanEditSettings = !act.IsClosed && canEditSettings,
                     CanEditStudio = editable && editorship.MayEditStudio,
                     CanGrantCoEditors = editable && editorship.LeadsGroup,
+                    CanMarkAttendance = editable && editorship.LeadsGroup,
                 },
                 CoEditors = seesStudio ? await CoEditorsOfAsync(actId, ct) : [],
                 Content = seesStudio ? await _reader.ContentOfAsync(act, ct) : null,

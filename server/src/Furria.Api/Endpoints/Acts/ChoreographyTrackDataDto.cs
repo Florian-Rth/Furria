@@ -11,13 +11,15 @@ public sealed record ChoreographyTrackDataDto
     public required IReadOnlyList<ChoreographyKeyframeDataDto> Keyframes { get; init; }
 
     [Pure]
-    public static ChoreographyDocument DocumentOf(IReadOnlyList<ChoreographyTrackDataDto> tracks) =>
-        new([
+    public static IReadOnlyList<SpotTrack> TracksOf(
+        IReadOnlyList<ChoreographyTrackDataDto> tracks
+    ) =>
+        [
             .. tracks.Select(track => new SpotTrack(
                 track.SpotId,
                 [.. track.Keyframes.Select(KeyframeOf)]
             )),
-        ]);
+        ];
 
     [Pure]
     private static Keyframe KeyframeOf(ChoreographyKeyframeDataDto keyframe) =>
@@ -69,6 +71,10 @@ public sealed class ChoreographyTrackDataValidator : AbstractValidator<Choreogra
             .Must(keyframes => keyframes.Count <= MostKeyframesPerTrack);
         RuleForEach(row => row.Keyframes).ChildRules(KeyframeRules);
     }
+
+    [Pure]
+    public static bool TracksEverySpotOnce(IReadOnlyList<ChoreographyTrackDataDto> tracks) =>
+        tracks.Select(track => track.SpotId).Distinct().Count() == tracks.Count;
 
     private static void KeyframeRules(InlineValidator<ChoreographyKeyframeDataDto> keyframe)
     {

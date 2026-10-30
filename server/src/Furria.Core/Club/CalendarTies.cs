@@ -12,17 +12,26 @@ public sealed record CalendarTies
 
     public required IReadOnlyDictionary<int, string?> AdminFunctions { get; init; }
 
+    public required IReadOnlySet<GroupSession> CastSessions { get; init; }
+
     [Pure]
     public bool IsTiedTo(CalendarEntryFacts entry) =>
         (entry.OwnerGroupId is { } owner && IsTiedToGroup(owner))
-        || entry.ParticipatingGroupIds.Any(IsTiedToGroup);
+        || entry.ParticipatingGroupIds.Any(IsTiedToGroup)
+        || IsAskedAsCast(entry);
 
     [Pure]
     public bool Concerns(CalendarEntryFacts entry) =>
-        entry.OwnerGroupId is { } owner
-            ? MemberGroupIds.Contains(owner)
-                || entry.ParticipatingGroupIds.Any(MemberGroupIds.Contains)
-            : HoldsRunningMembership && !Pauses.Any(pause => pause.Contains(entry.SessionYear));
+        IsAskedAsCast(entry)
+        || (
+            entry.OwnerGroupId is { } owner
+                ? MemberGroupIds.Contains(owner)
+                    || entry.ParticipatingGroupIds.Any(MemberGroupIds.Contains)
+                : HoldsRunningMembership && !Pauses.Any(pause => pause.Contains(entry.SessionYear))
+        );
+
+    [Pure]
+    public bool IsAskedAsCast(CalendarEntryFacts entry) => entry.AsksTheCastOf(CastSessions);
 
     [Pure]
     public int? RunsVia(CalendarEntryFacts entry) =>

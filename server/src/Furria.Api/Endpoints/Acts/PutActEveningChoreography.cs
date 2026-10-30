@@ -46,8 +46,18 @@ public sealed class PutActEveningChoreography
             return;
         }
 
+        if (result.Value.Version is not { } version)
+        {
+            await ChoreographyOverlapConflict.SendAsync(
+                HttpContext.Response,
+                result.Value.Overlaps,
+                ct
+            );
+            return;
+        }
+
         await Send.OkAsync(
-            new PutActEveningChoreographyResponse { Version = result.Value },
+            new PutActEveningChoreographyResponse { Version = version },
             cancellation: ct
         );
     }
@@ -56,9 +66,9 @@ public sealed class PutActEveningChoreography
         new()
         {
             Evening = new ActEveningCommand { ActId = req.ActId, EventId = req.EventId },
-            ExpectedVersion = req.ExpectedVersion,
+            BaseVersion = req.BaseVersion,
             SessionVersion = req.SessionVersion,
-            Document = ChoreographyTrackDataDto.DocumentOf(req.Tracks),
+            ChangedTracks = ChoreographyTrackDataDto.TracksOf(req.Tracks),
         };
 }
 
@@ -70,7 +80,7 @@ public sealed record PutActEveningChoreographyRequest
     [RouteParam]
     public required int EventId { get; init; }
 
-    public required int? ExpectedVersion { get; init; }
+    public required int? BaseVersion { get; init; }
 
     public required int? SessionVersion { get; init; }
 
@@ -83,12 +93,13 @@ public sealed class PutActEveningChoreographyValidator : Validator<PutActEvening
     {
         RuleFor(request => request.ActId).GreaterThan(0);
         RuleFor(request => request.EventId).GreaterThan(0);
-        RuleFor(request => request.ExpectedVersion).GreaterThanOrEqualTo(Choreography.FirstVersion);
+        RuleFor(request => request.BaseVersion).GreaterThanOrEqualTo(Choreography.FirstVersion);
         RuleFor(request => request.SessionVersion).GreaterThanOrEqualTo(Choreography.FirstVersion);
         RuleFor(request => request.Tracks)
             .Cascade(CascadeMode.Stop)
             .NotNull()
-            .Must(tracks => tracks.Count <= Spot.MostPerAct);
+            .Must(tracks => tracks.Count <= Spot.MostPerAct)
+            .Must(ChoreographyTrackDataValidator.TracksEverySpotOnce);
         RuleForEach(request => request.Tracks).SetValidator(new ChoreographyTrackDataValidator());
     }
 }

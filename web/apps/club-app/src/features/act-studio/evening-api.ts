@@ -24,9 +24,9 @@ import {
   withEveningStudio,
   withoutEveningCopy,
 } from './studio-evening';
-import { expectedVersionOf } from './studio-formation';
+import { baseVersionOf } from './studio-formation';
 import type { SpotAssignment, TrackChanges } from './studio-spots';
-import { withSpotPerson, withTracks } from './studio-spots';
+import { changedTracksOf, withSpotPerson, withTracks } from './studio-spots';
 
 export interface EveningMutations {
   join: UseMutationResult<void, Error, number>;
@@ -60,16 +60,16 @@ export const useEveningStageMutations = (
       ?.choreography ?? null;
 
   const save = useApiMutation({
-    request: (_changes: TrackChanges, accessToken) => {
+    request: (changes: TrackChanges, accessToken) => {
       const copy = cachedCopy();
 
       return requestEveningChoreographySave(
         actId,
         evening,
         {
-          expectedVersion: expectedVersionOf(savedVersion.current, copy?.version ?? null),
+          baseVersion: baseVersionOf(savedVersion.current, copy?.version ?? null),
           sessionVersion: copy?.copiedFromVersion ?? null,
-          tracks: copy?.tracks ?? [],
+          tracks: changedTracksOf(changes),
         },
         accessToken,
       );

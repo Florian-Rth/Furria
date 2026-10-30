@@ -267,34 +267,46 @@ that 403s.
 
 ### Phase 5 — Choreography history and merge (server) (∥ B)
 Goal: choreography saves merge per spot and keyframe and can be restored.
-- [ ] Choreography versions stored per save (author, time, document), for the session version and evening copies; migration
-- [ ] Save = base version + changed spots/keyframes; applied when untouched since the base, 409 with the overlapping spots/keyframes otherwise
-- [ ] Read the version list; restore writes a new version
-- [ ] Core rules pure and tested (merge, overlap detection); endpoint tests; CONTEXT.md *Choreography* updated
+- [x] Choreography versions stored per save (author, time, document), for the session version and evening copies; migration
+- [x] Save = base version + changed spots/keyframes; applied when untouched since the base, 409 with the overlapping spots/keyframes otherwise
+- [x] Read the version list; restore writes a new version
+- [x] Core rules pure and tested (merge, overlap detection); endpoint tests; CONTEXT.md *Choreography* updated
+- Notes: `choreography_version` keeps every write (kind *saved / restored / spotRemoved / musicAdopted*, author, time, full document); the migration seeds each existing choreography's current version. `PUT …/choreography` and `PUT …/evenings/{eventId}/choreography` take `baseVersion` + only the changed `tracks`; a track not sent stays untouched. Keyframes are matched by their music anchor (source + seconds); the three-way merge takes the other side wherever one side left a keyframe as it was, and refuses only same-keyframe clashes with `409 { errors.conflict, overlaps: [{ spotId, keyframes: [{ sourceMediaItemId, seconds }] }] }`. Adopting a final file is a barrier: a base or restore from before it answers 409. An evening copy made from an older session version merges the newer session into it. Reads/restores: `GET …/choreography/versions`, `POST …/choreography/versions/{version}/restore` and the same under `…/evenings/{eventId}/`; restore drops tracks of spots removed since. A save that loses the version race is re-merged on the server (up to 3 tries); a save that changes nothing keeps the version. History has no retention yet (full document per write) — revisit if it grows. The club app already sends only the changed tracks with `baseVersion`; the history list and restore get their UI in phase 6.
 
 ### Phase 6 — Undo everywhere (club app)
 Goal: every studio write can be undone, and conflicts ask only about real overlaps. Follows phase 5.
 - [ ] Undo service: per write an inverse, a snackbar with *Rückgängig*, the visit's history list, Ctrl+Z / Ctrl+Shift+Z
 - [ ] Wire it into every studio write (music, steps, parts, spots, keyframes, videos, cast, evening changes)
 - [ ] Choreography saves send patches; a 409 opens a merge prompt naming only the overlapping spots/keyframes
+- [ ] Version history of the choreography (session and evening copy) in the act's history, with *Wiederherstellen* (phase-5 endpoints)
 - [ ] Desks bound to an entity id and titled with it; a desk closes with a message when its target disappears
 - [ ] Gold band naming the evening while editing an evening's version
 - [ ] Pure tests for inverse-building; browser check of undo, conflict and band at 390 px and desktop
 
 ### Phase 7 — Attendance: every training asks its cast (∥ B)
 Goal: open spots appear for every training, including kids without accounts.
-- [ ] ADR + CONTEXT.md: group trainings/rehearsals always ask the act's cast; a group admin's mark is stored as the person's response with who recorded it, and her own answer replaces it
-- [ ] Server: response recorded on behalf (`RecordedBy`), the cast concerned for the entry, permission for group admins of the act's group; migration
-- [ ] Studio read: training rows with present/absent counts and open spots from both kinds of *Nein*
-- [ ] Club app: tap a name on the training to mark it absent/present (dense list, undoable); rows read *9 von 10 da · Platz 10 offen*; owed responses on Start include the new trainings
-- [ ] Endpoint tests (mark, override by her own answer, open spot, permission)
+- [x] ADR + CONTEXT.md: group trainings/rehearsals always ask the act's cast; a group admin's mark is stored as the person's response with who recorded it, and her own answer replaces it
+- [x] Server: response recorded on behalf (`RecordedBy`), the cast concerned for the entry, permission for group admins of the act's group; migration
+- [x] Studio read: training rows with present/absent counts and open spots from both kinds of *Nein*
+- [x] Club app: tap a name on the training to mark it absent/present (dense list, undoable); rows read *9 von 10 da · Platz 10 offen*; owed responses on Start include the new trainings
+- [x] Endpoint tests (mark, override by her own answer, open spot, permission)
+- Notes: ADR-0032. The entry keeps its switch (`asksForResponse`); `asksTheCast` is derived (training/rehearsal kind + a non-archived act of an owner/participating group in the entry's relevant session) and the calendar offers an answer on either. Guests in the cast are concerned (owed on Start, may see and answer). Marks: `PUT`/`DELETE /api/acts/{actId}/trainings/{calendarEntryId}/attendance/{personId}` (group admins of the act's group, coming trainings of the act, cast members only, *Ja*/*Nein*); the latest answer wins and `attendance_response_change` keeps the trail (backfilled). `DELETE` is the undo of a mark: it drops the latest mark from the trail and restores the answer before it (409 once she answered herself). Act page: a training row opens *Wer ist da* (side pane / bottom drawer) with the cast grid, the trail and *Training starten*; each mark raises a notice with *Rückgängig* (always the withdrawal). Answers and marks lock the response row (`FOR UPDATE`) so a withdrawal never overwrites an answer given meanwhile; the calendar shows a guest in the cast the group-only trainings of her act's group. `KkCastGrid` takes an optional add tile. Left for phase 6: undo notices with actions stay until answered (the notice queue's rule), so a fast run of marks queues one *Rückgängig* each.
 
 ### Phase 8 — Running order visible to members (∥ B)
 Goal: everyone who sees an evening sees when each act is on.
-- [ ] Server: read-only running order for everyone who sees the evening (position + approximate time from the evening's start and act lengths); planner wishes left out for non-planners
-- [ ] Calendar sheet of an evening: section with the running order, own group and acts highlighted
-- [ ] Act page *Abende*: position + approximate time, full-contrast titles, state as a chip (*im Ablauf* / *noch offen*)
-- [ ] Endpoint tests for visibility and the time derivation
+- [x] Server: read-only running order for everyone who sees the evening (position + approximate time from the evening's start and act lengths); planner wishes left out for non-planners
+- [x] Calendar sheet of an evening: section with the running order, own group and acts highlighted
+- [x] Act page *Abende*: position + approximate time, full-contrast titles, state as a chip (*im Ablauf* / *noch offen*)
+- [x] Endpoint tests for visibility and the time derivation
+
+Done 2026-10-30. `GET /calendar/entries/{id}/running-order` answers whoever sees the entry (else
+404): the placed acts with position, approximate stage time and `own` (her group or her evening
+cast), plus whether the order is confirmed; no rules, wishes or findings. Stage time = evening
+start + each earlier act's length + a 2-minute changeover; length = adopted final file, else the
+working mix, else the kind's typical length (dance 6, show 8, music 5, speech 10, point/none 5 min)
+— Core `StageClock`. The first act shows the start, later ones *ca.* rounded to 5 minutes. The
+studio read's evening appearance carries `position` + `stageStartsAt` instead of `placed`.
+`KkHubRow` gained `dimWhenInert` so the act's evening titles keep full contrast when not linked.
 
 ### Phase 9 — ⚖ Lab: the member's act, act-kind templates, *Üben* (∥ C)
 Goal: Florian picks how members see their act and how each act kind looks.
@@ -388,6 +400,8 @@ Goal: every screen of the studio and planner passes the bar.
 Goal: one home for the music rules, a clean database, docs in sync.
 - [ ] #52 gap: music-timeline and music-cut rules in one Core module used by writes and reads; tests moved onto it
 - [ ] Remove the UI-test data: acts 14–34 "PT …", event 66 "PT Probeabend", the running orders on evenings 19/20, *Wir tanzen hier* and cast changes on 16/17/20, act 5's partial build and waiting final file, act 3 part *Marsch* id 1→4
+- [ ] Choreography history retention: thin out old versions (keep every version of the last 14 days, then one per day) and page the version list
+- [ ] Media rendition read: check the signature before the lost-rendition repair, so unsigned requests can't queue regeneration jobs
 - [ ] CONTEXT.md, docs and `plan/club-app/group-year.md` status updated
 
 ## Risks & alternatives

@@ -78,6 +78,9 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<AttendanceResponse> AttendanceResponses => Set<AttendanceResponse>();
 
+    public DbSet<AttendanceResponseChange> AttendanceResponseChanges =>
+        Set<AttendanceResponseChange>();
+
     public DbSet<CalendarEntryGroup> CalendarEntryGroups => Set<CalendarEntryGroup>();
 
     public DbSet<Event> Events => Set<Event>();
@@ -148,6 +151,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<AppearanceSpot> AppearanceSpots => Set<AppearanceSpot>();
 
     public DbSet<Choreography> Choreographies => Set<Choreography>();
+
+    public DbSet<ChoreographyVersion> ChoreographyVersions => Set<ChoreographyVersion>();
 
     public DbSet<ActCoEditor> ActCoEditors => Set<ActCoEditor>();
 

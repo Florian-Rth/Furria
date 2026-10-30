@@ -47,6 +47,67 @@ public sealed class ActTimelineReader
         );
     }
 
+    public async Task<IReadOnlyDictionary<int, double>> MusicLengthsOfAsync(
+        IReadOnlyCollection<int> actIds,
+        CancellationToken ct
+    )
+    {
+        var adopted = await _dbContext
+            .ActFinalTracks.AsNoTracking()
+            .Where(track => actIds.Contains(track.ActId) && track.AdoptedAt != null)
+            .Select(track => new
+            {
+                track.ActId,
+                track.Version,
+                track.MediaItem!.DurationSeconds,
+            })
+            .ToListAsync(ct);
+        var adoptedLengths = adopted
+            .GroupBy(track => track.ActId)
+            .ToDictionary(
+                tracks => tracks.Key,
+                tracks =>
+                    tracks.OrderByDescending(track => track.Version).First().DurationSeconds ?? 0
+            );
+        var songs = await _dbContext
+            .ActSongs.AsNoTracking()
+            .Where(song => actIds.Contains(song.ActId))
+            .OrderBy(song => song.Position)
+            .ThenBy(song => song.Id)
+            .Select(song => new
+            {
+                song.ActId,
+                song.MediaItemId,
+                song.StartSeconds,
+                song.EndSeconds,
+                song.MediaItem!.DurationSeconds,
+            })
+            .ToListAsync(ct);
+        var mixLengths = songs
+            .GroupBy(song => song.ActId)
+            .ToDictionary(
+                mix => mix.Key,
+                mix =>
+                    new ActMusic(
+                        mix.Select(song => new MusicCut(
+                            song.MediaItemId,
+                            song.StartSeconds,
+                            song.EndSeconds ?? song.DurationSeconds ?? song.StartSeconds
+                        ))
+                    ).LengthSeconds
+            );
+
+        return actIds
+            .Distinct()
+            .ToDictionary(
+                actId => actId,
+                actId =>
+                    adoptedLengths.TryGetValue(actId, out var adoptedLength)
+                        ? adoptedLength
+                        : mixLengths.GetValueOrDefault(actId)
+            );
+    }
+
     public async Task<IReadOnlyList<MusicSource>> MusicOfAsync(int actId, CancellationToken ct)
     {
         var adopted = await _dbContext
