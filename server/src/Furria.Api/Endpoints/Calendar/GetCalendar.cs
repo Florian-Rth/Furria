@@ -150,6 +150,8 @@ public sealed record CalendarEntryDto
 
     public required bool AsksForResponse { get; init; }
 
+    public required bool AsksTheCast { get; init; }
+
     public required string? Description { get; init; }
 
     public required AttendanceAnswer? ViewerAnswer { get; init; }
@@ -175,6 +177,7 @@ public sealed record CalendarEntryDto
             ParticipatingGroups = [.. entry.ParticipatingGroups.Select(ParticipatingGroupDto.From)],
             Visibility = entry.Visibility,
             AsksForResponse = entry.AsksForResponse,
+            AsksTheCast = entry.AsksTheCast,
             Description = entry.Description,
             ViewerAnswer = entry.ViewerAnswer,
             IsRunning = entry.IsRunning,

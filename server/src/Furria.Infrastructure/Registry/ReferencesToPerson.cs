@@ -26,6 +26,7 @@ public static class ReferencesToPerson
         HerOwn<BoardSeat>(nameof(BoardSeat.PersonId)),
         HerOwn<KeyHolding>(nameof(KeyHolding.PersonId)),
         HerOwn<AttendanceResponse>(nameof(AttendanceResponse.PersonId)),
+        HerOwn<AttendanceResponseChange>(nameof(AttendanceResponseChange.PersonId)),
         HerOwn<NewsPostMention>(nameof(NewsPostMention.PersonId)),
         HerOwn<ActCastChange>(nameof(ActCastChange.PersonId)),
         HerOwn<FrozenCastMember>(nameof(FrozenCastMember.PersonId)),
@@ -72,6 +73,8 @@ public static class ReferencesToPerson
         HerAct<NewsPost>(nameof(NewsPost.LastSavedByPersonId)),
         HerAct<WebsitePicture>(nameof(WebsitePicture.UpdatedByPersonId)),
         HerAct<ActCoEditor>(nameof(ActCoEditor.GrantedByPersonId)),
+        HerAct<AttendanceResponse>(nameof(AttendanceResponse.RecordedByPersonId)),
+        HerAct<AttendanceResponseChange>(nameof(AttendanceResponseChange.RecordedByPersonId)),
     ];
 
     [Pure]

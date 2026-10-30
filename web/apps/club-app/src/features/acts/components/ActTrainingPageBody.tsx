@@ -10,13 +10,21 @@ interface ActTrainingPageBodyProps {
 const FREE_KEY = 'free';
 
 export const ActTrainingPageBody: FC<ActTrainingPageBodyProps> = ({ page }) => {
-  const studio = page.query.data?.studio;
+  const data = page.query.data;
+  const studio = data?.studio;
 
-  if (studio === undefined || studio === null || page.actId === null) {
+  if (data === undefined || studio === undefined || studio === null || page.actId === null) {
     return <ActPageLoading page={page} />;
   }
 
   const screenKey = `${page.actId}:${page.training?.calendarEntryId ?? FREE_KEY}`;
 
-  return <ActTrainingBody key={screenKey} studio={studio} training={page.training} />;
+  return (
+    <ActTrainingBody
+      key={screenKey}
+      studio={studio}
+      training={page.training}
+      cast={data.act.cast}
+    />
+  );
 };

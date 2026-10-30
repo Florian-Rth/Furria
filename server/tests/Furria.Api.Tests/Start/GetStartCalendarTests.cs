@@ -3,6 +3,8 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Calendar;
 using Furria.Api.Endpoints.Start;
 using Furria.Api.Tests.Events;
+using Furria.Api.Tests.RunningOrders;
+using Furria.Api.Tests.Studio;
 using Furria.Application.Start;
 using Furria.Core.Club;
 using Furria.Core.Groups;
@@ -483,6 +485,55 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
             }
         );
     }
+
+    [Fact]
+    public Task Should_OweAResponse_When_SheIsAGuestInTheCastOfTheGroupsTrainingThatAsksNothing() =>
+        _fixture.AtInstantAsync(
+            RunningOrderSeeds.InTheRunningSession,
+            async () =>
+            {
+                var ct = TestContext.Current.CancellationToken;
+                var today = _fixture.Today;
+                var ctx = await _fixture.BuildAsync(
+                    builder =>
+                    {
+                        StudioSeeds.GardeWithDancers(today)(builder);
+                        builder
+                            .Groups(groups =>
+                                groups.AddGroupMembership(
+                                    "clara-elferrat",
+                                    RunningOrderSeeds.Elferrat,
+                                    RunningOrderSeeds.Clara,
+                                    today.AddDays(-100)
+                                )
+                            )
+                            .Club(club =>
+                                club.AddCalendarEntry(
+                                    "garde-training",
+                                    "Training",
+                                    ClubClock.At(today.AddDays(2), new TimeOnly(18, 30)),
+                                    kind: CalendarEntryKind.Training,
+                                    visibility: CalendarEntryVisibility.Group,
+                                    ownerGroupAlias: RunningOrderSeeds.Garde
+                                )
+                            );
+                    },
+                    ct
+                );
+                await StudioSteps.GardetanzAsync(
+                    ctx,
+                    ct,
+                    added: [ctx.Identity.People.IdOf(RunningOrderSeeds.Clara)]
+                );
+                var clara = await ctx.Identity.ClientForAsync(RunningOrderSeeds.Clara, ct);
+
+                var (_, start) = await clara.GETAsync<GetStart, GetStartResponse>();
+
+                var training = EntryOf(start, IdOf(ctx, "garde-training"));
+                Assert.NotNull(training.Attendance);
+                Assert.True(training.Attendance.IsOwed);
+            }
+        );
 
     private static IReadOnlyList<StartEntryDto> EntriesOf(GetStartResponse start) =>
         start.Panels.SingleOrDefault(panel => panel.Kind == StartPanelKind.Calendar)?.Entries ?? [];

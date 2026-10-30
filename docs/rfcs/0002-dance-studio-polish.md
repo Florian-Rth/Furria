@@ -273,11 +273,12 @@ Goal: every studio write can be undone, and conflicts ask only about real overla
 
 ### Phase 7 — Attendance: every training asks its cast (∥ B)
 Goal: open spots appear for every training, including kids without accounts.
-- [ ] ADR + CONTEXT.md: group trainings/rehearsals always ask the act's cast; a group admin's mark is stored as the person's response with who recorded it, and her own answer replaces it
-- [ ] Server: response recorded on behalf (`RecordedBy`), the cast concerned for the entry, permission for group admins of the act's group; migration
-- [ ] Studio read: training rows with present/absent counts and open spots from both kinds of *Nein*
-- [ ] Club app: tap a name on the training to mark it absent/present (dense list, undoable); rows read *9 von 10 da · Platz 10 offen*; owed responses on Start include the new trainings
-- [ ] Endpoint tests (mark, override by her own answer, open spot, permission)
+- [x] ADR + CONTEXT.md: group trainings/rehearsals always ask the act's cast; a group admin's mark is stored as the person's response with who recorded it, and her own answer replaces it
+- [x] Server: response recorded on behalf (`RecordedBy`), the cast concerned for the entry, permission for group admins of the act's group; migration
+- [x] Studio read: training rows with present/absent counts and open spots from both kinds of *Nein*
+- [x] Club app: tap a name on the training to mark it absent/present (dense list, undoable); rows read *9 von 10 da · Platz 10 offen*; owed responses on Start include the new trainings
+- [x] Endpoint tests (mark, override by her own answer, open spot, permission)
+- Notes: ADR-0032. The entry keeps its switch (`asksForResponse`); `asksTheCast` is derived (training/rehearsal kind + a non-archived act of an owner/participating group in the entry's relevant session) and the calendar offers an answer on either. Guests in the cast are concerned (owed on Start, may see and answer). Marks: `PUT`/`DELETE /api/acts/{actId}/trainings/{calendarEntryId}/attendance/{personId}` (group admins of the act's group, coming trainings of the act, cast members only, *Ja*/*Nein*); the latest answer wins and `attendance_response_change` keeps the trail (backfilled). `DELETE` is the undo of a mark: it drops the latest mark from the trail and restores the answer before it (409 once she answered herself). Act page: a training row opens *Wer ist da* (side pane / bottom drawer) with the cast grid, the trail and *Training starten*; each mark raises a notice with *Rückgängig* (always the withdrawal). Answers and marks lock the response row (`FOR UPDATE`) so a withdrawal never overwrites an answer given meanwhile; the calendar shows a guest in the cast the group-only trainings of her act's group. `KkCastGrid` takes an optional add tile. Left for phase 6: undo notices with actions stay until answered (the notice queue's rule), so a fast run of marks queues one *Rückgängig* each.
 
 ### Phase 8 — Running order visible to members (∥ B)
 Goal: everyone who sees an evening sees when each act is on.

@@ -74,6 +74,7 @@ internal sealed record StartEntryRow(
             OwnerGroup?.GroupId,
             [.. ParticipatingGroups.Select(group => group.GroupId)],
             Visibility,
+            Kind,
             StartsAt
         );
 

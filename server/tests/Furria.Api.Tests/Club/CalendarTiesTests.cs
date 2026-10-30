@@ -100,10 +100,57 @@ public sealed class CalendarTiesTests
         Assert.False(ties.Sees(ClubOwned(), holdsClubRead: false));
     }
 
+    [Fact]
+    public void Should_ConcernAndShowTheTraining_When_SheIsInTheCastOfAnActOfTheTrainingsGroup()
+    {
+        var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear)]);
+        var training = TrainingOf(GroupOnly(DanceGuard));
+
+        Assert.Equal(
+            (true, true),
+            (guest.Concerns(training), guest.Sees(training, holdsClubRead: false))
+        );
+    }
+
+    [Fact]
+    public void Should_ConcernTheCast_When_TheActsGroupOnlyParticipatesInTheRehearsal()
+    {
+        var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear)]);
+        var rehearsal = GroupOwned(MensBallet, DanceGuard) with
+        {
+            Kind = CalendarEntryKind.Rehearsal,
+        };
+
+        Assert.True(guest.Concerns(rehearsal));
+    }
+
+    [Fact]
+    public void Should_NotConcernTheCast_When_TheEntryIsNoTrainingOrRehearsal()
+    {
+        var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear)]);
+
+        Assert.False(guest.Concerns(GroupOwned(DanceGuard)));
+    }
+
+    [Fact]
+    public void Should_NotConcernTheCast_When_TheActBelongsToAnotherSession()
+    {
+        var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear + 1)]);
+
+        Assert.False(guest.Concerns(TrainingOf(GroupOwned(DanceGuard))));
+    }
+
+    private static CalendarEntryFacts TrainingOf(CalendarEntryFacts entry) =>
+        entry with
+        {
+            Kind = CalendarEntryKind.Training,
+        };
+
     private static CalendarTies TiesOf(
         bool holdsRunningMembership = false,
         int[]? memberGroupIds = null,
-        int[]? adminGroupIds = null
+        int[]? adminGroupIds = null,
+        GroupSession[]? castSessions = null
     ) =>
         new()
         {
@@ -114,6 +161,7 @@ public sealed class CalendarTiesTests
                 groupId => groupId,
                 _ => (string?)Coach
             ),
+            CastSessions = (castSessions ?? []).ToHashSet(),
         };
 
     private static CalendarEntryFacts ClubOwned(params int[] participatingGroupIds) =>
@@ -123,6 +171,8 @@ public sealed class CalendarTiesTests
             ParticipatingGroupIds = participatingGroupIds,
             Visibility = CalendarEntryVisibility.Club,
             SessionYear = SessionYear,
+            Kind = CalendarEntryKind.Meeting,
+            CastSessionYear = SessionYear,
         };
 
     private static CalendarEntryFacts GroupOwned(
@@ -135,6 +185,8 @@ public sealed class CalendarTiesTests
             ParticipatingGroupIds = participatingGroupIds,
             Visibility = CalendarEntryVisibility.Club,
             SessionYear = SessionYear,
+            Kind = CalendarEntryKind.Meeting,
+            CastSessionYear = SessionYear,
         };
 
     private static CalendarEntryFacts GroupOnly(

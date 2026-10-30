@@ -3,6 +3,7 @@ import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toAttendanceChoiceLabel } from '@/lib/calendar-copy';
+import { asksForAnswer } from '../calendar-agenda';
 import type { CalendarDetailView } from '../calendar-agenda-view';
 import { toDetailView } from '../calendar-agenda-view';
 import type { CalendarEntryLink } from '../calendar-authoring';
@@ -37,7 +38,7 @@ export const useCalendarDetail = (entry: CalendarEntry): CalendarDetail => {
 
   return {
     view: toDetailView(entry),
-    answer: entry.asksForResponse
+    answer: asksForAnswer(entry)
       ? {
           label: toAttendanceChoiceLabel(entry.title),
           value: choice.answer,

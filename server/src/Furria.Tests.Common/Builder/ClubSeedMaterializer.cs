@@ -497,6 +497,14 @@ internal static class ClubSeedMaterializer
         if (responses.Count > 0)
         {
             dbContext.AttendanceResponses.AddRange(responses.Values);
+            dbContext.AttendanceResponseChanges.AddRange(
+                responses.Values.Select(response => new AttendanceResponseChange
+                {
+                    CalendarEntryId = response.CalendarEntryId,
+                    PersonId = response.PersonId,
+                    Answer = response.Answer,
+                })
+            );
             await dbContext.SaveChangesAsync(ct);
         }
 

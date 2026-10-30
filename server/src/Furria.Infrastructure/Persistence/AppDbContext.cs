@@ -78,6 +78,9 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<AttendanceResponse> AttendanceResponses => Set<AttendanceResponse>();
 
+    public DbSet<AttendanceResponseChange> AttendanceResponseChanges =>
+        Set<AttendanceResponseChange>();
+
     public DbSet<CalendarEntryGroup> CalendarEntryGroups => Set<CalendarEntryGroup>();
 
     public DbSet<Event> Events => Set<Event>();

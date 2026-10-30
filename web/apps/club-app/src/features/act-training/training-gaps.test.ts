@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { SpotPath, TimedKeyframe } from '@/features/act-player/choreography-motion';
 import type { Studio, StudioSpot, StudioStep, StudioTraining } from '@/features/acts/schemas';
-import { movingStepNumbersOf, trainingRollOf, trainingStudioOf } from './training-gaps';
+import { movingStepNumbersOf, trainingGapsOf, trainingStudioOf } from './training-gaps';
 
 const step = (stepId: number, startSeconds: number, endSeconds: number): StudioStep => ({
   stepId,
@@ -41,8 +41,8 @@ const training = (openSpotIds: number[]): StudioTraining => ({
   calendarEntryId: 5,
   title: 'Training',
   startsAt: '2026-11-03T18:30:00+01:00',
-  asksForResponse: true,
   openSpotIds,
+  responses: [],
 });
 
 describe('movingStepNumbersOf', () => {
@@ -63,27 +63,19 @@ describe('movingStepNumbersOf', () => {
   });
 });
 
-describe('trainingRollOf', () => {
+describe('trainingGapsOf', () => {
   const spots = [spot(1, 1, 'Anna'), spot(2, 2, 'Ben'), spot(3, 3, null), spot(4, 4, 'Clara')];
   const paths = [path(2, [at(12, 0), at(18, 3)])];
 
-  it('counts everyone holding a spot as there without a training', () => {
-    expect(trainingRollOf(null, spots, paths, steps)).toEqual({
-      expected: 3,
-      present: 3,
-      gaps: [],
-    });
+  it('leaves every spot held without a training', () => {
+    expect(trainingGapsOf(null, spots, paths, steps)).toEqual([]);
   });
 
   it('opens the spots of an Absage and names the steps where they move', () => {
-    expect(trainingRollOf(training([2, 4]), spots, paths, steps)).toEqual({
-      expected: 3,
-      present: 1,
-      gaps: [
-        { spotId: 2, number: 2, firstName: 'Ben', stepNumbers: [2] },
-        { spotId: 4, number: 4, firstName: 'Clara', stepNumbers: [] },
-      ],
-    });
+    expect(trainingGapsOf(training([2, 4]), spots, paths, steps)).toEqual([
+      { spotId: 2, number: 2, firstName: 'Ben', stepNumbers: [2] },
+      { spotId: 4, number: 4, firstName: 'Clara', stepNumbers: [] },
+    ]);
   });
 });
 

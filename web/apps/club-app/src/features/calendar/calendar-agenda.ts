@@ -126,11 +126,15 @@ export const answerOf = (
   pending: ReadonlyMap<number, AttendanceAnswer>,
 ): AttendanceAnswer | null => pending.get(entry.calendarEntryId) ?? entry.viewerAnswer;
 
+export const asksForAnswer = (
+  entry: Pick<CalendarEntry, 'asksForResponse' | 'asksTheCast'>,
+): boolean => entry.asksForResponse || entry.asksTheCast;
+
 export const isOwed = (
   entry: CalendarEntry,
   nowMs: number,
   pending: ReadonlyMap<number, AttendanceAnswer>,
-): boolean => entry.asksForResponse && answerOf(entry, pending) === null && !isOver(entry, nowMs);
+): boolean => asksForAnswer(entry) && answerOf(entry, pending) === null && !isOver(entry, nowMs);
 
 export const owedIdsOf = (
   entries: readonly CalendarEntry[],

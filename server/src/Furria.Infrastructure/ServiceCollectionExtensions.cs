@@ -107,6 +107,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ActEveningService>();
         services.AddScoped<ActStudioGate>();
         services.AddScoped<ActStudioService>();
+        services.AddScoped<ActAttendanceService>();
         services.AddScoped<ActSongService>();
         services.AddScoped<ActSpotService>();
         services.AddScoped<ActChoreographyService>();

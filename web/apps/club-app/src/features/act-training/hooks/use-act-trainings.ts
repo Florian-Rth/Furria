@@ -6,18 +6,21 @@ import { timedStepsOf } from '@/features/act-player/hooks/use-studio-playback';
 import { musicSegmentsOf } from '@/features/act-player/music-timeline';
 import { canPractise } from '@/features/acts/act-studio';
 import type { Studio } from '@/features/acts/schemas';
+import type { CastPerson } from '@/features/running-order/schemas';
+import { attendanceTallyOf, castAttendanceOf } from '../training-attendance';
 import { TRAINING_START, trainingOpenHintOf, trainingRowMetaOf } from '../training-copy';
-import { trainingRollOf } from '../training-gaps';
+import { trainingGapsOf } from '../training-gaps';
 
 const CURRENT_ROUTE = '.';
 const TRAINING_VIEW = 'training';
+const DETAILS_VIEW = 'details';
 
 export interface ActTrainingRow {
   calendarEntryId: number;
   label: string;
   meta: string;
   hint: string | undefined;
-  to: string | null;
+  to: string;
   search: KkLinkSearch;
 }
 
@@ -26,38 +29,53 @@ export interface ActTrainings {
   start: KkPanelAction | undefined;
 }
 
-const searchOf =
+const trainingSearchOf =
   (calendarEntryId: number | null): KkLinkSearch =>
-  ({ settings: _settings, edit: _edit, evening: _evening, training: _training, ...kept }) =>
+  ({
+    settings: _settings,
+    edit: _edit,
+    evening: _evening,
+    training: _training,
+    roll: _roll,
+    ...kept
+  }) =>
     calendarEntryId === null
       ? { ...kept, view: TRAINING_VIEW }
       : { ...kept, view: TRAINING_VIEW, training: calendarEntryId };
 
-export const useActTrainings = (studio: Studio): ActTrainings => {
-  const practisable = canPractise(studio);
+const rollSearchOf =
+  (calendarEntryId: number): KkLinkSearch =>
+  ({ settings: _settings, evening: _evening, edit: _edit, training: _training, ...kept }) => ({
+    ...kept,
+    view: DETAILS_VIEW,
+    roll: calendarEntryId,
+  });
+
+export const useActTrainings = (studio: Studio, cast: readonly CastPerson[]): ActTrainings => {
   const paths = spotPathsOf(studio.choreography, musicSegmentsOf(studio));
   const steps = timedStepsOf(studio.steps);
 
   return {
     rows: studio.trainings.map((training) => {
-      const roll = trainingRollOf(training, studio.spots, paths, steps);
+      const gaps = trainingGapsOf(training, studio.spots, paths, steps);
+      const tally = attendanceTallyOf(castAttendanceOf(cast, training));
 
       return {
         calendarEntryId: training.calendarEntryId,
         label: training.title,
-        meta: trainingRowMetaOf(training, roll),
-        hint: roll.gaps.length === 0 ? undefined : trainingOpenHintOf(roll.gaps.length),
-        to: practisable ? CURRENT_ROUTE : null,
-        search: searchOf(training.calendarEntryId),
+        meta: trainingRowMetaOf(training, tally, gaps),
+        hint: gaps.length === 0 ? undefined : trainingOpenHintOf(gaps.length),
+        to: CURRENT_ROUTE,
+        search: rollSearchOf(training.calendarEntryId),
       };
     }),
-    start: practisable
+    start: canPractise(studio)
       ? {
           label: TRAINING_START,
           icon: 'play',
           component: Link,
           to: CURRENT_ROUTE,
-          search: searchOf(null),
+          search: trainingSearchOf(null),
         }
       : undefined,
   };

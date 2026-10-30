@@ -8,7 +8,7 @@ public sealed record StudioTrainingDetails
 
     public required DateTimeOffset StartsAt { get; init; }
 
-    public required bool AsksForResponse { get; init; }
-
     public required IReadOnlyList<int> OpenSpotIds { get; init; }
+
+    public required IReadOnlyList<StudioAttendanceDetails> Responses { get; init; }
 }

@@ -255,7 +255,7 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public Task Should_ListTheGroupsComingTrainingsWithTheSpotsLeftOpen_When_DancersSentAnAbsage() =>
+    public Task Should_ListTheGroupsComingTrainingsWithTheSpotsLeftOpen_When_DancersSentAnAbsageEvenWithoutTheSwitch() =>
         _fixture.AtInstantAsync(
             InTheRunningSession,
             async () =>
@@ -339,6 +339,12 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
                                     Ben,
                                     AttendanceAnswer.Yes
                                 )
+                                .AddAttendanceResponse(
+                                    "ben-no-rehearsal",
+                                    "rehearsal",
+                                    Ben,
+                                    AttendanceAnswer.No
+                                )
                         );
                     },
                     ct
@@ -357,16 +363,12 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
                 Assert.NotNull(studio.Studio);
                 Assert.Equal(
                     [
-                        (ctx.Club.CalendarEntries.IdOf("soon"), true, $"{annasSpot}"),
-                        (ctx.Club.CalendarEntries.IdOf("rehearsal"), false, ""),
-                        (ctx.Club.CalendarEntries.IdOf("later"), true, ""),
+                        (ctx.Club.CalendarEntries.IdOf("soon"), $"{annasSpot}"),
+                        (ctx.Club.CalendarEntries.IdOf("rehearsal"), $"{bensSpot}"),
+                        (ctx.Club.CalendarEntries.IdOf("later"), ""),
                     ],
                     studio.Studio.Trainings.Select(training =>
-                        (
-                            training.CalendarEntryId,
-                            training.AsksForResponse,
-                            string.Join(",", training.OpenSpotIds)
-                        )
+                        (training.CalendarEntryId, string.Join(",", training.OpenSpotIds))
                     )
                 );
             }

@@ -2,6 +2,8 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Calendar;
 using Furria.Api.Tests.Events;
+using Furria.Api.Tests.RunningOrders;
+using Furria.Api.Tests.Studio;
 using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Media;
@@ -783,6 +785,62 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                             )
                     ),
             ct
+        );
+
+    [Fact]
+    public Task Should_ShowTheGroupOnlyTrainingAndAskHer_When_SheIsAGuestInTheCastOfTheGroupsAct() =>
+        _fixture.AtInstantAsync(
+            RunningOrderSeeds.InTheRunningSession,
+            async () =>
+            {
+                var ct = TestContext.Current.CancellationToken;
+                var today = _fixture.Today;
+                var ctx = await _fixture.BuildAsync(
+                    builder =>
+                    {
+                        StudioSeeds.GardeWithDancers(today)(builder);
+                        builder
+                            .Identity(identity =>
+                                identity.AddMembership(
+                                    "clara-member",
+                                    RunningOrderSeeds.Clara,
+                                    JoinedIn2017
+                                )
+                            )
+                            .Club(club =>
+                                club.AddCalendarEntry(
+                                    "garde-only-training",
+                                    DanceGuardTraining,
+                                    ClubClock.At(today.AddDays(2), new TimeOnly(18, 30)),
+                                    kind: CalendarEntryKind.Training,
+                                    visibility: CalendarEntryVisibility.Group,
+                                    ownerGroupAlias: RunningOrderSeeds.Garde
+                                )
+                            );
+                    },
+                    ct
+                );
+                await StudioSteps.GardetanzAsync(
+                    ctx,
+                    ct,
+                    added: [ctx.Identity.People.IdOf(RunningOrderSeeds.Clara)]
+                );
+
+                var result = await ReadAsync(
+                    ctx,
+                    RunningOrderSeeds.Clara,
+                    new GetCalendarRequest { From = today, To = today.AddDays(7) },
+                    ct
+                );
+
+                var training = Assert.Single(
+                    result.Entries,
+                    entry =>
+                        entry.CalendarEntryId
+                        == ctx.Club.CalendarEntries.IdOf("garde-only-training")
+                );
+                Assert.Equal((false, true), (training.AsksForResponse, training.AsksTheCast));
+            }
         );
 
     private static async Task<GetCalendarResponse> ReadAsync(

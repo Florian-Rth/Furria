@@ -12,12 +12,6 @@ export interface TrainingGap {
   stepNumbers: number[];
 }
 
-export interface TrainingRoll {
-  expected: number;
-  present: number;
-  gaps: TrainingGap[];
-}
-
 interface Span {
   start: number;
   end: number;
@@ -55,29 +49,27 @@ export const movingStepNumbersOf = (
 const isOpenAt = (spot: StudioSpot, training: StudioTraining | null): boolean =>
   training?.openSpotIds.includes(spot.spotId) === true;
 
-export const trainingRollOf = (
+export const trainingGapsOf = (
   training: StudioTraining | null,
   spots: readonly StudioSpot[],
   paths: readonly SpotPath[],
   timedSteps: readonly StudioStep[],
-): TrainingRoll => {
-  const held = spots.flatMap((spot) =>
-    spot.person === null ? [] : [{ spot, person: spot.person }],
+): TrainingGap[] =>
+  spots.flatMap((spot) =>
+    spot.person === null || !isOpenAt(spot, training)
+      ? []
+      : [
+          {
+            spotId: spot.spotId,
+            number: spot.number,
+            firstName: spot.person.firstName,
+            stepNumbers: movingStepNumbersOf(
+              paths.find((path) => path.spotId === spot.spotId),
+              timedSteps,
+            ),
+          },
+        ],
   );
-  const gaps = held
-    .filter(({ spot }) => isOpenAt(spot, training))
-    .map(({ spot, person }) => ({
-      spotId: spot.spotId,
-      number: spot.number,
-      firstName: person.firstName,
-      stepNumbers: movingStepNumbersOf(
-        paths.find((path) => path.spotId === spot.spotId),
-        timedSteps,
-      ),
-    }));
-
-  return { expected: held.length, present: held.length - gaps.length, gaps };
-};
 
 export const trainingStudioOf = (studio: Studio, training: StudioTraining | null): Studio =>
   training === null || training.openSpotIds.length === 0
