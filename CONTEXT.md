@@ -856,7 +856,11 @@ _Avoid_: choreographer, owner, moderator
 A dance act's music. The **working mix** is the group's songs in order, each cut to a start and an
 end point, played as one gapless timeline. The **final file** is the one file the group uploads
 for the stage — versioned; adopting it moves everything that hangs on the music onto it once.
-_UI copy_: Musik; *Endfassung*
+Before adopting, each song of the music playing (or the previously adopted final file) is
+**matched** into the new file: one offset per song, suggested by comparing the sound and
+fine-tuned by hand. Only one newer final file waits at a time. Whatever hangs on music the final
+file leaves out keeps its anchor and reads as *Musik fehlt* (RFC 0001 phase 10).
+_UI copy_: Musik; *Endfassung*, *Probehören*, *Endfassung übernehmen*
 _Avoid_: playlist, track list, render
 
 **Anchor** (act music):

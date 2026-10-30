@@ -2,7 +2,7 @@ import type { Studio, StudioPart, StudioStep } from '@/features/acts/schemas';
 
 const SECONDS_PER_MINUTE = 60;
 const COUNTS_PER_EIGHT = 8;
-const EDGE_TOLERANCE_SECONDS = 1e-6;
+export const EDGE_TOLERANCE_SECONDS = 1e-6;
 
 export interface MusicSegment {
   mediaItemId: number;
@@ -84,8 +84,8 @@ const finalTrackCutsOf = (studio: Studio): SegmentCut[] =>
       audible: track.state === 'ready',
       sourceStart: 0,
       sourceEnd: track.durationSeconds ?? 0,
-      firstBeatSeconds: null,
-      tempoBpm: null,
+      firstBeatSeconds: track.firstBeatSeconds,
+      tempoBpm: track.tempoBpm,
     }));
 
 export const musicSegmentsOf = (studio: Studio): MusicSegment[] =>

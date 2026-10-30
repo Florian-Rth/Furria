@@ -16,5 +16,13 @@ public sealed record StudioFinalTrackDetails
 
     public required double? DurationSeconds { get; init; }
 
+    public required string FileName { get; init; }
+
+    public required double? FirstBeatSeconds { get; init; }
+
+    public required double? TempoBpm { get; init; }
+
+    public required IReadOnlyList<StudioFinalTrackAlignmentDetails> Alignments { get; init; }
+
     public required StudioAudioUrls Urls { get; init; }
 }

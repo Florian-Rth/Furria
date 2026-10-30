@@ -48,10 +48,10 @@ export const useActStudioSongs = (screen: StudioScreen): ActStudioSongs => {
   const { player, segments } = playback;
   const [deskOpen, setDeskOpen] = useState(false);
   const onMusic = mode.editing && mode.tool === 'music';
-  if (deskOpen && !onMusic) {
+  const editable = studio.music.source === 'workingMix';
+  if (deskOpen && (!onMusic || !editable)) {
     setDeskOpen(false);
   }
-  const editable = studio.music.source === 'workingMix';
   const songs = [...studio.songs].sort((left, right) => left.position - right.position);
   const currentIndex = usePlaybackSelection(player, (seconds) =>
     segments.findIndex(

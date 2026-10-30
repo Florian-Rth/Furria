@@ -27,6 +27,20 @@ export const STUDIO_WAVE_LABEL = 'Musik: tippen oder ziehen zum Spulen';
 export const STUDIO_SONGS = 'Lieder';
 export const STUDIO_FINAL = 'Endfassung';
 export const STUDIO_FINAL_NONE = 'Noch keine Endfassung';
+export const STUDIO_FINAL_UPLOAD = 'Endfassung hochladen';
+export const STUDIO_FINAL_UPLOAD_NEWER = 'Neue Endfassung hochladen';
+export const STUDIO_FINAL_LEAD = 'E';
+export const STUDIO_FINAL_TRYING = 'Probehören';
+export const STUDIO_FINAL_DESK = 'Lied in der Endfassung';
+export const STUDIO_FINAL_DESK_CLOSE = 'Schließen';
+export const STUDIO_FINAL_GRID_DESK = 'Endfassung bearbeiten';
+export const STUDIO_FINAL_PLACE = 'Lage';
+export const STUDIO_FINAL_START_HERE = 'Beginnt hier';
+export const STUDIO_FINAL_FILE = 'Endfassung';
+export const STUDIO_FINAL_MATCH = 'Automatisch abgleichen';
+export const STUDIO_FINAL_MATCHING = 'Wird abgeglichen …';
+export const STUDIO_FINAL_REMOVE = 'Endfassung entfernen';
+export const STUDIO_FINAL_REMOVE_SURE = 'Wirklich entfernen';
 export const STUDIO_SONG_ADD = 'Lieder hinzufügen';
 export const STUDIO_OUTSIDE_MUSIC = 'Außerhalb der Musik';
 export const STUDIO_SONG_ACCEPT =
@@ -402,3 +416,49 @@ export const stepDeskTitleOf = (number: number, name: string): string =>
 
 export const videoNameOf = (name: string | null, number: number): string =>
   name ?? `Video ${number}`;
+
+export const finalTitleOf = (version: number): string => `Endfassung ${version}`;
+
+export const finalTrackMetaOf = (
+  state: MediaItemState,
+  found: number,
+  total: number,
+  trying: boolean,
+): string => {
+  const preparing = songStateMetaOf(state);
+
+  if (preparing !== null) {
+    return preparing;
+  }
+
+  const matched = found === 0 ? 'noch nicht abgeglichen' : `${found} von ${total} gefunden`;
+
+  return trying ? `${matched} · so klingt es übernommen` : `${matched} · antippen zum Probehören`;
+};
+
+export const finalTrackLabelOf = (trying: boolean): string =>
+  trying ? 'Probehören beenden' : 'Mit der Endfassung probehören';
+
+export const adoptedMetaOf = (bpm: number | null): string =>
+  bpm === null ? 'spielt · Takt fehlt' : `spielt · ${Math.round(bpm)} BPM`;
+
+export const finalSourceMetaOf = (start: number | null, end: number | null): string =>
+  start === null || end === null
+    ? 'in der Endfassung nicht gefunden'
+    : `in der Endfassung ${fineClockOf(start)}–${fineClockOf(end)}`;
+
+export const finalShiftLabelOf = (name: string): string => `${name} in der Endfassung verschieben`;
+
+export const adoptTextOf = (sure: boolean, missing: string | null): string => {
+  if (!sure) {
+    return 'Endfassung übernehmen';
+  }
+
+  return missing === null ? 'Wirklich übernehmen' : `Wirklich übernehmen · ohne Musik: ${missing}`;
+};
+
+export const finalShiftNudgeLabelOf = (delta: number): string =>
+  `Lied in der Endfassung um ${Math.abs(delta).toFixed(2).replace('.', ',')} s ${delta < 0 ? 'früher' : 'später'}`;
+
+export const finalDeskLabelOf = (kind: 'source' | 'grid' | null): string =>
+  kind === 'grid' ? STUDIO_FINAL_GRID_DESK : STUDIO_FINAL_DESK;

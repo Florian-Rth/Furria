@@ -121,6 +121,17 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
             Adopted = track.IsAdopted,
             State = track.State,
             DurationSeconds = track.DurationSeconds,
+            FileName = track.FileName,
+            FirstBeatSeconds = track.FirstBeatSeconds,
+            TempoBpm = track.TempoBpm,
+            Alignments =
+            [
+                .. track.Alignments.Select(alignment => new StudioFinalTrackAlignmentDto
+                {
+                    SourceMediaItemId = alignment.SourceMediaItemId,
+                    OffsetSeconds = alignment.OffsetSeconds,
+                }),
+            ],
             Urls = ToDto(track.Urls),
         };
 
@@ -419,7 +430,22 @@ public sealed record StudioFinalTrackDto
 
     public required double? DurationSeconds { get; init; }
 
+    public required string FileName { get; init; }
+
+    public required double? FirstBeatSeconds { get; init; }
+
+    public required double? TempoBpm { get; init; }
+
+    public required IReadOnlyList<StudioFinalTrackAlignmentDto> Alignments { get; init; }
+
     public required StudioAudioUrlsDto Urls { get; init; }
+}
+
+public sealed record StudioFinalTrackAlignmentDto
+{
+    public required int SourceMediaItemId { get; init; }
+
+    public required double OffsetSeconds { get; init; }
 }
 
 public sealed record StudioStepDto

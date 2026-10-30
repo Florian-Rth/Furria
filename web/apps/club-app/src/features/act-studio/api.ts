@@ -5,6 +5,12 @@ import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import { queryKeys } from '@/lib/query/reads';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import {
+  requestFinalTrackAdd,
+  requestFinalTrackAdoption,
+  requestFinalTrackBeat,
+  requestFinalTrackMatch,
+  requestFinalTrackOffset,
+  requestFinalTrackRemoval,
   requestPartAdd,
   requestPartRemoval,
   requestPartSettings,
@@ -22,7 +28,17 @@ import {
   requestVideoRemoval,
   requestVideoStart,
 } from './requests';
-import type { AddedPart, AddedSong, AddedVideo, MarkedSteps, VideoAlignment } from './schemas';
+import type {
+  AddedFinalTrack,
+  AddedPart,
+  AddedSong,
+  AddedVideo,
+  FinalTrackMatches,
+  MarkedSteps,
+  VideoAlignment,
+} from './schemas';
+import type { FinalBeatInput, FinalOffsetInput } from './studio-final';
+import { withFinalBeat, withFinalOffset, withoutFinalTrack } from './studio-final';
 import type { SongSettingsInput } from './studio-music';
 import { withoutSong, withSongOrder, withSongSettings } from './studio-music';
 import type { PartOpening, PartSettingsInput, StepStartInput, StepTextInput } from './studio-steps';
@@ -206,4 +222,74 @@ export const useVideoMutations = (actId: number): VideoMutations => {
   });
 
   return { add, rename, place, align, autoAlign, remove };
+};
+
+export interface FinalTrackMutations {
+  add: UseMutationResult<AddedFinalTrack, Error, number>;
+  settle: UseMutationResult<void, Error, FinalBeatInput>;
+  match: UseMutationResult<FinalTrackMatches, Error, number>;
+  autoMatch: UseMutationResult<FinalTrackMatches, Error, number>;
+  tune: UseMutationResult<void, Error, FinalOffsetInput>;
+  adopt: UseMutationResult<void, Error, number>;
+  remove: UseMutationResult<void, Error, number>;
+}
+
+export const useFinalTrackMutations = (actId: number): FinalTrackMutations => {
+  const studioKey = queryKeys.actStudio(actId);
+  const key = ['actSongs', actId];
+  const failure = { failure: toWriteErrorMessage };
+
+  const add = useApiMutation({
+    request: (mediaItemId: number, accessToken) =>
+      requestFinalTrackAdd(actId, mediaItemId, accessToken),
+    changes: ['actMusic'],
+    notice: failure,
+    key,
+  });
+  const settle = useApiMutation({
+    request: (input: FinalBeatInput, accessToken) =>
+      requestFinalTrackBeat(actId, input, accessToken),
+    changes: ['actMusic'],
+    optimistic: [optimisticPatch<ActStudioResponse, FinalBeatInput>(studioKey, withFinalBeat)],
+    notice: failure,
+    key,
+  });
+  const match = useApiMutation({
+    request: (finalTrackId: number, accessToken) =>
+      requestFinalTrackMatch(actId, finalTrackId, accessToken),
+    changes: ['actMusic'],
+    notice: failure,
+    key,
+  });
+  const autoMatch = useApiMutation({
+    request: (finalTrackId: number, accessToken) =>
+      requestFinalTrackMatch(actId, finalTrackId, accessToken),
+    changes: ['actMusic'],
+    key,
+  });
+  const tune = useApiMutation({
+    request: (input: FinalOffsetInput, accessToken) =>
+      requestFinalTrackOffset(actId, input, accessToken),
+    changes: ['actMusic'],
+    optimistic: [optimisticPatch<ActStudioResponse, FinalOffsetInput>(studioKey, withFinalOffset)],
+    notice: failure,
+    key,
+  });
+  const adopt = useApiMutation({
+    request: (finalTrackId: number, accessToken) =>
+      requestFinalTrackAdoption(actId, finalTrackId, accessToken),
+    changes: ['actMusic'],
+    notice: failure,
+    key,
+  });
+  const remove = useApiMutation({
+    request: (finalTrackId: number, accessToken) =>
+      requestFinalTrackRemoval(actId, finalTrackId, accessToken),
+    changes: ['actMusic'],
+    optimistic: [optimisticPatch<ActStudioResponse, number>(studioKey, withoutFinalTrack)],
+    notice: failure,
+    key,
+  });
+
+  return { add, settle, match, autoMatch, tune, adopt, remove };
 };

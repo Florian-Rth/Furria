@@ -8,9 +8,11 @@ import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-s
 import { waveformOf } from '@/features/act-player/mix-waveform';
 import type { MusicSegment } from '@/features/act-player/music-timeline';
 import type { StudioSong } from '@/features/acts/schemas';
-import { cutHandleLabelOf, songMetaOf, songNameOf } from '../studio-copy';
+import { cutHandleLabelOf, finalShiftLabelOf, songMetaOf, songNameOf } from '../studio-copy';
 import { trimmedCutOf } from '../studio-edits';
+import { offsetStartingAt, sourceNameOf } from '../studio-final';
 import { songSettingsOf } from '../studio-music';
+import { useFinalPlaces } from './use-final-places';
 import type { StudioScreen } from './use-studio-screen';
 
 const BUCKETS = 260;
@@ -64,6 +66,77 @@ const songCutsOf = (songs: readonly StudioSong[], segments: readonly MusicSegmen
       return segment === undefined ? [] : [{ song, segment }];
     });
 
+interface Shift {
+  seconds: number;
+}
+
+interface FinalWave {
+  regions: ActStudioWaveRegion[];
+  handles: ActStudioWaveHandle[];
+  cut: { start: number; end: number } | null;
+}
+
+const useFinalWave = (screen: StudioScreen, shareOf: (seconds: number) => number): FinalWave => {
+  const { final, playback, studio } = screen;
+  const { player, length } = playback;
+  const [shift, setShift] = useState<Shift | null>(null);
+  const pending = final.pending;
+  const { places, currentIndex: selectedIndex } = useFinalPlaces(screen);
+  const selected = places[selectedIndex] ?? null;
+  const found = places.flatMap((place, index) =>
+    place.start === null || place.end === null
+      ? []
+      : [{ place, start: place.start, end: place.end, number: index + 1 }],
+  );
+  const nameOf = (mediaItemId: number): string => sourceNameOf(studio, mediaItemId);
+
+  const regions: ActStudioWaveRegion[] = found.map(({ place, start, end, number }) => ({
+    key: `source-${place.segment.mediaItemId}`,
+    start: shareOf(start),
+    end: shareOf(end),
+    number,
+    name: nameOf(place.segment.mediaItemId),
+    meta: songMetaOf(start, end, null),
+    selected: place === selected,
+  }));
+  const selectedStart = selected?.start ?? null;
+  const handles: ActStudioWaveHandle[] =
+    selected === null || selectedStart === null || pending === null
+      ? []
+      : [
+          {
+            key: 'start',
+            edge: 'start',
+            share: shareOf(shift?.seconds ?? selectedStart),
+            label: finalShiftLabelOf(nameOf(selected.segment.mediaItemId)),
+            active: shift !== null,
+            move: (share) => {
+              setShift({ seconds: share * length });
+            },
+            end: () => {
+              if (shift !== null) {
+                screen.edits.keepPosition(player.position());
+                final.writes.tune.mutate({
+                  finalTrackId: pending.finalTrackId,
+                  sourceMediaItemId: selected.segment.mediaItemId,
+                  offsetSeconds: offsetStartingAt(selected.segment, shift.seconds),
+                });
+              }
+              setShift(null);
+            },
+          },
+        ];
+
+  return {
+    regions,
+    handles,
+    cut:
+      shift === null || selectedStart === null
+        ? null
+        : { start: shareOf(selectedStart), end: shareOf(shift.seconds) },
+  };
+};
+
 export const useActStudioWave = (screen: StudioScreen): ActStudioWave => {
   const { playback, studio, practice, edits, music } = screen;
   const { player, segments, length } = playback;
@@ -77,6 +150,7 @@ export const useActStudioWave = (screen: StudioScreen): ActStudioWave => {
   );
   const selected = cuts[selectedIndex] ?? null;
   const currentId = practice.step?.stepId ?? null;
+  const finalWave = useFinalWave(screen, shareOf);
 
   const edgeOf = (cut: SongCut, edge: KkStudioWaveHandleEdge): number =>
     edge === 'start' ? cut.segment.timelineStart : cut.segment.timelineEnd;
@@ -117,15 +191,17 @@ export const useActStudioWave = (screen: StudioScreen): ActStudioWave => {
 
   return {
     bars: waveformOf(segments, playback.peaksByItem, BUCKETS),
-    regions: cuts.map((cut, index) => ({
-      key: String(cut.song.songId),
-      start: shareOf(cut.segment.timelineStart),
-      end: shareOf(cut.segment.timelineEnd),
-      number: index + 1,
-      name: songNameOf(cut.song.fileName),
-      meta: songMetaOf(cut.segment.timelineStart, cut.segment.timelineEnd, cut.song.tempoBpm),
-      selected: index === selectedIndex,
-    })),
+    regions: screen.final.previewing
+      ? finalWave.regions
+      : cuts.map((cut, index) => ({
+          key: String(cut.song.songId),
+          start: shareOf(cut.segment.timelineStart),
+          end: shareOf(cut.segment.timelineEnd),
+          number: index + 1,
+          name: songNameOf(cut.song.fileName),
+          meta: songMetaOf(cut.segment.timelineStart, cut.segment.timelineEnd, cut.song.tempoBpm),
+          selected: index === selectedIndex,
+        })),
     beats: playback.countMarks
       .filter((mark) => mark.count === 1)
       .map((mark) => ({ share: shareOf(mark.seconds) })),
@@ -135,9 +211,10 @@ export const useActStudioWave = (screen: StudioScreen): ActStudioWave => {
       text: String(index + 1),
       current: step.stepId === currentId,
     })),
-    handles,
-    cut:
-      trim === null || selected === null
+    handles: screen.final.previewing ? finalWave.handles : handles,
+    cut: screen.final.previewing
+      ? finalWave.cut
+      : trim === null || selected === null
         ? null
         : { start: shareOf(edgeOf(selected, trim.edge)), end: shareOf(trim.seconds) },
     scrub: (share) => {

@@ -4,7 +4,6 @@ using Furria.Application.Studio;
 using Furria.Core.Media;
 using Furria.Core.Sound;
 using Furria.Core.Studio;
-using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -30,19 +29,19 @@ public sealed class ActVideoService
     private readonly AppDbContext _dbContext;
     private readonly ActStudioGate _gate;
     private readonly ActTimelineReader _timelines;
-    private readonly MediaRoot _root;
+    private readonly SoundProfiles _profiles;
 
     public ActVideoService(
         AppDbContext dbContext,
         ActStudioGate gate,
         ActTimelineReader timelines,
-        MediaRoot root
+        SoundProfiles profiles
     )
     {
         _dbContext = dbContext;
         _gate = gate;
         _timelines = timelines;
-        _root = root;
+        _profiles = profiles;
     }
 
     public async Task<Result<int>> AddAsync(
@@ -264,31 +263,18 @@ public sealed class ActVideoService
             return Result<SoundAlignment>.Conflict(FailedVideoMessage);
         if (video.MediaItem.State != MediaItemState.Ready)
             return Result<SoundAlignment>.Conflict(StillDevelopingMessage);
-        if (await ProfileOfAsync(video.MediaItem.StorageKey, ct) is not { } soundtrack)
+        if (await _profiles.ProfileOfAsync(video.MediaItem.StorageKey, ct) is not { } soundtrack)
             return Result<SoundAlignment>.Conflict(NoSoundtrackMessage);
 
         var music = await _timelines.MusicOfAsync(video.ActId, ct);
         if (music.Count == 0)
             return Result<SoundAlignment>.Conflict(NoMusicMessage);
-        var sounds = new List<CutSound>();
-        foreach (var source in music)
-        {
-            if (await ProfileOfAsync(source.StorageKey, ct) is not { } profile)
-                return Result<SoundAlignment>.Conflict(MusicDevelopingMessage);
-            sounds.Add(new CutSound(source.Cut, profile));
-        }
+        if (await _profiles.CutSoundsOfAsync(music, ct) is not { } sounds)
+            return Result<SoundAlignment>.Conflict(MusicDevelopingMessage);
 
         return VideoMatching.StartOf(sounds, soundtrack) is { } alignment
             ? Result<SoundAlignment>.Success(alignment)
             : Result<SoundAlignment>.Validation(NoMatchMessage);
-    }
-
-    private async Task<SoundProfile?> ProfileOfAsync(Guid storageKey, CancellationToken ct)
-    {
-        var path = _root.FullPathOf(MediaPaths.SoundProfileOf(storageKey));
-        return File.Exists(path)
-            ? SoundProfile.Parse(await File.ReadAllBytesAsync(path, ct))
-            : null;
     }
 
     private IQueryable<ActVideo> VideoRowsOf(int actId, int videoId) =>

@@ -1,12 +1,11 @@
 import { KkStudioList } from '@furria/ui/KkStudioList';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
+import type { ActStudioFinal } from '../hooks/use-act-studio-final';
 import type { ActStudioSongs } from '../hooks/use-act-studio-songs';
 import { useActUploads } from '../hooks/use-act-uploads';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import {
-  STUDIO_FINAL,
-  STUDIO_FINAL_NONE,
   STUDIO_OUTSIDE_MUSIC,
   STUDIO_SONG_ACCEPT,
   STUDIO_SONG_ADD,
@@ -14,15 +13,18 @@ import {
   uploadLabelOf,
   uploadMetaOf,
 } from '../studio-copy';
+import { ActStudioFinalSection } from './ActStudioFinalSection';
 
 interface ActStudioSongListProps {
   screen: StudioScreen;
   songs: ActStudioSongs;
+  finalList: ActStudioFinal;
 }
 
-export const ActStudioSongList: FC<ActStudioSongListProps> = ({ screen, songs }) => {
+export const ActStudioSongList: FC<ActStudioSongListProps> = ({ screen, songs, finalList }) => {
   const uploads = useActUploads(screen.actId, screen.music.add.mutateAsync);
-  const rows = songs.rows.map((song) => (
+  const shown = screen.final.previewing ? finalList.sources : songs.rows;
+  const rows = shown.map((song) => (
     <KkStudioList.Row
       key={song.key}
       lead={song.lead}
@@ -69,7 +71,7 @@ export const ActStudioSongList: FC<ActStudioSongListProps> = ({ screen, songs })
         onPress={uploads.choose}
       />
       {outside}
-      <KkStudioList.Slot title={STUDIO_FINAL} text={STUDIO_FINAL_NONE} />
+      <ActStudioFinalSection screen={screen} finalList={finalList} />
       <Box
         component="input"
         type="file"

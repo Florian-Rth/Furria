@@ -137,13 +137,28 @@ public sealed class ActStudioReader
                 track.MediaItemId,
                 track.Version,
                 track.AdoptedAt,
+                track.FirstBeatSeconds,
+                track.TempoBpm,
                 track.MediaItem!.State,
                 track.MediaItem.DurationSeconds,
+                track.MediaItem.OriginalFileName,
+                AnalysedFirstBeat = track.MediaItem.Audio == null
+                    ? null
+                    : track.MediaItem.Audio.FirstBeatSeconds,
+                AnalysedTempo = track.MediaItem.Audio == null
+                    ? null
+                    : track.MediaItem.Audio.TempoBpm,
+                Alignments = track
+                    .Alignments.OrderBy(alignment => alignment.SourceMediaItemId)
+                    .Select(alignment => new StudioFinalTrackAlignmentDetails
+                    {
+                        SourceMediaItemId = alignment.SourceMediaItemId,
+                        OffsetSeconds = alignment.OffsetSeconds,
+                    })
+                    .ToList(),
             })
             .ToListAsync(ct);
-        var adoptedId = rows.Where(row => row.AdoptedAt is not null)
-            .MaxBy(row => row.AdoptedAt)
-            ?.Id;
+        var adoptedId = rows.Where(row => row.AdoptedAt is not null).MaxBy(row => row.Version)?.Id;
 
         return
         [
@@ -155,6 +170,10 @@ public sealed class ActStudioReader
                 IsAdopted = row.Id == adoptedId,
                 State = row.State,
                 DurationSeconds = row.DurationSeconds,
+                FileName = row.OriginalFileName,
+                FirstBeatSeconds = row.FirstBeatSeconds ?? row.AnalysedFirstBeat,
+                TempoBpm = row.TempoBpm ?? row.AnalysedTempo,
+                Alignments = row.Alignments,
                 Urls = AudioUrlsOf(row.MediaItemId, owner),
             }),
         ];

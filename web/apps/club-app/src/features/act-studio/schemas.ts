@@ -22,3 +22,13 @@ export const VideoAlignmentSchema = z.object({
   confidence: z.number(),
 });
 export type VideoAlignment = z.infer<typeof VideoAlignmentSchema>;
+
+export const AddedFinalTrackSchema = z.object({ finalTrackId: z.int() });
+export type AddedFinalTrack = z.infer<typeof AddedFinalTrackSchema>;
+
+export const FinalTrackMatchesSchema = z.object({
+  matches: z.array(
+    z.object({ sourceMediaItemId: z.int(), offsetSeconds: z.number(), confidence: z.number() }),
+  ),
+});
+export type FinalTrackMatches = z.infer<typeof FinalTrackMatchesSchema>;
