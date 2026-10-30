@@ -951,6 +951,9 @@ Made precise when L2 was built (ruled 2026-10-02):
 - **Visibility.** A *Group*-visible entry is visible to the running members and admins of its owner
   group **and of its participating groups**. An archived group confers no concern, no running and
   no sight.
+- **Calendar without membership.** Without `club.read` (a group admin who is no member) her
+  calendar holds only the entries tied to her groups; club-wide entries stay hidden (ruled
+  2026-10-30, RFC #53 phase 4).
 - **Answering.** She may answer an entry she **sees** on one of her surfaces: she holds `club.read`
   or a tie to its owner or a participating group, and its visibility admits her. Concern always
   grants answering; a past entry stays answerable.

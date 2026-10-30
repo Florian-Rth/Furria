@@ -26,7 +26,7 @@ public sealed class Refresh : Endpoint<RefreshRequest, RefreshResponse>
     public override async Task HandleAsync(RefreshRequest req, CancellationToken ct)
     {
         var client = HttpContext.Connection.RemoteIpAddress;
-        if (_failureLimiter.HasFailedTooOften(SignInFailureScope.Refresh, client))
+        if (_failureLimiter.HasRefreshTokenBeenRejectedTooOften(client, req.RefreshToken))
         {
             await Send.StatusCodeAsync(StatusCodes.Status429TooManyRequests, ct);
             return;
@@ -35,7 +35,7 @@ public sealed class Refresh : Endpoint<RefreshRequest, RefreshResponse>
         var session = await _accountService.RefreshSessionAsync(req.RefreshToken, ct);
         if (!session.IsSuccess)
         {
-            _failureLimiter.CountFailure(SignInFailureScope.Refresh, client);
+            _failureLimiter.CountRejectedRefresh(client, req.RefreshToken);
             await Send.UnauthorizedAsync(ct);
             return;
         }
@@ -60,9 +60,11 @@ public sealed record RefreshRequest
 
 public sealed class RefreshValidator : Validator<RefreshRequest>
 {
+    private const int MaximumTokenLength = 128;
+
     public RefreshValidator()
     {
-        RuleFor(request => request.RefreshToken).NotEmpty();
+        RuleFor(request => request.RefreshToken).NotEmpty().MaximumLength(MaximumTokenLength);
     }
 }
 

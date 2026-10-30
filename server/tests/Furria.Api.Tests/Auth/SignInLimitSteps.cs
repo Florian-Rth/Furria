@@ -10,6 +10,7 @@ namespace Furria.Api.Tests.Auth;
 internal static class SignInLimitSteps
 {
     public const int FailuresAllowed = 2;
+    public const int RefreshRejectionsAllowedPerAddress = 10;
     public const string WrongPassword = "Wrong-Password-1!";
 
     public static WebApplicationFactory<Program> HostAllowingFewFailures(ApiTestFixture fixture) =>
@@ -20,8 +21,11 @@ internal static class SignInLimitSteps
                     $"{SignInRateLimitOptions.SectionName}:{nameof(SignInRateLimitOptions.FailedLoginsPerIp)}"
                 ] = FailuresAllowed.ToString(CultureInfo.InvariantCulture),
                 [
-                    $"{SignInRateLimitOptions.SectionName}:{nameof(SignInRateLimitOptions.RejectedRefreshesPerIp)}"
+                    $"{SignInRateLimitOptions.SectionName}:{nameof(SignInRateLimitOptions.RejectedRefreshesPerToken)}"
                 ] = FailuresAllowed.ToString(CultureInfo.InvariantCulture),
+                [
+                    $"{SignInRateLimitOptions.SectionName}:{nameof(SignInRateLimitOptions.RejectedRefreshesPerIp)}"
+                ] = RefreshRejectionsAllowedPerAddress.ToString(CultureInfo.InvariantCulture),
             }
         );
 

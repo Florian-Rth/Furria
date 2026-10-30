@@ -247,6 +247,10 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
         );
         builder.UseSetting(
+            $"{SignInRateLimitOptions.SectionName}:{nameof(SignInRateLimitOptions.RejectedRefreshesPerToken)}",
+            PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
             $"{SignInRateLimitOptions.SectionName}:{nameof(SignInRateLimitOptions.RejectedRefreshesPerIp)}",
             PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
         );

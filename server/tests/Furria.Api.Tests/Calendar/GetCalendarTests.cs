@@ -174,6 +174,55 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_CarryOnlyHerGroupsEntries_When_SheRunsAGroupWithoutBeingAMember()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+
+                var result = await ReadAsync(
+                    ctx,
+                    "dora",
+                    new GetCalendarRequest { Scope = CalendarScope.All },
+                    ct
+                );
+
+                Assert.Equal(
+                    new[] { DanceGuardTraining, DanceGuardPerformance, DanceGuardParty },
+                    TitlesOf(result)
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_ReturnForbidden_When_TheManagingLoginReadsTheCalendar()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+
+                var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+                var (response, _) = await client.GETAsync<
+                    GetCalendar,
+                    GetCalendarRequest,
+                    GetCalendarResponse
+                >(new GetCalendarRequest());
+
+                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+            }
+        );
+    }
+
+    [Fact]
     public async Task Should_ListAGroupOnlyEntry_When_TheViewerIsInAParticipatingGroup()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -673,7 +722,9 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
             .AddMembership("bea-first", "bea", JoinedIn2017)
             .AddPerson("chris", "Chris", "Trainer")
             .AddAccount("chris")
-            .AddMembership("chris-first", "chris", JoinedIn2017);
+            .AddMembership("chris-first", "chris", JoinedIn2017)
+            .AddPerson("dora", "Dora", "Leitung")
+            .AddAccount("dora");
 
     private Task<SeededContext> BuildCalendarAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
@@ -690,6 +741,13 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                                 "tanzgarde",
                                 "chris",
                                 "Trainer",
+                                JoinedIn2017
+                            )
+                            .AddGroupAdmin(
+                                "dora-tanzgarde",
+                                "tanzgarde",
+                                "dora",
+                                "Trainerin",
                                 JoinedIn2017
                             )
                     )

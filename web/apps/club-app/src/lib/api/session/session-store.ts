@@ -11,6 +11,8 @@ import {
   REFRESH_MARGIN_MS,
   resolveElapsedLifetime,
 } from './session-lifetime';
+import type { SessionStall } from './session-stall';
+import { sessionStallOf } from './session-stall';
 import type { SessionStoragePort } from './session-storage-port';
 import { createLocalStorageSessionStoragePort } from './session-storage-port';
 
@@ -24,6 +26,7 @@ export interface SessionSnapshot {
   readonly status: SessionStatus;
   readonly expired: boolean;
   readonly farewell: SessionFarewell | null;
+  readonly stall: SessionStall | null;
 }
 
 const REFRESH_LOCK_NAME = 'furria-club-app-refresh';
@@ -36,7 +39,12 @@ let accessTokenLifetimeMs = 0;
 let pendingInTabRefresh: Promise<string> | null = null;
 let expiryPublicationSuppressed = false;
 
-let snapshot: SessionSnapshot = { status: 'restoring', expired: false, farewell: null };
+let snapshot: SessionSnapshot = {
+  status: 'restoring',
+  expired: false,
+  farewell: null,
+  stall: null,
+};
 
 const listeners = new Set<() => void>();
 const sessionEndListeners = new Set<() => void>();
@@ -45,15 +53,17 @@ const publish = (
   status: SessionStatus,
   expired: boolean,
   farewell: SessionFarewell | null = null,
+  stall: SessionStall | null = null,
 ): void => {
   if (
     snapshot.status === status &&
     snapshot.expired === expired &&
-    snapshot.farewell === farewell
+    snapshot.farewell === farewell &&
+    snapshot.stall === stall
   ) {
     return;
   }
-  snapshot = { status, expired, farewell };
+  snapshot = { status, expired, farewell, stall };
   for (const listener of listeners) {
     listener();
   }
@@ -266,16 +276,16 @@ export const restoreSession = async (): Promise<void> => {
   publish('restoring', false);
   try {
     await ensureFreshAccessToken();
-  } catch {
+  } catch (error) {
     if ((await storagePort.readRefreshToken()) === null) {
       return;
     }
-    publish('unavailable', false);
+    publish('unavailable', false, null, sessionStallOf(error instanceof Error ? error : null));
   }
 };
 
 export const markSessionUnavailable = (): void => {
-  publish('unavailable', false);
+  publish('unavailable', false, null, 'unreachable');
 };
 
 export const endSessionWithFarewell = (farewell: SessionFarewell): void => {

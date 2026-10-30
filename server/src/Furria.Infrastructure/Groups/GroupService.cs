@@ -144,7 +144,7 @@ public sealed class GroupService
     }
 
     public async Task<IReadOnlyList<GroupSummary>> GetGroupsAsync(
-        int viewerPersonId,
+        int? viewerPersonId,
         CancellationToken ct
     )
     {

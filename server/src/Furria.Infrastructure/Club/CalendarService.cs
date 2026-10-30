@@ -20,6 +20,8 @@ namespace Furria.Infrastructure.Club;
 public sealed class CalendarService
 {
     private const string UnknownEntryMessage = "Diesen Kalendereintrag gibt es nicht.";
+    private const string NoPersonMessage = "Dieser Zugang gehört zu keiner Person.";
+    private const bool SeesEveryClubEntry = true;
     private const string NotYoursMessage = "Auf diesen Kalendereintrag kannst du nicht antworten.";
     private const string NotOwnedMessage = "Diesen Kalendereintrag darfst du nicht pflegen.";
     private const string NoResponseWantedMessage = "Dieser Eintrag fragt nicht nach einer Antwort.";
@@ -62,20 +64,19 @@ public sealed class CalendarService
         _timeProvider = timeProvider;
     }
 
-    public async Task<IReadOnlyList<CalendarEntrySummary>> GetEntriesAsync(
-        int personId,
-        bool clubOwnedOnly,
-        int? ownerGroupId,
-        DateOnly from,
-        DateOnly to,
+    public async Task<Result<IReadOnlyList<CalendarEntrySummary>>> GetEntriesAsync(
+        CalendarWindowQuery query,
         CancellationToken ct
     )
     {
+        if (await ViewerOfAsync(query.ViewerAccountId, ct) is not { } viewer)
+            return Result<IReadOnlyList<CalendarEntrySummary>>.Forbidden(NoPersonMessage);
+
         var now = _timeProvider.GetUtcNow();
         var today = ClubClock.Today(_timeProvider);
         var openEndedCutoff = now.AddHours(-CalendarDefaults.OpenEndedHours);
-        var windowStart = ClubClock.StartOfDay(from);
-        var windowEnd = ClubClock.StartOfDay(to.AddDays(1));
+        var windowStart = ClubClock.StartOfDay(query.From);
+        var windowEnd = ClubClock.StartOfDay(query.To.AddDays(1));
 
         var rows = await _dbContext
             .CalendarEntries.AsNoTracking()
@@ -87,9 +88,9 @@ public sealed class CalendarService
                         : entry.EndsAt > windowStart
                 )
             )
-            .Where(entry => !clubOwnedOnly || entry.OwnerGroupId == null)
-            .Where(entry => ownerGroupId == null || entry.OwnerGroupId == ownerGroupId)
-            .Where(VisibleTo(personId, today))
+            .Where(entry => !query.ClubOwnedOnly || entry.OwnerGroupId == null)
+            .Where(entry => query.OwnerGroupId == null || entry.OwnerGroupId == query.OwnerGroupId)
+            .Where(VisibleTo(viewer.PersonId, viewer.HoldsClubRead, today))
             .Where(PublishedEvents.IsListedEntry)
             .OrderBy(entry => entry.StartsAt)
             .ThenBy(entry => entry.Id)
@@ -97,20 +98,25 @@ public sealed class CalendarService
             .ToListAsync(ct);
 
         var answers = await AnswersOfAsync(
-            personId,
+            viewer.PersonId,
             [.. rows.Select(row => row.CalendarEntryId)],
             ct
         );
 
-        return [.. rows.Select(row => ToSummary(row, answers, now))];
+        return Result<IReadOnlyList<CalendarEntrySummary>>.Success([
+            .. rows.Select(row => ToSummary(row, answers, now)),
+        ]);
     }
 
-    public async Task<CalendarEntrySummary?> GetEntryAsync(
-        int personId,
+    public async Task<Result<CalendarEntrySummary>> GetEntryAsync(
+        int viewerAccountId,
         int calendarEntryId,
         CancellationToken ct
     )
     {
+        if (await ViewerOfAsync(viewerAccountId, ct) is not { } viewer)
+            return Result<CalendarEntrySummary>.Forbidden(NoPersonMessage);
+
         var now = _timeProvider.GetUtcNow();
         var today = ClubClock.Today(_timeProvider);
         var openEndedCutoff = now.AddHours(-CalendarDefaults.OpenEndedHours);
@@ -118,17 +124,17 @@ public sealed class CalendarService
         var row = await _dbContext
             .CalendarEntries.AsNoTracking()
             .Where(entry => entry.Id == calendarEntryId)
-            .Where(VisibleTo(personId, today))
+            .Where(VisibleTo(viewer.PersonId, viewer.HoldsClubRead, today))
             .Where(PublishedEvents.IsListedEntry)
             .Select(RowProjection(now, openEndedCutoff))
             .SingleOrDefaultAsync(ct);
 
         if (row is null)
-            return null;
+            return Result<CalendarEntrySummary>.NotFound(UnknownEntryMessage);
 
-        var answers = await AnswersOfAsync(personId, [row.CalendarEntryId], ct);
+        var answers = await AnswersOfAsync(viewer.PersonId, [row.CalendarEntryId], ct);
 
-        return ToSummary(row, answers, now);
+        return Result<CalendarEntrySummary>.Success(ToSummary(row, answers, now));
     }
 
     public async Task<IReadOnlyList<GroupCalendarEntrySummary>> GetGroupEntriesAsync(
@@ -153,7 +159,7 @@ public sealed class CalendarService
                 entry.OwnerGroupId == groupId
                 || entry.ParticipatingGroups.Any(link => link.GroupId == groupId)
             )
-            .Where(VisibleTo(personId, today))
+            .Where(VisibleTo(personId, SeesEveryClubEntry, today))
             .Where(PublishedEvents.IsListedEntry)
             .OrderBy(entry => entry.StartsAt)
             .ThenBy(entry => entry.Id)
@@ -217,7 +223,7 @@ public sealed class CalendarService
                             : entry.EndsAt > windowStart
                     )
                 )
-                .Where(VisibleTo(perViewer.Key, today))
+                .Where(VisibleTo(perViewer.Key, SeesEveryClubEntry, today))
                 .OrderBy(entry => entry.StartsAt)
                 .ThenBy(entry => entry.Id)
                 .Select(RowProjection(now, openEndedCutoff))
@@ -775,14 +781,34 @@ public sealed class CalendarService
     private Task<bool> GroupExistsAsync(int groupId, CancellationToken ct) =>
         _dbContext.Groups.AsNoTracking().AnyAsync(group => group.Id == groupId, ct);
 
-    private Expression<Func<CalendarEntry, bool>> VisibleTo(int? personId, DateOnly today)
+    private async Task<CalendarViewer?> ViewerOfAsync(int accountId, CancellationToken ct)
+    {
+        if (await _authorizer.ActivePersonIdAsync(accountId, ct) is not { } personId)
+            return null;
+
+        var holdsClubRead = await _authorizer.IsGrantedAsync(
+            accountId,
+            FurriaPermissions.ClubRead,
+            ct
+        );
+
+        return new CalendarViewer(personId, holdsClubRead);
+    }
+
+    private Expression<Func<CalendarEntry, bool>> VisibleTo(
+        int? personId,
+        bool holdsClubRead,
+        DateOnly today
+    )
     {
         var tiedGroupIds = _dbContext.TiedGroupIds(personId, today);
 
         return entry =>
-            entry.Visibility != CalendarEntryVisibility.Group
-            || (entry.OwnerGroupId != null && tiedGroupIds.Contains(entry.OwnerGroupId.Value))
-            || entry.ParticipatingGroups.Any(link => tiedGroupIds.Contains(link.GroupId));
+            (
+                entry.OwnerGroupId != null && tiedGroupIds.Contains(entry.OwnerGroupId.Value)
+                || entry.ParticipatingGroups.Any(link => tiedGroupIds.Contains(link.GroupId))
+            )
+            || holdsClubRead && entry.Visibility != CalendarEntryVisibility.Group;
     }
 
     private async Task<IReadOnlyDictionary<int, AttendanceAnswer>> AnswersOfAsync(
@@ -838,6 +864,8 @@ public sealed class CalendarService
     );
 
     private sealed record ParticipatingGroupRow(int GroupId, string Name, GroupTone? Tone);
+
+    private readonly record struct CalendarViewer(int PersonId, bool HoldsClubRead);
 
     private sealed record GroupStateRow(int GroupId, DateOnly? ArchivedOn);
 
