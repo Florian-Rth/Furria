@@ -3,6 +3,7 @@ import { KkStudioView } from '@furria/ui/KkStudioView';
 import type { FC } from 'react';
 import { PracticeSteps } from '@/features/act-practice/components/PracticeSteps';
 import type { Studio } from '@/features/acts/schemas';
+import type { CastPerson } from '@/features/running-order/schemas';
 import { useActStudioSongs } from '../hooks/use-act-studio-songs';
 import { useActStudioStage } from '../hooks/use-act-studio-stage';
 import { useActStudioTakes } from '../hooks/use-act-studio-takes';
@@ -21,10 +22,17 @@ interface ActStudioBodyProps {
   studio: Studio;
   viewerId: number | null;
   canEdit: boolean;
+  cast: readonly CastPerson[];
 }
 
-export const ActStudioBody: FC<ActStudioBodyProps> = ({ actId, studio, viewerId, canEdit }) => {
-  const screen = useStudioScreen(actId, studio, viewerId, canEdit);
+export const ActStudioBody: FC<ActStudioBodyProps> = ({
+  actId,
+  studio,
+  viewerId,
+  canEdit,
+  cast,
+}) => {
+  const screen = useStudioScreen(actId, studio, viewerId, canEdit, cast);
   const editor = useActStudioStage(screen);
   const takes = useActStudioTakes(screen);
   const songs = useActStudioSongs(screen);

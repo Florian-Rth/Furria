@@ -9,7 +9,7 @@ import { songLimitOf } from './studio-music';
 
 const MIN_STEP_SECONDS = 0.5;
 const MIN_SONG_SECONDS = 2;
-const KEY_TOLERANCE_SECONDS = 1e-3;
+export const KEY_TOLERANCE_SECONDS = 1e-3;
 const MIN_MOVE_SECONDS = 0.1;
 
 export interface TimeSpan {
@@ -62,12 +62,29 @@ export const workedStepsOf = (
 export const workedPathsOf = (
   paths: readonly SpotPath[],
   edits: StudioEdits,
-): readonly SpotPath[] =>
-  paths.map((path) => {
-    const track = edits.tracks[path.spotId];
+): readonly SpotPath[] => {
+  const known = new Set(paths.map((path) => path.spotId));
+  const added = Object.entries(edits.tracks)
+    .map(([spotId, keyframes]) => ({ spotId: Number(spotId), keyframes }))
+    .filter((path) => !known.has(path.spotId));
 
-    return track === undefined ? path : { spotId: path.spotId, keyframes: track };
-  });
+  return [
+    ...paths.map((path) => {
+      const track = edits.tracks[path.spotId];
+
+      return track === undefined ? path : { spotId: path.spotId, keyframes: track };
+    }),
+    ...added,
+  ];
+};
+
+export const tracksWithoutOf = (
+  tracks: StudioEdits['tracks'],
+  settled: StudioEdits['tracks'],
+): StudioEdits['tracks'] =>
+  Object.fromEntries(
+    Object.entries(tracks).filter(([spotId, keyframes]) => settled[Number(spotId)] !== keyframes),
+  );
 
 export const snappedOf = (marks: readonly CountMark[], seconds: number): number => {
   let best = seconds;
@@ -114,7 +131,7 @@ export const borderMovedOf = (
   };
 };
 
-const samePlace = (left: StagePoint, right: StagePoint): boolean =>
+export const samePlace = (left: StagePoint, right: StagePoint): boolean =>
   left.rightMetres === right.rightMetres && left.backMetres === right.backMetres;
 
 export const formationIndexOf = (
@@ -256,7 +273,10 @@ export const trimmedCutOf = (
   };
 };
 
-const GRID_METRES = 0.25;
+export const GRID_METRES = 0.25;
+
+export const snappedToGrid = (value: number): number =>
+  Math.round(value / GRID_METRES) * GRID_METRES + 0;
 
 export interface StageShare {
   x: number;
@@ -271,11 +291,10 @@ export const draggedPointOf = (
   const half = stage.widthMetres / 2;
   const right = origin.rightMetres - delta.x * stage.widthMetres;
   const back = origin.backMetres + delta.y * stage.depthMetres;
-  const snap = (value: number): number => Math.round(value / GRID_METRES) * GRID_METRES;
 
   return {
-    rightMetres: Math.min(half, Math.max(-half, snap(right))),
-    backMetres: Math.min(stage.depthMetres, Math.max(0, snap(back))),
+    rightMetres: Math.min(half, Math.max(-half, snappedToGrid(right))),
+    backMetres: Math.min(stage.depthMetres, Math.max(0, snappedToGrid(back))),
   };
 };
 

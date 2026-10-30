@@ -9,6 +9,7 @@ interface ActPracticeBodyProps {
 
 export const ActPracticeBody: FC<ActPracticeBodyProps> = ({ page }) => {
   const studio = page.query.data?.studio;
+  const cast = page.query.data?.act.cast ?? [];
 
   if (studio === undefined || studio === null || page.actId === null) {
     return <ActPageLoading page={page} />;
@@ -21,6 +22,7 @@ export const ActPracticeBody: FC<ActPracticeBodyProps> = ({ page }) => {
       studio={studio}
       viewerId={page.viewerId}
       canEdit={page.canEditStudio}
+      cast={cast}
     />
   );
 };

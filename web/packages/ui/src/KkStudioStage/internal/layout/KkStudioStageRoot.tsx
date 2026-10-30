@@ -8,6 +8,7 @@ import { kkTokens } from '../../../tokens';
 
 const FRONT_ROOM = '1.125rem';
 const VEIL = '30%';
+const GUIDE_LEFTS: readonly string[] = ['25%', '33.333%', '66.667%', '75%'];
 
 const palette = (theme: Theme) => (theme.vars ?? theme).palette;
 
@@ -41,6 +42,19 @@ export const KkStudioStageRoot: FC<KkStudioStageRootProps> = ({
         sx={{ position: 'absolute', inset: 0, transform: 'rotate(180deg)', pointerEvents: 'none' }}
       />
     );
+  const guides = GUIDE_LEFTS.map((left) => (
+    <Box
+      key={left}
+      data-kk-studio-guide
+      style={{ left }}
+      sx={(theme) => ({
+        position: 'absolute',
+        top: 0,
+        bottom: 0,
+        borderLeft: `${kkTokens.line.hair}px dotted ${palette(theme).text.disabled}`,
+      })}
+    />
+  ));
   const grid = {
     backgroundSize: `calc(100% / ${widthMetres}) calc(100% / ${depthMetres})`,
   };
@@ -94,6 +108,7 @@ export const KkStudioStageRoot: FC<KkStudioStageRootProps> = ({
               borderLeft: `${kkTokens.line.hair}px dashed ${palette(theme).text.secondary}`,
             })}
           />
+          {guides}
           <Box
             sx={(theme) => ({
               position: 'absolute',

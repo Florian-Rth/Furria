@@ -6,6 +6,7 @@ import { useActStudioRoutes } from '../hooks/use-act-studio-routes';
 import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import {
+  STUDIO_ARRANGE,
   STUDIO_FRONT,
   STUDIO_MIRROR,
   STUDIO_MULTI,
@@ -28,13 +29,14 @@ export const ActStudioStageEditor: FC<ActStudioStageEditorProps> = ({ screen, ed
   const paths = routes.map((route) => (
     <KkStudioStage.Path key={route.key} route={route.route} keys={route.keys} aspect={aspect} />
   ));
+  const mirrorLocked = !editor.canMirror;
   const formationTools = editor.formation ? (
     <>
       <KkStudioToolbar.Toggle
         glyph="mirror"
         text={STUDIO_MIRROR}
         pressed={null}
-        disabled={!editor.canMirror}
+        disabled={mirrorLocked}
         onPress={editor.mirror}
       />
       <KkStudioToolbar.Toggle
@@ -42,6 +44,12 @@ export const ActStudioStageEditor: FC<ActStudioStageEditorProps> = ({ screen, ed
         text={STUDIO_ONION}
         pressed={editor.onion}
         onPress={editor.toggleOnion}
+      />
+      <KkStudioToolbar.Toggle
+        glyph="arrange"
+        text={STUDIO_ARRANGE}
+        pressed={null}
+        onPress={editor.openSheet}
       />
     </>
   ) : null;

@@ -3,7 +3,7 @@ import type { FC } from 'react';
 import { useActStudioCast } from '../hooks/use-act-studio-cast';
 import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 import type { StudioScreen } from '../hooks/use-studio-screen';
-import { STUDIO_LATER, STUDIO_LATER_TITLE, STUDIO_SPOTS } from '../studio-copy';
+import { STUDIO_SPOT_ADD, STUDIO_SPOTS } from '../studio-copy';
 
 interface ActStudioCastListProps {
   screen: StudioScreen;
@@ -30,7 +30,12 @@ export const ActStudioCastList: FC<ActStudioCastListProps> = ({ screen, editor }
     <KkStudioList label={STUDIO_SPOTS}>
       <KkStudioList.Head text={editor.formationText} aside={null} />
       {rows}
-      <KkStudioList.Slot title={STUDIO_LATER_TITLE} text={STUDIO_LATER} />
+      <KkStudioList.Action
+        icon="add"
+        text={STUDIO_SPOT_ADD}
+        disabled={screen.stageWrites.addSpot.isPending}
+        onPress={editor.addSpot}
+      />
     </KkStudioList>
   );
 };

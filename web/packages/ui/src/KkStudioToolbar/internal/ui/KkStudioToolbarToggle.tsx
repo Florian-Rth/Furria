@@ -1,4 +1,5 @@
 import FlipRoundedIcon from '@mui/icons-material/FlipRounded';
+import GridViewRoundedIcon from '@mui/icons-material/GridViewRounded';
 import LayersRoundedIcon from '@mui/icons-material/LayersRounded';
 import SelectAllRoundedIcon from '@mui/icons-material/SelectAllRounded';
 import ButtonBase from '@mui/material/ButtonBase';
@@ -8,12 +9,13 @@ import type { FC, ReactNode } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { kkTokens } from '../../../tokens';
 
-export type KkStudioToolbarGlyph = 'multi' | 'mirror' | 'onion';
+export type KkStudioToolbarGlyph = 'multi' | 'mirror' | 'onion' | 'arrange';
 
 const GLYPHS: Record<KkStudioToolbarGlyph, ReactNode> = {
   multi: <SelectAllRoundedIcon fontSize="small" />,
   mirror: <FlipRoundedIcon fontSize="small" />,
   onion: <LayersRoundedIcon fontSize="small" />,
+  arrange: <GridViewRoundedIcon fontSize="small" />,
 };
 
 const palette = (theme: Theme) => (theme.vars ?? theme).palette;

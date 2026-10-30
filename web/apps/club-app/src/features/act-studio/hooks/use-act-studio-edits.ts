@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from 'react';
 import type { TimedKeyframe } from '@/features/act-player/choreography-motion';
 import type { MixPlayer } from '@/features/act-player/mix-player';
 import type { StepText, StudioEdits, TimeSpan } from '../studio-edits';
-import { NO_EDITS } from '../studio-edits';
+import { NO_EDITS, tracksWithoutOf } from '../studio-edits';
 
 export interface ActStudioEdits {
   value: StudioEdits;
@@ -11,6 +11,7 @@ export interface ActStudioEdits {
   setBounds: (bounds: Record<number, TimeSpan>) => void;
   setText: (stepId: number, text: StepText) => void;
   setTracks: (tracks: Record<number, readonly TimedKeyframe[]>) => void;
+  dropTracks: (tracks: Record<number, readonly TimedKeyframe[]>) => void;
   setOffset: (videoId: number, seconds: number) => void;
   keepPosition: (seconds: number) => void;
 }
@@ -30,6 +31,9 @@ export const useActStudioEdits = (): ActStudioEdits => {
     },
     setTracks: (tracks) => {
       setValue((current) => ({ ...current, tracks: { ...current.tracks, ...tracks } }));
+    },
+    dropTracks: (tracks) => {
+      setValue((current) => ({ ...current, tracks: tracksWithoutOf(current.tracks, tracks) }));
     },
     setOffset: (videoId, seconds) => {
       setValue((current) => ({ ...current, offsets: { ...current.offsets, [videoId]: seconds } }));
