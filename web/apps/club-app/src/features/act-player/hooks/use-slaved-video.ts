@@ -1,5 +1,5 @@
 import type { RefObject } from 'react';
-import { useEffect } from 'react';
+import { useEffect, useEffectEvent } from 'react';
 import type { StudioVideo } from '@/features/acts/schemas';
 import type { MixPlayer } from '../mix-player';
 import { videoCorrectionOf, videoSecondsAt } from '../video-sync';
@@ -43,24 +43,31 @@ export const useSlavedVideo = (
   video: StudioVideo | null,
   elementRef: RefObject<HTMLVideoElement | null>,
 ): void => {
+  const following = video !== null;
+  const follow = useEffectEvent((element: HTMLVideoElement): void => {
+    if (video !== null) {
+      followOnce(element, player, video);
+    }
+  });
+
   useEffect(() => {
-    if (video === null) {
+    if (!following) {
       return;
     }
 
     let frame = 0;
-    const follow = (): void => {
+    const tick = (): void => {
       const element = elementRef.current;
       if (element !== null) {
-        followOnce(element, player, video);
+        follow(element);
       }
-      frame = requestAnimationFrame(follow);
+      frame = requestAnimationFrame(tick);
     };
-    frame = requestAnimationFrame(follow);
+    frame = requestAnimationFrame(tick);
 
     return () => {
       cancelAnimationFrame(frame);
       elementRef.current?.pause();
     };
-  }, [player, video, elementRef]);
+  }, [following, elementRef]);
 };

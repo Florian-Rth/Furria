@@ -1,5 +1,6 @@
 import type { CountMark, TimelineRange } from '@/features/act-player/music-timeline';
 import { partOfStep } from '@/features/act-player/music-timeline';
+import { shownStepNameOf } from '@/features/act-player/step-names';
 import { isPlayableVideo } from '@/features/act-player/video-sync';
 import type { StudioPart, StudioStep, StudioVideo } from '@/features/acts/schemas';
 
@@ -74,7 +75,7 @@ export const stepListOf = (
     const row: StepListRow = {
       stepId: step.stepId,
       number,
-      name: step.name,
+      name: shownStepNameOf(step.name, number),
       start: range.start,
       end: range.end,
       eights: eightsOf(marks, range),

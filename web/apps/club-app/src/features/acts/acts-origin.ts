@@ -1,11 +1,15 @@
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { CatalogueAct } from '@/features/running-order/schemas';
 import { GROUPS_TITLE, START_ORIGIN } from '@/features/session/app-sections';
+import type { BackStackSpot } from '@/lib/back-stack';
+import { DETAILS_LABEL } from './act-page-copy';
 import type { ActsScope } from './acts-catalogue';
 import { ACTS_TITLE, GROUP_ACTS_TITLE } from './acts-copy';
 import type { ActPageOrigin, ActPageSearch, ActsSearch } from './schemas';
 
 export const CLUB_SCOPE: ActsScope = { kind: 'club' };
+
+const DETAILS_VIEW = 'details';
 
 export const PLANNER_PATH = '/events/$eventId/ablauf';
 export const GROUP_HUB_PATH = '/groups/$groupId';
@@ -117,3 +121,33 @@ export const actPageOriginOf = (
 
   return START_ORIGIN;
 };
+
+const detailsSearchOf = (search: ActPageSearch): Record<string, string> => {
+  const details = { ...search, view: DETAILS_VIEW, edit: undefined, training: undefined };
+
+  return Object.fromEntries(
+    Object.entries(details).flatMap(([key, value]) =>
+      value === undefined ? [] : [[key, String(value)]],
+    ),
+  );
+};
+
+const isActDetails = (spot: BackStackSpot | undefined, actId: number): boolean =>
+  spot !== undefined &&
+  spot.pathname === actPagePathOf(actId) &&
+  new URLSearchParams(spot.search).get('view') === DETAILS_VIEW;
+
+export const playerOriginOf = (
+  actId: number,
+  search: ActPageSearch,
+  behind: BackStackSpot | undefined,
+  away: KkScreenOrigin,
+): KkScreenOrigin =>
+  isActDetails(behind, actId)
+    ? {
+        label: DETAILS_LABEL,
+        to: ACT_PAGE_PATH,
+        params: { actId: String(actId) },
+        search: detailsSearchOf(search),
+      }
+    : away;

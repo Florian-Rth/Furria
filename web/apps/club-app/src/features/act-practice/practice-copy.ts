@@ -27,8 +27,8 @@ export const PRACTICE_PAUSED = 'Pause';
 export const PRACTICE_STEP_BACK = 'Schritt zurück';
 export const PRACTICE_STEP_FORWARD = 'Schritt vor';
 
-export const PRACTICE_HINT_TAP = 'Tippen: Start und Pause · hoch oder runter wischen: Tempo';
-export const PRACTICE_HINT_SIDES = 'Doppelt links oder rechts oder zur Seite wischen: Schritt';
+export const PRACTICE_HINT_TAP = 'Einmal tippen: Start und Pause · hoch oder runter wischen: Tempo';
+export const PRACTICE_HINT_SIDES = 'Zweimal links oder rechts tippen: Schritt zurück oder vor';
 
 export const countLabelOf = (count: number | null): string =>
   count === null ? 'Keine Zählzeit' : `Zählzeit ${count} von 8`;

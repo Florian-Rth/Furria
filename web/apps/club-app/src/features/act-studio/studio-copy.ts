@@ -1,4 +1,5 @@
 import type { KeyframeEasing } from '@/features/act-player/choreography-motion';
+import { unnamedStepNameOf } from '@/features/act-player/step-names';
 import { clockOf } from '@/features/act-practice/practice-step-list';
 import type { StudioVideo } from '@/features/acts/schemas';
 import type { MediaItemState } from '@/lib/api/schemas';
@@ -132,7 +133,7 @@ export const arrangeScopeOf = (selected: number): string =>
       ? '1 Platz gewählt'
       : `${selected} Plätze gewählt`;
 
-export const copySourceTextOf = (index: number): string => `Schritt ${index + 1}`;
+export const copySourceTextOf = (index: number): string => unnamedStepNameOf(index + 1);
 
 export const spotDeskTitleOf = (number: number): string => `Platz ${number}`;
 
@@ -264,7 +265,9 @@ export const cutHandleLabelOf = (edge: 'start' | 'end', name: string): string =>
   edge === 'start' ? `Anfang von ${name} schneiden` : `Ende von ${name} schneiden`;
 
 export const markLabelOf = (number: number, name: string): string =>
-  `Schritt ${number} ${name}: dorthin springen`;
+  name.trim() === ''
+    ? `${unnamedStepNameOf(number)}: dorthin springen`
+    : `${unnamedStepNameOf(number)} ${name}: dorthin springen`;
 
 export const borderLabelOf = (name: string): string => `Grenze nach ${name} verschieben`;
 
@@ -285,7 +288,7 @@ export const spotMetaOf = (rightMetres: number, backMetres: number, keys: number
       ? 'Mitte'
       : `${Math.abs(rightMetres).toFixed(1).replace('.', ',')} m ${rightMetres > 0 ? 'rechts' : 'links'}`;
 
-  return `${side} · ${backMetres.toFixed(1).replace('.', ',')} m hinten · ${keys} Wegpunkte`;
+  return `${side} · ${backMetres.toFixed(1).replace('.', ',')} m hinten · ${keys} ${keys === 1 ? 'Wegpunkt' : 'Wegpunkte'}`;
 };
 
 export const formationTextOf = (number: number, start: number): string =>
@@ -412,7 +415,7 @@ export const outsideMusicTextOf = ({ steps, videos, keyframes }: OutsideMusic): 
 export const newPartNameOf = (number: number): string => `Teil ${number}`;
 
 export const stepDeskTitleOf = (number: number, name: string): string =>
-  name.trim() === '' ? `Schritt ${number}` : `${number} · ${name}`;
+  name.trim() === '' ? unnamedStepNameOf(number) : `${number} · ${name}`;
 
 export const videoNameOf = (name: string | null, number: number): string =>
   name ?? `Video ${number}`;

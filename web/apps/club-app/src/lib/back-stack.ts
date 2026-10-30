@@ -16,6 +16,7 @@ const ONE_ENTRY = 1;
 const TRAVERSALS: readonly string[] = ['BACK', 'FORWARD'];
 
 const pathnamesByIndex = new Map<number, string>();
+const searchesByIndex = new Map<number, string>();
 let pendingStep: StepBack | null = null;
 let systemLandingKey: string | undefined;
 
@@ -35,6 +36,15 @@ export const landedBySystem = (state: HistoryLocation['state']): boolean =>
 
 const remember = (location: HistoryLocation): void => {
   pathnamesByIndex.set(location.state.__TSR_index, location.pathname);
+  searchesByIndex.set(location.state.__TSR_index, location.search);
+};
+
+export const spotBefore = (index: number): BackStackSpot | undefined => {
+  const pathname = pathnamesByIndex.get(index - ONE_ENTRY);
+
+  return pathname === undefined
+    ? undefined
+    : { pathname, search: searchesByIndex.get(index - ONE_ENTRY) ?? '' };
 };
 
 export const pathnameBehind = (location: HistoryLocation): string | undefined =>

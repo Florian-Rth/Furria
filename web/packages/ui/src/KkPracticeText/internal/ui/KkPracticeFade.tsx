@@ -5,9 +5,8 @@ import type { KkSx } from '../../../kk-sx';
 
 const FADE_SECONDS = 0.32;
 const FADE_EASE = [0.22, 0.61, 0.36, 1] as const;
-const HIDDEN_BELOW = { opacity: 0, y: '0.375rem' } as const;
-const SHOWN = { opacity: 1, y: 0 } as const;
-const HIDDEN_ABOVE = { opacity: 0, y: '-0.375rem' } as const;
+const HIDDEN = { opacity: 0 } as const;
+const SHOWN = { opacity: 1 } as const;
 
 interface KkPracticeFadeProps extends PropsWithChildren {
   fadeKey: string;
@@ -20,9 +19,9 @@ export const KkPracticeFade: FC<KkPracticeFadeProps> = ({ fadeKey, sx, children 
       <Box
         key={fadeKey}
         component={motion.div}
-        initial={HIDDEN_BELOW}
+        initial={HIDDEN}
         animate={SHOWN}
-        exit={HIDDEN_ABOVE}
+        exit={HIDDEN}
         transition={{ duration: FADE_SECONDS, ease: FADE_EASE }}
         sx={{ position: 'absolute', inset: 0, minWidth: 0 }}
       >

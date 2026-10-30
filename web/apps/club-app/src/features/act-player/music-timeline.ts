@@ -3,6 +3,7 @@ import type { Studio, StudioPart, StudioStep } from '@/features/acts/schemas';
 const SECONDS_PER_MINUTE = 60;
 const COUNTS_PER_EIGHT = 8;
 export const EDGE_TOLERANCE_SECONDS = 1e-6;
+const BEAT_ROUNDING_SECONDS = 0.01;
 
 export interface MusicSegment {
   mediaItemId: number;
@@ -127,7 +128,7 @@ const beatIndexAt = (segment: MusicSegment, sourceSeconds: number): number | nul
     return null;
   }
 
-  return Math.floor((sourceSeconds - segment.firstBeatSeconds) / beat + EDGE_TOLERANCE_SECONDS);
+  return Math.floor((sourceSeconds + BEAT_ROUNDING_SECONDS - segment.firstBeatSeconds) / beat);
 };
 
 const countOfBeat = (beatIndex: number): number =>

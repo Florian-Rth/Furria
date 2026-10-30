@@ -16,6 +16,7 @@ import { usePlansRunningOrder } from '@/features/running-order/hooks/use-plans-r
 import type { CastPerson, CatalogueAct } from '@/features/running-order/schemas';
 import { useMeQuery } from '@/features/session/api';
 import { parsePositiveId } from '@/lib/positive-id';
+import { useSpotBehind } from '@/lib/use-spot-behind';
 import { toEveningLabel } from '../act-evenings-copy';
 import {
   ACT_FALLBACK_TITLE,
@@ -25,7 +26,7 @@ import {
 } from '../act-page-copy';
 import type { ActPageMode } from '../act-studio';
 import { actPageModeOf, canPractise } from '../act-studio';
-import { actPageOriginOf, actPageReturnOf } from '../acts-origin';
+import { actPageOriginOf, actPageReturnOf, playerOriginOf } from '../acts-origin';
 import { useActStudioQuery } from '../api';
 import type { ActPageSearch, ActStudioResponse, StudioEvening, StudioTraining } from '../schemas';
 
@@ -89,7 +90,9 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
   const plans = usePlansRunningOrder();
   const navigate = useNavigate();
   const isWide = useIsWideScreen();
+  const behind = useSpotBehind();
   const act = query.data?.act ?? null;
+  const away = actPageOriginOf(actPageReturnOf(search, act), act);
   const canEditSettings = query.data?.viewer.canEditSettings === true;
   const isSettingsOpen = canEditSettings && search.settings === true;
   const catalogue = useActsQuery(act?.sessionYear ?? null, isSettingsOpen);
@@ -187,7 +190,8 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
     actId,
     query,
     title: titleOf(act?.name ?? ACT_FALLBACK_TITLE, evening, mode),
-    origin: actPageOriginOf(actPageReturnOf(search, act), act),
+    origin:
+      mode === 'details' || actId === null ? away : playerOriginOf(actId, search, behind, away),
     mode,
     actions: detailActions,
     practiceActions: [detailsAction],

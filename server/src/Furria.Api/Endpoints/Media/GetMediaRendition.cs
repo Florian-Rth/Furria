@@ -12,6 +12,12 @@ public sealed class GetMediaRendition : Endpoint<GetMediaRenditionRequest>
 {
     private const string ImmutableDirective = "immutable";
 
+    private static readonly string AskAgainCacheControl = new CacheControlHeaderValue
+    {
+        Private = true,
+        NoCache = true,
+    }.ToString();
+
     private readonly MediaStore _mediaStore;
     private readonly MediaUrlSigner _signer;
     private readonly TimeProvider _timeProvider;
@@ -48,7 +54,9 @@ public sealed class GetMediaRendition : Endpoint<GetMediaRenditionRequest>
             return;
         }
 
-        HttpContext.Response.Headers.CacheControl = CacheControlUntil(req.Exp);
+        HttpContext.Response.Headers.CacheControl = file.IsStandIn
+            ? AskAgainCacheControl
+            : CacheControlUntil(req.Exp);
         await Send.ResultAsync(MediaFileResults.Of(file, asDownload: req.Download is not null));
     }
 

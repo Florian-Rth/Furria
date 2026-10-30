@@ -95,16 +95,40 @@ public sealed class MediaStore
         if (item is null || !MediaRenditions.Exists(item.Kind, rendition))
             return null;
 
-        var file = new FileInfo(
-            _root.FullPathOf(MediaPaths.RenditionOf(item.StorageKey, rendition))
-        );
-        if (!file.Exists)
-        {
+        var served = ServedFileOf(item, rendition);
+        if (served is null)
             await RepairLostRenditionsAsync(item, ct);
-            return null;
-        }
 
-        return new MediaFileDetails
+        return served;
+    }
+
+    private MediaFileDetails? ServedFileOf(ServedItemRow item, MediaRendition rendition)
+    {
+        var file = RenditionFileOf(item, rendition);
+        if (file.Exists)
+            return FileDetailsOf(item, rendition, file);
+
+        if (MediaRenditions.StandInFor(rendition) is not { } standIn)
+            return null;
+
+        var standInFile = RenditionFileOf(item, standIn);
+        return standInFile.Exists
+            ? FileDetailsOf(item, standIn, standInFile) with
+            {
+                IsStandIn = true,
+            }
+            : null;
+    }
+
+    private FileInfo RenditionFileOf(ServedItemRow item, MediaRendition rendition) =>
+        new(_root.FullPathOf(MediaPaths.RenditionOf(item.StorageKey, rendition)));
+
+    private static MediaFileDetails FileDetailsOf(
+        ServedItemRow item,
+        MediaRendition rendition,
+        FileInfo file
+    ) =>
+        new()
         {
             Owner = item.Owner,
             FullPath = file.FullName,
@@ -112,7 +136,6 @@ public sealed class MediaStore
             DownloadName = DownloadNameOf(item.OriginalFileName, rendition),
             LastModified = file.LastWriteTimeUtc,
         };
-    }
 
     private async Task RepairLostRenditionsAsync(ServedItemRow item, CancellationToken ct)
     {

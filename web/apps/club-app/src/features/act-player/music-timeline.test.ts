@@ -151,6 +151,12 @@ describe('countAt', () => {
     expect(countAt(mix, seconds)).toEqual(expected);
   });
 
+  it('counts a step stored a hair before its beat as that beat', () => {
+    const tempo = segment({ sourceStart: 0, sourceEnd: 60, firstBeatSeconds: 0, tempoBpm: 126 });
+
+    expect(countAt([tempo], 7.619)).toEqual({ count: 1, eight: 2 });
+  });
+
   it.each([
     ['without a beat grid', segment({ tempoBpm: null })],
     ['before the first beat', segment({ sourceStart: 0, sourceEnd: 20, firstBeatSeconds: 2 })],
