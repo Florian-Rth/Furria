@@ -9,11 +9,8 @@ import {
   PRACTICE_MIRRORED,
   PRACTICE_VIDEO_TITLE,
 } from '@/features/act-practice/practice-copy';
-import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 import { useStudioHints } from '../hooks/use-studio-hints';
 import type { StudioScreen } from '../hooks/use-studio-screen';
-import { ActStudioStageEditor } from './ActStudioStageEditor';
-import { ActStudioWaveLayer } from './ActStudioWaveLayer';
 
 const HINT_LINES: readonly KkPracticeScreenHintLine[] = [
   { key: 'tap', glyph: 'tap', text: PRACTICE_HINT_TAP },
@@ -22,14 +19,12 @@ const HINT_LINES: readonly KkPracticeScreenHintLine[] = [
 
 interface ActStudioHeroProps {
   screen: StudioScreen;
-  editor: ActStudioStage;
 }
 
-export const ActStudioHero: FC<ActStudioHeroProps> = ({ screen, editor }) => {
-  const { practice, video, frame, mode, studio, playback } = screen;
+export const ActStudioHero: FC<ActStudioHeroProps> = ({ screen }) => {
+  const { practice, video, frame, studio, playback } = screen;
   const gestures = usePracticeGestures(practice);
   const hinted = useStudioHints(screen);
-  const surface = mode.editing ? undefined : gestures.surface;
   const take =
     video.take === null ? null : (
       <KkPracticeScreen.Take
@@ -40,7 +35,7 @@ export const ActStudioHero: FC<ActStudioHeroProps> = ({ screen, editor }) => {
     );
 
   return (
-    <KkPracticeScreen label={PRACTICE_VIDEO_TITLE} fit="aspect" surface={surface}>
+    <KkPracticeScreen label={PRACTICE_VIDEO_TITLE} fit="aspect" surface={gestures.surface}>
       <KkPracticeScreen.Layer shown={frame.hero === 'video'} tone="ink">
         <KkPracticeScreen.Video
           source={video.source}
@@ -58,12 +53,6 @@ export const ActStudioHero: FC<ActStudioHeroProps> = ({ screen, editor }) => {
       </KkPracticeScreen.Layer>
       <KkPracticeScreen.Layer shown={frame.hero === 'stage'} tone="clear">
         <PracticeStageLayer studio={studio} playback={playback} />
-      </KkPracticeScreen.Layer>
-      <KkPracticeScreen.Layer shown={frame.hero === 'wave'} tone="paper">
-        <ActStudioWaveLayer screen={screen} />
-      </KkPracticeScreen.Layer>
-      <KkPracticeScreen.Layer shown={frame.hero === 'editor'} tone="clear">
-        <ActStudioStageEditor screen={screen} editor={editor} />
       </KkPracticeScreen.Layer>
       <KkPracticeScreen.Hint lines={HINT_LINES} shown={hinted} />
       <KkPracticeScreen.Hud signal={gestures.signal} />

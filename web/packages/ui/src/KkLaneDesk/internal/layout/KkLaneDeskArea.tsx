@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import type { FC, PropsWithChildren } from 'react';
 
-export type KkLaneDeskAreaName = 'band' | 'bar' | 'stage' | 'inspector' | 'lanes';
+export type KkLaneDeskAreaName = 'band' | 'bar' | 'stage' | 'inspector' | 'overview' | 'lanes';
 
 interface KkLaneDeskAreaProps extends PropsWithChildren {
   area: KkLaneDeskAreaName;

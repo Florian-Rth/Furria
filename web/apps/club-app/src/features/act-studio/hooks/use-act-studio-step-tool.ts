@@ -13,8 +13,8 @@ export interface ActStudioStepTool {
 }
 
 export const useActStudioStepTool = (screen: StudioScreen): ActStudioStepTool => {
-  const { mode, manual, playback, practice, studio } = screen;
-  const onSteps = mode.editing && mode.tool === 'steps';
+  const { mode, manual, playback, practice, studio, editor } = screen;
+  const onSteps = mode.editing && (mode.tool === 'steps' || editor === 'cards');
   const desk = useDeskTarget(
     studio.steps.map((step) => step.stepId),
     onSteps,

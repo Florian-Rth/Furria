@@ -10,6 +10,7 @@ import { KkLaneTrackTicks } from './internal/ui/KkLaneTrackTicks';
 import { KkLaneTrackWave } from './internal/ui/KkLaneTrackWave';
 
 export type { KkLaneTrackRowSize } from './internal/lane-geometry';
+export { LANE_HEAD_REM as KK_LANE_HEAD_REM } from './internal/lane-geometry';
 export type { KkLaneTrackBlockTone } from './internal/ui/KkLaneTrackBlock';
 export type { KkLaneTrackTick } from './internal/ui/KkLaneTrackTicks';
 

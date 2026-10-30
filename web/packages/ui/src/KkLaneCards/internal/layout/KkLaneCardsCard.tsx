@@ -17,6 +17,7 @@ export const KkLaneCardsCard: FC<KkLaneCardsCardProps> = ({ label, current, chil
     aria-label={label}
     aria-roledescription="slide"
     aria-current={current ? 'step' : undefined}
+    inert={!current}
     sx={{
       flex: '0 0 100%',
       width: '100%',
