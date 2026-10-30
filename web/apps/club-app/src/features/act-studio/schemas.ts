@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { PortraitPersonRefSchema } from '@/lib/api/schemas';
 
 export const AddedSongSchema = z.object({ songId: z.int() });
 export type AddedSong = z.infer<typeof AddedSongSchema>;
@@ -32,3 +33,34 @@ export const FinalTrackMatchesSchema = z.object({
   ),
 });
 export type FinalTrackMatches = z.infer<typeof FinalTrackMatchesSchema>;
+
+export const CHOREOGRAPHY_VERSION_KINDS = [
+  'saved',
+  'restored',
+  'spotRemoved',
+  'musicAdopted',
+] as const;
+
+export const ChoreographyVersionSchema = z.object({
+  version: z.int(),
+  kind: z.enum(CHOREOGRAPHY_VERSION_KINDS),
+  restoredFromVersion: z.int().nullable(),
+  savedAt: z.iso.datetime({ offset: true }),
+  savedBy: PortraitPersonRefSchema.nullable(),
+});
+export type ChoreographyVersion = z.infer<typeof ChoreographyVersionSchema>;
+
+export const ChoreographyVersionsSchema = z.object({
+  versions: z.array(ChoreographyVersionSchema),
+});
+export type ChoreographyVersions = z.infer<typeof ChoreographyVersionsSchema>;
+
+export const ChoreographyConflictSchema = z.object({
+  overlaps: z.array(
+    z.object({
+      spotId: z.int(),
+      keyframes: z.array(z.object({ sourceMediaItemId: z.int(), seconds: z.number() })),
+    }),
+  ),
+});
+export type ChoreographyConflict = z.infer<typeof ChoreographyConflictSchema>;

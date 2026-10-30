@@ -1,6 +1,6 @@
 import type { ZodType } from 'zod';
 import { z } from 'zod';
-import type { ApiFailure, ApiFieldFailure } from './api-failure';
+import type { ApiFailure, RefusalReading } from './api-failure';
 import { ApiError, failureOfStatus, isRefusalStatus } from './api-failure';
 
 export type JsonBody = string | number | boolean | null | JsonBody[] | { [key: string]: JsonBody };
@@ -64,14 +64,18 @@ export const buildApiUrl = (baseUrl: string, path: string): string => {
 const toCamelCaseField = (field: string): string =>
   field.length === 0 ? field : `${field.charAt(0).toLowerCase()}${field.slice(1)}`;
 
-const readFieldFailures = async (response: Response): Promise<ApiFieldFailure[] | null> => {
+const readRefusal = async (response: Response): Promise<RefusalReading | null> => {
   try {
-    const parsed = FailurePayloadSchema.safeParse(await response.json());
+    const payload: JsonBody = await response.json();
+    const parsed = FailurePayloadSchema.safeParse(payload);
 
     return parsed.success
-      ? Object.entries(parsed.data.errors).flatMap(([field, messages]) =>
-          messages.map((message) => ({ field: toCamelCaseField(field), message })),
-        )
+      ? {
+          fields: Object.entries(parsed.data.errors).flatMap(([field, messages]) =>
+            messages.map((message) => ({ field: toCamelCaseField(field), message })),
+          ),
+          payload,
+        }
       : null;
   } catch {
     return null;
@@ -81,7 +85,7 @@ const readFieldFailures = async (response: Response): Promise<ApiFieldFailure[] 
 const failureOfResponse = async (response: Response): Promise<ApiFailure> =>
   failureOfStatus(
     response.status,
-    isRefusalStatus(response.status) ? await readFieldFailures(response) : null,
+    isRefusalStatus(response.status) ? await readRefusal(response) : null,
   );
 
 const failureOfTransport = (signal: AbortSignal | null | undefined): ApiFailure =>

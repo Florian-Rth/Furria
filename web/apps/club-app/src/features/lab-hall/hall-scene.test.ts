@@ -41,7 +41,7 @@ const training = (calendarEntryId: number, startsAt: string, openSpotIds: number
     calendarEntryId,
     title: 'Training',
     startsAt,
-    asksForResponse: true,
+    responses: [],
     openSpotIds,
   }) satisfies StudioTraining;
 

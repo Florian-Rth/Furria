@@ -415,7 +415,26 @@ export const outsideMusicTextOf = ({ steps, videos, keyframes }: OutsideMusic): 
 export const newPartNameOf = (number: number): string => `Teil ${number}`;
 
 export const stepDeskTitleOf = (number: number, name: string): string =>
-  name.trim() === '' ? unnamedStepNameOf(number) : `${number} · ${name}`;
+  name.trim() === '' ? unnamedStepNameOf(number) : `${STUDIO_STEP} ${number} · „${name.trim()}“`;
+
+export const partDeskTitleOf = (name: string, first: number, last: number): string => {
+  const steps = first === last ? `${STUDIO_STEP} ${first}` : `${STUDIO_STEP} ${first}–${last}`;
+
+  return `${STUDIO_PART} „${name.trim()}“ · ${steps}`;
+};
+
+export const songDeskTitleOf = (number: number, name: string): string => `Lied ${number} · ${name}`;
+
+export const STUDIO_STEP_GONE = 'Den Schritt gibt es nicht mehr. Sein Fenster ist zu.';
+export const STUDIO_SONG_GONE = 'Das Lied gibt es nicht mehr. Sein Fenster ist zu.';
+export const STUDIO_VIDEO_GONE = 'Das Video gibt es nicht mehr. Sein Fenster ist zu.';
+export const EVENING_BAND_PREFIX = 'Du bearbeitest';
+export const EVENING_BAND_SUFFIX = 'nicht die Session';
+
+const BAND_DAY = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-digit' });
+
+export const eveningBandOf = (title: string, startsAt: string): string =>
+  `${EVENING_BAND_PREFIX} ${title} ${BAND_DAY.format(new Date(startsAt))} — ${EVENING_BAND_SUFFIX}`;
 
 export const videoNameOf = (name: string | null, number: number): string =>
   name ?? `Video ${number}`;

@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { STUDIO_STEP_GONE } from '../studio-copy';
 import { markSecondsOf } from '../studio-steps';
+import { useDeskTarget } from './use-desk-target';
 import type { StudioScreen } from './use-studio-screen';
 
 export interface ActStudioStepTool {
   deskOpen: boolean;
+  deskStepId: number | null;
   canMark: boolean;
   openDesk: () => void;
   closeDesk: () => void;
@@ -11,22 +13,24 @@ export interface ActStudioStepTool {
 }
 
 export const useActStudioStepTool = (screen: StudioScreen): ActStudioStepTool => {
-  const { mode, manual, playback, practice } = screen;
-  const [deskOpen, setDeskOpen] = useState(false);
+  const { mode, manual, playback, practice, studio } = screen;
   const onSteps = mode.editing && mode.tool === 'steps';
-  if (deskOpen && (!onSteps || practice.step === null)) {
-    setDeskOpen(false);
-  }
+  const desk = useDeskTarget(
+    studio.steps.map((step) => step.stepId),
+    onSteps,
+    STUDIO_STEP_GONE,
+  );
 
   return {
-    deskOpen,
+    deskOpen: desk.targetId !== null,
+    deskStepId: desk.targetId,
     canMark: onSteps && playback.length > 0,
     openDesk: () => {
-      setDeskOpen(onSteps);
+      if (practice.step !== null) {
+        desk.open(practice.step.stepId);
+      }
     },
-    closeDesk: () => {
-      setDeskOpen(false);
-    },
+    closeDesk: desk.close,
     markHere: () => {
       manual.mark.mutate(markSecondsOf(playback, playback.player.position()));
     },
