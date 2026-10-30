@@ -50,6 +50,27 @@ export const STUDIO_NAME_PLACEHOLDER = 'Name';
 export const STUDIO_NOTE_LABEL = 'Beschreibung des Schritts';
 export const STUDIO_NOTE_PLACEHOLDER = 'Beschreibung hinzufügen';
 
+export const STUDIO_RAIL_TITLE = 'Schritte';
+export const STUDIO_RAIL_LABEL = 'Alle Schritte nach Teilen';
+export const STUDIO_MARK_HERE = 'Neuer Schritt hier';
+export const STUDIO_STEP_DESK = 'Schritt bearbeiten';
+export const STUDIO_STEP_DESK_CLOSE = 'Schritt schließen';
+export const STUDIO_STEP = 'Schritt';
+export const STUDIO_STEP_REMOVE = 'Schritt entfernen';
+export const STUDIO_STEP_REMOVE_SURE = 'Wirklich entfernen';
+export const STUDIO_PART = 'Teil';
+export const STUDIO_PART_NAME = 'Name des Teils';
+export const STUDIO_PART_OPEN = 'Neuer Teil ab hier';
+export const STUDIO_PART_EARLIER = 'Beginnt früher';
+export const STUDIO_PART_LATER = 'Beginnt später';
+export const STUDIO_PART_REMOVE = 'Teil auflösen';
+export const STUDIO_PART_REMOVE_SURE = 'Wirklich auflösen';
+export const STUDIO_MAIN_VIDEO = 'Hauptvideo';
+export const STUDIO_MAIN_VIDEO_NONE = 'Keins';
+export const STUDIO_STEP_NAME_LENGTH = 80;
+export const STUDIO_STEP_NOTE_LENGTH = 2000;
+export const STUDIO_PART_NAME_LENGTH = 80;
+
 export const STUDIO_STAGE_LABEL = 'Bühne: Punkte antippen und ziehen';
 export const STUDIO_FRONT = 'Publikum';
 export const STUDIO_TOOLBAR_LABEL = 'Bühne bearbeiten';
@@ -247,3 +268,11 @@ export const outsideMusicTextOf = ({ steps, videos, keyframes }: OutsideMusic): 
 
   return parts.length === 0 ? null : parts.join(' · ');
 };
+
+export const newPartNameOf = (number: number): string => `Teil ${number}`;
+
+export const stepDeskTitleOf = (number: number, name: string): string =>
+  name.trim() === '' ? `Schritt ${number}` : `${number} · ${name}`;
+
+export const videoNameOf = (name: string | null, number: number): string =>
+  name ?? `Video ${number}`;

@@ -1,16 +1,18 @@
 import { KkStudioMarks } from '@furria/ui/KkStudioMarks';
 import type { FC } from 'react';
 import { useActStudioMarks } from '../hooks/use-act-studio-marks';
+import type { ActStudioStepTool } from '../hooks/use-act-studio-step-tool';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import { STUDIO_MARKS_LABEL } from '../studio-copy';
 import { ActStudioPlayheadLive } from './ActStudioPlayheadLive';
 
 interface ActStudioMarkStripProps {
   screen: StudioScreen;
+  tool: ActStudioStepTool;
 }
 
-export const ActStudioMarkStrip: FC<ActStudioMarkStripProps> = ({ screen }) => {
-  const marks = useActStudioMarks(screen);
+export const ActStudioMarkStrip: FC<ActStudioMarkStripProps> = ({ screen, tool }) => {
+  const marks = useActStudioMarks(screen, tool);
   const parts = marks.parts.map((part) => (
     <KkStudioMarks.Part
       key={part.key}

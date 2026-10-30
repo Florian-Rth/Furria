@@ -4,6 +4,7 @@ using Furria.Api.Endpoints.Acts;
 using Furria.Api.Tests.Media;
 using Furria.Core.RunningOrders;
 using Furria.Tests.Common.Builder;
+using Furria.Tests.Common.Fixtures;
 using Xunit;
 using static Furria.Api.Tests.RunningOrders.RunningOrderSeeds;
 using static Furria.Api.Tests.RunningOrders.RunningOrderSteps;
@@ -86,4 +87,86 @@ internal static class StudioSteps
         int actId,
         CancellationToken ct
     ) => await AddSongAsync(client, actId, await UploadSongAsync(client, actId, ct));
+
+    internal static async Task SongOfAsync(
+        ApiTestFixture fixture,
+        HttpClient client,
+        int actId,
+        double seconds,
+        CancellationToken ct
+    )
+    {
+        var mediaItemId = await UploadSongAsync(client, actId, ct);
+        await fixture.RenderSongDirectlyAsync(mediaItemId, seconds, ct);
+        await AddSongAsync(client, actId, mediaItemId);
+    }
+
+    internal static async Task<IReadOnlyList<int>> MarkAsync(
+        HttpClient client,
+        int actId,
+        double atSeconds
+    )
+    {
+        var (response, result) = await client.POSTAsync<
+            PostActStep,
+            PostActStepRequest,
+            PostActStepResponse
+        >(new() { ActId = actId, AtSeconds = atSeconds });
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        return result.StepIds;
+    }
+
+    internal static async Task<IReadOnlyList<int>> MarkedAsync(
+        HttpClient client,
+        int actId,
+        params double[] marks
+    )
+    {
+        foreach (var mark in marks)
+            await MarkAsync(client, actId, mark);
+
+        return [.. (await StudioOfAsync(client, actId)).Studio!.Steps.Select(step => step.StepId)];
+    }
+
+    internal static async Task<int> AddPartAsync(
+        HttpClient client,
+        int actId,
+        int firstStepId,
+        string name
+    )
+    {
+        var (response, result) = await client.POSTAsync<
+            PostActPart,
+            PostActPartRequest,
+            PostActPartResponse
+        >(
+            new()
+            {
+                ActId = actId,
+                FirstStepId = firstStepId,
+                Name = name,
+            }
+        );
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        return result.PartId;
+    }
+
+    internal static async Task<int[][]> PartStepsOfAsync(HttpClient client, int actId) =>
+        [
+            .. (await StudioOfAsync(client, actId)).Studio!.Parts.Select(part =>
+                part.StepIds.ToArray()
+            ),
+        ];
+
+    internal static async Task<(double? Start, double? End)[]> StepSpansOfAsync(
+        HttpClient client,
+        int actId
+    ) =>
+        [
+            .. (await StudioOfAsync(client, actId)).Studio!.Steps.Select(step =>
+                (step.StartSeconds, step.EndSeconds)
+            ),
+        ];
 }

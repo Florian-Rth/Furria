@@ -5,14 +5,29 @@ import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import { queryKeys } from '@/lib/query/reads';
 import { toWriteErrorMessage } from '@/lib/write-error';
 import {
+  requestPartAdd,
+  requestPartRemoval,
+  requestPartSettings,
   requestSongAdd,
   requestSongOrder,
   requestSongRemoval,
   requestSongSettings,
+  requestStepMark,
+  requestStepRemoval,
+  requestStepStart,
+  requestStepText,
 } from './requests';
-import type { AddedSong } from './schemas';
+import type { AddedPart, AddedSong, MarkedSteps } from './schemas';
 import type { SongSettingsInput } from './studio-music';
 import { withoutSong, withSongOrder, withSongSettings } from './studio-music';
+import type { PartOpening, PartSettingsInput, StepStartInput, StepTextInput } from './studio-steps';
+import {
+  withoutPart,
+  withoutStep,
+  withPartSettings,
+  withStepStart,
+  withStepText,
+} from './studio-steps';
 
 export interface SongMutations {
   add: UseMutationResult<AddedSong, Error, number>;
@@ -59,4 +74,73 @@ export const useSongMutations = (actId: number): SongMutations => {
   });
 
   return { add, reorder, settle, remove };
+};
+
+export interface StepMutations {
+  mark: UseMutationResult<MarkedSteps, Error, number>;
+  describe: UseMutationResult<void, Error, StepTextInput>;
+  move: UseMutationResult<void, Error, StepStartInput>;
+  remove: UseMutationResult<void, Error, number>;
+  addPart: UseMutationResult<AddedPart, Error, PartOpening>;
+  settlePart: UseMutationResult<void, Error, PartSettingsInput>;
+  removePart: UseMutationResult<void, Error, number>;
+}
+
+export const useStepMutations = (actId: number): StepMutations => {
+  const studioKey = queryKeys.actStudio(actId);
+  const key = ['actSteps', actId];
+  const failure = { failure: toWriteErrorMessage };
+
+  const mark = useApiMutation({
+    request: (atSeconds: number, accessToken) => requestStepMark(actId, atSeconds, accessToken),
+    changes: ['actSteps'],
+    notice: failure,
+    key,
+  });
+  const describe = useApiMutation({
+    request: (input: StepTextInput, accessToken) => requestStepText(actId, input, accessToken),
+    changes: ['actSteps'],
+    optimistic: [optimisticPatch<ActStudioResponse, StepTextInput>(studioKey, withStepText)],
+    notice: failure,
+    key,
+  });
+  const move = useApiMutation({
+    request: (input: StepStartInput, accessToken) => requestStepStart(actId, input, accessToken),
+    changes: ['actSteps'],
+    optimistic: [optimisticPatch<ActStudioResponse, StepStartInput>(studioKey, withStepStart)],
+    notice: failure,
+    key,
+  });
+  const remove = useApiMutation({
+    request: (stepId: number, accessToken) => requestStepRemoval(actId, stepId, accessToken),
+    changes: ['actSteps'],
+    optimistic: [optimisticPatch<ActStudioResponse, number>(studioKey, withoutStep)],
+    notice: failure,
+    key,
+  });
+  const addPart = useApiMutation({
+    request: (opening: PartOpening, accessToken) => requestPartAdd(actId, opening, accessToken),
+    changes: ['actSteps'],
+    notice: failure,
+    key,
+  });
+  const settlePart = useApiMutation({
+    request: (input: PartSettingsInput, accessToken) =>
+      requestPartSettings(actId, input, accessToken),
+    changes: ['actSteps'],
+    optimistic: [
+      optimisticPatch<ActStudioResponse, PartSettingsInput>(studioKey, withPartSettings),
+    ],
+    notice: failure,
+    key,
+  });
+  const removePart = useApiMutation({
+    request: (partId: number, accessToken) => requestPartRemoval(actId, partId, accessToken),
+    changes: ['actSteps'],
+    optimistic: [optimisticPatch<ActStudioResponse, number>(studioKey, withoutPart)],
+    notice: failure,
+    key,
+  });
+
+  return { mark, describe, move, remove, addPart, settlePart, removePart };
 };

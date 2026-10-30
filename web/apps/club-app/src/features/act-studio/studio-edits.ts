@@ -31,6 +31,12 @@ export interface StudioEdits {
 
 export const NO_EDITS: StudioEdits = { bounds: {}, texts: {}, tracks: {}, offsets: {} };
 
+export const withoutKeys = <TValue>(
+  record: Readonly<Record<number, TValue>>,
+  keys: readonly number[],
+): Record<number, TValue> =>
+  Object.fromEntries(Object.entries(record).filter(([key]) => !keys.includes(Number(key))));
+
 export const workedStudioOf = (studio: Studio, edits: StudioEdits): Studio => ({
   ...studio,
   videos: studio.videos.map((video) => {

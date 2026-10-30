@@ -1,6 +1,7 @@
 import { KkPracticeStepsGroup } from './internal/layout/KkPracticeStepsGroup';
 import { KkPracticeStepsHead } from './internal/layout/KkPracticeStepsHead';
 import { KkPracticeStepsList } from './internal/layout/KkPracticeStepsList';
+import { KkPracticeStepsPanel } from './internal/layout/KkPracticeStepsPanel';
 import { KkPracticeStepsRoot } from './internal/layout/KkPracticeStepsRoot';
 import { KkPracticeStepsClose } from './internal/ui/KkPracticeStepsClose';
 import { KkPracticeStepsGroupHead } from './internal/ui/KkPracticeStepsGroupHead';
@@ -19,6 +20,7 @@ export const KkPracticeSteps = Object.assign(KkPracticeStepsRoot, {
   Title: KkPracticeStepsTitle,
   Close: KkPracticeStepsClose,
   List: KkPracticeStepsList,
+  Panel: KkPracticeStepsPanel,
   Group: KkPracticeStepsGroup,
   GroupHead: KkPracticeStepsGroupHead,
   Row: KkPracticeStepsRow,

@@ -37,11 +37,11 @@ export const songSettingsOf = (song: StudioSong): SongSettings => ({
 const orderedSongsOf = (songs: readonly StudioSong[]): StudioSong[] =>
   [...songs].sort((left, right) => left.position - right.position);
 
-interface HoldsStudio {
+export interface HoldsStudio {
   studio: Studio | null;
 }
 
-const withStudio = <TResponse extends HoldsStudio>(
+export const withStudio = <TResponse extends HoldsStudio>(
   response: TResponse | undefined,
   change: (studio: Studio) => Studio,
 ): TResponse | undefined =>

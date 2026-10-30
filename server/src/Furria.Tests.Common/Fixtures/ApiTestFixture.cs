@@ -696,6 +696,22 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await db.SaveChangesAsync(ct);
     }
 
+    public async Task<int> AddActVideoDirectlyAsync(
+        int actId,
+        int mediaItemId,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var video = new ActVideo { ActId = actId, MediaItemId = mediaItemId };
+        db.ActVideos.Add(video);
+        await db.SaveChangesAsync(ct);
+
+        return video.Id;
+    }
+
     public async Task<long> WriteLogEntryDirectlyAsync(
         LogSource source,
         LogEntryLevel level,

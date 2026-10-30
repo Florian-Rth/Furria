@@ -1,6 +1,6 @@
 import InputBase from '@mui/material/InputBase';
 import type { Theme } from '@mui/material/styles';
-import type { ChangeEvent, FC } from 'react';
+import type { ChangeEvent, FC, KeyboardEvent } from 'react';
 import { kkTokens } from '../tokens';
 
 export type KkStudioInlineTextVariant = 'name' | 'note';
@@ -28,7 +28,9 @@ interface KkStudioInlineTextProps {
   label: string;
   placeholder: string;
   variant: KkStudioInlineTextVariant;
+  maxLength: number;
   onChange: (value: string) => void;
+  onCommit: () => void;
 }
 
 export const KkStudioInlineText: FC<KkStudioInlineTextProps> = ({
@@ -36,10 +38,17 @@ export const KkStudioInlineText: FC<KkStudioInlineTextProps> = ({
   label,
   placeholder,
   variant,
+  maxLength,
   onChange,
+  onCommit,
 }) => {
   const change = (event: ChangeEvent<HTMLInputElement>): void => {
     onChange(event.target.value);
+  };
+  const settle = (event: KeyboardEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
+    if (event.key === 'Enter') {
+      event.currentTarget.blur();
+    }
   };
 
   return (
@@ -47,7 +56,9 @@ export const KkStudioInlineText: FC<KkStudioInlineTextProps> = ({
       value={value}
       placeholder={placeholder}
       onChange={change}
-      inputProps={{ 'aria-label': label, 'data-kk-studio-inline': variant }}
+      onBlur={onCommit}
+      onKeyDown={settle}
+      inputProps={{ 'aria-label': label, 'data-kk-studio-inline': variant, maxLength }}
       sx={[
         (theme) => ({
           display: 'block',

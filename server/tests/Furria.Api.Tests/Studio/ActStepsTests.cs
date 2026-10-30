@@ -119,4 +119,46 @@ public sealed class ActStepsTests
         Assert.Equal(expected, mark.Refusal);
         Assert.Empty(mark.NewStarts);
     }
+
+    [Theory]
+    [InlineData(2, 25, null)]
+    [InlineData(2, 0.005, StepMarkRefusal.BeyondANeighbour)]
+    [InlineData(2, 50, StepMarkRefusal.BeyondANeighbour)]
+    [InlineData(1, 5, StepMarkRefusal.FirstStep)]
+    [InlineData(3, 25, StepMarkRefusal.Adrift)]
+    public void Should_MoveAStepStartOnlyBetweenItsNeighbours_When_ItsBorderIsDragged(
+        int stepId,
+        double timelineSeconds,
+        StepMarkRefusal? expected
+    )
+    {
+        var tiling = ActSteps.Tile(
+            [
+                new StepStart(1, new MusicAnchor(Opener, 10)),
+                new StepStart(2, new MusicAnchor(Opener, 30)),
+                new StepStart(3, new MusicAnchor(Rehearsal, 3)),
+            ],
+            Mix
+        );
+
+        var move = ActSteps.MoveTo(tiling, stepId, timelineSeconds, Mix);
+
+        Assert.Equal(expected, move.Refusal);
+    }
+
+    [Fact]
+    public void Should_AnchorTheMovedStartInItsSong_When_ItCrossesASongCut()
+    {
+        var tiling = ActSteps.Tile(
+            [
+                new StepStart(1, new MusicAnchor(Opener, 10)),
+                new StepStart(2, new MusicAnchor(Opener, 30)),
+            ],
+            Mix
+        );
+
+        var move = ActSteps.MoveTo(tiling, 2, 40, Mix);
+
+        Assert.Equal([new MusicAnchor(Finale, 15)], move.NewStarts);
+    }
 }
