@@ -35,6 +35,7 @@ const studio = (patch: Partial<Studio>): Studio => ({
   choreography: null,
   stage: null,
   evenings: [],
+  trainings: [],
   ...patch,
 });
 
@@ -189,6 +190,27 @@ describe('actPageModeOf', () => {
       'details',
     ],
     ['expects practice while the studio loads', undefined, false, {}, 'practice'],
+    [
+      'runs a training on music that plays',
+      playable,
+      false,
+      { view: 'training' as const },
+      'training',
+    ],
+    [
+      'expects the training while loading',
+      undefined,
+      false,
+      { view: 'training' as const },
+      'training',
+    ],
+    [
+      'shows the details for a training without music',
+      processing,
+      true,
+      { view: 'training' as const },
+      'details',
+    ],
     [
       'expects the details while loading when asked',
       undefined,

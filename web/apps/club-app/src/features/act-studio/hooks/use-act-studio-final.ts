@@ -19,7 +19,7 @@ import {
   songRowLabelOf,
 } from '../studio-copy';
 import type { FinalPlace } from '../studio-final';
-import { sourceNameOf } from '../studio-final';
+import { matchesAnyMusic, sourceNameOf } from '../studio-final';
 import { outsideMusicOf } from '../studio-music';
 import type { ActStudioSongRow } from './use-act-studio-songs';
 import { useFinalPlaces } from './use-final-places';
@@ -69,6 +69,7 @@ export const useActStudioFinal = (screen: StudioScreen): ActStudioFinal => {
   const [removing, setRemoving] = useState<number | null>(null);
   const onMusic = mode.editing && mode.tool === 'music';
   const pending = final.pending;
+  const matched = matchesAnyMusic(final.offsets);
   const adopted = final.adopted;
   if (desk !== null && (!onMusic || desk !== deskKindOf(final.previewing))) {
     setDesk(null);
@@ -196,9 +197,12 @@ export const useActStudioFinal = (screen: StudioScreen): ActStudioFinal => {
       pending === null || !final.previewing
         ? null
         : {
-            text: adoptTextOf(adopting === pending.finalTrackId, missingTextOf(studio)),
-            disabled: final.writes.adopt.isPending,
+            text: adoptTextOf(adopting === pending.finalTrackId, matched, missingTextOf(studio)),
+            disabled: !matched || final.writes.adopt.isPending,
             press: () => {
+              if (!matched) {
+                return;
+              }
               if (adopting !== pending.finalTrackId) {
                 setAdopting(pending.finalTrackId);
                 return;

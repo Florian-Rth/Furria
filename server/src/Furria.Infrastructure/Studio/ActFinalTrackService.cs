@@ -29,6 +29,8 @@ public sealed class ActFinalTrackService
     private const string MusicDevelopingMessage = "Die Musik wird noch ausgewertet.";
     private const string NoMatchMessage =
         "In der Endfassung wurde keine Musik des Auftritts gefunden. Lege sie von Hand an.";
+    private const string NothingMatchedMessage =
+        "In der Endfassung ist noch keine Musik des Auftritts angelegt. Lege zuerst ein Lied an.";
     private const string UnknownSourceMessage = "Diese Musik spielt im Auftritt gerade nicht.";
 
     private readonly AppDbContext _dbContext;
@@ -211,6 +213,9 @@ public sealed class ActFinalTrackService
             return refused;
 
         var adoption = await AdoptionOfAsync(track, ct);
+        if (!adoption.MatchesAnyMusic)
+            return Result.Validation(NothingMatchedMessage);
+
         await RewriteStepsAsync(command.ActId, adoption, ct);
         await RewriteVideosAsync(command.ActId, adoption, ct);
         await RewriteChoreographiesAsync(command.ActId, adoption, ct);

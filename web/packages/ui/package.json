@@ -286,6 +286,7 @@
     "./KkPracticeSegments": "./src/KkPracticeSegments/KkPracticeSegments.tsx",
     "./KkPracticeSteps": "./src/KkPracticeSteps/KkPracticeSteps.tsx",
     "./KkPracticeView": "./src/KkPracticeView/KkPracticeView.tsx",
+    "./KkTrainingView": "./src/KkTrainingView/KkTrainingView.tsx",
     "./KkStudioCounts": "./src/KkStudioCounts/KkStudioCounts.tsx",
     "./KkStudioDesk": "./src/KkStudioDesk/KkStudioDesk.tsx",
     "./KkStudioEdit": "./src/KkStudioEdit/KkStudioEdit.tsx",

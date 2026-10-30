@@ -9,6 +9,7 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { PRACTICE_LABEL } from '@/features/act-practice/practice-copy';
 import { eveningCastOf } from '@/features/act-studio/studio-evening';
+import { TRAINING_LABEL } from '@/features/act-training/training-copy';
 import { useCloseOnEscape } from '@/features/events/hooks/use-close-on-escape';
 import { useActsQuery } from '@/features/running-order/api';
 import { usePlansRunningOrder } from '@/features/running-order/hooks/use-plans-running-order';
@@ -26,7 +27,7 @@ import type { ActPageMode } from '../act-studio';
 import { actPageModeOf, canPractise } from '../act-studio';
 import { actPageOriginOf, actPageReturnOf } from '../acts-origin';
 import { useActStudioQuery } from '../api';
-import type { ActPageSearch, ActStudioResponse, StudioEvening } from '../schemas';
+import type { ActPageSearch, ActStudioResponse, StudioEvening, StudioTraining } from '../schemas';
 
 const NO_ACTS: readonly CatalogueAct[] = [];
 const SIDE_OPEN_SPAN: KkMasterDetailSpan = 7;
@@ -43,6 +44,7 @@ export interface ActPageState {
   viewerId: number | null;
   canEditStudio: boolean;
   evening: StudioEvening | null;
+  training: StudioTraining | null;
   eveningCast: readonly CastPerson[];
   startEditing: boolean;
   isSettingsOpen: boolean;
@@ -58,8 +60,13 @@ export interface ActPageState {
   reload: () => void;
 }
 
-const titleOf = (name: string, evening: StudioEvening | null, mode: ActPageMode): string =>
-  evening === null || mode !== 'practice' ? name : `${name} · ${toEveningLabel(evening)}`;
+const titleOf = (name: string, evening: StudioEvening | null, mode: ActPageMode): string => {
+  if (mode === 'training') {
+    return `${name} · ${TRAINING_LABEL}`;
+  }
+
+  return evening === null || mode !== 'practice' ? name : `${name} · ${toEveningLabel(evening)}`;
+};
 
 const detailActionsOf = (
   practice: KkQuietScreenAction | null,
@@ -92,12 +99,14 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
   const mode = actPageModeOf(studio, canEditStudio, search);
   const evening =
     studio?.evenings.find((candidate) => candidate.eventId === search.evening) ?? null;
+  const training =
+    studio?.trainings.find((candidate) => candidate.calendarEntryId === search.training) ?? null;
   const isEveningOpen = mode === 'details' && !isSettingsOpen && canEditStudio && evening !== null;
 
   const showView = (view: 'details' | undefined): void => {
     void navigate({
       to: '.',
-      search: (previous) => ({ ...previous, view, settings: undefined }),
+      search: (previous) => ({ ...previous, view, settings: undefined, training: undefined }),
       resetScroll: true,
     });
   };
@@ -143,7 +152,12 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
     onSelect: () => {
       void navigate({
         to: '.',
-        search: (previous) => ({ ...previous, view: 'details', edit: undefined }),
+        search: (previous) => ({
+          ...previous,
+          view: 'details',
+          edit: undefined,
+          training: undefined,
+        }),
         resetScroll: true,
       });
     },
@@ -180,6 +194,7 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
     viewerId: me.data?.person?.id ?? null,
     canEditStudio,
     evening,
+    training,
     eveningCast: eveningCastOf(act?.cast ?? [], evening?.appearance ?? null),
     startEditing: search.edit === true,
     isSettingsOpen,

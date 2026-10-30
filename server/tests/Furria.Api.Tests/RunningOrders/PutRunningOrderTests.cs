@@ -10,6 +10,8 @@ using Furria.Tests.Common.Fixtures;
 using Xunit;
 using static Furria.Api.Tests.RunningOrders.RunningOrderSeeds;
 using static Furria.Api.Tests.RunningOrders.RunningOrderSteps;
+using static Furria.Api.Tests.Studio.StudioSeeds;
+using static Furria.Api.Tests.Studio.StudioSteps;
 
 namespace Furria.Api.Tests.RunningOrders;
 
@@ -248,6 +250,40 @@ public sealed class PutRunningOrderTests : IClassFixture<ApiTestFixture>
         Assert.NotNull(result.ConfirmedAt);
         Assert.True(result.ChangedSinceConfirmed);
     }
+
+    [Fact]
+    public Task Should_ShowTheEveningToTheGroup_When_ThePlannerAddsTheirActWithoutBeingAsked() =>
+        _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
+            {
+                var ct = TestContext.Current.CancellationToken;
+                var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+                var tanz = await GardetanzAsync(ctx, ct);
+                var garde = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+                var marsch = await GardetanzAsync(ctx, ct, name: "Gardemarsch");
+                var planner = await ctx.Identity.ClientForAsync(Planner, ct);
+                var gala = ctx.Club.Events.IdOf(Gala);
+
+                var (response, _) = await SaveAsync(
+                    planner,
+                    gala,
+                    null,
+                    [Line(tanz, 0), Line(marsch, null)]
+                );
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                var placed = new List<bool?>();
+                foreach (var actId in new[] { tanz, marsch })
+                {
+                    var evenings = (await StudioOfAsync(garde, actId)).Studio!.Evenings;
+                    placed.Add(
+                        evenings.Single(evening => evening.EventId == gala).Appearance?.Placed
+                    );
+                }
+                Assert.Equal([true, false], placed);
+            }
+        );
 
     [Fact]
     public async Task Should_RemoveTheAppearance_When_AnActWithoutEveningChangesIsTakenOut()

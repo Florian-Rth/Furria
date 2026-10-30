@@ -53,6 +53,7 @@ const studioWith = (appearance: StudioAppearance | null): Studio => ({
   ],
   choreography: { version: 4, tracks: [{ spotId: 1, keyframes: [keyframe(1)] }] },
   evenings: [evening(appearance)],
+  trainings: [],
 });
 
 const appearanceOf = (response: { studio: Studio | null } | undefined): StudioAppearance | null =>

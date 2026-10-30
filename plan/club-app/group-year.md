@@ -1,10 +1,10 @@
 ---
-status: vision / knowledge base 2026-10-29 — brainstorm collected, nothing shaped into slices yet
+status: vision / knowledge base 2026-10-29; v1 (foundation + dance studio + Absage → open spots + training mode) built in RFC 0001 (docs/rfcs/0001-dance-studio.md, phases 1–16, done 2026-10-30) — offline dropped from v1
 scope: the Auftritt (Act) becomes the group's year — training studio per group kind (dance first),
   music, stage editor, trainer video, steps; the evening (members, tech); memory (season, person)
 builds_on: plan/club-app/acts.md, plan/club-app/running-order.md (PR #50)
 shaped_with: Florian (direction + rulings below); team: dancer, trainer, tech/stage, carnival culture
-next: break down into feature sets, each shaped and planned on its own (see "Breakdown sketch")
+next: the later map — Heute geprobt, side by side, the evening, memory, other group kinds — each shaped and planned on its own (see "Breakdown sketch")
 ---
 
 # The group's year
@@ -377,6 +377,8 @@ hang off steps; one screen plays it all in sync.
 5. **Trainer video** — upload, offset alignment, mirror/slow/loop.
 6. **The one screen** — editor and player, lab variants, offline.
 7. **Around training** — Heute geprobt, countdown, Absage effects, training mode, side by side.
+   *Absage → open spots* and the *training mode* built in RFC 0001 phase 16 (2026-10-30);
+   Heute geprobt and side by side remain, no countdown (R29).
 8. **The evening** — F3 calendar ↔ Auftritte, evening pass on Start, live pointer, tech (final
    file pinning, loudness, cues, Regiebuch, Tonpult, Spuren-Check), Auswärts.
 9. **Memory** — Mitschnitt kommt heim, season book, Kehraus, Bühnenbiografie, Stammbaum, Übertritt,

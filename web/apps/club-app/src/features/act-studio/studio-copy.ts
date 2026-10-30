@@ -449,7 +449,10 @@ export const finalSourceMetaOf = (start: number | null, end: number | null): str
 
 export const finalShiftLabelOf = (name: string): string => `${name} in der Endfassung verschieben`;
 
-export const adoptTextOf = (sure: boolean, missing: string | null): string => {
+export const adoptTextOf = (sure: boolean, matched: boolean, missing: string | null): string => {
+  if (!matched) {
+    return 'Endfassung übernehmen · erst ein Lied anlegen';
+  }
   if (!sure) {
     return 'Endfassung übernehmen';
   }

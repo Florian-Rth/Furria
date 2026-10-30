@@ -41,8 +41,9 @@ export const ActPageSearchSchema = z.object({
   person: z.coerce.number().int().positive().optional().catch(undefined),
   session: z.coerce.number().int().positive().optional().catch(undefined),
   settings: z.boolean().optional().catch(undefined),
-  view: z.enum(['details']).optional().catch(undefined),
+  view: z.enum(['details', 'training']).optional().catch(undefined),
   evening: z.coerce.number().int().positive().optional().catch(undefined),
+  training: z.coerce.number().int().positive().optional().catch(undefined),
   edit: z.boolean().optional().catch(undefined),
 });
 export type ActPageSearch = z.infer<typeof ActPageSearchSchema>;
@@ -186,6 +187,15 @@ export const StudioEveningSchema = z.object({
 });
 export type StudioEvening = z.infer<typeof StudioEveningSchema>;
 
+export const StudioTrainingSchema = z.object({
+  calendarEntryId: z.int(),
+  title: z.string(),
+  startsAt: z.iso.datetime({ offset: true }),
+  asksForResponse: z.boolean(),
+  openSpotIds: z.array(z.int()),
+});
+export type StudioTraining = z.infer<typeof StudioTrainingSchema>;
+
 export const StudioSchema = z.object({
   music: z.object({
     lengthSeconds: z.number(),
@@ -200,6 +210,7 @@ export const StudioSchema = z.object({
   choreography: ChoreographySchema.nullable(),
   stage: StudioStageSchema.nullable(),
   evenings: z.array(StudioEveningSchema),
+  trainings: z.array(StudioTrainingSchema),
 });
 export type Studio = z.infer<typeof StudioSchema>;
 

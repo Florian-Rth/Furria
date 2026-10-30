@@ -199,6 +199,24 @@ public sealed class PostActFinalTrackAdoptionTests : IClassFixture<ApiTestFixtur
     }
 
     [Fact]
+    public async Task Should_RefuseAndLeaveTheMusicAsItWas_When_NoSongWasMatched()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (admin, actId, _, _) = await MixAsync(ct);
+        await MarkedAsync(admin, actId, 10, 70);
+        var (finalTrackId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 120, ct);
+
+        var response = await AdoptAsync(admin, actId, finalTrackId);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        var studio = (await StudioOfAsync(admin, actId)).Studio!;
+        Assert.Equal(
+            (StudioMusicSource.WorkingMix, false),
+            (studio.Music.Source, studio.FinalTracks.Single().Adopted)
+        );
+    }
+
+    [Fact]
     public async Task Should_ReportConflict_When_TheFinalFileIsStillProcessing()
     {
         var ct = TestContext.Current.CancellationToken;

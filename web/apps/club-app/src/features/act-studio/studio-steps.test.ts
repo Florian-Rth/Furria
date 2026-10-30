@@ -40,6 +40,7 @@ const responseOf = (parts: StudioPart[]): { studio: Studio } => ({
     choreography: null,
     stage: null,
     evenings: [],
+    trainings: [],
   },
 });
 

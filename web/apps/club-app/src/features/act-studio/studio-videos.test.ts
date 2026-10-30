@@ -33,6 +33,7 @@ const studio = (videos: StudioVideo[]): { studio: Studio } => ({
     choreography: null,
     stage: null,
     evenings: [],
+    trainings: [],
   },
 });
 

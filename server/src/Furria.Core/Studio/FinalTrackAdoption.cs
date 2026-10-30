@@ -19,6 +19,8 @@ public sealed class FinalTrackAdoption
         _offsetsBySource = offsetsBySource;
     }
 
+    public bool MatchesAnyMusic => _offsetsBySource.Count > 0;
+
     [Pure]
     public MusicAnchor Rewritten(MusicAnchor anchor) =>
         FinalSecondsOf(anchor) is { } seconds

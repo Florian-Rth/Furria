@@ -37,6 +37,7 @@ const studio = (patch: Partial<Studio>): Studio => ({
   choreography: null,
   stage: null,
   evenings: [],
+  trainings: [],
   ...patch,
 });
 

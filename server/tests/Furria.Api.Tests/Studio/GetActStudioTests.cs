@@ -1,6 +1,7 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Acts;
+using Furria.Core.Club;
 using Furria.Core.RunningOrders;
 using Furria.Tests.Common;
 using Furria.Tests.Common.Builder;
@@ -252,4 +253,125 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
         Assert.False(studio.Viewer.CanEditStudio);
         Assert.Null(studio.Studio);
     }
+
+    [Fact]
+    public Task Should_ListTheGroupsComingTrainingsWithTheSpotsLeftOpen_When_DancersSentAnAbsage() =>
+        _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
+            {
+                var ct = TestContext.Current.CancellationToken;
+                var today = _fixture.Today;
+                var ctx = await _fixture.BuildAsync(
+                    builder =>
+                    {
+                        GardeWithDancers(today)(builder);
+                        builder.Club(club =>
+                            club.AddCalendarEntry(
+                                    "last-week",
+                                    "Training letzte Woche",
+                                    TrainingOn(today.AddDays(-7)),
+                                    kind: CalendarEntryKind.Training,
+                                    ownerGroupAlias: Garde,
+                                    asksForResponse: true
+                                )
+                                .AddCalendarEntry(
+                                    "soon",
+                                    "Training",
+                                    TrainingOn(today.AddDays(2)),
+                                    kind: CalendarEntryKind.Training,
+                                    ownerGroupAlias: Garde,
+                                    asksForResponse: true
+                                )
+                                .AddCalendarEntry(
+                                    "elferrat",
+                                    "Elferrat-Training",
+                                    TrainingOn(today.AddDays(3)),
+                                    kind: CalendarEntryKind.Training,
+                                    ownerGroupAlias: Elferrat,
+                                    asksForResponse: true
+                                )
+                                .AddCalendarEntry(
+                                    "meeting",
+                                    "Gruppenabend",
+                                    TrainingOn(today.AddDays(4)),
+                                    kind: CalendarEntryKind.Meeting,
+                                    ownerGroupAlias: Garde,
+                                    asksForResponse: true
+                                )
+                                .AddCalendarEntry(
+                                    "rehearsal",
+                                    "Stellprobe",
+                                    TrainingOn(today.AddDays(5)),
+                                    kind: CalendarEntryKind.Rehearsal,
+                                    participatingGroupAliases: [Garde]
+                                )
+                                .AddCalendarEntry(
+                                    "later",
+                                    "Training",
+                                    TrainingOn(today.AddDays(9)),
+                                    kind: CalendarEntryKind.Training,
+                                    ownerGroupAlias: Garde,
+                                    asksForResponse: true
+                                )
+                                .AddAttendanceResponse("anna-no", "soon", Anna, AttendanceAnswer.No)
+                                .AddAttendanceResponse(
+                                    "ben-maybe",
+                                    "soon",
+                                    Ben,
+                                    AttendanceAnswer.Maybe
+                                )
+                                .AddAttendanceResponse(
+                                    "clara-no",
+                                    "soon",
+                                    Clara,
+                                    AttendanceAnswer.No
+                                )
+                                .AddAttendanceResponse(
+                                    "anna-no-past",
+                                    "last-week",
+                                    Anna,
+                                    AttendanceAnswer.No
+                                )
+                                .AddAttendanceResponse(
+                                    "ben-yes",
+                                    "later",
+                                    Ben,
+                                    AttendanceAnswer.Yes
+                                )
+                        );
+                    },
+                    ct
+                );
+                var actId = await GardetanzAsync(ctx, ct);
+                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+                var annasSpot = await AddSpotAsync(admin, actId);
+                var bensSpot = await AddSpotAsync(admin, actId);
+                await AddSpotAsync(admin, actId);
+                await AssignSpotAsync(admin, actId, annasSpot, ctx.Identity.People.IdOf(Anna));
+                await AssignSpotAsync(admin, actId, bensSpot, ctx.Identity.People.IdOf(Ben));
+                var anna = await ctx.Identity.ClientForAsync(Anna, ct);
+
+                var studio = await StudioOfAsync(anna, actId);
+
+                Assert.NotNull(studio.Studio);
+                Assert.Equal(
+                    [
+                        (ctx.Club.CalendarEntries.IdOf("soon"), true, $"{annasSpot}"),
+                        (ctx.Club.CalendarEntries.IdOf("rehearsal"), false, ""),
+                        (ctx.Club.CalendarEntries.IdOf("later"), true, ""),
+                    ],
+                    studio.Studio.Trainings.Select(training =>
+                        (
+                            training.CalendarEntryId,
+                            training.AsksForResponse,
+                            string.Join(",", training.OpenSpotIds)
+                        )
+                    )
+                );
+            }
+        );
+
+    private static DateTimeOffset TrainingOn(DateOnly day) =>
+        ClubClock.At(day, new TimeOnly(18, 30));
 }

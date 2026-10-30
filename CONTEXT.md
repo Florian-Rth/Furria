@@ -859,7 +859,8 @@ for the stage — versioned; adopting it moves everything that hangs on the musi
 Before adopting, each song of the music playing (or the previously adopted final file) is
 **matched** into the new file: one offset per song, suggested by comparing the sound and
 fine-tuned by hand. Only one newer final file waits at a time. Whatever hangs on music the final
-file leaves out keeps its anchor and reads as *Musik fehlt* (RFC 0001 phase 10).
+file leaves out keeps its anchor and reads as *Musik fehlt* (RFC 0001 phase 10). A final file
+in which no song is matched cannot be adopted (ruled 2026-10-30).
 _UI copy_: Musik; *Endfassung*, *Probehören*, *Endfassung übernehmen*
 _Avoid_: playlist, track list, render
 
@@ -887,6 +888,18 @@ saved whole with a version (a stale save is refused). An **appearance** may hold
 its own spot holders; everything else it inherits from the act.
 _UI copy_: Platz, Aufstellung, Bewegung
 _Avoid_: position (for the spot), dancer slot, formation (for the whole document)
+
+**Open spot** (training):
+A **spot** whose holder sent an *Absage* (*Nein*) to one of the group's coming trainings or
+rehearsals — the group owns the calendar entry or takes part in it. For that training the spot
+shows open on the stage, and the training names the **steps** in which the open spot moves, since
+that is where the others lose their reference. *Vielleicht* and no answer leave the spot held;
+trainings are always the session's version — the evening's changes never reach them. The
+**training mode** plays the act on the trainer's phone for the whole hall: the music over the
+speaker, the current step with its count and the formation large, the open spots of the chosen
+training marked, one tap to repeat a step (built 2026-10-30, RFC 0001 phase 16).
+_UI copy_: *offen*, *x von y da*, *Training starten*, *Schritt wiederholen*
+_Avoid_: missing, gap (in copy), absence (that is the evening review's word)
 
 **Running order**:
 The order of acts within a single event — a per-event ordering the club app manages. Not a list

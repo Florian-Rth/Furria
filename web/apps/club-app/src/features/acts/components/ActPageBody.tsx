@@ -2,6 +2,7 @@ import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
 import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { ActTrainingsSection } from '@/features/act-training/components/ActTrainingsSection';
 import { CAST_ONLY_NOTE } from '../act-page-copy';
 import type { ActPageState } from '../hooks/use-act-page';
 import { ActCoEditorsSection } from './ActCoEditorsSection';
@@ -29,6 +30,7 @@ export const ActPageBody: FC<ActPageBodyProps> = ({ page }) => {
     ) : (
       <ActStudioOverview studio={data.studio} viewerId={page.viewerId} />
     );
+  const trainings = data.studio === null ? null : <ActTrainingsSection studio={data.studio} />;
   const coEditors = data.studio === null ? null : <ActCoEditorsSection page={data} />;
   const evenings =
     data.studio === null ? null : <ActEveningsSection data={data} studio={data.studio} />;
@@ -50,6 +52,7 @@ export const ActPageBody: FC<ActPageBodyProps> = ({ page }) => {
           <ActFacts act={data.act} />
           {studio}
           {evenings}
+          {trainings}
           {coEditors}
         </Stack>
       </KkMasterDetail.Master>

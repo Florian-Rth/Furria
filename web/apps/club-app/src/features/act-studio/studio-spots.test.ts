@@ -29,6 +29,7 @@ const response = (studio: Pick<Studio, 'spots' | 'choreography'>): { studio: Stu
     videos: [],
     stage: null,
     evenings: [],
+    trainings: [],
     ...studio,
   },
 });

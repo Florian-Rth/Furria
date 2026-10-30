@@ -86,6 +86,7 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
             Choreography = content.Choreography is { } choreography ? ToDto(choreography) : null,
             Stage = content.Stage is { } stage ? ToDto(stage) : null,
             Evenings = [.. content.Evenings.Select(ToDto)],
+            Trainings = [.. content.Trainings.Select(ToDto)],
         };
 
     private static StudioStageDto ToDto(ClubStageDetails stage) =>
@@ -202,6 +203,16 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
                 Keyframes = [.. track.Keyframes.Select(ToDto)],
             }),
         ];
+
+    private static StudioTrainingDto ToDto(StudioTrainingDetails training) =>
+        new()
+        {
+            CalendarEntryId = training.CalendarEntryId,
+            Title = training.Title,
+            StartsAt = training.StartsAt,
+            AsksForResponse = training.AsksForResponse,
+            OpenSpotIds = training.OpenSpotIds,
+        };
 
     private static StudioEveningDto ToDto(StudioEveningDetails evening) =>
         new()
@@ -322,6 +333,21 @@ public sealed record StudioDto
     public required StudioStageDto? Stage { get; init; }
 
     public required IReadOnlyList<StudioEveningDto> Evenings { get; init; }
+
+    public required IReadOnlyList<StudioTrainingDto> Trainings { get; init; }
+}
+
+public sealed record StudioTrainingDto
+{
+    public required int CalendarEntryId { get; init; }
+
+    public required string Title { get; init; }
+
+    public required DateTimeOffset StartsAt { get; init; }
+
+    public required bool AsksForResponse { get; init; }
+
+    public required IReadOnlyList<int> OpenSpotIds { get; init; }
 }
 
 public sealed record StudioEveningDto

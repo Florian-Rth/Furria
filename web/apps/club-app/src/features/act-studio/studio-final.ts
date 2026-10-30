@@ -62,6 +62,8 @@ export const finalOffsetsOf = (
       .map((alignment) => [alignment.sourceMediaItemId, alignment.offsetSeconds]),
   );
 
+export const matchesAnyMusic = (offsets: FinalOffsets): boolean => Object.keys(offsets).length > 0;
+
 const finalSecondsOf = (anchor: MusicAnchor | null, mapping: FinalSpan): number | null => {
   const offset = anchor === null ? undefined : mapping.offsets[anchor.sourceMediaItemId];
 

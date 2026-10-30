@@ -176,6 +176,7 @@ describe('outsideMusicOf', () => {
       },
       stage: null,
       evenings: [],
+      trainings: [],
     };
 
     expect(outsideMusicOf(studio, [segment])).toEqual({ steps: 1, videos: 1, keyframes: 1 });
@@ -195,6 +196,7 @@ describe('optimistic song changes', () => {
       choreography: null,
       stage: null,
       evenings: [],
+      trainings: [],
     },
   });
   const songsOf = (response: { studio: Studio | null } | undefined): [number, number, number][] =>

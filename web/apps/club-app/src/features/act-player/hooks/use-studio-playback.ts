@@ -39,7 +39,7 @@ export interface StudioPlayback {
   controls: StudioPlaybackControls;
 }
 
-const timedStepsOf = (steps: readonly StudioStep[]): StudioStep[] =>
+export const timedStepsOf = (steps: readonly StudioStep[]): StudioStep[] =>
   steps
     .filter((step) => step.placement === 'onTimeline' && step.startSeconds !== null)
     .sort((left, right) => (left.startSeconds ?? 0) - (right.startSeconds ?? 0));

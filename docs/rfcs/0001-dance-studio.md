@@ -1,7 +1,7 @@
 ---
 rfc: 0001
 title: Dance studio — the Auftritt becomes the group's year (v1)
-status: in progress
+status: done
 github_issue: 52
 branch: feat/rfc-52-dance-studio
 created: 2026-10-29
@@ -594,9 +594,43 @@ Done 2026-10-30. Decisions taken in the phase:
 
 ### Phase 16 — Training
 Goal: the studio is used every week.
-- [ ] Open spots per training (from Zu-/Absagen on the group's training entries) and the steps they affect
-- [ ] Training mode: music over the hall speaker, current step/counts/formation big, one-tap loop
-- [ ] Wrap-up: CONTEXT.md, docs, `plan/club-app/group-year.md` status
+- [x] Open spots per training (from Zu-/Absagen on the group's training entries) and the steps they affect
+- [x] Training mode: music over the hall speaker, current step/counts/formation big, one-tap loop
+- [x] Wrap-up: CONTEXT.md, docs, `plan/club-app/group-year.md` status
+
+Done 2026-10-30. Decisions taken in the phase:
+- **Which trainings**: the calendar entries of kind *Training* and *Rehearsal* that the act's group
+  owns or takes part in, from the start of today, within the act's session; none for an act without
+  a group, without a session, closed or archived. The studio read carries them as
+  `studio.trainings` (`calendarEntryId`, title, start, `asksForResponse`, `openSpotIds`).
+- **Open spot** = a spot whose session holder answered *Nein*; *Vielleicht* and no answer keep it
+  held. Only entries that ask for a response can open spots. Trainings always use the session
+  version (spot holders and choreography), never an evening's.
+- **The steps it affects** = the steps in which the open spot moves (a move between two keyframes
+  overlapping the step; a bend back to the same place counts). Worked out in the club app from the
+  choreography, so it follows unsaved edits and the adopted music.
+- **Details page**: section *Trainings* (dense rows: day and time, *x von y da*, *Offen: Platz 7
+  (Lea) · Schritt 3, 5, 8*, gold *n offen* chip); a row opens the training mode for that training,
+  the section's *Training starten* opens it without a date. Visible to everyone who sees the studio.
+- **Training mode** = `/acts/$actId?view=training[&training=<calendarEntryId>]`, fullscreen, fixed
+  viewport, new `KkTrainingView` kit: title + tally, huge count with the eight beats, step name and
+  *Schritt n von m · Teil*, the open-spots notice, the stage from the audience-neutral dancers' view
+  with no own dot and open spots dashed, three big keys (*Schritt zurück*, play, *Schritt
+  wiederholen* — one tap loops the current step and starts playing; tap again to release). The
+  screen is kept awake (Wake Lock) while the mode is open.
+
+Rulings folded in (Florian, 2026-10-30):
+- **Adoption needs a match.** `POST …/final-tracks/{id}/adoption` is refused with 422 when no song
+  (or previous final file) currently playing has an offset in the new final file. The club app
+  disables *Endfassung übernehmen* then with the quiet reason *erst ein Lied anlegen*.
+- **Evenings offered** (confirms phase 15): every coming, not cancelled event of the act's session is
+  offered; *Wir tanzen hier* is what records that the group takes part.
+- **The planner adds any act directly.** The Ablauf planner still offers every non-archived act of the
+  evening's session (not only the tray of group-created appearances); adding one creates the
+  appearance, which the group then sees under *Abende* as joined (tray) or placed and can adjust.
+  Verified by `PutRunningOrderTests.Should_ShowTheEveningToTheGroup_When_ThePlannerAddsTheirActWithoutBeingAsked`.
+
+All phases are done; the issue can be closed.
 
 ## Risks & alternatives
 

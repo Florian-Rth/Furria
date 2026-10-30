@@ -8,6 +8,7 @@ import { useActPage } from '../hooks/use-act-page';
 import type { ActPageSearch } from '../schemas';
 import { ActPageBody } from './ActPageBody';
 import { ActPracticeBody } from './ActPracticeBody';
+import { ActTrainingPageBody } from './ActTrainingPageBody';
 
 interface ActPageProps {
   actId: string;
@@ -26,7 +27,14 @@ export const ActPage: FC<ActPageProps> = ({ actId, search }) => {
     );
   }
 
-  if (page.mode === 'practice') {
+  if (page.mode !== 'details') {
+    const body =
+      page.mode === 'training' ? (
+        <ActTrainingPageBody page={page} />
+      ) : (
+        <ActPracticeBody page={page} />
+      );
+
     return (
       <KkScreen
         kind="fullscreen"
@@ -34,7 +42,7 @@ export const ActPage: FC<ActPageProps> = ({ actId, search }) => {
         origin={page.origin}
         actions={page.practiceActions}
       >
-        <ActPracticeBody page={page} />
+        {body}
       </KkScreen>
     );
   }

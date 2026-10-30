@@ -2,7 +2,7 @@ import { musicSegmentsOf } from '@/features/act-player/music-timeline';
 import type { CastPerson } from '@/features/running-order/schemas';
 import type { ActPageSearch, CoEditor, Studio } from './schemas';
 
-export type ActPageMode = 'practice' | 'details';
+export type ActPageMode = 'practice' | 'details' | 'training';
 
 export interface StudioOverview {
   hasMusic: boolean;
@@ -61,6 +61,10 @@ export const actPageModeOf = (
 ): ActPageMode => {
   if (search.view === 'details' || search.settings === true) {
     return 'details';
+  }
+
+  if (search.view === 'training') {
+    return studio === undefined || canPractise(studio) ? 'training' : 'details';
   }
 
   if (studio === undefined) {
