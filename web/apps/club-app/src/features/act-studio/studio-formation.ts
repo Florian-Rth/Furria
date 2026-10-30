@@ -317,7 +317,7 @@ export const anchoredTrackOf = (
   return [...onTimeline, ...offTimeline];
 };
 
-export const expectedVersionOf = (saved: number | null, cached: number | null): number | null => {
+export const baseVersionOf = (saved: number | null, cached: number | null): number | null => {
   const known = Math.max(saved ?? 0, cached ?? 0);
 
   return known > 0 ? known : null;

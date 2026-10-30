@@ -78,6 +78,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(AnchorPlacement)] = "onTimeline cutAway musicMissing",
         [typeof(VideoPlacement)] = "onTimeline cutAway musicMissing unaligned",
         [typeof(KeyframeEasing)] = "linear easeIn easeOut easeInOut",
+        [typeof(ChoreographyVersionKind)] = "saved restored spotRemoved musicAdopted",
     };
 
     private readonly ApiTestFixture _fixture;

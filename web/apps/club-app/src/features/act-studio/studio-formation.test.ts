@@ -6,8 +6,8 @@ import {
   alignedOf,
   anchorAt,
   anchoredTrackOf,
+  baseVersionOf,
   distributedOf,
-  expectedVersionOf,
   formationPlacedOf,
   freePointOf,
   grabbedSpotsOf,
@@ -179,14 +179,14 @@ describe('anchoredTrackOf', () => {
   });
 });
 
-describe('expectedVersionOf', () => {
+describe('baseVersionOf', () => {
   it.each([
     [null, null, null],
     [null, 0, null],
     [3, 2, 3],
     [2, 4, 4],
   ])('expects version %s/%s as %s', (saved, cached, expected) => {
-    expect(expectedVersionOf(saved, cached)).toBe(expected);
+    expect(baseVersionOf(saved, cached)).toBe(expected);
   });
 });
 

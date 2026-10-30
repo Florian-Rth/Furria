@@ -112,13 +112,13 @@ export const requestSpotRemoval = (
 
 export const requestChoreographySave = (
   actId: number,
-  expectedVersion: number | null,
+  baseVersion: number | null,
   tracks: Choreography['tracks'],
   accessToken: string,
 ): Promise<SavedChoreography> =>
   apiFetch(`/api/acts/${actId}/choreography`, {
     method: 'PUT',
-    body: { expectedVersion, tracks },
+    body: { baseVersion, tracks },
     schema: SavedChoreographySchema,
     accessToken,
   });
@@ -333,7 +333,7 @@ export const requestEveningSpot = (
   });
 
 export type EveningChoreographyBody = {
-  expectedVersion: number | null;
+  baseVersion: number | null;
   sessionVersion: number | null;
   tracks: Choreography['tracks'];
 };

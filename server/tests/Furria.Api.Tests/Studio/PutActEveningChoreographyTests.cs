@@ -129,6 +129,54 @@ public sealed class PutActEveningChoreographyTests : IClassFixture<ApiTestFixtur
         );
 
     [Fact]
+    public Task Should_CarryTheNewerSessionIntoTheCopy_When_TheCopyIsMadeFromAnOlderSessionVersion() =>
+        _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
+            {
+                var ct = TestContext.Current.CancellationToken;
+                var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+                var actId = await GardetanzAsync(ctx, ct);
+                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+                var gala = ctx.Club.Events.IdOf(Gala);
+                var march = await UploadSongAsync(admin, actId, ct);
+                var front = await AddSpotAsync(admin, actId);
+                var back = await AddSpotAsync(admin, actId);
+                var (_, first) = await SaveChoreographyAsync(
+                    admin,
+                    actId,
+                    null,
+                    [StandingTrack(front, march, 0, 1), StandingTrack(back, march, 1, 1)]
+                );
+                var (_, second) = await SaveChoreographyAsync(
+                    admin,
+                    actId,
+                    first,
+                    [StandingTrack(front, march, -2, 1)]
+                );
+
+                var (response, _) = await SaveEveningChoreographyAsync(
+                    admin,
+                    actId,
+                    gala,
+                    null,
+                    first,
+                    [StandingTrack(back, march, 3, 1)]
+                );
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                var copy = Assert
+                    .Single((await StudioOfAsync(admin, actId)).Studio!.Evenings)
+                    .Appearance!.Choreography!;
+                Assert.Equal(second, copy.CopiedFromVersion);
+                Assert.Equal(
+                    [-2.0, 3.0],
+                    copy.Tracks.Select(track => track.Keyframes.Single().Position.RightMetres)
+                );
+            }
+        );
+
+    [Fact]
     public Task Should_Refuse_When_TheCopyChangedElsewhere() =>
         _fixture.AtInstantAsync(
             InTheRunningSession,

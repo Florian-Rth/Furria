@@ -883,10 +883,16 @@ _Avoid_: section, scene, figure, sequence
 A **spot** is a numbered place in the formation (*Platz 1…n*), held by at most one person — at
 most one spot per person; a stand-in takes the spot and the choreography stays. The
 **choreography** is where every spot stands and moves: keyframes per spot on the music, in metres
-from the centre of the stage front, so a later change of the stage size never distorts it. It is
-saved whole with a version (a stale save is refused). An **appearance** may hold its own copy and
-its own spot holders; everything else it inherits from the act.
-_UI copy_: Platz, Aufstellung, Bewegung
+from the centre of the stage front, so a later change of the stage size never distorts it. Every
+write keeps a **version** (who, when, how: saved, restored, spot removed, final file adopted); the
+history lists them, and restoring one writes a new version — never a rewind. A save names the
+version it builds on and carries only the spots it changed; it is merged per spot and keyframe
+(a keyframe is known by its place on the music) and refused only where someone else changed the
+same keyframe since — the refusal names those spots and keyframes. Adopting a final file moves
+every keyframe, so nothing can be merged onto or restored from a version before it. An
+**appearance** may hold its own copy (with its own history) and its own spot holders; everything
+else it inherits from the act.
+_UI copy_: Platz, Aufstellung, Bewegung, Fassung
 _Avoid_: position (for the spot), dancer slot, formation (for the whole document)
 
 **Open spot** (training):

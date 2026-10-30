@@ -149,6 +149,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<Choreography> Choreographies => Set<Choreography>();
 
+    public DbSet<ChoreographyVersion> ChoreographyVersions => Set<ChoreographyVersion>();
+
     public DbSet<ActCoEditor> ActCoEditors => Set<ActCoEditor>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)

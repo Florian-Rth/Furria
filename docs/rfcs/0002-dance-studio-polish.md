@@ -257,16 +257,18 @@ Goal: nobody is locked out or sees a 403 they didn't cause.
 
 ### Phase 5 — Choreography history and merge (server) (∥ B)
 Goal: choreography saves merge per spot and keyframe and can be restored.
-- [ ] Choreography versions stored per save (author, time, document), for the session version and evening copies; migration
-- [ ] Save = base version + changed spots/keyframes; applied when untouched since the base, 409 with the overlapping spots/keyframes otherwise
-- [ ] Read the version list; restore writes a new version
-- [ ] Core rules pure and tested (merge, overlap detection); endpoint tests; CONTEXT.md *Choreography* updated
+- [x] Choreography versions stored per save (author, time, document), for the session version and evening copies; migration
+- [x] Save = base version + changed spots/keyframes; applied when untouched since the base, 409 with the overlapping spots/keyframes otherwise
+- [x] Read the version list; restore writes a new version
+- [x] Core rules pure and tested (merge, overlap detection); endpoint tests; CONTEXT.md *Choreography* updated
+- Notes: `choreography_version` keeps every write (kind *saved / restored / spotRemoved / musicAdopted*, author, time, full document); the migration seeds each existing choreography's current version. `PUT …/choreography` and `PUT …/evenings/{eventId}/choreography` take `baseVersion` + only the changed `tracks`; a track not sent stays untouched. Keyframes are matched by their music anchor (source + seconds); the three-way merge takes the other side wherever one side left a keyframe as it was, and refuses only same-keyframe clashes with `409 { errors.conflict, overlaps: [{ spotId, keyframes: [{ sourceMediaItemId, seconds }] }] }`. Adopting a final file is a barrier: a base or restore from before it answers 409. An evening copy made from an older session version merges the newer session into it. Reads/restores: `GET …/choreography/versions`, `POST …/choreography/versions/{version}/restore` and the same under `…/evenings/{eventId}/`; restore drops tracks of spots removed since. A save that loses the version race is re-merged on the server (up to 3 tries); a save that changes nothing keeps the version. History has no retention yet (full document per write) — revisit if it grows. The club app already sends only the changed tracks with `baseVersion`; the history list and restore get their UI in phase 6.
 
 ### Phase 6 — Undo everywhere (club app)
 Goal: every studio write can be undone, and conflicts ask only about real overlaps. Follows phase 5.
 - [ ] Undo service: per write an inverse, a snackbar with *Rückgängig*, the visit's history list, Ctrl+Z / Ctrl+Shift+Z
 - [ ] Wire it into every studio write (music, steps, parts, spots, keyframes, videos, cast, evening changes)
 - [ ] Choreography saves send patches; a 409 opens a merge prompt naming only the overlapping spots/keyframes
+- [ ] Version history of the choreography (session and evening copy) in the act's history, with *Wiederherstellen* (phase-5 endpoints)
 - [ ] Desks bound to an entity id and titled with it; a desk closes with a message when its target disappears
 - [ ] Gold band naming the evening while editing an evening's version
 - [ ] Pure tests for inverse-building; browser check of undo, conflict and band at 390 px and desktop

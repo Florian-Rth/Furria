@@ -29,6 +29,7 @@ public sealed class ActEveningService
     private readonly ActStudioGate _gate;
     private readonly RunningOrderService _runningOrders;
     private readonly ActChoreographyService _choreographies;
+    private readonly ChoreographyHistory _history;
     private readonly TimeProvider _timeProvider;
 
     public ActEveningService(
@@ -36,6 +37,7 @@ public sealed class ActEveningService
         ActStudioGate gate,
         RunningOrderService runningOrders,
         ActChoreographyService choreographies,
+        ChoreographyHistory history,
         TimeProvider timeProvider
     )
     {
@@ -43,6 +45,7 @@ public sealed class ActEveningService
         _gate = gate;
         _runningOrders = runningOrders;
         _choreographies = choreographies;
+        _history = history;
         _timeProvider = timeProvider;
     }
 
@@ -143,7 +146,7 @@ public sealed class ActEveningService
         return Result.Success();
     }
 
-    public async Task<Result<int>> SaveChoreographyAsync(
+    public async Task<Result<ChoreographySaveDetails>> SaveChoreographyAsync(
         int accountId,
         SaveEveningChoreographyCommand command,
         CancellationToken ct
@@ -151,27 +154,112 @@ public sealed class ActEveningService
     {
         var act = await EditableEveningAsync(accountId, command.Evening, ct);
         if (!act.IsSuccess)
-            return Result<int>.Carrying(act);
+            return Result<ChoreographySaveDetails>.Carrying(act);
 
-        var actId = act.Value.ActId;
-        var copy = await _dbContext.Choreographies.SingleOrDefaultAsync(
-            row => row.ActId == actId && row.Appearance!.CalendarEntryId == command.Evening.EventId,
+        return await _choreographies.RemergedOnLostRaceAsync(() =>
+            MergeAndSaveCopyAsync(accountId, command, act.Value, ct)
+        );
+    }
+
+    private async Task<Result<ChoreographySaveDetails>> MergeAndSaveCopyAsync(
+        int accountId,
+        SaveEveningChoreographyCommand command,
+        ActSummary act,
+        CancellationToken ct
+    )
+    {
+        var copy = await CopyOfAsync(command.Evening, ct);
+        var session = await SessionChoreographyAsync(command.Evening.ActId, ct);
+        var baseline = await CopyBaselineAsync(copy, session, command, ct);
+        if (!baseline.IsSuccess)
+            return Result<ChoreographySaveDetails>.Carrying(baseline);
+
+        var merge = await _choreographies.MergeAsync(
+            new ChoreographyMergeQuery
+            {
+                ActId = command.Evening.ActId,
+                Baseline = baseline.Value,
+                Current = copy?.Document ?? session?.Document ?? ChoreographyDocument.Empty,
+                ChangedTracks = command.ChangedTracks,
+            },
             ct
         );
-        if (await CopyRefusalOfAsync(copy, command, ct) is { } refused)
-            return Result<int>.Carrying(refused);
+        if (!merge.IsSuccess || !merge.Value.IsClean)
+            return ActChoreographyService.OverlapsOrRefusal(merge);
+        if (copy is not null && merge.Value.Document.Matches(copy.Document))
+            return ActChoreographyService.Saved(copy.Version);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        var appearanceId = await AppearanceIdForAsync(command.Evening, act.Value, ct);
+        var appearanceId = await AppearanceIdForAsync(command.Evening, act, ct);
         if (!appearanceId.IsSuccess)
-            return Result<int>.Carrying(appearanceId);
+            return Result<ChoreographySaveDetails>.Carrying(appearanceId);
 
-        var saved = copy ?? AddedCopy(actId, appearanceId.Value, command.SessionVersion);
-        Write(saved, command.Document);
+        var saved = copy ?? AddedCopy(command.Evening.ActId, appearanceId.Value, session?.Version);
+        await _history.WriteAsync(
+            saved,
+            ActChoreographyService.SavedBy(accountId, merge.Value.Document),
+            ct
+        );
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
 
-        return Result<int>.Success(saved.Version);
+        return ActChoreographyService.Saved(saved.Version);
+    }
+
+    public async Task<Result<int>> RestoreChoreographyAsync(
+        int accountId,
+        RestoreEveningChoreographyCommand command,
+        CancellationToken ct
+    )
+    {
+        var act = await EditableEveningAsync(accountId, command.Evening, ct);
+        if (!act.IsSuccess)
+            return Result<int>.Carrying(act);
+
+        var copy = await CopyOfAsync(command.Evening, ct);
+        if (copy is null)
+            return Result<int>.NotFound(NoOwnChoreographyMessage);
+
+        var restored = await _choreographies.RestoredDocumentAsync(copy, command.Version, ct);
+        if (!restored.IsSuccess)
+            return Result<int>.Carrying(restored);
+
+        await _history.WriteAsync(
+            copy,
+            new ChoreographyWrite
+            {
+                AccountId = accountId,
+                Document = restored.Value,
+                Kind = ChoreographyVersionKind.Restored,
+                RestoredFromVersion = command.Version,
+            },
+            ct
+        );
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result<int>.Success(copy.Version);
+    }
+
+    public async Task<Result<IReadOnlyList<ChoreographyVersionSummary>>> ChoreographyVersionsAsync(
+        int accountId,
+        ActEveningCommand evening,
+        CancellationToken ct
+    )
+    {
+        var act = await _gate.EditorsActAsync(accountId, evening.ActId, ct);
+        if (!act.IsSuccess)
+            return Result<IReadOnlyList<ChoreographyVersionSummary>>.Carrying(act);
+
+        var copyId = await _dbContext
+            .Choreographies.Where(row =>
+                row.ActId == evening.ActId && row.Appearance!.CalendarEntryId == evening.EventId
+            )
+            .Select(row => (int?)row.Id)
+            .SingleOrDefaultAsync(ct);
+
+        return Result<IReadOnlyList<ChoreographyVersionSummary>>.Success(
+            await _history.VersionsOfAsync(copyId, ct)
+        );
     }
 
     public async Task<Result> DropChoreographyAsync(
@@ -222,26 +310,36 @@ public sealed class ActEveningService
         CancellationToken ct
     ) => await _runningOrders.AppearanceForAsync(evening.EventId, act, ct);
 
-    private async Task<Result?> CopyRefusalOfAsync(
+    private async Task<Result<ChoreographyDocument>> CopyBaselineAsync(
         Choreography? copy,
+        Choreography? session,
         SaveEveningChoreographyCommand command,
         CancellationToken ct
     )
     {
-        if (copy?.Version != command.ExpectedVersion)
-            return Result.Conflict(StaleCopyMessage);
-        if (
-            copy is null
-            && await SessionVersionOfAsync(command.Evening.ActId, ct) != command.SessionVersion
-        )
-            return Result.Conflict(StaleSessionMessage);
+        var fromCopy = command.BaseVersion is not null;
+        var baseline = fromCopy
+            ? await _choreographies.BaselineAsync(copy, command.BaseVersion, ct)
+            : await _choreographies.BaselineAsync(session, command.SessionVersion, ct);
+        if (baseline is not null)
+            return Result<ChoreographyDocument>.Success(baseline);
 
-        var frame = await _choreographies.FrameOfAsync(command.Evening.ActId, ct);
-
-        return ChoreographyCheck.ProblemsOf(command.Document, frame).Count > 0
-            ? Result.Validation(ActChoreographyService.ProblemsMessage)
-            : null;
+        return Result<ChoreographyDocument>.Conflict(
+            fromCopy ? StaleCopyMessage : StaleSessionMessage
+        );
     }
+
+    private Task<Choreography?> CopyOfAsync(ActEveningCommand evening, CancellationToken ct) =>
+        _dbContext.Choreographies.SingleOrDefaultAsync(
+            row => row.ActId == evening.ActId && row.Appearance!.CalendarEntryId == evening.EventId,
+            ct
+        );
+
+    private Task<Choreography?> SessionChoreographyAsync(int actId, CancellationToken ct) =>
+        _dbContext.Choreographies.SingleOrDefaultAsync(
+            row => row.ActId == actId && row.AppearanceId == null,
+            ct
+        );
 
     private async Task ReplaceCastChangeAsync(
         int appearanceId,
@@ -323,14 +421,6 @@ public sealed class ActEveningService
         await _dbContext.SaveChangesAsync(ct);
     }
 
-    private Task<int?> SessionVersionOfAsync(int actId, CancellationToken ct) =>
-        _dbContext
-            .Choreographies.Where(choreography =>
-                choreography.ActId == actId && choreography.AppearanceId == null
-            )
-            .Select(choreography => (int?)choreography.Version)
-            .SingleOrDefaultAsync(ct);
-
     private Choreography AddedCopy(int actId, int appearanceId, int? sessionVersion)
     {
         var copy = new Choreography
@@ -342,14 +432,6 @@ public sealed class ActEveningService
         _dbContext.Choreographies.Add(copy);
 
         return copy;
-    }
-
-    private static void Write(Choreography choreography, ChoreographyDocument document)
-    {
-        if (choreography.Id != 0)
-            choreography.Version++;
-
-        choreography.Document = document;
     }
 
     [Pure]

@@ -1,4 +1,5 @@
 using System.Net;
+using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Acts;
 using Furria.Api.Tests.Media;
@@ -114,7 +115,7 @@ internal static class StudioSteps
     internal static async Task<(HttpResponseMessage Response, int Version)> SaveChoreographyAsync(
         HttpClient client,
         int actId,
-        int? expectedVersion,
+        int? baseVersion,
         IReadOnlyList<ChoreographyTrackDataDto> tracks
     )
     {
@@ -126,7 +127,7 @@ internal static class StudioSteps
             new()
             {
                 ActId = actId,
-                ExpectedVersion = expectedVersion,
+                BaseVersion = baseVersion,
                 Tracks = tracks,
             }
         );
@@ -374,6 +375,76 @@ internal static class StudioSteps
                 OffsetSeconds = offsetSeconds,
             }
         );
+
+    internal static Task<HttpResponseMessage> DeleteSpotAsync(
+        HttpClient client,
+        int actId,
+        int spotId
+    ) =>
+        client.DELETEAsync<DeleteActSpotById, DeleteActSpotByIdRequest>(
+            new() { ActId = actId, SpotId = spotId }
+        );
+
+    internal static ChoreographyTrackDataDto TrackAt(
+        int spotId,
+        int songMediaItemId,
+        params (double Seconds, double RightMetres)[] keyframes
+    ) =>
+        new()
+        {
+            SpotId = spotId,
+            Keyframes =
+            [
+                .. keyframes.Select(keyframe => new ChoreographyKeyframeDataDto
+                {
+                    SourceMediaItemId = songMediaItemId,
+                    Seconds = keyframe.Seconds,
+                    Position = new() { RightMetres = keyframe.RightMetres, BackMetres = 1 },
+                    Bend = null,
+                    Easing = KeyframeEasing.Linear,
+                    FacingDegrees = null,
+                }),
+            ],
+        };
+
+    internal static async Task<ChoreographyOverlapConflictDto> OverlapConflictOf(
+        HttpResponseMessage response
+    )
+    {
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+
+        return (await response.Content.ReadFromJsonAsync<ChoreographyOverlapConflictDto>())!;
+    }
+
+    internal static async Task<IReadOnlyList<ChoreographyVersionSummaryDto>> VersionsOfAsync(
+        HttpClient client,
+        int actId
+    )
+    {
+        var (response, result) = await client.GETAsync<
+            GetActChoreographyVersions,
+            GetActChoreographyVersionsRequest,
+            GetActChoreographyVersionsResponse
+        >(new() { ActId = actId });
+        response.EnsureSuccessStatusCode();
+
+        return result.Versions;
+    }
+
+    internal static async Task<(HttpResponseMessage Response, int Version)> RestoreAsync(
+        HttpClient client,
+        int actId,
+        int version
+    )
+    {
+        var (response, result) = await client.POSTAsync<
+            RestoreActChoreographyVersion,
+            RestoreActChoreographyVersionRequest,
+            RestoreActChoreographyVersionResponse
+        >(new() { ActId = actId, Version = version });
+
+        return (response, response.IsSuccessStatusCode ? result.Version : 0);
+    }
 
     internal static Task<HttpResponseMessage> AdoptAsync(
         HttpClient client,

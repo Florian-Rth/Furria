@@ -72,6 +72,7 @@ public static class ReferencesToPerson
         HerAct<NewsPost>(nameof(NewsPost.LastSavedByPersonId)),
         HerAct<WebsitePicture>(nameof(WebsitePicture.UpdatedByPersonId)),
         HerAct<ActCoEditor>(nameof(ActCoEditor.GrantedByPersonId)),
+        HerAct<ChoreographyVersion>(nameof(ChoreographyVersion.SavedByPersonId)),
     ];
 
     [Pure]
