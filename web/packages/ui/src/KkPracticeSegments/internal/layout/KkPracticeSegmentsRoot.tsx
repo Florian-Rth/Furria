@@ -1,3 +1,4 @@
+import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { FC, PropsWithChildren } from 'react';
 
@@ -6,13 +7,24 @@ interface KkPracticeSegmentsRootProps extends PropsWithChildren {
 }
 
 export const KkPracticeSegmentsRoot: FC<KkPracticeSegmentsRootProps> = ({ label, children }) => (
-  <Stack
-    direction="row"
+  <Box
     role="group"
     aria-label={label}
     data-kk-practice-segments
-    sx={{ width: '100%', minWidth: 0, gap: { xs: 1, desktop: 1.25 } }}
+    data-kk-practice-rail
+    sx={{
+      width: '100%',
+      minWidth: 0,
+      flexShrink: 0,
+      overflowX: 'auto',
+      overflowY: 'clip',
+      overscrollBehaviorX: 'contain',
+      scrollbarWidth: 'none',
+      '&::-webkit-scrollbar': { display: 'none' },
+    }}
   >
-    {children}
-  </Stack>
+    <Stack direction="row" sx={{ minWidth: '100%', width: 'max-content', gap: 1 }}>
+      {children}
+    </Stack>
+  </Box>
 );

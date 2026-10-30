@@ -56,7 +56,7 @@ export const useLaneEditor = (source: LaneSource): LaneEditor => {
     source.viewerId,
     source.canEdit,
     source.cast,
-    { evening: source.evening, startEditing: true },
+    { evening: source.evening, startEditing: true, startHall: null },
   );
   if (!isStageTool(screen.mode.tool)) {
     screen.mode.choose('formation');

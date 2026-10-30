@@ -13,17 +13,11 @@ public sealed class ActGlanceReader
 {
     private readonly AppDbContext _dbContext;
     private readonly ActCatalogue _catalogue;
-    private readonly EveningStageTimes _stageTimes;
 
-    public ActGlanceReader(
-        AppDbContext dbContext,
-        ActCatalogue catalogue,
-        EveningStageTimes stageTimes
-    )
+    public ActGlanceReader(AppDbContext dbContext, ActCatalogue catalogue)
     {
         _dbContext = dbContext;
         _catalogue = catalogue;
-        _stageTimes = stageTimes;
     }
 
     public async Task<IReadOnlyList<MyActSummary>> GlancesOfAsync(
@@ -133,12 +127,8 @@ public sealed class ActGlanceReader
             ))
             .ToListAsync(ct);
         var next = NextPerAct(coming, row => row.ActId, row => row.StartsAt, row => row.EventId);
-        var stageStarts = await _stageTimes.StartsOfAsync(
-            [.. next.Where(row => row.Position is not null).Select(row => row.EventId).Distinct()],
-            ct
-        );
 
-        return next.ToDictionary(row => row.ActId, row => EveningOf(row, stageStarts));
+        return next.ToDictionary(row => row.ActId, EveningOf);
     }
 
     private async Task<Dictionary<int, MyActTrainingSummary>> NextTrainingsAsync(
@@ -223,22 +213,13 @@ public sealed class ActGlanceReader
         ];
 
     [Pure]
-    private static MyActEveningSummary EveningOf(
-        EveningRow row,
-        IReadOnlyDictionary<StagedAct, DateTimeOffset> stageStarts
-    ) =>
+    private static MyActEveningSummary EveningOf(EveningRow row) =>
         new()
         {
             EventId = row.EventId,
             Title = row.Title,
             StartsAt = row.StartsAt,
             Position = row.Position,
-            StageStartsAt = stageStarts.TryGetValue(
-                new StagedAct(row.EventId, row.ActId),
-                out var stageStartsAt
-            )
-                ? stageStartsAt
-                : null,
         };
 
     [Pure]

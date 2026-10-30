@@ -8,8 +8,6 @@ public sealed record StudioAppearanceDetails
 
     public required int? Position { get; init; }
 
-    public required DateTimeOffset? StageStartsAt { get; init; }
-
     public required IReadOnlyList<CastMember> Added { get; init; }
 
     public required IReadOnlyList<int> RemovedPersonIds { get; init; }

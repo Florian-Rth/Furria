@@ -47,6 +47,7 @@ export const useEightsMusic = ({
   const screen = useStudioScreen(actId, studio, viewerId, canEdit, cast, {
     evening,
     startEditing: true,
+    startHall: null,
   });
   const songs = useActStudioSongs(screen);
   const finalList = useActStudioFinal(screen);

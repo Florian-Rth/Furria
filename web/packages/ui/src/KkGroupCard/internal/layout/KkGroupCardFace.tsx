@@ -1,14 +1,17 @@
 import CardActionArea from '@mui/material/CardActionArea';
-import type { FC, PropsWithChildren } from 'react';
+import type { ElementType, FC, PropsWithChildren } from 'react';
 
 interface KkGroupCardFaceProps extends PropsWithChildren {
-  onSelect: () => void;
+  component: ElementType;
+  to: string;
+  params: Record<string, string>;
 }
 
-export const KkGroupCardFace: FC<KkGroupCardFaceProps> = ({ onSelect, children }) => (
+export const KkGroupCardFace: FC<KkGroupCardFaceProps> = ({ component, to, params, children }) => (
   <CardActionArea
-    onClick={onSelect}
-    aria-haspopup="dialog"
+    component={component}
+    to={to}
+    params={params}
     data-kk-group-card-face
     sx={(theme) => ({
       '&&': { flexDirection: 'row', alignItems: 'stretch' },

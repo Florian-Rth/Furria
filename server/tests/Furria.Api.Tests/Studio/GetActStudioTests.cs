@@ -30,7 +30,7 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_GiveEachPlacedEveningItsPositionAndApproximateStageTime_When_ACastMemberOpensTheAct()
+    public async Task Should_GiveEachPlacedEveningItsPosition_When_ACastMemberOpensTheAct()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
@@ -47,7 +47,6 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
         );
 
         Assert.Equal(1, evening.Appearance?.Position);
-        Assert.Equal(evening.StartsAt.AddMinutes(12), evening.Appearance?.StageStartsAt);
     }
 
     [Fact]

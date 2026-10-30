@@ -319,12 +319,34 @@ Goal: Florian picks how members see their act and how each act kind looks.
 
 ### Phase 10 — Promote the member's act and templates (∥ D, after 9)
 Goal: members land on their act card; each kind has its template.
-- [ ] Act page by kind (*Tanz*/*Show* studio, *Rede*, *Ablaufpunkt*); stats, co-editors, wishes and session facts behind *Details* for editors
-- [ ] Member act card = variant C refined (see phase 9 ruling) on the act page and in the group hub (*Auftritte* directly under the header); group cards become links
-- [ ] No stage times in v1: drop `stageStartsAt`/*ca.* times from the member running order, act page *Abende*, `nextEvening` and the calendar sheet (server + client, incl. `StageClock`); position only. Unconfirmed running orders stay visible with the *wird noch geplant* note
-- [ ] Start *Üben* tile: playable acts only, trainer-led acts included, *+n weitere* as a button
-- [ ] Cast as a named list in the accessibility tree; no repeated act/group name; jargon replaced (no planner wishes for cast)
-- [ ] Lab variants removed; browser check light/dark at 390 px
+- [x] Act page by kind (*Tanz*/*Show* studio, *Rede*, *Ablaufpunkt*); stats, co-editors, wishes and session facts behind *Details* for editors
+- [x] Member act card = variant C refined (see phase 9 ruling) on the act page and in the group hub (*Auftritte* directly under the header); group cards become links
+- [x] No stage times in v1: drop `stageStartsAt`/*ca.* times from the member running order, act page *Abende*, `nextEvening` and the calendar sheet (server + client, incl. `StageClock`); position only. Unconfirmed running orders stay visible with the *wird noch geplant* note
+- [x] Start *Üben* tile: playable acts only, trainer-led acts included, *+n weitere* as a button
+- [x] Cast as a named list in the accessibility tree; no repeated act/group name; jargon replaced (no planner wishes for cast)
+- [x] Lab variants removed; browser check light/dark at 390 px
+
+Done 2026-10-30. `/acts/$actId` now lands everyone on the act card (variant C refined); the player is
+`?view=play` (studio editing `?view=play&edit=true`), the editors' page `?view=details`. The card
+(`features/act-card`) fills the first phone screen with its tiles (`KkFacetStage` + `KkFacetGrid fill`),
+no scroll for members; on wide screens the tiles sit above a pane + side pane. Doors by kind: *Tanz*/
+*Show* = Abend · Training · Üben · Besetzung, *Rede*/*Musik* = Abend · Sprecher/Mitwirkende · Text,
+*Ablaufpunkt* = Abend only, full width; viewers without the studio (planners outside the cast) see
+the cast only. *Details* (header action for studio editors, group admins, planners) = header + stat
+tiles (Musik, Schritte, Plätze, Videos only for *Tanz*/*Show*; Mitbearbeitung, Wünsche, Session)
+above the existing evenings, trainings, history, versions and co-editor sections; cast members
+asking for `view=details` stay on the card. Back from the player goes to the card or Details it was
+opened from. Group hub: *Auftritte* is the first section; her own acts (cast or led) are wide tiles
+(Abend · Training · Üben), the group's other current acts rows. Groups list cards are real links to
+the hub (`KkGroupCard` takes `component`/`to`/`params`; the peek sheet is gone). Start *Üben*: only
+playable acts (cast or led), `+n weitere` is a button opening the chooser, links go to
+`?view=play&from=start`, no kind line repeating a group name. Stage times removed end to end
+(`StageClock`, `EveningStageTimes`, `MusicLengthsOfAsync`, every `stageStartsAt`); the calendar
+sheet and the act's evenings show *Nr.* only and the copy no longer says times are approximate.
+Cast tile carries a hidden named list (`KkFacetTile.Names`); the header drops the group link when it
+equals the act name and shows the session only to Details viewers; *Gruppen-Admins* → *Gruppenleitung*.
+Labs A/B/C, `/lab` drafts and `KkPass*`, `KkAgenda*`, `KkFacetFold` removed. Browser-checked at 390 px
+light/dark (Kevin act 6, Sabine act 3 and hub, admin act 3 card + Details) and 1440 px.
 
 ### Phase 11 — ⚖ Lab: hall mode (∥ C)
 Goal: Florian picks the trainer's hall view.
@@ -342,12 +364,13 @@ Goal: Florian picks the trainer's hall view.
 
 ### Phase 12 — Promote hall mode, step rail, large-text player (∥ D, after 11)
 Goal: one hall mode replaces training mode and the landscape player; the player is usable at 200 % text.
-- [ ] Hall mode replaces `?view=training` and the landscape player (one view, Wake Lock, absences of the chosen training)
-- [ ] Step rail in the player (≥ 44 px, part labels as buttons, scroll inside a fixed box, no jumps)
-- [ ] Large-text layout (≥ 150 % text or < 360 px): step name → stage → play → 2×2 keys
-- [ ] Keyboard in player and hall mode: Space, ←/→ step, ↑/↓ tempo, L loop; listed in the ⓘ sheet
-- [ ] Stage ARIA names the own spot and open spots; dot numbers hide below 18 px
-- [ ] Old training kit and lab variants removed; filmed check at 390 px portrait and 844×390 landscape
+- [x] Hall mode replaces `?view=training` and the landscape player (one view, Wake Lock, absences of the chosen training)
+- [x] Step rail in the player (≥ 44 px, part labels as buttons, scroll inside a fixed box, no jumps)
+- [x] Large-text layout (≥ 150 % text or < 360 px): step name → stage → play → 2×2 keys
+- [x] Keyboard in player and hall mode: Space, ←/→ step, ↑/↓ tempo, L loop; listed in the ⓘ sheet
+- [x] Stage ARIA names the own spot and open spots; dot numbers hide below 18 px
+- [x] Old training kit and lab variants removed; filmed check at 390 px portrait and 844×390 landscape
+- Notes (done 2026-10-30): hall mode is variant A (`features/act-hall`, `KkHall` with the wall layout only). It uses the dancers' view, front on top, with the stage about 60 % wide. A four-beat count-in runs before play and before every loop pass. It is on by default, and the *Einzählen* key switches it off. `?view=training` opens it, and without `training=` the next training's absences are shown. *Training beenden* steps back in history when the act page is behind, otherwise it opens the act page. Editors and trainers (`canEditStudio`) start it from the player's step sheet (*Training starten* next to the title); group admins also start it from the training row. The landscape player is no longer the trainer's tool, but members keep its layout for practising. The transport pill had no room for an extra key at 844×390. In portrait the hall keys show icons only, and their names stay in the accessibility tree. The step rail (`KkPracticeSegments`) has 44 px numbered tiles with proportional widths. A part key in front of each part loops the whole part, as a button instead of a long-press. The rail scrolls inside its box, and the current tile scrolls into view only when it leaves the box. Large text (root font ≥ 150 % or < 360 px wide, `lib/large-text.ts`) stacks the player: the step name, the stage (or the video via the *Video* key), one *Abspielen* key, then *Schritt zurück / Schritt vor / Tempo / Video*. It never applies while editing. Keyboard: `practice-keys.ts` (pure, tested). Space is left to a focused button, and arrows are left to a focused slider. Player tempo steps through 100/85/70/50 %, hall tempo through 100/75 %. On keyboard devices the keys are listed at the foot of the step sheet and behind a keyboard button in the hall. Stage labels read e.g. *Du stehst auf Platz 1. Plätze 11 und 12 frei*, and in the hall also *Es fehlt Lena auf Platz 1*. Hall dot numbers hide when a dot is under 18 px. `KkTrainingView`, `ActTrainingBody`, `use-act-training`, `/lab/hall/*` and the lab's thumbs and band layouts are gone. Left for phase 19: at 200 % text the large-text stage overlaps the play key by a few pixels.
 
 ### Phase 13 — ⚖ Lab: editor rework
 Goal: Florian picks the timeline desk, the phone step cards and the set-up checklist. Follows phase 6.

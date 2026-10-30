@@ -11,8 +11,11 @@ export type KkHallDotNameSide = 'below' | 'above' | 'none';
 
 const PERCENT = 100;
 const GLIDE = 'transform 360ms cubic-bezier(0.22, 0.61, 0.36, 1)';
-const DOT = 'clamp(1rem, 5.2cqw, 1.75rem)';
 const SMALL_FIELD = '@container (max-width: 12rem)';
+const DOT_PERCENT = 5.2;
+const LEGIBLE_NUMBER_PX = 18;
+const DOT = `clamp(1rem, ${DOT_PERCENT}cqw, 1.75rem)`;
+const TINY_DOTS = `@container (max-width: ${Math.round((LEGIBLE_NUMBER_PX * PERCENT) / DOT_PERCENT)}px)`;
 
 const palette = (theme: Theme) => (theme.vars ?? theme).palette;
 
@@ -95,6 +98,7 @@ export const KkHallDot: FC<KkHallDotProps> = ({
         transition: gliding ? GLIDE : 'none',
         zIndex: kind === 'absent' ? 2 : 1,
         [SMALL_FIELD]: { '& [data-kk-hall-dot-name]': { display: 'none' } },
+        [TINY_DOTS]: { '& [data-kk-hall-dot-number]': { visibility: 'hidden' } },
       }}
     >
       <Box
@@ -111,6 +115,7 @@ export const KkHallDot: FC<KkHallDotProps> = ({
         <Typography
           component="span"
           variant="caption"
+          data-kk-hall-dot-number
           sx={{
             fontWeight: 800,
             lineHeight: 1,

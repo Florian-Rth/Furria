@@ -47,6 +47,7 @@ export const LaneMusicBody: FC<LaneMusicBodyProps> = ({ page, actId, studio, too
   const screen = useStudioScreen(actId, studio, page.viewerId, page.canEdit, page.cast, {
     evening: page.evening,
     startEditing: true,
+    startHall: null,
   });
   if (screen.mode.tool !== tool && screen.mode.tools.includes(tool)) {
     screen.mode.choose(tool);

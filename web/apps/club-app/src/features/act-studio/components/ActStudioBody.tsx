@@ -16,6 +16,7 @@ import { ActStudioControls } from './ActStudioControls';
 import { ActStudioFinalDesk } from './ActStudioFinalDesk';
 import { ActStudioHead } from './ActStudioHead';
 import { ActStudioHero } from './ActStudioHero';
+import { ActStudioLargeKeys } from './ActStudioLargeKeys';
 import { ActStudioSide } from './ActStudioSide';
 import { ActStudioSongDesk } from './ActStudioSongDesk';
 import { ActStudioSpotSheet } from './ActStudioSpotSheet';
@@ -53,30 +54,41 @@ export const ActStudioBody: FC<ActStudioBodyProps> = ({
       </KkStudioView.Band>
     );
 
+  const side = screen.large.on ? null : (
+    <KkPracticeView.Side>
+      <ActStudioSide
+        screen={screen}
+        editor={editor}
+        takes={takes}
+        songs={songs}
+        finalList={finalList}
+        stepTool={stepTool}
+      />
+    </KkPracticeView.Side>
+  );
+  const controls = screen.large.on ? (
+    <ActStudioLargeKeys screen={screen} />
+  ) : (
+    <ActStudioControls screen={screen} editor={editor} takes={takes} stepTool={stepTool} />
+  );
+
+  const tools = screen.large.on ? null : (
+    <KkStudioView.Tools>
+      <ActStudioToolTabs mode={screen.mode} />
+    </KkStudioView.Tools>
+  );
+
   return (
-    <KkStudioView label={STUDIO_LABEL} editing={screen.mode.editing}>
+    <KkStudioView label={STUDIO_LABEL} editing={screen.mode.editing} largeText={screen.large.on}>
       {band}
       <ActStudioHead screen={screen} />
       <KkPracticeView.Hero>
         <ActStudioHero screen={screen} editor={editor} />
       </KkPracticeView.Hero>
-      <KkPracticeView.Side>
-        <ActStudioSide
-          screen={screen}
-          editor={editor}
-          takes={takes}
-          songs={songs}
-          finalList={finalList}
-          stepTool={stepTool}
-        />
-      </KkPracticeView.Side>
-      <KkPracticeView.Controls>
-        <ActStudioControls screen={screen} editor={editor} takes={takes} stepTool={stepTool} />
-      </KkPracticeView.Controls>
-      <KkStudioView.Tools>
-        <ActStudioToolTabs mode={screen.mode} />
-      </KkStudioView.Tools>
-      <PracticeSteps steps={screen.steps} />
+      {side}
+      <KkPracticeView.Controls>{controls}</KkPracticeView.Controls>
+      {tools}
+      <PracticeSteps steps={screen.steps} onTraining={screen.startHall} />
       <ActStudioSpotSheet screen={screen} editor={editor} />
       <ActStudioSongDesk screen={screen} songs={songs} />
       <ActStudioFinalDesk screen={screen} finalList={finalList} />

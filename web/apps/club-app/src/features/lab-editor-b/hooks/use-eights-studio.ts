@@ -52,6 +52,7 @@ export const useEightsStudio = ({
   const screen = useStudioScreen(actId, studio, viewerId, canEdit, cast, {
     evening,
     startEditing: true,
+    startHall: null,
   });
   const editor = useActStudioStage(screen);
   const { history, canUndo, canRedo } = useStudioHistory(actId);

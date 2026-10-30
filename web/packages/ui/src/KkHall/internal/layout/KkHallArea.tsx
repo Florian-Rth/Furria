@@ -1,17 +1,7 @@
 import Box from '@mui/material/Box';
 import type { FC, PropsWithChildren } from 'react';
-import { kkTokens } from '../../../tokens';
-import { HALL_WIDE } from '../hall-query';
 
-export type KkHallAreaName =
-  | 'count'
-  | 'band'
-  | 'step'
-  | 'stage'
-  | 'absent'
-  | 'keys'
-  | 'left'
-  | 'right';
+export type KkHallAreaName = 'count' | 'step' | 'stage' | 'absent' | 'keys';
 
 export type KkHallAreaFill = 'fill' | 'centre' | 'start';
 
@@ -21,20 +11,14 @@ const placements: Record<KkHallAreaFill, string> = {
   start: 'start',
 };
 
-const SIZED_AREAS: readonly KkHallAreaName[] = ['count', 'band', 'stage', 'left', 'right'];
+const SIZED_AREAS: readonly KkHallAreaName[] = ['count', 'stage'];
 
 interface KkHallAreaProps extends PropsWithChildren {
   area: KkHallAreaName;
   fill?: KkHallAreaFill;
-  clearCorner?: boolean;
 }
 
-export const KkHallArea: FC<KkHallAreaProps> = ({
-  area,
-  fill = 'fill',
-  clearCorner = false,
-  children,
-}) => (
+export const KkHallArea: FC<KkHallAreaProps> = ({ area, fill = 'fill', children }) => (
   <Box
     data-kk-hall-area={area}
     sx={{
@@ -44,7 +28,6 @@ export const KkHallArea: FC<KkHallAreaProps> = ({
       placeItems: placements[fill],
       minWidth: 0,
       minHeight: 0,
-      [HALL_WIDE]: { pt: clearCorner ? `calc(${kkTokens.tapTarget} + 0.75rem)` : 0 },
       containerType: SIZED_AREAS.includes(area) ? 'size' : 'normal',
       '& > *': { minWidth: 0, minHeight: 0 },
     }}

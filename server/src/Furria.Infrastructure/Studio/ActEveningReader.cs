@@ -13,19 +13,16 @@ public sealed class ActEveningReader
 {
     private readonly AppDbContext _dbContext;
     private readonly ActCatalogue _catalogue;
-    private readonly EveningStageTimes _stageTimes;
     private readonly TimeProvider _timeProvider;
 
     public ActEveningReader(
         AppDbContext dbContext,
         ActCatalogue catalogue,
-        EveningStageTimes stageTimes,
         TimeProvider timeProvider
     )
     {
         _dbContext = dbContext;
         _catalogue = catalogue;
-        _stageTimes = stageTimes;
         _timeProvider = timeProvider;
     }
 
@@ -60,7 +57,6 @@ public sealed class ActEveningReader
                 appearance.CalendarEntryId,
                 appearance.CalendarEntry!.Title,
                 appearance.CalendarEntry.StartsAt,
-                appearance.ActId,
                 appearance.Position
             ))
             .ToListAsync(ct);
@@ -98,10 +94,6 @@ public sealed class ActEveningReader
     )
     {
         var ids = appearances.Select(row => row.Id).ToList();
-        var stageStarts = await _stageTimes.StartsOfAsync(
-            [.. appearances.Where(row => row.Position is not null).Select(row => row.EventId)],
-            ct
-        );
         var castChanges = await _dbContext
             .AppearanceCastChanges.AsNoTracking()
             .Where(change => ids.Contains(change.AppearanceId))
@@ -136,12 +128,6 @@ public sealed class ActEveningReader
             {
                 AppearanceId = row.Id,
                 Position = row.Position,
-                StageStartsAt = stageStarts.TryGetValue(
-                    new StagedAct(row.EventId, row.ActId),
-                    out var stageStartsAt
-                )
-                    ? stageStartsAt
-                    : null,
                 Added =
                 [
                     .. people.Where(person =>
@@ -205,7 +191,6 @@ public sealed class ActEveningReader
         int EventId,
         string Title,
         DateTimeOffset StartsAt,
-        int ActId,
         int? Position
     );
 

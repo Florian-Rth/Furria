@@ -9,7 +9,7 @@ export const KkPracticeTransportPill: FC<PropsWithChildren> = ({ children }) => 
     sx={(theme) => ({
       alignSelf: 'center',
       alignItems: 'center',
-      gap: 0.5,
+      gap: 0.25,
       p: 0.5,
       borderRadius: `${kkTokens.radius.pill}px`,
       backgroundColor: (theme.vars ?? theme).palette.background.paper,

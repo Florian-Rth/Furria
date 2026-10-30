@@ -1,6 +1,8 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 
+const BAR = '0.25rem';
+
 interface KkPracticeSegmentFillProps {
   value: number;
   current: boolean;
@@ -12,7 +14,10 @@ export const KkPracticeSegmentFill: FC<KkPracticeSegmentFillProps> = ({ value, c
     style={{ transform: `scaleX(${value})` }}
     sx={(theme) => ({
       position: 'absolute',
-      inset: 0,
+      left: 0,
+      right: 0,
+      bottom: 0,
+      height: BAR,
       transformOrigin: 'left center',
       backgroundColor: current
         ? (theme.vars ?? theme).palette.primary.main

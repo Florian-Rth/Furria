@@ -1,22 +1,8 @@
-import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
 import type { FC, PropsWithChildren } from 'react';
 
-export type KkHallCornerSide = 'start' | 'end';
-
-interface KkHallCornerProps extends PropsWithChildren {
-  side: KkHallCornerSide;
-}
-
-export const KkHallCorner: FC<KkHallCornerProps> = ({ side, children }) => (
-  <Box
-    sx={{
-      position: 'absolute',
-      top: 0,
-      left: side === 'start' ? 0 : 'auto',
-      right: side === 'end' ? 0 : 'auto',
-      zIndex: 3,
-    }}
-  >
+export const KkHallCorner: FC<PropsWithChildren> = ({ children }) => (
+  <Stack direction="row" sx={{ position: 'absolute', top: 0, left: 0, zIndex: 3, gap: 1 }}>
     {children}
-  </Box>
+  </Stack>
 );

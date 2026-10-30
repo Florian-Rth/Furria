@@ -82,7 +82,6 @@ public sealed class GetCalendarEntryRunningOrder
             Kind = line.Kind,
             Group = ActGroupDto.From(line.Group),
             Position = line.Position,
-            StageStartsAt = line.StageStartsAt,
             Own = line.IsOwn,
         };
 }
@@ -122,8 +121,6 @@ public sealed record EveningRunningOrderLineDto
     public required ActGroupDto? Group { get; init; }
 
     public required int Position { get; init; }
-
-    public required DateTimeOffset StageStartsAt { get; init; }
 
     public required bool Own { get; init; }
 }

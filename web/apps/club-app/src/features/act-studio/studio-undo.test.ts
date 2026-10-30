@@ -115,7 +115,6 @@ const studio: Studio = {
       appearance: {
         appearanceId: 1,
         position: 1,
-        stageStartsAt: null,
         added: [],
         removedPersonIds: [],
         spotChanges: [{ spotId: 31, person: ben }],

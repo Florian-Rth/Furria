@@ -33,7 +33,7 @@ export interface FocusMusicInput {
   choose: (tool: FocusMusicTool) => void;
 }
 
-const SESSION = { evening: null, startEditing: true };
+const SESSION = { evening: null, startEditing: true, startHall: null };
 
 export const useFocusMusic = ({
   actId,

@@ -1,4 +1,6 @@
+import type { KkKeyListEntry } from '@furria/ui/KkKeyList';
 import type { LoopKind } from './practice-controls';
+import type { StageSummary } from './practice-stage';
 import { clockOf } from './practice-step-list';
 import type { OwnCue } from './practice-way';
 
@@ -42,6 +44,46 @@ export const cueTextOf = (cue: OwnCue): string =>
 
 export const segmentLabelOf = (name: string): string => `${name}: springen oder wiederholen`;
 
+export const partLoopLabelOf = (name: string): string => `Teil „${name}“ wiederholen`;
+
+const spotListOf = (numbers: readonly number[]): string => {
+  const shown = numbers.map(String);
+  const last = shown.pop();
+
+  return shown.length === 0 ? (last ?? '') : `${shown.join(', ')} und ${last}`;
+};
+
+export const openSpotsTextOf = (open: readonly number[]): string | null => {
+  if (open.length === 0) {
+    return null;
+  }
+
+  return open.length === 1 ? `Platz ${open[0]} frei` : `Plätze ${spotListOf(open)} frei`;
+};
+
+export const practiceStageLabelOf = (summary: StageSummary): string =>
+  [
+    PRACTICE_STAGE_LABEL,
+    summary.own === null ? null : `Du stehst auf Platz ${summary.own}`,
+    openSpotsTextOf(summary.open),
+  ]
+    .filter((part) => part !== null)
+    .join('. ');
+
+export const PRACTICE_KEYS_TITLE = 'Tastatur';
+export const PRACTICE_KEYS: readonly KkKeyListEntry[] = [
+  { id: 'toggle', keys: ['Leertaste'], action: 'Abspielen oder anhalten' },
+  { id: 'step', keys: ['←', '→'], action: 'Schritt zurück oder vor' },
+  { id: 'tempo', keys: ['↑', '↓'], action: 'Schneller oder langsamer' },
+  { id: 'loop', keys: ['L'], action: 'Schritt wiederholen' },
+];
+
+export const PRACTICE_TRAINING_START = 'Training starten';
+export const PRACTICE_LARGE_KEYS_LABEL = 'Schritte und Tempo';
+export const PRACTICE_VIDEO_SHOW = 'Video';
+export const PRACTICE_VIDEO_SHOW_LABEL = 'Trainervideo statt Bühne zeigen';
+export const PRACTICE_TEMPO = 'Tempo';
+
 export const noVideoEyebrowOf = (part: string | null): string =>
   part === null ? PRACTICE_NO_VIDEO : `${part} · ${PRACTICE_NO_VIDEO}`;
 
@@ -53,7 +95,7 @@ export const barStatusOf = (kind: LoopKind, part: string | null): string => {
     return `${part ?? 'Teil'} wird wiederholt · nochmal halten spielt weiter`;
   }
 
-  return 'Schritt antippen: wiederholen · halten: ganzer Teil';
+  return 'Schritt antippen: wiederholen · Teil antippen: ganzer Teil';
 };
 
 export const PRACTICE_STEPS_TITLE = 'Schritte';

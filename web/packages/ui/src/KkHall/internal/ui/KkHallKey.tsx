@@ -4,10 +4,20 @@ import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { kkTokens } from '../../../tokens';
+import { HALL_NARROW } from '../hall-query';
 import type { KkHallGlyph } from './hall-glyphs';
 import { HALL_GLYPHS } from './hall-glyphs';
 
 const KEY_MIN = '3.5rem';
+const CAPTION_HIDDEN: CSSObject = {
+  position: 'absolute',
+  width: 1,
+  height: 1,
+  margin: -1,
+  padding: 0,
+  clipPath: 'inset(50%)',
+  whiteSpace: 'nowrap',
+};
 
 const keyPaint =
   (strong: boolean, pressed: boolean) =>
@@ -37,6 +47,11 @@ const keyPaint =
       transition: kkTokens.motion.press,
       '&:active': { transform: 'scale(0.96)' },
       '&.Mui-disabled': { opacity: kkTokens.opacity.dimmed, color: palette.text.disabled },
+      [HALL_NARROW]: {
+        minWidth: kkTokens.tapTarget,
+        padding: theme.spacing(0.75, 0.5),
+        '& [data-kk-hall-caption]': CAPTION_HIDDEN,
+      },
       ...focusRing(theme),
     };
   };
@@ -68,7 +83,7 @@ export const KkHallKey: FC<KkHallKeyProps> = ({
     sx={keyPaint(strong, pressed === true)}
   >
     {HALL_GLYPHS[glyph]}
-    <Typography variant="button" component="span" noWrap>
+    <Typography variant="button" component="span" data-kk-hall-caption noWrap>
       {caption}
     </Typography>
   </ButtonBase>

@@ -5,12 +5,6 @@ import type { AttendanceTally, MarkedAnswer, TrailStep } from './training-attend
 import type { TrainingGap } from './training-gaps';
 
 export const TRAINING_LABEL = 'Training';
-export const TRAINING_SCREEN_LABEL = 'Training in der Halle';
-export const TRAINING_BACK = 'Schritt zurück';
-export const TRAINING_LOOP = 'Schritt wiederholen';
-export const TRAINING_PLAY = 'Abspielen';
-export const TRAINING_PAUSE = 'Anhalten';
-export const TRAINING_NO_STEP = 'Noch keine Schritte';
 export const TRAININGS_TITLE = 'Trainings';
 export const TRAININGS_NOTE =
   'Jedes Training fragt die Besetzung. Eine Absage lässt den Platz offen.';
@@ -30,9 +24,6 @@ const TIME = new Intl.DateTimeFormat('de-DE', {
   minute: '2-digit',
   timeZone: 'Europe/Berlin',
 });
-
-export const trainingTitleOf = (training: StudioTraining | null): string =>
-  training === null ? TRAINING_LABEL : `${training.title} · ${toEveningDay(training.startsAt)}`;
 
 export const trainingTallyOf = (tally: AttendanceTally): string =>
   `${tally.present} von ${tally.expected} da`;
@@ -74,9 +65,6 @@ export const trainingStepMetaOf = (
 
   return partName === null ? step : `${step} · ${partName}`;
 };
-
-export const trainingCountLabelOf = (count: number | null): string =>
-  count === null ? 'Keine Zählzeit' : `Zählzeit ${count} von 8`;
 
 export const trainingOpenHintOf = (open: number): string => `${open} offen`;
 

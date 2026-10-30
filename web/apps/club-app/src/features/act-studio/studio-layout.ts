@@ -16,6 +16,12 @@ const practiceFrameOf = (filmed: HeroKind): ActStudioFrame =>
     ? { hero: 'video', side: 'stage', strip: 'segments' }
     : { hero: 'stage', side: 'note', strip: 'segments' };
 
+export const largeTextFrameOf = (filmed: HeroKind, videoShown: boolean): ActStudioFrame => ({
+  hero: filmed === 'video' && videoShown ? 'video' : 'stage',
+  side: 'note',
+  strip: 'segments',
+});
+
 export const studioFrameOf = (
   editing: boolean,
   tool: StudioTool,

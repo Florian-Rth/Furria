@@ -40,7 +40,7 @@ export const FocusLabPage: FC<FocusLabPageProps> = ({ actId, search }) => {
   };
   const studio = data?.studio;
   const bodyKey = `${page.actId}:${page.evening?.eventId ?? SESSION_KEY}`;
-  const context = { evening: page.evening, startEditing: true };
+  const context = { evening: page.evening, startEditing: true, startHall: null };
   const editable =
     studio === null || studio === undefined ? (
       <KkEmptyState title={page.title} description={FOCUS_CLOSED} />

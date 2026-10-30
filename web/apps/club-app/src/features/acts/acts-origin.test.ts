@@ -66,6 +66,7 @@ describe('playerOriginOf', () => {
       { from: 'start', evening: 9, edit: true, training: 4, view: 'training' },
       { pathname: '/acts/5', search: '?from=start&view=details' },
       away,
+      'Marsch',
     );
 
     expect([origin.params, origin.search]).toEqual([
@@ -77,10 +78,22 @@ describe('playerOriginOf', () => {
   it.each([
     ['opened directly', undefined],
     ['opened from elsewhere', { pathname: '/groups/1', search: '' }],
-    ['opened from the same act playing', { pathname: '/acts/5', search: '?from=start' }],
+    ['opened from the same act playing', { pathname: '/acts/5', search: '?view=play' }],
     ['opened from another act', { pathname: '/acts/6', search: '?view=details' }],
   ])('closes to where the act was reached from when %s', (_, behind) => {
-    expect(playerOriginOf(5, { from: 'start' }, behind, away)).toBe(away);
+    expect(playerOriginOf(5, { from: 'start' }, behind, away, 'Marsch')).toBe(away);
+  });
+
+  it('closes back to the act card it was opened from, keeping how the act was reached', () => {
+    const origin = playerOriginOf(
+      5,
+      { from: 'group', group: 3, view: 'play', edit: true },
+      { pathname: '/acts/5', search: '?from=group&group=3' },
+      away,
+      'Marsch',
+    );
+
+    expect([origin.params, origin.search]).toEqual([{ actId: '5' }, { from: 'group', group: '3' }]);
   });
 });
 

@@ -1,7 +1,7 @@
 import type { StudioStep } from '@/features/acts/schemas';
 
 const RESTART_GRACE_SECONDS = 1.5;
-const PRACTICE_RATES: readonly number[] = [1, 0.85, 0.7, 0.5];
+export const PRACTICE_RATES: readonly number[] = [1, 0.85, 0.7, 0.5];
 const RATE_TOLERANCE = 1e-6;
 
 export type SkipDirection = 'back' | 'forward';

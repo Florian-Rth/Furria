@@ -14,7 +14,5 @@ public sealed record EveningRunningOrderLineDetails
 
     public required int Position { get; init; }
 
-    public required DateTimeOffset StageStartsAt { get; init; }
-
     public required bool IsOwn { get; init; }
 }

@@ -2,7 +2,6 @@ import type { FC } from 'react';
 import { useGroupsQuery } from '../api';
 import { toGroupsErrorMessage } from '../groups-messages';
 import type { GroupsSearch } from '../hooks/use-groups-search';
-import { GroupPeekSheet } from './GroupPeekSheet';
 import { GroupsError } from './GroupsError';
 import { GroupsSkeleton } from './GroupsSkeleton';
 import { GroupsView } from './GroupsView';
@@ -20,12 +19,7 @@ export const GroupsBody: FC<GroupsBodyProps> = ({ search }) => {
   };
 
   if (groups.data !== undefined) {
-    return (
-      <>
-        <GroupsView groups={groups.data.groups} search={search} />
-        <GroupPeekSheet groups={groups.data.groups} />
-      </>
-    );
+    return <GroupsView groups={groups.data.groups} search={search} />;
   }
   if (errorMessage !== null) {
     return <GroupsError message={errorMessage} onRetry={reload} />;

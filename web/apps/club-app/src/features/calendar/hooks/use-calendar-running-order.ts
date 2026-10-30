@@ -1,5 +1,4 @@
 import { useEveningRunningOrderQuery } from '@/features/running-order/api';
-import { toStageTime } from '@/features/running-order/stage-time';
 import {
   RUNNING_ORDER_CONFIRMED,
   RUNNING_ORDER_DRAFT,
@@ -13,7 +12,6 @@ export interface CalendarRunningOrderRow {
   number: string;
   title: string;
   groupName: string | null;
-  time: string;
   own: boolean;
 }
 
@@ -45,7 +43,6 @@ export const useCalendarRunningOrder = (entry: CalendarEntry): CalendarRunningOr
       number: String(line.position + 1),
       title: line.name,
       groupName: line.group?.name ?? null,
-      time: toStageTime(line.position, line.stageStartsAt),
       own: line.own,
     })),
   };
