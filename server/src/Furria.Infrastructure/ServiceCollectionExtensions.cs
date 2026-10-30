@@ -104,6 +104,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ActStudioReader>();
         services.AddScoped<ActEveningReader>();
         services.AddScoped<ActTrainingReader>();
+        services.AddScoped<ActGlanceReader>();
         services.AddScoped<ActEveningService>();
         services.AddScoped<ActStudioGate>();
         services.AddScoped<ActStudioService>();

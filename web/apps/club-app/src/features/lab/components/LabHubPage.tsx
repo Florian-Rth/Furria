@@ -15,6 +15,7 @@ import {
   labGreetingPathOf,
   labHeadlineOf,
 } from '../lab-greetings';
+import { LabDraftSections } from './LabDraftSections';
 import { LabHallSection } from './LabHallSection';
 
 const header = <KkTitleHeader title={LAB_TITLE} lead={LAB_LEAD} />;
@@ -49,6 +50,7 @@ export const LabHubPage: FC = () => {
     >
       <KkPanelStack>
         <LabHallSection />
+        <LabDraftSections />
         {sections}
       </KkPanelStack>
     </KkScreen>

@@ -272,12 +272,38 @@ export const GroupActsResponseSchema = z.object({
 });
 export type GroupActsResponse = z.infer<typeof GroupActsResponseSchema>;
 
+export const MyActEveningSchema = z.object({
+  eventId: z.int(),
+  title: z.string(),
+  startsAt: z.iso.datetime({ offset: true }),
+  position: z.int().nullable(),
+  stageStartsAt: z.iso.datetime({ offset: true }).nullable(),
+});
+export type MyActEvening = z.infer<typeof MyActEveningSchema>;
+
+export const MyActTrainingSchema = z.object({
+  calendarEntryId: z.int(),
+  title: z.string(),
+  startsAt: z.iso.datetime({ offset: true }),
+  viewerAnswer: AttendanceAnswerSchema.nullable(),
+  present: z.int(),
+  absent: z.int(),
+});
+export type MyActTraining = z.infer<typeof MyActTrainingSchema>;
+
 export const MyActSchema = z.object({
   actId: z.int(),
   name: z.string(),
   kind: ActKindSchema.nullable(),
   sessionYear: z.int(),
   group: ActGroupSchema.nullable(),
+  viewerInCast: z.boolean(),
+  viewerLeads: z.boolean(),
+  playable: z.boolean(),
+  cast: z.array(StudioPersonSchema),
+  editors: z.array(StudioPersonSchema),
+  nextEvening: MyActEveningSchema.nullable(),
+  nextTraining: MyActTrainingSchema.nullable(),
 });
 export type MyAct = z.infer<typeof MyActSchema>;
 

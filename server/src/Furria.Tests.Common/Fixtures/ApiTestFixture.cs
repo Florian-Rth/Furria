@@ -537,6 +537,17 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await db.Database.ExecuteSqlAsync($"DELETE FROM account WHERE id = {accountId}", ct);
     }
 
+    public async Task CancelEventDirectlyAsync(int eventId, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"UPDATE event SET cancelled_at = now() WHERE calendar_entry_id = {eventId}",
+            ct
+        );
+    }
+
     public async Task DeleteMediaItemDirectlyAsync(int mediaItemId, CancellationToken ct = default)
     {
         await using var scope = Services.CreateAsyncScope();

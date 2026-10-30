@@ -311,9 +311,10 @@ studio read's evening appearance carries `position` + `stageStartsAt` instead of
 
 ### Phase 9 — ⚖ Lab: the member's act, act-kind templates, *Üben* (∥ C)
 Goal: Florian picks how members see their act and how each act kind looks.
-- [ ] Server reads the lab needs: the member's act summary (next evening + position + time, next training + her answer, cast names, playable), the *Üben* list (playable acts incl. those a trainer leads)
-- [ ] Three divergent lab variants on real data at 390 px and desktop: member act card + *Details* for editors, *Rede* template, empty-act state with whom to ask, group hub with *Auftritte* first
+- [x] Server reads the lab needs: the member's act summary (next evening + position + time, next training + her answer, cast names, playable), the *Üben* list (playable acts incl. those a trainer leads)
+- [x] Three divergent lab variants on real data at 390 px and desktop: member act card + *Details* for editors, *Rede* template, empty-act state with whom to ask, group hub with *Auftritte* first
 - [ ] Pitch + Florian's pick; rulings recorded in the RFC
+- Notes: `GET /acts/mine` now also lists the acts of groups she leads and carries per act `viewerInCast`, `viewerLeads`, `playable` (a song or an adopted final file), `cast`, `editors` (group admins + co-editors = whom to ask), `nextEvening` (coming, not cancelled: position, approximate stage time) and `nextTraining` (her answer, present/absent counts). It reads set-based over all her acts (`ActGlanceReader`), and it is the one read for the act card, the group hub and the Start *Üben* list. Lab: `/lab` → *Entwürfe* lists her acts and groups per variant. A `/lab/act-a/…` = one dense card per act (hero *Nr.* + time, training answer in place, red *Üben*, cast chips; *Details* drawer/side pane; hub = swipeable cards). B `/lab/act-b/…` = the act's coming trainings and evenings in time order, grouped by week, answers inline, sticky *Üben* bar, *Für mich* / *Details* switch; hub = act rows with their next item. C `/lab/act-c/…` = 2×2 tiles *Abend · Training · Üben · Besetzung*, each a door to a sheet; editors' *Details* fold; hub = one wide tile per act. Each has `/…/$actId` and `/…/group/$groupId`; primitives `KkPass*`, `KkAgenda*`, `KkFacet*`.
 
 ### Phase 10 — Promote the member's act and templates (∥ D, after 9)
 Goal: members land on their act card; each kind has its template.
