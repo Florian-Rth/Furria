@@ -18,10 +18,10 @@ import {
 import type { ActStudioSongs } from './use-act-studio-songs';
 import type { StudioScreen } from './use-studio-screen';
 
-const SLOWER_NUDGES: readonly number[] = [-1, -0.1];
-const FASTER_NUDGES: readonly number[] = [0.1, 1];
-const BEAT_NUDGE_SECONDS = 0.02;
-const FALLBACK_TEMPO_BPM = 120;
+export const SLOWER_NUDGES: readonly number[] = [-1, -0.1];
+export const FASTER_NUDGES: readonly number[] = [0.1, 1];
+export const BEAT_NUDGE_SECONDS = 0.02;
+export const FALLBACK_TEMPO_BPM = 120;
 
 export interface SongDeskNudge {
   key: string;

@@ -312,4 +312,75 @@ internal static class StudioSteps
         (await StudioOfAsync(client, actId)).Studio!.Videos.Single(video =>
             video.VideoId == videoId
         );
+
+    internal static async Task<int> SongMediaOfAsync(
+        ApiTestFixture fixture,
+        HttpClient client,
+        int actId,
+        double seconds,
+        CancellationToken ct
+    )
+    {
+        var mediaItemId = await UploadSongAsync(client, actId, ct);
+        await fixture.RenderSongDirectlyAsync(mediaItemId, seconds, ct);
+        await AddSongAsync(client, actId, mediaItemId);
+
+        return mediaItemId;
+    }
+
+    internal static async Task<(
+        HttpResponseMessage Response,
+        int FinalTrackId
+    )> PostFinalTrackAsync(HttpClient client, int actId, int mediaItemId)
+    {
+        var (response, result) = await client.POSTAsync<
+            PostActFinalTrack,
+            PostActFinalTrackRequest,
+            PostActFinalTrackResponse
+        >(new() { ActId = actId, MediaItemId = mediaItemId });
+
+        return (response, response.IsSuccessStatusCode ? result.FinalTrackId : 0);
+    }
+
+    internal static async Task<(int FinalTrackId, int MediaItemId)> FinalTrackOfAsync(
+        ApiTestFixture fixture,
+        HttpClient client,
+        int actId,
+        double seconds,
+        CancellationToken ct
+    )
+    {
+        var mediaItemId = await UploadSongAsync(client, actId, ct, "Endfassung.wav");
+        await fixture.RenderSongDirectlyAsync(mediaItemId, seconds, ct);
+        var (response, finalTrackId) = await PostFinalTrackAsync(client, actId, mediaItemId);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+
+        return (finalTrackId, mediaItemId);
+    }
+
+    internal static Task<HttpResponseMessage> TuneOffsetAsync(
+        HttpClient client,
+        int actId,
+        int finalTrackId,
+        int sourceMediaItemId,
+        double offsetSeconds
+    ) =>
+        client.PUTAsync<PutActFinalTrackAlignment, PutActFinalTrackAlignmentRequest>(
+            new()
+            {
+                ActId = actId,
+                FinalTrackId = finalTrackId,
+                SourceMediaItemId = sourceMediaItemId,
+                OffsetSeconds = offsetSeconds,
+            }
+        );
+
+    internal static Task<HttpResponseMessage> AdoptAsync(
+        HttpClient client,
+        int actId,
+        int finalTrackId
+    ) =>
+        client.POSTAsync<PostActFinalTrackAdoption, PostActFinalTrackAdoptionRequest>(
+            new() { ActId = actId, FinalTrackId = finalTrackId }
+        );
 }

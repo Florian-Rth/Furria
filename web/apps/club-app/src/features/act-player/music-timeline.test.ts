@@ -99,6 +99,10 @@ describe('musicSegmentsOf', () => {
       adopted,
       state: 'ready' as const,
       durationSeconds: 180,
+      fileName: 'Endfassung.mp3',
+      firstBeatSeconds: null,
+      tempoBpm: null,
+      alignments: [],
       urls,
     });
     const segments = musicSegmentsOf(

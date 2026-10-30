@@ -8,6 +8,7 @@ import {
   PRACTICE_NO_VIDEO_NOTE,
   PRACTICE_SIDE_LABEL,
 } from '@/features/act-practice/practice-copy';
+import type { ActStudioFinal } from '../hooks/use-act-studio-final';
 import { useActStudioSideVideo } from '../hooks/use-act-studio-side-video';
 import type { ActStudioSongs } from '../hooks/use-act-studio-songs';
 import type { ActStudioStage } from '../hooks/use-act-studio-stage';
@@ -24,6 +25,7 @@ interface ActStudioSideProps {
   editor: ActStudioStage;
   takes: ActStudioTakes;
   songs: ActStudioSongs;
+  finalList: ActStudioFinal;
   stepTool: ActStudioStepTool;
 }
 
@@ -32,6 +34,7 @@ export const ActStudioSide: FC<ActStudioSideProps> = ({
   editor,
   takes,
   songs,
+  finalList,
   stepTool,
 }) => {
   const { practice, frame, studio, playback, video } = screen;
@@ -67,7 +70,7 @@ export const ActStudioSide: FC<ActStudioSideProps> = ({
         <KkPracticeScreen.Note eyebrow={eyebrow} text={note} />
       </KkPracticeScreen.Layer>
       <KkPracticeScreen.Layer shown={frame.side === 'songs'} tone="paper">
-        <ActStudioSongList screen={screen} songs={songs} />
+        <ActStudioSongList screen={screen} songs={songs} finalList={finalList} />
       </KkPracticeScreen.Layer>
       <KkPracticeScreen.Layer shown={frame.side === 'rail'} tone="paper">
         <ActStudioStepRail screen={screen} tool={stepTool} />

@@ -53,6 +53,10 @@ describe('studioOverviewOf', () => {
       adopted: false,
       state: 'ready' as const,
       durationSeconds: 120,
+      fileName: 'Endfassung.mp3',
+      firstBeatSeconds: null,
+      tempoBpm: null,
+      alignments: [],
       urls,
     };
 

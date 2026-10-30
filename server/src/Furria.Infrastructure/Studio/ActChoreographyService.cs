@@ -110,7 +110,7 @@ public sealed class ActChoreographyService
     {
         var adopted = await _dbContext
             .ActFinalTracks.Where(track => track.ActId == actId && track.AdoptedAt != null)
-            .OrderByDescending(track => track.AdoptedAt)
+            .OrderByDescending(track => track.Version)
             .Select(track => new MusicCut(
                 track.MediaItemId,
                 0,

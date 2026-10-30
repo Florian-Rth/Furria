@@ -2,23 +2,28 @@ import type { Choreography } from '@/features/acts/schemas';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type {
+  AddedFinalTrack,
   AddedPart,
   AddedSong,
   AddedSpot,
   AddedVideo,
+  FinalTrackMatches,
   MarkedSteps,
   SavedChoreography,
   VideoAlignment,
 } from './schemas';
 import {
+  AddedFinalTrackSchema,
   AddedPartSchema,
   AddedSongSchema,
   AddedSpotSchema,
   AddedVideoSchema,
+  FinalTrackMatchesSchema,
   MarkedStepsSchema,
   SavedChoreographySchema,
   VideoAlignmentSchema,
 } from './schemas';
+import type { FinalBeatInput, FinalOffsetInput } from './studio-final';
 import type { SongSettings } from './studio-music';
 import type { PartOpening, PartSettingsInput, StepStartInput, StepTextInput } from './studio-steps';
 import type { VideoNameInput, VideoStartInput } from './studio-videos';
@@ -27,6 +32,7 @@ const songsPathOf = (actId: number): string => `/api/acts/${actId}/songs`;
 const stepsPathOf = (actId: number): string => `/api/acts/${actId}/steps`;
 const partsPathOf = (actId: number): string => `/api/acts/${actId}/parts`;
 const videosPathOf = (actId: number): string => `/api/acts/${actId}/videos`;
+const finalTracksPathOf = (actId: number): string => `/api/acts/${actId}/final-tracks`;
 
 export const requestSongAdd = (
   actId: number,
@@ -268,6 +274,75 @@ export const requestVideoRemoval = (
 ): Promise<void> =>
   apiFetch(`${videosPathOf(actId)}/${videoId}`, {
     method: 'DELETE',
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestFinalTrackAdd = (
+  actId: number,
+  mediaItemId: number,
+  accessToken: string,
+): Promise<AddedFinalTrack> =>
+  apiFetch(finalTracksPathOf(actId), {
+    method: 'POST',
+    body: { mediaItemId },
+    schema: AddedFinalTrackSchema,
+    accessToken,
+  });
+
+export const requestFinalTrackBeat = (
+  actId: number,
+  { finalTrackId, firstBeatSeconds, tempoBpm }: FinalBeatInput,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${finalTracksPathOf(actId)}/${finalTrackId}`, {
+    method: 'PUT',
+    body: { firstBeatSeconds, tempoBpm },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestFinalTrackRemoval = (
+  actId: number,
+  finalTrackId: number,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${finalTracksPathOf(actId)}/${finalTrackId}`, {
+    method: 'DELETE',
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestFinalTrackMatch = (
+  actId: number,
+  finalTrackId: number,
+  accessToken: string,
+): Promise<FinalTrackMatches> =>
+  apiFetch(`${finalTracksPathOf(actId)}/${finalTrackId}/alignment`, {
+    method: 'POST',
+    schema: FinalTrackMatchesSchema,
+    accessToken,
+  });
+
+export const requestFinalTrackOffset = (
+  actId: number,
+  { finalTrackId, sourceMediaItemId, offsetSeconds }: FinalOffsetInput,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${finalTracksPathOf(actId)}/${finalTrackId}/alignments/${sourceMediaItemId}`, {
+    method: 'PUT',
+    body: { offsetSeconds },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestFinalTrackAdoption = (
+  actId: number,
+  finalTrackId: number,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${finalTracksPathOf(actId)}/${finalTrackId}/adoption`, {
+    method: 'POST',
     schema: NoContentSchema,
     accessToken,
   });

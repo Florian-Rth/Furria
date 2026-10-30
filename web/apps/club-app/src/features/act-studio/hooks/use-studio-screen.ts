@@ -22,6 +22,8 @@ import { useActStudioEdits, useKeptPosition } from './use-act-studio-edits';
 import type { ActStudioMode } from './use-act-studio-mode';
 import { useActStudioMode } from './use-act-studio-mode';
 import { useStudioDeveloping } from './use-studio-developing';
+import type { StudioFinal } from './use-studio-final';
+import { useStudioFinal } from './use-studio-final';
 import { useVideoAutoAlign } from './use-video-auto-align';
 
 export interface StudioScreen {
@@ -31,6 +33,7 @@ export interface StudioScreen {
   cast: readonly CastPerson[];
   manual: StepMutations;
   videos: VideoMutations;
+  final: StudioFinal;
   mode: ActStudioMode;
   frame: ActStudioFrame;
   edits: ActStudioEdits;
@@ -56,7 +59,7 @@ export const useStudioScreen = (
   useVideoAutoAlign(source, canEdit, videos);
   useStudioDeveloping(actId, source);
   const edits = useActStudioEdits();
-  const studio = workedStudioOf(source, edits.value);
+  const { studio, final } = useStudioFinal(actId, workedStudioOf(source, edits.value), mode, edits);
   const base = useStudioPlayback(studio, viewerId);
   const playback: StudioPlayback = {
     ...base,
@@ -77,6 +80,7 @@ export const useStudioScreen = (
     cast,
     manual,
     videos,
+    final,
     frame: studioFrameOf(mode.editing, mode.tool, video.hero),
     edits,
     studio,

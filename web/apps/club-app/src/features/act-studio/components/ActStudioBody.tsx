@@ -4,6 +4,7 @@ import type { FC } from 'react';
 import { PracticeSteps } from '@/features/act-practice/components/PracticeSteps';
 import type { Studio } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
+import { useActStudioFinal } from '../hooks/use-act-studio-final';
 import { useActStudioSongs } from '../hooks/use-act-studio-songs';
 import { useActStudioStage } from '../hooks/use-act-studio-stage';
 import { useActStudioStepTool } from '../hooks/use-act-studio-step-tool';
@@ -11,6 +12,7 @@ import { useActStudioTakes } from '../hooks/use-act-studio-takes';
 import { useStudioScreen } from '../hooks/use-studio-screen';
 import { STUDIO_LABEL } from '../studio-copy';
 import { ActStudioControls } from './ActStudioControls';
+import { ActStudioFinalDesk } from './ActStudioFinalDesk';
 import { ActStudioHead } from './ActStudioHead';
 import { ActStudioHero } from './ActStudioHero';
 import { ActStudioSide } from './ActStudioSide';
@@ -39,6 +41,7 @@ export const ActStudioBody: FC<ActStudioBodyProps> = ({
   const editor = useActStudioStage(screen);
   const takes = useActStudioTakes(screen);
   const songs = useActStudioSongs(screen);
+  const finalList = useActStudioFinal(screen);
   const stepTool = useActStudioStepTool(screen);
 
   return (
@@ -53,6 +56,7 @@ export const ActStudioBody: FC<ActStudioBodyProps> = ({
           editor={editor}
           takes={takes}
           songs={songs}
+          finalList={finalList}
           stepTool={stepTool}
         />
       </KkPracticeView.Side>
@@ -65,6 +69,7 @@ export const ActStudioBody: FC<ActStudioBodyProps> = ({
       <PracticeSteps steps={screen.steps} />
       <ActStudioSpotSheet screen={screen} editor={editor} />
       <ActStudioSongDesk screen={screen} songs={songs} />
+      <ActStudioFinalDesk screen={screen} finalList={finalList} />
       <ActStudioStepDesk screen={screen} tool={stepTool} />
       <ActStudioVideoDesk screen={screen} takes={takes} />
     </KkStudioView>

@@ -51,7 +51,7 @@ public sealed class ActTimelineReader
     {
         var adopted = await _dbContext
             .ActFinalTracks.Where(track => track.ActId == actId && track.AdoptedAt != null)
-            .OrderByDescending(track => track.AdoptedAt)
+            .OrderByDescending(track => track.Version)
             .Select(track => new
             {
                 track.MediaItemId,

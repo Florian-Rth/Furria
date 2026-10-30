@@ -439,9 +439,41 @@ Done 2026-10-30. Decisions taken in the phase:
 
 ### Phase 10 — Final file
 Goal: the members' player plays exactly what tech will play; built into the Musik tool.
-- [ ] Upload the final file (versioned) from the *Endfassung* slot
-- [ ] Automatic alignment suggestion per working song (profile comparison) + manual fine-tuning on the waveforms
-- [ ] *Endfassung übernehmen*: rewrite all anchors in one transaction, *Musik fehlt* markers; a newer final file aligns to the previous one
+- [x] Upload the final file (versioned) from the *Endfassung* slot
+- [x] Automatic alignment suggestion per working song (profile comparison) + manual fine-tuning on the waveforms
+- [x] *Endfassung übernehmen*: rewrite all anchors in one transaction, *Musik fehlt* markers; a newer final file aligns to the previous one
+
+Done 2026-10-30. Decisions taken in the phase:
+- **Endpoints** (all behind `ActStudioGate`): `POST /api/acts/{id}/final-tracks` `{mediaItemId}` →
+  `{finalTrackId}` (an audio item of this act that is neither a song nor a final file; the version
+  counts on; 409 while a newer, not adopted final file still waits — only one at a time),
+  `PUT …/final-tracks/{finalTrackId}` `{firstBeatSeconds, tempoBpm}` (the beat grid correction of a
+  final file, as for songs), `DELETE …/final-tracks/{finalTrackId}` (the waiting file and its media
+  item; an adopted one 409), `POST …/{finalTrackId}/alignment` → `{matches}` (compares every source
+  of the music playing — the working songs, or the adopted final file — with the new file, keeps the
+  offsets found with confidence ≥ 0.35; 409 while anything is still analysed, 422 when nothing is
+  found), `PUT …/{finalTrackId}/alignments/{sourceMediaItemId}` `{offsetSeconds}` (fine-tuning; a
+  source that does not play 404), `POST …/{finalTrackId}/adoption` (one transaction: steps, videos and
+  every choreography of the act, evening copies included, are rewritten; choreography versions rise).
+  Matching, tuning and adopting refuse an adopted or older file (409). The adopted final file is the
+  adopted one with the highest version (no longer the latest adoption time).
+- **Offset** = where source second 0 lies in the final file (`final = source + offset`), one per
+  source. An anchor moves only when its source is matched and the moved moment lies inside the final
+  file; otherwise it keeps its anchor and reads as *Musik fehlt*. A video keeps its lead-in.
+- The studio read returns each final file's name, beat grid (corrected or analysed) and offsets; the
+  player counts on the adopted final file's grid.
+- **Musik tool**: the side box's *Endfassung* section uploads the file (tus), shows the waiting one
+  with how many songs were found, and offers *Endfassung entfernen* (second tap). Editors' clients
+  ask for the matching once per ready, unmatched file and state of the music (silently). Tapping the
+  waiting file starts **Probehören**: the whole studio (music, steps, counts, video, formation)
+  plays exactly as it would after adopting, computed on the client from the offsets; the song list
+  then shows where each song lies in the final file and the waveform shows the final file with the
+  songs' regions — the selected one's start drags to shift it, saved on release. Tapping the
+  current song (or one not found) opens the desk: ±0.02/0.1 s, *Beginnt hier*, *Automatisch
+  abgleichen*. *Endfassung übernehmen* appears while listening, and its second tap names what
+  would lose its music. Once
+  adopted, the file's row opens a desk for its tempo and first "1". Probehören ends when leaving the
+  Musik tool or edit mode; the playhead keeps its musical place in both directions.
 
 ### Phase 11 — Stage editor: spots and formations
 Goal: formations per step on our stage, in the Aufstellung tool.
