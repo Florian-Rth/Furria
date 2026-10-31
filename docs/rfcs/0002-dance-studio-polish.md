@@ -582,7 +582,8 @@ Goal: every screen of the studio and planner passes the bar.
 ### Phase 20 — Consolidation, test data, wrap-up (∥ G)
 Goal: one home for the music rules, a clean database, docs in sync.
 - [ ] #52 gap: music-timeline and music-cut rules in one Core module used by writes and reads; tests moved onto it
-- [ ] Remove the UI-test data: acts 14–34 "PT …", event 66 "PT Probeabend", the running orders on evenings 19/20, *Wir tanzen hier* and cast changes on 16/17/20, act 5's partial build and waiting final file, act 3 part *Marsch* id 1→4
+- [ ] Remove the UI-test data: acts 14–34 "PT …", event 66 "PT Probeabend", the running orders on evenings 19/20, *Wir tanzen hier* and cast changes on 16/17/20, act 5's partial build and waiting final file, act 3 part *Marsch* id 1→4, the test role *Ablauf* (role 10) held by Frank, Sabine's *Kann nicht* for act 3's 03.11. training
+- [ ] Set-up completeness (ruling 2026-10-31): an act counts as set up without a trainer video and without an adopted final file — those two checklist rows stay, but are optional and don't keep the progress chip open (`setupOf`)
 - [ ] Choreography history retention: thin out old versions (keep every version of the last 14 days, then one per day) and page the version list
 - [ ] Media rendition read: check the signature before the lost-rendition repair, so unsigned requests can't queue regeneration jobs
 - [ ] CONTEXT.md, docs and `plan/club-app/group-year.md` status updated
