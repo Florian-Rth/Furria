@@ -165,7 +165,6 @@ public sealed class ActVideoService
         if (mediaItemId is null)
             return Result.NotFound(UnknownVideoMessage);
 
-        await VideoRowsOf(command.ActId, command.VideoId).ExecuteDeleteAsync(ct);
         await _dbContext.MediaItems.Where(item => item.Id == mediaItemId).ExecuteDeleteAsync(ct);
         await transaction.CommitAsync(ct);
 

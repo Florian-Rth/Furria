@@ -26,7 +26,7 @@ public sealed class ActPartConfiguration : IEntityTypeConfiguration<ActPart>
             .WithMany()
             .HasForeignKey(part => part.FirstStepId)
             .HasConstraintName("fk_act_part_act_step_first_step_id")
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.Cascade);
         builder
             .HasIndex(part => part.FirstStepId)
             .HasDatabaseName("ix_act_part_first_step_id")

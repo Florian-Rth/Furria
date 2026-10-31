@@ -39,7 +39,7 @@ public sealed class ActStepConfiguration : IEntityTypeConfiguration<ActStep>
             .WithMany()
             .HasForeignKey(step => step.StartSourceMediaItemId)
             .HasConstraintName("fk_act_step_media_item_start_source_media_item_id")
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.Cascade);
         builder
             .HasIndex(step => step.StartSourceMediaItemId)
             .HasDatabaseName("ix_act_step_start_source_media_item_id");

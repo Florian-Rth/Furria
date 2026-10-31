@@ -33,7 +33,7 @@ public sealed class ActVideoConfiguration : IEntityTypeConfiguration<ActVideo>
             .WithMany()
             .HasForeignKey(video => video.MediaItemId)
             .HasConstraintName("fk_act_video_media_item_media_item_id")
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.Cascade);
         builder
             .HasIndex(video => video.MediaItemId)
             .HasDatabaseName("ix_act_video_media_item_id")
@@ -44,7 +44,7 @@ public sealed class ActVideoConfiguration : IEntityTypeConfiguration<ActVideo>
             .WithMany()
             .HasForeignKey(video => video.StartSourceMediaItemId)
             .HasConstraintName("fk_act_video_media_item_start_source_media_item_id")
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.SetNull);
         builder
             .HasIndex(video => video.StartSourceMediaItemId)
             .HasDatabaseName("ix_act_video_start_source_media_item_id");

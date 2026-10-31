@@ -37,7 +37,7 @@ public sealed class ActFinalTrackConfiguration : IEntityTypeConfiguration<ActFin
             .WithMany()
             .HasForeignKey(track => track.MediaItemId)
             .HasConstraintName("fk_act_final_track_media_item_media_item_id")
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.Cascade);
         builder
             .HasIndex(track => track.MediaItemId)
             .HasDatabaseName("ix_act_final_track_media_item_id")

@@ -38,7 +38,7 @@ public sealed class ActSongConfiguration : IEntityTypeConfiguration<ActSong>
             .WithMany()
             .HasForeignKey(song => song.MediaItemId)
             .HasConstraintName("fk_act_song_media_item_media_item_id")
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.Cascade);
         builder
             .HasIndex(song => song.MediaItemId)
             .HasDatabaseName("ix_act_song_media_item_id")

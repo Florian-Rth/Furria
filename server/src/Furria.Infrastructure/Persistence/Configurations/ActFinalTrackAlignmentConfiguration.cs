@@ -27,7 +27,7 @@ public sealed class ActFinalTrackAlignmentConfiguration
             .WithMany()
             .HasForeignKey(alignment => alignment.SourceMediaItemId)
             .HasConstraintName("fk_act_final_track_alignment_media_item_source_media_item_id")
-            .OnDelete(DeleteBehavior.NoAction);
+            .OnDelete(DeleteBehavior.Cascade);
         builder
             .HasIndex(alignment => alignment.SourceMediaItemId)
             .HasDatabaseName("ix_act_final_track_alignment_source_media_item_id");

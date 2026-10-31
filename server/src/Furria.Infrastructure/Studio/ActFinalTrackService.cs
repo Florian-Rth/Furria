@@ -137,7 +137,6 @@ public sealed class ActFinalTrackService
         if (track.IsAdopted)
             return Result.Conflict(AdoptedMessage);
 
-        await TrackRowsOf(command.ActId, command.FinalTrackId).ExecuteDeleteAsync(ct);
         await _dbContext
             .MediaItems.Where(item => item.Id == track.MediaItemId)
             .ExecuteDeleteAsync(ct);

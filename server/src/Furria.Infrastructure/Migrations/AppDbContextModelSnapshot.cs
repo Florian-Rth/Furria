@@ -4977,7 +4977,7 @@ namespace Furria.Infrastructure.Migrations
                     b.HasOne("Furria.Core.Media.MediaItem", "MediaItem")
                         .WithMany()
                         .HasForeignKey("MediaItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_act_final_track_media_item_media_item_id");
 
@@ -4998,7 +4998,7 @@ namespace Furria.Infrastructure.Migrations
                     b.HasOne("Furria.Core.Media.MediaItem", "SourceMediaItem")
                         .WithMany()
                         .HasForeignKey("SourceMediaItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_act_final_track_alignment_media_item_source_media_item_id");
 
@@ -5019,7 +5019,7 @@ namespace Furria.Infrastructure.Migrations
                     b.HasOne("Furria.Core.Studio.ActStep", "FirstStep")
                         .WithMany()
                         .HasForeignKey("FirstStepId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_act_part_act_step_first_step_id");
 
@@ -5048,7 +5048,7 @@ namespace Furria.Infrastructure.Migrations
                     b.HasOne("Furria.Core.Media.MediaItem", "MediaItem")
                         .WithMany()
                         .HasForeignKey("MediaItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_act_song_media_item_media_item_id");
 
@@ -5069,7 +5069,7 @@ namespace Furria.Infrastructure.Migrations
                     b.HasOne("Furria.Core.Media.MediaItem", "StartSource")
                         .WithMany()
                         .HasForeignKey("StartSourceMediaItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_act_step_media_item_start_source_media_item_id");
 
@@ -5090,14 +5090,14 @@ namespace Furria.Infrastructure.Migrations
                     b.HasOne("Furria.Core.Media.MediaItem", "MediaItem")
                         .WithMany()
                         .HasForeignKey("MediaItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
                         .HasConstraintName("fk_act_video_media_item_media_item_id");
 
                     b.HasOne("Furria.Core.Media.MediaItem", "StartSource")
                         .WithMany()
                         .HasForeignKey("StartSourceMediaItemId")
-                        .OnDelete(DeleteBehavior.NoAction)
+                        .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_act_video_media_item_start_source_media_item_id");
 
                     b.Navigation("Act");
