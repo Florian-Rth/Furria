@@ -38,7 +38,8 @@ export const CalendarRunningOrderSection: FC<CalendarRunningOrderSectionProps> =
       ));
 
       return (
-        <KkPanelSection title={RUNNING_ORDER_TITLE} description={runningOrder.note}>
+        <KkPanelSection title={RUNNING_ORDER_TITLE}>
+          <KkNote>{runningOrder.note}</KkNote>
           <KkNumberedList label={RUNNING_ORDER_LIST_LABEL}>{lines}</KkNumberedList>
         </KkPanelSection>
       );

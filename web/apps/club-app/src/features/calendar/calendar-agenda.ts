@@ -5,7 +5,7 @@ import { sortRunningFirst, toLocalIsoDay, toTimeLabel } from '@/lib/calendar-day
 import { fromIsoDay, toIsoDay } from '@/lib/day';
 import type { CalendarDayMarkKey } from './calendar-board';
 import { dayMarkOf, toEntryDays } from './calendar-board';
-import type { CalendarEntry } from './schemas';
+import type { CalendarEntry, UsualTraining } from './schemas';
 
 export const DEFAULT_REACH_DAYS = 120;
 export const MAX_SPAN_DAYS = 399;
@@ -174,7 +174,13 @@ export const dayMarkAt = (isoDay: string): CalendarDayMark => {
 };
 
 export type CalendarDayItem =
-  | ({ kind: 'day'; key: string; isoDay: string; lines: CalendarLine[] } & CalendarDayMark)
+  | ({
+      kind: 'day';
+      key: string;
+      isoDay: string;
+      lines: CalendarLine[];
+      usuals: UsualTraining[];
+    } & CalendarDayMark)
   | { kind: 'gap'; key: string; fromDay: string; toDay: string };
 
 export type CalendarSection = {
@@ -209,12 +215,34 @@ export const linesByDay = (
   return byDay;
 };
 
+export const usualsByDay = (
+  usuals: readonly UsualTraining[],
+  window: CalendarWindow,
+): Map<string, UsualTraining[]> => {
+  const byDay = new Map<string, UsualTraining[]>();
+  const ordered = [...usuals].sort(
+    (left, right) => Date.parse(left.startsAt) - Date.parse(right.startsAt),
+  );
+
+  for (const usual of ordered) {
+    const isoDay = toLocalIsoDay(usual.startsAt);
+
+    if (isoDay >= window.from && isoDay <= window.to) {
+      byDay.set(isoDay, [...(byDay.get(isoDay) ?? []), usual]);
+    }
+  }
+
+  return byDay;
+};
+
 export const toCalendarSections = (
   entries: readonly CalendarEntry[],
+  usuals: readonly UsualTraining[],
   window: CalendarWindow,
   todayDay: string,
 ): CalendarSection[] => {
   const byDay = linesByDay(entries, window);
+  const usualDays = usualsByDay(usuals, window);
 
   const sections: CalendarSection[] = [];
   const run: { items: CalendarDayItem[]; gap: { from: string; to: string } | null } = {
@@ -247,11 +275,21 @@ export const toCalendarSections = (
     }
 
     const lines = byDay.get(isoDay) ?? [];
+    const dayUsuals = usualDays.get(isoDay) ?? [];
     const mark = dayMarkAt(isoDay);
+    const shown =
+      lines.length > 0 || dayUsuals.length > 0 || isoDay === todayDay || mark.landmark !== null;
 
-    if (lines.length > 0 || isoDay === todayDay || mark.landmark !== null) {
+    if (shown) {
       flushGap();
-      run.items.push({ kind: 'day', key: `day-${isoDay}`, isoDay, lines, ...mark });
+      run.items.push({
+        kind: 'day',
+        key: `day-${isoDay}`,
+        isoDay,
+        lines,
+        usuals: dayUsuals,
+        ...mark,
+      });
     } else {
       run.gap = { from: run.gap?.from ?? isoDay, to: isoDay };
     }
@@ -374,6 +412,7 @@ export interface CalendarDayCell {
   isPast: boolean;
   inMonth: boolean;
   marks: CalendarMark[];
+  usualMarks: CalendarMark[];
   count: number;
   owed: boolean;
   landmark: CalendarLandmark | null;
@@ -383,13 +422,18 @@ export interface CalendarDayCell {
 export const toDayCells = (
   days: readonly string[],
   byDay: ReadonlyMap<string, readonly CalendarLine[]>,
+  usualDays: ReadonlyMap<string, readonly UsualTraining[]>,
   owedIds: ReadonlySet<number>,
   todayDay: string,
   monthStart: string | null,
 ): CalendarDayCell[] =>
   days.map((isoDay) => {
     const lines = byDay.get(isoDay) ?? [];
+    const usuals = usualDays.get(isoDay) ?? [];
     const mark = dayMarkAt(isoDay);
+    const marks = lines
+      .slice(0, MAX_MARKS)
+      .map((line) => markOf(line.entry.ownerGroupId, line.entry.ownerGroupTone));
 
     return {
       isoDay,
@@ -398,9 +442,10 @@ export const toDayCells = (
       isToday: isoDay === todayDay,
       isPast: isoDay < todayDay,
       inMonth: monthStart === null || isoDay.slice(0, 7) === monthStart.slice(0, 7),
-      marks: lines
-        .slice(0, MAX_MARKS)
-        .map((line) => markOf(line.entry.ownerGroupId, line.entry.ownerGroupTone)),
+      marks,
+      usualMarks: usuals
+        .slice(0, MAX_MARKS - marks.length)
+        .map((usual) => markOf(usual.groupId, usual.groupTone)),
       count: lines.length,
       owed: lines.some((line) => owedIds.has(line.entry.calendarEntryId)),
       ...mark,

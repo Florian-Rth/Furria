@@ -44,9 +44,6 @@ export const catalogueRowStateOf = (draft: RunningOrderDraft, actId: number): Ca
   return index < 0 ? { kind: 'new' } : { kind: 'placed', place: index + 1 };
 };
 
-export const pickedInSectionOf = (section: CatalogueSection, draft: RunningOrderDraft): number =>
-  section.acts.filter((act) => isInEvening(draft, act.actId)).length;
-
 export const archivedLeftOutOf = (
   acts: readonly CatalogueAct[],
   draft: RunningOrderDraft,

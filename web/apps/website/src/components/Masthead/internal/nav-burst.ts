@@ -1,4 +1,4 @@
-import type { OriginRect } from './reveal-geometry';
+import type { OriginRect } from '@furria/ui/reveal-geometry';
 
 export interface NavBurstOrigin {
   x: number;

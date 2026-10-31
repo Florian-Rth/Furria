@@ -8,6 +8,8 @@ public sealed class ActScope
 
     public IReadOnlyList<int>? GroupIds { get; }
 
+    public bool SetsWishes => GroupIds is null;
+
     private ActScope(IReadOnlyList<int>? groupIds)
     {
         GroupIds = groupIds;

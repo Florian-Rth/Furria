@@ -25,8 +25,7 @@ public sealed class SessionPersistenceTests : IClassFixture<ApiTestFixture>
                         "jubilaeum",
                         2021,
                         number: 50,
-                        motto: "Grossfurra feiert weiter",
-                        logoSvg: "<svg viewBox=\"0 0 10 10\"></svg>"
+                        motto: "Grossfurra feiert weiter"
                     )
                 ),
             ct
@@ -39,8 +38,6 @@ public sealed class SessionPersistenceTests : IClassFixture<ApiTestFixture>
             .ToHaveNumber(50)
             .Session(ctx.Club.Sessions.IdOf("jubilaeum"))
             .ToHaveMotto("Grossfurra feiert weiter")
-            .Session(ctx.Club.Sessions.IdOf("jubilaeum"))
-            .ToHaveLogo("<svg viewBox=\"0 0 10 10\"></svg>")
             .AssertAsync(ct);
     }
 
@@ -141,7 +138,7 @@ public sealed class SessionPersistenceTests : IClassFixture<ApiTestFixture>
             .Session(ctx.Club.Sessions.IdOf("year-only"))
             .ToHaveMotto(null)
             .Session(ctx.Club.Sessions.IdOf("year-only"))
-            .ToHaveLogo(null)
+            .ToShowLogo(null)
             .AssertAsync(ct);
     }
 }

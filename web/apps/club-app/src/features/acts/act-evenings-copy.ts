@@ -6,7 +6,6 @@ import type { EveningEntryState } from './act-evenings';
 import type { StudioEvening } from './schemas';
 
 export const EVENINGS_TITLE = 'Abende';
-export const EVENINGS_NOTE = 'Wo die Gruppe den Auftritt zeigt. Musik und Schritte bleiben gleich.';
 export const EVENINGS_EMPTY = 'In dieser Session steht kein Abend mehr an.';
 export const DANCE_HERE = 'Wir tanzen hier';
 export const EVENING_CHANGED_HINT = 'angepasst';

@@ -195,6 +195,78 @@ public sealed class PutActTests : IClassFixture<ApiTestFixture>
         await ctx.Expected.Act(actId).ToHaveName("Großer Gardetanz").AssertAsync(ct);
     }
 
+    [Fact]
+    public async Task Should_StoreTheEdit_When_AGroupAdminKeepsThePlannersWishes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(PlannerWithGardeAdmin(_fixture.Today), ct);
+        var planner = await ctx.Identity.ClientForAsync(Planner, ct);
+        var gardeId = ctx.Groups.Groups.IdOf(Garde);
+        var actId = await CreateActAsync(
+            planner,
+            "Gardetanz",
+            gardeId,
+            wishes: [Wish(RunningOrderRuleKind.First, RuleStrength.Must)]
+        );
+        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+
+        var response = await PutAsync(
+            admin,
+            actId,
+            "Großer Gardetanz",
+            [],
+            [Wish(RunningOrderRuleKind.First, RuleStrength.Must)],
+            gardeId
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.Act(actId)
+            .ToHaveName("Großer Gardetanz")
+            .Act(actId)
+            .ToWishExactly((RunningOrderRuleKind.First, RuleStrength.Must))
+            .AssertAsync(ct);
+    }
+
+    [Theory]
+    [InlineData("added")]
+    [InlineData("strengthened")]
+    [InlineData("removed")]
+    public async Task Should_ReturnForbidden_When_AGroupAdminChangesTheWishes(string change)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(PlannerWithGardeAdmin(_fixture.Today), ct);
+        var planner = await ctx.Identity.ClientForAsync(Planner, ct);
+        var gardeId = ctx.Groups.Groups.IdOf(Garde);
+        var actId = await CreateActAsync(
+            planner,
+            "Gardetanz",
+            gardeId,
+            wishes: [Wish(RunningOrderRuleKind.First, RuleStrength.Prefer)]
+        );
+        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+        IReadOnlyList<ActWishDataDto> wishes = change switch
+        {
+            "added" =>
+            [
+                Wish(RunningOrderRuleKind.First, RuleStrength.Prefer),
+                Wish(RunningOrderRuleKind.Early, RuleStrength.Prefer),
+            ],
+            "strengthened" => [Wish(RunningOrderRuleKind.First, RuleStrength.Must)],
+            _ => [],
+        };
+
+        var response = await PutAsync(admin, actId, "Großer Gardetanz", [], wishes, gardeId);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await ctx
+            .Expected.Act(actId)
+            .ToHaveName("Gardetanz")
+            .Act(actId)
+            .ToWishExactly((RunningOrderRuleKind.First, RuleStrength.Prefer))
+            .AssertAsync(ct);
+    }
+
     [Theory]
     [InlineData(Elferrat)]
     [InlineData(null)]

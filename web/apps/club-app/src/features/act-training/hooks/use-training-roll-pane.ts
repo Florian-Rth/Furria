@@ -19,9 +19,7 @@ import {
   trailOf,
 } from '../training-attendance';
 import {
-  ROLL_MARK_NOTE,
   ROLL_MAYBE_BADGE,
-  ROLL_READ_NOTE,
   rollTileLabelOf,
   rollTrailLineOf,
   trainingGapsTextOf,
@@ -41,7 +39,6 @@ export interface TrainingRollPaneState {
   state: KkStepState;
   stateLabel: string;
   openLine: string | null;
-  note: string;
   tiles: KkCastTile[];
   readOnly: boolean;
   toggle: (personId: number) => void;
@@ -112,7 +109,6 @@ export const useTrainingRollPane = (
     state: tally.expected > 0 && tally.present === tally.expected ? 'done' : 'open',
     stateLabel: trainingTallyOf(tally),
     openLine: trainingGapsTextOf(gaps),
-    note: canMark ? ROLL_MARK_NOTE : ROLL_READ_NOTE,
     tiles: attendance.map(tileOf),
     readOnly: !canMark,
     toggle,

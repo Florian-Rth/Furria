@@ -4,8 +4,8 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { DraftLine } from '@/features/running-order/types';
 import { usePlanner } from '../planner-context';
-import { toAddActWishLabel, toWishGroupMeta } from '../planner-copy';
-import { lineWishesOf, wishTallyOf } from '../planner-wishes';
+import { toAddActWishLabel } from '../planner-copy';
+import { lineWishesOf } from '../planner-wishes';
 import { PlannerWishForm } from './PlannerWishForm';
 import { PlannerWishLine } from './PlannerWishLine';
 
@@ -36,7 +36,6 @@ export const PlannerWishGroup: FC<PlannerWishGroupProps> = ({
       </Stack>
     );
   const label = toAddActWishLabel(line.act.name);
-  const meta = toWishGroupMeta(wishTallyOf(wishes));
   const numberText = number === null ? null : String(number);
   const toggle = (
     <KkIconButton label={label} icon="add" size="small" pressed={adding} onClick={onToggleAdding} />
@@ -44,12 +43,7 @@ export const PlannerWishGroup: FC<PlannerWishGroupProps> = ({
 
   return (
     <Stack component="li" sx={{ minWidth: 0 }}>
-      <KkNumberedGroupHead
-        number={numberText}
-        title={line.act.name}
-        meta={meta}
-        trailing={toggle}
-      />
+      <KkNumberedGroupHead number={numberText} title={line.act.name} trailing={toggle} />
       {body}
     </Stack>
   );

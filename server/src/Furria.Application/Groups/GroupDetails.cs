@@ -26,7 +26,7 @@ public sealed record GroupDetails
 
     public required ClubIcon? Icon { get; init; }
 
-    public required IReadOnlyList<GroupTrainingSlotDetails> TrainingSlots { get; init; }
+    public required IReadOnlyList<UsualTrainingTimeDetails> UsualTrainingTimes { get; init; }
 
     public required IReadOnlyList<HubAdministrator> Admins { get; init; }
 

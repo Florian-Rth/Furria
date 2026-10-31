@@ -9,7 +9,6 @@ export const WEBSITE_TITLE = 'Website';
 export const WEBSITE_PATH = '/gallery/website';
 export const ORPHANS_TITLE = 'Nicht mehr auf der Website';
 export const ORPHANS_META = 'Die Website fragt diese Plätze nicht mehr ab';
-export const ALL_PAGES_PATH = 'alle Seiten';
 export const DESK_EMPTY = 'Wähl ein Bild in der Liste, um es zu bearbeiten.';
 export const LOADING_LABEL = 'Bildplätze werden geladen';
 export const LOAD_ERROR_TITLE = 'BILDPLÄTZE NICHT GELADEN';
@@ -152,9 +151,6 @@ export const slotFactsOf = (aspects: readonly KkAspect[], filled: number): strin
   const formats = [...new Set(aspects.map(aspectWordOf))].join(' · ');
   return aspects.length === 1 ? formats : `${filled} von ${aspects.length} belegt · ${formats}`;
 };
-
-export const pageMetaOf = (path: string | null, filled: number, total: number): string =>
-  `${path ?? ALL_PAGES_PATH} · ${filled}/${total}`;
 
 export const summaryLineOf = ({ filled, total, altMissing, mismatched }: BoardSummary): string =>
   [

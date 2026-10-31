@@ -8,6 +8,7 @@ import { toIsoDay } from '@/lib/day';
 import { queryKeys } from '@/lib/query/reads';
 import {
   toHolderAddedMessage,
+  toHoldingCorrectedMessage,
   toHoldingEndedMessage,
   toPermissionSavedMessage,
   toRoleArchivedMessage,
@@ -19,6 +20,7 @@ import {
 import {
   requestAddRoleHolding,
   requestArchiveRole,
+  requestCorrectRoleHolding,
   requestCreateRole,
   requestEndRoleHolding,
   requestRestoreRole,
@@ -56,6 +58,13 @@ export interface EndRoleHoldingInput {
   roleHoldingId: number;
   personName: string;
   endedOn: string;
+}
+
+export interface CorrectRoleHoldingInput {
+  roleHoldingId: number;
+  personName: string;
+  sinceOn: string;
+  untilOn: string | null;
 }
 
 const applyRolePermissions = (
@@ -192,4 +201,18 @@ export const useEndRoleHoldingMutation = (
       success: (input) =>
         toHoldingEndedMessage(input.personName, input.endedOn, toIsoDay(new Date())),
     },
+  });
+
+export const useCorrectRoleHoldingMutation = (
+  roleId: number,
+): UseMutationResult<void, Error, CorrectRoleHoldingInput> =>
+  useApiMutation({
+    request: (input: CorrectRoleHoldingInput, accessToken) =>
+      requestCorrectRoleHolding(
+        roleId,
+        { roleHoldingId: input.roleHoldingId, sinceOn: input.sinceOn, untilOn: input.untilOn },
+        accessToken,
+      ),
+    changes: ['roleHolding'],
+    notice: { success: (input) => toHoldingCorrectedMessage(input.personName) },
   });

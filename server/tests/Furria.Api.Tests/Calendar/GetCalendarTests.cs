@@ -25,6 +25,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
     private const string FormerGuardReunion = "Treffen der Altgarde";
     private const string Gala = "1. Prunksitzung";
     private const string ClubTrip = "Vereinsfahrt";
+    private const int NinetyMinutes = 90;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly ArchivedLastSummer = new(2026, 6, 30);
@@ -80,6 +81,13 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
     );
 
     private static readonly DateOnly TheAuftrittDay = new(2027, 1, 19);
+    private static readonly TimeOnly HalfPastSeven = new(19, 30);
+    private static readonly TimeOnly NineInTheEvening = new(21, 0);
+    private static readonly GetCalendarRequest UsualTimesWindow = new()
+    {
+        From = new DateOnly(2027, 1, 11),
+        To = new DateOnly(2027, 1, 31),
+    };
     private static readonly DateOnly TheMeetingDay = new(2027, 1, 20);
 
     private readonly ApiTestFixture _fixture;
@@ -899,6 +907,253 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                 );
                 Assert.Equal((false, true), (training.AsksForResponse, training.AsksTheCast));
             }
+        );
+
+    [Fact]
+    public async Task Should_CarryAGroupsUsualTrainingTimeOnEachComingWeekday_When_TheGroupStatesOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildUsualTimesAsync(club => club, ct);
+
+                var result = await ReadAsync(ctx, "bea", UsualTimesWindow, ct);
+
+                Assert.Equal(
+                    [
+                        (
+                            ClubClock.At(new DateOnly(2027, 1, 19), HalfPastSeven),
+                            ClubClock.At(new DateOnly(2027, 1, 19), NineInTheEvening),
+                            (string?)"Bühnenhaus"
+                        ),
+                        (
+                            ClubClock.At(new DateOnly(2027, 1, 26), HalfPastSeven),
+                            ClubClock.At(new DateOnly(2027, 1, 26), NineInTheEvening),
+                            (string?)"Bühnenhaus"
+                        ),
+                    ],
+                    UsualOf(result, "Tanzgarde")
+                        .Select(usual => (usual.StartsAt, usual.EndsAt, usual.VenueName))
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_StartTheUsualTrainingTimesToday_When_TheWindowReachesIntoThePast()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildUsualTimesAsync(club => club, ct);
+
+                var result = await ReadAsync(ctx, "bea", UsualTimesWindow, ct);
+
+                Assert.DoesNotContain(
+                    result.UsualTrainings,
+                    usual => ClubClock.DayOf(usual.StartsAt) < ClubClock.DayOf(Now)
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutTheUsualTrainingTime_When_TheGroupPlannedATrainingThatDay()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildUsualTimesAsync(
+                    club =>
+                        club.AddCalendarEntry(
+                            "garde-training",
+                            DanceGuardTraining,
+                            ClubClock.At(new DateOnly(2027, 1, 19), new TimeOnly(18, 0)),
+                            kind: CalendarEntryKind.Training,
+                            ownerGroupAlias: "tanzgarde"
+                        ),
+                    ct
+                );
+
+                var result = await ReadAsync(ctx, "alice", UsualTimesWindow, ct);
+
+                Assert.Equal(
+                    [new DateOnly(2027, 1, 26)],
+                    UsualOf(result, "Tanzgarde").Select(usual => ClubClock.DayOf(usual.StartsAt))
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_KeepTheUsualTrainingTime_When_TheGroupOnlyPerformsThatDay()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildUsualTimesAsync(
+                    club =>
+                        club.AddCalendarEntry(
+                            "garde-auftritt",
+                            DanceGuardPerformance,
+                            ClubClock.At(new DateOnly(2027, 1, 19), new TimeOnly(18, 0)),
+                            kind: CalendarEntryKind.Performance,
+                            ownerGroupAlias: "tanzgarde"
+                        ),
+                    ct
+                );
+
+                var result = await ReadAsync(ctx, "bea", UsualTimesWindow, ct);
+
+                Assert.Equal(2, UsualOf(result, "Tanzgarde").Count());
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CarryEveryRunningGroupsUsualTrainingTime_When_SheIsInNoneOfTheGroups()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildUsualTimesAsync(club => club, ct);
+
+                var result = await ReadAsync(ctx, "alice", UsualTimesWindow, ct);
+
+                Assert.Equal(
+                    [
+                        ("Kindergarde", new DateOnly(2027, 1, 15)),
+                        ("Tanzgarde", new DateOnly(2027, 1, 19)),
+                        ("Kindergarde", new DateOnly(2027, 1, 22)),
+                        ("Tanzgarde", new DateOnly(2027, 1, 26)),
+                        ("Kindergarde", new DateOnly(2027, 1, 29)),
+                    ],
+                    result.UsualTrainings.Select(usual =>
+                        (usual.GroupName, ClubClock.DayOf(usual.StartsAt))
+                    )
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CarryTheUsualTrainingTimes_When_SheReadsTheClubScope()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildUsualTimesAsync(club => club, ct);
+
+                var result = await ReadAsync(
+                    ctx,
+                    "bea",
+                    UsualTimesWindow with
+                    {
+                        Scope = CalendarScope.Club,
+                    },
+                    ct
+                );
+
+                Assert.Equal(5, result.UsualTrainings.Count);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CarryOnlyThatGroupsUsualTrainingTime_When_TheCalendarIsFilteredByGroup()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildUsualTimesAsync(club => club, ct);
+
+                var result = await ReadAsync(
+                    ctx,
+                    "alice",
+                    UsualTimesWindow with
+                    {
+                        GroupId = ctx.Groups.Groups.IdOf("kindergarde"),
+                    },
+                    ct
+                );
+
+                Assert.Equal(
+                    ["Kindergarde"],
+                    result.UsualTrainings.Select(usual => usual.GroupName).Distinct()
+                );
+            }
+        );
+    }
+
+    private static IEnumerable<UsualTrainingDto> UsualOf(
+        GetCalendarResponse result,
+        string groupName
+    ) => result.UsualTrainings.Where(usual => usual.GroupName == groupName);
+
+    private Task<SeededContext> BuildUsualTimesAsync(
+        Func<ClubSeedBuilder, ClubSeedBuilder> planned,
+        CancellationToken ct
+    ) =>
+        _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(WholeClub)
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroup("kindergarde", "Kindergarde")
+                            .AddGroup("altgarde", "Altgarde", archivedOn: ArchivedLastSummer)
+                            .AddGroupMembership("bea-tanzgarde", "tanzgarde", "bea", JoinedIn2017)
+                    )
+                    .Club(club =>
+                        planned(
+                            club.AddVenue("buehnenhaus", "Bühnenhaus")
+                                .AddUsualTrainingTime(
+                                    "garde-dienstags",
+                                    "tanzgarde",
+                                    DayOfWeek.Tuesday,
+                                    HalfPastSeven,
+                                    NinetyMinutes,
+                                    "buehnenhaus"
+                                )
+                                .AddUsualTrainingTime(
+                                    "kinder-freitags",
+                                    "kindergarde",
+                                    DayOfWeek.Friday,
+                                    new TimeOnly(16, 0),
+                                    NinetyMinutes
+                                )
+                                .AddUsualTrainingTime(
+                                    "altgarde-mittwochs",
+                                    "altgarde",
+                                    DayOfWeek.Wednesday,
+                                    HalfPastSeven,
+                                    NinetyMinutes
+                                )
+                        )
+                    ),
+            ct
         );
 
     private static async Task<GetCalendarResponse> ReadAsync(

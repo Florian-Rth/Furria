@@ -56,6 +56,8 @@ public sealed class GetGroupActs : Endpoint<GetGroupActsRequest, GetGroupActsRes
             Kind = act.Kind,
             SessionYear = act.SessionYear,
             Closed = act.IsClosed,
+            Archived = act.IsArchived,
+            CastSize = act.CastSize,
             ViewerInCast = act.ViewerInCast,
         };
 }
@@ -92,6 +94,10 @@ public sealed record GroupActDto
     public required int SessionYear { get; init; }
 
     public required bool Closed { get; init; }
+
+    public required bool Archived { get; init; }
+
+    public required int CastSize { get; init; }
 
     public required bool ViewerInCast { get; init; }
 }

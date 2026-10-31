@@ -58,9 +58,5 @@ export const BoardOpen: FC<BoardOpenProps> = ({
       <KkWorkQueue label={QUEUE_LABEL}>{rows}</KkWorkQueue>
     );
 
-  return (
-    <KkPanelSection title={OPEN_TITLE} meta={rows.length}>
-      {list}
-    </KkPanelSection>
-  );
+  return <KkPanelSection title={OPEN_TITLE}>{list}</KkPanelSection>;
 };

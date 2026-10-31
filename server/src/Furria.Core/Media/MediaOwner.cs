@@ -13,6 +13,7 @@ public readonly record struct MediaOwner
     private const string WebsitePrefix = "website:";
     private const string EventPrefix = "event:";
     private const string ActPrefix = "act:";
+    private const string SessionPrefix = "session:";
 
     public const double PortraitAspect = 4.0 / 5;
     public const double GroupPictureAspect = 3.0 / 2;
@@ -38,6 +39,7 @@ public readonly record struct MediaOwner
             MediaOwnerKind.Website => $"{WebsitePrefix}{Slot!.Value.Token}",
             MediaOwnerKind.Event => $"{EventPrefix}{Id}",
             MediaOwnerKind.Act => $"{ActPrefix}{Id}",
+            MediaOwnerKind.Session => $"{SessionPrefix}{Id}",
             _ => GalleryToken,
         };
 
@@ -87,6 +89,8 @@ public readonly record struct MediaOwner
 
     public static MediaOwner Act(int actId) => new(MediaOwnerKind.Act, actId);
 
+    public static MediaOwner Session(int sessionId) => new(MediaOwnerKind.Session, sessionId);
+
     public static MediaOwner Of(MediaItem item) =>
         Of(
             item.OwnerKind,
@@ -95,6 +99,7 @@ public readonly record struct MediaOwner
             item.OwnerNewsPostId,
             item.OwnerEventId,
             item.OwnerActId,
+            item.OwnerSessionId,
             item.WebsitePicture is { } picture
                 ? new PictureSlotPosition(picture.SlotKey, picture.Position)
                 : null
@@ -107,6 +112,7 @@ public readonly record struct MediaOwner
         int? newsPostId,
         int? eventId,
         int? actId,
+        int? sessionId,
         PictureSlotPosition? slot
     ) =>
         kind switch
@@ -117,6 +123,7 @@ public readonly record struct MediaOwner
             MediaOwnerKind.Website => Website(slot!.Value),
             MediaOwnerKind.Event => Event(eventId!.Value),
             MediaOwnerKind.Act => Act(actId!.Value),
+            MediaOwnerKind.Session => Session(sessionId!.Value),
             _ => Gallery,
         };
 
@@ -133,6 +140,7 @@ public readonly record struct MediaOwner
             _ when IdAfter(token, NewsPostPrefix) is { } newsPostId => NewsPost(newsPostId),
             _ when IdAfter(token, EventPrefix) is { } eventId => Event(eventId),
             _ when IdAfter(token, ActPrefix) is { } actId => Act(actId),
+            _ when IdAfter(token, SessionPrefix) is { } sessionId => Session(sessionId),
             _ when SlotAfter(token) is { } slot => Website(slot),
             _ => null,
         };

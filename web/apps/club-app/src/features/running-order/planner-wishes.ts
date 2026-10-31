@@ -133,16 +133,6 @@ export const eveningWishesOf = (
     .filter((rule) => rule.kind === 'kindSpread')
     .map((rule) => ruleWishOf(rule, findings));
 
-export interface WishTally {
-  total: number;
-  missed: number;
-}
-
-export const wishTallyOf = (wishes: readonly LineWish[]): WishTally => ({
-  total: wishes.filter((wish) => wish.state !== 'off').length,
-  missed: wishes.filter((wish) => wish.state === 'conflict' || wish.state === 'hint').length,
-});
-
 export const wishCountOf = (draft: RunningOrderDraft): number => {
   const placed = draft.lines.filter((line) => line.placed);
   const pins = placed.filter((line) => line.pinned).length;

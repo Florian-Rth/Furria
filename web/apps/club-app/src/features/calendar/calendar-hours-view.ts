@@ -15,10 +15,15 @@ import {
   toBlockSpoken,
   toGroupName,
   toHoursDayLabel,
+  toUsualSpoken,
+  USUAL_TITLE,
   weekdayOf,
 } from './calendar-agenda-copy';
-import { hoursBadgeOf, hoursTintOf, toSegments } from './calendar-hours';
-import type { CalendarEntry } from './schemas';
+import type { UsualSegment } from './calendar-hours';
+import { hoursBadgeOf, hoursTintOf, toSegments, toUsualSegments } from './calendar-hours';
+import type { CalendarEntry, UsualTraining } from './schemas';
+
+const USUAL_BLOCK_PREFIX = 'usual-';
 
 export interface CalendarHoursLane {
   day: KkCalendarHoursDayData;
@@ -30,10 +35,13 @@ export interface CalendarHoursLane {
 export interface CalendarHoursWeek {
   axis: KkCalendarHoursAxis;
   lanes: CalendarHoursLane[];
+  usuals: ReadonlyMap<string, UsualTraining>;
 }
 
 export interface CalendarHoursInput {
   entries: readonly CalendarEntry[];
+  usuals: readonly UsualTraining[];
+  mayPlan: (groupId: number) => boolean;
   weekDays: readonly string[];
   todayDay: string;
   activeDay: string | null;
@@ -61,9 +69,45 @@ const toDay = (
   };
 };
 
+const usualIdOf = (segment: UsualSegment): string =>
+  `${USUAL_BLOCK_PREFIX}${segment.usual.usualTrainingTimeId}-${segment.dayIndex}`;
+
+const toUsualBlock = (
+  segment: UsualSegment,
+  input: CalendarHoursInput,
+): KkCalendarHoursBlockData => {
+  const { usual, span } = segment;
+  const mark = markOf(usual.groupId, usual.groupTone);
+  const from = toTimeLabel(usual.startsAt);
+
+  return {
+    ...span,
+    id: usualIdOf(segment),
+    title: USUAL_TITLE,
+    time: from,
+    label: toUsualSpoken(
+      usual.groupName,
+      from,
+      toTimeLabel(usual.endsAt),
+      usual.venueName,
+      input.mayPlan(usual.groupId),
+    ),
+    kind: KIND_GLYPHS.training,
+    tone: mark === 'club' ? null : mark,
+    running: false,
+    usual: true,
+    badge: null,
+    selected: false,
+  };
+};
+
 export const toHoursWeek = (input: CalendarHoursInput): CalendarHoursWeek => {
   const segments = toSegments(input.entries, input.weekDays);
-  const axis = hoursAxisOf(segments.map((segment) => segment.span));
+  const usualSegments = toUsualSegments(input.usuals, input.weekDays);
+  const axis = hoursAxisOf([
+    ...segments.map((segment) => segment.span),
+    ...usualSegments.map((segment) => segment.span),
+  ]);
 
   const lanes = input.weekDays.map((isoDay, dayIndex): CalendarHoursLane => {
     const blocks = segments
@@ -87,18 +131,27 @@ export const toHoursWeek = (input: CalendarHoursInput): CalendarHoursWeek => {
           kind: KIND_GLYPHS[entry.kind],
           tone: mark === 'club' ? null : mark,
           running: entry.isRunning,
+          usual: false,
           badge,
           selected: entry.calendarEntryId === input.selectedId,
         };
       });
 
+    const usualBlocks = usualSegments
+      .filter((segment) => segment.dayIndex === dayIndex)
+      .map((segment) => toUsualBlock(segment, input));
+
     return {
       day: toDay(isoDay, input, blocks.length),
       tint: hoursTintOf(isoDay, input.todayDay),
-      placement: placeHourBlocks(blocks, axis),
+      placement: placeHourBlocks([...blocks, ...usualBlocks], axis),
       quiet: blocks.length === 0,
     };
   });
 
-  return { axis, lanes };
+  return {
+    axis,
+    lanes,
+    usuals: new Map(usualSegments.map((segment) => [usualIdOf(segment), segment.usual])),
+  };
 };

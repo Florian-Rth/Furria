@@ -83,6 +83,7 @@ export const GreetingTwinCell: FC<GreetingTwinCellProps> = ({ cell, tone, clock,
         inverse={fromOnTile}
         shade={<FlapShade shade={flap.fallShade} fit={LINE_FIT} />}
         rotate={flap.fall}
+        opacity={flap.fallOpacity}
       >
         {fromGlyph}
       </FlapLeaf>
@@ -94,6 +95,7 @@ export const GreetingTwinCell: FC<GreetingTwinCellProps> = ({ cell, tone, clock,
         inverse={toOnTile}
         shade={<FlapShade shade={flap.landShade} fit={LINE_FIT} />}
         rotate={flap.land}
+        opacity={flap.landOpacity}
       >
         {toGlyph}
       </FlapLeaf>

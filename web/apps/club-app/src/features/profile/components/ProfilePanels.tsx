@@ -4,16 +4,17 @@ import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
+import { AppSignOutButton } from '@/features/session/components/AppSignOutButton';
 import { useLanding } from '@/features/write/hooks/use-landing';
 import type { PersonalMe } from '@/lib/api/schemas';
 import { formatIsoDay } from '@/lib/membership-labels';
 import { PROFILE_SECTION_TITLES } from '../profile-labels';
+import { ProfileAppearancePanel } from './ProfileAppearancePanel';
 import { ProfileContactPanel } from './ProfileContactPanel';
 import { ProfileGroupsPanel } from './ProfileGroupsPanel';
 import { ProfileMembershipPanel } from './ProfileMembershipPanel';
 import { ProfileSecurityPanel } from './ProfileSecurityPanel';
 import { ProfileVisibilityPanel } from './ProfileVisibilityPanel';
-import { ProfileVisibilityPreview } from './ProfileVisibilityPreview';
 
 const EMPTY_VALUE = 'Nicht hinterlegt';
 const BIRTH_DATE_LABEL = 'Geburtsdatum';
@@ -33,7 +34,6 @@ export const ProfilePanels: FC<ProfilePanelsProps> = ({ me }) => {
         <KkPanelStack>
           <ProfileContactPanel person={person} highlightedKey={highlightedKey} />
           <ProfileVisibilityPanel person={person} />
-          <ProfileVisibilityPreview person={person} />
         </KkPanelStack>
       </Grid>
       <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
@@ -46,6 +46,8 @@ export const ProfilePanels: FC<ProfilePanelsProps> = ({ me }) => {
           <ProfileSecurityPanel loginEmail={me.email} />
           <ProfileMembershipPanel membership={me.membership} />
           <ProfileGroupsPanel />
+          <ProfileAppearancePanel />
+          <AppSignOutButton />
         </KkPanelStack>
       </Grid>
     </Grid>

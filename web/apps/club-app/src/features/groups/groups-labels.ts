@@ -129,13 +129,6 @@ export const toGroupCardSizeLine = (count: number, foundedLine: string | null): 
     ? toGroupSizeLine(count)
     : `${toGroupSizeLine(count)}${META_SEPARATOR}${foundedLine}`;
 
-const ONE_GROUP_LABEL = '1 Gruppe';
-const GROUP_UNIT_LABEL = 'Gruppen';
-const ONE_GROUP = 1;
-
-export const toGroupCountLabel = (count: number): string =>
-  count === ONE_GROUP ? ONE_GROUP_LABEL : `${count} ${GROUP_UNIT_LABEL}`;
-
 export const ALL_GROUPS_FILTER_ID = 'all';
 export const RECRUITING_FILTER_ID = 'recruiting';
 export const SETTLED_FILTER_ID = 'settled';

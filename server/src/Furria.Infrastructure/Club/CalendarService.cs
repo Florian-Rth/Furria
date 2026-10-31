@@ -252,57 +252,6 @@ public sealed class CalendarService
         return found;
     }
 
-    public async Task<IReadOnlyList<DateTimeOffset>> FindExistingTrainingsAsync(
-        int groupId,
-        DateOnly from,
-        DateOnly to,
-        CancellationToken ct
-    )
-    {
-        var windowStart = ClubClock.StartOfDay(from);
-        var windowEnd = ClubClock.StartOfDay(to.AddDays(1));
-
-        return await _dbContext
-            .CalendarEntries.AsNoTracking()
-            .Where(entry =>
-                entry.OwnerGroupId == groupId && entry.Kind == CalendarEntryKind.Training
-            )
-            .Where(entry => entry.StartsAt >= windowStart && entry.StartsAt < windowEnd)
-            .OrderBy(entry => entry.StartsAt)
-            .Select(entry => entry.StartsAt)
-            .ToListAsync(ct);
-    }
-
-    public async Task<Result<int>> CreateManyAsync(
-        CreateTrainingsCommand command,
-        CancellationToken ct
-    )
-    {
-        if (!await GroupExistsAsync(command.OwnerGroupId, ct))
-            return Result<int>.Validation(UnknownOwnerGroupMessage);
-
-        var venueIds = command
-            .Placements.Select(placement => placement.VenueId)
-            .OfType<int>()
-            .Distinct()
-            .ToList();
-
-        foreach (var venueId in venueIds)
-        {
-            if (await VenueRefusalAsync(venueId, ct) is { } refusal)
-                return Result<int>.Validation(refusal);
-        }
-
-        var entries = command
-            .Placements.Select(placement => ToTraining(command, placement))
-            .ToList();
-
-        _dbContext.CalendarEntries.AddRange(entries);
-        await _dbContext.SaveChangesAsync(ct);
-
-        return Result<int>.Success(entries.Count);
-    }
-
     public async Task<Result<CalendarEntryWriteResult>> CreateAsync(
         CreateCalendarEntryCommand command,
         CancellationToken ct
@@ -574,24 +523,6 @@ public sealed class CalendarService
                 ? entry.StartsAt > probe.StartsAt.AddHours(-CalendarDefaults.OpenEndedHours)
                 : entry.EndsAt > probe.StartsAt
         );
-
-    [Pure]
-    private static CalendarEntry ToTraining(
-        CreateTrainingsCommand command,
-        TrainingPlacement placement
-    ) =>
-        new()
-        {
-            Title = command.Title,
-            Description = null,
-            OwnerGroupId = command.OwnerGroupId,
-            VenueId = placement.VenueId,
-            StartsAt = placement.StartsAt,
-            EndsAt = placement.EndsAt,
-            Kind = CalendarEntryKind.Training,
-            Visibility = CalendarEntryVisibility.Group,
-            AsksForResponse = false,
-        };
 
     [Pure]
     private static IReadOnlyList<int> ParticipationOf(

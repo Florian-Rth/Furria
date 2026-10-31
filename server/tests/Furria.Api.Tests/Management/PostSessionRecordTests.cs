@@ -10,22 +10,10 @@ namespace Furria.Api.Tests.Management;
 public sealed class PostSessionRecordTests : IClassFixture<ApiTestFixture>
 {
     private const string ConflictField = "conflict";
-    private const string ValidationField = "request";
     private const string DuplicateStartYearMessage =
         "Für diese Session gibt es schon einen Eintrag.";
     private const string DuplicateNumberMessage = "Diese Nº steht schon bei einer anderen Session.";
-    private const string UnreadableLogoMessage = "Dieses Sessionslogo ist keine lesbare SVG-Datei.";
     private const string Motto = "FURRIA — Der Mittelpunkt des Universums";
-    private const string Logo =
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\">"
-        + "<circle cx=\"5\" cy=\"5\" r=\"4\" />"
-        + "</svg>";
-    private const string LogoCarryingAScript =
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\">"
-        + "<script>alert(1)</script>"
-        + "<circle cx=\"5\" cy=\"5\" r=\"4\" />"
-        + "</svg>";
-    private const string TornArtwork = "<svg><circle r=\"4\"></svg>";
 
     private readonly ApiTestFixture _fixture;
 
@@ -41,7 +29,7 @@ public sealed class PostSessionRecordTests : IClassFixture<ApiTestFixture>
         var ctx = await _fixture.BuildAsync(ct);
 
         var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await RecordAsync(client, 2026, 53, Motto, Logo);
+        var (response, result) = await RecordAsync(client, 2026, 53, Motto);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
@@ -51,8 +39,6 @@ public sealed class PostSessionRecordTests : IClassFixture<ApiTestFixture>
             .ToHaveNumber(53)
             .Session(result.SessionId)
             .ToHaveMotto(Motto)
-            .Session(result.SessionId)
-            .ToHaveLogo(Logo)
             .AssertAsync(ct);
     }
 
@@ -63,7 +49,7 @@ public sealed class PostSessionRecordTests : IClassFixture<ApiTestFixture>
         var ctx = await _fixture.BuildAsync(ct);
 
         var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await RecordAsync(client, 1974, null, null, null);
+        var (response, result) = await RecordAsync(client, 1974, null, null);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
@@ -74,7 +60,7 @@ public sealed class PostSessionRecordTests : IClassFixture<ApiTestFixture>
             .Session(result.SessionId)
             .ToHaveMotto(null)
             .Session(result.SessionId)
-            .ToHaveLogo(null)
+            .ToShowLogo(null)
             .AssertAsync(ct);
     }
 
@@ -86,7 +72,7 @@ public sealed class PostSessionRecordTests : IClassFixture<ApiTestFixture>
         var comingSeason = _fixture.CurrentSessionYear + 1;
 
         var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await RecordAsync(client, comingSeason, null, Motto, null);
+        var (response, result) = await RecordAsync(client, comingSeason, null, Motto);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
@@ -95,33 +81,6 @@ public sealed class PostSessionRecordTests : IClassFixture<ApiTestFixture>
             .Session(result.SessionId)
             .ToHaveMotto(Motto)
             .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_StoreTheArtworkWithoutTheScript_When_TheLogoCarriesOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, result) = await RecordAsync(client, 2026, null, null, LogoCarryingAScript);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        await ctx.Expected.Session(result.SessionId).ToHaveLogo(Logo).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_RefuseTheEntry_When_TheLogoIsNotReadableArtwork()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(ct);
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await RecordAsync(client, 2026, null, null, TornArtwork);
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal([UnreadableLogoMessage], failures[ValidationField]);
     }
 
     [Fact]
@@ -134,7 +93,7 @@ public sealed class PostSessionRecordTests : IClassFixture<ApiTestFixture>
         );
 
         var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await RecordAsync(client, 2026, null, Motto, null);
+        var (response, _) = await RecordAsync(client, 2026, null, Motto);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         var failures = await ReadFailuresAsync(response, ct);
@@ -155,7 +114,7 @@ public sealed class PostSessionRecordTests : IClassFixture<ApiTestFixture>
         );
 
         var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var (response, _) = await RecordAsync(client, 2026, 53, null, null);
+        var (response, _) = await RecordAsync(client, 2026, 53, null);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         var failures = await ReadFailuresAsync(response, ct);
@@ -170,8 +129,7 @@ public sealed class PostSessionRecordTests : IClassFixture<ApiTestFixture>
         HttpClient client,
         int startYear,
         int? number,
-        string? motto,
-        string? logoSvg
+        string? motto
     ) =>
         client.POSTAsync<PostSessionRecord, PostSessionRecordRequest, PostSessionRecordResponse>(
             new PostSessionRecordRequest
@@ -179,7 +137,6 @@ public sealed class PostSessionRecordTests : IClassFixture<ApiTestFixture>
                 StartYear = startYear,
                 Number = number,
                 Motto = motto,
-                LogoSvg = logoSvg,
             }
         );
 

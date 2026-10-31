@@ -3,7 +3,7 @@ import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';
 import type { KkImageSource } from './image-source';
 import type { KkGroupTone } from './internal/group-tone';
-import { lineClamp } from './internal/line-clamp';
+import { DISPLAY_CLAMP_LINE_HEIGHT, displayLineClamp } from './internal/line-clamp';
 import { responsiveTypography } from './internal/responsive-typography';
 import type { KkScheme } from './internal/scheme-paint';
 import { applyScheme } from './internal/scheme-paint';
@@ -12,7 +12,6 @@ import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
 const NAME_TYPOGRAPHY = { xs: 'h3', desktop: 'h2' } as const;
-const NAME_LINE_HEIGHT = 0.94;
 const NAME_LINES = 3;
 const INK_INSET = { px: { xs: 1.75, desktop: 2.25 }, py: { xs: 1.5, desktop: 1.75 } };
 const FILL_HEIGHT = { height: '100%' } as const;
@@ -98,11 +97,11 @@ export const KkGroupCover: FC<KkGroupCoverProps> = ({
             color: 'inherit',
             ...responsiveTypography(theme, NAME_TYPOGRAPHY, {
               letterSpacing: kkTokens.type.tracking.display,
-              lineHeight: NAME_LINE_HEIGHT,
+              lineHeight: DISPLAY_CLAMP_LINE_HEIGHT,
             }),
             textShadow: kkTokens.overlay.textShadow,
             overflowWrap: 'break-word',
-            ...lineClamp(NAME_LINES),
+            ...displayLineClamp(NAME_LINES),
           })}
         >
           {name}

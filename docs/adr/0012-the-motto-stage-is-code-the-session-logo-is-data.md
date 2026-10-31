@@ -96,3 +96,30 @@ data — and this ADR keeps its filename so the documents linking here still res
 Renamed with it: `Session.SignetSvg` → `Session.LogoSvg`, `signetSourceOf` → `logoSourceOf`,
 `KkMottoStageSignet` → `KkMottoStageLogo`. The record the logo hangs on is a **session record**;
 see `CONTEXT.md`.
+
+## Amendment, 2026-10-31 — the session logo is an uploaded picture, not SVG
+
+Ruled by Florian. The session logo stays **data** — that half of this decision is unchanged — but
+the data is no longer a sanitised SVG string in `session.logo_svg`. It is an uploaded **picture**:
+a media item the session record owns (`MediaOwner.Session`, `Session.LogoId`), rendered by the
+media worker like every other picture (ADR-0024) into WebP renditions that keep an alpha channel,
+so a transparent PNG or WebP logo stays transparent. It is never cropped; its shape travels with
+it as an aspect ratio, so every surface can ask for a sharp rendition through `srcset`.
+
+**Why.** The club has its logos as raster files (scans of medals, banner photos, PNG exports from
+whoever designed them), not as clean vector art, and the public website is to show the logo as
+well — a media-backed picture with signed renditions is what every other surface already serves.
+
+**Given up, knowingly:** the SVG recolouring. A vector logo could be inked into the dark theme
+(`multiply` in light, inverted in dark); a raster logo is shown as it is in both themes.
+
+**Consequences.**
+
+- `session.logo_svg` is dropped by the migration `SessionLogoPicture`; any SVG logo recorded
+  before it is gone and must be uploaded again as a picture. `SvgSanitizer` stays — it still
+  guards the club record's own logo.
+- The logo is set, replaced and removed in *club management* (`club.manage`): uploaded through
+  the media upload with the owner `session:{id}`, removed with
+  `DELETE /api/manage/sessions/{id}/logo`, and it goes with its session record.
+- Where the logo shows is unchanged: session rows, the motto stage's teaser, and later the
+  public website.

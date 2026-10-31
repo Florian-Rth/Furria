@@ -1,6 +1,7 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Management;
+using Furria.Core.Media;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -40,6 +41,27 @@ public sealed class DeleteSessionRecordByIdTests : IClassFixture<ApiTestFixture>
             .Session(ctx.Club.Sessions.IdOf("vorige"))
             .ToHaveStartYear(2025)
             .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_TakeTheLogoWithIt_When_TheEntryIsDeleted()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Club(club => club.AddSession("falsche", 2026, 53, Motto)),
+            ct
+        );
+        var wrongEntry = ctx.Club.Sessions.IdOf("falsche");
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var logoId = await SessionLogoSteps.RenderedAsync(_fixture, client, wrongEntry, ct);
+        var original = await _fixture.MediaFileOfAsync(logoId, MediaRendition.Original, ct);
+
+        var response = await DiscardAsync(client, wrongEntry);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx.Expected.MediaItem(logoId).ToBeGone().AssertAsync(ct);
+        await _fixture.MediaFilesReapedAsync(ct);
+        Assert.False(File.Exists(original));
     }
 
     private static Task<HttpResponseMessage> DiscardAsync(HttpClient client, int sessionId) =>

@@ -53,7 +53,20 @@ public sealed partial class ClubService
         var recorded = await _dbContext
             .Sessions.AsNoTracking()
             .Where(session => session.StartYear == startYear)
-            .Select(session => new SessionRow(session.Number, session.Motto, session.LogoSvg))
+            .Select(session => new SessionRow(
+                session.Number,
+                session.Motto,
+                session.Logo == null
+                    ? null
+                    : new SessionLogoRow(
+                        session.Id,
+                        session.Logo.Id,
+                        session.Logo.State,
+                        session.Logo.RenderedAt,
+                        session.Logo.Width,
+                        session.Logo.Height
+                    )
+            ))
             .SingleOrDefaultAsync(ct);
 
         return new ClubHubSession
@@ -62,7 +75,7 @@ public sealed partial class ClubService
             Label = ClubSession.LabelOf(startYear),
             Number = recorded?.Number,
             Motto = recorded?.Motto,
-            LogoSvg = recorded?.LogoSvg,
+            Logo = recorded?.Logo is { } logo ? SessionLogos.LogoOf(_pictures, logo) : null,
         };
     }
 
@@ -98,5 +111,5 @@ public sealed partial class ClubService
     private Task<int> GroupCountAsync(CancellationToken ct) =>
         _dbContext.Groups.CountAsync(group => group.ArchivedOn == null, ct);
 
-    private sealed record SessionRow(int? Number, string? Motto, string? LogoSvg);
+    private sealed record SessionRow(int? Number, string? Motto, SessionLogoRow? Logo);
 }

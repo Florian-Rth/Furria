@@ -24,7 +24,6 @@ const CHAIN_TITLE = 'Bisherige Zeiträume';
 const PERSON_SECTION = 'Person';
 const MEMBERSHIP_SECTION = 'Zugehörigkeit';
 const END_SECTION = 'Ende der Zugehörigkeit';
-const JOIN_NOTE = 'Neue Personen werden in der Personenverwaltung angelegt.';
 const JOIN_DATE_LABEL = 'Dabei ab';
 const JOIN_DATE_HINT =
   'Ein Wiedereintritt ist frühestens am Tag nach dem Ende der vorherigen Zugehörigkeit möglich.';
@@ -86,7 +85,7 @@ export const GroupMembershipEditor: FC<GroupMembershipEditorProps> = ({
   const fields =
     membership === null ? (
       <>
-        <KkFormSection title={PERSON_SECTION} description={JOIN_NOTE}>
+        <KkFormSection title={PERSON_SECTION}>
           <PersonPicker
             selected={control.person}
             onSelect={control.select}

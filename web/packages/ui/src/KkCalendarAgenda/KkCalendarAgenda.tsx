@@ -10,6 +10,7 @@ import { KkCalendarAgendaLine } from './internal/ui/KkCalendarAgendaLine';
 import { KkCalendarAgendaMore } from './internal/ui/KkCalendarAgendaMore';
 import { KkCalendarAgendaQuick } from './internal/ui/KkCalendarAgendaQuick';
 import { KkCalendarAgendaTime } from './internal/ui/KkCalendarAgendaTime';
+import { KkCalendarAgendaUsual } from './internal/ui/KkCalendarAgendaUsual';
 
 export const KkCalendarAgenda = Object.assign(KkCalendarAgendaRoot, {
   Days: KkCalendarAgendaDays,
@@ -23,4 +24,5 @@ export const KkCalendarAgenda = Object.assign(KkCalendarAgendaRoot, {
   Badge: KkCalendarAgendaBadge,
   Gap: KkCalendarAgendaGap,
   More: KkCalendarAgendaMore,
+  Usual: KkCalendarAgendaUsual,
 });

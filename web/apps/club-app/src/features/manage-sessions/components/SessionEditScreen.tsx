@@ -5,6 +5,7 @@ import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { parsePositiveId } from '@/lib/positive-id';
 import { useSessionRecordsQuery } from '../api';
+import { useDevelopingSessionLogos } from '../hooks/use-developing-session-logos';
 import { findSessionRecord } from '../manage-sessions-labels';
 import { toSessionRecordsErrorMessage } from '../manage-sessions-messages';
 import { SessionEditor } from './SessionEditor';
@@ -23,6 +24,10 @@ export const SessionEditScreen: FC = () => {
   const sessions = useSessionRecordsQuery(permissions.has(PERMISSION_KEYS.clubManage));
   const me = useMeQuery();
   const errorMessage = toSessionRecordsErrorMessage(sessions.error ?? me.error);
+  const refreshRecords = (): void => {
+    void sessions.refetch();
+  };
+  useDevelopingSessionLogos(sessions.data?.sessions, refreshRecords);
 
   const reload = (): void => {
     if (sessions.isError) {

@@ -301,6 +301,42 @@ public sealed class RoleService
         return Result.Success();
     }
 
+    public async Task<Result> CorrectHoldingAsync(
+        CorrectRoleHoldingCommand command,
+        CancellationToken ct
+    )
+    {
+        var holding = await _dbContext.RoleHoldings.SingleOrDefaultAsync(
+            row => row.Id == command.RoleHoldingId && row.RoleId == command.RoleId,
+            ct
+        );
+
+        if (holding is null)
+            return Result.NotFound(UnknownHoldingMessage);
+
+        if ((await RoleStateAsync(holding.RoleId, ct))?.ArchivedOn is not null)
+            return Result.Conflict(ArchivedRoleMessage);
+
+        var corrected = new DatePeriod { Start = command.SinceOn, End = command.UntilOn };
+
+        if (!corrected.IsWellFormed)
+            return Result.Validation(EndBeforeStartMessage);
+
+        var others = await OtherPeriodsOfAsync(holding, ct);
+
+        if (others.Any(other => corrected.Overlaps(other.AsPeriod)))
+            return Result.Conflict(OverlappingHoldingMessage);
+
+        holding.SinceOn = corrected.Start;
+        holding.UntilOn = corrected.End;
+
+        if (!corrected.HasEndedBefore(ClubClock.Today(_timeProvider)))
+            await _dbContext.LiftArchiveOfAsync(holding.PersonId, ct);
+
+        var saved = await _dbContext.SaveOrConflictAsync(ct);
+        return saved.IsSuccess ? Result.Success() : Result.Conflict(saved.Error.Message);
+    }
+
     private static void ReplacePermissions(Role role, IReadOnlyList<string> permissionKeys)
     {
         var desired = permissionKeys.ToHashSet(StringComparer.Ordinal);
@@ -392,6 +428,17 @@ public sealed class RoleService
         _dbContext
             .RoleHoldings.AsNoTracking()
             .Where(row => row.RoleId == roleId && row.PersonId == personId)
+            .Select(row => new PeriodRow(row.SinceOn, row.UntilOn))
+            .ToListAsync(ct);
+
+    private Task<List<PeriodRow>> OtherPeriodsOfAsync(RoleHolding holding, CancellationToken ct) =>
+        _dbContext
+            .RoleHoldings.AsNoTracking()
+            .Where(row =>
+                row.RoleId == holding.RoleId
+                && row.PersonId == holding.PersonId
+                && row.Id != holding.Id
+            )
             .Select(row => new PeriodRow(row.SinceOn, row.UntilOn))
             .ToListAsync(ct);
 

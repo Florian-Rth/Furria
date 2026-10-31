@@ -42,7 +42,12 @@ describe('staleReadsAfter', () => {
     {
       label: 'a calendar entry is written',
       change: 'calendarEntry',
-      stale: ['calendar', 'groupCalendar', 'trainingPreview', 'clubHub', 'start'],
+      stale: ['calendar', 'groupCalendar', 'clubHub', 'start'],
+    },
+    {
+      label: 'a usual training time is stated, moved or dropped',
+      change: 'usualTrainingTime',
+      stale: ['groupHub', 'calendar'],
     },
     {
       label: 'an account is invited, locked or redeemed',
@@ -80,8 +85,8 @@ describe('staleReadsAfter', () => {
       fresh: ['clubHub', 'groups', 'groupHub'],
     },
     {
-      label: 'a training slot leaves the group directory alone',
-      change: 'trainingSlot',
+      label: 'a usual training time leaves the group directory alone',
+      change: 'usualTrainingTime',
       fresh: ['groups', 'myGroups'],
     },
     {

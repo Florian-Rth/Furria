@@ -2,7 +2,7 @@ import type { KkCalendarDayData } from '@furria/ui/calendar-strip-types';
 import type { KkCalendarLineGroup } from '@furria/ui/KkCalendarAgendaLine';
 import type { KkCalendarTimeTone } from '@furria/ui/KkCalendarAgendaTime';
 import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
-import { toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
+import { toLocalIsoDay, toTimeLabel, toTimeSpanLabel } from '@/lib/calendar-days';
 import { formatPriceCents, toDoorsOpenLabel, toEventStatusLabel } from '@/lib/event-copy';
 import type { EventCover } from '@/lib/event-cover';
 import { toEventCover } from '@/lib/event-cover';
@@ -39,12 +39,14 @@ import {
   toLineSpoken,
   toRelativeLabel,
   toTimeCopy,
-  toWeekRange,
+  toUsualSpoken,
   toWeekTitle,
+  USUAL_PLAN_LABEL,
+  USUAL_TITLE,
   VISIBILITY_LABELS,
   weekdayOf,
 } from './calendar-agenda-copy';
-import type { CalendarEntry } from './schemas';
+import type { CalendarEntry, UsualTraining } from './schemas';
 
 const THUMB_SIZES = '72px';
 const COVER_SIZES = '(min-width: 1200px) 30rem, 100vw';
@@ -134,12 +136,13 @@ export const toDayData = (cell: CalendarDayCell, activeDay: string | null): KkCa
   isoDay: cell.isoDay,
   dayNumber: cell.dayNumber,
   weekday: weekdayOf(cell.isoDay),
-  label: toDayCellSpoken(cell.isoDay, cell.count, cell.owed),
+  label: toDayCellSpoken(cell.isoDay, cell.count, cell.owed, cell.usualMarks.length),
   isToday: cell.isToday,
   isPast: cell.isPast,
   inMonth: cell.inMonth,
   selected: cell.isoDay === activeDay,
   marks: cell.marks,
+  usualMarks: cell.usualMarks,
   owed: cell.owed,
   landmark: cell.landmark !== null,
   carnival: cell.carnival,
@@ -226,15 +229,8 @@ export const lineOrdersOf = (sections: readonly CalendarSection[]): Map<string, 
   return orders;
 };
 
-export interface CalendarSectionView {
-  title: string;
-  meta: string;
-}
-
-export const toSectionView = (section: CalendarSection, todayDay: string): CalendarSectionView => ({
-  title: toWeekTitle(weekNameOf(section.monday, todayDay), section.monday),
-  meta: toWeekRange(section.monday, shiftDay(section.monday, 6)),
-});
+export const toSectionTitle = (section: CalendarSection, todayDay: string): string =>
+  toWeekTitle(weekNameOf(section.monday, todayDay), section.monday);
 
 export interface CalendarGapView {
   label: string;
@@ -253,3 +249,30 @@ export const toGapView = (item: Extract<CalendarDayItem, { kind: 'gap' }>): Cale
 
 export const hasLines = (sections: readonly CalendarSection[]): boolean =>
   sectionItemsOf(sections).some((item) => item.kind === 'day' && item.lines.length > 0);
+
+export interface CalendarUsualView {
+  time: string;
+  until: string;
+  title: string;
+  groupName: string;
+  mark: CalendarMark;
+  venue: string | null;
+  spoken: string;
+  actionLabel: string | undefined;
+}
+
+export const toUsualView = (usual: UsualTraining, mayPlan: boolean): CalendarUsualView => {
+  const time = toTimeLabel(usual.startsAt);
+  const until = toTimeLabel(usual.endsAt);
+
+  return {
+    time,
+    until,
+    title: USUAL_TITLE,
+    groupName: usual.groupName,
+    mark: markOf(usual.groupId, usual.groupTone),
+    venue: usual.venueName,
+    spoken: toUsualSpoken(usual.groupName, time, until, usual.venueName, mayPlan),
+    actionLabel: mayPlan ? USUAL_PLAN_LABEL : undefined,
+  };
+};

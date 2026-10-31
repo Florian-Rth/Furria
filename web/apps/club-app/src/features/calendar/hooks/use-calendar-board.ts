@@ -16,13 +16,17 @@ import {
   monthStartOf,
   owedIdsOf,
   toCalendarSections,
+  usualsByDay,
   windowCovering,
 } from '../calendar-agenda';
 import { gridSpanOf } from '../calendar-fold';
-import type { CalendarEntry, CalendarSearch } from '../schemas';
+import type { CalendarEntry, CalendarSearch, UsualTraining } from '../schemas';
+import { toUsualTrainingDraft } from '../training-draft';
+import { useCalendarAuthoring } from './use-calendar-authoring';
 
 const routeApi = getRouteApi('/_app/calendar');
 const NO_ENTRIES: readonly CalendarEntry[] = [];
+const NO_USUALS: readonly UsualTraining[] = [];
 
 export type CalendarPhase = 'loading' | 'failed' | 'ready';
 
@@ -38,6 +42,8 @@ export interface CalendarBoard {
   pending: ReadonlyMap<number, AttendanceAnswer>;
   sections: readonly CalendarSection[];
   byDay: ReadonlyMap<string, readonly CalendarLine[]>;
+  usuals: readonly UsualTraining[];
+  usualDays: ReadonlyMap<string, readonly UsualTraining[]>;
   owedIds: ReadonlySet<number>;
   landingDay: string | null;
   highlightedKey: string | null;
@@ -51,6 +57,8 @@ export interface CalendarBoard {
   peek: (month: string) => void;
   select: (calendarEntryId: number) => void;
   close: () => void;
+  mayPlan: (groupId: number) => boolean;
+  planTraining: (usual: UsualTraining) => void;
 }
 
 export const useCalendarBoard = (): CalendarBoard => {
@@ -65,8 +73,11 @@ export const useCalendarBoard = (): CalendarBoard => {
   const span = fetchSpanOf(window, peeked);
   const query = useCalendarQuery({ scope: 'all', groupId: null, from: span.from, to: span.to });
   const pending = usePendingAnswers();
+  const { authoring } = useCalendarAuthoring();
+  const ownerOptions = authoring?.ownerOptions ?? [];
   const { highlightedKey } = useLanding();
   const all = query.data?.entries ?? NO_ENTRIES;
+  const usuals = query.data?.usualTrainings ?? NO_USUALS;
   const owedIds = owedIdsOf(all, nowMs, pending);
 
   const entries = all;
@@ -97,8 +108,10 @@ export const useCalendarBoard = (): CalendarBoard => {
     entries,
     allEntries: all,
     pending,
-    sections: toCalendarSections(entries, window, todayDay),
+    sections: toCalendarSections(entries, usuals, window, todayDay),
     byDay: linesByDay(entries, span),
+    usuals,
+    usualDays: usualsByDay(usuals, span),
     owedIds: new Set(owedIds),
     landingDay,
     highlightedKey,
@@ -138,6 +151,10 @@ export const useCalendarBoard = (): CalendarBoard => {
     },
     close: () => {
       patch({ entry: undefined });
+    },
+    mayPlan: (groupId) => ownerOptions.some((option) => option.ownerGroupId === groupId),
+    planTraining: (usual) => {
+      void navigate({ to: '/calendar/new', search: toUsualTrainingDraft(usual) });
     },
   };
 };

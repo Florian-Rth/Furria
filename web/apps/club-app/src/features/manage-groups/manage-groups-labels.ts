@@ -279,7 +279,6 @@ export const toGroupKindUsageBadge = (entry: GroupKindEntry): GroupKindUsageBadg
   };
 };
 
-export const GROUP_KINDS_LEAD = 'Einordnung der Gruppen.';
 export const toGroupKindFacts = (entry: GroupKindEntry, dayLabel: string): KkConfirmFact[] => [
   { label: 'Gruppenart', value: entry.name },
   { label: 'Gruppen', value: String(entry.groupCount) },

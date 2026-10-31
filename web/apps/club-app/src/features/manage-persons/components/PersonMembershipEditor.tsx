@@ -50,9 +50,9 @@ export const PersonMembershipEditor: FC<PersonMembershipEditorProps> = ({ person
   const startQuickChoices = toMembershipQuickChoices(today);
   const endQuickChoices = toMembershipEndQuickChoices(today);
   const isArchived = person.archive !== null;
-  const closedPausesNote = isArchived
-    ? toClosedHistoryLine(person.firstName, 'Ruhezeiten')
-    : undefined;
+  const closedPausesNote = isArchived ? (
+    <KkNote>{toClosedHistoryLine(person.firstName, 'Ruhezeiten')}</KkNote>
+  ) : null;
 
   const chainRows = toMembershipChainRows(person, membership?.membershipId ?? null);
   const chain =
@@ -104,11 +104,8 @@ export const PersonMembershipEditor: FC<PersonMembershipEditorProps> = ({ person
 
   const pausesSection =
     membership === null ? null : (
-      <KkPanelSection
-        title={MEMBERSHIP_PAUSES_TITLE}
-        action={pausesSectionAction}
-        description={closedPausesNote}
-      >
+      <KkPanelSection title={MEMBERSHIP_PAUSES_TITLE} action={pausesSectionAction}>
+        {closedPausesNote}
         {pausesBody}
       </KkPanelSection>
     );

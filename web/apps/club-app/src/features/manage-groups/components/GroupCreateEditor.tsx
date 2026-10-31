@@ -18,8 +18,6 @@ const ADD_LABEL = 'Hinzufügen';
 const SECTION_TITLE = 'Gruppe';
 const NAME_LABEL = 'Name der Gruppe';
 const NAME_HINT = 'Erscheint im Gruppenverzeichnis, auf der Gruppenseite und im Kalender.';
-const CREATE_NOTE =
-  'Die Gruppe erscheint sofort im Verzeichnis. Beschreibung, Farbe und Trainingszeiten pflegen anschließend die Gruppen-Admins.';
 
 interface GroupCreateEditorProps {
   kinds: readonly RunningGroupKind[];
@@ -46,7 +44,7 @@ export const GroupCreateEditor: FC<GroupCreateEditorProps> = ({ kinds }) => {
         },
       }}
     >
-      <KkFormSection title={SECTION_TITLE} description={CREATE_NOTE}>
+      <KkFormSection title={SECTION_TITLE}>
         <KkTextField
           name={nameField.name}
           label={NAME_LABEL}

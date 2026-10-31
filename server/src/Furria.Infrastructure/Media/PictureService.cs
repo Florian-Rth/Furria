@@ -90,6 +90,9 @@ public sealed class PictureService
             MediaOwnerKind.Event => _dbContext
                 .Events.Where(row => row.CalendarEntryId == owner.Id && row.Picture != null)
                 .Select(row => row.Picture!),
+            MediaOwnerKind.Session => _dbContext
+                .Sessions.Where(session => session.Id == owner.Id && session.Logo != null)
+                .Select(session => session.Logo!),
             _ => _dbContext.MediaItems.Where(_ => false),
         };
 }

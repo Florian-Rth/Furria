@@ -14,6 +14,7 @@ export interface KkCalendarDayData {
   inMonth: boolean;
   selected: boolean;
   marks: readonly KkCalendarMark[];
+  usualMarks: readonly KkCalendarMark[];
   owed: boolean;
   landmark: boolean;
   carnival: boolean;

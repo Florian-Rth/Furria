@@ -62,9 +62,6 @@ export const toHubPeople = (
   return [...led, ...rest];
 };
 
-export const countGroupAdmins = (people: readonly HubPerson[]): number =>
-  people.filter((person) => person.groupAdminId !== null).length;
-
 export const toHubPortrait = (
   people: readonly HubPerson[],
   personId: number | null,

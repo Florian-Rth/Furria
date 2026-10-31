@@ -1,12 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { ActKind, CatalogueAct } from '@/features/running-order/schemas';
-import {
-  filterCountsOf,
-  knownGroupsOf,
-  matchesQuery,
-  scopedActsOf,
-  visibleSectionsOf,
-} from './acts-catalogue';
+import { filterCountsOf, knownGroupsOf, matchesQuery, visibleSectionsOf } from './acts-catalogue';
 
 const act = (
   actId: number,
@@ -60,15 +54,6 @@ describe('filterCountsOf', () => {
       points: 3,
       archive: 1,
     });
-  });
-});
-
-describe('scopedActsOf', () => {
-  it.each([
-    [{ kind: 'club' } as const, [1, 2, 3, 4, 5, 6, 7]],
-    [{ kind: 'group', groupId: 1 } as const, [1, 2, 6]],
-  ])('keeps the acts of the scope %j', (scope, ids) => {
-    expect(scopedActsOf(acts, scope).map((candidate) => candidate.actId)).toEqual(ids);
   });
 });
 

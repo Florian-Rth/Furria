@@ -33,10 +33,15 @@ export const useActStudioQuery = (actId: number | null): UseQueryResult<ActStudi
         : () => withFreshAccessToken((accessToken) => requestActStudio(actId, accessToken)),
   });
 
-export const useGroupActsQuery = (groupId: number): UseQueryResult<GroupActsResponse, Error> =>
+export const useGroupActsQuery = (
+  groupId: number | null,
+): UseQueryResult<GroupActsResponse, Error> =>
   useQuery({
-    queryKey: queryKeys.groupActs(groupId),
-    queryFn: () => withFreshAccessToken((accessToken) => requestGroupActs(groupId, accessToken)),
+    queryKey: queryKeys.groupActs(groupId ?? 0),
+    queryFn:
+      groupId === null
+        ? skipToken
+        : () => withFreshAccessToken((accessToken) => requestGroupActs(groupId, accessToken)),
   });
 
 export const useMyActsQuery = (mayRead = true): UseQueryResult<MyActsResponse, Error> =>

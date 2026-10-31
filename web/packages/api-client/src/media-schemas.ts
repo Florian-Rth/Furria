@@ -8,6 +8,11 @@ type PictureSchema = z.ZodObject<{
   largeUrl: MediaUrlSchema;
 }>;
 
+type SessionLogoSchema = z.ZodObject<{
+  picture: PictureSchema;
+  aspect: z.ZodNumber;
+}>;
+
 type PublicWebsitePictureSchema = z.ZodObject<{
   slot: z.ZodString;
   position: z.ZodNumber;
@@ -26,19 +31,22 @@ type PublicWebsitePicturesSchema = z.ZodObject<{
 export interface MediaSchemas {
   MediaUrlSchema: MediaUrlSchema;
   PictureSchema: PictureSchema;
+  SessionLogoSchema: SessionLogoSchema;
   PublicWebsitePicturesSchema: PublicWebsitePicturesSchema;
 }
 
 export const createMediaSchemas = (apiUrlOf: (path: string) => string): MediaSchemas => {
   const MediaUrlSchema = z.string().min(1).transform(apiUrlOf);
+  const PictureSchema = z.object({
+    smallUrl: MediaUrlSchema,
+    mediumUrl: MediaUrlSchema,
+    largeUrl: MediaUrlSchema,
+  });
 
   return {
     MediaUrlSchema,
-    PictureSchema: z.object({
-      smallUrl: MediaUrlSchema,
-      mediumUrl: MediaUrlSchema,
-      largeUrl: MediaUrlSchema,
-    }),
+    PictureSchema,
+    SessionLogoSchema: z.object({ picture: PictureSchema, aspect: z.number().positive() }),
     PublicWebsitePicturesSchema: z.object({
       pictures: z.array(
         z.object({
@@ -57,5 +65,6 @@ export const createMediaSchemas = (apiUrlOf: (path: string) => string): MediaSch
 };
 
 export type Picture = z.infer<PictureSchema>;
+export type SessionLogo = z.infer<SessionLogoSchema>;
 export type PublicWebsitePictures = z.infer<PublicWebsitePicturesSchema>;
 export type PublicWebsitePicture = z.infer<PublicWebsitePictureSchema>;

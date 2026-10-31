@@ -8,7 +8,6 @@ const toBody = (payload: SessionRecordPayload): Record<string, string | number |
   startYear: payload.startYear,
   number: payload.number,
   motto: payload.motto,
-  logoSvg: payload.logoSvg,
 });
 
 export const requestSessionRecords = (accessToken: string): Promise<SessionRecordsResponse> =>
@@ -42,6 +41,13 @@ export const requestSessionRecordRemoval = (
   accessToken: string,
 ): Promise<void> =>
   apiFetch(`/api/manage/sessions/${sessionId}`, {
+    method: 'DELETE',
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestSessionLogoRemoval = (sessionId: number, accessToken: string): Promise<void> =>
+  apiFetch(`/api/manage/sessions/${sessionId}/logo`, {
     method: 'DELETE',
     schema: NoContentSchema,
     accessToken,

@@ -2,11 +2,14 @@ import { describe, expect, it } from 'vitest';
 import type { MyGroupSummary } from '@/features/group-hub/schemas';
 import {
   mayOwnCalendarEntry,
+  NO_DRAFT,
   opensEntrySheet,
   toDayTime,
   toDefaultVisibility,
   toEndKeptInStep,
+  toEntryDraft,
   toEntryFormValues,
+  toEntryLanding,
   toEntryLink,
   toEntryPayload,
   toInstant,
@@ -180,7 +183,12 @@ describe('toEntryPayload', () => {
 
 describe('toEntryFormValues', () => {
   it('fills in the only possible owner and its default visibility', () => {
-    const values = toEntryFormValues(null, toOwnerOptions([TANZGARDE], false), '2027-01-20');
+    const values = toEntryFormValues(
+      null,
+      toOwnerOptions([TANZGARDE], false),
+      '2027-01-20',
+      NO_DRAFT,
+    );
 
     expect(values.ownerId).toBe('7');
     expect(values.visibility).toBe('group');
@@ -188,15 +196,94 @@ describe('toEntryFormValues', () => {
   });
 
   it('reads an open end off an existing calendar entry', () => {
-    const values = toEntryFormValues(entry({ endsAt: null }), [], '2027-01-20');
+    const values = toEntryFormValues(entry({ endsAt: null }), [], '2027-01-20', NO_DRAFT);
 
     expect(values.endDay).toBe('');
   });
 
   it('carries the venue of an existing calendar entry into the form', () => {
-    const values = toEntryFormValues(entry({ venueId: 4 }), [], '2027-01-20');
+    const values = toEntryFormValues(entry({ venueId: 4 }), [], '2027-01-20', NO_DRAFT);
 
     expect(values.venueId).toBe('4');
+  });
+
+  it('plans a training of the drafted group at the drafted time and place', () => {
+    const values = toEntryFormValues(
+      null,
+      toOwnerOptions([group({ groupId: 3, name: 'Altgarde', isAdmin: true }), TANZGARDE], true),
+      '2027-01-19',
+      {
+        ownerGroupId: 7,
+        kind: 'training',
+        startTime: '19:30',
+        endTime: '21:00',
+        venueId: 2,
+        returnGroupId: null,
+      },
+    );
+
+    expect([
+      values.ownerId,
+      values.kind,
+      values.visibility,
+      values.startTime,
+      values.endDay,
+      values.endTime,
+      values.venueId,
+      values.title.length > 0,
+    ]).toEqual(['7', 'training', 'club', '19:30', '2027-01-19', '21:00', '2', true]);
+  });
+
+  it('ends a drafted training on the next day when it runs past midnight', () => {
+    const values = toEntryFormValues(null, toOwnerOptions([TANZGARDE], false), '2027-01-19', {
+      ...NO_DRAFT,
+      startTime: '22:30',
+      endTime: '00:30',
+    });
+
+    expect(values.endDay).toBe('2027-01-20');
+  });
+
+  it('falls back to the first owner when the drafted group is not hers', () => {
+    const values = toEntryFormValues(null, toOwnerOptions([TANZGARDE], false), '2027-01-19', {
+      ...NO_DRAFT,
+      ownerGroupId: 99,
+    });
+
+    expect(values.ownerId).toBe('7');
+  });
+});
+
+describe('toEntryDraft', () => {
+  it.each([
+    [{}, NO_DRAFT],
+    [{ kind: 'event' }, NO_DRAFT],
+    [
+      { group: 7, kind: 'training', start: '19:30', end: '21:00', venue: 2 },
+      {
+        ownerGroupId: 7,
+        kind: 'training',
+        startTime: '19:30',
+        endTime: '21:00',
+        venueId: 2,
+        returnGroupId: null,
+      },
+    ],
+    [
+      { group: 7, back: 'group' },
+      { ...NO_DRAFT, ownerGroupId: 7, returnGroupId: 7 },
+    ],
+  ])('reads %o into a draft', (search, draft) => {
+    expect(toEntryDraft(search)).toEqual(draft);
+  });
+});
+
+describe('toEntryLanding', () => {
+  it.each([
+    [NO_DRAFT, '/calendar'],
+    [{ ...NO_DRAFT, ownerGroupId: 7, returnGroupId: 7 }, '/groups/$groupId'],
+  ])('lands a draft back where it was planned', (draft, to) => {
+    expect(toEntryLanding(31, '2027-01-19', draft).to).toBe(to);
   });
 });
 

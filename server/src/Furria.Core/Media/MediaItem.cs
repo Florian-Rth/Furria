@@ -33,6 +33,8 @@ public sealed class MediaItem : ITimestamped
 
     public int? OwnerActId { get; set; }
 
+    public int? OwnerSessionId { get; set; }
+
     public MediaKind Kind { get; set; }
 
     public MediaItemState State { get; set; }
@@ -88,6 +90,8 @@ public sealed class MediaItem : ITimestamped
     public Event? OwnerEvent { get; set; }
 
     public Act? OwnerAct { get; set; }
+
+    public Session? OwnerSession { get; set; }
 
     public Person? UploadedBy { get; set; }
 

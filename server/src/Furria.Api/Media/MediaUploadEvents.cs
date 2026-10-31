@@ -26,7 +26,7 @@ public sealed class MediaUploadEvents
     private const string ConcatenationRefused = "Uploads are not concatenated.";
     private const string LengthRequired = "An upload declares its length up front.";
     private const string OwnerRequired =
-        "An upload names its owner: gallery, person:{id}, group:{id}, news:{id}, event:{id}, act:{id} or website:{slot}:{position}.";
+        "An upload names its owner: gallery, person:{id}, group:{id}, news:{id}, event:{id}, act:{id}, session:{id} or website:{slot}:{position}.";
     private const string FileNameRequired = "An upload names its file.";
     private const string TooLarge = "The upload exceeds what its owner accepts.";
     private const string NotAcceptedMedia =

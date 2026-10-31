@@ -41,7 +41,8 @@ export const ActsRow: FC<ActsRowProps> = ({ act, hub }) => {
   );
   const runs = hub.runs.get(act.actId) ?? 0;
   const fact = <ActsRowFact act={act} runs={runs} />;
-  const chips = act.wishes.length === 0 ? null : <ActWishChips wishes={act.wishes} />;
+  const chips =
+    hub.seesWishes && act.wishes.length > 0 ? <ActWishChips wishes={act.wishes} /> : null;
 
   return (
     <KkSpotlightList.Row

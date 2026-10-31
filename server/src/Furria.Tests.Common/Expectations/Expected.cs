@@ -29,7 +29,7 @@ public sealed class Expected
 
     public GroupKindSetExpectations GroupKinds() => new(this);
 
-    public GroupTrainingSlotSetExpectations TrainingSlotsOf(int groupId) => new(this, groupId);
+    public UsualTrainingTimeSetExpectations UsualTrainingTimesOf(int groupId) => new(this, groupId);
 
     public GroupSetExpectations Groups() => new(this);
 
@@ -98,8 +98,6 @@ public sealed class Expected
     public ActExpectations Act(int actId) => new(this, actId);
 
     public RunningOrderExpectations RunningOrder(int eventId) => new(this, eventId);
-
-    public TrainingSetExpectations TrainingsOf(int groupId) => new(this, groupId);
 
     public EmailConfirmationSetExpectations EmailConfirmationsOfAccount(int accountId) =>
         new(this, accountId);

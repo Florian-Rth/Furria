@@ -14,6 +14,7 @@ export const CLUB_OWNER_ID = 'club';
 export const NO_VENUE_ID = '';
 
 const CLUB_OWNER_OPTION_LABEL = 'Verein';
+const TRAINING_TITLE = 'Training';
 const DEFAULT_START_TIME = '19:00';
 const DEFAULT_END_TIME = '21:00';
 const ONE_COLLISION = 1;
@@ -226,29 +227,112 @@ export const toEntryPayload = (form: CalendarEntryForm): CalendarEntryPayload =>
   };
 };
 
+export interface CalendarEntryDraft {
+  ownerGroupId: number | null;
+  kind: CalendarEntryKind | null;
+  startTime: string | null;
+  endTime: string | null;
+  venueId: number | null;
+  returnGroupId: number | null;
+}
+
+export const NO_DRAFT: CalendarEntryDraft = {
+  ownerGroupId: null,
+  kind: null,
+  startTime: null,
+  endTime: null,
+  venueId: null,
+  returnGroupId: null,
+};
+
+export interface CalendarEntryDraftInput {
+  group?: number;
+  kind?: string;
+  start?: string;
+  end?: string;
+  venue?: number;
+  back?: string;
+}
+
+export const toEntryDraft = (search: CalendarEntryDraftInput): CalendarEntryDraft => ({
+  ownerGroupId: search.group ?? null,
+  kind: KIND_ORDER.find((known) => known === search.kind) ?? null,
+  startTime: search.start ?? null,
+  endTime: search.end ?? null,
+  venueId: search.venue ?? null,
+  returnGroupId: search.back === 'group' ? (search.group ?? null) : null,
+});
+
+export interface CalendarEntryLanding {
+  to: string;
+  params?: Record<string, number>;
+  search?: Record<string, string>;
+  mark: { kind: string; id: number };
+}
+
+const ENTRY_LANDING_KIND = 'calendar-entry';
+
+export const toEntryLanding = (
+  calendarEntryId: number,
+  landedDay: string,
+  draft: CalendarEntryDraft,
+): CalendarEntryLanding => {
+  const mark = { kind: ENTRY_LANDING_KIND, id: calendarEntryId };
+
+  if (draft.returnGroupId === null) {
+    return { to: '/calendar', search: { day: landedDay }, mark };
+  }
+
+  return { to: '/groups/$groupId', params: { groupId: draft.returnGroupId }, mark };
+};
+
+const nextDayOf = (isoDay: string): string =>
+  toIsoDay(
+    new Date(
+      Number(isoDay.slice(0, 4)),
+      Number(isoDay.slice(5, 7)) - 1,
+      Number(isoDay.slice(8, 10)) + 1,
+    ),
+  );
+
+const toDraftedFormValues = (
+  options: readonly CalendarOwnerOption[],
+  startDay: string,
+  draft: CalendarEntryDraft,
+): CalendarEntryForm => {
+  const owner =
+    options.find(
+      (option) => option.ownerGroupId === draft.ownerGroupId && draft.ownerGroupId !== null,
+    ) ?? options[0];
+  const ownerGroupId = owner?.ownerGroupId ?? null;
+  const kind = draft.kind ?? 'meeting';
+  const startTime = draft.startTime ?? DEFAULT_START_TIME;
+  const endTime = draft.endTime ?? DEFAULT_END_TIME;
+
+  return {
+    title: draft.kind === 'training' ? TRAINING_TITLE : '',
+    description: '',
+    ownerId: owner?.id ?? CLUB_OWNER_ID,
+    venueId: draft.venueId === null ? NO_VENUE_ID : String(draft.venueId),
+    kind,
+    visibility: toDefaultVisibility(ownerGroupId, kind),
+    startDay,
+    startTime,
+    endDay: endTime > startTime ? startDay : nextDayOf(startDay),
+    endTime,
+    asksForResponse: false,
+    participatingGroupIds: [],
+  };
+};
+
 export const toEntryFormValues = (
   entry: CalendarEntry | null,
   options: readonly CalendarOwnerOption[],
   startDay: string,
+  draft: CalendarEntryDraft,
 ): CalendarEntryForm => {
   if (entry === null) {
-    const ownerId = options[0]?.id ?? CLUB_OWNER_ID;
-    const ownerGroupId = options[0]?.ownerGroupId ?? null;
-
-    return {
-      title: '',
-      description: '',
-      ownerId,
-      venueId: NO_VENUE_ID,
-      kind: 'meeting',
-      visibility: toDefaultVisibility(ownerGroupId, 'meeting'),
-      startDay,
-      startTime: DEFAULT_START_TIME,
-      endDay: startDay,
-      endTime: DEFAULT_END_TIME,
-      asksForResponse: false,
-      participatingGroupIds: [],
-    };
+    return toDraftedFormValues(options, startDay, draft);
   }
 
   const start = toDayTime(entry.startsAt);

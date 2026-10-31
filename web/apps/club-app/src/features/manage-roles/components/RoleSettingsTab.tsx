@@ -28,7 +28,7 @@ export const RoleSettingsTab: FC<RoleSettingsTabProps> = ({ role, control }) => 
   ));
   const board =
     offices.length === 0 ? null : (
-      <KkPanelSection title={BOARD_TITLE} meta={offices.length}>
+      <KkPanelSection title={BOARD_TITLE}>
         <Stack sx={{ gap: 0, minWidth: 0 }}>{offices}</Stack>
       </KkPanelSection>
     );

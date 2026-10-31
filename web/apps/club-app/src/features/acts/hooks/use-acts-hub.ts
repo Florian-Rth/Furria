@@ -9,8 +9,8 @@ import type { ActsResponse, CatalogueAct } from '@/features/running-order/schema
 import { appRouteApi } from '@/features/session/app-route';
 import { relevantSessionYear } from '@/lib/club';
 import { useNow } from '@/lib/use-now';
-import type { ActSection, ActsScope } from '../acts-catalogue';
-import { filterCountsOf, matchesQuery, scopedActsOf, visibleSectionsOf } from '../acts-catalogue';
+import type { ActSection } from '../acts-catalogue';
+import { filterCountsOf, matchesQuery, visibleSectionsOf } from '../acts-catalogue';
 import { toClosedSessionNote, toSessionLabel } from '../acts-copy';
 import { ACT_PAGE_PATH, actPageSearchOf, PLANNER_PATH } from '../acts-origin';
 import type { ActOverlap, PersonLoad } from '../acts-overlap';
@@ -25,7 +25,7 @@ const CLOCK_MS = 60_000;
 
 export interface ActsHub {
   query: UseQueryResult<ActsResponse, Error>;
-  scope: ActsScope;
+  seesWishes: boolean;
   sessionValue: string;
   sessionChoices: KkChoiceChip[];
   showsSessionChoice: boolean;
@@ -53,7 +53,7 @@ export interface ActsHub {
   reload: () => void;
 }
 
-export const useActsHub = (scope: ActsScope, search: ActsSearch, mayRead: boolean): ActsHub => {
+export const useActsHub = (search: ActsSearch, mayRead: boolean): ActsHub => {
   const plans = usePlansRunningOrder();
   const query = useActsQuery(search.session ?? null, mayRead);
   const runningOrders = useRunningOrdersQuery(mayRead && plans);
@@ -61,8 +61,7 @@ export const useActsHub = (scope: ActsScope, search: ActsSearch, mayRead: boolea
   const navigate = useNavigate();
   const isWide = useIsWideScreen();
   const now = useNow(CLOCK_MS);
-  const all = query.data?.acts ?? NO_ACTS;
-  const acts = scopedActsOf(all, scope);
+  const acts = query.data?.acts ?? NO_ACTS;
   const searched = acts.filter((act) => matchesQuery(act, q ?? null));
   const filter = search.filter ?? 'all';
   const isCreating = search.act === NEW_ACT;
@@ -90,7 +89,7 @@ export const useActsHub = (scope: ActsScope, search: ActsSearch, mayRead: boolea
     void navigate({
       to: ACT_PAGE_PATH,
       params: { actId: String(actId) },
-      search: actPageSearchOf(scope, search),
+      search: actPageSearchOf(search),
       replace,
     });
   };
@@ -99,7 +98,7 @@ export const useActsHub = (scope: ActsScope, search: ActsSearch, mayRead: boolea
 
   return {
     query,
-    scope,
+    seesWishes: plans,
     sessionValue: String(sessionYear),
     sessionChoices,
     showsSessionChoice: sessionChoices.length > 1,
@@ -112,11 +111,11 @@ export const useActsHub = (scope: ActsScope, search: ActsSearch, mayRead: boolea
     filter,
     counts: filterCountsOf(searched),
     sections: visibleSectionsOf(acts, filter, q ?? null),
-    overlaps: overlapsOf(all),
+    overlaps: overlapsOf(acts),
     runs: upcomingRunsOf(runningOrders.data?.runningOrders ?? [], now),
     people: personLoadsOf(searched).length,
-    carriers: carriersAmongOf(all, searched),
-    spotlight: personInActsOf(spotlightId, all),
+    carriers: carriersAmongOf(acts, searched),
+    spotlight: personInActsOf(spotlightId, acts),
     isCreating,
     isWide,
     chooseFilter: (next) => {

@@ -68,16 +68,16 @@ public sealed class GroupService
             group.Icon,
             group.ArchivedOn,
             group
-                .TrainingSlots.OrderBy(slot => slot.Weekday)
-                .ThenBy(slot => slot.StartsAt)
-                .ThenBy(slot => slot.Id)
-                .Select(slot => new SlotRow(
-                    slot.Id,
-                    slot.Weekday,
-                    slot.StartsAt,
-                    slot.DurationMinutes,
-                    slot.VenueId,
-                    slot.Venue!.Name
+                .UsualTrainingTimes.OrderBy(usualTime => usualTime.Weekday)
+                .ThenBy(usualTime => usualTime.StartsAt)
+                .ThenBy(usualTime => usualTime.Id)
+                .Select(usualTime => new UsualTimeRow(
+                    usualTime.Id,
+                    usualTime.Weekday,
+                    usualTime.StartsAt,
+                    usualTime.DurationMinutes,
+                    usualTime.VenueId,
+                    usualTime.Venue!.Name
                 ))
                 .ToList(),
             group
@@ -577,8 +577,8 @@ public sealed class GroupService
         return await _dbContext.SaveOrConflictAsync(ct);
     }
 
-    public async Task<Result> SetTrainingSlotsAsync(
-        SetGroupTrainingSlotsCommand command,
+    public async Task<Result> SetUsualTrainingTimesAsync(
+        SetGroupUsualTrainingTimesCommand command,
         CancellationToken ct
     )
     {
@@ -590,16 +590,16 @@ public sealed class GroupService
         if (group.ArchivedOn is not null)
             return Result.Conflict(ArchivedGroupMessage);
 
-        if (await VenueRefusalAsync(command.Slots, ct) is { } refusal)
+        if (await VenueRefusalAsync(command.UsualTrainingTimes, ct) is { } refusal)
             return refusal;
 
         var current = await _dbContext
-            .GroupTrainingSlots.Where(slot => slot.GroupId == command.GroupId)
+            .UsualTrainingTimes.Where(usualTime => usualTime.GroupId == command.GroupId)
             .ToListAsync(ct);
 
-        _dbContext.GroupTrainingSlots.RemoveRange(current);
-        _dbContext.GroupTrainingSlots.AddRange(
-            command.Slots.Select(slot => ToSlot(command.GroupId, slot))
+        _dbContext.UsualTrainingTimes.RemoveRange(current);
+        _dbContext.UsualTrainingTimes.AddRange(
+            command.UsualTrainingTimes.Select(usualTime => ToUsualTime(command.GroupId, usualTime))
         );
 
         await _dbContext.SaveChangesAsync(ct);
@@ -802,11 +802,15 @@ public sealed class GroupService
             .SingleOrDefaultAsync(ct);
 
     private async Task<Result?> VenueRefusalAsync(
-        IReadOnlyList<GroupTrainingSlotInput> slots,
+        IReadOnlyList<UsualTrainingTimeInput> usualTimes,
         CancellationToken ct
     )
     {
-        var wanted = slots.Select(slot => slot.VenueId).OfType<int>().Distinct().ToList();
+        var wanted = usualTimes
+            .Select(usualTime => usualTime.VenueId)
+            .OfType<int>()
+            .Distinct()
+            .ToList();
 
         if (wanted.Count == 0)
             return null;
@@ -863,7 +867,7 @@ public sealed class GroupService
         foundedYear is { } year && year > today.Year;
 
     [Pure]
-    private static GroupTrainingSlot ToSlot(int groupId, GroupTrainingSlotInput input) =>
+    private static UsualTrainingTime ToUsualTime(int groupId, UsualTrainingTimeInput input) =>
         new()
         {
             GroupId = groupId,
@@ -896,15 +900,15 @@ public sealed class GroupService
     ) => personId is { } viewerId && chains.TryGetValue(viewerId, out var since) ? since : null;
 
     [Pure]
-    private static GroupTrainingSlotDetails ToSlotDetails(SlotRow slot) =>
+    private static UsualTrainingTimeDetails ToUsualTimeDetails(UsualTimeRow usualTime) =>
         new()
         {
-            GroupTrainingSlotId = slot.Id,
-            Weekday = slot.Weekday,
-            StartsAt = slot.StartsAt,
-            DurationMinutes = slot.DurationMinutes,
-            VenueId = slot.VenueId,
-            VenueName = slot.VenueName,
+            UsualTrainingTimeId = usualTime.Id,
+            Weekday = usualTime.Weekday,
+            StartsAt = usualTime.StartsAt,
+            DurationMinutes = usualTime.DurationMinutes,
+            VenueId = usualTime.VenueId,
+            VenueName = usualTime.VenueName,
         };
 
     private static GroupDetails ToHubDetails(
@@ -929,7 +933,7 @@ public sealed class GroupService
             FoundedYear = row.FoundedYear,
             Tone = row.Tone,
             Icon = row.Icon,
-            TrainingSlots = [.. row.TrainingSlots.Select(ToSlotDetails)],
+            UsualTrainingTimes = [.. row.UsualTrainingTimes.Select(ToUsualTimeDetails)],
             Admins =
             [
                 .. RunningRows(row.Admins, today)
@@ -1071,12 +1075,12 @@ public sealed class GroupService
         GroupTone? Tone,
         ClubIcon? Icon,
         DateOnly? ArchivedOn,
-        IReadOnlyList<SlotRow> TrainingSlots,
+        IReadOnlyList<UsualTimeRow> UsualTrainingTimes,
         IReadOnlyList<TieRow> Members,
         IReadOnlyList<TieRow> Admins
     );
 
-    private sealed record SlotRow(
+    private sealed record UsualTimeRow(
         int Id,
         DayOfWeek Weekday,
         TimeOnly StartsAt,

@@ -25,7 +25,7 @@ import type { PlannerFix } from './planner-fixes';
 import type { HoldRow } from './planner-holds';
 import type { StepBlock } from './planner-modes';
 import type { PersonGap, PersonTimeline } from './planner-person';
-import type { LineWish, WishState, WishTally } from './planner-wishes';
+import type { LineWish, WishState } from './planner-wishes';
 import type { EveningChange, PlannerMode } from './schemas';
 
 export const FACT_SEPARATOR = '\u00a0· ';
@@ -157,16 +157,6 @@ export const CANCEL_LABEL = 'Abbrechen';
 
 export const toAddActWishLabel = (name: string): string => `Wunsch für ${name}`;
 
-export const toWishGroupMeta = (tally: WishTally): string | null => {
-  if (tally.total === 0) {
-    return null;
-  }
-
-  const wishes = count(tally.total, 'Wunsch', 'Wünsche');
-
-  return tally.missed === 0 ? wishes : `${wishes}${FACT_SEPARATOR}${tally.missed} heute verfehlt`;
-};
-
 export const toWishesToolLabel = (count: number): string => `Wünsche ${count}`;
 
 export const toStepBlockText = (block: StepBlock): string => {
@@ -205,8 +195,6 @@ export const toEveningChangesFact = (
 
 export const toKindFact = (kind: ActKind | null): string | null =>
   kind === null ? null : toActKindLabel(kind);
-
-export const toCatalogueMeta = (picked: number, total: number): string => `${picked}/${total}`;
 
 export const NEW_IN_EVENING = 'neu';
 

@@ -11,7 +11,7 @@ VM on the same host has an Intel iGPU. Decided with Florian on 2026-10-08 while 
 API stores originals and enqueues a job in Postgres; the worker claims jobs (`FOR UPDATE SKIP
 LOCKED`), reads the original from the media path (ADR-0023) and writes renditions beside it.
 
-- **Photos** (libvips): WebP at ~400, ~1600 and ~2560 px, EXIF orientation applied, GPS stripped.
+- **Photos** (libvips): WebP at ~640, ~1600 and ~2560 px (quality 88), EXIF orientation applied, GPS stripped.
   No AVIF — too slow to encode on a homelab CPU for the size it saves.
 - **Videos** (ffmpeg): **remux before transcode** — an original that is already H.264 + AAC at
   ≤ 1080p is copied into a `faststart` MP4 in seconds; anything else is transcoded to one 1080p

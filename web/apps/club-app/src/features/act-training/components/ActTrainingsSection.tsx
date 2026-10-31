@@ -1,5 +1,4 @@
 import { KkHubRow } from '@furria/ui/KkHubRow';
-import { KkMeta } from '@furria/ui/KkMeta';
 import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
@@ -8,7 +7,7 @@ import type { FC } from 'react';
 import type { Studio } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
 import { useActTrainings } from '../hooks/use-act-trainings';
-import { TRAININGS_EMPTY, TRAININGS_NOTE, TRAININGS_TITLE } from '../training-copy';
+import { TRAININGS_EMPTY, TRAININGS_TITLE } from '../training-copy';
 
 interface ActTrainingsSectionProps {
   studio: Studio;
@@ -31,15 +30,9 @@ export const ActTrainingsSection: FC<ActTrainingsSectionProps> = ({ studio, cast
     />
   ));
   const list = rows.length === 0 ? <KkNote>{TRAININGS_EMPTY}</KkNote> : <KkPanel>{rows}</KkPanel>;
-  const meta = <KkMeta>{String(rows.length)}</KkMeta>;
 
   return (
-    <KkPanelSection
-      title={TRAININGS_TITLE}
-      meta={meta}
-      description={TRAININGS_NOTE}
-      action={trainings.start}
-    >
+    <KkPanelSection title={TRAININGS_TITLE} action={trainings.start}>
       {list}
     </KkPanelSection>
   );

@@ -61,6 +61,7 @@ export interface ActEditor {
   act: CatalogueAct | null;
   isNew: boolean;
   closed: boolean;
+  setsWishes: boolean;
   draft: ActDraft;
   state: EditorState;
   showsNameIssue: boolean;
@@ -187,6 +188,7 @@ export const useActEditor = ({
     act,
     isNew,
     closed,
+    setsWishes: plans && !closed,
     draft,
     state,
     showsNameIssue: touched && state.nameIssue !== null,

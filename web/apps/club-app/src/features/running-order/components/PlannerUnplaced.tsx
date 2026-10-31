@@ -22,11 +22,7 @@ export const PlannerUnplaced: FC = () => {
 
   return (
     <>
-      <KkNumberedList.Section
-        title={UNPLACED_TITLE}
-        meta={planner.unplaced.length}
-        action={placeAll}
-      />
+      <KkNumberedList.Section title={UNPLACED_TITLE} action={placeAll} />
       {rows}
     </>
   );

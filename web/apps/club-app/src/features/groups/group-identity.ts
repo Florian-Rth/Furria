@@ -15,7 +15,7 @@ export const WEEKDAY_VALUES = [
 
 export type Weekday = (typeof WEEKDAY_VALUES)[number];
 
-export interface TrainingSlotFacts {
+export interface UsualTrainingTimeFacts {
   readonly weekday: Weekday;
   readonly startsAt: string;
   readonly durationMinutes: number;
@@ -32,17 +32,17 @@ export const ANNIVERSARY_STEP = 5;
 const FALLBACK_TONE: GroupTone = 'clay';
 const FOUNDED_PREFIX = 'seit ';
 const ANNIVERSARY_SUFFIX = ' Jahre';
-const RHYTHM_LEAD = 'Wir trainieren ';
-const RHYTHM_END = '.';
-const RHYTHM_SEPARATOR = ', ';
-const RHYTHM_LAST_SEPARATOR = ' und ';
+const USUAL_TIMES_LEAD = 'Wir trainieren ';
+const USUAL_TIMES_END = '.';
+const USUAL_TIMES_SEPARATOR = ', ';
+const USUAL_TIMES_LAST_SEPARATOR = ' und ';
 const VENUE_SEPARATOR = ', ';
 const TIME_SPAN_SEPARATOR = ' – ';
 const CLOCK_SUFFIX = ' Uhr';
 const MINUTES_PER_HOUR = 60;
 const MINUTES_PER_DAY = 1440;
 const NO_YEARS = 0;
-const ONE_SLOT = 1;
+const ONE_USUAL_TIME = 1;
 
 const WEEKDAY_ADVERBS: Record<Weekday, string> = {
   monday: 'montags',
@@ -107,26 +107,28 @@ export const toClockSpan = (startsAt: string, durationMinutes: number): ClockSpa
   return { from: toClockLabel(startMinute), to: toClockLabel(startMinute + durationMinutes) };
 };
 
-export const toTrainingSlotLine = (slot: TrainingSlotFacts): string => {
-  const clock = toClockSpan(slot.startsAt, slot.durationMinutes);
+export const toUsualTrainingTimeLine = (usualTime: UsualTrainingTimeFacts): string => {
+  const clock = toClockSpan(usualTime.startsAt, usualTime.durationMinutes);
   const span = `${clock.from}${TIME_SPAN_SEPARATOR}${clock.to}${CLOCK_SUFFIX}`;
-  const venue = slot.venueName === null ? '' : `${VENUE_SEPARATOR}${slot.venueName}`;
+  const venue = usualTime.venueName === null ? '' : `${VENUE_SEPARATOR}${usualTime.venueName}`;
 
-  return `${WEEKDAY_ADVERBS[slot.weekday]} ${span}${venue}`;
+  return `${WEEKDAY_ADVERBS[usualTime.weekday]} ${span}${venue}`;
 };
 
-export const toRhythmSentence = (slots: readonly TrainingSlotFacts[]): string | null => {
-  if (slots.length === 0) {
+export const toUsualTrainingTimesSentence = (
+  usualTimes: readonly UsualTrainingTimeFacts[],
+): string | null => {
+  if (usualTimes.length === 0) {
     return null;
   }
 
-  const lines = slots.map(toTrainingSlotLine);
-  const last = lines.slice(-ONE_SLOT).join('');
-  const leading = lines.slice(0, -ONE_SLOT);
+  const lines = usualTimes.map(toUsualTrainingTimeLine);
+  const last = lines.slice(-ONE_USUAL_TIME).join('');
+  const leading = lines.slice(0, -ONE_USUAL_TIME);
   const joined =
     leading.length === 0
       ? last
-      : `${leading.join(RHYTHM_SEPARATOR)}${RHYTHM_LAST_SEPARATOR}${last}`;
+      : `${leading.join(USUAL_TIMES_SEPARATOR)}${USUAL_TIMES_LAST_SEPARATOR}${last}`;
 
-  return `${RHYTHM_LEAD}${joined}${RHYTHM_END}`;
+  return `${USUAL_TIMES_LEAD}${joined}${USUAL_TIMES_END}`;
 };

@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 import { inkWash } from './internal/ink-wash';
 import { stepFigures } from './KkStatePill/state-paint';
 import { kkTokens } from './tokens';
@@ -36,9 +36,16 @@ interface KkTenureChainRowProps {
   span: string;
   state: KkTenureState;
   stateLabel: string;
+  action?: ReactNode;
 }
 
-export const KkTenureChainRow: FC<KkTenureChainRowProps> = ({ name, span, state, stateLabel }) => (
+export const KkTenureChainRow: FC<KkTenureChainRowProps> = ({
+  name,
+  span,
+  state,
+  stateLabel,
+  action,
+}) => (
   <Stack
     direction="row"
     component="li"
@@ -91,5 +98,6 @@ export const KkTenureChainRow: FC<KkTenureChainRowProps> = ({ name, span, state,
     >
       {span}
     </Box>
+    {action}
   </Stack>
 );

@@ -8,6 +8,7 @@ import {
   sessionProgressAt,
 } from '@/lib/club';
 import { formatSessionLabel } from '@/lib/membership-labels';
+import { toSessionLogoImage } from '@/lib/session-logo-image';
 import { useClubHubQuery } from '../api';
 import {
   MOTTO_PENDING_LABEL,
@@ -16,6 +17,8 @@ import {
   toNumberLabel,
 } from '../club-labels';
 import { sceneForSession } from '../stages/stage-registry';
+
+const LOGO_SIZES = '(min-width: 900px) 56vw, 74vw';
 
 export const ClubStage: FC = () => {
   const clubHub = useClubHubQuery();
@@ -50,7 +53,7 @@ export const ClubStage: FC = () => {
     ? null
     : toCountdownLabel(daysUntilOpening(now, relevantStartYear));
   const progress = isRunning ? sessionProgressAt(now) : null;
-  const logo = session.logoSvg;
+  const logo = toSessionLogoImage(session.logo, LOGO_SIZES);
   const Scene = sceneForSession(relevantStartYear);
 
   const scene =

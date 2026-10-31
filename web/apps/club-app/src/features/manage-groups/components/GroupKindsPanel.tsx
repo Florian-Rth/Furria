@@ -8,7 +8,6 @@ import { toLandingKey } from '@/features/write/landing-target';
 import {
   CREATE_GROUP_KIND_LABEL,
   CREATE_GROUP_KIND_PILL_LABEL,
-  GROUP_KINDS_LEAD,
   GROUP_KINDS_PANEL_TITLE,
   toGroupKindEntries,
 } from '../manage-groups-labels';
@@ -59,7 +58,7 @@ export const GroupKindsPanel: FC<GroupKindsPanelProps> = ({ kinds, highlightedKe
   };
 
   return (
-    <KkPanelSection title={GROUP_KINDS_PANEL_TITLE} meta={GROUP_KINDS_LEAD} action={action}>
+    <KkPanelSection title={GROUP_KINDS_PANEL_TITLE} action={action}>
       {body}
     </KkPanelSection>
   );

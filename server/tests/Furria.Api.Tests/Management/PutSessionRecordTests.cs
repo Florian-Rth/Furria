@@ -11,22 +11,10 @@ public sealed class PutSessionRecordTests : IClassFixture<ApiTestFixture>
 {
     private const int UnknownSessionId = 999_999;
     private const string ConflictField = "conflict";
-    private const string ValidationField = "request";
     private const string DuplicateStartYearMessage =
         "Für diese Session gibt es schon einen Eintrag.";
-    private const string UnreadableLogoMessage = "Dieses Sessionslogo ist keine lesbare SVG-Datei.";
     private const string Motto = "FURRIA — Der Mittelpunkt des Universums";
     private const string WrongMotto = "Vom Festzelt ins All";
-    private const string Logo =
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\">"
-        + "<circle cx=\"5\" cy=\"5\" r=\"4\" />"
-        + "</svg>";
-    private const string LogoCarryingAScript =
-        "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 10 10\">"
-        + "<script>alert(1)</script>"
-        + "<circle cx=\"5\" cy=\"5\" r=\"4\" />"
-        + "</svg>";
-    private const string TornArtwork = "<svg><circle r=\"4\"></svg>";
 
     private readonly ApiTestFixture _fixture;
 
@@ -46,7 +34,7 @@ public sealed class PutSessionRecordTests : IClassFixture<ApiTestFixture>
         var sessionId = ctx.Club.Sessions.IdOf("laufende");
 
         var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EditAsync(client, sessionId, 2026, 53, Motto, null);
+        var response = await EditAsync(client, sessionId, 2026, 53, Motto);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx
@@ -68,50 +56,32 @@ public sealed class PutSessionRecordTests : IClassFixture<ApiTestFixture>
         var sessionId = ctx.Club.Sessions.IdOf("laufende");
 
         var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EditAsync(client, sessionId, 2026, 53, null, null);
+        var response = await EditAsync(client, sessionId, 2026, 53, null);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx.Expected.Session(sessionId).ToHaveMotto(null).AssertAsync(ct);
     }
 
     [Fact]
-    public async Task Should_StoreTheArtworkWithoutTheScript_When_TheLogoCarriesOne()
+    public async Task Should_KeepTheLogo_When_TheRestOfTheRecordIsEdited()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
-            builder => builder.Club(club => club.AddSession("laufende", 2026)),
+            builder => builder.Club(club => club.AddSession("laufende", 2026, 53, WrongMotto)),
             ct
         );
         var sessionId = ctx.Club.Sessions.IdOf("laufende");
-
         var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EditAsync(client, sessionId, 2026, null, null, LogoCarryingAScript);
+        var logoId = await SessionLogoSteps.UploadAsync(client, sessionId, ct);
+
+        var response = await EditAsync(client, sessionId, 2026, 53, Motto);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx.Expected.Session(sessionId).ToHaveLogo(Logo).AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_KeepTheEntryAsItWas_When_TheLogoIsNotReadableArtwork()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder => builder.Club(club => club.AddSession("laufende", 2026, 53, Motto)),
-            ct
-        );
-        var sessionId = ctx.Club.Sessions.IdOf("laufende");
-
-        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EditAsync(client, sessionId, 2026, 53, WrongMotto, TornArtwork);
-
-        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
-        var failures = await ReadFailuresAsync(response, ct);
-        Assert.Equal([UnreadableLogoMessage], failures[ValidationField]);
         await ctx
             .Expected.Session(sessionId)
             .ToHaveMotto(Motto)
             .Session(sessionId)
-            .ToHaveLogo(null)
+            .ToShowLogo(logoId)
             .AssertAsync(ct);
     }
 
@@ -127,7 +97,7 @@ public sealed class PutSessionRecordTests : IClassFixture<ApiTestFixture>
         var sessionId = ctx.Club.Sessions.IdOf("laufende");
 
         var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EditAsync(client, sessionId, 2025, null, null, null);
+        var response = await EditAsync(client, sessionId, 2025, null, null);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         var failures = await ReadFailuresAsync(response, ct);
@@ -142,7 +112,7 @@ public sealed class PutSessionRecordTests : IClassFixture<ApiTestFixture>
         var ctx = await _fixture.BuildAsync(ct);
 
         var client = await ctx.Identity.ManagingLoginClientAsync(ct);
-        var response = await EditAsync(client, UnknownSessionId, 2026, null, Motto, null);
+        var response = await EditAsync(client, UnknownSessionId, 2026, null, Motto);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -152,8 +122,7 @@ public sealed class PutSessionRecordTests : IClassFixture<ApiTestFixture>
         int sessionId,
         int startYear,
         int? number,
-        string? motto,
-        string? logoSvg
+        string? motto
     ) =>
         client.PUTAsync<PutSessionRecord, PutSessionRecordRequest>(
             new PutSessionRecordRequest
@@ -162,7 +131,6 @@ public sealed class PutSessionRecordTests : IClassFixture<ApiTestFixture>
                 StartYear = startYear,
                 Number = number,
                 Motto = motto,
-                LogoSvg = logoSvg,
             }
         );
 

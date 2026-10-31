@@ -13,8 +13,6 @@ const SAVE_LABEL = 'Speichern';
 const SECTION_TITLE = 'Gruppenart';
 const NAME_LABEL = 'Name';
 const NAME_HINT = 'Erscheint bei der Auswahl der Gruppenart und im Gruppenverzeichnis.';
-const CREATE_EXPLANATION = 'Die Zuordnung erfolgt an der jeweiligen Gruppe.';
-const EDIT_EXPLANATION = 'Eine Umbenennung ändert nichts an der Zuordnung der Gruppen.';
 
 interface GroupKindEditorProps {
   entry: GroupKindEntry | null;
@@ -26,7 +24,6 @@ export const GroupKindEditor: FC<GroupKindEditorProps> = ({ entry }) => {
   const nameErrorText = control.form.formState.errors.name?.message;
 
   const title = entry === null ? CREATE_TITLE : EDIT_TITLE;
-  const explanation = entry === null ? CREATE_EXPLANATION : EDIT_EXPLANATION;
   const actionLabel = entry === null ? ADD_LABEL : SAVE_LABEL;
 
   return (
@@ -44,7 +41,7 @@ export const GroupKindEditor: FC<GroupKindEditorProps> = ({ entry }) => {
         },
       }}
     >
-      <KkFormSection title={SECTION_TITLE} description={explanation}>
+      <KkFormSection title={SECTION_TITLE}>
         <KkTextField
           name={nameField.name}
           label={NAME_LABEL}

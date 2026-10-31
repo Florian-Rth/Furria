@@ -59,7 +59,6 @@ export const redoneTextOf = (kind: StudioWriteKind): string =>
   `${REDONE_PREFIX}: ${WRITE_TEXT[kind]}`;
 
 export const HISTORY_TITLE = 'Verlauf';
-export const HISTORY_VISIT = 'Deine Änderungen bei diesem Besuch';
 export const HISTORY_EMPTY = 'Noch nichts geändert.';
 export const HISTORY_YOU = 'Du';
 export const HISTORY_UNDONE = 'zurückgenommen';
@@ -69,8 +68,6 @@ export const REDO_ARIA = 'Wiederholen (Strg+Umschalt+Z)';
 
 export const VERSIONS_TITLE = 'Fassungen der Aufstellung';
 export const EVENING_VERSIONS_TITLE = 'Fassungen dieses Abends';
-export const VERSIONS_NOTE =
-  'Aus den letzten 14 Tagen bleibt jede Speicherung erhalten, davor die letzte Fassung jedes Tages. Wiederherstellen legt eine neue Fassung an.';
 export const VERSIONS_OLDER = 'Ältere Fassungen laden';
 export const VERSIONS_OLDER_RETRY = 'Ältere Fassungen erneut laden';
 export const VERSIONS_OLDER_FAILED = 'Ältere Fassungen konnten nicht geladen werden.';

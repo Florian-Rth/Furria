@@ -145,6 +145,7 @@ export const useCalendarFold = (board: CalendarBoard, scroll: CalendarScroll): C
   const cells = toDayCells(
     monthDaysOf(page.month),
     board.byDay,
+    board.usualDays,
     board.owedIds,
     board.todayDay,
     page.month,

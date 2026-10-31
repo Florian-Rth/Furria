@@ -7,7 +7,7 @@ import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import { fromIsoDay, toIsoDay } from '@/lib/day';
 import { answerOf, asksForAnswer, daysBetween, isOver } from './calendar-agenda';
 import { dayMarkOf, toEntryDays } from './calendar-board';
-import type { CalendarEntry } from './schemas';
+import type { CalendarEntry, UsualTraining } from './schemas';
 
 const MINUTES_PER_DAY = 1440;
 const MINUTES_PER_HOUR = 60;
@@ -70,6 +70,45 @@ export const toSegments = (
         ? [{ entry, dayIndex, span: spanOn(entry, isoDay, startDay, endDay) }]
         : [],
     );
+  });
+
+export interface UsualSegment {
+  usual: UsualTraining;
+  dayIndex: number;
+  span: KkCalendarHoursSpan;
+}
+
+export const toUsualSegments = (
+  usuals: readonly UsualTraining[],
+  weekDays: readonly string[],
+): UsualSegment[] =>
+  usuals.flatMap((usual) => {
+    const dayIndex = weekDays.indexOf(toIsoDay(new Date(usual.startsAt)));
+
+    if (dayIndex === -1) {
+      return [];
+    }
+
+    const isoDay = weekDays[dayIndex] ?? '';
+    const startMinute = minutesSince(isoDay, usual.startsAt);
+    const endMinute = Math.min(
+      Math.max(minutesSince(isoDay, usual.endsAt), startMinute),
+      MINUTES_PER_DAY,
+    );
+
+    return [
+      {
+        usual,
+        dayIndex,
+        span: {
+          startMinute,
+          endMinute,
+          continuesBefore: false,
+          continuesAfter: false,
+          openEnd: false,
+        },
+      },
+    ];
   });
 
 export const hoursBadgeOf = (

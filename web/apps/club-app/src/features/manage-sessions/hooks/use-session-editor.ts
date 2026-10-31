@@ -1,12 +1,12 @@
-import { useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import { relevantSessionYear } from '@/lib/club';
 import { useCreateSessionRecordMutation, useUpdateSessionRecordMutation } from '../api';
 import type { SessionRecordForm, SessionRecordSummary } from '../schemas';
 import { SessionRecordFormSchema } from '../schemas';
-import { toLogoFileRejection, UNREADABLE_FILE_MESSAGE } from '../session-logo-file';
 import { toSessionRecordForm, toSessionRecordPayload } from '../session-record-payload';
+import type { SessionLogoControl } from './use-session-logo';
+import { useSessionLogo } from './use-session-logo';
 
 export interface SessionEditorControl {
   form: UseFormReturn<SessionRecordForm>;
@@ -14,10 +14,7 @@ export interface SessionEditorControl {
   setStartYear: (value: number | null) => void;
   number: string;
   setNumber: (value: string) => void;
-  logoSvg: string | null;
-  logoRejection: string | null;
-  takeLogoFile: (file: File | null) => void;
-  clearLogo: () => void;
+  logo: SessionLogoControl;
   currentSessionYear: number;
   isDirty: boolean;
   canSubmit: boolean;
@@ -30,7 +27,7 @@ export const useSessionEditor = (
   record: SessionRecordSummary | null,
   draftYear: number | null,
 ): SessionEditorControl => {
-  const [logoRejection, setLogoRejection] = useState<string | null>(null);
+  const logo = useSessionLogo(record?.logo ?? null);
   const createMutation = useCreateSessionRecordMutation();
   const updateMutation = useUpdateSessionRecordMutation();
 
@@ -44,11 +41,18 @@ export const useSessionEditor = (
         return null;
       }
 
-      return record === null
-        ? createMutation.mutateAsync(payload).then((created) => created.sessionId)
-        : updateMutation
-            .mutateAsync({ sessionId: record.sessionId, payload })
-            .then(() => record.sessionId);
+      const written =
+        record === null
+          ? createMutation.mutateAsync(payload).then((created) => created.sessionId)
+          : updateMutation
+              .mutateAsync({ sessionId: record.sessionId, payload })
+              .then(() => record.sessionId);
+
+      return written.then(async (sessionId) => {
+        await logo.sendTo(sessionId);
+
+        return sessionId;
+      });
     },
     landing: (sessionId) => ({ to: '/manage/sessions', mark: { kind: 'session', id: sessionId } }),
   });
@@ -62,53 +66,15 @@ export const useSessionEditor = (
     form.setValue('number', value, { shouldValidate: true, shouldDirty: true });
   };
 
-  const setLogo = (value: string | null): void => {
-    form.setValue('logoSvg', value, { shouldValidate: true, shouldDirty: true });
-  };
-
-  const clearLogo = (): void => {
-    setLogoRejection(null);
-    setLogo(null);
-  };
-
-  const takeLogoFile = (file: File | null): void => {
-    if (file === null) {
-      return;
-    }
-
-    const refusal = toLogoFileRejection({ type: file.type, size: file.size });
-
-    if (refusal !== null) {
-      setLogoRejection(refusal);
-      return;
-    }
-
-    const reader = new FileReader();
-
-    reader.onload = (): void => {
-      if (typeof reader.result === 'string') {
-        setLogoRejection(null);
-        setLogo(reader.result);
-      }
-    };
-    reader.onerror = (): void => {
-      setLogoRejection(UNREADABLE_FILE_MESSAGE);
-    };
-    reader.readAsText(file);
-  };
-
   return {
     form,
     startYear: form.watch('startYear'),
     setStartYear,
     number: write.values.number,
     setNumber,
-    logoSvg: form.watch('logoSvg'),
-    logoRejection,
-    takeLogoFile,
-    clearLogo,
+    logo,
     currentSessionYear: relevantSessionYear(new Date()),
-    isDirty: write.isDirty,
+    isDirty: write.isDirty || logo.isChanged,
     canSubmit: write.canSubmit,
     isSaving: write.isSaving,
     rejection: write.rejection,

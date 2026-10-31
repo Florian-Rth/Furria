@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { GroupActsPage } from '@/features/acts/components/GroupActsPage';
-import { ActsSearchSchema } from '@/features/acts/schemas';
+import { GroupActsSearchSchema } from '@/features/acts/schemas';
 
 const GroupActsRoute: FC = () => {
   const { groupId } = Route.useParams();
@@ -11,6 +11,6 @@ const GroupActsRoute: FC = () => {
 };
 
 export const Route = createFileRoute('/_app/groups_/$groupId_/acts')({
-  validateSearch: ActsSearchSchema,
+  validateSearch: GroupActsSearchSchema,
   component: GroupActsRoute,
 });

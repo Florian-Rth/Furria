@@ -42,7 +42,7 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<GroupAdmin> GroupAdmins => Set<GroupAdmin>();
 
-    public DbSet<GroupTrainingSlot> GroupTrainingSlots => Set<GroupTrainingSlot>();
+    public DbSet<UsualTrainingTime> UsualTrainingTimes => Set<UsualTrainingTime>();
 
     public DbSet<Role> Roles => Set<Role>();
 

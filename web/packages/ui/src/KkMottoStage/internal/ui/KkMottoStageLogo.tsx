@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
-import { logoInk } from '../../../internal/logo-ink';
+import type { KkImageSource } from '../../../image-source';
 import { KkImage } from '../../../KkImage';
 
 const FADE = 'linear-gradient(to right, transparent 6%, #000 62%)';
@@ -9,10 +9,10 @@ const LIGHT_OPACITY = 0.94;
 const DARK_OPACITY = 0.82;
 
 interface KkMottoStageLogoProps {
-  source: string;
+  image: KkImageSource;
 }
 
-export const KkMottoStageLogo: FC<KkMottoStageLogoProps> = ({ source }) => (
+export const KkMottoStageLogo: FC<KkMottoStageLogoProps> = ({ image }) => (
   <Box
     aria-hidden
     data-kk-motto-stage-logo
@@ -27,8 +27,11 @@ export const KkMottoStageLogo: FC<KkMottoStageLogoProps> = ({ source }) => (
   >
     <KkImage
       fault="hide"
-      src={source}
+      src={image.src}
+      srcSet={image.srcSet}
+      sizes={image.sizes}
       alt=""
+      decoding="async"
       sx={(theme) => ({
         position: 'absolute',
         top: 0,
@@ -40,7 +43,7 @@ export const KkMottoStageLogo: FC<KkMottoStageLogoProps> = ({ source }) => (
         opacity: LIGHT_OPACITY,
         maskImage: FADE,
         WebkitMaskImage: FADE,
-        ...logoInk(theme, { opacity: DARK_OPACITY }),
+        ...theme.applyStyles('dark', { opacity: DARK_OPACITY }),
       })}
     />
   </Box>

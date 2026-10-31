@@ -46,7 +46,7 @@ export const ActTrainingRollPane: FC<ActTrainingRollPaneProps> = ({ pane, framed
       />
       <KkStepPane.Body>
         {open}
-        <KkPanelSection title={ROLL_GRID_TITLE} description={pane.note}>
+        <KkPanelSection title={ROLL_GRID_TITLE}>
           <KkCastGrid
             label={ROLL_GRID_LABEL}
             tiles={pane.tiles}

@@ -7,8 +7,8 @@ import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { MANAGED_GROUPS_EMPTY, REGISTER_TITLE } from '../manage-groups-labels';
-import type { GroupRegisterBands, GroupWorkFilterId } from '../manage-groups-work';
-import { countBandedGroups, toRegisterMeta } from '../manage-groups-work';
+import type { GroupRegisterBands } from '../manage-groups-work';
+import { countBandedGroups } from '../manage-groups-work';
 import { GroupRegisterBand } from './GroupRegisterBand';
 
 const ARCHIVED_BAND_TITLE = 'Archiviert';
@@ -20,17 +20,11 @@ const BAND_LABEL = { pt: 2.25, pb: 0.5, minWidth: 0 } as const;
 
 interface GroupRegisterProps {
   bands: GroupRegisterBands;
-  filter: GroupWorkFilterId;
   isFiltered: boolean;
   highlightedKey: string | null;
 }
 
-export const GroupRegister: FC<GroupRegisterProps> = ({
-  bands,
-  filter,
-  isFiltered,
-  highlightedKey,
-}) => {
+export const GroupRegister: FC<GroupRegisterProps> = ({ bands, isFiltered, highlightedKey }) => {
   const shown = countBandedGroups(bands);
   const empty = isFiltered ? MANAGED_GROUPS_EMPTY.filtered : MANAGED_GROUPS_EMPTY.cold;
 
@@ -63,7 +57,7 @@ export const GroupRegister: FC<GroupRegisterProps> = ({
   };
 
   return (
-    <KkPanelSection title={REGISTER_TITLE} meta={toRegisterMeta(filter, bands)} action={action}>
+    <KkPanelSection title={REGISTER_TITLE} action={action}>
       {body}
     </KkPanelSection>
   );

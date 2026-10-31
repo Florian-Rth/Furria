@@ -46,7 +46,7 @@ export const RoleBody: FC<RoleBodyProps> = ({ page }) => {
           framed={false}
           surface="page"
           onAddHolder={page.form.openHolding}
-          onEndHolder={page.form.endHolding}
+          onHolderTask={page.form.takeUpHolding}
         />
       </KkMasterDetail.Master>
       <HoldingFormHost

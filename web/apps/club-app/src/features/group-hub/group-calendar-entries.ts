@@ -12,7 +12,6 @@ const WITH_PREFIX = 'mit ';
 const WITH_SEPARATOR = ', ';
 const CLUB_OWNER_LABEL = 'Verein';
 const RUNNING_LABEL = 'läuft gerade';
-const ONE_CALENDAR_ENTRY = 1;
 
 export interface CalendarEntryWindow {
   from: string;
@@ -75,15 +74,4 @@ export const toCalendarEntryMetaLine = (entry: GroupCalendarEntry, groupId: numb
   }
 
   return parts.join(META_SEPARATOR);
-};
-
-export const toCalendarEntryMeta = (count: number): string => {
-  if (count === 0) {
-    return 'nichts geplant';
-  }
-  if (count === ONE_CALENDAR_ENTRY) {
-    return '1 Termin';
-  }
-
-  return `${count} Termine`;
 };

@@ -9,4 +9,5 @@ public enum MediaOwnerKind
     Website = 5,
     Event = 6,
     Act = 7,
+    Session = 8,
 }

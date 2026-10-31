@@ -38,6 +38,7 @@ const block = (
   kind: 'training',
   tone: null,
   running: false,
+  usual: false,
   badge: null,
   selected: false,
 });

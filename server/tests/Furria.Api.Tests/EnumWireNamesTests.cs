@@ -38,7 +38,6 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             + "trophy flag key shirt pen wrench palette heart mug calendar whistle broom",
         [typeof(PersonFunctionKind)] = "boardSeat groupAdmin role",
         [typeof(DayOfWeek)] = "sunday monday tuesday wednesday thursday friday saturday",
-        [typeof(TrainingPreviewState)] = "creatable venueTaken alreadyExists venueArchived",
         [typeof(EventSalesStatus)] =
             "announced presaleScheduled available fewLeft soldOut cancelled",
         [typeof(EventStep)] = "details tickets review runningOrder",
@@ -50,7 +49,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(NewsPublicationRequirement)] = "category title teaser text",
         [typeof(MediaKind)] = "photo video audio",
         [typeof(EveningChange)] = "cast spots choreography",
-        [typeof(MediaOwnerKind)] = "person group gallery newsPost website event act",
+        [typeof(MediaOwnerKind)] = "person group gallery newsPost website event act session",
         [typeof(SystemLevel)] = "ok attention broken",
         [typeof(SystemCheck)] = "database workers queue storage media logs services mail",
         [typeof(SystemReasonCode)] =

@@ -3,6 +3,7 @@ import { NoContentSchema } from '@/lib/api/schemas';
 import { toRoleCoin } from './role-coin';
 import type {
   AddRoleHoldingForm,
+  CorrectRoleHoldingForm,
   CreatedRole,
   CreatedRoleHolding,
   EndRoleHoldingForm,
@@ -89,6 +90,18 @@ export const requestEndRoleHolding = (
   apiFetch(`/api/manage/roles/${roleId}/holdings/${form.roleHoldingId}/end`, {
     method: 'POST',
     body: { endedOn: form.endedOn },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestCorrectRoleHolding = (
+  roleId: number,
+  form: CorrectRoleHoldingForm,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/manage/roles/${roleId}/holdings/${form.roleHoldingId}`, {
+    method: 'PUT',
+    body: { sinceOn: form.sinceOn, untilOn: form.untilOn },
     schema: NoContentSchema,
     accessToken,
   });

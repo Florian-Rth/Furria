@@ -1,6 +1,7 @@
 import { KkNote } from '@furria/ui/KkNote';
 import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
 import type { FC } from 'react';
+import type { HoldingTask } from '../hooks/use-holding-form-target';
 import type { RolePaneControl } from '../hooks/use-role-pane';
 import { isRoleArchived, toSeatedOffices } from '../roles-hub';
 import {
@@ -18,10 +19,10 @@ interface RoleHoldersTabProps {
   role: RoleSummary;
   today: string;
   control: RolePaneControl;
-  onEnd: (roleHoldingId: number) => void;
+  onTask: (roleHoldingId: number, task: HoldingTask) => void;
 }
 
-export const RoleHoldersTab: FC<RoleHoldersTabProps> = ({ role, today, control, onEnd }) => {
+export const RoleHoldersTab: FC<RoleHoldersTabProps> = ({ role, today, control, onTask }) => {
   if (control.loadError !== null) {
     return (
       <KkRetryAlert
@@ -46,18 +47,18 @@ export const RoleHoldersTab: FC<RoleHoldersTabProps> = ({ role, today, control, 
         emptyNote={nobody}
         pending={control.holdersPending}
         today={today}
-        canEnd={!isArchived}
-        onEnd={onEnd}
+        editable={!isArchived}
+        onTask={onTask}
       />
       <RoleHolderGroup
         title={PLANNED_TITLE}
         holders={control.groups.planned}
         pending={false}
         today={today}
-        canEnd={false}
-        onEnd={onEnd}
+        editable={!isArchived}
+        onTask={onTask}
       />
-      <RolePastGroup holders={control.past} />
+      <RolePastGroup holders={control.past} editable={!isArchived} onTask={onTask} />
     </>
   );
 };

@@ -10,5 +10,5 @@ public sealed record ClubHubSession
 
     public required string? Motto { get; init; }
 
-    public required string? LogoSvg { get; init; }
+    public required SessionLogoDetails? Logo { get; init; }
 }

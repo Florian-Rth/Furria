@@ -6,8 +6,6 @@ import type { FC } from 'react';
 import { useLogoutEverywhere } from '../hooks/use-logout-everywhere';
 
 const TITLE = 'Geräte';
-const DESCRIPTION =
-  'Du hast ein Gerät verloren oder dich woanders nicht abgemeldet? Dann beende hier jede Sitzung auf einmal.';
 const LOGOUT_EVERYWHERE_LABEL = 'Überall abmelden';
 const EYEBROW = 'Überall abmelden';
 const QUESTION = 'Auf allen Geräten abmelden?';
@@ -22,7 +20,7 @@ export const LogoutEverywherePanel: FC = () => {
   const logoutIcon = <KkIcon name="logout" size="small" />;
 
   return (
-    <KkPanelSection title={TITLE} description={DESCRIPTION}>
+    <KkPanelSection title={TITLE}>
       <KkButton variant="outlined" fullWidth startIcon={logoutIcon} onClick={control.open}>
         {LOGOUT_EVERYWHERE_LABEL}
       </KkButton>

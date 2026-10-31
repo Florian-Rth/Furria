@@ -2,7 +2,6 @@ import { toGroupKindId } from '@/features/group-kinds/group-kinds-labels';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import { toGroupInfoPayload } from './group-hub-labels';
-import type { TrainingSlotPayload } from './rhythm-labels';
 import type {
   AddedGroupAdmin,
   AddedGroupMembership,
@@ -10,25 +9,22 @@ import type {
   AddGroupMembershipForm,
   EndGroupAdminForm,
   EndGroupMembershipForm,
-  GeneratedTrainings,
   GroupAdministrationForm,
   GroupCalendarResponse,
   GroupHub,
   GroupInfoForm,
   MyGroupsResponse,
   PersonSearchResponse,
-  TrainingPreview,
 } from './schemas';
 import {
   AddedGroupAdminSchema,
   AddedGroupMembershipSchema,
-  GeneratedTrainingsSchema,
   GroupCalendarResponseSchema,
   GroupHubSchema,
   MyGroupsResponseSchema,
   PersonSearchResponseSchema,
-  TrainingPreviewSchema,
 } from './schemas';
+import type { UsualTrainingTimePayload } from './usual-training-time-labels';
 
 export const requestMyGroups = (accessToken: string): Promise<MyGroupsResponse> =>
   apiFetch('/api/my-groups', { schema: MyGroupsResponseSchema, accessToken });
@@ -135,52 +131,21 @@ export const requestEndGroupAdmin = (
     accessToken,
   });
 
-export const requestSetTrainingSlots = (
+export const requestSetUsualTrainingTimes = (
   groupId: number,
-  slots: readonly TrainingSlotPayload[],
+  usualTimes: readonly UsualTrainingTimePayload[],
   accessToken: string,
 ): Promise<void> =>
-  apiFetch(`/api/groups/${groupId}/training-slots`, {
+  apiFetch(`/api/groups/${groupId}/usual-training-times`, {
     method: 'PUT',
     body: {
-      slots: slots.map((slot) => ({
-        weekday: slot.weekday,
-        startsAt: slot.startsAt,
-        durationMinutes: slot.durationMinutes,
-        venueId: slot.venueId,
+      usualTimes: usualTimes.map((usualTime) => ({
+        weekday: usualTime.weekday,
+        startsAt: usualTime.startsAt,
+        durationMinutes: usualTime.durationMinutes,
+        venueId: usualTime.venueId,
       })),
     },
     schema: NoContentSchema,
-    accessToken,
-  });
-
-export const requestTrainingPreview = (
-  groupId: number,
-  endsOn: string | null,
-  accessToken: string,
-): Promise<TrainingPreview> =>
-  apiFetch(`/api/groups/${groupId}/trainings/preview`, {
-    method: 'POST',
-    body: { endsOn },
-    schema: TrainingPreviewSchema,
-    accessToken,
-  });
-
-export const requestGeneratedTrainings = (
-  groupId: number,
-  title: string,
-  instants: readonly { groupTrainingSlotId: number; startsAt: string }[],
-  accessToken: string,
-): Promise<GeneratedTrainings> =>
-  apiFetch(`/api/groups/${groupId}/trainings`, {
-    method: 'POST',
-    body: {
-      title,
-      instants: instants.map((instant) => ({
-        groupTrainingSlotId: instant.groupTrainingSlotId,
-        startsAt: instant.startsAt,
-      })),
-    },
-    schema: GeneratedTrainingsSchema,
     accessToken,
   });

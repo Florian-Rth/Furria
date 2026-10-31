@@ -82,6 +82,7 @@ export const useCalendarPager = (
   const cells = toDayCells(
     dayList,
     board.byDay,
+    board.usualDays,
     board.owedIds,
     board.todayDay,
     unit === 'month' ? shown.page : null,

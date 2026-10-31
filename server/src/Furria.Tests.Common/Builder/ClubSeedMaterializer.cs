@@ -29,7 +29,7 @@ internal static class ClubSeedMaterializer
         await InsertClubRecordAsync(dbContext, recorded, ct);
         var sessions = await InsertSessionsAsync(dbContext, recorded, ct);
         var venues = await InsertVenuesAsync(dbContext, recorded, ct);
-        var trainingSlots = await InsertTrainingSlotsAsync(
+        var usualTrainingTimes = await InsertUsualTrainingTimesAsync(
             dbContext,
             recorded,
             groupIds,
@@ -69,7 +69,7 @@ internal static class ClubSeedMaterializer
             keyHoldings,
             boardOffices,
             boardSeats,
-            trainingSlots,
+            usualTrainingTimes,
             calendarEntries,
             attendanceResponses,
             events
@@ -120,7 +120,6 @@ internal static class ClubSeedMaterializer
                 StartYear = intent.StartYear,
                 Number = intent.Number,
                 Motto = intent.Motto,
-                LogoSvg = intent.LogoSvg,
             },
             StringComparer.Ordinal
         );
@@ -216,7 +215,7 @@ internal static class ClubSeedMaterializer
         );
     }
 
-    private static async Task<Dictionary<string, int>> InsertTrainingSlotsAsync(
+    private static async Task<Dictionary<string, int>> InsertUsualTrainingTimesAsync(
         AppDbContext dbContext,
         ClubSeedBuilder recorded,
         IReadOnlyDictionary<string, int> groupIds,
@@ -224,9 +223,9 @@ internal static class ClubSeedMaterializer
         CancellationToken ct
     )
     {
-        var slots = recorded.TrainingSlots.ToDictionary(
+        var usualTimes = recorded.UsualTrainingTimes.ToDictionary(
             intent => intent.Alias,
-            intent => new GroupTrainingSlot
+            intent => new UsualTrainingTime
             {
                 GroupId = SeedAliases.RequireId(groupIds, intent.GroupAlias, "Group"),
                 VenueId = intent.VenueAlias is null
@@ -239,13 +238,13 @@ internal static class ClubSeedMaterializer
             StringComparer.Ordinal
         );
 
-        if (slots.Count > 0)
+        if (usualTimes.Count > 0)
         {
-            dbContext.GroupTrainingSlots.AddRange(slots.Values);
+            dbContext.UsualTrainingTimes.AddRange(usualTimes.Values);
             await dbContext.SaveChangesAsync(ct);
         }
 
-        return slots.ToDictionary(
+        return usualTimes.ToDictionary(
             entry => entry.Key,
             entry => entry.Value.Id,
             StringComparer.Ordinal

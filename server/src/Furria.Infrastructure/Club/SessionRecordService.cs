@@ -2,6 +2,7 @@ using System.Diagnostics.Contracts;
 using Furria.Application.Club;
 using Furria.Application.Results;
 using Furria.Core.Club;
+using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -14,37 +15,58 @@ public sealed class SessionRecordService
     private const string DuplicateStartYearMessage =
         "Für diese Session gibt es schon einen Eintrag.";
     private const string DuplicateNumberMessage = "Diese Nº steht schon bei einer anderen Session.";
-    private const string UnreadableLogoMessage = "Dieses Sessionslogo ist keine lesbare SVG-Datei.";
 
     private readonly AppDbContext _dbContext;
+    private readonly MediaPictures _pictures;
+    private readonly TimeProvider _timeProvider;
 
-    public SessionRecordService(AppDbContext dbContext)
+    public SessionRecordService(
+        AppDbContext dbContext,
+        MediaPictures pictures,
+        TimeProvider timeProvider
+    )
     {
         _dbContext = dbContext;
+        _pictures = pictures;
+        _timeProvider = timeProvider;
     }
 
-    public async Task<IReadOnlyList<SessionRecordSummary>> GetRecordsAsync(CancellationToken ct) =>
-        await _dbContext
+    public async Task<IReadOnlyList<SessionRecordSummary>> GetRecordsAsync(CancellationToken ct)
+    {
+        var rows = await _dbContext
             .Sessions.AsNoTracking()
             .OrderByDescending(session => session.StartYear)
-            .Select(session => new SessionRecordSummary
-            {
-                SessionId = session.Id,
-                StartYear = session.StartYear,
-                Number = session.Number,
-                Motto = session.Motto,
-                LogoSvg = session.LogoSvg,
-            })
+            .Select(session => new RecordRow(
+                session.Id,
+                session.StartYear,
+                session.Number,
+                session.Motto,
+                session.Logo == null
+                    ? null
+                    : new SessionLogoRow(
+                        session.Id,
+                        session.Logo.Id,
+                        session.Logo.State,
+                        session.Logo.RenderedAt,
+                        session.Logo.Width,
+                        session.Logo.Height
+                    )
+            ))
             .ToListAsync(ct);
+        var stalledIds = await _dbContext.StalledAmongAsync(
+            rows.Select(row => row.Logo is { } logo ? SessionLogos.PictureRowOf(logo) : null),
+            _timeProvider.GetUtcNow(),
+            ct
+        );
+
+        return [.. rows.Select(row => SummaryOf(row, stalledIds))];
+    }
 
     public async Task<Result<int>> CreateAsync(
         CreateSessionRecordCommand command,
         CancellationToken ct
     )
     {
-        if (!TrySanitizeLogo(command.LogoSvg, out var logoSvg))
-            return Result<int>.Validation(UnreadableLogoMessage);
-
         if (await StartYearIsTakenAsync(command.StartYear, NoSessionId, ct))
             return Result<int>.Conflict(DuplicateStartYearMessage);
 
@@ -56,7 +78,6 @@ public sealed class SessionRecordService
             StartYear = command.StartYear,
             Number = command.Number,
             Motto = Written(command.Motto),
-            LogoSvg = logoSvg,
         };
 
         _dbContext.Sessions.Add(session);
@@ -75,9 +96,6 @@ public sealed class SessionRecordService
         if (session is null)
             return Result.NotFound(UnknownRecordMessage);
 
-        if (!TrySanitizeLogo(command.LogoSvg, out var logoSvg))
-            return Result.Validation(UnreadableLogoMessage);
-
         if (await StartYearIsTakenAsync(command.StartYear, command.SessionId, ct))
             return Result.Conflict(DuplicateStartYearMessage);
 
@@ -87,7 +105,6 @@ public sealed class SessionRecordService
         session.StartYear = command.StartYear;
         session.Number = command.Number;
         session.Motto = Written(command.Motto);
-        session.LogoSvg = logoSvg;
 
         return await _dbContext.SaveOrConflictAsync(ct);
     }
@@ -126,21 +143,27 @@ public sealed class SessionRecordService
                 ct
             );
 
-    [Pure]
-    private static bool TrySanitizeLogo(string? logoSvg, out string? sanitized)
-    {
-        var markup = Written(logoSvg);
-
-        if (markup is null)
+    private SessionRecordSummary SummaryOf(RecordRow row, IReadOnlySet<int> stalledIds) =>
+        new()
         {
-            sanitized = null;
-            return true;
-        }
-
-        return SvgSanitizer.TrySanitize(markup, out sanitized);
-    }
+            SessionId = row.SessionId,
+            StartYear = row.StartYear,
+            Number = row.Number,
+            Motto = row.Motto,
+            Logo = row.Logo is { } logo
+                ? SessionLogos.EditingOf(_pictures, logo, stalledIds)
+                : null,
+        };
 
     [Pure]
     private static string? Written(string? value) =>
         string.IsNullOrWhiteSpace(value) ? null : value.Trim();
+
+    private sealed record RecordRow(
+        int SessionId,
+        int StartYear,
+        int? Number,
+        string? Motto,
+        SessionLogoRow? Logo
+    );
 }

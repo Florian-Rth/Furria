@@ -9,7 +9,6 @@ import { useContactVisibility } from '../hooks/use-contact-visibility';
 import {
   PROFILE_SECTION_TITLES,
   VISIBILITY_EXPLANATION,
-  VISIBILITY_KEY_HOLDER_NOTE,
   VISIBILITY_OFF_NOTE,
   VISIBILITY_SWITCH_LABEL,
 } from '../profile-labels';
@@ -39,9 +38,6 @@ export const ProfileVisibilityPanel: FC<ProfileVisibilityPanelProps> = ({ person
           error={visibility.error}
           busy={visibility.isSaving}
         />
-        <KkNote tone="info" icon="permissions">
-          {VISIBILITY_KEY_HOLDER_NOTE}
-        </KkNote>
         {offNote}
       </KkPanel>
     </KkPanelSection>

@@ -166,6 +166,24 @@ public sealed class AccountService
         return updated == 0 ? Result.NotFound(MissingAccountMessage) : Result.Success();
     }
 
+    public async Task<Result> MarkWelcomeSeenAsync(int accountId, CancellationToken ct)
+    {
+        var now = _timeProvider.GetUtcNow();
+
+        var updated = await _dbContext
+            .Users.Where(account => account.Id == accountId)
+            .ExecuteUpdateAsync(
+                setters =>
+                    setters.SetProperty(
+                        account => account.WelcomeSeenAt,
+                        account => account.WelcomeSeenAt ?? now
+                    ),
+                ct
+            );
+
+        return updated == 0 ? Result.NotFound(MissingAccountMessage) : Result.Success();
+    }
+
     public async Task LogoutAsync(string presentedToken, int accountId, CancellationToken ct)
     {
         await _refreshTokenService.RevokeFamilyAsync(
@@ -190,6 +208,7 @@ public sealed class AccountService
                 account.Email ?? "",
                 account.IsDisabled,
                 account.LastSeenAnnouncementAt,
+                account.WelcomeSeenAt,
                 _dbContext
                     .AccountEvents.Where(accountEvent =>
                         accountEvent.PersonId == account.PersonId
@@ -317,6 +336,7 @@ public sealed class AccountService
             IsAffiliated = grants.IsAffiliated,
             PermissionKeys = grants.PermissionKeys,
             LastSeenAnnouncementAt = row.LastSeenAnnouncementAt,
+            WelcomeSeenAt = row.WelcomeSeenAt,
             AppSince = row.LastRedeemedAt is { } redeemedAt ? ClubClock.DayOf(redeemedAt) : null,
             Passkeys = passkeys,
         };
@@ -361,6 +381,7 @@ public sealed class AccountService
         string Email,
         bool IsDisabled,
         DateTimeOffset? LastSeenAnnouncementAt,
+        DateTimeOffset? WelcomeSeenAt,
         DateTimeOffset? LastRedeemedAt,
         PersonDetails? Person,
         IReadOnlyList<MembershipPeriodRow> Memberships

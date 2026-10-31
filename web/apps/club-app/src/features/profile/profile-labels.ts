@@ -1,4 +1,4 @@
-import type { MemberContact } from '@/features/members/schemas';
+import type { KkColorSchemeChoice } from '@furria/ui/color-scheme-switch-types';
 import type { ContactChange, MePerson, PersonalMe } from '@/lib/api/schemas';
 import { toContactChangeLine } from '@/lib/contact-change';
 import { toInitials } from '@/lib/initials';
@@ -33,12 +33,7 @@ export const VISIBILITY_SWITCH_LABEL = 'Meine Kontaktdaten für Mitglieder sicht
 export const VISIBILITY_EXPLANATION =
   'Wenn aktiviert, sehen Mitglieder im Verzeichnis deine Telefonnummer, E-Mail und Adresse. Andernfalls erscheint dort ein Hinweis, dass sie nicht freigegeben sind.';
 
-export const VISIBILITY_KEY_HOLDER_NOTE =
-  'Mit dem Recht „Kontaktdaten aller Personen sehen“ sind deine Daten immer sichtbar.';
-
 export const VISIBILITY_OFF_NOTE = 'Das gilt auch für deine Gruppen-Admins.';
-
-export const VISIBILITY_PREVIEW_CAPTION = 'So sehen andere Mitglieder deinen Kontakt.';
 
 export const PROFILE_SECTION_TITLES = {
   contact: 'Kontaktdaten',
@@ -46,24 +41,17 @@ export const PROFILE_SECTION_TITLES = {
   membership: 'Im Verein',
   groups: 'Deine Gruppen',
   visibility: 'Sichtbarkeit',
-  preview: 'Was andere von dir sehen',
   signIn: 'Anmeldung',
+  appearance: 'Darstellung',
 } as const;
 
-export const toPreviewContact = (person: MePerson, visible: boolean): MemberContact => {
-  if (!visible) {
-    return { visibility: 'hidden', phone: null, email: null, street: null, zip: null, city: null };
-  }
+export const APPEARANCE_LABEL = 'Darstellung der App';
 
-  return {
-    visibility: 'shared',
-    phone: person.phone,
-    email: person.email,
-    street: person.street,
-    zip: person.zip,
-    city: person.city,
-  };
-};
+export const APPEARANCE_CHOICES: readonly KkColorSchemeChoice[] = [
+  { mode: 'light', label: 'Hell' },
+  { mode: 'dark', label: 'Dunkel' },
+  { mode: 'system', label: 'Automatisch' },
+];
 
 export const toVisibilitySavedMessage = (visible: boolean): string =>
   visible

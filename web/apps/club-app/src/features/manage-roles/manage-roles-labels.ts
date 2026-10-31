@@ -123,6 +123,9 @@ export const toHoldingEndedMessage = (
     ? `Die Inhaberschaft von ${personName} endet am ${formatIsoDay(endedOn)}.`
     : `Die Inhaberschaft von ${personName} ist beendet.`;
 
+export const toHoldingCorrectedMessage = (personName: string): string =>
+  `Die Inhaberschaft von ${personName} ist geändert.`;
+
 export const toHoldingConsequence = (
   personName: string,
   roleName: string,

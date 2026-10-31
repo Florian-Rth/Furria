@@ -14,6 +14,7 @@ public sealed class MediaOwnerAccess
     private const string UnknownNewsPost = "There is no such news post.";
     private const string UnknownEvent = "There is no such event.";
     private const string UnknownAct = "There is no such act.";
+    private const string UnknownSession = "There is no such session record.";
     private const string ArchivedAct = "The act is archived and takes no more media.";
     private const string NotPermitted = "The caller may not add media to this owner.";
 
@@ -50,6 +51,11 @@ public sealed class MediaOwnerAccess
                 ct
             ),
             MediaOwnerKind.Act => await MayUploadActMediaAsync(accountId, owner.Id!.Value, ct),
+            MediaOwnerKind.Session => await MayUploadSessionLogoAsync(
+                accountId,
+                owner.Id!.Value,
+                ct
+            ),
             MediaOwnerKind.Website => PermittedIf(
                 await _authorizer.IsGrantedAsync(accountId, FurriaPermissions.GalleryPublish, ct)
             ),
@@ -110,6 +116,20 @@ public sealed class MediaOwnerAccess
 
         return PermittedIf(
             await _authorizer.IsGrantedAsync(accountId, FurriaPermissions.EventsManage, ct)
+        );
+    }
+
+    private async Task<Result> MayUploadSessionLogoAsync(
+        int accountId,
+        int sessionId,
+        CancellationToken ct
+    )
+    {
+        if (!await _dbContext.Sessions.AnyAsync(session => session.Id == sessionId, ct))
+            return Result.NotFound(UnknownSession);
+
+        return PermittedIf(
+            await _authorizer.IsGrantedAsync(accountId, FurriaPermissions.ClubManage, ct)
         );
     }
 

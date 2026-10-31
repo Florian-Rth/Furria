@@ -14,7 +14,7 @@ public sealed class TestClub
 
     public AliasRegistry<int> BoardSeats { get; }
 
-    public AliasRegistry<int> TrainingSlots { get; }
+    public AliasRegistry<int> UsualTrainingTimes { get; }
 
     public AliasRegistry<int> CalendarEntries { get; }
 
@@ -30,7 +30,10 @@ public sealed class TestClub
         KeyHoldings = new AliasRegistry<int>("KeyHolding", seeded.KeyHoldingIds);
         BoardOffices = new AliasRegistry<int>("BoardOffice", seeded.BoardOfficeIds);
         BoardSeats = new AliasRegistry<int>("BoardSeat", seeded.BoardSeatIds);
-        TrainingSlots = new AliasRegistry<int>("TrainingSlot", seeded.TrainingSlotIds);
+        UsualTrainingTimes = new AliasRegistry<int>(
+            "UsualTrainingTime",
+            seeded.UsualTrainingTimeIds
+        );
         CalendarEntries = new AliasRegistry<int>("CalendarEntry", seeded.CalendarEntryIds);
         AttendanceResponses = new AliasRegistry<int>(
             "AttendanceResponse",

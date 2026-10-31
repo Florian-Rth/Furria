@@ -1,3 +1,4 @@
+import type { OriginRect } from '@furria/ui/reveal-geometry';
 import Collapse from '@mui/material/Collapse';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
@@ -5,7 +6,6 @@ import { navItems } from '../nav-items';
 import { ChipNavScroller } from './ChipNavScroller';
 import { EventsChip } from './EventsChip';
 import { NavChip } from './NavChip';
-import type { OriginRect } from './reveal-geometry';
 
 export const MASTHEAD_CHIP_NAV_ID = 'masthead-chip-nav';
 

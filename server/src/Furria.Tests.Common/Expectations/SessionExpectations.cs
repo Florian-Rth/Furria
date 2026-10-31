@@ -43,10 +43,10 @@ public sealed class SessionExpectations
             async (dbContext, ct) => Assert.Equal(motto, (await SingleAsync(dbContext, ct)).Motto)
         );
 
-    public Expected ToHaveLogo(string? logoSvg) =>
+    public Expected ToShowLogo(int? mediaItemId) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
-                Assert.Equal(logoSvg, (await SingleAsync(dbContext, ct)).LogoSvg)
+                Assert.Equal(mediaItemId, (await SingleAsync(dbContext, ct)).LogoId)
         );
 
     private Task<Session> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>

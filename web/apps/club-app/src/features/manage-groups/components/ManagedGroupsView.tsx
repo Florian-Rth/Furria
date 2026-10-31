@@ -24,7 +24,6 @@ export const ManagedGroupsView: FC<ManagedGroupsViewProps> = ({ kinds, listing }
       <Grid size={FULL_WIDTH} sx={REGISTER_SLOT}>
         <GroupRegister
           bands={listing.bands}
-          filter={listing.filter}
           isFiltered={listing.isFiltered}
           highlightedKey={highlightedKey}
         />

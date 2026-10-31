@@ -257,7 +257,7 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    `AddRoleWithHolder`; `builder.Club(…)` takes `AddSession`, whose every argument but the alias
    and the `startYear` is optional, because a Session record is exactly as complete as the club's
    evidence, and `AddVenue`, `AddAnnouncement`, `AddKeyHolding`, `AddBoardOffice`, `AddBoardSeat`,
-   `AddTrainingSlot`, `AddCalendarEntry` and `AddAttendanceResponse`.
+   `AddUsualTrainingTime`, `AddCalendarEntry` and `AddAttendanceResponse`.
    **Every one of them materializes.** `ClubSeedBuilder` was given its final shape in CA-P4 D1,
    ahead of the entities, and while that lasted `ClubSeedMaterializer` threw
    `NotSupportedException` for the methods that had no table yet. CA-P4 wave 2 landed the last of
@@ -266,9 +266,9 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    declaration without an insert**, because an arrangement that is silently dropped would read as
    a green test.
    **`AddGroupKind` is inserted first inside `GroupSeedMaterializer`**, before the groups that
-   name it; **`AddTrainingSlot` lives on `ClubSeedBuilder`**, not on `GroupSeedBuilder`, because a
-   training slot needs both a `groupId` and a `venueId` and only `ClubSeedMaterializer` holds both.
-   Its alias names the slot, its parents are named by alias (`AddTrainingSlot("garde-dienstag",
+   name it; **`AddUsualTrainingTime` lives on `ClubSeedBuilder`**, not on `GroupSeedBuilder`, because a
+   usual training time needs both a `groupId` and a `venueId` and only `ClubSeedMaterializer` holds both.
+   Its alias names the usual training time, its parents are named by alias (`AddUsualTrainingTime("garde-dienstag",
    "tanzgarde", DayOfWeek.Tuesday, new TimeOnly(19, 30), 90, venueAlias: "sporthalle")`), and
    `venueAlias` is optional — a group may state a habit without naming a hall.
    **`AddCalendarEntry` takes `participatingGroupAliases`** as its last parameter, which is how a
@@ -281,7 +281,7 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    memberships and every id comes back through an MET007-protected `IdOf`. `SeedMaterializer`
    opens the one scope and inserts Person → Membership → MembershipPause → FeeReduction → Account
    → GroupKind → Group → GroupMembership → GroupAdmin → Role → RolePermission → RoleHolding →
-   Session → Announcement → Venue → TrainingSlot → KeyHolding → BoardOffice → BoardSeat →
+   Session → Announcement → Venue → UsualTrainingTime → KeyHolding → BoardOffice → BoardSeat →
    CalendarEntry → AttendanceResponse → Album → GalleryItem (→ album covers), one
    `SaveChanges` per layer, and uniquifies emails behind the alias so unique indexes never
    collide. A sub-builder records its parents by alias, not by order: `AddGroupAdmin` may name a
@@ -298,7 +298,7 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    `ctx.Groups.{GroupKinds, Groups, GroupMemberships, GroupAdmins}`,
    `ctx.Roles.{Roles, RolePermissions, RoleHoldings}` and
    `ctx.Club.{Sessions, Venues, Announcements, KeyHoldings, BoardOffices, BoardSeats,
-   TrainingSlots, CalendarEntries, AttendanceResponses}`. A `RolePermission` has no alias of its
+   UsualTrainingTimes, CalendarEntries, AttendanceResponses}`. A `RolePermission` has no alias of its
    own — it is registered under `"{roleAlias}:{permissionKey}"`.
 4. **Identity shortcut** — Account rows are inserted directly, not through `UserManager`: the
    harness owns normalization and the password hash, and the hash is computed once per run and
@@ -351,7 +351,7 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    (`ToHaveCount`, `ToHaveConfirmedCount`).
    The training rhythm and the trainings the generator writes are **set**-scoped and group-
    scoped, never slot-scoped, because a group states several habits and the endpoint replaces
-   them wholesale: `Expected.TrainingSlotsOf(groupId)` (`ToHaveCount`, `ToBeEmpty`,
+   them wholesale: `Expected.UsualTrainingTimesOf(groupId)` (`ToHaveCount`, `ToBeEmpty`,
    `ToCarrySlot(weekday, startsAt, durationMinutes, venueId)`) and
    `Expected.TrainingsOf(groupId)` (`ToHaveCount`, `ToBeEmpty`,
    `ToCarryTraining(title, startsAt, endsAt, venueId)`, which also pins that a generated entry is

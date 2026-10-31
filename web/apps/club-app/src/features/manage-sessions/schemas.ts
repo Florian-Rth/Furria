@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { AppSearchSchema } from '@/features/session/schemas';
-import { SESSION_LOGO_MAX_LENGTH } from './session-logo-file';
+import { MediaItemStateSchema, SessionLogoSchema } from '@/lib/api/schemas';
 
 export const SESSION_MOTTO_MAX_LENGTH = 160;
 export const EARLIEST_SESSION_YEAR = 1900;
@@ -8,12 +8,19 @@ export const LATEST_SESSION_YEAR = 2100;
 
 const SESSION_NUMBER_PATTERN = /^\d*$/;
 
+export const SessionLogoEditingSchema = z.object({
+  state: MediaItemStateSchema,
+  isStalled: z.boolean(),
+  logo: SessionLogoSchema.nullable(),
+});
+export type SessionLogoEditing = z.infer<typeof SessionLogoEditingSchema>;
+
 export const SessionRecordSummarySchema = z.object({
   sessionId: z.number().int(),
   startYear: z.number().int(),
   number: z.number().int().nullable(),
   motto: z.string().nullable(),
-  logoSvg: z.string().nullable(),
+  logo: SessionLogoEditingSchema.nullable(),
 });
 export type SessionRecordSummary = z.infer<typeof SessionRecordSummarySchema>;
 
@@ -52,9 +59,5 @@ export const SessionRecordFormSchema = z.object({
     .string()
     .trim()
     .max(SESSION_MOTTO_MAX_LENGTH, `Höchstens ${SESSION_MOTTO_MAX_LENGTH} Zeichen.`),
-  logoSvg: z
-    .string()
-    .max(SESSION_LOGO_MAX_LENGTH, 'Diese SVG-Datei ist zu groß für einen Sessionseintrag.')
-    .nullable(),
 });
 export type SessionRecordForm = z.infer<typeof SessionRecordFormSchema>;

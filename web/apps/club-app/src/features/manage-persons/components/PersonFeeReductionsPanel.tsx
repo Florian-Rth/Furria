@@ -1,4 +1,5 @@
 import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { KkPanelAction } from '@furria/ui/panel-action';
@@ -26,9 +27,9 @@ export const PersonFeeReductionsPanel: FC<PersonFeeReductionsPanelProps> = ({
   highlightedKey,
 }) => {
   const isArchived = person.archive !== null;
-  const closedNote = isArchived
-    ? toClosedHistoryLine(person.firstName, 'Beitragsermäßigungen')
-    : undefined;
+  const closedNote = isArchived ? (
+    <KkNote>{toClosedHistoryLine(person.firstName, 'Beitragsermäßigungen')}</KkNote>
+  ) : null;
 
   const createAction: KkPanelAction = {
     label: ADD_LABEL,
@@ -60,11 +61,8 @@ export const PersonFeeReductionsPanel: FC<PersonFeeReductionsPanelProps> = ({
   );
 
   return (
-    <KkPanelSection
-      title={PERSON_SECTION_TITLES.feeReductions}
-      action={action}
-      description={closedNote}
-    >
+    <KkPanelSection title={PERSON_SECTION_TITLES.feeReductions} action={action}>
+      {closedNote}
       <KkPanel
         variant={isEmpty ? 'block' : 'list'}
         highlight={highlightedKey === landingKey}

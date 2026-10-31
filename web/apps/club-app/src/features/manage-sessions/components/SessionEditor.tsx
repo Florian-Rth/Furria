@@ -152,13 +152,7 @@ export const SessionEditor: FC<SessionEditorProps> = ({ record, draftYear = null
           onBlur={mottoField.onBlur}
           inputRef={mottoField.ref}
         />
-        <SessionLogoField
-          logoSvg={control.logoSvg}
-          label={logoLabel}
-          rejection={control.logoRejection}
-          onPick={control.takeLogoFile}
-          onClear={control.clearLogo}
-        />
+        <SessionLogoField logo={control.logo} label={logoLabel} />
       </KkFormSection>
       {danger}
       {confirm}

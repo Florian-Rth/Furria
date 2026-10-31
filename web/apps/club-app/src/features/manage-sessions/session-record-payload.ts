@@ -4,7 +4,6 @@ export interface SessionRecordPayload {
   startYear: number;
   number: number | null;
   motto: string | null;
-  logoSvg: string | null;
 }
 
 const written = (value: string | null): string | null => {
@@ -22,14 +21,13 @@ export const toSessionRecordForm = (
   draftYear: number | null,
 ): SessionRecordForm => {
   if (record === null) {
-    return { startYear: draftYear, number: '', motto: '', logoSvg: null };
+    return { startYear: draftYear, number: '', motto: '' };
   }
 
   return {
     startYear: record.startYear,
     number: record.number === null ? '' : String(record.number),
     motto: record.motto ?? '',
-    logoSvg: written(record.logoSvg),
   };
 };
 
@@ -44,6 +42,5 @@ export const toSessionRecordPayload = (form: SessionRecordForm): SessionRecordPa
     startYear: form.startYear,
     number: number === null ? null : Number(number),
     motto: written(form.motto),
-    logoSvg: written(form.logoSvg),
   };
 };

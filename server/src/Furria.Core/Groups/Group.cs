@@ -37,5 +37,5 @@ public sealed class Group : ITimestamped
 
     public MediaItem? Picture { get; set; }
 
-    public ICollection<GroupTrainingSlot> TrainingSlots { get; set; } = [];
+    public ICollection<UsualTrainingTime> UsualTrainingTimes { get; set; } = [];
 }

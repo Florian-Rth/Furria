@@ -25,7 +25,7 @@ export const HubSkeleton: FC = () => (
           <KkSkeletonBlock lines={PEOPLE_LINES} />
         </KkPanel>
       </KkPanelSection>
-      <KkPanelSection title={GROUP_SECTION_TITLES.rhythm}>
+      <KkPanelSection title={GROUP_SECTION_TITLES.usualTrainingTimes}>
         <KkPanel variant="block">
           <KkSkeletonBlock lines={RESERVED_LINES} />
         </KkPanel>

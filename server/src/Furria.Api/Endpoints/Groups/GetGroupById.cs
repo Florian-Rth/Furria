@@ -114,7 +114,7 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
             FoundedYear = group.FoundedYear,
             Tone = group.Tone,
             Icon = group.Icon,
-            TrainingSlots = [.. group.TrainingSlots.Select(ToDto)],
+            UsualTrainingTimes = [.. group.UsualTrainingTimes.Select(ToDto)],
             Admins = [.. group.Admins.Select(admin => ToDto(admin, honours))],
             Members = [.. group.Members.Select(member => ToDto(member, honours))],
             ViewerIsMember = group.ViewerIsMember,
@@ -129,15 +129,15 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
                 : [],
         };
 
-    private static GroupTrainingSlotDto ToDto(GroupTrainingSlotDetails slot) =>
+    private static UsualTrainingTimeDto ToDto(UsualTrainingTimeDetails usualTime) =>
         new()
         {
-            GroupTrainingSlotId = slot.GroupTrainingSlotId,
-            Weekday = slot.Weekday,
-            StartsAt = slot.StartsAt,
-            DurationMinutes = slot.DurationMinutes,
-            VenueId = slot.VenueId,
-            VenueName = slot.VenueName,
+            UsualTrainingTimeId = usualTime.UsualTrainingTimeId,
+            Weekday = usualTime.Weekday,
+            StartsAt = usualTime.StartsAt,
+            DurationMinutes = usualTime.DurationMinutes,
+            VenueId = usualTime.VenueId,
+            VenueName = usualTime.VenueName,
         };
 
     private static HubMemberDto ToDto(HubMember member, PersonHonoursLookup honours) =>
@@ -210,7 +210,7 @@ public sealed record GetGroupByIdResponse
 
     public required ClubIcon? Icon { get; init; }
 
-    public required IReadOnlyList<GroupTrainingSlotDto> TrainingSlots { get; init; }
+    public required IReadOnlyList<UsualTrainingTimeDto> UsualTrainingTimes { get; init; }
 
     public required IReadOnlyList<HubAdminDto> Admins { get; init; }
 
@@ -229,9 +229,9 @@ public sealed record GetGroupByIdResponse
     public required IReadOnlyList<HubAdminDto> PastAdmins { get; init; }
 }
 
-public sealed record GroupTrainingSlotDto
+public sealed record UsualTrainingTimeDto
 {
-    public required int GroupTrainingSlotId { get; init; }
+    public required int UsualTrainingTimeId { get; init; }
 
     public required DayOfWeek Weekday { get; init; }
 

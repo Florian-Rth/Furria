@@ -1,8 +1,8 @@
+import type { OriginRect } from '@furria/ui/reveal-geometry';
 import Chip from '@mui/material/Chip';
 import { Link as RouterLink } from '@tanstack/react-router';
 import type { FC, MouseEvent } from 'react';
 import type { NavItem } from '../nav-items';
-import type { OriginRect } from './reveal-geometry';
 
 interface NavChipProps {
   item: NavItem;

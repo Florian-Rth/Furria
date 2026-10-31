@@ -1,6 +1,7 @@
 import type { FC } from 'react';
 import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import { useSessionRecordsQuery } from '../api';
+import { useDevelopingSessionLogos } from '../hooks/use-developing-session-logos';
 import { MANAGE_SESSIONS_LOADING_LABEL } from '../manage-sessions-labels';
 import { toSessionRecordsErrorMessage } from '../manage-sessions-messages';
 import { ManageSessionsError } from './ManageSessionsError';
@@ -17,6 +18,7 @@ export const ManageSessionsBody: FC<ManageSessionsBodyProps> = ({ today }) => {
   const reload = (): void => {
     void sessions.refetch();
   };
+  useDevelopingSessionLogos(sessions.data?.sessions, reload);
 
   if (sessions.data !== undefined) {
     return <ManageSessionsView records={sessions.data.sessions} today={today} />;

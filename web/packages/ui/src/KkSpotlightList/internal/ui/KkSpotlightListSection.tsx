@@ -5,31 +5,10 @@ import { kkTokens } from '../../../tokens';
 
 interface KkSpotlightListSectionProps {
   title: string;
-  meta?: string | null;
   media?: ReactNode;
 }
 
-export const KkSpotlightListSection: FC<KkSpotlightListSectionProps> = ({
-  title,
-  meta = null,
-  media,
-}) => {
-  const metaText =
-    meta === null ? null : (
-      <Box
-        component="span"
-        sx={{
-          typography: 'caption',
-          fontWeight: 700,
-          color: 'text.secondary',
-          fontVariantNumeric: 'tabular-nums',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {meta}
-      </Box>
-    );
-
+export const KkSpotlightListSection: FC<KkSpotlightListSectionProps> = ({ title, media }) => {
   return (
     <Box
       component="li"
@@ -57,7 +36,6 @@ export const KkSpotlightListSection: FC<KkSpotlightListSectionProps> = ({
         >
           {title}
         </Box>
-        {metaText}
       </Stack>
     </Box>
   );

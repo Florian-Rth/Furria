@@ -8,32 +8,12 @@ import { GUTTER_WIDTH, ROW_PADDING_X } from './numbered-list-paint';
 
 interface KkNumberedListSectionProps {
   title: string;
-  meta?: ReactNode;
   tone?: KkGroupTone | null;
   action?: ReactNode;
 }
 
-export const KkNumberedListSection: FC<KkNumberedListSectionProps> = ({
-  title,
-  meta,
-  tone,
-  action,
-}) => {
+export const KkNumberedListSection: FC<KkNumberedListSectionProps> = ({ title, tone, action }) => {
   const dot = tone === undefined ? null : <KkGroupToneDot tone={tone} />;
-  const metaText =
-    meta === undefined || meta === null ? null : (
-      <Box
-        component="span"
-        sx={{
-          typography: 'caption',
-          fontWeight: 700,
-          color: 'text.secondary',
-          fontVariantNumeric: 'tabular-nums',
-        }}
-      >
-        {meta}
-      </Box>
-    );
 
   return (
     <Box component="li" data-kk-numbered-line data-kk-numbered-section sx={{ minWidth: 0 }}>
@@ -62,7 +42,6 @@ export const KkNumberedListSection: FC<KkNumberedListSectionProps> = ({
         >
           {title}
         </Box>
-        {metaText}
         <Box component="span" sx={{ flex: 1 }} />
         {action}
       </Stack>

@@ -42,7 +42,6 @@ public sealed class PutSessionRecord : Endpoint<PutSessionRecordRequest>
             StartYear = req.StartYear,
             Number = req.Number,
             Motto = req.Motto,
-            LogoSvg = req.LogoSvg,
         };
 }
 
@@ -56,8 +55,6 @@ public sealed record PutSessionRecordRequest
     public required int? Number { get; init; }
 
     public required string? Motto { get; init; }
-
-    public required string? LogoSvg { get; init; }
 }
 
 public sealed class PutSessionRecordValidator : Validator<PutSessionRecordRequest>
@@ -74,6 +71,5 @@ public sealed class PutSessionRecordValidator : Validator<PutSessionRecordReques
             .GreaterThan(0)
             .When(request => request.Number is not null);
         RuleFor(request => request.Motto).MaximumLength(SessionRecordLimits.MottoLength);
-        RuleFor(request => request.LogoSvg).MaximumLength(SessionRecordLimits.LogoSvgLength);
     }
 }

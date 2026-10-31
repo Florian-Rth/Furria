@@ -42,7 +42,6 @@ public sealed class PostSessionRecord
             StartYear = req.StartYear,
             Number = req.Number,
             Motto = req.Motto,
-            LogoSvg = req.LogoSvg,
         };
 
     private static PostSessionRecordResponse ToResponse(int sessionId) =>
@@ -56,8 +55,6 @@ public sealed record PostSessionRecordRequest
     public required int? Number { get; init; }
 
     public required string? Motto { get; init; }
-
-    public required string? LogoSvg { get; init; }
 }
 
 public sealed class PostSessionRecordValidator : Validator<PostSessionRecordRequest>
@@ -73,7 +70,6 @@ public sealed class PostSessionRecordValidator : Validator<PostSessionRecordRequ
             .GreaterThan(0)
             .When(request => request.Number is not null);
         RuleFor(request => request.Motto).MaximumLength(SessionRecordLimits.MottoLength);
-        RuleFor(request => request.LogoSvg).MaximumLength(SessionRecordLimits.LogoSvgLength);
     }
 }
 

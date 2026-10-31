@@ -2,12 +2,15 @@ import type { KkImageSource } from '@furria/ui/image-source';
 import type { KkViewerItem, KkViewerVideo } from '@furria/ui/viewer-types';
 import type { AlbumFrame } from './album-frames';
 import { loupeAlt } from './album-labels';
-import { durationLabel } from './gallery-view';
+import { durationLabel, thumbSourceOf } from './gallery-view';
 import type { AlbumItem } from './schemas';
 import { viewImageOf, viewSizeOf } from './view-image';
 
 const imageOf = (item: AlbumItem): KkImageSource | null =>
   item.state === 'ready' ? viewImageOf(item) : null;
+
+const thumbOf = (item: AlbumItem): string | undefined =>
+  item.state === 'ready' ? thumbSourceOf(item.urls) : undefined;
 
 const videoOf = (item: AlbumItem): KkViewerVideo | undefined =>
   item.kind !== 'video' || item.state !== 'ready' || item.urls.video === null
@@ -18,6 +21,7 @@ export const albumViewerItemOf = (frame: AlbumFrame, albumTitle: string): KkView
   key: String(frame.id),
   alt: frame.item.caption ?? loupeAlt(albumTitle, frame.number),
   image: imageOf(frame.item),
+  thumb: thumbOf(frame.item),
   state: frame.item.state,
   size: viewSizeOf(frame.item),
   caption: frame.item.caption ?? undefined,

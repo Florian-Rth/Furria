@@ -1,6 +1,7 @@
 import { KkStepPane } from '@furria/ui/KkStepPane';
 import type { KkStickyFootSurface } from '@furria/ui/KkStickyFoot';
 import type { FC, ReactNode } from 'react';
+import type { HoldingTask } from '../hooks/use-holding-form-target';
 import { useRolePane } from '../hooks/use-role-pane';
 import type { RolePaneTab, RoleSummary } from '../schemas';
 import { ArchiveRoleDialog } from './ArchiveRoleDialog';
@@ -19,7 +20,7 @@ interface RolePaneProps {
   surface: KkStickyFootSurface;
   actions?: ReactNode;
   onAddHolder: (roleId: number) => void;
-  onEndHolder: (roleId: number, roleHoldingId: number) => void;
+  onHolderTask: (roleId: number, roleHoldingId: number, task: HoldingTask) => void;
 }
 
 export const RolePane: FC<RolePaneProps> = ({
@@ -31,11 +32,11 @@ export const RolePane: FC<RolePaneProps> = ({
   surface,
   actions,
   onAddHolder,
-  onEndHolder,
+  onHolderTask,
 }) => {
   const control = useRolePane(role, catalogue, requestedTab, today);
-  const end = (roleHoldingId: number): void => {
-    onEndHolder(role.roleId, roleHoldingId);
+  const takeUp = (roleHoldingId: number, task: HoldingTask): void => {
+    onHolderTask(role.roleId, roleHoldingId, task);
   };
   const add = (): void => {
     onAddHolder(role.roleId);
@@ -50,13 +51,7 @@ export const RolePane: FC<RolePaneProps> = ({
       {head}
       <RolePaneTabs tab={control.tab} role={role} onChoose={control.chooseTab} />
       <KkStepPane.Body>
-        <RolePaneBody
-          role={role}
-          catalogue={catalogue}
-          today={today}
-          control={control}
-          onEnd={end}
-        />
+        <RolePaneBody role={role} today={today} control={control} onTask={takeUp} />
       </KkStepPane.Body>
       <RolePaneFoot
         role={role}

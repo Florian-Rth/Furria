@@ -7,7 +7,6 @@ import {
   NO_ADMIN_GROUPS_FILTER_ID,
   NO_KIND_GROUPS_FILTER_ID,
   NO_PEOPLE_GROUPS_FILTER_ID,
-  registerMetaKindOf,
   resolveGroupWorkFilter,
   toGroupRegisterBands,
   toGroupWorkFacets,
@@ -166,20 +165,5 @@ describe('toGroupRegisterBands', () => {
     expect(countBandedGroups(toGroupRegisterBands(ALL, 'musik', NO_ADMIN_GROUPS_FILTER_ID))).toBe(
       0,
     );
-  });
-});
-
-describe('registerMetaKindOf', () => {
-  it.each([
-    {
-      scenario: 'the whole register',
-      filter: ALL_GROUPS_FILTER_ID,
-      groups: ALL,
-      expected: 'whole-register',
-    },
-    { scenario: 'a facet', filter: NO_KIND_GROUPS_FILTER_ID, groups: ALL, expected: 'facet' },
-    { scenario: 'empty bands', filter: ALL_GROUPS_FILTER_ID, groups: [], expected: 'no-match' },
-  ] as const)('reads $scenario as $expected', ({ filter, groups, expected }) => {
-    expect(registerMetaKindOf(filter, toGroupRegisterBands(groups, '', filter))).toBe(expected);
   });
 });

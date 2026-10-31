@@ -15,9 +15,7 @@ import { HubCalendarEntriesPanel } from './HubCalendarEntriesPanel';
 import { HubCarePanel } from './HubCarePanel';
 import { HubDescriptionPanel } from './HubDescriptionPanel';
 import { HubPeoplePanel } from './HubPeoplePanel';
-import { HubRhythmPanel } from './HubRhythmPanel';
-
-const HISTORY_META = 'nur für die Verwaltung dieser Gruppe';
+import { HubUsualTrainingTimesPanel } from './HubUsualTrainingTimesPanel';
 
 interface HubViewProps {
   hub: GroupHub;
@@ -33,7 +31,12 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
 
   const seesCalendarEntries = hub.viewerIsMember || hub.viewerMayManage;
   const calendarEntries = seesCalendarEntries ? (
-    <HubCalendarEntriesPanel groupId={hub.groupId} tone={tone} />
+    <HubCalendarEntriesPanel
+      groupId={hub.groupId}
+      tone={tone}
+      usualTimes={hub.usualTrainingTimes}
+      canPlan={hub.viewerMayManage}
+    />
   ) : null;
 
   const care = hub.viewerMayManage ? (
@@ -41,12 +44,7 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
   ) : null;
 
   const history = hub.viewerMayManage ? (
-    <GroupHistoryPanel
-      pastMembers={hub.pastMembers}
-      pastAdmins={hub.pastAdmins}
-      meta={HISTORY_META}
-      groupTone={tone}
-    />
+    <GroupHistoryPanel pastMembers={hub.pastMembers} pastAdmins={hub.pastAdmins} groupTone={tone} />
   ) : null;
 
   const acts = actsAccess.sees ? (
@@ -70,10 +68,10 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
         highlightedKey={highlightedKey}
       />
       {calendarEntries}
-      <HubRhythmPanel
+      <HubUsualTrainingTimesPanel
         groupId={hub.groupId}
         tone={tone}
-        slots={hub.trainingSlots}
+        usualTimes={hub.usualTrainingTimes}
         canManage={hub.viewerMayManage}
       />
       {care}

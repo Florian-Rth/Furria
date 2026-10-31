@@ -7,6 +7,7 @@ import { AppShell } from '@/features/session/components/AppShell';
 import { ScreenNotFound } from '@/features/session/components/ScreenNotFound';
 import { useSessionSnapshot } from '@/features/session/hooks/use-session-snapshot';
 import { AppSearchSchema } from '@/features/session/schemas';
+import { WelcomeGate } from '@/features/welcome/components/WelcomeGate';
 import { getSessionSnapshot } from '@/lib/api/session/session-store';
 import { LOGIN_PATH } from '@/lib/return-to';
 
@@ -22,7 +23,9 @@ const AppLayout: FC = () => {
   return (
     <AppShell>
       <GalleryDevelopingPoller />
-      <Outlet />
+      <WelcomeGate>
+        <Outlet />
+      </WelcomeGate>
     </AppShell>
   );
 };

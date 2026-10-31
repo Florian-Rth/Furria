@@ -1,4 +1,5 @@
 import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { KkPanelAction } from '@furria/ui/panel-action';
@@ -38,15 +39,13 @@ interface ProfileContactPanelProps {
 
 export const ProfileContactPanel: FC<ProfileContactPanelProps> = ({ person, highlightedKey }) => {
   const address = formatAddress(person.street, person.zip, person.city);
-  const changeNote = toOwnContactChangeNote(person.contactChange, person.id, new Date());
+  const change = toOwnContactChangeNote(person.contactChange, person.id, new Date());
+  const changeNote = change === undefined ? null : <KkNote>{change}</KkNote>;
   const isHighlighted = highlightedKey === LANDING_KEY;
 
   return (
-    <KkPanelSection
-      title={PROFILE_SECTION_TITLES.contact}
-      action={EDIT_ACTION}
-      description={changeNote}
-    >
+    <KkPanelSection title={PROFILE_SECTION_TITLES.contact} action={EDIT_ACTION}>
+      {changeNote}
       <KkPanel highlight={isHighlighted} landing={LANDING_KEY}>
         <KkFieldRow label={PHONE_LABEL} value={person.phone ?? MISSING_VALUE} />
         <KkFieldRow label={EMAIL_LABEL} value={person.email ?? MISSING_VALUE} />

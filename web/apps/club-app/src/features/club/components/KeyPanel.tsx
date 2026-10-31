@@ -6,7 +6,6 @@ import { KeyHoldersSheet } from './KeyHoldersSheet';
 import { KeyVenueTile } from './KeyVenueTile';
 
 const KEY_PANEL_TITLE = 'Schlüssel';
-const KEY_PANEL_DESCRIPTION = 'Wer welchen Ort aufschließen kann';
 const TILE_SIZE = { xs: 6, sm: 4, desktop: 3 };
 const TILE_SPACING = { xs: 1.5, desktop: 2 };
 const FULL_HEIGHT = { height: '100%' } as const;
@@ -20,7 +19,7 @@ export const KeyPanel: FC = () => {
   }
 
   return (
-    <KkPanelSection title={KEY_PANEL_TITLE} description={KEY_PANEL_DESCRIPTION}>
+    <KkPanelSection title={KEY_PANEL_TITLE}>
       <Grid container spacing={TILE_SPACING} sx={{ minWidth: 0 }}>
         {venues.map((venue) => (
           <Grid key={venue.venueId} size={TILE_SIZE} sx={{ minWidth: 0 }}>

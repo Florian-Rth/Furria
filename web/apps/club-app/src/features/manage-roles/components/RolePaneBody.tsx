@@ -1,4 +1,5 @@
 import type { FC } from 'react';
+import type { HoldingTask } from '../hooks/use-holding-form-target';
 import type { RolePaneControl } from '../hooks/use-role-pane';
 import type { RoleSummary } from '../schemas';
 import { RoleHoldersTab } from './RoleHoldersTab';
@@ -7,18 +8,17 @@ import { RoleSettingsTab } from './RoleSettingsTab';
 
 interface RolePaneBodyProps {
   role: RoleSummary;
-  catalogue: readonly string[];
   today: string;
   control: RolePaneControl;
-  onEnd: (roleHoldingId: number) => void;
+  onTask: (roleHoldingId: number, task: HoldingTask) => void;
 }
 
-export const RolePaneBody: FC<RolePaneBodyProps> = ({ role, catalogue, today, control, onEnd }) => {
+export const RolePaneBody: FC<RolePaneBodyProps> = ({ role, today, control, onTask }) => {
   switch (control.tab) {
     case 'holders':
-      return <RoleHoldersTab role={role} today={today} control={control} onEnd={onEnd} />;
+      return <RoleHoldersTab role={role} today={today} control={control} onTask={onTask} />;
     case 'rights':
-      return <RoleRightsTab role={role} catalogue={catalogue} control={control} />;
+      return <RoleRightsTab role={role} control={control} />;
     case 'settings':
       return <RoleSettingsTab role={role} control={control} />;
   }

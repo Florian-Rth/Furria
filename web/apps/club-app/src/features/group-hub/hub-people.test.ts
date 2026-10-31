@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail/schemas';
-import { countGroupAdmins, toHubPeople } from './hub-people';
+import { toHubPeople } from './hub-people';
 
 const member = (over: Partial<GroupDetailMember>): GroupDetailMember => ({
   personId: 1,
@@ -65,24 +65,5 @@ describe('toHubPeople', () => {
     const people = toHubPeople([], [admin({ personId: 7, groupAdminId: 97 })]);
 
     expect(people[0]).toMatchObject({ personId: 7, groupMembershipId: null, memberSince: null });
-  });
-});
-
-describe('countGroupAdmins', () => {
-  it.each([
-    {
-      case: 'a group without admins',
-      members: [member({})],
-      admins: [] as GroupDetailAdmin[],
-      expected: 0,
-    },
-    {
-      case: 'a group led from outside',
-      members: [member({ personId: 4, groupMembershipId: 14 })],
-      admins: [admin({ personId: 5, groupAdminId: 95 })],
-      expected: 1,
-    },
-  ])('counts the admins of $case', ({ members, admins, expected }) => {
-    expect(countGroupAdmins(toHubPeople(members, admins))).toBe(expected);
   });
 });

@@ -10,7 +10,6 @@ import type { KkPressFactTone } from '@furria/ui/press-tone';
 import { format } from 'date-fns';
 import { de } from 'date-fns/locale';
 import { sessionYearsLabelOf } from '@/lib/club';
-import { formatSessionNumber } from '@/lib/membership-labels';
 import {
   MISSING_FACT,
   PENDING_FACT,
@@ -22,7 +21,7 @@ import {
   rulerDraftsOf,
   WITHDRAWN_FACT,
 } from '../../hub-copy';
-import type { HubFact, HubSection } from '../../hub-view';
+import type { HubFact } from '../../hub-view';
 import { REQUIREMENT_WORDS, UNTITLED } from '../../news-copy';
 import type { PressRulerView, RulerSession, RulerStage } from '../../press-ruler';
 import { carnivalShareOf, dateAtCarnivalShare } from '../../press-ruler';
@@ -38,9 +37,6 @@ export const REGISTER_STATES: Record<NewsStage, KkRegisterMarkState> = {
 };
 
 export const sessionNumberOf = (startYear: number): number => startYear - FIRST_SESSION_YEAR;
-
-export const sessionLineOf = (startYear: number, sessionNumber: number | null): string =>
-  formatSessionNumber(sessionNumber ?? sessionNumberOf(startYear));
 
 export const rowDateOf = (iso: string): string => format(new Date(iso), 'dd.MM.yy');
 
@@ -60,9 +56,6 @@ export const factLineOf = (fact: HubFact): string | null => {
       return null;
   }
 };
-
-export const sectionMetaOf = (section: HubSection): string | undefined =>
-  section.startYear === null ? undefined : sessionLineOf(section.startYear, section.sessionNumber);
 
 const FACT_TONES: Record<HubFact['kind'], KkPressFactTone> = {
   missing: 'warning',

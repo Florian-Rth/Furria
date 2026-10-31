@@ -5,8 +5,6 @@ import { VENUE_SECTION_TITLES } from '../manage-venues-labels';
 import type { ManagedVenue } from '../schemas';
 import { ArchivedVenueCard } from './ArchivedVenueCard';
 
-const ARCHIVED_DESCRIPTION =
-  'Diese Orte stehen nicht mehr zur Auswahl. Termine und Schlüssel bleiben erhalten.';
 const LIST_GAP = 1.5;
 
 interface ArchivedVenuesPanelProps {
@@ -19,7 +17,7 @@ export const ArchivedVenuesPanel: FC<ArchivedVenuesPanelProps> = ({ venues }) =>
   }
 
   return (
-    <KkPanelSection title={VENUE_SECTION_TITLES.archived} description={ARCHIVED_DESCRIPTION}>
+    <KkPanelSection title={VENUE_SECTION_TITLES.archived}>
       <Stack sx={{ gap: LIST_GAP, minWidth: 0 }}>
         {venues.map((venue) => (
           <ArchivedVenueCard key={venue.venueId} venue={venue} />

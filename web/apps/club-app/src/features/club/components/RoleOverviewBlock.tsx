@@ -1,4 +1,5 @@
 import { KkMeta } from '@furria/ui/KkMeta';
+import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
@@ -12,7 +13,7 @@ interface RoleOverviewBlockProps {
 }
 
 export const RoleOverviewBlock: FC<RoleOverviewBlockProps> = ({ role }) => {
-  const description = role.description.trim() === '' ? undefined : role.description;
+  const description = role.description.trim() === '' ? null : <KkNote>{role.description}</KkNote>;
 
   const rows = role.holders.map((holder) => (
     <RoleHolderRow key={holder.personId} holder={holder} />
@@ -22,7 +23,8 @@ export const RoleOverviewBlock: FC<RoleOverviewBlockProps> = ({ role }) => {
     rows.length === 0 ? <KkMeta italic>{NO_HOLDER_LINE}</KkMeta> : <KkPanel>{rows}</KkPanel>;
 
   return (
-    <KkPanelSection title={role.name} description={description}>
+    <KkPanelSection title={role.name}>
+      {description}
       {body}
     </KkPanelSection>
   );

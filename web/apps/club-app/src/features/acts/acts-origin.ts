@@ -8,11 +8,8 @@ import {
 } from '@/features/session/app-sections';
 import type { BackStackSpot } from '@/lib/back-stack';
 import { ACT_DETAILS_LABEL } from './act-page-copy';
-import type { ActsScope } from './acts-catalogue';
 import { ACTS_TITLE, GROUP_ACTS_TITLE } from './acts-copy';
 import type { ActPageOrigin, ActPageSearch, ActsSearch } from './schemas';
-
-export const CLUB_SCOPE: ActsScope = { kind: 'club' };
 
 const DETAILS_VIEW = 'details';
 const CARD_VIEW = 'card';
@@ -27,7 +24,7 @@ export type ActsListState = Omit<ActsSearch, 'act'>;
 
 export type ActPageReturn =
   | { kind: 'catalogue'; list: Record<string, string> }
-  | { kind: 'groupActs'; groupId: number; list: Record<string, string> }
+  | { kind: 'groupActs'; groupId: number }
   | { kind: 'group'; groupId: number }
   | { kind: 'start' };
 
@@ -60,12 +57,8 @@ export const groupOriginOf = (groupId: number, name: string): KkScreenOrigin => 
   params: { groupId: String(groupId) },
 });
 
-export const actPageSearchOf = (
-  scope: ActsScope,
-  list: ActsListState,
-): ActPageSearch & { from: ActPageOrigin } => ({
-  from: scope.kind === 'club' ? 'catalogue' : 'groupActs',
-  group: scope.kind === 'group' ? scope.groupId : undefined,
+export const actPageSearchOf = (list: ActsListState): ActPageSearch & { from: ActPageOrigin } => ({
+  from: 'catalogue',
   event: list.from,
   filter: list.filter,
   person: list.person,
@@ -98,7 +91,7 @@ export const actPageReturnOf = (search: ActPageSearch, act: CatalogueAct | null)
     return { kind: 'start' };
   }
   if (search.from === 'groupActs') {
-    return { kind: 'groupActs', groupId, list: listSearchOf(search) };
+    return { kind: 'groupActs', groupId };
   }
 
   return { kind: 'group', groupId };
@@ -116,7 +109,6 @@ export const actPageOriginOf = (
       label: GROUP_ACTS_TITLE,
       to: GROUP_ACTS_PATH,
       params: { groupId: String(target.groupId) },
-      search: target.list,
     };
   }
   if (target.kind === 'group') {

@@ -1,4 +1,5 @@
 import { KkEmptyState } from '@furria/ui/KkEmptyState';
+import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { KkPanelAction } from '@furria/ui/panel-action';
@@ -10,7 +11,6 @@ import {
   toArchivedVenueNote,
   toHandOutLabel,
   toVenueEmptyCopy,
-  toVenueHolderMeta,
 } from '../manage-keys-labels';
 import type { KeyVenue } from '../schemas';
 import { KeyHistoryPanel } from './KeyHistoryPanel';
@@ -41,7 +41,8 @@ export const KeyVenuePanel: FC<KeyVenuePanelProps> = ({ venue, highlightedKey })
         params: { venueId: String(venue.venueId) },
       };
 
-  const description = venue.archivedOn === null ? undefined : toArchivedVenueNote(venue.archivedOn);
+  const archivedNote =
+    venue.archivedOn === null ? null : <KkNote>{toArchivedVenueNote(venue.archivedOn)}</KkNote>;
 
   const runningRows = running.map((holding) => (
     <KeyHolderRow key={holding.keyHoldingId} holding={holding} highlightedKey={highlightedKey} />
@@ -59,13 +60,9 @@ export const KeyVenuePanel: FC<KeyVenuePanelProps> = ({ venue, highlightedKey })
     );
 
   return (
-    <KkPanelSection
-      title={venue.name}
-      meta={toVenueHolderMeta(venue.holdings)}
-      description={description}
-      action={action}
-    >
+    <KkPanelSection title={venue.name} action={action}>
       <Stack sx={{ gap: PANEL_GAP, minWidth: 0 }}>
+        {archivedNote}
         {runningPanel}
         <KeyHistoryPanel holdings={ended} highlightedKey={highlightedKey} />
       </Stack>

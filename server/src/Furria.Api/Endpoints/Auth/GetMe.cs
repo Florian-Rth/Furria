@@ -77,6 +77,7 @@ public sealed class GetMe : EndpointWithoutRequest<GetMeResponse>
             IsAffiliated = account.IsAffiliated,
             PermissionKeys = account.PermissionKeys,
             LastSeenAnnouncementAt = account.LastSeenAnnouncementAt,
+            WelcomeSeenAt = account.WelcomeSeenAt,
             AppSince = account.AppSince,
             Passkeys = [.. account.Passkeys.Select(ToDto)],
             Honours = PersonHonoursDto.From(honours),
@@ -150,6 +151,8 @@ public sealed record GetMeResponse
     public required IReadOnlyList<string> PermissionKeys { get; init; }
 
     public required DateTimeOffset? LastSeenAnnouncementAt { get; init; }
+
+    public required DateTimeOffset? WelcomeSeenAt { get; init; }
 
     public required DateOnly? AppSince { get; init; }
 

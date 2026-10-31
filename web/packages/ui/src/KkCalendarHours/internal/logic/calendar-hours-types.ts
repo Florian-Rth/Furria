@@ -40,6 +40,7 @@ export interface KkCalendarHoursBlockData extends KkCalendarHoursSpan {
   kind: KkEntryKindGlyphKind;
   tone: KkGroupTone | null;
   running: boolean;
+  usual: boolean;
   badge: KkCalendarHoursBadge;
   selected: boolean;
 }

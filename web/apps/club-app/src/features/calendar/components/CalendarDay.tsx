@@ -5,6 +5,7 @@ import type { CalendarDayItem } from '../calendar-agenda';
 import { toDayHeadView } from '../calendar-agenda-view';
 import type { CalendarBoard } from '../hooks/use-calendar-board';
 import { CalendarLine } from './CalendarLine';
+import { CalendarUsual } from './CalendarUsual';
 
 interface CalendarDayProps {
   item: Extract<CalendarDayItem, { kind: 'day' }>;
@@ -29,6 +30,14 @@ export const CalendarDay: FC<CalendarDayProps> = ({ item, board, under, orders, 
   ));
   const panel =
     lines.length === 0 ? null : <KkCalendarAgenda.Panel>{lines}</KkCalendarAgenda.Panel>;
+  const usuals = item.usuals.map((usual) => (
+    <CalendarUsual
+      key={`${usual.usualTrainingTimeId}-${usual.startsAt}`}
+      usual={usual}
+      mayPlan={board.mayPlan(usual.groupId)}
+      onPlan={board.planTraining}
+    />
+  ));
 
   return (
     <KkCalendarAgenda.Day isoDay={item.isoDay} anchor={item.key} label={head.spoken}>
@@ -43,6 +52,7 @@ export const CalendarDay: FC<CalendarDayProps> = ({ item, board, under, orders, 
         highlight={item.isoDay === board.landingDay}
       />
       {panel}
+      {usuals}
     </KkCalendarAgenda.Day>
   );
 };

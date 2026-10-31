@@ -1,14 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { reviewRunningOrder } from '@/features/running-order/running-order-review';
 import type { DraftLine, RunningOrderDraft } from '@/features/running-order/types';
-import type { LineWish } from './planner-wishes';
 import {
   eveningWishesOf,
   lineWishesOf,
   outcomeOfRule,
   ruleOfChoice,
   wishCountOf,
-  wishTallyOf,
 } from './planner-wishes';
 
 const act = (
@@ -96,28 +94,6 @@ describe('lineWishesOf', () => {
     expect(eveningWishesOf(draft, findings).map((wish) => [wish.actKind, wish.state])).toEqual([
       ['speech', 'conflict'],
     ]);
-  });
-});
-
-describe('wishTallyOf', () => {
-  it('counts the wishes in effect tonight and those it misses', () => {
-    const wish = (state: LineWish['state']): LineWish => ({
-      id: state,
-      source: 'rule',
-      kind: 'first',
-      strength: 'must',
-      actId: 1,
-      otherActId: null,
-      actKind: null,
-      state,
-      ruleKey: null,
-      actWishId: null,
-    });
-
-    expect(wishTallyOf([wish('met'), wish('conflict'), wish('hint'), wish('off')])).toEqual({
-      total: 3,
-      missed: 2,
-    });
   });
 });
 

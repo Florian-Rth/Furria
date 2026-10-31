@@ -97,6 +97,7 @@ public sealed class MediaStore
                     row.OwnerNewsPostId,
                     row.OwnerEventId,
                     row.OwnerActId,
+                    row.OwnerSessionId,
                     row.WebsitePicture == null
                         ? null
                         : new PictureSlotPosition(
@@ -220,6 +221,11 @@ public sealed class MediaStore
                     item.OwnerKind == MediaOwnerKind.Event && item.OwnerEventId == owner.Id
                 )
                 .ToListAsync(ct),
+            MediaOwnerKind.Session => await _dbContext
+                .MediaItems.Where(item =>
+                    item.OwnerKind == MediaOwnerKind.Session && item.OwnerSessionId == owner.Id
+                )
+                .ToListAsync(ct),
             _ => [],
         };
 
@@ -246,6 +252,12 @@ public sealed class MediaStore
                 .Events.Where(row => row.CalendarEntryId == command.Owner.Id)
                 .ExecuteUpdateAsync(
                     setters => setters.SetProperty(row => row.PictureId, mediaItemId),
+                    ct
+                ),
+            MediaOwnerKind.Session => _dbContext
+                .Sessions.Where(session => session.Id == command.Owner.Id)
+                .ExecuteUpdateAsync(
+                    setters => setters.SetProperty(session => session.LogoId, mediaItemId),
                     ct
                 ),
             MediaOwnerKind.NewsPost => _newsPictures.PlaceAsync(
@@ -286,6 +298,7 @@ public sealed class MediaStore
                 command.Owner.Kind == MediaOwnerKind.NewsPost ? command.Owner.Id : null,
             OwnerEventId = command.Owner.Kind == MediaOwnerKind.Event ? command.Owner.Id : null,
             OwnerActId = command.Owner.Kind == MediaOwnerKind.Act ? command.Owner.Id : null,
+            OwnerSessionId = command.Owner.Kind == MediaOwnerKind.Session ? command.Owner.Id : null,
             Kind = command.Format.Kind,
             State = MediaItemState.Processing,
             OriginalFileName = command.OriginalFileName,

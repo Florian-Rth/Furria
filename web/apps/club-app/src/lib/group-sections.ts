@@ -5,7 +5,7 @@ export const GROUP_SECTION_TITLES = {
   managedMembers: 'Zugehörigkeiten',
   admins: 'Gruppen-Admins',
   care: 'Die Gruppe pflegen',
-  rhythm: 'Trainingsrhythmus',
+  usualTrainingTimes: 'Übliche Trainingszeiten',
   history: 'Geschichte',
   events: 'Termine',
   administration: 'Für die Verwaltung',
@@ -13,31 +13,6 @@ export const GROUP_SECTION_TITLES = {
 
 export const GROUP_ADMINS_NOTE =
   'Gruppen-Admins verwalten die Gruppe und müssen ihr nicht selbst angehören.';
-
-export type GroupPeopleNoteKind = 'no-admins' | 'admins-first';
-
-const GROUP_PEOPLE_NOTES: Record<GroupPeopleNoteKind, string> = {
-  'no-admins':
-    'Diese Gruppe hat keinen Gruppen-Admin. Sie wird von der Gruppenverwaltung gepflegt.',
-  'admins-first': 'Gruppen-Admins stehen oben. Sie müssen der Gruppe nicht selbst angehören.',
-};
-
-export const toGroupPeopleNoteKind = (
-  people: number,
-  admins: number,
-): GroupPeopleNoteKind | undefined => {
-  if (people === 0) {
-    return undefined;
-  }
-
-  return admins === 0 ? 'no-admins' : 'admins-first';
-};
-
-export const toGroupPeopleNote = (people: number, admins: number): string | undefined => {
-  const kind = toGroupPeopleNoteKind(people, admins);
-
-  return kind === undefined ? undefined : GROUP_PEOPLE_NOTES[kind];
-};
 
 const SUBLINE_SEPARATOR = ' · ';
 

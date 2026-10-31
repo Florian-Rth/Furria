@@ -1,5 +1,5 @@
 import type { KkImageSource } from '@furria/ui/image-source';
-import { toImageSource } from '@furria/ui/image-source';
+import { toViewImageSource } from '@furria/ui/image-source';
 import type { GalleryMedia } from './schemas';
 
 const VIEW_SIZES = '100vw';
@@ -17,12 +17,10 @@ const photoImageOf = (media: ViewMedia): KkImageSource => {
   if (medium === null || large === null || size === undefined) {
     return { src: large ?? medium ?? small };
   }
-  return (
-    toImageSource(
-      { smallUrl: small, mediumUrl: medium, largeUrl: large },
-      size.width / size.height,
-      VIEW_SIZES,
-    ) ?? { src: large }
+  return toViewImageSource(
+    { smallUrl: small, mediumUrl: medium, largeUrl: large },
+    size.width / size.height,
+    VIEW_SIZES,
   );
 };
 

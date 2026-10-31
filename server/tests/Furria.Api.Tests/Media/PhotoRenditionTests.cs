@@ -45,7 +45,7 @@ public sealed class PhotoRenditionTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
         var small = await _fixture.MediaFileOfAsync(mediaItemId, MediaRendition.Small, ct);
         var large = await _fixture.MediaFileOfAsync(mediaItemId, MediaRendition.Large, ct);
-        Assert.Equal((267, 400), RenditionProbe.SizeOf(small));
+        Assert.Equal((400, 600), RenditionProbe.SizeOf(small));
         Assert.Equal((400, 600), RenditionProbe.SizeOf(large));
         Assert.False(RenditionProbe.CarriesMetadata(small));
         Assert.False(RenditionProbe.CarriesMetadata(large));
@@ -66,7 +66,7 @@ public sealed class PhotoRenditionTests : IClassFixture<ApiTestFixture>
         await _fixture.RunMediaWorkerAsync(ct);
 
         await ctx.Expected.MediaItem(mediaItemId).ToBeReady(4000, 3000).AssertAsync(ct);
-        Assert.Equal((400, 300), await RenditionSizeAsync(mediaItemId, MediaRendition.Small, ct));
+        Assert.Equal((640, 480), await RenditionSizeAsync(mediaItemId, MediaRendition.Small, ct));
         Assert.Equal(
             (1600, 1200),
             await RenditionSizeAsync(mediaItemId, MediaRendition.Medium, ct)
@@ -141,7 +141,7 @@ public sealed class PhotoRenditionTests : IClassFixture<ApiTestFixture>
 
         await ctx.Expected.MediaItem(mediaItemId).ToBeReady(3000, 2000).AssertAsync(ct);
         Assert.Equal((1200, 1500), await RenditionSizeAsync(mediaItemId, MediaRendition.Large, ct));
-        Assert.Equal((320, 400), await RenditionSizeAsync(mediaItemId, MediaRendition.Small, ct));
+        Assert.Equal((512, 640), await RenditionSizeAsync(mediaItemId, MediaRendition.Small, ct));
     }
 
     [Fact]
@@ -169,7 +169,7 @@ public sealed class PhotoRenditionTests : IClassFixture<ApiTestFixture>
             .MediaItem(mediaItemId)
             .ToBeCroppedTo(new PictureCrop(0.2, 0, 0.6, 1))
             .AssertAsync(ct);
-        Assert.Equal((320, 400), await RenditionSizeAsync(mediaItemId, MediaRendition.Small, ct));
+        Assert.Equal((512, 640), await RenditionSizeAsync(mediaItemId, MediaRendition.Small, ct));
         Assert.Equal(
             (1600, 1200),
             await RenditionSizeAsync(mediaItemId, MediaRendition.Uncropped, ct)

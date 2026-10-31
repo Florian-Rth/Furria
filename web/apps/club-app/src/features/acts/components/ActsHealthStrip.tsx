@@ -28,9 +28,7 @@ export const ActsHealthStrip: FC<ActsHealthStripProps> = ({ hub }) => {
     { state: 'current', text: toCarriersLegend(carriers) },
     { state: 'open', text: toSinglesLegend(singles) },
   ] as const;
-  const filters = ACTS_FILTERS.filter(
-    (filter) => hub.scope.kind === 'club' || filter !== 'points',
-  ).map((filter) => (
+  const filters = ACTS_FILTERS.map((filter) => (
     <ActsFilterChip
       key={filter}
       filter={filter}

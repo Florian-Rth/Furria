@@ -15,11 +15,17 @@ namespace Furria.Api.Endpoints.Calendar;
 public sealed class GetCalendar : Endpoint<GetCalendarRequest, GetCalendarResponse>
 {
     private readonly CalendarService _calendarService;
+    private readonly UsualTrainingService _usualTrainingService;
     private readonly TimeProvider _timeProvider;
 
-    public GetCalendar(CalendarService calendarService, TimeProvider timeProvider)
+    public GetCalendar(
+        CalendarService calendarService,
+        UsualTrainingService usualTrainingService,
+        TimeProvider timeProvider
+    )
     {
         _calendarService = calendarService;
+        _usualTrainingService = usualTrainingService;
         _timeProvider = timeProvider;
     }
 
@@ -40,28 +46,41 @@ public sealed class GetCalendar : Endpoint<GetCalendarRequest, GetCalendarRespon
         var from = req.From ?? ClubClock.Today(_timeProvider);
         var to = req.To ?? from.AddDays(CalendarLimits.DefaultWindowDays);
 
-        var entries = await _calendarService.GetEntriesAsync(
-            new CalendarWindowQuery
-            {
-                ViewerAccountId = accountId.Value,
-                ClubOwnedOnly = req.Scope == CalendarScope.Club,
-                OwnerGroupId = req.GroupId,
-                From = from,
-                To = to,
-            },
-            ct
-        );
+        var window = new CalendarWindowQuery
+        {
+            ViewerAccountId = accountId.Value,
+            ClubOwnedOnly = req.Scope == CalendarScope.Club,
+            OwnerGroupId = req.GroupId,
+            From = from,
+            To = to,
+        };
+
+        var entries = await _calendarService.GetEntriesAsync(window, ct);
         if (!entries.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(entries.Error, ct);
             return;
         }
 
-        await Send.OkAsync(ToResponse(entries.Value), cancellation: ct);
+        var usualTrainings = await _usualTrainingService.GetUsualTrainingsAsync(window, ct);
+        if (!usualTrainings.IsSuccess)
+        {
+            await HttpContext.Response.SendFailureAsync(usualTrainings.Error, ct);
+            return;
+        }
+
+        await Send.OkAsync(ToResponse(entries.Value, usualTrainings.Value), cancellation: ct);
     }
 
-    private static GetCalendarResponse ToResponse(IReadOnlyList<CalendarEntrySummary> entries) =>
-        new() { Entries = [.. entries.Select(CalendarEntryDto.From)] };
+    private static GetCalendarResponse ToResponse(
+        IReadOnlyList<CalendarEntrySummary> entries,
+        IReadOnlyList<UsualTrainingSummary> usualTrainings
+    ) =>
+        new()
+        {
+            Entries = [.. entries.Select(CalendarEntryDto.From)],
+            UsualTrainings = [.. usualTrainings.Select(UsualTrainingDto.From)],
+        };
 }
 
 public sealed record GetCalendarRequest
@@ -127,6 +146,41 @@ public sealed class GetCalendarValidator : Validator<GetCalendarRequest>
 public sealed record GetCalendarResponse
 {
     public required IReadOnlyList<CalendarEntryDto> Entries { get; init; }
+
+    public required IReadOnlyList<UsualTrainingDto> UsualTrainings { get; init; }
+}
+
+public sealed record UsualTrainingDto
+{
+    public required int UsualTrainingTimeId { get; init; }
+
+    public required int GroupId { get; init; }
+
+    public required string GroupName { get; init; }
+
+    public required GroupTone? GroupTone { get; init; }
+
+    public required DateTimeOffset StartsAt { get; init; }
+
+    public required DateTimeOffset EndsAt { get; init; }
+
+    public required int? VenueId { get; init; }
+
+    public required string? VenueName { get; init; }
+
+    [Pure]
+    public static UsualTrainingDto From(UsualTrainingSummary usual) =>
+        new()
+        {
+            UsualTrainingTimeId = usual.UsualTrainingTimeId,
+            GroupId = usual.GroupId,
+            GroupName = usual.GroupName,
+            GroupTone = usual.GroupTone,
+            StartsAt = usual.StartsAt,
+            EndsAt = usual.EndsAt,
+            VenueId = usual.VenueId,
+            VenueName = usual.VenueName,
+        };
 }
 
 public sealed record CalendarEntryDto

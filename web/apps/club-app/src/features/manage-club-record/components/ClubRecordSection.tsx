@@ -18,13 +18,11 @@ const EDIT_ROUTES = {
 interface ClubRecordSectionProps extends PropsWithChildren {
   section: Section;
   highlightedKey: string | null;
-  description?: string;
 }
 
 export const ClubRecordSection: FC<ClubRecordSectionProps> = ({
   section,
   highlightedKey,
-  description,
   children,
 }) => {
   const title = CLUB_RECORD_SECTION_TITLES[section];
@@ -39,7 +37,7 @@ export const ClubRecordSection: FC<ClubRecordSectionProps> = ({
   };
 
   return (
-    <KkPanelSection title={title} action={action} description={description}>
+    <KkPanelSection title={title} action={action}>
       <KkPanel highlight={highlightedKey === landingKey} landing={landingKey}>
         {children}
       </KkPanel>

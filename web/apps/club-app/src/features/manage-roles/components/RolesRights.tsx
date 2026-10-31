@@ -19,11 +19,7 @@ export const RolesRights: FC<RolesRightsProps> = ({ groups, selectedId, onOpen }
     ));
 
     return (
-      <KkPanelSection
-        key={group.id}
-        title={toRightGroupTitle(group.id)}
-        meta={group.entries.length}
-      >
+      <KkPanelSection key={group.id} title={toRightGroupTitle(group.id)}>
         <Stack sx={{ gap: 0, minWidth: 0 }}>{lines}</Stack>
       </KkPanelSection>
     );

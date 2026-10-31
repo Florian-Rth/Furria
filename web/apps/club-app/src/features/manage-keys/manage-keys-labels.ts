@@ -138,19 +138,6 @@ export const findKeyVenue = (
 };
 
 export const MANAGE_KEYS_LEAD = 'Wer welchen Ort aufschließen kann.';
-export const toVenueHolderMeta = (holdings: readonly KeyHolding[]): string => {
-  const { running } = partitionKeyHoldings(holdings);
-
-  if (running.length === 0) {
-    return 'kein Schlüssel';
-  }
-  if (running.length === 1) {
-    return '1 Schlüssel';
-  }
-
-  return `${running.length} Schlüssel`;
-};
-
 export const toArchivedVenueNote = (archivedOn: string): string =>
   `Der Ort ist seit dem ${formatIsoDay(archivedOn)} archiviert. Es können keine Schlüssel mehr ausgegeben werden.`;
 

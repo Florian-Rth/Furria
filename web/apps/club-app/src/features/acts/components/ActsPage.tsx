@@ -7,7 +7,7 @@ import { RequireAnyScreenPermission } from '@/features/session/components/Requir
 import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { ACTS_TITLE } from '../acts-copy';
-import { actsCatalogueOriginOf, actsCatalogueReturnOf, CLUB_SCOPE } from '../acts-origin';
+import { actsCatalogueOriginOf, actsCatalogueReturnOf } from '../acts-origin';
 import type { ActsSearch } from '../schemas';
 import { ActsScreen } from './ActsScreen';
 
@@ -31,13 +31,7 @@ export const ActsPage: FC<ActsPageProps> = ({ search }) => {
       title={ACTS_TITLE}
       origin={origin}
     >
-      <ActsScreen
-        scope={CLUB_SCOPE}
-        search={search}
-        title={ACTS_TITLE}
-        origin={origin}
-        mayRead={plans}
-      />
+      <ActsScreen search={search} title={ACTS_TITLE} origin={origin} mayRead={plans} />
     </RequireAnyScreenPermission>
   );
 };

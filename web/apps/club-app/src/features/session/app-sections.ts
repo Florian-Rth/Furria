@@ -197,7 +197,7 @@ export const MANAGE_SECTIONS: AppSection[] = [
   },
   {
     id: 'acts',
-    label: 'Auftritte',
+    label: 'Sessionsauftritte',
     icon: 'stage',
     to: ACTS_PATH,
     meta: 'Tänze, Reden und Ablaufpunkte mit Besetzung',

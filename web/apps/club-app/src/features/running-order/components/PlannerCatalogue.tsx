@@ -1,9 +1,8 @@
 import { KkNumberedList } from '@furria/ui/KkNumberedList';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { pickedInSectionOf } from '../planner-catalogue';
 import { usePlanner } from '../planner-context';
-import { CATALOGUE_EMPTY, CATALOGUE_TITLE, POINTS_TITLE, toCatalogueMeta } from '../planner-copy';
+import { CATALOGUE_EMPTY, CATALOGUE_TITLE, POINTS_TITLE } from '../planner-copy';
 import { PlannerActsLinks } from './PlannerActsLinks';
 import { PlannerCatalogueRow } from './PlannerCatalogueRow';
 import { PlannerPrevious } from './PlannerPrevious';
@@ -20,7 +19,6 @@ export const PlannerCatalogue: FC = () => {
       key={section.id}
       title={section.kind === 'group' ? section.group.name : POINTS_TITLE}
       tone={section.kind === 'group' ? section.group.tone : undefined}
-      meta={toCatalogueMeta(pickedInSectionOf(section, planner.draft), section.acts.length)}
     />,
     ...section.acts.map((act) => <PlannerCatalogueRow key={act.actId} act={act} />),
   ]);

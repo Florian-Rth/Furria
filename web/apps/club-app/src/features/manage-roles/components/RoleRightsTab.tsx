@@ -3,7 +3,6 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { RolePaneControl } from '../hooks/use-role-pane';
 import { isRoleArchived } from '../roles-hub';
-import { RIGHTS_GUIDANCE, toRightsMeta } from '../roles-hub-copy';
 import type { RoleSummary } from '../schemas';
 import { PermissionHandoverDialog } from './PermissionHandoverDialog';
 import { RoleGrantedList } from './RoleGrantedList';
@@ -14,17 +13,15 @@ const RIGHTS_TITLE = 'Rechte';
 
 interface RoleRightsTabProps {
   role: RoleSummary;
-  catalogue: readonly string[];
   control: RolePaneControl;
 }
 
-export const RoleRightsTab: FC<RoleRightsTabProps> = ({ role, catalogue, control }) => {
+export const RoleRightsTab: FC<RoleRightsTabProps> = ({ role, control }) => {
   const { permissions } = control;
-  const meta = toRightsMeta(role.permissionKeys.length, catalogue.length);
 
   if (isRoleArchived(role)) {
     return (
-      <KkPanelSection title={RIGHTS_TITLE} meta={meta}>
+      <KkPanelSection title={RIGHTS_TITLE}>
         <RoleGrantedList entries={permissions.entries} />
       </KkPanelSection>
     );
@@ -41,7 +38,7 @@ export const RoleRightsTab: FC<RoleRightsTabProps> = ({ role, catalogue, control
   ));
 
   return (
-    <KkPanelSection title={RIGHTS_TITLE} meta={meta} description={RIGHTS_GUIDANCE}>
+    <KkPanelSection title={RIGHTS_TITLE}>
       <Stack sx={{ gap: 0, minWidth: 0 }}>{rows}</Stack>
       <SelfLockoutDialog
         roleName={role.name}

@@ -1,14 +1,15 @@
-import { KkButton } from '@furria/ui/KkButton';
 import type { KkSeatTone } from '@furria/ui/KkSeatLine';
 import { KkSeatLine } from '@furria/ui/KkSeatLine';
 import type { FC } from 'react';
 import { toAvatarHonours } from '@/lib/honours';
 import { toInitials } from '@/lib/initials';
+import type { HoldingTask } from '../hooks/use-holding-form-target';
 import { toPersonName } from '../manage-roles-labels';
 import type { HolderPhase } from '../roles-hub';
 import { holderPhaseOf } from '../roles-hub';
-import { END_HOLDING_LABEL, toHolderPeriod } from '../roles-hub-copy';
+import { toHolderPeriod } from '../roles-hub-copy';
 import type { RoleHolder } from '../schemas';
+import { HoldingTaskButtons } from './HoldingTaskButtons';
 
 const PHASE_TONES: Record<HolderPhase, KkSeatTone> = {
   running: 'ink',
@@ -20,21 +21,19 @@ const PHASE_TONES: Record<HolderPhase, KkSeatTone> = {
 interface RoleHolderLineProps {
   holder: RoleHolder;
   today: string;
-  canEnd: boolean;
-  onEnd: (roleHoldingId: number) => void;
+  editable: boolean;
+  onTask: (roleHoldingId: number, task: HoldingTask) => void;
 }
 
-export const RoleHolderLine: FC<RoleHolderLineProps> = ({ holder, today, canEnd, onEnd }) => {
+export const RoleHolderLine: FC<RoleHolderLineProps> = ({ holder, today, editable, onTask }) => {
   const phase = holderPhaseOf(holder, today);
-  const end = (): void => {
-    onEnd(holder.roleHoldingId);
-  };
-  const action =
-    canEnd && phase === 'running' ? (
-      <KkButton size="small" variant="text" onClick={end}>
-        {END_HOLDING_LABEL}
-      </KkButton>
-    ) : undefined;
+  const action = editable ? (
+    <HoldingTaskButtons
+      roleHoldingId={holder.roleHoldingId}
+      endable={phase === 'running'}
+      onTask={onTask}
+    />
+  ) : undefined;
   const initials = toInitials(holder.firstName, holder.lastName);
   const honours = toAvatarHonours(holder.honours);
   const name = toPersonName(holder);
