@@ -17,12 +17,21 @@ export const KkFacetGridRoot: FC<KkFacetGridRootProps> = ({
   children,
 }) => (
   <Stack
+    component="ul"
+    role="list"
     direction="row"
-    role={label === undefined ? undefined : 'group'}
     aria-label={label}
     data-kk-facet-grid
     sx={[
-      { flexWrap: 'wrap', gap: 1.25, alignItems: 'stretch', minWidth: 0 },
+      {
+        flexWrap: 'wrap',
+        gap: 1.25,
+        alignItems: 'stretch',
+        minWidth: 0,
+        m: 0,
+        p: 0,
+        listStyle: 'none',
+      },
       fill && FILLING,
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}

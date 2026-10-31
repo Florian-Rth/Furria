@@ -44,6 +44,7 @@ export const KkKeyHelp: FC<KkKeyHelpProps> = ({ label, opens = 'down', children 
         aria-expanded={anchor !== null}
         onClick={open}
         sx={(theme) => ({
+          flexShrink: 0,
           width: kkTokens.tapTarget,
           height: kkTokens.tapTarget,
           borderRadius: '50%',

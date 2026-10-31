@@ -65,7 +65,6 @@ export const KkStudioListRow: FC<KkStudioListRowProps> = ({
 
   return (
     <ButtonBase
-      role="listitem"
       aria-label={label}
       aria-current={selected ? 'true' : undefined}
       onClick={onPress}

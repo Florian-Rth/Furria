@@ -1,4 +1,5 @@
 import { KkScreen } from '@furria/ui/KkScreen';
+import { KkVisuallyHidden } from '@furria/ui/KkVisuallyHidden';
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
 import { useScreenSearch } from '@/features/session/hooks/use-screen-search';
@@ -25,6 +26,7 @@ export const ActsScreen: FC<ActsScreenProps> = ({ scope, search, title, origin, 
 
   return (
     <KkScreen kind="working" title={title} origin={origin} search={screenSearch} actions={actions}>
+      <KkVisuallyHidden component="h1">{title}</KkVisuallyHidden>
       <ActsBody hub={hub} />
     </KkScreen>
   );

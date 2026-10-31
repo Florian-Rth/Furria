@@ -98,10 +98,10 @@ export const ActMusicBody: FC<ActMusicBodyProps> = ({ page, actId, studio }) => 
       </KkLanePhone.Area>
       <KkLanePhone.Area area="cards">
         <KkLanePhone.Split>
-          <KkLaneDesk.Panel label={MUSIC_PAGE_MUSIC} kind="region">
+          <KkLaneDesk.Panel label={MUSIC_PAGE_MUSIC}>
             <ActStudioWaveLayer screen={screen} />
           </KkLaneDesk.Panel>
-          <KkLaneDesk.Panel label={MUSIC_PAGE_LIST} kind="region">
+          <KkLaneDesk.Panel label={MUSIC_PAGE_LIST}>
             <KkLaneInspector>{list}</KkLaneInspector>
           </KkLaneDesk.Panel>
         </KkLanePhone.Split>

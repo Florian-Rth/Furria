@@ -13,7 +13,6 @@ interface KkStudioListSlotProps {
 
 export const KkStudioListSlot: FC<KkStudioListSlotProps> = ({ title, text }) => (
   <Stack
-    role="listitem"
     data-kk-studio-slot
     sx={(theme) => ({
       flexShrink: 0,

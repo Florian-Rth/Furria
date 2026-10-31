@@ -47,13 +47,13 @@ export const ActDeskView: FC<ActDeskViewProps> = ({ screen, editor }) => {
         <DeskTopBar desk={desk} zoom={zoom} setup={setup} />
       </KkLaneDesk.Area>
       <KkLaneDesk.Area area="stage">
-        <KkLaneDesk.Panel label={DESK_STAGE} kind="region" padded>
+        <KkLaneDesk.Panel label={DESK_STAGE} padded>
           <DeskStageTools desk={desk} />
           <DeskStageView desk={desk} />
         </KkLaneDesk.Panel>
       </KkLaneDesk.Area>
       <KkLaneDesk.Area area="inspector">
-        <KkLaneDesk.Panel label={DESK_INSPECTOR} kind="complementary">
+        <KkLaneDesk.Panel label={DESK_INSPECTOR}>
           <DeskInspectorPane desk={desk} borders={borders} setup={setup} />
         </KkLaneDesk.Panel>
       </KkLaneDesk.Area>
@@ -61,7 +61,7 @@ export const ActDeskView: FC<ActDeskViewProps> = ({ screen, editor }) => {
         <DeskOverview desk={desk} zoom={zoom} />
       </KkLaneDesk.Area>
       <KkLaneDesk.Area area="lanes">
-        <KkLaneDesk.Panel label={DESK_LANES} kind="region">
+        <KkLaneDesk.Panel label={DESK_LANES}>
           <DeskLanes desk={desk} zoom={zoom} borders={borders} setup={setup} />
         </KkLaneDesk.Panel>
       </KkLaneDesk.Area>

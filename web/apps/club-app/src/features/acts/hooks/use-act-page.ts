@@ -29,7 +29,14 @@ import {
 } from '../act-page-copy';
 import type { ActPageMode } from '../act-studio';
 import { actPageModeOf, canPractise, seesDetailsOf } from '../act-studio';
-import { actCardOriginOf, actPageOriginOf, actPageReturnOf, playerOriginOf } from '../acts-origin';
+import {
+  actCardLinkOf,
+  actCardOriginOf,
+  actDetailsLinkOf,
+  actPageOriginOf,
+  actPageReturnOf,
+  playerOriginOf,
+} from '../acts-origin';
 import { useActStudioQuery } from '../api';
 import type { ActPageSearch, ActStudioResponse, StudioEvening, StudioTraining } from '../schemas';
 
@@ -205,6 +212,7 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
     id: 'details',
     label: ACT_CARD_LABEL,
     icon: 'info',
+    link: actId === null ? undefined : actCardLinkOf(actId, search),
     onSelect: () => {
       void navigate({
         to: '.',
@@ -225,6 +233,7 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
     id: 'details',
     label: ACT_DETAILS_LABEL,
     icon: 'info',
+    link: actId === null ? undefined : actDetailsLinkOf(actId, search),
     onSelect: () => {
       showView('details');
     },

@@ -18,6 +18,7 @@ export const KkShellChrome: FC<KkShellChromeProps> = ({ ref }) => {
 
   return (
     <Stack
+      component="header"
       data-kk-shell-chrome
       sx={(theme) => ({
         position: 'fixed',

@@ -9,13 +9,14 @@ import { waveformOf } from '@/features/act-player/mix-waveform';
 import type { MusicSegment } from '@/features/act-player/music-timeline';
 import type { StudioSong } from '@/features/acts/schemas';
 import { cutHandleLabelOf, finalShiftLabelOf, songMetaOf, songNameOf } from '../studio-copy';
-import { trimmedCutOf } from '../studio-edits';
+import { nudgedCutOf, trimmedCutOf } from '../studio-edits';
 import { offsetStartingAt, sourceNameOf } from '../studio-final';
 import { songSettingsOf } from '../studio-music';
 import { useFinalPlaces } from './use-final-places';
 import type { StudioScreen } from './use-studio-screen';
 
 const BUCKETS = 260;
+const FINAL_NUDGE_SECONDS = 0.1;
 
 export interface ActStudioWaveRegion {
   key: string;
@@ -35,6 +36,7 @@ export interface ActStudioWaveHandle {
   active: boolean;
   move: (share: number) => void;
   end: () => void;
+  nudge: (direction: -1 | 1) => void;
 }
 
 export interface ActStudioWave {
@@ -124,6 +126,17 @@ const useFinalWave = (screen: StudioScreen, shareOf: (seconds: number) => number
               }
               setShift(null);
             },
+            nudge: (direction) => {
+              screen.edits.keepPosition(player.position());
+              final.writes.tune.mutate({
+                finalTrackId: pending.finalTrackId,
+                sourceMediaItemId: selected.segment.mediaItemId,
+                offsetSeconds: offsetStartingAt(
+                  selected.segment,
+                  selectedStart + direction * FINAL_NUDGE_SECONDS,
+                ),
+              });
+            },
           },
         ];
 
@@ -161,6 +174,17 @@ export const useActStudioWave = (screen: StudioScreen): ActStudioWave => {
       : (['start', 'end'] as const).map((edge) => {
           const active = trim?.edge === edge;
           const seconds = active ? trim.seconds : edgeOf(selected, edge);
+          const settleCut = (cut: { start: number; end: number }): void => {
+            edits.keepPosition(player.position());
+            music.settle.mutate({
+              songId: selected.song.songId,
+              settings: {
+                ...songSettingsOf(selected.song),
+                startSeconds: cut.start,
+                endSeconds: cut.end,
+              },
+            });
+          };
 
           return {
             key: edge,
@@ -173,18 +197,18 @@ export const useActStudioWave = (screen: StudioScreen): ActStudioWave => {
             },
             end: () => {
               if (trim !== null) {
-                const cut = trimmedCutOf(selected.song, selected.segment, edge, trim.seconds);
-                edits.keepPosition(player.position());
-                music.settle.mutate({
-                  songId: selected.song.songId,
-                  settings: {
-                    ...songSettingsOf(selected.song),
-                    startSeconds: cut.start,
-                    endSeconds: cut.end,
-                  },
-                });
+                settleCut(trimmedCutOf(selected.song, selected.segment, edge, trim.seconds));
               }
               setTrim(null);
+            },
+            nudge: (direction) => {
+              const cut = nudgedCutOf(selected.song, selected.segment, edge, direction);
+              if (
+                cut.start !== selected.song.startSeconds ||
+                cut.end !== selected.song.endSeconds
+              ) {
+                settleCut(cut);
+              }
             },
           };
         });

@@ -44,7 +44,7 @@ export const KkLaneTrackRoot: FC<KkLaneTrackRootProps> = ({
   return (
     <Box
       ref={attach}
-      role="region"
+      role="group"
       aria-label={label}
       data-kk-lane-track
       sx={{

@@ -1,6 +1,7 @@
 import { KkEmptyState } from '@furria/ui/KkEmptyState';
 import { KkScreen } from '@furria/ui/KkScreen';
 import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
+import { KkVisuallyHidden } from '@furria/ui/KkVisuallyHidden';
 import type { FC } from 'react';
 import { AccessDeniedScreen } from '@/features/session/components/AccessDeniedScreen';
 import { ScreenNotFound } from '@/features/session/components/ScreenNotFound';
@@ -47,6 +48,7 @@ export const ActMusicPage: FC<ActMusicPageProps> = ({ actId, search }) => {
 
   return (
     <KkScreen kind="fullscreen" title={MUSIC_PAGE_TITLE} origin={page.origin}>
+      <KkVisuallyHidden component="h1">{MUSIC_PAGE_TITLE}</KkVisuallyHidden>
       {body}
     </KkScreen>
   );

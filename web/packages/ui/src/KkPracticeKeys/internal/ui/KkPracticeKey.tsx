@@ -57,6 +57,7 @@ export const KkPracticeKey: FC<KkPracticeKeyProps> = ({
     <Typography
       variant="button"
       component="span"
+      data-kk-practice-key-caption
       sx={{ textAlign: 'center', overflowWrap: 'anywhere', hyphens: 'auto', lineHeight: 1.2 }}
     >
       {caption}

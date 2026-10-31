@@ -17,10 +17,17 @@ export interface KkScreenOrigin {
   search?: Record<string, string>;
 }
 
+export interface KkScreenActionLink {
+  to: string;
+  params?: Record<string, string>;
+  search?: Record<string, string>;
+}
+
 interface KkScreenActionBase {
   id: string;
   label: string;
   icon: KkIconName;
+  link?: KkScreenActionLink;
   onSelect: () => void;
 }
 

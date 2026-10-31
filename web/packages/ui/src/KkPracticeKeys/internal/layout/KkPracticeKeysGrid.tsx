@@ -3,6 +3,7 @@ import type { FC, PropsWithChildren } from 'react';
 
 export const KkPracticeKeysGrid: FC<PropsWithChildren> = ({ children }) => (
   <Box
+    data-kk-practice-keys-grid
     sx={{
       display: 'grid',
       gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',

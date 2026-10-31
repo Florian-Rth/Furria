@@ -6,6 +6,7 @@ import type { FC, KeyboardEvent, MouseEvent } from 'react';
 import { focusRing } from '../internal/focus-ring';
 import { redInk } from '../internal/red-ink';
 import { nextRovingId } from '../internal/roving-focus';
+import { tapArea } from '../internal/tap-area';
 import type { KkIconName } from '../KkIcon';
 import { KkIcon } from '../KkIcon';
 import type { KkSeverity } from '../KkSeverityGlyph';
@@ -37,6 +38,7 @@ const segmentPaint = (theme: Theme): CSSObject => ({
   borderRadius: `${kkTokens.radius.base}px`,
   color: 'text.secondary',
   ...focusRing(theme),
+  ...tapArea('before'),
   '&::after': {
     content: '""',
     position: 'absolute',

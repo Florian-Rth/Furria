@@ -237,6 +237,24 @@ export const trimmedCutOf = (
   };
 };
 
+const NUDGE_SECONDS_WITHOUT_BEAT = 0.5;
+
+const nudgeSecondsOf = (song: StudioSong): number =>
+  song.tempoBpm === null || song.tempoBpm <= 0
+    ? NUDGE_SECONDS_WITHOUT_BEAT
+    : SECONDS_PER_MINUTE / song.tempoBpm;
+
+export const nudgedCutOf = (
+  song: StudioSong,
+  segment: MusicSegment,
+  edge: CutEdge,
+  direction: -1 | 1,
+): TimeSpan => {
+  const seconds = edge === 'start' ? segment.timelineStart : segment.timelineEnd;
+
+  return trimmedCutOf(song, segment, edge, seconds + direction * nudgeSecondsOf(song));
+};
+
 export const GRID_METRES = 0.25;
 
 export const snappedToGrid = (value: number): number =>

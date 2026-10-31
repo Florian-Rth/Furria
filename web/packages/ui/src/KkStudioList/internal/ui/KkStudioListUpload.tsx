@@ -27,7 +27,6 @@ export const KkStudioListUpload: FC<KkStudioListUploadProps> = ({
   onPress,
 }) => (
   <ButtonBase
-    role="listitem"
     aria-label={label}
     disabled={!failed}
     onClick={onPress}

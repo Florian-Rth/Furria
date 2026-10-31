@@ -2,10 +2,13 @@ import Box from '@mui/material/Box';
 import type { CSSObject } from '@mui/material/styles';
 import type { FC, PropsWithChildren } from 'react';
 import { trackEdgeOf } from '../../../KkShell/internal/track-edge';
+import { HIDDEN_FROM_SIGHT, KkVisuallyHidden } from '../../../KkVisuallyHidden';
 import type { KkSx } from '../../../kk-sx';
+import { kkTokens } from '../../../tokens';
 
 const WIDE = '@container kk-practice (min-aspect-ratio: 5/4)';
 const NARROW = '@container kk-practice (max-aspect-ratio: 5/4)';
+const WIDE_SHORT = '@container kk-practice (min-aspect-ratio: 5/4) and (max-height: 20rem)';
 const WIDE_TALL = '@container kk-practice (min-aspect-ratio: 5/4) and (min-height: 34rem)';
 const SIDE = 'clamp(18rem, 34cqw, 30rem)';
 const COMPOSED_HEIGHT = `min(100%, calc((100cqw - ${SIDE} - 2rem) * 9 / 16 + 10rem))`;
@@ -42,22 +45,45 @@ const ROOMY_GRID: CSSObject = {
   },
 };
 
+const HEAD_WRAPPED: CSSObject = {
+  '& [data-kk-practice-head]': { flexWrap: 'wrap', rowGap: 0.5 },
+  '& [data-kk-practice-head] > [data-kk-practice-count]': { flexBasis: '100%' },
+};
+
 const LARGE_TEXT_GRID: CSSObject = {
   gridTemplateAreas: '"head" "hero" "controls"',
   gridTemplateColumns: 'minmax(0, 1fr)',
   gridTemplateRows: 'auto minmax(0, 1fr) auto',
-  [NARROW]: {
-    '& [data-kk-practice-head]': { flexWrap: 'wrap', rowGap: 0.5 },
-    '& [data-kk-practice-head] > [data-kk-practice-count]': { flexBasis: '100%' },
-  },
+  [NARROW]: HEAD_WRAPPED,
   [WITH_BAND]: {
     gridTemplateAreas: '"band" "head" "hero" "controls"',
     gridTemplateRows: 'auto auto minmax(0, 1fr) auto',
+  },
+  [WIDE]: {
+    gridTemplateAreas: '"head hero" "controls controls"',
+    gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+    gridTemplateRows: 'minmax(0, 1fr) auto',
+    [WITH_BAND]: {
+      gridTemplateAreas: '"band band" "head hero" "controls controls"',
+      gridTemplateRows: 'auto minmax(0, 1fr) auto',
+    },
+  },
+  [WIDE_SHORT]: {
+    ...HEAD_WRAPPED,
+    '& [data-kk-practice-keys]': { flexDirection: 'row' },
+    '& [data-kk-practice-keys] > *': { flex: '2 1 0', minWidth: 0 },
+    '& [data-kk-practice-keys] > button': { minHeight: kkTokens.tapTarget },
+    '& [data-kk-practice-keys-grid]': {
+      flexGrow: 4,
+      gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
+    },
+    '& [data-kk-practice-key-caption]': HIDDEN_FROM_SIGHT,
   },
 };
 
 interface KkStudioViewRootProps extends PropsWithChildren {
   label: string;
+  title?: string;
   editing: boolean;
   largeText?: boolean;
   sx?: KkSx;
@@ -65,45 +91,52 @@ interface KkStudioViewRootProps extends PropsWithChildren {
 
 export const KkStudioViewRoot: FC<KkStudioViewRootProps> = ({
   label,
+  title,
   editing,
   largeText = false,
   sx,
   children,
-}) => (
-  <Box
-    component="section"
-    aria-label={label}
-    data-kk-practice
-    data-kk-studio
-    data-editing={editing}
-    data-large-text={largeText}
-    sx={[
-      {
-        width: '100%',
-        maxWidth: { desktop: '90rem' },
-        minWidth: 0,
-        height: `calc(100dvh - ${trackEdgeOf('top')} - ${trackEdgeOf('bottom')})`,
-        mx: 'auto',
-        containerType: 'size',
-        containerName: 'kk-practice kk-studio-h',
-        userSelect: 'none',
-        WebkitUserSelect: 'none',
-        touchAction: 'manipulation',
-      },
-      ...(Array.isArray(sx) ? sx : [sx]),
-    ]}
-  >
+}) => {
+  const heading =
+    title === undefined ? null : <KkVisuallyHidden component="h1">{title}</KkVisuallyHidden>;
+
+  return (
     <Box
-      sx={{
-        display: 'grid',
-        width: '100%',
-        height: '100%',
-        rowGap: { xs: 1.5, desktop: 2 },
-        columnGap: { xs: 2, desktop: 3 },
-        ...(largeText ? LARGE_TEXT_GRID : ROOMY_GRID),
-      }}
+      component="section"
+      aria-label={label}
+      data-kk-practice
+      data-kk-studio
+      data-editing={editing}
+      data-large-text={largeText}
+      sx={[
+        {
+          width: '100%',
+          maxWidth: { desktop: '90rem' },
+          minWidth: 0,
+          height: `calc(100dvh - ${trackEdgeOf('top')} - ${trackEdgeOf('bottom')})`,
+          mx: 'auto',
+          containerType: 'size',
+          containerName: 'kk-practice kk-studio-h',
+          userSelect: 'none',
+          WebkitUserSelect: 'none',
+          touchAction: 'manipulation',
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
     >
-      {children}
+      {heading}
+      <Box
+        sx={{
+          display: 'grid',
+          width: '100%',
+          height: '100%',
+          rowGap: { xs: 1.5, desktop: 2 },
+          columnGap: { xs: 2, desktop: 3 },
+          ...(largeText ? LARGE_TEXT_GRID : ROOMY_GRID),
+        }}
+      >
+        {children}
+      </Box>
     </Box>
-  </Box>
-);
+  );
+};

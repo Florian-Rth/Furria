@@ -3,7 +3,13 @@ import type { TimedKeyframe } from '@/features/act-player/choreography-motion';
 import type { MusicSegment } from '@/features/act-player/music-timeline';
 import type { StudioSong, StudioStep } from '@/features/acts/schemas';
 import type { CutEdge, TimeSpan } from './studio-edits';
-import { borderMovedOf, draggedPointOf, placedTrackOf, trimmedCutOf } from './studio-edits';
+import {
+  borderMovedOf,
+  draggedPointOf,
+  nudgedCutOf,
+  placedTrackOf,
+  trimmedCutOf,
+} from './studio-edits';
 
 const step = (stepId: number, start: number, end: number): StudioStep => ({
   stepId,
@@ -134,5 +140,23 @@ describe('trimmedCutOf', () => {
     ['keeps the shortest cut', 'start', 59.9, 0.25, 120, { start: 68.25, end: 70.25 }],
   ])('%s', (_, edge, seconds, firstBeat, tempo, expected) => {
     expect(trimmedCutOf(songOf(firstBeat, tempo), segment, edge, seconds)).toEqual(expected);
+  });
+
+  it.each<[string, CutEdge, -1 | 1, number | null, number | null, TimeSpan]>([
+    ['moves the start one count later', 'start', 1, 0.25, 120, { start: 10.75, end: 70.25 }],
+    ['moves the start one count earlier', 'start', -1, 0.25, 120, { start: 9.75, end: 70.25 }],
+    ['moves the end one count later', 'end', 1, 0.25, 120, { start: 10.25, end: 70.75 }],
+    ['moves the end one count earlier', 'end', -1, 0.25, 120, { start: 10.25, end: 69.75 }],
+    ['moves half a second without a tempo', 'start', 1, null, null, { start: 10.75, end: 70.25 }],
+    [
+      'moves a beat at a known tempo without a first beat',
+      'end',
+      -1,
+      null,
+      60,
+      { start: 10.25, end: 69.25 },
+    ],
+  ])('nudge %s', (_, edge, direction, firstBeat, tempo, expected) => {
+    expect(nudgedCutOf(songOf(firstBeat, tempo), segment, edge, direction)).toEqual(expected);
   });
 });

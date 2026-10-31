@@ -17,6 +17,7 @@ interface KkFacetGridCellProps extends PropsWithChildren {
 
 export const KkFacetGridCell: FC<KkFacetGridCellProps> = ({ reach, sx, children }) => (
   <Stack
+    component="li"
     data-kk-facet-cell
     sx={[{ flex: `1 1 ${BASES[reach]}`, minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}
   >

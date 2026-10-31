@@ -31,6 +31,7 @@ export const ActStudioWaveLayer: FC<ActStudioWaveLayerProps> = ({ screen }) => {
       active={handle.active}
       onMove={handle.move}
       onEnd={handle.end}
+      onNudge={handle.nudge}
     />
   ));
   const cut =

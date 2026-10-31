@@ -7,20 +7,18 @@ const palette = (theme: Theme) => (theme.vars ?? theme).palette;
 
 interface KkLaneDeskPanelProps extends PropsWithChildren {
   label: string;
-  kind: 'region' | 'complementary';
   padded?: boolean;
   fit?: boolean;
 }
 
 export const KkLaneDeskPanel: FC<KkLaneDeskPanelProps> = ({
   label,
-  kind,
   padded = false,
   fit = false,
   children,
 }) => (
   <Box
-    component={kind === 'complementary' ? 'aside' : 'section'}
+    component="section"
     aria-label={label}
     data-kk-lane-panel
     sx={(theme) => ({

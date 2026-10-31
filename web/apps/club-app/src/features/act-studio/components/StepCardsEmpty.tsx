@@ -42,7 +42,7 @@ export const StepCardsEmpty: FC<StepCardsEmptyProps> = ({ screen, stepTool }) =>
   );
 
   return (
-    <KkLaneDesk.Panel label={STEP_CARDS_EMPTY} kind="region">
+    <KkLaneDesk.Panel label={STEP_CARDS_EMPTY}>
       <KkLaneInspector>
         <KkLaneInspector.Head eyebrow={STEP_CARDS_LABEL} title={STEP_CARDS_EMPTY} />
         <KkLaneInspector.Note text={note} />
