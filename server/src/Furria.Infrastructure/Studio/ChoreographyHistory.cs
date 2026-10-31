@@ -9,6 +9,8 @@ namespace Furria.Infrastructure.Studio;
 
 public sealed class ChoreographyHistory
 {
+    private const int VersionsPerPage = 20;
+
     private readonly AppDbContext _dbContext;
     private readonly PermissionAuthorizer _authorizer;
     private readonly ActCatalogue _catalogue;
@@ -50,6 +52,8 @@ public sealed class ChoreographyHistory
                 SavedAt = _timeProvider.GetUtcNow(),
             }
         );
+        if (_dbContext.Entry(choreography).State != EntityState.Added)
+            await ThinOutAsync(choreography.Id, ct);
     }
 
     public async Task<ChoreographyDocument?> DocumentAtAsync(
@@ -79,18 +83,22 @@ public sealed class ChoreographyHistory
             ct
         );
 
-    public async Task<IReadOnlyList<ChoreographyVersionSummary>> VersionsOfAsync(
+    public async Task<ChoreographyVersionPage> VersionsOfAsync(
         int? choreographyId,
+        int? before,
         CancellationToken ct
     )
     {
         if (choreographyId is not { } id)
-            return [];
+            return ChoreographyVersionPage.Empty;
 
-        var rows = await _dbContext
+        var history = _dbContext
             .ChoreographyVersions.AsNoTracking()
-            .Where(row => row.ChoreographyId == id)
+            .Where(row => row.ChoreographyId == id);
+        var rows = await history
+            .Where(row => before == null || row.Version < before)
             .OrderByDescending(row => row.Version)
+            .Take(VersionsPerPage + 1)
             .Select(row => new
             {
                 row.Version,
@@ -100,27 +108,66 @@ public sealed class ChoreographyHistory
                 row.SavedByPersonId,
             })
             .ToListAsync(ct);
+        var page = rows.Take(VersionsPerPage).ToList();
         var authors = (
             await _catalogue.PersonsInNameOrderAsync(
-                [.. rows.Select(row => row.SavedByPersonId).OfType<int>().Distinct()],
+                [.. page.Select(row => row.SavedByPersonId).OfType<int>().Distinct()],
                 ct
             )
         ).ToDictionary(person => person.PersonId);
 
-        return
-        [
-            .. rows.Select(row => new ChoreographyVersionSummary
-            {
-                Version = row.Version,
-                Kind = row.Kind,
-                RestoredFromVersion = row.RestoredFromVersion,
-                SavedAt = row.SavedAt,
-                SavedBy = row.SavedByPersonId is { } author
-                    ? authors.GetValueOrDefault(author)
-                    : null,
-            }),
-        ];
+        return new ChoreographyVersionPage
+        {
+            Versions =
+            [
+                .. page.Select(row => new ChoreographyVersionSummary
+                {
+                    Version = row.Version,
+                    Kind = row.Kind,
+                    RestoredFromVersion = row.RestoredFromVersion,
+                    SavedAt = row.SavedAt,
+                    SavedBy = row.SavedByPersonId is { } author
+                        ? authors.GetValueOrDefault(author)
+                        : null,
+                }),
+            ],
+            Total = await history.CountAsync(ct),
+            HasOlder = rows.Count > VersionsPerPage,
+        };
     }
+
+    private async Task ThinOutAsync(int choreographyId, CancellationToken ct)
+    {
+        var now = _timeProvider.GetUtcNow();
+        var cutoff = ChoreographyRetention.ThinningCutoff(now);
+        var old = await _dbContext
+            .ChoreographyVersions.Where(row =>
+                row.ChoreographyId == choreographyId && row.SavedAt < cutoff
+            )
+            .Select(row => new
+            {
+                row.Id,
+                row.Version,
+                row.Kind,
+                row.SavedAt,
+            })
+            .ToListAsync(ct);
+        var thinned = ChoreographyRetention
+            .ThinnedOf(
+                old.Select(row => new ChoreographyVersionStamp(row.Version, row.Kind, row.SavedAt)),
+                now
+            )
+            .ToHashSet();
+
+        foreach (var row in old.Where(row => thinned.Contains(row.Version)))
+            _dbContext.ChoreographyVersions.Remove(TrackedVersionOf(row.Id));
+    }
+
+    private ChoreographyVersion TrackedVersionOf(int versionId) =>
+        _dbContext.ChoreographyVersions.Local.FirstOrDefault(row => row.Id == versionId)
+        ?? _dbContext
+            .ChoreographyVersions.Attach(new ChoreographyVersion { Id = versionId })
+            .Entity;
 
     private async Task<int?> AuthorOfAsync(int? accountId, CancellationToken ct)
     {

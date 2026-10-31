@@ -40,6 +40,8 @@ export const SETUP_STATES: Record<SetupState, string> = {
   open: 'offen',
 };
 
+export const SETUP_OPTIONAL = 'optional';
+
 const amountOf = (count: number, one: string, many: string): string =>
   `${count} ${count === 1 ? one : many}`;
 

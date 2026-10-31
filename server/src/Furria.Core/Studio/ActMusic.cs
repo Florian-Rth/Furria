@@ -15,6 +15,10 @@ public sealed class ActMusic
     }
 
     [Pure]
+    public static ActMusic Of(MusicCut? adoptedFinalTrack, IEnumerable<MusicCut> songs) =>
+        new(adoptedFinalTrack is { } finalTrack ? [finalTrack] : songs);
+
+    [Pure]
     public AnchorPlace Locate(MusicAnchor anchor)
     {
         var placed = _placedCuts.FirstOrDefault(candidate =>

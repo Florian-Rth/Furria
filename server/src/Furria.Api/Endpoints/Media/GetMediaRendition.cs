@@ -1,6 +1,7 @@
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Media;
+using Furria.Api.Results;
 using Furria.Application.Media;
 using Furria.Core.Media;
 using Furria.Infrastructure.Media;
@@ -41,18 +42,19 @@ public sealed class GetMediaRendition : Endpoint<GetMediaRenditionRequest>
 
     public override async Task HandleAsync(GetMediaRenditionRequest req, CancellationToken ct)
     {
-        var file = await _mediaStore.FileOfAsync(req.MediaItemId, req.Rendition, ct);
-        if (file is null)
+        var lookup = await _mediaStore.FileOfAsync(
+            req.MediaItemId,
+            req.Rendition,
+            owner => _signer.Verifies(ToQuery(req, owner)),
+            ct
+        );
+        if (!lookup.IsSuccess)
         {
-            await Send.NotFoundAsync(ct);
+            await HttpContext.Response.SendFailureAsync(lookup.Error, ct);
             return;
         }
 
-        if (!_signer.Verifies(ToQuery(req, file.Owner)))
-        {
-            await Send.ForbiddenAsync(ct);
-            return;
-        }
+        var file = lookup.Value;
 
         HttpContext.Response.Headers.CacheControl = file.IsStandIn
             ? AskAgainCacheControl

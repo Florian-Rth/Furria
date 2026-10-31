@@ -17,7 +17,12 @@ export type ChoreographyVersionsState = 'loading' | 'failed' | 'ready';
 export interface ChoreographyVersionsView {
   state: ChoreographyVersionsState;
   rows: VersionRowView[];
+  total: number;
   restoring: boolean;
+  hasOlder: boolean;
+  loadingOlder: boolean;
+  olderFailed: boolean;
+  loadOlder: () => void;
 }
 
 const currentVersionOf = (studio: Studio, eventId: number | null): number | null =>
@@ -36,17 +41,19 @@ export const useChoreographyVersions = (
   const restore = useChoreographyRestore(actId, eventId);
   const { history } = useStudioHistory(actId);
   const stateOf = (): ChoreographyVersionsState => {
-    if (query.error !== null) {
+    if (query.error !== null && query.data === undefined) {
       return 'failed';
     }
 
     return query.data === undefined && current !== null ? 'loading' : 'ready';
   };
 
+  const pages = query.data?.pages ?? [];
+
   return {
     state: stateOf(),
-    rows: [...(query.data?.versions ?? [])]
-      .sort((left, right) => right.version - left.version)
+    rows: pages
+      .flatMap((page) => page.versions)
       .map((version) => ({
         key: String(version.version),
         label: versionLabelOf(version),
@@ -57,6 +64,13 @@ export const useChoreographyVersions = (
           restore.mutate(version.version);
         },
       })),
+    total: pages[0]?.total ?? 0,
     restoring: restore.isPending || history.busy,
+    hasOlder: query.hasNextPage,
+    loadingOlder: query.isFetchingNextPage,
+    olderFailed: query.isFetchNextPageError,
+    loadOlder: () => {
+      void query.fetchNextPage();
+    },
   };
 };

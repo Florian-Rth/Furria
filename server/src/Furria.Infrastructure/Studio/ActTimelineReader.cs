@@ -15,7 +15,7 @@ public sealed class ActTimelineReader
 
     public async Task<ActTimeline> TimelineOfAsync(int actId, CancellationToken ct)
     {
-        var music = new ActMusic((await MusicOfAsync(actId, ct)).Select(source => source.Cut));
+        var music = await PlayedMusicOfAsync(actId, ct);
         var stepStarts = await _dbContext
             .ActSteps.Where(step => step.ActId == actId)
             .Select(step => new
@@ -47,6 +47,9 @@ public sealed class ActTimelineReader
         );
     }
 
+    public async Task<ActMusic> PlayedMusicOfAsync(int actId, CancellationToken ct) =>
+        new((await MusicOfAsync(actId, ct)).Select(source => source.Cut));
+
     public async Task<IReadOnlyList<MusicSource>> MusicOfAsync(int actId, CancellationToken ct)
     {
         var adopted = await _dbContext
@@ -63,7 +66,7 @@ public sealed class ActTimelineReader
             return
             [
                 new MusicSource(
-                    new MusicCut(adopted.MediaItemId, 0, adopted.DurationSeconds ?? 0),
+                    MusicCut.OfFinalTrack(adopted.MediaItemId, adopted.DurationSeconds),
                     adopted.StorageKey
                 ),
             ];
@@ -85,10 +88,11 @@ public sealed class ActTimelineReader
         return
         [
             .. songs.Select(song => new MusicSource(
-                new MusicCut(
+                MusicCut.OfSong(
                     song.MediaItemId,
                     song.StartSeconds,
-                    song.EndSeconds ?? song.DurationSeconds ?? song.StartSeconds
+                    song.EndSeconds,
+                    song.DurationSeconds
                 ),
                 song.StorageKey
             )),

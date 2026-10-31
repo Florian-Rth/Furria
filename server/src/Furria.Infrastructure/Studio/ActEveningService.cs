@@ -240,25 +240,25 @@ public sealed class ActEveningService
         return Result<int>.Success(copy.Version);
     }
 
-    public async Task<Result<IReadOnlyList<ChoreographyVersionSummary>>> ChoreographyVersionsAsync(
+    public async Task<Result<ChoreographyVersionPage>> ChoreographyVersionsAsync(
         int accountId,
-        ActEveningCommand evening,
+        ActEveningChoreographyVersionsQuery query,
         CancellationToken ct
     )
     {
-        var act = await _gate.EditorsActAsync(accountId, evening.ActId, ct);
+        var act = await _gate.EditorsActAsync(accountId, query.ActId, ct);
         if (!act.IsSuccess)
-            return Result<IReadOnlyList<ChoreographyVersionSummary>>.Carrying(act);
+            return Result<ChoreographyVersionPage>.Carrying(act);
 
         var copyId = await _dbContext
             .Choreographies.Where(row =>
-                row.ActId == evening.ActId && row.Appearance!.CalendarEntryId == evening.EventId
+                row.ActId == query.ActId && row.Appearance!.CalendarEntryId == query.EventId
             )
             .Select(row => (int?)row.Id)
             .SingleOrDefaultAsync(ct);
 
-        return Result<IReadOnlyList<ChoreographyVersionSummary>>.Success(
-            await _history.VersionsOfAsync(copyId, ct)
+        return Result<ChoreographyVersionPage>.Success(
+            await _history.VersionsOfAsync(copyId, query.Before, ct)
         );
     }
 

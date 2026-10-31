@@ -51,10 +51,12 @@ export const ChoreographyVersionSchema = z.object({
 });
 export type ChoreographyVersion = z.infer<typeof ChoreographyVersionSchema>;
 
-export const ChoreographyVersionsSchema = z.object({
+export const ChoreographyVersionPageSchema = z.object({
   versions: z.array(ChoreographyVersionSchema),
+  total: z.int(),
+  hasOlder: z.boolean(),
 });
-export type ChoreographyVersions = z.infer<typeof ChoreographyVersionsSchema>;
+export type ChoreographyVersionPage = z.infer<typeof ChoreographyVersionPageSchema>;
 
 export const ChoreographyConflictSchema = z.object({
   overlaps: z.array(

@@ -2,6 +2,7 @@ import type { KkLaneGlyphName } from '@furria/ui/KkLaneGlyph';
 import {
   SETUP_ACTIONS,
   SETUP_HINTS,
+  SETUP_OPTIONAL,
   SETUP_STATES,
   SETUP_STEPS_DONE_ACTION,
   SETUP_TITLES,
@@ -10,7 +11,7 @@ import {
   setupProgressTextOf,
   uploadFactOf,
 } from '../setup-copy';
-import type { Setup, SetupKey, SetupState } from '../studio-setup';
+import type { Setup, SetupKey, SetupRow, SetupState } from '../studio-setup';
 import { setupOf, setupShownOf } from '../studio-setup';
 import { markSecondsOf } from '../studio-steps';
 import type { ActStudioStage } from './use-act-studio-stage';
@@ -59,6 +60,9 @@ export interface StudioSetup {
   videos: ActUploads;
   rowOf: (key: SetupKey) => StudioSetupRow | null;
 }
+
+const stateTextOf = (row: SetupRow): string =>
+  row.optional && row.state !== 'done' ? SETUP_OPTIONAL : SETUP_STATES[row.state];
 
 const uploadingOf = (uploads: ActUploads): string | null => {
   const first = uploads.rows[0];
@@ -113,10 +117,10 @@ export const useStudioSetup = (
   const rows = setup.rows.map((row) => ({
     key: row.key,
     number: row.number,
-    total: setup.total,
+    total: setup.rows.length,
     state: row.state,
     ready: row.ready,
-    stateText: SETUP_STATES[row.state],
+    stateText: stateTextOf(row),
     glyph: GLYPHS[row.key],
     title: SETUP_TITLES[row.key],
     hint: SETUP_HINTS[row.key],

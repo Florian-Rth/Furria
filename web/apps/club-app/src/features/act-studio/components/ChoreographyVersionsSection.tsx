@@ -1,3 +1,4 @@
+import { KkButton } from '@furria/ui/KkButton';
 import { KkMeta } from '@furria/ui/KkMeta';
 import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
@@ -5,7 +6,14 @@ import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import type { Studio } from '@/features/acts/schemas';
 import { useChoreographyVersions } from '../hooks/use-choreography-versions';
-import { VERSIONS_EMPTY, VERSIONS_FAILED, VERSIONS_NOTE } from '../undo-copy';
+import {
+  VERSIONS_EMPTY,
+  VERSIONS_FAILED,
+  VERSIONS_NOTE,
+  VERSIONS_OLDER,
+  VERSIONS_OLDER_FAILED,
+  VERSIONS_OLDER_RETRY,
+} from '../undo-copy';
 import { ChoreographyVersionRow } from './ChoreographyVersionRow';
 
 interface ChoreographyVersionsSectionProps {
@@ -29,13 +37,27 @@ export const ChoreographyVersionsSection: FC<ChoreographyVersionsSectionProps> =
   const empty =
     versions.state === 'ready' && rows.length === 0 ? <KkNote>{VERSIONS_EMPTY}</KkNote> : null;
   const list = rows.length === 0 ? null : <KkPanel>{rows}</KkPanel>;
-  const meta = <KkMeta>{String(rows.length)}</KkMeta>;
+  const meta = <KkMeta>{String(versions.total)}</KkMeta>;
+  const olderFailed = versions.olderFailed ? <KkNote>{VERSIONS_OLDER_FAILED}</KkNote> : null;
+  const olderLabel = versions.olderFailed ? VERSIONS_OLDER_RETRY : VERSIONS_OLDER;
+  const older = versions.hasOlder ? (
+    <KkButton
+      variant="outlined"
+      fullWidth
+      loading={versions.loadingOlder}
+      onClick={versions.loadOlder}
+    >
+      {olderLabel}
+    </KkButton>
+  ) : null;
 
   return (
     <KkPanelSection title={title} meta={meta} description={VERSIONS_NOTE}>
       {failed}
       {empty}
       {list}
+      {olderFailed}
+      {older}
     </KkPanelSection>
   );
 };

@@ -102,28 +102,43 @@ const startedStudio: Studio = {
 describe('setupOf', () => {
   it('points an empty act at the music first and holds back what needs music', () => {
     const setup = setupOf(emptyStudio);
-    expect(setup.rows.map((row) => [row.key, row.number, row.state, row.ready])).toEqual([
-      ['music', 1, 'next', true],
-      ['steps', 2, 'open', false],
-      ['spots', 3, 'open', true],
-      ['formation', 4, 'open', false],
-      ['video', 5, 'open', false],
-      ['final', 6, 'open', true],
+    expect(
+      setup.rows.map((row) => [row.key, row.number, row.state, row.ready, row.optional]),
+    ).toEqual([
+      ['music', 1, 'next', true, false],
+      ['steps', 2, 'open', false, false],
+      ['spots', 3, 'open', true, false],
+      ['formation', 4, 'open', false, false],
+      ['video', 5, 'open', false, true],
+      ['final', 6, 'open', true, true],
     ]);
-    expect([setup.done, setup.started, setup.complete]).toEqual([0, false, false]);
+    expect([setup.done, setup.total, setup.started, setup.complete]).toEqual([0, 4, false, false]);
   });
 
   it('counts what a started act already has', () => {
-    const setup = setupOf(startedStudio);
+    const setup = setupOf({ ...startedStudio, spots: [] });
     expect(setup.rows.map((row) => [row.key, row.state, row.amount, row.open])).toEqual([
       ['music', 'done', 1, 0],
       ['steps', 'done', 1, 0],
-      ['spots', 'done', 2, 1],
-      ['formation', 'done', 1, 1],
-      ['video', 'next', 0, 0],
+      ['spots', 'next', 0, 0],
+      ['formation', 'open', 0, 0],
+      ['video', 'open', 0, 0],
       ['final', 'open', 1, 1],
     ]);
-    expect([setup.done, setup.started, setup.complete]).toEqual([4, true, false]);
+    expect([setup.done, setup.total, setup.started, setup.complete]).toEqual([2, 4, true, false]);
+  });
+
+  it('is complete without a trainer video and an adopted final file', () => {
+    const setup = setupOf(startedStudio);
+    expect(setup.rows.map((row) => [row.key, row.state])).toEqual([
+      ['music', 'done'],
+      ['steps', 'done'],
+      ['spots', 'done'],
+      ['formation', 'done'],
+      ['video', 'open'],
+      ['final', 'open'],
+    ]);
+    expect([setup.done, setup.total, setup.complete]).toEqual([4, 4, true]);
   });
 
   it('counts an adopted final file as music', () => {
@@ -179,13 +194,13 @@ describe('setupOf', () => {
     ]);
   });
 
-  it('is complete once the final file is adopted and a video exists', () => {
+  it('leaves the optional rows out of the progress', () => {
     const setup = setupOf({
-      ...startedStudio,
+      ...emptyStudio,
       finalTracks: [{ ...finalTrack, adopted: true }],
       videos: [video],
     });
-    expect([setup.done, setup.complete]).toEqual([6, true]);
+    expect([setup.done, setup.total, setup.started, setup.complete]).toEqual([1, 4, true, false]);
   });
 });
 

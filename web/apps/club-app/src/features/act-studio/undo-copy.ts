@@ -70,7 +70,10 @@ export const REDO_ARIA = 'Wiederholen (Strg+Umschalt+Z)';
 export const VERSIONS_TITLE = 'Fassungen der Aufstellung';
 export const EVENING_VERSIONS_TITLE = 'Fassungen dieses Abends';
 export const VERSIONS_NOTE =
-  'Jede Speicherung bleibt erhalten. Wiederherstellen legt eine neue Fassung an.';
+  'Aus den letzten 14 Tagen bleibt jede Speicherung erhalten, davor die letzte Fassung jedes Tages. Wiederherstellen legt eine neue Fassung an.';
+export const VERSIONS_OLDER = 'Ältere Fassungen laden';
+export const VERSIONS_OLDER_RETRY = 'Ältere Fassungen erneut laden';
+export const VERSIONS_OLDER_FAILED = 'Ältere Fassungen konnten nicht geladen werden.';
 export const VERSIONS_EMPTY = 'Noch keine Fassung gespeichert.';
 export const VERSIONS_FAILED = 'Die Fassungen konnten nicht geladen werden.';
 export const VERSION_RESTORE = 'Wiederherstellen';

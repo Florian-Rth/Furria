@@ -854,7 +854,8 @@ _Avoid_: choreographer, owner, moderator
 
 **Working mix**, **final file** (act):
 A dance act's music. The **working mix** is the group's songs in order, each cut to a start and an
-end point, played as one gapless timeline. The **final file** is the one file the group uploads
+end point (no end point: the end of its file), played as one gapless timeline; an adopted final
+file replaces the working mix as the music, played whole. The **final file** is the one file the group uploads
 for the stage — versioned; adopting it moves everything that hangs on the music onto it once.
 Before adopting, each song of the music playing (or the previously adopted final file) is
 **matched** into the new file: one offset per song, suggested by comparing the sound and
@@ -885,7 +886,9 @@ most one spot per person; a stand-in takes the spot and the choreography stays. 
 **choreography** is where every spot stands and moves: keyframes per spot on the music, in metres
 from the centre of the stage front, so a later change of the stage size never distorts it. Every
 write keeps a **version** (who, when, how: saved, restored, spot removed, final file adopted); the
-history lists them, and restoring one writes a new version — never a rewind. A save names the
+history lists them page by page, newest first, and restoring one writes a new version — never a
+rewind. Every version of the last 14 days stays; of each older day only the last one and every
+final-file adoption stay (thinned on the next write, RFC 0002 phase 20). A save names the
 version it builds on and carries only the spots it changed; it is merged per spot and keyframe
 (a keyframe is known by its place on the music) and refused only where someone else changed the
 same keyframe since — the refusal names those spots and keyframes. Adopting a final file moves

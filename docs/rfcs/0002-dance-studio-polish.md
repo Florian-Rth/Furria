@@ -581,12 +581,21 @@ Goal: every screen of the studio and planner passes the bar.
 
 ### Phase 20 — Consolidation, test data, wrap-up (∥ G)
 Goal: one home for the music rules, a clean database, docs in sync.
-- [ ] #52 gap: music-timeline and music-cut rules in one Core module used by writes and reads; tests moved onto it
-- [ ] Remove the UI-test data: acts 14–34 "PT …", event 66 "PT Probeabend", the running orders on evenings 19/20, *Wir tanzen hier* and cast changes on 16/17/20, act 5's partial build and waiting final file, act 3 part *Marsch* id 1→4, the test role *Ablauf* (role 10) held by Frank, Sabine's *Kann nicht* for act 3's 03.11. training
-- [ ] Set-up completeness (ruling 2026-10-31): an act counts as set up without a trainer video and without an adopted final file — those two checklist rows stay, but are optional and don't keep the progress chip open (`setupOf`)
-- [ ] Choreography history retention: thin out old versions (keep every version of the last 14 days, then one per day) and page the version list
-- [ ] Media rendition read: check the signature before the lost-rendition repair, so unsigned requests can't queue regeneration jobs
-- [ ] CONTEXT.md, docs and `plan/club-app/group-year.md` status updated
+- [x] #52 gap: music-timeline and music-cut rules in one Core module used by writes and reads; tests moved onto it
+- [x] Remove the UI-test data: acts 14–34 "PT …", event 66 "PT Probeabend", the running orders on evenings 19/20, *Wir tanzen hier* and cast changes on 16/17/20, act 5's partial build and waiting final file, act 3 part *Marsch* id 1→4, the test role *Ablauf* (role 10) held by Frank, Sabine's *Kann nicht* for act 3's 03.11. training
+- [x] Set-up completeness (ruling 2026-10-31): an act counts as set up without a trainer video and without an adopted final file — those two checklist rows stay, but are optional and don't keep the progress chip open (`setupOf`)
+- [x] Choreography history retention: thin out old versions (keep every version of the last 14 days, then one per day) and page the version list
+- [x] Media rendition read: check the signature before the lost-rendition repair, so unsigned requests can't queue regeneration jobs
+- [x] CONTEXT.md, docs and `plan/club-app/group-year.md` status updated
+- Notes (built 2026-10-31):
+  - **Music rules in Core.** `MusicCut.OfSong` (no end point: the end of the file) and `MusicCut.OfFinalTrack` (played whole), `ActMusic.Of` (an adopted final file replaces the working mix) and `MusicFile.IsPastTheEnd` (0.01 s tolerance) are the one home. `ActTimelineReader` (writes), `ActStudioReader` (reads), `ActSongService` and `ActFinalTrackService` use them. `ActChoreographyService` lost its own copy and reads the music through `ActTimelineReader.PlayedMusicOfAsync`. Tests in `ActMusicTests`.
+  - **Test data removed** from the dev database `furria_rfc52` (dump before: `/tmp/furria_rfc52_before_p20.dump` in the `furria-dev-postgres` container). Acts 14–34 and event 66 are gone, with all their appearances, including the group-made ones on 16/17/20 and the evening cast changes on appearance 137. The running orders and appearances on evenings 19/20 are gone. Evening 17 is renumbered 0–11. Act 5 is back to empty: no songs, steps, parts, spots, video, final file or choreography, and its media items are deleted (their files stay on disk). Act 3's part *Marsch* is id 1 again. Role 10 *Ablauf* (Frank) is deleted. Sabine's *Nein* for training 46 (03.11.) and its trail entry are deleted.
+  - **Set-up:** *Video* and *Endfassung* are optional (`SetupRow.optional`, state text *optional*). They don't count in the chip (*n/4*) and don't keep it open. `complete` means music, steps, spots and formation are done, so the checklist, the *Einrichten* tab and the lane buttons go away then. Video and final file stay on *Musik & Video*.
+  - **Version retention:** `ChoreographyRetention.ThinnedOf` (pure, tested) keeps every version from the last 14 club days (Europe/Berlin), and before that the last version of each day plus every final-file adoption. `MusicAdoptedSinceAsync` keeps working that way. Thinning runs on every write to an existing choreography (session and evening copies) and is removed in the same `SaveChanges` as the new version. A thinned version can't be restored (404), and an edit based on one gets a conflict.
+  - **Version paging:** `GET …/choreography/versions?before=n` (session and evening) returns 20 per page plus `total` and `hasOlder`. The club app uses an infinite query with the button *Ältere Fassungen laden*, and the meta shows the total. The note under *Fassungen* now explains the retention.
+  - **Media:** `MediaStore.FileOfAsync` takes a `mayServe` check on the owner. `GetMediaRendition` passes the signature check, so a bad signature answers 403 before any lost-rendition repair is queued (test `Should_LeaveTheVideoAlone_When_AnUnsignedUrlAsksForAMissingRendition`). ADR-0025 is amended.
+  - **Docs:** CONTEXT.md (*Working mix* plays the adopted final file whole; choreography versions are paged and thinned), ADR-0025, and the status of `plan/club-app/group-year.md`.
+  - **Pre-existing, not fixed here:** 4 final-file tests fail on the branch before this phase too. They are `DeleteActFinalTrackByIdTests.Should_Refuse_When_TheFinalFileWasAdopted`, `PostActFinalTrackTests.Should_CountTheVersionOn_…` and two in `PutActFinalTrackAlignmentTests`. Each adopts a final file with no matched song, most likely refused by the "adoption needs a match" rule from RFC 0001 phase 16.
 
 ## Risks & alternatives
 

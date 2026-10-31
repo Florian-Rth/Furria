@@ -302,6 +302,28 @@ public sealed class GetMediaRenditionTests : IClassFixture<ApiTestFixture>
         );
     }
 
+    [Fact]
+    public async Task Should_LeaveTheVideoAlone_When_AnUnsignedUrlAsksForAMissingRendition()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (actId, mediaItemId, admin) = await ActVideoAsync(ct);
+        var url = _fixture.SignedMediaUrl(
+            mediaItemId,
+            MediaOwner.Act(actId),
+            MediaRendition.Compact
+        );
+        var unsigned = url[..url.IndexOf('?', StringComparison.Ordinal)];
+
+        var response = await _fixture.CreateClient().GetAsync(unsigned, ct);
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        var studio = await StudioOfAsync(admin, actId);
+        Assert.Equal(
+            MediaItemState.Ready,
+            Assert.Single(studio.Studio!.Videos, video => video.MediaItemId == mediaItemId).State
+        );
+    }
+
     private async Task<(int ActId, int MediaItemId, HttpClient Admin)> ActVideoAsync(
         CancellationToken ct
     )

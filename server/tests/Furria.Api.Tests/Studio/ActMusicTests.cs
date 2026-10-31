@@ -85,4 +85,66 @@ public sealed class ActMusicTests
     {
         Assert.Null(Mix.AnchorAt(timelineSeconds));
     }
+
+    [Theory]
+    [InlineData(25.0, 60.0, 25.0)]
+    [InlineData(null, 60.0, 60.0)]
+    [InlineData(null, null, 10.0)]
+    public void Should_EndTheSongCutAtItsMarkOrItsFile_When_TheEndIsOpen(
+        double? endSeconds,
+        double? durationSeconds,
+        double expectedEndSeconds
+    )
+    {
+        var cut = MusicCut.OfSong(Opener, 10, endSeconds, durationSeconds);
+
+        Assert.Equal(new MusicCut(Opener, 10, expectedEndSeconds), cut);
+    }
+
+    [Theory]
+    [InlineData(95.5, 95.5)]
+    [InlineData(null, 0)]
+    public void Should_PlayTheWholeFinalTrack_When_ItIsCut(
+        double? durationSeconds,
+        double expectedLengthSeconds
+    )
+    {
+        var cut = MusicCut.OfFinalTrack(Rehearsal, durationSeconds);
+
+        Assert.Equal(new MusicCut(Rehearsal, 0, expectedLengthSeconds), cut);
+    }
+
+    [Fact]
+    public void Should_PlayOnlyTheFinalTrack_When_OneIsAdopted()
+    {
+        var music = ActMusic.Of(
+            new MusicCut(Rehearsal, 0, 95),
+            [new MusicCut(Opener, 10, 40), new MusicCut(Finale, 5, 25)]
+        );
+
+        Assert.Equal(95, music.LengthSeconds);
+        Assert.Equal(AnchorPlace.MusicMissing, music.Locate(new MusicAnchor(Opener, 20)));
+    }
+
+    [Fact]
+    public void Should_PlayTheWorkingMix_When_NoFinalTrackIsAdopted()
+    {
+        var music = ActMusic.Of(null, [new MusicCut(Opener, 10, 40), new MusicCut(Finale, 5, 25)]);
+
+        Assert.Equal(50, music.LengthSeconds);
+    }
+
+    [Theory]
+    [InlineData(60.009, 60.0, false)]
+    [InlineData(60.02, 60.0, true)]
+    [InlineData(500.0, null, false)]
+    [InlineData(null, 60.0, false)]
+    public void Should_RefuseAMomentPastTheFile_When_ItLiesBeyondItsLength(
+        double? seconds,
+        double? durationSeconds,
+        bool expectedPastTheEnd
+    )
+    {
+        Assert.Equal(expectedPastTheEnd, MusicFile.IsPastTheEnd(seconds, durationSeconds));
+    }
 }

@@ -7,7 +7,7 @@ import type {
   AddedSong,
   AddedSpot,
   AddedVideo,
-  ChoreographyVersions,
+  ChoreographyVersionPage,
   FinalTrackMatches,
   MarkedSteps,
   SavedChoreography,
@@ -19,7 +19,7 @@ import {
   AddedSongSchema,
   AddedSpotSchema,
   AddedVideoSchema,
-  ChoreographyVersionsSchema,
+  ChoreographyVersionPageSchema,
   FinalTrackMatchesSchema,
   MarkedStepsSchema,
   SavedChoreographySchema,
@@ -358,13 +358,19 @@ const choreographyPathOf = (actId: number, eventId: number | null): string =>
     ? `/api/acts/${actId}/choreography`
     : `${eveningPathOf(actId, eventId)}/choreography`;
 
+const versionsPathOf = (actId: number, eventId: number | null, before: number | null): string =>
+  before === null
+    ? `${choreographyPathOf(actId, eventId)}/versions`
+    : `${choreographyPathOf(actId, eventId)}/versions?before=${before}`;
+
 export const requestChoreographyVersions = (
   actId: number,
   eventId: number | null,
+  before: number | null,
   accessToken: string,
-): Promise<ChoreographyVersions> =>
-  apiFetch(`${choreographyPathOf(actId, eventId)}/versions`, {
-    schema: ChoreographyVersionsSchema,
+): Promise<ChoreographyVersionPage> =>
+  apiFetch(versionsPathOf(actId, eventId, before), {
+    schema: ChoreographyVersionPageSchema,
     accessToken,
   });
 

@@ -1,5 +1,5 @@
 ---
-status: vision / knowledge base 2026-10-29; v1 (foundation + dance studio + Absage → open spots + training mode) built in RFC 0001 (docs/rfcs/0001-dance-studio.md, phases 1–16, done 2026-10-30) — offline dropped from v1
+status: vision / knowledge base 2026-10-29; v1 (foundation + dance studio + Absage → open spots + training mode) built in RFC 0001 (docs/rfcs/0001-dance-studio.md, phases 1–16, done 2026-10-30) — offline dropped from v1; polished in RFC 0002 (docs/rfcs/0002-dance-studio-polish.md, #53, 2026-10-30/31): bugs, undo + choreography versions, every training asks its cast, the member's act + running order for members, hall mode, timeline desk + phone step cards + set-up checklist; season grid and *Heute* dropped (the event/tech view is defined later)
 scope: the Auftritt (Act) becomes the group's year — training studio per group kind (dance first),
   music, stage editor, trainer video, steps; the evening (members, tech); memory (season, person)
 builds_on: plan/club-app/acts.md, plan/club-app/running-order.md (PR #50)
@@ -378,7 +378,8 @@ hang off steps; one screen plays it all in sync.
 6. **The one screen** — editor and player, lab variants, offline.
 7. **Around training** — Heute geprobt, countdown, Absage effects, training mode, side by side.
    *Absage → open spots* and the *training mode* built in RFC 0001 phase 16 (2026-10-30);
-   Heute geprobt and side by side remain, no countdown (R29).
+   RFC 0002 made every training ask its cast and merged training mode and the landscape player
+   into hall mode (2026-10-30/31); Heute geprobt and side by side remain, no countdown (R29).
 8. **The evening** — F3 calendar ↔ Auftritte, evening pass on Start, live pointer, tech (final
    file pinning, loudness, cues, Regiebuch, Tonpult, Spuren-Check), Auswärts.
 9. **Memory** — Mitschnitt kommt heim, season book, Kehraus, Bühnenbiografie, Stammbaum, Übertritt,

@@ -12,10 +12,13 @@ export const SETUP_ORDER: readonly SetupKey[] = [
   'final',
 ];
 
+const OPTIONAL_KEYS: ReadonlySet<SetupKey> = new Set<SetupKey>(['video', 'final']);
+
 export interface SetupRow {
   key: SetupKey;
   number: number;
   state: SetupState;
+  optional: boolean;
   ready: boolean;
   amount: number;
   open: number;
@@ -105,25 +108,31 @@ const countOf = (facts: SetupFacts, key: SetupKey): SetupCount => {
 
 export const setupOf = (studio: Studio): Setup => {
   const facts = factsOf(studio);
-  const counts = SETUP_ORDER.map((key) => ({ key, ...countOf(facts, key) }));
-  const next = counts.find((count) => !count.done)?.key ?? null;
-  const done = counts.filter((count) => count.done).length;
+  const counts = SETUP_ORDER.map((key) => ({
+    key,
+    optional: OPTIONAL_KEYS.has(key),
+    ...countOf(facts, key),
+  }));
+  const required = counts.filter((count) => !count.optional);
+  const next = required.find((count) => !count.done)?.key ?? null;
 
   return {
     rows: counts.map((count, index) => ({
       key: count.key,
       number: index + 1,
       state: count.done ? 'done' : count.key === next ? 'next' : 'open',
+      optional: count.optional,
       ready: count.ready,
       amount: count.amount,
       open: count.open,
     })),
-    done,
-    total: SETUP_ORDER.length,
-    started: done > 0,
+    done: required.filter((count) => count.done).length,
+    total: required.length,
+    started: counts.some((count) => count.done),
     complete: next === null,
   };
 };
+
 export const setupStartsOpen = (studio: Studio, onEvening: boolean): boolean =>
   !onEvening && !setupOf(studio).started;
 

@@ -28,18 +28,21 @@ public sealed class ActChoreographyService
     private readonly ActStudioGate _gate;
     private readonly ClubRecordService _clubRecords;
     private readonly ChoreographyHistory _history;
+    private readonly ActTimelineReader _timelines;
 
     public ActChoreographyService(
         AppDbContext dbContext,
         ActStudioGate gate,
         ClubRecordService clubRecords,
-        ChoreographyHistory history
+        ChoreographyHistory history,
+        ActTimelineReader timelines
     )
     {
         _dbContext = dbContext;
         _gate = gate;
         _clubRecords = clubRecords;
         _history = history;
+        _timelines = timelines;
     }
 
     public async Task<Result<ChoreographySaveDetails>> SaveAsync(
@@ -140,23 +143,23 @@ public sealed class ActChoreographyService
         return Result<int>.Success(choreography.Version);
     }
 
-    public async Task<Result<IReadOnlyList<ChoreographyVersionSummary>>> VersionsAsync(
+    public async Task<Result<ChoreographyVersionPage>> VersionsAsync(
         int accountId,
-        int actId,
+        ActChoreographyVersionsQuery query,
         CancellationToken ct
     )
     {
-        var act = await _gate.EditorsActAsync(accountId, actId, ct);
+        var act = await _gate.EditorsActAsync(accountId, query.ActId, ct);
         if (!act.IsSuccess)
-            return Result<IReadOnlyList<ChoreographyVersionSummary>>.Carrying(act);
+            return Result<ChoreographyVersionPage>.Carrying(act);
 
         var choreographyId = await _dbContext
-            .Choreographies.Where(row => row.ActId == actId && row.AppearanceId == null)
+            .Choreographies.Where(row => row.ActId == query.ActId && row.AppearanceId == null)
             .Select(row => (int?)row.Id)
             .SingleOrDefaultAsync(ct);
 
-        return Result<IReadOnlyList<ChoreographyVersionSummary>>.Success(
-            await _history.VersionsOfAsync(choreographyId, ct)
+        return Result<ChoreographyVersionPage>.Success(
+            await _history.VersionsOfAsync(choreographyId, query.Before, ct)
         );
     }
 
@@ -220,7 +223,7 @@ public sealed class ActChoreographyService
         new(
             await SpotIdsOfAsync(actId, ct),
             await MusicSourceIdsOfAsync(actId, ct),
-            await MusicOfAsync(actId, ct),
+            await _timelines.PlayedMusicOfAsync(actId, ct),
             StageSizeOf(await _clubRecords.StageOfClubAsync(ct))
         );
 
@@ -288,34 +291,6 @@ public sealed class ActChoreographyService
                 .Select(item => item.Id)
                 .ToListAsync(ct)
         ).ToHashSet();
-
-    private async Task<ActMusic> MusicOfAsync(int actId, CancellationToken ct)
-    {
-        var adopted = await _dbContext
-            .ActFinalTracks.Where(track => track.ActId == actId && track.AdoptedAt != null)
-            .OrderByDescending(track => track.Version)
-            .Select(track => new MusicCut(
-                track.MediaItemId,
-                0,
-                track.MediaItem!.DurationSeconds ?? 0
-            ))
-            .FirstOrDefaultAsync(ct);
-        if (adopted != default)
-            return new ActMusic([adopted]);
-
-        var songs = await _dbContext
-            .ActSongs.Where(song => song.ActId == actId)
-            .OrderBy(song => song.Position)
-            .ThenBy(song => song.Id)
-            .Select(song => new MusicCut(
-                song.MediaItemId,
-                song.StartSeconds,
-                song.EndSeconds ?? song.MediaItem!.DurationSeconds ?? song.StartSeconds
-            ))
-            .ToListAsync(ct);
-
-        return new ActMusic(songs);
-    }
 
     [Pure]
     private static StageSize StageSizeOf(ClubStageDetails? stage) =>

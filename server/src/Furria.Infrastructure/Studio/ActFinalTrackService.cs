@@ -11,7 +11,6 @@ namespace Furria.Infrastructure.Studio;
 
 public sealed class ActFinalTrackService
 {
-    private const double DurationTolerance = 0.01;
     private const string UnknownAudioFileMessage = "Diese Musikdatei gehört nicht zum Auftritt.";
     private const string SongMessage =
         "Diese Datei ist ein Lied der Musik und kann keine Endfassung sein.";
@@ -109,7 +108,7 @@ public sealed class ActFinalTrackService
             .SingleOrDefaultAsync(ct);
         if (track is null)
             return Result.NotFound(UnknownFinalTrackMessage);
-        if (command.FirstBeatSeconds > track.MediaItem!.DurationSeconds + DurationTolerance)
+        if (MusicFile.IsPastTheEnd(command.FirstBeatSeconds, track.MediaItem!.DurationSeconds))
             return Result.Validation(FirstBeatPastEndMessage);
 
         track.FirstBeatSeconds = command.FirstBeatSeconds;
@@ -243,7 +242,9 @@ public sealed class ActFinalTrackService
 
         return new FinalTrackAdoption(
             track.MediaItemId,
-            track.MediaItem!.DurationSeconds ?? 0,
+            MusicCut
+                .OfFinalTrack(track.MediaItemId, track.MediaItem!.DurationSeconds)
+                .LengthSeconds,
             offsets
                 .Where(alignment => sources.Contains(alignment.SourceMediaItemId))
                 .ToDictionary(

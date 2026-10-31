@@ -44,7 +44,7 @@ public sealed class ActStudioReader
         var songs = await SongsOfAsync(actId, owner, ct);
         var finalTracks = await FinalTracksOfAsync(actId, owner, ct);
         var adopted = finalTracks.FirstOrDefault(track => track.IsAdopted);
-        var music = new ActMusic(adopted is null ? songs.Select(CutOf) : [CutOf(adopted)]);
+        var music = ActMusic.Of(adopted is null ? null : CutOf(adopted), songs.Select(CutOf));
         var steps = await _dbContext
             .ActSteps.AsNoTracking()
             .Where(step => step.ActId == actId)
@@ -115,7 +115,9 @@ public sealed class ActStudioReader
                 MediaItemId = row.MediaItemId,
                 Position = row.Position,
                 StartSeconds = row.StartSeconds,
-                EndSeconds = row.EndSeconds ?? row.DurationSeconds ?? row.StartSeconds,
+                EndSeconds = MusicCut
+                    .OfSong(row.MediaItemId, row.StartSeconds, row.EndSeconds, row.DurationSeconds)
+                    .EndSeconds,
                 FirstBeatSeconds = row.FirstBeatSeconds ?? row.AnalysedFirstBeat,
                 TempoBpm = row.TempoBpm ?? row.AnalysedTempo,
                 State = row.State,
@@ -358,7 +360,7 @@ public sealed class ActStudioReader
 
     [Pure]
     private static MusicCut CutOf(StudioFinalTrackDetails track) =>
-        new(track.MediaItemId, 0, track.DurationSeconds ?? 0);
+        MusicCut.OfFinalTrack(track.MediaItemId, track.DurationSeconds);
 
     [Pure]
     private static MusicAnchor AnchorOf(ActStep step) =>

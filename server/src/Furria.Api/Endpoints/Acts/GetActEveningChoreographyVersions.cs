@@ -36,7 +36,12 @@ public sealed class GetActEveningChoreographyVersions
 
         var result = await _eveningService.ChoreographyVersionsAsync(
             accountId.Value,
-            new ActEveningCommand { ActId = req.ActId, EventId = req.EventId },
+            new ActEveningChoreographyVersionsQuery
+            {
+                ActId = req.ActId,
+                EventId = req.EventId,
+                Before = req.Before,
+            },
             ct
         );
         if (!result.IsSuccess)
@@ -48,7 +53,9 @@ public sealed class GetActEveningChoreographyVersions
         await Send.OkAsync(
             new GetActEveningChoreographyVersionsResponse
             {
-                Versions = [.. result.Value.Select(ChoreographyVersionSummaryDto.From)],
+                Versions = [.. result.Value.Versions.Select(ChoreographyVersionSummaryDto.From)],
+                Total = result.Value.Total,
+                HasOlder = result.Value.HasOlder,
             },
             cancellation: ct
         );
@@ -62,6 +69,9 @@ public sealed record GetActEveningChoreographyVersionsRequest
 
     [RouteParam]
     public required int EventId { get; init; }
+
+    [QueryParam]
+    public int? Before { get; init; }
 }
 
 public sealed class GetActEveningChoreographyVersionsValidator
@@ -71,10 +81,17 @@ public sealed class GetActEveningChoreographyVersionsValidator
     {
         RuleFor(request => request.ActId).GreaterThan(0);
         RuleFor(request => request.EventId).GreaterThan(0);
+        RuleFor(request => request.Before)
+            .GreaterThan(0)
+            .When(request => request.Before is not null);
     }
 }
 
 public sealed record GetActEveningChoreographyVersionsResponse
 {
     public required IReadOnlyList<ChoreographyVersionSummaryDto> Versions { get; init; }
+
+    public required int Total { get; init; }
+
+    public required bool HasOlder { get; init; }
 }

@@ -2,6 +2,7 @@ using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
+using Furria.Application.Studio;
 using Furria.Infrastructure.Studio;
 
 namespace Furria.Api.Endpoints.Acts;
@@ -33,7 +34,11 @@ public sealed class GetActChoreographyVersions
             return;
         }
 
-        var result = await _choreographyService.VersionsAsync(accountId.Value, req.ActId, ct);
+        var result = await _choreographyService.VersionsAsync(
+            accountId.Value,
+            new ActChoreographyVersionsQuery { ActId = req.ActId, Before = req.Before },
+            ct
+        );
         if (!result.IsSuccess)
         {
             await HttpContext.Response.SendFailureAsync(result.Error, ct);
@@ -43,7 +48,9 @@ public sealed class GetActChoreographyVersions
         await Send.OkAsync(
             new GetActChoreographyVersionsResponse
             {
-                Versions = [.. result.Value.Select(ChoreographyVersionSummaryDto.From)],
+                Versions = [.. result.Value.Versions.Select(ChoreographyVersionSummaryDto.From)],
+                Total = result.Value.Total,
+                HasOlder = result.Value.HasOlder,
             },
             cancellation: ct
         );
@@ -54,6 +61,9 @@ public sealed record GetActChoreographyVersionsRequest
 {
     [RouteParam]
     public required int ActId { get; init; }
+
+    [QueryParam]
+    public int? Before { get; init; }
 }
 
 public sealed class GetActChoreographyVersionsValidator
@@ -62,10 +72,17 @@ public sealed class GetActChoreographyVersionsValidator
     public GetActChoreographyVersionsValidator()
     {
         RuleFor(request => request.ActId).GreaterThan(0);
+        RuleFor(request => request.Before)
+            .GreaterThan(0)
+            .When(request => request.Before is not null);
     }
 }
 
 public sealed record GetActChoreographyVersionsResponse
 {
     public required IReadOnlyList<ChoreographyVersionSummaryDto> Versions { get; init; }
+
+    public required int Total { get; init; }
+
+    public required bool HasOlder { get; init; }
 }

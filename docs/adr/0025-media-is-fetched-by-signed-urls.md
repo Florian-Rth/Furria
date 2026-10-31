@@ -19,6 +19,9 @@ original's file name).
 - **The API serves the files itself** (range requests, `sendfile`); no nginx needs the media mount.
 - **The API checks the item still exists and still belongs where the URL says before serving**,
   so deletion and takedown take effect at once; a leaked URL to a living item works at most 14 days.
+  The signature is checked before anything else happens: only a signed request for a rendition
+  that went missing on disk queues its regeneration, so unsigned requests cannot queue work
+  (RFC 0002 phase 20).
 - **The public face is unsigned**: the website's pictures have stable URLs under `/api/public/…`
   of one shape, `/api/public/{kind}/pictures/{id}/{rendition}`, that are served only while the
   picture is on the public face and answer 404 the moment it leaves it — board portraits

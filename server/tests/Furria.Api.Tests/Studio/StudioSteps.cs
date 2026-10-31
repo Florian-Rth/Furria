@@ -419,16 +419,22 @@ internal static class StudioSteps
     internal static async Task<IReadOnlyList<ChoreographyVersionSummaryDto>> VersionsOfAsync(
         HttpClient client,
         int actId
+    ) => (await VersionPageOfAsync(client, actId, null)).Versions;
+
+    internal static async Task<GetActChoreographyVersionsResponse> VersionPageOfAsync(
+        HttpClient client,
+        int actId,
+        int? before
     )
     {
         var (response, result) = await client.GETAsync<
             GetActChoreographyVersions,
             GetActChoreographyVersionsRequest,
             GetActChoreographyVersionsResponse
-        >(new() { ActId = actId });
+        >(new() { ActId = actId, Before = before });
         response.EnsureSuccessStatusCode();
 
-        return result.Versions;
+        return result;
     }
 
     internal static async Task<(HttpResponseMessage Response, int Version)> RestoreAsync(

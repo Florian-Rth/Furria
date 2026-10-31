@@ -10,7 +10,6 @@ namespace Furria.Infrastructure.Studio;
 
 public sealed class ActSongService
 {
-    private const double DurationTolerance = 0.01;
     private const string UnknownSongFileMessage = "Diese Musikdatei gehört nicht zum Auftritt.";
     private const string SongTwiceMessage = "Dieses Lied ist schon in der Musik des Auftritts.";
     private const string FinalTrackMessage =
@@ -169,9 +168,9 @@ public sealed class ActSongService
 
     [Pure]
     private static Result? BeyondTheSongRefusalOf(ActSongCutCommand cut, double? durationSeconds) =>
-        durationSeconds is not { } duration ? null
-        : cut.EndSeconds > duration + DurationTolerance ? Result.Validation(CutPastEndMessage)
-        : cut.FirstBeatSeconds > duration + DurationTolerance
+        MusicFile.IsPastTheEnd(cut.EndSeconds, durationSeconds)
+            ? Result.Validation(CutPastEndMessage)
+        : MusicFile.IsPastTheEnd(cut.FirstBeatSeconds, durationSeconds)
             ? Result.Validation(FirstBeatPastEndMessage)
         : null;
 }
