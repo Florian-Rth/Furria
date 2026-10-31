@@ -1,4 +1,4 @@
-import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
+import type { KkScreenActionLink, KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { CatalogueAct } from '@/features/running-order/schemas';
 import {
   EVENTS_ORIGIN,
@@ -206,6 +206,18 @@ export const actCardOriginOf = (
   to: ACT_PAGE_PATH,
   params: { actId: String(actId) },
   search: cardSearchOf(search),
+});
+
+export const actCardLinkOf = (actId: number, search: ActPageSearch): KkScreenActionLink => ({
+  to: ACT_PAGE_PATH,
+  params: { actId: String(actId) },
+  search: cardSearchOf(search),
+});
+
+export const actDetailsLinkOf = (actId: number, search: ActPageSearch): KkScreenActionLink => ({
+  to: ACT_PAGE_PATH,
+  params: { actId: String(actId) },
+  search: { ...cardSearchOf(search), view: DETAILS_VIEW },
 });
 
 export const playerOriginOf = (

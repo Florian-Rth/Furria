@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import type { Theme } from '@mui/material/styles';
-import type { FC } from 'react';
+import type { FC, KeyboardEvent } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { useStudioDrag } from '../../../KkStudioDrag/use-studio-drag';
 import { kkTokens } from '../../../tokens';
@@ -18,6 +18,7 @@ interface KkStudioWaveHandleProps {
   active: boolean;
   onMove: (share: number) => void;
   onEnd: () => void;
+  onNudge: (direction: -1 | 1) => void;
 }
 
 export const KkStudioWaveHandle: FC<KkStudioWaveHandleProps> = ({
@@ -27,6 +28,7 @@ export const KkStudioWaveHandle: FC<KkStudioWaveHandleProps> = ({
   active,
   onMove,
   onEnd,
+  onNudge,
 }) => {
   const drag = useStudioDrag({
     onMove: (point) => {
@@ -35,13 +37,23 @@ export const KkStudioWaveHandle: FC<KkStudioWaveHandleProps> = ({
     onEnd,
   });
   const place = { left: `${share * PERCENT}%` };
+  const press = (event: KeyboardEvent<HTMLElement>): void => {
+    if ((event.key === 'ArrowLeft' || event.key === 'ArrowRight') && !event.repeat) {
+      event.preventDefault();
+      event.stopPropagation();
+      onNudge(event.key === 'ArrowLeft' ? -1 : 1);
+    }
+  };
 
   return (
     <Box
       role="slider"
       aria-label={label}
       aria-valuenow={Math.round(share * PERCENT)}
+      aria-valuemin={0}
+      aria-valuemax={PERCENT}
       tabIndex={0}
+      onKeyDown={press}
       data-kk-studio-handle={edge}
       data-active={active}
       {...drag}

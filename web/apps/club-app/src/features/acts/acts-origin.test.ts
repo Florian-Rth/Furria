@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { CatalogueAct } from '@/features/running-order/schemas';
 import type { ActPageReturn, ActsCatalogueAccess, ActsCatalogueReturn } from './acts-origin';
 import {
+  actDetailsLinkOf,
   actPageReturnOf,
   actPageSearchOf,
   actsCatalogueReturnOf,
@@ -94,6 +95,24 @@ describe('playerOriginOf', () => {
     );
 
     expect([origin.params, origin.search]).toEqual([{ actId: '5' }, { from: 'group', group: '3' }]);
+  });
+});
+
+describe('actDetailsLinkOf', () => {
+  it('links the act details, keeping how the act was reached and dropping the open tools', () => {
+    const link = actDetailsLinkOf(5, {
+      from: 'group',
+      group: 3,
+      view: 'play',
+      edit: true,
+      training: 4,
+      settings: true,
+    });
+
+    expect([link.params, link.search]).toEqual([
+      { actId: '5' },
+      { from: 'group', group: '3', view: 'details' },
+    ]);
   });
 });
 

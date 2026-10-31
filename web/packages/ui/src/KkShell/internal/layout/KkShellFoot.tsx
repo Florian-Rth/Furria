@@ -12,6 +12,7 @@ interface KkShellFootProps extends PropsWithChildren {
 
 export const KkShellFoot: FC<KkShellFootProps> = ({ raise, children }) => (
   <Stack
+    component="footer"
     data-kk-shell-foot
     sx={(theme) => ({
       position: 'fixed',

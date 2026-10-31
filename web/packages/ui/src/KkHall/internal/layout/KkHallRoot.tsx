@@ -1,8 +1,13 @@
 import Box from '@mui/material/Box';
 import type { CSSObject } from '@mui/material/styles';
 import type { FC, PropsWithChildren } from 'react';
+import { KkVisuallyHidden } from '../../../KkVisuallyHidden';
 import { KK_DARK_SCHEME_ATTRIBUTE } from '../../../theme';
-import { HALL_WIDE } from '../hall-query';
+import { kkTokens } from '../../../tokens';
+import { HALL_CRAMPED_NARROW, HALL_CRAMPED_WIDE, HALL_WIDE } from '../hall-query';
+
+const COUNT_AREA = '& > [data-kk-hall-area="count"]';
+const CORNER_WIDTH = `calc(${kkTokens.tapTarget} * 2 + 0.5rem)`;
 
 const SAFE_TOP = 'max(env(safe-area-inset-top), 0.75rem)';
 const SAFE_RIGHT = 'max(env(safe-area-inset-right), 0.75rem)';
@@ -17,6 +22,16 @@ const WALL: CSSObject = {
     gridTemplateAreas: '"count stage" "step stage" "absent stage" "keys keys"',
     gridTemplateColumns: 'minmax(0, 2fr) minmax(0, 3fr)',
     gridTemplateRows: 'minmax(0, 1fr) auto auto auto',
+  },
+  [HALL_CRAMPED_NARROW]: {
+    gridTemplateRows: 'minmax(0, 24cqh) auto minmax(0, 1fr) auto auto',
+    [COUNT_AREA]: { pt: kkTokens.tapTarget },
+  },
+  [HALL_CRAMPED_WIDE]: {
+    gridTemplateAreas: '"count step stage" "count absent stage" "keys keys keys"',
+    gridTemplateColumns: `minmax(${CORNER_WIDTH}, 1fr) minmax(0, 2fr) minmax(0, 2fr)`,
+    gridTemplateRows: 'auto minmax(0, 1fr) auto',
+    [COUNT_AREA]: { pt: kkTokens.tapTarget },
   },
 };
 
@@ -50,6 +65,7 @@ export const KkHallRoot: FC<KkHallRootProps> = ({ label, children }) => {
         overscrollBehavior: 'none',
       })}
     >
+      <KkVisuallyHidden component="h1">{label}</KkVisuallyHidden>
       <Box
         sx={{
           position: 'relative',

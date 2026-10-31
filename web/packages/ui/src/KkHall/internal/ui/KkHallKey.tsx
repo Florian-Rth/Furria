@@ -4,7 +4,7 @@ import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { kkTokens } from '../../../tokens';
-import { HALL_NARROW } from '../hall-query';
+import { HALL_CRAMPED_NARROW, HALL_CRAMPED_WIDE, HALL_NARROW } from '../hall-query';
 import type { KkHallGlyph } from './hall-glyphs';
 import { HALL_GLYPHS } from './hall-glyphs';
 
@@ -50,6 +50,11 @@ const keyPaint =
       [HALL_NARROW]: {
         minWidth: kkTokens.tapTarget,
         padding: theme.spacing(0.75, 0.5),
+        '& [data-kk-hall-caption]': CAPTION_HIDDEN,
+      },
+      [HALL_CRAMPED_NARROW]: { minHeight: kkTokens.tapTarget },
+      [HALL_CRAMPED_WIDE]: {
+        minWidth: kkTokens.tapTarget,
         '& [data-kk-hall-caption]': CAPTION_HIDDEN,
       },
       ...focusRing(theme),

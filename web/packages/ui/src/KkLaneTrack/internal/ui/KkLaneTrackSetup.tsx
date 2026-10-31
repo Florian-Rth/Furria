@@ -55,7 +55,7 @@ export const KkLaneTrackSetup: FC<KkLaneTrackSetupProps> = ({
         border: `${kkTokens.line.hair}px solid ${palette(theme).primary.main}`,
         boxShadow: kkTokens.shadow.floating,
       },
-      '&.Mui-disabled': { opacity: 0.6 },
+      '&.Mui-disabled': { opacity: kkTokens.opacity.dimmed },
       ...focusRing(theme),
     })}
   >
@@ -84,7 +84,7 @@ export const KkLaneTrackSetup: FC<KkLaneTrackSetupProps> = ({
         component="span"
         variant="caption"
         noWrap
-        sx={{ color: 'inherit', opacity: 0.8, lineHeight: 1.25, maxWidth: '100%' }}
+        sx={{ color: 'inherit', lineHeight: 1.25, maxWidth: '100%' }}
       >
         {hint}
       </Typography>

@@ -16,7 +16,7 @@ export const KkLaneTrackScrub: FC<KkLaneTrackScrubProps> = ({ label, onSeek }) =
 
   return (
     <Box
-      aria-label={label}
+      aria-hidden
       title={label}
       data-kk-lane-scrub
       {...drag}

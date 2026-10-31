@@ -555,29 +555,60 @@ Goal: Florian picks the planner's season view and the backstage view.
 - [x] Server: season read (acts × evenings: position, in tray, adjusted; readiness derived per act) and the live pointer for live direction (advance, read)
 - [x] Season-grid variants (dense, sticky first column, one evening per swipe on phones, one-click add/remove, readiness meter, inline evening cast)
 - [x] *Heute* variants (fixed viewport, landscape-first: now/next/after, missing and standing in, people to call, *Weiter*, Wake Lock)
-- [ ] Pitch + Florian's pick; rulings recorded (lab built; pick open)
+- ~~Pitch + Florian's pick; rulings recorded (lab built; pick open)~~ (dropped)
 
 ### Phase 18a — Promote the season grid (∥ F) — **dropped (ruling 2026-10-31)**
 Reason: no season grid; act ↔ evening planning stays in ordering the evening (Ablauf).
 Goal: the planner answers "which act, which evening, ready?" on one screen.
-- [ ] Season grid on `/acts` for planners; one-click add/remove writes appearances (undoable)
-- [ ] Readiness meter in the grid and the planner's line pane; line pane shows and edits the evening's cast changes
-- [ ] Change line for group-made changes after *Ablauf steht* (*„Kindergarde tanzt neu mit …" · gestern 14:02*, *Einplanen* inline)
-- [ ] Endpoint tests; browser check at 390 px and 1440 px
+- ~~Season grid on `/acts` for planners; one-click add/remove writes appearances (undoable)~~ (dropped)
+- ~~Readiness meter in the grid and the planner's line pane; line pane shows and edits the evening's cast changes~~ (dropped)
+- ~~Change line for group-made changes after *Ablauf steht* (*„Kindergarde tanzt neu mit …" · gestern 14:02*, *Einplanen* inline)~~ (dropped)
+- ~~Endpoint tests; browser check at 390 px and 1440 px~~ (dropped)
 
 ### Phase 18b — Promote *Heute* (∥ F) — **dropped (ruling 2026-10-31)**
 Reason: the event/tech view is not defined yet; Florian defines it later.
 Goal: the night runs from one calm screen.
-- [ ] `/events/$eventId/heute` replaces *Live-Regie · kommt noch*; the operator advances, everyone else follows
-- [ ] People to call from the evening cast and the attendance responses
-- [ ] Endpoint tests for the live pointer; filmed check landscape and portrait
+- ~~`/events/$eventId/heute` replaces *Live-Regie · kommt noch*; the operator advances, everyone else follows~~ (dropped)
+- ~~People to call from the evening cast and the attendance responses~~ (dropped)
+- ~~Endpoint tests for the live pointer; filmed check landscape and portrait~~ (dropped)
 
 ### Phase 19 — Accessibility and large-text sweep (∥ G)
 Goal: every screen of the studio and planner passes the bar.
-- [ ] 200 % text on player, hall mode, act page facts (one column above 150 %), planner
-- [ ] Targets ≥ 44 px; AA contrast (evening titles and muted text); `h1` and landmarks on every act screen; real lists and `dl` structure
-- [ ] Arrow keys on every slider; long-press actions have a button or keyboard equivalent; ⓘ details is a link
-- [ ] axe run over the studio and planner routes is clean (serious/critical)
+- [x] 200 % text on player, hall mode, act page facts (one column above 150 %), planner (season grid dropped with phase 17)
+- [x] Targets ≥ 44 px; AA contrast (evening titles and muted text); `h1` and landmarks on every act screen; real lists and `dl` structure
+- [x] Arrow keys on every slider; long-press actions have a button or keyboard equivalent; ⓘ details is a link
+- [x] axe run over the studio and planner routes is clean (serious/critical)
+- Notes (done 2026-10-31):
+  - **200 % text.**
+    - The hall numeral now scales with the real root font size (`useRootFontPixels`). Before, it overflowed at 200 %.
+    - Hall mode has two cramped layouts, chosen by container queries in `rem` (`HALL_CRAMPED_*`), so they switch on only with large text:
+      - Portrait: the keys wrap to two rows of four, 44 px tall, and the count sits below the corner keys.
+      - Landscape: count, step and stage sit in three columns, with icon-only keys in one row.
+    - The large-text player in landscape puts the head next to the stage. The keys form one row, and below 20 rem of height they show icons only. The 844×390 page no longer scrolls.
+    - The act page facts are one column from 150 %.
+    - The planner holds at 200 % without sideways scroll.
+  - **Targets.** `tapArea` in `@furria/ui` (internal) grows the hit area of a smaller control to 44 px with a pseudo element and doesn't change how it looks. It is used on `KkIconButton`, `KkDragGrip`, `KkIconTabs` and `KkSegmentSwitch`; `KkButton` small already did this. `KkKeyHelp` no longer shrinks to 24 px.
+    - Ruled: two controls stay under 44 px wide. The desk diamonds are 20 px and the step-card count cells 38 px; wider ones would overlap at whole-act zoom or on a 390 px row. Each keeps a 44 px height, and each has a keyboard equivalent: ←/→ on the diamond, and Shift+arrow by count on the cards.
+  - **Contrast.**
+    - The pressed *Bin da* key is `greenInk` with white in light mode and with `bg` in dark mode. It was 3.41:1.
+    - The set-up checklist hint no longer fades to 80 %. On the red *next* row it was 3.44:1.
+  - **Structure.**
+    - Hidden `h1`s on *Auftritte* (club and group), *Ablauf*, *Musik & Video*, hall mode, the large-text player, step cards and the desk (`KkVisuallyHidden component="h1"`, `KkStudioView title`).
+    - The shell chrome is the `header` landmark, so the tool row (*Wählen/Ordnen/Prüfen*) is inside it. The shell foot is a `footer`.
+    - Act sections in the catalogue are `h2`.
+    - The facet grid is a `ul`/`li`. The studio list is a labelled group with no wrong `listitem` buttons.
+    - Desk panels are labelled `section`s with no nested `aside`. The lane track is a `group`, and the pointer-only scrub is hidden from the accessibility tree.
+    - Facts with label and value already use `dl` (`KkLaneInspectorFacts`, `KkReadout`, `KkFactStrip`). The stat tiles stay headed sections.
+  - **Keys.**
+    - The music cut handles answer ←/→ by one count (`nudgedCutOf`, tested), or 0.5 s without a tempo. The final-file shift handle moves 0.1 s.
+    - The planner's hold-together grip toggles by keyboard and assistive-tech click (`bracket.tap`). The other planner drags already had arrow keys.
+    - Hold-to-confirm deeds stay holds, with their visible hint.
+    - The ⓘ details and back-to-card actions are real links (`KkScreenAction.link`). Modifier clicks open a new tab.
+  - **axe 4.10** ran as admin, Lena and Sabine on `/acts`, `/groups/2/acts`, `/acts/{3,5}` (card, details, player, hall, step cards, desk) and `/acts/3/musik`. It ran at 390×844, 844×390 and 1440×900, in light and dark, at 100 % and 200 %. No serious or critical findings are left, and no moderate ones either.
+  - Season grid and *Heute* were left out: phase 17 is being removed.
+  - Left open:
+    - `typePixelsOf` callers outside the studio (text meters, honour sash) still assume a 16 px root.
+    - `KkIconTabs` has no roving focus.
 
 ### Phase 20 — Consolidation, test data, wrap-up (∥ G)
 Goal: one home for the music rules, a clean database, docs in sync.

@@ -38,7 +38,7 @@ export const KkSpotlightListSection: FC<KkSpotlightListSectionProps> = ({
     >
       <Stack
         direction="row"
-        component="h3"
+        component="h2"
         sx={{ m: 0, alignItems: 'center', gap: 1, minHeight: '2.5rem', px: 1.5, py: 0.5 }}
       >
         {media}

@@ -1,5 +1,6 @@
 import { KkPracticeView } from '@furria/ui/KkPracticeView';
 import { KkStudioView } from '@furria/ui/KkStudioView';
+import { KkVisuallyHidden } from '@furria/ui/KkVisuallyHidden';
 import type { FC } from 'react';
 import { ActDeskView } from '@/features/act-desk/components/ActDeskView';
 import { LessonBody } from '@/features/act-lesson/components/LessonBody';
@@ -39,11 +40,23 @@ export const ActStudioBody: FC<ActStudioBodyProps> = ({
   const screen = useStudioScreen(actId, studio, viewerId, canEdit, cast, context);
   const editor = useActStudioStage(screen);
 
+  const heading = <KkVisuallyHidden component="h1">{title}</KkVisuallyHidden>;
+
   if (screen.editor === 'cards') {
-    return <StepCardsView screen={screen} editor={editor} />;
+    return (
+      <>
+        {heading}
+        <StepCardsView screen={screen} editor={editor} />
+      </>
+    );
   }
   if (screen.editor === 'desk') {
-    return <ActDeskView screen={screen} editor={editor} />;
+    return (
+      <>
+        {heading}
+        <ActDeskView screen={screen} editor={editor} />
+      </>
+    );
   }
 
   if (!screen.mode.editing && !canPractise(screen.studio)) {
@@ -54,7 +67,7 @@ export const ActStudioBody: FC<ActStudioBodyProps> = ({
   }
 
   return (
-    <KkStudioView label={STUDIO_LABEL} editing={false} largeText>
+    <KkStudioView label={STUDIO_LABEL} title={title} editing={false} largeText>
       <ActStudioHead screen={screen} />
       <KkPracticeView.Hero>
         <ActStudioHero screen={screen} />

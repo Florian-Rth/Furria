@@ -11,7 +11,7 @@ interface StepCardsSetupPanelProps {
 }
 
 export const StepCardsSetupPanel: FC<StepCardsSetupPanelProps> = ({ cardsSetup }) => (
-  <KkLaneDesk.Panel label={SETUP_LIST_LABEL} kind="region" fit>
+  <KkLaneDesk.Panel label={SETUP_LIST_LABEL} fit>
     <KkLaneInspector>
       <StudioSetupList setup={cardsSetup.setup} />
       <KkLaneInspector.Actions label={SETUP_LIST_LABEL}>

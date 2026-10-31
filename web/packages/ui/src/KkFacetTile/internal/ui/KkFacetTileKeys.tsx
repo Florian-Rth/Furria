@@ -42,8 +42,8 @@ const keyPaint = (theme: Theme): CSSObject => ({
   '&[aria-pressed="true"]': { borderColor: 'transparent' },
   '&[aria-pressed="true"][data-kk-facet-key="yes"]': applyScheme(
     theme,
-    schemeFill(light.green, dark.green),
-    schemeInk(light.onRed, dark.ink),
+    schemeFill(light.greenInk, dark.greenInk),
+    schemeInk(light.onRed, dark.bg),
   ),
   '&[aria-pressed="true"][data-kk-facet-key="no"]': applyScheme(
     theme,

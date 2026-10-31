@@ -7,7 +7,7 @@ interface KkStudioListRootProps extends PropsWithChildren {
 
 export const KkStudioListRoot: FC<KkStudioListRootProps> = ({ label, children }) => (
   <Stack
-    role="list"
+    role="group"
     aria-label={label}
     data-kk-studio-list
     sx={{

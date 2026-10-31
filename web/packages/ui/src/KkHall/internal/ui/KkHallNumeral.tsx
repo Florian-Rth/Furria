@@ -4,6 +4,7 @@ import { useTheme } from '@mui/material/styles';
 import type { FC } from 'react';
 import { goldInkOf } from '../../../internal/gold-ink';
 import { typePixelsOf } from '../../../internal/type-pixels';
+import { useRootFontPixels } from '../../../internal/use-root-font-pixels';
 
 export type KkHallNumeralTone = 'music' | 'lead' | 'rest' | 'onAccent';
 
@@ -25,7 +26,8 @@ interface KkHallNumeralProps {
 
 export const KkHallNumeral: FC<KkHallNumeralProps> = ({ text, tone }) => {
   const theme = useTheme();
-  const scale = EM_UNITS / typePixelsOf(theme.typography.h1.fontSize);
+  const remPixels = useRootFontPixels();
+  const scale = EM_UNITS / typePixelsOf(theme.typography.h1.fontSize, remPixels);
   const placement = `translate(${CENTRE} ${CENTRE}) scale(${scale})`;
 
   return (
