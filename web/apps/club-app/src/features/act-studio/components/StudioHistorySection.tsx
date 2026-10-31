@@ -1,6 +1,5 @@
 import { KkButton } from '@furria/ui/KkButton';
 import { KkHubRow } from '@furria/ui/KkHubRow';
-import { KkMeta } from '@furria/ui/KkMeta';
 import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
@@ -11,7 +10,6 @@ import { useVisitHistory } from '../hooks/use-visit-history';
 import {
   HISTORY_EMPTY,
   HISTORY_TITLE,
-  HISTORY_VISIT,
   REDO_ARIA,
   REDO_LABEL,
   UNDO_ARIA,
@@ -37,10 +35,9 @@ export const StudioHistorySection: FC<StudioHistorySectionProps> = ({ actId, stu
     />
   ));
   const list = rows.length === 0 ? <KkNote>{HISTORY_EMPTY}</KkNote> : <KkPanel>{rows}</KkPanel>;
-  const meta = <KkMeta>{String(rows.length)}</KkMeta>;
 
   return (
-    <KkPanelSection title={HISTORY_TITLE} meta={meta} description={HISTORY_VISIT}>
+    <KkPanelSection title={HISTORY_TITLE}>
       <Stack sx={{ gap: 1, minWidth: 0 }}>
         <Stack direction="row" sx={{ gap: 1, flexWrap: 'wrap' }}>
           <KkButton

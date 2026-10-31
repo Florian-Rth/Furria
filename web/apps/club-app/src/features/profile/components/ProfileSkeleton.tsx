@@ -5,11 +5,10 @@ import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
 import { AppSkeletonRegion } from '@/features/session/components/AppSkeletonRegion';
-import { PROFILE_SECTION_TITLES, VISIBILITY_PREVIEW_CAPTION } from '../profile-labels';
+import { PROFILE_SECTION_TITLES } from '../profile-labels';
 
 const CONTACT_LINES = 3;
 const VISIBILITY_LINES = 6;
-const PREVIEW_LINES = 5;
 const DATA_LINES = 3;
 const MEMBERSHIP_LINES = 3;
 const GROUPS_LINES = 3;
@@ -28,14 +27,6 @@ export const ProfileSkeleton: FC = () => (
           <KkPanelSection title={PROFILE_SECTION_TITLES.visibility}>
             <KkPanel variant="block">
               <KkSkeletonBlock lines={VISIBILITY_LINES} />
-            </KkPanel>
-          </KkPanelSection>
-          <KkPanelSection
-            title={PROFILE_SECTION_TITLES.preview}
-            description={VISIBILITY_PREVIEW_CAPTION}
-          >
-            <KkPanel variant="block">
-              <KkSkeletonBlock lines={PREVIEW_LINES} />
             </KkPanel>
           </KkPanelSection>
         </KkPanelStack>

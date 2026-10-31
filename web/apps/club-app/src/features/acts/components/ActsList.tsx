@@ -2,7 +2,7 @@ import { toImageSource } from '@furria/ui/image-source';
 import { KkPictureMark } from '@furria/ui/KkPictureMark';
 import { KkSpotlightList } from '@furria/ui/KkSpotlightList';
 import type { FC } from 'react';
-import { LIST_LABEL, POINTS_TITLE, toSectionMeta } from '../acts-copy';
+import { LIST_LABEL, POINTS_TITLE } from '../acts-copy';
 import type { ActsHub } from '../hooks/use-acts-hub';
 import { ActsRow } from './ActsRow';
 
@@ -25,12 +25,7 @@ export const ActsList: FC<ActsListProps> = ({ hub }) => {
     );
 
     return [
-      <KkSpotlightList.Section
-        key={section.id}
-        title={title}
-        meta={toSectionMeta(section.acts.length)}
-        media={media}
-      />,
+      <KkSpotlightList.Section key={section.id} title={title} media={media} />,
       ...section.acts.map((act) => <ActsRow key={act.actId} act={act} hub={hub} />),
     ];
   });

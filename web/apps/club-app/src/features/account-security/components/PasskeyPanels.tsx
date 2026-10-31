@@ -8,8 +8,6 @@ import { formatPasskeyDay } from '../account-security-labels';
 import { PasskeyRemovalPanel } from './PasskeyRemovalPanel';
 
 const TITLE = 'Passkey';
-const DESCRIPTION =
-  'Mit diesem Passkey meldest du dich ohne Passwort an. Er liegt auf deinem Gerät oder in deinem Passwort-Manager.';
 const NAME_LABEL = 'Name';
 const ADDED_LABEL = 'Hinzugefügt am';
 
@@ -22,7 +20,7 @@ export const PasskeyPanels: FC<PasskeyPanelsProps> = ({ passkey }) => {
 
   return (
     <KkPanelStack>
-      <KkPanelSection title={TITLE} description={DESCRIPTION}>
+      <KkPanelSection title={TITLE}>
         <KkPanel>
           <KkFieldRow label={NAME_LABEL} value={passkey.name} />
           <KkFieldRow label={ADDED_LABEL} value={addedOn} />

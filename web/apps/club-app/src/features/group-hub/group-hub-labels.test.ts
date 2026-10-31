@@ -58,7 +58,7 @@ const groupHub = (overrides: Partial<GroupHub>): GroupHub => ({
   foundedYear: null,
   tone: null,
   icon: null,
-  trainingSlots: [],
+  usualTrainingTimes: [],
   admins: [],
   members: [],
   viewerIsMember: false,

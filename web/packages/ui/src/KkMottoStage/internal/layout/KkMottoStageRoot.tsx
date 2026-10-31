@@ -1,9 +1,9 @@
 import Stack from '@mui/material/Stack';
 import { keyframes } from '@mui/material/styles';
 import type { FC, PropsWithChildren, ReactNode } from 'react';
+import type { KkImageSource } from '../../../image-source';
 import { useReducedMotion } from '../../../internal/use-reduced-motion';
 import type { KkSx } from '../../../kk-sx';
-import { logoSourceOf } from '../logic/logo-source';
 import { mottoStageMotionOf } from '../logic/motto-stage-motion';
 import {
   MOTTO_STAGE_CONTENT_GAP,
@@ -59,7 +59,7 @@ interface KkMottoStageRootProps extends PropsWithChildren {
   numberLabel: string | null;
   countdownLabel: string | null;
   progress: number | null;
-  logo: string | null;
+  logo: KkImageSource | null;
   sx?: KkSx;
 }
 
@@ -78,9 +78,8 @@ export const KkMottoStageRoot: FC<KkMottoStageRootProps> = ({
   const reducedMotion = useReducedMotion();
   const motion = mottoStageMotionOf(state, reducedMotion);
   const isRunning = state === 'running';
-  const logoSource = logoSourceOf(logo);
   const scene = isRunning ? children : null;
-  const logoArtwork = logoSource === null ? null : <KkMottoStageLogo source={logoSource} />;
+  const logoArtwork = logo === null ? null : <KkMottoStageLogo image={logo} />;
   const artworkByState: Record<KkMottoStageState, ReactNode> = {
     teaser: logoArtwork,
     running: <KkMottoStageConfetti />,

@@ -37,59 +37,15 @@ export type MyGroupSummary = z.infer<typeof MyGroupSummarySchema>;
 export const MyGroupsResponseSchema = z.object({ groups: z.array(MyGroupSummarySchema) });
 export type MyGroupsResponse = z.infer<typeof MyGroupsResponseSchema>;
 
-export const TrainingSlotSchema = z.object({
-  groupTrainingSlotId: z.number().int(),
+export const UsualTrainingTimeSchema = z.object({
+  usualTrainingTimeId: z.number().int(),
   weekday: WeekdaySchema,
   startsAt: z.string(),
   durationMinutes: z.number().int(),
   venueId: z.number().int().nullable(),
   venueName: z.string().nullable(),
 });
-export type TrainingSlot = z.infer<typeof TrainingSlotSchema>;
-
-export const TRAINING_PREVIEW_STATES = [
-  'creatable',
-  'venueTaken',
-  'alreadyExists',
-  'venueArchived',
-] as const;
-
-export const TrainingPreviewStateSchema = z.enum(TRAINING_PREVIEW_STATES);
-export type TrainingPreviewState = z.infer<typeof TrainingPreviewStateSchema>;
-
-export const TrainingCollisionSchema = z.object({
-  calendarEntryId: z.number().int(),
-  title: z.string(),
-  startsAt: z.iso.datetime({ offset: true }),
-  endsAt: z.iso.datetime({ offset: true }).nullable(),
-  ownerGroupName: z.string().nullable(),
-});
-export type TrainingCollision = z.infer<typeof TrainingCollisionSchema>;
-
-export const TrainingPreviewRowSchema = z.object({
-  groupTrainingSlotId: z.number().int(),
-  startsAt: z.iso.datetime({ offset: true }),
-  endsAt: z.iso.datetime({ offset: true }),
-  venueId: z.number().int().nullable(),
-  venueName: z.string().nullable(),
-  state: TrainingPreviewStateSchema,
-  venueCollisions: z.array(TrainingCollisionSchema),
-});
-export type TrainingPreviewRow = z.infer<typeof TrainingPreviewRowSchema>;
-
-export const TrainingPreviewSchema = z.object({
-  defaultEndsOn: z.iso.date(),
-  endsOn: z.iso.date(),
-  rows: z.array(TrainingPreviewRowSchema),
-});
-export type TrainingPreview = z.infer<typeof TrainingPreviewSchema>;
-
-export const GeneratedTrainingsSchema = z.object({
-  createdCount: z.number().int(),
-  skippedCount: z.number().int(),
-  venueCollisions: z.array(TrainingCollisionSchema),
-});
-export type GeneratedTrainings = z.infer<typeof GeneratedTrainingsSchema>;
+export type UsualTrainingTime = z.infer<typeof UsualTrainingTimeSchema>;
 
 export const GroupHubSchema = z.object({
   groupId: z.number().int(),
@@ -103,7 +59,7 @@ export const GroupHubSchema = z.object({
   foundedYear: z.number().int().nullable(),
   tone: GroupToneSchema.nullable(),
   icon: ClubIconSchema.nullable(),
-  trainingSlots: z.array(TrainingSlotSchema),
+  usualTrainingTimes: z.array(UsualTrainingTimeSchema),
   admins: z.array(GroupDetailAdminSchema),
   members: z.array(GroupDetailMemberSchema),
   viewerIsMember: z.boolean(),
@@ -216,15 +172,13 @@ export const GroupAdminEndFormSchema = z.object({
 });
 
 export const TRAINING_DURATION_MINUTES = { min: 15, max: 480 } as const;
-export const TRAINING_TITLE_MAX_LENGTH = 120;
-export const MAX_TRAINING_SLOTS = 14;
+export const MAX_USUAL_TRAINING_TIMES = 14;
 
-export const TRAINING_TITLE_MESSAGE = 'Die Trainings brauchen einen Titel.';
 export const TRAINING_DURATION_MESSAGE = 'Die Dauer muss zwischen 15 und 480 Minuten liegen.';
 
 const CLOCK_TIME_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
 
-export const TrainingSlotFormSchema = z.object({
+export const UsualTrainingTimeFormSchema = z.object({
   weekday: WeekdaySchema,
   startsAt: z.string().regex(CLOCK_TIME_PATTERN),
   durationMinutes: z
@@ -234,13 +188,7 @@ export const TrainingSlotFormSchema = z.object({
     .max(TRAINING_DURATION_MINUTES.max, TRAINING_DURATION_MESSAGE),
   venueId: z.string(),
 });
-export type TrainingSlotForm = z.infer<typeof TrainingSlotFormSchema>;
-
-export const GenerateTrainingsFormSchema = z.object({
-  title: z.string().trim().min(1, TRAINING_TITLE_MESSAGE).max(TRAINING_TITLE_MAX_LENGTH),
-  endsOn: z.iso.date(),
-});
-export type GenerateTrainingsForm = z.infer<typeof GenerateTrainingsFormSchema>;
+export type UsualTrainingTimeForm = z.infer<typeof UsualTrainingTimeFormSchema>;
 
 export const GroupCalendarKindSchema = z.enum(CALENDAR_KIND_KEYS);
 export type GroupCalendarKind = z.infer<typeof GroupCalendarKindSchema>;

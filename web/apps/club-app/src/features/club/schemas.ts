@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { PictureSchema } from '@/lib/api/schemas';
+import { PictureSchema, SessionLogoSchema } from '@/lib/api/schemas';
 import { CALENDAR_KIND_KEYS } from '@/lib/calendar-copy';
 
 export const ClubPersonSchema = z.object({
@@ -16,7 +16,7 @@ export const ClubSessionSchema = z.object({
   label: z.string(),
   number: z.number().int().nullable(),
   motto: z.string().nullable(),
-  logoSvg: z.string().nullable(),
+  logo: SessionLogoSchema.nullable(),
 });
 export type ClubSession = z.infer<typeof ClubSessionSchema>;
 

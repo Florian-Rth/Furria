@@ -1,30 +1,27 @@
 import type { HubActCard } from '@/features/act-card/hub-acts';
 import { hubActCardOf, ownHubActsOf } from '@/features/act-card/hub-acts';
+import { toHistoryLinkMeta } from '@/features/acts/acts-copy';
 import { groupActsPathOf } from '@/features/acts/acts-origin';
 import { useGroupActsQuery, useMyActsQuery } from '@/features/acts/api';
 import type { GroupAct } from '@/features/acts/schemas';
 import { useMeQuery } from '@/features/session/api';
-import { toHubActsMeta } from '../group-hub-labels';
 import { toHubActsErrorMessage } from '../group-hub-messages';
-import type { HubActSession } from '../hub-acts';
 import { hubActsOf } from '../hub-acts';
 
 export interface HubActsView {
   cards: HubActCard[];
   others: GroupAct[];
-  earlier: HubActSession[];
+  historyMeta: string | undefined;
   loaded: boolean;
-  meta: string | undefined;
   isLoading: boolean;
   errorMessage: string | null;
-  manageTo: string;
+  historyTo: string;
   viewerId: number | null;
   retry: () => void;
 }
 
 const NO_CARDS: HubActCard[] = [];
 const NO_ACTS: GroupAct[] = [];
-const NO_SESSIONS: HubActSession[] = [];
 
 export const useHubActs = (groupId: number): HubActsView => {
   const query = useGroupActsQuery(groupId);
@@ -45,12 +42,12 @@ export const useHubActs = (groupId: number): HubActsView => {
   return {
     cards: own?.mine.map(hubActCardOf) ?? NO_CARDS,
     others: own?.others ?? NO_ACTS,
-    earlier: acts?.earlier ?? NO_SESSIONS,
+    historyMeta:
+      acts === null ? undefined : toHistoryLinkMeta(acts.recorded, acts.firstSessionYear),
     loaded,
-    meta: acts === null ? undefined : toHubActsMeta(acts.current.length),
     isLoading: !loaded && query.error === null,
     errorMessage: acts === null ? toHubActsErrorMessage(query.error) : null,
-    manageTo: groupActsPathOf(groupId),
+    historyTo: groupActsPathOf(groupId),
     viewerId: me.data?.person?.id ?? null,
     retry: () => {
       void query.refetch();

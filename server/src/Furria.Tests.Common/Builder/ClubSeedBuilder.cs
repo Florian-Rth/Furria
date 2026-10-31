@@ -19,7 +19,7 @@ public sealed class ClubSeedBuilder
     private readonly List<KeyHoldingIntent> _keyHoldings = [];
     private readonly List<BoardOfficeIntent> _boardOffices = [];
     private readonly List<BoardSeatIntent> _boardSeats = [];
-    private readonly List<TrainingSlotIntent> _trainingSlots = [];
+    private readonly List<UsualTrainingTimeIntent> _usualTrainingTimes = [];
     private readonly List<CalendarEntryIntent> _calendarEntries = [];
     private readonly List<AttendanceResponseIntent> _attendanceResponses = [];
     private readonly List<EventIntent> _events = [];
@@ -40,7 +40,7 @@ public sealed class ClubSeedBuilder
 
     internal IReadOnlyList<BoardSeatIntent> BoardSeats => _boardSeats;
 
-    internal IReadOnlyList<TrainingSlotIntent> TrainingSlots => _trainingSlots;
+    internal IReadOnlyList<UsualTrainingTimeIntent> UsualTrainingTimes => _usualTrainingTimes;
 
     internal IReadOnlyList<CalendarEntryIntent> CalendarEntries => _calendarEntries;
 
@@ -88,11 +88,10 @@ public sealed class ClubSeedBuilder
         string alias,
         int startYear,
         int? number = null,
-        string? motto = null,
-        string? logoSvg = null
+        string? motto = null
     )
     {
-        _sessions.Add(new SessionIntent(alias, startYear, number, motto, logoSvg));
+        _sessions.Add(new SessionIntent(alias, startYear, number, motto));
         return this;
     }
 
@@ -201,7 +200,7 @@ public sealed class ClubSeedBuilder
         return this;
     }
 
-    public ClubSeedBuilder AddTrainingSlot(
+    public ClubSeedBuilder AddUsualTrainingTime(
         string alias,
         string groupAlias,
         DayOfWeek weekday,
@@ -210,8 +209,8 @@ public sealed class ClubSeedBuilder
         string? venueAlias = null
     )
     {
-        _trainingSlots.Add(
-            new TrainingSlotIntent(
+        _usualTrainingTimes.Add(
+            new UsualTrainingTimeIntent(
                 alias,
                 groupAlias,
                 weekday,
@@ -306,13 +305,7 @@ public sealed class ClubSeedBuilder
         return this;
     }
 
-    internal sealed record SessionIntent(
-        string Alias,
-        int StartYear,
-        int? Number,
-        string? Motto,
-        string? LogoSvg
-    );
+    internal sealed record SessionIntent(string Alias, int StartYear, int? Number, string? Motto);
 
     internal sealed record ClubRecordIntent(
         string? Name,
@@ -384,7 +377,7 @@ public sealed class ClubSeedBuilder
         DateOnly? UntilOn
     );
 
-    internal sealed record TrainingSlotIntent(
+    internal sealed record UsualTrainingTimeIntent(
         string Alias,
         string GroupAlias,
         DayOfWeek Weekday,

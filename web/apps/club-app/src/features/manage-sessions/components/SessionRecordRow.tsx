@@ -1,11 +1,11 @@
 import { KkChip } from '@furria/ui/KkChip';
 import { KkMeta } from '@furria/ui/KkMeta';
 import { KkSessionRow } from '@furria/ui/KkSessionRow';
-import { logoSourceOf } from '@furria/ui/logo-source';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { useLanding } from '@/features/write/hooks/use-landing';
 import { toLandingKey } from '@/features/write/landing-target';
+import { toSessionLogoImage } from '@/lib/session-logo-image';
 import {
   toSessionNumberLabel,
   toSessionRowChip,
@@ -28,7 +28,7 @@ export const SessionRecordRow: FC<SessionRecordRowProps> = ({ record, today }) =
   const motto = toSessionRowMotto(record, today);
   const numberLabel = toSessionNumberLabel(record.number);
   const seasonLabel = toSessionSeasonLabel(record.startYear);
-  const logoSource = logoSourceOf(record.logoSvg);
+  const logoImage = toSessionLogoImage(record.logo?.logo ?? null);
   const routeParams = { sessionId: String(record.sessionId) };
   const highlighted = highlightedKey === landingKey;
 
@@ -49,7 +49,7 @@ export const SessionRecordRow: FC<SessionRecordRowProps> = ({ record, today }) =
       highlight={highlighted}
       landing={landingKey}
     >
-      <KkSessionRow.Emblem source={logoSource} />
+      <KkSessionRow.Emblem image={logoImage} />
       <KkSessionRow.Body>
         <KkSessionRow.Heading>
           <KkSessionRow.Season>{seasonLabel}</KkSessionRow.Season>

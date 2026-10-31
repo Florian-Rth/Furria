@@ -11,7 +11,7 @@ const record = (overrides: Partial<SessionRecordSummary>): SessionRecordSummary 
   startYear: 2025,
   number: 53,
   motto: 'Wir sind die Narren vom Rhein',
-  logoSvg: null,
+  logo: null,
   ...overrides,
 });
 

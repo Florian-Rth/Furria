@@ -6,7 +6,6 @@ import { kkTokens } from '../../../tokens';
 
 interface KkPaneLayoutPaneHeadProps {
   title: string;
-  meta?: ReactNode;
   tools?: ReactNode;
   closeLabel?: string;
   onClose?: () => void;
@@ -14,7 +13,6 @@ interface KkPaneLayoutPaneHeadProps {
 
 export const KkPaneLayoutPaneHead: FC<KkPaneLayoutPaneHeadProps> = ({
   title,
-  meta,
   tools,
   closeLabel,
   onClose,
@@ -22,15 +20,6 @@ export const KkPaneLayoutPaneHead: FC<KkPaneLayoutPaneHeadProps> = ({
   const close =
     onClose === undefined || closeLabel === undefined ? null : (
       <KkIconButton label={closeLabel} icon="close" size="small" onClick={onClose} />
-    );
-  const metaLine =
-    meta === undefined || meta === null ? null : (
-      <Box
-        component="span"
-        sx={{ typography: 'caption', fontWeight: 700, color: 'text.secondary' }}
-      >
-        {meta}
-      </Box>
     );
 
   return (
@@ -50,12 +39,12 @@ export const KkPaneLayoutPaneHead: FC<KkPaneLayoutPaneHeadProps> = ({
         borderBottomColor: 'divider',
       }}
     >
-      <Stack sx={{ flex: 1, minWidth: 0 }}>
-        <Box component="h2" sx={{ m: 0, typography: 'h4', color: 'text.primary' }}>
-          {title}
-        </Box>
-        {metaLine}
-      </Stack>
+      <Box
+        component="h2"
+        sx={{ flex: 1, minWidth: 0, m: 0, typography: 'h4', color: 'text.primary' }}
+      >
+        {title}
+      </Box>
       {tools}
       {close}
     </Stack>

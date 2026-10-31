@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import { useRoleQuery } from '../api';
 import type { HoldingFormTarget } from '../hooks/use-holding-form-target';
 import type { RoleSummary } from '../schemas';
+import { HoldingEditPane } from './HoldingEditPane';
 import { HoldingEndPane } from './HoldingEndPane';
 import { HoldingOpenPane } from './HoldingOpenPane';
 
@@ -45,6 +46,19 @@ export const HoldingFormPane: FC<HoldingFormPaneProps> = ({
 
   if (holder === undefined) {
     return null;
+  }
+
+  if (target.mode === 'edit') {
+    return (
+      <HoldingEditPane
+        key={holder.roleHoldingId}
+        role={role}
+        holder={holder}
+        today={today}
+        framed={framed}
+        onClose={onClose}
+      />
+    );
   }
 
   return (

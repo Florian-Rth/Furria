@@ -3,6 +3,7 @@ import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { KkSeatList } from '@furria/ui/KkSeatList';
 import { KkSkeletonRow } from '@furria/ui/KkSkeletonRow';
 import type { FC } from 'react';
+import type { HoldingTask } from '../hooks/use-holding-form-target';
 import type { RoleHolder } from '../schemas';
 import { RoleHolderLine } from './RoleHolderLine';
 
@@ -14,8 +15,8 @@ interface RoleHolderGroupProps {
   emptyNote?: string;
   pending: boolean;
   today: string;
-  canEnd: boolean;
-  onEnd: (roleHoldingId: number) => void;
+  editable: boolean;
+  onTask: (roleHoldingId: number, task: HoldingTask) => void;
 }
 
 export const RoleHolderGroup: FC<RoleHolderGroupProps> = ({
@@ -24,8 +25,8 @@ export const RoleHolderGroup: FC<RoleHolderGroupProps> = ({
   emptyNote,
   pending,
   today,
-  canEnd,
-  onEnd,
+  editable,
+  onTask,
 }) => {
   if (pending) {
     return (
@@ -43,11 +44,10 @@ export const RoleHolderGroup: FC<RoleHolderGroupProps> = ({
       key={holder.roleHoldingId}
       holder={holder}
       today={today}
-      canEnd={canEnd}
-      onEnd={onEnd}
+      editable={editable}
+      onTask={onTask}
     />
   ));
-  const count = holders.length === 0 ? undefined : holders.length;
   const body =
     holders.length === 0 ? (
       <KkMeta>{emptyNote}</KkMeta>
@@ -55,9 +55,5 @@ export const RoleHolderGroup: FC<RoleHolderGroupProps> = ({
       <KkSeatList label={title}>{lines}</KkSeatList>
     );
 
-  return (
-    <KkPanelSection title={title} meta={count}>
-      {body}
-    </KkPanelSection>
-  );
+  return <KkPanelSection title={title}>{body}</KkPanelSection>;
 };

@@ -60,7 +60,7 @@ public sealed class VideoRenditionTests : IClassFixture<ApiTestFixture>
         Assert.DoesNotContain("location", await RenditionProbe.ContainerTagsOf(rendition, ct));
         Assert.True(await RenditionProbe.StartsFastAsync(rendition, ct));
         Assert.Equal((640, 360), await ImageSizeAsync(mediaItemId, MediaRendition.Poster, ct));
-        Assert.Equal((400, 225), await ImageSizeAsync(mediaItemId, MediaRendition.Small, ct));
+        Assert.Equal((640, 360), await ImageSizeAsync(mediaItemId, MediaRendition.Small, ct));
     }
 
     [Fact]

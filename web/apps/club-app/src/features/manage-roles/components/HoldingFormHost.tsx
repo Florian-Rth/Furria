@@ -2,7 +2,7 @@ import { KkBottomDrawer } from '@furria/ui/KkBottomDrawer';
 import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
 import type { FC } from 'react';
 import type { HoldingFormTarget } from '../hooks/use-holding-form-target';
-import { CLOSE_LABEL, OPEN_HOLDING_TITLE } from '../roles-hub-copy';
+import { CLOSE_LABEL, toHoldingFormTitle } from '../roles-hub-copy';
 import type { RoleSummary } from '../schemas';
 import { HoldingFormPane } from './HoldingFormPane';
 
@@ -27,6 +27,8 @@ export const HoldingFormHost: FC<HoldingFormHostProps> = ({
     return null;
   }
 
+  const title = toHoldingFormTitle(target.mode);
+
   if (isWide) {
     return (
       <KkMasterDetail.Detail span={PANE_SPAN}>
@@ -36,7 +38,7 @@ export const HoldingFormHost: FC<HoldingFormHostProps> = ({
   }
 
   return (
-    <KkBottomDrawer open label={OPEN_HOLDING_TITLE} closeLabel={CLOSE_LABEL} onClose={onClose}>
+    <KkBottomDrawer open label={title} closeLabel={CLOSE_LABEL} onClose={onClose}>
       <HoldingFormPane
         target={target}
         roles={roles}

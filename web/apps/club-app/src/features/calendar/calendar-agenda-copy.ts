@@ -151,9 +151,6 @@ export const toGapLabel = (fromDay: string, toDay: string): string => {
 
 export const toWeekRuleLabel = (isoDay: string): string => `KW ${isoWeekOf(isoDay)}`;
 
-export const toWeekRange = (fromDay: string, toDay: string): string =>
-  `${Number(fromDay.slice(8, 10))}.${Number(fromDay.slice(5, 7))}.–${Number(toDay.slice(8, 10))}.${Number(toDay.slice(5, 7))}.`;
-
 export const toDayMonth = dayMonth;
 
 export const weekdayShortOf = (isoDay: string): string =>
@@ -224,10 +221,32 @@ export const toLineSpoken = (
   venue: string | null,
 ): string => [title, kindLabel, when, venue].filter((part) => part !== null).join(', ');
 
-export const toDayCellSpoken = (isoDay: string, count: number, owed: boolean): string => {
-  const entries = count === 0 ? 'keine Termine' : count === 1 ? 'ein Termin' : `${count} Termine`;
+export const USUAL_TITLE = 'Übliche Trainingszeit';
+export const USUAL_PLAN_LABEL = 'Planen';
 
-  return `${toDayLongLabel(isoDay)}, ${entries}${owed ? ', Zusage fehlt' : ''}`;
+export const toDayCellSpoken = (
+  isoDay: string,
+  count: number,
+  owed: boolean,
+  usualCount: number,
+): string => {
+  const entries = count === 0 ? 'keine Termine' : count === 1 ? 'ein Termin' : `${count} Termine`;
+  const usual = usualCount === 0 ? '' : ', übliche Trainingszeit';
+
+  return `${toDayLongLabel(isoDay)}, ${entries}${owed ? ', Zusage fehlt' : ''}${usual}`;
+};
+
+export const toUsualSpoken = (
+  groupName: string,
+  from: string,
+  to: string,
+  venue: string | null,
+  mayPlan: boolean,
+): string => {
+  const place = venue === null ? '' : `, ${venue}`;
+  const plan = mayPlan ? '. Als Training planen' : '';
+
+  return `${USUAL_TITLE} ${groupName}, ${from} bis ${to} Uhr${place}, kein fester Termin${plan}`;
 };
 
 export const toHoursDayLabel = (isoDay: string, count: number): string => {

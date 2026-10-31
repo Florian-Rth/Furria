@@ -12,9 +12,8 @@ import {
   toNoMembersLine,
 } from '@/features/group-detail/group-detail-labels';
 import type { GroupTone } from '@/features/groups/group-identity';
-import { GROUP_SECTION_TITLES, toGroupPeopleNote } from '@/lib/group-sections';
+import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import type { HubPerson } from '../hub-people';
-import { countGroupAdmins } from '../hub-people';
 import { HubPersonTile } from './HubPersonTile';
 
 const GRID_SPACING = { xs: 1.75, desktop: 2.5 };
@@ -74,12 +73,7 @@ export const HubPeoplePanel: FC<HubPeoplePanelProps> = ({
   );
 
   return (
-    <KkPanelSection
-      title={GROUP_SECTION_TITLES.members}
-      groupTone={tone}
-      action={action}
-      description={toGroupPeopleNote(people.length, countGroupAdmins(people))}
-    >
+    <KkPanelSection title={GROUP_SECTION_TITLES.members} groupTone={tone} action={action}>
       <KkPanel variant="block">{body}</KkPanel>
     </KkPanelSection>
   );

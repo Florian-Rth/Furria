@@ -12,6 +12,7 @@ export interface KkViewerItem {
   key: string;
   alt: string;
   image: KkImageSource | null;
+  thumb?: string;
   state?: KkViewerItemState;
   size?: KkSize;
   caption?: string;

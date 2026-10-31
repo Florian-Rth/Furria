@@ -24,13 +24,14 @@ export const MoreBody: FC = () => {
   );
 
   const profilePanel = isManagingLogin ? null : <MoreProfilePanel />;
+  const personlessSignOut = isManagingLogin ? <AppSignOutButton /> : null;
 
   return (
     <KkPanelStack>
       {profilePanel}
       <MoreSectionPanel title={MORE_PANEL_TITLES.gallery} sections={gallerySections} />
       {managePanel}
-      <AppSignOutButton />
+      {personlessSignOut}
     </KkPanelStack>
   );
 };

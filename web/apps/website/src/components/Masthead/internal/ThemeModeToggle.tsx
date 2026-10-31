@@ -1,10 +1,10 @@
+import { KkSunMoonMorphIcon } from '@furria/ui/KkSunMoonMorphIcon';
+import { useKkModeTransition } from '@furria/ui/use-kk-mode-transition';
 import IconButton from '@mui/material/IconButton';
 import type { FC, MouseEvent } from 'react';
-import { SunMoonMorphIcon } from './SunMoonMorphIcon';
-import { useModeTransition } from './use-mode-transition';
 
 export const ThemeModeToggle: FC = () => {
-  const { resolved, toggle } = useModeTransition();
+  const { resolved, toggle } = useKkModeTransition();
   const dark = resolved === 'dark';
   const label = dark ? 'Zum hellen Design wechseln' : 'Zum dunklen Design wechseln';
 
@@ -14,7 +14,7 @@ export const ThemeModeToggle: FC = () => {
 
   return (
     <IconButton aria-label={label} onClick={handleClick} sx={{ color: 'text.primary' }}>
-      <SunMoonMorphIcon dark={dark} />
+      <KkSunMoonMorphIcon scheme={resolved} />
     </IconButton>
   );
 };

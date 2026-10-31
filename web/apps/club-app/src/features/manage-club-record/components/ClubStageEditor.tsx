@@ -13,16 +13,12 @@ import { ClubStagePreview } from './ClubStagePreview';
 
 const SAVE_LABEL = 'Speichern';
 const SIZE_SECTION_TITLE = 'Maße';
-const SIZE_SECTION_DESCRIPTION =
-  'Die bespielbare Fläche in Metern, auf den Zentimeter genau. Aufstellungen werden darauf geplant.';
 const WIDTH_LABEL = 'Breite';
 const WIDTH_HINT = 'Von links nach rechts, entlang der Bühnenkante.';
 const DEPTH_LABEL = 'Tiefe';
 const DEPTH_HINT = 'Von der Bühnenkante nach hinten.';
 const METRE_UNIT = 'm';
 const ARTWORK_SECTION_TITLE = 'Bühnenzeichnung';
-const ARTWORK_SECTION_DESCRIPTION =
-  'Optional. Eine SVG-Datei, etwa aus Inkscape. Sie füllt die ganze Bühnenfläche, die Bühnenkante liegt unten.';
 const PREVIEW_PENDING_NOTE = 'Die Vorschau erscheint, sobald Breite und Tiefe stimmen.';
 const DISTORTED_NOTE =
   'Die Zeichnung hat ein anderes Seitenverhältnis als die Bühne und wird verzerrt dargestellt.';
@@ -103,10 +99,10 @@ export const ClubStageEditor: FC<ClubStageEditorProps> = ({ record }) => {
         },
       }}
     >
-      <KkFormSection title={SIZE_SECTION_TITLE} description={SIZE_SECTION_DESCRIPTION}>
+      <KkFormSection title={SIZE_SECTION_TITLE}>
         <KkFormPair start={widthField} end={depthField} phone="side" />
       </KkFormSection>
-      <KkFormSection title={ARTWORK_SECTION_TITLE} description={ARTWORK_SECTION_DESCRIPTION}>
+      <KkFormSection title={ARTWORK_SECTION_TITLE}>
         <ClubStageArtworkField
           hasArtwork={hasArtwork}
           rejection={control.artworkRejection}

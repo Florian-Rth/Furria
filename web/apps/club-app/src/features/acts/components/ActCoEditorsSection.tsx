@@ -1,16 +1,10 @@
 import { KkChoiceChips } from '@furria/ui/KkChoiceChips';
-import { KkMeta } from '@furria/ui/KkMeta';
 import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import {
-  CO_EDITOR_GRANT_LABEL,
-  CO_EDITORS_EMPTY,
-  CO_EDITORS_NOTE,
-  CO_EDITORS_TITLE,
-} from '../act-page-copy';
+import { CO_EDITOR_GRANT_LABEL, CO_EDITORS_EMPTY, CO_EDITORS_TITLE } from '../act-page-copy';
 import { useActCoEditors } from '../hooks/use-act-co-editors';
 import type { ActStudioResponse } from '../schemas';
 import { ActCoEditorRow } from './ActCoEditorRow';
@@ -40,10 +34,9 @@ export const ActCoEditorsSection: FC<ActCoEditorsSectionProps> = ({ page }) => {
         onChange={coEditors.grant}
       />
     );
-  const meta = <KkMeta>{String(rows.length)}</KkMeta>;
 
   return (
-    <KkPanelSection title={CO_EDITORS_TITLE} meta={meta} description={CO_EDITORS_NOTE}>
+    <KkPanelSection title={CO_EDITORS_TITLE}>
       <Stack sx={{ gap: 1.5, minWidth: 0 }}>
         {list}
         {grant}

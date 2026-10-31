@@ -7,8 +7,6 @@ import type { VenueEditorControl } from '../hooks/use-venue-editor';
 import { VenueOpeningSlotFields } from './VenueOpeningSlotFields';
 
 const SECTION_TITLE = 'Öffnungszeiten';
-const SECTION_DESCRIPTION =
-  'Für Orte mit Kartenvorverkauf: Die Website zeigt die Zeiten bei jeder Veranstaltung, die hier Karten verkauft. Mehrere Zeiten an einem Tag sind möglich, etwa 9–12 und 14–18 Uhr.';
 const ADD_LABEL = 'Zeit hinzufügen';
 const ADD_ICON = <KkIcon name="add" size="small" />;
 
@@ -22,7 +20,7 @@ export const VenueOpeningHoursSection: FC<VenueOpeningHoursSectionProps> = ({ co
   ));
 
   return (
-    <KkFormSection title={SECTION_TITLE} description={SECTION_DESCRIPTION}>
+    <KkFormSection title={SECTION_TITLE}>
       {slots}
       <Stack direction="row">
         <KkButton

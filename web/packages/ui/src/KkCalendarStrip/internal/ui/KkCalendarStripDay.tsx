@@ -9,6 +9,7 @@ import { goldInkOf } from '../../../internal/gold-ink';
 import { groupToneFieldScheme } from '../../../internal/group-tone';
 import { inkWash } from '../../../internal/ink-wash';
 import { applyScheme, schemeFill } from '../../../internal/scheme-paint';
+import { usualRingPaint } from '../../../internal/usual-ring';
 import { kkTokens } from '../../../tokens';
 import { KK_CALENDAR_STICKY } from '../../calendar-sticky';
 import type { KkCalendarDayData, KkCalendarMark } from '../../calendar-strip-types';
@@ -77,6 +78,17 @@ const markPaint =
       : applyScheme(theme, groupToneFieldScheme(mark))),
   });
 
+const usualPaint =
+  (mark: KkCalendarMark) =>
+  (theme: Theme): CSSObject => ({
+    width: DOT,
+    height: DOT,
+    borderRadius: '50%',
+    flexShrink: 0,
+    boxSizing: 'border-box',
+    ...usualRingPaint(theme, mark),
+  });
+
 const OWED_PAINT: CSSObject = {
   width: OWED_MARK,
   height: OWED_MARK,
@@ -110,6 +122,9 @@ export const KkCalendarStripDay: FC<KkCalendarStripDayProps> = ({ day, onSelect 
   const marks = day.marks.map((mark, index) => (
     <Box key={`${mark}-${index.toString()}`} component="span" sx={markPaint(mark)} />
   ));
+  const usualMarks = day.usualMarks.map((mark, index) => (
+    <Box key={`usual-${mark}-${index.toString()}`} component="span" sx={usualPaint(mark)} />
+  ));
   const landmark = day.landmark ? <Box aria-hidden component="span" sx={LANDMARK_PAINT} /> : null;
   const outside = day.inMonth ? undefined : true;
 
@@ -138,6 +153,7 @@ export const KkCalendarStripDay: FC<KkCalendarStripDayProps> = ({ day, onSelect 
       >
         {owed}
         {marks}
+        {usualMarks}
       </Stack>
       {landmark}
     </ButtonBase>

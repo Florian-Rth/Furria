@@ -1,6 +1,7 @@
 import ButtonBase from '@mui/material/ButtonBase';
 import type { Theme } from '@mui/material/styles';
 import type { FC } from 'react';
+import type { KkImageSource } from '../../../image-source';
 import { focusRing } from '../../../internal/focus-ring';
 import { KkImage } from '../../../KkImage';
 import { KkPhoto } from '../../../KkPhoto';
@@ -9,6 +10,11 @@ import type { KkViewerItem } from '../../viewer-types';
 
 const FRAME_SIZE = 52;
 const FRAME_SIZES = `${FRAME_SIZE}px`;
+
+const frameImageOf = (image: KkImageSource, thumb: string | undefined): KkImageSource =>
+  thumb === undefined
+    ? { src: image.src, srcSet: image.srcSet, sizes: FRAME_SIZES }
+    : { src: thumb };
 
 const revealCurrent = (node: HTMLButtonElement | null): void => {
   node?.scrollIntoView({ block: 'nearest', inline: 'center' });
@@ -34,14 +40,15 @@ export const KkViewerFilmstripFrame: FC<KkViewerFilmstripFrameProps> = ({
     onShow(index);
   };
 
+  const frameImage = item.image === null ? null : frameImageOf(item.image, item.thumb);
   const thumbnail =
-    item.image === null ? (
+    frameImage === null ? (
       <KkPhoto alt="" fill />
     ) : (
       <KkImage
-        src={item.image.src}
-        srcSet={item.image.srcSet}
-        sizes={FRAME_SIZES}
+        src={frameImage.src}
+        srcSet={frameImage.srcSet}
+        sizes={frameImage.sizes}
         alt=""
         loading="lazy"
         draggable={false}

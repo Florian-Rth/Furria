@@ -10,7 +10,9 @@ import {
   toCalendarVisibility,
   toDefaultVisibility,
   toEndKeptInStep,
+  toEntryDraft,
   toEntryFormValues,
+  toEntryLanding,
   toEntryPayload,
   toParticipationKeptForOwner,
   toToggledParticipation,
@@ -18,7 +20,6 @@ import {
 import type { CalendarEntry, CalendarEntryForm } from '../schemas';
 import { CalendarEntryFormSchema } from '../schemas';
 
-const LANDING_KIND = 'calendar-entry';
 const FIELD_EDIT = { shouldDirty: true, shouldValidate: true } as const;
 
 interface CalendarEntryEditorInput {
@@ -53,14 +54,16 @@ export const useCalendarEntryEditor = ({
   ownerOptions,
 }: CalendarEntryEditorInput): CalendarEntryEditorControl => {
   const [today] = useState(() => new Date());
-  const { day } = useSearch({ strict: false });
+  const search = useSearch({ strict: false });
+  const { day } = search;
+  const draft = toEntryDraft(search);
   const createMutation = useCreateCalendarEntryMutation();
   const updateMutation = useUpdateCalendarEntryMutation();
   const landedDay = useRef(day ?? toIsoDay(today));
 
   const write = useWriteForm({
     schema: CalendarEntryFormSchema,
-    defaults: toEntryFormValues(entry, ownerOptions, day ?? toIsoDay(today)),
+    defaults: toEntryFormValues(entry, ownerOptions, day ?? toIsoDay(today), draft),
     mutate: (submitted) => {
       const payload = toEntryPayload(submitted);
 
@@ -70,11 +73,7 @@ export const useCalendarEntryEditor = ({
         ? createMutation.mutateAsync({ payload })
         : updateMutation.mutateAsync({ calendarEntryId: entry.calendarEntryId, payload });
     },
-    landing: ({ calendarEntryId }) => ({
-      to: '/calendar',
-      search: { day: landedDay.current },
-      mark: { kind: LANDING_KIND, id: calendarEntryId },
-    }),
+    landing: ({ calendarEntryId }) => toEntryLanding(calendarEntryId, landedDay.current, draft),
   });
   const { form, values } = write;
 

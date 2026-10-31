@@ -24,8 +24,8 @@ export type NoContent = z.infer<typeof NoContentSchema>;
 export const MembershipStateSchema = z.enum(['none', 'ended', 'paused', 'active']);
 export type MembershipState = z.infer<typeof MembershipStateSchema>;
 
-export const { MediaUrlSchema, PictureSchema } = createMediaSchemas(apiUrlOf);
-export type { Picture } from '@furria/api-client';
+export const { MediaUrlSchema, PictureSchema, SessionLogoSchema } = createMediaSchemas(apiUrlOf);
+export type { Picture, SessionLogo } from '@furria/api-client';
 
 export const PictureCropSchema = z.object({
   left: z.number(),
@@ -131,6 +131,7 @@ export const MeSchema = z.object({
   isAffiliated: z.boolean(),
   permissionKeys: z.array(z.string()),
   lastSeenAnnouncementAt: z.iso.datetime({ offset: true }).nullable(),
+  welcomeSeenAt: z.iso.datetime({ offset: true }).nullable(),
   appSince: z.iso.date().nullable(),
   passkeys: z.array(MePasskeySchema),
   honours: HonoursSchema,

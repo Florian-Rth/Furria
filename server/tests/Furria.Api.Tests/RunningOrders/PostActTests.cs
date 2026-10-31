@@ -253,6 +253,26 @@ public sealed class PostActTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Should_ReturnForbidden_When_AGroupAdminCreatesAnActWithWishes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(PlannerWithGardeAdmin(_fixture.Today), ct);
+        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+        var gardeId = ctx.Groups.Groups.IdOf(Garde);
+
+        var (response, _) = await PostAsync(
+            admin,
+            "Gardetanz",
+            gardeId,
+            [],
+            [],
+            [Wish(RunningOrderRuleKind.First, RuleStrength.Must)]
+        );
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
     private static Task<TestResult<PostActResponse>> PostAsync(
         HttpClient client,
         string name,

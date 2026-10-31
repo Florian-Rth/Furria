@@ -1,5 +1,6 @@
 using FastEndpoints;
 using Furria.Api.Authorization;
+using Furria.Api.Media;
 using Furria.Application.Authorization;
 using Furria.Application.Club;
 using Furria.Infrastructure.Club;
@@ -39,7 +40,7 @@ public sealed class GetSessionRecords : EndpointWithoutRequest<GetSessionRecords
             StartYear = record.StartYear,
             Number = record.Number,
             Motto = record.Motto,
-            LogoSvg = record.LogoSvg,
+            Logo = SessionLogoEditingDto.From(record.Logo),
         };
 }
 
@@ -58,5 +59,5 @@ public sealed record SessionRecordSummaryDto
 
     public required string? Motto { get; init; }
 
-    public required string? LogoSvg { get; init; }
+    public required SessionLogoEditingDto? Logo { get; init; }
 }

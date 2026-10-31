@@ -34,5 +34,6 @@ export type {
   Picture,
   PublicWebsitePicture,
   PublicWebsitePictures,
+  SessionLogo,
 } from './media-schemas';
 export { createMediaSchemas } from './media-schemas';

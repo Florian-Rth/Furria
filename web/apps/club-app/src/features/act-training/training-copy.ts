@@ -6,13 +6,9 @@ import type { TrainingGap } from './training-gaps';
 
 export const TRAINING_LABEL = 'Training';
 export const TRAININGS_TITLE = 'Trainings';
-export const TRAININGS_NOTE =
-  'Jedes Training fragt die Besetzung. Eine Absage lässt den Platz offen.';
 export const ROLL_PANE_LABEL = 'Wer ist da';
 export const ROLL_GRID_TITLE = 'Besetzung';
 export const ROLL_GRID_LABEL = 'Besetzung beim Training';
-export const ROLL_MARK_NOTE = 'Tippe auf einen Namen, um ihn als da oder nicht da einzutragen.';
-export const ROLL_READ_NOTE = 'Eintragen kann die Leitung der Gruppe.';
 export const ROLL_TRAIL_TITLE = 'Verlauf';
 export const ROLL_UNDO = 'Rückgängig';
 export const ROLL_MAYBE_BADGE = '?';

@@ -1,5 +1,4 @@
 import { KkButton } from '@furria/ui/KkButton';
-import { KkMeta } from '@furria/ui/KkMeta';
 import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
@@ -9,7 +8,6 @@ import { useChoreographyVersions } from '../hooks/use-choreography-versions';
 import {
   VERSIONS_EMPTY,
   VERSIONS_FAILED,
-  VERSIONS_NOTE,
   VERSIONS_OLDER,
   VERSIONS_OLDER_FAILED,
   VERSIONS_OLDER_RETRY,
@@ -37,7 +35,6 @@ export const ChoreographyVersionsSection: FC<ChoreographyVersionsSectionProps> =
   const empty =
     versions.state === 'ready' && rows.length === 0 ? <KkNote>{VERSIONS_EMPTY}</KkNote> : null;
   const list = rows.length === 0 ? null : <KkPanel>{rows}</KkPanel>;
-  const meta = <KkMeta>{String(versions.total)}</KkMeta>;
   const olderFailed = versions.olderFailed ? <KkNote>{VERSIONS_OLDER_FAILED}</KkNote> : null;
   const olderLabel = versions.olderFailed ? VERSIONS_OLDER_RETRY : VERSIONS_OLDER;
   const older = versions.hasOlder ? (
@@ -52,7 +49,7 @@ export const ChoreographyVersionsSection: FC<ChoreographyVersionsSectionProps> =
   ) : null;
 
   return (
-    <KkPanelSection title={title} meta={meta} description={VERSIONS_NOTE}>
+    <KkPanelSection title={title}>
       {failed}
       {empty}
       {list}

@@ -12,6 +12,18 @@ export const CalendarSearchSchema = AppSearchSchema.extend({
 });
 export type CalendarSearch = z.infer<typeof CalendarSearchSchema>;
 
+const CLOCK_PATTERN = /^([01]\d|2[0-3]):[0-5]\d$/;
+
+export const CalendarEntryDraftSearchSchema = CalendarSearchSchema.extend({
+  group: z.number().int().positive().optional().catch(undefined),
+  kind: CalendarEntryKindSchema.optional().catch(undefined),
+  start: z.string().regex(CLOCK_PATTERN).optional().catch(undefined),
+  end: z.string().regex(CLOCK_PATTERN).optional().catch(undefined),
+  venue: z.number().int().positive().optional().catch(undefined),
+  back: z.literal('group').optional().catch(undefined),
+});
+export type CalendarEntryDraftSearch = z.infer<typeof CalendarEntryDraftSearchSchema>;
+
 export const CalendarEntryVisibilitySchema = z.enum(['group', 'club', 'public']);
 export type CalendarEntryVisibility = z.infer<typeof CalendarEntryVisibilitySchema>;
 
@@ -55,7 +67,22 @@ export const CalendarEntrySchema = z.object({
 });
 export type CalendarEntry = z.infer<typeof CalendarEntrySchema>;
 
-export const CalendarResponseSchema = z.object({ entries: z.array(CalendarEntrySchema) });
+export const UsualTrainingSchema = z.object({
+  usualTrainingTimeId: z.number().int(),
+  groupId: z.number().int(),
+  groupName: z.string(),
+  groupTone: GroupToneSchema.nullable(),
+  startsAt: z.iso.datetime({ offset: true }),
+  endsAt: z.iso.datetime({ offset: true }),
+  venueId: z.number().int().nullable(),
+  venueName: z.string().nullable(),
+});
+export type UsualTraining = z.infer<typeof UsualTrainingSchema>;
+
+export const CalendarResponseSchema = z.object({
+  entries: z.array(CalendarEntrySchema),
+  usualTrainings: z.array(UsualTrainingSchema),
+});
 export type CalendarResponse = z.infer<typeof CalendarResponseSchema>;
 
 export const CalendarEntryResponseSchema = z.object({ entry: CalendarEntrySchema });

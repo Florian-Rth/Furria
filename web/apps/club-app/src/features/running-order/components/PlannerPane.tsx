@@ -1,5 +1,6 @@
 import type { KkIconTab } from '@furria/ui/KkIconTabs';
 import { KkIconTabs } from '@furria/ui/KkIconTabs';
+import { KkNote } from '@furria/ui/KkNote';
 import { KkPaneLayout } from '@furria/ui/KkPaneLayout';
 import type { FC, ReactNode } from 'react';
 import { usePlanner } from '../planner-context';
@@ -47,17 +48,17 @@ export const PlannerPane: FC = () => {
 
   if (timeline !== null) {
     const name = `${timeline.person.firstName} ${timeline.person.lastName}`;
-    const meta = toPersonFact(timeline);
+    const fact = toPersonFact(timeline);
 
     return (
       <KkPaneLayout.Pane label={name}>
         <KkPaneLayout.PaneHead
           title={name}
-          meta={meta}
           closeLabel={CLOSE_LABEL}
           onClose={planner.closePerson}
         />
         <KkPaneLayout.PaneBody key={`person:${timeline.person.personId}`}>
+          <KkNote>{fact}</KkNote>
           <PlannerPersonTimeline timeline={timeline} />
         </KkPaneLayout.PaneBody>
       </KkPaneLayout.Pane>

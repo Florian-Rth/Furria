@@ -120,6 +120,13 @@ export const EndRoleHoldingFormSchema = z.object({
 });
 export type EndRoleHoldingForm = z.infer<typeof EndRoleHoldingFormSchema>;
 
+export const CorrectRoleHoldingFormSchema = z.object({
+  roleHoldingId: z.number().int().positive(),
+  sinceOn: z.iso.date(),
+  untilOn: z.iso.date().nullable(),
+});
+export type CorrectRoleHoldingForm = z.infer<typeof CorrectRoleHoldingFormSchema>;
+
 export const RoleHoldingAddFormSchema = z.object({
   person: requiredPerson('Wähle die Person, die die Rolle innehat.'),
   sinceOn: requiredDay('Der erste Tag fehlt.'),
@@ -128,3 +135,13 @@ export const RoleHoldingAddFormSchema = z.object({
 export const RoleHoldingEndFormSchema = z.object({
   endedOn: requiredDay('Der letzte Tag fehlt.'),
 });
+
+export const RoleHoldingCorrectFormSchema = z
+  .object({
+    sinceOn: requiredDay('Der erste Tag fehlt.'),
+    untilOn: z.iso.date().nullable(),
+  })
+  .refine((form) => form.untilOn === null || form.untilOn >= form.sinceOn, {
+    message: 'Der letzte Tag liegt vor dem ersten.',
+    path: ['untilOn'],
+  });

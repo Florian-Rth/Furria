@@ -71,7 +71,7 @@ export const RolesSide: FC<RolesSideProps> = ({
           surface="paper"
           actions={openPage}
           onAddHolder={form.openHolding}
-          onEndHolder={form.endHolding}
+          onHolderTask={form.takeUpHolding}
         />
       </KkBottomDrawer>
     );
@@ -96,7 +96,7 @@ export const RolesSide: FC<RolesSideProps> = ({
         surface="paper"
         actions={actions}
         onAddHolder={form.openHolding}
-        onEndHolder={form.endHolding}
+        onHolderTask={form.takeUpHolding}
       />
     </KkMasterDetail.Detail>
   );

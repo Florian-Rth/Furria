@@ -1,29 +1,30 @@
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import type { KkImageSource } from '../../../image-source';
 import { inkWashSurface } from '../../../internal/ink-wash';
-import { logoInk } from '../../../internal/logo-ink';
 import { KkImage } from '../../../KkImage';
 import { KkPhoto } from '../../../KkPhoto';
-import { emblemTile } from './emblem-tile';
+import { EMBLEM_SIZES, emblemTile } from './emblem-tile';
+
+const EMBLEM_FILL = { width: '100%', height: '100%', objectFit: 'contain' } as const;
 
 interface KkSessionRowEmblemProps {
-  source: string | null;
+  image: KkImageSource | null;
 }
 
-export const KkSessionRowEmblem: FC<KkSessionRowEmblemProps> = ({ source }) => {
+export const KkSessionRowEmblem: FC<KkSessionRowEmblemProps> = ({ image }) => {
   const content =
-    source === null ? (
+    image === null ? (
       <KkPhoto alt="" fill />
     ) : (
       <KkImage
-        src={source}
+        src={image.src}
+        srcSet={image.srcSet}
+        sizes={image.sizes ?? EMBLEM_SIZES}
         alt=""
-        sx={(theme) => ({
-          width: '100%',
-          height: '100%',
-          objectFit: 'contain',
-          ...logoInk(theme),
-        })}
+        loading="lazy"
+        decoding="async"
+        sx={EMBLEM_FILL}
       />
     );
 

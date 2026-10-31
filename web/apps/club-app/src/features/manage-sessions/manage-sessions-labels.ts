@@ -4,6 +4,7 @@ import { relevantSessionYear } from '@/lib/club';
 import { formatSessionLabel, formatSessionNumber } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
 import type { SessionRecordSummary } from './schemas';
+import type { SessionLogoPreview } from './session-logo-draft';
 
 const PART_SEPARATOR = ' · ';
 const QUOTE_OPEN = '„';
@@ -169,7 +170,7 @@ export const toSessionFacts = (record: SessionRecordSummary): KkConfirmFact[] =>
   { label: SESSION_SPAN_LABEL, value: toSessionSeasonLabel(record.startYear) },
   { label: 'Sessionsnummer', value: toSessionNumberLabel(record.number) ?? '—' },
   { label: 'Motto', value: toSessionMottoLine(record.motto) ?? '—' },
-  { label: 'Sessionslogo', value: written(record.logoSvg) === null ? '—' : 'hinterlegt' },
+  { label: 'Sessionslogo', value: record.logo === null ? '—' : 'hinterlegt' },
 ];
 
 export const toSessionCreatedMessage = (startYear: number): string =>
@@ -185,10 +186,22 @@ export const toSessionLogoLabel = (seasonLabel: string): string => `Sessionslogo
 
 export const LOGO_FIELD_LABEL = 'Sessionslogo';
 export const LOGO_REMOVE_LABEL = 'Sessionslogo entfernen';
-export const LOGO_PRESENT_LINE = 'So erscheint es neben der Session.';
 
-const LOGO_DROP_HINT = 'Tippen, um eine SVG-Datei auszuwählen.';
-const LOGO_PICK_HINT = 'Tippen, um das Sessionslogo durch ein anderes SVG zu ersetzen.';
+export const LOGO_PREVIEW_LINES: Record<SessionLogoPreview['kind'], string | null> = {
+  none: null,
+  staged: 'Wird beim Speichern hochgeladen.',
+  stored: 'So erscheint es neben der Session.',
+  developing: 'Das Sessionslogo wird gerade aufbereitet.',
+  failed: 'Das Sessionslogo ließ sich nicht aufbereiten. Lade es bitte noch einmal hoch.',
+};
+
+const LOGO_NOT_SENT_LEAD = 'Der Sessionseintrag ist gespeichert, das Sessionslogo aber nicht.';
+
+export const toLogoNotSentMessage = (reason: string): string => `${LOGO_NOT_SENT_LEAD} ${reason}`;
+
+const LOGO_DROP_HINT =
+  'Tippen, um ein Bild auszuwählen – am besten PNG oder WebP mit durchsichtigem Hintergrund.';
+const LOGO_PICK_HINT = 'Tippen, um das Sessionslogo durch ein anderes Bild zu ersetzen.';
 const LOGO_RELEASE_HINT = 'Zum Hochladen loslassen.';
 
 export const LOGO_DRAG_HINT = 'Oder Datei hierher ziehen.';

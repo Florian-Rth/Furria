@@ -13,5 +13,7 @@ public sealed class Account : IdentityUser<int>
 
     public DateTimeOffset? LastSeenAnnouncementAt { get; set; }
 
+    public DateTimeOffset? WelcomeSeenAt { get; set; }
+
     public Person? Person { get; set; }
 }

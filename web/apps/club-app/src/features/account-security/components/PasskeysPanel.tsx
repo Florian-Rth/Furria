@@ -9,8 +9,6 @@ import { usePasskeyAddition } from '../hooks/use-passkey-addition';
 import { PasskeyRow } from './PasskeyRow';
 
 const TITLE = 'Passkeys';
-const DESCRIPTION =
-  'Mit einem Passkey meldest du dich ohne Passwort an – per Fingerabdruck, Gesicht oder Displaysperre deines Geräts. Dein Passwort gilt weiter.';
 const ADD_PILL_LABEL = 'Passkey';
 const ADD_ACTION_LABEL = 'Passkey hinzufügen';
 const NONE_YET = 'Noch kein Passkey eingerichtet.';
@@ -41,7 +39,7 @@ export const PasskeysPanel: FC<PasskeysPanelProps> = ({ passkeys, highlightedKey
   const list = passkeys.length === 0 ? <KkNote>{NONE_YET}</KkNote> : <KkPanel>{rows}</KkPanel>;
 
   return (
-    <KkPanelSection title={TITLE} description={DESCRIPTION} action={action}>
+    <KkPanelSection title={TITLE} action={action}>
       {rejection}
       {list}
       {unavailableNote}

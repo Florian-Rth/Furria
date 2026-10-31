@@ -12,8 +12,6 @@ import {
 } from '../account-security-labels';
 
 const TITLE = 'Anmelde-E-Mail';
-const DESCRIPTION =
-  'Mit dieser Adresse meldest du dich an. Hierhin schicken wir auch jeden Hinweis zu deinem Account.';
 const EMAIL_LABEL = 'E-Mail';
 const EDIT_LABEL = 'Bearbeiten';
 
@@ -39,7 +37,7 @@ export const LoginEmailPanel: FC<LoginEmailPanelProps> = ({ loginEmail, highligh
   const isHighlighted = highlightedKey === LANDING_KEY;
 
   return (
-    <KkPanelSection title={TITLE} action={EDIT_ACTION} description={DESCRIPTION}>
+    <KkPanelSection title={TITLE} action={EDIT_ACTION}>
       <KkPanel highlight={isHighlighted} landing={LANDING_KEY}>
         <KkFieldRow label={EMAIL_LABEL} value={loginEmail} />
       </KkPanel>

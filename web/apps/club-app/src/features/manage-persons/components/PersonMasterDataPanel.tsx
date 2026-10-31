@@ -1,4 +1,5 @@
 import { KkFieldRow } from '@furria/ui/KkFieldRow';
+import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
@@ -38,11 +39,12 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({
 }) => {
   const visibility = useContactVisibilitySwitch(person);
   const me = useMeQuery();
-  const contactChangeNote = toContactChangeNote(
+  const contactChange = toContactChangeNote(
     person.contactChange,
     me.data?.person?.id ?? null,
     new Date(),
   );
+  const contactChangeNote = contactChange === undefined ? null : <KkNote>{contactChange}</KkNote>;
   const address = formatAddress(person.street, person.zip, person.city);
   const landingKey = toLandingKey('person', person.personId);
 
@@ -56,11 +58,8 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({
   };
 
   return (
-    <KkPanelSection
-      title={PERSON_SECTION_TITLES.masterData}
-      action={action}
-      description={contactChangeNote}
-    >
+    <KkPanelSection title={PERSON_SECTION_TITLES.masterData} action={action}>
+      {contactChangeNote}
       <KkPanel highlight={highlightedKey === landingKey} landing={landingKey}>
         <KkFieldRow label={NAME_LABEL} value={`${person.firstName} ${person.lastName}`} />
         <KkFieldRow label={EMAIL_LABEL} value={person.email ?? MISSING_VALUE} />

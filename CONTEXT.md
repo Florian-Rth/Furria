@@ -31,7 +31,8 @@ English rendering anywhere else, so two translations never drift apart.
 | group profile | Steckbrief | — |
 | founded year | Gründungsjahr | `FoundedYear` |
 | group tone | Gruppenfarbe | `GroupTone` |
-| training rhythm / training slot | Trainingsrhythmus / Trainingsslot | `GroupTrainingSlot` |
+| usual training time | Übliche Trainingszeit | `UsualTrainingTime` |
+| training (planned) | Training | `CalendarEntry` of kind `Training` |
 | anniversary | Jubiläum | — (derived) |
 | group membership | Zugehörigkeit | `GroupMembership` |
 | group admin / function | Gruppen-Admin / Funktion | `GroupAdmin`, `Function` |
@@ -197,19 +198,15 @@ exceptions, not the default.
 Since CA-P6 a group also carries a **group profile it maintains itself**
 ([ADR-0014](docs/adr/0014-the-group-hub-writes-its-own-record.md)): its **group kind**, a
 **founded year** — a year, never a date, because nobody remembers the day the beer guard
-formed — a **group tone** and a **training rhythm**, a list of **training slots**
-(`GroupTrainingSlot`), each `(weekday, time, duration, venue)`. The **anniversary** is *derived*
+formed — a **group tone** and its **usual training times** (`UsualTrainingTime`), each
+`(weekday, time, duration, venue)`. The **anniversary** is *derived*
 from the founded year at every fifth year and never stored; a club that celebrates a 13th
 anniversary celebrates nothing. The group tone comes from an identity palette that shares no
 value with the status tones (green = ok/paid, gold = warning, red = action), so a calendar tinted
-by group never accidentally says *paid*. The training rhythm is a **stated habit, not a rule**:
-it is what the group says it does, the calendar holds what actually happens, and the two are
-allowed to disagree — generating trainings from it writes ordinary **calendar entries** and
-nothing on them remembers the batch.
-_UI copy_: Gruppe; Steckbrief, Gründungsjahr, Gruppenfarbe, Trainingsrhythmus, Trainingsslot,
-Jubiläum
+by group never accidentally says *paid*.
+_UI copy_: Gruppe; Steckbrief, Gründungsjahr, Gruppenfarbe, Übliche Trainingszeit, Jubiläum
 _Avoid_: team, squad, gating anything on membership by default, recurring appointment /
-recurrence rule (for the training rhythm), storing the anniversary, age group (ruled out
+recurrence rule (for the usual training time), storing the anniversary, age group (ruled out
 2026-09-21 — the name and the description say it, and it would lie about the children's guard's
 43-year-old trainer)
 
@@ -291,6 +288,9 @@ _Avoid_: membership (alone — that word is the club's, not a group's)
 **Role holding** (`RoleHolding`):
 A person's **dated period** in a role — the same shape as a group membership, ended and never
 deleted. The **holders** of a role are the open ones (pinned 2026-09-10, CA-P1 fresh shaping).
+Both dates stay correctable after the end, an ended holding included: a correction may move either
+date or clear the end, never overlaps another holding of the same person in the role, and lifts her
+archive when the corrected period still runs (ruled 2026-10-31).
 _UI copy_: Inhaberschaft; *Inhaberin seit* / *Inhaber seit*
 _Avoid_: assignment, "in office since"
 
@@ -643,6 +643,20 @@ _UI copy_: Start (nav, the first default destination since L3); tiles KALENDER �
 Zusage · Vielleicht · Absage, always in this order
 _Avoid_: dashboard, feed, inbox, „Termin", „Programm"
 
+**Welcome**:
+The full-screen moment a person sees the first time she signs in to the club app — once per
+account, on whichever device comes first (`Account.WelcomeSeenAt`, marked when it starts to play,
+`PUT auth/me/welcome-seen`). Her own club poster prints itself, one ink at a time: the year reel
+runs from 1971 to the year she joined, her first name lands letter by letter, her session and up to
+two functions are billed beneath, and the club call „Groß – Furria!" closes it with confetti
+and waits on its poster until she taps „Los geht’s“; then the inks lift off and the screen she
+came for prints in. It fits the screen without scrolling, plays in full, can be skipped,
+and shows as a still poster under reduced motion. Managing logins never see it. Replayable from
+the lab with sample cases (`/lab/welcome/$case`) (built 2026-10-21).
+_UI copy_: *Seit 1971 feiern wir.*; *{Jahr} kamst du dazu.* / *Von Anfang an mit dir.* /
+*Jetzt kommst du dazu.*; *Deine 12. Session* / *Deine erste Session*; *Groß – Furria!*; Überspringen; Los geht’s
+_Avoid_: onboarding, tour, intro, tutorial
+
 **Her occasions**:
 Her own birthday and the anniversary of her joining are hers to see on Start; nobody else's
 occasions are shown anywhere. A round join anniversary (a multiple of 5 or 11 years) stays on
@@ -751,6 +765,10 @@ one, absent when it does not, and never invented. It stands in wherever a season
 staged — past seasons, lists, the public website. Renamed from **session signet** on 2026-09-20
 (CA-P5 shaping): nobody outside design knows what a signet is, and the "session" prefix already
 keeps it clear of the club's own logo, which is all the old name was protecting.
+Since 2026-10-31 it is an uploaded **picture**, a **media item** the session record owns — PNG,
+WebP, JPEG or HEIC, never SVG, never cropped (it keeps its own shape), and a transparent
+background stays transparent. It is shown as it is: the old SVG recolouring for dark mode is gone.
+It is set and replaced in *club management* with the rest of the record and goes with the record.
 _UI copy_: Sessionslogo
 _Avoid_: **signet** (retired 2026-09-20), logo (alone — that is the club's), artwork (in copy),
 animating it, using it for the current season's opener
@@ -819,9 +837,16 @@ ended one. An *Ablaufpunkt* or an act without a kind is **timeless**: it belongs
 is reused until archived. Once its session has ended (the day after Ash Wednesday) an act is
 **read-only** — no edit, no archiving — and its **cast is frozen** as it stood on Ash Wednesday, so
 later group changes never rewrite who danced that season (built 2026-10-29, RFC 0001 phase 1).
-_UI copy_: Auftritt; kinds Tanz, Rede, Musik, Show, Ablaufpunkt
-_Avoid_: **Nummer** (retired 2026-10-22), number, routine, piece (as an entity name); deriving the
-training from the group kind
+A group's acts read as its **history per session** — newest session first, most groups keep one
+act a session; an archived act stays in that history for those who manage the group (ruled
+2026-10-31, Auftritte rework).
+_UI copy_: **Sessionsauftritt** (the act; renamed from *Auftritt* 2026-10-31 so the per-session
+nature is in the name — *Auftritt* alone now means the act at one evening, see **Appearance**);
+*Sessionsauftritte* (the group's history, the planners' catalogue); kinds Tanz, Rede, Musik,
+Show, Ablaufpunkt
+_Avoid_: **Nummer** (retired 2026-10-22), number, routine, piece (as an entity name); bare
+*Auftritt* for the per-session act; *Programm*, *Beitrag* (clashes with *Mitgliedsbeitrag*);
+deriving the training from the group kind
 
 **Appearance** (`Appearance`):
 One **act** at one **calendar entry** — the gala evening's guard dance. It inherits the act's cast
@@ -995,6 +1020,26 @@ Gruppen; Zu-/Absage
 _Avoid_: **appointment**, **group appointment**, schedule, calling it an event, collapsing
 participating groups into the owner, participant (that is one person's attendance response),
 guest group
+
+**Usual training time** (`UsualTrainingTime`):
+What a group says it usually does — optional, any number of `(weekday, time, duration, venue)`.
+It is a **stated habit, shown, never binding** (ruled 2026-10-31,
+[ADR-0033](docs/adr/0033-a-usual-training-time-is-shown-never-generated.md)): it writes no row per
+date, nobody answers it and it summons nobody. Every calendar shows the usual training times of every
+running group (club scope included, a group filter narrows them) from today on as a muted, dashed
+hint on each matching day — never as a calendar entry — and drops one on a day its group has a
+**training** of its own. Only the group's admins may plan a training from the hint.
+_UI copy_: Übliche Trainingszeit
+_Avoid_: training rhythm, training slot (retired 2026-10-31), generating trainings from it
+
+**Training** (planned):
+A concrete, dated **calendar entry** of kind *Training* that a group plans one at a time — from its
+hub (*Training planen*, prefilled from the next usual training time) or from a usual-time hint in
+the calendar (prefilled with that day). It is a real appointment: solid in the calendar, it asks
+the cast ([ADR-0032](docs/adr/0032-every-training-asks-its-cast.md)) and carries the act training
+attendance. A training needs no usual training time and may differ from it.
+_UI copy_: Training, Training planen
+_Avoid_: generated training, training batch
 
 **Venue** (`Venue`):
 One of the few places the club names — the sports hall, the clubroom, the storeroom, and the
@@ -1216,8 +1261,8 @@ _Avoid_: media library, file store, uploads (as a noun)
 **Media item** (`MediaItem`):
 One uploaded photo or video together with everything derived from it. It has **exactly one
 owner** — a person (her **portrait**), a group (its **group picture**), a **news post** (its
-**news picture**), an **event** (its **event picture**), the **gallery** or the website (a
-**website picture**). Using
+**news picture**), an **event** (its **event picture**), a **session record** (its **session
+logo**), the **gallery** or the website (a **website picture**). Using
 one owner's picture for another *copies* it into a new media item, so a takedown or deletion in
 one use never breaks another.
 _Avoid_: file, asset, attachment, media (as a countable noun)

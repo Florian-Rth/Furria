@@ -16,6 +16,8 @@ public sealed record AccountDetails
 
     public required DateTimeOffset? LastSeenAnnouncementAt { get; init; }
 
+    public required DateTimeOffset? WelcomeSeenAt { get; init; }
+
     public required DateOnly? AppSince { get; init; }
 
     public required IReadOnlyList<PasskeyDetails> Passkeys { get; init; }

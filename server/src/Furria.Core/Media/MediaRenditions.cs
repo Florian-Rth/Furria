@@ -9,7 +9,7 @@ public static class MediaRenditions
     private const string M4aContentType = "audio/mp4";
     private const string JsonContentType = "application/json";
 
-    public const int SmallLongEdge = 400;
+    public const int SmallLongEdge = 640;
     public const int MediumLongEdge = 1600;
     public const int LargeLongEdge = 2560;
     public const int VideoLongEdge = 1920;

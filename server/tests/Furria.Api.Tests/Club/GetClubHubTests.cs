@@ -1,6 +1,9 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Club;
+using Furria.Api.Media;
+using Furria.Api.Tests.Management;
+using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -97,7 +100,70 @@ public sealed class GetClubHubTests : IClassFixture<ApiTestFixture>
                 Assert.Equal(2026, result.Session.StartYear);
                 Assert.Equal(RecordedMotto, result.Session.Motto);
                 Assert.Null(result.Session.Number);
-                Assert.Null(result.Session.LogoSvg);
+                Assert.Null(result.Session.Logo);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CarryTheLogoSourcesAndShape_When_TheSessionsLogoIsRendered()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            InsideTheSession,
+            async () =>
+            {
+                var ctx = await BuildMemberClubAsync(
+                    club => club.AddSession("laufende", 2026, motto: RecordedMotto),
+                    ct
+                );
+                var sessionId = ctx.Club.Sessions.IdOf("laufende");
+                var logoId = await SessionLogoSteps.RenderedAsync(
+                    _fixture,
+                    await ctx.Identity.ManagingLoginClientAsync(ct),
+                    sessionId,
+                    ct
+                );
+
+                var result = await ReadAsync(ctx, ct);
+
+                var logo = Assert.IsType<SessionLogoDto>(result.Session.Logo);
+                Assert.StartsWith(
+                    _fixture.SignedMediaUrl(
+                        logoId,
+                        MediaOwner.Session(sessionId),
+                        MediaRendition.Medium
+                    ),
+                    logo.Picture.MediumUrl
+                );
+                Assert.Equal(0.8, logo.Aspect, 6);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CarryNoLogo_When_TheSessionsLogoIsStillDeveloping()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            InsideTheSession,
+            async () =>
+            {
+                var ctx = await BuildMemberClubAsync(
+                    club => club.AddSession("laufende", 2026, motto: RecordedMotto),
+                    ct
+                );
+                await SessionLogoSteps.UploadAsync(
+                    await ctx.Identity.ManagingLoginClientAsync(ct),
+                    ctx.Club.Sessions.IdOf("laufende"),
+                    ct
+                );
+
+                var result = await ReadAsync(ctx, ct);
+
+                Assert.Null(result.Session.Logo);
             }
         );
     }
@@ -120,7 +186,7 @@ public sealed class GetClubHubTests : IClassFixture<ApiTestFixture>
                 Assert.Equal("2027/28", result.Session.Label);
                 Assert.Null(result.Session.Motto);
                 Assert.Null(result.Session.Number);
-                Assert.Null(result.Session.LogoSvg);
+                Assert.Null(result.Session.Logo);
             }
         );
     }
@@ -162,7 +228,7 @@ public sealed class GetClubHubTests : IClassFixture<ApiTestFixture>
                 Assert.Equal("2026/27", result.Session.Label);
                 Assert.Null(result.Session.Number);
                 Assert.Null(result.Session.Motto);
-                Assert.Null(result.Session.LogoSvg);
+                Assert.Null(result.Session.Logo);
                 Assert.Empty(result.Announcements.Newest);
                 Assert.Equal(0, result.Announcements.TotalCount);
                 Assert.Empty(result.Calendar);
@@ -230,9 +296,13 @@ public sealed class GetClubHubTests : IClassFixture<ApiTestFixture>
     private async Task<GetClubHubResponse> ReadTheHubAsMemberAsync(
         Action<ClubSeedBuilder> club,
         CancellationToken ct
-    )
-    {
-        var ctx = await _fixture.BuildAsync(
+    ) => await ReadAsync(await BuildMemberClubAsync(club, ct), ct);
+
+    private Task<SeededContext> BuildMemberClubAsync(
+        Action<ClubSeedBuilder> club,
+        CancellationToken ct
+    ) =>
+        _fixture.BuildAsync(
             builder =>
                 builder
                     .Identity(identity =>
@@ -244,9 +314,6 @@ public sealed class GetClubHubTests : IClassFixture<ApiTestFixture>
                     .Club(club),
             ct
         );
-
-        return await ReadAsync(ctx, ct);
-    }
 
     private async Task<GetClubHubResponse> ReadTheHubAsWholeClubAsync(CancellationToken ct)
     {

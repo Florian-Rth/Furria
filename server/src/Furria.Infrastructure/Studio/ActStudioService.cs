@@ -194,16 +194,19 @@ public sealed class ActStudioService
             return Result<GroupActsDetails>.NotFound(UnknownGroupMessage);
 
         var scope = await _actAccess.ScopeOfAsync(accountId, ct);
+        var manages = scope?.Covers(groupId) == true;
         var mayLook =
-            scope?.Covers(groupId) == true
-            || await _authorizer.IsGroupMemberOrAdminAsync(accountId, groupId, ct);
+            manages || await _authorizer.IsGroupMemberOrAdminAsync(accountId, groupId, ct);
         if (!mayLook)
             return Result<GroupActsDetails>.Forbidden(NoTieMessage);
 
         var personId = await _authorizer.ActivePersonIdAsync(accountId, ct);
         var today = ClubClock.Today(_timeProvider);
         var acts = await _catalogue.ActsOnAsync(
-            act => act.GroupId == groupId && act.SessionYear != null && act.ArchivedAt == null,
+            act =>
+                act.GroupId == groupId
+                && act.SessionYear != null
+                && (manages || act.ArchivedAt == null),
             today,
             ct
         );
@@ -222,6 +225,8 @@ public sealed class ActStudioService
                             Kind = act.Kind,
                             SessionYear = act.SessionYear!.Value,
                             IsClosed = act.IsClosed,
+                            IsArchived = act.IsArchived,
+                            CastSize = act.Cast.Count,
                             ViewerInCast = act.Cast.Any(member => member.PersonId == personId),
                         }),
                 ],

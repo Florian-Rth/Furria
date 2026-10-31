@@ -27,24 +27,35 @@ export const useCalendarHours = (
 ): CalendarHours => {
   const now = useNow(NOW_TICK_MS);
   const nowMinute = hoursMinuteOf(now);
+  const week = toHoursWeek({
+    entries: board.allEntries,
+    usuals: board.usuals,
+    mayPlan: board.mayPlan,
+    weekDays: pager.weekDays,
+    todayDay: board.todayDay,
+    activeDay: scroll.activeDay,
+    selectedId: board.selectedId,
+    nowMs: now.getTime(),
+    pending: board.pending,
+  });
 
   return {
-    week: toHoursWeek({
-      entries: board.allEntries,
-      weekDays: pager.weekDays,
-      todayDay: board.todayDay,
-      activeDay: scroll.activeDay,
-      selectedId: board.selectedId,
-      nowMs: now.getTime(),
-      pending: board.pending,
-    }),
+    week,
     pageKey: pager.pageKey,
     travel: pager.travel,
     nowMinute,
     nowClock: toClock(nowMinute),
     travelTo: pager.travelTo,
     select: (id) => {
-      board.select(Number(id));
+      const usual = week.usuals.get(id);
+
+      if (usual === undefined) {
+        board.select(Number(id));
+        return;
+      }
+      if (board.mayPlan(usual.groupId)) {
+        board.planTraining(usual);
+      }
     },
   };
 };

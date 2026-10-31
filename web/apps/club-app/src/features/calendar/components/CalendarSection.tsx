@@ -3,7 +3,7 @@ import { KkCalendarAgenda } from '@furria/ui/KkCalendarAgenda';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import type { CalendarSection as CalendarSectionData } from '../calendar-agenda';
-import { toSectionView } from '../calendar-agenda-view';
+import { toSectionTitle } from '../calendar-agenda-view';
 import type { CalendarBoard } from '../hooks/use-calendar-board';
 import { CalendarItem } from './CalendarItem';
 
@@ -22,7 +22,6 @@ export const CalendarSection: FC<CalendarSectionProps> = ({
   orders,
   selectedId,
 }) => {
-  const view = toSectionView(section, board.todayDay);
   const items = section.items.map((item) => (
     <CalendarItem
       key={item.key}
@@ -35,7 +34,7 @@ export const CalendarSection: FC<CalendarSectionProps> = ({
   ));
 
   return (
-    <KkPanelSection title={view.title} meta={view.meta}>
+    <KkPanelSection title={toSectionTitle(section, board.todayDay)}>
       <KkCalendarAgenda.Days>{items}</KkCalendarAgenda.Days>
     </KkPanelSection>
   );

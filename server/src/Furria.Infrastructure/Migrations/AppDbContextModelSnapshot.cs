@@ -626,10 +626,9 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<string>("LogoSvg")
-                        .HasMaxLength(200000)
-                        .HasColumnType("character varying(200000)")
-                        .HasColumnName("logo_svg");
+                    b.Property<int?>("LogoId")
+                        .HasColumnType("integer")
+                        .HasColumnName("logo_id");
 
                     b.Property<string>("Motto")
                         .HasMaxLength(160)
@@ -652,6 +651,10 @@ namespace Furria.Infrastructure.Migrations
 
                     b.HasKey("Id")
                         .HasName("pk_session");
+
+                    b.HasIndex("LogoId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_session_logo_id");
 
                     b.HasIndex("Number")
                         .IsUnique()
@@ -1211,7 +1214,7 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
-            modelBuilder.Entity("Furria.Core.Groups.GroupTrainingSlot", b =>
+            modelBuilder.Entity("Furria.Core.Groups.UsualTrainingTime", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -1255,19 +1258,19 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("weekday");
 
                     b.HasKey("Id")
-                        .HasName("pk_group_training_slot");
+                        .HasName("pk_usual_training_time");
 
                     b.HasIndex("GroupId")
-                        .HasDatabaseName("ix_group_training_slot_group_id");
+                        .HasDatabaseName("ix_usual_training_time_group_id");
 
                     b.HasIndex("VenueId")
-                        .HasDatabaseName("ix_group_training_slot_venue_id");
+                        .HasDatabaseName("ix_usual_training_time_venue_id");
 
-                    b.ToTable("group_training_slot", null, t =>
+                    b.ToTable("usual_training_time", null, t =>
                         {
-                            t.HasCheckConstraint("ck_group_training_slot_duration", "duration_minutes > 0 AND duration_minutes <= 480");
+                            t.HasCheckConstraint("ck_usual_training_time_duration", "duration_minutes > 0 AND duration_minutes <= 480");
 
-                            t.HasCheckConstraint("ck_group_training_slot_weekday", "weekday IN ('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')");
+                            t.HasCheckConstraint("ck_usual_training_time_weekday", "weekday IN ('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')");
                         });
                 });
 
@@ -1741,6 +1744,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("owner_person_id");
 
+                    b.Property<int?>("OwnerSessionId")
+                        .HasColumnType("integer")
+                        .HasColumnName("owner_session_id");
+
                     b.Property<DateTimeOffset?>("PlacedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("placed_at");
@@ -1802,6 +1809,9 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("OwnerPersonId")
                         .HasDatabaseName("ix_media_item_owner_person_id");
 
+                    b.HasIndex("OwnerSessionId")
+                        .HasDatabaseName("ix_media_item_owner_session_id");
+
                     b.HasIndex("PlacedAt")
                         .HasDatabaseName("ix_media_item_placed_at");
 
@@ -1834,11 +1844,11 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_media_item_kind", "kind IN ('Photo', 'Video', 'Audio')");
 
-                            t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL)\nOR (owner_kind = 'NewsPost' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL)\nOR (owner_kind = 'Event' AND owner_event_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_act_id IS NULL)\nOR (owner_kind = 'Act' AND owner_act_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL)\nOR (owner_kind IN ('Gallery', 'Website') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL)");
+                            t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)\nOR (owner_kind = 'NewsPost' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)\nOR (owner_kind = 'Event' AND owner_event_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)\nOR (owner_kind = 'Act' AND owner_act_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_session_id IS NULL)\nOR (owner_kind = 'Session' AND owner_session_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL)\nOR (owner_kind IN ('Gallery', 'Website') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)");
 
-                            t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery', 'NewsPost', 'Website', 'Event', 'Act')");
+                            t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery', 'NewsPost', 'Website', 'Event', 'Act', 'Session')");
 
-                            t.HasCheckConstraint("ck_media_item_photo_only", "owner_kind NOT IN ('Website', 'Event') OR kind = 'Photo'");
+                            t.HasCheckConstraint("ck_media_item_photo_only", "owner_kind NOT IN ('Website', 'Event', 'Session') OR kind = 'Photo'");
 
                             t.HasCheckConstraint("ck_media_item_placed", "(album_id IS NULL) = (placed_at IS NULL)");
 
@@ -3403,6 +3413,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(256)")
                         .HasColumnName("user_name");
 
+                    b.Property<DateTimeOffset?>("WelcomeSeenAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("welcome_seen_at");
+
                     b.HasKey("Id")
                         .HasName("pk_account");
 
@@ -4243,6 +4257,17 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Venue");
                 });
 
+            modelBuilder.Entity("Furria.Core.Club.Session", b =>
+                {
+                    b.HasOne("Furria.Core.Media.MediaItem", "Logo")
+                        .WithMany()
+                        .HasForeignKey("LogoId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_session_media_item_logo_id");
+
+                    b.Navigation("Logo");
+                });
+
             modelBuilder.Entity("Furria.Core.Club.VenueOpeningSlot", b =>
                 {
                     b.HasOne("Furria.Core.Club.Venue", "Venue")
@@ -4376,20 +4401,20 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Person");
                 });
 
-            modelBuilder.Entity("Furria.Core.Groups.GroupTrainingSlot", b =>
+            modelBuilder.Entity("Furria.Core.Groups.UsualTrainingTime", b =>
                 {
                     b.HasOne("Furria.Core.Groups.Group", "Group")
-                        .WithMany("TrainingSlots")
+                        .WithMany("UsualTrainingTimes")
                         .HasForeignKey("GroupId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
-                        .HasConstraintName("fk_group_training_slot_group_group_id");
+                        .HasConstraintName("fk_usual_training_time_group_group_id");
 
                     b.HasOne("Furria.Core.Club.Venue", "Venue")
                         .WithMany()
                         .HasForeignKey("VenueId")
                         .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_group_training_slot_venue_venue_id");
+                        .HasConstraintName("fk_usual_training_time_venue_venue_id");
 
                     b.Navigation("Group");
 
@@ -4525,6 +4550,12 @@ namespace Furria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("fk_media_item_person_owner_person_id");
 
+                    b.HasOne("Furria.Core.Club.Session", "OwnerSession")
+                        .WithMany()
+                        .HasForeignKey("OwnerSessionId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_media_item_session_owner_session_id");
+
                     b.HasOne("Furria.Core.Identity.Person", "UploadedBy")
                         .WithMany()
                         .HasForeignKey("UploadedByPersonId")
@@ -4616,6 +4647,8 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("OwnerNewsPost");
 
                     b.Navigation("OwnerPerson");
+
+                    b.Navigation("OwnerSession");
 
                     b.Navigation("UploadedBy");
                 });
@@ -5412,7 +5445,7 @@ namespace Furria.Infrastructure.Migrations
 
                     b.Navigation("Memberships");
 
-                    b.Navigation("TrainingSlots");
+                    b.Navigation("UsualTrainingTimes");
                 });
 
             modelBuilder.Entity("Furria.Core.Identity.Membership", b =>

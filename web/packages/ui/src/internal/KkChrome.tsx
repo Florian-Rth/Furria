@@ -51,14 +51,29 @@ const CHROME_HAIRLINE: KkScheme = schemeEdge(
 
 const CHROME_BACKDROP = `blur(${pixels(CHROME_MATERIAL.blurRadius)}) saturate(${CHROME_MATERIAL.saturation})`;
 
+const glassPaint = (theme: Theme): CSSObject => ({
+  content: '""',
+  position: 'absolute',
+  inset: -kkTokens.line.hair,
+  zIndex: -1,
+  borderWidth: kkTokens.line.hair,
+  borderStyle: 'solid',
+  borderRadius: 'inherit',
+  pointerEvents: 'none',
+  backdropFilter: CHROME_BACKDROP,
+  WebkitBackdropFilter: CHROME_BACKDROP,
+  ...applyScheme(theme, CHROME_TINT, CHROME_SHEEN, CHROME_HAIRLINE, CHROME_SHADOW),
+});
+
 const chromePaint = (theme: Theme): CSSObject => ({
+  position: 'relative',
+  isolation: 'isolate',
   minWidth: 0,
   borderWidth: kkTokens.line.hair,
   borderStyle: 'solid',
   borderRadius: `${kkTokens.radius.base}px`,
-  backdropFilter: CHROME_BACKDROP,
-  WebkitBackdropFilter: CHROME_BACKDROP,
-  ...applyScheme(theme, CHROME_TINT, CHROME_SHEEN, CHROME_HAIRLINE, CHROME_SHADOW),
+  borderColor: 'transparent',
+  '&::before': glassPaint(theme),
 });
 
 const densityPaint = (density: number | undefined): CSSObject =>

@@ -14,8 +14,6 @@ const WEBSITE_LABEL = 'Website';
 const INSTAGRAM_LABEL = 'Instagram';
 const FACEBOOK_LABEL = 'Facebook';
 const ADDRESS_SECTION_TITLE = 'Anschrift';
-const ADDRESS_SECTION_DESCRIPTION =
-  'Die Postanschrift des Vereins. Steht im Impressum der Website.';
 const REACH_SECTION_TITLE = 'Erreichbarkeit';
 const EMAIL_HINT =
   'Steht im Impressum und überall auf der Website, wo Gäste dem Verein schreiben können.';
@@ -51,7 +49,7 @@ export const ClubContactFields: FC<ClubContactFieldsProps> = ({ form, errors }) 
 
   return (
     <>
-      <KkFormSection title={ADDRESS_SECTION_TITLE} description={ADDRESS_SECTION_DESCRIPTION}>
+      <KkFormSection title={ADDRESS_SECTION_TITLE}>
         <KkTextField
           name={street.name}
           label={STREET_LABEL}

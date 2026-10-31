@@ -37,12 +37,7 @@ describe('actPageReturnOf', () => {
         list: { from: '12', filter: 'dance', person: '4', session: '2024' },
       },
     ],
-    [
-      'group acts with a filter',
-      { from: 'groupActs', group: 3, filter: 'archive' },
-      null,
-      { kind: 'groupActs', groupId: 3, list: { filter: 'archive' } },
-    ],
+    ['group history', { from: 'groupActs', group: 3 }, null, { kind: 'groupActs', groupId: 3 }],
     [
       'group hub named in the link',
       { from: 'group', group: 8 },
@@ -118,14 +113,10 @@ describe('actDetailsLinkOf', () => {
 
 describe('actPageSearchOf', () => {
   it('carries the catalogue state so the way back restores it', () => {
-    const search = actPageSearchOf(
-      { kind: 'group', groupId: 3 },
-      { from: 12, filter: 'show', person: 4, session: 2025 },
-    );
+    const search = actPageSearchOf({ from: 12, filter: 'show', person: 4, session: 2025 });
 
     expect(actPageReturnOf(search, null)).toEqual({
-      kind: 'groupActs',
-      groupId: 3,
+      kind: 'catalogue',
       list: { from: '12', filter: 'show', person: '4', session: '2025' },
     });
   });

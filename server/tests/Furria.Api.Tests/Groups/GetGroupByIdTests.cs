@@ -140,7 +140,7 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
                     )
                     .Club(club =>
                         club.AddVenue("sporthalle", "Sporthalle")
-                            .AddTrainingSlot(
+                            .AddUsualTrainingTime(
                                 "dienstags",
                                 "tanzgarde",
                                 DayOfWeek.Tuesday,
@@ -160,13 +160,13 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal("Tanzgruppe", result.GroupKindName);
         Assert.Equal(FoundedIn1971, result.FoundedYear);
         Assert.Equal(GroupTone.Iris, result.Tone);
-        var slot = Assert.Single(result.TrainingSlots);
-        Assert.Equal(ctx.Club.TrainingSlots.IdOf("dienstags"), slot.GroupTrainingSlotId);
-        Assert.Equal(DayOfWeek.Tuesday, slot.Weekday);
-        Assert.Equal(HalfPastSeven, slot.StartsAt);
-        Assert.Equal(TrainingMinutes, slot.DurationMinutes);
-        Assert.Equal(ctx.Club.Venues.IdOf("sporthalle"), slot.VenueId);
-        Assert.Equal("Sporthalle", slot.VenueName);
+        var usualTime = Assert.Single(result.UsualTrainingTimes);
+        Assert.Equal(ctx.Club.UsualTrainingTimes.IdOf("dienstags"), usualTime.UsualTrainingTimeId);
+        Assert.Equal(DayOfWeek.Tuesday, usualTime.Weekday);
+        Assert.Equal(HalfPastSeven, usualTime.StartsAt);
+        Assert.Equal(TrainingMinutes, usualTime.DurationMinutes);
+        Assert.Equal(ctx.Club.Venues.IdOf("sporthalle"), usualTime.VenueId);
+        Assert.Equal("Sporthalle", usualTime.VenueName);
     }
 
     [Fact]
@@ -193,7 +193,7 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
         Assert.Null(result.GroupKindName);
         Assert.Null(result.FoundedYear);
         Assert.Null(result.Tone);
-        Assert.Empty(result.TrainingSlots);
+        Assert.Empty(result.UsualTrainingTimes);
     }
 
     [Fact]
@@ -1024,7 +1024,7 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
                     )
                     .Club(club =>
                         club.AddVenue("sporthalle", "Sporthalle")
-                            .AddTrainingSlot(
+                            .AddUsualTrainingTime(
                                 "dienstags",
                                 "tanzgarde",
                                 DayOfWeek.Tuesday,
@@ -1056,7 +1056,7 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
                 "foundedYear",
                 "tone",
                 "icon",
-                "trainingSlots",
+                "usualTrainingTimes",
                 "admins",
                 "members",
                 "viewerIsMember",
@@ -1071,20 +1071,23 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal("iris", document.RootElement.GetProperty("tone").GetString());
         Assert.Equal("drum", document.RootElement.GetProperty("icon").GetString());
         Assert.Equal(JsonValueKind.Null, document.RootElement.GetProperty("viewerSince").ValueKind);
-        var slot = document.RootElement.GetProperty("trainingSlots").EnumerateArray().Single();
+        var usualTime = document
+            .RootElement.GetProperty("usualTrainingTimes")
+            .EnumerateArray()
+            .Single();
         Assert.Equal(
             [
-                "groupTrainingSlotId",
+                "usualTrainingTimeId",
                 "weekday",
                 "startsAt",
                 "durationMinutes",
                 "venueId",
                 "venueName",
             ],
-            slot.EnumerateObject().Select(field => field.Name)
+            usualTime.EnumerateObject().Select(field => field.Name)
         );
-        Assert.Equal("tuesday", slot.GetProperty("weekday").GetString());
-        Assert.Equal("19:30:00", slot.GetProperty("startsAt").GetString());
+        Assert.Equal("tuesday", usualTime.GetProperty("weekday").GetString());
+        Assert.Equal("19:30:00", usualTime.GetProperty("startsAt").GetString());
         var mara = document.RootElement.GetProperty("members").EnumerateArray().Single();
         Assert.Equal(
             [

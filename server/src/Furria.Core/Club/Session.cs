@@ -1,3 +1,5 @@
+using Furria.Core.Media;
+
 namespace Furria.Core.Club;
 
 public sealed class Session : ITimestamped
@@ -10,9 +12,11 @@ public sealed class Session : ITimestamped
 
     public string? Motto { get; set; }
 
-    public string? LogoSvg { get; set; }
+    public int? LogoId { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
+
+    public MediaItem? Logo { get; set; }
 }

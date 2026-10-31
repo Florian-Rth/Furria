@@ -28,7 +28,7 @@ export const FACTS_LABEL = 'Eckdaten des Abends';
 export const OPEN_EVENT_LABEL = 'Ganze Seite';
 export const EMPTY_FILTER_NOTE = 'Kein Abend in dieser Auswahl.';
 export const NEW_EVENT_ACTION_LABEL = 'Veranstaltung anlegen';
-export const ACTS_ACTION_LABEL = 'Auftritte';
+export const ACTS_ACTION_LABEL = 'Sessionsauftritte';
 
 export const COLUMN_TITLES: Record<BoardColumn, string> = {
   website: 'Website',

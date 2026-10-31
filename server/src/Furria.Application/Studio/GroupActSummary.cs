@@ -14,5 +14,9 @@ public sealed record GroupActSummary
 
     public required bool IsClosed { get; init; }
 
+    public required bool IsArchived { get; init; }
+
+    public required int CastSize { get; init; }
+
     public required bool ViewerInCast { get; init; }
 }

@@ -11,7 +11,6 @@ const PHONE_LABEL = 'Telefon';
 const WEBSITE_LABEL = 'Website';
 const INSTAGRAM_LABEL = 'Instagram';
 const FACEBOOK_LABEL = 'Facebook';
-const DESCRIPTION = 'Steht im Impressum und überall, wo der Verein erreichbar sein muss.';
 
 interface ClubContactPanelProps {
   record: ClubRecord;
@@ -22,7 +21,7 @@ export const ClubContactPanel: FC<ClubContactPanelProps> = ({ record, highlighte
   const address = formatAddress(record.street, record.zip, record.city);
 
   return (
-    <ClubRecordSection section="contact" highlightedKey={highlightedKey} description={DESCRIPTION}>
+    <ClubRecordSection section="contact" highlightedKey={highlightedKey}>
       <KkFieldRow label={ADDRESS_LABEL} value={address ?? MISSING_VALUE} />
       <KkFieldRow label={EMAIL_LABEL} value={record.email ?? MISSING_VALUE} />
       <KkFieldRow label={PHONE_LABEL} value={record.phone ?? MISSING_VALUE} />

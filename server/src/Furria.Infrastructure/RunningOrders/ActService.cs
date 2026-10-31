@@ -27,6 +27,8 @@ public sealed class ActService
     private const string ForeignGroupMessage =
         "Auftritte anderer Gruppen lassen sich hier nicht bearbeiten.";
     private const string UnknownWishMessage = "Diesen Wunsch gibt es für einen Auftritt nicht.";
+    private const string PlannersWishesMessage =
+        "Die Wünsche eines Auftritts legt die Ablaufplanung fest.";
     private const string RepeatedWishMessage = "Jeder Wunsch steht nur einmal an einem Auftritt.";
     private const string ClosedSessionMessage =
         "Die Session dieses Auftritts ist vorbei, er bleibt so, wie er war.";
@@ -107,6 +109,8 @@ public sealed class ActService
     {
         if (!scope.Covers(facts.GroupId))
             return Result<int>.Forbidden(ForeignGroupMessage);
+        if (!scope.SetsWishes && facts.Wishes.Count > 0)
+            return Result<int>.Forbidden(PlannersWishesMessage);
 
         var today = ClubClock.Today(_timeProvider);
         var refusal = await RefusalOfAsync(facts, null, today, ct);
@@ -135,6 +139,8 @@ public sealed class ActService
             return Result.NotFound(UnknownActMessage);
         if (!scope.AllowsEditing(act.GroupId, command.Facts.GroupId))
             return Result.Forbidden(ForeignGroupMessage);
+        if (!scope.SetsWishes && !KeepsTheWishes(act, command.Facts.Wishes))
+            return Result.Forbidden(PlannersWishesMessage);
         if (act.ArchivedAt is not null)
             return Result.Conflict(ArchivedActMessage);
 
@@ -224,6 +230,13 @@ public sealed class ActService
             (groupIds == null || (act.GroupId != null && groupIds.Contains(act.GroupId.Value)))
             && (act.SessionYear == sessionYear || (withTimeless && act.SessionYear == null));
     }
+
+    [Pure]
+    private static bool KeepsTheWishes(Act act, IReadOnlyList<ActWishInput> wishes) =>
+        wishes
+            .Select(wish => (wish.Kind, wish.Strength))
+            .ToHashSet()
+            .SetEquals(act.Wishes.Select(wish => (wish.Kind, wish.Strength)));
 
     [Pure]
     private static string? SessionRefusalOf(ActFactsCommand facts, DateOnly today) =>

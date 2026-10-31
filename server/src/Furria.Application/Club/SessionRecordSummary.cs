@@ -10,5 +10,5 @@ public sealed record SessionRecordSummary
 
     public required string? Motto { get; init; }
 
-    public required string? LogoSvg { get; init; }
+    public required SessionLogoEditingDetails? Logo { get; init; }
 }

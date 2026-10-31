@@ -6,7 +6,6 @@ const form = (overrides: Partial<SessionRecordForm>): SessionRecordForm => ({
   startYear: 2026,
   number: '53',
   motto: 'Wir sind die Narren vom Rhein',
-  logoSvg: '<svg viewBox="0 0 2 1"></svg>',
   ...overrides,
 });
 
@@ -15,7 +14,7 @@ const record = (overrides: Partial<SessionRecordSummary>): SessionRecordSummary 
   startYear: 2026,
   number: 53,
   motto: 'Wir sind die Narren vom Rhein',
-  logoSvg: '<svg viewBox="0 0 2 1"></svg>',
+  logo: null,
   ...overrides,
 });
 
@@ -40,10 +39,6 @@ describe('toSessionRecordPayload', () => {
       'Vom Festzelt ins All',
     );
   });
-
-  it.each([null, '  \n '])('reports a blank session logo %j as unknown', (typed) => {
-    expect(toSessionRecordPayload(form({ logoSvg: typed }))?.logoSvg).toBeNull();
-  });
 });
 
 describe('toSessionRecordForm', () => {
@@ -52,7 +47,6 @@ describe('toSessionRecordForm', () => {
       startYear: 2026,
       number: '',
       motto: '',
-      logoSvg: null,
     });
   });
 
@@ -61,7 +55,6 @@ describe('toSessionRecordForm', () => {
       startYear: 2026,
       number: '',
       motto: '',
-      logoSvg: '<svg viewBox="0 0 2 1"></svg>',
     });
   });
 

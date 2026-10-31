@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { weekDaysOf } from './calendar-agenda';
-import { hoursBadgeOf, hoursTintOf, toClock, toSegments } from './calendar-hours';
-import type { CalendarEntry } from './schemas';
+import { hoursBadgeOf, hoursTintOf, toClock, toSegments, toUsualSegments } from './calendar-hours';
+import type { CalendarEntry, UsualTraining } from './schemas';
 
 const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
   calendarEntryId: 1,
@@ -27,6 +27,35 @@ const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
 
 const WEEK = weekDaysOf('2026-10-26');
 const NO_PENDING = new Map<number, 'yes' | 'maybe' | 'no'>();
+
+const usual = (startsAt: string, endsAt: string): UsualTraining => ({
+  usualTrainingTimeId: 4,
+  groupId: 1,
+  groupName: 'Tanzgarde',
+  groupTone: null,
+  startsAt,
+  endsAt,
+  venueId: null,
+  venueName: null,
+});
+
+describe('toUsualSegments', () => {
+  it.each([
+    ['2026-10-27T19:30:00', '2026-10-27T21:00:00', [{ dayIndex: 1, from: 1170, to: 1260 }]],
+    ['2026-11-03T19:30:00', '2026-11-03T21:00:00', []],
+    ['2026-11-01T23:00:00', '2026-11-02T00:30:00', [{ dayIndex: 6, from: 1380, to: 1440 }]],
+  ])('places %s to %s on its own lane', (startsAt, endsAt, placed) => {
+    const segments = toUsualSegments([usual(startsAt, endsAt)], WEEK);
+
+    expect(
+      segments.map(({ dayIndex, span }) => ({
+        dayIndex,
+        from: span.startMinute,
+        to: span.endMinute,
+      })),
+    ).toEqual(placed);
+  });
+});
 
 describe('toSegments', () => {
   it('places a same-day entry by its minutes', () => {

@@ -1,30 +1,48 @@
 import { describe, expect, it } from 'vitest';
-import { logoFileRejectionOf, SESSION_LOGO_MAX_LENGTH } from './session-logo-file';
+import { logoFileRejectionOf, SESSION_LOGO_MAX_BYTES } from './session-logo-file';
 
 describe('logoFileRejectionOf', () => {
   it.each([
-    { scenario: 'an SVG', type: 'image/svg+xml', size: 4_200, expected: null },
-    { scenario: 'another type', type: 'image/png', size: 4_200, expected: 'wrong-type' },
-    { scenario: 'no type', type: '', size: 4_200, expected: 'wrong-type' },
+    { scenario: 'a PNG', name: 'logo.png', type: 'image/png', size: 4_200, expected: null },
+    { scenario: 'a WebP', name: 'logo.webp', type: 'image/webp', size: 4_200, expected: null },
+    { scenario: 'a JPEG', name: 'logo.jpg', type: 'image/jpeg', size: 4_200, expected: null },
+    { scenario: 'an untyped HEIC', name: 'IMG_1.HEIC', type: '', size: 4_200, expected: null },
     {
-      scenario: 'an SVG that just fits',
+      scenario: 'an SVG',
+      name: 'logo.svg',
       type: 'image/svg+xml',
-      size: SESSION_LOGO_MAX_LENGTH,
+      size: 4_200,
+      expected: 'wrong-type',
+    },
+    {
+      scenario: 'an untyped text',
+      name: 'logo.txt',
+      type: '',
+      size: 4_200,
+      expected: 'wrong-type',
+    },
+    {
+      scenario: 'a PNG that just fits',
+      name: 'logo.png',
+      type: 'image/png',
+      size: SESSION_LOGO_MAX_BYTES,
       expected: null,
     },
     {
-      scenario: 'an SVG wider than the column',
-      type: 'image/svg+xml',
-      size: SESSION_LOGO_MAX_LENGTH + 1,
+      scenario: 'a PNG beyond the photo limit',
+      name: 'logo.png',
+      type: 'image/png',
+      size: SESSION_LOGO_MAX_BYTES + 1,
       expected: 'too-large',
     },
     {
       scenario: 'a file wrong in type and size',
-      type: 'image/png',
-      size: SESSION_LOGO_MAX_LENGTH + 1,
+      name: 'logo.svg',
+      type: 'image/svg+xml',
+      size: SESSION_LOGO_MAX_BYTES + 1,
       expected: 'wrong-type',
     },
-  ])('answers $expected for $scenario', ({ type, size, expected }) => {
-    expect(logoFileRejectionOf({ type, size })).toBe(expected);
+  ])('answers $expected for $scenario', ({ name, type, size, expected }) => {
+    expect(logoFileRejectionOf({ name, type, size })).toBe(expected);
   });
 });

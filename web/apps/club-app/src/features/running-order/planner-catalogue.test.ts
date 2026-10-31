@@ -5,7 +5,6 @@ import {
   archivedLeftOutOf,
   catalogueRowStateOf,
   catalogueSectionsOf,
-  pickedInSectionOf,
   previousEveningsOf,
 } from './planner-catalogue';
 
@@ -107,14 +106,6 @@ describe('catalogueRowStateOf', () => {
     [2, { kind: 'new' }],
   ])('act %i', (actId, expected) => {
     expect(catalogueRowStateOf(evening, actId)).toEqual(expected);
-  });
-});
-
-describe('pickedInSectionOf', () => {
-  it('counts the section acts already in the evening', () => {
-    const [, gardeSection] = catalogueSectionsOf(acts, draft);
-
-    expect(gardeSection === undefined ? null : pickedInSectionOf(gardeSection, draft)).toBe(1);
   });
 });
 

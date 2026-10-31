@@ -33,9 +33,12 @@ interface ActWishesSectionProps {
 }
 
 export const ActWishesSection: FC<ActWishesSectionProps> = ({ editor }) => {
-  const removeWish = editor.closed ? null : editor.removeWish;
+  if (!editor.setsWishes) {
+    return null;
+  }
+
   const lines = editor.draft.wishes.map((wish) => (
-    <ActWishLine key={wish.kind} wish={wish} onRemove={removeWish} />
+    <ActWishLine key={wish.kind} wish={wish} onRemove={editor.removeWish} />
   ));
   const meta = lines.length === 0 ? NONE : String(lines.length);
   const chooseStrength = (id: string): void => {
@@ -55,7 +58,7 @@ export const ActWishesSection: FC<ActWishesSectionProps> = ({ editor }) => {
   const list = lines.length === 0 ? null : <Stack sx={{ gap: 0.5, minWidth: 0 }}>{lines}</Stack>;
 
   const metaLine = <KkMeta>{meta}</KkMeta>;
-  const newWish = editor.closed ? null : (
+  const newWish = (
     <Stack sx={{ gap: 1, minWidth: 0 }} aria-label={NEW_WISH_LABEL}>
       <KkChoiceChips
         label={WISH_STRENGTH_LABEL}

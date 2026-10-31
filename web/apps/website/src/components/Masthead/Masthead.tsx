@@ -1,3 +1,5 @@
+import { KkModeTransitionStyles } from '@furria/ui/KkModeTransitionStyles';
+import type { OriginRect } from '@furria/ui/reveal-geometry';
 import { kkTokens } from '@furria/ui/tokens';
 import AppBar from '@mui/material/AppBar';
 import { alpha } from '@mui/material/styles';
@@ -7,8 +9,6 @@ import { MastheadChipNav } from './internal/MastheadChipNav';
 import { MastheadDesktopBar } from './internal/MastheadDesktopBar';
 import { MastheadMobileBar } from './internal/MastheadMobileBar';
 import { MastheadNavBurst } from './internal/MastheadNavBurst';
-import type { OriginRect } from './internal/reveal-geometry';
-import { ThemeTransitionStyles } from './internal/ThemeTransitionStyles';
 import { useNavBurst } from './internal/use-nav-burst';
 import { usePublishMastheadHeight } from './internal/use-publish-masthead-height';
 import { useScrolledPastTop } from './internal/use-scrolled-past-top';
@@ -47,7 +47,7 @@ export const Masthead: FC = () => {
         };
       }}
     >
-      <ThemeTransitionStyles />
+      <KkModeTransitionStyles />
       <MastheadDesktopBar />
       <MastheadMobileBar menuOpen={menuOpen} onMenuToggle={() => setMenuOpen((open) => !open)} />
       <MastheadChipNav open={menuOpen} onNavigate={handleNavigate} />

@@ -23,7 +23,6 @@ import {
   requestAddGroupMembership,
   requestEndGroupAdmin,
   requestEndGroupMembership,
-  requestGeneratedTrainings,
   requestGroupAdministrationUpdate,
   requestGroupArchivalFromHub,
   requestGroupCalendar,
@@ -31,22 +30,19 @@ import {
   requestGroupInfoUpdate,
   requestMyGroups,
   requestPersonSearch,
-  requestSetTrainingSlots,
-  requestTrainingPreview,
+  requestSetUsualTrainingTimes,
 } from './requests';
-import type { TrainingSlotPayload } from './rhythm-labels';
-import { RHYTHM_SAVED_MESSAGE, toTrainingsCreatedMessage } from './rhythm-labels';
 import type {
   AddedGroupAdmin,
-  GeneratedTrainings,
   GroupAdministrationForm,
   GroupCalendarResponse,
   GroupHub,
   GroupInfoForm,
   MyGroupsResponse,
   PersonSearchResponse,
-  TrainingPreview,
 } from './schemas';
+import type { UsualTrainingTimePayload } from './usual-training-time-labels';
+import { USUAL_TIMES_SAVED_MESSAGE } from './usual-training-time-labels';
 
 export interface AdminAppointment {
   function: string | null;
@@ -294,47 +290,12 @@ export const useEndGroupAdminMutation = (
     notice: { success: toAdminEndedNotice },
   });
 
-export interface GenerateTrainingsInput {
-  title: string;
-  instants: readonly { groupTrainingSlotId: number; startsAt: string }[];
-}
-
-export const useSetTrainingSlotsMutation = (
+export const useSetUsualTrainingTimesMutation = (
   groupId: number,
-): UseMutationResult<void, Error, readonly TrainingSlotPayload[]> =>
+): UseMutationResult<void, Error, readonly UsualTrainingTimePayload[]> =>
   useApiMutation({
-    request: (slots: readonly TrainingSlotPayload[], accessToken) =>
-      requestSetTrainingSlots(groupId, slots, accessToken),
-    changes: ['trainingSlot'],
-    notice: { success: () => RHYTHM_SAVED_MESSAGE },
-  });
-
-export const useTrainingPreviewQuery = (
-  groupId: number,
-  endsOn: string | null,
-  enabled: boolean,
-): UseQueryResult<TrainingPreview, Error> => {
-  const load = enabled
-    ? (): Promise<TrainingPreview> =>
-        withFreshAccessToken((accessToken) => requestTrainingPreview(groupId, endsOn, accessToken))
-    : skipToken;
-
-  return useQuery({
-    queryKey: queryKeys.trainingPreview(groupId, endsOn),
-    queryFn: load,
-    placeholderData: keepPreviousData,
-  });
-};
-
-export const useGenerateTrainingsMutation = (
-  groupId: number,
-): UseMutationResult<GeneratedTrainings, Error, GenerateTrainingsInput> =>
-  useApiMutation({
-    request: (input: GenerateTrainingsInput, accessToken) =>
-      requestGeneratedTrainings(groupId, input.title, input.instants, accessToken),
-    changes: ['calendarEntry'],
-    notice: {
-      success: (_input, written) =>
-        toTrainingsCreatedMessage(written.createdCount, written.skippedCount),
-    },
+    request: (usualTimes: readonly UsualTrainingTimePayload[], accessToken) =>
+      requestSetUsualTrainingTimes(groupId, usualTimes, accessToken),
+    changes: ['usualTrainingTime'],
+    notice: { success: () => USUAL_TIMES_SAVED_MESSAGE },
   });

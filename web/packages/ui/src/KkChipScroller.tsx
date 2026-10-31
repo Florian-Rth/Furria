@@ -25,6 +25,8 @@ export const KkChipScroller: FC<KkChipScrollerProps> = ({ children, sx }) => {
           return {
             minWidth: 0,
             overflowX: 'auto',
+            overflowY: 'hidden',
+            overscrollBehaviorX: 'contain',
             scrollbarWidth: 'none',
             '&::-webkit-scrollbar': { display: 'none' },
             '& > *': { flexShrink: 0 },

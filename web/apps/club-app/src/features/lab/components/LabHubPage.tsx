@@ -8,6 +8,11 @@ import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { AREA_HANDOVERS, MANAGE_ORIGIN } from '@/features/session/app-sections';
 import {
+  WELCOME_LAB_CASES,
+  WELCOME_LAB_TITLE,
+  welcomeLabPathOf,
+} from '@/features/welcome/welcome-lab';
+import {
   LAB_GREETINGS,
   LAB_LEAD,
   LAB_TITLE,
@@ -38,6 +43,17 @@ export const LabHubPage: FC = () => {
     );
   });
 
+  const welcomeRows = WELCOME_LAB_CASES.map((labCase) => (
+    <KkHubRow
+      key={labCase.slug}
+      label={labCase.title}
+      icon="stage"
+      meta={labCase.member.firstName}
+      component={Link}
+      to={welcomeLabPathOf(labCase)}
+    />
+  ));
+
   return (
     <KkScreen
       kind="detail"
@@ -46,7 +62,12 @@ export const LabHubPage: FC = () => {
       header={header}
       handover={AREA_HANDOVERS.manage}
     >
-      <KkPanelStack>{sections}</KkPanelStack>
+      <KkPanelStack>
+        <KkPanelSection title={WELCOME_LAB_TITLE}>
+          <KkPanel>{welcomeRows}</KkPanel>
+        </KkPanelSection>
+        {sections}
+      </KkPanelStack>
     </KkScreen>
   );
 };

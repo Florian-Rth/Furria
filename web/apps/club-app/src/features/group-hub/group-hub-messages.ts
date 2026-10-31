@@ -59,7 +59,7 @@ export const toPreviewErrorMessage = (error: Error | null): string | null =>
 
 const ACTS_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
   unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
-  unexpected: 'Die Auftritte konnten nicht geladen werden.',
+  unexpected: 'Die Sessionsauftritte konnten nicht geladen werden.',
   rejected: 'Der Server hat die Anfrage abgelehnt.',
 };
 

@@ -43,9 +43,5 @@ export const BoardHeld: FC<BoardHeldProps> = ({
       </KkRoster>
     );
 
-  return (
-    <KkPanelSection title={HELD_TITLE} meta={lines.length}>
-      {list}
-    </KkPanelSection>
-  );
+  return <KkPanelSection title={HELD_TITLE}>{list}</KkPanelSection>;
 };

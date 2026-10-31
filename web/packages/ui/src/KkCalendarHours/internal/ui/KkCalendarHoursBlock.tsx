@@ -8,7 +8,7 @@ import type { FC } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { KkEntryKindGlyph } from '../../../KkEntryKindGlyph';
 import { kkTokens } from '../../../tokens';
-import { HALO_TEXT, hoursFillPaint, hoursToneInk } from '../calendar-hours-paint';
+import { HALO_TEXT, hoursFillPaint, hoursToneInk, hoursUsualPaint } from '../calendar-hours-paint';
 import { useCalendarHours } from '../logic/calendar-hours-context';
 import { hoursGrowDelayOf, hoursLabelPlanOf } from '../logic/calendar-hours-geometry';
 import type { KkCalendarPlacedBlock } from '../logic/calendar-hours-types';
@@ -57,7 +57,9 @@ const fillPaint =
   (placed: KkCalendarPlacedBlock) =>
   (theme: Theme): CSSObject => ({
     ...fillShape(placed),
-    ...hoursFillPaint(theme, placed.block.tone, placed.block.selected),
+    ...(placed.block.usual
+      ? hoursUsualPaint(theme, placed.block.tone)
+      : hoursFillPaint(theme, placed.block.tone, placed.block.selected)),
     ...(placed.block.selected
       ? {
           outline: `${kkTokens.line.section}px solid ${(theme.vars ?? theme).palette.text.primary}`,
@@ -124,6 +126,8 @@ export const KkCalendarHoursBlock: FC<KkCalendarHoursBlockProps> = ({
   const select = (): void => {
     onSelect(block.id);
   };
+  const ink = block.usual ? 'text.secondary' : 'text.primary';
+  const pressed = block.usual ? undefined : block.selected;
 
   const glyph =
     level === 'none' || (leads && !fitsGlyph) ? null : (
@@ -140,7 +144,7 @@ export const KkCalendarHoursBlock: FC<KkCalendarHoursBlockProps> = ({
           fontWeight: TIME_WEIGHT,
           fontVariantNumeric: 'tabular-nums',
           lineHeight: 1,
-          color: 'text.primary',
+          color: ink,
           ...HALO_TEXT,
         }}
       >
@@ -157,7 +161,8 @@ export const KkCalendarHoursBlock: FC<KkCalendarHoursBlockProps> = ({
           fontWeight: TITLE_WEIGHT,
           letterSpacing: type.tracking.tight,
           lineHeight: 1.2,
-          color: 'text.primary',
+          color: ink,
+          fontStyle: block.usual ? 'italic' : 'normal',
           minWidth: 0,
           ...HALO_TEXT,
         }}
@@ -213,7 +218,7 @@ export const KkCalendarHoursBlock: FC<KkCalendarHoursBlockProps> = ({
   return (
     <ButtonBase
       aria-label={block.label}
-      aria-pressed={block.selected}
+      aria-pressed={pressed}
       data-kk-calendar-hours-block={block.id}
       onClick={select}
       sx={hostPaint(placed)}

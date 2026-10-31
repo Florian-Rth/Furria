@@ -38,6 +38,8 @@ const groupAct = (actId: number, sessionYear: number, closed: boolean): GroupAct
   kind: 'dance',
   sessionYear,
   closed,
+  archived: false,
+  castSize: 8,
   viewerInCast: false,
 });
 

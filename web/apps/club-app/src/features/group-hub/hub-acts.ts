@@ -1,29 +1,18 @@
 import type { GroupAct, GroupActsResponse } from '@/features/acts/schemas';
 
-export interface HubActSession {
-  sessionYear: number;
-  acts: GroupAct[];
-}
-
 export interface HubActs {
   current: GroupAct[];
-  earlier: HubActSession[];
+  recorded: number;
+  firstSessionYear: number | null;
 }
 
 export const hubActsOf = (response: GroupActsResponse): HubActs => {
-  const current = response.acts.filter((act) => act.sessionYear === response.relevantSessionYear);
-  const earlier = new Map<number, GroupAct[]>();
-
-  for (const act of response.acts) {
-    if (act.sessionYear !== response.relevantSessionYear) {
-      earlier.set(act.sessionYear, [...(earlier.get(act.sessionYear) ?? []), act]);
-    }
-  }
+  const standing = response.acts.filter((act) => !act.archived);
+  const years = standing.map((act) => act.sessionYear);
 
   return {
-    current,
-    earlier: [...earlier.entries()]
-      .sort(([first], [second]) => second - first)
-      .map(([sessionYear, acts]) => ({ sessionYear, acts })),
+    current: standing.filter((act) => act.sessionYear === response.relevantSessionYear),
+    recorded: standing.length,
+    firstSessionYear: years.length === 0 ? null : Math.min(...years),
   };
 };

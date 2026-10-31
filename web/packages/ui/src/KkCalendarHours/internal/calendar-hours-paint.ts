@@ -53,6 +53,19 @@ export const hoursFillPaint = (
   };
 };
 
+export const hoursUsualPaint = (theme: Theme, tone: KkGroupTone | null): CSSObject => ({
+  backgroundColor: 'transparent',
+  backgroundImage: 'none',
+  borderWidth: kkTokens.line.hair,
+  borderStyle: 'dashed',
+  ...(tone === null
+    ? { borderColor: (theme.vars ?? theme).palette.text.secondary }
+    : applyScheme(
+        theme,
+        schemeEdge(groupToneRecipes[tone].edgeLight, groupToneRecipes[tone].edgeDark),
+      )),
+});
+
 export const hoursToneInk = (theme: Theme, tone: KkGroupTone | null): CSSObject =>
   tone === null
     ? { color: 'text.primary' }

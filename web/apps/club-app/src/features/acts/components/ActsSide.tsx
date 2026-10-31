@@ -17,12 +17,11 @@ export const ActsSide: FC<ActsSideProps> = ({ hub }) => {
   }
 
   const acts = hub.query.data?.acts ?? [];
-  const fixedGroupId = hub.scope.kind === 'group' ? hub.scope.groupId : null;
   const pane = (
     <ActPane
       act={null}
       acts={acts}
-      fixedGroupId={fixedGroupId}
+      fixedGroupId={null}
       framed={hub.isWide}
       onCreated={hub.created}
       onClose={hub.close}

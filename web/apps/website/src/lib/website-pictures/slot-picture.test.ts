@@ -59,7 +59,7 @@ describe('slotPictureOf', () => {
       alt: 'Saal',
       image: {
         src: '/m/gallery.stack/2',
-        srcSet: '/s/gallery.stack/2 320w, /m/gallery.stack/2 1280w, /l/gallery.stack/2 2048w',
+        srcSet: '/s/gallery.stack/2 512w, /m/gallery.stack/2 1280w, /l/gallery.stack/2 2048w',
         sizes: '30vw',
       },
     });

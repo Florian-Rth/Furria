@@ -14,8 +14,6 @@ import { toSectionLandingKey } from '../person-identity';
 import type { PersonDetails } from '../schemas';
 
 const TITLE = 'Gruppen & Rollen';
-const POINTER =
-  'Gruppen pflegen die Gruppen-Admins, Rollen und Vorstand werden unter „Rollen & Rechte“ vergeben.';
 const SINCE_LABEL = 'seit';
 const PAST_META = 'früher';
 const GROUP_PATH = '/groups/$groupId';
@@ -125,7 +123,7 @@ export const PersonTiesPanel: FC<PersonTiesPanelProps> = ({ person, highlightedK
     );
 
   return (
-    <KkPanelSection title={TITLE} description={POINTER}>
+    <KkPanelSection title={TITLE}>
       <Stack sx={{ gap: 1.25, minWidth: 0 }}>
         {runningPanel}
         {pastPanel}

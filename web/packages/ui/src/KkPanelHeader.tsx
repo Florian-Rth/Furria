@@ -2,11 +2,10 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import type { FC, ReactNode, Ref } from 'react';
+import type { FC, Ref } from 'react';
 import type { KkGroupTone } from './internal/group-tone';
 import { groupToneInkPaint } from './internal/group-tone';
 import { KkButton } from './KkButton';
-import { KkEyebrow } from './KkEyebrow';
 import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
 import type { KkPanelAction, KkPanelActionEmphasis } from './panel-action';
@@ -41,7 +40,6 @@ const rulePaint = (theme: Theme, groupTone: KkGroupTone | undefined): CSSObject 
 interface KkPanelHeaderProps {
   title: string;
   action?: KkPanelAction;
-  meta?: ReactNode;
   groupTone?: KkGroupTone;
   titleRef?: Ref<HTMLHeadingElement>;
   sx?: KkSx;
@@ -50,12 +48,10 @@ interface KkPanelHeaderProps {
 export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
   title,
   action,
-  meta,
   groupTone,
   titleRef,
   sx,
 }) => {
-  const metaContent = typeof meta === 'string' ? <KkEyebrow tone="muted">{meta}</KkEyebrow> : meta;
   const actionSlot =
     action === undefined ? null : (
       <Box sx={ACTION_SLOT}>
@@ -77,17 +73,6 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
         </KkButton>
       </Box>
     );
-  const metaSlot =
-    meta === undefined ? null : (
-      <Stack
-        direction="row"
-        data-kk-panel-header-meta
-        sx={{ alignItems: 'center', minWidth: 0, flexShrink: 1 }}
-      >
-        {metaContent}
-      </Stack>
-    );
-
   return (
     <Stack
       direction="row"
@@ -128,7 +113,6 @@ export const KkPanelHeader: FC<KkPanelHeaderProps> = ({
       >
         {title}
       </Typography>
-      {metaSlot}
       <Box
         aria-hidden
         sx={(theme) => ({

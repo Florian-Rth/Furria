@@ -2,7 +2,6 @@ import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import type { SlotPositionRef } from '../types';
 import type { BoardPage } from '../website-board';
-import { pageMetaOf } from '../website-copy';
 import { WebsiteSlotRow } from './WebsiteSlotRow';
 
 interface WebsitePageSectionProps {
@@ -21,11 +20,6 @@ export const WebsitePageSection: FC<WebsitePageSectionProps> = ({ page, selected
       onSelect={onSelect}
     />
   ));
-  const meta = pageMetaOf(page.path, page.filled, page.total);
 
-  return (
-    <KkPanelSection title={page.title} meta={meta}>
-      {rows}
-    </KkPanelSection>
-  );
+  return <KkPanelSection title={page.title}>{rows}</KkPanelSection>;
 };

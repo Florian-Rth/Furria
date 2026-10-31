@@ -41,7 +41,6 @@ const FOUNDED_STEP_LABELS: KkNumberStepLabels = {
   less: 'Ein Jahr früher',
   more: 'Ein Jahr später',
 };
-const NAME_NOTE = 'Der Name wird in der Gruppenverwaltung geändert.';
 
 const toCountLabel = (used: number, max: number): string => `${used} von ${max} Zeichen`;
 
@@ -127,7 +126,7 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
         />
       </KkFormSection>
       <GroupPictureSection hub={hub} tone={pictureTone} />
-      <KkFormSection title={FACTS_SECTION} description={NAME_NOTE}>
+      <KkFormSection title={FACTS_SECTION}>
         <KkFormPair
           balance="leading"
           start={

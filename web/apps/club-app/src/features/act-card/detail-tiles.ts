@@ -142,7 +142,10 @@ const sessionTileOf = (view: ActCardView): DetailTile => {
   };
 };
 
-export const detailTilesOf = (view: ActCardView): DetailTile[] =>
-  view.hasStudio
-    ? [...studioTilesOf(view), peopleTileOf(view), wishesTileOf(view), sessionTileOf(view)]
-    : [wishesTileOf(view)];
+export const detailTilesOf = (view: ActCardView, seesWishes: boolean): DetailTile[] => {
+  const wishes = seesWishes ? [wishesTileOf(view)] : [];
+
+  return view.hasStudio
+    ? [...studioTilesOf(view), peopleTileOf(view), ...wishes, sessionTileOf(view)]
+    : wishes;
+};

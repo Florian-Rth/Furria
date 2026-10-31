@@ -30,6 +30,11 @@ export const ActsSearchSchema = z.object({
 });
 export type ActsSearch = z.infer<typeof ActsSearchSchema>;
 
+export const GroupActsSearchSchema = z.object({
+  act: z.literal(NEW_ACT).optional().catch(undefined),
+});
+export type GroupActsSearch = z.infer<typeof GroupActsSearchSchema>;
+
 export const ACT_PAGE_ORIGINS = ['catalogue', 'groupActs', 'group', 'start'] as const;
 export const ActPageOriginSchema = z.enum(ACT_PAGE_ORIGINS);
 export type ActPageOrigin = z.infer<typeof ActPageOriginSchema>;
@@ -267,6 +272,8 @@ export const GroupActSchema = z.object({
   kind: ActKindSchema.nullable(),
   sessionYear: z.int(),
   closed: z.boolean(),
+  archived: z.boolean(),
+  castSize: z.int(),
   viewerInCast: z.boolean(),
 });
 export type GroupAct = z.infer<typeof GroupActSchema>;

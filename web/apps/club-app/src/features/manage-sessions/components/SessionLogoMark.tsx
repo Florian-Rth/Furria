@@ -1,29 +1,19 @@
+import type { KkImageSource } from '@furria/ui/image-source';
 import { KkPhoto } from '@furria/ui/KkPhoto';
-import { logoSourceOf } from '@furria/ui/logo-source';
 import type { FC } from 'react';
 
 interface SessionLogoMarkProps {
-  logoSvg: string | null;
+  image: KkImageSource;
   label: string;
   size: number;
 }
 
-export const SessionLogoMark: FC<SessionLogoMarkProps> = ({ logoSvg, label, size }) => {
-  const source = logoSourceOf(logoSvg);
-
-  if (source === null) {
-    return null;
-  }
-
-  const image = { src: source };
-
-  return (
-    <KkPhoto
-      alt={label}
-      image={image}
-      fit="contain"
-      fill
-      sx={{ width: size, height: size, flexShrink: 0 }}
-    />
-  );
-};
+export const SessionLogoMark: FC<SessionLogoMarkProps> = ({ image, label, size }) => (
+  <KkPhoto
+    alt={label}
+    image={image}
+    fit="contain"
+    fill
+    sx={{ width: size, height: size, flexShrink: 0 }}
+  />
+);

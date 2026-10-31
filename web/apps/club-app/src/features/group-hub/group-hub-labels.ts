@@ -504,6 +504,3 @@ export const toArchiveGroupFacts = (hub: GroupHub, todayLabel: string): KkConfir
 ];
 
 export const toGroupArchivedFromHubMessage = (name: string): string => `${name} ist archiviert.`;
-
-export const toHubActsMeta = (count: number): string =>
-  count === 0 ? 'diese Session noch keine' : `${count} diese Session`;

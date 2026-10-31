@@ -2,8 +2,6 @@ import type { ActGroup, CatalogueAct } from '@/features/running-order/schemas';
 import { normalizeForSearch } from '@/lib/text';
 import type { ActsFilter } from './schemas';
 
-export type ActsScope = { kind: 'club' } | { kind: 'group'; groupId: number };
-
 export interface ActSection {
   id: string;
   group: ActGroup | null;
@@ -12,9 +10,6 @@ export interface ActSection {
 
 const COLLATOR = new Intl.Collator('de-DE');
 const POINTS_SECTION_ID = 'points';
-
-export const scopedActsOf = (acts: readonly CatalogueAct[], scope: ActsScope): CatalogueAct[] =>
-  scope.kind === 'club' ? [...acts] : acts.filter((act) => act.group?.groupId === scope.groupId);
 
 export const matchesFilter = (act: CatalogueAct, filter: ActsFilter): boolean => {
   if (filter === 'archive') {

@@ -6,7 +6,7 @@ namespace Furria.MediaWorker.Photos;
 
 public static class WebPWriter
 {
-    private const int Quality = 82;
+    private const int Quality = 88;
     private const string EmbeddedProfileField = "icc-profile-data";
     private const string SrgbProfile = "srgb";
 

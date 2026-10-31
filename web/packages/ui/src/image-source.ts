@@ -13,17 +13,30 @@ export interface KkImageSource {
   sizes?: string;
 }
 
-const LONG_EDGES = { small: 400, medium: 1600, large: 2560 } as const;
+const LONG_EDGES = { small: 640, medium: 1600, large: 2560 } as const;
+
+type Rendition = keyof typeof LONG_EDGES;
+
+const EVERY_RENDITION: readonly Rendition[] = ['small', 'medium', 'large'];
+const VIEW_RENDITIONS: readonly Rendition[] = ['medium', 'large'];
+
+const URL_KEYS: Record<Rendition, keyof KkPictureUrls> = {
+  small: 'smallUrl',
+  medium: 'mediumUrl',
+  large: 'largeUrl',
+};
 
 const widthOf = (longEdge: number, ratio: number): number =>
   Math.round(ratio >= 1 ? longEdge : longEdge * ratio);
 
-const sourceSetOf = (urls: KkPictureUrls, ratio: number): string =>
-  [
-    `${urls.smallUrl} ${widthOf(LONG_EDGES.small, ratio)}w`,
-    `${urls.mediumUrl} ${widthOf(LONG_EDGES.medium, ratio)}w`,
-    `${urls.largeUrl} ${widthOf(LONG_EDGES.large, ratio)}w`,
-  ].join(', ');
+const sourceSetOf = (
+  urls: KkPictureUrls,
+  renditions: readonly Rendition[],
+  ratio: number,
+): string =>
+  renditions
+    .map((rendition) => `${urls[URL_KEYS[rendition]]} ${widthOf(LONG_EDGES[rendition], ratio)}w`)
+    .join(', ');
 
 export const toImageSource = (
   urls: KkPictureUrls | null,
@@ -32,4 +45,14 @@ export const toImageSource = (
 ): KkImageSource | null =>
   urls === null
     ? null
-    : { src: urls.mediumUrl, srcSet: sourceSetOf(urls, aspectOf(aspect)), sizes };
+    : { src: urls.mediumUrl, srcSet: sourceSetOf(urls, EVERY_RENDITION, aspectOf(aspect)), sizes };
+
+export const toViewImageSource = (
+  urls: KkPictureUrls,
+  aspect: KkAspect,
+  sizes: string,
+): KkImageSource => ({
+  src: urls.mediumUrl,
+  srcSet: sourceSetOf(urls, VIEW_RENDITIONS, aspectOf(aspect)),
+  sizes,
+});

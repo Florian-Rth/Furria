@@ -35,7 +35,6 @@ export const OfficeSeatGroup: FC<OfficeSeatGroupProps> = ({
       onEnd={onEnd}
     />
   ));
-  const count = seats.length === 0 ? undefined : seats.length;
   const body =
     seats.length === 0 ? (
       <KkMeta>{emptyNote}</KkMeta>
@@ -43,9 +42,5 @@ export const OfficeSeatGroup: FC<OfficeSeatGroupProps> = ({
       <KkSeatList label={title}>{lines}</KkSeatList>
     );
 
-  return (
-    <KkPanelSection title={title} meta={count}>
-      {body}
-    </KkPanelSection>
-  );
+  return <KkPanelSection title={title}>{body}</KkPanelSection>;
 };

@@ -15,10 +15,11 @@ import {
   toCalendarSections,
   toCalendarTime,
   toDayCells,
+  usualsByDay,
   weekNameOf,
   windowCovering,
 } from './calendar-agenda';
-import type { CalendarEntry } from './schemas';
+import type { CalendarEntry, UsualTraining } from './schemas';
 
 const at = (day: string, time: string): string =>
   new Date(
@@ -54,6 +55,17 @@ const entry = (
   isRunning: false,
   event: null,
   ...extra,
+});
+
+const usual = (groupId: number, startsAt: string): UsualTraining => ({
+  usualTrainingTimeId: groupId * 10,
+  groupId,
+  groupName: `Gruppe ${groupId}`,
+  groupTone: 'teal',
+  startsAt,
+  endsAt: startsAt,
+  venueId: null,
+  venueName: null,
 });
 
 const NOW = Date.parse(at('2026-10-20', '12:00'));
@@ -152,7 +164,7 @@ describe('toCalendarSections', () => {
   ];
 
   it('groups days by week, collapses empty days and splits trips across days', () => {
-    const sections = toCalendarSections(entries, window, '2026-10-20');
+    const sections = toCalendarSections(entries, [], window, '2026-10-20');
 
     expect(
       sections.map((section) => [
@@ -184,12 +196,37 @@ describe('toCalendarSections', () => {
   });
 
   it('keeps today and landmarks even without entries', () => {
-    const sections = toCalendarSections([], { from: '2026-11-10', to: '2026-11-12' }, '2026-11-12');
+    const sections = toCalendarSections(
+      [],
+      [],
+      { from: '2026-11-10', to: '2026-11-12' },
+      '2026-11-12',
+    );
 
     expect(sections.flatMap((section) => section.items.map((item) => item.key))).toEqual([
       'gap-2026-11-10',
       'day-2026-11-11',
       'day-2026-11-12',
+    ]);
+  });
+
+  it('keeps a day that only holds a usual training time and lists it there', () => {
+    const sections = toCalendarSections(
+      [],
+      [usual(3, at('2026-11-10', '19:30'))],
+      { from: '2026-11-09', to: '2026-11-10' },
+      '2026-11-09',
+    );
+
+    expect(
+      sections.flatMap((section) =>
+        section.items.map((item) =>
+          item.kind === 'day' ? [item.key, item.usuals.map((held) => held.groupId)] : [item.key],
+        ),
+      ),
+    ).toEqual([
+      ['day-2026-11-09', []],
+      ['day-2026-11-10', [3]],
     ]);
   });
 
@@ -199,7 +236,7 @@ describe('toCalendarSections', () => {
     ['2026-10-27', 'gap-2026-10-26'],
     ['2026-12-01', null],
   ])('anchors %s at %s', (day, key) => {
-    expect(anchorKeyOf(toCalendarSections(entries, window, '2026-10-20'), day)).toBe(key);
+    expect(anchorKeyOf(toCalendarSections(entries, [], window, '2026-10-20'), day)).toBe(key);
   });
 });
 
@@ -304,6 +341,7 @@ describe('toDayCells', () => {
     const cells = toDayCells(
       ['2026-11-10', '2026-11-11'],
       linesByDay(entries, window),
+      new Map(),
       new Set([1]),
       '2026-11-11',
       '2026-11-01',
@@ -314,6 +352,49 @@ describe('toDayCells', () => {
     ).toEqual([
       [['club', 'rose', 'rose'], 4, true, null, true],
       [[], 0, false, 'opening', false],
+    ]);
+  });
+
+  it('rings usual training times in the marks the entries leave free', () => {
+    const entries = [
+      entry(1, at('2026-11-10', '19:00'), null),
+      entry(2, at('2026-11-10', '20:00'), null, { ownerGroupId: 3, ownerGroupTone: 'rose' }),
+    ];
+    const window = { from: '2026-11-09', to: '2026-11-15' };
+    const usuals = [
+      usual(4, at('2026-11-10', '18:00')),
+      usual(5, at('2026-11-10', '19:00')),
+      usual(6, at('2026-11-12', '19:00')),
+    ];
+    const cells = toDayCells(
+      ['2026-11-10', '2026-11-12'],
+      linesByDay(entries, window),
+      usualsByDay(usuals, window),
+      new Set(),
+      '2026-11-09',
+      null,
+    );
+
+    expect(cells.map((cell) => [cell.marks.length, cell.usualMarks.length])).toEqual([
+      [2, 1],
+      [0, 1],
+    ]);
+  });
+});
+
+describe('usualsByDay', () => {
+  it('orders a day by time and drops days outside the window', () => {
+    const byDay = usualsByDay(
+      [
+        usual(2, at('2026-11-10', '20:00')),
+        usual(1, at('2026-11-10', '18:00')),
+        usual(3, at('2026-11-20', '18:00')),
+      ],
+      { from: '2026-11-09', to: '2026-11-15' },
+    );
+
+    expect([...byDay].map(([day, held]) => [day, held.map((one) => one.groupId)])).toEqual([
+      ['2026-11-10', [1, 2]],
     ]);
   });
 });
