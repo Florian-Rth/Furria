@@ -1,7 +1,7 @@
 ---
 rfc: 0002
 title: Dance studio polish — fix everything, then make it a tool people use every week
-status: draft
+status: done
 github_issue: 53
 parent: 52
 branch: feat/rfc-53-dance-studio-polish
