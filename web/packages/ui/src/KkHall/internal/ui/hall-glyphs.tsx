@@ -1,6 +1,5 @@
 import AvTimerRoundedIcon from '@mui/icons-material/AvTimerRounded';
 import CloseRoundedIcon from '@mui/icons-material/CloseRounded';
-import KeyboardRoundedIcon from '@mui/icons-material/KeyboardRounded';
 import PauseRoundedIcon from '@mui/icons-material/PauseRounded';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import RepeatOneRoundedIcon from '@mui/icons-material/RepeatOneRounded';
@@ -21,8 +20,7 @@ export type KkHallGlyph =
   | 'countIn'
   | 'video'
   | 'videoOff'
-  | 'close'
-  | 'keys';
+  | 'close';
 
 export const HALL_GLYPHS: Record<KkHallGlyph, ReactNode> = {
   back: <SkipPreviousRoundedIcon aria-hidden fontSize="medium" />,
@@ -35,5 +33,4 @@ export const HALL_GLYPHS: Record<KkHallGlyph, ReactNode> = {
   video: <VideocamRoundedIcon aria-hidden fontSize="medium" />,
   videoOff: <VideocamOffRoundedIcon aria-hidden fontSize="medium" />,
   close: <CloseRoundedIcon aria-hidden fontSize="medium" />,
-  keys: <KeyboardRoundedIcon aria-hidden fontSize="medium" />,
 };

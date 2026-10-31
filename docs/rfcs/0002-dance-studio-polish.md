@@ -448,8 +448,32 @@ Goal: the dancer's *Üben* screen becomes the full training mode for practising 
   - **Shots and films** (gitignored): `web/tools/screenshot/out/lab12b/{a,b,c}/`. The baseline of today's player is `out/lab12b/base-{portrait,landscape}.png`.
 
 ### Phase 12c — Promote the home training mode (after 12b)
-- [ ] Chosen variant replaces the practice view (`?view=play`) in portrait and landscape; hall switch; keyboard, step rail, large-text layout kept
-- [ ] Lab variants removed; filmed check at 390 px portrait and 844×390 landscape
+- [x] Chosen variant replaces the practice view (`?view=play`) in portrait and landscape; hall switch; keyboard, step rail, large-text layout kept
+- [x] Lab variants removed; filmed check at 390 px portrait and 844×390 landscape
+- Notes (done 2026-10-30):
+  - **Where:** B lives in `features/act-lesson` on the existing `StudioScreen`, so evening versions, editing and practice memory work as before. `ActStudioBody` shows it whenever the player is not editing and the text is not large. Without music an editor who taps *Fertig* sees B's calm *Noch keine Musik* card with the *Bearbeiten* key. The old roomy player (`ActStudioSide`, `ActStudioControls`, `PracticeSegmentsLive`, `KkPracticeSegments`) is gone.
+  - **Dock:** *Gruppentraining* for every viewer (it was editors only), back / play / next, tempo, *Bearbeiten* for editors, and a keyboard key on keyboard devices that lists the keys (`KkKeyHelp`, shared with the hall). At phone width with *Bearbeiten*, the *Gruppentraining* key shows its icon only, and its name stays in the accessibility tree. Keyboard: the same `usePlayerKeys` as before, paused while the description sheet is open.
+  - **B's weak spots fixed:**
+    - No black band in portrait: when the picture has room (aspect ≤ 6:5, e.g. 390×844), the video sits on top at 16:9 and the own stage fills the rest below it. Nothing overlaps, so the swap key hides there.
+    - On short phones (390×664) the picture is exactly the video. The stage inset shrinks to at most 34 % of the width and 42 % of the height in the bottom right corner. **Open for Florian:** it still overlaps that corner of the video, because the card has no height left for a band. The swap key brings the stage to the front.
+    - *Danach* now shows on every screen except cramped ones, including 390×664 and 844×390. Phone landscape clamps the description to 2 lines, and the full text is one tap away.
+    - At ≥ 150 % text the player keeps the phase-12 large-text stack. In portrait its head now wraps, so the step name gets the full row and the count with its eight sits on its own row below it: both readable at 200 %.
+  - **From the lab review:**
+    - An eight is defined once: `countCellsOf` (`act-studio/studio-timing.ts`, a new eight on every count 1). `lesson-counts` builds the count bar, the lit count and *Achter n/m* from it, and the tolerance comes from `music-timeline`.
+    - The step name is announced from one stable, visually hidden live `h2`. The faded copies are `aria-hidden`.
+    - The cue stays a named `img`.
+    - The description button holds only spans.
+    - The swap animates opacity and transform only, never layout properties.
+    - The page shell is the act page's own, so not found, denied and loading behave as on every act page.
+    - The C-only items left with C.
+  - **Lab removed:** `/lab/home-{a,b,c}`, the *Zuhause üben* lab section, `features/lab-home*`, `KkTwin` and `KkWay*`.
+  - **Filmed check** (Jana, act 3, playing across the border from step 1 to 2) at 390×844, 844×390 and 390×664:
+    - The page never scrolls.
+    - Picture, head, count bar, description, *Danach*, rail and dock keep identical boxes over 8 stills.
+    - *Gruppentraining* opens the hall.
+    - Also shot: desktop dark, act 5 (no own spot), act 14 (no music), and 125 % / 200 % text.
+    - Shots and films (gitignored): `web/tools/screenshot/out/p12c/`.
+  - **Left for phase 19:** at 200 % text in 844×390, the large-text stack overflows the screen height, so the page scrolls. The overflow is 535 px of content for a 390 px screen. Before this phase it was already 511 px; the count in the head adds the rest.
 
 ### Phase 13 — ⚖ Lab: editor rework
 Goal: Florian picks the timeline desk, the phone step cards and the set-up checklist. Follows phase 6.

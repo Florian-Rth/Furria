@@ -53,7 +53,7 @@ export const KkLessonNext: FC<KkLessonNextProps> = ({
       <KkEyebrow tone="muted" sx={{ flexShrink: 0, lineHeight: 1 }}>
         {eyebrow}
       </KkEyebrow>
-      <KkLessonFade fadeKey={fadeKey} sx={{ flex: 1, height: '1.5rem' }}>
+      <KkLessonFade fadeKey={fadeKey} silent sx={{ flex: 1, height: '1.5rem' }}>
         <Typography
           component="span"
           variant="subtitle2"

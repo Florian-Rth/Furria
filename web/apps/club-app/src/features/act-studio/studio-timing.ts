@@ -1,7 +1,6 @@
 import type { CountMark } from '@/features/act-player/music-timeline';
+import { EDGE_TOLERANCE_SECONDS } from '@/features/act-player/music-timeline';
 import type { TimeSpan } from './studio-edits';
-
-const EDGE_TOLERANCE_SECONDS = 1e-6;
 
 export interface CountCell {
   count: number;

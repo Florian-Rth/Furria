@@ -23,7 +23,7 @@ import { eveningBandOf } from '../studio-copy';
 import { workedPathsOf, workedStepsOf, workedStudioOf } from '../studio-edits';
 import { eveningStudioOf } from '../studio-evening';
 import type { ActStudioFrame } from '../studio-layout';
-import { largeTextFrameOf, practiceFrameOf } from '../studio-layout';
+import { largeTextFrameOf } from '../studio-layout';
 import type { StudioEditor } from '../studio-mode';
 import { studioEditorOf } from '../studio-mode';
 import type { ActStudioEdits } from './use-act-studio-edits';
@@ -113,7 +113,7 @@ export const useStudioScreen = (
   const steps = usePracticeSteps(studio, playback, practice);
   usePracticeMemory({ actId, personId: viewerId }, playback, practice.step?.stepId ?? null);
   const large = useStudioLargeText(useLargeText() && !mode.editing);
-  usePlayerKeys(practice, !mode.editing && !steps.open);
+  usePlayerKeys(practice, large.on && !mode.editing && !steps.open);
 
   return {
     actId,
@@ -128,7 +128,7 @@ export const useStudioScreen = (
     manual,
     videos,
     final,
-    frame: large.on ? largeTextFrameOf(video.hero, large.videoShown) : practiceFrameOf(video.hero),
+    frame: largeTextFrameOf(video.hero, large.videoShown),
     large,
     startHall,
     edits,

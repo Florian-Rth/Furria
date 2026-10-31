@@ -1,16 +1,14 @@
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import { shownStepNameOf, stepNumberOf } from '@/features/act-player/step-names';
+import { stepNumberOf } from '@/features/act-player/step-names';
 import type { StudioStep } from '@/features/acts/schemas';
 import { isLooped, segmentGroupsOf } from '../practice-controls';
-import { partLoopLabelOf, segmentLabelOf } from '../practice-copy';
+import { partLoopLabelOf } from '../practice-copy';
 import type { Practice } from './use-practice';
 
 export interface PracticeSegmentRow {
   stepId: number;
   step: StudioStep;
   number: number;
-  grow: number;
-  label: string;
   current: boolean;
   looped: boolean;
 }
@@ -25,7 +23,6 @@ export interface PracticePartKey {
 export interface PracticeSegmentGroupRow {
   key: string;
   part: PracticePartKey | null;
-  grow: number;
   current: boolean;
   segments: PracticeSegmentRow[];
 }
@@ -50,8 +47,6 @@ export const usePracticeSegments = (
           stepId: step.stepId,
           step,
           number,
-          grow: segment.grow,
-          label: segmentLabelOf(shownStepNameOf(step.name, number)),
           current: step.stepId === currentId,
           looped: isLooped(step, practice.loop),
         },
@@ -71,7 +66,6 @@ export const usePracticeSegments = (
               firstStepId,
               looped: practice.loopKind === 'part' && current,
             },
-      grow: group.grow,
       current,
       segments,
     };

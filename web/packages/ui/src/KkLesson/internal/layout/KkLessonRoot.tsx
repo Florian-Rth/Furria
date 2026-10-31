@@ -1,20 +1,9 @@
 import Box from '@mui/material/Box';
 import type { FC, PropsWithChildren } from 'react';
 import { trackEdgeOf } from '../../../KkShell/internal/track-edge';
-import { LESSON_CONTAINER, LESSON_WIDE, LESSON_WIDE_TALL } from '../lesson-query';
+import { HIDDEN_HEADING, LESSON_CONTAINER, LESSON_WIDE, LESSON_WIDE_TALL } from '../lesson-query';
 
 const COMPOSED_HEIGHT = 'min(100%, calc(max(36.5cqw, 24rem) + 5rem))';
-
-const HIDDEN_HEADING = {
-  position: 'absolute',
-  width: '1px',
-  height: '1px',
-  m: '-1px',
-  p: 0,
-  overflow: 'hidden',
-  clipPath: 'inset(50%)',
-  whiteSpace: 'nowrap',
-} as const;
 
 interface KkLessonRootProps extends PropsWithChildren {
   label: string;

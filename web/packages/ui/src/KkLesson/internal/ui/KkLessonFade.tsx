@@ -10,20 +10,28 @@ const SHOWN = { opacity: 1 } as const;
 
 interface KkLessonFadeProps extends PropsWithChildren {
   fadeKey: string;
+  silent?: boolean;
   sx?: KkSx;
 }
 
-export const KkLessonFade: FC<KkLessonFadeProps> = ({ fadeKey, sx, children }) => (
-  <Box sx={[{ position: 'relative', minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}>
+export const KkLessonFade: FC<KkLessonFadeProps> = ({ fadeKey, silent, sx, children }) => (
+  <Box
+    component="span"
+    aria-hidden={silent}
+    sx={[
+      { display: 'block', position: 'relative', minWidth: 0 },
+      ...(Array.isArray(sx) ? sx : [sx]),
+    ]}
+  >
     <AnimatePresence initial={false}>
       <Box
         key={fadeKey}
-        component={motion.div}
+        component={motion.span}
         initial={HIDDEN}
         animate={SHOWN}
         exit={HIDDEN}
         transition={{ duration: FADE_SECONDS, ease: FADE_EASE }}
-        sx={{ position: 'absolute', inset: 0, minWidth: 0 }}
+        sx={{ display: 'block', position: 'absolute', inset: 0, minWidth: 0 }}
       >
         {children}
       </Box>
