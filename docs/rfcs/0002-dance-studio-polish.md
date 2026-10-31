@@ -628,6 +628,15 @@ Goal: one home for the music rules, a clean database, docs in sync.
   - **Docs:** CONTEXT.md (*Working mix* plays the adopted final file whole; choreography versions are paged and thinned), ADR-0025, and the status of `plan/club-app/group-year.md`.
   - **Final-file tests repaired.** 4 final-file tests had failed since RFC 0001 phase 16 ("adoption needs a match"). Each adopted a final file with no matched song. They now match a song first through `StudioSteps.AdoptMatchedAsync`, which tunes offset 0 and adopts. Each test keeps what it checks, and the rule is unchanged. The tests are `DeleteActFinalTrackByIdTests.Should_Refuse_When_TheFinalFileWasAdopted`, `PostActFinalTrackTests.Should_CountTheVersionOn_…` and two in `PutActFinalTrackAlignmentTests`.
 
+### Phase 21 — Real-media fixes (from the realistic upload test, 2026-10-31)
+Goal: real songs, iPhone videos and a live final file come out right. Evidence: `web/tools/screenshot/out/upload-test/` (`run.log`, `before-adopt.txt`, `after-adopt.txt`, `shots/`, `gen/` regenerates the media).
+- [ ] After adoption every song section of the final file keeps its own tempo and first beat (from that song, shifted by its offset and scaled by its stretch); counts in a 128 or 96 BPM section are right — today the whole final file takes song 1's tempo (`act-player/music-timeline.ts:78-93`, single tempo on `act_final_track`)
+- [ ] Matching tolerates a tempo difference (live mix ±5 %): find the song with its stretch factor; adoption maps anchors through offset **and** stretch, so a +2 % song no longer drifts (+1.77 s at 90 s today) and is found automatically
+- [ ] Anchors that land before 0 after adoption (intro cut) move to 0 instead of being dropped (`FinalTrackAdoption.FinalSecondsOf`)
+- [ ] *Video* list shows every placed video when the act has no parts (`use-act-studio-takes.ts:194-229`)
+- [ ] Player: no stale still frame of the last video over the stage when a step has no video
+- [ ] Endpoint/unit tests for multi-tempo adoption, stretch matching and the 0-clamp; re-run the realistic flow (regenerate media with `gen/`) on an isolated stack and report offsets vs truth
+
 ## Risks & alternatives
 
 - **Merging choreography.** A per-spot/keyframe merge can combine two edits that each make sense but
