@@ -19,7 +19,7 @@ export const KkPracticeScreenVideo: FC<KkPracticeScreenVideoProps> = ({
 }) => {
   const face = {
     transform: mirrored ? 'scaleX(-1)' : 'none',
-    visibility: source === null ? 'hidden' : 'visible',
+    visibility: source === null ? 'hidden' : 'inherit',
   } as const;
 
   return (

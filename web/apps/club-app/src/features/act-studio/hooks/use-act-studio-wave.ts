@@ -10,7 +10,13 @@ import type { MusicSegment } from '@/features/act-player/music-timeline';
 import type { StudioSong } from '@/features/acts/schemas';
 import { cutHandleLabelOf, finalShiftLabelOf, songMetaOf, songNameOf } from '../studio-copy';
 import { nudgedCutOf, trimmedCutOf } from '../studio-edits';
-import { offsetStartingAt, sourceNameOf } from '../studio-final';
+import {
+  offsetStartingAt,
+  sourceNameOf,
+  stretchOf,
+  tunedOffsetOf,
+  UNSTRETCHED,
+} from '../studio-final';
 import { songSettingsOf } from '../studio-music';
 import { useFinalPlaces } from './use-final-places';
 import type { StudioScreen } from './use-studio-screen';
@@ -102,8 +108,15 @@ const useFinalWave = (screen: StudioScreen, shareOf: (seconds: number) => number
     selected: place === selected,
   }));
   const selectedStart = selected?.start ?? null;
+  const selectedPlacement =
+    selected === null ? undefined : final.placements[selected.segment.mediaItemId];
+  const selectedStretch =
+    selected === null ? UNSTRETCHED : stretchOf(final.placements, selected.segment.mediaItemId);
   const handles: ActStudioWaveHandle[] =
-    selected === null || selectedStart === null || pending === null
+    selected === null ||
+    selectedStart === null ||
+    selectedPlacement === undefined ||
+    pending === null
       ? []
       : [
           {
@@ -121,7 +134,8 @@ const useFinalWave = (screen: StudioScreen, shareOf: (seconds: number) => number
                 final.writes.tune.mutate({
                   finalTrackId: pending.finalTrackId,
                   sourceMediaItemId: selected.segment.mediaItemId,
-                  offsetSeconds: offsetStartingAt(selected.segment, shift.seconds),
+                  offsetSeconds: offsetStartingAt(selected.segment, shift.seconds, selectedStretch),
+                  stretch: selectedStretch,
                 });
               }
               setShift(null);
@@ -131,10 +145,11 @@ const useFinalWave = (screen: StudioScreen, shareOf: (seconds: number) => number
               final.writes.tune.mutate({
                 finalTrackId: pending.finalTrackId,
                 sourceMediaItemId: selected.segment.mediaItemId,
-                offsetSeconds: offsetStartingAt(
-                  selected.segment,
-                  selectedStart + direction * FINAL_NUDGE_SECONDS,
+                offsetSeconds: tunedOffsetOf(
+                  selectedPlacement.offsetSeconds,
+                  direction * FINAL_NUDGE_SECONDS,
                 ),
+                stretch: selectedPlacement.stretch,
               });
             },
           },

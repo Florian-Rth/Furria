@@ -167,9 +167,12 @@ public sealed class ActFinalTrackService
         if (matches.Count == 0)
             return Result<IReadOnlyList<FinalTrackMatchDetails>>.Validation(NoMatchMessage);
 
-        await KeepOffsetsAsync(
+        await KeepPlacementsAsync(
             pending.Value,
-            matches.ToDictionary(match => match.SourceMediaItemId, match => match.OffsetSeconds),
+            matches.ToDictionary(
+                match => match.SourceMediaItemId,
+                match => new FinalTrackPlacement(match.OffsetSeconds, match.Stretch)
+            ),
             ct
         );
 
@@ -190,9 +193,12 @@ public sealed class ActFinalTrackService
         if (music.All(source => source.SourceMediaItemId != command.SourceMediaItemId))
             return Result.NotFound(UnknownSourceMessage);
 
-        await KeepOffsetsAsync(
+        await KeepPlacementsAsync(
             pending.Value,
-            new Dictionary<int, double> { [command.SourceMediaItemId] = command.OffsetSeconds },
+            new Dictionary<int, FinalTrackPlacement>
+            {
+                [command.SourceMediaItemId] = new(command.OffsetSeconds, command.Stretch),
+            },
             ct
         );
 
@@ -249,7 +255,7 @@ public sealed class ActFinalTrackService
                 .Where(alignment => sources.Contains(alignment.SourceMediaItemId))
                 .ToDictionary(
                     alignment => alignment.SourceMediaItemId,
-                    alignment => alignment.OffsetSeconds
+                    alignment => new FinalTrackPlacement(alignment.OffsetSeconds, alignment.Stretch)
                 )
         );
     }
@@ -378,27 +384,30 @@ public sealed class ActFinalTrackService
             : Result<IReadOnlyList<CutSound>>.Conflict(MusicDevelopingMessage);
     }
 
-    private async Task KeepOffsetsAsync(
+    private async Task KeepPlacementsAsync(
         ActFinalTrack track,
-        IReadOnlyDictionary<int, double> offsetsBySource,
+        IReadOnlyDictionary<int, FinalTrackPlacement> placementsBySource,
         CancellationToken ct
     )
     {
         var kept = await _dbContext
             .ActFinalTrackAlignments.Where(row => row.FinalTrackId == track.Id)
             .ToDictionaryAsync(row => row.SourceMediaItemId, ct);
-        foreach (var (sourceMediaItemId, offsetSeconds) in offsetsBySource)
-            if (kept.TryGetValue(sourceMediaItemId, out var alignment))
-                alignment.OffsetSeconds = offsetSeconds;
-            else
-                _dbContext.ActFinalTrackAlignments.Add(
-                    new ActFinalTrackAlignment
-                    {
-                        FinalTrackId = track.Id,
-                        SourceMediaItemId = sourceMediaItemId,
-                        OffsetSeconds = offsetSeconds,
-                    }
-                );
+        foreach (var (sourceMediaItemId, placement) in placementsBySource)
+        {
+            if (!kept.TryGetValue(sourceMediaItemId, out var alignment))
+            {
+                alignment = new ActFinalTrackAlignment
+                {
+                    FinalTrackId = track.Id,
+                    SourceMediaItemId = sourceMediaItemId,
+                };
+                _dbContext.ActFinalTrackAlignments.Add(alignment);
+            }
+
+            alignment.OffsetSeconds = placement.OffsetSeconds;
+            alignment.Stretch = placement.Stretch;
+        }
         await _dbContext.SaveChangesAsync(ct);
     }
 
@@ -451,11 +460,12 @@ public sealed class ActFinalTrackService
 
     [Pure]
     private static FinalTrackMatchDetails? MatchOf(CutSound sound, SoundProfile finalProfile) =>
-        FinalTrackMatching.OffsetOf(sound, finalProfile) is { } alignment
+        FinalTrackMatching.AlignmentOf(sound, finalProfile) is { } alignment
             ? new FinalTrackMatchDetails
             {
                 SourceMediaItemId = sound.Cut.SourceMediaItemId,
                 OffsetSeconds = alignment.OffsetSeconds,
+                Stretch = alignment.Stretch,
                 Confidence = alignment.Confidence,
             }
             : null;

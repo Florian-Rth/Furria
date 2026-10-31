@@ -11,8 +11,7 @@ const segment = (patch: Partial<MusicSegment>): MusicSegment => ({
   sourceEnd: 3,
   timelineStart: 0,
   timelineEnd: 2,
-  firstBeatSeconds: null,
-  tempoBpm: null,
+  beats: [],
   ...patch,
 });
 

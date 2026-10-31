@@ -63,8 +63,8 @@ const studio: Studio = {
       firstBeatSeconds: 0.4,
       tempoBpm: 118,
       alignments: [
-        { sourceMediaItemId: 11, offsetSeconds: 0.2 },
-        { sourceMediaItemId: 21, offsetSeconds: 20.1 },
+        { sourceMediaItemId: 11, offsetSeconds: 0.2, stretch: 1 },
+        { sourceMediaItemId: 21, offsetSeconds: 20.1, stretch: 1 },
       ],
       urls: audio,
     },
@@ -233,13 +233,13 @@ describe('inverseOf', () => {
       write: {
         kind: 'finalOffsets',
         finalTrackId: 4,
-        offsets: [{ sourceMediaItemId: 21, offsetSeconds: 20.3 }],
+        offsets: [{ sourceMediaItemId: 21, offsetSeconds: 20.3, stretch: 1 }],
       },
       created: [],
       inverse: {
         kind: 'finalOffsets',
         finalTrackId: 4,
-        offsets: [{ sourceMediaItemId: 21, offsetSeconds: 20.1 }],
+        offsets: [{ sourceMediaItemId: 21, offsetSeconds: 20.1, stretch: 1 }],
       },
     },
     {
@@ -250,8 +250,8 @@ describe('inverseOf', () => {
         kind: 'finalOffsets',
         finalTrackId: 4,
         offsets: [
-          { sourceMediaItemId: 11, offsetSeconds: 0.2 },
-          { sourceMediaItemId: 21, offsetSeconds: 20.1 },
+          { sourceMediaItemId: 11, offsetSeconds: 0.2, stretch: 1 },
+          { sourceMediaItemId: 21, offsetSeconds: 20.1, stretch: 1 },
         ],
       },
     },

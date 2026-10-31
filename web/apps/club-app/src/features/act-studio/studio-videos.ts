@@ -1,4 +1,6 @@
-import type { Studio, StudioVideo } from '@/features/acts/schemas';
+import type { TimelineRange } from '@/features/act-player/music-timeline';
+import { partRangeOf } from '@/features/act-player/music-timeline';
+import type { Studio, StudioPart, StudioStep, StudioVideo } from '@/features/acts/schemas';
 import type { HoldsStudio } from './studio-music';
 import { withStudio } from './studio-music';
 
@@ -85,3 +87,32 @@ export const overlapsRange = (video: StudioVideo, range: { start: number; end: n
   video.durationSeconds !== null &&
   video.startSeconds < range.end &&
   video.startSeconds + video.durationSeconds > range.start;
+
+export interface TakeGroup {
+  part: StudioPart | null;
+  range: TimelineRange | null;
+  takes: StudioVideo[];
+}
+
+const mainFirst = (takes: readonly StudioVideo[], mainVideoId: number | null): StudioVideo[] => [
+  ...takes.filter((take) => take.videoId === mainVideoId),
+  ...takes.filter((take) => take.videoId !== mainVideoId),
+];
+
+export const takeGroupsOf = (
+  parts: readonly StudioPart[],
+  steps: readonly StudioStep[],
+  placed: readonly StudioVideo[],
+): TakeGroup[] => {
+  const partGroups = parts.map((part) => {
+    const range = partRangeOf(part, steps);
+    const takes = placed.filter((take) => range !== null && overlapsRange(take, range));
+
+    return { part, range, takes: mainFirst(takes, part.mainVideoId) };
+  });
+  const loose = placed.filter((take) => !partGroups.some((group) => group.takes.includes(take)));
+
+  return loose.length === 0
+    ? partGroups
+    : [...partGroups, { part: null, range: null, takes: loose }];
+};

@@ -445,12 +445,12 @@ export const requestFinalTrackMatch = (
 
 export const requestFinalTrackOffset = (
   actId: number,
-  { finalTrackId, sourceMediaItemId, offsetSeconds }: FinalOffsetInput,
+  { finalTrackId, sourceMediaItemId, offsetSeconds, stretch }: FinalOffsetInput,
   accessToken: string,
 ): Promise<void> =>
   apiFetch(`${finalTracksPathOf(actId)}/${finalTrackId}/alignments/${sourceMediaItemId}`, {
     method: 'PUT',
-    body: { offsetSeconds },
+    body: { offsetSeconds, stretch },
     schema: NoContentSchema,
     accessToken,
   });

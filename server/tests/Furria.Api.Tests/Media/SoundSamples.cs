@@ -34,6 +34,22 @@ public static class SoundSamples
             Rate
         );
 
+    public static SoundSignal Faster(SoundSignal song, double factor)
+    {
+        var samples = new float[(int)(song.Samples.Length / factor)];
+        for (var index = 0; index < samples.Length; index++)
+        {
+            var position = index * factor;
+            var before = Math.Min((int)position, song.Samples.Length - 1);
+            var after = Math.Min(before + 1, song.Samples.Length - 1);
+            var share = (float)(position - before);
+            samples[index] =
+                song.Samples[before] + share * (song.Samples[after] - song.Samples[before]);
+        }
+
+        return new SoundSignal(samples, Rate);
+    }
+
     public static SoundSignal Silence(double seconds) =>
         new(new float[(int)(seconds * Rate)], Rate);
 

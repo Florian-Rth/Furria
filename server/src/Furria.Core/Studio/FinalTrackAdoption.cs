@@ -6,25 +6,25 @@ public sealed class FinalTrackAdoption
 {
     private readonly int _finalMediaItemId;
     private readonly double _lengthSeconds;
-    private readonly IReadOnlyDictionary<int, double> _offsetsBySource;
+    private readonly IReadOnlyDictionary<int, FinalTrackPlacement> _placementsBySource;
 
     public FinalTrackAdoption(
         int finalMediaItemId,
         double lengthSeconds,
-        IReadOnlyDictionary<int, double> offsetsBySource
+        IReadOnlyDictionary<int, FinalTrackPlacement> placementsBySource
     )
     {
         _finalMediaItemId = finalMediaItemId;
         _lengthSeconds = lengthSeconds;
-        _offsetsBySource = offsetsBySource;
+        _placementsBySource = placementsBySource;
     }
 
-    public bool MatchesAnyMusic => _offsetsBySource.Count > 0;
+    public bool MatchesAnyMusic => _placementsBySource.Count > 0;
 
     [Pure]
     public MusicAnchor Rewritten(MusicAnchor anchor) =>
         FinalSecondsOf(anchor) is { } seconds
-            ? new MusicAnchor(_finalMediaItemId, seconds)
+            ? new MusicAnchor(_finalMediaItemId, Math.Max(0, seconds))
             : anchor;
 
     [Pure]
@@ -60,8 +60,8 @@ public sealed class FinalTrackAdoption
 
     [Pure]
     private double? FinalSecondsOf(MusicAnchor anchor) =>
-        _offsetsBySource.TryGetValue(anchor.SourceMediaItemId, out var offset)
-        && anchor.Seconds + offset is var seconds and >= 0
+        _placementsBySource.TryGetValue(anchor.SourceMediaItemId, out var placement)
+        && placement.FinalSecondsOf(anchor.Seconds) is var seconds
         && seconds <= _lengthSeconds
             ? seconds
             : null;

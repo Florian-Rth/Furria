@@ -36,8 +36,7 @@ const segment: MusicSegment = {
   sourceEnd: 70,
   timelineStart: 30,
   timelineEnd: 90,
-  firstBeatSeconds: 0.5,
-  tempoBpm: 120,
+  beats: [{ sourceStart: 10, sourceEnd: 70, firstBeatSeconds: 0.5, tempoBpm: 120 }],
 };
 
 describe('shiftedOrderOf', () => {

@@ -2844,6 +2844,12 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("double precision")
                         .HasColumnName("offset_seconds");
 
+                    b.Property<double>("Stretch")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("double precision")
+                        .HasDefaultValue(1.0)
+                        .HasColumnName("stretch");
+
                     b.HasKey("FinalTrackId", "SourceMediaItemId")
                         .HasName("pk_act_final_track_alignment");
 

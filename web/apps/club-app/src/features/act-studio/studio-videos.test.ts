@@ -1,8 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import type { Studio, StudioVideo } from '@/features/acts/schemas';
+import type { Studio, StudioStep, StudioVideo } from '@/features/acts/schemas';
+import type { TakeGroup } from './studio-videos';
 import {
   clampedVideoStartOf,
   needsAlignment,
+  takeGroupsOf,
   videoShelfOf,
   withoutVideo,
   withVideoStart,
@@ -84,6 +86,36 @@ describe('optimistic video patches', () => {
     expect([removed?.studio.videos.length, removed?.studio.parts[0]?.mainVideoId]).toEqual([
       0,
       null,
+    ]);
+  });
+});
+
+describe('takeGroupsOf', () => {
+  const placedVideo = (videoId: number, startSeconds: number): StudioVideo =>
+    video({ videoId, startSeconds, durationSeconds: 10, placement: 'onTimeline' });
+  const stepOf = (stepId: number, startSeconds: number, endSeconds: number): StudioStep => ({
+    stepId,
+    name: '',
+    description: null,
+    startSeconds,
+    endSeconds,
+    placement: 'onTimeline',
+  });
+  const steps = [stepOf(1, 0, 20), stepOf(2, 20, 60)];
+  const takes = [placedVideo(1, 2), placedVideo(2, 5), placedVideo(3, 45)];
+  const groupIdsOf = (groups: TakeGroup[]): [number | null, number[]][] =>
+    groups.map((group) => [group.part?.partId ?? null, group.takes.map((take) => take.videoId)]);
+
+  it('lists every placed video in one group when the act has no parts', () => {
+    expect(groupIdsOf(takeGroupsOf([], steps, takes))).toEqual([[null, [1, 2, 3]]]);
+  });
+
+  it('puts the main video first and gathers videos outside every part', () => {
+    const parts = [{ partId: 7, name: 'Marsch', stepIds: [1], mainVideoId: 2, adrift: false }];
+
+    expect(groupIdsOf(takeGroupsOf(parts, steps, takes))).toEqual([
+      [7, [2, 1]],
+      [null, [3]],
     ]);
   });
 });

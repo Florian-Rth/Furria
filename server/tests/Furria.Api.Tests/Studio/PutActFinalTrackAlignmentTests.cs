@@ -29,13 +29,16 @@ public sealed class PutActFinalTrackAlignmentTests : IClassFixture<ApiTestFixtur
         var (finalTrackId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 90, ct);
         await TuneOffsetAsync(admin, actId, finalTrackId, song, 3);
 
-        var response = await TuneOffsetAsync(admin, actId, finalTrackId, song, 3.12);
+        var response = await TuneOffsetAsync(admin, actId, finalTrackId, song, 3.12, 0.98);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         var alignment = Assert.Single(
             Assert.Single((await StudioOfAsync(admin, actId)).Studio!.FinalTracks).Alignments
         );
-        Assert.Equal((song, 3.12), (alignment.SourceMediaItemId, alignment.OffsetSeconds));
+        Assert.Equal(
+            (song, 3.12, 0.98),
+            (alignment.SourceMediaItemId, alignment.OffsetSeconds, alignment.Stretch)
+        );
     }
 
     [Fact]

@@ -53,6 +53,29 @@ public sealed class PostActFinalTrackAlignmentTests : IClassFixture<ApiTestFixtu
     }
 
     [Fact]
+    public async Task Should_FindTheFasterSongWithItsStretch_When_TheLiveMixPlaysItFaster()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (admin, actId, march, polka) = await MixAsync(ct);
+        var live = Joined(
+            SoundSamples.Excerpt(March, 5, 50),
+            SoundSamples.Faster(SoundSamples.Excerpt(Polka, 0, 40), 1.02)
+        );
+        var finalTrackId = await AnalysedFinalTrackAsync(admin, actId, live, ct);
+
+        var (response, _) = await PostAsync(admin, actId, finalTrackId);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var alignments = Assert
+            .Single((await StudioOfAsync(admin, actId)).Studio!.FinalTracks)
+            .Alignments.ToDictionary(alignment => alignment.SourceMediaItemId);
+        Assert.Equal(-5, alignments[march].OffsetSeconds, 0.05);
+        Assert.Equal(1, alignments[march].Stretch, 0.001);
+        Assert.Equal(45, alignments[polka].OffsetSeconds, 0.05);
+        Assert.Equal(1 / 1.02, alignments[polka].Stretch, 0.001);
+    }
+
+    [Fact]
     public async Task Should_Refuse_When_NoSongIsInTheFinalFile()
     {
         var ct = TestContext.Current.CancellationToken;

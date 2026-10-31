@@ -12,7 +12,7 @@ interface KkLessonVideoProps {
 export const KkLessonVideo: FC<KkLessonVideoProps> = ({ label, source, videoRef, mirrored }) => {
   const face = {
     transform: mirrored ? 'scaleX(-1)' : 'none',
-    visibility: source === null ? 'hidden' : 'visible',
+    visibility: source === null ? 'hidden' : 'inherit',
   } as const;
 
   return (

@@ -161,6 +161,7 @@ public sealed class ActStudioReader
                     {
                         SourceMediaItemId = alignment.SourceMediaItemId,
                         OffsetSeconds = alignment.OffsetSeconds,
+                        Stretch = alignment.Stretch,
                     })
                     .ToList(),
             })

@@ -19,8 +19,7 @@ const segment: MusicSegment = {
   sourceEnd: 30,
   timelineStart: 0,
   timelineEnd: 20,
-  firstBeatSeconds: null,
-  tempoBpm: null,
+  beats: [],
 };
 
 const at = (rightMetres: number, backMetres: number) => ({ rightMetres, backMetres });

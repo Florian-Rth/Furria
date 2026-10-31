@@ -112,8 +112,7 @@ describe('trimmedCutOf', () => {
     sourceEnd: 70.25,
     timelineStart: 0,
     timelineEnd: 60,
-    firstBeatSeconds: 0.25,
-    tempoBpm: 120,
+    beats: [{ sourceStart: 10.25, sourceEnd: 70.25, firstBeatSeconds: 0.25, tempoBpm: 120 }],
   };
 
   it.each<[string, CutEdge, number, number | null, number | null, TimeSpan]>([

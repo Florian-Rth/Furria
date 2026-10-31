@@ -7,13 +7,19 @@ public sealed class FinalTrackAdoptionTests
 {
     private const int Opener = 11;
     private const int Finale = 12;
+    private const int Live = 13;
     private const int Rehearsal = 99;
     private const int FinalFile = 50;
 
     private static readonly FinalTrackAdoption Adoption = new(
         FinalFile,
         120,
-        new Dictionary<int, double> { [Opener] = -5, [Finale] = 60 }
+        new Dictionary<int, FinalTrackPlacement>
+        {
+            [Opener] = new(-5, 1),
+            [Finale] = new(60, 1),
+            [Live] = new(100, 0.98),
+        }
     );
 
     [Theory]
@@ -21,6 +27,8 @@ public sealed class FinalTrackAdoptionTests
     [InlineData(Opener, 5, 0)]
     [InlineData(Finale, 0, 60)]
     [InlineData(Finale, 60, 120)]
+    [InlineData(Live, 0, 100)]
+    [InlineData(Live, 10, 109.8)]
     public void Should_MoveTheAnchorOntoTheFinalFile_When_ItsMusicIsAligned(
         int source,
         double seconds,
@@ -29,12 +37,22 @@ public sealed class FinalTrackAdoptionTests
     {
         var rewritten = Adoption.Rewritten(new MusicAnchor(source, seconds));
 
-        Assert.Equal(new MusicAnchor(FinalFile, expectedSeconds), rewritten);
+        Assert.Equal(FinalFile, rewritten.SourceMediaItemId);
+        Assert.Equal(expectedSeconds, rewritten.Seconds, 9);
+    }
+
+    [Theory]
+    [InlineData(4.9)]
+    [InlineData(0)]
+    public void Should_MoveTheAnchorToTheStart_When_TheFinalFileCutsTheIntro(double seconds)
+    {
+        var rewritten = Adoption.Rewritten(new MusicAnchor(Opener, seconds));
+
+        Assert.Equal(new MusicAnchor(FinalFile, 0), rewritten);
     }
 
     [Theory]
     [InlineData(Rehearsal, 12)]
-    [InlineData(Opener, 4.9)]
     [InlineData(Finale, 60.1)]
     public void Should_KeepTheAnchor_When_ItsMusicIsNotInTheFinalFile(int source, double seconds)
     {
@@ -46,6 +64,7 @@ public sealed class FinalTrackAdoptionTests
     [Theory]
     [InlineData(20, 3, 12, 0)]
     [InlineData(6, 3, 0, 2)]
+    [InlineData(2, 0, 0, 3)]
     public void Should_KeepTheVideosLeadIn_When_ItsMusicMovesOntoTheFinalFile(
         double musicSeconds,
         double videoSeconds,

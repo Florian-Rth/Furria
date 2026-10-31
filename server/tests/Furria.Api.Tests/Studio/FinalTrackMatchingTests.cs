@@ -15,6 +15,12 @@ public sealed class FinalTrackMatchingTests
     private static readonly SoundProfile FinalFile = SoundProfile.Of(
         Joined(SoundSamples.Excerpt(March, 5, 50), SoundSamples.Excerpt(Polka, 0, 40))
     );
+    private static readonly SoundProfile LiveFinalFile = SoundProfile.Of(
+        Joined(
+            SoundSamples.Excerpt(March, 5, 50),
+            SoundSamples.Faster(SoundSamples.Excerpt(Polka, 0, 40), 1.02)
+        )
+    );
 
     [Theory]
     [InlineData(MarchItem, 10, 50, -5)]
@@ -28,12 +34,37 @@ public sealed class FinalTrackMatchingTests
     {
         var sound = source == MarchItem ? March : Polka;
 
-        var alignment = FinalTrackMatching.OffsetOf(
+        var alignment = FinalTrackMatching.AlignmentOf(
             new CutSound(new MusicCut(source, cutStart, cutEnd), SoundProfile.Of(sound)),
             FinalFile
         );
 
         Assert.NotNull(alignment);
+        Assert.Equal(expectedOffset, alignment.OffsetSeconds, 0.05);
+        Assert.Equal(1, alignment.Stretch, 0.001);
+    }
+
+    [Theory]
+    [InlineData(MarchItem, 10, 50, -5, 1)]
+    [InlineData(PolkaItem, 0, 40, 45, 1 / 1.02)]
+    [InlineData(PolkaItem, 10, 40, 45, 1 / 1.02)]
+    public void Should_FindTheSongWithItsTempo_When_TheLiveMixPlaysItFaster(
+        int source,
+        double cutStart,
+        double cutEnd,
+        double expectedOffset,
+        double expectedStretch
+    )
+    {
+        var sound = source == MarchItem ? March : Polka;
+
+        var alignment = FinalTrackMatching.AlignmentOf(
+            new CutSound(new MusicCut(source, cutStart, cutEnd), SoundProfile.Of(sound)),
+            LiveFinalFile
+        );
+
+        Assert.NotNull(alignment);
+        Assert.Equal(expectedStretch, alignment.Stretch, 0.001);
         Assert.Equal(expectedOffset, alignment.OffsetSeconds, 0.05);
     }
 
@@ -42,7 +73,7 @@ public sealed class FinalTrackMatchingTests
     {
         var other = SoundSamples.Song(seed: 99, bpm: 97, seconds: 45);
 
-        var alignment = FinalTrackMatching.OffsetOf(
+        var alignment = FinalTrackMatching.AlignmentOf(
             new CutSound(new MusicCut(MarchItem, 0, 45), SoundProfile.Of(other)),
             FinalFile
         );

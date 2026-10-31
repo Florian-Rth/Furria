@@ -30,7 +30,12 @@ export type AddedFinalTrack = z.infer<typeof AddedFinalTrackSchema>;
 
 export const FinalTrackMatchesSchema = z.object({
   matches: z.array(
-    z.object({ sourceMediaItemId: z.int(), offsetSeconds: z.number(), confidence: z.number() }),
+    z.object({
+      sourceMediaItemId: z.int(),
+      offsetSeconds: z.number(),
+      stretch: z.number().positive(),
+      confidence: z.number(),
+    }),
   ),
 });
 export type FinalTrackMatches = z.infer<typeof FinalTrackMatchesSchema>;

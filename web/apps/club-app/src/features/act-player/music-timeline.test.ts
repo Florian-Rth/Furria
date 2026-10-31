@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { Studio, StudioPart, StudioStep } from '@/features/acts/schemas';
-import type { MusicSegment } from './music-timeline';
+import type { Studio, StudioFinalTrack, StudioPart, StudioStep } from '@/features/acts/schemas';
+import type { BeatSection, MusicSegment } from './music-timeline';
 import {
   countAt,
   countMarksOf,
@@ -41,6 +41,10 @@ const studio = (patch: Partial<Studio>): Studio => ({
   ...patch,
 });
 
+const gridOf = (firstBeatSeconds: number, tempoBpm: number): BeatSection[] => [
+  { sourceStart: 0, sourceEnd: 1000, firstBeatSeconds, tempoBpm },
+];
+
 const segment = (patch: Partial<MusicSegment>): MusicSegment => ({
   mediaItemId: 1,
   audioUrl: '/a',
@@ -50,8 +54,7 @@ const segment = (patch: Partial<MusicSegment>): MusicSegment => ({
   sourceEnd: 30,
   timelineStart: 0,
   timelineEnd: 20,
-  firstBeatSeconds: 0.5,
-  tempoBpm: 120,
+  beats: gridOf(0.5, 120),
   ...patch,
 });
 
@@ -63,8 +66,7 @@ const mix = [
     sourceEnd: 15,
     timelineStart: 20,
     timelineEnd: 30,
-    firstBeatSeconds: 1,
-    tempoBpm: 60,
+    beats: gridOf(1, 60),
   }),
 ];
 
@@ -152,31 +154,90 @@ describe('countAt', () => {
   });
 
   it('counts a step stored a hair before its beat as that beat', () => {
-    const tempo = segment({ sourceStart: 0, sourceEnd: 60, firstBeatSeconds: 0, tempoBpm: 126 });
+    const tempo = segment({ sourceStart: 0, sourceEnd: 60, beats: gridOf(0, 126) });
 
     expect(countAt([tempo], 7.619)).toEqual({ count: 1, eight: 2 });
   });
 
   it.each([
-    ['without a beat grid', segment({ tempoBpm: null })],
-    ['before the first beat', segment({ sourceStart: 0, sourceEnd: 20, firstBeatSeconds: 2 })],
+    ['without a beat grid', segment({ beats: [] })],
+    ['before the first beat', segment({ sourceStart: 0, sourceEnd: 20, beats: gridOf(2, 120) })],
   ])('has no count %s', (_, unbeaten) => {
     expect(countAt([unbeaten], 1)).toBeNull();
+  });
+});
+
+describe('counts on an adopted final file', () => {
+  const songOf = (
+    mediaItemId: number,
+    startSeconds: number,
+    endSeconds: number,
+    firstBeatSeconds: number,
+    tempoBpm: number,
+  ) => ({ ...song(mediaItemId, 0, startSeconds, endSeconds), firstBeatSeconds, tempoBpm });
+  const finalOf = (alignments: StudioFinalTrack['alignments']): StudioFinalTrack => ({
+    finalTrackId: 1,
+    mediaItemId: 42,
+    version: 1,
+    adopted: true,
+    state: 'ready',
+    durationSeconds: 180,
+    fileName: 'Endfassung.mp3',
+    firstBeatSeconds: 0.2,
+    tempoBpm: 100,
+    alignments,
+    urls,
+  });
+  const liveMix = musicSegmentsOf(
+    studio({
+      music: { lengthSeconds: 180, source: 'finalTrack' },
+      songs: [songOf(3, 0, 60, 0.5, 120), songOf(4, 10, 70, 1, 96)],
+      finalTracks: [
+        finalOf([
+          { sourceMediaItemId: 3, offsetSeconds: -2, stretch: 1 },
+          { sourceMediaItemId: 4, offsetSeconds: 80, stretch: 0.98 },
+        ]),
+      ],
+    }),
+  );
+
+  it.each([
+    ['the first song, its intro cut away', 0, { count: 4, eight: 0 }],
+    ['the first song on its own first beat', 2.5, { count: 1, eight: 1 }],
+    ['the faster second song on its own first beat', 90.78, { count: 1, eight: 2 }],
+    ['the gap between the songs on the file grid', 60, { count: 4, eight: 12 }],
+    ['the end after the songs on the file grid', 150, { count: 2, eight: 31 }],
+  ])('counts %s', (_, seconds, expected) => {
+    expect(countAt(liveMix, seconds)).toEqual(expected);
+  });
+
+  it('marks the beats of the faster song at its own, stretched tempo', () => {
+    const marks = countMarksOf(liveMix).filter((mark) => mark.seconds >= 90 && mark.seconds < 92);
+    const gaps = marks.slice(1).map((mark, index) => mark.seconds - (marks[index]?.seconds ?? 0));
+
+    expect(gaps.map((gap) => Math.round(gap * 10000) / 10000)).toEqual([0.6125, 0.6125]);
+  });
+
+  it('counts with the file grid alone when no song is aligned', () => {
+    const plain = musicSegmentsOf(
+      studio({ music: { lengthSeconds: 180, source: 'finalTrack' }, finalTracks: [finalOf([])] }),
+    );
+
+    expect(countAt(plain, 60)).toEqual({ count: 4, eight: 12 });
   });
 });
 
 describe('countMarksOf', () => {
   it('marks every beat inside the cut on the timeline with its count', () => {
     const marks = countMarksOf([
-      segment({ sourceStart: 10, sourceEnd: 12, firstBeatSeconds: 0.5, tempoBpm: 120 }),
+      segment({ sourceStart: 10, sourceEnd: 12, beats: gridOf(0.5, 120) }),
       segment({
         mediaItemId: 2,
         sourceStart: 0,
         sourceEnd: 1.5,
         timelineStart: 2,
         timelineEnd: 3.5,
-        firstBeatSeconds: 0,
-        tempoBpm: 60,
+        beats: gridOf(0, 60),
       }),
     ]);
 

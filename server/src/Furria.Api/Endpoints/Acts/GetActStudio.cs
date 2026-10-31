@@ -133,6 +133,7 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
                 {
                     SourceMediaItemId = alignment.SourceMediaItemId,
                     OffsetSeconds = alignment.OffsetSeconds,
+                    Stretch = alignment.Stretch,
                 }),
             ],
             Urls = ToDto(track.Urls),
@@ -519,6 +520,8 @@ public sealed record StudioFinalTrackAlignmentDto
     public required int SourceMediaItemId { get; init; }
 
     public required double OffsetSeconds { get; init; }
+
+    public required double Stretch { get; init; }
 }
 
 public sealed record StudioStepDto

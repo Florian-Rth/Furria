@@ -5,23 +5,23 @@ import { partRangeOf } from '@/features/act-player/music-timeline';
 import type { StudioVideo } from '@/features/acts/schemas';
 import {
   placementTextOf,
-  STUDIO_ALTERNATIVE,
   STUDIO_EDIT,
-  STUDIO_MAIN,
   STUDIO_NO_VIDEO_HERE,
-  STUDIO_OUTDATED,
   STUDIO_VIDEO_GONE,
   shelfMetaOf,
+  takeBadgeOf,
+  takeGroupNameOf,
   takeMetaOf,
   videoBarLabelOf,
   videoNameOf,
 } from '../studio-copy';
 import type { StageShare } from '../studio-edits';
-import { clampedVideoStartOf, overlapsRange, videoShelfOf } from '../studio-videos';
+import { clampedVideoStartOf, takeGroupsOf, videoShelfOf } from '../studio-videos';
 import { useDeskTarget } from './use-desk-target';
 import type { StudioScreen } from './use-studio-screen';
 
 const NUDGE_SECONDS = 0.1;
+const LOOSE_GROUP_KEY = 'loose';
 
 export interface ActStudioVideoBar {
   key: string;
@@ -191,28 +191,19 @@ export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
         ),
       });
     },
-    groups: parts.map((part) => {
-      const range = partRangeOf(part, steps);
-      const takes = placed.filter((candidate) => range !== null && overlapsRange(candidate, range));
-      const ordered = [
-        ...takes.filter((candidate) => candidate.videoId === part.mainVideoId),
-        ...takes.filter((candidate) => candidate.videoId !== part.mainVideoId),
-      ];
+    groups: takeGroupsOf(parts, steps, placed).map(({ part, range, takes }) => {
+      const groupKey = part === null ? LOOSE_GROUP_KEY : String(part.partId);
 
       return {
-        key: String(part.partId),
-        name: part.name,
-        aside: ordered.length === 0 ? STUDIO_NO_VIDEO_HERE : null,
-        rows: ordered.map((candidate, index) => {
-          const main = candidate.videoId === part.mainVideoId;
+        key: groupKey,
+        name: takeGroupNameOf(part?.name ?? null, parts.length > 0),
+        aside: takes.length === 0 ? STUDIO_NO_VIDEO_HERE : null,
+        rows: takes.map((candidate, index) => {
+          const main = part !== null && candidate.videoId === part.mainVideoId;
           const isSelected = candidate.videoId === selected?.videoId;
-          const badge = candidate.outdated
-            ? STUDIO_OUTDATED
-            : main
-              ? STUDIO_MAIN
-              : STUDIO_ALTERNATIVE;
+          const badge = takeBadgeOf(candidate.outdated, part === null ? null : main);
           return {
-            key: `${part.partId}-${candidate.videoId}`,
+            key: `${groupKey}-${candidate.videoId}`,
             lead: String(index + 1),
             title: nameOf(candidate),
             meta: takeMetaOf(candidate.startSeconds, candidate.durationSeconds),

@@ -54,6 +54,7 @@ public sealed class PostActFinalTrackAlignment
                     {
                         SourceMediaItemId = match.SourceMediaItemId,
                         OffsetSeconds = match.OffsetSeconds,
+                        Stretch = match.Stretch,
                         Confidence = match.Confidence,
                     }),
                 ],
@@ -92,6 +93,8 @@ public sealed record FinalTrackMatchDto
     public required int SourceMediaItemId { get; init; }
 
     public required double OffsetSeconds { get; init; }
+
+    public required double Stretch { get; init; }
 
     public required double Confidence { get; init; }
 }

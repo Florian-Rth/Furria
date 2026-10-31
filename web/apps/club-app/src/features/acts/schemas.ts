@@ -84,7 +84,13 @@ export const StudioFinalTrackSchema = z.object({
   fileName: z.string(),
   firstBeatSeconds: z.number().nullable(),
   tempoBpm: z.number().nullable(),
-  alignments: z.array(z.object({ sourceMediaItemId: z.int(), offsetSeconds: z.number() })),
+  alignments: z.array(
+    z.object({
+      sourceMediaItemId: z.int(),
+      offsetSeconds: z.number(),
+      stretch: z.number().positive(),
+    }),
+  ),
   urls: AudioUrlsSchema,
 });
 export type StudioFinalTrack = z.infer<typeof StudioFinalTrackSchema>;

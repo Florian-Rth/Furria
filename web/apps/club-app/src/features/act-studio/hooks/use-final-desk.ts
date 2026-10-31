@@ -8,7 +8,13 @@ import {
   tempoNudgeTextOf,
   tempoTextOf,
 } from '../studio-copy';
-import { finalBeatAtOf, nudgedFinalBeatOf, offsetStartingAt, tunedOffsetOf } from '../studio-final';
+import {
+  finalBeatAtOf,
+  nudgedFinalBeatOf,
+  offsetStartingAt,
+  stretchOf,
+  tunedOffsetOf,
+} from '../studio-final';
 import { steppedTempoOf } from '../studio-music';
 import type { ActStudioFinal, CurrentSource } from './use-act-studio-final';
 import type { SongDeskNudge } from './use-song-desk';
@@ -56,12 +62,14 @@ export const useFinalDesk = (screen: StudioScreen, list: ActStudioFinal): FinalD
 
   const sourceDeskOf = (track: StudioFinalTrack, current: CurrentSource): FinalSourceDesk => {
     const mediaItemId = current.place.segment.mediaItemId;
-    const offset = final.offsets[mediaItemId] ?? null;
+    const offset = final.placements[mediaItemId]?.offsetSeconds ?? null;
+    const stretch = stretchOf(final.placements, mediaItemId);
     const tune = (offsetSeconds: number): void => {
       final.writes.tune.mutate({
         finalTrackId: track.finalTrackId,
         sourceMediaItemId: mediaItemId,
         offsetSeconds,
+        stretch,
       });
     };
     const shiftOf = (delta: number): SongDeskNudge => ({
@@ -83,7 +91,7 @@ export const useFinalDesk = (screen: StudioScreen, list: ActStudioFinal): FinalD
       later: LATER_SHIFTS.map(shiftOf),
       shiftLocked: offset === null,
       startHere: () => {
-        tune(offsetStartingAt(current.place.segment, player.position()));
+        tune(offsetStartingAt(current.place.segment, player.position(), stretch));
       },
       matching: final.writes.match.isPending,
       match: () => {

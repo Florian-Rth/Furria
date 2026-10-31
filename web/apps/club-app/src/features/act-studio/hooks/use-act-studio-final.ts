@@ -69,7 +69,7 @@ export const useActStudioFinal = (screen: StudioScreen): ActStudioFinal => {
   const [removing, setRemoving] = useState<number | null>(null);
   const onMusic = mode.editing && mode.tool === 'music';
   const pending = final.pending;
-  const matched = matchesAnyMusic(final.offsets);
+  const matched = matchesAnyMusic(final.placements);
   const adopted = final.adopted;
   if (desk !== null && (!onMusic || desk !== deskKindOf(final.previewing))) {
     setDesk(null);
@@ -106,7 +106,7 @@ export const useActStudioFinal = (screen: StudioScreen): ActStudioFinal => {
     title: finalTitleOf(track.version),
     meta: finalTrackMetaOf(
       track.state,
-      Object.keys(final.offsets).length,
+      Object.keys(final.placements).length,
       final.mix.length,
       final.previewing,
     ),

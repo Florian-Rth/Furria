@@ -7,17 +7,14 @@ import type {
   StudioVideo,
 } from '@/features/acts/schemas';
 import type { PortraitPersonRef } from '@/lib/api/schemas';
-import type { FinalBeatInput } from './studio-final';
+import type { FinalBeatInput, FinalOffsetInput } from './studio-final';
 import type { SongSettings } from './studio-music';
 import { songSettingsOf } from './studio-music';
 import type { SpotPerson, TrackChanges } from './studio-spots';
 import type { PartSettings } from './studio-steps';
 import { partSettingsOf } from './studio-steps';
 
-export interface FinalOffset {
-  sourceMediaItemId: number;
-  offsetSeconds: number;
-}
+export type FinalOffset = Omit<FinalOffsetInput, 'finalTrackId'>;
 
 export interface StepCopy {
   atSeconds: number;
@@ -149,7 +146,11 @@ const offsetsBefore = (
 
   const offsets = track.alignments
     .filter((known) => sources === null || sources.includes(known.sourceMediaItemId))
-    .map(({ sourceMediaItemId, offsetSeconds }) => ({ sourceMediaItemId, offsetSeconds }));
+    .map(({ sourceMediaItemId, offsetSeconds, stretch }) => ({
+      sourceMediaItemId,
+      offsetSeconds,
+      stretch,
+    }));
 
   return offsets.length === 0 ? null : { kind: 'finalOffsets', finalTrackId, offsets };
 };

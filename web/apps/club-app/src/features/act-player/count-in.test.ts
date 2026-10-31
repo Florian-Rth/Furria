@@ -11,8 +11,7 @@ const segment = (patch: Partial<MusicSegment>): MusicSegment => ({
   sourceEnd: 20,
   timelineStart: 0,
   timelineEnd: 20,
-  firstBeatSeconds: 1,
-  tempoBpm: 120,
+  beats: [{ sourceStart: 0, sourceEnd: 20, firstBeatSeconds: 1, tempoBpm: 120 }],
   ...patch,
 });
 
@@ -24,8 +23,7 @@ const mix = [
     sourceEnd: 30,
     timelineStart: 20,
     timelineEnd: 40,
-    firstBeatSeconds: 10.25,
-    tempoBpm: 60,
+    beats: [{ sourceStart: 10, sourceEnd: 30, firstBeatSeconds: 10.25, tempoBpm: 60 }],
   }),
 ];
 
@@ -76,8 +74,7 @@ describe('countInOf', () => {
   });
 
   it.each([
-    ['a song without a tempo', [segment({ tempoBpm: null })], 5, 4],
-    ['a song without a first beat', [segment({ firstBeatSeconds: null })], 5, 4],
+    ['a song without a beat grid', [segment({ beats: [] })], 5, 4],
     ['a start past the music', mix, 45, 4],
     ['no beats asked for', mix, 5, 0],
   ])('counts nothing in for %s', (_, segments, start, beats) => {

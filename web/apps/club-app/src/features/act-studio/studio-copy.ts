@@ -173,9 +173,28 @@ export const STUDIO_PLACEMENT_LABEL = 'Wo das Video auf der Musik liegt';
 export const STUDIO_EARLIER = 'Video früher';
 export const STUDIO_LATER_NUDGE = 'Video später';
 export const STUDIO_TAKES = 'Videos je Teil';
+export const STUDIO_TAKES_WITHOUT_PART = 'Ohne Teil';
 export const STUDIO_MAIN = 'Haupt';
 export const STUDIO_ALTERNATIVE = 'Alternative';
 export const STUDIO_OUTDATED = 'veraltet';
+export const STUDIO_TAKES_ON_MUSIC = 'Auf der Musik';
+
+export const takeGroupNameOf = (partName: string | null, hasParts: boolean): string => {
+  if (partName !== null) {
+    return partName;
+  }
+  return hasParts ? STUDIO_TAKES_WITHOUT_PART : STUDIO_TAKES_ON_MUSIC;
+};
+
+export const takeBadgeOf = (outdated: boolean, main: boolean | null): string | null => {
+  if (outdated) {
+    return STUDIO_OUTDATED;
+  }
+  if (main === null) {
+    return null;
+  }
+  return main ? STUDIO_MAIN : STUDIO_ALTERNATIVE;
+};
 export const STUDIO_NO_VIDEO = 'kein Video';
 export const STUDIO_NO_VIDEO_HERE = 'Hier liegt kein Video';
 export const STUDIO_VIDEOS_UNPLACED = 'Noch nicht auf der Musik';

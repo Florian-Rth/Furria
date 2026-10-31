@@ -311,11 +311,13 @@ export const useFinalTrackMutations = (actId: number): FinalTrackMutations => {
       requestFinalTrackOffset(actId, input, accessToken),
     changes: ['actMusic'],
     optimistic: [optimisticPatch<ActStudioResponse, FinalOffsetInput>(studioKey, withFinalOffset)],
-    ...undoable(({ finalTrackId, sourceMediaItemId, offsetSeconds }: FinalOffsetInput) => ({
-      kind: 'finalOffsets',
-      finalTrackId,
-      offsets: [{ sourceMediaItemId, offsetSeconds }],
-    })),
+    ...undoable(
+      ({ finalTrackId, sourceMediaItemId, offsetSeconds, stretch }: FinalOffsetInput) => ({
+        kind: 'finalOffsets',
+        finalTrackId,
+        offsets: [{ sourceMediaItemId, offsetSeconds, stretch }],
+      }),
+    ),
     notice: failure,
     key,
   });

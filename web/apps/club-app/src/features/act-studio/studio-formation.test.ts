@@ -41,8 +41,7 @@ const segment = (
   sourceEnd,
   timelineStart,
   timelineEnd: timelineStart + sourceEnd - sourceStart,
-  firstBeatSeconds: null,
-  tempoBpm: null,
+  beats: [],
 });
 
 const mix = [segment(11, 10, 40, 0), segment(12, 5, 25, 30)];

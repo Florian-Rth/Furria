@@ -3,7 +3,7 @@ import type { MusicSegment } from '@/features/act-player/music-timeline';
 import type { Studio, StudioFinalTrack, StudioStep, StudioVideo } from '@/features/acts/schemas';
 import {
   finalBeatAtOf,
-  finalOffsetsOf,
+  finalPlacementsOf,
   finalPlacesOf,
   finalPreviewOf,
   finalSecondsAt,
@@ -31,12 +31,12 @@ const segmentOf = (
   sourceEnd,
   timelineStart,
   timelineEnd: timelineStart + sourceEnd - sourceStart,
-  firstBeatSeconds: null,
-  tempoBpm: null,
+  beats: [],
 });
 
 const mix = [segmentOf(1, 10, 40, 0), segmentOf(2, 0, 30, 30)];
-const offsets = { 1: -5, 2: 40 };
+const placed = (offsetSeconds: number, stretch = 1) => ({ offsetSeconds, stretch });
+const placements = { 1: placed(-5), 2: placed(40) };
 
 const trackOf = (finalTrackId: number, version: number, adopted: boolean): StudioFinalTrack => ({
   finalTrackId,
@@ -99,17 +99,17 @@ describe('pendingFinalTrackOf', () => {
   });
 });
 
-describe('finalOffsetsOf', () => {
-  it('keeps only the offsets of music that plays', () => {
+describe('finalPlacementsOf', () => {
+  it('keeps only the placements of music that plays', () => {
     const track = {
       ...trackOf(1, 1, false),
       alignments: [
-        { sourceMediaItemId: 1, offsetSeconds: -5 },
-        { sourceMediaItemId: 7, offsetSeconds: 3 },
+        { sourceMediaItemId: 1, offsetSeconds: -5, stretch: 1 },
+        { sourceMediaItemId: 7, offsetSeconds: 3, stretch: 1 },
       ],
     };
 
-    expect(finalOffsetsOf(track, mix)).toEqual({ 1: -5 });
+    expect(finalPlacementsOf(track, mix)).toEqual({ 1: placed(-5) });
   });
 });
 
@@ -119,11 +119,11 @@ describe('position mapping', () => {
     [35, 45],
     [60, 70],
   ])('mix second %s lies at final second %s', (seconds, expected) => {
-    expect(finalSecondsAt(mix, offsets, 70, seconds)).toBe(expected);
+    expect(finalSecondsAt(mix, placements, 70, seconds)).toBe(expected);
   });
 
   it('finds no final second for music the final file leaves out', () => {
-    expect(finalSecondsAt(mix, { 2: 40 }, 70, 10)).toBeNull();
+    expect(finalSecondsAt(mix, { 2: placed(40) }, 70, 10)).toBeNull();
   });
 
   it.each([
@@ -131,14 +131,32 @@ describe('position mapping', () => {
     [45, 35],
     [2, null],
   ])('final second %s lies at mix second %s', (seconds, expected) => {
-    expect(mixSecondsAt(mix, offsets, seconds)).toBe(expected);
+    expect(mixSecondsAt(mix, placements, seconds)).toBe(expected);
+  });
+
+  it.each([
+    [0, 0],
+    [5, 4.7],
+    [20, 19.4],
+    [35, 45],
+  ])('maps mix second %s of a song played faster to final second %s', (seconds, expected) => {
+    expect(finalSecondsAt(mix, { 1: placed(-10, 0.98), 2: placed(40) }, 70, seconds)).toBeCloseTo(
+      expected,
+    );
+  });
+
+  it('maps a final second of a song played faster back to its mix second', () => {
+    expect(mixSecondsAt(mix, { 1: placed(-10, 0.98) }, 19.4)).toBeCloseTo(20);
   });
 });
 
 describe('finalPlacesOf', () => {
   it('places each song in the final file, clamped to its length', () => {
     expect(
-      finalPlacesOf(mix, { 1: -5, 2: 45 }, 70).map((place) => [place.start, place.end]),
+      finalPlacesOf(mix, { 1: placed(-5), 2: placed(45) }, 70).map((place) => [
+        place.start,
+        place.end,
+      ]),
     ).toEqual([
       [5, 35],
       [45, 70],
@@ -146,11 +164,20 @@ describe('finalPlacesOf', () => {
   });
 
   it('leaves a song unplaced when the final file ends before it begins', () => {
-    expect(finalPlacesOf(mix, { 1: 60 }, 70)[0]).toMatchObject({ start: null, end: null });
+    expect(finalPlacesOf(mix, { 1: placed(60) }, 70)[0]).toMatchObject({ start: null, end: null });
+  });
+
+  it('places a song played faster over its shorter span', () => {
+    expect(
+      finalPlacesOf(mix, { 1: placed(-10, 0.98) }, 70).map((place) => [place.start, place.end]),
+    ).toEqual([
+      [0, -10 + 40 * 0.98],
+      [null, null],
+    ]);
   });
 
   it('leaves a song without offset unplaced', () => {
-    expect(finalPlacesOf(mix, { 2: 40 }, 70)[0]).toMatchObject({ start: null, end: null });
+    expect(finalPlacesOf(mix, { 2: placed(40) }, 70)[0]).toMatchObject({ start: null, end: null });
   });
 });
 
@@ -163,7 +190,8 @@ describe('offsets', () => {
   });
 
   it('starts a song where the playhead stands', () => {
-    expect(offsetStartingAt(segmentOf(1, 10, 40, 0), 12.5)).toBe(2.5);
+    expect(offsetStartingAt(segmentOf(1, 10, 40, 0), 12.5, 1)).toBe(2.5);
+    expect(offsetStartingAt(segmentOf(1, 10, 40, 0), 12.5, 0.98)).toBe(2.7);
   });
 });
 
@@ -175,7 +203,7 @@ describe('finalPreviewOf', () => {
       steps: [stepOf(1, 0, 20), stepOf(2, 20, 35), stepOf(3, 35, 60)],
     });
 
-    const preview = finalPreviewOf(studio, track, mix, { 1: -5 });
+    const preview = finalPreviewOf(studio, track, mix, { 1: placed(-5) });
 
     expect(
       preview.steps.map((step) => [
@@ -194,7 +222,7 @@ describe('finalPreviewOf', () => {
   it('keeps a video lead-in and loses videos whose music is left out', () => {
     const studio = studioOf({ videos: [videoOf(1, -2), videoOf(2, 35)] });
 
-    const preview = finalPreviewOf(studio, track, mix, { 1: -5 });
+    const preview = finalPreviewOf(studio, track, mix, { 1: placed(-5) });
 
     expect(preview.videos.map((video) => [video.startSeconds, video.placement])).toEqual([
       [3, 'onTimeline'],
@@ -225,7 +253,7 @@ describe('finalPreviewOf', () => {
       },
     });
 
-    const preview = finalPreviewOf(studio, track, mix, { 1: -5 });
+    const preview = finalPreviewOf(studio, track, mix, { 1: placed(-5) });
 
     expect(
       preview.choreography?.tracks[0]?.keyframes.map((moved) => [
@@ -267,19 +295,19 @@ describe('withFinalOffset', () => {
     const track = {
       ...trackOf(1, 1, false),
       alignments: [
-        { sourceMediaItemId: 1, offsetSeconds: -5 },
-        { sourceMediaItemId: 2, offsetSeconds: 40 },
+        { sourceMediaItemId: 1, offsetSeconds: -5, stretch: 1 },
+        { sourceMediaItemId: 2, offsetSeconds: 40, stretch: 1 },
       ],
     };
 
     const patched = withFinalOffset(
       { studio: studioOf({ finalTracks: [track] }) },
-      { finalTrackId: 1, sourceMediaItemId: 1, offsetSeconds: -4.9 },
+      { finalTrackId: 1, sourceMediaItemId: 1, offsetSeconds: -4.9, stretch: 1 },
     );
 
     expect(patched?.studio?.finalTracks[0]?.alignments).toEqual([
-      { sourceMediaItemId: 2, offsetSeconds: 40 },
-      { sourceMediaItemId: 1, offsetSeconds: -4.9 },
+      { sourceMediaItemId: 2, offsetSeconds: 40, stretch: 1 },
+      { sourceMediaItemId: 1, offsetSeconds: -4.9, stretch: 1 },
     ]);
   });
 });

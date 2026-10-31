@@ -10,6 +10,8 @@ public sealed class ActFinalTrackAlignment
 
     public double OffsetSeconds { get; set; }
 
+    public double Stretch { get; set; } = FinalTrackPlacement.Unstretched;
+
     public ActFinalTrack? FinalTrack { get; set; }
 
     public MediaItem? SourceMediaItem { get; set; }

@@ -3,6 +3,7 @@ using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.Studio;
+using Furria.Core.Studio;
 using Furria.Infrastructure.Studio;
 
 namespace Furria.Api.Endpoints.Acts;
@@ -41,6 +42,7 @@ public sealed class PutActFinalTrackAlignment : Endpoint<PutActFinalTrackAlignme
                 FinalTrackId = req.FinalTrackId,
                 SourceMediaItemId = req.SourceMediaItemId,
                 OffsetSeconds = req.OffsetSeconds,
+                Stretch = req.Stretch,
             },
             ct
         );
@@ -66,6 +68,8 @@ public sealed record PutActFinalTrackAlignmentRequest
     public required int SourceMediaItemId { get; init; }
 
     public required double OffsetSeconds { get; init; }
+
+    public required double Stretch { get; init; }
 }
 
 public sealed class PutActFinalTrackAlignmentValidator : Validator<PutActFinalTrackAlignmentRequest>
@@ -76,5 +80,7 @@ public sealed class PutActFinalTrackAlignmentValidator : Validator<PutActFinalTr
         RuleFor(request => request.FinalTrackId).GreaterThan(0);
         RuleFor(request => request.SourceMediaItemId).GreaterThan(0);
         RuleFor(request => request.OffsetSeconds).Must(double.IsFinite);
+        RuleFor(request => request.Stretch)
+            .InclusiveBetween(FinalTrackPlacement.LeastStretch, FinalTrackPlacement.MostStretch);
     }
 }

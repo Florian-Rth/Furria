@@ -1,5 +1,5 @@
 import type { MusicSegment } from './music-timeline';
-import { BEAT_ROUNDING_SECONDS, beatSecondsOf, countOfBeat, segmentAt } from './music-timeline';
+import { BEAT_ROUNDING_SECONDS, beatGridAt, countOfBeat, segmentAt } from './music-timeline';
 
 export const COUNT_IN_BEATS = 4;
 const ON_BEAT_SECONDS = BEAT_ROUNDING_SECONDS;
@@ -21,18 +21,22 @@ export const countInOf = (
   beats: number,
 ): CountIn | null => {
   const segment = segmentAt(segments, startSeconds);
-  const beat = segment === null ? null : beatSecondsOf(segment);
 
-  if (segment === null || beat === null || segment.firstBeatSeconds === null || beats <= 0) {
+  if (segment === null || beats <= 0) {
     return null;
   }
 
   const sourceSeconds = segment.sourceStart + (startSeconds - segment.timelineStart);
-  const landingBeat = Math.ceil(
-    (sourceSeconds - ON_BEAT_SECONDS - segment.firstBeatSeconds) / beat,
-  );
+  const grid = beatGridAt(segment, sourceSeconds);
+
+  if (grid === null) {
+    return null;
+  }
+
+  const { firstBeatSeconds, beatSeconds: beat } = grid;
+  const landingBeat = Math.ceil((sourceSeconds - ON_BEAT_SECONDS - firstBeatSeconds) / beat);
   const firstClickBeat = landingBeat - beats;
-  const firstClickSeconds = segment.firstBeatSeconds + firstClickBeat * beat;
+  const firstClickSeconds = firstBeatSeconds + firstClickBeat * beat;
   const clicks = Array.from({ length: beats }, (_, index) => ({
     offsetSeconds: (index * beat) / rate,
     count: countOfBeat(firstClickBeat + index),

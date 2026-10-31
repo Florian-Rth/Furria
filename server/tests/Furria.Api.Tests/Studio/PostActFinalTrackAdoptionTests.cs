@@ -214,6 +214,24 @@ public sealed class PostActFinalTrackAdoptionTests : IClassFixture<ApiTestFixtur
         );
 
     [Fact]
+    public async Task Should_KeepEachSongsTempoAndTheCutIntro_When_TheLiveMixPlaysASongFaster()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (admin, actId, opener, finale) = await MixAsync(ct);
+        await MarkedAsync(admin, actId, 10, 70);
+        var (finalTrackId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 120, ct);
+        await TuneOffsetAsync(admin, actId, finalTrackId, opener, -5);
+        await TuneOffsetAsync(admin, actId, finalTrackId, finale, 40, 0.98);
+
+        var response = await AdoptAsync(admin, actId, finalTrackId);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        var steps = (await StudioOfAsync(admin, actId)).Studio!.Steps;
+        Assert.All(steps, step => Assert.Equal(AnchorPlacement.OnTimeline, step.Placement));
+        Assert.Equal([0, 5, 49.8], steps.Select(step => Math.Round(step.StartSeconds!.Value, 6)));
+    }
+
+    [Fact]
     public async Task Should_MarkTheMusicMissing_When_ASongIsNotInTheFinalFile()
     {
         var ct = TestContext.Current.CancellationToken;

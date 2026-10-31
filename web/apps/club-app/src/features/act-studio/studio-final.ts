@@ -8,12 +8,18 @@ import { withStudio } from './studio-music';
 
 const OFFSET_GRAIN = 1000;
 
-export type FinalOffsets = Readonly<Record<number, number>>;
+export interface FinalPlacement {
+  offsetSeconds: number;
+  stretch: number;
+}
 
-export interface FinalOffsetInput {
+export type FinalPlacements = Readonly<Record<number, FinalPlacement>>;
+
+export const UNSTRETCHED = 1;
+
+export interface FinalOffsetInput extends FinalPlacement {
   finalTrackId: number;
   sourceMediaItemId: number;
-  offsetSeconds: number;
 }
 
 export interface FinalBeatInput {
@@ -29,7 +35,7 @@ export interface FinalPlace {
 }
 
 interface FinalSpan {
-  offsets: FinalOffsets;
+  placements: FinalPlacements;
   length: number;
 }
 
@@ -50,49 +56,66 @@ export const pendingFinalTrackOf = (studio: Studio): StudioFinalTrack | null => 
   );
 };
 
-export const finalOffsetsOf = (
+export const finalPlacementsOf = (
   track: StudioFinalTrack,
   segments: readonly MusicSegment[],
-): FinalOffsets =>
+): FinalPlacements =>
   Object.fromEntries(
     track.alignments
       .filter((alignment) =>
         segments.some((segment) => segment.mediaItemId === alignment.sourceMediaItemId),
       )
-      .map((alignment) => [alignment.sourceMediaItemId, alignment.offsetSeconds]),
+      .map(({ sourceMediaItemId, offsetSeconds, stretch }) => [
+        sourceMediaItemId,
+        { offsetSeconds, stretch },
+      ]),
   );
 
-export const matchesAnyMusic = (offsets: FinalOffsets): boolean => Object.keys(offsets).length > 0;
+export const stretchOf = (placements: FinalPlacements, mediaItemId: number): number =>
+  placements[mediaItemId]?.stretch ?? UNSTRETCHED;
 
-const finalSecondsOf = (anchor: MusicAnchor | null, mapping: FinalSpan): number | null => {
-  const offset = anchor === null ? undefined : mapping.offsets[anchor.sourceMediaItemId];
+export const matchesAnyMusic = (placements: FinalPlacements): boolean =>
+  Object.keys(placements).length > 0;
 
-  if (anchor === null || offset === undefined) {
+const placedSecondsOf = (placement: FinalPlacement, sourceSeconds: number): number =>
+  placement.offsetSeconds + sourceSeconds * placement.stretch;
+
+const sourceSecondsOf = (placement: FinalPlacement, finalSeconds: number): number =>
+  (finalSeconds - placement.offsetSeconds) / placement.stretch;
+
+const unclampedFinalSecondsOf = (anchor: MusicAnchor | null, mapping: FinalSpan): number | null => {
+  const placement = anchor === null ? undefined : mapping.placements[anchor.sourceMediaItemId];
+
+  if (anchor === null || placement === undefined) {
     return null;
   }
 
-  const seconds = anchor.seconds + offset;
+  const seconds = placedSecondsOf(placement, anchor.seconds);
 
-  return seconds >= -EDGE_TOLERANCE_SECONDS && seconds <= mapping.length + EDGE_TOLERANCE_SECONDS
-    ? Math.min(mapping.length, Math.max(0, seconds))
-    : null;
+  return seconds <= mapping.length + EDGE_TOLERANCE_SECONDS ? seconds : null;
+};
+
+const finalSecondsOf = (anchor: MusicAnchor | null, mapping: FinalSpan): number | null => {
+  const seconds = unclampedFinalSecondsOf(anchor, mapping);
+
+  return seconds === null ? null : Math.min(mapping.length, Math.max(0, seconds));
 };
 
 export const finalSecondsAt = (
   segments: readonly MusicSegment[],
-  offsets: FinalOffsets,
+  placements: FinalPlacements,
   length: number,
   seconds: number,
-): number | null => finalSecondsOf(anchorAt(segments, seconds), { offsets, length });
+): number | null => finalSecondsOf(anchorAt(segments, seconds), { placements, length });
 
 export const mixSecondsAt = (
   segments: readonly MusicSegment[],
-  offsets: FinalOffsets,
+  placements: FinalPlacements,
   finalSeconds: number,
 ): number | null => {
   for (const segment of segments) {
-    const offset = offsets[segment.mediaItemId];
-    const source = offset === undefined ? null : finalSeconds - offset;
+    const placement = placements[segment.mediaItemId];
+    const source = placement === undefined ? null : sourceSecondsOf(placement, finalSeconds);
 
     if (source !== null && source >= segment.sourceStart && source < segment.sourceEnd) {
       return segment.timelineStart + source - segment.sourceStart;
@@ -145,7 +168,10 @@ const previewVideoOf = (
   }
 
   const leadIn = Math.max(0, -video.startSeconds);
-  const music = finalSecondsOf(anchorAt(segments, Math.max(0, video.startSeconds)), mapping);
+  const music = unclampedFinalSecondsOf(
+    anchorAt(segments, Math.max(0, video.startSeconds)),
+    mapping,
+  );
 
   return music === null
     ? { ...video, startSeconds: null, placement: 'musicMissing' }
@@ -176,10 +202,10 @@ export const finalPreviewOf = (
   studio: Studio,
   track: StudioFinalTrack,
   segments: readonly MusicSegment[],
-  offsets: FinalOffsets,
+  placements: FinalPlacements,
 ): Studio => {
   const mapping: FinalMapping = {
-    offsets,
+    placements,
     length: track.durationSeconds ?? 0,
     mediaItemId: track.mediaItemId,
   };
@@ -199,18 +225,18 @@ export const finalPreviewOf = (
 
 export const finalPlacesOf = (
   segments: readonly MusicSegment[],
-  offsets: FinalOffsets,
+  placements: FinalPlacements,
   length: number,
 ): FinalPlace[] =>
   segments.map((segment) => {
-    const offset = offsets[segment.mediaItemId];
+    const placement = placements[segment.mediaItemId];
 
-    if (offset === undefined) {
+    if (placement === undefined) {
       return { segment, start: null, end: null };
     }
 
-    const start = Math.max(0, segment.sourceStart + offset);
-    const end = Math.min(length, segment.sourceEnd + offset);
+    const start = Math.max(0, placedSecondsOf(placement, segment.sourceStart));
+    const end = Math.min(length, placedSecondsOf(placement, segment.sourceEnd));
 
     return end > start ? { segment, start, end } : { segment, start: null, end: null };
   });
@@ -221,12 +247,15 @@ const roundedOffsetOf = (seconds: number): number =>
 export const tunedOffsetOf = (offset: number, delta: number): number =>
   roundedOffsetOf(offset + delta);
 
-export const offsetStartingAt = (segment: MusicSegment, finalSeconds: number): number =>
-  roundedOffsetOf(finalSeconds - segment.sourceStart);
+export const offsetStartingAt = (
+  segment: MusicSegment,
+  finalSeconds: number,
+  stretch: number,
+): number => roundedOffsetOf(finalSeconds - segment.sourceStart * stretch);
 
 export const withFinalOffset = <TResponse extends HoldsStudio>(
   response: TResponse | undefined,
-  { finalTrackId, sourceMediaItemId, offsetSeconds }: FinalOffsetInput,
+  { finalTrackId, sourceMediaItemId, offsetSeconds, stretch }: FinalOffsetInput,
 ): TResponse | undefined =>
   withStudio(response, (studio) => ({
     ...studio,
@@ -238,7 +267,7 @@ export const withFinalOffset = <TResponse extends HoldsStudio>(
               ...track.alignments.filter(
                 (alignment) => alignment.sourceMediaItemId !== sourceMediaItemId,
               ),
-              { sourceMediaItemId, offsetSeconds },
+              { sourceMediaItemId, offsetSeconds, stretch },
             ],
           }
         : track,

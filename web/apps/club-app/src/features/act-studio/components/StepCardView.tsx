@@ -97,6 +97,7 @@ export const StepCardView: FC<StepCardViewProps> = ({
           <KkLaneButton
             text={STEP_CARDS_UNDO}
             glyph="undo"
+            textShown={false}
             disabled={undoLocked}
             onPress={history.undo}
           />

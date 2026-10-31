@@ -52,6 +52,26 @@ public sealed record SoundProfile(int FramesPerSecond, float[][] Bands)
     }
 
     [Pure]
+    public SoundProfile Stretched(double stretch)
+    {
+        var length = (int)Math.Round(FrameCount * stretch);
+        return new SoundProfile(
+            FramesPerSecond,
+            [.. Bands.Select(band => StretchedFramesOf(band, stretch, length))]
+        );
+    }
+
+    [Pure]
+    public SoundProfile Coarsened(int factor)
+    {
+        var length = FrameCount / factor;
+        return new SoundProfile(
+            FramesPerSecond / factor,
+            [.. Bands.Select(band => AveragedFramesOf(band, factor, length))]
+        );
+    }
+
+    [Pure]
     public static SoundProfile? Joined(IReadOnlyList<SoundProfile> profiles)
     {
         if (profiles.Count == 0)
@@ -124,6 +144,37 @@ public sealed record SoundProfile(int FramesPerSecond, float[][] Bands)
         var to = Math.Clamp(first + length, from, band.Length);
         if (to > from)
             band.AsSpan(from, to - from).CopyTo(frames.AsSpan(from - first));
+        return frames;
+    }
+
+    [Pure]
+    private static float[] StretchedFramesOf(float[] band, double stretch, int length)
+    {
+        var frames = new float[length];
+        for (var frame = 0; frame < length; frame++)
+        {
+            var position = Math.Min(frame / stretch, band.Length - 1);
+            var before = (int)position;
+            var after = Math.Min(before + 1, band.Length - 1);
+            var share = (float)(position - before);
+            frames[frame] = band[before] + share * (band[after] - band[before]);
+        }
+
+        return frames;
+    }
+
+    [Pure]
+    private static float[] AveragedFramesOf(float[] band, int factor, int length)
+    {
+        var frames = new float[length];
+        for (var frame = 0; frame < length; frame++)
+        {
+            var sum = 0f;
+            for (var inner = 0; inner < factor; inner++)
+                sum += band[frame * factor + inner];
+            frames[frame] = sum / factor;
+        }
+
         return frames;
     }
 

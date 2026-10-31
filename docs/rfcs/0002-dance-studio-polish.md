@@ -630,12 +630,38 @@ Goal: one home for the music rules, a clean database, docs in sync.
 
 ### Phase 21 — Real-media fixes (from the realistic upload test, 2026-10-31)
 Goal: real songs, iPhone videos and a live final file come out right. Evidence: `web/tools/screenshot/out/upload-test/` (`run.log`, `before-adopt.txt`, `after-adopt.txt`, `shots/`, `gen/` regenerates the media).
-- [ ] After adoption every song section of the final file keeps its own tempo and first beat (from that song, shifted by its offset and scaled by its stretch); counts in a 128 or 96 BPM section are right — today the whole final file takes song 1's tempo (`act-player/music-timeline.ts:78-93`, single tempo on `act_final_track`)
-- [ ] Matching tolerates a tempo difference (live mix ±5 %): find the song with its stretch factor; adoption maps anchors through offset **and** stretch, so a +2 % song no longer drifts (+1.77 s at 90 s today) and is found automatically
-- [ ] Anchors that land before 0 after adoption (intro cut) move to 0 instead of being dropped (`FinalTrackAdoption.FinalSecondsOf`)
-- [ ] *Video* list shows every placed video when the act has no parts (`use-act-studio-takes.ts:194-229`)
-- [ ] Player: no stale still frame of the last video over the stage when a step has no video
-- [ ] Endpoint/unit tests for multi-tempo adoption, stretch matching and the 0-clamp; re-run the realistic flow (regenerate media with `gen/`) on an isolated stack and report offsets vs truth
+- [x] After adoption every song section of the final file keeps its own tempo and first beat (from that song, shifted by its offset and scaled by its stretch); counts in a 128 or 96 BPM section are right — today the whole final file takes song 1's tempo (`act-player/music-timeline.ts:78-93`, single tempo on `act_final_track`)
+- [x] Matching tolerates a tempo difference (live mix ±5 %): find the song with its stretch factor; adoption maps anchors through offset **and** stretch, so a +2 % song no longer drifts (+1.77 s at 90 s today) and is found automatically
+- [x] Anchors that land before 0 after adoption (intro cut) move to 0 instead of being dropped (`FinalTrackAdoption.FinalSecondsOf`)
+- [x] *Video* list shows every placed video when the act has no parts (`use-act-studio-takes.ts:194-229`)
+- [x] Player: no stale still frame of the last video over the stage when a step has no video
+- [x] Phone step cards (390 px): the card's *Rückgängig* button no longer sticks out past the card's right edge
+- [x] Endpoint/unit tests for multi-tempo adoption, stretch matching and the 0-clamp; re-run the realistic flow (regenerate media with `gen/`) on an isolated stack and report offsets vs truth
+
+Done 2026-10-31:
+  - **Stretch.** `act_final_track_alignment.stretch` (migration `FinalTrackAlignmentStretch`, default 1). The rule is final second = offset + source second × stretch (`FinalTrackPlacement`). `PUT …/alignments/{source}` takes `stretch` (0.9–1.1). A manual tune keeps the stretch it has.
+  - **Matching** (`SoundComparison.AlignStretched`, `FinalTrackMatching.AlignmentOf`) runs in two passes:
+    - A coarse pass at 10 fps tries stretches from 0.95 to 1.05 in 0.2 % steps over the whole file (FFT).
+    - A fine pass at 100 fps tries 0.05 % steps within ±0.4 % of the coarse pick. It correlates directly near the coarse lag, then refines with a parabola.
+    - Offsets are corrected for the cut start × stretch.
+  - **Adoption** maps steps, keyframes and videos through offset and stretch. Music anchors before 0 move to 0. Videos keep the unclamped position, so the lead-in absorbs an intro cut.
+  - **Counts:** `MusicSegment.beats` lists beat sections. For a final file, each aligned song (or earlier final file) gives its grid. Its first beat is offset + first beat × stretch, and its tempo is tempo ÷ stretch. Sections are clipped to the file and against the next section, and gaps use the file's own grid. Count marks, `countAt` and count-in read the section at the position.
+  - **Preview and tuning** use offset and stretch everywhere: `finalPlacementsOf`, `finalPlacesOf`, `mixSecondsAt`, the wave handle, the desk, undo and restore. A wave nudge moves the stored offset itself, so an intro-cut song no longer jumps.
+  - **Videos list:** `takeGroupsOf` adds a group for placed videos outside every part. It is named *Auf der Musik* when the act has no parts and *Ohne Teil* otherwise.
+  - **Stale still:** `KkLessonVideo` and `KkPracticeScreenVideo` set `visibility: inherit` instead of `visible`, so a hidden or inset layer really hides the last video.
+  - **Step card:** *Rückgängig* is icon-only, like the history buttons in the head.
+  - **Realistic re-run.** The media was regenerated with `gen/song.py` and `gen/media.sh`. The real decoded audio ran through the matching code; the browser flow was not repeated. Cuts are those of the test run.
+
+    | Song | Offset | Truth | Stretch | Truth | Confidence | Error at cut start / middle / end |
+    | --- | --- | --- | --- | --- | --- | --- |
+    | Hexenparty | −1.993 | −2 | 1.00000 | 1 | 0.90 | +7 / +7 / +7 ms |
+    | Gänsemarsch (+2 %) | 195.004 | 195 | 0.98046 | 0.98039 | 0.85 | +4 / +10 / +16 ms |
+    | Finale | 374.002 | 374 | 1.00000 | 1 | 0.90 | +2 / +2 / +2 ms |
+
+    - All three songs are now found automatically. Gänsemarsch was not found before.
+    - The +2 % drift at 90 s drops from +1.77 s to +0.01 s.
+    - The Hexenparty step at 0 lands at 0 instead of being dropped.
+    - Matching takes about 1 s per song.
 
 ## Risks & alternatives
 

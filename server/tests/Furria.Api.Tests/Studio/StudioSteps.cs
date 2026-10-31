@@ -364,7 +364,8 @@ internal static class StudioSteps
         int actId,
         int finalTrackId,
         int sourceMediaItemId,
-        double offsetSeconds
+        double offsetSeconds,
+        double stretch = 1
     ) =>
         client.PUTAsync<PutActFinalTrackAlignment, PutActFinalTrackAlignmentRequest>(
             new()
@@ -373,6 +374,7 @@ internal static class StudioSteps
                 FinalTrackId = finalTrackId,
                 SourceMediaItemId = sourceMediaItemId,
                 OffsetSeconds = offsetSeconds,
+                Stretch = stretch,
             }
         );
 

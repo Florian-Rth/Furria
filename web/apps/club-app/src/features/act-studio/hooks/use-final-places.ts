@@ -11,7 +11,7 @@ export interface FinalPlaces {
 export const useFinalPlaces = (screen: StudioScreen): FinalPlaces => {
   const { final, playback } = screen;
   const places = final.previewing
-    ? finalPlacesOf(final.mix, final.offsets, final.pending?.durationSeconds ?? 0)
+    ? finalPlacesOf(final.mix, final.placements, final.pending?.durationSeconds ?? 0)
     : [];
   const currentIndex = usePlaybackSelection(playback.player, (seconds) =>
     placeIndexAt(places, seconds),

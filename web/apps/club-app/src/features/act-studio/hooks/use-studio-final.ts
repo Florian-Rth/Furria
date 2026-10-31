@@ -4,10 +4,10 @@ import { musicSegmentsOf } from '@/features/act-player/music-timeline';
 import type { Studio, StudioFinalTrack } from '@/features/acts/schemas';
 import type { FinalTrackMutations } from '../api';
 import { useFinalTrackMutations } from '../api';
-import type { FinalOffsets } from '../studio-final';
+import type { FinalPlacements } from '../studio-final';
 import {
   adoptedFinalTrackOf,
-  finalOffsetsOf,
+  finalPlacementsOf,
   finalPreviewOf,
   finalSecondsAt,
   mixSecondsAt,
@@ -17,13 +17,13 @@ import { musicKeyOf } from '../studio-videos';
 import type { ActStudioEdits } from './use-act-studio-edits';
 import type { ActStudioMode } from './use-act-studio-mode';
 
-const NO_OFFSETS: FinalOffsets = {};
+const NO_PLACEMENTS: FinalPlacements = {};
 
 export interface StudioFinal {
   pending: StudioFinalTrack | null;
   adopted: StudioFinalTrack | null;
   previewing: boolean;
-  offsets: FinalOffsets;
+  placements: FinalPlacements;
   mix: readonly MusicSegment[];
   writes: FinalTrackMutations;
   togglePreview: (position: number) => void;
@@ -81,16 +81,16 @@ export const useStudioFinal = (
     setPreviewing(false);
   }
   useFinalAutoMatch(pending, musicKeyOf(worked), writes);
-  const offsets = pending === null ? NO_OFFSETS : finalOffsetsOf(pending, mix);
+  const placements = pending === null ? NO_PLACEMENTS : finalPlacementsOf(pending, mix);
   const shown = previewing && previewable && pending !== null;
 
   return {
-    studio: shown ? finalPreviewOf(worked, pending, mix, offsets) : worked,
+    studio: shown ? finalPreviewOf(worked, pending, mix, placements) : worked,
     final: {
       pending,
       adopted: adoptedFinalTrackOf(worked),
       previewing: shown,
-      offsets,
+      placements,
       mix,
       writes,
       togglePreview: (position) => {
@@ -98,8 +98,8 @@ export const useStudioFinal = (
           return;
         }
         const kept = shown
-          ? mixSecondsAt(mix, offsets, position)
-          : finalSecondsAt(mix, offsets, pending.durationSeconds ?? 0, position);
+          ? mixSecondsAt(mix, placements, position)
+          : finalSecondsAt(mix, placements, pending.durationSeconds ?? 0, position);
         edits.keepPosition(kept ?? 0);
         setPreviewing(!shown);
       },

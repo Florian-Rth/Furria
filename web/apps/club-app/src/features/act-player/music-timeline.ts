@@ -1,9 +1,22 @@
-import type { Studio, StudioPart, StudioStep } from '@/features/acts/schemas';
+import type {
+  Studio,
+  StudioFinalTrack,
+  StudioPart,
+  StudioSong,
+  StudioStep,
+} from '@/features/acts/schemas';
 
 const SECONDS_PER_MINUTE = 60;
 const COUNTS_PER_EIGHT = 8;
 export const EDGE_TOLERANCE_SECONDS = 1e-6;
 export const BEAT_ROUNDING_SECONDS = 0.01;
+
+export interface BeatSection {
+  sourceStart: number;
+  sourceEnd: number;
+  firstBeatSeconds: number;
+  tempoBpm: number;
+}
 
 export interface MusicSegment {
   mediaItemId: number;
@@ -14,8 +27,12 @@ export interface MusicSegment {
   sourceEnd: number;
   timelineStart: number;
   timelineEnd: number;
-  firstBeatSeconds: number | null;
-  tempoBpm: number | null;
+  beats: BeatSection[];
+}
+
+export interface BeatGrid {
+  firstBeatSeconds: number;
+  beatSeconds: number;
 }
 
 export interface MusicAnchor {
@@ -45,8 +62,12 @@ interface SegmentCut {
   audible: boolean;
   sourceStart: number;
   sourceEnd: number;
-  firstBeatSeconds: number | null;
-  tempoBpm: number | null;
+  beats: BeatSection[];
+}
+
+interface Placement {
+  offsetSeconds: number;
+  stretch: number;
 }
 
 const placeCuts = (cuts: readonly SegmentCut[]): MusicSegment[] => {
@@ -61,6 +82,89 @@ const placeCuts = (cuts: readonly SegmentCut[]): MusicSegment[] => {
   });
 };
 
+const knownSectionsOf = (
+  firstBeatSeconds: number | null,
+  tempoBpm: number | null,
+  sourceStart: number,
+  sourceEnd: number,
+): BeatSection[] =>
+  firstBeatSeconds === null || tempoBpm === null || tempoBpm <= 0 || sourceEnd <= sourceStart
+    ? []
+    : [{ sourceStart, sourceEnd, firstBeatSeconds, tempoBpm }];
+
+const songSectionsOf = (song: StudioSong): BeatSection[] =>
+  knownSectionsOf(song.firstBeatSeconds, song.tempoBpm, song.startSeconds, song.endSeconds);
+
+const placedSectionOf = (section: BeatSection, placement: Placement): BeatSection => ({
+  sourceStart: placement.offsetSeconds + section.sourceStart * placement.stretch,
+  sourceEnd: placement.offsetSeconds + section.sourceEnd * placement.stretch,
+  firstBeatSeconds: placement.offsetSeconds + section.firstBeatSeconds * placement.stretch,
+  tempoBpm: section.tempoBpm / placement.stretch,
+});
+
+const clippedSectionsOf = (sections: readonly BeatSection[], length: number): BeatSection[] => {
+  const ordered = [...sections].sort((left, right) => left.sourceStart - right.sourceStart);
+
+  return ordered
+    .map((section, index) => ({
+      ...section,
+      sourceStart: Math.max(0, section.sourceStart),
+      sourceEnd: Math.min(length, section.sourceEnd, ordered[index + 1]?.sourceStart ?? length),
+    }))
+    .filter((section) => section.sourceEnd > section.sourceStart);
+};
+
+const filledSectionsOf = (
+  sections: readonly BeatSection[],
+  track: StudioFinalTrack,
+  length: number,
+): BeatSection[] => {
+  const gapsOf = (start: number, end: number): BeatSection[] =>
+    knownSectionsOf(track.firstBeatSeconds, track.tempoBpm, start, end);
+  const filled: BeatSection[] = [];
+  let cursor = 0;
+
+  for (const section of sections) {
+    filled.push(...gapsOf(cursor, section.sourceStart), section);
+    cursor = section.sourceEnd;
+  }
+
+  return [...filled, ...gapsOf(cursor, length)];
+};
+
+const sourceSectionsOf = (
+  studio: Studio,
+  mediaItemId: number,
+  visited: ReadonlySet<number>,
+): BeatSection[] => {
+  const song = studio.songs.find((candidate) => candidate.mediaItemId === mediaItemId);
+  const track = studio.finalTracks.find((candidate) => candidate.mediaItemId === mediaItemId);
+
+  if (song !== undefined) {
+    return songSectionsOf(song);
+  }
+
+  return track === undefined || visited.has(mediaItemId)
+    ? []
+    : finalTrackSectionsOf(studio, track, visited);
+};
+
+const finalTrackSectionsOf = (
+  studio: Studio,
+  track: StudioFinalTrack,
+  visited: ReadonlySet<number> = new Set(),
+): BeatSection[] => {
+  const length = track.durationSeconds ?? 0;
+  const inner = new Set([...visited, track.mediaItemId]);
+  const placed = track.alignments.flatMap((alignment) =>
+    sourceSectionsOf(studio, alignment.sourceMediaItemId, inner).map((section) =>
+      placedSectionOf(section, alignment),
+    ),
+  );
+
+  return filledSectionsOf(clippedSectionsOf(placed, length), track, length);
+};
+
 const songCutsOf = (studio: Studio): SegmentCut[] =>
   [...studio.songs]
     .sort((left, right) => left.position - right.position)
@@ -71,8 +175,7 @@ const songCutsOf = (studio: Studio): SegmentCut[] =>
       audible: song.state === 'ready',
       sourceStart: song.startSeconds,
       sourceEnd: song.endSeconds,
-      firstBeatSeconds: song.firstBeatSeconds,
-      tempoBpm: song.tempoBpm,
+      beats: songSectionsOf(song),
     }));
 
 const finalTrackCutsOf = (studio: Studio): SegmentCut[] =>
@@ -85,8 +188,7 @@ const finalTrackCutsOf = (studio: Studio): SegmentCut[] =>
       audible: track.state === 'ready',
       sourceStart: 0,
       sourceEnd: track.durationSeconds ?? 0,
-      firstBeatSeconds: track.firstBeatSeconds,
-      tempoBpm: track.tempoBpm,
+      beats: finalTrackSectionsOf(studio, track),
     }));
 
 export const musicSegmentsOf = (studio: Studio): MusicSegment[] =>
@@ -118,17 +220,28 @@ export const timelineSecondsOf = (
     : segment.timelineStart + Math.max(0, anchor.seconds - segment.sourceStart);
 };
 
-export const beatSecondsOf = (segment: MusicSegment): number | null =>
-  segment.tempoBpm === null || segment.tempoBpm <= 0 ? null : SECONDS_PER_MINUTE / segment.tempoBpm;
+const gridOf = (section: BeatSection): BeatGrid => ({
+  firstBeatSeconds: section.firstBeatSeconds,
+  beatSeconds: SECONDS_PER_MINUTE / section.tempoBpm,
+});
+
+export const beatGridAt = (segment: MusicSegment, sourceSeconds: number): BeatGrid | null => {
+  const at = sourceSeconds + BEAT_ROUNDING_SECONDS;
+  const section = segment.beats.find(
+    (candidate) => at >= candidate.sourceStart && at < candidate.sourceEnd,
+  );
+
+  return section === undefined ? null : gridOf(section);
+};
 
 const beatIndexAt = (segment: MusicSegment, sourceSeconds: number): number | null => {
-  const beat = beatSecondsOf(segment);
+  const grid = beatGridAt(segment, sourceSeconds);
 
-  if (beat === null || segment.firstBeatSeconds === null) {
-    return null;
-  }
-
-  return Math.floor((sourceSeconds + BEAT_ROUNDING_SECONDS - segment.firstBeatSeconds) / beat);
+  return grid === null
+    ? null
+    : Math.floor(
+        (sourceSeconds + BEAT_ROUNDING_SECONDS - grid.firstBeatSeconds) / grid.beatSeconds,
+      );
 };
 
 export const countOfBeat = (beatIndex: number): number =>
@@ -150,23 +263,16 @@ export const countAt = (segments: readonly MusicSegment[], seconds: number): Cou
   return { count: countOfBeat(beatIndex), eight: Math.floor(beatIndex / COUNTS_PER_EIGHT) };
 };
 
-const countMarksIn = (segment: MusicSegment): CountMark[] => {
-  const beat = beatSecondsOf(segment);
-  const firstBeat = segment.firstBeatSeconds;
-
-  if (beat === null || firstBeat === null) {
-    return [];
-  }
-
-  const firstIndex = Math.max(
-    0,
-    Math.ceil((segment.sourceStart - firstBeat) / beat - EDGE_TOLERANCE_SECONDS),
-  );
+const countMarksInSection = (segment: MusicSegment, section: BeatSection): CountMark[] => {
+  const { firstBeatSeconds: firstBeat, beatSeconds: beat } = gridOf(section);
+  const start = Math.max(segment.sourceStart, section.sourceStart);
+  const end = Math.min(segment.sourceEnd, section.sourceEnd);
+  const firstIndex = Math.max(0, Math.ceil((start - firstBeat) / beat - EDGE_TOLERANCE_SECONDS));
   const marks: CountMark[] = [];
 
   for (
     let index = firstIndex;
-    firstBeat + index * beat < segment.sourceEnd - EDGE_TOLERANCE_SECONDS;
+    firstBeat + index * beat < end - EDGE_TOLERANCE_SECONDS;
     index += 1
   ) {
     marks.push({
@@ -179,7 +285,9 @@ const countMarksIn = (segment: MusicSegment): CountMark[] => {
 };
 
 export const countMarksOf = (segments: readonly MusicSegment[]): CountMark[] =>
-  segments.flatMap(countMarksIn);
+  segments.flatMap((segment) =>
+    segment.beats.flatMap((section) => countMarksInSection(segment, section)),
+  );
 
 export const stepRangeOf = (step: StudioStep): TimelineRange | null =>
   step.startSeconds === null || step.endSeconds === null
