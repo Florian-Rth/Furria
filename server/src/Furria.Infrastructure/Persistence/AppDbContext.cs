@@ -127,8 +127,6 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<Appearance> Appearances => Set<Appearance>();
 
-    public DbSet<LiveDirection> LiveDirections => Set<LiveDirection>();
-
     public DbSet<AppearanceCastChange> AppearanceCastChanges => Set<AppearanceCastChange>();
 
     public DbSet<RunningOrderRule> RunningOrderRules => Set<RunningOrderRule>();

@@ -169,53 +169,6 @@ public sealed class RunningOrderService
         };
     }
 
-    public async Task<EveningLiveDetails> GetEveningLiveAsync(
-        int eventId,
-        int? viewerPersonId,
-        CancellationToken ct
-    )
-    {
-        var entry = await _dbContext
-            .CalendarEntries.AsNoTracking()
-            .Where(row => row.Id == eventId)
-            .Select(row => new { row.Title, row.StartsAt })
-            .SingleAsync(ct);
-        var placed = InOrder(await AppearancesOfAsync(eventId, ct, tracked: false))
-            .Where(line => line.Position is not null)
-            .ToList();
-        var evening = await EveningOfAsync(eventId, placed, ct);
-        var missing = await _catalogue.PersonsInNameOrderAsync(
-            [.. placed.SelectMany(line => PersonsChanged(line.CastChanges, CastChange.Removed))],
-            ct
-        );
-        var viewerGroupIds = viewerPersonId is { } personId
-            ? await _dbContext
-                .TiedGroupIds(personId, ClubClock.Today(_timeProvider))
-                .ToHashSetAsync(ct)
-            : [];
-
-        return new EveningLiveDetails
-        {
-            EventId = eventId,
-            Title = entry.Title,
-            StartsAt = entry.StartsAt,
-            Lines =
-            [
-                .. placed.Select(
-                    (line, index) =>
-                        LiveLineOf(
-                            line,
-                            evening.Acts[line.ActId],
-                            index,
-                            viewerPersonId is { } viewer
-                                && IsOwn(evening.Acts[line.ActId], viewer, viewerGroupIds),
-                            missing
-                        )
-                ),
-            ],
-        };
-    }
-
     public async Task<IReadOnlySet<int>> SettledEventIdsAsync(
         IReadOnlyCollection<int> eventIds,
         CancellationToken ct
@@ -1037,32 +990,6 @@ public sealed class RunningOrderService
             Position = position,
             IsOwn = isOwn,
         };
-
-    [Pure]
-    private static EveningLiveLineDetails LiveLineOf(
-        Appearance line,
-        ActSummary act,
-        int position,
-        bool isOwn,
-        IReadOnlyList<CastMember> missing
-    )
-    {
-        var removed = PersonsChanged(line.CastChanges, CastChange.Removed);
-
-        return new EveningLiveLineDetails
-        {
-            AppearanceId = line.Id,
-            ActId = act.ActId,
-            Name = act.Name,
-            Kind = act.Kind,
-            Group = act.Group,
-            Position = position,
-            IsOwn = isOwn,
-            Cast = act.Cast,
-            StandInIds = PersonsChanged(line.CastChanges, CastChange.Added),
-            Missing = [.. missing.Where(person => removed.Contains(person.PersonId))],
-        };
-    }
 
     [Pure]
     private static bool IsOwn(

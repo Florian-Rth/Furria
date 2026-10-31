@@ -120,8 +120,6 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ActFinalTrackService>();
         services.AddSingleton<SoundProfiles>();
         services.AddScoped<RunningOrderService>();
-        services.AddScoped<LiveDirectionService>();
-        services.AddScoped<ActSeasonReader>();
         services.AddScoped<EventPictures>();
         services.AddScoped<ClubRecordService>();
         services.AddScoped<ManagementService>();

@@ -23,7 +23,6 @@ improvements the testers asked for:
 - members see the running order and their own act at a glance
 - a hall training mode for the trainer
 - a rebuilt editor: a timeline desk on large screens, step cards on phones, a set-up checklist
-- a season grid and a backstage *Heute* view for the planner
 - an accessibility sweep
 
 ## Motivation
@@ -71,8 +70,8 @@ to "work today".
 - **Management screens are dense pro tools.** They show queue, grid and inline actions. There are no
   decorative metaphors and no hero blocks.
 - **Mobile first, judged at 390 px**, then tablet and desktop.
-- **No concept names in UI copy.** *Halle*, *season grid*, *timeline desk* and *step cards* are
-  working names in this RFC. The copy on screen is plain German (e.g. *Training starten*, *Heute*).
+- **No concept names in UI copy.** *Halle*, *timeline desk* and *step cards* are
+  working names in this RFC. The copy on screen is plain German (e.g. *Training starten*).
   The running order's UI copy stays *Ablauf* (CONTEXT.md retires *programme*).
 - **Design rounds = lab variants on real data, Florian picks** (⚖, the page-rework way, as in
   RFC 0001 phases 6/7b). The rulings of a pick are recorded in the phase.
@@ -171,23 +170,7 @@ layout** (≥ 150 % text or < 360 px width) stacks the player:
   Endfassung*. Each row jumps into its tool with the action prepared. Once the act has started, the
   checklist lives on as a progress chip.
 
-### 7. Planner: season grid and *Heute*
-
-- **Season grid** (working name) on `/acts` for planners: acts × evenings of the session.
-  - A cell shows the position, *group asked* (in the tray) or *adjusted* (evening changes). One click
-    adds or removes the act on that evening.
-  - A readiness meter per act, derived from music, final file, steps, formation, videos and cast.
-  - The first column is sticky. On phones it scrolls one evening per swipe.
-  - The line pane shows the evening's cast changes and lets the planner change them inline.
-- ***Heute*** = the backstage view of live direction (CONTEXT.md *Live direction*). It is a fixed
-  viewport, landscape-first, and has no editing:
-  - now / next / after, with elapsed time
-  - who is missing and who stands in
-  - the people to call for the next acts
-  - one big *Weiter* key that moves the live pointer through the running order
-  - the screen kept awake
-
-### 8. Server
+### 7. Server
 
 - **Refresh rate limit** per token family or device, not per IP. A 429 gets its own copy (*Zu viele
   Versuche — gleich noch einmal*), never "Verbindung fehlgeschlagen".
@@ -214,8 +197,8 @@ in the listed order.
 | 5 | 10, 12 | ∥ D (10 after 9, 12 after 11) |
 | 6 | 13 | ⚖, after 6 |
 | 7 | 14, 15 | ∥ E, then 16 |
-| 8 | 17 | ⚖ |
-| 9 | 18a, 18b | ∥ F |
+| 8 | 17 | dropped |
+| 9 | 18a, 18b | dropped |
 | 10 | 19, 20 | ∥ G |
 
 ### Phase 1 — Player and media bugs (∥ A)
@@ -566,38 +549,24 @@ Goal: an empty act guides its editors to a first playable version. Follows 14 an
   - Left open: `complete` needs a trainer video and an adopted final file. An act that never gets either keeps the chip. If the owner wants those two to be optional, that ruling would change `setupOf`.
   - Browser check (Sabine; act 14 empty, act 5 at 5/6) at 1440×900 light, 1024×768 dark and 390×844 light/dark: no page scroll, chip toggles the tab and the phone checklist, *Zu den Schritten* lands on *Auswahl*, *Endfassung* opens `/acts/5/musik?tool=music`. Upload and step-setting actions weren't clicked, to keep the shared dev data as it is.
 
-### Phase 17 — ⚖ Lab: season grid and *Heute*
+### Phase 17 — ⚖ Lab: season grid and *Heute* — **dropped (ruling 2026-10-31)**
+Reason: no season grid — act ↔ evening planning happens while ordering the evening; the event/tech view is Florian's to define later. Lab and server reads removed.
 Goal: Florian picks the planner's season view and the backstage view.
 - [x] Server: season read (acts × evenings: position, in tray, adjusted; readiness derived per act) and the live pointer for live direction (advance, read)
 - [x] Season-grid variants (dense, sticky first column, one evening per swipe on phones, one-click add/remove, readiness meter, inline evening cast)
 - [x] *Heute* variants (fixed viewport, landscape-first: now/next/after, missing and standing in, people to call, *Weiter*, Wake Lock)
 - [ ] Pitch + Florian's pick; rulings recorded (lab built; pick open)
-- Notes (lab built 2026-10-30, awaiting the pick):
-  - **Server.** `GET acts/season?session=` (planners) returns the session's evenings (has an Ablauf, confirmed) and per act the readiness checks plus one cell per evening: position or tray, evening changes, who is in and out. Readiness is pure Core (`ActReadiness`): *Tanz*/*Show* check music, steps, formation (every spot held and placed), videos, final file and cast; every other kind checks the cast only. The live pointer is a `live_direction` row per running order: the act on stage, started at, moved at. `PUT calendar/entries/{id}/live {from, to}` (planners) is a compare-and-set on the act on stage: a stale `from` → 409, `to: null` ends the night, a removed act clears the pointer. `GET calendar/entries/{id}/live` (everyone who sees the evening) returns the placed lines with evening cast, stand-ins and who is missing; per-person absences only for the operator.
-  - **Client data.** `features/season` (query, `readinessOf`/`cellOf`, one-click toggle through the running-order save with *Rückgängig*) and `features/live` (query polling every 4 s, move mutation, `liveFlowOf`, forward/back moves, people to call, elapsed time). The lab hub has *Saison planen* (`/lab/season-{a,b,c}`) and *Heute am Abend* (`/lab/heute-{a,b,c}/{eventId}`, one row per evening with an Ablauf).
-  - **Season A — acts × evenings as a grid.** Rows are acts, grouped by group or ordered by readiness or A–Z; columns are evenings. The first column and the header are truly sticky because the parts scroll in sync. Cells show *Nr. n*, *Ablage* and a gold dot for adjusted; one click adds or removes. The details pane (side pane on desktop, sheet on phone) follows the keyboard focus and holds the evening cast. The phone shows one evening per swipe. The densest answer to "which act, which evening"; not a true ARIA grid (every cell is a tab stop).
-  - **Season B — each evening as its own column.** Each column holds the evening's Ablauf in order, then the tray, then *Nicht dabei* with +. An act index on the left highlights an act in every column. The cast opens inline in the column. Reads like the real running order of each evening. Only 4½ evenings fit at 1440 px, and the index rows don't line up with the columns.
-  - **Season C — sorted by readiness, evenings as dots.** Least-ready acts come first, with filter chips (*Nicht fertig*, *Alle*, per group). There are six check columns from tablet width, dot columns per evening and an inspector for readiness, evenings and cast. Answers "who is behind" first. The header doesn't stick (it would need an opaque sticky surface in `@furria/ui`), and at 200 % text the names are cut hard.
-  - **Heute A — now big, Weiter below.** The act on stage has a huge name and big minutes that change once a minute. *Als Nächstes* and *Danach* cards, then *Bitte rufen* (people coming straight off stage in gold), then a strip of who is missing (struck) and who stands in. One dominant *Weiter* key. The calmest of the three.
-  - **Heute B — the Ablauf as a strip, calling on the right.** A chip strip of the whole Ablauf (done acts shrink to their number, the act on stage red, the next gold); the act on stage and the next one in the centre; *Jetzt rufen* grouped by act on the right. Shows the whole night and who to call without turning the device.
-  - **Heute C — whole Ablauf on the left, stage in the middle.** Three panes: the Ablauf list in its own box, the act on stage and the next one with their cast by name, and a call list with *gerufen* ticks kept on the device. The fullest view for the person calling cast; at 200 % text it is barely usable.
-  - All three Heute variants run on `KkHall`: fixed viewport, Wake Lock, Space/Enter/→ forward, ← back, the 409 shown inline in red, followers without keys. No page scroll in any view.
-  - Found for the promotion (18a/18b):
-    - **Unpublished evenings.** The live read goes through the calendar's visibility, so an unpublished evening (66, 18 in the lab data) is 404 even for the planner. Planners need to see their evening.
-    - **The 4-second poll rebuilds the whole evening** (about 15 queries). Split it: poll a pointer-only read and refetch the lines only when the pointer or the running order changed.
-    - **Planners can't change the evening cast.** The evening-cast writes are for the act's editors only, so the planner's inline cast change is refused. 18a widens that.
-    - **Primitives.** `KkHall.Key` hides its caption in portrait and `KkHall.Step` doesn't wrap a long name. A grid kit with opaque sticky surfaces is missing, and so is one tab stop for the grid.
-    - **Undo of a remove.** Undo re-adds the act at the end, not at its old number.
-  - Shots (gitignored): `web/tools/screenshot/out/planner-lab/{a,b,c}/`.
 
-### Phase 18a — Promote the season grid (∥ F)
+### Phase 18a — Promote the season grid (∥ F) — **dropped (ruling 2026-10-31)**
+Reason: no season grid; act ↔ evening planning stays in ordering the evening (Ablauf).
 Goal: the planner answers "which act, which evening, ready?" on one screen.
 - [ ] Season grid on `/acts` for planners; one-click add/remove writes appearances (undoable)
 - [ ] Readiness meter in the grid and the planner's line pane; line pane shows and edits the evening's cast changes
 - [ ] Change line for group-made changes after *Ablauf steht* (*„Kindergarde tanzt neu mit …" · gestern 14:02*, *Einplanen* inline)
 - [ ] Endpoint tests; browser check at 390 px and 1440 px
 
-### Phase 18b — Promote *Heute* (∥ F)
+### Phase 18b — Promote *Heute* (∥ F) — **dropped (ruling 2026-10-31)**
+Reason: the event/tech view is not defined yet; Florian defines it later.
 Goal: the night runs from one calm screen.
 - [ ] `/events/$eventId/heute` replaces *Live-Regie · kommt noch*; the operator advances, everyone else follows
 - [ ] People to call from the evening cast and the attendance responses
@@ -605,7 +574,7 @@ Goal: the night runs from one calm screen.
 
 ### Phase 19 — Accessibility and large-text sweep (∥ G)
 Goal: every screen of the studio and planner passes the bar.
-- [ ] 200 % text on player, hall mode, act page facts (one column above 150 %), planner, season grid
+- [ ] 200 % text on player, hall mode, act page facts (one column above 150 %), planner
 - [ ] Targets ≥ 44 px; AA contrast (evening titles and muted text); `h1` and landmarks on every act screen; real lists and `dl` structure
 - [ ] Arrow keys on every slider; long-press actions have a button or keyboard equivalent; ⓘ details is a link
 - [ ] axe run over the studio and planner routes is clean (serious/critical)
@@ -638,6 +607,7 @@ Goal: one home for the music rules, a clean database, docs in sync.
 
 ## Out of scope
 
+- Season overview / backstage mode (season grid, *Heute*): event/tech view: Florian defines it later.
 - The text studio for *Rede* / *Sketch* (uploaded text, cue lines). Phase 10 only gives speeches
   their own template.
 - *Weitermachen*, offline practising, the evening's tech (show book, playback desk), memory features

@@ -48,9 +48,6 @@ import { Route as AppManageGroupsRouteImport } from './routes/_app/manage.groups
 import { Route as AppManageClubRecordRouteImport } from './routes/_app/manage.club-record'
 import { Route as AppManageBoardRouteImport } from './routes/_app/manage.board'
 import { Route as AppManageApplicationsRouteImport } from './routes/_app/manage.applications'
-import { Route as AppLabSeasonCRouteImport } from './routes/_app/lab_.season-c'
-import { Route as AppLabSeasonBRouteImport } from './routes/_app/lab_.season-b'
-import { Route as AppLabSeasonARouteImport } from './routes/_app/lab_.season-a'
 import { Route as AppLabGreetingRouteImport } from './routes/_app/lab_.$greeting'
 import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups_.$groupId'
 import { Route as AppGalleryWebsiteRouteImport } from './routes/_app/gallery_.website'
@@ -83,9 +80,6 @@ import { Route as AppManageClubRecordAccessRouteImport } from './routes/_app/man
 import { Route as AppManageBoardNewRouteImport } from './routes/_app/manage.board_.new'
 import { Route as AppManageBoardBoardOfficeIdRouteImport } from './routes/_app/manage.board_.$boardOfficeId'
 import { Route as AppManageApplicationsMembershipApplicationIdRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId'
-import { Route as AppLabHeuteCEventIdRouteImport } from './routes/_app/lab_.heute-c.$eventId'
-import { Route as AppLabHeuteBEventIdRouteImport } from './routes/_app/lab_.heute-b.$eventId'
-import { Route as AppLabHeuteAEventIdRouteImport } from './routes/_app/lab_.heute-a.$eventId'
 import { Route as AppGroupsGroupIdTrainingsRouteImport } from './routes/_app/groups_.$groupId_.trainings'
 import { Route as AppGroupsGroupIdEditRouteImport } from './routes/_app/groups_.$groupId_.edit'
 import { Route as AppGroupsGroupIdAdministrationRouteImport } from './routes/_app/groups_.$groupId_.administration'
@@ -322,21 +316,6 @@ const AppManageApplicationsRoute = AppManageApplicationsRouteImport.update({
   path: '/manage/applications',
   getParentRoute: () => AppRoute,
 } as any)
-const AppLabSeasonCRoute = AppLabSeasonCRouteImport.update({
-  id: '/lab_/season-c',
-  path: '/lab/season-c',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLabSeasonBRoute = AppLabSeasonBRouteImport.update({
-  id: '/lab_/season-b',
-  path: '/lab/season-b',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLabSeasonARoute = AppLabSeasonARouteImport.update({
-  id: '/lab_/season-a',
-  path: '/lab/season-a',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppLabGreetingRoute = AppLabGreetingRouteImport.update({
   id: '/lab_/$greeting',
   path: '/lab/$greeting',
@@ -506,21 +485,6 @@ const AppManageApplicationsMembershipApplicationIdRoute =
     path: '/manage/applications/$membershipApplicationId',
     getParentRoute: () => AppRoute,
   } as any)
-const AppLabHeuteCEventIdRoute = AppLabHeuteCEventIdRouteImport.update({
-  id: '/lab_/heute-c/$eventId',
-  path: '/lab/heute-c/$eventId',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLabHeuteBEventIdRoute = AppLabHeuteBEventIdRouteImport.update({
-  id: '/lab_/heute-b/$eventId',
-  path: '/lab/heute-b/$eventId',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLabHeuteAEventIdRoute = AppLabHeuteAEventIdRouteImport.update({
-  id: '/lab_/heute-a/$eventId',
-  path: '/lab/heute-a/$eventId',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppGroupsGroupIdTrainingsRoute =
   AppGroupsGroupIdTrainingsRouteImport.update({
     id: '/groups_/$groupId_/trainings',
@@ -807,9 +771,6 @@ export interface FileRoutesByFullPath {
   '/gallery/website': typeof AppGalleryWebsiteRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/lab/$greeting': typeof AppLabGreetingRoute
-  '/lab/season-a': typeof AppLabSeasonARoute
-  '/lab/season-b': typeof AppLabSeasonBRoute
-  '/lab/season-c': typeof AppLabSeasonCRoute
   '/manage/applications': typeof AppManageApplicationsRoute
   '/manage/board': typeof AppManageBoardRoute
   '/manage/club-record': typeof AppManageClubRecordRoute
@@ -841,9 +802,6 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
   '/groups/$groupId/trainings': typeof AppGroupsGroupIdTrainingsRoute
-  '/lab/heute-a/$eventId': typeof AppLabHeuteAEventIdRoute
-  '/lab/heute-b/$eventId': typeof AppLabHeuteBEventIdRoute
-  '/lab/heute-c/$eventId': typeof AppLabHeuteCEventIdRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
   '/manage/board/new': typeof AppManageBoardNewRoute
@@ -926,9 +884,6 @@ export interface FileRoutesByTo {
   '/gallery/website': typeof AppGalleryWebsiteRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/lab/$greeting': typeof AppLabGreetingRoute
-  '/lab/season-a': typeof AppLabSeasonARoute
-  '/lab/season-b': typeof AppLabSeasonBRoute
-  '/lab/season-c': typeof AppLabSeasonCRoute
   '/manage/applications': typeof AppManageApplicationsRoute
   '/manage/board': typeof AppManageBoardRoute
   '/manage/club-record': typeof AppManageClubRecordRoute
@@ -960,9 +915,6 @@ export interface FileRoutesByTo {
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
   '/groups/$groupId/trainings': typeof AppGroupsGroupIdTrainingsRoute
-  '/lab/heute-a/$eventId': typeof AppLabHeuteAEventIdRoute
-  '/lab/heute-b/$eventId': typeof AppLabHeuteBEventIdRoute
-  '/lab/heute-c/$eventId': typeof AppLabHeuteCEventIdRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
   '/manage/board/new': typeof AppManageBoardNewRoute
@@ -1049,9 +1001,6 @@ export interface FileRoutesById {
   '/_app/gallery_/website': typeof AppGalleryWebsiteRoute
   '/_app/groups_/$groupId': typeof AppGroupsGroupIdRoute
   '/_app/lab_/$greeting': typeof AppLabGreetingRoute
-  '/_app/lab_/season-a': typeof AppLabSeasonARoute
-  '/_app/lab_/season-b': typeof AppLabSeasonBRoute
-  '/_app/lab_/season-c': typeof AppLabSeasonCRoute
   '/_app/manage/applications': typeof AppManageApplicationsRoute
   '/_app/manage/board': typeof AppManageBoardRoute
   '/_app/manage/club-record': typeof AppManageClubRecordRoute
@@ -1083,9 +1032,6 @@ export interface FileRoutesById {
   '/_app/groups_/$groupId_/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/_app/groups_/$groupId_/edit': typeof AppGroupsGroupIdEditRoute
   '/_app/groups_/$groupId_/trainings': typeof AppGroupsGroupIdTrainingsRoute
-  '/_app/lab_/heute-a/$eventId': typeof AppLabHeuteAEventIdRoute
-  '/_app/lab_/heute-b/$eventId': typeof AppLabHeuteBEventIdRoute
-  '/_app/lab_/heute-c/$eventId': typeof AppLabHeuteCEventIdRoute
   '/_app/manage/applications_/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/_app/manage/board_/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
   '/_app/manage/board_/new': typeof AppManageBoardNewRoute
@@ -1170,9 +1116,6 @@ export interface FileRouteTypes {
     | '/gallery/website'
     | '/groups/$groupId'
     | '/lab/$greeting'
-    | '/lab/season-a'
-    | '/lab/season-b'
-    | '/lab/season-c'
     | '/manage/applications'
     | '/manage/board'
     | '/manage/club-record'
@@ -1204,9 +1147,6 @@ export interface FileRouteTypes {
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
     | '/groups/$groupId/trainings'
-    | '/lab/heute-a/$eventId'
-    | '/lab/heute-b/$eventId'
-    | '/lab/heute-c/$eventId'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
     | '/manage/board/new'
@@ -1289,9 +1229,6 @@ export interface FileRouteTypes {
     | '/gallery/website'
     | '/groups/$groupId'
     | '/lab/$greeting'
-    | '/lab/season-a'
-    | '/lab/season-b'
-    | '/lab/season-c'
     | '/manage/applications'
     | '/manage/board'
     | '/manage/club-record'
@@ -1323,9 +1260,6 @@ export interface FileRouteTypes {
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
     | '/groups/$groupId/trainings'
-    | '/lab/heute-a/$eventId'
-    | '/lab/heute-b/$eventId'
-    | '/lab/heute-c/$eventId'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
     | '/manage/board/new'
@@ -1411,9 +1345,6 @@ export interface FileRouteTypes {
     | '/_app/gallery_/website'
     | '/_app/groups_/$groupId'
     | '/_app/lab_/$greeting'
-    | '/_app/lab_/season-a'
-    | '/_app/lab_/season-b'
-    | '/_app/lab_/season-c'
     | '/_app/manage/applications'
     | '/_app/manage/board'
     | '/_app/manage/club-record'
@@ -1445,9 +1376,6 @@ export interface FileRouteTypes {
     | '/_app/groups_/$groupId_/administration'
     | '/_app/groups_/$groupId_/edit'
     | '/_app/groups_/$groupId_/trainings'
-    | '/_app/lab_/heute-a/$eventId'
-    | '/_app/lab_/heute-b/$eventId'
-    | '/_app/lab_/heute-c/$eventId'
     | '/_app/manage/applications_/$membershipApplicationId'
     | '/_app/manage/board_/$boardOfficeId'
     | '/_app/manage/board_/new'
@@ -1781,27 +1709,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageApplicationsRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/lab_/season-c': {
-      id: '/_app/lab_/season-c'
-      path: '/lab/season-c'
-      fullPath: '/lab/season-c'
-      preLoaderRoute: typeof AppLabSeasonCRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/lab_/season-b': {
-      id: '/_app/lab_/season-b'
-      path: '/lab/season-b'
-      fullPath: '/lab/season-b'
-      preLoaderRoute: typeof AppLabSeasonBRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/lab_/season-a': {
-      id: '/_app/lab_/season-a'
-      path: '/lab/season-a'
-      fullPath: '/lab/season-a'
-      preLoaderRoute: typeof AppLabSeasonARouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/lab_/$greeting': {
       id: '/_app/lab_/$greeting'
       path: '/lab/$greeting'
@@ -2024,27 +1931,6 @@ declare module '@tanstack/react-router' {
       path: '/manage/applications/$membershipApplicationId'
       fullPath: '/manage/applications/$membershipApplicationId'
       preLoaderRoute: typeof AppManageApplicationsMembershipApplicationIdRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/lab_/heute-c/$eventId': {
-      id: '/_app/lab_/heute-c/$eventId'
-      path: '/lab/heute-c/$eventId'
-      fullPath: '/lab/heute-c/$eventId'
-      preLoaderRoute: typeof AppLabHeuteCEventIdRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/lab_/heute-b/$eventId': {
-      id: '/_app/lab_/heute-b/$eventId'
-      path: '/lab/heute-b/$eventId'
-      fullPath: '/lab/heute-b/$eventId'
-      preLoaderRoute: typeof AppLabHeuteBEventIdRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/lab_/heute-a/$eventId': {
-      id: '/_app/lab_/heute-a/$eventId'
-      path: '/lab/heute-a/$eventId'
-      fullPath: '/lab/heute-a/$eventId'
-      preLoaderRoute: typeof AppLabHeuteAEventIdRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/groups_/$groupId_/trainings': {
@@ -2419,9 +2305,6 @@ interface AppRouteChildren {
   AppGalleryWebsiteRoute: typeof AppGalleryWebsiteRoute
   AppGroupsGroupIdRoute: typeof AppGroupsGroupIdRoute
   AppLabGreetingRoute: typeof AppLabGreetingRoute
-  AppLabSeasonARoute: typeof AppLabSeasonARoute
-  AppLabSeasonBRoute: typeof AppLabSeasonBRoute
-  AppLabSeasonCRoute: typeof AppLabSeasonCRoute
   AppManageApplicationsRoute: typeof AppManageApplicationsRoute
   AppManageBoardRoute: typeof AppManageBoardRoute
   AppManageClubRecordRoute: typeof AppManageClubRecordRoute
@@ -2451,9 +2334,6 @@ interface AppRouteChildren {
   AppGroupsGroupIdAdministrationRoute: typeof AppGroupsGroupIdAdministrationRoute
   AppGroupsGroupIdEditRoute: typeof AppGroupsGroupIdEditRoute
   AppGroupsGroupIdTrainingsRoute: typeof AppGroupsGroupIdTrainingsRoute
-  AppLabHeuteAEventIdRoute: typeof AppLabHeuteAEventIdRoute
-  AppLabHeuteBEventIdRoute: typeof AppLabHeuteBEventIdRoute
-  AppLabHeuteCEventIdRoute: typeof AppLabHeuteCEventIdRoute
   AppManageApplicationsMembershipApplicationIdRoute: typeof AppManageApplicationsMembershipApplicationIdRoute
   AppManageBoardBoardOfficeIdRoute: typeof AppManageBoardBoardOfficeIdRoute
   AppManageBoardNewRoute: typeof AppManageBoardNewRoute
@@ -2527,9 +2407,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppGalleryWebsiteRoute: AppGalleryWebsiteRoute,
   AppGroupsGroupIdRoute: AppGroupsGroupIdRoute,
   AppLabGreetingRoute: AppLabGreetingRoute,
-  AppLabSeasonARoute: AppLabSeasonARoute,
-  AppLabSeasonBRoute: AppLabSeasonBRoute,
-  AppLabSeasonCRoute: AppLabSeasonCRoute,
   AppManageApplicationsRoute: AppManageApplicationsRoute,
   AppManageBoardRoute: AppManageBoardRoute,
   AppManageClubRecordRoute: AppManageClubRecordRoute,
@@ -2559,9 +2436,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppGroupsGroupIdAdministrationRoute: AppGroupsGroupIdAdministrationRoute,
   AppGroupsGroupIdEditRoute: AppGroupsGroupIdEditRoute,
   AppGroupsGroupIdTrainingsRoute: AppGroupsGroupIdTrainingsRoute,
-  AppLabHeuteAEventIdRoute: AppLabHeuteAEventIdRoute,
-  AppLabHeuteBEventIdRoute: AppLabHeuteBEventIdRoute,
-  AppLabHeuteCEventIdRoute: AppLabHeuteCEventIdRoute,
   AppManageApplicationsMembershipApplicationIdRoute:
     AppManageApplicationsMembershipApplicationIdRoute,
   AppManageBoardBoardOfficeIdRoute: AppManageBoardBoardOfficeIdRoute,
