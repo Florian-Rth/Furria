@@ -4,4 +4,5 @@ public enum SignInFailureScope
 {
     Login = 1,
     Refresh = 2,
+    RefreshFromAddress = 3,
 }

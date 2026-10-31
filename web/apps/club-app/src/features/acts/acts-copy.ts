@@ -1,5 +1,6 @@
 import type { KkIconName } from '@furria/ui/KkIcon';
 import type { ActKind, ActWishKind, Strength } from '@/features/running-order/schemas';
+import { sessionYearsLabelOf } from '@/lib/club';
 import type { CastTally, CastTileState } from './act-cast';
 import type { NameIssue } from './act-editor';
 import type { ActsFilter } from './schemas';
@@ -14,7 +15,7 @@ export const RETRY_LABEL = 'Erneut laden';
 export const LIST_LABEL = 'Auftritte nach Gruppen';
 export const POINTS_TITLE = 'Ablaufpunkte';
 export const POINT_CONTEXT = 'Ablaufpunkt';
-export const OPEN_LABEL = 'Bearbeiten';
+export const OPEN_LABEL = 'Öffnen';
 export const CLOSE_LABEL = 'Schließen';
 export const NONE = 'keine';
 export const EMPTY_FILTER_NOTE = 'Hier gibt es keine Auftritte.';
@@ -27,6 +28,19 @@ export const SPOTLIGHT_CLEAR_LABEL = 'Aufheben';
 export const NAME_LABEL = 'Name des Auftritts';
 export const NAME_PLACEHOLDER = 'Name des Auftritts';
 export const KIND_CHOICE_LABEL = 'Art des Auftritts';
+export const SESSION_CHOICE_LABEL = 'Session des Auftritts';
+export const SESSIONS_LABEL = 'Session wählen';
+
+export const toSessionLabel = (sessionYear: number): string =>
+  `Session ${sessionYearsLabelOf(sessionYear)}`;
+
+export const toClosedActNote = (sessionYear: number | null): string =>
+  sessionYear === null
+    ? 'Dieser Auftritt bleibt, wie er war.'
+    : `Die Session ${sessionYearsLabelOf(sessionYear)} ist vorbei – der Auftritt bleibt, wie er war.`;
+
+export const toClosedSessionNote = (sessionYear: number): string =>
+  `Die Session ${sessionYearsLabelOf(sessionYear)} ist vorbei – ihre Auftritte bleiben, wie sie waren.`;
 export const GROUP_TITLE = 'Gruppe';
 export const GROUP_FIELD_LABEL = 'Gruppe';
 export const NO_GROUP_OPTION = 'Keine Gruppe';
@@ -83,10 +97,12 @@ export const KIND_ICONS: Record<ActKind, KkIconName> = {
   point: 'flag',
 };
 
-const count = (value: number, one: string, many: string): string =>
+export const META_SEPARATOR = ' · ';
+
+export const countOf = (value: number, one: string, many: string): string =>
   `${value} ${value === 1 ? one : many}`;
 
-export const toSectionMeta = (total: number): string => count(total, 'Auftritt', 'Auftritte');
+export const toSectionMeta = (total: number): string => countOf(total, 'Auftritt', 'Auftritte');
 
 export const toCastFact = (present: number): string =>
   present === 0 ? 'niemand eingetragen' : `${present} dabei`;
@@ -110,7 +126,7 @@ export const toCarriersLegend = (carriers: number): string => `${carriers} mehrf
 export const toSinglesLegend = (singles: number): string => `${singles} nur einmal`;
 
 export const toSpotlightLine = (name: string, acts: number): string =>
-  `${name} steht in ${count(acts, 'Auftritt', 'Auftritten')}`;
+  `${name} steht in ${countOf(acts, 'Auftritt', 'Auftritten')}`;
 
 export const toSharedActMeta = (shared: number): string =>
   `${shared} ${shared === 1 ? 'Person' : 'Leute'} gemeinsam`;
@@ -123,7 +139,7 @@ export const toCastTallyLine = (tally: CastTally, grouped: boolean): string => {
   const parts = [
     `${tally.present} dabei`,
     tally.out === 0 ? null : `${tally.out} nicht dabei`,
-    tally.guests === 0 ? null : count(tally.guests, 'Gast', 'Gäste'),
+    tally.guests === 0 ? null : countOf(tally.guests, 'Gast', 'Gäste'),
   ].filter((part): part is string => part !== null);
 
   return parts.join(' · ');
@@ -176,3 +192,9 @@ export const toShortName = (firstName: string, lastName: string): string => {
 
 export const toFullName = (firstName: string, lastName: string): string =>
   `${firstName} ${lastName}`;
+
+export const toCoEditorGrantedMessage = (name: string): string =>
+  `${name} darf jetzt mitbearbeiten.`;
+
+export const toCoEditorRevokedMessage = (name: string): string =>
+  `${name} bearbeitet nicht mehr mit.`;

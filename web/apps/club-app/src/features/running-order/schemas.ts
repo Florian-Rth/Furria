@@ -62,6 +62,19 @@ export const ActRefSchema = z.object({
 });
 export type ActRef = z.infer<typeof ActRefSchema>;
 
+export const EveningRunningOrderLineSchema = ActRefSchema.extend({
+  position: z.number().int().nonnegative(),
+  own: z.boolean(),
+});
+export type EveningRunningOrderLine = z.infer<typeof EveningRunningOrderLineSchema>;
+
+export const EveningRunningOrderSchema = z.object({
+  calendarEntryId: z.number().int(),
+  confirmed: z.boolean(),
+  lines: z.array(EveningRunningOrderLineSchema),
+});
+export type EveningRunningOrder = z.infer<typeof EveningRunningOrderSchema>;
+
 export const CastPersonSchema = PortraitPersonRefSchema.extend({ absent: z.boolean() });
 export type CastPerson = z.infer<typeof CastPersonSchema>;
 
@@ -94,6 +107,8 @@ export const FindingSchema = z.object({
 export type Finding = z.infer<typeof FindingSchema>;
 
 export const CatalogueActSchema = ActRefSchema.extend({
+  sessionYear: z.number().int().nullable(),
+  closed: z.boolean(),
   archived: z.boolean(),
   cast: z.array(CastPersonSchema),
   added: z.array(PortraitPersonRefSchema),
@@ -102,7 +117,11 @@ export const CatalogueActSchema = ActRefSchema.extend({
 });
 export type CatalogueAct = z.infer<typeof CatalogueActSchema>;
 
-export const ActsResponseSchema = z.object({ acts: z.array(CatalogueActSchema) });
+export const ActsResponseSchema = z.object({
+  sessionYear: z.number().int(),
+  sessionYears: z.array(z.number().int()),
+  acts: z.array(CatalogueActSchema),
+});
 export type ActsResponse = z.infer<typeof ActsResponseSchema>;
 
 export const ActWishBodySchema = z.object({ kind: ActWishKindSchema, strength: StrengthSchema });
@@ -112,6 +131,7 @@ export const ActFormSchema = z.object({
   name: z.string().trim().min(1).max(ACT_NAME_MAX_LENGTH),
   groupId: z.number().int().nullable(),
   kind: ActKindSchema.nullable(),
+  sessionYear: z.number().int().nullable(),
   addedPersonIds: z.array(z.number().int()),
   removedPersonIds: z.array(z.number().int()),
   wishes: z.array(ActWishBodySchema),
@@ -124,12 +144,17 @@ export type CreatedAct = z.infer<typeof CreatedActSchema>;
 export const LineActSchema = ActRefSchema.extend({ cast: z.array(CastPersonSchema) });
 export type LineAct = z.infer<typeof LineActSchema>;
 
+export const EVENING_CHANGES = ['cast', 'spots', 'choreography'] as const;
+export const EveningChangeSchema = z.enum(EVENING_CHANGES);
+export type EveningChange = z.infer<typeof EveningChangeSchema>;
+
 export const RunningOrderLineSchema = z.object({
   lineId: z.number().int(),
   act: LineActSchema,
   position: z.number().int().nonnegative().nullable(),
   pinned: z.boolean(),
   blockKey: z.number().int().nullable(),
+  eveningChanges: z.array(EveningChangeSchema),
 });
 export type RunningOrderLine = z.infer<typeof RunningOrderLineSchema>;
 
@@ -234,6 +259,15 @@ export const SuggestionSchema = z.object({
   holdsUnavoidable: z.boolean(),
 });
 export type Suggestion = z.infer<typeof SuggestionSchema>;
+
+export const SuggestionLineSchema = SuggestionSchema.extend({ final: z.boolean() });
+export type SuggestionLine = z.infer<typeof SuggestionLineSchema>;
+
+export const SuggestionBodySchema = RunningOrderBodySchema.extend({
+  seedActIds: z.array(z.number().int()),
+  searchSeconds: z.number().int().positive(),
+});
+export type SuggestionBody = z.infer<typeof SuggestionBodySchema>;
 
 export const ConfirmationBodySchema = z.object({ confirmed: z.boolean() });
 export type ConfirmationBody = z.infer<typeof ConfirmationBodySchema>;

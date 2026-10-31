@@ -203,6 +203,7 @@ export const kkTokens = {
     note: '34rem',
     empty: '19rem',
     text: '35rem',
+    stagePreview: '24rem',
   },
   opacity: {
     onAccent: 0.92,

@@ -27,6 +27,26 @@ public sealed class ActExpectations
                 Assert.Equal(groupId, (await SingleAsync(dbContext, ct)).GroupId)
         );
 
+    public Expected ToBelongToSession(int? sessionYear) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(sessionYear, (await SingleAsync(dbContext, ct)).SessionYear)
+        );
+
+    public Expected ToHaveFrozenCastExactly(params int[] personIds) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    personIds.Order(),
+                    await dbContext
+                        .FrozenCastMembers.AsNoTracking()
+                        .Where(row => row.ActId == _actId)
+                        .OrderBy(row => row.PersonId)
+                        .Select(row => row.PersonId)
+                        .ToListAsync(ct)
+                )
+        );
+
     public Expected ToBeArchivedAt(DateTimeOffset archivedAt) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

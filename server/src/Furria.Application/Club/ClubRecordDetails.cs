@@ -25,4 +25,6 @@ public sealed record ClubRecordDetails
     public required string? FacebookUrl { get; init; }
 
     public required int AgeOfConsent { get; init; }
+
+    public required ClubStageDetails? Stage { get; init; }
 }

@@ -1,7 +1,7 @@
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
-using Furria.Application.Authorization;
+using Furria.Api.Results;
 using Furria.Infrastructure.Club;
 
 namespace Furria.Api.Endpoints.Calendar;
@@ -19,26 +19,25 @@ public sealed class GetCalendarEntryById
     public override void Configure()
     {
         Get("calendar/entries/{calendarEntryId}");
-        Definition.RequirePermission(FurriaPermissions.ClubRead);
     }
 
     public override async Task HandleAsync(GetCalendarEntryByIdRequest req, CancellationToken ct)
     {
-        var personId = User.PersonId();
-        if (personId is null)
+        var accountId = User.AccountId();
+        if (accountId is null)
         {
             await Send.UnauthorizedAsync(ct);
             return;
         }
 
-        var entry = await _calendarService.GetEntryAsync(personId.Value, req.CalendarEntryId, ct);
-        if (entry is null)
+        var entry = await _calendarService.GetEntryAsync(accountId.Value, req.CalendarEntryId, ct);
+        if (!entry.IsSuccess)
         {
-            await Send.NotFoundAsync(ct);
+            await HttpContext.Response.SendFailureAsync(entry.Error, ct);
             return;
         }
 
-        await Send.OkAsync(new() { Entry = CalendarEntryDto.From(entry) }, cancellation: ct);
+        await Send.OkAsync(new() { Entry = CalendarEntryDto.From(entry.Value) }, cancellation: ct);
     }
 }
 

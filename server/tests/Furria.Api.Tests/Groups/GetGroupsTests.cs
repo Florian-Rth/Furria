@@ -485,6 +485,65 @@ public sealed class GetGroupsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_ListTheGroups_When_TheCallerOnlyRunsAGroup()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("trixi"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("kindergarde", "Kindergarde")
+                            .AddGroupAdmin("trixi-leitet", "kindergarde", "trixi", "Trainerin")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("trixi", ct);
+        var (response, result) = await client.GETAsync<GetGroups, GetGroupsResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.True(Assert.Single(result.Groups).ViewerIsAdmin);
+    }
+
+    [Fact]
+    public async Task Should_ListTheGroupsWithoutStanding_When_TheManagingLoginReadsTheList()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Groups(groups => groups.AddGroup("kindergarde", "Kindergarde")),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await client.GETAsync<GetGroups, GetGroupsResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var kindergarde = Assert.Single(result.Groups);
+        Assert.False(kindergarde.ViewerIsMember);
+        Assert.False(kindergarde.ViewerIsAdmin);
+    }
+
+    [Fact]
+    public async Task Should_ReturnForbidden_When_TheCallerIsNotAffiliated()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("tom"))
+                    .Groups(groups => groups.AddGroup("kindergarde", "Kindergarde")),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("tom", ct);
+        var (response, _) = await client.GETAsync<GetGroups, GetGroupsResponse>();
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Should_MarkNoStanding_When_TheViewerLeftTheGroupAndHandedTheAdminOver()
     {
         var ct = TestContext.Current.CancellationToken;

@@ -1,12 +1,24 @@
+import type { SessionStall } from '@/lib/api/session/session-stall';
 import type { QueryErrorKind } from '@/lib/query-error';
 import { toQueryErrorMessage } from '@/lib/query-error';
 
 export const BOOT_STATUS_MESSAGE = 'ZUGANG WIRD GEPRÜFT';
 
-export const BOOT_FAILURE_MESSAGE =
-  'Die Verbindung zum Server ist fehlgeschlagen. Deine Anmeldung bleibt erhalten.';
+const BOOT_FAILURE_MESSAGES: Record<SessionStall, string> = {
+  unreachable: 'Die Verbindung zum Server ist fehlgeschlagen. Deine Anmeldung bleibt erhalten.',
+  throttled: 'Zu viele Versuche – gleich noch einmal. Deine Anmeldung bleibt erhalten.',
+};
+
+export const bootFailureMessageOf = (stall: SessionStall | null): string =>
+  BOOT_FAILURE_MESSAGES[stall ?? 'unreachable'];
 
 export const BOOT_RETRY_LABEL = 'Erneut versuchen';
+
+export const ACCESS_PENDING_LABEL = 'Zugang wird geprüft';
+
+export const DENIED_START_LABEL = 'Zur Startseite';
+
+export const DENIED_MY_ACTS_LABEL = 'Zu meinen Auftritten';
 
 export const BOOT_RELOGIN_LABEL = 'Neu anmelden';
 

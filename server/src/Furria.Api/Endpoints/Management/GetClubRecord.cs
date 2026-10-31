@@ -43,6 +43,15 @@ public sealed class GetClubRecord : EndpointWithoutRequest<GetClubRecordResponse
             InstagramUrl = record.InstagramUrl,
             FacebookUrl = record.FacebookUrl,
             AgeOfConsent = record.AgeOfConsent,
+            Stage = record.Stage is { } stage ? ToStageDto(stage) : null,
+        };
+
+    private static ClubStageDto ToStageDto(ClubStageDetails stage) =>
+        new()
+        {
+            WidthMetres = stage.WidthMetres,
+            DepthMetres = stage.DepthMetres,
+            ArtworkSvg = stage.ArtworkSvg,
         };
 }
 
@@ -71,4 +80,15 @@ public sealed record GetClubRecordResponse
     public required string? FacebookUrl { get; init; }
 
     public required int AgeOfConsent { get; init; }
+
+    public required ClubStageDto? Stage { get; init; }
+}
+
+public sealed record ClubStageDto
+{
+    public required decimal WidthMetres { get; init; }
+
+    public required decimal DepthMetres { get; init; }
+
+    public required string? ArtworkSvg { get; init; }
 }

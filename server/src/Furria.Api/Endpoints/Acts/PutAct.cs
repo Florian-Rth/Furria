@@ -3,6 +3,7 @@ using FluentValidation;
 using Furria.Api.Authorization;
 using Furria.Api.Results;
 using Furria.Application.RunningOrders;
+using Furria.Core.Club;
 using Furria.Core.RunningOrders;
 using Furria.Infrastructure.RunningOrders;
 
@@ -59,6 +60,7 @@ public sealed class PutAct : Endpoint<PutActRequest>
                 Name = req.Name,
                 GroupId = req.GroupId,
                 Kind = req.Kind,
+                SessionYear = req.SessionYear,
                 AddedPersonIds = req.AddedPersonIds,
                 RemovedPersonIds = req.RemovedPersonIds,
                 Wishes = [.. req.Wishes.Select(wish => wish.ToInput())],
@@ -76,6 +78,8 @@ public sealed record PutActRequest
     public required int? GroupId { get; init; }
 
     public required ActKind? Kind { get; init; }
+
+    public required int? SessionYear { get; init; }
 
     public required IReadOnlyList<int> AddedPersonIds { get; init; }
 
@@ -102,5 +106,7 @@ public sealed class PutActValidator : Validator<PutActRequest>
             .NotNull()
             .Must(personIds => personIds.Count <= ActLimits.MostPersons);
         RuleFor(request => request.Wishes).NotNull();
+        RuleFor(request => request.SessionYear)
+            .GreaterThanOrEqualTo(ClubSession.EarliestSessionYear);
     }
 }

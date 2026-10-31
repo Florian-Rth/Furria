@@ -8,10 +8,13 @@ public sealed class MediaWorkerActivity
 
     private int _photoMediaItemId;
     private int _videoMediaItemId;
+    private int _audioMediaItemId;
 
     public int? PhotoMediaItemId => ItemOrNone(Volatile.Read(ref _photoMediaItemId));
 
     public int? VideoMediaItemId => ItemOrNone(Volatile.Read(ref _videoMediaItemId));
+
+    public int? AudioMediaItemId => ItemOrNone(Volatile.Read(ref _audioMediaItemId));
 
     public void Begin(MediaKind kind, int mediaItemId) =>
         Volatile.Write(ref LaneOf(kind), mediaItemId);
@@ -22,6 +25,8 @@ public sealed class MediaWorkerActivity
     {
         if (kind == MediaKind.Video)
             return ref _videoMediaItemId;
+        if (kind == MediaKind.Audio)
+            return ref _audioMediaItemId;
         return ref _photoMediaItemId;
     }
 

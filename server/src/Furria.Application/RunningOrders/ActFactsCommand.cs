@@ -10,6 +10,8 @@ public sealed record ActFactsCommand
 
     public required ActKind? Kind { get; init; }
 
+    public required int? SessionYear { get; init; }
+
     public required IReadOnlyList<int> AddedPersonIds { get; init; }
 
     public required IReadOnlyList<int> RemovedPersonIds { get; init; }

@@ -15,7 +15,7 @@ export const PlannerModeTool: FC = () => {
   });
   const buttons =
     items.length === 0 ? null : (
-      <Stack direction="row" sx={{ ml: 'auto', gap: 1, alignItems: 'center' }}>
+      <Stack direction="row" sx={{ ml: 'auto', gap: 1, alignItems: 'center', flexWrap: 'wrap' }}>
         {items}
       </Stack>
     );
@@ -26,6 +26,7 @@ export const PlannerModeTool: FC = () => {
       sx={{
         alignItems: 'center',
         justifyContent: 'space-between',
+        flexWrap: 'wrap',
         gap: 1,
         minWidth: 0,
         '&:empty': { display: 'none' },

@@ -29,17 +29,20 @@ public sealed class MediaWorkerHeartbeats
             $"""
             INSERT INTO media_worker_heartbeat (
                 instance_id, host_name, version, hardware_acceleration,
-                started_at, last_seen_at, photo_media_item_id, video_media_item_id)
+                started_at, last_seen_at, photo_media_item_id, video_media_item_id,
+                audio_media_item_id)
             VALUES (
                 {command.InstanceId}, {hostName}, {version}, {hardwareAcceleration},
-                {command.StartedAt}, {lastSeenAt}, {command.PhotoMediaItemId}, {command.VideoMediaItemId})
+                {command.StartedAt}, {lastSeenAt}, {command.PhotoMediaItemId}, {command.VideoMediaItemId},
+                {command.AudioMediaItemId})
             ON CONFLICT (instance_id) DO UPDATE SET
                 host_name = EXCLUDED.host_name,
                 version = EXCLUDED.version,
                 hardware_acceleration = EXCLUDED.hardware_acceleration,
                 last_seen_at = EXCLUDED.last_seen_at,
                 photo_media_item_id = EXCLUDED.photo_media_item_id,
-                video_media_item_id = EXCLUDED.video_media_item_id
+                video_media_item_id = EXCLUDED.video_media_item_id,
+                audio_media_item_id = EXCLUDED.audio_media_item_id
             """,
             ct
         );

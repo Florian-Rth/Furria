@@ -15,4 +15,6 @@ public sealed record MediaWorkerBeatCommand
     public required int? PhotoMediaItemId { get; init; }
 
     public required int? VideoMediaItemId { get; init; }
+
+    public required int? AudioMediaItemId { get; init; }
 }

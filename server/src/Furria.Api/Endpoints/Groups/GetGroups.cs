@@ -4,6 +4,7 @@ using Furria.Api.Media;
 using Furria.Application.Groups;
 using Furria.Core.Club;
 using Furria.Core.Groups;
+using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Groups;
 
 namespace Furria.Api.Endpoints.Groups;
@@ -11,28 +12,35 @@ namespace Furria.Api.Endpoints.Groups;
 public sealed class GetGroups : EndpointWithoutRequest<GetGroupsResponse>
 {
     private readonly GroupService _groupService;
+    private readonly PermissionAuthorizer _authorizer;
 
-    public GetGroups(GroupService groupService)
+    public GetGroups(GroupService groupService, PermissionAuthorizer authorizer)
     {
         _groupService = groupService;
+        _authorizer = authorizer;
     }
 
     public override void Configure()
     {
         Get("groups");
-        Definition.RequireAffiliation();
     }
 
     public override async Task HandleAsync(CancellationToken ct)
     {
-        var personId = User.PersonId();
-        if (personId is null)
+        var accountId = User.AccountId();
+        if (accountId is null)
         {
             await Send.UnauthorizedAsync(ct);
             return;
         }
 
-        var groups = await _groupService.GetGroupsAsync(personId.Value, ct);
+        if (!await _authorizer.IsAffiliatedOrGroupAdminAsync(accountId.Value, ct))
+        {
+            await Send.ForbiddenAsync(ct);
+            return;
+        }
+
+        var groups = await _groupService.GetGroupsAsync(User.PersonId(), ct);
 
         await Send.OkAsync(ToResponse(groups), cancellation: ct);
     }

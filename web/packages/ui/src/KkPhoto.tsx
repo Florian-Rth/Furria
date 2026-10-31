@@ -11,7 +11,7 @@ import type { KkPhotoOrientation } from './photo-frame';
 import { resolvePhotoFrame } from './photo-frame';
 import { kkTokens } from './tokens';
 
-export type KkPhotoFit = 'cover' | 'contain';
+export type KkPhotoFit = 'cover' | 'contain' | 'fill';
 export type KkPhotoSize = 'full' | 'thumb';
 
 const STAMPED_FILTER = 'grayscale(0.85)';

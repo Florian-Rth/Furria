@@ -1,6 +1,11 @@
 using System.Net;
+using FastEndpoints;
+using Furria.Api.Endpoints.Acts;
+using Furria.Api.Tests.RunningOrders;
 using Furria.Application.Authorization;
 using Furria.Core.Media;
+using Furria.Core.RunningOrders;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -502,5 +507,170 @@ public sealed class MediaUploadTests : IClassFixture<ApiTestFixture>
         var response = await TusUploadSteps.HeadAsync(bernd, upload, ct);
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_GiveTheSongToTheAct_When_TheGroupAdminUploadsIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, actId) = await GardeWithDanceAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("gerda", ct);
+
+        var mediaItemId = await TusUploadSteps.UploadAsync(
+            client,
+            TusUploadSteps.ActOwner(actId),
+            "Gardemarsch.wav",
+            MediaSamples.Wav(ChunkLength),
+            ChunkLength,
+            ct
+        );
+
+        await ctx
+            .Expected.MediaItem(mediaItemId)
+            .ToBeOwnedBy(MediaOwner.Act(actId))
+            .MediaItem(mediaItemId)
+            .ToAwaitItsRenditions(MediaKind.Audio, "audio/wav")
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_AcceptATrainerVideo_When_TheGroupAdminUploadsItToTheAct()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, actId) = await GardeWithDanceAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("gerda", ct);
+
+        var mediaItemId = await TusUploadSteps.UploadAsync(
+            client,
+            TusUploadSteps.ActOwner(actId),
+            "Training.mp4",
+            MediaSamples.Mp4(ChunkLength),
+            ChunkLength,
+            ct
+        );
+
+        await ctx
+            .Expected.MediaItem(mediaItemId)
+            .ToAwaitItsRenditions(MediaKind.Video, "video/mp4")
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseActMedia_When_TheCallerDoesNotAdministerTheActsGroup()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, actId) = await GardeWithDanceAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("bernd", ct);
+
+        var response = await TusUploadSteps.CreateAsync(
+            client,
+            TusUploadSteps.ActOwner(actId),
+            "Gardemarsch.wav",
+            ChunkLength,
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_RefuseActMedia_When_TheActIsArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, actId) = await GardeWithDanceAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("gerda", ct);
+        (
+            await client.PUTAsync<PutActArchived, PutActArchivedRequest>(
+                new() { ActId = actId, Archived = true }
+            )
+        ).EnsureSuccessStatusCode();
+
+        var response = await TusUploadSteps.CreateAsync(
+            client,
+            TusUploadSteps.ActOwner(actId),
+            "Gardemarsch.wav",
+            ChunkLength,
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_RejectAPhoto_When_ItIsMeantForAnAct()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, actId) = await GardeWithDanceAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("gerda", ct);
+        var photo = MediaSamples.Jpeg(ChunkLength);
+        var upload = await TusUploadSteps.CreatedAsync(
+            client,
+            TusUploadSteps.ActOwner(actId),
+            "Aufstellung.jpg",
+            photo.Length,
+            ct
+        );
+
+        var response = await TusUploadSteps.PatchAsync(client, upload, 0, photo, ct);
+
+        Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_RejectASong_When_ItIsUploadedToTheGallery()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("ilka"))
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "galerie",
+                            "ilka-galerie",
+                            "Galerie",
+                            "ilka",
+                            FurriaPermissions.GalleryUpload
+                        )
+                    ),
+            ct
+        );
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var song = MediaSamples.Wav(ChunkLength);
+        var upload = await TusUploadSteps.CreatedAsync(
+            client,
+            TusUploadSteps.GalleryOwner,
+            "Gardemarsch.wav",
+            song.Length,
+            ct
+        );
+
+        var response = await TusUploadSteps.PatchAsync(client, upload, 0, song, ct);
+
+        Assert.Equal(HttpStatusCode.UnsupportedMediaType, response.StatusCode);
+    }
+
+    private async Task<(SeededContext Context, int ActId)> GardeWithDanceAsync(CancellationToken ct)
+    {
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("gerda").AddAccount("bernd"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroup("elferrat", "Elferrat")
+                            .AddGroupAdmin("gerda-tanzgarde", "tanzgarde", "gerda")
+                            .AddGroupAdmin("bernd-elferrat", "elferrat", "bernd")
+                    ),
+            ct
+        );
+        var actId = await RunningOrderSteps.CreateActAsync(
+            await ctx.Identity.ClientForAsync("gerda", ct),
+            "Gardetanz",
+            ctx.Groups.Groups.IdOf("tanzgarde"),
+            ActKind.Dance
+        );
+        return (ctx, actId);
     }
 }

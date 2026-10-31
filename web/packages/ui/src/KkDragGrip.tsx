@@ -3,6 +3,7 @@ import type { CSSObject, Theme } from '@mui/material/styles';
 import type { FC, KeyboardEvent, MouseEvent, PointerEvent } from 'react';
 import { focusRing } from './internal/focus-ring';
 import { inkWashSurface } from './internal/ink-wash';
+import { tapArea } from './internal/tap-area';
 import type { KkIconName } from './KkIcon';
 import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
@@ -28,6 +29,7 @@ const gripPaint =
     ...(active ? inkWashSurface(theme, '10%', '16%') : {}),
     ...(pressed && !active ? inkWashSurface(theme, '6%', '10%') : {}),
     ...focusRing(theme),
+    ...tapArea(),
     '@media (hover: hover)': {
       '&:hover': inkWashSurface(theme, '6%', '10%'),
     },
@@ -43,6 +45,7 @@ interface KkDragGripProps {
   gripKey?: string;
   onPointerDown: (event: PointerEvent<HTMLButtonElement>) => void;
   onKeyDown?: (event: KeyboardEvent<HTMLButtonElement>) => void;
+  onClick?: (event: MouseEvent<HTMLButtonElement>) => void;
   sx?: KkSx;
 }
 
@@ -56,6 +59,7 @@ export const KkDragGrip: FC<KkDragGripProps> = ({
   gripKey,
   onPointerDown,
   onKeyDown,
+  onClick,
   sx,
 }) => (
   <ButtonBase
@@ -67,6 +71,7 @@ export const KkDragGrip: FC<KkDragGripProps> = ({
     aria-hidden={concealed ? true : undefined}
     onPointerDown={onPointerDown}
     onKeyDown={onKeyDown}
+    onClick={onClick}
     onContextMenu={keepMenuAway}
     sx={[
       gripPaint(active, pressed === true, cursor),

@@ -9,8 +9,9 @@ import {
   requestClubContactUpdate,
   requestClubIdentityUpdate,
   requestClubRecord,
+  requestClubStageUpdate,
 } from './requests';
-import type { ClubContact, ClubIdentity, ClubRecord } from './schemas';
+import type { ClubContact, ClubIdentity, ClubRecord, ClubStage } from './schemas';
 
 export const useClubRecordQuery = (enabled = true): UseQueryResult<ClubRecord, Error> =>
   useQuery({
@@ -36,3 +37,6 @@ export const useUpdateClubContactMutation = (): UseMutationResult<void, Error, C
 
 export const useUpdateClubAccessMutation = (): UseMutationResult<void, Error, number> =>
   useClubRecordWrite(requestClubAccessUpdate);
+
+export const useUpdateClubStageMutation = (): UseMutationResult<void, Error, ClubStage> =>
+  useClubRecordWrite(requestClubStageUpdate);

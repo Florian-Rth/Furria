@@ -23,19 +23,22 @@ internal sealed class Solution
         NodesUsed = outcome.NodesUsed;
     }
 
-    [Pure]
-    public static Solution Of(RunningOrderReviewInput input, int nodeBudget)
+    public static Solution Of(RunningOrderReviewInput input, SearchControl control)
     {
         var pipeline = RunningOrderCostPipeline.For(input);
         var layout = UnitLayout.Of(input, pipeline.Facts);
 
-        return new Solution(pipeline, layout, OrderSearch.Run(pipeline, layout, nodeBudget));
+        return new Solution(pipeline, layout, OrderSearch.Run(pipeline, layout, control));
     }
+
+    [Pure]
+    public static IReadOnlyList<LineKey> OriginalOrderOf(RunningOrderReviewInput input) =>
+        KeysOf(UnitLayout.Of(input, RunningOrderCostPipeline.For(input).Facts).CurrentOrder);
 
     [Pure]
     public int ConflictsAfter() => Conflicts.Of(Pipeline.FindingsOf(Order));
 
     [Pure]
-    private static IReadOnlyList<LineKey> KeysOf(IReadOnlyList<PlanUnit> units) =>
+    public static IReadOnlyList<LineKey> KeysOf(IReadOnlyList<PlanUnit> units) =>
         [.. units.SelectMany(unit => unit.Lines).Select(line => line.Key)];
 }

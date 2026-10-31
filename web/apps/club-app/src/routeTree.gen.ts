@@ -62,6 +62,7 @@ import { Route as AppCalendarNewRouteImport } from './routes/_app/calendar_.new'
 import { Route as AppCalendarCalendarEntryIdRouteImport } from './routes/_app/calendar_.$calendarEntryId'
 import { Route as AppAnnouncementsNewRouteImport } from './routes/_app/announcements_.new'
 import { Route as AppAnnouncementsAnnouncementIdRouteImport } from './routes/_app/announcements_.$announcementId'
+import { Route as AppActsActIdRouteImport } from './routes/_app/acts_.$actId'
 import { Route as AppPersonalProfileRouteImport } from './routes/_app/_personal.profile'
 import { Route as AppAffiliatedMembersRouteImport } from './routes/_app/_affiliated.members'
 import { Route as AppManageVenuesNewRouteImport } from './routes/_app/manage.venues_.new'
@@ -72,6 +73,7 @@ import { Route as AppManageRolesRoleIdRouteImport } from './routes/_app/manage.r
 import { Route as AppManagePersonsNewRouteImport } from './routes/_app/manage.persons_.new'
 import { Route as AppManagePersonsPersonIdRouteImport } from './routes/_app/manage.persons_.$personId'
 import { Route as AppManageGroupsNewRouteImport } from './routes/_app/manage.groups_.new'
+import { Route as AppManageClubRecordStageRouteImport } from './routes/_app/manage.club-record_.stage'
 import { Route as AppManageClubRecordIdentityRouteImport } from './routes/_app/manage.club-record_.identity'
 import { Route as AppManageClubRecordContactRouteImport } from './routes/_app/manage.club-record_.contact'
 import { Route as AppManageClubRecordAccessRouteImport } from './routes/_app/manage.club-record_.access'
@@ -87,6 +89,7 @@ import { Route as AppGalleryAlbumIdEditRouteImport } from './routes/_app/gallery
 import { Route as AppEventsEventIdManageRouteImport } from './routes/_app/events_.$eventId_.manage'
 import { Route as AppEventsEventIdEditRouteImport } from './routes/_app/events_.$eventId_.edit'
 import { Route as AppEventsEventIdAblaufRouteImport } from './routes/_app/events_.$eventId_.ablauf'
+import { Route as AppActsActIdMusikRouteImport } from './routes/_app/acts_.$actId_.musik'
 import { Route as AppPersonalProfileSecurityRouteImport } from './routes/_app/_personal.profile_.security'
 import { Route as AppAffiliatedMembersPersonIdRouteImport } from './routes/_app/_affiliated.members_.$personId'
 import { Route as AppManageVenuesVenueIdEditRouteImport } from './routes/_app/manage.venues_.$venueId_.edit'
@@ -385,6 +388,11 @@ const AppAnnouncementsAnnouncementIdRoute =
     path: '/announcements/$announcementId',
     getParentRoute: () => AppRoute,
   } as any)
+const AppActsActIdRoute = AppActsActIdRouteImport.update({
+  id: '/acts_/$actId',
+  path: '/acts/$actId',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppPersonalProfileRoute = AppPersonalProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
@@ -436,6 +444,12 @@ const AppManageGroupsNewRoute = AppManageGroupsNewRouteImport.update({
   path: '/manage/groups/new',
   getParentRoute: () => AppRoute,
 } as any)
+const AppManageClubRecordStageRoute =
+  AppManageClubRecordStageRouteImport.update({
+    id: '/manage/club-record_/stage',
+    path: '/manage/club-record/stage',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppManageClubRecordIdentityRoute =
   AppManageClubRecordIdentityRouteImport.update({
     id: '/manage/club-record_/identity',
@@ -517,6 +531,11 @@ const AppEventsEventIdEditRoute = AppEventsEventIdEditRouteImport.update({
 const AppEventsEventIdAblaufRoute = AppEventsEventIdAblaufRouteImport.update({
   id: '/events_/$eventId_/ablauf',
   path: '/events/$eventId/ablauf',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppActsActIdMusikRoute = AppActsActIdMusikRouteImport.update({
+  id: '/acts_/$actId_/musik',
+  path: '/acts/$actId/musik',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPersonalProfileSecurityRoute =
@@ -737,6 +756,7 @@ export interface FileRoutesByFullPath {
   '/invitation/code': typeof InvitationCodeRoute
   '/members': typeof AppAffiliatedMembersRoute
   '/profile': typeof AppPersonalProfileRoute
+  '/acts/$actId': typeof AppActsActIdRoute
   '/announcements/$announcementId': typeof AppAnnouncementsAnnouncementIdRoute
   '/announcements/new': typeof AppAnnouncementsNewRoute
   '/calendar/$calendarEntryId': typeof AppCalendarCalendarEntryIdRoute
@@ -772,6 +792,7 @@ export interface FileRoutesByFullPath {
   '/system/': typeof AppSystemIndexRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/profile/security': typeof AppPersonalProfileSecurityRoute
+  '/acts/$actId/musik': typeof AppActsActIdMusikRoute
   '/events/$eventId/ablauf': typeof AppEventsEventIdAblaufRoute
   '/events/$eventId/edit': typeof AppEventsEventIdEditRoute
   '/events/$eventId/manage': typeof AppEventsEventIdManageRoute
@@ -787,6 +808,7 @@ export interface FileRoutesByFullPath {
   '/manage/club-record/access': typeof AppManageClubRecordAccessRoute
   '/manage/club-record/contact': typeof AppManageClubRecordContactRoute
   '/manage/club-record/identity': typeof AppManageClubRecordIdentityRoute
+  '/manage/club-record/stage': typeof AppManageClubRecordStageRoute
   '/manage/groups/new': typeof AppManageGroupsNewRoute
   '/manage/persons/$personId': typeof AppManagePersonsPersonIdRoute
   '/manage/persons/new': typeof AppManagePersonsNewRoute
@@ -847,6 +869,7 @@ export interface FileRoutesByTo {
   '/invitation/code': typeof InvitationCodeRoute
   '/members': typeof AppAffiliatedMembersRoute
   '/profile': typeof AppPersonalProfileRoute
+  '/acts/$actId': typeof AppActsActIdRoute
   '/announcements/$announcementId': typeof AppAnnouncementsAnnouncementIdRoute
   '/announcements/new': typeof AppAnnouncementsNewRoute
   '/calendar/$calendarEntryId': typeof AppCalendarCalendarEntryIdRoute
@@ -882,6 +905,7 @@ export interface FileRoutesByTo {
   '/system': typeof AppSystemIndexRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/profile/security': typeof AppPersonalProfileSecurityRoute
+  '/acts/$actId/musik': typeof AppActsActIdMusikRoute
   '/events/$eventId/ablauf': typeof AppEventsEventIdAblaufRoute
   '/events/$eventId/edit': typeof AppEventsEventIdEditRoute
   '/events/$eventId/manage': typeof AppEventsEventIdManageRoute
@@ -897,6 +921,7 @@ export interface FileRoutesByTo {
   '/manage/club-record/access': typeof AppManageClubRecordAccessRoute
   '/manage/club-record/contact': typeof AppManageClubRecordContactRoute
   '/manage/club-record/identity': typeof AppManageClubRecordIdentityRoute
+  '/manage/club-record/stage': typeof AppManageClubRecordStageRoute
   '/manage/groups/new': typeof AppManageGroupsNewRoute
   '/manage/persons/$personId': typeof AppManagePersonsPersonIdRoute
   '/manage/persons/new': typeof AppManagePersonsNewRoute
@@ -961,6 +986,7 @@ export interface FileRoutesById {
   '/_app/': typeof AppIndexRoute
   '/_app/_affiliated/members': typeof AppAffiliatedMembersRoute
   '/_app/_personal/profile': typeof AppPersonalProfileRoute
+  '/_app/acts_/$actId': typeof AppActsActIdRoute
   '/_app/announcements_/$announcementId': typeof AppAnnouncementsAnnouncementIdRoute
   '/_app/announcements_/new': typeof AppAnnouncementsNewRoute
   '/_app/calendar_/$calendarEntryId': typeof AppCalendarCalendarEntryIdRoute
@@ -996,6 +1022,7 @@ export interface FileRoutesById {
   '/_app/system/': typeof AppSystemIndexRoute
   '/_app/_affiliated/members_/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/_app/_personal/profile_/security': typeof AppPersonalProfileSecurityRoute
+  '/_app/acts_/$actId_/musik': typeof AppActsActIdMusikRoute
   '/_app/events_/$eventId_/ablauf': typeof AppEventsEventIdAblaufRoute
   '/_app/events_/$eventId_/edit': typeof AppEventsEventIdEditRoute
   '/_app/events_/$eventId_/manage': typeof AppEventsEventIdManageRoute
@@ -1011,6 +1038,7 @@ export interface FileRoutesById {
   '/_app/manage/club-record_/access': typeof AppManageClubRecordAccessRoute
   '/_app/manage/club-record_/contact': typeof AppManageClubRecordContactRoute
   '/_app/manage/club-record_/identity': typeof AppManageClubRecordIdentityRoute
+  '/_app/manage/club-record_/stage': typeof AppManageClubRecordStageRoute
   '/_app/manage/groups_/new': typeof AppManageGroupsNewRoute
   '/_app/manage/persons_/$personId': typeof AppManagePersonsPersonIdRoute
   '/_app/manage/persons_/new': typeof AppManagePersonsNewRoute
@@ -1073,6 +1101,7 @@ export interface FileRouteTypes {
     | '/invitation/code'
     | '/members'
     | '/profile'
+    | '/acts/$actId'
     | '/announcements/$announcementId'
     | '/announcements/new'
     | '/calendar/$calendarEntryId'
@@ -1108,6 +1137,7 @@ export interface FileRouteTypes {
     | '/system/'
     | '/members/$personId'
     | '/profile/security'
+    | '/acts/$actId/musik'
     | '/events/$eventId/ablauf'
     | '/events/$eventId/edit'
     | '/events/$eventId/manage'
@@ -1123,6 +1153,7 @@ export interface FileRouteTypes {
     | '/manage/club-record/access'
     | '/manage/club-record/contact'
     | '/manage/club-record/identity'
+    | '/manage/club-record/stage'
     | '/manage/groups/new'
     | '/manage/persons/$personId'
     | '/manage/persons/new'
@@ -1183,6 +1214,7 @@ export interface FileRouteTypes {
     | '/invitation/code'
     | '/members'
     | '/profile'
+    | '/acts/$actId'
     | '/announcements/$announcementId'
     | '/announcements/new'
     | '/calendar/$calendarEntryId'
@@ -1218,6 +1250,7 @@ export interface FileRouteTypes {
     | '/system'
     | '/members/$personId'
     | '/profile/security'
+    | '/acts/$actId/musik'
     | '/events/$eventId/ablauf'
     | '/events/$eventId/edit'
     | '/events/$eventId/manage'
@@ -1233,6 +1266,7 @@ export interface FileRouteTypes {
     | '/manage/club-record/access'
     | '/manage/club-record/contact'
     | '/manage/club-record/identity'
+    | '/manage/club-record/stage'
     | '/manage/groups/new'
     | '/manage/persons/$personId'
     | '/manage/persons/new'
@@ -1296,6 +1330,7 @@ export interface FileRouteTypes {
     | '/_app/'
     | '/_app/_affiliated/members'
     | '/_app/_personal/profile'
+    | '/_app/acts_/$actId'
     | '/_app/announcements_/$announcementId'
     | '/_app/announcements_/new'
     | '/_app/calendar_/$calendarEntryId'
@@ -1331,6 +1366,7 @@ export interface FileRouteTypes {
     | '/_app/system/'
     | '/_app/_affiliated/members_/$personId'
     | '/_app/_personal/profile_/security'
+    | '/_app/acts_/$actId_/musik'
     | '/_app/events_/$eventId_/ablauf'
     | '/_app/events_/$eventId_/edit'
     | '/_app/events_/$eventId_/manage'
@@ -1346,6 +1382,7 @@ export interface FileRouteTypes {
     | '/_app/manage/club-record_/access'
     | '/_app/manage/club-record_/contact'
     | '/_app/manage/club-record_/identity'
+    | '/_app/manage/club-record_/stage'
     | '/_app/manage/groups_/new'
     | '/_app/manage/persons_/$personId'
     | '/_app/manage/persons_/new'
@@ -1770,6 +1807,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAnnouncementsAnnouncementIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/acts_/$actId': {
+      id: '/_app/acts_/$actId'
+      path: '/acts/$actId'
+      fullPath: '/acts/$actId'
+      preLoaderRoute: typeof AppActsActIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/_personal/profile': {
       id: '/_app/_personal/profile'
       path: '/profile'
@@ -1838,6 +1882,13 @@ declare module '@tanstack/react-router' {
       path: '/manage/groups/new'
       fullPath: '/manage/groups/new'
       preLoaderRoute: typeof AppManageGroupsNewRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/manage/club-record_/stage': {
+      id: '/_app/manage/club-record_/stage'
+      path: '/manage/club-record/stage'
+      fullPath: '/manage/club-record/stage'
+      preLoaderRoute: typeof AppManageClubRecordStageRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/manage/club-record_/identity': {
@@ -1943,6 +1994,13 @@ declare module '@tanstack/react-router' {
       path: '/events/$eventId/ablauf'
       fullPath: '/events/$eventId/ablauf'
       preLoaderRoute: typeof AppEventsEventIdAblaufRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/acts_/$actId_/musik': {
+      id: '/_app/acts_/$actId_/musik'
+      path: '/acts/$actId/musik'
+      fullPath: '/acts/$actId/musik'
+      preLoaderRoute: typeof AppActsActIdMusikRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/_personal/profile_/security': {
@@ -2232,6 +2290,7 @@ interface AppRouteChildren {
   AppMoreRoute: typeof AppMoreRoute
   AppNewsRoute: typeof AppNewsRoute
   AppIndexRoute: typeof AppIndexRoute
+  AppActsActIdRoute: typeof AppActsActIdRoute
   AppAnnouncementsAnnouncementIdRoute: typeof AppAnnouncementsAnnouncementIdRoute
   AppAnnouncementsNewRoute: typeof AppAnnouncementsNewRoute
   AppCalendarCalendarEntryIdRoute: typeof AppCalendarCalendarEntryIdRoute
@@ -2265,6 +2324,7 @@ interface AppRouteChildren {
   AppLabIndexRoute: typeof AppLabIndexRoute
   AppManageIndexRoute: typeof AppManageIndexRoute
   AppSystemIndexRoute: typeof AppSystemIndexRoute
+  AppActsActIdMusikRoute: typeof AppActsActIdMusikRoute
   AppEventsEventIdAblaufRoute: typeof AppEventsEventIdAblaufRoute
   AppEventsEventIdEditRoute: typeof AppEventsEventIdEditRoute
   AppEventsEventIdManageRoute: typeof AppEventsEventIdManageRoute
@@ -2280,6 +2340,7 @@ interface AppRouteChildren {
   AppManageClubRecordAccessRoute: typeof AppManageClubRecordAccessRoute
   AppManageClubRecordContactRoute: typeof AppManageClubRecordContactRoute
   AppManageClubRecordIdentityRoute: typeof AppManageClubRecordIdentityRoute
+  AppManageClubRecordStageRoute: typeof AppManageClubRecordStageRoute
   AppManageGroupsNewRoute: typeof AppManageGroupsNewRoute
   AppManagePersonsPersonIdRoute: typeof AppManagePersonsPersonIdRoute
   AppManagePersonsNewRoute: typeof AppManagePersonsNewRoute
@@ -2331,6 +2392,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppMoreRoute: AppMoreRoute,
   AppNewsRoute: AppNewsRoute,
   AppIndexRoute: AppIndexRoute,
+  AppActsActIdRoute: AppActsActIdRoute,
   AppAnnouncementsAnnouncementIdRoute: AppAnnouncementsAnnouncementIdRoute,
   AppAnnouncementsNewRoute: AppAnnouncementsNewRoute,
   AppCalendarCalendarEntryIdRoute: AppCalendarCalendarEntryIdRoute,
@@ -2364,6 +2426,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppLabIndexRoute: AppLabIndexRoute,
   AppManageIndexRoute: AppManageIndexRoute,
   AppSystemIndexRoute: AppSystemIndexRoute,
+  AppActsActIdMusikRoute: AppActsActIdMusikRoute,
   AppEventsEventIdAblaufRoute: AppEventsEventIdAblaufRoute,
   AppEventsEventIdEditRoute: AppEventsEventIdEditRoute,
   AppEventsEventIdManageRoute: AppEventsEventIdManageRoute,
@@ -2380,6 +2443,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageClubRecordAccessRoute: AppManageClubRecordAccessRoute,
   AppManageClubRecordContactRoute: AppManageClubRecordContactRoute,
   AppManageClubRecordIdentityRoute: AppManageClubRecordIdentityRoute,
+  AppManageClubRecordStageRoute: AppManageClubRecordStageRoute,
   AppManageGroupsNewRoute: AppManageGroupsNewRoute,
   AppManagePersonsPersonIdRoute: AppManagePersonsPersonIdRoute,
   AppManagePersonsNewRoute: AppManagePersonsNewRoute,

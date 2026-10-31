@@ -1,13 +1,15 @@
 import { KkEmptyState } from '@furria/ui/KkEmptyState';
-import type { FC, ReactNode } from 'react';
+import type { FC } from 'react';
+import { DeniedEscapes } from './DeniedEscapes';
 
 const ACCESS_DENIED_TITLE = 'KEIN ZUGANG';
 
 interface AccessDeniedProps {
   message: string;
-  action?: ReactNode;
 }
 
-export const AccessDenied: FC<AccessDeniedProps> = ({ message, action }) => (
-  <KkEmptyState title={ACCESS_DENIED_TITLE} description={message} action={action} />
-);
+export const AccessDenied: FC<AccessDeniedProps> = ({ message }) => {
+  const escapes = <DeniedEscapes />;
+
+  return <KkEmptyState title={ACCESS_DENIED_TITLE} description={message} action={escapes} />;
+};

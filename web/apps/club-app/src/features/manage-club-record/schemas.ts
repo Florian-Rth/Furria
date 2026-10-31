@@ -1,4 +1,6 @@
 import { z } from 'zod';
+import { STAGE_ARTWORK_MAX_LENGTH, STAGE_ARTWORK_TOO_LARGE_MESSAGE } from './stage-artwork-file';
+import { isStageSide, LARGEST_STAGE_SIDE_METRES, SMALLEST_STAGE_SIDE_METRES } from './stage-metres';
 
 export const EARLIEST_FOUNDED_YEAR = 1800;
 export const LATEST_FOUNDED_YEAR = 2100;
@@ -17,6 +19,7 @@ const LINK_MAX = 256;
 const FOUNDED_YEAR_MESSAGE = `Gib ein Jahr zwischen ${EARLIEST_FOUNDED_YEAR} und ${LATEST_FOUNDED_YEAR} ein.`;
 const AGE_OF_CONSENT_MESSAGE = `Wähle ein Alter zwischen ${YOUNGEST_AGE_OF_CONSENT} und ${OLDEST_AGE_OF_CONSENT} Jahren.`;
 const EMAIL_MESSAGE = 'Bitte gib eine gültige E-Mail-Adresse ein.';
+const STAGE_SIDE_MESSAGE = `Gib ${SMALLEST_STAGE_SIDE_METRES} bis ${LARGEST_STAGE_SIDE_METRES} Meter ein, höchstens auf den Zentimeter genau.`;
 const WEB_LINK_MESSAGE = 'Gib eine vollständige Adresse mit https:// ein.';
 const FOUNDED_YEAR_PATTERN = /^\d{4}$/;
 const AGE_PATTERN = /^\d{2}$/;
@@ -47,6 +50,13 @@ export const isWebLinkOrEmpty = (value: string): boolean =>
 
 const webLink = z.string().trim().max(LINK_MAX).refine(isWebLinkOrEmpty, WEB_LINK_MESSAGE);
 
+export const ClubStageSchema = z.object({
+  widthMetres: z.number(),
+  depthMetres: z.number(),
+  artworkSvg: z.string().nullable(),
+});
+export type ClubStage = z.infer<typeof ClubStageSchema>;
+
 export const ClubRecordSchema = z.object({
   name: z.string().nullable(),
   shortName: z.string().nullable(),
@@ -60,6 +70,7 @@ export const ClubRecordSchema = z.object({
   instagramUrl: z.string().nullable(),
   facebookUrl: z.string().nullable(),
   ageOfConsent: z.number().int(),
+  stage: ClubStageSchema.nullable(),
 });
 export type ClubRecord = z.infer<typeof ClubRecordSchema>;
 
@@ -92,3 +103,12 @@ export const ClubAccessFormSchema = z.object({
   ageOfConsent: z.string().refine(isAgeInRange, AGE_OF_CONSENT_MESSAGE),
 });
 export type ClubAccessForm = z.infer<typeof ClubAccessFormSchema>;
+
+const stageSide = z.string().trim().refine(isStageSide, STAGE_SIDE_MESSAGE);
+
+export const ClubStageFormSchema = z.object({
+  widthMetres: stageSide,
+  depthMetres: stageSide,
+  artworkSvg: z.string().max(STAGE_ARTWORK_MAX_LENGTH, STAGE_ARTWORK_TOO_LARGE_MESSAGE).nullable(),
+});
+export type ClubStageForm = z.infer<typeof ClubStageFormSchema>;

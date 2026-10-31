@@ -15,6 +15,7 @@ export interface ActDraft {
   name: string;
   groupId: number | null;
   kind: ActKind | null;
+  sessionYear: number | null;
   cast: CastDraft;
   wishes: ActWishBody[];
 }
@@ -36,6 +37,7 @@ export const draftOfAct = (act: CatalogueAct): ActDraft => ({
   name: act.name,
   groupId: act.group?.groupId ?? null,
   kind: act.kind,
+  sessionYear: act.sessionYear,
   cast: castDraftOf(act),
   wishes: sortedWishes(act.wishes.map(({ kind, strength }) => ({ kind, strength }))),
 });
@@ -44,6 +46,7 @@ export const newActDraft = (groupId: number | null): ActDraft => ({
   name: '',
   groupId,
   kind: null,
+  sessionYear: null,
   cast: EMPTY_CAST,
   wishes: [],
 });
@@ -63,16 +66,42 @@ const fingerprintOf = (draft: ActDraft): string =>
     name: draft.name.trim(),
     groupId: draft.groupId,
     kind: draft.kind,
+    sessionYear: draft.sessionYear,
     removed: [...draft.cast.removedIds].sort((left, right) => left - right),
     added: draft.cast.added.map((person) => person.personId).sort((left, right) => left - right),
     wishes: sortedWishes(draft.wishes),
   });
 
-export const editorStateOf = (initial: ActDraft, draft: ActDraft, isNew: boolean): EditorState => {
+export const editorStateOf = (
+  initial: ActDraft,
+  draft: ActDraft,
+  isNew: boolean,
+  closed: boolean,
+): EditorState => {
   const dirty = fingerprintOf(initial) !== fingerprintOf(draft);
   const nameIssue = nameIssueOf(draft.name);
 
-  return { dirty, nameIssue, canSave: nameIssue === null && (dirty || isNew) };
+  return { dirty, nameIssue, canSave: !closed && nameIssue === null && (dirty || isNew) };
+};
+
+export const isTimelessKind = (kind: ActKind | null): boolean => kind === null || kind === 'point';
+
+export const withKind = (draft: ActDraft, kind: ActKind, relevantYear: number): ActDraft => {
+  const next = draft.kind === kind ? null : kind;
+
+  return {
+    ...draft,
+    kind: next,
+    sessionYear: isTimelessKind(next) ? null : (draft.sessionYear ?? relevantYear),
+  };
+};
+
+export const sessionYearsToChoose = (relevantYear: number, chosen: number | null): number[] => {
+  const offered = [relevantYear, relevantYear + 1];
+
+  return chosen === null || offered.includes(chosen)
+    ? offered
+    : [...offered, chosen].sort((left, right) => left - right);
 };
 
 export const withWish = (draft: ActDraft, kind: ActWishKind, strength: Strength): ActDraft => ({
@@ -94,6 +123,7 @@ export const actBodyOf = (draft: ActDraft, members: readonly PortraitPersonRef[]
   name: draft.name.trim(),
   groupId: draft.groupId,
   kind: draft.kind,
+  sessionYear: draft.sessionYear,
   ...castBodyOf(draft.cast, members, draft.groupId !== null),
   wishes: sortedWishes(draft.wishes),
 });

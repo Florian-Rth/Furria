@@ -12,11 +12,16 @@ public readonly record struct MediaOwner
     private const string NewsPostPrefix = "news:";
     private const string WebsitePrefix = "website:";
     private const string EventPrefix = "event:";
+    private const string ActPrefix = "act:";
 
     public const double PortraitAspect = 4.0 / 5;
     public const double GroupPictureAspect = 3.0 / 2;
     public const double NewsPictureAspect = 2.0 / 1;
     public const double EventPictureAspect = 2.0 / 1;
+
+    private static readonly MediaKind[] PhotosOnly = [MediaKind.Photo];
+    private static readonly MediaKind[] PhotosAndVideos = [MediaKind.Photo, MediaKind.Video];
+    private static readonly MediaKind[] AudioAndVideos = [MediaKind.Audio, MediaKind.Video];
 
     public MediaOwnerKind Kind { get; }
 
@@ -32,13 +37,23 @@ public readonly record struct MediaOwner
             MediaOwnerKind.NewsPost => $"{NewsPostPrefix}{Id}",
             MediaOwnerKind.Website => $"{WebsitePrefix}{Slot!.Value.Token}",
             MediaOwnerKind.Event => $"{EventPrefix}{Id}",
+            MediaOwnerKind.Act => $"{ActPrefix}{Id}",
             _ => GalleryToken,
         };
 
-    public long MaxBytes =>
-        Accepts(MediaKind.Video)
-            ? MediaLimits.MaxBytesOf(MediaKind.Video)
-            : MediaLimits.MaxBytesOf(MediaKind.Photo);
+    public IReadOnlyList<MediaKind> AcceptedKinds =>
+        Kind switch
+        {
+            MediaOwnerKind.Gallery => PhotosAndVideos,
+            MediaOwnerKind.Act => AudioAndVideos,
+            _ => PhotosOnly,
+        };
+
+    public bool KeepsSoundProfiles => Kind == MediaOwnerKind.Act;
+
+    public bool KeepsCompactVideos => Kind == MediaOwnerKind.Act;
+
+    public long MaxBytes => AcceptedKinds.Max(MediaLimits.MaxBytesOf);
 
     public double? PictureAspect =>
         Kind switch
@@ -70,6 +85,8 @@ public readonly record struct MediaOwner
 
     public static MediaOwner Event(int eventId) => new(MediaOwnerKind.Event, eventId);
 
+    public static MediaOwner Act(int actId) => new(MediaOwnerKind.Act, actId);
+
     public static MediaOwner Of(MediaItem item) =>
         Of(
             item.OwnerKind,
@@ -77,6 +94,7 @@ public readonly record struct MediaOwner
             item.OwnerGroupId,
             item.OwnerNewsPostId,
             item.OwnerEventId,
+            item.OwnerActId,
             item.WebsitePicture is { } picture
                 ? new PictureSlotPosition(picture.SlotKey, picture.Position)
                 : null
@@ -88,6 +106,7 @@ public readonly record struct MediaOwner
         int? groupId,
         int? newsPostId,
         int? eventId,
+        int? actId,
         PictureSlotPosition? slot
     ) =>
         kind switch
@@ -97,12 +116,12 @@ public readonly record struct MediaOwner
             MediaOwnerKind.NewsPost => NewsPost(newsPostId!.Value),
             MediaOwnerKind.Website => Website(slot!.Value),
             MediaOwnerKind.Event => Event(eventId!.Value),
+            MediaOwnerKind.Act => Act(actId!.Value),
             _ => Gallery,
         };
 
     [Pure]
-    public bool Accepts(MediaKind kind) =>
-        Kind == MediaOwnerKind.Gallery || kind == MediaKind.Photo;
+    public bool Accepts(MediaKind kind) => AcceptedKinds.Contains(kind);
 
     [Pure]
     public static MediaOwner? Parse(string? token) =>
@@ -113,6 +132,7 @@ public readonly record struct MediaOwner
             _ when IdAfter(token, GroupPrefix) is { } groupId => Group(groupId),
             _ when IdAfter(token, NewsPostPrefix) is { } newsPostId => NewsPost(newsPostId),
             _ when IdAfter(token, EventPrefix) is { } eventId => Event(eventId),
+            _ when IdAfter(token, ActPrefix) is { } actId => Act(actId),
             _ when SlotAfter(token) is { } slot => Website(slot),
             _ => null,
         };

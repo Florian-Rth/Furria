@@ -99,5 +99,6 @@ public sealed class MediaWorkerBeat : BackgroundService
             StartedAt = _startedAt,
             PhotoMediaItemId = _activity.PhotoMediaItemId,
             VideoMediaItemId = _activity.VideoMediaItemId,
+            AudioMediaItemId = _activity.AudioMediaItemId,
         };
 }

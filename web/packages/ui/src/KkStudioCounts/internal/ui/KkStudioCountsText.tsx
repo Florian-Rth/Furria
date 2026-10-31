@@ -1,0 +1,29 @@
+import Typography from '@mui/material/Typography';
+import type { FC } from 'react';
+import { redInk } from '../../../internal/red-ink';
+
+interface KkStudioCountsTextProps {
+  text: string;
+  accent: boolean;
+}
+
+export const KkStudioCountsText: FC<KkStudioCountsTextProps> = ({ text, accent }) => (
+  <Typography
+    component="span"
+    variant="caption"
+    data-kk-studio-counts-text
+    sx={(theme) => ({
+      minWidth: 0,
+      fontWeight: 800,
+      lineHeight: 1.2,
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+      fontVariantNumeric: 'tabular-nums',
+      color: (theme.vars ?? theme).palette.text.secondary,
+      ...(accent ? redInk(theme) : {}),
+    })}
+  >
+    {text}
+  </Typography>
+);

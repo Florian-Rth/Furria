@@ -2,7 +2,9 @@ import type { KkChoiceChip } from '@furria/ui/KkChoiceChips';
 import { useState } from 'react';
 import { useGroupHubQuery } from '@/features/group-hub/api';
 import { useGroupsQuery } from '@/features/groups/api';
-import { useActMutations } from '@/features/running-order/api';
+import { useActMutations, useRunningOrdersQuery } from '@/features/running-order/api';
+import { usePlansRunningOrder } from '@/features/running-order/hooks/use-plans-running-order';
+import { toActKindLabel } from '@/features/running-order/running-order-copy';
 import type {
   ActGroup,
   ActKind,
@@ -11,7 +13,10 @@ import type {
   CatalogueAct,
   Strength,
 } from '@/features/running-order/schemas';
+import { ACT_KINDS } from '@/features/running-order/schemas';
 import type { PersonRef, PortraitPersonRef } from '@/lib/api/schemas';
+import { relevantSessionYear } from '@/lib/club';
+import { useNow } from '@/lib/use-now';
 import type { CastTally, CastTile } from '../act-cast';
 import {
   addCastPerson,
@@ -26,21 +31,36 @@ import {
   actBodyOf,
   draftOfAct,
   editorStateOf,
+  isTimelessKind,
   newActDraft,
+  sessionYearsToChoose,
   withGroup,
+  withKind,
   withoutWish,
   withWish,
 } from '../act-editor';
 import { knownGroupsOf } from '../acts-catalogue';
-import { NO_GROUP_OPTION } from '../acts-copy';
+import { KIND_ICONS, NO_GROUP_OPTION, toSessionLabel } from '../acts-copy';
 import type { SharedAct } from '../acts-overlap';
 import { sharedActsOf } from '../acts-overlap';
+import { upcomingRunsOf } from '../acts-runs';
 
 const NO_MEMBERS: readonly PortraitPersonRef[] = [];
+
+const kindChoicesOf = (closed: boolean): KkChoiceChip[] =>
+  ACT_KINDS.map((kind) => ({
+    id: kind,
+    label: toActKindLabel(kind),
+    icon: KIND_ICONS[kind],
+    disabled: closed,
+  }));
+const CLOCK_MS = 60_000;
+const DEFAULT_WISH_STRENGTH: Strength = 'must';
 
 export interface ActEditor {
   act: CatalogueAct | null;
   isNew: boolean;
+  closed: boolean;
   draft: ActDraft;
   state: EditorState;
   showsNameIssue: boolean;
@@ -48,16 +68,20 @@ export interface ActEditor {
   grouped: boolean;
   canChooseGroup: boolean;
   groupChoices: KkChoiceChip[];
+  kindChoices: KkChoiceChip[];
+  showsSession: boolean;
+  sessionChoices: KkChoiceChip[];
   membersLoading: boolean;
   tiles: CastTile[];
   tally: CastTally;
   shared: SharedAct[];
   isAdding: boolean;
-  wishStrength: Strength;
+  wishStrength: Strength | null;
   isSaving: boolean;
   isArchiving: boolean;
   rename: (name: string) => void;
   chooseKind: (kind: ActKind) => void;
+  chooseSession: (value: string) => void;
   chooseGroup: (value: string) => void;
   toggleCast: (personId: number) => void;
   openAdding: () => void;
@@ -74,7 +98,7 @@ interface ActEditorOptions {
   act: CatalogueAct | null;
   acts: readonly CatalogueAct[];
   fixedGroupId: number | null;
-  onCreated: (actId: number) => void;
+  onCreated: (actId: number, sessionYear: number | null) => void;
 }
 
 const groupOf = (
@@ -103,15 +127,20 @@ export const useActEditor = ({
   onCreated,
 }: ActEditorOptions): ActEditor => {
   const isNew = act === null;
+  const closed = act?.closed === true;
+  const now = useNow(CLOCK_MS);
+  const relevantYear = relevantSessionYear(now);
   const initial = act === null ? newActDraft(fixedGroupId) : draftOfAct(act);
   const [draft, setDraft] = useState<ActDraft>(initial);
   const [touched, setTouched] = useState(false);
   const [isAdding, setIsAdding] = useState(false);
-  const [wishStrength, setWishStrength] = useState<Strength>('must');
+  const [wishStrength, setWishStrength] = useState<Strength | null>(null);
   const canChooseGroup = fixedGroupId === null;
   const groups = useGroupsQuery(canChooseGroup);
   const hub = useGroupHubQuery(draft.groupId);
   const mutations = useActMutations();
+  const plans = usePlansRunningOrder();
+  const runningOrders = useRunningOrdersQuery(plans);
   const grouped = draft.groupId !== null;
   const hubData = hub.data?.groupId === draft.groupId ? hub.data : undefined;
   const fallbackMembers =
@@ -142,14 +171,22 @@ export const useActEditor = ({
     { id: '', label: NO_GROUP_OPTION, icon: 'flag' },
     ...listedGroups.map((group) => ({ id: String(group.groupId), label: group.name })),
   ];
-  const state = editorStateOf(initial, draft, isNew);
+  const sessionChoices: KkChoiceChip[] = sessionYearsToChoose(relevantYear, draft.sessionYear).map(
+    (year) => ({ id: String(year), label: toSessionLabel(year), disabled: closed }),
+  );
+  const state = editorStateOf(initial, draft, isNew, closed);
   const update = (next: (current: ActDraft) => ActDraft): void => {
+    if (closed) {
+      return;
+    }
+
     setDraft((current) => next(current));
   };
 
   return {
     act,
     isNew,
+    closed,
     draft,
     state,
     showsNameIssue: touched && state.nameIssue !== null,
@@ -162,6 +199,9 @@ export const useActEditor = ({
     grouped,
     canChooseGroup,
     groupChoices,
+    kindChoices: kindChoicesOf(closed),
+    showsSession: !isTimelessKind(draft.kind),
+    sessionChoices,
     membersLoading:
       grouped && hubData === undefined && fallbackMembers.length === 0 && hub.isPending,
     tiles,
@@ -176,7 +216,10 @@ export const useActEditor = ({
       update((current) => ({ ...current, name }));
     },
     chooseKind: (kind) => {
-      update((current) => ({ ...current, kind: current.kind === kind ? null : kind }));
+      update((current) => withKind(current, kind, relevantYear));
+    },
+    chooseSession: (value) => {
+      update((current) => ({ ...current, sessionYear: Number(value) }));
     },
     chooseGroup: (value) => {
       const groupId = value === '' ? null : Number(value);
@@ -208,7 +251,10 @@ export const useActEditor = ({
       setWishStrength(strength);
     },
     addWish: (kind) => {
-      update((current) => withWish(current, kind, wishStrength));
+      const strength = wishStrength ?? DEFAULT_WISH_STRENGTH;
+
+      setWishStrength(strength);
+      update((current) => withWish(current, kind, strength));
     },
     removeWish: (kind) => {
       update((current) => withoutWish(current, kind));
@@ -224,7 +270,7 @@ export const useActEditor = ({
       if (act === null) {
         mutations.create.mutate(form, {
           onSuccess: (created) => {
-            onCreated(created.actId);
+            onCreated(created.actId, form.sessionYear);
           },
         });
         return;
@@ -233,11 +279,18 @@ export const useActEditor = ({
       mutations.update.mutate({ actId: act.actId, form });
     },
     toggleArchived: () => {
-      if (act === null) {
+      if (act === null || closed) {
         return;
       }
 
-      mutations.archive.mutate({ actId: act.actId, name: act.name, archived: !act.archived });
+      const runs = upcomingRunsOf(runningOrders.data?.runningOrders ?? [], now).get(act.actId);
+
+      mutations.archive.mutate({
+        actId: act.actId,
+        name: act.name,
+        archived: !act.archived,
+        offersWithdrawal: !act.archived && plans && runs !== undefined,
+      });
     },
   };
 };

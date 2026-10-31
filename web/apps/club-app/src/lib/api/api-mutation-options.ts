@@ -13,13 +13,14 @@ export interface ApiMutationNotice<TInput, TResult> {
   failure?: (error: Error, input: TInput) => string | KkNoticeRequest | null;
 }
 
-export interface ApiMutation<TInput, TResult> {
+export interface ApiMutation<TInput, TResult, TMemo = undefined> {
   request: (input: TInput, accessToken: string) => Promise<TResult>;
   changes: readonly DomainChange[];
   optimistic?: readonly OptimisticPatch<TInput>[];
   forgets?: MutationKeys<TInput>;
   notice?: ApiMutationNotice<TInput, TResult>;
-  afterSuccess?: (result: TResult, input: TInput) => void;
+  remember?: (input: TInput) => TMemo;
+  afterSuccess?: (result: TResult, input: TInput, memo: TMemo | undefined) => void;
   key?: MutationKey;
 }
 
@@ -33,7 +34,10 @@ export interface ApiMutationRuntime {
   authorize: Authorize;
 }
 
-type OpenedPatches<TInput> = readonly OptimisticPatch<TInput>[];
+interface MutationContext<TInput, TMemo> {
+  opened: readonly OptimisticPatch<TInput>[];
+  memo: TMemo | undefined;
+}
 
 const keysFor = <TInput>(
   keys: MutationKeys<TInput> | undefined,
@@ -47,11 +51,20 @@ const toNotice = (
 
 const isHeldOffline = (): boolean => !onlineManager.isOnline();
 
-export const toApiMutationOptions = <TInput, TResult>(
+export const toApiMutationOptions = <TInput, TResult, TMemo = undefined>(
   { queryClient, raiseNotice, authorize }: ApiMutationRuntime,
-  definition: ApiMutation<TInput, TResult>,
-): MutationOptions<TResult, Error, TInput, OpenedPatches<TInput>> => {
-  const { request, changes, optimistic = [], forgets, notice, afterSuccess, key } = definition;
+  definition: ApiMutation<TInput, TResult, TMemo>,
+): MutationOptions<TResult, Error, TInput, MutationContext<TInput, TMemo>> => {
+  const {
+    request,
+    changes,
+    optimistic = [],
+    forgets,
+    notice,
+    remember,
+    afterSuccess,
+    key,
+  } = definition;
 
   return {
     mutationKey: key,
@@ -63,20 +76,21 @@ export const toApiMutationOptions = <TInput, TResult>(
         ? Promise.reject(new OfflineWriteError())
         : authorize((accessToken) => request(input, accessToken)),
     onMutate: async (input) => {
+      const memo = remember?.(input);
       const opened = isHeldOffline() ? [] : optimistic;
 
       await Promise.all(opened.map((patch) => openPatch(queryClient, patch, input)));
 
-      return opened;
+      return { opened, memo };
     },
-    onSuccess: (result, input) => {
+    onSuccess: (result, input, context) => {
       for (const queryKey of keysFor(forgets, input)) {
         queryClient.removeQueries({ queryKey, exact: true });
       }
       if (notice?.success !== undefined) {
         raiseNotice(toNotice(notice.success(input, result), 'success'));
       }
-      afterSuccess?.(result, input);
+      afterSuccess?.(result, input, context?.memo);
     },
     onError: (error, input) => {
       const failure = notice?.failure?.(error, input) ?? null;
@@ -85,8 +99,8 @@ export const toApiMutationOptions = <TInput, TResult>(
         raiseNotice(toNotice(failure, 'error'));
       }
     },
-    onSettled: async (_result, error, input, opened) => {
-      const closed = (opened ?? []).filter((patch) =>
+    onSettled: async (_result, error, input, context) => {
+      const closed = (context?.opened ?? []).filter((patch) =>
         closePatch(queryClient, patch, input, error === null),
       );
 

@@ -55,6 +55,121 @@ public sealed class PostActTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
+    [Theory]
+    [InlineData(ActKind.Dance, true)]
+    [InlineData(ActKind.Speech, true)]
+    [InlineData(ActKind.Point, false)]
+    [InlineData(null, false)]
+    public async Task Should_FileTheActUnderTheRelevantSession_When_ItsKindTrainsAndNoneIsNamed(
+        ActKind? kind,
+        bool belongsToASession
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+                var client = await ctx.Identity.ClientForAsync(Planner, ct);
+
+                var actId = await CreateActAsync(client, "Auftritt", kind: kind);
+
+                int? expected = belongsToASession ? RunningSessionYear : null;
+                await ctx.Expected.Act(actId).ToBelongToSession(expected).AssertAsync(ct);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_FileTheDanceUnderTheComingSession_When_ItIsCreatedAfterAshWednesday()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            AfterItsAshWednesday,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+                var client = await ctx.Identity.ClientForAsync(Planner, ct);
+
+                var actId = await CreateActAsync(client, "Gardetanz", kind: ActKind.Dance);
+
+                await ctx
+                    .Expected.Act(actId)
+                    .ToBelongToSession(RunningSessionYear + 1)
+                    .AssertAsync(ct);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_FileTheDanceUnderTheNamedSession_When_ThePlannerChoosesTheNextOne()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+                var client = await ctx.Identity.ClientForAsync(Planner, ct);
+
+                var actId = await CreateActAsync(
+                    client,
+                    "Gardetanz",
+                    kind: ActKind.Dance,
+                    sessionYear: RunningSessionYear + 1
+                );
+
+                await ctx
+                    .Expected.Act(actId)
+                    .ToBelongToSession(RunningSessionYear + 1)
+                    .AssertAsync(ct);
+            }
+        );
+    }
+
+    [Theory]
+    [InlineData(ActKind.Dance, -1)]
+    [InlineData(ActKind.Point, 0)]
+    public async Task Should_RefuseTheAct_When_ItsSessionIsPastOrItIsTimeless(
+        ActKind kind,
+        int yearsFromRelevant
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+                var client = await ctx.Identity.ClientForAsync(Planner, ct);
+
+                var (response, _) = await client.POSTAsync<
+                    PostAct,
+                    PostActRequest,
+                    PostActResponse
+                >(
+                    new()
+                    {
+                        Name = "Gardetanz",
+                        GroupId = null,
+                        Kind = kind,
+                        SessionYear = RunningSessionYear + yearsFromRelevant,
+                        AddedPersonIds = [],
+                        RemovedPersonIds = [],
+                        Wishes = [],
+                    }
+                );
+
+                Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+            }
+        );
+    }
+
     [Fact]
     public async Task Should_RefuseTheAct_When_ItsGroupIsArchived()
     {
@@ -152,6 +267,7 @@ public sealed class PostActTests : IClassFixture<ApiTestFixture>
                 Name = name,
                 GroupId = groupId,
                 Kind = null,
+                SessionYear = null,
                 AddedPersonIds = added,
                 RemovedPersonIds = removed,
                 Wishes = wishes,

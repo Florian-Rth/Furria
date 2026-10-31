@@ -16,7 +16,7 @@ import { KkNumberedListCheck } from './KkNumberedListCheck';
 import { KkNumberedListNumber } from './KkNumberedListNumber';
 import { goldWashSurface, liftedSurface, ROW_PADDING_X } from './numbered-list-paint';
 
-export type KkListRowState = 'rest' | 'selected' | 'lifted' | 'proposed';
+export type KkListRowState = 'rest' | 'selected' | 'lifted' | 'proposed' | 'marked';
 export type KkListDropEdge = 'before' | 'after';
 
 const ARRIVE = { opacity: 0 };
@@ -61,7 +61,7 @@ const rowPaint =
     minWidth: 0,
     bgcolor: 'background.paper',
     ...(state === 'selected' ? inkWashSurface(theme, '6%', '10%') : {}),
-    ...(state === 'proposed' ? goldWashSurface(theme, '10%', '14%') : {}),
+    ...(state === 'proposed' || state === 'marked' ? goldWashSurface(theme, '10%', '14%') : {}),
     ...(state === 'lifted'
       ? {
           ...liftedSurface(theme),
@@ -200,6 +200,48 @@ export const KkNumberedListRow: FC<KkNumberedListRowProps> = ({
       </Stack>
     );
 
+  const body = (
+    <>
+      {numberZone}
+      {mark}
+      <Stack component="span" sx={{ flex: 1, minWidth: 0 }}>
+        <Box
+          component="span"
+          data-kk-numbered-row-title
+          sx={{
+            typography: 'subtitle2',
+            fontWeight: 800,
+            lineHeight: 1.25,
+            color: 'text.primary',
+            overflowWrap: 'anywhere',
+          }}
+        >
+          {title}
+        </Box>
+        {factLine}
+        {chipLine}
+      </Stack>
+      {checkSlot}
+    </>
+  );
+  const isStatic = onOpen === undefined && check === undefined;
+  const main = isStatic ? (
+    <Stack direction="row" sx={mainSx}>
+      {body}
+    </Stack>
+  ) : (
+    <ButtonBase
+      onClick={onOpen}
+      disabled={onOpen === undefined}
+      aria-label={`${openLabel}: ${title}`}
+      aria-current={state === 'selected' ? 'true' : undefined}
+      aria-pressed={pressed}
+      sx={mainSx}
+    >
+      {body}
+    </ButtonBase>
+  );
+
   return (
     <Box
       component={motion.li}
@@ -222,35 +264,7 @@ export const KkNumberedListRow: FC<KkNumberedListRowProps> = ({
       {home}
       <Stack direction="row" sx={{ alignItems: 'center', minWidth: 0 }}>
         <KkNumberedListBracket bracket={bracket} preview={bracketPreview} />
-        <ButtonBase
-          onClick={onOpen}
-          disabled={onOpen === undefined}
-          aria-label={`${openLabel}: ${title}`}
-          aria-current={state === 'selected' ? 'true' : undefined}
-          aria-pressed={pressed}
-          sx={mainSx}
-        >
-          {numberZone}
-          {mark}
-          <Stack component="span" sx={{ flex: 1, minWidth: 0 }}>
-            <Box
-              component="span"
-              data-kk-numbered-row-title
-              sx={{
-                typography: 'subtitle2',
-                fontWeight: 800,
-                lineHeight: 1.25,
-                color: 'text.primary',
-                overflowWrap: 'anywhere',
-              }}
-            >
-              {title}
-            </Box>
-            {factLine}
-            {chipLine}
-          </Stack>
-          {checkSlot}
-        </ButtonBase>
+        {main}
         {trailingSlot}
       </Stack>
     </Box>

@@ -1,4 +1,5 @@
 import { KkScreen } from '@furria/ui/KkScreen';
+import { KkVisuallyHidden } from '@furria/ui/KkVisuallyHidden';
 import type { KkScreenActions } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
 import { usePlannerAction } from '../hooks/use-planner-action';
@@ -38,6 +39,7 @@ export const RunningOrderScreen: FC<RunningOrderScreenProps> = ({ eventId }) => 
         tools={tools}
         foot={foot}
       >
+        <KkVisuallyHidden component="h1">{PAGE_TITLE}</KkVisuallyHidden>
         <PlannerBody />
         <PlannerRowDrawer />
         <PlannerPersonDrawer />

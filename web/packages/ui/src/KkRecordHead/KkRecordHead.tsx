@@ -6,6 +6,8 @@ import { stepFigures, stepLabel } from '../KkStatePill/state-paint';
 import type { KkSx } from '../kk-sx';
 import { kkTokens } from '../tokens';
 
+const SIDE_PLACEMENT = { gridRow: { sm: 'span 2' }, minWidth: 0 } as const;
+
 interface KkRecordHeadProps {
   eyebrow: string;
   title: string;
@@ -34,6 +36,7 @@ export const KkRecordHead: FC<KkRecordHeadProps> = ({
         gridTemplateColumns: 'auto minmax(0, 1fr) auto',
         alignItems: 'center',
         columnGap: { xs: 1.25, sm: 2 },
+        rowGap: { xs: 1, sm: 0.25 },
         minWidth: 0,
         p: { xs: 1.5, sm: 2 },
         bgcolor: 'background.paper',
@@ -45,8 +48,8 @@ export const KkRecordHead: FC<KkRecordHeadProps> = ({
       ...(Array.isArray(sx) ? sx : [sx]),
     ]}
   >
-    {media}
-    <Stack sx={{ minWidth: 0, gap: 0.5 }}>
+    <Box sx={SIDE_PLACEMENT}>{media}</Box>
+    <Stack sx={{ minWidth: 0, gap: 0.5, alignSelf: { sm: 'end' } }}>
       <Box component="span" sx={{ ...stepLabel, ...stepFigures, whiteSpace: 'normal' }}>
         {eyebrow}
       </Box>
@@ -63,10 +66,20 @@ export const KkRecordHead: FC<KkRecordHeadProps> = ({
       >
         {title}
       </Typography>
-      <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.75, minWidth: 0, pt: 0.25 }}>
-        {chips}
-      </Stack>
     </Stack>
-    {progress}
+    <Box sx={SIDE_PLACEMENT}>{progress}</Box>
+    <Stack
+      direction="row"
+      sx={{
+        gridColumn: { xs: '1 / -1', sm: '2' },
+        alignSelf: 'start',
+        flexWrap: 'wrap',
+        gap: 0.75,
+        minWidth: 0,
+        '&:empty': { display: 'none' },
+      }}
+    >
+      {chips}
+    </Stack>
   </Box>
 );

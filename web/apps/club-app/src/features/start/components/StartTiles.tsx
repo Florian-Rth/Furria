@@ -10,6 +10,7 @@ import { EntrySheet } from './EntrySheet';
 import { OwedSheet } from './OwedSheet';
 import { PanelLinesSheet } from './PanelLinesSheet';
 import { PanelTile } from './PanelTile';
+import { PracticeSheet } from './PracticeSheet';
 import { RoleSheet } from './RoleSheet';
 
 const TILE_SPACING = 1.5;
@@ -73,6 +74,7 @@ export const StartTiles: FC<StartTilesProps> = ({ board, focusedDay, strip }) =>
       <PanelLinesSheet kind="mine" board={board} />
       <PanelLinesSheet kind="groups" board={board} />
       <OwedSheet board={board} />
+      <PracticeSheet board={board} />
     </>
   );
 };

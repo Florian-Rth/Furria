@@ -60,11 +60,11 @@ public sealed class TestIdentity
         );
     }
 
-    public async Task<HttpClient> ClientForAsync(string alias, CancellationToken ct = default)
-    {
-        if (_clients.TryGetValue(alias, out var cached))
-            return cached;
+    public async Task<HttpClient> ClientForAsync(string alias, CancellationToken ct = default) =>
+        _clients.TryGetValue(alias, out var cached) ? cached : await SignInAgainAsync(alias, ct);
 
+    public async Task<HttpClient> SignInAgainAsync(string alias, CancellationToken ct = default)
+    {
         var client = await AuthenticateAsync(EmailOf(alias), _password, ct);
         _clients[alias] = client;
         return client;

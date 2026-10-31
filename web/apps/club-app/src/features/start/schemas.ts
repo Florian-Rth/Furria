@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { MyActSchema } from '@/features/acts/schemas';
 import { AttendanceAnswerSchema } from '@/features/attendance/schemas';
 import { TO_DO_KINDS } from '@/features/to-dos/schemas';
 import { knownKindsOnly } from '@/lib/api/known-kinds';
@@ -180,6 +181,19 @@ export const StartPanelSchema = z.discriminatedUnion('kind', [
 ]);
 export type StartPanel = z.infer<typeof StartPanelSchema>;
 export type StartPanelKind = StartPanel['kind'];
+
+export const StartPracticePanelSchema = z.object({
+  kind: z.literal('practice'),
+  ...Base,
+  acts: z.array(MyActSchema),
+});
+export type StartPracticePanel = z.infer<typeof StartPracticePanelSchema>;
+
+export const BoardPanelSchema = z.discriminatedUnion('kind', [
+  ...StartPanelSchema.options,
+  StartPracticePanelSchema,
+]);
+export type BoardPanel = z.infer<typeof BoardPanelSchema>;
 
 export const StartSchema = z.object({
   asOf: z.iso.datetime({ offset: true }),

@@ -17,6 +17,7 @@ export interface PlannerBracket {
   shownDraft: RunningOrderDraft | null;
   previewKeys: LineKey[];
   start: (key: LineKey, event: PointerEvent<HTMLButtonElement>) => void;
+  tap: (key: LineKey) => void;
 }
 
 const ROW_SELECTOR = '[data-kk-numbered-row]';
@@ -105,8 +106,12 @@ export const usePlannerBracket = (
     window.addEventListener('pointercancel', cancel);
   };
 
+  const tap = (key: LineKey): void => {
+    applyRef.current(tapBracket(draftRef.current, key));
+  };
+
   if (bracket === null || bracket.overKey === bracket.fromKey) {
-    return { activeKey: bracket?.fromKey ?? null, shownDraft: null, previewKeys: [], start };
+    return { activeKey: bracket?.fromKey ?? null, shownDraft: null, previewKeys: [], start, tap };
   }
 
   const shown = formBlock(draft, bracket.fromKey, bracket.overKey);
@@ -116,5 +121,5 @@ export const usePlannerBracket = (
       ? []
       : shown.lines.filter((line) => line.blockKey === blockKey).map((line) => line.key);
 
-  return { activeKey: bracket.fromKey, shownDraft: shown, previewKeys, start };
+  return { activeKey: bracket.fromKey, shownDraft: shown, previewKeys, start, tap };
 };

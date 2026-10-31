@@ -5,8 +5,8 @@ import type { ApiMutation } from './api-mutation-options';
 import { toApiMutationOptions } from './api-mutation-options';
 import { withFreshAccessToken } from './session/session-store';
 
-export const useApiMutation = <TInput, TResult>(
-  definition: ApiMutation<TInput, TResult>,
+export const useApiMutation = <TInput, TResult, TMemo = undefined>(
+  definition: ApiMutation<TInput, TResult, TMemo>,
 ): UseMutationResult<TResult, Error, TInput> => {
   const queryClient = useQueryClient();
   const raiseNotice = useKkNotice();

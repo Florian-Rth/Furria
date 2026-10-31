@@ -9,7 +9,7 @@ const SAVE_TONES: Record<SaveState, KkStatusTone | null> = {
   empty: null,
   saved: null,
   saving: null,
-  failed: 'attention',
+  failed: 'conflict',
   conflict: 'conflict',
 };
 

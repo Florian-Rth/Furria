@@ -4,6 +4,7 @@ import type { CSSObject, Theme } from '@mui/material/styles';
 import type { FC } from 'react';
 import { focusRing } from './internal/focus-ring';
 import { inkWashSurface } from './internal/ink-wash';
+import { tapArea } from './internal/tap-area';
 import type { KkIconName } from './KkIcon';
 import { KkIcon } from './KkIcon';
 import { kkTokens } from './tokens';
@@ -30,6 +31,7 @@ const tabPaint =
     color: selected ? 'text.primary' : 'text.secondary',
     ...(selected ? inkWashSurface(theme, '8%', '14%') : {}),
     ...focusRing(theme),
+    ...tapArea(),
     '@media (hover: hover)': {
       '&:hover': { color: 'text.primary' },
     },

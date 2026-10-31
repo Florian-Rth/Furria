@@ -1,6 +1,6 @@
 import { KkDragGrip } from '@furria/ui/KkDragGrip';
 import { KkIconButton } from '@furria/ui/KkIconButton';
-import type { FC, KeyboardEvent, PointerEvent } from 'react';
+import type { FC, KeyboardEvent, MouseEvent, PointerEvent } from 'react';
 import { usePlanner } from '../planner-context';
 import {
   BRACKET_LABEL,
@@ -24,6 +24,11 @@ export const PlannerOrderTrailing: FC<PlannerOrderTrailingProps> = ({ entry }) =
   };
   const startBracket = (event: PointerEvent<HTMLButtonElement>): void => {
     planner.bracket.start(entry.key, event);
+  };
+  const tapBracketWithoutPointer = (event: MouseEvent<HTMLButtonElement>): void => {
+    if (event.detail === 0) {
+      planner.bracket.tap(entry.key);
+    }
   };
   const startDrag = (event: PointerEvent<HTMLButtonElement>): void => {
     planner.drag.start(entry.key, event);
@@ -58,6 +63,7 @@ export const PlannerOrderTrailing: FC<PlannerOrderTrailingProps> = ({ entry }) =
         active={planner.bracket.activeKey === entry.key}
         cursor="pointer"
         onPointerDown={startBracket}
+        onClick={tapBracketWithoutPointer}
       />
       {handle}
     </>

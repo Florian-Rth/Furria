@@ -40,3 +40,25 @@ interface Navigator {
   userAgentData?: NavigatorUserAgentHints;
   getInstalledRelatedApps?: () => Promise<readonly RelatedApplication[]>;
 }
+
+declare module 'signalsmith-stretch' {
+  function createStretch(context: BaseAudioContext): Promise<createStretch.StretchNode>;
+
+  namespace createStretch {
+    let moduleUrl: string | undefined;
+
+    interface StretchChange {
+      active?: boolean;
+      output?: number;
+      semitones?: number;
+    }
+
+    interface StretchNode extends AudioWorkletNode {
+      schedule: (change: StretchChange) => Promise<StretchChange>;
+      stop: (when?: number) => Promise<StretchChange>;
+      latency: () => Promise<number>;
+    }
+  }
+
+  export = createStretch;
+}

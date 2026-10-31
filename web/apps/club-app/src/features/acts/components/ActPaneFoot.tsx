@@ -9,6 +9,7 @@ import {
   CREATE_LABEL,
   RESTORE_LABEL,
   SAVE_LABEL,
+  toClosedActNote,
 } from '../acts-copy';
 import type { ActEditor } from '../hooks/use-act-editor';
 
@@ -17,6 +18,16 @@ interface ActPaneFootProps {
 }
 
 export const ActPaneFoot: FC<ActPaneFootProps> = ({ editor }) => {
+  if (editor.closed) {
+    const note = toClosedActNote(editor.act?.sessionYear ?? null);
+
+    return (
+      <KkStickyFoot>
+        <KkMeta>{note}</KkMeta>
+      </KkStickyFoot>
+    );
+  }
+
   if (editor.act?.archived === true) {
     return (
       <KkStickyFoot>

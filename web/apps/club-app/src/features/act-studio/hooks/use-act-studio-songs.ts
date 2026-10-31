@@ -1,0 +1,107 @@
+import type { KkStudioListBadgeTone } from '@furria/ui/KkStudioList';
+import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
+import type { MusicSegment } from '@/features/act-player/music-timeline';
+import type { StudioSong } from '@/features/acts/schemas';
+import {
+  outsideMusicTextOf,
+  STUDIO_EDIT,
+  STUDIO_SONG_GONE,
+  songCardMetaOf,
+  songEditLabelOf,
+  songNameOf,
+  songRowLabelOf,
+  songStateMetaOf,
+} from '../studio-copy';
+import { outsideMusicOf } from '../studio-music';
+import { useDeskTarget } from './use-desk-target';
+import type { StudioScreen } from './use-studio-screen';
+
+export interface ActStudioSongRow {
+  key: string;
+  lead: string;
+  title: string;
+  meta: string;
+  label: string;
+  badge: string | null;
+  badgeTone: KkStudioListBadgeTone;
+  selected: boolean;
+  press: () => void;
+}
+
+export interface CurrentSong {
+  song: StudioSong;
+  segment: MusicSegment;
+  index: number;
+}
+
+export interface ActStudioSongs {
+  rows: ActStudioSongRow[];
+  current: CurrentSong | null;
+  outside: string | null;
+  count: string;
+  locked: boolean;
+  deskOpen: boolean;
+  closeDesk: () => void;
+}
+
+export const useActStudioSongs = (screen: StudioScreen): ActStudioSongs => {
+  const { playback, studio, mode } = screen;
+  const { player, segments } = playback;
+  const onMusic = mode.editing && mode.tool === 'music';
+  const editable = studio.music.source === 'workingMix';
+  const desk = useDeskTarget(
+    studio.songs.map((song) => song.songId),
+    onMusic && editable,
+    STUDIO_SONG_GONE,
+  );
+  const songs = [...studio.songs].sort((left, right) => left.position - right.position);
+  const currentIndex = usePlaybackSelection(player, (seconds) =>
+    segments.findIndex(
+      (segment) => seconds >= segment.timelineStart && seconds < segment.timelineEnd,
+    ),
+  );
+  const boundIndex = songs.findIndex((song) => song.songId === desk.targetId);
+  const selectedIndex = editable ? (boundIndex >= 0 ? boundIndex : currentIndex) : -1;
+  const currentSong = songs[selectedIndex];
+  const currentSegment = segments[selectedIndex];
+  const outside = outsideMusicOf(studio, segments);
+
+  return {
+    rows: songs.map((song, index) => {
+      const name = songNameOf(song.fileName);
+      const selected = index === selectedIndex;
+
+      return {
+        key: String(song.songId),
+        lead: String(index + 1),
+        title: name,
+        meta:
+          songStateMetaOf(song.state) ??
+          songCardMetaOf(song.startSeconds, song.endSeconds, song.durationSeconds, song.tempoBpm),
+        label: selected ? songEditLabelOf(name) : songRowLabelOf(name),
+        badge: selected ? STUDIO_EDIT : null,
+        badgeTone: 'ink',
+        selected,
+        press: () => {
+          if (!editable) {
+            return;
+          }
+          if (selected) {
+            desk.open(song.songId);
+            return;
+          }
+          player.seek(segments[index]?.timelineStart ?? 0);
+        },
+      };
+    }),
+    current:
+      currentSong !== undefined && currentSegment !== undefined
+        ? { song: currentSong, segment: currentSegment, index: selectedIndex }
+        : null,
+    count: String(songs.length),
+    outside: outsideMusicTextOf(outside),
+    locked: !editable,
+    deskOpen: desk.targetId !== null,
+    closeDesk: desk.close,
+  };
+};

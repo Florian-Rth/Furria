@@ -10,6 +10,7 @@ public static class SignInRateLimiting
             .Validate(
                 options =>
                     options.FailedLoginsPerIp > 0
+                    && options.RejectedRefreshesPerToken > 0
                     && options.RejectedRefreshesPerIp > 0
                     && options.Window > TimeSpan.Zero,
                 $"{SignInRateLimitOptions.SectionName} needs positive limits and a window."

@@ -2,6 +2,7 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Management;
 using Furria.Application.Authorization;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -10,6 +11,8 @@ namespace Furria.Api.Tests.Management;
 public sealed class GetClubRecordTests : IClassFixture<ApiTestFixture>
 {
     private const int TheDefaultAgeOfConsent = 16;
+    private const string StageArtwork =
+        "<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 12.5 8\"><rect width=\"12.5\" height=\"8\" /></svg>";
 
     private readonly ApiTestFixture _fixture;
 
@@ -81,6 +84,44 @@ public sealed class GetClubRecordTests : IClassFixture<ApiTestFixture>
         Assert.Null(result.FoundedYear);
         Assert.Null(result.Email);
         Assert.Equal(TheDefaultAgeOfConsent, result.AgeOfConsent);
+    }
+
+    [Fact]
+    public async Task Should_ReturnTheStage_When_TheClubHasMeasuredIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder.Club(club =>
+                    club.SetClubRecord(stage: new ClubStageIntent(12.5m, 8m, StageArtwork))
+                ),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (response, result) = await client.GETAsync<GetClubRecord, GetClubRecordResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(result.Stage);
+        Assert.Equal(
+            (12.5m, 8m, StageArtwork),
+            (result.Stage.WidthMetres, result.Stage.DepthMetres, result.Stage.ArtworkSvg)
+        );
+    }
+
+    [Fact]
+    public async Task Should_ReturnNoStage_When_TheClubHasNotMeasuredIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Club(club => club.SetClubRecord(name: "Großfurraer Carnevals Club")),
+            ct
+        );
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var (_, result) = await client.GETAsync<GetClubRecord, GetClubRecordResponse>();
+
+        Assert.Null(result.Stage);
     }
 
     [Fact]

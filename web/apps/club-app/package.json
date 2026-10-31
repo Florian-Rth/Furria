@@ -41,6 +41,7 @@
     "react": "catalog:",
     "react-dom": "catalog:",
     "react-hook-form": "catalog:",
+    "signalsmith-stretch": "catalog:",
     "tus-js-client": "catalog:",
     "workbox-window": "catalog:",
     "zod": "catalog:"

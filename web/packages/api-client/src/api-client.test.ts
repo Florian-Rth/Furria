@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { z } from 'zod';
 import type { ApiRequest, JsonBody, ResponseMismatch } from './api-client';
-import { buildApiUrl, createApiClient } from './api-client';
+import { buildApiUrl, createApiClient, takeLines } from './api-client';
 import type { ApiFailure } from './api-failure';
 import { apiFailureOf } from './api-failure';
 
@@ -57,6 +57,7 @@ describe('apiFetch', () => {
             { field: 'firstName', message: 'zwei' },
             { field: '', message: 'drei' },
           ],
+          payload: { errors: { FirstName: ['eins', 'zwei'], '': ['drei'] } },
         },
       },
     ],
@@ -68,6 +69,7 @@ describe('apiFetch', () => {
           kind: 'refused',
           status: 409,
           fields: [{ field: 'generalErrors', message: 'vergeben' }],
+          payload: { errors: { generalErrors: ['vergeben'] } },
         },
       },
     ],
@@ -228,5 +230,57 @@ describe('the request the API receives', () => {
     await apiFetch('/api/items', { ...request, schema: z.undefined() });
 
     expect(sent).toEqual([{ url: 'https://api.example.org/api/items', ...expected }]);
+  });
+});
+
+describe('takeLines', () => {
+  it.each([
+    ['{"id":1}\n{"id":2}\n{"id"', ['{"id":1}', '{"id":2}'], '{"id"'],
+    ['{"id":1}', [], '{"id":1}'],
+    ['\n\n{"id":3}\n', ['{"id":3}'], ''],
+  ])('splits %j into whole lines and a rest', (pending, lines, rest) => {
+    expect(takeLines(pending)).toEqual({ lines, rest });
+  });
+});
+
+describe('apiStream', () => {
+  const streamed = async (answer: () => Promise<Response>): Promise<Outcome[]> => {
+    const { apiStream } = createApiClient({
+      readBaseUrl: () => '',
+      timeoutMs: 1_000,
+      send: answer,
+      reportMismatch: () => undefined,
+    });
+    const seen: Outcome[] = [];
+
+    try {
+      await apiStream('/api/items', {
+        schema: ItemSchema,
+        signal: new AbortController().signal,
+        onLine: (value) => {
+          seen.push({ value });
+        },
+      });
+    } catch (error) {
+      seen.push({ failure: error instanceof Error ? apiFailureOf(error) : null });
+    }
+
+    return seen;
+  };
+
+  it('hands over every line as it arrives, the last one without a line break too', async () => {
+    expect(
+      await streamed(async () => new Response('{"id":1}\n{"id":2}\n{"id":3}', { status: 200 })),
+    ).toEqual([{ value: { id: 1 } }, { value: { id: 2 } }, { value: { id: 3 } }]);
+  });
+
+  it.each<[string, () => Promise<Response>, ApiFailure['kind']]>([
+    ['a refusal', async () => json(422, { errors: { lines: ['x'] } }), 'refused'],
+    ['an unknown line', async () => new Response('{"id":"a"}\n', { status: 200 }), 'mismatch'],
+  ])('fails on %s', async (_name, answer, kind) => {
+    const seen = await streamed(answer);
+    const last = seen.at(-1);
+
+    expect(last !== undefined && 'failure' in last ? last.failure?.kind : null).toBe(kind);
   });
 });

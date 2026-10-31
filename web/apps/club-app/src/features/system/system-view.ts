@@ -207,6 +207,7 @@ export const mediaViewOf = (status: SystemStatus, nowMs: number): MediaView => {
           worker.hardwareAcceleration,
           worker.photoMediaItemId,
           worker.videoMediaItemId,
+          worker.audioMediaItemId,
         ),
       };
     }),

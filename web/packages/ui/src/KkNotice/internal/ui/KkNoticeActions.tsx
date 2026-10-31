@@ -7,18 +7,30 @@ const ACTION_GAP = 1;
 
 interface KkNoticeActionsProps {
   actions: KkNoticeActionList;
+  onAnswered: () => void;
 }
 
-export const KkNoticeActions: FC<KkNoticeActionsProps> = ({ actions }) => (
-  <Stack
-    direction="row"
-    data-kk-notice-actions
-    sx={{ minWidth: 0, flexWrap: 'wrap', alignItems: 'center', gap: ACTION_GAP }}
-  >
-    {actions.map((action) => (
-      <KkButton key={action.id} variant="outlined" size="small" onClick={action.onSelect}>
+export const KkNoticeActions: FC<KkNoticeActionsProps> = ({ actions, onAnswered }) => {
+  const buttons = actions.map((action) => {
+    const answer = (): void => {
+      action.onSelect();
+      onAnswered();
+    };
+
+    return (
+      <KkButton key={action.id} variant="outlined" size="small" onClick={answer}>
         {action.label}
       </KkButton>
-    ))}
-  </Stack>
-);
+    );
+  });
+
+  return (
+    <Stack
+      direction="row"
+      data-kk-notice-actions
+      sx={{ minWidth: 0, flexWrap: 'wrap', alignItems: 'center', gap: ACTION_GAP }}
+    >
+      {buttons}
+    </Stack>
+  );
+};

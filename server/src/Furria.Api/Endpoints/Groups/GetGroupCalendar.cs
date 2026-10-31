@@ -97,6 +97,7 @@ public sealed class GetGroupCalendar : Endpoint<GetGroupCalendarRequest, GetGrou
             ParticipatingGroups = [.. entry.ParticipatingGroups.Select(ToDto)],
             Visibility = entry.Visibility,
             AsksForResponse = entry.AsksForResponse,
+            AsksTheCast = entry.AsksTheCast,
             Description = entry.Description,
             ViewerAnswer = entry.ViewerAnswer,
             ViewerMayAnswer = viewerMayAnswer,
@@ -191,6 +192,8 @@ public sealed record GroupCalendarEntryDto
     public required CalendarEntryVisibility Visibility { get; init; }
 
     public required bool AsksForResponse { get; init; }
+
+    public required bool AsksTheCast { get; init; }
 
     public required string? Description { get; init; }
 

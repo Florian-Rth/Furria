@@ -11,6 +11,7 @@ using Furria.Core.Groups;
 using Furria.Core.Media;
 using Furria.Core.News;
 using Furria.Core.RunningOrders;
+using Furria.Core.Studio;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -47,8 +48,9 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(NewsCategory)] = "session achievements club groups",
         [typeof(NewsPostState)] = "draft published withdrawn",
         [typeof(NewsPublicationRequirement)] = "category title teaser text",
-        [typeof(MediaKind)] = "photo video",
-        [typeof(MediaOwnerKind)] = "person group gallery newsPost website event",
+        [typeof(MediaKind)] = "photo video audio",
+        [typeof(EveningChange)] = "cast spots choreography",
+        [typeof(MediaOwnerKind)] = "person group gallery newsPost website event act",
         [typeof(SystemLevel)] = "ok attention broken",
         [typeof(SystemCheck)] = "database workers queue storage media logs services mail",
         [typeof(SystemReasonCode)] =
@@ -58,7 +60,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(BackgroundJob)] =
             "abandonedUploadSweep mediaFileReaper galleryBinPurge mailDispatcher "
             + "unconfirmedApplicationPurge signedOutMailRequestWorker "
-            + "logEntryPurge mediaStorageSurvey",
+            + "logEntryPurge mediaStorageSurvey actCastFreeze",
         [typeof(LogSource)] = "api mediaWorker",
         [typeof(LogEntryLevel)] = "information warning error fatal",
         [typeof(ActKind)] = "dance speech music show point",
@@ -72,6 +74,11 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(RunningOrderCostStep)] =
             "noChangeover tightChangeover mustRules preferRules sameKind unplaced changeoverRoom",
         [typeof(RunningOrderHoldKind)] = "pin block mustRule mustWish",
+        [typeof(StudioMusicSource)] = "workingMix finalTrack",
+        [typeof(AnchorPlacement)] = "onTimeline cutAway musicMissing",
+        [typeof(VideoPlacement)] = "onTimeline cutAway musicMissing unaligned",
+        [typeof(KeyframeEasing)] = "linear easeIn easeOut easeInOut",
+        [typeof(ChoreographyVersionKind)] = "saved restored spotRemoved musicAdopted",
     };
 
     private readonly ApiTestFixture _fixture;

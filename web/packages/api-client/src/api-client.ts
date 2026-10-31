@@ -1,6 +1,6 @@
 import type { ZodType } from 'zod';
 import { z } from 'zod';
-import type { ApiFailure, ApiFieldFailure } from './api-failure';
+import type { ApiFailure, RefusalReading } from './api-failure';
 import { ApiError, failureOfStatus, isRefusalStatus } from './api-failure';
 
 export type JsonBody = string | number | boolean | null | JsonBody[] | { [key: string]: JsonBody };
@@ -25,6 +25,18 @@ export type ApiFetch = <TResponse>(
   request: ApiRequest<TResponse>,
 ) => Promise<TResponse>;
 
+export interface ApiStreamRequest<TLine> extends ApiRequest<TLine> {
+  signal: AbortSignal;
+  onLine: (line: TLine) => void;
+}
+
+export type ApiStream = <TLine>(path: string, request: ApiStreamRequest<TLine>) => Promise<void>;
+
+export interface TakenLines {
+  lines: string[];
+  rest: string;
+}
+
 export interface ApiClientConfig {
   readBaseUrl: () => string;
   timeoutMs: number;
@@ -34,6 +46,7 @@ export interface ApiClientConfig {
 
 export interface ApiClient {
   apiFetch: ApiFetch;
+  apiStream: ApiStream;
   apiUrlOf: (path: string) => string;
 }
 
@@ -51,14 +64,18 @@ export const buildApiUrl = (baseUrl: string, path: string): string => {
 const toCamelCaseField = (field: string): string =>
   field.length === 0 ? field : `${field.charAt(0).toLowerCase()}${field.slice(1)}`;
 
-const readFieldFailures = async (response: Response): Promise<ApiFieldFailure[] | null> => {
+const readRefusal = async (response: Response): Promise<RefusalReading | null> => {
   try {
-    const parsed = FailurePayloadSchema.safeParse(await response.json());
+    const payload: JsonBody = await response.json();
+    const parsed = FailurePayloadSchema.safeParse(payload);
 
     return parsed.success
-      ? Object.entries(parsed.data.errors).flatMap(([field, messages]) =>
-          messages.map((message) => ({ field: toCamelCaseField(field), message })),
-        )
+      ? {
+          fields: Object.entries(parsed.data.errors).flatMap(([field, messages]) =>
+            messages.map((message) => ({ field: toCamelCaseField(field), message })),
+          ),
+          payload,
+        }
       : null;
   } catch {
     return null;
@@ -68,7 +85,7 @@ const readFieldFailures = async (response: Response): Promise<ApiFieldFailure[] 
 const failureOfResponse = async (response: Response): Promise<ApiFailure> =>
   failureOfStatus(
     response.status,
-    isRefusalStatus(response.status) ? await readFieldFailures(response) : null,
+    isRefusalStatus(response.status) ? await readRefusal(response) : null,
   );
 
 const failureOfTransport = (signal: AbortSignal | null | undefined): ApiFailure =>
@@ -77,6 +94,19 @@ const failureOfTransport = (signal: AbortSignal | null | undefined): ApiFailure 
 const readText = async (response: Response, init: RequestInit): Promise<string> => {
   try {
     return await response.text();
+  } catch {
+    throw new ApiError(failureOfTransport(init.signal));
+  }
+};
+
+const readChunk = async (
+  reader: ReadableStreamDefaultReader<string>,
+  init: RequestInit,
+): Promise<string | null> => {
+  try {
+    const { done, value } = await reader.read();
+
+    return done ? null : value;
   } catch {
     throw new ApiError(failureOfTransport(init.signal));
   }
@@ -122,6 +152,13 @@ const readBody = async <TResponse>(
   const body = parseJson(await readText(response, init));
 
   return body.parsed ? parseBody(schema, body.value) : { readable: false, issues: [] };
+};
+
+export const takeLines = (pending: string): TakenLines => {
+  const parts = pending.split('\n');
+  const rest = parts.pop() ?? '';
+
+  return { lines: parts.filter((line) => line.trim().length > 0), rest };
 };
 
 const toRequestInit = (
@@ -190,5 +227,60 @@ export const createApiClient = ({
     return reading.value;
   };
 
-  return { apiFetch, apiUrlOf };
+  const readLine = <TLine>(
+    path: string,
+    method: ApiMethod,
+    schema: ZodType<TLine>,
+    text: string,
+  ): TLine => {
+    const body = parseJson(text);
+    const reading: BodyReading<TLine> = body.parsed
+      ? parseBody(schema, body.value)
+      : { readable: false, issues: [] };
+
+    if (!reading.readable) {
+      reportMismatch({ method, path, issues: reading.issues });
+      throw new ApiError({ kind: 'mismatch' });
+    }
+
+    return reading.value;
+  };
+
+  const apiStream: ApiStream = async (
+    path,
+    { schema, method = 'GET', body, accessToken, signal, onLine },
+  ) => {
+    const init = { ...toRequestInit(method, body, accessToken, timeoutMs), signal };
+    const response = await sendOrFail(apiUrlOf(path), init);
+
+    if (!response.ok) {
+      throw new ApiError(await failureOfResponse(response));
+    }
+
+    if (response.body === null) {
+      throw new ApiError({ kind: 'mismatch' });
+    }
+
+    const reader = response.body.pipeThrough(new TextDecoderStream()).getReader();
+    let pending = '';
+
+    try {
+      for (let chunk = await readChunk(reader, init); chunk !== null; ) {
+        const taken = takeLines(pending + chunk);
+
+        pending = taken.rest;
+        for (const line of taken.lines) {
+          onLine(readLine(path, method, schema, line));
+        }
+        chunk = await readChunk(reader, init);
+      }
+      if (pending.trim().length > 0) {
+        onLine(readLine(path, method, schema, pending));
+      }
+    } finally {
+      void reader.cancel().catch(() => undefined);
+    }
+  };
+
+  return { apiFetch, apiStream, apiUrlOf };
 };

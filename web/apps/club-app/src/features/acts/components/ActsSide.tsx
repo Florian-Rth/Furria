@@ -1,9 +1,8 @@
 import { KkBottomDrawer } from '@furria/ui/KkBottomDrawer';
 import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
 import type { FC } from 'react';
-import { CLOSE_LABEL, toPaneTitle } from '../acts-copy';
+import { CLOSE_LABEL, NEW_ACT_TITLE } from '../acts-copy';
 import type { ActsHub } from '../hooks/use-acts-hub';
-import { NEW_ACT } from '../schemas';
 import { ActPane } from './ActPane';
 
 const PANE_SPAN = 5;
@@ -13,26 +12,18 @@ interface ActsSideProps {
 }
 
 export const ActsSide: FC<ActsSideProps> = ({ hub }) => {
-  const isNew = hub.selection === NEW_ACT;
-
-  if (hub.selection === null || (!isNew && hub.selectedAct === null)) {
+  if (!hub.isCreating) {
     return null;
   }
 
-  const paneKey = String(hub.selection);
   const acts = hub.query.data?.acts ?? [];
-  const title = toPaneTitle(isNew);
-  const spotlightId = hub.spotlight?.person.personId ?? null;
   const fixedGroupId = hub.scope.kind === 'group' ? hub.scope.groupId : null;
   const pane = (
     <ActPane
-      key={paneKey}
-      act={hub.selectedAct}
+      act={null}
       acts={acts}
       fixedGroupId={fixedGroupId}
       framed={hub.isWide}
-      spotlightId={spotlightId}
-      onToggleSpotlight={hub.toggleSpotlight}
       onCreated={hub.created}
       onClose={hub.close}
     />
@@ -40,7 +31,7 @@ export const ActsSide: FC<ActsSideProps> = ({ hub }) => {
 
   if (!hub.isWide) {
     return (
-      <KkBottomDrawer open label={title} closeLabel={CLOSE_LABEL} onClose={hub.close}>
+      <KkBottomDrawer open label={NEW_ACT_TITLE} closeLabel={CLOSE_LABEL} onClose={hub.close}>
         {pane}
       </KkBottomDrawer>
     );

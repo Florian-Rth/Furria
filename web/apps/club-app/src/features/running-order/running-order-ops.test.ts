@@ -15,7 +15,14 @@ import {
   unitsOf,
   unplace,
 } from './running-order-ops';
-import type { ActWish, CatalogueAct, LineKey, RunningOrderResponse, Suggestion } from './schemas';
+import type {
+  ActWish,
+  CatalogueAct,
+  EveningChange,
+  LineKey,
+  RunningOrderResponse,
+  Suggestion,
+} from './schemas';
 import type { DraftLine, RunningOrderDraft } from './types';
 
 interface LineOptions {
@@ -23,6 +30,7 @@ interface LineOptions {
   pinned?: boolean;
   blockKey?: number | null;
   cast?: number[];
+  eveningChanges?: EveningChange[];
 }
 
 const act = (actId: number, options: LineOptions = {}): DraftLine => ({
@@ -44,6 +52,7 @@ const act = (actId: number, options: LineOptions = {}): DraftLine => ({
   placed: options.placed ?? true,
   pinned: options.pinned ?? false,
   blockKey: options.blockKey ?? null,
+  eveningChanges: options.eveningChanges ?? [],
 });
 
 const evening = (lines: DraftLine[], actWishes: ActWish[] = []): RunningOrderDraft => ({
@@ -59,6 +68,8 @@ const catalogueAct = (actId: number, wishes: ActWish[] = []): CatalogueAct => ({
   name: `Auftritt ${actId}`,
   kind: 'dance',
   group: null,
+  sessionYear: null,
+  closed: false,
   archived: false,
   cast: [],
   added: [],
@@ -84,6 +95,7 @@ describe('draftOf and bodyOf', () => {
         position: 1,
         pinned: true,
         blockKey: null,
+        eveningChanges: [],
       },
       {
         lineId: 13,
@@ -91,6 +103,7 @@ describe('draftOf and bodyOf', () => {
         position: 0,
         pinned: false,
         blockKey: null,
+        eveningChanges: [],
       },
       {
         lineId: 14,
@@ -98,6 +111,7 @@ describe('draftOf and bodyOf', () => {
         position: null,
         pinned: false,
         blockKey: null,
+        eveningChanges: [],
       },
     ],
     rules: [
@@ -409,6 +423,13 @@ describe('pickActs', () => {
       picks: [3, 4],
       order: ['act:1', 'act:2', 'act:4', 'act:3'],
     },
+    {
+      label: 'leaves archived acts out of a copied evening',
+      draft: evening([act(1)]),
+      catalogue: [catalogueAct(2), { ...catalogueAct(3), archived: true }],
+      picks: [2, 3],
+      order: ['act:1', 'act:2'],
+    },
   ])('$label', ({ draft, catalogue, picks, order }) => {
     expect(orderOf(pickActs(draft, catalogue, picks))).toEqual(order);
   });
@@ -439,6 +460,12 @@ describe('dropAct', () => {
       dropped.actWishes,
       dropped.suspendedActWishIds,
     ]).toEqual([['act:2'], [], [], []]);
+  });
+
+  it('keeps a line the evening has changed', () => {
+    const draft = evening([act(1, { eveningChanges: ['cast'] }), act(2)]);
+
+    expect(orderOf(dropAct(draft, 1))).toEqual(['act:1', 'act:2']);
   });
 });
 

@@ -77,6 +77,18 @@ public sealed class ClubRecordExpectations
                 Assert.Equal(ageOfConsent, (await SingleAsync(dbContext, ct)).AgeOfConsent)
         );
 
+    public Expected ToHaveStage(decimal widthMetres, decimal depthMetres, string? artworkSvg) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var record = await SingleAsync(dbContext, ct);
+                Assert.Equal(
+                    (widthMetres, depthMetres, artworkSvg),
+                    (record.StageWidthMetres, record.StageDepthMetres, record.StageArtworkSvg)
+                );
+            }
+        );
+
     private static Task<ClubRecord> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
         dbContext.ClubRecords.AsNoTracking().SingleAsync(ct);
 }

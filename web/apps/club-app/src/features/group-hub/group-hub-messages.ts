@@ -56,3 +56,14 @@ export const toPreviewErrorMessage = (error: Error | null): string | null =>
   error === null
     ? null
     : (toQueryErrorMessage(error, PREVIEW_ERROR_MESSAGES) ?? PREVIEW_ERROR_MESSAGES.unexpected);
+
+const ACTS_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
+  unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
+  unexpected: 'Die Auftritte konnten nicht geladen werden.',
+  rejected: 'Der Server hat die Anfrage abgelehnt.',
+};
+
+export const toHubActsErrorMessage = (error: Error | null): string | null =>
+  error === null
+    ? null
+    : (toQueryErrorMessage(error, ACTS_ERROR_MESSAGES) ?? ACTS_ERROR_MESSAGES.unexpected);

@@ -1,3 +1,5 @@
+import type { JsonBody } from './api-client';
+
 export interface ApiFieldFailure {
   field: string;
   message: string;
@@ -9,6 +11,12 @@ export interface Refusal {
   kind: 'refused';
   status: RefusalStatus;
   fields: readonly ApiFieldFailure[];
+  payload?: JsonBody;
+}
+
+export interface RefusalReading {
+  fields: readonly ApiFieldFailure[];
+  payload: JsonBody;
 }
 
 export type ApiFailure =
@@ -41,18 +49,15 @@ export const isUnauthorizedStatus = (status: number): boolean => status === UNAU
 export const isRefusalStatus = (status: number): status is RefusalStatus =>
   REFUSAL_STATUSES.includes(status);
 
-export const failureOfStatus = (
-  status: number,
-  fields: readonly ApiFieldFailure[] | null,
-): ApiFailure => {
+export const failureOfStatus = (status: number, reading: RefusalReading | null): ApiFailure => {
   if (isUnauthorizedStatus(status)) {
     return { kind: 'unauthorized' };
   }
   if (status === TOO_MANY_REQUESTS_STATUS) {
     return { kind: 'throttled' };
   }
-  if (isRefusalStatus(status) && fields !== null) {
-    return { kind: 'refused', status, fields };
+  if (isRefusalStatus(status) && reading !== null) {
+    return { kind: 'refused', status, fields: reading.fields, payload: reading.payload };
   }
 
   return { kind: 'status', status };
@@ -69,6 +74,9 @@ export const refusalOf = (error: Error | null): Refusal | null => {
 
 export const refusalMessageOf = (error: Error | null): string | null =>
   refusalOf(error)?.fields[0]?.message ?? null;
+
+export const refusalPayloadOf = (error: Error | null): JsonBody | null =>
+  refusalOf(error)?.payload ?? null;
 
 export const apiStatusOf = (error: Error | null): number | null => {
   const failure = apiFailureOf(error);

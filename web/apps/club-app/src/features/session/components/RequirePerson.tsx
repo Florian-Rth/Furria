@@ -3,18 +3,19 @@ import { usePermissions } from '../hooks/use-permissions';
 import { NO_PERSON_MESSAGE } from '../permission-denials';
 import type { AccessDeniedFrame } from './AccessDeniedScreen';
 import { AccessDeniedScreen } from './AccessDeniedScreen';
+import { AccessPendingScreen } from './AccessPendingScreen';
 
 type RequirePersonProps = PropsWithChildren<AccessDeniedFrame>;
 
-export const RequirePerson: FC<RequirePersonProps> = ({ title, section, origin, children }) => {
-  const { isManagingLogin } = usePermissions();
+export const RequirePerson: FC<RequirePersonProps> = ({ children, ...frame }) => {
+  const { isManagingLogin, isUndecided } = usePermissions();
 
+  if (isUndecided) {
+    return <AccessPendingScreen {...frame} />;
+  }
   if (!isManagingLogin) {
     return children;
   }
-  if (section === undefined) {
-    return <AccessDeniedScreen title={title} origin={origin} message={NO_PERSON_MESSAGE} />;
-  }
 
-  return <AccessDeniedScreen title={title} section={section} message={NO_PERSON_MESSAGE} />;
+  return <AccessDeniedScreen {...frame} message={NO_PERSON_MESSAGE} />;
 };

@@ -9,14 +9,18 @@ import {
   CONFIRM_QUESTION,
   DISCARD_LABEL,
   REOPEN_LABEL,
+  SEARCH_ON_LABEL,
+  SEARCH_STOP_LABEL,
   SUGGEST_LABEL,
+  TAKE_NOW_LABEL,
   toNextModeLabel,
   toPickedContext,
+  toSearchNotice,
   toStepBlockText,
   toWishesToolLabel,
 } from '../planner-copy';
-import type { FootForward, ModeTool } from '../planner-modes';
-import { footPlanOf, modeToolsOf } from '../planner-modes';
+import type { FootForward, ModeTool, ProposalStage } from '../planner-modes';
+import { footPlanOf, modeToolsOf, proposalStageOf } from '../planner-modes';
 import type { PlannerMode } from '../schemas';
 import type { RunningOrderPlanner } from './use-running-order-planner';
 
@@ -61,8 +65,17 @@ const toolDeedOf = (planner: RunningOrderPlanner, tool: ModeTool): KkScreenDeed 
         disabled: planner.counts.pick < 2,
         onSelect: planner.suggestion.request,
       };
+    case 'searchOn':
+      return {
+        label: SEARCH_ON_LABEL,
+        icon: 'suggest',
+        onSelect: planner.suggestion.searchOn,
+      };
   }
 };
+
+const stageOf = ({ suggestion }: RunningOrderPlanner): ProposalStage =>
+  proposalStageOf(suggestion.isLoading, suggestion.isActive, suggestion.proven);
 
 const forwardDeedOf = (
   planner: RunningOrderPlanner,
@@ -114,13 +127,25 @@ const footOf = (planner: RunningOrderPlanner): PlannerFootView => {
   const { store, suggestion } = planner;
   const plan = footPlanOf({
     mode: planner.mode,
-    proposing: suggestion.isActive,
+    proposal: stageOf(planner),
     confirmed: store.confirmedAt !== null && !store.changedSinceConfirmed,
     picked: planner.counts.pick,
     unplaced: unplacedLinesOf(planner.draft).length,
     conflicts: planner.tally.conflicts,
     saved: store.exists && !store.isDirty,
   });
+
+  if (plan.kind === 'searching') {
+    return {
+      notice: toSearchNotice(suggestion.tally),
+      start: { label: SEARCH_STOP_LABEL, onSelect: suggestion.cancel },
+      end: {
+        label: TAKE_NOW_LABEL,
+        disabled: suggestion.tally === null,
+        onSelect: suggestion.takeNow,
+      },
+    };
+  }
 
   if (plan.kind === 'proposal') {
     return {
@@ -150,7 +175,7 @@ export const usePlannerAction = (planner: RunningOrderPlanner): PlannerActions =
 
   return {
     foot: footOf(planner),
-    tools: modeToolsOf(planner.mode, planner.suggestion.isActive).map((tool) => ({
+    tools: modeToolsOf(planner.mode, stageOf(planner)).map((tool) => ({
       id: tool,
       deed: toolDeedOf(planner, tool),
       active: tool === 'wishes' && planner.wishesOpen && planner.isWide,

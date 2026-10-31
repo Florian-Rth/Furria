@@ -2,6 +2,7 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Acts;
 using Furria.Api.Endpoints.RunningOrders;
+using Furria.Core.Club;
 using Furria.Core.RunningOrders;
 using Furria.Tests.Common;
 using Furria.Tests.Common.Builder;
@@ -9,6 +10,8 @@ using Furria.Tests.Common.Fixtures;
 using Xunit;
 using static Furria.Api.Tests.RunningOrders.RunningOrderSeeds;
 using static Furria.Api.Tests.RunningOrders.RunningOrderSteps;
+using static Furria.Api.Tests.Studio.StudioSeeds;
+using static Furria.Api.Tests.Studio.StudioSteps;
 
 namespace Furria.Api.Tests.RunningOrders;
 
@@ -246,6 +249,162 @@ public sealed class PutRunningOrderTests : IClassFixture<ApiTestFixture>
 
         Assert.NotNull(result.ConfirmedAt);
         Assert.True(result.ChangedSinceConfirmed);
+    }
+
+    [Fact]
+    public Task Should_ShowTheEveningToTheGroup_When_ThePlannerAddsTheirActWithoutBeingAsked() =>
+        _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
+            {
+                var ct = TestContext.Current.CancellationToken;
+                var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+                var tanz = await GardetanzAsync(ctx, ct);
+                var garde = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+                var marsch = await GardetanzAsync(ctx, ct, name: "Gardemarsch");
+                var planner = await ctx.Identity.ClientForAsync(Planner, ct);
+                var gala = ctx.Club.Events.IdOf(Gala);
+
+                var (response, _) = await SaveAsync(
+                    planner,
+                    gala,
+                    null,
+                    [Line(tanz, 0), Line(marsch, null)]
+                );
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                var positions = new List<int?>();
+                foreach (var actId in new[] { tanz, marsch })
+                {
+                    var evenings = (await StudioOfAsync(garde, actId)).Studio!.Evenings;
+                    positions.Add(
+                        evenings.Single(evening => evening.EventId == gala).Appearance?.Position
+                    );
+                }
+                Assert.Equal([0, null], positions);
+            }
+        );
+
+    [Fact]
+    public async Task Should_RemoveTheAppearance_When_AnActWithoutEveningChangesIsTakenOut()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(Planner, ct);
+        var eventId = ctx.Club.Events.IdOf(Gala);
+        var einmarsch = await CreateActAsync(client, "Einmarsch");
+        var finale = await CreateActAsync(client, "Finale");
+        var first = await SavedAsync(client, eventId, null, [Line(einmarsch, 0), Line(finale, 1)]);
+
+        var (response, _) = await SaveAsync(client, eventId, first.Version, [Line(finale, 0)]);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx.Expected.RunningOrder(eventId).ToHaveAppearancesOf(finale).AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseToTakeTheActOut_When_ItsAppearanceChangesTheEvening()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(Planner, ct);
+        var eventId = ctx.Club.Events.IdOf(Gala);
+        var tanz = await CreateActAsync(client, "Gardetanz", ctx.Groups.Groups.IdOf(Garde));
+        var finale = await CreateActAsync(client, "Finale");
+        var first = await SavedAsync(client, eventId, null, [Line(tanz, 0), Line(finale, 1)]);
+        await _fixture.ChangeEveningCastDirectlyAsync(
+            eventId,
+            tanz,
+            ctx.Identity.People.IdOf(Clara),
+            CastChange.Added,
+            ct
+        );
+
+        var (response, _) = await SaveAsync(client, eventId, first.Version, [Line(finale, 0)]);
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        Assert.Equal(
+            "Für diesen Abend angepasst, die Anpassung ginge verloren: „Gardetanz“ (Besetzung).",
+            await RefusalOfAsync(response)
+        );
+        await ctx
+            .Expected.RunningOrder(eventId)
+            .ToHaveVersion(first.Version)
+            .RunningOrder(eventId)
+            .ToHaveAppearancesOf(tanz, finale)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheAct_When_ItBelongsToAnotherSessionThanTheEvening()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(Planner, ct);
+        var eventId = ctx.Club.Events.IdOf(Gala);
+        var nextSession = ClubSession.RelevantYearOf(_fixture.Today) + 1;
+        var tanz = await CreateActAsync(
+            client,
+            "Gardetanz",
+            kind: ActKind.Dance,
+            sessionYear: nextSession
+        );
+
+        var (response, _) = await SaveAsync(client, eventId, null, [Line(tanz, 0)]);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        Assert.Equal(
+            "Dieser Auftritt gehört zu einer anderen Session als die Veranstaltung.",
+            await RefusalOfAsync(response)
+        );
+    }
+
+    [Fact]
+    public async Task Should_KeepAnEndedActButRefuseANewOne_When_ItsSessionHasEnded()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        SeededContext? ctx = null;
+        var (eventId, planned, unplanned, version) = (0, 0, 0, 0);
+        await _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
+            {
+                ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+                var client = await ctx.Identity.ClientForAsync(Planner, ct);
+                eventId = ctx.Club.Events.IdOf(Gala);
+                planned = await CreateActAsync(client, "Gardetanz", kind: ActKind.Dance);
+                unplanned = await CreateActAsync(client, "Schautanz", kind: ActKind.Show);
+                version = (await SavedAsync(client, eventId, null, [Line(planned, 0)])).Version;
+            }
+        );
+
+        await _fixture.AtInstantAsync(
+            AfterItsAshWednesday,
+            async () =>
+            {
+                var client = await ctx!.Identity.SignInAgainAsync(Planner, ct);
+
+                var (kept, keptResult) = await SaveAsync(
+                    client,
+                    eventId,
+                    version,
+                    [Line(planned, null)]
+                );
+                var (added, _) = await SaveAsync(
+                    client,
+                    eventId,
+                    keptResult.Version,
+                    [Line(planned, 0), Line(unplanned, 1)]
+                );
+
+                Assert.Equal(HttpStatusCode.OK, kept.StatusCode);
+                Assert.Equal(HttpStatusCode.UnprocessableEntity, added.StatusCode);
+                Assert.Equal(
+                    "Die Session dieses Auftritts ist vorbei, er lässt sich nicht mehr einplanen.",
+                    await RefusalOfAsync(added)
+                );
+            }
+        );
     }
 
     [Fact]

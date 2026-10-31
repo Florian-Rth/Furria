@@ -4,15 +4,19 @@ export type {
   ApiFetch,
   ApiMethod,
   ApiRequest,
+  ApiStream,
+  ApiStreamRequest,
   JsonBody,
   ResponseMismatch,
+  TakenLines,
 } from './api-client';
-export { buildApiUrl, createApiClient } from './api-client';
+export { buildApiUrl, createApiClient, takeLines } from './api-client';
 export type {
   ApiFailure,
   ApiFailureKind,
   ApiFieldFailure,
   Refusal,
+  RefusalReading,
   RefusalStatus,
 } from './api-failure';
 export {
@@ -22,6 +26,7 @@ export {
   isUnauthorizedStatus,
   refusalMessageOf,
   refusalOf,
+  refusalPayloadOf,
   shouldRetryRequest,
 } from './api-failure';
 export type {

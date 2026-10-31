@@ -13,4 +13,6 @@ public sealed record MediaFileDetails
     public required string DownloadName { get; init; }
 
     public required DateTimeOffset LastModified { get; init; }
+
+    public bool IsStandIn { get; init; }
 }

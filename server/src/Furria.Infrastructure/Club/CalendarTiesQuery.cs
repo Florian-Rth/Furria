@@ -1,6 +1,7 @@
 using System.Diagnostics.Contracts;
 using Furria.Core.Club;
 using Furria.Core.Groups;
+using Furria.Core.RunningOrders;
 using Furria.Core.Ties;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -50,6 +51,7 @@ public static class CalendarTiesQuery
             Pauses = [.. runningMembershipPauses.SelectMany(pauses => pauses).Select(ToSpan)],
             MemberGroupIds = memberGroupIds.ToHashSet(),
             AdminFunctions = ToAdminFunctions(adminTenures),
+            CastSessions = await CastSessionsOfAsync(dbContext, personId, today, ct),
         };
     }
 
@@ -65,6 +67,67 @@ public static class CalendarTiesQuery
             .Concat(
                 dbContext.RunningGroupAdminTenures(personId, today).Select(admin => admin.GroupId)
             );
+
+    [Pure]
+    public static IQueryable<int> CastGroupIds(
+        this AppDbContext dbContext,
+        int? personId,
+        DateOnly today
+    ) => dbContext.CastActs(personId, today).Select(act => act.GroupId!.Value);
+
+    [Pure]
+    private static IQueryable<Act> CastActs(
+        this AppDbContext dbContext,
+        int? personId,
+        DateOnly today
+    )
+    {
+        var memberGroupIds = dbContext
+            .RunningGroupMemberships(personId, today)
+            .Select(membership => membership.GroupId);
+
+        return dbContext
+            .Acts.Where(act =>
+                act.ArchivedAt == null && act.SessionYear != null && act.GroupId != null
+            )
+            .Where(act =>
+                act.CastFrozenAt != null
+                    ? act.FrozenCast.Any(member => member.PersonId == personId)
+                    : act.CastChanges.Any(change =>
+                        change.PersonId == personId && change.Change == CastChange.Added
+                    )
+                        || (
+                            memberGroupIds.Contains(act.GroupId!.Value)
+                            && !act.CastChanges.Any(change =>
+                                change.PersonId == personId && change.Change == CastChange.Removed
+                            )
+                        )
+            );
+    }
+
+    private static async Task<IReadOnlySet<GroupSession>> CastSessionsOfAsync(
+        AppDbContext dbContext,
+        int? personId,
+        DateOnly today,
+        CancellationToken ct
+    )
+    {
+        if (personId is null)
+            return new HashSet<GroupSession>();
+
+        var rows = await dbContext
+            .CastActs(personId, today)
+            .AsNoTracking()
+            .Select(act => new
+            {
+                GroupId = act.GroupId!.Value,
+                SessionYear = act.SessionYear!.Value,
+            })
+            .Distinct()
+            .ToListAsync(ct);
+
+        return rows.Select(row => new GroupSession(row.GroupId, row.SessionYear)).ToHashSet();
+    }
 
     [Pure]
     private static IQueryable<GroupMembership> RunningGroupMemberships(

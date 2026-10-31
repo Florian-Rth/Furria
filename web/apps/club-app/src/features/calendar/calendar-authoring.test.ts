@@ -42,6 +42,7 @@ const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
   participatingGroups: [],
   visibility: 'club',
   asksForResponse: false,
+  asksTheCast: false,
   description: null,
   viewerAnswer: null,
   isRunning: false,

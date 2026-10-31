@@ -1,22 +1,25 @@
 import { apiStatusOf } from '@furria/api-client';
-import { apiFetch } from '@/lib/api/api-fetch';
+import { apiFetch, apiStream } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import { isNotFoundError } from '@/lib/query-error';
 import type {
   ActForm,
   ActsResponse,
   CreatedAct,
+  EveningRunningOrder,
   RunningOrderBody,
   RunningOrderResponse,
   RunningOrdersResponse,
-  Suggestion,
+  SuggestionBody,
+  SuggestionLine,
 } from './schemas';
 import {
   ActsResponseSchema,
   CreatedActSchema,
+  EveningRunningOrderSchema,
   RunningOrderResponseSchema,
   RunningOrdersResponseSchema,
-  SuggestionSchema,
+  SuggestionLineSchema,
 } from './schemas';
 
 const CONFLICT_STATUS = 409;
@@ -33,8 +36,23 @@ export const isRunningOrderConflict = (error: Error | null): boolean =>
 
 const runningOrderPathOf = (eventId: number): string => `/api/events/${eventId}/running-order`;
 
-export const requestActs = (accessToken: string): Promise<ActsResponse> =>
-  apiFetch('/api/acts', { schema: ActsResponseSchema, accessToken });
+export const requestEveningRunningOrder = (
+  calendarEntryId: number,
+  accessToken: string,
+): Promise<EveningRunningOrder> =>
+  apiFetch(`/api/calendar/entries/${calendarEntryId}/running-order`, {
+    schema: EveningRunningOrderSchema,
+    accessToken,
+  });
+
+const actsPathOf = (sessionYear: number | null): string =>
+  sessionYear === null ? '/api/acts' : `/api/acts?session=${sessionYear}`;
+
+export const requestActs = (
+  sessionYear: number | null,
+  accessToken: string,
+): Promise<ActsResponse> =>
+  apiFetch(actsPathOf(sessionYear), { schema: ActsResponseSchema, accessToken });
 
 export const requestActCreation = (form: ActForm, accessToken: string): Promise<CreatedAct> =>
   apiFetch('/api/acts', { method: 'POST', body: form, schema: CreatedActSchema, accessToken });
@@ -107,15 +125,33 @@ export const requestRunningOrderDeletion = (eventId: number, accessToken: string
     accessToken,
   });
 
-export const requestSuggestion = (
+export interface SuggestionSearchRequest {
+  body: SuggestionBody;
+  signal: AbortSignal;
+  onLine: (line: SuggestionLine) => void;
+}
+
+export const requestSuggestionSearch = (
   eventId: number,
-  body: RunningOrderBody,
+  { body, signal, onLine }: SuggestionSearchRequest,
   accessToken: string,
-): Promise<Suggestion> =>
-  apiFetch(`${runningOrderPathOf(eventId)}/suggestion`, {
+): Promise<void> =>
+  apiStream(`${runningOrderPathOf(eventId)}/suggestion`, {
     method: 'POST',
     body,
-    schema: SuggestionSchema,
+    schema: SuggestionLineSchema,
+    accessToken,
+    signal,
+    onLine,
+  });
+
+export const requestActOpenAppearancesRemoval = (
+  actId: number,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/acts/${actId}/open-appearances`, {
+    method: 'DELETE',
+    schema: NoContentSchema,
     accessToken,
   });
 

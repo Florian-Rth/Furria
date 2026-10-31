@@ -1,3 +1,4 @@
+import { useKkNotice } from '@furria/ui/KkNotice';
 import { useIsMediumScreen } from '@furria/ui/use-is-medium-screen';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
@@ -8,6 +9,7 @@ import { useActsQuery, useRunningOrdersQuery } from '@/features/running-order/ap
 import {
   dissolveBlock,
   dropAct,
+  isDroppable,
   moveUnit,
   pickActs,
   removeRule,
@@ -25,10 +27,18 @@ import type {
   RuleKey,
   RunningOrderDraft,
 } from '@/features/running-order/types';
+import { useNow } from '@/lib/use-now';
 import type { CatalogueRowState, CatalogueSection, PreviousEvening } from '../planner-catalogue';
-import { catalogueRowStateOf, catalogueSectionsOf, previousEveningsOf } from '../planner-catalogue';
+import {
+  archivedActIdsOf,
+  archivedLeftOutOf,
+  catalogueRowStateOf,
+  catalogueSectionsOf,
+  previousEveningsOf,
+} from '../planner-catalogue';
 import {
   toAllPlacedMessage,
+  toKeptForEveningMessage,
   toPickedMessage,
   toPlacedMessage,
   toRemovedMessage,
@@ -42,6 +52,7 @@ import type { PersonTimeline } from '../planner-person';
 import { personTimelineOf } from '../planner-person';
 import type { PlannerEntry, RailView } from '../planner-rows';
 import { placeNumberOf, plannerEntriesOf, visibleEntriesOf } from '../planner-rows';
+import { actsSessionOfEvening } from '../planner-session';
 import type { LineWish } from '../planner-wishes';
 import { eveningWishesOf, wishCountOf } from '../planner-wishes';
 import type { PlannerMode } from '../schemas';
@@ -57,6 +68,7 @@ import { usePlannerSuggestion } from './use-planner-suggestion';
 const ROUTE_ID = '/_app/events_/$eventId_/ablauf';
 const NO_ACTS: readonly CatalogueAct[] = [];
 const DEFAULT_MODE: PlannerMode = 'pick';
+const CLOCK_MS = 60_000;
 const RAIL_VIEWS: Record<PlannerMode, RailView> = {
   pick: 'none',
   order: 'all',
@@ -84,6 +96,7 @@ export interface RunningOrderPlanner {
   catalogueReady: boolean;
   previous: PreviousEvening[];
   rowStateOf: (actId: number) => CatalogueRowState;
+  isArchived: (actId: number) => boolean;
   eveningWishes: LineWish[];
   selectedKey: LineKey | null;
   person: PersonTimeline | null;
@@ -122,19 +135,32 @@ export const useRunningOrderPlanner = (eventId: number): RunningOrderPlanner => 
   const navigate = useNavigate();
   const isWide = useIsMediumScreen();
   const event = useEventQuery(eventId);
-  const acts = useActsQuery();
+  const now = useNow(CLOCK_MS);
+  const acts = useActsQuery(
+    actsSessionOfEvening(event.data?.startsAt ?? null, now),
+    event.data !== undefined,
+  );
   const runningOrders = useRunningOrdersQuery();
   const store = usePlannerDraft(eventId);
+  const notify = useKkNotice();
   const { draft, apply } = store;
   const drag = usePlannerDrag(draft, apply);
   const bracket = usePlannerBracket(draft, drag.listRef, apply);
   const lineNameOf = (key: LineKey): string =>
     draft.lines.find((candidate) => candidate.key === key)?.act.name ?? '';
+  const dropLine = (line: DraftLine): void => {
+    if (!isDroppable(line)) {
+      notify({ tone: 'info', message: toKeptForEveningMessage(line.act.name) });
+      return;
+    }
+    apply(dropAct(draft, line.act.actId), toRemovedMessage(line.act.name));
+  };
   const suggestion = usePlannerSuggestion(eventId, draft, store.findings, apply, lineNameOf);
   const [selectedKey, setSelectedKey] = useState<LineKey | null>(null);
   const [personId, setPersonId] = useState<number | null>(null);
   const [wishesOpen, setWishesOpen] = useState(false);
   const catalogueActs = acts.data?.acts ?? NO_ACTS;
+  const archivedActIds = archivedActIdsOf(catalogueActs);
   const shown = bracket.shownDraft ?? suggestion.preview ?? draft;
   const findings = suggestion.previewFindings ?? store.findings;
   const allEntries = plannerEntriesOf(shown, findings);
@@ -197,8 +223,8 @@ export const useRunningOrderPlanner = (eventId: number): RunningOrderPlanner => 
     allEntries,
     unplaced: unplacedLinesOf(shown),
     counts: modeCountsOf(draft, store.findings),
-    catalogue: catalogueSectionsOf(catalogueActs),
-    catalogueReady: acts.data !== undefined,
+    catalogue: catalogueSectionsOf(catalogueActs, draft),
+    catalogueReady: event.data !== undefined && acts.data !== undefined && !acts.isPlaceholderData,
     previous: previousEveningsOf(
       runningOrders.data?.runningOrders ?? [],
       eventId,
@@ -206,6 +232,7 @@ export const useRunningOrderPlanner = (eventId: number): RunningOrderPlanner => 
       draft,
     ),
     rowStateOf: (actId) => catalogueRowStateOf(draft, actId),
+    isArchived: (actId) => archivedActIds.has(actId),
     eveningWishes: eveningWishesOf(draft, store.findings),
     selectedKey,
     person,
@@ -243,7 +270,6 @@ export const useRunningOrderPlanner = (eventId: number): RunningOrderPlanner => 
         ?.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
     },
     setMode: (next) => {
-      suggestion.discard();
       setWishesOpen(false);
       void navigate({
         to: '/events/$eventId/ablauf',
@@ -277,21 +303,25 @@ export const useRunningOrderPlanner = (eventId: number): RunningOrderPlanner => 
         apply(pickActs(draft, catalogueActs, [actId]));
         return;
       }
-      apply(dropAct(draft, actId), toRemovedMessage(line.act.name));
+      dropLine(line);
     },
     pickMany: (actIds) => {
       const picked = pickActs(draft, catalogueActs, actIds);
       const added = picked.lines.length - draft.lines.length;
+      const leftOut = archivedLeftOutOf(catalogueActs, draft, actIds);
 
-      apply(picked, toPickedMessage(added));
+      if (picked === draft) {
+        notify({ tone: 'info', message: toPickedMessage(0, leftOut) });
+        return;
+      }
+      apply(picked, toPickedMessage(added, leftOut));
     },
     drop: (key) => {
       const line = draft.lines.find((candidate) => candidate.key === key);
 
-      if (line === undefined) {
-        return;
+      if (line !== undefined) {
+        dropLine(line);
       }
-      apply(dropAct(draft, line.act.actId), toRemovedMessage(line.act.name));
     },
     place: (key) => {
       const next = placeAtBest(draft, key);

@@ -4,15 +4,15 @@ namespace Furria.Core.RunningOrders.Planning;
 
 internal static class HoldSearch
 {
-    [Pure]
     public static (IReadOnlyList<RunningOrderHold> Holds, bool IsUnavoidable) Run(
         RunningOrderReviewInput input,
         Solution solution,
-        int nodeBudget
+        int nodeBudget,
+        CancellationToken stop
     )
     {
         var conflicts = solution.ConflictsAfter();
-        if (conflicts == 0)
+        if (conflicts == 0 || stop.IsCancellationRequested)
             return ([], false);
 
         var planned = PlannedAs(input, solution.Order);
@@ -29,7 +29,7 @@ internal static class HoldSearch
             }
 
             var (hold, relaxed) = relaxations[index];
-            var without = Solution.Of(relaxed, share);
+            var without = Solution.Of(relaxed, SearchControl.Budget(share, stop));
             nodeBudget -= without.NodesUsed;
             isEverySolveProven &= without.IsProven;
             var conflictsWithout = without.ConflictsAfter();
@@ -39,7 +39,7 @@ internal static class HoldSearch
 
         return (
             [.. holds.OrderBy(hold => hold.ConflictsWithout)],
-            holds.Count == 0 && isEverySolveProven
+            holds.Count == 0 && isEverySolveProven && !stop.IsCancellationRequested
         );
     }
 

@@ -8,6 +8,7 @@ using Furria.Core.MembershipApplications;
 using Furria.Core.News;
 using Furria.Core.Roles;
 using Furria.Core.RunningOrders;
+using Furria.Core.Studio;
 using Furria.Core.Website;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Logging;
@@ -77,6 +78,9 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<AttendanceResponse> AttendanceResponses => Set<AttendanceResponse>();
 
+    public DbSet<AttendanceResponseChange> AttendanceResponseChanges =>
+        Set<AttendanceResponseChange>();
+
     public DbSet<CalendarEntryGroup> CalendarEntryGroups => Set<CalendarEntryGroup>();
 
     public DbSet<Event> Events => Set<Event>();
@@ -115,16 +119,42 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<ActCastChange> ActCastChanges => Set<ActCastChange>();
 
+    public DbSet<FrozenCastMember> FrozenCastMembers => Set<FrozenCastMember>();
+
     public DbSet<ActWish> ActWishes => Set<ActWish>();
 
     public DbSet<RunningOrder> RunningOrders => Set<RunningOrder>();
 
-    public DbSet<RunningOrderLine> RunningOrderLines => Set<RunningOrderLine>();
+    public DbSet<Appearance> Appearances => Set<Appearance>();
+
+    public DbSet<AppearanceCastChange> AppearanceCastChanges => Set<AppearanceCastChange>();
 
     public DbSet<RunningOrderRule> RunningOrderRules => Set<RunningOrderRule>();
 
     public DbSet<RunningOrderSuspendedWish> RunningOrderSuspendedWishes =>
         Set<RunningOrderSuspendedWish>();
+
+    public DbSet<ActSong> ActSongs => Set<ActSong>();
+
+    public DbSet<ActFinalTrack> ActFinalTracks => Set<ActFinalTrack>();
+
+    public DbSet<ActFinalTrackAlignment> ActFinalTrackAlignments => Set<ActFinalTrackAlignment>();
+
+    public DbSet<ActStep> ActSteps => Set<ActStep>();
+
+    public DbSet<ActPart> ActParts => Set<ActPart>();
+
+    public DbSet<ActVideo> ActVideos => Set<ActVideo>();
+
+    public DbSet<Spot> Spots => Set<Spot>();
+
+    public DbSet<AppearanceSpot> AppearanceSpots => Set<AppearanceSpot>();
+
+    public DbSet<Choreography> Choreographies => Set<Choreography>();
+
+    public DbSet<ChoreographyVersion> ChoreographyVersions => Set<ChoreographyVersion>();
+
+    public DbSet<ActCoEditor> ActCoEditors => Set<ActCoEditor>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }

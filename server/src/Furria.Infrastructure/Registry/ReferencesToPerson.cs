@@ -6,6 +6,7 @@ using Furria.Core.Media;
 using Furria.Core.News;
 using Furria.Core.Roles;
 using Furria.Core.RunningOrders;
+using Furria.Core.Studio;
 using Furria.Core.Website;
 using Furria.Infrastructure.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -25,8 +26,14 @@ public static class ReferencesToPerson
         HerOwn<BoardSeat>(nameof(BoardSeat.PersonId)),
         HerOwn<KeyHolding>(nameof(KeyHolding.PersonId)),
         HerOwn<AttendanceResponse>(nameof(AttendanceResponse.PersonId)),
+        HerOwn<AttendanceResponseChange>(nameof(AttendanceResponseChange.PersonId)),
         HerOwn<NewsPostMention>(nameof(NewsPostMention.PersonId)),
         HerOwn<ActCastChange>(nameof(ActCastChange.PersonId)),
+        HerOwn<FrozenCastMember>(nameof(FrozenCastMember.PersonId)),
+        HerOwn<AppearanceCastChange>(nameof(AppearanceCastChange.PersonId)),
+        HerOwn<ActCoEditor>(nameof(ActCoEditor.PersonId)),
+        Reference<Spot>(nameof(Spot.PersonId), OnAbsorption.BlocksIt, OnErasure.KeptNamingNobody),
+        HerOwn<AppearanceSpot>(nameof(AppearanceSpot.PersonId)),
         Reference<Announcement>(
             nameof(Announcement.AuthorPersonId),
             OnAbsorption.BlocksIt,
@@ -65,6 +72,10 @@ public static class ReferencesToPerson
         HerAct<MediaItem>(nameof(MediaItem.UploadedByPersonId)),
         HerAct<NewsPost>(nameof(NewsPost.LastSavedByPersonId)),
         HerAct<WebsitePicture>(nameof(WebsitePicture.UpdatedByPersonId)),
+        HerAct<ActCoEditor>(nameof(ActCoEditor.GrantedByPersonId)),
+        HerAct<ChoreographyVersion>(nameof(ChoreographyVersion.SavedByPersonId)),
+        HerAct<AttendanceResponse>(nameof(AttendanceResponse.RecordedByPersonId)),
+        HerAct<AttendanceResponseChange>(nameof(AttendanceResponseChange.RecordedByPersonId)),
     ];
 
     [Pure]

@@ -18,8 +18,8 @@ export interface TakenTonesControl {
 }
 
 export const useTakenTones = (groupId: number, canPick: boolean): TakenTonesControl => {
-  const { isAffiliated, isUndecided } = usePermissions();
-  const readsDirectory = canPick && isAffiliated;
+  const { isUndecided } = usePermissions();
+  const readsDirectory = canPick && !isUndecided;
   const groups = useGroupsQuery(readsDirectory);
 
   const retry = (): void => {

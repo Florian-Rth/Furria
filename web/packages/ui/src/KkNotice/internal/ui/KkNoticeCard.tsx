@@ -18,6 +18,7 @@ import { KkNoticeToggle } from './KkNoticeToggle';
 const { detailGap } = kkTokens.shell.notice;
 const CARD_DENSITY = 1;
 const INSTANT = 0;
+const NO_DISMISS = (): void => undefined;
 const HEAD_GAP = 0.5;
 
 interface KkNoticeCardProps {
@@ -61,8 +62,13 @@ export const KkNoticeCard: FC<KkNoticeCardProps> = ({ notice, labels, onDismiss 
     );
 
   const detail = notice.detail === undefined ? null : <KkNoticeDetail rows={notice.detail} />;
+  const answered = onDismiss ?? NO_DISMISS;
   const actions =
-    notice.actions === undefined ? null : <KkNoticeActions actions={notice.actions} />;
+    notice.actions === undefined ? null : (
+      <KkNoticeActions actions={notice.actions} onAnswered={answered} />
+    );
+
+  const inlineActions = expandable ? null : actions;
 
   const body = expandable ? (
     <Collapse in={expanded} timeout={collapseTimeout} unmountOnExit>
@@ -88,6 +94,7 @@ export const KkNoticeCard: FC<KkNoticeCardProps> = ({ notice, labels, onDismiss 
     >
       <Stack direction="row" sx={{ minWidth: 0, alignItems: 'center', gap: HEAD_GAP }}>
         {head}
+        {inlineActions}
         {dismiss}
       </Stack>
       {body}

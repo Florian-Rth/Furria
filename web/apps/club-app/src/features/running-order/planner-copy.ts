@@ -26,7 +26,7 @@ import type { HoldRow } from './planner-holds';
 import type { StepBlock } from './planner-modes';
 import type { PersonGap, PersonTimeline } from './planner-person';
 import type { LineWish, WishState, WishTally } from './planner-wishes';
-import type { PlannerMode } from './schemas';
+import type { EveningChange, PlannerMode } from './schemas';
 
 export const FACT_SEPARATOR = '\u00a0· ';
 
@@ -95,7 +95,15 @@ export const SUGGESTION_TITLE = 'Vorschlag';
 export const SUGGESTION_EMPTY = 'Schon die beste Reihenfolge.';
 export const AUTO_ORDER_LABEL = 'Automatisch ordnen';
 export const NOT_PROVEN = 'Beste gefundene Reihenfolge';
+export const SEARCH_ON_LABEL = 'Weiter suchen';
+export const SEARCH_STOP_LABEL = 'Abbrechen';
+export const TAKE_NOW_LABEL = 'Jetzt nehmen';
+export const SEARCHING_NOTICE = 'Sucht die beste Reihenfolge …';
+
+export const toSearchNotice = (tally: { before: number; after: number } | null): string =>
+  tally === null ? SEARCHING_NOTICE : `Sucht … Konflikte ${tally.before} → ${tally.after}`;
 export const NEWLY_PLACED = 'neu eingeplant';
+export const ARCHIVED_FACT = 'archiviert';
 export const PLACE_ALL_LABEL = 'Alle einplanen';
 export const PROPOSAL_SHIFTS_LABEL = 'Was sich ändert';
 export const CONFLICT_RELOAD =
@@ -180,6 +188,21 @@ export const toActsLabel = (count: number): string =>
 export const toCastFact = (present: number, absent: number): string =>
   absent === 0 ? `${present} dabei` : `${present} dabei${FACT_SEPARATOR}${absent} abgesagt`;
 
+export const EVENING_CHANGE_WORDS: Record<EveningChange, string> = {
+  cast: 'Besetzung',
+  spots: 'Plätze',
+  choreography: 'Aufstellung',
+};
+const EVENING_CHANGED = 'für den Abend angepasst';
+
+export const toEveningChangesFact = (
+  changes: readonly EveningChange[],
+  compact: boolean,
+): string =>
+  compact
+    ? EVENING_CHANGED
+    : `${EVENING_CHANGED}: ${changes.map((change) => EVENING_CHANGE_WORDS[change]).join(', ')}`;
+
 export const toKindFact = (kind: ActKind | null): string | null =>
   kind === null ? null : toActKindLabel(kind);
 
@@ -240,7 +263,18 @@ export const toPlaceChange = (delta: FindingTally): string | null => {
 
 export const toRemovedMessage = (name: string): string => `${name} aus dem Abend genommen.`;
 
-export const toPickedMessage = (count: number): string => `${toActsLabel(count)} übernommen.`;
+export const toKeptForEveningMessage = (name: string): string =>
+  `${name} ist für diesen Abend angepasst und bleibt im Ablauf, solange die Anpassung besteht.`;
+
+export const toPickedMessage = (count: number, archivedLeftOut = 0): string =>
+  archivedLeftOut === 0
+    ? `${toActsLabel(count)} übernommen.`
+    : `${toActsLabel(count)} übernommen · ${toArchivedActsLabel(archivedLeftOut)} nicht übernommen.`;
+
+export const toArchivedActsLabel = (count: number): string =>
+  count === 1 ? '1 archivierter Auftritt' : `${count} archivierte Auftritte`;
+
+export const toSaveFailedMessage = (reason: string): string => `Nicht gespeichert. ${reason}`;
 
 export const SUGGESTION_TAKEN = 'Vorschlag übernommen.';
 

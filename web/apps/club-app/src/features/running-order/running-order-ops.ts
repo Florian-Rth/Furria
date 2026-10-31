@@ -371,6 +371,7 @@ const lineOfAct = (act: CatalogueAct): DraftLine => ({
   placed: true,
   pinned: false,
   blockKey: null,
+  eveningChanges: [],
 });
 
 const lastIndexOf = (draft: RunningOrderDraft): number => placedLinesOf(draft).length - 1;
@@ -406,7 +407,7 @@ export const pickActs = (
   const picked = actIds.flatMap((actId) => {
     const act = catalogue.find((candidate) => candidate.actId === actId);
 
-    return act === undefined || present.includes(actLineKeyOf(actId)) ? [] : [act];
+    return act === undefined || act.archived || present.includes(actLineKeyOf(actId)) ? [] : [act];
   });
 
   if (picked.length === 0) {
@@ -433,10 +434,13 @@ export const pickActs = (
     : moveUnit(wished, trailingLast, lastIndexOf(wished));
 };
 
+export const isDroppable = (line: DraftLine): boolean => line.eveningChanges.length === 0;
+
 export const dropAct = (draft: RunningOrderDraft, actId: number): RunningOrderDraft => {
   const key = actLineKeyOf(actId);
+  const line = lineOf(draft, key);
 
-  if (lineOf(draft, key) === undefined) {
+  if (line === undefined || !isDroppable(line)) {
     return draft;
   }
 
@@ -454,8 +458,8 @@ export const dropAct = (draft: RunningOrderDraft, actId: number): RunningOrderDr
 
   return settle(
     trimmed,
-    withoutLonelyBlocks(placedLinesOf(draft).filter((line) => line.key !== key)),
-    unplacedLinesOf(draft).filter((line) => line.key !== key),
+    withoutLonelyBlocks(placedLinesOf(draft).filter((candidate) => candidate.key !== key)),
+    unplacedLinesOf(draft).filter((candidate) => candidate.key !== key),
   );
 };
 
@@ -535,6 +539,7 @@ const draftLineOf = (line: RunningOrderLine): DraftLine => ({
   placed: line.position !== null,
   pinned: line.position !== null && line.pinned,
   blockKey: line.position === null ? null : line.blockKey,
+  eveningChanges: line.eveningChanges,
 });
 
 export const draftOf = (response: RunningOrderResponse): RunningOrderDraft => {

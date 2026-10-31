@@ -44,20 +44,18 @@ public static class VideoEncoding
     private static readonly string[] Mp4WithFastStart = ["-movflags", "+faststart", "-f", "mp4"];
 
     [Pure]
-    public static bool KeepsVideoStream(VideoFacts facts) =>
+    public static bool KeepsVideoStream(VideoFacts facts, VideoBox box) =>
         facts.VideoCodec == PlayableVideoCodec
         && facts.PixelFormat is { } pixelFormat
         && PlayablePixelFormats.Contains(pixelFormat)
         && !facts.IsHdr
-        && TargetSizeOf(facts.Width, facts.Height) == (facts.Width, facts.Height);
+        && TargetSizeOf(facts.Width, facts.Height, box) == (facts.Width, facts.Height);
 
     [Pure]
-    public static (int Width, int Height) TargetSizeOf(int width, int height)
+    public static (int Width, int Height) TargetSizeOf(int width, int height, VideoBox box)
     {
         var (boxWidth, boxHeight) =
-            width >= height
-                ? (MediaRenditions.VideoLongEdge, MediaRenditions.VideoShortEdge)
-                : (MediaRenditions.VideoShortEdge, MediaRenditions.VideoLongEdge);
+            width >= height ? (box.LongEdge, box.ShortEdge) : (box.ShortEdge, box.LongEdge);
         var scale = Math.Min(1, Math.Min((double)boxWidth / width, (double)boxHeight / height));
         return scale >= 1 && width % 2 == 0 && height % 2 == 0
             ? (width, height)
@@ -70,10 +68,11 @@ public static class VideoEncoding
         string input,
         string output,
         HardwareAcceleration acceleration,
-        string device
+        string device,
+        VideoBox box
     )
     {
-        var keepsVideo = KeepsVideoStream(facts);
+        var keepsVideo = KeepsVideoStream(facts, box);
         return
         [
             .. Quiet,
@@ -81,7 +80,7 @@ public static class VideoEncoding
             "-i",
             input,
             .. StreamsWithoutMetadata,
-            .. keepsVideo ? ["-c:v", "copy"] : VideoEncoderOf(facts, acceleration),
+            .. keepsVideo ? ["-c:v", "copy"] : VideoEncoderOf(facts, acceleration, box),
             .. facts.AudioCodec == PlayableAudioCodec
                 ? ["-c:a", "copy"]
                 : (string[])["-c:a", "aac", "-b:a", AudioBitrate, "-ac", "2"],
@@ -137,13 +136,20 @@ public static class VideoEncoding
         };
 
     [Pure]
-    private static string[] VideoEncoderOf(VideoFacts facts, HardwareAcceleration acceleration) =>
-        ["-vf", FiltersOf(facts, acceleration), .. EncoderOf(acceleration)];
+    private static string[] VideoEncoderOf(
+        VideoFacts facts,
+        HardwareAcceleration acceleration,
+        VideoBox box
+    ) => ["-vf", FiltersOf(facts, acceleration, box), .. EncoderOf(acceleration)];
 
     [Pure]
-    private static string FiltersOf(VideoFacts facts, HardwareAcceleration acceleration)
+    private static string FiltersOf(
+        VideoFacts facts,
+        HardwareAcceleration acceleration,
+        VideoBox box
+    )
     {
-        var (width, height) = TargetSizeOf(facts.Width, facts.Height);
+        var (width, height) = TargetSizeOf(facts.Width, facts.Height, box);
         string[] chain =
         [
             $"scale={width}:{height}:flags=lanczos",

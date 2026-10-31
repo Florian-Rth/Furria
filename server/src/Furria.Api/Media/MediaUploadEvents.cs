@@ -26,12 +26,12 @@ public sealed class MediaUploadEvents
     private const string ConcatenationRefused = "Uploads are not concatenated.";
     private const string LengthRequired = "An upload declares its length up front.";
     private const string OwnerRequired =
-        "An upload names its owner: gallery, person:{id}, group:{id}, news:{id}, event:{id} or website:{slot}:{position}.";
+        "An upload names its owner: gallery, person:{id}, group:{id}, news:{id}, event:{id}, act:{id} or website:{slot}:{position}.";
     private const string FileNameRequired = "An upload names its file.";
     private const string TooLarge = "The upload exceeds what its owner accepts.";
     private const string NotAcceptedMedia =
-        "Only photos (JPEG, HEIC, PNG, WebP) and videos (MP4, MOV) are accepted.";
-    private const string NotAcceptedByOwner = "This owner accepts photos only.";
+        "Only photos (JPEG, HEIC, PNG, WebP), videos (MP4, MOV) and audio (MP3, WAV, AIFF, FLAC, M4A) are accepted.";
+    private const string NotAcceptedByOwner = "This owner does not accept this kind of media.";
     private const string AlbumOfGalleryOnly = "Only a gallery upload goes into an album.";
     private const string AlbumUnknown = "There is no such album.";
     private const string CropRefused =
@@ -196,13 +196,16 @@ public sealed class MediaUploadEvents
         if (access.IsSuccess)
             return;
 
-        context.FailRequest(
-            access.Error.Kind == ResultErrorKind.NotFound
-                ? HttpStatusCode.NotFound
-                : HttpStatusCode.Forbidden,
-            access.Error.Message
-        );
+        context.FailRequest(StatusOf(access.Error.Kind), access.Error.Message);
     }
+
+    private static HttpStatusCode StatusOf(ResultErrorKind kind) =>
+        kind switch
+        {
+            ResultErrorKind.NotFound => HttpStatusCode.NotFound,
+            ResultErrorKind.Conflict => HttpStatusCode.Conflict,
+            _ => HttpStatusCode.Forbidden,
+        };
 
     private static bool CropFits(MediaOwner owner, string? crop) =>
         crop is null

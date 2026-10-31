@@ -2,6 +2,7 @@ using System.Diagnostics.Contracts;
 using Furria.Application.Start;
 using Furria.Core.Club;
 using Furria.Core.Media;
+using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Events;
 using Microsoft.EntityFrameworkCore;
 
@@ -24,6 +25,7 @@ public sealed partial class StartService
         StartEntryRow row,
         AttendanceAnswer? answer,
         Viewer viewer,
+        IReadOnlySet<GroupSession> actSessions,
         StartEvent? tiedEvent
     )
     {
@@ -47,9 +49,10 @@ public sealed partial class StartService
                 .. row.GroupIds().Where(groupId => IsTiedToGroup(viewer.Ties, groupId)).Distinct(),
             ],
             ViewerRuns = ViewerRunsOf(viewer.Ties, facts),
-            Attendance = row.AsksForResponse
-                ? AttendanceOf(row, answer, viewer.Ties.Concerns(facts), viewer.Moment.Now)
-                : null,
+            Attendance =
+                row.AsksForResponse || facts.AsksTheCastOf(actSessions)
+                    ? AttendanceOf(row, answer, viewer.Ties.Concerns(facts), viewer.Moment.Now)
+                    : null,
             Description = row.Description,
             Event = tiedEvent,
         };
@@ -57,7 +60,11 @@ public sealed partial class StartService
 
     [Pure]
     private static List<int> TieGroupIdsOf(CalendarTies ties) =>
-        [.. ties.MemberGroupIds.Union(ties.AdminFunctions.Keys)];
+        [
+            .. ties
+                .MemberGroupIds.Union(ties.AdminFunctions.Keys)
+                .Union(ties.CastSessions.Select(cast => cast.GroupId)),
+        ];
 
     [Pure]
     private static bool IsTiedToGroup(CalendarTies ties, int groupId) =>
@@ -114,6 +121,14 @@ public sealed partial class StartService
             [.. rows.Select(row => row.CalendarEntryId)],
             ct
         );
+        var actSessions = await _dbContext.ActSessionsOfAsync(
+            [
+                .. rows.Where(row => CastAttendance.AsksTheCastOn(row.Kind))
+                    .SelectMany(row => row.GroupIds())
+                    .Distinct(),
+            ],
+            ct
+        );
 
         return
         [
@@ -129,6 +144,7 @@ public sealed partial class StartService
                         row,
                         answers.GetValueOrDefault(row.CalendarEntryId),
                         viewer,
+                        actSessions,
                         EventOf(row)
                     )
                 ),

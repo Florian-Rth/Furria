@@ -83,6 +83,91 @@ public sealed class PutActTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_ReturnConflict_When_TheActsSessionHasEnded()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        SeededContext? ctx = null;
+        var actId = 0;
+        await _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
+            {
+                ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+                var client = await ctx.Identity.ClientForAsync(Planner, ct);
+                actId = await CreateActAsync(client, "Gardetanz", kind: ActKind.Dance);
+            }
+        );
+
+        await _fixture.AtInstantAsync(
+            AfterItsAshWednesday,
+            async () =>
+            {
+                var client = await ctx!.Identity.SignInAgainAsync(Planner, ct);
+
+                var response = await PutAsync(client, actId, "Neuer Gardetanz", [], []);
+
+                Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+                await ctx.Expected.Act(actId).ToHaveName("Gardetanz").AssertAsync(ct);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_KeepTheChosenSession_When_TheEditNamesNone()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
+            {
+                var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+                var client = await ctx.Identity.ClientForAsync(Planner, ct);
+                var actId = await CreateActAsync(
+                    client,
+                    "Gardetanz",
+                    kind: ActKind.Dance,
+                    sessionYear: RunningSessionYear + 1
+                );
+
+                var response = await client.PUTAsync<PutAct, PutActRequest>(
+                    new()
+                    {
+                        ActId = actId,
+                        Name = "Neuer Gardetanz",
+                        GroupId = null,
+                        Kind = ActKind.Show,
+                        SessionYear = null,
+                        AddedPersonIds = [],
+                        RemovedPersonIds = [],
+                        Wishes = [],
+                    }
+                );
+
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+                await ctx
+                    .Expected.Act(actId)
+                    .ToBelongToSession(RunningSessionYear + 1)
+                    .AssertAsync(ct);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_DropTheSession_When_TheDanceBecomesAnAblaufpunkt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(PlannerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(Planner, ct);
+        var actId = await CreateActAsync(client, "Gardetanz", kind: ActKind.Dance);
+
+        var response = await PutAsync(client, actId, "Gardetanz", [], []);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx.Expected.Act(actId).ToBelongToSession(null).AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ReturnNotFound_When_TheActIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -166,7 +251,7 @@ public sealed class PutActTests : IClassFixture<ApiTestFixture>
 
     private static async Task<int> WishIdOfAsync(HttpClient client, int actId)
     {
-        var (_, result) = await client.GETAsync<GetActs, GetActsResponse>();
+        var (_, result) = await client.GETAsync<GetActs, GetActsRequest, GetActsResponse>(new());
 
         return result
             .Acts.Single(act => act.ActId == actId)
@@ -196,6 +281,7 @@ public sealed class PutActTests : IClassFixture<ApiTestFixture>
                 Name = name,
                 GroupId = groupId,
                 Kind = ActKind.Point,
+                SessionYear = null,
                 AddedPersonIds = added,
                 RemovedPersonIds = [],
                 Wishes = wishes,

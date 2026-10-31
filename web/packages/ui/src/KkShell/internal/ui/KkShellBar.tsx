@@ -62,7 +62,6 @@ export const KkShellBar: FC<KkShellBarProps> = ({
 
   return (
     <KkChrome
-      component="header"
       sx={{
         position: 'relative',
         height: `${barHeight}px`,

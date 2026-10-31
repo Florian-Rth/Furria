@@ -1,26 +1,43 @@
-import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
-import { EVENTS_ORIGIN } from '@/features/session/app-sections';
+import {
+  PLANNER_PERMISSION_KEYS,
+  usePlansRunningOrder,
+} from '@/features/running-order/hooks/use-plans-running-order';
 import { RequireAnyScreenPermission } from '@/features/session/components/RequireAnyScreenPermission';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { ACTS_TITLE } from '../acts-copy';
-import { CLUB_SCOPE, plannerOriginOf } from '../acts-origin';
+import { actsCatalogueOriginOf, actsCatalogueReturnOf, CLUB_SCOPE } from '../acts-origin';
 import type { ActsSearch } from '../schemas';
 import { ActsScreen } from './ActsScreen';
-
-const PLANNERS = [PERMISSION_KEYS.eventsRunningOrder, PERMISSION_KEYS.eventsManage] as const;
 
 interface ActsPageProps {
   search: ActsSearch;
 }
 
 export const ActsPage: FC<ActsPageProps> = ({ search }) => {
-  const origin: KkScreenOrigin =
-    search.from === undefined ? EVENTS_ORIGIN : plannerOriginOf(search.from);
+  const plans = usePlansRunningOrder();
+  const permissions = usePermissions();
+  const origin = actsCatalogueOriginOf(
+    actsCatalogueReturnOf(search.from, {
+      plans,
+      managesEvents: permissions.has(PERMISSION_KEYS.eventsManage),
+    }),
+  );
 
   return (
-    <RequireAnyScreenPermission permissionKeys={PLANNERS} title={ACTS_TITLE} origin={origin}>
-      <ActsScreen scope={CLUB_SCOPE} search={search} title={ACTS_TITLE} origin={origin} />
+    <RequireAnyScreenPermission
+      permissionKeys={PLANNER_PERMISSION_KEYS}
+      title={ACTS_TITLE}
+      origin={origin}
+    >
+      <ActsScreen
+        scope={CLUB_SCOPE}
+        search={search}
+        title={ACTS_TITLE}
+        origin={origin}
+        mayRead={plans}
+      />
     </RequireAnyScreenPermission>
   );
 };

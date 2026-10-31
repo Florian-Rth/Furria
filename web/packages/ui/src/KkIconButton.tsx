@@ -1,6 +1,7 @@
 import IconButton from '@mui/material/IconButton';
-import type { ElementType, FC } from 'react';
+import type { ElementType, FC, MouseEvent } from 'react';
 import { focusRing } from './internal/focus-ring';
+import { tapArea } from './internal/tap-area';
 import type { KkIconName } from './KkIcon';
 import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
@@ -17,10 +18,11 @@ interface KkIconButtonProps {
   type?: 'button' | 'submit';
   disabled?: boolean;
   pressed?: boolean;
-  onClick?: () => void;
+  onClick?: (event: MouseEvent<HTMLElement>) => void;
   component?: ElementType;
   to?: string;
   params?: Record<string, string>;
+  search?: Record<string, string>;
   sx?: KkSx;
 }
 
@@ -35,9 +37,10 @@ export const KkIconButton: FC<KkIconButtonProps> = ({
   component,
   to,
   params,
+  search,
   sx,
 }) => {
-  const routeProps = component === undefined ? {} : { component, to, params };
+  const routeProps = component === undefined ? {} : { component, to, params, search };
 
   return (
     <IconButton
@@ -50,7 +53,7 @@ export const KkIconButton: FC<KkIconButtonProps> = ({
       {...routeProps}
       data-kk-icon-button
       sx={[
-        (theme) => ({ color: toggleInk(pressed), ...focusRing(theme) }),
+        (theme) => ({ color: toggleInk(pressed), ...focusRing(theme), ...tapArea() }),
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >

@@ -33,8 +33,9 @@ interface ActWishesSectionProps {
 }
 
 export const ActWishesSection: FC<ActWishesSectionProps> = ({ editor }) => {
+  const removeWish = editor.closed ? null : editor.removeWish;
   const lines = editor.draft.wishes.map((wish) => (
-    <ActWishLine key={wish.kind} wish={wish} onRemove={editor.removeWish} />
+    <ActWishLine key={wish.kind} wish={wish} onRemove={removeWish} />
   ));
   const meta = lines.length === 0 ? NONE : String(lines.length);
   const chooseStrength = (id: string): void => {
@@ -54,24 +55,27 @@ export const ActWishesSection: FC<ActWishesSectionProps> = ({ editor }) => {
   const list = lines.length === 0 ? null : <Stack sx={{ gap: 0.5, minWidth: 0 }}>{lines}</Stack>;
 
   const metaLine = <KkMeta>{meta}</KkMeta>;
+  const newWish = editor.closed ? null : (
+    <Stack sx={{ gap: 1, minWidth: 0 }} aria-label={NEW_WISH_LABEL}>
+      <KkChoiceChips
+        label={WISH_STRENGTH_LABEL}
+        choices={STRENGTHS}
+        value={editor.wishStrength}
+        onChange={chooseStrength}
+      />
+      <KkChoiceChips
+        label={WISH_KIND_LABEL}
+        choices={KIND_CHOICES}
+        value={null}
+        onChange={addWish}
+      />
+    </Stack>
+  );
 
   return (
     <PlannerDetailSection title={WISHES_TITLE} action={metaLine}>
       {list}
-      <Stack sx={{ gap: 1, minWidth: 0 }} aria-label={NEW_WISH_LABEL}>
-        <KkChoiceChips
-          label={WISH_STRENGTH_LABEL}
-          choices={STRENGTHS}
-          value={editor.wishStrength}
-          onChange={chooseStrength}
-        />
-        <KkChoiceChips
-          label={WISH_KIND_LABEL}
-          choices={KIND_CHOICES}
-          value={null}
-          onChange={addWish}
-        />
-      </Stack>
+      {newWish}
     </PlannerDetailSection>
   );
 };

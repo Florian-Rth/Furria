@@ -28,7 +28,7 @@ const TILE_MIN = '4.5rem';
 const AVATAR_EXTENT = '2.5rem';
 const FLIP = { duration: 0.42, ease: [0.22, 0.61, 0.36, 1] } as const;
 
-const tilePaint = (theme: Theme): CSSObject => ({
+const staticTilePaint: CSSObject = {
   width: '100%',
   flexDirection: 'column',
   alignItems: 'center',
@@ -36,13 +36,17 @@ const tilePaint = (theme: Theme): CSSObject => ({
   py: 0.75,
   px: 0.25,
   borderRadius: `${kkTokens.radius.base}px`,
-  ...focusRing(theme),
   '& [data-kk-cast-face]': { transition: 'filter 200ms ease-out, opacity 200ms ease-out' },
-  '&[aria-pressed="false"] [data-kk-cast-face]': { filter: 'grayscale(1)', opacity: 0.45 },
-  '&[aria-pressed="false"] [data-kk-cast-name]': {
+  '&[data-kk-cast-state="out"] [data-kk-cast-face]': { filter: 'grayscale(1)', opacity: 0.45 },
+  '&[data-kk-cast-state="out"] [data-kk-cast-name]': {
     textDecoration: 'line-through',
     color: 'text.secondary',
   },
+};
+
+const tilePaint = (theme: Theme): CSSObject => ({
+  ...staticTilePaint,
+  ...focusRing(theme),
   '@media (hover: hover)': {
     '&:hover': { backgroundColor: 'action.hover' },
     '&:hover [data-kk-cast-name]': redInk(theme),
@@ -79,14 +83,17 @@ const addPaint = (theme: Theme): CSSObject => ({
   },
 });
 
-interface KkCastGridProps {
+type KkCastGridAddTile =
+  | { addLabel: string; onAdd: () => void }
+  | { addLabel?: never; onAdd?: never };
+
+type KkCastGridProps = KkCastGridAddTile & {
   label: string;
   tiles: readonly KkCastTile[];
-  addLabel: string;
   onToggle: (id: number) => void;
-  onAdd: () => void;
+  readOnly?: boolean;
   sx?: KkSx;
-}
+};
 
 export const KkCastGrid: FC<KkCastGridProps> = ({
   label,
@@ -94,6 +101,7 @@ export const KkCastGrid: FC<KkCastGridProps> = ({
   addLabel,
   onToggle,
   onAdd,
+  readOnly = false,
   sx,
 }) => {
   const toggle = (event: MouseEvent<HTMLButtonElement>): void => {
@@ -112,46 +120,82 @@ export const KkCastGrid: FC<KkCastGridProps> = ({
         </Box>
       );
 
+    const tileLabel = `${tile.name}, ${tile.stateLabel}`;
+    const face = (
+      <>
+        <Box
+          component={motion.span}
+          initial={false}
+          animate={{ rotateY: out ? 360 : 0 }}
+          transition={FLIP}
+          data-kk-cast-face
+          sx={{ display: 'inline-flex' }}
+        >
+          <KkAvatar initials={tile.initials} image={tile.portrait} component="span" />
+        </Box>
+        <Box
+          component="span"
+          data-kk-cast-name
+          sx={{
+            maxWidth: '100%',
+            typography: 'caption',
+            fontWeight: 700,
+            lineHeight: 1.15,
+            color: 'text.primary',
+            textAlign: 'center',
+            overflowWrap: 'anywhere',
+          }}
+        >
+          {tile.name}
+        </Box>
+        {note}
+      </>
+    );
+    const tileBody = readOnly ? (
+      <Stack
+        role="img"
+        aria-label={tileLabel}
+        data-kk-cast-tile={tile.id}
+        data-kk-cast-state={tile.state}
+        sx={staticTilePaint}
+      >
+        {face}
+      </Stack>
+    ) : (
+      <ButtonBase
+        aria-pressed={!out}
+        aria-label={tileLabel}
+        data-kk-cast-tile={tile.id}
+        data-kk-cast-state={tile.state}
+        onClick={toggle}
+        sx={tilePaint}
+      >
+        {face}
+      </ButtonBase>
+    );
+
     return (
       <Stack component="li" key={tile.id} sx={{ minWidth: 0 }}>
-        <ButtonBase
-          aria-pressed={!out}
-          aria-label={`${tile.name}, ${tile.stateLabel}`}
-          data-kk-cast-tile={tile.id}
-          data-kk-cast-state={tile.state}
-          onClick={toggle}
-          sx={tilePaint}
-        >
-          <Box
-            component={motion.span}
-            initial={false}
-            animate={{ rotateY: out ? 360 : 0 }}
-            transition={FLIP}
-            data-kk-cast-face
-            sx={{ display: 'inline-flex' }}
-          >
-            <KkAvatar initials={tile.initials} image={tile.portrait} component="span" />
-          </Box>
-          <Box
-            component="span"
-            data-kk-cast-name
-            sx={{
-              maxWidth: '100%',
-              typography: 'caption',
-              fontWeight: 700,
-              lineHeight: 1.15,
-              color: 'text.primary',
-              textAlign: 'center',
-              overflowWrap: 'anywhere',
-            }}
-          >
-            {tile.name}
-          </Box>
-          {note}
-        </ButtonBase>
+        {tileBody}
       </Stack>
     );
   });
+  const addTile =
+    readOnly || onAdd === undefined ? null : (
+      <Stack component="li" sx={{ minWidth: 0 }}>
+        <ButtonBase onClick={onAdd} data-kk-cast-add-tile sx={addPaint}>
+          <Stack component="span" data-kk-cast-add>
+            <KkIcon name="add" size="small" />
+          </Stack>
+          <Box
+            component="span"
+            sx={{ typography: 'caption', fontWeight: 800, lineHeight: 1.15, textAlign: 'center' }}
+          >
+            {addLabel}
+          </Box>
+        </ButtonBase>
+      </Stack>
+    );
 
   return (
     <Box
@@ -172,19 +216,7 @@ export const KkCastGrid: FC<KkCastGridProps> = ({
       ]}
     >
       {items}
-      <Stack component="li" sx={{ minWidth: 0 }}>
-        <ButtonBase onClick={onAdd} data-kk-cast-add-tile sx={addPaint}>
-          <Stack component="span" data-kk-cast-add>
-            <KkIcon name="add" size="small" />
-          </Stack>
-          <Box
-            component="span"
-            sx={{ typography: 'caption', fontWeight: 800, lineHeight: 1.15, textAlign: 'center' }}
-          >
-            {addLabel}
-          </Box>
-        </ButtonBase>
-      </Stack>
+      {addTile}
     </Box>
   );
 };

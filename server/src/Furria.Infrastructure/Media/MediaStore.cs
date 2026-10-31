@@ -1,6 +1,7 @@
 using System.Diagnostics.Contracts;
 using Furria.Application.Media;
 using Furria.Application.News;
+using Furria.Application.Results;
 using Furria.Application.Website;
 using Furria.Core.Media;
 using Furria.Core.Website;
@@ -14,6 +15,11 @@ namespace Furria.Infrastructure.Media;
 
 public sealed class MediaStore
 {
+    private const string UnknownFileMessage = "Diese Datei gibt es nicht.";
+    private const string RefusedFileMessage = "Dieser Link ist ungültig oder abgelaufen.";
+
+    private static readonly Func<MediaOwner, bool> AnyOwner = _ => true;
+
     private readonly AppDbContext _dbContext;
     private readonly MediaRoot _root;
     private readonly GalleryService _gallery;
@@ -66,6 +72,17 @@ public sealed class MediaStore
         CancellationToken ct
     )
     {
+        var file = await FileOfAsync(mediaItemId, rendition, AnyOwner, ct);
+        return file.IsSuccess ? file.Value : null;
+    }
+
+    public async Task<Result<MediaFileDetails>> FileOfAsync(
+        int mediaItemId,
+        MediaRendition rendition,
+        Func<MediaOwner, bool> mayServe,
+        CancellationToken ct
+    )
+    {
         var item = await _dbContext
             .MediaItems.AsNoTracking()
             .Where(row => row.Id == mediaItemId)
@@ -79,6 +96,7 @@ public sealed class MediaStore
                     row.OwnerGroupId,
                     row.OwnerNewsPostId,
                     row.OwnerEventId,
+                    row.OwnerActId,
                     row.WebsitePicture == null
                         ? null
                         : new PictureSlotPosition(
@@ -92,18 +110,45 @@ public sealed class MediaStore
             ))
             .SingleOrDefaultAsync(ct);
         if (item is null || !MediaRenditions.Exists(item.Kind, rendition))
+            return Result<MediaFileDetails>.NotFound(UnknownFileMessage);
+        if (!mayServe(item.Owner))
+            return Result<MediaFileDetails>.Forbidden(RefusedFileMessage);
+
+        var served = ServedFileOf(item, rendition);
+        if (served is not null)
+            return Result<MediaFileDetails>.Success(served);
+
+        await RepairLostRenditionsAsync(item, ct);
+        return Result<MediaFileDetails>.NotFound(UnknownFileMessage);
+    }
+
+    private MediaFileDetails? ServedFileOf(ServedItemRow item, MediaRendition rendition)
+    {
+        var file = RenditionFileOf(item, rendition);
+        if (file.Exists)
+            return FileDetailsOf(item, rendition, file);
+
+        if (MediaRenditions.StandInFor(rendition) is not { } standIn)
             return null;
 
-        var file = new FileInfo(
-            _root.FullPathOf(MediaPaths.RenditionOf(item.StorageKey, rendition))
-        );
-        if (!file.Exists)
-        {
-            await RepairLostRenditionsAsync(item, ct);
-            return null;
-        }
+        var standInFile = RenditionFileOf(item, standIn);
+        return standInFile.Exists
+            ? FileDetailsOf(item, standIn, standInFile) with
+            {
+                IsStandIn = true,
+            }
+            : null;
+    }
 
-        return new MediaFileDetails
+    private FileInfo RenditionFileOf(ServedItemRow item, MediaRendition rendition) =>
+        new(_root.FullPathOf(MediaPaths.RenditionOf(item.StorageKey, rendition)));
+
+    private static MediaFileDetails FileDetailsOf(
+        ServedItemRow item,
+        MediaRendition rendition,
+        FileInfo file
+    ) =>
+        new()
         {
             Owner = item.Owner,
             FullPath = file.FullName,
@@ -111,7 +156,6 @@ public sealed class MediaStore
             DownloadName = DownloadNameOf(item.OriginalFileName, rendition),
             LastModified = file.LastWriteTimeUtc,
         };
-    }
 
     private async Task RepairLostRenditionsAsync(ServedItemRow item, CancellationToken ct)
     {
@@ -241,6 +285,7 @@ public sealed class MediaStore
             OwnerNewsPostId =
                 command.Owner.Kind == MediaOwnerKind.NewsPost ? command.Owner.Id : null,
             OwnerEventId = command.Owner.Kind == MediaOwnerKind.Event ? command.Owner.Id : null,
+            OwnerActId = command.Owner.Kind == MediaOwnerKind.Act ? command.Owner.Id : null,
             Kind = command.Format.Kind,
             State = MediaItemState.Processing,
             OriginalFileName = command.OriginalFileName,

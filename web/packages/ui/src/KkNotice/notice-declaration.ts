@@ -16,6 +16,7 @@ export interface KkNoticeRequest {
   icon?: KkIconName;
   detail?: readonly string[];
   actions?: KkNoticeActions;
+  group?: string;
 }
 
 export interface KkSystemNotice extends KkNoticeRequest {

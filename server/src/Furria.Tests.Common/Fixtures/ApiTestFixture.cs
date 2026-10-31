@@ -16,6 +16,8 @@ using Furria.Core.Groups;
 using Furria.Core.Identity;
 using Furria.Core.Media;
 using Furria.Core.Roles;
+using Furria.Core.RunningOrders;
+using Furria.Core.Studio;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Identity;
@@ -24,6 +26,7 @@ using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Registry;
+using Furria.Infrastructure.RunningOrders;
 using Furria.MediaWorker;
 using Furria.MediaWorker.Heartbeat;
 using Furria.MediaWorker.Jobs;
@@ -35,6 +38,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
@@ -239,6 +244,10 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         );
         builder.UseSetting(
             $"{SignInRateLimitOptions.SectionName}:{nameof(SignInRateLimitOptions.FailedLoginsPerIp)}",
+            PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
+        );
+        builder.UseSetting(
+            $"{SignInRateLimitOptions.SectionName}:{nameof(SignInRateLimitOptions.RejectedRefreshesPerToken)}",
             PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
         );
         builder.UseSetting(
@@ -500,6 +509,13 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await seeder.StartAsync(ct);
     }
 
+    public async Task MigrateDatabaseToAsync(string migration, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        await db.GetService<IMigrator>().MigrateAsync(migration, cancellationToken: ct);
+    }
+
     public Task RunDatabaseMigratorAsync(CancellationToken ct = default) =>
         Services.GetServices<IHostedService>().OfType<DatabaseMigrator>().Single().StartAsync(ct);
 
@@ -519,6 +535,17 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         await db.Database.ExecuteSqlAsync($"DELETE FROM account WHERE id = {accountId}", ct);
+    }
+
+    public async Task CancelEventDirectlyAsync(int eventId, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"UPDATE event SET cancelled_at = now() WHERE calendar_entry_id = {eventId}",
+            ct
+        );
     }
 
     public async Task DeleteMediaItemDirectlyAsync(int mediaItemId, CancellationToken ct = default)
@@ -570,6 +597,18 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         return Path.Combine(_mediaRoot, MediaPaths.RenditionOf(storageKey, rendition));
     }
 
+    public async Task<string> SoundProfileOfAsync(int mediaItemId, CancellationToken ct = default)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var storageKey = await db
+            .MediaItems.Where(item => item.Id == mediaItemId)
+            .Select(item => item.StorageKey)
+            .SingleAsync(ct);
+        return Path.Combine(_mediaRoot, MediaPaths.SoundProfileOf(storageKey));
+    }
+
     public async Task PlaceRenditionAsync(
         int mediaItemId,
         MediaRendition rendition,
@@ -588,6 +627,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         while (
             await runner.RunNextAsync(MediaKind.Photo, ct)
             | await runner.RunNextAsync(MediaKind.Video, ct)
+            | await runner.RunNextAsync(MediaKind.Audio, ct)
         ) { }
     }
 
@@ -643,6 +683,59 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await db.SaveChangesAsync(ct);
     }
 
+    public async Task RenderSongDirectlyAsync(
+        int mediaItemId,
+        double durationSeconds,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var item = await db.MediaItems.SingleAsync(row => row.Id == mediaItemId, ct);
+        item.State = MediaItemState.Ready;
+        item.DurationSeconds = durationSeconds;
+        item.RenderedAt = TimeProvider.GetUtcNow();
+        db.MediaJobs.RemoveRange(db.MediaJobs.Where(job => job.MediaItemId == mediaItemId));
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task AddFinalTrackDirectlyAsync(
+        int actId,
+        int mediaItemId,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        db.ActFinalTracks.Add(
+            new ActFinalTrack
+            {
+                ActId = actId,
+                MediaItemId = mediaItemId,
+                Version = 1,
+            }
+        );
+        await db.SaveChangesAsync(ct);
+    }
+
+    public async Task<int> AddActVideoDirectlyAsync(
+        int actId,
+        int mediaItemId,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var video = new ActVideo { ActId = actId, MediaItemId = mediaItemId };
+        db.ActVideos.Add(video);
+        await db.SaveChangesAsync(ct);
+
+        return video.Id;
+    }
+
     public async Task<long> WriteLogEntryDirectlyAsync(
         LogSource source,
         LogEntryLevel level,
@@ -692,6 +785,9 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     public void SweepAbandonedUploads() =>
         Services.GetServices<IHostedService>().OfType<AbandonedUploadSweep>().Single().Sweep();
 
+    public Task FreezeActCastsAsync(CancellationToken ct = default) =>
+        Services.GetServices<IHostedService>().OfType<ActCastFreeze>().Single().FreezeAsync(ct);
+
     public Task PurgeGalleryBinAsync(CancellationToken ct = default) =>
         Services.GetServices<IHostedService>().OfType<GalleryBinPurge>().Single().PurgeAsync(ct);
 
@@ -704,6 +800,34 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
 
         await db.Database.ExecuteSqlAsync($"DELETE FROM person WHERE id = {personId}", ct);
+    }
+
+    public async Task ChangeEveningCastDirectlyAsync(
+        int eventId,
+        int actId,
+        int personId,
+        CastChange change,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        var appearanceId = await db
+            .Appearances.Where(appearance =>
+                appearance.CalendarEntryId == eventId && appearance.ActId == actId
+            )
+            .Select(appearance => appearance.Id)
+            .SingleAsync(ct);
+        db.AppearanceCastChanges.Add(
+            new AppearanceCastChange
+            {
+                AppearanceId = appearanceId,
+                PersonId = personId,
+                Change = change,
+            }
+        );
+        await db.SaveChangesAsync(ct);
     }
 
     public async Task AddRolePermissionDirectlyAsync(

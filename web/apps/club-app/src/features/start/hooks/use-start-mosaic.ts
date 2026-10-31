@@ -1,11 +1,11 @@
 import { useIsMobile } from '@furria/ui/use-is-mobile';
-import type { StartPanel } from '../schemas';
+import type { BoardPanel } from '../schemas';
 import type { MosaicTile, TileSpan } from '../start-mosaic';
 import { toMosaic } from '../start-mosaic';
 import type { StartBoard } from './use-start-view';
 
 export interface PlacedTile {
-  panel: StartPanel;
+  panel: BoardPanel;
   order: number;
   span: TileSpan;
 }
@@ -24,7 +24,7 @@ export interface StartMosaic {
 const placedOf =
   (board: StartBoard, stacked: boolean) =>
   (tile: MosaicTile): PlacedTile[] => {
-    const panel = board.start.panels.find((candidate) => candidate.kind === tile.kind);
+    const panel = board.panels.find((candidate) => candidate.kind === tile.kind);
 
     if (panel === undefined) {
       return [];
@@ -37,7 +37,7 @@ const placedOf =
   };
 
 export const useStartMosaic = (board: StartBoard): StartMosaic => {
-  const mosaic = toMosaic(board.start);
+  const mosaic = toMosaic(board.panels);
   const stacked = useIsMobile();
   const place = placedOf(board, stacked);
 

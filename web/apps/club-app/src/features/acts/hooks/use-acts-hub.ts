@@ -1,18 +1,23 @@
+import type { KkChoiceChip } from '@furria/ui/KkChoiceChips';
 import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
 import { useCloseOnEscape } from '@/features/events/hooks/use-close-on-escape';
 import { useActsQuery, useRunningOrdersQuery } from '@/features/running-order/api';
+import { usePlansRunningOrder } from '@/features/running-order/hooks/use-plans-running-order';
 import type { ActsResponse, CatalogueAct } from '@/features/running-order/schemas';
 import { appRouteApi } from '@/features/session/app-route';
+import { relevantSessionYear } from '@/lib/club';
 import { useNow } from '@/lib/use-now';
 import type { ActSection, ActsScope } from '../acts-catalogue';
-import { filterCountsOf, scopedActsOf, visibleSectionsOf } from '../acts-catalogue';
-import { PLANNER_PATH } from '../acts-origin';
+import { filterCountsOf, matchesQuery, scopedActsOf, visibleSectionsOf } from '../acts-catalogue';
+import { toClosedSessionNote, toSessionLabel } from '../acts-copy';
+import { ACT_PAGE_PATH, actPageSearchOf, PLANNER_PATH } from '../acts-origin';
 import type { ActOverlap, PersonLoad } from '../acts-overlap';
 import { carriersAmongOf, overlapsOf, personInActsOf, personLoadsOf } from '../acts-overlap';
 import { upcomingRunsOf } from '../acts-runs';
-import type { ActSelection, ActsFilter, ActsSearch } from '../schemas';
+import { isSessionClosed, sessionSearchOf } from '../acts-session';
+import type { ActsFilter, ActsSearch } from '../schemas';
 import { NEW_ACT } from '../schemas';
 
 const NO_ACTS: readonly CatalogueAct[] = [];
@@ -21,6 +26,11 @@ const CLOCK_MS = 60_000;
 export interface ActsHub {
   query: UseQueryResult<ActsResponse, Error>;
   scope: ActsScope;
+  sessionValue: string;
+  sessionChoices: KkChoiceChip[];
+  showsSessionChoice: boolean;
+  closedSessionNote: string | null;
+  isSideOpen: boolean;
   acts: readonly CatalogueAct[];
   filter: ActsFilter;
   counts: Record<ActsFilter, number>;
@@ -30,34 +40,39 @@ export interface ActsHub {
   people: number;
   carriers: PersonLoad[];
   spotlight: PersonLoad | null;
-  selection: ActSelection | null;
-  selectedAct: CatalogueAct | null;
+  isCreating: boolean;
   isWide: boolean;
-  fromEventId: number | null;
   chooseFilter: (filter: ActsFilter) => void;
+  chooseSession: (value: string) => void;
   open: (actId: number) => void;
   openNew: () => void;
   close: () => void;
-  created: (actId: number) => void;
+  created: (actId: number, sessionYear: number | null) => void;
   toggleSpotlight: (personId: number) => void;
   clearSpotlight: () => void;
   reload: () => void;
 }
 
-export const useActsHub = (scope: ActsScope, search: ActsSearch): ActsHub => {
-  const query = useActsQuery();
-  const runningOrders = useRunningOrdersQuery();
+export const useActsHub = (scope: ActsScope, search: ActsSearch, mayRead: boolean): ActsHub => {
+  const plans = usePlansRunningOrder();
+  const query = useActsQuery(search.session ?? null, mayRead);
+  const runningOrders = useRunningOrdersQuery(mayRead && plans);
   const { q } = appRouteApi.useSearch();
   const navigate = useNavigate();
   const isWide = useIsWideScreen();
   const now = useNow(CLOCK_MS);
   const all = query.data?.acts ?? NO_ACTS;
   const acts = scopedActsOf(all, scope);
+  const searched = acts.filter((act) => matchesQuery(act, q ?? null));
   const filter = search.filter ?? 'all';
-  const selection = search.act ?? null;
-  const selectedAct =
-    typeof selection === 'number' ? (acts.find((act) => act.actId === selection) ?? null) : null;
+  const isCreating = search.act === NEW_ACT;
   const spotlightId = search.person ?? null;
+  const sessionYear = query.data?.sessionYear ?? null;
+  const relevantYear = relevantSessionYear(now);
+  const sessionChoices = (query.data?.sessionYears ?? []).map((year) => ({
+    id: String(year),
+    label: toSessionLabel(year),
+  }));
 
   const go = (patch: Partial<ActsSearch>, replace: boolean): void => {
     void navigate({
@@ -71,37 +86,55 @@ export const useActsHub = (scope: ActsScope, search: ActsSearch): ActsHub => {
     go({ act: undefined }, true);
   };
 
-  useCloseOnEscape(isWide && selection !== null, close);
+  const openAct = (actId: number, replace: boolean): void => {
+    void navigate({
+      to: ACT_PAGE_PATH,
+      params: { actId: String(actId) },
+      search: actPageSearchOf(scope, search),
+      replace,
+    });
+  };
+
+  useCloseOnEscape(isWide && isCreating, close);
 
   return {
     query,
     scope,
+    sessionValue: String(sessionYear),
+    sessionChoices,
+    showsSessionChoice: sessionChoices.length > 1,
+    closedSessionNote:
+      sessionYear !== null && isSessionClosed(sessionYear, relevantYear)
+        ? toClosedSessionNote(sessionYear)
+        : null,
+    isSideOpen: isWide && isCreating,
     acts,
     filter,
-    counts: filterCountsOf(acts),
+    counts: filterCountsOf(searched),
     sections: visibleSectionsOf(acts, filter, q ?? null),
     overlaps: overlapsOf(all),
     runs: upcomingRunsOf(runningOrders.data?.runningOrders ?? [], now),
-    people: personLoadsOf(acts).length,
-    carriers: carriersAmongOf(all, acts),
+    people: personLoadsOf(searched).length,
+    carriers: carriersAmongOf(all, searched),
     spotlight: personInActsOf(spotlightId, all),
-    selection,
-    selectedAct,
+    isCreating,
     isWide,
-    fromEventId: search.from ?? null,
     chooseFilter: (next) => {
       go({ filter: next === 'all' ? undefined : next }, true);
     },
+    chooseSession: (value) => {
+      go({ session: sessionSearchOf(Number(value), relevantYear), act: undefined }, true);
+    },
     open: (actId) => {
-      go({ act: actId }, selection !== null);
+      openAct(actId, false);
     },
     openNew: () => {
-      go({ act: NEW_ACT }, selection !== null);
+      go({ act: NEW_ACT }, false);
     },
     close,
     created: (actId) => {
       if (search.from === undefined) {
-        go({ act: actId }, true);
+        openAct(actId, true);
         return;
       }
 

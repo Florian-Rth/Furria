@@ -162,6 +162,7 @@ public sealed class GetSystemStatus : EndpointWithoutRequest<GetSystemStatusResp
             IsAlive = worker.IsAlive,
             PhotoMediaItemId = worker.PhotoMediaItemId,
             VideoMediaItemId = worker.VideoMediaItemId,
+            AudioMediaItemId = worker.AudioMediaItemId,
         };
 
     private static SystemServiceDto ToDto(BackgroundRunSummary run) =>
@@ -365,6 +366,8 @@ public sealed record SystemWorkerDto
     public required int? PhotoMediaItemId { get; init; }
 
     public required int? VideoMediaItemId { get; init; }
+
+    public required int? AudioMediaItemId { get; init; }
 }
 
 public sealed record SystemServiceDto

@@ -19,6 +19,7 @@ using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.Roles;
 using Furria.Infrastructure.RunningOrders;
 using Furria.Infrastructure.Start;
+using Furria.Infrastructure.Studio;
 using Furria.Infrastructure.Website;
 using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.Identity;
@@ -100,6 +101,24 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ActCatalogue>();
         services.AddScoped<ActService>();
         services.AddScoped<ActAccess>();
+        services.AddScoped<ActStudioReader>();
+        services.AddScoped<ActEveningReader>();
+        services.AddScoped<ActTrainingReader>();
+        services.AddScoped<ActGlanceReader>();
+        services.AddScoped<ActEveningService>();
+        services.AddScoped<ActStudioGate>();
+        services.AddScoped<ActStudioService>();
+        services.AddScoped<ActAttendanceService>();
+        services.AddScoped<ActSongService>();
+        services.AddScoped<ActSpotService>();
+        services.AddScoped<ActChoreographyService>();
+        services.AddScoped<ChoreographyHistory>();
+        services.AddScoped<ActTimelineReader>();
+        services.AddScoped<ActStepService>();
+        services.AddScoped<ActPartService>();
+        services.AddScoped<ActVideoService>();
+        services.AddScoped<ActFinalTrackService>();
+        services.AddSingleton<SoundProfiles>();
         services.AddScoped<RunningOrderService>();
         services.AddScoped<EventPictures>();
         services.AddScoped<ClubRecordService>();
@@ -158,6 +177,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<SystemLogService>();
         services.AddHostedService<LogEntryPurge>();
         services.AddHostedService<MediaStorageSurvey>();
+        services.AddHostedService<ActCastFreeze>();
         services.Configure<DataProtectionTokenProviderOptions>(options =>
             options.TokenLifespan = PasswordResetService.LinkLifetime
         );

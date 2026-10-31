@@ -47,9 +47,23 @@ export const catalogueRowStateOf = (draft: RunningOrderDraft, actId: number): Ca
 export const pickedInSectionOf = (section: CatalogueSection, draft: RunningOrderDraft): number =>
   section.acts.filter((act) => isInEvening(draft, act.actId)).length;
 
-export const catalogueSectionsOf = (acts: readonly CatalogueAct[]): CatalogueSection[] => {
+export const archivedLeftOutOf = (
+  acts: readonly CatalogueAct[],
+  draft: RunningOrderDraft,
+  actIds: readonly number[],
+): number =>
+  acts.filter((act) => act.archived && actIds.includes(act.actId) && !isInEvening(draft, act.actId))
+    .length;
+
+export const archivedActIdsOf = (acts: readonly CatalogueAct[]): Set<number> =>
+  new Set(acts.filter((act) => act.archived).map((act) => act.actId));
+
+export const catalogueSectionsOf = (
+  acts: readonly CatalogueAct[],
+  draft: RunningOrderDraft,
+): CatalogueSection[] => {
   const available = acts
-    .filter((act) => !act.archived)
+    .filter((act) => !act.archived || isInEvening(draft, act.actId))
     .sort((left, right) => COLLATOR.compare(left.name, right.name));
   const groups = new Map<number, CatalogueSection & { kind: 'group' }>();
   const points: CatalogueAct[] = [];

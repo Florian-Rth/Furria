@@ -71,11 +71,10 @@ export const KkShell: FC<KkShellProps> = ({
   const headClearance = stance?.headClearance ?? BAR_CLEARANCE;
   const footClearance = stance?.footClearance ?? gutter;
   const indexClearance = stance?.indexClearance ?? NO_CLEARANCE;
-  const silent = stance?.kind === 'fullscreen';
-  const arrivalBlocks = silent ? FIRST_ARRIVAL_BLOCK : screen.arrivalBlocks;
+  const fullscreen = stance?.kind === 'fullscreen';
+  const arrivalBlocks = fullscreen ? FIRST_ARRIVAL_BLOCK : screen.arrivalBlocks;
 
   const nav = section === null ? null : <KkShellNav section={section} />;
-  const notice = silent ? null : <KkShellNotice />;
 
   const scrollClearance = {
     html: {
@@ -127,7 +126,7 @@ export const KkShell: FC<KkShellProps> = ({
               footClearance={footClearance}
             />
             <KkShellFoot raise={keyboardInset}>
-              {notice}
+              <KkShellNotice />
               <KkShellActionSlot ref={foot.hold} />
               {nav}
             </KkShellFoot>

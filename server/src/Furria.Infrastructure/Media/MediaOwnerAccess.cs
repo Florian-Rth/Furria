@@ -13,6 +13,8 @@ public sealed class MediaOwnerAccess
     private const string UnknownGroup = "There is no such group.";
     private const string UnknownNewsPost = "There is no such news post.";
     private const string UnknownEvent = "There is no such event.";
+    private const string UnknownAct = "There is no such act.";
+    private const string ArchivedAct = "The act is archived and takes no more media.";
     private const string NotPermitted = "The caller may not add media to this owner.";
 
     private readonly AppDbContext _dbContext;
@@ -47,6 +49,7 @@ public sealed class MediaOwnerAccess
                 owner.Id!.Value,
                 ct
             ),
+            MediaOwnerKind.Act => await MayUploadActMediaAsync(accountId, owner.Id!.Value, ct),
             MediaOwnerKind.Website => PermittedIf(
                 await _authorizer.IsGrantedAsync(accountId, FurriaPermissions.GalleryPublish, ct)
             ),
@@ -109,6 +112,36 @@ public sealed class MediaOwnerAccess
             await _authorizer.IsGrantedAsync(accountId, FurriaPermissions.EventsManage, ct)
         );
     }
+
+    private async Task<Result> MayUploadActMediaAsync(
+        int accountId,
+        int actId,
+        CancellationToken ct
+    )
+    {
+        var act = await _dbContext
+            .Acts.Where(row => row.Id == actId)
+            .Select(row => new { row.GroupId, IsArchived = row.ArchivedAt != null })
+            .SingleOrDefaultAsync(ct);
+        if (act is null)
+            return Result.NotFound(UnknownAct);
+        if (act.IsArchived)
+            return Result.Conflict(ArchivedAct);
+
+        return PermittedIf(
+            (
+                act.GroupId is { } groupId
+                && await _authorizer.CanAdministerGroupAsync(accountId, groupId, ct)
+            ) || await IsCoEditorAsync(accountId, actId, ct)
+        );
+    }
+
+    private async Task<bool> IsCoEditorAsync(int accountId, int actId, CancellationToken ct) =>
+        await _authorizer.ActivePersonIdAsync(accountId, ct) is { } personId
+        && await _dbContext.ActCoEditors.AnyAsync(
+            editor => editor.ActId == actId && editor.PersonId == personId,
+            ct
+        );
 
     private static Result PermittedIf(bool isPermitted) =>
         isPermitted ? Result.Success() : Result.Forbidden(NotPermitted);

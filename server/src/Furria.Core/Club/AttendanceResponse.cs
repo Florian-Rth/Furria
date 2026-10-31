@@ -12,6 +12,10 @@ public sealed class AttendanceResponse : ITimestamped
 
     public AttendanceAnswer Answer { get; set; }
 
+    public bool IsRecordedOnBehalf { get; set; }
+
+    public int? RecordedByPersonId { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
@@ -19,4 +23,6 @@ public sealed class AttendanceResponse : ITimestamped
     public CalendarEntry? CalendarEntry { get; set; }
 
     public Person? Person { get; set; }
+
+    public Person? RecordedBy { get; set; }
 }

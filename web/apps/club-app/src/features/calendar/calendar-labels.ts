@@ -4,6 +4,7 @@ import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
 import { toIsoDayLabel, toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
 import { toIsoDay } from '@/lib/day';
+import { asksForAnswer } from './calendar-agenda';
 import type { CalendarOwnerOption } from './calendar-authoring';
 import { NO_VENUE_ID } from './calendar-authoring';
 import type { CalendarEntry, CalendarEntryVisibility, RunningVenue } from './schemas';
@@ -75,7 +76,7 @@ export const toEntryFacts = (entry: CalendarEntry): KkConfirmFact[] => {
 };
 
 export const toDeleteConsequence = (entry: CalendarEntry): string => {
-  if (entry.asksForResponse) {
+  if (asksForAnswer(entry)) {
     return `„${entry.title}“ wird mit allen Zu- und Absagen gelöscht.`;
   }
 

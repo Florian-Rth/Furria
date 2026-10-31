@@ -11,6 +11,7 @@ import type { ActsHub } from '../hooks/use-acts-hub';
 import { ActsCarriers } from './ActsCarriers';
 import { ActsHealthStrip } from './ActsHealthStrip';
 import { ActsList } from './ActsList';
+import { ActsSessionChoice } from './ActsSessionChoice';
 import { ActsSide } from './ActsSide';
 
 interface ActsBodyProps {
@@ -33,13 +34,13 @@ export const ActsBody: FC<ActsBodyProps> = ({ hub }) => {
     );
   }
 
-  const isSideOpen = hub.isWide && hub.selection !== null;
-  const masterSpan = isSideOpen ? 7 : 12;
+  const masterSpan = hub.isSideOpen ? 7 : 12;
   const list =
     hub.sections.length === 0 ? <KkNote>{EMPTY_FILTER_NOTE}</KkNote> : <ActsList hub={hub} />;
 
   return (
     <Stack sx={{ gap: 2, minWidth: 0 }}>
+      <ActsSessionChoice hub={hub} />
       <ActsHealthStrip hub={hub} />
       <KkMasterDetail>
         <KkMasterDetail.Master span={masterSpan}>

@@ -9,4 +9,8 @@ public enum MediaRendition
     Poster = 5,
     Video = 6,
     Uncropped = 7,
+    Normalised = 8,
+    Preview = 9,
+    Peaks = 10,
+    Compact = 11,
 }

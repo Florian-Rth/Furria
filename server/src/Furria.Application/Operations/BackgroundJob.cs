@@ -10,4 +10,5 @@ public enum BackgroundJob
     SignedOutMailRequestWorker = 7,
     LogEntryPurge = 8,
     MediaStorageSurvey = 9,
+    ActCastFreeze = 10,
 }
