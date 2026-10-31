@@ -452,6 +452,19 @@ internal static class StudioSteps
         return (response, response.IsSuccessStatusCode ? result.Version : 0);
     }
 
+    internal static async Task AdoptMatchedAsync(
+        HttpClient client,
+        int actId,
+        int finalTrackId,
+        int songMediaItemId
+    )
+    {
+        (
+            await TuneOffsetAsync(client, actId, finalTrackId, songMediaItemId, 0)
+        ).EnsureSuccessStatusCode();
+        (await AdoptAsync(client, actId, finalTrackId)).EnsureSuccessStatusCode();
+    }
+
     internal static Task<HttpResponseMessage> AdoptAsync(
         HttpClient client,
         int actId,

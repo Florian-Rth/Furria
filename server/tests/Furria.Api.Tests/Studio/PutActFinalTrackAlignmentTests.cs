@@ -45,9 +45,9 @@ public sealed class PutActFinalTrackAlignmentTests : IClassFixture<ApiTestFixtur
         var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
         var actId = await GardetanzAsync(ctx, ct);
         var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        await SongMediaOfAsync(_fixture, admin, actId, 60, ct);
+        var song = await SongMediaOfAsync(_fixture, admin, actId, 60, ct);
         var (firstId, firstMedia) = await FinalTrackOfAsync(_fixture, admin, actId, 90, ct);
-        await AdoptAsync(admin, actId, firstId);
+        await AdoptMatchedAsync(admin, actId, firstId, song);
         var (secondId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 92, ct);
 
         var response = await TuneOffsetAsync(admin, actId, secondId, firstMedia, 2);
@@ -80,7 +80,7 @@ public sealed class PutActFinalTrackAlignmentTests : IClassFixture<ApiTestFixtur
         var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
         var song = await SongMediaOfAsync(_fixture, admin, actId, 60, ct);
         var (finalTrackId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 90, ct);
-        await AdoptAsync(admin, actId, finalTrackId);
+        await AdoptMatchedAsync(admin, actId, finalTrackId, song);
 
         var response = await TuneOffsetAsync(admin, actId, finalTrackId, song, 3);
 

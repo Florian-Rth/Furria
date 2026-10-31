@@ -44,8 +44,9 @@ public sealed class DeleteActFinalTrackByIdTests : IClassFixture<ApiTestFixture>
         var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
         var actId = await GardetanzAsync(ctx, ct);
         var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+        var song = await SongMediaOfAsync(_fixture, admin, actId, 60, ct);
         var (finalTrackId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 90, ct);
-        await AdoptAsync(admin, actId, finalTrackId);
+        await AdoptMatchedAsync(admin, actId, finalTrackId, song);
 
         var response = await DeleteAsync(admin, actId, finalTrackId);
 
