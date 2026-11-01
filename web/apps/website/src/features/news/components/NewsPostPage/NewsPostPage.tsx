@@ -1,3 +1,4 @@
+import { KkNewsArticleHeader } from '@furria/ui/KkNewsArticleHeader';
 import { KkNewsText } from '@furria/ui/KkNewsText';
 import { PageLayout } from '@furria/ui/PageLayout';
 import type { FC } from 'react';
@@ -5,7 +6,6 @@ import { newTabNote } from '@/features/news/news-content';
 import { collectMentionCards } from '@/features/news/news-mentions';
 import type { NewsArticle } from '@/lib/public-news/schemas';
 import { NewsRelated } from '../NewsRelated/NewsRelated';
-import { NewsPostHeader } from './internal/layout/NewsPostHeader';
 import { NewsShareRow } from './internal/layout/NewsShareRow';
 import { NewsTies } from './internal/layout/NewsTies';
 import { NewsMentionContext } from './internal/logic/news-mention-context';
@@ -14,9 +14,7 @@ import { NewsCopyLinkButton } from './internal/ui/NewsCopyLinkButton';
 import { NewsEventTie } from './internal/ui/NewsEventTie';
 import { NewsMention } from './internal/ui/NewsMention';
 import { NewsPostBackLink } from './internal/ui/NewsPostBackLink';
-import { NewsPostHeadline } from './internal/ui/NewsPostHeadline';
 import { NewsPostHero } from './internal/ui/NewsPostHero';
-import { NewsPostLead } from './internal/ui/NewsPostLead';
 import { NewsPostMeta } from './internal/ui/NewsPostMeta';
 import { NewsShareLabel } from './internal/ui/NewsShareLabel';
 import { NewsWhatsAppShareButton } from './internal/ui/NewsWhatsAppShareButton';
@@ -40,12 +38,12 @@ export const NewsPostPage: FC<NewsPostPageProps> = ({ article }) => {
   return (
     <PageLayout>
       <PageLayout.Prose>
-        <NewsPostHeader>
+        <KkNewsArticleHeader>
           <NewsPostBackLink />
           <NewsPostMeta article={article} />
-          <NewsPostHeadline post={article} />
-          <NewsPostLead post={article} />
-        </NewsPostHeader>
+          <KkNewsArticleHeader.Headline title={article.title} />
+          <KkNewsArticleHeader.Lead teaser={article.teaser} />
+        </KkNewsArticleHeader>
         <NewsPostHero article={article} />
         <NewsMentionContext value={mentionCards}>
           <KkNewsText text={article.text} newTabNote={newTabNote} mentionView={NewsMention} />

@@ -1,4 +1,5 @@
 import Collapse from '@mui/material/Collapse';
+import LinearProgress from '@mui/material/LinearProgress';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useState } from 'react';
@@ -20,6 +21,7 @@ const CARD_DENSITY = 1;
 const INSTANT = 0;
 const NO_DISMISS = (): void => undefined;
 const HEAD_GAP = 0.5;
+const PERCENT = 100;
 
 interface KkNoticeCardProps {
   notice: KkNoticeRequest;
@@ -70,6 +72,18 @@ export const KkNoticeCard: FC<KkNoticeCardProps> = ({ notice, labels, onDismiss 
 
   const inlineActions = expandable ? null : actions;
 
+  const progress = notice.progress ?? null;
+  const progressVariant = progress === null ? 'indeterminate' : 'determinate';
+  const progressPercent = (progress ?? 0) * PERCENT;
+  const progressBar =
+    notice.progress === undefined ? null : (
+      <LinearProgress
+        variant={progressVariant}
+        value={progressPercent}
+        sx={{ mb: 1, borderRadius: `${kkTokens.radius.bar}px` }}
+      />
+    );
+
   const body = expandable ? (
     <Collapse in={expanded} timeout={collapseTimeout} unmountOnExit>
       <Stack sx={{ minWidth: 0, gap: detailGap, pt: 0.5, pb: 1 }}>
@@ -97,6 +111,7 @@ export const KkNoticeCard: FC<KkNoticeCardProps> = ({ notice, labels, onDismiss 
         {inlineActions}
         {dismiss}
       </Stack>
+      {progressBar}
       {body}
     </KkChrome>
   );

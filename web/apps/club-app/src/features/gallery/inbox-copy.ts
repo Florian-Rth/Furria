@@ -28,6 +28,7 @@ export const NEW_ALBUM_FIELD = 'Neues Album';
 export const NEW_ALBUM_ACTION = 'Anlegen';
 export const MY_INBOX = 'Mein Eingang';
 export const OWNERLESS_INBOX = 'Ohne Besitzer';
+export const LINK_INBOX = 'Sammellink';
 export const DONE_HEADLINE = 'EINGANG LEER';
 
 export const basketFieldOf = (slot: number): string => `Korb ${slot + 1}`;
@@ -79,6 +80,9 @@ export const tallyLineOf = (
 
 export const doneSummaryOf = (filed: number, rejected: number): string =>
   `${countLabel(filed)} abgelegt · ${countLabel(rejected)} verworfen`;
+
+export const frameLabelOf = (number: number, uploaderName: string | null): string =>
+  uploaderName === null ? `Bild ${number}` : `Bild ${number} · von ${uploaderName}`;
 
 export const inboxTitleOf = (owner: string | null): string =>
   owner === null ? 'Eingang' : `Eingang · ${owner}`;

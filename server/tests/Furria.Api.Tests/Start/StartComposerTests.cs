@@ -1,6 +1,7 @@
 using Furria.Application.Management;
 using Furria.Application.Start;
 using Furria.Core.Club;
+using Furria.Core.News;
 using Furria.Infrastructure.Start;
 using Xunit;
 
@@ -32,6 +33,7 @@ public sealed class StartComposerTests
         Mine = [],
         GroupMoments = [],
         Albums = [],
+        News = [],
     };
 
     private static readonly StartCandidates CappedCalendar = Nothing with
@@ -134,6 +136,7 @@ public sealed class StartComposerTests
                 Mine = [MineOn(StartMineKind.NewKey, TuesdayEvening.Today)],
                 Announcements = [AnnouncementPublishedAt(1, DaysAgo(1))],
                 GroupMoments = [JubileeOf(1, 25)],
+                News = [NewsPublishedAt("umzug", DaysAgo(2))],
             },
             TuesdayEvening
         );
@@ -143,6 +146,7 @@ public sealed class StartComposerTests
                 StartPanelKind.Calendar,
                 StartPanelKind.Mine,
                 StartPanelKind.Announcements,
+                StartPanelKind.News,
                 StartPanelKind.Groups,
             ],
             KindsOf(start)
@@ -730,6 +734,16 @@ public sealed class StartComposerTests
 
     private static IReadOnlyList<StartPanelKind> KindsOf(StartDetails start) =>
         [.. start.Panels.Select(panel => panel.Kind)];
+
+    private static StartNewsSummary NewsPublishedAt(string slug, DateTimeOffset publishedAt) =>
+        new()
+        {
+            Slug = slug,
+            Title = $"Meldung {slug}",
+            Category = NewsCategory.Session,
+            PublishedAt = publishedAt,
+            Picture = null,
+        };
 
     private static StartAnnouncementSummary AnnouncementPublishedAt(
         int announcementId,

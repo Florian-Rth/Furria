@@ -365,6 +365,7 @@ const UPLOAD_FAILURES: Record<Exclude<UploadFailure, 'notAccepted'>, string> = {
   tooLarge: 'zu groß',
   notAllowed: 'nicht erlaubt',
   gone: 'Auftritt gibt es nicht mehr',
+  ended: 'nicht mehr angenommen',
   interrupted: 'abgebrochen',
 };
 

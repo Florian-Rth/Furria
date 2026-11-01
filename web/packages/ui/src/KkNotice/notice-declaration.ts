@@ -17,6 +17,7 @@ export interface KkNoticeRequest {
   detail?: readonly string[];
   actions?: KkNoticeActions;
   group?: string;
+  progress?: number | null;
 }
 
 export interface KkSystemNotice extends KkNoticeRequest {

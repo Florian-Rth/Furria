@@ -235,6 +235,9 @@ export const usualsByDay = (
   return byDay;
 };
 
+const holdsAppointments = (item: CalendarDayItem): boolean =>
+  item.kind === 'day' && item.lines.length > 0;
+
 export const toCalendarSections = (
   entries: readonly CalendarEntry[],
   usuals: readonly UsualTraining[],
@@ -297,21 +300,42 @@ export const toCalendarSections = (
 
   flushGap();
 
-  return sections;
+  const todayMonday = mondayOf(todayDay);
+
+  return sections.filter(
+    (section) => section.monday === todayMonday || section.items.some(holdsAppointments),
+  );
 };
 
 export const sectionItemsOf = (sections: readonly CalendarSection[]): CalendarDayItem[] =>
   sections.flatMap((section) => section.items);
 
-export const anchorKeyOf = (
+export interface CalendarLanding {
+  key: string;
+  day: string;
+}
+
+const landingAt = (item: CalendarDayItem, isoDay: string): CalendarLanding => {
+  if (item.kind === 'day') {
+    return { key: item.key, day: item.isoDay };
+  }
+
+  return {
+    key: item.key,
+    day: isoDay >= item.fromDay && isoDay <= item.toDay ? isoDay : item.fromDay,
+  };
+};
+
+export const landingOf = (
   sections: readonly CalendarSection[],
   isoDay: string,
-): string | null => {
-  const hit = sectionItemsOf(sections).find((item) =>
-    item.kind === 'day' ? item.isoDay >= isoDay : item.toDay >= isoDay,
-  );
+): CalendarLanding | null => {
+  const items = sectionItemsOf(sections);
+  const hit =
+    items.find((item) => (item.kind === 'day' ? item.isoDay : item.toDay) >= isoDay) ??
+    items.at(-1);
 
-  return hit?.key ?? null;
+  return hit === undefined ? null : landingAt(hit, isoDay);
 };
 
 export type CalendarWeekName = 'current' | 'next' | 'previous' | 'numbered';

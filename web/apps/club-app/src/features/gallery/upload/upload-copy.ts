@@ -21,6 +21,7 @@ const FAILURE_LINES: Record<TileNote, string> = {
   notAccepted: 'kein Foto oder Video',
   notAllowed: 'nicht erlaubt',
   gone: 'Album gibt es nicht mehr',
+  ended: 'Link beendet',
   interrupted: 'abgebrochen — antippen zum Wiederholen',
 };
 

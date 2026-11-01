@@ -49,7 +49,14 @@ public sealed class GetGalleryItems : Endpoint<GetGalleryItemsRequest, GetGaller
             UploadedAt = item.UploadedAt,
             Camera = item.Camera,
             OriginalFileName = item.OriginalFileName,
-            Urls = GalleryMediaUrls.Of(_signer, item.MediaItemId, item.Kind, item.RenderedAt),
+            UploaderName = item.UploaderName,
+            Urls = GalleryMediaUrls.Of(
+                _signer,
+                item.MediaItemId,
+                item.Kind,
+                item.RenderedAt,
+                item.Owner
+            ),
         };
 }
 
@@ -98,6 +105,8 @@ public sealed record GetGalleryItemsItemDto
     public required string? Camera { get; init; }
 
     public required string OriginalFileName { get; init; }
+
+    public required string? UploaderName { get; init; }
 
     public required GalleryMediaUrlsDto Urls { get; init; }
 }

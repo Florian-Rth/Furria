@@ -30,7 +30,14 @@ public sealed record GalleryItemSummary
 
     public required GalleryUploader? Uploader { get; init; }
 
+    public required string? UploaderName { get; init; }
+
+    public required int? UploadLinkId { get; init; }
+
     public required int? SelectionPosition { get; init; }
 
     public required string? Caption { get; init; }
+
+    public MediaOwner Owner =>
+        UploadLinkId is { } uploadLinkId ? MediaOwner.UploadLink(uploadLinkId) : MediaOwner.Gallery;
 }

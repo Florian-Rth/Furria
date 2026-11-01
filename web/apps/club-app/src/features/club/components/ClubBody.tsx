@@ -12,6 +12,7 @@ import { ClubSkeleton } from './ClubSkeleton';
 import { ClubStats } from './ClubStats';
 import { GalleryPanel } from './GalleryPanel';
 import { KeyPanel } from './KeyPanel';
+import { NewsPanel } from './NewsPanel';
 
 export const ClubBody: FC = () => {
   const clubHub = useClubHubQuery();
@@ -34,6 +35,7 @@ export const ClubBody: FC = () => {
       <KkPanelStack>
         <ClubStats />
         <AnnouncementsPanel />
+        <NewsPanel />
         <CalendarPanel />
         <GalleryPanel />
         <BoardPanel />

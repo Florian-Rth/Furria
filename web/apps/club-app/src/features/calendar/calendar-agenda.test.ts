@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
 import {
-  anchorKeyOf,
   dayToneOf,
   earlierWindowOf,
   fetchSpanOf,
   initialWindowOf,
   isoWeekOf,
+  landingOf,
   laterWindowOf,
   leadEntryOf,
   linesByDay,
@@ -163,7 +163,7 @@ describe('toCalendarSections', () => {
     entry(4, at('2026-10-24', '08:00'), at('2026-10-25', '18:00')),
   ];
 
-  it('groups days by week, collapses empty days and splits trips across days', () => {
+  it('groups days by week, collapses empty days, splits trips and hides weeks without appointments', () => {
     const sections = toCalendarSections(entries, [], window, '2026-10-20');
 
     expect(
@@ -191,31 +191,30 @@ describe('toCalendarSections', () => {
         'week-2026-10-26',
         ['gap 2026-10-26..2026-10-30', 'day 2026-10-31 3-2026-10-31', 'gap 2026-11-01..2026-11-01'],
       ],
-      ['week-2026-11-02', ['gap 2026-11-02..2026-11-02']],
     ]);
   });
 
-  it('keeps today and landmarks even without entries', () => {
+  it.each([
+    ['only usual training times', [], [usual(3, at('2026-11-17', '19:30'))], '2026-11-02'],
+    ['only a landmark', [], [], '2026-11-02'],
+    ['nothing', [], [], '2026-11-02'],
+  ])('hides a week holding %s', (_, weekEntries, weekUsuals, todayDay) => {
     const sections = toCalendarSections(
-      [],
-      [],
-      { from: '2026-11-10', to: '2026-11-12' },
-      '2026-11-12',
+      weekEntries,
+      weekUsuals,
+      { from: '2026-11-09', to: '2026-11-22' },
+      todayDay,
     );
 
-    expect(sections.flatMap((section) => section.items.map((item) => item.key))).toEqual([
-      'gap-2026-11-10',
-      'day-2026-11-11',
-      'day-2026-11-12',
-    ]);
+    expect(sections.map((section) => section.key)).toEqual([]);
   });
 
-  it('keeps a day that only holds a usual training time and lists it there', () => {
+  it('keeps the week of today without appointments, with today, landmarks and usual training times', () => {
     const sections = toCalendarSections(
       [],
-      [usual(3, at('2026-11-10', '19:30'))],
-      { from: '2026-11-09', to: '2026-11-10' },
-      '2026-11-09',
+      [usual(3, at('2026-11-12', '19:30'))],
+      { from: '2026-11-09', to: '2026-11-15' },
+      '2026-11-10',
     );
 
     expect(
@@ -225,18 +224,58 @@ describe('toCalendarSections', () => {
         ),
       ),
     ).toEqual([
-      ['day-2026-11-09', []],
-      ['day-2026-11-10', [3]],
+      ['gap-2026-11-09'],
+      ['day-2026-11-10', []],
+      ['day-2026-11-11', []],
+      ['day-2026-11-12', [3]],
+      ['gap-2026-11-13'],
+    ]);
+  });
+
+  it('lists usual training times inside a week that holds appointments', () => {
+    const sections = toCalendarSections(
+      [entry(9, at('2026-11-18', '19:00'), null)],
+      [usual(3, at('2026-11-17', '19:30'))],
+      { from: '2026-11-16', to: '2026-11-22' },
+      '2026-11-02',
+    );
+
+    expect(
+      sections.flatMap((section) =>
+        section.items.map((item) =>
+          item.kind === 'day' ? [item.key, item.usuals.map((held) => held.groupId)] : [item.key],
+        ),
+      ),
+    ).toEqual([
+      ['gap-2026-11-16'],
+      ['day-2026-11-17', [3]],
+      ['day-2026-11-18', []],
+      ['gap-2026-11-19'],
     ]);
   });
 
   it.each([
-    ['2026-10-20', 'day-2026-10-20'],
-    ['2026-10-21', 'gap-2026-10-21'],
-    ['2026-10-27', 'gap-2026-10-26'],
-    ['2026-12-01', null],
-  ])('anchors %s at %s', (day, key) => {
-    expect(anchorKeyOf(toCalendarSections(entries, [], window, '2026-10-20'), day)).toBe(key);
+    ['2026-10-20', { key: 'day-2026-10-20', day: '2026-10-20' }],
+    ['2026-10-21', { key: 'gap-2026-10-21', day: '2026-10-21' }],
+    ['2026-10-27', { key: 'gap-2026-10-26', day: '2026-10-27' }],
+    ['2026-11-02', { key: 'gap-2026-11-01', day: '2026-11-01' }],
+  ])('lands %s at %o', (day, landing) => {
+    expect(landingOf(toCalendarSections(entries, [], window, '2026-10-20'), day)).toEqual(landing);
+  });
+
+  it('lands a jump into a hidden week on the next week with appointments', () => {
+    const sections = toCalendarSections(
+      [entry(1, at('2026-11-02', '19:00'), null), entry(2, at('2026-11-25', '19:00'), null)],
+      [],
+      { from: '2026-11-02', to: '2026-11-29' },
+      '2026-11-02',
+    );
+
+    expect(landingOf(sections, '2026-11-12')).toEqual({ key: 'gap-2026-11-23', day: '2026-11-23' });
+  });
+
+  it('lands nowhere without any shown day', () => {
+    expect(landingOf([], '2026-11-12')).toBeNull();
   });
 });
 

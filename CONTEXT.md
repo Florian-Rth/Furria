@@ -628,7 +628,8 @@ Session, Lena.") with its number as one big flap number beside it — days to go
 no number — and one line of facts (member since, her functions, a round join anniversary, a closed
 lap of sessions). It flips in full on every visit. Below: her **week** (seven days and „später",
 one mark per date; a day opens the calendar on that day) and **one tile per kind** — her dates, the
-Aushänge new to her, what is new on her own record, her groups' jubilees, the gallery, club work —
+Aushänge new to her, what is new on her own record, her groups' jubilees, the gallery, the newest news post of the last
+14 days that she did not write herself (ruled 2026-11-01), club work —
 each one fact line per item, detail in sheets. Answers she still owes show as one ring on the dates
 tile and are given together in one sheet. Tiles are frosted panes over a poster that follows the
 season (run-up to the 11.11., the 11.11., the hall season, the hot days, Aschermittwoch, the off
@@ -639,7 +640,7 @@ Start is dismissed by hand: every item ends by itself — the one thing Start ho
 elsewhere is a to-do **marked seen** where its work is done (ruled 2026-10-06, L3). A **frozen
 visit**: after her first touch nothing on Start is added, removed or reordered — it only changes
 state in place; device memory may only quiet, never add (ruled 2026-10-02, L2).
-_UI copy_: Start (nav, the first default destination since L3); tiles KALENDER · AUSHÄNGE · DU · GRUPPEN · GALERIE · ZU ERLEDIGEN; *Deine offenen Antworten*;
+_UI copy_: Start (nav, the first default destination since L3); tiles KALENDER · AUSHÄNGE · DU · AKTUELLES · GRUPPEN · GALERIE · ZU ERLEDIGEN; *Deine offenen Antworten*;
 Zusage · Vielleicht · Absage, always in this order
 _Avoid_: dashboard, feed, inbox, „Termin", „Programm"
 
@@ -1221,8 +1222,9 @@ _Avoid_: tag, section
 
 **News workbench**:
 The club app's own hub for **news**, beside club management, where news posts are written,
-published and withdrawn; open to whoever may manage news. Members read news on the website, never
-in the club app (ruled 2026-10-09, L7b shaping).
+published and withdrawn; open to whoever may manage news. Members also read the published news
+in the club app — a panel on the club hub, a list and the article, exactly what the website shows,
+nothing member-only (Florian, 2026-11-01; reverses the L7b ruling of 2026-10-09).
 _UI copy_: Aktuelles
 _Avoid_: news admin, CMS, editor (for the hub)
 
@@ -1262,7 +1264,7 @@ _Avoid_: media library, file store, uploads (as a noun)
 One uploaded photo or video together with everything derived from it. It has **exactly one
 owner** — a person (her **portrait**), a group (its **group picture**), a **news post** (its
 **news picture**), an **event** (its **event picture**), a **session record** (its **session
-logo**), the **gallery** or the website (a **website picture**). Using
+logo**), the **gallery**, an **upload link** (its inbox) or the website (a **website picture**). Using
 one owner's picture for another *copies* it into a new media item, so a takedown or deletion in
 one use never breaks another.
 _Avoid_: file, asset, attachment, media (as a countable noun)
@@ -1295,6 +1297,21 @@ exactly while it sits in its uploader's inbox; placing it in an album takes it o
 the inbox is final. Uploading straight into an album skips it.
 _UI copy_: Eingang
 _Avoid_: unsorted, drafts, uploads, staging
+
+**Upload link** (`UploadLink`):
+A secret link someone who manages the **gallery** makes for one occasion and posts into the club's
+group chat, so that anyone holding it — member or not, signed in or not — can upload their photos
+and videos of the evening from their phone, with their name if they like. It is **open for 7 days**
+from its making and can be **ended early** by any gallery manager; after that it takes nothing new
+(an upload already under way may still finish, unless the link was ended). Whatever comes through
+it lands in **its own inbox**: the media items are owned by the link — not by the gallery, not by
+the uploader — so nothing a stranger sent shows anywhere in the gallery until a gallery manager
+has sorted it at the usual inbox desk; placing an item in an **album** hands it to the gallery,
+deleting it is final. Those who hold the link see only what they themselves sent in that visit,
+never anyone else's. Made 2026-11-01 (Florian: "der Fotograf erzeugt einen Link für die
+WhatsApp-Gruppe").
+_UI copy_: Sammellink; *Sammellink erstellen*, *beenden*, *offen bis*, *abgelaufen*, *beendet*
+_Avoid_: share link, guest upload, token, drop box, "Upload-Link" (in copy)
 
 **Bin**:
 Where gallery items deleted from an **album**, and whole albums, wait **30 days** before they are

@@ -21,6 +21,7 @@ import {
   DONE_HEADLINE,
   doneSummaryOf,
   EMPTY_BASKET,
+  frameLabelOf,
   inboxTitleOf,
   sceneQuestionOf,
   stampOf,
@@ -101,8 +102,6 @@ interface Settled {
   rejected: number;
 }
 
-const labelOf = (number: number): string => `Bild ${number}`;
-
 export const useGalleryInbox = (): GalleryInbox => {
   const navigate = useNavigate();
   const raiseNotice = useKkNotice();
@@ -137,7 +136,11 @@ export const useGalleryInbox = (): GalleryInbox => {
     const item = frame === undefined ? undefined : itemOf(frame.id);
     return frame === undefined || item === undefined
       ? null
-      : { id: String(frame.id), label: labelOf(numberOf(frame.id)), image: viewImageOf(item) };
+      : {
+          id: String(frame.id),
+          label: frameLabelOf(numberOf(frame.id), item.uploaderName ?? null),
+          image: viewImageOf(item),
+        };
   };
   const basketTitleOf = (slot: number): string | null => baskets.albumOf(slot)?.title ?? null;
 
@@ -239,7 +242,7 @@ export const useGalleryInbox = (): GalleryInbox => {
       return [
         {
           id: String(frame.id),
-          label: labelOf(numberOf(frame.id)),
+          label: frameLabelOf(numberOf(frame.id), item.uploaderName ?? null),
           thumb: thumbSourceOf(item.urls),
           verdict: verdict.kind,
           slot: verdict.kind === 'filed' ? verdict.slot + 1 : null,

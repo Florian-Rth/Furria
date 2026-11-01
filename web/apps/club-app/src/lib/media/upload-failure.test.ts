@@ -8,6 +8,7 @@ describe('transferStatusOf', () => {
     ['expired resume check', 404, 'HEAD', 'interrupted'],
     ['unknown request', 404, null, 'interrupted'],
     ['too large creation', 413, 'POST', 'tooLarge'],
+    ['transfer through an ended link', 410, 'PATCH', 'ended'],
     ['lost connection', null, null, 'interrupted'],
   ])('classifies a %s', (_, status, method, failure) => {
     expect(failureOfStatus(transferStatusOf(status, method))).toBe(failure);

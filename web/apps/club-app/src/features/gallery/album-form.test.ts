@@ -22,6 +22,7 @@ const albumOf = (overrides: Partial<AlbumDetails>): AlbumDetails => ({
   videos: 0,
   uploaders: [],
   items: [],
+  zipBytes: 0,
   zipUrl: '/zip',
   ...overrides,
 });

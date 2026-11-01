@@ -27,13 +27,14 @@ public sealed class MediaItemConfiguration : IEntityTypeConfiguration<MediaItem>
                 table.HasCheckConstraint(
                     "ck_media_item_owner",
                     $"""
-                    (owner_kind = '{MediaOwnerKind.Person}' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)
-                    OR (owner_kind = '{MediaOwnerKind.Group}' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)
-                    OR (owner_kind = '{MediaOwnerKind.NewsPost}' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)
-                    OR (owner_kind = '{MediaOwnerKind.Event}' AND owner_event_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)
-                    OR (owner_kind = '{MediaOwnerKind.Act}' AND owner_act_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_session_id IS NULL)
-                    OR (owner_kind = '{MediaOwnerKind.Session}' AND owner_session_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL)
-                    OR (owner_kind IN ('{MediaOwnerKind.Gallery}', '{MediaOwnerKind.Website}') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)
+                    (owner_kind = '{MediaOwnerKind.Person}' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)
+                    OR (owner_kind = '{MediaOwnerKind.Group}' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)
+                    OR (owner_kind = '{MediaOwnerKind.NewsPost}' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)
+                    OR (owner_kind = '{MediaOwnerKind.Event}' AND owner_event_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)
+                    OR (owner_kind = '{MediaOwnerKind.Act}' AND owner_act_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)
+                    OR (owner_kind = '{MediaOwnerKind.Session}' AND owner_session_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_upload_link_id IS NULL)
+                    OR (owner_kind IN ('{MediaOwnerKind.Gallery}', '{MediaOwnerKind.Website}') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)
+                    OR (owner_kind = '{MediaOwnerKind.UploadLink}' AND owner_upload_link_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)
                     """
                 );
                 table.HasCheckConstraint(
@@ -59,6 +60,10 @@ public sealed class MediaItemConfiguration : IEntityTypeConfiguration<MediaItem>
                     """
                 );
                 table.HasCheckConstraint("ck_media_item_byte_size", "byte_size > 0");
+                table.HasCheckConstraint(
+                    "ck_media_item_uploader_name",
+                    "uploader_name IS NULL OR (uploaded_by_person_id IS NULL AND length(btrim(uploader_name)) > 0)"
+                );
                 table.HasCheckConstraint(
                     "ck_media_item_album_owner",
                     $"album_id IS NULL OR owner_kind = '{MediaOwnerKind.Gallery}'"
@@ -145,6 +150,14 @@ public sealed class MediaItemConfiguration : IEntityTypeConfiguration<MediaItem>
             .HasConstraintName("fk_media_item_person_uploaded_by_person_id")
             .OnDelete(DeleteBehavior.SetNull);
 
+        builder
+            .HasOne(item => item.OwnerUploadLink)
+            .WithMany(link => link.InboxItems)
+            .HasForeignKey(item => item.OwnerUploadLinkId)
+            .HasConstraintName("fk_media_item_upload_link_owner_upload_link_id")
+            .OnDelete(DeleteBehavior.Cascade);
+        builder.Property(item => item.UploaderName).HasMaxLength(MediaItem.UploaderNameLength);
+
         builder.Property(item => item.Caption).HasMaxLength(MediaItem.CaptionLength);
         builder
             .HasOne(item => item.Album)
@@ -166,6 +179,7 @@ public sealed class MediaItemConfiguration : IEntityTypeConfiguration<MediaItem>
         builder.HasIndex(item => item.OwnerEventId);
         builder.HasIndex(item => item.OwnerActId);
         builder.HasIndex(item => item.OwnerSessionId);
+        builder.HasIndex(item => item.OwnerUploadLinkId);
         builder.HasIndex(item => item.UploadedByPersonId);
 
         builder.Property(item => item.CreatedAt).HasDefaultValueSql("now()");

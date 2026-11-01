@@ -11,21 +11,26 @@ export type HubAlbumMark =
   | { kind: 'selection'; count: number }
   | { kind: 'none' };
 
+export interface HubMarkSight {
+  selection: boolean;
+  publication: boolean;
+}
+
 export const isNewAlbum = (album: Pick<GalleryHubAlbum, 'createdAt'>, now: Date): boolean =>
   now.getTime() - Date.parse(album.createdAt) < NEW_ALBUM_DAYS * DAY_MS;
 
 export const albumMarkOf = (
   album: Pick<GalleryHubAlbum, 'createdAt' | 'isPublished' | 'selectionCount'>,
   now: Date,
-  showsSelection: boolean,
+  sight: HubMarkSight,
 ): HubAlbumMark => {
-  if (album.isPublished) {
+  if (sight.publication && album.isPublished) {
     return { kind: 'published' };
   }
   if (isNewAlbum(album, now)) {
     return { kind: 'new' };
   }
-  if (showsSelection && album.selectionCount > 0) {
+  if (sight.selection && album.selectionCount > 0) {
     return { kind: 'selection', count: album.selectionCount };
   }
   return { kind: 'none' };
@@ -73,6 +78,8 @@ export const inboxKeyOf = (owner: InboxOwner): string => {
       return `uploader-${owner.personId}`;
     case 'ownerless':
       return 'ownerless';
+    case 'link':
+      return `link-${owner.uploadLinkId}`;
   }
 };
 

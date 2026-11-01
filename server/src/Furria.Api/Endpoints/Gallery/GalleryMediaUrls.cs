@@ -12,12 +12,20 @@ public static class GalleryMediaUrls
         int mediaItemId,
         MediaKind kind,
         DateTimeOffset? renderedAt
+    ) => Of(signer, mediaItemId, kind, renderedAt, MediaOwner.Gallery);
+
+    public static GalleryMediaUrlsDto Of(
+        MediaUrlSigner signer,
+        int mediaItemId,
+        MediaKind kind,
+        DateTimeOffset? renderedAt,
+        MediaOwner owner
     )
     {
         string? UrlOf(MediaRendition rendition) =>
             MediaRenditions.Exists(kind, rendition)
                 ? MediaUrlVersions.Versioned(
-                    signer.UrlOf(mediaItemId, MediaOwner.Gallery, rendition),
+                    signer.UrlOf(mediaItemId, owner, rendition),
                     renderedAt
                 )
                 : null;

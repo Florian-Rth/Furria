@@ -14,6 +14,8 @@ there shows the install page (`features/app-install`) instead of the app.**
   minimal-ui or `navigator.standalone`), the Capacitor shell, and the mail-link flows
   `/reset-password` and `/invitation/*` — iOS opens mail links in Safari and cannot hand them to
   the installed app, so those one-shot flows finish in the tab and the gate takes over after.
+  Since 2026-11-01 also the upload-link page `/photos` (ADR-0034): it is opened from a group
+  chat, mostly by people without the app, and finishes in the tab.
 - **The install page picks the steps for the browser in hand** (`install-guide.ts`): one tap via
   `beforeinstallprompt` where the browser offers it (captured before React mounts by
   `public/install-boot.js`), else the menu steps of iPhone Safari (≤18 share bar, 26 "•••"

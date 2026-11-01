@@ -67,6 +67,7 @@ try
     builder.Services.AddSignedOutRateLimiting();
     builder.Services.AddAccountRateLimiting();
     builder.Services.AddSignInRateLimiting();
+    builder.Services.AddLinkUploadRateLimiting();
     builder.Services.AddAltchaProofOfWork();
     builder.Services.AddFastEndpoints();
     if (builder.Environment.IsDevelopment())
@@ -92,6 +93,7 @@ try
     app.UseAuthorization();
     app.UseRateLimiter();
     app.UseMediaUploads();
+    app.UseLinkUploads();
     app.UseFastEndpoints(c =>
     {
         c.Endpoints.RoutePrefix = "api";

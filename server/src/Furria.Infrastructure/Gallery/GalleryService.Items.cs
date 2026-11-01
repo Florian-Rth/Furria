@@ -89,7 +89,7 @@ public sealed partial class GalleryService
     {
         var actor = await ActorAsync(actorAccountId, ct);
 
-        return await GalleryItems()
+        return await SortableItems()
             .AsNoTracking()
             .Where(item => mediaItemIds.Contains(item.Id))
             .Where(item =>
@@ -132,6 +132,7 @@ public sealed partial class GalleryService
 
             item.AlbumId = command.AlbumId;
             item.PlacedAt = now;
+            HandToTheGallery(item);
             Unselect(item);
         }
 
@@ -234,7 +235,7 @@ public sealed partial class GalleryService
     private async Task<List<MediaItem>> TrackedItemsAsync(
         IReadOnlyCollection<int> mediaItemIds,
         CancellationToken ct
-    ) => await GalleryItems().Where(item => mediaItemIds.Contains(item.Id)).ToListAsync(ct);
+    ) => await SortableItems().Where(item => mediaItemIds.Contains(item.Id)).ToListAsync(ct);
 
     private async Task SaveWithdrawingEmptiedAsync(
         IReadOnlyCollection<int> albumIds,
@@ -297,6 +298,12 @@ public sealed partial class GalleryService
             CapturedAt = row.CapturedAt,
             RenderedAt = row.RenderedAt,
         };
+
+    private static void HandToTheGallery(MediaItem item)
+    {
+        item.OwnerKind = MediaOwnerKind.Gallery;
+        item.OwnerUploadLinkId = null;
+    }
 
     private static void Unselect(MediaItem item)
     {

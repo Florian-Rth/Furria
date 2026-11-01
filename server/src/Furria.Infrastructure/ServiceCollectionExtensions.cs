@@ -150,6 +150,7 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<AbandonedUploadSweep>();
         services.AddHostedService<MediaFileReaper>();
         services.AddScoped<GalleryService>();
+        services.AddScoped<UploadLinkService>();
         services.AddScoped<NewsService>();
         services.AddScoped<NewsPictures>();
         services.AddScoped<MediaCopier>();

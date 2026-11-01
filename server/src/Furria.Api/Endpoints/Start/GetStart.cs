@@ -7,6 +7,7 @@ using Furria.Application.Start;
 using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Core.Media;
+using Furria.Core.News;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Start;
@@ -77,6 +78,7 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
             GroupMoments = panel.GroupMoments?.Select(ToDto).ToList(),
             ToDos = panel.ToDos?.Select(ToDto).ToList(),
             Albums = panel.Albums?.Select(ToDto).ToList(),
+            News = panel.News?.Select(ToDto).ToList(),
         };
 
     private StartAlbumDto ToDto(StartAlbumSummary album) =>
@@ -103,6 +105,16 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
                     ),
                 }
                 : null,
+        };
+
+    private static StartNewsDto ToDto(StartNewsSummary post) =>
+        new()
+        {
+            Slug = post.Slug,
+            Title = post.Title,
+            Category = post.Category,
+            PublishedAt = post.PublishedAt,
+            Picture = PictureDto.From(post.Picture),
         };
 
     private static StartEntryDto ToDto(StartEntrySummary entry) =>
@@ -244,6 +256,21 @@ public sealed record StartPanelDto
     public required IReadOnlyList<StartToDoDto>? ToDos { get; init; }
 
     public required IReadOnlyList<StartAlbumDto>? Albums { get; init; }
+
+    public required IReadOnlyList<StartNewsDto>? News { get; init; }
+}
+
+public sealed record StartNewsDto
+{
+    public required string Slug { get; init; }
+
+    public required string Title { get; init; }
+
+    public required NewsCategory Category { get; init; }
+
+    public required DateTimeOffset PublishedAt { get; init; }
+
+    public required PictureDto? Picture { get; init; }
 }
 
 public sealed record StartAlbumDto

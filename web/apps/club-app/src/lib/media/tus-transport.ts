@@ -1,34 +1,25 @@
 import { isUnauthorizedStatus } from '@furria/api-client';
-import { DetailedError, defaultOptions, Upload } from 'tus-js-client';
+import { defaultOptions, Upload } from 'tus-js-client';
 import { apiUrlOf } from '@/lib/api/api-fetch';
 import { ensureFreshAccessToken, expireSession } from '@/lib/api/session/session-store';
 import type { UploadTransport } from './media-upload';
-import { transferStatusOf } from './upload-failure';
+import {
+  failureStatusOf,
+  isSameMetadata,
+  TUS_CHUNK_BYTES,
+  TUS_RETRY_DELAYS_MS,
+} from './tus-options';
 
 const UPLOADS_PATH = '/api/media/uploads';
 const MEDIA_ITEM_HEADER = 'Media-Item-Id';
-const CHUNK_BYTES = 16 * 1024 * 1024;
-const RETRY_DELAYS_MS = [0, 1_000, 3_000, 5_000, 10_000];
-
-const statusOf = (error: Error): number | null =>
-  error instanceof DetailedError
-    ? transferStatusOf(
-        error.originalResponse?.getStatus() ?? null,
-        error.originalRequest?.getMethod() ?? null,
-      )
-    : null;
-
-const isSameMetadata = (left: Record<string, string>, right: Record<string, string>): boolean =>
-  Object.keys(left).length === Object.keys(right).length &&
-  Object.entries(left).every(([key, value]) => right[key] === value);
 
 export const tusTransport: UploadTransport = (file, metadata, events) => {
   let mediaItemId: number | null = null;
   let isStopped = false;
   const upload = new Upload(file, {
     endpoint: apiUrlOf(UPLOADS_PATH),
-    chunkSize: CHUNK_BYTES,
-    retryDelays: RETRY_DELAYS_MS,
+    chunkSize: TUS_CHUNK_BYTES,
+    retryDelays: TUS_RETRY_DELAYS_MS,
     metadata,
     removeFingerprintOnSuccess: true,
     onBeforeRequest: async (request) => {
@@ -48,7 +39,7 @@ export const tusTransport: UploadTransport = (file, metadata, events) => {
       events.onSuccess(mediaItemId);
     },
     onError: (error) => {
-      events.onError(statusOf(error));
+      events.onError(failureStatusOf(error));
     },
   });
   void upload

@@ -965,6 +965,88 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Furria.Core.Gallery.UploadLink", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int?>("CreatedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("created_by_person_id");
+
+                    b.Property<DateTimeOffset>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("expires_at");
+
+                    b.Property<DateTimeOffset?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("revoked_at");
+
+                    b.Property<string>("Title")
+                        .IsRequired()
+                        .HasMaxLength(80)
+                        .HasColumnType("character varying(80)")
+                        .HasColumnName("title");
+
+                    b.Property<string>("TokenHash")
+                        .IsRequired()
+                        .HasMaxLength(43)
+                        .HasColumnType("character varying(43)")
+                        .HasColumnName("token_hash");
+
+                    b.Property<string>("TokenSeed")
+                        .IsRequired()
+                        .HasMaxLength(22)
+                        .HasColumnType("character varying(22)")
+                        .HasColumnName("token_seed");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("UploadCount")
+                        .HasColumnType("integer")
+                        .HasColumnName("upload_count");
+
+                    b.Property<long>("UploadedBytes")
+                        .HasColumnType("bigint")
+                        .HasColumnName("uploaded_bytes");
+
+                    b.HasKey("Id")
+                        .HasName("pk_upload_link");
+
+                    b.HasIndex("CreatedAt")
+                        .HasDatabaseName("ix_upload_link_created_at");
+
+                    b.HasIndex("CreatedByPersonId")
+                        .HasDatabaseName("ix_upload_link_created_by_person_id");
+
+                    b.HasIndex("TokenHash")
+                        .IsUnique()
+                        .HasDatabaseName("ix_upload_link_token_hash");
+
+                    b.ToTable("upload_link", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_upload_link_counts", "upload_count >= 0 AND uploaded_bytes >= 0");
+
+                            t.HasCheckConstraint("ck_upload_link_expiry", "expires_at > created_at");
+
+                            t.HasCheckConstraint("ck_upload_link_title", "length(btrim(title)) > 0");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.Groups.Group", b =>
                 {
                     b.Property<int>("Id")
@@ -1748,6 +1830,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("owner_session_id");
 
+                    b.Property<int?>("OwnerUploadLinkId")
+                        .HasColumnType("integer")
+                        .HasColumnName("owner_upload_link_id");
+
                     b.Property<DateTimeOffset?>("PlacedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("placed_at");
@@ -1784,6 +1870,11 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("uploaded_by_person_id");
 
+                    b.Property<string>("UploaderName")
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("uploader_name");
+
                     b.Property<int?>("Width")
                         .HasColumnType("integer")
                         .HasColumnName("width");
@@ -1811,6 +1902,9 @@ namespace Furria.Infrastructure.Migrations
 
                     b.HasIndex("OwnerSessionId")
                         .HasDatabaseName("ix_media_item_owner_session_id");
+
+                    b.HasIndex("OwnerUploadLinkId")
+                        .HasDatabaseName("ix_media_item_owner_upload_link_id");
 
                     b.HasIndex("PlacedAt")
                         .HasDatabaseName("ix_media_item_placed_at");
@@ -1844,9 +1938,9 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_media_item_kind", "kind IN ('Photo', 'Video', 'Audio')");
 
-                            t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)\nOR (owner_kind = 'NewsPost' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)\nOR (owner_kind = 'Event' AND owner_event_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)\nOR (owner_kind = 'Act' AND owner_act_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_session_id IS NULL)\nOR (owner_kind = 'Session' AND owner_session_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL)\nOR (owner_kind IN ('Gallery', 'Website') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)");
+                            t.HasCheckConstraint("ck_media_item_owner", "(owner_kind = 'Person' AND owner_person_id IS NOT NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'Group' AND owner_group_id IS NOT NULL AND owner_person_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'NewsPost' AND owner_news_post_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'Event' AND owner_event_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'Act' AND owner_act_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'Session' AND owner_session_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind IN ('Gallery', 'Website') AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL AND owner_upload_link_id IS NULL)\nOR (owner_kind = 'UploadLink' AND owner_upload_link_id IS NOT NULL AND owner_person_id IS NULL AND owner_group_id IS NULL AND owner_news_post_id IS NULL AND owner_event_id IS NULL AND owner_act_id IS NULL AND owner_session_id IS NULL)");
 
-                            t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery', 'NewsPost', 'Website', 'Event', 'Act', 'Session')");
+                            t.HasCheckConstraint("ck_media_item_owner_kind", "owner_kind IN ('Person', 'Group', 'Gallery', 'NewsPost', 'Website', 'Event', 'Act', 'Session', 'UploadLink')");
 
                             t.HasCheckConstraint("ck_media_item_photo_only", "owner_kind NOT IN ('Website', 'Event', 'Session') OR kind = 'Photo'");
 
@@ -1855,6 +1949,8 @@ namespace Furria.Infrastructure.Migrations
                             t.HasCheckConstraint("ck_media_item_selection", "selection_position IS NULL\nOR (selection_position > 0 AND album_id IS NOT NULL AND binned_at IS NULL AND kind = 'Photo')");
 
                             t.HasCheckConstraint("ck_media_item_state", "state IN ('Processing', 'Ready', 'Failed')");
+
+                            t.HasCheckConstraint("ck_media_item_uploader_name", "uploader_name IS NULL OR (uploaded_by_person_id IS NULL AND length(btrim(uploader_name)) > 0)");
                         });
                 });
 
@@ -4340,6 +4436,17 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("CoverMediaItem");
                 });
 
+            modelBuilder.Entity("Furria.Core.Gallery.UploadLink", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "CreatedBy")
+                        .WithMany()
+                        .HasForeignKey("CreatedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_upload_link_person_created_by_person_id");
+
+                    b.Navigation("CreatedBy");
+                });
+
             modelBuilder.Entity("Furria.Core.Groups.Group", b =>
                 {
                     b.HasOne("Furria.Core.Groups.GroupKind", "GroupKind")
@@ -4556,6 +4663,12 @@ namespace Furria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .HasConstraintName("fk_media_item_session_owner_session_id");
 
+                    b.HasOne("Furria.Core.Gallery.UploadLink", "OwnerUploadLink")
+                        .WithMany("InboxItems")
+                        .HasForeignKey("OwnerUploadLinkId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .HasConstraintName("fk_media_item_upload_link_owner_upload_link_id");
+
                     b.HasOne("Furria.Core.Identity.Person", "UploadedBy")
                         .WithMany()
                         .HasForeignKey("UploadedByPersonId")
@@ -4649,6 +4762,8 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("OwnerPerson");
 
                     b.Navigation("OwnerSession");
+
+                    b.Navigation("OwnerUploadLink");
 
                     b.Navigation("UploadedBy");
                 });
@@ -5437,6 +5552,11 @@ namespace Furria.Infrastructure.Migrations
             modelBuilder.Entity("Furria.Core.Gallery.Album", b =>
                 {
                     b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Furria.Core.Gallery.UploadLink", b =>
+                {
+                    b.Navigation("InboxItems");
                 });
 
             modelBuilder.Entity("Furria.Core.Groups.Group", b =>

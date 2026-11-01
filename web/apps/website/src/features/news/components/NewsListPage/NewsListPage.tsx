@@ -1,3 +1,4 @@
+import { KkNewsRowList } from '@furria/ui/KkNewsRowList';
 import { KkRule } from '@furria/ui/KkRule';
 import { KkSection } from '@furria/ui/KkSection';
 import { PageLayout } from '@furria/ui/PageLayout';
@@ -7,7 +8,6 @@ import { NewsLead } from '@/features/news/components/NewsLead';
 import { arrangeNewsFront, moreNewsLabel } from '@/features/news/news-content';
 import type { NewsSection } from '@/lib/public-news/schemas';
 import { NewsEventsBand } from '../NewsEventsBand/NewsEventsBand';
-import { NewsRowList } from './internal/layout/NewsRowList';
 import { NewsEmptyPanel } from './internal/ui/NewsEmptyPanel';
 import { NewsRow } from './internal/ui/NewsRow';
 import { NewsSessionSection } from './internal/ui/NewsSessionSection';
@@ -32,11 +32,11 @@ export const NewsListPage: FC<NewsListPageProps> = ({ sections }) => {
             {front.following.length > 0 && (
               <KkSection>
                 <KkSection.Header title={moreNewsLabel} />
-                <NewsRowList>
+                <KkNewsRowList>
                   {front.following.map((post) => (
                     <NewsRow key={post.slug} post={post} />
                   ))}
-                </NewsRowList>
+                </KkNewsRowList>
               </KkSection>
             )}
             {front.olderSections.map((section) => (

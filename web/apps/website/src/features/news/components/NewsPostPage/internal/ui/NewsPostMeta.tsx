@@ -1,8 +1,6 @@
-import { KkNewsCategoryChip } from '@furria/ui/KkNewsCategoryChip';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
+import { KkNewsArticleHeader } from '@furria/ui/KkNewsArticleHeader';
 import type { FC } from 'react';
-import { buildPostByline, categoryLabelOf, categoryToneOf } from '@/features/news/news-content';
+import { buildPostByline, newsCategoryOf } from '@/features/news/news-content';
 import type { NewsArticle } from '@/lib/public-news/schemas';
 
 interface NewsPostMetaProps {
@@ -10,16 +8,8 @@ interface NewsPostMetaProps {
 }
 
 export const NewsPostMeta: FC<NewsPostMetaProps> = ({ article }) => {
-  const tone = categoryToneOf(article.category);
-  const label = categoryLabelOf(article.category);
+  const category = newsCategoryOf(article.category);
   const byline = buildPostByline(article);
 
-  return (
-    <Stack direction="row" sx={{ gap: 1.5, alignItems: 'center', flexWrap: 'wrap' }}>
-      <KkNewsCategoryChip tone={tone} label={label} />
-      <Typography variant="caption" sx={{ fontWeight: 700, color: 'text.secondary' }}>
-        {byline}
-      </Typography>
-    </Stack>
-  );
+  return <KkNewsArticleHeader.Meta category={category} byline={byline} />;
 };

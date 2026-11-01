@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RequestAccessRouteImport } from './routes/request-access'
+import { Route as PhotosRouteImport } from './routes/photos'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InvitationRouteImport } from './routes/invitation'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
@@ -53,11 +54,13 @@ import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups_.$gro
 import { Route as AppGalleryWebsiteRouteImport } from './routes/_app/gallery_.website'
 import { Route as AppGalleryUploadRouteImport } from './routes/_app/gallery_.upload'
 import { Route as AppGalleryNewRouteImport } from './routes/_app/gallery_.new'
+import { Route as AppGalleryLinksRouteImport } from './routes/_app/gallery_.links'
 import { Route as AppGalleryInboxRouteImport } from './routes/_app/gallery_.inbox'
 import { Route as AppGalleryBinRouteImport } from './routes/_app/gallery_.bin'
 import { Route as AppGalleryAlbumIdRouteImport } from './routes/_app/gallery_.$albumId'
 import { Route as AppEventsNewRouteImport } from './routes/_app/events_.new'
 import { Route as AppEventsEventIdRouteImport } from './routes/_app/events_.$eventId'
+import { Route as AppClubNewsRouteImport } from './routes/_app/club_.news'
 import { Route as AppCalendarNewRouteImport } from './routes/_app/calendar_.new'
 import { Route as AppCalendarCalendarEntryIdRouteImport } from './routes/_app/calendar_.$calendarEntryId'
 import { Route as AppAnnouncementsNewRouteImport } from './routes/_app/announcements_.new'
@@ -89,6 +92,7 @@ import { Route as AppGalleryAlbumIdEditRouteImport } from './routes/_app/gallery
 import { Route as AppEventsEventIdManageRouteImport } from './routes/_app/events_.$eventId_.manage'
 import { Route as AppEventsEventIdEditRouteImport } from './routes/_app/events_.$eventId_.edit'
 import { Route as AppEventsEventIdAblaufRouteImport } from './routes/_app/events_.$eventId_.ablauf'
+import { Route as AppClubNewsSlugRouteImport } from './routes/_app/club_.news_.$slug'
 import { Route as AppActsActIdMusikRouteImport } from './routes/_app/acts_.$actId_.musik'
 import { Route as AppPersonalProfileSecurityRouteImport } from './routes/_app/_personal.profile_.security'
 import { Route as AppAffiliatedMembersPersonIdRouteImport } from './routes/_app/_affiliated.members_.$personId'
@@ -132,6 +136,11 @@ const ResetPasswordRoute = ResetPasswordRouteImport.update({
 const RequestAccessRoute = RequestAccessRouteImport.update({
   id: '/request-access',
   path: '/request-access',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const PhotosRoute = PhotosRouteImport.update({
+  id: '/photos',
+  path: '/photos',
   getParentRoute: () => rootRouteImport,
 } as any)
 const LoginRoute = LoginRouteImport.update({
@@ -341,6 +350,11 @@ const AppGalleryNewRoute = AppGalleryNewRouteImport.update({
   path: '/gallery/new',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGalleryLinksRoute = AppGalleryLinksRouteImport.update({
+  id: '/gallery_/links',
+  path: '/gallery/links',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGalleryInboxRoute = AppGalleryInboxRouteImport.update({
   id: '/gallery_/inbox',
   path: '/gallery/inbox',
@@ -364,6 +378,11 @@ const AppEventsNewRoute = AppEventsNewRouteImport.update({
 const AppEventsEventIdRoute = AppEventsEventIdRouteImport.update({
   id: '/events_/$eventId',
   path: '/events/$eventId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppClubNewsRoute = AppClubNewsRouteImport.update({
+  id: '/club_/news',
+  path: '/club/news',
   getParentRoute: () => AppRoute,
 } as any)
 const AppCalendarNewRoute = AppCalendarNewRouteImport.update({
@@ -530,6 +549,11 @@ const AppEventsEventIdEditRoute = AppEventsEventIdEditRouteImport.update({
 const AppEventsEventIdAblaufRoute = AppEventsEventIdAblaufRouteImport.update({
   id: '/events_/$eventId_/ablauf',
   path: '/events/$eventId/ablauf',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppClubNewsSlugRoute = AppClubNewsSlugRouteImport.update({
+  id: '/club_/news_/$slug',
+  path: '/club/news/$slug',
   getParentRoute: () => AppRoute,
 } as any)
 const AppActsActIdMusikRoute = AppActsActIdMusikRouteImport.update({
@@ -740,6 +764,7 @@ export interface FileRoutesByFullPath {
   '/forgot-password': typeof ForgotPasswordRoute
   '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
+  '/photos': typeof PhotosRoute
   '/request-access': typeof RequestAccessRoute
   '/reset-password': typeof ResetPasswordRoute
   '/$': typeof AppSplatRoute
@@ -760,11 +785,13 @@ export interface FileRoutesByFullPath {
   '/announcements/new': typeof AppAnnouncementsNewRoute
   '/calendar/$calendarEntryId': typeof AppCalendarCalendarEntryIdRoute
   '/calendar/new': typeof AppCalendarNewRoute
+  '/club/news': typeof AppClubNewsRoute
   '/events/$eventId': typeof AppEventsEventIdRoute
   '/events/new': typeof AppEventsNewRoute
   '/gallery/$albumId': typeof AppGalleryAlbumIdRoute
   '/gallery/bin': typeof AppGalleryBinRoute
   '/gallery/inbox': typeof AppGalleryInboxRoute
+  '/gallery/links': typeof AppGalleryLinksRoute
   '/gallery/new': typeof AppGalleryNewRoute
   '/gallery/upload': typeof AppGalleryUploadRoute
   '/gallery/website': typeof AppGalleryWebsiteRoute
@@ -792,6 +819,7 @@ export interface FileRoutesByFullPath {
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/profile/security': typeof AppPersonalProfileSecurityRoute
   '/acts/$actId/musik': typeof AppActsActIdMusikRoute
+  '/club/news/$slug': typeof AppClubNewsSlugRoute
   '/events/$eventId/ablauf': typeof AppEventsEventIdAblaufRoute
   '/events/$eventId/edit': typeof AppEventsEventIdEditRoute
   '/events/$eventId/manage': typeof AppEventsEventIdManageRoute
@@ -852,6 +880,7 @@ export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
+  '/photos': typeof PhotosRoute
   '/request-access': typeof RequestAccessRoute
   '/reset-password': typeof ResetPasswordRoute
   '/$': typeof AppSplatRoute
@@ -873,11 +902,13 @@ export interface FileRoutesByTo {
   '/announcements/new': typeof AppAnnouncementsNewRoute
   '/calendar/$calendarEntryId': typeof AppCalendarCalendarEntryIdRoute
   '/calendar/new': typeof AppCalendarNewRoute
+  '/club/news': typeof AppClubNewsRoute
   '/events/$eventId': typeof AppEventsEventIdRoute
   '/events/new': typeof AppEventsNewRoute
   '/gallery/$albumId': typeof AppGalleryAlbumIdRoute
   '/gallery/bin': typeof AppGalleryBinRoute
   '/gallery/inbox': typeof AppGalleryInboxRoute
+  '/gallery/links': typeof AppGalleryLinksRoute
   '/gallery/new': typeof AppGalleryNewRoute
   '/gallery/upload': typeof AppGalleryUploadRoute
   '/gallery/website': typeof AppGalleryWebsiteRoute
@@ -905,6 +936,7 @@ export interface FileRoutesByTo {
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/profile/security': typeof AppPersonalProfileSecurityRoute
   '/acts/$actId/musik': typeof AppActsActIdMusikRoute
+  '/club/news/$slug': typeof AppClubNewsSlugRoute
   '/events/$eventId/ablauf': typeof AppEventsEventIdAblaufRoute
   '/events/$eventId/edit': typeof AppEventsEventIdEditRoute
   '/events/$eventId/manage': typeof AppEventsEventIdManageRoute
@@ -967,6 +999,7 @@ export interface FileRoutesById {
   '/forgot-password': typeof ForgotPasswordRoute
   '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
+  '/photos': typeof PhotosRoute
   '/request-access': typeof RequestAccessRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_app/$': typeof AppSplatRoute
@@ -990,11 +1023,13 @@ export interface FileRoutesById {
   '/_app/announcements_/new': typeof AppAnnouncementsNewRoute
   '/_app/calendar_/$calendarEntryId': typeof AppCalendarCalendarEntryIdRoute
   '/_app/calendar_/new': typeof AppCalendarNewRoute
+  '/_app/club_/news': typeof AppClubNewsRoute
   '/_app/events_/$eventId': typeof AppEventsEventIdRoute
   '/_app/events_/new': typeof AppEventsNewRoute
   '/_app/gallery_/$albumId': typeof AppGalleryAlbumIdRoute
   '/_app/gallery_/bin': typeof AppGalleryBinRoute
   '/_app/gallery_/inbox': typeof AppGalleryInboxRoute
+  '/_app/gallery_/links': typeof AppGalleryLinksRoute
   '/_app/gallery_/new': typeof AppGalleryNewRoute
   '/_app/gallery_/upload': typeof AppGalleryUploadRoute
   '/_app/gallery_/website': typeof AppGalleryWebsiteRoute
@@ -1022,6 +1057,7 @@ export interface FileRoutesById {
   '/_app/_affiliated/members_/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/_app/_personal/profile_/security': typeof AppPersonalProfileSecurityRoute
   '/_app/acts_/$actId_/musik': typeof AppActsActIdMusikRoute
+  '/_app/club_/news_/$slug': typeof AppClubNewsSlugRoute
   '/_app/events_/$eventId_/ablauf': typeof AppEventsEventIdAblaufRoute
   '/_app/events_/$eventId_/edit': typeof AppEventsEventIdEditRoute
   '/_app/events_/$eventId_/manage': typeof AppEventsEventIdManageRoute
@@ -1085,6 +1121,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/invitation'
     | '/login'
+    | '/photos'
     | '/request-access'
     | '/reset-password'
     | '/$'
@@ -1105,11 +1142,13 @@ export interface FileRouteTypes {
     | '/announcements/new'
     | '/calendar/$calendarEntryId'
     | '/calendar/new'
+    | '/club/news'
     | '/events/$eventId'
     | '/events/new'
     | '/gallery/$albumId'
     | '/gallery/bin'
     | '/gallery/inbox'
+    | '/gallery/links'
     | '/gallery/new'
     | '/gallery/upload'
     | '/gallery/website'
@@ -1137,6 +1176,7 @@ export interface FileRouteTypes {
     | '/members/$personId'
     | '/profile/security'
     | '/acts/$actId/musik'
+    | '/club/news/$slug'
     | '/events/$eventId/ablauf'
     | '/events/$eventId/edit'
     | '/events/$eventId/manage'
@@ -1197,6 +1237,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/invitation'
     | '/login'
+    | '/photos'
     | '/request-access'
     | '/reset-password'
     | '/$'
@@ -1218,11 +1259,13 @@ export interface FileRouteTypes {
     | '/announcements/new'
     | '/calendar/$calendarEntryId'
     | '/calendar/new'
+    | '/club/news'
     | '/events/$eventId'
     | '/events/new'
     | '/gallery/$albumId'
     | '/gallery/bin'
     | '/gallery/inbox'
+    | '/gallery/links'
     | '/gallery/new'
     | '/gallery/upload'
     | '/gallery/website'
@@ -1250,6 +1293,7 @@ export interface FileRouteTypes {
     | '/members/$personId'
     | '/profile/security'
     | '/acts/$actId/musik'
+    | '/club/news/$slug'
     | '/events/$eventId/ablauf'
     | '/events/$eventId/edit'
     | '/events/$eventId/manage'
@@ -1311,6 +1355,7 @@ export interface FileRouteTypes {
     | '/forgot-password'
     | '/invitation'
     | '/login'
+    | '/photos'
     | '/request-access'
     | '/reset-password'
     | '/_app/$'
@@ -1334,11 +1379,13 @@ export interface FileRouteTypes {
     | '/_app/announcements_/new'
     | '/_app/calendar_/$calendarEntryId'
     | '/_app/calendar_/new'
+    | '/_app/club_/news'
     | '/_app/events_/$eventId'
     | '/_app/events_/new'
     | '/_app/gallery_/$albumId'
     | '/_app/gallery_/bin'
     | '/_app/gallery_/inbox'
+    | '/_app/gallery_/links'
     | '/_app/gallery_/new'
     | '/_app/gallery_/upload'
     | '/_app/gallery_/website'
@@ -1366,6 +1413,7 @@ export interface FileRouteTypes {
     | '/_app/_affiliated/members_/$personId'
     | '/_app/_personal/profile_/security'
     | '/_app/acts_/$actId_/musik'
+    | '/_app/club_/news_/$slug'
     | '/_app/events_/$eventId_/ablauf'
     | '/_app/events_/$eventId_/edit'
     | '/_app/events_/$eventId_/manage'
@@ -1428,6 +1476,7 @@ export interface RootRouteChildren {
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   InvitationRoute: typeof InvitationRoute
   LoginRoute: typeof LoginRoute
+  PhotosRoute: typeof PhotosRoute
   RequestAccessRoute: typeof RequestAccessRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   InvitationCodeRoute: typeof InvitationCodeRoute
@@ -1447,6 +1496,13 @@ declare module '@tanstack/react-router' {
       path: '/request-access'
       fullPath: '/request-access'
       preLoaderRoute: typeof RequestAccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/photos': {
+      id: '/photos'
+      path: '/photos'
+      fullPath: '/photos'
+      preLoaderRoute: typeof PhotosRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/login': {
@@ -1743,6 +1799,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGalleryNewRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/gallery_/links': {
+      id: '/_app/gallery_/links'
+      path: '/gallery/links'
+      fullPath: '/gallery/links'
+      preLoaderRoute: typeof AppGalleryLinksRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/gallery_/inbox': {
       id: '/_app/gallery_/inbox'
       path: '/gallery/inbox'
@@ -1776,6 +1839,13 @@ declare module '@tanstack/react-router' {
       path: '/events/$eventId'
       fullPath: '/events/$eventId'
       preLoaderRoute: typeof AppEventsEventIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/club_/news': {
+      id: '/_app/club_/news'
+      path: '/club/news'
+      fullPath: '/club/news'
+      preLoaderRoute: typeof AppClubNewsRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/calendar_/new': {
@@ -1993,6 +2063,13 @@ declare module '@tanstack/react-router' {
       path: '/events/$eventId/ablauf'
       fullPath: '/events/$eventId/ablauf'
       preLoaderRoute: typeof AppEventsEventIdAblaufRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/club_/news_/$slug': {
+      id: '/_app/club_/news_/$slug'
+      path: '/club/news/$slug'
+      fullPath: '/club/news/$slug'
+      preLoaderRoute: typeof AppClubNewsSlugRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/acts_/$actId_/musik': {
@@ -2294,11 +2371,13 @@ interface AppRouteChildren {
   AppAnnouncementsNewRoute: typeof AppAnnouncementsNewRoute
   AppCalendarCalendarEntryIdRoute: typeof AppCalendarCalendarEntryIdRoute
   AppCalendarNewRoute: typeof AppCalendarNewRoute
+  AppClubNewsRoute: typeof AppClubNewsRoute
   AppEventsEventIdRoute: typeof AppEventsEventIdRoute
   AppEventsNewRoute: typeof AppEventsNewRoute
   AppGalleryAlbumIdRoute: typeof AppGalleryAlbumIdRoute
   AppGalleryBinRoute: typeof AppGalleryBinRoute
   AppGalleryInboxRoute: typeof AppGalleryInboxRoute
+  AppGalleryLinksRoute: typeof AppGalleryLinksRoute
   AppGalleryNewRoute: typeof AppGalleryNewRoute
   AppGalleryUploadRoute: typeof AppGalleryUploadRoute
   AppGalleryWebsiteRoute: typeof AppGalleryWebsiteRoute
@@ -2324,6 +2403,7 @@ interface AppRouteChildren {
   AppManageIndexRoute: typeof AppManageIndexRoute
   AppSystemIndexRoute: typeof AppSystemIndexRoute
   AppActsActIdMusikRoute: typeof AppActsActIdMusikRoute
+  AppClubNewsSlugRoute: typeof AppClubNewsSlugRoute
   AppEventsEventIdAblaufRoute: typeof AppEventsEventIdAblaufRoute
   AppEventsEventIdEditRoute: typeof AppEventsEventIdEditRoute
   AppEventsEventIdManageRoute: typeof AppEventsEventIdManageRoute
@@ -2396,11 +2476,13 @@ const AppRouteChildren: AppRouteChildren = {
   AppAnnouncementsNewRoute: AppAnnouncementsNewRoute,
   AppCalendarCalendarEntryIdRoute: AppCalendarCalendarEntryIdRoute,
   AppCalendarNewRoute: AppCalendarNewRoute,
+  AppClubNewsRoute: AppClubNewsRoute,
   AppEventsEventIdRoute: AppEventsEventIdRoute,
   AppEventsNewRoute: AppEventsNewRoute,
   AppGalleryAlbumIdRoute: AppGalleryAlbumIdRoute,
   AppGalleryBinRoute: AppGalleryBinRoute,
   AppGalleryInboxRoute: AppGalleryInboxRoute,
+  AppGalleryLinksRoute: AppGalleryLinksRoute,
   AppGalleryNewRoute: AppGalleryNewRoute,
   AppGalleryUploadRoute: AppGalleryUploadRoute,
   AppGalleryWebsiteRoute: AppGalleryWebsiteRoute,
@@ -2426,6 +2508,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageIndexRoute: AppManageIndexRoute,
   AppSystemIndexRoute: AppSystemIndexRoute,
   AppActsActIdMusikRoute: AppActsActIdMusikRoute,
+  AppClubNewsSlugRoute: AppClubNewsSlugRoute,
   AppEventsEventIdAblaufRoute: AppEventsEventIdAblaufRoute,
   AppEventsEventIdEditRoute: AppEventsEventIdEditRoute,
   AppEventsEventIdManageRoute: AppEventsEventIdManageRoute,
@@ -2502,6 +2585,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForgotPasswordRoute: ForgotPasswordRoute,
   InvitationRoute: InvitationRoute,
   LoginRoute: LoginRoute,
+  PhotosRoute: PhotosRoute,
   RequestAccessRoute: RequestAccessRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   InvitationCodeRoute: InvitationCodeRoute,

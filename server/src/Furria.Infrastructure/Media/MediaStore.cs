@@ -98,6 +98,7 @@ public sealed class MediaStore
                     row.OwnerEventId,
                     row.OwnerActId,
                     row.OwnerSessionId,
+                    row.OwnerUploadLinkId,
                     row.WebsitePicture == null
                         ? null
                         : new PictureSlotPosition(
@@ -260,6 +261,18 @@ public sealed class MediaStore
                     setters => setters.SetProperty(session => session.LogoId, mediaItemId),
                     ct
                 ),
+            MediaOwnerKind.UploadLink => _dbContext
+                .UploadLinks.Where(link => link.Id == command.Owner.Id)
+                .ExecuteUpdateAsync(
+                    setters =>
+                        setters
+                            .SetProperty(link => link.UploadCount, link => link.UploadCount + 1)
+                            .SetProperty(
+                                link => link.UploadedBytes,
+                                link => link.UploadedBytes + command.ByteSize
+                            ),
+                    ct
+                ),
             MediaOwnerKind.NewsPost => _newsPictures.PlaceAsync(
                 new PlaceNewsPictureCommand
                 {
@@ -299,12 +312,15 @@ public sealed class MediaStore
             OwnerEventId = command.Owner.Kind == MediaOwnerKind.Event ? command.Owner.Id : null,
             OwnerActId = command.Owner.Kind == MediaOwnerKind.Act ? command.Owner.Id : null,
             OwnerSessionId = command.Owner.Kind == MediaOwnerKind.Session ? command.Owner.Id : null,
+            OwnerUploadLinkId =
+                command.Owner.Kind == MediaOwnerKind.UploadLink ? command.Owner.Id : null,
             Kind = command.Format.Kind,
             State = MediaItemState.Processing,
             OriginalFileName = command.OriginalFileName,
             ContentType = command.Format.ContentType,
             ByteSize = command.ByteSize,
             UploadedByPersonId = command.UploadedByPersonId,
+            UploaderName = command.UploaderName,
             UploadedAt = now,
             AlbumId = albumId,
             PlacedAt = albumId is null ? null : now,

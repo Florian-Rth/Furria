@@ -56,6 +56,7 @@ public sealed partial class GalleryService
             ChosenCoverMediaItemId = header.ChosenCoverMediaItemId,
             Photos = await LiveItemsOf(query.AlbumId).CountAsync(IsPhoto, ct),
             Videos = await LiveItemsOf(query.AlbumId).CountAsync(IsVideo, ct),
+            ZipBytes = await LiveItemsOf(query.AlbumId).SumAsync(item => item.ByteSize, ct),
             Uploaders = uploaders,
             Items = await LiveItemsOf(query.AlbumId)
                 .AsNoTracking()

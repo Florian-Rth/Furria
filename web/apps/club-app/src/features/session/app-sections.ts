@@ -26,6 +26,7 @@ export const EVENTS_PATH = '/events';
 export const PROFILE_PATH = '/profile';
 export const GALLERY_PATH = '/gallery';
 export const NEWS_PATH = '/news';
+export const CLUB_NEWS_PATH = '/club/news';
 export const ACTS_PATH = '/acts';
 export const SYSTEM_PATH = '/system';
 
@@ -175,6 +176,13 @@ export const CLUB_SECTIONS: AppSection[] = [
     icon: 'info',
     to: ANNOUNCEMENTS_PATH,
     meta: 'Mitteilungen des Vereins',
+  },
+  {
+    id: 'news',
+    label: NEWS_TITLE,
+    icon: 'news',
+    to: CLUB_NEWS_PATH,
+    meta: 'Meldungen des Vereins von der Website',
   },
 ];
 

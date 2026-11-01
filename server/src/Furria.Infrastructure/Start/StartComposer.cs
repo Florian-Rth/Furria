@@ -12,6 +12,7 @@ public static class StartComposer
     private const int MineCap = 3;
     private const int GroupsCap = 3;
     private const int GalleryCap = 3;
+    private const int NewsCap = 1;
     private const int LiveLeadHours = 2;
     private const int RecentDays = 2;
     private const int SoonDays = 7;
@@ -54,6 +55,7 @@ public static class StartComposer
                     AnnouncementsPanelOf(candidates.Announcements),
                     ToDosPanelOf(candidates.ToDos),
                     GroupsPanelOf(candidates.GroupMoments),
+                    NewsPanelOf(candidates.News),
                     GalleryPanelOf(candidates.Albums),
                 }.OfType<BandedPanel>(),
             ]),
@@ -170,10 +172,11 @@ public static class StartComposer
             StartPanelKind.Calendar => 0,
             StartPanelKind.Mine => 1,
             StartPanelKind.Announcements => 2,
-            StartPanelKind.ToDos => 3,
-            StartPanelKind.Groups => 4,
-            StartPanelKind.Gallery => 5,
-            _ => 6,
+            StartPanelKind.News => 3,
+            StartPanelKind.ToDos => 4,
+            StartPanelKind.Groups => 5,
+            StartPanelKind.Gallery => 6,
+            _ => 7,
         };
 
     [Pure]
@@ -299,6 +302,23 @@ public static class StartComposer
             );
 
     [Pure]
+    private static BandedPanel? NewsPanelOf(IReadOnlyList<StartNewsSummary> news) =>
+        news.Count == 0
+            ? null
+            : new BandedPanel(
+                PanelOf(StartPanelKind.News, NewsCap) with
+                {
+                    News =
+                    [
+                        .. news.OrderByDescending(post => post.PublishedAt)
+                            .ThenBy(post => post.Slug, StringComparer.Ordinal)
+                            .Take(NewsCap),
+                    ],
+                },
+                StartBand.New
+            );
+
+    [Pure]
     private static int ShownCountOf(int cap, int total) =>
         total == cap + 1 ? total : Math.Min(cap, total);
 
@@ -345,6 +365,7 @@ public static class StartComposer
             GroupMoments = null,
             ToDos = null,
             Albums = null,
+            News = null,
         };
 
     private sealed record BandedPanel(StartPanel Panel, StartBand Band);

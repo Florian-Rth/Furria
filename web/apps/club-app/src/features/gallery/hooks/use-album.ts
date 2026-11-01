@@ -1,11 +1,10 @@
 import type { KkFilterOption } from '@furria/ui/filter-chip-entries';
 import type { KkTimeRailScene } from '@furria/ui/KkTimeRail';
-import type { KkScreenActions } from '@furria/ui/screen-declaration';
+import type { KkQuietScreenAction, KkScreenActions } from '@furria/ui/screen-declaration';
 import { useNavigate, useSearch } from '@tanstack/react-router';
 import { useState } from 'react';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
-import { saveFile } from '@/lib/media/save-file';
 import { isNotFoundError } from '@/lib/query-error';
 import type { AlbumFrame } from '../album-frames';
 import { albumFramesOf } from '../album-frames';
@@ -27,6 +26,8 @@ import { railScenesOf, sceneSpanLabel, thumbSourceOf } from '../gallery-view';
 import type { AlbumDetails } from '../schemas';
 import type { AlbumSelecting } from './use-album-selecting';
 import { useAlbumSelecting } from './use-album-selecting';
+import type { AlbumZip } from './use-album-zip';
+import { useAlbumZip } from './use-album-zip';
 import { useSceneInView } from './use-scene-in-view';
 
 const ALBUM_ROUTE_ID = '/_app/gallery_/$albumId';
@@ -58,6 +59,7 @@ export interface AlbumScreen {
   glowId: number | null;
   rights: AlbumRights;
   selecting: AlbumSelecting;
+  zip: AlbumZip;
   actions: KkScreenActions | undefined;
   setKind: (kind: string) => void;
   setUploader: (uploader: string) => void;
@@ -67,6 +69,17 @@ export interface AlbumScreen {
   closeFrame: () => void;
   retry: () => void;
 }
+
+const browsingActionsOf = (
+  zip: KkQuietScreenAction | null,
+  select: KkQuietScreenAction | null,
+): KkScreenActions | undefined => {
+  if (zip !== null && select !== null) {
+    return [zip, select];
+  }
+  const only = zip ?? select;
+  return only === null ? undefined : [only];
+};
 
 export const sceneAnchorOf = (index: number): string => `${SCENE_ANCHOR_PREFIX}${index}`;
 
@@ -122,6 +135,7 @@ export const useAlbum = (albumId: number): AlbumScreen => {
     uploads: has(PERMISSION_KEYS.galleryUpload) || has(PERMISSION_KEYS.galleryManage),
   };
   const selecting = useAlbumSelecting(order, rights.managesItems || rights.curates);
+  const zip = useAlbumZip(album);
   const shown =
     search.photo === undefined ? null : (frames.find((frame) => frame.id === search.photo) ?? null);
 
@@ -181,17 +195,19 @@ export const useAlbum = (albumId: number): AlbumScreen => {
     });
   };
 
-  const downloadZip = (): void => {
-    if (album !== undefined) {
-      saveFile(album.zipUrl);
-    }
-  };
-
-  const zipAction = { id: 'zip', label: ZIP_LABEL, icon: 'zip', onSelect: downloadZip } as const;
+  const zipAction = { id: 'zip', label: ZIP_LABEL, icon: 'zip', onSelect: zip.ask } as const;
+  const selectAction = {
+    id: 'select',
+    label: SELECT_LABEL,
+    icon: 'select',
+    onSelect: selecting.start,
+  } as const;
   const canSelect = (rights.managesItems || rights.curates) && frames.length > 0;
-  const browsingActions: KkScreenActions = canSelect
-    ? [zipAction, { id: 'select', label: SELECT_LABEL, icon: 'select', onSelect: selecting.start }]
-    : [zipAction];
+  const hasMedia = album !== undefined && album.photos + album.videos > 0;
+  const browsingActions = browsingActionsOf(
+    hasMedia ? zipAction : null,
+    canSelect ? selectAction : null,
+  );
   const selectingActions: KkScreenActions = [
     {
       id: 'done',
@@ -220,6 +236,7 @@ export const useAlbum = (albumId: number): AlbumScreen => {
     glowId: shown === null ? glowId : null,
     rights,
     selecting,
+    zip,
     actions:
       album === undefined ? undefined : selecting.active ? selectingActions : browsingActions,
     setKind,

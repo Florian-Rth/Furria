@@ -62,7 +62,7 @@ describe('staleReadsAfter', () => {
     {
       label: 'a news post is saved, published or withdrawn',
       change: 'newsPost',
-      stale: ['newsHub'],
+      stale: ['newsHub', 'readNews', 'readNewsArticle'],
     },
     {
       label: 'an album of the evening is published',

@@ -1,7 +1,4 @@
-import { KkNewsMedia } from '@furria/ui/KkNewsMedia';
-import { kkTokens } from '@furria/ui/tokens';
-import Stack from '@mui/material/Stack';
-import Typography from '@mui/material/Typography';
+import { KkNewsHero } from '@furria/ui/KkNewsHero';
 import type { FC } from 'react';
 import { newsPhotoOf } from '@/features/news/components/news-photo';
 import type { NewsArticle } from '@/lib/public-news/schemas';
@@ -14,30 +11,7 @@ interface NewsPostHeroProps {
 
 export const NewsPostHero: FC<NewsPostHeroProps> = ({ article }) => {
   const photo = newsPhotoOf(article.picture, HERO_PHOTO_SIZES);
-  const caption =
-    article.picture === null || article.pictureCaption === null ? null : (
-      <Typography
-        component="figcaption"
-        variant="caption"
-        sx={{ color: 'text.secondary', fontWeight: 600 }}
-      >
-        {article.pictureCaption}
-      </Typography>
-    );
+  const caption = article.picture === null ? null : article.pictureCaption;
 
-  return (
-    <Stack component="figure" data-kk-news-hero sx={{ m: 0, gap: 1 }}>
-      <KkNewsMedia
-        photo={photo}
-        sx={{
-          aspectRatio: kkTokens.aspectRatio.banner,
-          border: 1,
-          borderColor: 'divider',
-          borderRadius: `${kkTokens.radius.base}px`,
-          typography: { xs: 'h1', md: 'display' },
-        }}
-      />
-      {caption}
-    </Stack>
-  );
+  return <KkNewsHero photo={photo} caption={caption} />;
 };

@@ -16,6 +16,7 @@ public sealed class MediaItem : ITimestamped
     public const int CameraLength = 120;
     public const int FailureReasonLength = 500;
     public const int CaptionLength = 300;
+    public const int UploaderNameLength = 60;
 
     public int Id { get; set; }
 
@@ -34,6 +35,8 @@ public sealed class MediaItem : ITimestamped
     public int? OwnerActId { get; set; }
 
     public int? OwnerSessionId { get; set; }
+
+    public int? OwnerUploadLinkId { get; set; }
 
     public MediaKind Kind { get; set; }
 
@@ -65,6 +68,8 @@ public sealed class MediaItem : ITimestamped
 
     public int? UploadedByPersonId { get; set; }
 
+    public string? UploaderName { get; set; }
+
     public DateTimeOffset UploadedAt { get; set; }
 
     public int? AlbumId { get; set; }
@@ -92,6 +97,8 @@ public sealed class MediaItem : ITimestamped
     public Act? OwnerAct { get; set; }
 
     public Session? OwnerSession { get; set; }
+
+    public UploadLink? OwnerUploadLink { get; set; }
 
     public Person? UploadedBy { get; set; }
 

@@ -4,6 +4,7 @@ import { KkExposureSweep } from '@furria/ui/KkExposureSweep';
 import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { UploadLinksHubEntry } from '@/features/upload-links/components/UploadLinksHubEntry';
 import { WebsiteHubEntry } from '@/features/website-pictures/components/WebsiteHubEntry';
 import type { GalleryHubState } from '../hooks/use-gallery-hub';
 import { HUB_ERROR_TITLE, HUB_RETRY_LABEL, NEW_ALBUM_LABEL, toHubErrorMessage } from '../hub-copy';
@@ -55,7 +56,7 @@ export const GalleryHubBody: FC<GalleryHubBodyProps> = ({ state }) => {
       key={section.sessionStartYear ?? 'free'}
       section={section}
       order={order}
-      showsSelection={state.showsSelection}
+      marks={state.marks}
       now={state.now}
       onOpen={state.openAlbum}
     />
@@ -80,6 +81,7 @@ export const GalleryHubBody: FC<GalleryHubBodyProps> = ({ state }) => {
       <Stack sx={{ rowGap: 3.5, pb: 4 }}>
         {inboxFailure}
         {rolls}
+        <UploadLinksHubEntry />
         {newAlbum}
         {sections}
         {empty}
