@@ -40,6 +40,8 @@ public sealed partial class GalleryService
                         item.UploadedBy.FirstName,
                         item.UploadedBy.LastName
                     ),
+            UploaderName = item.UploaderName,
+            UploadLinkId = item.OwnerUploadLinkId,
             SelectionPosition = item.SelectionPosition,
             Caption = item.Caption,
         };
@@ -85,6 +87,11 @@ public sealed partial class GalleryService
 
     private IQueryable<MediaItem> GalleryItems() =>
         _dbContext.MediaItems.Where(item => item.OwnerKind == MediaOwnerKind.Gallery);
+
+    private IQueryable<MediaItem> SortableItems() =>
+        _dbContext.MediaItems.Where(item =>
+            item.OwnerKind == MediaOwnerKind.Gallery || item.OwnerKind == MediaOwnerKind.UploadLink
+        );
 
     private IQueryable<MediaItem> InboxItems() =>
         GalleryItems().Where(item => item.AlbumId == null);

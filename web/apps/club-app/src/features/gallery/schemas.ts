@@ -105,13 +105,17 @@ export const AlbumDetailsSchema = z.object({
   chosenCoverMediaItemId: z.int().nullable(),
   photos: z.int().nonnegative(),
   videos: z.int().nonnegative(),
+  zipBytes: z.int().nonnegative(),
   uploaders: z.array(AlbumUploaderCountSchema),
   items: z.array(AlbumItemSchema),
   zipUrl: MediaUrlSchema,
 });
 export type AlbumDetails = z.infer<typeof AlbumDetailsSchema>;
 
-export const InboxItemSchema = z.object(GalleryItemFields);
+export const InboxItemSchema = z.object({
+  ...GalleryItemFields,
+  uploaderName: z.string().nullable().optional(),
+});
 export type InboxItem = z.infer<typeof InboxItemSchema>;
 
 export const InboxResponseSchema = z.object({ items: z.array(InboxItemSchema) });

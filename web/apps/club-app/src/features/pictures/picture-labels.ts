@@ -50,6 +50,7 @@ const UPLOAD_FAILURE_MESSAGES: Record<UploadFailure, string> = {
   notAccepted: 'Das ist kein unterstütztes Foto. Erlaubt sind JPEG, HEIC, PNG und WebP.',
   notAllowed: 'Dieses Bild darfst du nicht ändern.',
   gone: 'Diesen Eintrag gibt es nicht mehr.',
+  ended: 'Dieser Link nimmt nichts mehr an.',
   interrupted: 'Das Hochladen wurde unterbrochen. Versuch es bitte noch einmal.',
 };
 

@@ -6,10 +6,16 @@ public sealed class GallerySeedBuilder
 {
     private readonly List<AlbumIntent> _albums = [];
     private readonly List<GalleryItemIntent> _items = [];
+    private readonly List<UploadLinkIntent> _uploadLinks = [];
+    private readonly List<LinkItemIntent> _linkItems = [];
 
     internal IReadOnlyList<AlbumIntent> Albums => _albums;
 
     internal IReadOnlyList<GalleryItemIntent> Items => _items;
+
+    internal IReadOnlyList<UploadLinkIntent> UploadLinks => _uploadLinks;
+
+    internal IReadOnlyList<LinkItemIntent> LinkItems => _linkItems;
 
     public GallerySeedBuilder AddAlbum(
         string alias,
@@ -72,6 +78,48 @@ public sealed class GallerySeedBuilder
         );
         return this;
     }
+
+    public GallerySeedBuilder AddUploadLink(
+        string alias,
+        string title,
+        string? creatorAlias = null,
+        DateTimeOffset? expiresAt = null,
+        DateTimeOffset? revokedAt = null,
+        long uploadedBytes = 0
+    )
+    {
+        _uploadLinks.Add(
+            new UploadLinkIntent(alias, title, creatorAlias, expiresAt, revokedAt, uploadedBytes)
+        );
+        return this;
+    }
+
+    public GallerySeedBuilder AddLinkItem(
+        string alias,
+        string uploadLinkAlias,
+        string? uploaderName = null,
+        MediaKind kind = MediaKind.Photo
+    )
+    {
+        _linkItems.Add(new LinkItemIntent(alias, uploadLinkAlias, uploaderName, kind));
+        return this;
+    }
+
+    internal sealed record UploadLinkIntent(
+        string Alias,
+        string Title,
+        string? CreatorAlias,
+        DateTimeOffset? ExpiresAt,
+        DateTimeOffset? RevokedAt,
+        long UploadedBytes
+    );
+
+    internal sealed record LinkItemIntent(
+        string Alias,
+        string UploadLinkAlias,
+        string? UploaderName,
+        MediaKind Kind
+    );
 
     internal sealed record AlbumIntent(
         string Alias,

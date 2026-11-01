@@ -17,4 +17,5 @@ export interface SelectionPhoto {
 export type InboxOwner =
   | { kind: 'mine' }
   | { kind: 'uploader'; personId: number }
-  | { kind: 'ownerless' };
+  | { kind: 'ownerless' }
+  | { kind: 'link'; uploadLinkId: number };

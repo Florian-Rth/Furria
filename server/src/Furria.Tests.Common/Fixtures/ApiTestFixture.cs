@@ -89,12 +89,12 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     public const string TrustedProxyAddress = "10.10.20.1";
 
     private const string AltchaHmacKey = "furria-test-altcha-hmac-key-of-32-bytes";
-    private const string MediaSigningKey = "furria-test-media-signing-key-of-32-bytes";
     private const int AltchaCost = 1;
     private const int AltchaMinCounter = 1;
     private const int AltchaMaxCounter = 50;
     private const int PermitsPerIpBeyondAnySuite = 1_000_000;
     private const int PasswordHashIterations = 1;
+    internal const string MediaSigningKey = "furria-test-media-signing-key-of-32-bytes";
 
     private static readonly TimeSpan SignedOutWorkTimeout = TimeSpan.FromSeconds(20);
     private static readonly TimeSpan OutboxDrainTimeout = TimeSpan.FromSeconds(20);

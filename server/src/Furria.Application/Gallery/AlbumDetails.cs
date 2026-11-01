@@ -22,6 +22,8 @@ public sealed record AlbumDetails
 
     public required int Videos { get; init; }
 
+    public required long ZipBytes { get; init; }
+
     public required IReadOnlyList<AlbumUploaderCount> Uploaders { get; init; }
 
     public required IReadOnlyList<GalleryItemSummary> Items { get; init; }

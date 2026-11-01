@@ -78,6 +78,27 @@ public sealed class DeleteGalleryItemsTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
+    [Fact]
+    public async Task Should_DeleteAGuestsRejectForGood_When_AManagerDeletesItFromALinksInbox()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            Photographer(gallery =>
+                gallery.AddUploadLink("link", "Zug").AddLinkItem("blurry", "link")
+            ),
+            ct
+        );
+        var client = await ctx.Identity.ClientForAsync("jana", ct);
+        var blurryId = ctx.Gallery.Items.IdOf("blurry");
+
+        var response = await client.POSTAsync<DeleteGalleryItems, DeleteGalleryItemsRequest>(
+            new() { MediaItemIds = [blurryId] }
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx.Expected.GalleryItem(blurryId).ToNotExist().AssertAsync(ct);
+    }
+
     private static Action<SeedContextBuilder> Workbench() =>
         builder =>
             builder
@@ -96,5 +117,30 @@ public sealed class DeleteGalleryItemsTests : IClassFixture<ApiTestFixture>
                         .AddAlbum("gala", "Prunksitzung", sessionStartYear: 2025)
                         .AddGalleryItem("reject", "markus")
                         .AddGalleryItem("placed", "markus", "gala", selectionPosition: 1)
+                );
+
+    private static Action<SeedContextBuilder> Photographer(
+        Action<GallerySeedBuilder>? gallery = null
+    ) =>
+        builder =>
+            builder
+                .Gallery(gallery ?? (_ => { }))
+                .Identity(identity => identity.AddAccount("jana").AddAccount("markus"))
+                .Roles(roles =>
+                    roles
+                        .AddRoleWithHolder(
+                            "fotografie",
+                            "fotografie-holding",
+                            "Fotografie",
+                            "jana",
+                            FurriaPermissions.GalleryManage
+                        )
+                        .AddRoleWithHolder(
+                            "galerie",
+                            "galerie-holding",
+                            "Galerie",
+                            "markus",
+                            FurriaPermissions.GalleryUpload
+                        )
                 );
 }

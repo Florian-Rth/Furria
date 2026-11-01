@@ -5,6 +5,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { FREE_TITLE, SESSION_WORD } from '../gallery-copy';
 import { countLabel, countsLine, sessionLabel } from '../gallery-view';
+import type { HubMarkSight } from '../hub-view';
 import { albumMarkOf, sectionCountsOf } from '../hub-view';
 import type { GallerySection } from '../schemas';
 import { GalleryAlbumStrip } from './GalleryAlbumStrip';
@@ -14,7 +15,7 @@ const FLAP_STEP_SECONDS = 0.12;
 interface GallerySessionSectionProps {
   section: GallerySection;
   order: number;
-  showsSelection: boolean;
+  marks: HubMarkSight;
   now: Date;
   onOpen: (albumId: number, photo?: number) => void;
 }
@@ -28,7 +29,7 @@ const metaOf = (section: GallerySection): string => {
 export const GallerySessionSection: FC<GallerySessionSectionProps> = ({
   section,
   order,
-  showsSelection,
+  marks,
   now,
   onOpen,
 }) => {
@@ -45,7 +46,7 @@ export const GallerySessionSection: FC<GallerySessionSectionProps> = ({
       />
     );
   const strips = section.albums.map((album) => {
-    const mark = albumMarkOf(album, now, showsSelection);
+    const mark = albumMarkOf(album, now, marks);
     return (
       <Grid key={album.albumId} size={{ xs: 12, desktop: 6 }}>
         <GalleryAlbumStrip album={album} mark={mark} onOpen={onOpen} />

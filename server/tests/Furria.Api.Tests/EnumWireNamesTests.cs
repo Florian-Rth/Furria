@@ -7,6 +7,7 @@ using Furria.Application.Registry;
 using Furria.Application.Start;
 using Furria.Core.Club;
 using Furria.Core.Events;
+using Furria.Core.Gallery;
 using Furria.Core.Groups;
 using Furria.Core.Media;
 using Furria.Core.News;
@@ -24,7 +25,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         string
     >
     {
-        [typeof(StartPanelKind)] = "calendar announcements mine groups toDos gallery",
+        [typeof(StartPanelKind)] = "calendar announcements mine groups toDos gallery news",
         [typeof(StartMineKind)] =
             "newRole newBoardSeat newGroupAdmin newGroupMembership newKey "
             + "contactChangedByOther membershipEnding membershipPaused milestone",
@@ -49,7 +50,9 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(NewsPublicationRequirement)] = "category title teaser text",
         [typeof(MediaKind)] = "photo video audio",
         [typeof(EveningChange)] = "cast spots choreography",
-        [typeof(MediaOwnerKind)] = "person group gallery newsPost website event act session",
+        [typeof(MediaOwnerKind)] =
+            "person group gallery newsPost website event act session uploadLink",
+        [typeof(UploadLinkState)] = "open expired revoked",
         [typeof(SystemLevel)] = "ok attention broken",
         [typeof(SystemCheck)] = "database workers queue storage media logs services mail",
         [typeof(SystemReasonCode)] =

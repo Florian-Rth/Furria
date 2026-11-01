@@ -1,10 +1,12 @@
+import { useKkNotice } from '@furria/ui/KkNotice';
 import type { KkViewerItem, KkViewerKeys, KkViewerStepDelta } from '@furria/ui/viewer-types';
 import { useState } from 'react';
-import { saveFile } from '@/lib/media/save-file';
 import type { AlbumFrame } from '../album-frames';
 import { sceneIndexOfFrame } from '../album-frames';
 import { loupeFacts, loupeSceneLine } from '../album-labels';
 import { albumViewerItemOf } from '../album-viewer-items';
+import { DOWNLOAD_BUSY_LINE } from '../download/download-copy';
+import { isDownloadRunning, startDownload } from '../download/download-store';
 import type { GalleryScene } from '../gallery-scenes';
 import { frameNumberOf } from '../gallery-scenes';
 import { clockLabel } from '../gallery-view';
@@ -65,6 +67,7 @@ export const useAlbumLoupe = ({
   onShow,
 }: AlbumLoupeInput): AlbumLoupe => {
   const lastShown = useLastShown(shown);
+  const raise = useKkNotice();
   const sceneIndex = lastShown === null ? -1 : sceneIndexOfFrame(scenes, lastShown.number);
   const index = shown === null ? null : frames.findIndex((frame) => frame.id === shown.id);
 
@@ -85,9 +88,22 @@ export const useAlbumLoupe = ({
   const canDownload = lastShown?.item.state === 'ready';
 
   const download = (): void => {
-    if (lastShown !== null && canDownload) {
-      saveFile(lastShown.item.urls.download);
+    if (lastShown === null || !canDownload) {
+      return;
     }
+    if (isDownloadRunning()) {
+      raise({ tone: 'info', icon: 'download', message: DOWNLOAD_BUSY_LINE });
+      return;
+    }
+    const { originalFileName, urls } = lastShown.item;
+    startDownload({
+      kind: 'original',
+      title: originalFileName,
+      fileName: originalFileName,
+      expectedBytes: 0,
+      url: urls.download,
+      refreshUrl: () => Promise.resolve(urls.download),
+    });
   };
 
   return {

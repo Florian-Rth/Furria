@@ -14,6 +14,7 @@ public readonly record struct MediaOwner
     private const string EventPrefix = "event:";
     private const string ActPrefix = "act:";
     private const string SessionPrefix = "session:";
+    private const string UploadLinkPrefix = "upload-link:";
 
     public const double PortraitAspect = 4.0 / 5;
     public const double GroupPictureAspect = 3.0 / 2;
@@ -40,13 +41,14 @@ public readonly record struct MediaOwner
             MediaOwnerKind.Event => $"{EventPrefix}{Id}",
             MediaOwnerKind.Act => $"{ActPrefix}{Id}",
             MediaOwnerKind.Session => $"{SessionPrefix}{Id}",
+            MediaOwnerKind.UploadLink => $"{UploadLinkPrefix}{Id}",
             _ => GalleryToken,
         };
 
     public IReadOnlyList<MediaKind> AcceptedKinds =>
         Kind switch
         {
-            MediaOwnerKind.Gallery => PhotosAndVideos,
+            MediaOwnerKind.Gallery or MediaOwnerKind.UploadLink => PhotosAndVideos,
             MediaOwnerKind.Act => AudioAndVideos,
             _ => PhotosOnly,
         };
@@ -91,6 +93,9 @@ public readonly record struct MediaOwner
 
     public static MediaOwner Session(int sessionId) => new(MediaOwnerKind.Session, sessionId);
 
+    public static MediaOwner UploadLink(int uploadLinkId) =>
+        new(MediaOwnerKind.UploadLink, uploadLinkId);
+
     public static MediaOwner Of(MediaItem item) =>
         Of(
             item.OwnerKind,
@@ -100,6 +105,7 @@ public readonly record struct MediaOwner
             item.OwnerEventId,
             item.OwnerActId,
             item.OwnerSessionId,
+            item.OwnerUploadLinkId,
             item.WebsitePicture is { } picture
                 ? new PictureSlotPosition(picture.SlotKey, picture.Position)
                 : null
@@ -113,6 +119,7 @@ public readonly record struct MediaOwner
         int? eventId,
         int? actId,
         int? sessionId,
+        int? uploadLinkId,
         PictureSlotPosition? slot
     ) =>
         kind switch
@@ -124,6 +131,7 @@ public readonly record struct MediaOwner
             MediaOwnerKind.Event => Event(eventId!.Value),
             MediaOwnerKind.Act => Act(actId!.Value),
             MediaOwnerKind.Session => Session(sessionId!.Value),
+            MediaOwnerKind.UploadLink => UploadLink(uploadLinkId!.Value),
             _ => Gallery,
         };
 

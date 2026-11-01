@@ -43,6 +43,7 @@ const MIN_CALENDAR_ROWS = 2;
 const COUNTER_ROW_WEIGHT = 1.4;
 const JUBILEE_WEIGHT = 1.3;
 const COVERS_WEIGHT = 3;
+const NEWS_LINE_WEIGHT = 2;
 const FURTHER_WEIGHT = 0.4;
 
 const shownOf = (count: number, cap: number): number => Math.min(count, cap);
@@ -85,6 +86,9 @@ export const weightOf = (panel: BoardPanel, countersPerRow: number = COUNTERS_PE
   }
   if (panel.kind === 'groups') {
     return HEAD_WEIGHT + shownOf(panel.groupMoments.length, panel.shownCount) * JUBILEE_WEIGHT;
+  }
+  if (panel.kind === 'news') {
+    return HEAD_WEIGHT + NEWS_LINE_WEIGHT;
   }
   if (panel.kind === 'practice') {
     return (

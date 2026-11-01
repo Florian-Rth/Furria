@@ -10,6 +10,9 @@ namespace Furria.Api.Tests.Gallery;
 
 public sealed class GetGalleryAlbumByIdTests : IClassFixture<ApiTestFixture>
 {
+    private const long SeededOriginalBytes = 4096;
+    private const int GalaItems = 4;
+
     private static readonly DateTimeOffset Evening = new(2026, 2, 14, 19, 0, 0, TimeSpan.Zero);
     private static readonly TimeSpan RenderedAgainAfter = TimeSpan.FromSeconds(1);
 
@@ -47,7 +50,7 @@ public sealed class GetGalleryAlbumByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_FilterByKindAndUploaderButCountTheWholeAlbum_When_FiltersAreAsked()
+    public async Task Should_FilterByKindAndUploaderButCountAndSizeTheWholeAlbum_When_FiltersAreAsked()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(GalaAlbumSeed(), ct);
@@ -77,6 +80,7 @@ public sealed class GetGalleryAlbumByIdTests : IClassFixture<ApiTestFixture>
                 (uploader.Uploader?.PersonId, uploader.Count)
             )
         );
+        Assert.Equal(GalaItems * SeededOriginalBytes, photosOfMarkus.ZipBytes);
     }
 
     [Fact]

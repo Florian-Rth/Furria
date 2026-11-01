@@ -8,4 +8,5 @@ public enum StartPanelKind
     Groups = 4,
     ToDos = 5,
     Gallery = 6,
+    News = 7,
 }

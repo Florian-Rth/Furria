@@ -46,14 +46,16 @@ export const toAlbumQuery = (filter: AlbumFilter): string => {
   return text === '' ? '' : `?${text}`;
 };
 
-export const toInboxQuery = (owner: InboxOwner): string => {
+export const inboxPathOf = (owner: InboxOwner): string => {
   switch (owner.kind) {
     case 'mine':
-      return '';
+      return '/api/gallery/inbox';
     case 'uploader':
-      return `?uploaderPersonId=${owner.personId}`;
+      return `/api/gallery/inbox?uploaderPersonId=${owner.personId}`;
     case 'ownerless':
-      return '?ownerless=true';
+      return '/api/gallery/inbox?ownerless=true';
+    case 'link':
+      return `/api/gallery/upload-links/${owner.uploadLinkId}/inbox`;
   }
 };
 
@@ -71,7 +73,7 @@ export const requestAlbum = (
   });
 
 export const requestInbox = (owner: InboxOwner, accessToken: string): Promise<InboxResponse> =>
-  apiFetch(`/api/gallery/inbox${toInboxQuery(owner)}`, {
+  apiFetch(inboxPathOf(owner), {
     schema: InboxResponseSchema,
     accessToken,
   });

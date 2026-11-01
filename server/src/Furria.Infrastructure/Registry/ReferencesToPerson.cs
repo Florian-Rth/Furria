@@ -1,5 +1,6 @@
 using System.Diagnostics.Contracts;
 using Furria.Core.Club;
+using Furria.Core.Gallery;
 using Furria.Core.Groups;
 using Furria.Core.Identity;
 using Furria.Core.Media;
@@ -70,6 +71,7 @@ public static class ReferencesToPerson
         HerAct<Person>(nameof(Person.ContactChangedByPersonId)),
         HerAct<Person>(nameof(Person.ArchivedByPersonId)),
         HerAct<MediaItem>(nameof(MediaItem.UploadedByPersonId)),
+        HerAct<UploadLink>(nameof(UploadLink.CreatedByPersonId)),
         HerAct<NewsPost>(nameof(NewsPost.LastSavedByPersonId)),
         HerAct<WebsitePicture>(nameof(WebsitePicture.UpdatedByPersonId)),
         HerAct<ActCoEditor>(nameof(ActCoEditor.GrantedByPersonId)),

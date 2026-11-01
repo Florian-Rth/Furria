@@ -6,6 +6,7 @@ import { CalendarTile } from './CalendarTile';
 import { GalleryTile } from './GalleryTile';
 import { GroupsTile } from './GroupsTile';
 import { MineTile } from './MineTile';
+import { NewsTile } from './NewsTile';
 import { PracticeTile } from './PracticeTile';
 import { ToDosTile } from './ToDosTile';
 
@@ -30,6 +31,9 @@ export const PanelTile: FC<TileOfProps> = ({ panel, board, order }) => {
   }
   if (panel.kind === 'gallery') {
     return <GalleryTile panel={panel} order={order} />;
+  }
+  if (panel.kind === 'news') {
+    return <NewsTile panel={panel} board={board} order={order} />;
   }
   if (panel.kind === 'practice') {
     return <PracticeTile panel={panel} order={order} />;

@@ -1,9 +1,16 @@
-export type UploadFailure = 'tooLarge' | 'notAccepted' | 'notAllowed' | 'gone' | 'interrupted';
+export type UploadFailure =
+  | 'tooLarge'
+  | 'notAccepted'
+  | 'notAllowed'
+  | 'gone'
+  | 'ended'
+  | 'interrupted';
 
 const FAILURE_BY_STATUS: Record<number, UploadFailure> = {
   403: 'notAllowed',
   404: 'gone',
   413: 'tooLarge',
+  410: 'ended',
   415: 'notAccepted',
 };
 

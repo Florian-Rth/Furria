@@ -1,7 +1,7 @@
 import type { KkCalendarHeadUnder } from '@furria/ui/calendar-sticky';
 import { KK_CALENDAR_HEAD_TOP } from '@furria/ui/calendar-sticky';
 import { useEffect, useRef, useState } from 'react';
-import { anchorKeyOf } from '../calendar-agenda';
+import { landingOf } from '../calendar-agenda';
 import type { CalendarBoard } from './use-calendar-board';
 
 const DAY_SECTION = '[data-kk-calendar-day]';
@@ -97,13 +97,19 @@ export const useCalendarScroll = (
       return;
     }
 
-    const anchor = anchorKeyOf(board.sections, target.day);
+    const landing = landingOf(board.sections, target.day);
     const node =
-      anchor === null ? null : document.querySelector(`[data-kk-calendar-anchor="${anchor}"]`);
+      landing === null
+        ? null
+        : document.querySelector(`[data-kk-calendar-anchor="${landing.key}"]`);
 
-    if (node === null) {
+    if (landing === null || node === null) {
       return;
     }
+    if (pinned.current === target.day) {
+      pinned.current = landing.day;
+    }
+    setActiveDay(landing.day);
 
     const reduced = window.matchMedia(REDUCED_MOTION).matches;
     const behavior = target.instant || reduced ? 'instant' : 'smooth';

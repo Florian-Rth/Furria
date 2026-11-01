@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { MyActSchema } from '@/features/acts/schemas';
 import { AttendanceAnswerSchema } from '@/features/attendance/schemas';
+import { NewsCategorySchema } from '@/features/news/schemas';
 import { TO_DO_KINDS } from '@/features/to-dos/schemas';
 import { knownKindsOnly } from '@/lib/api/known-kinds';
 import { MediaItemStateSchema, MediaUrlSchema, PictureSchema } from '@/lib/api/schemas';
@@ -144,6 +145,15 @@ export const StartAlbumSchema = z.object({
 });
 export type StartAlbum = z.infer<typeof StartAlbumSchema>;
 
+export const StartNewsSchema = z.object({
+  slug: z.string().min(1),
+  title: z.string(),
+  category: NewsCategorySchema,
+  publishedAt: z.iso.datetime({ offset: true }),
+  picture: PictureSchema.nullable(),
+});
+export type StartNews = z.infer<typeof StartNewsSchema>;
+
 export const START_PANEL_KINDS = [
   'calendar',
   'announcements',
@@ -151,6 +161,7 @@ export const START_PANEL_KINDS = [
   'groups',
   'toDos',
   'gallery',
+  'news',
 ] as const;
 
 const Base = { shownCount: z.int().nonnegative() };
@@ -178,6 +189,7 @@ export const StartPanelSchema = z.discriminatedUnion('kind', [
     toDos: knownKindsOnly(StartToDoSchema, TO_DO_KINDS),
   }),
   z.object({ kind: z.literal('gallery'), ...Base, albums: z.array(StartAlbumSchema) }),
+  z.object({ kind: z.literal('news'), ...Base, news: z.array(StartNewsSchema) }),
 ]);
 export type StartPanel = z.infer<typeof StartPanelSchema>;
 export type StartPanelKind = StartPanel['kind'];

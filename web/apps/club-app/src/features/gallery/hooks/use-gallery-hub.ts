@@ -15,6 +15,7 @@ import {
   UPLOAD_TITLE,
 } from '../gallery-copy';
 import { toHubErrorMessage } from '../hub-copy';
+import type { HubMarkSight } from '../hub-view';
 import { ownInboxFirst } from '../hub-view';
 import type { GalleryHub, InboxSummary } from '../schemas';
 import type { InboxOwner } from '../types';
@@ -27,7 +28,7 @@ export interface GalleryHubState {
   inboxRetrying: boolean;
   retryInboxes: () => void;
   sorts: boolean;
-  showsSelection: boolean;
+  marks: HubMarkSight;
   actions: KkScreenActions | undefined;
   thread: KkScreenThread | undefined;
   now: Date;
@@ -37,7 +38,9 @@ export interface GalleryHubState {
   openUpload: () => void;
 }
 
-const inboxSearchOf = (owner: InboxOwner): { uploader?: number; ownerless?: boolean } => {
+const inboxSearchOf = (
+  owner: InboxOwner,
+): { uploader?: number; ownerless?: boolean; link?: number } => {
   switch (owner.kind) {
     case 'mine':
       return {};
@@ -45,6 +48,8 @@ const inboxSearchOf = (owner: InboxOwner): { uploader?: number; ownerless?: bool
       return { uploader: owner.personId };
     case 'ownerless':
       return { ownerless: true };
+    case 'link':
+      return { link: owner.uploadLinkId };
   }
 };
 
@@ -94,7 +99,10 @@ export const useGalleryHub = (): GalleryHubState => {
       void inboxQuery.refetch();
     },
     sorts,
-    showsSelection: has(PERMISSION_KEYS.galleryPublish),
+    marks: {
+      selection: has(PERMISSION_KEYS.galleryPublish),
+      publication: manages || has(PERMISSION_KEYS.galleryPublish),
+    },
     actions: sorts ? sorterActions : undefined,
     thread,
     now: new Date(),

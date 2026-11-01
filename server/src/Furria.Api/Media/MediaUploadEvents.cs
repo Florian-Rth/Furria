@@ -1,6 +1,5 @@
 using System.Globalization;
 using System.Net;
-using System.Text;
 using Furria.Api.Authorization;
 using Furria.Application.Media;
 using Furria.Application.Results;
@@ -74,8 +73,8 @@ public sealed class MediaUploadEvents
 
     private async Task BeforeCreateAsync(BeforeCreateContext context)
     {
-        var owner = MediaOwner.Parse(TextOf(context.Metadata, OwnerMetadataKey));
-        var fileName = FileNameOf(context.Metadata);
+        var owner = MediaOwner.Parse(UploadMetadata.TextOf(context.Metadata, OwnerMetadataKey));
+        var fileName = UploadMetadata.FileNameOf(context.Metadata);
 
         if (context.UploadLengthIsDeferred || context.UploadLength <= 0)
             context.FailRequest(HttpStatusCode.BadRequest, LengthRequired);
@@ -83,7 +82,7 @@ public sealed class MediaUploadEvents
             context.FailRequest(HttpStatusCode.BadRequest, OwnerRequired);
         else if (fileName is null)
             context.FailRequest(HttpStatusCode.BadRequest, FileNameRequired);
-        else if (!CropFits(owner.Value, TextOf(context.Metadata, CropMetadataKey)))
+        else if (!CropFits(owner.Value, UploadMetadata.TextOf(context.Metadata, CropMetadataKey)))
             context.FailRequest(HttpStatusCode.BadRequest, CropRefused);
         else if (!AspectFits(owner.Value, context.Metadata))
             context.FailRequest(HttpStatusCode.BadRequest, AspectRefused);
@@ -103,7 +102,7 @@ public sealed class MediaUploadEvents
 
     private async Task CheckAlbumAsync(BeforeCreateContext context, MediaOwner owner)
     {
-        if (TextOf(context.Metadata, AlbumMetadataKey) is null)
+        if (UploadMetadata.TextOf(context.Metadata, AlbumMetadataKey) is null)
             return;
 
         var albumId = AlbumIdOf(context.Metadata);
@@ -149,15 +148,17 @@ public sealed class MediaUploadEvents
                 new AdoptUploadCommand
                 {
                     StagedFilePath = Path.Combine(StagingPath(), context.FileId),
-                    Format = await FormatOfAsync(file, ct),
-                    Owner = MediaOwner.Parse(TextOf(metadata, OwnerMetadataKey))!.Value,
-                    OriginalFileName = FileNameOf(metadata)!,
+                    Format = await UploadMetadata.FormatOfAsync(file, ct),
+                    Owner = MediaOwner
+                        .Parse(UploadMetadata.TextOf(metadata, OwnerMetadataKey))!
+                        .Value,
+                    OriginalFileName = UploadMetadata.FileNameOf(metadata)!,
                     AlbumId = AlbumIdOf(metadata),
                     ByteSize = (
                         await context.Store.GetUploadLengthAsync(context.FileId, ct)
                     )!.Value,
                     UploadedByPersonId = _http.User.PersonId(),
-                    Crop = PictureCrop.Parse(TextOf(metadata, CropMetadataKey)),
+                    Crop = PictureCrop.Parse(UploadMetadata.TextOf(metadata, CropMetadataKey)),
                     Aspect = AspectOf(metadata),
                 },
                 ct
@@ -179,16 +180,7 @@ public sealed class MediaUploadEvents
     {
         var file = (await context.GetFileAsync())!;
         var metadata = await file.GetMetadataAsync(context.CancellationToken);
-        return MediaOwner.Parse(TextOf(metadata, OwnerMetadataKey))!.Value;
-    }
-
-    private static async Task<MediaFormat> FormatOfAsync(ITusFile file, CancellationToken ct)
-    {
-        await using var content = await file.GetContentAsync(ct);
-        return MediaSniffer.Sniff(await UploadHead.ReadHeadAsync(content, ct))
-            ?? throw new InvalidOperationException(
-                "A completed upload was sniffed on its first chunk and must still be media."
-            );
+        return MediaOwner.Parse(UploadMetadata.TextOf(metadata, OwnerMetadataKey))!.Value;
     }
 
     private static void FailOn(BeforeCreateContext context, Result access)
@@ -217,11 +209,11 @@ public sealed class MediaUploadEvents
     private static bool AspectFits(MediaOwner owner, Dictionary<string, Metadata> metadata) =>
         owner.Kind == MediaOwnerKind.Website
             ? AspectOf(metadata) is not null
-            : TextOf(metadata, AspectMetadataKey) is null;
+            : UploadMetadata.TextOf(metadata, AspectMetadataKey) is null;
 
     private static double? AspectOf(Dictionary<string, Metadata> metadata) =>
         double.TryParse(
-            TextOf(metadata, AspectMetadataKey),
+            UploadMetadata.TextOf(metadata, AspectMetadataKey),
             NumberStyles.Float,
             CultureInfo.InvariantCulture,
             out var aspect
@@ -229,27 +221,14 @@ public sealed class MediaUploadEvents
             ? aspect
             : null;
 
-    private static string? FileNameOf(Dictionary<string, Metadata> metadata)
-    {
-        var fileName = Path.GetFileName(TextOf(metadata, FileNameMetadataKey)?.Trim());
-        return string.IsNullOrEmpty(fileName) || fileName.Length > MediaItem.OriginalFileNameLength
-            ? null
-            : fileName;
-    }
-
     private static int? AlbumIdOf(Dictionary<string, Metadata> metadata) =>
         int.TryParse(
-            TextOf(metadata, AlbumMetadataKey),
+            UploadMetadata.TextOf(metadata, AlbumMetadataKey),
             NumberStyles.None,
             CultureInfo.InvariantCulture,
             out var albumId
         )
         && albumId > 0
             ? albumId
-            : null;
-
-    private static string? TextOf(Dictionary<string, Metadata> metadata, string key) =>
-        metadata.TryGetValue(key, out var value) && !value.HasEmptyValue
-            ? value.GetString(Encoding.UTF8)
             : null;
 }

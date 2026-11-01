@@ -2,6 +2,7 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Gallery;
 using Furria.Application.Authorization;
+using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -135,6 +136,68 @@ public sealed class PlaceGalleryItemsTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Should_HandTheItemsToTheGallery_When_AManagerFilesALinksInboxInAnAlbum()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(LinkInbox(), ct);
+        var client = await ctx.Identity.ClientForAsync("jana", ct);
+        var albumId = ctx.Gallery.Albums.IdOf("zug");
+        var guestPhotoId = ctx.Gallery.Items.IdOf("guest-photo");
+
+        var response = await client.POSTAsync<PlaceGalleryItems, PlaceGalleryItemsRequest>(
+            new() { AlbumId = albumId, MediaItemIds = [guestPhotoId] }
+        );
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.GalleryItem(guestPhotoId)
+            .ToBePlacedIn(albumId, _fixture.TimeProvider.GetUtcNow())
+            .MediaItem(guestPhotoId)
+            .ToBeOwnedBy(MediaOwner.Gallery)
+            .AssertAsync(ct);
+        var (_, inbox) = await client.GETAsync<
+            GetUploadLinkInbox,
+            GetUploadLinkInboxRequest,
+            GetUploadLinkInboxResponse
+        >(new() { UploadLinkId = ctx.Gallery.UploadLinks.IdOf("link") });
+        Assert.Equal(
+            [ctx.Gallery.Items.IdOf("guest-video")],
+            inbox.Items.Select(item => item.MediaItemId)
+        );
+    }
+
+    [Fact]
+    public async Task Should_RefuseToFileALinksUpload_When_TheSorterOnlyUploadsToTheGallery()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(LinkInbox(), ct);
+        var client = await ctx.Identity.ClientForAsync("markus", ct);
+
+        var response = await client.POSTAsync<PlaceGalleryItems, PlaceGalleryItemsRequest>(
+            new()
+            {
+                AlbumId = ctx.Gallery.Albums.IdOf("zug"),
+                MediaItemIds = [ctx.Gallery.Items.IdOf("guest-photo")],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        await ctx
+            .Expected.MediaItem(ctx.Gallery.Items.IdOf("guest-photo"))
+            .ToBeOwnedBy(MediaOwner.UploadLink(ctx.Gallery.UploadLinks.IdOf("link")))
+            .AssertAsync(ct);
+    }
+
+    private static Action<SeedContextBuilder> LinkInbox() =>
+        Photographer(gallery =>
+            gallery
+                .AddAlbum("zug", "Rosenmontagszug", sessionStartYear: 2025)
+                .AddUploadLink("link", "Rosenmontagszug", "jana")
+                .AddLinkItem("guest-photo", "link", uploaderName: "Oma Gerda")
+                .AddLinkItem("guest-video", "link", kind: MediaKind.Video)
+        );
+
     private static Action<SeedContextBuilder> Workbench() =>
         builder =>
             builder
@@ -163,5 +226,30 @@ public sealed class PlaceGalleryItemsTests : IClassFixture<ApiTestFixture>
                             caption: "Der Prinzenwagen"
                         )
                         .AddGalleryItem("parade-binned", "markus", "parade", binnedAt: Binned)
+                );
+
+    private static Action<SeedContextBuilder> Photographer(
+        Action<GallerySeedBuilder>? gallery = null
+    ) =>
+        builder =>
+            builder
+                .Gallery(gallery ?? (_ => { }))
+                .Identity(identity => identity.AddAccount("jana").AddAccount("markus"))
+                .Roles(roles =>
+                    roles
+                        .AddRoleWithHolder(
+                            "fotografie",
+                            "fotografie-holding",
+                            "Fotografie",
+                            "jana",
+                            FurriaPermissions.GalleryManage
+                        )
+                        .AddRoleWithHolder(
+                            "galerie",
+                            "galerie-holding",
+                            "Galerie",
+                            "markus",
+                            FurriaPermissions.GalleryUpload
+                        )
                 );
 }

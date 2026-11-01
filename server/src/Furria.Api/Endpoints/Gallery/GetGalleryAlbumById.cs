@@ -66,6 +66,7 @@ public sealed class GetGalleryAlbumById
             ChosenCoverMediaItemId = album.ChosenCoverMediaItemId,
             Photos = album.Photos,
             Videos = album.Videos,
+            ZipBytes = album.ZipBytes,
             Uploaders =
             [
                 .. album.Uploaders.Select(uploader => new GetGalleryAlbumByIdUploaderCountDto
@@ -150,6 +151,8 @@ public sealed record GetGalleryAlbumByIdResponse
     public required int Photos { get; init; }
 
     public required int Videos { get; init; }
+
+    public required long ZipBytes { get; init; }
 
     public required IReadOnlyList<GetGalleryAlbumByIdUploaderCountDto> Uploaders { get; init; }
 

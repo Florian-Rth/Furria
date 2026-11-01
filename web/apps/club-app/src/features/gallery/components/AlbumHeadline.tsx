@@ -1,11 +1,10 @@
 import { KkButton } from '@furria/ui/KkButton';
-import { KkFilmEdge } from '@furria/ui/KkFilmEdge';
 import { KkIcon } from '@furria/ui/KkIcon';
 import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { albumMetaLine, EDIT_LABEL, scenesTrail, UPLOAD_HERE_LABEL } from '../album-labels';
+import { EDIT_LABEL, photographersLine, UPLOAD_HERE_LABEL } from '../album-labels';
 import { ALBUM_EDIT_ROUTE, GALLERY_UPLOAD_PATH } from '../gallery-copy';
 import type { AlbumRights } from '../hooks/use-album';
 import type { AlbumDetails } from '../schemas';
@@ -13,18 +12,22 @@ import type { AlbumDetails } from '../schemas';
 interface AlbumHeadlineProps {
   albumId: number;
   album: AlbumDetails;
-  scenes: number;
   rights: AlbumRights;
 }
 
 const uploadIcon = <KkIcon name="upload" size="small" />;
 const editIcon = <KkIcon name="edit" size="small" />;
 
-export const AlbumHeadline: FC<AlbumHeadlineProps> = ({ albumId, album, scenes, rights }) => {
+export const AlbumHeadline: FC<AlbumHeadlineProps> = ({ albumId, album, rights }) => {
   const params = { albumId: String(albumId) };
-  const lead = scenesTrail(scenes);
-  const meta = albumMetaLine(album);
+  const photographers = photographersLine(album);
   const uploadSearch = { album: albumId };
+  const credits =
+    photographers === null ? null : (
+      <KkText variant="caption" tone="secondary">
+        {photographers}
+      </KkText>
+    );
   const description =
     album.description === null ? null : (
       <KkText variant="body2" tone="secondary">
@@ -65,7 +68,7 @@ export const AlbumHeadline: FC<AlbumHeadlineProps> = ({ albumId, album, scenes, 
 
   return (
     <Stack sx={{ rowGap: 1 }}>
-      <KkFilmEdge lead={lead} meta={meta} level="h2" />
+      {credits}
       {description}
       {tools}
     </Stack>

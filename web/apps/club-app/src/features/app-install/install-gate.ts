@@ -8,10 +8,10 @@ export interface InstallGateInput {
   pathname: string;
 }
 
-const MAIL_LINK_PATHS = [/^\/reset-password\/?$/, /^\/invitation(\/.*)?$/];
+const TAB_LINK_PATHS = [/^\/reset-password\/?$/, /^\/invitation(\/.*)?$/, /^\/photos\/?$/];
 
-export const isMailLinkPath = (pathname: string): boolean =>
-  MAIL_LINK_PATHS.some((path) => path.test(pathname));
+export const isTabLinkPath = (pathname: string): boolean =>
+  TAB_LINK_PATHS.some((path) => path.test(pathname));
 
 export const isInstallGateClosed = ({
   device,
@@ -20,4 +20,4 @@ export const isInstallGateClosed = ({
   isBrowserMode,
   pathname,
 }: InstallGateInput): boolean =>
-  device !== 'desktop' && !isNative && !isStandalone && !isBrowserMode && !isMailLinkPath(pathname);
+  device !== 'desktop' && !isNative && !isStandalone && !isBrowserMode && !isTabLinkPath(pathname);

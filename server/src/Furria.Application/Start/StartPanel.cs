@@ -19,4 +19,6 @@ public sealed record StartPanel
     public required IReadOnlyList<ToDoSummary>? ToDos { get; init; }
 
     public required IReadOnlyList<StartAlbumSummary>? Albums { get; init; }
+
+    public required IReadOnlyList<StartNewsSummary>? News { get; init; }
 }

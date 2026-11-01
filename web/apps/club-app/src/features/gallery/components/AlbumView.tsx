@@ -13,6 +13,7 @@ import { AlbumLoupe } from './AlbumLoupe';
 import { AlbumMoveSheet } from './AlbumMoveSheet';
 import { AlbumScene } from './AlbumScene';
 import { AlbumSelectionShelf } from './AlbumSelectionShelf';
+import { AlbumZipConfirm } from './AlbumZipConfirm';
 
 const RAIL_MIN_SCENES = 2;
 const BULK_ROOM = 14;
@@ -104,12 +105,7 @@ export const AlbumView: FC<AlbumViewProps> = ({ albumId, album, screen }) => {
     <>
       <KkExposureSweep scope="viewport">
         <Stack sx={{ rowGap: 2.5, pb: bottomRoom, pr: railRoom }}>
-          <AlbumHeadline
-            albumId={albumId}
-            album={album}
-            scenes={screen.scenes.length}
-            rights={rights}
-          />
+          <AlbumHeadline albumId={albumId} album={album} rights={rights} />
           {shelf}
           {content}
         </Stack>
@@ -118,6 +114,7 @@ export const AlbumView: FC<AlbumViewProps> = ({ albumId, album, screen }) => {
       {loupe}
       {bulkBar}
       {moveSheet}
+      <AlbumZipConfirm zip={screen.zip} />
     </>
   );
 };

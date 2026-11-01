@@ -16,6 +16,8 @@ public sealed record AdoptUploadCommand
 
     public required int? UploadedByPersonId { get; init; }
 
+    public string? UploaderName { get; init; }
+
     public int? AlbumId { get; init; }
 
     public PictureCrop? Crop { get; init; }

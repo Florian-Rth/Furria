@@ -27,6 +27,11 @@ describe('isInstallGateClosed', () => {
       expected: false,
     },
     {
+      label: 'an upload link from the group chat',
+      input: { ...PHONE_TAB, pathname: '/photos' },
+      expected: false,
+    },
+    {
       label: 'an invitation link from a mail',
       input: { ...PHONE_TAB, pathname: '/invitation/AB12CD' },
       expected: false,

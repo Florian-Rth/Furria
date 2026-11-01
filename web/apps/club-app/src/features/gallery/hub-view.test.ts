@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import type { HubAlbumMark } from './hub-view';
+import type { HubAlbumMark, HubMarkSight } from './hub-view';
 import {
   albumMarkOf,
   inboxOwnerOf,
@@ -53,15 +53,29 @@ const inbox = (personId: number | null, latestUploadedAt: string): InboxSummary 
 });
 
 describe('albumMarkOf', () => {
-  it.each<[string, boolean, string, number, boolean, HubAlbumMark]>([
-    ['published wins over new', true, '2026-10-08T00:00:00Z', 3, true, { kind: 'published' }],
-    ['created 13 days ago is new', false, '2026-09-26T13:00:00Z', 3, true, { kind: 'new' }],
+  const curator: HubMarkSight = { selection: true, publication: true };
+  const manager: HubMarkSight = { selection: false, publication: true };
+  const member: HubMarkSight = { selection: false, publication: false };
+
+  it.each<[string, boolean, string, number, HubMarkSight, HubAlbumMark]>([
+    ['published wins over new', true, '2026-10-08T00:00:00Z', 3, curator, { kind: 'published' }],
+    ['a manager sees published', true, '2026-09-24T00:00:00Z', 0, manager, { kind: 'published' }],
+    ['a member never sees published', true, '2026-09-24T00:00:00Z', 3, member, { kind: 'none' }],
+    [
+      'a member sees a published album as new',
+      true,
+      '2026-10-08T00:00:00Z',
+      0,
+      member,
+      { kind: 'new' },
+    ],
+    ['created 13 days ago is new', false, '2026-09-26T13:00:00Z', 3, curator, { kind: 'new' }],
     [
       'created 15 days ago shows its selection',
       false,
       '2026-09-24T00:00:00Z',
       3,
-      true,
+      curator,
       { kind: 'selection', count: 3 },
     ],
     [
@@ -69,14 +83,12 @@ describe('albumMarkOf', () => {
       false,
       '2026-09-24T00:00:00Z',
       3,
-      false,
+      manager,
       { kind: 'none' },
     ],
-    ['empty selection shows nothing', false, '2026-09-24T00:00:00Z', 0, true, { kind: 'none' }],
-  ])('%s', (_, isPublished, createdAt, selectionCount, showsSelection, expected) => {
-    expect(albumMarkOf({ isPublished, createdAt, selectionCount }, NOW, showsSelection)).toEqual(
-      expected,
-    );
+    ['empty selection shows nothing', false, '2026-09-24T00:00:00Z', 0, curator, { kind: 'none' }],
+  ])('%s', (_, isPublished, createdAt, selectionCount, sight, expected) => {
+    expect(albumMarkOf({ isPublished, createdAt, selectionCount }, NOW, sight)).toEqual(expected);
   });
 });
 

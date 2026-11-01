@@ -87,17 +87,6 @@ export const photographersLine = (album: AlbumDetails): string | null => {
   return names.length === 0 ? null : `Fotos: ${names.join(', ')}`;
 };
 
-export const albumMetaLine = (album: AlbumDetails): string => {
-  const parts = [
-    album.sessionStartYear === null ? null : `Session ${sessionLabel(album.sessionStartYear)}`,
-    photographersLine(album),
-  ].filter((part) => part !== null);
-  return parts.join(' · ');
-};
-
-export const scenesTrail = (count: number): string =>
-  count === 1 ? '1 Szene' : `${countLabel(count)} Szenen`;
-
 export const frameCaption = (number: number, clock: string): string =>
   clock === '' ? `Bild ${number}` : `Bild ${number}, ${clock}`;
 

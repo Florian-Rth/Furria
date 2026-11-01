@@ -84,6 +84,16 @@ describe('uploadVia', () => {
       },
     ],
     [
+      'a guest photo through an upload link with the name she gave',
+      { file: photo, owner: { kind: 'link', uploaderName: '  Oma Gerda ' } },
+      { filename: 'IMG_0001.HEIC', name: 'Oma Gerda' },
+    ],
+    [
+      'a guest photo through an upload link without a name',
+      { file: photo, owner: { kind: 'link', uploaderName: '   ' } },
+      { filename: 'IMG_0001.HEIC' },
+    ],
+    [
       'a gallery photo into the inbox',
       { file: photo, owner: { kind: 'gallery', albumId: null } },
       { owner: 'gallery', filename: 'IMG_0001.HEIC' },

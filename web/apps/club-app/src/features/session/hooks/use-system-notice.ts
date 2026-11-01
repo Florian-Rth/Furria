@@ -1,6 +1,7 @@
 import type { KkSystemNotice } from '@furria/ui/KkNotice';
 import { applyAppUpdate } from '@/features/app-install/app-update-store';
 import { useAppUpdateReady } from '@/features/app-install/hooks/use-app-update-ready';
+import { useDownloadNotice } from '@/features/gallery/download/use-download-notice';
 import { useIsOnline } from '@/lib/use-is-online';
 import {
   APP_UPDATE_ACTION,
@@ -30,9 +31,13 @@ const APP_UPDATE_NOTICE: KkSystemNotice = {
 export const useSystemNotice = (): KkSystemNotice | null => {
   const online = useIsOnline();
   const isUpdateReady = useAppUpdateReady();
+  const zipNotice = useDownloadNotice();
 
   if (!online) {
     return CONNECTION_LOST_NOTICE;
+  }
+  if (zipNotice !== null) {
+    return zipNotice;
   }
   return isUpdateReady ? APP_UPDATE_NOTICE : null;
 };

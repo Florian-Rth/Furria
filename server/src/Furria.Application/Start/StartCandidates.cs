@@ -16,6 +16,8 @@ public sealed record StartCandidates
 
     public required IReadOnlyList<StartAlbumSummary> Albums { get; init; }
 
+    public required IReadOnlyList<StartNewsSummary> News { get; init; }
+
     public static StartCandidates OnlyToDos(IReadOnlyList<ToDoSummary> toDos) =>
         new()
         {
@@ -25,5 +27,6 @@ public sealed record StartCandidates
             Mine = [],
             GroupMoments = [],
             Albums = [],
+            News = [],
         };
 }

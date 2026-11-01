@@ -103,6 +103,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<Album> Albums => Set<Album>();
 
+    public DbSet<UploadLink> UploadLinks => Set<UploadLink>();
+
     public DbSet<NewsPost> NewsPosts => Set<NewsPost>();
 
     public DbSet<NewsPostMention> NewsPostMentions => Set<NewsPostMention>();

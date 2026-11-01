@@ -33,6 +33,7 @@ export type AlbumSearch = z.infer<typeof AlbumSearchSchema>;
 export const InboxSearchSchema = z.object({
   uploader: z.coerce.number().int().positive().optional().catch(undefined),
   ownerless: z.boolean().optional().catch(undefined),
+  link: z.coerce.number().int().positive().optional().catch(undefined),
 });
 export type InboxSearch = z.infer<typeof InboxSearchSchema>;
 

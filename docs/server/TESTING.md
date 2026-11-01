@@ -619,7 +619,9 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
 - **Uploads are middleware, not a route.** tus (`/api/media/uploads`) runs through `tusdotnet`
   ahead of FastEndpoints, so neither `EndpointGateTests` nor `EndpointConventionTests` sees it.
   Its gates — signed in, owner permission, an upload hidden from every other account — are proven
-  in `MediaUploadTests` and nowhere else. A staged upload's age is its files' write time (real
+  in `MediaUploadTests` and nowhere else; the upload-link mount (`/api/media/link-uploads`) and
+  its gates — a live token, the 7-day window, revocation, one link's uploads hidden from every
+  other link and from members — in `LinkUploadTests`. A staged upload's age is its files' write time (real
   time): the sweep tests move the clock a day ahead of it, never back.
 
 - **The audit timestamps come from the injected clock, not from `now()`.**
