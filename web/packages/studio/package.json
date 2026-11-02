@@ -6,11 +6,18 @@
   "sideEffects": false,
   "exports": {
     "./choreography-motion": "./src/models/choreography-motion.ts",
+    "./count-in": "./src/engine/count-in.ts",
+    "./mix-player": "./src/engine/mix-player.ts",
     "./mix-waveform": "./src/models/mix-waveform.ts",
     "./music-timeline": "./src/models/music-timeline.ts",
     "./stage-view": "./src/models/stage-view.ts",
     "./step-names": "./src/models/step-names.ts",
-    "./studio-schemas": "./src/models/studio-schemas.ts"
+    "./studio-schemas": "./src/models/studio-schemas.ts",
+    "./use-mix-player": "./src/engine/use-mix-player.ts",
+    "./use-playback-seconds": "./src/engine/use-playback-seconds.ts",
+    "./use-screen-wake-lock": "./src/engine/use-screen-wake-lock.ts",
+    "./use-slaved-video": "./src/engine/use-slaved-video.ts",
+    "./video-sync": "./src/engine/video-sync.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -18,9 +25,12 @@
   },
   "dependencies": {
     "@furria/api-client": "workspace:*",
+    "signalsmith-stretch": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@types/react": "catalog:",
+    "react": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

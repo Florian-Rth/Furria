@@ -1,11 +1,11 @@
+import type { MixPlayer } from '@furria/studio/mix-player';
 import { waveformOf } from '@furria/studio/mix-waveform';
+import { useMixPlayer } from '@furria/studio/use-mix-player';
+import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import type { KkScoreTrackTick } from '@furria/ui/KkScoreTrack';
 import type { KkScoreLens } from '@furria/ui/KkScoreTransport';
 import { useState } from 'react';
 import { useAudioPeaks } from '@/features/act-player/api';
-import { useMixPlayer } from '@/features/act-player/hooks/use-mix-player';
-import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
-import type { MixPlayer } from '@/features/act-player/mix-player';
 import { clockOf, WHOLE_LABEL } from '../score-copy';
 import type { ScoreModel } from '../score-model';
 import type { ScoreZoom } from '../score-ruler';

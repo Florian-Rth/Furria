@@ -1,13 +1,13 @@
 import { waveformOf } from '@furria/studio/mix-waveform';
 import type { MusicSegment } from '@furria/studio/music-timeline';
 import type { StudioSong } from '@furria/studio/studio-schemas';
+import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import type {
   KkStudioWaveBeat,
   KkStudioWaveHandleEdge,
   KkStudioWaveTick,
 } from '@furria/ui/KkStudioWave';
 import { useState } from 'react';
-import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
 import { cutHandleLabelOf, finalShiftLabelOf, songMetaOf, songNameOf } from '../studio-copy';
 import { nudgedCutOf, trimmedCutOf } from '../studio-edits';
 import {

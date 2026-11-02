@@ -1,5 +1,5 @@
 import { useSyncExternalStore } from 'react';
-import type { MixPlayer } from '../mix-player';
+import type { MixPlayer } from './mix-player';
 
 interface FrameStore {
   subscribe: (listener: () => void) => () => void;

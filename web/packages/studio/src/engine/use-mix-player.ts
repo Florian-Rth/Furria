@@ -1,7 +1,7 @@
-import type { MusicSegment } from '@furria/studio/music-timeline';
 import { useEffect, useState, useSyncExternalStore } from 'react';
-import type { MixPlayer, MixPlayerState } from '../mix-player';
-import { createMixPlayer } from '../mix-player';
+import type { MusicSegment } from '../models/music-timeline';
+import type { MixPlayer, MixPlayerState } from './mix-player';
+import { createMixPlayer } from './mix-player';
 
 export interface MixPlayerHandle {
   player: MixPlayer;

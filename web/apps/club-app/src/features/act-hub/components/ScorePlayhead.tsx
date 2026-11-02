@@ -1,7 +1,7 @@
+import type { MixPlayer } from '@furria/studio/mix-player';
+import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
 import { KkScoreTrack } from '@furria/ui/KkScoreTrack';
 import type { FC } from 'react';
-import { usePlaybackSeconds } from '@/features/act-player/hooks/use-playback-seconds';
-import type { MixPlayer } from '@/features/act-player/mix-player';
 
 interface ScorePlayheadProps {
   player: MixPlayer;

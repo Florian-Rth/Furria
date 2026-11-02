@@ -1,7 +1,7 @@
+import type { MixPlayer } from '@furria/studio/mix-player';
+import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import { KkStudioPlayhead } from '@furria/ui/KkStudioPlayhead';
 import type { FC } from 'react';
-import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
-import type { MixPlayer } from '@/features/act-player/mix-player';
 import { shareInSpan } from '../studio-timing';
 
 interface ActStudioPlayheadLiveProps {

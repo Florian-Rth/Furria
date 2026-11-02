@@ -1,7 +1,7 @@
+import type { MixPlayer } from '@furria/studio/mix-player';
 import type { MusicSegment } from '@furria/studio/music-timeline';
 import { countAt } from '@furria/studio/music-timeline';
-import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
-import type { MixPlayer } from '@/features/act-player/mix-player';
+import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import { hallCountLabelOf } from '../hall-copy';
 
 export interface HallCount {

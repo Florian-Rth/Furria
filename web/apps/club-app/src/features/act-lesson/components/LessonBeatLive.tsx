@@ -1,9 +1,9 @@
+import type { MixPlayer } from '@furria/studio/mix-player';
 import type { MusicSegment } from '@furria/studio/music-timeline';
 import { countAt } from '@furria/studio/music-timeline';
+import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import { KkLesson } from '@furria/ui/KkLesson';
 import type { FC } from 'react';
-import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
-import type { MixPlayer } from '@/features/act-player/mix-player';
 import { countLabelOf } from '@/features/act-practice/practice-copy';
 import { beatLabelOf, eightTextOf, LESSON_EIGHT } from '../lesson-copy';
 import type { StepCounts } from '../lesson-counts';

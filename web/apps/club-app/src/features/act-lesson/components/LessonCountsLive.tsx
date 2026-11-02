@@ -1,8 +1,8 @@
+import type { MixPlayer } from '@furria/studio/mix-player';
 import type { StudioStep } from '@furria/studio/studio-schemas';
+import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import { KkLesson } from '@furria/ui/KkLesson';
 import type { FC } from 'react';
-import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
-import type { MixPlayer } from '@/features/act-player/mix-player';
 import { fillOf } from '@/features/act-practice/practice-controls';
 import { countsLabelOf } from '../lesson-copy';
 import type { StepCounts } from '../lesson-counts';

@@ -1,8 +1,9 @@
+import { COUNT_IN_BEATS } from '@furria/studio/count-in';
 import type { StageViewpoint } from '@furria/studio/stage-view';
 import { shownStepNameOf, stepNumberOf } from '@furria/studio/step-names';
+import { useScreenWakeLock } from '@furria/studio/use-screen-wake-lock';
 import type { KkHallAbsentPerson } from '@furria/ui/KkHall';
 import { useEffect, useState } from 'react';
-import { COUNT_IN_BEATS } from '@/features/act-player/count-in';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import { usePractice } from '@/features/act-practice/hooks/use-practice';
@@ -10,7 +11,6 @@ import { usePracticeKeys } from '@/features/act-practice/hooks/use-practice-keys
 import type { PracticeVideo } from '@/features/act-practice/hooks/use-practice-video';
 import { usePracticeVideo } from '@/features/act-practice/hooks/use-practice-video';
 import { stageSummaryOf } from '@/features/act-practice/practice-stage';
-import { useScreenWakeLock } from '@/features/act-training/hooks/use-screen-wake-lock';
 import { trainingStepMetaOf } from '@/features/act-training/training-copy';
 import type { Studio, StudioTraining } from '@/features/acts/schemas';
 import {
@@ -64,7 +64,7 @@ export interface Hall {
 }
 
 export const useHall = (studio: Studio, training: StudioTraining | null): Hall => {
-  useScreenWakeLock();
+  useScreenWakeLock(true);
   const playback = useStudioPlayback(studio, NO_VIEWER);
   const practice = usePractice(playback);
   const video = usePracticeVideo(studio, playback);

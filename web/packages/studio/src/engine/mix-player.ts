@@ -1,18 +1,20 @@
-import type { MusicSegment, TimelineRange } from '@furria/studio/music-timeline';
-import { musicLengthOf } from '@furria/studio/music-timeline';
-import { audioBufferOf, sharedAudioContext } from './audio-buffers';
+import type { MusicSegment, TimelineRange } from '../models/music-timeline';
+import { musicLengthOf } from '../models/music-timeline';
+import { sharedAudioContext } from './audio-context';
 import type { CountIn } from './count-in';
 import { countInAt, countInOf } from './count-in';
+import { studioMediaLoader } from './media-loader';
 import type { MixRun } from './mix-schedule';
 import {
   mixPiecesOf,
-  pitchCorrectionOf,
   playRangeOf,
   positionInRuns,
   runEndOf,
+  stretchSlicesOf,
 } from './mix-schedule';
-import type { PitchKeeper } from './pitch-keeper';
-import { pitchKeeperOf } from './pitch-keeper';
+import { watchPlaybackInterruptions } from './playback-interruptions';
+import type { TimeStretch } from './time-stretch';
+import { timeStretchOf } from './time-stretch';
 
 const START_LATENCY_SECONDS = 0.05;
 const LOOKAHEAD_SECONDS = 3;
@@ -23,6 +25,7 @@ const CLICK_PEAK_GAIN = 0.6;
 const CLICK_SILENT_GAIN = 0.0001;
 const CLICK_HERTZ = 1046;
 const ACCENT_CLICK_HERTZ = 1568;
+const STRAIGHT_RATE = 1;
 
 export type MixLoadState = 'idle' | 'loading' | 'ready' | 'failed';
 
@@ -48,11 +51,6 @@ export interface MixPlayer {
   state: () => MixPlayerState;
   subscribe: (listener: () => void) => () => void;
   dispose: () => void;
-}
-
-interface MixRoute {
-  output: AudioNode;
-  delaySeconds: number;
 }
 
 interface MixClick {
@@ -98,8 +96,10 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
   let runs: MixRun[] = [];
   let watch: ReturnType<typeof setInterval> | null = null;
   let restingAt = 0;
-  let keeper: PitchKeeper | null = null;
-  let route: MixRoute | null = null;
+  let stretch: TimeStretch | null = null;
+  let stretching = false;
+  let stopWatchingInterruptions: (() => void) | null = null;
+  const owner = {};
   let current: MixPlayerState = {
     load: 'idle',
     playing: false,
@@ -137,22 +137,50 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
     clicks = [];
     leads = [];
     runs = [];
-    keeper?.release();
+    if (stretching) {
+      stretch?.silence();
+      stretching = false;
+    }
+    stopWatchingInterruptions?.();
+    stopWatchingInterruptions = null;
     if (watch !== null) {
       clearInterval(watch);
       watch = null;
     }
   };
 
-  const routeFor = (audio: AudioContext, rate: number): MixRoute => {
-    const correction = pitchCorrectionOf(rate);
-
-    if (keeper === null || correction === 0) {
-      return { output: audio.destination, delaySeconds: 0 };
+  const engageStretch = (audio: AudioContext): void => {
+    if (stretch === null || current.rate === STRAIGHT_RATE) {
+      return;
     }
 
-    keeper.engage(correction);
-    return { output: keeper.input, delaySeconds: keeper.latencySeconds };
+    stretch.hold(owner, stretchSlicesOf(segments, length, audio.sampleRate), buffers);
+    stretching = true;
+  };
+
+  const stretchLeadSeconds = (): number =>
+    stretching && stretch !== null ? stretch.leadSeconds : 0;
+
+  const scheduleSources = (audio: AudioContext, run: MixRun): void => {
+    for (const piece of mixPiecesOf(segments, run.from, run.to)) {
+      const buffer = buffers.get(piece.mediaItemId);
+
+      if (buffer !== undefined) {
+        const source = audio.createBufferSource();
+        source.buffer = buffer;
+        source.playbackRate.value = run.rate;
+        source.connect(audio.destination);
+        source.start(
+          run.contextStart + (piece.timelineStart - run.from) / run.rate,
+          piece.sourceOffset,
+          piece.duration,
+        );
+        source.onended = () => {
+          sources = sources.filter((playing) => playing !== source);
+        };
+        sources.push(source);
+      }
+    }
   };
 
   const leadBefore = (from: number, musicStart: number): number => {
@@ -182,26 +210,11 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
   const scheduleRun = (from: number, to: number, contextStart: number): MixRun => {
     const audio = sharedAudioContext();
     const run: MixRun = { contextStart, from, to, rate: current.rate };
-    const { output, delaySeconds } = route ?? { output: audio.destination, delaySeconds: 0 };
 
-    for (const piece of mixPiecesOf(segments, from, to)) {
-      const buffer = buffers.get(piece.mediaItemId);
-
-      if (buffer !== undefined) {
-        const source = audio.createBufferSource();
-        source.buffer = buffer;
-        source.playbackRate.value = run.rate;
-        source.connect(output);
-        source.start(
-          contextStart - delaySeconds + (piece.timelineStart - from) / run.rate,
-          piece.sourceOffset,
-          piece.duration,
-        );
-        source.onended = () => {
-          sources = sources.filter((playing) => playing !== source);
-        };
-        sources.push(source);
-      }
+    if (stretching && stretch !== null) {
+      stretch.play(run);
+    } else {
+      scheduleSources(audio, run);
     }
 
     const keptSince = audio.currentTime - FINISHED_RUN_GRACE_SECONDS;
@@ -236,6 +249,18 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
     }
   };
 
+  const pause = (): void => {
+    restingAt = position();
+    silence();
+    publish({ playing: false });
+  };
+
+  const interrupt = (): void => {
+    if (current.playing) {
+      pause();
+    }
+  };
+
   const startFrom = (from: number, counted = true): void => {
     const audio = sharedAudioContext();
     silence();
@@ -248,16 +273,12 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
     }
 
     restingAt = range.start;
-    void audio.resume();
-    route = routeFor(audio, current.rate);
-    scheduleRun(
-      range.start,
-      range.end,
-      counted
-        ? leadBefore(range.start, audio.currentTime + START_LATENCY_SECONDS + route.delaySeconds)
-        : audio.currentTime + START_LATENCY_SECONDS + route.delaySeconds,
-    );
+    void audio.resume().catch(interrupt);
+    engageStretch(audio);
+    const startAt = audio.currentTime + START_LATENCY_SECONDS + stretchLeadSeconds();
+    scheduleRun(range.start, range.end, counted ? leadBefore(range.start, startAt) : startAt);
     watch = setInterval(keepGoing, WATCH_INTERVAL_MS);
+    stopWatchingInterruptions = watchPlaybackInterruptions(audio, interrupt);
     publish({ playing: true });
   };
 
@@ -268,9 +289,9 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
       }
 
       publish({ load: 'loading' });
-      void pitchKeeperOf(sharedAudioContext()).then((ready) => {
-        keeper = ready;
-        if (ready !== null && current.playing && pitchCorrectionOf(current.rate) !== 0) {
+      void timeStretchOf(sharedAudioContext()).then((ready) => {
+        stretch = ready;
+        if (ready !== null && current.playing && current.rate !== STRAIGHT_RATE) {
           startFrom(position(), false);
         }
       });
@@ -281,7 +302,7 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
             .map(async (segment) => {
               buffers.set(
                 segment.mediaItemId,
-                await audioBufferOf(segment.mediaItemId, segment.audioUrl),
+                await studioMediaLoader.audioBuffer(segment.mediaItemId, segment.audioUrl),
               );
             }),
         );
@@ -296,11 +317,7 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
       }
       startFrom(restingAt >= length ? 0 : restingAt);
     },
-    pause: () => {
-      restingAt = position();
-      silence();
-      publish({ playing: false });
-    },
+    pause,
     seek: (seconds) => {
       restingAt = clampTo(seconds, length);
       if (current.playing) {
@@ -352,6 +369,7 @@ export const createMixPlayer = (segments: readonly MusicSegment[]): MixPlayer =>
     dispose: () => {
       restingAt = position();
       silence();
+      stretch?.forget(owner);
       publish({ playing: false });
     },
   };

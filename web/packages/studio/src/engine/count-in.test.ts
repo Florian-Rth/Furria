@@ -1,5 +1,5 @@
-import type { MusicSegment } from '@furria/studio/music-timeline';
 import { describe, expect, it } from 'vitest';
+import type { MusicSegment } from '../models/music-timeline';
 import { countInAt, countInOf } from './count-in';
 
 const segment = (patch: Partial<MusicSegment>): MusicSegment => ({

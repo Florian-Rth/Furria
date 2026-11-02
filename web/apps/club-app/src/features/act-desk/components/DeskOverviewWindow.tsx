@@ -1,6 +1,6 @@
+import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
 import { KkLaneOverview } from '@furria/ui/KkLaneOverview';
 import type { FC } from 'react';
-import { usePlaybackSeconds } from '@/features/act-player/hooks/use-playback-seconds';
 import { DESK_BRACKET } from '../desk-copy';
 import { shareOf } from '../desk-time';
 import type { ActDesk } from '../hooks/use-act-desk';

@@ -1,10 +1,10 @@
-import type { MusicSegment } from '@furria/studio/music-timeline';
+import type { MusicSegment } from '../models/music-timeline';
 import {
   BEAT_ROUNDING_SECONDS,
   beatGridAt,
   countOfBeat,
   segmentAt,
-} from '@furria/studio/music-timeline';
+} from '../models/music-timeline';
 
 export const COUNT_IN_BEATS = 4;
 const ON_BEAT_SECONDS = BEAT_ROUNDING_SECONDS;
