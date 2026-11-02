@@ -1,5 +1,5 @@
+import type { StudioPart, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { StudioPart, StudioStep, StudioVideo } from '@/features/acts/schemas';
 import {
   dragOf,
   fillOf,

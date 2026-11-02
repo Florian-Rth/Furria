@@ -1,8 +1,8 @@
-import type { CountMark, TimelineRange } from '@/features/act-player/music-timeline';
-import { partOfStep } from '@/features/act-player/music-timeline';
-import { shownStepNameOf } from '@/features/act-player/step-names';
+import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
+import { partOfStep } from '@furria/studio/music-timeline';
+import { shownStepNameOf } from '@furria/studio/step-names';
+import type { StudioPart, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
 import { isPlayableVideo } from '@/features/act-player/video-sync';
-import type { StudioPart, StudioStep, StudioVideo } from '@/features/acts/schemas';
 
 const COUNTS_PER_EIGHT = 8;
 const EIGHT_GRAIN = 2;

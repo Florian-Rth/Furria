@@ -1,4 +1,4 @@
-import type { KeyframeEasing } from '@/features/act-player/choreography-motion';
+import type { KeyframeEasing } from '@furria/studio/choreography-motion';
 import {
   EASING_TEXT,
   facingTextOf,

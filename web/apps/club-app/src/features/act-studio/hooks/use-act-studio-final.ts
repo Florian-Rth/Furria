@@ -1,6 +1,7 @@
+import { musicSegmentsOf } from '@furria/studio/music-timeline';
+import type { StudioFinalTrack } from '@furria/studio/studio-schemas';
 import { useState } from 'react';
-import { musicSegmentsOf } from '@/features/act-player/music-timeline';
-import type { Studio, StudioFinalTrack } from '@/features/acts/schemas';
+import type { Studio } from '@/features/acts/schemas';
 import {
   adoptedMetaOf,
   adoptTextOf,

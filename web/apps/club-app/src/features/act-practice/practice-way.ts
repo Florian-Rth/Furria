@@ -1,6 +1,6 @@
-import type { StagePoint, TimedKeyframe } from '@/features/act-player/choreography-motion';
-import { easedProgress, pointOnMove } from '@/features/act-player/choreography-motion';
-import type { CountMark, TimelineRange } from '@/features/act-player/music-timeline';
+import type { StagePoint, TimedKeyframe } from '@furria/studio/choreography-motion';
+import { easedProgress, pointOnMove } from '@furria/studio/choreography-motion';
+import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
 
 const LOOKAHEAD_COUNTS = 8;
 const LOOKAHEAD_SECONDS_WITHOUT_COUNTS = 4;

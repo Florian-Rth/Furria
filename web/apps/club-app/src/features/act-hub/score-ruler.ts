@@ -1,4 +1,4 @@
-import type { TimelineRange } from '@/features/act-player/music-timeline';
+import type { TimelineRange } from '@furria/studio/music-timeline';
 
 const TICK_STEPS_SECONDS: readonly number[] = [1, 2, 5, 10, 15, 30, 60];
 const MOST_TICKS = 12;

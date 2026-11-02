@@ -364,6 +364,9 @@ importers:
       '@furria/api-client':
         specifier: workspace:*
         version: link:../../packages/api-client
+      '@furria/studio':
+        specifier: workspace:*
+        version: link:../../packages/studio
       '@furria/ui':
         specifier: workspace:*
         version: link:../../packages/ui
@@ -579,6 +582,22 @@ importers:
 
   packages/api-client:
     dependencies:
+      zod:
+        specifier: 'catalog:'
+        version: 4.4.3
+    devDependencies:
+      typescript:
+        specifier: 'catalog:'
+        version: 7.0.2
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.10(@types/node@26.1.1)(happy-dom@20.10.6)(vite@8.1.5(@types/node@26.1.1)(jiti@2.7.0))
+
+  packages/studio:
+    dependencies:
+      '@furria/api-client':
+        specifier: workspace:*
+        version: link:../api-client
       zod:
         specifier: 'catalog:'
         version: 4.4.3

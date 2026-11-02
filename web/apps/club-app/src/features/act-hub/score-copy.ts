@@ -1,4 +1,4 @@
-import type { TimelineRange } from '@/features/act-player/music-timeline';
+import type { TimelineRange } from '@furria/studio/music-timeline';
 import type { ScoreDoorKey } from './score-doors';
 import type { ReadinessItem, ReadinessKey } from './score-readiness';
 import type { ScoreCounts, ScoreStepFlag } from './score-steps';

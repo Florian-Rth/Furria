@@ -1,5 +1,6 @@
+import type { StudioPart, StudioStep } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { Studio, StudioPart, StudioStep } from '@/features/acts/schemas';
+import type { Studio } from '@/features/acts/schemas';
 import {
   deskPartOf,
   markSecondsOf,

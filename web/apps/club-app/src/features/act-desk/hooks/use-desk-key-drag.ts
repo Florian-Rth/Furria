@@ -1,5 +1,5 @@
+import type { SpotPath } from '@furria/studio/choreography-motion';
 import { useState } from 'react';
-import type { SpotPath } from '@/features/act-player/choreography-motion';
 import { useTrackCommit } from '@/features/act-studio/hooks/use-track-commit';
 import { snappedOf } from '@/features/act-studio/studio-edits';
 import type { DeskTracks } from '../desk-keyframes';

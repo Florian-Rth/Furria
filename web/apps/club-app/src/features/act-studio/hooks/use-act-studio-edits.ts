@@ -1,6 +1,6 @@
+import type { TimedKeyframe } from '@furria/studio/choreography-motion';
 import type { RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import type { TimedKeyframe } from '@/features/act-player/choreography-motion';
 import type { MixPlayer } from '@/features/act-player/mix-player';
 import type { StepText, StudioEdits, TimeSpan } from '../studio-edits';
 import { NO_EDITS, tracksWithoutOf, withoutKeys } from '../studio-edits';

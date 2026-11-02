@@ -1,18 +1,23 @@
-import type { Studio, StudioPart, StudioStage, StudioStep } from '@/features/acts/schemas';
-import { useAudioPeaks } from '../api';
-import type { SpotPath } from '../choreography-motion';
-import { spotPathsOf } from '../choreography-motion';
-import type { MixPlayer, MixPlayerState } from '../mix-player';
-import type { CountMark, MusicSegment, TimelineRange } from '../music-timeline';
+import type { SpotPath } from '@furria/studio/choreography-motion';
+import { spotPathsOf } from '@furria/studio/choreography-motion';
+import type { CountMark, MusicSegment, TimelineRange } from '@furria/studio/music-timeline';
 import {
   countMarksOf,
   musicLengthOf,
   musicSegmentsOf,
   partRangeOf,
   stepRangeOf,
-} from '../music-timeline';
-import type { AudioPeaks } from '../schemas';
-import { stageOrDefault } from '../stage-view';
+} from '@furria/studio/music-timeline';
+import { stageOrDefault } from '@furria/studio/stage-view';
+import type {
+  AudioPeaks,
+  StudioPart,
+  StudioStage,
+  StudioStep,
+} from '@furria/studio/studio-schemas';
+import type { Studio } from '@/features/acts/schemas';
+import { useAudioPeaks } from '../api';
+import type { MixPlayer, MixPlayerState } from '../mix-player';
 import { useMixPlayer } from './use-mix-player';
 
 export interface StudioPlaybackControls {

@@ -1,8 +1,8 @@
-import type { SpotPath } from '@/features/act-player/choreography-motion';
-import { poseAt } from '@/features/act-player/choreography-motion';
-import type { CountMark, TimelineRange } from '@/features/act-player/music-timeline';
-import { EDGE_TOLERANCE_SECONDS } from '@/features/act-player/music-timeline';
-import type { StudioStage } from '@/features/acts/schemas';
+import type { SpotPath } from '@furria/studio/choreography-motion';
+import { poseAt } from '@furria/studio/choreography-motion';
+import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
+import { EDGE_TOLERANCE_SECONDS } from '@furria/studio/music-timeline';
+import type { StudioStage } from '@furria/studio/studio-schemas';
 import type { ViewShare } from './practice-stage';
 import { viewShareOf } from './practice-stage';
 

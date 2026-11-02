@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import type { Studio, StudioFinalTrack, StudioPart, StudioStep } from '@/features/acts/schemas';
 import type { BeatSection, MusicSegment } from './music-timeline';
 import {
   countAt,
@@ -9,6 +8,7 @@ import {
   segmentAt,
   timelineSecondsOf,
 } from './music-timeline';
+import type { Studio, StudioFinalTrack, StudioPart, StudioStep } from './studio-schemas';
 
 const urls = { normalised: '/n', preview: '/p', peaks: '/k' };
 
@@ -36,8 +36,6 @@ const studio = (patch: Partial<Studio>): Studio => ({
   videos: [],
   choreography: null,
   stage: null,
-  evenings: [],
-  trainings: [],
   ...patch,
 });
 

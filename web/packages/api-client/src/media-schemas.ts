@@ -28,6 +28,9 @@ type PublicWebsitePicturesSchema = z.ZodObject<{
   pictures: z.ZodArray<PublicWebsitePictureSchema>;
 }>;
 
+export const MediaItemStateSchema = z.enum(['processing', 'ready', 'failed']);
+export type MediaItemState = z.infer<typeof MediaItemStateSchema>;
+
 export interface MediaSchemas {
   MediaUrlSchema: MediaUrlSchema;
   PictureSchema: PictureSchema;

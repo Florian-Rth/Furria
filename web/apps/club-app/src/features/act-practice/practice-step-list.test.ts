@@ -1,6 +1,6 @@
+import type { CountMark } from '@furria/studio/music-timeline';
+import type { StudioPart, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { CountMark } from '@/features/act-player/music-timeline';
-import type { StudioPart, StudioStep, StudioVideo } from '@/features/acts/schemas';
 import { clockOf, eightsOf, isFilmed, stepListOf } from './practice-step-list';
 
 const step = (

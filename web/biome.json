@@ -339,6 +339,55 @@
       }
     },
     {
+      "includes": ["packages/studio/**"],
+      "plugins": ["./biome-plugins/noDesignSx.grit"],
+      "linter": {
+        "rules": {
+          "style": {
+            "noRestrictedImports": {
+              "level": "error",
+              "options": {
+                "paths": {
+                  "@mui/material": "Import defaults from `@mui/material/<Component>`, never the barrel.",
+                  "@mui/icons-material": "Import defaults from `@mui/icons-material/<Icon>`, never the barrel.",
+                  "@furria/ui": "Import from the leaf subpath `@furria/ui/<Module>`; the package has no barrel (it made Vite dev load every module).",
+                  "@furria/api-client": "Import only `@furria/api-client/media-schemas`: the studio never fetches (ADR-0035)."
+                },
+                "patterns": [
+                  {
+                    "group": [
+                      "@mui/material/**",
+                      "!@mui/material/Stack",
+                      "!@mui/material/Grid",
+                      "!@mui/material/Box"
+                    ],
+                    "message": "The studio carries no Furria pixels: only `Stack`, `Grid` and `Box` come from MUI. It builds its components from `@furria/ui` tokens and primitives (ADR-0035)."
+                  },
+                  {
+                    "group": ["@mui/icons-material/**"],
+                    "message": "Studio icons come from `@furria/ui` (`KkIcon`), never from `@mui/icons-material`."
+                  },
+                  {
+                    "group": ["@emotion/**"],
+                    "message": "Styling lives in `@furria/ui` (ADR-0007, ADR-0035): the studio never authors CSS with Emotion."
+                  },
+                  {
+                    "group": [
+                      "@/**",
+                      "@capacitor/**",
+                      "@tanstack/react-query",
+                      "@tanstack/react-router"
+                    ],
+                    "message": "The studio never fetches, routes or reaches native code (ADR-0035): the club app hands it the studio data, media URLs and a save port."
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    },
+    {
       "includes": ["apps/club-app/src/features/club/stages/**"],
       "plugins": [
         "./biome-plugins/useStackOverFlexBox.grit",

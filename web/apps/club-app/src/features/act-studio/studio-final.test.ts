@@ -1,6 +1,7 @@
+import type { MusicSegment } from '@furria/studio/music-timeline';
+import type { StudioFinalTrack, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { MusicSegment } from '@/features/act-player/music-timeline';
-import type { Studio, StudioFinalTrack, StudioStep, StudioVideo } from '@/features/acts/schemas';
+import type { Studio } from '@/features/acts/schemas';
 import {
   finalBeatAtOf,
   finalPlacementsOf,

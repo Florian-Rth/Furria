@@ -1,4 +1,4 @@
-import type { StudioStep } from '@/features/acts/schemas';
+import type { StudioStep } from '@furria/studio/studio-schemas';
 
 export interface LessonNextStep {
   step: StudioStep;

@@ -1,7 +1,7 @@
-import type { SpotPath } from '@/features/act-player/choreography-motion';
-import { poseAt } from '@/features/act-player/choreography-motion';
-import { viewPointOf } from '@/features/act-player/stage-view';
-import type { StudioSpot, StudioStage } from '@/features/acts/schemas';
+import type { SpotPath } from '@furria/studio/choreography-motion';
+import { poseAt } from '@furria/studio/choreography-motion';
+import { viewPointOf } from '@furria/studio/stage-view';
+import type { StudioSpot, StudioStage } from '@furria/studio/studio-schemas';
 
 const SETTLE_SECONDS = 0.01;
 

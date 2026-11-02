@@ -1,4 +1,4 @@
-import type { TimedKeyframe } from '@/features/act-player/choreography-motion';
+import type { TimedKeyframe } from '@furria/studio/choreography-motion';
 import { anchoredTrackOf } from '../studio-formation';
 import type { StudioScreen } from './use-studio-screen';
 

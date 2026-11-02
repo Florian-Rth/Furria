@@ -1,6 +1,7 @@
+import type { SpotPath } from '@furria/studio/choreography-motion';
+import type { StudioSpot, StudioStep } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { SpotPath } from '@/features/act-player/choreography-motion';
-import type { StudioSpot, StudioStep, StudioTraining } from '@/features/acts/schemas';
+import type { StudioTraining } from '@/features/acts/schemas';
 import type { HallScene } from './hall-scene';
 import {
   hallAbsencesOf,

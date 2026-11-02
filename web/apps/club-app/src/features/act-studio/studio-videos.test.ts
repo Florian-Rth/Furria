@@ -1,5 +1,6 @@
+import type { StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { Studio, StudioStep, StudioVideo } from '@/features/acts/schemas';
+import type { Studio } from '@/features/acts/schemas';
 import type { TakeGroup } from './studio-videos';
 import {
   clampedVideoStartOf,

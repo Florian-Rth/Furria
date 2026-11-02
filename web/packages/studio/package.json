@@ -1,0 +1,27 @@
+{
+  "name": "@furria/studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "sideEffects": false,
+  "exports": {
+    "./choreography-motion": "./src/models/choreography-motion.ts",
+    "./mix-waveform": "./src/models/mix-waveform.ts",
+    "./music-timeline": "./src/models/music-timeline.ts",
+    "./stage-view": "./src/models/stage-view.ts",
+    "./step-names": "./src/models/step-names.ts",
+    "./studio-schemas": "./src/models/studio-schemas.ts"
+  },
+  "scripts": {
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@furria/api-client": "workspace:*",
+    "zod": "catalog:"
+  },
+  "devDependencies": {
+    "typescript": "catalog:",
+    "vitest": "catalog:"
+  }
+}

@@ -1,4 +1,4 @@
-import type { Choreography, Keyframe, StudioSpot } from '@/features/acts/schemas';
+import type { Choreography, Keyframe, StudioSpot } from '@furria/studio/studio-schemas';
 import type { HoldsStudio } from './studio-music';
 import { withStudio } from './studio-music';
 

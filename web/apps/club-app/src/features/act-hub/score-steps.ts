@@ -1,6 +1,7 @@
-import type { SpotPath } from '@/features/act-player/choreography-motion';
-import type { CountMark, TimelineRange } from '@/features/act-player/music-timeline';
-import type { Studio, StudioPart, StudioStep, StudioVideo } from '@/features/acts/schemas';
+import type { SpotPath } from '@furria/studio/choreography-motion';
+import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
+import type { StudioPart, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
+import type { Studio } from '@/features/acts/schemas';
 
 const SAME_PLACE_METRES = 0.05;
 const COVER_SHARE = 0.5;

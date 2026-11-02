@@ -1,6 +1,6 @@
+import type { StudioVideo } from '@furria/studio/studio-schemas';
 import type { RefObject } from 'react';
 import { useEffect, useEffectEvent } from 'react';
-import type { StudioVideo } from '@/features/acts/schemas';
 import type { MixPlayer } from '../mix-player';
 import { videoCorrectionOf, videoSecondsAt } from '../video-sync';
 

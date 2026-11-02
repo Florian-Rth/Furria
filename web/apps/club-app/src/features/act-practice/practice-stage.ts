@@ -1,7 +1,7 @@
-import type { SpotPath, StagePoint } from '@/features/act-player/choreography-motion';
-import { posesAt } from '@/features/act-player/choreography-motion';
-import { viewPointOf, viewRotationOf } from '@/features/act-player/stage-view';
-import type { StudioSpot, StudioStage } from '@/features/acts/schemas';
+import type { SpotPath, StagePoint } from '@furria/studio/choreography-motion';
+import { posesAt } from '@furria/studio/choreography-motion';
+import { viewPointOf, viewRotationOf } from '@furria/studio/stage-view';
+import type { StudioSpot, StudioStage } from '@furria/studio/studio-schemas';
 
 export type StageDotKind = 'own' | 'cast' | 'open';
 

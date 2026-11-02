@@ -1,8 +1,8 @@
+import type { MusicSegment } from '@furria/studio/music-timeline';
+import type { AudioPeaks } from '@furria/studio/studio-schemas';
 import { useQueries } from '@tanstack/react-query';
 import { queryKeys } from '@/lib/query/reads';
-import type { MusicSegment } from './music-timeline';
 import { requestAudioPeaks } from './requests';
-import type { AudioPeaks } from './schemas';
 
 export const useAudioPeaks = (
   segments: readonly MusicSegment[],

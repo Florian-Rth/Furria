@@ -1,6 +1,7 @@
-import type { MusicAnchor, MusicSegment } from '@/features/act-player/music-timeline';
-import { EDGE_TOLERANCE_SECONDS } from '@/features/act-player/music-timeline';
-import type { Studio, StudioFinalTrack, StudioStep, StudioVideo } from '@/features/acts/schemas';
+import type { MusicAnchor, MusicSegment } from '@furria/studio/music-timeline';
+import { EDGE_TOLERANCE_SECONDS } from '@furria/studio/music-timeline';
+import type { StudioFinalTrack, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
+import type { Studio } from '@/features/acts/schemas';
 import { finalTitleOf, songNameOf } from './studio-copy';
 import { anchorAt } from './studio-formation';
 import type { HoldsStudio } from './studio-music';

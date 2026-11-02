@@ -1,10 +1,7 @@
-import type {
-  SpotPath,
-  StagePoint,
-  TimedKeyframe,
-} from '@/features/act-player/choreography-motion';
-import type { CountMark, MusicSegment } from '@/features/act-player/music-timeline';
-import type { Studio, StudioSong, StudioStep } from '@/features/acts/schemas';
+import type { SpotPath, StagePoint, TimedKeyframe } from '@furria/studio/choreography-motion';
+import type { CountMark, MusicSegment } from '@furria/studio/music-timeline';
+import type { StudioSong, StudioStep } from '@furria/studio/studio-schemas';
+import type { Studio } from '@/features/acts/schemas';
 import { songLimitOf } from './studio-music';
 
 const MIN_STEP_SECONDS = 0.5;

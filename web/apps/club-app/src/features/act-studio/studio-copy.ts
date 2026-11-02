@@ -1,7 +1,7 @@
-import type { KeyframeEasing } from '@/features/act-player/choreography-motion';
-import { unnamedStepNameOf } from '@/features/act-player/step-names';
+import type { KeyframeEasing } from '@furria/studio/choreography-motion';
+import { unnamedStepNameOf } from '@furria/studio/step-names';
+import type { StudioVideo } from '@furria/studio/studio-schemas';
 import { clockOf } from '@/features/act-practice/practice-step-list';
-import type { StudioVideo } from '@/features/acts/schemas';
 import type { MediaItemState } from '@/lib/api/schemas';
 import type { UploadFailure } from '@/lib/media/upload-failure';
 import type { OutsideMusic } from './studio-music';

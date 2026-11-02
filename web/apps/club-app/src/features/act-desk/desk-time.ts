@@ -1,4 +1,4 @@
-import type { CountMark } from '@/features/act-player/music-timeline';
+import type { CountMark } from '@furria/studio/music-timeline';
 
 export const ZOOM_FACTOR = 1.6;
 const COUNT_AT_CLOSEST_PX = 64;

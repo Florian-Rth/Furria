@@ -1,10 +1,9 @@
+import type { Choreography, StudioSpot } from '@furria/studio/studio-schemas';
 import type {
-  Choreography,
   EveningChoreography,
   Studio,
   StudioAppearance,
   StudioEvening,
-  StudioSpot,
   StudioSpotChange,
 } from '@/features/acts/schemas';
 import type { CastPerson, EveningChange } from '@/features/running-order/schemas';

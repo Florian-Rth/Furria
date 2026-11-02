@@ -1,5 +1,5 @@
-import { posesAt } from '@/features/act-player/choreography-motion';
-import { viewRotationOf } from '@/features/act-player/stage-view';
+import { posesAt } from '@furria/studio/choreography-motion';
+import { viewRotationOf } from '@furria/studio/stage-view';
 import type { StageDot, StageScene } from '@/features/act-practice/practice-stage';
 import { stageDotsAt } from '@/features/act-practice/practice-stage';
 import { dotLabelOf } from './studio-copy';

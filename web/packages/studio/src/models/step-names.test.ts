@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import type { StudioStep } from '@/features/acts/schemas';
 import { shownStepNameOf, stepNumberOf } from './step-names';
+import type { StudioStep } from './studio-schemas';
 
 const step = (stepId: number): StudioStep => ({
   stepId,

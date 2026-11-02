@@ -1,5 +1,5 @@
-import type { AudioPeaks } from './schemas';
-import { AudioPeaksSchema } from './schemas';
+import type { AudioPeaks } from '@furria/studio/studio-schemas';
+import { AudioPeaksSchema } from '@furria/studio/studio-schemas';
 
 export const requestAudioPeaks = async (url: string): Promise<AudioPeaks> => {
   const response = await fetch(url);

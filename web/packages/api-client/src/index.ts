@@ -30,10 +30,11 @@ export {
   shouldRetryRequest,
 } from './api-failure';
 export type {
+  MediaItemState,
   MediaSchemas,
   Picture,
   PublicWebsitePicture,
   PublicWebsitePictures,
   SessionLogo,
 } from './media-schemas';
-export { createMediaSchemas } from './media-schemas';
+export { createMediaSchemas, MediaItemStateSchema } from './media-schemas';

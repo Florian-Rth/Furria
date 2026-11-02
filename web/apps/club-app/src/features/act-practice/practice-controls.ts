@@ -1,7 +1,7 @@
-import type { TimelineRange } from '@/features/act-player/music-timeline';
-import { partOfStep, partRangeOf, stepRangeOf } from '@/features/act-player/music-timeline';
+import type { TimelineRange } from '@furria/studio/music-timeline';
+import { partOfStep, partRangeOf, stepRangeOf } from '@furria/studio/music-timeline';
+import type { StudioPart, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
 import { isPlayableVideo, videoSecondsAt } from '@/features/act-player/video-sync';
-import type { StudioPart, StudioStep, StudioVideo } from '@/features/acts/schemas';
 import { shownStepOf } from './practice-stepping';
 
 export type LoopKind = 'off' | 'step' | 'part';

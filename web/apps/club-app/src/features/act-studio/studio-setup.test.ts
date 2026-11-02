@@ -1,5 +1,6 @@
+import type { StudioFinalTrack, StudioSong, StudioVideo } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { Studio, StudioFinalTrack, StudioSong, StudioVideo } from '@/features/acts/schemas';
+import type { Studio } from '@/features/acts/schemas';
 import { setupOf, setupStartsOpen } from './studio-setup';
 
 const urls = { normalised: 'a', preview: 'b', peaks: 'p' };

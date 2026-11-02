@@ -1,5 +1,6 @@
+import type { Keyframe } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { Keyframe, Studio, StudioAppearance, StudioEvening } from '@/features/acts/schemas';
+import type { Studio, StudioAppearance, StudioEvening } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
 import {
   EMPTY_APPEARANCE,

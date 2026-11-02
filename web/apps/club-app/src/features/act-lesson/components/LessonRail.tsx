@@ -1,6 +1,6 @@
+import { shownStepNameOf } from '@furria/studio/step-names';
 import { KkLesson } from '@furria/ui/KkLesson';
 import type { FC } from 'react';
-import { shownStepNameOf } from '@/features/act-player/step-names';
 import { PRACTICE_SEGMENTS_LABEL } from '@/features/act-practice/practice-copy';
 import type { Lesson } from '../hooks/use-lesson';
 import { railGroupLabelOf, railStepLabelOf } from '../lesson-copy';

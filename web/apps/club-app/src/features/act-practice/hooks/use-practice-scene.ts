@@ -1,10 +1,10 @@
+import type { SpotPath } from '@furria/studio/choreography-motion';
+import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
+import { stepRangeOf } from '@furria/studio/music-timeline';
+import type { StudioStep } from '@furria/studio/studio-schemas';
 import type { KkPracticeStageGhostPoint } from '@furria/ui/KkPracticeStage';
-import type { SpotPath } from '@/features/act-player/choreography-motion';
 import { usePlaybackSeconds } from '@/features/act-player/hooks/use-playback-seconds';
 import type { MixPlayer } from '@/features/act-player/mix-player';
-import type { CountMark, TimelineRange } from '@/features/act-player/music-timeline';
-import { stepRangeOf } from '@/features/act-player/music-timeline';
-import type { StudioStep } from '@/features/acts/schemas';
 import type { CueSide, StageDot, StageScene } from '../practice-stage';
 import { cueSideOf, stageDotsAt, viewRouteOf } from '../practice-stage';
 import type { StepWay } from '../practice-step-way';

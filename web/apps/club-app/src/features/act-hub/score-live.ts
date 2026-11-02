@@ -1,7 +1,7 @@
+import type { SpotPath } from '@furria/studio/choreography-motion';
+import type { TimelineRange } from '@furria/studio/music-timeline';
+import type { StudioSpot, StudioStage } from '@furria/studio/studio-schemas';
 import type { KkScoreFormationDot } from '@furria/ui/KkScoreFormation';
-import type { SpotPath } from '@/features/act-player/choreography-motion';
-import type { TimelineRange } from '@/features/act-player/music-timeline';
-import type { StudioSpot, StudioStage } from '@/features/acts/schemas';
 import { formationAt } from './score-formation';
 
 export interface LiveScene {

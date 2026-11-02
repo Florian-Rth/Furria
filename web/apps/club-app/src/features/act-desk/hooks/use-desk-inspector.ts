@@ -1,9 +1,9 @@
+import { poseAt } from '@furria/studio/choreography-motion';
+import { partRangeOf } from '@furria/studio/music-timeline';
 import type { KkLaneButtonTone } from '@furria/ui/KkLaneButton';
 import type { KkLaneGlyphName } from '@furria/ui/KkLaneGlyph';
 import type { KkLaneInspectorFact } from '@furria/ui/KkLaneInspector';
 import { useState } from 'react';
-import { poseAt } from '@/features/act-player/choreography-motion';
-import { partRangeOf } from '@/features/act-player/music-timeline';
 import { useStepTexts } from '@/features/act-studio/hooks/use-step-texts';
 import { videoNameOf } from '@/features/act-studio/studio-copy';
 import { markSecondsOf, partSettingsOf, startsAPart } from '@/features/act-studio/studio-steps';

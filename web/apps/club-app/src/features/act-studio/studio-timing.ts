@@ -1,5 +1,5 @@
-import type { CountMark } from '@/features/act-player/music-timeline';
-import { EDGE_TOLERANCE_SECONDS } from '@/features/act-player/music-timeline';
+import type { CountMark } from '@furria/studio/music-timeline';
+import { EDGE_TOLERANCE_SECONDS } from '@furria/studio/music-timeline';
 import type { TimeSpan } from './studio-edits';
 
 export interface CountCell {

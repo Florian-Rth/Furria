@@ -1,11 +1,10 @@
 import type {
   Keyframe,
-  Studio,
-  StudioEvening,
   StudioFinalTrack,
   StudioPart,
   StudioVideo,
-} from '@/features/acts/schemas';
+} from '@furria/studio/studio-schemas';
+import type { Studio, StudioEvening } from '@/features/acts/schemas';
 import type { PortraitPersonRef } from '@/lib/api/schemas';
 import type { FinalBeatInput, FinalOffsetInput } from './studio-final';
 import type { SongSettings } from './studio-music';

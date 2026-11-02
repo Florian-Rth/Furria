@@ -1,8 +1,8 @@
+import { partRangeOf } from '@furria/studio/music-timeline';
+import type { StudioVideo } from '@furria/studio/studio-schemas';
 import type { KkStudioListBadgeTone } from '@furria/ui/KkStudioList';
 import type { KkStudioNudgeDirection } from '@furria/ui/KkStudioPlacement';
 import { useState } from 'react';
-import { partRangeOf } from '@/features/act-player/music-timeline';
-import type { StudioVideo } from '@/features/acts/schemas';
 import {
   placementTextOf,
   STUDIO_EDIT,

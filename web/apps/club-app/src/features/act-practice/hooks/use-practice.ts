@@ -1,9 +1,9 @@
+import type { TimelineRange } from '@furria/studio/music-timeline';
+import { partOfStep, partRangeOf, stepRangeOf } from '@furria/studio/music-timeline';
+import { shownStepNameOf, stepNumberOf } from '@furria/studio/step-names';
+import type { StudioStep } from '@furria/studio/studio-schemas';
 import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import type { TimelineRange } from '@/features/act-player/music-timeline';
-import { partOfStep, partRangeOf, stepRangeOf } from '@/features/act-player/music-timeline';
-import { shownStepNameOf, stepNumberOf } from '@/features/act-player/step-names';
-import type { StudioStep } from '@/features/acts/schemas';
 import type { LoopKind } from '../practice-controls';
 import { loopKindOf, loopRangeOf } from '../practice-controls';
 import {

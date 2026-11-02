@@ -1,6 +1,6 @@
+import type { CountMark } from '@furria/studio/music-timeline';
 import { KK_LANE_HEAD_REM } from '@furria/ui/KkLaneTrack';
 import { useEffect, useState } from 'react';
-import type { CountMark } from '@/features/act-player/music-timeline';
 import { beatSecondsOf, canZoomOf, followLeftOf, zoomedOf, zoomRangeOf } from '../desk-time';
 
 const BASE_FONT_PX = 16;
