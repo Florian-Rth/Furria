@@ -17,7 +17,7 @@ export const ActStudioCastList: FC<ActStudioCastListProps> = ({ screen, editor }
       <KkStudioList.Action
         icon="add"
         text={STUDIO_SPOT_ADD}
-        disabled={screen.stageWrites.addSpot.isPending}
+        disabled={false}
         onPress={editor.addSpot}
       />
     ) : null;

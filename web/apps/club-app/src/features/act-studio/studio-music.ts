@@ -45,15 +45,6 @@ export const withStudio = <TResponse extends HoldsStudio>(
     ? response
     : { ...response, studio: change(response.studio) };
 
-export const withoutSong = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
-  songId: number,
-): TResponse | undefined =>
-  withStudio(response, (studio) => ({
-    ...studio,
-    songs: studio.songs.filter((song) => song.songId !== songId),
-  }));
-
 export const shiftedOrderOf = (
   songs: readonly StudioSong[],
   songId: number,

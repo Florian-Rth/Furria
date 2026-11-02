@@ -1,7 +1,7 @@
 import type { SaveStatus } from '@furria/studio/autosave';
 import type { Studio } from '@/features/acts/schemas';
-import { HISTORY_FIXED, HISTORY_UNDONE, visitMetaOf, WRITE_TEXT } from '../undo-copy';
-import { useStudioHistory } from './use-studio-history';
+import { historyLinesOf } from '../history-turn';
+import { CHANGE_TEXT, HISTORY_UNDONE, visitMetaOf } from '../undo-copy';
 import { useStudioHistoryControls } from './use-studio-history-controls';
 
 export interface VisitHistoryRow {
@@ -22,24 +22,23 @@ export interface VisitHistory {
 }
 
 export const useVisitHistory = (actId: number, studio: Studio): VisitHistory => {
-  const { history } = useStudioHistory(actId);
   const controls = useStudioHistoryControls(actId);
   const eveningTitleOf = (eventId: number | null): string | null =>
     studio.evenings.find((evening) => evening.eventId === eventId)?.title ?? null;
-  const hintOf = (undone: boolean, fixed: boolean): string | undefined => {
-    if (undone) {
-      return HISTORY_UNDONE;
-    }
-
-    return fixed ? HISTORY_FIXED : undefined;
-  };
+  const lines = historyLinesOf(
+    controls.views.map((view) => ({
+      key: view.key,
+      eventId: view.scope.eventId,
+      records: view.snapshot.history,
+    })),
+  );
 
   return {
-    rows: [...history.entries].reverse().map((entry) => ({
-      key: String(entry.id),
-      label: WRITE_TEXT[entry.kind],
-      meta: visitMetaOf(entry.at, eveningTitleOf(entry.eventId)),
-      hint: hintOf(entry.state === 'undone', entry.reverse === null),
+    rows: lines.map((line) => ({
+      key: line.key,
+      label: CHANGE_TEXT[line.kind],
+      meta: visitMetaOf(line.at, eveningTitleOf(line.eventId)),
+      hint: line.undone ? HISTORY_UNDONE : undefined,
     })),
     canUndo: controls.canUndo,
     canRedo: controls.canRedo,

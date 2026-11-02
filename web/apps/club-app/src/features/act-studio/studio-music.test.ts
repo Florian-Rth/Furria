@@ -9,7 +9,6 @@ import {
   shiftedOrderOf,
   startInOrderOf,
   steppedTempoOf,
-  withoutSong,
 } from './studio-music';
 
 const songOf = (songId: number, position: number, firstBeat: number | null = 0.5): StudioSong => ({
@@ -178,33 +177,5 @@ describe('outsideMusicOf', () => {
     };
 
     expect(outsideMusicOf(studio, [segment])).toEqual({ steps: 1, videos: 1, keyframes: 1 });
-  });
-});
-
-describe('optimistic song changes', () => {
-  const responseOf = (songs: StudioSong[]): { studio: Studio } => ({
-    studio: {
-      music: { lengthSeconds: 0, source: 'workingMix' },
-      songs,
-      finalTracks: [],
-      steps: [],
-      parts: [],
-      spots: [],
-      videos: [],
-      choreography: null,
-      stage: null,
-      evenings: [],
-      trainings: [],
-    },
-  });
-  const songsOf = (response: { studio: Studio | null } | undefined): [number, number, number][] =>
-    (response?.studio?.songs ?? []).map((song) => [song.songId, song.position, song.endSeconds]);
-
-  it('drops a removed song', () => {
-    expect(songsOf(withoutSong(responseOf([songOf(1, 0), songOf(2, 1)]), 1))).toEqual([[2, 1, 70]]);
-  });
-
-  it('leaves a missing studio alone', () => {
-    expect(withoutSong(undefined, 1)).toBeUndefined();
   });
 });

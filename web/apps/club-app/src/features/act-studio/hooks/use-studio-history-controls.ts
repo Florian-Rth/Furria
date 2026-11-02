@@ -1,17 +1,12 @@
 import type { SaveStatus } from '@furria/studio/autosave';
-import type { StudioEditor, StudioEditorSnapshot } from '@furria/studio/studio-editor';
 import { useSyncExternalStore } from 'react';
-import type { Studio } from '@/features/acts/schemas';
-import type { HistoryTops } from '../history-turn';
-import { redoStackOf, undoStackOf } from '../history-turn';
-import { studioEditorOf, subscribeStudioEditors } from '../studio-editor-store';
-import { nextRedoOf, nextUndoOf } from '../studio-history';
-import { useStudioHistory } from './use-studio-history';
-import { useStudioUndo } from './use-studio-undo';
+import type { HistoryTop } from '../history-turn';
+import { combinedStatusOf, redoTurnOf, undoTurnOf } from '../history-turn';
+import type { EditorView } from '../studio-editor-store';
+import { editorViewsOf, subscribeEditorViews } from '../studio-editor-store';
 
 export interface StudioHistoryControls {
-  editor: StudioEditor<Studio> | null;
-  note: StudioEditorSnapshot<Studio>['note'];
+  views: readonly EditorView[];
   canUndo: boolean;
   canRedo: boolean;
   status: SaveStatus | null;
@@ -20,56 +15,40 @@ export interface StudioHistoryControls {
   retry: () => void;
 }
 
-const NO_SUBSCRIPTION = (): (() => void) => () => undefined;
-const NO_SNAPSHOT = (): null => null;
-
-const atOf = (at: string | undefined): number | null => (at === undefined ? null : Date.parse(at));
+const topOf = ({ key, snapshot }: EditorView): HistoryTop => ({
+  key,
+  undoAt: snapshot.canUndo ? snapshot.undoAt : null,
+  redoAt: snapshot.canRedo ? snapshot.redoAt : null,
+});
 
 export const useStudioHistoryControls = (actId: number): StudioHistoryControls => {
-  const editor = useSyncExternalStore(subscribeStudioEditors, () => studioEditorOf(actId));
-  const snapshot = useSyncExternalStore(
-    editor?.subscribe ?? NO_SUBSCRIPTION,
-    editor?.snapshot ?? NO_SNAPSHOT,
+  const views = useSyncExternalStore(
+    (listener) => subscribeEditorViews(actId, listener),
+    () => editorViewsOf(actId),
   );
-  const visit = useStudioHistory(actId);
-  const visitUndo = useStudioUndo(actId);
-  const settled = !visit.history.busy;
-  const undoTops: HistoryTops = {
-    document: snapshot?.canUndo === true ? snapshot.undoAt : null,
-    visit: visit.canUndo ? atOf(nextUndoOf(visit.history)?.at) : null,
-  };
-  const redoTops: HistoryTops = {
-    document: snapshot?.canRedo === true ? snapshot.redoAt : null,
-    visit: visit.canRedo ? atOf(nextRedoOf(visit.history)?.at) : null,
-  };
-
-  const undoStack = settled ? undoStackOf(undoTops) : null;
-  const redoStack = settled ? redoStackOf(redoTops, undoTops) : null;
+  const tops = views.map(topOf);
+  const undoKey = undoTurnOf(tops);
+  const redoKey = redoTurnOf(tops);
+  const viewOf = (key: string | null): EditorView | null =>
+    views.find((view) => view.key === key) ?? null;
 
   return {
-    editor,
-    note: snapshot?.note ?? null,
-    canUndo: undoStack !== null,
-    canRedo: redoStack !== null,
-    status: snapshot?.status ?? null,
+    views,
+    canUndo: undoKey !== null,
+    canRedo: redoKey !== null,
+    status: combinedStatusOf(views.map((view) => view.snapshot.status)),
     undo: () => {
-      if (undoStack === 'document') {
-        editor?.undo();
-      }
-      if (undoStack === 'visit') {
-        visitUndo.undo();
-      }
+      viewOf(undoKey)?.editor.undo();
     },
     redo: () => {
-      if (redoStack === 'document') {
-        editor?.redo();
-      }
-      if (redoStack === 'visit') {
-        visitUndo.redo();
-      }
+      viewOf(redoKey)?.editor.redo();
     },
     retry: () => {
-      editor?.retry();
+      for (const view of views) {
+        if (view.snapshot.status === 'failed') {
+          view.editor.retry();
+        }
+      }
     },
   };
 };

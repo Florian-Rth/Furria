@@ -32,7 +32,6 @@ export const DeskStageTools: FC<DeskStageToolsProps> = ({ desk }) => {
         text={DESK_ADD_SPOT}
         glyph="add"
         label={DESK_ADD_SPOT_LABEL}
-        disabled={desk.screen.stageWrites.addSpot.isPending}
         onPress={editor.addSpot}
       />
     ) : null;

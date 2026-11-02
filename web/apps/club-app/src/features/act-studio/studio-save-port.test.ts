@@ -1,7 +1,7 @@
 import { ApiError } from '@furria/api-client';
 import type { SaveOutcome, ServerWrite } from '@furria/studio/save-port';
 import { describe, expect, it } from 'vitest';
-import { refusedSaveOf } from './studio-save-port';
+import { eveningTracksBodyOf, refusedSaveOf } from './studio-save-port';
 
 const tracks: ServerWrite = { kind: 'tracks', baseVersion: 3, tracks: [] };
 const stepMove: ServerWrite = { kind: 'stepMove', stepId: 4, atSeconds: 8 };
@@ -54,4 +54,18 @@ describe('refusedSaveOf', () => {
   ])('$name', ({ write, error, outcome }) => {
     expect(refusedSaveOf(write, error)).toEqual(outcome);
   });
+});
+
+describe('eveningTracksBodyOf', () => {
+  it.each([
+    { copied: false, body: { baseVersion: null, sessionVersion: 3, tracks: [] } },
+    { copied: true, body: { baseVersion: 3, sessionVersion: null, tracks: [] } },
+  ])(
+    'builds on the session until the evening has its own copy: copied=$copied',
+    ({ copied, body }) => {
+      expect(eveningTracksBodyOf({ kind: 'tracks', baseVersion: 3, tracks: [] }, copied)).toEqual(
+        body,
+      );
+    },
+  );
 });

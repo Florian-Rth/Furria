@@ -18,8 +18,6 @@ export interface EveningDancer {
   dances: boolean;
 }
 
-const UNSAVED_COPY_VERSION = 0;
-
 export const EMPTY_APPEARANCE: StudioAppearance = {
   appearanceId: 0,
   position: null,
@@ -42,14 +40,24 @@ export const eveningSpotsOf = (
     return change === undefined ? spot : { ...spot, person: change.person };
   });
 
-const eveningViewOf = (studio: Studio, appearance: StudioAppearance): Studio => ({
-  ...studio,
-  spots: eveningSpotsOf(studio.spots, appearance.spotChanges),
-  choreography:
-    appearance.choreography === null
-      ? studio.choreography
-      : { version: appearance.choreography.version, tracks: appearance.choreography.tracks },
-});
+const appearanceOf = (studio: Studio, eventId: number): StudioAppearance | null =>
+  studio.evenings.find((evening) => evening.eventId === eventId)?.appearance ?? null;
+
+export const eveningViewOf = (studio: Studio, eventId: number): Studio => {
+  const appearance = appearanceOf(studio, eventId) ?? EMPTY_APPEARANCE;
+
+  return {
+    ...studio,
+    spots: eveningSpotsOf(studio.spots, appearance.spotChanges),
+    choreography:
+      appearance.choreography === null
+        ? studio.choreography
+        : { version: appearance.choreography.version, tracks: appearance.choreography.tracks },
+  };
+};
+
+export const eveningCopyOf = (studio: Studio, eventId: number): EveningChoreography | null =>
+  appearanceOf(studio, eventId)?.choreography ?? null;
 
 export const eveningCastOf = (
   cast: readonly CastPerson[],
@@ -68,23 +76,23 @@ export const eveningCastOf = (
 };
 
 export const eveningStudioOf = (
-  studio: Studio,
+  session: Studio,
+  stage: Studio,
   evening: StudioEvening | null,
   cast: readonly CastPerson[],
 ): Studio => {
-  const appearance = evening?.appearance ?? null;
-  if (appearance === null) {
-    return studio;
+  if (evening === null) {
+    return session;
   }
 
   const dancing = new Set(cast.map((person) => person.personId));
-  const view = eveningViewOf(studio, appearance);
+  const sitsOut = (spot: StudioSpot): boolean =>
+    evening.appearance !== null && spot.person !== null && !dancing.has(spot.person.personId);
 
   return {
-    ...view,
-    spots: view.spots.map((spot) =>
-      spot.person === null || dancing.has(spot.person.personId) ? spot : { ...spot, person: null },
-    ),
+    ...session,
+    spots: stage.spots.map((spot) => (sitsOut(spot) ? { ...spot, person: null } : spot)),
+    choreography: stage.choreography,
   };
 };
 
@@ -126,19 +134,6 @@ const spotChangesOf = (
     )
     .map((spot) => ({ spotId: spot.spotId, person: spot.person }));
 
-const copyOf = (
-  before: EveningChoreography | null,
-  session: Choreography | null,
-  next: Choreography,
-): EveningChoreography =>
-  before === null
-    ? {
-        version: UNSAVED_COPY_VERSION,
-        tracks: next.tracks,
-        copiedFromVersion: session?.version ?? null,
-      }
-    : { ...before, version: next.version, tracks: next.tracks };
-
 const withAppearance = (
   studio: Studio,
   eventId: number,
@@ -152,31 +147,46 @@ const withAppearance = (
   ),
 });
 
-export const withEveningStudio = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
+const savedCopyOf = (
+  studio: Studio,
+  appearance: StudioAppearance,
+  saved: Choreography | null,
+  copied: boolean,
+): EveningChoreography | null => {
+  const copy = appearance.choreography;
+  if (saved === null || !copied) {
+    return copy;
+  }
+
+  return copy === null
+    ? { ...saved, copiedFromVersion: studio.choreography?.version ?? null }
+    : { ...copy, version: saved.version, tracks: saved.tracks };
+};
+
+export const eveningSavedOf = (
+  studio: Studio,
   eventId: number,
-  change: (studio: Studio) => Studio,
-): TResponse | undefined =>
-  withStudio(response, (studio) => {
-    const evening = studio.evenings.find((candidate) => candidate.eventId === eventId);
-    if (evening === undefined) {
-      return studio;
-    }
+  saved: Studio,
+  copied: boolean,
+): Studio => {
+  const appearance = appearanceOf(studio, eventId);
+  const spotChanges = spotChangesOf(studio.spots, saved.spots);
+  const choreography = savedCopyOf(
+    studio,
+    appearance ?? EMPTY_APPEARANCE,
+    saved.choreography,
+    copied,
+  );
+  if (appearance === null && spotChanges.length === 0 && choreography === null) {
+    return studio;
+  }
 
-    const appearance = evening.appearance ?? EMPTY_APPEARANCE;
-    const view = eveningViewOf(studio, appearance);
-    const next = change(view);
-    const choreography =
-      next.choreography === view.choreography || next.choreography === null
-        ? appearance.choreography
-        : copyOf(appearance.choreography, studio.choreography, next.choreography);
-
-    return withAppearance(studio, eventId, () => ({
-      ...appearance,
-      spotChanges: spotChangesOf(studio.spots, next.spots),
-      choreography,
-    }));
-  });
+  return withAppearance(studio, eventId, (current) => ({
+    ...current,
+    spotChanges,
+    choreography,
+  }));
+};
 
 export const withEveningDancer = <TResponse extends HoldsStudio>(
   response: TResponse | undefined,
@@ -198,40 +208,8 @@ export const withEveningDancer = <TResponse extends HoldsStudio>(
     }),
   );
 
-export const withoutEveningCopy = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
-  eventId: number,
-): TResponse | undefined =>
-  withStudio(response, (studio) =>
-    withAppearance(studio, eventId, (appearance) => ({ ...appearance, choreography: null })),
-  );
-
 export const withEveningJoined = <TResponse extends HoldsStudio>(
   response: TResponse | undefined,
   eventId: number,
 ): TResponse | undefined =>
   withStudio(response, (studio) => withAppearance(studio, eventId, (appearance) => appearance));
-
-export const withEveningLeft = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
-  eventId: number,
-): TResponse | undefined =>
-  withStudio(response, (studio) => ({
-    ...studio,
-    evenings: studio.evenings.map((evening) =>
-      evening.eventId === eventId ? { ...evening, appearance: null } : evening,
-    ),
-  }));
-
-export const withEveningCopyVersion = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
-  eventId: number,
-  version: number,
-): TResponse | undefined =>
-  withStudio(response, (studio) =>
-    withAppearance(studio, eventId, (appearance) =>
-      appearance.choreography === null
-        ? appearance
-        : { ...appearance, choreography: { ...appearance.choreography, version } },
-    ),
-  );

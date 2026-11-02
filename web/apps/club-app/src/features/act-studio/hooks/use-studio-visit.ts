@@ -2,7 +2,6 @@ import { useKkNotice } from '@furria/ui/KkNotice';
 import { useEffect } from 'react';
 import { EDITOR_NOTE_GROUP, EDITOR_NOTE_TEXT } from '../document-copy';
 import { historyKeyOf } from '../studio-history-keys';
-import { enterVisit, leaveVisit } from '../studio-history-store';
 import { useStudioHistoryControls } from './use-studio-history-controls';
 
 const NO_ACT = 0;
@@ -13,21 +12,22 @@ const isTypingTarget = (target: EventTarget | null): boolean =>
   (target.isContentEditable || TYPING_TAGS.includes(target.tagName));
 
 export const useStudioVisit = (actId: number | null): void => {
-  const { undo, redo, canUndo, canRedo, note, editor } = useStudioHistoryControls(actId ?? NO_ACT);
+  const { undo, redo, canUndo, canRedo, views } = useStudioHistoryControls(actId ?? NO_ACT);
   const raise = useKkNotice();
 
   useEffect(() => {
-    if (note === null || editor === null) {
-      return;
+    for (const { snapshot, editor } of views) {
+      if (snapshot.note !== null) {
+        raise({
+          tone: 'info',
+          icon: 'undo',
+          group: EDITOR_NOTE_GROUP,
+          message: EDITOR_NOTE_TEXT[snapshot.note.kind],
+        });
+        editor.dismissNote();
+      }
     }
-    raise({
-      tone: 'info',
-      icon: 'undo',
-      group: EDITOR_NOTE_GROUP,
-      message: EDITOR_NOTE_TEXT[note.kind],
-    });
-    editor.dismissNote();
-  }, [note, editor, raise]);
+  }, [views, raise]);
 
   useEffect(() => {
     if (actId === null) {
@@ -62,15 +62,4 @@ export const useStudioVisit = (actId: number | null): void => {
       window.removeEventListener('keydown', press);
     };
   }, [actId, undo, redo, canUndo, canRedo]);
-
-  useEffect(() => {
-    if (actId === null) {
-      return;
-    }
-    enterVisit(actId);
-
-    return () => {
-      leaveVisit(actId);
-    };
-  }, [actId]);
 };

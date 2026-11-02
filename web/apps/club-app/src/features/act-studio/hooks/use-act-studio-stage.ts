@@ -4,7 +4,6 @@ import type { StudioSpot } from '@furria/studio/studio-schemas';
 import { useRef, useState } from 'react';
 import type { StageScene } from '@/features/act-practice/practice-stage';
 import { viewShareOf } from '@/features/act-practice/practice-stage';
-import type { AddedSpot } from '../schemas';
 import { formationTextOf, selectionTextOf, spotTitleOf } from '../studio-copy';
 import type { StageShare, TimeSpan } from '../studio-edits';
 import { draggedPointOf } from '../studio-edits';
@@ -84,7 +83,7 @@ const byNumber = (spots: readonly StudioSpot[]): StudioSpot[] =>
   [...spots].sort((left, right) => left.number - right.number);
 
 export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
-  const { playback, practice, studio, mode, stageWrites } = screen;
+  const { playback, practice, studio, mode, stageDocument } = screen;
   const { player, paths, stage, ownSpotId, steps, controls, length } = playback;
   const writes = useTrackCommit(screen);
   const { preview, commit } = writes;
@@ -295,11 +294,11 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
       );
     },
     addSpot: () => {
-      const place = (added: AddedSpot): void => {
-        settle(new Map([[added.spotId, freePointOf([...current.values()], stage)]]));
-        setPicked([added.spotId]);
-      };
-      void stageWrites.addSpot.mutateAsync(undefined).then(place, () => undefined);
+      stageDocument.startGesture();
+      const spotId = stageDocument.addSpot();
+      settle(new Map([[spotId, freePointOf([...current.values()], stage)]]));
+      stageDocument.endGesture();
+      setPicked([spotId]);
     },
     openSheet: () => {
       setSheetOpen(true);

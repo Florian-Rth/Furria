@@ -2,8 +2,8 @@ import type { KkLaneInspectorTab } from '@furria/ui/KkLaneInspector';
 import { KkLaneInspector } from '@furria/ui/KkLaneInspector';
 import type { FC, ReactNode } from 'react';
 import { StudioSetupList } from '@/features/act-studio/components/StudioSetupList';
-import { useStudioHistory } from '@/features/act-studio/hooks/use-studio-history';
 import type { StudioSetup } from '@/features/act-studio/hooks/use-studio-setup';
+import { useVisitHistory } from '@/features/act-studio/hooks/use-visit-history';
 import { SETUP_TITLE } from '@/features/act-studio/setup-copy';
 import { DESK_TAB_HISTORY, DESK_TAB_SELECTION, DESK_TABS } from '../desk-copy';
 import type { ActDesk, DeskTab } from '../hooks/use-act-desk';
@@ -22,13 +22,13 @@ const isTab = (key: string): key is DeskTab =>
 
 export const DeskInspectorPane: FC<DeskInspectorPaneProps> = ({ desk, borders, setup }) => {
   const { screen } = desk;
-  const { history } = useStudioHistory(screen.actId);
+  const history = useVisitHistory(screen.actId, screen.studio);
   const setupTab: KkLaneInspectorTab[] = setup.shown
     ? [{ key: 'setup', text: SETUP_TITLE, aside: setup.progressText }]
     : [];
   const tabs: KkLaneInspectorTab[] = [
     { key: 'selection', text: DESK_TAB_SELECTION, aside: null },
-    { key: 'history', text: DESK_TAB_HISTORY, aside: String(history.entries.length) },
+    { key: 'history', text: DESK_TAB_HISTORY, aside: String(history.rows.length) },
     ...setupTab,
   ];
   const choose = (key: string): void => {

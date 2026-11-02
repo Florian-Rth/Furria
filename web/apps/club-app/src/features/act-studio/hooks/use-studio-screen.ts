@@ -15,9 +15,6 @@ import type { CastPerson } from '@/features/running-order/schemas';
 import { useLargeText } from '@/lib/use-large-text';
 import type { SongMutations, VideoMutations } from '../api';
 import { useSongMutations, useVideoMutations } from '../api';
-import { useEveningStageMutations } from '../evening-api';
-import type { StageMutations } from '../stage-api';
-import { useStageMutations } from '../stage-api';
 import type { StudioTool } from '../studio-copy';
 import { eveningBandOf } from '../studio-copy';
 import { workedPathsOf } from '../studio-edits';
@@ -52,7 +49,7 @@ export interface StudioScreen {
   evening: StudioEvening | null;
   eveningBand: string | null;
   music: SongMutations;
-  stageWrites: StageMutations;
+  stageDocument: StudioDocumentEdit;
   cast: readonly CastPerson[];
   document: StudioDocumentEdit;
   videos: VideoMutations;
@@ -87,19 +84,15 @@ export const useStudioScreen = (
     tool: startTool ?? null,
   });
   const music = useSongMutations(actId);
-  const stageWrites = useEveningStageMutations(
-    actId,
-    evening?.eventId ?? null,
-    useStageMutations(actId),
-  );
-  const work = useStudioDocument(actId, source);
+  const work = useStudioDocument({ actId, eventId: null }, source);
+  const stageDocument = useStudioDocument({ actId, eventId: evening?.eventId ?? null }, source);
   const videos = useVideoMutations(actId);
   useVideoAutoAlign(source, canEdit, videos);
   useStudioDeveloping(actId, source);
   const edits = useActStudioEdits();
   const { studio, final } = useStudioFinal(
     actId,
-    eveningStudioOf(work.studio, evening, cast),
+    eveningStudioOf(work.studio, stageDocument.studio, evening, cast),
     mode,
     edits,
   );
@@ -124,7 +117,7 @@ export const useStudioScreen = (
     mode,
     editor: studioEditorOf(stageEditor, mode.editing, wide),
     music,
-    stageWrites,
+    stageDocument,
     cast,
     document: work,
     videos,
