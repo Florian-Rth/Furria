@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import type { Theme } from '@mui/material/styles';
 import type { FC } from 'react';
-import { percentOf, SCORE_FIGURES } from '../../../KkScoreTrack/internal/score-paint';
+import { percentOf, SCORE_FIGURES } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
 
 const palette = (theme: Theme) => (theme.vars ?? theme).palette;

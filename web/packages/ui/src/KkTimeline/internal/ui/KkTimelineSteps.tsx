@@ -1,16 +1,17 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import { inkWash } from '../../../internal/ink-wash';
+import { percentOf } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
-import { LANE_VARS, percentOf } from '../score-paint';
-import type { KkScoreTrackStepBlock } from './KkScoreTrackStep';
-import { KkScoreTrackStep } from './KkScoreTrackStep';
+import { LANE_VARS } from '../timeline-paint';
+import type { KkTimelineStepBlock } from './KkTimelineStep';
+import { KkTimelineStep } from './KkTimelineStep';
 
 const DROP_LEAD_SECONDS = 0.15;
 
-interface KkScoreTrackStepsProps {
+interface KkTimelineStepsProps {
   label: string;
-  blocks: readonly KkScoreTrackStepBlock[];
+  blocks: readonly KkTimelineStepBlock[];
   activeKey: number | null;
   selectedKey: number | null;
   interactive: boolean;
@@ -18,7 +19,7 @@ interface KkScoreTrackStepsProps {
   onSelect: (key: number) => void;
 }
 
-export const KkScoreTrackSteps: FC<KkScoreTrackStepsProps> = ({
+export const KkTimelineSteps: FC<KkTimelineStepsProps> = ({
   label,
   blocks,
   activeKey,
@@ -32,7 +33,7 @@ export const KkScoreTrackSteps: FC<KkScoreTrackStepsProps> = ({
     selected === null ? null : (
       <Box
         aria-hidden
-        data-kk-score-selection
+        data-kk-timeline-selection
         style={{
           left: percentOf(selected.from),
           width: percentOf(selected.to - selected.from),
@@ -53,7 +54,7 @@ export const KkScoreTrackSteps: FC<KkScoreTrackStepsProps> = ({
       revealSeconds === null ? null : DROP_LEAD_SECONDS + block.from * revealSeconds;
 
     return (
-      <KkScoreTrackStep
+      <KkTimelineStep
         key={block.key}
         block={block}
         active={block.key === activeKey}
@@ -70,7 +71,7 @@ export const KkScoreTrackSteps: FC<KkScoreTrackStepsProps> = ({
       role={interactive ? 'group' : undefined}
       aria-label={interactive ? label : undefined}
       aria-hidden={interactive ? undefined : true}
-      data-kk-score-steps
+      data-kk-timeline-steps
       sx={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
     >
       {band}

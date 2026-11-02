@@ -1,37 +1,38 @@
 import Box from '@mui/material/Box';
 import type { FC, MouseEvent, PropsWithChildren } from 'react';
 import { raisedSurface } from '../../../internal/raised-surface';
+import { percentOf } from '../../../internal/score-paint';
 import type { KkSx } from '../../../kk-sx';
 import { kkTokens } from '../../../tokens';
-import type { KkScoreTrackSize } from '../score-paint';
-import { LANE_VARS, percentOf, SCORE_LANES } from '../score-paint';
+import type { KkTimelineDensity } from '../timeline-paint';
+import { LANE_VARS, TIMELINE_LANES } from '../timeline-paint';
 
-export interface KkScoreZoom {
+export interface KkTimelineWindow {
   start: number;
   end: number;
 }
 
 const ZOOM_EASE = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
 
-interface KkScoreTrackRootProps extends PropsWithChildren {
+interface KkTimelineRootProps extends PropsWithChildren {
   label: string;
-  size: KkScoreTrackSize;
-  zoom: KkScoreZoom;
+  density: KkTimelineDensity;
+  window: KkTimelineWindow;
   onSeek: (share: number) => void;
   sx?: KkSx;
 }
 
-export const KkScoreTrackRoot: FC<KkScoreTrackRootProps> = ({
+export const KkTimelineRoot: FC<KkTimelineRootProps> = ({
   label,
-  size,
-  zoom,
+  density,
+  window,
   onSeek,
   sx,
   children,
 }) => {
-  const lanes = SCORE_LANES[size];
-  const span = Math.max(zoom.end - zoom.start, Number.EPSILON);
-  const canvas = { left: percentOf(-zoom.start / span), width: percentOf(1 / span) };
+  const lanes = TIMELINE_LANES[density];
+  const span = Math.max(window.end - window.start, Number.EPSILON);
+  const canvas = { left: percentOf(-window.start / span), width: percentOf(1 / span) };
   const seek = (event: MouseEvent<HTMLDivElement>): void => {
     const box = event.currentTarget.getBoundingClientRect();
     if (box.width > 0) {
@@ -43,7 +44,7 @@ export const KkScoreTrackRoot: FC<KkScoreTrackRootProps> = ({
     <Box
       role="group"
       aria-label={label}
-      data-kk-score-track={size}
+      data-kk-timeline={density}
       sx={[
         (theme) => ({
           [LANE_VARS.ruler]: lanes.ruler,
@@ -63,7 +64,7 @@ export const KkScoreTrackRoot: FC<KkScoreTrackRootProps> = ({
       ]}
     >
       <Box
-        data-kk-score-canvas
+        data-kk-timeline-canvas
         onClick={seek}
         style={canvas}
         sx={{

@@ -7,12 +7,13 @@ import type { FC, MouseEvent } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { inkWash } from '../../../internal/ink-wash';
 import { redInk } from '../../../internal/red-ink';
+import { percentOf, SCORE_FIGURES } from '../../../internal/score-paint';
 import { useReducedMotion } from '../../../internal/use-reduced-motion';
 import { KkScoreGlyph } from '../../../KkScoreGlyph/KkScoreGlyph';
 import { kkTokens } from '../../../tokens';
-import { percentOf, SCORE_FIGURES, stepsTop } from '../score-paint';
+import { stepsTop } from '../timeline-paint';
 
-export interface KkScoreTrackStepBlock {
+export interface KkTimelineStepBlock {
   key: number;
   number: number;
   name: string;
@@ -26,7 +27,7 @@ export interface KkScoreTrackStepBlock {
 const DROP = { y: '-140%', opacity: 0 } as const;
 const LANDED = { y: '0%', opacity: 1 } as const;
 const DROP_SECONDS = 0.42;
-const BLOCK_CONTAINER = 'kk-score-step';
+const BLOCK_CONTAINER = 'kk-timeline-step';
 
 const blockPaint = (theme: Theme): CSSObject => ({
   position: 'absolute',
@@ -56,18 +57,18 @@ const blockPaint = (theme: Theme): CSSObject => ({
   '&[data-active="true"]': {
     boxShadow: `inset 0 ${kkTokens.line.page}px 0 ${(theme.vars ?? theme).palette.primary.main}`,
   },
-  '&[data-active="true"] [data-kk-score-step-number]': redInk(theme),
+  '&[data-active="true"] [data-kk-timeline-step-number]': redInk(theme),
   '@media (hover: hover)': { '&:hover': { backgroundColor: inkWash(theme, '12%') } },
   [`@container ${BLOCK_CONTAINER} (max-width: 3.25rem)`]: {
-    '& [data-kk-score-step-name]': { display: 'none' },
+    '& [data-kk-timeline-step-name]': { display: 'none' },
   },
   [`@container ${BLOCK_CONTAINER} (max-width: 1.25rem)`]: {
-    '& [data-kk-score-step-glyphs]': { display: 'none' },
+    '& [data-kk-timeline-step-glyphs]': { display: 'none' },
   },
 });
 
-interface KkScoreTrackStepProps {
-  block: KkScoreTrackStepBlock;
+interface KkTimelineStepProps {
+  block: KkTimelineStepBlock;
   active: boolean;
   selected: boolean;
   interactive: boolean;
@@ -75,7 +76,7 @@ interface KkScoreTrackStepProps {
   onSelect: (key: number) => void;
 }
 
-export const KkScoreTrackStep: FC<KkScoreTrackStepProps> = ({
+export const KkTimelineStep: FC<KkTimelineStepProps> = ({
   block,
   active,
   selected,
@@ -99,7 +100,7 @@ export const KkScoreTrackStep: FC<KkScoreTrackStepProps> = ({
     <Stack
       direction="row"
       component="span"
-      data-kk-score-step-glyphs
+      data-kk-timeline-step-glyphs
       sx={{ gap: 0.375, alignItems: 'center' }}
     >
       <KkScoreGlyph kind="movement" present={block.movement} size="tiny" />
@@ -115,7 +116,7 @@ export const KkScoreTrackStep: FC<KkScoreTrackStepProps> = ({
       >
         <Box
           component="span"
-          data-kk-score-step-number
+          data-kk-timeline-step-number
           sx={{
             fontFamily: kkTokens.font.display,
             typography: 'caption',
@@ -127,7 +128,7 @@ export const KkScoreTrackStep: FC<KkScoreTrackStepProps> = ({
         </Box>
         <Box
           component="span"
-          data-kk-score-step-name
+          data-kk-timeline-step-name
           sx={{
             typography: 'caption',
             fontWeight: 700,

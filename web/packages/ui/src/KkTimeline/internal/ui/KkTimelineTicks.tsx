@@ -2,25 +2,21 @@ import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import { inkWash } from '../../../internal/ink-wash';
 import { kkTokens } from '../../../tokens';
-import { LANE_VARS, stepsTop } from '../score-paint';
-import type { KkScoreTrackTickMark } from './KkScoreTrackTick';
-import { KkScoreTrackTick } from './KkScoreTrackTick';
+import { LANE_VARS, stepsTop } from '../timeline-paint';
+import type { KkTimelineTickMark } from './KkTimelineTick';
+import { KkTimelineTick } from './KkTimelineTick';
 
 const DROP_LEAD_SECONDS = 0.15;
 
-interface KkScoreTrackTicksProps {
-  ticks: readonly KkScoreTrackTickMark[];
+interface KkTimelineTicksProps {
+  ticks: readonly KkTimelineTickMark[];
   activeKey: number | null;
   revealSeconds: number | null;
 }
 
-export const KkScoreTrackTicks: FC<KkScoreTrackTicksProps> = ({
-  ticks,
-  activeKey,
-  revealSeconds,
-}) => {
+export const KkTimelineTicks: FC<KkTimelineTicksProps> = ({ ticks, activeKey, revealSeconds }) => {
   const marks = ticks.map((tick) => (
-    <KkScoreTrackTick
+    <KkTimelineTick
       key={tick.key}
       tick={tick}
       active={tick.key === activeKey}
@@ -31,7 +27,7 @@ export const KkScoreTrackTicks: FC<KkScoreTrackTicksProps> = ({
   return (
     <Box
       aria-hidden
-      data-kk-score-ticks
+      data-kk-timeline-ticks
       sx={(theme) => ({
         position: 'absolute',
         left: 0,

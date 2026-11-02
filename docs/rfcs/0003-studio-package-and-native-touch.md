@@ -344,14 +344,30 @@ area's own capture loss.
 
 ### Phase 8 — One Timeline: build, practice strip, hub score track
 Goal: the `Timeline` kit exists per the lab rulings and replaces the read-only tracks.
-- [ ] `Timeline` kit with layers (wave, parts, steps, counts, cuts, keyframes, playhead, loop range), density and zoom props
-- [ ] Practice strip and hub score track on `Timeline`; delete their old tracks
-- [ ] Shots at 390 px, 844×390, iPad; film playback
+- [x] `Timeline` kit with layers (wave, parts, steps, counts, cuts, keyframes, playhead, loop range), density and zoom props
+- [x] Practice strip and hub score track on `Timeline`; delete their old tracks
+- [x] Shots at 390 px, 844×390, iPad; film playback
+
+Done 2026-11-02 (read and display layers only; the Phase 7 touch rulings are still open, so no lab
+variant is built in — seeking stays a tap). `@furria/studio/Timeline` is the domain kit: the root
+takes `label`, `density` (`strip` lesson, `track` hub phone, `full` hub wide; the desk lane joins in
+phase 9), the music `length`, an optional `focus` range (the zoom: framed with a small margin) and
+`onSeek(seconds)`; layers `Ruler` (clock ticks spaced by the visible window, full density only),
+`Parts`, `Wave` (bars from the server peaks per density, plus the played wave when given the
+player), `Counts` (every "1"), `Cuts` (song seams), `Steps` (blocks), `Ticks` (step ticks),
+`Keyframes` (one mark per moment, lit for selected spots), `Loop` and `Playhead` (follows the
+`MixPlayer` clock itself). Everything is placed in seconds; `@furria/studio/timeline-geometry` turns
+seconds into shares (tested). The paint lives in `@furria/ui/KkTimeline` (the former `KkScoreTrack`,
+renamed, with new Counts, Cuts, Keyframes and Loop parts); the shared score paint moved to
+`@furria/ui` `internal/score-paint`. The hub score track (`ScorePanel`) and the lesson strip
+(`LessonStrip`) are on `Timeline`; `KkScoreTrack`, `ScorePlayhead` and `act-hub/score-ruler` are
+deleted, `ScoreModel` carries the count marks instead of precomputed shares. Shots and a playback
+film (phone 390×844, 844×390, iPad portrait and landscape, light and dark) on the seeded Marschtanz.
 
 ### Phase 9 — One Timeline: editing tracks
 Goal: every editing track is the `Timeline` with the gesture engine.
 - [ ] Studio wave (cuts), desk lanes, lane overview on `Timeline` with the lab's touch handling
-- [ ] Delete `KkStudioWave`, `KkLaneTrack`, `KkLaneOverview`, `KkScoreTrack` and their helpers
+- [ ] Delete `KkStudioWave`, `KkLaneTrack`, `KkLaneOverview` and their helpers (`KkScoreTrack` went in phase 8)
 - [ ] Device check: trim, border move, zoom, precision scrub on phone and iPad
 
 ### Phase 10 — One Stage: read views

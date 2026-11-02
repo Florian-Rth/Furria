@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { SCORE_FIGURES } from '../../../KkScoreTrack/internal/score-paint';
+import { SCORE_FIGURES } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
 
 interface KkScoreYouPlaceProps {

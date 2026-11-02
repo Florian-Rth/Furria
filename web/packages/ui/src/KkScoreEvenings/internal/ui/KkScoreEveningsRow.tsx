@@ -4,7 +4,7 @@ import type { CSSObject, Theme } from '@mui/material/styles';
 import type { FC } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { inkWash } from '../../../internal/ink-wash';
-import { SCORE_FIGURES } from '../../../KkScoreTrack/internal/score-paint';
+import { SCORE_FIGURES } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
 
 const rowPaint = (theme: Theme): CSSObject => ({

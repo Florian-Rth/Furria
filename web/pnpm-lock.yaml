@@ -598,6 +598,9 @@ importers:
       '@furria/api-client':
         specifier: workspace:*
         version: link:../api-client
+      '@furria/ui':
+        specifier: workspace:*
+        version: link:../ui
       immer:
         specifier: 'catalog:'
         version: 11.1.21

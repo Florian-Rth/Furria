@@ -1,13 +1,14 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
-import { LANE_VARS, percentOf, WAVE_HEIGHT, wavePathOf, waveTop } from '../score-paint';
+import { percentOf } from '../../../internal/score-paint';
+import { LANE_VARS, WAVE_HEIGHT, wavePathOf, waveTop } from '../timeline-paint';
 
-interface KkScoreTrackPlayedProps {
+interface KkTimelinePlayedProps {
   bars: readonly number[];
   share: number;
 }
 
-export const KkScoreTrackPlayed: FC<KkScoreTrackPlayedProps> = ({ bars, share }) => {
+export const KkTimelinePlayed: FC<KkTimelinePlayedProps> = ({ bars, share }) => {
   const path = wavePathOf(bars);
   const view = `0 0 ${Math.max(1, bars.length)} ${WAVE_HEIGHT}`;
   const clip = { clipPath: `inset(0 ${percentOf(1 - Math.min(1, Math.max(0, share)))} 0 0)` };
@@ -15,7 +16,7 @@ export const KkScoreTrackPlayed: FC<KkScoreTrackPlayedProps> = ({ bars, share })
   return (
     <Box
       aria-hidden
-      data-kk-score-played
+      data-kk-timeline-played
       style={clip}
       sx={{
         position: 'absolute',

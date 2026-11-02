@@ -4,9 +4,9 @@ import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { inkWash } from '../../../internal/ink-wash';
+import { SCORE_FIGURES } from '../../../internal/score-paint';
 import type { KkIconName } from '../../../KkIcon';
 import { KkIcon } from '../../../KkIcon';
-import { SCORE_FIGURES } from '../../../KkScoreTrack/internal/score-paint';
 import { kkTokens } from '../../../tokens';
 
 interface KkScoreFactsFactProps {

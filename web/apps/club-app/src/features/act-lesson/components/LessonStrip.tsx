@@ -1,13 +1,8 @@
+import { Timeline } from '@furria/studio/Timeline';
 import type { KkGroupTone } from '@furria/ui/group-tone';
-import { KkScoreTrack } from '@furria/ui/KkScoreTrack';
 import type { FC } from 'react';
-import { ScorePlayhead } from '@/features/act-hub/components/ScorePlayhead';
-import { WHOLE_ZOOM } from '@/features/act-hub/score-ruler';
 import type { Lesson } from '../hooks/use-lesson';
 import { LESSON_STRIP_LABEL } from '../lesson-copy';
-
-const NO_LINES: readonly number[] = [];
-const NO_REVEAL_SECONDS = 0;
 
 interface LessonStripProps {
   lesson: Lesson;
@@ -20,22 +15,21 @@ export const LessonStrip: FC<LessonStripProps> = ({ lesson, tone }) => {
   const current = practice.step?.stepId ?? null;
 
   return (
-    <KkScoreTrack label={LESSON_STRIP_LABEL} size="slim" zoom={WHOLE_ZOOM} onSeek={strip.seek}>
-      <KkScoreTrack.Parts tone={tone} parts={strip.parts} />
-      <KkScoreTrack.Wave
-        bars={strip.bars}
-        seams={NO_LINES}
-        eights={NO_LINES}
-        reveal={false}
-        revealSeconds={NO_REVEAL_SECONDS}
-      />
-      <KkScoreTrack.Ticks ticks={strip.ticks} activeKey={current} revealSeconds={null} />
-      <ScorePlayhead
+    <Timeline
+      label={LESSON_STRIP_LABEL}
+      density="strip"
+      length={playback.length}
+      onSeek={strip.seek}
+    >
+      <Timeline.Parts tone={tone} parts={strip.parts} />
+      <Timeline.Wave
+        segments={playback.segments}
+        peaks={playback.peaksByItem}
         player={playback.player}
-        length={playback.length}
-        bars={strip.bars}
         playing={practice.playing}
       />
-    </KkScoreTrack>
+      <Timeline.Ticks steps={strip.ticks} activeKey={current} />
+      <Timeline.Playhead player={playback.player} playing={practice.playing} />
+    </Timeline>
   );
 };

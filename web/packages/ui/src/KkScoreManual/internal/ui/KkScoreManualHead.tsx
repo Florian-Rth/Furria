@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { KkGroupTone } from '../../../internal/group-tone';
-import { SCORE_FIGURES, shadeFill } from '../../../KkScoreTrack/internal/score-paint';
+import { SCORE_FIGURES, shadeFill } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
 
 interface KkScoreManualHeadProps {

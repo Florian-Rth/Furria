@@ -1,13 +1,9 @@
+import type { TimelinePart, TimelineStep } from '@furria/studio/Timeline';
 import type { KkGroupTone } from '@furria/ui/group-tone';
 import type { KkIconName } from '@furria/ui/KkIcon';
 import { useKkScoreWide } from '@furria/ui/KkScoreDesk';
 import type { KkScoreFormationDot } from '@furria/ui/KkScoreFormation';
 import type { KkScoreReadinessState } from '@furria/ui/KkScoreReadiness';
-import type {
-  KkScoreTrackPart,
-  KkScoreTrackStepBlock,
-  KkScoreTrackTickMark,
-} from '@furria/ui/KkScoreTrack';
 import type { KkQuietScreenAction } from '@furria/ui/screen-declaration';
 import { useState } from 'react';
 import { practiceMemoryKeyOf } from '@/features/act-practice/practice-memory';
@@ -152,9 +148,8 @@ export interface ActHub {
   model: ScoreModel;
   player: ScorePlayer;
   route: ScoreRoute;
-  parts: KkScoreTrackPart[];
-  blocks: KkScoreTrackStepBlock[];
-  ticks: KkScoreTrackTickMark[];
+  parts: TimelinePart[];
+  steps: TimelineStep[];
   groups: ScoreGroupView[];
   readiness: ScoreReadinessView[];
   showReadiness: boolean;
@@ -193,6 +188,15 @@ const shownDotsOf = (dots: readonly FormationDot[]): KkScoreFormationDot[] =>
     caption: dot.firstName,
   }));
 
+const stepLabelOf = (step: ScoreStep): string =>
+  [
+    `${step.number}. ${stepTitleOf(step.number, step.name)}`,
+    rangeTextOf(step.range),
+    glyphsLabelOf(step.movement, step.video !== null, step.flag),
+  ]
+    .filter((piece) => piece !== '')
+    .join(', ');
+
 const rowOf = (
   step: ScoreStep,
   model: ScoreModel,
@@ -200,14 +204,11 @@ const rowOf = (
   entranceDelay: number | null,
 ): ScoreRowView => {
   const title = stepTitleOf(step.number, step.name);
-  const glyphs = glyphsLabelOf(step.movement, step.video !== null, step.flag);
   const dots = model.formations.get(step.stepId) ?? [];
 
   return {
     stepId: step.stepId,
-    label: [`${step.number}. ${title}`, rangeTextOf(step.range), glyphs]
-      .filter((piece) => piece !== '')
-      .join(', '),
+    label: stepLabelOf(step),
     number: step.number,
     title,
     meta: [rangeTextOf(step.range), countsTextOf(step.counts)]
@@ -294,7 +295,6 @@ export const useActHub = (
   const editor = viewer.canEditStudio;
   const reveal = !wide || !editor;
   const timed = model.steps.filter((step) => step.range !== null);
-  const length = model.length > 0 ? model.length : 1;
   const picked = model.steps.find((step) => step.stepId === search.stepId) ?? null;
   const paneStepId = paneStepIdOf(
     picked?.stepId ?? null,
@@ -357,41 +357,22 @@ export const useActHub = (
     model,
     player,
     route,
-    parts: model.parts.flatMap((part) =>
-      part.range === null
-        ? []
-        : [
-            {
-              key: part.partId,
-              label: part.name,
-              hint: partHintOf(part.name),
-              from: part.range.start / length,
-              to: part.range.end / length,
-              shade: part.index,
-            },
-          ],
-    ),
-    blocks: timed.flatMap((step) =>
-      step.range === null
-        ? []
-        : [
-            {
-              key: step.stepId,
-              number: step.number,
-              name: stepTitleOf(step.number, step.name),
-              from: step.range.start / length,
-              to: step.range.end / length,
-              movement: step.movement,
-              video: step.video !== null,
-              label: rowOf(step, model, null, null).label,
-            },
-          ],
-    ),
-    ticks: timed.flatMap((step) =>
-      step.range === null
-        ? []
-        : [{ key: step.stepId, from: step.range.start / length, to: step.range.end / length }],
-    ),
+    parts: model.parts.map((part) => ({
+      key: part.partId,
+      label: part.name,
+      hint: partHintOf(part.name),
+      range: part.range,
+      shade: part.index,
+    })),
+    steps: timed.map((step) => ({
+      key: step.stepId,
+      number: step.number,
+      name: stepTitleOf(step.number, step.name),
+      label: stepLabelOf(step),
+      range: step.range,
+      movement: step.movement,
+      video: step.video !== null,
+    })),
     groups: groupsOf(model, reveal),
     readiness: model.readiness.map((item) => ({
       key: item.key,

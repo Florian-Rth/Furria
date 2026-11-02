@@ -1,19 +1,15 @@
 import type { MixPlayer } from '@furria/studio/mix-player';
-import { waveformOf } from '@furria/studio/mix-waveform';
+import type { TimelineRange } from '@furria/studio/music-timeline';
+import type { AudioPeaks } from '@furria/studio/studio-schemas';
 import { useMixPlayer } from '@furria/studio/use-mix-player';
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
-import type { KkScoreTrackTick } from '@furria/ui/KkScoreTrack';
 import type { KkScoreLens } from '@furria/ui/KkScoreTransport';
 import { useState } from 'react';
 import { useAudioPeaks } from '@/features/act-player/api';
-import { clockOf, WHOLE_LABEL } from '../score-copy';
+import { WHOLE_LABEL } from '../score-copy';
 import type { ScoreModel } from '../score-model';
-import type { ScoreZoom } from '../score-ruler';
-import { rulerTicksOf, shareToSeconds, WHOLE_ZOOM, zoomOf } from '../score-ruler';
 import { stepAtSeconds } from '../score-steps';
 
-const WIDE_BARS = 720;
-const STRIP_BARS = 200;
 const WHOLE_LENS = 'all';
 
 export interface ScorePlayer {
@@ -21,15 +17,13 @@ export interface ScorePlayer {
   playing: boolean;
   canPlay: boolean;
   length: number;
-  bars: number[];
-  ticks: KkScoreTrackTick[];
-  zoom: ScoreZoom;
+  peaks: ReadonlyMap<number, AudioPeaks>;
+  focus: TimelineRange | null;
   lens: string;
   lenses: KkScoreLens[];
   activeStepId: number | null;
   setLens: (id: string) => void;
   toggle: () => void;
-  seekShare: (share: number) => void;
   seekTo: (seconds: number) => void;
 }
 
@@ -41,7 +35,6 @@ export const useScorePlayer = (model: ScoreModel, wide: boolean): ScorePlayer =>
     seconds > 0 ? (stepAtSeconds(model.steps, seconds)?.stepId ?? null) : null,
   );
   const part = model.parts.find((candidate) => String(candidate.partId) === lens) ?? null;
-  const zoom = wide && part !== null ? zoomOf(part.range, model.length) : WHOLE_ZOOM;
   const lenses = [
     { id: WHOLE_LENS, label: WHOLE_LABEL },
     ...model.parts
@@ -54,12 +47,8 @@ export const useScorePlayer = (model: ScoreModel, wide: boolean): ScorePlayer =>
     playing: state.playing,
     canPlay: state.load !== 'failed' && model.segments.some((segment) => segment.audible),
     length: model.length,
-    bars: waveformOf(model.segments, peaks, wide ? WIDE_BARS : STRIP_BARS),
-    ticks: rulerTicksOf(model.length, zoom).map((tick) => ({
-      share: tick.share,
-      label: clockOf(tick.seconds),
-    })),
-    zoom,
+    peaks,
+    focus: wide ? (part?.range ?? null) : null,
     lens,
     lenses,
     activeStepId,
@@ -70,9 +59,6 @@ export const useScorePlayer = (model: ScoreModel, wide: boolean): ScorePlayer =>
       } else {
         player.play();
       }
-    },
-    seekShare: (share) => {
-      player.seek(shareToSeconds(share, model.length));
     },
     seekTo: (seconds) => {
       player.seek(seconds);

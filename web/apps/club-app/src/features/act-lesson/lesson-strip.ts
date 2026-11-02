@@ -1,48 +1,25 @@
 import { partRangeOf, stepRangeOf } from '@furria/studio/music-timeline';
 import type { StudioPart, StudioStep } from '@furria/studio/studio-schemas';
-import type { KkScoreTrackPart, KkScoreTrackTickMark } from '@furria/ui/KkScoreTrack';
+import type { TimelinePart, TimelineSpan } from '@furria/studio/Timeline';
 import { shownStepOf } from '@/features/act-practice/practice-stepping';
 
 export interface LessonStripLanes {
-  parts: KkScoreTrackPart[];
-  ticks: KkScoreTrackTickMark[];
+  parts: TimelinePart[];
+  ticks: TimelineSpan[];
 }
 
 export const lessonStripOf = (
   steps: readonly StudioStep[],
   parts: readonly StudioPart[],
-  length: number,
-): LessonStripLanes => {
-  if (length <= 0) {
-    return { parts: [], ticks: [] };
-  }
+): LessonStripLanes => ({
+  parts: parts.map((part, index) => ({
+    key: part.partId,
+    label: part.name,
+    range: partRangeOf(part, steps),
+    shade: index,
+  })),
+  ticks: steps.map((step) => ({ key: step.stepId, range: stepRangeOf(step) })),
+});
 
-  return {
-    parts: parts.flatMap((part, index) => {
-      const range = partRangeOf(part, steps);
-      return range === null
-        ? []
-        : [
-            {
-              key: part.partId,
-              label: part.name,
-              from: range.start / length,
-              to: range.end / length,
-              shade: index,
-            },
-          ];
-    }),
-    ticks: steps.flatMap((step) => {
-      const range = stepRangeOf(step);
-      return range === null
-        ? []
-        : [{ key: step.stepId, from: range.start / length, to: range.end / length }];
-    }),
-  };
-};
-
-export const stripStepIdOf = (
-  steps: readonly StudioStep[],
-  share: number,
-  length: number,
-): number | null => shownStepOf(steps, share * length)?.stepId ?? null;
+export const stripStepIdOf = (steps: readonly StudioStep[], seconds: number): number | null =>
+  shownStepOf(steps, seconds)?.stepId ?? null;

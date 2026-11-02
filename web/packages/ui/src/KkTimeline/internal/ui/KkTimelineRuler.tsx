@@ -1,18 +1,19 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
+import { percentOf, SCORE_FIGURES } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
-import { LANE_VARS, percentOf, SCORE_FIGURES } from '../score-paint';
+import { LANE_VARS } from '../timeline-paint';
 
-export interface KkScoreTrackTick {
+export interface KkTimelineTick {
   share: number;
   label: string;
 }
 
-interface KkScoreTrackRulerProps {
-  ticks: readonly KkScoreTrackTick[];
+interface KkTimelineRulerProps {
+  ticks: readonly KkTimelineTick[];
 }
 
-export const KkScoreTrackRuler: FC<KkScoreTrackRulerProps> = ({ ticks }) => {
+export const KkTimelineRuler: FC<KkTimelineRulerProps> = ({ ticks }) => {
   const marks = ticks.map((tick) => (
     <Box
       key={tick.share}
@@ -41,7 +42,7 @@ export const KkScoreTrackRuler: FC<KkScoreTrackRulerProps> = ({ ticks }) => {
   return (
     <Box
       aria-hidden
-      data-kk-score-ruler
+      data-kk-timeline-ruler
       sx={{
         position: 'absolute',
         left: 0,
