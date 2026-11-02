@@ -29,6 +29,14 @@ describe('liftPlacementOf', () => {
   ])('places the readout $name', ({ finger, expected }) => {
     expect(liftPlacementOf(finger, AREA, READOUT)).toEqual(expected);
   });
+
+  it('stays above the finger when the room above the area may be used', () => {
+    expect(liftPlacementOf({ x: 200, y: 80 }, AREA, READOUT, 56, 200)).toEqual({
+      x: 200,
+      y: 4,
+      side: 'above',
+    });
+  });
 });
 
 describe('loupeOf', () => {

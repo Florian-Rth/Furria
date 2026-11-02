@@ -4,33 +4,32 @@ import type { Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { kkTokens } from '../../../tokens';
-
-const PERCENT = 100;
+import { spanPlaceOf } from '../timeline-paint';
 
 const palette = (theme: Theme) => (theme.vars ?? theme).palette;
 
-interface KkStudioWaveRegionProps {
-  start: number;
-  end: number;
+interface KkTimelineRegionProps {
+  from: number;
+  to: number;
   number: number;
   name: string;
   meta: string;
   selected: boolean;
 }
 
-export const KkStudioWaveRegion: FC<KkStudioWaveRegionProps> = ({
-  start,
-  end,
+export const KkTimelineRegion: FC<KkTimelineRegionProps> = ({
+  from,
+  to,
   number,
   name,
   meta,
   selected,
 }) => {
-  const place = { left: `${start * PERCENT}%`, width: `${(end - start) * PERCENT}%` };
+  const place = spanPlaceOf({ from, to });
 
   return (
     <Box
-      data-kk-studio-song={number}
+      data-kk-timeline-region={number}
       data-selected={selected}
       style={place}
       sx={(theme) => ({

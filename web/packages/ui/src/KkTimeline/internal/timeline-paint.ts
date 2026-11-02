@@ -1,7 +1,10 @@
+import { percentOf } from '../../internal/score-paint';
+
 export const TIMELINE_LANES = {
   strip: { height: '3.25rem', ruler: '0rem', parts: '1.125rem', steps: '0.625rem' },
   track: { height: '5.5rem', ruler: '0rem', parts: '1.5rem', steps: '0.875rem' },
   full: { height: '12.5rem', ruler: '1.375rem', parts: '1.625rem', steps: '3.25rem' },
+  edit: { height: '100%', ruler: '0rem', parts: '2.5rem', steps: '1.25rem' },
 } as const;
 
 export type KkTimelineDensity = keyof typeof TIMELINE_LANES;
@@ -29,3 +32,17 @@ export const wavePathOf = (bars: readonly number[]): string =>
       return `M${left.toFixed(2)} ${(WAVE_MID - half).toFixed(2)}h${BAR_FILL}v${(half * 2).toFixed(2)}h-${BAR_FILL}z`;
     })
     .join('');
+
+export interface KkTimelineSpan {
+  from: number;
+  to: number;
+}
+
+const WHOLE_SPAN: KkTimelineSpan = { from: 0, to: 1 };
+
+export const spanPlaceOf = (
+  span: KkTimelineSpan = WHOLE_SPAN,
+): { left: string; width: string } => ({
+  left: percentOf(span.from),
+  width: percentOf(span.to - span.from),
+});

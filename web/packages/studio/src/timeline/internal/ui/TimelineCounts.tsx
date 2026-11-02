@@ -2,6 +2,7 @@ import { KkTimeline } from '@furria/ui/KkTimeline';
 import type { FC } from 'react';
 import type { CountMark } from '../../../models/music-timeline';
 import { countSharesOf } from '../../timeline-geometry';
+import { TimelineStrip } from '../layout/TimelineStrip';
 import { useTimeline } from '../logic/timeline-context';
 
 interface TimelineCountsProps {
@@ -13,5 +14,9 @@ export const TimelineCounts: FC<TimelineCountsProps> = ({ marks }) => {
 
   const shares = countSharesOf(marks, length);
 
-  return <KkTimeline.Counts shares={shares} />;
+  return (
+    <TimelineStrip>
+      <KkTimeline.Counts shares={shares} />
+    </TimelineStrip>
+  );
 };

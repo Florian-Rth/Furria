@@ -2,6 +2,7 @@ import { KkTimeline } from '@furria/ui/KkTimeline';
 import type { FC } from 'react';
 import type { TimelineRange } from '../../../models/music-timeline';
 import { spanSharesOf } from '../../timeline-geometry';
+import { TimelineStrip } from '../layout/TimelineStrip';
 import { useTimeline } from '../logic/timeline-context';
 
 export interface TimelineStep {
@@ -35,14 +36,16 @@ export const TimelineSteps: FC<TimelineStepsProps> = ({
   const blocks = spanSharesOf(steps, length);
 
   return (
-    <KkTimeline.Steps
-      label={label}
-      blocks={blocks}
-      activeKey={activeKey}
-      selectedKey={selectedKey}
-      interactive
-      revealSeconds={revealSeconds}
-      onSelect={onSelect}
-    />
+    <TimelineStrip>
+      <KkTimeline.Steps
+        label={label}
+        blocks={blocks}
+        activeKey={activeKey}
+        selectedKey={selectedKey}
+        interactive
+        revealSeconds={revealSeconds}
+        onSelect={onSelect}
+      />
+    </TimelineStrip>
   );
 };

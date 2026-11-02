@@ -1,16 +1,22 @@
 import { KkTimeline } from '@furria/ui/KkTimeline';
 import type { FC } from 'react';
 import { rulerTicksOf } from '../../timeline-geometry';
+import { TimelineStrip } from '../layout/TimelineStrip';
 import { useTimeline } from '../logic/timeline-context';
 
 export const TimelineRuler: FC = () => {
-  const { length, density, window } = useTimeline();
+  const { length, density, window, centre } = useTimeline();
 
   if (density !== 'full') {
     return null;
   }
 
-  const ticks = rulerTicksOf(length, window);
+  const spacing = centre === null ? window : { start: 0, end: centre.visibleShare };
+  const ticks = rulerTicksOf(length, spacing);
 
-  return <KkTimeline.Ruler ticks={ticks} />;
+  return (
+    <TimelineStrip>
+      <KkTimeline.Ruler ticks={ticks} />
+    </TimelineStrip>
+  );
 };

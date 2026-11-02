@@ -3,6 +3,7 @@ import { KkTimeline } from '@furria/ui/KkTimeline';
 import type { FC } from 'react';
 import type { TimelineRange } from '../../../models/music-timeline';
 import { spanSharesOf } from '../../timeline-geometry';
+import { TimelineStrip } from '../layout/TimelineStrip';
 import { useTimeline } from '../logic/timeline-context';
 
 export interface TimelinePart {
@@ -23,5 +24,9 @@ export const TimelineParts: FC<TimelinePartsProps> = ({ parts, tone, onSelect })
   const { length } = useTimeline();
   const bands = spanSharesOf(parts, length);
 
-  return <KkTimeline.Parts tone={tone} parts={bands} onSelect={onSelect} />;
+  return (
+    <TimelineStrip>
+      <KkTimeline.Parts tone={tone} parts={bands} onSelect={onSelect} />
+    </TimelineStrip>
+  );
 };

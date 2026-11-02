@@ -1,9 +1,7 @@
-import { KkTimeline } from '@furria/ui/KkTimeline';
 import type { FC } from 'react';
 import type { MixPlayer } from '../../../engine/mix-player';
-import { usePlaybackSeconds } from '../../../engine/use-playback-seconds';
-import { shareOf } from '../../timeline-geometry';
 import { useTimeline } from '../logic/timeline-context';
+import { TimelinePlayheadLive } from './TimelinePlayheadLive';
 
 interface TimelinePlayheadProps {
   player: MixPlayer;
@@ -11,12 +9,11 @@ interface TimelinePlayheadProps {
 }
 
 export const TimelinePlayhead: FC<TimelinePlayheadProps> = ({ player, playing }) => {
-  const { length } = useTimeline();
-  const share = shareOf(usePlaybackSeconds(player), length);
+  const { centre } = useTimeline();
 
-  if (share <= 0 && !playing) {
+  if (centre !== null) {
     return null;
   }
 
-  return <KkTimeline.Playhead share={share} />;
+  return <TimelinePlayheadLive player={player} playing={playing} />;
 };

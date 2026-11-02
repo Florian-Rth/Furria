@@ -4,8 +4,11 @@ import type { MixPlayer } from '../../../engine/mix-player';
 import { waveformOf } from '../../../models/mix-waveform';
 import type { MusicSegment } from '../../../models/music-timeline';
 import type { AudioPeaks } from '../../../models/studio-schemas';
-import { waveBarsOf } from '../../timeline-geometry';
+import { stripBarCountOf } from '../../centre-scrub';
+import { stripWaveOf, waveBarsOf } from '../../timeline-geometry';
+import { TimelineStrip } from '../layout/TimelineStrip';
 import { useTimeline } from '../logic/timeline-context';
+import { TimelineCentrePlayed } from './TimelineCentrePlayed';
 import { TimelinePlayed } from './TimelinePlayed';
 
 interface TimelineWaveProps {
@@ -23,14 +26,24 @@ export const TimelineWave: FC<TimelineWaveProps> = ({
   playing = false,
   revealSeconds = null,
 }) => {
-  const { density } = useTimeline();
-  const bars = waveformOf(segments, peaks, waveBarsOf(density));
+  const { density, centre, length, window } = useTimeline();
+  const span = centre === null ? undefined : { from: window.start, to: window.end };
+  const bars =
+    centre === null
+      ? waveformOf(segments, peaks, waveBarsOf(density))
+      : stripWaveOf(segments, peaks, window, length, stripBarCountOf(centre.strip));
   const played =
-    player === undefined ? null : <TimelinePlayed player={player} playing={playing} bars={bars} />;
+    span !== undefined ? (
+      <TimelineCentrePlayed bars={bars} span={span} />
+    ) : player === undefined ? null : (
+      <TimelinePlayed player={player} playing={playing} bars={bars} />
+    );
 
   return (
     <>
-      <KkTimeline.Wave bars={bars} revealSeconds={revealSeconds} />
+      <TimelineStrip>
+        <KkTimeline.Wave bars={bars} revealSeconds={revealSeconds} span={span} />
+      </TimelineStrip>
       {played}
     </>
   );
