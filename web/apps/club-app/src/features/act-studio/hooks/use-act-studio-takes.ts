@@ -32,6 +32,8 @@ export interface ActStudioVideoBar {
   selected: boolean;
   press: (share: StageShare) => void;
   move: (share: StageShare) => void;
+  moveTo: (seconds: number) => void;
+  choose: () => void;
   finish: () => void;
 }
 
@@ -151,6 +153,14 @@ export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
           }
           work.startGesture();
           placeAt(candidate, grab.start + (share.x - grab.x) * length);
+        },
+        choose: () => {
+          setChosenId(candidate.videoId);
+        },
+        moveTo: (seconds) => {
+          setChosenId(candidate.videoId);
+          work.startGesture();
+          placeAt(candidate, seconds);
         },
         finish: () => {
           setGrab(null);

@@ -1,3 +1,4 @@
+import type { CentreScrub } from '@furria/studio/use-centre-scrub';
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
 import { KkLaneButton } from '@furria/ui/KkLaneButton';
 import type { FC } from 'react';
@@ -25,16 +26,15 @@ import {
   DESK_ZOOM_OUT,
 } from '../desk-copy';
 import type { ActDesk } from '../hooks/use-act-desk';
-import type { DeskZoom } from '../hooks/use-desk-zoom';
 import { DeskReadoutLive } from './DeskReadoutLive';
 
 interface DeskTopBarProps {
   desk: ActDesk;
-  zoom: DeskZoom;
+  centre: CentreScrub;
   setup: StudioSetup;
 }
 
-export const DeskTopBar: FC<DeskTopBarProps> = ({ desk, zoom, setup }) => {
+export const DeskTopBar: FC<DeskTopBarProps> = ({ desk, centre, setup }) => {
   const { screen } = desk;
   const { practice, playback, mode } = screen;
   const history = useVisitHistory(screen.actId, screen.studio);
@@ -45,10 +45,10 @@ export const DeskTopBar: FC<DeskTopBarProps> = ({ desk, zoom, setup }) => {
     practice.skip('forward');
   };
   const zoomIn = (): void => {
-    zoom.zoom(1);
+    centre.zoomBy(1);
   };
   const zoomOut = (): void => {
-    zoom.zoom(-1);
+    centre.zoomBy(-1);
   };
   const openMusic = useStudioMusicRoute(screen.actId);
   const music = (): void => {
@@ -62,8 +62,8 @@ export const DeskTopBar: FC<DeskTopBarProps> = ({ desk, zoom, setup }) => {
   const playGlyph = practice.playing ? 'pause' : 'play';
   const stepLocked = !practice.canStep;
   const playLocked = !practice.canPlay;
-  const zoomInLocked = !zoom.canIn;
-  const zoomOutLocked = !zoom.canOut;
+  const zoomInLocked = !centre.canZoomIn;
+  const zoomOutLocked = !centre.canZoomOut;
   const undoLocked = !history.canUndo;
   const redoLocked = !history.canRedo;
   const setupOpen = desk.tab === 'setup';
@@ -120,8 +120,8 @@ export const DeskTopBar: FC<DeskTopBarProps> = ({ desk, zoom, setup }) => {
           text={DESK_FIT}
           glyph="fit"
           textShown={false}
-          pressed={zoom.fitted}
-          onPress={zoom.fit}
+          pressed={centre.fitted}
+          onPress={centre.fit}
         />
       </KkLaneBar.Group>
       <KkLaneBar.Group label={DESK_HISTORY_GROUP}>

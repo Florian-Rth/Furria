@@ -2,24 +2,24 @@ import Box from '@mui/material/Box';
 import type { Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
+import { percentOf } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
-import { percentOf } from '../lane-geometry';
 
 const palette = (theme: Theme) => (theme.vars ?? theme).palette;
 
-export interface KkLaneTrackTick {
+export interface KkTimelineMark {
   key: string;
   share: number;
   strong: boolean;
   text: string | null;
 }
 
-interface KkLaneTrackTicksProps {
-  ticks: readonly KkLaneTrackTick[];
+interface KkTimelineMarksProps {
+  ticks: readonly KkTimelineMark[];
   edge: 'top' | 'bottom';
 }
 
-export const KkLaneTrackTicks: FC<KkLaneTrackTicksProps> = ({ ticks, edge }) => {
+export const KkTimelineMarks: FC<KkTimelineMarksProps> = ({ ticks, edge }) => {
   const marks = ticks.map((tick) => {
     const text =
       tick.text === null ? null : (

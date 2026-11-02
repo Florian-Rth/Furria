@@ -460,11 +460,64 @@ line and a haptic tick; arrow keys still nudge a focused handle.
   (40 px/s) no name is visible on the wave (the list below names the selected song); the lab's
   `centre-view` copy stays until the lab goes (phase 12).
 
-### Phase 9b — One Timeline: desk lanes and overview
-Goal: every editing track is the `Timeline` with the gesture engine.
-- [ ] Desk lanes (parts, steps + borders, music, video, keyframes) and the lane overview on `Timeline`
-- [ ] Delete `KkLaneTrack`, `KkLaneOverview`, `KkStudioDrag` and their helpers
+### Phase 9b — One Timeline: desk lanes
+Goal: the desk's editing lanes are the `Timeline` in centre mode with the gesture engine.
+Split 2026-11-02 (the overview and the two studio strips still on `KkStudioDrag` exceed the soft
+cap) — overview and `KkStudioDrag` are phase 9c.
+- [x] Desk lanes (ruler, parts, steps + borders, music, video, keyframes) on `Timeline` in centre mode
+- [x] Lane-aware targets in the centre scrub (edges, spans, tap vs drag); zoom commands for the desk bar and overview
+- [x] Delete `KkLaneTrack`, `use-desk-zoom`, `use-desk-follow` and the desk playhead
 - [ ] Device check: border move, video drag, keyframe drag, zoom on iPad and desktop
+
+Built 2026-11-02. The desk lanes (`DeskLanes`) are one `@furria/studio/Timeline` in **centre
+mode** (`density="desk"`, 16.25rem tall): the red line spans all six lanes and the music moves
+under it, with the same swipe, momentum, rubber band, tap-to-glide, pinch/ctrl-wheel zoom and
+pause-while-steering as the music page. Lanes are `Timeline.Lane` (`data-timeline-lane`, sizes
+ruler/thin/lane/wave, a fixed label chip at the top left); empty lanes show their note or setup
+button right of the centre line (`data-gesture-ignore`, so the button still clicks).
+- **Targets:** `@furria/studio/centre-targets` (pure, tested) generalises the cut handles to
+  targets — edges (step borders, keyframes, cuts) or spans (`until`: parts, steps, videos), each
+  on a lane (its band is read from the DOM at hit time) or full height, `movable`, `tappable`,
+  `snaps`. Edges outrank spans; a tap on a tappable target selects it (part, step, video,
+  keyframe) instead of gliding; a drag on a movable one edits it with the Phase 7 rulings (lifted
+  readout, precision by distance, count snap with lit line and haptic; videos do not snap), any
+  other drag scrubs. `use-centre-scrub` takes `targets` + `onTargetStart/Move/End/Cancel/Tap` and
+  gained `zoomBy`, `fit`, `frame(start, end)`, `centreOn(seconds)`, `canZoomIn/Out`, `fitted`,
+  `pxPerSecond`, `width`; `centreViewOf` gives the visible seconds.
+- **Kit:** `@furria/ui/KkTimeline` gained `Lane`, `LaneLabel`, `LaneNote`, `LaneSetup`, `Block`,
+  `Diamond`, `Marks` (moved from `KkLaneTrack`, without their own pointer handling) and a `tone`
+  on `Handle` (`border` = ink, `cut` = warning); studio layers `Timeline.Lane`, `Blocks`,
+  `Diamonds`, `Marks`, `Handles tone`.
+- **Desk:** `use-desk-lanes` (replaces `use-desk-rows`) builds blocks, diamonds, border handles
+  and the targets and owns the centre scrub; the top bar's zoom buttons, the keyboard zoom and the
+  overview (still `KkLaneOverview`, its bracket fed from `centreViewOf` via the scrub's motion
+  values) drive the scrub; panning or aiming the overview seeks. `ActStudioVideoBar.moveTo`
+  places a take by seconds; the keyframe drag gained `cancel`. Deleted: `KkLaneTrack`,
+  `use-desk-zoom`, `use-desk-follow`, `DeskPlayheadLive`, the old border hint bubble
+  (`snapHintOf`), the scroll-window helpers in `desk-time`/`desk-window`.
+- **Review follow-ups (fixed):** the keyframe drag holds its key in a ref and commits the
+  release value (the first move and a quick flick were lost); a kept desk edit resumes playback at
+  once (`editsRebuildPlayer` only on the music page, where the player is rebuilt); the overview
+  bracket refreshes when the zoom or width changes at rest; zooming or aiming while a glide coasts
+  settles it first (zoom used to freeze the wave off the player); a video tap only chooses the take
+  (`ActStudioVideoBar.choose`).
+- **Review follow-ups (open):** a cancelled border or video drag (second finger) keeps the moved
+  value as one undo step; on touch a drag that lands on a video span edits it instead of scrubbing
+  (judge on the device, maybe require a long press for spans); tabbing to an off-screen block,
+  diamond or border does not bring it under the line; keyframe targets are keyed by index; the
+  whole desk re-renders while a target is dragged; keys always count-snap even at fine precision.
+- **Browser check (Playwright on the HTTPS lab build, 1440×900, lab data, read-only):** six lanes
+  at their heights, a swipe scrubs, zoom-in keeps the line, a step tap selects step 2 and glides
+  there, readout, stage and overview follow; no writes.
+- **Open:** the desk opens at the scrub's 40 px/s instead of fitted; the lanes have a fixed height
+  (no vertical scroll on very short windows); the overview playhead follows the player, so it
+  rests while the wave is steered.
+
+### Phase 9c — One Timeline: overview and the last studio drags
+Goal: no track is left outside `Timeline` and the gesture engine.
+- [ ] Desk overview on `Timeline` (bracket = the centre scrub's view, edges zoom, tap aims); delete `KkLaneOverview`
+- [ ] Video strip (`KkStudioPlacement`) and count strip (`KkStudioCounts`) on the gesture engine; delete `KkStudioDrag`
+- [ ] Device check: overview bracket and edges, video and count strips on iPad and desktop
 
 ### Phase 10 — One Stage: read views
 Goal: the `Stage` kit replaces the read-only renderers.

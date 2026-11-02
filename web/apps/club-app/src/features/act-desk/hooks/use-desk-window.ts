@@ -1,9 +1,12 @@
+import type { CentreView } from '@furria/studio/centre-scrub';
+import { centreViewOf } from '@furria/studio/centre-scrub';
+import type { CentreScrub } from '@furria/studio/use-centre-scrub';
 import type { KkLaneOverviewEdgeSide, KkLaneOverviewKey } from '@furria/ui/KkLaneOverview';
+import { useMotionValueEvent } from 'motion/react';
 import { useEffect, useState } from 'react';
 import { bracketTextOf } from '../desk-copy';
 import type { DeskWindow } from '../desk-window';
-import { pannedCentreOf, resizedFrameOf, windowOf, windowSharesOf } from '../desk-window';
-import type { DeskZoom } from './use-desk-zoom';
+import { pannedCentreOf, resizedWindowOf, windowSharesOf } from '../desk-window';
 
 export interface DeskWindowControl {
   start: number;
@@ -16,41 +19,34 @@ export interface DeskWindowControl {
   key: (key: KkLaneOverviewKey) => void;
 }
 
-export const useDeskWindow = (zoom: DeskZoom, length: number): DeskWindowControl => {
-  const { scroller, perSecond, visible } = zoom;
-  const [left, setLeft] = useState(0);
+export const useDeskWindow = (centre: CentreScrub, length: number): DeskWindowControl => {
+  const { x, scale, pxPerSecond, width } = centre;
+  const read = (): CentreView => centreViewOf(x.get(), pxPerSecond * scale.get(), width, length);
+  const [view, setView] = useState<CentreView>(read);
   const [grabOffset, setGrabOffset] = useState(0);
   const [resizing, setResizing] = useState<DeskWindow | null>(null);
-  const view = windowOf(left, perSecond, visible);
   const shares = windowSharesOf(view, length);
-
+  const follow = (): void => {
+    setView(read());
+  };
+  useMotionValueEvent(x, 'change', follow);
+  useMotionValueEvent(scale, 'change', follow);
   useEffect(() => {
-    if (scroller === null) {
-      return;
-    }
-    const read = (): void => {
-      setLeft(scroller.scrollLeft);
-    };
-    read();
-    scroller.addEventListener('scroll', read, { passive: true });
-
-    return () => {
-      scroller.removeEventListener('scroll', read);
-    };
-  }, [scroller]);
+    setView(centreViewOf(x.get(), pxPerSecond * scale.get(), width, length));
+  }, [x, scale, pxPerSecond, width, length]);
 
   const keys: Record<KkLaneOverviewKey, () => void> = {
     earlier: () => {
-      zoom.centreOn(pannedCentreOf(view, -1, length));
+      centre.centreOn(pannedCentreOf(view, -1, length));
     },
     later: () => {
-      zoom.centreOn(pannedCentreOf(view, 1, length));
+      centre.centreOn(pannedCentreOf(view, 1, length));
     },
     closer: () => {
-      zoom.zoom(1);
+      centre.zoomBy(1);
     },
     wider: () => {
-      zoom.zoom(-1);
+      centre.zoomBy(-1);
     },
   };
 
@@ -62,15 +58,15 @@ export const useDeskWindow = (zoom: DeskZoom, length: number): DeskWindowControl
       setGrabOffset(share * length - (view.start + view.end) / 2);
     },
     pan: (share) => {
-      zoom.centreOn(share * length - grabOffset);
+      centre.centreOn(share * length - grabOffset);
     },
     edge: (side, share) => {
       const from = resizing ?? view;
       if (resizing === null) {
         setResizing(view);
       }
-      const frame = resizedFrameOf(from, side, share * length, length, visible);
-      zoom.frame(frame.perSecond, frame.centre);
+      const framed = resizedWindowOf(from, side, share * length, length);
+      centre.frame(framed.start, framed.end);
     },
     release: () => {
       setResizing(null);

@@ -5,23 +5,23 @@ import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { kkTokens } from '../../../tokens';
-import { LANE_STICKY_LEFT } from '../lane-geometry';
+import { LANE_AHEAD } from '../lane-sizes';
 
 const palette = (theme: Theme) => (theme.vars ?? theme).palette;
 
-export type KkLaneTrackSetupState = 'next' | 'later';
+export type KkTimelineLaneSetupState = 'next' | 'later';
 
-interface KkLaneTrackSetupProps {
+interface KkTimelineLaneSetupProps {
   number: number;
   text: string;
   hint: string;
   label: string;
-  state: KkLaneTrackSetupState;
+  state: KkTimelineLaneSetupState;
   disabled: boolean;
   onPress: () => void;
 }
 
-export const KkLaneTrackSetup: FC<KkLaneTrackSetupProps> = ({
+export const KkTimelineLaneSetup: FC<KkTimelineLaneSetupProps> = ({
   number,
   text,
   hint,
@@ -35,10 +35,13 @@ export const KkLaneTrackSetup: FC<KkLaneTrackSetupProps> = ({
     disabled={disabled}
     aria-label={label}
     data-kk-lane-setup={state}
+    data-gesture-ignore
     sx={(theme) => ({
-      position: 'sticky',
-      left: LANE_STICKY_LEFT,
-      zIndex: 2,
+      position: 'absolute',
+      top: '50%',
+      left: LANE_AHEAD,
+      transform: 'translateY(-50%)',
+      zIndex: 4,
       gap: 1,
       minHeight: kkTokens.tapTarget,
       width: 'max-content',

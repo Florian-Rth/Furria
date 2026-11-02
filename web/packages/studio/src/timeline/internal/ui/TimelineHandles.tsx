@@ -1,3 +1,4 @@
+import type { KkTimelineHandleTone } from '@furria/ui/KkTimeline';
 import { KkTimeline } from '@furria/ui/KkTimeline';
 import type { FC } from 'react';
 import { shareOf } from '../../timeline-geometry';
@@ -14,9 +15,10 @@ export interface TimelineHandle {
 
 interface TimelineHandlesProps {
   handles: readonly TimelineHandle[];
+  tone?: KkTimelineHandleTone;
 }
 
-export const TimelineHandles: FC<TimelineHandlesProps> = ({ handles }) => {
+export const TimelineHandles: FC<TimelineHandlesProps> = ({ handles, tone = 'cut' }) => {
   const { length, centre } = useTimeline();
   const activeKey = centre?.activeKey ?? null;
   const marks = handles.map((handle) => (
@@ -26,6 +28,7 @@ export const TimelineHandles: FC<TimelineHandlesProps> = ({ handles }) => {
       label={handle.label}
       valueText={handle.valueText}
       active={handle.key === activeKey}
+      tone={tone}
       onNudge={handle.onNudge}
     />
   ));

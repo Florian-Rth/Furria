@@ -22,11 +22,11 @@ const outlineOf = (values: readonly number[]): string => {
   return `M ${top.join(' L ')} L ${bottom.join(' L ')} Z`;
 };
 
-interface KkLaneTrackWaveProps {
+interface KkLaneOverviewWaveProps {
   values: readonly number[];
 }
 
-export const KkLaneTrackWave: FC<KkLaneTrackWaveProps> = ({ values }) => (
+export const KkLaneOverviewWave: FC<KkLaneOverviewWaveProps> = ({ values }) => (
   <Box
     component="svg"
     aria-hidden

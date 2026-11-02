@@ -1,7 +1,5 @@
 import type { CountMark } from '@furria/studio/music-timeline';
 
-export const ZOOM_FACTOR = 1.6;
-const COUNT_AT_CLOSEST_PX = 64;
 const FALLBACK_BEAT_SECONDS = 0.5;
 const EDGE = 1e-3;
 const RULER_STEPS_SECONDS: readonly number[] = [1, 2, 5, 10, 15, 30, 60, 120];
@@ -11,14 +9,9 @@ const COUNT_LABEL_PX = 20;
 const EIGHT_LABEL_PX = 18;
 const COUNTS_PER_EIGHT = 8;
 
-export interface ZoomRange {
-  min: number;
-  max: number;
-}
-
 export interface DeskTick {
   key: string;
-  share: number;
+  seconds: number;
   strong: boolean;
   text: string | null;
 }
@@ -41,27 +34,6 @@ export const beatSecondsOf = (marks: readonly CountMark[]): number => {
   return gaps[Math.floor(gaps.length / 2)] ?? FALLBACK_BEAT_SECONDS;
 };
 
-export const zoomRangeOf = (length: number, visible: number, beatSeconds: number): ZoomRange => {
-  const min = length > 0 && visible > 0 ? visible / length : 1;
-
-  return { min, max: Math.max(min, COUNT_AT_CLOSEST_PX / beatSeconds) };
-};
-
-export const zoomedOf = (current: number, direction: 1 | -1, range: ZoomRange): number =>
-  clamp(current * ZOOM_FACTOR ** direction, range.min, range.max);
-
-export const canZoomOf = (current: number, direction: 1 | -1, range: ZoomRange): boolean =>
-  direction === 1 ? current < range.max * (1 - EDGE) : current > range.min * (1 + EDGE);
-
-export const followLeftOf = (seconds: number, perSecond: number): number =>
-  Math.max(0, seconds * perSecond);
-
-const GLIDE_SHARE = 0.3;
-const LOCK_PX = 2;
-
-export const glidedLeftOf = (current: number, target: number): number =>
-  Math.abs(target - current) <= LOCK_PX ? target : current + (target - current) * GLIDE_SHARE;
-
 export const shareOf = (seconds: number, length: number): number =>
   length <= 0 ? 0 : clamp(seconds / length, 0, 1);
 
@@ -80,7 +52,7 @@ export const rulerTicksOf = (length: number, perSecond: number): DeskTick[] => {
 
   return Array.from({ length: count }, (_, index) => ({
     key: String(index),
-    share: shareOf(index * step, length),
+    seconds: index * step,
     strong: true,
     text: clockOf(index * step),
   }));
@@ -97,11 +69,7 @@ export const countPlacesOf = (marks: readonly CountMark[]): CountPlace[] => {
   });
 };
 
-export const musicTicksOf = (
-  marks: readonly CountMark[],
-  length: number,
-  perSecond: number,
-): DeskTick[] => {
+export const musicTicksOf = (marks: readonly CountMark[], perSecond: number): DeskTick[] => {
   const beatPx = beatSecondsOf(marks) * perSecond;
   const places = countPlacesOf(marks);
   const everyCount = beatPx >= BEAT_TICK_PX;
@@ -119,7 +87,7 @@ export const musicTicksOf = (
     return [
       {
         key: String(index),
-        share: shareOf(mark.seconds, length),
+        seconds: mark.seconds,
         strong: one,
         text: one ? eightText : countText,
       },

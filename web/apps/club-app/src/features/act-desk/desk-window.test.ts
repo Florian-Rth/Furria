@@ -1,15 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { pannedCentreOf, resizedFrameOf, windowOf, windowSharesOf } from './desk-window';
-
-describe('windowOf', () => {
-  it.each([
-    [0, 10, 200, { start: -10, end: 10 }],
-    [500, 10, 200, { start: 40, end: 60 }],
-    [500, 0, 200, { start: 0, end: 0 }],
-  ])('reads the window at scroll %d and %d px per second', (left, perSecond, visible, expected) => {
-    expect(windowOf(left, perSecond, visible)).toEqual(expected);
-  });
-});
+import { pannedCentreOf, resizedWindowOf, windowSharesOf } from './desk-window';
 
 describe('windowSharesOf', () => {
   it.each([
@@ -21,23 +11,20 @@ describe('windowSharesOf', () => {
   });
 });
 
-describe('resizedFrameOf', () => {
+describe('resizedWindowOf', () => {
   const window = { start: 20, end: 40 };
 
   it.each([
-    ['end', 60, { perSecond: 5, centre: 40 }],
-    ['start', 30, { perSecond: 20, centre: 35 }],
-    ['start', 39.8, { perSecond: 200, centre: 39.5 }],
-    ['end', 500, { perSecond: 2.5, centre: 60 }],
+    ['end', 60, { start: 20, end: 60 }],
+    ['start', 30, { start: 30, end: 40 }],
+    ['start', 39.8, { start: 39, end: 40 }],
+    ['end', 500, { start: 20, end: 100 }],
   ] as const)('drags the %s edge to %ds', (side, seconds, expected) => {
-    const frame = resizedFrameOf(window, side, seconds, 100, 200);
-    expect(frame.perSecond).toBeCloseTo(expected.perSecond);
-    expect(frame.centre).toBeCloseTo(expected.centre);
+    expect(resizedWindowOf(window, side, seconds, 100)).toEqual(expected);
   });
 
   it('measures from the part of the window that lies on the act', () => {
-    const frame = resizedFrameOf({ start: -10, end: 10 }, 'end', 20, 100, 200);
-    expect(frame).toEqual({ perSecond: 10, centre: 10 });
+    expect(resizedWindowOf({ start: -10, end: 10 }, 'end', 20, 100)).toEqual({ start: 0, end: 20 });
   });
 });
 

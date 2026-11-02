@@ -5,8 +5,8 @@ import {
   centrePxPerSecondOf,
   centreScaleOf,
   centreSecondsOf,
+  centreViewOf,
   centreZoomLimitsOf,
-  handleTargetsOf,
   STRIP_PITCH,
   secondsAtX,
   snapCandidatesOf,
@@ -160,22 +160,15 @@ describe('snapSecondsOf', () => {
   });
 });
 
-describe('handleTargetsOf', () => {
-  it('places each handle over the full height at its second, the active one selected', () => {
-    expect(
-      handleTargetsOf(
-        [
-          { key: 'start', seconds: 2 },
-          { key: 'end', seconds: 10 },
-        ],
-        -100,
-        40,
-        200,
-        'end',
-      ),
-    ).toEqual([
-      { id: 'start', x: -21, y: 0, width: 2, height: 200, priority: 0, selected: false },
-      { id: 'end', x: 299, y: 0, width: 2, height: 200, priority: 0, selected: true },
-    ]);
+describe('centreViewOf', () => {
+  it.each([
+    { offset: -305, expected: { start: 7.625, end: 17.375 } },
+    { offset: 400, expected: { start: -4.875, end: 4.875 } },
+  ])('spans the visible seconds around the centre for offset $offset', ({ offset, expected }) => {
+    expect(centreViewOf(offset, 40, 390, 180)).toEqual(expected);
+  });
+
+  it('shows nothing without a zoom', () => {
+    expect(centreViewOf(0, 0, 390, 180)).toEqual({ start: 0, end: 0 });
   });
 });

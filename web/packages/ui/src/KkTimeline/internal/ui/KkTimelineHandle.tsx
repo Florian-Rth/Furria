@@ -10,11 +10,17 @@ const PERCENT = 100;
 
 const palette = (theme: Theme) => (theme.vars ?? theme).palette;
 
+export type KkTimelineHandleTone = 'cut' | 'border';
+
+const inkOf = (theme: Theme, tone: KkTimelineHandleTone): string =>
+  tone === 'cut' ? palette(theme).warning.main : palette(theme).text.primary;
+
 interface KkTimelineHandleProps {
   share: number;
   label: string;
   valueText: string;
   active: boolean;
+  tone?: KkTimelineHandleTone;
   onNudge: (direction: -1 | 1) => void;
 }
 
@@ -23,6 +29,7 @@ export const KkTimelineHandle: FC<KkTimelineHandleProps> = ({
   label,
   valueText,
   active,
+  tone = 'cut',
   onNudge,
 }) => {
   const place = { left: percentOf(share) };
@@ -65,7 +72,7 @@ export const KkTimelineHandle: FC<KkTimelineHandleProps> = ({
           top: 0,
           bottom: 0,
           left: '50%',
-          borderLeft: `${kkTokens.line.section}px solid ${palette(theme).warning.main}`,
+          borderLeft: `${kkTokens.line.section}px solid ${inkOf(theme, tone)}`,
           transform: 'translateX(-50%)',
         },
       })}
@@ -75,7 +82,7 @@ export const KkTimelineHandle: FC<KkTimelineHandleProps> = ({
           width: '0.625rem',
           height: '58%',
           borderRadius: `${kkTokens.radius.pill}px`,
-          backgroundColor: palette(theme).warning.main,
+          backgroundColor: inkOf(theme, tone),
           boxShadow: `0 0 0 ${kkTokens.line.section}px ${palette(theme).background.paper}, ${kkTokens.shadow.rest}`,
           transition: 'transform 160ms ease-out',
           '[data-active="true"] > &': { transform: 'scaleX(1.4)' },

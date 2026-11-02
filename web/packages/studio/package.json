@@ -9,6 +9,7 @@
     "./Timeline": "./src/timeline/Timeline.tsx",
     "./autosave": "./src/document/autosave.ts",
     "./centre-scrub": "./src/timeline/centre-scrub.ts",
+    "./centre-targets": "./src/timeline/centre-targets.ts",
     "./choreography-motion": "./src/models/choreography-motion.ts",
     "./count-in": "./src/engine/count-in.ts",
     "./document-patches": "./src/document/document-patches.ts",

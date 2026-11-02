@@ -1,4 +1,3 @@
-import type { HitTarget } from '../gestures/hit-priority';
 import type { PanBounds } from '../gestures/pan-bounds';
 import type { CountMark } from '../models/music-timeline';
 import type { TimelineWindow } from './timeline-geometry';
@@ -18,18 +17,12 @@ export interface CentreSnap {
   snapped: boolean;
 }
 
-export interface CentreHandleSpot {
-  key: string;
-  seconds: number;
-}
-
 export const CENTRE_PX_PER_SECOND = 40;
 export const CENTRE_MAX_PX_PER_SECOND = 480;
 export const STRIP_PITCH = 4;
 export const CENTRE_SNAP_PX = 12;
 const WINDOW_REACH = 2;
 const MIN_SNAP_SPACING = 4;
-const HANDLE_WIDTH = 2;
 
 export const centreOffsetOf = (seconds: number, pxPerSecond: number, centre: number): number =>
   centre - seconds * pxPerSecond;
@@ -139,19 +132,22 @@ export const snapSecondsOf = (
   return best === null ? { seconds, snapped: false } : { seconds: best, snapped: true };
 };
 
-export const handleTargetsOf = (
-  handles: readonly CentreHandleSpot[],
+export interface CentreView {
+  start: number;
+  end: number;
+}
+
+export const centreViewOf = (
   offset: number,
   pxPerSecond: number,
-  height: number,
-  activeKey: string | null,
-): HitTarget<string>[] =>
-  handles.map((handle) => ({
-    id: handle.key,
-    x: offset + handle.seconds * pxPerSecond - HANDLE_WIDTH / 2,
-    y: 0,
-    width: HANDLE_WIDTH,
-    height,
-    priority: 0,
-    selected: handle.key === activeKey,
-  }));
+  width: number,
+  length: number,
+): CentreView => {
+  if (pxPerSecond <= 0) {
+    return { start: 0, end: 0 };
+  }
+  const now = centreSecondsOf(offset, pxPerSecond, width / 2, length);
+  const half = width / 2 / pxPerSecond;
+
+  return { start: now - half, end: now + half };
+};

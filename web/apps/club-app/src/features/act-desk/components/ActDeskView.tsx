@@ -10,7 +10,7 @@ import { DESK_INSPECTOR, DESK_LABEL, DESK_LANES, DESK_STAGE } from '../desk-copy
 import { useActDesk } from '../hooks/use-act-desk';
 import { useDeskBorders } from '../hooks/use-desk-borders';
 import { useDeskKeys } from '../hooks/use-desk-keys';
-import { useDeskZoom } from '../hooks/use-desk-zoom';
+import { useDeskLanes } from '../hooks/use-desk-lanes';
 import { DeskInspectorPane } from './DeskInspectorPane';
 import { DeskLanes } from './DeskLanes';
 import { DeskOverview } from './DeskOverview';
@@ -26,10 +26,9 @@ interface ActDeskViewProps {
 export const ActDeskView: FC<ActDeskViewProps> = ({ screen, editor }) => {
   const takes = useActStudioTakes(screen);
   const desk = useActDesk(screen, editor, takes);
-  const { playback } = screen;
-  const zoom = useDeskZoom(playback.length, playback.countMarks, playback.player.position);
   const borders = useDeskBorders(screen);
-  useDeskKeys(screen, zoom.zoom);
+  const lanes = useDeskLanes(desk, borders);
+  useDeskKeys(screen, lanes.centre.zoomBy);
   const setup = useStudioSetup(screen, editor, {
     leave: () => {
       desk.chooseTab('selection');
@@ -44,7 +43,7 @@ export const ActDeskView: FC<ActDeskViewProps> = ({ screen, editor }) => {
     <KkLaneDesk label={DESK_LABEL}>
       <KkLaneDesk.Area area="band">{band}</KkLaneDesk.Area>
       <KkLaneDesk.Area area="bar">
-        <DeskTopBar desk={desk} zoom={zoom} setup={setup} />
+        <DeskTopBar desk={desk} centre={lanes.centre} setup={setup} />
       </KkLaneDesk.Area>
       <KkLaneDesk.Area area="stage">
         <KkLaneDesk.Panel label={DESK_STAGE} padded>
@@ -58,11 +57,11 @@ export const ActDeskView: FC<ActDeskViewProps> = ({ screen, editor }) => {
         </KkLaneDesk.Panel>
       </KkLaneDesk.Area>
       <KkLaneDesk.Area area="overview">
-        <DeskOverview desk={desk} zoom={zoom} />
+        <DeskOverview desk={desk} centre={lanes.centre} />
       </KkLaneDesk.Area>
       <KkLaneDesk.Area area="lanes">
         <KkLaneDesk.Panel label={DESK_LANES}>
-          <DeskLanes desk={desk} zoom={zoom} borders={borders} setup={setup} />
+          <DeskLanes desk={desk} lanes={lanes} setup={setup} />
         </KkLaneDesk.Panel>
       </KkLaneDesk.Area>
       <StudioSetupInputs setup={setup} />

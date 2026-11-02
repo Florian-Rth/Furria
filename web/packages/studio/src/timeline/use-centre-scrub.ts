@@ -9,7 +9,6 @@ import type {
   GesturePrecisionTier,
 } from '../gestures/gesture-recogniser';
 import { pulseHaptic } from '../gestures/haptics';
-import { pickHitTarget } from '../gestures/hit-priority';
 import type { LiftSize } from '../gestures/lift-placement';
 import { LIFT_GAP, liftPlacementOf } from '../gestures/lift-placement';
 import { momentumOf, momentumTargetOf } from '../gestures/pan-bounds';
@@ -18,7 +17,7 @@ import type { GestureHandlers } from '../gestures/use-gesture';
 import { useGesture } from '../gestures/use-gesture';
 import { usePanAxis } from '../gestures/use-pan-axis';
 import type { CountMark } from '../models/music-timeline';
-import type { CentreHandleSpot, StripWindow } from './centre-scrub';
+import type { StripWindow } from './centre-scrub';
 import {
   centreBoundsOf,
   centreOffsetOf,
@@ -26,7 +25,6 @@ import {
   centreScaleOf,
   centreSecondsOf,
   centreZoomLimitsOf,
-  handleTargetsOf,
   secondsAtX,
   snapCandidatesOf,
   snapSecondsOf,
@@ -35,6 +33,8 @@ import {
   stripSharesOf,
   stripWindowOf,
 } from './centre-scrub';
+import type { CentreTarget, CentreTargetUse, LaneBand } from './centre-targets';
+import { pickCentreTarget, targetHitsOf } from './centre-targets';
 import type { TimelineWindow } from './timeline-geometry';
 
 export interface CentreDragValue {
@@ -55,20 +55,32 @@ export interface CentreScrub {
   activeKey: string | null;
   snapSeconds: number | null;
   readout: DragReadout<CentreDragValue> | null;
+  width: number;
+  pxPerSecond: number;
+  canZoomIn: boolean;
+  canZoomOut: boolean;
+  fitted: boolean;
+  zoomBy: (direction: 1 | -1) => void;
+  fit: () => void;
+  frame: (start: number, end: number) => void;
+  centreOn: (seconds: number) => void;
 }
 
 interface UseCentreScrubOptions {
   player: MixPlayer;
   length: number;
   countMarks: readonly CountMark[];
-  handles: readonly CentreHandleSpot[];
-  onHandleMove: (key: string, seconds: number) => void;
-  onHandleEnd: (key: string, seconds: number) => void;
-  onHandleCancel: (key: string) => void;
+  targets: readonly CentreTarget[];
+  editsRebuildPlayer?: boolean;
+  onTargetStart?: (key: string) => void;
+  onTargetMove: (key: string, seconds: number) => void;
+  onTargetEnd: (key: string, seconds: number) => void;
+  onTargetCancel: (key: string) => void;
+  onTargetTap?: (key: string) => void;
 }
 
 type CentreDrag =
-  | { kind: 'handle'; key: string; x: number; seconds: number }
+  | { kind: 'handle'; key: string; x: number; seconds: number; snaps: boolean }
   | { kind: 'scrub'; ratio: number; lastX: number }
   | { kind: 'navigate'; seconds: number };
 
@@ -83,15 +95,38 @@ const READOUT_SIZE: LiftSize = { width: 200, height: 34 };
 const READOUT_ROOM = Number.POSITIVE_INFINITY;
 const WHEEL_COMMIT_MS = 160;
 const REACH_STEP = 0.5;
+const ZOOM_STEP = 1.6;
+const ZOOM_EDGE = 1e-3;
+const LANE = '[data-timeline-lane]';
+
+const laneBandsOf = (area: HTMLElement | SVGElement | null): Map<string, LaneBand> => {
+  const bands = new Map<string, LaneBand>();
+  if (area === null) {
+    return bands;
+  }
+  const top = area.getBoundingClientRect().top;
+  for (const lane of area.querySelectorAll<HTMLElement>(LANE)) {
+    const key = lane.dataset.timelineLane;
+    const box = lane.getBoundingClientRect();
+    if (key !== undefined) {
+      bands.set(key, { top: box.top - top, height: box.height });
+    }
+  }
+
+  return bands;
+};
 
 export const useCentreScrub = ({
   player,
   length,
   countMarks,
-  handles,
-  onHandleMove,
-  onHandleEnd,
-  onHandleCancel,
+  targets,
+  editsRebuildPlayer = false,
+  onTargetStart,
+  onTargetMove,
+  onTargetEnd,
+  onTargetCancel,
+  onTargetTap,
 }: UseCentreScrubOptions): CentreScrub => {
   const reducedMotion = useReducedMotion() ?? false;
   const [chosenPxPerSecond, setChosenPxPerSecond] = useState<number | null>(null);
@@ -110,6 +145,7 @@ export const useCentreScrub = ({
   const glide = useRef<AnimationPlaybackControls | null>(null);
   const lastNow = useRef(0);
   const seenPlayer = useRef<MixPlayer | null>(null);
+  const area = useRef<HTMLElement | SVGElement | null>(null);
   const scale = useMotionValue(1);
 
   const onIntent = (intent: GestureIntent): void => {
@@ -261,11 +297,17 @@ export const useCentreScrub = ({
     glide.current = animate(x, target, { ...TAP_GLIDE, onComplete: glideDone });
   };
 
-  const handleAt = (point: GesturePoint): CentreHandleSpot | null => {
-    const targets = handleTargetsOf(handles, x.get(), pxPerSecond, height, activeKey);
-    const key = pickHitTarget(targets, point);
+  const targetAt = (point: GesturePoint, use: CentreTargetUse): CentreTarget | null => {
+    const hits = targetHitsOf(
+      targets,
+      x.get(),
+      pxPerSecond,
+      height,
+      laneBandsOf(area.current),
+      activeKey,
+    );
 
-    return handles.find((handle) => handle.key === key) ?? null;
+    return pickCentreTarget(targets, hits, point, use);
   };
 
   const endEdit = (resumeHere: boolean = true): void => {
@@ -286,7 +328,7 @@ export const useCentreScrub = ({
     const handleX = current.x + deltaX;
     const raw = secondsAt(handleX);
     const snap =
-      tier === 'full'
+      tier === 'full' && current.snaps
         ? snapSecondsOf(raw, snapCandidatesOf(countMarks, pxPerSecond), pxPerSecond)
         : { seconds: raw, snapped: false };
     const snapped = snap.snapped ? snap.seconds : null;
@@ -297,7 +339,7 @@ export const useCentreScrub = ({
     drag.current = { ...current, x: handleX, seconds: snap.seconds };
     setSnapSeconds(snapped);
     setHeld({ finger: point, value: { seconds: snap.seconds, tier } });
-    onHandleMove(current.key, snap.seconds);
+    onTargetMove(current.key, snap.seconds);
   };
 
   const navigate = (intent: Extract<GestureIntent, { kind: 'navigate' }>): void => {
@@ -347,11 +389,11 @@ export const useCentreScrub = ({
     drag.current = null;
     if (current?.kind === 'handle') {
       if (kept) {
-        onHandleEnd(current.key, current.seconds);
+        onTargetEnd(current.key, current.seconds);
       } else {
-        onHandleCancel(current.key);
+        onTargetCancel(current.key);
       }
-      endEdit(!kept);
+      endEdit(!kept || !editsRebuildPlayer);
       return;
     }
     if (current?.kind === 'scrub') {
@@ -368,19 +410,25 @@ export const useCentreScrub = ({
           stopTap.current = true;
         }
         return;
-      case 'tap':
+      case 'tap': {
         if (stopTap.current) {
           stopTap.current = false;
           settle();
           return;
         }
+        const tapped = targetAt(intent.point, 'tap');
+        if (tapped !== null && onTargetTap !== undefined) {
+          onTargetTap(tapped.key);
+          return;
+        }
         glideTo(secondsAt(intent.point.x));
         return;
+      }
       case 'pressCancel':
         stopTap.current = false;
         return;
       case 'longPress': {
-        const handle = handleAt(intent.point);
+        const handle = targetAt(intent.point, 'drag');
         if (handle !== null) {
           takeOver();
           pulseHaptic();
@@ -393,7 +441,7 @@ export const useCentreScrub = ({
         endEdit();
         return;
       case 'dragStart': {
-        const handle = handleAt(intent.origin);
+        const handle = targetAt(intent.origin, 'drag');
         stopTap.current = false;
         takeOver();
         if (handle === null) {
@@ -406,8 +454,10 @@ export const useCentreScrub = ({
           key: handle.key,
           x: x.get() + handle.seconds * pxPerSecond,
           seconds: handle.seconds,
+          snaps: handle.snaps ?? true,
         };
         setActiveKey(handle.key);
+        onTargetStart?.(handle.key);
         return;
       }
       case 'drag': {
@@ -454,6 +504,33 @@ export const useCentreScrub = ({
     }
   };
 
+  const attachArea = (node: HTMLElement | SVGElement | null): void => {
+    area.current = node;
+    gesture.areaRef(node);
+  };
+
+  const zoomTo = (wanted: number): void => {
+    glide.current?.stop();
+    settle();
+    setReach(1);
+    setAnchor(nowOf());
+    setChosenPxPerSecond(Math.min(Math.max(wanted, limits.min), limits.max));
+  };
+
+  const centreOn = (seconds: number): void => {
+    const target = Math.min(Math.max(seconds, 0), length);
+    const resumeHere = steering.current && resume.current;
+    glide.current?.stop();
+    glide.current = null;
+    steering.current = false;
+    resume.current = false;
+    axis.jumpTo(centreOffsetOf(target, pxPerSecond * scale.get(), centre));
+    player.seek(target);
+    if (resumeHere) {
+      player.play();
+    }
+  };
+
   const readout =
     held === null || size === null
       ? null
@@ -463,7 +540,7 @@ export const useCentreScrub = ({
         };
 
   return {
-    areaRef: gesture.areaRef,
+    areaRef: attachArea,
     handlers: gesture.handlers,
     size,
     x,
@@ -475,5 +552,24 @@ export const useCentreScrub = ({
     activeKey,
     snapSeconds,
     readout,
+    width,
+    pxPerSecond,
+    canZoomIn: pxPerSecond < limits.max * (1 - ZOOM_EDGE),
+    canZoomOut: pxPerSecond > limits.min * (1 + ZOOM_EDGE),
+    fitted: pxPerSecond <= limits.min * (1 + ZOOM_EDGE),
+    zoomBy: (direction) => {
+      zoomTo(pxPerSecond * ZOOM_STEP ** direction);
+    },
+    fit: () => {
+      zoomTo(limits.min);
+    },
+    frame: (start, end) => {
+      const span = Math.max(end - start, 0);
+      if (span > 0) {
+        zoomTo(width / span);
+      }
+      centreOn((start + end) / 2);
+    },
+    centreOn,
   };
 };

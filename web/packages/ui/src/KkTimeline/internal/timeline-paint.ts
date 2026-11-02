@@ -5,6 +5,7 @@ export const TIMELINE_LANES = {
   track: { height: '5.5rem', ruler: '0rem', parts: '1.5rem', steps: '0.875rem' },
   full: { height: '12.5rem', ruler: '1.375rem', parts: '1.625rem', steps: '3.25rem' },
   edit: { height: '100%', ruler: '0rem', parts: '2.5rem', steps: '1.25rem' },
+  desk: { height: '16.25rem', ruler: '0rem', parts: '0rem', steps: '0rem' },
 } as const;
 
 export type KkTimelineDensity = keyof typeof TIMELINE_LANES;

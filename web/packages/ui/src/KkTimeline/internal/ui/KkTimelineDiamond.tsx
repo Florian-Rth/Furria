@@ -3,40 +3,30 @@ import ButtonBase from '@mui/material/ButtonBase';
 import type { Theme } from '@mui/material/styles';
 import type { FC, KeyboardEvent } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
-import type { KkStudioShare } from '../../../KkStudioDrag/use-studio-drag';
-import { useStudioDrag } from '../../../KkStudioDrag/use-studio-drag';
+import { percentOf } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
-import { percentOf } from '../lane-geometry';
 
 const palette = (theme: Theme) => (theme.vars ?? theme).palette;
 
-interface KkLaneTrackDiamondProps {
+interface KkTimelineDiamondProps {
   share: number;
   selected: boolean;
   dimmed: boolean;
   label: string;
   onPress: () => void;
-  onGrab?: () => void;
-  onDrag?: (share: KkStudioShare) => void;
-  onDrop?: () => void;
-  onNudge?: (direction: -1 | 1) => void;
+  onNudge: (direction: -1 | 1) => void;
 }
 
-export const KkLaneTrackDiamond: FC<KkLaneTrackDiamondProps> = ({
+export const KkTimelineDiamond: FC<KkTimelineDiamondProps> = ({
   share,
   selected,
   dimmed,
   label,
   onPress,
-  onGrab,
-  onDrag,
-  onDrop,
   onNudge,
 }) => {
-  const drag = useStudioDrag({ onPress: onGrab, onMove: onDrag, onEnd: onDrop });
-  const handlers = onGrab === undefined ? {} : drag;
   const press = (event: KeyboardEvent<HTMLElement>): void => {
-    if (onNudge === undefined || (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight')) {
+    if (event.key !== 'ArrowLeft' && event.key !== 'ArrowRight') {
       return;
     }
     event.preventDefault();
@@ -50,7 +40,6 @@ export const KkLaneTrackDiamond: FC<KkLaneTrackDiamondProps> = ({
       aria-pressed={selected}
       onClick={onPress}
       onKeyDown={press}
-      {...handlers}
       data-selected={selected}
       data-dimmed={dimmed}
       style={{ left: percentOf(share) }}
@@ -61,8 +50,6 @@ export const KkLaneTrackDiamond: FC<KkLaneTrackDiamondProps> = ({
         height: kkTokens.tapTarget,
         transform: 'translate(-50%, -50%)',
         zIndex: selected ? 2 : 1,
-        cursor: onGrab === undefined ? 'pointer' : 'ew-resize',
-        touchAction: onGrab === undefined ? 'auto' : 'none',
         '&[data-dimmed="true"]': { opacity: 0.35 },
         ...focusRing(theme),
       })}

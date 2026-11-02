@@ -2,19 +2,17 @@ import { useState } from 'react';
 import { useGestureRelease } from '@/features/act-studio/hooks/use-gesture-release';
 import type { StudioScreen } from '@/features/act-studio/hooks/use-studio-screen';
 import { borderMovedOf } from '@/features/act-studio/studio-edits';
-import { borderLabelOf, clockOf, snapHintOf } from '../desk-copy';
-import { countPlaceAt, neighbourCountOf, shareOf } from '../desk-time';
+import { borderLabelOf, clockOf } from '../desk-copy';
+import { neighbourCountOf } from '../desk-time';
 
 export interface DeskBorder {
   key: string;
-  share: number;
+  seconds: number;
   label: string;
-  value: string;
-  active: boolean;
-  hint: string;
-  move: (share: number) => void;
+  valueText: string;
+  move: (seconds: number) => void;
   end: () => void;
-  nudge: (direction: -1 | 1) => void;
+  onNudge: (direction: -1 | 1) => void;
 }
 
 export interface DeskBorders {
@@ -57,26 +55,23 @@ export const useDeskBorders = (screen: StudioScreen): DeskBorders => {
       return [];
     }
     const seconds = after.startSeconds;
-    const place = countPlaceAt(countMarks, seconds);
 
     return [
       {
-        key: String(before.stepId),
-        share: shareOf(seconds, length),
+        key: `border-${before.stepId}`,
+        seconds,
         label: borderLabelOf(before.name, after.name),
-        value: clockOf(seconds),
-        active: activeId === before.stepId,
-        hint: snapHintOf(place?.eight ?? null, place?.count ?? null, seconds),
-        move: (share: number) => {
+        valueText: clockOf(seconds),
+        move: (to: number) => {
           setActiveId(before.stepId);
           work.startGesture();
-          moveTo(before.stepId, after.stepId, share * length);
+          moveTo(before.stepId, after.stepId, to);
         },
         end: () => {
           setActiveId(null);
           work.endGesture();
         },
-        nudge: (direction: -1 | 1) => {
+        onNudge: (direction: -1 | 1) => {
           nudgeAt(index, direction);
         },
       },
