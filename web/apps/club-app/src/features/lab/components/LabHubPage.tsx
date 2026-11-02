@@ -7,6 +7,8 @@ import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { AREA_HANDOVERS, MANAGE_ORIGIN } from '@/features/session/app-sections';
+import { STUDIO_LAB_ENTRIES, studioLabPathOf } from '@/features/studio-lab/studio-lab';
+import { STUDIO_LAB_SECTION } from '@/features/studio-lab/studio-lab-copy';
 import {
   WELCOME_LAB_CASES,
   WELCOME_LAB_TITLE,
@@ -54,6 +56,17 @@ export const LabHubPage: FC = () => {
     />
   ));
 
+  const studioRows = STUDIO_LAB_ENTRIES.map((entry) => (
+    <KkHubRow
+      key={entry.playground}
+      label={entry.title}
+      icon={entry.icon}
+      meta={entry.meta}
+      component={Link}
+      to={studioLabPathOf(entry.playground)}
+    />
+  ));
+
   return (
     <KkScreen
       kind="detail"
@@ -63,6 +76,9 @@ export const LabHubPage: FC = () => {
       handover={AREA_HANDOVERS.manage}
     >
       <KkPanelStack>
+        <KkPanelSection title={STUDIO_LAB_SECTION}>
+          <KkPanel>{studioRows}</KkPanel>
+        </KkPanelSection>
         <KkPanelSection title={WELCOME_LAB_TITLE}>
           <KkPanel>{welcomeRows}</KkPanel>
         </KkPanelSection>

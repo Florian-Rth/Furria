@@ -38,6 +38,7 @@ catalog:
   babel-plugin-react-compiler: 1.0.0
   date-fns: 4.4.0
   immer: 11.1.21
+  '@dnd-kit/react': 0.5.1
   '@hookform/resolvers': 5.4.0
   motion: 12.42.2
   playwright: 1.63.0
