@@ -151,12 +151,31 @@ Goal: playback lives in the package behind a media loader; iPhone audio is robus
 
 ### Phase 3 — Edit document, save planner, autosave
 Goal: the local edit document exists and is tested, not yet wired into the editor.
-- [ ] Studio document type and immer change functions for every in-document edit kind
-- [ ] Undo/redo stack: one entry per gesture, nudge merging, dropping entries after direct server actions
-- [ ] Save planner: patches → existing write endpoints, batching, ordering
-- [ ] Autosave scheduler (gesture end + quiet time, flush on leave/background) and save status
-- [ ] Choreography refusal → reload and replay pending changes, conflict note
-- [ ] Pure tests for change functions, planner, merging, replay
+- [x] Studio document type and immer change functions for every in-document edit kind
+- [x] Undo/redo stack: one entry per gesture, nudge merging, dropping entries after direct server actions
+- [x] Save planner: patches → existing write endpoints, batching, ordering
+- [x] Autosave scheduler (gesture end + quiet time, flush on leave/background) and save status
+- [x] Choreography refusal → reload and replay pending changes, conflict note
+- [x] Pure tests for change functions, planner, merging, replay
+
+Done 2026-11-02. `@furria/studio/*` under `src/document/`: the document keeps only the editable facts
+in id-keyed records (`studio-document`), so patches name items by id and replay onto a newer state;
+`studioOf(base, document)` projects it back to a `Studio` for the views (step ends, part spans, spot
+numbers and the music length are derived, the first step starts at 0 like the server tiling).
+Locally created steps, parts and spots get negative ids from the editor (`newLocalId`, never part of
+undo); the save run learns their server ids (`id-map`) instead of rewriting the document or the undo
+stack. The planner diffs the last saved document against the current one (`savePlanOf`), so an edit
+undone before saving sends nothing and a save that stops halfway resumes with the rest; `savedAfter`
+advances the saved document write by write. `createStudioEditor(studio, port)` is the framework-free
+store for phase 4 (`snapshot`/`subscribe` for `useSyncExternalStore`, `leave` on leave/background,
+`direct(action)` for uploads/adoption/restore/deletes, which flushes, runs the action and reloads).
+The port routes `tracks` and `spotAssign` — a Sessionsauftritt's copy can be edited through the same
+document by a port that targets the evening endpoints.
+Change functions mirror the server rules (step marks/moves inside the music and between neighbours,
+part starts between neighbouring parts, the first part fixed) so a refusal is rare; the planner
+orders step and part moves so none passes a neighbour on the way. A write the server still rejects
+(port outcome `rejected`) reloads the studio and drops the pending changes with a quiet note — only a
+choreography refusal replays them. Saves pause while a reload or a direct action runs.
 
 ### Phase 4 — Editor onto the document: music, steps, parts, videos
 Goal: these edits run through the document; their inverse writes are gone.

@@ -254,6 +254,9 @@ catalogs:
     date-fns:
       specifier: 4.4.0
       version: 4.4.0
+    immer:
+      specifier: 11.1.21
+      version: 11.1.21
     motion:
       specifier: 12.42.2
       version: 12.42.2
@@ -592,6 +595,9 @@ importers:
       '@furria/api-client':
         specifier: workspace:*
         version: link:../api-client
+      immer:
+        specifier: 'catalog:'
+        version: 11.1.21
       zod:
         specifier: 'catalog:'
         version: 4.4.3
@@ -3133,6 +3139,9 @@ packages:
 
   ieee754@1.2.1:
     resolution: {integrity: sha512-dcyqhDvX1C46lXZcVqCpK+FtMRQVdIMN6/Df5js2zouUsqG7I6sFxitIC+7KYK29KdXOLHdu9zL4sFnoVQnqaA==}
+
+  immer@11.1.21:
+    resolution: {integrity: sha512-bZSadeCPGdaY5/qRLgr6mDSH1ra21rD3rqpiWk7+QTr4ayYPTE9qZYdLh/NdPhMe0wSrTvHD/Lk8q5EwhUs0aw==}
 
   import-fresh@3.3.1:
     resolution: {integrity: sha512-TR3KfrTZTYLPB6jUjfx6MF9WcWrHL9su5TObK4ZkYgBdWKPOFoSoQIdEuTuR82pmtxH2spWG9h6etwfr1pLBqQ==}
@@ -7155,6 +7164,8 @@ snapshots:
   idb@7.1.1: {}
 
   ieee754@1.2.1: {}
+
+  immer@11.1.21: {}
 
   import-fresh@3.3.1:
     dependencies:

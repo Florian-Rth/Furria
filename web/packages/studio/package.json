@@ -5,11 +5,23 @@
   "type": "module",
   "sideEffects": false,
   "exports": {
+    "./autosave": "./src/document/autosave.ts",
     "./choreography-motion": "./src/models/choreography-motion.ts",
+    "./document-patches": "./src/document/document-patches.ts",
+    "./document-projection": "./src/document/document-projection.ts",
+    "./edit-history": "./src/document/edit-history.ts",
+    "./id-map": "./src/document/id-map.ts",
     "./mix-waveform": "./src/models/mix-waveform.ts",
     "./music-timeline": "./src/models/music-timeline.ts",
+    "./same-value": "./src/document/same-value.ts",
+    "./save-plan": "./src/document/save-plan.ts",
+    "./save-port": "./src/document/save-port.ts",
+    "./save-run": "./src/document/save-run.ts",
     "./stage-view": "./src/models/stage-view.ts",
     "./step-names": "./src/models/step-names.ts",
+    "./studio-changes": "./src/document/studio-changes.ts",
+    "./studio-document": "./src/document/studio-document.ts",
+    "./studio-editor": "./src/document/studio-editor.ts",
     "./studio-schemas": "./src/models/studio-schemas.ts"
   },
   "scripts": {
@@ -18,6 +30,7 @@
   },
   "dependencies": {
     "@furria/api-client": "workspace:*",
+    "immer": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
