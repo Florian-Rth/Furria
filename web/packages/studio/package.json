@@ -6,11 +6,21 @@
   "sideEffects": false,
   "exports": {
     "./choreography-motion": "./src/models/choreography-motion.ts",
+    "./drag-readout": "./src/gestures/drag-readout.ts",
+    "./gesture-recogniser": "./src/gestures/gesture-recogniser.ts",
+    "./haptics": "./src/gestures/haptics.ts",
+    "./hit-priority": "./src/gestures/hit-priority.ts",
+    "./lift-placement": "./src/gestures/lift-placement.ts",
     "./mix-waveform": "./src/models/mix-waveform.ts",
     "./music-timeline": "./src/models/music-timeline.ts",
+    "./pan-bounds": "./src/gestures/pan-bounds.ts",
     "./stage-view": "./src/models/stage-view.ts",
     "./step-names": "./src/models/step-names.ts",
-    "./studio-schemas": "./src/models/studio-schemas.ts"
+    "./studio-schemas": "./src/models/studio-schemas.ts",
+    "./use-drag-lift": "./src/gestures/use-drag-lift.ts",
+    "./use-gesture": "./src/gestures/use-gesture.ts",
+    "./use-pan-axis": "./src/gestures/use-pan-axis.ts",
+    "./use-work-area": "./src/gestures/use-work-area.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -18,9 +28,12 @@
   },
   "dependencies": {
     "@furria/api-client": "workspace:*",
+    "motion": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {
+    "@types/react": "catalog:",
+    "react": "catalog:",
     "typescript": "catalog:",
     "vitest": "catalog:"
   }

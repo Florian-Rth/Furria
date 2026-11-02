@@ -174,10 +174,24 @@ Goal: every in-document edit uses the document; the old undo machinery is delete
 
 ### Phase 6 — Gesture engine
 Goal: one tested gesture recogniser and its React binding exist in the package.
-- [ ] Generalise `stage-machine` into a pure recogniser: press, drag (threshold), long-press, pinch, two-finger pan, precision drag
-- [ ] Hit priority, momentum and rubber band (motion), browser-gesture prevention per work area
-- [ ] Lift/loupe and live-value hooks for drags
-- [ ] Pure tests with input sequences; Playwright touch script for films (dev tooling)
+- [x] Generalise `stage-machine` into a pure recogniser: press, drag (threshold), long-press, pinch, two-finger pan, precision drag
+- [x] Hit priority, momentum and rubber band (motion), browser-gesture prevention per work area
+- [x] Lift/loupe and live-value hooks for drags
+- [x] Pure tests with input sequences; Playwright touch script for films (dev tooling)
+
+Done 2026-11-02. `@furria/studio/gesture-recogniser` is the pure recogniser (`stepGesture`): press,
+tap, long-press (450 ms, fired by a `tick` or the next move), drag after 8 px touch / 3 px mouse,
+held drag after a long press, precision drag (full/half/quarter/fine per 50 px off the track,
+integrated so the value never jumps), two-finger navigate (incremental scale + pan; a second finger
+cancels a running edit), wheel and Safari `gesture*` events as navigate. every press ends in tap, `pressCancel`, `holdEnd`, `dragEnd`/`dragCancel` or `navigateEnd`.
+`use-gesture` binds it to Pointer Events (capture only once a gesture leaves the press, so taps
+still reach child buttons; `data-gesture-ignore` opts a child out; long-press timer, area size,
+wheel line/page units); `use-work-area` blocks scrolling, selection,
+callout and context menu; `hit-priority` grows hit areas to 44 px and ranks selected → priority →
+distance; `pan-bounds` + `use-pan-axis` give rubber band and motion inertia; `lift-placement` +
+`use-drag-lift` place the lifted readout or loupe; `drag-readout` formats *1:23,4* and *2,5 m*.
+The photo viewer keeps its own `stage-machine` in `@furria/ui` (the studio sits above the UI
+package). `pnpm film <route> --script <gestures.json>` in `tools/screenshot` films touch sequences.
 
 ### Phase 7 — ⚖ Interaction lab
 Goal: Florian picks the touch handling on his devices.
