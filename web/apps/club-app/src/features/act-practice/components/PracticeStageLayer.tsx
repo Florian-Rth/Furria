@@ -1,7 +1,7 @@
 import { stepRangeOf } from '@furria/studio/music-timeline';
+import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import { KkPracticeStage } from '@furria/ui/KkPracticeStage';
 import type { FC } from 'react';
-import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import type { Studio } from '@/features/acts/schemas';
 import { PRACTICE_FRONT, practiceStageLabelOf } from '../practice-copy';

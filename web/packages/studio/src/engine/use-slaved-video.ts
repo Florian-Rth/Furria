@@ -1,8 +1,8 @@
-import type { StudioVideo } from '@furria/studio/studio-schemas';
 import type { RefObject } from 'react';
 import { useEffect, useEffectEvent } from 'react';
-import type { MixPlayer } from '../mix-player';
-import { videoCorrectionOf, videoSecondsAt } from '../video-sync';
+import type { StudioVideo } from '../models/studio-schemas';
+import type { MixPlayer } from './mix-player';
+import { videoCorrectionOf, videoSecondsAt } from './video-sync';
 
 const PAUSED_TOLERANCE_SECONDS = 0.04;
 

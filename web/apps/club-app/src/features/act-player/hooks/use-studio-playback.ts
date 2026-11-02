@@ -1,5 +1,6 @@
 import type { SpotPath } from '@furria/studio/choreography-motion';
 import { spotPathsOf } from '@furria/studio/choreography-motion';
+import type { MixPlayer, MixPlayerState } from '@furria/studio/mix-player';
 import type { CountMark, MusicSegment, TimelineRange } from '@furria/studio/music-timeline';
 import {
   countMarksOf,
@@ -15,10 +16,9 @@ import type {
   StudioStage,
   StudioStep,
 } from '@furria/studio/studio-schemas';
+import { useMixPlayer } from '@furria/studio/use-mix-player';
 import type { Studio } from '@/features/acts/schemas';
 import { useAudioPeaks } from '../api';
-import type { MixPlayer, MixPlayerState } from '../mix-player';
-import { useMixPlayer } from './use-mix-player';
 
 export interface StudioPlaybackControls {
   toggle: () => void;

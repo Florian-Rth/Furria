@@ -6,11 +6,13 @@
   "sideEffects": false,
   "exports": {
     "./choreography-motion": "./src/models/choreography-motion.ts",
+    "./count-in": "./src/engine/count-in.ts",
     "./drag-readout": "./src/gestures/drag-readout.ts",
     "./gesture-recogniser": "./src/gestures/gesture-recogniser.ts",
     "./haptics": "./src/gestures/haptics.ts",
     "./hit-priority": "./src/gestures/hit-priority.ts",
     "./lift-placement": "./src/gestures/lift-placement.ts",
+    "./mix-player": "./src/engine/mix-player.ts",
     "./mix-waveform": "./src/models/mix-waveform.ts",
     "./music-timeline": "./src/models/music-timeline.ts",
     "./pan-bounds": "./src/gestures/pan-bounds.ts",
@@ -19,8 +21,13 @@
     "./studio-schemas": "./src/models/studio-schemas.ts",
     "./use-drag-lift": "./src/gestures/use-drag-lift.ts",
     "./use-gesture": "./src/gestures/use-gesture.ts",
+    "./use-mix-player": "./src/engine/use-mix-player.ts",
     "./use-pan-axis": "./src/gestures/use-pan-axis.ts",
-    "./use-work-area": "./src/gestures/use-work-area.ts"
+    "./use-playback-seconds": "./src/engine/use-playback-seconds.ts",
+    "./use-screen-wake-lock": "./src/engine/use-screen-wake-lock.ts",
+    "./use-slaved-video": "./src/engine/use-slaved-video.ts",
+    "./use-work-area": "./src/gestures/use-work-area.ts",
+    "./video-sync": "./src/engine/video-sync.ts"
   },
   "scripts": {
     "test": "vitest run",
@@ -29,6 +36,7 @@
   "dependencies": {
     "@furria/api-client": "workspace:*",
     "motion": "catalog:",
+    "signalsmith-stretch": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

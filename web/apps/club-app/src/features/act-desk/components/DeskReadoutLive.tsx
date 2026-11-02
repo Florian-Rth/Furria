@@ -1,8 +1,8 @@
+import type { MixPlayer } from '@furria/studio/mix-player';
 import type { CountMark } from '@furria/studio/music-timeline';
+import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
 import type { FC } from 'react';
-import { usePlaybackSeconds } from '@/features/act-player/hooks/use-playback-seconds';
-import type { MixPlayer } from '@/features/act-player/mix-player';
 import { clockOf, DESK_READOUT, readoutCountOf } from '../desk-copy';
 import { countPlaceAt } from '../desk-time';
 

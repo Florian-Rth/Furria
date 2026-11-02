@@ -1,13 +1,18 @@
-import type { MusicSegment, TimelineRange } from '@furria/studio/music-timeline';
+import type { MusicSegment, TimelineRange } from '../models/music-timeline';
 
 const MIN_PIECE_SECONDS = 0.001;
-const SEMITONES_PER_OCTAVE = 12;
 
 export interface MixPiece {
   mediaItemId: number;
   sourceOffset: number;
   duration: number;
   timelineStart: number;
+}
+
+export interface StretchSlice {
+  mediaItemId: number | null;
+  sourceSample: number;
+  samples: number;
 }
 
 export interface MixRun {
@@ -72,5 +77,39 @@ export const playRangeOf = (
   return { start: insideLoop ? from : loop.start, end: loop.end };
 };
 
-export const pitchCorrectionOf = (rate: number): number =>
-  rate <= 0 || rate >= 1 ? 0 : -SEMITONES_PER_OCTAVE * Math.log2(rate);
+export const stretchSlicesOf = (
+  segments: readonly MusicSegment[],
+  length: number,
+  sampleRate: number,
+): StretchSlice[] => {
+  const slices: StretchSlice[] = [];
+  let cursor = 0;
+  const pieces = mixPiecesOf(
+    segments.filter((segment) => segment.audible),
+    0,
+    length,
+  ).sort((left, right) => left.timelineStart - right.timelineStart);
+
+  for (const piece of pieces) {
+    const start = Math.round(piece.timelineStart * sampleRate);
+    const end = Math.round((piece.timelineStart + piece.duration) * sampleRate);
+
+    if (start > cursor) {
+      slices.push({ mediaItemId: null, sourceSample: 0, samples: start - cursor });
+    }
+
+    const from = Math.max(start, cursor);
+
+    if (end > from) {
+      slices.push({
+        mediaItemId: piece.mediaItemId,
+        sourceSample: Math.round(piece.sourceOffset * sampleRate) + (from - start),
+        samples: end - from,
+      });
+    }
+
+    cursor = Math.max(cursor, end);
+  }
+
+  return slices;
+};

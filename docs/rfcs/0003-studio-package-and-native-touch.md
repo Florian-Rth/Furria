@@ -143,11 +143,33 @@ app's `Studio` extends it with `evenings` and `trainings`. `MediaItemStateSchema
 
 ### Phase 2 — Engine, media loader and iPhone audio
 Goal: playback lives in the package behind a media loader; iPhone audio is robust.
-- [ ] Move the mix player, schedule, buffers, count-in, frame store, video sync, pitch keeper into the package
-- [ ] One media loader (fetch, decode, in-memory cache with eviction) used by the engine
-- [ ] Use signalsmith-stretch's `schedule`/loop API where it replaces own loop/seek code (keep the gapless song cuts)
-- [ ] `audioSession.type = 'playback'`; pause and keep position on background, lock, interruption and output change
-- [ ] Pure tests for the new scheduling decisions; device check on iPhone (silent switch, call, lock)
+- [x] Move the mix player, schedule, buffers, count-in, frame store, video sync, pitch keeper into the package
+- [x] One media loader (fetch, decode, in-memory cache with eviction) used by the engine
+- [x] Use signalsmith-stretch's `schedule`/loop API where it replaces own loop/seek code (keep the gapless song cuts)
+- [x] `audioSession.type = 'playback'`; pause and keep position on background, lock, interruption and output change
+- [x] Pure tests for the new scheduling decisions
+- [ ] Device check on iPhone (silent switch, call, lock) and slowed playback on iPhone/iPad — owed to Florian
+
+Built 2026-11-02. `@furria/studio` now holds the engine (`src/engine`): `mix-player`, `mix-schedule`,
+`count-in`, `video-sync`, `use-mix-player`, `use-playback-seconds` (frame store), `use-slaved-video`
+and `use-screen-wake-lock` (now `active`-gated; practice holds it while playing). The peaks query
+(`act-player/api`) and `use-studio-playback` stay in the club app (TanStack Query).
+- **Media loader** (`media-loader`): one shared fetch + decode cache, 256 MB of decoded audio, least
+  recently used evicted (`evictionsOf`).
+- **signalsmith-stretch:** slowed or sped playback now runs in its **buffer mode** — the mix is laid end
+  to end in samples (`stretchSlicesOf`, gapless cuts, silence for unplayable songs) and every run is one
+  `schedule({ input, rate, output })`; this replaces the old resample-then-pitch-shift route. Its own
+  `loopStart`/`loopEnd` is **not** used: a loop pass carries the count-in gap, and the native path at
+  rate 1 (and when the worklet fails) loops the same way, so both share one run scheduler. Note: the
+  worklet drops later changes from `outputTime` (default *now*), so chained runs pass `outputTime`.
+- **iPhone audio:** `navigator.audioSession.type = 'playback'` before the context is created; while
+  playing, the player pauses (position, loop, tempo kept) on page hidden/`pagehide`, context
+  `interrupted`/`suspended`, and on a lost audio output (`outputLostOf`; browsers that list no outputs
+  pause on any device change).
+- **Review follow-ups (device check):** the stretch holds a second copy of the whole mix (not counted in
+  the 256 MB budget) — measure on the iPhone and trim to the loop range if memory is tight; check with a
+  click track whether the extra stretch lead before a slowed start is needed; load failures still
+  collapse to `failed` without a cause.
 
 ### Phase 3 — Edit document, save planner, autosave
 Goal: the local edit document exists and is tested, not yet wired into the editor.

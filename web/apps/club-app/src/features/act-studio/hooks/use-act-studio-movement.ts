@@ -4,8 +4,8 @@ import type {
   StagePoint,
   TimedKeyframe,
 } from '@furria/studio/choreography-motion';
+import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import { useRef } from 'react';
-import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
 import { viewShareOf } from '@/features/act-practice/practice-stage';
 import type { StageShare, TimeSpan } from '../studio-edits';
 import { draggedPointOf, snappedOf } from '../studio-edits';

@@ -1,7 +1,7 @@
+import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
 import { KkLaneDot } from '@furria/ui/KkLaneDot';
 import { KkStudioStage } from '@furria/ui/KkStudioStage';
 import type { FC } from 'react';
-import { usePlaybackSeconds } from '@/features/act-player/hooks/use-playback-seconds';
 import { STUDIO_BEND_LABEL } from '@/features/act-studio/studio-copy';
 import type { ActDesk } from '../hooks/use-act-desk';
 import { useDeskDots } from '../hooks/use-desk-dots';
