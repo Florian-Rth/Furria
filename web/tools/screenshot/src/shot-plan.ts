@@ -1,4 +1,4 @@
-export type ShotViewport = 'phone' | 'desktop';
+export type ShotViewport = 'phone' | 'tablet' | 'desktop';
 export type ShotScheme = 'light' | 'dark';
 
 export interface ShotVariant {
@@ -34,10 +34,12 @@ interface ViewportSize {
 
 const VIEWPORTS: Record<ShotViewport, ViewportSize> = {
   phone: { width: 390, height: 844 },
+  tablet: { width: 1180, height: 820 },
   desktop: { width: 1400, height: 900 },
 };
 
-const ALL_VIEWPORTS: readonly ShotViewport[] = ['phone', 'desktop'];
+const KNOWN_VIEWPORTS: readonly ShotViewport[] = ['phone', 'tablet', 'desktop'];
+const DEFAULT_VIEWPORTS: readonly ShotViewport[] = ['phone', 'desktop'];
 const ALL_SCHEMES: readonly ShotScheme[] = ['light', 'dark'];
 const FILMSTRIP_VIEWPORTS: readonly ShotViewport[] = ['phone'];
 const FILMSTRIP_SCHEMES: readonly ShotScheme[] = ['light'];
@@ -51,7 +53,7 @@ export const FILMSTRIP_OFFSETS_MS: readonly number[] = [
 
 const USAGE =
   'usage: pnpm shot <route> [--name <name>] [--out <dir>] [--base <url>] [--no-login] ' +
-  '[--reduced-motion] [--text-scale <factor>] [--filmstrip] [--viewport phone|desktop] ' +
+  '[--reduced-motion] [--text-scale <factor>] [--filmstrip] [--viewport phone|tablet|desktop] ' +
   '[--scheme light|dark] [--click <selector>]...';
 
 export const deriveShotName = (route: string): string => {
@@ -65,10 +67,10 @@ export const deriveShotName = (route: string): string => {
 
 export const buildShotVariants = (
   name: string,
-  viewports: readonly ShotViewport[] = ALL_VIEWPORTS,
+  viewports: readonly ShotViewport[] = DEFAULT_VIEWPORTS,
   schemes: readonly ShotScheme[] = ALL_SCHEMES,
 ): ShotVariant[] =>
-  ALL_VIEWPORTS.filter((viewport) => viewports.includes(viewport)).flatMap((viewport) =>
+  KNOWN_VIEWPORTS.filter((viewport) => viewports.includes(viewport)).flatMap((viewport) =>
     ALL_SCHEMES.filter((scheme) => schemes.includes(scheme)).map((scheme) => ({
       viewport,
       scheme,
@@ -120,9 +122,9 @@ const parseTextScale = (value: string): number => {
 };
 
 const parseViewport = (value: string): ShotViewport => {
-  const viewport = ALL_VIEWPORTS.find((candidate) => candidate === value);
+  const viewport = KNOWN_VIEWPORTS.find((candidate) => candidate === value);
   if (viewport === undefined) {
-    throw new Error(`--viewport is phone or desktop, got ${value}`);
+    throw new Error(`--viewport is phone, tablet or desktop, got ${value}`);
   }
   return viewport;
 };
@@ -210,7 +212,7 @@ export const parseShotArgs = (argv: readonly string[]): ShotRequest => {
     reducedMotion,
     textScale,
     filmstrip,
-    viewports: selectedOr(viewports, filmstrip ? FILMSTRIP_VIEWPORTS : ALL_VIEWPORTS),
+    viewports: selectedOr(viewports, filmstrip ? FILMSTRIP_VIEWPORTS : DEFAULT_VIEWPORTS),
     schemes: selectedOr(schemes, filmstrip ? FILMSTRIP_SCHEMES : ALL_SCHEMES),
     clicks,
   };

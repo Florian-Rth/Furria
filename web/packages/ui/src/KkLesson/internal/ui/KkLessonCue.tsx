@@ -13,7 +13,7 @@ const palette = (theme: Theme) => (theme.vars ?? theme).palette;
 const tonePaints: Record<KkLessonCueTone, (theme: Theme) => CSSObject> = {
   soon: (theme) => ({
     ...redInk(theme),
-    backgroundColor: 'transparent',
+    backgroundColor: palette(theme).background.paper,
     boxShadow: `inset 0 0 0 ${kkTokens.line.section}px ${palette(theme).primary.main}`,
   }),
   now: (theme) => ({

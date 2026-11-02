@@ -1,3 +1,4 @@
+import type { KkGroupTone } from '@furria/ui/group-tone';
 import { KkPracticeView } from '@furria/ui/KkPracticeView';
 import { KkStudioView } from '@furria/ui/KkStudioView';
 import { KkVisuallyHidden } from '@furria/ui/KkVisuallyHidden';
@@ -21,6 +22,7 @@ import { StepCardsView } from './StepCardsView';
 interface ActStudioBodyProps {
   actId: number;
   title: string;
+  tone: KkGroupTone | null;
   studio: Studio;
   viewerId: number | null;
   canEdit: boolean;
@@ -31,6 +33,7 @@ interface ActStudioBodyProps {
 export const ActStudioBody: FC<ActStudioBodyProps> = ({
   actId,
   title,
+  tone,
   studio,
   viewerId,
   canEdit,
@@ -63,7 +66,7 @@ export const ActStudioBody: FC<ActStudioBodyProps> = ({
     return <LessonEmpty title={title} mode={screen.mode} />;
   }
   if (!screen.large.on) {
-    return <LessonBody title={title} screen={screen} />;
+    return <LessonBody title={title} tone={tone} screen={screen} />;
   }
 
   return (

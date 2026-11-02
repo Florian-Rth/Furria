@@ -1,7 +1,13 @@
 import Box from '@mui/material/Box';
 import type { FC, PropsWithChildren } from 'react';
 import { kkTokens } from '../../../tokens';
-import { LESSON_CRAMPED, LESSON_PICTURE_CONTAINER, LESSON_WIDE } from '../lesson-query';
+import {
+  BESIDE_PICTURE_HEIGHT,
+  LESSON_CRAMPED,
+  LESSON_PICTURE_CONTAINER,
+  LESSON_WIDE,
+  LESSON_WIDE_TALL,
+} from '../lesson-query';
 
 const RADIUS = `${kkTokens.radius.base}px`;
 
@@ -26,6 +32,10 @@ export const KkLessonPicture: FC<KkLessonPictureProps> = ({ label, paired, child
       borderRadius: `${RADIUS} ${RADIUS} 0 0`,
       backgroundColor: kkTokens.overlay.scrimInk,
       [LESSON_WIDE]: { borderRadius: `${RADIUS} 0 0 ${RADIUS}` },
+      [LESSON_WIDE_TALL]: {
+        height: BESIDE_PICTURE_HEIGHT,
+        borderRadius: `${RADIUS} ${RADIUS} 0 0`,
+      },
       [LESSON_CRAMPED]: { minHeight: '3rem' },
     }}
   >

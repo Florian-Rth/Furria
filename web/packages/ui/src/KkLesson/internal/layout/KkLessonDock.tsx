@@ -14,12 +14,11 @@ export const KkLessonDock: FC<KkLessonDockProps> = ({ label, children }) => (
     data-kk-lesson-dock
     sx={{
       alignItems: 'center',
-      justifyContent: 'space-between',
+      justifyContent: 'flex-start',
       gap: 1,
+      '& > [data-kk-lesson-hall]': { marginInlineStart: 'auto' },
       minWidth: 0,
-      [LESSON_PHONE]: {
-        '&:has([data-kk-studio-edit]) [data-kk-lesson-hall-text]': { display: 'none' },
-      },
+      [LESSON_PHONE]: { '& [data-kk-key-help]': { display: 'none' } },
       [LESSON_CRAMPED]: {
         flexWrap: 'wrap',
         justifyContent: 'center',

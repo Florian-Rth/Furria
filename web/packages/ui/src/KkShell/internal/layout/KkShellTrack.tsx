@@ -2,11 +2,11 @@ import Stack from '@mui/material/Stack';
 import type { FC, PropsWithChildren } from 'react';
 import { safeArea, safeAreaInset } from '../../../internal/safe-area';
 import { kkTokens } from '../../../tokens';
+import { TRACK_PADDING_X } from '../folded-bar';
 import { arrivalCascadeOf } from '../logic/arrival-cascade';
 import { MAIN_ELEMENT_ID } from '../main-element-id';
 import { TRACK_EDGE } from '../track-edge';
 
-const TRACK_PADDING_X = 2.5;
 const ARRIVING_BLOCK = '& [data-kk-shell-entrance] > * > *';
 const HELD_BODY_BLOCK = '& [data-kk-shell-entrance][data-kk-body-held] > * ~ * > *';
 const RESTORED_BLOCK = '& [data-kk-shell-entrance][data-kk-restored] > * > *';

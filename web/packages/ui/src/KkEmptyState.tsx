@@ -3,18 +3,22 @@ import Typography from '@mui/material/Typography';
 import type { FC, ReactNode } from 'react';
 import { displayTitle } from './internal/display-title';
 import { KkBroomMark } from './KkBroomMark';
+import type { KkIconName } from './KkIcon';
+import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
 type KkEmptyStateSize = 'panel' | 'page';
 
 const MARK_SIZE = 56;
+const ICON_DISC = '2.5rem';
 
 interface KkEmptyStateProps {
   title: string;
   description: string;
   size?: KkEmptyStateSize;
   action?: ReactNode;
+  icon?: KkIconName;
   sx?: KkSx;
 }
 
@@ -23,10 +27,32 @@ export const KkEmptyState: FC<KkEmptyStateProps> = ({
   description,
   size = 'page',
   action,
+  icon,
   sx,
 }) => {
   const isPanel = size === 'panel';
-  const mark = isPanel ? null : <KkBroomMark size={MARK_SIZE} sx={{ color: 'text.disabled' }} />;
+  const panelMark =
+    icon === undefined ? null : (
+      <Stack
+        aria-hidden
+        sx={{
+          width: ICON_DISC,
+          height: ICON_DISC,
+          alignItems: 'center',
+          justifyContent: 'center',
+          borderRadius: '50%',
+          color: 'text.secondary',
+          backgroundColor: 'action.hover',
+        }}
+      >
+        <KkIcon name={icon} size="small" />
+      </Stack>
+    );
+  const mark = isPanel ? (
+    panelMark
+  ) : (
+    <KkBroomMark size={MARK_SIZE} sx={{ color: 'text.disabled' }} />
+  );
   const headline = isPanel ? null : (
     <Typography component="h2" sx={{ ...displayTitle, textWrap: 'balance' }}>
       {title}

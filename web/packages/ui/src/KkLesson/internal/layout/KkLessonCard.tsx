@@ -28,7 +28,12 @@ export const KkLessonCard: FC<KkLessonCardProps> = ({ label, children }) => (
         gridTemplateColumns: 'minmax(0, 11fr) minmax(0, 9fr)',
         gridTemplateRows: 'auto auto minmax(0, 1fr) auto',
       },
-      [LESSON_WIDE_TALL]: { gridTemplateColumns: 'minmax(0, 13fr) minmax(0, 7fr)' },
+      [LESSON_WIDE_TALL]: {
+        gridTemplateAreas: '"picture picture" "head text" "counts next"',
+        gridTemplateColumns: 'minmax(0, 1fr) minmax(0, 1fr)',
+        gridTemplateRows: 'auto auto auto',
+        flex: '0 0 auto',
+      },
     })}
   >
     {children}

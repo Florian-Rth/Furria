@@ -87,6 +87,8 @@ structure becomes the first slice(s) of the plan.
 | R31 | ***Ablaufpunkte* are timeless** (no session, reused until archived). Only acts with a training kind (*Tanz*, *Show*, later *Rede*/*Musik*) belong to a session; kind *Ablaufpunkt* or no kind = timeless. | grilling Q16 |
 | R13 | **No** skill grid (*kann / wackelt / neu*). | Florian 2026-10-29 (rejected) |
 
+**R26 note (2026-11-01):** the default of `/acts/$actId` is now the dance-first act hub (lab variant approved by Florian as is): music score with parts and steps, the step manual, *Für dich* on phone (place, *Üben*, next training + next evening); trainings appear only as the next date + own answer, attendance and the full training list live in details (`?view=details`). Trainer edit doors sit in one drawer (`?sheet=edit`), a step opens via `?stepId=`. The old four-tile act card (Abend · Training · Üben · Besetzung) is gone.
+
 ## Foundation (rebuilds everything else stands on)
 
 ### F1 — Auftritt per Session

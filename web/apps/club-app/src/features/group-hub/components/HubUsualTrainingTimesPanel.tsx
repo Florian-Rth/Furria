@@ -1,5 +1,4 @@
 import { KkEmptyState } from '@furria/ui/KkEmptyState';
-import { KkLead } from '@furria/ui/KkLead';
 import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
@@ -8,7 +7,6 @@ import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import type { GroupTone } from '@/features/groups/group-identity';
-import { toUsualTrainingTimesSentence } from '@/features/groups/group-identity';
 import { GROUP_SECTION_TITLES } from '@/lib/group-sections';
 import { useUsualTrainingTimesInfo } from '../hooks/use-usual-training-times-info';
 import type { UsualTrainingTime } from '../schemas';
@@ -21,7 +19,9 @@ import {
   USUAL_TIMES_EMPTY_TITLE,
   USUAL_TIMES_FULL_NOTE,
 } from '../usual-training-time-labels';
+import { inWeekOrder } from '../week-rhythm';
 import { HubUsualTrainingTimeRow } from './HubUsualTrainingTimeRow';
+import { HubWeekRhythm } from './HubWeekRhythm';
 
 const NEW_USUAL_TIME_ROUTE = '/groups/$groupId/usual-training-times/new';
 
@@ -39,7 +39,6 @@ export const HubUsualTrainingTimesPanel: FC<HubUsualTrainingTimesPanelProps> = (
   canManage,
 }) => {
   const info = useUsualTrainingTimesInfo({ usualTimes });
-  const sentence = toUsualTrainingTimesSentence(usualTimes);
   const isEmpty = usualTimes.length === 0;
 
   const action: KkPanelAction | undefined = canManage
@@ -53,28 +52,25 @@ export const HubUsualTrainingTimesPanel: FC<HubUsualTrainingTimesPanelProps> = (
       }
     : undefined;
 
-  const rows = usualTimes.map((usualTime) => (
+  const rows = inWeekOrder(usualTimes).map((usualTime) => (
     <HubUsualTrainingTimeRow
       key={usualTime.usualTrainingTimeId}
       groupId={groupId}
       usualTime={usualTime}
+      canManage={canManage}
       venueIsArchived={
         usualTime.venueId !== null && info.unavailableVenueIds.has(usualTime.venueId)
       }
     />
   ));
 
-  const sentenceBlock =
-    sentence === null ? null : (
-      <KkPanel variant="block">
-        <KkLead>{sentence}</KkLead>
-      </KkPanel>
-    );
+  const rhythm = isEmpty ? null : <HubWeekRhythm tone={tone} usualTimes={usualTimes} />;
 
   const list = isEmpty ? (
     <KkPanel variant="block">
       <KkEmptyState
         size="panel"
+        icon="clock"
         title={USUAL_TIMES_EMPTY_TITLE}
         description={USUAL_TIMES_EMPTY_LINE}
       />
@@ -104,7 +100,7 @@ export const HubUsualTrainingTimesPanel: FC<HubUsualTrainingTimesPanelProps> = (
       action={action}
     >
       <Stack sx={{ gap: 1.5, minWidth: 0 }}>
-        {sentenceBlock}
+        {rhythm}
         {list}
         {tools}
       </Stack>

@@ -52,6 +52,8 @@ export const ActPageSearchSchema = z.object({
   training: z.coerce.number().int().positive().optional().catch(undefined),
   roll: z.coerce.number().int().positive().optional().catch(undefined),
   edit: z.boolean().optional().catch(undefined),
+  stepId: z.coerce.number().int().positive().optional().catch(undefined),
+  sheet: z.string().optional().catch(undefined),
 });
 export type ActPageSearch = z.infer<typeof ActPageSearchSchema>;
 

@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import type { SpotPath } from '@/features/act-player/choreography-motion';
+import { waveformOf } from '@/features/act-player/mix-waveform';
 import { stepRangeOf } from '@/features/act-player/music-timeline';
 import { shownStepNameOf, stepNumberOf } from '@/features/act-player/step-names';
 import { usePlayerKeys } from '@/features/act-practice/hooks/use-player-keys';
@@ -23,6 +24,8 @@ import { stepCountsOf } from '../lesson-counts';
 import { nextStepOf } from '../lesson-next';
 import type { LessonPicturePlan } from '../lesson-picture';
 import { lessonPictureOf } from '../lesson-picture';
+import type { LessonStripLanes } from '../lesson-strip';
+import { lessonStripOf, stripStepIdOf } from '../lesson-strip';
 
 export interface LessonCard {
   key: string;
@@ -52,6 +55,11 @@ export interface LessonPicture {
   swap: () => void;
 }
 
+export interface LessonStrip extends LessonStripLanes {
+  bars: number[];
+  seek: (share: number) => void;
+}
+
 export interface LessonReading {
   open: boolean;
   show: () => void;
@@ -66,9 +74,12 @@ export interface Lesson {
   loop: LessonLoop;
   picture: LessonPicture;
   reading: LessonReading;
+  strip: LessonStrip;
   ownPath: SpotPath | null;
   rail: PracticeSegmentGroupRow[];
 }
+
+const STRIP_BARS = 240;
 
 export const useLesson = (screen: StudioScreen): Lesson => {
   const { playback, practice, video } = screen;
@@ -131,6 +142,16 @@ export const useLesson = (screen: StudioScreen): Lesson => {
       },
       close: () => {
         setReading(false);
+      },
+    },
+    strip: {
+      ...lessonStripOf(playback.steps, playback.parts, playback.length),
+      bars: waveformOf(playback.segments, playback.peaksByItem, STRIP_BARS),
+      seek: (share) => {
+        const target = stripStepIdOf(playback.steps, share, playback.length);
+        if (target !== null) {
+          practice.jumpTo(target);
+        }
       },
     },
     ownPath: playback.paths.find((path) => path.spotId === playback.ownSpotId) ?? null,

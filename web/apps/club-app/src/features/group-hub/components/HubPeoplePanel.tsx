@@ -53,6 +53,7 @@ export const HubPeoplePanel: FC<HubPeoplePanelProps> = ({
   const body = isEmpty ? (
     <KkEmptyState
       size="panel"
+      icon="members"
       title={NO_MEMBERS_TITLE}
       description={toNoMembersLine(groupName, canManage)}
     />

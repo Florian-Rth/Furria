@@ -43,6 +43,7 @@ export const KkKeyHelp: FC<KkKeyHelpProps> = ({ label, opens = 'down', children 
         aria-haspopup="dialog"
         aria-expanded={anchor !== null}
         onClick={open}
+        data-kk-key-help
         sx={(theme) => ({
           flexShrink: 0,
           width: kkTokens.tapTarget,
@@ -52,7 +53,7 @@ export const KkKeyHelp: FC<KkKeyHelpProps> = ({ label, opens = 'down', children 
           backgroundColor: `color-mix(in srgb, ${(theme.vars ?? theme).palette.background.paper} 80%, transparent)`,
           '&:active': { transform: 'scale(0.94)' },
           transition: kkTokens.motion.press,
-          '@media (hover: none) and (pointer: coarse)': { display: 'none' },
+          '@media not ((hover: hover) and (pointer: fine))': { display: 'none' },
           ...focusRing(theme),
         })}
       >

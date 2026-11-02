@@ -6,12 +6,9 @@ import type {
   Ask,
   DoorKey,
   EveningSlot,
-  NamesPreview,
   StudioCounts,
-  Tally,
 } from './act-card-model';
 import { musicClockOf } from './act-card-model';
-import type { CastRole } from './cast-rows';
 
 export const CLOSE_LABEL = 'Schließen';
 export const DETAILS_TITLE = 'Details';
@@ -23,9 +20,6 @@ export const NO_TRAINING = 'Kein Training geplant';
 export const NO_MUSIC = 'Noch keine Musik';
 const UNPLACED = 'noch ohne Nr.';
 const NOT_THERE = 'nicht dabei';
-export const TEXT_SOON = 'kommt noch';
-export const TEXT_SOON_LINE = 'Hier steht später der Text zum Auftritt.';
-export const OUTSIDE_NOTE = 'Die Einzelheiten sehen nur die Besetzung und die Gruppenleitung.';
 export const EDITORS_TITLE = 'Mitbearbeitung';
 export const WISHES_TITLE = 'Wünsche';
 export const SESSION_TITLE = 'Session';
@@ -44,33 +38,11 @@ const DOOR_LABELS: Record<DoorKey, string> = {
   text: 'Text',
 };
 
-const SHEET_TITLES: Record<DoorKey, string> = {
-  evening: 'Alle Abende',
-  training: 'Alle Trainings',
-  practice: 'Üben',
-  cast: 'Besetzung',
-  text: 'Text',
-};
-
-const DOOR_HINTS: Record<DoorKey, string> = {
-  evening: 'alle Abende zeigen',
-  training: 'alle Trainings zeigen',
-  practice: 'Player öffnen',
-  cast: 'alle Namen zeigen',
-  text: '',
-};
-
 const CAST_LABELS: Record<ActTemplate, string> = {
   studio: 'Besetzung',
   spoken: 'Sprecher',
   point: 'Besetzung',
 };
-
-const CLOCK = new Intl.DateTimeFormat('de-DE', {
-  hour: '2-digit',
-  minute: '2-digit',
-  timeZone: 'Europe/Berlin',
-});
 
 const DATE = new Intl.DateTimeFormat('de-DE', {
   day: '2-digit',
@@ -93,19 +65,9 @@ export const toDoorLabel = (door: DoorKey, template: ActTemplate, kind: string |
   return kind !== null && MUSIC_SPEAKING_KINDS.has(kind) ? 'Mitwirkende' : CAST_LABELS[template];
 };
 
-export const toSheetTitle = (door: DoorKey, castLabel: string): string =>
-  door === 'cast' ? castLabel : SHEET_TITLES[door];
-
-export const toDoorHint = (door: DoorKey): string => `: ${DOOR_HINTS[door]}`;
-
-export const toSheetId = (door: DoorKey): string => `act-card-${door}`;
-
 const stripDot = (value: string): string => value.replace('.', '');
 
 export const toDateFigure = (startsAt: string): string => DATE.format(new Date(startsAt));
-
-export const toWeekdayClock = (startsAt: string): string =>
-  `${stripDot(WEEKDAY.format(new Date(startsAt)))} · ${CLOCK.format(new Date(startsAt))}`;
 
 export const toDayLine = (startsAt: string): string =>
   `${stripDot(WEEKDAY.format(new Date(startsAt)))} ${DATE.format(new Date(startsAt))}`;
@@ -125,23 +87,6 @@ export const toSlotAside = (slot: EveningSlot): string => {
 
   return slot.kind === 'absent' ? NOT_THERE : '';
 };
-
-export const toMoreEvenings = (count: number): string | null => {
-  if (count <= 0) {
-    return null;
-  }
-
-  return count === 1 ? '+1 weiterer Abend' : `+${count} weitere Abende`;
-};
-
-export const toTallyLine = (tally: Tally | null): string | null =>
-  tally === null ? null : `${tally.present} von ${tally.of} da`;
-
-export const toTallyMeta = (tally: Tally | null): string =>
-  tally === null ? 'noch keine Antworten' : `${tally.present} da · ${tally.absent} nicht`;
-
-export const toNamesLine = (preview: NamesPreview): string =>
-  preview.more === 0 ? preview.names.join(', ') : `${preview.names.join(', ')} +${preview.more}`;
 
 export const toPeopleCount = (count: number): string => (count === 1 ? 'Person' : 'Personen');
 
@@ -168,19 +113,6 @@ const CLOCK_ONLY = new Intl.DateTimeFormat('de-DE', {
 export const toClockLine = (startsAt: string): string =>
   `${CLOCK_ONLY.format(new Date(startsAt))} Uhr`;
 
-export const toMoreTrainings = (count: number): string | null => {
-  if (count <= 0) {
-    return null;
-  }
-
-  return count === 1 ? '+1 weiteres Training' : `+${count} weitere Trainings`;
-};
-
-export const toPracticeFacts = (counts: StudioCounts): string =>
-  `${counts.steps} Schritte · ${counts.parts.length} Teile`;
-
-export const toPartsLine = (parts: readonly string[]): string => parts.join(' · ');
-
 export const toMusicFigure = (seconds: number): string => musicClockOf(seconds);
 
 export const toMusicSource = (counts: StudioCounts): string =>
@@ -200,14 +132,6 @@ export const toSessionLine = (sessionYear: number): string =>
 
 export const toCountLine = (count: number, one: string, many: string): string =>
   `${count} ${count === 1 ? one : many}`;
-
-const CAST_ROLE_METAS: Record<CastRole, string | undefined> = {
-  self: 'du',
-  editor: 'bearbeitet mit',
-  member: undefined,
-};
-
-export const toCastRoleMeta = (role: CastRole): string | undefined => CAST_ROLE_METAS[role];
 
 export const headerFactsOf = (
   kind: ActKind | null,

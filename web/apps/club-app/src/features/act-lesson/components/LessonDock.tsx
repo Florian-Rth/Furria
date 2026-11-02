@@ -12,7 +12,7 @@ import {
 } from '@/features/act-practice/practice-copy';
 import type { StudioScreen } from '@/features/act-studio/hooks/use-studio-screen';
 import { STUDIO_DONE, STUDIO_EDIT } from '@/features/act-studio/studio-copy';
-import { LESSON_DOCK_LABEL, LESSON_HALL, LESSON_HALL_LABEL } from '../lesson-copy';
+import { LESSON_DOCK_LABEL, LESSON_HALL_LABEL } from '../lesson-copy';
 
 interface LessonDockProps {
   screen: StudioScreen;
@@ -27,9 +27,7 @@ export const LessonDock: FC<LessonDockProps> = ({ screen }) => {
     practice.skip('forward');
   };
   const hall =
-    startHall === null ? null : (
-      <KkLesson.Hall text={LESSON_HALL} label={LESSON_HALL_LABEL} onOpen={startHall} />
-    );
+    startHall === null ? null : <KkLesson.Hall label={LESSON_HALL_LABEL} onOpen={startHall} />;
   const edit = mode.canEdit ? (
     <>
       <KkPracticeTransport.Divider />
@@ -44,7 +42,6 @@ export const LessonDock: FC<LessonDockProps> = ({ screen }) => {
 
   return (
     <KkLesson.Dock label={LESSON_DOCK_LABEL}>
-      {hall}
       <KkPracticeTransport.Pill>
         <KkPracticeTransport.Skip
           direction="back"
@@ -74,6 +71,7 @@ export const LessonDock: FC<LessonDockProps> = ({ screen }) => {
         />
         {edit}
       </KkPracticeTransport.Pill>
+      {hall}
       <KkKeyHelp label={PRACTICE_KEYS_TITLE} opens="up">
         <KkKeyList title={PRACTICE_KEYS_TITLE} entries={PRACTICE_KEYS} />
       </KkKeyHelp>

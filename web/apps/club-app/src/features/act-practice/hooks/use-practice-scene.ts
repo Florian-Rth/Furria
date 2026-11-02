@@ -3,8 +3,13 @@ import type { SpotPath } from '@/features/act-player/choreography-motion';
 import { usePlaybackSeconds } from '@/features/act-player/hooks/use-playback-seconds';
 import type { MixPlayer } from '@/features/act-player/mix-player';
 import type { CountMark, TimelineRange } from '@/features/act-player/music-timeline';
+import { stepRangeOf } from '@/features/act-player/music-timeline';
+import type { StudioStep } from '@/features/acts/schemas';
 import type { CueSide, StageDot, StageScene } from '../practice-stage';
 import { cueSideOf, stageDotsAt, viewRouteOf } from '../practice-stage';
+import type { StepWay } from '../practice-step-way';
+import { stepWayOf } from '../practice-step-way';
+import { shownStepOf } from '../practice-stepping';
 import type { OwnCue } from '../practice-way';
 import { cueOf, ownWayAt } from '../practice-way';
 
@@ -13,6 +18,7 @@ const NO_ROUTE: KkPracticeStageGhostPoint[] = [];
 export interface PracticeSceneFrame {
   dots: StageDot[];
   ghost: KkPracticeStageGhostPoint[];
+  way: StepWay | null;
   cue: OwnCue | null;
   own: StageDot | null;
   cueSide: CueSide;
@@ -24,6 +30,7 @@ export const usePracticeScene = (
   ownPath: SpotPath | null,
   marks: readonly CountMark[],
   loop: TimelineRange | null,
+  steps: readonly StudioStep[],
 ): PracticeSceneFrame => {
   const seconds = usePlaybackSeconds(player);
   const dots = stageDotsAt(scene, seconds);
@@ -32,10 +39,16 @@ export const usePracticeScene = (
 
   const ghost = route === null ? NO_ROUTE : viewRouteOf(route, scene.stage);
   const own = dots.find((dot) => dot.kind === 'own') ?? null;
+  const step = shownStepOf(steps, seconds);
+  const stepRange = step === null ? null : stepRangeOf(step);
 
   return {
     dots,
     ghost,
+    way:
+      ownPath === null || stepRange === null
+        ? null
+        : stepWayOf(ownPath, marks, stepRange, seconds, scene.stage),
     cue: way === null ? null : cueOf(way),
     own,
     cueSide: own === null ? 'above' : cueSideOf(own, ghost),
