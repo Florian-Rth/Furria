@@ -1,9 +1,16 @@
 import type { MixPlayer } from '@furria/studio/mix-player';
+import { Stage } from '@furria/studio/Stage';
 import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
-import { KkHall } from '@furria/ui/KkHall';
+import type { KkStageInkDiscKind } from '@furria/ui/KkStageInk';
 import type { FC } from 'react';
-import type { HallScene } from '../hall-scene';
+import type { HallDotKind, HallScene } from '../hall-scene';
 import { hallDotsAt } from '../hall-scene';
+
+const discKinds: Record<HallDotKind, KkStageInkDiscKind> = {
+  present: 'cast',
+  absent: 'absent',
+  empty: 'open',
+};
 
 interface HallDotsLiveProps {
   player: MixPlayer;
@@ -14,16 +21,16 @@ interface HallDotsLiveProps {
 export const HallDotsLive: FC<HallDotsLiveProps> = ({ player, scene, gliding }) => {
   const seconds = usePlaybackSeconds(player);
   const dots = hallDotsAt(scene, seconds).map((dot) => (
-    <KkHall.Dot
+    <Stage.Dot
       key={dot.spotId}
       x={dot.x}
       y={dot.y}
       number={dot.number}
-      name={dot.name}
-      kind={dot.kind}
+      kind={discKinds[dot.kind]}
       moving={dot.moving}
+      name={dot.name}
       nameSide={dot.nameSide}
-      gliding={gliding}
+      glide={gliding}
     />
   ));
 

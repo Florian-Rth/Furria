@@ -1,13 +1,13 @@
 import { stepRangeOf } from '@furria/studio/music-timeline';
+import { Stage } from '@furria/studio/Stage';
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
-import { KkPracticeStage } from '@furria/ui/KkPracticeStage';
 import type { FC } from 'react';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import type { Studio } from '@/features/acts/schemas';
 import { PRACTICE_FRONT, practiceStageLabelOf } from '../practice-copy';
 import type { StageScene } from '../practice-stage';
 import { stageSummaryOf } from '../practice-stage';
-import { frameKeyOf, stageFrameOf } from '../practice-stage-frame';
+import { stageFrameOf } from '../practice-stage-frame';
 import { shownStepOf } from '../practice-stepping';
 import { PracticeStageScene } from './PracticeStageScene';
 
@@ -29,14 +29,13 @@ export const PracticeStageLayer: FC<PracticeStageLayerProps> = ({ studio, playba
   const frame = stageFrameOf(paths, countMarks, step === null ? null : stepRangeOf(step), stage);
 
   return (
-    <KkPracticeStage
+    <Stage
       label={label}
-      frontLabel={PRACTICE_FRONT}
-      widthMetres={stage.widthMetres}
-      depthMetres={stage.depthMetres}
-      artworkSvg={stage.artworkSvg}
+      stage={stage}
+      viewpoint="dancers"
+      fit="contain"
       frame={frame}
-      frameKey={frameKeyOf(frame)}
+      frontLabel={PRACTICE_FRONT}
     >
       <PracticeStageScene
         player={player}
@@ -47,6 +46,6 @@ export const PracticeStageLayer: FC<PracticeStageLayerProps> = ({ studio, playba
         steps={steps}
         gliding={!state.playing}
       />
-    </KkPracticeStage>
+    </Stage>
   );
 };

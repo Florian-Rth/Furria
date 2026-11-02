@@ -1,7 +1,6 @@
 import { KkButton } from '@furria/ui/KkButton';
 import { KkIcon } from '@furria/ui/KkIcon';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
-import { KkScoreFormation } from '@furria/ui/KkScoreFormation';
 import { KkScoreYou } from '@furria/ui/KkScoreYou';
 import { KkText } from '@furria/ui/KkText';
 import type { FC } from 'react';
@@ -14,6 +13,7 @@ import {
   PRACTISE_LABEL,
 } from '../score-copy';
 import { ScoreFactsStrip } from './ScoreFactsStrip';
+import { ScoreFormation } from './ScoreFormation';
 
 interface ScoreForYouProps {
   score: ActHub;
@@ -29,12 +29,11 @@ export const ScoreForYou: FC<ScoreForYouProps> = ({ score }) => {
 
   const figure =
     you.place === null || you.dots.length === 0 ? null : (
-      <KkScoreFormation
+      <ScoreFormation
         label={ownPlaceLabelOf(you.place)}
-        widthMetres={model.stage.widthMetres}
-        depthMetres={model.stage.depthMetres}
+        stage={model.stage}
         dots={you.dots}
-        size="card"
+        density="card"
       />
     );
   const place =
