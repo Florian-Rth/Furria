@@ -1,7 +1,7 @@
+import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
 import { KkLaneDot } from '@furria/ui/KkLaneDot';
 import { KkStudioStage } from '@furria/ui/KkStudioStage';
 import type { FC } from 'react';
-import { usePlaybackSeconds } from '@/features/act-player/hooks/use-playback-seconds';
 import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 import { useStepCardDots } from '../hooks/use-step-card-dots';
 import type { StudioScreen } from '../hooks/use-studio-screen';

@@ -1,4 +1,4 @@
-import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
+import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import type { FinalPlace } from '../studio-final';
 import { finalPlacesOf, placeIndexAt } from '../studio-final';
 import type { StudioScreen } from './use-studio-screen';

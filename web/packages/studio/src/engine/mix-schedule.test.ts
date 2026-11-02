@@ -1,7 +1,7 @@
-import type { MusicSegment } from '@furria/studio/music-timeline';
 import { describe, expect, it } from 'vitest';
+import type { MusicSegment } from '../models/music-timeline';
 import type { MixRun } from './mix-schedule';
-import { mixPiecesOf, pitchCorrectionOf, playRangeOf, positionInRuns } from './mix-schedule';
+import { mixPiecesOf, playRangeOf, positionInRuns, stretchSlicesOf } from './mix-schedule';
 
 const segment = (patch: Partial<MusicSegment>): MusicSegment => ({
   mediaItemId: 1,
@@ -74,12 +74,38 @@ describe('playRangeOf', () => {
   });
 });
 
-describe('pitchCorrectionOf', () => {
-  it.each([
-    [1, 0],
-    [0.5, 12],
-    [Math.SQRT1_2, 6],
-  ])('lifts music slowed to %s by %s semitones', (rate, semitones) => {
-    expect(pitchCorrectionOf(rate)).toBeCloseTo(semitones, 6);
+describe('stretchSlicesOf', () => {
+  it('lays the cut songs end to end in samples, without a gap', () => {
+    expect(stretchSlicesOf(mix, 30, 10)).toEqual([
+      { mediaItemId: 1, sourceSample: 100, samples: 200 },
+      { mediaItemId: 2, sourceSample: 50, samples: 100 },
+    ]);
+  });
+
+  it('fills a song that cannot play with silence of its length', () => {
+    const muted = [segment({ audible: false }), mix[1] ?? segment({})];
+
+    expect(stretchSlicesOf(muted, 30, 10)).toEqual([
+      { mediaItemId: null, sourceSample: 0, samples: 200 },
+      { mediaItemId: 2, sourceSample: 50, samples: 100 },
+    ]);
+  });
+
+  it('never lets a rounded border overlap the song before it', () => {
+    const tight = [
+      segment({ timelineEnd: 1.06, sourceEnd: 11.06 }),
+      segment({
+        mediaItemId: 2,
+        sourceStart: 0,
+        sourceEnd: 1,
+        timelineStart: 1.04,
+        timelineEnd: 2,
+      }),
+    ];
+
+    expect(stretchSlicesOf(tight, 2, 10)).toEqual([
+      { mediaItemId: 1, sourceSample: 100, samples: 11 },
+      { mediaItemId: 2, sourceSample: 1, samples: 9 },
+    ]);
   });
 });

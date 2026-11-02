@@ -1,5 +1,5 @@
+import { COUNT_IN_BEATS } from '@furria/studio/count-in';
 import type { KkKeyListEntry } from '@furria/ui/KkKeyList';
-import { COUNT_IN_BEATS } from '@/features/act-player/count-in';
 import { openSpotsTextOf } from '@/features/act-practice/practice-copy';
 import { toEveningDay } from '@/features/acts/act-evenings-copy';
 import type { StudioTraining } from '@/features/acts/schemas';

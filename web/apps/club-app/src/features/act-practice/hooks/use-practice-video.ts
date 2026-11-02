@@ -1,9 +1,9 @@
+import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
+import { useSlavedVideo } from '@furria/studio/use-slaved-video';
 import type { KkPracticeScreenVideoSource } from '@furria/ui/KkPracticeScreen';
 import { useIsMobile } from '@furria/ui/use-is-mobile';
 import type { RefObject } from 'react';
 import { useRef, useState } from 'react';
-import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
-import { useSlavedVideo } from '@/features/act-player/hooks/use-slaved-video';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import type { Studio } from '@/features/acts/schemas';
 import type { HeroKind } from '../practice-controls';

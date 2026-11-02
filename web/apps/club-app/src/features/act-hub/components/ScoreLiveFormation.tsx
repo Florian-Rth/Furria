@@ -1,6 +1,6 @@
+import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
 import { KkScoreFormation } from '@furria/ui/KkScoreFormation';
 import type { FC } from 'react';
-import { usePlaybackSeconds } from '@/features/act-player/hooks/use-playback-seconds';
 import type { ActHub, ScoreStepView } from '../hooks/use-act-hub';
 import { AUDIENCE_LABEL, FORMATION_TITLE, OPEN_SPOT } from '../score-copy';
 import { liveDotsOf } from '../score-live';

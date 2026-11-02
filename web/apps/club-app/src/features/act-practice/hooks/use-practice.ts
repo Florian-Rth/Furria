@@ -2,7 +2,8 @@ import type { TimelineRange } from '@furria/studio/music-timeline';
 import { partOfStep, partRangeOf, stepRangeOf } from '@furria/studio/music-timeline';
 import { shownStepNameOf, stepNumberOf } from '@furria/studio/step-names';
 import type { StudioStep } from '@furria/studio/studio-schemas';
-import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
+import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
+import { useScreenWakeLock } from '@furria/studio/use-screen-wake-lock';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import type { LoopKind } from '../practice-controls';
 import { loopKindOf, loopRangeOf } from '../practice-controls';
@@ -50,6 +51,7 @@ const sameRange = (left: TimelineRange | null, right: TimelineRange | null): boo
 
 export const usePractice = (playback: StudioPlayback): Practice => {
   const { player, steps, parts, state, controls } = playback;
+  useScreenWakeLock(state.playing);
   const stepId = usePlaybackSelection(
     player,
     (seconds) => shownStepOf(steps, seconds)?.stepId ?? null,

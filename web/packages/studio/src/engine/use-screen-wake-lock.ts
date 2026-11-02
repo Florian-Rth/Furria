@@ -12,14 +12,18 @@ const requestScreenLock = async (): Promise<WakeLockSentinel | null> => {
   }
 };
 
-export const useScreenWakeLock = (): void => {
+export const useScreenWakeLock = (active: boolean): void => {
   useEffect(() => {
+    if (!active) {
+      return;
+    }
+
     let lock: WakeLockSentinel | null = null;
-    let active = true;
+    let held = true;
 
     const acquire = async (): Promise<void> => {
       const next = await requestScreenLock();
-      if (active && next !== null) {
+      if (held && next !== null) {
         const previous = lock;
         lock = next;
         void previous?.release();
@@ -35,9 +39,9 @@ export const useScreenWakeLock = (): void => {
     document.addEventListener('visibilitychange', reacquire);
 
     return () => {
-      active = false;
+      held = false;
       document.removeEventListener('visibilitychange', reacquire);
       void lock?.release();
     };
-  }, []);
+  }, [active]);
 };

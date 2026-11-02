@@ -1,7 +1,7 @@
+import type { MixPlayer } from '@furria/studio/mix-player';
+import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import { KkScoreTransport } from '@furria/ui/KkScoreTransport';
 import type { FC } from 'react';
-import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
-import type { MixPlayer } from '@/features/act-player/mix-player';
 import { clockOf } from '../score-copy';
 
 interface ScoreClockProps {

@@ -2,7 +2,7 @@ import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
 import { partOfStep } from '@furria/studio/music-timeline';
 import { shownStepNameOf } from '@furria/studio/step-names';
 import type { StudioPart, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
-import { isPlayableVideo } from '@/features/act-player/video-sync';
+import { isPlayableVideo } from '@furria/studio/video-sync';
 
 const COUNTS_PER_EIGHT = 8;
 const EIGHT_GRAIN = 2;

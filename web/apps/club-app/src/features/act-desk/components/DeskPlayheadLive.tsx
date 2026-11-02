@@ -1,7 +1,7 @@
+import type { MixPlayer } from '@furria/studio/mix-player';
+import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
 import { KkLaneTrack } from '@furria/ui/KkLaneTrack';
 import type { FC } from 'react';
-import { usePlaybackSeconds } from '@/features/act-player/hooks/use-playback-seconds';
-import type { MixPlayer } from '@/features/act-player/mix-player';
 import { shareOf } from '../desk-time';
 import { useDeskFollow } from '../hooks/use-desk-follow';
 import type { DeskZoom } from '../hooks/use-desk-zoom';
