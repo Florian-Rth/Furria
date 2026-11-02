@@ -1,9 +1,9 @@
-import { KkScoreFormation } from '@furria/ui/KkScoreFormation';
 import { KkScoreManual } from '@furria/ui/KkScoreManual';
 import { KkText } from '@furria/ui/KkText';
 import type { FC } from 'react';
 import type { ActHub } from '../hooks/use-act-hub';
 import { MANUAL_LABEL, MOVEMENT_KEY, NO_STEPS, VIDEO_KEY } from '../score-copy';
+import { ScoreFormation } from './ScoreFormation';
 
 interface ScoreManualListProps {
   score: ActHub;
@@ -34,12 +34,10 @@ export const ScoreManualList: FC<ScoreManualListProps> = ({ score }) => {
         score.selectRow(row.stepId);
       };
       const figure = (
-        <KkScoreFormation
-          label=""
-          widthMetres={stage.widthMetres}
-          depthMetres={stage.depthMetres}
+        <ScoreFormation
+          stage={stage}
           dots={row.dots}
-          size="thumb"
+          density="thumb"
           entranceDelay={row.entranceDelay}
         />
       );

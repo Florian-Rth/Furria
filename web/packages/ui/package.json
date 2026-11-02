@@ -278,7 +278,6 @@
     "./KkScoreDesk": "./src/KkScoreDesk/KkScoreDesk.tsx",
     "./KkScoreEvenings": "./src/KkScoreEvenings/KkScoreEvenings.tsx",
     "./KkScoreFacts": "./src/KkScoreFacts/KkScoreFacts.tsx",
-    "./KkScoreFormation": "./src/KkScoreFormation/KkScoreFormation.tsx",
     "./KkScoreGlyph": "./src/KkScoreGlyph/KkScoreGlyph.tsx",
     "./KkScoreManual": "./src/KkScoreManual/KkScoreManual.tsx",
     "./KkScoreReadiness": "./src/KkScoreReadiness/KkScoreReadiness.tsx",
@@ -336,7 +335,6 @@
     "./KkPracticeCount": "./src/KkPracticeCount/KkPracticeCount.tsx",
     "./KkPracticeDescription": "./src/KkPracticeText/KkPracticeDescription.tsx",
     "./KkPracticeKeys": "./src/KkPracticeKeys/KkPracticeKeys.tsx",
-    "./KkPracticeStage": "./src/KkPracticeStage/KkPracticeStage.tsx",
     "./KkPracticeStepName": "./src/KkPracticeText/KkPracticeStepName.tsx",
     "./KkPracticeTransport": "./src/KkPracticeTransport/KkPracticeTransport.tsx",
     "./KkPracticeScreen": "./src/KkPracticeScreen/KkPracticeScreen.tsx",
@@ -445,7 +443,9 @@
     "./use-publish-ceremony": "./src/KkPublishCeremony/use-publish-ceremony.ts",
     "./viewer-types": "./src/KkViewer/viewer-types.ts",
     "./welcome-paint": "./src/KkWelcomeStage/internal/welcome-paint.ts",
-    "./when-tone": "./src/KkStartTile/internal/when-tone.ts"
+    "./when-tone": "./src/KkStartTile/internal/when-tone.ts",
+    "./KkStageInk": "./src/KkStageInk/KkStageInk.tsx",
+    "./KkFormationLegend": "./src/KkFormationLegend.tsx"
   },
   "scripts": {
     "test": "vitest run",

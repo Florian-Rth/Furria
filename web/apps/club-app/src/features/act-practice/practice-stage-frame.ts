@@ -1,6 +1,8 @@
 import type { SpotPath } from '@furria/studio/choreography-motion';
 import { poseAt } from '@furria/studio/choreography-motion';
 import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
+import type { StageFrame } from '@furria/studio/stage-framing';
+import { WHOLE_STAGE_FRAME } from '@furria/studio/stage-framing';
 import type { StudioStage } from '@furria/studio/studio-schemas';
 import type { ViewShare } from './practice-stage';
 import { viewShareOf } from './practice-stage';
@@ -9,15 +11,6 @@ const PAD_METRES = 1.25;
 const MIN_SHARE = 0.4;
 const GRAIN = 1000;
 const HALF = 0.5;
-
-export interface StageFrame {
-  left: number;
-  top: number;
-  width: number;
-  height: number;
-}
-
-export const WHOLE_STAGE_FRAME: StageFrame = { left: 0, top: 0, width: 1, height: 1 };
 
 const rounded = (value: number): number => Math.round(value * GRAIN) / GRAIN;
 
@@ -65,6 +58,3 @@ export const stageFrameOf = (
 
   return { left, top, width, height };
 };
-
-export const frameKeyOf = (frame: StageFrame): string =>
-  [frame.left, frame.top, frame.width, frame.height].join(':');

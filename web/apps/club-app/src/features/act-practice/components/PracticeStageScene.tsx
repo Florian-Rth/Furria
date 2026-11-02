@@ -1,8 +1,8 @@
 import type { SpotPath } from '@furria/studio/choreography-motion';
 import type { MixPlayer } from '@furria/studio/mix-player';
 import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
+import { Stage } from '@furria/studio/Stage';
 import type { StudioStep } from '@furria/studio/studio-schemas';
-import { KkPracticeStage } from '@furria/ui/KkPracticeStage';
 import type { FC } from 'react';
 import { usePracticeScene } from '../hooks/use-practice-scene';
 import { cueTextOf } from '../practice-copy';
@@ -28,21 +28,21 @@ export const PracticeStageScene: FC<PracticeStageSceneProps> = ({
   gliding,
 }) => {
   const frame = usePracticeScene(player, scene, ownPath, marks, loop, steps);
-  const aspect = scene.stage.depthMetres / scene.stage.widthMetres;
   const dots = frame.dots.map((dot) => (
-    <KkPracticeStage.Dot
+    <Stage.Dot
       key={dot.spotId}
       x={dot.x}
       y={dot.y}
       number={dot.number}
       kind={dot.kind}
+      muted
       turn={dot.turn}
-      gliding={gliding}
+      glide={gliding}
     />
   ));
   const cue =
     frame.cue === null || frame.own === null ? null : (
-      <KkPracticeStage.Cue
+      <Stage.Cue
         x={frame.own.x}
         y={frame.own.y}
         text={cueTextOf(frame.cue)}
@@ -50,16 +50,25 @@ export const PracticeStageScene: FC<PracticeStageSceneProps> = ({
         side={frame.cueSide}
       />
     );
-
-  const way =
-    frame.way === null ? null : (
-      <KkPracticeStage.Way points={frame.way.points} marks={frame.way.marks} aspect={aspect} />
-    );
+  const way = frame.way === null ? null : <Stage.Path points={frame.way.points} kind="way" />;
+  const wayMarks = frame.way === null ? [] : frame.way.marks;
+  const counts = wayMarks.map((mark) => (
+    <Stage.Count
+      key={`${mark.count}-${mark.x}-${mark.y}`}
+      x={mark.x}
+      y={mark.y}
+      count={mark.count}
+    />
+  ));
+  const target = frame.ghost.length < 2 ? undefined : frame.ghost.at(-1);
+  const ghostTarget = target === undefined ? null : <Stage.Target x={target.x} y={target.y} />;
 
   return (
     <>
       {way}
-      <KkPracticeStage.Ghost points={frame.ghost} aspect={aspect} />
+      {counts}
+      <Stage.Path points={frame.ghost} kind="ghost" />
+      {ghostTarget}
       {dots}
       {cue}
     </>

@@ -1,3 +1,4 @@
+import { Stage } from '@furria/studio/Stage';
 import { KkHall } from '@furria/ui/KkHall';
 import { KkPracticeScreen } from '@furria/ui/KkPracticeScreen';
 import type { FC } from 'react';
@@ -16,15 +17,15 @@ export const HallStageLayer: FC<HallStageLayerProps> = ({ hall }) => {
     <KkPracticeScreen.Video source={video.source} videoRef={video.ref} mirrored={video.mirrored} />
   ) : null;
   const stage = hall.videoOn ? null : (
-    <KkHall.Stage
+    <Stage
       label={hall.stageLabel}
+      stage={scene.stage}
+      viewpoint={scene.viewpoint}
+      fit="contain"
       frontLabel={HALL_FRONT}
-      widthMetres={scene.stage.widthMetres}
-      depthMetres={scene.stage.depthMetres}
-      artworkSvg={scene.stage.artworkSvg}
     >
       <HallDotsLive player={playback.player} scene={scene} gliding={gliding} />
-    </KkHall.Stage>
+    </Stage>
   );
 
   return (

@@ -4,8 +4,7 @@ import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
 import { stepRangeOf } from '@furria/studio/music-timeline';
 import type { StudioStep } from '@furria/studio/studio-schemas';
 import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
-import type { KkPracticeStageGhostPoint } from '@furria/ui/KkPracticeStage';
-import type { CueSide, StageDot, StageScene } from '../practice-stage';
+import type { CueSide, StageDot, StageScene, ViewShare } from '../practice-stage';
 import { cueSideOf, stageDotsAt, viewRouteOf } from '../practice-stage';
 import type { StepWay } from '../practice-step-way';
 import { stepWayOf } from '../practice-step-way';
@@ -13,11 +12,11 @@ import { shownStepOf } from '../practice-stepping';
 import type { OwnCue } from '../practice-way';
 import { cueOf, ownWayAt } from '../practice-way';
 
-const NO_ROUTE: KkPracticeStageGhostPoint[] = [];
+const NO_ROUTE: ViewShare[] = [];
 
 export interface PracticeSceneFrame {
   dots: StageDot[];
-  ghost: KkPracticeStageGhostPoint[];
+  ghost: ViewShare[];
   way: StepWay | null;
   cue: OwnCue | null;
   own: StageDot | null;
