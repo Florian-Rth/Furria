@@ -1,3 +1,5 @@
+import type { DragEndEvent } from '@dnd-kit/react';
+import { isSortable } from '@dnd-kit/react/sortable';
 import type { MusicSegment } from '@furria/studio/music-timeline';
 import type { StudioSong } from '@furria/studio/studio-schemas';
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
@@ -8,11 +10,13 @@ import {
   STUDIO_SONG_GONE,
   songCardMetaOf,
   songEditLabelOf,
+  songMoveLabelOf,
   songNameOf,
   songRowLabelOf,
   songStateMetaOf,
 } from '../studio-copy';
-import { outsideMusicOf } from '../studio-music';
+import { studioDragPluginsOf } from '../studio-drag-copy';
+import { keptPositionOf, movedOrderOf, outsideMusicOf } from '../studio-music';
 import { useDeskTarget } from './use-desk-target';
 import type { StudioScreen } from './use-studio-screen';
 
@@ -28,6 +32,10 @@ export interface ActStudioSongRow {
   press: () => void;
 }
 
+export interface ActStudioSortableSongRow extends ActStudioSongRow {
+  moveLabel: string;
+}
+
 export interface CurrentSong {
   song: StudioSong;
   segment: MusicSegment;
@@ -35,17 +43,20 @@ export interface CurrentSong {
 }
 
 export interface ActStudioSongs {
-  rows: ActStudioSongRow[];
+  rows: ActStudioSortableSongRow[];
   current: CurrentSong | null;
   outside: string | null;
   count: string;
   locked: boolean;
+  dragPlugins: ReturnType<typeof studioDragPluginsOf>;
+  onDragEnd: (event: DragEndEvent) => void;
   deskOpen: boolean;
   closeDesk: () => void;
 }
 
 export const useActStudioSongs = (screen: StudioScreen): ActStudioSongs => {
-  const { playback, studio, mode } = screen;
+  const { playback, studio, mode, edits } = screen;
+  const work = screen.document;
   const { player, segments } = playback;
   const onMusic = mode.editing && mode.tool === 'music';
   const editable = studio.music.source === 'workingMix';
@@ -65,6 +76,22 @@ export const useActStudioSongs = (screen: StudioScreen): ActStudioSongs => {
   const currentSong = songs[selectedIndex];
   const currentSegment = segments[selectedIndex];
   const outside = outsideMusicOf(studio, segments);
+  const songTitleOf = (key: string | number): string => {
+    const song = songs.find((candidate) => String(candidate.songId) === String(key));
+
+    return song === undefined ? String(key) : songNameOf(song.fileName);
+  };
+  const reorder = (from: number, to: number): void => {
+    const order = movedOrderOf(studio.songs, from, to);
+    if (!editable || order === null) {
+      return;
+    }
+    const kept = keptPositionOf(studio.songs, segments, order, player.position());
+    if (kept !== null) {
+      edits.keepPosition(kept);
+    }
+    work.change({ kind: 'songOrder', songIds: order });
+  };
 
   return {
     rows: songs.map((song, index) => {
@@ -79,6 +106,7 @@ export const useActStudioSongs = (screen: StudioScreen): ActStudioSongs => {
           songStateMetaOf(song.state) ??
           songCardMetaOf(song.startSeconds, song.endSeconds, song.durationSeconds, song.tempoBpm),
         label: selected ? songEditLabelOf(name) : songRowLabelOf(name),
+        moveLabel: songMoveLabelOf(name),
         badge: selected ? STUDIO_EDIT : null,
         badgeTone: 'ink',
         selected,
@@ -101,6 +129,14 @@ export const useActStudioSongs = (screen: StudioScreen): ActStudioSongs => {
     count: String(songs.length),
     outside: outsideMusicTextOf(outside),
     locked: !editable,
+    dragPlugins: studioDragPluginsOf({ itemOf: songTitleOf, targetOf: songTitleOf }),
+    onDragEnd: (event) => {
+      const source = event.operation.source;
+      if (event.canceled || !isSortable(source)) {
+        return;
+      }
+      reorder(source.initialIndex, source.index);
+    },
     deskOpen: desk.targetId !== null,
     closeDesk: desk.close,
   };

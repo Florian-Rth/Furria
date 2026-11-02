@@ -194,6 +194,9 @@ catalogs:
     '@capacitor/splash-screen':
       specifier: 8.0.2
       version: 8.0.2
+    '@dnd-kit/dom':
+      specifier: 0.5.3
+      version: 0.5.3
     '@dnd-kit/react':
       specifier: 0.5.1
       version: 0.5.1
@@ -358,6 +361,9 @@ importers:
       '@capacitor/splash-screen':
         specifier: 'catalog:'
         version: 8.0.2(@capacitor/core@8.5.2)
+      '@dnd-kit/dom':
+        specifier: 'catalog:'
+        version: 0.5.3
       '@dnd-kit/react':
         specifier: 'catalog:'
         version: 0.5.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)

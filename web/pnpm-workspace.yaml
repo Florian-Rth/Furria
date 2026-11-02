@@ -37,6 +37,7 @@ catalog:
   altcha: 3.2.4
   babel-plugin-react-compiler: 1.0.0
   date-fns: 4.4.0
+  '@dnd-kit/dom': 0.5.3
   '@dnd-kit/react': 0.5.1
   immer: 11.1.21
   '@hookform/resolvers': 5.4.0

@@ -4,6 +4,7 @@ import { useActStudioCast } from '../hooks/use-act-studio-cast';
 import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import { STUDIO_SPOT_ADD, STUDIO_SPOTS } from '../studio-copy';
+import { ActStudioHolderSection } from './ActStudioHolderSection';
 
 interface ActStudioCastListProps {
   screen: StudioScreen;
@@ -40,6 +41,7 @@ export const ActStudioCastList: FC<ActStudioCastListProps> = ({ screen, editor }
       <KkStudioList.Head text={editor.formationText} aside={null} />
       {rows}
       {addSpot}
+      <ActStudioHolderSection screen={screen} />
     </KkStudioList>
   );
 };

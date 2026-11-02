@@ -7,15 +7,8 @@ import {
   tempoNudgeTextOf,
   tempoTextOf,
 } from '../studio-copy';
-import type { SongSettings, SongShift } from '../studio-music';
-import {
-  firstBeatAtOf,
-  nudgedFirstBeatOf,
-  shiftedOrderOf,
-  songSettingsOf,
-  startInOrderOf,
-  steppedTempoOf,
-} from '../studio-music';
+import type { SongSettings } from '../studio-music';
+import { firstBeatAtOf, nudgedFirstBeatOf, songSettingsOf, steppedTempoOf } from '../studio-music';
 import type { ActStudioSongs } from './use-act-studio-songs';
 import type { StudioScreen } from './use-studio-screen';
 
@@ -40,14 +33,12 @@ export interface SongDesk {
   beatLocked: boolean;
   placeOne: () => void;
   nudgeOne: (direction: -1 | 1) => void;
-  shiftLocked: Record<SongShift, boolean>;
-  shift: (direction: SongShift) => void;
   removing: boolean;
   remove: () => void;
 }
 
 export const useSongDesk = (screen: StudioScreen, songs: ActStudioSongs): SongDesk | null => {
-  const { music, playback, studio, edits } = screen;
+  const { music, playback, edits } = screen;
   const work = screen.document;
   const { player } = playback;
   const current = songs.current;
@@ -72,8 +63,6 @@ export const useSongDesk = (screen: StudioScreen, songs: ActStudioSongs): SongDe
       settle({ tempoBpm: steppedTempoOf(song.tempoBpm ?? FALLBACK_TEMPO_BPM, delta) });
     },
   });
-  const orderOf = (direction: SongShift): number[] | null =>
-    shiftedOrderOf(studio.songs, song.songId, direction);
 
   return {
     title: songDeskTitleOf(current.index + 1, songNameOf(song.fileName)),
@@ -87,16 +76,6 @@ export const useSongDesk = (screen: StudioScreen, songs: ActStudioSongs): SongDe
     },
     nudgeOne: (direction) => {
       settle({ firstBeatSeconds: nudgedFirstBeatOf(song, direction * BEAT_NUDGE_SECONDS) });
-    },
-    shiftLocked: { earlier: orderOf('earlier') === null, later: orderOf('later') === null },
-    shift: (direction) => {
-      const order = orderOf(direction);
-      if (order === null) {
-        return;
-      }
-      const offset = player.position() - segment.timelineStart;
-      edits.keepPosition(startInOrderOf(studio.songs, order, song.songId) + offset);
-      work.change({ kind: 'songOrder', songIds: order });
     },
     removing: removingId === song.songId,
     remove: () => {
