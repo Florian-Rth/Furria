@@ -31,6 +31,12 @@ export const GLIDE_CHOICES = [
   { id: 'snap', label: 'Auf Schritt einrasten' },
 ] as const;
 
+export const SCRUB_LABEL = 'Zeitleiste';
+export const SCRUB_CHOICES = [
+  { id: 'fixed', label: 'Feste Ansicht' },
+  { id: 'centre', label: 'Mittellinie' },
+] as const;
+
 export const TIMELINE_AREA = 'Musik-Zeitleiste';
 export const STAGE_AREA = 'Bühne';
 export const KEY_LANE_AREA = 'Wegpunkte auf der Zeitleiste';
@@ -45,6 +51,10 @@ export const TIMELINE_HINT_DISTANCE =
   'Tippen spult. Zwei Finger zoomen und schieben. Griff ziehen ändert Schnitt oder Schrittgrenze – Finger nach oben oder unten wegziehen macht es feiner.';
 export const TIMELINE_HINT_HOLD =
   'Tippen spult. Zwei Finger zoomen und schieben. Griff ziehen ändert Schnitt oder Schrittgrenze – erst kurz halten, dann ziehen macht es feiner.';
+export const TIMELINE_HINT_CENTRE_DISTANCE =
+  'Wischen schiebt die Musik unter der Linie durch und läuft frei aus. Tippen spult. Zwei Finger zoomen. Griff ziehen ändert Schnitt oder Schrittgrenze – Finger nach oben oder unten wegziehen macht es feiner.';
+export const TIMELINE_HINT_CENTRE_HOLD =
+  'Wischen schiebt die Musik unter der Linie durch und läuft frei aus. Tippen spult. Zwei Finger zoomen. Griff ziehen ändert Schnitt oder Schrittgrenze – erst kurz halten, dann ziehen macht es feiner.';
 export const STAGE_HINT =
   'Punkt ziehen setzt einen Wegpunkt zur aktuellen Zeit. Lang drücken wählt mehrere. Raute auf dem Weg ziehen biegt ihn. Zwei Finger zoomen die Bühne.';
 export const RAIL_HINT =

@@ -5,6 +5,7 @@ import { pickHitTarget } from '@furria/studio/hit-priority';
 import { countAt, musicLengthOf, musicSegmentsOf } from '@furria/studio/music-timeline';
 import { useGesture } from '@furria/studio/use-gesture';
 import type { KkTouchLabHandlers } from '@furria/ui/KkTouchLab';
+import type { MotionValue } from 'motion/react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { usePlaybackSeconds } from '@/features/act-player/hooks/use-playback-seconds';
 import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
@@ -74,7 +75,7 @@ export interface LabArea {
 
 export interface LabTransport {
   playing: boolean;
-  time: string;
+  time: string | MotionValue<string>;
   canUndo: boolean;
   toggle: () => void;
   undo: (() => void) | null;

@@ -4,6 +4,7 @@ import {
   StudioLabGlideSchema,
   StudioLabLiftSchema,
   StudioLabPrecisionSchema,
+  StudioLabScrubSchema,
   StudioLabSelectionSchema,
 } from './schemas';
 import type { StudioLabPlayground } from './studio-lab';
@@ -14,11 +15,13 @@ import {
   LIFT_LABEL,
   PRECISION_CHOICES,
   PRECISION_LABEL,
+  SCRUB_CHOICES,
+  SCRUB_LABEL,
   SELECTION_CHOICES,
   SELECTION_LABEL,
 } from './studio-lab-copy';
 
-export type StudioLabToolKey = 'lift' | 'precision' | 'selection' | 'glide';
+export type StudioLabToolKey = 'scrub' | 'lift' | 'precision' | 'selection' | 'glide';
 
 export interface StudioLabTool {
   key: StudioLabToolKey;
@@ -29,7 +32,7 @@ export interface StudioLabTool {
 }
 
 const TOOLS_BY_PLAYGROUND: Record<StudioLabPlayground, readonly StudioLabToolKey[]> = {
-  timeline: ['lift', 'precision'],
+  timeline: ['scrub', 'lift', 'precision'],
   stage: ['lift', 'selection', 'precision'],
   lists: [],
   rail: ['glide'],
@@ -52,6 +55,10 @@ const patchOf = (key: StudioLabToolKey, id: string): Partial<StudioLabSearch> | 
       const parsed = StudioLabSelectionSchema.safeParse(id);
       return parsed.success ? { selection: parsed.data } : null;
     }
+    case 'scrub': {
+      const parsed = StudioLabScrubSchema.safeParse(id);
+      return parsed.success ? { scrub: parsed.data } : null;
+    }
     case 'glide': {
       const parsed = StudioLabGlideSchema.safeParse(id);
       return parsed.success ? { glide: parsed.data } : null;
@@ -64,6 +71,7 @@ const TOOL_TEXTS: Record<StudioLabToolKey, { label: string; choices: readonly Kk
   precision: { label: PRECISION_LABEL, choices: PRECISION_CHOICES },
   selection: { label: SELECTION_LABEL, choices: SELECTION_CHOICES },
   glide: { label: GLIDE_LABEL, choices: GLIDE_CHOICES },
+  scrub: { label: SCRUB_LABEL, choices: SCRUB_CHOICES },
 };
 
 export const studioLabToolsOf = (
