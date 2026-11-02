@@ -7,13 +7,12 @@ import {
   eveningCastOf,
   eveningChangesOf,
   eveningChoreographyStateOf,
+  eveningSavedOf,
   eveningStudioOf,
-  withEveningCopyVersion,
+  eveningViewOf,
   withEveningDancer,
-  withEveningStudio,
 } from './studio-evening';
 import type { SpotPerson } from './studio-spots';
-import { withChoreographyVersion, withSpotPerson, withTracks } from './studio-spots';
 
 const person = (personId: number): SpotPerson => ({
   personId,
@@ -82,7 +81,10 @@ describe('eveningStudioOf', () => {
     };
     const studio = studioWith(appearance);
 
-    const shown = eveningStudioOf(studio, evening(appearance), [member(7), member(9)]);
+    const shown = eveningStudioOf(studio, eveningViewOf(studio, 5), evening(appearance), [
+      member(7),
+      member(9),
+    ]);
 
     expect([
       shown.spots.map((spot) => spot.person?.personId ?? null),
@@ -90,10 +92,18 @@ describe('eveningStudioOf', () => {
     ]).toEqual([[9, null], 2]);
   });
 
-  it('keeps the session when the act has no appearance that evening', () => {
+  it('keeps the session outside an evening', () => {
     const studio = studioWith(null);
 
-    expect(eveningStudioOf(studio, evening(null), [])).toBe(studio);
+    expect(eveningStudioOf(studio, studio, null, [])).toBe(studio);
+  });
+});
+
+describe('eveningSavedOf without an appearance', () => {
+  it('leaves an evening the act has not joined alone when nothing differs', () => {
+    const studio = studioWith(null);
+
+    expect(eveningSavedOf(studio, 5, eveningViewOf(studio, 5), false)).toBe(studio);
   });
 });
 
@@ -125,52 +135,65 @@ describe('eveningChangesOf', () => {
   });
 });
 
-describe('withEveningStudio', () => {
-  it('starts a copy from the session version on the first formation change', () => {
-    const before = { studio: studioWith(null) };
-
-    const after = withEveningStudio(
-      before,
-      5,
-      (studio) => withTracks({ studio }, { 2: [keyframe(3)] })?.studio ?? studio,
-    );
-
-    const copy = appearanceOf(after)?.choreography;
-    expect([copy?.version, copy?.copiedFromVersion, copy?.tracks.length]).toEqual([0, 4, 2]);
-    expect(after?.studio.choreography?.tracks).toHaveLength(1);
+describe('eveningSavedOf', () => {
+  const saved = (studio: Studio, patch: Partial<Studio>): Studio => ({
+    ...eveningViewOf(studio, 5),
+    ...patch,
   });
 
-  it('stores only the spots that differ from the session', () => {
-    const before = { studio: studioWith(EMPTY_APPEARANCE) };
+  it('starts a copy from the session version once the formation was saved', () => {
+    const studio = studioWith(null);
 
-    const after = withEveningStudio(
-      before,
+    const after = eveningSavedOf(
+      studio,
       5,
-      (studio) => withSpotPerson({ studio }, { spotId: 2, person: person(7) })?.studio ?? studio,
+      saved(studio, { choreography: { version: 1, tracks: [{ spotId: 2, keyframes: [] }] } }),
+      true,
     );
 
-    expect(
-      appearanceOf(after)?.spotChanges.map((change) => change.person?.personId ?? null),
-    ).toEqual([null, 7]);
-    expect(appearanceOf(after)?.choreography).toBeNull();
-  });
-
-  it('carries the saved version onto the copy', () => {
-    const before = {
-      studio: studioWith({
-        ...EMPTY_APPEARANCE,
-        choreography: { version: 0, copiedFromVersion: 4, tracks: [] },
-      }),
-    };
-
-    const after = withEveningStudio(
-      before,
-      5,
-      (studio) => withChoreographyVersion({ studio }, 1)?.studio ?? studio,
-    );
-
-    expect(appearanceOf(after)?.choreography).toEqual({
+    expect(after.evenings[0]?.appearance?.choreography).toEqual({
       version: 1,
+      copiedFromVersion: 4,
+      tracks: [{ spotId: 2, keyframes: [] }],
+    });
+  });
+
+  it('stores only the spots that differ from the session and makes no copy for them', () => {
+    const studio = studioWith(EMPTY_APPEARANCE);
+    const view = eveningViewOf(studio, 5);
+
+    const after = eveningSavedOf(
+      studio,
+      5,
+      saved(studio, {
+        spots: view.spots.map((spot) =>
+          spot.spotId === 2 ? { ...spot, person: person(7) } : { ...spot, person: null },
+        ),
+      }),
+      false,
+    );
+
+    expect([
+      after.evenings[0]?.appearance?.spotChanges.map((change) => change.person?.personId ?? null),
+      after.evenings[0]?.appearance?.choreography,
+    ]).toEqual([[null, 7], null]);
+  });
+
+  it('carries the saved version onto an existing copy', () => {
+    const studio = studioWith({
+      ...EMPTY_APPEARANCE,
+      choreography: { version: 2, copiedFromVersion: 4, tracks: [] },
+    });
+
+    const after = eveningSavedOf(
+      studio,
+      5,
+      saved(studio, { choreography: { version: 3, tracks: [] } }),
+      true,
+    );
+
+    expect(after.evenings[0]?.appearance?.choreography).toEqual({
+      version: 3,
       copiedFromVersion: 4,
       tracks: [],
     });
@@ -198,12 +221,4 @@ describe('withEveningDancer', () => {
       ]).toEqual([removed, added]);
     },
   );
-});
-
-describe('withEveningCopyVersion', () => {
-  it('leaves an evening without a copy as it is', () => {
-    const before = { studio: studioWith(EMPTY_APPEARANCE) };
-
-    expect(appearanceOf(withEveningCopyVersion(before, 5, 3))?.choreography).toBeNull();
-  });
 });

@@ -2,8 +2,6 @@ import type { TimelineRange } from '@furria/studio/music-timeline';
 import { partRangeOf } from '@furria/studio/music-timeline';
 import type { StudioPart, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
 import type { Studio } from '@/features/acts/schemas';
-import type { HoldsStudio } from './studio-music';
-import { withStudio } from './studio-music';
 
 const START_GRAIN_SECONDS = 0.05;
 
@@ -40,18 +38,6 @@ export const videoShelfOf = (video: StudioVideo): VideoShelf => {
 
 export const needsAlignment = (video: StudioVideo): boolean =>
   video.state === 'ready' && video.placement === 'unaligned';
-
-export const withoutVideo = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
-  videoId: number,
-): TResponse | undefined =>
-  withStudio(response, (studio) => ({
-    ...studio,
-    videos: studio.videos.filter((video) => video.videoId !== videoId),
-    parts: studio.parts.map((part) =>
-      part.mainVideoId === videoId ? { ...part, mainVideoId: null } : part,
-    ),
-  }));
 
 export const isDevelopingStudio = (studio: Studio): boolean =>
   [...studio.songs, ...studio.finalTracks, ...studio.videos].some(

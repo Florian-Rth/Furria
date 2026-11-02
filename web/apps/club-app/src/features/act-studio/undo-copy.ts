@@ -1,51 +1,33 @@
+import type { ChangeKind } from '@furria/studio/edit-history';
 import type { ChoreographyVersion } from './schemas';
-import type { OverlapRow } from './studio-conflict';
-import { fineClockOf } from './studio-copy';
-import type { StudioWriteKind } from './studio-undo';
 
 export const UNDO_LABEL = 'Rückgängig';
 export const REDO_LABEL = 'Wiederholen';
-export const UNDO_GROUP = 'act-studio-undo';
-export const UNDONE_PREFIX = 'Rückgängig gemacht';
-export const REDONE_PREFIX = 'Wiederholt';
 
-export const WRITE_TEXT: Record<StudioWriteKind, string> = {
-  songAdd: 'Lied hinzugefügt',
-  songRemove: 'Lied entfernt',
-  songRestore: 'Lied zurückgeholt',
-  finalAdd: 'Endfassung hochgeladen',
-  finalRemove: 'Endfassung entfernt',
-  finalRestore: 'Endfassung zurückgeholt',
-  finalAdopt: 'Endfassung übernommen',
-  videoAdd: 'Video hinzugefügt',
-  videoRemove: 'Video entfernt',
-  videoRestore: 'Video zurückgeholt',
+export const CHANGE_TEXT: Record<ChangeKind, string> = {
+  songOrder: 'Liedfolge geändert',
+  songSettings: 'Lied eingestellt',
+  finalBeat: 'Takt der Endfassung gesetzt',
+  finalOffset: 'Endfassung ausgerichtet',
+  stepMark: 'Schritt gesetzt',
+  stepMove: 'Schrittgrenze verschoben',
+  stepText: 'Schritt beschrieben',
+  stepRemove: 'Schritt entfernt',
+  partAdd: 'Teil angelegt',
+  partSettings: 'Teil geändert',
+  partRemove: 'Teil entfernt',
+  videoName: 'Video benannt',
+  videoStart: 'Video verschoben',
   spotAdd: 'Platz hinzugefügt',
   spotRemove: 'Platz entfernt',
-  spotRestore: 'Platz zurückgeholt',
   spotAssign: 'Platz besetzt',
   tracks: 'Aufstellung geändert',
-  restore: 'Ältere Fassung wiederhergestellt',
-  eveningJoin: 'Beim Abend dabei',
-  eveningLeave: 'Abend verlassen',
-  eveningDancer: 'Besetzung des Abends geändert',
-  eveningSpot: 'Platz des Abends besetzt',
-  eveningTracks: 'Aufstellung des Abends geändert',
-  eveningCopyDrop: 'Eigene Aufstellung des Abends verworfen',
-  batch: 'Mehrere Änderungen',
 };
-
-export const undoneTextOf = (kind: StudioWriteKind): string =>
-  `${UNDONE_PREFIX}: ${WRITE_TEXT[kind]}`;
-
-export const redoneTextOf = (kind: StudioWriteKind): string =>
-  `${REDONE_PREFIX}: ${WRITE_TEXT[kind]}`;
 
 export const HISTORY_TITLE = 'Verlauf';
 export const HISTORY_EMPTY = 'Noch nichts geändert.';
 export const HISTORY_YOU = 'Du';
 export const HISTORY_UNDONE = 'zurückgenommen';
-export const HISTORY_FIXED = 'nicht umkehrbar';
 export const UNDO_ARIA = 'Rückgängig (Strg+Z)';
 export const REDO_ARIA = 'Wiederholen (Strg+Umschalt+Z)';
 
@@ -95,23 +77,10 @@ export const versionMetaOf = (version: ChoreographyVersion): string => {
 export const restoreLabelOf = (version: ChoreographyVersion): string =>
   `${VERSION_RESTORE}: Fassung ${version.version}`;
 
-export const visitMetaOf = (at: string, eveningTitle: string | null): string => {
+export const visitMetaOf = (at: number, eveningTitle: string | null): string => {
   const when = CLOCK.format(new Date(at));
 
   return eveningTitle === null
     ? `${HISTORY_YOU} · ${when}`
     : `${HISTORY_YOU} · ${when} · ${eveningTitle}`;
-};
-
-export const MERGE_KEEP_MINE = 'Meine Fassung behalten';
-export const MERGE_TAKE_THEIRS = 'Andere übernehmen';
-const UNKNOWN_SPOT = 'Entfernter Platz';
-const UNPLACED_KEYS = 'außerhalb der Musik';
-
-export const overlapLineOf = (row: OverlapRow): string => {
-  const spot = row.spotNumber === null ? UNKNOWN_SPOT : `Platz ${row.spotNumber}`;
-  const times = row.seconds.map(fineClockOf);
-  const outside = row.unplaced > 0 ? [`${row.unplaced} ${UNPLACED_KEYS}`] : [];
-
-  return `${spot}: ${[...times, ...outside].join(' · ')}`;
 };

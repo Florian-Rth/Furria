@@ -3,7 +3,13 @@ import type { StudioEditor } from '@furria/studio/studio-editor';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useSyncExternalStore } from 'react';
 import type { Studio } from '@/features/acts/schemas';
-import { holdStudioEditor, openStudioEditor, releaseStudioEditor } from '../studio-editor-store';
+import type { StudioScope } from '../studio-editor-store';
+import {
+  adoptStudio,
+  holdStudioEditor,
+  openStudioEditor,
+  releaseStudioEditor,
+} from '../studio-editor-store';
 
 export interface StudioDocumentEdit {
   studio: Studio;
@@ -12,6 +18,8 @@ export interface StudioDocumentEdit {
   endGesture: () => void;
   mark: (atSeconds: number, lengthSeconds: number) => void;
   addPart: (firstStepId: number, name: string) => void;
+  addSpot: () => number;
+  direct: <TResult>(action: () => Promise<TResult>) => Promise<TResult>;
 }
 
 const editsOf = (editor: StudioEditor<Studio>, studio: Studio): StudioDocumentEdit => ({
@@ -31,24 +39,32 @@ const editsOf = (editor: StudioEditor<Studio>, studio: Studio): StudioDocumentEd
   addPart: (firstStepId, name) => {
     editor.change({ kind: 'partAdd', partId: editor.newLocalId(), firstStepId, name });
   },
+  addSpot: () => {
+    const spotId = editor.newLocalId();
+    editor.change({ kind: 'spotAdd', spotId });
+
+    return spotId;
+  },
+  direct: editor.direct,
 });
 
-export const useStudioDocument = (actId: number, source: Studio): StudioDocumentEdit => {
+export const useStudioDocument = (scope: StudioScope, source: Studio): StudioDocumentEdit => {
   const queryClient = useQueryClient();
-  const editor = openStudioEditor(actId, source, queryClient);
+  const { actId, eventId } = scope;
+  const editor = openStudioEditor({ actId, eventId }, source, queryClient);
   const snapshot = useSyncExternalStore(editor.subscribe, editor.snapshot);
 
   useEffect(() => {
-    holdStudioEditor(actId);
+    holdStudioEditor({ actId, eventId });
 
     return () => {
-      releaseStudioEditor(actId);
+      releaseStudioEditor({ actId, eventId });
     };
-  }, [actId]);
+  }, [actId, eventId]);
 
   useEffect(() => {
-    void editor.adopt(source);
-  }, [editor, source]);
+    adoptStudio({ actId, eventId }, source);
+  }, [actId, eventId, source]);
 
   return editsOf(editor, snapshot.studio);
 };

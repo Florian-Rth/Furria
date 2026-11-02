@@ -242,10 +242,56 @@ anlegen* — are written into the document as one undoable change after the requ
 
 ### Phase 5 — Editor onto the document: spots and choreography; old undo removed
 Goal: every in-document edit uses the document; the old undo machinery is deleted.
-- [ ] Spots and holders, keyframes, paths, bends, easing, facing, formation presets through the document
-- [ ] Uploads, final-file adoption, version restore, media delete as direct actions with reload
-- [ ] Delete `studio-undo`, `undo-requests`, `studio-remap`, the visit history store and the remaining optimistic patches
-- [ ] Device check: edit on phone and iPad, undo during a pending save, two editors at once
+- [x] Spots and holders, keyframes, paths, bends, easing, facing, formation presets through the document
+- [x] Uploads, final-file adoption, version restore, media delete as direct actions with reload
+- [x] Delete `studio-undo`, `undo-requests`, `studio-remap`, the visit history store and the remaining optimistic patches
+- [ ] Device check: edit on phone and iPad, undo during a pending save, two editors at once — owed to Florian
+
+Built 2026-11-02. Every stage edit is a document change: spot add/remove/assign and every track
+commit (`use-track-commit`: formation presets, drags, keyframes, bends, easing, facing all end in
+one `tracks` change). *Platz hinzufügen* is one gesture (local spot id + its first keyframe), so one
+undo removes both; the picked spot keeps its local id across the save.
+- **Evening copy (Sessionsauftritt):** the store keeps one editor per scope — `{ actId, eventId }`
+  (`scopeKeyOf`). An evening editor edits `eveningViewOf(studio, eventId)` (evening spots, the copy
+  or the session choreography) through `eveningSavePortOf`: `spotAssign` → evening spot,
+  `tracks` → evening choreography (`eveningTracksBodyOf`: builds on the session version until the
+  evening has its own copy, then on the copy's version); anything else is `rejected`. After a save
+  `eveningSavedOf` writes the result back into the appearance in the query cache. The studio
+  screen shows the session document with the evening editor's spots and choreography
+  (`eveningStudioOf(session, stage, evening, cast)`), so music stays the session's.
+- **Direct actions:** song/video/final add and remove, final adoption, version restore (session or
+  evening), evening leave and dropping the evening copy run as `editor.direct` through
+  `throughStudioEditor(scope, action)` (flush, act, reload; plain request when no editor is open).
+  `direct` now returns the action's result (the upload flows need the created id).
+- **One history:** the snapshot carries `history` (`historyRecordsOf`: every entry with its change
+  kinds, undone ones on top). Undo/redo, keys, the save state and the history lists span all open
+  editors of the act (`history-turn`: newest undo first, redo blocked once another editor holds a
+  newer edit; `combinedStatusOf` shows the weakest save state; retry retries the failed ones).
+  Editor notes of every editor surface as quiet notices.
+- **Deleted:** `studio-undo`, `undo-requests`, `studio-remap`, `studio-history`,
+  `studio-history-store`, `use-studio-undo`, `use-studio-history`, `stage-api`,
+  `use-choreography-conflict` (the editor's replay + note replace *Meine Fassung behalten*), the
+  evening stage mutations, the optimistic `withTracks`/`withSpot*`/`withoutSpot`/
+  `withChoreographyVersion`/`withoutSong`/`withoutVideo`/`withoutFinalTrack`/
+  `withEveningStudio`/`withEveningCopyVersion`/`withoutEveningCopy`/`withEveningLeft` patches,
+  `overlapRowsOf` and the visit undo copy.
+- **Outside undo by design:** joining an evening and its cast changes (dancer in/out) stay plain
+  writes with their optimistic patch; they are not part of the document.
+- **Review follow-ups (fixed):** a failed reload after a direct action no longer fails the action;
+  a session save writes back only its own fields (evenings and trainings stay the cache's); the
+  evening write-back makes a copy only once the port saved one (`copied()`), and never invents an
+  appearance for an evening the act has not joined; an editor still saving at its close time is
+  closed once it is saved; a rebase no longer reports the cleared redo steps as dropped undo.
+- **Review follow-ups (open):** `adopt` applies the source it was handed after a running save, so a
+  refetch that started before the save can briefly roll that save back (latest-wins + version
+  check); a `rejected` write drops edits made while it was in flight, not only the plan's own; the
+  editor and its listeners are created during render (move `attached` and the grace timer into
+  the hold); direct actions use the access token taken before the flush.
+- **Owed (device/browser check):** spot add + drag + undo on phone and iPad; formation preset and
+  keyframe edits, undo during a pending save; an evening copy: first formation change creates the
+  copy, spot assign, undo across session and evening edits, drop copy while edits are pending; two
+  editors at once (another device) → replay note; upload, remove and adopt while edits are pending;
+  version restore with pending edits.
 
 ### Phase 6 — Gesture engine
 Goal: one tested gesture recogniser and its React binding exist in the package.

@@ -1,14 +1,7 @@
 import type { StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { Studio } from '@/features/acts/schemas';
 import type { TakeGroup } from './studio-videos';
-import {
-  clampedVideoStartOf,
-  needsAlignment,
-  takeGroupsOf,
-  videoShelfOf,
-  withoutVideo,
-} from './studio-videos';
+import { clampedVideoStartOf, needsAlignment, takeGroupsOf, videoShelfOf } from './studio-videos';
 
 const video = (patch: Partial<StudioVideo>): StudioVideo => ({
   videoId: 4,
@@ -21,22 +14,6 @@ const video = (patch: Partial<StudioVideo>): StudioVideo => ({
   outdated: false,
   urls: { video: '/v', compact: '/c', poster: '/p' },
   ...patch,
-});
-
-const studio = (videos: StudioVideo[]): { studio: Studio } => ({
-  studio: {
-    music: { lengthSeconds: 120, source: 'workingMix' },
-    songs: [],
-    finalTracks: [],
-    steps: [],
-    parts: [{ partId: 1, name: 'Marsch', stepIds: [], mainVideoId: 4, adrift: false }],
-    spots: [],
-    videos,
-    choreography: null,
-    stage: null,
-    evenings: [],
-    trainings: [],
-  },
 });
 
 describe('clampedVideoStartOf', () => {
@@ -70,17 +47,6 @@ describe('needsAlignment', () => {
     [video({ placement: 'musicMissing' }), false],
   ])('asks for an automatic place only once the unaligned video is ready', (candidate, asks) => {
     expect(needsAlignment(candidate)).toBe(asks);
-  });
-});
-
-describe('optimistic video patches', () => {
-  it('frees the part whose main video is removed', () => {
-    const removed = withoutVideo(studio([video({})]), 4);
-
-    expect([removed?.studio.videos.length, removed?.studio.parts[0]?.mainVideoId]).toEqual([
-      0,
-      null,
-    ]);
   });
 });
 

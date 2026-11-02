@@ -10,7 +10,7 @@ export interface TrackCommit {
 }
 
 export const useTrackCommit = (screen: StudioScreen): TrackCommit => {
-  const { studio, edits, stageWrites, playback } = screen;
+  const { studio, edits, stageDocument, playback } = screen;
 
   return {
     preview: edits.setTracks,
@@ -18,7 +18,6 @@ export const useTrackCommit = (screen: StudioScreen): TrackCommit => {
       if (Object.keys(tracks).length === 0) {
         return;
       }
-      edits.setTracks(tracks);
       const stored = studio.choreography?.tracks ?? [];
       const changes = Object.fromEntries(
         Object.entries(tracks).map(([spotId, keyframes]) => [
@@ -31,10 +30,8 @@ export const useTrackCommit = (screen: StudioScreen): TrackCommit => {
           ),
         ]),
       );
-      const drop = (): void => {
-        edits.dropTracks(tracks);
-      };
-      void stageWrites.save.mutateAsync(changes).then(drop, drop);
+      stageDocument.change({ kind: 'tracks', tracks: changes });
+      edits.dropTracks(tracks);
     },
   };
 };

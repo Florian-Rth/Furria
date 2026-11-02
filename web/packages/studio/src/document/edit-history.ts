@@ -10,11 +10,20 @@ enablePatches();
 
 export const NUDGE_MERGE_MS = 1000;
 
+export type ChangeKind = StudioChange['kind'];
+
 export interface HistoryEntry {
   patches: readonly Patch[];
   inversePatches: readonly Patch[];
+  kinds: readonly ChangeKind[];
   mergeKey: string | null;
   at: number;
+}
+
+export interface HistoryRecord {
+  kinds: readonly ChangeKind[];
+  at: number;
+  undone: boolean;
 }
 
 export interface EditState {
@@ -36,6 +45,7 @@ export const editStateOf = (document: StudioDocument): EditState => ({
 const joined = (entry: HistoryEntry, later: HistoryEntry): HistoryEntry => ({
   patches: [...entry.patches, ...later.patches],
   inversePatches: [...later.inversePatches, ...entry.inversePatches],
+  kinds: [...new Set([...entry.kinds, ...later.kinds])],
   mergeKey: entry.mergeKey,
   at: later.at,
 });
@@ -61,7 +71,13 @@ export const edited = (state: EditState, change: StudioChange, at: number): Edit
     return state;
   }
 
-  const entry: HistoryEntry = { patches, inversePatches, mergeKey: mergeKeyOf(change), at };
+  const entry: HistoryEntry = {
+    patches,
+    inversePatches,
+    kinds: [change.kind],
+    mergeKey: mergeKeyOf(change),
+    at,
+  };
 
   return {
     ...state,
@@ -76,7 +92,7 @@ export const edited = (state: EditState, change: StudioChange, at: number): Edit
 
 export const gestureStarted = (state: EditState, at: number): EditState =>
   state.gesture === null
-    ? { ...state, gesture: { patches: [], inversePatches: [], mergeKey: null, at } }
+    ? { ...state, gesture: { patches: [], inversePatches: [], kinds: [], mergeKey: null, at } }
     : state;
 
 export const gestureEnded = (state: EditState): EditState => {
@@ -127,6 +143,25 @@ export const canUndo = (state: EditState): boolean =>
   state.past.length > 0 || (state.gesture?.patches.length ?? 0) > 0;
 
 export const canRedo = (state: EditState): boolean => state.future.length > 0;
+
+const recordOf = (entry: HistoryEntry, undone: boolean): HistoryRecord => ({
+  kinds: entry.kinds,
+  at: entry.at,
+  undone,
+});
+
+export const historyRecordsOf = (state: EditState): HistoryRecord[] => {
+  const open =
+    state.gesture !== null && state.gesture.patches.length > 0
+      ? [recordOf(state.gesture, false)]
+      : [];
+
+  return [
+    ...state.future.map((entry) => recordOf(entry, true)),
+    ...open,
+    ...[...state.past].reverse().map((entry) => recordOf(entry, false)),
+  ];
+};
 
 const applicablePastOf = (
   document: StudioDocument,
@@ -196,7 +231,7 @@ export const rebased = (state: EditState, fresh: StudioDocument, mode: RebaseMod
       gesture: null,
       pending: mode === 'replayPending' ? closed.pending : [],
     },
-    droppedUndoSteps: closed.past.length - past.length + closed.future.length,
+    droppedUndoSteps: closed.past.length - past.length,
     skippedChanges: replayed.skipped,
   };
 };

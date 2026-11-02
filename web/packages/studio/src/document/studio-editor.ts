@@ -2,7 +2,7 @@ import type { Studio } from '../models/studio-schemas';
 import type { AutosaveEvent, AutosaveState, SaveStatus } from './autosave';
 import { AUTOSAVE_IDLE, autosaveAfter, saveIsDue, saveStatusOf } from './autosave';
 import { documentOf, studioOf } from './document-projection';
-import type { EditState, RebaseMode } from './edit-history';
+import type { EditState, HistoryRecord, RebaseMode } from './edit-history';
 import {
   canRedo,
   canUndo,
@@ -10,6 +10,7 @@ import {
   editStateOf,
   gestureEnded,
   gestureStarted,
+  historyRecordsOf,
   rebased,
   redone,
   savedUpTo,
@@ -37,6 +38,7 @@ export interface StudioEditorSnapshot<TStudio extends Studio = Studio> {
   canRedo: boolean;
   undoAt: number | null;
   redoAt: number | null;
+  history: readonly HistoryRecord[];
   note: EditorNote | null;
 }
 
@@ -60,7 +62,7 @@ export interface StudioEditor<TStudio extends Studio = Studio> {
   retry: () => void;
   reload: () => Promise<void>;
   adopt: (fresh: TStudio) => Promise<void>;
-  direct: (action: () => Promise<void>) => Promise<void>;
+  direct: <TResult>(action: () => Promise<TResult>) => Promise<TResult>;
   dismissNote: () => void;
   dispose: () => void;
 }
@@ -139,6 +141,7 @@ export const createStudioEditor = <TStudio extends Studio>(
       canRedo: canRedo(session.edit),
       undoAt: undoAtOf(session.edit),
       redoAt: session.edit.future.at(-1)?.at ?? null,
+      history: historyRecordsOf(session.edit),
       note: session.note,
     };
 
@@ -377,15 +380,24 @@ export const createStudioEditor = <TStudio extends Studio>(
     },
     reload: () => held(reloaded),
     adopt,
-    direct: async (action) => {
+    direct: async <TResult>(action: () => Promise<TResult>): Promise<TResult> => {
       await flush();
+      const runs: Promise<TResult>[] = [];
       await held(async () => {
+        const run = action();
+        runs.push(run);
         try {
-          await action();
+          await run;
         } finally {
-          await reloaded();
+          await reloaded().catch(() => undefined);
         }
       });
+      const [run] = runs;
+      if (run === undefined) {
+        throw new Error('The direct action never ran.');
+      }
+
+      return run;
     },
     dismissNote: () => {
       update({ note: null });

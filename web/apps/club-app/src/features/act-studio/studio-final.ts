@@ -4,8 +4,6 @@ import type { StudioFinalTrack, StudioStep, StudioVideo } from '@furria/studio/s
 import type { Studio } from '@/features/acts/schemas';
 import { finalTitleOf, songNameOf } from './studio-copy';
 import { anchorAt } from './studio-formation';
-import type { HoldsStudio } from './studio-music';
-import { withStudio } from './studio-music';
 
 const OFFSET_GRAIN = 1000;
 
@@ -253,15 +251,6 @@ export const offsetStartingAt = (
   finalSeconds: number,
   stretch: number,
 ): number => roundedOffsetOf(finalSeconds - segment.sourceStart * stretch);
-
-export const withoutFinalTrack = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
-  finalTrackId: number,
-): TResponse | undefined =>
-  withStudio(response, (studio) => ({
-    ...studio,
-    finalTracks: studio.finalTracks.filter((track) => track.finalTrackId !== finalTrackId),
-  }));
 
 const finalLimitOf = (track: StudioFinalTrack): number => track.durationSeconds ?? 0;
 

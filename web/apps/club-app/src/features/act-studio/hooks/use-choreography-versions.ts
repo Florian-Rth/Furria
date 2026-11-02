@@ -1,7 +1,6 @@
 import type { Studio } from '@/features/acts/schemas';
 import { useChoreographyRestore, useChoreographyVersionsQuery } from '../history-api';
 import { restoreLabelOf, versionLabelOf, versionMetaOf } from '../undo-copy';
-import { useStudioHistory } from './use-studio-history';
 
 export interface VersionRowView {
   key: string;
@@ -39,7 +38,6 @@ export const useChoreographyVersions = (
   const current = currentVersionOf(studio, eventId);
   const query = useChoreographyVersionsQuery(actId, eventId, current !== null);
   const restore = useChoreographyRestore(actId, eventId);
-  const { history } = useStudioHistory(actId);
   const stateOf = (): ChoreographyVersionsState => {
     if (query.error !== null && query.data === undefined) {
       return 'failed';
@@ -65,7 +63,7 @@ export const useChoreographyVersions = (
         },
       })),
     total: pages[0]?.total ?? 0,
-    restoring: restore.isPending || history.busy,
+    restoring: restore.isPending,
     hasOlder: query.hasNextPage,
     loadingOlder: query.isFetchingNextPage,
     olderFailed: query.isFetchNextPageError,

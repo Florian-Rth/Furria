@@ -7,6 +7,7 @@ import {
   editStateOf,
   gestureEnded,
   gestureStarted,
+  historyRecordsOf,
   NUDGE_MERGE_MS,
   rebased,
   redone,
@@ -133,6 +134,31 @@ describe('undone and redone', () => {
     const state = edited(undone(edited(editStateOf(document({})), move(9), 0)), move(12), 5000);
 
     expect(canRedo(state)).toBe(false);
+  });
+});
+
+describe('historyRecordsOf', () => {
+  it('lists the newest step first, undone steps above the done ones, a gesture by all its kinds', () => {
+    const state = undone(
+      applied(
+        editStateOf(document({})),
+        [
+          move(9),
+          'start',
+          move(10),
+          { kind: 'stepRemove', stepId: 3 },
+          'end',
+          { kind: 'videoName', videoId: 5, name: 'Generalprobe' },
+        ],
+        5000,
+      ),
+    );
+
+    expect(historyRecordsOf(state).map(({ kinds, undone }) => ({ kinds, undone }))).toEqual([
+      { kinds: ['videoName'], undone: true },
+      { kinds: ['stepMove', 'stepRemove'], undone: false },
+      { kinds: ['stepMove'], undone: false },
+    ]);
   });
 });
 

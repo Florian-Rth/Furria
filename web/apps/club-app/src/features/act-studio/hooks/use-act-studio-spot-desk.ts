@@ -24,7 +24,7 @@ export const useActStudioSpotDesk = (
   screen: StudioScreen,
   editor: ActStudioStage,
 ): SpotDesk | null => {
-  const { studio, cast, stageWrites } = screen;
+  const { studio, cast, stageDocument } = screen;
   const [removingId, setRemovingId] = useState<number | null>(null);
   const spotId = editor.selected.length === 1 ? (editor.selected[0] ?? null) : null;
   const spot = studio.spots.find((candidate) => candidate.spotId === spotId) ?? null;
@@ -59,7 +59,8 @@ export const useActStudioSpotDesk = (
           ),
           current: spot.person?.personId === person.personId,
           press: () => {
-            stageWrites.assign.mutate({
+            stageDocument.change({
+              kind: 'spotAssign',
               spotId: spot.spotId,
               person: {
                 personId: person.personId,
@@ -73,7 +74,7 @@ export const useActStudioSpotDesk = (
       }),
     open: spot.person === null,
     free: () => {
-      stageWrites.assign.mutate({ spotId: spot.spotId, person: null });
+      stageDocument.change({ kind: 'spotAssign', spotId: spot.spotId, person: null });
     },
     removable: screen.evening === null,
     removing: removingId === spot.spotId,
@@ -84,7 +85,7 @@ export const useActStudioSpotDesk = (
       }
       setRemovingId(null);
       editor.forget(spot.spotId);
-      stageWrites.removeSpot.mutate(spot.spotId);
+      stageDocument.change({ kind: 'spotRemove', spotId: spot.spotId });
     },
   };
 };
