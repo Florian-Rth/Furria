@@ -1,5 +1,7 @@
 import type { KeyframeEasing } from '@furria/studio/choreography-motion';
 import { formatReadoutMetres } from '@furria/studio/drag-readout';
+import type { GesturePrecisionTier } from '@furria/studio/gesture-recogniser';
+import type { CountAt } from '@furria/studio/music-timeline';
 import { unnamedStepNameOf } from '@furria/studio/step-names';
 import type { StudioVideo } from '@furria/studio/studio-schemas';
 import { clockOf } from '@/features/act-practice/practice-step-list';
@@ -24,7 +26,8 @@ export const STUDIO_TOOLS: readonly { tool: StudioTool; label: string }[] = [
   { tool: 'video', label: 'Video' },
 ];
 
-export const STUDIO_WAVE_LABEL = 'Musik: tippen oder ziehen zum Spulen';
+export const STUDIO_WAVE_LABEL =
+  'Musik: wischen zum Spulen, tippen springt hin, mit zwei Fingern zoomen';
 export const STUDIO_SONGS = 'Lieder';
 export const STUDIO_FINAL = 'Endfassung';
 export const STUDIO_FINAL_NONE = 'Noch keine Endfassung';
@@ -276,6 +279,23 @@ export const songCardMetaOf = (
 export const songNameOf = (fileName: string): string => fileName.replace(/\.[a-z0-9]+$/i, '');
 
 export const songRowLabelOf = (name: string): string => `${name}: an den Anfang springen`;
+
+const PRECISION_NAMES: Record<GesturePrecisionTier, string | null> = {
+  full: null,
+  half: 'halb',
+  quarter: 'viertel',
+  fine: 'fein',
+};
+
+export const waveReadoutDetailOf = (
+  count: CountAt | null,
+  tier: GesturePrecisionTier,
+): string | null => {
+  const counted = count === null ? null : `${count.eight + 1}. Acht · ${count.count}`;
+  const precision = PRECISION_NAMES[tier];
+
+  return [counted, precision].filter((part) => part !== null).join(' · ') || null;
+};
 
 export const cutHandleLabelOf = (edge: 'start' | 'end', name: string): string =>
   edge === 'start' ? `Anfang von ${name} schneiden` : `Ende von ${name} schneiden`;

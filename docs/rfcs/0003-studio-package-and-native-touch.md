@@ -402,11 +402,69 @@ renamed, with new Counts, Cuts, Keyframes and Loop parts); the shared score pain
 deleted, `ScoreModel` carries the count marks instead of precomputed shares. Shots and a playback
 film (phone 390×844, 844×390, iPad portrait and landscape, light and dark) on the seeded Marschtanz.
 
-### Phase 9 — One Timeline: editing tracks
+### Phase 9 — One Timeline: centre-line scrub and the studio wave
+Goal: the `Timeline` has the ruled centre-line scrub and the studio wave (cuts) is on it.
+Split 2026-11-02 (the desk lanes and the overview alone exceed the soft cap) — desk lanes and
+overview are phase 9b.
+- [x] Centre-line scrub in the package (pure geometry + `use-centre-scrub`), the lab's centre hooks as reference
+- [x] `Timeline` centre mode: moving strips, played half, centre line, song regions, cut handles, trim wash, snap line, lifted readout
+- [x] Studio wave (cuts and the final-file shift) on `Timeline`; delete `KkStudioWave`
+- [ ] Device check: trim, zoom, precision drag, fluid scrub with momentum on phone and iPad
+
+Built 2026-11-02. The music page's wave (`ActStudioWaveLayer`) is `@furria/studio/Timeline` in
+**centre mode** (`centre={useCentreScrub(…)}`, `density="edit"`, fills its panel): the red line
+stays in the middle and the music moves under it. One finger swipes with free momentum and a
+rubber band at both ends, no snapping; tap glides to that point; two fingers (or ctrl/trackpad
+wheel) zoom around the line; a swipe while playing pauses and resumes where the glide rests; the
+played half left of the line is inked. The selected song's cut handles (or the final file's shift
+handle while it is previewed) drag directly or after a long press, with the Phase 7 rulings: the
+live value above the finger (`KkDragReadout`: *0:07,6 · 3. Acht · 1*, plus *halb/viertel/fein*),
+precision by moving the finger away from the track, count snap at full speed with the lit snap
+line and a haptic tick; arrow keys still nudge a focused handle.
+- **Package:** `@furria/studio/centre-scrub` (pure, tested: centre offset/seconds, bounds, zoom
+  limits, pinch scale, the strip window — about five widths, moved with hysteresis in whole bar
+  steps — and its shares, snap candidates/snap, handle hit targets) and
+  `@furria/studio/use-centre-scrub` (gesture engine + one offset and one zoom motion value + the
+  player clock; React renders only when the strip window moves on, a pinch is committed or a
+  handle moves). `mix-waveform` gained `waveformBetween`/`loudestPeakOf` (the wave is drawn for
+  the strip window only, at a 4 px bar pitch); `liftPlacementOf` takes the room above the area.
+- **Timeline kit:** context `centre`; every layer wraps itself in `TimelineStrip` (a moving
+  `KkTimeline.Strip` in centre mode, nothing in the fixed view), `Playhead` yields to the centre
+  line; new layers `Regions` (songs: number, name, cut and tempo), `Handles`, `Trim` (hatched
+  wash between the old and the dragged edge), `Snap`. Paint in `@furria/ui/KkTimeline`: `Strip`,
+  `Half`, `Region`, `Handle`, `Trim`, `Snap`, the centre line and the root's work mode (`work`:
+  gesture area, overlay outside the clip); density `edit`; `Wave`/`Played` take a `span`.
+- **Deleted:** `KkStudioWave` (root, bars, beats, ticks; region, handle and cut moved into
+  `KkTimeline`). The step ticks lost their numbers (the `Timeline.Ticks` look of the practice strip).
+- **Review follow-ups (fixed):** a kept cut edit resumes playback on the rebuilt player (not the
+  old one); the edit's end value travels with the gesture (a quick flick keeps it); a finger landing
+  on a coasting wave stops it without seeking; the snap haptic compares against a ref; wheel and
+  trackpad zoom commit once after 160 ms idle instead of per event; a deep pinch-out widens the
+  strip window so the edges stay drawn; a glide is stopped on a player swap; unmounting while
+  steering resumes the paused music; the release momentum follows the precision tier; the last
+  song's end handle stays reachable at the very end; the ruler spaces its ticks by the visible span;
+  `Timeline.Playhead` subscribes to the clock only in the fixed view; the KkTimeline root has one
+  frame for both modes (`work` = gesture area, `overlay` its own slot); the studio root's props are a
+  union (`centre` excludes `focus`/`onSeek`).
+- **Review follow-ups (open):** every layer mounts its own moving strip (about eight transformed
+  layers) — measure on the iPhone/iPad and fold them into one root strip (the played half stays
+  apart) if frames drop; the selected song (and so its handles) follows the player, which is paused
+  while scrubbing, so the handles switch songs when the glide rests; `use-centre-scrub` holds clock,
+  gestures, zoom and handle editing in one hook (split when phase 9b adds lane editing); no keyboard
+  scrub of the centre line itself (the transport keys remain); the readout size is a constant;
+  `snapCandidatesOf` judges count spacing by the first two counts.
+- **Browser check (Playwright touch on the HTTPS lab build, 390 px, lab data):** swipe glides and
+  settles the player, pinch zooms out to the whole mix, a cut-handle drag shows the readout and
+  writes the cut (restored afterwards by arrow-key nudges).
+- **Open:** a song's name sits at its start, so deep inside a long song at the default zoom
+  (40 px/s) no name is visible on the wave (the list below names the selected song); the lab's
+  `centre-view` copy stays until the lab goes (phase 12).
+
+### Phase 9b — One Timeline: desk lanes and overview
 Goal: every editing track is the `Timeline` with the gesture engine.
-- [ ] Studio wave (cuts), desk lanes, lane overview on `Timeline` with the lab's touch handling
-- [ ] Delete `KkStudioWave`, `KkLaneTrack`, `KkLaneOverview` and their helpers (`KkScoreTrack` went in phase 8)
-- [ ] Device check: trim, border move, zoom, precision scrub on phone and iPad
+- [ ] Desk lanes (parts, steps + borders, music, video, keyframes) and the lane overview on `Timeline`
+- [ ] Delete `KkLaneTrack`, `KkLaneOverview`, `KkStudioDrag` and their helpers
+- [ ] Device check: border move, video drag, keyframe drag, zoom on iPad and desktop
 
 ### Phase 10 — One Stage: read views
 Goal: the `Stage` kit replaces the read-only renderers.

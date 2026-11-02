@@ -1,24 +1,35 @@
 import Box from '@mui/material/Box';
-import type { FC, MouseEvent, PropsWithChildren } from 'react';
+import type { FC, HTMLAttributes, PropsWithChildren, ReactNode } from 'react';
 import { raisedSurface } from '../../../internal/raised-surface';
-import { percentOf } from '../../../internal/score-paint';
 import type { KkSx } from '../../../kk-sx';
 import { kkTokens } from '../../../tokens';
 import type { KkTimelineDensity } from '../timeline-paint';
 import { LANE_VARS, TIMELINE_LANES } from '../timeline-paint';
+import { KkTimelineCentre } from '../ui/KkTimelineCentre';
+import { KkTimelineSeekCanvas } from './KkTimelineSeekCanvas';
 
 export interface KkTimelineWindow {
   start: number;
   end: number;
 }
 
-const ZOOM_EASE = 'cubic-bezier(0.22, 0.61, 0.36, 1)';
+export type KkTimelineHandlers = Pick<
+  HTMLAttributes<HTMLDivElement>,
+  'onPointerDown' | 'onPointerMove' | 'onPointerUp' | 'onPointerCancel' | 'onLostPointerCapture'
+>;
+
+export interface KkTimelineWork {
+  areaRef: (node: HTMLDivElement | null) => void;
+  handlers: KkTimelineHandlers;
+}
 
 interface KkTimelineRootProps extends PropsWithChildren {
   label: string;
   density: KkTimelineDensity;
   window: KkTimelineWindow;
   onSeek: (share: number) => void;
+  work?: KkTimelineWork | null;
+  overlay?: ReactNode;
   sx?: KkSx;
 }
 
@@ -27,57 +38,60 @@ export const KkTimelineRoot: FC<KkTimelineRootProps> = ({
   density,
   window,
   onSeek,
+  work = null,
+  overlay = null,
   sx,
   children,
 }) => {
   const lanes = TIMELINE_LANES[density];
-  const span = Math.max(window.end - window.start, Number.EPSILON);
-  const canvas = { left: percentOf(-window.start / span), width: percentOf(1 / span) };
-  const seek = (event: MouseEvent<HTMLDivElement>): void => {
-    const box = event.currentTarget.getBoundingClientRect();
-    if (box.width > 0) {
-      onSeek(Math.min(1, Math.max(0, (event.clientX - box.left) / box.width)));
-    }
-  };
+  const working = work !== null;
+  const canvas = working ? (
+    <>
+      {children}
+      <KkTimelineCentre />
+    </>
+  ) : (
+    <KkTimelineSeekCanvas start={window.start} end={window.end} onSeek={onSeek}>
+      {children}
+    </KkTimelineSeekCanvas>
+  );
 
   return (
     <Box
+      ref={work?.areaRef}
       role="group"
       aria-label={label}
       data-kk-timeline={density}
+      data-kk-timeline-work={working || undefined}
+      {...work?.handlers}
       sx={[
-        (theme) => ({
+        {
           [LANE_VARS.ruler]: lanes.ruler,
           [LANE_VARS.parts]: lanes.parts,
           [LANE_VARS.steps]: lanes.steps,
           position: 'relative',
           height: lanes.height,
           minWidth: 0,
+          cursor: working ? 'grab' : undefined,
+        },
+        ...(Array.isArray(sx) ? sx : [sx]),
+      ]}
+    >
+      <Box
+        sx={(theme) => ({
+          position: 'absolute',
+          inset: 0,
           borderRadius: `${kkTokens.radius.base}px`,
           borderWidth: kkTokens.line.hair,
           borderStyle: 'solid',
           borderColor: 'divider',
           overflow: 'clip',
           ...raisedSurface(theme),
-        }),
-        ...(Array.isArray(sx) ? sx : [sx]),
-      ]}
-    >
-      <Box
-        data-kk-timeline-canvas
-        onClick={seek}
-        style={canvas}
-        sx={{
-          position: 'absolute',
-          top: 0,
-          bottom: 0,
-          cursor: 'text',
-          transition: `left 360ms ${ZOOM_EASE}, width 360ms ${ZOOM_EASE}`,
-          '@media (prefers-reduced-motion: reduce)': { transition: 'none' },
-        }}
+        })}
       >
-        {children}
+        {canvas}
       </Box>
+      {overlay}
     </Box>
   );
 };

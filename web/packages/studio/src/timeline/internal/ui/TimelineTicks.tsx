@@ -2,6 +2,7 @@ import { KkTimeline } from '@furria/ui/KkTimeline';
 import type { FC } from 'react';
 import type { TimelineSpan } from '../../timeline-geometry';
 import { spanSharesOf } from '../../timeline-geometry';
+import { TimelineStrip } from '../layout/TimelineStrip';
 import { useTimeline } from '../logic/timeline-context';
 
 interface TimelineTicksProps {
@@ -18,5 +19,9 @@ export const TimelineTicks: FC<TimelineTicksProps> = ({
   const { length } = useTimeline();
   const ticks = spanSharesOf(steps, length);
 
-  return <KkTimeline.Ticks ticks={ticks} activeKey={activeKey} revealSeconds={revealSeconds} />;
+  return (
+    <TimelineStrip>
+      <KkTimeline.Ticks ticks={ticks} activeKey={activeKey} revealSeconds={revealSeconds} />
+    </TimelineStrip>
+  );
 };

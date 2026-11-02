@@ -3,7 +3,8 @@ import { motion } from 'motion/react';
 import type { FC } from 'react';
 import { inkWash } from '../../../internal/ink-wash';
 import { useReducedMotion } from '../../../internal/use-reduced-motion';
-import { LANE_VARS, WAVE_HEIGHT, wavePathOf, waveTop } from '../timeline-paint';
+import type { KkTimelineSpan } from '../timeline-paint';
+import { LANE_VARS, spanPlaceOf, WAVE_HEIGHT, wavePathOf, waveTop } from '../timeline-paint';
 
 const HIDDEN = { clipPath: 'inset(0 100% 0 0)' } as const;
 const SHOWN = { clipPath: 'inset(0 0% 0 0)' } as const;
@@ -12,9 +13,10 @@ const DRAW_EASE = [0.33, 0, 0.2, 1] as const;
 interface KkTimelineWaveProps {
   bars: readonly number[];
   revealSeconds: number | null;
+  span?: KkTimelineSpan;
 }
 
-export const KkTimelineWave: FC<KkTimelineWaveProps> = ({ bars, revealSeconds }) => {
+export const KkTimelineWave: FC<KkTimelineWaveProps> = ({ bars, revealSeconds, span }) => {
   const reduced = useReducedMotion();
   const drawn = revealSeconds !== null && !reduced;
   const path = wavePathOf(bars);
@@ -26,10 +28,9 @@ export const KkTimelineWave: FC<KkTimelineWaveProps> = ({ bars, revealSeconds })
     <Box
       aria-hidden
       data-kk-timeline-wave
+      style={spanPlaceOf(span)}
       sx={{
         position: 'absolute',
-        left: 0,
-        right: 0,
         top: waveTop,
         bottom: `var(${LANE_VARS.steps})`,
         pointerEvents: 'none',

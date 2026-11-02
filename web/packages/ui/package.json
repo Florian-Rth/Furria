@@ -348,7 +348,6 @@
     "./KkStudioPlayhead": "./src/KkStudioPlayhead/KkStudioPlayhead.tsx",
     "./KkStudioSide": "./src/KkStudioSide/KkStudioSide.tsx",
     "./KkStudioView": "./src/KkStudioView/KkStudioView.tsx",
-    "./KkStudioWave": "./src/KkStudioWave/KkStudioWave.tsx",
     "./KkEightsReel": "./src/KkEightsReel/KkEightsReel.tsx",
     "./KkStickyFoot": "./src/KkStickyFoot.tsx",
     "./KkSuccession": "./src/KkSuccession.tsx",

@@ -1,6 +1,8 @@
 import type { KkTimelineDensity } from '@furria/ui/KkTimeline';
 import type { SpotPath } from '../models/choreography-motion';
+import { loudestPeakOf, waveformBetween } from '../models/mix-waveform';
 import type { CountMark, MusicSegment, TimelineRange } from '../models/music-timeline';
+import type { AudioPeaks } from '../models/studio-schemas';
 
 const TICK_STEPS_SECONDS: readonly number[] = [1, 2, 5, 10, 15, 30, 60];
 const MOST_TICKS = 12;
@@ -40,7 +42,7 @@ export interface KeyframeMark {
 
 export const WHOLE_WINDOW: TimelineWindow = { start: 0, end: 1 };
 
-const WAVE_BARS: Record<TimelineDensity, number> = { strip: 240, track: 200, full: 720 };
+const WAVE_BARS: Record<TimelineDensity, number> = { strip: 240, track: 200, full: 720, edit: 720 };
 
 export const waveBarsOf = (density: TimelineDensity): number => WAVE_BARS[density];
 
@@ -145,3 +147,19 @@ export const keyframeMarksOf = (
       selected,
     }));
 };
+
+export const stripWaveOf = (
+  segments: readonly MusicSegment[],
+  peaks: ReadonlyMap<number, AudioPeaks>,
+  window: TimelineWindow,
+  length: number,
+  barCount: number,
+): number[] =>
+  waveformBetween(
+    segments,
+    peaks,
+    window.start * length,
+    window.end * length,
+    barCount,
+    loudestPeakOf(segments, peaks),
+  );

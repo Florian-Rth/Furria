@@ -31,12 +31,13 @@ export const liftPlacementOf = (
   area: LiftSize,
   lifted: LiftSize,
   gap: number = LIFT_GAP,
+  roomAbove: number = 0,
 ): LiftPlacement => {
   const halfWidth = lifted.width / 2;
   const halfHeight = lifted.height / 2;
   const x = clamp(finger.x, halfWidth, area.width - halfWidth);
   const above = finger.y - gap - halfHeight;
-  if (above - halfHeight >= 0) {
+  if (above - halfHeight >= -roomAbove) {
     return { x, y: above, side: 'above' };
   }
 

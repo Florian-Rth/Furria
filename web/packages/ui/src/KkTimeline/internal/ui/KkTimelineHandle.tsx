@@ -2,41 +2,31 @@ import Box from '@mui/material/Box';
 import type { Theme } from '@mui/material/styles';
 import type { FC, KeyboardEvent } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
-import { useStudioDrag } from '../../../KkStudioDrag/use-studio-drag';
+import { percentOf } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
+import { LANE_VARS, waveTop } from '../timeline-paint';
 
 const PERCENT = 100;
 
 const palette = (theme: Theme) => (theme.vars ?? theme).palette;
 
-export type KkStudioWaveHandleEdge = 'start' | 'end';
-
-interface KkStudioWaveHandleProps {
+interface KkTimelineHandleProps {
   share: number;
-  edge: KkStudioWaveHandleEdge;
   label: string;
+  valueText: string;
   active: boolean;
-  onMove: (share: number) => void;
-  onEnd: () => void;
   onNudge: (direction: -1 | 1) => void;
 }
 
-export const KkStudioWaveHandle: FC<KkStudioWaveHandleProps> = ({
+export const KkTimelineHandle: FC<KkTimelineHandleProps> = ({
   share,
-  edge,
   label,
+  valueText,
   active,
-  onMove,
-  onEnd,
   onNudge,
 }) => {
-  const drag = useStudioDrag({
-    onMove: (point) => {
-      onMove(point.x);
-    },
-    onEnd,
-  });
-  const place = { left: `${share * PERCENT}%` };
+  const place = { left: percentOf(share) };
+  const percent = Math.round(share * PERCENT);
   const press = (event: KeyboardEvent<HTMLElement>): void => {
     if ((event.key === 'ArrowLeft' || event.key === 'ArrowRight') && !event.repeat) {
       event.preventDefault();
@@ -49,27 +39,35 @@ export const KkStudioWaveHandle: FC<KkStudioWaveHandleProps> = ({
     <Box
       role="slider"
       aria-label={label}
-      aria-valuenow={Math.round(share * PERCENT)}
+      aria-valuenow={percent}
+      aria-valuetext={valueText}
       aria-valuemin={0}
       aria-valuemax={PERCENT}
       tabIndex={0}
       onKeyDown={press}
-      data-kk-studio-handle={edge}
+      data-kk-timeline-handle
       data-active={active}
-      {...drag}
       style={place}
       sx={(theme) => ({
         position: 'absolute',
-        top: '2.75rem',
-        bottom: '2rem',
+        top: waveTop,
+        bottom: `var(${LANE_VARS.steps})`,
         width: kkTokens.tapTarget,
         transform: 'translateX(-50%)',
         display: 'grid',
         placeItems: 'center',
-        touchAction: 'none',
-        cursor: 'ew-resize',
+        pointerEvents: 'none',
         zIndex: 2,
         ...focusRing(theme),
+        '&::before': {
+          content: '""',
+          position: 'absolute',
+          top: 0,
+          bottom: 0,
+          left: '50%',
+          borderLeft: `${kkTokens.line.section}px solid ${palette(theme).warning.main}`,
+          transform: 'translateX(-50%)',
+        },
       })}
     >
       <Box

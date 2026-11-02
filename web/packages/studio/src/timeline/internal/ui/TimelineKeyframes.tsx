@@ -2,6 +2,7 @@ import { KkTimeline } from '@furria/ui/KkTimeline';
 import type { FC } from 'react';
 import type { SpotPath } from '../../../models/choreography-motion';
 import { keyframeMarksOf } from '../../timeline-geometry';
+import { TimelineStrip } from '../layout/TimelineStrip';
 import { useTimeline } from '../logic/timeline-context';
 
 const NO_SPOTS: ReadonlySet<number> = new Set();
@@ -19,5 +20,9 @@ export const TimelineKeyframes: FC<TimelineKeyframesProps> = ({
 
   const marks = keyframeMarksOf(paths, selectedSpotIds, length);
 
-  return <KkTimeline.Keyframes marks={marks} />;
+  return (
+    <TimelineStrip>
+      <KkTimeline.Keyframes marks={marks} />
+    </TimelineStrip>
+  );
 };
