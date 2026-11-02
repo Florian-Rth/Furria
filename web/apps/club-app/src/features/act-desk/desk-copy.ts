@@ -28,7 +28,6 @@ export const DESK_MUSIC = 'Musik';
 export const DESK_VIDEO = 'Video';
 export const DESK_PATHS = 'Wege';
 export const DESK_NONE = 'keine';
-export const DESK_SEEK = 'Zeitleiste: tippen oder ziehen zum Spulen';
 export const DESK_STAGE = 'Bühne';
 export const DESK_STAGE_TOOLS = 'Bühne bearbeiten';
 export const DESK_FORMATION = 'Aufstellung';
@@ -126,11 +125,6 @@ export const countPlaceTextOf = (eight: number, count: number): string =>
 
 export const readoutCountOf = (eight: number | null, count: number | null): string =>
   eight === null || count === null ? '–' : `${eight} · ${count}`;
-
-export const snapHintOf = (eight: number | null, count: number | null, seconds: number): string =>
-  eight === null || count === null
-    ? clockOf(seconds)
-    : `${countPlaceTextOf(eight, count)} · ${clockOf(seconds)}`;
 
 export const stepEyebrowOf = (number: number, total: number, part: string | null): string =>
   part === null ? `Schritt ${number} von ${total}` : `Schritt ${number} von ${total} · ${part}`;

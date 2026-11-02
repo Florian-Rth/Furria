@@ -1,3 +1,4 @@
+import type { CentreScrub } from '@furria/studio/use-centre-scrub';
 import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
 import { KkLaneOverview } from '@furria/ui/KkLaneOverview';
 import type { FC } from 'react';
@@ -5,16 +6,15 @@ import { DESK_BRACKET } from '../desk-copy';
 import { shareOf } from '../desk-time';
 import type { ActDesk } from '../hooks/use-act-desk';
 import { useDeskWindow } from '../hooks/use-desk-window';
-import type { DeskZoom } from '../hooks/use-desk-zoom';
 
 interface DeskOverviewWindowProps {
   desk: ActDesk;
-  zoom: DeskZoom;
+  centre: CentreScrub;
 }
 
-export const DeskOverviewWindow: FC<DeskOverviewWindowProps> = ({ desk, zoom }) => {
+export const DeskOverviewWindow: FC<DeskOverviewWindowProps> = ({ desk, centre }) => {
   const { player, length } = desk.screen.playback;
-  const control = useDeskWindow(zoom, length);
+  const control = useDeskWindow(centre, length);
   const playhead = shareOf(usePlaybackSeconds(player), length);
 
   if (length <= 0) {

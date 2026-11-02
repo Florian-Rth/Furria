@@ -251,15 +251,16 @@ export const useActStudioWave = (screen: StudioScreen): ActStudioWave => {
     player,
     length,
     countMarks: playback.countMarks,
-    handles: wave.handles,
-    onHandleMove: (key, seconds) => {
+    targets: wave.handles,
+    editsRebuildPlayer: true,
+    onTargetMove: (key, seconds) => {
       handleOf(key)?.move(seconds);
     },
-    onHandleEnd: (key, seconds) => {
+    onTargetEnd: (key, seconds) => {
       handleOf(key)?.end(seconds);
       reset();
     },
-    onHandleCancel: reset,
+    onTargetCancel: reset,
   });
   const lifted = centre.readout;
 

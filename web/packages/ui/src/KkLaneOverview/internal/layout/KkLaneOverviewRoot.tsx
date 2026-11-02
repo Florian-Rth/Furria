@@ -3,10 +3,11 @@ import Stack from '@mui/material/Stack';
 import type { Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC, PropsWithChildren } from 'react';
-import { LANE_HEAD } from '../../../KkLaneTrack/internal/lane-geometry';
 import type { KkStudioShare } from '../../../KkStudioDrag/use-studio-drag';
 import { useStudioDrag } from '../../../KkStudioDrag/use-studio-drag';
 import { kkTokens } from '../../../tokens';
+
+const LANE_HEAD = '6.5rem';
 
 const palette = (theme: Theme) => (theme.vars ?? theme).palette;
 

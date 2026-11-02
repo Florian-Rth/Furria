@@ -1,8 +1,8 @@
 import { waveformOf } from '@furria/studio/mix-waveform';
 import { partRangeOf } from '@furria/studio/music-timeline';
+import type { CentreScrub } from '@furria/studio/use-centre-scrub';
 import { shareOf } from '../desk-time';
 import type { ActDesk } from './use-act-desk';
-import type { DeskZoom } from './use-desk-zoom';
 
 const OVERVIEW_BARS = 480;
 
@@ -21,7 +21,7 @@ export interface DeskOverviewView {
   aim: (share: number) => void;
 }
 
-export const useDeskOverview = (desk: ActDesk, zoom: DeskZoom): DeskOverviewView => {
+export const useDeskOverview = (desk: ActDesk, centre: CentreScrub): DeskOverviewView => {
   const { playback, practice } = desk.screen;
   const { length, parts, steps } = playback;
   const currentId = practice.step?.stepId ?? null;
@@ -45,9 +45,7 @@ export const useDeskOverview = (desk: ActDesk, zoom: DeskZoom): DeskOverviewView
     }),
     wave: waveformOf(playback.segments, playback.peaksByItem, OVERVIEW_BARS),
     aim: (share) => {
-      const seconds = share * length;
-      playback.player.seek(seconds);
-      zoom.centreOn(seconds);
+      centre.centreOn(share * length);
     },
   };
 };

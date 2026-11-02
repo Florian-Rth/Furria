@@ -155,7 +155,6 @@
     "./KkLaneOverview": "./src/KkLaneOverview/KkLaneOverview.tsx",
     "./KkLanePhone": "./src/KkLanePhone/KkLanePhone.tsx",
     "./KkLaneProgress": "./src/KkLaneProgress.tsx",
-    "./KkLaneTrack": "./src/KkLaneTrack/KkLaneTrack.tsx",
     "./KkLaneWide": "./src/KkLaneWide.ts",
     "./KkLesson": "./src/KkLesson/KkLesson.tsx",
     "./KkHeading": "./src/KkHeading.tsx",

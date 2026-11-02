@@ -1,4 +1,4 @@
-import { KkLaneTrack } from '@furria/ui/KkLaneTrack';
+import { KkTimeline } from '@furria/ui/KkTimeline';
 import type { FC } from 'react';
 import type { StudioSetupRow } from '@/features/act-studio/hooks/use-studio-setup';
 import { setupLaneLabelOf } from '@/features/act-studio/setup-copy';
@@ -13,7 +13,7 @@ export const DeskLaneSetup: FC<DeskLaneSetupProps> = ({ row }) => {
   const locked = !row.ready;
 
   return (
-    <KkLaneTrack.Setup
+    <KkTimeline.LaneSetup
       number={row.number}
       text={row.actionText}
       hint={row.hint}

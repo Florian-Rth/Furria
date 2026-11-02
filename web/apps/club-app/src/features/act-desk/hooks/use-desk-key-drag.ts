@@ -1,5 +1,5 @@
 import type { SpotPath } from '@furria/studio/choreography-motion';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useTrackCommit } from '@/features/act-studio/hooks/use-track-commit';
 import { snappedOf } from '@/features/act-studio/studio-edits';
 import type { DeskTracks } from '../desk-keyframes';
@@ -17,8 +17,9 @@ interface HeldKey {
 export interface DeskKeyDrag {
   heldAt: number | null;
   grab: (seconds: number) => void;
-  move: (share: number) => void;
-  drop: () => void;
+  move: (seconds: number) => void;
+  drop: (seconds: number) => void;
+  cancel: () => void;
   nudge: (seconds: number, direction: -1 | 1) => void;
 }
 
@@ -28,37 +29,54 @@ export const useDeskKeyDrag = (desk: ActDesk, shown: readonly SpotPath[]): DeskK
   const { screen } = desk;
   const { playback, edits } = screen;
   const writes = useTrackCommit(screen);
-  const [held, setHeld] = useState<HeldKey | null>(null);
+  const held = useRef<HeldKey | null>(null);
+  const [heldAt, setHeldAt] = useState<number | null>(null);
+
+  const release = (): HeldKey | null => {
+    const current = held.current;
+    held.current = null;
+    setHeldAt(null);
+    if (current !== null) {
+      edits.dropTracks(current.shown);
+    }
+    return current;
+  };
 
   return {
-    heldAt: held?.to ?? null,
+    heldAt,
     grab: (seconds) => {
-      setHeld({ from: seconds, to: seconds, paths: shown, shown: {} });
+      held.current = { from: seconds, to: seconds, paths: shown, shown: {} };
+      setHeldAt(seconds);
       desk.holdKey(seconds);
     },
-    move: (share) => {
-      if (held === null) {
+    move: (seconds) => {
+      const current = held.current;
+      if (current === null) {
         return;
       }
-      const to = snappedOf(playback.countMarks, share * playback.length);
+      const to = snappedOf(playback.countMarks, seconds);
       const next = {
-        ...keyedTracksOf(held.paths, held.from),
-        ...keyShiftedTracksOf(held.paths, held.from, to),
+        ...keyedTracksOf(current.paths, current.from),
+        ...keyShiftedTracksOf(current.paths, current.from, to),
       };
       writes.preview(next);
-      setHeld({ ...held, to, shown: next });
+      held.current = { ...current, to, shown: next };
+      setHeldAt(to);
     },
-    drop: () => {
-      if (held === null) {
+    drop: (seconds) => {
+      const current = release();
+      if (current === null) {
         return;
       }
-      setHeld(null);
-      edits.dropTracks(held.shown);
-      const tracks = keyShiftedTracksOf(held.paths, held.from, held.to);
+      const to = snappedOf(playback.countMarks, seconds);
+      const tracks = keyShiftedTracksOf(current.paths, current.from, to);
       if (!isEmpty(tracks)) {
         writes.commit(tracks);
-        desk.holdKey(held.to);
+        desk.holdKey(to);
       }
+    },
+    cancel: () => {
+      release();
     },
     nudge: (seconds, direction) => {
       const to = neighbourCountOf(playback.countMarks, seconds, direction);

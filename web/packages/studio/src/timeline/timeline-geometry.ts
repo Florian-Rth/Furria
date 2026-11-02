@@ -42,7 +42,13 @@ export interface KeyframeMark {
 
 export const WHOLE_WINDOW: TimelineWindow = { start: 0, end: 1 };
 
-const WAVE_BARS: Record<TimelineDensity, number> = { strip: 240, track: 200, full: 720, edit: 720 };
+const WAVE_BARS: Record<TimelineDensity, number> = {
+  strip: 240,
+  track: 200,
+  full: 720,
+  edit: 720,
+  desk: 720,
+};
 
 export const waveBarsOf = (density: TimelineDensity): number => WAVE_BARS[density];
 

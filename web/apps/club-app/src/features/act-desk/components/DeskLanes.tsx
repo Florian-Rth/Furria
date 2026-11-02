@@ -1,5 +1,7 @@
-import { KkLaneTrack } from '@furria/ui/KkLaneTrack';
+import { Timeline } from '@furria/studio/Timeline';
+import { KkTimeline } from '@furria/ui/KkTimeline';
 import type { FC, ReactNode } from 'react';
+import { ActStudioWaveReadout } from '@/features/act-studio/components/ActStudioWaveReadout';
 import type { StudioSetup } from '@/features/act-studio/hooks/use-studio-setup';
 import type { SetupKey } from '@/features/act-studio/studio-setup';
 import {
@@ -9,151 +11,69 @@ import {
   DESK_PARTS,
   DESK_PATHS,
   DESK_RULER,
-  DESK_SEEK,
   DESK_STEPS,
   DESK_VIDEO,
 } from '../desk-copy';
 import type { ActDesk } from '../hooks/use-act-desk';
-import type { DeskBorders } from '../hooks/use-desk-borders';
-import { useDeskRows } from '../hooks/use-desk-rows';
-import type { DeskZoom } from '../hooks/use-desk-zoom';
+import type { DeskLaneRows } from '../hooks/use-desk-lanes';
+import { DESK_LANE } from '../hooks/use-desk-lanes';
 import { DeskLaneSetup } from './DeskLaneSetup';
-import { DeskPlayheadLive } from './DeskPlayheadLive';
 
 interface DeskLanesProps {
   desk: ActDesk;
-  zoom: DeskZoom;
-  borders: DeskBorders;
+  lanes: DeskLaneRows;
   setup: StudioSetup;
 }
 
-export const DeskLanes: FC<DeskLanesProps> = ({ desk, zoom, borders, setup }) => {
-  const rows = useDeskRows(desk, zoom);
-  const { playback, practice, evening } = desk.screen;
-  const movable = evening === null;
-  const parts = rows.parts.map((part) => (
-    <KkLaneTrack.Block
-      key={part.key}
-      start={part.start}
-      end={part.end}
-      lead={null}
-      title={part.title}
-      meta={part.meta}
-      tone="part"
-      selected={part.selected}
-      current={part.current}
-      label={part.label}
-      onPress={part.press}
-    />
-  ));
-  const steps = rows.steps.map((step) => (
-    <KkLaneTrack.Block
-      key={step.key}
-      start={step.start}
-      end={step.end}
-      lead={step.lead}
-      title={step.title}
-      meta={step.meta}
-      tone="step"
-      selected={step.selected}
-      current={step.current}
-      label={step.label}
-      onPress={step.press}
-    />
-  ));
-  const edges = borders.borders.map((border) => (
-    <KkLaneTrack.Border
-      key={border.key}
-      share={border.share}
-      label={border.label}
-      value={border.value}
-      active={border.active}
-      hint={border.hint}
-      onMove={border.move}
-      onEnd={border.end}
-      onNudge={border.nudge}
-    />
-  ));
-  const videos = rows.videos.map((video) => {
-    const grab = movable ? video.grab : undefined;
-
-    return (
-      <KkLaneTrack.Block
-        key={video.key}
-        start={video.start}
-        end={video.end}
-        lead={null}
-        title={video.title}
-        meta={video.meta}
-        tone="video"
-        selected={video.selected}
-        current={false}
-        label={video.label}
-        onPress={video.press}
-        onGrab={grab}
-        onDrag={video.drag}
-        onDrop={video.drop}
-      />
-    );
-  });
-  const keys = rows.keys.map((key) => (
-    <KkLaneTrack.Diamond
-      key={key.key}
-      share={key.share}
-      selected={key.selected}
-      dimmed={key.dimmed}
-      label={key.label}
-      onPress={key.press}
-      onGrab={key.grab}
-      onDrag={key.drag}
-      onDrop={key.drop}
-      onNudge={key.nudge}
-    />
-  ));
-  const none = <KkLaneTrack.Empty text={DESK_NONE} />;
+export const DeskLanes: FC<DeskLanesProps> = ({ desk, lanes, setup }) => {
+  const { playback } = desk.screen;
+  const none = <KkTimeline.LaneNote text={DESK_NONE} />;
   const setupIn = (key: SetupKey): ReactNode => {
     const row = setup.rowOf(key);
 
     return row === null ? null : <DeskLaneSetup row={row} />;
   };
   const emptyLane = (key: SetupKey): ReactNode => setupIn(key) ?? none;
-  const partLane = parts.length === 0 ? none : parts;
-  const stepLane = steps.length === 0 ? emptyLane('steps') : steps;
-  const musicSetup = setupIn('music');
-  const videoLane = videos.length === 0 ? emptyLane('video') : videos;
-  const keyLane = keys.length === 0 ? emptyLane('formation') : keys;
+  const partNote = lanes.parts.length === 0 ? none : null;
+  const stepNote = lanes.steps.length === 0 ? emptyLane('steps') : null;
+  const videoNote = lanes.videos.length === 0 ? emptyLane('video') : null;
+  const keyNote = lanes.keys.length === 0 ? emptyLane('formation') : null;
+  const readout = <ActStudioWaveReadout readout={lanes.readout} />;
 
   return (
-    <KkLaneTrack label={DESK_LANES} width={zoom.width} scrollerRef={zoom.attach} onZoom={zoom.zoom}>
-      <KkLaneTrack.Row label={DESK_RULER} aside={null} size="ruler">
-        <KkLaneTrack.Ticks ticks={rows.ruler} edge="top" />
-        <KkLaneTrack.Scrub label={DESK_SEEK} onSeek={rows.seek} />
-      </KkLaneTrack.Row>
-      <KkLaneTrack.Row label={DESK_PARTS} aside={null} size="thin">
-        {partLane}
-      </KkLaneTrack.Row>
-      <KkLaneTrack.Row label={DESK_STEPS} aside={null} size="lane">
-        {stepLane}
-        {edges}
-      </KkLaneTrack.Row>
-      <KkLaneTrack.Row label={DESK_MUSIC} aside={null} size="wave">
-        <KkLaneTrack.Wave values={rows.wave} />
-        <KkLaneTrack.Ticks ticks={rows.beats} edge="bottom" />
-        <KkLaneTrack.Scrub label={DESK_SEEK} onSeek={rows.seek} />
-        {musicSetup}
-      </KkLaneTrack.Row>
-      <KkLaneTrack.Row label={DESK_VIDEO} aside={null} size="lane">
-        {videoLane}
-      </KkLaneTrack.Row>
-      <KkLaneTrack.Row label={DESK_PATHS} aside={rows.keysAside} size="lane">
-        {keyLane}
-      </KkLaneTrack.Row>
-      <DeskPlayheadLive
-        player={playback.player}
-        length={playback.length}
-        playing={practice.playing}
-        zoom={zoom}
-      />
-    </KkLaneTrack>
+    <Timeline
+      label={DESK_LANES}
+      density="desk"
+      length={playback.length}
+      centre={lanes.centre}
+      overlay={readout}
+    >
+      <Timeline.Lane lane={DESK_LANE.ruler} label={DESK_RULER} size="ruler">
+        <Timeline.Marks marks={lanes.ruler} edge="top" />
+      </Timeline.Lane>
+      <Timeline.Lane lane={DESK_LANE.parts} label={DESK_PARTS} size="thin">
+        <Timeline.Blocks tone="part" blocks={lanes.parts} />
+        {partNote}
+      </Timeline.Lane>
+      <Timeline.Lane lane={DESK_LANE.steps} label={DESK_STEPS} size="lane">
+        <Timeline.Blocks tone="step" blocks={lanes.steps} />
+        <Timeline.Handles handles={lanes.borders} tone="border" />
+        {stepNote}
+      </Timeline.Lane>
+      <Timeline.Lane lane={DESK_LANE.music} label={DESK_MUSIC} size="wave">
+        <Timeline.Wave segments={playback.segments} peaks={playback.peaksByItem} />
+        <Timeline.Marks marks={lanes.beats} edge="bottom" />
+        {setupIn('music')}
+      </Timeline.Lane>
+      <Timeline.Lane lane={DESK_LANE.video} label={DESK_VIDEO} size="lane">
+        <Timeline.Blocks tone="video" blocks={lanes.videos} />
+        {videoNote}
+      </Timeline.Lane>
+      <Timeline.Lane lane={DESK_LANE.keys} label={DESK_PATHS} aside={lanes.keysAside} size="lane">
+        <Timeline.Diamonds diamonds={lanes.keys} />
+        {keyNote}
+      </Timeline.Lane>
+      <Timeline.Snap />
+    </Timeline>
   );
 };
