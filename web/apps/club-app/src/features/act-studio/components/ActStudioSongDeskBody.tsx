@@ -5,14 +5,12 @@ import type { SongDesk, SongDeskNudge } from '../hooks/use-song-desk';
 import {
   STUDIO_NUDGE_BACK,
   STUDIO_NUDGE_ON,
+  STUDIO_SONG,
   STUDIO_SONG_DESK,
-  STUDIO_SONG_EARLIER,
-  STUDIO_SONG_LATER,
   STUDIO_SONG_ONE,
   STUDIO_SONG_ONE_EARLIER,
   STUDIO_SONG_ONE_HERE,
   STUDIO_SONG_ONE_LATER,
-  STUDIO_SONG_ORDER,
   STUDIO_SONG_REMOVE,
   STUDIO_SONG_REMOVE_SURE,
   STUDIO_SONG_TEMPO,
@@ -38,12 +36,6 @@ export const ActStudioSongDeskBody: FC<ActStudioSongDeskBodyProps> = ({ desk }) 
   };
   const oneLater = (): void => {
     desk.nudgeOne(1);
-  };
-  const moveEarlier = (): void => {
-    desk.shift('earlier');
-  };
-  const moveLater = (): void => {
-    desk.shift('later');
   };
   const removeText = desk.removing ? STUDIO_SONG_REMOVE_SURE : STUDIO_SONG_REMOVE;
 
@@ -79,24 +71,8 @@ export const ActStudioSongDeskBody: FC<ActStudioSongDeskBodyProps> = ({ desk }) 
         </KkStudioDesk.Controls>
       </KkStudioDesk.Line>
       <KkStudioDesk.Line>
-        <KkStudioDesk.Title text={STUDIO_SONG_ORDER} />
+        <KkStudioDesk.Title text={STUDIO_SONG} />
         <KkStudioDesk.Controls>
-          <KkButton
-            variant="outlined"
-            size="small"
-            disabled={desk.shiftLocked.earlier}
-            onClick={moveEarlier}
-          >
-            {STUDIO_SONG_EARLIER}
-          </KkButton>
-          <KkButton
-            variant="outlined"
-            size="small"
-            disabled={desk.shiftLocked.later}
-            onClick={moveLater}
-          >
-            {STUDIO_SONG_LATER}
-          </KkButton>
           <KkButton variant="outlined" tone="danger" size="small" onClick={desk.remove}>
             {removeText}
           </KkButton>

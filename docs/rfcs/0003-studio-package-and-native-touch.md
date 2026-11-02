@@ -484,10 +484,33 @@ selects (`Stage.Dot` `keys`).
 
 ### Phase 11b — Lists with @dnd-kit/react
 Goal: spot holders and song order are dragged like the lab's lists.
-- [ ] Song order in the song list by drag handle (`songOrder` change), replacing the earlier/later shift
-- [ ] Spot holder assignment by dragging people between places and *frei* (session and evening)
+- [x] Song order in the song list by drag handle (`songOrder` change), replacing the earlier/later shift
+- [x] Spot holder assignment by dragging people between places and *frei* (session and evening)
 - [ ] Video order: decide — the data model has no video order (main/alternative per part only)
 - [ ] Device check: sort and assign on phone and iPad
+
+Built 2026-11-02 (video order left open for Florian's decision). Song list: while the working mix
+is editable and no final file is previewed, every song row is a `KkStudioList.SortRow` (the row plus
+a drag handle, `useSortable`); a drop writes one `songOrder` change (`movedOrderOf`) and keeps the
+playhead in the song it was in (`keptPositionOf`). The song desk's *Nach vorn / Nach hinten* are
+gone (`shiftedOrderOf` deleted); its last line is *Lied* with *Lied entfernen*. Spot sheet: under the
+places list a *Besetzung* section — every place a drop target (`KkStudioList.Places/Place`) holding
+its person as a draggable chip (`KkStudioList.Holder`), plus a wide *frei* place with the cast
+nobody holds. A drop is one undo step (`startGesture`/`endGesture` around the `spotAssign`
+changes of `holderMovesOf`): onto an open place moves, onto a held place swaps, onto *frei* frees.
+It writes through `stageDocument`, so the evening (Sessionsauftritt) assigns its own holders. The
+spot desk's tap choices stay. Keyboard: dnd-kit's keyboard sensor on the handle and the chips
+(both `ButtonBase`); screen reader instructions and announcements are German and name the song,
+person and place (`studio-drag-copy`, dnd-kit `Accessibility` plugin; `@dnd-kit/dom` 0.5.3 pinned in
+the catalog). Escape that cancels a keyboard drag no longer also closes the sheet
+(`KkPracticeSteps` honours `defaultPrevented`).
+- **Review follow-ups (open):** song order has no single-pointer alternative to dragging any more
+  (the task replaced the earlier/later buttons; keyboard sorting remains) — Florian to confirm;
+  the holder chips are `touch-action: none`, so a swipe starting on a chip does not scroll the
+  sheet (judge on the phone).
+- **Owed (device check):** sort by handle and assign/swap/free by chip with touch on iPhone, Pixel
+  and iPad Safari (touch delay, auto-scroll inside the sheet, the sheet's own swipe), keyboard
+  sorting; shots at 390 px and iPad.
 
 ### Phase 12 — Screens into the package, keyboard, cleanup
 Goal: the studio is one package; nothing studio-specific is left behind.

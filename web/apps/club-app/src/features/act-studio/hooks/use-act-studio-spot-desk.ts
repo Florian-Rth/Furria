@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { castChoiceTextOf, spotDeskTitleOf } from '../studio-copy';
+import { byNameOf, spotPersonOf } from '../studio-spots';
 import type { ActStudioStage } from './use-act-studio-stage';
 import type { StudioScreen } from './use-studio-screen';
 
@@ -41,37 +42,26 @@ export const useActStudioSpotDesk = (
 
   return {
     title: spotDeskTitleOf(spot.number),
-    choices: [...cast]
-      .sort(
-        (left, right) =>
-          left.firstName.localeCompare(right.firstName) ||
-          left.lastName.localeCompare(right.lastName),
-      )
-      .map((person) => {
-        const number = spotNumberOf(person.personId);
+    choices: [...cast].sort(byNameOf).map((person) => {
+      const number = spotNumberOf(person.personId);
 
-        return {
-          key: String(person.personId),
-          text: castChoiceTextOf(
-            person.firstName,
-            person.lastName,
-            number === spot.number ? null : number,
-          ),
-          current: spot.person?.personId === person.personId,
-          press: () => {
-            stageDocument.change({
-              kind: 'spotAssign',
-              spotId: spot.spotId,
-              person: {
-                personId: person.personId,
-                firstName: person.firstName,
-                lastName: person.lastName,
-                portrait: person.portrait,
-              },
-            });
-          },
-        };
-      }),
+      return {
+        key: String(person.personId),
+        text: castChoiceTextOf(
+          person.firstName,
+          person.lastName,
+          number === spot.number ? null : number,
+        ),
+        current: spot.person?.personId === person.personId,
+        press: () => {
+          stageDocument.change({
+            kind: 'spotAssign',
+            spotId: spot.spotId,
+            person: spotPersonOf(person),
+          });
+        },
+      };
+    }),
     open: spot.person === null,
     free: () => {
       stageDocument.change({ kind: 'spotAssign', spotId: spot.spotId, person: null });

@@ -4,9 +4,10 @@ import { describe, expect, it } from 'vitest';
 import type { Studio } from '@/features/acts/schemas';
 import {
   firstBeatAtOf,
+  keptPositionOf,
+  movedOrderOf,
   nudgedFirstBeatOf,
   outsideMusicOf,
-  shiftedOrderOf,
   startInOrderOf,
   steppedTempoOf,
 } from './studio-music';
@@ -37,17 +38,20 @@ const segment: MusicSegment = {
   beats: [{ sourceStart: 10, sourceEnd: 70, firstBeatSeconds: 0.5, tempoBpm: 120 }],
 };
 
-describe('shiftedOrderOf', () => {
+describe('movedOrderOf', () => {
   const songs = [songOf(3, 2), songOf(1, 0), songOf(2, 1)];
 
   it.each([
-    [2, 'earlier', [2, 1, 3]],
-    [2, 'later', [1, 3, 2]],
-    [1, 'earlier', null],
-    [3, 'later', null],
-    [9, 'later', null],
-  ] as const)('moves song %s %s', (songId, shift, order) => {
-    expect(shiftedOrderOf(songs, songId, shift)).toEqual(order);
+    [0, 2, [2, 3, 1]],
+    [2, 0, [3, 1, 2]],
+    [1, 0, [2, 1, 3]],
+    [1, 1, null],
+    [3, 0, null],
+    [0, 3, null],
+    [0, -1, null],
+    [-1, 0, null],
+  ] as const)('moves the song at %s to %s', (from, to, order) => {
+    expect(movedOrderOf(songs, from, to)).toEqual(order);
   });
 });
 
@@ -60,6 +64,23 @@ describe('startInOrderOf', () => {
     [[2, 1], 2, 0],
   ])('in order %j song %s starts at %s', (order, songId, start) => {
     expect(startInOrderOf(songs, order, songId)).toBe(start);
+  });
+});
+
+describe('keptPositionOf', () => {
+  const songs = [songOf(1, 0), { ...songOf(2, 1), startSeconds: 0, endSeconds: 30 }];
+  const segments: MusicSegment[] = [
+    { ...segment, timelineStart: 0, timelineEnd: 60 },
+    { ...segment, timelineStart: 60, timelineEnd: 90 },
+  ];
+
+  it.each([
+    [[2, 1], 10, 40],
+    [[2, 1], 70, 10],
+    [[1, 2], 70, 70],
+    [[2, 1], 95, null],
+  ])('in order %j keeps %s at %s', (order, position, kept) => {
+    expect(keptPositionOf(songs, segments, order, position)).toBe(kept);
   });
 });
 

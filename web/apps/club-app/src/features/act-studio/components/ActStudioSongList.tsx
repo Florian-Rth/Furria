@@ -14,6 +14,7 @@ import {
   uploadMetaOf,
 } from '../studio-copy';
 import { ActStudioFinalSection } from './ActStudioFinalSection';
+import { ActStudioSortedSongs } from './ActStudioSortedSongs';
 
 interface ActStudioSongListProps {
   screen: StudioScreen;
@@ -24,7 +25,8 @@ interface ActStudioSongListProps {
 export const ActStudioSongList: FC<ActStudioSongListProps> = ({ screen, songs, finalList }) => {
   const uploads = useActUploads(screen.actId, screen.music.add.mutateAsync);
   const shown = screen.final.previewing ? finalList.sources : songs.rows;
-  const rows = shown.map((song) => (
+  const sortable = !screen.final.previewing && !songs.locked;
+  const listed = shown.map((song) => (
     <KkStudioList.Row
       key={song.key}
       lead={song.lead}
@@ -37,6 +39,7 @@ export const ActStudioSongList: FC<ActStudioSongListProps> = ({ screen, songs, f
       onPress={song.press}
     />
   ));
+  const rows = sortable ? <ActStudioSortedSongs songs={songs} /> : listed;
   const uploading = uploads.rows.map((upload) => {
     const dismiss = (): void => {
       uploads.dismiss(upload.key);

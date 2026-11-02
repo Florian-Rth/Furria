@@ -19,6 +19,7 @@
     "@capacitor/core": "catalog:",
     "@capacitor/keyboard": "catalog:",
     "@capacitor/splash-screen": "catalog:",
+    "@dnd-kit/dom": "catalog:",
     "@dnd-kit/react": "catalog:",
     "@emotion/react": "catalog:",
     "@emotion/styled": "catalog:",

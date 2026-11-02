@@ -55,9 +55,8 @@ export const STUDIO_SONG_ONE_EARLIER = 'Eins früher';
 export const STUDIO_SONG_ONE_LATER = 'Eins später';
 export const STUDIO_NUDGE_BACK = '‹';
 export const STUDIO_NUDGE_ON = '›';
-export const STUDIO_SONG_ORDER = 'Reihenfolge';
-export const STUDIO_SONG_EARLIER = 'Nach vorn';
-export const STUDIO_SONG_LATER = 'Nach hinten';
+export const STUDIO_SONG = 'Lied';
+export const songMoveLabelOf = (name: string): string => `${name} verschieben`;
 export const STUDIO_SONG_REMOVE = 'Lied entfernen';
 export const STUDIO_SONG_REMOVE_SURE = 'Wirklich entfernen';
 export const STUDIO_SONG_PREPARING = 'wird vorbereitet';
@@ -115,6 +114,12 @@ export const STUDIO_COPY_EARLIER = 'Früherer Schritt';
 export const STUDIO_COPY_LATER = 'Späterer Schritt';
 export const STUDIO_SPOT_PERSON = 'Wer steht hier';
 export const STUDIO_SPOT_FREE = 'Frei lassen';
+export const STUDIO_HOLDERS = 'Besetzung';
+export const STUDIO_HOLDERS_FREE = 'frei';
+export const holderChipTextOf = (firstName: string, lastName: string): string =>
+  `${firstName} ${lastName.charAt(0)}.`;
+export const holderMoveLabelOf = (firstName: string, lastName: string): string =>
+  `${firstName} ${lastName} auf einen Platz ziehen`;
 export const STUDIO_SPOT_REMOVE = 'Platz entfernen';
 export const STUDIO_SPOT_REMOVE_SURE = 'Wirklich entfernen';
 

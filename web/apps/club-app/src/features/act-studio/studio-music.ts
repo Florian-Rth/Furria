@@ -15,8 +15,6 @@ export interface SongSettings {
   tempoBpm: number | null;
 }
 
-export type SongShift = 'earlier' | 'later';
-
 export interface OutsideMusic {
   steps: number;
   videos: number;
@@ -45,22 +43,19 @@ export const withStudio = <TResponse extends HoldsStudio>(
     ? response
     : { ...response, studio: change(response.studio) };
 
-export const shiftedOrderOf = (
+export const movedOrderOf = (
   songs: readonly StudioSong[],
-  songId: number,
-  shift: SongShift,
+  from: number,
+  to: number,
 ): number[] | null => {
   const ids = orderedSongsOf(songs).map((song) => song.songId);
-  const index = ids.indexOf(songId);
-  const target = shift === 'earlier' ? index - 1 : index + 1;
-  const neighbour = ids[target];
+  const [moving] = ids.splice(from, 1);
 
-  if (index < 0 || neighbour === undefined) {
+  if (moving === undefined || from < 0 || from === to || to < 0 || to > ids.length) {
     return null;
   }
 
-  ids[target] = songId;
-  ids[index] = neighbour;
+  ids.splice(to, 0, moving);
 
   return ids;
 };
@@ -81,6 +76,23 @@ export const startInOrderOf = (
   }
 
   return start;
+};
+
+export const keptPositionOf = (
+  songs: readonly StudioSong[],
+  segments: readonly MusicSegment[],
+  order: readonly number[],
+  position: number,
+): number | null => {
+  const index = segments.findIndex(
+    (segment) => position >= segment.timelineStart && position < segment.timelineEnd,
+  );
+  const playing = orderedSongsOf(songs)[index];
+  const segment = segments[index];
+
+  return playing === undefined || segment === undefined
+    ? null
+    : startInOrderOf(songs, order, playing.songId) + position - segment.timelineStart;
 };
 
 export const steppedTempoOf = (tempo: number, delta: number): number => {
