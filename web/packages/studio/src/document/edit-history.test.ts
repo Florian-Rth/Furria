@@ -74,8 +74,20 @@ describe('edited', () => {
     {
       name: 'never merges changes without a merge key',
       steps: [
-        { kind: 'stepText', stepId: 2, name: 'A', description: null } as const,
-        { kind: 'stepText', stepId: 2, name: 'B', description: null } as const,
+        {
+          kind: 'stepMark',
+          stepId: -1,
+          openingStepId: -2,
+          atSeconds: 4,
+          lengthSeconds: 40,
+        } as const,
+        {
+          kind: 'stepMark',
+          stepId: -3,
+          openingStepId: -4,
+          atSeconds: 12,
+          lengthSeconds: 40,
+        } as const,
       ],
       undos: 2,
     },

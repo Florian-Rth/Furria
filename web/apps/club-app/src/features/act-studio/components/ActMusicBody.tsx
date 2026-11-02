@@ -30,6 +30,7 @@ import { ActStudioTakeList } from './ActStudioTakeList';
 import { ActStudioVideoDesk } from './ActStudioVideoDesk';
 import { ActStudioWaveLayer } from './ActStudioWaveLayer';
 import { StepCardsTransport } from './StepCardsTransport';
+import { StudioSaveButton } from './StudioSaveButton';
 
 interface ActMusicBodyProps {
   page: ActMusicPage;
@@ -93,6 +94,7 @@ export const ActMusicBody: FC<ActMusicBodyProps> = ({ page, actId, studio }) => 
               disabled={redoLocked}
               onPress={history.redo}
             />
+            <StudioSaveButton history={history} textShown={false} />
           </KkLaneBar.Group>
         </KkLaneBar>
       </KkLanePhone.Area>

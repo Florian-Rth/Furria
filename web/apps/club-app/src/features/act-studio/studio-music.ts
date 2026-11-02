@@ -15,11 +15,6 @@ export interface SongSettings {
   tempoBpm: number | null;
 }
 
-export interface SongSettingsInput {
-  songId: number;
-  settings: SongSettings;
-}
-
 export type SongShift = 'earlier' | 'later';
 
 export interface OutsideMusic {
@@ -49,28 +44,6 @@ export const withStudio = <TResponse extends HoldsStudio>(
   response === undefined || response.studio === null
     ? response
     : { ...response, studio: change(response.studio) };
-
-export const withSongSettings = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
-  { songId, settings }: SongSettingsInput,
-): TResponse | undefined =>
-  withStudio(response, (studio) => ({
-    ...studio,
-    songs: studio.songs.map((song) => (song.songId === songId ? { ...song, ...settings } : song)),
-  }));
-
-export const withSongOrder = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
-  songIds: readonly number[],
-): TResponse | undefined =>
-  withStudio(response, (studio) => ({
-    ...studio,
-    songs: studio.songs.map((song) => {
-      const position = songIds.indexOf(song.songId);
-
-      return position < 0 ? song : { ...song, position };
-    }),
-  }));
 
 export const withoutSong = <TResponse extends HoldsStudio>(
   response: TResponse | undefined,

@@ -8,7 +8,6 @@ import {
   takeGroupsOf,
   videoShelfOf,
   withoutVideo,
-  withVideoStart,
 } from './studio-videos';
 
 const video = (patch: Partial<StudioVideo>): StudioVideo => ({
@@ -75,12 +74,6 @@ describe('needsAlignment', () => {
 });
 
 describe('optimistic video patches', () => {
-  it('places the video on the music', () => {
-    const placed = withVideoStart(studio([video({})]), { videoId: 4, startSeconds: 7.5 });
-
-    expect(placed?.studio.videos[0]).toMatchObject({ startSeconds: 7.5, placement: 'onTimeline' });
-  });
-
   it('frees the part whose main video is removed', () => {
     const removed = withoutVideo(studio([video({})]), 4);
 

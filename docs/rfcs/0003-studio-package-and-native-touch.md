@@ -201,10 +201,44 @@ choreography refusal replays them. Saves pause while a reload or a direct action
 
 ### Phase 4 — Editor onto the document: music, steps, parts, videos
 Goal: these edits run through the document; their inverse writes are gone.
-- [ ] Club app provides the save port and studio data to the package
-- [ ] Song order/cuts, tempo/first "1", steps/borders, parts, video offsets and main/alternative through the document
-- [ ] Save status in the editor bar; undo/redo keys and buttons on the new stack
-- [ ] Delete the replaced inverse writes and optimistic `with*` patches for these kinds
+- [x] Club app provides the save port and studio data to the package
+- [x] Song order/cuts, tempo/first "1", steps/borders, parts, video offsets and main/alternative through the document
+- [x] Save status in the editor bar; undo/redo keys and buttons on the new stack
+- [x] Delete the replaced inverse writes and optimistic `with*` patches for these kinds
+
+Done 2026-11-02. `act-studio/studio-editor-store` keeps one `createStudioEditor` per act (shared by
+the studio, desk, cards and music page; held while a screen shows it, flushed on leave and closed
+5 s after the last screen, so undo survives a hop to the music page). `studio-save-port` maps every
+`ServerWrite` to the existing endpoints; a choreography conflict becomes `choreographyRefused`, a
+400/409/422/404 `rejected`, anything else a failed save. `useStudioScreen` reads the studio from
+the editor (`useStudioDocument`), so playback, desks and lanes show edits at once; drags (step
+borders, video bars) are one gesture, text and nudges merge per item (`stepText`, `videoName`,
+`partSettings` got merge keys). Server-computed results — *Video anlegen* and *Endfassung
+anlegen* — are written into the document as one undoable change after the request.
+- **Cache:** after a save the store writes `editor.savedStudio()` (server ids, `serverStudioOf`)
+  into the act's studio query and marks it stale without refetching, so other screens are current
+  and a racing refetch cannot roll an edit back. Every other change of the query (uploads, spot and
+  choreography writes, auto-align) reaches the editor through `editor.adopt(studio)`: an echo of
+  the saved state only refreshes the base, a real change rebases with the pending changes replayed
+  (deferred to the end of a running gesture).
+- **Two stacks until phase 5:** spots, choreography, evenings, uploads and removals still record in
+  the visit history; undo/redo and the keys take the newer stack top (`history-turn`). The editor
+  bars (desk, cards, music page) show *Gespeichert* / *Speichert…* / *Erneut speichern*
+  (`StudioSaveButton`, tap retries); editor notes surface as quiet notices.
+- **Deleted:** `useStepMutations`, the song order/settings, video name/start, final beat/offset
+  mutations, their `with*` patches and tests, the `StudioEdits` bounds/texts/starts overlay, and the
+  inverse writes for `songOrder`, `songSettings`, `finalBeat`, `finalOffsets`, `finalMatch`,
+  `steps*`, `stepText`, `stepStart`, `part*`, `videoName`, `videoStart`, `videoAlign`.
+- **Review follow-ups (fixed):** an editor with unsaved or failed changes is never closed (it waits
+  for the next visit and its retry); an editor created but never held is reaped; redo of one stack
+  is blocked once the other stack holds a newer edit, and nothing undoes while a visit undo runs;
+  a drag that unmounts mid-gesture ends its gesture (`useGestureRelease`).
+- **Open for phase 5:** song/video/final add, remove and adoption still write directly and
+  compute their visit undo from the query cache (not the document) — they become `editor.direct`
+  actions; a `rejected` write still drops every pending change, the note does not say which; the
+  history list shows only visit entries.
+- **Owed:** browser check of drag, trim, text and undo across both stacks on phone and desk; the
+  save port does not route evening writes yet (phase 5 wires spots and choreography).
 
 ### Phase 5 — Editor onto the document: spots and choreography; old undo removed
 Goal: every in-document edit uses the document; the old undo machinery is deleted.

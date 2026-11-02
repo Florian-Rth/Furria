@@ -10,8 +10,6 @@ import {
   startInOrderOf,
   steppedTempoOf,
   withoutSong,
-  withSongOrder,
-  withSongSettings,
 } from './studio-music';
 
 const songOf = (songId: number, position: number, firstBeat: number | null = 0.5): StudioSong => ({
@@ -201,25 +199,6 @@ describe('optimistic song changes', () => {
   });
   const songsOf = (response: { studio: Studio | null } | undefined): [number, number, number][] =>
     (response?.studio?.songs ?? []).map((song) => [song.songId, song.position, song.endSeconds]);
-
-  it('applies new settings to one song', () => {
-    const changed = withSongSettings(responseOf([songOf(1, 0), songOf(2, 1)]), {
-      songId: 2,
-      settings: { startSeconds: 5, endSeconds: 40, firstBeatSeconds: 1, tempoBpm: 100 },
-    });
-
-    expect(songsOf(changed)).toEqual([
-      [1, 0, 70],
-      [2, 1, 40],
-    ]);
-  });
-
-  it('rewrites positions in the new order', () => {
-    expect(songsOf(withSongOrder(responseOf([songOf(1, 0), songOf(2, 1)]), [2, 1]))).toEqual([
-      [1, 1, 70],
-      [2, 0, 70],
-    ]);
-  });
 
   it('drops a removed song', () => {
     expect(songsOf(withoutSong(responseOf([songOf(1, 0), songOf(2, 1)]), 1))).toEqual([[2, 1, 70]]);

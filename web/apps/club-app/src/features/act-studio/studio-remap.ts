@@ -18,10 +18,6 @@ export const removedIdsOf = (write: StudioWrite): RemovedIds | null => {
   switch (write.kind) {
     case 'songRemove':
       return { entity: 'song', ids: [write.songId] };
-    case 'stepsRemove':
-      return { entity: 'step', ids: write.stepIds };
-    case 'partRemove':
-      return { entity: 'part', ids: [write.partId] };
     case 'videoRemove':
       return { entity: 'video', ids: [write.videoId] };
     case 'spotRemove':
@@ -73,39 +69,13 @@ const bindingRenamed = (rename: IdRename, binding: PartBinding): PartBinding => 
 export const writeRenamed = (rename: IdRename, write: StudioWrite): StudioWrite => {
   switch (write.kind) {
     case 'songRemove':
-    case 'songSettings':
       return { ...write, songId: renamed(rename, 'song', write.songId) };
-    case 'songOrder':
-      return { ...write, songIds: write.songIds.map((id) => renamed(rename, 'song', id)) };
     case 'songRestore':
       return { ...write, order: write.order.map((id) => renamed(rename, 'song', id)) };
     case 'finalRemove':
-    case 'finalBeat':
-    case 'finalOffsets':
-    case 'finalMatch':
     case 'finalAdopt':
       return { ...write, finalTrackId: renamed(rename, 'finalTrack', write.finalTrackId) };
-    case 'stepsRemove':
-      return { ...write, stepIds: write.stepIds.map((id) => renamed(rename, 'step', id)) };
-    case 'stepText':
-    case 'stepStart':
-      return { ...write, stepId: renamed(rename, 'step', write.stepId) };
-    case 'partAdd':
-      return { ...write, firstStepId: renamed(rename, 'step', write.firstStepId) };
-    case 'partRemove':
-      return { ...write, partId: renamed(rename, 'part', write.partId) };
-    case 'partRestore':
-      return { ...write, settings: settingsRenamed(rename, write.settings) };
-    case 'partSettings':
-      return {
-        ...write,
-        partId: renamed(rename, 'part', write.partId),
-        settings: settingsRenamed(rename, write.settings),
-      };
     case 'videoRemove':
-    case 'videoName':
-    case 'videoStart':
-    case 'videoAlign':
       return { ...write, videoId: renamed(rename, 'video', write.videoId) };
     case 'videoRestore':
       return { ...write, parts: write.parts.map((binding) => bindingRenamed(rename, binding)) };

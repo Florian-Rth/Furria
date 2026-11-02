@@ -18,6 +18,7 @@ import {
 import type { StageShare } from '../studio-edits';
 import { clampedVideoStartOf, takeGroupsOf, videoShelfOf } from '../studio-videos';
 import { useDeskTarget } from './use-desk-target';
+import { useGestureRelease } from './use-gesture-release';
 import type { StudioScreen } from './use-studio-screen';
 
 const NUDGE_SECONDS = 0.1;
@@ -67,6 +68,7 @@ export interface ActStudioTakes {
 }
 
 interface Grab {
+  videoId: number;
   x: number;
   start: number;
 }
@@ -75,10 +77,12 @@ const placedOf = (video: StudioVideo): boolean =>
   videoShelfOf(video) === 'placed' && video.durationSeconds !== null;
 
 export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
-  const { playback, studio, video, edits, videos: writes, mode } = screen;
+  const { playback, studio, video, mode } = screen;
+  const work = screen.document;
   const { player, length, parts, steps } = playback;
   const [chosenId, setChosenId] = useState<number | null>(null);
   const [grab, setGrab] = useState<Grab | null>(null);
+  useGestureRelease(grab !== null, work.endGesture);
   const onVideo = mode.editing && mode.tool === 'video';
   const desk = useDeskTarget(
     studio.videos.map((candidate) => candidate.videoId),
@@ -95,14 +99,15 @@ export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
     placed.find((candidate) => candidate.videoId === video.shownId) ??
     placed[0] ??
     null;
-  const draftStart = selected === null ? undefined : edits.value.starts[selected.videoId];
-  const saveStart = (candidate: StudioVideo, start: number): void => {
-    const startSeconds = clampedVideoStartOf(start, candidate.durationSeconds ?? 0, length);
-    const clear = (): void => {
-      edits.clearStart(candidate.videoId, start);
-    };
-    void writes.place.mutateAsync({ videoId: candidate.videoId, startSeconds }).then(clear, clear);
+  const placeAt = (candidate: StudioVideo, start: number): void => {
+    work.change({
+      kind: 'videoStart',
+      videoId: candidate.videoId,
+      startSeconds: clampedVideoStartOf(start, candidate.durationSeconds ?? 0, length),
+    });
   };
+  const draggedFrom =
+    grab !== null && selected !== null && grab.videoId === selected.videoId ? grab.start : null;
   const pressRow = (candidate: StudioVideo, seekTo: number | null): void => {
     if (candidate.videoId === selected?.videoId) {
       desk.open(candidate.videoId);
@@ -138,32 +143,18 @@ export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
         selected: candidate.videoId === selected?.videoId,
         press: (share) => {
           setChosenId(candidate.videoId);
-          setGrab({ x: share.x, start });
+          setGrab({ videoId: candidate.videoId, x: share.x, start });
         },
         move: (share) => {
           if (grab === null) {
             return;
           }
-          edits.setStart(
-            candidate.videoId,
-            clampedVideoStartOf(
-              grab.start + (share.x - grab.x) * length,
-              candidate.durationSeconds ?? 0,
-              length,
-            ),
-          );
+          work.startGesture();
+          placeAt(candidate, grab.start + (share.x - grab.x) * length);
         },
         finish: () => {
           setGrab(null);
-          const moved = edits.value.starts[candidate.videoId];
-          if (moved === undefined) {
-            return;
-          }
-          if (grab !== null && moved !== grab.start) {
-            saveStart(candidate, moved);
-            return;
-          }
-          edits.clearStart(candidate.videoId, moved);
+          work.endGesture();
         },
       };
     }),
@@ -172,24 +163,17 @@ export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
         ? STUDIO_NO_VIDEO_HERE
         : placementTextOf(
             nameOf(selected),
-            selected.startSeconds,
-            draftStart === undefined || grab === null ? null : draftStart - grab.start,
+            draggedFrom ?? selected.startSeconds,
+            draggedFrom === null ? null : selected.startSeconds - draggedFrom,
           ),
-    changed: draftStart !== undefined,
+    changed: draggedFrom !== null && draggedFrom !== selected?.startSeconds,
     canNudge: selected !== null && placedOf(selected),
     nudge: (direction) => {
       if (selected === null || selected.startSeconds === null) {
         return;
       }
       const delta = direction === 'later' ? NUDGE_SECONDS : -NUDGE_SECONDS;
-      writes.place.mutate({
-        videoId: selected.videoId,
-        startSeconds: clampedVideoStartOf(
-          selected.startSeconds + delta,
-          selected.durationSeconds ?? 0,
-          length,
-        ),
-      });
+      placeAt(selected, selected.startSeconds + delta);
     },
     groups: takeGroupsOf(parts, steps, placed).map(({ part, range, takes }) => {
       const groupKey = part === null ? LOOSE_GROUP_KEY : String(part.partId);

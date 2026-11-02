@@ -15,12 +15,12 @@ const entry = (
   fixed = false,
 ): StudioHistoryEntry => ({
   id,
-  kind: 'stepStart',
+  kind: 'spotAssign',
   eventId: null,
   at: '2026-10-30T12:00:00Z',
   state,
-  applied: { kind: 'stepStart', stepId: id, atSeconds: 0 },
-  reverse: fixed ? null : { kind: 'stepStart', stepId: id, atSeconds: id },
+  applied: { kind: 'spotAssign', spotId: id, person: null },
+  reverse: fixed ? null : { kind: 'spotRemove', spotId: id },
 });
 
 const historyOf = (...entries: StudioHistoryEntry[]): StudioHistory => ({ entries, busy: false });
@@ -67,7 +67,7 @@ describe('nextUndoOf and nextRedoOf', () => {
 
 describe('flippedIn', () => {
   it('marks an undone write and keeps its redo', () => {
-    const redo = { kind: 'stepStart', stepId: 1, atSeconds: 9 } as const;
+    const redo = { kind: 'spotAssign', spotId: 1, person: null } as const;
 
     const flipped = flippedIn(historyOf(entry(1)), 1, redo);
 
@@ -84,11 +84,11 @@ describe('remappedIn', () => {
   it('points older writes at the id a restore created', () => {
     const history = historyOf(entry(5), entry(6));
 
-    const remapped = remappedIn(history, { entity: 'step', renames: new Map([[5, 50]]) });
+    const remapped = remappedIn(history, { entity: 'spot', renames: new Map([[5, 50]]) });
 
     expect(remapped.entries.map((kept) => kept.reverse)).toEqual([
-      { kind: 'stepStart', stepId: 50, atSeconds: 5 },
-      { kind: 'stepStart', stepId: 6, atSeconds: 6 },
+      { kind: 'spotRemove', spotId: 50 },
+      { kind: 'spotRemove', spotId: 6 },
     ]);
   });
 });

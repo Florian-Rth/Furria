@@ -2,19 +2,13 @@ import type { TimedKeyframe } from '@furria/studio/choreography-motion';
 import type { MixPlayer } from '@furria/studio/mix-player';
 import type { RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import type { StepText, StudioEdits, TimeSpan } from '../studio-edits';
-import { NO_EDITS, tracksWithoutOf, withoutKeys } from '../studio-edits';
+import type { StudioEdits } from '../studio-edits';
+import { NO_EDITS, tracksWithoutOf } from '../studio-edits';
 
 export interface ActStudioEdits {
   value: StudioEdits;
   keep: RefObject<number | null>;
-  setBounds: (bounds: Record<number, TimeSpan>) => void;
-  clearBounds: (stepIds: readonly number[]) => void;
-  setText: (stepId: number, text: StepText) => void;
-  clearText: (stepId: number, committed: StepText) => void;
   setTracks: (tracks: Record<number, readonly TimedKeyframe[]>) => void;
-  setStart: (videoId: number, seconds: number) => void;
-  clearStart: (videoId: number, committed: number) => void;
   dropTracks: (tracks: Record<number, readonly TimedKeyframe[]>) => void;
   keepPosition: (seconds: number) => void;
 }
@@ -26,34 +20,8 @@ export const useActStudioEdits = (): ActStudioEdits => {
   return {
     value,
     keep,
-    setBounds: (bounds) => {
-      setValue((current) => ({ ...current, bounds: { ...current.bounds, ...bounds } }));
-    },
-    clearBounds: (stepIds) => {
-      setValue((current) => ({ ...current, bounds: withoutKeys(current.bounds, stepIds) }));
-    },
-    setText: (stepId, text) => {
-      setValue((current) => ({ ...current, texts: { ...current.texts, [stepId]: text } }));
-    },
-    clearText: (stepId, committed) => {
-      setValue((current) =>
-        current.texts[stepId] === committed
-          ? { ...current, texts: withoutKeys(current.texts, [stepId]) }
-          : current,
-      );
-    },
     setTracks: (tracks) => {
       setValue((current) => ({ ...current, tracks: { ...current.tracks, ...tracks } }));
-    },
-    setStart: (videoId, seconds) => {
-      setValue((current) => ({ ...current, starts: { ...current.starts, [videoId]: seconds } }));
-    },
-    clearStart: (videoId, committed) => {
-      setValue((current) =>
-        current.starts[videoId] === committed
-          ? { ...current, starts: withoutKeys(current.starts, [videoId]) }
-          : current,
-      );
     },
     dropTracks: (tracks) => {
       setValue((current) => ({ ...current, tracks: tracksWithoutOf(current.tracks, tracks) }));

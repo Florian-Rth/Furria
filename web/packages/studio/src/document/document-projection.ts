@@ -262,7 +262,10 @@ const finalTracksOf = (base: Studio, document: StudioDocument): StudioFinalTrack
         ];
   });
 
-export const studioOf = (base: Studio, document: StudioDocument): Studio => {
+export const studioOf = <TStudio extends Studio>(
+  base: TStudio,
+  document: StudioDocument,
+): TStudio => {
   const songs = songsOf(base, document);
   const finalTracks = finalTracksOf(base, document);
   const lengthSeconds =

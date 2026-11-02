@@ -11,11 +11,8 @@ import {
   requestFinalTrackAdd,
   requestFinalTrackAdoption,
   requestFinalTrackBeat,
-  requestFinalTrackMatch,
   requestFinalTrackOffset,
   requestFinalTrackRemoval,
-  requestPartAdd,
-  requestPartRemoval,
   requestPartSettings,
   requestSongAdd,
   requestSongOrder,
@@ -24,18 +21,13 @@ import {
   requestSpotAdd,
   requestSpotAssignment,
   requestSpotRemoval,
-  requestStepMark,
-  requestStepRemoval,
-  requestStepStart,
-  requestStepText,
   requestVideoAdd,
-  requestVideoAlignment,
   requestVideoName,
   requestVideoRemoval,
   requestVideoStart,
 } from './requests';
 import { changedTracksOf } from './studio-spots';
-import type { FinalOffset, StepCopy, StudioWrite } from './studio-undo';
+import type { FinalOffset, StudioWrite } from './studio-undo';
 import { restoredOrderOf } from './studio-undo';
 
 const NONE: number[] = [];
@@ -63,24 +55,6 @@ const offsetsWritten = (
     return NONE;
   });
 
-const stepRestored = async (
-  actId: number,
-  step: StepCopy,
-  accessToken: string,
-): Promise<number[]> => {
-  const { stepIds } = await requestStepMark(actId, step.atSeconds, accessToken);
-  const restoredId = stepIds.at(-1);
-  if (restoredId !== undefined) {
-    await requestStepText(
-      actId,
-      { stepId: restoredId, name: step.name, description: step.description },
-      accessToken,
-    );
-  }
-
-  return stepIds;
-};
-
 const eveningCopyOf = (studio: Studio, eventId: number): EveningChoreography | null =>
   studio.evenings.find((evening) => evening.eventId === eventId)?.appearance?.choreography ?? null;
 
@@ -102,12 +76,6 @@ export const performStudioWrite = async (
       await requestSongOrder(actId, restoredOrderOf(write.order, songId), accessToken);
       return [songId];
     }
-    case 'songOrder':
-      await requestSongOrder(actId, write.songIds, accessToken);
-      return NONE;
-    case 'songSettings':
-      await requestSongSettings(actId, write.songId, write.settings, accessToken);
-      return NONE;
     case 'finalAdd':
       return [(await requestFinalTrackAdd(actId, write.mediaItemId, accessToken)).finalTrackId];
     case 'finalRemove':
@@ -123,50 +91,8 @@ export const performStudioWrite = async (
       await offsetsWritten(actId, finalTrackId, write.offsets, accessToken);
       return [finalTrackId];
     }
-    case 'finalBeat':
-      await requestFinalTrackBeat(actId, write, accessToken);
-      return NONE;
-    case 'finalOffsets':
-      return offsetsWritten(actId, write.finalTrackId, write.offsets, accessToken);
-    case 'finalMatch':
-      await requestFinalTrackMatch(actId, write.finalTrackId, accessToken);
-      return NONE;
     case 'finalAdopt':
       await requestFinalTrackAdoption(actId, write.finalTrackId, accessToken);
-      return NONE;
-    case 'stepsMark':
-      return (await requestStepMark(actId, write.atSeconds, accessToken)).stepIds;
-    case 'stepsRemove':
-      return inSequence(write.stepIds, async (stepId) => {
-        await requestStepRemoval(actId, stepId, accessToken);
-        return NONE;
-      });
-    case 'stepsRestore':
-      return inSequence(write.steps, (step) => stepRestored(actId, step, accessToken));
-    case 'stepText':
-      await requestStepText(actId, write, accessToken);
-      return NONE;
-    case 'stepStart':
-      await requestStepStart(actId, write, accessToken);
-      return NONE;
-    case 'partAdd':
-      return [(await requestPartAdd(actId, write, accessToken)).partId];
-    case 'partRemove':
-      await requestPartRemoval(actId, write.partId, accessToken);
-      return NONE;
-    case 'partRestore': {
-      const { partId } = await requestPartAdd(
-        actId,
-        { firstStepId: write.settings.firstStepId, name: write.settings.name },
-        accessToken,
-      );
-      if (write.settings.mainVideoId !== null) {
-        await requestPartSettings(actId, { partId, settings: write.settings }, accessToken);
-      }
-      return [partId];
-    }
-    case 'partSettings':
-      await requestPartSettings(actId, write, accessToken);
       return NONE;
     case 'videoAdd':
       return [(await requestVideoAdd(actId, write.mediaItemId, accessToken)).videoId];
@@ -191,15 +117,6 @@ export const performStudioWrite = async (
       });
       return [videoId];
     }
-    case 'videoName':
-      await requestVideoName(actId, write, accessToken);
-      return NONE;
-    case 'videoStart':
-      await requestVideoStart(actId, write, accessToken);
-      return NONE;
-    case 'videoAlign':
-      await requestVideoAlignment(actId, write.videoId, accessToken);
-      return NONE;
     case 'spotAdd':
       return [(await requestSpotAdd(actId, accessToken)).spotId];
     case 'spotRemove':

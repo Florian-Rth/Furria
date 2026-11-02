@@ -1,8 +1,6 @@
 import type { CountMark } from '@furria/studio/music-timeline';
 import type { StudioPart, StudioStep } from '@furria/studio/studio-schemas';
 import { snappedOf } from './studio-edits';
-import type { HoldsStudio } from './studio-music';
-import { withStudio } from './studio-music';
 
 export interface StepTextInput {
   stepId: number;
@@ -84,30 +82,6 @@ export const deskPartOf = (
 export const startsAPart = (parts: readonly StudioPart[], stepId: number): boolean =>
   parts.some((part) => firstStepOf(part) === stepId);
 
-export const regroupedPartsOf = (
-  steps: readonly StudioStep[],
-  parts: readonly StudioPart[],
-  starts: ReadonlyMap<number, number>,
-): StudioPart[] => {
-  const order = timelineIdsOf(steps);
-  const placed = placedPartsOf(parts);
-  const firstIndexes = placed.map((part, index) =>
-    index === 0 ? 0 : order.indexOf(starts.get(part.partId) ?? firstStepOf(part) ?? -1),
-  );
-  const regrouped = new Map(
-    placed.map((part, index) => [
-      part.partId,
-      order.slice(firstIndexes[index], firstIndexes[index + 1] ?? order.length),
-    ]),
-  );
-
-  return parts.map((part) => {
-    const stepIds = regrouped.get(part.partId);
-
-    return stepIds === undefined ? part : { ...part, stepIds };
-  });
-};
-
 export const partBorderStepOf = (
   steps: readonly StudioStep[],
   parts: readonly StudioPart[],
@@ -131,88 +105,3 @@ export const partBorderStepOf = (
 
   return target > lower && target < upper ? (order[target] ?? null) : null;
 };
-
-export const withStepText = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
-  { stepId, name, description }: StepTextInput,
-): TResponse | undefined =>
-  withStudio(response, (studio) => ({
-    ...studio,
-    steps: studio.steps.map((step) =>
-      step.stepId === stepId ? { ...step, name, description } : step,
-    ),
-  }));
-
-export const withStepStart = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
-  { stepId, atSeconds }: StepStartInput,
-): TResponse | undefined =>
-  withStudio(response, (studio) => {
-    const index = studio.steps.findIndex((step) => step.stepId === stepId);
-
-    return {
-      ...studio,
-      steps: studio.steps.map((step, at) => {
-        if (at === index) {
-          return { ...step, startSeconds: atSeconds };
-        }
-
-        return at === index - 1 ? { ...step, endSeconds: atSeconds } : step;
-      }),
-    };
-  });
-
-export const withoutStep = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
-  stepId: number,
-): TResponse | undefined =>
-  withStudio(response, (studio) => {
-    const order = timelineIdsOf(studio.steps);
-    const index = order.indexOf(stepId);
-    const removed = studio.steps.find((step) => step.stepId === stepId);
-    const heirId = index > 0 ? order[index - 1] : order[index + 1];
-    const steps = studio.steps.map((step) => {
-      if (removed === undefined || index < 0 || step.stepId !== heirId) {
-        return step;
-      }
-
-      return index > 0
-        ? { ...step, endSeconds: removed.endSeconds }
-        : { ...step, startSeconds: removed.startSeconds };
-    });
-
-    return {
-      ...studio,
-      steps: steps.filter((step) => step.stepId !== stepId),
-      parts: studio.parts
-        .map((part) => ({ ...part, stepIds: part.stepIds.filter((id) => id !== stepId) }))
-        .filter((part) => part.adrift || part.stepIds.length > 0),
-    };
-  });
-
-export const withPartSettings = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
-  { partId, settings }: PartSettingsInput,
-): TResponse | undefined =>
-  withStudio(response, (studio) => {
-    const renamed = studio.parts.map((part) =>
-      part.partId === partId
-        ? { ...part, name: settings.name, mainVideoId: settings.mainVideoId }
-        : part,
-    );
-
-    return {
-      ...studio,
-      parts: regroupedPartsOf(studio.steps, renamed, new Map([[partId, settings.firstStepId]])),
-    };
-  });
-
-export const withoutPart = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
-  partId: number,
-): TResponse | undefined =>
-  withStudio(response, (studio) => {
-    const parts = studio.parts.filter((part) => part.partId !== partId);
-
-    return { ...studio, parts: regroupedPartsOf(studio.steps, parts, new Map()) };
-  });

@@ -1,6 +1,7 @@
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
 import { KkLaneButton } from '@furria/ui/KkLaneButton';
 import type { FC } from 'react';
+import { StudioSaveButton } from '@/features/act-studio/components/StudioSaveButton';
 import { StudioSetupChip } from '@/features/act-studio/components/StudioSetupChip';
 import { useStudioMusicRoute } from '@/features/act-studio/hooks/use-studio-music-route';
 import type { StudioSetup } from '@/features/act-studio/hooks/use-studio-setup';
@@ -132,6 +133,7 @@ export const DeskTopBar: FC<DeskTopBarProps> = ({ desk, zoom, setup }) => {
           disabled={redoLocked}
           onPress={history.redo}
         />
+        <StudioSaveButton history={history} />
         {musicButton}
         <StudioSetupChip setup={setup} expanded={setupOpen} onToggle={desk.toggleSetup} />
         <KkLaneButton

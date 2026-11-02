@@ -48,6 +48,7 @@ export interface SongDesk {
 
 export const useSongDesk = (screen: StudioScreen, songs: ActStudioSongs): SongDesk | null => {
   const { music, playback, studio, edits } = screen;
+  const work = screen.document;
   const { player } = playback;
   const current = songs.current;
   const [removingId, setRemovingId] = useState<number | null>(null);
@@ -61,7 +62,7 @@ export const useSongDesk = (screen: StudioScreen, songs: ActStudioSongs): SongDe
 
   const { song, segment } = current;
   const settle = (change: Partial<SongSettings>): void => {
-    music.settle.mutate({ songId: song.songId, settings: { ...songSettingsOf(song), ...change } });
+    work.change({ kind: 'songSettings', songId: song.songId, ...songSettingsOf(song), ...change });
   };
   const tempoNudgeOf = (delta: number): SongDeskNudge => ({
     key: String(delta),
@@ -95,7 +96,7 @@ export const useSongDesk = (screen: StudioScreen, songs: ActStudioSongs): SongDe
       }
       const offset = player.position() - segment.timelineStart;
       edits.keepPosition(startInOrderOf(studio.songs, order, song.songId) + offset);
-      music.reorder.mutate(order);
+      work.change({ kind: 'songOrder', songIds: order });
     },
     removing: removingId === song.songId,
     remove: () => {

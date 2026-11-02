@@ -75,7 +75,7 @@ export const useStudioSetup = (
   editor: ActStudioStage,
   host: StudioSetupHost,
 ): StudioSetup => {
-  const { playback, manual, mode, studio } = screen;
+  const { playback, mode, studio } = screen;
   const setup = setupOf(studio);
   const shown = setupShownOf(studio, screen.evening !== null);
   const stepsDone = setup.rows.some((row) => row.key === 'steps' && row.state === 'done');
@@ -91,7 +91,7 @@ export const useStudioSetup = (
         return;
       }
       playback.player.seek(0);
-      manual.mark.mutate(markSecondsOf(playback, 0));
+      screen.document.mark(markSecondsOf(playback, 0), playback.length);
       host.showStep(null);
     },
     spots: () => {

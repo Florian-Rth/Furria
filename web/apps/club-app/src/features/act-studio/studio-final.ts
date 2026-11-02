@@ -254,38 +254,6 @@ export const offsetStartingAt = (
   stretch: number,
 ): number => roundedOffsetOf(finalSeconds - segment.sourceStart * stretch);
 
-export const withFinalOffset = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
-  { finalTrackId, sourceMediaItemId, offsetSeconds, stretch }: FinalOffsetInput,
-): TResponse | undefined =>
-  withStudio(response, (studio) => ({
-    ...studio,
-    finalTracks: studio.finalTracks.map((track) =>
-      track.finalTrackId === finalTrackId
-        ? {
-            ...track,
-            alignments: [
-              ...track.alignments.filter(
-                (alignment) => alignment.sourceMediaItemId !== sourceMediaItemId,
-              ),
-              { sourceMediaItemId, offsetSeconds, stretch },
-            ],
-          }
-        : track,
-    ),
-  }));
-
-export const withFinalBeat = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
-  { finalTrackId, firstBeatSeconds, tempoBpm }: FinalBeatInput,
-): TResponse | undefined =>
-  withStudio(response, (studio) => ({
-    ...studio,
-    finalTracks: studio.finalTracks.map((track) =>
-      track.finalTrackId === finalTrackId ? { ...track, firstBeatSeconds, tempoBpm } : track,
-    ),
-  }));
-
 export const withoutFinalTrack = <TResponse extends HoldsStudio>(
   response: TResponse | undefined,
   finalTrackId: number,

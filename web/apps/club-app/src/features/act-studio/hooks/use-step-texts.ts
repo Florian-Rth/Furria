@@ -1,8 +1,4 @@
-import type { StepText } from '../studio-edits';
 import type { StudioScreen } from './use-studio-screen';
-
-const draftsOf = (texts: Readonly<Record<number, StepText>>): [number, StepText][] =>
-  Object.entries(texts).map(([stepId, text]) => [Number(stepId), text]);
 
 export interface StepTexts {
   name: string;
@@ -12,38 +8,35 @@ export interface StepTexts {
   commit: () => void;
 }
 
+const descriptionOf = (value: string): string | null => (value === '' ? null : value);
+
 export const useStepTexts = (screen: StudioScreen): StepTexts => {
-  const { practice, edits, manual } = screen;
-  const step = practice.step;
+  const work = screen.document;
+  const step = screen.practice.step;
   const name = step?.name ?? '';
   const description = step?.description ?? '';
+  const texted = (nextName: string, nextDescription: string): void => {
+    if (step !== null) {
+      work.change({
+        kind: 'stepText',
+        stepId: step.stepId,
+        name: nextName,
+        description: descriptionOf(nextDescription),
+      });
+    }
+  };
 
   return {
     name,
     description,
     rename: (value) => {
-      if (step !== null) {
-        edits.setText(step.stepId, { name: value, description });
-      }
+      texted(value, description);
     },
     describe: (value) => {
-      if (step !== null) {
-        edits.setText(step.stepId, { name, description: value });
-      }
+      texted(name, value);
     },
     commit: () => {
-      for (const [stepId, draft] of draftsOf(edits.value.texts)) {
-        const clear = (): void => {
-          edits.clearText(stepId, draft);
-        };
-        void manual.describe
-          .mutateAsync({
-            stepId,
-            name: draft.name.trim(),
-            description: draft.description.trim() || null,
-          })
-          .then(clear, clear);
-      }
+      texted(name.trim(), description.trim());
     },
   };
 };

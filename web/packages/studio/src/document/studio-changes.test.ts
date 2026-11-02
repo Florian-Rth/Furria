@@ -229,6 +229,8 @@ describe('mergeKeyOf', () => {
   it.each<{ change: StudioChange; merges: boolean }>([
     { change: { kind: 'stepMove', stepId: 1, atSeconds: 2, lengthSeconds: 40 }, merges: true },
     { change: { kind: 'videoStart', videoId: 1, startSeconds: 2 }, merges: true },
+    { change: { kind: 'stepText', stepId: 1, name: 'Wel', description: null }, merges: true },
+    { change: { kind: 'videoName', videoId: 1, name: 'Probe' }, merges: true },
     { change: { kind: 'tracks', tracks: { 2: [], 1: [] } }, merges: true },
     { change: { kind: 'stepRemove', stepId: 1 }, merges: false },
     { change: { kind: 'spotAdd', spotId: -1 }, merges: false },

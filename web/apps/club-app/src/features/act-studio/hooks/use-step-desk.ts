@@ -1,5 +1,5 @@
 import type { StudioPart } from '@furria/studio/studio-schemas';
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import {
   newPartNameOf,
   partDeskTitleOf,
@@ -49,7 +49,8 @@ interface Draft {
 const NO_VIDEO_KEY = 'none';
 
 export const useStepDesk = (screen: StudioScreen, tool: ActStudioStepTool): StepDesk | null => {
-  const { manual, playback, practice, studio } = screen;
+  const { playback, practice, studio } = screen;
+  const work = screen.document;
   const { steps, parts } = playback;
   const step =
     tool.deskStepId === null
@@ -59,7 +60,6 @@ export const useStepDesk = (screen: StudioScreen, tool: ActStudioStepTool): Step
   const [removingPartId, setRemovingPartId] = useState<number | null>(null);
   const [draft, setDraft] = useState<Draft | null>(null);
   const [anchor, setAnchor] = useState<PartDeskAnchor | null>(null);
-  const intended = useRef(new Map<number, PartSettings>());
   if (anchor !== null && (!tool.deskOpen || anchor.stepId !== step?.stepId)) {
     setAnchor(null);
   }
@@ -76,33 +76,21 @@ export const useStepDesk = (screen: StudioScreen, tool: ActStudioStepTool): Step
   }
 
   const number = steps.findIndex((candidate) => candidate.stepId === step.stepId) + 1;
-  const settle = (target: StudioPart, change: Partial<PartSettings>): Promise<void> => {
-    const settings = {
-      ...(intended.current.get(target.partId) ?? partSettingsOf(target)),
+  const settle = (target: StudioPart, change: Partial<PartSettings>): void => {
+    work.change({
+      kind: 'partSettings',
+      partId: target.partId,
+      ...partSettingsOf(target),
       ...change,
-    };
-    intended.current.set(target.partId, settings);
-    const release = (): void => {
-      if (intended.current.get(target.partId) === settings) {
-        intended.current.delete(target.partId);
-      }
-    };
-
-    return manual.settlePart
-      .mutateAsync({ partId: target.partId, settings })
-      .then(release, release);
+    });
   };
   const commitDraft = (): void => {
     const edited = parts.find((candidate) => candidate.partId === draft?.partId);
     const trimmed = draft?.name.trim() ?? '';
-    if (draft === null || edited === undefined || trimmed === '' || trimmed === edited.name) {
-      setDraft(null);
-      return;
+    setDraft(null);
+    if (edited !== undefined && trimmed !== '' && trimmed !== edited.name) {
+      settle(edited, { name: trimmed });
     }
-    const clear = (): void => {
-      setDraft((current) => (current === draft ? null : current));
-    };
-    void settle(edited, { name: trimmed }).then(clear);
   };
   const partDeskOf = (target: StudioPart): StepDeskPart => {
     const borderOf = (direction: PartShift): number | null =>
@@ -116,7 +104,7 @@ export const useStepDesk = (screen: StudioScreen, tool: ActStudioStepTool): Step
       text,
       variant: target.mainVideoId === videoId ? 'contained' : 'outlined',
       press: () => {
-        void settle(target, { mainVideoId: videoId });
+        settle(target, { mainVideoId: videoId });
       },
     });
 
@@ -146,7 +134,7 @@ export const useStepDesk = (screen: StudioScreen, tool: ActStudioStepTool): Step
         const firstStepId = borderOf(direction);
         if (firstStepId !== null) {
           setAnchor({ stepId: step.stepId, partId: target.partId });
-          void settle(target, { firstStepId });
+          settle(target, { firstStepId });
         }
       },
       remove: () => {
@@ -155,7 +143,7 @@ export const useStepDesk = (screen: StudioScreen, tool: ActStudioStepTool): Step
           return;
         }
         setRemovingPartId(null);
-        manual.removePart.mutate(target.partId);
+        work.change({ kind: 'partRemove', partId: target.partId });
       },
     };
   };
@@ -172,11 +160,11 @@ export const useStepDesk = (screen: StudioScreen, tool: ActStudioStepTool): Step
       }
       setRemovingStepId(null);
       tool.closeDesk();
-      manual.remove.mutate(step.stepId);
+      work.change({ kind: 'stepRemove', stepId: step.stepId });
     },
     openPart: () => {
       setAnchor(null);
-      manual.addPart.mutate({ firstStepId: step.stepId, name: newPartNameOf(parts.length + 1) });
+      work.addPart(step.stepId, newPartNameOf(parts.length + 1));
     },
   };
 };

@@ -173,7 +173,8 @@ export const useArrangeActions = (desk: ActDesk): DeskInspectorAction[] => {
 
 const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspectorView => {
   const { screen, editor, takes, focus, partId, keySeconds } = desk;
-  const { playback, practice, studio, manual, videos } = screen;
+  const { playback, practice, studio, videos } = screen;
+  const work = screen.document;
   const { steps, parts, countMarks, length, player, paths } = playback;
   const texts = useStepTexts(screen);
   const [partDraft, setPartDraft] = useState<{ partId: number; name: string } | null>(null);
@@ -187,7 +188,7 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
     DESK_MARK_HERE,
     'add',
     () => {
-      manual.mark.mutate(markSecondsOf(playback, player.position()));
+      work.mark(markSecondsOf(playback, player.position()), length);
     },
     {
       label: DESK_MARK_HERE_LABEL,
@@ -227,9 +228,11 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
               const draft = partDraft?.name.trim() ?? '';
               setPartDraft(null);
               if (draft !== '' && draft !== part.name) {
-                manual.settlePart.mutate({
+                work.change({
+                  kind: 'partSettings',
                   partId: part.partId,
-                  settings: { ...partSettingsOf(part), name: draft },
+                  ...partSettingsOf(part),
+                  name: draft,
                 });
               }
             },
@@ -244,7 +247,7 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
             DESK_DISSOLVE,
             'dissolve',
             () => {
-              manual.removePart.mutate(part.partId);
+              work.change({ kind: 'partRemove', partId: part.partId });
               desk.focusStep(null);
             },
             { tone: 'danger' },
@@ -290,7 +293,11 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
           { disabled: !takes.canNudge },
         ),
         actionOf('here', DESK_START_HERE, 'video', () => {
-          videos.place.mutate({ videoId: video.videoId, startSeconds: player.position() });
+          work.change({
+            kind: 'videoStart',
+            videoId: video.videoId,
+            startSeconds: player.position(),
+          });
         }),
         actionOf(
           'delete',
@@ -461,10 +468,7 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
         DESK_NEW_PART,
         'parts',
         () => {
-          manual.addPart.mutate({
-            firstStepId: step.stepId,
-            name: newPartNameOf(parts.length + 1),
-          });
+          work.addPart(step.stepId, newPartNameOf(parts.length + 1));
         },
         { disabled: startsAPart(parts, step.stepId) },
       ),
@@ -476,7 +480,7 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
         DESK_DELETE,
         'delete',
         () => {
-          manual.remove.mutate(step.stepId);
+          work.change({ kind: 'stepRemove', stepId: step.stepId });
         },
         { tone: 'danger' },
       ),

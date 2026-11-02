@@ -156,62 +156,6 @@ describe('inverseOf', () => {
       },
     },
     {
-      name: 'puts the songs back in their order',
-      write: { kind: 'songOrder', songIds: [2, 1] },
-      created: [],
-      inverse: { kind: 'songOrder', songIds: [1, 2] },
-    },
-    {
-      name: 'restores the cut of a song',
-      write: {
-        kind: 'songSettings',
-        songId: 1,
-        settings: { startSeconds: 3, endSeconds: 20, firstBeatSeconds: null, tempoBpm: null },
-      },
-      created: [],
-      inverse: {
-        kind: 'songSettings',
-        songId: 1,
-        settings: { startSeconds: 0, endSeconds: 20, firstBeatSeconds: null, tempoBpm: null },
-      },
-    },
-    {
-      name: 'removes every step a mark created',
-      write: { kind: 'stepsMark', atSeconds: 12 },
-      created: [70, 71],
-      inverse: { kind: 'stepsRemove', stepIds: [70, 71] },
-    },
-    {
-      name: 'marks a removed step again with its texts',
-      write: { kind: 'stepsRemove', stepIds: [5] },
-      created: [],
-      inverse: {
-        kind: 'stepsRestore',
-        steps: [{ atSeconds: 4, name: 'Kreis', description: 'eng' }],
-      },
-    },
-    {
-      name: 'cannot bring back a step cut away from the music',
-      write: { kind: 'stepsRemove', stepIds: [6] },
-      created: [],
-      inverse: null,
-    },
-    {
-      name: 'moves a step back',
-      write: { kind: 'stepStart', stepId: 5, atSeconds: 6 },
-      created: [],
-      inverse: { kind: 'stepStart', stepId: 5, atSeconds: 4 },
-    },
-    {
-      name: 'opens a dissolved part again with its main video',
-      write: { kind: 'partRemove', partId: 9 },
-      created: [],
-      inverse: {
-        kind: 'partRestore',
-        settings: { name: 'Marsch', firstStepId: 5, mainVideoId: 3 },
-      },
-    },
-    {
       name: 'brings a removed video back as main video of its parts',
       write: { kind: 'videoRemove', videoId: 3 },
       created: [],
@@ -221,39 +165,6 @@ describe('inverseOf', () => {
         name: 'Probe',
         startSeconds: 2,
         parts: [{ partId: 9, settings: { name: 'Marsch', firstStepId: 5, mainVideoId: 3 } }],
-      },
-    },
-    {
-      name: 'puts an aligned video back to its start',
-      write: { kind: 'videoAlign', videoId: 3 },
-      created: [],
-      inverse: { kind: 'videoStart', videoId: 3, startSeconds: 2 },
-    },
-    {
-      name: 'restores only the offsets a tune touched',
-      write: {
-        kind: 'finalOffsets',
-        finalTrackId: 4,
-        offsets: [{ sourceMediaItemId: 21, offsetSeconds: 20.3, stretch: 1 }],
-      },
-      created: [],
-      inverse: {
-        kind: 'finalOffsets',
-        finalTrackId: 4,
-        offsets: [{ sourceMediaItemId: 21, offsetSeconds: 20.1, stretch: 1 }],
-      },
-    },
-    {
-      name: 'restores every offset a match replaced',
-      write: { kind: 'finalMatch', finalTrackId: 4 },
-      created: [],
-      inverse: {
-        kind: 'finalOffsets',
-        finalTrackId: 4,
-        offsets: [
-          { sourceMediaItemId: 11, offsetSeconds: 0.2, stretch: 1 },
-          { sourceMediaItemId: 21, offsetSeconds: 20.1, stretch: 1 },
-        ],
       },
     },
     {
@@ -345,26 +256,22 @@ describe('inverseOf', () => {
       write: {
         kind: 'batch',
         writes: [
-          { kind: 'stepStart', stepId: 5, atSeconds: 6 },
-          { kind: 'videoStart', videoId: 3, startSeconds: 4 },
+          { kind: 'eveningDancer', eventId: 50, person: ben, dances: false },
+          { kind: 'eveningJoin', eventId: 51 },
         ],
       },
       created: [],
       inverse: {
         kind: 'batch',
         writes: [
-          { kind: 'videoStart', videoId: 3, startSeconds: 2 },
-          { kind: 'stepStart', stepId: 5, atSeconds: 4 },
+          { kind: 'eveningLeave', eventId: 51 },
+          { kind: 'eveningDancer', eventId: 50, person: ben, dances: true },
         ],
       },
     },
     {
       name: 'gives up on a write whose target is already gone',
-      write: {
-        kind: 'partSettings',
-        partId: 404,
-        settings: { name: 'x', firstStepId: 5, mainVideoId: null },
-      },
+      write: { kind: 'songRemove', songId: 404 },
       created: [],
       inverse: null,
     },

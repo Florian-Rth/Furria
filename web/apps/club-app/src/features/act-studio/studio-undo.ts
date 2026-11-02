@@ -1,12 +1,7 @@
-import type {
-  Keyframe,
-  StudioFinalTrack,
-  StudioPart,
-  StudioVideo,
-} from '@furria/studio/studio-schemas';
+import type { Keyframe, StudioFinalTrack, StudioVideo } from '@furria/studio/studio-schemas';
 import type { Studio, StudioEvening } from '@/features/acts/schemas';
 import type { PortraitPersonRef } from '@/lib/api/schemas';
-import type { FinalBeatInput, FinalOffsetInput } from './studio-final';
+import type { FinalOffsetInput } from './studio-final';
 import type { SongSettings } from './studio-music';
 import { songSettingsOf } from './studio-music';
 import type { SpotPerson, TrackChanges } from './studio-spots';
@@ -14,12 +9,6 @@ import type { PartSettings } from './studio-steps';
 import { partSettingsOf } from './studio-steps';
 
 export type FinalOffset = Omit<FinalOffsetInput, 'finalTrackId'>;
-
-export interface StepCopy {
-  atSeconds: number;
-  name: string;
-  description: string | null;
-}
 
 export interface PartBinding {
   partId: number;
@@ -30,8 +19,6 @@ export type StudioWrite =
   | { kind: 'songAdd'; mediaItemId: number }
   | { kind: 'songRemove'; songId: number }
   | { kind: 'songRestore'; mediaItemId: number; settings: SongSettings; order: readonly number[] }
-  | { kind: 'songOrder'; songIds: readonly number[] }
-  | { kind: 'songSettings'; songId: number; settings: SongSettings }
   | { kind: 'finalAdd'; mediaItemId: number }
   | { kind: 'finalRemove'; finalTrackId: number }
   | {
@@ -41,19 +28,7 @@ export type StudioWrite =
       tempoBpm: number | null;
       offsets: readonly FinalOffset[];
     }
-  | ({ kind: 'finalBeat' } & FinalBeatInput)
-  | { kind: 'finalOffsets'; finalTrackId: number; offsets: readonly FinalOffset[] }
-  | { kind: 'finalMatch'; finalTrackId: number }
   | { kind: 'finalAdopt'; finalTrackId: number }
-  | { kind: 'stepsMark'; atSeconds: number }
-  | { kind: 'stepsRemove'; stepIds: readonly number[] }
-  | { kind: 'stepsRestore'; steps: readonly StepCopy[] }
-  | { kind: 'stepText'; stepId: number; name: string; description: string | null }
-  | { kind: 'stepStart'; stepId: number; atSeconds: number }
-  | { kind: 'partAdd'; firstStepId: number; name: string }
-  | { kind: 'partRemove'; partId: number }
-  | { kind: 'partRestore'; settings: PartSettings }
-  | { kind: 'partSettings'; partId: number; settings: PartSettings }
   | { kind: 'videoAdd'; mediaItemId: number }
   | { kind: 'videoRemove'; videoId: number }
   | {
@@ -63,9 +38,6 @@ export type StudioWrite =
       startSeconds: number | null;
       parts: readonly PartBinding[];
     }
-  | { kind: 'videoName'; videoId: number; name: string | null }
-  | { kind: 'videoStart'; videoId: number; startSeconds: number }
-  | { kind: 'videoAlign'; videoId: number }
   | { kind: 'spotAdd' }
   | { kind: 'spotRemove'; spotId: number }
   | { kind: 'spotRestore'; person: SpotPerson | null; keyframes: readonly Keyframe[] }
@@ -122,66 +94,8 @@ const songRestoreOf = (studio: Studio, songId: number): StudioWrite | null => {
       };
 };
 
-const songSettingsBefore = (studio: Studio, songId: number): StudioWrite | null => {
-  const song = studio.songs.find((candidate) => candidate.songId === songId);
-
-  return song === undefined
-    ? null
-    : { kind: 'songSettings', songId, settings: songSettingsOf(song) };
-};
-
 const finalTrackOf = (studio: Studio, finalTrackId: number): StudioFinalTrack | null =>
   studio.finalTracks.find((candidate) => candidate.finalTrackId === finalTrackId) ?? null;
-
-const offsetsBefore = (
-  studio: Studio,
-  finalTrackId: number,
-  sources: readonly number[] | null,
-): StudioWrite | null => {
-  const track = finalTrackOf(studio, finalTrackId);
-  if (track === null) {
-    return null;
-  }
-
-  const offsets = track.alignments
-    .filter((known) => sources === null || sources.includes(known.sourceMediaItemId))
-    .map(({ sourceMediaItemId, offsetSeconds, stretch }) => ({
-      sourceMediaItemId,
-      offsetSeconds,
-      stretch,
-    }));
-
-  return offsets.length === 0 ? null : { kind: 'finalOffsets', finalTrackId, offsets };
-};
-
-const stepCopiesOf = (studio: Studio, stepIds: readonly number[]): StepCopy[] =>
-  studio.steps
-    .filter((step) => stepIds.includes(step.stepId))
-    .flatMap((step) =>
-      step.startSeconds === null
-        ? []
-        : [{ atSeconds: step.startSeconds, name: step.name, description: step.description }],
-    )
-    .sort((left, right) => left.atSeconds - right.atSeconds);
-
-const stepStartBefore = (studio: Studio, stepId: number): StudioWrite | null => {
-  const step = studio.steps.find((candidate) => candidate.stepId === stepId);
-
-  return step === undefined || step.startSeconds === null
-    ? null
-    : { kind: 'stepStart', stepId, atSeconds: step.startSeconds };
-};
-
-const stepTextBefore = (studio: Studio, stepId: number): StudioWrite | null => {
-  const step = studio.steps.find((candidate) => candidate.stepId === stepId);
-
-  return step === undefined
-    ? null
-    : { kind: 'stepText', stepId, name: step.name, description: step.description };
-};
-
-const partBefore = (studio: Studio, partId: number): StudioPart | null =>
-  studio.parts.find((candidate) => candidate.partId === partId) ?? null;
 
 const videoOf = (studio: Studio, videoId: number): StudioVideo | null =>
   studio.videos.find((candidate) => candidate.videoId === videoId) ?? null;
@@ -200,12 +114,6 @@ const videoRestoreOf = (studio: Studio, videoId: number): StudioWrite | null => 
           .filter((part) => part.mainVideoId === videoId)
           .map((part) => ({ partId: part.partId, settings: partSettingsOf(part) })),
       };
-};
-
-const videoStartBefore = (studio: Studio, videoId: number): StudioWrite | null => {
-  const start = videoOf(studio, videoId)?.startSeconds ?? null;
-
-  return start === null ? null : { kind: 'videoStart', videoId, startSeconds: start };
 };
 
 const keyframesOf = (studio: Studio, spotId: number): readonly Keyframe[] =>
@@ -311,10 +219,6 @@ export const inverseOf = (
       return removalOf(created, (songId) => ({ kind: 'songRemove', songId }));
     case 'songRemove':
       return songRestoreOf(studio, write.songId);
-    case 'songOrder':
-      return { kind: 'songOrder', songIds: orderedSongIdsOf(studio) };
-    case 'songSettings':
-      return songSettingsBefore(studio, write.songId);
     case 'finalAdd':
     case 'finalRestore':
       return removalOf(created, (finalTrackId) => ({ kind: 'finalRemove', finalTrackId }));
@@ -331,71 +235,14 @@ export const inverseOf = (
             offsets: track.alignments,
           };
     }
-    case 'finalBeat': {
-      const track = finalTrackOf(studio, write.finalTrackId);
-
-      return track === null
-        ? null
-        : {
-            kind: 'finalBeat',
-            finalTrackId: write.finalTrackId,
-            firstBeatSeconds: track.firstBeatSeconds,
-            tempoBpm: track.tempoBpm,
-          };
-    }
-    case 'finalOffsets':
-      return offsetsBefore(
-        studio,
-        write.finalTrackId,
-        write.offsets.map((offset) => offset.sourceMediaItemId),
-      );
-    case 'finalMatch':
-      return offsetsBefore(studio, write.finalTrackId, null);
     case 'finalAdopt':
     case 'eveningCopyDrop':
       return null;
-    case 'stepsMark':
-    case 'stepsRestore':
-      return created.length === 0 ? null : { kind: 'stepsRemove', stepIds: created };
-    case 'stepsRemove': {
-      const steps = stepCopiesOf(studio, write.stepIds);
-
-      return steps.length === 0 ? null : { kind: 'stepsRestore', steps };
-    }
-    case 'stepText':
-      return stepTextBefore(studio, write.stepId);
-    case 'stepStart':
-      return stepStartBefore(studio, write.stepId);
-    case 'partAdd':
-    case 'partRestore':
-      return removalOf(created, (partId) => ({ kind: 'partRemove', partId }));
-    case 'partRemove': {
-      const part = partBefore(studio, write.partId);
-
-      return part === null ? null : { kind: 'partRestore', settings: partSettingsOf(part) };
-    }
-    case 'partSettings': {
-      const part = partBefore(studio, write.partId);
-
-      return part === null
-        ? null
-        : { kind: 'partSettings', partId: write.partId, settings: partSettingsOf(part) };
-    }
     case 'videoAdd':
     case 'videoRestore':
       return removalOf(created, (videoId) => ({ kind: 'videoRemove', videoId }));
     case 'videoRemove':
       return videoRestoreOf(studio, write.videoId);
-    case 'videoName': {
-      const video = videoOf(studio, write.videoId);
-
-      return video === null
-        ? null
-        : { kind: 'videoName', videoId: write.videoId, name: video.name };
-    }
-    case 'videoStart':
-    case 'videoAlign':
-      return videoStartBefore(studio, write.videoId);
     case 'spotAdd':
     case 'spotRestore':
       return removalOf(created, (spotId) => ({ kind: 'spotRemove', spotId }));

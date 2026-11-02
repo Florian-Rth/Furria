@@ -1,4 +1,5 @@
 import type { StudioFinalTrack } from '@furria/studio/studio-schemas';
+import type { FinalTrackMatches } from '../schemas';
 import {
   finalShiftNudgeLabelOf,
   finalTitleOf,
@@ -57,6 +58,7 @@ export type FinalDesk = FinalSourceDesk | FinalGridDesk;
 
 export const useFinalDesk = (screen: StudioScreen, list: ActStudioFinal): FinalDesk | null => {
   const { final, playback } = screen;
+  const work = screen.document;
   const { player } = playback;
   const pending = final.pending;
 
@@ -65,7 +67,8 @@ export const useFinalDesk = (screen: StudioScreen, list: ActStudioFinal): FinalD
     const offset = final.placements[mediaItemId]?.offsetSeconds ?? null;
     const stretch = stretchOf(final.placements, mediaItemId);
     const tune = (offsetSeconds: number): void => {
-      final.writes.tune.mutate({
+      work.change({
+        kind: 'finalOffset',
         finalTrackId: track.finalTrackId,
         sourceMediaItemId: mediaItemId,
         offsetSeconds,
@@ -95,14 +98,31 @@ export const useFinalDesk = (screen: StudioScreen, list: ActStudioFinal): FinalD
       },
       matching: final.writes.match.isPending,
       match: () => {
-        final.writes.match.mutate(track.finalTrackId);
+        const matched = ({ matches }: FinalTrackMatches): void => {
+          work.startGesture();
+          try {
+            for (const found of matches) {
+              work.change({
+                kind: 'finalOffset',
+                finalTrackId: track.finalTrackId,
+                sourceMediaItemId: found.sourceMediaItemId,
+                offsetSeconds: found.offsetSeconds,
+                stretch: found.stretch,
+              });
+            }
+          } finally {
+            work.endGesture();
+          }
+        };
+        void final.writes.match.mutateAsync(track.finalTrackId).then(matched, () => undefined);
       },
     };
   };
 
   const gridDeskOf = (track: StudioFinalTrack): FinalGridDesk => {
     const settle = (change: { firstBeatSeconds?: number | null; tempoBpm?: number }): void => {
-      final.writes.settle.mutate({
+      work.change({
+        kind: 'finalBeat',
         finalTrackId: track.finalTrackId,
         firstBeatSeconds: track.firstBeatSeconds,
         tempoBpm: track.tempoBpm,
