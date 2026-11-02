@@ -598,10 +598,19 @@ importers:
       '@furria/api-client':
         specifier: workspace:*
         version: link:../api-client
+      motion:
+        specifier: 'catalog:'
+        version: 12.42.2(@emotion/is-prop-valid@1.4.0)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       zod:
         specifier: 'catalog:'
         version: 4.4.3
     devDependencies:
+      '@types/react':
+        specifier: 'catalog:'
+        version: 19.2.17
+      react:
+        specifier: 'catalog:'
+        version: 19.2.7
       typescript:
         specifier: 'catalog:'
         version: 7.0.2

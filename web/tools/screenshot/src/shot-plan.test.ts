@@ -120,7 +120,7 @@ describe('parseShotArgs', () => {
     [['/a', '--wat']],
     [['/a', '--text-scale', '0']],
     [['/a', '--text-scale', 'big']],
-    [['/a', '--viewport', 'tablet']],
+    [['/a', '--viewport', 'watch']],
     [['/a', '--scheme', 'sepia']],
     [['/a', '--filmstrip', '--reduced-motion']],
   ])('rejects %j', (argv: string[]) => {
