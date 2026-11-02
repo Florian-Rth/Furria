@@ -350,8 +350,10 @@ the Phase 7 lift and precision rulings. Every frame only writes transforms: one 
 zoom motion value move the wave, steps and ticks; the clock is a motion value; React renders only
 when the wave window (about five widths wide, moved with hysteresis) has to move on, or when a
 pinch is committed. Found on the way: Motion finishes `animate(value, value.get(), { type:
-'inertia' })` at once, so a release has to target the projected point. `usePanAxis.release`
-(rail, stage pan) and `use-timeline-viewport` still start inertia that way.
+'inertia' })` at once, so a release targets the projected point (`momentumTargetOf` in
+`pan-bounds`). `usePanAxis.release` (rail) and the fixed timeline's two-finger pan had the same
+bug and are fixed too, so the step rail now actually glides; its `glide=free` ruling may deserve a
+second look on the device.
 
 Lab built 2026-11-02, awaiting rulings. `/lab/studio/{timeline,stage,lists,rail}` (Labor → *Studio:
 Bedienung mit dem Finger*), feature `studio-lab`, visuals in the throwaway `KkTouchLab` kit; every

@@ -1,5 +1,10 @@
 import type { GesturePoint } from '@furria/studio/gesture-recogniser';
-import { clampToBounds, momentumOf, rubberFollow } from '@furria/studio/pan-bounds';
+import {
+  clampToBounds,
+  momentumOf,
+  momentumTargetOf,
+  rubberFollow,
+} from '@furria/studio/pan-bounds';
 import type { AnimationPlaybackControls } from 'motion/react';
 import { animate, useMotionValue, useMotionValueEvent, useReducedMotion } from 'motion/react';
 import { useEffect, useRef, useState } from 'react';
@@ -104,9 +109,10 @@ export const useTimelineViewport = (length: number, width: number): TimelineView
         place(current.current, false);
         return;
       }
-      glide.current = animate(offset, offset.get(), {
+      const momentum = momentumOf(velocityX, bounds);
+      glide.current = animate(offset, momentumTargetOf(offset.get(), momentum), {
         type: 'inertia',
-        ...momentumOf(velocityX, bounds),
+        ...momentum,
         onComplete: () => {
           glide.current = null;
         },

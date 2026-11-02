@@ -4,7 +4,7 @@ import { pulseHaptic } from '@furria/studio/haptics';
 import { pickHitTarget } from '@furria/studio/hit-priority';
 import type { MixPlayer } from '@furria/studio/mix-player';
 import { countAt, musicLengthOf, musicSegmentsOf } from '@furria/studio/music-timeline';
-import { momentumOf } from '@furria/studio/pan-bounds';
+import { momentumOf, momentumTargetOf } from '@furria/studio/pan-bounds';
 import { useGesture } from '@furria/studio/use-gesture';
 import { usePanAxis } from '@furria/studio/use-pan-axis';
 import type { AnimationPlaybackControls, MotionValue } from 'motion/react';
@@ -19,7 +19,6 @@ import {
   centrePxPerSecondOf,
   centreScaleOf,
   centreSecondsOf,
-  momentumTargetOf,
   stripChunkOf,
   stripOutrunOf,
   stripViewOf,

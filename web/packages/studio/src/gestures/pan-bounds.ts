@@ -41,6 +41,9 @@ export const rubberScale = (raw: number, bounds: PanBounds): number => {
   return resting * Math.exp(rubberBand(overshoot, 1));
 };
 
+export const momentumTargetOf = (from: number, momentum: InertiaOptions): number =>
+  from + (momentum.power ?? 0) * (momentum.velocity ?? 0);
+
 export const momentumOf = (velocityPerMs: number, bounds: PanBounds): InertiaOptions => ({
   velocity: velocityPerMs * MS_PER_SECOND,
   min: bounds.min,
