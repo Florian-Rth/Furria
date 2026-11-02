@@ -339,6 +339,11 @@ Goal: Florian picks the touch handling on his devices.
   or any point while scrubbing, continuous momentum; performance first (transform-only per frame, no
   React render per frame, 60 fps on iPhone). Practice strip, hub score track and lesson keep the fixed
   view.
+- Rulings 2 (Florian, 2026-11-02): scrub = **centre line** (`scrub=centre`) for the editing timeline in
+  Phase 9 (fixed view stays for practice strip, hub score track, lesson); a swipe during playback pauses
+  and resumes where the glide rests; step rail free momentum confirmed with real momentum; song order
+  only by drag/keyboard is fine; the Phase 10/11 stage looks (neutral open spot, practice discs, metre
+  grid) are approved.
 
 Scrub variant built 2026-11-02, awaiting the ruling: switch *Zeitleiste: Feste Ansicht |
 Mittellinie* (`scrub=fixed|centre`) on `/lab/studio/timeline`. In *Mittellinie* the playhead stays
@@ -501,7 +506,7 @@ selects (`Stage.Dot` `keys`).
 Goal: spot holders and song order are dragged like the lab's lists.
 - [x] Song order in the song list by drag handle (`songOrder` change), replacing the earlier/later shift
 - [x] Spot holder assignment by dragging people between places and *frei* (session and evening)
-- [ ] Video order: decide — the data model has no video order (main/alternative per part only)
+- [x] Video order: decided 2026-11-02 — no video order; main/alternative per part stays
 - [ ] Device check: sort and assign on phone and iPad
 
 Built 2026-11-02 (video order left open for Florian's decision). Song list: while the working mix
