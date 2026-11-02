@@ -321,6 +321,24 @@ Goal: Florian picks the touch handling on his devices.
 - [x] Playground: lists (song order, spot holders with dnd-kit) and the practice step rail
 - [x] Variants where open: loupe vs lifted copy; long-press sheet vs selection toolbar; precision by distance vs by hold
 - [ ] HTTPS static build; Florian tests on iPhone, Pixel and iPad Safari; rulings recorded here
+- [ ] Scrub variant on the timeline playground: fixed centre "now" line, the wave moves under it
+  (iOS Voice Memos style) vs the fixed view; Florian judges, Phase 9 builds the winner
+
+**Rulings (Florian, 2026-11-02):**
+- Timeline: live value above the finger (`lift=lifted`); precision by moving the finger away from
+  the track (`precision=distance`).
+- Stage: value above the finger; selection toolbar (`selection=toolbar`) — tap selects one dot without
+  toolbar, long press adds to the selection and shows the toolbar. Precision on the 2D stage comes from
+  pinch zoom + the 0.25 m grid snap (no track to move away from); `precision=distance` applies to the
+  keyframe lane.
+- Step rail: free momentum (`glide=free`).
+- Phase 3 decisions confirmed: a rejected write reloads and drops pending changes with a note; media
+  removal is a direct action without undo; Sessionsauftritt writes go through the save port.
+- Rename the club app's `Studio` to `ActStudio` (Phase 12).
+- Scrub (open): the centre-line variant must be fully fluid like iOS — no snapping to counts, steps
+  or any point while scrubbing, continuous momentum; performance first (transform-only per frame, no
+  React render per frame, 60 fps on iPhone). Practice strip, hub score track and lesson keep the fixed
+  view.
 
 Lab built 2026-11-02, awaiting rulings. `/lab/studio/{timeline,stage,lists,rail}` (Labor → *Studio:
 Bedienung mit dem Finger*), feature `studio-lab`, visuals in the throwaway `KkTouchLab` kit; every
@@ -417,6 +435,7 @@ Goal: the stage editor is the `Stage` with editor layers and the gesture engine.
 
 ### Phase 12 — Screens into the package, keyboard, cleanup
 Goal: the studio is one package; nothing studio-specific is left behind.
+- [ ] Rename the club app's `Studio` type to `ActStudio` (package `Studio` stays)
 - [ ] Move practice, lesson, hall, desk and hub score/formation views into the package; the club app composes them
 - [ ] tinykeys replaces the seven key hooks; one key map feeds the key help
 - [ ] Delete the remaining studio kits from `@furria/ui` and empty club-app folders; grep for leftovers
