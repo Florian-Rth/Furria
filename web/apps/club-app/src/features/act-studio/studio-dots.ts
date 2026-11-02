@@ -1,4 +1,5 @@
 import { posesAt } from '@furria/studio/choreography-motion';
+import type { StageFrame } from '@furria/studio/stage-framing';
 import { viewRotationOf } from '@furria/studio/stage-view';
 import type { StageDot, StageScene } from '@/features/act-practice/practice-stage';
 import { stageDotsAt } from '@/features/act-practice/practice-stage';
@@ -33,4 +34,30 @@ export const studioDotsAt = (
       dimmed: someSelected && !chosen,
     };
   });
+};
+
+export type SelectionSide = 'above' | 'below';
+
+export interface SelectionAnchor {
+  x: number;
+  y: number;
+  side: SelectionSide;
+}
+
+const ROOM_ABOVE = 0.2;
+
+export const selectionAnchorOf = (
+  dots: readonly StudioDot[],
+  frame: StageFrame,
+): SelectionAnchor | null => {
+  const chosen = dots.filter((dot) => dot.selected);
+  if (chosen.length === 0) {
+    return null;
+  }
+  const x = chosen.reduce((sum, dot) => sum + dot.x, 0) / chosen.length;
+  const top = Math.min(...chosen.map((dot) => dot.y));
+
+  return top - frame.top < ROOM_ABOVE * frame.height
+    ? { x, y: Math.max(...chosen.map((dot) => dot.y)), side: 'below' }
+    : { x, y: top, side: 'above' };
 };

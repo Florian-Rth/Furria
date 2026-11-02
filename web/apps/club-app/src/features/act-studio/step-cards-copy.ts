@@ -26,7 +26,6 @@ export const STEP_CARD_STEP = 'Schritt …';
 export const STEP_CARD_STEP_LABEL = 'Schritt: löschen oder Teil bilden';
 export const STEP_TOOL_FORMATION = 'Aufstellung';
 export const STEP_TOOL_MOVEMENT = 'Wege';
-export const STEP_TOOL_MULTI = 'Mehrere';
 export const STEP_TOOL_SPOTS = 'Plätze';
 export const STEP_TOOL_SPOTS_LABEL = 'Plätze und Besetzung';
 export const STEP_TOOL_ADD_SPOT = 'Platz';

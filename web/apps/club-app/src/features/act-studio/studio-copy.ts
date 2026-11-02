@@ -1,4 +1,5 @@
 import type { KeyframeEasing } from '@furria/studio/choreography-motion';
+import { formatReadoutMetres } from '@furria/studio/drag-readout';
 import { unnamedStepNameOf } from '@furria/studio/step-names';
 import type { StudioVideo } from '@furria/studio/studio-schemas';
 import { clockOf } from '@/features/act-practice/practice-step-list';
@@ -81,6 +82,14 @@ export const STUDIO_PART_NAME_LENGTH = 80;
 export const STUDIO_FRONT = 'Publikum';
 export const STUDIO_ONION = 'Vorher';
 export const STUDIO_NOTHING_SELECTED = 'Punkt antippen';
+export const STUDIO_SELECTION_BAR = 'Auswahl';
+export const STUDIO_SELECTION_MIRROR = 'Spiegeln';
+export const STUDIO_SELECTION_ROW = 'Reihe';
+export const STUDIO_SELECTION_SPREAD = 'Verteilen';
+export const STUDIO_SELECTION_CLEAR = 'Abwählen';
+
+export const stagePlaceTextOf = (rightMetres: number, backMetres: number): string =>
+  `${formatReadoutMetres(rightMetres)} ${rightMetres < 0 ? 'links' : 'rechts'} · ${formatReadoutMetres(backMetres)} hinten`;
 export const STUDIO_SPOTS = 'Plätze';
 export const STUDIO_SPOTS_CLOSE = 'Auswahl schließen';
 export const STUDIO_OPEN_SPOT = 'offen';

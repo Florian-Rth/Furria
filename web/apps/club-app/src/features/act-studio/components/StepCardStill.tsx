@@ -1,11 +1,11 @@
-import { KkLaneDot } from '@furria/ui/KkLaneDot';
-import { KkStudioStage } from '@furria/ui/KkStudioStage';
+import { Stage } from '@furria/studio/Stage';
+import { WHOLE_STAGE_FRAME } from '@furria/studio/stage-framing';
 import type { FC } from 'react';
 import type { ActStudioStage } from '../hooks/use-act-studio-stage';
-import { useStepCardDots } from '../hooks/use-step-card-dots';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import { STEP_CARD_STAGE } from '../step-cards-copy';
 import { STUDIO_FRONT } from '../studio-copy';
+import { studioStageDotsOf } from '../studio-stage-dots';
 
 interface StepCardStillProps {
   screen: StudioScreen;
@@ -13,40 +13,43 @@ interface StepCardStillProps {
   seconds: number;
 }
 
+const NO_LIFT: ReadonlySet<number> = new Set();
 const ignore = (): void => undefined;
 
 export const StepCardStill: FC<StepCardStillProps> = ({ screen, editor, seconds }) => {
-  const { stage } = screen.playback;
-  const dots = useStepCardDots(screen, editor, seconds).map((dot) => (
-    <KkLaneDot
+  const { dots } = studioStageDotsOf({
+    scene: editor.scene,
+    seconds,
+    selected: [],
+    dimOthers: false,
+    lifted: NO_LIFT,
+    frame: WHOLE_STAGE_FRAME,
+    choose: ignore,
+    nudge: ignore,
+  });
+  const shown = dots.map((dot) => (
+    <Stage.Dot
       key={dot.key}
       x={dot.x}
       y={dot.y}
       number={dot.number}
-      name={dot.name}
       kind={dot.kind}
-      selected={false}
-      dimmed={false}
-      label={dot.label}
-      nameAbove={dot.nameAbove}
-      interactive={false}
-      onPress={ignore}
-      onMove={ignore}
-      onEnd={ignore}
-      onNudge={ignore}
+      turn={dot.turn}
+      name={dot.name}
+      nameSide={dot.nameSide}
     />
   ));
 
   return (
-    <KkStudioStage
+    <Stage
       label={STEP_CARD_STAGE}
+      stage={screen.playback.stage}
+      viewpoint="dancers"
+      fit="contain"
       frontLabel={STUDIO_FRONT}
-      widthMetres={stage.widthMetres}
-      depthMetres={stage.depthMetres}
-      artworkSvg={stage.artworkSvg}
-      onClear={ignore}
+      centre
     >
-      {dots}
-    </KkStudioStage>
+      {shown}
+    </Stage>
   );
 };

@@ -190,15 +190,13 @@ describe('baseVersionOf', () => {
 });
 
 describe('grabbedSpotsOf', () => {
-  it.each<[string, readonly number[], boolean, boolean, readonly number[]]>([
-    ['the pressed spot alone', [1], false, false, [3]],
-    ['the selection when the pressed spot belongs to it', [1, 3], false, false, [1, 3]],
-    ['the selection while the music runs, never a passing spot', [1], false, true, [1]],
-    ['the pressed spot while the music runs without a selection', [], false, true, [3]],
-    ['the selection with the pressed spot added', [1], true, false, [1, 3]],
-    ['the selection without the pressed spot again', [1, 3], true, false, [1]],
-  ])('grabs %s', (_, selected, multi, playing, expected) => {
-    expect(grabbedSpotsOf({ selected, spotId: 3, multi, playing })).toEqual(expected);
+  it.each<[string, readonly number[], boolean, readonly number[]]>([
+    ['the pressed spot alone', [1], false, [3]],
+    ['the selection when the pressed spot belongs to it', [1, 3], false, [1, 3]],
+    ['the selection while the music runs, never a passing spot', [1], true, [1]],
+    ['the pressed spot while the music runs without a selection', [], true, [3]],
+  ])('grabs %s', (_, selected, playing, expected) => {
+    expect(grabbedSpotsOf({ selected, spotId: 3, playing })).toEqual(expected);
   });
 });
 

@@ -428,10 +428,66 @@ glide while paused, motion entrance from an earlier place (hub rows).
 
 ### Phase 11 — One Stage: editor
 Goal: the stage editor is the `Stage` with editor layers and the gesture engine.
-- [ ] Editor layers (handles, bends, onion skin, selection) with the lab's touch handling
-- [ ] Spot holder assignment and song/video order with @dnd-kit/react
-- [ ] Delete `KkStudioStage` and the old editor drag code
+- [x] Editor layers (handles, bends, onion skin, selection) with the lab's touch handling
+- [ ] Spot holder assignment and song/video order with @dnd-kit/react — split into phase 11b
+- [x] Delete `KkStudioStage` and the old editor drag code
 - [ ] Device check: dot drag, multi-select, bend, pinch/pan on phone and iPad
+
+Built 2026-11-02. The step card stage and the desk stage are one `StudioEditStage` (club app) on
+`@furria/studio/Stage` (`fit="contain"`, `viewpoint="dancers"`) with the gesture engine bound by
+`@furria/studio/use-stage-gestures`: hit testing over dots (and bend handles, higher priority)
+through `hit-priority` in area pixels measured from the plane, tap → `editor.tap` (one dot alone,
+again → none, empty floor → none), long press → `editor.hold` (adds to the selection, haptic) and
+shows the selection toolbar (`Stage.Float` + `KkStageInk.Bar`: *Spiegeln · Reihe · Verteilen ·
+Abwählen*, only *Abwählen* in Wege); drag a dot → `grab/move/end` (the selection when the dot
+belongs to it, 0.25 m grid snap as before), `dragCancel` drops the preview (`editor.cancel`,
+`TrackCommit.drop`); the live value (*1,5 m rechts · 2,0 m hinten*) floats above the finger
+(`KkDragReadout`, `liftPlacementOf`), the snap lines light through the dragged dot, a haptic tick on
+whole metres. Two fingers (and wheel/trackpad) zoom up to 6× and pan: the zoom is a smaller
+`frame` (`stage-zoom`: `zoomedStageViewOf` keeps the point under the fingers, clamps to the
+stage), so the contain stage needs no second geometry; `frameChange="follow"` keys the plane
+once (closes the phase 10 re-key follow-up for edit stages). Quarter-metre grid lines appear from
+2× (`stage-grid`, centred on the centre line, front-anchored in depth). Precision on the stage is
+zoom + grid snap (ruling); no distance precision. Arrow keys nudge a focused dot by 0.5 m, Enter
+selects (`Stage.Dot` `keys`).
+- **New parts:** `Stage.Grid`, `Stage.Echo` (onion), `Stage.Handle` (bend), `Stage.Key`
+  (waypoint), `Stage.Float`; `Stage.Dot` `selected`/`lifted`/`dimmed`; `StageRoot` `work`
+  (gesture area wrapper as size container + plane ref), `overlay`, `frameChange`. Paint in
+  `@furria/ui`: `KkStageInk.Grid/Echo/Handle/Key/Bar`, `KkStageInkDisc` selected/lifted/dimmed,
+  `KkDragReadout` (phase 9 reuses it).
+- **Selection:** the *Mehrere* switch is gone (step card tools and desk tools); long press adds.
+  `grabbedSpotsOf` lost `multi`; the cast list's `choose` selects the spot (or keeps the
+  selection it belongs to).
+- **Deleted:** `KkStudioStage` (+ `Dot`, `Handle`, `Onion`, `Path`), `KkLaneDot`,
+  `StepCardDotsLive`, `DeskDotsLive`, `use-step-card-dots`, `use-desk-dots`, desk `dotNameOf`/
+  `dotLabelOf`. `KkStudioDrag/use-studio-drag` stays for the phase 9 tracks.
+- **Unified looks (judge on device):** editor dots are the practice discs (ink cast dots, dashed open
+  spots) with a primary outline when selected and a lift when dragged; the old 25/33/66/75 % guides
+  are replaced by the metre grid and the centre line.
+- **Review follow-ups (fixed):** a tap on a bend handle no longer clears the selection; keyboard
+  choose/nudge focus the desk's spots like a touch; the editable stage is a `group` (not `img`)
+  so its dot buttons reach assistive tech; the toolbar side is judged against the zoomed view; a
+  drag that replaces the selection hides the toolbar; a long press and a drag start in one batch
+  keep the added dot; pinch + pan keeps the point under the moving fingers; bends show no snap
+  lines (they are not snapped); `StageWork` lives in `stage-work.ts`; the toolbar is a `group`
+  and the readout no live region.
+- **Review follow-ups (open):** formation drags read the previewed keyframes per move (as before
+  this phase), so a drag landing on the next waypoint's place could join it to the held run —
+  snapshot the keyframes at grab time; `use-act-studio-stage` is large (selection, arrange, copy,
+  drag) — split in phase 12; no custom focus ring on stage dots; the readout size is a constant
+  in `use-stage-gestures`.
+- **Not built:** momentum/rubber band at the stage pan ends (pan stops at the stage edge); a
+  *whole stage* button — pinch out or wheel resets.
+- **Owed (device check):** dot drag with the readout, long-press multi-select + toolbar, bend
+  handle drag, pinch/pan during playback, keyboard nudge, on iPhone, Pixel and iPad Safari; shots at
+  390 px, 844×390 and iPad (the dev database holds no choreography).
+
+### Phase 11b — Lists with @dnd-kit/react
+Goal: spot holders and song order are dragged like the lab's lists.
+- [ ] Song order in the song list by drag handle (`songOrder` change), replacing the earlier/later shift
+- [ ] Spot holder assignment by dragging people between places and *frei* (session and evening)
+- [ ] Video order: decide — the data model has no video order (main/alternative per part only)
+- [ ] Device check: sort and assign on phone and iPad
 
 ### Phase 12 — Screens into the package, keyboard, cleanup
 Goal: the studio is one package; nothing studio-specific is left behind.
