@@ -2,7 +2,7 @@ import type { AnimationPlaybackControls, MotionValue } from 'motion/react';
 import { animate, useMotionValue, useReducedMotion } from 'motion/react';
 import { useEffect, useRef } from 'react';
 import type { PanBounds } from './pan-bounds';
-import { clampToBounds, momentumOf, rubberFollow } from './pan-bounds';
+import { clampToBounds, momentumOf, momentumTargetOf, rubberFollow } from './pan-bounds';
 
 export interface PanAxis {
   value: MotionValue<number>;
@@ -54,9 +54,10 @@ export const usePanAxis = ({ bounds, dimension, initial = 0 }: UsePanAxisOptions
       jumpTo(value.get());
       return;
     }
-    glide.current = animate(value, value.get(), {
+    const momentum = momentumOf(velocityPerMs, bounds);
+    glide.current = animate(value, momentumTargetOf(value.get(), momentum), {
       type: 'inertia',
-      ...momentumOf(velocityPerMs, bounds),
+      ...momentum,
     });
   };
 

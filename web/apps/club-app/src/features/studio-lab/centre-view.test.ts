@@ -5,7 +5,6 @@ import {
   centrePxPerSecondOf,
   centreScaleOf,
   centreSecondsOf,
-  momentumTargetOf,
   stripChunkOf,
   stripOutrunOf,
   stripWindowOf,
@@ -31,15 +30,6 @@ describe('centreOffsetOf / centreSecondsOf', () => {
 describe('centreBoundsOf', () => {
   it('lets the start and the end of the music reach the centre line', () => {
     expect(centreBoundsOf(180, 40, 195)).toEqual({ min: 195 - 7200, max: 195 });
-  });
-});
-
-describe('momentumTargetOf', () => {
-  it.each([
-    { velocity: -1000, expected: -640 },
-    { velocity: 0, expected: -40 },
-  ])('projects a release at $velocity px/s ahead of the finger', ({ velocity, expected }) => {
-    expect(momentumTargetOf(-40, { velocity, power: 0.6 })).toBe(expected);
   });
 });
 

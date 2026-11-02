@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { momentumOf, rubberFollow, rubberScale } from './pan-bounds';
+import { momentumOf, momentumTargetOf, rubberFollow, rubberScale } from './pan-bounds';
 
 describe('rubberFollow', () => {
   it.each([
@@ -31,5 +31,14 @@ describe('momentumOf', () => {
     { bounds: { min: 0, max: -300 }, expected: { velocity: 1500, min: 0, max: 0 } },
   ])('converts the release speed to px/s within $bounds', ({ bounds, expected }) => {
     expect(momentumOf(1.5, bounds)).toMatchObject(expected);
+  });
+});
+
+describe('momentumTargetOf', () => {
+  it.each([
+    { velocity: -1000, expected: -640 },
+    { velocity: 0, expected: -40 },
+  ])('projects a release at $velocity px/s ahead of where it starts', ({ velocity, expected }) => {
+    expect(momentumTargetOf(-40, { velocity, power: 0.6 })).toBe(expected);
   });
 });

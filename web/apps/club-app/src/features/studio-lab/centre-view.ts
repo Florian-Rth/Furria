@@ -1,5 +1,4 @@
 import type { PanBounds } from '@furria/studio/pan-bounds';
-import type { InertiaOptions } from 'motion/react';
 import { BAR_PITCH } from './timeline-layers';
 import type { TimelineView, ZoomLimits } from './timeline-view';
 
@@ -26,9 +25,6 @@ export const centreBoundsOf = (length: number, pxPerSecond: number, centre: numb
   min: centre - length * pxPerSecond,
   max: centre,
 });
-
-export const momentumTargetOf = (from: number, momentum: InertiaOptions): number =>
-  from + (momentum.power ?? 0) * (momentum.velocity ?? 0);
 
 export const centrePxPerSecondOf = (chosen: number | null, limits: ZoomLimits): number =>
   Math.min(Math.max(chosen ?? CENTRE_PX_PER_SECOND, limits.min), limits.max);
