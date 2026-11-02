@@ -195,11 +195,31 @@ package). `pnpm film <route> --script <gestures.json>` in `tools/screenshot` fil
 
 ### Phase 7 — ⚖ Interaction lab
 Goal: Florian picks the touch handling on his devices.
-- [ ] Playground: timeline (seek, pinch zoom, trim a cut, move a step border, precision drag) on real data
-- [ ] Playground: stage editor (drag a dot, multi-select, bend a path, keyframe on the timeline)
-- [ ] Playground: lists (song order, spot holders with dnd-kit) and the practice step rail
-- [ ] Variants where open: loupe vs lifted copy; long-press sheet vs selection toolbar; precision by distance vs by hold
+- [x] Playground: timeline (seek, pinch zoom, trim a cut, move a step border, precision drag) on real data
+- [x] Playground: stage editor (drag a dot, multi-select, bend a path, keyframe on the timeline)
+- [x] Playground: lists (song order, spot holders with dnd-kit) and the practice step rail
+- [x] Variants where open: loupe vs lifted copy; long-press sheet vs selection toolbar; precision by distance vs by hold
 - [ ] HTTPS static build; Florian tests on iPhone, Pixel and iPad Safari; rulings recorded here
+
+Lab built 2026-11-02, awaiting rulings. `/lab/studio/{timeline,stage,lists,rail}` (Labor → *Studio:
+Bedienung mit dem Finger*), feature `studio-lab`, visuals in the throwaway `KkTouchLab` kit; every
+playground loads the real studio of `?act=` (default: the first playable act the viewer leads) and
+edits only locally with one-tap undo, music plays through the existing mix player. Variants are
+switches at the top of each page and live in the URL: `lift=lifted|loupe`, `precision=distance|hold`,
+`selection=sheet|toolbar`, plus `glide=free|snap` for the rail (free momentum vs settling on a step).
+Timeline: tap seeks, one-finger drag on empty track scrubs, drag a step border (top row) or a cut
+(dashed, lower half) with count snapping and a haptic tick, two fingers zoom and pan with momentum
+and rubber band, the view follows the playhead after 1.8 s untouched. Stage: tap selects, long press
+adds to the selection (sheet variant opens *Auswahl* after lifting; toolbar variant floats
+*Spiegeln · Reihe · Abwählen* above the selection), dragging a selected dot moves the whole selection
+and writes a keyframe at the current time (0.25 m grid snap), the diamond on the selected dot's move
+bends it, pinch zooms the stage; the lane below shows keyframes (selected dots, else all), dragging one
+retimes that formation change with count snapping. Lists: @dnd-kit/react 0.5.1 (pinned, catalog) —
+song order by handle, holders dragged between places or to *frei* (touch delay from dnd-kit's default
+sensor). Rail: swipe with momentum and rubber band, tap loops a step, follows playback.
+Found and fixed on the way: `use-gesture` cancelled every touch drag on Chromium, because the
+`lostpointercapture` of the implicitly captured child bubbled to the area; it now only reacts to the
+area's own capture loss.
 
 ### Phase 8 — One Timeline: build, practice strip, hub score track
 Goal: the `Timeline` kit exists per the lab rulings and replaces the read-only tracks.

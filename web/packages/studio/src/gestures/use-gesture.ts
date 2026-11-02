@@ -191,6 +191,12 @@ export const useGesture = ({ policy, onIntent }: UseGestureOptions): Gesture => 
     dispatch({ type: 'cancel', id: event.pointerId });
   };
 
+  const onLostPointerCapture = (event: PointerEvent<GestureElement>): void => {
+    if (event.target === event.currentTarget) {
+      onPointerCancel(event);
+    }
+  };
+
   const onWheel = useEffectEvent((event: WheelEvent): void => {
     if (!callbacks.current.policy.navigate) {
       return;
@@ -275,7 +281,7 @@ export const useGesture = ({ policy, onIntent }: UseGestureOptions): Gesture => 
       onPointerMove,
       onPointerUp,
       onPointerCancel,
-      onLostPointerCapture: onPointerCancel,
+      onLostPointerCapture,
     },
     areaSize,
     isActive: () => isGestureActive(machine.current),
