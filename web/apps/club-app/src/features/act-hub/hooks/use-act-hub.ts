@@ -2,7 +2,6 @@ import type { TimelinePart, TimelineStep } from '@furria/studio/Timeline';
 import type { KkGroupTone } from '@furria/ui/group-tone';
 import type { KkIconName } from '@furria/ui/KkIcon';
 import { useKkScoreWide } from '@furria/ui/KkScoreDesk';
-import type { KkScoreFormationDot } from '@furria/ui/KkScoreFormation';
 import type { KkScoreReadinessState } from '@furria/ui/KkScoreReadiness';
 import type { KkQuietScreenAction } from '@furria/ui/screen-declaration';
 import { useState } from 'react';
@@ -40,7 +39,7 @@ import {
 import type { ScoreDoor } from '../score-doors';
 import { hasEditDoors, scoreDoorsOf } from '../score-doors';
 import { enteringDotsOf, entranceDelayOf } from '../score-entrance';
-import type { FormationDot } from '../score-formation';
+import type { FormationDot, ScoreDot } from '../score-formation';
 import type { ScoreLink } from '../score-links';
 import { detailsLinkOf, eveningLinkOf, musicLinkOf } from '../score-links';
 import type { ScoreModel } from '../score-model';
@@ -70,7 +69,7 @@ export interface ScoreRowView {
   number: number;
   title: string;
   meta: string;
-  dots: KkScoreFormationDot[];
+  dots: ScoreDot[];
   entranceDelay: number | null;
   movement: boolean;
   video: boolean;
@@ -100,7 +99,7 @@ export interface ScoreStepView {
   step: ScoreStep;
   title: string;
   context: string;
-  dots: KkScoreFormationDot[];
+  dots: ScoreDot[];
   videoSource: string | null;
   videoPoster: string | null;
   videoName: string | null;
@@ -116,7 +115,7 @@ export interface ScoreFactsView {
 
 export interface ScoreYouView {
   place: number | null;
-  dots: KkScoreFormationDot[];
+  dots: ScoreDot[];
   practiseMeta: string | null;
 }
 
@@ -177,7 +176,7 @@ const readStored = (key: string): string | null => {
   }
 };
 
-const shownDotsOf = (dots: readonly FormationDot[]): KkScoreFormationDot[] =>
+const shownDotsOf = (dots: readonly FormationDot[]): ScoreDot[] =>
   dots.map((dot) => ({
     id: dot.spotId,
     x: dot.x,

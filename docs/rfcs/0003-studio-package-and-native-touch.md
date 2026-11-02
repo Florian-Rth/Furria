@@ -372,9 +372,41 @@ Goal: every editing track is the `Timeline` with the gesture engine.
 
 ### Phase 10 — One Stage: read views
 Goal: the `Stage` kit replaces the read-only renderers.
-- [ ] `Stage` kit with layers (floor, spots, dots, paths, own dot and cue, absences), viewpoint and framing props
-- [ ] Practice, lesson picture, hall and hub thumbnails on `Stage`; delete their renderers
-- [ ] Film playback; check frame rate on the iPad (canvas only if it drops)
+- [x] `Stage` kit with layers (floor, spots, dots, paths, own dot and cue, absences), viewpoint and framing props
+- [x] Practice, lesson picture, hall and hub thumbnails on `Stage`; delete their renderers
+- [ ] Film playback; check frame rate on the iPad (canvas only if it drops) — owed to Florian
+
+Built 2026-11-02. `@furria/studio/Stage` is the one read stage: `Stage` (root) with `Dot`, `Path`,
+`Target`, `Count` and `Cue`. Props: `stage` (width, depth, artwork), `viewpoint` (dancers = front
+edge and front label on top, artwork turned; audience = at the bottom), `fit` (`contain` fills a
+sized container and frames `frame` — the practice step framing, fading between frames — or `width`
+for list and card figures), `density` (`full` | `card` | `thumb`: dot sizes, numbers, halo, paper vs
+ink-wash floor), `centre` (centre line), `frontLabel`. Every layer places by stage shares (0–1) in
+one field (`stage-framing`: `placeOf`, `containedPlaneOf`, `containedFrontOf`, `StageFrame`,
+`WHOLE_STAGE_FRAME`, `frameKeyOf` moved here from practice); lines draw in a `0 0 1 1` SVG with
+non-scaling strokes, so no aspect is passed around. `Stage.Dot` kinds: `own`, `cast` (`muted` in
+practice beside the own dot, `moving` in the hall), `open`, `absent`; optional name tag above/below,
+glide while paused, motion entrance from an earlier place (hub rows).
+- **Paint stays in `@furria/ui`** (ADR-0035: the studio authors no design CSS): `KkStageInk` (plane,
+  disc, name, line, ring, count, cue, front label) and `KkFormationLegend` (the hub's numbered cast
+  list beside/below the live formation). `KkTheme` joins `@furria/ui/kk-sx`; the studio takes the
+  theme augmentation through `src/ui-theme.d.ts`.
+- **On `Stage`:** practice and the lesson picture (`PracticeStageLayer`, dancers, contain + step
+  frame), the hall (`HallStageLayer`, its own viewpoint, contain), the hub (`ScoreFormation`:
+  manual-row thumbs, the *Für dich* card, the live formation with legend; audience, width).
+- **Deleted:** `KkPracticeStage`, `KkScoreFormation` (+ `formation-geometry`), `KkHall.Stage`,
+  `KkHall.Dot`.
+- **Unified looks (judge on device):** an open spot is one neutral dashed ring everywhere (practice
+  had gold, now kept for absent people); the hall floor uses the practice veil and shadow; the hub
+  live formation shows full-size numbered discs with the pulsing own halo.
+- **Review follow-ups (fixed):** a dot only mounts motion when it enters (`StageEntering`) and
+  promotes a layer only while gliding; thumbs need no label; `stage-framing` has pure tests.
+- **Review follow-ups (open):** a `contain` frame change re-keys the plane with its layers (as the
+  old practice stage did), so layers remount and an entrance would replay — keep `from` to `width`
+  stages, or key only the floor when phase 11 needs it; the front label does not fade with a frame.
+- **Owed:** shots at 390 px, 844×390 and iPad, a playback film and the iPad frame rate — the dev
+  database holds no choreography, so nothing could be shot here; `KkTouchLab` and `KkStudioStage`
+  stay for the open phase 7 rulings and phase 11.
 
 ### Phase 11 — One Stage: editor
 Goal: the stage editor is the `Stage` with editor layers and the gesture engine.

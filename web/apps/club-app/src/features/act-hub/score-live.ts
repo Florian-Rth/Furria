@@ -1,7 +1,7 @@
 import type { SpotPath } from '@furria/studio/choreography-motion';
 import type { TimelineRange } from '@furria/studio/music-timeline';
 import type { StudioSpot, StudioStage } from '@furria/studio/studio-schemas';
-import type { KkScoreFormationDot } from '@furria/ui/KkScoreFormation';
+import type { ScoreDot } from './score-formation';
 import { formationAt } from './score-formation';
 
 export interface LiveScene {
@@ -18,8 +18,8 @@ export const liveDotsOf = (
   scene: LiveScene,
   range: TimelineRange | null,
   seconds: number,
-  resting: KkScoreFormationDot[],
-): KkScoreFormationDot[] =>
+  resting: ScoreDot[],
+): ScoreDot[] =>
   isInside(range, seconds)
     ? formationAt(scene.paths, scene.spots, scene.stage, seconds, scene.ownSpotId).map((dot) => ({
         id: dot.spotId,

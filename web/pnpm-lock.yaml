@@ -595,12 +595,21 @@ importers:
 
   packages/studio:
     dependencies:
+      '@emotion/react':
+        specifier: 'catalog:'
+        version: 11.14.0(@types/react@19.2.17)(react@19.2.7)
+      '@emotion/styled':
+        specifier: 'catalog:'
+        version: 11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react@19.2.7)
       '@furria/api-client':
         specifier: workspace:*
         version: link:../api-client
       '@furria/ui':
         specifier: workspace:*
         version: link:../ui
+      '@mui/material':
+        specifier: 'catalog:'
+        version: 9.2.0(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       immer:
         specifier: 'catalog:'
         version: 11.1.21

@@ -1,9 +1,10 @@
 import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
-import { KkScoreFormation } from '@furria/ui/KkScoreFormation';
+import { KkFormationLegend } from '@furria/ui/KkFormationLegend';
 import type { FC } from 'react';
 import type { ActHub, ScoreStepView } from '../hooks/use-act-hub';
 import { AUDIENCE_LABEL, FORMATION_TITLE, OPEN_SPOT } from '../score-copy';
 import { liveDotsOf } from '../score-live';
+import { ScoreFormation } from './ScoreFormation';
 
 interface ScoreLiveFormationProps {
   score: ActHub;
@@ -25,15 +26,22 @@ export const ScoreLiveFormation: FC<ScoreLiveFormationProps> = ({ score, view })
     view.dots,
   );
 
-  return (
-    <KkScoreFormation
+  const entries = dots.map((dot) => ({
+    key: dot.id,
+    number: dot.number,
+    caption: dot.caption,
+    own: dot.own,
+    open: dot.open,
+  }));
+  const figure = (
+    <ScoreFormation
       label={FORMATION_TITLE}
-      widthMetres={model.stage.widthMetres}
-      depthMetres={model.stage.depthMetres}
+      stage={model.stage}
       dots={dots}
-      size="stage"
-      audienceLabel={AUDIENCE_LABEL}
-      openLabel={OPEN_SPOT}
+      density="full"
+      frontLabel={AUDIENCE_LABEL}
     />
   );
+
+  return <KkFormationLegend figure={figure} entries={entries} openLabel={OPEN_SPOT} />;
 };
