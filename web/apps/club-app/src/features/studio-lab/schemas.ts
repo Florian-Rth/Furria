@@ -9,6 +9,9 @@ export type StudioLabPrecision = z.infer<typeof StudioLabPrecisionSchema>;
 export const StudioLabSelectionSchema = z.enum(['sheet', 'toolbar']);
 export type StudioLabSelection = z.infer<typeof StudioLabSelectionSchema>;
 
+export const StudioLabScrubSchema = z.enum(['fixed', 'centre']);
+export type StudioLabScrub = z.infer<typeof StudioLabScrubSchema>;
+
 export const StudioLabGlideSchema = z.enum(['free', 'snap']);
 export type StudioLabGlide = z.infer<typeof StudioLabGlideSchema>;
 
@@ -18,6 +21,7 @@ export const StudioLabSearchSchema = z.object({
   precision: StudioLabPrecisionSchema.optional().catch(undefined),
   selection: StudioLabSelectionSchema.optional().catch(undefined),
   glide: StudioLabGlideSchema.optional().catch(undefined),
+  scrub: StudioLabScrubSchema.optional().catch(undefined),
 });
 export type StudioLabSearch = z.infer<typeof StudioLabSearchSchema>;
 
@@ -26,6 +30,7 @@ export interface StudioLabVariants {
   precision: StudioLabPrecision;
   selection: StudioLabSelection;
   glide: StudioLabGlide;
+  scrub: StudioLabScrub;
 }
 
 export const studioLabVariantsOf = (search: StudioLabSearch): StudioLabVariants => ({
@@ -33,4 +38,5 @@ export const studioLabVariantsOf = (search: StudioLabSearch): StudioLabVariants 
   precision: search.precision ?? 'distance',
   selection: search.selection ?? 'sheet',
   glide: search.glide ?? 'free',
+  scrub: search.scrub ?? 'fixed',
 });

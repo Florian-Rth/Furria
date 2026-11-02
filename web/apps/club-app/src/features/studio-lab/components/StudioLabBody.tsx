@@ -4,6 +4,7 @@ import type { StudioLabLoad } from '../hooks/use-studio-lab-page';
 import type { StudioLabVariants } from '../schemas';
 import type { StudioLabPlayground } from '../studio-lab';
 import { STUDIO_LAB_EMPTY, STUDIO_LAB_LOADING, STUDIO_LAB_NO_ACT } from '../studio-lab-copy';
+import { CentreTimelinePlayground } from './CentreTimelinePlayground';
 import { ListsPlayground } from './ListsPlayground';
 import { RailPlayground } from './RailPlayground';
 import { StagePlayground } from './StagePlayground';
@@ -28,6 +29,11 @@ export const StudioLabBody: FC<StudioLabBodyProps> = ({ playground, load, varian
 
   switch (playground) {
     case 'timeline':
+      if (variants.scrub === 'centre') {
+        return (
+          <CentreTimelinePlayground key={load.actId} studio={load.studio} variants={variants} />
+        );
+      }
       return <TimelinePlayground key={load.actId} studio={load.studio} variants={variants} />;
     case 'stage':
       return <StagePlayground key={load.actId} studio={load.studio} variants={variants} />;

@@ -321,7 +321,7 @@ Goal: Florian picks the touch handling on his devices.
 - [x] Playground: lists (song order, spot holders with dnd-kit) and the practice step rail
 - [x] Variants where open: loupe vs lifted copy; long-press sheet vs selection toolbar; precision by distance vs by hold
 - [ ] HTTPS static build; Florian tests on iPhone, Pixel and iPad Safari; rulings recorded here
-- [ ] Scrub variant on the timeline playground: fixed centre "now" line, the wave moves under it
+- [x] Scrub variant on the timeline playground: fixed centre "now" line, the wave moves under it
   (iOS Voice Memos style) vs the fixed view; Florian judges, Phase 9 builds the winner
 
 **Rulings (Florian, 2026-11-02):**
@@ -339,6 +339,21 @@ Goal: Florian picks the touch handling on his devices.
   or any point while scrubbing, continuous momentum; performance first (transform-only per frame, no
   React render per frame, 60 fps on iPhone). Practice strip, hub score track and lesson keep the fixed
   view.
+
+Scrub variant built 2026-11-02, awaiting the ruling: switch *Zeitleiste: Feste Ansicht |
+Mittellinie* (`scrub=fixed|centre`) on `/lab/studio/timeline`. In *Mittellinie* the playhead stays
+in the middle and the music moves under it: one finger swipes the wave with free momentum and a
+rubber band at both ends (no snapping), tap glides to that point, two fingers zoom around the
+line, the played half is tinted. A swipe during playback pauses the music and resumes it where the
+glide comes to rest. Cut and step-border handles still drag (the wave freezes while editing) with
+the Phase 7 lift and precision rulings. Every frame only writes transforms: one offset and one
+zoom motion value move the wave, steps and ticks; the clock is a motion value; React renders only
+when the wave window (about five widths wide, moved with hysteresis) has to move on, or when a
+pinch is committed. Found on the way: Motion finishes `animate(value, value.get(), { type:
+'inertia' })` at once, so a release targets the projected point (`momentumTargetOf` in
+`pan-bounds`). `usePanAxis.release` (rail) and the fixed timeline's two-finger pan had the same
+bug and are fixed too, so the step rail now actually glides; its `glide=free` ruling may deserve a
+second look on the device.
 
 Lab built 2026-11-02, awaiting rulings. `/lab/studio/{timeline,stage,lists,rail}` (Labor → *Studio:
 Bedienung mit dem Finger*), feature `studio-lab`, visuals in the throwaway `KkTouchLab` kit; every
