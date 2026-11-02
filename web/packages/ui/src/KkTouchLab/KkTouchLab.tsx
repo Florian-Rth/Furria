@@ -1,8 +1,11 @@
+import { KkTouchLabHalf } from './internal/layout/KkTouchLabHalf';
 import { KkTouchLabRailTrack } from './internal/layout/KkTouchLabRailTrack';
 import { KkTouchLabRoot } from './internal/layout/KkTouchLabRoot';
+import { KkTouchLabStrip } from './internal/layout/KkTouchLabStrip';
 import { KkTouchLabBands } from './internal/ui/KkTouchLabBands';
 import { KkTouchLabBend } from './internal/ui/KkTouchLabBend';
 import { KkTouchLabCentre } from './internal/ui/KkTouchLabCentre';
+import { KkTouchLabClock } from './internal/ui/KkTouchLabClock';
 import { KkTouchLabDot } from './internal/ui/KkTouchLabDot';
 import { KkTouchLabFloat } from './internal/ui/KkTouchLabFloat';
 import { KkTouchLabFloor } from './internal/ui/KkTouchLabFloor';
@@ -20,6 +23,7 @@ import { KkTouchLabSlot } from './internal/ui/KkTouchLabSlot';
 import { KkTouchLabTicks } from './internal/ui/KkTouchLabTicks';
 import { KkTouchLabWave } from './internal/ui/KkTouchLabWave';
 
+export type { KkTouchLabHalfSide } from './internal/layout/KkTouchLabHalf';
 export type { KkTouchLabHandlers, KkTouchLabSize } from './internal/layout/KkTouchLabRoot';
 export type { KkTouchLabBand } from './internal/ui/KkTouchLabBands';
 export type { KkTouchLabDotState } from './internal/ui/KkTouchLabDot';
@@ -53,6 +57,9 @@ export const KkTouchLab = Object.assign(KkTouchLabRoot, {
   RailTrack: KkTouchLabRailTrack,
   RailStep: KkTouchLabRailStep,
   Centre: KkTouchLabCentre,
+  Strip: KkTouchLabStrip,
+  Half: KkTouchLabHalf,
+  Clock: KkTouchLabClock,
   Row: KkTouchLabRow,
   Slot: KkTouchLabSlot,
   Person: KkTouchLabPerson,

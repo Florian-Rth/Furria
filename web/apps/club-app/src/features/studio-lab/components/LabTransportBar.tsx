@@ -15,6 +15,12 @@ const playIcon = <KkIcon name="play" size="small" />;
 
 export const LabTransportBar: FC<LabTransportBarProps> = ({ transport }) => {
   const label = transport.playing ? PAUSE : PLAY;
+  const time =
+    typeof transport.time === 'string' ? (
+      <KkTouchLab.Hint text={transport.time} numeric sx={{ flex: 1 }} />
+    ) : (
+      <KkTouchLab.Clock time={transport.time} sx={{ flex: 1 }} />
+    );
   const fit =
     transport.fit === null ? null : (
       <KkIconButton label={FIT} icon="zoom" onClick={transport.fit} />
@@ -34,7 +40,7 @@ export const LabTransportBar: FC<LabTransportBarProps> = ({ transport }) => {
       <KkButton variant="contained" size="small" startIcon={playIcon} onClick={transport.toggle}>
         {label}
       </KkButton>
-      <KkTouchLab.Hint text={transport.time} numeric sx={{ flex: 1 }} />
+      {time}
       {fit}
       {undo}
     </Stack>
