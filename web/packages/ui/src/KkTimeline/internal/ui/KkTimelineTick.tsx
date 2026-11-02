@@ -1,11 +1,11 @@
 import Box from '@mui/material/Box';
 import { motion } from 'motion/react';
 import type { FC } from 'react';
+import { percentOf } from '../../../internal/score-paint';
 import { useReducedMotion } from '../../../internal/use-reduced-motion';
 import { kkTokens } from '../../../tokens';
-import { percentOf } from '../score-paint';
 
-export interface KkScoreTrackTickMark {
+export interface KkTimelineTickMark {
   key: number;
   from: number;
   to: number;
@@ -15,13 +15,13 @@ const DROP = { scaleY: 0, opacity: 0 } as const;
 const LANDED = { scaleY: 1, opacity: 1 } as const;
 const DROP_SECONDS = 0.36;
 
-interface KkScoreTrackTickProps {
-  tick: KkScoreTrackTickMark;
+interface KkTimelineTickProps {
+  tick: KkTimelineTickMark;
   active: boolean;
   dropDelay: number | null;
 }
 
-export const KkScoreTrackTick: FC<KkScoreTrackTickProps> = ({ tick, active, dropDelay }) => {
+export const KkTimelineTick: FC<KkTimelineTickProps> = ({ tick, active, dropDelay }) => {
   const reduced = useReducedMotion();
   const place = { left: percentOf(tick.from), width: percentOf(tick.to - tick.from) };
   const initial = dropDelay === null || reduced ? false : DROP;

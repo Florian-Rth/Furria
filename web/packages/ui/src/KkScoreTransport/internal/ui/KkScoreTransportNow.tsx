@@ -1,7 +1,7 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import { redInk } from '../../../internal/red-ink';
-import { SCORE_FIGURES } from '../../../KkScoreTrack/internal/score-paint';
+import { SCORE_FIGURES } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
 
 interface KkScoreTransportNowProps {

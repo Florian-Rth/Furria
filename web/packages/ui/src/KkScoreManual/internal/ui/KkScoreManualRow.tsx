@@ -7,8 +7,8 @@ import { focusRing } from '../../../internal/focus-ring';
 import { goldInkOf } from '../../../internal/gold-ink';
 import { inkWash } from '../../../internal/ink-wash';
 import { redInk } from '../../../internal/red-ink';
+import { SCORE_FIGURES } from '../../../internal/score-paint';
 import { KkScoreGlyph } from '../../../KkScoreGlyph/KkScoreGlyph';
-import { SCORE_FIGURES } from '../../../KkScoreTrack/internal/score-paint';
 import { kkTokens } from '../../../tokens';
 
 const rowPaint = (theme: Theme): CSSObject => ({

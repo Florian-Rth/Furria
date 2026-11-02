@@ -31,6 +31,7 @@
     "./studio-document": "./src/document/studio-document.ts",
     "./studio-editor": "./src/document/studio-editor.ts",
     "./studio-schemas": "./src/models/studio-schemas.ts",
+    "./Timeline": "./src/timeline/Timeline.tsx",
     "./use-drag-lift": "./src/gestures/use-drag-lift.ts",
     "./use-gesture": "./src/gestures/use-gesture.ts",
     "./use-mix-player": "./src/engine/use-mix-player.ts",
@@ -47,6 +48,7 @@
   },
   "dependencies": {
     "@furria/api-client": "workspace:*",
+    "@furria/ui": "workspace:*",
     "immer": "catalog:",
     "motion": "catalog:",
     "signalsmith-stretch": "catalog:",

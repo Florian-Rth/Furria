@@ -1,6 +1,6 @@
 import type { SpotPath } from '@furria/studio/choreography-motion';
 import { spotPathsOf } from '@furria/studio/choreography-motion';
-import type { MusicSegment } from '@furria/studio/music-timeline';
+import type { CountMark, MusicSegment } from '@furria/studio/music-timeline';
 import { countMarksOf, musicLengthOf, musicSegmentsOf } from '@furria/studio/music-timeline';
 import { stageOrDefault } from '@furria/studio/stage-view';
 import type { StudioStage } from '@furria/studio/studio-schemas';
@@ -12,13 +12,10 @@ import { readinessOf } from './score-readiness';
 import type { ScorePart, ScoreStep, ScoreStepGroup } from './score-steps';
 import { scorePartsOf, scoreStepsOf, stepGroupsOf } from './score-steps';
 
-const FIRST_COUNT = 1;
-
 export interface ScoreModel {
   segments: readonly MusicSegment[];
   length: number;
-  seams: number[];
-  eights: number[];
+  marks: CountMark[];
   paths: readonly SpotPath[];
   parts: ScorePart[];
   steps: ScoreStep[];
@@ -43,13 +40,11 @@ export const scoreModelOf = (studio: Studio, viewerId: number | null): ScoreMode
   const steps = scoreStepsOf(studio, parts, paths, marks);
   const stage = stageOrDefault(studio.stage);
   const ownSpotId = ownSpotIdOf(studio, viewerId);
-  const shareOf = (seconds: number): number => (length > 0 ? seconds / length : 0);
 
   return {
     segments,
     length,
-    seams: segments.slice(1).map((segment) => shareOf(segment.timelineStart)),
-    eights: marks.filter((mark) => mark.count === FIRST_COUNT).map((mark) => shareOf(mark.seconds)),
+    marks,
     paths,
     parts,
     steps,

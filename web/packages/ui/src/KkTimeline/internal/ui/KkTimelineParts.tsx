@@ -1,19 +1,19 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import type { KkGroupTone } from '../../../internal/group-tone';
-import { percentOf } from '../score-paint';
-import type { KkScoreTrackPart } from './KkScoreTrackPartBand';
-import { KkScoreTrackPartBand } from './KkScoreTrackPartBand';
+import { percentOf } from '../../../internal/score-paint';
+import type { KkTimelinePart } from './KkTimelinePartBand';
+import { KkTimelinePartBand } from './KkTimelinePartBand';
 
-interface KkScoreTrackPartsProps {
+interface KkTimelinePartsProps {
   tone: KkGroupTone | null;
-  parts: readonly KkScoreTrackPart[];
+  parts: readonly KkTimelinePart[];
   onSelect?: (key: number) => void;
 }
 
-export const KkScoreTrackParts: FC<KkScoreTrackPartsProps> = ({ tone, parts, onSelect }) => {
+export const KkTimelineParts: FC<KkTimelinePartsProps> = ({ tone, parts, onSelect }) => {
   const bands = parts.map((part) => (
-    <KkScoreTrackPartBand
+    <KkTimelinePartBand
       key={part.key}
       part={part}
       tone={tone}
@@ -25,7 +25,7 @@ export const KkScoreTrackParts: FC<KkScoreTrackPartsProps> = ({ tone, parts, onS
   return (
     <Box
       aria-hidden={onSelect === undefined ? true : undefined}
-      data-kk-score-parts
+      data-kk-timeline-parts
       sx={{ position: 'absolute', inset: 0, pointerEvents: 'none' }}
     >
       {bands}

@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
-import { SCORE_FIGURES } from '../../../KkScoreTrack/internal/score-paint';
+import { SCORE_FIGURES } from '../../../internal/score-paint';
 
 interface KkScoreTransportClockProps {
   position: string;

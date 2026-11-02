@@ -1,21 +1,22 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
+import { percentOf } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
-import { LANE_VARS, percentOf } from '../score-paint';
+import { LANE_VARS } from '../timeline-paint';
 
 const HEAD = '0.5rem';
 
-interface KkScoreTrackPlayheadProps {
+interface KkTimelinePlayheadProps {
   share: number;
 }
 
-export const KkScoreTrackPlayhead: FC<KkScoreTrackPlayheadProps> = ({ share }) => {
+export const KkTimelinePlayhead: FC<KkTimelinePlayheadProps> = ({ share }) => {
   const place = { left: percentOf(Math.min(1, Math.max(0, share))) };
 
   return (
     <Box
       aria-hidden
-      data-kk-score-playhead
+      data-kk-timeline-playhead
       style={place}
       sx={{
         position: 'absolute',

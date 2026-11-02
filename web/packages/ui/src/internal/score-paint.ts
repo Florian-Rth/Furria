@@ -1,8 +1,8 @@
 import type { CSSObject, Theme } from '@mui/material/styles';
-import type { KkGroupTone } from '../../internal/group-tone';
-import { GROUP_TONE_ON_FIELD_LIGHT, groupToneRecipes } from '../../internal/group-tone';
-import { applyScheme } from '../../internal/scheme-paint';
-import { kkTokens } from '../../tokens';
+import { kkTokens } from '../tokens';
+import type { KkGroupTone } from './group-tone';
+import { GROUP_TONE_ON_FIELD_LIGHT, groupToneRecipes } from './group-tone';
+import { applyScheme } from './scheme-paint';
 
 const PERCENT = 100;
 const SHADE_MIXES: readonly (readonly [string, string])[] = [
@@ -56,35 +56,3 @@ export const shadeInk = (theme: Theme, tone: KkGroupTone | null, shade: number):
 
   return applyScheme(theme, { light: { color: light }, dark: { color: dark } });
 };
-
-export const SCORE_LANES = {
-  slim: { height: '3.25rem', ruler: '0rem', parts: '1.125rem', steps: '0.625rem' },
-  strip: { height: '5.5rem', ruler: '0rem', parts: '1.5rem', steps: '0.875rem' },
-  full: { height: '12.5rem', ruler: '1.375rem', parts: '1.625rem', steps: '3.25rem' },
-} as const;
-
-export type KkScoreTrackSize = keyof typeof SCORE_LANES;
-
-export const LANE_VARS = {
-  ruler: '--kk-score-ruler',
-  parts: '--kk-score-parts',
-  steps: '--kk-score-steps',
-} as const;
-
-export const waveTop = `calc(var(${LANE_VARS.ruler}) + var(${LANE_VARS.parts}))`;
-export const stepsTop = `calc(100% - var(${LANE_VARS.steps}))`;
-
-export const WAVE_HEIGHT = 100;
-const WAVE_MID = WAVE_HEIGHT / 2;
-const BAR_FILL = 0.72;
-const BAR_FLOOR = 0.6;
-
-export const wavePathOf = (bars: readonly number[]): string =>
-  bars
-    .map((value, index) => {
-      const half = Math.max(BAR_FLOOR, value * (WAVE_MID - 2));
-      const left = index + (1 - BAR_FILL) / 2;
-
-      return `M${left.toFixed(2)} ${(WAVE_MID - half).toFixed(2)}h${BAR_FILL}v${(half * 2).toFixed(2)}h-${BAR_FILL}z`;
-    })
-    .join('');

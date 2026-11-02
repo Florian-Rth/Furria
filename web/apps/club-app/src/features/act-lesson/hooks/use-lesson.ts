@@ -1,5 +1,4 @@
 import type { SpotPath } from '@furria/studio/choreography-motion';
-import { waveformOf } from '@furria/studio/mix-waveform';
 import { stepRangeOf } from '@furria/studio/music-timeline';
 import { shownStepNameOf, stepNumberOf } from '@furria/studio/step-names';
 import { useScreenWakeLock } from '@furria/studio/use-screen-wake-lock';
@@ -55,9 +54,8 @@ export interface LessonPicture {
   swap: () => void;
 }
 
-export interface LessonStrip extends LessonStripLanes {
-  bars: number[];
-  seek: (share: number) => void;
+export interface LessonStripView extends LessonStripLanes {
+  seek: (seconds: number) => void;
 }
 
 export interface LessonReading {
@@ -74,12 +72,10 @@ export interface Lesson {
   loop: LessonLoop;
   picture: LessonPicture;
   reading: LessonReading;
-  strip: LessonStrip;
+  strip: LessonStripView;
   ownPath: SpotPath | null;
   rail: PracticeSegmentGroupRow[];
 }
-
-const STRIP_BARS = 240;
 
 export const useLesson = (screen: StudioScreen): Lesson => {
   const { playback, practice, video } = screen;
@@ -145,10 +141,9 @@ export const useLesson = (screen: StudioScreen): Lesson => {
       },
     },
     strip: {
-      ...lessonStripOf(playback.steps, playback.parts, playback.length),
-      bars: waveformOf(playback.segments, playback.peaksByItem, STRIP_BARS),
-      seek: (share) => {
-        const target = stripStepIdOf(playback.steps, share, playback.length);
+      ...lessonStripOf(playback.steps, playback.parts),
+      seek: (seconds) => {
+        const target = stripStepIdOf(playback.steps, seconds);
         if (target !== null) {
           practice.jumpTo(target);
         }

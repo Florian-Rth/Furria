@@ -3,10 +3,11 @@ import ButtonBase from '@mui/material/ButtonBase';
 import type { FC, MouseEvent } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import type { KkGroupTone } from '../../../internal/group-tone';
+import { shadeFill, shadeWash } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
-import { LANE_VARS, shadeFill, shadeWash, waveTop } from '../score-paint';
+import { LANE_VARS, waveTop } from '../timeline-paint';
 
-export interface KkScoreTrackPart {
+export interface KkTimelinePart {
   key: number;
   label: string;
   hint?: string;
@@ -15,14 +16,14 @@ export interface KkScoreTrackPart {
   shade: number;
 }
 
-interface KkScoreTrackPartBandProps {
-  part: KkScoreTrackPart;
+interface KkTimelinePartBandProps {
+  part: KkTimelinePart;
   tone: KkGroupTone | null;
   place: { left: string; width: string };
   onSelect: ((key: number) => void) | undefined;
 }
 
-export const KkScoreTrackPartBand: FC<KkScoreTrackPartBandProps> = ({
+export const KkTimelinePartBand: FC<KkTimelinePartBandProps> = ({
   part,
   tone,
   place,
@@ -35,7 +36,7 @@ export const KkScoreTrackPartBand: FC<KkScoreTrackPartBandProps> = ({
   const wash = (
     <Box
       component="span"
-      data-kk-score-part-wash
+      data-kk-timeline-part-wash
       sx={(theme) => ({
         position: 'absolute',
         left: 0,
@@ -49,7 +50,7 @@ export const KkScoreTrackPartBand: FC<KkScoreTrackPartBandProps> = ({
   const chip = (
     <Box
       component="span"
-      data-kk-score-part
+      data-kk-timeline-part
       sx={(theme) => ({
         position: 'absolute',
         left: kkTokens.line.hair,
@@ -91,7 +92,7 @@ export const KkScoreTrackPartBand: FC<KkScoreTrackPartBandProps> = ({
       <ButtonBase
         aria-label={part.hint ?? part.label}
         onClick={select}
-        data-kk-score-part-button
+        data-kk-timeline-part-button
         sx={(theme) => ({
           position: 'absolute',
           left: 0,

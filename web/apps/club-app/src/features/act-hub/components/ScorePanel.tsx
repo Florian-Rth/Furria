@@ -1,4 +1,4 @@
-import { KkScoreTrack } from '@furria/ui/KkScoreTrack';
+import { Timeline } from '@furria/studio/Timeline';
 import { KkScoreTransport } from '@furria/ui/KkScoreTransport';
 import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
@@ -13,7 +13,6 @@ import {
   stepTitleOf,
 } from '../score-copy';
 import { ScoreClock } from './ScoreClock';
-import { ScorePlayhead } from './ScorePlayhead';
 
 const REVEAL_SECONDS = 1.6;
 
@@ -38,54 +37,47 @@ export const ScorePanel: FC<ScorePanelProps> = ({ score }) => {
   const clock =
     player.length > 0 ? <ScoreClock player={player.player} length={player.length} /> : null;
   const revealSeconds = score.reveal ? REVEAL_SECONDS : null;
-  const ruler = wide ? <KkScoreTrack.Ruler ticks={player.ticks} /> : null;
-  const parts = wide ? (
-    <KkScoreTrack.Parts tone={score.tone} parts={score.parts} />
-  ) : (
-    <KkScoreTrack.Parts tone={score.tone} parts={score.parts} onSelect={score.selectPart} />
-  );
+  const selectPart = wide ? undefined : score.selectPart;
   const steps = wide ? (
-    <KkScoreTrack.Steps
+    <Timeline.Steps
       label={SCORE_LABEL}
-      blocks={score.blocks}
+      steps={score.steps}
       activeKey={player.activeStepId}
       selectedKey={score.paneStepId}
-      interactive
       revealSeconds={revealSeconds}
       onSelect={score.selectRow}
     />
   ) : (
-    <KkScoreTrack.Ticks
-      ticks={score.ticks}
+    <Timeline.Ticks
+      steps={score.steps}
       activeKey={player.activeStepId}
       revealSeconds={revealSeconds}
     />
   );
+  const counts = wide ? <Timeline.Counts marks={score.model.marks} /> : null;
   const track =
     player.length > 0 ? (
-      <KkScoreTrack
+      <Timeline
         label={SCORE_LABEL}
-        size={wide ? 'full' : 'strip'}
-        zoom={player.zoom}
-        onSeek={player.seekShare}
+        density={wide ? 'full' : 'track'}
+        length={player.length}
+        focus={player.focus}
+        onSeek={player.seekTo}
       >
-        {parts}
-        {ruler}
-        <KkScoreTrack.Wave
-          bars={player.bars}
-          seams={score.model.seams}
-          eights={wide ? score.model.eights : []}
-          reveal={score.reveal}
-          revealSeconds={REVEAL_SECONDS}
-        />
-        {steps}
-        <ScorePlayhead
+        <Timeline.Parts tone={score.tone} parts={score.parts} onSelect={selectPart} />
+        <Timeline.Ruler />
+        {counts}
+        <Timeline.Wave
+          segments={score.model.segments}
+          peaks={player.peaks}
           player={player.player}
-          length={player.length}
-          bars={player.bars}
           playing={player.playing}
+          revealSeconds={revealSeconds}
         />
-      </KkScoreTrack>
+        <Timeline.Cuts segments={score.model.segments} />
+        {steps}
+        <Timeline.Playhead player={player.player} playing={player.playing} />
+      </Timeline>
     ) : (
       <KkText variant="body2" tone="secondary">
         {NO_MUSIC}
