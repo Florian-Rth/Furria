@@ -1,5 +1,5 @@
+import type { StudioPart } from '@furria/studio/studio-schemas';
 import { useRef, useState } from 'react';
-import type { StudioPart } from '@/features/acts/schemas';
 import {
   newPartNameOf,
   partDeskTitleOf,

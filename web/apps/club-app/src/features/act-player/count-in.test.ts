@@ -1,6 +1,6 @@
+import type { MusicSegment } from '@furria/studio/music-timeline';
 import { describe, expect, it } from 'vitest';
 import { countInAt, countInOf } from './count-in';
-import type { MusicSegment } from './music-timeline';
 
 const segment = (patch: Partial<MusicSegment>): MusicSegment => ({
   mediaItemId: 1,

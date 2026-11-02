@@ -1,3 +1,5 @@
+import type { MusicSegment, TimelineRange } from '@furria/studio/music-timeline';
+import { musicLengthOf } from '@furria/studio/music-timeline';
 import { audioBufferOf, sharedAudioContext } from './audio-buffers';
 import type { CountIn } from './count-in';
 import { countInAt, countInOf } from './count-in';
@@ -9,8 +11,6 @@ import {
   positionInRuns,
   runEndOf,
 } from './mix-schedule';
-import type { MusicSegment, TimelineRange } from './music-timeline';
-import { musicLengthOf } from './music-timeline';
 import type { PitchKeeper } from './pitch-keeper';
 import { pitchKeeperOf } from './pitch-keeper';
 

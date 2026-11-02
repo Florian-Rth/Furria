@@ -1,5 +1,5 @@
-import { partOfStep } from '@/features/act-player/music-timeline';
-import type { StudioStep } from '@/features/acts/schemas';
+import { partOfStep } from '@furria/studio/music-timeline';
+import type { StudioStep } from '@furria/studio/studio-schemas';
 import type { StepCountCell } from '../step-cards';
 import { countSheetOf, countsBetweenOf, stepCountCellsOf } from '../step-cards';
 import { stepCardEyebrowOf, stepCardLabelOf } from '../step-cards-copy';

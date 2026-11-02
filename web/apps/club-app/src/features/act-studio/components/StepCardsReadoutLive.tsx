@@ -1,8 +1,8 @@
+import type { CountMark } from '@furria/studio/music-timeline';
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
 import type { FC } from 'react';
 import { usePlaybackSeconds } from '@/features/act-player/hooks/use-playback-seconds';
 import type { MixPlayer } from '@/features/act-player/mix-player';
-import type { CountMark } from '@/features/act-player/music-timeline';
 import { countPlaceAt } from '../step-cards';
 import { readoutCountOf, STEP_CARDS_READOUT } from '../step-cards-copy';
 import { fineClockOf } from '../studio-copy';

@@ -1,9 +1,10 @@
-import type { SpotPath } from '@/features/act-player/choreography-motion';
-import { spotPathsOf } from '@/features/act-player/choreography-motion';
-import type { MusicSegment } from '@/features/act-player/music-timeline';
-import { countMarksOf, musicLengthOf, musicSegmentsOf } from '@/features/act-player/music-timeline';
-import { stageOrDefault } from '@/features/act-player/stage-view';
-import type { Studio, StudioStage } from '@/features/acts/schemas';
+import type { SpotPath } from '@furria/studio/choreography-motion';
+import { spotPathsOf } from '@furria/studio/choreography-motion';
+import type { MusicSegment } from '@furria/studio/music-timeline';
+import { countMarksOf, musicLengthOf, musicSegmentsOf } from '@furria/studio/music-timeline';
+import { stageOrDefault } from '@furria/studio/stage-view';
+import type { StudioStage } from '@furria/studio/studio-schemas';
+import type { Studio } from '@/features/acts/schemas';
 import type { FormationDot } from './score-formation';
 import { formationAt } from './score-formation';
 import type { ReadinessItem } from './score-readiness';

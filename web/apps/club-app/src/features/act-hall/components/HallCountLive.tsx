@@ -1,7 +1,7 @@
+import type { MusicSegment } from '@furria/studio/music-timeline';
 import { KkHall } from '@furria/ui/KkHall';
 import type { FC } from 'react';
 import type { MixPlayer } from '@/features/act-player/mix-player';
-import type { MusicSegment } from '@/features/act-player/music-timeline';
 import { useHallCount } from '../hooks/use-hall-count';
 
 interface HallCountLiveProps {

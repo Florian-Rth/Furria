@@ -1,3 +1,6 @@
+import { waveformOf } from '@furria/studio/mix-waveform';
+import type { MusicSegment } from '@furria/studio/music-timeline';
+import type { StudioSong } from '@furria/studio/studio-schemas';
 import type {
   KkStudioWaveBeat,
   KkStudioWaveHandleEdge,
@@ -5,9 +8,6 @@ import type {
 } from '@furria/ui/KkStudioWave';
 import { useState } from 'react';
 import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
-import { waveformOf } from '@/features/act-player/mix-waveform';
-import type { MusicSegment } from '@/features/act-player/music-timeline';
-import type { StudioSong } from '@/features/acts/schemas';
 import { cutHandleLabelOf, finalShiftLabelOf, songMetaOf, songNameOf } from '../studio-copy';
 import { nudgedCutOf, trimmedCutOf } from '../studio-edits';
 import {

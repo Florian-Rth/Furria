@@ -1,6 +1,6 @@
+import type { SpotPath } from '@furria/studio/choreography-motion';
+import type { StudioSpot, StudioStage } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { SpotPath } from '@/features/act-player/choreography-motion';
-import type { StudioSpot, StudioStage } from '@/features/acts/schemas';
 import { cueSideOf, stageDotsAt, stageSummaryOf, viewRouteOf } from './practice-stage';
 
 const stage: StudioStage = { widthMetres: 10, depthMetres: 8, artworkSvg: null };

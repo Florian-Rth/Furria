@@ -1,6 +1,6 @@
+import type { TimedKeyframe } from '@furria/studio/choreography-motion';
+import type { CountMark } from '@furria/studio/music-timeline';
 import { describe, expect, it } from 'vitest';
-import type { TimedKeyframe } from '@/features/act-player/choreography-motion';
-import type { CountMark } from '@/features/act-player/music-timeline';
 import type { OwnCue, OwnWay } from './practice-way';
 import { countsBetween, cueOf, ownWayAt } from './practice-way';
 

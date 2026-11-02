@@ -1,6 +1,6 @@
-import type { Choreography, Keyframe } from '@/features/acts/schemas';
 import type { MusicSegment } from './music-timeline';
 import { timelineSecondsOf } from './music-timeline';
+import type { Choreography, Keyframe } from './studio-schemas';
 
 const FULL_TURN_DEGREES = 360;
 const HALF_TURN_DEGREES = 180;

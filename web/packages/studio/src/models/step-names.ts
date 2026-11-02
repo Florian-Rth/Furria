@@ -1,4 +1,4 @@
-import type { StudioStep } from '@/features/acts/schemas';
+import type { StudioStep } from './studio-schemas';
 
 export const unnamedStepNameOf = (number: number): string => `Schritt ${number}`;
 

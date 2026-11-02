@@ -1,9 +1,9 @@
+import type { SpotPath } from '@furria/studio/choreography-motion';
+import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
+import type { StudioStep } from '@furria/studio/studio-schemas';
 import { KkPracticeStage } from '@furria/ui/KkPracticeStage';
 import type { FC } from 'react';
-import type { SpotPath } from '@/features/act-player/choreography-motion';
 import type { MixPlayer } from '@/features/act-player/mix-player';
-import type { CountMark, TimelineRange } from '@/features/act-player/music-timeline';
-import type { StudioStep } from '@/features/acts/schemas';
 import { usePracticeScene } from '../hooks/use-practice-scene';
 import { cueTextOf } from '../practice-copy';
 import type { StageScene } from '../practice-stage';

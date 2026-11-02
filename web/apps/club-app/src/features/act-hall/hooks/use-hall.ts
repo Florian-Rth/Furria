@@ -1,10 +1,10 @@
+import type { StageViewpoint } from '@furria/studio/stage-view';
+import { shownStepNameOf, stepNumberOf } from '@furria/studio/step-names';
 import type { KkHallAbsentPerson } from '@furria/ui/KkHall';
 import { useEffect, useState } from 'react';
 import { COUNT_IN_BEATS } from '@/features/act-player/count-in';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import type { StageViewpoint } from '@/features/act-player/stage-view';
-import { shownStepNameOf, stepNumberOf } from '@/features/act-player/step-names';
 import { usePractice } from '@/features/act-practice/hooks/use-practice';
 import { usePracticeKeys } from '@/features/act-practice/hooks/use-practice-keys';
 import type { PracticeVideo } from '@/features/act-practice/hooks/use-practice-video';

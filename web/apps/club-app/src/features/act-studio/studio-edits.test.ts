@@ -1,7 +1,7 @@
+import type { TimedKeyframe } from '@furria/studio/choreography-motion';
+import type { MusicSegment } from '@furria/studio/music-timeline';
+import type { StudioSong, StudioStep } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { TimedKeyframe } from '@/features/act-player/choreography-motion';
-import type { MusicSegment } from '@/features/act-player/music-timeline';
-import type { StudioSong, StudioStep } from '@/features/acts/schemas';
 import type { CutEdge, TimeSpan } from './studio-edits';
 import {
   borderMovedOf,

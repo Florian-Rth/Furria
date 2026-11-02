@@ -1,5 +1,5 @@
 import type { JsonBody } from '@furria/api-client';
-import { musicSegmentsOf, timelineSecondsOf } from '@/features/act-player/music-timeline';
+import { musicSegmentsOf, timelineSecondsOf } from '@furria/studio/music-timeline';
 import type { Studio } from '@/features/acts/schemas';
 import type { ChoreographyConflict } from './schemas';
 import { ChoreographyConflictSchema } from './schemas';

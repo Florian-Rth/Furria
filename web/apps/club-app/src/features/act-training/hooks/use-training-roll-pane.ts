@@ -1,9 +1,9 @@
+import { spotPathsOf } from '@furria/studio/choreography-motion';
+import { musicSegmentsOf } from '@furria/studio/music-timeline';
 import { toImageSource } from '@furria/ui/image-source';
 import type { KkCastTile } from '@furria/ui/KkCastGrid';
 import type { KkStepState } from '@furria/ui/step-state';
-import { spotPathsOf } from '@/features/act-player/choreography-motion';
 import { timedStepsOf } from '@/features/act-player/hooks/use-studio-playback';
-import { musicSegmentsOf } from '@/features/act-player/music-timeline';
 import { canPractise } from '@/features/acts/act-studio';
 import { toShortName } from '@/features/acts/acts-copy';
 import type { Studio, StudioTraining } from '@/features/acts/schemas';

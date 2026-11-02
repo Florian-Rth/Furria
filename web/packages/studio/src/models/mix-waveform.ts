@@ -1,5 +1,5 @@
 import type { MusicSegment } from './music-timeline';
-import type { AudioPeaks } from './schemas';
+import type { AudioPeaks } from './studio-schemas';
 
 export const waveformOf = (
   segments: readonly MusicSegment[],

@@ -1,6 +1,6 @@
+import type { SpotPath } from '@furria/studio/choreography-motion';
+import type { StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { SpotPath } from '@/features/act-player/choreography-motion';
-import type { StudioStep, StudioVideo } from '@/features/acts/schemas';
 import { countsIn, coveringVideoOf, movesWithin, stepGroupsOf, stepRangeOf } from './score-steps';
 
 const step = (patch: Partial<StudioStep>): StudioStep => ({

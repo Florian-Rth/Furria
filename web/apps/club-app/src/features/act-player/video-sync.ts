@@ -1,4 +1,4 @@
-import type { StudioVideo } from '@/features/acts/schemas';
+import type { StudioVideo } from '@furria/studio/studio-schemas';
 
 const SEEK_THRESHOLD_SECONDS = 0.3;
 const HOLD_THRESHOLD_SECONDS = 0.04;

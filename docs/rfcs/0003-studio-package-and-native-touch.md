@@ -1,7 +1,7 @@
 ---
 rfc: 0003
 title: The studio as its own package — one engine, one stage, one timeline, native-grade touch
-status: draft
+status: in progress
 github_issue: 57
 branch: feat/rfc-57-studio-package
 created: 2026-11-02
@@ -130,10 +130,16 @@ the same phase.
 
 ### Phase 1 — Package and pure models
 Goal: `@furria/studio` exists with the lint boundary, and the pure models live there.
-- [ ] Create `web/packages/studio` (`@furria/studio`): package.json exports, tsconfig, vitest, catalog deps
-- [ ] Apply the club app's Biome restrictions to `packages/studio/**`; amend the ADR-0007 consequences with a pointer to ADR-0035
-- [ ] Move pure models + tests: music timeline and count math, choreography motion, stage view, mix waveform, step names, studio zod schemas
-- [ ] Re-point every club-app import; delete the moved files; lint, typecheck, affected tests
+- [x] Create `web/packages/studio` (`@furria/studio`): package.json exports, tsconfig, vitest, catalog deps
+- [x] Apply the club app's Biome restrictions to `packages/studio/**`; amend the ADR-0007 consequences with a pointer to ADR-0035
+- [x] Move pure models + tests: music timeline and count math, choreography motion, stage view, mix waveform, step names, studio zod schemas
+- [x] Re-point every club-app import; delete the moved files; lint, typecheck, affected tests
+
+Done 2026-11-02. `@furria/studio/studio-schemas` holds the static schemas and `createStudioSchemas`
+for the URL-bearing ones (the club app injects its `MediaUrlSchema`/`PictureSchema`). The package's
+`Studio` is the dance itself (music, songs, steps, parts, spots, videos, choreography, stage); the club
+app's `Studio` extends it with `evenings` and `trainings`. `MediaItemStateSchema` moved to
+`@furria/api-client`.
 
 ### Phase 2 — Engine, media loader and iPhone audio
 Goal: playback lives in the package behind a media loader; iPhone audio is robust.

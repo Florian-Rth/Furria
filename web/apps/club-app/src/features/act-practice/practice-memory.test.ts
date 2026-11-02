@@ -1,5 +1,5 @@
+import type { StudioStep } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { StudioStep } from '@/features/acts/schemas';
 import { hintVisitsOf, isHintedVisit, rememberedStepStartOf } from './practice-memory';
 
 const step = (stepId: number, startSeconds: number | null): StudioStep => ({

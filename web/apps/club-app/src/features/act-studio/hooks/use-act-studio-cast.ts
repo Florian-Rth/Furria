@@ -1,4 +1,4 @@
-import { poseAt } from '@/features/act-player/choreography-motion';
+import { poseAt } from '@furria/studio/choreography-motion';
 import {
   dotLabelOf,
   STUDIO_NOT_PLACED,

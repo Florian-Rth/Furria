@@ -1,5 +1,5 @@
+import type { StudioVideo } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { StudioVideo } from '@/features/acts/schemas';
 import { videoCorrectionOf, videoSecondsAt } from './video-sync';
 
 const video = (videoId: number, patch: Partial<StudioVideo> = {}): StudioVideo => ({

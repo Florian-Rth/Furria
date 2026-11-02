@@ -1,7 +1,8 @@
+import type { MusicSegment } from '@furria/studio/music-timeline';
+import { musicSegmentsOf } from '@furria/studio/music-timeline';
+import type { StudioFinalTrack } from '@furria/studio/studio-schemas';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import type { MusicSegment } from '@/features/act-player/music-timeline';
-import { musicSegmentsOf } from '@/features/act-player/music-timeline';
-import type { Studio, StudioFinalTrack } from '@/features/acts/schemas';
+import type { Studio } from '@/features/acts/schemas';
 import type { FinalTrackMutations } from '../api';
 import { useFinalTrackMutations } from '../api';
 import type { FinalPlacements } from '../studio-final';

@@ -1,5 +1,5 @@
-import type { CountMark } from '@/features/act-player/music-timeline';
-import type { StudioPart, StudioStep } from '@/features/acts/schemas';
+import type { CountMark } from '@furria/studio/music-timeline';
+import type { StudioPart, StudioStep } from '@furria/studio/studio-schemas';
 import { snappedOf } from './studio-edits';
 import type { HoldsStudio } from './studio-music';
 import { withStudio } from './studio-music';

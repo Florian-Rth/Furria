@@ -1,9 +1,9 @@
+import type { SpotPath } from '@furria/studio/choreography-motion';
+import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
 import { KkLesson } from '@furria/ui/KkLesson';
 import type { FC } from 'react';
-import type { SpotPath } from '@/features/act-player/choreography-motion';
 import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
 import type { MixPlayer } from '@/features/act-player/mix-player';
-import type { CountMark, TimelineRange } from '@/features/act-player/music-timeline';
 import { cueTextOf } from '@/features/act-practice/practice-copy';
 import { cueOf, ownWayAt } from '@/features/act-practice/practice-way';
 import { cueLabelOf } from '../lesson-copy';

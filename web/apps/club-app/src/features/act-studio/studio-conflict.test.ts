@@ -1,6 +1,7 @@
 import type { JsonBody } from '@furria/api-client';
+import type { StudioSong } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { Studio, StudioSong } from '@/features/acts/schemas';
+import type { Studio } from '@/features/acts/schemas';
 import { choreographyConflictOf, overlapRowsOf } from './studio-conflict';
 
 const audio = { normalised: 'https://x/n', preview: 'https://x/p', peaks: 'https://x/k' };

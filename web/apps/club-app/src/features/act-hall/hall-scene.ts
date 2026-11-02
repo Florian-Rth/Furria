@@ -1,8 +1,9 @@
-import type { SpotPath } from '@/features/act-player/choreography-motion';
-import { posesAt } from '@/features/act-player/choreography-motion';
-import type { StageViewpoint } from '@/features/act-player/stage-view';
-import { viewPointOf } from '@/features/act-player/stage-view';
-import type { StudioSpot, StudioStage, StudioStep, StudioTraining } from '@/features/acts/schemas';
+import type { SpotPath } from '@furria/studio/choreography-motion';
+import { posesAt } from '@furria/studio/choreography-motion';
+import type { StageViewpoint } from '@furria/studio/stage-view';
+import { viewPointOf } from '@furria/studio/stage-view';
+import type { StudioSpot, StudioStage, StudioStep } from '@furria/studio/studio-schemas';
+import type { StudioTraining } from '@/features/acts/schemas';
 
 export type HallDotKind = 'present' | 'absent' | 'empty';
 export type HallNameSide = 'below' | 'above' | 'none';

@@ -1,5 +1,5 @@
+import { partRangeOf } from '@furria/studio/music-timeline';
 import { useState } from 'react';
-import { partRangeOf } from '@/features/act-player/music-timeline';
 import type { VideoMutations } from '../api';
 import { videoNameOf } from '../studio-copy';
 import { partSettingsOf } from '../studio-steps';

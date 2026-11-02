@@ -8,6 +8,7 @@
   ],
   "exports": {
     ".": "./src/index.ts",
+    "./media-schemas": "./src/media-schemas.ts",
     "./opening-hours": "./src/opening-hours.ts",
     "./zod-without-eval": "./src/zod-without-eval.ts"
   },

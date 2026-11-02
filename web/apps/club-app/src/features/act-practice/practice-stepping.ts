@@ -1,4 +1,4 @@
-import type { StudioStep } from '@/features/acts/schemas';
+import type { StudioStep } from '@furria/studio/studio-schemas';
 
 const RESTART_GRACE_SECONDS = 1.5;
 export const PRACTICE_RATES: readonly number[] = [1, 0.85, 0.7, 0.5];

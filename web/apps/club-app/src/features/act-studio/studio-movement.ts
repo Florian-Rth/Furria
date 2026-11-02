@@ -1,9 +1,5 @@
-import type {
-  KeyframeEasing,
-  StagePoint,
-  TimedKeyframe,
-} from '@/features/act-player/choreography-motion';
-import { poseAt } from '@/features/act-player/choreography-motion';
+import type { KeyframeEasing, StagePoint, TimedKeyframe } from '@furria/studio/choreography-motion';
+import { poseAt } from '@furria/studio/choreography-motion';
 import type { StageShare, TimeSpan } from './studio-edits';
 import { GRID_METRES, holdRunOf, KEY_TOLERANCE_SECONDS, samePlace } from './studio-edits';
 import type { StageSize } from './studio-formation';

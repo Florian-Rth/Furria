@@ -1,7 +1,7 @@
+import { partRangeOf, stepRangeOf } from '@furria/studio/music-timeline';
+import type { StudioPart, StudioStep } from '@furria/studio/studio-schemas';
 import type { KkScoreTrackPart, KkScoreTrackTickMark } from '@furria/ui/KkScoreTrack';
-import { partRangeOf, stepRangeOf } from '@/features/act-player/music-timeline';
 import { shownStepOf } from '@/features/act-practice/practice-stepping';
-import type { StudioPart, StudioStep } from '@/features/acts/schemas';
 
 export interface LessonStripLanes {
   parts: KkScoreTrackPart[];

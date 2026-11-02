@@ -1,6 +1,7 @@
-import type { TimelineRange } from '@/features/act-player/music-timeline';
-import { partRangeOf } from '@/features/act-player/music-timeline';
-import type { Studio, StudioPart, StudioStep, StudioVideo } from '@/features/acts/schemas';
+import type { TimelineRange } from '@furria/studio/music-timeline';
+import { partRangeOf } from '@furria/studio/music-timeline';
+import type { StudioPart, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
+import type { Studio } from '@/features/acts/schemas';
 import type { HoldsStudio } from './studio-music';
 import { withStudio } from './studio-music';
 

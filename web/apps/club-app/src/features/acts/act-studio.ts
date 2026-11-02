@@ -1,4 +1,4 @@
-import { musicSegmentsOf } from '@/features/act-player/music-timeline';
+import { musicSegmentsOf } from '@furria/studio/music-timeline';
 import type { CastPerson } from '@/features/running-order/schemas';
 import type { ActPageSearch, ActViewer, CoEditor, Studio } from './schemas';
 

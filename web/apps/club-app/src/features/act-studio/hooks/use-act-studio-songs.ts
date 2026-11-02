@@ -1,7 +1,7 @@
+import type { MusicSegment } from '@furria/studio/music-timeline';
+import type { StudioSong } from '@furria/studio/studio-schemas';
 import type { KkStudioListBadgeTone } from '@furria/ui/KkStudioList';
 import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
-import type { MusicSegment } from '@/features/act-player/music-timeline';
-import type { StudioSong } from '@/features/acts/schemas';
 import {
   outsideMusicTextOf,
   STUDIO_EDIT,

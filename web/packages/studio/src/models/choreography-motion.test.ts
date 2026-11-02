@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import type { Choreography } from '@/features/acts/schemas';
 import type { SpotPath, TimedKeyframe } from './choreography-motion';
 import {
   easedProgress,
@@ -9,6 +8,7 @@ import {
   spotPathsOf,
 } from './choreography-motion';
 import type { MusicSegment } from './music-timeline';
+import type { Choreography } from './studio-schemas';
 
 const segment: MusicSegment = {
   mediaItemId: 1,

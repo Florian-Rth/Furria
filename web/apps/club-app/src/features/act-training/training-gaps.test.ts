@@ -1,6 +1,7 @@
+import type { SpotPath, TimedKeyframe } from '@furria/studio/choreography-motion';
+import type { StudioSpot, StudioStep } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { SpotPath, TimedKeyframe } from '@/features/act-player/choreography-motion';
-import type { StudioSpot, StudioStep, StudioTraining } from '@/features/acts/schemas';
+import type { StudioTraining } from '@/features/acts/schemas';
 import { movingStepNumbersOf, trainingGapsOf } from './training-gaps';
 
 const step = (stepId: number, startSeconds: number, endSeconds: number): StudioStep => ({

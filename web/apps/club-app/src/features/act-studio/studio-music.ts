@@ -1,6 +1,7 @@
-import type { MusicSegment } from '@/features/act-player/music-timeline';
-import { timelineSecondsOf } from '@/features/act-player/music-timeline';
-import type { Studio, StudioSong } from '@/features/acts/schemas';
+import type { MusicSegment } from '@furria/studio/music-timeline';
+import { timelineSecondsOf } from '@furria/studio/music-timeline';
+import type { StudioSong } from '@furria/studio/studio-schemas';
+import type { Studio } from '@/features/acts/schemas';
 
 const MIN_TEMPO_BPM = 40;
 const MAX_TEMPO_BPM = 300;

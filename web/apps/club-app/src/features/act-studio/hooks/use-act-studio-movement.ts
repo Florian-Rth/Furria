@@ -1,10 +1,10 @@
-import { useRef } from 'react';
 import type {
   KeyframeEasing,
   SpotPath,
   StagePoint,
   TimedKeyframe,
-} from '@/features/act-player/choreography-motion';
+} from '@furria/studio/choreography-motion';
+import { useRef } from 'react';
 import { usePlaybackSelection } from '@/features/act-player/hooks/use-playback-seconds';
 import { viewShareOf } from '@/features/act-practice/practice-stage';
 import type { StageShare, TimeSpan } from '../studio-edits';

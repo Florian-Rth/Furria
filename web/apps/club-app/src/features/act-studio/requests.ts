@@ -1,4 +1,4 @@
-import type { Choreography } from '@/features/acts/schemas';
+import type { Choreography } from '@furria/studio/studio-schemas';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type {

@@ -1,5 +1,5 @@
-import { waveformOf } from '@/features/act-player/mix-waveform';
-import { partRangeOf } from '@/features/act-player/music-timeline';
+import { waveformOf } from '@furria/studio/mix-waveform';
+import { partRangeOf } from '@furria/studio/music-timeline';
 import { shareOf } from '../desk-time';
 import type { ActDesk } from './use-act-desk';
 import type { DeskZoom } from './use-desk-zoom';

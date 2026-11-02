@@ -22,6 +22,7 @@
     "@emotion/react": "catalog:",
     "@emotion/styled": "catalog:",
     "@furria/api-client": "workspace:*",
+    "@furria/studio": "workspace:*",
     "@furria/ui": "workspace:*",
     "@furria/website-pictures": "workspace:*",
     "@mui/material": "catalog:",

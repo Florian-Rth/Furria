@@ -1,4 +1,4 @@
-import type { SpotPath, TimedKeyframe } from '@/features/act-player/choreography-motion';
+import type { SpotPath, TimedKeyframe } from '@furria/studio/choreography-motion';
 
 export const KEY_MATCH_SECONDS = 0.05;
 const KEY_GAP_SECONDS = 0.05;

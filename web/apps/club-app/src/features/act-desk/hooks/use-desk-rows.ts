@@ -1,5 +1,5 @@
-import { waveformOf } from '@/features/act-player/mix-waveform';
-import { partRangeOf } from '@/features/act-player/music-timeline';
+import { waveformOf } from '@furria/studio/mix-waveform';
+import { partRangeOf } from '@furria/studio/music-timeline';
 import { videoNameOf } from '@/features/act-studio/studio-copy';
 import type { StageShare } from '@/features/act-studio/studio-edits';
 import {

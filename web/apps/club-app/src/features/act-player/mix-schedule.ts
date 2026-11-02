@@ -1,4 +1,4 @@
-import type { MusicSegment, TimelineRange } from './music-timeline';
+import type { MusicSegment, TimelineRange } from '@furria/studio/music-timeline';
 
 const MIN_PIECE_SECONDS = 0.001;
 const SEMITONES_PER_OCTAVE = 12;

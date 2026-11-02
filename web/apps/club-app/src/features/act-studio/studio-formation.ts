@@ -1,12 +1,8 @@
-import type {
-  SpotPath,
-  StagePoint,
-  TimedKeyframe,
-} from '@/features/act-player/choreography-motion';
-import { poseAt } from '@/features/act-player/choreography-motion';
-import type { MusicAnchor, MusicSegment } from '@/features/act-player/music-timeline';
-import { timelineSecondsOf } from '@/features/act-player/music-timeline';
-import type { Keyframe, StudioStage } from '@/features/acts/schemas';
+import type { SpotPath, StagePoint, TimedKeyframe } from '@furria/studio/choreography-motion';
+import { poseAt } from '@furria/studio/choreography-motion';
+import type { MusicAnchor, MusicSegment } from '@furria/studio/music-timeline';
+import { timelineSecondsOf } from '@furria/studio/music-timeline';
+import type { Keyframe, StudioStage } from '@furria/studio/studio-schemas';
 import type { TimeSpan } from './studio-edits';
 import { GRID_METRES, KEY_TOLERANCE_SECONDS, samePlace, snappedToGrid } from './studio-edits';
 

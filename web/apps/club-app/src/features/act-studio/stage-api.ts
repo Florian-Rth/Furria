@@ -1,7 +1,8 @@
+import type { Choreography } from '@furria/studio/studio-schemas';
 import type { UseMutationResult } from '@tanstack/react-query';
 import { useQueryClient } from '@tanstack/react-query';
 import { useRef } from 'react';
-import type { ActStudioResponse, Choreography } from '@/features/acts/schemas';
+import type { ActStudioResponse } from '@/features/acts/schemas';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import { queryKeys } from '@/lib/query/reads';

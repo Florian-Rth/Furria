@@ -1,8 +1,8 @@
+import type { SpotPath } from '@furria/studio/choreography-motion';
+import { waveformOf } from '@furria/studio/mix-waveform';
+import { stepRangeOf } from '@furria/studio/music-timeline';
+import { shownStepNameOf, stepNumberOf } from '@furria/studio/step-names';
 import { useState } from 'react';
-import type { SpotPath } from '@/features/act-player/choreography-motion';
-import { waveformOf } from '@/features/act-player/mix-waveform';
-import { stepRangeOf } from '@/features/act-player/music-timeline';
-import { shownStepNameOf, stepNumberOf } from '@/features/act-player/step-names';
 import { usePlayerKeys } from '@/features/act-practice/hooks/use-player-keys';
 import type { PracticeSegmentGroupRow } from '@/features/act-practice/hooks/use-practice-segments';
 import { usePracticeSegments } from '@/features/act-practice/hooks/use-practice-segments';

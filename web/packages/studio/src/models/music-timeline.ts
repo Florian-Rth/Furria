@@ -4,7 +4,7 @@ import type {
   StudioPart,
   StudioSong,
   StudioStep,
-} from '@/features/acts/schemas';
+} from './studio-schemas';
 
 const SECONDS_PER_MINUTE = 60;
 const COUNTS_PER_EIGHT = 8;

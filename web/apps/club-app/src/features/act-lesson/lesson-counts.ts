@@ -1,5 +1,5 @@
-import type { CountMark, TimelineRange } from '@/features/act-player/music-timeline';
-import { EDGE_TOLERANCE_SECONDS } from '@/features/act-player/music-timeline';
+import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
+import { EDGE_TOLERANCE_SECONDS } from '@furria/studio/music-timeline';
 import type { CountCell } from '@/features/act-studio/studio-timing';
 import { countCellsOf } from '@/features/act-studio/studio-timing';
 

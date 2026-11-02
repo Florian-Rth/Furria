@@ -1,5 +1,5 @@
-import type { StudioStage } from '@/features/acts/schemas';
 import type { StagePoint } from './choreography-motion';
+import type { StudioStage } from './studio-schemas';
 
 const CENTRE_DIVISOR = 2;
 const HALF_TURN_DEGREES = 180;

@@ -1,5 +1,6 @@
+import type { Keyframe } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { Keyframe, Studio } from '@/features/acts/schemas';
+import type { Studio } from '@/features/acts/schemas';
 import type { StudioWrite } from './studio-undo';
 import { inverseOf, restoredOrderOf } from './studio-undo';
 

@@ -1,4 +1,4 @@
-import type { StudioFinalTrack } from '@/features/acts/schemas';
+import type { StudioFinalTrack } from '@furria/studio/studio-schemas';
 import {
   finalShiftNudgeLabelOf,
   finalTitleOf,

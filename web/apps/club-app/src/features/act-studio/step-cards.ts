@@ -1,4 +1,4 @@
-import type { CountMark } from '@/features/act-player/music-timeline';
+import type { CountMark } from '@furria/studio/music-timeline';
 
 const EDGE_SECONDS = 1e-3;
 

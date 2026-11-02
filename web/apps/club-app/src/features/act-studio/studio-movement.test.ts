@@ -1,5 +1,5 @@
+import type { TimedKeyframe } from '@furria/studio/choreography-motion';
 import { describe, expect, it } from 'vitest';
-import type { TimedKeyframe } from '@/features/act-player/choreography-motion';
 import {
   bendHandleOf,
   bentMoveOf,

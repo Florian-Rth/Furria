@@ -1,9 +1,9 @@
+import type { SpotPath, StagePoint } from '@furria/studio/choreography-motion';
+import { poseAt } from '@furria/studio/choreography-motion';
+import type { StudioSpot } from '@furria/studio/studio-schemas';
 import { useRef, useState } from 'react';
-import type { SpotPath, StagePoint } from '@/features/act-player/choreography-motion';
-import { poseAt } from '@/features/act-player/choreography-motion';
 import type { StageScene } from '@/features/act-practice/practice-stage';
 import { viewShareOf } from '@/features/act-practice/practice-stage';
-import type { StudioSpot } from '@/features/acts/schemas';
 import type { AddedSpot } from '../schemas';
 import { formationTextOf, selectionTextOf, spotTitleOf } from '../studio-copy';
 import type { StageShare, TimeSpan } from '../studio-edits';
