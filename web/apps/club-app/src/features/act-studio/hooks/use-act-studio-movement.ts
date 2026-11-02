@@ -52,11 +52,12 @@ export interface ActStudioMovement {
   keyed: boolean;
   handles: ActStudioBendHandle[];
   grab: (spotIds: readonly number[], share: StageShare) => void;
-  drag: (share: StageShare) => void;
+  drag: (share: StageShare) => ReadonlyMap<number, StagePoint>;
   release: () => void;
-  bendPress: (spotId: number) => void;
-  bendMove: (share: StageShare) => void;
+  bendPress: (spotId: number) => boolean;
+  bendMove: (share: StageShare) => StagePoint | null;
   bendEnd: () => void;
+  cancel: () => void;
   retime: (target: TimeSpan) => void;
   ease: (easing: KeyframeEasing) => void;
   straighten: () => void;
@@ -109,7 +110,7 @@ const waypointIndexAt = (
 export const useActStudioMovement = (
   screen: StudioScreen,
   selected: readonly number[],
-  { preview, commit }: TrackCommit,
+  { preview, commit, drop }: TrackCommit,
 ): ActStudioMovement => {
   const { playback, practice, mode } = screen;
   const { player, paths, stage, countMarks, controls, length } = playback;
@@ -227,22 +228,22 @@ export const useActStudioMovement = (
     },
     drag: (share) => {
       const held = grabbed.current;
+      const points = new Map<number, StagePoint>();
       if (held === null) {
-        return;
+        return points;
       }
       const settled = settledGrab(held);
       const seconds = settled.seconds ?? 0;
       const delta = { x: share.x - settled.start.x, y: share.y - settled.start.y };
       const tracks: StudioTracks = {};
       for (const [spotId, origin] of settled.origins) {
-        tracks[spotId] = keyedTrackOf(
-          settled.tracks[spotId] ?? [],
-          seconds,
-          draggedPointOf(origin, delta, stage),
-        );
+        const point = draggedPointOf(origin, delta, stage);
+        points.set(spotId, point);
+        tracks[spotId] = keyedTrackOf(settled.tracks[spotId] ?? [], seconds, point);
       }
       settled.placed = tracks;
       preview(tracks);
+      return points;
     },
     release: () => {
       const held = grabbed.current;
@@ -255,33 +256,41 @@ export const useActStudioMovement = (
       const entry = moves.find((candidate) => candidate.spotId === spotId);
       const path = pathOf(spotId);
       if (entry?.move === null || entry === undefined || path === null) {
-        return;
+        return false;
       }
       if (player.state().playing) {
         controls.toggle();
       }
       bending.current = { spotId, index: entry.move, keyframes: path.keyframes, placed: null };
+      return true;
     },
     bendMove: (share) => {
       const held = bending.current;
       if (held === null) {
-        return;
+        return null;
       }
-      held.placed = {
-        [held.spotId]: bentMoveOf(
-          held.keyframes,
-          held.index,
-          stagePointOfShare(share, stage),
-          stage,
-        ),
-      };
+      const point = stagePointOfShare(share, stage);
+      held.placed = { [held.spotId]: bentMoveOf(held.keyframes, held.index, point, stage) };
       preview(held.placed);
+      return point;
     },
     bendEnd: () => {
       const held = bending.current;
       bending.current = null;
       if (held?.placed) {
         commit(held.placed);
+      }
+    },
+    cancel: () => {
+      const moved = grabbed.current?.placed ?? null;
+      const bent = bending.current?.placed ?? null;
+      grabbed.current = null;
+      bending.current = null;
+      if (moved !== null) {
+        drop(moved);
+      }
+      if (bent !== null) {
+        drop(bent);
       }
     },
     retime: (target) => {

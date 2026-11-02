@@ -115,6 +115,9 @@ interface KkStageInkDiscProps {
   muted?: boolean;
   moving?: boolean;
   turn?: number | null;
+  selected?: boolean;
+  lifted?: boolean;
+  dimmed?: boolean;
 }
 
 export const KkStageInkDisc: FC<KkStageInkDiscProps> = ({
@@ -124,6 +127,9 @@ export const KkStageInkDisc: FC<KkStageInkDiscProps> = ({
   muted = false,
   moving = false,
   turn = null,
+  selected = false,
+  lifted = false,
+  dimmed = false,
 }) => {
   const own = kind === 'own';
   const full = density === 'full';
@@ -203,6 +209,9 @@ export const KkStageInkDisc: FC<KkStageInkDiscProps> = ({
   return (
     <Box
       data-kk-stage-disc={kind}
+      data-selected={selected}
+      data-lifted={lifted}
+      data-dimmed={dimmed}
       sx={(theme) => ({
         position: 'relative',
         borderRadius: '50%',
@@ -211,6 +220,19 @@ export const KkStageInkDisc: FC<KkStageInkDiscProps> = ({
         boxSizing: 'border-box',
         ...sizeOf(theme, density, own),
         ...paintOf(theme, paint),
+        outline: `${kkTokens.line.section}px solid transparent`,
+        outlineOffset: kkTokens.line.section,
+        transition:
+          'background-color 160ms ease-out, color 160ms ease-out, outline-color 160ms ease-out, transform 160ms ease-out, opacity 160ms ease-out',
+        '&[data-selected="true"]': {
+          outlineColor: palette(theme).primary.main,
+          transform: 'scale(1.12)',
+        },
+        '&[data-lifted="true"]': {
+          transform: 'scale(1.3)',
+          boxShadow: kkTokens.shadow.floating,
+        },
+        '&[data-dimmed="true"]': { opacity: 0.45 },
       })}
     >
       {halo}

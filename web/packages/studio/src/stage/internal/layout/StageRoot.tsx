@@ -4,7 +4,7 @@ import type { KkSx, KkTheme } from '@furria/ui/kk-sx';
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import { AnimatePresence, motion } from 'motion/react';
-import type { FC, PropsWithChildren } from 'react';
+import type { FC, PropsWithChildren, ReactNode } from 'react';
 import type { StageViewpoint } from '../../../models/stage-view';
 import type { StageExtent, StageFrame } from '../../stage-framing';
 import {
@@ -14,8 +14,11 @@ import {
   frontAtTopOf,
   WHOLE_STAGE_FRAME,
 } from '../../stage-framing';
+import type { StageWork } from '../../stage-work';
 
 export type StageFit = 'contain' | 'width';
+
+export type StageFrameChange = 'fade' | 'follow';
 
 export interface StageFloor extends StageExtent {
   artworkSvg: string | null;
@@ -32,6 +35,7 @@ const FIELD = {
   pointerEvents: 'none',
 } as const;
 const FULL_WIDTH = { width: '100%' } as const;
+const FOLLOWING = 'follow';
 const thumbWidth = (theme: KkTheme): { width: string } => ({ width: theme.spacing(THUMB_WIDTH) });
 
 interface StageRootProps extends PropsWithChildren {
@@ -43,6 +47,9 @@ interface StageRootProps extends PropsWithChildren {
   frame?: StageFrame;
   frontLabel?: string;
   centre?: boolean;
+  frameChange?: StageFrameChange;
+  work?: StageWork;
+  overlay?: ReactNode;
   sx?: KkSx;
 }
 
@@ -55,12 +62,16 @@ export const StageRoot: FC<StageRootProps> = ({
   frame = WHOLE_STAGE_FRAME,
   frontLabel,
   centre = false,
+  frameChange = 'fade',
+  work,
+  overlay,
   sx,
   children,
 }) => {
   const front = frontAtTopOf(viewpoint) ? 'top' : 'bottom';
   const described = density !== 'thumb';
-  const role = described ? 'img' : undefined;
+  const describedRole = work === undefined ? 'img' : 'group';
+  const role = described ? describedRole : undefined;
   const ariaLabel = described ? label : undefined;
   const ariaHidden = described ? undefined : true;
   const plane = (
@@ -81,7 +92,9 @@ export const StageRoot: FC<StageRootProps> = ({
         </Box>
       );
 
-    return (
+    const planeKey = frameChange === 'follow' ? FOLLOWING : frameKeyOf(frame);
+
+    const contained = (
       <Box
         role={role}
         aria-label={ariaLabel}
@@ -102,7 +115,7 @@ export const StageRoot: FC<StageRootProps> = ({
       >
         <AnimatePresence initial={false}>
           <Box
-            key={frameKeyOf(frame)}
+            key={planeKey}
             component={motion.div}
             initial={HIDDEN}
             animate={SHOWN}
@@ -112,10 +125,39 @@ export const StageRoot: FC<StageRootProps> = ({
             sx={{ position: 'absolute' }}
           >
             {plane}
-            <Box sx={FIELD}>{children}</Box>
+            <Box ref={work?.planeRef} sx={FIELD}>
+              {children}
+            </Box>
           </Box>
         </AnimatePresence>
         {frontTag}
+      </Box>
+    );
+
+    if (work === undefined) {
+      return contained;
+    }
+
+    return (
+      <Box
+        ref={work.areaRef}
+        {...work.handlers}
+        data-kk-stage-work
+        sx={{
+          position: 'relative',
+          flex: 1,
+          alignSelf: 'stretch',
+          justifySelf: 'stretch',
+          width: '100%',
+          height: '100%',
+          minWidth: 0,
+          minHeight: 0,
+          containerType: 'size',
+          touchAction: 'none',
+        }}
+      >
+        {contained}
+        {overlay}
       </Box>
     );
   }

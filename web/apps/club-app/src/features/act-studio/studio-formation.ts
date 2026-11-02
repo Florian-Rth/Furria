@@ -221,23 +221,12 @@ export const formationPlacedOf = (
 export interface SpotGrab {
   selected: readonly number[];
   spotId: number;
-  multi: boolean;
   playing: boolean;
 }
 
-export const grabbedSpotsOf = ({
-  selected,
-  spotId,
-  multi,
-  playing,
-}: SpotGrab): readonly number[] => {
+export const grabbedSpotsOf = ({ selected, spotId, playing }: SpotGrab): readonly number[] => {
   if (playing && selected.length > 0) {
     return selected;
-  }
-  if (multi) {
-    return selected.includes(spotId)
-      ? selected.filter((id) => id !== spotId)
-      : [...selected, spotId];
   }
 
   return selected.includes(spotId) ? selected : [spotId];

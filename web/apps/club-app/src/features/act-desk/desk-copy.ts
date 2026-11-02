@@ -33,7 +33,6 @@ export const DESK_STAGE = 'Bühne';
 export const DESK_STAGE_TOOLS = 'Bühne bearbeiten';
 export const DESK_FORMATION = 'Aufstellung';
 export const DESK_MOVEMENT = 'Wege';
-export const DESK_MULTI = 'Mehrere';
 export const DESK_ADD_SPOT = 'Platz';
 export const DESK_ADD_SPOT_LABEL = 'Platz hinzufügen';
 export const DESK_INSPECTOR = 'Auswahl';
@@ -174,11 +173,6 @@ export const spotEyebrowOf = (count: number): string =>
 
 export const spotTitleOf = (number: number, name: string | null): string =>
   name === null ? `Platz ${number}` : `${number} · ${name}`;
-
-export const dotNameOf = (name: string | null): string => name ?? DESK_OPEN;
-
-export const dotLabelOf = (number: number, name: string | null): string =>
-  `Platz ${number}, ${name ?? DESK_OPEN}: wählen, ziehen oder Pfeiltasten`;
 
 export const pointTextOf = (right: number, back: number): string =>
   `${right.toFixed(1).replace('.', ',')} m quer · ${back.toFixed(1).replace('.', ',')} m tief`;

@@ -12,7 +12,6 @@ import {
   STEP_TOOL_LINE,
   STEP_TOOL_MIRROR,
   STEP_TOOL_MOVEMENT,
-  STEP_TOOL_MULTI,
   STEP_TOOL_ONION,
   STEP_TOOL_SPOTS,
   STEP_TOOL_SPOTS_LABEL,
@@ -108,7 +107,6 @@ export const useStepCardTools = (screen: StudioScreen, editor: ActStudioStage): 
     toolOf('spots', STEP_TOOL_SPOTS, 'spots', editor.openSheet, { label: STEP_TOOL_SPOTS_LABEL }),
     ...arranging,
     ...onion,
-    toolOf('multi', STEP_TOOL_MULTI, undefined, editor.toggleMulti, { pressed: editor.multi }),
     toolOf('add', STEP_TOOL_ADD_SPOT, 'add', editor.addSpot, { label: STEP_TOOL_ADD_SPOT_LABEL }),
   ];
 };

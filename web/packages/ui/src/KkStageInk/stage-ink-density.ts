@@ -6,3 +6,10 @@ export type KkStageInkDiscKind = 'own' | 'cast' | 'open' | 'absent';
 
 export const NARROW_FIELD = '@container (max-width: 17rem)';
 export const SMALL_FIELD = '@container (max-width: 12rem)';
+
+export interface KkStageInkGridLine {
+  key: string;
+  axis: 'x' | 'y';
+  at: number;
+  kind: 'metre' | 'quarter' | 'snap';
+}

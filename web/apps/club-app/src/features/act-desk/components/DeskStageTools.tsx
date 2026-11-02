@@ -7,7 +7,6 @@ import {
   DESK_ADD_SPOT_LABEL,
   DESK_FORMATION,
   DESK_MOVEMENT,
-  DESK_MULTI,
   DESK_STAGE_TOOLS,
 } from '../desk-copy';
 import type { ActDesk } from '../hooks/use-act-desk';
@@ -48,7 +47,6 @@ export const DeskStageTools: FC<DeskStageToolsProps> = ({ desk }) => {
         <KkLaneButton text={DESK_MOVEMENT} glyph="paths" pressed={onMovement} onPress={movement} />
       </KkLaneBar.Group>
       <KkLaneBar.Group label={DESK_STAGE_TOOLS} grow>
-        <KkLaneButton text={DESK_MULTI} pressed={editor.multi} onPress={editor.toggleMulti} />
         <KkLaneButton text={STUDIO_ONION} pressed={editor.onion} onPress={editor.toggleOnion} />
         {addSpot}
       </KkLaneBar.Group>

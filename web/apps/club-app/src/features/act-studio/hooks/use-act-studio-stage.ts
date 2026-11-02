@@ -1,7 +1,7 @@
 import type { SpotPath, StagePoint } from '@furria/studio/choreography-motion';
 import { poseAt } from '@furria/studio/choreography-motion';
 import type { StudioSpot } from '@furria/studio/studio-schemas';
-import { useRef, useState } from 'react';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { StageScene } from '@/features/act-practice/practice-stage';
 import { viewShareOf } from '@/features/act-practice/practice-stage';
 import { formationTextOf, selectionTextOf, spotTitleOf } from '../studio-copy';
@@ -37,7 +37,7 @@ export interface ActStudioStage {
   scene: StageScene;
   movement: ActStudioMovement;
   selected: readonly number[];
-  multi: boolean;
+  toolbar: boolean;
   onion: boolean;
   onionPoints: ActStudioOnionPoint[];
   formation: boolean;
@@ -52,13 +52,15 @@ export interface ActStudioStage {
   previousSeconds: number | null;
   copySource: number;
   copySteps: number;
-  press: (spotId: number, share: StageShare) => void;
-  move: (share: StageShare) => void;
+  tap: (spotId: number | null) => void;
+  hold: (spotId: number) => void;
+  grab: (spotId: number, share: StageShare) => readonly number[] | null;
+  move: (share: StageShare) => ReadonlyMap<number, StagePoint>;
   end: () => void;
-  clear: () => void;
+  cancel: () => void;
+  nudge: (spotId: number, right: number, down: number) => void;
   choose: (spotId: number) => void;
   forget: (spotId: number) => void;
-  toggleMulti: () => void;
   toggleOnion: () => void;
   mirror: () => void;
   align: (axis: ArrangeAxis) => void;
@@ -77,6 +79,9 @@ interface Grab {
   placed: StudioTracks | null;
 }
 
+const NUDGE_METRES = 0.5;
+const NUDGE_START: StageShare = { x: 0, y: 0 };
+
 const nameOf = (spot: StudioSpot | undefined): string | null => spot?.person?.firstName ?? null;
 
 const byNumber = (spots: readonly StudioSpot[]): StudioSpot[] =>
@@ -86,14 +91,18 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
   const { playback, practice, studio, mode, stageDocument } = screen;
   const { player, paths, stage, ownSpotId, steps, controls, length } = playback;
   const writes = useTrackCommit(screen);
-  const { preview, commit } = writes;
+  const { preview, commit, drop } = writes;
   const [picked, setPicked] = useState<readonly number[]>([]);
-  const [multi, setMulti] = useState(false);
+  const [toolbar, setToolbar] = useState(false);
   const [onion, setOnion] = useState(true);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [copyPick, setCopyPick] = useState<number | null>(null);
   const [copyPickStep, setCopyPickStep] = useState<number | undefined>(undefined);
   const grab = useRef<Grab | null>(null);
+  const pending = useRef<readonly number[] | null>(null);
+  useLayoutEffect(() => {
+    pending.current = null;
+  });
   const formation = mode.tool === 'formation';
   const moving = mode.tool === 'movement';
   const step = practice.step;
@@ -162,7 +171,54 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
   };
 
   const nextSelection = (spotId: number, playing: boolean): readonly number[] =>
-    grabbedSpotsOf({ selected, spotId, multi, playing });
+    grabbedSpotsOf({ selected: pending.current ?? selected, spotId, playing });
+
+  const grabbed = (spotId: number, share: StageShare): readonly number[] | null => {
+    if (!formation && !moving) {
+      return null;
+    }
+    const chosen = nextSelection(spotId, player.state().playing);
+    if (!(pending.current ?? selected).includes(spotId)) {
+      setToolbar(false);
+    }
+    setPicked(chosen);
+    grab.current = null;
+    if (moving) {
+      movement.grab(chosen, share);
+      return chosen;
+    }
+    if (player.state().playing) {
+      controls.toggle();
+    }
+    if (Math.abs(player.position() - formationSeconds) > AT_BORDER_SECONDS) {
+      player.seek(formationSeconds);
+    }
+    grab.current = { start: share, origins: pointsOf(chosen), placed: null };
+    return chosen;
+  };
+
+  const moved = (share: StageShare): ReadonlyMap<number, StagePoint> => {
+    const held = grab.current;
+    if (held === null) {
+      return movement.drag(share);
+    }
+    const delta = { x: share.x - held.start.x, y: share.y - held.start.y };
+    const moves = new Map<number, StagePoint>();
+    for (const [id, origin] of held.origins) {
+      moves.set(id, draggedPointOf(origin, delta, stage));
+    }
+    held.placed = placed(moves);
+    return moves;
+  };
+
+  const ended = (): void => {
+    const held = grab.current;
+    grab.current = null;
+    movement.release();
+    if (held !== null && held.placed !== null) {
+      commit(held.placed);
+    }
+  };
 
   const single =
     selected.length === 1
@@ -176,7 +232,7 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
     scene: { paths, spots: studio.spots, ownSpotId, stage },
     movement,
     selected,
-    multi,
+    toolbar,
     onion,
     onionPoints:
       onionSeconds === null
@@ -201,59 +257,46 @@ export const useActStudioStage = (screen: StudioScreen): ActStudioStage => {
     previousSeconds,
     copySource,
     copySteps: steps.length,
-    press: (spotId, share) => {
-      const chosen = nextSelection(spotId, player.state().playing);
-      setPicked(chosen);
-      grab.current = null;
-      if (moving) {
-        movement.grab(chosen, share);
-        return;
-      }
-      if (!formation) {
-        return;
-      }
-      if (player.state().playing) {
-        controls.toggle();
-      }
-      if (Math.abs(player.position() - formationSeconds) > AT_BORDER_SECONDS) {
-        player.seek(formationSeconds);
-      }
-      grab.current = { start: share, origins: pointsOf(chosen), placed: null };
+    tap: (spotId) => {
+      setToolbar(false);
+      setPicked(
+        spotId === null || (selected.length === 1 && selected[0] === spotId) ? [] : [spotId],
+      );
     },
-    move: (share) => {
-      const held = grab.current;
-      if (held === null) {
-        movement.drag(share);
-        return;
-      }
-      const delta = { x: share.x - held.start.x, y: share.y - held.start.y };
-      const moves = new Map<number, StagePoint>();
-      for (const [id, origin] of held.origins) {
-        moves.set(id, draggedPointOf(origin, delta, stage));
-      }
-      held.placed = placed(moves);
+    hold: (spotId) => {
+      setToolbar(true);
+      const base = pending.current ?? selected;
+      const next = base.includes(spotId) ? base : [...base, spotId];
+      pending.current = next;
+      setPicked(next);
     },
-    end: () => {
+    grab: grabbed,
+    move: moved,
+    end: ended,
+    cancel: () => {
       const held = grab.current;
       grab.current = null;
-      movement.release();
+      movement.cancel();
       if (held !== null && held.placed !== null) {
-        commit(held.placed);
+        drop(held.placed);
       }
     },
-    clear: () => {
-      if (!multi) {
-        setPicked([]);
+    nudge: (spotId, right, down) => {
+      if (grabbed(spotId, NUDGE_START) === null) {
+        return;
       }
+      moved({
+        x: (right * NUDGE_METRES) / stage.widthMetres,
+        y: (down * NUDGE_METRES) / stage.depthMetres,
+      });
+      ended();
     },
     choose: (spotId) => {
+      setToolbar(false);
       setPicked(nextSelection(spotId, false));
     },
     forget: (spotId) => {
       setPicked((chosen) => chosen.filter((id) => id !== spotId));
-    },
-    toggleMulti: () => {
-      setMulti((on) => !on);
     },
     toggleOnion: () => {
       setOnion((on) => !on);

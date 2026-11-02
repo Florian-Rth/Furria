@@ -7,6 +7,7 @@ export type StudioTracks = Record<number, readonly TimedKeyframe[]>;
 export interface TrackCommit {
   preview: (tracks: StudioTracks) => void;
   commit: (tracks: StudioTracks) => void;
+  drop: (tracks: StudioTracks) => void;
 }
 
 export const useTrackCommit = (screen: StudioScreen): TrackCommit => {
@@ -14,6 +15,7 @@ export const useTrackCommit = (screen: StudioScreen): TrackCommit => {
 
   return {
     preview: edits.setTracks,
+    drop: edits.dropTracks,
     commit: (tracks) => {
       if (Object.keys(tracks).length === 0) {
         return;
