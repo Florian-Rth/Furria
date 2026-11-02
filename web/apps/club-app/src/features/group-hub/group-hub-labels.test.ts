@@ -11,6 +11,7 @@ import {
   toJoinQuickChoices,
   toMembershipChainRows,
   toSearchTerm,
+  toStageKindLabel,
   toTakenTones,
   viewerStandingOf,
 } from './group-hub-labels';
@@ -299,5 +300,16 @@ describe('toEndQuickChoices', () => {
     ['the last day of the Session', new Date(2026, 10, 10), ['2026-11-10']],
   ])('offers today and the Session end for %s', (_case, today, expected) => {
     expect(toEndQuickChoices(today).map((choice) => choice.value)).toEqual(expected);
+  });
+});
+
+describe('toStageKindLabel', () => {
+  it.each([
+    { kind: null, name: 'Tanzgarde', shows: false },
+    { kind: 'Tanzgarde', name: 'Tanzgarde', shows: false },
+    { kind: 'tanzgarde', name: ' Tanzgarde ', shows: false },
+    { kind: 'Tanzgarde', name: 'Juniorengarde', shows: true },
+  ])('shows the kind $kind above $name: $shows', ({ kind, name, shows }) => {
+    expect(toStageKindLabel(kind, name) !== null).toBe(shows);
   });
 });

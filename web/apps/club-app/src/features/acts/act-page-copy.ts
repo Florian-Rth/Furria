@@ -9,7 +9,6 @@ export const ACT_DENIED_MESSAGE =
 export const SETTINGS_LABEL = 'Bearbeiten';
 export const ACT_DETAILS_LABEL = 'Details';
 export const ACT_CARD_LABEL = 'Zum Sessionsauftritt';
-export const STUDIO_OPEN_LABEL = 'Studio öffnen';
 export const STUDIO_MUSIC_LABEL = 'Musik anlegen';
 export const SETTINGS_TITLE = 'Sessionsauftritt bearbeiten';
 export const CAST_ONLY_NOTE =

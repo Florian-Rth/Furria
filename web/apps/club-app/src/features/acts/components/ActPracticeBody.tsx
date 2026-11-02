@@ -16,6 +16,7 @@ export const ActPracticeBody: FC<ActPracticeBodyProps> = ({ page }) => {
     return <ActPageLoading page={page} />;
   }
 
+  const tone = page.query.data?.act.group?.tone ?? null;
   const screenKey = `${page.actId}:${page.evening?.eventId ?? SESSION_KEY}`;
   const startHall = (): void => {
     page.startTraining(undefined);
@@ -32,6 +33,7 @@ export const ActPracticeBody: FC<ActPracticeBodyProps> = ({ page }) => {
       key={screenKey}
       actId={page.actId}
       title={page.title}
+      tone={tone}
       studio={studio}
       viewerId={page.viewerId}
       canEdit={page.canEditStudio}

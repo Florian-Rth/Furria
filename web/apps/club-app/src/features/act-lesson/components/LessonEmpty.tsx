@@ -36,6 +36,9 @@ export const LessonEmpty: FC<LessonEmptyProps> = ({ title, mode }) => {
 
   return (
     <KkLesson label={LESSON_LABEL} title={title}>
+      <KkLesson.Area name="strip">
+        <KkLesson.Heading text={title} />
+      </KkLesson.Area>
       <KkLesson.Area name="card">
         <KkLesson.Card label={LESSON_EMPTY_NAME}>
           <KkLesson.Picture label={LESSON_PICTURE_LABEL} paired={false}>

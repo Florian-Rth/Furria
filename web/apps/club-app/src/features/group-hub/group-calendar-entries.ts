@@ -6,6 +6,7 @@ import { toIsoDay } from '@/lib/day';
 import type { GroupCalendarEntry } from './schemas';
 
 export const CALENDAR_ENTRY_WINDOW_DAYS = 180;
+export const CALENDAR_ENTRY_PREVIEW_COUNT = 3;
 
 const META_SEPARATOR = ' · ';
 const WITH_PREFIX = 'mit ';
@@ -74,4 +75,26 @@ export const toCalendarEntryMetaLine = (entry: GroupCalendarEntry, groupId: numb
   }
 
   return parts.join(META_SEPARATOR);
+};
+
+export interface CalendarEntryPreview {
+  shown: readonly GroupCalendarEntry[];
+  moreCount: number;
+  moreOwedCount: number;
+}
+
+const isOwedAnswer = (entry: GroupCalendarEntry): boolean =>
+  entry.viewerMayAnswer && entry.viewerAnswer === null;
+
+export const toCalendarEntryPreview = (
+  entries: readonly GroupCalendarEntry[],
+  previewCount: number,
+): CalendarEntryPreview => {
+  const more = entries.slice(previewCount);
+
+  return {
+    shown: entries.slice(0, previewCount),
+    moreCount: more.length,
+    moreOwedCount: more.filter(isOwedAnswer).length,
+  };
 };

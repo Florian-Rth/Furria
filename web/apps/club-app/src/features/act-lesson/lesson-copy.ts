@@ -12,8 +12,9 @@ export const LESSON_NO_DESCRIPTION = 'Zu diesem Schritt gibt es noch keine Besch
 export const LESSON_READ_LABEL = 'Schritt ganz lesen';
 export const LESSON_READ_CLOSE = 'Schließen';
 export const LESSON_DOCK_LABEL = 'Abspielen, Tempo und Gruppentraining';
-export const LESSON_HALL = 'Gruppentraining';
 export const LESSON_HALL_LABEL = 'Gruppentraining: zur großen Ansicht wechseln';
+export const LESSON_STRIP_LABEL = 'Der ganze Tanz auf der Musik, tippen springt zum Schritt';
+export const LESSON_EIGHT = 'Achter';
 export const LESSON_NO_PART = 'Ohne Teil';
 export const LESSON_NEXT = 'Danach';
 export const LESSON_LAST = 'Das war der letzte Schritt';
@@ -25,7 +26,7 @@ export const LESSON_EMPTY_TEXT =
   'Sobald die Musik und die Schritte angelegt sind, übst du hier Schritt für Schritt: mit Trainervideo, deinem Platz und deinem Weg.';
 
 export const lessonEyebrowOf = (part: string | null, number: number, total: number): string => {
-  const place = `${number} von ${total}`;
+  const place = `Schritt ${number}/${total}`;
 
   return part === null ? place : `${part} · ${place}`;
 };
@@ -52,3 +53,9 @@ export const cueLabelOf = (cue: OwnCue | null): string => {
     ? 'Dein Weg: jetzt loslaufen'
     : `Dein Weg beginnt in ${cue.counts} Zählzeiten`;
 };
+
+export const eightTextOf = (place: EightPlace | null): string =>
+  place === null ? '' : `${place.eight} / ${place.eights}`;
+
+export const beatLabelOf = (count: string, place: EightPlace | null): string =>
+  place === null ? count : `${count}, Achter ${place.eight} von ${place.eights}`;

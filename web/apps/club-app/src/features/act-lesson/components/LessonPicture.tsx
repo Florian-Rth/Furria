@@ -9,6 +9,7 @@ import {
 } from '@/features/act-practice/practice-copy';
 import type { Lesson } from '../hooks/use-lesson';
 import { LESSON_PICTURE_LABEL } from '../lesson-copy';
+import { LessonCueLive } from './LessonCueLive';
 
 const VIDEO_ASPECT = 16 / 9;
 const FRONT_ROOM_SHARE = 1.14;
@@ -59,7 +60,15 @@ export const LessonPicture: FC<LessonPictureProps> = ({ lesson }) => {
         <PracticeStageLayer studio={studio} playback={playback} />
       </KkLesson.Layer>
       {swap}
-      <KkLesson.Corner side="start">{noVideo}</KkLesson.Corner>
+      <KkLesson.Corner side="start">
+        <LessonCueLive
+          player={playback.player}
+          ownPath={lesson.ownPath}
+          marks={playback.countMarks}
+          loop={practice.loop}
+        />
+        {noVideo}
+      </KkLesson.Corner>
       <KkLesson.Corner side="end">
         {take}
         {mirror}

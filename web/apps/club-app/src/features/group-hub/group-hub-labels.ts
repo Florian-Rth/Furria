@@ -5,6 +5,7 @@ import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { GroupDetailAdmin, GroupDetailMember } from '@/features/group-detail/schemas';
 import { toGroupKindId, toGroupKindValue } from '@/features/group-kinds/group-kinds-labels';
 import { toAnniversary, toFoundedLine } from '@/features/groups/group-identity';
+import { toGroupKindLabel } from '@/features/groups/groups-labels';
 import { GROUPS_ORIGIN, MANAGE_ORIGIN, PROFILE_ORIGIN } from '@/features/session/app-sections';
 import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH, sessionAt } from '@/lib/club';
 import type { ClubIcon } from '@/lib/club-icon';
@@ -76,6 +77,19 @@ export const toHubMetaFacts = (hub: GroupHub): string[] => {
   const facts = [toGroupMembersLabel(hub.members.length), toGroupAdminsLabel(hub.admins.length)];
 
   return founded === null ? facts : [founded, ...facts];
+};
+
+export const toStageKindLabel = (
+  groupKindName: string | null,
+  groupName: string,
+): string | null => {
+  const kind = toGroupKindLabel(groupKindName);
+
+  if (kind === null) {
+    return null;
+  }
+
+  return kind.toLocaleLowerCase('de') === groupName.trim().toLocaleLowerCase('de') ? null : kind;
 };
 
 export const toHubRecruitingChip = (hub: GroupHub): StateChip | null =>

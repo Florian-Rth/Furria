@@ -25,6 +25,14 @@ const BAR_CLEARANCE = gutter * 2 + barHeight;
 const TOOL_ROW_CLEARANCE = chromeGap + toolRowHeight;
 const NO_CLEARANCE = 0;
 
+const headClearanceOf = (folded: boolean, showsTools: boolean): number => {
+  if (folded) {
+    return gutter;
+  }
+
+  return showsTools ? BAR_CLEARANCE + TOOL_ROW_CLEARANCE : BAR_CLEARANCE;
+};
+
 export const KkScreen: FC<KkScreenProps> = ({
   kind,
   title,
@@ -43,7 +51,7 @@ export const KkScreen: FC<KkScreenProps> = ({
   handover,
   children,
 }) => {
-  const { path, move, destinations, chromeHost, footHost, indexHost } = useKkShell();
+  const { path, move, destinations, chromeHost, footHost, indexHost, barFolded } = useKkShell();
   const gate = useScreenArrivalGate();
   const { ref: actionBarRef, measured: measuredActionHeight } = useFootMeasure(
     action !== undefined || foot !== undefined,
@@ -52,7 +60,8 @@ export const KkScreen: FC<KkScreenProps> = ({
   const lead: KkShellBarLead = header === undefined ? 'title' : 'brand';
   const searching = search !== undefined && search.query !== null;
   const showsTools = tools !== undefined && !searching;
-  const headClearance = showsTools ? BAR_CLEARANCE + TOOL_ROW_CLEARANCE : BAR_CLEARANCE;
+  const folded = kind === 'fullscreen' && barFolded;
+  const headClearance = headClearanceOf(folded, showsTools);
   const footClearance = footClearanceOf({
     section,
     action,
@@ -76,6 +85,7 @@ export const KkScreen: FC<KkScreenProps> = ({
           <>
             <KkShellBar
               kind={kind}
+              folded={folded}
               lead={lead}
               title={title}
               origin={barOrigin}

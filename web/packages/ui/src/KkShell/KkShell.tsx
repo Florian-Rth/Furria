@@ -61,6 +61,7 @@ export const KkShell: FC<KkShellProps> = ({
   const foot = useShellHost();
   const index = useShellHost();
   const [stance, holdStance] = useState<KkScreenStance | null>(null);
+  const [barFolded, holdBarFold] = useState(false);
   const [barMemory] = useState(createBarMemory);
   const ledByUser = useScrollLead(path);
 
@@ -97,6 +98,8 @@ export const KkShell: FC<KkShellProps> = ({
         footHost: foot.node,
         indexHost: index.node,
         holdStance,
+        barFolded,
+        holdBarFold,
         barMemory,
       }}
     >

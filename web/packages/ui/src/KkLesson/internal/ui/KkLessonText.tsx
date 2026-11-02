@@ -21,7 +21,7 @@ const PORTRAIT_LINES = 3;
 const TALL_LINES = 4;
 const WIDE_LINES = 4;
 const WIDE_SHORT_LINES = 2;
-const WIDE_TALL_LINES = 8;
+const WIDE_TALL_LINES = 3;
 const CRAMPED_LINES = 2;
 
 const boxOf = (lines: number): CSSObject => ({ height: `calc(${LINE} * ${lines})` });

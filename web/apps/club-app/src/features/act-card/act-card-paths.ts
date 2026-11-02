@@ -1,8 +1,6 @@
 import { ACT_PAGE_PATH, GROUP_HUB_PATH } from '@/features/acts/acts-origin';
 import type { ActPageSearch } from '@/features/acts/schemas';
 
-const CALENDAR_ENTRY_PATH = '/calendar/$calendarEntryId';
-
 export type CardLinkSearch = Record<string, string | number | boolean>;
 
 export interface CardLink {
@@ -53,11 +51,6 @@ export const actCardLinkOf = (actId: number, groupId: number): CardLink => ({
   to: ACT_PAGE_PATH,
   params: { actId: String(actId) },
   search: { from: 'group', group: groupId },
-});
-
-export const calendarEntryLinkOf = (calendarEntryId: number): CardLink => ({
-  to: CALENDAR_ENTRY_PATH,
-  params: { calendarEntryId: String(calendarEntryId) },
 });
 
 export const groupHubLinkOf = (groupId: number): CardLink => ({

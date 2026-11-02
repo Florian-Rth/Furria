@@ -3,6 +3,7 @@ import type { FC } from 'react';
 import type { SpotPath } from '@/features/act-player/choreography-motion';
 import type { MixPlayer } from '@/features/act-player/mix-player';
 import type { CountMark, TimelineRange } from '@/features/act-player/music-timeline';
+import type { StudioStep } from '@/features/acts/schemas';
 import { usePracticeScene } from '../hooks/use-practice-scene';
 import { cueTextOf } from '../practice-copy';
 import type { StageScene } from '../practice-stage';
@@ -13,6 +14,7 @@ interface PracticeStageSceneProps {
   ownPath: SpotPath | null;
   marks: readonly CountMark[];
   loop: TimelineRange | null;
+  steps: readonly StudioStep[];
   gliding: boolean;
 }
 
@@ -22,9 +24,10 @@ export const PracticeStageScene: FC<PracticeStageSceneProps> = ({
   ownPath,
   marks,
   loop,
+  steps,
   gliding,
 }) => {
-  const frame = usePracticeScene(player, scene, ownPath, marks, loop);
+  const frame = usePracticeScene(player, scene, ownPath, marks, loop, steps);
   const aspect = scene.stage.depthMetres / scene.stage.widthMetres;
   const dots = frame.dots.map((dot) => (
     <KkPracticeStage.Dot
@@ -48,8 +51,14 @@ export const PracticeStageScene: FC<PracticeStageSceneProps> = ({
       />
     );
 
+  const way =
+    frame.way === null ? null : (
+      <KkPracticeStage.Way points={frame.way.points} marks={frame.way.marks} aspect={aspect} />
+    );
+
   return (
     <>
+      {way}
       <KkPracticeStage.Ghost points={frame.ghost} aspect={aspect} />
       {dots}
       {cue}

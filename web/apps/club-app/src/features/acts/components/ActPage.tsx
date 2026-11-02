@@ -1,6 +1,7 @@
 import { KkScreen } from '@furria/ui/KkScreen';
 import type { FC } from 'react';
-import { ActCardScreenBody } from '@/features/act-card/components/ActCardScreenBody';
+import { ActHubOutline } from '@/features/act-hub/components/ActHubOutline';
+import { ActHubScreen } from '@/features/act-hub/components/ActHubScreen';
 import { useStudioVisit } from '@/features/act-studio/hooks/use-studio-visit';
 import { START_ORIGIN } from '@/features/session/app-sections';
 import { AccessDeniedScreen } from '@/features/session/components/AccessDeniedScreen';
@@ -40,10 +41,24 @@ export const ActPage: FC<ActPageProps> = ({ actId, search }) => {
     );
   }
 
+  const studio = page.query.data.studio;
+
+  if (page.mode === 'card' && studio !== null) {
+    return (
+      <ActHubScreen
+        data={page.query.data}
+        studio={studio}
+        search={page.search}
+        viewerId={page.viewerId}
+        title={page.title}
+        origin={page.origin}
+      />
+    );
+  }
   if (page.mode === 'card') {
     return (
       <KkScreen kind="detail" title={page.title} origin={page.origin} actions={page.actions}>
-        <ActCardScreenBody data={page.query.data} viewerId={page.viewerId} search={page.search} />
+        <ActHubOutline data={page.query.data} />
       </KkScreen>
     );
   }

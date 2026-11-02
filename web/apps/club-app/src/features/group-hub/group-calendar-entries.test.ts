@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { toCalendarEntryMark, toCalendarEntryWindow } from './group-calendar-entries';
+import {
+  toCalendarEntryMark,
+  toCalendarEntryPreview,
+  toCalendarEntryWindow,
+} from './group-calendar-entries';
 import type { GroupCalendarEntry } from './schemas';
 
 const anEntry = (overrides: Partial<GroupCalendarEntry>): GroupCalendarEntry => ({
@@ -53,5 +57,33 @@ describe('toCalendarEntryMark', () => {
     );
 
     expect(mark?.kind === 'guestOfGroup' ? mark.tone : null).toBe('teal');
+  });
+});
+
+describe('toCalendarEntryPreview', () => {
+  const entries = [
+    anEntry({ calendarEntryId: 1, viewerMayAnswer: true }),
+    anEntry({ calendarEntryId: 2 }),
+    anEntry({ calendarEntryId: 3, viewerMayAnswer: true, viewerAnswer: 'yes' }),
+    anEntry({ calendarEntryId: 4, viewerMayAnswer: true }),
+    anEntry({ calendarEntryId: 5, viewerMayAnswer: true, viewerAnswer: 'no' }),
+    anEntry({ calendarEntryId: 6 }),
+    anEntry({ calendarEntryId: 7, viewerMayAnswer: true }),
+  ];
+
+  it('shows the first entries and counts the rest with their open answers', () => {
+    const preview = toCalendarEntryPreview(entries, 3);
+
+    expect(preview.shown.map((entry) => entry.calendarEntryId)).toEqual([1, 2, 3]);
+    expect(preview.moreCount).toBe(4);
+    expect(preview.moreOwedCount).toBe(2);
+  });
+
+  it('keeps nothing back when everything fits', () => {
+    const preview = toCalendarEntryPreview(entries.slice(0, 2), 3);
+
+    expect(preview.shown).toHaveLength(2);
+    expect(preview.moreCount).toBe(0);
+    expect(preview.moreOwedCount).toBe(0);
   });
 });

@@ -4,7 +4,7 @@ import ButtonBase from '@mui/material/ButtonBase';
 import type { FC } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { kkTokens } from '../../../tokens';
-import { insetBoxOf, LESSON_PAIRED, LESSON_PICTURE_ROOMY } from '../lesson-query';
+import { insetBoxOf, LESSON_PAIRED, LESSON_PICTURE_ROOMY, LESSON_WIDE_TALL } from '../lesson-query';
 
 interface KkLessonSwapProps {
   aspect: number;
@@ -27,6 +27,7 @@ export const KkLessonSwap: FC<KkLessonSwapProps> = ({ aspect, label, onSwap }) =
       '&:active': { transform: 'scale(0.98)' },
       ...insetBoxOf(aspect),
       [LESSON_PICTURE_ROOMY]: { [LESSON_PAIRED]: { display: 'none' } },
+      [LESSON_WIDE_TALL]: { [LESSON_PAIRED]: { display: 'none' } },
       ...focusRing(theme),
     })}
   >

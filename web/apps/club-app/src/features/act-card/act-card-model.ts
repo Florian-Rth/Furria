@@ -20,11 +20,6 @@ export interface Tally {
   of: number;
 }
 
-export interface NamesPreview {
-  names: string[];
-  more: number;
-}
-
 export interface StudioCounts {
   musicSeconds: number;
   finalTrack: boolean;
@@ -71,9 +66,6 @@ const OUTSIDE_DOORS: DoorKey[] = ['cast'];
 export const doorsOf = (template: ActTemplate, hasStudio: boolean): DoorKey[] =>
   hasStudio ? DOORS[template] : OUTSIDE_DOORS;
 
-export const isDoorKey = (value: string, doors: readonly DoorKey[]): value is DoorKey =>
-  doors.some((door) => door === value);
-
 export const eveningSlotOf = (position: number | null | undefined): EveningSlot => {
   if (position === undefined) {
     return { kind: 'absent' };
@@ -118,14 +110,6 @@ export const trainingTallyOf = (training: StudioTraining, castSize: number): Tal
     training.responses.filter((response) => response.answer === 'no').length,
     castSize,
   );
-
-export const namesPreviewOf = (
-  people: readonly PortraitPersonRef[],
-  shown: number,
-): NamesPreview => ({
-  names: people.slice(0, shown).map((person) => person.firstName),
-  more: Math.max(people.length - shown, 0),
-});
 
 export type Ask = { kind: 'names'; names: string[] } | { kind: 'self' } | { kind: 'nobody' };
 
@@ -186,16 +170,3 @@ export const isOwed = (inCast: boolean, answer: AnswerKey | null): boolean =>
 
 export const isEditorOf = (canEditStudio: boolean, leads: boolean): boolean =>
   canEditStudio || leads;
-
-export type DoorReach = 'tile' | 'full';
-
-export const doorReachOf = (doors: readonly DoorKey[]): DoorReach =>
-  doors.length === 1 ? 'full' : 'tile';
-
-export const hasSheet = (door: DoorKey): boolean => door !== 'practice' && door !== 'text';
-
-export const paneDoorOf = (open: DoorKey | null, doors: readonly DoorKey[]): DoorKey | null =>
-  open !== null && hasSheet(open) ? open : (doors.find(hasSheet) ?? null);
-
-export const sideDoorOf = (pane: DoorKey | null, doors: readonly DoorKey[]): DoorKey | null =>
-  doors.find((door) => door !== pane && hasSheet(door)) ?? null;

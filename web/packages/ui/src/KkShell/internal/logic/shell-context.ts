@@ -19,6 +19,8 @@ export interface KkShellState {
   footHost: HTMLElement | null;
   indexHost: HTMLElement | null;
   holdStance: (stance: KkScreenStance | null) => void;
+  barFolded: boolean;
+  holdBarFold: (folded: boolean) => void;
   barMemory: KkBarMemory;
 }
 

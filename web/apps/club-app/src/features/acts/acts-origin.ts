@@ -206,12 +206,6 @@ export const actCardLinkOf = (actId: number, search: ActPageSearch): KkScreenAct
   search: cardSearchOf(search),
 });
 
-export const actDetailsLinkOf = (actId: number, search: ActPageSearch): KkScreenActionLink => ({
-  to: ACT_PAGE_PATH,
-  params: { actId: String(actId) },
-  search: { ...cardSearchOf(search), view: DETAILS_VIEW },
-});
-
 export const playerOriginOf = (
   actId: number,
   search: ActPageSearch,
