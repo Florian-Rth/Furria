@@ -13,14 +13,14 @@ import { canPractise } from '@/features/acts/act-studio';
 import type { Studio, StudioEvening } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
 import { useLargeText } from '@/lib/use-large-text';
-import type { SongMutations, StepMutations, VideoMutations } from '../api';
-import { useSongMutations, useStepMutations, useVideoMutations } from '../api';
+import type { SongMutations, VideoMutations } from '../api';
+import { useSongMutations, useVideoMutations } from '../api';
 import { useEveningStageMutations } from '../evening-api';
 import type { StageMutations } from '../stage-api';
 import { useStageMutations } from '../stage-api';
 import type { StudioTool } from '../studio-copy';
 import { eveningBandOf } from '../studio-copy';
-import { workedPathsOf, workedStepsOf, workedStudioOf } from '../studio-edits';
+import { workedPathsOf } from '../studio-edits';
 import { eveningStudioOf } from '../studio-evening';
 import type { ActStudioFrame } from '../studio-layout';
 import { largeTextFrameOf } from '../studio-layout';
@@ -31,6 +31,8 @@ import { useActStudioEdits, useKeptPosition } from './use-act-studio-edits';
 import type { ActStudioMode } from './use-act-studio-mode';
 import { useActStudioMode } from './use-act-studio-mode';
 import { useStudioDeveloping } from './use-studio-developing';
+import type { StudioDocumentEdit } from './use-studio-document';
+import { useStudioDocument } from './use-studio-document';
 import type { StudioFinal } from './use-studio-final';
 import { useStudioFinal } from './use-studio-final';
 import type { StudioLargeText } from './use-studio-large-text';
@@ -52,7 +54,7 @@ export interface StudioScreen {
   music: SongMutations;
   stageWrites: StageMutations;
   cast: readonly CastPerson[];
-  manual: StepMutations;
+  document: StudioDocumentEdit;
   videos: VideoMutations;
   final: StudioFinal;
   mode: ActStudioMode;
@@ -90,21 +92,20 @@ export const useStudioScreen = (
     evening?.eventId ?? null,
     useStageMutations(actId),
   );
-  const manual = useStepMutations(actId);
+  const work = useStudioDocument(actId, source);
   const videos = useVideoMutations(actId);
   useVideoAutoAlign(source, canEdit, videos);
   useStudioDeveloping(actId, source);
   const edits = useActStudioEdits();
   const { studio, final } = useStudioFinal(
     actId,
-    workedStudioOf(eveningStudioOf(source, evening, cast), edits.value),
+    eveningStudioOf(work.studio, evening, cast),
     mode,
     edits,
   );
   const base = useStudioPlayback(studio, viewerId);
   const playback: StudioPlayback = {
     ...base,
-    steps: workedStepsOf(base.steps, edits.value),
     paths: workedPathsOf(base.paths, edits.value),
   };
   useKeptPosition(base.player, edits.keep);
@@ -125,7 +126,7 @@ export const useStudioScreen = (
     music,
     stageWrites,
     cast,
-    manual,
+    document: work,
     videos,
     final,
     frame: largeTextFrameOf(video.hero, large.videoShown),

@@ -41,26 +41,6 @@ export const videoShelfOf = (video: StudioVideo): VideoShelf => {
 export const needsAlignment = (video: StudioVideo): boolean =>
   video.state === 'ready' && video.placement === 'unaligned';
 
-export const withVideoStart = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
-  { videoId, startSeconds }: VideoStartInput,
-): TResponse | undefined =>
-  withStudio(response, (studio) => ({
-    ...studio,
-    videos: studio.videos.map((video) =>
-      video.videoId === videoId ? { ...video, startSeconds, placement: 'onTimeline' } : video,
-    ),
-  }));
-
-export const withVideoName = <TResponse extends HoldsStudio>(
-  response: TResponse | undefined,
-  { videoId, name }: VideoNameInput,
-): TResponse | undefined =>
-  withStudio(response, (studio) => ({
-    ...studio,
-    videos: studio.videos.map((video) => (video.videoId === videoId ? { ...video, name } : video)),
-  }));
-
 export const withoutVideo = <TResponse extends HoldsStudio>(
   response: TResponse | undefined,
   videoId: number,

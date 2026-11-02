@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useGestureRelease } from '@/features/act-studio/hooks/use-gesture-release';
 import type { StudioScreen } from '@/features/act-studio/hooks/use-studio-screen';
 import { borderMovedOf } from '@/features/act-studio/studio-edits';
 import { borderLabelOf, clockOf, snapHintOf } from '../desk-copy';
@@ -23,19 +24,17 @@ export interface DeskBorders {
 }
 
 export const useDeskBorders = (screen: StudioScreen): DeskBorders => {
-  const { playback, edits, manual } = screen;
+  const { playback } = screen;
+  const work = screen.document;
   const { steps, length, countMarks } = playback;
   const [activeId, setActiveId] = useState<number | null>(null);
+  useGestureRelease(activeId !== null, work.endGesture);
 
-  const save = (beforeId: number, afterId: number): void => {
-    const moved = edits.value.bounds[afterId];
-    if (moved === undefined) {
-      return;
+  const moveTo = (beforeId: number, afterId: number, seconds: number): void => {
+    const moved = borderMovedOf(steps, beforeId, seconds, countMarks)[afterId]?.start;
+    if (moved !== undefined) {
+      work.change({ kind: 'stepMove', stepId: afterId, atSeconds: moved, lengthSeconds: length });
     }
-    const clear = (): void => {
-      edits.clearBounds([beforeId, afterId]);
-    };
-    void manual.move.mutateAsync({ stepId: afterId, atSeconds: moved.start }).then(clear, clear);
   };
 
   const nudgeAt = (index: number, direction: -1 | 1): void => {
@@ -48,12 +47,7 @@ export const useDeskBorders = (screen: StudioScreen): DeskBorders => {
     if (target === null) {
       return;
     }
-    const bounds = borderMovedOf(steps, before.stepId, target, countMarks);
-    const moved = bounds[after.stepId]?.start;
-    if (moved === undefined || Math.abs(moved - after.startSeconds) < 1e-3) {
-      return;
-    }
-    manual.move.mutate({ stepId: after.stepId, atSeconds: moved });
+    moveTo(before.stepId, after.stepId, target);
   };
 
   const locked = screen.evening !== null;
@@ -75,11 +69,12 @@ export const useDeskBorders = (screen: StudioScreen): DeskBorders => {
         hint: snapHintOf(place?.eight ?? null, place?.count ?? null, seconds),
         move: (share: number) => {
           setActiveId(before.stepId);
-          edits.setBounds(borderMovedOf(steps, before.stepId, share * length, countMarks));
+          work.startGesture();
+          moveTo(before.stepId, after.stepId, share * length);
         },
         end: () => {
           setActiveId(null);
-          save(before.stepId, after.stepId);
+          work.endGesture();
         },
         nudge: (direction: -1 | 1) => {
           nudgeAt(index, direction);

@@ -1,7 +1,8 @@
+import type { SaveStatus } from '@furria/studio/autosave';
 import type { Studio } from '@/features/acts/schemas';
 import { HISTORY_FIXED, HISTORY_UNDONE, visitMetaOf, WRITE_TEXT } from '../undo-copy';
 import { useStudioHistory } from './use-studio-history';
-import { useStudioUndo } from './use-studio-undo';
+import { useStudioHistoryControls } from './use-studio-history-controls';
 
 export interface VisitHistoryRow {
   key: string;
@@ -14,13 +15,15 @@ export interface VisitHistory {
   rows: VisitHistoryRow[];
   canUndo: boolean;
   canRedo: boolean;
+  status: SaveStatus | null;
   undo: () => void;
   redo: () => void;
+  retry: () => void;
 }
 
 export const useVisitHistory = (actId: number, studio: Studio): VisitHistory => {
-  const { history, canUndo, canRedo } = useStudioHistory(actId);
-  const { undo, redo } = useStudioUndo(actId);
+  const { history } = useStudioHistory(actId);
+  const controls = useStudioHistoryControls(actId);
   const eveningTitleOf = (eventId: number | null): string | null =>
     studio.evenings.find((evening) => evening.eventId === eventId)?.title ?? null;
   const hintOf = (undone: boolean, fixed: boolean): string | undefined => {
@@ -38,9 +41,11 @@ export const useVisitHistory = (actId: number, studio: Studio): VisitHistory => 
       meta: visitMetaOf(entry.at, eveningTitleOf(entry.eventId)),
       hint: hintOf(entry.state === 'undone', entry.reverse === null),
     })),
-    canUndo,
-    canRedo,
-    undo,
-    redo,
+    canUndo: controls.canUndo,
+    canRedo: controls.canRedo,
+    status: controls.status,
+    undo: controls.undo,
+    redo: controls.redo,
+    retry: controls.retry,
   };
 };

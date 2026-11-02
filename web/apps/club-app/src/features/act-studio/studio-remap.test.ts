@@ -16,26 +16,14 @@ describe('renameOf', () => {
       rename: songs,
     },
     {
-      name: 'restored steps in order',
-      applied: { kind: 'stepsRemove', stepIds: [1, 2] },
-      created: [11, 12],
-      rename: {
-        entity: 'step',
-        renames: new Map([
-          [1, 11],
-          [2, 12],
-        ]),
-      },
-    },
-    {
       name: 'a restore that created a different count',
-      applied: { kind: 'stepsRemove', stepIds: [1] },
-      created: [11, 12],
+      applied: { kind: 'spotRemove', spotId: 30 },
+      created: [40, 41],
       rename: null,
     },
     {
       name: 'a write that removed nothing',
-      applied: { kind: 'songOrder', songIds: [1] },
+      applied: { kind: 'songAdd', mediaItemId: 1 },
       created: [],
       rename: null,
     },
@@ -47,24 +35,20 @@ describe('renameOf', () => {
 describe('writeRenamed', () => {
   it.each<{ name: string; rename: IdRename; write: StudioWrite; renamed: StudioWrite }>([
     {
-      name: 'song settings',
+      name: 'a song restore order',
       rename: songs,
       write: {
-        kind: 'songSettings',
-        songId: 5,
+        kind: 'songRestore',
+        mediaItemId: 2,
         settings: { startSeconds: 0, endSeconds: 1, firstBeatSeconds: null, tempoBpm: null },
+        order: [5, 0],
       },
       renamed: {
-        kind: 'songSettings',
-        songId: 9,
+        kind: 'songRestore',
+        mediaItemId: 2,
         settings: { startSeconds: 0, endSeconds: 1, firstBeatSeconds: null, tempoBpm: null },
+        order: [9, 0],
       },
-    },
-    {
-      name: 'a song order',
-      rename: songs,
-      write: { kind: 'songOrder', songIds: [1, 5] },
-      renamed: { kind: 'songOrder', songIds: [1, 9] },
     },
     {
       name: 'paths keyed by spot',
@@ -73,17 +57,21 @@ describe('writeRenamed', () => {
       renamed: { kind: 'tracks', changes: { 40: [], 31: [] } },
     },
     {
-      name: 'the main video of a part',
+      name: 'the main video of a restored part binding',
       rename: videos,
       write: {
-        kind: 'partSettings',
-        partId: 3,
-        settings: { name: 'A', firstStepId: 3, mainVideoId: 3 },
+        kind: 'videoRestore',
+        mediaItemId: 8,
+        name: null,
+        startSeconds: null,
+        parts: [{ partId: 3, settings: { name: 'A', firstStepId: 3, mainVideoId: 3 } }],
       },
       renamed: {
-        kind: 'partSettings',
-        partId: 3,
-        settings: { name: 'A', firstStepId: 3, mainVideoId: 7 },
+        kind: 'videoRestore',
+        mediaItemId: 8,
+        name: null,
+        startSeconds: null,
+        parts: [{ partId: 3, settings: { name: 'A', firstStepId: 3, mainVideoId: 7 } }],
       },
     },
     {

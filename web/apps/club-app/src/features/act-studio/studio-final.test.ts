@@ -13,7 +13,6 @@ import {
   offsetStartingAt,
   pendingFinalTrackOf,
   tunedOffsetOf,
-  withFinalOffset,
 } from './studio-final';
 
 const urls = { normalised: '/n', preview: '/p', peaks: '/k' };
@@ -288,27 +287,5 @@ describe('final beat', () => {
     expect(nudgedFinalBeatOf({ ...trackOf(1, 1, true), firstBeatSeconds: firstBeat }, delta)).toBe(
       expected,
     );
-  });
-});
-
-describe('withFinalOffset', () => {
-  it('replaces the offset of the tuned song and keeps the others', () => {
-    const track = {
-      ...trackOf(1, 1, false),
-      alignments: [
-        { sourceMediaItemId: 1, offsetSeconds: -5, stretch: 1 },
-        { sourceMediaItemId: 2, offsetSeconds: 40, stretch: 1 },
-      ],
-    };
-
-    const patched = withFinalOffset(
-      { studio: studioOf({ finalTracks: [track] }) },
-      { finalTrackId: 1, sourceMediaItemId: 1, offsetSeconds: -4.9, stretch: 1 },
-    );
-
-    expect(patched?.studio?.finalTracks[0]?.alignments).toEqual([
-      { sourceMediaItemId: 2, offsetSeconds: 40, stretch: 1 },
-      { sourceMediaItemId: 1, offsetSeconds: -4.9, stretch: 1 },
-    ]);
   });
 });

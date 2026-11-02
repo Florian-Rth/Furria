@@ -16,7 +16,8 @@ import {
   undone,
 } from './edit-history';
 import type { CreatedCollection, IdMap } from './id-map';
-import { localStudioOf, NO_IDS, serverIdOf } from './id-map';
+import { localStudioOf, NO_IDS, serverIdOf, serverStudioOf } from './id-map';
+import { sameValue } from './same-value';
 import type { SaveWrite } from './save-plan';
 import { savePlanOf } from './save-plan';
 import type { SaveOutcome, StudioSavePort } from './save-port';
@@ -29,11 +30,13 @@ export type EditorNote =
   | { kind: 'rejected' }
   | { kind: 'undoDropped'; steps: number };
 
-export interface StudioEditorSnapshot {
-  studio: Studio;
+export interface StudioEditorSnapshot<TStudio extends Studio = Studio> {
+  studio: TStudio;
   status: SaveStatus;
   canUndo: boolean;
   canRedo: boolean;
+  undoAt: number | null;
+  redoAt: number | null;
   note: EditorNote | null;
 }
 
@@ -42,8 +45,9 @@ export interface EditorClock {
   schedule: (run: () => void, delayMs: number) => () => void;
 }
 
-export interface StudioEditor {
-  snapshot: () => StudioEditorSnapshot;
+export interface StudioEditor<TStudio extends Studio = Studio> {
+  snapshot: () => StudioEditorSnapshot<TStudio>;
+  savedStudio: () => TStudio;
   subscribe: (listener: () => void) => () => void;
   newLocalId: () => number;
   serverIdOf: (collection: CreatedCollection, id: number) => number | null;
@@ -55,13 +59,14 @@ export interface StudioEditor {
   leave: () => Promise<SaveStatus>;
   retry: () => void;
   reload: () => Promise<void>;
+  adopt: (fresh: TStudio) => Promise<void>;
   direct: (action: () => Promise<void>) => Promise<void>;
   dismissNote: () => void;
   dispose: () => void;
 }
 
-interface EditorSession {
-  base: Studio;
+interface EditorSession<TStudio extends Studio> {
+  base: TStudio;
   saved: StudioDocument;
   edit: EditState;
   ids: IdMap;
@@ -83,7 +88,7 @@ const browserClock: EditorClock = {
   },
 };
 
-const withVersion = (studio: Studio, version: number): Studio => ({
+const withVersion = <TStudio extends Studio>(studio: TStudio, version: number): TStudio => ({
   ...studio,
   choreography: { tracks: [], ...studio.choreography, version },
 });
@@ -99,18 +104,24 @@ const noteOfRun = (end: RunEnd): EditorNote | null => {
   }
 };
 
-export const createStudioEditor = (
-  studio: Studio,
-  port: StudioSavePort,
+const undoAtOf = (edit: EditState): number | null =>
+  (edit.gesture?.patches.length ?? 0) > 0
+    ? (edit.gesture?.at ?? null)
+    : (edit.past.at(-1)?.at ?? null);
+
+export const createStudioEditor = <TStudio extends Studio>(
+  studio: TStudio,
+  port: StudioSavePort<TStudio>,
   clock: EditorClock = browserClock,
-): StudioEditor => {
+): StudioEditor<TStudio> => {
   const listeners = new Set<() => void>();
   let lastLocalId = 0;
   let cancelTimer: (() => void) | null = null;
   let running: Promise<void> | null = null;
   let holds = 0;
   let disposed = false;
-  let session: EditorSession = {
+  let waiting: TStudio | null = null;
+  let session: EditorSession<TStudio> = {
     base: studio,
     saved: documentOf(studio),
     edit: editStateOf(documentOf(studio)),
@@ -118,14 +129,16 @@ export const createStudioEditor = (
     autosave: AUTOSAVE_IDLE,
     note: null,
   };
-  let shown: StudioEditorSnapshot | null = null;
+  let shown: StudioEditorSnapshot<TStudio> | null = null;
 
-  const snapshot = (): StudioEditorSnapshot => {
+  const snapshot = (): StudioEditorSnapshot<TStudio> => {
     shown ??= {
       studio: studioOf(session.base, session.edit.document),
       status: saveStatusOf(session.autosave),
       canUndo: canUndo(session.edit),
       canRedo: canRedo(session.edit),
+      undoAt: undoAtOf(session.edit),
+      redoAt: session.edit.future.at(-1)?.at ?? null,
       note: session.note,
     };
 
@@ -146,7 +159,10 @@ export const createStudioEditor = (
     }
   };
 
-  const update = (next: Partial<EditorSession>, events: readonly AutosaveEvent[] = []): void => {
+  const update = (
+    next: Partial<EditorSession<TStudio>>,
+    events: readonly AutosaveEvent[] = [],
+  ): void => {
     if (disposed) {
       return;
     }
@@ -163,7 +179,7 @@ export const createStudioEditor = (
     }
   };
 
-  const rebasedOnto = (fresh: Studio, mode: RebaseMode, note: EditorNote | null): void => {
+  const rebasedOnto = (fresh: TStudio, mode: RebaseMode, note: EditorNote | null): void => {
     const base = localStudioOf(fresh, session.ids);
     const saved = documentOf(base);
     const rebase = rebased(session.edit, saved, mode);
@@ -273,6 +289,28 @@ export const createStudioEditor = (
     rebasedOnto(await port.load(), 'replayPending', null);
   };
 
+  const adopted = (fresh: TStudio): void => {
+    const base = localStudioOf(fresh, session.ids);
+    if (sameValue(documentOf(base), session.saved)) {
+      update({ base });
+      return;
+    }
+
+    rebasedOnto(fresh, 'replayPending', null);
+  };
+
+  const adopt = (fresh: TStudio): Promise<void> => {
+    if (session.edit.gesture !== null) {
+      waiting = fresh;
+      return Promise.resolve();
+    }
+
+    waiting = null;
+    return held(async () => {
+      adopted(fresh);
+    });
+  };
+
   const flush = async (): Promise<SaveStatus> => {
     update({ edit: gestureEnded(session.edit) }, [{ kind: 'left', at: clock.now() }]);
     await running;
@@ -296,6 +334,7 @@ export const createStudioEditor = (
 
   return {
     snapshot,
+    savedStudio: () => serverStudioOf(studioOf(session.base, session.saved), session.ids),
     subscribe: (listener) => {
       listeners.add(listener);
 
@@ -322,6 +361,9 @@ export const createStudioEditor = (
     },
     endGesture: () => {
       update({ edit: gestureEnded(session.edit) }, [{ kind: 'gestureEnded', at: clock.now() }]);
+      if (waiting !== null) {
+        void adopt(waiting);
+      }
     },
     undo: () => {
       historyStep(undone(session.edit), canUndo(session.edit));
@@ -334,6 +376,7 @@ export const createStudioEditor = (
       update({ edit: gestureEnded(session.edit) }, [{ kind: 'retried', at: clock.now() }]);
     },
     reload: () => held(reloaded),
+    adopt,
     direct: async (action) => {
       await flush();
       await held(async () => {

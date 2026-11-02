@@ -1,7 +1,6 @@
 import type { SpotPath, StagePoint, TimedKeyframe } from '@furria/studio/choreography-motion';
 import type { CountMark, MusicSegment } from '@furria/studio/music-timeline';
 import type { StudioSong, StudioStep } from '@furria/studio/studio-schemas';
-import type { Studio } from '@/features/acts/schemas';
 import { songLimitOf } from './studio-music';
 
 const MIN_STEP_SECONDS = 0.5;
@@ -13,51 +12,11 @@ export interface TimeSpan {
   end: number;
 }
 
-export interface StepText {
-  name: string;
-  description: string;
-}
-
 export interface StudioEdits {
-  bounds: Readonly<Record<number, TimeSpan>>;
-  texts: Readonly<Record<number, StepText>>;
   tracks: Readonly<Record<number, readonly TimedKeyframe[]>>;
-  starts: Readonly<Record<number, number>>;
 }
 
-export const NO_EDITS: StudioEdits = { bounds: {}, texts: {}, tracks: {}, starts: {} };
-
-export const withoutKeys = <TValue>(
-  record: Readonly<Record<number, TValue>>,
-  keys: readonly number[],
-): Record<number, TValue> =>
-  Object.fromEntries(Object.entries(record).filter(([key]) => !keys.includes(Number(key))));
-
-export const workedStudioOf = (studio: Studio, edits: StudioEdits): Studio => ({
-  ...studio,
-  videos: studio.videos.map((video) => {
-    const start = edits.starts[video.videoId];
-
-    return start === undefined ? video : { ...video, startSeconds: start };
-  }),
-});
-
-export const workedStepsOf = (
-  steps: readonly StudioStep[],
-  edits: StudioEdits,
-): readonly StudioStep[] =>
-  steps.map((step) => {
-    const bounds = edits.bounds[step.stepId];
-    const text = edits.texts[step.stepId];
-
-    return {
-      ...step,
-      startSeconds: bounds?.start ?? step.startSeconds,
-      endSeconds: bounds?.end ?? step.endSeconds,
-      name: text?.name ?? step.name,
-      description: text === undefined ? step.description : text.description || null,
-    };
-  });
+export const NO_EDITS: StudioEdits = { tracks: {} };
 
 export const workedPathsOf = (
   paths: readonly SpotPath[],

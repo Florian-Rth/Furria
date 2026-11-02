@@ -335,6 +335,12 @@ export const mergeKeyOf = (change: StudioChange): string | null => {
       return `finalOffset:${change.finalTrackId}:${change.sourceMediaItemId}`;
     case 'stepMove':
       return `stepMove:${change.stepId}`;
+    case 'stepText':
+      return `stepText:${change.stepId}`;
+    case 'partSettings':
+      return `partSettings:${change.partId}`;
+    case 'videoName':
+      return `videoName:${change.videoId}`;
     case 'videoStart':
       return `videoStart:${change.videoId}`;
     case 'tracks':

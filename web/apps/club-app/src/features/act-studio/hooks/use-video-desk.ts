@@ -1,6 +1,7 @@
 import { partRangeOf } from '@furria/studio/music-timeline';
 import { useState } from 'react';
 import type { VideoMutations } from '../api';
+import type { VideoAlignment } from '../schemas';
 import { videoNameOf } from '../studio-copy';
 import { partSettingsOf } from '../studio-steps';
 import { clampedVideoStartOf, overlapsRange, videoShelfOf } from '../studio-videos';
@@ -35,7 +36,8 @@ interface Draft {
 }
 
 export const useVideoDesk = (screen: StudioScreen, takes: ActStudioTakes): VideoDesk | null => {
-  const { videos: writes, manual, playback, studio } = screen;
+  const { videos: writes, playback, studio } = screen;
+  const work = screen.document;
   const { player, parts, steps, length } = playback;
   const video = takes.selected;
   const [draft, setDraft] = useState<Draft | null>(null);
@@ -71,22 +73,20 @@ export const useVideoDesk = (screen: StudioScreen, takes: ActStudioTakes): Video
         return;
       }
       const name = draft.name.trim() === '' ? null : draft.name.trim();
-      const clear = (): void => {
-        setDraft((current) => (current === draft ? null : current));
-      };
-      if (name === video.name) {
-        clear();
-        return;
-      }
-      void writes.rename.mutateAsync({ videoId: video.videoId, name }).then(clear, clear);
+      setDraft(null);
+      work.change({ kind: 'videoName', videoId: video.videoId, name });
     },
     aligning,
     alignLocked: video.state !== 'ready' || aligning,
     align: () => {
-      writes.align.mutate(video.videoId);
+      const aligned = ({ startSeconds }: VideoAlignment): void => {
+        work.change({ kind: 'videoStart', videoId: video.videoId, startSeconds });
+      };
+      void writes.align.mutateAsync(video.videoId).then(aligned, () => undefined);
     },
     startHere: () => {
-      writes.place.mutate({
+      work.change({
+        kind: 'videoStart',
         videoId: video.videoId,
         startSeconds: clampedVideoStartOf(player.position(), video.durationSeconds ?? 0, length),
       });
@@ -99,9 +99,11 @@ export const useVideoDesk = (screen: StudioScreen, takes: ActStudioTakes): Video
         text: part.name,
         variant: main ? 'contained' : 'outlined',
         press: () => {
-          manual.settlePart.mutate({
+          work.change({
+            kind: 'partSettings',
             partId: part.partId,
-            settings: { ...partSettingsOf(part), mainVideoId: main ? null : video.videoId },
+            ...partSettingsOf(part),
+            mainVideoId: main ? null : video.videoId,
           });
         },
       };

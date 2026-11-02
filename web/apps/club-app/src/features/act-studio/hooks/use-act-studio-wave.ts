@@ -131,7 +131,8 @@ const useFinalWave = (screen: StudioScreen, shareOf: (seconds: number) => number
             end: () => {
               if (shift !== null) {
                 screen.edits.keepPosition(player.position());
-                final.writes.tune.mutate({
+                screen.document.change({
+                  kind: 'finalOffset',
                   finalTrackId: pending.finalTrackId,
                   sourceMediaItemId: selected.segment.mediaItemId,
                   offsetSeconds: offsetStartingAt(selected.segment, shift.seconds, selectedStretch),
@@ -142,7 +143,8 @@ const useFinalWave = (screen: StudioScreen, shareOf: (seconds: number) => number
             },
             nudge: (direction) => {
               screen.edits.keepPosition(player.position());
-              final.writes.tune.mutate({
+              screen.document.change({
+                kind: 'finalOffset',
                 finalTrackId: pending.finalTrackId,
                 sourceMediaItemId: selected.segment.mediaItemId,
                 offsetSeconds: tunedOffsetOf(
@@ -166,7 +168,7 @@ const useFinalWave = (screen: StudioScreen, shareOf: (seconds: number) => number
 };
 
 export const useActStudioWave = (screen: StudioScreen): ActStudioWave => {
-  const { playback, studio, practice, edits, music } = screen;
+  const { playback, studio, practice, edits } = screen;
   const { player, segments, length } = playback;
   const [trim, setTrim] = useState<Trim | null>(null);
   const cuts = studio.music.source === 'workingMix' ? songCutsOf(studio.songs, segments) : [];
@@ -191,13 +193,12 @@ export const useActStudioWave = (screen: StudioScreen): ActStudioWave => {
           const seconds = active ? trim.seconds : edgeOf(selected, edge);
           const settleCut = (cut: { start: number; end: number }): void => {
             edits.keepPosition(player.position());
-            music.settle.mutate({
+            screen.document.change({
+              kind: 'songSettings',
               songId: selected.song.songId,
-              settings: {
-                ...songSettingsOf(selected.song),
-                startSeconds: cut.start,
-                endSeconds: cut.end,
-              },
+              ...songSettingsOf(selected.song),
+              startSeconds: cut.start,
+              endSeconds: cut.end,
             });
           };
 

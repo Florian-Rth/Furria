@@ -14,6 +14,7 @@ import {
   STEP_CARDS_REDO,
   STEP_CARDS_UNDO,
 } from '../step-cards-copy';
+import { StudioSaveButton } from './StudioSaveButton';
 import { StudioSetupChip } from './StudioSetupChip';
 
 interface StepCardsHeadProps {
@@ -57,6 +58,7 @@ export const StepCardsHead: FC<StepCardsHeadProps> = ({ screen, history, cardsSe
           disabled={redoLocked}
           onPress={history.redo}
         />
+        <StudioSaveButton history={history} textShown={false} />
       </KkLaneBar.Group>
       <StudioSetupChip
         setup={cardsSetup.setup}

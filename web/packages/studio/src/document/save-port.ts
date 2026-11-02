@@ -12,7 +12,7 @@ export type SaveOutcome =
   | { kind: 'choreographyRefused'; spotIds: readonly number[] }
   | { kind: 'rejected' };
 
-export interface StudioSavePort {
+export interface StudioSavePort<TStudio extends Studio = Studio> {
   save: (write: ServerWrite) => Promise<SaveOutcome>;
-  load: () => Promise<Studio>;
+  load: () => Promise<TStudio>;
 }
