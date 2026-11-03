@@ -1,7 +1,7 @@
 import { KkScoreReadiness } from '@furria/ui/KkScoreReadiness';
 import type { FC } from 'react';
-import type { ScoreReadinessView } from '../hooks/use-act-hub';
 import { READINESS_LABEL } from '../score-copy';
+import type { ScoreReadinessView } from '../score-hub-views';
 
 interface ScoreReadinessStripProps {
   items: readonly ScoreReadinessView[];

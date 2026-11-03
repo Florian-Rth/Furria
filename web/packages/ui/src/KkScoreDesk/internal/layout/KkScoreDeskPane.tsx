@@ -6,14 +6,11 @@ import { kkTokens } from '../../../tokens';
 const STICKY_TOP = `${kkTokens.shell.gutter * 2 + kkTokens.shell.barHeight}px`;
 
 interface KkScoreDeskPaneProps extends PropsWithChildren {
-  label?: string;
   sx?: KkSx;
 }
 
-export const KkScoreDeskPane: FC<KkScoreDeskPaneProps> = ({ label, sx, children }) => (
+export const KkScoreDeskPane: FC<KkScoreDeskPaneProps> = ({ sx, children }) => (
   <Box
-    component="section"
-    aria-label={label}
     data-kk-score-desk-pane
     sx={[
       {

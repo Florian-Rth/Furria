@@ -907,9 +907,37 @@ Stay in the club app: `use-studio-screen`, `use-studio-document`, `use-studio-fi
 
 ### Phase 12g — Hub score views: review follow-ups
 Goal: the 12e review follow-ups are settled.
-- [ ] Narrow `ScoreHub` to props per view (the live formation reads `player`, `model` and `studio.spots`); split `ScorePanel` into transport and track (no transport built before the no-music return); give `ScoreManualList` its own row component
-- [ ] Step pane: no empty caption for an unnamed video; one *Schritt* landmark instead of two nested (`KkScoreDesk.Pane`, `KkStepPane`)
-- [ ] `use-score-player` drops a lens id whose part lost its range; `scoreGroupsOf` gives the loose group no key `0`; `ScoreModel` arrays all readonly; `use-act-hub` builds readiness, facts, evenings and doors through pure helpers and finds the step once
+- [x] Narrow `ScoreHub` to props per view (the live formation reads `player`, `model` and `studio.spots`); split `ScorePanel` into transport and track (no transport built before the no-music return); give `ScoreManualList` its own row component
+- [x] Step pane: no empty caption for an unnamed video; one *Schritt* landmark instead of two nested (`KkScoreDesk.Pane`, `KkStepPane`)
+- [x] `use-score-player` drops a lens id whose part lost its range; `scoreGroupsOf` gives the loose group no key `0`; `ScoreModel` arrays all readonly; `use-act-hub` builds readiness, facts, evenings and doors through pure helpers and finds the step once
+
+Built 2026-11-03. **Narrow props:** `@furria/studio/score-hub` is gone; every score view names
+what it reads. `ScorePanel` (player, now step, segments, marks, timeline parts and steps, tone,
+wide, reveal, selected step, `onSelectStep`/`onSelectPart`) returns *Keine Musik* first and
+otherwise stacks the new `ScoreTransport` (play, clock, now, lenses) and `ScoreTrack` (the
+`Timeline`). `ScoreManualList` takes groups, stage, tone, selected and current step and renders
+the new `ScoreManualRow`. The live formation takes a `LiveScene` (`score-live`) and the
+`MixPlayer`; the step pane and drawer take one `ScoreStepTools` (`score-step-tools`: scene, player,
+`practiseFrom`/`editFrom`, each `null` when the viewer may not — the buttons follow that, so
+`canPlay`/`canEditStudio` left the views). `ScoreForYou` takes `you`, stage, the facts slot and
+`onPractise` (`null` without playable music). The club app's `ActHub` no longer extends a package
+contract (it dropped `data`, `studio`, `canPlay`, `canEditStudio`, `practiseFrom`, `editFrom`,
+`closeStep`), and its own views were narrowed the same way (`ScoreFactsStrip`: facts, cast,
+`onOpenTrainings`; `ScoreEveningsList`: evenings; `ScoreEditDrawer`: open, doors, readiness or
+`null`, `onClose`). **Step pane:** the video caption renders only with a name; `KkScoreDesk.Pane`
+lost its `label` and is a plain `div`, so the step pane's own `section` is the one *Schritt*
+region. **Model:** `ScoreModel` arrays and formations are readonly and it carries `stepById`;
+`stepOf(model, id)` replaces the four `model.steps.find` in `use-act-hub`. The loose group's key
+is `'loose'`, part groups `part-<id>`. The lens choice is the pure `score-lens`
+(`scoreLensesOf`, `scoreLensOf`: a picked part without a range falls back to the whole and no
+focus; tested). **Hub helpers:** `act-hub/score-hub-views` (`readinessViewsOf`, `factsViewOf`,
+`eveningViewsOf`, `doorViewsOf`, `trainingAnswerOf` and the view types; tested where they decide);
+`use-act-hub` hands them openers that are `null` for non-editors.
+- **Open (review, judge with a screen reader):** on phones the step drawer is a dialog named
+  *Schritt* that holds the *Schritt* region (`KkBottomDrawer` and `KkStepPane` both need a label);
+  `SCORE_LABEL`, `MANUAL_LABEL` and `FACTS_LABEL` each name a desk slot and the kit inside it
+  (older than this phase). Kept: `scoreStepViewOf` still finds the part and video per call (one
+  step per render); the naming review agent has no file tools and returned nothing.
 
 ### Phase 12h — Lab removal, cleanup, docs
 Goal: nothing studio-specific is left behind.
