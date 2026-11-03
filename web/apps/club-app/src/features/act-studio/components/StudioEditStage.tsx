@@ -1,10 +1,10 @@
 import { Stage } from '@furria/studio/Stage';
+import { STUDIO_FRONT } from '@furria/studio/studio-copy';
 import type { FC } from 'react';
 import { useActStudioRoutes } from '../hooks/use-act-studio-routes';
 import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import { useStudioStageWork } from '../hooks/use-studio-stage-work';
-import { STUDIO_FRONT } from '../studio-copy';
 import { StudioStageDotsLive } from './StudioStageDotsLive';
 import { StudioStageReadout } from './StudioStageReadout';
 

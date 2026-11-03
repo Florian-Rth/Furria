@@ -1,8 +1,4 @@
 import { musicSegmentsOf } from '@furria/studio/music-timeline';
-import { STUDIO_EDIT } from '@furria/studio/studio-mode-copy';
-import type { StudioFinalTrack } from '@furria/studio/studio-schemas';
-import { useState } from 'react';
-import type { ActStudio } from '@/features/acts/schemas';
 import {
   adoptedMetaOf,
   adoptTextOf,
@@ -18,10 +14,14 @@ import {
   STUDIO_FINAL_TRYING,
   songEditLabelOf,
   songRowLabelOf,
-} from '../studio-copy';
-import type { FinalPlace } from '../studio-final';
-import { matchesAnyMusic, sourceNameOf } from '../studio-final';
-import { outsideMusicOf } from '../studio-music';
+} from '@furria/studio/studio-copy';
+import type { FinalPlace } from '@furria/studio/studio-final';
+import { matchesAnyMusic, sourceNameOf } from '@furria/studio/studio-final';
+import { STUDIO_EDIT } from '@furria/studio/studio-mode-copy';
+import { outsideMusicOf } from '@furria/studio/studio-music';
+import type { StudioFinalTrack } from '@furria/studio/studio-schemas';
+import { useState } from 'react';
+import type { ActStudio } from '@/features/acts/schemas';
 import type { ActStudioSongRow } from './use-act-studio-songs';
 import { useFinalPlaces } from './use-final-places';
 import type { StudioScreen } from './use-studio-screen';

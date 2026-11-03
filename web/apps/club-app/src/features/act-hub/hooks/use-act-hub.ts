@@ -1,4 +1,8 @@
 import { practiceMemoryKeyOf } from '@furria/studio/practice-memory';
+import { enteringDotsOf, entranceDelayOf } from '@furria/studio/score-entrance';
+import type { FormationDot, ScoreDot } from '@furria/studio/score-formation';
+import type { ScoreStep } from '@furria/studio/score-steps';
+import { paneStepIdOf, rememberedStepOf } from '@furria/studio/score-you';
 import type { TimelinePart, TimelineStep } from '@furria/studio/Timeline';
 import { useStudioKeys } from '@furria/studio/use-studio-keys';
 import type { KkGroupTone } from '@furria/ui/group-tone';
@@ -39,16 +43,12 @@ import {
 } from '../score-copy';
 import type { ScoreDoor } from '../score-doors';
 import { hasEditDoors, scoreDoorsOf } from '../score-doors';
-import { enteringDotsOf, entranceDelayOf } from '../score-entrance';
-import type { FormationDot, ScoreDot } from '../score-formation';
 import type { ScoreLink } from '../score-links';
 import { detailsLinkOf, eveningLinkOf, musicLinkOf } from '../score-links';
 import type { ScoreModel } from '../score-model';
 import { scoreModelOf } from '../score-model';
 import type { ReadinessKey } from '../score-readiness';
 import { actEveningsOf, eveningNumberOf, nextEveningOf, nextTrainingOf } from '../score-season';
-import type { ScoreStep } from '../score-steps';
-import { paneStepIdOf, rememberedStepOf } from '../score-you';
 import type { ScorePlayer } from './use-score-player';
 import { useScorePlayer } from './use-score-player';
 import type { ScoreRoute } from './use-score-route';

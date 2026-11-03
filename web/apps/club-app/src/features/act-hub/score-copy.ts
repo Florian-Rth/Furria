@@ -1,7 +1,7 @@
 import type { TimelineRange } from '@furria/studio/music-timeline';
+import type { ScoreCounts, ScoreStepFlag } from '@furria/studio/score-steps';
 import type { ScoreDoorKey } from './score-doors';
 import type { ReadinessItem, ReadinessKey } from './score-readiness';
-import type { ScoreCounts, ScoreStepFlag } from './score-steps';
 
 const SECONDS_PER_MINUTE = 60;
 const PAD = 2;

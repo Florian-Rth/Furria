@@ -1,9 +1,3 @@
-import { Timeline } from '@furria/studio/Timeline';
-import { KkTimeline } from '@furria/ui/KkTimeline';
-import type { FC, ReactNode } from 'react';
-import { ActStudioWaveReadout } from '@/features/act-studio/components/ActStudioWaveReadout';
-import type { StudioSetup } from '@/features/act-studio/hooks/use-studio-setup';
-import type { SetupKey } from '@/features/act-studio/studio-setup';
 import {
   DESK_LANES,
   DESK_MUSIC,
@@ -13,7 +7,13 @@ import {
   DESK_RULER,
   DESK_STEPS,
   DESK_VIDEO,
-} from '../desk-copy';
+} from '@furria/studio/desk-copy';
+import type { SetupKey } from '@furria/studio/studio-setup';
+import { Timeline } from '@furria/studio/Timeline';
+import { KkTimeline } from '@furria/ui/KkTimeline';
+import type { FC, ReactNode } from 'react';
+import { ActStudioWaveReadout } from '@/features/act-studio/components/ActStudioWaveReadout';
+import type { StudioSetup } from '@/features/act-studio/hooks/use-studio-setup';
 import type { ActDesk } from '../hooks/use-act-desk';
 import type { DeskLaneRows } from '../hooks/use-desk-lanes';
 import { DESK_LANE } from '../hooks/use-desk-lanes';

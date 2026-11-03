@@ -1,9 +1,3 @@
-import { KkStudioList } from '@furria/ui/KkStudioList';
-import Box from '@mui/material/Box';
-import type { FC, ReactNode } from 'react';
-import type { ActStudioTakeRow, ActStudioTakes } from '../hooks/use-act-studio-takes';
-import { useActUploads } from '../hooks/use-act-uploads';
-import type { StudioScreen } from '../hooks/use-studio-screen';
 import {
   STUDIO_TAKES,
   STUDIO_VIDEO_ACCEPT,
@@ -11,7 +5,13 @@ import {
   STUDIO_VIDEOS_UNPLACED,
   uploadLabelOf,
   uploadMetaOf,
-} from '../studio-copy';
+} from '@furria/studio/studio-copy';
+import { KkStudioList } from '@furria/ui/KkStudioList';
+import Box from '@mui/material/Box';
+import type { FC, ReactNode } from 'react';
+import type { ActStudioTakeRow, ActStudioTakes } from '../hooks/use-act-studio-takes';
+import { useActUploads } from '../hooks/use-act-uploads';
+import type { StudioScreen } from '../hooks/use-studio-screen';
 
 interface ActStudioTakeListProps {
   screen: StudioScreen;

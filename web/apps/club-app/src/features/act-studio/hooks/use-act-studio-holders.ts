@@ -4,11 +4,11 @@ import {
   holderMoveLabelOf,
   STUDIO_HOLDERS_FREE,
   spotDeskTitleOf,
-} from '../studio-copy';
-import type { DragNames } from '../studio-drag-copy';
-import { studioDragPluginsOf } from '../studio-drag-copy';
-import type { SpotPerson } from '../studio-spots';
-import { byNameOf, holderMovesOf, spotPersonOf } from '../studio-spots';
+} from '@furria/studio/studio-copy';
+import type { DragNames } from '@furria/studio/studio-drag-copy';
+import { studioDragPluginsOf } from '@furria/studio/studio-drag-copy';
+import type { SpotPerson } from '@furria/studio/studio-spots';
+import { byNameOf, holderMovesOf, spotPersonOf } from '@furria/studio/studio-spots';
 import type { StudioScreen } from './use-studio-screen';
 
 export const FREE_PLACE_ID = 'free';

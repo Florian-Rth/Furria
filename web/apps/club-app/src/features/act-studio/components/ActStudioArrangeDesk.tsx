@@ -1,7 +1,3 @@
-import { KkButton } from '@furria/ui/KkButton';
-import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
-import type { FC } from 'react';
-import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 import {
   arrangeScopeOf,
   copySourceTextOf,
@@ -23,7 +19,11 @@ import {
   STUDIO_PRESET_CIRCLE,
   STUDIO_PRESET_LINE,
   STUDIO_PRESETS,
-} from '../studio-copy';
+} from '@furria/studio/studio-copy';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
+import type { FC } from 'react';
+import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 
 interface ActStudioArrangeDeskProps {
   editor: ActStudioStage;

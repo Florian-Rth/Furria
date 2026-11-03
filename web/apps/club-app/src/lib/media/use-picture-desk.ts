@@ -1,11 +1,11 @@
+import type { UploadFailure } from '@furria/api-client/upload-failure';
+import { failureOfError, UploadFailedError } from '@furria/api-client/upload-failure';
 import type { KkCrop } from '@furria/ui/image-crop';
 import { useEffect, useRef, useState } from 'react';
 import type { UploadHandle, UploadOwner } from './media-upload';
 import type { PictureDeskEffect, PictureDeskEvent, PictureDeskState } from './picture-desk';
 import { advanceDesk, deskSourceOf, RESTING_DESK } from './picture-desk';
 import { startUpload } from './start-upload';
-import type { UploadFailure } from './upload-failure';
-import { failureOfError, UploadFailedError } from './upload-failure';
 
 export type PictureSend = (owner: UploadOwner) => Promise<void>;
 

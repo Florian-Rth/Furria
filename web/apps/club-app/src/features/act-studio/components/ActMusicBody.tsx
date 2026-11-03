@@ -1,3 +1,13 @@
+import {
+  MUSIC_PAGE_LIST,
+  MUSIC_PAGE_MUSIC,
+  MUSIC_PAGE_TABS,
+  MUSIC_PAGE_TITLE,
+  MUSIC_PAGE_VIDEO,
+  STEP_CARDS_HISTORY,
+  STEP_CARDS_REDO,
+  STEP_CARDS_UNDO,
+} from '@furria/studio/step-cards-copy';
 import { useStudioKeys } from '@furria/studio/use-studio-keys';
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
 import { KkLaneButton } from '@furria/ui/KkLaneButton';
@@ -13,16 +23,6 @@ import { useActStudioTakes } from '../hooks/use-act-studio-takes';
 import { useStudioScreen } from '../hooks/use-studio-screen';
 import { useVisitHistory } from '../hooks/use-visit-history';
 import type { StudioMusicTool } from '../schemas';
-import {
-  MUSIC_PAGE_LIST,
-  MUSIC_PAGE_MUSIC,
-  MUSIC_PAGE_TABS,
-  MUSIC_PAGE_TITLE,
-  MUSIC_PAGE_VIDEO,
-  STEP_CARDS_HISTORY,
-  STEP_CARDS_REDO,
-  STEP_CARDS_UNDO,
-} from '../step-cards-copy';
 import { scrubKeyActionsOf } from '../studio-key-actions';
 import { ActStudioFinalDesk } from './ActStudioFinalDesk';
 import { ActStudioSongDesk } from './ActStudioSongDesk';

@@ -1,5 +1,5 @@
 import type { TimedKeyframe } from '@furria/studio/choreography-motion';
-import { anchoredTrackOf } from '../studio-formation';
+import { anchoredTrackOf } from '@furria/studio/studio-formation';
 import type { StudioScreen } from './use-studio-screen';
 
 export type StudioTracks = Record<number, readonly TimedKeyframe[]>;

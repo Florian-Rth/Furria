@@ -1,8 +1,8 @@
+import { STEP_CARD_TOOLS } from '@furria/studio/step-cards-copy';
 import { KkLaneButton } from '@furria/ui/KkLaneButton';
 import { KkLaneCards } from '@furria/ui/KkLaneCards';
 import type { FC } from 'react';
 import type { StepCardTool } from '../hooks/use-step-card-tools';
-import { STEP_CARD_TOOLS } from '../step-cards-copy';
 
 interface StepCardToolsProps {
   tools: readonly StepCardTool[];

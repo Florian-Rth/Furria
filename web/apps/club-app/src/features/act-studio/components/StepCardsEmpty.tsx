@@ -1,10 +1,3 @@
-import { KkLaneButton } from '@furria/ui/KkLaneButton';
-import { KkLaneDesk } from '@furria/ui/KkLaneDesk';
-import { KkLaneInspector } from '@furria/ui/KkLaneInspector';
-import type { FC } from 'react';
-import type { ActStudioStepTool } from '../hooks/use-act-studio-step-tool';
-import { useStudioMusicRoute } from '../hooks/use-studio-music-route';
-import type { StudioScreen } from '../hooks/use-studio-screen';
 import {
   STEP_CARD_ACTIONS,
   STEP_CARD_MARK,
@@ -14,7 +7,14 @@ import {
   STEP_CARDS_MUSIC_PAGE,
   STEP_CARDS_NO_MUSIC,
   STEP_CARDS_NO_STEP,
-} from '../step-cards-copy';
+} from '@furria/studio/step-cards-copy';
+import { KkLaneButton } from '@furria/ui/KkLaneButton';
+import { KkLaneDesk } from '@furria/ui/KkLaneDesk';
+import { KkLaneInspector } from '@furria/ui/KkLaneInspector';
+import type { FC } from 'react';
+import type { ActStudioStepTool } from '../hooks/use-act-studio-step-tool';
+import { useStudioMusicRoute } from '../hooks/use-studio-music-route';
+import type { StudioScreen } from '../hooks/use-studio-screen';
 
 interface StepCardsEmptyProps {
   screen: StudioScreen;

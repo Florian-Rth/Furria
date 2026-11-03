@@ -1,4 +1,3 @@
-import type { KkLaneGlyphName } from '@furria/ui/KkLaneGlyph';
 import {
   SETUP_ACTIONS,
   SETUP_HINTS,
@@ -10,10 +9,11 @@ import {
   setupProgressLabelOf,
   setupProgressTextOf,
   uploadFactOf,
-} from '../setup-copy';
-import type { Setup, SetupKey, SetupRow, SetupState } from '../studio-setup';
-import { setupOf, setupShownOf } from '../studio-setup';
-import { markSecondsOf } from '../studio-steps';
+} from '@furria/studio/setup-copy';
+import type { Setup, SetupKey, SetupRow, SetupState } from '@furria/studio/studio-setup';
+import { setupOf, setupShownOf } from '@furria/studio/studio-setup';
+import { markSecondsOf } from '@furria/studio/studio-steps';
+import type { KkLaneGlyphName } from '@furria/ui/KkLaneGlyph';
 import type { ActStudioStage } from './use-act-studio-stage';
 import type { ActUploads } from './use-act-uploads';
 import { useActUploads } from './use-act-uploads';

@@ -1,12 +1,5 @@
 import { poseAt } from '@furria/studio/choreography-motion';
-import { partRangeOf } from '@furria/studio/music-timeline';
-import type { KkLaneButtonTone } from '@furria/ui/KkLaneButton';
-import type { KkLaneGlyphName } from '@furria/ui/KkLaneGlyph';
-import type { KkLaneInspectorFact } from '@furria/ui/KkLaneInspector';
-import { useState } from 'react';
-import { useStepTexts } from '@/features/act-studio/hooks/use-step-texts';
-import { videoNameOf } from '@/features/act-studio/studio-copy';
-import { markSecondsOf, partSettingsOf, startsAPart } from '@/features/act-studio/studio-steps';
+import { countEightsOf, countPlaceAt, countsBetweenOf } from '@furria/studio/count-marks';
 import {
   clockOf,
   countLengthOf,
@@ -66,9 +59,16 @@ import {
   spotTitleOf,
   stepEyebrowOf,
   videoEyebrowOf,
-} from '../desk-copy';
-import { keyedSpotsAt } from '../desk-keyframes';
-import { countPlaceAt, countsBetweenOf } from '../desk-time';
+} from '@furria/studio/desk-copy';
+import { keyedSpotsAt } from '@furria/studio/desk-keyframes';
+import { partRangeOf } from '@furria/studio/music-timeline';
+import { videoNameOf } from '@furria/studio/studio-copy';
+import { markSecondsOf, partSettingsOf, startsAPart } from '@furria/studio/studio-steps';
+import type { KkLaneButtonTone } from '@furria/ui/KkLaneButton';
+import type { KkLaneGlyphName } from '@furria/ui/KkLaneGlyph';
+import type { KkLaneInspectorFact } from '@furria/ui/KkLaneInspector';
+import { useState } from 'react';
+import { useStepTexts } from '@/features/act-studio/hooks/use-step-texts';
 import type { ActDesk } from './use-act-desk';
 import type { DeskBorders } from './use-desk-borders';
 
@@ -176,6 +176,7 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
   const { playback, practice, studio, videos } = screen;
   const work = screen.document;
   const { steps, parts, countMarks, length, player, paths } = playback;
+  const countEights = countEightsOf(countMarks);
   const texts = useStepTexts(screen);
   const [partDraft, setPartDraft] = useState<{ partId: number; name: string } | null>(null);
   const arrange = useArrangeActions(desk);
@@ -316,7 +317,7 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
   }
 
   if (focus === 'key' && keySeconds !== null) {
-    const place = countPlaceAt(countMarks, keySeconds);
+    const place = countPlaceAt(countMarks, countEights, keySeconds);
 
     return {
       eyebrow: keyEyebrowOf(keySeconds),
@@ -407,7 +408,7 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
 
   const part = parts.find((candidate) => candidate.stepIds.includes(step.stepId)) ?? null;
   const counts = countsBetweenOf(countMarks, step.startSeconds ?? 0, step.endSeconds ?? 0);
-  const startPlace = countPlaceAt(countMarks, step.startSeconds ?? 0);
+  const startPlace = countPlaceAt(countMarks, countEights, step.startSeconds ?? 0);
   const canStretch = borders.canStretch(step.stepId);
 
   return {

@@ -1,7 +1,7 @@
+import { STUDIO_SONG_ACCEPT, STUDIO_VIDEO_ACCEPT } from '@furria/studio/studio-copy';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import type { StudioSetup } from '../hooks/use-studio-setup';
-import { STUDIO_SONG_ACCEPT, STUDIO_VIDEO_ACCEPT } from '../studio-copy';
 
 interface StudioSetupInputsProps {
   setup: StudioSetup;

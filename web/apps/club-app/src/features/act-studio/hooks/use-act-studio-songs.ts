@@ -1,10 +1,6 @@
 import type { DragEndEvent } from '@dnd-kit/react';
 import { isSortable } from '@dnd-kit/react/sortable';
 import type { MusicSegment } from '@furria/studio/music-timeline';
-import { STUDIO_EDIT } from '@furria/studio/studio-mode-copy';
-import type { StudioSong } from '@furria/studio/studio-schemas';
-import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
-import type { KkStudioListBadgeTone } from '@furria/ui/KkStudioList';
 import {
   outsideMusicTextOf,
   STUDIO_SONG_GONE,
@@ -14,9 +10,13 @@ import {
   songNameOf,
   songRowLabelOf,
   songStateMetaOf,
-} from '../studio-copy';
-import { studioDragPluginsOf } from '../studio-drag-copy';
-import { keptPositionOf, movedOrderOf, outsideMusicOf } from '../studio-music';
+} from '@furria/studio/studio-copy';
+import { studioDragPluginsOf } from '@furria/studio/studio-drag-copy';
+import { STUDIO_EDIT } from '@furria/studio/studio-mode-copy';
+import { keptPositionOf, movedOrderOf, outsideMusicOf } from '@furria/studio/studio-music';
+import type { StudioSong } from '@furria/studio/studio-schemas';
+import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
+import type { KkStudioListBadgeTone } from '@furria/ui/KkStudioList';
 import { useDeskTarget } from './use-desk-target';
 import type { StudioScreen } from './use-studio-screen';
 

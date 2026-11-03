@@ -1,11 +1,11 @@
+import { countPlaceAt } from '@furria/studio/count-marks';
 import type { MixPlayer } from '@furria/studio/mix-player';
 import type { CountMark } from '@furria/studio/music-timeline';
+import { readoutCountOf, STEP_CARDS_READOUT } from '@furria/studio/step-cards-copy';
+import { fineClockOf } from '@furria/studio/studio-copy';
 import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
 import type { FC } from 'react';
-import { countPlaceAt } from '../step-cards';
-import { readoutCountOf, STEP_CARDS_READOUT } from '../step-cards-copy';
-import { fineClockOf } from '../studio-copy';
 
 interface StepCardsReadoutLiveProps {
   player: MixPlayer;

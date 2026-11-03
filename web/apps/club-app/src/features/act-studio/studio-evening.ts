@@ -6,10 +6,10 @@ import type {
   StudioEvening,
   StudioSpotChange,
 } from '@/features/acts/schemas';
+import type { HoldsStudio } from '@/features/acts/studio-response';
+import { withStudio } from '@/features/acts/studio-response';
 import type { CastPerson, EveningChange } from '@/features/running-order/schemas';
 import type { PortraitPersonRef } from '@/lib/api/schemas';
-import type { HoldsStudio } from './studio-music';
-import { withStudio } from './studio-music';
 
 export type EveningChoreographyState = 'session' | 'own' | 'behind';
 

@@ -1,4 +1,3 @@
-import { useState } from 'react';
 import {
   firstBeatTextOf,
   songDeskTitleOf,
@@ -6,9 +5,15 @@ import {
   tempoNudgeLabelOf,
   tempoNudgeTextOf,
   tempoTextOf,
-} from '../studio-copy';
-import type { SongSettings } from '../studio-music';
-import { firstBeatAtOf, nudgedFirstBeatOf, songSettingsOf, steppedTempoOf } from '../studio-music';
+} from '@furria/studio/studio-copy';
+import type { SongSettings } from '@furria/studio/studio-music';
+import {
+  firstBeatAtOf,
+  nudgedFirstBeatOf,
+  songSettingsOf,
+  steppedTempoOf,
+} from '@furria/studio/studio-music';
+import { useState } from 'react';
 import type { ActStudioSongs } from './use-act-studio-songs';
 import type { StudioScreen } from './use-studio-screen';
 

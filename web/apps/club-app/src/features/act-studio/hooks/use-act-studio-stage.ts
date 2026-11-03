@@ -2,12 +2,10 @@ import type { SpotPath, StagePoint } from '@furria/studio/choreography-motion';
 import { poseAt } from '@furria/studio/choreography-motion';
 import type { StageScene } from '@furria/studio/practice-stage';
 import { viewShareOf } from '@furria/studio/practice-stage';
-import type { StudioSpot } from '@furria/studio/studio-schemas';
-import { useLayoutEffect, useRef, useState } from 'react';
-import { formationTextOf, selectionTextOf, spotTitleOf } from '../studio-copy';
-import type { StageShare, TimeSpan } from '../studio-edits';
-import { draggedPointOf } from '../studio-edits';
-import type { ArrangeAxis, FormationPreset } from '../studio-formation';
+import { formationTextOf, selectionTextOf, spotTitleOf } from '@furria/studio/studio-copy';
+import type { StageShare, TimeSpan } from '@furria/studio/studio-edits';
+import { draggedPointOf } from '@furria/studio/studio-edits';
+import type { ArrangeAxis, FormationPreset } from '@furria/studio/studio-formation';
 import {
   alignedOf,
   distributedOf,
@@ -18,7 +16,9 @@ import {
   mirroredOf,
   presetPointsOf,
   shownSelectionOf,
-} from '../studio-formation';
+} from '@furria/studio/studio-formation';
+import type { StudioSpot } from '@furria/studio/studio-schemas';
+import { useLayoutEffect, useRef, useState } from 'react';
 import type { ActStudioMovement } from './use-act-studio-movement';
 import { useActStudioMovement } from './use-act-studio-movement';
 import type { StudioScreen } from './use-studio-screen';

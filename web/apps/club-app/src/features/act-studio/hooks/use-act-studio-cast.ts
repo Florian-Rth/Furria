@@ -5,7 +5,7 @@ import {
   STUDIO_OPEN_SPOT,
   STUDIO_SELECTED,
   spotMetaOf,
-} from '../studio-copy';
+} from '@furria/studio/studio-copy';
 import type { ActStudioStage } from './use-act-studio-stage';
 import type { StudioScreen } from './use-studio-screen';
 

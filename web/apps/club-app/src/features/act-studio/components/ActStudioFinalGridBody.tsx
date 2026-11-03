@@ -1,8 +1,3 @@
-import { KkButton } from '@furria/ui/KkButton';
-import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
-import type { FC, ReactNode } from 'react';
-import type { FinalGridDesk } from '../hooks/use-final-desk';
-import type { SongDeskNudge } from '../hooks/use-song-desk';
 import {
   STUDIO_FINAL_GRID_DESK,
   STUDIO_NUDGE_BACK,
@@ -12,7 +7,12 @@ import {
   STUDIO_SONG_ONE_HERE,
   STUDIO_SONG_ONE_LATER,
   STUDIO_SONG_TEMPO,
-} from '../studio-copy';
+} from '@furria/studio/studio-copy';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
+import type { FC, ReactNode } from 'react';
+import type { FinalGridDesk } from '../hooks/use-final-desk';
+import type { SongDeskNudge } from '../hooks/use-song-desk';
 
 interface ActStudioFinalGridBodyProps {
   desk: FinalGridDesk;

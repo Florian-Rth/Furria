@@ -1,7 +1,7 @@
+import type { StudioTool } from '@furria/studio/studio-copy';
+import type { StudioModeStart } from '@furria/studio/studio-mode';
+import { firstStudioToolOf, shownStudioToolOf, studioToolsOf } from '@furria/studio/studio-mode';
 import { useState } from 'react';
-import type { StudioTool } from '../studio-copy';
-import type { StudioModeStart } from '../studio-mode';
-import { firstStudioToolOf, shownStudioToolOf, studioToolsOf } from '../studio-mode';
 
 export interface ActStudioMode {
   canEdit: boolean;

@@ -1,11 +1,11 @@
+import { DESK_TAB_HISTORY, DESK_TAB_SELECTION, DESK_TABS } from '@furria/studio/desk-copy';
+import { SETUP_TITLE } from '@furria/studio/setup-copy';
 import type { KkLaneInspectorTab } from '@furria/ui/KkLaneInspector';
 import { KkLaneInspector } from '@furria/ui/KkLaneInspector';
 import type { FC, ReactNode } from 'react';
 import { StudioSetupList } from '@/features/act-studio/components/StudioSetupList';
 import type { StudioSetup } from '@/features/act-studio/hooks/use-studio-setup';
 import { useVisitHistory } from '@/features/act-studio/hooks/use-visit-history';
-import { SETUP_TITLE } from '@/features/act-studio/setup-copy';
-import { DESK_TAB_HISTORY, DESK_TAB_SELECTION, DESK_TABS } from '../desk-copy';
 import type { ActDesk, DeskTab } from '../hooks/use-act-desk';
 import type { DeskBorders } from '../hooks/use-desk-borders';
 import { DeskHistoryPane } from './DeskHistoryPane';

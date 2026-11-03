@@ -1,10 +1,3 @@
-import { KkStudioList } from '@furria/ui/KkStudioList';
-import Box from '@mui/material/Box';
-import type { FC } from 'react';
-import type { ActStudioFinal } from '../hooks/use-act-studio-final';
-import type { ActStudioSongs } from '../hooks/use-act-studio-songs';
-import { useActUploads } from '../hooks/use-act-uploads';
-import type { StudioScreen } from '../hooks/use-studio-screen';
 import {
   STUDIO_OUTSIDE_MUSIC,
   STUDIO_SONG_ACCEPT,
@@ -12,7 +5,14 @@ import {
   STUDIO_SONGS,
   uploadLabelOf,
   uploadMetaOf,
-} from '../studio-copy';
+} from '@furria/studio/studio-copy';
+import { KkStudioList } from '@furria/ui/KkStudioList';
+import Box from '@mui/material/Box';
+import type { FC } from 'react';
+import type { ActStudioFinal } from '../hooks/use-act-studio-final';
+import type { ActStudioSongs } from '../hooks/use-act-studio-songs';
+import { useActUploads } from '../hooks/use-act-uploads';
+import type { StudioScreen } from '../hooks/use-studio-screen';
 import { ActStudioFinalSection } from './ActStudioFinalSection';
 import { ActStudioSortedSongs } from './ActStudioSortedSongs';
 

@@ -1,5 +1,5 @@
-import { STUDIO_STEP_GONE } from '../studio-copy';
-import { markSecondsOf } from '../studio-steps';
+import { STUDIO_STEP_GONE } from '@furria/studio/studio-copy';
+import { markSecondsOf } from '@furria/studio/studio-steps';
 import { useDeskTarget } from './use-desk-target';
 import type { StudioScreen } from './use-studio-screen';
 

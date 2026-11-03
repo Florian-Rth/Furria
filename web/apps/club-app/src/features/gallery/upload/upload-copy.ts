@@ -1,4 +1,4 @@
-import type { UploadFailure } from '@/lib/media/upload-failure';
+import type { UploadFailure } from '@furria/api-client/upload-failure';
 import { countLabel } from '../gallery-view';
 import type { UploadStatus } from './upload-status';
 

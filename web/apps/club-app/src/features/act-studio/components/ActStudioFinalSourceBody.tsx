@@ -1,8 +1,3 @@
-import { KkButton } from '@furria/ui/KkButton';
-import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
-import type { FC, ReactNode } from 'react';
-import type { FinalSourceDesk } from '../hooks/use-final-desk';
-import type { SongDeskNudge } from '../hooks/use-song-desk';
 import {
   STUDIO_FINAL_DESK,
   STUDIO_FINAL_FILE,
@@ -10,7 +5,12 @@ import {
   STUDIO_FINAL_MATCHING,
   STUDIO_FINAL_PLACE,
   STUDIO_FINAL_START_HERE,
-} from '../studio-copy';
+} from '@furria/studio/studio-copy';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
+import type { FC, ReactNode } from 'react';
+import type { FinalSourceDesk } from '../hooks/use-final-desk';
+import type { SongDeskNudge } from '../hooks/use-song-desk';
 
 interface ActStudioFinalSourceBodyProps {
   desk: FinalSourceDesk;

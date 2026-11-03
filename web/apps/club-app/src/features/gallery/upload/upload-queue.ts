@@ -1,4 +1,4 @@
-import type { UploadFailure } from '@/lib/media/upload-failure';
+import type { UploadFailure } from '@furria/api-client/upload-failure';
 import type { MediaKind } from '../schemas';
 
 export type UploadPhase = 'queued' | 'uploading' | 'sent' | 'failed' | 'refused';

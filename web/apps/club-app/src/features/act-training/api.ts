@@ -1,8 +1,8 @@
 import type { KkNoticeRequest } from '@furria/ui/KkNotice';
 import type { UseMutationResult } from '@tanstack/react-query';
 import { useStudioWriteFailure } from '@/features/act-studio/hooks/use-studio-write-failure';
-import { withStudio } from '@/features/act-studio/studio-music';
 import type { ActStudio, ActStudioResponse, StudioTraining } from '@/features/acts/schemas';
+import { withStudio } from '@/features/acts/studio-response';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import { queryKeys } from '@/lib/query/reads';

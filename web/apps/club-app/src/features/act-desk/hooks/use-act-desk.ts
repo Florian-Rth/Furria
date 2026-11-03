@@ -1,8 +1,8 @@
+import { setupShownOf, setupStartsOpen } from '@furria/studio/studio-setup';
 import { useState } from 'react';
 import type { ActStudioStage } from '@/features/act-studio/hooks/use-act-studio-stage';
 import type { ActStudioTakes } from '@/features/act-studio/hooks/use-act-studio-takes';
 import type { StudioScreen } from '@/features/act-studio/hooks/use-studio-screen';
-import { setupShownOf, setupStartsOpen } from '@/features/act-studio/studio-setup';
 
 export type DeskFocus = 'step' | 'part' | 'video' | 'spot' | 'key';
 export type DeskTab = 'selection' | 'history' | 'setup';

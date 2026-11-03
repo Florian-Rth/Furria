@@ -1,9 +1,9 @@
+import { finalDeskLabelOf, STUDIO_FINAL_DESK_CLOSE } from '@furria/studio/studio-copy';
 import { KkPracticeSteps } from '@furria/ui/KkPracticeSteps';
 import type { FC } from 'react';
 import type { ActStudioFinal } from '../hooks/use-act-studio-final';
 import { useFinalDesk } from '../hooks/use-final-desk';
 import type { StudioScreen } from '../hooks/use-studio-screen';
-import { finalDeskLabelOf, STUDIO_FINAL_DESK_CLOSE } from '../studio-copy';
 import { ActStudioFinalDeskBody } from './ActStudioFinalDeskBody';
 
 interface ActStudioFinalDeskProps {

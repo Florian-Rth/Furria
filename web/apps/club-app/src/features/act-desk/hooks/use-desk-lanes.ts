@@ -1,16 +1,5 @@
 import type { CentreTarget } from '@furria/studio/centre-targets';
-import { formatReadoutTime } from '@furria/studio/drag-readout';
-import { countAt, partRangeOf } from '@furria/studio/music-timeline';
-import type {
-  TimelineBlock,
-  TimelineDiamond,
-  TimelineHandle,
-  TimelineMark,
-} from '@furria/studio/Timeline';
-import type { CentreScrub } from '@furria/studio/use-centre-scrub';
-import { useCentreScrub } from '@furria/studio/use-centre-scrub';
-import type { WaveReadout } from '@/features/act-studio/hooks/use-act-studio-wave';
-import { videoNameOf, waveReadoutDetailOf } from '@/features/act-studio/studio-copy';
+import { countsBetweenOf } from '@furria/studio/count-marks';
 import {
   clockOf,
   countShapeOf,
@@ -20,9 +9,21 @@ import {
   stepBlockLabelOf,
   stepsAmountOf,
   videoBlockLabelOf,
-} from '../desk-copy';
-import { KEY_MATCH_SECONDS, keyedSpotsAt, keyTimesOf } from '../desk-keyframes';
-import { countsBetweenOf, musicTicksOf, rulerTicksOf } from '../desk-time';
+} from '@furria/studio/desk-copy';
+import { KEY_MATCH_SECONDS, keyedSpotsAt, keyTimesOf } from '@furria/studio/desk-keyframes';
+import { musicTicksOf, rulerTicksOf } from '@furria/studio/desk-time';
+import { formatReadoutTime } from '@furria/studio/drag-readout';
+import { countAt, partRangeOf } from '@furria/studio/music-timeline';
+import { videoNameOf, waveReadoutDetailOf } from '@furria/studio/studio-copy';
+import type {
+  TimelineBlock,
+  TimelineDiamond,
+  TimelineHandle,
+  TimelineMark,
+} from '@furria/studio/Timeline';
+import type { CentreScrub } from '@furria/studio/use-centre-scrub';
+import { useCentreScrub } from '@furria/studio/use-centre-scrub';
+import type { WaveReadout } from '@/features/act-studio/hooks/use-act-studio-wave';
 import type { ActDesk } from './use-act-desk';
 import type { DeskBorders } from './use-desk-borders';
 import { useDeskKeyDrag } from './use-desk-key-drag';

@@ -1,9 +1,9 @@
+import { bracketTextOf } from '@furria/studio/desk-copy';
 import { partRangeOf } from '@furria/studio/music-timeline';
 import type { TimelinePart } from '@furria/studio/Timeline';
 import type { CentreScrub } from '@furria/studio/use-centre-scrub';
 import type { OverviewBracket } from '@furria/studio/use-overview-bracket';
 import { useOverviewBracket } from '@furria/studio/use-overview-bracket';
-import { bracketTextOf } from '../desk-copy';
 import type { ActDesk } from './use-act-desk';
 
 export interface DeskOverviewView {

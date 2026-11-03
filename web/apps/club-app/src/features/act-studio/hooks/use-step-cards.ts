@@ -1,8 +1,9 @@
+import { countsBetweenOf } from '@furria/studio/count-marks';
 import { partOfStep } from '@furria/studio/music-timeline';
+import type { StepCountCell } from '@furria/studio/step-cards';
+import { countSheetOf, stepCountCellsOf } from '@furria/studio/step-cards';
+import { stepCardEyebrowOf, stepCardLabelOf } from '@furria/studio/step-cards-copy';
 import type { StudioStep } from '@furria/studio/studio-schemas';
-import type { StepCountCell } from '../step-cards';
-import { countSheetOf, countsBetweenOf, stepCountCellsOf } from '../step-cards';
-import { stepCardEyebrowOf, stepCardLabelOf } from '../step-cards-copy';
 import type { ActStudioStage } from './use-act-studio-stage';
 import type { StepTexts } from './use-step-texts';
 import { useStepTexts } from './use-step-texts';

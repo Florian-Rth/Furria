@@ -11,7 +11,8 @@ import {
   hallTempoCaptionOf,
 } from '@furria/studio/hall-copy';
 import type { HallScene, HallTraining } from '@furria/studio/hall-scene';
-import { hallAbsencesOf, nextStepOf } from '@furria/studio/hall-scene';
+import { hallAbsencesOf } from '@furria/studio/hall-scene';
+import { nextStepOf } from '@furria/studio/next-step';
 import { practiceKeyActionsOf } from '@furria/studio/practice-key-actions';
 import { stageSummaryOf } from '@furria/studio/practice-stage';
 import type { StageViewpoint } from '@furria/studio/stage-view';
@@ -65,10 +66,7 @@ export interface Hall {
   toggleVideo: () => void;
 }
 
-export const useHall = (
-  studio: Studio,
-  training: HallTraining | null,
-): Hall => {
+export const useHall = (studio: Studio, training: HallTraining | null): Hall => {
   useScreenWakeLock(true);
   const playback = useStudioPlayback(studio, NO_VIEWER, NO_PEAKS);
   const practice = usePractice(playback);
@@ -116,9 +114,7 @@ export const useHall = (
       practice.partName,
     ),
     next: hallNextOf(
-      following === null
-        ? null
-        : shownStepNameOf(following.name, stepNumberOf(steps, following.stepId)),
+      following === null ? null : shownStepNameOf(following.step.name, following.number),
     ),
     absentTitle: hallAbsentTitleOf(training),
     absentNone: hallAbsentNoneOf(training),

@@ -1,7 +1,3 @@
-import { KkButton } from '@furria/ui/KkButton';
-import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
-import type { FC, ReactNode } from 'react';
-import type { SongDesk, SongDeskNudge } from '../hooks/use-song-desk';
 import {
   STUDIO_NUDGE_BACK,
   STUDIO_NUDGE_ON,
@@ -14,7 +10,11 @@ import {
   STUDIO_SONG_REMOVE,
   STUDIO_SONG_REMOVE_SURE,
   STUDIO_SONG_TEMPO,
-} from '../studio-copy';
+} from '@furria/studio/studio-copy';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
+import type { FC, ReactNode } from 'react';
+import type { SongDesk, SongDeskNudge } from '../hooks/use-song-desk';
 
 interface ActStudioSongDeskBodyProps {
   desk: SongDesk;

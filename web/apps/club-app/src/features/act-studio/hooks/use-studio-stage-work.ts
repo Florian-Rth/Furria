@@ -5,11 +5,11 @@ import type { StageGridLine } from '@furria/studio/stage-grid';
 import { snapLinesOf, stageGridOf } from '@furria/studio/stage-grid';
 import type { StageShare } from '@furria/studio/stage-zoom';
 import { QUARTER_GRID_ZOOM } from '@furria/studio/stage-zoom';
+import { stagePlaceTextOf } from '@furria/studio/studio-copy';
+import { studioDotsAt } from '@furria/studio/studio-dots';
 import type { StageGestures, StageGestureTarget } from '@furria/studio/use-stage-gestures';
 import { useStageGestures } from '@furria/studio/use-stage-gestures';
 import { useRef, useState } from 'react';
-import { stagePlaceTextOf } from '../studio-copy';
-import { studioDotsAt } from '../studio-dots';
 import type { ActStudioStage } from './use-act-studio-stage';
 import type { StudioScreen } from './use-studio-screen';
 

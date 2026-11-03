@@ -1,7 +1,7 @@
+import type { StepCountCell } from '@furria/studio/step-cards';
+import { countCellLabelOf, STEP_CARD_COUNTS } from '@furria/studio/step-cards-copy';
 import { KkEightsReel } from '@furria/ui/KkEightsReel';
 import type { FC } from 'react';
-import type { StepCountCell } from '../step-cards';
-import { countCellLabelOf, STEP_CARD_COUNTS } from '../step-cards-copy';
 
 interface StepCardCountsProps {
   cells: readonly StepCountCell[];

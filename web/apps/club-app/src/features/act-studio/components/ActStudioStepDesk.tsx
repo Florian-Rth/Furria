@@ -1,9 +1,9 @@
+import { STUDIO_STEP_DESK, STUDIO_STEP_DESK_CLOSE } from '@furria/studio/studio-copy';
 import { KkPracticeSteps } from '@furria/ui/KkPracticeSteps';
 import type { FC } from 'react';
 import type { ActStudioStepTool } from '../hooks/use-act-studio-step-tool';
 import { useStepDesk } from '../hooks/use-step-desk';
 import type { StudioScreen } from '../hooks/use-studio-screen';
-import { STUDIO_STEP_DESK, STUDIO_STEP_DESK_CLOSE } from '../studio-copy';
 import { ActStudioStepDeskBody } from './ActStudioStepDeskBody';
 
 interface ActStudioStepDeskProps {

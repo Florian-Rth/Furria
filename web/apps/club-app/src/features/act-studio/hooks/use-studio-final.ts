@@ -1,11 +1,6 @@
 import type { MusicSegment } from '@furria/studio/music-timeline';
 import { musicSegmentsOf } from '@furria/studio/music-timeline';
-import type { StudioFinalTrack } from '@furria/studio/studio-schemas';
-import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import type { ActStudio } from '@/features/acts/schemas';
-import type { FinalTrackMutations } from '../api';
-import { useFinalTrackMutations } from '../api';
-import type { FinalPlacements } from '../studio-final';
+import type { FinalPlacements } from '@furria/studio/studio-final';
 import {
   adoptedFinalTrackOf,
   finalPlacementsOf,
@@ -13,8 +8,13 @@ import {
   finalSecondsAt,
   mixSecondsAt,
   pendingFinalTrackOf,
-} from '../studio-final';
-import { musicKeyOf } from '../studio-videos';
+} from '@furria/studio/studio-final';
+import type { StudioFinalTrack } from '@furria/studio/studio-schemas';
+import { musicKeyOf } from '@furria/studio/studio-videos';
+import { useEffect, useEffectEvent, useRef, useState } from 'react';
+import type { ActStudio } from '@/features/acts/schemas';
+import type { FinalTrackMutations } from '../api';
+import { useFinalTrackMutations } from '../api';
 import type { ActStudioEdits } from './use-act-studio-edits';
 import type { ActStudioMode } from './use-act-studio-mode';
 

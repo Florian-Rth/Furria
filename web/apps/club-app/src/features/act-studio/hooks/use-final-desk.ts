@@ -1,5 +1,3 @@
-import type { StudioFinalTrack } from '@furria/studio/studio-schemas';
-import type { FinalTrackMatches } from '../schemas';
 import {
   finalShiftNudgeLabelOf,
   finalTitleOf,
@@ -8,15 +6,17 @@ import {
   tempoNudgeLabelOf,
   tempoNudgeTextOf,
   tempoTextOf,
-} from '../studio-copy';
+} from '@furria/studio/studio-copy';
 import {
   finalBeatAtOf,
   nudgedFinalBeatOf,
   offsetStartingAt,
   stretchOf,
   tunedOffsetOf,
-} from '../studio-final';
-import { steppedTempoOf } from '../studio-music';
+} from '@furria/studio/studio-final';
+import { steppedTempoOf } from '@furria/studio/studio-music';
+import type { StudioFinalTrack } from '@furria/studio/studio-schemas';
+import type { FinalTrackMatches } from '../schemas';
 import type { ActStudioFinal, CurrentSource } from './use-act-studio-final';
 import type { SongDeskNudge } from './use-song-desk';
 import {

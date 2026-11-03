@@ -1,7 +1,7 @@
 import type { SaveStatus } from '@furria/studio/autosave';
+import type { HistoryTop } from '@furria/studio/history-turn';
+import { combinedStatusOf, redoTurnOf, undoTurnOf } from '@furria/studio/history-turn';
 import { useSyncExternalStore } from 'react';
-import type { HistoryTop } from '../history-turn';
-import { combinedStatusOf, redoTurnOf, undoTurnOf } from '../history-turn';
 import type { EditorView } from '../studio-editor-store';
 import { editorViewsOf, subscribeEditorViews } from '../studio-editor-store';
 

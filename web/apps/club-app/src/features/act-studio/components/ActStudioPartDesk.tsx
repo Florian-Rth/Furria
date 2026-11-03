@@ -1,8 +1,3 @@
-import { KkButton } from '@furria/ui/KkButton';
-import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
-import { KkTextField } from '@furria/ui/KkTextField';
-import type { ChangeEvent, FC } from 'react';
-import type { StepDeskPart } from '../hooks/use-step-desk';
 import {
   STUDIO_MAIN_VIDEO,
   STUDIO_PART_EARLIER,
@@ -11,7 +6,12 @@ import {
   STUDIO_PART_NAME_LENGTH,
   STUDIO_PART_REMOVE,
   STUDIO_PART_REMOVE_SURE,
-} from '../studio-copy';
+} from '@furria/studio/studio-copy';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
+import { KkTextField } from '@furria/ui/KkTextField';
+import type { ChangeEvent, FC } from 'react';
+import type { StepDeskPart } from '../hooks/use-step-desk';
 
 interface ActStudioPartDeskProps {
   part: StepDeskPart;

@@ -1,9 +1,9 @@
+import { STUDIO_SONG_DESK, STUDIO_SONG_DESK_CLOSE } from '@furria/studio/studio-copy';
 import { KkPracticeSteps } from '@furria/ui/KkPracticeSteps';
 import type { FC } from 'react';
 import type { ActStudioSongs } from '../hooks/use-act-studio-songs';
 import { useSongDesk } from '../hooks/use-song-desk';
 import type { StudioScreen } from '../hooks/use-studio-screen';
-import { STUDIO_SONG_DESK, STUDIO_SONG_DESK_CLOSE } from '../studio-copy';
 import { ActStudioSongDeskBody } from './ActStudioSongDeskBody';
 
 interface ActStudioSongDeskProps {

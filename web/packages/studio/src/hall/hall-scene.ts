@@ -2,7 +2,7 @@ import type { SpotPath } from '@furria/studio/choreography-motion';
 import { posesAt } from '@furria/studio/choreography-motion';
 import type { StageViewpoint } from '@furria/studio/stage-view';
 import { viewPointOf } from '@furria/studio/stage-view';
-import type { StudioSpot, StudioStage, StudioStep } from '@furria/studio/studio-schemas';
+import type { StudioSpot, StudioStage } from '@furria/studio/studio-schemas';
 
 export type HallDotKind = 'present' | 'absent' | 'empty';
 export type HallNameSide = 'below' | 'above' | 'none';
@@ -124,12 +124,3 @@ export const hallAbsencesOf = (
         : [],
     )
     .sort((left, right) => left.number - right.number);
-
-export const nextStepOf = (
-  steps: readonly StudioStep[],
-  stepId: number | null,
-): StudioStep | null => {
-  const index = steps.findIndex((step) => step.stepId === stepId);
-
-  return index < 0 ? (steps[0] ?? null) : (steps[index + 1] ?? null);
-};

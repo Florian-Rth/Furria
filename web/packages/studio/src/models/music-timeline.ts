@@ -9,7 +9,7 @@ import type {
 const SECONDS_PER_MINUTE = 60;
 const COUNTS_PER_EIGHT = 8;
 export const EDGE_TOLERANCE_SECONDS = 1e-6;
-const COUNT_EDGE_SECONDS = 1e-3;
+export const COUNT_EDGE_SECONDS = 1e-3;
 export const BEAT_ROUNDING_SECONDS = 0.01;
 
 export interface BeatSection {

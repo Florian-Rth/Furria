@@ -1,5 +1,5 @@
+import type { ScoreStep } from '@furria/studio/score-steps';
 import type { ActStudio } from '@/features/acts/schemas';
-import type { ScoreStep } from './score-steps';
 
 export type ReadinessKey = 'music' | 'steps' | 'places' | 'movement' | 'video' | 'final';
 export type ReadinessState = 'done' | 'open' | 'empty';
