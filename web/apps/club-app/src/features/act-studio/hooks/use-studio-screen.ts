@@ -2,17 +2,19 @@ import { musicSegmentsOf } from '@furria/studio/music-timeline';
 import { playerKeyActionsOf } from '@furria/studio/practice-key-actions';
 import type { StudioTool } from '@furria/studio/studio-copy';
 import { eveningBandOf } from '@furria/studio/studio-copy';
+import type { StudioDocumentEdit } from '@furria/studio/studio-document-edit';
 import { workedPathsOf } from '@furria/studio/studio-edits';
 import type { ActStudioFrame } from '@furria/studio/studio-layout';
 import { largeTextFrameOf } from '@furria/studio/studio-layout';
 import type { StudioEditor } from '@furria/studio/studio-mode';
 import { studioEditorOf } from '@furria/studio/studio-mode';
-import type { Practice } from '@furria/studio/use-practice';
+import type { StudioWorkScreen } from '@furria/studio/studio-work-screen';
+import { useActStudioEdits, useKeptPosition } from '@furria/studio/use-act-studio-edits';
+import { useActStudioMode } from '@furria/studio/use-act-studio-mode';
 import { usePractice } from '@furria/studio/use-practice';
 import { usePracticeMemory } from '@furria/studio/use-practice-memory';
 import type { PracticeSteps } from '@furria/studio/use-practice-steps';
 import { usePracticeSteps } from '@furria/studio/use-practice-steps';
-import type { PracticeVideo } from '@furria/studio/use-practice-video';
 import { usePracticeVideo } from '@furria/studio/use-practice-video';
 import { useStudioKeys } from '@furria/studio/use-studio-keys';
 import type { StudioPlayback } from '@furria/studio/use-studio-playback';
@@ -26,12 +28,7 @@ import { useLargeText } from '@/lib/use-large-text';
 import type { SongMutations, VideoMutations } from '../api';
 import { useSongMutations, useVideoMutations } from '../api';
 import { eveningStudioOf } from '../studio-evening';
-import type { ActStudioEdits } from './use-act-studio-edits';
-import { useActStudioEdits, useKeptPosition } from './use-act-studio-edits';
-import type { ActStudioMode } from './use-act-studio-mode';
-import { useActStudioMode } from './use-act-studio-mode';
 import { useStudioDeveloping } from './use-studio-developing';
-import type { StudioDocumentEdit } from './use-studio-document';
 import { useStudioDocument } from './use-studio-document';
 import type { StudioFinal } from './use-studio-final';
 import { useStudioFinal } from './use-studio-final';
@@ -47,26 +44,20 @@ export interface StudioEveningContext {
   stageEditor?: boolean;
 }
 
-export interface StudioScreen {
+export interface StudioScreen extends StudioWorkScreen {
   actId: number;
   evening: StudioEvening | null;
-  eveningBand: string | null;
   music: SongMutations;
-  stageDocument: StudioDocumentEdit;
+  stageDocument: StudioDocumentEdit<ActStudio>;
   cast: readonly CastPerson[];
-  document: StudioDocumentEdit;
+  document: StudioDocumentEdit<ActStudio>;
   videos: VideoMutations;
   final: StudioFinal;
-  mode: ActStudioMode;
   editor: StudioEditor | null;
   frame: ActStudioFrame;
   large: StudioLargeText;
   startHall: (() => void) | null;
-  edits: ActStudioEdits;
   studio: ActStudio;
-  playback: StudioPlayback;
-  practice: Practice;
-  video: PracticeVideo;
   steps: PracticeSteps;
 }
 
@@ -125,6 +116,9 @@ export const useStudioScreen = (
     cast,
     document: work,
     videos,
+    removeVideo: (videoId) => {
+      videos.remove.mutate(videoId);
+    },
     final,
     frame: largeTextFrameOf(video.hero, large.videoShown),
     large,

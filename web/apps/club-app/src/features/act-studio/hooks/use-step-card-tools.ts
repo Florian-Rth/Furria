@@ -16,8 +16,8 @@ import {
   STEP_TOOL_SPOTS_LABEL,
 } from '@furria/studio/step-cards-copy';
 import type { FormationPreset } from '@furria/studio/studio-formation';
+import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 import type { KkLaneGlyphName } from '@furria/ui/KkLaneGlyph';
-import type { ActStudioStage } from './use-act-studio-stage';
 import type { StudioScreen } from './use-studio-screen';
 
 export interface StepCardTool {

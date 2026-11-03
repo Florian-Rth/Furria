@@ -7,7 +7,6 @@ import {
   keyedTrackOf,
   keyIndexAt,
   moveIndexNear,
-  retimedMoveOf,
   stagePointOfShare,
   turnedOf,
   unkeyedTrackOf,
@@ -43,67 +42,6 @@ describe('moveIndexNear', () => {
 
   it('finds no move in a still step', () => {
     expect(moveIndexNear(track, { start: 6.5, end: 10 }, 7)).toBeNull();
-  });
-});
-
-describe('retimedMoveOf', () => {
-  it('holds both formations around a move pulled inside the step', () => {
-    const retimed = retimedMoveOf([key(0, 0), key(8, 4)], 0, { start: 2, end: 5 });
-
-    expect(timesOf(retimed)).toEqual([0, 2, 5, 8]);
-    expect(placesOf(retimed)).toEqual([0, 0, 4, 4]);
-  });
-
-  it('keeps the bend and easing on the arriving keyframe', () => {
-    const arriving = {
-      ...key(8, 4),
-      easing: 'easeOut' as const,
-      bend: { rightMetres: 2, backMetres: 3 },
-    };
-    const retimed = retimedMoveOf([key(0, 0), arriving], 0, { start: 2, end: 5 });
-
-    expect(retimed[2]).toEqual({ ...arriving, seconds: 5 });
-    expect(retimed[3]?.bend).toBeNull();
-  });
-
-  it('stretches a move back over the hold before it', () => {
-    const retimed = retimedMoveOf([key(0, 0), key(3, 0), key(6, 4), key(8, 4)], 1, {
-      start: 1,
-      end: 8,
-    });
-
-    expect(timesOf(retimed)).toEqual([0, 1, 8]);
-    expect(placesOf(retimed)).toEqual([0, 0, 4]);
-  });
-
-  it('never takes time from a neighbouring move', () => {
-    const retimed = retimedMoveOf([key(0, 2), key(2, 0), key(6, 4), key(8, 1)], 1, {
-      start: 0,
-      end: 10,
-    });
-
-    expect(timesOf(retimed)).toEqual([0, 2, 6, 8]);
-  });
-
-  it('adds no second hold next to one already there', () => {
-    const retimed = retimedMoveOf([key(0, 0), key(1, 0), key(6, 4), key(8, 4)], 1, {
-      start: 2,
-      end: 5,
-    });
-
-    expect(timesOf(retimed)).toEqual([0, 2, 5, 8]);
-  });
-
-  it('leaves moves closer than a tenth of a second alone', () => {
-    const track = [key(0, 2), key(2, 0), key(2.05, 4), key(2.1, 1)];
-
-    expect(retimedMoveOf(track, 1, { start: 0, end: 3 })).toBe(track);
-  });
-
-  it('leaves a track without that move alone', () => {
-    const track = [key(0, 0)];
-
-    expect(retimedMoveOf(track, 0, { start: 1, end: 2 })).toBe(track);
   });
 });
 

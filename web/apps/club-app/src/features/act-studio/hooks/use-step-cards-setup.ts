@@ -1,8 +1,8 @@
 import { setupShownOf, setupStartsOpen } from '@furria/studio/studio-setup';
+import type { StudioSetup } from '@furria/studio/studio-setup-view';
+import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 import { useState } from 'react';
-import type { ActStudioStage } from './use-act-studio-stage';
 import type { StudioScreen } from './use-studio-screen';
-import type { StudioSetup } from './use-studio-setup';
 import { useStudioSetup } from './use-studio-setup';
 
 export interface StepCardsSetup {

@@ -4,9 +4,9 @@ import type { StepCountCell } from '@furria/studio/step-cards';
 import { countSheetOf, stepCountCellsOf } from '@furria/studio/step-cards';
 import { stepCardEyebrowOf, stepCardLabelOf } from '@furria/studio/step-cards-copy';
 import type { StudioStep } from '@furria/studio/studio-schemas';
-import type { ActStudioStage } from './use-act-studio-stage';
-import type { StepTexts } from './use-step-texts';
-import { useStepTexts } from './use-step-texts';
+import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
+import type { StepTexts } from '@furria/studio/use-step-texts';
+import { useStepTexts } from '@furria/studio/use-step-texts';
 import type { StudioScreen } from './use-studio-screen';
 
 const NEAR = 1;

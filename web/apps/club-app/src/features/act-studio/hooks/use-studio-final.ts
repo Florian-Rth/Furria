@@ -1,4 +1,3 @@
-import type { MusicSegment } from '@furria/studio/music-timeline';
 import { musicSegmentsOf } from '@furria/studio/music-timeline';
 import type { FinalPlacements } from '@furria/studio/studio-final';
 import {
@@ -11,21 +10,18 @@ import {
 } from '@furria/studio/studio-final';
 import type { StudioFinalTrack } from '@furria/studio/studio-schemas';
 import { musicKeyOf } from '@furria/studio/studio-videos';
+import type { StudioFinalView } from '@furria/studio/studio-work-screen';
+import type { ActStudioEdits } from '@furria/studio/use-act-studio-edits';
+import type { ActStudioMode } from '@furria/studio/use-act-studio-mode';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { ActStudio } from '@/features/acts/schemas';
 import type { FinalTrackMutations } from '../api';
 import { useFinalTrackMutations } from '../api';
-import type { ActStudioEdits } from './use-act-studio-edits';
-import type { ActStudioMode } from './use-act-studio-mode';
 
 const NO_PLACEMENTS: FinalPlacements = {};
 
-export interface StudioFinal {
-  pending: StudioFinalTrack | null;
+export interface StudioFinal extends StudioFinalView {
   adopted: StudioFinalTrack | null;
-  previewing: boolean;
-  placements: FinalPlacements;
-  mix: readonly MusicSegment[];
   writes: FinalTrackMutations;
   togglePreview: (position: number) => void;
 }

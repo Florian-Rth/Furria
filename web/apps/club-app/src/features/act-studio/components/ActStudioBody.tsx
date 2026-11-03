@@ -2,18 +2,18 @@ import { LessonBody } from '@furria/studio/LessonBody';
 import { LessonEmpty } from '@furria/studio/LessonEmpty';
 import { PracticeSteps } from '@furria/studio/PracticeSteps';
 import { STUDIO_LABEL } from '@furria/studio/studio-copy';
+import { useActStudioStage } from '@furria/studio/use-act-studio-stage';
 import type { KkGroupTone } from '@furria/ui/group-tone';
 import { KkPracticeView } from '@furria/ui/KkPracticeView';
 import { KkStudioView } from '@furria/ui/KkStudioView';
 import { KkVisuallyHidden } from '@furria/ui/KkVisuallyHidden';
 import type { FC } from 'react';
-import { ActDeskView } from '@/features/act-desk/components/ActDeskView';
 import { canPractise } from '@/features/acts/act-studio';
 import type { ActStudio } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
-import { useActStudioStage } from '../hooks/use-act-studio-stage';
 import type { StudioEveningContext } from '../hooks/use-studio-screen';
 import { useStudioScreen } from '../hooks/use-studio-screen';
+import { ActDeskScreen } from './ActDeskScreen';
 import { ActStudioHead } from './ActStudioHead';
 import { ActStudioHero } from './ActStudioHero';
 import { ActStudioLargeKeys } from './ActStudioLargeKeys';
@@ -57,7 +57,7 @@ export const ActStudioBody: FC<ActStudioBodyProps> = ({
     return (
       <>
         {heading}
-        <ActDeskView screen={screen} editor={editor} />
+        <ActDeskScreen screen={screen} editor={editor} />
       </>
     );
   }

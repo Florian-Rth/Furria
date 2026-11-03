@@ -20,10 +20,10 @@ import {
   STUDIO_PRESET_LINE,
   STUDIO_PRESETS,
 } from '@furria/studio/studio-copy';
+import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 import { KkButton } from '@furria/ui/KkButton';
 import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
 import type { FC } from 'react';
-import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 
 interface ActStudioArrangeDeskProps {
   editor: ActStudioStage;

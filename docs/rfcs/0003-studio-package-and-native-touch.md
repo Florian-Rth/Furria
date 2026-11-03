@@ -62,7 +62,9 @@ Decisions: grilling 2026-11-02, [ADR-0035](../adr/0035-the-studio-is-its-own-pac
 - `web/packages/studio` = `@furria/studio`, source-consumed like `@furria/ui`, one subpath export per
   module, no barrels, the same Biome rules as the club app (no raw MUI beyond layout, no design `sx`).
 - **Moves in:** `act-player`, `act-studio`, `act-desk`, `act-practice`, `act-lesson`, `act-hall`, the
-  score/formation views of `act-hub`, and the studio kits from `@furria/ui`.
+  score/formation views of `act-hub`. **Settled 2026-11-03:** the styled studio kits in use stay in
+  `@furria/ui` as the studio's look (the ADR-0035 lint forbids the package to author pixels); only
+  unused kits are deleted.
 - **Stays in the club app:** routes and page shells, `acts` (catalogue, settings, cast, co-editors),
   `act-card`, `act-training` attendance, the hub screen composition, TanStack Query hooks and
   endpoints.
@@ -756,7 +758,7 @@ club-app modules along. Split 2026-11-03 (soft cap: ~18.7k lines and 210 files w
 12e, the lab removal and docs 12f.
 - [x] Move the pure models of the studio screen, the desk and the score (and their tests) into the package
 - [x] Deduplicate `nextStepOf` (hall, lesson) and the count helpers (desk time, step cards)
-- [x] Audit the studio kits in `@furria/ui` for unused ones
+- [x] Audit the studio kits in `@furria/ui` for unused ones (styled kits in use stay there — settled, ADR-0035)
 
 Built 2026-11-03. **Models:** `@furria/studio/{studio-edits,studio-formation,studio-movement,studio-music,studio-videos,studio-setup,studio-final,studio-mode,studio-dots,studio-stage-dots,studio-spots,studio-steps,studio-layout,step-cards}`
 (`models/`), `history-turn` (`document/`), `studio-copy`, `step-cards-copy`, `setup-copy`,
@@ -783,21 +785,57 @@ the package's `@dnd-kit/dom` dependency came with `studio-drag-copy`. Stay in th
   (`findIndex + 1`) in the desk inspector and lanes, `use-act-studio-stage`, `use-step-desk` and
   `score-steps`, next to `stepNumberOf`.
 - **Kits:** no studio kit in `@furria/ui` is unused (exports and internal files checked); only
-  `KkTouchLab` is lab-only and stays until the phase 7 device check (12f).
+  `KkTouchLab` is lab-only and stays until the phase 7 device check (12g).
 
-### Phase 12d — Desk and hub score views into the package
-Goal: the desk and the score/formation views are package modules; the hub screen stays a club-app
-composition.
-- [ ] Move the desk views and hooks (and the studio screen hooks they need) into the package
+### Phase 12d — Desk into the package
+Goal: the desk and the studio-screen editing hooks it needs are package modules; the club app
+composes them. Split 2026-11-03 (soft cap): the hub's score and formation views are phase 12e; the
+studio screen moves to 12f, lab removal and docs to 12g.
+- [x] Move the desk views and hooks (and the studio screen hooks they need) into the package
+- [x] Drop the unused `use-act-studio-movement.retime` / `retimedMoveOf` and their tests
+
+Built 2026-11-03. **Desk:** `features/act-desk` is gone; its views and hooks are
+`@furria/studio/{ActDeskView,Desk*,use-act-desk,use-desk-*}` (`desk/`). The club app composes the
+desk in `act-studio/components/ActDeskScreen` (takes, desk state, setup with its uploads, visit
+history, music route) and hands `desk`, `setup`, `history` and `onMusic` to `ActDeskView`; the visit
+history is read once there (the top bar, inspector tabs and history pane each read it before).
+**Contract:** `@furria/studio/studio-work-screen` declares `StudioWorkScreen`, the part of the studio
+screen the package edits through (evening, studio, both documents, the final preview's pending
+track/placements/mix, mode, local edits, playback, practice, video, `removeVideo`); the club app's
+`StudioScreen` extends it with `actId`, its mutations, cast and layout, and its `StudioFinal` adds
+`adopted`, `writes` and `togglePreview`. `StudioDocumentEdit<TStudio>` (`studio-document-edit`),
+`StudioSetup`/`StudioSetupRow` (`studio-setup-view`), `StudioFileInput` (`studio-uploads`; the club
+app's `ActUploads` extends it with rows and failures) and `VisitHistory` (`visit-history`) are
+package types the club-app hooks return. **Editor hooks and
+views moved** (`editor/`): `use-act-studio-{edits,mode,stage,movement,takes,wave,routes}`,
+`use-track-commit`, `use-final-places`, `use-desk-target`, `use-step-texts`, `use-gesture-release`,
+`use-studio-stage-work`, `StudioEditStage`, `StudioStage{DotsLive,Readout,Toolbar}`,
+`ActStudioWaveReadout`, `StudioSaveButton`, `StudioSetup{Chip,List,Inputs}`; `studio-key-actions` to
+`keys/`, `document-copy` to `copy/`. Stay in the club app: `use-studio-screen`, `use-studio-document`
+(editor store), `use-studio-final` (final-track mutations), `use-studio-setup` and `use-act-uploads`
+(uploads), `use-visit-history` and its controls (store), `use-studio-music-route` (router).
+**Dropped:** `retime`/`retimedMoveOf` (no screen used them) with their tests and helpers.
+- **Review follow-ups (open, 12f):** `countPlaceAt` takes marks and eights as two parallel
+  arrays; step numbers are still hand-rolled (`findIndex + 1`, desk lanes and inspector,
+  `use-act-studio-stage`) next to `stepNumberOf`; the wave readout is built twice (desk lanes,
+  `use-act-studio-wave`) and could be one pure `waveReadoutOf`; `useActDesk` re-derives the setup tab
+  rule (`setupShownOf`) that `StudioSetup.shown` already carries; `eveningBand` is copy in the screen
+  contract and the setup row mapping in `use-studio-setup` is untested pure logic; `use-desk-target`
+  (a sheet's target, used by the takes, songs and step-tool sheets) clashes with the desk's own
+  `DeskTarget` — rename to a sheet target; `ActDeskScreen` now re-renders the whole desk on every
+  upload tick and history change (one read instead of three) — judge on the iPad.
+
+### Phase 12e — Hub score and formation views into the package
+Goal: the score/formation views are package modules; the hub screen stays a club-app composition.
 - [ ] Move the hub's score and formation views into the package; the hub screen, its route, readiness, doors and season stay in the club app
 
-### Phase 12e — Studio screen into the package
+### Phase 12f — Studio screen into the package
 Goal: the studio screen's views and hooks live in the package; queries, mutations and uploads stay in
 the club app behind the save port and direct-action ports.
 - [ ] Move the `act-studio` views and hooks that do not fetch into the package
 - [ ] Deduplicate leftovers found on the way; empty club-app folders removed
 
-### Phase 12f — Lab removal, cleanup, docs
+### Phase 12g — Lab removal, cleanup, docs
 Goal: nothing studio-specific is left behind.
 - [ ] Delete `KkTouchLab` and the `studio-lab` feature once the phase 7 device check is done; grep for leftovers
 - [ ] Update CONTEXT.md if terms changed, plan/club-app/group-year.md, docs/web; full web suite

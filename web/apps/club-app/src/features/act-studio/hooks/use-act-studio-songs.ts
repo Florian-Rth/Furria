@@ -15,9 +15,9 @@ import { studioDragPluginsOf } from '@furria/studio/studio-drag-copy';
 import { STUDIO_EDIT } from '@furria/studio/studio-mode-copy';
 import { keptPositionOf, movedOrderOf, outsideMusicOf } from '@furria/studio/studio-music';
 import type { StudioSong } from '@furria/studio/studio-schemas';
+import { useDeskTarget } from '@furria/studio/use-desk-target';
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import type { KkStudioListBadgeTone } from '@furria/ui/KkStudioList';
-import { useDeskTarget } from './use-desk-target';
 import type { StudioScreen } from './use-studio-screen';
 
 export interface ActStudioSongRow {

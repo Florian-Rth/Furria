@@ -1,8 +1,8 @@
 import { STUDIO_SPOT_ADD, STUDIO_SPOTS } from '@furria/studio/studio-copy';
+import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 import { KkStudioList } from '@furria/ui/KkStudioList';
 import type { FC } from 'react';
 import { useActStudioCast } from '../hooks/use-act-studio-cast';
-import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import { ActStudioHolderSection } from './ActStudioHolderSection';
 

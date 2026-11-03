@@ -1,25 +1,8 @@
-import type { SaveStatus } from '@furria/studio/autosave';
 import { historyLinesOf } from '@furria/studio/history-turn';
+import type { VisitHistory } from '@furria/studio/visit-history';
 import type { ActStudio } from '@/features/acts/schemas';
 import { CHANGE_TEXT, HISTORY_UNDONE, visitMetaOf } from '../undo-copy';
 import { useStudioHistoryControls } from './use-studio-history-controls';
-
-export interface VisitHistoryRow {
-  key: string;
-  label: string;
-  meta: string;
-  hint: string | undefined;
-}
-
-export interface VisitHistory {
-  rows: VisitHistoryRow[];
-  canUndo: boolean;
-  canRedo: boolean;
-  status: SaveStatus | null;
-  undo: () => void;
-  redo: () => void;
-  retry: () => void;
-}
 
 export const useVisitHistory = (actId: number, studio: ActStudio): VisitHistory => {
   const controls = useStudioHistoryControls(actId);
