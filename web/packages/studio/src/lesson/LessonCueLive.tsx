@@ -1,0 +1,29 @@
+import type { SpotPath } from '@furria/studio/choreography-motion';
+import { cueLabelOf } from '@furria/studio/lesson-copy';
+import { cueCountOf, cueOfCount } from '@furria/studio/lesson-picture';
+import type { MixPlayer } from '@furria/studio/mix-player';
+import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
+import { cueTextOf } from '@furria/studio/practice-copy';
+import { cueOf, ownWayAt } from '@furria/studio/practice-way';
+import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
+import { KkLesson } from '@furria/ui/KkLesson';
+import type { FC } from 'react';
+
+interface LessonCueLiveProps {
+  player: MixPlayer;
+  ownPath: SpotPath | null;
+  marks: readonly CountMark[];
+  loop: TimelineRange | null;
+}
+
+export const LessonCueLive: FC<LessonCueLiveProps> = ({ player, ownPath, marks, loop }) => {
+  const count = usePlaybackSelection(player, (seconds) =>
+    ownPath === null ? null : cueCountOf(cueOf(ownWayAt(ownPath.keyframes, marks, seconds, loop))),
+  );
+  const cue = cueOfCount(count);
+  const text = cue === null ? null : cueTextOf(cue);
+  const tone = cue?.tone ?? 'soon';
+  const label = cueLabelOf(cue);
+
+  return <KkLesson.Cue text={text} tone={tone} label={label} />;
+};

@@ -1,9 +1,6 @@
-import type {
-  SpotPath,
-  StagePoint,
-  TimedKeyframe,
-} from '@/features/act-player/choreography-motion';
-import type { StudioSpot, StudioStep, StudioTraining } from '@/features/acts/schemas';
+import type { SpotPath, StagePoint, TimedKeyframe } from '@furria/studio/choreography-motion';
+import type { StudioSpot, StudioStep } from '@furria/studio/studio-schemas';
+import type { StudioTraining } from '@/features/acts/schemas';
 
 export interface TrainingGap {
   spotId: number;

@@ -1,5 +1,5 @@
+import type { StudioMusicTool } from '@furria/studio/studio-schemas';
 import { useNavigate } from '@tanstack/react-router';
-import type { StudioMusicTool } from '../schemas';
 
 export const useStudioMusicRoute = (actId: number): ((tool: StudioMusicTool) => void) => {
   const navigate = useNavigate();

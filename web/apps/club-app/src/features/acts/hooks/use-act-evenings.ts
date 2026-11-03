@@ -1,10 +1,10 @@
+import { canPractise } from '@furria/studio/music-timeline';
 import type { KkChipTone } from '@furria/ui/KkChip';
 import type { KkLinkSearch } from '@furria/ui/kk-link-search';
 import { useEveningMutations } from '@/features/act-studio/evening-api';
 import { eveningEntryOf } from '../act-evenings';
 import { EVENING_CHANGED_HINT, toEveningMeta, toEveningStateChip } from '../act-evenings-copy';
-import { canPractise } from '../act-studio';
-import type { ActStudioResponse, Studio } from '../schemas';
+import type { ActStudio, ActStudioResponse } from '../schemas';
 
 const CURRENT_ROUTE = '.';
 
@@ -33,7 +33,7 @@ const searchOf =
   ({ view: _view, settings: _settings, edit: _edit, roll: _roll, ...kept }) =>
     opensPane ? { ...kept, view: DETAILS_VIEW, evening: eventId } : { ...kept, evening: eventId };
 
-export const useActEvenings = (data: ActStudioResponse, studio: Studio): ActEvenings => {
+export const useActEvenings = (data: ActStudioResponse, studio: ActStudio): ActEvenings => {
   const mutations = useEveningMutations(data.act.actId);
   const canEdit = data.viewer.canEditStudio;
   const practisable = canPractise(studio);

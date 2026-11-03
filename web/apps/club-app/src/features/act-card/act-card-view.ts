@@ -1,4 +1,5 @@
-import { canPractise, seesDetailsOf } from '@/features/acts/act-studio';
+import { canPractise } from '@furria/studio/music-timeline';
+import { seesDetailsOf } from '@/features/acts/act-studio';
 import type {
   ActPageSearch,
   ActStudioResponse,

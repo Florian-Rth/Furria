@@ -12,6 +12,7 @@ import { KkLessonBeat } from './internal/ui/KkLessonBeat';
 import { KkLessonCounts } from './internal/ui/KkLessonCounts';
 import { KkLessonCue } from './internal/ui/KkLessonCue';
 import { KkLessonHall } from './internal/ui/KkLessonHall';
+import { KkLessonHeading } from './internal/ui/KkLessonHeading';
 import { KkLessonLoop } from './internal/ui/KkLessonLoop';
 import { KkLessonNext } from './internal/ui/KkLessonNext';
 import { KkLessonQuiet } from './internal/ui/KkLessonQuiet';
@@ -33,6 +34,7 @@ export type { KkLessonCueTone } from './internal/ui/KkLessonCue';
 
 export const KkLesson = Object.assign(KkLessonRoot, {
   Area: KkLessonArea,
+  Heading: KkLessonHeading,
   Card: KkLessonCard,
   Picture: KkLessonPicture,
   Layer: KkLessonLayer,

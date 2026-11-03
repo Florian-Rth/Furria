@@ -1,0 +1,73 @@
+import { isLooped, segmentGroupsOf } from '@furria/studio/practice-controls';
+import { partLoopLabelOf } from '@furria/studio/practice-copy';
+import { stepNumberOf } from '@furria/studio/step-names';
+import type { StudioStep } from '@furria/studio/studio-schemas';
+import type { Practice } from '@furria/studio/use-practice';
+import type { StudioPlayback } from '@furria/studio/use-studio-playback';
+
+export interface PracticeSegmentRow {
+  stepId: number;
+  step: StudioStep;
+  number: number;
+  current: boolean;
+  looped: boolean;
+}
+
+export interface PracticePartKey {
+  name: string;
+  label: string;
+  firstStepId: number;
+  looped: boolean;
+}
+
+export interface PracticeSegmentGroupRow {
+  key: string;
+  part: PracticePartKey | null;
+  current: boolean;
+  segments: PracticeSegmentRow[];
+}
+
+export const usePracticeSegments = (
+  playback: StudioPlayback,
+  practice: Practice,
+): PracticeSegmentGroupRow[] => {
+  const currentId = practice.step?.stepId ?? null;
+
+  return segmentGroupsOf(playback.steps, playback.parts).map((group) => {
+    const segments = group.steps.flatMap((segment) => {
+      const step = playback.steps.find((candidate) => candidate.stepId === segment.stepId);
+
+      if (step === undefined) {
+        return [];
+      }
+      const number = stepNumberOf(playback.steps, step.stepId);
+
+      return [
+        {
+          stepId: step.stepId,
+          step,
+          number,
+          current: step.stepId === currentId,
+          looped: isLooped(step, practice.loop),
+        },
+      ];
+    });
+    const current = segments.some((segment) => segment.current);
+    const firstStepId = segments[0]?.stepId ?? null;
+
+    return {
+      key: group.key,
+      part:
+        group.name === null || firstStepId === null
+          ? null
+          : {
+              name: group.name,
+              label: partLoopLabelOf(group.name),
+              firstStepId,
+              looped: practice.loopKind === 'part' && current,
+            },
+      current,
+      segments,
+    };
+  });
+};

@@ -1,14 +1,9 @@
 export const GROUP_SECTION_TITLES = {
-  about: 'Die Gruppe',
-  description: 'Kurz gesagt',
   members: 'Wer dabei ist',
-  managedMembers: 'Zugehörigkeiten',
-  admins: 'Gruppen-Admins',
-  care: 'Die Gruppe pflegen',
   usualTrainingTimes: 'Übliche Trainingszeiten',
   history: 'Geschichte',
   events: 'Termine',
-  administration: 'Für die Verwaltung',
+  settings: 'Einstellungen',
 } as const;
 
 export const GROUP_ADMINS_NOTE =

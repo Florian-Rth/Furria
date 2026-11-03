@@ -1,3 +1,5 @@
+import { canPractise } from '@furria/studio/music-timeline';
+import { PRACTICE_LABEL } from '@furria/studio/practice-copy';
 import type { KkMasterDetailSpan } from '@furria/ui/KkMasterDetailMaster';
 import type {
   KkQuietScreenAction,
@@ -7,7 +9,6 @@ import type {
 import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { PRACTICE_LABEL } from '@/features/act-practice/practice-copy';
 import { eveningCastOf } from '@/features/act-studio/studio-evening';
 import { TRAINING_LABEL } from '@/features/act-training/training-copy';
 import { useCloseOnEscape } from '@/features/events/hooks/use-close-on-escape';
@@ -21,18 +22,15 @@ import { useSpotBehind } from '@/lib/use-spot-behind';
 import { toEveningLabel } from '../act-evenings-copy';
 import {
   ACT_CARD_LABEL,
-  ACT_DETAILS_LABEL,
   ACT_FALLBACK_TITLE,
   SETTINGS_LABEL,
   STUDIO_MUSIC_LABEL,
-  STUDIO_OPEN_LABEL,
 } from '../act-page-copy';
 import type { ActPageMode } from '../act-studio';
-import { actPageModeOf, canPractise, seesDetailsOf } from '../act-studio';
+import { actPageModeOf, seesDetailsOf } from '../act-studio';
 import {
   actCardLinkOf,
   actCardOriginOf,
-  actDetailsLinkOf,
   actPageOriginOf,
   actPageReturnOf,
   playerOriginOf,
@@ -229,27 +227,6 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
       });
     },
   };
-  const openDetailsAction: KkQuietScreenAction = {
-    id: 'details',
-    label: ACT_DETAILS_LABEL,
-    icon: 'info',
-    link: actId === null ? undefined : actDetailsLinkOf(actId, search),
-    onSelect: () => {
-      showView('details');
-    },
-  };
-  const studioAction: KkQuietScreenAction = {
-    id: 'studio',
-    label: STUDIO_OPEN_LABEL,
-    icon: 'music',
-    onSelect: () => {
-      void navigate({
-        to: '.',
-        search: (previous) => ({ ...previous, view: 'play', edit: true }),
-        resetScroll: true,
-      });
-    },
-  };
   const practisable = canPractise(studio ?? null);
   const practiceAction: KkQuietScreenAction = {
     id: 'practice',
@@ -270,11 +247,6 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
     practisable || canEditStudio ? practiceAction : null,
     canEditSettings ? settingsAction : null,
   ]);
-
-  const cardActions = actionsOf([
-    seesDetails ? openDetailsAction : null,
-    canEditStudio ? studioAction : null,
-  ]);
   const name = act?.name ?? ACT_FALLBACK_TITLE;
 
   return {
@@ -283,7 +255,7 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
     title: titleOf(name, evening, mode),
     origin: originOf(mode, actId, search, away, behind, name),
     mode,
-    actions: mode === 'card' ? cardActions : detailActions,
+    actions: mode === 'card' && query.data?.studio !== null ? undefined : detailActions,
     practiceActions: [cardAction],
     viewerId: me.data?.person?.id ?? null,
     search,

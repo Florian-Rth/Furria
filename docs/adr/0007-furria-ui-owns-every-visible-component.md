@@ -51,3 +51,9 @@ thing must exist in `@furria/ui`, so every page that needs it gets the same one.
 - **`@furria/ui` grows past its marketing origins.** It currently holds the website's vocabulary
   (`KkHeroSection`, `KkConfettiRain`, `KkTicker`). It becomes the platform's component library,
   and the Club-App's data-dense parts live beside them.
+- **The studio's domain components live in `@furria/studio`** (amended 2026-11-02 by
+  [ADR-0035](0035-the-studio-is-its-own-package-and-owns-its-domain-components.md)). `@furria/ui`
+  keeps the design system; `@furria/studio` builds the studio's stage, timeline and views from its
+  tokens and primitives under the same rules — `packages/studio/**` has the same import bans and
+  `noDesignSx` plugin as the Club-App, plus a ban on app imports, the API client barrel, TanStack
+  Query, the router and Capacitor.

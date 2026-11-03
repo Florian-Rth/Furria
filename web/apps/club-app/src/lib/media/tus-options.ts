@@ -1,5 +1,5 @@
+import { transferStatusOf } from '@furria/api-client/upload-failure';
 import { DetailedError } from 'tus-js-client';
-import { transferStatusOf } from './upload-failure';
 
 export const TUS_CHUNK_BYTES = 16 * 1024 * 1024;
 export const TUS_RETRY_DELAYS_MS = [0, 1_000, 3_000, 5_000, 10_000];

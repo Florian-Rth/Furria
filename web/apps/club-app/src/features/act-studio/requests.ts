@@ -1,4 +1,18 @@
-import type { Choreography } from '@/features/acts/schemas';
+import type { FinalBeatInput, FinalOffsetInput } from '@furria/studio/studio-final';
+import type { SongSettings } from '@furria/studio/studio-music';
+import type {
+  Choreography,
+  FinalTrackMatches,
+  VideoAlignment,
+} from '@furria/studio/studio-schemas';
+import { FinalTrackMatchesSchema, VideoAlignmentSchema } from '@furria/studio/studio-schemas';
+import type {
+  PartOpening,
+  PartSettingsInput,
+  StepStartInput,
+  StepTextInput,
+} from '@furria/studio/studio-steps';
+import type { VideoNameInput, VideoStartInput } from '@furria/studio/studio-videos';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type {
@@ -8,10 +22,8 @@ import type {
   AddedSpot,
   AddedVideo,
   ChoreographyVersionPage,
-  FinalTrackMatches,
   MarkedSteps,
   SavedChoreography,
-  VideoAlignment,
 } from './schemas';
 import {
   AddedFinalTrackSchema,
@@ -20,15 +32,9 @@ import {
   AddedSpotSchema,
   AddedVideoSchema,
   ChoreographyVersionPageSchema,
-  FinalTrackMatchesSchema,
   MarkedStepsSchema,
   SavedChoreographySchema,
-  VideoAlignmentSchema,
 } from './schemas';
-import type { FinalBeatInput, FinalOffsetInput } from './studio-final';
-import type { SongSettings } from './studio-music';
-import type { PartOpening, PartSettingsInput, StepStartInput, StepTextInput } from './studio-steps';
-import type { VideoNameInput, VideoStartInput } from './studio-videos';
 
 const songsPathOf = (actId: number): string => `/api/acts/${actId}/songs`;
 const stepsPathOf = (actId: number): string => `/api/acts/${actId}/steps`;

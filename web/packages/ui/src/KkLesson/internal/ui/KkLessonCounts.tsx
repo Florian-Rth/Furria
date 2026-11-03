@@ -2,10 +2,28 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import type { FC } from 'react';
+import { inkWash } from '../../../internal/ink-wash';
 import { kkTokens } from '../../../tokens';
 
 const DOWNBEAT = 1;
+const HALF_BEAT = 5;
 const PERCENT = 100;
+
+type CellAccent = 'downbeat' | 'half' | 'plain';
+
+const CELL_HEIGHTS: Record<CellAccent, string> = {
+  downbeat: '1.25rem',
+  half: '0.875rem',
+  plain: '0.5rem',
+};
+
+const accentOf = (count: number): CellAccent => {
+  if (count === DOWNBEAT) {
+    return 'downbeat';
+  }
+
+  return count === HALF_BEAT ? 'half' : 'plain';
+};
 
 type CellState = 'past' | 'lit' | 'ahead';
 
@@ -22,12 +40,11 @@ const cellInk = (theme: Theme, state: CellState): string => {
 };
 
 const cellPaint =
-  (state: CellState, downbeat: boolean) =>
+  (state: CellState, accent: CellAccent) =>
   (theme: Theme): CSSObject => ({
-    flex: '1 1 0',
-    minWidth: '0.125rem',
-    maxWidth: '0.3125rem',
-    height: downbeat ? '1.375rem' : '0.875rem',
+    flex: '0 0 auto',
+    width: '0.25rem',
+    height: CELL_HEIGHTS[accent],
     borderRadius: `${kkTokens.radius.pill}px`,
     backgroundColor: cellInk(theme, state),
     transform: state === 'lit' ? 'scaleY(1.25)' : 'none',
@@ -57,7 +74,7 @@ export const KkLessonCounts: FC<KkLessonCountsProps> = ({ groups, lit, progress,
     const cells = group.map((count, cellIndex) => (
       <Box
         key={`${count}-${start + cellIndex}`}
-        sx={cellPaint(stateOf(start + cellIndex, lit), count === DOWNBEAT)}
+        sx={cellPaint(stateOf(start + cellIndex, lit), accentOf(count))}
       />
     ));
 
@@ -65,13 +82,17 @@ export const KkLessonCounts: FC<KkLessonCountsProps> = ({ groups, lit, progress,
       <Stack
         key={`${groupIndex}-${start}`}
         direction="row"
-        sx={{
+        data-kk-lesson-eight
+        sx={(theme) => ({
           flex: `${group.length} 1 0`,
           minWidth: 0,
+          height: '100%',
           alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '0.125rem',
-        }}
+          justifyContent: 'space-around',
+          px: 0.5,
+          borderRadius: `${kkTokens.radius.bar * 2}px`,
+          backgroundColor: inkWash(theme, '5%'),
+        })}
       >
         {cells}
       </Stack>
@@ -108,7 +129,7 @@ export const KkLessonCounts: FC<KkLessonCountsProps> = ({ groups, lit, progress,
       role="img"
       aria-label={label}
       data-kk-lesson-counts
-      sx={{ flex: 1, minWidth: 0, height: '1.75rem', alignItems: 'center', gap: 0.75 }}
+      sx={{ flex: 1, minWidth: 0, height: '2rem', alignItems: 'center', gap: 0.5 }}
     >
       {eights}
       {track}

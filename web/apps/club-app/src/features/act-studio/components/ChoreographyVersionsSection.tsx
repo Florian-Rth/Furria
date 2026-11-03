@@ -3,7 +3,7 @@ import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { useChoreographyVersions } from '../hooks/use-choreography-versions';
 import {
   VERSIONS_EMPTY,
@@ -17,7 +17,7 @@ import { ChoreographyVersionRow } from './ChoreographyVersionRow';
 interface ChoreographyVersionsSectionProps {
   actId: number;
   eventId: number | null;
-  studio: Studio;
+  studio: ActStudio;
   title: string;
 }
 

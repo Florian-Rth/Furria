@@ -1,7 +1,7 @@
 import { apiStatusOf, refusalMessageOf } from '@furria/api-client';
+import { STUDIO_CHANGED_ELSEWHERE, STUDIO_RELOAD } from '@furria/studio/studio-copy';
 import type { KkNoticeRequest } from '@furria/ui/KkNotice';
 import { toWriteErrorMessage } from '@/lib/write-error';
-import { STUDIO_CHANGED_ELSEWHERE, STUDIO_RELOAD } from './studio-copy';
 
 const CONFLICT_STATUS = 409;
 const RELOAD_ACTION = 'reload';

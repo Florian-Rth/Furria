@@ -7,6 +7,8 @@ import { KkShellChromeDensity } from './KkShellChromeDensity';
 import { KkShellChromeScrollDensity } from './KkShellChromeScrollDensity';
 
 const { gutter } = kkTokens.shell;
+const FOLDED_HOLD =
+  '&:has([data-kk-shell-bar-folded="true"]), &:has([data-kk-shell-bar-folded="true"]) > *';
 
 interface KkShellChromeProps {
   ref?: Ref<HTMLDivElement>;
@@ -27,6 +29,7 @@ export const KkShellChrome: FC<KkShellChromeProps> = ({ ref }) => {
         right: safeArea('right', gutter),
         zIndex: theme.zIndex.appBar,
         minWidth: 0,
+        [FOLDED_HOLD]: { pointerEvents: 'none' },
       })}
     >
       <Density ref={ref} />

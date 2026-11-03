@@ -4,9 +4,12 @@ import { keyframes } from '@mui/material/styles';
 import type { FC, PropsWithChildren } from 'react';
 import { kkTokens } from '../../../tokens';
 import {
+  BESIDE_STAGE_BOX,
+  BESIDE_VIDEO_BOX,
   insetBoxOf,
   LESSON_PAIRED,
   LESSON_PICTURE_ROOMY,
+  LESSON_WIDE_TALL,
   MAIN_BOX,
   STACKED_STAGE_BOX,
   STACKED_VIDEO_BOX,
@@ -39,12 +42,22 @@ const STACKED_PAINT: CSSObject = {
   animation: 'none',
 };
 
-const stackedOf = (tone: KkLessonLayerTone): CSSObject => ({
+const RADIUS = `${kkTokens.radius.base}px`;
+
+const besideOf = (tone: KkLessonLayerTone): CSSObject =>
+  tone === 'ink'
+    ? { ...BESIDE_VIDEO_BOX, borderRadius: `${RADIUS} 0 0 0` }
+    : { ...BESIDE_STAGE_BOX, borderRadius: `0 ${RADIUS} 0 0` };
+
+const pairedOf = (tone: KkLessonLayerTone): CSSObject => ({
   [LESSON_PICTURE_ROOMY]: {
     [LESSON_PAIRED]: {
       ...STACKED_PAINT,
       ...(tone === 'ink' ? { ...STACKED_VIDEO_BOX, borderRadius: 'inherit' } : STACKED_STAGE_BOX),
     },
+  },
+  [LESSON_WIDE_TALL]: {
+    [LESSON_PAIRED]: { ...STACKED_PAINT, ...besideOf(tone) },
   },
 });
 
@@ -90,7 +103,7 @@ export const KkLessonLayer: FC<KkLessonLayerProps> = ({ place, aspect, tone, chi
         overflow: 'clip',
         backgroundColor: toneOf(theme, tone),
         ...placePaint(place, aspect, theme),
-        ...stackedOf(tone),
+        ...pairedOf(tone),
       })}
     >
       {children}

@@ -1,12 +1,12 @@
+import { musicKeyOf, needsAlignment } from '@furria/studio/studio-videos';
 import { useEffect, useEffectEvent, useRef } from 'react';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import type { VideoMutations } from '../api';
-import { musicKeyOf, needsAlignment } from '../studio-videos';
 
 const ID_SEPARATOR = ',';
 
 export const useVideoAutoAlign = (
-  studio: Studio,
+  studio: ActStudio,
   canEdit: boolean,
   videos: VideoMutations,
 ): void => {

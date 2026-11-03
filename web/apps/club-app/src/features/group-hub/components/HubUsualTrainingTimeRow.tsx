@@ -16,12 +16,14 @@ interface HubUsualTrainingTimeRowProps {
   groupId: number;
   usualTime: UsualTrainingTime;
   venueIsArchived: boolean;
+  canManage: boolean;
 }
 
 export const HubUsualTrainingTimeRow: FC<HubUsualTrainingTimeRowProps> = ({
   groupId,
   usualTime,
   venueIsArchived,
+  canManage,
 }) => {
   const meta = [
     toDurationLabel(usualTime.durationMinutes),
@@ -29,6 +31,16 @@ export const HubUsualTrainingTimeRow: FC<HubUsualTrainingTimeRowProps> = ({
   ].join(META_SEPARATOR);
 
   const tone = venueIsArchived ? 'gold' : 'neutral';
+  const editLink = canManage
+    ? {
+        component: Link,
+        to: USUAL_TIME_ROUTE,
+        params: {
+          groupId: String(groupId),
+          usualTrainingTimeId: String(usualTime.usualTrainingTimeId),
+        },
+      }
+    : {};
 
   return (
     <KkFactRow
@@ -37,12 +49,7 @@ export const HubUsualTrainingTimeRow: FC<HubUsualTrainingTimeRowProps> = ({
       spanLabel="ab"
       meta={meta}
       tone={tone}
-      component={Link}
-      to={USUAL_TIME_ROUTE}
-      params={{
-        groupId: String(groupId),
-        usualTrainingTimeId: String(usualTime.usualTrainingTimeId),
-      }}
+      {...editLink}
     />
   );
 };

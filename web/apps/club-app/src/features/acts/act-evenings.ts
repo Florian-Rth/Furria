@@ -1,10 +1,11 @@
+import type { Choreography } from '@furria/studio/studio-schemas';
 import type { EveningChoreographyState } from '@/features/act-studio/studio-evening';
 import { eveningChangesOf, eveningChoreographyStateOf } from '@/features/act-studio/studio-evening';
 import type { EveningChange } from '@/features/running-order/schemas';
 import type { PortraitPersonRef } from '@/lib/api/schemas';
 import type { CastTile } from './act-cast';
 import { castTilesOf } from './act-cast';
-import type { Choreography, StudioEvening } from './schemas';
+import type { StudioEvening } from './schemas';
 
 export type EveningEntryState = 'open' | 'joined' | 'placed';
 

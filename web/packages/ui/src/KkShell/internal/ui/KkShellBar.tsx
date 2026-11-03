@@ -18,10 +18,20 @@ import { KkShellBarSearch } from './KkShellBarSearch';
 import { KkShellThread } from './KkShellThread';
 
 const { barHeight } = kkTokens.shell;
-const BAR_PADDING_X = 1.25;
+
+import { BAR_PADDING_X } from '../folded-bar';
+
+const FOLDED_PAINT = {
+  pointerEvents: 'none',
+  borderColor: 'transparent',
+  '&::before': { display: 'none' },
+  '& a, & button': { pointerEvents: 'auto' },
+  '& [data-kk-shell-bar-close] > :not([data-kk-shell-bar-mark])': { display: 'none' },
+} as const;
 
 interface KkShellBarProps {
   kind: KkScreenKind;
+  folded: boolean;
   lead: KkShellBarLead;
   title: string;
   origin?: KkScreenOrigin;
@@ -32,6 +42,7 @@ interface KkShellBarProps {
 
 export const KkShellBar: FC<KkShellBarProps> = ({
   kind,
+  folded,
   lead,
   title,
   origin,
@@ -62,14 +73,21 @@ export const KkShellBar: FC<KkShellBarProps> = ({
 
   return (
     <KkChrome
-      sx={{
-        position: 'relative',
-        height: `${barHeight}px`,
-        justifyContent: 'center',
-        px: BAR_PADDING_X,
-      }}
+      sx={[
+        {
+          position: 'relative',
+          height: `${barHeight}px`,
+          justifyContent: 'center',
+          px: BAR_PADDING_X,
+        },
+        folded && FOLDED_PAINT,
+      ]}
     >
-      <Stack direction="row" sx={{ alignItems: 'center', gap: 0.25, minWidth: 0 }}>
+      <Stack
+        direction="row"
+        data-kk-shell-bar-folded={folded}
+        sx={{ alignItems: 'center', gap: 0.25, minWidth: 0 }}
+      >
         {row}
         {profileLink}
       </Stack>

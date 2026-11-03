@@ -86,6 +86,14 @@ server {
         proxy_http_version 1.1;
     }
 
+    # nginx's mime.types knows no .mjs; the time-stretch worklet (signalsmith-stretch) ships as one
+    # and audioWorklet.addModule refuses anything but a JavaScript type.
+    location ~ \.mjs$ {
+        types { }
+        default_type application/javascript;
+        try_files $uri =404;
+    }
+
     location / {
         try_files $uri $uri/ /index.html;
     }

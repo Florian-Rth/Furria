@@ -17,7 +17,7 @@ export const useStepsDismiss = (open: boolean, onClose: () => void): StepsDismis
       return;
     }
     const closeOnEscape = (event: KeyboardEvent): void => {
-      if (event.key === 'Escape') {
+      if (event.key === 'Escape' && !event.defaultPrevented) {
         onClose();
       }
     };

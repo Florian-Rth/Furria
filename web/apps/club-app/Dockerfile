@@ -6,6 +6,7 @@ ENV CI=true
 
 COPY pnpm-workspace.yaml pnpm-lock.yaml package.json ./
 COPY packages/ui/package.json packages/ui/
+COPY packages/studio/package.json packages/studio/
 COPY apps/website/package.json apps/website/
 COPY apps/club-app/package.json apps/club-app/
 RUN pnpm install --frozen-lockfile

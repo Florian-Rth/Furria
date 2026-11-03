@@ -1,3 +1,8 @@
+import {
+  MUSIC_PAGE_CLOSED,
+  MUSIC_PAGE_DENIED,
+  MUSIC_PAGE_TITLE,
+} from '@furria/studio/step-cards-copy';
 import { KkEmptyState } from '@furria/ui/KkEmptyState';
 import { KkScreen } from '@furria/ui/KkScreen';
 import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
@@ -9,7 +14,6 @@ import { isForbiddenError, isNotFoundError } from '@/lib/query-error';
 import { useActMusicPage } from '../hooks/use-act-music-page';
 import { useStudioVisit } from '../hooks/use-studio-visit';
 import type { ActMusicSearch } from '../schemas';
-import { MUSIC_PAGE_CLOSED, MUSIC_PAGE_DENIED, MUSIC_PAGE_TITLE } from '../step-cards-copy';
 import { ActMusicBody } from './ActMusicBody';
 
 interface ActMusicPageProps {

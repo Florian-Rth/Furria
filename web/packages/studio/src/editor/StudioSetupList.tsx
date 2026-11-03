@@ -1,0 +1,31 @@
+import { SETUP_TITLE } from '@furria/studio/setup-copy';
+import type { StudioSetup } from '@furria/studio/studio-setup-view';
+import { KkLaneChecklist } from '@furria/ui/KkLaneChecklist';
+import type { FC } from 'react';
+
+interface StudioSetupListProps {
+  setup: StudioSetup;
+}
+
+export const StudioSetupList: FC<StudioSetupListProps> = ({ setup }) => {
+  const rows = setup.rows.map((row) => (
+    <KkLaneChecklist.Row
+      key={row.key}
+      index={row.number}
+      state={row.state}
+      stateText={row.stateText}
+      glyph={row.glyph}
+      title={row.title}
+      fact={row.fact}
+      actionText={row.actionText}
+      disabled={!row.ready}
+      onAction={row.act}
+    />
+  ));
+
+  return (
+    <KkLaneChecklist title={SETUP_TITLE} aside={setup.progressText}>
+      {rows}
+    </KkLaneChecklist>
+  );
+};

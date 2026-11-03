@@ -1,11 +1,10 @@
+import { spotPathsOf } from '@furria/studio/choreography-motion';
+import { canPractise, musicSegmentsOf } from '@furria/studio/music-timeline';
+import { timedStepsOf } from '@furria/studio/use-studio-playback';
 import type { KkLinkSearch } from '@furria/ui/kk-link-search';
 import type { KkPanelAction } from '@furria/ui/panel-action';
 import { Link } from '@tanstack/react-router';
-import { spotPathsOf } from '@/features/act-player/choreography-motion';
-import { timedStepsOf } from '@/features/act-player/hooks/use-studio-playback';
-import { musicSegmentsOf } from '@/features/act-player/music-timeline';
-import { canPractise } from '@/features/acts/act-studio';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
 import { attendanceTallyOf, castAttendanceOf } from '../training-attendance';
 import { TRAINING_START, trainingOpenHintOf, trainingRowMetaOf } from '../training-copy';
@@ -51,7 +50,7 @@ const rollSearchOf =
     roll: calendarEntryId,
   });
 
-export const useActTrainings = (studio: Studio, cast: readonly CastPerson[]): ActTrainings => {
+export const useActTrainings = (studio: ActStudio, cast: readonly CastPerson[]): ActTrainings => {
   const paths = spotPathsOf(studio.choreography, musicSegmentsOf(studio));
   const steps = timedStepsOf(studio.steps);
 

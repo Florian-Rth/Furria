@@ -52,6 +52,31 @@ appeared. It writes each frame as `<name>-<viewport>-<scheme>-filmstrip-<offset>
 contact sheet `<name>-<viewport>-<scheme>-filmstrip.png`. It films phone in light unless
 `--viewport` / `--scheme` say otherwise, and cannot run with `--reduced-motion`.
 
+## Touch films
+
+`src/touch-film.ts` plays a scripted touch sequence on a page in a touch-enabled browser (CDP
+`Input.dispatchTouchEvent`) and records it as a webm film, for studio interaction work (RFC 0003).
+It is dev tooling for looking at gestures, not a test.
+
+```bash
+pnpm film /lab/timeline --script gestures.json                 # phone 390×844
+pnpm film /lab/stage --script stage.json --viewport tablet     # also: landscape (844×390)
+```
+
+The script is a JSON array of gestures in page pixels, played in order:
+
+| Gesture | Fields |
+|---|---|
+| `tap` | `at: [x, y]` |
+| `longPress` | `at`, `holdMs` (default 700) |
+| `drag` | `path: [[x, y], …]` (2+ points; a detour off the track films a precision drag), `ms`, `holdMs` (default 0; > 450 starts it as a held drag) |
+| `pinch` | `centre`, `fromSpread`, `toSpread` (finger distance in px), `ms` |
+| `pan` | two-finger pan `from`, `to`, `spread` (default 80), `ms` |
+| `wait` | `ms` |
+
+The film lands in `out/<name>-film/<name>-<viewport>.webm` (`--name`, default the script's file
+name). `--base` and `--no-login` work as for `shot`.
+
 ## Seeding the Start screen
 
 `src/seed-start.ts` fills a development database through the real API with a small club around
