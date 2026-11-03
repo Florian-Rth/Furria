@@ -7,10 +7,7 @@ import { formationAt } from '@furria/studio/score-formation';
 import type { ScorePart, ScoreStep, ScoreStepGroup } from '@furria/studio/score-steps';
 import { scorePartsOf, scoreStepsOf, stepGroupsOf } from '@furria/studio/score-steps';
 import { stageOrDefault } from '@furria/studio/stage-view';
-import type { StudioStage } from '@furria/studio/studio-schemas';
-import type { ActStudio } from '@/features/acts/schemas';
-import type { ReadinessItem } from './score-readiness';
-import { readinessOf } from './score-readiness';
+import type { Studio, StudioStage } from '@furria/studio/studio-schemas';
 
 export interface ScoreModel {
   segments: readonly MusicSegment[];
@@ -20,18 +17,17 @@ export interface ScoreModel {
   parts: ScorePart[];
   steps: ScoreStep[];
   groups: ScoreStepGroup[];
-  readiness: ReadinessItem[];
   stage: StudioStage;
   ownSpotId: number | null;
   formations: ReadonlyMap<number, FormationDot[]>;
 }
 
-const ownSpotIdOf = (studio: ActStudio, viewerId: number | null): number | null =>
+const ownSpotIdOf = (studio: Studio, viewerId: number | null): number | null =>
   viewerId === null
     ? null
     : (studio.spots.find((spot) => spot.person?.personId === viewerId)?.spotId ?? null);
 
-export const scoreModelOf = (studio: ActStudio, viewerId: number | null): ScoreModel => {
+export const scoreModelOf = (studio: Studio, viewerId: number | null): ScoreModel => {
   const segments = musicSegmentsOf(studio);
   const length = musicLengthOf(segments);
   const marks = countMarksOf(segments);
@@ -49,7 +45,6 @@ export const scoreModelOf = (studio: ActStudio, viewerId: number | null): ScoreM
     parts,
     steps,
     groups: stepGroupsOf(steps, parts),
-    readiness: readinessOf(studio, steps),
     stage,
     ownSpotId,
     formations: new Map(

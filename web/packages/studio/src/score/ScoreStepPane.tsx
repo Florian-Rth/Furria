@@ -1,14 +1,4 @@
-import { KkButton } from '@furria/ui/KkButton';
-import { KkIconButton } from '@furria/ui/KkIconButton';
-import { KkNote } from '@furria/ui/KkNote';
-import { KkPanelSection } from '@furria/ui/KkPanelSection';
-import { KkScoreVideo } from '@furria/ui/KkScoreVideo';
-import { KkStepPane } from '@furria/ui/KkStepPane';
-import { KkText } from '@furria/ui/KkText';
-import Grid from '@mui/material/Grid';
-import Stack from '@mui/material/Stack';
-import type { FC } from 'react';
-import type { ActHub, ScoreStepView } from '../hooks/use-act-hub';
+import { ScoreLiveFormation } from '@furria/studio/ScoreLiveFormation';
 import {
   CLOSE_LABEL,
   DESCRIPTION_TITLE,
@@ -22,14 +12,25 @@ import {
   STEP_PANE_LABEL,
   stepStateTextOf,
   VIDEO_TITLE,
-} from '../score-copy';
-import { ScoreLiveFormation } from './ScoreLiveFormation';
+} from '@furria/studio/score-copy';
+import type { ScoreHub } from '@furria/studio/score-hub';
+import type { ScoreStepView } from '@furria/studio/score-views';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkIconButton } from '@furria/ui/KkIconButton';
+import { KkNote } from '@furria/ui/KkNote';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkScoreVideo } from '@furria/ui/KkScoreVideo';
+import { KkStepPane } from '@furria/ui/KkStepPane';
+import { KkText } from '@furria/ui/KkText';
+import Grid from '@mui/material/Grid';
+import Stack from '@mui/material/Stack';
+import type { FC } from 'react';
 
 const HALF = 6;
 const FULL = 12;
 
 interface ScoreStepPaneProps {
-  score: ActHub;
+  score: ScoreHub;
   view: ScoreStepView;
   framed: boolean;
   onClose: (() => void) | null;
@@ -45,11 +46,13 @@ export const ScoreStepPane: FC<ScoreStepPaneProps> = ({ score, view, framed, onC
       <KkIconButton label={CLOSE_LABEL} icon="close" size="small" onClick={onClose} />
     );
   const practise = (): void => {
-    score.route.practiseFrom(step.stepId);
+    score.practiseFrom(step.stepId);
   };
   const edit = (): void => {
-    score.route.editFrom(step.stepId);
+    score.editFrom(step.stepId);
   };
+  const videoLabel = view.videoName ?? VIDEO_TITLE;
+  const practiseVariant = score.canEditStudio ? 'outlined' : 'contained';
   const formation =
     view.dots.length === 0 ? (
       <KkText variant="body2" tone="secondary">
@@ -66,7 +69,7 @@ export const ScoreStepPane: FC<ScoreStepPaneProps> = ({ score, view, framed, onC
     ) : (
       <Stack sx={{ gap: 0.5 }}>
         <KkScoreVideo
-          label={view.videoName ?? VIDEO_TITLE}
+          label={videoLabel}
           source={view.videoSource}
           poster={view.videoPoster}
           offsetSeconds={step.video.offsetSeconds}
@@ -80,7 +83,7 @@ export const ScoreStepPane: FC<ScoreStepPaneProps> = ({ score, view, framed, onC
   const description = step.description ?? NO_DESCRIPTION;
   const descriptionTone = step.description === null ? 'secondary' : 'primary';
   const practiseButton = score.canPlay ? (
-    <KkButton variant={score.canEditStudio ? 'outlined' : 'contained'} fullWidth onClick={practise}>
+    <KkButton variant={practiseVariant} fullWidth onClick={practise}>
       {PRACTISE_FROM_HERE}
     </KkButton>
   ) : null;
