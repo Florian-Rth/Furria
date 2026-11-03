@@ -11,7 +11,7 @@ import { percentOf, SCORE_FIGURES } from '../../../internal/score-paint';
 import { useReducedMotion } from '../../../internal/use-reduced-motion';
 import { KkScoreGlyph } from '../../../KkScoreGlyph/KkScoreGlyph';
 import { kkTokens } from '../../../tokens';
-import { stepsTop } from '../timeline-paint';
+import { stepsBottom, stepsTop } from '../timeline-paint';
 
 export interface KkTimelineStepBlock {
   key: number;
@@ -175,7 +175,7 @@ export const KkTimelineStep: FC<KkTimelineStepProps> = ({
       sx={{
         position: 'absolute',
         top: stepsTop,
-        bottom: 0,
+        bottom: stepsBottom,
         pointerEvents: interactive ? 'auto' : 'none',
       }}
     >

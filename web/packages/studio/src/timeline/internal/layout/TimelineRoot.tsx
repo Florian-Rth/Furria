@@ -1,3 +1,4 @@
+import type { KkTimelineRows } from '@furria/ui/KkTimeline';
 import { KkTimeline } from '@furria/ui/KkTimeline';
 import type { KkSx } from '@furria/ui/kk-sx';
 import type { FC, PropsWithChildren, ReactNode } from 'react';
@@ -11,6 +12,7 @@ import { TimelineContext } from '../logic/timeline-context';
 interface TimelineBaseProps extends PropsWithChildren {
   label: string;
   density: TimelineDensity;
+  rows: KkTimelineRows;
   length: number;
   overlay?: ReactNode;
   sx?: KkSx;
@@ -31,6 +33,7 @@ type TimelineRootProps = CentreTimelineProps | OverviewTimelineProps;
 export const TimelineRoot: FC<TimelineRootProps> = ({
   label,
   density,
+  rows,
   length,
   centre = null,
   overview = null,
@@ -50,6 +53,7 @@ export const TimelineRoot: FC<TimelineRootProps> = ({
       <KkTimeline
         label={label}
         density={density}
+        rows={rows}
         window={visible}
         work={work}
         centred={centred}

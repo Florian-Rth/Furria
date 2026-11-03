@@ -1,6 +1,6 @@
 import { KkTimelineHalf } from './internal/layout/KkTimelineHalf';
-import { KkTimelineLane } from './internal/layout/KkTimelineLane';
 import { KkTimelineRoot } from './internal/layout/KkTimelineRoot';
+import { KkTimelineRow } from './internal/layout/KkTimelineRow';
 import { KkTimelineStrip } from './internal/layout/KkTimelineStrip';
 import { KkTimelineBlock } from './internal/ui/KkTimelineBlock';
 import { KkTimelineBracket } from './internal/ui/KkTimelineBracket';
@@ -9,7 +9,6 @@ import { KkTimelineCuts } from './internal/ui/KkTimelineCuts';
 import { KkTimelineDiamond } from './internal/ui/KkTimelineDiamond';
 import { KkTimelineHandle } from './internal/ui/KkTimelineHandle';
 import { KkTimelineKeyframes } from './internal/ui/KkTimelineKeyframes';
-import { KkTimelineLaneLabel } from './internal/ui/KkTimelineLaneLabel';
 import { KkTimelineLaneNote } from './internal/ui/KkTimelineLaneNote';
 import { KkTimelineLaneSetup } from './internal/ui/KkTimelineLaneSetup';
 import { KkTimelineLoop } from './internal/ui/KkTimelineLoop';
@@ -24,14 +23,19 @@ import { KkTimelineTicks } from './internal/ui/KkTimelineTicks';
 import { KkTimelineTrim } from './internal/ui/KkTimelineTrim';
 import { KkTimelineWave } from './internal/ui/KkTimelineWave';
 
-export type { KkTimelineLaneSize } from './internal/lane-sizes';
 export type { KkTimelineHalfSide } from './internal/layout/KkTimelineHalf';
 export type {
   KkTimelineHandlers,
   KkTimelineWindow,
   KkTimelineWork,
 } from './internal/layout/KkTimelineRoot';
-export type { KkTimelineDensity, KkTimelineSpan } from './internal/timeline-paint';
+export type { KkTimelineRowPlace } from './internal/layout/KkTimelineRow';
+export type {
+  KkTimelineDensity,
+  KkTimelineRowKind,
+  KkTimelineRows,
+  KkTimelineSpan,
+} from './internal/timeline-paint';
 export type { KkTimelineBlockTone } from './internal/ui/KkTimelineBlock';
 export type {
   KkTimelineBracketGrip,
@@ -46,11 +50,11 @@ export type { KkTimelinePart } from './internal/ui/KkTimelinePartBand';
 export type { KkTimelineTick } from './internal/ui/KkTimelineRuler';
 export type { KkTimelineStepBlock } from './internal/ui/KkTimelineStep';
 export type { KkTimelineTickMark } from './internal/ui/KkTimelineTick';
+export type { KkTimelinePan } from './internal/use-sticky-name';
 
 export const KkTimeline = Object.assign(KkTimelineRoot, {
   Strip: KkTimelineStrip,
-  Lane: KkTimelineLane,
-  LaneLabel: KkTimelineLaneLabel,
+  Row: KkTimelineRow,
   LaneNote: KkTimelineLaneNote,
   LaneSetup: KkTimelineLaneSetup,
   Block: KkTimelineBlock,

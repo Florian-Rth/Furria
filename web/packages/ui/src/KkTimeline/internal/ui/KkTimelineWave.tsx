@@ -4,7 +4,7 @@ import type { FC } from 'react';
 import { inkWash } from '../../../internal/ink-wash';
 import { useReducedMotion } from '../../../internal/use-reduced-motion';
 import type { KkTimelineSpan } from '../timeline-paint';
-import { LANE_VARS, spanPlaceOf, WAVE_HEIGHT, wavePathOf, waveTop } from '../timeline-paint';
+import { spanPlaceOf, WAVE_HEIGHT, waveBottom, wavePathOf, waveTop } from '../timeline-paint';
 
 const HIDDEN = { clipPath: 'inset(0 100% 0 0)' } as const;
 const SHOWN = { clipPath: 'inset(0 0% 0 0)' } as const;
@@ -32,7 +32,7 @@ export const KkTimelineWave: FC<KkTimelineWaveProps> = ({ bars, revealSeconds, s
       sx={{
         position: 'absolute',
         top: waveTop,
-        bottom: `var(${LANE_VARS.steps})`,
+        bottom: waveBottom,
         pointerEvents: 'none',
       }}
     >

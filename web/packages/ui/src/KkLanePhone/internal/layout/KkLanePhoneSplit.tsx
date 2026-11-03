@@ -4,7 +4,7 @@ import type { FC, PropsWithChildren } from 'react';
 export type KkLanePhoneSplitKind = 'strip' | 'film';
 
 const ROWS: Record<KkLanePhoneSplitKind, string> = {
-  strip: 'clamp(7rem, 24%, 12rem) minmax(0, 1fr)',
+  strip: 'clamp(13rem, 36%, 17rem) minmax(0, 1fr)',
   film: 'auto auto minmax(0, 1fr)',
 };
 

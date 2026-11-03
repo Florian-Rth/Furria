@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import type { Theme } from '@mui/material/styles';
 import type { FC } from 'react';
 import { percentOf } from '../../../internal/score-paint';
-import { LANE_VARS, waveTop } from '../timeline-paint';
+import { waveBottom, waveTop } from '../timeline-paint';
 
 const palette = (theme: Theme) => (theme.vars ?? theme).palette;
 
@@ -25,7 +25,7 @@ export const KkTimelineTrim: FC<KkTimelineTrimProps> = ({ from, to }) => {
       sx={(theme) => ({
         position: 'absolute',
         top: waveTop,
-        bottom: `var(${LANE_VARS.steps})`,
+        bottom: waveBottom,
         pointerEvents: 'none',
         backgroundImage: `repeating-linear-gradient(135deg, color-mix(in srgb, ${palette(theme).warning.main} 55%, transparent) 0 2px, transparent 2px 7px)`,
         backgroundColor: `color-mix(in srgb, ${palette(theme).warning.main} 14%, transparent)`,

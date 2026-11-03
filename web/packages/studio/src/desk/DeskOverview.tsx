@@ -5,6 +5,8 @@ import type { CentreScrub } from '@furria/studio/use-centre-scrub';
 import { useDeskOverview } from '@furria/studio/use-desk-overview';
 import type { FC } from 'react';
 
+const OVERVIEW_ROWS = { ruler: false, parts: true, steps: false, videos: false, keys: false };
+
 interface DeskOverviewProps {
   desk: ActDesk;
   centre: CentreScrub;
@@ -18,6 +20,7 @@ export const DeskOverview: FC<DeskOverviewProps> = ({ desk, centre }) => {
     <Timeline
       label={DESK_OVERVIEW_AIM}
       density="overview"
+      rows={OVERVIEW_ROWS}
       length={playback.length}
       overview={overview.bracket}
     >

@@ -35,29 +35,33 @@ const segment = (timelineStart: number, timelineEnd: number): MusicSegment => ({
 
 describe('tickStepOf', () => {
   it.each([
-    [186, 30],
-    [60, 5],
-    [12, 1],
-    [2000, 60],
-  ])('spaces the ruler for %i visible seconds at %i seconds', (visible, expected) => {
-    expect(tickStepOf(visible)).toBe(expected);
+    [40, 5],
+    [60, 2],
+    [130, 1],
+    [4.7, 30],
+    [0.5, 120],
+  ])('spaces the ruler at %f px per second every %i seconds', (pxPerSecond, expected) => {
+    expect(tickStepOf(pxPerSecond)).toBe(expected);
   });
 });
 
 describe('rulerTicksOf', () => {
-  it('marks the whole music at the spacing of the window', () => {
-    expect(rulerTicksOf(100, { start: 0, end: 1 }).map((tick) => tick.seconds)).toEqual([
-      0, 10, 20, 30, 40, 50, 60, 70, 80, 90,
-    ]);
-    expect(rulerTicksOf(100, { start: 0, end: 0.2 }).filter((tick) => tick.seconds < 6)).toEqual([
+  it('marks the whole music at the spacing of the zoom', () => {
+    expect(rulerTicksOf(30, 40)).toEqual([
       { seconds: 0, share: 0, label: '0:00' },
-      { seconds: 2, share: 0.02, label: '0:02' },
-      { seconds: 4, share: 0.04, label: '0:04' },
+      { seconds: 5, share: 5 / 30, label: '0:05' },
+      { seconds: 10, share: 10 / 30, label: '0:10' },
+      { seconds: 15, share: 0.5, label: '0:15' },
+      { seconds: 20, share: 20 / 30, label: '0:20' },
+      { seconds: 25, share: 25 / 30, label: '0:25' },
     ]);
   });
 
-  it('has no ticks without music', () => {
-    expect(rulerTicksOf(0, { start: 0, end: 1 })).toEqual([]);
+  it.each([
+    [0, 40],
+    [100, 0],
+  ])('has no ticks for %i seconds at %i px per second', (length, pxPerSecond) => {
+    expect(rulerTicksOf(length, pxPerSecond)).toEqual([]);
   });
 });
 

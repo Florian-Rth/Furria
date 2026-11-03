@@ -17,7 +17,9 @@ import {
 import { songSettingsOf } from '@furria/studio/studio-music';
 import type { StudioSong } from '@furria/studio/studio-schemas';
 import type { StudioWorkScreen } from '@furria/studio/studio-work-screen';
-import type { TimelineHandle, TimelineRegion, TimelineSpan } from '@furria/studio/Timeline';
+import type { TimelineHandle, TimelineRegion } from '@furria/studio/Timeline';
+import type { TimelineRows } from '@furria/studio/timeline-rows';
+import { timelineRowsOf } from '@furria/studio/timeline-rows';
 import type { CentreScrub } from '@furria/studio/use-centre-scrub';
 import { useCentreScrub } from '@furria/studio/use-centre-scrub';
 import { useFinalPlaces } from '@furria/studio/use-final-places';
@@ -39,8 +41,7 @@ export interface ActStudioWave {
   centre: CentreScrub;
   regions: TimelineRegion[];
   handles: TimelineHandle[];
-  ticks: TimelineSpan[];
-  currentStepId: number | null;
+  rows: TimelineRows;
   trim: TimelineRange | null;
   readout: WaveReadout | null;
 }
@@ -260,14 +261,12 @@ export const useActStudioWave = (screen: StudioWorkScreen): ActStudioWave => {
     centre,
     regions: wave.regions,
     handles: wave.handles,
-    ticks: playback.steps.map((step) => ({
-      key: step.stepId,
-      range:
-        step.startSeconds === null || step.endSeconds === null
-          ? null
-          : { start: step.startSeconds, end: step.endSeconds },
-    })),
-    currentStepId: practice.step?.stepId ?? null,
+    rows: timelineRowsOf(
+      screen.studio,
+      playback.paths,
+      playback.countMarks,
+      practice.step?.stepId ?? null,
+    ),
     trim: wave.trim,
     readout: waveReadoutOf(centre.readout, segments),
   };

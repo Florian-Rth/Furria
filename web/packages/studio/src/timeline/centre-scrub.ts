@@ -1,3 +1,4 @@
+import type { GesturePrecisionTier } from '../gestures/gesture-recogniser';
 import type { PanBounds } from '../gestures/pan-bounds';
 import type { CountMark } from '../models/music-timeline';
 import type { TimelineWindow } from './timeline-geometry';
@@ -21,8 +22,12 @@ export const CENTRE_PX_PER_SECOND = 40;
 export const CENTRE_MAX_PX_PER_SECOND = 480;
 export const STRIP_PITCH = 4;
 export const CENTRE_SNAP_PX = 12;
+export const FLICK_PX_PER_MS = 1.5;
 const WINDOW_REACH = 2;
 const MIN_SNAP_SPACING = 4;
+
+export const flickVelocityOf = (velocityPerMs: number, tier: GesturePrecisionTier): number =>
+  tier === 'full' && Math.abs(velocityPerMs) >= FLICK_PX_PER_MS ? velocityPerMs : 0;
 
 export const centreOffsetOf = (seconds: number, pxPerSecond: number, centre: number): number =>
   centre - seconds * pxPerSecond;

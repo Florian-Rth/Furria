@@ -7,6 +7,7 @@ import type { ActStudioMode } from '@furria/studio/use-act-studio-mode';
 import type { Practice } from '@furria/studio/use-practice';
 import type { PracticeVideo } from '@furria/studio/use-practice-video';
 import type { StudioPlayback } from '@furria/studio/use-studio-playback';
+import type { KkGroupTone } from '@furria/ui/group-tone';
 
 export interface StudioWorkEvening {
   eventId: number;
@@ -28,6 +29,7 @@ export interface StudioVideoActions {
 }
 
 export interface StudioWorkScreen {
+  tone: KkGroupTone | null;
   evening: StudioWorkEvening | null;
   studio: Studio;
   document: StudioDocumentEdit;

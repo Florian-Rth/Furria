@@ -1,22 +1,14 @@
 import type { CentreTarget } from '@furria/studio/centre-targets';
-import { partBlockLabelOf, stepsAmountOf, videoBlockLabelOf } from '@furria/studio/desk-copy';
-import { rulerTicksOf } from '@furria/studio/desk-time';
-import { partRangeOf } from '@furria/studio/music-timeline';
-import { stepNumberOf } from '@furria/studio/step-names';
+import { videoBlockLabelOf } from '@furria/studio/desk-copy';
 import type { StudioScreen } from '@furria/studio/studio-screen';
-import type { TimelineBlock, TimelineMark } from '@furria/studio/Timeline';
+import { TIMELINE_LANE } from '@furria/studio/studio-timeline-layers';
+import type { TimelineBlock, TimelinePart } from '@furria/studio/Timeline';
+import { timelineRowsOf } from '@furria/studio/timeline-rows';
 import type { ActStudioTakes, ActStudioVideoBar } from '@furria/studio/use-act-studio-takes';
 import type { CentreScrub } from '@furria/studio/use-centre-scrub';
 import { useCentreScrub } from '@furria/studio/use-centre-scrub';
 import type { WaveReadout } from '@furria/studio/wave-readout';
 import { waveReadoutOf } from '@furria/studio/wave-readout';
-
-export const VIDEO_LANE = {
-  ruler: 'ruler',
-  parts: 'parts',
-  music: 'music',
-  video: 'video',
-} as const;
 
 interface VideoLaneTarget extends CentreTarget {
   move?: (seconds: number) => void;
@@ -26,8 +18,7 @@ interface VideoLaneTarget extends CentreTarget {
 
 export interface VideoLanes {
   centre: CentreScrub;
-  ruler: TimelineMark[];
-  parts: TimelineBlock[];
+  parts: TimelinePart[];
   videos: TimelineBlock[];
   readout: WaveReadout | null;
 }
@@ -39,37 +30,9 @@ const selectedLast = (bars: readonly ActStudioVideoBar[]): ActStudioVideoBar[] =
 
 export const useVideoLanes = (screen: StudioScreen, takes: ActStudioTakes): VideoLanes => {
   const { playback, practice } = screen;
-  const { player, length, parts, steps, countMarks, segments } = playback;
+  const { player, length, countMarks, segments, paths } = playback;
   const movable = screen.evening === null;
-  const currentId = practice.step?.stepId ?? null;
-  const numberOf = (stepId: number): number => stepNumberOf(steps, stepId);
-
-  const partBlocks: TimelineBlock[] = parts.flatMap((part) => {
-    const range = partRangeOf(part, steps);
-    if (range === null) {
-      return [];
-    }
-
-    return [
-      {
-        key: `part-${part.partId}`,
-        range,
-        lead: null,
-        title: part.name,
-        meta: stepsAmountOf(part.stepIds.length),
-        selected: false,
-        current: currentId !== null && part.stepIds.includes(currentId),
-        label: partBlockLabelOf(
-          part.name,
-          numberOf(part.stepIds[0] ?? -1),
-          numberOf(part.stepIds.at(-1) ?? -1),
-        ),
-        onPress: () => {
-          player.seek(range.start);
-        },
-      },
-    ];
-  });
+  const { parts } = timelineRowsOf(screen.studio, paths, countMarks, practice.step?.stepId ?? null);
 
   const bars = selectedLast(takes.bars);
   const videoBlocks: TimelineBlock[] = bars.map((bar) => ({
@@ -85,20 +48,28 @@ export const useVideoLanes = (screen: StudioScreen, takes: ActStudioTakes): Vide
   }));
 
   const targets: VideoLaneTarget[] = [
-    ...partBlocks.map((block) => ({
-      key: block.key,
-      seconds: block.range.start,
-      until: block.range.end,
-      lane: VIDEO_LANE.parts,
-      movable: false,
-      tappable: true,
-      tap: block.onPress,
-    })),
+    ...parts.flatMap(({ key, range }) =>
+      range === null
+        ? []
+        : [
+            {
+              key: `part-${key}`,
+              seconds: range.start,
+              until: range.end,
+              lane: TIMELINE_LANE.parts,
+              movable: false,
+              tappable: true,
+              tap: () => {
+                player.seek(range.start);
+              },
+            },
+          ],
+    ),
     ...bars.map((bar) => ({
       key: `video-${bar.key}`,
       seconds: bar.startSeconds,
       until: bar.endSeconds,
-      lane: VIDEO_LANE.video,
+      lane: TIMELINE_LANE.videos,
       movable,
       tappable: true,
       snaps: false,
@@ -131,8 +102,7 @@ export const useVideoLanes = (screen: StudioScreen, takes: ActStudioTakes): Vide
 
   return {
     centre,
-    ruler: rulerTicksOf(length, centre.pxPerSecond),
-    parts: partBlocks,
+    parts,
     videos: videoBlocks,
     readout: waveReadoutOf(centre.readout, segments),
   };

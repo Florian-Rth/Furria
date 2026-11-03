@@ -1,4 +1,5 @@
 import type { StudioMusicTool } from '@furria/studio/studio-schemas';
+import type { KkGroupTone } from '@furria/ui/group-tone';
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
@@ -21,6 +22,7 @@ export interface ActMusicPage {
   viewerId: number | null;
   canEdit: boolean;
   cast: readonly CastPerson[];
+  tone: KkGroupTone | null;
   tool: StudioMusicTool;
   chooseTool: (tool: StudioMusicTool) => void;
 }
@@ -56,6 +58,7 @@ export const useActMusicPage = (rawActId: string, search: ActMusicSearch): ActMu
     viewerId: me.data?.person?.id ?? null,
     canEdit: query.data?.viewer.canEditStudio === true,
     cast: act?.cast ?? NO_CAST,
+    tone: act?.group?.tone ?? null,
     tool: search.tool ?? 'music',
     chooseTool: (tool) => {
       void navigate({

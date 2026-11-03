@@ -7,6 +7,7 @@ import {
   centreSecondsOf,
   centreViewOf,
   centreZoomLimitsOf,
+  flickVelocityOf,
   STRIP_PITCH,
   secondsAtX,
   snapCandidatesOf,
@@ -171,4 +172,20 @@ describe('centreViewOf', () => {
   it('shows nothing without a zoom', () => {
     expect(centreViewOf(0, 0, 390, 180)).toEqual({ start: 0, end: 0 });
   });
+});
+
+describe('flickVelocityOf', () => {
+  it.each([
+    { velocity: 0.6, tier: 'full', expected: 0 },
+    { velocity: -1.49, tier: 'full', expected: 0 },
+    { velocity: 1.5, tier: 'full', expected: 1.5 },
+    { velocity: -3.2, tier: 'full', expected: -3.2 },
+    { velocity: 3.2, tier: 'half', expected: 0 },
+    { velocity: -4, tier: 'fine', expected: 0 },
+  ] as const)(
+    'glides at $expected px/ms after a $velocity px/ms release on the $tier tier',
+    ({ velocity, tier, expected }) => {
+      expect(flickVelocityOf(velocity, tier)).toBe(expected);
+    },
+  );
 });

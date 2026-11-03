@@ -11,7 +11,7 @@ import type {
 import { pulseHaptic } from '../gestures/haptics';
 import type { LiftSize } from '../gestures/lift-placement';
 import { LIFT_GAP, liftPlacementOf } from '../gestures/lift-placement';
-import { BOUNCE_BACK, clampToBounds } from '../gestures/pan-bounds';
+import { BOUNCE_BACK, clampToBounds, momentumOf, momentumTargetOf } from '../gestures/pan-bounds';
 import type { DragReadout } from '../gestures/use-drag-lift';
 import type { GestureHandlers } from '../gestures/use-gesture';
 import { useGesture } from '../gestures/use-gesture';
@@ -25,6 +25,7 @@ import {
   centreScaleOf,
   centreSecondsOf,
   centreZoomLimitsOf,
+  flickVelocityOf,
   secondsAtX,
   snapCandidatesOf,
   snapSecondsOf,
@@ -86,7 +87,7 @@ interface UseCentreScrubOptions {
 
 type CentreDrag =
   | { kind: 'handle'; key: string; x: number; seconds: number; snaps: boolean }
-  | { kind: 'scrub' }
+  | { kind: 'scrub'; tier: GesturePrecisionTier }
   | { kind: 'navigate'; seconds: number };
 
 interface Held {
@@ -290,14 +291,24 @@ export const useCentreScrub = ({
     settle();
   };
 
-  const release = (): void => {
+  const release = (velocityPerMs: number, tier: GesturePrecisionTier): void => {
     const resting = clampToBounds(x.get(), bounds);
-    if (reducedMotion || resting === x.get()) {
+    const flick = flickVelocityOf(velocityPerMs, tier);
+    if (resting !== x.get() && !reducedMotion) {
+      glide.current = animate(x, resting, { ...BOUNCE_BACK, onComplete: glideDone });
+      return;
+    }
+    if (flick === 0 || reducedMotion) {
       axis.jumpTo(resting);
       settle();
       return;
     }
-    glide.current = animate(x, resting, { ...BOUNCE_BACK, onComplete: glideDone });
+    const momentum = momentumOf(flick, bounds);
+    glide.current = animate(x, momentumTargetOf(x.get(), momentum), {
+      type: 'inertia',
+      ...momentum,
+      onComplete: glideDone,
+    });
   };
 
   const glideTo = (seconds: number): void => {
@@ -398,7 +409,7 @@ export const useCentreScrub = ({
     }, WHEEL_COMMIT_MS);
   };
 
-  const endDrag = (kept: boolean): void => {
+  const endDrag = (kept: boolean, velocityPerMs: number = 0): void => {
     const current = drag.current;
     drag.current = null;
     if (current?.kind === 'handle') {
@@ -411,7 +422,7 @@ export const useCentreScrub = ({
       return;
     }
     if (current?.kind === 'scrub') {
-      release();
+      release(velocityPerMs, current.tier);
     }
   };
 
@@ -460,7 +471,7 @@ export const useCentreScrub = ({
         takeOver();
         if (handle === null) {
           axis.grab();
-          drag.current = { kind: 'scrub' };
+          drag.current = { kind: 'scrub', tier: 'full' };
           return;
         }
         drag.current = {
@@ -481,12 +492,13 @@ export const useCentreScrub = ({
           return;
         }
         if (current?.kind === 'scrub') {
+          drag.current = { kind: 'scrub', tier: intent.precision };
           axis.follow(intent.delta.x);
         }
         return;
       }
       case 'dragEnd':
-        endDrag(true);
+        endDrag(true, intent.velocity.x);
         return;
       case 'dragCancel':
         endDrag(false);

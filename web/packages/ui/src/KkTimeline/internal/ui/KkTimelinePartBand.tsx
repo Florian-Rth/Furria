@@ -1,11 +1,14 @@
 import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
+import { motion } from 'motion/react';
 import type { FC, MouseEvent } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import type { KkGroupTone } from '../../../internal/group-tone';
 import { shadeFill, shadeWash } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
-import { LANE_VARS, waveTop } from '../timeline-paint';
+import { LANE_VARS, stepsBottom, waveBottom, waveTop } from '../timeline-paint';
+import type { KkTimelinePan } from '../use-sticky-name';
+import { useStickyName } from '../use-sticky-name';
 
 export interface KkTimelinePart {
   key: number;
@@ -15,6 +18,7 @@ export interface KkTimelinePart {
   to: number;
   shade: number;
   current?: boolean;
+  selected?: boolean;
 }
 
 interface KkTimelinePartBandProps {
@@ -22,6 +26,7 @@ interface KkTimelinePartBandProps {
   tone: KkGroupTone | null;
   place: { left: string; width: string };
   lane: string | undefined;
+  pan: KkTimelinePan | null;
   onSelect: ((key: number) => void) | undefined;
 }
 
@@ -30,9 +35,12 @@ export const KkTimelinePartBand: FC<KkTimelinePartBandProps> = ({
   tone,
   place,
   lane,
+  pan,
   onSelect,
 }) => {
   const current = part.current === true;
+  const selected = part.selected === true;
+  const sticky = useStickyName(pan, part.from);
   const chipTop = onSelect === undefined ? `calc(var(${LANE_VARS.ruler}) + 2px)` : '2px';
   const select = (event: MouseEvent<HTMLElement>): void => {
     event.stopPropagation();
@@ -47,7 +55,7 @@ export const KkTimelinePartBand: FC<KkTimelinePartBandProps> = ({
         left: 0,
         right: 0,
         top: waveTop,
-        bottom: 0,
+        bottom: stepsBottom,
         ...shadeWash(theme, tone, part.shade),
       })}
     />
@@ -56,8 +64,10 @@ export const KkTimelinePartBand: FC<KkTimelinePartBandProps> = ({
     <Box
       component="span"
       data-kk-timeline-part
+      ref={sticky.chipRef}
       data-timeline-lane={lane}
       data-current={current}
+      data-selected={selected}
       sx={(theme) => ({
         position: 'absolute',
         left: kkTokens.line.hair,
@@ -81,9 +91,28 @@ export const KkTimelinePartBand: FC<KkTimelinePartBandProps> = ({
         '&[data-current="true"]': {
           boxShadow: `inset 0 -${kkTokens.line.page}px 0 ${(theme.vars ?? theme).palette.primary.main}`,
         },
+        '&[data-selected="true"]': {
+          outline: `${kkTokens.line.section}px solid ${(theme.vars ?? theme).palette.text.primary}`,
+          outlineOffset: -kkTokens.line.section,
+        },
       })}
     >
-      {part.label}
+      <Box
+        ref={sticky.nameRef}
+        component={motion.span}
+        style={{ x: sticky.x }}
+        sx={{
+          justifySelf: 'start',
+          minWidth: 0,
+          maxWidth: '100%',
+          overflow: 'clip',
+          textOverflow: 'ellipsis',
+          verticalAlign: 'middle',
+          willChange: 'transform',
+        }}
+      >
+        {part.label}
+      </Box>
     </Box>
   );
 
@@ -108,7 +137,7 @@ export const KkTimelinePartBand: FC<KkTimelinePartBandProps> = ({
           left: 0,
           right: 0,
           top: `var(${LANE_VARS.ruler})`,
-          bottom: `var(${LANE_VARS.steps})`,
+          bottom: waveBottom,
           pointerEvents: 'auto',
           display: 'block',
           ...focusRing(theme),

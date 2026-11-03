@@ -20,13 +20,6 @@ export const DESK_LANES = 'Spuren: Teile, Schritte, Musik, Video, Wege';
 export const DESK_OVERVIEW_AIM = 'Ganzer Auftritt: tippen, um dorthin zu springen';
 export const DESK_BRACKET =
   'Sichtbarer Ausschnitt: ziehen zum Verschieben, Ränder ziehen zum Zoomen, Pfeiltasten';
-export const DESK_RULER = 'Zeit';
-export const DESK_PARTS = 'Teile';
-export const DESK_STEPS = 'Schritte';
-export const DESK_MUSIC = 'Musik';
-export const DESK_VIDEO = 'Video';
-export const DESK_PATHS = 'Wege';
-export const DESK_NONE = 'keine';
 export const DESK_STAGE = 'Bühne';
 export const DESK_STAGE_TOOLS = 'Bühne bearbeiten';
 export const DESK_FORMATION = 'Aufstellung';
@@ -128,12 +121,6 @@ export const readoutCountOf = (eight: number | null, count: number | null): stri
 export const stepEyebrowOf = (number: number, total: number, part: string | null): string =>
   part === null ? `Schritt ${number} von ${total}` : `Schritt ${number} von ${total} · ${part}`;
 
-export const stepBlockLabelOf = (number: number, name: string, current: boolean): string =>
-  `Schritt ${number}: ${name}${current ? ' (läuft)' : ''}`;
-
-export const partBlockLabelOf = (name: string, first: number, last: number): string =>
-  `Teil ${name}, Schritt ${first} bis ${last}`;
-
 export const partEyebrowOf = (first: number, last: number): string =>
   `Teil · Schritt ${first}–${last}`;
 
@@ -153,8 +140,6 @@ export const amountOf = (count: number, one: string, many: string): string =>
   `${count} ${count === 1 ? one : many}`;
 
 export const spotsAmountOf = (count: number): string => amountOf(count, 'Platz', 'Plätze');
-
-export const stepsAmountOf = (count: number): string => amountOf(count, 'Schritt', 'Schritte');
 
 export const keyLabelOf = (seconds: number, spots: number): string =>
   `Zeitpunkt ${clockOf(seconds)} · ${spotsAmountOf(spots)}: wählen, ziehen oder Pfeiltasten`;

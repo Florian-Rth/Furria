@@ -4,8 +4,8 @@ import { loudestPeakOf, waveformBetween } from '../models/mix-waveform';
 import type { CountMark, MusicSegment, TimelineRange } from '../models/music-timeline';
 import type { AudioPeaks } from '../models/studio-schemas';
 
-const TICK_STEPS_SECONDS: readonly number[] = [1, 2, 5, 10, 15, 30, 60];
-const MOST_TICKS = 12;
+const TICK_STEPS_SECONDS: readonly number[] = [1, 2, 5, 10, 15, 30, 60, 120];
+export const RULER_LABEL_PX = 120;
 const FIRST_COUNT = 1;
 const SECONDS_PER_MINUTE = 60;
 const KEYFRAME_ROUNDING = 100;
@@ -51,10 +51,6 @@ const WAVE_BARS: Record<TimelineDensity, number> = {
   overview: 480,
 };
 
-const RULED: ReadonlySet<TimelineDensity> = new Set<TimelineDensity>(['full', 'track']);
-
-export const isRuled = (density: TimelineDensity): boolean => RULED.has(density);
-
 export const waveBarsOf = (density: TimelineDensity): number => WAVE_BARS[density];
 
 export const shareOf = (seconds: number, length: number): number =>
@@ -63,8 +59,8 @@ export const shareOf = (seconds: number, length: number): number =>
 export const secondsOfShare = (share: number, length: number): number =>
   Math.min(length, Math.max(0, share * length));
 
-export const tickStepOf = (visibleSeconds: number): number =>
-  TICK_STEPS_SECONDS.find((step) => visibleSeconds / step <= MOST_TICKS) ??
+export const tickStepOf = (pxPerSecond: number): number =>
+  TICK_STEPS_SECONDS.find((step) => step * pxPerSecond >= RULER_LABEL_PX) ??
   TICK_STEPS_SECONDS.at(-1) ??
   1;
 
@@ -74,12 +70,12 @@ export const rulerLabelOf = (seconds: number): string => {
   return `${Math.floor(whole / SECONDS_PER_MINUTE)}:${String(whole % SECONDS_PER_MINUTE).padStart(2, '0')}`;
 };
 
-export const rulerTicksOf = (length: number, window: TimelineWindow): RulerTick[] => {
-  if (length <= 0) {
+export const rulerTicksOf = (length: number, pxPerSecond: number): RulerTick[] => {
+  if (length <= 0 || pxPerSecond <= 0) {
     return [];
   }
 
-  const step = tickStepOf(length * (window.end - window.start));
+  const step = tickStepOf(pxPerSecond);
   const count = Math.floor(length / step);
 
   return Array.from({ length: count + 1 }, (_, index) => index * step)

@@ -26,6 +26,7 @@ export const ActPracticeBody: FC<ActPracticeBodyProps> = ({ page }) => {
     startEditing: page.startEditing,
     startHall,
     stageEditor: true,
+    tone,
   };
 
   return (
