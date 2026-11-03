@@ -51,6 +51,10 @@ const WAVE_BARS: Record<TimelineDensity, number> = {
   overview: 480,
 };
 
+const RULED: ReadonlySet<TimelineDensity> = new Set<TimelineDensity>(['full', 'track']);
+
+export const isRuled = (density: TimelineDensity): boolean => RULED.has(density);
+
 export const waveBarsOf = (density: TimelineDensity): number => WAVE_BARS[density];
 
 export const shareOf = (seconds: number, length: number): number =>

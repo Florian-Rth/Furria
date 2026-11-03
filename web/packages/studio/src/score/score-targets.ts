@@ -39,7 +39,8 @@ export const scoreTargetsOf = (
   parts: readonly Spanned[],
   steps: readonly Spanned[],
   wide: boolean,
-): ScoreTarget[] => (wide ? spansOf(steps, 'step') : spansOf(parts, 'part'));
+): ScoreTarget[] =>
+  wide ? spansOf(steps, 'step') : [...spansOf(parts, 'part'), ...spansOf(steps, 'step')];
 
 export const scoreTapOf = (targets: readonly ScoreTarget[], key: string): ScoreTap | null =>
   targets.find((target) => target.key === key)?.tap ?? null;

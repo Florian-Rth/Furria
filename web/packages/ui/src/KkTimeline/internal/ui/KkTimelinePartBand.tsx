@@ -33,6 +33,7 @@ export const KkTimelinePartBand: FC<KkTimelinePartBandProps> = ({
   onSelect,
 }) => {
   const current = part.current === true;
+  const chipTop = onSelect === undefined ? `calc(var(${LANE_VARS.ruler}) + 2px)` : '2px';
   const select = (event: MouseEvent<HTMLElement>): void => {
     event.stopPropagation();
     onSelect?.(part.key);
@@ -61,7 +62,7 @@ export const KkTimelinePartBand: FC<KkTimelinePartBandProps> = ({
         position: 'absolute',
         left: kkTokens.line.hair,
         right: kkTokens.line.hair,
-        top: `calc(var(${LANE_VARS.ruler}) + 2px)`,
+        top: chipTop,
         height: `calc(var(${LANE_VARS.parts}) - 4px)`,
         display: 'grid',
         alignItems: 'center',

@@ -1,13 +1,13 @@
 import { KkTimeline } from '@furria/ui/KkTimeline';
 import type { FC } from 'react';
-import { rulerTicksOf } from '../../timeline-geometry';
+import { isRuled, rulerTicksOf } from '../../timeline-geometry';
 import { TimelineStrip } from '../layout/TimelineStrip';
 import { useTimeline } from '../logic/timeline-context';
 
 export const TimelineRuler: FC = () => {
   const { length, density, window, centre } = useTimeline();
 
-  if (density !== 'full') {
+  if (!isRuled(density)) {
     return null;
   }
 
