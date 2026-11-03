@@ -1,5 +1,5 @@
 ---
-status: vision / knowledge base 2026-10-29; v1 (foundation + dance studio + Absage → open spots + training mode) built in RFC 0001 (docs/rfcs/0001-dance-studio.md, phases 1–16, done 2026-10-30) — offline dropped from v1; polished in RFC 0002 (docs/rfcs/0002-dance-studio-polish.md, #53, 2026-10-30/31): bugs, undo + choreography versions, every training asks its cast, the member's act + running order for members, hall mode, timeline desk + phone step cards + set-up checklist; season grid and *Heute* dropped (the event/tech view is defined later)
+status: vision / knowledge base 2026-10-29; v1 (foundation + dance studio + Absage → open spots + training mode) built in RFC 0001 (docs/rfcs/0001-dance-studio.md, phases 1–16, done 2026-10-30) — offline dropped from v1; polished in RFC 0002 (docs/rfcs/0002-dance-studio-polish.md, #53, 2026-10-30/31): bugs, undo + choreography versions, every training asks its cast, the member's act + running order for members, hall mode, timeline desk + phone step cards + set-up checklist; season grid and *Heute* dropped (the event/tech view is defined later); moved into its own package `@furria/studio` in RFC 0003 (docs/rfcs/0003-studio-package-and-native-touch.md, #57, 2026-11-02/03): one engine with iPhone-robust audio, a local edit document saved in the background, an own gesture engine with native-grade touch (rulings from the interaction lab), one SVG Stage and one Timeline (centre-line scrub in the editor), lists on @dnd-kit/react; device checks owed (RFC 0003 *Device checks*)
 scope: the Auftritt (Act) becomes the group's year — training studio per group kind (dance first),
   music, stage editor, trainer video, steps; the evening (members, tech); memory (season, person)
 builds_on: plan/club-app/acts.md, plan/club-app/running-order.md (PR #50)
@@ -378,6 +378,9 @@ hang off steps; one screen plays it all in sync.
 4. **Stage editor** — spots + people, formations per step, movement paths, playback.
 5. **Trainer video** — upload, offset alignment, mirror/slow/loop.
 6. **The one screen** — editor and player, lab variants, offline.
+   Rebuilt as `@furria/studio` in RFC 0003 (2026-11-03): touch handling picked by Florian in the
+   interaction lab (value lifted above the finger, precision by moving away from the track,
+   selection toolbar, free momentum, centre-line scrub); offline is a later RFC.
 7. **Around training** — Heute geprobt, countdown, Absage effects, training mode, side by side.
    *Absage → open spots* and the *training mode* built in RFC 0001 phase 16 (2026-10-30);
    RFC 0002 made every training ask its cast and merged training mode and the landscape player
