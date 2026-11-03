@@ -8,7 +8,6 @@ import { clockOf } from '@/features/act-practice/practice-step-list';
 import type { MediaItemState } from '@/lib/api/schemas';
 import type { UploadFailure } from '@/lib/media/upload-failure';
 import type { OutsideMusic } from './studio-music';
-import type { CountSpanView } from './studio-timing';
 
 type VideoPlacement = StudioVideo['placement'];
 
@@ -143,10 +142,6 @@ export const castChoiceTextOf = (
   spot: number | null,
 ): string => (spot === null ? `${firstName} ${lastName}` : `${firstName} ${lastName} · ${spot}`);
 
-export const STUDIO_COUNTS_LABEL = 'Zählzeiten des Schritts: von Zählzeit zu Zählzeit ziehen';
-export const STUDIO_NO_MOVE = 'Kein Weg in diesem Schritt';
-export const STUDIO_PICK_DOTS = 'Punkte auf der Bühne wählen';
-
 export const STUDIO_BEND_LABEL = 'Kurve: ziehen zum Biegen';
 export const STUDIO_MOVE_DESK = 'Weg bearbeiten';
 export const STUDIO_MOVE_NONE = 'Kein Weg an dieser Stelle';
@@ -186,9 +181,6 @@ export const facingTextOf = (degrees: number | null): string =>
 export const moveDeskTitleOf = (from: number, to: number): string =>
   `Weg ${fineClockOf(from)}–${fineClockOf(to)}`;
 
-export const STUDIO_PLACEMENT_LABEL = 'Wo das Video auf der Musik liegt';
-export const STUDIO_EARLIER = 'Video früher';
-export const STUDIO_LATER_NUDGE = 'Video später';
 export const STUDIO_TAKES = 'Videos je Teil';
 export const STUDIO_TAKES_WITHOUT_PART = 'Ohne Teil';
 export const STUDIO_MAIN = 'Haupt';
@@ -325,31 +317,8 @@ export const spotMetaOf = (rightMetres: number, backMetres: number, keys: number
 export const formationTextOf = (number: number, start: number): string =>
   `Aufstellung Schritt ${number} · ab ${fineClockOf(start)}`;
 
-export const countSpanTextOf = (view: CountSpanView | null, eights: number): string => {
-  if (view === null) {
-    return STUDIO_NO_MOVE;
-  }
-
-  const takt = `Takt ${view.fromCount} – ${view.toCount}`;
-
-  if (eights < 2) {
-    return takt;
-  }
-
-  return view.fromEight === view.toEight
-    ? `${takt} · ${view.fromEight + 1}. Achter`
-    : `${takt} · Achter ${view.fromEight + 1}–${view.toEight + 1}`;
-};
-
-export const movedDotsTextOf = (count: number): string =>
-  count === 1 ? '1 Platz' : `${count} Plätze`;
-
-export const placementTextOf = (name: string, start: number, shift: number | null): string =>
-  shift === null
-    ? `${name} · ab ${fineClockOf(start)}`
-    : `${name} · ab ${fineClockOf(start)} · Versatz ${offsetTextOf(shift)}`;
-
-export const videoBarLabelOf = (name: string): string => `${name}: wählen und verschieben`;
+export const placementTextOf = (name: string, start: number): string =>
+  `${name} · ab ${fineClockOf(start)}`;
 
 export const takeMetaOf = (start: number | null, duration: number | null): string =>
   start === null || duration === null

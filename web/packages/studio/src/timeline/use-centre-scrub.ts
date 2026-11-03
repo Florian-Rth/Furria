@@ -64,6 +64,9 @@ export interface CentreScrub {
   fit: () => void;
   frame: (start: number, end: number) => void;
   centreOn: (seconds: number) => void;
+  steerTo: (seconds: number) => void;
+  steerView: (start: number, end: number) => void;
+  letGo: () => void;
 }
 
 interface UseCentreScrubOptions {
@@ -531,6 +534,35 @@ export const useCentreScrub = ({
     }
   };
 
+  const steerTo = (seconds: number): void => {
+    takeOver();
+    const target = Math.min(Math.max(seconds, 0), length);
+    x.jump(centreOffsetOf(target, pxPerSecond * scale.get(), centre));
+  };
+
+  const steerView = (start: number, end: number): void => {
+    const span = end - start;
+    if (span <= 0 || pxPerSecond <= 0) {
+      return;
+    }
+    takeOver();
+    const zoom = centreScaleOf(pxPerSecond, width / span / pxPerSecond, limits);
+    const seconds = Math.min(Math.max((start + end) / 2, 0), length);
+    scale.jump(zoom);
+    x.jump(centreOffsetOf(seconds, pxPerSecond * zoom, centre));
+    if (zoom < reach * REACH_STEP) {
+      setReach(zoom);
+    }
+  };
+
+  const letGo = (): void => {
+    if (scale.get() !== 1) {
+      commitZoom(nowOf());
+      return;
+    }
+    settle();
+  };
+
   const readout =
     held === null || size === null
       ? null
@@ -571,5 +603,8 @@ export const useCentreScrub = ({
       centreOn((start + end) / 2);
     },
     centreOn,
+    steerTo,
+    steerView,
+    letGo,
   };
 };

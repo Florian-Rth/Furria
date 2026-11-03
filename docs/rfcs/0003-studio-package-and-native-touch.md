@@ -515,9 +515,56 @@ button right of the centre line (`data-gesture-ignore`, so the button still clic
 
 ### Phase 9c — One Timeline: overview and the last studio drags
 Goal: no track is left outside `Timeline` and the gesture engine.
-- [ ] Desk overview on `Timeline` (bracket = the centre scrub's view, edges zoom, tap aims); delete `KkLaneOverview`
-- [ ] Video strip (`KkStudioPlacement`) and count strip (`KkStudioCounts`) on the gesture engine; delete `KkStudioDrag`
-- [ ] Device check: overview bracket and edges, video and count strips on iPad and desktop
+- [x] Desk overview on `Timeline` (bracket = the centre scrub's view, edges zoom, tap aims); delete `KkLaneOverview`
+- [x] Video strip (`KkStudioPlacement`) and count strip (`KkStudioCounts`) on the gesture engine; delete `KkStudioDrag`
+- [ ] Device check: overview bracket and edges on iPad and desktop
+
+Built 2026-11-03. The desk overview (`DeskOverview`) is `@furria/studio/Timeline` in a third mode,
+**overview** (`overview={useOverviewBracket(centre, length)}`, `density="overview"`, 3.5rem): the
+whole act with part chips (the current step's part underlined) and the wave, and the bracket = the
+lanes' visible seconds. The bracket moves by motion values (`from`/`to` shares fed from the centre
+scrub's offset and zoom), so steering the lanes renders nothing per frame; its aria value text
+settles 150 ms after the motion stops. The bracket's centre line is "now", so the old overview
+playhead (which rested while the wave was steered) is gone.
+- **Gestures:** `@furria/studio/use-overview-bracket` binds the gesture engine (drag, precision
+  by distance, no long press, no navigate): a tap aims (centres the lanes there); a drag on the
+  bracket pans it keeping the grab point; a drag on an edge frames the lanes (zoom); a drag on the
+  free track centres the bracket under the finger; arrow keys pan a quarter view and zoom.
+  `@furria/studio/overview-bracket` (pure, tested) holds the grip hit-test (edges reach 22 px
+  outward and at most a quarter of the bracket inward, so a narrow bracket keeps a middle for
+  panning; overlapping edges go to the nearer one), the grab, the moves (`centre` / `frame`, at
+  least one second wide) and the keyboard pan — moved from the club app's `desk-window`.
+- **Kit:** `@furria/ui/KkTimeline` gained `Bracket` + `BracketEdge` (motion-driven place, held
+  tint, lit edge while dragged, centre "now" line, slider keys), density `overview`, part chips
+  `current`, and a root `centred` flag: the centre line only in centre mode; a gesture area
+  outside centre mode keeps the seek canvas without its click seek. Studio layer
+  `Timeline.Bracket`; the studio root's props are a three-way union (fixed, centre, overview).
+- **Strips:** the act-studio video strip and count strip had not been rendered since RFC 0002
+  phase 16 (video placement lives on the desk lanes since phase 9b; formation timing on the
+  keyframe lane), so instead of porting dead code they are deleted: `ActStudioVideoStrip`,
+  `ActStudioCountStrip`, `use-act-studio-counts`, `ActStudioPlayheadLive`, the strip parts of
+  `use-act-studio-takes` (press/move grab, parts, changed, bar labels), the count-span helpers in
+  `studio-timing`, their copy, and the kits `KkStudioPlacement`, `KkStudioCounts`, `KkStudioDrag`
+  and `KkStudioPlayhead`. Also deleted: `KkLaneOverview`, `use-desk-window`, `DeskOverviewWindow`,
+  `desk-window`, `desk-time.shareOf`. No studio track is left outside `Timeline` and the gesture
+  engine.
+- **Review follow-ups (fixed):** overview drags steer the lanes without seeking the player per
+  move — new `CentreScrub.steerTo` / `steerView` (pause once, offset and zoom as motion values, no
+  React render per move) and `letGo` (commit the zoom, seek once, resume); an edge keeps the
+  distance to the finger that grabbed it (no jump by the 22 px reach); precision by distance on x
+  (the Phase 7 ruling); the value text refreshes every 150 ms while moving (it froze during
+  playback) and reads the latest zoom (a stale closure gave a wrong span after an edge zoom);
+  `onIntent` no longer reads `gesture` inside its own initialiser.
+- **Browser check (Playwright on the HTTPS lab build, 1440×900 mouse and 1366×1024 touch, lab
+  data, read-only, no writes):** tap at 70 % centres the bracket there, a body drag pans by the
+  finger's travel, an end-edge drag widens the bracket without a jump, a drag on the free track
+  centres it under the finger, arrow up zooms; the value text follows each step.
+- **Open:** narrow brackets (about 16 px at the default zoom on a phone) are mostly edge reach,
+  so a drag near them zooms rather than centres — judge on the device; the slider has no
+  Home/End/Page keys and its `aria-valuenow` is the start share; `use-act-studio-movement.retime` / `retimedMoveOf` (retime a formation move to a count
+  span) is now reachable from no screen — keep it for a later count tool or drop it (Florian);
+  the overview has no visible title any more (the aria label stays); pinch on the overview is
+  not bound (the lanes zoom by pinch).
 
 ### Phase 10 — One Stage: read views
 Goal: the `Stage` kit replaces the read-only renderers.

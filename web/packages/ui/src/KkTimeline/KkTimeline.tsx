@@ -3,6 +3,7 @@ import { KkTimelineLane } from './internal/layout/KkTimelineLane';
 import { KkTimelineRoot } from './internal/layout/KkTimelineRoot';
 import { KkTimelineStrip } from './internal/layout/KkTimelineStrip';
 import { KkTimelineBlock } from './internal/ui/KkTimelineBlock';
+import { KkTimelineBracket } from './internal/ui/KkTimelineBracket';
 import { KkTimelineCounts } from './internal/ui/KkTimelineCounts';
 import { KkTimelineCuts } from './internal/ui/KkTimelineCuts';
 import { KkTimelineDiamond } from './internal/ui/KkTimelineDiamond';
@@ -33,6 +34,10 @@ export type {
 } from './internal/layout/KkTimelineRoot';
 export type { KkTimelineDensity, KkTimelineSpan } from './internal/timeline-paint';
 export type { KkTimelineBlockTone } from './internal/ui/KkTimelineBlock';
+export type {
+  KkTimelineBracketGrip,
+  KkTimelineBracketKey,
+} from './internal/ui/KkTimelineBracket';
 export type { KkTimelineHandleTone } from './internal/ui/KkTimelineHandle';
 export type { KkTimelineKeyframeMark } from './internal/ui/KkTimelineKeyframes';
 export type { KkTimelineLaneSetupState } from './internal/ui/KkTimelineLaneSetup';
@@ -50,6 +55,7 @@ export const KkTimeline = Object.assign(KkTimelineRoot, {
   LaneNote: KkTimelineLaneNote,
   LaneSetup: KkTimelineLaneSetup,
   Block: KkTimelineBlock,
+  Bracket: KkTimelineBracket,
   Diamond: KkTimelineDiamond,
   Marks: KkTimelineMarks,
   Half: KkTimelineHalf,

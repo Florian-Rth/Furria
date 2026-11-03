@@ -14,6 +14,7 @@ export interface KkTimelinePart {
   from: number;
   to: number;
   shade: number;
+  current?: boolean;
 }
 
 interface KkTimelinePartBandProps {
@@ -29,6 +30,7 @@ export const KkTimelinePartBand: FC<KkTimelinePartBandProps> = ({
   place,
   onSelect,
 }) => {
+  const current = part.current === true;
   const select = (event: MouseEvent<HTMLElement>): void => {
     event.stopPropagation();
     onSelect?.(part.key);
@@ -51,6 +53,7 @@ export const KkTimelinePartBand: FC<KkTimelinePartBandProps> = ({
     <Box
       component="span"
       data-kk-timeline-part
+      data-current={current}
       sx={(theme) => ({
         position: 'absolute',
         left: kkTokens.line.hair,
@@ -71,6 +74,9 @@ export const KkTimelinePartBand: FC<KkTimelinePartBandProps> = ({
         overflow: 'clip',
         textOverflow: 'ellipsis',
         ...shadeFill(theme, tone, part.shade),
+        '&[data-current="true"]': {
+          boxShadow: `inset 0 -${kkTokens.line.page}px 0 ${(theme.vars ?? theme).palette.primary.main}`,
+        },
       })}
     >
       {part.label}

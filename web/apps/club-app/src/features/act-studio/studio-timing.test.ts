@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { cellIndexAt, cellSpanOf, countCellsOf, countSpanViewOf } from './studio-timing';
+import { countCellsOf } from './studio-timing';
 
 const marks = Array.from({ length: 20 }, (_, index) => ({
   seconds: index * 0.5,
@@ -19,29 +19,5 @@ describe('countCellsOf', () => {
       [4, 1],
     ]);
     expect(cells.at(-1)?.end).toBe(6);
-  });
-});
-
-describe('cell spans', () => {
-  const cells = countCellsOf(marks, { start: 0, end: 8 });
-
-  it.each([
-    [0, 0],
-    [0.5, 8],
-    [1, 15],
-  ])('maps a touch at %s to cell %s', (share, index) => {
-    expect(cellIndexAt(cells, share)).toBe(index);
-  });
-
-  it('covers the cells a move runs through', () => {
-    const span = cellSpanOf(cells, { start: 1, end: 3 });
-
-    expect(span).toEqual({ first: 2, last: 5 });
-    expect(span === null ? null : countSpanViewOf(cells, span)).toEqual({
-      fromCount: 3,
-      toCount: 6,
-      fromEight: 0,
-      toEight: 0,
-    });
   });
 });

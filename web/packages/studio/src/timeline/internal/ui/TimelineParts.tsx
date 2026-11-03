@@ -12,6 +12,7 @@ export interface TimelinePart {
   hint?: string;
   range: TimelineRange | null;
   shade: number;
+  current?: boolean;
 }
 
 interface TimelinePartsProps {
