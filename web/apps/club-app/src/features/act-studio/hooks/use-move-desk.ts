@@ -6,8 +6,8 @@ import {
   STUDIO_MOVE_BENT,
   STUDIO_MOVE_NONE,
   STUDIO_MOVE_STRAIGHT,
-} from '../studio-copy';
-import { KEYFRAME_EASINGS } from '../studio-movement';
+} from '@furria/studio/studio-copy';
+import { KEYFRAME_EASINGS } from '@furria/studio/studio-movement';
 import type { ActStudioMovement } from './use-act-studio-movement';
 
 const TURN_DEGREES = 45;

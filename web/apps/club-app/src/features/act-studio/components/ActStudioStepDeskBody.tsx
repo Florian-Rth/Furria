@@ -1,14 +1,14 @@
-import { KkButton } from '@furria/ui/KkButton';
-import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
-import type { FC } from 'react';
-import type { StepDesk } from '../hooks/use-step-desk';
 import {
   STUDIO_PART_OPEN,
   STUDIO_STEP,
   STUDIO_STEP_DESK,
   STUDIO_STEP_REMOVE,
   STUDIO_STEP_REMOVE_SURE,
-} from '../studio-copy';
+} from '@furria/studio/studio-copy';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
+import type { FC } from 'react';
+import type { StepDesk } from '../hooks/use-step-desk';
 import { ActStudioPartDesk } from './ActStudioPartDesk';
 
 interface ActStudioStepDeskBodyProps {

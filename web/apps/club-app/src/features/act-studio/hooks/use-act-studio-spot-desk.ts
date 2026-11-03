@@ -1,6 +1,6 @@
+import { castChoiceTextOf, spotDeskTitleOf } from '@furria/studio/studio-copy';
+import { byNameOf, spotPersonOf } from '@furria/studio/studio-spots';
 import { useState } from 'react';
-import { castChoiceTextOf, spotDeskTitleOf } from '../studio-copy';
-import { byNameOf, spotPersonOf } from '../studio-spots';
 import type { ActStudioStage } from './use-act-studio-stage';
 import type { StudioScreen } from './use-studio-screen';
 

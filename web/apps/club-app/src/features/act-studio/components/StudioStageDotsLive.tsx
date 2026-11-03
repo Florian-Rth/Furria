@@ -1,10 +1,10 @@
 import { Stage } from '@furria/studio/Stage';
+import { studioStageDotsOf } from '@furria/studio/studio-stage-dots';
 import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
 import type { FC } from 'react';
 import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import type { StudioStageWork } from '../hooks/use-studio-stage-work';
-import { studioStageDotsOf } from '../studio-stage-dots';
 import { StudioStageToolbar } from './StudioStageToolbar';
 
 interface StudioStageDotsLiveProps {

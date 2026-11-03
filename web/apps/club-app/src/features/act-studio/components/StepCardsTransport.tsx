@@ -1,15 +1,15 @@
-import { KkLaneBar } from '@furria/ui/KkLaneBar';
-import { KkLaneButton } from '@furria/ui/KkLaneButton';
-import type { FC } from 'react';
-import type { StudioScreen } from '../hooks/use-studio-screen';
-import { countEightsOf } from '../step-cards';
+import { countEightsOf } from '@furria/studio/count-marks';
 import {
   STEP_CARDS_BACK,
   STEP_CARDS_FORWARD,
   STEP_CARDS_PAUSE,
   STEP_CARDS_PLAY,
   STEP_CARDS_TRANSPORT,
-} from '../step-cards-copy';
+} from '@furria/studio/step-cards-copy';
+import { KkLaneBar } from '@furria/ui/KkLaneBar';
+import { KkLaneButton } from '@furria/ui/KkLaneButton';
+import type { FC } from 'react';
+import type { StudioScreen } from '../hooks/use-studio-screen';
 import { StepCardsReadoutLive } from './StepCardsReadoutLive';
 
 interface StepCardsTransportProps {

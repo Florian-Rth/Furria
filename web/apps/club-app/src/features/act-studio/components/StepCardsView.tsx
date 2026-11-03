@@ -1,3 +1,4 @@
+import { STEP_CARDS_LABEL, STEP_CARDS_LIST } from '@furria/studio/step-cards-copy';
 import { useStudioKeys } from '@furria/studio/use-studio-keys';
 import { KkLaneCards } from '@furria/ui/KkLaneCards';
 import { KkLanePhone } from '@furria/ui/KkLanePhone';
@@ -10,7 +11,6 @@ import { useStepCards } from '../hooks/use-step-cards';
 import { useStepCardsSetup } from '../hooks/use-step-cards-setup';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import { useVisitHistory } from '../hooks/use-visit-history';
-import { STEP_CARDS_LABEL, STEP_CARDS_LIST } from '../step-cards-copy';
 import { scrubKeyActionsOf } from '../studio-key-actions';
 import { ActStudioSpotSheet } from './ActStudioSpotSheet';
 import { ActStudioStepDesk } from './ActStudioStepDesk';

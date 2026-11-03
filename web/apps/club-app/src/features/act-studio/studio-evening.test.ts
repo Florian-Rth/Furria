@@ -1,4 +1,5 @@
 import type { Keyframe } from '@furria/studio/studio-schemas';
+import type { SpotPerson } from '@furria/studio/studio-spots';
 import { describe, expect, it } from 'vitest';
 import type { ActStudio, StudioAppearance, StudioEvening } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
@@ -12,7 +13,6 @@ import {
   eveningViewOf,
   withEveningDancer,
 } from './studio-evening';
-import type { SpotPerson } from './studio-spots';
 
 const person = (personId: number): SpotPerson => ({
   personId,

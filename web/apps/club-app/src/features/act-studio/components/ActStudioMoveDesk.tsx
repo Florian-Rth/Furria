@@ -1,8 +1,3 @@
-import { KkButton } from '@furria/ui/KkButton';
-import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
-import type { FC } from 'react';
-import type { ActStudioMovement } from '../hooks/use-act-studio-movement';
-import { useMoveDesk } from '../hooks/use-move-desk';
 import {
   STUDIO_MOVE_CURVE,
   STUDIO_MOVE_DESK,
@@ -16,7 +11,12 @@ import {
   STUDIO_MOVE_UNKEY,
   STUDIO_NUDGE_BACK,
   STUDIO_NUDGE_ON,
-} from '../studio-copy';
+} from '@furria/studio/studio-copy';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
+import type { FC } from 'react';
+import type { ActStudioMovement } from '../hooks/use-act-studio-movement';
+import { useMoveDesk } from '../hooks/use-move-desk';
 
 interface ActStudioMoveDeskProps {
   movement: ActStudioMovement;

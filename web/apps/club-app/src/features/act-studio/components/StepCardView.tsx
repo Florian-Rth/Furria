@@ -1,3 +1,12 @@
+import {
+  STEP_CARD_ACTIONS,
+  STEP_CARD_MARK,
+  STEP_CARD_MARK_LABEL,
+  STEP_CARD_NAME,
+  STEP_CARD_STEP,
+  STEP_CARD_STEP_LABEL,
+  STEP_CARDS_UNDO,
+} from '@furria/studio/step-cards-copy';
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
 import { KkLaneButton } from '@furria/ui/KkLaneButton';
 import { KkLaneCards } from '@furria/ui/KkLaneCards';
@@ -9,15 +18,6 @@ import type { StepCard } from '../hooks/use-step-cards';
 import type { StepTexts } from '../hooks/use-step-texts';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import type { VisitHistory } from '../hooks/use-visit-history';
-import {
-  STEP_CARD_ACTIONS,
-  STEP_CARD_MARK,
-  STEP_CARD_MARK_LABEL,
-  STEP_CARD_NAME,
-  STEP_CARD_STEP,
-  STEP_CARD_STEP_LABEL,
-  STEP_CARDS_UNDO,
-} from '../step-cards-copy';
 import { StepCardCounts } from './StepCardCounts';
 import { StepCardCountsLive } from './StepCardCountsLive';
 import { StepCardStage } from './StepCardStage';

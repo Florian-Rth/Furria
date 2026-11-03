@@ -1,13 +1,13 @@
-import { KkButton } from '@furria/ui/KkButton';
-import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
-import type { FC } from 'react';
-import type { SpotDesk } from '../hooks/use-act-studio-spot-desk';
 import {
   STUDIO_SPOT_FREE,
   STUDIO_SPOT_PERSON,
   STUDIO_SPOT_REMOVE,
   STUDIO_SPOT_REMOVE_SURE,
-} from '../studio-copy';
+} from '@furria/studio/studio-copy';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
+import type { FC } from 'react';
+import type { SpotDesk } from '../hooks/use-act-studio-spot-desk';
 
 interface ActStudioSpotDeskProps {
   desk: SpotDesk;

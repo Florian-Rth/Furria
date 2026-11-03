@@ -1,7 +1,7 @@
+import { setupLaneLabelOf } from '@furria/studio/setup-copy';
 import { KkTimeline } from '@furria/ui/KkTimeline';
 import type { FC } from 'react';
 import type { StudioSetupRow } from '@/features/act-studio/hooks/use-studio-setup';
-import { setupLaneLabelOf } from '@/features/act-studio/setup-copy';
 
 interface DeskLaneSetupProps {
   row: StudioSetupRow;

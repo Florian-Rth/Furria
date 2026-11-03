@@ -1,16 +1,16 @@
 import { Stage } from '@furria/studio/Stage';
-import { KkButton } from '@furria/ui/KkButton';
-import { KkStageInk } from '@furria/ui/KkStageInk';
-import type { FC } from 'react';
-import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 import {
   STUDIO_SELECTION_BAR,
   STUDIO_SELECTION_CLEAR,
   STUDIO_SELECTION_MIRROR,
   STUDIO_SELECTION_ROW,
   STUDIO_SELECTION_SPREAD,
-} from '../studio-copy';
-import type { SelectionAnchor } from '../studio-dots';
+} from '@furria/studio/studio-copy';
+import type { SelectionAnchor } from '@furria/studio/studio-dots';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkStageInk } from '@furria/ui/KkStageInk';
+import type { FC } from 'react';
+import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 
 interface StudioStageToolbarProps {
   editor: ActStudioStage;

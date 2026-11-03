@@ -1,10 +1,10 @@
+import { countEightsOf, countPlaceAt } from '@furria/studio/count-marks';
+import { clockOf, DESK_READOUT, readoutCountOf } from '@furria/studio/desk-copy';
 import type { MixPlayer } from '@furria/studio/mix-player';
 import type { CountMark } from '@furria/studio/music-timeline';
 import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
 import type { FC } from 'react';
-import { clockOf, DESK_READOUT, readoutCountOf } from '../desk-copy';
-import { countPlaceAt } from '../desk-time';
 
 interface DeskReadoutLiveProps {
   player: MixPlayer;
@@ -13,7 +13,8 @@ interface DeskReadoutLiveProps {
 
 export const DeskReadoutLive: FC<DeskReadoutLiveProps> = ({ player, marks }) => {
   const seconds = usePlaybackSeconds(player);
-  const place = countPlaceAt(marks, seconds);
+  const eights = countEightsOf(marks);
+  const place = countPlaceAt(marks, eights, seconds);
 
   return (
     <KkLaneBar.Readout

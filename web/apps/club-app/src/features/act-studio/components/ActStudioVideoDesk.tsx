@@ -1,9 +1,9 @@
+import { STUDIO_VIDEO_DESK, STUDIO_VIDEO_DESK_CLOSE } from '@furria/studio/studio-copy';
 import { KkPracticeSteps } from '@furria/ui/KkPracticeSteps';
 import type { FC } from 'react';
 import type { ActStudioTakes } from '../hooks/use-act-studio-takes';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import { useVideoDesk } from '../hooks/use-video-desk';
-import { STUDIO_VIDEO_DESK, STUDIO_VIDEO_DESK_CLOSE } from '../studio-copy';
 import { ActStudioVideoDeskBody } from './ActStudioVideoDeskBody';
 
 interface ActStudioVideoDeskProps {

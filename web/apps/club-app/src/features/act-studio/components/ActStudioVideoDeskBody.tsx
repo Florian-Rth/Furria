@@ -1,8 +1,3 @@
-import { KkButton } from '@furria/ui/KkButton';
-import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
-import { KkTextField } from '@furria/ui/KkTextField';
-import type { ChangeEvent, FC } from 'react';
-import type { VideoDesk } from '../hooks/use-video-desk';
 import {
   STUDIO_VIDEO_ALIGN,
   STUDIO_VIDEO_ALIGNING,
@@ -15,7 +10,12 @@ import {
   STUDIO_VIDEO_REMOVE,
   STUDIO_VIDEO_REMOVE_SURE,
   STUDIO_VIDEO_START_HERE,
-} from '../studio-copy';
+} from '@furria/studio/studio-copy';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
+import { KkTextField } from '@furria/ui/KkTextField';
+import type { ChangeEvent, FC } from 'react';
+import type { VideoDesk } from '../hooks/use-video-desk';
 
 interface ActStudioVideoDeskBodyProps {
   desk: VideoDesk;

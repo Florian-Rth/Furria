@@ -1,4 +1,3 @@
-import type { KkLaneGlyphName } from '@furria/ui/KkLaneGlyph';
 import {
   STEP_TOOL_ADD_SPOT,
   STEP_TOOL_ADD_SPOT_LABEL,
@@ -15,8 +14,9 @@ import {
   STEP_TOOL_ONION,
   STEP_TOOL_SPOTS,
   STEP_TOOL_SPOTS_LABEL,
-} from '../step-cards-copy';
-import type { FormationPreset } from '../studio-formation';
+} from '@furria/studio/step-cards-copy';
+import type { FormationPreset } from '@furria/studio/studio-formation';
+import type { KkLaneGlyphName } from '@furria/ui/KkLaneGlyph';
 import type { ActStudioStage } from './use-act-studio-stage';
 import type { StudioScreen } from './use-studio-screen';
 

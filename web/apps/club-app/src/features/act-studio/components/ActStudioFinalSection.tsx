@@ -1,9 +1,3 @@
-import { KkStudioList } from '@furria/ui/KkStudioList';
-import Box from '@mui/material/Box';
-import type { FC } from 'react';
-import type { ActStudioFinal } from '../hooks/use-act-studio-final';
-import { useActUploads } from '../hooks/use-act-uploads';
-import type { StudioScreen } from '../hooks/use-studio-screen';
 import {
   STUDIO_FINAL,
   STUDIO_FINAL_NONE,
@@ -12,7 +6,13 @@ import {
   STUDIO_SONG_ACCEPT,
   uploadLabelOf,
   uploadMetaOf,
-} from '../studio-copy';
+} from '@furria/studio/studio-copy';
+import { KkStudioList } from '@furria/ui/KkStudioList';
+import Box from '@mui/material/Box';
+import type { FC } from 'react';
+import type { ActStudioFinal } from '../hooks/use-act-studio-final';
+import { useActUploads } from '../hooks/use-act-uploads';
+import type { StudioScreen } from '../hooks/use-studio-screen';
 
 interface ActStudioFinalSectionProps {
   screen: StudioScreen;

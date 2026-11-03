@@ -5,11 +5,9 @@ import type {
   TimedKeyframe,
 } from '@furria/studio/choreography-motion';
 import { viewShareOf } from '@furria/studio/practice-stage';
-import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
-import { useRef } from 'react';
-import type { StageShare, TimeSpan } from '../studio-edits';
-import { draggedPointOf, snappedOf } from '../studio-edits';
-import { formationAt } from '../studio-formation';
+import type { StageShare, TimeSpan } from '@furria/studio/studio-edits';
+import { draggedPointOf, snappedOf } from '@furria/studio/studio-edits';
+import { formationAt } from '@furria/studio/studio-formation';
 import {
   bendHandleOf,
   bentMoveOf,
@@ -24,7 +22,9 @@ import {
   straightenedMoveOf,
   turnedOf,
   unkeyedTrackOf,
-} from '../studio-movement';
+} from '@furria/studio/studio-movement';
+import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
+import { useRef } from 'react';
 import type { StudioScreen } from './use-studio-screen';
 import type { StudioTracks, TrackCommit } from './use-track-commit';
 

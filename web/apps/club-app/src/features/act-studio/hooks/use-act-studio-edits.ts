@@ -1,9 +1,9 @@
 import type { TimedKeyframe } from '@furria/studio/choreography-motion';
 import type { MixPlayer } from '@furria/studio/mix-player';
+import type { StudioEdits } from '@furria/studio/studio-edits';
+import { NO_EDITS, tracksWithoutOf } from '@furria/studio/studio-edits';
 import type { RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import type { StudioEdits } from '../studio-edits';
-import { NO_EDITS, tracksWithoutOf } from '../studio-edits';
 
 export interface ActStudioEdits {
   value: StudioEdits;

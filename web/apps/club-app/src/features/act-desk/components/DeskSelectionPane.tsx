@@ -1,6 +1,6 @@
+import { DESK_ACTIONS, DESK_FORMATION_GROUP } from '@furria/studio/desk-copy';
 import { KkLaneInspector } from '@furria/ui/KkLaneInspector';
 import type { FC } from 'react';
-import { DESK_ACTIONS, DESK_FORMATION_GROUP } from '../desk-copy';
 import type { ActDesk } from '../hooks/use-act-desk';
 import type { DeskBorders } from '../hooks/use-desk-borders';
 import { useDeskInspector } from '../hooks/use-desk-inspector';

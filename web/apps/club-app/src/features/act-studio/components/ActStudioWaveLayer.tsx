@@ -1,8 +1,8 @@
+import { STUDIO_WAVE_LABEL } from '@furria/studio/studio-copy';
 import { Timeline } from '@furria/studio/Timeline';
 import type { FC } from 'react';
 import { useActStudioWave } from '../hooks/use-act-studio-wave';
 import type { StudioScreen } from '../hooks/use-studio-screen';
-import { STUDIO_WAVE_LABEL } from '../studio-copy';
 import { ActStudioWaveReadout } from './ActStudioWaveReadout';
 
 interface ActStudioWaveLayerProps {

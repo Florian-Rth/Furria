@@ -604,6 +604,9 @@ importers:
 
   packages/studio:
     dependencies:
+      '@dnd-kit/dom':
+        specifier: 'catalog:'
+        version: 0.5.3
       '@emotion/react':
         specifier: 'catalog:'
         version: 11.14.0(@types/react@19.2.17)(react@19.2.7)

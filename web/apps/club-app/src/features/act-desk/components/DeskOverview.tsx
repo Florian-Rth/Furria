@@ -1,7 +1,7 @@
+import { DESK_BRACKET, DESK_OVERVIEW_AIM } from '@furria/studio/desk-copy';
 import { Timeline } from '@furria/studio/Timeline';
 import type { CentreScrub } from '@furria/studio/use-centre-scrub';
 import type { FC } from 'react';
-import { DESK_BRACKET, DESK_OVERVIEW_AIM } from '../desk-copy';
 import type { ActDesk } from '../hooks/use-act-desk';
 import { useDeskOverview } from '../hooks/use-desk-overview';
 

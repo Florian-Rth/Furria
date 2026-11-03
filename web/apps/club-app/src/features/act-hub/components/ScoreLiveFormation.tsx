@@ -1,9 +1,9 @@
+import { liveDotsOf } from '@furria/studio/score-live';
 import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
 import { KkFormationLegend } from '@furria/ui/KkFormationLegend';
 import type { FC } from 'react';
 import type { ActHub, ScoreStepView } from '../hooks/use-act-hub';
 import { AUDIENCE_LABEL, FORMATION_TITLE, OPEN_SPOT } from '../score-copy';
-import { liveDotsOf } from '../score-live';
 import { ScoreFormation } from './ScoreFormation';
 
 interface ScoreLiveFormationProps {

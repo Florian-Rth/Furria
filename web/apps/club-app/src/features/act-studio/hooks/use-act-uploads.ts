@@ -1,8 +1,8 @@
+import type { UploadFailure } from '@furria/api-client/upload-failure';
+import { songNameOf } from '@furria/studio/studio-copy';
 import type { ChangeEvent } from 'react';
 import { useRef, useState } from 'react';
 import { startUpload } from '@/lib/media/start-upload';
-import type { UploadFailure } from '@/lib/media/upload-failure';
-import { songNameOf } from '../studio-copy';
 
 export interface ActUpload {
   key: string;

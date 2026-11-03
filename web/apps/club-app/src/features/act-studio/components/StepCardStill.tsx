@@ -1,11 +1,11 @@
 import { Stage } from '@furria/studio/Stage';
 import { WHOLE_STAGE_FRAME } from '@furria/studio/stage-framing';
+import { STEP_CARD_STAGE } from '@furria/studio/step-cards-copy';
+import { STUDIO_FRONT } from '@furria/studio/studio-copy';
+import { studioStageDotsOf } from '@furria/studio/studio-stage-dots';
 import type { FC } from 'react';
 import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 import type { StudioScreen } from '../hooks/use-studio-screen';
-import { STEP_CARD_STAGE } from '../step-cards-copy';
-import { STUDIO_FRONT } from '../studio-copy';
-import { studioStageDotsOf } from '../studio-stage-dots';
 
 interface StepCardStillProps {
   screen: StudioScreen;

@@ -12,13 +12,13 @@ import {
 } from '@furria/studio/lesson-copy';
 import type { StepCounts } from '@furria/studio/lesson-counts';
 import { stepCountsOf } from '@furria/studio/lesson-counts';
-import { nextStepOf } from '@furria/studio/lesson-next';
 import type { LessonPicturePlan } from '@furria/studio/lesson-picture';
 import { lessonPictureOf } from '@furria/studio/lesson-picture';
 import type { LessonScreen } from '@furria/studio/lesson-screen';
 import type { LessonStripLanes } from '@furria/studio/lesson-strip';
 import { lessonStripOf, stripStepIdOf } from '@furria/studio/lesson-strip';
 import { stepRangeOf } from '@furria/studio/music-timeline';
+import { nextStepOf } from '@furria/studio/next-step';
 import { playerKeyActionsOf } from '@furria/studio/practice-key-actions';
 import { shownStepNameOf, stepNumberOf } from '@furria/studio/step-names';
 import type { PracticeSegmentGroupRow } from '@furria/studio/use-practice-segments';

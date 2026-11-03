@@ -1,10 +1,10 @@
 import type { SpotPath } from '@furria/studio/choreography-motion';
+import type { DeskTracks } from '@furria/studio/desk-keyframes';
+import { keyedTracksOf, keyShiftedTracksOf } from '@furria/studio/desk-keyframes';
 import { neighbourCountOf } from '@furria/studio/music-timeline';
+import { snappedOf } from '@furria/studio/studio-edits';
 import { useRef, useState } from 'react';
 import { useTrackCommit } from '@/features/act-studio/hooks/use-track-commit';
-import { snappedOf } from '@/features/act-studio/studio-edits';
-import type { DeskTracks } from '../desk-keyframes';
-import { keyedTracksOf, keyShiftedTracksOf } from '../desk-keyframes';
 import type { ActDesk } from './use-act-desk';
 
 interface HeldKey {

@@ -741,7 +741,7 @@ it (`@furria/studio/studio-timing`), `STUDIO_EDIT`/`STUDIO_DONE` to `@furria/stu
 `neighbourCountOf` is one function in `@furria/studio/music-timeline`. Removed: the folders
 `act-player`, `act-practice`, `act-hall`, `act-lesson`; the unused copy `PRACTICE_FALLBACK_TITLE`,
 `PRACTICE_DENIED`, `PRACTICE_NO_ACCESS`; the unused kit `KkStudioSide`.
-- **Review follow-ups (open, 12c):** `nextStepOf` exists twice with different null-id rules (hall: first
+- **Review follow-ups (done in 12c):** `nextStepOf` exists twice with different null-id rules (hall: first
   step, lesson: none); `countIndexAt`/`countPlaceAt`/`countsBetweenOf` are still duplicated between
   desk time and step cards (with different implementations).
 - **Kits:** the ADR-0035 lint forbids the studio to author pixels (only Stack/Grid/Box, no Emotion, no
@@ -749,11 +749,57 @@ it (`@furria/studio/studio-timing`), `STUDIO_EDIT`/`STUDIO_DONE` to `@furria/stu
   screen uses; the styled ones still in use stay in `@furria/ui` as the studio's look (like
   `KkTimeline` and `KkStageInk` under `Timeline`/`Stage`).
 
-### Phase 12c — Desk, hub and studio screen into the package, kit cleanup, docs
-Goal: the studio is one package; nothing studio-specific is left behind.
-- [ ] Move desk and hub score/formation views (and the studio screen hooks they need) into the package
-- [ ] Move the studio screen (`act-studio` views and hooks that do not fetch) into the package; queries and mutations stay in the club app behind the save port
-- [ ] Delete the studio kits from `@furria/ui` that no screen uses (incl. `KkTouchLab` and the `studio-lab` feature once the phase 7 device check is done) and empty club-app folders; grep for leftovers
+### Phase 12c — Studio, desk and score models into the package; follow-ups; kit audit
+Goal: every pure studio model lives in the package, so the screens can follow without dragging
+club-app modules along. Split 2026-11-03 (soft cap: ~18.7k lines and 210 files were left in
+`act-studio`, `act-desk` and `act-hub`): the desk and hub views are phase 12d, the studio screen
+12e, the lab removal and docs 12f.
+- [x] Move the pure models of the studio screen, the desk and the score (and their tests) into the package
+- [x] Deduplicate `nextStepOf` (hall, lesson) and the count helpers (desk time, step cards)
+- [x] Audit the studio kits in `@furria/ui` for unused ones
+
+Built 2026-11-03. **Models:** `@furria/studio/{studio-edits,studio-formation,studio-movement,studio-music,studio-videos,studio-setup,studio-final,studio-mode,studio-dots,studio-stage-dots,studio-spots,studio-steps,studio-layout,step-cards}`
+(`models/`), `history-turn` (`document/`), `studio-copy`, `step-cards-copy`, `setup-copy`,
+`studio-drag-copy` (`copy/`), `desk-copy`, `desk-keyframes`, `desk-time` (`desk/`) and
+`score-formation`, `score-entrance`, `score-live`, `score-steps`, `score-you` (`score/`). They are
+typed by the package `Studio`; `finalPreviewOf` is generic, so the club app keeps its `ActStudio`.
+The response helper `withStudio`/`HoldsStudio` (query cache, `evenings`/`trainings`) stayed in the
+club app as `features/acts/studio-response`. `UploadFailure` and its status classification moved to
+`@furria/api-client/upload-failure` (pure, no fetch), so the studio copy can name upload failures;
+the package's `@dnd-kit/dom` dependency came with `studio-drag-copy`. Stay in the club app for
+12d/12e: the save port, the editor store, `studio-evening`, `studio-conflict`, `studio-failure`,
+`studio-key-actions`, `undo-copy`, `document-copy`, the API files and the hub's composition models
+(readiness, doors, season, links, copy, model, memory, anchor).
+- **Follow-ups:** `nextStepOf` is one function (`@furria/studio/next-step`, was `lesson-next` and
+  `hall-scene`) with the hall's rule — before any step the first step is next — so the lesson now
+  also names step 1 before the music reaches it (judge on device). The count helpers are one module
+  `@furria/studio/count-marks` (`countEightsOf`, `countIndexAt`, `countPlaceAt`, `countsBetweenOf`;
+  binary search, eights start on every count that does not climb, one `COUNT_EDGE_SECONDS`); the
+  desk passes the eights, and its ruler and the lesson/score count cells (`countCellsOf`) number
+  eights by the same rule (they differed after a cut that lands mid-eight). The upload classifier
+  is `uploadFailureOfStatus` (the api client already has an API `failureOfStatus`).
+- **Review follow-ups (open, 12d):** `countPlaceAt` takes marks and eights as two parallel arrays;
+  a count sheet (`countSheetOf`) could carry both. Step numbers are still hand-rolled
+  (`findIndex + 1`) in the desk inspector and lanes, `use-act-studio-stage`, `use-step-desk` and
+  `score-steps`, next to `stepNumberOf`.
+- **Kits:** no studio kit in `@furria/ui` is unused (exports and internal files checked); only
+  `KkTouchLab` is lab-only and stays until the phase 7 device check (12f).
+
+### Phase 12d — Desk and hub score views into the package
+Goal: the desk and the score/formation views are package modules; the hub screen stays a club-app
+composition.
+- [ ] Move the desk views and hooks (and the studio screen hooks they need) into the package
+- [ ] Move the hub's score and formation views into the package; the hub screen, its route, readiness, doors and season stay in the club app
+
+### Phase 12e — Studio screen into the package
+Goal: the studio screen's views and hooks live in the package; queries, mutations and uploads stay in
+the club app behind the save port and direct-action ports.
+- [ ] Move the `act-studio` views and hooks that do not fetch into the package
+- [ ] Deduplicate leftovers found on the way; empty club-app folders removed
+
+### Phase 12f — Lab removal, cleanup, docs
+Goal: nothing studio-specific is left behind.
+- [ ] Delete `KkTouchLab` and the `studio-lab` feature once the phase 7 device check is done; grep for leftovers
 - [ ] Update CONTEXT.md if terms changed, plan/club-app/group-year.md, docs/web; full web suite
 
 ## Risks & alternatives

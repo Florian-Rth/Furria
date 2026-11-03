@@ -1,9 +1,9 @@
 import { Stage } from '@furria/studio/Stage';
+import type { ScoreDot } from '@furria/studio/score-formation';
+import { entranceOf, scoreDotKindOf } from '@furria/studio/score-formation';
 import type { StudioStage } from '@furria/studio/studio-schemas';
 import type { KkStageInkDensity } from '@furria/ui/KkStageInk';
 import type { FC } from 'react';
-import type { ScoreDot } from '../score-formation';
-import { entranceOf, scoreDotKindOf } from '../score-formation';
 
 interface ScoreFormationProps {
   label?: string;

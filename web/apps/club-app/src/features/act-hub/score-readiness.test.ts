@@ -1,7 +1,7 @@
+import type { ScoreStep } from '@furria/studio/score-steps';
 import { describe, expect, it } from 'vitest';
 import type { ActStudio } from '@/features/acts/schemas';
 import { readinessOf } from './score-readiness';
-import type { ScoreStep } from './score-steps';
 
 const urls = { normalised: '/n', preview: '/p', peaks: '/k' };
 

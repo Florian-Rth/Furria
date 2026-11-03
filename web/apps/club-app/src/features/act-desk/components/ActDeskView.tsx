@@ -1,3 +1,4 @@
+import { DESK_INSPECTOR, DESK_LABEL, DESK_LANES, DESK_STAGE } from '@furria/studio/desk-copy';
 import { useStudioKeys } from '@furria/studio/use-studio-keys';
 import { KkLaneDesk } from '@furria/ui/KkLaneDesk';
 import { KkStudioView } from '@furria/ui/KkStudioView';
@@ -8,7 +9,6 @@ import { useActStudioTakes } from '@/features/act-studio/hooks/use-act-studio-ta
 import type { StudioScreen } from '@/features/act-studio/hooks/use-studio-screen';
 import { useStudioSetup } from '@/features/act-studio/hooks/use-studio-setup';
 import { scrubKeyActionsOf } from '@/features/act-studio/studio-key-actions';
-import { DESK_INSPECTOR, DESK_LABEL, DESK_LANES, DESK_STAGE } from '../desk-copy';
 import { useActDesk } from '../hooks/use-act-desk';
 import { useDeskBorders } from '../hooks/use-desk-borders';
 import { useDeskLanes } from '../hooks/use-desk-lanes';

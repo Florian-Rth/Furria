@@ -1,5 +1,6 @@
 import type { MixPlayer } from '@furria/studio/mix-player';
 import type { TimelineRange } from '@furria/studio/music-timeline';
+import { stepAtSeconds } from '@furria/studio/score-steps';
 import type { AudioPeaks } from '@furria/studio/studio-schemas';
 import { useMixPlayer } from '@furria/studio/use-mix-player';
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
@@ -8,7 +9,6 @@ import { useState } from 'react';
 import { useAudioPeaks } from '@/features/acts/api';
 import { WHOLE_LABEL } from '../score-copy';
 import type { ScoreModel } from '../score-model';
-import { stepAtSeconds } from '../score-steps';
 
 const WHOLE_LENS = 'all';
 

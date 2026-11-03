@@ -1,14 +1,14 @@
-import { KkLaneBar } from '@furria/ui/KkLaneBar';
-import { KkLaneButton } from '@furria/ui/KkLaneButton';
-import type { FC } from 'react';
-import { STUDIO_ONION } from '@/features/act-studio/studio-copy';
 import {
   DESK_ADD_SPOT,
   DESK_ADD_SPOT_LABEL,
   DESK_FORMATION,
   DESK_MOVEMENT,
   DESK_STAGE_TOOLS,
-} from '../desk-copy';
+} from '@furria/studio/desk-copy';
+import { STUDIO_ONION } from '@furria/studio/studio-copy';
+import { KkLaneBar } from '@furria/ui/KkLaneBar';
+import { KkLaneButton } from '@furria/ui/KkLaneButton';
+import type { FC } from 'react';
 import type { ActDesk } from '../hooks/use-act-desk';
 
 interface DeskStageToolsProps {

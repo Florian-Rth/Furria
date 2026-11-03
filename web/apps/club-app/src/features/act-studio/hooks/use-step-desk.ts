@@ -1,14 +1,19 @@
-import type { StudioPart } from '@furria/studio/studio-schemas';
-import { useState } from 'react';
 import {
   newPartNameOf,
   partDeskTitleOf,
   STUDIO_MAIN_VIDEO_NONE,
   stepDeskTitleOf,
   videoNameOf,
-} from '../studio-copy';
-import type { PartDeskAnchor, PartSettings, PartShift } from '../studio-steps';
-import { deskPartOf, partBorderStepOf, partSettingsOf, startsAPart } from '../studio-steps';
+} from '@furria/studio/studio-copy';
+import type { StudioPart } from '@furria/studio/studio-schemas';
+import type { PartDeskAnchor, PartSettings, PartShift } from '@furria/studio/studio-steps';
+import {
+  deskPartOf,
+  partBorderStepOf,
+  partSettingsOf,
+  startsAPart,
+} from '@furria/studio/studio-steps';
+import { useState } from 'react';
 import type { ActStudioStepTool } from './use-act-studio-step-tool';
 import type { StudioScreen } from './use-studio-screen';
 

@@ -1,10 +1,10 @@
 import { partRangeOf } from '@furria/studio/music-timeline';
+import { videoNameOf } from '@furria/studio/studio-copy';
+import { partSettingsOf } from '@furria/studio/studio-steps';
+import { clampedVideoStartOf, overlapsRange, videoShelfOf } from '@furria/studio/studio-videos';
 import { useState } from 'react';
 import type { VideoMutations } from '../api';
 import type { VideoAlignment } from '../schemas';
-import { videoNameOf } from '../studio-copy';
-import { partSettingsOf } from '../studio-steps';
-import { clampedVideoStartOf, overlapsRange, videoShelfOf } from '../studio-videos';
 import type { ActStudioTakes } from './use-act-studio-takes';
 import type { StudioScreen } from './use-studio-screen';
 

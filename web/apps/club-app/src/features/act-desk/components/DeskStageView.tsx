@@ -1,6 +1,6 @@
+import { DESK_STAGE } from '@furria/studio/desk-copy';
 import type { FC } from 'react';
 import { StudioEditStage } from '@/features/act-studio/components/StudioEditStage';
-import { DESK_STAGE } from '../desk-copy';
 import type { ActDesk } from '../hooks/use-act-desk';
 
 interface DeskStageViewProps {

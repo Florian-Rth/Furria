@@ -1,6 +1,6 @@
+import type { FinalPlace } from '@furria/studio/studio-final';
+import { finalPlacesOf, placeIndexAt } from '@furria/studio/studio-final';
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
-import type { FinalPlace } from '../studio-final';
-import { finalPlacesOf, placeIndexAt } from '../studio-final';
 import type { StudioScreen } from './use-studio-screen';
 
 export interface FinalPlaces {

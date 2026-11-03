@@ -1,5 +1,5 @@
+import { setupShownOf, setupStartsOpen } from '@furria/studio/studio-setup';
 import { useState } from 'react';
-import { setupShownOf, setupStartsOpen } from '../studio-setup';
 import type { ActStudioStage } from './use-act-studio-stage';
 import type { StudioScreen } from './use-studio-screen';
 import type { StudioSetup } from './use-studio-setup';

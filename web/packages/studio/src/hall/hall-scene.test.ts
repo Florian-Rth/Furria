@@ -1,14 +1,8 @@
 import type { SpotPath } from '@furria/studio/choreography-motion';
-import type { StudioSpot, StudioStep } from '@furria/studio/studio-schemas';
+import type { StudioSpot } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
 import type { HallScene, HallTraining } from './hall-scene';
-import {
-  hallAbsencesOf,
-  hallDotsAt,
-  hallTrainingOf,
-  nextStepOf,
-  withNameSides,
-} from './hall-scene';
+import { hallAbsencesOf, hallDotsAt, hallTrainingOf, withNameSides } from './hall-scene';
 
 const person = (personId: number, firstName: string) => ({
   personId,
@@ -143,25 +137,5 @@ describe('hallAbsencesOf', () => {
 
   it('misses nobody without a training', () => {
     expect(hallAbsencesOf(spots, null)).toEqual([]);
-  });
-});
-
-describe('nextStepOf', () => {
-  const step = (stepId: number): StudioStep => ({
-    stepId,
-    name: '',
-    description: null,
-    startSeconds: stepId,
-    endSeconds: stepId + 1,
-    placement: 'onTimeline',
-  });
-  const steps = [step(1), step(2), step(3)];
-
-  it.each([
-    [1, 2],
-    [3, null],
-    [null, 1],
-  ])('follows step %s with step %s', (current, next) => {
-    expect(nextStepOf(steps, current)?.stepId ?? null).toBe(next);
   });
 });

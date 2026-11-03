@@ -1,6 +1,7 @@
 import { LessonBody } from '@furria/studio/LessonBody';
 import { LessonEmpty } from '@furria/studio/LessonEmpty';
 import { PracticeSteps } from '@furria/studio/PracticeSteps';
+import { STUDIO_LABEL } from '@furria/studio/studio-copy';
 import type { KkGroupTone } from '@furria/ui/group-tone';
 import { KkPracticeView } from '@furria/ui/KkPracticeView';
 import { KkStudioView } from '@furria/ui/KkStudioView';
@@ -13,7 +14,6 @@ import type { CastPerson } from '@/features/running-order/schemas';
 import { useActStudioStage } from '../hooks/use-act-studio-stage';
 import type { StudioEveningContext } from '../hooks/use-studio-screen';
 import { useStudioScreen } from '../hooks/use-studio-screen';
-import { STUDIO_LABEL } from '../studio-copy';
 import { ActStudioHead } from './ActStudioHead';
 import { ActStudioHero } from './ActStudioHero';
 import { ActStudioLargeKeys } from './ActStudioLargeKeys';

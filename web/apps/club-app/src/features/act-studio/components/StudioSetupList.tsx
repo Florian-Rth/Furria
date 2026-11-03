@@ -1,7 +1,7 @@
+import { SETUP_TITLE } from '@furria/studio/setup-copy';
 import { KkLaneChecklist } from '@furria/ui/KkLaneChecklist';
 import type { FC } from 'react';
 import type { StudioSetup } from '../hooks/use-studio-setup';
-import { SETUP_TITLE } from '../setup-copy';
 
 interface StudioSetupListProps {
   setup: StudioSetup;

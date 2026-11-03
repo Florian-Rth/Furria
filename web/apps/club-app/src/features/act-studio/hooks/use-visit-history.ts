@@ -1,6 +1,6 @@
 import type { SaveStatus } from '@furria/studio/autosave';
+import { historyLinesOf } from '@furria/studio/history-turn';
 import type { ActStudio } from '@/features/acts/schemas';
-import { historyLinesOf } from '../history-turn';
 import { CHANGE_TEXT, HISTORY_UNDONE, visitMetaOf } from '../undo-copy';
 import { useStudioHistoryControls } from './use-studio-history-controls';
 

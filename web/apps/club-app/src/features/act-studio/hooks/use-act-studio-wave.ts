@@ -1,28 +1,28 @@
 import { formatReadoutTime } from '@furria/studio/drag-readout';
 import type { MusicSegment, TimelineRange } from '@furria/studio/music-timeline';
 import { countAt } from '@furria/studio/music-timeline';
-import type { StudioSong } from '@furria/studio/studio-schemas';
-import type { TimelineHandle, TimelineRegion, TimelineSpan } from '@furria/studio/Timeline';
-import type { CentreScrub } from '@furria/studio/use-centre-scrub';
-import { useCentreScrub } from '@furria/studio/use-centre-scrub';
-import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
-import { useState } from 'react';
 import {
   cutHandleLabelOf,
   finalShiftLabelOf,
   songMetaOf,
   songNameOf,
   waveReadoutDetailOf,
-} from '../studio-copy';
-import { nudgedCutOf, trimmedCutOf } from '../studio-edits';
+} from '@furria/studio/studio-copy';
+import { nudgedCutOf, trimmedCutOf } from '@furria/studio/studio-edits';
 import {
   offsetStartingAt,
   sourceNameOf,
   stretchOf,
   tunedOffsetOf,
   UNSTRETCHED,
-} from '../studio-final';
-import { songSettingsOf } from '../studio-music';
+} from '@furria/studio/studio-final';
+import { songSettingsOf } from '@furria/studio/studio-music';
+import type { StudioSong } from '@furria/studio/studio-schemas';
+import type { TimelineHandle, TimelineRegion, TimelineSpan } from '@furria/studio/Timeline';
+import type { CentreScrub } from '@furria/studio/use-centre-scrub';
+import { useCentreScrub } from '@furria/studio/use-centre-scrub';
+import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
+import { useState } from 'react';
 import { useFinalPlaces } from './use-final-places';
 import type { StudioScreen } from './use-studio-screen';
 

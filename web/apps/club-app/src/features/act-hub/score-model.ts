@@ -2,15 +2,15 @@ import type { SpotPath } from '@furria/studio/choreography-motion';
 import { spotPathsOf } from '@furria/studio/choreography-motion';
 import type { CountMark, MusicSegment } from '@furria/studio/music-timeline';
 import { countMarksOf, musicLengthOf, musicSegmentsOf } from '@furria/studio/music-timeline';
+import type { FormationDot } from '@furria/studio/score-formation';
+import { formationAt } from '@furria/studio/score-formation';
+import type { ScorePart, ScoreStep, ScoreStepGroup } from '@furria/studio/score-steps';
+import { scorePartsOf, scoreStepsOf, stepGroupsOf } from '@furria/studio/score-steps';
 import { stageOrDefault } from '@furria/studio/stage-view';
 import type { StudioStage } from '@furria/studio/studio-schemas';
 import type { ActStudio } from '@/features/acts/schemas';
-import type { FormationDot } from './score-formation';
-import { formationAt } from './score-formation';
 import type { ReadinessItem } from './score-readiness';
 import { readinessOf } from './score-readiness';
-import type { ScorePart, ScoreStep, ScoreStepGroup } from './score-steps';
-import { scorePartsOf, scoreStepsOf, stepGroupsOf } from './score-steps';
 
 export interface ScoreModel {
   segments: readonly MusicSegment[];

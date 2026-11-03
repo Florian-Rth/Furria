@@ -1,9 +1,9 @@
 import { DragDropProvider } from '@dnd-kit/react';
+import { STUDIO_HOLDERS, STUDIO_HOLDERS_FREE } from '@furria/studio/studio-copy';
 import { KkStudioList } from '@furria/ui/KkStudioList';
 import type { FC } from 'react';
 import { FREE_PLACE_ID, useActStudioHolders } from '../hooks/use-act-studio-holders';
 import type { StudioScreen } from '../hooks/use-studio-screen';
-import { STUDIO_HOLDERS, STUDIO_HOLDERS_FREE } from '../studio-copy';
 import { ActStudioHolderChip } from './ActStudioHolderChip';
 import { ActStudioHolderPlace } from './ActStudioHolderPlace';
 
