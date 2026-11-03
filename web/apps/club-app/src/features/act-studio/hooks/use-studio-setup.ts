@@ -10,11 +10,12 @@ import {
   setupProgressTextOf,
   uploadFactOf,
 } from '@furria/studio/setup-copy';
-import type { Setup, SetupKey, SetupRow, SetupState } from '@furria/studio/studio-setup';
+import type { SetupKey, SetupRow } from '@furria/studio/studio-setup';
 import { setupOf, setupShownOf } from '@furria/studio/studio-setup';
+import type { StudioSetup } from '@furria/studio/studio-setup-view';
 import { markSecondsOf } from '@furria/studio/studio-steps';
+import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 import type { KkLaneGlyphName } from '@furria/ui/KkLaneGlyph';
-import type { ActStudioStage } from './use-act-studio-stage';
 import type { ActUploads } from './use-act-uploads';
 import { useActUploads } from './use-act-uploads';
 import { useStudioMusicRoute } from './use-studio-music-route';
@@ -33,32 +34,6 @@ export interface StudioSetupHost {
   leave: () => void;
   showStep: (stepId: number | null) => void;
   showSpots: () => void;
-}
-
-export interface StudioSetupRow {
-  key: SetupKey;
-  number: number;
-  total: number;
-  state: SetupState;
-  ready: boolean;
-  stateText: string;
-  glyph: KkLaneGlyphName;
-  title: string;
-  hint: string;
-  fact: string;
-  actionText: string;
-  act: () => void;
-}
-
-export interface StudioSetup {
-  setup: Setup;
-  shown: boolean;
-  rows: StudioSetupRow[];
-  progressText: string;
-  progressLabel: string;
-  songs: ActUploads;
-  videos: ActUploads;
-  rowOf: (key: SetupKey) => StudioSetupRow | null;
 }
 
 const stateTextOf = (row: SetupRow): string =>

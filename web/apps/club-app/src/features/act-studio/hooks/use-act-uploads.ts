@@ -1,6 +1,6 @@
 import type { UploadFailure } from '@furria/api-client/upload-failure';
 import { songNameOf } from '@furria/studio/studio-copy';
-import type { ChangeEvent } from 'react';
+import type { StudioFileInput } from '@furria/studio/studio-uploads';
 import { useRef, useState } from 'react';
 import { startUpload } from '@/lib/media/start-upload';
 
@@ -11,11 +11,9 @@ export interface ActUpload {
   failure: UploadFailure | null;
 }
 
-export interface ActUploads {
+export interface ActUploads extends StudioFileInput {
   rows: readonly ActUpload[];
-  fileInput: (node: HTMLInputElement | null) => void;
   choose: () => void;
-  onChosen: (event: ChangeEvent<HTMLInputElement>) => void;
   dismiss: (key: string) => void;
 }
 

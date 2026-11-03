@@ -10,7 +10,6 @@ import {
 import type { StageSize } from '@furria/studio/studio-formation';
 import { onStageOf } from '@furria/studio/studio-formation';
 
-const MIN_MOVE_SECONDS = 0.1;
 const FULL_TURN_DEGREES = 360;
 const HALF = 0.5;
 const STRAIGHT_METRES = GRID_METRES / 2;
@@ -22,9 +21,6 @@ export const KEYFRAME_EASINGS: readonly KeyframeEasing[] = [
   'easeInOut',
 ];
 
-const isAt = (keyframe: TimedKeyframe, seconds: number): boolean =>
-  Math.abs(keyframe.seconds - seconds) <= KEY_TOLERANCE_SECONDS;
-
 export const sameTrack = (
   left: readonly TimedKeyframe[],
   right: readonly TimedKeyframe[],
@@ -32,22 +28,6 @@ export const sameTrack = (
 
 const isMove = (from: TimedKeyframe, to: TimedKeyframe): boolean =>
   !samePlace(from.position, to.position) || to.bend !== null;
-
-const holdOf = (keyframe: TimedKeyframe, seconds: number): TimedKeyframe => ({
-  seconds,
-  position: keyframe.position,
-  bend: null,
-  easing: 'linear',
-  facingDegrees: keyframe.facingDegrees,
-});
-
-const withoutTwins = (keyframes: readonly TimedKeyframe[]): TimedKeyframe[] =>
-  keyframes.filter(
-    (keyframe, index) => index === 0 || !isAt(keyframe, keyframes[index - 1]?.seconds ?? 0),
-  );
-
-const clamped = (value: number, low: number, high: number): number =>
-  Math.min(high, Math.max(low, value));
 
 export const moveIndexNear = (
   keyframes: readonly TimedKeyframe[],
@@ -75,54 +55,6 @@ export const moveIndexNear = (
     moves.at(-1) ??
     null
   );
-};
-
-export const retimedMoveOf = (
-  keyframes: readonly TimedKeyframe[],
-  index: number,
-  target: TimeSpan,
-): readonly TimedKeyframe[] => {
-  const before = keyframes[index - 1];
-  const from = keyframes[index];
-  const to = keyframes[index + 1];
-  const after = keyframes[index + 2];
-
-  if (from === undefined || to === undefined) {
-    return keyframes;
-  }
-
-  const floor =
-    before === undefined
-      ? Number.NEGATIVE_INFINITY
-      : isMove(before, from)
-        ? from.seconds
-        : before.seconds;
-  const ceiling =
-    after === undefined ? Number.POSITIVE_INFINITY : isMove(to, after) ? to.seconds : after.seconds;
-
-  if (floor > ceiling - MIN_MOVE_SECONDS) {
-    return keyframes;
-  }
-
-  const start = clamped(target.start, floor, ceiling - MIN_MOVE_SECONDS);
-  const end = clamped(target.end, start + MIN_MOVE_SECONDS, ceiling);
-  const heldBefore = before !== undefined && samePlace(before.position, from.position);
-  const heldAfter = after !== undefined && samePlace(after.position, to.position);
-  const leaving =
-    from.seconds < start - KEY_TOLERANCE_SECONDS && !heldBefore
-      ? [from, holdOf(from, start)]
-      : [{ ...from, seconds: start }];
-  const arriving =
-    to.seconds > end + KEY_TOLERANCE_SECONDS && !heldAfter
-      ? [{ ...to, seconds: end }, holdOf(to, to.seconds)]
-      : [{ ...to, seconds: end }];
-
-  return withoutTwins([
-    ...keyframes.slice(0, index),
-    ...leaving,
-    ...arriving,
-    ...keyframes.slice(index + 2),
-  ]);
 };
 
 export const keyIndexAt = (

@@ -8,7 +8,7 @@ import {
   STUDIO_MOVE_STRAIGHT,
 } from '@furria/studio/studio-copy';
 import { KEYFRAME_EASINGS } from '@furria/studio/studio-movement';
-import type { ActStudioMovement } from './use-act-studio-movement';
+import type { ActStudioMovement } from '@furria/studio/use-act-studio-movement';
 
 const TURN_DEGREES = 45;
 

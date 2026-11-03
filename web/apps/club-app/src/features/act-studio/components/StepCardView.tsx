@@ -7,17 +7,17 @@ import {
   STEP_CARD_STEP_LABEL,
   STEP_CARDS_UNDO,
 } from '@furria/studio/step-cards-copy';
+import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
+import type { StepTexts } from '@furria/studio/use-step-texts';
+import type { VisitHistory } from '@furria/studio/visit-history';
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
 import { KkLaneButton } from '@furria/ui/KkLaneButton';
 import { KkLaneCards } from '@furria/ui/KkLaneCards';
 import type { FC } from 'react';
-import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 import type { ActStudioStepTool } from '../hooks/use-act-studio-step-tool';
 import type { StepCardTool } from '../hooks/use-step-card-tools';
 import type { StepCard } from '../hooks/use-step-cards';
-import type { StepTexts } from '../hooks/use-step-texts';
 import type { StudioScreen } from '../hooks/use-studio-screen';
-import type { VisitHistory } from '../hooks/use-visit-history';
 import { StepCardCounts } from './StepCardCounts';
 import { StepCardCountsLive } from './StepCardCountsLive';
 import { StepCardStage } from './StepCardStage';

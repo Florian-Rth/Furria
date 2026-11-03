@@ -1,17 +1,18 @@
+import { StudioSetupInputs } from '@furria/studio/StudioSetupInputs';
 import { STEP_CARDS_LABEL, STEP_CARDS_LIST } from '@furria/studio/step-cards-copy';
+import { scrubKeyActionsOf } from '@furria/studio/studio-key-actions';
+import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 import { useStudioKeys } from '@furria/studio/use-studio-keys';
 import { KkLaneCards } from '@furria/ui/KkLaneCards';
 import { KkLanePhone } from '@furria/ui/KkLanePhone';
 import { KkStudioView } from '@furria/ui/KkStudioView';
 import type { FC } from 'react';
-import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 import { useActStudioStepTool } from '../hooks/use-act-studio-step-tool';
 import { useStepCardTools } from '../hooks/use-step-card-tools';
 import { useStepCards } from '../hooks/use-step-cards';
 import { useStepCardsSetup } from '../hooks/use-step-cards-setup';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import { useVisitHistory } from '../hooks/use-visit-history';
-import { scrubKeyActionsOf } from '../studio-key-actions';
 import { ActStudioSpotSheet } from './ActStudioSpotSheet';
 import { ActStudioStepDesk } from './ActStudioStepDesk';
 import { StepCardsEmpty } from './StepCardsEmpty';
@@ -19,7 +20,6 @@ import { StepCardsHead } from './StepCardsHead';
 import { StepCardsSetupPanel } from './StepCardsSetupPanel';
 import { StepCardsTransport } from './StepCardsTransport';
 import { StepCardView } from './StepCardView';
-import { StudioSetupInputs } from './StudioSetupInputs';
 
 interface StepCardsViewProps {
   screen: StudioScreen;

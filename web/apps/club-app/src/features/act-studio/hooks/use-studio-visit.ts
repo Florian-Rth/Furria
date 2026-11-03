@@ -1,7 +1,7 @@
+import { EDITOR_NOTE_GROUP, EDITOR_NOTE_TEXT } from '@furria/studio/document-copy';
 import { useStudioKeys } from '@furria/studio/use-studio-keys';
 import { useKkNotice } from '@furria/ui/KkNotice';
 import { useEffect } from 'react';
-import { EDITOR_NOTE_GROUP, EDITOR_NOTE_TEXT } from '../document-copy';
 import { useStudioHistoryControls } from './use-studio-history-controls';
 
 const NO_ACT = 0;

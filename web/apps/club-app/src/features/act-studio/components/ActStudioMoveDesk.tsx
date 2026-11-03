@@ -12,10 +12,10 @@ import {
   STUDIO_NUDGE_BACK,
   STUDIO_NUDGE_ON,
 } from '@furria/studio/studio-copy';
+import type { ActStudioMovement } from '@furria/studio/use-act-studio-movement';
 import { KkButton } from '@furria/ui/KkButton';
 import { KkStudioDesk } from '@furria/ui/KkStudioDesk';
 import type { FC } from 'react';
-import type { ActStudioMovement } from '../hooks/use-act-studio-movement';
 import { useMoveDesk } from '../hooks/use-move-desk';
 
 interface ActStudioMoveDeskProps {

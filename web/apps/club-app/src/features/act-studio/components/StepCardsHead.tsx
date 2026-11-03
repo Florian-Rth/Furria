@@ -1,3 +1,5 @@
+import { StudioSaveButton } from '@furria/studio/StudioSaveButton';
+import { StudioSetupChip } from '@furria/studio/StudioSetupChip';
 import {
   STEP_CARDS_DONE,
   STEP_CARDS_DONE_LABEL,
@@ -7,15 +9,13 @@ import {
   STEP_CARDS_REDO,
   STEP_CARDS_UNDO,
 } from '@furria/studio/step-cards-copy';
+import type { VisitHistory } from '@furria/studio/visit-history';
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
 import { KkLaneButton } from '@furria/ui/KkLaneButton';
 import type { FC } from 'react';
 import type { StepCardsSetup } from '../hooks/use-step-cards-setup';
 import { useStudioMusicRoute } from '../hooks/use-studio-music-route';
 import type { StudioScreen } from '../hooks/use-studio-screen';
-import type { VisitHistory } from '../hooks/use-visit-history';
-import { StudioSaveButton } from './StudioSaveButton';
-import { StudioSetupChip } from './StudioSetupChip';
 
 interface StepCardsHeadProps {
   screen: StudioScreen;

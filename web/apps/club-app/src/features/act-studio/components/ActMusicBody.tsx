@@ -1,3 +1,4 @@
+import { StudioSaveButton } from '@furria/studio/StudioSaveButton';
 import {
   MUSIC_PAGE_LIST,
   MUSIC_PAGE_MUSIC,
@@ -8,6 +9,8 @@ import {
   STEP_CARDS_REDO,
   STEP_CARDS_UNDO,
 } from '@furria/studio/step-cards-copy';
+import { scrubKeyActionsOf } from '@furria/studio/studio-key-actions';
+import { useActStudioTakes } from '@furria/studio/use-act-studio-takes';
 import { useStudioKeys } from '@furria/studio/use-studio-keys';
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
 import { KkLaneButton } from '@furria/ui/KkLaneButton';
@@ -19,11 +22,9 @@ import type { ActStudio } from '@/features/acts/schemas';
 import type { ActMusicPage } from '../hooks/use-act-music-page';
 import { useActStudioFinal } from '../hooks/use-act-studio-final';
 import { useActStudioSongs } from '../hooks/use-act-studio-songs';
-import { useActStudioTakes } from '../hooks/use-act-studio-takes';
 import { useStudioScreen } from '../hooks/use-studio-screen';
 import { useVisitHistory } from '../hooks/use-visit-history';
 import type { StudioMusicTool } from '../schemas';
-import { scrubKeyActionsOf } from '../studio-key-actions';
 import { ActStudioFinalDesk } from './ActStudioFinalDesk';
 import { ActStudioSongDesk } from './ActStudioSongDesk';
 import { ActStudioSongList } from './ActStudioSongList';
@@ -31,7 +32,6 @@ import { ActStudioTakeList } from './ActStudioTakeList';
 import { ActStudioVideoDesk } from './ActStudioVideoDesk';
 import { ActStudioWaveLayer } from './ActStudioWaveLayer';
 import { StepCardsTransport } from './StepCardsTransport';
-import { StudioSaveButton } from './StudioSaveButton';
 
 interface ActMusicBodyProps {
   page: ActMusicPage;

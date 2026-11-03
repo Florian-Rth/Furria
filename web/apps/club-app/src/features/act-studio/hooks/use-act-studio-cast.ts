@@ -6,7 +6,7 @@ import {
   STUDIO_SELECTED,
   spotMetaOf,
 } from '@furria/studio/studio-copy';
-import type { ActStudioStage } from './use-act-studio-stage';
+import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 import type { StudioScreen } from './use-studio-screen';
 
 export interface ActStudioCastRow {

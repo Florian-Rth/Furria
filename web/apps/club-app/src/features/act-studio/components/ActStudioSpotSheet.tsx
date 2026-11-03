@@ -1,8 +1,8 @@
 import { STUDIO_ARRANGE, STUDIO_MOVE_DESK, STUDIO_SPOTS_CLOSE } from '@furria/studio/studio-copy';
+import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 import { KkPracticeSteps } from '@furria/ui/KkPracticeSteps';
 import type { FC } from 'react';
 import { useActStudioSpotDesk } from '../hooks/use-act-studio-spot-desk';
-import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import { ActStudioArrangeDesk } from './ActStudioArrangeDesk';
 import { ActStudioCastList } from './ActStudioCastList';

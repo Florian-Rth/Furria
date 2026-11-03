@@ -2,10 +2,10 @@ import { partRangeOf } from '@furria/studio/music-timeline';
 import { videoNameOf } from '@furria/studio/studio-copy';
 import { partSettingsOf } from '@furria/studio/studio-steps';
 import { clampedVideoStartOf, overlapsRange, videoShelfOf } from '@furria/studio/studio-videos';
+import type { ActStudioTakes } from '@furria/studio/use-act-studio-takes';
 import { useState } from 'react';
 import type { VideoMutations } from '../api';
 import type { VideoAlignment } from '../schemas';
-import type { ActStudioTakes } from './use-act-studio-takes';
 import type { StudioScreen } from './use-studio-screen';
 
 export interface VideoDeskPart {
