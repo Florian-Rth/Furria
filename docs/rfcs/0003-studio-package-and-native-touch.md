@@ -954,6 +954,21 @@ has a *Studio* section (pure modules own touch, playback and saving; devices own
 the list below). The real-screen checks of every phase are gathered in *Device checks*; they stay
 open until Florian runs them on the HTTPS build.
 
+## Findings 2026-11-03 (Florian, device test)
+
+Rulings: these override the earlier Phase 7 rulings where they differ.
+
+**A — timelines and copy**
+- [ ] Music edit screen: the readout at the bottom shows only the time; drop the step and count.
+- [ ] Editing timelines stop exactly where the finger lifts, with no momentum or glide after release, because momentum overshoots when positioning. Dragging stays fluid with no snapping. The step rail keeps its free momentum.
+- [ ] Every wave everywhere (practice strip, hub score track, lesson, desk, music page) uses the centre-line scrub (iOS style). This replaces the ruling that practice, hub and lesson keep the fixed view.
+- [ ] Rename the "Die Eins" label (first downbeat) to "Zählbeginn" everywhere in the UI copy.
+
+**B — screens**
+- [ ] The music page's video tab still shows the music: rebuild it into the video screen (list the videos per part, add, remove, rename, main/alternative, offset on the timeline).
+- [ ] Act main screen, edit menu: remove "Bearbeiten mit" and "Verlauf".
+- [ ] Position screen: the red "my number" dot is too big and hides the other dots; give it the same size as the others and mark it by colour or ring only.
+
 ## Device checks
 
 Every real-screen check this RFC still owes, gathered from the phases (letters mark where they came
