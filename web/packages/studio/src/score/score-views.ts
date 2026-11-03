@@ -32,7 +32,7 @@ export interface ScoreRowView {
 }
 
 export interface ScoreGroupView {
-  key: number;
+  key: string;
   anchor: string | undefined;
   title: string;
   meta: string;
@@ -77,8 +77,12 @@ const stepLabelOf = (step: ScoreStep): string =>
     .filter((piece) => piece !== '')
     .join(', ');
 
-const formationOf = (model: ScoreModel, stepId: number): FormationDot[] =>
-  model.formations.get(stepId) ?? [];
+const LOOSE_GROUP_KEY = 'loose';
+
+const NO_DOTS: readonly FormationDot[] = [];
+
+const formationOf = (model: ScoreModel, stepId: number): readonly FormationDot[] =>
+  model.formations.get(stepId) ?? NO_DOTS;
 
 export const timedStepsOf = (model: ScoreModel): ScoreStep[] =>
   model.steps.filter((step) => step.range !== null);
@@ -112,7 +116,7 @@ export const scoreGroupsOf = (model: ScoreModel, reveal: boolean): ScoreGroupVie
   let before: readonly FormationDot[] | null = null;
 
   return model.groups.map((group) => ({
-    key: group.part?.partId ?? 0,
+    key: group.part === null ? LOOSE_GROUP_KEY : `part-${group.part.partId}`,
     anchor: group.part === null ? undefined : partAnchorOf(group.part.partId),
     title: group.part?.name ?? LOOSE_STEPS,
     meta: partRangeTextOf(group.part?.range ?? null, group.steps.length),

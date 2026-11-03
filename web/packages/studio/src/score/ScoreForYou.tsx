@@ -6,7 +6,8 @@ import {
   PLACE_LABEL,
   PRACTISE_LABEL,
 } from '@furria/studio/score-copy';
-import type { ScoreHub } from '@furria/studio/score-hub';
+import type { ScoreYouView } from '@furria/studio/score-views';
+import type { StudioStage } from '@furria/studio/studio-schemas';
 import { KkButton } from '@furria/ui/KkButton';
 import { KkIcon } from '@furria/ui/KkIcon';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
@@ -15,13 +16,13 @@ import { KkText } from '@furria/ui/KkText';
 import type { FC, ReactNode } from 'react';
 
 interface ScoreForYouProps {
-  score: ScoreHub;
+  you: ScoreYouView | null;
+  stage: StudioStage;
   facts: ReactNode;
+  onPractise: (() => void) | null;
 }
 
-export const ScoreForYou: FC<ScoreForYouProps> = ({ score, facts }) => {
-  const { you, model } = score;
-
+export const ScoreForYou: FC<ScoreForYouProps> = ({ you, stage, facts, onPractise }) => {
   if (you === null) {
     return <KkPanelSection title={NEXT_TITLE}>{facts}</KkPanelSection>;
   }
@@ -30,18 +31,19 @@ export const ScoreForYou: FC<ScoreForYouProps> = ({ score, facts }) => {
     you.place === null || you.dots.length === 0 ? null : (
       <ScoreFormation
         label={ownPlaceLabelOf(you.place)}
-        stage={model.stage}
+        stage={stage}
         dots={you.dots}
         density="card"
       />
     );
   const place =
     you.place === null ? null : <KkScoreYou.Place label={PLACE_LABEL} number={you.place} />;
-  const practise = score.canPlay ? (
-    <KkButton startIcon={<KkIcon name="play" size="small" />} onClick={score.practise}>
-      {PRACTISE_LABEL}
-    </KkButton>
-  ) : null;
+  const practise =
+    onPractise === null ? null : (
+      <KkButton startIcon={<KkIcon name="play" size="small" />} onClick={onPractise}>
+        {PRACTISE_LABEL}
+      </KkButton>
+    );
   const meta =
     you.practiseMeta === null ? null : (
       <KkText variant="caption" tone="secondary">

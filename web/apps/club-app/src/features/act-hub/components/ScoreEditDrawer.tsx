@@ -5,16 +5,19 @@ import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { KkSelectRow } from '@furria/ui/KkSelectRow';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import type { ActHub } from '../hooks/use-act-hub';
 import { DOOR_COPY, EDIT_DOORS_TITLE, EDIT_DRAWER_LABEL, READINESS_TITLE } from '../score-copy';
+import type { ScoreDoorView, ScoreReadinessView } from '../score-hub-views';
 import { ScoreReadinessStrip } from './ScoreReadinessStrip';
 
 interface ScoreEditDrawerProps {
-  score: ActHub;
+  open: boolean;
+  doors: readonly ScoreDoorView[];
+  readiness: readonly ScoreReadinessView[] | null;
+  onClose: () => void;
 }
 
-export const ScoreEditDrawer: FC<ScoreEditDrawerProps> = ({ score }) => {
-  const doors = score.doors.map((door) => (
+export const ScoreEditDrawer: FC<ScoreEditDrawerProps> = ({ open, doors, readiness, onClose }) => {
+  const rows = doors.map((door) => (
     <KkSelectRow
       key={door.key}
       title={DOOR_COPY[door.key].label}
@@ -22,25 +25,25 @@ export const ScoreEditDrawer: FC<ScoreEditDrawerProps> = ({ score }) => {
       onClick={door.open}
     />
   ));
-  const readiness =
-    score.showReadiness && !score.wide ? (
+  const readinessSection =
+    readiness === null ? null : (
       <KkPanelSection title={READINESS_TITLE}>
-        <ScoreReadinessStrip items={score.readiness} />
+        <ScoreReadinessStrip items={readiness} />
       </KkPanelSection>
-    ) : null;
+    );
 
   return (
     <KkBottomDrawer
-      open={score.editOpen}
+      open={open}
       label={EDIT_DRAWER_LABEL}
       closeLabel={CLOSE_LABEL}
-      onClose={score.route.closeEdit}
+      onClose={onClose}
     >
       <Stack sx={{ gap: 2, px: 2, pt: 1, pb: 3 }}>
         <KkPanelSection title={EDIT_DOORS_TITLE}>
-          <KkPanel variant="list">{doors}</KkPanel>
+          <KkPanel variant="list">{rows}</KkPanel>
         </KkPanelSection>
-        {readiness}
+        {readinessSection}
       </Stack>
     </KkBottomDrawer>
   );

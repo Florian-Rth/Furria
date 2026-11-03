@@ -40,6 +40,7 @@ const model: ScoreModel = {
   paths: [],
   parts: [{ partId: 10, index: 0, name: 'Intro', range: { start: 0, end: 8 }, stepIds: [1, 2] }],
   steps: [first, empty, loose],
+  stepById: new Map([first, empty, loose].map((step) => [step.stepId, step])),
   groups: [
     {
       part: { partId: 10, index: 0, name: 'Intro', range: { start: 0, end: 8 }, stepIds: [1, 2] },

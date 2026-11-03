@@ -1,18 +1,30 @@
-import { ScoreFormation } from '@furria/studio/ScoreFormation';
+import { ScoreManualRow } from '@furria/studio/ScoreManualRow';
 import { MANUAL_LABEL, MOVEMENT_KEY, NO_STEPS, VIDEO_KEY } from '@furria/studio/score-copy';
-import type { ScoreHub } from '@furria/studio/score-hub';
+import type { ScoreGroupView } from '@furria/studio/score-views';
+import type { StudioStage } from '@furria/studio/studio-schemas';
+import type { KkGroupTone } from '@furria/ui/group-tone';
 import { KkScoreManual } from '@furria/ui/KkScoreManual';
 import { KkText } from '@furria/ui/KkText';
 import type { FC } from 'react';
 
 interface ScoreManualListProps {
-  score: ScoreHub;
+  groups: readonly ScoreGroupView[];
+  stage: StudioStage;
+  tone: KkGroupTone | null;
+  selectedStepId: number | null;
+  currentStepId: number | null;
+  onSelect: (stepId: number) => void;
 }
 
-export const ScoreManualList: FC<ScoreManualListProps> = ({ score }) => {
-  const { stage } = score.model;
-
-  if (score.groups.length === 0) {
+export const ScoreManualList: FC<ScoreManualListProps> = ({
+  groups,
+  stage,
+  tone,
+  selectedStepId,
+  currentStepId,
+  onSelect,
+}) => {
+  if (groups.length === 0) {
     return (
       <KkText variant="body2" tone="secondary">
         {NO_STEPS}
@@ -20,44 +32,22 @@ export const ScoreManualList: FC<ScoreManualListProps> = ({ score }) => {
     );
   }
 
-  const groups = score.groups.map((group) => {
+  const sections = groups.map((group) => {
     const head = (
-      <KkScoreManual.Head
-        title={group.title}
-        meta={group.meta}
-        tone={score.tone}
-        shade={group.shade}
-      />
+      <KkScoreManual.Head title={group.title} meta={group.meta} tone={tone} shade={group.shade} />
     );
     const rows = group.rows.map((row) => {
-      const select = (): void => {
-        score.selectRow(row.stepId);
-      };
-      const selected = row.stepId === score.paneStepId;
-      const current = row.stepId === score.player.activeStepId;
-      const figure = (
-        <ScoreFormation
-          stage={stage}
-          dots={row.dots}
-          density="thumb"
-          entranceDelay={row.entranceDelay}
-        />
-      );
+      const selected = row.stepId === selectedStepId;
+      const current = row.stepId === currentStepId;
 
       return (
-        <KkScoreManual.Row
+        <ScoreManualRow
           key={row.stepId}
-          label={row.label}
-          number={row.number}
-          title={row.title}
-          meta={row.meta}
-          figure={figure}
-          movement={row.movement}
-          video={row.video}
-          flag={row.flag}
+          row={row}
+          stage={stage}
           selected={selected}
           current={current}
-          onSelect={select}
+          onSelect={onSelect}
         />
       );
     });
@@ -72,7 +62,7 @@ export const ScoreManualList: FC<ScoreManualListProps> = ({ score }) => {
   return (
     <KkScoreManual label={MANUAL_LABEL}>
       <KkScoreManual.Legend movementLabel={MOVEMENT_KEY} videoLabel={VIDEO_KEY} />
-      {groups}
+      {sections}
     </KkScoreManual>
   );
 };

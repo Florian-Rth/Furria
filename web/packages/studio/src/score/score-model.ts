@@ -12,14 +12,15 @@ import type { Studio, StudioStage } from '@furria/studio/studio-schemas';
 export interface ScoreModel {
   segments: readonly MusicSegment[];
   length: number;
-  marks: CountMark[];
+  marks: readonly CountMark[];
   paths: readonly SpotPath[];
-  parts: ScorePart[];
-  steps: ScoreStep[];
-  groups: ScoreStepGroup[];
+  parts: readonly ScorePart[];
+  steps: readonly ScoreStep[];
+  stepById: ReadonlyMap<number, ScoreStep>;
+  groups: readonly ScoreStepGroup[];
   stage: StudioStage;
   ownSpotId: number | null;
-  formations: ReadonlyMap<number, FormationDot[]>;
+  formations: ReadonlyMap<number, readonly FormationDot[]>;
 }
 
 const ownSpotIdOf = (studio: Studio, viewerId: number | null): number | null =>
@@ -44,6 +45,7 @@ export const scoreModelOf = (studio: Studio, viewerId: number | null): ScoreMode
     paths,
     parts,
     steps,
+    stepById: new Map(steps.map((step) => [step.stepId, step])),
     groups: stepGroupsOf(steps, parts),
     stage,
     ownSpotId,
@@ -57,3 +59,6 @@ export const scoreModelOf = (studio: Studio, viewerId: number | null): ScoreMode
     ),
   };
 };
+
+export const stepOf = (model: ScoreModel, stepId: number | null): ScoreStep | null =>
+  stepId === null ? null : (model.stepById.get(stepId) ?? null);

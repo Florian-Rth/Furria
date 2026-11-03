@@ -13,7 +13,7 @@ import {
   stepStateTextOf,
   VIDEO_TITLE,
 } from '@furria/studio/score-copy';
-import type { ScoreHub } from '@furria/studio/score-hub';
+import type { ScoreStepTools } from '@furria/studio/score-step-tools';
 import type { ScoreStepView } from '@furria/studio/score-views';
 import { KkButton } from '@furria/ui/KkButton';
 import { KkIconButton } from '@furria/ui/KkIconButton';
@@ -30,13 +30,15 @@ const HALF = 6;
 const FULL = 12;
 
 interface ScoreStepPaneProps {
-  score: ScoreHub;
   view: ScoreStepView;
+  tools: ScoreStepTools;
+  wide: boolean;
   framed: boolean;
   onClose: (() => void) | null;
 }
 
-export const ScoreStepPane: FC<ScoreStepPaneProps> = ({ score, view, framed, onClose }) => {
+export const ScoreStepPane: FC<ScoreStepPaneProps> = ({ view, tools, wide, framed, onClose }) => {
+  const { practiseFrom, editFrom } = tools;
   const { step } = view;
   const ready = step.movement && step.video !== null;
   const state = ready ? 'done' : 'open';
@@ -45,21 +47,21 @@ export const ScoreStepPane: FC<ScoreStepPaneProps> = ({ score, view, framed, onC
     onClose === null ? undefined : (
       <KkIconButton label={CLOSE_LABEL} icon="close" size="small" onClick={onClose} />
     );
-  const practise = (): void => {
-    score.practiseFrom(step.stepId);
-  };
-  const edit = (): void => {
-    score.editFrom(step.stepId);
-  };
   const videoLabel = view.videoName ?? VIDEO_TITLE;
-  const practiseVariant = score.canEditStudio ? 'outlined' : 'contained';
+  const practiseVariant = editFrom === null ? 'contained' : 'outlined';
   const formation =
     view.dots.length === 0 ? (
       <KkText variant="body2" tone="secondary">
         {NO_FORMATION}
       </KkText>
     ) : (
-      <ScoreLiveFormation score={score} view={view} />
+      <ScoreLiveFormation scene={tools.scene} player={tools.player} view={view} />
+    );
+  const videoCaption =
+    view.videoName === null ? null : (
+      <KkText variant="caption" tone="secondary">
+        {view.videoName}
+      </KkText>
     );
   const video =
     view.videoSource === null || view.videoPoster === null || step.video === null ? (
@@ -74,24 +76,30 @@ export const ScoreStepPane: FC<ScoreStepPaneProps> = ({ score, view, framed, onC
           poster={view.videoPoster}
           offsetSeconds={step.video.offsetSeconds}
         />
-        <KkText variant="caption" tone="secondary">
-          {view.videoName}
-        </KkText>
+        {videoCaption}
       </Stack>
     );
   const flag = step.flag === null ? null : <KkNote>{flagTextOf(step.flag)}</KkNote>;
   const description = step.description ?? NO_DESCRIPTION;
   const descriptionTone = step.description === null ? 'secondary' : 'primary';
-  const practiseButton = score.canPlay ? (
-    <KkButton variant={practiseVariant} fullWidth onClick={practise}>
-      {PRACTISE_FROM_HERE}
-    </KkButton>
-  ) : null;
-  const editButton = score.canEditStudio ? (
-    <KkButton variant="contained" fullWidth onClick={edit}>
-      {EDIT_FROM_HERE}
-    </KkButton>
-  ) : null;
+  const practise = (): void => {
+    practiseFrom?.(step.stepId);
+  };
+  const edit = (): void => {
+    editFrom?.(step.stepId);
+  };
+  const practiseButton =
+    practiseFrom === null ? null : (
+      <KkButton variant={practiseVariant} fullWidth onClick={practise}>
+        {PRACTISE_FROM_HERE}
+      </KkButton>
+    );
+  const editButton =
+    editFrom === null ? null : (
+      <KkButton variant="contained" fullWidth onClick={edit}>
+        {EDIT_FROM_HERE}
+      </KkButton>
+    );
   const foot =
     practiseButton === null && editButton === null ? null : (
       <KkStepPane.Foot>
@@ -101,7 +109,7 @@ export const ScoreStepPane: FC<ScoreStepPaneProps> = ({ score, view, framed, onC
         </Stack>
       </KkStepPane.Foot>
     );
-  const split = score.wide ? HALF : FULL;
+  const split = wide ? HALF : FULL;
 
   return (
     <KkStepPane label={STEP_PANE_LABEL} framed={framed}>
