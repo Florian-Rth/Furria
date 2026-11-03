@@ -1,4 +1,4 @@
-import { beatSecondsOf, musicTicksOf, rulerTicksOf } from '@furria/studio/desk-time';
+import { beatSecondsOf, musicTicksOf } from '@furria/studio/desk-time';
 import { describe, expect, it } from 'vitest';
 
 const marksOf = (beats: number, beat: number, firstCount = 1) =>
@@ -14,17 +14,6 @@ describe('beatSecondsOf', () => {
     [[], 0.5],
   ])('finds the typical beat', (marks, expected) => {
     expect(beatSecondsOf(marks)).toBeCloseTo(expected);
-  });
-});
-
-describe('rulerTicksOf', () => {
-  it.each([
-    [55, 10, 6, '0:50'],
-    [60, 100, 61, '1:00'],
-  ])('labels %ds at %d px per second', (length, perSecond, ticks, last) => {
-    const result = rulerTicksOf(length, perSecond);
-    expect(result).toHaveLength(ticks);
-    expect(result.at(-1)?.text).toBe(last);
   });
 });
 

@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import { percentOf } from '../../../internal/score-paint';
 import type { KkTimelineSpan } from '../timeline-paint';
-import { LANE_VARS, spanPlaceOf, WAVE_HEIGHT, wavePathOf, waveTop } from '../timeline-paint';
+import { spanPlaceOf, WAVE_HEIGHT, waveBottom, wavePathOf, waveTop } from '../timeline-paint';
 
 interface KkTimelinePlayedProps {
   bars: readonly number[];
@@ -23,7 +23,7 @@ export const KkTimelinePlayed: FC<KkTimelinePlayedProps> = ({ bars, share, span 
       sx={{
         position: 'absolute',
         top: waveTop,
-        bottom: `var(${LANE_VARS.steps})`,
+        bottom: waveBottom,
         pointerEvents: 'none',
       }}
     >

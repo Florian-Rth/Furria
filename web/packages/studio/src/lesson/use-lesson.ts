@@ -16,12 +16,12 @@ import { stepCountsOf } from '@furria/studio/lesson-counts';
 import type { LessonPicturePlan } from '@furria/studio/lesson-picture';
 import { lessonPictureOf } from '@furria/studio/lesson-picture';
 import type { LessonScreen } from '@furria/studio/lesson-screen';
-import type { LessonStripLanes } from '@furria/studio/lesson-strip';
-import { lessonStripOf } from '@furria/studio/lesson-strip';
 import { stepRangeOf } from '@furria/studio/music-timeline';
 import { nextStepOf } from '@furria/studio/next-step';
 import { playerKeyActionsOf } from '@furria/studio/practice-key-actions';
 import { shownStepNameOf, stepNumberOf } from '@furria/studio/step-names';
+import type { TimelineRows } from '@furria/studio/timeline-rows';
+import { timelineRowsOf } from '@furria/studio/timeline-rows';
 import type { CentreScrub } from '@furria/studio/use-centre-scrub';
 import { useCentreScrub } from '@furria/studio/use-centre-scrub';
 import type { PracticeSegmentGroupRow } from '@furria/studio/use-practice-segments';
@@ -58,7 +58,7 @@ export interface LessonPicture {
   swap: () => void;
 }
 
-export interface LessonStripView extends LessonStripLanes {
+export interface LessonStripView extends TimelineRows {
   centre: CentreScrub;
 }
 
@@ -154,7 +154,12 @@ export const useLesson = (screen: LessonScreen): Lesson => {
       },
     },
     strip: {
-      ...lessonStripOf(playback.steps, playback.parts),
+      ...timelineRowsOf(
+        screen.studio,
+        playback.paths,
+        playback.countMarks,
+        practice.step?.stepId ?? null,
+      ),
       centre,
     },
     ownPath: playback.paths.find((path) => path.spotId === playback.ownSpotId) ?? null,

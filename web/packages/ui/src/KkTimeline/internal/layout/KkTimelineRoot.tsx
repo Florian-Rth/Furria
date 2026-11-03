@@ -3,8 +3,8 @@ import type { FC, HTMLAttributes, PropsWithChildren, ReactNode } from 'react';
 import { raisedSurface } from '../../../internal/raised-surface';
 import type { KkSx } from '../../../kk-sx';
 import { kkTokens } from '../../../tokens';
-import type { KkTimelineDensity } from '../timeline-paint';
-import { LANE_VARS, TIMELINE_LANES } from '../timeline-paint';
+import type { KkTimelineDensity, KkTimelineRows } from '../timeline-paint';
+import { rowVarsOf, TIMELINE_DENSITIES } from '../timeline-paint';
 import { KkTimelineCentre } from '../ui/KkTimelineCentre';
 import { KkTimelineCanvas } from './KkTimelineCanvas';
 
@@ -26,6 +26,7 @@ export interface KkTimelineWork {
 interface KkTimelineRootProps extends PropsWithChildren {
   label: string;
   density: KkTimelineDensity;
+  rows: KkTimelineRows;
   window: KkTimelineWindow;
   work?: KkTimelineWork | null;
   centred?: boolean;
@@ -44,6 +45,7 @@ const cursorOf = (centred: boolean, working: boolean): string | undefined => {
 export const KkTimelineRoot: FC<KkTimelineRootProps> = ({
   label,
   density,
+  rows,
   window,
   work = null,
   centred = false,
@@ -51,7 +53,8 @@ export const KkTimelineRoot: FC<KkTimelineRootProps> = ({
   sx,
   children,
 }) => {
-  const lanes = TIMELINE_LANES[density];
+  const { height } = TIMELINE_DENSITIES[density];
+  const rowVars = rowVarsOf(density, rows);
   const working = work !== null;
   const canvas = centred ? (
     <>
@@ -75,11 +78,9 @@ export const KkTimelineRoot: FC<KkTimelineRootProps> = ({
       {...work?.handlers}
       sx={[
         {
-          [LANE_VARS.ruler]: lanes.ruler,
-          [LANE_VARS.parts]: lanes.parts,
-          [LANE_VARS.steps]: lanes.steps,
+          ...rowVars,
           position: 'relative',
-          height: lanes.height,
+          height,
           minWidth: 0,
           cursor,
         },

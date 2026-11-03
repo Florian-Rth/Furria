@@ -2,6 +2,7 @@ import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import type { KkGroupTone } from '../../../internal/group-tone';
 import { percentOf } from '../../../internal/score-paint';
+import type { KkTimelinePan } from '../use-sticky-name';
 import type { KkTimelinePart } from './KkTimelinePartBand';
 import { KkTimelinePartBand } from './KkTimelinePartBand';
 
@@ -9,10 +10,17 @@ interface KkTimelinePartsProps {
   tone: KkGroupTone | null;
   parts: readonly KkTimelinePart[];
   lane?: string;
+  pan?: KkTimelinePan | null;
   onSelect?: (key: number) => void;
 }
 
-export const KkTimelineParts: FC<KkTimelinePartsProps> = ({ tone, parts, lane, onSelect }) => {
+export const KkTimelineParts: FC<KkTimelinePartsProps> = ({
+  tone,
+  parts,
+  lane,
+  pan = null,
+  onSelect,
+}) => {
   const bands = parts.map((part) => (
     <KkTimelinePartBand
       key={part.key}
@@ -20,6 +28,7 @@ export const KkTimelineParts: FC<KkTimelinePartsProps> = ({ tone, parts, lane, o
       tone={tone}
       place={{ left: percentOf(part.from), width: percentOf(part.to - part.from) }}
       lane={lane}
+      pan={pan}
       onSelect={onSelect}
     />
   ));

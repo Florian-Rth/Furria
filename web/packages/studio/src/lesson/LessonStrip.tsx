@@ -1,5 +1,5 @@
 import { LESSON_STRIP_LABEL } from '@furria/studio/lesson-copy';
-import { Timeline } from '@furria/studio/Timeline';
+import { StudioTimeline } from '@furria/studio/StudioTimeline';
 import type { Lesson } from '@furria/studio/use-lesson';
 import type { KkGroupTone } from '@furria/ui/group-tone';
 import type { FC } from 'react';
@@ -12,18 +12,19 @@ interface LessonStripProps {
 export const LessonStrip: FC<LessonStripProps> = ({ lesson, tone }) => {
   const { strip } = lesson;
   const { playback, practice } = lesson.screen;
-  const current = practice.step?.stepId ?? null;
+  const parts = { parts: strip.parts, tone };
+  const wave = { segments: playback.segments, peaks: playback.peaksByItem };
+  const steps = { steps: strip.steps, activeKey: practice.step?.stepId ?? null };
 
   return (
-    <Timeline
+    <StudioTimeline
       label={LESSON_STRIP_LABEL}
       density="strip"
       length={playback.length}
       centre={strip.centre}
-    >
-      <Timeline.Parts tone={tone} parts={strip.parts} />
-      <Timeline.Wave segments={playback.segments} peaks={playback.peaksByItem} />
-      <Timeline.Ticks steps={strip.ticks} activeKey={current} />
-    </Timeline>
+      parts={parts}
+      wave={wave}
+      steps={steps}
+    />
   );
 };

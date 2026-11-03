@@ -998,6 +998,44 @@ Group B rulings taken while building (2026-11-03):
 - The edit menu drops *Bearbeiten mit* and *Verlauf*; co-editors and history stay reachable on the act's details.
 - The own spot is the same size as every other spot, marked only by the red fill and a thin red ring with a paper gap; the pulse and the card halo are gone.
 
+**C — one timeline everywhere (rulings 2026-11-03, afternoon)**
+- [x] One shared centre-scrub timeline component, used identically on the music page (incl. the video tab), the act hub, the desk, the lesson strip and practice. Pages differ only by props that choose the layers and lanes (ruler, parts, wave, counts, cuts, steps, videos, keyframes) and by density/height: same proportions, same paint, same behaviour. Delete the page-specific track compositions.
+- [x] Momentum only on a really fast flick: a normal release still stops exactly where the finger lifts; a release above a named velocity threshold glides with momentum so the line can travel far. Every centre timeline; the precision-drag tiers never glide.
+- [x] The part name stays visible on its band wherever the part is on screen (sticky to the left edge).
+- [x] Ruler labels every 5 s on the phone, spacing adapts to the zoom (pure and tested).
+
+Group C built 2026-11-03. Decisions:
+- **One component:** `StudioTimeline` (`@furria/studio/StudioTimeline`) is the only centre-scrub
+  composition. Layer props pick what shows — `ruler`, `parts`, `wave` (with `counts`, `cuts`,
+  `beats`, `regions`, `trim`, `handles`, `note`), `steps` (with `borders`, `note`), `videos`,
+  `keys` — and `density` picks only the height. The stack is fixed top to bottom: ruler, parts,
+  wave, steps, videos, keys; each row has one size for every page (`ROW_SIZES` in
+  `timeline-paint`), the wave takes the rest. The strip density (lesson) keeps the compact rows and
+  draws the steps as ticks because step blocks do not fit 0.6 rem. Deleted: `ScoreTrack`, the
+  desk/film lane stack (`Timeline.Lane`, `KkTimeline.Lane`, `KkTimeline.LaneLabel`, lane sizes),
+  `lesson-strip`, the desk ruler marks; the page files (`ActStudioWaveLayer`,
+  `ActStudioVideoLayer`, `DeskLanes`, `LessonStrip`, `ScorePanel`) only bind their hook to the
+  props. Rows that need their own band (videos, keys, step borders, notes, song regions, beat
+  marks) sit in `KkTimeline.Row`, which resets the row variables so its layers fill it.
+- **Same rows everywhere:** parts and steps come from `timelineRowsOf` (the score's
+  `scorePartsOf`/`scoreStepsOf`), so music page, video tab, desk, lesson and hub show the same
+  part colours (group tone, now on the screen as `tone`), the same step blocks (number, name,
+  movement and video marks) and the same lane ids (`TIMELINE_LANE`) for taps. The desk's part and
+  step blocks became the part band and step blocks; a focused part gets a ring (`selected`); the
+  lane labels and the desk's spots aside are gone (the inspector shows the spots). The music
+  page's panel grows to `clamp(13rem, 36%, 17rem)` so the wave keeps room under ruler, parts and
+  steps.
+- **Flick:** `FLICK_PX_PER_MS = 1.5` (`centre-scrub`); `flickVelocityOf` passes the release
+  velocity only at or above it and only on the full tier. Below it the line stops where the finger
+  lifts; above it the strip glides with the step rail's inertia (bounded, rubber at the ends) and
+  the player settles where it stops. A release past an end still springs back.
+- **Sticky part name:** the name rides a motion value (`useStickyName`) computed from the strip
+  offset, so it stays at the left edge while its part is on screen and stops at the band's end —
+  transform only, measured once per size change.
+- **Ruler:** `tickStepOf(pxPerSecond)` picks the first of 1, 2, 5, 10, 15, 30, 60, 120 s whose
+  labels are at least `RULER_LABEL_PX = 120` apart: 5 s at the phone's default 40 px/s, 2 s and
+  1 s when zoomed in, 30 s on the fitted wide hub.
+
 ## Device checks
 
 Every real-screen check this RFC still owes, gathered from the phases (letters mark where they came
@@ -1015,6 +1053,7 @@ from). Run on the HTTPS static build on iPhone, Pixel and iPad Safari unless a l
 - [ ] **J — Desk on the iPad (phase 12f):** the desk stays smooth while set-up uploads tick and history changes (it re-renders on both)
 - [ ] **K — Screen reader (phase 12g):** VoiceOver on the phone step drawer (a *Schritt* dialog holding the *Schritt* region) and the score, manual and facts slots (desk slot and kit both labelled)
 - [ ] **L — Video screen (findings 2026-11-03 B):** layout at 390 px and on the iPad, video block drag sets the offset without moving the music, the preview follows play and scrub, the own spot reads clearly at the same size
+- [ ] **M — One timeline (findings 2026-11-03 C):** a fast flick glides far and a normal release stops dead on iPhone and iPad; the part name stays readable while scrubbing; hub, music page, video tab, desk and lesson read the same
 
 ## Risks & alternatives
 

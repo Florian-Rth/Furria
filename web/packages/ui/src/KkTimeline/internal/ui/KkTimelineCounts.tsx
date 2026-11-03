@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import { inkWash } from '../../../internal/ink-wash';
 import { percentOf } from '../../../internal/score-paint';
-import { LANE_VARS, waveTop } from '../timeline-paint';
+import { waveBottom, waveTop } from '../timeline-paint';
 
 interface KkTimelineCountsProps {
   shares: readonly number[];
@@ -32,7 +32,7 @@ export const KkTimelineCounts: FC<KkTimelineCountsProps> = ({ shares }) => {
         left: 0,
         right: 0,
         top: waveTop,
-        bottom: `var(${LANE_VARS.steps})`,
+        bottom: waveBottom,
         pointerEvents: 'none',
       }}
     >

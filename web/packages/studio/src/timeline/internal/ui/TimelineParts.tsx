@@ -13,6 +13,7 @@ export interface TimelinePart {
   range: TimelineRange | null;
   shade: number;
   current?: boolean;
+  selected?: boolean;
 }
 
 interface TimelinePartsProps {
@@ -23,12 +24,13 @@ interface TimelinePartsProps {
 }
 
 export const TimelineParts: FC<TimelinePartsProps> = ({ parts, tone, lane, onSelect }) => {
-  const { length } = useTimeline();
+  const { length, centre } = useTimeline();
   const bands = spanSharesOf(parts, length);
+  const pan = centre === null ? null : { x: centre.x, width: centre.contentWidth };
 
   return (
     <TimelineStrip>
-      <KkTimeline.Parts tone={tone} parts={bands} lane={lane} onSelect={onSelect} />
+      <KkTimeline.Parts tone={tone} parts={bands} lane={lane} pan={pan} onSelect={onSelect} />
     </TimelineStrip>
   );
 };

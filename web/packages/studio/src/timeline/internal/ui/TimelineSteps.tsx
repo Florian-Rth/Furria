@@ -19,23 +19,27 @@ interface TimelineStepsProps {
   label: string;
   steps: readonly TimelineStep[];
   activeKey: number | null;
-  selectedKey: number | null;
+  selectedKey?: number | null;
   revealSeconds?: number | null;
   lane?: string;
-  onSelect: (key: number) => void;
+  onSelect?: (key: number) => void;
 }
+
+const IGNORE = (): void => undefined;
 
 export const TimelineSteps: FC<TimelineStepsProps> = ({
   label,
   steps,
   activeKey,
-  selectedKey,
+  selectedKey = null,
   revealSeconds = null,
   lane,
   onSelect,
 }) => {
   const { length } = useTimeline();
   const blocks = spanSharesOf(steps, length);
+  const interactive = onSelect !== undefined;
+  const select = onSelect ?? IGNORE;
 
   return (
     <TimelineStrip>
@@ -44,10 +48,10 @@ export const TimelineSteps: FC<TimelineStepsProps> = ({
         blocks={blocks}
         activeKey={activeKey}
         selectedKey={selectedKey}
-        interactive
+        interactive={interactive}
         revealSeconds={revealSeconds}
         lane={lane}
-        onSelect={onSelect}
+        onSelect={select}
       />
     </TimelineStrip>
   );

@@ -1,7 +1,7 @@
 import type { CountMark, MusicSegment } from '@furria/studio/music-timeline';
-import { ScoreTrack } from '@furria/studio/ScoreTrack';
 import { ScoreTransport } from '@furria/studio/ScoreTransport';
-import { NO_MUSIC } from '@furria/studio/score-copy';
+import { StudioTimeline } from '@furria/studio/StudioTimeline';
+import { NO_MUSIC, SCORE_LABEL } from '@furria/studio/score-copy';
 import type { ScoreStep } from '@furria/studio/score-steps';
 import type { TimelinePart, TimelineStep } from '@furria/studio/Timeline';
 import type { ScorePlayer } from '@furria/studio/use-score-player';
@@ -10,6 +10,8 @@ import type { KkGroupTone } from '@furria/ui/group-tone';
 import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+
+const REVEAL_SECONDS = 1.6;
 
 interface ScorePanelProps {
   player: ScorePlayer;
@@ -29,13 +31,16 @@ interface ScorePanelProps {
 export const ScorePanel: FC<ScorePanelProps> = ({
   player,
   nowStep,
-  wide,
+  segments,
   marks,
   parts,
   steps,
+  tone,
+  wide,
+  reveal,
+  selectedStepId,
   onSelectStep,
   onSelectPart,
-  ...track
 }) => {
   const timeline = useScoreTimeline({
     player,
@@ -46,6 +51,19 @@ export const ScorePanel: FC<ScorePanelProps> = ({
     onSelectStep,
     onSelectPart,
   });
+
+  const revealSeconds = reveal ? REVEAL_SECONDS : null;
+  const selectPart = wide ? undefined : onSelectPart;
+  const density = wide ? 'full' : 'track';
+  const wave = { segments, peaks: player.peaks, revealSeconds, counts: marks, cuts: true };
+  const partBands = { parts, tone, onSelect: selectPart };
+  const stepBlocks = {
+    steps,
+    activeKey: player.activeStepId,
+    selectedKey: selectedStepId,
+    revealSeconds,
+    onSelect: onSelectStep,
+  };
 
   if (player.length <= 0) {
     return (
@@ -58,16 +76,15 @@ export const ScorePanel: FC<ScorePanelProps> = ({
   return (
     <Stack sx={{ gap: 1, minWidth: 0 }}>
       <ScoreTransport player={player} timeline={timeline} nowStep={nowStep} wide={wide} />
-      <ScoreTrack
-        player={player}
+      <StudioTimeline
+        label={SCORE_LABEL}
+        density={density}
+        length={player.length}
         centre={timeline.centre}
-        marks={marks}
-        parts={parts}
-        steps={steps}
-        wide={wide}
-        onSelectStep={onSelectStep}
-        onSelectPart={onSelectPart}
-        {...track}
+        ruler
+        parts={partBands}
+        wave={wave}
+        steps={stepBlocks}
       />
     </Stack>
   );

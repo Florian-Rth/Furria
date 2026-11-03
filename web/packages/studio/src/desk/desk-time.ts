@@ -2,8 +2,6 @@ import { countEightsOf } from '@furria/studio/count-marks';
 import type { CountMark } from '@furria/studio/music-timeline';
 
 const FALLBACK_BEAT_SECONDS = 0.5;
-const RULER_STEPS_SECONDS: readonly number[] = [1, 2, 5, 10, 15, 30, 60, 120];
-const RULER_LABEL_PX = 72;
 const BEAT_TICK_PX = 6;
 const COUNT_LABEL_PX = 20;
 const EIGHT_LABEL_PX = 18;
@@ -24,27 +22,6 @@ export const beatSecondsOf = (marks: readonly CountMark[]): number => {
     .sort((left, right) => left - right);
 
   return gaps[Math.floor(gaps.length / 2)] ?? FALLBACK_BEAT_SECONDS;
-};
-
-const clockOf = (seconds: number): string => {
-  const whole = Math.round(seconds);
-  const minutes = Math.floor(whole / 60);
-  return `${minutes}:${String(whole % 60).padStart(2, '0')}`;
-};
-
-export const rulerTicksOf = (length: number, perSecond: number): DeskTick[] => {
-  const step =
-    RULER_STEPS_SECONDS.find((seconds) => seconds * perSecond >= RULER_LABEL_PX) ??
-    RULER_STEPS_SECONDS.at(-1) ??
-    60;
-  const count = length <= 0 ? 0 : Math.floor(length / step) + 1;
-
-  return Array.from({ length: count }, (_, index) => ({
-    key: String(index),
-    seconds: index * step,
-    strong: true,
-    text: clockOf(index * step),
-  }));
 };
 
 export const musicTicksOf = (marks: readonly CountMark[], perSecond: number): DeskTick[] => {

@@ -3,7 +3,7 @@ import type { FC } from 'react';
 import { inkWash } from '../../../internal/ink-wash';
 import { percentOf } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
-import { LANE_VARS } from '../timeline-paint';
+import { stepsBottom, waveTop } from '../timeline-paint';
 import type { KkTimelineStepBlock } from './KkTimelineStep';
 import { KkTimelineStep } from './KkTimelineStep';
 
@@ -42,8 +42,8 @@ export const KkTimelineSteps: FC<KkTimelineStepsProps> = ({
         }}
         sx={(theme) => ({
           position: 'absolute',
-          top: `var(${LANE_VARS.ruler})`,
-          bottom: 0,
+          top: waveTop,
+          bottom: stepsBottom,
           backgroundColor: inkWash(theme, '7%'),
           borderLeft: `${kkTokens.line.hair}px solid ${(theme.vars ?? theme).palette.text.secondary}`,
           borderRight: `${kkTokens.line.hair}px solid ${(theme.vars ?? theme).palette.text.secondary}`,

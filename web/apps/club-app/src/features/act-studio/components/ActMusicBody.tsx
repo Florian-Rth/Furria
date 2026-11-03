@@ -16,6 +16,7 @@ export const ActMusicBody: FC<ActMusicBodyProps> = ({ page, actId, studio }) => 
     startEditing: true,
     startHall: null,
     startTool: page.tool,
+    tone: page.tone,
   });
 
   return <ActMusicView screen={screen} onTool={page.chooseTool} />;

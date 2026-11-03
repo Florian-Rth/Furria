@@ -4,7 +4,7 @@ import type { FC, KeyboardEvent } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { percentOf } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
-import { LANE_VARS, waveTop } from '../timeline-paint';
+import { waveBottom, waveTop } from '../timeline-paint';
 
 const PERCENT = 100;
 
@@ -58,7 +58,7 @@ export const KkTimelineHandle: FC<KkTimelineHandleProps> = ({
       sx={(theme) => ({
         position: 'absolute',
         top: waveTop,
-        bottom: `var(${LANE_VARS.steps})`,
+        bottom: waveBottom,
         width: kkTokens.tapTarget,
         transform: 'translateX(-50%)',
         display: 'grid',

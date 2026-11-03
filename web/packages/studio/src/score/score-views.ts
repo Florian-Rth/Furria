@@ -2,9 +2,7 @@ import { partAnchorOf } from '@furria/studio/score-anchor';
 import {
   countsTextOf,
   flagTextOf,
-  glyphsLabelOf,
   LOOSE_STEPS,
-  partHintOf,
   partRangeTextOf,
   practiseMetaOf,
   rangeTextOf,
@@ -17,6 +15,7 @@ import type { ScoreModel } from '@furria/studio/score-model';
 import type { ScoreStep } from '@furria/studio/score-steps';
 import type { Studio } from '@furria/studio/studio-schemas';
 import type { TimelinePart, TimelineStep } from '@furria/studio/Timeline';
+import { partRowsOf, stepRowLabelOf, stepRowsOf } from '@furria/studio/timeline-rows';
 
 export interface ScoreRowView {
   stepId: number;
@@ -68,15 +67,6 @@ const shownDotOf = (dot: FormationDot): ScoreDot => ({
 
 const shownDotsOf = (dots: readonly FormationDot[]): ScoreDot[] => dots.map(shownDotOf);
 
-const stepLabelOf = (step: ScoreStep): string =>
-  [
-    `${step.number}. ${stepTitleOf(step.number, step.name)}`,
-    rangeTextOf(step.range),
-    glyphsLabelOf(step.movement, step.video !== null, step.flag),
-  ]
-    .filter((piece) => piece !== '')
-    .join(', ');
-
 const LOOSE_GROUP_KEY = 'loose';
 
 const NO_DOTS: readonly FormationDot[] = [];
@@ -94,7 +84,7 @@ const rowOf = (
   entranceDelay: number | null,
 ): ScoreRowView => ({
   stepId: step.stepId,
-  label: stepLabelOf(step),
+  label: stepRowLabelOf(step),
   number: step.number,
   title: stepTitleOf(step.number, step.name),
   meta: [rangeTextOf(step.range), countsTextOf(step.counts)]
@@ -172,22 +162,6 @@ export const scoreYouOf = (
   };
 };
 
-export const timelinePartsOf = (model: ScoreModel): TimelinePart[] =>
-  model.parts.map((part) => ({
-    key: part.partId,
-    label: part.name,
-    hint: partHintOf(part.name),
-    range: part.range,
-    shade: part.index,
-  }));
+export const timelinePartsOf = (model: ScoreModel): TimelinePart[] => partRowsOf(model.parts);
 
-export const timelineStepsOf = (model: ScoreModel): TimelineStep[] =>
-  timedStepsOf(model).map((step) => ({
-    key: step.stepId,
-    number: step.number,
-    name: stepTitleOf(step.number, step.name),
-    label: stepLabelOf(step),
-    range: step.range,
-    movement: step.movement,
-    video: step.video !== null,
-  }));
+export const timelineStepsOf = (model: ScoreModel): TimelineStep[] => stepRowsOf(model.steps);

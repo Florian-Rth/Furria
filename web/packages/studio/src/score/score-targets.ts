@@ -1,8 +1,6 @@
 import type { CentreTarget } from '@furria/studio/centre-targets';
 import type { TimelineRange } from '@furria/studio/music-timeline';
-
-export const SCORE_PART_LANE = 'parts';
-export const SCORE_STEP_LANE = 'steps';
+import { TIMELINE_LANE } from '@furria/studio/studio-timeline-layers';
 
 export interface ScoreTap {
   kind: 'part' | 'step';
@@ -27,7 +25,7 @@ const spansOf = (items: readonly Spanned[], kind: ScoreTap['kind']): ScoreTarget
             key: `${kind}:${item.key}`,
             seconds: item.range.start,
             until: item.range.end,
-            lane: kind === 'part' ? SCORE_PART_LANE : SCORE_STEP_LANE,
+            lane: kind === 'part' ? TIMELINE_LANE.parts : TIMELINE_LANE.steps,
             movable: false,
             tappable: true,
             tap: { kind, id: item.key },

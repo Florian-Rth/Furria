@@ -226,10 +226,6 @@ export const STUDIO_FILM_EARLIER = 'Video früher';
 export const STUDIO_FILM_LATER = 'Video später';
 export const STUDIO_FILM_EDIT = 'Bearbeiten';
 export const STUDIO_FILM_LANES = 'Spuren: Zeit, Teile, Musik, Videos';
-export const STUDIO_FILM_TIME = 'Zeit';
-export const STUDIO_FILM_PARTS = 'Teile';
-export const STUDIO_FILM_MUSIC = 'Musik';
-export const STUDIO_FILM_VIDEOS = 'Videos';
 export const STUDIO_FILM_NONE = 'noch keins angelegt';
 
 const SHELF_META: Record<'processing' | 'failed' | VideoPlacement, string> = {

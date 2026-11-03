@@ -1,4 +1,3 @@
-import { TimelineLane } from './internal/layout/TimelineLane';
 import { TimelineRoot } from './internal/layout/TimelineRoot';
 import { TimelineBlocks } from './internal/ui/TimelineBlocks';
 import { TimelineBracket } from './internal/ui/TimelineBracket';
@@ -28,7 +27,6 @@ export type { TimelineStep } from './internal/ui/TimelineSteps';
 export type { TimelineDensity, TimelineSpan } from './timeline-geometry';
 
 export const Timeline = Object.assign(TimelineRoot, {
-  Lane: TimelineLane,
   Ruler: TimelineRuler,
   Blocks: TimelineBlocks,
   Bracket: TimelineBracket,

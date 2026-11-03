@@ -15,6 +15,7 @@ import { useStudioKeys } from '@furria/studio/use-studio-keys';
 import { useStudioLargeText } from '@furria/studio/use-studio-large-text';
 import type { StudioPlayback } from '@furria/studio/use-studio-playback';
 import { useStudioPlayback } from '@furria/studio/use-studio-playback';
+import type { KkGroupTone } from '@furria/ui/group-tone';
 import { useKkLaneWide } from '@furria/ui/KkLaneWide';
 import { useAudioPeaks } from '@/features/acts/api';
 import type { ActStudio, StudioEvening } from '@/features/acts/schemas';
@@ -37,6 +38,7 @@ export interface StudioEveningContext {
   startHall: (() => void) | null;
   startTool?: StudioTool;
   stageEditor?: boolean;
+  tone?: KkGroupTone | null;
 }
 
 const aligningOf =
@@ -50,7 +52,14 @@ export const useStudioScreen = (
   viewerId: number | null,
   canEdit: boolean,
   cast: readonly CastPerson[],
-  { evening, startEditing, startHall, startTool, stageEditor = false }: StudioEveningContext,
+  {
+    evening,
+    startEditing,
+    startHall,
+    startTool,
+    stageEditor = false,
+    tone = null,
+  }: StudioEveningContext,
 ): StudioScreen => {
   const wide = useKkLaneWide();
   const mode = useActStudioMode(canEdit, {
@@ -95,6 +104,7 @@ export const useStudioScreen = (
   const openMusic = useStudioMusicRoute(actId);
 
   return {
+    tone,
     evening,
     mode,
     editor: studioEditorOf(stageEditor, mode.editing, wide),
