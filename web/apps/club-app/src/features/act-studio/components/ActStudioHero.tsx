@@ -1,14 +1,14 @@
-import type { KkPracticeScreenHintLine } from '@furria/ui/KkPracticeScreen';
-import { KkPracticeScreen } from '@furria/ui/KkPracticeScreen';
-import type { FC } from 'react';
-import { PracticeStageLayer } from '@/features/act-practice/components/PracticeStageLayer';
-import { usePracticeGestures } from '@/features/act-practice/hooks/use-practice-gestures';
+import { PracticeStageLayer } from '@furria/studio/PracticeStageLayer';
 import {
   PRACTICE_HINT_SIDES,
   PRACTICE_HINT_TAP,
   PRACTICE_MIRRORED,
   PRACTICE_VIDEO_TITLE,
-} from '@/features/act-practice/practice-copy';
+} from '@furria/studio/practice-copy';
+import { usePracticeGestures } from '@furria/studio/use-practice-gestures';
+import type { KkPracticeScreenHintLine } from '@furria/ui/KkPracticeScreen';
+import { KkPracticeScreen } from '@furria/ui/KkPracticeScreen';
+import type { FC } from 'react';
 import { useStudioHints } from '../hooks/use-studio-hints';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 

@@ -1,9 +1,9 @@
 import { spotPathsOf } from '@furria/studio/choreography-motion';
 import { musicSegmentsOf } from '@furria/studio/music-timeline';
+import { timedStepsOf } from '@furria/studio/use-studio-playback';
 import type { KkLinkSearch } from '@furria/ui/kk-link-search';
 import type { KkPanelAction } from '@furria/ui/panel-action';
 import { Link } from '@tanstack/react-router';
-import { timedStepsOf } from '@/features/act-player/hooks/use-studio-playback';
 import { canPractise } from '@/features/acts/act-studio';
 import type { ActStudio } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';

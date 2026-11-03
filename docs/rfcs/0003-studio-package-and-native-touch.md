@@ -720,12 +720,40 @@ Deleted: `use-desk-keys` + `desk-keys`, `use-score-keys`, `use-practice-keys`, `
 - **Practice models:** `@furria/studio/practice-{controls,memory,stage,stage-frame,step-list,stepping,step-way,way}`
   with their tests; `practice-copy` and the practice hooks/components stay for phase 12b.
 
-### Phase 12b — Screens into the package, kit cleanup, docs
+### Phase 12b — Player, practice, lesson and hall into the package
+Goal: every read view of the studio lives in the package; the club app only fetches and composes.
+Split 2026-11-03 (soft cap): desk, hub, the studio screen, kit cleanup and docs are phase 12c.
+- [x] Move player playback (peaks passed in, no fetch), practice, lesson and hall views into the package; the club app composes them
+- [x] Deduplicate `neighbourCountOf` (step cards and desk time)
+
+Built 2026-11-03. `@furria/studio/use-studio-playback` takes the server peaks as a parameter;
+`useAudioPeaks`/`requestAudioPeaks` moved to `features/acts/{api,requests}` and every caller (studio
+screen, hub score player, lab playgrounds) fetches and hands them in. Practice
+(`Practice*`, `use-practice*`, `practice-copy`, `practice-key-actions`), hall (`HallBody`, `Hall*Live`,
+`HallStageLayer`, `use-hall*`, `hall-copy`, `hall-scene`) and lesson (`Lesson*`, `use-lesson`,
+`lesson-*`) are package modules typed by the package `Studio`. The hall takes a structural
+`HallTraining` (`calendarEntryId`, `startsAt`, `openSpotIds`; `hallTrainingOf` is generic, so the club
+app keeps its `StudioTraining`) and owns its step line (`hallStepMetaOf`, was
+`trainingStepMetaOf`) and its day formatter; it draws no wave, so it passes an empty peak map
+and loads none (it fetched them for nothing before). The lesson takes a `LessonScreen` (`studio`, `playback`, `practice`, `video`, `startHall`
+and an edit switch `mode`) that the club app's `StudioScreen` satisfies. `countCellsOf` moved with
+it (`@furria/studio/studio-timing`), `STUDIO_EDIT`/`STUDIO_DONE` to `@furria/studio/studio-mode-copy`.
+`neighbourCountOf` is one function in `@furria/studio/music-timeline`. Removed: the folders
+`act-player`, `act-practice`, `act-hall`, `act-lesson`; the unused copy `PRACTICE_FALLBACK_TITLE`,
+`PRACTICE_DENIED`, `PRACTICE_NO_ACCESS`; the unused kit `KkStudioSide`.
+- **Review follow-ups (open, 12c):** `nextStepOf` exists twice with different null-id rules (hall: first
+  step, lesson: none); `countIndexAt`/`countPlaceAt`/`countsBetweenOf` are still duplicated between
+  desk time and step cards (with different implementations).
+- **Kits:** the ADR-0035 lint forbids the studio to author pixels (only Stack/Grid/Box, no Emotion, no
+  design `sx`), so styled studio kits cannot move into the package. Phase 12c deletes the kits no
+  screen uses; the styled ones still in use stay in `@furria/ui` as the studio's look (like
+  `KkTimeline` and `KkStageInk` under `Timeline`/`Stage`).
+
+### Phase 12c — Desk, hub and studio screen into the package, kit cleanup, docs
 Goal: the studio is one package; nothing studio-specific is left behind.
-- [ ] Move player playback (peaks passed in, no fetch), practice, lesson and hall views into the package; the club app composes them
 - [ ] Move desk and hub score/formation views (and the studio screen hooks they need) into the package
-- [ ] Delete the remaining studio kits from `@furria/ui` (incl. `KkTouchLab` once the phase 7 device check is done) and empty club-app folders; grep for leftovers
-- [ ] Deduplicate `neighbourCountOf` (step cards and desk time)
+- [ ] Move the studio screen (`act-studio` views and hooks that do not fetch) into the package; queries and mutations stay in the club app behind the save port
+- [ ] Delete the studio kits from `@furria/ui` that no screen uses (incl. `KkTouchLab` and the `studio-lab` feature once the phase 7 device check is done) and empty club-app folders; grep for leftovers
 - [ ] Update CONTEXT.md if terms changed, plan/club-app/group-year.md, docs/web; full web suite
 
 ## Risks & alternatives

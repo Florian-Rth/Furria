@@ -4,6 +4,7 @@ import {
   countAt,
   countMarksOf,
   musicSegmentsOf,
+  neighbourCountOf,
   partRangeOf,
   segmentAt,
   timelineSecondsOf,
@@ -266,5 +267,26 @@ describe('partRangeOf', () => {
     [[3], null],
   ])('spans steps %o as %o', (stepIds, expected) => {
     expect(partRangeOf(part(stepIds), steps)).toEqual(expected);
+  });
+});
+
+const NEIGHBOUR_MARKS = [
+  { seconds: 1, count: 7 },
+  { seconds: 1.5, count: 8 },
+  { seconds: 2, count: 1 },
+  { seconds: 2.5, count: 2 },
+  { seconds: 3, count: 3 },
+  { seconds: 3.5, count: 1 },
+];
+
+describe('neighbourCountOf', () => {
+  it.each([
+    [2, 1, 2.5],
+    [2, -1, 1.5],
+    [2.2, -1, 2],
+    [3.5, 1, null],
+    [1, -1, null],
+  ] as const)('from %ss towards %i lands on %s', (seconds, direction, target) => {
+    expect(neighbourCountOf(NEIGHBOUR_MARKS, seconds, direction)).toBe(target);
   });
 });

@@ -5,7 +5,6 @@ import {
   countPlaceAt,
   countSheetOf,
   countsBetweenOf,
-  neighbourCountOf,
   stepCountCellsOf,
 } from './step-cards';
 
@@ -47,18 +46,6 @@ describe('countPlaceAt', () => {
 
   it('is empty before the first count', () => {
     expect(countPlaceAt(marks, countEightsOf(marks), 0.2)).toBeNull();
-  });
-});
-
-describe('neighbourCountOf', () => {
-  it.each([
-    [2, 1, 2.5],
-    [2, -1, 1.5],
-    [2.2, -1, 2],
-    [3.5, 1, null],
-    [1, -1, null],
-  ] as const)('from %ss towards %i lands on %s', (seconds, direction, target) => {
-    expect(neighbourCountOf(marks, seconds, direction)).toBe(target);
   });
 });
 

@@ -1,14 +1,16 @@
 import { formatReadoutTime } from '@furria/studio/drag-readout';
 import type { GestureIntent } from '@furria/studio/gesture-recogniser';
+import { musicSegmentsOf } from '@furria/studio/music-timeline';
 import { momentumOf } from '@furria/studio/pan-bounds';
 import { useGesture } from '@furria/studio/use-gesture';
 import { usePanAxis } from '@furria/studio/use-pan-axis';
 import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
+import { useStudioPlayback } from '@furria/studio/use-studio-playback';
 import type { KkTouchLabRailStepState } from '@furria/ui/KkTouchLab';
 import type { AnimationPlaybackControls, MotionValue } from 'motion/react';
 import { animate, useReducedMotion } from 'motion/react';
 import { useEffect, useEffectEvent, useRef } from 'react';
-import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
+import { useAudioPeaks } from '@/features/acts/api';
 import type { ActStudio } from '@/features/acts/schemas';
 import type { RailItem } from '../rail-layout';
 import {
@@ -46,7 +48,8 @@ export const useRailPlayground = (
   studio: ActStudio,
   variants: StudioLabVariants,
 ): RailPlayground => {
-  const playback = useStudioPlayback(studio, null);
+  const peaksByItem = useAudioPeaks(musicSegmentsOf(studio));
+  const playback = useStudioPlayback(studio, null, peaksByItem);
   const seconds = usePlaybackSeconds(playback.player);
   const reducedMotion = useReducedMotion() ?? false;
   const items = railItemsOf(studio.steps);

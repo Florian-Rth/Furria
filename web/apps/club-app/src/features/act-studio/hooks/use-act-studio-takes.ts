@@ -1,9 +1,9 @@
+import { STUDIO_EDIT } from '@furria/studio/studio-mode-copy';
 import type { StudioVideo } from '@furria/studio/studio-schemas';
 import type { KkStudioListBadgeTone } from '@furria/ui/KkStudioList';
 import { useState } from 'react';
 import {
   placementTextOf,
-  STUDIO_EDIT,
   STUDIO_NO_VIDEO_HERE,
   STUDIO_VIDEO_GONE,
   shelfMetaOf,

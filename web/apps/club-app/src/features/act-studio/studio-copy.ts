@@ -14,8 +14,6 @@ type VideoPlacement = StudioVideo['placement'];
 export type StudioTool = 'music' | 'steps' | 'formation' | 'movement' | 'video';
 
 export const STUDIO_LABEL = 'Üben und bearbeiten';
-export const STUDIO_EDIT = 'Bearbeiten';
-export const STUDIO_DONE = 'Fertig';
 
 export const STUDIO_TOOLS: readonly { tool: StudioTool; label: string }[] = [
   { tool: 'music', label: 'Musik' },

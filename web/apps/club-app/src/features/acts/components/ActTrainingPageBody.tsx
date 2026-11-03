@@ -1,6 +1,6 @@
+import { hallTrainingOf } from '@furria/studio/hall-scene';
+import { HallBody } from '@furria/studio/HallBody';
 import type { FC } from 'react';
-import { HallBody } from '@/features/act-hall/components/HallBody';
-import { hallTrainingOf } from '@/features/act-hall/hall-scene';
 import { useGoBackTo } from '@/lib/use-go-back-to';
 import { actPagePathOf } from '../acts-origin';
 import type { ActPageState } from '../hooks/use-act-page';

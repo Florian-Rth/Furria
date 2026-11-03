@@ -1,12 +1,12 @@
+import { LessonBody } from '@furria/studio/LessonBody';
+import { LessonEmpty } from '@furria/studio/LessonEmpty';
+import { PracticeSteps } from '@furria/studio/PracticeSteps';
 import type { KkGroupTone } from '@furria/ui/group-tone';
 import { KkPracticeView } from '@furria/ui/KkPracticeView';
 import { KkStudioView } from '@furria/ui/KkStudioView';
 import { KkVisuallyHidden } from '@furria/ui/KkVisuallyHidden';
 import type { FC } from 'react';
 import { ActDeskView } from '@/features/act-desk/components/ActDeskView';
-import { LessonBody } from '@/features/act-lesson/components/LessonBody';
-import { LessonEmpty } from '@/features/act-lesson/components/LessonEmpty';
-import { PracticeSteps } from '@/features/act-practice/components/PracticeSteps';
 import { canPractise } from '@/features/acts/act-studio';
 import type { ActStudio } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';

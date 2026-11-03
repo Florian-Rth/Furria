@@ -1,12 +1,12 @@
 import type { DragEndEvent } from '@dnd-kit/react';
 import { isSortable } from '@dnd-kit/react/sortable';
 import type { MusicSegment } from '@furria/studio/music-timeline';
+import { STUDIO_EDIT } from '@furria/studio/studio-mode-copy';
 import type { StudioSong } from '@furria/studio/studio-schemas';
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import type { KkStudioListBadgeTone } from '@furria/ui/KkStudioList';
 import {
   outsideMusicTextOf,
-  STUDIO_EDIT,
   STUDIO_SONG_GONE,
   songCardMetaOf,
   songEditLabelOf,

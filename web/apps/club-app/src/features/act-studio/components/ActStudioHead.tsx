@@ -1,10 +1,10 @@
+import { PracticeCountLive } from '@furria/studio/PracticeCountLive';
+import { PRACTICE_STEPS_OPEN } from '@furria/studio/practice-copy';
 import { KkPracticeDescription } from '@furria/ui/KkPracticeDescription';
 import { KkPracticeStepName } from '@furria/ui/KkPracticeStepName';
 import { KkPracticeSteps } from '@furria/ui/KkPracticeSteps';
 import { KkPracticeView } from '@furria/ui/KkPracticeView';
 import type { FC } from 'react';
-import { PracticeCountLive } from '@/features/act-practice/components/PracticeCountLive';
-import { PRACTICE_STEPS_OPEN } from '@/features/act-practice/practice-copy';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 
 interface ActStudioHeadProps {
