@@ -965,9 +965,15 @@ Rulings: these override the earlier Phase 7 rulings where they differ.
 - [ ] Rename the "Die Eins" label (first downbeat) to "Zählbeginn" everywhere in the UI copy.
 
 **B — screens**
-- [ ] The music page's video tab still shows the music: rebuild it into the video screen (list the videos per part, add, remove, rename, main/alternative, offset on the timeline).
-- [ ] Act main screen, edit menu: remove "Bearbeiten mit" and "Verlauf".
-- [ ] Position screen: the red "my number" dot is too big and hides the other dots; give it the same size as the others and mark it by colour or ring only.
+- [x] The music page's video tab still shows the music: rebuild it into the video screen (list the videos per part, add, remove, rename, main/alternative, offset on the timeline).
+- [x] Act main screen, edit menu: remove "Bearbeiten mit" and "Verlauf".
+- [x] Position screen: the red "my number" dot is too big and hides the other dots; give it the same size as the others and mark it by colour or ring only.
+
+Group B rulings taken while building (2026-11-03):
+- The video tab is its own screen: the chosen video plays on top, slaved to the music (`KkLaneFilm`), with its name, range, ±0.1 s nudge and *Bearbeiten*; below it a centre-scrub timeline with the lanes time, parts, music and videos (`density="film"`), where a video block is dragged to set its offset and tapping a part jumps there; the list of videos per part (main/alternative badges, add, unplaced shelf) stays below, and the existing video sheet keeps rename, auto align, *Beginnt hier*, main video per part and remove. No new endpoint: every edit is a document change (`videoStart`, `videoName`, `partSettings`) or the existing video actions.
+- Overlapping videos (main and alternatives of one part) share the one video lane; the chosen one is drawn on top, the list picks between them.
+- The edit menu drops *Bearbeiten mit* and *Verlauf*; co-editors and history stay reachable on the act's details.
+- The own spot is the same size as every other spot, marked only by the red fill and a thin red ring with a paper gap; the pulse and the card halo are gone.
 
 ## Device checks
 
@@ -985,6 +991,7 @@ from). Run on the HTTPS static build on iPhone, Pixel and iPad Safari unless a l
 - [ ] **I — Step rail (phase 7 ruling):** free momentum glides and settles without snapping
 - [ ] **J — Desk on the iPad (phase 12f):** the desk stays smooth while set-up uploads tick and history changes (it re-renders on both)
 - [ ] **K — Screen reader (phase 12g):** VoiceOver on the phone step drawer (a *Schritt* dialog holding the *Schritt* region) and the score, manual and facts slots (desk slot and kit both labelled)
+- [ ] **L — Video screen (findings 2026-11-03 B):** layout at 390 px and on the iPad, video block drag sets the offset without moving the music, the preview follows play and scrub, the own spot reads clearly at the same size
 
 ## Risks & alternatives
 

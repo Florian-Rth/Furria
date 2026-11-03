@@ -9,15 +9,7 @@ import {
   settingsLinkOf,
 } from './score-links';
 
-export type ScoreDoorKey =
-  | 'studio'
-  | 'music'
-  | 'evenings'
-  | 'trainings'
-  | 'hall'
-  | 'coEditors'
-  | 'history'
-  | 'settings';
+export type ScoreDoorKey = 'studio' | 'music' | 'evenings' | 'trainings' | 'hall' | 'settings';
 
 export interface ScoreDoor {
   key: ScoreDoorKey;
@@ -47,8 +39,6 @@ export const scoreDoorsOf = (viewer: ActViewer, facts: ScoreDoorFacts): ScoreDoo
     studio ? { key: 'evenings', link: eveningLinkOf(actId, facts.nextEveningId) } : null,
     studio || viewer.canMarkAttendance ? { key: 'trainings', link: detailsLinkOf(actId) } : null,
     facts.playable ? { key: 'hall', link: hallLinkOf(actId, facts.nextTrainingId) } : null,
-    viewer.canGrantCoEditors ? { key: 'coEditors', link: detailsLinkOf(actId) } : null,
-    studio ? { key: 'history', link: detailsLinkOf(actId) } : null,
     viewer.canEditSettings ? { key: 'settings', link: settingsLinkOf(actId) } : null,
   ];
 

@@ -3,6 +3,7 @@ import { KkLanePhoneRoot } from './internal/layout/KkLanePhoneRoot';
 import { KkLanePhoneSplit } from './internal/layout/KkLanePhoneSplit';
 
 export type { KkLanePhoneAreaName } from './internal/layout/KkLanePhoneArea';
+export type { KkLanePhoneSplitKind } from './internal/layout/KkLanePhoneSplit';
 
 export const KkLanePhone = Object.assign(KkLanePhoneRoot, {
   Area: KkLanePhoneArea,

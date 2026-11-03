@@ -150,6 +150,7 @@
     "./KkLaneCards": "./src/KkLaneCards/KkLaneCards.tsx",
     "./KkLaneChecklist": "./src/KkLaneChecklist/KkLaneChecklist.tsx",
     "./KkLaneDesk": "./src/KkLaneDesk/KkLaneDesk.tsx",
+    "./KkLaneFilm": "./src/KkLaneFilm/KkLaneFilm.tsx",
     "./KkLaneGlyph": "./src/KkLaneGlyph.tsx",
     "./KkLaneInspector": "./src/KkLaneInspector/KkLaneInspector.tsx",
     "./KkLanePhone": "./src/KkLanePhone/KkLanePhone.tsx",

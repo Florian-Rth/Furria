@@ -30,6 +30,10 @@ export interface ActStudioVideoBar {
   key: string;
   start: number;
   end: number;
+  startSeconds: number;
+  endSeconds: number;
+  title: string;
+  meta: string;
   selected: boolean;
   moveTo: (seconds: number) => void;
   choose: () => void;
@@ -63,10 +67,11 @@ export interface ActStudioTakes {
   shelf: ActStudioTakeRow[];
   selected: StudioVideo | null;
   deskOpen: boolean;
+  openDesk: () => void;
   closeDesk: () => void;
 }
 
-const placedOf = (video: StudioVideo): boolean =>
+export const placedOf = (video: StudioVideo): boolean =>
   videoShelfOf(video) === 'placed' && video.durationSeconds !== null;
 
 export const useActStudioTakes = (screen: StudioWorkScreen): ActStudioTakes => {
@@ -111,10 +116,15 @@ export const useActStudioTakes = (screen: StudioWorkScreen): ActStudioTakes => {
   return {
     bars: placed.map((candidate) => {
       const start = candidate.startSeconds ?? 0;
+      const end = start + (candidate.durationSeconds ?? 0);
       return {
         key: String(candidate.videoId),
         start: shareOf(start),
-        end: shareOf(start + (candidate.durationSeconds ?? 0)),
+        end: shareOf(end),
+        startSeconds: start,
+        endSeconds: end,
+        title: nameOf(candidate),
+        meta: takeMetaOf(candidate.startSeconds, candidate.durationSeconds),
         selected: candidate.videoId === selected?.videoId,
         choose: () => {
           setChosenId(candidate.videoId);
@@ -186,6 +196,11 @@ export const useActStudioTakes = (screen: StudioWorkScreen): ActStudioTakes => {
       }),
     selected,
     deskOpen: desk.targetId !== null,
+    openDesk: () => {
+      if (selected !== null) {
+        desk.open(selected.videoId);
+      }
+    },
     closeDesk: desk.close,
   };
 };
