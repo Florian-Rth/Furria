@@ -21,9 +21,6 @@ export interface CountPlace {
   count: number;
 }
 
-const clamp = (value: number, low: number, high: number): number =>
-  Math.min(high, Math.max(low, value));
-
 export const beatSecondsOf = (marks: readonly CountMark[]): number => {
   const gaps = marks
     .slice(1)
@@ -33,9 +30,6 @@ export const beatSecondsOf = (marks: readonly CountMark[]): number => {
 
   return gaps[Math.floor(gaps.length / 2)] ?? FALLBACK_BEAT_SECONDS;
 };
-
-export const shareOf = (seconds: number, length: number): number =>
-  length <= 0 ? 0 : clamp(seconds / length, 0, 1);
 
 const clockOf = (seconds: number): string => {
   const whole = Math.round(seconds);

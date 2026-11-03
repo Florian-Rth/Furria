@@ -17,7 +17,6 @@ export const DESK_DONE_LABEL = 'Bearbeiten beenden';
 export const DESK_READOUT = 'Position';
 export const DESK_MUSIC_PAGE = 'Musik & Video';
 export const DESK_LANES = 'Spuren: Teile, Schritte, Musik, Video, Wege';
-export const DESK_OVERVIEW = 'Ganzer Auftritt';
 export const DESK_OVERVIEW_AIM = 'Ganzer Auftritt: tippen, um dorthin zu springen';
 export const DESK_BRACKET =
   'Sichtbarer Ausschnitt: ziehen zum Verschieben, Ränder ziehen zum Zoomen, Pfeiltasten';

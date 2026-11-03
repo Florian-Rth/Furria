@@ -1,6 +1,7 @@
 import { TimelineLane } from './internal/layout/TimelineLane';
 import { TimelineRoot } from './internal/layout/TimelineRoot';
 import { TimelineBlocks } from './internal/ui/TimelineBlocks';
+import { TimelineBracket } from './internal/ui/TimelineBracket';
 import { TimelineCounts } from './internal/ui/TimelineCounts';
 import { TimelineCuts } from './internal/ui/TimelineCuts';
 import { TimelineDiamonds } from './internal/ui/TimelineDiamonds';
@@ -31,6 +32,7 @@ export const Timeline = Object.assign(TimelineRoot, {
   Lane: TimelineLane,
   Ruler: TimelineRuler,
   Blocks: TimelineBlocks,
+  Bracket: TimelineBracket,
   Diamonds: TimelineDiamonds,
   Marks: TimelineMarks,
   Parts: TimelineParts,

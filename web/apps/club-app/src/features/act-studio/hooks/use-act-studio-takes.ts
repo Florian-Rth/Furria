@@ -1,7 +1,5 @@
-import { partRangeOf } from '@furria/studio/music-timeline';
 import type { StudioVideo } from '@furria/studio/studio-schemas';
 import type { KkStudioListBadgeTone } from '@furria/ui/KkStudioList';
-import type { KkStudioNudgeDirection } from '@furria/ui/KkStudioPlacement';
 import { useState } from 'react';
 import {
   placementTextOf,
@@ -12,26 +10,22 @@ import {
   takeBadgeOf,
   takeGroupNameOf,
   takeMetaOf,
-  videoBarLabelOf,
   videoNameOf,
 } from '../studio-copy';
-import type { StageShare } from '../studio-edits';
 import { clampedVideoStartOf, takeGroupsOf, videoShelfOf } from '../studio-videos';
 import { useDeskTarget } from './use-desk-target';
-import { useGestureRelease } from './use-gesture-release';
 import type { StudioScreen } from './use-studio-screen';
 
 const NUDGE_SECONDS = 0.1;
 const LOOSE_GROUP_KEY = 'loose';
 
+export type VideoNudgeDirection = 'earlier' | 'later';
+
 export interface ActStudioVideoBar {
   key: string;
   start: number;
   end: number;
-  label: string;
   selected: boolean;
-  press: (share: StageShare) => void;
-  move: (share: StageShare) => void;
   moveTo: (seconds: number) => void;
   choose: () => void;
   finish: () => void;
@@ -56,23 +50,15 @@ export interface ActStudioTakeGroup {
 }
 
 export interface ActStudioTakes {
-  parts: { key: string; start: number; end: number; name: string }[];
   bars: ActStudioVideoBar[];
   text: string;
-  changed: boolean;
   canNudge: boolean;
-  nudge: (direction: KkStudioNudgeDirection) => void;
+  nudge: (direction: VideoNudgeDirection) => void;
   groups: ActStudioTakeGroup[];
   shelf: ActStudioTakeRow[];
   selected: StudioVideo | null;
   deskOpen: boolean;
   closeDesk: () => void;
-}
-
-interface Grab {
-  videoId: number;
-  x: number;
-  start: number;
 }
 
 const placedOf = (video: StudioVideo): boolean =>
@@ -83,8 +69,6 @@ export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
   const work = screen.document;
   const { player, length, parts, steps } = playback;
   const [chosenId, setChosenId] = useState<number | null>(null);
-  const [grab, setGrab] = useState<Grab | null>(null);
-  useGestureRelease(grab !== null, work.endGesture);
   const onVideo = mode.editing && mode.tool === 'video';
   const desk = useDeskTarget(
     studio.videos.map((candidate) => candidate.videoId),
@@ -108,8 +92,6 @@ export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
       startSeconds: clampedVideoStartOf(start, candidate.durationSeconds ?? 0, length),
     });
   };
-  const draggedFrom =
-    grab !== null && selected !== null && grab.videoId === selected.videoId ? grab.start : null;
   const pressRow = (candidate: StudioVideo, seekTo: number | null): void => {
     if (candidate.videoId === selected?.videoId) {
       desk.open(candidate.videoId);
@@ -122,38 +104,13 @@ export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
   };
 
   return {
-    parts: parts.flatMap((part) => {
-      const range = partRangeOf(part, steps);
-      return range === null
-        ? []
-        : [
-            {
-              key: String(part.partId),
-              start: shareOf(range.start),
-              end: shareOf(range.end),
-              name: part.name,
-            },
-          ];
-    }),
     bars: placed.map((candidate) => {
       const start = candidate.startSeconds ?? 0;
       return {
         key: String(candidate.videoId),
         start: shareOf(start),
         end: shareOf(start + (candidate.durationSeconds ?? 0)),
-        label: videoBarLabelOf(nameOf(candidate)),
         selected: candidate.videoId === selected?.videoId,
-        press: (share) => {
-          setChosenId(candidate.videoId);
-          setGrab({ videoId: candidate.videoId, x: share.x, start });
-        },
-        move: (share) => {
-          if (grab === null) {
-            return;
-          }
-          work.startGesture();
-          placeAt(candidate, grab.start + (share.x - grab.x) * length);
-        },
         choose: () => {
           setChosenId(candidate.videoId);
         },
@@ -163,7 +120,6 @@ export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
           placeAt(candidate, seconds);
         },
         finish: () => {
-          setGrab(null);
           work.endGesture();
         },
       };
@@ -171,12 +127,7 @@ export const useActStudioTakes = (screen: StudioScreen): ActStudioTakes => {
     text:
       selected === null || selected.startSeconds === null
         ? STUDIO_NO_VIDEO_HERE
-        : placementTextOf(
-            nameOf(selected),
-            draggedFrom ?? selected.startSeconds,
-            draggedFrom === null ? null : selected.startSeconds - draggedFrom,
-          ),
-    changed: draggedFrom !== null && draggedFrom !== selected?.startSeconds,
+        : placementTextOf(nameOf(selected), selected.startSeconds),
     canNudge: selected !== null && placedOf(selected),
     nudge: (direction) => {
       if (selected === null || selected.startSeconds === null) {

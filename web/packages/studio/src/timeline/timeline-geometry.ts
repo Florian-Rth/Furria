@@ -48,6 +48,7 @@ const WAVE_BARS: Record<TimelineDensity, number> = {
   full: 720,
   edit: 720,
   desk: 720,
+  overview: 480,
 };
 
 export const waveBarsOf = (density: TimelineDensity): number => WAVE_BARS[density];

@@ -29,9 +29,18 @@ interface KkTimelineRootProps extends PropsWithChildren {
   window: KkTimelineWindow;
   onSeek: (share: number) => void;
   work?: KkTimelineWork | null;
+  centred?: boolean;
   overlay?: ReactNode;
   sx?: KkSx;
 }
+
+const cursorOf = (centred: boolean, working: boolean): string | undefined => {
+  if (centred) {
+    return 'grab';
+  }
+
+  return working ? 'pointer' : undefined;
+};
 
 export const KkTimelineRoot: FC<KkTimelineRootProps> = ({
   label,
@@ -39,22 +48,25 @@ export const KkTimelineRoot: FC<KkTimelineRootProps> = ({
   window,
   onSeek,
   work = null,
+  centred = false,
   overlay = null,
   sx,
   children,
 }) => {
   const lanes = TIMELINE_LANES[density];
   const working = work !== null;
-  const canvas = working ? (
+  const seek = working ? undefined : onSeek;
+  const canvas = centred ? (
     <>
       {children}
       <KkTimelineCentre />
     </>
   ) : (
-    <KkTimelineSeekCanvas start={window.start} end={window.end} onSeek={onSeek}>
+    <KkTimelineSeekCanvas start={window.start} end={window.end} onSeek={seek}>
       {children}
     </KkTimelineSeekCanvas>
   );
+  const cursor = cursorOf(centred, working);
 
   return (
     <Box
@@ -72,7 +84,7 @@ export const KkTimelineRoot: FC<KkTimelineRootProps> = ({
           position: 'relative',
           height: lanes.height,
           minWidth: 0,
-          cursor: working ? 'grab' : undefined,
+          cursor,
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
