@@ -1,3 +1,4 @@
+import { CLOSE_LABEL } from '@furria/studio/score-copy';
 import { KkBottomDrawer } from '@furria/ui/KkBottomDrawer';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
@@ -5,13 +6,7 @@ import { KkSelectRow } from '@furria/ui/KkSelectRow';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { ActHub } from '../hooks/use-act-hub';
-import {
-  CLOSE_LABEL,
-  DOOR_COPY,
-  EDIT_DOORS_TITLE,
-  EDIT_DRAWER_LABEL,
-  READINESS_TITLE,
-} from '../score-copy';
+import { DOOR_COPY, EDIT_DOORS_TITLE, EDIT_DRAWER_LABEL, READINESS_TITLE } from '../score-copy';
 import { ScoreReadinessStrip } from './ScoreReadinessStrip';
 
 interface ScoreEditDrawerProps {

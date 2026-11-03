@@ -1,27 +1,26 @@
-import { KkButton } from '@furria/ui/KkButton';
-import { KkIcon } from '@furria/ui/KkIcon';
-import { KkPanelSection } from '@furria/ui/KkPanelSection';
-import { KkScoreYou } from '@furria/ui/KkScoreYou';
-import { KkText } from '@furria/ui/KkText';
-import type { FC } from 'react';
-import type { ActHub } from '../hooks/use-act-hub';
+import { ScoreFormation } from '@furria/studio/ScoreFormation';
 import {
   FOR_YOU_TITLE,
   NEXT_TITLE,
   ownPlaceLabelOf,
   PLACE_LABEL,
   PRACTISE_LABEL,
-} from '../score-copy';
-import { ScoreFactsStrip } from './ScoreFactsStrip';
-import { ScoreFormation } from './ScoreFormation';
+} from '@furria/studio/score-copy';
+import type { ScoreHub } from '@furria/studio/score-hub';
+import { KkButton } from '@furria/ui/KkButton';
+import { KkIcon } from '@furria/ui/KkIcon';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkScoreYou } from '@furria/ui/KkScoreYou';
+import { KkText } from '@furria/ui/KkText';
+import type { FC, ReactNode } from 'react';
 
 interface ScoreForYouProps {
-  score: ActHub;
+  score: ScoreHub;
+  facts: ReactNode;
 }
 
-export const ScoreForYou: FC<ScoreForYouProps> = ({ score }) => {
+export const ScoreForYou: FC<ScoreForYouProps> = ({ score, facts }) => {
   const { you, model } = score;
-  const facts = <ScoreFactsStrip score={score} withMusic={false} />;
 
   if (you === null) {
     return <KkPanelSection title={NEXT_TITLE}>{facts}</KkPanelSection>;

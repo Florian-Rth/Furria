@@ -1,30 +1,31 @@
+import { ScoreStepPane } from '@furria/studio/ScoreStepPane';
+import { CLOSE_LABEL, STEP_PANE_LABEL } from '@furria/studio/score-copy';
+import type { ScoreHub } from '@furria/studio/score-hub';
 import { KkBottomDrawer } from '@furria/ui/KkBottomDrawer';
 import type { FC } from 'react';
-import type { ActHub } from '../hooks/use-act-hub';
-import { CLOSE_LABEL, STEP_PANE_LABEL } from '../score-copy';
-import { ScoreStepPane } from './ScoreStepPane';
 
 interface ScoreStepDrawerProps {
-  score: ActHub;
+  score: ScoreHub;
 }
 
 export const ScoreStepDrawer: FC<ScoreStepDrawerProps> = ({ score }) => {
+  const open = score.drawerStep !== null;
   const step =
     score.drawerStep === null ? null : (
       <ScoreStepPane
         score={score}
         view={score.drawerStep}
         framed={false}
-        onClose={score.route.closeStep}
+        onClose={score.closeStep}
       />
     );
 
   return (
     <KkBottomDrawer
-      open={score.drawerStep !== null}
+      open={open}
       label={STEP_PANE_LABEL}
       closeLabel={CLOSE_LABEL}
-      onClose={score.route.closeStep}
+      onClose={score.closeStep}
     >
       {step}
     </KkBottomDrawer>

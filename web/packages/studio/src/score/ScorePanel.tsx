@@ -1,9 +1,4 @@
-import { Timeline } from '@furria/studio/Timeline';
-import { KkScoreTransport } from '@furria/ui/KkScoreTransport';
-import { KkText } from '@furria/ui/KkText';
-import Stack from '@mui/material/Stack';
-import type { FC } from 'react';
-import type { ActHub } from '../hooks/use-act-hub';
+import { ScoreClock } from '@furria/studio/ScoreClock';
 import {
   LENS_LABEL,
   NO_MUSIC,
@@ -11,13 +6,18 @@ import {
   PLAY_LABEL,
   SCORE_LABEL,
   stepTitleOf,
-} from '../score-copy';
-import { ScoreClock } from './ScoreClock';
+} from '@furria/studio/score-copy';
+import type { ScoreHub } from '@furria/studio/score-hub';
+import { Timeline } from '@furria/studio/Timeline';
+import { KkScoreTransport } from '@furria/ui/KkScoreTransport';
+import { KkText } from '@furria/ui/KkText';
+import Stack from '@mui/material/Stack';
+import type { FC } from 'react';
 
 const REVEAL_SECONDS = 1.6;
 
 interface ScorePanelProps {
-  score: ActHub;
+  score: ScoreHub;
 }
 
 export const ScorePanel: FC<ScorePanelProps> = ({ score }) => {
@@ -38,6 +38,10 @@ export const ScorePanel: FC<ScorePanelProps> = ({ score }) => {
     player.length > 0 ? <ScoreClock player={player.player} length={player.length} /> : null;
   const revealSeconds = score.reveal ? REVEAL_SECONDS : null;
   const selectPart = wide ? undefined : score.selectPart;
+  const density = wide ? 'full' : 'track';
+  const playDisabled = !player.canPlay;
+  const nowNumber = active?.number ?? null;
+  const nowLit = player.playing && player.activeStepId !== null;
   const steps = wide ? (
     <Timeline.Steps
       label={SCORE_LABEL}
@@ -59,7 +63,7 @@ export const ScorePanel: FC<ScorePanelProps> = ({ score }) => {
     player.length > 0 ? (
       <Timeline
         label={SCORE_LABEL}
-        density={wide ? 'full' : 'track'}
+        density={density}
         length={player.length}
         focus={player.focus}
         onSeek={player.seekTo}
@@ -94,15 +98,11 @@ export const ScorePanel: FC<ScorePanelProps> = ({ score }) => {
         <KkScoreTransport.Play
           playing={player.playing}
           label={playLabel}
-          disabled={!player.canPlay}
+          disabled={playDisabled}
           onToggle={player.toggle}
         />
         {clock}
-        <KkScoreTransport.Now
-          number={active?.number ?? null}
-          name={nowName}
-          lit={player.playing && player.activeStepId !== null}
-        />
+        <KkScoreTransport.Now number={nowNumber} name={nowName} lit={nowLit} />
         {lenses}
       </KkScoreTransport>
       {track}

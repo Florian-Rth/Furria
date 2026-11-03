@@ -1,14 +1,13 @@
 import type { MixPlayer } from '@furria/studio/mix-player';
 import type { TimelineRange } from '@furria/studio/music-timeline';
+import { WHOLE_LABEL } from '@furria/studio/score-copy';
+import type { ScoreModel } from '@furria/studio/score-model';
 import { stepAtSeconds } from '@furria/studio/score-steps';
 import type { AudioPeaks } from '@furria/studio/studio-schemas';
 import { useMixPlayer } from '@furria/studio/use-mix-player';
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import type { KkScoreLens } from '@furria/ui/KkScoreTransport';
 import { useState } from 'react';
-import { useAudioPeaks } from '@/features/acts/api';
-import { WHOLE_LABEL } from '../score-copy';
-import type { ScoreModel } from '../score-model';
 
 const WHOLE_LENS = 'all';
 
@@ -27,9 +26,12 @@ export interface ScorePlayer {
   seekTo: (seconds: number) => void;
 }
 
-export const useScorePlayer = (model: ScoreModel, wide: boolean): ScorePlayer => {
+export const useScorePlayer = (
+  model: ScoreModel,
+  wide: boolean,
+  peaks: ReadonlyMap<number, AudioPeaks>,
+): ScorePlayer => {
   const { player, state } = useMixPlayer(model.segments);
-  const peaks = useAudioPeaks(model.segments);
   const [lens, setLens] = useState(WHOLE_LENS);
   const activeStepId = usePlaybackSelection(player, (seconds) =>
     seconds > 0 ? (stepAtSeconds(model.steps, seconds)?.stepId ?? null) : null,

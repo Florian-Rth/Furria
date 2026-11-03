@@ -1,13 +1,14 @@
+import { ScoreFormation } from '@furria/studio/ScoreFormation';
+import { AUDIENCE_LABEL, FORMATION_TITLE, OPEN_SPOT } from '@furria/studio/score-copy';
+import type { ScoreHub } from '@furria/studio/score-hub';
 import { liveDotsOf } from '@furria/studio/score-live';
+import type { ScoreStepView } from '@furria/studio/score-views';
 import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
 import { KkFormationLegend } from '@furria/ui/KkFormationLegend';
 import type { FC } from 'react';
-import type { ActHub, ScoreStepView } from '../hooks/use-act-hub';
-import { AUDIENCE_LABEL, FORMATION_TITLE, OPEN_SPOT } from '../score-copy';
-import { ScoreFormation } from './ScoreFormation';
 
 interface ScoreLiveFormationProps {
-  score: ActHub;
+  score: ScoreHub;
   view: ScoreStepView;
 }
 

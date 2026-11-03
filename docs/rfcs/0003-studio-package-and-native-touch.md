@@ -827,7 +827,34 @@ views moved** (`editor/`): `use-act-studio-{edits,mode,stage,movement,takes,wave
 
 ### Phase 12e — Hub score and formation views into the package
 Goal: the score/formation views are package modules; the hub screen stays a club-app composition.
-- [ ] Move the hub's score and formation views into the package; the hub screen, its route, readiness, doors and season stay in the club app
+- [x] Move the hub's score and formation views into the package; the hub screen, its route, readiness, doors and season stay in the club app
+
+Built 2026-11-03. **Views:** `@furria/studio/{ScorePanel,ScoreClock,ScoreFormation,ScoreLiveFormation,ScoreManualList,ScoreStepPane,ScoreStepDrawer,ScoreForYou}`
+(`score/`) read the contract `@furria/studio/score-hub` (`ScoreHub`: wide, reveal, tone, edit and
+play rights, studio, model, player, timeline parts and steps, step groups, *Für dich*, pane and
+drawer step, `selectRow`/`selectPart`, `practise`, `practiseFrom`/`editFrom`/`closeStep`); the club
+app's `ActHub` extends it with the route, readiness, facts, evenings, doors, edit sheet and screen
+actions. `ScoreForYou` takes the facts strip as a slot (`facts`), since the training answer is a
+club-app mutation. **Models:** `score-model` (`scoreModelOf`, without readiness — the hub calls
+`readinessOf` itself), `score-views` (`ScoreRowView`/`ScoreGroupView`/`ScoreStepView`/`ScoreYouView`
+and the pure `scoreGroupsOf`, `scoreStepViewOf`, `scoreYouOf`, `timelinePartsOf`,
+`timelineStepsOf`, `timedStepsOf`, moved out of `use-act-hub`; tested), `score-anchor` (`partAnchorOf`: the
+manual list owns the part anchors; the scroll to one stays in the club app as `score-scroll`) and `use-score-player` (peaks passed in; the hub fetches them with `useAudioPeaks`). The
+view copy and the clock/range/count formatters are `@furria/studio/score-copy` (with their tests);
+the club app's `score-copy` keeps the hub copy (doors, readiness, facts, evenings, session).
+Dropped the unused `SCREEN_TITLE` and `musicSourceOf`. Stay in the club app: `ActHubScreen`,
+`ActHubOutline`, `ScoreBody` (composition), `ScoreFactsStrip`, `ScoreTrainingFact`,
+`ScoreEveningsList`, `ScoreReadinessStrip`, `ScoreEditDrawer`, `use-act-hub`, `use-score-route`,
+`score-{doors,links,memory,readiness,season}`.
+- **Review follow-ups (open, 12f):** `ScoreHub` is one wide contract handed whole to every score
+  view (the live formation reads `player`, `model` and `studio.spots` through it) — narrow props per
+  view; `ScorePanel` branches on `wide` five times and builds the transport before its no-music
+  return — split transport and track; `ScoreManualList` could have its own row component; the step
+  pane shows an empty caption when a video has no name, and `KkScoreDesk.Pane` and `KkStepPane`
+  both label their region *Schritt* (two nested landmarks — judge with a screen reader);
+  `use-score-player` keeps a lens id whose part lost its range; `scoreGroupsOf` gives the loose
+  group key `0`; `ScoreModel` mixes readonly and mutable arrays; `use-act-hub` still builds
+  readiness, facts, evenings and doors inline and repeats `model.steps.find` four times.
 
 ### Phase 12f — Studio screen into the package
 Goal: the studio screen's views and hooks live in the package; queries, mutations and uploads stay in
