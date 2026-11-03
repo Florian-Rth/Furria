@@ -1,3 +1,4 @@
+import { countTrackOf } from '@furria/studio/count-marks';
 import { DeskReadoutLive } from '@furria/studio/DeskReadoutLive';
 import {
   DESK_BACK,
@@ -38,6 +39,7 @@ interface DeskTopBarProps {
 export const DeskTopBar: FC<DeskTopBarProps> = ({ desk, centre, setup, history, onMusic }) => {
   const { screen } = desk;
   const { practice, playback, mode } = screen;
+  const counts = countTrackOf(playback.countMarks);
   const back = (): void => {
     practice.skip('back');
   };
@@ -89,7 +91,7 @@ export const DeskTopBar: FC<DeskTopBarProps> = ({ desk, centre, setup, history, 
           disabled={stepLocked}
           onPress={forward}
         />
-        <DeskReadoutLive player={playback.player} marks={playback.countMarks} />
+        <DeskReadoutLive player={playback.player} counts={counts} />
         <KkLaneButton
           text={practice.rateText}
           label={practice.rateLabel}

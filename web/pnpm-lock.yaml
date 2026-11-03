@@ -613,6 +613,9 @@ importers:
       '@dnd-kit/dom':
         specifier: 'catalog:'
         version: 0.5.3
+      '@dnd-kit/react':
+        specifier: 'catalog:'
+        version: 0.5.1(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
       '@emotion/react':
         specifier: 'catalog:'
         version: 11.14.0(@types/react@19.2.17)(react@19.2.7)

@@ -1,0 +1,33 @@
+import { ActStudioVideoDeskBody } from '@furria/studio/ActStudioVideoDeskBody';
+import { STUDIO_VIDEO_DESK, STUDIO_VIDEO_DESK_CLOSE } from '@furria/studio/studio-copy';
+import type { StudioScreen } from '@furria/studio/studio-screen';
+import type { ActStudioTakes } from '@furria/studio/use-act-studio-takes';
+import { useVideoDesk } from '@furria/studio/use-video-desk';
+import { KkPracticeSteps } from '@furria/ui/KkPracticeSteps';
+import type { FC } from 'react';
+
+interface ActStudioVideoDeskProps {
+  screen: StudioScreen;
+  takes: ActStudioTakes;
+}
+
+export const ActStudioVideoDesk: FC<ActStudioVideoDeskProps> = ({ screen, takes }) => {
+  const desk = useVideoDesk(screen, takes);
+  const open = takes.deskOpen && desk !== null;
+  const title = desk?.title ?? STUDIO_VIDEO_DESK;
+  const body = desk === null ? null : <ActStudioVideoDeskBody desk={desk} />;
+  const close = (): void => {
+    desk?.commitName();
+    takes.closeDesk();
+  };
+
+  return (
+    <KkPracticeSteps open={open} label={STUDIO_VIDEO_DESK} onClose={close}>
+      <KkPracticeSteps.Head>
+        <KkPracticeSteps.Title text={title} />
+        <KkPracticeSteps.Close label={STUDIO_VIDEO_DESK_CLOSE} onClose={close} />
+      </KkPracticeSteps.Head>
+      <KkPracticeSteps.List>{body}</KkPracticeSteps.List>
+    </KkPracticeSteps>
+  );
+};

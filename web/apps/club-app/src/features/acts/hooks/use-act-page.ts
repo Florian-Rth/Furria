@@ -1,3 +1,4 @@
+import { canPractise } from '@furria/studio/music-timeline';
 import { PRACTICE_LABEL } from '@furria/studio/practice-copy';
 import type { KkMasterDetailSpan } from '@furria/ui/KkMasterDetailMaster';
 import type {
@@ -26,7 +27,7 @@ import {
   STUDIO_MUSIC_LABEL,
 } from '../act-page-copy';
 import type { ActPageMode } from '../act-studio';
-import { actPageModeOf, canPractise, seesDetailsOf } from '../act-studio';
+import { actPageModeOf, seesDetailsOf } from '../act-studio';
 import {
   actCardLinkOf,
   actCardOriginOf,

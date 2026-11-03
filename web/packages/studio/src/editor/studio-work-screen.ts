@@ -1,7 +1,7 @@
 import type { MusicSegment } from '@furria/studio/music-timeline';
 import type { StudioDocumentEdit } from '@furria/studio/studio-document-edit';
 import type { FinalPlacements } from '@furria/studio/studio-final';
-import type { Studio, StudioFinalTrack } from '@furria/studio/studio-schemas';
+import type { Studio, StudioFinalTrack, VideoAlignment } from '@furria/studio/studio-schemas';
 import type { ActStudioEdits } from '@furria/studio/use-act-studio-edits';
 import type { ActStudioMode } from '@furria/studio/use-act-studio-mode';
 import type { Practice } from '@furria/studio/use-practice';
@@ -10,6 +10,8 @@ import type { StudioPlayback } from '@furria/studio/use-studio-playback';
 
 export interface StudioWorkEvening {
   eventId: number;
+  title: string;
+  startsAt: string;
 }
 
 export interface StudioFinalView {
@@ -19,9 +21,14 @@ export interface StudioFinalView {
   mix: readonly MusicSegment[];
 }
 
+export interface StudioVideoActions {
+  align: (videoId: number) => Promise<VideoAlignment>;
+  aligning: (videoId: number) => boolean;
+  remove: (videoId: number) => void;
+}
+
 export interface StudioWorkScreen {
   evening: StudioWorkEvening | null;
-  eveningBand: string | null;
   studio: Studio;
   document: StudioDocumentEdit;
   stageDocument: StudioDocumentEdit;
@@ -31,5 +38,5 @@ export interface StudioWorkScreen {
   playback: StudioPlayback;
   practice: Practice;
   video: PracticeVideo;
-  removeVideo: (videoId: number) => void;
+  videos: StudioVideoActions;
 }

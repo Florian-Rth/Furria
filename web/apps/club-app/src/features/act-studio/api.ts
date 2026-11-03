@@ -1,3 +1,4 @@
+import type { FinalTrackMatches, VideoAlignment } from '@furria/studio/studio-schemas';
 import type { UseMutationResult } from '@tanstack/react-query';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { useStudioWriteFailure } from './hooks/use-studio-write-failure';
@@ -12,13 +13,7 @@ import {
   requestVideoAlignment,
   requestVideoRemoval,
 } from './requests';
-import type {
-  AddedFinalTrack,
-  AddedSong,
-  AddedVideo,
-  FinalTrackMatches,
-  VideoAlignment,
-} from './schemas';
+import type { AddedFinalTrack, AddedSong, AddedVideo } from './schemas';
 import { throughStudioEditor } from './studio-editor-store';
 
 export interface SongMutations {

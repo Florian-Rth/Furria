@@ -1,20 +1,19 @@
-import { countEightsOf, countPlaceAt } from '@furria/studio/count-marks';
+import type { CountTrack } from '@furria/studio/count-marks';
+import { countPlaceAt } from '@furria/studio/count-marks';
 import { clockOf, DESK_READOUT, readoutCountOf } from '@furria/studio/desk-copy';
 import type { MixPlayer } from '@furria/studio/mix-player';
-import type { CountMark } from '@furria/studio/music-timeline';
 import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
 import type { FC } from 'react';
 
 interface DeskReadoutLiveProps {
   player: MixPlayer;
-  marks: readonly CountMark[];
+  counts: CountTrack;
 }
 
-export const DeskReadoutLive: FC<DeskReadoutLiveProps> = ({ player, marks }) => {
+export const DeskReadoutLive: FC<DeskReadoutLiveProps> = ({ player, counts }) => {
   const seconds = usePlaybackSeconds(player);
-  const eights = countEightsOf(marks);
-  const place = countPlaceAt(marks, eights, seconds);
+  const place = countPlaceAt(counts, seconds);
 
   return (
     <KkLaneBar.Readout

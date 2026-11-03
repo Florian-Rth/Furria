@@ -1,5 +1,5 @@
 import { poseAt } from '@furria/studio/choreography-motion';
-import { countEightsOf, countPlaceAt, countsBetweenOf } from '@furria/studio/count-marks';
+import { countPlaceAt, countsBetweenOf, countTrackOf } from '@furria/studio/count-marks';
 import {
   clockOf,
   countLengthOf,
@@ -62,8 +62,10 @@ import {
 } from '@furria/studio/desk-copy';
 import { keyedSpotsAt } from '@furria/studio/desk-keyframes';
 import { partRangeOf } from '@furria/studio/music-timeline';
+import { stepNumberOf } from '@furria/studio/step-names';
 import { videoNameOf } from '@furria/studio/studio-copy';
 import { markSecondsOf, partSettingsOf, startsAPart } from '@furria/studio/studio-steps';
+import { videoNumberOf } from '@furria/studio/studio-videos';
 import type { ActDesk } from '@furria/studio/use-act-desk';
 import type { DeskBorders } from '@furria/studio/use-desk-borders';
 import { useStepTexts } from '@furria/studio/use-step-texts';
@@ -176,14 +178,13 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
   const { playback, practice, studio } = screen;
   const work = screen.document;
   const { steps, parts, countMarks, length, player, paths } = playback;
-  const countEights = countEightsOf(countMarks);
+  const countTrack = countTrackOf(countMarks);
   const texts = useStepTexts(screen);
   const [partDraft, setPartDraft] = useState<{ partId: number; name: string } | null>(null);
   const arrange = useArrangeActions(desk);
   const step = practice.step;
   const stepIndex = steps.findIndex((candidate) => candidate.stepId === step?.stepId);
-  const numberOf = (stepId: number): number =>
-    steps.findIndex((candidate) => candidate.stepId === stepId) + 1;
+  const numberOf = (stepId: number): number => stepNumberOf(steps, stepId);
   const markHere = actionOf(
     'mark',
     DESK_MARK_HERE,
@@ -262,7 +263,7 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
 
   if (focus === 'video' && takes.selected !== null) {
     const video = takes.selected;
-    const number = studio.videos.indexOf(video) + 1;
+    const number = videoNumberOf(studio.videos, video.videoId);
     const placed = video.startSeconds !== null;
 
     return {
@@ -305,7 +306,7 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
           DESK_DELETE,
           'delete',
           () => {
-            screen.removeVideo(video.videoId);
+            screen.videos.remove(video.videoId);
             desk.focusStep(null);
           },
           { tone: 'danger' },
@@ -317,7 +318,7 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
   }
 
   if (focus === 'key' && keySeconds !== null) {
-    const place = countPlaceAt(countMarks, countEights, keySeconds);
+    const place = countPlaceAt(countTrack, keySeconds);
 
     return {
       eyebrow: keyEyebrowOf(keySeconds),
@@ -408,7 +409,7 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
 
   const part = parts.find((candidate) => candidate.stepIds.includes(step.stepId)) ?? null;
   const counts = countsBetweenOf(countMarks, step.startSeconds ?? 0, step.endSeconds ?? 0);
-  const startPlace = countPlaceAt(countMarks, countEights, step.startSeconds ?? 0);
+  const startPlace = countPlaceAt(countTrack, step.startSeconds ?? 0);
   const canStretch = borders.canStretch(step.stepId);
 
   return {

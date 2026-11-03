@@ -6,6 +6,7 @@ import { DeskStageView } from '@furria/studio/DeskStageView';
 import { DeskTopBar } from '@furria/studio/DeskTopBar';
 import { DESK_INSPECTOR, DESK_LABEL, DESK_LANES, DESK_STAGE } from '@furria/studio/desk-copy';
 import { StudioSetupInputs } from '@furria/studio/StudioSetupInputs';
+import { studioBandOf } from '@furria/studio/studio-copy';
 import { scrubKeyActionsOf } from '@furria/studio/studio-key-actions';
 import type { StudioSetup } from '@furria/studio/studio-setup-view';
 import type { ActDesk } from '@furria/studio/use-act-desk';
@@ -29,8 +30,8 @@ export const ActDeskView: FC<ActDeskViewProps> = ({ desk, setup, history, onMusi
   const borders = useDeskBorders(screen);
   const lanes = useDeskLanes(desk, borders);
   useStudioKeys(scrubKeyActionsOf(screen, lanes.centre.zoomBy), true);
-  const band =
-    screen.eveningBand === null ? null : <KkStudioView.BandNote text={screen.eveningBand} />;
+  const bandText = studioBandOf(screen.evening, screen.mode.editing);
+  const band = bandText === null ? null : <KkStudioView.BandNote text={bandText} />;
 
   return (
     <KkLaneDesk label={DESK_LABEL}>

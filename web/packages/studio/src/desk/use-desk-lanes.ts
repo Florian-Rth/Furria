@@ -12,9 +12,10 @@ import {
 } from '@furria/studio/desk-copy';
 import { KEY_MATCH_SECONDS, keyedSpotsAt, keyTimesOf } from '@furria/studio/desk-keyframes';
 import { musicTicksOf, rulerTicksOf } from '@furria/studio/desk-time';
-import { formatReadoutTime } from '@furria/studio/drag-readout';
-import { countAt, partRangeOf } from '@furria/studio/music-timeline';
-import { videoNameOf, waveReadoutDetailOf } from '@furria/studio/studio-copy';
+import { partRangeOf } from '@furria/studio/music-timeline';
+import { stepNumberOf } from '@furria/studio/step-names';
+import { videoNameOf } from '@furria/studio/studio-copy';
+import { videoNumberOf } from '@furria/studio/studio-videos';
 import type {
   TimelineBlock,
   TimelineDiamond,
@@ -22,11 +23,12 @@ import type {
   TimelineMark,
 } from '@furria/studio/Timeline';
 import type { ActDesk } from '@furria/studio/use-act-desk';
-import type { WaveReadout } from '@furria/studio/use-act-studio-wave';
 import type { CentreScrub } from '@furria/studio/use-centre-scrub';
 import { useCentreScrub } from '@furria/studio/use-centre-scrub';
 import type { DeskBorders } from '@furria/studio/use-desk-borders';
 import { useDeskKeyDrag } from '@furria/studio/use-desk-key-drag';
+import type { WaveReadout } from '@furria/studio/wave-readout';
+import { waveReadoutOf } from '@furria/studio/wave-readout';
 
 export const DESK_LANE = {
   ruler: 'ruler',
@@ -80,8 +82,7 @@ export const useDeskLanes = (desk: ActDesk, borders: DeskBorders): DeskLaneRows 
   const chosen = paths.filter((path) => editor.selected.includes(path.spotId));
   const shownPaths = chosen.length > 0 ? chosen : paths;
   const keyDrag = useDeskKeyDrag(desk, shownPaths);
-  const numberOf = (stepId: number): number =>
-    steps.findIndex((step) => step.stepId === stepId) + 1;
+  const numberOf = (stepId: number): number => stepNumberOf(steps, stepId);
 
   const partBlocks: TimelineBlock[] = parts.flatMap((part) => {
     const range = partRangeOf(part, steps);
@@ -158,7 +159,7 @@ export const useDeskLanes = (desk: ActDesk, borders: DeskBorders): DeskLaneRows 
 
   const videoBlocks: TimelineBlock[] = takes.bars.map((bar, index) => {
     const video = studio.videos.find((candidate) => String(candidate.videoId) === bar.key);
-    const number = video === undefined ? 0 : studio.videos.indexOf(video) + 1;
+    const number = video === undefined ? 0 : videoNumberOf(studio.videos, video.videoId);
     const name = videoNameOf(video?.name ?? null, number);
     const duration = video?.durationSeconds ?? null;
     const target = videoTargets[index];
@@ -248,7 +249,6 @@ export const useDeskLanes = (desk: ActDesk, borders: DeskBorders): DeskLaneRows 
       targetOf(key)?.tap?.();
     },
   });
-  const lifted = centre.readout;
 
   return {
     centre,
@@ -260,14 +260,6 @@ export const useDeskLanes = (desk: ActDesk, borders: DeskBorders): DeskLaneRows 
     keys: keyDiamonds,
     keysAside: chosen.length === 0 ? null : spotsAmountOf(chosen.length),
     borders: borders.borders,
-    readout:
-      lifted === null
-        ? null
-        : {
-            x: lifted.placement.x,
-            y: lifted.placement.y,
-            value: formatReadoutTime(lifted.value.seconds),
-            detail: waveReadoutDetailOf(countAt(segments, lifted.value.seconds), lifted.value.tier),
-          },
+    readout: waveReadoutOf(centre.readout, segments),
   };
 };

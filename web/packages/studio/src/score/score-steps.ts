@@ -1,5 +1,6 @@
 import type { SpotPath } from '@furria/studio/choreography-motion';
 import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
+import { stepNumberOf } from '@furria/studio/step-names';
 import type { Studio, StudioPart, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
 
 const SAME_PLACE_METRES = 0.05;
@@ -173,7 +174,7 @@ export const scoreStepsOf = (
     const part = parts.find((candidate) => candidate.stepIds.includes(step.stepId)) ?? null;
     const preferred =
       studio.parts.find((candidate) => candidate.partId === part?.partId)?.mainVideoId ?? null;
-    const number = studio.steps.findIndex((candidate) => candidate.stepId === step.stepId) + 1;
+    const number = stepNumberOf(studio.steps, step.stepId);
 
     return {
       stepId: step.stepId,

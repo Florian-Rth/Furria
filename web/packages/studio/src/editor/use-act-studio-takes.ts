@@ -10,9 +10,14 @@ import {
 } from '@furria/studio/studio-copy';
 import { STUDIO_EDIT } from '@furria/studio/studio-mode-copy';
 import type { StudioVideo } from '@furria/studio/studio-schemas';
-import { clampedVideoStartOf, takeGroupsOf, videoShelfOf } from '@furria/studio/studio-videos';
+import {
+  clampedVideoStartOf,
+  takeGroupsOf,
+  videoNumberOf,
+  videoShelfOf,
+} from '@furria/studio/studio-videos';
 import type { StudioWorkScreen } from '@furria/studio/studio-work-screen';
-import { useDeskTarget } from '@furria/studio/use-desk-target';
+import { useSheetTarget } from '@furria/studio/use-sheet-target';
 import type { KkStudioListBadgeTone } from '@furria/ui/KkStudioList';
 import { useState } from 'react';
 
@@ -70,7 +75,7 @@ export const useActStudioTakes = (screen: StudioWorkScreen): ActStudioTakes => {
   const { player, length, parts, steps } = playback;
   const [chosenId, setChosenId] = useState<number | null>(null);
   const onVideo = mode.editing && mode.tool === 'video';
-  const desk = useDeskTarget(
+  const desk = useSheetTarget(
     studio.videos.map((candidate) => candidate.videoId),
     onVideo,
     STUDIO_VIDEO_GONE,
@@ -78,7 +83,7 @@ export const useActStudioTakes = (screen: StudioWorkScreen): ActStudioTakes => {
   const shareOf = (seconds: number): number => (length <= 0 ? 0 : seconds / length);
   const placed = studio.videos.filter(placedOf);
   const nameOf = (candidate: StudioVideo): string =>
-    videoNameOf(candidate.name, studio.videos.indexOf(candidate) + 1);
+    videoNameOf(candidate.name, videoNumberOf(studio.videos, candidate.videoId));
   const selected =
     studio.videos.find((candidate) => candidate.videoId === desk.targetId) ??
     studio.videos.find((candidate) => candidate.videoId === chosenId) ??
