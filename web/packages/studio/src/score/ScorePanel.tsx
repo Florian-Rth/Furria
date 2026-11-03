@@ -5,6 +5,7 @@ import { NO_MUSIC } from '@furria/studio/score-copy';
 import type { ScoreStep } from '@furria/studio/score-steps';
 import type { TimelinePart, TimelineStep } from '@furria/studio/Timeline';
 import type { ScorePlayer } from '@furria/studio/use-score-player';
+import { useScoreTimeline } from '@furria/studio/use-score-timeline';
 import type { KkGroupTone } from '@furria/ui/group-tone';
 import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
@@ -25,7 +26,27 @@ interface ScorePanelProps {
   onSelectPart: (partId: number) => void;
 }
 
-export const ScorePanel: FC<ScorePanelProps> = ({ player, nowStep, wide, ...track }) => {
+export const ScorePanel: FC<ScorePanelProps> = ({
+  player,
+  nowStep,
+  wide,
+  marks,
+  parts,
+  steps,
+  onSelectStep,
+  onSelectPart,
+  ...track
+}) => {
+  const timeline = useScoreTimeline({
+    player,
+    marks,
+    parts,
+    steps,
+    wide,
+    onSelectStep,
+    onSelectPart,
+  });
+
   if (player.length <= 0) {
     return (
       <KkText variant="body2" tone="secondary">
@@ -36,8 +57,18 @@ export const ScorePanel: FC<ScorePanelProps> = ({ player, nowStep, wide, ...trac
 
   return (
     <Stack sx={{ gap: 1, minWidth: 0 }}>
-      <ScoreTransport player={player} nowStep={nowStep} wide={wide} />
-      <ScoreTrack player={player} wide={wide} {...track} />
+      <ScoreTransport player={player} timeline={timeline} nowStep={nowStep} wide={wide} />
+      <ScoreTrack
+        player={player}
+        centre={timeline.centre}
+        marks={marks}
+        parts={parts}
+        steps={steps}
+        wide={wide}
+        onSelectStep={onSelectStep}
+        onSelectPart={onSelectPart}
+        {...track}
+      />
     </Stack>
   );
 };

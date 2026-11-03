@@ -6,7 +6,7 @@ import { kkTokens } from '../../../tokens';
 import type { KkTimelineDensity } from '../timeline-paint';
 import { LANE_VARS, TIMELINE_LANES } from '../timeline-paint';
 import { KkTimelineCentre } from '../ui/KkTimelineCentre';
-import { KkTimelineSeekCanvas } from './KkTimelineSeekCanvas';
+import { KkTimelineCanvas } from './KkTimelineCanvas';
 
 export interface KkTimelineWindow {
   start: number;
@@ -27,7 +27,6 @@ interface KkTimelineRootProps extends PropsWithChildren {
   label: string;
   density: KkTimelineDensity;
   window: KkTimelineWindow;
-  onSeek: (share: number) => void;
   work?: KkTimelineWork | null;
   centred?: boolean;
   overlay?: ReactNode;
@@ -46,7 +45,6 @@ export const KkTimelineRoot: FC<KkTimelineRootProps> = ({
   label,
   density,
   window,
-  onSeek,
   work = null,
   centred = false,
   overlay = null,
@@ -55,16 +53,15 @@ export const KkTimelineRoot: FC<KkTimelineRootProps> = ({
 }) => {
   const lanes = TIMELINE_LANES[density];
   const working = work !== null;
-  const seek = working ? undefined : onSeek;
   const canvas = centred ? (
     <>
       {children}
       <KkTimelineCentre />
     </>
   ) : (
-    <KkTimelineSeekCanvas start={window.start} end={window.end} onSeek={seek}>
+    <KkTimelineCanvas start={window.start} end={window.end}>
       {children}
-    </KkTimelineSeekCanvas>
+    </KkTimelineCanvas>
   );
   const cursor = cursorOf(centred, working);
 

@@ -18,16 +18,17 @@ export interface TimelinePart {
 interface TimelinePartsProps {
   parts: readonly TimelinePart[];
   tone: KkGroupTone | null;
+  lane?: string;
   onSelect?: (key: number) => void;
 }
 
-export const TimelineParts: FC<TimelinePartsProps> = ({ parts, tone, onSelect }) => {
+export const TimelineParts: FC<TimelinePartsProps> = ({ parts, tone, lane, onSelect }) => {
   const { length } = useTimeline();
   const bands = spanSharesOf(parts, length);
 
   return (
     <TimelineStrip>
-      <KkTimeline.Parts tone={tone} parts={bands} onSelect={onSelect} />
+      <KkTimeline.Parts tone={tone} parts={bands} lane={lane} onSelect={onSelect} />
     </TimelineStrip>
   );
 };

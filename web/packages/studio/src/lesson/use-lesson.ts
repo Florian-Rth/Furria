@@ -1,3 +1,4 @@
+import type { CentreTarget } from '@furria/studio/centre-targets';
 import type { SpotPath } from '@furria/studio/choreography-motion';
 import {
   LESSON_LAST,
@@ -16,11 +17,13 @@ import type { LessonPicturePlan } from '@furria/studio/lesson-picture';
 import { lessonPictureOf } from '@furria/studio/lesson-picture';
 import type { LessonScreen } from '@furria/studio/lesson-screen';
 import type { LessonStripLanes } from '@furria/studio/lesson-strip';
-import { lessonStripOf, stripStepIdOf } from '@furria/studio/lesson-strip';
+import { lessonStripOf } from '@furria/studio/lesson-strip';
 import { stepRangeOf } from '@furria/studio/music-timeline';
 import { nextStepOf } from '@furria/studio/next-step';
 import { playerKeyActionsOf } from '@furria/studio/practice-key-actions';
 import { shownStepNameOf, stepNumberOf } from '@furria/studio/step-names';
+import type { CentreScrub } from '@furria/studio/use-centre-scrub';
+import { useCentreScrub } from '@furria/studio/use-centre-scrub';
 import type { PracticeSegmentGroupRow } from '@furria/studio/use-practice-segments';
 import { usePracticeSegments } from '@furria/studio/use-practice-segments';
 import { useScreenWakeLock } from '@furria/studio/use-screen-wake-lock';
@@ -56,8 +59,10 @@ export interface LessonPicture {
 }
 
 export interface LessonStripView extends LessonStripLanes {
-  seek: (seconds: number) => void;
+  centre: CentreScrub;
 }
+
+const NO_TARGETS: readonly CentreTarget[] = [];
 
 export interface LessonReading {
   open: boolean;
@@ -85,6 +90,13 @@ export const useLesson = (screen: LessonScreen): Lesson => {
   const [reading, setReading] = useState(false);
   useScreenWakeLock(true);
   useStudioKeys(playerKeyActionsOf(practice), !reading);
+  const centre = useCentreScrub({
+    player: playback.player,
+    length: playback.length,
+    countMarks: playback.countMarks,
+    targets: NO_TARGETS,
+    seek: practice.seekTo,
+  });
 
   const { step } = practice;
   const number = step === null ? 0 : stepNumberOf(playback.steps, step.stepId);
@@ -143,12 +155,7 @@ export const useLesson = (screen: LessonScreen): Lesson => {
     },
     strip: {
       ...lessonStripOf(playback.steps, playback.parts),
-      seek: (seconds) => {
-        const target = stripStepIdOf(playback.steps, seconds);
-        if (target !== null) {
-          practice.jumpTo(target);
-        }
-      },
+      centre,
     },
     ownPath: playback.paths.find((path) => path.spotId === playback.ownSpotId) ?? null,
     rail,

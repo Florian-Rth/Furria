@@ -21,6 +21,7 @@ interface KkTimelinePartBandProps {
   part: KkTimelinePart;
   tone: KkGroupTone | null;
   place: { left: string; width: string };
+  lane: string | undefined;
   onSelect: ((key: number) => void) | undefined;
 }
 
@@ -28,6 +29,7 @@ export const KkTimelinePartBand: FC<KkTimelinePartBandProps> = ({
   part,
   tone,
   place,
+  lane,
   onSelect,
 }) => {
   const current = part.current === true;
@@ -53,6 +55,7 @@ export const KkTimelinePartBand: FC<KkTimelinePartBandProps> = ({
     <Box
       component="span"
       data-kk-timeline-part
+      data-timeline-lane={lane}
       data-current={current}
       sx={(theme) => ({
         position: 'absolute',

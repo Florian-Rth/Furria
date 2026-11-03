@@ -4,6 +4,7 @@ import { ActStudioSongList } from '@furria/studio/ActStudioSongList';
 import { ActStudioTakeList } from '@furria/studio/ActStudioTakeList';
 import { ActStudioVideoDesk } from '@furria/studio/ActStudioVideoDesk';
 import { ActStudioWaveLayer } from '@furria/studio/ActStudioWaveLayer';
+import { MusicReadoutLive } from '@furria/studio/MusicReadoutLive';
 import { StepCardsTransport } from '@furria/studio/StepCardsTransport';
 import { StudioSaveButton } from '@furria/studio/StudioSaveButton';
 import {
@@ -61,6 +62,7 @@ export const ActMusicView: FC<ActMusicViewProps> = ({ screen, onTool }) => {
   );
   const undoLocked = !history.canUndo;
   const redoLocked = !history.canRedo;
+  const readout = <MusicReadoutLive player={screen.playback.player} />;
 
   return (
     <KkLanePhone label={MUSIC_PAGE_TITLE} narrow>
@@ -100,7 +102,7 @@ export const ActMusicView: FC<ActMusicViewProps> = ({ screen, onTool }) => {
         </KkLanePhone.Split>
       </KkLanePhone.Area>
       <KkLanePhone.Area area="transport">
-        <StepCardsTransport screen={screen} />
+        <StepCardsTransport screen={screen} readout={readout} />
       </KkLanePhone.Area>
       <ActStudioSongDesk screen={screen} songs={songs} />
       <ActStudioFinalDesk screen={screen} finalList={finalList} />

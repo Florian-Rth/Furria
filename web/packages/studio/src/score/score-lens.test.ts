@@ -1,10 +1,10 @@
 import { scoreLensesOf, scoreLensOf, WHOLE_LENS } from '@furria/studio/score-lens';
-import type { ScorePart } from '@furria/studio/score-steps';
+import type { TimelinePart } from '@furria/studio/Timeline';
 import { describe, expect, it } from 'vitest';
 
-const parts: ScorePart[] = [
-  { partId: 10, index: 0, name: 'Intro', range: { start: 0, end: 8 }, stepIds: [] },
-  { partId: 11, index: 1, name: 'Finale', range: null, stepIds: [] },
+const parts: TimelinePart[] = [
+  { key: 10, label: 'Intro', range: { start: 0, end: 8 }, shade: 0 },
+  { key: 11, label: 'Finale', range: null, shade: 1 },
 ];
 
 describe('scoreLensOf', () => {

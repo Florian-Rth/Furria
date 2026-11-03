@@ -959,10 +959,33 @@ open until Florian runs them on the HTTPS build.
 Rulings: these override the earlier Phase 7 rulings where they differ.
 
 **A — timelines and copy**
-- [ ] Music edit screen: the readout at the bottom shows only the time; drop the step and count.
-- [ ] Editing timelines stop exactly where the finger lifts, with no momentum or glide after release, because momentum overshoots when positioning. Dragging stays fluid with no snapping. The step rail keeps its free momentum.
-- [ ] Every wave everywhere (practice strip, hub score track, lesson, desk, music page) uses the centre-line scrub (iOS style). This replaces the ruling that practice, hub and lesson keep the fixed view.
-- [ ] Rename the "Die Eins" label (first downbeat) to "Zählbeginn" everywhere in the UI copy.
+- [x] Music edit screen: the readout at the bottom shows only the time; drop the step and count.
+- [x] Editing timelines stop exactly where the finger lifts, with no momentum or glide after release, because momentum overshoots when positioning. Dragging stays fluid with no snapping. The step rail keeps its free momentum.
+- [x] Every wave everywhere (practice strip, hub score track, lesson, desk, music page) uses the centre-line scrub (iOS style). This replaces the ruling that practice, hub and lesson keep the fixed view.
+- [x] Rename the "Die Eins" label (first downbeat) to "Zählbeginn" everywhere in the UI copy.
+
+Group A built 2026-11-03. Decisions:
+- **Readout:** the music page's transport shows only the clock (`MusicReadoutLive`, which renders
+  only when the shown tenth changes); `StepCardsTransport` takes the readout as a slot, so the step
+  cards keep *Position* with eight and count; `KkLaneBar.Readout`'s `count` is optional.
+- **No glide after release on every centre timeline** (music page, desk lanes, hub score track,
+  lesson strip), not only the editing ones: positioning overshoots the same way when practising.
+  The wave stops where the finger lifts; only a release past either end springs back to the edge
+  (rubber band kept), and tap-to-glide stays. The step rail keeps its free momentum
+  (`usePanAxis.release` unchanged).
+- **One timeline mode:** the hub score track and the lesson strip are `Timeline` in centre mode;
+  the fixed view is deleted (`Timeline.Playhead`, the fixed played wave, `focus`/`onSeek`,
+  `windowOf`, `KkTimeline.Playhead`; `KkTimelineSeekCanvas` → `KkTimelineCanvas`). The desk
+  overview stays a whole-mix map with its bracket (it navigates, it does not scrub).
+- **Hub:** `useScoreTimeline` owns the scrub; taps on a step block (wide) or a part chip (phone)
+  select it through lane-bound tap targets (`score-targets`, `data-timeline-lane` on the chips
+  and blocks), a tap anywhere else glides there; the buttons stay for the keyboard. The wide hub
+  starts fitted (`startFitted`), the phone at the default zoom. The part lenses stay as framing
+  commands: a part zooms to its length and puts the line on its start, *Ganz* fits the mix.
+- **Lesson:** the strip scrubs freely instead of jumping to step starts; settling goes through
+  `practice.seekTo`, which carries an active step or part loop to the step under the line
+  (`useCentreScrub` takes an optional `seek`).
+- **Copy:** *Zählbeginn*, *Zählbeginn früher / später*, *Zählbeginn auf die Abspielstelle*.
 
 **B — screens**
 - [ ] The music page's video tab still shows the music: rebuild it into the video screen (list the videos per part, add, remove, rename, main/alternative, offset on the timeline).
@@ -976,7 +999,7 @@ from). Run on the HTTPS static build on iPhone, Pixel and iPad Safari unless a l
 
 - [ ] **A — Audio (phase 2):** silent switch, an incoming call and the lock screen on the iPhone pause and resume cleanly; slowed and sped playback on iPhone and iPad; the stretch's second copy of the mix fits in iPhone memory (trim to the loop range if not); with a click track, whether the extra stretch lead before a slowed start is needed
 - [ ] **B — Saving (phases 3–5):** edit on phone and iPad; undo during a pending save; two editors at once (another device) gives the reload note; spot add + drag + undo; formation preset and keyframe edits; an evening copy (first formation change creates it, spot assign, undo across session and evening edits, drop the copy while edits are pending); upload, remove and adopt while edits are pending; version restore with pending edits
-- [ ] **C — Timeline (phase 9):** trim a cut, zoom, precision drag by moving away from the track, fluid centre-line scrub with momentum and rubber band, swipe during playback pauses and resumes where the glide rests
+- [ ] **C — Timeline (phase 9):** trim a cut, zoom, precision drag by moving away from the track, fluid centre-line scrub that stops where the finger lifts (rubber band at the ends), swipe during playback pauses and resumes there; the same on the hub score track and the lesson strip
 - [ ] **D — Desk lanes (phase 9b, iPad and desktop):** border move, video drag, keyframe drag, zoom; whether a touch drag that lands on a video span should scrub instead (maybe a long press for spans)
 - [ ] **E — Overview (phase 9c, iPad and desktop):** bracket drag and edge reach; narrow brackets on a phone zoom rather than centre
 - [ ] **F — Stage playback (phase 10):** film playback and check the iPad frame rate (canvas only if it drops); shots at 390 px, 844×390 and iPad with a real choreography
