@@ -1,6 +1,5 @@
 import type { MotionValue } from 'motion/react';
 import { useMotionValue } from 'motion/react';
-import type { RefObject } from 'react';
 import { useLayoutEffect, useRef } from 'react';
 import { useStickyOffset } from './use-sticky-offset';
 
@@ -10,21 +9,21 @@ export interface KkTimelinePan {
 }
 
 export interface StickyName {
-  chipRef: RefObject<HTMLSpanElement | null>;
-  nameRef: RefObject<HTMLSpanElement | null>;
+  chipRef: (node: HTMLElement | null) => void;
+  nameRef: (node: HTMLElement | null) => void;
   x: MotionValue<number>;
 }
 
 export const useStickyName = (pan: KkTimelinePan | null, from: number): StickyName => {
-  const chipRef = useRef<HTMLSpanElement | null>(null);
-  const nameRef = useRef<HTMLSpanElement | null>(null);
+  const chipNode = useRef<HTMLElement | null>(null);
+  const nameNode = useRef<HTMLElement | null>(null);
   const room = useMotionValue(0);
   const panX = pan?.x ?? null;
   const bandLeft = from * (pan?.width ?? 0);
 
   useLayoutEffect(() => {
-    const chip = chipRef.current;
-    const name = nameRef.current;
+    const chip = chipNode.current;
+    const name = nameNode.current;
     if (chip === null || name === null || panX === null) {
       return;
     }
@@ -41,6 +40,13 @@ export const useStickyName = (pan: KkTimelinePan | null, from: number): StickyNa
   }, [panX, room]);
 
   const x = useStickyOffset(panX, bandLeft, room);
+
+  const chipRef = (node: HTMLElement | null): void => {
+    chipNode.current = node;
+  };
+  const nameRef = (node: HTMLElement | null): void => {
+    nameNode.current = node;
+  };
 
   return { chipRef, nameRef, x };
 };

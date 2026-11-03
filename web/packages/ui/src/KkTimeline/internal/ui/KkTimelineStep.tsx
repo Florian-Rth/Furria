@@ -12,6 +12,8 @@ import { useReducedMotion } from '../../../internal/use-reduced-motion';
 import { KkScoreGlyph } from '../../../KkScoreGlyph/KkScoreGlyph';
 import { kkTokens } from '../../../tokens';
 import { stepsBottom, stepsTop } from '../timeline-paint';
+import type { KkTimelinePan } from '../use-sticky-name';
+import { useStickyName } from '../use-sticky-name';
 
 export interface KkTimelineStepBlock {
   key: number;
@@ -33,9 +35,10 @@ const blockPaint = (theme: Theme): CSSObject => ({
   position: 'absolute',
   inset: '3px 1px 3px 1px',
   display: 'grid',
+  gridTemplateColumns: 'minmax(0, 1fr)',
   alignContent: 'center',
+  justifyContent: 'stretch',
   justifyItems: 'start',
-  gap: 0.25,
   px: 0.625,
   minWidth: 0,
   borderRadius: `${kkTokens.radius.bar}px`,
@@ -74,6 +77,7 @@ interface KkTimelineStepProps {
   interactive: boolean;
   dropDelay: number | null;
   lane?: string;
+  pan: KkTimelinePan | null;
   onSelect: (key: number) => void;
 }
 
@@ -84,8 +88,10 @@ export const KkTimelineStep: FC<KkTimelineStepProps> = ({
   interactive,
   dropDelay,
   lane,
+  pan,
   onSelect,
 }) => {
+  const sticky = useStickyName(pan, block.from);
   const reduced = useReducedMotion();
   const place = { left: percentOf(block.from), width: percentOf(block.to - block.from) };
   const initial = dropDelay === null || reduced ? false : DROP;
@@ -110,7 +116,19 @@ export const KkTimelineStep: FC<KkTimelineStepProps> = ({
     </Stack>
   );
   const face = (
-    <>
+    <Box
+      ref={sticky.nameRef}
+      component={motion.span}
+      style={{ x: sticky.x }}
+      sx={{
+        display: 'grid',
+        justifyItems: 'start',
+        gap: 0.25,
+        minWidth: 0,
+        maxWidth: '100%',
+        willChange: 'transform',
+      }}
+    >
       <Stack
         direction="row"
         component="span"
@@ -145,12 +163,13 @@ export const KkTimelineStep: FC<KkTimelineStepProps> = ({
         </Box>
       </Stack>
       {glyphs}
-    </>
+    </Box>
   );
   const body = interactive ? (
     <ButtonBase
       aria-label={block.label}
       aria-pressed={selected}
+      ref={sticky.chipRef}
       data-selected={selected}
       data-active={active}
       onClick={select}
@@ -159,7 +178,13 @@ export const KkTimelineStep: FC<KkTimelineStepProps> = ({
       {face}
     </ButtonBase>
   ) : (
-    <Box component="span" data-selected={selected} data-active={active} sx={blockPaint}>
+    <Box
+      ref={sticky.chipRef}
+      component="span"
+      data-selected={selected}
+      data-active={active}
+      sx={blockPaint}
+    >
       {face}
     </Box>
   );

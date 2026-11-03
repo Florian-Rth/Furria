@@ -4,6 +4,7 @@ import { inkWash } from '../../../internal/ink-wash';
 import { percentOf } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
 import { stepsBottom, waveTop } from '../timeline-paint';
+import type { KkTimelinePan } from '../use-sticky-name';
 import type { KkTimelineStepBlock } from './KkTimelineStep';
 import { KkTimelineStep } from './KkTimelineStep';
 
@@ -17,6 +18,7 @@ interface KkTimelineStepsProps {
   interactive: boolean;
   revealSeconds: number | null;
   lane?: string;
+  pan?: KkTimelinePan | null;
   onSelect: (key: number) => void;
 }
 
@@ -28,6 +30,7 @@ export const KkTimelineSteps: FC<KkTimelineStepsProps> = ({
   interactive,
   revealSeconds,
   lane,
+  pan = null,
   onSelect,
 }) => {
   const selected = blocks.find((block) => block.key === selectedKey) ?? null;
@@ -64,6 +67,7 @@ export const KkTimelineSteps: FC<KkTimelineStepsProps> = ({
         interactive={interactive}
         dropDelay={dropDelay}
         lane={lane}
+        pan={pan}
         onSelect={onSelect}
       />
     );

@@ -36,7 +36,8 @@ export const TimelineSteps: FC<TimelineStepsProps> = ({
   lane,
   onSelect,
 }) => {
-  const { length } = useTimeline();
+  const { length, centre } = useTimeline();
+  const pan = centre === null ? null : { x: centre.x, width: centre.contentWidth };
   const blocks = spanSharesOf(steps, length);
   const interactive = onSelect !== undefined;
   const select = onSelect ?? IGNORE;
@@ -51,6 +52,7 @@ export const TimelineSteps: FC<TimelineStepsProps> = ({
         interactive={interactive}
         revealSeconds={revealSeconds}
         lane={lane}
+        pan={pan}
         onSelect={select}
       />
     </TimelineStrip>
