@@ -1,4 +1,4 @@
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { useChoreographyRestore, useChoreographyVersionsQuery } from '../history-api';
 import { restoreLabelOf, versionLabelOf, versionMetaOf } from '../undo-copy';
 
@@ -24,7 +24,7 @@ export interface ChoreographyVersionsView {
   loadOlder: () => void;
 }
 
-const currentVersionOf = (studio: Studio, eventId: number | null): number | null =>
+const currentVersionOf = (studio: ActStudio, eventId: number | null): number | null =>
   eventId === null
     ? (studio.choreography?.version ?? null)
     : (studio.evenings.find((evening) => evening.eventId === eventId)?.appearance?.choreography
@@ -33,7 +33,7 @@ const currentVersionOf = (studio: Studio, eventId: number | null): number | null
 export const useChoreographyVersions = (
   actId: number,
   eventId: number | null,
-  studio: Studio,
+  studio: ActStudio,
 ): ChoreographyVersionsView => {
   const current = currentVersionOf(studio, eventId);
   const query = useChoreographyVersionsQuery(actId, eventId, current !== null);

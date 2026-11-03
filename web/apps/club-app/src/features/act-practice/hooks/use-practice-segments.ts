@@ -1,7 +1,7 @@
+import { isLooped, segmentGroupsOf } from '@furria/studio/practice-controls';
 import { stepNumberOf } from '@furria/studio/step-names';
 import type { StudioStep } from '@furria/studio/studio-schemas';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import { isLooped, segmentGroupsOf } from '../practice-controls';
 import { partLoopLabelOf } from '../practice-copy';
 import type { Practice } from './use-practice';
 

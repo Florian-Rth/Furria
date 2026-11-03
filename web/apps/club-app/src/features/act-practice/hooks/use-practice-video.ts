@@ -1,3 +1,11 @@
+import type { HeroKind } from '@furria/studio/practice-controls';
+import {
+  heroOf,
+  nextVideoIdOf,
+  partVideosOf,
+  shownVideoIdOf,
+  videoSourceOf,
+} from '@furria/studio/practice-controls';
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import { useSlavedVideo } from '@furria/studio/use-slaved-video';
 import type { KkPracticeScreenVideoSource } from '@furria/ui/KkPracticeScreen';
@@ -5,15 +13,7 @@ import { useIsMobile } from '@furria/ui/use-is-mobile';
 import type { RefObject } from 'react';
 import { useRef, useState } from 'react';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import type { Studio } from '@/features/acts/schemas';
-import type { HeroKind } from '../practice-controls';
-import {
-  heroOf,
-  nextVideoIdOf,
-  partVideosOf,
-  shownVideoIdOf,
-  videoSourceOf,
-} from '../practice-controls';
+import type { ActStudio } from '@/features/acts/schemas';
 import { takeLabelOf, takeTextOf } from '../practice-copy';
 
 const ID_SEPARATOR = ',';
@@ -37,7 +37,7 @@ export interface PracticeVideo {
 const idsOf = (joined: string): number[] =>
   joined === '' ? [] : joined.split(ID_SEPARATOR).map(Number);
 
-export const usePracticeVideo = (studio: Studio, playback: StudioPlayback): PracticeVideo => {
+export const usePracticeVideo = (studio: ActStudio, playback: StudioPlayback): PracticeVideo => {
   const { player, parts, steps } = playback;
   const ref = useRef<HTMLVideoElement>(null);
   const compact = useIsMobile();

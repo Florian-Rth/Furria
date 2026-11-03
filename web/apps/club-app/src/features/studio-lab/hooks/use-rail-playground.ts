@@ -9,7 +9,7 @@ import { animate, useReducedMotion } from 'motion/react';
 import { useEffect, useEffectEvent, useRef } from 'react';
 import { usePlaybackSeconds } from '@/features/act-player/hooks/use-playback-seconds';
 import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import type { RailItem } from '../rail-layout';
 import {
   nearestRailOffset,
@@ -42,7 +42,10 @@ const RAIL_POLICY = { drag: true, navigate: false, longPress: false, precision: 
 const FOLLOW_PAUSE_MS = 1800;
 const SNAP_SPRING = { type: 'spring', stiffness: 380, damping: 40 } as const;
 
-export const useRailPlayground = (studio: Studio, variants: StudioLabVariants): RailPlayground => {
+export const useRailPlayground = (
+  studio: ActStudio,
+  variants: StudioLabVariants,
+): RailPlayground => {
   const playback = useStudioPlayback(studio, null);
   const seconds = usePlaybackSeconds(playback.player);
   const reducedMotion = useReducedMotion() ?? false;

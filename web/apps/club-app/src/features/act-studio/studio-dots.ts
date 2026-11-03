@@ -1,8 +1,8 @@
 import { posesAt } from '@furria/studio/choreography-motion';
+import type { StageDot, StageScene } from '@furria/studio/practice-stage';
+import { stageDotsAt } from '@furria/studio/practice-stage';
 import type { StageFrame } from '@furria/studio/stage-framing';
 import { viewRotationOf } from '@furria/studio/stage-view';
-import type { StageDot, StageScene } from '@/features/act-practice/practice-stage';
-import { stageDotsAt } from '@/features/act-practice/practice-stage';
 import { dotLabelOf } from './studio-copy';
 
 export interface StudioDot extends StageDot {

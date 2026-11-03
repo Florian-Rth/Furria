@@ -8,7 +8,7 @@ import { LessonBody } from '@/features/act-lesson/components/LessonBody';
 import { LessonEmpty } from '@/features/act-lesson/components/LessonEmpty';
 import { PracticeSteps } from '@/features/act-practice/components/PracticeSteps';
 import { canPractise } from '@/features/acts/act-studio';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
 import { useActStudioStage } from '../hooks/use-act-studio-stage';
 import type { StudioEveningContext } from '../hooks/use-studio-screen';
@@ -23,7 +23,7 @@ interface ActStudioBodyProps {
   actId: number;
   title: string;
   tone: KkGroupTone | null;
-  studio: Studio;
+  studio: ActStudio;
   viewerId: number | null;
   canEdit: boolean;
   cast: readonly CastPerson[];

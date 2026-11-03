@@ -1,7 +1,7 @@
 import type { MusicAnchor, MusicSegment } from '@furria/studio/music-timeline';
 import { EDGE_TOLERANCE_SECONDS } from '@furria/studio/music-timeline';
 import type { StudioFinalTrack, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { finalTitleOf, songNameOf } from './studio-copy';
 import { anchorAt } from './studio-formation';
 
@@ -42,10 +42,10 @@ interface FinalMapping extends FinalSpan {
   mediaItemId: number;
 }
 
-export const adoptedFinalTrackOf = (studio: Studio): StudioFinalTrack | null =>
+export const adoptedFinalTrackOf = (studio: ActStudio): StudioFinalTrack | null =>
   studio.finalTracks.find((track) => track.adopted) ?? null;
 
-export const pendingFinalTrackOf = (studio: Studio): StudioFinalTrack | null => {
+export const pendingFinalTrackOf = (studio: ActStudio): StudioFinalTrack | null => {
   const adoptedVersion = adoptedFinalTrackOf(studio)?.version ?? 0;
 
   return (
@@ -178,9 +178,9 @@ const previewVideoOf = (
 };
 
 const previewChoreographyOf = (
-  choreography: Studio['choreography'],
+  choreography: ActStudio['choreography'],
   mapping: FinalMapping,
-): Studio['choreography'] =>
+): ActStudio['choreography'] =>
   choreography === null
     ? null
     : {
@@ -198,11 +198,11 @@ const previewChoreographyOf = (
       };
 
 export const finalPreviewOf = (
-  studio: Studio,
+  studio: ActStudio,
   track: StudioFinalTrack,
   segments: readonly MusicSegment[],
   placements: FinalPlacements,
-): Studio => {
+): ActStudio => {
   const mapping: FinalMapping = {
     placements,
     length: track.durationSeconds ?? 0,
@@ -260,7 +260,7 @@ export const finalBeatAtOf = (track: StudioFinalTrack, seconds: number): number 
 export const nudgedFinalBeatOf = (track: StudioFinalTrack, delta: number): number | null =>
   track.firstBeatSeconds === null ? null : finalBeatAtOf(track, track.firstBeatSeconds + delta);
 
-export const sourceNameOf = (studio: Studio, mediaItemId: number): string => {
+export const sourceNameOf = (studio: ActStudio, mediaItemId: number): string => {
   const song = studio.songs.find((candidate) => candidate.mediaItemId === mediaItemId);
   const track = studio.finalTracks.find((candidate) => candidate.mediaItemId === mediaItemId);
 

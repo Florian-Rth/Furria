@@ -1,8 +1,10 @@
+import { isLooped } from '@furria/studio/practice-controls';
+import { stageDotsAt } from '@furria/studio/practice-stage';
+import { stepListOf } from '@furria/studio/practice-step-list';
 import type { KkPracticeStepsThumbDot } from '@furria/ui/KkPracticeSteps';
 import { useState } from 'react';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import type { Studio } from '@/features/acts/schemas';
-import { isLooped } from '../practice-controls';
+import type { ActStudio } from '@/features/acts/schemas';
 import {
   PRACTICE_NO_PART,
   stepsGroupMetaOf,
@@ -10,8 +12,6 @@ import {
   stepsRowLabelOf,
   stepsRowMetaOf,
 } from '../practice-copy';
-import { stageDotsAt } from '../practice-stage';
-import { stepListOf } from '../practice-step-list';
 import type { Practice } from './use-practice';
 
 export interface PracticeStepRowView {
@@ -45,7 +45,7 @@ export interface PracticeSteps {
 }
 
 export const usePracticeSteps = (
-  studio: Studio,
+  studio: ActStudio,
   playback: StudioPlayback,
   practice: Practice,
 ): PracticeSteps => {

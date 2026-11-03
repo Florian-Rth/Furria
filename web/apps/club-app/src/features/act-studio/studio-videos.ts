@@ -1,7 +1,7 @@
 import type { TimelineRange } from '@furria/studio/music-timeline';
 import { partRangeOf } from '@furria/studio/music-timeline';
 import type { StudioPart, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 
 const START_GRAIN_SECONDS = 0.05;
 
@@ -39,12 +39,12 @@ export const videoShelfOf = (video: StudioVideo): VideoShelf => {
 export const needsAlignment = (video: StudioVideo): boolean =>
   video.state === 'ready' && video.placement === 'unaligned';
 
-export const isDevelopingStudio = (studio: Studio): boolean =>
+export const isDevelopingStudio = (studio: ActStudio): boolean =>
   [...studio.songs, ...studio.finalTracks, ...studio.videos].some(
     (item) => item.state === 'processing',
   );
 
-export const musicKeyOf = (studio: Studio): string =>
+export const musicKeyOf = (studio: ActStudio): string =>
   [...studio.songs, ...studio.finalTracks]
     .map((item) => `${item.mediaItemId}:${item.state}`)
     .join(',');

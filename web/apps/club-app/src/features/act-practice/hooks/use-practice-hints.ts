@@ -1,5 +1,9 @@
+import {
+  hintVisitsOf,
+  isHintedVisit,
+  PRACTICE_HINT_VISITS_KEY,
+} from '@furria/studio/practice-memory';
 import { useEffect, useState } from 'react';
-import { hintVisitsOf, isHintedVisit, PRACTICE_HINT_VISITS_KEY } from '../practice-memory';
 
 const readVisits = (): number => {
   try {

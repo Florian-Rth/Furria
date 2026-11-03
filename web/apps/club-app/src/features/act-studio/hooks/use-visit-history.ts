@@ -1,5 +1,5 @@
 import type { SaveStatus } from '@furria/studio/autosave';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { historyLinesOf } from '../history-turn';
 import { CHANGE_TEXT, HISTORY_UNDONE, visitMetaOf } from '../undo-copy';
 import { useStudioHistoryControls } from './use-studio-history-controls';
@@ -21,7 +21,7 @@ export interface VisitHistory {
   retry: () => void;
 }
 
-export const useVisitHistory = (actId: number, studio: Studio): VisitHistory => {
+export const useVisitHistory = (actId: number, studio: ActStudio): VisitHistory => {
   const controls = useStudioHistoryControls(actId);
   const eveningTitleOf = (eventId: number | null): string | null =>
     studio.evenings.find((evening) => evening.eventId === eventId)?.title ?? null;

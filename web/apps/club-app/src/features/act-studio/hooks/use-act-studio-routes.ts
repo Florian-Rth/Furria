@@ -1,8 +1,8 @@
 import type { SpotPath } from '@furria/studio/choreography-motion';
 import { poseAt } from '@furria/studio/choreography-motion';
+import { viewShareOf } from '@furria/studio/practice-stage';
 import type { StudioStage } from '@furria/studio/studio-schemas';
 import type { KkStageInkLineKind } from '@furria/ui/KkStageInk';
-import { viewShareOf } from '@/features/act-practice/practice-stage';
 import type { ActStudioStage } from './use-act-studio-stage';
 import type { StudioScreen } from './use-studio-screen';
 

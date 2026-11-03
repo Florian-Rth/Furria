@@ -1,7 +1,7 @@
+import type { StageScene } from '@furria/studio/practice-stage';
 import type { StageDotKeys, StageNameSide } from '@furria/studio/Stage';
 import type { StageFrame } from '@furria/studio/stage-framing';
 import type { KkStageInkDiscKind } from '@furria/ui/KkStageInk';
-import type { StageScene } from '@/features/act-practice/practice-stage';
 import { stepDotLabelOf, stepDotNameOf } from './step-cards-copy';
 import type { SelectionAnchor } from './studio-dots';
 import { selectionAnchorOf, studioDotsAt } from './studio-dots';

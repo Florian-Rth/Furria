@@ -1,7 +1,8 @@
+import type { StageSummary } from '@furria/studio/practice-stage';
+import { clockOf } from '@furria/studio/practice-step-list';
+import type { OwnCue } from '@furria/studio/practice-way';
+import { keyHelpOf } from '@furria/studio/studio-keys';
 import type { KkKeyListEntry } from '@furria/ui/KkKeyList';
-import type { StageSummary } from './practice-stage';
-import { clockOf } from './practice-step-list';
-import type { OwnCue } from './practice-way';
 
 export const PRACTICE_FALLBACK_TITLE = 'Auftritt üben';
 export const PRACTICE_LABEL = 'Üben';
@@ -65,12 +66,12 @@ export const practiceStageLabelOf = (summary: StageSummary): string =>
     .join('. ');
 
 export const PRACTICE_KEYS_TITLE = 'Tastatur';
-export const PRACTICE_KEYS: readonly KkKeyListEntry[] = [
-  { id: 'toggle', keys: ['Leertaste'], action: 'Abspielen oder anhalten' },
-  { id: 'step', keys: ['←', '→'], action: 'Schritt zurück oder vor' },
-  { id: 'tempo', keys: ['↑', '↓'], action: 'Schneller oder langsamer' },
-  { id: 'loop', keys: ['L'], action: 'Schritt wiederholen' },
-];
+export const PRACTICE_KEYS: readonly KkKeyListEntry[] = keyHelpOf([
+  { id: 'toggle', commands: ['toggle'], action: 'Abspielen oder anhalten' },
+  { id: 'step', commands: ['stepBack', 'stepForward'], action: 'Schritt zurück oder vor' },
+  { id: 'tempo', commands: ['faster', 'slower'], action: 'Schneller oder langsamer' },
+  { id: 'loop', commands: ['loop'], action: 'Schritt wiederholen' },
+]);
 
 export const PRACTICE_TRAINING_START = 'Training starten';
 export const PRACTICE_LARGE_KEYS_LABEL = 'Schritte und Tempo';

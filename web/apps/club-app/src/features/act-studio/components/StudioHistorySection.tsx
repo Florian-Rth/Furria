@@ -5,7 +5,7 @@ import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { useVisitHistory } from '../hooks/use-visit-history';
 import {
   HISTORY_EMPTY,
@@ -18,7 +18,7 @@ import {
 
 interface StudioHistorySectionProps {
   actId: number;
-  studio: Studio;
+  studio: ActStudio;
 }
 
 export const StudioHistorySection: FC<StudioHistorySectionProps> = ({ actId, studio }) => {

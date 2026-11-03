@@ -1,3 +1,4 @@
+import { useStudioKeys } from '@furria/studio/use-studio-keys';
 import { KkLaneDesk } from '@furria/ui/KkLaneDesk';
 import { KkStudioView } from '@furria/ui/KkStudioView';
 import type { FC } from 'react';
@@ -6,10 +7,10 @@ import type { ActStudioStage } from '@/features/act-studio/hooks/use-act-studio-
 import { useActStudioTakes } from '@/features/act-studio/hooks/use-act-studio-takes';
 import type { StudioScreen } from '@/features/act-studio/hooks/use-studio-screen';
 import { useStudioSetup } from '@/features/act-studio/hooks/use-studio-setup';
+import { scrubKeyActionsOf } from '@/features/act-studio/studio-key-actions';
 import { DESK_INSPECTOR, DESK_LABEL, DESK_LANES, DESK_STAGE } from '../desk-copy';
 import { useActDesk } from '../hooks/use-act-desk';
 import { useDeskBorders } from '../hooks/use-desk-borders';
-import { useDeskKeys } from '../hooks/use-desk-keys';
 import { useDeskLanes } from '../hooks/use-desk-lanes';
 import { DeskInspectorPane } from './DeskInspectorPane';
 import { DeskLanes } from './DeskLanes';
@@ -28,7 +29,7 @@ export const ActDeskView: FC<ActDeskViewProps> = ({ screen, editor }) => {
   const desk = useActDesk(screen, editor, takes);
   const borders = useDeskBorders(screen);
   const lanes = useDeskLanes(desk, borders);
-  useDeskKeys(screen, lanes.centre.zoomBy);
+  useStudioKeys(scrubKeyActionsOf(screen, lanes.centre.zoomBy), true);
   const setup = useStudioSetup(screen, editor, {
     leave: () => {
       desk.chooseTab('selection');

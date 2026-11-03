@@ -1,11 +1,11 @@
 import type { StudioFinalTrack, StudioSong, StudioVideo } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { setupOf, setupStartsOpen } from './studio-setup';
 
 const urls = { normalised: 'a', preview: 'b', peaks: 'p' };
 
-const emptyStudio: Studio = {
+const emptyStudio: ActStudio = {
   music: { lengthSeconds: 0, source: 'workingMix' },
   songs: [],
   finalTracks: [],
@@ -61,7 +61,7 @@ const video: StudioVideo = {
 
 const person = { personId: 4, firstName: 'Lena', lastName: 'B', portrait: null };
 
-const startedStudio: Studio = {
+const startedStudio: ActStudio = {
   ...emptyStudio,
   songs: [song],
   steps: [

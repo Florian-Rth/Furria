@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { CastPerson } from '@/features/running-order/schemas';
 import { actPageModeOf, canChangeCoEditors, coEditorCandidatesOf } from './act-studio';
-import type { CoEditor, Studio } from './schemas';
+import type { ActStudio, CoEditor } from './schemas';
 
 const urls = { normalised: '/n', preview: '/p', peaks: '/k' };
 
@@ -19,7 +19,7 @@ const song = (songId: number) => ({
   urls,
 });
 
-const studio = (patch: Partial<Studio>): Studio => ({
+const studio = (patch: Partial<ActStudio>): ActStudio => ({
   music: { lengthSeconds: 0, source: 'workingMix' },
   songs: [],
   finalTracks: [],

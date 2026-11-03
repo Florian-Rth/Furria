@@ -1,7 +1,7 @@
 import type { MusicSegment } from '@furria/studio/music-timeline';
 import type { StudioSong } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import {
   firstBeatAtOf,
   keptPositionOf,
@@ -118,7 +118,7 @@ describe('nudgedFirstBeatOf', () => {
 
 describe('outsideMusicOf', () => {
   it('counts what lies outside the cut music', () => {
-    const studio: Studio = {
+    const studio: ActStudio = {
       music: { lengthSeconds: 60, source: 'workingMix' },
       songs: [songOf(1, 0)],
       finalTracks: [],

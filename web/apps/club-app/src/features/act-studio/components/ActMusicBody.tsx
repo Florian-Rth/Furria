@@ -1,15 +1,15 @@
+import { useStudioKeys } from '@furria/studio/use-studio-keys';
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
 import { KkLaneButton } from '@furria/ui/KkLaneButton';
 import { KkLaneDesk } from '@furria/ui/KkLaneDesk';
 import { KkLaneInspector } from '@furria/ui/KkLaneInspector';
 import { KkLanePhone } from '@furria/ui/KkLanePhone';
 import type { FC } from 'react';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import type { ActMusicPage } from '../hooks/use-act-music-page';
 import { useActStudioFinal } from '../hooks/use-act-studio-final';
 import { useActStudioSongs } from '../hooks/use-act-studio-songs';
 import { useActStudioTakes } from '../hooks/use-act-studio-takes';
-import { useStepCardKeys } from '../hooks/use-step-card-keys';
 import { useStudioScreen } from '../hooks/use-studio-screen';
 import { useVisitHistory } from '../hooks/use-visit-history';
 import type { StudioMusicTool } from '../schemas';
@@ -23,6 +23,7 @@ import {
   STEP_CARDS_REDO,
   STEP_CARDS_UNDO,
 } from '../step-cards-copy';
+import { scrubKeyActionsOf } from '../studio-key-actions';
 import { ActStudioFinalDesk } from './ActStudioFinalDesk';
 import { ActStudioSongDesk } from './ActStudioSongDesk';
 import { ActStudioSongList } from './ActStudioSongList';
@@ -35,7 +36,7 @@ import { StudioSaveButton } from './StudioSaveButton';
 interface ActMusicBodyProps {
   page: ActMusicPage;
   actId: number;
-  studio: Studio;
+  studio: ActStudio;
 }
 
 export const ActMusicBody: FC<ActMusicBodyProps> = ({ page, actId, studio }) => {
@@ -50,7 +51,7 @@ export const ActMusicBody: FC<ActMusicBodyProps> = ({ page, actId, studio }) => 
   const takes = useActStudioTakes(screen);
   const history = useVisitHistory(actId, screen.studio);
   const deskOpen = songs.deskOpen || takes.deskOpen || finalList.desk !== null;
-  useStepCardKeys(screen, !deskOpen);
+  useStudioKeys(scrubKeyActionsOf(screen, null), !deskOpen);
   const choose = (tool: StudioMusicTool): void => {
     screen.mode.choose(tool);
     page.chooseTool(tool);

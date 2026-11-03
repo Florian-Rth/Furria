@@ -9,7 +9,7 @@ import type { MotionValue } from 'motion/react';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import { usePlaybackSeconds } from '@/features/act-player/hooks/use-playback-seconds';
 import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { labDragStepOf, labPolicyOf } from '../lab-drag';
 import type { LabLift } from '../lab-lift';
 import { labLiftOf } from '../lab-lift';
@@ -101,7 +101,7 @@ export const LOUPE = { diameter: 116, zoom: 2.25 };
 export const READOUT_WIDTH = 190;
 
 export const useTimelinePlayground = (
-  studio: Studio,
+  studio: ActStudio,
   variants: StudioLabVariants,
 ): TimelinePlayground => {
   const history = useLabHistory(studio);

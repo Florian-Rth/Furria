@@ -11,7 +11,7 @@ import type { AnimationPlaybackControls, MotionValue } from 'motion/react';
 import { animate, useMotionValue, useMotionValueEvent, useReducedMotion } from 'motion/react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import type { StripWindow } from '../centre-view';
 import {
   centreBoundsOf,
@@ -89,7 +89,7 @@ interface LiftState {
 const TAP_GLIDE = { type: 'spring', stiffness: 320, damping: 38 } as const;
 
 export const useCentreTimelinePlayground = (
-  studio: Studio,
+  studio: ActStudio,
   variants: StudioLabVariants,
 ): CentreTimelinePlayground => {
   const history = useLabHistory(studio);

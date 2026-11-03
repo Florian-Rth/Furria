@@ -1,7 +1,7 @@
 import { KkTouchLab } from '@furria/ui/KkTouchLab';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { useCentreTimelinePlayground } from '../hooks/use-centre-timeline-playground';
 import type { StudioLabVariants } from '../schemas';
 import {
@@ -14,7 +14,7 @@ import { LabLiftOverlay } from './LabLiftOverlay';
 import { LabTransportBar } from './LabTransportBar';
 
 interface CentreTimelinePlaygroundProps {
-  studio: Studio;
+  studio: ActStudio;
   variants: StudioLabVariants;
 }
 

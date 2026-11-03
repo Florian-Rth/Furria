@@ -1,4 +1,4 @@
-import { practiceMemoryKeyOf } from '@/features/act-practice/practice-memory';
+import { practiceMemoryKeyOf } from '@furria/studio/practice-memory';
 
 export const rememberStep = (actId: number, personId: number | null, stepId: number): void => {
   try {

@@ -1,6 +1,6 @@
+import { practiceMemoryKeyOf, rememberedStepStartOf } from '@furria/studio/practice-memory';
 import { useEffect, useRef, useState } from 'react';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import { practiceMemoryKeyOf, rememberedStepStartOf } from '../practice-memory';
 
 const readStored = (key: string): string | null => {
   try {

@@ -1,4 +1,4 @@
-import type { OwnCue } from '@/features/act-practice/practice-way';
+import type { OwnCue } from '@furria/studio/practice-way';
 import type { EightPlace } from './lesson-counts';
 
 export const LESSON_LABEL = 'Üben';

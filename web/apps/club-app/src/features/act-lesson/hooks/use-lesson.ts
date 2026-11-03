@@ -2,10 +2,11 @@ import type { SpotPath } from '@furria/studio/choreography-motion';
 import { stepRangeOf } from '@furria/studio/music-timeline';
 import { shownStepNameOf, stepNumberOf } from '@furria/studio/step-names';
 import { useScreenWakeLock } from '@furria/studio/use-screen-wake-lock';
+import { useStudioKeys } from '@furria/studio/use-studio-keys';
 import { useState } from 'react';
-import { usePlayerKeys } from '@/features/act-practice/hooks/use-player-keys';
 import type { PracticeSegmentGroupRow } from '@/features/act-practice/hooks/use-practice-segments';
 import { usePracticeSegments } from '@/features/act-practice/hooks/use-practice-segments';
+import { playerKeyActionsOf } from '@/features/act-practice/practice-key-actions';
 import type { StudioScreen } from '@/features/act-studio/hooks/use-studio-screen';
 import {
   LESSON_LAST,
@@ -83,7 +84,7 @@ export const useLesson = (screen: StudioScreen): Lesson => {
   const [swapped, setSwapped] = useState(false);
   const [reading, setReading] = useState(false);
   useScreenWakeLock(true);
-  usePlayerKeys(practice, !reading);
+  useStudioKeys(playerKeyActionsOf(practice), !reading);
 
   const { step } = practice;
   const number = step === null ? 0 : stepNumberOf(playback.steps, step.stepId);

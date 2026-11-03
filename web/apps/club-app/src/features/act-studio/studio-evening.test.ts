@@ -1,6 +1,6 @@
 import type { Keyframe } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { Studio, StudioAppearance, StudioEvening } from '@/features/acts/schemas';
+import type { ActStudio, StudioAppearance, StudioEvening } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
 import {
   EMPTY_APPEARANCE,
@@ -39,7 +39,7 @@ const evening = (appearance: StudioAppearance | null): StudioEvening => ({
   appearance,
 });
 
-const studioWith = (appearance: StudioAppearance | null): Studio => ({
+const studioWith = (appearance: StudioAppearance | null): ActStudio => ({
   music: { lengthSeconds: 60, source: 'workingMix' },
   songs: [],
   finalTracks: [],
@@ -56,8 +56,9 @@ const studioWith = (appearance: StudioAppearance | null): Studio => ({
   trainings: [],
 });
 
-const appearanceOf = (response: { studio: Studio | null } | undefined): StudioAppearance | null =>
-  response?.studio?.evenings[0]?.appearance ?? null;
+const appearanceOf = (
+  response: { studio: ActStudio | null } | undefined,
+): StudioAppearance | null => response?.studio?.evenings[0]?.appearance ?? null;
 
 describe('eveningCastOf', () => {
   it('drops who sits the evening out and adds the stand-ins', () => {
@@ -136,7 +137,7 @@ describe('eveningChangesOf', () => {
 });
 
 describe('eveningSavedOf', () => {
-  const saved = (studio: Studio, patch: Partial<Studio>): Studio => ({
+  const saved = (studio: ActStudio, patch: Partial<ActStudio>): ActStudio => ({
     ...eveningViewOf(studio, 5),
     ...patch,
   });

@@ -690,12 +690,42 @@ the catalog). Escape that cancels a keyboard drag no longer also closes the shee
   and iPad Safari (touch delay, auto-scroll inside the sheet, the sheet's own swipe), keyboard
   sorting; shots at 390 px and iPad.
 
-### Phase 12 — Screens into the package, keyboard, cleanup
+### Phase 12 — Rename, one key map, practice models into the package
+Goal: the club app's studio type is `ActStudio`, one key map drives every studio screen, and the
+practice models live in the package. Split 2026-11-03: moving the screens is phase 12b (soft cap).
+- [x] Rename the club app's `Studio` type to `ActStudio` (package `Studio` stays)
+- [x] tinykeys replaces the seven key hooks; one key map feeds the key help
+- [x] Move the pure practice models (stepping, way, step way, stage, stage frame, step list, controls, memory) into the package
+
+Built 2026-11-03. `features/acts/schemas` exports `ActStudioSchema` / `ActStudio` (the package's
+`Studio` plus `evenings` and `trainings`); every club-app use is renamed. **Keys:**
+`@furria/studio/studio-keys` is the one key map (`STUDIO_KEYS`: tinykeys bindings, key-cap glyphs,
+repeat and focus rules per command — `toggle`, `stepBack/Forward`, `countBack/Forward` (Shift),
+`faster/slower`, `loop`, `zoomIn/Out`, `undo/redo`) with the pure `keyDecisionOf` (run, swallow a
+repeat, or pass to the focused element; tested) and `keyHelpOf`, which builds the key help
+(`PRACTICE_KEYS`, `HALL_KEYS`) from the map. `@furria/studio/use-studio-keys` binds a screen's
+actions through tinykeys 4.0.1 (catalog); a `null` action is not bound (undo/redo when nothing to
+undo). Screens pass actions from `practiceKeyActionsOf` / `playerKeyActionsOf` (player, lesson,
+hall) and `scrubKeyActionsOf` (step cards, music page, desk with zoom); the hub passes `toggle` only.
+Deleted: `use-desk-keys` + `desk-keys`, `use-score-keys`, `use-practice-keys`, `use-player-keys`,
+`practice-keys` (`steppedRateOf` joined `practice-stepping`), `use-step-card-keys` +
+`stepCardKeyOf`, `studio-history-keys` and the key listener of `use-studio-visit`.
+- **Unified behaviour (judge on device/keyboard):** one focus rule for all screens — typing blocks
+  everything, a dialog/menu/listbox blocks all but undo/redo, a focused slider or tab keeps the
+  arrows (widgets that handle their arrows already prevent them), a button keeps Space; arrows and
+  zoom repeat when held (the step cards did not repeat before), Space/L/undo/redo never repeat;
+  Shift+Space also toggles; undo/redo take Ctrl or Cmd on every platform.
+- **Review follow-ups (open):** in practice, hall and lesson Shift+arrows no longer skip a step
+  (they are the count keys, unbound there); the undo/redo key caps (`Strg`) are not shown anywhere yet.
+- **Practice models:** `@furria/studio/practice-{controls,memory,stage,stage-frame,step-list,stepping,step-way,way}`
+  with their tests; `practice-copy` and the practice hooks/components stay for phase 12b.
+
+### Phase 12b — Screens into the package, kit cleanup, docs
 Goal: the studio is one package; nothing studio-specific is left behind.
-- [ ] Rename the club app's `Studio` type to `ActStudio` (package `Studio` stays)
-- [ ] Move practice, lesson, hall, desk and hub score/formation views into the package; the club app composes them
-- [ ] tinykeys replaces the seven key hooks; one key map feeds the key help
-- [ ] Delete the remaining studio kits from `@furria/ui` and empty club-app folders; grep for leftovers
+- [ ] Move player playback (peaks passed in, no fetch), practice, lesson and hall views into the package; the club app composes them
+- [ ] Move desk and hub score/formation views (and the studio screen hooks they need) into the package
+- [ ] Delete the remaining studio kits from `@furria/ui` (incl. `KkTouchLab` once the phase 7 device check is done) and empty club-app folders; grep for leftovers
+- [ ] Deduplicate `neighbourCountOf` (step cards and desk time)
 - [ ] Update CONTEXT.md if terms changed, plan/club-app/group-year.md, docs/web; full web suite
 
 ## Risks & alternatives

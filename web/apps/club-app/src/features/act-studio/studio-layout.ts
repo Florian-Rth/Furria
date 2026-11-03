@@ -1,4 +1,4 @@
-import type { HeroKind } from '@/features/act-practice/practice-controls';
+import type { HeroKind } from '@furria/studio/practice-controls';
 
 export type ActStudioHeroKind = 'video' | 'stage';
 

@@ -4,7 +4,7 @@ import { KkTouchLab } from '@furria/ui/KkTouchLab';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { POOL_ID, useListsPlayground } from '../hooks/use-lists-playground';
 import { LISTS_HINT, OPEN_SPOT, SONGS_TITLE, SPOTS_TITLE } from '../studio-lab-copy';
 import { HolderChip } from './HolderChip';
@@ -13,7 +13,7 @@ import { SpotDropSlot } from './SpotDropSlot';
 import { SpotSlot } from './SpotSlot';
 
 interface ListsPlaygroundProps {
-  studio: Studio;
+  studio: ActStudio;
 }
 
 export const ListsPlayground: FC<ListsPlaygroundProps> = ({ studio }) => {

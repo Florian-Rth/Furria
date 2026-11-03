@@ -2,7 +2,7 @@ import type { MusicSegment } from '@furria/studio/music-timeline';
 import { musicSegmentsOf } from '@furria/studio/music-timeline';
 import type { StudioFinalTrack } from '@furria/studio/studio-schemas';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import type { FinalTrackMutations } from '../api';
 import { useFinalTrackMutations } from '../api';
 import type { FinalPlacements } from '../studio-final';
@@ -32,7 +32,7 @@ export interface StudioFinal {
 
 export interface StudioFinalStage {
   final: StudioFinal;
-  studio: Studio;
+  studio: ActStudio;
 }
 
 const isPreviewable = (track: StudioFinalTrack | null, mode: ActStudioMode): boolean =>
@@ -69,7 +69,7 @@ const useFinalAutoMatch = (
 
 export const useStudioFinal = (
   actId: number,
-  worked: Studio,
+  worked: ActStudio,
   mode: ActStudioMode,
   edits: ActStudioEdits,
 ): StudioFinalStage => {

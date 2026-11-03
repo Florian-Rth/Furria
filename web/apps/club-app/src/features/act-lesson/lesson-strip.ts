@@ -1,7 +1,7 @@
 import { partRangeOf, stepRangeOf } from '@furria/studio/music-timeline';
+import { shownStepOf } from '@furria/studio/practice-stepping';
 import type { StudioPart, StudioStep } from '@furria/studio/studio-schemas';
 import type { TimelinePart, TimelineSpan } from '@furria/studio/Timeline';
-import { shownStepOf } from '@/features/act-practice/practice-stepping';
 
 export interface LessonStripLanes {
   parts: TimelinePart[];

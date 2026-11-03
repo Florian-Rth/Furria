@@ -1,11 +1,11 @@
 import type { SpotPath } from '@furria/studio/choreography-motion';
 import type { MixPlayer } from '@furria/studio/mix-player';
 import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
+import { cueOf, ownWayAt } from '@furria/studio/practice-way';
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import { KkLesson } from '@furria/ui/KkLesson';
 import type { FC } from 'react';
 import { cueTextOf } from '@/features/act-practice/practice-copy';
-import { cueOf, ownWayAt } from '@/features/act-practice/practice-way';
 import { cueLabelOf } from '../lesson-copy';
 import { cueCountOf, cueOfCount } from '../lesson-picture';
 

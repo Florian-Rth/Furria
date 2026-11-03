@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { readinessOf } from './score-readiness';
 import type { ScoreStep } from './score-steps';
 
 const urls = { normalised: '/n', preview: '/p', peaks: '/k' };
 
-const studio = (patch: Partial<Studio>): Studio => ({
+const studio = (patch: Partial<ActStudio>): ActStudio => ({
   music: { lengthSeconds: 0, source: 'workingMix' },
   songs: [],
   finalTracks: [],
@@ -68,7 +68,7 @@ const spot = (spotId: number, filled: boolean) => ({
   person: filled ? { personId: spotId, firstName: 'A', lastName: 'B', portrait: null } : null,
 });
 
-const statesOf = (input: Studio, steps: ScoreStep[]) =>
+const statesOf = (input: ActStudio, steps: ScoreStep[]) =>
   Object.fromEntries(
     readinessOf(input, steps).map((item) => [item.key, [item.state, item.done, item.total]]),
   );

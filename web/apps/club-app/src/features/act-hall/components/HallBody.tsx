@@ -1,7 +1,7 @@
 import { KkHall } from '@furria/ui/KkHall';
 import { KkKeyList } from '@furria/ui/KkKeyList';
 import type { FC } from 'react';
-import type { Studio, StudioTraining } from '@/features/acts/schemas';
+import type { ActStudio, StudioTraining } from '@/features/acts/schemas';
 import {
   HALL_BACK,
   HALL_CLOSE,
@@ -23,7 +23,7 @@ import { HallCountLive } from './HallCountLive';
 import { HallStageLayer } from './HallStageLayer';
 
 interface HallBodyProps {
-  studio: Studio;
+  studio: ActStudio;
   training: StudioTraining | null;
   onClose: () => void;
 }

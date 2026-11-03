@@ -3,7 +3,7 @@ import type { StudioEditor, StudioEditorSnapshot } from '@furria/studio/studio-e
 import { createStudioEditor } from '@furria/studio/studio-editor';
 import type { QueryClient } from '@tanstack/react-query';
 import { hashKey } from '@tanstack/react-query';
-import type { ActStudioResponse, Studio } from '@/features/acts/schemas';
+import type { ActStudio, ActStudioResponse } from '@/features/acts/schemas';
 import type { DomainChange } from '@/lib/query/reads';
 import { queryKeys, staleQueryKeysAfter } from '@/lib/query/reads';
 import { eveningSavedOf, eveningViewOf } from './studio-evening';
@@ -20,11 +20,11 @@ export interface StudioScope {
 export interface ScopedEditor {
   key: string;
   scope: StudioScope;
-  editor: StudioEditor<Studio>;
+  editor: StudioEditor<ActStudio>;
 }
 
 export interface EditorView extends ScopedEditor {
-  snapshot: StudioEditorSnapshot<Studio>;
+  snapshot: StudioEditorSnapshot<ActStudio>;
 }
 
 const CLOSE_GRACE_MS = 5000;
@@ -60,7 +60,7 @@ const announce = (): void => {
   }
 };
 
-const savedInto = (open: OpenEditor, current: Studio): Studio => {
+const savedInto = (open: OpenEditor, current: ActStudio): ActStudio => {
   const saved = open.editor.savedStudio();
   const { eventId } = open.scope;
 
@@ -96,7 +96,7 @@ const cacheSaved = (key: string, queryClient: QueryClient): void => {
 
 const attached = (
   key: string,
-  editor: StudioEditor<Studio>,
+  editor: StudioEditor<ActStudio>,
   queryClient: QueryClient,
 ): (() => void) => {
   let status: SaveStatus = editor.snapshot().status;
@@ -126,7 +126,7 @@ const attached = (
   };
 };
 
-export const studioEditorOf = (scope: StudioScope): StudioEditor<Studio> | null =>
+export const studioEditorOf = (scope: StudioScope): StudioEditor<ActStudio> | null =>
   editors.get(scopeKeyOf(scope))?.editor ?? null;
 
 export const studioEditorsOf = (actId: number): readonly ScopedEditor[] => {
@@ -144,7 +144,7 @@ export const studioEditorsOf = (actId: number): readonly ScopedEditor[] => {
   return kept;
 };
 
-const closeWhenUnheld = (key: string, editor: StudioEditor<Studio>): void => {
+const closeWhenUnheld = (key: string, editor: StudioEditor<ActStudio>): void => {
   const open = editors.get(key);
   if (open?.editor !== editor || open.holders > 0) {
     return;
@@ -171,14 +171,14 @@ const closeWhenUnheld = (key: string, editor: StudioEditor<Studio>): void => {
   });
 };
 
-const editorStudioOf = (scope: StudioScope, studio: Studio): Studio =>
+const editorStudioOf = (scope: StudioScope, studio: ActStudio): ActStudio =>
   scope.eventId === null ? studio : eveningViewOf(studio, scope.eventId);
 
 export const openStudioEditor = (
   scope: StudioScope,
-  studio: Studio,
+  studio: ActStudio,
   queryClient: QueryClient,
-): StudioEditor<Studio> => {
+): StudioEditor<ActStudio> => {
   const key = scopeKeyOf(scope);
   const known = editors.get(key);
   if (known !== undefined) {
@@ -208,7 +208,7 @@ export const openStudioEditor = (
   return editor;
 };
 
-export const adoptStudio = (scope: StudioScope, studio: Studio): void => {
+export const adoptStudio = (scope: StudioScope, studio: ActStudio): void => {
   const open = editors.get(scopeKeyOf(scope));
   if (open === undefined) {
     return;

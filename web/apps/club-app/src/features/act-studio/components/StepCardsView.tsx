@@ -1,16 +1,17 @@
+import { useStudioKeys } from '@furria/studio/use-studio-keys';
 import { KkLaneCards } from '@furria/ui/KkLaneCards';
 import { KkLanePhone } from '@furria/ui/KkLanePhone';
 import { KkStudioView } from '@furria/ui/KkStudioView';
 import type { FC } from 'react';
 import type { ActStudioStage } from '../hooks/use-act-studio-stage';
 import { useActStudioStepTool } from '../hooks/use-act-studio-step-tool';
-import { useStepCardKeys } from '../hooks/use-step-card-keys';
 import { useStepCardTools } from '../hooks/use-step-card-tools';
 import { useStepCards } from '../hooks/use-step-cards';
 import { useStepCardsSetup } from '../hooks/use-step-cards-setup';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 import { useVisitHistory } from '../hooks/use-visit-history';
 import { STEP_CARDS_LABEL, STEP_CARDS_LIST } from '../step-cards-copy';
+import { scrubKeyActionsOf } from '../studio-key-actions';
 import { ActStudioSpotSheet } from './ActStudioSpotSheet';
 import { ActStudioStepDesk } from './ActStudioStepDesk';
 import { StepCardsEmpty } from './StepCardsEmpty';
@@ -31,7 +32,8 @@ export const StepCardsView: FC<StepCardsViewProps> = ({ screen, editor }) => {
   const tools = useStepCardTools(screen, editor);
   const history = useVisitHistory(screen.actId, screen.studio);
   const cardsSetup = useStepCardsSetup(screen, editor);
-  useStepCardKeys(screen, !editor.sheetOpen && !stepTool.deskOpen && !cardsSetup.open);
+  const keysActive = !editor.sheetOpen && !stepTool.deskOpen && !cardsSetup.open;
+  useStudioKeys(scrubKeyActionsOf(screen, null), keysActive);
   const band =
     screen.eveningBand === null ? null : <KkStudioView.BandNote text={screen.eveningBand} />;
   const views = cards.cards.map((card) => (

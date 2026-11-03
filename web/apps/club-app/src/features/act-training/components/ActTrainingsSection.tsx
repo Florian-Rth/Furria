@@ -4,13 +4,13 @@ import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
 import { useActTrainings } from '../hooks/use-act-trainings';
 import { TRAININGS_EMPTY, TRAININGS_TITLE } from '../training-copy';
 
 interface ActTrainingsSectionProps {
-  studio: Studio;
+  studio: ActStudio;
   cast: readonly CastPerson[];
 }
 

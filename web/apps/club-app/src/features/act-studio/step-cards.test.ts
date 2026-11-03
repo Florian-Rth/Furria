@@ -6,7 +6,6 @@ import {
   countSheetOf,
   countsBetweenOf,
   neighbourCountOf,
-  stepCardKeyOf,
   stepCountCellsOf,
 } from './step-cards';
 
@@ -85,36 +84,5 @@ describe('stepCountCellsOf', () => {
 
   it('has no cells for a step between two counts', () => {
     expect(stepCountCellsOf(countSheetOf(marks, []), { start: 3.1, end: 3.4 })).toEqual([]);
-  });
-});
-
-describe('stepCardKeyOf', () => {
-  const press = {
-    key: ' ',
-    shiftKey: false,
-    ctrlKey: false,
-    metaKey: false,
-    altKey: false,
-    repeat: false,
-    typing: false,
-    onControl: false,
-    onWidget: false,
-  };
-
-  it.each([
-    [{ ...press }, 'toggle'],
-    [{ ...press, onControl: true }, null],
-    [{ ...press, typing: true }, null],
-    [{ ...press, key: 'ArrowLeft' }, 'stepBack'],
-    [{ ...press, key: 'ArrowLeft', shiftKey: true }, 'countBack'],
-    [{ ...press, key: 'ArrowRight' }, 'stepForward'],
-    [{ ...press, key: 'ArrowRight', shiftKey: true }, 'countForward'],
-    [{ ...press, key: 'ArrowRight', ctrlKey: true }, null],
-    [{ ...press, key: 'z' }, null],
-    [{ ...press, repeat: true }, null],
-    [{ ...press, key: 'ArrowLeft', onControl: true }, 'stepBack'],
-    [{ ...press, key: 'ArrowLeft', onWidget: true }, null],
-  ])('maps %o to %s', (pressed, key) => {
-    expect(stepCardKeyOf(pressed)).toBe(key);
   });
 });

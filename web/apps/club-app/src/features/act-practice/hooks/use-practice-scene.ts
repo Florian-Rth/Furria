@@ -2,15 +2,15 @@ import type { SpotPath } from '@furria/studio/choreography-motion';
 import type { MixPlayer } from '@furria/studio/mix-player';
 import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
 import { stepRangeOf } from '@furria/studio/music-timeline';
+import type { CueSide, StageDot, StageScene, ViewShare } from '@furria/studio/practice-stage';
+import { cueSideOf, stageDotsAt, viewRouteOf } from '@furria/studio/practice-stage';
+import type { StepWay } from '@furria/studio/practice-step-way';
+import { stepWayOf } from '@furria/studio/practice-step-way';
+import { shownStepOf } from '@furria/studio/practice-stepping';
+import type { OwnCue } from '@furria/studio/practice-way';
+import { cueOf, ownWayAt } from '@furria/studio/practice-way';
 import type { StudioStep } from '@furria/studio/studio-schemas';
 import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
-import type { CueSide, StageDot, StageScene, ViewShare } from '../practice-stage';
-import { cueSideOf, stageDotsAt, viewRouteOf } from '../practice-stage';
-import type { StepWay } from '../practice-step-way';
-import { stepWayOf } from '../practice-step-way';
-import { shownStepOf } from '../practice-stepping';
-import type { OwnCue } from '../practice-way';
-import { cueOf, ownWayAt } from '../practice-way';
 
 const NO_ROUTE: ViewShare[] = [];
 

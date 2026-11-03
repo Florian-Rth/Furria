@@ -1,7 +1,7 @@
 import { musicSegmentsOf } from '@furria/studio/music-timeline';
 import type { StudioFinalTrack } from '@furria/studio/studio-schemas';
 import { useState } from 'react';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import {
   adoptedMetaOf,
   adoptTextOf,
@@ -56,7 +56,7 @@ export interface ActStudioFinal {
   closeDesk: () => void;
 }
 
-const missingTextOf = (studio: Studio): string | null =>
+const missingTextOf = (studio: ActStudio): string | null =>
   outsideMusicTextOf(outsideMusicOf(studio, musicSegmentsOf(studio)));
 
 const deskKindOf = (previewing: boolean): FinalDeskKind => (previewing ? 'source' : 'grid');

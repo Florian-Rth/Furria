@@ -1,3 +1,6 @@
+import type { Drag, TapZone } from '@furria/studio/practice-controls';
+import { dragOf, swipedRateOf, tapZoneOf } from '@furria/studio/practice-controls';
+import { ratePercentOf } from '@furria/studio/practice-stepping';
 import type {
   KkPracticeGlyph,
   KkPracticeScreenHudSignal,
@@ -5,8 +8,6 @@ import type {
 } from '@furria/ui/KkPracticeScreen';
 import type { PointerEvent } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import type { Drag, TapZone } from '../practice-controls';
-import { dragOf, swipedRateOf, tapZoneOf } from '../practice-controls';
 import {
   PRACTICE_PAUSED,
   PRACTICE_RUNNING,
@@ -14,7 +15,6 @@ import {
   PRACTICE_STEP_FORWARD,
   rateTextOf,
 } from '../practice-copy';
-import { ratePercentOf } from '../practice-stepping';
 import type { Practice } from './use-practice';
 
 const DOUBLE_TAP_MS = 350;

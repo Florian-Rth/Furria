@@ -1,6 +1,6 @@
 import { useNavigate } from '@tanstack/react-router';
 import { useActStudioQuery, useMyActsQuery } from '@/features/acts/api';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import type { StudioLabSearch, StudioLabVariants } from '../schemas';
 import { studioLabVariantsOf } from '../schemas';
 import { labActIdOf } from '../studio-lab';
@@ -9,7 +9,7 @@ export type StudioLabLoad =
   | { kind: 'loading' }
   | { kind: 'noAct' }
   | { kind: 'empty' }
-  | { kind: 'ready'; actId: number; studio: Studio };
+  | { kind: 'ready'; actId: number; studio: ActStudio };
 
 export interface StudioLabPageModel {
   load: StudioLabLoad;
