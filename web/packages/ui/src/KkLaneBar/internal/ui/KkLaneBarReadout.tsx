@@ -1,6 +1,8 @@
 import Stack from '@mui/material/Stack';
 import type { Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
+import type { MotionValue } from 'motion/react';
+import { motion } from 'motion/react';
 import type { FC } from 'react';
 import { kkTokens } from '../../../tokens';
 
@@ -8,8 +10,8 @@ const palette = (theme: Theme) => (theme.vars ?? theme).palette;
 
 interface KkLaneBarReadoutProps {
   label: string;
-  time: string;
-  count?: string;
+  time: string | MotionValue<string>;
+  count?: string | MotionValue<string>;
 }
 
 export const KkLaneBarReadout: FC<KkLaneBarReadoutProps> = ({ label, time, count }) => {
@@ -26,7 +28,7 @@ export const KkLaneBarReadout: FC<KkLaneBarReadoutProps> = ({ label, time, count
           lineHeight: 1,
         }}
       >
-        {count}
+        <motion.span>{count}</motion.span>
       </Typography>
     );
 
@@ -51,7 +53,7 @@ export const KkLaneBarReadout: FC<KkLaneBarReadoutProps> = ({ label, time, count
         variant="h4"
         sx={{ fontVariantNumeric: 'tabular-nums', minWidth: '4.6ch', lineHeight: 1 }}
       >
-        {time}
+        <motion.span>{time}</motion.span>
       </Typography>
       {counted}
     </Stack>

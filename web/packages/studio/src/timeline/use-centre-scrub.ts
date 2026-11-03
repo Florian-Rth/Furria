@@ -2,6 +2,7 @@ import type { AnimationPlaybackControls, MotionValue } from 'motion/react';
 import { animate, useMotionValue, useMotionValueEvent, useReducedMotion } from 'motion/react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
 import type { MixPlayer } from '../engine/mix-player';
+import { steerPlayback } from '../engine/use-playback-seconds';
 import type {
   GestureIntent,
   GesturePoint,
@@ -194,6 +195,9 @@ export const useCentreScrub = ({
   useMotionValueEvent(x, 'change', () => {
     const now = nowOf();
     lastNow.current = now;
+    if (steering.current) {
+      steerPlayback(player, now);
+    }
     if (stripOutrunOf(strip, now * pxPerSecond, reachWidth, contentWidth)) {
       setAnchor(now);
     }
@@ -207,6 +211,7 @@ export const useCentreScrub = ({
       glide.current = null;
       steering.current = false;
       resume.current = false;
+      steerPlayback(seenPlayer.current, null);
       player.seek(lastNow.current);
       if (resumeOnSwap.current) {
         player.play();
@@ -250,10 +255,14 @@ export const useCentreScrub = ({
   useEffect(
     () => () => {
       const left = seenPlayer.current;
-      if (left !== null && steering.current && resume.current) {
+      if (left === null || !steering.current) {
+        return;
+      }
+      if (resume.current) {
         left.seek(lastNow.current);
         left.play();
       }
+      steerPlayback(left, null);
     },
     [],
   );
@@ -263,6 +272,7 @@ export const useCentreScrub = ({
     glide.current = null;
     if (!steering.current) {
       steering.current = true;
+      steerPlayback(player, nowOf());
       resume.current = player.state().playing;
       if (resume.current) {
         player.pause();
@@ -277,6 +287,7 @@ export const useCentreScrub = ({
     glide.current = null;
     steering.current = false;
     seekPlayer(nowOf());
+    steerPlayback(player, null);
     if (resume.current) {
       resume.current = false;
       if (resumeHere) {
@@ -546,6 +557,7 @@ export const useCentreScrub = ({
     resume.current = false;
     axis.jumpTo(centreOffsetOf(target, pxPerSecond * scale.get(), centre));
     seekPlayer(target);
+    steerPlayback(player, null);
     if (resumeHere) {
       player.play();
     }

@@ -1036,6 +1036,24 @@ Group C built 2026-11-03. Decisions:
   labels are at least `RULER_LABEL_PX = 120` apart: 5 s at the phone's default 40 px/s, 2 s and
   1 s when zoomed in, 30 s on the fitted wide hub.
 
+**D — the time follows the line (2026-11-03, evening)**
+- [x] Scrolling through the audio with the timeline moves the time readout while scrolling, not only after the release: every readout tied to a centre timeline (music page and video tab, hub transport, desk, lesson and practice) and the current step or part name beside it follow the centre line during a drag and a flick glide. Playing and untouched, they follow the player clock as before.
+- [x] Act hub at 390 px: the step block label sits right-aligned and clipped; it sits left like on the music page and stays visible at the left edge like the part name, identical on every page.
+
+Group D built 2026-11-03. Decisions:
+- **Steered playback:** the frame store behind `usePlaybackSeconds` / `usePlaybackSelection` takes
+  a steered time (`steerPlayback(player, seconds | null)`). `useCentreScrub` steers it with the
+  time under the line (`centreSecondsOf`) from the moment it takes over until it settles, so the
+  player is still only sought once on settle, but everything that reads the shown time (readouts,
+  step and part names, count cells, lesson fill, stage dots) follows the line live.
+- **No render per frame for the clocks:** `usePlaybackText(player, format)` writes the formatted
+  time into a motion value rendered as text (`KkLaneBar.Readout` `time`/`count` and
+  `KkScoreTransport.Clock` `position` take `string | MotionValue<string>`); the DOM changes only
+  when the shown tenth or second changes.
+- **Step label:** the step block's face rides `useStickyName` like the part name (pan from the
+  strip offset), and the block's grid no longer inherits the button's centred content, which
+  pushed the label right and clipped it on the interactive hub blocks.
+
 ## Device checks
 
 Every real-screen check this RFC still owes, gathered from the phases (letters mark where they came
@@ -1054,6 +1072,7 @@ from). Run on the HTTPS static build on iPhone, Pixel and iPad Safari unless a l
 - [ ] **K — Screen reader (phase 12g):** VoiceOver on the phone step drawer (a *Schritt* dialog holding the *Schritt* region) and the score, manual and facts slots (desk slot and kit both labelled)
 - [ ] **L — Video screen (findings 2026-11-03 B):** layout at 390 px and on the iPad, video block drag sets the offset without moving the music, the preview follows play and scrub, the own spot reads clearly at the same size
 - [ ] **M — One timeline (findings 2026-11-03 C):** a fast flick glides far and a normal release stops dead on iPhone and iPad; the part name stays readable while scrubbing; hub, music page, video tab, desk and lesson read the same
+- [ ] **N — Live time (findings 2026-11-03 D):** the readouts and step names follow the line while dragging and gliding on iPhone without dropping frames; the step label stays at the left edge on the hub
 
 ## Risks & alternatives
 
