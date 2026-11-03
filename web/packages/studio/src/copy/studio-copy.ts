@@ -219,6 +219,18 @@ export const STUDIO_VIDEO_START_HERE = 'Beginnt hier';
 export const STUDIO_VIDEO_MAIN_FOR = 'Hauptvideo für';
 export const STUDIO_VIDEO_REMOVE = 'Video entfernen';
 export const STUDIO_VIDEO_REMOVE_SURE = 'Wirklich entfernen?';
+export const STUDIO_FILM = 'Gewähltes Video';
+export const STUDIO_FILM_EMPTY = 'Noch kein Video. Unten hinzufügen.';
+export const STUDIO_FILM_UNPLACED = 'Noch nicht auf der Musik angelegt';
+export const STUDIO_FILM_EARLIER = 'Video früher';
+export const STUDIO_FILM_LATER = 'Video später';
+export const STUDIO_FILM_EDIT = 'Bearbeiten';
+export const STUDIO_FILM_LANES = 'Spuren: Zeit, Teile, Musik, Videos';
+export const STUDIO_FILM_TIME = 'Zeit';
+export const STUDIO_FILM_PARTS = 'Teile';
+export const STUDIO_FILM_MUSIC = 'Musik';
+export const STUDIO_FILM_VIDEOS = 'Videos';
+export const STUDIO_FILM_NONE = 'noch keins angelegt';
 
 const SHELF_META: Record<'processing' | 'failed' | VideoPlacement, string> = {
   processing: 'wird vorbereitet',

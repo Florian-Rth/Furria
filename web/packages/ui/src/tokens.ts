@@ -297,6 +297,7 @@ export const kkTokens = {
     onPhotoText: '#FFFFFF',
     textShadow: '0 4px 34px rgba(0,0,0,0.5)',
     scrimInk: '#14161A',
+    filmScrim: 'rgba(12,13,16,0.72)',
   },
   glass: {
     tintOpacity: 0.7,

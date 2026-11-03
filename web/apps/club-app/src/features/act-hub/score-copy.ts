@@ -39,8 +39,6 @@ export const MUSIC_DOOR = 'Musik & Video';
 export const EVENINGS_DOOR = 'Abende';
 export const TRAININGS_DOOR = 'Trainings & Anwesenheit';
 export const HALL_DOOR = 'Training starten';
-export const CO_EDITORS_DOOR = 'Bearbeiten mit';
-export const HISTORY_DOOR = 'Verlauf';
 export const SETTINGS_DOOR = 'Einstellungen';
 export const STUDIO_DOOR_META = 'Schritte, Plätze, Bewegung';
 export const MUSIC_DOOR_META = 'Lieder, Endfassung, Videos';
@@ -54,8 +52,6 @@ export const DOOR_COPY: Record<ScoreDoorKey, { label: string; meta?: string }> =
   evenings: { label: EVENINGS_DOOR, meta: EVENINGS_DOOR_META },
   trainings: { label: TRAININGS_DOOR },
   hall: { label: HALL_DOOR },
-  coEditors: { label: CO_EDITORS_DOOR },
-  history: { label: HISTORY_DOOR },
   settings: { label: SETTINGS_DOOR, meta: SETTINGS_DOOR_META },
 };
 

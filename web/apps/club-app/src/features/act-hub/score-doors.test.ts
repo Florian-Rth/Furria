@@ -14,12 +14,9 @@ describe('scoreDoorsOf', () => {
   it.each([
     [
       viewer(true, true, true, true),
-      ['studio', 'music', 'evenings', 'trainings', 'hall', 'coEditors', 'history', 'settings'],
+      ['studio', 'music', 'evenings', 'trainings', 'hall', 'settings'],
     ],
-    [
-      viewer(true, false, false, false),
-      ['studio', 'music', 'evenings', 'trainings', 'hall', 'history'],
-    ],
+    [viewer(true, false, false, false), ['studio', 'music', 'evenings', 'trainings', 'hall']],
     [viewer(false, true, false, true), ['trainings', 'hall', 'settings']],
     [viewer(false, false, false, true), []],
   ])('offers the doors the viewer may use', (who, expected) => {

@@ -1,8 +1,10 @@
+import { ActStudioFilm } from '@furria/studio/ActStudioFilm';
 import { ActStudioFinalDesk } from '@furria/studio/ActStudioFinalDesk';
 import { ActStudioSongDesk } from '@furria/studio/ActStudioSongDesk';
 import { ActStudioSongList } from '@furria/studio/ActStudioSongList';
 import { ActStudioTakeList } from '@furria/studio/ActStudioTakeList';
 import { ActStudioVideoDesk } from '@furria/studio/ActStudioVideoDesk';
+import { ActStudioVideoLayer } from '@furria/studio/ActStudioVideoLayer';
 import { ActStudioWaveLayer } from '@furria/studio/ActStudioWaveLayer';
 import { StepCardsTransport } from '@furria/studio/StepCardsTransport';
 import { StudioSaveButton } from '@furria/studio/StudioSaveButton';
@@ -54,10 +56,27 @@ export const ActMusicView: FC<ActMusicViewProps> = ({ screen, onTool }) => {
   };
   const onMusic = screen.mode.tool === 'music';
   const onVideo = screen.mode.tool === 'video';
-  const list = onVideo ? (
-    <ActStudioTakeList screen={screen} takes={takes} />
+  const cards = onVideo ? (
+    <KkLanePhone.Split kind="film">
+      <ActStudioFilm screen={screen} takes={takes} />
+      <ActStudioVideoLayer screen={screen} takes={takes} />
+      <KkLaneDesk.Panel label={MUSIC_PAGE_LIST}>
+        <KkLaneInspector>
+          <ActStudioTakeList screen={screen} takes={takes} />
+        </KkLaneInspector>
+      </KkLaneDesk.Panel>
+    </KkLanePhone.Split>
   ) : (
-    <ActStudioSongList screen={screen} songs={songs} finalList={finalList} />
+    <KkLanePhone.Split>
+      <KkLaneDesk.Panel label={MUSIC_PAGE_MUSIC}>
+        <ActStudioWaveLayer screen={screen} />
+      </KkLaneDesk.Panel>
+      <KkLaneDesk.Panel label={MUSIC_PAGE_LIST}>
+        <KkLaneInspector>
+          <ActStudioSongList screen={screen} songs={songs} finalList={finalList} />
+        </KkLaneInspector>
+      </KkLaneDesk.Panel>
+    </KkLanePhone.Split>
   );
   const undoLocked = !history.canUndo;
   const redoLocked = !history.canRedo;
@@ -89,16 +108,7 @@ export const ActMusicView: FC<ActMusicViewProps> = ({ screen, onTool }) => {
           </KkLaneBar.Group>
         </KkLaneBar>
       </KkLanePhone.Area>
-      <KkLanePhone.Area area="cards">
-        <KkLanePhone.Split>
-          <KkLaneDesk.Panel label={MUSIC_PAGE_MUSIC}>
-            <ActStudioWaveLayer screen={screen} />
-          </KkLaneDesk.Panel>
-          <KkLaneDesk.Panel label={MUSIC_PAGE_LIST}>
-            <KkLaneInspector>{list}</KkLaneInspector>
-          </KkLaneDesk.Panel>
-        </KkLanePhone.Split>
-      </KkLanePhone.Area>
+      <KkLanePhone.Area area="cards">{cards}</KkLanePhone.Area>
       <KkLanePhone.Area area="transport">
         <StepCardsTransport screen={screen} />
       </KkLanePhone.Area>
