@@ -2,7 +2,7 @@ import type { DragEndEvent } from '@dnd-kit/react';
 import { isSortable } from '@dnd-kit/react/sortable';
 import { formatReadoutTime } from '@furria/studio/drag-readout';
 import { useState } from 'react';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import type { SpotHolding } from '../list-order';
 import { reordered, withHolderMoved } from '../list-order';
 import { spotLabelOf } from '../studio-lab-copy';
@@ -35,7 +35,7 @@ export interface ListsPlayground {
 export const POOL_ID = 'pool';
 const FILE_EXTENSION = /\.[a-z0-9]+$/i;
 
-export const useListsPlayground = (studio: Studio): ListsPlayground => {
+export const useListsPlayground = (studio: ActStudio): ListsPlayground => {
   const [songIds, setSongIds] = useState<readonly number[]>(() =>
     [...studio.songs]
       .sort((left, right) => left.position - right.position)

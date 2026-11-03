@@ -1,5 +1,5 @@
 import type { MusicSegment } from '@furria/studio/music-timeline';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 
 export interface BorderEdge {
   kind: 'border';
@@ -28,7 +28,7 @@ interface TimedStep {
   end: number;
 }
 
-const timedStepsOf = (studio: Studio): TimedStep[] =>
+const timedStepsOf = (studio: ActStudio): TimedStep[] =>
   studio.steps
     .filter((step) => step.placement === 'onTimeline')
     .flatMap((step) =>
@@ -66,10 +66,10 @@ const bordersOf = (steps: readonly TimedStep[]): BorderEdge[] => {
   return borders;
 };
 
-const orderedSongsOf = (studio: Studio): Studio['songs'] =>
+const orderedSongsOf = (studio: ActStudio): ActStudio['songs'] =>
   [...studio.songs].sort((left, right) => left.position - right.position);
 
-const cutsOf = (studio: Studio, segments: readonly MusicSegment[]): CutEdge[] =>
+const cutsOf = (studio: ActStudio, segments: readonly MusicSegment[]): CutEdge[] =>
   studio.music.source === 'finalTrack'
     ? []
     : orderedSongsOf(studio).flatMap((song, index) => {
@@ -88,7 +88,7 @@ const cutsOf = (studio: Studio, segments: readonly MusicSegment[]): CutEdge[] =>
       });
 
 export const timelineEdgesOf = (
-  studio: Studio,
+  studio: ActStudio,
   segments: readonly MusicSegment[],
 ): TimelineEdge[] => [...cutsOf(studio, segments), ...bordersOf(timedStepsOf(studio))];
 
@@ -96,11 +96,11 @@ const clamp = (value: number, min: number, max: number): number =>
   Math.min(Math.max(value, min), Math.max(min, max));
 
 const withBorderAt = (
-  studio: Studio,
+  studio: ActStudio,
   edge: BorderEdge,
   seconds: number,
   length: number,
-): Studio => {
+): ActStudio => {
   const ending = studio.steps.find((step) => step.stepId === edge.endingStepId);
   const starting = studio.steps.find((step) => step.stepId === edge.startingStepId);
   const lower =
@@ -132,11 +132,11 @@ const shifted = (seconds: number | null, from: number, delta: number): number | 
   seconds === null || seconds < from - JOINED_SECONDS ? seconds : seconds + delta;
 
 const withCutAt = (
-  studio: Studio,
+  studio: ActStudio,
   edge: CutEdge,
   seconds: number,
   segments: readonly MusicSegment[],
-): Studio => {
+): ActStudio => {
   const songs = orderedSongsOf(studio);
   const index = songs.findIndex((song) => song.songId === edge.songId);
   const song = songs[index];
@@ -166,11 +166,11 @@ const withCutAt = (
 };
 
 export const withEdgeAt = (
-  studio: Studio,
+  studio: ActStudio,
   edge: TimelineEdge,
   seconds: number,
   segments: readonly MusicSegment[],
-): Studio =>
+): ActStudio =>
   edge.kind === 'cut'
     ? withCutAt(studio, edge, seconds, segments)
     : withBorderAt(studio, edge, seconds, segments.at(-1)?.timelineEnd ?? 0);

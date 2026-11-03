@@ -1,10 +1,10 @@
 import { useQueryClient } from '@tanstack/react-query';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { useDevelopingPicture } from '@/lib/media/use-developing-picture';
 import { queryKeys } from '@/lib/query/reads';
 import { isDevelopingStudio } from '../studio-videos';
 
-export const useStudioDeveloping = (actId: number, studio: Studio): void => {
+export const useStudioDeveloping = (actId: number, studio: ActStudio): void => {
   const queryClient = useQueryClient();
 
   useDevelopingPicture({

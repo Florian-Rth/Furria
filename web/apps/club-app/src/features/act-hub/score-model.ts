@@ -4,7 +4,7 @@ import type { CountMark, MusicSegment } from '@furria/studio/music-timeline';
 import { countMarksOf, musicLengthOf, musicSegmentsOf } from '@furria/studio/music-timeline';
 import { stageOrDefault } from '@furria/studio/stage-view';
 import type { StudioStage } from '@furria/studio/studio-schemas';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import type { FormationDot } from './score-formation';
 import { formationAt } from './score-formation';
 import type { ReadinessItem } from './score-readiness';
@@ -26,12 +26,12 @@ export interface ScoreModel {
   formations: ReadonlyMap<number, FormationDot[]>;
 }
 
-const ownSpotIdOf = (studio: Studio, viewerId: number | null): number | null =>
+const ownSpotIdOf = (studio: ActStudio, viewerId: number | null): number | null =>
   viewerId === null
     ? null
     : (studio.spots.find((spot) => spot.person?.personId === viewerId)?.spotId ?? null);
 
-export const scoreModelOf = (studio: Studio, viewerId: number | null): ScoreModel => {
+export const scoreModelOf = (studio: ActStudio, viewerId: number | null): ScoreModel => {
   const segments = musicSegmentsOf(studio);
   const length = musicLengthOf(segments);
   const marks = countMarksOf(segments);

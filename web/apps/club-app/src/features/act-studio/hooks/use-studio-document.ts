@@ -2,7 +2,7 @@ import type { StudioChange } from '@furria/studio/studio-changes';
 import type { StudioEditor } from '@furria/studio/studio-editor';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useSyncExternalStore } from 'react';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import type { StudioScope } from '../studio-editor-store';
 import {
   adoptStudio,
@@ -12,7 +12,7 @@ import {
 } from '../studio-editor-store';
 
 export interface StudioDocumentEdit {
-  studio: Studio;
+  studio: ActStudio;
   change: (change: StudioChange) => void;
   startGesture: () => void;
   endGesture: () => void;
@@ -22,7 +22,7 @@ export interface StudioDocumentEdit {
   direct: <TResult>(action: () => Promise<TResult>) => Promise<TResult>;
 }
 
-const editsOf = (editor: StudioEditor<Studio>, studio: Studio): StudioDocumentEdit => ({
+const editsOf = (editor: StudioEditor<ActStudio>, studio: ActStudio): StudioDocumentEdit => ({
   studio,
   change: editor.change,
   startGesture: editor.startGesture,
@@ -48,7 +48,7 @@ const editsOf = (editor: StudioEditor<Studio>, studio: Studio): StudioDocumentEd
   direct: editor.direct,
 });
 
-export const useStudioDocument = (scope: StudioScope, source: Studio): StudioDocumentEdit => {
+export const useStudioDocument = (scope: StudioScope, source: ActStudio): StudioDocumentEdit => {
   const queryClient = useQueryClient();
   const { actId, eventId } = scope;
   const editor = openStudioEditor({ actId, eventId }, source, queryClient);

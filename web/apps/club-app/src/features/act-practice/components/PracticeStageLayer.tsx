@@ -1,18 +1,18 @@
 import { stepRangeOf } from '@furria/studio/music-timeline';
+import type { StageScene } from '@furria/studio/practice-stage';
+import { stageSummaryOf } from '@furria/studio/practice-stage';
+import { stageFrameOf } from '@furria/studio/practice-stage-frame';
+import { shownStepOf } from '@furria/studio/practice-stepping';
 import { Stage } from '@furria/studio/Stage';
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import type { FC } from 'react';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { PRACTICE_FRONT, practiceStageLabelOf } from '../practice-copy';
-import type { StageScene } from '../practice-stage';
-import { stageSummaryOf } from '../practice-stage';
-import { stageFrameOf } from '../practice-stage-frame';
-import { shownStepOf } from '../practice-stepping';
 import { PracticeStageScene } from './PracticeStageScene';
 
 interface PracticeStageLayerProps {
-  studio: Studio;
+  studio: ActStudio;
   playback: StudioPlayback;
 }
 

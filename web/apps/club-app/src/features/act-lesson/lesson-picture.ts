@@ -1,5 +1,5 @@
-import type { HeroKind } from '@/features/act-practice/practice-controls';
-import type { OwnCue } from '@/features/act-practice/practice-way';
+import type { HeroKind } from '@furria/studio/practice-controls';
+import type { OwnCue } from '@furria/studio/practice-way';
 
 export type LessonPlace = 'main' | 'inset' | 'off';
 

@@ -1,12 +1,12 @@
 import { KkLaneInspector } from '@furria/ui/KkLaneInspector';
 import type { FC } from 'react';
 import { useVisitHistory } from '@/features/act-studio/hooks/use-visit-history';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { DESK_HISTORY_EMPTY, DESK_HISTORY_LIST } from '../desk-copy';
 
 interface DeskHistoryPaneProps {
   actId: number;
-  studio: Studio;
+  studio: ActStudio;
 }
 
 export const DeskHistoryPane: FC<DeskHistoryPaneProps> = ({ actId, studio }) => {

@@ -55,3 +55,21 @@ export const nextRateOf = (rate: number): number =>
   PRACTICE_RATES.find((candidate) => candidate < rate - RATE_TOLERANCE) ?? 1;
 
 export const ratePercentOf = (rate: number): number => Math.round(rate * 100);
+
+export const steppedRateOf = (
+  rates: readonly number[],
+  rate: number,
+  command: 'faster' | 'slower',
+): number => {
+  const ascending = [...rates].sort((left, right) => left - right);
+
+  if (command === 'faster') {
+    return (
+      ascending.find((candidate) => candidate > rate + RATE_TOLERANCE) ?? ascending.at(-1) ?? rate
+    );
+  }
+
+  return (
+    ascending.findLast((candidate) => candidate < rate - RATE_TOLERANCE) ?? ascending[0] ?? rate
+  );
+};

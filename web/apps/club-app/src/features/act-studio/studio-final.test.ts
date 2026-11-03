@@ -1,7 +1,7 @@
 import type { MusicSegment } from '@furria/studio/music-timeline';
 import type { StudioFinalTrack, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import {
   finalBeatAtOf,
   finalPlacementsOf,
@@ -73,7 +73,7 @@ const videoOf = (videoId: number, start: number): StudioVideo => ({
   urls: { video: '/v', compact: '/c', poster: '/p' },
 });
 
-const studioOf = (patch: Partial<Studio>): Studio => ({
+const studioOf = (patch: Partial<ActStudio>): ActStudio => ({
   music: { lengthSeconds: 60, source: 'workingMix' },
   songs: [],
   finalTracks: [],

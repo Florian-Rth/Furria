@@ -4,9 +4,9 @@ import type {
   StagePoint,
   TimedKeyframe,
 } from '@furria/studio/choreography-motion';
+import { viewShareOf } from '@furria/studio/practice-stage';
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import { useRef } from 'react';
-import { viewShareOf } from '@/features/act-practice/practice-stage';
 import type { StageShare, TimeSpan } from '../studio-edits';
 import { draggedPointOf, snappedOf } from '../studio-edits';
 import { formationAt } from '../studio-formation';

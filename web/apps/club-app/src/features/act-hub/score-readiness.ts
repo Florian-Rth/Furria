@@ -1,4 +1,4 @@
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import type { ScoreStep } from './score-steps';
 
 export type ReadinessKey = 'music' | 'steps' | 'places' | 'movement' | 'video' | 'final';
@@ -21,7 +21,7 @@ const stateOf = (done: number, total: number): ReadinessState => {
   return done >= total ? 'done' : 'open';
 };
 
-const musicOf = (studio: Studio): ReadinessItem => {
+const musicOf = (studio: ActStudio): ReadinessItem => {
   const ready = studio.songs.filter(
     (song) => song.state === 'ready' && song.tempoBpm !== null && song.firstBeatSeconds !== null,
   ).length;
@@ -35,7 +35,7 @@ const musicOf = (studio: Studio): ReadinessItem => {
   };
 };
 
-const finalOf = (studio: Studio): ReadinessItem => {
+const finalOf = (studio: ActStudio): ReadinessItem => {
   const adopted = studio.finalTracks.some((track) => track.adopted);
   let state: ReadinessState = 'empty';
 
@@ -61,7 +61,7 @@ const shareItem = (
   target: ReadinessTarget,
 ): ReadinessItem => ({ key, state: stateOf(done, total), done, total, target });
 
-export const readinessOf = (studio: Studio, steps: readonly ScoreStep[]): ReadinessItem[] => {
+export const readinessOf = (studio: ActStudio, steps: readonly ScoreStep[]): ReadinessItem[] => {
   const timed = steps.filter((step) => step.range !== null);
   const filled = studio.spots.filter((spot) => spot.person !== null).length;
 

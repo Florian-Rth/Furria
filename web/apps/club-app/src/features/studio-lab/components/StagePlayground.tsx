@@ -1,7 +1,7 @@
 import { KkTouchLab } from '@furria/ui/KkTouchLab';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { useStagePlayground } from '../hooks/use-stage-playground';
 import type { StudioLabVariants } from '../schemas';
 import { STAGE_AREA, STAGE_HINT } from '../studio-lab-copy';
@@ -13,7 +13,7 @@ import { StageSelectionSheet } from './StageSelectionSheet';
 import { StageSelectionToolbar } from './StageSelectionToolbar';
 
 interface StagePlaygroundProps {
-  studio: Studio;
+  studio: ActStudio;
   variants: StudioLabVariants;
 }
 

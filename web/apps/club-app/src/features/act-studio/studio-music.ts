@@ -1,7 +1,7 @@
 import type { MusicSegment } from '@furria/studio/music-timeline';
 import { timelineSecondsOf } from '@furria/studio/music-timeline';
 import type { StudioSong } from '@furria/studio/studio-schemas';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 
 const MIN_TEMPO_BPM = 40;
 const MAX_TEMPO_BPM = 300;
@@ -32,12 +32,12 @@ const orderedSongsOf = (songs: readonly StudioSong[]): StudioSong[] =>
   [...songs].sort((left, right) => left.position - right.position);
 
 export interface HoldsStudio {
-  studio: Studio | null;
+  studio: ActStudio | null;
 }
 
 export const withStudio = <TResponse extends HoldsStudio>(
   response: TResponse | undefined,
-  change: (studio: Studio) => Studio,
+  change: (studio: ActStudio) => ActStudio,
 ): TResponse | undefined =>
   response === undefined || response.studio === null
     ? response
@@ -120,7 +120,7 @@ export const nudgedFirstBeatOf = (song: StudioSong, delta: number): number | nul
 };
 
 export const outsideMusicOf = (
-  studio: Studio,
+  studio: ActStudio,
   segments: readonly MusicSegment[],
 ): OutsideMusic => ({
   steps: studio.steps.filter((step) => step.placement !== 'onTimeline').length,

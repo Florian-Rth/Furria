@@ -1,12 +1,19 @@
 import type { TimelineRange } from '@furria/studio/music-timeline';
 import { partOfStep, partRangeOf, stepRangeOf } from '@furria/studio/music-timeline';
+import type { LoopKind } from '@furria/studio/practice-controls';
+import { loopKindOf, loopRangeOf } from '@furria/studio/practice-controls';
+import type { SkipDirection } from '@furria/studio/practice-stepping';
+import {
+  nextRateOf,
+  ratePercentOf,
+  shownStepOf,
+  skipTargetOf,
+} from '@furria/studio/practice-stepping';
 import { shownStepNameOf, stepNumberOf } from '@furria/studio/step-names';
 import type { StudioStep } from '@furria/studio/studio-schemas';
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import { useScreenWakeLock } from '@furria/studio/use-screen-wake-lock';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import type { LoopKind } from '../practice-controls';
-import { loopKindOf, loopRangeOf } from '../practice-controls';
 import {
   PRACTICE_LOAD_FAILED,
   PRACTICE_NO_STEPS,
@@ -15,8 +22,6 @@ import {
   rateLabelOf,
   rateTextOf,
 } from '../practice-copy';
-import type { SkipDirection } from '../practice-stepping';
-import { nextRateOf, ratePercentOf, shownStepOf, skipTargetOf } from '../practice-stepping';
 
 const NO_STEP_KEY = 'none';
 

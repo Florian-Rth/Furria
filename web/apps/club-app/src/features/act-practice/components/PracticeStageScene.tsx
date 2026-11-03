@@ -1,12 +1,12 @@
 import type { SpotPath } from '@furria/studio/choreography-motion';
 import type { MixPlayer } from '@furria/studio/mix-player';
 import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
+import type { StageScene } from '@furria/studio/practice-stage';
 import { Stage } from '@furria/studio/Stage';
 import type { StudioStep } from '@furria/studio/studio-schemas';
 import type { FC } from 'react';
 import { usePracticeScene } from '../hooks/use-practice-scene';
 import { cueTextOf } from '../practice-copy';
-import type { StageScene } from '../practice-stage';
 
 interface PracticeStageSceneProps {
   player: MixPlayer;

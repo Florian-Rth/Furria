@@ -1,15 +1,16 @@
+import { practiceMemoryKeyOf } from '@furria/studio/practice-memory';
 import type { TimelinePart, TimelineStep } from '@furria/studio/Timeline';
+import { useStudioKeys } from '@furria/studio/use-studio-keys';
 import type { KkGroupTone } from '@furria/ui/group-tone';
 import type { KkIconName } from '@furria/ui/KkIcon';
 import { useKkScoreWide } from '@furria/ui/KkScoreDesk';
 import type { KkScoreReadinessState } from '@furria/ui/KkScoreReadiness';
 import type { KkQuietScreenAction } from '@furria/ui/screen-declaration';
 import { useState } from 'react';
-import { practiceMemoryKeyOf } from '@/features/act-practice/practice-memory';
 import type {
   ActPageSearch,
+  ActStudio,
   ActStudioResponse,
-  Studio,
   StudioTraining,
 } from '@/features/acts/schemas';
 import { partAnchorOf, scrollToAnchor } from '../score-anchor';
@@ -48,7 +49,6 @@ import type { ReadinessKey } from '../score-readiness';
 import { actEveningsOf, eveningNumberOf, nextEveningOf, nextTrainingOf } from '../score-season';
 import type { ScoreStep } from '../score-steps';
 import { paneStepIdOf, rememberedStepOf } from '../score-you';
-import { useScoreKeys } from './use-score-keys';
 import type { ScorePlayer } from './use-score-player';
 import { useScorePlayer } from './use-score-player';
 import type { ScoreRoute } from './use-score-route';
@@ -143,7 +143,7 @@ export interface ActHub {
   canPlay: boolean;
   intro: string;
   data: ActStudioResponse;
-  studio: Studio;
+  studio: ActStudio;
   model: ScoreModel;
   player: ScorePlayer;
   route: ScoreRoute;
@@ -231,7 +231,7 @@ const rowOf = (
   };
 };
 
-const stepViewOf = (step: ScoreStep, model: ScoreModel, studio: Studio): ScoreStepView => {
+const stepViewOf = (step: ScoreStep, model: ScoreModel, studio: ActStudio): ScoreStepView => {
   const part = model.parts.find((candidate) => candidate.partId === step.partId) ?? null;
   const video = studio.videos.find((candidate) => candidate.videoId === step.video?.videoId);
 
@@ -278,7 +278,7 @@ const groupsOf = (model: ScoreModel, reveal: boolean): ScoreGroupView[] => {
 
 export const useActHub = (
   data: ActStudioResponse,
-  studio: Studio,
+  studio: ActStudio,
   search: ActPageSearch,
   viewerId: number | null,
 ): ActHub => {
@@ -290,7 +290,7 @@ export const useActHub = (
   const model = scoreModelOf(studio, viewerId);
   const player = useScorePlayer(model, wide);
   const route = useScoreRoute(actId, viewerId, search);
-  useScoreKeys(wide, player.toggle);
+  useStudioKeys({ toggle: player.toggle }, wide);
   const editor = viewer.canEditStudio;
   const reveal = !wide || !editor;
   const timed = model.steps.filter((step) => step.range !== null);

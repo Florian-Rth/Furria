@@ -1,6 +1,6 @@
 import { musicSegmentsOf } from '@furria/studio/music-timeline';
 import type { CastPerson } from '@/features/running-order/schemas';
-import type { ActPageSearch, ActViewer, CoEditor, Studio } from './schemas';
+import type { ActPageSearch, ActStudio, ActViewer, CoEditor } from './schemas';
 
 export type ActPageMode = 'card' | 'practice' | 'details' | 'training';
 
@@ -18,7 +18,7 @@ export const canChangeCoEditors = (
   act: { closed: boolean; archived: boolean },
 ): boolean => canGrant && !act.closed && !act.archived;
 
-export const canPractise = (studio: Studio | null): boolean =>
+export const canPractise = (studio: ActStudio | null): boolean =>
   studio !== null && musicSegmentsOf(studio).some((segment) => segment.audible);
 
 export const seesDetailsOf = (viewer: ActViewer): boolean =>
@@ -33,7 +33,7 @@ export interface ActPageViewer {
 }
 
 export const actPageModeOf = (
-  studio: Studio | null | undefined,
+  studio: ActStudio | null | undefined,
   viewer: ActPageViewer,
   search: Pick<ActPageSearch, 'view' | 'settings'>,
 ): ActPageMode => {

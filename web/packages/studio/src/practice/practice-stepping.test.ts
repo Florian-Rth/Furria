@@ -1,6 +1,6 @@
 import type { StudioStep } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import { nextRateOf, shownStepOf, skipTargetOf } from './practice-stepping';
+import { nextRateOf, shownStepOf, skipTargetOf, steppedRateOf } from './practice-stepping';
 
 const step = (
   stepId: number,
@@ -62,5 +62,21 @@ describe('nextRateOf', () => {
     [0.75, 0.7],
   ])('after %s comes %s', (rate, next) => {
     expect(nextRateOf(rate)).toBe(next);
+  });
+});
+
+describe('steppedRateOf', () => {
+  const rates = [1, 0.85, 0.7, 0.5];
+
+  it.each<[number, 'faster' | 'slower', number]>([
+    [1, 'slower', 0.85],
+    [0.85, 'slower', 0.7],
+    [0.5, 'slower', 0.5],
+    [0.5, 'faster', 0.7],
+    [1, 'faster', 1],
+    [0.6, 'faster', 0.7],
+    [0.6, 'slower', 0.5],
+  ])('from %d going %s lands on %d', (rate, command, expected) => {
+    expect(steppedRateOf(rates, rate, command)).toBe(expected);
   });
 });

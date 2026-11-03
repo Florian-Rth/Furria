@@ -17,7 +17,7 @@ import type {
   StudioStep,
 } from '@furria/studio/studio-schemas';
 import { useMixPlayer } from '@furria/studio/use-mix-player';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { useAudioPeaks } from '../api';
 
 export interface StudioPlaybackControls {
@@ -49,7 +49,7 @@ export const timedStepsOf = (steps: readonly StudioStep[]): StudioStep[] =>
     .filter((step) => step.placement === 'onTimeline' && step.startSeconds !== null)
     .sort((left, right) => (left.startSeconds ?? 0) - (right.startSeconds ?? 0));
 
-const ownSpotIdOf = (studio: Studio, viewerId: number | null): number | null =>
+const ownSpotIdOf = (studio: ActStudio, viewerId: number | null): number | null =>
   viewerId === null
     ? null
     : (studio.spots.find((spot) => spot.person?.personId === viewerId)?.spotId ?? null);
@@ -64,7 +64,7 @@ const loopOrClear = (player: MixPlayer, range: TimelineRange | null): void => {
   player.setLoop(same ? null : range);
 };
 
-export const useStudioPlayback = (studio: Studio, viewerId: number | null): StudioPlayback => {
+export const useStudioPlayback = (studio: ActStudio, viewerId: number | null): StudioPlayback => {
   const segments = musicSegmentsOf(studio);
   const steps = timedStepsOf(studio.steps);
   const { player, state } = useMixPlayer(segments);

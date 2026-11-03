@@ -26,6 +26,14 @@
     "./music-timeline": "./src/models/music-timeline.ts",
     "./overview-bracket": "./src/timeline/overview-bracket.ts",
     "./pan-bounds": "./src/gestures/pan-bounds.ts",
+    "./practice-controls": "./src/practice/practice-controls.ts",
+    "./practice-memory": "./src/practice/practice-memory.ts",
+    "./practice-stage": "./src/practice/practice-stage.ts",
+    "./practice-stage-frame": "./src/practice/practice-stage-frame.ts",
+    "./practice-step-list": "./src/practice/practice-step-list.ts",
+    "./practice-step-way": "./src/practice/practice-step-way.ts",
+    "./practice-stepping": "./src/practice/practice-stepping.ts",
+    "./practice-way": "./src/practice/practice-way.ts",
     "./same-value": "./src/document/same-value.ts",
     "./save-plan": "./src/document/save-plan.ts",
     "./save-port": "./src/document/save-port.ts",
@@ -38,6 +46,7 @@
     "./studio-changes": "./src/document/studio-changes.ts",
     "./studio-document": "./src/document/studio-document.ts",
     "./studio-editor": "./src/document/studio-editor.ts",
+    "./studio-keys": "./src/keys/studio-keys.ts",
     "./studio-schemas": "./src/models/studio-schemas.ts",
     "./use-centre-scrub": "./src/timeline/use-centre-scrub.ts",
     "./use-drag-lift": "./src/gestures/use-drag-lift.ts",
@@ -49,6 +58,7 @@
     "./use-screen-wake-lock": "./src/engine/use-screen-wake-lock.ts",
     "./use-slaved-video": "./src/engine/use-slaved-video.ts",
     "./use-stage-gestures": "./src/gestures/use-stage-gestures.ts",
+    "./use-studio-keys": "./src/keys/use-studio-keys.ts",
     "./use-work-area": "./src/gestures/use-work-area.ts",
     "./video-sync": "./src/engine/video-sync.ts"
   },
@@ -65,6 +75,7 @@
     "immer": "catalog:",
     "motion": "catalog:",
     "signalsmith-stretch": "catalog:",
+    "tinykeys": "catalog:",
     "zod": "catalog:"
   },
   "devDependencies": {

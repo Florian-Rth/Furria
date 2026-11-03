@@ -1,5 +1,6 @@
 import type { StagePoint } from '@furria/studio/choreography-motion';
 import { pulseHaptic } from '@furria/studio/haptics';
+import { viewShareOf } from '@furria/studio/practice-stage';
 import type { StageGridLine } from '@furria/studio/stage-grid';
 import { snapLinesOf, stageGridOf } from '@furria/studio/stage-grid';
 import type { StageShare } from '@furria/studio/stage-zoom';
@@ -7,7 +8,6 @@ import { QUARTER_GRID_ZOOM } from '@furria/studio/stage-zoom';
 import type { StageGestures, StageGestureTarget } from '@furria/studio/use-stage-gestures';
 import { useStageGestures } from '@furria/studio/use-stage-gestures';
 import { useRef, useState } from 'react';
-import { viewShareOf } from '@/features/act-practice/practice-stage';
 import { stagePlaceTextOf } from '../studio-copy';
 import { studioDotsAt } from '../studio-dots';
 import type { ActStudioStage } from './use-act-studio-stage';

@@ -1,7 +1,7 @@
 import { KkTouchLab } from '@furria/ui/KkTouchLab';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { useTimelinePlayground } from '../hooks/use-timeline-playground';
 import type { StudioLabVariants } from '../schemas';
 import { TIMELINE_AREA, TIMELINE_HINT_DISTANCE, TIMELINE_HINT_HOLD } from '../studio-lab-copy';
@@ -10,7 +10,7 @@ import { LabTransportBar } from './LabTransportBar';
 import { TimelineLayers } from './TimelineLayers';
 
 interface TimelinePlaygroundProps {
-  studio: Studio;
+  studio: ActStudio;
   variants: StudioLabVariants;
 }
 

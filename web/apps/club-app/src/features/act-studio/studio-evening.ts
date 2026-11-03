@@ -1,7 +1,7 @@
 import type { Choreography, StudioSpot } from '@furria/studio/studio-schemas';
 import type {
+  ActStudio,
   EveningChoreography,
-  Studio,
   StudioAppearance,
   StudioEvening,
   StudioSpotChange,
@@ -40,10 +40,10 @@ export const eveningSpotsOf = (
     return change === undefined ? spot : { ...spot, person: change.person };
   });
 
-const appearanceOf = (studio: Studio, eventId: number): StudioAppearance | null =>
+const appearanceOf = (studio: ActStudio, eventId: number): StudioAppearance | null =>
   studio.evenings.find((evening) => evening.eventId === eventId)?.appearance ?? null;
 
-export const eveningViewOf = (studio: Studio, eventId: number): Studio => {
+export const eveningViewOf = (studio: ActStudio, eventId: number): ActStudio => {
   const appearance = appearanceOf(studio, eventId) ?? EMPTY_APPEARANCE;
 
   return {
@@ -56,7 +56,7 @@ export const eveningViewOf = (studio: Studio, eventId: number): Studio => {
   };
 };
 
-export const eveningCopyOf = (studio: Studio, eventId: number): EveningChoreography | null =>
+export const eveningCopyOf = (studio: ActStudio, eventId: number): EveningChoreography | null =>
   appearanceOf(studio, eventId)?.choreography ?? null;
 
 export const eveningCastOf = (
@@ -76,11 +76,11 @@ export const eveningCastOf = (
 };
 
 export const eveningStudioOf = (
-  session: Studio,
-  stage: Studio,
+  session: ActStudio,
+  stage: ActStudio,
   evening: StudioEvening | null,
   cast: readonly CastPerson[],
-): Studio => {
+): ActStudio => {
   if (evening === null) {
     return session;
   }
@@ -135,10 +135,10 @@ const spotChangesOf = (
     .map((spot) => ({ spotId: spot.spotId, person: spot.person }));
 
 const withAppearance = (
-  studio: Studio,
+  studio: ActStudio,
   eventId: number,
   change: (appearance: StudioAppearance) => StudioAppearance,
-): Studio => ({
+): ActStudio => ({
   ...studio,
   evenings: studio.evenings.map((evening) =>
     evening.eventId === eventId
@@ -148,7 +148,7 @@ const withAppearance = (
 });
 
 const savedCopyOf = (
-  studio: Studio,
+  studio: ActStudio,
   appearance: StudioAppearance,
   saved: Choreography | null,
   copied: boolean,
@@ -164,11 +164,11 @@ const savedCopyOf = (
 };
 
 export const eveningSavedOf = (
-  studio: Studio,
+  studio: ActStudio,
   eventId: number,
-  saved: Studio,
+  saved: ActStudio,
   copied: boolean,
-): Studio => {
+): ActStudio => {
   const appearance = appearanceOf(studio, eventId);
   const spotChanges = spotChangesOf(studio.spots, saved.spots);
   const choreography = savedCopyOf(

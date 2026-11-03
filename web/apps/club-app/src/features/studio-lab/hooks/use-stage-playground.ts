@@ -12,7 +12,7 @@ import type { KkTouchLabDotState, KkTouchLabGridLine, KkTouchLabPath } from '@fu
 import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import { useEffect, useRef, useState } from 'react';
 import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { labDragStepOf, labPolicyOf } from '../lab-drag';
 import { labLiftOf } from '../lab-lift';
 import type { StudioLabVariants } from '../schemas';
@@ -116,7 +116,7 @@ const movePathOf = (
   }).join('');
 
 export const useStagePlayground = (
-  studio: Studio,
+  studio: ActStudio,
   variants: StudioLabVariants,
 ): StagePlayground => {
   const history = useLabHistory<SpotPath[]>(

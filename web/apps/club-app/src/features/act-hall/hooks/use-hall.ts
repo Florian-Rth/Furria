@@ -1,18 +1,19 @@
 import { COUNT_IN_BEATS } from '@furria/studio/count-in';
+import { stageSummaryOf } from '@furria/studio/practice-stage';
 import type { StageViewpoint } from '@furria/studio/stage-view';
 import { shownStepNameOf, stepNumberOf } from '@furria/studio/step-names';
 import { useScreenWakeLock } from '@furria/studio/use-screen-wake-lock';
+import { useStudioKeys } from '@furria/studio/use-studio-keys';
 import type { KkHallAbsentPerson } from '@furria/ui/KkHall';
 import { useEffect, useState } from 'react';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import { usePractice } from '@/features/act-practice/hooks/use-practice';
-import { usePracticeKeys } from '@/features/act-practice/hooks/use-practice-keys';
 import type { PracticeVideo } from '@/features/act-practice/hooks/use-practice-video';
 import { usePracticeVideo } from '@/features/act-practice/hooks/use-practice-video';
-import { stageSummaryOf } from '@/features/act-practice/practice-stage';
+import { practiceKeyActionsOf } from '@/features/act-practice/practice-key-actions';
 import { trainingStepMetaOf } from '@/features/act-training/training-copy';
-import type { Studio, StudioTraining } from '@/features/acts/schemas';
+import type { ActStudio, StudioTraining } from '@/features/acts/schemas';
 import {
   HALL_NO_STEP,
   HALL_PAUSE,
@@ -63,7 +64,7 @@ export interface Hall {
   toggleVideo: () => void;
 }
 
-export const useHall = (studio: Studio, training: StudioTraining | null): Hall => {
+export const useHall = (studio: ActStudio, training: StudioTraining | null): Hall => {
   useScreenWakeLock(true);
   const playback = useStudioPlayback(studio, NO_VIEWER);
   const practice = usePractice(playback);
@@ -91,7 +92,7 @@ export const useHall = (studio: Studio, training: StudioTraining | null): Hall =
     }
   };
 
-  usePracticeKeys(true, practice, HALL_RATES, loop);
+  useStudioKeys(practiceKeyActionsOf(practice, HALL_RATES, loop), true);
 
   return {
     playback,

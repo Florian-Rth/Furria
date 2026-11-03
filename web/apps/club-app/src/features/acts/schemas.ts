@@ -118,11 +118,11 @@ export const StudioTrainingSchema = z.object({
 });
 export type StudioTraining = z.infer<typeof StudioTrainingSchema>;
 
-export const StudioSchema = StudioWorkSchema.extend({
+export const ActStudioSchema = StudioWorkSchema.extend({
   evenings: z.array(StudioEveningSchema),
   trainings: z.array(StudioTrainingSchema),
 });
-export type Studio = z.infer<typeof StudioSchema>;
+export type ActStudio = z.infer<typeof ActStudioSchema>;
 
 export const CoEditorSchema = StudioPersonSchema.extend({
   grantedAt: z.iso.datetime({ offset: true }),
@@ -142,7 +142,7 @@ export const ActStudioResponseSchema = z.object({
   act: CatalogueActSchema,
   viewer: ActViewerSchema,
   coEditors: z.array(CoEditorSchema),
-  studio: StudioSchema.nullable(),
+  studio: ActStudioSchema.nullable(),
 });
 export type ActStudioResponse = z.infer<typeof ActStudioResponseSchema>;
 

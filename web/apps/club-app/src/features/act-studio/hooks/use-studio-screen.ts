@@ -1,7 +1,7 @@
+import { useStudioKeys } from '@furria/studio/use-studio-keys';
 import { useKkLaneWide } from '@furria/ui/KkLaneWide';
 import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import { usePlayerKeys } from '@/features/act-practice/hooks/use-player-keys';
 import type { Practice } from '@/features/act-practice/hooks/use-practice';
 import { usePractice } from '@/features/act-practice/hooks/use-practice';
 import { usePracticeMemory } from '@/features/act-practice/hooks/use-practice-memory';
@@ -9,8 +9,9 @@ import type { PracticeSteps } from '@/features/act-practice/hooks/use-practice-s
 import { usePracticeSteps } from '@/features/act-practice/hooks/use-practice-steps';
 import type { PracticeVideo } from '@/features/act-practice/hooks/use-practice-video';
 import { usePracticeVideo } from '@/features/act-practice/hooks/use-practice-video';
+import { playerKeyActionsOf } from '@/features/act-practice/practice-key-actions';
 import { canPractise } from '@/features/acts/act-studio';
-import type { Studio, StudioEvening } from '@/features/acts/schemas';
+import type { ActStudio, StudioEvening } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
 import { useLargeText } from '@/lib/use-large-text';
 import type { SongMutations, VideoMutations } from '../api';
@@ -60,7 +61,7 @@ export interface StudioScreen {
   large: StudioLargeText;
   startHall: (() => void) | null;
   edits: ActStudioEdits;
-  studio: Studio;
+  studio: ActStudio;
   playback: StudioPlayback;
   practice: Practice;
   video: PracticeVideo;
@@ -69,7 +70,7 @@ export interface StudioScreen {
 
 export const useStudioScreen = (
   actId: number,
-  source: Studio,
+  source: ActStudio,
   viewerId: number | null,
   canEdit: boolean,
   cast: readonly CastPerson[],
@@ -107,7 +108,7 @@ export const useStudioScreen = (
   const steps = usePracticeSteps(studio, playback, practice);
   usePracticeMemory({ actId, personId: viewerId }, playback, practice.step?.stepId ?? null);
   const large = useStudioLargeText(useLargeText() && !mode.editing);
-  usePlayerKeys(practice, large.on && !mode.editing && !steps.open);
+  useStudioKeys(playerKeyActionsOf(practice), large.on && !mode.editing && !steps.open);
 
   return {
     actId,

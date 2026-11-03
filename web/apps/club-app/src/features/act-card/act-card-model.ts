@@ -1,4 +1,4 @@
-import type { MyAct, Studio, StudioEvening, StudioTraining } from '@/features/acts/schemas';
+import type { ActStudio, MyAct, StudioEvening, StudioTraining } from '@/features/acts/schemas';
 import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import type { ActKind } from '@/features/running-order/schemas';
 import type { PortraitPersonRef } from '@/lib/api/schemas';
@@ -139,7 +139,7 @@ export const musicClockOf = (seconds: number): string => {
   return `${minutes}:${String(rest).padStart(2, '0')}`;
 };
 
-export const studioCountsOf = (studio: Studio): StudioCounts => ({
+export const studioCountsOf = (studio: ActStudio): StudioCounts => ({
   musicSeconds: studio.music.lengthSeconds,
   finalTrack: studio.music.source === 'finalTrack',
   songs: studio.songs.length,

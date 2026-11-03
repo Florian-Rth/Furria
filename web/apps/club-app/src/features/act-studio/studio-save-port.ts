@@ -3,7 +3,7 @@ import type { SaveOutcome, ServerWrite, StudioSavePort } from '@furria/studio/sa
 import type { Choreography } from '@furria/studio/studio-schemas';
 import type { QueryClient } from '@tanstack/react-query';
 import { requestActStudio } from '@/features/acts/requests';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { queryKeys } from '@/lib/query/reads';
 import type { EveningChoreographyBody } from './requests';
@@ -143,7 +143,7 @@ const savedOrRefused = async (
   }
 };
 
-const loadedStudio = async (actId: number, queryClient: QueryClient): Promise<Studio> => {
+const loadedStudio = async (actId: number, queryClient: QueryClient): Promise<ActStudio> => {
   const response = await queryClient.fetchQuery({
     queryKey: queryKeys.actStudio(actId),
     queryFn: () => withFreshAccessToken((accessToken) => requestActStudio(actId, accessToken)),
@@ -159,13 +159,13 @@ const loadedStudio = async (actId: number, queryClient: QueryClient): Promise<St
 export const studioSavePortOf = (
   actId: number,
   queryClient: QueryClient,
-): StudioSavePort<Studio> => ({
+): StudioSavePort<ActStudio> => ({
   save: (write) => savedOrRefused(write, (accessToken) => performed(actId, write, accessToken)),
   load: () => loadedStudio(actId, queryClient),
 });
 
-export interface EveningSavePort extends StudioSavePort<Studio> {
-  observe: (studio: Studio) => void;
+export interface EveningSavePort extends StudioSavePort<ActStudio> {
+  observe: (studio: ActStudio) => void;
   copied: () => boolean;
 }
 
@@ -182,7 +182,7 @@ export const eveningSavePortOf = (
   actId: number,
   eventId: number,
   queryClient: QueryClient,
-  studio: Studio,
+  studio: ActStudio,
 ): EveningSavePort => {
   let copied = eveningCopyOf(studio, eventId) !== null;
 

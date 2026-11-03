@@ -1,14 +1,14 @@
 import { KkTouchLab } from '@furria/ui/KkTouchLab';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { useRailPlayground } from '../hooks/use-rail-playground';
 import type { StudioLabVariants } from '../schemas';
 import { RAIL_AREA, RAIL_HINT } from '../studio-lab-copy';
 import { LabTransportBar } from './LabTransportBar';
 
 interface RailPlaygroundProps {
-  studio: Studio;
+  studio: ActStudio;
   variants: StudioLabVariants;
 }
 

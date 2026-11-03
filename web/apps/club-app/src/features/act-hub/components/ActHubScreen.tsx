@@ -1,13 +1,13 @@
 import { KkScreen } from '@furria/ui/KkScreen';
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { FC } from 'react';
-import type { ActPageSearch, ActStudioResponse, Studio } from '@/features/acts/schemas';
+import type { ActPageSearch, ActStudio, ActStudioResponse } from '@/features/acts/schemas';
 import { useActHub } from '../hooks/use-act-hub';
 import { ScoreBody } from './ScoreBody';
 
 interface ActHubScreenProps {
   data: ActStudioResponse;
-  studio: Studio;
+  studio: ActStudio;
   search: ActPageSearch;
   viewerId: number | null;
   title: string;

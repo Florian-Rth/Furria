@@ -1,4 +1,5 @@
 import { COUNT_IN_BEATS } from '@furria/studio/count-in';
+import { keyHelpOf } from '@furria/studio/studio-keys';
 import type { KkKeyListEntry } from '@furria/ui/KkKeyList';
 import { openSpotsTextOf } from '@/features/act-practice/practice-copy';
 import { toEveningDay } from '@/features/acts/act-evenings-copy';
@@ -25,12 +26,12 @@ export const HALL_NO_STEP = 'Noch keine Schritte';
 export const HALL_LAST_STEP = 'Letzter Schritt';
 export const HALL_KEYS_TITLE = 'Tastatur';
 export const HALL_KEYS_LABEL = 'Wiedergabe';
-export const HALL_KEYS: readonly KkKeyListEntry[] = [
-  { id: 'toggle', keys: ['Leertaste'], action: 'Start oder Stopp' },
-  { id: 'step', keys: ['←', '→'], action: 'Schritt zurück oder weiter' },
-  { id: 'tempo', keys: ['↑', '↓'], action: 'Tempo 100 % oder 75 %' },
-  { id: 'loop', keys: ['L'], action: 'Schritt in Schleife' },
-];
+export const HALL_KEYS: readonly KkKeyListEntry[] = keyHelpOf([
+  { id: 'toggle', commands: ['toggle'], action: 'Start oder Stopp' },
+  { id: 'step', commands: ['stepBack', 'stepForward'], action: 'Schritt zurück oder weiter' },
+  { id: 'tempo', commands: ['faster', 'slower'], action: 'Tempo 100 % oder 75 %' },
+  { id: 'loop', commands: ['loop'], action: 'Schritt in Schleife' },
+]);
 
 const HALL_STAGE_LABEL = 'Bühne aus Sicht der Tanzenden, vorne oben';
 

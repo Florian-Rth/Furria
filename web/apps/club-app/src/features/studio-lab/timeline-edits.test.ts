@@ -1,6 +1,6 @@
 import type { MusicSegment } from '@furria/studio/music-timeline';
 import { describe, expect, it } from 'vitest';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 import { timelineEdgesOf, withEdgeAt } from './timeline-edits';
 
 const songOf = (songId: number, position: number) => ({
@@ -26,7 +26,7 @@ const stepOf = (stepId: number, start: number, end: number) => ({
   placement: 'onTimeline' as const,
 });
 
-const studio: Studio = {
+const studio: ActStudio = {
   music: { lengthSeconds: 60, source: 'workingMix' },
   songs: [songOf(2, 1), songOf(1, 0)],
   finalTracks: [],
@@ -83,7 +83,7 @@ describe('withEdgeAt', () => {
     }
     return edge;
   };
-  const rangesOf = (changed: Studio) =>
+  const rangesOf = (changed: ActStudio) =>
     changed.steps.map((step) => [step.stepId, step.startSeconds, step.endSeconds]);
 
   it.each([

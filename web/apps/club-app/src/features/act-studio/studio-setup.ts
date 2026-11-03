@@ -1,4 +1,4 @@
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 
 export type SetupKey = 'music' | 'steps' | 'spots' | 'formation' | 'video' | 'final';
 export type SetupState = 'done' | 'next' | 'open';
@@ -53,7 +53,7 @@ interface SetupFacts {
 
 const isReady = (item: { state: string }): boolean => item.state === 'ready';
 
-const factsOf = (studio: Studio): SetupFacts => {
+const factsOf = (studio: ActStudio): SetupFacts => {
   const placed = new Set(
     (studio.choreography?.tracks ?? [])
       .filter((track) => track.keyframes.length > 0)
@@ -106,7 +106,7 @@ const countOf = (facts: SetupFacts, key: SetupKey): SetupCount => {
   }
 };
 
-export const setupOf = (studio: Studio): Setup => {
+export const setupOf = (studio: ActStudio): Setup => {
   const facts = factsOf(studio);
   const counts = SETUP_ORDER.map((key) => ({
     key,
@@ -133,8 +133,8 @@ export const setupOf = (studio: Studio): Setup => {
   };
 };
 
-export const setupStartsOpen = (studio: Studio, onEvening: boolean): boolean =>
+export const setupStartsOpen = (studio: ActStudio, onEvening: boolean): boolean =>
   !onEvening && !setupOf(studio).started;
 
-export const setupShownOf = (studio: Studio, onEvening: boolean): boolean =>
+export const setupShownOf = (studio: ActStudio, onEvening: boolean): boolean =>
   !onEvening && !setupOf(studio).complete;

@@ -23,20 +23,6 @@ export interface CountSheet {
   keyed: ReadonlySet<number>;
 }
 
-export type StepCardKey = 'toggle' | 'stepBack' | 'stepForward' | 'countBack' | 'countForward';
-
-export interface StepCardKeyPress {
-  key: string;
-  shiftKey: boolean;
-  ctrlKey: boolean;
-  metaKey: boolean;
-  altKey: boolean;
-  repeat: boolean;
-  typing: boolean;
-  onControl: boolean;
-  onWidget: boolean;
-}
-
 export const countEightsOf = (marks: readonly CountMark[]): number[] => {
   let eight = 0;
 
@@ -131,24 +117,4 @@ export const stepCountCellsOf = (
       keyed: sheet.keyed.has(index),
     };
   });
-};
-
-const ARROWS: Readonly<Record<string, readonly [StepCardKey, StepCardKey]>> = {
-  ArrowLeft: ['stepBack', 'countBack'],
-  ArrowRight: ['stepForward', 'countForward'],
-};
-
-export const stepCardKeyOf = (press: StepCardKeyPress): StepCardKey | null => {
-  if (press.repeat || press.typing || press.ctrlKey || press.metaKey || press.altKey) {
-    return null;
-  }
-  if (press.key === ' ') {
-    return press.onControl ? null : 'toggle';
-  }
-  const arrow = ARROWS[press.key];
-  if (arrow === undefined || press.onWidget) {
-    return null;
-  }
-
-  return press.shiftKey ? arrow[1] : arrow[0];
 };

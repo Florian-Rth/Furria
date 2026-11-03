@@ -1,7 +1,7 @@
 import type { SpotPath } from '@furria/studio/choreography-motion';
 import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
 import type { StudioPart, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
-import type { Studio } from '@/features/acts/schemas';
+import type { ActStudio } from '@/features/acts/schemas';
 
 const SAME_PLACE_METRES = 0.05;
 const COVER_SHARE = 0.5;
@@ -133,7 +133,7 @@ const partStartOf = (part: StudioPart, steps: readonly StudioStep[]): number => 
   return starts.length === 0 ? Number.POSITIVE_INFINITY : Math.min(...starts);
 };
 
-export const scorePartsOf = (studio: Studio): ScorePart[] =>
+export const scorePartsOf = (studio: ActStudio): ScorePart[] =>
   studio.parts
     .filter((part) => !part.adrift)
     .map((part) => ({ part, start: partStartOf(part, studio.steps) }))
@@ -164,7 +164,7 @@ const stepOrder = (left: StudioStep, right: StudioStep): number =>
   (stepRangeOf(right)?.start ?? Number.POSITIVE_INFINITY);
 
 export const scoreStepsOf = (
-  studio: Studio,
+  studio: ActStudio,
   parts: readonly ScorePart[],
   paths: readonly SpotPath[],
   marks: readonly CountMark[],
