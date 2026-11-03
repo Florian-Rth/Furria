@@ -47,6 +47,7 @@ export interface Practice {
   slowDown: () => void;
   setRate: (rate: number) => void;
   jumpTo: (stepId: number) => void;
+  seekTo: (seconds: number) => void;
   loopStep: (stepId: number) => void;
   loopPart: (stepId: number) => void;
 }
@@ -68,7 +69,7 @@ export const usePractice = (playback: StudioPlayback): Practice => {
   const stepOf = (id: number): StudioStep | null =>
     steps.find((candidate) => candidate.stepId === id) ?? null;
 
-  const land = (target: StudioStep): void => {
+  const carryLoopTo = (target: StudioStep): void => {
     const kind = loopKindOf(
       player.state().loop,
       shownStepOf(steps, player.position()),
@@ -78,6 +79,10 @@ export const usePractice = (playback: StudioPlayback): Practice => {
     if (kind !== 'off') {
       player.setLoop(loopRangeOf(kind, target, parts, steps));
     }
+  };
+
+  const land = (target: StudioStep): void => {
+    carryLoopTo(target);
     player.seek(target.startSeconds ?? 0);
   };
 
@@ -126,6 +131,13 @@ export const usePractice = (playback: StudioPlayback): Practice => {
       if (target !== null) {
         land(target);
       }
+    },
+    seekTo: (seconds) => {
+      const target = shownStepOf(steps, seconds);
+      if (target !== null) {
+        carryLoopTo(target);
+      }
+      player.seek(seconds);
     },
     loopStep: (id) => {
       const target = stepOf(id);

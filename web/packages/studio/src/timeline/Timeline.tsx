@@ -10,7 +10,6 @@ import { TimelineKeyframes } from './internal/ui/TimelineKeyframes';
 import { TimelineLoop } from './internal/ui/TimelineLoop';
 import { TimelineMarks } from './internal/ui/TimelineMarks';
 import { TimelineParts } from './internal/ui/TimelineParts';
-import { TimelinePlayhead } from './internal/ui/TimelinePlayhead';
 import { TimelineRegions } from './internal/ui/TimelineRegions';
 import { TimelineRuler } from './internal/ui/TimelineRuler';
 import { TimelineSnap } from './internal/ui/TimelineSnap';
@@ -47,5 +46,4 @@ export const Timeline = Object.assign(TimelineRoot, {
   Trim: TimelineTrim,
   Snap: TimelineSnap,
   Handles: TimelineHandles,
-  Playhead: TimelinePlayhead,
 });

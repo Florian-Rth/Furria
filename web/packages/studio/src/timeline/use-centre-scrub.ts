@@ -11,7 +11,7 @@ import type {
 import { pulseHaptic } from '../gestures/haptics';
 import type { LiftSize } from '../gestures/lift-placement';
 import { LIFT_GAP, liftPlacementOf } from '../gestures/lift-placement';
-import { momentumOf, momentumTargetOf } from '../gestures/pan-bounds';
+import { BOUNCE_BACK, clampToBounds } from '../gestures/pan-bounds';
 import type { DragReadout } from '../gestures/use-drag-lift';
 import type { GestureHandlers } from '../gestures/use-gesture';
 import { useGesture } from '../gestures/use-gesture';
@@ -75,16 +75,18 @@ interface UseCentreScrubOptions {
   countMarks: readonly CountMark[];
   targets: readonly CentreTarget[];
   editsRebuildPlayer?: boolean;
+  startFitted?: boolean;
+  seek?: (seconds: number) => void;
   onTargetStart?: (key: string) => void;
-  onTargetMove: (key: string, seconds: number) => void;
-  onTargetEnd: (key: string, seconds: number) => void;
-  onTargetCancel: (key: string) => void;
+  onTargetMove?: (key: string, seconds: number) => void;
+  onTargetEnd?: (key: string, seconds: number) => void;
+  onTargetCancel?: (key: string) => void;
   onTargetTap?: (key: string) => void;
 }
 
 type CentreDrag =
   | { kind: 'handle'; key: string; x: number; seconds: number; snaps: boolean }
-  | { kind: 'scrub'; ratio: number; lastX: number }
+  | { kind: 'scrub' }
   | { kind: 'navigate'; seconds: number };
 
 interface Held {
@@ -100,6 +102,7 @@ const WHEEL_COMMIT_MS = 160;
 const REACH_STEP = 0.5;
 const ZOOM_STEP = 1.6;
 const ZOOM_EDGE = 1e-3;
+const FITTED = 0;
 const LANE = '[data-timeline-lane]';
 
 const laneBandsOf = (area: HTMLElement | SVGElement | null): Map<string, LaneBand> => {
@@ -125,6 +128,8 @@ export const useCentreScrub = ({
   countMarks,
   targets,
   editsRebuildPlayer = false,
+  startFitted = false,
+  seek,
   onTargetStart,
   onTargetMove,
   onTargetEnd,
@@ -132,7 +137,9 @@ export const useCentreScrub = ({
   onTargetTap,
 }: UseCentreScrubOptions): CentreScrub => {
   const reducedMotion = useReducedMotion() ?? false;
-  const [chosenPxPerSecond, setChosenPxPerSecond] = useState<number | null>(null);
+  const [chosenPxPerSecond, setChosenPxPerSecond] = useState<number | null>(
+    startFitted ? FITTED : null,
+  );
   const [anchor, setAnchor] = useState(0);
   const [activeKey, setActiveKey] = useState<string | null>(null);
   const [snapSeconds, setSnapSeconds] = useState<number | null>(null);
@@ -171,6 +178,14 @@ export const useCentreScrub = ({
   );
   const axis = usePanAxis({ bounds, dimension: width, initial: centre });
   const x = axis.value;
+
+  const seekPlayer = (seconds: number): void => {
+    if (seek === undefined) {
+      player.seek(seconds);
+      return;
+    }
+    seek(seconds);
+  };
 
   const nowOf = (): number => centreSecondsOf(x.get(), pxPerSecond * scale.get(), centre, length);
   const secondsAt = (pointX: number): number => secondsAtX(pointX, x.get(), pxPerSecond, length);
@@ -260,7 +275,7 @@ export const useCentreScrub = ({
     }
     glide.current = null;
     steering.current = false;
-    player.seek(nowOf());
+    seekPlayer(nowOf());
     if (resume.current) {
       resume.current = false;
       if (resumeHere) {
@@ -275,18 +290,14 @@ export const useCentreScrub = ({
     settle();
   };
 
-  const release = (velocityPerMs: number): void => {
-    if (reducedMotion) {
-      axis.jumpTo(x.get());
+  const release = (): void => {
+    const resting = clampToBounds(x.get(), bounds);
+    if (reducedMotion || resting === x.get()) {
+      axis.jumpTo(resting);
       settle();
       return;
     }
-    const momentum = momentumOf(velocityPerMs, bounds);
-    glide.current = animate(x, momentumTargetOf(x.get(), momentum), {
-      type: 'inertia',
-      ...momentum,
-      onComplete: glideDone,
-    });
+    glide.current = animate(x, resting, { ...BOUNCE_BACK, onComplete: glideDone });
   };
 
   const glideTo = (seconds: number): void => {
@@ -342,7 +353,7 @@ export const useCentreScrub = ({
     drag.current = { ...current, x: handleX, seconds: snap.seconds };
     setSnapSeconds(snapped);
     setHeld({ finger: point, value: { seconds: snap.seconds, tier } });
-    onTargetMove(current.key, snap.seconds);
+    onTargetMove?.(current.key, snap.seconds);
   };
 
   const navigate = (intent: Extract<GestureIntent, { kind: 'navigate' }>): void => {
@@ -387,20 +398,20 @@ export const useCentreScrub = ({
     }, WHEEL_COMMIT_MS);
   };
 
-  const endDrag = (velocityX: number, kept: boolean): void => {
+  const endDrag = (kept: boolean): void => {
     const current = drag.current;
     drag.current = null;
     if (current?.kind === 'handle') {
       if (kept) {
-        onTargetEnd(current.key, current.seconds);
+        onTargetEnd?.(current.key, current.seconds);
       } else {
-        onTargetCancel(current.key);
+        onTargetCancel?.(current.key);
       }
       endEdit(!kept || !editsRebuildPlayer);
       return;
     }
     if (current?.kind === 'scrub') {
-      release(velocityX * current.ratio);
+      release();
     }
   };
 
@@ -449,7 +460,7 @@ export const useCentreScrub = ({
         takeOver();
         if (handle === null) {
           axis.grab();
-          drag.current = { kind: 'scrub', ratio: 1, lastX: intent.origin.x };
+          drag.current = { kind: 'scrub' };
           return;
         }
         drag.current = {
@@ -470,21 +481,15 @@ export const useCentreScrub = ({
           return;
         }
         if (current?.kind === 'scrub') {
-          const moved = intent.point.x - current.lastX;
-          drag.current = {
-            kind: 'scrub',
-            ratio: moved === 0 ? current.ratio : Math.min(1, Math.abs(intent.delta.x / moved)),
-            lastX: intent.point.x,
-          };
           axis.follow(intent.delta.x);
         }
         return;
       }
       case 'dragEnd':
-        endDrag(intent.velocity.x, true);
+        endDrag(true);
         return;
       case 'dragCancel':
-        endDrag(0, false);
+        endDrag(false);
         return;
       case 'navigateStart':
         takeOver();
@@ -528,7 +533,7 @@ export const useCentreScrub = ({
     steering.current = false;
     resume.current = false;
     axis.jumpTo(centreOffsetOf(target, pxPerSecond * scale.get(), centre));
-    player.seek(target);
+    seekPlayer(target);
     if (resumeHere) {
       player.play();
     }

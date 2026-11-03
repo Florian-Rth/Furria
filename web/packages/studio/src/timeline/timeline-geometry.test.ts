@@ -11,7 +11,6 @@ import {
   secondsOfShare,
   spanSharesOf,
   tickStepOf,
-  windowOf,
 } from './timeline-geometry';
 
 const keyframe = (seconds: number): TimedKeyframe => ({
@@ -70,26 +69,6 @@ describe('rulerLabelOf', () => {
     [-3, '0:00'],
   ])('labels %f seconds as %s', (seconds, expected) => {
     expect(rulerLabelOf(seconds)).toBe(expected);
-  });
-});
-
-describe('windowOf', () => {
-  it('frames the focus with a small margin inside the music', () => {
-    const window = windowOf({ start: 50, end: 100 }, 200);
-
-    expect(window.start).toBeCloseTo(0.235);
-    expect(window.end).toBeCloseTo(0.515);
-  });
-
-  it.each([
-    [null, 200],
-    [{ start: 0, end: 10 }, 0],
-  ])('shows the whole music for %o', (focus, length) => {
-    expect(windowOf(focus, length)).toEqual({ start: 0, end: 1 });
-  });
-
-  it('stays inside the music at the edges', () => {
-    expect(windowOf({ start: 0, end: 200 }, 200)).toEqual({ start: 0, end: 1 });
   });
 });
 

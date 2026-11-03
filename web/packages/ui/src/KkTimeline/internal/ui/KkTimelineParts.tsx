@@ -8,16 +8,18 @@ import { KkTimelinePartBand } from './KkTimelinePartBand';
 interface KkTimelinePartsProps {
   tone: KkGroupTone | null;
   parts: readonly KkTimelinePart[];
+  lane?: string;
   onSelect?: (key: number) => void;
 }
 
-export const KkTimelineParts: FC<KkTimelinePartsProps> = ({ tone, parts, onSelect }) => {
+export const KkTimelineParts: FC<KkTimelinePartsProps> = ({ tone, parts, lane, onSelect }) => {
   const bands = parts.map((part) => (
     <KkTimelinePartBand
       key={part.key}
       part={part}
       tone={tone}
       place={{ left: percentOf(part.from), width: percentOf(part.to - part.from) }}
+      lane={lane}
       onSelect={onSelect}
     />
   ));

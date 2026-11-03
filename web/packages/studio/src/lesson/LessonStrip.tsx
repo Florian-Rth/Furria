@@ -19,17 +19,11 @@ export const LessonStrip: FC<LessonStripProps> = ({ lesson, tone }) => {
       label={LESSON_STRIP_LABEL}
       density="strip"
       length={playback.length}
-      onSeek={strip.seek}
+      centre={strip.centre}
     >
       <Timeline.Parts tone={tone} parts={strip.parts} />
-      <Timeline.Wave
-        segments={playback.segments}
-        peaks={playback.peaksByItem}
-        player={playback.player}
-        playing={practice.playing}
-      />
+      <Timeline.Wave segments={playback.segments} peaks={playback.peaksByItem} />
       <Timeline.Ticks steps={strip.ticks} activeKey={current} />
-      <Timeline.Playhead player={playback.player} playing={practice.playing} />
     </Timeline>
   );
 };

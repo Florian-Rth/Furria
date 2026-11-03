@@ -13,6 +13,13 @@ const BOUNCE_STIFFNESS = 420;
 const BOUNCE_DAMPING = 38;
 const RESTING_DELTA = 0.5;
 
+export const BOUNCE_BACK = {
+  type: 'spring',
+  stiffness: BOUNCE_STIFFNESS,
+  damping: BOUNCE_DAMPING,
+  restDelta: RESTING_DELTA,
+} as const;
+
 export const rubberBand = (overshoot: number, dimension: number): number => {
   if (dimension <= 0 || overshoot === 0) {
     return 0;

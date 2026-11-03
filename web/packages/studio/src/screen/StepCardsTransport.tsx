@@ -1,5 +1,3 @@
-import { countTrackOf } from '@furria/studio/count-marks';
-import { StepCardsReadoutLive } from '@furria/studio/StepCardsReadoutLive';
 import {
   STEP_CARDS_BACK,
   STEP_CARDS_FORWARD,
@@ -10,14 +8,15 @@ import {
 import type { StudioScreen } from '@furria/studio/studio-screen';
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
 import { KkLaneButton } from '@furria/ui/KkLaneButton';
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
 
 interface StepCardsTransportProps {
   screen: StudioScreen;
+  readout: ReactNode;
 }
 
-export const StepCardsTransport: FC<StepCardsTransportProps> = ({ screen }) => {
-  const { practice, playback } = screen;
+export const StepCardsTransport: FC<StepCardsTransportProps> = ({ screen, readout }) => {
+  const { practice } = screen;
   const back = (): void => {
     practice.skip('back');
   };
@@ -28,7 +27,6 @@ export const StepCardsTransport: FC<StepCardsTransportProps> = ({ screen }) => {
   const playGlyph = practice.playing ? 'pause' : 'play';
   const stepLocked = !practice.canStep;
   const playLocked = !practice.canPlay;
-  const counts = countTrackOf(playback.countMarks);
 
   return (
     <KkLaneBar label={STEP_CARDS_TRANSPORT}>
@@ -55,7 +53,7 @@ export const StepCardsTransport: FC<StepCardsTransportProps> = ({ screen }) => {
           disabled={stepLocked}
           onPress={forward}
         />
-        <StepCardsReadoutLive player={playback.player} counts={counts} />
+        {readout}
       </KkLaneBar.Group>
       <KkLaneButton
         text={practice.rateText}
