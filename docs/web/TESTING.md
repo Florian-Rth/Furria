@@ -140,6 +140,21 @@ pnpm shot /members       # phone/desktop × light/dark → web/tools/screenshot/
 and the shots are looked at. This is the same sentence as *Running*'s last line, made binding
 for one kind of change.
 
+## The studio
+
+`@furria/studio` ([ADR-0035](../adr/0035-the-studio-is-its-own-package-and-owns-its-domain-components.md))
+follows the same split. Every decision behind touch, playback and saving is a pure module with
+its own test: `gestures/` (recogniser, hit priority, pan bounds and momentum targets, lift
+placement, drag readout), `timeline/` and `stage/` (geometry, centre scrub, zoom, grid snap),
+`engine/` (mix schedule, video sync, count-in) and `document/` (patches, history, save plan and
+run, autosave — [ADR-0036](../adr/0036-the-studio-edits-a-local-document-saved-in-the-background.md)).
+The hooks and views only move motion values and call them.
+
+**Devices own the feel.** Whether a drag lifts, glides and snaps right on iPhone, Pixel and
+iPad Safari is not something Chromium or a test can see. Touch work ends on the devices, and
+the open checks live in one list at the end of
+[RFC 0003](../rfcs/0003-studio-package-and-native-touch.md#device-checks).
+
 ## Writing testable code
 
 The rule is a constraint on the code, not just the tests. When logic is worth testing, it

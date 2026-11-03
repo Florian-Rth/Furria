@@ -345,7 +345,6 @@
     "./KkTimeRail": "./src/KkTimeRail.tsx",
     "./KkTimetable": "./src/KkTimetable/KkTimetable.tsx",
     "./KkTitleHeader": "./src/KkTitleHeader.tsx",
-    "./KkTouchLab": "./src/KkTouchLab/KkTouchLab.tsx",
     "./KkTwoToneHeadline": "./src/KkTwoToneHeadline.tsx",
     "./KkViewer": "./src/KkViewer/KkViewer.tsx",
     "./KkVisuallyHidden": "./src/KkVisuallyHidden.tsx",

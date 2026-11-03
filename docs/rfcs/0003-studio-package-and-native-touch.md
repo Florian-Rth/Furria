@@ -1,7 +1,7 @@
 ---
 rfc: 0003
 title: The studio as its own package — one engine, one stage, one timeline, native-grade touch
-status: in progress
+status: built — device checks owed
 github_issue: 57
 branch: feat/rfc-57-studio-package
 created: 2026-11-02
@@ -150,7 +150,7 @@ Goal: playback lives in the package behind a media loader; iPhone audio is robus
 - [x] Use signalsmith-stretch's `schedule`/loop API where it replaces own loop/seek code (keep the gapless song cuts)
 - [x] `audioSession.type = 'playback'`; pause and keep position on background, lock, interruption and output change
 - [x] Pure tests for the new scheduling decisions
-- [ ] Device check on iPhone (silent switch, call, lock) and slowed playback on iPhone/iPad — owed to Florian
+- Device check (A) → [Device checks](#device-checks)
 
 Built 2026-11-02. `@furria/studio` now holds the engine (`src/engine`): `mix-player`, `mix-schedule`,
 `count-in`, `video-sync`, `use-mix-player`, `use-playback-seconds` (frame store), `use-slaved-video`
@@ -247,7 +247,7 @@ Goal: every in-document edit uses the document; the old undo machinery is delete
 - [x] Spots and holders, keyframes, paths, bends, easing, facing, formation presets through the document
 - [x] Uploads, final-file adoption, version restore, media delete as direct actions with reload
 - [x] Delete `studio-undo`, `undo-requests`, `studio-remap`, the visit history store and the remaining optimistic patches
-- [ ] Device check: edit on phone and iPad, undo during a pending save, two editors at once — owed to Florian
+- Device check (B) → [Device checks](#device-checks)
 
 Built 2026-11-02. Every stage edit is a document change: spot add/remove/assign and every track
 commit (`use-track-commit`: formation presets, drags, keyframes, bends, easing, facing all end in
@@ -322,7 +322,7 @@ Goal: Florian picks the touch handling on his devices.
 - [x] Playground: stage editor (drag a dot, multi-select, bend a path, keyframe on the timeline)
 - [x] Playground: lists (song order, spot holders with dnd-kit) and the practice step rail
 - [x] Variants where open: loupe vs lifted copy; long-press sheet vs selection toolbar; precision by distance vs by hold
-- [ ] HTTPS static build; Florian tests on iPhone, Pixel and iPad Safari; rulings recorded here
+- [x] HTTPS static build; Florian tests on iPhone, Pixel and iPad Safari; rulings recorded here
 - [x] Scrub variant on the timeline playground: fixed centre "now" line, the wave moves under it
   (iOS Voice Memos style) vs the fixed view; Florian judges, Phase 9 builds the winner
 
@@ -411,7 +411,7 @@ overview are phase 9b.
 - [x] Centre-line scrub in the package (pure geometry + `use-centre-scrub`), the lab's centre hooks as reference
 - [x] `Timeline` centre mode: moving strips, played half, centre line, song regions, cut handles, trim wash, snap line, lifted readout
 - [x] Studio wave (cuts and the final-file shift) on `Timeline`; delete `KkStudioWave`
-- [ ] Device check: trim, zoom, precision drag, fluid scrub with momentum on phone and iPad
+- Device check (C) → [Device checks](#device-checks)
 
 Built 2026-11-02. The music page's wave (`ActStudioWaveLayer`) is `@furria/studio/Timeline` in
 **centre mode** (`centre={useCentreScrub(…)}`, `density="edit"`, fills its panel): the red line
@@ -469,7 +469,7 @@ cap) — overview and `KkStudioDrag` are phase 9c.
 - [x] Desk lanes (ruler, parts, steps + borders, music, video, keyframes) on `Timeline` in centre mode
 - [x] Lane-aware targets in the centre scrub (edges, spans, tap vs drag); zoom commands for the desk bar and overview
 - [x] Delete `KkLaneTrack`, `use-desk-zoom`, `use-desk-follow` and the desk playhead
-- [ ] Device check: border move, video drag, keyframe drag, zoom on iPad and desktop
+- Device check (D) → [Device checks](#device-checks)
 
 Built 2026-11-02. The desk lanes (`DeskLanes`) are one `@furria/studio/Timeline` in **centre
 mode** (`density="desk"`, 16.25rem tall): the red line spans all six lanes and the music moves
@@ -519,7 +519,7 @@ button right of the centre line (`data-gesture-ignore`, so the button still clic
 Goal: no track is left outside `Timeline` and the gesture engine.
 - [x] Desk overview on `Timeline` (bracket = the centre scrub's view, edges zoom, tap aims); delete `KkLaneOverview`
 - [x] Video strip (`KkStudioPlacement`) and count strip (`KkStudioCounts`) on the gesture engine; delete `KkStudioDrag`
-- [ ] Device check: overview bracket and edges on iPad and desktop
+- Device check (E) → [Device checks](#device-checks)
 
 Built 2026-11-03. The desk overview (`DeskOverview`) is `@furria/studio/Timeline` in a third mode,
 **overview** (`overview={useOverviewBracket(centre, length)}`, `density="overview"`, 3.5rem): the
@@ -572,7 +572,7 @@ playhead (which rested while the wave was steered) is gone.
 Goal: the `Stage` kit replaces the read-only renderers.
 - [x] `Stage` kit with layers (floor, spots, dots, paths, own dot and cue, absences), viewpoint and framing props
 - [x] Practice, lesson picture, hall and hub thumbnails on `Stage`; delete their renderers
-- [ ] Film playback; check frame rate on the iPad (canvas only if it drops) — owed to Florian
+- Device check (F) → [Device checks](#device-checks)
 
 Built 2026-11-02. `@furria/studio/Stage` is the one read stage: `Stage` (root) with `Dot`, `Path`,
 `Target`, `Count` and `Cue`. Props: `stage` (width, depth, artwork), `viewpoint` (dancers = front
@@ -609,9 +609,9 @@ glide while paused, motion entrance from an earlier place (hub rows).
 ### Phase 11 — One Stage: editor
 Goal: the stage editor is the `Stage` with editor layers and the gesture engine.
 - [x] Editor layers (handles, bends, onion skin, selection) with the lab's touch handling
-- [ ] Spot holder assignment and song/video order with @dnd-kit/react — split into phase 11b
+- [x] Spot holder assignment and song/video order with @dnd-kit/react — split into phase 11b (built there)
 - [x] Delete `KkStudioStage` and the old editor drag code
-- [ ] Device check: dot drag, multi-select, bend, pinch/pan on phone and iPad
+- Device check (G) → [Device checks](#device-checks)
 
 Built 2026-11-02. The step card stage and the desk stage are one `StudioEditStage` (club app) on
 `@furria/studio/Stage` (`fit="contain"`, `viewpoint="dancers"`) with the gesture engine bound by
@@ -667,7 +667,7 @@ Goal: spot holders and song order are dragged like the lab's lists.
 - [x] Song order in the song list by drag handle (`songOrder` change), replacing the earlier/later shift
 - [x] Spot holder assignment by dragging people between places and *frei* (session and evening)
 - [x] Video order: decided 2026-11-02 — no video order; main/alternative per part stays
-- [ ] Device check: sort and assign on phone and iPad
+- Device check (H) → [Device checks](#device-checks)
 
 Built 2026-11-02 (video order left open for Florian's decision). Song list: while the working mix
 is editable and no final file is previewed, every song row is a `KkStudioList.SortRow` (the row plus
@@ -941,8 +941,35 @@ focus; tested). **Hub helpers:** `act-hub/score-hub-views` (`readinessViewsOf`, 
 
 ### Phase 12h — Lab removal, cleanup, docs
 Goal: nothing studio-specific is left behind.
-- [ ] Delete `KkTouchLab` and the `studio-lab` feature once the phase 7 device check is done; grep for leftovers
-- [ ] Update CONTEXT.md if terms changed, plan/club-app/group-year.md, docs/web; full web suite
+- [x] Delete `KkTouchLab` and the `studio-lab` feature once the phase 7 device check is done; grep for leftovers
+- [x] Update CONTEXT.md if terms changed, plan/club-app/group-year.md, docs/web; full web suite
+
+Done 2026-11-03. The Phase 7 rulings are all in (Rulings and Rulings 2 above), so the lab is gone:
+`@furria/ui/KkTouchLab` (kit and export), the club app's `studio-lab` feature with its tests, the
+`/lab/studio/$playground` route and the *Studio* section of the Labor hub. A grep finds no
+`KkTouchLab`, `studio-lab`, `/lab/studio` or lab copy outside this RFC. **Docs:** CONTEXT.md is
+unchanged (the RFC renamed code, not domain terms — *Studio* → `ActStudio` is an identifier);
+`plan/club-app/group-year.md` records the package and the touch rulings; `docs/web/TESTING.md`
+has a *Studio* section (pure modules own touch, playback and saving; devices own the feel, with
+the list below). The real-screen checks of every phase are gathered in *Device checks*; they stay
+open until Florian runs them on the HTTPS build.
+
+## Device checks
+
+Every real-screen check this RFC still owes, gathered from the phases (letters mark where they came
+from). Run on the HTTPS static build on iPhone, Pixel and iPad Safari unless a line says otherwise.
+
+- [ ] **A — Audio (phase 2):** silent switch, an incoming call and the lock screen on the iPhone pause and resume cleanly; slowed and sped playback on iPhone and iPad; the stretch's second copy of the mix fits in iPhone memory (trim to the loop range if not); with a click track, whether the extra stretch lead before a slowed start is needed
+- [ ] **B — Saving (phases 3–5):** edit on phone and iPad; undo during a pending save; two editors at once (another device) gives the reload note; spot add + drag + undo; formation preset and keyframe edits; an evening copy (first formation change creates it, spot assign, undo across session and evening edits, drop the copy while edits are pending); upload, remove and adopt while edits are pending; version restore with pending edits
+- [ ] **C — Timeline (phase 9):** trim a cut, zoom, precision drag by moving away from the track, fluid centre-line scrub with momentum and rubber band, swipe during playback pauses and resumes where the glide rests
+- [ ] **D — Desk lanes (phase 9b, iPad and desktop):** border move, video drag, keyframe drag, zoom; whether a touch drag that lands on a video span should scrub instead (maybe a long press for spans)
+- [ ] **E — Overview (phase 9c, iPad and desktop):** bracket drag and edge reach; narrow brackets on a phone zoom rather than centre
+- [ ] **F — Stage playback (phase 10):** film playback and check the iPad frame rate (canvas only if it drops); shots at 390 px, 844×390 and iPad with a real choreography
+- [ ] **G — Stage editor (phase 11):** dot drag with the lifted value, tap selects, long press adds to the selection with the toolbar, bend handle drag, pinch/pan, also during playback, keyboard nudge
+- [ ] **H — Lists (phase 11b):** song and video order by handle, assign/swap/free spot holders by chip (touch delay, auto-scroll inside the sheet, the sheet's own swipe, a swipe starting on a chip), keyboard sorting
+- [ ] **I — Step rail (phase 7 ruling):** free momentum glides and settles without snapping
+- [ ] **J — Desk on the iPad (phase 12f):** the desk stays smooth while set-up uploads tick and history changes (it re-renders on both)
+- [ ] **K — Screen reader (phase 12g):** VoiceOver on the phone step drawer (a *Schritt* dialog holding the *Schritt* region) and the score, manual and facts slots (desk slot and kit both labelled)
 
 ## Risks & alternatives
 
