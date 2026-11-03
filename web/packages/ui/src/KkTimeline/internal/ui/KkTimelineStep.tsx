@@ -73,6 +73,7 @@ interface KkTimelineStepProps {
   selected: boolean;
   interactive: boolean;
   dropDelay: number | null;
+  lane?: string;
   onSelect: (key: number) => void;
 }
 
@@ -82,6 +83,7 @@ export const KkTimelineStep: FC<KkTimelineStepProps> = ({
   selected,
   interactive,
   dropDelay,
+  lane,
   onSelect,
 }) => {
   const reduced = useReducedMotion();
@@ -169,6 +171,7 @@ export const KkTimelineStep: FC<KkTimelineStepProps> = ({
       animate={LANDED}
       transition={drop}
       style={place}
+      data-timeline-lane={lane}
       sx={{
         position: 'absolute',
         top: stepsTop,

@@ -16,6 +16,7 @@ interface KkTimelineStepsProps {
   selectedKey: number | null;
   interactive: boolean;
   revealSeconds: number | null;
+  lane?: string;
   onSelect: (key: number) => void;
 }
 
@@ -26,6 +27,7 @@ export const KkTimelineSteps: FC<KkTimelineStepsProps> = ({
   selectedKey,
   interactive,
   revealSeconds,
+  lane,
   onSelect,
 }) => {
   const selected = blocks.find((block) => block.key === selectedKey) ?? null;
@@ -61,6 +63,7 @@ export const KkTimelineSteps: FC<KkTimelineStepsProps> = ({
         selected={block.key === selectedKey}
         interactive={interactive}
         dropDelay={dropDelay}
+        lane={lane}
         onSelect={onSelect}
       />
     );

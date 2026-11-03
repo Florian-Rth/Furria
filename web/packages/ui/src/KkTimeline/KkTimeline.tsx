@@ -16,7 +16,6 @@ import { KkTimelineLoop } from './internal/ui/KkTimelineLoop';
 import { KkTimelineMarks } from './internal/ui/KkTimelineMarks';
 import { KkTimelineParts } from './internal/ui/KkTimelineParts';
 import { KkTimelinePlayed } from './internal/ui/KkTimelinePlayed';
-import { KkTimelinePlayhead } from './internal/ui/KkTimelinePlayhead';
 import { KkTimelineRegion } from './internal/ui/KkTimelineRegion';
 import { KkTimelineRuler } from './internal/ui/KkTimelineRuler';
 import { KkTimelineSnap } from './internal/ui/KkTimelineSnap';
@@ -73,5 +72,4 @@ export const KkTimeline = Object.assign(KkTimelineRoot, {
   Trim: KkTimelineTrim,
   Snap: KkTimelineSnap,
   Handle: KkTimelineHandle,
-  Playhead: KkTimelinePlayhead,
 });

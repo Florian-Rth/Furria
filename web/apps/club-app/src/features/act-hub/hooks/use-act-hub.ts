@@ -98,7 +98,7 @@ export const useActHub = (
   const [stored] = useState(() => readStored(practiceMemoryKeyOf(actId, viewerId)));
   const model = scoreModelOf(studio, viewerId);
   const peaks = useAudioPeaks(model.segments);
-  const player = useScorePlayer(model, wide, peaks);
+  const player = useScorePlayer(model, peaks);
   const route = useScoreRoute(actId, viewerId, search);
   useStudioKeys({ toggle: player.toggle }, wide);
   const editor = viewer.canEditStudio;

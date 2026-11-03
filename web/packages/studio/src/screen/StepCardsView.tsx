@@ -1,7 +1,9 @@
 import { ActStudioSpotSheet } from '@furria/studio/ActStudioSpotSheet';
 import { ActStudioStepDesk } from '@furria/studio/ActStudioStepDesk';
+import { countTrackOf } from '@furria/studio/count-marks';
 import { StepCardsEmpty } from '@furria/studio/StepCardsEmpty';
 import { StepCardsHead } from '@furria/studio/StepCardsHead';
+import { StepCardsReadoutLive } from '@furria/studio/StepCardsReadoutLive';
 import { StepCardsSetupPanel } from '@furria/studio/StepCardsSetupPanel';
 import { StepCardsTransport } from '@furria/studio/StepCardsTransport';
 import { StepCardView } from '@furria/studio/StepCardView';
@@ -55,6 +57,12 @@ export const StepCardsView: FC<StepCardsViewProps> = ({ screen, editor }) => {
       </KkLaneCards>
     );
   const body = cardsSetup.open ? <StepCardsSetupPanel cardsSetup={cardsSetup} /> : cardsBody;
+  const readout = (
+    <StepCardsReadoutLive
+      player={screen.playback.player}
+      counts={countTrackOf(screen.playback.countMarks)}
+    />
+  );
 
   return (
     <KkLanePhone label={STEP_CARDS_LABEL}>
@@ -64,7 +72,7 @@ export const StepCardsView: FC<StepCardsViewProps> = ({ screen, editor }) => {
       </KkLanePhone.Area>
       <KkLanePhone.Area area="cards">{body}</KkLanePhone.Area>
       <KkLanePhone.Area area="transport">
-        <StepCardsTransport screen={screen} />
+        <StepCardsTransport screen={screen} readout={readout} />
       </KkLanePhone.Area>
       <ActStudioSpotSheet screen={screen} editor={editor} />
       <ActStudioStepDesk screen={screen} tool={stepTool} />

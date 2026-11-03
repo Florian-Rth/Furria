@@ -1,5 +1,4 @@
 import { partRangeOf, stepRangeOf } from '@furria/studio/music-timeline';
-import { shownStepOf } from '@furria/studio/practice-stepping';
 import type { StudioPart, StudioStep } from '@furria/studio/studio-schemas';
 import type { TimelinePart, TimelineSpan } from '@furria/studio/Timeline';
 
@@ -20,6 +19,3 @@ export const lessonStripOf = (
   })),
   ticks: steps.map((step) => ({ key: step.stepId, range: stepRangeOf(step) })),
 });
-
-export const stripStepIdOf = (steps: readonly StudioStep[], seconds: number): number | null =>
-  shownStepOf(steps, seconds)?.stepId ?? null;

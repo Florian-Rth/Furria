@@ -21,6 +21,7 @@ interface TimelineStepsProps {
   activeKey: number | null;
   selectedKey: number | null;
   revealSeconds?: number | null;
+  lane?: string;
   onSelect: (key: number) => void;
 }
 
@@ -30,6 +31,7 @@ export const TimelineSteps: FC<TimelineStepsProps> = ({
   activeKey,
   selectedKey,
   revealSeconds = null,
+  lane,
   onSelect,
 }) => {
   const { length } = useTimeline();
@@ -44,6 +46,7 @@ export const TimelineSteps: FC<TimelineStepsProps> = ({
         selectedKey={selectedKey}
         interactive
         revealSeconds={revealSeconds}
+        lane={lane}
         onSelect={onSelect}
       />
     </TimelineStrip>

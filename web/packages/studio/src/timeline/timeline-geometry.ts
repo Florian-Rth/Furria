@@ -6,7 +6,6 @@ import type { AudioPeaks } from '../models/studio-schemas';
 
 const TICK_STEPS_SECONDS: readonly number[] = [1, 2, 5, 10, 15, 30, 60];
 const MOST_TICKS = 12;
-const FOCUS_MARGIN_SHARE = 0.015;
 const FIRST_COUNT = 1;
 const SECONDS_PER_MINUTE = 60;
 const KEYFRAME_ROUNDING = 100;
@@ -59,17 +58,6 @@ export const shareOf = (seconds: number, length: number): number =>
 
 export const secondsOfShare = (share: number, length: number): number =>
   Math.min(length, Math.max(0, share * length));
-
-export const windowOf = (focus: TimelineRange | null, length: number): TimelineWindow => {
-  if (focus === null || length <= 0) {
-    return WHOLE_WINDOW;
-  }
-
-  return {
-    start: Math.max(0, focus.start / length - FOCUS_MARGIN_SHARE),
-    end: Math.min(1, focus.end / length + FOCUS_MARGIN_SHARE),
-  };
-};
 
 export const tickStepOf = (visibleSeconds: number): number =>
   TICK_STEPS_SECONDS.find((step) => visibleSeconds / step <= MOST_TICKS) ??
