@@ -1,3 +1,4 @@
+import { PRACTICE_LABEL } from '@furria/studio/practice-copy';
 import type { KkMasterDetailSpan } from '@furria/ui/KkMasterDetailMaster';
 import type {
   KkQuietScreenAction,
@@ -7,7 +8,6 @@ import type {
 import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { PRACTICE_LABEL } from '@/features/act-practice/practice-copy';
 import { eveningCastOf } from '@/features/act-studio/studio-evening';
 import { TRAINING_LABEL } from '@/features/act-training/training-copy';
 import { useActsQuery } from '@/features/running-order/api';

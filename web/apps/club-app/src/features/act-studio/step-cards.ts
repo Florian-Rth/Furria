@@ -67,19 +67,6 @@ export const countPlaceAt = (
   return mark === undefined || eight === undefined ? null : { eight, count: mark.count };
 };
 
-export const neighbourCountOf = (
-  marks: readonly CountMark[],
-  seconds: number,
-  direction: 1 | -1,
-): number | null => {
-  const next =
-    direction === 1
-      ? marks.find((mark) => mark.seconds > seconds + EDGE_SECONDS)
-      : marks.findLast((mark) => mark.seconds < seconds - EDGE_SECONDS);
-
-  return next?.seconds ?? null;
-};
-
 const firstIndexFrom = (marks: readonly CountMark[], seconds: number): number =>
   countIndexAt(marks, seconds - 2 * EDGE_SECONDS) + 1;
 

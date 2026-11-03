@@ -1,4 +1,5 @@
 import { musicSegmentsOf } from '@furria/studio/music-timeline';
+import { STUDIO_EDIT } from '@furria/studio/studio-mode-copy';
 import type { StudioFinalTrack } from '@furria/studio/studio-schemas';
 import { useState } from 'react';
 import type { ActStudio } from '@/features/acts/schemas';
@@ -10,7 +11,6 @@ import {
   finalTrackLabelOf,
   finalTrackMetaOf,
   outsideMusicTextOf,
-  STUDIO_EDIT,
   STUDIO_FINAL_GRID_DESK,
   STUDIO_FINAL_LEAD,
   STUDIO_FINAL_REMOVE,

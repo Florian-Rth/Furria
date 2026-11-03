@@ -1,16 +1,18 @@
+import { musicSegmentsOf } from '@furria/studio/music-timeline';
+import { playerKeyActionsOf } from '@furria/studio/practice-key-actions';
+import type { Practice } from '@furria/studio/use-practice';
+import { usePractice } from '@furria/studio/use-practice';
+import { usePracticeMemory } from '@furria/studio/use-practice-memory';
+import type { PracticeSteps } from '@furria/studio/use-practice-steps';
+import { usePracticeSteps } from '@furria/studio/use-practice-steps';
+import type { PracticeVideo } from '@furria/studio/use-practice-video';
+import { usePracticeVideo } from '@furria/studio/use-practice-video';
 import { useStudioKeys } from '@furria/studio/use-studio-keys';
+import type { StudioPlayback } from '@furria/studio/use-studio-playback';
+import { useStudioPlayback } from '@furria/studio/use-studio-playback';
 import { useKkLaneWide } from '@furria/ui/KkLaneWide';
-import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import type { Practice } from '@/features/act-practice/hooks/use-practice';
-import { usePractice } from '@/features/act-practice/hooks/use-practice';
-import { usePracticeMemory } from '@/features/act-practice/hooks/use-practice-memory';
-import type { PracticeSteps } from '@/features/act-practice/hooks/use-practice-steps';
-import { usePracticeSteps } from '@/features/act-practice/hooks/use-practice-steps';
-import type { PracticeVideo } from '@/features/act-practice/hooks/use-practice-video';
-import { usePracticeVideo } from '@/features/act-practice/hooks/use-practice-video';
-import { playerKeyActionsOf } from '@/features/act-practice/practice-key-actions';
 import { canPractise } from '@/features/acts/act-studio';
+import { useAudioPeaks } from '@/features/acts/api';
 import type { ActStudio, StudioEvening } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
 import { useLargeText } from '@/lib/use-large-text';
@@ -97,7 +99,8 @@ export const useStudioScreen = (
     mode,
     edits,
   );
-  const base = useStudioPlayback(studio, viewerId);
+  const peaksByItem = useAudioPeaks(musicSegmentsOf(studio));
+  const base = useStudioPlayback(studio, viewerId, peaksByItem);
   const playback: StudioPlayback = {
     ...base,
     paths: workedPathsOf(base.paths, edits.value),

@@ -9,6 +9,7 @@ import type {
 const SECONDS_PER_MINUTE = 60;
 const COUNTS_PER_EIGHT = 8;
 export const EDGE_TOLERANCE_SECONDS = 1e-6;
+const COUNT_EDGE_SECONDS = 1e-3;
 export const BEAT_ROUNDING_SECONDS = 0.01;
 
 export interface BeatSection {
@@ -314,4 +315,17 @@ export const partRangeOf = (
     start: Math.min(...ranges.map((range) => range.start)),
     end: Math.max(...ranges.map((range) => range.end)),
   };
+};
+
+export const neighbourCountOf = (
+  marks: readonly CountMark[],
+  seconds: number,
+  direction: 1 | -1,
+): number | null => {
+  const next =
+    direction === 1
+      ? marks.find((mark) => mark.seconds > seconds + COUNT_EDGE_SECONDS)
+      : marks.findLast((mark) => mark.seconds < seconds - COUNT_EDGE_SECONDS);
+
+  return next?.seconds ?? null;
 };

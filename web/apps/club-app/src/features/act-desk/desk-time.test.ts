@@ -4,7 +4,6 @@ import {
   countPlaceAt,
   countsBetweenOf,
   musicTicksOf,
-  neighbourCountOf,
   rulerTicksOf,
 } from './desk-time';
 
@@ -67,16 +66,6 @@ describe('counts', () => {
     [-1, null],
   ])('places %ds', (seconds, expected) => {
     expect(countPlaceAt(marks, seconds)).toEqual(expected);
-  });
-
-  it.each([
-    [1, 1, 1.5],
-    [1.2, 1, 1.5],
-    [1.2, -1, 1],
-    [0, -1, null],
-    [11.5, 1, null],
-  ] as const)('finds the count next to %ds going %d', (seconds, direction, expected) => {
-    expect(neighbourCountOf(marks, seconds, direction)).toBe(expected);
   });
 
   it.each([

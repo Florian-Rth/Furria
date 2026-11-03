@@ -7,10 +7,11 @@ import { countAt, musicLengthOf, musicSegmentsOf } from '@furria/studio/music-ti
 import { momentumOf, momentumTargetOf } from '@furria/studio/pan-bounds';
 import { useGesture } from '@furria/studio/use-gesture';
 import { usePanAxis } from '@furria/studio/use-pan-axis';
+import { useStudioPlayback } from '@furria/studio/use-studio-playback';
 import type { AnimationPlaybackControls, MotionValue } from 'motion/react';
 import { animate, useMotionValue, useMotionValueEvent, useReducedMotion } from 'motion/react';
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
-import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
+import { useAudioPeaks } from '@/features/acts/api';
 import type { ActStudio } from '@/features/acts/schemas';
 import type { StripWindow } from '../centre-view';
 import {
@@ -95,7 +96,8 @@ export const useCentreTimelinePlayground = (
   const history = useLabHistory(studio);
   const committed = history.value;
   const shown = history.shown;
-  const playback = useStudioPlayback(committed, null);
+  const peaksByItem = useAudioPeaks(musicSegmentsOf(committed));
+  const playback = useStudioPlayback(committed, null, peaksByItem);
   const player = playback.player;
   const committedSegments = musicSegmentsOf(committed);
   const segments = musicSegmentsOf(shown);

@@ -7,11 +7,12 @@ import { pickHitTarget } from '@furria/studio/hit-priority';
 import { musicSegmentsOf } from '@furria/studio/music-timeline';
 import { stageOrDefault } from '@furria/studio/stage-view';
 import { useGesture } from '@furria/studio/use-gesture';
+import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
+import { useStudioPlayback } from '@furria/studio/use-studio-playback';
 import type { KkTouchLabDotState, KkTouchLabGridLine, KkTouchLabPath } from '@furria/ui/KkTouchLab';
 import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import { useEffect, useRef, useState } from 'react';
-import { usePlaybackSeconds } from '@/features/act-player/hooks/use-playback-seconds';
-import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
+import { useAudioPeaks } from '@/features/acts/api';
 import type { ActStudio } from '@/features/acts/schemas';
 import { labDragStepOf, labPolicyOf } from '../lab-drag';
 import { labLiftOf } from '../lab-lift';
@@ -122,7 +123,8 @@ export const useStagePlayground = (
   const history = useLabHistory<SpotPath[]>(
     spotPathsOf(studio.choreography, musicSegmentsOf(studio)),
   );
-  const playback = useStudioPlayback(studio, null);
+  const peaksByItem = useAudioPeaks(musicSegmentsOf(studio));
+  const playback = useStudioPlayback(studio, null, peaksByItem);
   const seconds = usePlaybackSeconds(playback.player);
   const stage = stageOrDefault(studio.stage);
   const sheets = useKkSheetCommands();

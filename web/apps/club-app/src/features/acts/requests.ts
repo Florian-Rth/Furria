@@ -1,3 +1,5 @@
+import type { AudioPeaks } from '@furria/studio/studio-schemas';
+import { AudioPeaksSchema } from '@furria/studio/studio-schemas';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type { ActStudioResponse, GroupActsResponse, MyActsResponse } from './schemas';
@@ -39,3 +41,13 @@ export const requestCoEditorRevoke = (
     schema: NoContentSchema,
     accessToken,
   });
+
+export const requestAudioPeaks = async (url: string): Promise<AudioPeaks> => {
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    throw new Error(`The waveform answered ${response.status}.`);
+  }
+
+  return AudioPeaksSchema.parse(await response.json());
+};

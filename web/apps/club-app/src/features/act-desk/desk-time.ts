@@ -102,18 +102,5 @@ export const countIndexAt = (marks: readonly CountMark[], seconds: number): numb
 export const countPlaceAt = (marks: readonly CountMark[], seconds: number): CountPlace | null =>
   countPlacesOf(marks)[countIndexAt(marks, seconds)] ?? null;
 
-export const neighbourCountOf = (
-  marks: readonly CountMark[],
-  seconds: number,
-  direction: 1 | -1,
-): number | null => {
-  const next =
-    direction === 1
-      ? marks.find((mark) => mark.seconds > seconds + EDGE)
-      : [...marks].reverse().find((mark) => mark.seconds < seconds - EDGE);
-
-  return next?.seconds ?? null;
-};
-
 export const countsBetweenOf = (marks: readonly CountMark[], start: number, end: number): number =>
   marks.filter((mark) => mark.seconds >= start - EDGE && mark.seconds < end - EDGE).length;

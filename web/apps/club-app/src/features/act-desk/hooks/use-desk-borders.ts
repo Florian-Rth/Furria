@@ -1,9 +1,9 @@
+import { neighbourCountOf } from '@furria/studio/music-timeline';
 import { useState } from 'react';
 import { useGestureRelease } from '@/features/act-studio/hooks/use-gesture-release';
 import type { StudioScreen } from '@/features/act-studio/hooks/use-studio-screen';
 import { borderMovedOf } from '@/features/act-studio/studio-edits';
 import { borderLabelOf, clockOf } from '../desk-copy';
-import { neighbourCountOf } from '../desk-time';
 
 export interface DeskBorder {
   key: string;

@@ -1,5 +1,7 @@
+import type { MusicSegment } from '@furria/studio/music-timeline';
+import type { AudioPeaks } from '@furria/studio/studio-schemas';
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
-import { skipToken, useQuery } from '@tanstack/react-query';
+import { skipToken, useQueries, useQuery } from '@tanstack/react-query';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { queryKeys } from '@/lib/query/reads';
@@ -7,6 +9,7 @@ import { toWriteErrorMessage } from '@/lib/write-error';
 import { toCoEditorGrantedMessage, toCoEditorRevokedMessage } from './acts-copy';
 import {
   requestActStudio,
+  requestAudioPeaks,
   requestCoEditorGrant,
   requestCoEditorRevoke,
   requestGroupActs,
@@ -71,4 +74,28 @@ export const useCoEditorMutations = (actId: number): CoEditorMutations => {
   });
 
   return { grant, revoke };
+};
+
+export const useAudioPeaks = (
+  segments: readonly MusicSegment[],
+): ReadonlyMap<number, AudioPeaks> => {
+  const audible = segments.filter((segment) => segment.audible);
+
+  return useQueries({
+    queries: audible.map((segment) => ({
+      queryKey: queryKeys.audioPeaks(segment.mediaItemId),
+      queryFn: () => requestAudioPeaks(segment.peaksUrl),
+      staleTime: Number.POSITIVE_INFINITY,
+    })),
+    combine: (results) => {
+      const peaksByItem = new Map<number, AudioPeaks>();
+      results.forEach((result, index) => {
+        const segment = audible[index];
+        if (result.data !== undefined && segment !== undefined) {
+          peaksByItem.set(segment.mediaItemId, result.data);
+        }
+      });
+      return peaksByItem;
+    },
+  });
 };

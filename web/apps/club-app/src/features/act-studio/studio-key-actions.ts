@@ -1,6 +1,6 @@
+import { neighbourCountOf } from '@furria/studio/music-timeline';
 import type { StudioKeyActions } from '@furria/studio/studio-keys';
 import type { StudioScreen } from './hooks/use-studio-screen';
-import { neighbourCountOf } from './step-cards';
 
 export type ZoomBy = (direction: 1 | -1) => void;
 

@@ -5,7 +5,7 @@ import { useMixPlayer } from '@furria/studio/use-mix-player';
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import type { KkScoreLens } from '@furria/ui/KkScoreTransport';
 import { useState } from 'react';
-import { useAudioPeaks } from '@/features/act-player/api';
+import { useAudioPeaks } from '@/features/acts/api';
 import { WHOLE_LABEL } from '../score-copy';
 import type { ScoreModel } from '../score-model';
 import { stepAtSeconds } from '../score-steps';

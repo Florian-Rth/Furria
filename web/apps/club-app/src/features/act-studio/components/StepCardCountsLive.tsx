@@ -1,6 +1,6 @@
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
+import type { StudioPlayback } from '@furria/studio/use-studio-playback';
 import type { FC } from 'react';
-import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
 import type { StepCountCell } from '../step-cards';
 import { countIndexAt } from '../step-cards';
 import { StepCardCounts } from './StepCardCounts';

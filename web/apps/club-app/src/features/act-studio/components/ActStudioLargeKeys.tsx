@@ -1,12 +1,12 @@
-import { KkPracticeKeys } from '@furria/ui/KkPracticeKeys';
-import type { FC } from 'react';
 import {
   PRACTICE_LARGE_KEYS_LABEL,
   PRACTICE_STEP_BACK,
   PRACTICE_STEP_FORWARD,
   PRACTICE_VIDEO_SHOW,
   PRACTICE_VIDEO_SHOW_LABEL,
-} from '@/features/act-practice/practice-copy';
+} from '@furria/studio/practice-copy';
+import { KkPracticeKeys } from '@furria/ui/KkPracticeKeys';
+import type { FC } from 'react';
 import type { StudioScreen } from '../hooks/use-studio-screen';
 
 interface ActStudioLargeKeysProps {

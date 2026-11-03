@@ -341,7 +341,6 @@
     "./KkStudioDesk": "./src/KkStudioDesk/KkStudioDesk.tsx",
     "./KkStudioEdit": "./src/KkStudioEdit/KkStudioEdit.tsx",
     "./KkStudioList": "./src/KkStudioList/KkStudioList.tsx",
-    "./KkStudioSide": "./src/KkStudioSide/KkStudioSide.tsx",
     "./KkStudioView": "./src/KkStudioView/KkStudioView.tsx",
     "./KkEightsReel": "./src/KkEightsReel/KkEightsReel.tsx",
     "./KkStickyFoot": "./src/KkStickyFoot.tsx",
