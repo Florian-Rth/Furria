@@ -12,7 +12,14 @@ const steps = [
 
 describe('scoreTargetsOf', () => {
   it.each([
-    [false, [{ key: 'part:1', seconds: 0, until: 8, lane: 'parts' }]],
+    [
+      false,
+      [
+        { key: 'part:1', seconds: 0, until: 8, lane: 'parts' },
+        { key: 'step:7', seconds: 2, until: 4, lane: 'steps' },
+        { key: 'step:8', seconds: 4, until: 6, lane: 'steps' },
+      ],
+    ],
     [
       true,
       [
@@ -20,7 +27,7 @@ describe('scoreTargetsOf', () => {
         { key: 'step:8', seconds: 4, until: 6, lane: 'steps' },
       ],
     ],
-  ])('taps parts on the phone and steps when wide (wide %s)', (wide, expected) => {
+  ])('taps parts and steps on the phone and steps when wide (wide %s)', (wide, expected) => {
     expect(
       scoreTargetsOf(parts, steps, wide).map(({ key, seconds, until, lane }) => ({
         key,

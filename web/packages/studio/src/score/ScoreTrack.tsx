@@ -43,29 +43,23 @@ export const ScoreTrack: FC<ScoreTrackProps> = ({
   const selectPart = wide ? undefined : onSelectPart;
   const partLane = wide ? undefined : SCORE_PART_LANE;
   const density = wide ? 'full' : 'track';
-  const stepMarks = wide ? (
-    <Timeline.Steps
-      label={SCORE_LABEL}
-      steps={steps}
-      activeKey={player.activeStepId}
-      selectedKey={selectedStepId}
-      revealSeconds={revealSeconds}
-      lane={SCORE_STEP_LANE}
-      onSelect={onSelectStep}
-    />
-  ) : (
-    <Timeline.Ticks steps={steps} activeKey={player.activeStepId} revealSeconds={revealSeconds} />
-  );
-  const counts = wide ? <Timeline.Counts marks={marks} /> : null;
 
   return (
     <Timeline label={SCORE_LABEL} density={density} length={player.length} centre={centre}>
       <Timeline.Parts tone={tone} parts={parts} lane={partLane} onSelect={selectPart} />
       <Timeline.Ruler />
-      {counts}
+      <Timeline.Counts marks={marks} />
       <Timeline.Wave segments={segments} peaks={player.peaks} revealSeconds={revealSeconds} />
       <Timeline.Cuts segments={segments} />
-      {stepMarks}
+      <Timeline.Steps
+        label={SCORE_LABEL}
+        steps={steps}
+        activeKey={player.activeStepId}
+        selectedKey={selectedStepId}
+        revealSeconds={revealSeconds}
+        lane={SCORE_STEP_LANE}
+        onSelect={onSelectStep}
+      />
     </Timeline>
   );
 };
