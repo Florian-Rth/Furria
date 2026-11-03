@@ -1,6 +1,11 @@
 import type { FinalBeatInput, FinalOffsetInput } from '@furria/studio/studio-final';
 import type { SongSettings } from '@furria/studio/studio-music';
-import type { Choreography } from '@furria/studio/studio-schemas';
+import type {
+  Choreography,
+  FinalTrackMatches,
+  VideoAlignment,
+} from '@furria/studio/studio-schemas';
+import { FinalTrackMatchesSchema, VideoAlignmentSchema } from '@furria/studio/studio-schemas';
 import type {
   PartOpening,
   PartSettingsInput,
@@ -17,10 +22,8 @@ import type {
   AddedSpot,
   AddedVideo,
   ChoreographyVersionPage,
-  FinalTrackMatches,
   MarkedSteps,
   SavedChoreography,
-  VideoAlignment,
 } from './schemas';
 import {
   AddedFinalTrackSchema,
@@ -29,10 +32,8 @@ import {
   AddedSpotSchema,
   AddedVideoSchema,
   ChoreographyVersionPageSchema,
-  FinalTrackMatchesSchema,
   MarkedStepsSchema,
   SavedChoreographySchema,
-  VideoAlignmentSchema,
 } from './schemas';
 
 const songsPathOf = (actId: number): string => `/api/acts/${actId}/songs`;

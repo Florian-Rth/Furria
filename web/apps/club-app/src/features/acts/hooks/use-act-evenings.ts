@@ -1,9 +1,9 @@
+import { canPractise } from '@furria/studio/music-timeline';
 import type { KkChipTone } from '@furria/ui/KkChip';
 import type { KkLinkSearch } from '@furria/ui/kk-link-search';
 import { useEveningMutations } from '@/features/act-studio/evening-api';
 import { eveningEntryOf } from '../act-evenings';
 import { EVENING_CHANGED_HINT, toEveningMeta, toEveningStateChip } from '../act-evenings-copy';
-import { canPractise } from '../act-studio';
 import type { ActStudio, ActStudioResponse } from '../schemas';
 
 const CURRENT_ROUTE = '.';

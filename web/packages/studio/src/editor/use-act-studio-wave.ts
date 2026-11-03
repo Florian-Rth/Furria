@@ -1,12 +1,10 @@
 import { formatReadoutTime } from '@furria/studio/drag-readout';
 import type { MusicSegment, TimelineRange } from '@furria/studio/music-timeline';
-import { countAt } from '@furria/studio/music-timeline';
 import {
   cutHandleLabelOf,
   finalShiftLabelOf,
   songMetaOf,
   songNameOf,
-  waveReadoutDetailOf,
 } from '@furria/studio/studio-copy';
 import { nudgedCutOf, trimmedCutOf } from '@furria/studio/studio-edits';
 import {
@@ -24,18 +22,13 @@ import type { CentreScrub } from '@furria/studio/use-centre-scrub';
 import { useCentreScrub } from '@furria/studio/use-centre-scrub';
 import { useFinalPlaces } from '@furria/studio/use-final-places';
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
+import type { WaveReadout } from '@furria/studio/wave-readout';
+import { waveReadoutOf } from '@furria/studio/wave-readout';
 import { useState } from 'react';
 
 const FINAL_NUDGE_SECONDS = 0.1;
 
 type WaveEdge = 'start' | 'end';
-
-export interface WaveReadout {
-  x: number;
-  y: number;
-  value: string;
-  detail: string | null;
-}
 
 interface WaveHandle extends TimelineHandle {
   move: (seconds: number) => void;
@@ -262,7 +255,6 @@ export const useActStudioWave = (screen: StudioWorkScreen): ActStudioWave => {
     },
     onTargetCancel: reset,
   });
-  const lifted = centre.readout;
 
   return {
     centre,
@@ -277,14 +269,6 @@ export const useActStudioWave = (screen: StudioWorkScreen): ActStudioWave => {
     })),
     currentStepId: practice.step?.stepId ?? null,
     trim: wave.trim,
-    readout:
-      lifted === null
-        ? null
-        : {
-            x: lifted.placement.x,
-            y: lifted.placement.y,
-            value: formatReadoutTime(lifted.value.seconds),
-            detail: waveReadoutDetailOf(countAt(segments, lifted.value.seconds), lifted.value.tier),
-          },
+    readout: waveReadoutOf(centre.readout, segments),
   };
 };

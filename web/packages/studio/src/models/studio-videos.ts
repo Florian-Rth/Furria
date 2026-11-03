@@ -16,6 +16,9 @@ export interface VideoNameInput {
 
 export type VideoShelf = 'placed' | 'waiting' | 'unplaced' | 'failed';
 
+export const videoNumberOf = (videos: readonly StudioVideo[], videoId: number): number =>
+  videos.findIndex((video) => video.videoId === videoId) + 1;
+
 export const clampedVideoStartOf = (start: number, duration: number, length: number): number => {
   const rounded = Number(
     (Math.round(start / START_GRAIN_SECONDS) * START_GRAIN_SECONDS).toFixed(2),

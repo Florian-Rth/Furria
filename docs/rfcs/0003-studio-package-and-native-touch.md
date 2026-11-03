@@ -785,7 +785,7 @@ the package's `@dnd-kit/dom` dependency came with `studio-drag-copy`. Stay in th
   (`findIndex + 1`) in the desk inspector and lanes, `use-act-studio-stage`, `use-step-desk` and
   `score-steps`, next to `stepNumberOf`.
 - **Kits:** no studio kit in `@furria/ui` is unused (exports and internal files checked); only
-  `KkTouchLab` is lab-only and stays until the phase 7 device check (12g).
+  `KkTouchLab` is lab-only and stays until the phase 7 device check (12h).
 
 ### Phase 12d — Desk into the package
 Goal: the desk and the studio-screen editing hooks it needs are package modules; the club app
@@ -815,7 +815,7 @@ views moved** (`editor/`): `use-act-studio-{edits,mode,stage,movement,takes,wave
 (editor store), `use-studio-final` (final-track mutations), `use-studio-setup` and `use-act-uploads`
 (uploads), `use-visit-history` and its controls (store), `use-studio-music-route` (router).
 **Dropped:** `retime`/`retimedMoveOf` (no screen used them) with their tests and helpers.
-- **Review follow-ups (open, 12f):** `countPlaceAt` takes marks and eights as two parallel
+- **Review follow-ups (done in 12f):** `countPlaceAt` takes marks and eights as two parallel
   arrays; step numbers are still hand-rolled (`findIndex + 1`, desk lanes and inspector,
   `use-act-studio-stage`) next to `stepNumberOf`; the wave readout is built twice (desk lanes,
   `use-act-studio-wave`) and could be one pure `waveReadoutOf`; `useActDesk` re-derives the setup tab
@@ -846,7 +846,7 @@ Dropped the unused `SCREEN_TITLE` and `musicSourceOf`. Stay in the club app: `Ac
 `ActHubOutline`, `ScoreBody` (composition), `ScoreFactsStrip`, `ScoreTrainingFact`,
 `ScoreEveningsList`, `ScoreReadinessStrip`, `ScoreEditDrawer`, `use-act-hub`, `use-score-route`,
 `score-{doors,links,memory,readiness,season}`.
-- **Review follow-ups (open, 12f):** `ScoreHub` is one wide contract handed whole to every score
+- **Review follow-ups (open, 12g):** `ScoreHub` is one wide contract handed whole to every score
   view (the live formation reads `player`, `model` and `studio.spots` through it) — narrow props per
   view; `ScorePanel` branches on `wide` five times and builds the transport before its no-music
   return — split transport and track; `ScoreManualList` could have its own row component; the step
@@ -858,11 +858,60 @@ Dropped the unused `SCREEN_TITLE` and `musicSourceOf`. Stay in the club app: `Ac
 
 ### Phase 12f — Studio screen into the package
 Goal: the studio screen's views and hooks live in the package; queries, mutations and uploads stay in
-the club app behind the save port and direct-action ports.
-- [ ] Move the `act-studio` views and hooks that do not fetch into the package
-- [ ] Deduplicate leftovers found on the way; empty club-app folders removed
+the club app behind the save port and direct-action ports. Split 2026-11-03 (soft cap): the 12e hub
+review follow-ups are phase 12g, the lab removal and docs 12h.
+- [x] Move the `act-studio` views and hooks that do not fetch into the package
+- [x] Deduplicate leftovers found on the way; empty club-app folders removed
 
-### Phase 12g — Lab removal, cleanup, docs
+Built 2026-11-03. **Views and hooks:** `@furria/studio/{ActStudioView,ActMusicView,ActDeskScreen,ActStudio*,StepCard*,use-act-studio-{cast,final,holders,songs,spot-desk,step-tool},use-final-desk,use-move-desk,use-song-desk,use-step-cards,use-step-cards-setup,use-step-card-tools,use-step-desk,use-studio-hints,use-studio-large-text,use-studio-setup,use-studio-uploads,use-video-desk}`
+(`screen/`). The club app's `ActStudioBody` and `ActMusicBody` only build the screen and render
+`ActStudioView` / `ActMusicView` (the music page hands its tool choice in as `onTool`).
+**Contract:** `@furria/studio/studio-screen` declares `StudioScreen` (extends `StudioWorkScreen`) with
+the direct-action ports — `songs.remove`, `final` (`match`/`matching`, `adopt`/`adopting`,
+`remove`, `adopted`, `togglePreview`), `uploads` (`songs`, `videos`, `final`: a
+`StudioUploadPort` — `start(file)` and `add(mediaItemId)`; the rows live in the package hook
+`useStudioUploads` inside the list or setup that shows them, so an upload tick re-renders only
+that part — the desk setup still re-renders the desk), `history` (`VisitHistory`),
+`openMusic` (the music route), `cast` (`SpotPerson`s), editor, frame, large text, hall start and
+steps. The work contract's `removeVideo` became a `videos` port (`align`, `aligning(videoId)`,
+`remove`) that the desk and the video desk share. `useStudioScreen` builds it all from the
+TanStack mutations, `actUploadPortOf` (`startUpload`, was the hook `useActUploads`),
+`useVisitHistory` and `useStudioMusicRoute`; it returns the package type, so the club app's
+`StudioScreen`, `StudioFinal.writes` and `ActUploads` are gone. `VideoAlignmentSchema`, `FinalTrackMatchesSchema` and
+`StudioMusicToolSchema` moved to `@furria/studio/studio-schemas`; `canPractise` to
+`@furria/studio/music-timeline`. The package now depends on `@dnd-kit/react` (song sort, holders).
+Stay in the club app: `use-studio-screen`, `use-studio-document`, `use-studio-final`,
+`act-upload-port`, `use-visit-history`, `use-studio-history-controls`, `use-studio-visit`,
+`use-studio-music-route`, `use-act-music-page`, `use-studio-developing`, `use-video-auto-align`,
+`use-studio-write-failure`, the version history (`ChoreographyVersion*`, `StudioHistorySection`,
+`use-choreography-versions`), `ActMusicPage`, the API, store, save port and evening files.
+- **Behaviour (judge on device):** the visit history is read by every studio screen (also the
+  lesson and large-text views, which ignore it); `final.matching` now also covers the automatic
+  match, so *Abgleichen* shows its busy state and cannot start twice while it runs.
+- **12d follow-ups done:** `countPlaceAt(track, seconds)` takes one `CountTrack`
+  (`countTrackOf`, `CountSheet` extends it; the desk readout no longer numbers eights every frame);
+  `stepNumberOf` replaces the hand-rolled `findIndex + 1` (desk lanes and inspector, step desk,
+  `score-steps`; `use-act-studio-stage` uses the index, not a number); one pure `waveReadoutOf`
+  (`@furria/studio/wave-readout`) for the desk lanes and the studio wave; `eveningBand` left the
+  contract — the evening carries `title`/`startsAt` and the views call `studioBandOf`;
+  `use-desk-target` is `use-sheet-target` (`useSheetTarget`); step cards and their head read
+  `screen.history` instead of a prop; one `videoNumberOf` (`studio-videos`) replaces four
+  hand-rolled video numbers (takes, desk lanes and inspector, video desk). **Kept, with reasons:** `useActDesk` still derives
+  `setupShownOf` itself — the setup's host actions come from the desk, so the desk cannot read
+  `setup.shown` first; the setup row mapping in `use-studio-setup` only picks copy, so a test
+  could only assert text (docs/web/TESTING.md) — left untested. Open (iPad): `ActDeskScreen`
+  re-renders the desk on every setup upload tick and history change. Open (review): one TanStack mutation tracks only its
+  latest call, so while several videos auto-align at once only the last shows *aligning*
+  (unchanged); `useStudioScreen` still takes six positional arguments and its
+  `StudioEveningContext` also carries the start tool and stage editor.
+
+### Phase 12g — Hub score views: review follow-ups
+Goal: the 12e review follow-ups are settled.
+- [ ] Narrow `ScoreHub` to props per view (the live formation reads `player`, `model` and `studio.spots`); split `ScorePanel` into transport and track (no transport built before the no-music return); give `ScoreManualList` its own row component
+- [ ] Step pane: no empty caption for an unnamed video; one *Schritt* landmark instead of two nested (`KkScoreDesk.Pane`, `KkStepPane`)
+- [ ] `use-score-player` drops a lens id whose part lost its range; `scoreGroupsOf` gives the loose group no key `0`; `ScoreModel` arrays all readonly; `use-act-hub` builds readiness, facts, evenings and doors through pure helpers and finds the step once
+
+### Phase 12h — Lab removal, cleanup, docs
 Goal: nothing studio-specific is left behind.
 - [ ] Delete `KkTouchLab` and the `studio-lab` feature once the phase 7 device check is done; grep for leftovers
 - [ ] Update CONTEXT.md if terms changed, plan/club-app/group-year.md, docs/web; full web suite

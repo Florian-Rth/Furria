@@ -435,6 +435,12 @@ const BAND_DAY = new Intl.DateTimeFormat('de-DE', { day: '2-digit', month: '2-di
 export const eveningBandOf = (title: string, startsAt: string): string =>
   `${EVENING_BAND_PREFIX} ${title} ${BAND_DAY.format(new Date(startsAt))} — ${EVENING_BAND_SUFFIX}`;
 
+export const studioBandOf = (
+  evening: { title: string; startsAt: string } | null,
+  editing: boolean,
+): string | null =>
+  evening !== null && editing ? eveningBandOf(evening.title, evening.startsAt) : null;
+
 export const videoNameOf = (name: string | null, number: number): string =>
   name ?? `Video ${number}`;
 

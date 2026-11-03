@@ -41,14 +41,20 @@ export const countIndexAt = (marks: readonly CountMark[], seconds: number): numb
   return found;
 };
 
-export const countPlaceAt = (
-  marks: readonly CountMark[],
-  eights: readonly number[],
-  seconds: number,
-): CountPlace | null => {
-  const index = countIndexAt(marks, seconds);
-  const mark = marks[index];
-  const eight = eights[index];
+export interface CountTrack {
+  marks: readonly CountMark[];
+  eights: readonly number[];
+}
+
+export const countTrackOf = (marks: readonly CountMark[]): CountTrack => ({
+  marks,
+  eights: countEightsOf(marks),
+});
+
+export const countPlaceAt = (track: CountTrack, seconds: number): CountPlace | null => {
+  const index = countIndexAt(track.marks, seconds);
+  const mark = track.marks[index];
+  const eight = track.eights[index];
 
   return mark === undefined || eight === undefined ? null : { eight, count: mark.count };
 };

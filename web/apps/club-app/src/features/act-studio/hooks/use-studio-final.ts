@@ -9,26 +9,22 @@ import {
   pendingFinalTrackOf,
 } from '@furria/studio/studio-final';
 import type { StudioFinalTrack } from '@furria/studio/studio-schemas';
+import type { StudioFinal } from '@furria/studio/studio-screen';
 import { musicKeyOf } from '@furria/studio/studio-videos';
-import type { StudioFinalView } from '@furria/studio/studio-work-screen';
 import type { ActStudioEdits } from '@furria/studio/use-act-studio-edits';
 import type { ActStudioMode } from '@furria/studio/use-act-studio-mode';
 import { useEffect, useEffectEvent, useRef, useState } from 'react';
 import type { ActStudio } from '@/features/acts/schemas';
 import type { FinalTrackMutations } from '../api';
 import { useFinalTrackMutations } from '../api';
+import type { AddedFinalTrack } from '../schemas';
 
 const NO_PLACEMENTS: FinalPlacements = {};
 
-export interface StudioFinal extends StudioFinalView {
-  adopted: StudioFinalTrack | null;
-  writes: FinalTrackMutations;
-  togglePreview: (position: number) => void;
-}
-
-export interface StudioFinalStage {
+interface StudioFinalStage {
   final: StudioFinal;
   studio: ActStudio;
+  add: (mediaItemId: number) => Promise<AddedFinalTrack>;
 }
 
 const isPreviewable = (track: StudioFinalTrack | null, mode: ActStudioMode): boolean =>
@@ -89,7 +85,11 @@ export const useStudioFinal = (
       previewing: shown,
       placements,
       mix,
-      writes,
+      match: writes.match.mutateAsync,
+      matching: writes.match.isPending || writes.autoMatch.isPending,
+      adopt: writes.adopt.mutate,
+      adopting: writes.adopt.isPending,
+      remove: writes.remove.mutate,
       togglePreview: (position) => {
         if (pending === null || !previewable) {
           return;
@@ -101,5 +101,6 @@ export const useStudioFinal = (
         setPreviewing(!shown);
       },
     },
+    add: writes.add.mutateAsync,
   };
 };

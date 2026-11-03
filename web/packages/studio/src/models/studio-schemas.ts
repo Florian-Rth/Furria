@@ -8,6 +8,27 @@ export const AudioPeaksSchema = z.object({
 });
 export type AudioPeaks = z.infer<typeof AudioPeaksSchema>;
 
+export const VideoAlignmentSchema = z.object({
+  startSeconds: z.number(),
+  confidence: z.number(),
+});
+export type VideoAlignment = z.infer<typeof VideoAlignmentSchema>;
+
+export const FinalTrackMatchesSchema = z.object({
+  matches: z.array(
+    z.object({
+      sourceMediaItemId: z.int(),
+      offsetSeconds: z.number(),
+      stretch: z.number().positive(),
+      confidence: z.number(),
+    }),
+  ),
+});
+export type FinalTrackMatches = z.infer<typeof FinalTrackMatchesSchema>;
+
+export const StudioMusicToolSchema = z.enum(['music', 'video']);
+export type StudioMusicTool = z.infer<typeof StudioMusicToolSchema>;
+
 const PlacementSchema = z.enum(['onTimeline', 'cutAway', 'musicMissing']);
 const VideoPlacementSchema = z.enum(['onTimeline', 'cutAway', 'musicMissing', 'unaligned']);
 

@@ -1,4 +1,4 @@
-import { musicSegmentsOf } from '@furria/studio/music-timeline';
+import { canPractise } from '@furria/studio/music-timeline';
 import type { CastPerson } from '@/features/running-order/schemas';
 import type { ActPageSearch, ActStudio, ActViewer, CoEditor } from './schemas';
 
@@ -17,9 +17,6 @@ export const canChangeCoEditors = (
   canGrant: boolean,
   act: { closed: boolean; archived: boolean },
 ): boolean => canGrant && !act.closed && !act.archived;
-
-export const canPractise = (studio: ActStudio | null): boolean =>
-  studio !== null && musicSegmentsOf(studio).some((segment) => segment.audible);
 
 export const seesDetailsOf = (viewer: ActViewer): boolean =>
   viewer.canEditStudio ||

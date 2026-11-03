@@ -1,4 +1,4 @@
-import type { WaveReadout } from '@furria/studio/use-act-studio-wave';
+import type { WaveReadout } from '@furria/studio/wave-readout';
 import { KkDragReadout } from '@furria/ui/KkDragReadout';
 import type { FC } from 'react';
 

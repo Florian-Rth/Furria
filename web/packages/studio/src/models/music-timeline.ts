@@ -195,6 +195,9 @@ const finalTrackCutsOf = (studio: Studio): SegmentCut[] =>
 export const musicSegmentsOf = (studio: Studio): MusicSegment[] =>
   placeCuts(studio.music.source === 'finalTrack' ? finalTrackCutsOf(studio) : songCutsOf(studio));
 
+export const canPractise = (studio: Studio | null): boolean =>
+  studio !== null && musicSegmentsOf(studio).some((segment) => segment.audible);
+
 export const musicLengthOf = (segments: readonly MusicSegment[]): number =>
   segments.at(-1)?.timelineEnd ?? 0;
 

@@ -3,6 +3,7 @@ import {
   countIndexAt,
   countPlaceAt,
   countsBetweenOf,
+  countTrackOf,
 } from '@furria/studio/count-marks';
 import { describe, expect, it } from 'vitest';
 
@@ -39,11 +40,11 @@ describe('countIndexAt', () => {
 
 describe('countPlaceAt', () => {
   it('names the eight and the count', () => {
-    expect(countPlaceAt(marks, countEightsOf(marks), 3.1)).toEqual({ eight: 2, count: 3 });
+    expect(countPlaceAt(countTrackOf(marks), 3.1)).toEqual({ eight: 2, count: 3 });
   });
 
   it('is empty before the first count', () => {
-    expect(countPlaceAt(marks, countEightsOf(marks), 0.2)).toBeNull();
+    expect(countPlaceAt(countTrackOf(marks), 0.2)).toBeNull();
   });
 });
 

@@ -1,23 +1,10 @@
-import { LessonBody } from '@furria/studio/LessonBody';
-import { LessonEmpty } from '@furria/studio/LessonEmpty';
-import { PracticeSteps } from '@furria/studio/PracticeSteps';
-import { STUDIO_LABEL } from '@furria/studio/studio-copy';
-import { useActStudioStage } from '@furria/studio/use-act-studio-stage';
+import { ActStudioView } from '@furria/studio/ActStudioView';
 import type { KkGroupTone } from '@furria/ui/group-tone';
-import { KkPracticeView } from '@furria/ui/KkPracticeView';
-import { KkStudioView } from '@furria/ui/KkStudioView';
-import { KkVisuallyHidden } from '@furria/ui/KkVisuallyHidden';
 import type { FC } from 'react';
-import { canPractise } from '@/features/acts/act-studio';
 import type { ActStudio } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
 import type { StudioEveningContext } from '../hooks/use-studio-screen';
 import { useStudioScreen } from '../hooks/use-studio-screen';
-import { ActDeskScreen } from './ActDeskScreen';
-import { ActStudioHead } from './ActStudioHead';
-import { ActStudioHero } from './ActStudioHero';
-import { ActStudioLargeKeys } from './ActStudioLargeKeys';
-import { StepCardsView } from './StepCardsView';
 
 interface ActStudioBodyProps {
   actId: number;
@@ -41,44 +28,6 @@ export const ActStudioBody: FC<ActStudioBodyProps> = ({
   context,
 }) => {
   const screen = useStudioScreen(actId, studio, viewerId, canEdit, cast, context);
-  const editor = useActStudioStage(screen);
 
-  const heading = <KkVisuallyHidden component="h1">{title}</KkVisuallyHidden>;
-
-  if (screen.editor === 'cards') {
-    return (
-      <>
-        {heading}
-        <StepCardsView screen={screen} editor={editor} />
-      </>
-    );
-  }
-  if (screen.editor === 'desk') {
-    return (
-      <>
-        {heading}
-        <ActDeskScreen screen={screen} editor={editor} />
-      </>
-    );
-  }
-
-  if (!screen.mode.editing && !canPractise(screen.studio)) {
-    return <LessonEmpty title={title} mode={screen.mode} />;
-  }
-  if (!screen.large.on) {
-    return <LessonBody title={title} tone={tone} screen={screen} />;
-  }
-
-  return (
-    <KkStudioView label={STUDIO_LABEL} title={title} editing={false} largeText>
-      <ActStudioHead screen={screen} />
-      <KkPracticeView.Hero>
-        <ActStudioHero screen={screen} />
-      </KkPracticeView.Hero>
-      <KkPracticeView.Controls>
-        <ActStudioLargeKeys screen={screen} />
-      </KkPracticeView.Controls>
-      <PracticeSteps steps={screen.steps} onTraining={screen.startHall} />
-    </KkStudioView>
-  );
+  return <ActStudioView title={title} tone={tone} screen={screen} />;
 };

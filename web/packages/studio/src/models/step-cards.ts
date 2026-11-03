@@ -1,4 +1,5 @@
-import { countEightsOf, countIndexAt, firstIndexFrom } from '@furria/studio/count-marks';
+import type { CountTrack } from '@furria/studio/count-marks';
+import { countIndexAt, countTrackOf, firstIndexFrom } from '@furria/studio/count-marks';
 import type { CountMark } from '@furria/studio/music-timeline';
 
 export interface StepCountCell {
@@ -11,9 +12,7 @@ export interface StepCountCell {
   keyed: boolean;
 }
 
-export interface CountSheet {
-  marks: readonly CountMark[];
-  eights: readonly number[];
+export interface CountSheet extends CountTrack {
   keyed: ReadonlySet<number>;
 }
 
@@ -21,8 +20,7 @@ export const countSheetOf = (
   marks: readonly CountMark[],
   keySeconds: readonly number[],
 ): CountSheet => ({
-  marks,
-  eights: countEightsOf(marks),
+  ...countTrackOf(marks),
   keyed: new Set(
     keySeconds.map((seconds) => countIndexAt(marks, seconds)).filter((index) => index >= 0),
   ),
