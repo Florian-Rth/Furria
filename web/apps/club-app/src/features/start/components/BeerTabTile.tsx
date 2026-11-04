@@ -29,7 +29,7 @@ export const BeerTabTile: FC<BeerTabTileProps> = ({ panel, board, order }) => {
 
   return (
     <KkStartTile label={TILE_LABEL} order={order} attention={tile.attention}>
-      <KkStartTile.Head icon="fees" label={HEAD_LABEL} />
+      <KkStartTile.Head icon="beer" label={HEAD_LABEL} reach={tile.reach} />
       <Stack sx={{ gap: 1, minWidth: 0 }}>{lines}</Stack>
     </KkStartTile>
   );

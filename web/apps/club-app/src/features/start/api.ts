@@ -2,8 +2,9 @@ import type { UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { queryKeys } from '@/lib/query/reads';
+import { beerTabsOfStart } from './beer-tab-tile';
 import { requestStart } from './requests';
-import type { Start } from './schemas';
+import type { Start, StartBeerTab } from './schemas';
 import { isStartOfDay } from './start-refetch';
 
 const START_STALE_MS = 30_000;
@@ -22,4 +23,13 @@ export const useStartQuery = (): UseQueryResult<Start | undefined, Error> =>
     refetchOnMount: 'always',
     refetchOnWindowFocus: true,
     refetchOnReconnect: true,
+  });
+
+export const useStartBeerTabsQuery = (): UseQueryResult<readonly StartBeerTab[], Error> =>
+  useQuery({
+    queryKey: queryKeys.start,
+    queryFn: () => withFreshAccessToken(requestStart),
+    select: beerTabsOfStart,
+    staleTime: START_STALE_MS,
+    gcTime: START_GC_MS,
   });

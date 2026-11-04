@@ -14,7 +14,7 @@ interface KkTabLedgerPersonProps {
   initials: string;
   name: string;
   count: string;
-  day: string;
+  day?: string;
   own?: boolean;
   action?: ReactNode;
 }
@@ -26,55 +26,9 @@ export const KkTabLedgerPerson: FC<KkTabLedgerPersonProps> = ({
   day,
   own = false,
   action = null,
-}) => (
-  <Box
-    component={motion.li}
-    initial={hidden}
-    animate={shown}
-    exit={hidden}
-    transition={fold}
-    data-kk-tab-ledger-person
-    sx={{
-      minWidth: 0,
-      borderTopWidth: kkTokens.line.hair,
-      borderTopStyle: 'solid',
-      borderTopColor: 'divider',
-      '&:first-of-type': { borderTopWidth: 0 },
-    }}
-  >
-    <Stack
-      direction="row"
-      sx={{ alignItems: 'center', gap: 1.25, px: 1.5, py: 0.625, minWidth: 0 }}
-    >
-      <KkAvatar initials={initials} size="small" />
-      <Box
-        component="span"
-        sx={{
-          flex: 1,
-          minWidth: 0,
-          typography: 'body2',
-          fontWeight: own ? 800 : 600,
-          lineHeight: 1.25,
-          color: 'text.primary',
-          overflowWrap: 'anywhere',
-        }}
-      >
-        {name}
-      </Box>
-      <Box
-        component="span"
-        sx={{
-          ...stepFigures,
-          flexShrink: 0,
-          typography: 'body2',
-          fontWeight: 800,
-          lineHeight: 1.25,
-          color: 'text.primary',
-          whiteSpace: 'nowrap',
-        }}
-      >
-        {count}
-      </Box>
+}) => {
+  const dayMark =
+    day === undefined ? null : (
       <Box
         component="span"
         sx={{
@@ -91,7 +45,60 @@ export const KkTabLedgerPerson: FC<KkTabLedgerPersonProps> = ({
       >
         {day}
       </Box>
-      {action}
-    </Stack>
-  </Box>
-);
+    );
+
+  return (
+    <Box
+      component={motion.li}
+      initial={hidden}
+      animate={shown}
+      exit={hidden}
+      transition={fold}
+      data-kk-tab-ledger-person
+      sx={{
+        minWidth: 0,
+        borderTopWidth: kkTokens.line.hair,
+        borderTopStyle: 'solid',
+        borderTopColor: 'divider',
+        '&:first-of-type': { borderTopWidth: 0 },
+      }}
+    >
+      <Stack
+        direction="row"
+        sx={{ alignItems: 'center', gap: 1.25, px: 1.5, py: 0.625, minWidth: 0 }}
+      >
+        <KkAvatar initials={initials} size="small" />
+        <Box
+          component="span"
+          sx={{
+            flex: 1,
+            minWidth: 0,
+            typography: 'body2',
+            fontWeight: own ? 800 : 600,
+            lineHeight: 1.25,
+            color: 'text.primary',
+            overflowWrap: 'anywhere',
+          }}
+        >
+          {name}
+        </Box>
+        <Box
+          component="span"
+          sx={{
+            ...stepFigures,
+            flexShrink: 0,
+            typography: 'body2',
+            fontWeight: 800,
+            lineHeight: 1.25,
+            color: 'text.primary',
+            whiteSpace: 'nowrap',
+          }}
+        >
+          {count}
+        </Box>
+        {dayMark}
+        {action}
+      </Stack>
+    </Box>
+  );
+};

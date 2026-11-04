@@ -29,6 +29,7 @@ export const NEWS_PATH = '/news';
 export const CLUB_NEWS_PATH = '/club/news';
 export const ACTS_PATH = '/acts';
 export const SYSTEM_PATH = '/system';
+export const BEER_LIST_PATH = '/beer-list';
 
 export const START_SECTION = 'start';
 export const CLUB_SECTION = 'club';

@@ -5,6 +5,11 @@ import { staleReadsAfter } from './reads';
 describe('staleReadsAfter', () => {
   it.each<{ label: string; change: DomainChange; stale: ReadName[] }>([
     {
+      label: 'a crate is booked or undone',
+      change: 'beerCrate',
+      stale: ['start', 'beerTab', 'beerGivers'],
+    },
+    {
       label: 'a group membership opens or ends',
       change: 'groupMembership',
       stale: ['members', 'member', 'me', 'person', 'groupHub', 'myGroups', 'groups'],

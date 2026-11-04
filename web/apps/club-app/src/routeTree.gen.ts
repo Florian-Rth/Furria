@@ -28,6 +28,7 @@ import { Route as AppGalleryRouteImport } from './routes/_app/gallery'
 import { Route as AppEventsRouteImport } from './routes/_app/events'
 import { Route as AppClubRouteImport } from './routes/_app/club'
 import { Route as AppCalendarRouteImport } from './routes/_app/calendar'
+import { Route as AppBeerListRouteImport } from './routes/_app/beer-list'
 import { Route as AppAnnouncementsRouteImport } from './routes/_app/announcements'
 import { Route as AppActsRouteImport } from './routes/_app/acts'
 import { Route as AppPersonalRouteImport } from './routes/_app/_personal'
@@ -229,6 +230,11 @@ const AppClubRoute = AppClubRouteImport.update({
 const AppCalendarRoute = AppCalendarRouteImport.update({
   id: '/calendar',
   path: '/calendar',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppBeerListRoute = AppBeerListRouteImport.update({
+  id: '/beer-list',
+  path: '/beer-list',
   getParentRoute: () => AppRoute,
 } as any)
 const AppAnnouncementsRoute = AppAnnouncementsRouteImport.update({
@@ -827,6 +833,7 @@ export interface FileRoutesByFullPath {
   '/$': typeof AppSplatRoute
   '/acts': typeof AppActsRoute
   '/announcements': typeof AppAnnouncementsRoute
+  '/beer-list': typeof AppBeerListRoute
   '/calendar': typeof AppCalendarRoute
   '/club': typeof AppClubRoute
   '/events': typeof AppEventsRoute
@@ -953,6 +960,7 @@ export interface FileRoutesByTo {
   '/': typeof AppIndexRoute
   '/acts': typeof AppActsRoute
   '/announcements': typeof AppAnnouncementsRoute
+  '/beer-list': typeof AppBeerListRoute
   '/calendar': typeof AppCalendarRoute
   '/club': typeof AppClubRoute
   '/events': typeof AppEventsRoute
@@ -1082,6 +1090,7 @@ export interface FileRoutesById {
   '/_app/_personal': typeof AppPersonalRouteWithChildren
   '/_app/acts': typeof AppActsRoute
   '/_app/announcements': typeof AppAnnouncementsRoute
+  '/_app/beer-list': typeof AppBeerListRoute
   '/_app/calendar': typeof AppCalendarRoute
   '/_app/club': typeof AppClubRoute
   '/_app/events': typeof AppEventsRoute
@@ -1211,6 +1220,7 @@ export interface FileRouteTypes {
     | '/$'
     | '/acts'
     | '/announcements'
+    | '/beer-list'
     | '/calendar'
     | '/club'
     | '/events'
@@ -1337,6 +1347,7 @@ export interface FileRouteTypes {
     | '/'
     | '/acts'
     | '/announcements'
+    | '/beer-list'
     | '/calendar'
     | '/club'
     | '/events'
@@ -1465,6 +1476,7 @@ export interface FileRouteTypes {
     | '/_app/_personal'
     | '/_app/acts'
     | '/_app/announcements'
+    | '/_app/beer-list'
     | '/_app/calendar'
     | '/_app/club'
     | '/_app/events'
@@ -1726,6 +1738,13 @@ declare module '@tanstack/react-router' {
       path: '/calendar'
       fullPath: '/calendar'
       preLoaderRoute: typeof AppCalendarRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/beer-list': {
+      id: '/_app/beer-list'
+      path: '/beer-list'
+      fullPath: '/beer-list'
+      preLoaderRoute: typeof AppBeerListRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/announcements': {
@@ -2532,6 +2551,7 @@ interface AppRouteChildren {
   AppPersonalRoute: typeof AppPersonalRouteWithChildren
   AppActsRoute: typeof AppActsRoute
   AppAnnouncementsRoute: typeof AppAnnouncementsRoute
+  AppBeerListRoute: typeof AppBeerListRoute
   AppCalendarRoute: typeof AppCalendarRoute
   AppClubRoute: typeof AppClubRoute
   AppEventsRoute: typeof AppEventsRoute
@@ -2643,6 +2663,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppPersonalRoute: AppPersonalRouteWithChildren,
   AppActsRoute: AppActsRoute,
   AppAnnouncementsRoute: AppAnnouncementsRoute,
+  AppBeerListRoute: AppBeerListRoute,
   AppCalendarRoute: AppCalendarRoute,
   AppClubRoute: AppClubRoute,
   AppEventsRoute: AppEventsRoute,

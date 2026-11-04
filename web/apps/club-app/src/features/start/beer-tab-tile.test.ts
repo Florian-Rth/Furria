@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { beerTabLineOf, isBeerTabDue } from './beer-tab-tile';
-import type { StartBeerTab } from './schemas';
+import { beerTabLineOf, beerTabsOfStart, isBeerTabDue } from './beer-tab-tile';
+import type { Start, StartBeerTab } from './schemas';
 
 const NOW = new Date('2026-11-04T12:00:00Z');
 
@@ -41,5 +41,35 @@ describe('beerTabLineOf', () => {
     });
 
     expect(line.payHref).toBe(expected);
+  });
+});
+
+describe('beerTabsOfStart', () => {
+  const tab: StartBeerTab = {
+    beerPotId: 2,
+    openCrates: 1,
+    openCents: 1800,
+    oldestOpenBookedAt: '2026-11-01T10:00:00Z',
+    owner: null,
+    paymentLink: null,
+    paymentNote: null,
+  };
+  const startWith = (panels: Start['panels']): Start => ({
+    asOf: '2026-11-04T12:00:00Z',
+    today: '2026-11-04',
+    reshapeAt: null,
+    viewerIsActiveInClub: true,
+    panels,
+  });
+
+  it.each<{ label: string; start: Start; expected: StartBeerTab[] }>([
+    {
+      label: 'the open tabs of the tab panel',
+      start: startWith([{ kind: 'beerTab', shownCount: 1, beerTabs: [tab] }]),
+      expected: [tab],
+    },
+    { label: 'none without a tab panel', start: startWith([]), expected: [] },
+  ])('$label', ({ start, expected }) => {
+    expect(beerTabsOfStart(start)).toEqual(expected);
   });
 });
