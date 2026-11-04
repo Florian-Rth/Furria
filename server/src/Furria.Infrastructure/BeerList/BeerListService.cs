@@ -19,6 +19,8 @@ public sealed class BeerListService
     private const string UnknownEnrollmentMessage =
         "Diese Teilnahme an der Bierliste gibt es nicht.";
     private const string EndedEnrollmentMessage = "Diese Teilnahme ist schon beendet.";
+    private const string ClosedPotMessage =
+        "Diese Bierliste ist übergeben und lässt sich nicht mehr einstellen.";
 
     private readonly AppDbContext _dbContext;
     private readonly TimeProvider _timeProvider;
@@ -62,6 +64,9 @@ public sealed class BeerListService
         if (pot is null)
             return Result.NotFound(UnknownPotMessage);
 
+        if (pot.ClosedAt is not null)
+            return Result.Conflict(ClosedPotMessage);
+
         Apply(settings, pot);
         await _dbContext.SaveChangesAsync(ct);
 
@@ -70,7 +75,7 @@ public sealed class BeerListService
 
     public async Task<Result> EnrollAsync(int personId, CancellationToken ct)
     {
-        if (await RunningEnrollmentOfAsync(personId, ct) is not null)
+        if (await IsEnrolledAsync(personId, ct))
             return Result.Conflict(WriteConflictMessages.RunningBeerListEnrollment);
 
         _dbContext.BeerListEnrollments.Add(
@@ -82,14 +87,13 @@ public sealed class BeerListService
 
     public async Task<Result> EndOwnEnrollmentAsync(int personId, CancellationToken ct)
     {
-        var enrollment = await RunningEnrollmentOfAsync(personId, ct);
-        if (enrollment is null)
-            return Result.Conflict(NotEnrolledMessage);
+        var ended = await EndRunningAsync(
+            _dbContext.BeerListEnrollments.Where(row => row.PersonId == personId),
+            personId,
+            ct
+        );
 
-        End(enrollment, personId);
-        await _dbContext.SaveChangesAsync(ct);
-
-        return Result.Success();
+        return ended ? Result.Success() : Result.Conflict(NotEnrolledMessage);
     }
 
     public async Task<Result> EndEnrollmentAsync(
@@ -98,21 +102,13 @@ public sealed class BeerListService
         CancellationToken ct
     )
     {
-        var enrollment = await _dbContext.BeerListEnrollments.SingleOrDefaultAsync(
-            row => row.Id == enrollmentId,
-            ct
-        );
+        var enrollment = _dbContext.BeerListEnrollments.Where(row => row.Id == enrollmentId);
+        if (await EndRunningAsync(enrollment, endedByPersonId, ct))
+            return Result.Success();
 
-        if (enrollment is null)
-            return Result.NotFound(UnknownEnrollmentMessage);
-
-        if (enrollment.EndedAt is not null)
-            return Result.Conflict(EndedEnrollmentMessage);
-
-        End(enrollment, endedByPersonId);
-        await _dbContext.SaveChangesAsync(ct);
-
-        return Result.Success();
+        return await enrollment.AnyAsync(ct)
+            ? Result.Conflict(EndedEnrollmentMessage)
+            : Result.NotFound(UnknownEnrollmentMessage);
     }
 
     public async Task<IReadOnlyList<BeerListEnrollmentSummary>> GetEnrollmentsAsync(
@@ -156,20 +152,30 @@ public sealed class BeerListService
         pot.PaymentNote = settings.PaymentNote;
     }
 
-    private void End(BeerListEnrollment enrollment, int? endedByPersonId)
+    private async Task<bool> EndRunningAsync(
+        IQueryable<BeerListEnrollment> enrollments,
+        int? endedByPersonId,
+        CancellationToken ct
+    )
     {
-        enrollment.EndedAt = _timeProvider.GetUtcNow();
-        enrollment.EndedByPersonId = endedByPersonId;
+        var now = _timeProvider.GetUtcNow();
+        var ended = await enrollments
+            .Where(row => row.EndedAt == null)
+            .ExecuteUpdateAsync(
+                row =>
+                    row.SetProperty(enrollment => enrollment.EndedAt, now)
+                        .SetProperty(enrollment => enrollment.EndedByPersonId, endedByPersonId)
+                        .SetProperty(enrollment => enrollment.UpdatedAt, now),
+                ct
+            );
+
+        return ended > 0;
     }
 
-    private Task<BeerListEnrollment?> RunningEnrollmentOfAsync(
-        int personId,
-        CancellationToken ct
-    ) =>
-        _dbContext.BeerListEnrollments.SingleOrDefaultAsync(
-            row => row.PersonId == personId && row.EndedAt == null,
-            ct
-        );
+    private Task<bool> IsEnrolledAsync(int personId, CancellationToken ct) =>
+        _dbContext
+            .BeerListEnrollments.AsNoTracking()
+            .AnyAsync(row => row.PersonId == personId && row.EndedAt == null, ct);
 
     private Task<bool> PersonExistsAsync(int personId, CancellationToken ct) =>
         _dbContext.People.AsNoTracking().AnyAsync(person => person.Id == personId, ct);

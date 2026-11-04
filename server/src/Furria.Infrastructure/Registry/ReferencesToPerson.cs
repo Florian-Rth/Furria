@@ -34,12 +34,16 @@ public static class ReferencesToPerson
         HerOwn<FrozenCastMember>(nameof(FrozenCastMember.PersonId)),
         HerOwn<AppearanceCastChange>(nameof(AppearanceCastChange.PersonId)),
         HerOwn<ActCoEditor>(nameof(ActCoEditor.PersonId)),
-        HerOwn<BeerPot>(nameof(BeerPot.OwnerPersonId)),
         HerOwn<BeerListEnrollment>(nameof(BeerListEnrollment.PersonId)),
         Reference<Spot>(nameof(Spot.PersonId), OnAbsorption.BlocksIt, OnErasure.KeptNamingNobody),
         HerOwn<AppearanceSpot>(nameof(AppearanceSpot.PersonId)),
         Reference<Announcement>(
             nameof(Announcement.AuthorPersonId),
+            OnAbsorption.BlocksIt,
+            OnErasure.KeptNamingNobody
+        ),
+        Reference<BeerPot>(
+            nameof(BeerPot.OwnerPersonId),
             OnAbsorption.BlocksIt,
             OnErasure.KeptNamingNobody
         ),

@@ -81,6 +81,46 @@ public sealed class PutBeerPotTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_ReturnConflict_When_ThePotHasBeenHandedOver()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = _fixture.TimeProvider.GetUtcNow();
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                WithWarden(builder)
+                    .BeerList(beerList =>
+                        beerList.AddBeerPot(
+                            "alter-topf",
+                            "greta",
+                            openedAt: now.AddDays(-200),
+                            closedAt: now.AddDays(-2)
+                        )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("greta", ct);
+        var response = await client.PUTAsync<PutBeerPot, PutBeerPotRequest>(
+            new()
+            {
+                BeerPotId = ctx.BeerList.Pots.IdOf("alter-topf"),
+                CratePriceCents = RaisedCratePrice,
+                PaymentNote = PaymentNote,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        await ctx
+            .Expected.BeerPot(ctx.BeerList.Pots.IdOf("alter-topf"))
+            .ToHaveSettings(
+                BeerListSeedBuilder.DefaultCratePriceCents,
+                BeerListSeedBuilder.DefaultPaymentLink,
+                null
+            )
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ReturnNotFound_When_ThePotIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;

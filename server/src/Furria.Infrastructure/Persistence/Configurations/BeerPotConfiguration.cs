@@ -18,7 +18,7 @@ public sealed class BeerPotConfiguration : IEntityTypeConfiguration<BeerPot>
                 );
                 table.HasCheckConstraint(
                     "ck_beer_pot_payment_details",
-                    "payment_link IS NOT NULL OR payment_note IS NOT NULL"
+                    "btrim(coalesce(payment_link, '')) <> '' OR btrim(coalesce(payment_note, '')) <> ''"
                 );
                 table.HasCheckConstraint(
                     "ck_beer_pot_period",
@@ -36,7 +36,7 @@ public sealed class BeerPotConfiguration : IEntityTypeConfiguration<BeerPot>
             .WithMany()
             .HasForeignKey(pot => pot.OwnerPersonId)
             .HasConstraintName("fk_beer_pot_person_owner_person_id")
-            .OnDelete(DeleteBehavior.Cascade);
+            .OnDelete(DeleteBehavior.SetNull);
 
         builder.HasIndex(pot => pot.OwnerPersonId);
         builder

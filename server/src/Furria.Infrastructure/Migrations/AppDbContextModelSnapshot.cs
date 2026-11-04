@@ -108,7 +108,7 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("opened_at");
 
-                    b.Property<int>("OwnerPersonId")
+                    b.Property<int?>("OwnerPersonId")
                         .HasColumnType("integer")
                         .HasColumnName("owner_person_id");
 
@@ -145,7 +145,7 @@ namespace Furria.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("ck_beer_pot_crate_price", "crate_price_cents > 0 AND crate_price_cents <= 10000");
 
-                            t.HasCheckConstraint("ck_beer_pot_payment_details", "payment_link IS NOT NULL OR payment_note IS NOT NULL");
+                            t.HasCheckConstraint("ck_beer_pot_payment_details", "btrim(coalesce(payment_link, '')) <> '' OR btrim(coalesce(payment_note, '')) <> ''");
 
                             t.HasCheckConstraint("ck_beer_pot_period", "closed_at IS NULL OR closed_at >= opened_at");
                         });
@@ -4345,8 +4345,7 @@ namespace Furria.Infrastructure.Migrations
                     b.HasOne("Furria.Core.Identity.Person", "Owner")
                         .WithMany()
                         .HasForeignKey("OwnerPersonId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired()
+                        .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_beer_pot_person_owner_person_id");
 
                     b.Navigation("Owner");

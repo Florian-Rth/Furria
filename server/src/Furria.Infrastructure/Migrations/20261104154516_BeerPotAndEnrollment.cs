@@ -81,7 +81,7 @@ namespace Furria.Infrastructure.Migrations
                             "Npgsql:ValueGenerationStrategy",
                             NpgsqlValueGenerationStrategy.IdentityByDefaultColumn
                         ),
-                    owner_person_id = table.Column<int>(type: "integer", nullable: false),
+                    owner_person_id = table.Column<int>(type: "integer", nullable: true),
                     crate_price_cents = table.Column<int>(type: "integer", nullable: false),
                     payment_link = table.Column<string>(
                         type: "character varying(200)",
@@ -121,7 +121,7 @@ namespace Furria.Infrastructure.Migrations
                     );
                     table.CheckConstraint(
                         "ck_beer_pot_payment_details",
-                        "payment_link IS NOT NULL OR payment_note IS NOT NULL"
+                        "btrim(coalesce(payment_link, '')) <> '' OR btrim(coalesce(payment_note, '')) <> ''"
                     );
                     table.CheckConstraint(
                         "ck_beer_pot_period",
@@ -132,7 +132,7 @@ namespace Furria.Infrastructure.Migrations
                         column: x => x.owner_person_id,
                         principalTable: "person",
                         principalColumn: "id",
-                        onDelete: ReferentialAction.Cascade
+                        onDelete: ReferentialAction.SetNull
                     );
                 }
             );

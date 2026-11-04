@@ -7,11 +7,11 @@ public sealed class BeerPot : ITimestamped
 {
     public const int PaymentLinkLength = 200;
     public const int PaymentNoteLength = 500;
-    public const int MaxCratePriceCents = 100_00;
+    public const int MaxCratePriceCents = 10_000;
 
     public int Id { get; set; }
 
-    public int OwnerPersonId { get; set; }
+    public int? OwnerPersonId { get; set; }
 
     public int CratePriceCents { get; set; }
 

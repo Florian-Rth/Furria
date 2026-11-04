@@ -97,16 +97,13 @@ public sealed class PermissionAuthorizer
 
         var keySet = keys.ToHashSet(StringComparer.Ordinal);
 
-        var isMember = await _dbContext
-            .People.AsNoTracking()
-            .Where(person => person.Id == personId)
-            .AnyAsync(
-                person => person.Memberships.AsQueryable().Any(Running.Memberships(today)),
-                ct
-            );
+        var ties = await RelationshipTiesAsync(personId, today, ct);
 
-        if (isMember)
+        if (ties.IsMember)
             keySet.Add(FurriaPermissions.ClubRead);
+
+        if (ties.IsEnrolledInBeerList)
+            keySet.Add(FurriaPermissions.BeerListTake);
 
         var impliedKeys = await _dbContext
             .BoardSeats.AsNoTracking()
@@ -119,9 +116,6 @@ public sealed class PermissionAuthorizer
             .ToListAsync(ct);
 
         keySet.UnionWith(impliedKeys);
-
-        if (await IsEnrolledInBeerListAsync(personId, today, ct))
-            keySet.Add(FurriaPermissions.BeerListTake);
 
         return _grantedKeys = keySet;
     }
@@ -225,16 +219,26 @@ public sealed class PermissionAuthorizer
         _boundAccountId = accountId;
     }
 
-    private Task<bool> IsEnrolledInBeerListAsync(
+    private async Task<RelationshipTies> RelationshipTiesAsync(
         int personId,
         DateOnly today,
         CancellationToken ct
-    ) =>
-        _dbContext
-            .BeerListEnrollments.AsNoTracking()
-            .Where(enrollment => enrollment.PersonId == personId && enrollment.EndedAt == null)
-            .Select(enrollment => enrollment.Person!)
-            .AnyAsync(AffiliationQuery.IsAffiliatedOn(today), ct);
+    )
+    {
+        var affiliated = _dbContext.People.Where(AffiliationQuery.IsAffiliatedOn(today));
+
+        return await _dbContext
+                .People.AsNoTracking()
+                .Where(person => person.Id == personId)
+                .Select(person => new RelationshipTies(
+                    person.Memberships.AsQueryable().Any(Running.Memberships(today)),
+                    _dbContext.BeerListEnrollments.Any(enrollment =>
+                        enrollment.PersonId == personId && enrollment.EndedAt == null
+                    ) && affiliated.Any(affiliatedPerson => affiliatedPerson.Id == personId)
+                ))
+                .SingleOrDefaultAsync(ct)
+            ?? RelationshipTies.None;
+    }
 
     private async Task<bool> AdministersAnyGroupAsync(int accountId, CancellationToken ct) =>
         (await AdministeredGroupIdsAsync(accountId, ct)).Count > 0;
@@ -284,6 +288,11 @@ public sealed class PermissionAuthorizer
             ?? AccountIdentity.Unknown;
 
     private readonly record struct GroupTies(bool IsAdmin, bool IsMember);
+
+    private sealed record RelationshipTies(bool IsMember, bool IsEnrolledInBeerList)
+    {
+        public static readonly RelationshipTies None = new(false, false);
+    }
 
     private sealed record AccountIdentity(bool IsActive, int? PersonId, bool IsManagingLogin)
     {

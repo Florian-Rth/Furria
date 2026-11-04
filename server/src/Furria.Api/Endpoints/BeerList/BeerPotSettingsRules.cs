@@ -1,3 +1,4 @@
+using System.Diagnostics.CodeAnalysis;
 using System.Diagnostics.Contracts;
 using FluentValidation;
 using Furria.Application.BeerList;
@@ -14,6 +15,9 @@ internal static class BeerPotSettingsRules
     private const string CratePriceMessage = "Der Kistenpreis liegt zwischen 0,01 € und 100 €.";
     private const string PaymentLinkMessage =
         "Der PayPal-Link sieht aus wie https://paypal.me/deinname.";
+    private const string PaymentLinkTooLongMessage = "Der PayPal-Link ist zu lang.";
+    private const string PaymentNoteTooLongMessage =
+        "Der Zahlungshinweis hat höchstens 500 Zeichen.";
 
     internal static IRuleBuilderOptions<T, int> CratePrice<T>(this IRuleBuilder<T, int> rule) =>
         rule.InclusiveBetween(1, BeerPot.MaxCratePriceCents).WithMessage(CratePriceMessage);
@@ -21,13 +25,16 @@ internal static class BeerPotSettingsRules
     internal static IRuleBuilderOptions<T, string?> PaymentLink<T>(
         this IRuleBuilder<T, string?> rule
     ) =>
-        rule.Must(link => Blank(link) || PayPalLink.IsValid(link!.Trim()))
+        rule.Must(link => Blank(link) || PayPalLink.IsValid(link.Trim()))
             .WithMessage(PaymentLinkMessage)
-            .Must(link => Blank(link) || link!.Trim().Length <= BeerPot.PaymentLinkLength);
+            .Must(link => Blank(link) || link.Trim().Length <= BeerPot.PaymentLinkLength)
+            .WithMessage(PaymentLinkTooLongMessage);
 
     internal static IRuleBuilderOptions<T, string?> PaymentNote<T>(
         this IRuleBuilder<T, string?> rule
-    ) => rule.Must(note => Blank(note) || note!.Trim().Length <= BeerPot.PaymentNoteLength);
+    ) =>
+        rule.Must(note => Blank(note) || note.Trim().Length <= BeerPot.PaymentNoteLength)
+            .WithMessage(PaymentNoteTooLongMessage);
 
     [Pure]
     internal static bool NamesPaymentDetails(string? paymentLink, string? paymentNote) =>
@@ -47,8 +54,9 @@ internal static class BeerPotSettingsRules
         };
 
     [Pure]
-    private static bool Blank(string? value) => string.IsNullOrWhiteSpace(value);
+    private static bool Blank([NotNullWhen(false)] string? value) =>
+        string.IsNullOrWhiteSpace(value);
 
     [Pure]
-    private static string? Trimmed(string? value) => Blank(value) ? null : value!.Trim();
+    private static string? Trimmed(string? value) => Blank(value) ? null : value.Trim();
 }
