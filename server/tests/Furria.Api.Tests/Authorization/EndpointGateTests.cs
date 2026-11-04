@@ -90,6 +90,7 @@ public sealed class EndpointGateTests : IClassFixture<ApiTestFixture>
         "/api/push/key",
         "/api/push/subscription",
         "/api/push/subscription/remove",
+        "/api/beer-list/tab",
     ];
 
     private static readonly string[] InHandlerGatedProbes =

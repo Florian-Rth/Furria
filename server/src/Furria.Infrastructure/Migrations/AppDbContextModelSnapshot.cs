@@ -22,6 +22,75 @@ namespace Furria.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Furria.Core.BeerList.BeerCrate", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BeerPotId")
+                        .HasColumnType("integer")
+                        .HasColumnName("beer_pot_id");
+
+                    b.Property<DateTimeOffset>("BookedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("booked_at");
+
+                    b.Property<int?>("EnteredByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("entered_by_person_id");
+
+                    b.Property<int?>("PaidByPaymentId")
+                        .HasColumnType("integer")
+                        .HasColumnName("paid_by_payment_id");
+
+                    b.Property<int?>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<int>("PriceCents")
+                        .HasColumnType("integer")
+                        .HasColumnName("price_cents");
+
+                    b.Property<DateTimeOffset?>("UndoneAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("undone_at");
+
+                    b.Property<int?>("UndoneByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("undone_by_person_id");
+
+                    b.HasKey("Id")
+                        .HasName("pk_beer_crate");
+
+                    b.HasIndex("EnteredByPersonId")
+                        .HasDatabaseName("ix_beer_crate_entered_by_person_id");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_beer_crate_person_id");
+
+                    b.HasIndex("UndoneByPersonId")
+                        .HasDatabaseName("ix_beer_crate_undone_by_person_id");
+
+                    b.HasIndex(new[] { "BeerPotId", "PersonId" }, "ix_beer_crate_beer_pot_id_person_id_taken")
+                        .HasDatabaseName("ix_beer_crate_beer_pot_id_person_id_taken")
+                        .HasFilter("undone_at IS NULL");
+
+                    b.HasIndex(new[] { "BookedAt" }, "ix_beer_crate_booked_at_taken")
+                        .HasDatabaseName("ix_beer_crate_booked_at_taken")
+                        .HasFilter("undone_at IS NULL");
+
+                    b.ToTable("beer_crate", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_beer_crate_price", "price_cents > 0 AND price_cents <= 10000");
+
+                            t.HasCheckConstraint("ck_beer_crate_undone", "(undone_at IS NULL AND undone_by_person_id IS NULL) OR (undone_at >= booked_at AND paid_by_payment_id IS NULL)");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.BeerList.BeerListEnrollment", b =>
                 {
                     b.Property<int>("Id")
@@ -4433,6 +4502,42 @@ namespace Furria.Infrastructure.Migrations
                         .HasName("pk_account_token");
 
                     b.ToTable("account_token", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.BeerList.BeerCrate", b =>
+                {
+                    b.HasOne("Furria.Core.BeerList.BeerPot", "Pot")
+                        .WithMany()
+                        .HasForeignKey("BeerPotId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_beer_crate_beer_pot_beer_pot_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "EnteredBy")
+                        .WithMany()
+                        .HasForeignKey("EnteredByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_beer_crate_person_entered_by_person_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_beer_crate_person_person_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "UndoneBy")
+                        .WithMany()
+                        .HasForeignKey("UndoneByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_beer_crate_person_undone_by_person_id");
+
+                    b.Navigation("EnteredBy");
+
+                    b.Navigation("Person");
+
+                    b.Navigation("Pot");
+
+                    b.Navigation("UndoneBy");
                 });
 
             modelBuilder.Entity("Furria.Core.BeerList.BeerListEnrollment", b =>

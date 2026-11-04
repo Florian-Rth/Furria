@@ -10,12 +10,15 @@ public sealed class BeerListSeedBuilder
     private readonly List<BeerPotIntent> _pots = [];
     private readonly List<BeerListEnrollmentIntent> _enrollments = [];
     private readonly List<BeerStockMovementIntent> _stockMovements = [];
+    private readonly List<BeerCrateIntent> _crates = [];
 
     internal IReadOnlyList<BeerPotIntent> Pots => _pots;
 
     internal IReadOnlyList<BeerListEnrollmentIntent> Enrollments => _enrollments;
 
     internal IReadOnlyList<BeerStockMovementIntent> StockMovements => _stockMovements;
+
+    internal IReadOnlyList<BeerCrateIntent> Crates => _crates;
 
     public BeerListSeedBuilder AddBeerPot(
         string alias,
@@ -96,6 +99,48 @@ public sealed class BeerListSeedBuilder
         return this;
     }
 
+    public BeerListSeedBuilder AddBeerCrate(
+        string alias,
+        string potAlias,
+        string personAlias,
+        DateTimeOffset? bookedAt = null,
+        string? enteredByAlias = null,
+        int? priceCents = null,
+        DateTimeOffset? undoneAt = null
+    )
+    {
+        _crates.Add(
+            new BeerCrateIntent(
+                alias,
+                potAlias,
+                personAlias,
+                bookedAt,
+                enteredByAlias,
+                priceCents,
+                undoneAt
+            )
+        );
+        return this;
+    }
+
+    public BeerListSeedBuilder AddBeerCrates(
+        string potAlias,
+        string personAlias,
+        int count,
+        DateTimeOffset? bookedAt = null
+    )
+    {
+        for (var index = 0; index < count; index++)
+            AddBeerCrate(
+                $"{potAlias}-{personAlias}-{_crates.Count}",
+                potAlias,
+                personAlias,
+                bookedAt
+            );
+
+        return this;
+    }
+
     internal sealed record BeerPotIntent(
         string Alias,
         string OwnerAlias,
@@ -121,5 +166,15 @@ public sealed class BeerListSeedBuilder
         BeerStockCorrectionReason? Reason,
         DateTimeOffset? BookedAt,
         string? BookedByAlias
+    );
+
+    internal sealed record BeerCrateIntent(
+        string Alias,
+        string PotAlias,
+        string PersonAlias,
+        DateTimeOffset? BookedAt,
+        string? EnteredByAlias,
+        int? PriceCents,
+        DateTimeOffset? UndoneAt
     );
 }

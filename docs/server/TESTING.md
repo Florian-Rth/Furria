@@ -512,18 +512,26 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    the purge once, `BeatAsMediaWorkerAsync` writes the fixture worker's heartbeat
    (`Expected.MediaWorkerHeartbeats().ToHaveCount`), `SurveyMediaStorageAsync` surveys the media
    root. `SystemVerdictTests` pin the verdict rules as pure tests.
-20. **The beer list (RFC 0004 phases 2–3)** — `builder.BeerList(…)` takes `AddBeerPot(alias,
+20. **The beer list (RFC 0004 phases 2–4)** — `builder.BeerList(…)` takes `AddBeerPot(alias,
    ownerAlias, cratePriceCents, paymentLink, paymentNote, openedAt, closedAt)` (defaults: 15,00 €,
    `BeerListSeedBuilder.DefaultPaymentLink`, opened 30 days ago, open) and
    `AddBeerListEnrollment(alias, personAlias, startedAt, endedAt, endedByAlias)` (running, started
    30 days ago), `AddBeerDelivery(potAlias, crates, bookedAt, bookedByAlias)` and
    `AddBeerStockCorrection(potAlias, crates, reason, bookedAt, bookedByAlias)` (booked 10 days
-   ago, by nobody); it materializes after the news layer. Aliases resolve through
-   `ctx.BeerList.{Pots, Enrollments}`. `Expected.BeerPot(id)` (`ToBeOwnedBy`, `ToHaveSettings`,
+   ago, by nobody), `AddBeerCrate(alias, potAlias, personAlias, bookedAt, enteredByAlias,
+   priceCents, undoneAt)` (booked 10 days ago, entered by the holder herself, at the pot's price)
+   and `AddBeerCrates(potAlias, personAlias, count, bookedAt)` for unnamed ones; it materializes
+   after the news layer. Aliases resolve through
+   `ctx.BeerList.{Pots, Enrollments, Crates}`. `Expected.BeerPot(id)` (`ToBeOwnedBy`, `ToHaveSettings`,
    `ToBeOpenedAt`), `Expected.BeerPots()` (`ToHaveCount`), `Expected.BeerListEnrollment(id)`
    (`ToBeEnded(endedAt, endedByPersonId)`) and
    `Expected.BeerListEnrollmentsOfPerson(personId)` (`ToHaveCount`, `ToHaveRunningSince`) and
-   `Expected.BeerStockOfPot(potId)` (`ToHaveMovementCount`, `ToEndWith`) read the result. `beer_list.take` is proven through `BeerListTakeProbe` in
+   `Expected.BeerStockOfPot(potId)` (`ToHaveMovementCount`, `ToEndWith`, `ToStandAt` — movements
+   minus taken crates), `Expected.BeerTabOf(personId)` (`ToHaveTakenCrates`, `ToEndWithCratesOf`)
+   and `Expected.BeerCrate(id)` (`ToBeTaken`, `ToBeUndone`) read the result. The beer-list tests
+   share their cast through `BeerListCast.WardenAndDrinker` (Greta holds `beer_list.manage`, Mira
+   is a member). The never-below-zero race is proven deterministically in `PostMyBeerCratesTests`:
+   the test holds the pot row `FOR UPDATE`, polls `pg_locks` until both bookings wait, then lets go. `beer_list.take` is proven through `BeerListTakeProbe` in
    `PermissionAuthorizerTests`.
 
 ### Traps worth knowing

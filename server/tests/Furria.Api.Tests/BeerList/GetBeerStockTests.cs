@@ -114,4 +114,59 @@ public sealed class GetBeerStockTests : IClassFixture<ApiTestFixture>
         Assert.Equal(0, result.Forecast.CratesTakenInPaceWindow);
         Assert.Null(result.Forecast.ProjectedEmptyOn);
     }
+
+    [Fact]
+    public async Task Should_SubtractTakenCratesAndForecastFromThePaceAcrossPots_When_CratesWereBooked()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = _fixture.TimeProvider.GetUtcNow();
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                BeerListCast
+                    .WardenAndDrinker(builder)
+                    .BeerList(beerList =>
+                        beerList
+                            .AddBeerPot(
+                                "alter-topf",
+                                BeerListCast.Warden,
+                                openedAt: now.AddDays(-90),
+                                closedAt: now.AddDays(-15)
+                            )
+                            .AddBeerPot(
+                                BeerListCast.Pot,
+                                BeerListCast.Warden,
+                                openedAt: now.AddDays(-15)
+                            )
+                            .AddBeerDelivery("alter-topf", 20, now.AddDays(-60))
+                            .AddBeerCrates("alter-topf", BeerListCast.Drinker, 1, now.AddDays(-30))
+                            .AddBeerCrates("alter-topf", BeerListCast.Drinker, 6, now.AddDays(-18))
+                            .AddBeerDelivery(BeerListCast.Pot, 40, now.AddDays(-14))
+                            .AddBeerCrates(
+                                BeerListCast.Pot,
+                                BeerListCast.Drinker,
+                                6,
+                                now.AddDays(-5)
+                            )
+                            .AddBeerCrate(
+                                "zurueckgenommen",
+                                BeerListCast.Pot,
+                                BeerListCast.Drinker,
+                                now.AddDays(-3),
+                                undoneAt: now.AddDays(-3)
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync(BeerListCast.Warden, ct);
+        var (_, result) = await client.GETAsync<
+            GetBeerStock,
+            GetBeerStockRequest,
+            GetBeerStockResponse
+        >(new() { BeerPotId = ctx.BeerList.Pots.IdOf(BeerListCast.Pot) });
+
+        Assert.Equal(34, result.Crates);
+        Assert.Equal(12, result.Forecast.CratesTakenInPaceWindow);
+        Assert.Equal(_fixture.Today.AddDays(34 * 21 / 12), result.Forecast.ProjectedEmptyOn);
+    }
 }
