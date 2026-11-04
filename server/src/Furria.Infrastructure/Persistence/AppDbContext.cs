@@ -172,6 +172,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<BeerPayment> BeerPayments => Set<BeerPayment>();
 
+    public DbSet<BeerTabReminder> BeerTabReminders => Set<BeerTabReminder>();
+
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
 

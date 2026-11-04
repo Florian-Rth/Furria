@@ -1,3 +1,4 @@
+using System.Data;
 using System.Diagnostics.Contracts;
 using Furria.Application.BeerList;
 using Furria.Application.Results;
@@ -40,7 +41,9 @@ public sealed class BeerPaymentService
         var payment = NewPayment(command, settled, _timeProvider.GetUtcNow());
         _dbContext.BeerPayments.Add(payment);
         await _dbContext.SaveChangesAsync(ct);
-        await SettleAsync(settled, payment.Id, ct);
+        if (await SettleAsync(settled, payment.Id, ct) != settled.Count)
+            return Result<BeerPaymentDetails>.Conflict(MoreThanOpenMessage);
+
         await transaction.CommitAsync(ct);
 
         return Result<BeerPaymentDetails>.Success(
@@ -68,7 +71,9 @@ public sealed class BeerPaymentService
             return Result.NotFound(UnknownPaymentMessage);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        await BeerPotLedger.LockedPot(_dbContext, beerPotId.Value).AnyAsync(ct);
+        if (!await BeerPotLedger.LockedPot(_dbContext, beerPotId.Value).AnyAsync(ct))
+            return Result.NotFound(BeerListMessages.UnknownPot);
+
         var undone = await _dbContext
             .BeerPayments.Where(payment => payment.Id == beerPaymentId && payment.UndoneAt == null)
             .ExecuteUpdateAsync(
@@ -98,10 +103,17 @@ public sealed class BeerPaymentService
         if (!await _dbContext.BeerPots.AsNoTracking().AnyAsync(pot => pot.Id == beerPotId, ct))
             return Result<IReadOnlyList<BeerPotTabSummary>>.NotFound(BeerListMessages.UnknownPot);
 
+        await using var snapshot = await _dbContext.Database.BeginTransactionAsync(
+            IsolationLevel.RepeatableRead,
+            ct
+        );
         var tallies = await TalliesAsync(beerPotId, ct);
         var personIds = tallies.Select(tally => tally.Person.PersonId).ToList();
         var enrolled = await RunningEnrolleesAsync(personIds, ct);
-        var payments = await StandingPaymentsAsync(beerPotId, ct);
+        var payments = (await StandingPaymentsAsync(beerPotId, ct)).ToLookup(
+            payment => payment.PersonId,
+            payment => payment.Summary
+        );
 
         return Result<IReadOnlyList<BeerPotTabSummary>>.Success([
             .. tallies.Select(tally => TabOf(tally, enrolled, payments)),
@@ -128,7 +140,7 @@ public sealed class BeerPaymentService
     private static BeerPotTabSummary TabOf(
         TabTally tally,
         IReadOnlySet<int> enrolled,
-        IReadOnlyList<PaymentRow> payments
+        ILookup<int, BeerPaymentSummary> payments
     ) =>
         new()
         {
@@ -139,12 +151,7 @@ public sealed class BeerPaymentService
             PaidCrates = tally.PaidCrates,
             PaidCents = tally.PaidCents,
             OldestOpenBookedAt = tally.OldestOpenBookedAt,
-            Payments =
-            [
-                .. payments
-                    .Where(payment => payment.PersonId == tally.Person.PersonId)
-                    .Select(payment => payment.Summary),
-            ],
+            Payments = [.. payments[tally.Person.PersonId]],
         };
 
     private async Task<IReadOnlyList<OpenCrate>> OldestOpenCratesAsync(
@@ -152,11 +159,9 @@ public sealed class BeerPaymentService
         CancellationToken ct
     ) =>
         await BeerPotLedger
-            .TakenCrates(_dbContext)
+            .OpenCrates(_dbContext)
             .Where(crate =>
-                crate.BeerPotId == command.BeerPotId
-                && crate.PersonId == command.PersonId
-                && crate.PaidByPaymentId == null
+                crate.BeerPotId == command.BeerPotId && crate.PersonId == command.PersonId
             )
             .OrderBy(crate => crate.BookedAt)
             .ThenBy(crate => crate.Id)
@@ -164,15 +169,19 @@ public sealed class BeerPaymentService
             .Select(crate => new OpenCrate(crate.Id, crate.PriceCents))
             .ToListAsync(ct);
 
-    private async Task SettleAsync(
+    private async Task<int> SettleAsync(
         IReadOnlyList<OpenCrate> settled,
         int beerPaymentId,
         CancellationToken ct
     )
     {
         var crateIds = settled.Select(crate => crate.Id).ToList();
-        await _dbContext
-            .BeerCrates.Where(crate => crateIds.Contains(crate.Id))
+        return await _dbContext
+            .BeerCrates.Where(crate =>
+                crateIds.Contains(crate.Id)
+                && crate.UndoneAt == null
+                && crate.PaidByPaymentId == null
+            )
             .ExecuteUpdateAsync(
                 row => row.SetProperty(crate => crate.PaidByPaymentId, beerPaymentId),
                 ct

@@ -12,6 +12,7 @@ public sealed class BeerListSeedBuilder
     private readonly List<BeerStockMovementIntent> _stockMovements = [];
     private readonly List<BeerCrateIntent> _crates = [];
     private readonly List<BeerPaymentIntent> _payments = [];
+    private readonly List<BeerTabReminderIntent> _tabReminders = [];
 
     internal IReadOnlyList<BeerPotIntent> Pots => _pots;
 
@@ -22,6 +23,8 @@ public sealed class BeerListSeedBuilder
     internal IReadOnlyList<BeerCrateIntent> Crates => _crates;
 
     internal IReadOnlyList<BeerPaymentIntent> Payments => _payments;
+
+    internal IReadOnlyList<BeerTabReminderIntent> TabReminders => _tabReminders;
 
     public BeerListSeedBuilder AddBeerPot(
         string alias,
@@ -168,6 +171,12 @@ public sealed class BeerListSeedBuilder
         return this;
     }
 
+    public BeerListSeedBuilder AddBeerTabReminder(string personAlias, DateTimeOffset sentAt)
+    {
+        _tabReminders.Add(new BeerTabReminderIntent(personAlias, sentAt));
+        return this;
+    }
+
     internal sealed record BeerPotIntent(
         string Alias,
         string OwnerAlias,
@@ -214,4 +223,6 @@ public sealed class BeerListSeedBuilder
         string? BookedByAlias,
         DateTimeOffset? UndoneAt
     );
+
+    internal sealed record BeerTabReminderIntent(string PersonAlias, DateTimeOffset SentAt);
 }

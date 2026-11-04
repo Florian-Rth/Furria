@@ -35,6 +35,7 @@ public static class ReferencesToPerson
         HerOwn<AppearanceCastChange>(nameof(AppearanceCastChange.PersonId)),
         HerOwn<ActCoEditor>(nameof(ActCoEditor.PersonId)),
         HerOwn<BeerListEnrollment>(nameof(BeerListEnrollment.PersonId)),
+        HerOwn<BeerTabReminder>(nameof(BeerTabReminder.PersonId)),
         Reference<Spot>(nameof(Spot.PersonId), OnAbsorption.BlocksIt, OnErasure.KeptNamingNobody),
         HerOwn<AppearanceSpot>(nameof(AppearanceSpot.PersonId)),
         Reference<Announcement>(

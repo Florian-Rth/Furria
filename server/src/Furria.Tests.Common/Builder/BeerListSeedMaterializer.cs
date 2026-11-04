@@ -49,6 +49,10 @@ internal static class BeerListSeedMaterializer
         );
         dbContext.BeerPayments.AddRange(payments.Values);
 
+        dbContext.BeerTabReminders.AddRange(
+            recorded.TabReminders.Select(intent => NewTabReminder(intent, personIds))
+        );
+
         await dbContext.SaveChangesAsync(ct);
 
         return new SeededBeerList(
@@ -156,6 +160,16 @@ internal static class BeerListSeedMaterializer
         payment.AmountCents = settled.Sum(crate => crate.PriceCents);
         return payment;
     }
+
+    private static BeerTabReminder NewTabReminder(
+        BeerListSeedBuilder.BeerTabReminderIntent intent,
+        IReadOnlyDictionary<string, int> personIds
+    ) =>
+        new()
+        {
+            PersonId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person"),
+            SentAt = intent.SentAt,
+        };
 
     private static BeerPot PotOf(IReadOnlyDictionary<string, BeerPot> pots, string potAlias) =>
         pots.TryGetValue(potAlias, out var pot)

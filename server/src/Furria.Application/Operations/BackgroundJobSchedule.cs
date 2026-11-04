@@ -17,6 +17,8 @@ public static class BackgroundJobSchedule
         [BackgroundJob.LogEntryPurge] = TimeSpan.FromMinutes(15),
         [BackgroundJob.MediaStorageSurvey] = TimeSpan.FromHours(6),
         [BackgroundJob.ActCastFreeze] = TimeSpan.FromHours(1),
+        [BackgroundJob.BeerTabReminders] = TimeSpan.FromMinutes(15),
+        [BackgroundJob.BeerStockWarnings] = TimeSpan.FromMinutes(15),
     };
 
     private static readonly IReadOnlyDictionary<BackgroundJob, TimeSpan> FirstRunDelays =

@@ -19,6 +19,7 @@ using Furria.Core.Media;
 using Furria.Core.Roles;
 using Furria.Core.RunningOrders;
 using Furria.Core.Studio;
+using Furria.Infrastructure.BeerList;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Identity;
@@ -814,6 +815,12 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     public Task FreezeActCastsAsync(CancellationToken ct = default) =>
         Services.GetServices<IHostedService>().OfType<ActCastFreeze>().Single().FreezeAsync(ct);
+
+    public Task RemindOfBeerTabsAsync(CancellationToken ct = default) =>
+        Services.GetServices<IHostedService>().OfType<BeerTabReminders>().Single().RemindAsync(ct);
+
+    public Task WarnOfBeerStockAsync(CancellationToken ct = default) =>
+        Services.GetServices<IHostedService>().OfType<BeerStockWarnings>().Single().WarnAsync(ct);
 
     public Task PurgeGalleryBinAsync(CancellationToken ct = default) =>
         Services.GetServices<IHostedService>().OfType<GalleryBinPurge>().Single().PurgeAsync(ct);

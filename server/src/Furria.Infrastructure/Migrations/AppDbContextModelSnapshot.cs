@@ -69,14 +69,14 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("EnteredByPersonId")
                         .HasDatabaseName("ix_beer_crate_entered_by_person_id");
 
-                    b.HasIndex("PaidByPaymentId")
-                        .HasDatabaseName("ix_beer_crate_paid_by_payment_id");
-
                     b.HasIndex("PersonId")
                         .HasDatabaseName("ix_beer_crate_person_id");
 
                     b.HasIndex("UndoneByPersonId")
                         .HasDatabaseName("ix_beer_crate_undone_by_person_id");
+
+                    b.HasIndex("PaidByPaymentId", "BeerPotId")
+                        .HasDatabaseName("ix_beer_crate_paid_by_payment_id_beer_pot_id");
 
                     b.HasIndex(new[] { "BeerPotId", "PersonId" }, "ix_beer_crate_beer_pot_id_person_id_taken")
                         .HasDatabaseName("ix_beer_crate_beer_pot_id_person_id_taken")
@@ -85,6 +85,12 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex(new[] { "BookedAt" }, "ix_beer_crate_booked_at_taken")
                         .HasDatabaseName("ix_beer_crate_booked_at_taken")
                         .HasFilter("undone_at IS NULL");
+
+                    b.HasIndex(new[] { "PersonId", "BeerPotId", "BookedAt", "Id" }, "ix_beer_crate_open")
+                        .HasDatabaseName("ix_beer_crate_open")
+                        .HasFilter("undone_at IS NULL AND paid_by_payment_id IS NULL");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex(new[] { "PersonId", "BeerPotId", "BookedAt", "Id" }, "ix_beer_crate_open"), new[] { "PriceCents" });
 
                     b.ToTable("beer_crate", null, t =>
                         {
@@ -197,6 +203,9 @@ namespace Furria.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_beer_payment");
 
+                    b.HasAlternateKey("Id", "BeerPotId")
+                        .HasName("ak_beer_payment_id_beer_pot_id");
+
                     b.HasIndex("BookedByPersonId")
                         .HasDatabaseName("ix_beer_payment_booked_by_person_id");
 
@@ -212,7 +221,7 @@ namespace Furria.Infrastructure.Migrations
 
                     b.ToTable("beer_payment", null, t =>
                         {
-                            t.HasCheckConstraint("ck_beer_payment_amount", "amount_cents > 0 AND amount_cents <= crates * 10000");
+                            t.HasCheckConstraint("ck_beer_payment_amount", "amount_cents >= crates AND amount_cents <= crates * 10000");
 
                             t.HasCheckConstraint("ck_beer_payment_crates", "crates > 0 AND crates <= 500");
 
@@ -260,6 +269,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasMaxLength(500)
                         .HasColumnType("character varying(500)")
                         .HasColumnName("payment_note");
+
+                    b.Property<DateTimeOffset?>("StockWarningSentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("stock_warning_sent_at");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
@@ -348,6 +361,22 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_beer_stock_movement_kind", "(kind IN ('Delivery', 'HandoverCarry') AND reason IS NULL AND crates > 0) OR (kind = 'Correction' AND reason IS NOT NULL AND (reason = 'Miscount' OR (reason IN ('Shrinkage', 'Breakage') AND crates < 0)))");
                         });
+                });
+
+            modelBuilder.Entity("Furria.Core.BeerList.BeerTabReminder", b =>
+                {
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateTimeOffset>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.HasKey("PersonId")
+                        .HasName("pk_beer_tab_reminder");
+
+                    b.ToTable("beer_tab_reminder", (string)null);
                 });
 
             modelBuilder.Entity("Furria.Core.Club.Announcement", b =>
@@ -4589,12 +4618,6 @@ namespace Furria.Infrastructure.Migrations
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_beer_crate_person_entered_by_person_id");
 
-                    b.HasOne("Furria.Core.BeerList.BeerPayment", "PaidByPayment")
-                        .WithMany()
-                        .HasForeignKey("PaidByPaymentId")
-                        .OnDelete(DeleteBehavior.Restrict)
-                        .HasConstraintName("fk_beer_crate_beer_payment_paid_by_payment_id");
-
                     b.HasOne("Furria.Core.Identity.Person", "Person")
                         .WithMany()
                         .HasForeignKey("PersonId")
@@ -4606,6 +4629,13 @@ namespace Furria.Infrastructure.Migrations
                         .HasForeignKey("UndoneByPersonId")
                         .OnDelete(DeleteBehavior.SetNull)
                         .HasConstraintName("fk_beer_crate_person_undone_by_person_id");
+
+                    b.HasOne("Furria.Core.BeerList.BeerPayment", "PaidByPayment")
+                        .WithMany()
+                        .HasForeignKey("PaidByPaymentId", "BeerPotId")
+                        .HasPrincipalKey("Id", "BeerPotId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_beer_crate_beer_payment_paid_by_payment_id_beer_pot_id");
 
                     b.Navigation("EnteredBy");
 
@@ -4703,6 +4733,18 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("BookedBy");
 
                     b.Navigation("Pot");
+                });
+
+            modelBuilder.Entity("Furria.Core.BeerList.BeerTabReminder", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithOne()
+                        .HasForeignKey("Furria.Core.BeerList.BeerTabReminder", "PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_beer_tab_reminder_person_person_id");
+
+                    b.Navigation("Person");
                 });
 
             modelBuilder.Entity("Furria.Core.Club.Announcement", b =>

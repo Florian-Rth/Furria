@@ -157,6 +157,8 @@ export const SERVICE_NAMES: Readonly<Record<string, string>> = {
   logEntryPurge: 'Protokoll bereinigen',
   mediaStorageSurvey: 'Speicherbelegung messen',
   actCastFreeze: 'Besetzungen zu Aschermittwoch festschreiben',
+  beerTabReminders: 'An offene Bierkisten erinnern',
+  beerStockWarnings: 'Vor leerem Bierbestand warnen',
 };
 
 export const serviceNameOf = (job: string): string => SERVICE_NAMES[job] ?? job;

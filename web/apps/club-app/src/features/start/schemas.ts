@@ -156,12 +156,11 @@ export type StartNews = z.infer<typeof StartNewsSchema>;
 
 export const StartBeerTabSchema = z.object({
   beerPotId: z.int().positive(),
-  potIsOpen: z.boolean(),
   openCrates: z.int().positive(),
   openCents: z.int().positive(),
   oldestOpenBookedAt: z.iso.datetime({ offset: true }),
   owner: StartPersonRefSchema.nullable(),
-  paymentLink: z.string().nullable(),
+  paymentLink: z.url({ protocol: /^https$/ }).nullable(),
   paymentNote: z.string().nullable(),
 });
 export type StartBeerTab = z.infer<typeof StartBeerTabSchema>;

@@ -7,6 +7,7 @@ import type { StartPanelOf } from '../start-board';
 
 const TILE_LABEL = 'Dein Deckel';
 const HEAD_LABEL = 'DEIN DECKEL';
+const TITLE_LINES = 2;
 
 interface BeerTabTileProps {
   panel: StartPanelOf<'beerTab'>;
@@ -17,7 +18,13 @@ interface BeerTabTileProps {
 export const BeerTabTile: FC<BeerTabTileProps> = ({ panel, board, order }) => {
   const tile = useBeerTabTile(panel, board.now);
   const lines = tile.lines.map((line) => (
-    <KkStartTile.Line key={line.key} title={line.title} meta={line.meta} reach={line.reach} />
+    <KkStartTile.Line
+      key={line.key}
+      title={line.title}
+      meta={line.meta}
+      lines={TITLE_LINES}
+      reach={line.reach}
+    />
   ));
 
   return (

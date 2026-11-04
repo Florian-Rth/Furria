@@ -40,9 +40,13 @@ namespace Furria.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_beer_payment", x => x.id);
+                    table.UniqueConstraint(
+                        "ak_beer_payment_id_beer_pot_id",
+                        x => new { x.id, x.beer_pot_id }
+                    );
                     table.CheckConstraint(
                         "ck_beer_payment_amount",
-                        "amount_cents > 0 AND amount_cents <= crates * 10000"
+                        "amount_cents >= crates AND amount_cents <= crates * 10000"
                     );
                     table.CheckConstraint("ck_beer_payment_crates", "crates > 0 AND crates <= 500");
                     table.CheckConstraint(
@@ -80,10 +84,19 @@ namespace Furria.Infrastructure.Migrations
                 }
             );
 
+            migrationBuilder
+                .CreateIndex(
+                    name: "ix_beer_crate_open",
+                    table: "beer_crate",
+                    columns: new[] { "person_id", "beer_pot_id", "booked_at", "id" },
+                    filter: "undone_at IS NULL AND paid_by_payment_id IS NULL"
+                )
+                .Annotation("Npgsql:IndexInclude", new[] { "price_cents" });
+
             migrationBuilder.CreateIndex(
-                name: "ix_beer_crate_paid_by_payment_id",
+                name: "ix_beer_crate_paid_by_payment_id_beer_pot_id",
                 table: "beer_crate",
-                column: "paid_by_payment_id"
+                columns: new[] { "paid_by_payment_id", "beer_pot_id" }
             );
 
             migrationBuilder.CreateIndex(
@@ -112,11 +125,11 @@ namespace Furria.Infrastructure.Migrations
             );
 
             migrationBuilder.AddForeignKey(
-                name: "fk_beer_crate_beer_payment_paid_by_payment_id",
+                name: "fk_beer_crate_beer_payment_paid_by_payment_id_beer_pot_id",
                 table: "beer_crate",
-                column: "paid_by_payment_id",
+                columns: new[] { "paid_by_payment_id", "beer_pot_id" },
                 principalTable: "beer_payment",
-                principalColumn: "id",
+                principalColumns: new[] { "id", "beer_pot_id" },
                 onDelete: ReferentialAction.Restrict
             );
         }
@@ -125,14 +138,16 @@ namespace Furria.Infrastructure.Migrations
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropForeignKey(
-                name: "fk_beer_crate_beer_payment_paid_by_payment_id",
+                name: "fk_beer_crate_beer_payment_paid_by_payment_id_beer_pot_id",
                 table: "beer_crate"
             );
 
             migrationBuilder.DropTable(name: "beer_payment");
 
+            migrationBuilder.DropIndex(name: "ix_beer_crate_open", table: "beer_crate");
+
             migrationBuilder.DropIndex(
-                name: "ix_beer_crate_paid_by_payment_id",
+                name: "ix_beer_crate_paid_by_payment_id_beer_pot_id",
                 table: "beer_crate"
             );
         }

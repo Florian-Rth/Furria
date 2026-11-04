@@ -18,7 +18,7 @@ public sealed class BeerPaymentConfiguration : IEntityTypeConfiguration<BeerPaym
                 );
                 table.HasCheckConstraint(
                     "ck_beer_payment_amount",
-                    $"amount_cents > 0 AND amount_cents <= crates * {BeerPot.MaxCratePriceCents}"
+                    $"amount_cents >= crates AND amount_cents <= crates * {BeerPot.MaxCratePriceCents}"
                 );
                 table.HasCheckConstraint(
                     "ck_beer_payment_undone",
@@ -28,6 +28,9 @@ public sealed class BeerPaymentConfiguration : IEntityTypeConfiguration<BeerPaym
             }
         );
         builder.HasKey(payment => payment.Id);
+        builder
+            .HasAlternateKey(payment => new { payment.Id, payment.BeerPotId })
+            .HasName("ak_beer_payment_id_beer_pot_id");
 
         builder
             .HasOne(payment => payment.Pot)

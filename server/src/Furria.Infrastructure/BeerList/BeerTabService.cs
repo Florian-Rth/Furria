@@ -108,9 +108,7 @@ public sealed class BeerTabService
     }
 
     public Task<bool> HasOpenCratesAsync(int personId, CancellationToken ct) =>
-        BeerPotLedger
-            .TakenCrates(_dbContext)
-            .AnyAsync(crate => crate.PersonId == personId && crate.PaidByPaymentId == null, ct);
+        BeerPotLedger.OpenCrates(_dbContext).AnyAsync(crate => crate.PersonId == personId, ct);
 
     public async Task<BeerTabDetails> GetTabAsync(int personId, CancellationToken ct)
     {
@@ -306,7 +304,11 @@ public sealed class BeerTabService
                 ct
             );
         if (undone != crateIds.Count)
-            return Result.Conflict(UndoneCrateMessage);
+            return Result.Conflict(
+                (await CratesAsync(crateIds, ct)).Any(crate => crate.IsPaid)
+                    ? PaidCrateMessage
+                    : UndoneCrateMessage
+            );
 
         await transaction.CommitAsync(ct);
         return Result.Success();

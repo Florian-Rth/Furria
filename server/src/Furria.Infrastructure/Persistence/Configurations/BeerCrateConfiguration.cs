@@ -57,8 +57,9 @@ public sealed class BeerCrateConfiguration : IEntityTypeConfiguration<BeerCrate>
         builder
             .HasOne(crate => crate.PaidByPayment)
             .WithMany()
-            .HasForeignKey(crate => crate.PaidByPaymentId)
-            .HasConstraintName("fk_beer_crate_beer_payment_paid_by_payment_id")
+            .HasForeignKey(crate => new { crate.PaidByPaymentId, crate.BeerPotId })
+            .HasPrincipalKey(payment => new { payment.Id, payment.BeerPotId })
+            .HasConstraintName("fk_beer_crate_beer_payment_paid_by_payment_id_beer_pot_id")
             .OnDelete(DeleteBehavior.Restrict);
 
         builder
@@ -75,6 +76,20 @@ public sealed class BeerCrateConfiguration : IEntityTypeConfiguration<BeerCrate>
             .HasFilter("undone_at IS NULL");
         builder.HasIndex(crate => crate.EnteredByPersonId);
         builder.HasIndex(crate => crate.UndoneByPersonId);
-        builder.HasIndex(crate => crate.PaidByPaymentId);
+        builder.HasIndex(crate => new { crate.PaidByPaymentId, crate.BeerPotId });
+        builder
+            .HasIndex(
+                crate => new
+                {
+                    crate.PersonId,
+                    crate.BeerPotId,
+                    crate.BookedAt,
+                    crate.Id,
+                },
+                "ix_beer_crate_open"
+            )
+            .HasDatabaseName("ix_beer_crate_open")
+            .HasFilter("undone_at IS NULL AND paid_by_payment_id IS NULL")
+            .IncludeProperties(crate => crate.PriceCents);
     }
 }
