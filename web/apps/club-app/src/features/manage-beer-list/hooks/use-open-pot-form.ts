@@ -1,42 +1,26 @@
-import { useState } from 'react';
-import { useMeQuery } from '@/features/session/api';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import type { PersonRef } from '@/lib/api/schemas';
 import { useOpenBeerPotMutation } from '../api';
-import type { PotSettingsForm } from './use-pot-settings-form';
-import { usePotSettingsForm } from './use-pot-settings-form';
+import { potFormOf } from '../beer-hub';
+import { HUB_LANDING } from '../beer-landing';
+import { writeStateOf } from '../form-fields';
+import { BeerPotOpeningFormSchema } from '../schemas';
+import type { PotWriteForm } from './use-pot-fields';
+import { usePotFields } from './use-pot-fields';
 
-export interface OpenPotForm {
-  owner: PersonRef | null;
-  chooseOwner: (person: PersonRef) => void;
-  clearOwner: () => void;
-  settings: PotSettingsForm;
-  canSubmit: boolean;
-  busy: boolean;
-  submit: () => void;
-}
-
-export const useOpenPotForm = (): OpenPotForm => {
-  const me = useMeQuery().data?.person ?? null;
-  const [picked, setPicked] = useState<PersonRef | null | undefined>(undefined);
-  const settings = usePotSettingsForm(null);
+export const useOpenPotForm = (owner: PersonRef | null): PotWriteForm => {
   const opening = useOpenBeerPotMutation();
-  const myself: PersonRef | null =
-    me === null ? null : { personId: me.id, firstName: me.firstName, lastName: me.lastName };
-  const owner = picked === undefined ? myself : picked;
+  const write = useWriteForm({
+    schema: BeerPotOpeningFormSchema,
+    defaults: potFormOf(owner, null),
+    mutate: (opened) =>
+      opening.mutateAsync({ ownerPersonId: opened.person.personId, settings: opened.settings }),
+    landing: () => HUB_LANDING,
+  });
+  const fields = usePotFields(write.form.control);
 
   return {
-    owner,
-    chooseOwner: setPicked,
-    clearOwner: () => {
-      setPicked(null);
-    },
-    settings,
-    canSubmit: owner !== null && settings.settings !== null && !opening.isPending,
-    busy: opening.isPending,
-    submit: () => {
-      if (owner !== null && settings.settings !== null) {
-        opening.mutate({ ownerPersonId: owner.personId, settings: settings.settings });
-      }
-    },
+    fields,
+    ...writeStateOf(write),
   };
 };

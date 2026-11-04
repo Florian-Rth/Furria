@@ -1,15 +1,17 @@
 import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import { useChildMatches, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { useCloseOnEscape } from '@/features/events/hooks/use-close-on-escape';
+import { useOpenBeerPotQuery } from '@/features/beer-list/api';
+import type { OpenBeerPot } from '@/features/beer-list/schemas';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { useCloseOnEscape } from '@/lib/use-close-on-escape';
+import { useMinuteNow } from '@/lib/use-minute-now';
 import {
   useBeerEnrollmentsQuery,
   useBeerJournalQuery,
   useBeerStockQuery,
   useBeerTabsQuery,
-  useOpenBeerPotQuery,
 } from '../api';
 import type {
   BeerFocus,
@@ -27,10 +29,11 @@ import {
   rosterOf,
 } from '../beer-hub';
 import { HUB_PATH } from '../beer-hub-copy';
+import type { BeerPane } from '../beer-pane';
+import { beerPaneOf } from '../beer-pane';
 import { dayKeyOf } from '../beer-time';
-import type { BeerEnrollment, BeerJournalCrate, BeerJournalPayment, OpenBeerPot } from '../schemas';
+import type { BeerEnrollment, BeerJournalCrate, BeerJournalPayment } from '../schemas';
 
-const INDEX_ROUTE_ID = '/_app/manage/beer-list/';
 const NO_ENROLLMENTS: readonly BeerEnrollment[] = [];
 
 export type BeerPanePath =
@@ -66,7 +69,7 @@ export interface BeerHub {
   now: string;
   todayKey: string;
   enrollments: readonly BeerEnrollment[];
-  paneOpen: boolean;
+  pane: BeerPane | null;
   selectedPersonId: number | null;
   focus: BeerFocus;
   chooseFocus: (focus: BeerFocus) => void;
@@ -99,18 +102,16 @@ export const useBeerHub = (): BeerHub => {
   const stockQuery = useBeerStockQuery(beerPotId);
   const tabsQuery = useBeerTabsQuery(beerPotId);
   const journalQuery = useBeerJournalQuery(beerPotId);
-  const now = new Date().toISOString();
+  const now = useMinuteNow().toISOString();
   const enrollments = enrollmentsQuery.data?.enrollments ?? NO_ENROLLMENTS;
-  const paneMatch = childMatches.find((match) => match.routeId !== INDEX_ROUTE_ID);
-  const personParam = paneMatch?.params;
-  const selectedPersonId =
-    personParam !== undefined && 'personId' in personParam ? Number(personParam.personId) : null;
+  const pane = beerPaneOf(childMatches[0]);
+  const selectedPersonId = pane?.kind === 'person' ? pane.personId : null;
 
   const closePane = (): void => {
     void navigate({ to: HUB_PATH, resetScroll: false });
   };
 
-  useCloseOnEscape(isWide && paneMatch !== undefined, closePane);
+  useCloseOnEscape(isWide && pane !== null, closePane);
 
   const stateOf = (): BeerHubState => {
     const pot = potQuery.data?.pot;
@@ -179,7 +180,7 @@ export const useBeerHub = (): BeerHub => {
     now,
     todayKey: dayKeyOf(now),
     enrollments,
-    paneOpen: paneMatch !== undefined,
+    pane,
     selectedPersonId,
     focus,
     chooseFocus: (next) => {

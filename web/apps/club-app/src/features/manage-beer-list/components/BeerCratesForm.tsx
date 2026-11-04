@@ -4,12 +4,11 @@ import { KkSelectField } from '@furria/ui/KkSelectField';
 import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import type { FC } from 'react';
 import type { BeerBookable } from '../beer-hub';
-import { useBeerHubContext } from '../beer-hub-context';
 import {
+  bookableLabelOf,
   COUNT_FIELD_LABEL,
   crateButtonOf,
   firstNameOf,
-  fullNameOf,
   PAID_SWITCH_HINT,
   PAID_SWITCH_LABEL,
   PERSON_LABEL,
@@ -17,8 +16,7 @@ import {
   stockAfterOf,
 } from '../beer-hub-copy';
 import { useCratesForm } from '../hooks/use-crates-form';
-
-const ENDED_SUFFIX = ' · Teilnahme beendet';
+import { BeerRejection } from './BeerRejection';
 
 interface BeerCratesFormProps {
   beerPotId: number;
@@ -27,39 +25,45 @@ interface BeerCratesFormProps {
   stock: number;
 }
 
+const optionOf = (entry: BeerBookable): { value: string; label: string } => ({
+  value: String(entry.person.personId),
+  label: bookableLabelOf(entry),
+});
+
+const personOf = (entry: BeerBookable): BeerBookable['person'] => entry.person;
+
 export const BeerCratesForm: FC<BeerCratesFormProps> = ({
   beerPotId,
   bookable,
   initialPersonId,
   stock,
 }) => {
-  const hub = useBeerHubContext();
   const form = useCratesForm({
     beerPotId,
-    candidates: bookable.map((entry) => entry.person),
+    candidates: bookable.map(personOf),
     initialPersonId,
     stock,
-    onDone: hub.closePane,
   });
-  const options = bookable.map((entry) => ({
-    value: String(entry.person.personId),
-    label: `${fullNameOf(entry.person)}${entry.enrolled ? '' : ENDED_SUFFIX}`,
-  }));
+  const options = bookable.map(optionOf);
   const buttonLabel = crateButtonOf(form.count, firstNameOf(form.person), form.paid);
   const hint = stockAfterOf(stock, -form.count);
+  const personInvalid = form.personError !== undefined;
+  const countInvalid = form.countError !== undefined;
 
   return (
     <>
       <KkSelectField
-        name="person"
+        name="personId"
         label={PERSON_LABEL}
-        value={form.pick.value}
+        value={form.personValue}
         options={options}
         presentation="select"
-        onChange={form.pick.choose}
+        onChange={form.choosePerson}
+        error={personInvalid}
+        helperText={form.personError}
       />
       <KkNumberField
-        name="crates"
+        name="count"
         label={COUNT_FIELD_LABEL}
         value={form.countText}
         onChange={form.setCountText}
@@ -67,6 +71,8 @@ export const BeerCratesForm: FC<BeerCratesFormProps> = ({
         min={1}
         max={form.maxCount}
         hint={hint}
+        error={countInvalid}
+        helperText={form.countError}
       />
       <KkSwitchRow
         label={PAID_SWITCH_LABEL}
@@ -74,7 +80,14 @@ export const BeerCratesForm: FC<BeerCratesFormProps> = ({
         checked={form.paid}
         onChange={form.setPaid}
       />
-      <KkButton variant="contained" size="large" disabled={!form.canSubmit} onClick={form.submit}>
+      <BeerRejection rejection={form.rejection} />
+      <KkButton
+        variant="contained"
+        size="large"
+        disabled={!form.canSubmit}
+        loading={form.isSaving}
+        onClick={form.submit}
+      >
         {buttonLabel}
       </KkButton>
     </>

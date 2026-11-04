@@ -2,17 +2,26 @@ import type { KkHoldConfirm } from '@furria/ui/KkHoldButton';
 import type { KkPourQuickItem } from '@furria/ui/KkPourQuickBar';
 import type { PersonRef } from '@/lib/api/schemas';
 import { formatEuroCents } from '@/lib/money';
+import type { QueryErrorKind } from '@/lib/query-error';
 import type {
+  BeerBookable,
+  BeerHubSummary,
   BeerJournalEntry,
   BeerKindFilter,
   BeerRosterRow,
+} from './beer-hub';
+import { OVERDUE_AFTER_DAYS } from './beer-hub';
+import type { BeerDayName } from './beer-time';
+import { clockOf, shortDateOf, weekdayDateOf } from './beer-time';
+import type {
+  BeerCorrectionReason,
+  BeerEnrollment,
+  BeerJournalCrate,
+  BeerJournalPayment,
   BeerStockCause,
   BeerStockChange,
   BeerStockDirection,
-} from './beer-hub';
-import type { BeerDayName } from './beer-time';
-import { dayKeyOf, weekdayDateOf } from './beer-time';
-import type { BeerCorrectionReason } from './schemas';
+} from './schemas';
 
 export const HUB_TITLE = 'Bierliste';
 export const HUB_PATH = '/manage/beer-list';
@@ -66,7 +75,7 @@ export const STOCK_LABEL = 'Bestand';
 export const STOCK_UNIT = 'Kisten';
 export const COUNTERS_LABEL = 'Deckel filtern';
 export const OPEN_LABEL = 'Deckel offen';
-export const OVERDUE_LABEL = 'ab 7 Tagen';
+export const OVERDUE_LABEL = `ab ${OVERDUE_AFTER_DAYS} Tagen`;
 export const PEOPLE_LABEL = 'nehmen teil';
 export const QUICK_LABEL = 'Schnell eintragen';
 export const KIND_FILTER_LABEL = 'Art';
@@ -98,18 +107,16 @@ export const KIND_ORDER: readonly BeerKindFilter[] = [
   'enrollment',
 ];
 
-export const stockCaptionOf = (
-  emptyOn: string | null,
-  daysLeft: number | null,
-  warns: boolean,
-): string => {
-  if (emptyOn === null || daysLeft === null) {
-    return 'kein Verbrauch in 21 Tagen';
+export const stockCaptionOf = (summary: BeerHubSummary): string => {
+  if (summary.emptyOn === null || summary.daysLeft === null) {
+    return `kein Verbrauch in ${summary.paceWindowDays} Tagen`;
   }
 
-  const day = weekdayDateOf(emptyOn);
+  const day = weekdayDateOf(summary.emptyOn);
 
-  return warns ? `leer ≈ ${day} · in ${Math.round(daysLeft)} T.` : `reicht bis ≈ ${day}`;
+  return summary.warns
+    ? `leer ≈ ${day} · in ${Math.round(summary.daysLeft)} T.`
+    : `reicht bis ≈ ${day}`;
 };
 
 const actorNote = (entry: BeerJournalEntry, verb: string): string | null =>
@@ -243,7 +250,7 @@ export const stockAfterOf = (stock: number, delta: number): string =>
 
 export const personOptionLabelOf = (row: BeerRosterRow): string =>
   row.openCrates > 0
-    ? `${fullNameOf(row.person)} · ${cratesLabel(row.openCrates)} offen`
+    ? `${fullNameOf(row.person)} · ${openCountOf(row.openCrates)}`
     : fullNameOf(row.person);
 
 export const FORM_TITLES = {
@@ -298,7 +305,7 @@ export const potLabelOf = (
   openedAt: string,
   closedAt: string | null,
 ): string =>
-  `${fullNameOf(owner)} · ${weekdayDateOf(dayKeyOf(openedAt)).slice(3)}–${closedAt === null ? 'heute' : weekdayDateOf(dayKeyOf(closedAt)).slice(3)}`;
+  `${fullNameOf(owner)} · ${shortDateOf(openedAt)}–${closedAt === null ? 'heute' : shortDateOf(closedAt)}`;
 export const potFactsOf = (openTabs: number, openCents: number): string =>
   openTabs === 0 ? 'alles bezahlt' : `${openTabs} Deckel offen · ${euroOf(openCents)}`;
 
@@ -315,6 +322,11 @@ export const clearPersonLabelOf = (name: string): string => `Nur ${name} · Filt
 export const filterPersonLabelOf = (name: string): string => `Nur ${name} im Journal zeigen`;
 
 export const ERROR_TITLE = 'BIERLISTE NICHT GELADEN';
+export const HUB_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
+  unreachable: 'Keine Verbindung zum Server.',
+  unexpected: 'Die Bierliste konnte nicht geladen werden.',
+  rejected: 'Der Server hat die Anfrage abgelehnt.',
+};
 export const RETRY_LABEL = 'Erneut laden';
 
 export const OPENED_NOTICE = 'Bierliste eröffnet';
@@ -344,3 +356,82 @@ export const dayFactsOf = (entries: readonly BeerJournalEntry[]): string => {
 
   return crates === 0 ? '' : `${cratesLabel(crates)} gebucht`;
 };
+
+export const COUNT_INVALID = 'Bitte mindestens eine Kiste angeben.';
+export const CAUSE_MISSING = 'Bitte einen Grund wählen.';
+export const PERSON_MISSING = 'Wähle die Person, für die gebucht wird.';
+export const OWNER_MISSING = 'Wähle die Inhaberin der Bierliste.';
+export const SUCCESSOR_MISSING = 'Wähle die neue Inhaberin.';
+
+export const countRangeOf = (max: number): string =>
+  max < 1 ? 'Gerade ist keine Kiste da.' : `Bitte zwischen 1 und ${cratesLabel(max)} angeben.`;
+
+export const RUNNING_SECTION = 'Nehmen teil';
+export const ENDED_SECTION = 'Beendet';
+export const ENROLLMENTS_CONTEXT = 'Person öffnen, um die Teilnahme zu beenden';
+export const TAKEN_SECTION = 'Kisten';
+export const SETUP_SWITCH_LABEL = 'Bierliste einrichten';
+
+export const enrollmentLineOf = (enrollment: BeerEnrollment | null): string => {
+  if (enrollment === null) {
+    return 'nimmt nicht teil';
+  }
+
+  const since = `nimmt teil seit ${shortDateOf(enrollment.startedAt)}`;
+
+  if (enrollment.endedAt === null) {
+    return since;
+  }
+
+  const by = enrollment.endedBy === null ? '' : ` von ${enrollment.endedBy.firstName}`;
+
+  return `${since} · beendet am ${shortDateOf(enrollment.endedAt)}${by}`;
+};
+
+export const enrollmentSpanOf = (enrollment: BeerEnrollment): string =>
+  enrollment.endedAt === null
+    ? `seit ${shortDateOf(enrollment.startedAt)}`
+    : `${shortDateOf(enrollment.startedAt)}–${shortDateOf(enrollment.endedAt)}`;
+
+export const bookableLabelOf = (entry: BeerBookable): string =>
+  entry.enrolled ? fullNameOf(entry.person) : `${fullNameOf(entry.person)} · Teilnahme beendet`;
+
+export const crateNoteOf = (crate: BeerJournalCrate): string | null =>
+  crate.enteredBy === null || crate.enteredBy.personId === crate.person?.personId
+    ? null
+    : `eingetragen von ${firstNameOf(crate.enteredBy)}`;
+
+export const crateLineTextOf = (crate: BeerJournalCrate): string =>
+  `${cratesLabel(1)} · ${clockOf(crate.bookedAt)}`;
+
+export const paymentLineTextOf = (payment: BeerJournalPayment): string =>
+  `zahlt ${cratesLabel(payment.crates)} · ${clockOf(payment.bookedAt)}`;
+
+export const paymentNoteOf = (payment: BeerJournalPayment): string | null =>
+  payment.bookedBy === null ? null : `gebucht von ${firstNameOf(payment.bookedBy)}`;
+
+export const openCountOf = (openCrates: number): string => `${cratesLabel(openCrates)} offen`;
+
+export const openFactsOf = (count: number, cents: number): string =>
+  `${cratesLabel(count)} · ${euroOf(cents)}`;
+
+export const rosterTotalOf = (cents: number): string => (cents === 0 ? '' : euroOf(cents));
+
+export const takenFactsOf = (count: number): string => (count === 0 ? '' : cratesLabel(count));
+
+export const openTabsLabelOf = (openTabs: number): string => `${openTabs} ${OPEN_LABEL}`;
+
+export const openAriaOf = (summary: BeerHubSummary): string =>
+  `${euroOf(summary.openCents)} offen auf ${openTabsLabelOf(summary.openTabs)}`;
+
+export const overdueAriaOf = (overdue: number): string => `${overdue} Deckel ${OVERDUE_LABEL}`;
+
+export const peopleAriaOf = (enrolled: number): string => `${enrolled} ${PEOPLE_LABEL}`;
+
+export const personContextOf = (row: BeerRosterRow | null): string =>
+  row === null || row.openCrates === 0
+    ? 'alles bezahlt'
+    : `${openCountOf(row.openCrates)} · ${daysLabel(row.openDays ?? 0)}`;
+
+export const personStateLabelOf = (row: BeerRosterRow | null): string =>
+  row === null || row.openCrates === 0 ? 'bezahlt' : `${euroOf(row.openCents)} offen`;

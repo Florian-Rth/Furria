@@ -9,10 +9,9 @@ import {
   HUB_TITLE,
   PRINT_LABEL,
 } from '../beer-hub-copy';
+import { beerBookingUrlOf } from '../beer-landing';
 import { BeerPaneFrame } from './BeerPaneFrame';
 import { BeerSettingsSwitch } from './BeerSettingsSwitch';
-
-const BOOKING_PATH = '/beer-list/book';
 
 const print = (): void => {
   window.print();
@@ -21,7 +20,7 @@ const print = (): void => {
 const SWITCHER = <BeerSettingsSwitch value="/manage/beer-list/code" />;
 
 export const BeerCodePane: FC = () => {
-  const value = `${window.location.origin}${BOOKING_PATH}`;
+  const value = beerBookingUrlOf(window.location.origin);
   const lines = [CODE_SHEET_LEAD];
 
   return (

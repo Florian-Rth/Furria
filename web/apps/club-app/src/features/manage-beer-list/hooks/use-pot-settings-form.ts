@@ -1,42 +1,25 @@
-import { useState } from 'react';
-import { centsOfPriceText, priceTextOf, textOrNull } from '../beer-hub';
-import type { BeerPotSettings } from '../schemas';
+import type { OpenBeerPot } from '@/features/beer-list/schemas';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
+import { useBeerPotSettingsMutation } from '../api';
+import { potFormOf } from '../beer-hub';
+import { HUB_LANDING } from '../beer-landing';
+import { writeStateOf } from '../form-fields';
+import { BeerPotSettingsFormSchema } from '../schemas';
+import type { PotWriteForm } from './use-pot-fields';
+import { usePotFields } from './use-pot-fields';
 
-export interface PotSettingsForm {
-  priceText: string;
-  setPriceText: (text: string) => void;
-  link: string;
-  setLink: (text: string) => void;
-  note: string;
-  setNote: (text: string) => void;
-  priceInvalid: boolean;
-  detailsMissing: boolean;
-  settings: BeerPotSettings | null;
-}
-
-export const usePotSettingsForm = (initial: BeerPotSettings | null): PotSettingsForm => {
-  const [priceText, setPriceText] = useState(
-    initial === null ? '' : priceTextOf(initial.cratePriceCents),
-  );
-  const [link, setLink] = useState(initial?.paymentLink ?? '');
-  const [note, setNote] = useState(initial?.paymentNote ?? '');
-  const cratePriceCents = centsOfPriceText(priceText);
-  const paymentLink = textOrNull(link);
-  const paymentNote = textOrNull(note);
-  const detailsMissing = paymentLink === null && paymentNote === null;
+export const usePotSettingsForm = (pot: OpenBeerPot): PotWriteForm => {
+  const saving = useBeerPotSettingsMutation(pot.beerPotId);
+  const write = useWriteForm({
+    schema: BeerPotSettingsFormSchema,
+    defaults: potFormOf(null, pot),
+    mutate: (settings) => saving.mutateAsync(settings),
+    landing: () => HUB_LANDING,
+  });
+  const fields = usePotFields(write.form.control);
 
   return {
-    priceText,
-    setPriceText,
-    link,
-    setLink,
-    note,
-    setNote,
-    priceInvalid: cratePriceCents === null,
-    detailsMissing,
-    settings:
-      cratePriceCents === null || detailsMissing
-        ? null
-        : { cratePriceCents, paymentLink, paymentNote },
+    fields,
+    ...writeStateOf(write),
   };
 };

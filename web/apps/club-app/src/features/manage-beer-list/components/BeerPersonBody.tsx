@@ -7,42 +7,23 @@ import type { FC } from 'react';
 import type { PersonRef } from '@/lib/api/schemas';
 import { useBeerHubContext } from '../beer-hub-context';
 import {
-  cratesLabel,
   END_LABEL,
   ENROLL_SECTION,
   endConfirmOf,
+  enrollmentLineOf,
   FORM_TITLES,
   filterPersonLabelOf,
   HOLD_HINT,
   PAYMENTS_SECTION,
+  TAKEN_SECTION,
+  takenFactsOf,
 } from '../beer-hub-copy';
-import { shortDateOf } from '../beer-time';
+import { personLandingOf } from '../beer-landing';
 import type { BeerOpenHub } from '../hooks/use-beer-hub';
 import type { PersonPane } from '../hooks/use-person-pane';
-import type { BeerEnrollment } from '../schemas';
 import { BeerPaymentBlock } from './BeerPaymentBlock';
 import { BeerPaymentRow } from './BeerPaymentRow';
 import { BeerTakenCrateRow } from './BeerTakenCrateRow';
-
-const TAKEN_SECTION = 'Kisten';
-
-const STAY_IN_PANE = (): undefined => undefined;
-
-const enrollmentLineOf = (enrollment: BeerEnrollment | null): string => {
-  if (enrollment === null) {
-    return 'nimmt nicht teil';
-  }
-
-  const since = `nimmt teil seit ${shortDateOf(enrollment.startedAt)}`;
-
-  if (enrollment.endedAt === null) {
-    return since;
-  }
-
-  const by = enrollment.endedBy === null ? '' : ` von ${enrollment.endedBy.firstName}`;
-
-  return `${since} · beendet am ${shortDateOf(enrollment.endedAt)}${by}`;
-};
 
 interface BeerPersonBodyProps {
   open: BeerOpenHub;
@@ -55,14 +36,11 @@ export const BeerPersonBody: FC<BeerPersonBodyProps> = ({ open, person, pane }) 
   const name = person.firstName;
   const endConfirm = endConfirmOf(name);
   const target = { beerPotId: open.pot.beerPotId, person, oldestFirst: pane.oldestOpen };
+  const landing = personLandingOf(person.personId);
+  const paymentKey = pane.oldestOpen.length;
   const paymentBlock =
     pane.oldestOpen.length === 0 ? null : (
-      <BeerPaymentBlock
-        key={pane.oldestOpen.length}
-        target={target}
-        now={hub.now}
-        onDone={STAY_IN_PANE}
-      />
+      <BeerPaymentBlock key={paymentKey} target={target} now={hub.now} landing={landing} />
     );
   const bookCrates = (): void => {
     hub.openPane('/manage/beer-list/crates', person.personId);
@@ -77,19 +55,18 @@ export const BeerPersonBody: FC<BeerPersonBodyProps> = ({ open, person, pane }) 
     <BeerPaymentRow key={payment.beerPaymentId} payment={payment} />
   ));
   const enrollmentLine = enrollmentLineOf(pane.enrollment);
-  const endButton =
-    pane.enrollment !== null && pane.enrollment.endedAt === null ? (
-      <KkHoldButton
-        label={END_LABEL}
-        hint={HOLD_HINT}
-        tone="danger"
-        confirm={endConfirm}
-        onCommit={pane.end}
-        disabled={pane.ending}
-      />
-    ) : null;
+  const endButton = pane.canEnd ? (
+    <KkHoldButton
+      label={END_LABEL}
+      hint={HOLD_HINT}
+      tone="danger"
+      confirm={endConfirm}
+      onCommit={pane.end}
+      disabled={pane.ending}
+    />
+  ) : null;
   const filterLabel = filterPersonLabelOf(name);
-  const takenFacts = pane.taken.length === 0 ? '' : cratesLabel(pane.taken.length);
+  const takenFacts = takenFactsOf(pane.taken.length);
 
   return (
     <Stack sx={{ gap: 3, minWidth: 0 }}>

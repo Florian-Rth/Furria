@@ -35,12 +35,15 @@ export const dayNameOf = (dayKey: string, todayKey: string): BeerDayName => {
 
 export const clockOf = (at: string): string => BERLIN_CLOCK.format(new Date(at));
 
-export const weekdayDateOf = (dayKey: string): string => {
+export const dayMonthOfKey = (dayKey: string): string => {
   const date = new Date(utcOfKey(dayKey));
   const day = String(date.getUTCDate()).padStart(2, '0');
   const month = String(date.getUTCMonth() + 1).padStart(2, '0');
 
-  return `${WEEKDAYS[date.getUTCDay()]} ${day}.${month}.`;
+  return `${day}.${month}.`;
 };
 
-export const shortDateOf = (at: string): string => weekdayDateOf(dayKeyOf(at)).slice(3);
+export const weekdayDateOf = (dayKey: string): string =>
+  `${WEEKDAYS[new Date(utcOfKey(dayKey)).getUTCDay()]} ${dayMonthOfKey(dayKey)}`;
+
+export const shortDateOf = (at: string): string => dayMonthOfKey(dayKeyOf(at));

@@ -7,9 +7,12 @@ import {
   COUNTERS_LABEL,
   euroOf,
   HEAD_LABEL,
-  OPEN_LABEL,
   OVERDUE_LABEL,
+  openAriaOf,
+  openTabsLabelOf,
+  overdueAriaOf,
   PEOPLE_LABEL,
+  peopleAriaOf,
   STOCK_LABEL,
   STOCK_UNIT,
   stockCaptionOf,
@@ -22,15 +25,20 @@ interface BeerHubHeadProps {
 export const BeerHubHead: FC<BeerHubHeadProps> = ({ summary }) => {
   const hub = useBeerHubContext();
   const { focus } = hub;
-  const caption = stockCaptionOf(summary.emptyOn, summary.daysLeft, summary.warns);
+  const caption = stockCaptionOf(summary);
   const stockValue = String(summary.stock);
   const openValue = euroOf(summary.openCents);
   const overdueValue = String(summary.overdue);
   const peopleValue = String(summary.enrolled);
-  const openLabel = `${summary.openTabs} ${OPEN_LABEL}`;
-  const openAria = `${openValue} offen auf ${openLabel}`;
-  const overdueAria = `${summary.overdue} Deckel ${OVERDUE_LABEL}`;
-  const peopleAria = `${summary.enrolled} ${PEOPLE_LABEL}`;
+  const openLabel = openTabsLabelOf(summary.openTabs);
+  const openAria = openAriaOf(summary);
+  const overdueAria = overdueAriaOf(summary.overdue);
+  const peopleAria = peopleAriaOf(summary.enrolled);
+  const overdueAttention = summary.overdue > 0;
+  const stockSelected = focus === 'stock';
+  const openSelected = focus === 'open';
+  const overdueSelected = focus === 'overdue';
+  const peopleSelected = focus === 'people';
   const spark = (
     <KkPourSpark values={summary.series} forecastSteps={summary.daysLeft} warn={summary.warns} />
   );
@@ -56,7 +64,7 @@ export const BeerHubHead: FC<BeerHubHeadProps> = ({ summary }) => {
         caption={caption}
         warn={summary.warns}
         spark={spark}
-        selected={focus === 'stock'}
+        selected={stockSelected}
         onSelect={chooseStock}
       />
       <KkPourHead.Counters label={COUNTERS_LABEL}>
@@ -65,15 +73,15 @@ export const BeerHubHead: FC<BeerHubHeadProps> = ({ summary }) => {
           label={openLabel}
           ariaLabel={openAria}
           attention={false}
-          selected={focus === 'open'}
+          selected={openSelected}
           onSelect={chooseOpen}
         />
         <KkPourHead.Counter
           value={overdueValue}
           label={OVERDUE_LABEL}
           ariaLabel={overdueAria}
-          attention={summary.overdue > 0}
-          selected={focus === 'overdue'}
+          attention={overdueAttention}
+          selected={overdueSelected}
           onSelect={chooseOverdue}
         />
         <KkPourHead.Counter
@@ -81,7 +89,7 @@ export const BeerHubHead: FC<BeerHubHeadProps> = ({ summary }) => {
           label={PEOPLE_LABEL}
           ariaLabel={peopleAria}
           attention={false}
-          selected={focus === 'people'}
+          selected={peopleSelected}
           onSelect={choosePeople}
         />
       </KkPourHead.Counters>

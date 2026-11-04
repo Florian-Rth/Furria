@@ -4,7 +4,6 @@ import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { queryKeys } from '@/lib/query/reads';
 import { toWriteErrorMessage } from '@/lib/write-error';
-import type { BeerStockChange } from './beer-hub';
 import {
   cratesNoticeOf,
   ENDED_NOTICE,
@@ -33,7 +32,6 @@ import {
   requestBeerStock,
   requestBeerStockCorrection,
   requestBeerTabs,
-  requestOpenBeerPot,
 } from './requests';
 import type {
   BeerEnrollmentsResponse,
@@ -41,19 +39,12 @@ import type {
   BeerJournalResponse,
   BeerPotSettings,
   BeerPotsResponse,
+  BeerStockChange,
   BeerStockResponse,
   BeerTabsResponse,
-  OpenBeerPotResponse,
 } from './schemas';
 
 const FAILURE = { failure: toWriteErrorMessage };
-
-export const useOpenBeerPotQuery = (enabled = true): UseQueryResult<OpenBeerPotResponse, Error> =>
-  useQuery({
-    queryKey: queryKeys.beerPot,
-    queryFn: () => withFreshAccessToken(requestOpenBeerPot),
-    enabled,
-  });
 
 export const useBeerPotsQuery = (): UseQueryResult<BeerPotsResponse, Error> =>
   useQuery({
@@ -110,7 +101,7 @@ export const useOpenBeerPotMutation = (): UseMutationResult<number, Error, BeerP
     request: (input: BeerPotOpeningInput, accessToken) =>
       requestBeerPotOpening(input.ownerPersonId, input.settings, accessToken),
     changes: ['beerPot'],
-    notice: { success: () => OPENED_NOTICE, ...FAILURE },
+    notice: { success: () => OPENED_NOTICE },
   });
 
 export const useBeerPotSettingsMutation = (
@@ -120,7 +111,7 @@ export const useBeerPotSettingsMutation = (
     request: (settings: BeerPotSettings, accessToken) =>
       requestBeerPotSettings(beerPotId, settings, accessToken),
     changes: ['beerPot'],
-    notice: { success: () => SETTINGS_NOTICE, ...FAILURE },
+    notice: { success: () => SETTINGS_NOTICE },
   });
 
 export const useBeerStockMutation = (
@@ -132,7 +123,7 @@ export const useBeerStockMutation = (
         ? requestBeerDelivery(beerPotId, change.crates, accessToken)
         : requestBeerStockCorrection(beerPotId, change.crates, change.reason, accessToken),
     changes: ['beerStock'],
-    notice: { success: stockNoticeOf, ...FAILURE },
+    notice: { success: stockNoticeOf },
   });
 
 export interface BeerCratesForInput extends BeerCratesForBody {
@@ -150,7 +141,7 @@ export const useBeerCratesForMutation = (
         accessToken,
       ),
     changes: ['beerCrate', 'beerPayment'],
-    notice: { success: cratesNoticeOf, ...FAILURE },
+    notice: { success: cratesNoticeOf },
   });
 
 export const useBeerCrateUndoMutation = (): UseMutationResult<void, Error, number> =>
@@ -172,7 +163,7 @@ export const useBeerPaymentMutation = (): UseMutationResult<void, Error, BeerPay
     request: (input: BeerPaymentInput, accessToken) =>
       requestBeerPayment(input.beerPotId, input.personId, input.crates, accessToken),
     changes: ['beerPayment'],
-    notice: { success: paymentNoticeOf, ...FAILURE },
+    notice: { success: paymentNoticeOf },
   });
 
 export const useBeerPaymentUndoMutation = (): UseMutationResult<void, Error, number> =>
@@ -204,5 +195,5 @@ export const useBeerHandoverMutation = (): UseMutationResult<
     request: (input: BeerHandoverInput, accessToken) =>
       requestBeerPotHandover(input.beerPotId, input.successorPersonId, input.settings, accessToken),
     changes: ['beerPot', 'beerStock'],
-    notice: { success: (_input, result) => handoverNoticeOf(result.carriedCrates), ...FAILURE },
+    notice: { success: (_input, result) => handoverNoticeOf(result.carriedCrates) },
   });

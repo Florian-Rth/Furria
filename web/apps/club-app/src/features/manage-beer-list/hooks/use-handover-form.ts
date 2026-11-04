@@ -1,39 +1,29 @@
-import { useState } from 'react';
-import type { PersonRef } from '@/lib/api/schemas';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import { useBeerHandoverMutation } from '../api';
-import type { PotSettingsForm } from './use-pot-settings-form';
-import { usePotSettingsForm } from './use-pot-settings-form';
+import { potFormOf } from '../beer-hub';
+import { HUB_LANDING } from '../beer-landing';
+import { writeStateOf } from '../form-fields';
+import { BeerHandoverFormSchema } from '../schemas';
+import type { PotWriteForm } from './use-pot-fields';
+import { usePotFields } from './use-pot-fields';
 
-export interface HandoverForm {
-  successor: PersonRef | null;
-  chooseSuccessor: (person: PersonRef) => void;
-  clearSuccessor: () => void;
-  settings: PotSettingsForm;
-  canSubmit: boolean;
-  submit: () => void;
-}
-
-export const useHandoverForm = (beerPotId: number, onDone: () => void): HandoverForm => {
-  const [successor, setSuccessor] = useState<PersonRef | null>(null);
-  const settings = usePotSettingsForm(null);
+export const useHandoverForm = (beerPotId: number): PotWriteForm => {
   const handingOver = useBeerHandoverMutation();
-  const canSubmit = successor !== null && settings.settings !== null && !handingOver.isPending;
+  const write = useWriteForm({
+    schema: BeerHandoverFormSchema,
+    defaults: potFormOf(null, null),
+    mutate: (handover) =>
+      handingOver.mutateAsync({
+        beerPotId,
+        successorPersonId: handover.person.personId,
+        settings: handover.settings,
+      }),
+    landing: () => HUB_LANDING,
+  });
+  const fields = usePotFields(write.form.control);
 
   return {
-    successor,
-    chooseSuccessor: setSuccessor,
-    clearSuccessor: () => {
-      setSuccessor(null);
-    },
-    settings,
-    canSubmit,
-    submit: () => {
-      if (successor !== null && settings.settings !== null) {
-        handingOver.mutate(
-          { beerPotId, successorPersonId: successor.personId, settings: settings.settings },
-          { onSuccess: onDone },
-        );
-      }
-    },
+    fields,
+    ...writeStateOf(write),
   };
 };

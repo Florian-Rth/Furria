@@ -3,13 +3,19 @@ import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { PersonPicker } from '@/features/group-hub/components/PersonPicker';
+import type { PersonRef } from '@/lib/api/schemas';
 import { EMPTY_LEAD, EMPTY_TITLE, OPEN_POT_LABEL, OWNER_LABEL } from '../beer-hub-copy';
 import { useOpenPotForm } from '../hooks/use-open-pot-form';
+import { BeerPotPersonField } from './BeerPotPersonField';
 import { BeerPotSettingsFields } from './BeerPotSettingsFields';
+import { BeerRejection } from './BeerRejection';
 
-export const BeerOpenPotForm: FC = () => {
-  const form = useOpenPotForm();
+interface BeerOpenPotFormProps {
+  owner: PersonRef | null;
+}
+
+export const BeerOpenPotForm: FC<BeerOpenPotFormProps> = ({ owner }) => {
+  const form = useOpenPotForm(owner);
 
   return (
     <KkPanelSection title={EMPTY_TITLE}>
@@ -17,10 +23,16 @@ export const BeerOpenPotForm: FC = () => {
         <KkText variant="body2" tone="secondary">
           {EMPTY_LEAD}
         </KkText>
-        <KkText variant="subtitle2">{OWNER_LABEL}</KkText>
-        <PersonPicker selected={form.owner} onSelect={form.chooseOwner} onClear={form.clearOwner} />
-        <BeerPotSettingsFields form={form.settings} />
-        <KkButton variant="contained" size="large" disabled={!form.canSubmit} onClick={form.submit}>
+        <BeerPotPersonField label={OWNER_LABEL} fields={form.fields} />
+        <BeerPotSettingsFields fields={form.fields} />
+        <BeerRejection rejection={form.rejection} />
+        <KkButton
+          variant="contained"
+          size="large"
+          disabled={!form.canSubmit}
+          loading={form.isSaving}
+          onClick={form.submit}
+        >
           {OPEN_POT_LABEL}
         </KkButton>
       </Stack>

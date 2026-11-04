@@ -1,8 +1,35 @@
 import { z } from 'zod';
 import { PersonRefSchema } from '@/lib/api/schemas';
+import { causeFor, centsOfPriceText, countOfText, stockChangeOf, textOrNull } from './beer-hub';
+import {
+  CAUSE_MISSING,
+  COUNT_INVALID,
+  countRangeOf,
+  DETAILS_MISSING,
+  OWNER_MISSING,
+  PERSON_MISSING,
+  PRICE_INVALID,
+  SUCCESSOR_MISSING,
+} from './beer-hub-copy';
 
 export const BeerCorrectionReasonSchema = z.enum(['shrinkage', 'breakage', 'miscount']);
 export type BeerCorrectionReason = z.infer<typeof BeerCorrectionReasonSchema>;
+
+export const BeerStockDirectionSchema = z.enum(['up', 'down']);
+export type BeerStockDirection = z.infer<typeof BeerStockDirectionSchema>;
+
+export const BeerStockCauseSchema = z.enum(['delivery', ...BeerCorrectionReasonSchema.options]);
+export type BeerStockCause = z.infer<typeof BeerStockCauseSchema>;
+
+export const BeerStockChangeSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('delivery'), crates: z.number().int() }),
+  z.object({
+    kind: z.literal('correction'),
+    crates: z.number().int(),
+    reason: BeerCorrectionReasonSchema,
+  }),
+]);
+export type BeerStockChange = z.infer<typeof BeerStockChangeSchema>;
 
 export const BeerMovementKindSchema = z.enum([
   'delivery',
@@ -11,19 +38,6 @@ export const BeerMovementKindSchema = z.enum([
   'handedOver',
 ]);
 export type BeerMovementKind = z.infer<typeof BeerMovementKindSchema>;
-
-export const OpenBeerPotSchema = z.object({
-  beerPotId: z.number().int(),
-  owner: PersonRefSchema.nullable(),
-  cratePriceCents: z.number().int(),
-  paymentLink: z.string().nullable(),
-  paymentNote: z.string().nullable(),
-  openedAt: z.iso.datetime({ offset: true }),
-});
-export type OpenBeerPot = z.infer<typeof OpenBeerPotSchema>;
-
-export const OpenBeerPotResponseSchema = z.object({ pot: OpenBeerPotSchema.nullable() });
-export type OpenBeerPotResponse = z.infer<typeof OpenBeerPotResponseSchema>;
 
 export const BeerPotSummarySchema = z.object({
   beerPotId: z.number().int(),
@@ -145,13 +159,131 @@ export const BeerHandoverSchema = z.object({
 });
 export type BeerHandover = z.infer<typeof BeerHandoverSchema>;
 
-export interface BeerPotSettings {
-  cratePriceCents: number;
-  paymentLink: string | null;
-  paymentNote: string | null;
-}
-
-export const BeerPaneSearchSchema = z.object({
-  person: z.coerce.number().int().positive().optional().catch(undefined),
+export const BeerPotSettingsSchema = z.object({
+  cratePriceCents: z.number().int().positive(),
+  paymentLink: z.string().nullable(),
+  paymentNote: z.string().nullable(),
 });
-export type BeerPaneSearch = z.infer<typeof BeerPaneSearchSchema>;
+export type BeerPotSettings = z.infer<typeof BeerPotSettingsSchema>;
+
+type IssueContext = z.RefinementCtx;
+
+const addIssue = (ctx: IssueContext, field: string, message: string): void => {
+  ctx.addIssue({ code: 'custom', message, path: [field] });
+};
+
+const BeerStockFieldsSchema = z.object({
+  direction: BeerStockDirectionSchema,
+  cause: BeerStockCauseSchema.nullable(),
+  crates: z.string(),
+});
+export type BeerStockForm = z.infer<typeof BeerStockFieldsSchema>;
+
+export const BeerStockFormSchema = BeerStockFieldsSchema.transform((form, ctx): BeerStockChange => {
+  const count = countOfText(form.crates);
+  const change = stockChangeOf(form.direction, form.cause, count);
+
+  if (count < 1) {
+    addIssue(ctx, 'crates', COUNT_INVALID);
+  }
+  if (causeFor(form.direction, form.cause) === null) {
+    addIssue(ctx, 'cause', CAUSE_MISSING);
+  }
+
+  return change ?? z.NEVER;
+});
+
+const countWithin = (text: string, max: number, ctx: IssueContext, field: string): number => {
+  const count = countOfText(text);
+
+  if (count < 1 || count > max) {
+    addIssue(ctx, field, countRangeOf(max));
+  }
+
+  return count;
+};
+
+const BeerPaymentFieldsSchema = z.object({ crates: z.string() });
+export type BeerPaymentForm = z.infer<typeof BeerPaymentFieldsSchema>;
+
+export const beerPaymentFormSchema = (openCrates: number): z.ZodType<number, BeerPaymentForm> =>
+  BeerPaymentFieldsSchema.transform((form, ctx) =>
+    countWithin(form.crates, openCrates, ctx, 'crates'),
+  );
+
+const BeerCratesFieldsSchema = z.object({
+  personId: z.string(),
+  count: z.string(),
+  paid: z.boolean(),
+});
+export type BeerCratesForm = z.infer<typeof BeerCratesFieldsSchema>;
+
+export const BeerCratesBookingSchema = z.object({
+  personId: z.number().int(),
+  count: z.number().int(),
+  paid: z.boolean(),
+});
+export type BeerCratesBooking = z.infer<typeof BeerCratesBookingSchema>;
+
+export const beerCratesFormSchema = (
+  personIds: readonly number[],
+  maxCount: number,
+): z.ZodType<BeerCratesBooking, BeerCratesForm> =>
+  BeerCratesFieldsSchema.transform((form, ctx) => {
+    const personId = Number(form.personId);
+    const count = countWithin(form.count, maxCount, ctx, 'count');
+
+    if (form.personId === '' || !personIds.includes(personId)) {
+      addIssue(ctx, 'personId', PERSON_MISSING);
+    }
+
+    return { personId, count, paid: form.paid };
+  });
+
+const BeerPotFieldsSchema = z.object({
+  person: PersonRefSchema.nullable(),
+  cratePrice: z.string(),
+  paymentLink: z.string(),
+  paymentNote: z.string(),
+});
+export type BeerPotForm = z.infer<typeof BeerPotFieldsSchema>;
+
+const potSettingsOf = (form: BeerPotForm, ctx: IssueContext): BeerPotSettings => {
+  const cratePriceCents = centsOfPriceText(form.cratePrice);
+  const paymentLink = textOrNull(form.paymentLink);
+  const paymentNote = textOrNull(form.paymentNote);
+
+  if (cratePriceCents === null) {
+    addIssue(ctx, 'cratePrice', PRICE_INVALID);
+  }
+  if (paymentLink === null && paymentNote === null) {
+    addIssue(ctx, 'paymentNote', DETAILS_MISSING);
+  }
+
+  return { cratePriceCents: cratePriceCents ?? 0, paymentLink, paymentNote };
+};
+
+export const BeerPotSettingsFormSchema = BeerPotFieldsSchema.transform(potSettingsOf);
+
+export const BeerPersonPotSettingsSchema = z.object({
+  person: PersonRefSchema,
+  settings: BeerPotSettingsSchema,
+});
+export type BeerPersonPotSettings = z.infer<typeof BeerPersonPotSettingsSchema>;
+
+const personPotFormSchema = (missing: string): z.ZodType<BeerPersonPotSettings, BeerPotForm> =>
+  BeerPotFieldsSchema.transform((form, ctx) => {
+    const settings = potSettingsOf(form, ctx);
+
+    if (form.person === null) {
+      addIssue(ctx, 'person', missing);
+
+      return z.NEVER;
+    }
+
+    return { person: form.person, settings };
+  });
+
+export const BeerPotOpeningFormSchema = personPotFormSchema(OWNER_MISSING);
+
+export const BeerHandoverFormSchema = personPotFormSchema(SUCCESSOR_MISSING);

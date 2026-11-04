@@ -1,23 +1,28 @@
-import { useState } from 'react';
+import { useController } from 'react-hook-form';
+import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import type { PersonRef } from '@/lib/api/schemas';
 import { useBeerCratesForMutation } from '../api';
 import { countOfText } from '../beer-hub';
-import type { PersonPick } from './use-person-pick';
-import { usePersonPick } from './use-person-pick';
+import { HUB_LANDING } from '../beer-landing';
+import type { BeerWriteState } from '../form-fields';
+import { touchingChangeOf, writeStateOf } from '../form-fields';
+import { beerCratesFormSchema } from '../schemas';
 
 const MAX_PER_BOOKING = 20;
+const NO_PERSON = '';
 
-export interface CratesForm {
-  pick: PersonPick;
+export interface CratesForm extends BeerWriteState {
+  personValue: string;
+  choosePerson: (value: string) => void;
+  personError: string | undefined;
   person: PersonRef | null;
   countText: string;
   setCountText: (text: string) => void;
+  countError: string | undefined;
   count: number;
   maxCount: number;
   paid: boolean;
   setPaid: (paid: boolean) => void;
-  canSubmit: boolean;
-  submit: () => void;
 }
 
 export interface CratesFormSource {
@@ -25,40 +30,49 @@ export interface CratesFormSource {
   candidates: readonly PersonRef[];
   initialPersonId: number | null;
   stock: number;
-  onDone: () => void;
 }
 
+const initialPersonOf = (source: CratesFormSource): string =>
+  source.candidates.some((candidate) => candidate.personId === source.initialPersonId)
+    ? String(source.initialPersonId)
+    : NO_PERSON;
+
 export const useCratesForm = (source: CratesFormSource): CratesForm => {
-  const pick = usePersonPick(
-    source.initialPersonId,
-    source.candidates.map((candidate) => candidate.personId),
-  );
-  const [countText, setCountText] = useState('1');
-  const [paid, setPaid] = useState(false);
   const booking = useBeerCratesForMutation(source.beerPotId);
-  const person =
-    source.candidates.find((candidate) => candidate.personId === pick.personId) ?? null;
   const maxCount = Math.min(MAX_PER_BOOKING, source.stock);
-  const count = countOfText(countText);
-  const canSubmit = person !== null && count >= 1 && count <= maxCount && !booking.isPending;
+  const write = useWriteForm({
+    schema: beerCratesFormSchema(
+      source.candidates.map((candidate) => candidate.personId),
+      maxCount,
+    ),
+    defaults: { personId: initialPersonOf(source), count: '1', paid: false },
+    mutate: (booked) => {
+      const name =
+        source.candidates.find((candidate) => candidate.personId === booked.personId)?.firstName ??
+        '';
+
+      return booking.mutateAsync({ ...booked, name });
+    },
+    landing: () => HUB_LANDING,
+  });
+  const personField = useController({ control: write.form.control, name: 'personId' });
+  const countField = useController({ control: write.form.control, name: 'count' });
+  const paidField = useController({ control: write.form.control, name: 'paid' });
+  const personValue = personField.field.value;
 
   return {
-    pick,
-    person,
-    countText,
-    setCountText,
-    count,
+    personValue,
+    choosePerson: touchingChangeOf(personField.field),
+    personError: personField.fieldState.error?.message,
+    person:
+      source.candidates.find((candidate) => String(candidate.personId) === personValue) ?? null,
+    countText: countField.field.value,
+    setCountText: touchingChangeOf(countField.field),
+    countError: countField.fieldState.error?.message,
+    count: countOfText(countField.field.value),
     maxCount,
-    paid,
-    setPaid,
-    canSubmit,
-    submit: () => {
-      if (person !== null && canSubmit) {
-        booking.mutate(
-          { personId: person.personId, count, paid, name: person.firstName },
-          { onSuccess: source.onDone },
-        );
-      }
-    },
+    paid: paidField.field.value,
+    setPaid: touchingChangeOf(paidField.field),
+    ...writeStateOf(write),
   };
 };

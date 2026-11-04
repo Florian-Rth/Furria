@@ -32,6 +32,8 @@ export const BeerJournalLine: FC<BeerJournalLineProps> = ({ entry }) => {
             hub.openPerson(entryPerson.personId);
           },
         };
+  const deltaTone = deltaToneOf(entry.stockDelta);
+  const selected = entryPerson !== null && entryPerson.personId === hub.selectedPersonId;
 
   return (
     <KkPourJournalRow
@@ -42,9 +44,9 @@ export const BeerJournalLine: FC<BeerJournalLineProps> = ({ entry }) => {
       note={copy.note}
       amount={copy.amount}
       delta={copy.delta}
-      deltaTone={deltaToneOf(entry.stockDelta)}
+      deltaTone={deltaTone}
       struck={entry.undone}
-      selected={entryPerson !== null && entryPerson.personId === hub.selectedPersonId}
+      selected={selected}
     />
   );
 };

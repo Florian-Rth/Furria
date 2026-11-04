@@ -2,8 +2,8 @@ import { KkPourTabLine } from '@furria/ui/KkPourTabLine';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useBeerPaymentUndoMutation } from '../api';
-import { cratesLabel, euroOf, firstNameOf, paymentUndoConfirmOf } from '../beer-hub-copy';
-import { clockOf, shortDateOf } from '../beer-time';
+import { euroOf, paymentLineTextOf, paymentNoteOf, paymentUndoConfirmOf } from '../beer-hub-copy';
+import { shortDateOf } from '../beer-time';
 import type { BeerJournalPayment } from '../schemas';
 import { BeerUndoButton } from './BeerUndoButton';
 
@@ -14,8 +14,10 @@ interface BeerPaymentRowProps {
 export const BeerPaymentRow: FC<BeerPaymentRowProps> = ({ payment }) => {
   const undoing = useBeerPaymentUndoMutation();
   const confirm = paymentUndoConfirmOf(payment.crates);
-  const text = `zahlt ${cratesLabel(payment.crates)} · ${clockOf(payment.bookedAt)}`;
-  const note = payment.bookedBy === null ? null : `gebucht von ${firstNameOf(payment.bookedBy)}`;
+  const date = shortDateOf(payment.bookedAt);
+  const text = paymentLineTextOf(payment);
+  const note = paymentNoteOf(payment);
+  const amount = euroOf(payment.amountCents);
   const undo = (): void => {
     undoing.mutate(payment.beerPaymentId);
   };
@@ -23,10 +25,10 @@ export const BeerPaymentRow: FC<BeerPaymentRowProps> = ({ payment }) => {
   return (
     <Stack direction="row" sx={{ alignItems: 'center', gap: 0.5, minWidth: 0 }}>
       <KkPourTabLine
-        date={shortDateOf(payment.bookedAt)}
+        date={date}
         text={text}
         note={note}
-        amount={euroOf(payment.amountCents)}
+        amount={amount}
         state="paid"
         sx={{ flex: 1, minWidth: 0 }}
       />

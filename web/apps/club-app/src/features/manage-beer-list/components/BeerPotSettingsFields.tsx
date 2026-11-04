@@ -1,54 +1,44 @@
 import { KkPriceField } from '@furria/ui/KkPriceField';
 import { KkTextField } from '@furria/ui/KkTextField';
-import type { ChangeEvent, FC } from 'react';
-import {
-  DETAILS_MISSING,
-  LINK_LABEL,
-  NOTE_LABEL,
-  PRICE_HINT,
-  PRICE_INVALID,
-  PRICE_LABEL,
-} from '../beer-hub-copy';
-import type { PotSettingsForm } from '../hooks/use-pot-settings-form';
+import type { FC } from 'react';
+import { LINK_LABEL, NOTE_LABEL, PRICE_HINT, PRICE_LABEL } from '../beer-hub-copy';
+import type { PotFields } from '../hooks/use-pot-fields';
 
 interface BeerPotSettingsFieldsProps {
-  form: PotSettingsForm;
+  fields: PotFields;
 }
 
-export const BeerPotSettingsFields: FC<BeerPotSettingsFieldsProps> = ({ form }) => {
-  const priceHelper = form.priceInvalid ? PRICE_INVALID : PRICE_HINT;
-  const noteHelper = form.detailsMissing ? DETAILS_MISSING : undefined;
-  const changeLink = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
-    form.setLink(event.target.value);
-  };
-  const changeNote = (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>): void => {
-    form.setNote(event.target.value);
-  };
+export const BeerPotSettingsFields: FC<BeerPotSettingsFieldsProps> = ({ fields }) => {
+  const priceInvalid = fields.priceError !== undefined;
+  const priceHelper = fields.priceError ?? PRICE_HINT;
+  const noteInvalid = fields.noteError !== undefined;
 
   return (
     <>
       <KkPriceField
-        name="price"
+        name="cratePrice"
         label={PRICE_LABEL}
-        value={form.priceText}
-        onChange={form.setPriceText}
-        error={form.priceInvalid}
+        value={fields.priceText}
+        onChange={fields.setPriceText}
+        error={priceInvalid}
         helperText={priceHelper}
       />
       <KkTextField
         name="paymentLink"
         label={LINK_LABEL}
         type="url"
-        value={form.link}
-        onChange={changeLink}
+        value={fields.link}
+        onChange={fields.changeLink}
+        onBlur={fields.touchLink}
       />
       <KkTextField
         name="paymentNote"
         label={NOTE_LABEL}
-        value={form.note}
-        onChange={changeNote}
-        error={form.detailsMissing}
-        helperText={noteHelper}
+        value={fields.note}
+        onChange={fields.changeNote}
+        onBlur={fields.touchNote}
+        error={noteInvalid}
+        helperText={fields.noteError}
       />
     </>
   );

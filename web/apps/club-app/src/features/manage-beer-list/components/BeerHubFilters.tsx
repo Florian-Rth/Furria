@@ -5,7 +5,7 @@ import { KkSelectField } from '@furria/ui/KkSelectField';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import type { BeerKindFilter } from '../beer-hub';
+import type { BeerBookable, BeerKindFilter } from '../beer-hub';
 import { bookableOf } from '../beer-hub';
 import { useBeerHubContext } from '../beer-hub-context';
 import {
@@ -25,21 +25,23 @@ const CLEAR_ICON = <KkIcon name="close" size="small" />;
 
 const KIND_OPTIONS = KIND_ORDER.map((kind) => ({ id: kind, label: KIND_LABELS[kind] }));
 
+const optionOf = (entry: BeerBookable): { value: string; label: string } => ({
+  value: String(entry.person.personId),
+  label: fullNameOf(entry.person),
+});
+
 const isKind = (id: string): id is BeerKindFilter => KIND_ORDER.some((kind) => kind === id);
 
 export const BeerHubFilters: FC = () => {
   const hub = useBeerHubContext();
+  const bookable = bookableOf(hub.enrollments);
   const personOptions = [
     { value: ALL_PERSONS, label: PERSON_FILTER_ALL },
-    ...bookableOf(hub.enrollments).map((entry) => ({
-      value: String(entry.person.personId),
-      label: fullNameOf(entry.person),
-    })),
+    ...bookable.map(optionOf),
   ];
   const personValue = hub.personFilter === null ? ALL_PERSONS : String(hub.personFilter);
   const filtered =
-    bookableOf(hub.enrollments).find((entry) => entry.person.personId === hub.personFilter)
-      ?.person ?? null;
+    bookable.find((entry) => entry.person.personId === hub.personFilter)?.person ?? null;
   const chooseKind = (id: string): void => {
     if (isKind(id)) {
       hub.chooseKind(id);

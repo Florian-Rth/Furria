@@ -9,7 +9,6 @@ import type {
   BeerPotsResponse,
   BeerStockResponse,
   BeerTabsResponse,
-  OpenBeerPotResponse,
 } from './schemas';
 import {
   BeerCratesBookedSchema,
@@ -21,13 +20,9 @@ import {
   BeerPotsResponseSchema,
   BeerStockResponseSchema,
   BeerTabsResponseSchema,
-  OpenBeerPotResponseSchema,
 } from './schemas';
 
 const POTS = '/api/beer-list/pots';
-
-export const requestOpenBeerPot = (accessToken: string): Promise<OpenBeerPotResponse> =>
-  apiFetch('/api/beer-list/pot', { schema: OpenBeerPotResponseSchema, accessToken });
 
 export const requestBeerPots = (accessToken: string): Promise<BeerPotsResponse> =>
   apiFetch(POTS, { schema: BeerPotsResponseSchema, accessToken });

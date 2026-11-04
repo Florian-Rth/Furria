@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import {
   bookableOf,
   centsOfPriceText,
+  crateStateOf,
   hubSummaryOf,
   journalOf,
   openCratesOf,
@@ -79,8 +80,24 @@ describe('openCratesOf and paymentPreviewOf', () => {
     const preview = paymentPreviewOf(open, 1);
 
     expect(open.map((entry) => entry.crateId)).toEqual([3, 4]);
-    expect([...preview.settledIds]).toEqual([3]);
+    expect(preview.lines.map((line) => [line.crate.crateId, line.settled])).toEqual([
+      [3, true],
+      [4, false],
+    ]);
     expect(preview.cents).toBe(1300);
+  });
+});
+
+describe('crateStateOf', () => {
+  it.each([
+    ['2026-11-03T10:00:00.000Z', null, 'open'],
+    ['2026-10-28T18:00:00.000Z', null, 'overdue'],
+    ['2026-10-28T18:00:01.000Z', null, 'open'],
+    ['2026-10-01T10:00:00.000Z', 4, 'paid'],
+  ] as const)('booked %s, payment %s → %s', (bookedAt, beerPaymentId, expected) => {
+    const booked = crate(1, 1, bookedAt, beerPaymentId === null ? {} : { beerPaymentId });
+
+    expect(crateStateOf(booked, NOW)).toBe(expected);
   });
 });
 

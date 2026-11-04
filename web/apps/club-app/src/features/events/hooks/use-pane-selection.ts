@@ -1,7 +1,7 @@
 import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import { useNavigate, useSearch } from '@tanstack/react-router';
+import { useCloseOnEscape } from '@/lib/use-close-on-escape';
 import type { EventPaneKey } from '../schemas';
-import { useCloseOnEscape } from './use-close-on-escape';
 
 const EVENTS_ROUTE_ID = '/_app/events';
 const EVENTS_PATH = '/events';

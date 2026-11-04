@@ -9,7 +9,9 @@ interface BeerPersonPaneProps {
 export const BeerPersonPane: FC<BeerPersonPaneProps> = ({ personId }) => {
   const open = openHubOf(useBeerHubContext());
 
-  return open === null ? null : (
-    <BeerPersonPaneOpen key={personId} open={open} personId={personId} />
-  );
+  if (open === null) {
+    return null;
+  }
+
+  return <BeerPersonPaneOpen open={open} personId={personId} />;
 };

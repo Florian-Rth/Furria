@@ -6,7 +6,12 @@ import type {
   BeerJournalCrate,
   BeerJournalResponse,
   BeerMovement,
+  BeerPotForm,
+  BeerPotSettings,
   BeerPotTab,
+  BeerStockCause,
+  BeerStockChange,
+  BeerStockDirection,
   BeerStockResponse,
 } from './schemas';
 
@@ -39,6 +44,7 @@ export interface BeerHubSummary {
   openTabs: number;
   overdue: number;
   enrolled: number;
+  paceWindowDays: number;
   series: readonly number[];
 }
 
@@ -173,10 +179,11 @@ export const hubSummaryOf = ({ stock, crates, roster, now }: BeerSummarySource):
     emptyOn,
     daysLeft,
     warns: daysLeft !== null && daysLeft <= WARN_WITHIN_DAYS,
-    openCents: roster.reduce((sum, row) => sum + row.openCents, 0),
+    openCents: rosterCentsOf(roster),
     openTabs: roster.filter((row) => row.openCrates > 0).length,
     overdue: roster.filter((row) => row.state === 'overdue').length,
     enrolled: roster.filter((row) => row.enrollmentId !== null).length,
+    paceWindowDays: stock.forecast.paceWindowDays,
     series: stockSeriesOf(stock.movements, crates, now, SPARK_DAYS),
   };
 };
@@ -197,8 +204,19 @@ export const openCratesOf = (
         Date.parse(left.bookedAt) - Date.parse(right.bookedAt) || left.crateId - right.crateId,
     );
 
+export const openCentsOf = (crates: readonly BeerJournalCrate[]): number =>
+  crates.reduce((sum, crate) => sum + crate.priceCents, 0);
+
+export const rosterCentsOf = (rows: readonly BeerRosterRow[]): number =>
+  rows.reduce((sum, row) => sum + row.openCents, 0);
+
+export interface BeerPaymentLine {
+  crate: BeerJournalCrate;
+  settled: boolean;
+}
+
 export interface BeerPaymentPreview {
-  settledIds: ReadonlySet<number>;
+  lines: readonly BeerPaymentLine[];
   cents: number;
 }
 
@@ -206,26 +224,26 @@ export const paymentPreviewOf = (
   oldestFirst: readonly BeerJournalCrate[],
   count: number,
 ): BeerPaymentPreview => {
-  const settled = oldestFirst.slice(0, Math.max(0, count));
+  const settledCount = Math.max(0, count);
 
   return {
-    settledIds: new Set(settled.map((crate) => crate.crateId)),
-    cents: settled.reduce((sum, crate) => sum + crate.priceCents, 0),
+    lines: oldestFirst.map((crate, index) => ({ crate, settled: index < settledCount })),
+    cents: openCentsOf(oldestFirst.slice(0, settledCount)),
   };
 };
 
-export type BeerStockDirection = 'up' | 'down';
+export const crateStateOf = (crate: BeerJournalCrate, now: string): BeerTabState => {
+  if (crate.beerPaymentId !== null) {
+    return 'paid';
+  }
 
-export type BeerStockCause = 'delivery' | BeerCorrectionReason;
+  return (openDaysOf(crate.bookedAt, now) ?? 0) >= OVERDUE_AFTER_DAYS ? 'overdue' : 'open';
+};
 
 export const STOCK_CAUSES: Record<BeerStockDirection, readonly BeerStockCause[]> = {
   up: ['delivery', 'miscount'],
   down: ['shrinkage', 'breakage', 'miscount'],
 };
-
-export type BeerStockChange =
-  | { kind: 'delivery'; crates: number }
-  | { kind: 'correction'; crates: number; reason: BeerCorrectionReason };
 
 export const causeFor = (
   direction: BeerStockDirection,
@@ -278,6 +296,16 @@ export const priceTextOf = (cents: number): string =>
 
 export const textOrNull = (text: string): string | null =>
   text.trim() === '' ? null : text.trim();
+
+export const potFormOf = (
+  person: PersonRef | null,
+  settings: BeerPotSettings | null,
+): BeerPotForm => ({
+  person,
+  cratePrice: settings === null ? '' : priceTextOf(settings.cratePriceCents),
+  paymentLink: settings?.paymentLink ?? '',
+  paymentNote: settings?.paymentNote ?? '',
+});
 
 export type BeerJournalKind =
   | 'crate'

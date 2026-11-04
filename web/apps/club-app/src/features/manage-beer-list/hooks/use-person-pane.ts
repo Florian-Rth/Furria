@@ -12,6 +12,7 @@ export interface PersonPane {
   taken: readonly BeerJournalCrate[];
   payments: readonly BeerJournalPayment[];
   enrollment: BeerEnrollment | null;
+  canEnd: boolean;
   ending: boolean;
   end: () => void;
 }
@@ -37,6 +38,7 @@ export const usePersonPane = (hub: BeerHub, open: BeerOpenHub, personId: number)
   const ending = useBeerEnrollmentEndMutation();
   const enrollment =
     hub.enrollments.findLast((candidate) => candidate.personId === personId) ?? null;
+  const running = enrollment !== null && enrollment.endedAt === null ? enrollment : null;
 
   return {
     person: personOf(personId, open, hub.enrollments),
@@ -49,10 +51,11 @@ export const usePersonPane = (hub: BeerHub, open: BeerOpenHub, personId: number)
       (payment) => payment.person?.personId === personId && payment.undoneAt === null,
     ),
     enrollment,
+    canEnd: running !== null,
     ending: ending.isPending,
     end: () => {
-      if (enrollment !== null && enrollment.endedAt === null) {
-        ending.mutate(enrollment.enrollmentId);
+      if (running !== null) {
+        ending.mutate(running.enrollmentId);
       }
     },
   };

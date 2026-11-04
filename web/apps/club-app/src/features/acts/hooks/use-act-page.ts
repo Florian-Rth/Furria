@@ -10,13 +10,13 @@ import { useNavigate } from '@tanstack/react-router';
 import { PRACTICE_LABEL } from '@/features/act-practice/practice-copy';
 import { eveningCastOf } from '@/features/act-studio/studio-evening';
 import { TRAINING_LABEL } from '@/features/act-training/training-copy';
-import { useCloseOnEscape } from '@/features/events/hooks/use-close-on-escape';
 import { useActsQuery } from '@/features/running-order/api';
 import { usePlansRunningOrder } from '@/features/running-order/hooks/use-plans-running-order';
 import type { CastPerson, CatalogueAct } from '@/features/running-order/schemas';
 import { useMeQuery } from '@/features/session/api';
 import type { BackStackSpot } from '@/lib/back-stack';
 import { parsePositiveId } from '@/lib/positive-id';
+import { useCloseOnEscape } from '@/lib/use-close-on-escape';
 import { useSpotBehind } from '@/lib/use-spot-behind';
 import { toEveningLabel } from '../act-evenings-copy';
 import {
