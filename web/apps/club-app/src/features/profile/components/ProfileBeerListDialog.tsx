@@ -1,14 +1,14 @@
 import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
 import type { FC } from 'react';
-import type { BeerListEnrollmentControl } from '../hooks/use-beer-list-enrollment';
+import type { BeerListDialogControl } from '../hooks/use-beer-list-enrollment';
 import { BEER_LIST_CANCEL, BEER_LIST_CLOSE, BEER_LIST_DIALOGS } from '../profile-beer-list-labels';
 
 interface ProfileBeerListDialogProps {
-  control: BeerListEnrollmentControl;
+  control: BeerListDialogControl;
 }
 
 export const ProfileBeerListDialog: FC<ProfileBeerListDialogProps> = ({ control }) => {
-  const copy = BEER_LIST_DIALOGS[control.dialog];
+  const copy = BEER_LIST_DIALOGS[control.askedAbout];
 
   return (
     <KkConfirmDialog

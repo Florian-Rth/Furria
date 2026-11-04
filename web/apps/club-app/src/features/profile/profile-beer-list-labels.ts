@@ -1,14 +1,40 @@
+import type { KkChipTone } from '@furria/ui/KkChip';
 import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
+import type { KkIconName } from '@furria/ui/KkIcon';
+import type { KkPanelActionEmphasis } from '@furria/ui/panel-action';
 
 export type BeerListDialog = 'enroll' | 'leave';
 
 export const BEER_LIST_TITLE = 'Bierliste';
 export const BEER_LIST_STATUS_LABEL = 'Status';
-export const BEER_LIST_ENROLLED = 'eingetragen';
-export const BEER_LIST_NOT_ENROLLED = 'nicht eingetragen';
-export const BEER_LIST_ENROLLED_HINT = 'Kisten vom Getränkewart gehen auf deinen Deckel.';
-export const BEER_LIST_NOT_ENROLLED_HINT =
-  'Trag dich ein, um Kisten vom Getränkewart auf deinen Deckel zu nehmen.';
+
+export interface BeerListStateCopy {
+  status: string;
+  hint: string;
+  tone: KkChipTone;
+  actionLabel: string;
+  actionIcon: KkIconName;
+  actionEmphasis: KkPanelActionEmphasis;
+}
+
+export const BEER_LIST_STATES: Record<'enrolled' | 'notEnrolled', BeerListStateCopy> = {
+  enrolled: {
+    status: 'eingetragen',
+    hint: 'Kisten von der Bierliste gehen auf deinen Deckel.',
+    tone: 'green',
+    actionLabel: 'Austragen',
+    actionIcon: 'close',
+    actionEmphasis: 'quiet',
+  },
+  notEnrolled: {
+    status: 'nicht eingetragen',
+    hint: 'Trag dich ein, um Kisten von der Bierliste auf deinen Deckel zu nehmen.',
+    tone: 'neutral',
+    actionLabel: 'Eintragen',
+    actionIcon: 'add',
+    actionEmphasis: 'strong',
+  },
+};
 
 export const BEER_LIST_ENROLLED_MESSAGE = 'Du stehst jetzt auf der Bierliste.';
 export const BEER_LIST_LEFT_MESSAGE = 'Du bist von der Bierliste ausgetragen.';
@@ -17,7 +43,6 @@ export const BEER_LIST_CANCEL = 'Abbrechen';
 export const BEER_LIST_CLOSE = 'Schließen';
 
 export interface BeerListDialogCopy {
-  actionLabel: string;
   eyebrow: string;
   question: string;
   explanation: string;
@@ -34,7 +59,7 @@ const ENROLL_DECLARATION: readonly KkConfirmFact[] = [
   {
     label: 'Bezahlen',
     value:
-      'Du zahlst direkt an den Getränkewart. Die Bierliste ist seine Kasse, nicht die des Vereins.',
+      'Du zahlst direkt an die Person, der die Bierliste gehört. Es ist ihre private Kasse, nicht die des Vereins.',
   },
   {
     label: 'Sichtbar',
@@ -49,7 +74,6 @@ const ENROLL_DECLARATION: readonly KkConfirmFact[] = [
 
 export const BEER_LIST_DIALOGS: Record<BeerListDialog, BeerListDialogCopy> = {
   enroll: {
-    actionLabel: 'Eintragen',
     eyebrow: BEER_LIST_TITLE,
     question: 'Auf die Bierliste setzen?',
     explanation: 'Mit dem Eintragen bestätigst du diese Erklärung.',
@@ -57,7 +81,6 @@ export const BEER_LIST_DIALOGS: Record<BeerListDialog, BeerListDialogCopy> = {
     confirmLabel: 'Zustimmen und eintragen',
   },
   leave: {
-    actionLabel: 'Austragen',
     eyebrow: BEER_LIST_TITLE,
     question: 'Von der Bierliste austragen?',
     explanation: 'Du kannst danach keine Kisten mehr auf deinen Deckel nehmen.',
