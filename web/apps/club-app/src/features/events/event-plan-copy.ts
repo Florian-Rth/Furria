@@ -6,7 +6,6 @@ export const STEP_TITLES: Record<EventStepKey, string> = {
   details: 'Eckdaten',
   tickets: 'Karten',
   runningOrder: 'Ablauf',
-  review: 'Nachbereitung',
 };
 
 const FACT_DETAIL_NAMES: Record<FactDetail, string> = {

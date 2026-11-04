@@ -12,11 +12,9 @@ const planned = (overrides: Partial<PlannedEvent> = {}): PlannedEvent => ({
   priceCents: 1900,
   presaleStartsAt: '2026-11-14T10:00:00Z',
   detailsMissing: [],
-  review: { publishedAlbums: 0, publishedNews: 0 },
   steps: [
     { step: 'details', state: 'done', dueOn: '2026-10-18', opensOn: null },
     { step: 'tickets', state: 'open', dueOn: '2026-11-17', opensOn: null },
-    { step: 'review', state: 'waiting', dueOn: '2027-01-30', opensOn: '2027-01-17' },
   ],
   currentStep: 'tickets',
   ...overrides,
@@ -39,7 +37,7 @@ describe('boardStateOf', () => {
     ['overdue', 'tickets', 'tickets', 'overdue'],
     ['open', 'tickets', 'tickets', 'current'],
     ['open', 'tickets', 'details', 'open'],
-    ['waiting', 'review', null, 'waiting'],
+    ['waiting', 'runningOrder', null, 'waiting'],
   ] as const)('shows a %s %s step with current %s as %s', (state, step, current, shown) => {
     expect(boardStateOf(state, step, current)).toBe(shown);
   });

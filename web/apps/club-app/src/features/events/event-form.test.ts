@@ -33,7 +33,6 @@ const event = (overrides: Partial<EventDetails>): EventDetails => ({
   publishedAt: null,
   createdAt: at(2026, 10, 1, 10),
   detailsMissing: ['description', 'picture', 'published'],
-  review: { publishedAlbums: 0, publishedNews: 0 },
   steps: [],
   currentStep: null,
   ...overrides,

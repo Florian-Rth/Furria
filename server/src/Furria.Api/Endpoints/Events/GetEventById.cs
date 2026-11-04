@@ -60,7 +60,6 @@ public sealed class GetEventById : Endpoint<GetEventByIdRequest, GetEventByIdRes
             PublishedAt = details.PublishedAt,
             CreatedAt = details.CreatedAt,
             DetailsMissing = details.Planning.DetailsMissing,
-            Review = EventReviewDto.From(details.Planning.Review),
             Steps = [.. details.Planning.Readiness.Steps.Select(EventStepDto.From)],
             CurrentStep = details.Planning.Readiness.CurrentStep,
         };
@@ -123,8 +122,6 @@ public sealed record GetEventByIdResponse
     public required DateTimeOffset CreatedAt { get; init; }
 
     public required IReadOnlyList<MissingEventDetail> DetailsMissing { get; init; }
-
-    public required EventReviewDto Review { get; init; }
 
     public required IReadOnlyList<EventStepDto> Steps { get; init; }
 

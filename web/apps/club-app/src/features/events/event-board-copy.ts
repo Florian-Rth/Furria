@@ -35,7 +35,6 @@ export const COLUMN_TITLES: Record<BoardColumn, string> = {
   details: 'Eckdaten',
   tickets: 'Karten',
   runningOrder: 'Ablauf',
-  review: 'Nachbereitung',
   deadline: 'Nächste Frist',
 };
 
@@ -44,7 +43,6 @@ export const PANE_ICONS: Record<EventPaneKey, KkIconName> = {
   details: 'factSheet',
   tickets: 'tickets',
   runningOrder: 'timeline',
-  review: 'gallery',
 };
 
 export const GRID_COLUMNS: readonly KkStateGridColumn[] = EVENT_PANE_KEYS.map((pane) => ({
@@ -57,7 +55,6 @@ export const PANE_TITLES: Record<EventPaneKey, string> = {
   details: 'Eckdaten',
   tickets: 'Karten',
   runningOrder: 'Ablauf',
-  review: 'Nachbereitung',
 };
 
 export const STATE_LABELS: Record<KkStepState, string> = {
@@ -115,9 +112,6 @@ const SEPARATOR = ' · ';
 const join = (parts: readonly (string | null)[]): string =>
   parts.filter((part): part is string => part !== null && part !== '').join(SEPARATOR);
 
-const plural = (count: number, one: string, many: string): string =>
-  `${count} ${count === 1 ? one : many}`;
-
 export const toRelativeDays = (days: number): string => {
   if (days === 0) {
     return 'heute';
@@ -159,12 +153,6 @@ export const toCellFactLabel = (fact: CellFact): string => {
         : 'Preis und VVK fehlen';
     case 'sales':
       return salesLabelOf(fact);
-    case 'review':
-      return fact.albums === 0 && fact.news === 0
-        ? 'noch nichts'
-        : join([plural(fact.albums, 'Album', 'Alben'), plural(fact.news, 'Meldung', 'Meldungen')]);
-    case 'reviewOpens':
-      return `ab ${toShortDay(fact.opensOn)}`;
     case 'runningOrder':
       return fact.stands ? 'steht' : 'noch offen';
     case 'runningOrderOpens':
@@ -229,7 +217,6 @@ export const LATER_EYEBROW = 'Kommt noch';
 export const LATER_ITEMS: readonly KkStepLaterItem[] = [
   { icon: 'stage', label: 'Besetzung' },
   { icon: 'tables', label: 'Saal & Tische' },
-  { icon: 'select', label: 'Aufgaben' },
   { icon: 'campaign', label: 'Werbung' },
   { icon: 'live', label: 'Live-Regie' },
 ];
@@ -303,14 +290,6 @@ export const toCellShortFact = (fact: CellFact): string => {
       return fact.priceCents === null
         ? toEventStatusShortLabel({ status: fact.status, presaleStartsAt: fact.presaleStartsAt })
         : formatPriceCents(fact.priceCents);
-    case 'review':
-      return fact.albums > 0
-        ? plural(fact.albums, 'Album', 'Alben')
-        : fact.news > 0
-          ? plural(fact.news, 'Meldung', 'Meldungen')
-          : 'noch nichts';
-    case 'reviewOpens':
-      return `ab ${toShortDay(fact.opensOn)}`;
     case 'runningOrder':
       return fact.stands ? 'steht' : 'noch offen';
     case 'runningOrderOpens':
@@ -358,7 +337,6 @@ export const ACTION_LABELS = {
   picture: 'Bild setzen',
   editDetails: 'Angaben ergänzen',
   editTickets: 'Karten einrichten',
-  album: 'Album anlegen',
 } as const;
 
 export const toStepActionLabel = (pane: EventPaneKey): string => `Weiter: ${PANE_TITLES[pane]}`;
@@ -376,7 +354,6 @@ export const SECONDARY_LINKS: Record<EventPaneKey, readonly SecondaryLink[]> = {
   details: [EDIT_LINK, MANAGE_LINK],
   tickets: [EDIT_LINK],
   runningOrder: [],
-  review: [],
 };
 
 export const EVENT_FALLBACK_TITLE = 'Veranstaltung';

@@ -168,16 +168,7 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
 
                 Assert.Empty(result.DetailsMissing);
                 Assert.Equal(
-                    new EventReviewDto { PublishedAlbums = 0, PublishedNews = 0 },
-                    result.Review
-                );
-                Assert.Equal(
-                    [
-                        EventStepState.Done,
-                        EventStepState.Done,
-                        EventStepState.Open,
-                        EventStepState.Waiting,
-                    ],
+                    [EventStepState.Done, EventStepState.Done, EventStepState.Open],
                     result.Steps.Select(status => status.State)
                 );
                 Assert.Equal(EventStep.RunningOrder, result.CurrentStep);

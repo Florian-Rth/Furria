@@ -24,11 +24,9 @@ const planned = (overrides: Partial<PlannedEvent> = {}): PlannedEvent => ({
   priceCents: 1900,
   presaleStartsAt: '2026-11-14T10:00:00Z',
   detailsMissing: [],
-  review: { publishedAlbums: 0, publishedNews: 0 },
   steps: [
     { step: 'details', state: 'done', dueOn: '2026-10-18', opensOn: null },
     { step: 'tickets', state: 'open', dueOn: '2026-11-17', opensOn: null },
-    { step: 'review', state: 'waiting', dueOn: '2027-01-30', opensOn: '2027-01-17' },
   ],
   currentStep: 'tickets',
   ...overrides,
@@ -134,13 +132,6 @@ describe('cellOf steps', () => {
       priceCents: null,
       presaleStartsAt: '2026-11-14T10:00:00Z',
     });
-  });
-
-  it('shows the review opening day while nothing is published', () => {
-    const cell = cellOf(planned(), 'review', TODAY);
-
-    expect(cell.fact).toEqual({ kind: 'reviewOpens', opensOn: '2027-01-17' });
-    expect(cell.state).toBe('waiting');
   });
 
   it.each([
@@ -334,7 +325,6 @@ describe('sessionTallyOf', () => {
       steps: [
         { step: 'details', state: 'overdue', dueOn: '2026-10-10', opensOn: null },
         { step: 'tickets', state: 'open', dueOn: '2026-10-25', opensOn: null },
-        { step: 'review', state: 'waiting', dueOn: '2027-01-30', opensOn: '2027-01-17' },
       ],
       currentStep: 'details',
     });
@@ -342,8 +332,8 @@ describe('sessionTallyOf', () => {
     const past = planned({ eventId: 4, isOver: true });
 
     expect(sessionTallyOf([planned(), late, cancelled, past], TODAY)).toEqual({
-      counts: { done: 2, overdue: 2, current: 1, open: 1, waiting: 2 },
-      total: 8,
+      counts: { done: 2, overdue: 2, current: 1, open: 1, waiting: 0 },
+      total: 6,
     });
   });
 });

@@ -41,8 +41,6 @@ export type CellFact =
       priceCents: number | null;
       presaleStartsAt: string | null;
     }
-  | { kind: 'review'; albums: number; news: number }
-  | { kind: 'reviewOpens'; opensOn: string }
   | { kind: 'runningOrder'; stands: boolean }
   | { kind: 'runningOrderOpens'; opensOn: string }
   | { kind: 'deadline'; step: EventStepKey; dueOn: string; daysLeft: number }
@@ -60,7 +58,6 @@ const STEP_PANES: Record<EventStepKey, EventPaneKey> = {
   details: 'details',
   tickets: 'tickets',
   runningOrder: 'runningOrder',
-  review: 'review',
 };
 
 const stepStateOf = (event: PlannedEvent, step: EventStepKey): KkStepState => {
@@ -125,25 +122,6 @@ const ticketsCellOf = (event: PlannedEvent): BoardCell => {
   };
 };
 
-const reviewCellOf = (event: PlannedEvent): BoardCell => {
-  const status = stepStatusOf(event, 'review');
-  const opens = status?.state === 'waiting' && status.opensOn !== null ? status.opensOn : null;
-
-  return {
-    column: 'review',
-    pane: 'review',
-    state: stepStateOf(event, 'review'),
-    fact:
-      opens !== null && event.review.publishedAlbums === 0 && event.review.publishedNews === 0
-        ? { kind: 'reviewOpens', opensOn: opens }
-        : {
-            kind: 'review',
-            albums: event.review.publishedAlbums,
-            news: event.review.publishedNews,
-          },
-  };
-};
-
 const runningOrderCellOf = (event: PlannedEvent): BoardCell => {
   const status = stepStatusOf(event, 'runningOrder');
   const opens = status?.state === 'waiting' && status.opensOn !== null ? status.opensOn : null;
@@ -179,7 +157,7 @@ const deadlineCellOf = (event: PlannedEvent, todayIsoDay: string): BoardCell => 
   const next = nextDeadlineOf(event);
 
   if (next === null) {
-    return { column: 'deadline', pane: 'review', state: 'done', fact: { kind: 'allDone' } };
+    return { column: 'deadline', pane: 'website', state: 'done', fact: { kind: 'allDone' } };
   }
 
   return {
@@ -220,8 +198,6 @@ export const cellOf = (
       return ticketsCellOf(event);
     case 'runningOrder':
       return runningOrderCellOf(event);
-    case 'review':
-      return reviewCellOf(event);
     case 'deadline':
       return deadlineCellOf(event, todayIsoDay);
   }

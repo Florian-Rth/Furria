@@ -19,7 +19,6 @@ export type PlannedEvent = Pick<
   | 'priceCents'
   | 'presaleStartsAt'
   | 'detailsMissing'
-  | 'review'
   | 'steps'
   | 'currentStep'
 >;

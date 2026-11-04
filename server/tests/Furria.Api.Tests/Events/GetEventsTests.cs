@@ -5,7 +5,6 @@ using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Media;
-using Furria.Core.News;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -291,43 +290,10 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
                             DueOn = new DateOnly(2027, 3, 6),
                             OpensOn = new DateOnly(2027, 2, 20),
                         },
-                        new EventStepDto
-                        {
-                            Step = EventStep.Review,
-                            State = EventStepState.Waiting,
-                            DueOn = new DateOnly(2027, 4, 3),
-                            OpensOn = new DateOnly(2027, 3, 21),
-                        },
                     ],
                     planned.Steps
                 );
                 Assert.Equal(EventStep.Details, planned.CurrentStep);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CountOnlyWhatTheWebsiteShows_When_TheEventIsReviewed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildPlanningAsync(ct);
-
-                var (_, result) = await ReadAsync(ctx, "vera", ct);
-
-                var opening = Assert.Single(result.Events, listed => listed.Title == Opening);
-                Assert.Equal(
-                    new EventReviewDto { PublishedAlbums = 1, PublishedNews = 1 },
-                    opening.Review
-                );
-                Assert.Equal(
-                    EventStepState.Done,
-                    opening.Steps.Single(status => status.Step == EventStep.Review).State
-                );
             }
         );
     }
@@ -498,32 +464,6 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
                                 presaleStartsAt: PresaleStarted
                             )
                             .AddEvent("opening", Opening, AtTheOpening, "buergerhaus")
-                    )
-                    .Gallery(gallery =>
-                        gallery
-                            .AddAlbum(
-                                "opening-album",
-                                Opening,
-                                calendarEntryAlias: "opening",
-                                publishedAt: Now.AddDays(-30)
-                            )
-                            .AddAlbum(
-                                "opening-outtakes",
-                                "Ausschnitte",
-                                calendarEntryAlias: "opening"
-                            )
-                    )
-                    .News(news =>
-                        news.AddNewsPost(
-                                "opening-report",
-                                title: "Session eröffnet",
-                                teaser: "Der Auftakt.",
-                                text: "Ein langer Abend.",
-                                category: NewsCategory.Session,
-                                eventAlias: "opening",
-                                publishedAt: Now.AddDays(-40)
-                            )
-                            .AddNewsPost("opening-draft", title: "Nachlese", eventAlias: "opening")
                     ),
             ct
         );

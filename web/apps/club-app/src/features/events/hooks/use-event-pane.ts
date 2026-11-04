@@ -1,7 +1,5 @@
 import type { KkIconName } from '@furria/ui/KkIcon';
 import type { KkStepState } from '@furria/ui/step-state';
-import { GALLERY_SORT_KEYS } from '@/features/session/app-sections';
-import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { useEventQuery } from '../api';
 import type { BoardCell } from '../event-board';
 import { cellOf, paneCellsOf } from '../event-board';
@@ -36,7 +34,6 @@ export interface EventPaneState {
 
 export const useEventPane = (eventId: number, pane: EventPaneKey): EventPaneState => {
   const query = useEventQuery(eventId);
-  const permissions = usePermissions();
   const { today } = usePlanClock();
   const event = query.data;
   const publishing = useEventPublishing(PUBLISHING_PANES.has(pane) ? event : undefined);
@@ -56,7 +53,6 @@ export const useEventPane = (eventId: number, pane: EventPaneKey): EventPaneStat
       event,
       pane,
       todayIsoDay: today,
-      addsAlbums: GALLERY_SORT_KEYS.some(permissions.has),
       runningOrder: runningOrder.presence,
     }),
     head: {

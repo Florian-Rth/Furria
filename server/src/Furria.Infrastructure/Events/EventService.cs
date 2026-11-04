@@ -113,7 +113,6 @@ public sealed class EventService
             ))
             .ToListAsync(ct);
         var eventIds = rows.Select(row => row.EventId).ToList();
-        var tallies = await TalliesOfAsync(eventIds, ct);
         var settled = await _runningOrders.SettledEventIdsAsync(eventIds, ct);
 
         return
@@ -127,12 +126,7 @@ public sealed class EventService
                         row.PictureId,
                         row.PictureRenderedAt
                     ),
-                    PlanningOf(
-                        PlanningInputsOf(row),
-                        tallies.GetValueOrDefault(row.EventId),
-                        settled.Contains(row.EventId),
-                        now
-                    )
+                    PlanningOf(PlanningInputsOf(row), settled.Contains(row.EventId), now)
                 )
             ),
         ];
@@ -189,14 +183,8 @@ public sealed class EventService
             return null;
 
         var stalledIds = await _dbContext.StalledAmongAsync([row.Picture], now, ct);
-        var tallies = await TalliesOfAsync([row.EventId], ct);
         var settled = await _runningOrders.SettledEventIdsAsync([row.EventId], ct);
-        var planning = PlanningOf(
-            PlanningInputsOf(row),
-            tallies.GetValueOrDefault(row.EventId),
-            settled.Contains(row.EventId),
-            now
-        );
+        var planning = PlanningOf(PlanningInputsOf(row), settled.Contains(row.EventId), now);
         return ToDetails(row, now, EditingOf(row, stalledIds), planning);
     }
 
@@ -523,7 +511,6 @@ public sealed class EventService
     [Pure]
     private static EventPlanning PlanningOf(
         PlanningInputs inputs,
-        TallyRow? tally,
         bool isRunningOrderSettled,
         DateTimeOffset now
     )
@@ -538,17 +525,11 @@ public sealed class EventService
             AreDetailsDone = detailsMissing.Count == 0,
             AreTicketsSet = inputs.AreTicketsSet,
             IsRunningOrderDone = isRunningOrderSettled,
-            HasPublishedAlbum = tally?.PublishedAlbums > 0,
         };
 
         return new EventPlanning
         {
             DetailsMissing = detailsMissing,
-            Review = new EventReviewTally
-            {
-                PublishedAlbums = tally?.PublishedAlbums ?? 0,
-                PublishedNews = tally?.PublishedNews ?? 0,
-            },
             Readiness = EventSteps.ReadinessOf(facts, now),
         };
     }
@@ -681,25 +662,6 @@ public sealed class EventService
             ? _pictures.EditingOf(MediaOwner.Event(row.EventId), picture, stalledIds)
             : null;
 
-    private async Task<IReadOnlyDictionary<int, TallyRow>> TalliesOfAsync(
-        IReadOnlyList<int> eventIds,
-        CancellationToken ct
-    )
-    {
-        var albums = _publicFace.Albums;
-        var posts = _publicFace.NewsPosts;
-
-        return await _dbContext
-            .Events.AsNoTracking()
-            .Where(row => eventIds.Contains(row.CalendarEntryId))
-            .Select(row => new TallyRow(
-                row.CalendarEntryId,
-                albums.Count(album => album.CalendarEntryId == row.CalendarEntryId),
-                posts.Count(post => post.EventId == row.CalendarEntryId)
-            ))
-            .ToDictionaryAsync(tally => tally.EventId, ct);
-    }
-
     private Task<CalendarEntry?> TrackedEventEntryAsync(int eventId, CancellationToken ct) =>
         _dbContext
             .CalendarEntries.Include(entry => entry.Event)
@@ -785,8 +747,6 @@ public sealed class EventService
         EventDetailsFacts Details,
         bool AreTicketsSet
     );
-
-    private sealed record TallyRow(int EventId, int PublishedAlbums, int PublishedNews);
 
     private sealed record VenueStateRow(int VenueId, DateOnly? ArchivedOn);
 }

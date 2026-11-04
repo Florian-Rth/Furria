@@ -87,19 +87,6 @@ export const EventPaneAction: FC<EventPaneActionProps> = ({
           {ACTION_LABELS.editTickets}
         </KkButton>
       );
-    case 'album':
-      return (
-        <KkButton
-          size="large"
-          fullWidth
-          component={Link}
-          to="/gallery/new"
-          search={{ entry: event.eventId }}
-          startIcon={<KkIcon name="gallery" size="small" />}
-        >
-          {ACTION_LABELS.album}
-        </KkButton>
-      );
     case 'planRunningOrder':
       return (
         <KkButton
