@@ -128,12 +128,6 @@ public sealed class BeerListSeedBuilder
         return this;
     }
 
-    public BeerListSeedBuilder AddBeerTabReminder(string personAlias, DateTimeOffset sentAt)
-    {
-        _tabReminders.Add(new BeerTabReminderIntent(personAlias, sentAt));
-        return this;
-    }
-
     public BeerListSeedBuilder AddBeerCrates(
         string potAlias,
         string personAlias,
@@ -149,6 +143,12 @@ public sealed class BeerListSeedBuilder
                 bookedAt
             );
 
+        return this;
+    }
+
+    public BeerListSeedBuilder AddBeerTabReminder(string personAlias, DateTimeOffset sentAt)
+    {
+        _tabReminders.Add(new BeerTabReminderIntent(personAlias, sentAt));
         return this;
     }
 

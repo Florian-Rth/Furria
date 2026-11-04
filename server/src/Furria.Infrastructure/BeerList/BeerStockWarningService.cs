@@ -44,25 +44,32 @@ public sealed class BeerStockWarningService
             return;
 
         var stock = await _beerStockService.GetStockAsync(armedPotId, ct);
+        if (!stock.IsSuccess)
+            return;
+
         var today = ClubClock.DayOf(now);
+        var crates = stock.Value.Crates;
+        var forecast = stock.Value.Forecast;
         if (
-            !stock.IsSuccess
-            || stock.Value.Forecast.ProjectedEmptyOn is not { } projectedEmptyOn
+            forecast.ProjectedEmptyOn is not { } projectedEmptyOn
             || !BeerListNoticeSchedule.IsStockWarningDue(projectedEmptyOn, today)
         )
             return;
 
+        var message = BeerListPushes.StockWarning(crates, projectedEmptyOn, today);
+        var delivered = await WarnOperatorsAsync(message, today, ct);
+        if (delivered == 0)
+            return;
+
         await RecordWarningAsync(armedPotId, now, ct);
-        await WarnOperatorsAsync(
+        _logger.LogInformation(
+            "Beer stock warning for pot {BeerPotId} reached {DeliveredDevices} devices",
             armedPotId,
-            BeerListPushes.StockWarning(stock.Value.Crates, projectedEmptyOn, today),
-            today,
-            ct
+            delivered
         );
     }
 
-    private async Task WarnOperatorsAsync(
-        int beerPotId,
+    private async Task<int> WarnOperatorsAsync(
         PushMessage message,
         DateOnly today,
         CancellationToken ct
@@ -72,11 +79,7 @@ public sealed class BeerStockWarningService
         foreach (var accountId in await OperatorAccountsAsync(today, ct))
             delivered += (await _pushSender.SendAsync(accountId, message, ct)).Delivered;
 
-        _logger.LogInformation(
-            "Beer stock warning for pot {BeerPotId} reached {DeliveredDevices} devices",
-            beerPotId,
-            delivered
-        );
+        return delivered;
     }
 
     private Task<int?> ArmedOpenPotIdAsync(CancellationToken ct) =>

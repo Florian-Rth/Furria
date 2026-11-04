@@ -6,7 +6,7 @@ using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 using static Furria.Api.Tests.BeerList.BeerListCast;
-using static Furria.Api.Tests.BeerList.BeerListPushes;
+using static Furria.Api.Tests.BeerList.BeerListDevices;
 
 namespace Furria.Api.Tests.BeerList;
 
@@ -66,11 +66,25 @@ public sealed class BeerStockWarningsTests : IClassFixture<ApiTestFixture>
         var ctx = await BuildAsync(cratesLeft: 2, ct);
         var phone = await SubscribedDeviceAsync(ctx, Warden, "stock-night", ct);
 
-        await WarnAtAsync(ClubClock.At(tomorrow, new TimeOnly(9, 59)), ct);
         await WarnAtAsync(ClubClock.At(tomorrow, new TimeOnly(20, 0)), ct);
+        await WarnAtAsync(ClubClock.At(tomorrow.AddDays(1), new TimeOnly(9, 59)), ct);
         Assert.Empty(PushesAt(_fixture, phone));
 
-        await WarnAtAsync(ClubClock.At(tomorrow, new TimeOnly(19, 59)), ct);
+        await WarnAtAsync(ClubClock.At(tomorrow.AddDays(1), new TimeOnly(10, 0)), ct);
+        Assert.Single(PushesAt(_fixture, phone));
+    }
+
+    [Fact]
+    public async Task Should_WarnAsSoonAsAnOperatorTurnsNotificationsOn_When_NoDeviceGotTheWarning()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = NoonTomorrow;
+        var ctx = await BuildAsync(cratesLeft: 2, ct);
+
+        await WarnAtAsync(now, ct);
+        var phone = await SubscribedDeviceAsync(ctx, Warden, "stock-late-device", ct);
+        await WarnAtAsync(now + TimeSpan.FromMinutes(15), ct);
+
         Assert.Single(PushesAt(_fixture, phone));
     }
 

@@ -6,11 +6,11 @@ namespace Furria.Infrastructure.BeerList;
 
 internal static class BeerListPushes
 {
-    internal const string MemberBeerListPath = "/beer-list";
-    internal const string HubStockPanelPath = "/manage/beer-list/stock";
-
     private const string TabReminderTag = "beer-tab";
     private const string StockWarningTag = "beer-stock";
+
+    internal const string MemberBeerListPath = "/beer-list";
+    internal const string HubStockPanelPath = "/manage/beer-list/stock";
 
     private static readonly CultureInfo German = CultureInfo.GetCultureInfo("de-DE");
     private static readonly TimeSpan TimeToLive = TimeSpan.FromDays(1);

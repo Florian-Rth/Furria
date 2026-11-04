@@ -3,7 +3,7 @@ using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 using static Furria.Api.Tests.BeerList.BeerListCast;
-using static Furria.Api.Tests.BeerList.BeerListPushes;
+using static Furria.Api.Tests.BeerList.BeerListDevices;
 
 namespace Furria.Api.Tests.BeerList;
 
@@ -77,6 +77,23 @@ public sealed class BeerTabRemindersTests : IClassFixture<ApiTestFixture>
 
         await RemindAtAsync(now + Week, ct);
         Assert.Equal(2, PushesAt(_fixture, phone).Count);
+    }
+
+    [Fact]
+    public async Task Should_RemindAsSoonAsTheHolderTurnsNotificationsOn_When_NoDeviceGotTheDueReminder()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = NoonTomorrow;
+        var ctx = await BuildAsync(
+            beerList => beerList.AddBeerCrates(Pot, Drinker, 1, now - TimeSpan.FromDays(10)),
+            ct
+        );
+
+        await RemindAtAsync(now, ct);
+        var phone = await SubscribedDeviceAsync(ctx, Drinker, "tab-late-device", ct);
+        await RemindAtAsync(now + TimeSpan.FromMinutes(15), ct);
+
+        Assert.Single(PushesAt(_fixture, phone));
     }
 
     [Fact]

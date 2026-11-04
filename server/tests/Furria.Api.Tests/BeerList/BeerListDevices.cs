@@ -7,7 +7,7 @@ using Furria.Tests.Common.Push;
 
 namespace Furria.Api.Tests.BeerList;
 
-internal static class BeerListPushes
+internal static class BeerListDevices
 {
     internal static async Task<string> SubscribedDeviceAsync(
         SeededContext ctx,

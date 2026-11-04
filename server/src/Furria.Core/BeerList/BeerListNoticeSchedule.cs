@@ -30,6 +30,6 @@ public static class BeerListNoticeSchedule
         && (lastRemindedAt is not { } remindedAt || now - remindedAt >= TabReminderInterval);
 
     [Pure]
-    public static bool IsStockWarningDue(DateOnly? projectedEmptyOn, DateOnly today) =>
-        projectedEmptyOn is { } emptyOn && emptyOn <= today.AddDays(StockWarningHorizonDays);
+    public static bool IsStockWarningDue(DateOnly projectedEmptyOn, DateOnly today) =>
+        projectedEmptyOn <= today.AddDays(StockWarningHorizonDays);
 }

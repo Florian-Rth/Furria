@@ -33,7 +33,7 @@ public sealed class BeerTabReminderService
             return;
 
         var openTabs = await OpenTabsAsync(ct);
-        var lastReminders = await LastRemindersAsync(ct);
+        var lastReminders = await LastRemindersAsync(openTabs, ct);
         var dueTabs = openTabs.Where(tab =>
             BeerListNoticeSchedule.IsTabReminderDue(
                 tab.OldestOpenCrateBookedAt,
@@ -48,13 +48,15 @@ public sealed class BeerTabReminderService
 
     private async Task RemindAsync(OpenTab tab, DateTimeOffset now, CancellationToken ct)
     {
-        await RecordReminderAsync(tab.PersonId, now, ct);
-
         var message = BeerListPushes.TabReminder(tab.OpenCrates, tab.OpenCents);
         var delivered = 0;
         foreach (var accountId in await AccountsOfAsync(tab.PersonId, ct))
             delivered += (await _pushSender.SendAsync(accountId, message, ct)).Delivered;
 
+        if (delivered == 0)
+            return;
+
+        await RecordReminderAsync(tab.PersonId, now, ct);
         _logger.LogInformation(
             "Beer tab reminder for person {PersonId} reached {DeliveredDevices} devices",
             tab.PersonId,
@@ -84,10 +86,18 @@ public sealed class BeerTabReminderService
             ))
             .ToListAsync(ct);
 
-    private Task<Dictionary<int, DateTimeOffset>> LastRemindersAsync(CancellationToken ct) =>
-        _dbContext
+    private Task<Dictionary<int, DateTimeOffset>> LastRemindersAsync(
+        IReadOnlyList<OpenTab> openTabs,
+        CancellationToken ct
+    )
+    {
+        var personIds = openTabs.Select(tab => tab.PersonId).ToList();
+
+        return _dbContext
             .BeerTabReminders.AsNoTracking()
+            .Where(reminder => personIds.Contains(reminder.PersonId))
             .ToDictionaryAsync(reminder => reminder.PersonId, reminder => reminder.SentAt, ct);
+    }
 
     private Task<List<int>> AccountsOfAsync(int personId, CancellationToken ct) =>
         _dbContext
