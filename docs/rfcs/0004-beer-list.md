@@ -241,10 +241,15 @@ Built-phase notes (phase 8):
 
 ### Phase 9 — Handover
 Goal: the pot changes hands cleanly.
-- [ ] Rules: close the current pot, open the successor's with a handover-carry movement of the remaining count; the old pot's open tabs stay owed to the old owner and stay payable
-- [ ] Endpoint + tests: hand over (successor holds `manage`)
-- [ ] Hub: handover flow; closed pots readable with their open tabs; members see open crates of a closed pot on their tab
-- [ ] CONTEXT.md / ADR-0035 touched where behaviour changed
+- [x] Rules: close the current pot, open the successor's with a handover-carry movement of the remaining count; the old pot's open tabs stay owed to the old owner and stay payable
+- [x] Endpoint + tests: hand over (successor holds `manage`)
+- [ ] Hub: handover flow; closed pots readable with their open tabs; members see open crates of a closed pot on their tab (backend reads built: `GET beer-list/pots`, closed-pot tabs; the hub flow waits for the phase 1 pick)
+- [x] CONTEXT.md / ADR-0035 touched where behaviour changed
+
+Built-phase notes (phase 9):
+- A handover writes an outgoing `HandedOver` row on the old pot and a `HandoverCarry` row on the successor's pot, so the old pot stands at 0. With no crates left, neither row is written.
+- The successor sets her own price and payment details in the handover. Any `manage` holder can hand over (open product question: only the owner?).
+- The stock-warning state carries over unless a delivery re-armed it. A member booking that loses the race to a handover is retried on the successor's pot.
 
 ## Risks & alternatives
 
