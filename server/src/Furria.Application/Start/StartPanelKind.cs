@@ -9,4 +9,5 @@ public enum StartPanelKind
     ToDos = 5,
     Gallery = 6,
     News = 7,
+    BeerTab = 8,
 }

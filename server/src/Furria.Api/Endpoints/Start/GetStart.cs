@@ -79,6 +79,7 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
             ToDos = panel.ToDos?.Select(ToDto).ToList(),
             Albums = panel.Albums?.Select(ToDto).ToList(),
             News = panel.News?.Select(ToDto).ToList(),
+            BeerTabs = panel.BeerTabs?.Select(ToDto).ToList(),
         };
 
     private StartAlbumDto ToDto(StartAlbumSummary album) =>
@@ -105,6 +106,19 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
                     ),
                 }
                 : null,
+        };
+
+    private static StartBeerTabDto ToDto(StartBeerTabSummary tab) =>
+        new()
+        {
+            BeerPotId = tab.BeerPotId,
+            PotIsOpen = tab.PotIsOpen,
+            OpenCrates = tab.OpenCrates,
+            OpenCents = tab.OpenCents,
+            OldestOpenBookedAt = tab.OldestOpenBookedAt,
+            Owner = tab.Owner is { } owner ? ToDto(owner) : null,
+            PaymentLink = tab.PaymentLink,
+            PaymentNote = tab.PaymentNote,
         };
 
     private static StartNewsDto ToDto(StartNewsSummary post) =>
@@ -258,6 +272,27 @@ public sealed record StartPanelDto
     public required IReadOnlyList<StartAlbumDto>? Albums { get; init; }
 
     public required IReadOnlyList<StartNewsDto>? News { get; init; }
+
+    public required IReadOnlyList<StartBeerTabDto>? BeerTabs { get; init; }
+}
+
+public sealed record StartBeerTabDto
+{
+    public required int BeerPotId { get; init; }
+
+    public required bool PotIsOpen { get; init; }
+
+    public required int OpenCrates { get; init; }
+
+    public required int OpenCents { get; init; }
+
+    public required DateTimeOffset OldestOpenBookedAt { get; init; }
+
+    public required StartPersonRefDto? Owner { get; init; }
+
+    public required string? PaymentLink { get; init; }
+
+    public required string? PaymentNote { get; init; }
 }
 
 public sealed record StartNewsDto

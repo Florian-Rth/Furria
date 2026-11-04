@@ -28,6 +28,24 @@ public sealed class BeerTabExpectations
                 )
         );
 
+    public Expected ToHaveOpenAndPaidCrates(int beerPotId, int open, int paid) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var crates = await dbContext
+                    .BeerCrates.AsNoTracking()
+                    .Where(crate =>
+                        crate.PersonId == _personId
+                        && crate.BeerPotId == beerPotId
+                        && crate.UndoneAt == null
+                    )
+                    .Select(crate => crate.PaidByPaymentId)
+                    .ToListAsync(ct);
+                Assert.Equal(open, crates.Count(paidBy => paidBy is null));
+                Assert.Equal(paid, crates.Count(paidBy => paidBy is not null));
+            }
+        );
+
     public Expected ToEndWithCratesOf(
         int count,
         int beerPotId,

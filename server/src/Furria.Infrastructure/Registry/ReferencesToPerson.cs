@@ -52,6 +52,11 @@ public static class ReferencesToPerson
             OnAbsorption.BlocksIt,
             OnErasure.KeptNamingNobody
         ),
+        Reference<BeerPayment>(
+            nameof(BeerPayment.PersonId),
+            OnAbsorption.BlocksIt,
+            OnErasure.KeptNamingNobody
+        ),
         Reference<NewsPost>(
             nameof(NewsPost.AuthorPersonId),
             OnAbsorption.BlocksIt,
@@ -94,6 +99,8 @@ public static class ReferencesToPerson
         HerAct<BeerStockMovement>(nameof(BeerStockMovement.BookedByPersonId)),
         HerAct<BeerCrate>(nameof(BeerCrate.EnteredByPersonId)),
         HerAct<BeerCrate>(nameof(BeerCrate.UndoneByPersonId)),
+        HerAct<BeerPayment>(nameof(BeerPayment.BookedByPersonId)),
+        HerAct<BeerPayment>(nameof(BeerPayment.UndoneByPersonId)),
     ];
 
     [Pure]

@@ -10,5 +10,5 @@ public sealed record BeerTabCrateSummary
 
     public required BeerListPerson? EnteredBy { get; init; }
 
-    public required bool IsPaid { get; init; }
+    public required DateTimeOffset? PaidAt { get; init; }
 }

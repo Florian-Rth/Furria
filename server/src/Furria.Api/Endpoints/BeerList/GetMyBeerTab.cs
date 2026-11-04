@@ -60,6 +60,8 @@ public sealed class GetMyBeerTab : EndpointWithoutRequest<GetMyBeerTabResponse>
             PaymentNote = pot.PaymentNote,
             OpenCrates = pot.OpenCrates,
             OpenCents = pot.OpenCents,
+            PaidCrates = pot.PaidCrates,
+            PaidCents = pot.PaidCents,
             Crates = [.. pot.Crates.Select(ToDto)],
         };
 
@@ -70,7 +72,7 @@ public sealed class GetMyBeerTab : EndpointWithoutRequest<GetMyBeerTabResponse>
             PriceCents = crate.PriceCents,
             BookedAt = crate.BookedAt,
             EnteredBy = crate.EnteredBy is { } enteredBy ? ToDto(enteredBy) : null,
-            IsPaid = crate.IsPaid,
+            PaidAt = crate.PaidAt,
         };
 
     private static BeerTabPersonDto ToDto(BeerListPerson person) =>
@@ -105,6 +107,10 @@ public sealed record BeerTabPotDto
 
     public required int OpenCents { get; init; }
 
+    public required int PaidCrates { get; init; }
+
+    public required int PaidCents { get; init; }
+
     public required IReadOnlyList<BeerTabCrateDto> Crates { get; init; }
 }
 
@@ -118,7 +124,7 @@ public sealed record BeerTabCrateDto
 
     public required BeerTabPersonDto? EnteredBy { get; init; }
 
-    public required bool IsPaid { get; init; }
+    public required DateTimeOffset? PaidAt { get; init; }
 }
 
 public sealed record BeerTabPersonDto

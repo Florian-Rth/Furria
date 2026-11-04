@@ -86,12 +86,58 @@ public sealed class GetMyBeerTabTests : IClassFixture<ApiTestFixture>
             open.Crates.Select(crate => crate.CrateId)
         );
         Assert.Equal(ctx.Identity.People.IdOf(Warden), open.Crates[0].EnteredBy?.PersonId);
-        Assert.All(open.Crates, crate => Assert.False(crate.IsPaid));
+        Assert.All(open.Crates, crate => Assert.Null(crate.PaidAt));
         var closed = result.Pots[1];
         Assert.False(closed.IsOpen);
         Assert.Equal("Otto", closed.Owner?.FirstName);
         Assert.Equal(OldPaymentNote, closed.PaymentNote);
         Assert.Equal((2, 2 * OldPrice), (closed.OpenCrates, closed.OpenCents));
+    }
+
+    [Fact]
+    public async Task Should_SplitHerTabIntoOpenAndPaid_When_AnOperatorBookedHerPayment()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = _fixture.TimeProvider.GetUtcNow();
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                WardenAndDrinker(builder)
+                    .BeerList(beerList =>
+                        beerList
+                            .AddBeerPot(Pot, Warden, Price)
+                            .AddBeerListEnrollment("mira-bier", Drinker)
+                            .AddBeerCrate(
+                                "alt",
+                                Pot,
+                                Drinker,
+                                now.AddDays(-20),
+                                priceCents: OldPrice
+                            )
+                            .AddBeerCrate("mitte", Pot, Drinker, now.AddDays(-10))
+                            .AddBeerCrate("neu", Pot, Drinker, now.AddDays(-2))
+                            .AddBeerPayment(
+                                "bar",
+                                Pot,
+                                Drinker,
+                                2,
+                                now.AddDays(-1),
+                                bookedByAlias: Warden
+                            )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync(Drinker, ct);
+        var (response, result) = await client.GETAsync<GetMyBeerTab, GetMyBeerTabResponse>();
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var pot = Assert.Single(result.Pots);
+        Assert.Equal((1, Price), (pot.OpenCrates, pot.OpenCents));
+        Assert.Equal((2, OldPrice + Price), (pot.PaidCrates, pot.PaidCents));
+        Assert.Equal(
+            [null, now.AddDays(-1), now.AddDays(-1)],
+            pot.Crates.Select(crate => crate.PaidAt)
+        );
     }
 
     [Fact]

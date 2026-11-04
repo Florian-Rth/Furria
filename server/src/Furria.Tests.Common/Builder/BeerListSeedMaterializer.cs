@@ -7,6 +7,7 @@ internal static class BeerListSeedMaterializer
 {
     private static readonly TimeSpan SeededAge = TimeSpan.FromDays(30);
     private static readonly TimeSpan SeededStockAge = TimeSpan.FromDays(10);
+    private static readonly TimeSpan SeededPaymentAge = TimeSpan.FromDays(1);
 
     internal static async Task<SeededBeerList> InsertAsync(
         AppDbContext dbContext,
@@ -41,12 +42,20 @@ internal static class BeerListSeedMaterializer
         );
         dbContext.BeerCrates.AddRange(crates.Values);
 
+        var payments = recorded.Payments.ToDictionary(
+            intent => intent.Alias,
+            intent => NewPayment(intent, pots, personIds, crates.Values, now),
+            StringComparer.Ordinal
+        );
+        dbContext.BeerPayments.AddRange(payments.Values);
+
         await dbContext.SaveChangesAsync(ct);
 
         return new SeededBeerList(
             pots.ToDictionary(entry => entry.Key, entry => entry.Value.Id),
             enrollments.ToDictionary(entry => entry.Key, entry => entry.Value.Id),
-            crates.ToDictionary(entry => entry.Key, entry => entry.Value.Id)
+            crates.ToDictionary(entry => entry.Key, entry => entry.Value.Id),
+            payments.ToDictionary(entry => entry.Key, entry => entry.Value.Id)
         );
     }
 
@@ -101,6 +110,51 @@ internal static class BeerListSeedMaterializer
             BookedAt = intent.BookedAt ?? now - SeededStockAge,
             UndoneAt = intent.UndoneAt,
         };
+    }
+
+    private static BeerPayment NewPayment(
+        BeerListSeedBuilder.BeerPaymentIntent intent,
+        IReadOnlyDictionary<string, BeerPot> pots,
+        IReadOnlyDictionary<string, int> personIds,
+        IEnumerable<BeerCrate> crates,
+        DateTimeOffset now
+    )
+    {
+        var pot = PotOf(pots, intent.PotAlias);
+        var personId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person");
+        var payment = new BeerPayment
+        {
+            Pot = pot,
+            PersonId = personId,
+            Crates = intent.Crates,
+            AmountCents = intent.Crates * pot.CratePriceCents,
+            BookedByPersonId = intent.BookedByAlias is null
+                ? null
+                : SeedAliases.RequireId(personIds, intent.BookedByAlias, "Person"),
+            BookedAt = intent.BookedAt ?? now - SeededPaymentAge,
+            UndoneAt = intent.UndoneAt,
+        };
+        if (intent.UndoneAt is not null)
+            return payment;
+
+        var settled = crates
+            .Where(crate =>
+                crate.Pot == pot
+                && crate.PersonId == personId
+                && crate.UndoneAt is null
+                && crate.PaidByPayment is null
+            )
+            .OrderBy(crate => crate.BookedAt)
+            .Take(intent.Crates)
+            .ToList();
+        if (settled.Count != intent.Crates)
+            throw new InvalidOperationException(
+                $"BeerPayment '{intent.Alias}' settles more crates than are open."
+            );
+
+        settled.ForEach(crate => crate.PaidByPayment = payment);
+        payment.AmountCents = settled.Sum(crate => crate.PriceCents);
+        return payment;
     }
 
     private static BeerPot PotOf(IReadOnlyDictionary<string, BeerPot> pots, string potAlias) =>

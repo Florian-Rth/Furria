@@ -11,6 +11,7 @@ public sealed class BeerListSeedBuilder
     private readonly List<BeerListEnrollmentIntent> _enrollments = [];
     private readonly List<BeerStockMovementIntent> _stockMovements = [];
     private readonly List<BeerCrateIntent> _crates = [];
+    private readonly List<BeerPaymentIntent> _payments = [];
 
     internal IReadOnlyList<BeerPotIntent> Pots => _pots;
 
@@ -19,6 +20,8 @@ public sealed class BeerListSeedBuilder
     internal IReadOnlyList<BeerStockMovementIntent> StockMovements => _stockMovements;
 
     internal IReadOnlyList<BeerCrateIntent> Crates => _crates;
+
+    internal IReadOnlyList<BeerPaymentIntent> Payments => _payments;
 
     public BeerListSeedBuilder AddBeerPot(
         string alias,
@@ -141,6 +144,30 @@ public sealed class BeerListSeedBuilder
         return this;
     }
 
+    public BeerListSeedBuilder AddBeerPayment(
+        string alias,
+        string potAlias,
+        string personAlias,
+        int crates,
+        DateTimeOffset? bookedAt = null,
+        string? bookedByAlias = null,
+        DateTimeOffset? undoneAt = null
+    )
+    {
+        _payments.Add(
+            new BeerPaymentIntent(
+                alias,
+                potAlias,
+                personAlias,
+                crates,
+                bookedAt,
+                bookedByAlias,
+                undoneAt
+            )
+        );
+        return this;
+    }
+
     internal sealed record BeerPotIntent(
         string Alias,
         string OwnerAlias,
@@ -175,6 +202,16 @@ public sealed class BeerListSeedBuilder
         DateTimeOffset? BookedAt,
         string? EnteredByAlias,
         int? PriceCents,
+        DateTimeOffset? UndoneAt
+    );
+
+    internal sealed record BeerPaymentIntent(
+        string Alias,
+        string PotAlias,
+        string PersonAlias,
+        int Crates,
+        DateTimeOffset? BookedAt,
+        string? BookedByAlias,
         DateTimeOffset? UndoneAt
     );
 }

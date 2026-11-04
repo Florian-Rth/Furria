@@ -55,6 +55,13 @@ public sealed class BeerCrateConfiguration : IEntityTypeConfiguration<BeerCrate>
             .OnDelete(DeleteBehavior.SetNull);
 
         builder
+            .HasOne(crate => crate.PaidByPayment)
+            .WithMany()
+            .HasForeignKey(crate => crate.PaidByPaymentId)
+            .HasConstraintName("fk_beer_crate_beer_payment_paid_by_payment_id")
+            .OnDelete(DeleteBehavior.Restrict);
+
+        builder
             .HasIndex(
                 crate => new { crate.BeerPotId, crate.PersonId },
                 "ix_beer_crate_beer_pot_id_person_id_taken"
@@ -68,5 +75,6 @@ public sealed class BeerCrateConfiguration : IEntityTypeConfiguration<BeerCrate>
             .HasFilter("undone_at IS NULL");
         builder.HasIndex(crate => crate.EnteredByPersonId);
         builder.HasIndex(crate => crate.UndoneByPersonId);
+        builder.HasIndex(crate => crate.PaidByPaymentId);
     }
 }

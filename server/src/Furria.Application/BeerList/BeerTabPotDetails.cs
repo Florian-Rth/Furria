@@ -18,5 +18,9 @@ public sealed record BeerTabPotDetails
 
     public required int OpenCents { get; init; }
 
+    public required int PaidCrates { get; init; }
+
+    public required int PaidCents { get; init; }
+
     public required IReadOnlyList<BeerTabCrateSummary> Crates { get; init; }
 }

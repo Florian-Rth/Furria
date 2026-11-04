@@ -512,7 +512,7 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    the purge once, `BeatAsMediaWorkerAsync` writes the fixture worker's heartbeat
    (`Expected.MediaWorkerHeartbeats().ToHaveCount`), `SurveyMediaStorageAsync` surveys the media
    root. `SystemVerdictTests` pin the verdict rules as pure tests.
-20. **The beer list (RFC 0004 phases 2–4)** — `builder.BeerList(…)` takes `AddBeerPot(alias,
+20. **The beer list (RFC 0004 phases 2–5)** — `builder.BeerList(…)` takes `AddBeerPot(alias,
    ownerAlias, cratePriceCents, paymentLink, paymentNote, openedAt, closedAt)` (defaults: 15,00 €,
    `BeerListSeedBuilder.DefaultPaymentLink`, opened 30 days ago, open) and
    `AddBeerListEnrollment(alias, personAlias, startedAt, endedAt, endedByAlias)` (running, started
@@ -520,20 +520,26 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    `AddBeerStockCorrection(potAlias, crates, reason, bookedAt, bookedByAlias)` (booked 10 days
    ago, by nobody), `AddBeerCrate(alias, potAlias, personAlias, bookedAt, enteredByAlias,
    priceCents, undoneAt)` (booked 10 days ago, entered by the holder herself, at the pot's price)
-   and `AddBeerCrates(potAlias, personAlias, count, bookedAt)` for unnamed ones; it materializes
+   and `AddBeerCrates(potAlias, personAlias, count, bookedAt)` for unnamed ones,
+   `AddBeerPayment(alias, potAlias, personAlias, crates, bookedAt, bookedByAlias, undoneAt)`
+   (booked a day ago; a standing one settles that person's oldest open crates of the pot, the way
+   production does, and throws when fewer are open; an undone one settles none); it materializes
    after the news layer. Aliases resolve through
-   `ctx.BeerList.{Pots, Enrollments, Crates}`. `Expected.BeerPot(id)` (`ToBeOwnedBy`, `ToHaveSettings`,
+   `ctx.BeerList.{Pots, Enrollments, Crates, Payments}`. `Expected.BeerPot(id)` (`ToBeOwnedBy`, `ToHaveSettings`,
    `ToBeOpenedAt`), `Expected.BeerPots()` (`ToHaveCount`), `Expected.BeerListEnrollment(id)`
    (`ToBeEnded(endedAt, endedByPersonId)`) and
    `Expected.BeerListEnrollmentsOfPerson(personId)` (`ToHaveCount`, `ToHaveRunningSince`) and
    `Expected.BeerStockOfPot(potId)` (`ToHaveMovementCount`, `ToEndWith`, `ToStandAt` — movements
-   minus taken crates), `Expected.BeerTabOf(personId)` (`ToHaveTakenCrates`, `ToEndWithCratesOf`)
-   and `Expected.BeerCrate(id)` (`ToBeTaken`, `ToBeUndone`) read the result. The beer-list tests
+   minus taken crates), `Expected.BeerTabOf(personId)` (`ToHaveTakenCrates`, `ToEndWithCratesOf`,
+   `ToHaveOpenAndPaidCrates(potId, open, paid)`), `Expected.BeerCrate(id)` (`ToBeTaken`,
+   `ToBeUndone`, `ToBePaidBy`) and `Expected.BeerPayment(id)` (`ToSettle`, `ToBeUndone`) read the
+   result. The beer-list tests
    share their cast through `BeerListCast.WardenAndDrinker` (Greta holds `beer_list.manage`, Mira
    is a member). A race on the pot lock is proven deterministically with
    `_fixture.WhileBeerPotIsLockedAsync(potId, waitingSessions, act, ct)`: it holds the pot row
    `FOR UPDATE`, polls `pg_locks` until the requests wait, then lets go
-   (`PostMyBeerCratesTests` proves never-below-zero this way). `beer_list.take` is proven through `BeerListTakeProbe` in
+   (`PostMyBeerCratesTests` proves never-below-zero this way, `PostBeerPaymentTests` that two
+   payments never settle the same crate). `beer_list.take` is proven through `BeerListTakeProbe` in
    `PermissionAuthorizerTests`.
 
 ### Traps worth knowing

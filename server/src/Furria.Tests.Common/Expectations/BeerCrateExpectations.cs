@@ -37,4 +37,17 @@ public sealed class BeerCrateExpectations
                 Assert.Equal(undoneByPersonId, crate.UndoneByPersonId);
             }
         );
+
+    public Expected ToBePaidBy(int? beerPaymentId) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    beerPaymentId,
+                    await dbContext
+                        .BeerCrates.AsNoTracking()
+                        .Where(row => row.Id == _beerCrateId)
+                        .Select(row => row.PaidByPaymentId)
+                        .SingleAsync(ct)
+                )
+        );
 }

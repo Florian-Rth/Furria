@@ -170,7 +170,8 @@ public sealed class BeerTabService
             .Where(crate => crate.BeerPotId == pot.BeerPotId)
             .Select(crate => crate.Summary)
             .ToList();
-        var open = crateSummaries.Where(crate => !crate.IsPaid).ToList();
+        var open = crateSummaries.Where(crate => crate.PaidAt is null).ToList();
+        var paid = crateSummaries.Where(crate => crate.PaidAt is not null).ToList();
 
         return new BeerTabPotDetails
         {
@@ -182,6 +183,8 @@ public sealed class BeerTabService
             PaymentNote = pot.PaymentNote,
             OpenCrates = open.Count,
             OpenCents = open.Sum(crate => crate.PriceCents),
+            PaidCrates = paid.Count,
+            PaidCents = paid.Sum(crate => crate.PriceCents),
             Crates = crateSummaries,
         };
     }
@@ -211,7 +214,10 @@ public sealed class BeerTabService
                                 FirstName = crate.EnteredBy.FirstName,
                                 LastName = crate.EnteredBy.LastName,
                             },
-                    IsPaid = crate.PaidByPaymentId != null,
+                    PaidAt =
+                        crate.PaidByPayment == null
+                            ? null
+                            : (DateTimeOffset?)crate.PaidByPayment.BookedAt,
                 }
             ))
             .ToListAsync(ct);

@@ -81,6 +81,39 @@ public sealed class UndoBeerCrateTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_ReturnConflictAndKeepItPaid_When_TheCrateIsAlreadyPaid()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = _fixture.TimeProvider.GetUtcNow();
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                WardenAndDrinker(builder)
+                    .BeerList(beerList =>
+                        beerList
+                            .AddBeerPot(Pot, Warden)
+                            .AddBeerDelivery(Pot, 10)
+                            .AddBeerListEnrollment("mira-bier", Drinker)
+                            .AddBeerCrate("bezahlt", Pot, Drinker, now.AddDays(-3))
+                            .AddBeerPayment("bar", Pot, Drinker, 1)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync(Warden, ct);
+        var response = await client.POSTAsync<UndoBeerCrate, UndoBeerCrateRequest>(
+            new() { BeerCrateId = ctx.BeerList.Crates.IdOf("bezahlt") }
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        await ctx
+            .Expected.BeerCrate(ctx.BeerList.Crates.IdOf("bezahlt"))
+            .ToBeTaken()
+            .BeerCrate(ctx.BeerList.Crates.IdOf("bezahlt"))
+            .ToBePaidBy(ctx.BeerList.Payments.IdOf("bar"))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ReturnConflict_When_TheCrateIsAlreadyUndone()
     {
         var ct = TestContext.Current.CancellationToken;

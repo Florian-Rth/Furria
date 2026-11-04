@@ -35,4 +35,6 @@ public sealed class BeerCrate
     public Person? EnteredBy { get; set; }
 
     public Person? UndoneBy { get; set; }
+
+    public BeerPayment? PaidByPayment { get; set; }
 }
