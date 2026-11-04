@@ -29,6 +29,8 @@ const planned = (overrides: Partial<PlannedEvent> = {}): PlannedEvent => ({
     { step: 'tickets', state: 'open', dueOn: '2026-11-17', opensOn: null },
   ],
   currentStep: 'tickets',
+  tablePlan: null,
+  withoutTablePlan: false,
   ...overrides,
 });
 
@@ -85,6 +87,42 @@ describe('cellOf website', () => {
 });
 
 describe('cellOf steps', () => {
+  it.each([
+    {
+      name: 'no plan yet',
+      overrides: {},
+      state: 'open',
+      fact: { kind: 'noTablePlan' },
+    },
+    {
+      name: 'a plan with tables',
+      overrides: {
+        tablePlan: { tables: 12, chairs: 96 },
+        steps: [
+          { step: 'hall' as const, state: 'done' as const, dueOn: '2026-12-26', opensOn: null },
+        ],
+      },
+      state: 'done',
+      fact: { kind: 'tablePlan', tables: 12, chairs: 96 },
+    },
+    {
+      name: 'no plan needed',
+      overrides: { withoutTablePlan: true, steps: [] },
+      state: 'off',
+      fact: { kind: 'tablePlanSkipped' },
+    },
+  ])('Saal & Tische: $name', ({ overrides, state, fact }) => {
+    const base = {
+      steps: [
+        { step: 'hall' as const, state: 'open' as const, dueOn: '2026-12-26', opensOn: null },
+      ],
+      currentStep: 'tickets' as const,
+    };
+    const cell = cellOf(planned({ ...base, ...overrides }), 'hall', TODAY);
+
+    expect([cell.state, cell.fact]).toEqual([state, fact]);
+  });
+
   it('marks the current step as current', () => {
     expect(cellOf(planned(), 'tickets', TODAY).state).toBe('current');
   });

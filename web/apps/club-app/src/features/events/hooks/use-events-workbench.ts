@@ -5,6 +5,7 @@ export interface EventsWorkbenchKeys {
   isUndecided: boolean;
   managesEvents: boolean;
   plansRunningOrder: boolean;
+  plansHall: boolean;
 }
 
 export const useEventsWorkbench = (): EventsWorkbenchKeys => {
@@ -16,5 +17,7 @@ export const useEventsWorkbench = (): EventsWorkbenchKeys => {
     plansRunningOrder:
       permissions.has(PERMISSION_KEYS.eventsRunningOrder) ||
       permissions.has(PERMISSION_KEYS.eventsManage),
+    plansHall:
+      permissions.has(PERMISSION_KEYS.eventsHall) || permissions.has(PERMISSION_KEYS.eventsManage),
   };
 };

@@ -2,6 +2,7 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Events;
 using Furria.Api.Media;
+using Furria.Api.Tests.Halls;
 using Furria.Application.Authorization;
 using Furria.Core.Events;
 using Furria.Core.Media;
@@ -168,7 +169,12 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
 
                 Assert.Empty(result.DetailsMissing);
                 Assert.Equal(
-                    [EventStepState.Done, EventStepState.Done, EventStepState.Open],
+                    [
+                        EventStepState.Done,
+                        EventStepState.Done,
+                        EventStepState.Open,
+                        EventStepState.Open,
+                    ],
                     result.Steps.Select(status => status.State)
                 );
                 Assert.Equal(EventStep.RunningOrder, result.CurrentStep);
@@ -435,4 +441,55 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
                     ),
             ct
         );
+
+    [Fact]
+    public async Task Should_CountTablesAndChairsAndFinishTheHallStep_When_TablesStand()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(HallSeeds.SaalchefWithGala(_fixture.Today), ct);
+        var saalchef = await ctx.Identity.ClientForAsync(HallSeeds.Saalchef, ct);
+        var eventId = ctx.Club.Events.IdOf(HallSeeds.Gala);
+        var hallId = await HallSteps.CreateHallAsync(
+            saalchef,
+            ctx.Club.Venues.IdOf(HallSeeds.Buergerhaus),
+            "Saal"
+        );
+        await HallSteps.CreatePlanAsync(saalchef, eventId, hallId);
+        await HallSteps.SavedPlanAsync(
+            saalchef,
+            eventId,
+            hallId,
+            1,
+            [
+                HallSteps.Row("r1", HallSeeds.BiertischId, 4),
+                HallSteps.Row("r2", HallSeeds.RundId, 2),
+            ]
+        );
+        var lead = await ctx.Identity.ClientForAsync(HallSeeds.EventLead, ct);
+
+        var result = await HallSteps.EventOfAsync(lead, eventId);
+
+        Assert.Equal(new EventTablePlanDto { Tables = 6, Chairs = 48 }, result.TablePlan);
+        Assert.False(result.WithoutTablePlan);
+        Assert.Equal(
+            EventStepState.Done,
+            result.Steps.Single(status => status.Step == EventStep.Hall).State
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveTheHallStepOpenWithoutCounts_When_NoPlanExists()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(HallSeeds.SaalchefWithGala(_fixture.Today), ct);
+        var lead = await ctx.Identity.ClientForAsync(HallSeeds.EventLead, ct);
+
+        var result = await HallSteps.EventOfAsync(lead, ctx.Club.Events.IdOf(HallSeeds.Gala));
+
+        Assert.Null(result.TablePlan);
+        Assert.Equal(
+            EventStepState.Open,
+            result.Steps.Single(status => status.Step == EventStep.Hall).State
+        );
+    }
 }

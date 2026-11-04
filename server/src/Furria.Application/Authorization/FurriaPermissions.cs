@@ -16,6 +16,7 @@ public static class FurriaPermissions
     public const string MembershipApplicationsDecide = "membership_applications.decide";
     public const string EventsManage = "events.manage";
     public const string EventsRunningOrder = "events.running_order";
+    public const string EventsHall = "events.hall";
     public const string GalleryUpload = "gallery.upload";
     public const string GalleryManage = "gallery.manage";
     public const string GalleryPublish = "gallery.publish";
@@ -39,6 +40,7 @@ public static class FurriaPermissions
         MembershipApplicationsDecide,
         EventsManage,
         EventsRunningOrder,
+        EventsHall,
         GalleryUpload,
         GalleryManage,
         GalleryPublish,

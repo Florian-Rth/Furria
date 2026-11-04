@@ -62,6 +62,8 @@ public sealed class GetEventById : Endpoint<GetEventByIdRequest, GetEventByIdRes
             DetailsMissing = details.Planning.DetailsMissing,
             Steps = [.. details.Planning.Readiness.Steps.Select(EventStepDto.From)],
             CurrentStep = details.Planning.Readiness.CurrentStep,
+            TablePlan = EventTablePlanDto.From(details.Planning.TablePlan),
+            WithoutTablePlan = details.Planning.WithoutTablePlan,
         };
 }
 
@@ -126,4 +128,8 @@ public sealed record GetEventByIdResponse
     public required IReadOnlyList<EventStepDto> Steps { get; init; }
 
     public required EventStep? CurrentStep { get; init; }
+
+    public required EventTablePlanDto? TablePlan { get; init; }
+
+    public required bool WithoutTablePlan { get; init; }
 }

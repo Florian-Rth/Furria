@@ -35,6 +35,8 @@ const event = (overrides: Partial<EventDetails>): EventDetails => ({
   detailsMissing: ['description', 'picture', 'published'],
   steps: [],
   currentStep: null,
+  tablePlan: null,
+  withoutTablePlan: false,
   ...overrides,
 });
 

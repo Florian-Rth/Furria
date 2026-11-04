@@ -69,6 +69,13 @@ English rendering anywhere else, so two translations never drift apart.
 | in preparation / published | in Vorbereitung / veröffentlicht | `Event.PublishedAt` |
 | event step / current step | Schritt / aktueller Schritt | `EventStep`, `EventReadiness` |
 | running order | Ablauf | — |
+| hall / hall builder | Saal / Saal zeichnen | `Hall` |
+| table plan | Tischplan | `TablePlan` |
+| table type | Tischart | `TableType` |
+| table row / table group | Tischreihe / Tischgruppe | `TableRow`, `TableGroup` |
+| chair area / seating mode | Stuhlbereich / Bestuhlung: Bequem, Maximal | `SeatingMode` |
+| aisle / too-small gap / overlap | Gang / Engstelle / Überschneidung | — |
+| seating standard | Tische & Stühle | `SeatingStandard` |
 | live direction | Live-Regie | — |
 | calendar entry | Kalendereintrag | `CalendarEntry` |
 | owner / visibility | Eigentümer / Sichtbarkeit | `Owner…`, `CalendarEntryVisibility` |
@@ -817,13 +824,14 @@ One piece of an event's preparation, computed from the event's data, never ticke
 (*Karten* — price, presale start and at least one **presale place** set, due 60 days before;
 widened 2026-10-22) and **running order** (*Ablauf* — the evening has a running order, every act is
 placed, it has no conflicts and it is confirmed and unchanged since; opens 28 days before, due 14
-days before). A step is *done*, *overdue*, *open* or *waiting* (its window not
+days before) and **hall** (*Saal & Tische* — the event's **table plan** holds at least one table,
+due 21 days before; an event marked *kein Tischplan nötig* has no such step, added 2026-11-04). A step is *done*, *overdue*, *open* or *waiting* (its window not
 open yet). Due dates are never retroactive: no step falls due earlier than 14 days after the event
 was created, and none before the evening later than the day before it. The **current step** is
 the one to do next — the earliest overdue, else the open one due soonest; a cancelled event has
 none, and neither has an event that is over (ruled 2026-10-17, event planner v2; the *review* step
 *Nachbereitung* dropped 2026-11-04).
-_UI copy_: Schritt; Eckdaten, Karten, Ablauf
+_UI copy_: Schritt; Eckdaten, Karten, Ablauf, Saal & Tische
 _Avoid_: task, phase, milestone, checklist item, *Nachbereitung* (dropped 2026-11-04)
 
 **Act** (`Act`):
@@ -1068,6 +1076,26 @@ _UI copy_: Ort; Straße, PLZ, Stadt; Hinweis
 _Avoid_: room (too narrow — the sports hall is not the club's), location, place (alone — a
 **presale place** is a venue in one role), free-text
 places, **venue** as the name of an address's city field (that is **city**)
+
+**Hall** (`Hall`):
+One drawn room of a **venue** — walls, doors and exits, areas (stage, bar, …), pillars, marker
+lines and labels, in centimetres. A venue has none or several (*Turnhalle ganz / halb*); every
+event there reuses them. A hall used by a **table plan** cannot be deleted (added 2026-11-04,
+plan/club-app/hall-planner.md).
+_UI copy_: Saal; Saal zeichnen
+_Avoid_: room, floor plan (alone), *Raum*
+
+**Table plan** (`TablePlan`):
+How one **event** sets up one **hall**: **table rows** (a *Tisch* is a row of one; a row is
+`count` tables of one **table type** end to end) that may be bound into a **table group** moved
+as one. Around each table lies its **chair area** (*Stuhlbereich*); how many chairs fit a side
+follows the **seating mode** (*Bequem* / *Maximal*) and the club's **seating standard** (chair
+spacing, chair depth, aisle width, exit clearance). A gap below the aisle width is an
+**Engstelle**, chair areas running into something an **Überschneidung**. Rows, groups and chairs
+carry a number and a note — a hint, never a reservation. Counts say *Stühle*, never *Plätze*.
+_UI copy_: Tischplan; Tischart, Tisch, Tischreihe, Tischgruppe, Stuhlbereich, Bestuhlung, Gang,
+Engstelle, Überschneidung; Planen / Aufbau
+_Avoid_: *Plätze*, seat (for a chair — seat allocation stays open), *Sitzplan*
 
 **Key holding** (`KeyHolding`):
 A person's **dated period** of holding a key for a **venue** — the same shape as a role holding,

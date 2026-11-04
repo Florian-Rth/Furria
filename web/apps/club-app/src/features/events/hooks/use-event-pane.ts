@@ -10,6 +10,7 @@ import { paneActionOf } from '../pane-actions';
 import type { EventDetails, EventPaneKey } from '../schemas';
 import type { EventPublishing } from './use-event-publishing';
 import { useEventPublishing } from './use-event-publishing';
+import { useEventsWorkbench } from './use-events-workbench';
 import { usePlanClock } from './use-plan-clock';
 import { useRunningOrderStep } from './use-running-order-step';
 
@@ -38,6 +39,7 @@ export const useEventPane = (eventId: number, pane: EventPaneKey): EventPaneStat
   const event = query.data;
   const publishing = useEventPublishing(PUBLISHING_PANES.has(pane) ? event : undefined);
   const runningOrder = useRunningOrderStep(eventId, pane === 'runningOrder');
+  const { plansHall } = useEventsWorkbench();
 
   if (event === undefined) {
     return { event, head: null, tabs: [], action: { kind: 'none' }, publishing };
@@ -54,6 +56,7 @@ export const useEventPane = (eventId: number, pane: EventPaneKey): EventPaneStat
       pane,
       todayIsoDay: today,
       runningOrder: runningOrder.presence,
+      plansHall,
     }),
     head: {
       icon: PANE_ICONS[pane],

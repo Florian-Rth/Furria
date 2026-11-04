@@ -50,6 +50,7 @@ import { Route as AppManageClubRecordRouteImport } from './routes/_app/manage.cl
 import { Route as AppManageBoardRouteImport } from './routes/_app/manage.board'
 import { Route as AppManageApplicationsRouteImport } from './routes/_app/manage.applications'
 import { Route as AppLabGreetingRouteImport } from './routes/_app/lab_.$greeting'
+import { Route as AppHallsHallIdRouteImport } from './routes/_app/halls_.$hallId'
 import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups_.$groupId'
 import { Route as AppGalleryWebsiteRouteImport } from './routes/_app/gallery_.website'
 import { Route as AppGalleryUploadRouteImport } from './routes/_app/gallery_.upload'
@@ -89,6 +90,7 @@ import { Route as AppGroupsGroupIdAdministrationRouteImport } from './routes/_ap
 import { Route as AppGroupsGroupIdActsRouteImport } from './routes/_app/groups_.$groupId_.acts'
 import { Route as AppGalleryAlbumIdSelectionRouteImport } from './routes/_app/gallery_.$albumId_.selection'
 import { Route as AppGalleryAlbumIdEditRouteImport } from './routes/_app/gallery_.$albumId_.edit'
+import { Route as AppEventsEventIdTischplanRouteImport } from './routes/_app/events_.$eventId_.tischplan'
 import { Route as AppEventsEventIdManageRouteImport } from './routes/_app/events_.$eventId_.manage'
 import { Route as AppEventsEventIdEditRouteImport } from './routes/_app/events_.$eventId_.edit'
 import { Route as AppEventsEventIdAblaufRouteImport } from './routes/_app/events_.$eventId_.ablauf'
@@ -330,6 +332,11 @@ const AppLabGreetingRoute = AppLabGreetingRouteImport.update({
   path: '/lab/$greeting',
   getParentRoute: () => AppRoute,
 } as any)
+const AppHallsHallIdRoute = AppHallsHallIdRouteImport.update({
+  id: '/halls_/$hallId',
+  path: '/halls/$hallId',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGroupsGroupIdRoute = AppGroupsGroupIdRouteImport.update({
   id: '/groups_/$groupId',
   path: '/groups/$groupId',
@@ -536,6 +543,12 @@ const AppGalleryAlbumIdEditRoute = AppGalleryAlbumIdEditRouteImport.update({
   path: '/gallery/$albumId/edit',
   getParentRoute: () => AppRoute,
 } as any)
+const AppEventsEventIdTischplanRoute =
+  AppEventsEventIdTischplanRouteImport.update({
+    id: '/events_/$eventId_/tischplan',
+    path: '/events/$eventId/tischplan',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppEventsEventIdManageRoute = AppEventsEventIdManageRouteImport.update({
   id: '/events_/$eventId_/manage',
   path: '/events/$eventId/manage',
@@ -796,6 +809,7 @@ export interface FileRoutesByFullPath {
   '/gallery/upload': typeof AppGalleryUploadRoute
   '/gallery/website': typeof AppGalleryWebsiteRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
+  '/halls/$hallId': typeof AppHallsHallIdRoute
   '/lab/$greeting': typeof AppLabGreetingRoute
   '/manage/applications': typeof AppManageApplicationsRoute
   '/manage/board': typeof AppManageBoardRoute
@@ -823,6 +837,7 @@ export interface FileRoutesByFullPath {
   '/events/$eventId/ablauf': typeof AppEventsEventIdAblaufRoute
   '/events/$eventId/edit': typeof AppEventsEventIdEditRoute
   '/events/$eventId/manage': typeof AppEventsEventIdManageRoute
+  '/events/$eventId/tischplan': typeof AppEventsEventIdTischplanRoute
   '/gallery/$albumId/edit': typeof AppGalleryAlbumIdEditRoute
   '/gallery/$albumId/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/groups/$groupId/acts': typeof AppGroupsGroupIdActsRoute
@@ -913,6 +928,7 @@ export interface FileRoutesByTo {
   '/gallery/upload': typeof AppGalleryUploadRoute
   '/gallery/website': typeof AppGalleryWebsiteRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
+  '/halls/$hallId': typeof AppHallsHallIdRoute
   '/lab/$greeting': typeof AppLabGreetingRoute
   '/manage/applications': typeof AppManageApplicationsRoute
   '/manage/board': typeof AppManageBoardRoute
@@ -940,6 +956,7 @@ export interface FileRoutesByTo {
   '/events/$eventId/ablauf': typeof AppEventsEventIdAblaufRoute
   '/events/$eventId/edit': typeof AppEventsEventIdEditRoute
   '/events/$eventId/manage': typeof AppEventsEventIdManageRoute
+  '/events/$eventId/tischplan': typeof AppEventsEventIdTischplanRoute
   '/gallery/$albumId/edit': typeof AppGalleryAlbumIdEditRoute
   '/gallery/$albumId/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/groups/$groupId/acts': typeof AppGroupsGroupIdActsRoute
@@ -1034,6 +1051,7 @@ export interface FileRoutesById {
   '/_app/gallery_/upload': typeof AppGalleryUploadRoute
   '/_app/gallery_/website': typeof AppGalleryWebsiteRoute
   '/_app/groups_/$groupId': typeof AppGroupsGroupIdRoute
+  '/_app/halls_/$hallId': typeof AppHallsHallIdRoute
   '/_app/lab_/$greeting': typeof AppLabGreetingRoute
   '/_app/manage/applications': typeof AppManageApplicationsRoute
   '/_app/manage/board': typeof AppManageBoardRoute
@@ -1061,6 +1079,7 @@ export interface FileRoutesById {
   '/_app/events_/$eventId_/ablauf': typeof AppEventsEventIdAblaufRoute
   '/_app/events_/$eventId_/edit': typeof AppEventsEventIdEditRoute
   '/_app/events_/$eventId_/manage': typeof AppEventsEventIdManageRoute
+  '/_app/events_/$eventId_/tischplan': typeof AppEventsEventIdTischplanRoute
   '/_app/gallery_/$albumId_/edit': typeof AppGalleryAlbumIdEditRoute
   '/_app/gallery_/$albumId_/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/_app/groups_/$groupId_/acts': typeof AppGroupsGroupIdActsRoute
@@ -1153,6 +1172,7 @@ export interface FileRouteTypes {
     | '/gallery/upload'
     | '/gallery/website'
     | '/groups/$groupId'
+    | '/halls/$hallId'
     | '/lab/$greeting'
     | '/manage/applications'
     | '/manage/board'
@@ -1180,6 +1200,7 @@ export interface FileRouteTypes {
     | '/events/$eventId/ablauf'
     | '/events/$eventId/edit'
     | '/events/$eventId/manage'
+    | '/events/$eventId/tischplan'
     | '/gallery/$albumId/edit'
     | '/gallery/$albumId/selection'
     | '/groups/$groupId/acts'
@@ -1270,6 +1291,7 @@ export interface FileRouteTypes {
     | '/gallery/upload'
     | '/gallery/website'
     | '/groups/$groupId'
+    | '/halls/$hallId'
     | '/lab/$greeting'
     | '/manage/applications'
     | '/manage/board'
@@ -1297,6 +1319,7 @@ export interface FileRouteTypes {
     | '/events/$eventId/ablauf'
     | '/events/$eventId/edit'
     | '/events/$eventId/manage'
+    | '/events/$eventId/tischplan'
     | '/gallery/$albumId/edit'
     | '/gallery/$albumId/selection'
     | '/groups/$groupId/acts'
@@ -1390,6 +1413,7 @@ export interface FileRouteTypes {
     | '/_app/gallery_/upload'
     | '/_app/gallery_/website'
     | '/_app/groups_/$groupId'
+    | '/_app/halls_/$hallId'
     | '/_app/lab_/$greeting'
     | '/_app/manage/applications'
     | '/_app/manage/board'
@@ -1417,6 +1441,7 @@ export interface FileRouteTypes {
     | '/_app/events_/$eventId_/ablauf'
     | '/_app/events_/$eventId_/edit'
     | '/_app/events_/$eventId_/manage'
+    | '/_app/events_/$eventId_/tischplan'
     | '/_app/gallery_/$albumId_/edit'
     | '/_app/gallery_/$albumId_/selection'
     | '/_app/groups_/$groupId_/acts'
@@ -1771,6 +1796,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLabGreetingRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/halls_/$hallId': {
+      id: '/_app/halls_/$hallId'
+      path: '/halls/$hallId'
+      fullPath: '/halls/$hallId'
+      preLoaderRoute: typeof AppHallsHallIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/groups_/$groupId': {
       id: '/_app/groups_/$groupId'
       path: '/groups/$groupId'
@@ -2042,6 +2074,13 @@ declare module '@tanstack/react-router' {
       path: '/gallery/$albumId/edit'
       fullPath: '/gallery/$albumId/edit'
       preLoaderRoute: typeof AppGalleryAlbumIdEditRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/events_/$eventId_/tischplan': {
+      id: '/_app/events_/$eventId_/tischplan'
+      path: '/events/$eventId/tischplan'
+      fullPath: '/events/$eventId/tischplan'
+      preLoaderRoute: typeof AppEventsEventIdTischplanRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/events_/$eventId_/manage': {
@@ -2382,6 +2421,7 @@ interface AppRouteChildren {
   AppGalleryUploadRoute: typeof AppGalleryUploadRoute
   AppGalleryWebsiteRoute: typeof AppGalleryWebsiteRoute
   AppGroupsGroupIdRoute: typeof AppGroupsGroupIdRoute
+  AppHallsHallIdRoute: typeof AppHallsHallIdRoute
   AppLabGreetingRoute: typeof AppLabGreetingRoute
   AppManageApplicationsRoute: typeof AppManageApplicationsRoute
   AppManageBoardRoute: typeof AppManageBoardRoute
@@ -2407,6 +2447,7 @@ interface AppRouteChildren {
   AppEventsEventIdAblaufRoute: typeof AppEventsEventIdAblaufRoute
   AppEventsEventIdEditRoute: typeof AppEventsEventIdEditRoute
   AppEventsEventIdManageRoute: typeof AppEventsEventIdManageRoute
+  AppEventsEventIdTischplanRoute: typeof AppEventsEventIdTischplanRoute
   AppGalleryAlbumIdEditRoute: typeof AppGalleryAlbumIdEditRoute
   AppGalleryAlbumIdSelectionRoute: typeof AppGalleryAlbumIdSelectionRoute
   AppGroupsGroupIdActsRoute: typeof AppGroupsGroupIdActsRoute
@@ -2487,6 +2528,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppGalleryUploadRoute: AppGalleryUploadRoute,
   AppGalleryWebsiteRoute: AppGalleryWebsiteRoute,
   AppGroupsGroupIdRoute: AppGroupsGroupIdRoute,
+  AppHallsHallIdRoute: AppHallsHallIdRoute,
   AppLabGreetingRoute: AppLabGreetingRoute,
   AppManageApplicationsRoute: AppManageApplicationsRoute,
   AppManageBoardRoute: AppManageBoardRoute,
@@ -2512,6 +2554,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppEventsEventIdAblaufRoute: AppEventsEventIdAblaufRoute,
   AppEventsEventIdEditRoute: AppEventsEventIdEditRoute,
   AppEventsEventIdManageRoute: AppEventsEventIdManageRoute,
+  AppEventsEventIdTischplanRoute: AppEventsEventIdTischplanRoute,
   AppGalleryAlbumIdEditRoute: AppGalleryAlbumIdEditRoute,
   AppGalleryAlbumIdSelectionRoute: AppGalleryAlbumIdSelectionRoute,
   AppGroupsGroupIdActsRoute: AppGroupsGroupIdActsRoute,

@@ -17,11 +17,11 @@ export type EventSalesStatus = z.infer<typeof EventSalesStatusSchema>;
 export const TicketAvailabilitySchema = z.enum(TICKET_AVAILABILITY_KEYS);
 export type TicketAvailability = z.infer<typeof TicketAvailabilitySchema>;
 
-export const EVENT_STEP_KEYS = ['details', 'tickets', 'runningOrder'] as const;
+export const EVENT_STEP_KEYS = ['details', 'tickets', 'runningOrder', 'hall'] as const;
 export const EventStepKeySchema = z.enum(EVENT_STEP_KEYS);
 export type EventStepKey = z.infer<typeof EventStepKeySchema>;
 
-export const EVENT_PANE_KEYS = ['website', 'details', 'tickets', 'runningOrder'] as const;
+export const EVENT_PANE_KEYS = ['website', 'details', 'tickets', 'runningOrder', 'hall'] as const;
 export const EventPaneKeySchema = z.enum(EVENT_PANE_KEYS);
 export type EventPaneKey = z.infer<typeof EventPaneKeySchema>;
 
@@ -63,12 +63,20 @@ export const EventStepStatusSchema = z.object({
 });
 export type EventStepStatus = z.infer<typeof EventStepStatusSchema>;
 
+export const EventTablePlanSchema = z.object({
+  tables: z.number().int(),
+  chairs: z.number().int(),
+});
+export type EventTablePlan = z.infer<typeof EventTablePlanSchema>;
+
 const EventPlanningFields = {
   publishedAt: z.iso.datetime({ offset: true }).nullable(),
   createdAt: z.iso.datetime({ offset: true }),
   detailsMissing: z.array(MissingEventDetailSchema),
   steps: z.array(EventStepStatusSchema),
   currentStep: EventStepKeySchema.nullable(),
+  tablePlan: EventTablePlanSchema.nullable(),
+  withoutTablePlan: z.boolean(),
 };
 
 export const EventSummarySchema = z.object({

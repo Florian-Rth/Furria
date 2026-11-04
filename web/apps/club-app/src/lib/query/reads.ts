@@ -36,6 +36,9 @@ export const DOMAIN_CHANGES = [
   'actVideos',
   'actEvening',
   'runningOrder',
+  'hall',
+  'tablePlan',
+  'seating',
 ] as const;
 export type DomainChange = (typeof DOMAIN_CHANGES)[number];
 
@@ -104,6 +107,11 @@ export const READ_NAMES = [
   'runningOrder',
   'runningOrders',
   'eveningRunningOrder',
+  'seating',
+  'halls',
+  'hall',
+  'tablePlans',
+  'tablePlan',
 ] as const;
 export type ReadName = (typeof READ_NAMES)[number];
 
@@ -172,6 +180,11 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   runningOrder: ['running-order', 'detail'],
   runningOrders: ['running-order', 'list'],
   eveningRunningOrder: ['running-order', 'evening'],
+  seating: ['seating'],
+  halls: ['halls', 'list'],
+  hall: ['halls', 'detail'],
+  tablePlans: ['table-plans', 'list'],
+  tablePlan: ['table-plans', 'detail'],
 };
 
 const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
@@ -259,8 +272,8 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   members: ['person', 'picture', 'membership', 'group', 'groupMembership', 'role', 'roleHolding'],
   member: ['person', 'picture', 'membership', 'group', 'groupMembership', 'role', 'roleHolding'],
   rolesOverview: ['role', 'roleHolding', 'person'],
-  events: ['event', 'venue', 'media', 'newsPost', 'runningOrder', 'act'],
-  event: ['event', 'venue', 'media', 'newsPost', 'runningOrder', 'act'],
+  events: ['event', 'venue', 'media', 'newsPost', 'runningOrder', 'act', 'tablePlan', 'seating'],
+  event: ['event', 'venue', 'media', 'newsPost', 'runningOrder', 'act', 'tablePlan', 'seating'],
   galleryHub: ['media'],
   album: ['media'],
   inbox: ['media'],
@@ -401,6 +414,11 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'groupAdmin',
     'membership',
   ],
+  seating: ['seating'],
+  halls: ['hall', 'venue'],
+  hall: ['venue'],
+  tablePlans: ['tablePlan', 'hall', 'event', 'seating'],
+  tablePlan: ['hall', 'venue', 'seating'],
 };
 
 export const staleReadsAfter = (changes: readonly DomainChange[]): ReadName[] =>
@@ -498,4 +516,9 @@ export const queryKeys = {
   runningOrders: READ_ROOTS.runningOrders,
   eveningRunningOrder: (calendarEntryId: number | null): QueryKey =>
     keyOf('eveningRunningOrder', calendarEntryId),
+  seating: READ_ROOTS.seating,
+  halls: READ_ROOTS.halls,
+  hall: (hallId: number): QueryKey => keyOf('hall', hallId),
+  tablePlans: READ_ROOTS.tablePlans,
+  tablePlan: (eventId: number): QueryKey => keyOf('tablePlan', eventId),
 } as const;

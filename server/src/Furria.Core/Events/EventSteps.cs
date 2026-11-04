@@ -9,7 +9,10 @@ public static class EventSteps
     private const int TicketsLeadDays = 60;
     private const int RunningOrderOpensDays = 28;
     private const int RunningOrderLeadDays = 14;
+    private const int HallLeadDays = 21;
     private const int FewestDaysSinceCreation = 14;
+
+    private static readonly DateOnly HallStepArrivedOn = new(2026, 11, 4);
 
     [Pure]
     public static EventReadiness ReadinessOf(EventReadinessFacts facts, DateTimeOffset now)
@@ -26,6 +29,7 @@ public static class EventSteps
             ),
             PreEventStatusOf(EventStep.Tickets, TicketsLeadDays, facts.AreTicketsSet, facts, today),
             RunningOrderStatusOf(facts, today),
+            .. HallStatusesOf(facts, today),
         ];
 
         return new EventReadiness(steps, facts.IsCancelled ? null : CurrentOf(steps, facts));
@@ -71,6 +75,33 @@ public static class EventSteps
             OpensOn = opensOn,
         };
     }
+
+    [Pure]
+    private static IEnumerable<EventStepStatus> HallStatusesOf(
+        EventReadinessFacts facts,
+        DateOnly today
+    ) =>
+        facts.NeedsTablePlan
+            ?
+            [
+                PreEventStatusOf(
+                    EventStep.Hall,
+                    HallLeadDays,
+                    facts.HasPlacedTables,
+                    SinceHallStepArrived(facts),
+                    today
+                ),
+            ]
+            : [];
+
+    [Pure]
+    private static EventReadinessFacts SinceHallStepArrived(EventReadinessFacts facts) =>
+        facts.CreatedDay < HallStepArrivedOn
+            ? facts with
+            {
+                CreatedDay = HallStepArrivedOn,
+            }
+            : facts;
 
     [Pure]
     private static EventStep? CurrentOf(

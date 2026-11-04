@@ -15,4 +15,8 @@ public sealed record EventReadinessFacts
     public required bool AreTicketsSet { get; init; }
 
     public required bool IsRunningOrderDone { get; init; }
+
+    public required bool NeedsTablePlan { get; init; }
+
+    public required bool HasPlacedTables { get; init; }
 }

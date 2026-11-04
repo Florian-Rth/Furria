@@ -43,6 +43,9 @@ export type CellFact =
     }
   | { kind: 'runningOrder'; stands: boolean }
   | { kind: 'runningOrderOpens'; opensOn: string }
+  | { kind: 'tablePlan'; tables: number; chairs: number }
+  | { kind: 'noTablePlan' }
+  | { kind: 'tablePlanSkipped' }
   | { kind: 'deadline'; step: EventStepKey; dueOn: string; daysLeft: number }
   | { kind: 'allDone' }
   | { kind: 'cancelled' };
@@ -58,6 +61,7 @@ const STEP_PANES: Record<EventStepKey, EventPaneKey> = {
   details: 'details',
   tickets: 'tickets',
   runningOrder: 'runningOrder',
+  hall: 'hall',
 };
 
 const stepStateOf = (event: PlannedEvent, step: EventStepKey): KkStepState => {
@@ -137,6 +141,23 @@ const runningOrderCellOf = (event: PlannedEvent): BoardCell => {
   };
 };
 
+const hallFactOf = (event: PlannedEvent): CellFact => {
+  if (event.withoutTablePlan) {
+    return { kind: 'tablePlanSkipped' };
+  }
+
+  return event.tablePlan === null
+    ? { kind: 'noTablePlan' }
+    : { kind: 'tablePlan', tables: event.tablePlan.tables, chairs: event.tablePlan.chairs };
+};
+
+const hallCellOf = (event: PlannedEvent): BoardCell => ({
+  column: 'hall',
+  pane: 'hall',
+  state: stepStateOf(event, 'hall'),
+  fact: hallFactOf(event),
+});
+
 const STATE_RANK: Record<EventStepState, number> = { overdue: 0, open: 1, waiting: 2, done: 3 };
 
 export const nextDeadlineOf = (
@@ -198,6 +219,8 @@ export const cellOf = (
       return ticketsCellOf(event);
     case 'runningOrder':
       return runningOrderCellOf(event);
+    case 'hall':
+      return hallCellOf(event);
     case 'deadline':
       return deadlineCellOf(event, todayIsoDay);
   }

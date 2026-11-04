@@ -21,6 +21,8 @@ public sealed class EventStepsTests
         AreDetailsDone = false,
         AreTicketsSet = false,
         IsRunningOrderDone = false,
+        NeedsTablePlan = false,
+        HasPlacedTables = false,
     };
 
     [Theory]
@@ -144,6 +146,90 @@ public sealed class EventStepsTests
         );
 
         Assert.Null(readiness.CurrentStep);
+    }
+
+    [Fact]
+    public void Should_ListTheHallStepDueThreeWeeksAhead_When_TheEventNeedsATablePlan()
+    {
+        var readiness = EventSteps.ReadinessOf(
+            NothingDone with
+            {
+                NeedsTablePlan = true,
+            },
+            Noon("2026-10-01")
+        );
+
+        Assert.Equal(
+            new EventStepStatus(EventStep.Hall, Open, new DateOnly(2026, 12, 26), null),
+            readiness.Steps[^1]
+        );
+    }
+
+    [Theory]
+    [InlineData("2026-11-11", "2026-11-10")]
+    [InlineData("2026-12-01", "2026-11-18")]
+    [InlineData("2027-01-16", "2026-12-26")]
+    public void Should_GiveTheHallStepTimeSinceItArrived_When_TheEventIsOlderThanTheStep(
+        string eventDay,
+        string hallDue
+    )
+    {
+        var readiness = EventSteps.ReadinessOf(
+            NothingDone with
+            {
+                EventDay = DateOnly.Parse(eventDay),
+                CreatedDay = new DateOnly(2026, 1, 1),
+                NeedsTablePlan = true,
+            },
+            Noon("2026-11-05")
+        );
+
+        var hall = readiness.Steps.Single(status => status.Step == EventStep.Hall);
+        Assert.Equal(
+            new EventStepStatus(EventStep.Hall, Open, DateOnly.Parse(hallDue), null),
+            hall
+        );
+    }
+
+    [Fact]
+    public void Should_DropTheHallStep_When_NoTablePlanIsNeeded()
+    {
+        var readiness = EventSteps.ReadinessOf(NothingDone, Noon("2026-10-01"));
+
+        Assert.DoesNotContain(readiness.Steps, status => status.Step == EventStep.Hall);
+    }
+
+    [Theory]
+    [InlineData("2026-12-26", false, false, Open, EventStep.Hall)]
+    [InlineData("2026-12-27", false, false, Overdue, EventStep.Hall)]
+    [InlineData("2026-12-27", true, false, Done, null)]
+    [InlineData("2027-01-03", false, false, Overdue, EventStep.Hall)]
+    [InlineData("2027-01-03", false, true, Overdue, EventStep.Hall)]
+    [InlineData("2027-01-03", true, true, Done, EventStep.RunningOrder)]
+    [InlineData("2027-02-01", false, false, Open, null)]
+    public void Should_TreatTheHallStepLikeTheOtherSteps_When_TheEventNeedsATablePlan(
+        string today,
+        bool hasPlacedTables,
+        bool isAfterRunningOrderDue,
+        EventStepState hall,
+        EventStep? current
+    )
+    {
+        var readiness = EventSteps.ReadinessOf(
+            NothingDone with
+            {
+                AreDetailsDone = true,
+                AreTicketsSet = true,
+                IsRunningOrderDone = !isAfterRunningOrderDue,
+                NeedsTablePlan = true,
+                HasPlacedTables = hasPlacedTables,
+                IsOver = DateOnly.Parse(today) > GalaDay,
+            },
+            Noon(today)
+        );
+
+        Assert.Equal(hall, readiness.Steps.Single(status => status.Step == EventStep.Hall).State);
+        Assert.Equal(current, readiness.CurrentStep);
     }
 
     private static DateTimeOffset Noon(string day) =>

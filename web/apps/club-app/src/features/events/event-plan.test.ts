@@ -17,6 +17,8 @@ const planned = (overrides: Partial<PlannedEvent> = {}): PlannedEvent => ({
     { step: 'tickets', state: 'open', dueOn: '2026-11-17', opensOn: null },
   ],
   currentStep: 'tickets',
+  tablePlan: null,
+  withoutTablePlan: false,
   ...overrides,
 });
 

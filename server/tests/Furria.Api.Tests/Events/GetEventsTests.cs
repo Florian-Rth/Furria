@@ -1,6 +1,7 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Events;
+using Furria.Api.Tests.Halls;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Core.Events;
@@ -290,6 +291,13 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
                             DueOn = new DateOnly(2027, 3, 6),
                             OpensOn = new DateOnly(2027, 2, 20),
                         },
+                        new EventStepDto
+                        {
+                            Step = EventStep.Hall,
+                            State = EventStepState.Open,
+                            DueOn = new DateOnly(2027, 2, 27),
+                            OpensOn = null,
+                        },
                     ],
                     planned.Steps
                 );
@@ -467,4 +475,37 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
                     ),
             ct
         );
+
+    [Fact]
+    public async Task Should_CountEachEventsTables_When_SomeEventsHavePlans()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(HallSeeds.SaalchefWithGala(_fixture.Today), ct);
+        var saalchef = await ctx.Identity.ClientForAsync(HallSeeds.Saalchef, ct);
+        var gala = ctx.Club.Events.IdOf(HallSeeds.Gala);
+        var hallId = await HallSteps.CreateHallAsync(
+            saalchef,
+            ctx.Club.Venues.IdOf(HallSeeds.Buergerhaus),
+            "Saal"
+        );
+        await HallSteps.CreatePlanAsync(saalchef, gala, hallId);
+        await HallSteps.SavedPlanAsync(
+            saalchef,
+            gala,
+            hallId,
+            1,
+            [HallSteps.Row("r1", HallSeeds.TischId, 3)]
+        );
+        var lead = await ctx.Identity.ClientForAsync(HallSeeds.EventLead, ct);
+
+        var (_, result) = await lead.GETAsync<GetEvents, GetEventsResponse>();
+
+        Assert.Equal(
+            ["1. Prunksitzung 3/12", "Kindersitzung –"],
+            result.Events.Select(listed =>
+                $"{listed.Title} "
+                + (listed.TablePlan is { } plan ? $"{plan.Tables}/{plan.Chairs}" : "–")
+            )
+        );
+    }
 }

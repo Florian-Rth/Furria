@@ -35,6 +35,7 @@ export const COLUMN_TITLES: Record<BoardColumn, string> = {
   details: 'Eckdaten',
   tickets: 'Karten',
   runningOrder: 'Ablauf',
+  hall: 'Saal & Tische',
   deadline: 'Nächste Frist',
 };
 
@@ -43,6 +44,7 @@ export const PANE_ICONS: Record<EventPaneKey, KkIconName> = {
   details: 'factSheet',
   tickets: 'tickets',
   runningOrder: 'timeline',
+  hall: 'tables',
 };
 
 export const GRID_COLUMNS: readonly KkStateGridColumn[] = EVENT_PANE_KEYS.map((pane) => ({
@@ -55,6 +57,7 @@ export const PANE_TITLES: Record<EventPaneKey, string> = {
   details: 'Eckdaten',
   tickets: 'Karten',
   runningOrder: 'Ablauf',
+  hall: 'Saal & Tische',
 };
 
 export const STATE_LABELS: Record<KkStepState, string> = {
@@ -157,6 +160,12 @@ export const toCellFactLabel = (fact: CellFact): string => {
       return fact.stands ? 'steht' : 'noch offen';
     case 'runningOrderOpens':
       return `ab ${toShortDay(fact.opensOn)}`;
+    case 'tablePlan':
+      return `${toTableCountLabel(fact.tables)} · ${toChairCountLabel(fact.chairs)}`;
+    case 'noTablePlan':
+      return 'noch kein Tischplan';
+    case 'tablePlanSkipped':
+      return 'kein Tischplan nötig';
     case 'deadline':
       return join([STEP_TITLES[fact.step], toShortDay(fact.dueOn)]);
     case 'allDone':
@@ -213,10 +222,15 @@ export const toCountdown = (days: number): { value: string; unit: string; label:
   return { value: String(days), unit: days === 1 ? 'Tag' : 'Tage', label: `Noch ${days} Tage` };
 };
 
+export const toTableCountLabel = (tables: number): string =>
+  `${tables} ${tables === 1 ? 'Tisch' : 'Tische'}`;
+
+export const toChairCountLabel = (chairs: number): string =>
+  `${chairs} ${chairs === 1 ? 'Stuhl' : 'Stühle'}`;
+
 export const LATER_EYEBROW = 'Kommt noch';
 export const LATER_ITEMS: readonly KkStepLaterItem[] = [
   { icon: 'stage', label: 'Besetzung' },
-  { icon: 'tables', label: 'Saal & Tische' },
   { icon: 'campaign', label: 'Werbung' },
   { icon: 'live', label: 'Live-Regie' },
 ];
@@ -294,6 +308,12 @@ export const toCellShortFact = (fact: CellFact): string => {
       return fact.stands ? 'steht' : 'noch offen';
     case 'runningOrderOpens':
       return `ab ${toShortDay(fact.opensOn)}`;
+    case 'tablePlan':
+      return `${fact.chairs} Stühle`;
+    case 'noTablePlan':
+      return 'noch offen';
+    case 'tablePlanSkipped':
+      return 'nicht nötig';
     case 'deadline':
       return toShortDay(fact.dueOn);
     case 'allDone':
@@ -354,6 +374,7 @@ export const SECONDARY_LINKS: Record<EventPaneKey, readonly SecondaryLink[]> = {
   details: [EDIT_LINK, MANAGE_LINK],
   tickets: [EDIT_LINK],
   runningOrder: [],
+  hall: [],
 };
 
 export const EVENT_FALLBACK_TITLE = 'Veranstaltung';

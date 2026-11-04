@@ -4,11 +4,13 @@ import AlternateEmailOutlinedIcon from '@mui/icons-material/AlternateEmailOutlin
 import AutoAwesomeOutlinedIcon from '@mui/icons-material/AutoAwesomeOutlined';
 import AutoFixHighOutlinedIcon from '@mui/icons-material/AutoFixHighOutlined';
 import BoltOutlinedIcon from '@mui/icons-material/BoltOutlined';
+import BorderOuterOutlinedIcon from '@mui/icons-material/BorderOuterOutlined';
 import BrokenImageOutlinedIcon from '@mui/icons-material/BrokenImageOutlined';
 import CakeOutlinedIcon from '@mui/icons-material/CakeOutlined';
 import CalendarMonthIcon from '@mui/icons-material/CalendarMonth';
 import CalendarMonthOutlinedIcon from '@mui/icons-material/CalendarMonthOutlined';
 import CampaignOutlinedIcon from '@mui/icons-material/CampaignOutlined';
+import ChairOutlinedIcon from '@mui/icons-material/ChairOutlined';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import CheckCircleOutlineOutlinedIcon from '@mui/icons-material/CheckCircleOutlineOutlined';
 import ChecklistOutlinedIcon from '@mui/icons-material/ChecklistOutlined';
@@ -16,12 +18,14 @@ import CheckOutlinedIcon from '@mui/icons-material/CheckOutlined';
 import CheckroomOutlinedIcon from '@mui/icons-material/CheckroomOutlined';
 import ChevronLeftIcon from '@mui/icons-material/ChevronLeft';
 import ChevronRightIcon from '@mui/icons-material/ChevronRight';
+import CircleOutlinedIcon from '@mui/icons-material/CircleOutlined';
 import CloseIcon from '@mui/icons-material/Close';
 import CloudOffOutlinedIcon from '@mui/icons-material/CloudOffOutlined';
 import CloudUploadOutlinedIcon from '@mui/icons-material/CloudUploadOutlined';
 import ConfirmationNumberOutlinedIcon from '@mui/icons-material/ConfirmationNumberOutlined';
 import ContentCopyOutlinedIcon from '@mui/icons-material/ContentCopyOutlined';
 import CropOutlinedIcon from '@mui/icons-material/CropOutlined';
+import CropSquareOutlinedIcon from '@mui/icons-material/CropSquareOutlined';
 import DeleteOutlineOutlinedIcon from '@mui/icons-material/DeleteOutlineOutlined';
 import Diversity3Icon from '@mui/icons-material/Diversity3';
 import Diversity3OutlinedIcon from '@mui/icons-material/Diversity3Outlined';
@@ -34,6 +38,7 @@ import EuroOutlinedIcon from '@mui/icons-material/EuroOutlined';
 import EventOutlinedIcon from '@mui/icons-material/EventOutlined';
 import FileDownloadOutlinedIcon from '@mui/icons-material/FileDownloadOutlined';
 import FingerprintOutlinedIcon from '@mui/icons-material/FingerprintOutlined';
+import FitScreenOutlinedIcon from '@mui/icons-material/FitScreenOutlined';
 import FlagOutlinedIcon from '@mui/icons-material/FlagOutlined';
 import FolderZipOutlinedIcon from '@mui/icons-material/FolderZipOutlined';
 import FormatBoldIcon from '@mui/icons-material/FormatBold';
@@ -56,6 +61,7 @@ import Inventory2OutlinedIcon from '@mui/icons-material/Inventory2Outlined';
 import IosShareIcon from '@mui/icons-material/IosShare';
 import KeyOutlinedIcon from '@mui/icons-material/KeyOutlined';
 import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
+import LayersClearOutlinedIcon from '@mui/icons-material/LayersClearOutlined';
 import LinkOffOutlinedIcon from '@mui/icons-material/LinkOffOutlined';
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
@@ -66,29 +72,38 @@ import MonitorHeartOutlinedIcon from '@mui/icons-material/MonitorHeartOutlined';
 import MoreHorizIcon from '@mui/icons-material/MoreHoriz';
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import MusicNoteOutlinedIcon from '@mui/icons-material/MusicNoteOutlined';
+import NearMeOutlinedIcon from '@mui/icons-material/NearMeOutlined';
 import NewspaperOutlinedIcon from '@mui/icons-material/NewspaperOutlined';
 import NotesOutlinedIcon from '@mui/icons-material/NotesOutlined';
 import NotificationsActiveOutlinedIcon from '@mui/icons-material/NotificationsActiveOutlined';
 import OpenInBrowserOutlinedIcon from '@mui/icons-material/OpenInBrowserOutlined';
 import OpenInNewOutlinedIcon from '@mui/icons-material/OpenInNewOutlined';
+import PanToolOutlinedIcon from '@mui/icons-material/PanToolOutlined';
 import PersonOutlinedIcon from '@mui/icons-material/PersonOutlined';
 import PhoneOutlinedIcon from '@mui/icons-material/PhoneOutlined';
 import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import PolicyOutlinedIcon from '@mui/icons-material/PolicyOutlined';
+import PolylineOutlinedIcon from '@mui/icons-material/PolylineOutlined';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import QrCode2OutlinedIcon from '@mui/icons-material/QrCode2Outlined';
+import RedoOutlinedIcon from '@mui/icons-material/RedoOutlined';
 import RemoveOutlinedIcon from '@mui/icons-material/RemoveOutlined';
+import RotateRightOutlinedIcon from '@mui/icons-material/RotateRightOutlined';
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import SensorsOutlinedIcon from '@mui/icons-material/SensorsOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import ShortTextOutlinedIcon from '@mui/icons-material/ShortTextOutlined';
+import StickyNote2OutlinedIcon from '@mui/icons-material/StickyNote2Outlined';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
+import StraightenOutlinedIcon from '@mui/icons-material/StraightenOutlined';
 import TableRestaurantOutlinedIcon from '@mui/icons-material/TableRestaurantOutlined';
+import TableRowsOutlinedIcon from '@mui/icons-material/TableRowsOutlined';
+import TextFieldsOutlinedIcon from '@mui/icons-material/TextFieldsOutlined';
 import TheaterComedyOutlinedIcon from '@mui/icons-material/TheaterComedyOutlined';
 import TuneOutlinedIcon from '@mui/icons-material/TuneOutlined';
 import TuneRoundedIcon from '@mui/icons-material/TuneRounded';
@@ -98,6 +113,7 @@ import ViewTimelineOutlinedIcon from '@mui/icons-material/ViewTimelineOutlined';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import WorkspacePremiumOutlinedIcon from '@mui/icons-material/WorkspacePremiumOutlined';
+import WorkspacesOutlinedIcon from '@mui/icons-material/WorkspacesOutlined';
 import ZoomInOutlinedIcon from '@mui/icons-material/ZoomInOutlined';
 import type { FC } from 'react';
 import type { KkSx } from './kk-sx';
@@ -204,7 +220,23 @@ export type KkIconName =
   | 'suggest'
   | 'music'
   | 'flag'
-  | 'sparkle';
+  | 'sparkle'
+  | 'pointer'
+  | 'wall'
+  | 'area'
+  | 'pillar'
+  | 'line'
+  | 'text'
+  | 'ruler'
+  | 'row'
+  | 'redo'
+  | 'fit'
+  | 'pan'
+  | 'rotate'
+  | 'chair'
+  | 'note'
+  | 'groupTables'
+  | 'ungroup';
 type KkIconSize = 'small' | 'medium' | 'large';
 
 interface KkIconProps {
@@ -322,6 +354,22 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   music: MusicNoteOutlinedIcon,
   flag: FlagOutlinedIcon,
   sparkle: AutoAwesomeOutlinedIcon,
+  pointer: NearMeOutlinedIcon,
+  wall: BorderOuterOutlinedIcon,
+  area: CropSquareOutlinedIcon,
+  pillar: CircleOutlinedIcon,
+  line: PolylineOutlinedIcon,
+  text: TextFieldsOutlinedIcon,
+  ruler: StraightenOutlinedIcon,
+  row: TableRowsOutlinedIcon,
+  redo: RedoOutlinedIcon,
+  fit: FitScreenOutlinedIcon,
+  pan: PanToolOutlinedIcon,
+  rotate: RotateRightOutlinedIcon,
+  chair: ChairOutlinedIcon,
+  note: StickyNote2OutlinedIcon,
+  groupTables: WorkspacesOutlinedIcon,
+  ungroup: LayersClearOutlinedIcon,
 };
 
 export const KkIcon: FC<KkIconProps> = ({ name, size = 'medium', sx }) => {

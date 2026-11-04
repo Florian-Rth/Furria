@@ -13,6 +13,8 @@ export type PaneAction =
   | { kind: 'editTickets' }
   | { kind: 'planRunningOrder' }
   | { kind: 'openRunningOrder' }
+  | { kind: 'planTablePlan' }
+  | { kind: 'openTablePlan' }
   | { kind: 'step'; pane: EventPaneKey }
   | { kind: 'none' };
 
@@ -39,11 +41,23 @@ const runningOrderActionOf = (presence: RunningOrderPresence, isOver: boolean): 
   }
 };
 
+const tablePlanActionOf = (event: PlannedEvent, plansHall: boolean): PaneAction => {
+  if (!plansHall) {
+    return NONE;
+  }
+  if (event.tablePlan !== null) {
+    return { kind: 'openTablePlan' };
+  }
+
+  return event.isOver || event.withoutTablePlan ? NONE : { kind: 'planTablePlan' };
+};
+
 export interface PaneActionInput {
   event: PlannedEvent;
   pane: EventPaneKey;
   todayIsoDay: string;
   runningOrder: RunningOrderPresence;
+  plansHall: boolean;
 }
 
 export const paneActionOf = ({
@@ -51,6 +65,7 @@ export const paneActionOf = ({
   pane,
   todayIsoDay,
   runningOrder,
+  plansHall,
 }: PaneActionInput): PaneAction => {
   if (isCancelledEvent(event)) {
     return NONE;
@@ -80,5 +95,7 @@ export const paneActionOf = ({
         : next();
     case 'runningOrder':
       return runningOrderActionOf(runningOrder, event.isOver);
+    case 'hall':
+      return tablePlanActionOf(event, plansHall);
   }
 };
