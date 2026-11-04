@@ -16,6 +16,7 @@ export const OpenBeerPotSchema = z.object({
   paymentLink: PaymentLinkSchema,
   paymentNote: z.string().nullable(),
   openedAt: z.iso.datetime({ offset: true }),
+  hasStock: z.boolean(),
 });
 export type OpenBeerPot = z.infer<typeof OpenBeerPotSchema>;
 

@@ -34,6 +34,9 @@ beer cost the owner, and never any debt between two private people.**
   declaration) and end it again; an operator may end it for her. The enrollment is a running
   relationship and implies the beer-list keys ([ADR-0011](0011-permissions-come-from-roles-and-running-relationships.md)).
   Ending it stops new crates and never touches the debt.
+- **Members see only whether a crate is left:** the pot read tells everyone on the list whether
+  the stock is above zero, so an empty pallet shows before anyone confirms a crate; the count
+  itself stays an operator figure (built 2026-11-04).
 
 ## Considered options
 

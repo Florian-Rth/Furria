@@ -1,4 +1,5 @@
-import type { FC } from 'react';
+import type { FC, ReactNode } from 'react';
+import { BeerBookingEmpty } from '../booking/components/BeerBookingEmpty';
 import { BeerBookingFailure } from '../booking/components/BeerBookingFailure';
 import { BeerBookingOffer } from '../booking/components/BeerBookingOffer';
 import { BeerBookingUndo } from '../booking/components/BeerBookingUndo';
@@ -11,31 +12,27 @@ interface BeerBookBookingFootProps {
   done: BeerBookDone;
 }
 
-export const BeerBookBookingFoot: FC<BeerBookBookingFootProps> = ({ booking, done }) => {
-  const failure = <BeerBookingFailure booking={booking} />;
-
+const footOf = (booking: BeerBooking, done: BeerBookDone): ReactNode => {
   if (booking.phase === 'undo') {
-    return (
-      <>
-        <BeerBookingUndo booking={booking} variant="stage" />
-        {failure}
-      </>
-    );
+    return <BeerBookingUndo booking={booking} variant="stage" />;
+  }
+  if (done.isDone) {
+    return <BeerBookDoneNote line={done.line} onAgain={done.again} />;
+  }
+  if (booking.phase === 'empty') {
+    return <BeerBookingEmpty />;
   }
 
-  if (done.isDone) {
-    return (
-      <>
-        <BeerBookDoneNote line={done.line} onAgain={done.again} />
-        {failure}
-      </>
-    );
-  }
+  return <BeerBookingOffer booking={booking} size="large" />;
+};
+
+export const BeerBookBookingFoot: FC<BeerBookBookingFootProps> = ({ booking, done }) => {
+  const foot = footOf(booking, done);
 
   return (
     <>
-      <BeerBookingOffer booking={booking} size="large" />
-      {failure}
+      {foot}
+      <BeerBookingFailure booking={booking} />
     </>
   );
 };

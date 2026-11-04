@@ -7,6 +7,7 @@ import { useBeerCratesBooking, useBeerCratesUndo } from '../api';
 import { personNameOf } from '../beer-list-format';
 import type { OpenBeerPot } from '../schemas';
 import { BOOKING_ERROR_MESSAGES, bookedStamp, UNDO_ERROR_MESSAGES } from './booking-copy';
+import { bookingPhaseOf } from './booking-gate';
 import type { BeerBookedCrates, BeerBookingPending } from './booking-overlay';
 import { NO_PENDING_BOOKING } from './booking-overlay';
 import { UNDO_WINDOW_MS, undoRemainingMsOf } from './booking-window';
@@ -43,7 +44,12 @@ export interface BeerBookingUndoing extends BeerBookingShared {
   undo: () => void;
 }
 
-export type BeerBooking = BeerBookingChoosing | BeerBookingUndoing;
+export interface BeerBookingStockOut extends BeerBookingShared {
+  phase: 'empty';
+  lapsed: BeerBookedCrates | null;
+}
+
+export type BeerBooking = BeerBookingChoosing | BeerBookingUndoing | BeerBookingStockOut;
 
 interface UndoDeadline {
   booked: BeerBookedCrates;
@@ -58,10 +64,16 @@ export const useBeerBooking = (pot: OpenBeerPot | null): BeerBooking => {
   const [deadline, setDeadline] = useState<UndoDeadline | null>(null);
   const [spin, setSpin] = useState(0);
   const [burstKey, setBurstKey] = useState(0);
-  const now = useNow(TICK_MS, deadline !== null).getTime();
+  const [isTicking, setIsTicking] = useState(false);
+  const now = useNow(TICK_MS, isTicking).getTime();
   const priceCents = pot?.cratePriceCents ?? 0;
   const remainingMs = deadline === null ? 0 : undoRemainingMsOf(deadline.endsAt, now);
   const live = deadline !== null && (remainingMs > 0 || undoing.isPending) ? deadline : null;
+  const phase = bookingPhaseOf(live !== null, pot);
+
+  if (isTicking && live === null) {
+    setIsTicking(false);
+  }
 
   const book = (): void => {
     if (pot === null || booking.isPending) {
@@ -81,6 +93,7 @@ export const useBeerBooking = (pot: OpenBeerPot | null): BeerBooking => {
 
         setPending((current) => ({ booked, undoneIds: current.undoneIds }));
         setDeadline({ booked, endsAt: sentAt + UNDO_WINDOW_MS });
+        setIsTicking(true);
         setSpin((value) => value + 1);
         setBurstKey((value) => value + 1);
       },
@@ -123,11 +136,17 @@ export const useBeerBooking = (pot: OpenBeerPot | null): BeerBooking => {
     celebration: { spin, burstKey, stamp: null },
   };
 
-  if (live === null) {
+  const lapsed = deadline?.booked ?? null;
+
+  if (phase === 'empty') {
+    return { ...shared, phase, lapsed };
+  }
+
+  if (phase === 'choose' || live === null) {
     return {
       ...shared,
       phase: 'choose',
-      lapsed: deadline?.booked ?? null,
+      lapsed,
       count,
       isBooking: booking.isPending,
       chooseCount: setCount,

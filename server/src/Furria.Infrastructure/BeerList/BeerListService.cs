@@ -77,8 +77,12 @@ public sealed partial class BeerListService
             : Result.NotFound(BeerListMessages.UnknownPot);
     }
 
-    public Task<BeerPotDetails?> GetOpenPotAsync(CancellationToken ct) =>
-        _dbContext
+    public Task<BeerPotDetails?> GetOpenPotAsync(CancellationToken ct)
+    {
+        var stockMovements = BeerPotLedger.StockMovements(_dbContext);
+        var takenCrates = BeerPotLedger.TakenCrates(_dbContext);
+
+        return _dbContext
             .BeerPots.AsNoTracking()
             .Where(pot => pot.ClosedAt == null)
             .Select(pot => new BeerPotDetails
@@ -97,8 +101,14 @@ public sealed partial class BeerListService
                 PaymentLink = pot.PaymentLink,
                 PaymentNote = pot.PaymentNote,
                 OpenedAt = pot.OpenedAt,
+                HasStock =
+                    stockMovements
+                        .Where(movement => movement.BeerPotId == pot.Id)
+                        .Sum(movement => movement.Crates)
+                    > takenCrates.Count(crate => crate.BeerPotId == pot.Id),
             })
             .SingleOrDefaultAsync(ct);
+    }
 
     public async Task<IReadOnlyList<BeerPotSummary>> GetPotsAsync(CancellationToken ct)
     {

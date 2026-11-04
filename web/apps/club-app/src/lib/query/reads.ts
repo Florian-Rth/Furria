@@ -434,7 +434,7 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'groupAdmin',
     'membership',
   ],
-  beerPot: ['beerPot', 'beerListEnrollment', 'person'],
+  beerPot: ['beerPot', 'beerStock', 'beerCrate', 'beerListEnrollment', 'person'],
   beerTab: ['beerPot', 'beerCrate', 'beerPayment', 'beerListEnrollment', 'person'],
   beerGivers: ['beerCrate', 'beerListEnrollment', 'person'],
   beerPots: ['beerPot', 'beerCrate', 'beerPayment', 'beerStock', 'person'],

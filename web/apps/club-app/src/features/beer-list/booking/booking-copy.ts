@@ -28,6 +28,9 @@ export const bookConfirm = (count: number, owner: string | null): KkHoldConfirm 
   closeLabel: 'Schließen',
 });
 
+export const EMPTY_STOCK_NOTE =
+  'Bestand leer. Gerade ist keine Kiste mehr da. Buchen geht wieder, sobald neue Kisten geliefert sind.';
+
 export const bookedTitle = (count: number): string => `${cratesLabel(count)} gebucht`;
 export const bookedDetail = (amount: string): string => `+${amount} auf deiner Liste`;
 export const UNDO_LABEL = 'Rückgängig';

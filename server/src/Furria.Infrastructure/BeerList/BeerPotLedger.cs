@@ -16,11 +16,13 @@ internal static class BeerPotLedger
         int beerPotId,
         CancellationToken ct
     ) =>
-        await dbContext
-            .BeerStockMovements.AsNoTracking()
+        await StockMovements(dbContext)
             .Where(movement => movement.BeerPotId == beerPotId)
             .SumAsync(movement => movement.Crates, ct)
         - await TakenCrates(dbContext).CountAsync(crate => crate.BeerPotId == beerPotId, ct);
+
+    internal static IQueryable<BeerStockMovement> StockMovements(AppDbContext dbContext) =>
+        dbContext.BeerStockMovements.AsNoTracking();
 
     internal static IQueryable<BeerCrate> TakenCrates(AppDbContext dbContext) =>
         dbContext.BeerCrates.AsNoTracking().Where(crate => crate.UndoneAt == null);

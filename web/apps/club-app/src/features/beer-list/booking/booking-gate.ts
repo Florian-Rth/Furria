@@ -18,3 +18,13 @@ export const bookingGateOf = (
       return pot === null ? 'noPot' : 'open';
   }
 };
+
+export type BeerBookingPhase = 'choose' | 'undo' | 'empty';
+
+export const bookingPhaseOf = (isUndoOpen: boolean, pot: OpenBeerPot | null): BeerBookingPhase => {
+  if (isUndoOpen) {
+    return 'undo';
+  }
+
+  return pot?.hasStock === false ? 'empty' : 'choose';
+};

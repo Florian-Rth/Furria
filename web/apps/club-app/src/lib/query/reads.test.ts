@@ -7,7 +7,7 @@ describe('staleReadsAfter', () => {
     {
       label: 'a crate is booked or undone',
       change: 'beerCrate',
-      stale: ['start', 'beerTab', 'beerGivers'],
+      stale: ['start', 'beerPot', 'beerTab', 'beerGivers'],
     },
     {
       label: 'a group membership opens or ends',

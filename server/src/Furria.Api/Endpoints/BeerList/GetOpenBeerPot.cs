@@ -39,6 +39,7 @@ public sealed class GetOpenBeerPot : EndpointWithoutRequest<GetOpenBeerPotRespon
             PaymentLink = pot.PaymentLink,
             PaymentNote = pot.PaymentNote,
             OpenedAt = pot.OpenedAt,
+            HasStock = pot.HasStock,
         };
 
     private static BeerPotOwnerDto ToDto(BeerListPerson owner) =>
@@ -68,6 +69,8 @@ public sealed record OpenBeerPotDetailsDto
     public required string? PaymentNote { get; init; }
 
     public required DateTimeOffset OpenedAt { get; init; }
+
+    public required bool HasStock { get; init; }
 }
 
 public sealed record BeerPotOwnerDto

@@ -10,6 +10,7 @@ const OPEN_POT: OpenBeerPot = {
   paymentLink: 'https://paypal.me/sabine',
   paymentNote: null,
   openedAt: '2026-09-01T10:00:00Z',
+  hasStock: true,
 };
 
 const tabPot = (beerPotId: number, isOpen: boolean, crateIds: readonly number[]): BeerTabPot => ({

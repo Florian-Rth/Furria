@@ -68,7 +68,7 @@ export const useBeerBookPage = (): BeerBookView => {
   const error = me.error ?? readsError;
   const person = me.data?.person ?? null;
   const ownerName = personNameOf(pot?.owner ?? null);
-  const lapsed = booking.phase === 'choose' ? booking.lapsed : null;
+  const lapsed = booking.phase === 'undo' ? null : booking.lapsed;
 
   const retry = (): void => {
     void me.refetch();
