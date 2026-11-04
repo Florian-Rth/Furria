@@ -14,5 +14,5 @@ public sealed record BeerListEnrollmentSummary
 
     public required DateTimeOffset? EndedAt { get; init; }
 
-    public required BeerListEnrollmentEnder? EndedBy { get; init; }
+    public required BeerListPerson? EndedBy { get; init; }
 }

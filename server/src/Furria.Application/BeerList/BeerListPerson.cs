@@ -1,6 +1,6 @@
 namespace Furria.Application.BeerList;
 
-public sealed record BeerListEnrollmentEnder
+public sealed record BeerListPerson
 {
     public required int PersonId { get; init; }
 

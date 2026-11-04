@@ -73,6 +73,29 @@ public sealed class BeerListService
         return Result.Success();
     }
 
+    public Task<BeerPotDetails?> GetOpenPotAsync(CancellationToken ct) =>
+        _dbContext
+            .BeerPots.AsNoTracking()
+            .Where(pot => pot.ClosedAt == null)
+            .Select(pot => new BeerPotDetails
+            {
+                BeerPotId = pot.Id,
+                Owner =
+                    pot.Owner == null
+                        ? null
+                        : new BeerListPerson
+                        {
+                            PersonId = pot.Owner.Id,
+                            FirstName = pot.Owner.FirstName,
+                            LastName = pot.Owner.LastName,
+                        },
+                CratePriceCents = pot.CratePriceCents,
+                PaymentLink = pot.PaymentLink,
+                PaymentNote = pot.PaymentNote,
+                OpenedAt = pot.OpenedAt,
+            })
+            .SingleOrDefaultAsync(ct);
+
     public async Task<Result> EnrollAsync(int personId, CancellationToken ct)
     {
         if (await IsEnrolledAsync(personId, ct))
@@ -136,7 +159,7 @@ public sealed class BeerListService
                 EndedBy =
                     enrollment.EndedBy == null
                         ? null
-                        : new BeerListEnrollmentEnder
+                        : new BeerListPerson
                         {
                             PersonId = enrollment.EndedBy.Id,
                             FirstName = enrollment.EndedBy.FirstName,

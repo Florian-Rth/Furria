@@ -86,6 +86,7 @@ public static class ReferencesToPerson
         HerAct<AttendanceResponse>(nameof(AttendanceResponse.RecordedByPersonId)),
         HerAct<AttendanceResponseChange>(nameof(AttendanceResponseChange.RecordedByPersonId)),
         HerAct<BeerListEnrollment>(nameof(BeerListEnrollment.EndedByPersonId)),
+        HerAct<BeerStockMovement>(nameof(BeerStockMovement.BookedByPersonId)),
     ];
 
     [Pure]

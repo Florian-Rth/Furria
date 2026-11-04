@@ -6,6 +6,7 @@ namespace Furria.Tests.Common.Builder;
 internal static class BeerListSeedMaterializer
 {
     private static readonly TimeSpan SeededAge = TimeSpan.FromDays(30);
+    private static readonly TimeSpan SeededStockAge = TimeSpan.FromDays(10);
 
     internal static async Task<SeededBeerList> InsertAsync(
         AppDbContext dbContext,
@@ -28,6 +29,10 @@ internal static class BeerListSeedMaterializer
             StringComparer.Ordinal
         );
         dbContext.BeerListEnrollments.AddRange(enrollments.Values);
+
+        dbContext.BeerStockMovements.AddRange(
+            recorded.StockMovements.Select(intent => NewStockMovement(intent, pots, personIds, now))
+        );
 
         await dbContext.SaveChangesAsync(ct);
 
@@ -65,5 +70,27 @@ internal static class BeerListSeedMaterializer
             EndedByPersonId = intent.EndedByAlias is null
                 ? null
                 : SeedAliases.RequireId(personIds, intent.EndedByAlias, "Person"),
+        };
+
+    private static BeerStockMovement NewStockMovement(
+        BeerListSeedBuilder.BeerStockMovementIntent intent,
+        IReadOnlyDictionary<string, BeerPot> pots,
+        IReadOnlyDictionary<string, int> personIds,
+        DateTimeOffset now
+    ) =>
+        new()
+        {
+            Pot = pots.TryGetValue(intent.PotAlias, out var pot)
+                ? pot
+                : throw new InvalidOperationException(
+                    $"BeerPot alias '{intent.PotAlias}' unknown."
+                ),
+            Kind = intent.Kind,
+            Crates = intent.Crates,
+            Reason = intent.Reason,
+            BookedAt = intent.BookedAt ?? now - SeededStockAge,
+            BookedByPersonId = intent.BookedByAlias is null
+                ? null
+                : SeedAliases.RequireId(personIds, intent.BookedByAlias, "Person"),
         };
 }

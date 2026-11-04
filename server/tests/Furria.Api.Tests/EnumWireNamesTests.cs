@@ -5,6 +5,7 @@ using Furria.Application.Management;
 using Furria.Application.Operations;
 using Furria.Application.Registry;
 using Furria.Application.Start;
+using Furria.Core.BeerList;
 using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Gallery;
@@ -81,6 +82,8 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(VideoPlacement)] = "onTimeline cutAway musicMissing unaligned",
         [typeof(KeyframeEasing)] = "linear easeIn easeOut easeInOut",
         [typeof(ChoreographyVersionKind)] = "saved restored spotRemoved musicAdopted",
+        [typeof(BeerStockMovementKind)] = "delivery correction handoverCarry",
+        [typeof(BeerStockCorrectionReason)] = "shrinkage breakage miscount",
     };
 
     private readonly ApiTestFixture _fixture;
