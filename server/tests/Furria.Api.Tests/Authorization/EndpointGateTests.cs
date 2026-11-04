@@ -87,6 +87,9 @@ public sealed class EndpointGateTests : IClassFixture<ApiTestFixture>
         "/api/auth/me/passkeys/creation-options",
         "/api/auth/me/passkeys/{passkeyId}",
         "/api/start",
+        "/api/push/key",
+        "/api/push/subscription",
+        "/api/push/subscription/remove",
     ];
 
     private static readonly string[] InHandlerGatedProbes =

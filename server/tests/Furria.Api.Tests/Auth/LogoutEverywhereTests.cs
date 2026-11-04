@@ -1,9 +1,11 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
+using Furria.Api.Endpoints.Push;
 using Furria.Application.Identity;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
+using Furria.Tests.Common.Push;
 using Xunit;
 
 namespace Furria.Api.Tests.Auth;
@@ -65,6 +67,44 @@ public sealed class LogoutEverywhereTests : IClassFixture<ApiTestFixture>
             (await AccountSecuritySteps.RefreshAsync(_fixture, bert.RefreshToken)).StatusCode
         );
     }
+
+    [Fact]
+    public async Task Should_StopPushingToHerDevices_When_SheLoggedOutEverywhere()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder => builder.Identity(identity => identity.AddAccount("anna").AddAccount("bert")),
+            ct
+        );
+        var anna = await LogInAsync(ctx, "anna", ct);
+        var bert = await LogInAsync(ctx, "bert", ct);
+        await SubscribeAsync(anna.AccessToken, "https://fcm.googleapis.com/fcm/send/anna-phone");
+        await SubscribeAsync(bert.AccessToken, "https://fcm.googleapis.com/fcm/send/bert-phone");
+
+        await PostAsync(anna.AccessToken);
+
+        await ctx
+            .Expected.PushSubscriptionsOfAccount(ctx.Identity.Accounts.IdOf("anna"))
+            .ToHaveCount(0)
+            .PushSubscriptionsOfAccount(ctx.Identity.Accounts.IdOf("bert"))
+            .ToHaveCount(1)
+            .AssertAsync(ct);
+    }
+
+    private Task<HttpResponseMessage> SubscribeAsync(string accessToken, string endpoint) =>
+        AccountSecuritySteps
+            .ClientWith(_fixture, accessToken)
+            .PUTAsync<PutMyPushSubscription, PutMyPushSubscriptionRequest>(
+                new PutMyPushSubscriptionRequest
+                {
+                    Endpoint = endpoint,
+                    Keys = new PushSubscriptionKeysDto
+                    {
+                        P256dh = PushDevices.FirstPublicKey,
+                        Auth = PushDevices.AuthSecret,
+                    },
+                }
+            );
 
     private async Task<HttpResponseMessage> PostAsync(string accessToken) =>
         (

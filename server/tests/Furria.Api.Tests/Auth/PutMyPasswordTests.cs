@@ -1,9 +1,11 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Auth;
+using Furria.Api.Endpoints.Push;
 using Furria.Application.Identity;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
+using Furria.Tests.Common.Push;
 using Xunit;
 
 namespace Furria.Api.Tests.Auth;
@@ -50,6 +52,35 @@ public sealed class PutMyPasswordTests : IClassFixture<ApiTestFixture>
                 ApiTestFixture.SeededAccountPassword
             )
         );
+    }
+
+    [Fact]
+    public async Task Should_ForgetEveryPushDevice_When_HerPasswordChanged()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await ArrangeAnnaAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        await client.PUTAsync<PutMyPushSubscription, PutMyPushSubscriptionRequest>(
+            new PutMyPushSubscriptionRequest
+            {
+                Endpoint = "https://fcm.googleapis.com/fcm/send/stolen-phone",
+                Keys = new PushSubscriptionKeysDto
+                {
+                    P256dh = PushDevices.FirstPublicKey,
+                    Auth = PushDevices.AuthSecret,
+                },
+            }
+        );
+
+        await AccountSecuritySteps.ChangePasswordAsync(
+            client,
+            ApiTestFixture.SeededAccountPassword
+        );
+
+        await ctx
+            .Expected.PushSubscriptionsOfAccount(ctx.Identity.Accounts.IdOf("anna"))
+            .ToHaveCount(0)
+            .AssertAsync(ct);
     }
 
     [Fact]

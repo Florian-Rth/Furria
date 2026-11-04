@@ -16,6 +16,7 @@ using Furria.Infrastructure.News;
 using Furria.Infrastructure.Operations;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Public;
+using Furria.Infrastructure.Push;
 using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.Roles;
 using Furria.Infrastructure.RunningOrders;
@@ -80,6 +81,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<EmailConfirmationService>();
         services.AddScoped<CredentialChangeNotifier>();
         services.AddScoped<PasskeyService>();
+        services.AddScoped<PushSubscriptionService>();
+        services.AddScoped<PushSender>();
+        services
+            .AddHttpClient(PushSender.HttpClientName)
+            .ConfigureHttpClient(client => client.Timeout = PushSender.Timeout)
+            .ConfigurePrimaryHttpMessageHandler(() =>
+                new SocketsHttpHandler { AllowAutoRedirect = false }
+            );
         services.AddScoped<PermissionAuthorizer>();
         services.AddScoped<AffiliationLookup>();
         services.AddScoped<PersonHonoursQuery>();

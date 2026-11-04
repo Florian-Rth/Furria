@@ -16,6 +16,7 @@ using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Management;
 using Furria.Infrastructure.Media;
+using Furria.Infrastructure.Push;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -60,6 +61,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<EmailConfirmation> EmailConfirmations => Set<EmailConfirmation>();
 
     public DbSet<PasskeyChallenge> PasskeyChallenges => Set<PasskeyChallenge>();
+
+    public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
 
     public DbSet<Session> Sessions => Set<Session>();
 

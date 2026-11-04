@@ -72,6 +72,21 @@ every variable. The ones that matter most:
 - **`MEDIA_SIGNING_KEY`** — signs every media URL the API hands out
   ([ADR-0025](../adr/0025-media-is-fetched-by-signed-urls.md), at least 32 characters). A change
   voids the media URLs of the last 14 days; clients fetch fresh ones.
+- **`PUSH_VAPID_PUBLIC_KEY` / `PUSH_VAPID_PRIVATE_KEY`** — the server's Web Push identity
+  ([ADR-0036](../adr/0036-the-installed-app-is-reached-by-web-push.md)): one P-256 key pair,
+  raw base64url. The compose sets `Push__Subject` to the club app's URL. The API refuses to start
+  unless both keys are one pair. Make the pair once and keep it: a new pair orphans every
+  subscribed device until the app's next start. Generate it on any machine with OpenSSL:
+
+  ```bash
+  openssl ecparam -genkey -name prime256v1 -noout -out vapid.pem
+  openssl ec -in vapid.pem -outform DER | tail -c +8 | head -c 32 | base64 | tr '/+' '_-' | tr -d '=\n'   # PUSH_VAPID_PRIVATE_KEY
+  openssl ec -in vapid.pem -pubout -outform DER | tail -c 65 | base64 | tr '/+' '_-' | tr -d '=\n'       # PUSH_VAPID_PUBLIC_KEY
+  ```
+
+  Keep `vapid.pem` with the other secrets, or delete it once the two values are in `.env`.
+  Check after a release: *Mehr → Verwaltung → System → Testnachricht senden* reaches a phone that
+  has *Mein Profil → Benachrichtigungen* switched on.
 - **`MEDIA_PATH`** — where photos and videos live
   ([ADR-0023](../adr/0023-media-lives-under-one-mounted-path.md)); empty keeps the named volume
   `media`. A host path must be owned by uid 1654 (the api's and worker's user). See [Media](#media).

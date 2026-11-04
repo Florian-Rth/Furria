@@ -106,7 +106,7 @@ public sealed class PasswordResetService
 
         await _userManager.ResetAccessFailedCountAsync(account);
         await _userManager.SetLockoutEndDateAsync(account, null);
-        await _refreshTokenService.RevokeAllAsync(account.Id, ct);
+        await _refreshTokenService.EndAllSessionsAsync(account.Id, ct);
         await _credentialChangeNotifier.NotifyAsync(
             account.Id,
             CredentialChange.PasswordReset,

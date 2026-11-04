@@ -131,7 +131,7 @@ public sealed class AccountAdministrationService
 
         if (command.IsDisabled)
         {
-            await _refreshTokenService.RevokeAllAsync(account.Id, ct);
+            await _refreshTokenService.EndAllSessionsAsync(account.Id, ct);
             await VoidLiveRecoveryAsync(command.PersonId, now, ct);
         }
 

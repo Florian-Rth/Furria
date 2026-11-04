@@ -116,7 +116,7 @@ public sealed class AccountClaimService
             }
         );
         await _dbContext.SaveChangesAsync(ct);
-        await _refreshTokenService.RevokeAllAsync(account.Id, ct);
+        await _refreshTokenService.EndAllSessionsAsync(account.Id, ct);
         await transaction.CommitAsync(ct);
         await _dbContext.Entry(account).ReloadAsync(ct);
 

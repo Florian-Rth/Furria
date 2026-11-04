@@ -37,7 +37,8 @@ there shows the install page (`features/app-install`) instead of the app.**
   marks it and ends it, as does `?pwa=true`. The param is stripped from the URL on boot.
 - **Service worker (`vite-plugin-pwa`, generateSW):** precaches the built shell only; `/api/` and
   `/.well-known/` stay network-only. A new build raises the "Neue Version da" system notice with a
-  reload action; the app checks for one hourly. nginx serves `sw.js`, `workbox-*.js`,
+  reload action; the app checks for one hourly. nginx serves `sw.js`, `push-worker.js` (Web Push,
+  ADR-0036), `workbox-*.js`,
   `manifest.webmanifest` and `index.html` with `no-cache`. The native build (`--mode native`)
   disables the plugin.
 

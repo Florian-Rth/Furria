@@ -108,6 +108,9 @@ public sealed class Expected
 
     public PasskeyChallengeSetExpectations PasskeyChallenges() => new(this);
 
+    public PushSubscriptionSetExpectations PushSubscriptionsOfAccount(int accountId) =>
+        new(this, accountId);
+
     public MembershipApplicationSetExpectations MembershipApplications() => new(this);
 
     public MembershipApplicationExpectations MembershipApplication(int membershipApplicationId) =>

@@ -119,7 +119,7 @@ public sealed class RefreshTokenService
         );
     }
 
-    public async Task RevokeAllAsync(int accountId, CancellationToken ct)
+    public async Task EndAllSessionsAsync(int accountId, CancellationToken ct)
     {
         var now = _timeProvider.GetUtcNow();
         await _dbContext
@@ -134,6 +134,9 @@ public sealed class RefreshTokenService
                         ),
                 ct
             );
+        await _dbContext
+            .PushSubscriptions.Where(subscription => subscription.AccountId == accountId)
+            .ExecuteDeleteAsync(ct);
     }
 
     private bool IsReplay(

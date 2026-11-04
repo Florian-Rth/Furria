@@ -23,7 +23,7 @@ server {
     }
 
     # The installed app checks these on every start; a cached copy would pin members to an old build.
-    location ~ ^/(sw\.js|workbox-[^/]+\.js|manifest\.webmanifest|index\.html)$ {
+    location ~ ^/(sw\.js|push-worker\.js|workbox-[^/]+\.js|manifest\.webmanifest|index\.html)$ {
         include /etc/nginx/snippets/security-headers.conf;
         add_header Cache-Control "no-cache";
         try_files $uri =404;
