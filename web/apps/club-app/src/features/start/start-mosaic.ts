@@ -90,6 +90,9 @@ export const weightOf = (panel: BoardPanel, countersPerRow: number = COUNTERS_PE
   if (panel.kind === 'news') {
     return HEAD_WEIGHT + NEWS_LINE_WEIGHT;
   }
+  if (panel.kind === 'beerTab') {
+    return HEAD_WEIGHT + panel.beerTabs.length * ROW_WEIGHT;
+  }
   if (panel.kind === 'practice') {
     return (
       HEAD_WEIGHT +

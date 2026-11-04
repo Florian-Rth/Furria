@@ -76,6 +76,9 @@ export const panelSizeOf = (panel: StartPanel): number => {
   if (panel.kind === 'news') {
     return panel.news.length;
   }
+  if (panel.kind === 'beerTab') {
+    return panel.beerTabs.length;
+  }
 
   return panel.toDos.length;
 };
