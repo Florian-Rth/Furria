@@ -136,10 +136,10 @@ Phases that need a verdict from Florian are marked ⚖.
 
 ### Phase 1 — ⚖ Member screen and operator hub: lab variants
 Goal: Florian picks the member beer list and the operator hub layout before anything is built into them.
-- [ ] Lab seed of a realistic pot (owner, ~10 tabs, deliveries, corrections, 60 days of crates) as client fixtures
-- [ ] Three divergent variants of the member beer list at 390 px (tab, booking, who gave crates) in the lab
-- [ ] Three divergent variants of the operator hub (dense, work first: tabs, payment booking, stock + forecast) at 390 px and desktop
-- [ ] Bare booking page variant(s) at 390 px, including the not-enrolled state with the declaration
+- [x] Lab seed of a realistic pot (owner, ~10 tabs, deliveries, corrections, 60 days of crates) as client fixtures
+- [x] Three divergent variants of the member beer list at 390 px (tab, booking, who gave crates) in the lab
+- [x] Three divergent variants of the operator hub (dense, work first: tabs, payment booking, stock + forecast) at 390 px and desktop
+- [x] Bare booking page variant(s) at 390 px, including the not-enrolled state with the declaration
 - [ ] Pitch + Florian's pick; rulings recorded in this RFC
 
 ### Phase 2 — Pot and enrollment
