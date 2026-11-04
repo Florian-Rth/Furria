@@ -22,6 +22,135 @@ namespace Furria.Infrastructure.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("Furria.Core.BeerList.BeerListEnrollment", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset?>("EndedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("ended_at");
+
+                    b.Property<int?>("EndedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("ended_by_person_id");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateTimeOffset>("StartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("started_at");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_beer_list_enrollment");
+
+                    b.HasIndex("EndedByPersonId")
+                        .HasDatabaseName("ix_beer_list_enrollment_ended_by_person_id");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_beer_list_enrollment_person_id");
+
+                    b.HasIndex(new[] { "PersonId" }, "ix_beer_list_enrollment_person_id_running")
+                        .IsUnique()
+                        .HasDatabaseName("ix_beer_list_enrollment_person_id_running")
+                        .HasFilter("ended_at IS NULL");
+
+                    b.ToTable("beer_list_enrollment", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_beer_list_enrollment_ended_by", "ended_by_person_id IS NULL OR ended_at IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_beer_list_enrollment_period", "ended_at IS NULL OR ended_at >= started_at");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.BeerList.BeerPot", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<int>("CratePriceCents")
+                        .HasColumnType("integer")
+                        .HasColumnName("crate_price_cents");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset>("OpenedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("opened_at");
+
+                    b.Property<int>("OwnerPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("owner_person_id");
+
+                    b.Property<string>("PaymentLink")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("payment_link");
+
+                    b.Property<string>("PaymentNote")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)")
+                        .HasColumnName("payment_note");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_beer_pot");
+
+                    b.HasIndex("OwnerPersonId")
+                        .HasDatabaseName("ix_beer_pot_owner_person_id");
+
+                    b.HasIndex(new[] { "ClosedAt" }, "ix_beer_pot_open")
+                        .IsUnique()
+                        .HasDatabaseName("ix_beer_pot_open")
+                        .HasFilter("closed_at IS NULL");
+
+                    NpgsqlIndexBuilderExtensions.AreNullsDistinct(b.HasIndex(new[] { "ClosedAt" }, "ix_beer_pot_open"), false);
+
+                    b.ToTable("beer_pot", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_beer_pot_crate_price", "crate_price_cents > 0 AND crate_price_cents <= 10000");
+
+                            t.HasCheckConstraint("ck_beer_pot_payment_details", "payment_link IS NOT NULL OR payment_note IS NOT NULL");
+
+                            t.HasCheckConstraint("ck_beer_pot_period", "closed_at IS NULL OR closed_at >= opened_at");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.Club.Announcement", b =>
                 {
                     b.Property<int>("Id")
@@ -4189,6 +4318,38 @@ namespace Furria.Infrastructure.Migrations
                         .HasName("pk_account_token");
 
                     b.ToTable("account_token", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.BeerList.BeerListEnrollment", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "EndedBy")
+                        .WithMany()
+                        .HasForeignKey("EndedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_beer_list_enrollment_person_ended_by_person_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_beer_list_enrollment_person_person_id");
+
+                    b.Navigation("EndedBy");
+
+                    b.Navigation("Person");
+                });
+
+            modelBuilder.Entity("Furria.Core.BeerList.BeerPot", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Owner")
+                        .WithMany()
+                        .HasForeignKey("OwnerPersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_beer_pot_person_owner_person_id");
+
+                    b.Navigation("Owner");
                 });
 
             modelBuilder.Entity("Furria.Core.Club.Announcement", b =>

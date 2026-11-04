@@ -1,6 +1,7 @@
 using Furria.Application.ClubApp;
 using Furria.Application.Identity;
 using Furria.Infrastructure.Authorization;
+using Furria.Infrastructure.BeerList;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Events;
 using Furria.Infrastructure.Gallery;
@@ -95,6 +96,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<VenueService>();
         services.AddScoped<BoardService>();
         services.AddScoped<KeyHoldingService>();
+        services.AddScoped<BeerListService>();
         services.AddScoped<AnnouncementService>();
         services.AddScoped<CalendarService>();
         services.AddScoped<EventService>();

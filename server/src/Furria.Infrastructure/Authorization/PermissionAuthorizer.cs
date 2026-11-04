@@ -120,6 +120,9 @@ public sealed class PermissionAuthorizer
 
         keySet.UnionWith(impliedKeys);
 
+        if (await IsEnrolledInBeerListAsync(personId, today, ct))
+            keySet.Add(FurriaPermissions.BeerListTake);
+
         return _grantedKeys = keySet;
     }
 
@@ -221,6 +224,17 @@ public sealed class PermissionAuthorizer
 
         _boundAccountId = accountId;
     }
+
+    private Task<bool> IsEnrolledInBeerListAsync(
+        int personId,
+        DateOnly today,
+        CancellationToken ct
+    ) =>
+        _dbContext
+            .BeerListEnrollments.AsNoTracking()
+            .Where(enrollment => enrollment.PersonId == personId && enrollment.EndedAt == null)
+            .Select(enrollment => enrollment.Person!)
+            .AnyAsync(AffiliationQuery.IsAffiliatedOn(today), ct);
 
     private async Task<bool> AdministersAnyGroupAsync(int accountId, CancellationToken ct) =>
         (await AdministeredGroupIdsAsync(accountId, ct)).Count > 0;

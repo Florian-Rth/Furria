@@ -512,6 +512,16 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    the purge once, `BeatAsMediaWorkerAsync` writes the fixture worker's heartbeat
    (`Expected.MediaWorkerHeartbeats().ToHaveCount`), `SurveyMediaStorageAsync` surveys the media
    root. `SystemVerdictTests` pin the verdict rules as pure tests.
+20. **The beer list (RFC 0004 phase 2)** — `builder.BeerList(…)` takes `AddBeerPot(alias,
+   ownerAlias, cratePriceCents, paymentLink, paymentNote, openedAt, closedAt)` (defaults: 15,00 €,
+   `BeerListSeedBuilder.DefaultPaymentLink`, opened 30 days ago, open) and
+   `AddBeerListEnrollment(alias, personAlias, startedAt, endedAt, endedByAlias)` (running, started
+   30 days ago); it materializes after the news layer. Aliases resolve through
+   `ctx.BeerList.{Pots, Enrollments}`. `Expected.BeerPot(id)` (`ToBeOwnedBy`, `ToHaveSettings`,
+   `ToBeOpenedAt`), `Expected.BeerPots()` (`ToHaveCount`), `Expected.BeerListEnrollment(id)`
+   (`ToBeEnded(endedAt, endedByPersonId)`) and
+   `Expected.BeerListEnrollmentsOfPerson(personId)` (`ToHaveCount`, `ToHaveRunningSince`) read the result. `beer_list.take` is proven through `BeerListTakeProbe` in
+   `PermissionAuthorizerTests`.
 
 ### Traps worth knowing
 

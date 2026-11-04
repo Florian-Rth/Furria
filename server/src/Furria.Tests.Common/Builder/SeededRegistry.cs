@@ -6,5 +6,6 @@ internal sealed record SeededRegistry(
     SeededRoles Roles,
     SeededClub Club,
     SeededGallery Gallery,
-    SeededNews News
+    SeededNews News,
+    SeededBeerList BeerList
 );

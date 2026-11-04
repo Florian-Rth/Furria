@@ -16,6 +16,8 @@ public sealed class SeededContext
 
     public TestNews News { get; }
 
+    public TestBeerList BeerList { get; }
+
     public Expected Expected { get; }
 
     internal SeededContext(
@@ -25,6 +27,7 @@ public sealed class SeededContext
         TestClub club,
         TestGallery gallery,
         TestNews news,
+        TestBeerList beerList,
         Expected expected
     )
     {
@@ -34,6 +37,7 @@ public sealed class SeededContext
         Club = club;
         Gallery = gallery;
         News = news;
+        BeerList = beerList;
         Expected = expected;
     }
 }

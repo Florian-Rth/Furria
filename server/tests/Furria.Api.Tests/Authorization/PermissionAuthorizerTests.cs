@@ -593,6 +593,111 @@ public sealed class PermissionAuthorizerTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Should_Allow_When_ARunningBeerListEnrollmentImpliesTheTakeKey()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddAccount("mira")
+                            .AddMembership("mira-first", "mira", HeldSince2017)
+                    )
+                    .BeerList(beerList => beerList.AddBeerListEnrollment("mira-bier", "mira")),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("mira", ct);
+        var (response, _) = await client.GETAsync<BeerListTakeProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Refuse_When_TheBeerListEnrollmentHasEnded()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = _fixture.TimeProvider.GetUtcNow();
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddAccount("mira")
+                            .AddMembership("mira-first", "mira", HeldSince2017)
+                    )
+                    .BeerList(beerList =>
+                        beerList.AddBeerListEnrollment(
+                            "mira-bier",
+                            "mira",
+                            now.AddDays(-20),
+                            now.AddDays(-1)
+                        )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("mira", ct);
+        var (response, _) = await client.GETAsync<BeerListTakeProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Refuse_When_TheEnrolledPersonIsNoLongerAffiliated()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddAccount("mira")
+                            .AddMembership(
+                                "mira-first",
+                                "mira",
+                                HeldSince2017,
+                                _fixture.Today.AddDays(-1)
+                            )
+                    )
+                    .BeerList(beerList => beerList.AddBeerListEnrollment("mira-bier", "mira")),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("mira", ct);
+        var (response, _) = await client.GETAsync<BeerListTakeProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_Refuse_When_TheBeerListManagerIsNotEnrolled()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("mira"))
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "getraenkewart",
+                            "mira-getraenkewart",
+                            "Getränkewart",
+                            "mira",
+                            FurriaPermissions.BeerListManage
+                        )
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("mira", ct);
+        var (response, _) = await client.GETAsync<BeerListTakeProbe, EmptyResponse>();
+
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+    }
+
     private Task<SeededContext> SeatedAsync(
         DateOnly sinceOn,
         DateOnly? untilOn,

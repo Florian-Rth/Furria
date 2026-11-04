@@ -22,4 +22,7 @@ public static class WriteConflictMessages
         "Dieser Punkt wurde gerade schon als gesehen markiert. Bitte erneut versuchen.";
     public const string ChangedMeanwhile =
         "Die Daten wurden gerade anderweitig geändert. Bitte neu laden und erneut versuchen.";
+
+    public const string OpenBeerPot = "Es gibt schon eine offene Bierliste.";
+    public const string RunningBeerListEnrollment = "Du stehst schon auf der Bierliste.";
 }

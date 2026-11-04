@@ -130,6 +130,16 @@ public sealed class Expected
     public WebsitePictureExpectations WebsitePicture(string slotKey, int position) =>
         new(this, slotKey, position);
 
+    public BeerPotExpectations BeerPot(int beerPotId) => new(this, beerPotId);
+
+    public BeerPotSetExpectations BeerPots() => new(this);
+
+    public BeerListEnrollmentExpectations BeerListEnrollment(int enrollmentId) =>
+        new(this, enrollmentId);
+
+    public BeerListEnrollmentSetExpectations BeerListEnrollmentsOfPerson(int personId) =>
+        new(this, personId);
+
     public async Task AssertAsync(CancellationToken ct = default)
     {
         var pending = _reads.ToList();

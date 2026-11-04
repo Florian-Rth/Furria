@@ -1,3 +1,4 @@
+using Furria.Core.BeerList;
 using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Gallery;
@@ -157,6 +158,10 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<ChoreographyVersion> ChoreographyVersions => Set<ChoreographyVersion>();
 
     public DbSet<ActCoEditor> ActCoEditors => Set<ActCoEditor>();
+
+    public DbSet<BeerPot> BeerPots => Set<BeerPot>();
+
+    public DbSet<BeerListEnrollment> BeerListEnrollments => Set<BeerListEnrollment>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }

@@ -1,4 +1,5 @@
 using System.Diagnostics.Contracts;
+using Furria.Core.BeerList;
 using Furria.Core.Club;
 using Furria.Core.Gallery;
 using Furria.Core.Groups;
@@ -33,6 +34,8 @@ public static class ReferencesToPerson
         HerOwn<FrozenCastMember>(nameof(FrozenCastMember.PersonId)),
         HerOwn<AppearanceCastChange>(nameof(AppearanceCastChange.PersonId)),
         HerOwn<ActCoEditor>(nameof(ActCoEditor.PersonId)),
+        HerOwn<BeerPot>(nameof(BeerPot.OwnerPersonId)),
+        HerOwn<BeerListEnrollment>(nameof(BeerListEnrollment.PersonId)),
         Reference<Spot>(nameof(Spot.PersonId), OnAbsorption.BlocksIt, OnErasure.KeptNamingNobody),
         HerOwn<AppearanceSpot>(nameof(AppearanceSpot.PersonId)),
         Reference<Announcement>(
@@ -78,6 +81,7 @@ public static class ReferencesToPerson
         HerAct<ChoreographyVersion>(nameof(ChoreographyVersion.SavedByPersonId)),
         HerAct<AttendanceResponse>(nameof(AttendanceResponse.RecordedByPersonId)),
         HerAct<AttendanceResponseChange>(nameof(AttendanceResponseChange.RecordedByPersonId)),
+        HerAct<BeerListEnrollment>(nameof(BeerListEnrollment.EndedByPersonId)),
     ];
 
     [Pure]
