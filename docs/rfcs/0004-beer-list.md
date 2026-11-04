@@ -160,7 +160,7 @@ Goal: an operator opens the pot, people enroll and leave, and `beer_list.take` e
 - [x] Rules: one open pot; the owner holds `manage`; only affiliated persons enroll; ending keeps history; re-enrolling continues it
 - [x] Endpoints + tests: open pot, edit pot settings, enroll self, end own enrollment, end someone's enrollment, list enrollments
 - [x] Club app: enroll/leave with the declaration in *Mein Profil*
-- [ ] Club app: hub shell with pot settings and the enrollment panel in the picked design (waits for the phase 1 pick)
+- [x] Club app: hub shell with pot settings and the enrollment panel in the picked design
 
 Built-phase decisions (phase 2):
 - `beer_list.take` needs a running enrollment **and** current affiliation; leaving the club stops booking.
@@ -176,7 +176,7 @@ Goal: operators keep the stock; the hub shows the projected empty date.
 - [x] Stock = movements − booked crates (crates come in phase 4; until then movements only); never below zero
 - [x] Pure forecast: 21-day pace → projected empty date (tested), no pace → no projection
 - [x] Endpoints + tests: book delivery, book correction with reason, read stock + forecast
-- [ ] Hub: stock panel with history, delivery and correction actions, forecast readout (waits for the phase 1 pick)
+- [x] Hub: stock panel with history, delivery and correction actions, forecast readout
 
 Built-phase notes (phase 3):
 - Pot read `GET beer-list/pot` (take/manage, `pot: null` when none open) and stock read `GET beer-list/pots/{id}/stock` (manage) are separate.
@@ -191,7 +191,7 @@ Goal: enrolled people book crates for themselves, operators for anyone, and the 
 - [x] Rules: members only for themselves; operators for anyone enrolled or with history; stock never below zero; undo only by the booker within the window; stock follows
 - [x] Endpoints + tests: book crates (count), undo, operator book-for, my tab, who gave crates
 - [x] Member beer list screen in the picked design; navigation entry gated; former enrollee with open crates sees only her tab
-- [ ] Hub: book-for-someone panel; tabs table (counts only until phase 5) (waits for the phase 1 pick)
+- [x] Hub: book-for-someone panel; tabs table (counts only until phase 5)
 
 Built-phase notes (phase 4):
 - One row per crate; undo marks `undone_at/by` and keeps the row. If the holder is erased the crate stays with an empty holder, so the stock doesn't jump.
@@ -206,7 +206,7 @@ Goal: operators settle tabs; open tabs reach their holders on Start.
 - [x] Core: `BeerPayment` (pot, person, crate count, booked by, at) settling oldest open crates, migration
 - [x] Rules: whole crates only, never more than open; a correction of a payment by an operator
 - [x] Endpoints + tests: book payment, tabs with open/paid for operators, own tab open/paid
-- [ ] Hub: tabs table with open/paid and the payment action in the picked design (waits for the phase 1 pick)
+- [x] Hub: tabs table with open/paid and the payment action in the picked design
 - [x] Start: an open tab as a personal task with the amount and the owner's payment details (Start service + client)
 
 Built-phase notes (phase 5):
@@ -221,7 +221,7 @@ Goal: scan, confirm, done, on Android and iOS.
 - [ ] Install gate exemption (`install-gate.ts`) + inline sign-in in the tab (iOS keeps its own Safari session)
 - [ ] Not enrolled → inline enrollment with the declaration, then the crate; not affiliated → plain explanation
 - [ ] Android: confirm the installed app captures the link (manifest scope/`launch_handler`); device check on iPhone + Pixel
-- [ ] Hub: printable pallet code (`KkQrCode`) with print-ready layout
+- [x] Hub: printable pallet code (`KkQrCode`) with print-ready layout
 - [ ] ADR-0031 amendment rewritten from "decided" to built, with the route
 
 ### Phase 7 — Web Push foundation
@@ -254,13 +254,19 @@ Built-phase notes (phase 8):
 Goal: the pot changes hands cleanly.
 - [x] Rules: close the current pot, open the successor's with a handover-carry movement of the remaining count; the old pot's open tabs stay owed to the old owner and stay payable
 - [x] Endpoint + tests: hand over (successor holds `manage`)
-- [ ] Hub: handover flow; closed pots readable with their open tabs; members see open crates of a closed pot on their tab (backend reads built: `GET beer-list/pots`, closed-pot tabs; the hub flow waits for the phase 1 pick)
+- [x] Hub: handover flow; closed pots readable with their open tabs; members see open crates of a closed pot on their tab
 - [x] CONTEXT.md / ADR-0035 touched where behaviour changed
 
 Built-phase notes (phase 9):
 - A handover writes an outgoing `HandedOver` row on the old pot and a `HandoverCarry` row on the successor's pot, so the old pot stands at 0. With no crates left, neither row is written.
 - The successor sets her own price and payment details in the handover. Any `manage` holder can hand over (open product question: only the owner?).
 - The stock-warning state carries over unless a delivery re-armed it. A member booking that loses the race to a handover is retried on the successor's pot.
+
+Built-phase notes (operator hub):
+- The hub is at `/manage/beer-list`: the journal with quick entry (B), with child panes for `/stock`, `/payment`, `/crates`, `/persons/$personId`, `/settings`, `/enrollments`, `/code`, `/handover` and `/pots`.
+- One stock action (direction + reason + count) maps onto the two endpoints. A delivery stays its own event because it re-arms the stock warning.
+- "Schon bezahlt" books the crates and a payment in one transaction. The payment settles the oldest open crates, so with older debt the count of open crates on the tab still drops by N.
+- New reads: `GET beer-list/pots/{id}/journal`, and the manage-hub `beerList` panel.
 
 ## Risks & alternatives
 
