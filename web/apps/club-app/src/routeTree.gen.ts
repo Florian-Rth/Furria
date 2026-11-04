@@ -52,12 +52,6 @@ import { Route as AppManageClubRecordRouteImport } from './routes/_app/manage.cl
 import { Route as AppManageBoardRouteImport } from './routes/_app/manage.board'
 import { Route as AppManageBeerListRouteImport } from './routes/_app/manage.beer-list'
 import { Route as AppManageApplicationsRouteImport } from './routes/_app/manage.applications'
-import { Route as AppLabBeerListCRouteImport } from './routes/_app/lab_.beer-list-c'
-import { Route as AppLabBeerListBRouteImport } from './routes/_app/lab_.beer-list-b'
-import { Route as AppLabBeerListARouteImport } from './routes/_app/lab_.beer-list-a'
-import { Route as AppLabBeerHubCRouteImport } from './routes/_app/lab_.beer-hub-c'
-import { Route as AppLabBeerHubBRouteImport } from './routes/_app/lab_.beer-hub-b'
-import { Route as AppLabBeerHubARouteImport } from './routes/_app/lab_.beer-hub-a'
 import { Route as AppLabGreetingRouteImport } from './routes/_app/lab_.$greeting'
 import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups_.$groupId'
 import { Route as AppGalleryWebsiteRouteImport } from './routes/_app/gallery_.website'
@@ -358,36 +352,6 @@ const AppManageBeerListRoute = AppManageBeerListRouteImport.update({
 const AppManageApplicationsRoute = AppManageApplicationsRouteImport.update({
   id: '/manage/applications',
   path: '/manage/applications',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLabBeerListCRoute = AppLabBeerListCRouteImport.update({
-  id: '/lab_/beer-list-c',
-  path: '/lab/beer-list-c',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLabBeerListBRoute = AppLabBeerListBRouteImport.update({
-  id: '/lab_/beer-list-b',
-  path: '/lab/beer-list-b',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLabBeerListARoute = AppLabBeerListARouteImport.update({
-  id: '/lab_/beer-list-a',
-  path: '/lab/beer-list-a',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLabBeerHubCRoute = AppLabBeerHubCRouteImport.update({
-  id: '/lab_/beer-hub-c',
-  path: '/lab/beer-hub-c',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLabBeerHubBRoute = AppLabBeerHubBRouteImport.update({
-  id: '/lab_/beer-hub-b',
-  path: '/lab/beer-hub-b',
-  getParentRoute: () => AppRoute,
-} as any)
-const AppLabBeerHubARoute = AppLabBeerHubARouteImport.update({
-  id: '/lab_/beer-hub-a',
-  path: '/lab/beer-hub-a',
   getParentRoute: () => AppRoute,
 } as any)
 const AppLabGreetingRoute = AppLabGreetingRouteImport.update({
@@ -925,12 +889,6 @@ export interface FileRoutesByFullPath {
   '/gallery/website': typeof AppGalleryWebsiteRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/lab/$greeting': typeof AppLabGreetingRoute
-  '/lab/beer-hub-a': typeof AppLabBeerHubARoute
-  '/lab/beer-hub-b': typeof AppLabBeerHubBRoute
-  '/lab/beer-hub-c': typeof AppLabBeerHubCRoute
-  '/lab/beer-list-a': typeof AppLabBeerListARoute
-  '/lab/beer-list-b': typeof AppLabBeerListBRoute
-  '/lab/beer-list-c': typeof AppLabBeerListCRoute
   '/manage/applications': typeof AppManageApplicationsRoute
   '/manage/beer-list': typeof AppManageBeerListRouteWithChildren
   '/manage/board': typeof AppManageBoardRoute
@@ -1062,12 +1020,6 @@ export interface FileRoutesByTo {
   '/gallery/website': typeof AppGalleryWebsiteRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/lab/$greeting': typeof AppLabGreetingRoute
-  '/lab/beer-hub-a': typeof AppLabBeerHubARoute
-  '/lab/beer-hub-b': typeof AppLabBeerHubBRoute
-  '/lab/beer-hub-c': typeof AppLabBeerHubCRoute
-  '/lab/beer-list-a': typeof AppLabBeerListARoute
-  '/lab/beer-list-b': typeof AppLabBeerListBRoute
-  '/lab/beer-list-c': typeof AppLabBeerListCRoute
   '/manage/applications': typeof AppManageApplicationsRoute
   '/manage/board': typeof AppManageBoardRoute
   '/manage/club-record': typeof AppManageClubRecordRoute
@@ -1202,12 +1154,6 @@ export interface FileRoutesById {
   '/_app/gallery_/website': typeof AppGalleryWebsiteRoute
   '/_app/groups_/$groupId': typeof AppGroupsGroupIdRoute
   '/_app/lab_/$greeting': typeof AppLabGreetingRoute
-  '/_app/lab_/beer-hub-a': typeof AppLabBeerHubARoute
-  '/_app/lab_/beer-hub-b': typeof AppLabBeerHubBRoute
-  '/_app/lab_/beer-hub-c': typeof AppLabBeerHubCRoute
-  '/_app/lab_/beer-list-a': typeof AppLabBeerListARoute
-  '/_app/lab_/beer-list-b': typeof AppLabBeerListBRoute
-  '/_app/lab_/beer-list-c': typeof AppLabBeerListCRoute
   '/_app/manage/applications': typeof AppManageApplicationsRoute
   '/_app/manage/beer-list': typeof AppManageBeerListRouteWithChildren
   '/_app/manage/board': typeof AppManageBoardRoute
@@ -1341,12 +1287,6 @@ export interface FileRouteTypes {
     | '/gallery/website'
     | '/groups/$groupId'
     | '/lab/$greeting'
-    | '/lab/beer-hub-a'
-    | '/lab/beer-hub-b'
-    | '/lab/beer-hub-c'
-    | '/lab/beer-list-a'
-    | '/lab/beer-list-b'
-    | '/lab/beer-list-c'
     | '/manage/applications'
     | '/manage/beer-list'
     | '/manage/board'
@@ -1478,12 +1418,6 @@ export interface FileRouteTypes {
     | '/gallery/website'
     | '/groups/$groupId'
     | '/lab/$greeting'
-    | '/lab/beer-hub-a'
-    | '/lab/beer-hub-b'
-    | '/lab/beer-hub-c'
-    | '/lab/beer-list-a'
-    | '/lab/beer-list-b'
-    | '/lab/beer-list-c'
     | '/manage/applications'
     | '/manage/board'
     | '/manage/club-record'
@@ -1617,12 +1551,6 @@ export interface FileRouteTypes {
     | '/_app/gallery_/website'
     | '/_app/groups_/$groupId'
     | '/_app/lab_/$greeting'
-    | '/_app/lab_/beer-hub-a'
-    | '/_app/lab_/beer-hub-b'
-    | '/_app/lab_/beer-hub-c'
-    | '/_app/lab_/beer-list-a'
-    | '/_app/lab_/beer-list-b'
-    | '/_app/lab_/beer-list-c'
     | '/_app/manage/applications'
     | '/_app/manage/beer-list'
     | '/_app/manage/board'
@@ -2028,48 +1956,6 @@ declare module '@tanstack/react-router' {
       path: '/manage/applications'
       fullPath: '/manage/applications'
       preLoaderRoute: typeof AppManageApplicationsRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/lab_/beer-list-c': {
-      id: '/_app/lab_/beer-list-c'
-      path: '/lab/beer-list-c'
-      fullPath: '/lab/beer-list-c'
-      preLoaderRoute: typeof AppLabBeerListCRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/lab_/beer-list-b': {
-      id: '/_app/lab_/beer-list-b'
-      path: '/lab/beer-list-b'
-      fullPath: '/lab/beer-list-b'
-      preLoaderRoute: typeof AppLabBeerListBRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/lab_/beer-list-a': {
-      id: '/_app/lab_/beer-list-a'
-      path: '/lab/beer-list-a'
-      fullPath: '/lab/beer-list-a'
-      preLoaderRoute: typeof AppLabBeerListARouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/lab_/beer-hub-c': {
-      id: '/_app/lab_/beer-hub-c'
-      path: '/lab/beer-hub-c'
-      fullPath: '/lab/beer-hub-c'
-      preLoaderRoute: typeof AppLabBeerHubCRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/lab_/beer-hub-b': {
-      id: '/_app/lab_/beer-hub-b'
-      path: '/lab/beer-hub-b'
-      fullPath: '/lab/beer-hub-b'
-      preLoaderRoute: typeof AppLabBeerHubBRouteImport
-      parentRoute: typeof AppRoute
-    }
-    '/_app/lab_/beer-hub-a': {
-      id: '/_app/lab_/beer-hub-a'
-      path: '/lab/beer-hub-a'
-      fullPath: '/lab/beer-hub-a'
-      preLoaderRoute: typeof AppLabBeerHubARouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/lab_/$greeting': {
@@ -2800,12 +2686,6 @@ interface AppRouteChildren {
   AppGalleryWebsiteRoute: typeof AppGalleryWebsiteRoute
   AppGroupsGroupIdRoute: typeof AppGroupsGroupIdRoute
   AppLabGreetingRoute: typeof AppLabGreetingRoute
-  AppLabBeerHubARoute: typeof AppLabBeerHubARoute
-  AppLabBeerHubBRoute: typeof AppLabBeerHubBRoute
-  AppLabBeerHubCRoute: typeof AppLabBeerHubCRoute
-  AppLabBeerListARoute: typeof AppLabBeerListARoute
-  AppLabBeerListBRoute: typeof AppLabBeerListBRoute
-  AppLabBeerListCRoute: typeof AppLabBeerListCRoute
   AppManageApplicationsRoute: typeof AppManageApplicationsRoute
   AppManageBeerListRoute: typeof AppManageBeerListRouteWithChildren
   AppManageBoardRoute: typeof AppManageBoardRoute
@@ -2913,12 +2793,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppGalleryWebsiteRoute: AppGalleryWebsiteRoute,
   AppGroupsGroupIdRoute: AppGroupsGroupIdRoute,
   AppLabGreetingRoute: AppLabGreetingRoute,
-  AppLabBeerHubARoute: AppLabBeerHubARoute,
-  AppLabBeerHubBRoute: AppLabBeerHubBRoute,
-  AppLabBeerHubCRoute: AppLabBeerHubCRoute,
-  AppLabBeerListARoute: AppLabBeerListARoute,
-  AppLabBeerListBRoute: AppLabBeerListBRoute,
-  AppLabBeerListCRoute: AppLabBeerListCRoute,
   AppManageApplicationsRoute: AppManageApplicationsRoute,
   AppManageBeerListRoute: AppManageBeerListRouteWithChildren,
   AppManageBoardRoute: AppManageBoardRoute,
