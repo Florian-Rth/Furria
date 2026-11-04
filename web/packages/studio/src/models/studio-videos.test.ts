@@ -2,6 +2,7 @@ import type { StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
 import type { TakeGroup } from '@furria/studio/studio-videos';
 import {
   clampedVideoStartOf,
+  clipSpanOf,
   needsAlignment,
   takeGroupsOf,
   videoShelfOf,
@@ -14,6 +15,8 @@ const video = (patch: Partial<StudioVideo>): StudioVideo => ({
   name: null,
   state: 'ready',
   durationSeconds: 30,
+  clipStartSeconds: 0,
+  clipEndSeconds: 30,
   startSeconds: null,
   placement: 'unaligned',
   outdated: false,
@@ -28,7 +31,30 @@ describe('clampedVideoStartOf', () => {
     [-40, -29.95],
     [130, 119.95],
   ])('rounds and keeps %s touching the music', (start, result) => {
-    expect(clampedVideoStartOf(start, 30, 120)).toBeCloseTo(result);
+    expect(clampedVideoStartOf(start, { startSeconds: 0, endSeconds: 30 }, 120)).toBeCloseTo(
+      result,
+    );
+  });
+
+  it.each([
+    [-40, -19.95],
+    [130, 109.95],
+    [20, 20],
+  ])('keeps the clip of %s touching the music', (start, result) => {
+    expect(clampedVideoStartOf(start, { startSeconds: 10, endSeconds: 20 }, 120)).toBeCloseTo(
+      result,
+    );
+  });
+});
+
+describe('clipSpanOf', () => {
+  it.each([
+    [video({ startSeconds: 5 }), { start: 5, end: 35 }],
+    [video({ startSeconds: 5, clipStartSeconds: 2, clipEndSeconds: 8 }), { start: 7, end: 13 }],
+    [video({ startSeconds: null }), null],
+    [video({ startSeconds: 5, clipEndSeconds: null }), null],
+  ])('places the clip of %o on the music', (candidate, span) => {
+    expect(clipSpanOf(candidate)).toEqual(span);
   });
 });
 
@@ -57,7 +83,13 @@ describe('needsAlignment', () => {
 
 describe('takeGroupsOf', () => {
   const placedVideo = (videoId: number, startSeconds: number): StudioVideo =>
-    video({ videoId, startSeconds, durationSeconds: 10, placement: 'onTimeline' });
+    video({
+      videoId,
+      startSeconds,
+      durationSeconds: 10,
+      clipEndSeconds: 10,
+      placement: 'onTimeline',
+    });
   const stepOf = (stepId: number, startSeconds: number, endSeconds: number): StudioStep => ({
     stepId,
     name: '',

@@ -8,10 +8,28 @@ import type {
   StudioStep,
   StudioVideo,
 } from '../models/studio-schemas';
-import type { DocumentPart, DocumentStep, StudioDocument } from './studio-document';
+import type {
+  DocumentFinalTrack,
+  DocumentPart,
+  DocumentStep,
+  StudioDocument,
+} from './studio-document';
 import { idsOf, itemOf } from './studio-document';
 
 const NO_CHOREOGRAPHY_VERSION = 0;
+
+const documentAlignmentsOf = (track: StudioFinalTrack): DocumentFinalTrack['alignments'] => {
+  const alignments: DocumentFinalTrack['alignments'] = {};
+
+  for (const { sourceMediaItemId, fromSeconds, offsetSeconds, stretch } of track.alignments) {
+    alignments[sourceMediaItemId] = [
+      ...(alignments[sourceMediaItemId] ?? []),
+      { fromSeconds, offsetSeconds, stretch },
+    ].sort((left, right) => left.fromSeconds - right.fromSeconds);
+  }
+
+  return alignments;
+};
 
 export const documentOf = (studio: Studio): StudioDocument => ({
   songOrder: [...studio.songs]
@@ -21,8 +39,7 @@ export const documentOf = (studio: Studio): StudioDocument => ({
     studio.songs.map((song) => [
       song.songId,
       {
-        startSeconds: song.startSeconds,
-        endSeconds: song.endSeconds,
+        pieces: song.pieces.map((piece) => ({ ...piece })),
         firstBeatSeconds: song.firstBeatSeconds,
         tempoBpm: song.tempoBpm,
       },
@@ -50,7 +67,12 @@ export const documentOf = (studio: Studio): StudioDocument => ({
   videos: Object.fromEntries(
     studio.videos.map((video) => [
       video.videoId,
-      { name: video.name, startSeconds: video.startSeconds },
+      {
+        name: video.name,
+        startSeconds: video.startSeconds,
+        clipStartSeconds: video.clipStartSeconds,
+        clipEndSeconds: video.clipEndSeconds,
+      },
     ]),
   ),
   finalTracks: Object.fromEntries(
@@ -59,12 +81,7 @@ export const documentOf = (studio: Studio): StudioDocument => ({
       {
         firstBeatSeconds: track.firstBeatSeconds,
         tempoBpm: track.tempoBpm,
-        alignments: Object.fromEntries(
-          track.alignments.map((alignment) => [
-            alignment.sourceMediaItemId,
-            { offsetSeconds: alignment.offsetSeconds, stretch: alignment.stretch },
-          ]),
-        ),
+        alignments: documentAlignmentsOf(track),
       },
     ]),
   ),
@@ -253,11 +270,12 @@ const finalTracksOf = (base: Studio, document: StudioDocument): StudioFinalTrack
             ...track,
             firstBeatSeconds: edited.firstBeatSeconds,
             tempoBpm: edited.tempoBpm,
-            alignments: idsOf(edited.alignments).flatMap((sourceMediaItemId) => {
-              const alignment = itemOf(edited.alignments, sourceMediaItemId);
-
-              return alignment === null ? [] : [{ sourceMediaItemId, ...alignment }];
-            }),
+            alignments: idsOf(edited.alignments).flatMap((sourceMediaItemId) =>
+              (itemOf(edited.alignments, sourceMediaItemId) ?? []).map((alignment) => ({
+                sourceMediaItemId,
+                ...alignment,
+              })),
+            ),
           },
         ];
   });

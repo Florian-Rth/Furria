@@ -1,4 +1,5 @@
 import type {
+  SongPiece,
   Studio,
   StudioFinalTrack,
   StudioPart,
@@ -71,6 +72,8 @@ interface Placement {
   stretch: number;
 }
 
+type Alignment = StudioFinalTrack['alignments'][number];
+
 const placeCuts = (cuts: readonly SegmentCut[]): MusicSegment[] => {
   let timelineStart = 0;
 
@@ -93,8 +96,17 @@ const knownSectionsOf = (
     ? []
     : [{ sourceStart, sourceEnd, firstBeatSeconds, tempoBpm }];
 
-const songSectionsOf = (song: StudioSong): BeatSection[] =>
-  knownSectionsOf(song.firstBeatSeconds, song.tempoBpm, song.startSeconds, song.endSeconds);
+const pieceSectionsOf = (song: StudioSong, piece: SongPiece): BeatSection[] =>
+  knownSectionsOf(song.firstBeatSeconds, song.tempoBpm, piece.startSeconds, piece.endSeconds);
+
+export const pieceAlignmentOf = <TEntry extends { fromSeconds: number }>(
+  entries: readonly TEntry[],
+  pieceEnd: number,
+): TEntry | null => {
+  const ordered = [...entries].sort((left, right) => left.fromSeconds - right.fromSeconds);
+
+  return ordered.findLast((entry) => entry.fromSeconds < pieceEnd) ?? ordered[0] ?? null;
+};
 
 const placedSectionOf = (section: BeatSection, placement: Placement): BeatSection => ({
   sourceStart: placement.offsetSeconds + section.sourceStart * placement.stretch,
@@ -133,21 +145,32 @@ const filledSectionsOf = (
   return [...filled, ...gapsOf(cursor, length)];
 };
 
-const sourceSectionsOf = (
+const placedSourceSectionsOf = (
   studio: Studio,
   mediaItemId: number,
+  alignments: readonly Alignment[],
   visited: ReadonlySet<number>,
 ): BeatSection[] => {
   const song = studio.songs.find((candidate) => candidate.mediaItemId === mediaItemId);
   const track = studio.finalTracks.find((candidate) => candidate.mediaItemId === mediaItemId);
 
   if (song !== undefined) {
-    return songSectionsOf(song);
+    return song.pieces.flatMap((piece) => {
+      const alignment = pieceAlignmentOf(alignments, piece.endSeconds);
+
+      return alignment === null
+        ? []
+        : pieceSectionsOf(song, piece).map((section) => placedSectionOf(section, alignment));
+    });
   }
 
-  return track === undefined || visited.has(mediaItemId)
+  const alignment = pieceAlignmentOf(alignments, Number.POSITIVE_INFINITY);
+
+  return track === undefined || alignment === null || visited.has(mediaItemId)
     ? []
-    : finalTrackSectionsOf(studio, track, visited);
+    : finalTrackSectionsOf(studio, track, visited).map((section) =>
+        placedSectionOf(section, alignment),
+      );
 };
 
 const finalTrackSectionsOf = (
@@ -157,9 +180,13 @@ const finalTrackSectionsOf = (
 ): BeatSection[] => {
   const length = track.durationSeconds ?? 0;
   const inner = new Set([...visited, track.mediaItemId]);
-  const placed = track.alignments.flatMap((alignment) =>
-    sourceSectionsOf(studio, alignment.sourceMediaItemId, inner).map((section) =>
-      placedSectionOf(section, alignment),
+  const sources = [...new Set(track.alignments.map((alignment) => alignment.sourceMediaItemId))];
+  const placed = sources.flatMap((sourceMediaItemId) =>
+    placedSourceSectionsOf(
+      studio,
+      sourceMediaItemId,
+      track.alignments.filter((alignment) => alignment.sourceMediaItemId === sourceMediaItemId),
+      inner,
     ),
   );
 
@@ -169,15 +196,17 @@ const finalTrackSectionsOf = (
 const songCutsOf = (studio: Studio): SegmentCut[] =>
   [...studio.songs]
     .sort((left, right) => left.position - right.position)
-    .map((song) => ({
-      mediaItemId: song.mediaItemId,
-      audioUrl: song.urls.normalised,
-      peaksUrl: song.urls.peaks,
-      audible: song.state === 'ready',
-      sourceStart: song.startSeconds,
-      sourceEnd: song.endSeconds,
-      beats: songSectionsOf(song),
-    }));
+    .flatMap((song) =>
+      song.pieces.map((piece) => ({
+        mediaItemId: song.mediaItemId,
+        audioUrl: song.urls.normalised,
+        peaksUrl: song.urls.peaks,
+        audible: song.state === 'ready',
+        sourceStart: piece.startSeconds,
+        sourceEnd: piece.endSeconds,
+        beats: pieceSectionsOf(song, piece),
+      })),
+    );
 
 const finalTrackCutsOf = (studio: Studio): SegmentCut[] =>
   studio.finalTracks
@@ -200,6 +229,9 @@ export const canPractise = (studio: Studio | null): boolean =>
 
 export const musicLengthOf = (segments: readonly MusicSegment[]): number =>
   segments.at(-1)?.timelineEnd ?? 0;
+
+export const segmentKeyOf = (segment: MusicSegment): string =>
+  `${segment.mediaItemId}@${segment.sourceStart}`;
 
 export const segmentAt = (
   segments: readonly MusicSegment[],

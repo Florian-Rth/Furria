@@ -25,6 +25,7 @@ export type SaveWrite =
       kind: 'finalOffset';
       finalTrackId: number;
       sourceMediaItemId: number;
+      fromSeconds: number;
       offsetSeconds: number;
       stretch: number;
     }
@@ -46,6 +47,7 @@ export type SaveWrite =
     }
   | { kind: 'videoName'; videoId: number; name: string | null }
   | { kind: 'videoStart'; videoId: number; startSeconds: number }
+  | { kind: 'videoClip'; videoId: number; startSeconds: number; endSeconds: number }
   | { kind: 'tracks'; tracks: readonly SavedTrack[] };
 
 const keptIdsOf = <TItem>(
@@ -93,12 +95,17 @@ const musicWritesOf = (saved: StudioDocument, current: StudioDocument): SaveWrit
             },
           ];
     const offsets = idsOf(after.alignments).flatMap((sourceMediaItemId): SaveWrite[] => {
-      const alignment = itemOf(after.alignments, sourceMediaItemId);
+      const known = itemOf(before.alignments, sourceMediaItemId) ?? [];
 
-      return alignment === null ||
-        sameValue(itemOf(before.alignments, sourceMediaItemId), alignment)
-        ? []
-        : [{ kind: 'finalOffset', finalTrackId, sourceMediaItemId, ...alignment }];
+      return (itemOf(after.alignments, sourceMediaItemId) ?? []).flatMap(
+        (alignment): SaveWrite[] => {
+          const saved = known.find((entry) => entry.fromSeconds === alignment.fromSeconds);
+
+          return saved !== undefined && sameValue(saved, alignment)
+            ? []
+            : [{ kind: 'finalOffset', finalTrackId, sourceMediaItemId, ...alignment }];
+        },
+      );
     });
 
     return [...beat, ...offsets];
@@ -256,6 +263,18 @@ const videoWritesOf = (saved: StudioDocument, current: StudioDocument): SaveWrit
       ...(after.startSeconds === null || before.startSeconds === after.startSeconds
         ? []
         : [{ kind: 'videoStart' as const, videoId, startSeconds: after.startSeconds }]),
+      ...(after.clipEndSeconds === null ||
+      (before.clipStartSeconds === after.clipStartSeconds &&
+        before.clipEndSeconds === after.clipEndSeconds)
+        ? []
+        : [
+            {
+              kind: 'videoClip' as const,
+              videoId,
+              startSeconds: after.clipStartSeconds,
+              endSeconds: after.clipEndSeconds,
+            },
+          ]),
     ];
   });
 

@@ -11,6 +11,8 @@ import {
   finalBeatAtOf,
   nudgedFinalBeatOf,
   offsetStartingAt,
+  pieceEndOf,
+  segmentPlacementOf,
   stretchOf,
   tunedOffsetOf,
 } from '@furria/studio/studio-final';
@@ -62,14 +64,16 @@ export const useFinalDesk = (screen: StudioScreen, list: ActStudioFinal): FinalD
   const pending = final.pending;
 
   const sourceDeskOf = (track: StudioFinalTrack, current: CurrentSource): FinalSourceDesk => {
-    const mediaItemId = current.place.segment.mediaItemId;
-    const offset = final.placements[mediaItemId]?.offsetSeconds ?? null;
-    const stretch = stretchOf(final.placements, mediaItemId);
+    const { segment } = current.place;
+    const offset = segmentPlacementOf(final.placements, segment)?.offsetSeconds ?? null;
+    const stretch = stretchOf(final.placements, segment);
     const tune = (offsetSeconds: number): void => {
       work.change({
         kind: 'finalOffset',
         finalTrackId: track.finalTrackId,
-        sourceMediaItemId: mediaItemId,
+        sourceMediaItemId: segment.mediaItemId,
+        fromSeconds: segment.sourceStart,
+        untilSeconds: segment.sourceEnd,
         offsetSeconds,
         stretch,
       });
@@ -93,7 +97,7 @@ export const useFinalDesk = (screen: StudioScreen, list: ActStudioFinal): FinalD
       later: LATER_SHIFTS.map(shiftOf),
       shiftLocked: offset === null,
       startHere: () => {
-        tune(offsetStartingAt(current.place.segment, player.position(), stretch));
+        tune(offsetStartingAt(segment, player.position(), stretch));
       },
       matching: final.matching,
       match: () => {
@@ -105,6 +109,8 @@ export const useFinalDesk = (screen: StudioScreen, list: ActStudioFinal): FinalD
                 kind: 'finalOffset',
                 finalTrackId: track.finalTrackId,
                 sourceMediaItemId: found.sourceMediaItemId,
+                fromSeconds: found.fromSeconds,
+                untilSeconds: pieceEndOf(final.mix, found.sourceMediaItemId, found.fromSeconds),
                 offsetSeconds: found.offsetSeconds,
                 stretch: found.stretch,
               });

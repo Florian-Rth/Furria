@@ -1,5 +1,5 @@
 import type { MusicAnchor, MusicSegment } from '@furria/studio/music-timeline';
-import { EDGE_TOLERANCE_SECONDS } from '@furria/studio/music-timeline';
+import { EDGE_TOLERANCE_SECONDS, pieceAlignmentOf } from '@furria/studio/music-timeline';
 import { finalTitleOf, songNameOf } from '@furria/studio/studio-copy';
 import { anchorAt } from '@furria/studio/studio-formation';
 import type {
@@ -12,11 +12,12 @@ import type {
 const OFFSET_GRAIN = 1000;
 
 export interface FinalPlacement {
+  fromSeconds: number;
   offsetSeconds: number;
   stretch: number;
 }
 
-export type FinalPlacements = Readonly<Record<number, FinalPlacement>>;
+export type FinalPlacements = Readonly<Record<number, readonly FinalPlacement[]>>;
 
 export const UNSTRETCHED = 1;
 
@@ -39,6 +40,7 @@ export interface FinalPlace {
 
 interface FinalSpan {
   placements: FinalPlacements;
+  segments: readonly MusicSegment[];
   length: number;
 }
 
@@ -62,23 +64,74 @@ export const pendingFinalTrackOf = (studio: Studio): StudioFinalTrack | null => 
 export const finalPlacementsOf = (
   track: StudioFinalTrack,
   segments: readonly MusicSegment[],
-): FinalPlacements =>
-  Object.fromEntries(
-    track.alignments
-      .filter((alignment) =>
-        segments.some((segment) => segment.mediaItemId === alignment.sourceMediaItemId),
-      )
-      .map(({ sourceMediaItemId, offsetSeconds, stretch }) => [
+): FinalPlacements => {
+  const sources = new Set(segments.map((segment) => segment.mediaItemId));
+
+  return Object.fromEntries(
+    [...new Set(track.alignments.map((alignment) => alignment.sourceMediaItemId))]
+      .filter((sourceMediaItemId) => sources.has(sourceMediaItemId))
+      .map((sourceMediaItemId) => [
         sourceMediaItemId,
-        { offsetSeconds, stretch },
+        track.alignments
+          .filter((alignment) => alignment.sourceMediaItemId === sourceMediaItemId)
+          .map(({ fromSeconds, offsetSeconds, stretch }) => ({
+            fromSeconds,
+            offsetSeconds,
+            stretch,
+          }))
+          .sort((left, right) => left.fromSeconds - right.fromSeconds),
       ]),
   );
+};
 
-export const stretchOf = (placements: FinalPlacements, mediaItemId: number): number =>
-  placements[mediaItemId]?.stretch ?? UNSTRETCHED;
+export const segmentPlacementOf = (
+  placements: FinalPlacements,
+  segment: MusicSegment,
+): FinalPlacement | null =>
+  pieceAlignmentOf(placements[segment.mediaItemId] ?? [], segment.sourceEnd);
+
+const holdsAnchor = (segment: MusicSegment, anchor: MusicAnchor, closed: boolean): boolean =>
+  segment.mediaItemId === anchor.sourceMediaItemId &&
+  anchor.seconds >= segment.sourceStart &&
+  (closed ? anchor.seconds <= segment.sourceEnd : anchor.seconds < segment.sourceEnd);
+
+export const anchorPlacementOf = (
+  placements: FinalPlacements,
+  segments: readonly MusicSegment[],
+  anchor: MusicAnchor,
+): FinalPlacement | null => {
+  const holder =
+    segments.find((segment) => holdsAnchor(segment, anchor, false)) ??
+    segments.find((segment) => holdsAnchor(segment, anchor, true));
+
+  if (holder !== undefined) {
+    return segmentPlacementOf(placements, holder);
+  }
+
+  const entries = placements[anchor.sourceMediaItemId] ?? [];
+
+  return entries.findLast((entry) => entry.fromSeconds <= anchor.seconds) ?? entries[0] ?? null;
+};
+
+export const pieceEndOf = (
+  segments: readonly MusicSegment[],
+  mediaItemId: number,
+  fromSeconds: number,
+): number =>
+  segments.find(
+    (segment) => segment.mediaItemId === mediaItemId && segment.sourceStart === fromSeconds,
+  )?.sourceEnd ?? fromSeconds;
+
+export const stretchOf = (placements: FinalPlacements, segment: MusicSegment): number =>
+  segmentPlacementOf(placements, segment)?.stretch ?? UNSTRETCHED;
 
 export const matchesAnyMusic = (placements: FinalPlacements): boolean =>
-  Object.keys(placements).length > 0;
+  Object.values(placements).some((entries) => entries.length > 0);
+
+export const matchedCountOf = (
+  placements: FinalPlacements,
+  segments: readonly MusicSegment[],
+): number => segments.filter((segment) => segmentPlacementOf(placements, segment) !== null).length;
 
 const placedSecondsOf = (placement: FinalPlacement, sourceSeconds: number): number =>
   placement.offsetSeconds + sourceSeconds * placement.stretch;
@@ -87,9 +140,10 @@ const sourceSecondsOf = (placement: FinalPlacement, finalSeconds: number): numbe
   (finalSeconds - placement.offsetSeconds) / placement.stretch;
 
 const unclampedFinalSecondsOf = (anchor: MusicAnchor | null, mapping: FinalSpan): number | null => {
-  const placement = anchor === null ? undefined : mapping.placements[anchor.sourceMediaItemId];
+  const placement =
+    anchor === null ? null : anchorPlacementOf(mapping.placements, mapping.segments, anchor);
 
-  if (anchor === null || placement === undefined) {
+  if (anchor === null || placement === null) {
     return null;
   }
 
@@ -109,7 +163,7 @@ export const finalSecondsAt = (
   placements: FinalPlacements,
   length: number,
   seconds: number,
-): number | null => finalSecondsOf(anchorAt(segments, seconds), { placements, length });
+): number | null => finalSecondsOf(anchorAt(segments, seconds), { placements, segments, length });
 
 export const mixSecondsAt = (
   segments: readonly MusicSegment[],
@@ -117,8 +171,8 @@ export const mixSecondsAt = (
   finalSeconds: number,
 ): number | null => {
   for (const segment of segments) {
-    const placement = placements[segment.mediaItemId];
-    const source = placement === undefined ? null : sourceSecondsOf(placement, finalSeconds);
+    const placement = segmentPlacementOf(placements, segment);
+    const source = placement === null ? null : sourceSecondsOf(placement, finalSeconds);
 
     if (source !== null && source >= segment.sourceStart && source < segment.sourceEnd) {
       return segment.timelineStart + source - segment.sourceStart;
@@ -128,16 +182,12 @@ export const mixSecondsAt = (
   return null;
 };
 
-const previewStepsOf = (
-  steps: readonly StudioStep[],
-  segments: readonly MusicSegment[],
-  mapping: FinalMapping,
-): StudioStep[] => {
+const previewStepsOf = (steps: readonly StudioStep[], mapping: FinalMapping): StudioStep[] => {
   const moved = steps.map((step) => ({
     step,
     start:
       step.placement === 'onTimeline' && step.startSeconds !== null
-        ? finalSecondsOf(anchorAt(segments, step.startSeconds), mapping)
+        ? finalSecondsOf(anchorAt(mapping.segments, step.startSeconds), mapping)
         : null,
   }));
   const placed = moved
@@ -161,24 +211,21 @@ const previewStepsOf = (
   ];
 };
 
-const previewVideoOf = (
-  video: StudioVideo,
-  segments: readonly MusicSegment[],
-  mapping: FinalMapping,
-): StudioVideo => {
+const previewVideoOf = (video: StudioVideo, mapping: FinalMapping): StudioVideo => {
   if (video.placement !== 'onTimeline' || video.startSeconds === null) {
     return video;
   }
 
-  const leadIn = Math.max(0, -video.startSeconds);
+  const clipStart = video.startSeconds + video.clipStartSeconds;
+  const leadIn = Math.max(0, -clipStart);
   const music = unclampedFinalSecondsOf(
-    anchorAt(segments, Math.max(0, video.startSeconds)),
+    anchorAt(mapping.segments, Math.max(0, clipStart)),
     mapping,
   );
 
   return music === null
     ? { ...video, startSeconds: null, placement: 'musicMissing' }
-    : { ...video, startSeconds: music - leadIn };
+    : { ...video, startSeconds: music - leadIn - video.clipStartSeconds };
 };
 
 const previewChoreographyOf = (
@@ -209,6 +256,7 @@ export const finalPreviewOf = <TStudio extends Studio>(
 ): TStudio => {
   const mapping: FinalMapping = {
     placements,
+    segments,
     length: track.durationSeconds ?? 0,
     mediaItemId: track.mediaItemId,
   };
@@ -220,8 +268,8 @@ export const finalPreviewOf = <TStudio extends Studio>(
       ...candidate,
       adopted: candidate.finalTrackId === track.finalTrackId,
     })),
-    steps: previewStepsOf(studio.steps, segments, mapping),
-    videos: studio.videos.map((video) => previewVideoOf(video, segments, mapping)),
+    steps: previewStepsOf(studio.steps, mapping),
+    videos: studio.videos.map((video) => previewVideoOf(video, mapping)),
     choreography: previewChoreographyOf(studio.choreography, mapping),
   };
 };
@@ -232,9 +280,9 @@ export const finalPlacesOf = (
   length: number,
 ): FinalPlace[] =>
   segments.map((segment) => {
-    const placement = placements[segment.mediaItemId];
+    const placement = segmentPlacementOf(placements, segment);
 
-    if (placement === undefined) {
+    if (placement === null) {
       return { segment, start: null, end: null };
     }
 

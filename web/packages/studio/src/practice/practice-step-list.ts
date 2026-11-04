@@ -2,6 +2,7 @@ import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
 import { partOfStep } from '@furria/studio/music-timeline';
 import { shownStepNameOf } from '@furria/studio/step-names';
 import type { StudioPart, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
+import { overlapsRange } from '@furria/studio/studio-videos';
 import { isPlayableVideo } from '@furria/studio/video-sync';
 
 const COUNTS_PER_EIGHT = 8;
@@ -46,14 +47,7 @@ export const eightsOf = (marks: readonly CountMark[], range: TimelineRange): num
 };
 
 export const isFilmed = (videos: readonly StudioVideo[], range: TimelineRange): boolean =>
-  videos.some(
-    (video) =>
-      isPlayableVideo(video) &&
-      video.startSeconds !== null &&
-      video.durationSeconds !== null &&
-      video.startSeconds < range.end &&
-      video.startSeconds + video.durationSeconds > range.start,
-  );
+  videos.some((video) => isPlayableVideo(video) && overlapsRange(video, range));
 
 export const stepListOf = (
   steps: readonly StudioStep[],

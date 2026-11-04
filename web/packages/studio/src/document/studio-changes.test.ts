@@ -225,10 +225,64 @@ describe('songOrder', () => {
   });
 });
 
+describe('finalOffset', () => {
+  const aligned = document({
+    finalTracks: {
+      40: {
+        firstBeatSeconds: null,
+        tempoBpm: null,
+        alignments: {
+          1: [
+            { fromSeconds: 0, offsetSeconds: 2, stretch: 1 },
+            { fromSeconds: 20, offsetSeconds: 5, stretch: 1 },
+            { fromSeconds: 30, offsetSeconds: 9, stretch: 1 },
+          ],
+        },
+      },
+    },
+  });
+
+  it.each<[string, number, number, number[]]>([
+    ['replaces the entry of the piece', 20, 30, [0, 20, 30]],
+    ['drops older entries inside the piece', 10, 35, [0, 10]],
+    ['adds an entry for a fresh piece', 12, 18, [0, 12, 20, 30]],
+  ])('%s', (_, fromSeconds, untilSeconds, froms) => {
+    const result = changed(aligned, {
+      kind: 'finalOffset',
+      finalTrackId: 40,
+      sourceMediaItemId: 1,
+      fromSeconds,
+      untilSeconds,
+      offsetSeconds: 7,
+      stretch: 1,
+    });
+
+    expect(result.finalTracks[40]?.alignments[1]?.map((entry) => entry.fromSeconds)).toEqual(froms);
+  });
+});
+
+describe('videoClip', () => {
+  it('cuts the clip of a known video and ignores unknown ones', () => {
+    const base = document({
+      videos: { 5: { name: null, startSeconds: 3, clipStartSeconds: 0, clipEndSeconds: 30 } },
+    });
+
+    const result = changed(
+      changed(base, { kind: 'videoClip', videoId: 5, startSeconds: 2.5, endSeconds: 12.25 }),
+      { kind: 'videoClip', videoId: 9, startSeconds: 1, endSeconds: 2 },
+    );
+
+    expect(result.videos).toEqual({
+      5: { name: null, startSeconds: 3, clipStartSeconds: 2.5, clipEndSeconds: 12.25 },
+    });
+  });
+});
+
 describe('mergeKeyOf', () => {
   it.each<{ change: StudioChange; merges: boolean }>([
     { change: { kind: 'stepMove', stepId: 1, atSeconds: 2, lengthSeconds: 40 }, merges: true },
     { change: { kind: 'videoStart', videoId: 1, startSeconds: 2 }, merges: true },
+    { change: { kind: 'videoClip', videoId: 1, startSeconds: 0, endSeconds: 2 }, merges: true },
     { change: { kind: 'stepText', stepId: 1, name: 'Wel', description: null }, merges: true },
     { change: { kind: 'videoName', videoId: 1, name: 'Probe' }, merges: true },
     { change: { kind: 'tracks', tracks: { 2: [], 1: [] } }, merges: true },

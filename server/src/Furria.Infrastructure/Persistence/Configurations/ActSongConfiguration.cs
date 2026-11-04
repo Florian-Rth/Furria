@@ -13,10 +13,7 @@ public sealed class ActSongConfiguration : IEntityTypeConfiguration<ActSong>
             table =>
             {
                 table.HasCheckConstraint("ck_act_song_position", "position >= 0");
-                table.HasCheckConstraint(
-                    "ck_act_song_cut",
-                    "start_seconds >= 0 AND (end_seconds IS NULL OR end_seconds > start_seconds)"
-                );
+                table.HasCheckConstraint("ck_act_song_pieces", SongPiecesColumn.ShapeCheck);
                 table.HasCheckConstraint(
                     "ck_act_song_beat_grid",
                     "(first_beat_seconds IS NULL OR first_beat_seconds >= 0) AND (tempo_bpm IS NULL OR tempo_bpm > 0)"
@@ -24,6 +21,8 @@ public sealed class ActSongConfiguration : IEntityTypeConfiguration<ActSong>
             }
         );
         builder.HasKey(song => song.Id);
+
+        SongPiecesColumn.Configure(builder.Property(song => song.Pieces));
 
         builder
             .HasOne(song => song.Act)

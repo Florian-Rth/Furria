@@ -76,6 +76,32 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_PlayTheWholeFilesUncut_When_NothingWasCutYet()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+        var actId = await GardetanzAsync(ctx, ct);
+        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+        await SongOfAsync(_fixture, admin, actId, 180, ct);
+        await AddedSongAsync(admin, actId, ct);
+        await VideoOfAsync(_fixture, admin, actId, 70, ct);
+
+        var studio = (await StudioOfAsync(admin, actId)).Studio!;
+
+        Assert.Equal(
+            [
+                [(0.0, 180.0)],
+                [(0.0, 0.0)],
+            ],
+            studio.Songs.Select(song =>
+                song.Pieces.Select(piece => (piece.StartSeconds, piece.EndSeconds)).ToArray()
+            )
+        );
+        var video = Assert.Single(studio.Videos);
+        Assert.Equal((0.0, 70.0), (video.ClipStartSeconds, video.ClipEndSeconds!.Value));
+    }
+
+    [Fact]
     public async Task Should_DrawOurStage_When_TheClubHasSetItUp()
     {
         var ct = TestContext.Current.CancellationToken;

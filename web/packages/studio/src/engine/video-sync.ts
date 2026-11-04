@@ -14,16 +14,27 @@ export const isPlayableVideo = (video: StudioVideo): boolean =>
   !video.outdated &&
   video.placement === 'onTimeline' &&
   video.startSeconds !== null &&
-  video.durationSeconds !== null;
+  video.durationSeconds !== null &&
+  video.clipEndSeconds !== null;
 
 export const videoSecondsAt = (video: StudioVideo, seconds: number): number | null => {
-  if (!isPlayableVideo(video) || video.startSeconds === null || video.durationSeconds === null) {
+  if (!isPlayableVideo(video) || video.startSeconds === null || video.clipEndSeconds === null) {
     return null;
   }
 
   const inVideo = seconds - video.startSeconds;
 
-  return inVideo >= 0 && inVideo < video.durationSeconds ? inVideo : null;
+  return inVideo >= video.clipStartSeconds && inVideo < video.clipEndSeconds ? inVideo : null;
+};
+
+export const videoStillAt = (video: StudioVideo, seconds: number): number | null => {
+  if (!isPlayableVideo(video) || video.startSeconds === null || video.clipEndSeconds === null) {
+    return null;
+  }
+
+  const inVideo = seconds - video.startSeconds;
+
+  return Math.min(video.clipEndSeconds, Math.max(video.clipStartSeconds, inVideo));
 };
 
 export const videoCorrectionOf = (

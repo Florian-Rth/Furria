@@ -6,6 +6,7 @@ import {
   musicSegmentsOf,
   neighbourCountOf,
   partRangeOf,
+  pieceAlignmentOf,
   segmentAt,
   timelineSecondsOf,
 } from './music-timeline';
@@ -17,8 +18,7 @@ const song = (mediaItemId: number, position: number, startSeconds: number, endSe
   songId: mediaItemId,
   mediaItemId,
   position,
-  startSeconds,
-  endSeconds,
+  pieces: [{ startSeconds, endSeconds }],
   firstBeatSeconds: 0.5,
   tempoBpm: 120,
   state: 'ready' as const,
@@ -94,6 +94,30 @@ describe('musicSegmentsOf', () => {
     ]);
   });
 
+  it('plays every kept piece of a song in order and skips the parts cut out between them', () => {
+    const split = {
+      ...song(3, 0, 0, 0),
+      pieces: [
+        { startSeconds: 2, endSeconds: 10 },
+        { startSeconds: 14.5, endSeconds: 20 },
+      ],
+    };
+    const segments = musicSegmentsOf(studio({ songs: [split, song(7, 1, 0, 5)] }));
+
+    expect(
+      segments.map((placed) => [
+        placed.mediaItemId,
+        placed.sourceStart,
+        placed.timelineStart,
+        placed.timelineEnd,
+      ]),
+    ).toEqual([
+      [3, 2, 0, 8],
+      [3, 14.5, 8, 13.5],
+      [7, 0, 13.5, 18.5],
+    ]);
+  });
+
   it('plays only the adopted final track once one is adopted', () => {
     const track = (finalTrackId: number, adopted: boolean) => ({
       finalTrackId,
@@ -117,6 +141,28 @@ describe('musicSegmentsOf', () => {
     );
 
     expect(segments.map((placed) => [placed.mediaItemId, placed.timelineEnd])).toEqual([[42, 180]]);
+  });
+});
+
+describe('pieceAlignmentOf', () => {
+  const entries = [
+    { fromSeconds: 20, offsetSeconds: 2 },
+    { fromSeconds: 0, offsetSeconds: 1 },
+    { fromSeconds: 40, offsetSeconds: 3 },
+  ];
+
+  it.each([
+    [10, 1],
+    [20, 1],
+    [20.5, 2],
+    [100, 3],
+    [-1, 1],
+  ])('places a piece ending at %s with the entry %s', (pieceEnd, offset) => {
+    expect(pieceAlignmentOf(entries, pieceEnd)?.offsetSeconds).toBe(offset);
+  });
+
+  it('has nothing without entries', () => {
+    expect(pieceAlignmentOf([], 10)).toBeNull();
   });
 });
 
@@ -193,8 +239,8 @@ describe('counts on an adopted final file', () => {
       songs: [songOf(3, 0, 60, 0.5, 120), songOf(4, 10, 70, 1, 96)],
       finalTracks: [
         finalOf([
-          { sourceMediaItemId: 3, offsetSeconds: -2, stretch: 1 },
-          { sourceMediaItemId: 4, offsetSeconds: 80, stretch: 0.98 },
+          { sourceMediaItemId: 3, fromSeconds: 0, offsetSeconds: -2, stretch: 1 },
+          { sourceMediaItemId: 4, fromSeconds: 10, offsetSeconds: 80, stretch: 0.98 },
         ]),
       ],
     }),

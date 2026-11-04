@@ -2,6 +2,7 @@ import type { SpotPath } from '@furria/studio/choreography-motion';
 import type { CountMark, TimelineRange } from '@furria/studio/music-timeline';
 import { stepNumberOf } from '@furria/studio/step-names';
 import type { Studio, StudioPart, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
+import { clipSpanOf } from '@furria/studio/studio-videos';
 
 const SAME_PLACE_METRES = 0.05;
 const COVER_SHARE = 0.5;
@@ -82,17 +83,13 @@ export const movesWithin = (paths: readonly SpotPath[], range: TimelineRange): b
   );
 
 const overlapOf = (video: StudioVideo, range: TimelineRange): number => {
-  if (
-    video.placement !== 'onTimeline' ||
-    video.startSeconds === null ||
-    video.durationSeconds === null ||
-    video.state !== 'ready'
-  ) {
+  const span = clipSpanOf(video);
+  if (video.placement !== 'onTimeline' || span === null || video.state !== 'ready') {
     return 0;
   }
 
-  const start = Math.max(range.start, video.startSeconds);
-  const end = Math.min(range.end, video.startSeconds + video.durationSeconds);
+  const start = Math.max(range.start, span.start);
+  const end = Math.min(range.end, span.end);
 
   return Math.max(0, end - start) / (range.end - range.start);
 };
@@ -116,7 +113,7 @@ export const coveringVideoOf = (
     ? null
     : {
         videoId: best.videoId,
-        offsetSeconds: Math.max(0, range.start - (best.startSeconds ?? 0)),
+        offsetSeconds: Math.max(best.clipStartSeconds, range.start - (best.startSeconds ?? 0)),
       };
 };
 

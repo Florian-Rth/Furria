@@ -105,8 +105,14 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
             SongId = song.SongId,
             MediaItemId = song.MediaItemId,
             Position = song.Position,
-            StartSeconds = song.StartSeconds,
-            EndSeconds = song.EndSeconds,
+            Pieces =
+            [
+                .. song.Pieces.Select(piece => new StudioSongPieceDto
+                {
+                    StartSeconds = piece.StartSeconds,
+                    EndSeconds = piece.EndSeconds,
+                }),
+            ],
             FirstBeatSeconds = song.FirstBeatSeconds,
             TempoBpm = song.TempoBpm,
             State = song.State,
@@ -132,6 +138,7 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
                 .. track.Alignments.Select(alignment => new StudioFinalTrackAlignmentDto
                 {
                     SourceMediaItemId = alignment.SourceMediaItemId,
+                    FromSeconds = alignment.FromSeconds,
                     OffsetSeconds = alignment.OffsetSeconds,
                     Stretch = alignment.Stretch,
                 }),
@@ -185,6 +192,8 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
             State = video.State,
             DurationSeconds = video.DurationSeconds,
             StartSeconds = video.StartSeconds,
+            ClipStartSeconds = video.ClipStartSeconds,
+            ClipEndSeconds = video.ClipEndSeconds,
             Placement = video.Placement,
             Outdated = video.IsOutdated,
             Urls = new StudioVideoUrlsDto
@@ -473,9 +482,7 @@ public sealed record StudioSongDto
 
     public required int Position { get; init; }
 
-    public required double StartSeconds { get; init; }
-
-    public required double EndSeconds { get; init; }
+    public required IReadOnlyList<StudioSongPieceDto> Pieces { get; init; }
 
     public required double? FirstBeatSeconds { get; init; }
 
@@ -488,6 +495,13 @@ public sealed record StudioSongDto
     public required string FileName { get; init; }
 
     public required StudioAudioUrlsDto Urls { get; init; }
+}
+
+public sealed record StudioSongPieceDto
+{
+    public required double StartSeconds { get; init; }
+
+    public required double EndSeconds { get; init; }
 }
 
 public sealed record StudioFinalTrackDto
@@ -518,6 +532,8 @@ public sealed record StudioFinalTrackDto
 public sealed record StudioFinalTrackAlignmentDto
 {
     public required int SourceMediaItemId { get; init; }
+
+    public required double FromSeconds { get; init; }
 
     public required double OffsetSeconds { get; init; }
 
@@ -583,6 +599,10 @@ public sealed record StudioVideoDto
     public required double? DurationSeconds { get; init; }
 
     public required double? StartSeconds { get; init; }
+
+    public required double ClipStartSeconds { get; init; }
+
+    public required double? ClipEndSeconds { get; init; }
 
     public required VideoPlacement Placement { get; init; }
 

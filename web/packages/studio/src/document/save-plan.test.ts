@@ -20,8 +20,8 @@ const keyframe = {
 const saved: StudioDocument = {
   songOrder: [1, 2],
   songs: {
-    1: { startSeconds: 0, endSeconds: 20, firstBeatSeconds: 0.5, tempoBpm: 120 },
-    2: { startSeconds: 0, endSeconds: 20, firstBeatSeconds: null, tempoBpm: null },
+    1: { pieces: [{ startSeconds: 0, endSeconds: 20 }], firstBeatSeconds: 0.5, tempoBpm: 120 },
+    2: { pieces: [{ startSeconds: 0, endSeconds: 20 }], firstBeatSeconds: null, tempoBpm: null },
   },
   steps: {
     1: { startSeconds: 0, name: '', description: null },
@@ -33,7 +33,7 @@ const saved: StudioDocument = {
   spotOrder: [31, 32],
   spots: { 31: { person: lena }, 32: { person: tom } },
   tracks: { 31: [keyframe] },
-  videos: { 5: { name: null, startSeconds: null } },
+  videos: { 5: { name: null, startSeconds: null, clipStartSeconds: 0, clipEndSeconds: 30 } },
   finalTracks: {},
 };
 
@@ -167,6 +167,80 @@ describe('savePlanOf', () => {
         { kind: 'tracks', tracks: { [-1]: [keyframe] } },
       ),
     ).toEqual(['spotRemove', 'spotAdd', 'spotAssign -1=7', 'tracks -1']);
+  });
+
+  it('saves only the final alignment of the piece that moved', () => {
+    const aligned: StudioDocument = {
+      ...saved,
+      finalTracks: {
+        40: {
+          firstBeatSeconds: null,
+          tempoBpm: null,
+          alignments: {
+            1: [
+              { fromSeconds: 0, offsetSeconds: 2, stretch: 1 },
+              { fromSeconds: 20, offsetSeconds: 5, stretch: 1 },
+            ],
+          },
+        },
+      },
+    };
+    const target = produce(aligned, (draft) => {
+      applyChange(draft, {
+        kind: 'finalOffset',
+        finalTrackId: 40,
+        sourceMediaItemId: 1,
+        fromSeconds: 20,
+        untilSeconds: 30,
+        offsetSeconds: 6,
+        stretch: 1,
+      });
+    });
+
+    expect(savePlanOf(aligned, target)).toEqual([
+      {
+        kind: 'finalOffset',
+        finalTrackId: 40,
+        sourceMediaItemId: 1,
+        fromSeconds: 20,
+        offsetSeconds: 6,
+        stretch: 1,
+      },
+    ]);
+  });
+
+  it.each<[string, StudioChange[], string[]]>([
+    [
+      'clips a video',
+      [{ kind: 'videoClip', videoId: 5, startSeconds: 2, endSeconds: 12 }],
+      ['videoClip'],
+    ],
+    [
+      'saves a clip cut back to where it was',
+      [
+        { kind: 'videoClip', videoId: 5, startSeconds: 2, endSeconds: 12 },
+        { kind: 'videoClip', videoId: 5, startSeconds: 0, endSeconds: 30 },
+      ],
+      [],
+    ],
+    [
+      'saves a split song',
+      [
+        {
+          kind: 'songSettings',
+          songId: 1,
+          pieces: [
+            { startSeconds: 0, endSeconds: 8 },
+            { startSeconds: 8, endSeconds: 20 },
+          ],
+          firstBeatSeconds: 0.5,
+          tempoBpm: 120,
+        },
+      ],
+      ['songSettings'],
+    ],
+  ])('%s', (_, changes, writes) => {
+    expect(planned(saved, ...changes)).toEqual(writes);
   });
 
   it('sends nothing for edits undone before saving', () => {

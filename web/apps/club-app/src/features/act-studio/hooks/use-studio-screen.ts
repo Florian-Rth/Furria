@@ -118,6 +118,7 @@ export const useStudioScreen = (
       align: videos.align.mutateAsync,
       aligning: aligningOf(videos),
       remove: videos.remove.mutate,
+      split: videos.split.mutate,
     },
     uploads,
     history,

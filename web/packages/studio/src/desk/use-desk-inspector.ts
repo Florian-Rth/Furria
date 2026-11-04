@@ -65,7 +65,7 @@ import { partRangeOf } from '@furria/studio/music-timeline';
 import { stepNumberOf } from '@furria/studio/step-names';
 import { videoNameOf } from '@furria/studio/studio-copy';
 import { markSecondsOf, partSettingsOf, startsAPart } from '@furria/studio/studio-steps';
-import { videoNumberOf } from '@furria/studio/studio-videos';
+import { clipSpanOf, videoNumberOf } from '@furria/studio/studio-videos';
 import type { ActDesk } from '@furria/studio/use-act-desk';
 import type { DeskBorders } from '@furria/studio/use-desk-borders';
 import { useStepTexts } from '@furria/studio/use-step-texts';
@@ -264,14 +264,16 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
   if (focus === 'video' && takes.selected !== null) {
     const video = takes.selected;
     const number = videoNumberOf(studio.videos, video.videoId);
-    const placed = video.startSeconds !== null;
+    const span = clipSpanOf(video);
+    const clipLength =
+      (video.clipEndSeconds ?? video.durationSeconds ?? 0) - video.clipStartSeconds;
 
     return {
       eyebrow: videoEyebrowOf(number),
       title: videoNameOf(video.name, number),
       facts: [
-        factOf('start', FACT_START, placed ? clockOf(video.startSeconds ?? 0) : DESK_OPEN),
-        factOf('length', FACT_LENGTH, clockOf(video.durationSeconds ?? 0)),
+        factOf('start', FACT_START, span === null ? DESK_OPEN : clockOf(span.start)),
+        factOf('length', FACT_LENGTH, clockOf(clipLength)),
         factOf('state', FACT_STATE, takes.text),
       ],
       fields: [],
@@ -298,7 +300,7 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
           work.change({
             kind: 'videoStart',
             videoId: video.videoId,
-            startSeconds: player.position(),
+            startSeconds: player.position() - video.clipStartSeconds,
           });
         }),
         actionOf(

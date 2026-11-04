@@ -10,7 +10,12 @@ public sealed class ActFinalTrackAlignmentConfiguration
     public void Configure(EntityTypeBuilder<ActFinalTrackAlignment> builder)
     {
         builder.ToTable("act_final_track_alignment");
-        builder.HasKey(alignment => new { alignment.FinalTrackId, alignment.SourceMediaItemId });
+        builder.HasKey(alignment => new
+        {
+            alignment.FinalTrackId,
+            alignment.SourceMediaItemId,
+            alignment.FromSeconds,
+        });
         builder
             .Property(alignment => alignment.Stretch)
             .HasDefaultValue(FinalTrackPlacement.Unstretched);

@@ -14,10 +14,17 @@ export const VideoAlignmentSchema = z.object({
 });
 export type VideoAlignment = z.infer<typeof VideoAlignmentSchema>;
 
+export const SongPieceSchema = z.object({
+  startSeconds: z.number(),
+  endSeconds: z.number(),
+});
+export type SongPiece = z.infer<typeof SongPieceSchema>;
+
 export const FinalTrackMatchesSchema = z.object({
   matches: z.array(
     z.object({
       sourceMediaItemId: z.int(),
+      fromSeconds: z.number(),
       offsetSeconds: z.number(),
       stretch: z.number().positive(),
       confidence: z.number(),
@@ -96,8 +103,7 @@ type StudioSongSchema = z.ZodObject<{
   songId: z.ZodInt;
   mediaItemId: z.ZodInt;
   position: z.ZodInt;
-  startSeconds: z.ZodNumber;
-  endSeconds: z.ZodNumber;
+  pieces: z.ZodArray<typeof SongPieceSchema>;
   firstBeatSeconds: z.ZodNullable<z.ZodNumber>;
   tempoBpm: z.ZodNullable<z.ZodNumber>;
   state: typeof MediaItemStateSchema;
@@ -119,6 +125,7 @@ type StudioFinalTrackSchema = z.ZodObject<{
   alignments: z.ZodArray<
     z.ZodObject<{
       sourceMediaItemId: z.ZodInt;
+      fromSeconds: z.ZodNumber;
       offsetSeconds: z.ZodNumber;
       stretch: z.ZodNumber;
     }>
@@ -146,6 +153,8 @@ type StudioVideoSchema = z.ZodObject<{
   state: typeof MediaItemStateSchema;
   durationSeconds: z.ZodNullable<z.ZodNumber>;
   startSeconds: z.ZodNullable<z.ZodNumber>;
+  clipStartSeconds: z.ZodNumber;
+  clipEndSeconds: z.ZodNullable<z.ZodNumber>;
   placement: typeof VideoPlacementSchema;
   outdated: z.ZodBoolean;
   urls: z.ZodObject<{ video: MediaUrlSchema; compact: MediaUrlSchema; poster: MediaUrlSchema }>;
@@ -181,8 +190,7 @@ export const createStudioSchemas = ({
     songId: z.int(),
     mediaItemId: z.int(),
     position: z.int(),
-    startSeconds: z.number(),
-    endSeconds: z.number(),
+    pieces: z.array(SongPieceSchema),
     firstBeatSeconds: z.number().nullable(),
     tempoBpm: z.number().nullable(),
     state: MediaItemStateSchema,
@@ -203,6 +211,7 @@ export const createStudioSchemas = ({
     alignments: z.array(
       z.object({
         sourceMediaItemId: z.int(),
+        fromSeconds: z.number(),
         offsetSeconds: z.number(),
         stretch: z.number().positive(),
       }),
@@ -227,6 +236,8 @@ export const createStudioSchemas = ({
     state: MediaItemStateSchema,
     durationSeconds: z.number().nullable(),
     startSeconds: z.number().nullable(),
+    clipStartSeconds: z.number(),
+    clipEndSeconds: z.number().nullable(),
     placement: VideoPlacementSchema,
     outdated: z.boolean(),
     urls: z.object({ video: MediaUrlSchema, compact: MediaUrlSchema, poster: MediaUrlSchema }),

@@ -7,7 +7,7 @@ import {
 } from '@furria/studio/studio-copy';
 import type { StudioVideo } from '@furria/studio/studio-schemas';
 import type { StudioScreen } from '@furria/studio/studio-screen';
-import { videoNumberOf } from '@furria/studio/studio-videos';
+import { clipSpanOf, videoNumberOf } from '@furria/studio/studio-videos';
 import type { ActStudioTakes } from '@furria/studio/use-act-studio-takes';
 import { placedOf } from '@furria/studio/use-act-studio-takes';
 import { useSlavedVideo } from '@furria/studio/use-slaved-video';
@@ -29,7 +29,7 @@ export interface VideoFilm {
 }
 
 const filmMetaOf = (video: StudioVideo, placed: boolean): string =>
-  placed ? takeMetaOf(video.startSeconds, video.durationSeconds) : STUDIO_FILM_UNPLACED;
+  placed ? takeMetaOf(clipSpanOf(video)) : STUDIO_FILM_UNPLACED;
 
 export const useVideoFilm = (screen: StudioScreen, takes: ActStudioTakes): VideoFilm => {
   const { studio, playback } = screen;

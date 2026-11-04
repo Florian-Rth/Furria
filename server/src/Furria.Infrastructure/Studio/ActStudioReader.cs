@@ -44,7 +44,7 @@ public sealed class ActStudioReader
         var songs = await SongsOfAsync(actId, owner, ct);
         var finalTracks = await FinalTracksOfAsync(actId, owner, ct);
         var adopted = finalTracks.FirstOrDefault(track => track.IsAdopted);
-        var music = ActMusic.Of(adopted is null ? null : CutOf(adopted), songs.Select(CutOf));
+        var music = ActMusic.Of(adopted is null ? null : CutOf(adopted), songs.SelectMany(CutsOf));
         var steps = await _dbContext
             .ActSteps.AsNoTracking()
             .Where(step => step.ActId == actId)
@@ -93,8 +93,7 @@ public sealed class ActStudioReader
                 song.Id,
                 song.MediaItemId,
                 song.Position,
-                song.StartSeconds,
-                song.EndSeconds,
+                song.Pieces,
                 song.FirstBeatSeconds,
                 song.TempoBpm,
                 song.MediaItem!.State,
@@ -114,10 +113,12 @@ public sealed class ActStudioReader
                 SongId = row.Id,
                 MediaItemId = row.MediaItemId,
                 Position = row.Position,
-                StartSeconds = row.StartSeconds,
-                EndSeconds = MusicCut
-                    .OfSong(row.MediaItemId, row.StartSeconds, row.EndSeconds, row.DurationSeconds)
-                    .EndSeconds,
+                Pieces =
+                [
+                    .. MusicCut
+                        .OfSong(row.MediaItemId, row.Pieces, row.DurationSeconds)
+                        .Select(cut => new SongPiece(cut.StartSeconds, cut.EndSeconds)),
+                ],
                 FirstBeatSeconds = row.FirstBeatSeconds ?? row.AnalysedFirstBeat,
                 TempoBpm = row.TempoBpm ?? row.AnalysedTempo,
                 State = row.State,
@@ -157,9 +158,11 @@ public sealed class ActStudioReader
                     : track.MediaItem.Audio.TempoBpm,
                 Alignments = track
                     .Alignments.OrderBy(alignment => alignment.SourceMediaItemId)
+                    .ThenBy(alignment => alignment.FromSeconds)
                     .Select(alignment => new StudioFinalTrackAlignmentDetails
                     {
                         SourceMediaItemId = alignment.SourceMediaItemId,
+                        FromSeconds = alignment.FromSeconds,
                         OffsetSeconds = alignment.OffsetSeconds,
                         Stretch = alignment.Stretch,
                     })
@@ -283,6 +286,8 @@ public sealed class ActStudioReader
                 video.StartSourceMediaItemId,
                 video.StartSeconds,
                 video.StartVideoSeconds,
+                video.ClipStartSeconds,
+                video.ClipEndSeconds,
                 video.MediaItem!.State,
                 video.MediaItem.DurationSeconds
             ))
@@ -294,7 +299,12 @@ public sealed class ActStudioReader
         );
         var outdated = VideoCoverage.OutdatedOf([
             .. rows.Select(row =>
-                    VideoCoverage.SpanOf(row.VideoId, places[row.VideoId], row.DurationSeconds)
+                    VideoCoverage.SpanOf(
+                        row.VideoId,
+                        places[row.VideoId],
+                        row.ClipStartSeconds,
+                        row.ClipEndSeconds
+                    )
                 )
                 .OfType<VideoSpan>(),
         ]);
@@ -322,6 +332,8 @@ public sealed class ActStudioReader
             State = row.State,
             DurationSeconds = row.DurationSeconds,
             StartSeconds = place?.TimelineSeconds,
+            ClipStartSeconds = row.ClipStartSeconds,
+            ClipEndSeconds = row.ClipEndSeconds,
             Placement = VideoPlacementOf(place),
             IsOutdated = isOutdated,
             Urls = new StudioVideoUrls
@@ -356,8 +368,12 @@ public sealed class ActStudioReader
         };
 
     [Pure]
-    private static MusicCut CutOf(StudioSongDetails song) =>
-        new(song.MediaItemId, song.StartSeconds, song.EndSeconds);
+    private static IEnumerable<MusicCut> CutsOf(StudioSongDetails song) =>
+        song.Pieces.Select(piece => new MusicCut(
+            song.MediaItemId,
+            piece.StartSeconds,
+            piece.EndSeconds
+        ));
 
     [Pure]
     private static MusicCut CutOf(StudioFinalTrackDetails track) =>
@@ -416,10 +432,14 @@ public sealed class ActStudioReader
         int? StartSourceMediaItemId,
         double? StartSeconds,
         double StartVideoSeconds,
+        double ClipStartSeconds,
+        double? StoredClipEndSeconds,
         MediaItemState State,
         double? DurationSeconds
     )
     {
+        public double? ClipEndSeconds => StoredClipEndSeconds ?? DurationSeconds;
+
         public VideoAnchor? StartAnchor =>
             StartSourceMediaItemId is { } source && StartSeconds is { } seconds
                 ? new VideoAnchor(new MusicAnchor(source, seconds), StartVideoSeconds)

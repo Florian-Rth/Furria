@@ -1,6 +1,9 @@
+import { ActStudioCutLines } from '@furria/studio/ActStudioCutLines';
 import {
   STUDIO_NUDGE_BACK,
   STUDIO_NUDGE_ON,
+  STUDIO_PIECE_REMOVE,
+  STUDIO_PIECE_REMOVE_SURE,
   STUDIO_SONG,
   STUDIO_SONG_DESK,
   STUDIO_SONG_ONE,
@@ -38,9 +41,17 @@ export const ActStudioSongDeskBody: FC<ActStudioSongDeskBodyProps> = ({ desk }) 
     desk.nudgeOne(1);
   };
   const removeText = desk.removing ? STUDIO_SONG_REMOVE_SURE : STUDIO_SONG_REMOVE;
+  const pieceRemoveText = desk.pieceRemoval?.sure ? STUDIO_PIECE_REMOVE_SURE : STUDIO_PIECE_REMOVE;
+  const pieceRemoval =
+    desk.pieceRemoval === null ? null : (
+      <KkButton variant="outlined" tone="danger" size="small" onClick={desk.pieceRemoval.press}>
+        {pieceRemoveText}
+      </KkButton>
+    );
 
   return (
     <KkStudioDesk label={STUDIO_SONG_DESK}>
+      <ActStudioCutLines cut={desk.cut}>{pieceRemoval}</ActStudioCutLines>
       <KkStudioDesk.Line>
         <KkStudioDesk.Title text={STUDIO_SONG_TEMPO} />
         <KkStudioDesk.Controls>

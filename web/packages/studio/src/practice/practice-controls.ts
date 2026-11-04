@@ -1,6 +1,7 @@
 import type { TimelineRange } from '@furria/studio/music-timeline';
 import { partOfStep, partRangeOf, stepRangeOf } from '@furria/studio/music-timeline';
 import type { StudioPart, StudioStep, StudioVideo } from '@furria/studio/studio-schemas';
+import { overlapsRange } from '@furria/studio/studio-videos';
 import { isPlayableVideo, videoSecondsAt } from '@furria/studio/video-sync';
 import { shownStepOf } from './practice-stepping';
 
@@ -62,11 +63,7 @@ export const loopRangeOf = (
 };
 
 const overlaps = (video: StudioVideo, range: TimelineRange): boolean =>
-  isPlayableVideo(video) &&
-  video.startSeconds !== null &&
-  video.durationSeconds !== null &&
-  video.startSeconds < range.end &&
-  video.startSeconds + video.durationSeconds > range.start;
+  isPlayableVideo(video) && overlapsRange(video, range);
 
 const coversMoment = (video: StudioVideo, seconds: number): boolean =>
   videoSecondsAt(video, seconds) !== null;

@@ -18,6 +18,7 @@ export const CHANGE_TEXT: Record<ChangeKind, string> = {
   partRemove: 'Teil entfernt',
   videoName: 'Video benannt',
   videoStart: 'Video verschoben',
+  videoClip: 'Video geschnitten',
   spotAdd: 'Platz hinzugefügt',
   spotRemove: 'Platz entfernt',
   spotAssign: 'Platz besetzt',

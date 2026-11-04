@@ -5,7 +5,7 @@ import { serverIdOf, withLearnedId } from './id-map';
 import type { SaveWrite } from './save-plan';
 import type { SaveOutcome, ServerWrite } from './save-port';
 import { applyChange } from './studio-changes';
-import type { StudioDocument } from './studio-document';
+import type { DocumentAlignment, StudioDocument } from './studio-document';
 import { itemOf } from './studio-document';
 
 const resolvedOf = (
@@ -116,6 +116,21 @@ export const idsLearnedFrom = (write: SaveWrite, outcome: SaveOutcome, ids: IdMa
   }
 };
 
+const recordedAlignmentsOf = (
+  saved: readonly DocumentAlignment[],
+  target: readonly DocumentAlignment[],
+  write: Extract<SaveWrite, { kind: 'finalOffset' }>,
+): DocumentAlignment[] => {
+  const wanted = new Set(target.map((entry) => entry.fromSeconds));
+
+  return [
+    ...saved
+      .filter((entry) => entry.fromSeconds !== write.fromSeconds && wanted.has(entry.fromSeconds))
+      .map((entry) => ({ ...entry })),
+    { fromSeconds: write.fromSeconds, offsetSeconds: write.offsetSeconds, stretch: write.stretch },
+  ].sort((left, right) => left.fromSeconds - right.fromSeconds);
+};
+
 const recorded = (draft: Draft<StudioDocument>, target: StudioDocument, write: SaveWrite): void => {
   switch (write.kind) {
     case 'songOrder':
@@ -136,10 +151,14 @@ const recorded = (draft: Draft<StudioDocument>, target: StudioDocument, write: S
     case 'finalOffset': {
       const track = itemOf(draft.finalTracks, write.finalTrackId);
       if (track !== null) {
-        track.alignments[write.sourceMediaItemId] = {
-          offsetSeconds: write.offsetSeconds,
-          stretch: write.stretch,
-        };
+        track.alignments[write.sourceMediaItemId] = recordedAlignmentsOf(
+          itemOf(track.alignments, write.sourceMediaItemId) ?? [],
+          itemOf(
+            itemOf(target.finalTracks, write.finalTrackId)?.alignments ?? {},
+            write.sourceMediaItemId,
+          ) ?? [],
+          write,
+        );
       }
       return;
     }
@@ -214,6 +233,14 @@ const recorded = (draft: Draft<StudioDocument>, target: StudioDocument, write: S
       const video = itemOf(draft.videos, write.videoId);
       if (video !== null) {
         video.startSeconds = write.startSeconds;
+      }
+      return;
+    }
+    case 'videoClip': {
+      const video = itemOf(draft.videos, write.videoId);
+      if (video !== null) {
+        video.clipStartSeconds = write.startSeconds;
+        video.clipEndSeconds = write.endSeconds;
       }
       return;
     }

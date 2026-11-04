@@ -1,4 +1,4 @@
-import { fineClockOf, offsetTextOf, spotMetaOf } from '@furria/studio/studio-copy';
+import { cutClockOf, fineClockOf, offsetTextOf, spotMetaOf } from '@furria/studio/studio-copy';
 import { describe, expect, it } from 'vitest';
 
 describe('time formatters', () => {
@@ -16,6 +16,16 @@ describe('time formatters', () => {
     [0, '±0,00 s'],
   ])('offsetTextOf(%s)', (seconds, text) => {
     expect(offsetTextOf(seconds)).toBe(text);
+  });
+
+  it.each([
+    [15.238, '0:15,24'],
+    [61.996, '1:02,00'],
+    [119.994, '1:59,99'],
+    [0.004, '0:00,00'],
+    [-1, '0:00,00'],
+  ])('cutClockOf(%s)', (seconds, text) => {
+    expect(cutClockOf(seconds)).toBe(text);
   });
 });
 

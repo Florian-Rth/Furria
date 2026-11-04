@@ -14,6 +14,12 @@ public sealed class ActMusicTests
         new MusicCut(Finale, 5, 25),
     ]);
 
+    private static readonly ActMusic SplitMix = new([
+        new MusicCut(Opener, 10, 20),
+        new MusicCut(Opener, 30, 40),
+        new MusicCut(Finale, 5, 25),
+    ]);
+
     [Theory]
     [InlineData(Opener, 10, 0)]
     [InlineData(Opener, 25.5, 15.5)]
@@ -87,18 +93,58 @@ public sealed class ActMusicTests
     }
 
     [Theory]
-    [InlineData(25.0, 60.0, 25.0)]
-    [InlineData(null, 60.0, 60.0)]
-    [InlineData(null, null, 10.0)]
-    public void Should_EndTheSongCutAtItsMarkOrItsFile_When_TheEndIsOpen(
-        double? endSeconds,
+    [InlineData(Opener, 12, 2)]
+    [InlineData(Opener, 30, 10)]
+    [InlineData(Opener, 40, 20)]
+    [InlineData(Finale, 6, 21)]
+    public void Should_PlaceTheAnchorInItsPiece_When_TheSongIsSplitIntoPieces(
+        int source,
+        double seconds,
+        double expectedTimelineSeconds
+    )
+    {
+        var place = SplitMix.Locate(new MusicAnchor(source, seconds));
+
+        Assert.Equal(AnchorPlace.At(expectedTimelineSeconds), place);
+    }
+
+    [Theory]
+    [InlineData(20.1)]
+    [InlineData(29.9)]
+    public void Should_FlagTheAnchorAsCutAway_When_ItsMusicLiesInTheGapBetweenPieces(double seconds)
+    {
+        var place = SplitMix.Locate(new MusicAnchor(Opener, seconds));
+
+        Assert.Equal(AnchorPlace.CutAway, place);
+    }
+
+    [Fact]
+    public void Should_PlaceTheAnchorAtTheEndOfAPiece_When_ItSitsOnThatPiecesEnd()
+    {
+        var place = SplitMix.Locate(new MusicAnchor(Opener, 20));
+
+        Assert.Equal(AnchorPlace.At(10), place);
+    }
+
+    [Fact]
+    public void Should_CutTheSongIntoItsPieces_When_ItHasPieces()
+    {
+        var cuts = MusicCut.OfSong(Opener, [new SongPiece(10, 20), new SongPiece(30, 40)], 60);
+
+        Assert.Equal([new MusicCut(Opener, 10, 20), new MusicCut(Opener, 30, 40)], cuts);
+    }
+
+    [Theory]
+    [InlineData(60.0, 60.0)]
+    [InlineData(null, 0.0)]
+    public void Should_PlayTheWholeFile_When_TheSongHasNoPieces(
         double? durationSeconds,
         double expectedEndSeconds
     )
     {
-        var cut = MusicCut.OfSong(Opener, 10, endSeconds, durationSeconds);
+        var cuts = MusicCut.OfSong(Opener, [], durationSeconds);
 
-        Assert.Equal(new MusicCut(Opener, 10, expectedEndSeconds), cut);
+        Assert.Equal([new MusicCut(Opener, 0, expectedEndSeconds)], cuts);
     }
 
     [Theory]

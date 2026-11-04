@@ -1,15 +1,22 @@
+import type { CutDesk } from '@furria/studio/cut-desk';
+import { cutDeskOf } from '@furria/studio/cut-desk';
 import { partRangeOf } from '@furria/studio/music-timeline';
 import { videoNameOf } from '@furria/studio/studio-copy';
+import type { CutSpan } from '@furria/studio/studio-cuts';
+import { playheadInOf } from '@furria/studio/studio-cuts';
 import type { VideoAlignment } from '@furria/studio/studio-schemas';
 import type { StudioScreen } from '@furria/studio/studio-screen';
 import { partSettingsOf } from '@furria/studio/studio-steps';
 import {
   clampedVideoStartOf,
+  clipOf,
+  clipSpanOf,
   overlapsRange,
   videoNumberOf,
   videoShelfOf,
 } from '@furria/studio/studio-videos';
 import type { ActStudioTakes } from '@furria/studio/use-act-studio-takes';
+import { useCutReach } from '@furria/studio/use-cut-reach';
 import { useState } from 'react';
 
 export interface VideoDeskPart {
@@ -29,6 +36,7 @@ export interface VideoDesk {
   align: () => void;
   startHere: () => void;
   startLocked: boolean;
+  cut: CutDesk | null;
   parts: VideoDeskPart[];
   removing: boolean;
   remove: () => void;
@@ -49,10 +57,30 @@ export const useVideoDesk = (screen: StudioScreen, takes: ActStudioTakes): Video
   if (removingId !== null && (!takes.deskOpen || video?.videoId !== removingId)) {
     setRemovingId(null);
   }
+  const clip = video === null || video.state !== 'ready' ? null : clipOf(video);
+  const span = video === null ? null : clipSpanOf(video);
+  const clips: readonly CutSpan[] = clip === null ? [] : [clip];
+  const playheadAt = (seconds: number): number | null =>
+    span === null || clip === null
+      ? null
+      : playheadInOf(span.start, span.end, clip.startSeconds, seconds);
+  const reach = useCutReach(player, clips, 0, video?.durationSeconds ?? null, playheadAt);
 
   if (video === null) {
     return null;
   }
+
+  const trimmed = (pieces: CutSpan[]): void => {
+    const [next] = pieces;
+    if (next !== undefined) {
+      work.change({
+        kind: 'videoClip',
+        videoId: video.videoId,
+        startSeconds: next.startSeconds,
+        endSeconds: next.endSeconds,
+      });
+    }
+  };
 
   const covered =
     videoShelfOf(video) === 'placed'
@@ -86,13 +114,32 @@ export const useVideoDesk = (screen: StudioScreen, takes: ActStudioTakes): Video
       void videos.align(video.videoId).then(aligned, () => undefined);
     },
     startHere: () => {
+      if (clip === null) {
+        return;
+      }
       work.change({
         kind: 'videoStart',
         videoId: video.videoId,
-        startSeconds: clampedVideoStartOf(player.position(), video.durationSeconds ?? 0, length),
+        startSeconds: clampedVideoStartOf(player.position() - clip.startSeconds, clip, length),
       });
     },
-    startLocked: video.state !== 'ready' || length <= 0,
+    startLocked: clip === null || length <= 0,
+    cut:
+      clip === null
+        ? null
+        : cutDeskOf({
+            pieces: clips,
+            index: 0,
+            limit: video.durationSeconds,
+            reach,
+            playhead: () => playheadAt(player.position()),
+            trim: (_, pieces) => {
+              trimmed(pieces);
+            },
+            split: (atSeconds) => {
+              videos.split({ videoId: video.videoId, atSeconds });
+            },
+          }),
     parts: covered.map((part) => {
       const main = part.mainVideoId === video.videoId;
       return {

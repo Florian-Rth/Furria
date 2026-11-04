@@ -11,10 +11,16 @@ public sealed class ActVideoConfiguration : IEntityTypeConfiguration<ActVideo>
         builder.ToTable(
             "act_video",
             table =>
+            {
                 table.HasCheckConstraint(
                     "ck_act_video_start",
                     "(start_source_media_item_id IS NULL) = (start_seconds IS NULL) AND (start_seconds IS NULL OR start_seconds >= 0) AND start_video_seconds >= 0"
-                )
+                );
+                table.HasCheckConstraint(
+                    "ck_act_video_clip",
+                    "clip_start_seconds >= 0 AND (clip_end_seconds IS NULL OR clip_end_seconds > clip_start_seconds)"
+                );
+            }
         );
         builder.HasKey(video => video.Id);
 
@@ -34,10 +40,7 @@ public sealed class ActVideoConfiguration : IEntityTypeConfiguration<ActVideo>
             .HasForeignKey(video => video.MediaItemId)
             .HasConstraintName("fk_act_video_media_item_media_item_id")
             .OnDelete(DeleteBehavior.Cascade);
-        builder
-            .HasIndex(video => video.MediaItemId)
-            .HasDatabaseName("ix_act_video_media_item_id")
-            .IsUnique();
+        builder.HasIndex(video => video.MediaItemId).HasDatabaseName("ix_act_video_media_item_id");
 
         builder
             .HasOne(video => video.StartSource)

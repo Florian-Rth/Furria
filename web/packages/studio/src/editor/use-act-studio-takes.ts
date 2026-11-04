@@ -12,6 +12,8 @@ import { STUDIO_EDIT } from '@furria/studio/studio-mode-copy';
 import type { StudioVideo } from '@furria/studio/studio-schemas';
 import {
   clampedVideoStartOf,
+  clipOf,
+  clipSpanOf,
   takeGroupsOf,
   videoNumberOf,
   videoShelfOf,
@@ -72,7 +74,7 @@ export interface ActStudioTakes {
 }
 
 export const placedOf = (video: StudioVideo): boolean =>
-  videoShelfOf(video) === 'placed' && video.durationSeconds !== null;
+  videoShelfOf(video) === 'placed' && clipSpanOf(video) !== null;
 
 export const useActStudioTakes = (screen: StudioWorkScreen): ActStudioTakes => {
   const { playback, studio, video, mode } = screen;
@@ -96,12 +98,16 @@ export const useActStudioTakes = (screen: StudioWorkScreen): ActStudioTakes => {
     placed[0] ??
     null;
   const placeAt = (candidate: StudioVideo, start: number): void => {
-    work.change({
-      kind: 'videoStart',
-      videoId: candidate.videoId,
-      startSeconds: clampedVideoStartOf(start, candidate.durationSeconds ?? 0, length),
-    });
+    const clip = clipOf(candidate);
+    if (clip !== null) {
+      work.change({
+        kind: 'videoStart',
+        videoId: candidate.videoId,
+        startSeconds: clampedVideoStartOf(start, clip, length),
+      });
+    }
   };
+  const selectedSpan = selected === null ? null : clipSpanOf(selected);
   const pressRow = (candidate: StudioVideo, seekTo: number | null): void => {
     if (candidate.videoId === selected?.videoId) {
       desk.open(candidate.videoId);
@@ -115,8 +121,9 @@ export const useActStudioTakes = (screen: StudioWorkScreen): ActStudioTakes => {
 
   return {
     bars: placed.map((candidate) => {
-      const start = candidate.startSeconds ?? 0;
-      const end = start + (candidate.durationSeconds ?? 0);
+      const span = clipSpanOf(candidate);
+      const start = span?.start ?? 0;
+      const end = span?.end ?? 0;
       return {
         key: String(candidate.videoId),
         start: shareOf(start),
@@ -124,7 +131,7 @@ export const useActStudioTakes = (screen: StudioWorkScreen): ActStudioTakes => {
         startSeconds: start,
         endSeconds: end,
         title: nameOf(candidate),
-        meta: takeMetaOf(candidate.startSeconds, candidate.durationSeconds),
+        meta: takeMetaOf(span),
         selected: candidate.videoId === selected?.videoId,
         choose: () => {
           setChosenId(candidate.videoId);
@@ -132,7 +139,7 @@ export const useActStudioTakes = (screen: StudioWorkScreen): ActStudioTakes => {
         moveTo: (seconds) => {
           setChosenId(candidate.videoId);
           work.startGesture();
-          placeAt(candidate, seconds);
+          placeAt(candidate, seconds - candidate.clipStartSeconds);
         },
         finish: () => {
           work.endGesture();
@@ -140,9 +147,9 @@ export const useActStudioTakes = (screen: StudioWorkScreen): ActStudioTakes => {
       };
     }),
     text:
-      selected === null || selected.startSeconds === null
+      selectedSpan === null || selected === null
         ? STUDIO_NO_VIDEO_HERE
-        : placementTextOf(nameOf(selected), selected.startSeconds),
+        : placementTextOf(nameOf(selected), selectedSpan.start),
     canNudge: selected !== null && placedOf(selected),
     nudge: (direction) => {
       if (selected === null || selected.startSeconds === null) {
@@ -166,12 +173,12 @@ export const useActStudioTakes = (screen: StudioWorkScreen): ActStudioTakes => {
             key: `${groupKey}-${candidate.videoId}`,
             lead: String(index + 1),
             title: nameOf(candidate),
-            meta: takeMetaOf(candidate.startSeconds, candidate.durationSeconds),
+            meta: takeMetaOf(clipSpanOf(candidate)),
             badge: isSelected && onVideo ? STUDIO_EDIT : badge,
             badgeTone: candidate.outdated ? 'gold' : main || isSelected ? 'ink' : 'quiet',
             selected: isSelected,
             press: () => {
-              pressRow(candidate, Math.max(range?.start ?? 0, candidate.startSeconds ?? 0));
+              pressRow(candidate, Math.max(range?.start ?? 0, clipSpanOf(candidate)?.start ?? 0));
             },
           };
         }),

@@ -79,7 +79,11 @@ export const useCoEditorMutations = (actId: number): CoEditorMutations => {
 export const useAudioPeaks = (
   segments: readonly MusicSegment[],
 ): ReadonlyMap<number, AudioPeaks> => {
-  const audible = segments.filter((segment) => segment.audible);
+  const audible = segments.filter(
+    (segment, index) =>
+      segment.audible &&
+      segments.findIndex((candidate) => candidate.mediaItemId === segment.mediaItemId) === index,
+  );
 
   return useQueries({
     queries: audible.map((segment) => ({

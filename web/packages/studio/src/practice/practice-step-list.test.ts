@@ -22,6 +22,8 @@ const video = (startSeconds: number, durationSeconds: number, outdated = false):
   name: null,
   state: 'ready',
   durationSeconds,
+  clipStartSeconds: 0,
+  clipEndSeconds: durationSeconds,
   startSeconds,
   placement: 'onTimeline',
   outdated,

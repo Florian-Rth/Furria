@@ -232,6 +232,33 @@ public sealed class PostActFinalTrackAdoptionTests : IClassFixture<ApiTestFixtur
     }
 
     [Fact]
+    public async Task Should_MoveEachPieceWithItsOwnAlignment_When_TheSongIsSplitApart()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+        var actId = await GardetanzAsync(ctx, ct);
+        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+        var song = await UploadSongAsync(admin, actId, ct);
+        await _fixture.RenderSongDirectlyAsync(song, 60, ct);
+        var songId = await AddSongAsync(admin, actId, song);
+        await CutSongAsync(admin, actId, songId, (0, 20), (30, 60));
+        await MarkedAsync(admin, actId, 10, 25);
+        var (finalTrackId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 120, ct);
+        await TuneOffsetAsync(admin, actId, finalTrackId, song, 0);
+        await TuneOffsetAsync(admin, actId, finalTrackId, song, 40, fromSeconds: 30);
+
+        var response = await AdoptAsync(admin, actId, finalTrackId);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal(
+            [(0d, 10d), (10d, 75d), (75d, 120d)],
+            (await StudioOfAsync(admin, actId)).Studio!.Steps.Select(step =>
+                (step.StartSeconds!.Value, step.EndSeconds!.Value)
+            )
+        );
+    }
+
+    [Fact]
     public async Task Should_MarkTheMusicMissing_When_ASongIsNotInTheFinalFile()
     {
         var ct = TestContext.Current.CancellationToken;

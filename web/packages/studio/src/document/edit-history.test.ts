@@ -28,7 +28,7 @@ const document = (patch: Partial<StudioDocument>): StudioDocument => ({
   spotOrder: [],
   spots: {},
   tracks: {},
-  videos: { 5: { name: 'Probe', startSeconds: 2 } },
+  videos: { 5: { name: 'Probe', startSeconds: 2, clipStartSeconds: 0, clipEndSeconds: 30 } },
   finalTracks: {},
   ...patch,
 });

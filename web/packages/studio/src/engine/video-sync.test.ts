@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { StudioVideo } from '../models/studio-schemas';
-import { videoCorrectionOf, videoSecondsAt } from './video-sync';
+import { videoCorrectionOf, videoSecondsAt, videoStillAt } from './video-sync';
 
 const video = (videoId: number, patch: Partial<StudioVideo> = {}): StudioVideo => ({
   videoId,
@@ -8,6 +8,8 @@ const video = (videoId: number, patch: Partial<StudioVideo> = {}): StudioVideo =
   name: null,
   state: 'ready',
   durationSeconds: 20,
+  clipStartSeconds: 0,
+  clipEndSeconds: 20,
   startSeconds: 10,
   placement: 'onTimeline',
   outdated: false,
@@ -22,8 +24,24 @@ describe('videoSecondsAt', () => {
     [video(1), 30, null],
     [video(1, { outdated: true }), 15, null],
     [video(1, { placement: 'unaligned', startSeconds: null }), 15, null],
+    [video(1, { clipStartSeconds: 4, clipEndSeconds: 12 }), 13, null],
+    [video(1, { clipStartSeconds: 4, clipEndSeconds: 12 }), 14, 4],
+    [video(1, { clipStartSeconds: 4, clipEndSeconds: 12 }), 21.5, 11.5],
+    [video(1, { clipStartSeconds: 4, clipEndSeconds: 12 }), 22, null],
+    [video(1, { clipEndSeconds: null }), 15, null],
   ])('shows %o at %s seconds of the music at %s', (shown, seconds, expected) => {
     expect(videoSecondsAt(shown, seconds)).toBe(expected);
+  });
+});
+
+describe('videoStillAt', () => {
+  it.each([
+    [video(1, { clipStartSeconds: 4, clipEndSeconds: 12 }), 3, 4],
+    [video(1, { clipStartSeconds: 4, clipEndSeconds: 12 }), 18, 8],
+    [video(1, { clipStartSeconds: 4, clipEndSeconds: 12 }), 25, 12],
+    [video(1, { placement: 'unaligned', startSeconds: null }), 15, null],
+  ])('holds %o at %s seconds of the music on video second %s', (shown, seconds, expected) => {
+    expect(videoStillAt(shown, seconds)).toBe(expected);
   });
 });
 

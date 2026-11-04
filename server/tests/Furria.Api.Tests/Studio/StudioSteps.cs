@@ -85,6 +85,34 @@ internal static class StudioSteps
         return result.SongId;
     }
 
+    internal static Task<HttpResponseMessage> CutSongAsync(
+        HttpClient client,
+        int actId,
+        int songId,
+        params (double Start, double End)[] pieces
+    ) =>
+        client.PUTAsync<PutActSong, PutActSongRequest>(
+            new()
+            {
+                ActId = actId,
+                SongId = songId,
+                Pieces = PiecesOf(pieces),
+                FirstBeatSeconds = null,
+                TempoBpm = null,
+            }
+        );
+
+    internal static IReadOnlyList<SongPieceDataDto> PiecesOf(
+        params (double Start, double End)[] pieces
+    ) =>
+        [
+            .. pieces.Select(piece => new SongPieceDataDto
+            {
+                StartSeconds = piece.Start,
+                EndSeconds = piece.End,
+            }),
+        ];
+
     internal static async Task<int> AddSpotAsync(HttpClient client, int actId)
     {
         var (response, result) = await client.POSTAsync<
@@ -305,6 +333,46 @@ internal static class StudioSteps
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
     }
 
+    internal static Task<HttpResponseMessage> ClipVideoAsync(
+        HttpClient client,
+        int actId,
+        int videoId,
+        double startSeconds,
+        double endSeconds
+    ) =>
+        client.PUTAsync<PutActVideoClip, PutActVideoClipRequest>(
+            new()
+            {
+                ActId = actId,
+                VideoId = videoId,
+                StartSeconds = startSeconds,
+                EndSeconds = endSeconds,
+            }
+        );
+
+    internal static async Task<(HttpResponseMessage Response, int VideoId)> SplitVideoAsync(
+        HttpClient client,
+        int actId,
+        int videoId,
+        double atSeconds
+    )
+    {
+        var (response, result) = await client.POSTAsync<
+            PostActVideoSplit,
+            PostActVideoSplitRequest,
+            PostActVideoSplitResponse
+        >(
+            new()
+            {
+                ActId = actId,
+                VideoId = videoId,
+                AtSeconds = atSeconds,
+            }
+        );
+
+        return (response, response.IsSuccessStatusCode ? result.VideoId : 0);
+    }
+
     internal static async Task<StudioVideoDto> VideoInStudioAsync(
         HttpClient client,
         int actId,
@@ -365,7 +433,8 @@ internal static class StudioSteps
         int finalTrackId,
         int sourceMediaItemId,
         double offsetSeconds,
-        double stretch = 1
+        double stretch = 1,
+        double fromSeconds = 0
     ) =>
         client.PUTAsync<PutActFinalTrackAlignment, PutActFinalTrackAlignmentRequest>(
             new()
@@ -373,6 +442,7 @@ internal static class StudioSteps
                 ActId = actId,
                 FinalTrackId = finalTrackId,
                 SourceMediaItemId = sourceMediaItemId,
+                FromSeconds = fromSeconds,
                 OffsetSeconds = offsetSeconds,
                 Stretch = stretch,
             }

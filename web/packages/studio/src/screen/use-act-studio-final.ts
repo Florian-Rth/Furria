@@ -1,4 +1,4 @@
-import { musicSegmentsOf } from '@furria/studio/music-timeline';
+import { musicSegmentsOf, segmentKeyOf } from '@furria/studio/music-timeline';
 import {
   adoptedMetaOf,
   adoptTextOf,
@@ -16,7 +16,7 @@ import {
   songRowLabelOf,
 } from '@furria/studio/studio-copy';
 import type { FinalPlace } from '@furria/studio/studio-final';
-import { matchesAnyMusic, sourceNameOf } from '@furria/studio/studio-final';
+import { matchedCountOf, matchesAnyMusic, sourceNameOf } from '@furria/studio/studio-final';
 import { STUDIO_EDIT } from '@furria/studio/studio-mode-copy';
 import { outsideMusicOf } from '@furria/studio/studio-music';
 import type { Studio, StudioFinalTrack } from '@furria/studio/studio-schemas';
@@ -64,7 +64,7 @@ export const useActStudioFinal = (screen: StudioScreen): ActStudioFinal => {
   const { final, studio, playback, mode } = screen;
   const { player } = playback;
   const [desk, setDesk] = useState<FinalDeskKind | null>(null);
-  const [deskSource, setDeskSource] = useState<number | null>(null);
+  const [deskSource, setDeskSource] = useState<string | null>(null);
   const [adopting, setAdopting] = useState<number | null>(null);
   const [removing, setRemoving] = useState<number | null>(null);
   const onMusic = mode.editing && mode.tool === 'music';
@@ -88,11 +88,11 @@ export const useActStudioFinal = (screen: StudioScreen): ActStudioFinal => {
   const chosenIndex =
     deskSource === null
       ? currentIndex
-      : places.findIndex((place) => place.segment.mediaItemId === deskSource);
+      : places.findIndex((place) => segmentKeyOf(place.segment) === deskSource);
   const chosen = places[chosenIndex];
 
-  const openSource = (mediaItemId: number | null): void => {
-    setDeskSource(mediaItemId);
+  const openSource = (segmentKey: string | null): void => {
+    setDeskSource(segmentKey);
     setDesk(onMusic ? 'source' : null);
   };
   const closeDesk = (): void => {
@@ -106,7 +106,7 @@ export const useActStudioFinal = (screen: StudioScreen): ActStudioFinal => {
     title: finalTitleOf(track.version),
     meta: finalTrackMetaOf(
       track.state,
-      Object.keys(final.placements).length,
+      matchedCountOf(final.placements, final.mix),
       final.mix.length,
       final.previewing,
     ),
@@ -144,7 +144,7 @@ export const useActStudioFinal = (screen: StudioScreen): ActStudioFinal => {
     const selected = index === chosenIndex;
 
     return {
-      key: `source-${place.segment.mediaItemId}`,
+      key: `source-${segmentKeyOf(place.segment)}`,
       lead: String(index + 1),
       title: name,
       meta: finalSourceMetaOf(place.start, place.end),
@@ -154,7 +154,7 @@ export const useActStudioFinal = (screen: StudioScreen): ActStudioFinal => {
       selected,
       press: () => {
         if (place.start === null) {
-          openSource(place.segment.mediaItemId);
+          openSource(segmentKeyOf(place.segment));
           return;
         }
         if (selected) {

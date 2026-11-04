@@ -91,35 +91,28 @@ export const useDeskLanes = (desk: ActDesk, borders: DeskBorders): DeskLaneRows 
     focus === 'part' ? partId : null,
   );
 
-  const videoTargets: DeskTarget[] = takes.bars.map((bar) => {
-    const video = studio.videos.find((candidate) => String(candidate.videoId) === bar.key);
-    const start = video?.startSeconds ?? bar.start * length;
-    const duration = video?.durationSeconds ?? (bar.end - bar.start) * length;
-
-    return {
-      key: `video-${bar.key}`,
-      seconds: start,
-      until: start + duration,
-      lane: TIMELINE_LANE.videos,
-      movable,
-      tappable: true,
-      snaps: false,
-      start: desk.focusVideo,
-      move: bar.moveTo,
-      end: bar.finish,
-      cancel: bar.finish,
-      tap: () => {
-        bar.choose();
-        desk.focusVideo();
-      },
-    };
-  });
+  const videoTargets: DeskTarget[] = takes.bars.map((bar) => ({
+    key: `video-${bar.key}`,
+    seconds: bar.startSeconds,
+    until: bar.endSeconds,
+    lane: TIMELINE_LANE.videos,
+    movable,
+    tappable: true,
+    snaps: false,
+    start: desk.focusVideo,
+    move: bar.moveTo,
+    end: bar.finish,
+    cancel: bar.finish,
+    tap: () => {
+      bar.choose();
+      desk.focusVideo();
+    },
+  }));
 
   const videoBlocks: TimelineBlock[] = takes.bars.map((bar, index) => {
     const video = studio.videos.find((candidate) => String(candidate.videoId) === bar.key);
     const number = video === undefined ? 0 : videoNumberOf(studio.videos, video.videoId);
     const name = videoNameOf(video?.name ?? null, number);
-    const duration = video?.durationSeconds ?? null;
     const target = videoTargets[index];
 
     return {
@@ -127,7 +120,7 @@ export const useDeskLanes = (desk: ActDesk, borders: DeskBorders): DeskLaneRows 
       range: { start: target?.seconds ?? 0, end: target?.until ?? 0 },
       lead: null,
       title: name,
-      meta: duration === null ? null : clockOf(duration),
+      meta: clockOf(bar.endSeconds - bar.startSeconds),
       selected: focus === 'video' && bar.selected,
       current: false,
       label: videoBlockLabelOf(name),

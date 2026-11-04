@@ -25,6 +25,7 @@ import {
   requestStepRemoval,
   requestStepStart,
   requestStepText,
+  requestVideoClip,
   requestVideoName,
   requestVideoStart,
 } from './requests';
@@ -109,6 +110,8 @@ const performed = async (
       return sent(requestVideoName(actId, write, accessToken));
     case 'videoStart':
       return sent(requestVideoStart(actId, write, accessToken));
+    case 'videoClip':
+      return sent(requestVideoClip(actId, write, accessToken));
     case 'tracks': {
       const { version } = await requestChoreographySave(
         actId,

@@ -1,3 +1,4 @@
+import { ActStudioCutLines } from '@furria/studio/ActStudioCutLines';
 import {
   STUDIO_VIDEO_ALIGN,
   STUDIO_VIDEO_ALIGNING,
@@ -40,6 +41,8 @@ export const ActStudioVideoDeskBody: FC<ActStudioVideoDeskBodyProps> = ({ desk }
       </KkStudioDesk.Line>
     );
 
+  const cutLines = desk.cut === null ? null : <ActStudioCutLines cut={desk.cut} />;
+
   return (
     <KkStudioDesk label={STUDIO_VIDEO_DESK}>
       <KkStudioDesk.Line>
@@ -78,6 +81,7 @@ export const ActStudioVideoDeskBody: FC<ActStudioVideoDeskBodyProps> = ({ desk }
           </KkButton>
         </KkStudioDesk.Controls>
       </KkStudioDesk.Line>
+      {cutLines}
       {mainLine}
     </KkStudioDesk>
   );

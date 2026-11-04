@@ -15,9 +15,7 @@ public sealed class ActSong
 
     public int Position { get; set; }
 
-    public double StartSeconds { get; set; }
-
-    public double? EndSeconds { get; set; }
+    public IReadOnlyList<SongPiece> Pieces { get; set; } = [];
 
     public double? FirstBeatSeconds { get; set; }
 

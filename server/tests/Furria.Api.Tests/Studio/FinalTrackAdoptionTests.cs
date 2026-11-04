@@ -14,13 +14,22 @@ public sealed class FinalTrackAdoptionTests
     private static readonly FinalTrackAdoption Adoption = new(
         FinalFile,
         120,
-        new Dictionary<int, FinalTrackPlacement>
-        {
-            [Opener] = new(-5, 1),
-            [Finale] = new(60, 1),
-            [Live] = new(100, 0.98),
-        }
+        new ActMusic([
+            new MusicCut(Opener, 0, 60),
+            new MusicCut(Finale, 0, 70),
+            new MusicCut(Live, 0, 60),
+        ]),
+        [
+            new SourceAlignment(Opener, 0, new(-5, 1)),
+            new SourceAlignment(Finale, 0, new(60, 1)),
+            new SourceAlignment(Live, 0, new(100, 0.98)),
+        ]
     );
+
+    private static readonly ActMusic SplitOpener = new([
+        new MusicCut(Opener, 10, 20),
+        new MusicCut(Opener, 30, 40),
+    ]);
 
     [Theory]
     [InlineData(Opener, 10, 5)]
@@ -39,6 +48,69 @@ public sealed class FinalTrackAdoptionTests
 
         Assert.Equal(FinalFile, rewritten.SourceMediaItemId);
         Assert.Equal(expectedSeconds, rewritten.Seconds, 9);
+    }
+
+    [Theory]
+    [InlineData(15, 15)]
+    [InlineData(20, 20)]
+    [InlineData(30, 80)]
+    [InlineData(35, 85)]
+    public void Should_MoveEachPieceWithItsOwnAlignment_When_ThePiecesSitApartInTheFinalFile(
+        double seconds,
+        double expectedSeconds
+    )
+    {
+        var adoption = new FinalTrackAdoption(
+            FinalFile,
+            120,
+            SplitOpener,
+            [new SourceAlignment(Opener, 0, new(0, 1)), new SourceAlignment(Opener, 30, new(50, 1))]
+        );
+
+        Assert.Equal(
+            new MusicAnchor(FinalFile, expectedSeconds),
+            adoption.Rewritten(new MusicAnchor(Opener, seconds))
+        );
+    }
+
+    [Fact]
+    public void Should_MoveAFreshPieceWithTheAlignmentItWasSplitFrom_When_ItHasNoneOfItsOwn()
+    {
+        var adoption = new FinalTrackAdoption(
+            FinalFile,
+            120,
+            SplitOpener,
+            [new SourceAlignment(Opener, 10, new(2, 1))]
+        );
+
+        Assert.Equal(
+            new MusicAnchor(FinalFile, 37),
+            adoption.Rewritten(new MusicAnchor(Opener, 35))
+        );
+    }
+
+    [Theory]
+    [InlineData(25, 75)]
+    [InlineData(5, 55)]
+    public void Should_MoveACutAwayAnchorWithTheAlignmentBeforeIt_When_ItLiesInNoPiece(
+        double seconds,
+        double expectedSeconds
+    )
+    {
+        var adoption = new FinalTrackAdoption(
+            FinalFile,
+            120,
+            new ActMusic([new MusicCut(Opener, 10, 20), new MusicCut(Opener, 30, 40)]),
+            [
+                new SourceAlignment(Opener, 20, new(50, 1)),
+                new SourceAlignment(Opener, 30, new(70, 1)),
+            ]
+        );
+
+        Assert.Equal(
+            new MusicAnchor(FinalFile, expectedSeconds),
+            adoption.Rewritten(new MusicAnchor(Opener, seconds))
+        );
     }
 
     [Theory]

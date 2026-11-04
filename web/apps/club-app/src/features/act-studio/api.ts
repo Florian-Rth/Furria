@@ -1,4 +1,5 @@
 import type { FinalTrackMatches, VideoAlignment } from '@furria/studio/studio-schemas';
+import type { VideoSplitInput } from '@furria/studio/studio-videos';
 import type { UseMutationResult } from '@tanstack/react-query';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { useStudioWriteFailure } from './hooks/use-studio-write-failure';
@@ -12,8 +13,9 @@ import {
   requestVideoAdd,
   requestVideoAlignment,
   requestVideoRemoval,
+  requestVideoSplit,
 } from './requests';
-import type { AddedFinalTrack, AddedSong, AddedVideo } from './schemas';
+import type { AddedFinalTrack, AddedSong, AddedVideo, SplitVideo } from './schemas';
 import { throughStudioEditor } from './studio-editor-store';
 
 export interface SongMutations {
@@ -49,6 +51,7 @@ export interface VideoMutations {
   align: UseMutationResult<VideoAlignment, Error, number>;
   autoAlign: UseMutationResult<VideoAlignment, Error, number>;
   remove: UseMutationResult<void, Error, number>;
+  split: UseMutationResult<SplitVideo, Error, VideoSplitInput>;
 }
 
 export const useVideoMutations = (actId: number): VideoMutations => {
@@ -82,7 +85,15 @@ export const useVideoMutations = (actId: number): VideoMutations => {
     key,
   });
 
-  return { add, align, autoAlign, remove };
+  const split = useApiMutation({
+    request: (input: VideoSplitInput, accessToken) =>
+      throughStudioEditor(scope, () => requestVideoSplit(actId, input, accessToken)),
+    changes: ['actVideos'],
+    notice: failure,
+    key,
+  });
+
+  return { add, align, autoAlign, remove, split };
 };
 
 export interface FinalTrackMutations {

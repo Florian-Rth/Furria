@@ -27,14 +27,14 @@ public sealed class SoundProfiles
         CancellationToken ct
     )
     {
-        var sounds = new List<CutSound>();
-        foreach (var source in music)
+        var profiles = new Dictionary<Guid, SoundProfile>();
+        foreach (var storageKey in music.Select(source => source.StorageKey).Distinct())
         {
-            if (await ProfileOfAsync(source.StorageKey, ct) is not { } profile)
+            if (await ProfileOfAsync(storageKey, ct) is not { } profile)
                 return null;
-            sounds.Add(new CutSound(source.Cut, profile));
+            profiles[storageKey] = profile;
         }
 
-        return sounds;
+        return [.. music.Select(source => new CutSound(source.Cut, profiles[source.StorageKey]))];
     }
 }

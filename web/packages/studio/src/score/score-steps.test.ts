@@ -25,6 +25,8 @@ const video = (patch: Partial<StudioVideo>): StudioVideo => ({
   name: null,
   state: 'ready',
   durationSeconds: 40,
+  clipStartSeconds: 0,
+  clipEndSeconds: 40,
   startSeconds: 0,
   placement: 'onTimeline',
   outdated: false,
@@ -146,6 +148,19 @@ describe('coveringVideoOf', () => {
         1,
       ),
     ).toEqual({ videoId: 1, offsetSeconds: 0 });
+  });
+
+  it('starts a clipped video at its clip and skips one clipped off the step', () => {
+    expect(
+      coveringVideoOf(
+        [
+          video({ videoId: 1, startSeconds: 0, clipStartSeconds: 0, clipEndSeconds: 12 }),
+          video({ videoId: 2, startSeconds: 6, clipStartSeconds: 5, clipEndSeconds: 30 }),
+        ],
+        range,
+        1,
+      ),
+    ).toEqual({ videoId: 2, offsetSeconds: 5 });
   });
 
   it.each([

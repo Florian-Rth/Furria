@@ -2,7 +2,7 @@ import type { RefObject } from 'react';
 import { useEffect, useEffectEvent } from 'react';
 import type { StudioVideo } from '../models/studio-schemas';
 import type { MixPlayer } from './mix-player';
-import { videoCorrectionOf, videoSecondsAt } from './video-sync';
+import { videoCorrectionOf, videoSecondsAt, videoStillAt } from './video-sync';
 
 const PAUSED_TOLERANCE_SECONDS = 0.04;
 
@@ -11,15 +11,17 @@ const followOnce = (element: HTMLVideoElement, player: MixPlayer, video: StudioV
     return;
   }
 
-  const target = videoSecondsAt(video, player.position());
+  const position = player.position();
+  const target = videoSecondsAt(video, position);
+  const still = target ?? videoStillAt(video, position);
   const { playing, rate } = player.state();
 
   if (target === null || !playing || player.leadCount() !== null) {
     if (!element.paused) {
       element.pause();
     }
-    if (target !== null && Math.abs(element.currentTime - target) > PAUSED_TOLERANCE_SECONDS) {
-      element.currentTime = target;
+    if (still !== null && Math.abs(element.currentTime - still) > PAUSED_TOLERANCE_SECONDS) {
+      element.currentTime = still;
     }
     return;
   }

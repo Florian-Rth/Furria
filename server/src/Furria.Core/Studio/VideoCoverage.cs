@@ -16,9 +16,16 @@ public static class VideoCoverage
             .ToHashSet();
 
     [Pure]
-    public static VideoSpan? SpanOf(int videoId, AnchorPlace? place, double? durationSeconds) =>
-        place?.TimelineSeconds is { } start && durationSeconds is > 0
-            ? new VideoSpan(videoId, start, start + durationSeconds.Value)
+    public static VideoSpan? SpanOf(
+        int videoId,
+        AnchorPlace? place,
+        double clipStartSeconds,
+        double? clipEndSeconds
+    ) =>
+        place?.TimelineSeconds is { } start
+        && clipEndSeconds is { } clipEnd
+        && clipEnd > clipStartSeconds
+            ? new VideoSpan(videoId, start + clipStartSeconds, start + clipEnd)
             : null;
 
     [Pure]

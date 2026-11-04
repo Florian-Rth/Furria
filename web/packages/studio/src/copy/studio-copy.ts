@@ -3,11 +3,12 @@ import type { UploadFailure } from '@furria/api-client/upload-failure';
 import type { KeyframeEasing } from '@furria/studio/choreography-motion';
 import { formatReadoutMetres } from '@furria/studio/drag-readout';
 import type { GesturePrecisionTier } from '@furria/studio/gesture-recogniser';
-import type { CountAt } from '@furria/studio/music-timeline';
+import type { CountAt, TimelineRange } from '@furria/studio/music-timeline';
 import { clockOf } from '@furria/studio/practice-step-list';
 import { unnamedStepNameOf } from '@furria/studio/step-names';
+import type { CutEdge } from '@furria/studio/studio-cuts';
 import type { OutsideMusic } from '@furria/studio/studio-music';
-import type { StudioVideo } from '@furria/studio/studio-schemas';
+import type { SongPiece, StudioVideo } from '@furria/studio/studio-schemas';
 
 type VideoPlacement = StudioVideo['placement'];
 
@@ -262,12 +263,16 @@ export const songMetaOf = (start: number, end: number, bpm: number | null): stri
     : `${clockOf(start)}–${clockOf(end)} · ${Math.round(bpm)} BPM`;
 
 export const songCardMetaOf = (
-  start: number,
-  end: number,
+  pieces: readonly SongPiece[],
   duration: number | null,
   bpm: number | null,
 ): string => {
-  const cut = `Schnitt ${clockOf(start)}–${clockOf(end)}`;
+  const [first] = pieces;
+  const kept = pieces.reduce((sum, piece) => sum + piece.endSeconds - piece.startSeconds, 0);
+  const cut =
+    pieces.length === 1 && first !== undefined
+      ? `Schnitt ${clockOf(first.startSeconds)}–${clockOf(first.endSeconds)}`
+      : `${pieces.length} Stücke · ${clockOf(kept)}`;
   const whole = duration === null ? '' : ` von ${clockOf(duration)}`;
   const tempo = bpm === null ? ' · Takt fehlt' : ` · ${Math.round(bpm)} BPM`;
 
@@ -295,8 +300,34 @@ export const waveReadoutDetailOf = (
   return [counted, precision].filter((part) => part !== null).join(' · ') || null;
 };
 
-export const cutHandleLabelOf = (edge: 'start' | 'end', name: string): string =>
-  edge === 'start' ? `Anfang von ${name} schneiden` : `Ende von ${name} schneiden`;
+export const STUDIO_CUT = 'Schnitt';
+export const STUDIO_CUT_START = 'Anfang';
+export const STUDIO_CUT_END = 'Ende';
+export const STUDIO_CUT_START_HERE = 'Anfang hier';
+export const STUDIO_CUT_SPLIT = 'Teilen';
+export const STUDIO_CUT_END_HERE = 'Ende hier';
+export const STUDIO_PIECE_REMOVE = 'Stück entfernen';
+export const STUDIO_PIECE_REMOVE_SURE = 'Wirklich entfernen';
+
+const CENTS_PER_SECOND = 100;
+
+export const cutClockOf = (seconds: number): string => {
+  const cents = Math.round(Math.max(0, seconds) * CENTS_PER_SECOND);
+  const minutes = Math.floor(cents / (CENTS_PER_SECOND * 60));
+  const rest = cents % (CENTS_PER_SECOND * 60);
+  const whole = String(Math.floor(rest / CENTS_PER_SECOND)).padStart(2, '0');
+  const fraction = String(rest % CENTS_PER_SECOND).padStart(2, '0');
+
+  return `${minutes}:${whole},${fraction}`;
+};
+
+const cutAmountOf = (delta: number): string => String(Math.abs(delta)).replace('.', ',');
+
+export const cutNudgeTextOf = (delta: number): string =>
+  `${delta > 0 ? '+' : '−'}${cutAmountOf(delta)}`;
+
+export const cutNudgeLabelOf = (edge: CutEdge, delta: number): string =>
+  `${edge === 'start' ? STUDIO_CUT_START : STUDIO_CUT_END} ${cutAmountOf(delta)} s ${delta > 0 ? 'später' : 'früher'}`;
 
 export const borderLabelOf = (name: string): string => `Grenze nach ${name} verschieben`;
 
@@ -326,10 +357,8 @@ export const formationTextOf = (number: number, start: number): string =>
 export const placementTextOf = (name: string, start: number): string =>
   `${name} · ab ${fineClockOf(start)}`;
 
-export const takeMetaOf = (start: number | null, duration: number | null): string =>
-  start === null || duration === null
-    ? 'noch nicht angelegt'
-    : `${fineClockOf(start)}–${fineClockOf(start + duration)}`;
+export const takeMetaOf = (span: TimelineRange | null): string =>
+  span === null ? 'noch nicht angelegt' : `${fineClockOf(span.start)}–${fineClockOf(span.end)}`;
 
 export const dotLabelOf = (number: number, name: string | null): string =>
   `${spotTitleOf(number, name)}: wählen und ziehen`;
@@ -430,7 +459,15 @@ export const partDeskTitleOf = (name: string, first: number, last: number): stri
   return `${STUDIO_PART} „${name.trim()}“ · ${steps}`;
 };
 
-export const songDeskTitleOf = (number: number, name: string): string => `Lied ${number} · ${name}`;
+export const songDeskTitleOf = (
+  number: number,
+  name: string,
+  piece: number,
+  pieces: number,
+): string =>
+  pieces > 1
+    ? `Lied ${number} · ${name} · Stück ${piece} von ${pieces}`
+    : `Lied ${number} · ${name}`;
 
 export const STUDIO_STEP_GONE = 'Den Schritt gibt es nicht mehr. Sein Fenster ist zu.';
 export const STUDIO_SONG_GONE = 'Das Lied gibt es nicht mehr. Sein Fenster ist zu.';

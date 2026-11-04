@@ -13,12 +13,19 @@ import {
 } from '@furria/studio/studio-copy';
 import { studioDragPluginsOf } from '@furria/studio/studio-drag-copy';
 import { STUDIO_EDIT } from '@furria/studio/studio-mode-copy';
-import { keptPositionOf, movedOrderOf, outsideMusicOf } from '@furria/studio/studio-music';
+import {
+  deskSegmentIndexOf,
+  keptPositionOf,
+  movedOrderOf,
+  outsideMusicOf,
+  songOfSegment,
+} from '@furria/studio/studio-music';
 import type { StudioSong } from '@furria/studio/studio-schemas';
 import type { StudioScreen } from '@furria/studio/studio-screen';
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import { useSheetTarget } from '@furria/studio/use-sheet-target';
 import type { KkStudioListBadgeTone } from '@furria/ui/KkStudioList';
+import { useState } from 'react';
 
 export interface ActStudioSongRow {
   key: string;
@@ -40,6 +47,7 @@ export interface CurrentSong {
   song: StudioSong;
   segment: MusicSegment;
   index: number;
+  pieceIndex: number;
 }
 
 export interface ActStudioSongs {
@@ -52,6 +60,12 @@ export interface ActStudioSongs {
   onDragEnd: (event: DragEndEvent) => void;
   deskOpen: boolean;
   closeDesk: () => void;
+  holdPiece: (sourceStart: number) => void;
+}
+
+interface HeldPiece {
+  songId: number;
+  sourceStart: number;
 }
 
 export const useActStudioSongs = (screen: StudioScreen): ActStudioSongs => {
@@ -65,16 +79,30 @@ export const useActStudioSongs = (screen: StudioScreen): ActStudioSongs => {
     onMusic && editable,
     STUDIO_SONG_GONE,
   );
+  const [held, setHeld] = useState<HeldPiece | null>(null);
+  if (held !== null && desk.targetId !== held.songId) {
+    setHeld(null);
+  }
   const songs = [...studio.songs].sort((left, right) => left.position - right.position);
-  const currentIndex = usePlaybackSelection(player, (seconds) =>
+  const playingIndex = usePlaybackSelection(player, (seconds) =>
     segments.findIndex(
       (segment) => seconds >= segment.timelineStart && seconds < segment.timelineEnd,
     ),
   );
-  const boundIndex = songs.findIndex((song) => song.songId === desk.targetId);
-  const selectedIndex = editable ? (boundIndex >= 0 ? boundIndex : currentIndex) : -1;
-  const currentSong = songs[selectedIndex];
-  const currentSegment = segments[selectedIndex];
+  const playing = segments[playingIndex];
+  const playingSong = playing === undefined ? null : songOfSegment(songs, playing);
+  const boundSong = songs.find((song) => song.songId === desk.targetId) ?? playingSong;
+  const currentSong = editable ? (boundSong ?? undefined) : undefined;
+  const selectedIndex = currentSong === undefined ? -1 : songs.indexOf(currentSong);
+  const firstSegmentOf = (song: StudioSong): MusicSegment | undefined =>
+    segments.find((segment) => segment.mediaItemId === song.mediaItemId);
+  const heldStart = held?.songId === currentSong?.songId ? (held?.sourceStart ?? null) : null;
+  const deskIndex = usePlaybackSelection(player, (seconds) =>
+    currentSong === undefined
+      ? -1
+      : deskSegmentIndexOf(segments, currentSong.mediaItemId, seconds, heldStart),
+  );
+  const currentSegment = segments[deskIndex];
   const outside = outsideMusicOf(studio, segments);
   const songTitleOf = (key: string | number): string => {
     const song = songs.find((candidate) => String(candidate.songId) === String(key));
@@ -104,7 +132,7 @@ export const useActStudioSongs = (screen: StudioScreen): ActStudioSongs => {
         title: name,
         meta:
           songStateMetaOf(song.state) ??
-          songCardMetaOf(song.startSeconds, song.endSeconds, song.durationSeconds, song.tempoBpm),
+          songCardMetaOf(song.pieces, song.durationSeconds, song.tempoBpm),
         label: selected ? songEditLabelOf(name) : songRowLabelOf(name),
         moveLabel: songMoveLabelOf(name),
         badge: selected ? STUDIO_EDIT : null,
@@ -118,13 +146,20 @@ export const useActStudioSongs = (screen: StudioScreen): ActStudioSongs => {
             desk.open(song.songId);
             return;
           }
-          player.seek(segments[index]?.timelineStart ?? 0);
+          player.seek(firstSegmentOf(song)?.timelineStart ?? 0);
         },
       };
     }),
     current:
       currentSong !== undefined && currentSegment !== undefined
-        ? { song: currentSong, segment: currentSegment, index: selectedIndex }
+        ? {
+            song: currentSong,
+            segment: currentSegment,
+            index: selectedIndex,
+            pieceIndex: currentSong.pieces.findIndex(
+              (piece) => piece.startSeconds === currentSegment.sourceStart,
+            ),
+          }
         : null,
     count: String(songs.length),
     outside: outsideMusicTextOf(outside),
@@ -139,5 +174,10 @@ export const useActStudioSongs = (screen: StudioScreen): ActStudioSongs => {
     },
     deskOpen: desk.targetId !== null,
     closeDesk: desk.close,
+    holdPiece: (sourceStart) => {
+      if (desk.targetId !== null) {
+        setHeld({ songId: desk.targetId, sourceStart });
+      }
+    },
   };
 };

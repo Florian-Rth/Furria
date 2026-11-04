@@ -1,10 +1,8 @@
 import type { SpotPath, StagePoint, TimedKeyframe } from '@furria/studio/choreography-motion';
-import type { CountMark, MusicSegment } from '@furria/studio/music-timeline';
-import { songLimitOf } from '@furria/studio/studio-music';
-import type { StudioSong, StudioStep } from '@furria/studio/studio-schemas';
+import type { CountMark } from '@furria/studio/music-timeline';
+import type { StudioStep } from '@furria/studio/studio-schemas';
 
 const MIN_STEP_SECONDS = 0.5;
-const MIN_SONG_SECONDS = 2;
 export const KEY_TOLERANCE_SECONDS = 1e-3;
 
 export interface TimeSpan {
@@ -148,67 +146,6 @@ export const placedTrackOf = (
   return keyframes.map((keyframe, at) =>
     at >= run.start && at <= run.end ? { ...keyframe, position } : keyframe,
   );
-};
-
-export type CutEdge = 'start' | 'end';
-
-const SECONDS_PER_MINUTE = 60;
-const CUT_GRAIN = 1000;
-
-const roundedCutOf = (seconds: number): number => Math.round(seconds * CUT_GRAIN) / CUT_GRAIN;
-
-const onSongCountOf = (song: StudioSong, seconds: number): number => {
-  if (song.firstBeatSeconds === null || song.tempoBpm === null || song.tempoBpm <= 0) {
-    return roundedCutOf(seconds);
-  }
-
-  const beat = SECONDS_PER_MINUTE / song.tempoBpm;
-  const counts = Math.round((seconds - song.firstBeatSeconds) / beat);
-
-  return roundedCutOf(song.firstBeatSeconds + counts * beat);
-};
-
-export const trimmedCutOf = (
-  song: StudioSong,
-  segment: MusicSegment,
-  edge: CutEdge,
-  seconds: number,
-): TimeSpan => {
-  const length = songLimitOf(song);
-
-  if (edge === 'end') {
-    const end = onSongCountOf(song, song.endSeconds + (seconds - segment.timelineEnd));
-
-    return {
-      start: song.startSeconds,
-      end: Math.min(length, Math.max(song.startSeconds + MIN_SONG_SECONDS, end)),
-    };
-  }
-
-  const start = onSongCountOf(song, song.startSeconds + (seconds - segment.timelineStart));
-
-  return {
-    start: Math.max(0, Math.min(song.endSeconds - MIN_SONG_SECONDS, start)),
-    end: song.endSeconds,
-  };
-};
-
-const NUDGE_SECONDS_WITHOUT_BEAT = 0.5;
-
-const nudgeSecondsOf = (song: StudioSong): number =>
-  song.tempoBpm === null || song.tempoBpm <= 0
-    ? NUDGE_SECONDS_WITHOUT_BEAT
-    : SECONDS_PER_MINUTE / song.tempoBpm;
-
-export const nudgedCutOf = (
-  song: StudioSong,
-  segment: MusicSegment,
-  edge: CutEdge,
-  direction: -1 | 1,
-): TimeSpan => {
-  const seconds = edge === 'start' ? segment.timelineStart : segment.timelineEnd;
-
-  return trimmedCutOf(song, segment, edge, seconds + direction * nudgeSecondsOf(song));
 };
 
 export const GRID_METRES = 0.25;

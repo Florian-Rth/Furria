@@ -3514,6 +3514,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("source_media_item_id");
 
+                    b.Property<double>("FromSeconds")
+                        .HasColumnType("double precision")
+                        .HasColumnName("from_seconds");
+
                     b.Property<double>("OffsetSeconds")
                         .HasColumnType("double precision")
                         .HasColumnName("offset_seconds");
@@ -3524,7 +3528,7 @@ namespace Furria.Infrastructure.Migrations
                         .HasDefaultValue(1.0)
                         .HasColumnName("stretch");
 
-                    b.HasKey("FinalTrackId", "SourceMediaItemId")
+                    b.HasKey("FinalTrackId", "SourceMediaItemId", "FromSeconds")
                         .HasName("pk_act_final_track_alignment");
 
                     b.HasIndex("SourceMediaItemId")
@@ -3589,10 +3593,6 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("act_id");
 
-                    b.Property<double?>("EndSeconds")
-                        .HasColumnType("double precision")
-                        .HasColumnName("end_seconds");
-
                     b.Property<double?>("FirstBeatSeconds")
                         .HasColumnType("double precision")
                         .HasColumnName("first_beat_seconds");
@@ -3601,13 +3601,16 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("media_item_id");
 
+                    b.Property<string>("Pieces")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("pieces")
+                        .HasDefaultValueSql("'[]'::jsonb");
+
                     b.Property<int>("Position")
                         .HasColumnType("integer")
                         .HasColumnName("position");
-
-                    b.Property<double>("StartSeconds")
-                        .HasColumnType("double precision")
-                        .HasColumnName("start_seconds");
 
                     b.Property<double?>("TempoBpm")
                         .HasColumnType("double precision")
@@ -3627,7 +3630,7 @@ namespace Furria.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("ck_act_song_beat_grid", "(first_beat_seconds IS NULL OR first_beat_seconds >= 0) AND (tempo_bpm IS NULL OR tempo_bpm > 0)");
 
-                            t.HasCheckConstraint("ck_act_song_cut", "start_seconds >= 0 AND (end_seconds IS NULL OR end_seconds > start_seconds)");
+                            t.HasCheckConstraint("ck_act_song_pieces", "jsonb_typeof(pieces) = 'array'");
 
                             t.HasCheckConstraint("ck_act_song_position", "position >= 0");
                         });
@@ -3697,6 +3700,14 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("act_id");
 
+                    b.Property<double?>("ClipEndSeconds")
+                        .HasColumnType("double precision")
+                        .HasColumnName("clip_end_seconds");
+
+                    b.Property<double>("ClipStartSeconds")
+                        .HasColumnType("double precision")
+                        .HasColumnName("clip_start_seconds");
+
                     b.Property<int>("MediaItemId")
                         .HasColumnType("integer")
                         .HasColumnName("media_item_id");
@@ -3725,7 +3736,6 @@ namespace Furria.Infrastructure.Migrations
                         .HasDatabaseName("ix_act_video_act_id");
 
                     b.HasIndex("MediaItemId")
-                        .IsUnique()
                         .HasDatabaseName("ix_act_video_media_item_id");
 
                     b.HasIndex("StartSourceMediaItemId")
@@ -3733,6 +3743,8 @@ namespace Furria.Infrastructure.Migrations
 
                     b.ToTable("act_video", null, t =>
                         {
+                            t.HasCheckConstraint("ck_act_video_clip", "clip_start_seconds >= 0 AND (clip_end_seconds IS NULL OR clip_end_seconds > clip_start_seconds)");
+
                             t.HasCheckConstraint("ck_act_video_start", "(start_source_media_item_id IS NULL) = (start_seconds IS NULL) AND (start_seconds IS NULL OR start_seconds >= 0) AND start_video_seconds >= 0");
                         });
                 });

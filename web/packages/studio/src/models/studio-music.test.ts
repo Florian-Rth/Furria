@@ -1,5 +1,6 @@
 import type { MusicSegment } from '@furria/studio/music-timeline';
 import {
+  deskSegmentIndexOf,
   firstBeatAtOf,
   keptPositionOf,
   movedOrderOf,
@@ -15,8 +16,7 @@ const songOf = (songId: number, position: number, firstBeat: number | null = 0.5
   songId,
   mediaItemId: songId * 10,
   position,
-  startSeconds: 10,
-  endSeconds: 70,
+  pieces: [{ startSeconds: 10, endSeconds: 70 }],
   firstBeatSeconds: firstBeat,
   tempoBpm: 120,
   state: 'ready',
@@ -55,7 +55,7 @@ describe('movedOrderOf', () => {
 });
 
 describe('startInOrderOf', () => {
-  const songs = [songOf(1, 0), { ...songOf(2, 1), startSeconds: 0, endSeconds: 30 }];
+  const songs = [songOf(1, 0), { ...songOf(2, 1), pieces: [{ startSeconds: 0, endSeconds: 30 }] }];
 
   it.each([
     [[1, 2], 2, 60],
@@ -67,10 +67,17 @@ describe('startInOrderOf', () => {
 });
 
 describe('keptPositionOf', () => {
-  const songs = [songOf(1, 0), { ...songOf(2, 1), startSeconds: 0, endSeconds: 30 }];
+  const songs = [songOf(1, 0), { ...songOf(2, 1), pieces: [{ startSeconds: 0, endSeconds: 30 }] }];
   const segments: MusicSegment[] = [
     { ...segment, timelineStart: 0, timelineEnd: 60 },
-    { ...segment, timelineStart: 60, timelineEnd: 90 },
+    {
+      ...segment,
+      mediaItemId: 20,
+      sourceStart: 0,
+      sourceEnd: 30,
+      timelineStart: 60,
+      timelineEnd: 90,
+    },
   ];
 
   it.each([
@@ -80,6 +87,33 @@ describe('keptPositionOf', () => {
     [[2, 1], 95, null],
   ])('in order %j keeps %s at %s', (order, position, kept) => {
     expect(keptPositionOf(songs, segments, order, position)).toBe(kept);
+  });
+
+  it('keeps the place inside a later piece of a split song', () => {
+    const split = [
+      {
+        ...songOf(1, 0),
+        pieces: [
+          { startSeconds: 10, endSeconds: 30 },
+          { startSeconds: 40, endSeconds: 70 },
+        ],
+      },
+      { ...songOf(2, 1), pieces: [{ startSeconds: 0, endSeconds: 30 }] },
+    ];
+    const pieces: MusicSegment[] = [
+      { ...segment, sourceStart: 10, sourceEnd: 30, timelineStart: 0, timelineEnd: 20 },
+      { ...segment, sourceStart: 40, sourceEnd: 70, timelineStart: 20, timelineEnd: 50 },
+      {
+        ...segment,
+        mediaItemId: 20,
+        sourceStart: 0,
+        sourceEnd: 30,
+        timelineStart: 50,
+        timelineEnd: 80,
+      },
+    ];
+
+    expect(keptPositionOf(split, pieces, [2, 1], 25)).toBe(55);
   });
 });
 
@@ -148,6 +182,8 @@ describe('outsideMusicOf', () => {
           name: null,
           state: 'ready',
           durationSeconds: 20,
+          clipStartSeconds: 0,
+          clipEndSeconds: 20,
           startSeconds: null,
           placement: 'musicMissing',
           outdated: false,
@@ -159,6 +195,8 @@ describe('outsideMusicOf', () => {
           name: null,
           state: 'ready',
           durationSeconds: 20,
+          clipStartSeconds: 0,
+          clipEndSeconds: 20,
           startSeconds: null,
           placement: 'unaligned',
           outdated: false,
@@ -195,5 +233,33 @@ describe('outsideMusicOf', () => {
     };
 
     expect(outsideMusicOf(studio, [segment])).toEqual({ steps: 1, videos: 1, keyframes: 1 });
+  });
+});
+
+describe('deskSegmentIndexOf', () => {
+  const pieceOf = (
+    mediaItemId: number,
+    timelineStart: number,
+    timelineEnd: number,
+  ): MusicSegment => ({
+    ...segment,
+    mediaItemId,
+    sourceStart: timelineStart + 100,
+    sourceEnd: timelineEnd + 100,
+    timelineStart,
+    timelineEnd,
+  });
+  const segments = [pieceOf(10, 0, 5), pieceOf(10, 5, 9), pieceOf(20, 9, 15)];
+
+  it.each([
+    ['the piece under the playhead', 10, 3, null, 0],
+    ['the next piece on a shared edge', 10, 5, null, 1],
+    ['the held piece on its own end', 10, 5, 100, 0],
+    ['the piece under the playhead over a held piece elsewhere', 10, 7, 100, 1],
+    ['the last piece of the song at its end', 10, 9, null, 1],
+    ['the first piece of a song the playhead is outside of', 20, 3, null, 2],
+    ['nothing for a song without pieces', 30, 3, null, -1],
+  ])('picks %s', (_, mediaItemId, seconds, heldStart, expected) => {
+    expect(deskSegmentIndexOf(segments, mediaItemId, seconds, heldStart)).toBe(expected);
   });
 });

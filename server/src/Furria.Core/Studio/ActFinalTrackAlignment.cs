@@ -8,6 +8,8 @@ public sealed class ActFinalTrackAlignment
 
     public int SourceMediaItemId { get; set; }
 
+    public double FromSeconds { get; set; }
+
     public double OffsetSeconds { get; set; }
 
     public double Stretch { get; set; } = FinalTrackPlacement.Unstretched;

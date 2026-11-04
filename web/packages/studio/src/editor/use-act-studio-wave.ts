@@ -1,20 +1,16 @@
 import { formatReadoutTime } from '@furria/studio/drag-readout';
 import type { MusicSegment, TimelineRange } from '@furria/studio/music-timeline';
-import {
-  cutHandleLabelOf,
-  finalShiftLabelOf,
-  songMetaOf,
-  songNameOf,
-} from '@furria/studio/studio-copy';
-import { nudgedCutOf, trimmedCutOf } from '@furria/studio/studio-edits';
+import { segmentKeyOf } from '@furria/studio/music-timeline';
+import { finalShiftLabelOf, songMetaOf, songNameOf } from '@furria/studio/studio-copy';
 import {
   offsetStartingAt,
+  segmentPlacementOf,
   sourceNameOf,
   stretchOf,
   tunedOffsetOf,
   UNSTRETCHED,
 } from '@furria/studio/studio-final';
-import { songSettingsOf } from '@furria/studio/studio-music';
+import { songOfSegment } from '@furria/studio/studio-music';
 import type { StudioSong } from '@furria/studio/studio-schemas';
 import type { StudioWorkScreen } from '@furria/studio/studio-work-screen';
 import type { TimelineHandle, TimelineRegion } from '@furria/studio/Timeline';
@@ -30,8 +26,6 @@ import { useState } from 'react';
 
 const FINAL_NUDGE_SECONDS = 0.1;
 
-type WaveEdge = 'start' | 'end';
-
 interface WaveHandle extends TimelineHandle {
   move: (seconds: number) => void;
   end: (seconds: number) => void;
@@ -46,31 +40,27 @@ export interface ActStudioWave {
   readout: WaveReadout | null;
 }
 
-interface Trim {
-  edge: WaveEdge;
-  seconds: number;
-}
-
 interface SongCut {
   song: StudioSong;
   segment: MusicSegment;
 }
 
-interface WaveEdits {
+interface WaveShape {
   regions: TimelineRegion[];
   handles: WaveHandle[];
   trim: TimelineRange | null;
+}
+
+interface WaveEdits extends WaveShape {
   reset: () => void;
 }
 
 const songCutsOf = (songs: readonly StudioSong[], segments: readonly MusicSegment[]): SongCut[] =>
-  [...songs]
-    .sort((left, right) => left.position - right.position)
-    .flatMap((song, index) => {
-      const segment = segments[index];
+  segments.flatMap((segment) => {
+    const song = songOfSegment(songs, segment);
 
-      return segment === undefined ? [] : [{ song, segment }];
-    });
+    return song === null ? [] : [{ song, segment }];
+  });
 
 const useFinalWave = (screen: StudioWorkScreen): WaveEdits => {
   const { final, playback, studio } = screen;
@@ -87,7 +77,7 @@ const useFinalWave = (screen: StudioWorkScreen): WaveEdits => {
   const nameOf = (mediaItemId: number): string => sourceNameOf(studio, mediaItemId);
 
   const regions: TimelineRegion[] = found.map(({ place, start, end, number }) => ({
-    key: `source-${place.segment.mediaItemId}`,
+    key: `source-${segmentKeyOf(place.segment)}`,
     range: { start, end },
     number,
     name: nameOf(place.segment.mediaItemId),
@@ -96,15 +86,15 @@ const useFinalWave = (screen: StudioWorkScreen): WaveEdits => {
   }));
   const selectedStart = selected?.start ?? null;
   const selectedPlacement =
-    selected === null ? undefined : final.placements[selected.segment.mediaItemId];
+    selected === null ? null : segmentPlacementOf(final.placements, selected.segment);
   const selectedStretch =
-    selected === null ? UNSTRETCHED : stretchOf(final.placements, selected.segment.mediaItemId);
+    selected === null ? UNSTRETCHED : stretchOf(final.placements, selected.segment);
   const shown = shift ?? selectedStart;
   const handles: WaveHandle[] =
     selected === null ||
     selectedStart === null ||
     shown === null ||
-    selectedPlacement === undefined ||
+    selectedPlacement === null ||
     pending === null
       ? []
       : [
@@ -120,6 +110,8 @@ const useFinalWave = (screen: StudioWorkScreen): WaveEdits => {
                 kind: 'finalOffset',
                 finalTrackId: pending.finalTrackId,
                 sourceMediaItemId: selected.segment.mediaItemId,
+                fromSeconds: selected.segment.sourceStart,
+                untilSeconds: selected.segment.sourceEnd,
                 offsetSeconds: offsetStartingAt(selected.segment, moved, selectedStretch),
                 stretch: selectedStretch,
               });
@@ -131,6 +123,8 @@ const useFinalWave = (screen: StudioWorkScreen): WaveEdits => {
                 kind: 'finalOffset',
                 finalTrackId: pending.finalTrackId,
                 sourceMediaItemId: selected.segment.mediaItemId,
+                fromSeconds: selected.segment.sourceStart,
+                untilSeconds: selected.segment.sourceEnd,
                 offsetSeconds: tunedOffsetOf(
                   selectedPlacement.offsetSeconds,
                   direction * FINAL_NUDGE_SECONDS,
@@ -151,11 +145,14 @@ const useFinalWave = (screen: StudioWorkScreen): WaveEdits => {
   };
 };
 
-const useCutWave = (screen: StudioWorkScreen): WaveEdits => {
-  const { playback, studio, edits } = screen;
+const useCutWave = (screen: StudioWorkScreen): WaveShape => {
+  const { playback, studio } = screen;
   const { player, segments } = playback;
-  const [trim, setTrim] = useState<Trim | null>(null);
   const cuts = studio.music.source === 'workingMix' ? songCutsOf(studio.songs, segments) : [];
+  const songNumberOf = (song: StudioSong): number =>
+    [...studio.songs]
+      .sort((left, right) => left.position - right.position)
+      .findIndex((candidate) => candidate.songId === song.songId) + 1;
   const selectedIndex = usePlaybackSelection(player, (seconds) =>
     cuts.findIndex(
       (cut, index) =>
@@ -164,68 +161,18 @@ const useCutWave = (screen: StudioWorkScreen): WaveEdits => {
           (index === cuts.length - 1 && seconds <= cut.segment.timelineEnd)),
     ),
   );
-  const selected = cuts[selectedIndex] ?? null;
-
-  const edgeOf = (cut: SongCut, edge: WaveEdge): number =>
-    edge === 'start' ? cut.segment.timelineStart : cut.segment.timelineEnd;
-
-  const handles: WaveHandle[] =
-    selected === null
-      ? []
-      : (['start', 'end'] as const).map((edge) => {
-          const seconds = trim?.edge === edge ? trim.seconds : edgeOf(selected, edge);
-          const settleCut = (cut: { start: number; end: number }): void => {
-            edits.keepPosition(player.position());
-            screen.document.change({
-              kind: 'songSettings',
-              songId: selected.song.songId,
-              ...songSettingsOf(selected.song),
-              startSeconds: cut.start,
-              endSeconds: cut.end,
-            });
-          };
-
-          return {
-            key: edge,
-            seconds,
-            label: cutHandleLabelOf(edge, songNameOf(selected.song.fileName)),
-            valueText: formatReadoutTime(seconds),
-            move: (moved) => {
-              setTrim({ edge, seconds: moved });
-            },
-            end: (moved) => {
-              settleCut(trimmedCutOf(selected.song, selected.segment, edge, moved));
-              setTrim(null);
-            },
-            onNudge: (direction) => {
-              const cut = nudgedCutOf(selected.song, selected.segment, edge, direction);
-              if (
-                cut.start !== selected.song.startSeconds ||
-                cut.end !== selected.song.endSeconds
-              ) {
-                settleCut(cut);
-              }
-            },
-          };
-        });
 
   return {
     regions: cuts.map((cut, index) => ({
-      key: String(cut.song.songId),
+      key: segmentKeyOf(cut.segment),
       range: { start: cut.segment.timelineStart, end: cut.segment.timelineEnd },
-      number: index + 1,
+      number: songNumberOf(cut.song),
       name: songNameOf(cut.song.fileName),
       meta: songMetaOf(cut.segment.timelineStart, cut.segment.timelineEnd, cut.song.tempoBpm),
       selected: index === selectedIndex,
     })),
-    handles,
-    trim:
-      trim === null || selected === null
-        ? null
-        : { start: edgeOf(selected, trim.edge), end: trim.seconds },
-    reset: () => {
-      setTrim(null);
-    },
+    handles: [],
+    trim: null,
   };
 };
 
@@ -235,10 +182,7 @@ export const useActStudioWave = (screen: StudioWorkScreen): ActStudioWave => {
   const cutWave = useCutWave(screen);
   const finalWave = useFinalWave(screen);
   const wave = screen.final.previewing ? finalWave : cutWave;
-  const reset = (): void => {
-    cutWave.reset();
-    finalWave.reset();
-  };
+  const reset = finalWave.reset;
   const handleOf = (key: string): WaveHandle | undefined =>
     wave.handles.find((handle) => handle.key === key);
   const centre = useCentreScrub({

@@ -1,10 +1,12 @@
 import type { MusicSegment } from '@furria/studio/music-timeline';
 import {
+  anchorPlacementOf,
   finalBeatAtOf,
   finalPlacementsOf,
   finalPlacesOf,
   finalPreviewOf,
   finalSecondsAt,
+  matchedCountOf,
   mixSecondsAt,
   nudgedFinalBeatOf,
   offsetStartingAt,
@@ -39,7 +41,7 @@ const segmentOf = (
 });
 
 const mix = [segmentOf(1, 10, 40, 0), segmentOf(2, 0, 30, 30)];
-const placed = (offsetSeconds: number, stretch = 1) => ({ offsetSeconds, stretch });
+const placed = (offsetSeconds: number, stretch = 1) => [{ fromSeconds: 0, offsetSeconds, stretch }];
 const placements = { 1: placed(-5), 2: placed(40) };
 
 const trackOf = (finalTrackId: number, version: number, adopted: boolean): StudioFinalTrack => ({
@@ -71,6 +73,8 @@ const videoOf = (videoId: number, start: number): StudioVideo => ({
   name: null,
   state: 'ready',
   durationSeconds: 10,
+  clipStartSeconds: 0,
+  clipEndSeconds: 10,
   startSeconds: start,
   placement: 'onTimeline',
   outdated: false,
@@ -106,12 +110,70 @@ describe('finalPlacementsOf', () => {
     const track = {
       ...trackOf(1, 1, false),
       alignments: [
-        { sourceMediaItemId: 1, offsetSeconds: -5, stretch: 1 },
-        { sourceMediaItemId: 7, offsetSeconds: 3, stretch: 1 },
+        { sourceMediaItemId: 1, fromSeconds: 0, offsetSeconds: -5, stretch: 1 },
+        { sourceMediaItemId: 7, fromSeconds: 0, offsetSeconds: 3, stretch: 1 },
       ],
     };
 
     expect(finalPlacementsOf(track, mix)).toEqual({ 1: placed(-5) });
+  });
+
+  it('keeps every piece entry of a source in order', () => {
+    const track = {
+      ...trackOf(1, 1, false),
+      alignments: [
+        { sourceMediaItemId: 1, fromSeconds: 25, offsetSeconds: 9, stretch: 1 },
+        { sourceMediaItemId: 1, fromSeconds: 0, offsetSeconds: -5, stretch: 1 },
+      ],
+    };
+
+    expect(finalPlacementsOf(track, mix)).toEqual({
+      1: [
+        { fromSeconds: 0, offsetSeconds: -5, stretch: 1 },
+        { fromSeconds: 25, offsetSeconds: 9, stretch: 1 },
+      ],
+    });
+  });
+});
+
+describe('pieces placed apart', () => {
+  const pieces = [segmentOf(1, 10, 20, 0), segmentOf(1, 30, 40, 10)];
+  const apart = {
+    1: [
+      { fromSeconds: 10, offsetSeconds: -10, stretch: 1 },
+      { fromSeconds: 30, offsetSeconds: 20, stretch: 1 },
+    ],
+  };
+
+  it.each([
+    [5, 5],
+    [15, 55],
+  ])('mix second %s lies at final second %s', (seconds, expected) => {
+    expect(finalSecondsAt(pieces, apart, 70, seconds)).toBe(expected);
+  });
+
+  it('places each piece by its own entry', () => {
+    expect(finalPlacesOf(pieces, apart, 70).map((place) => [place.start, place.end])).toEqual([
+      [0, 10],
+      [50, 60],
+    ]);
+  });
+
+  it.each([
+    [{ sourceMediaItemId: 1, seconds: 12 }, -10],
+    [{ sourceMediaItemId: 1, seconds: 35 }, 20],
+    [{ sourceMediaItemId: 1, seconds: 25 }, -10],
+    [{ sourceMediaItemId: 1, seconds: 45 }, 20],
+    [{ sourceMediaItemId: 1, seconds: 5 }, -10],
+    [{ sourceMediaItemId: 2, seconds: 5 }, null],
+  ])('places the anchor %o by the entry with offset %s', (anchor, offset) => {
+    expect(anchorPlacementOf(apart, pieces, anchor)?.offsetSeconds ?? null).toBe(offset);
+  });
+
+  it('counts every placed piece', () => {
+    expect(matchedCountOf({ 1: apart[1].slice(0, 1) }, [...pieces, segmentOf(2, 0, 5, 20)])).toBe(
+      2,
+    );
   });
 });
 

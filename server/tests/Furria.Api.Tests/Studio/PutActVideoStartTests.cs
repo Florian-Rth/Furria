@@ -48,6 +48,19 @@ public sealed class PutActVideoStartTests : IClassFixture<ApiTestFixture>
         Assert.Equal(atSeconds, video.StartSeconds!.Value, 6);
     }
 
+    [Fact]
+    public async Task Should_RefuseThePlace_When_TheClipWouldEndBeforeTheMusic()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (admin, actId) = await MusicAsync(ct);
+        var videoId = await VideoOfAsync(_fixture, admin, actId, 30, ct);
+        await ClipVideoAsync(admin, actId, videoId, 0, 10);
+
+        var response = await PutAsync(admin, actId, videoId, -15);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
     [Theory]
     [InlineData(120)]
     [InlineData(-30)]

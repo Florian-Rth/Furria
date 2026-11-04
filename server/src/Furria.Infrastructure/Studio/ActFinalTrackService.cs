@@ -31,6 +31,8 @@ public sealed class ActFinalTrackService
     private const string NothingMatchedMessage =
         "In der Endfassung ist noch keine Musik des Auftritts angelegt. Lege zuerst ein Lied an.";
     private const string UnknownSourceMessage = "Diese Musik spielt im Auftritt gerade nicht.";
+    private const string UnknownPieceMessage =
+        "An dieser Stelle spielt gerade kein Stück dieser Musik.";
 
     private readonly AppDbContext _dbContext;
     private readonly ActStudioGate _gate;
@@ -168,14 +170,18 @@ public sealed class ActFinalTrackService
 
         await KeepPlacementsAsync(
             pending.Value,
-            matches.ToDictionary(
-                match => match.SourceMediaItemId,
-                match => new FinalTrackPlacement(match.OffsetSeconds, match.Stretch)
-            ),
+            [
+                .. matches.Select(match => new PiecePlacement(
+                    match.Piece,
+                    new FinalTrackPlacement(match.Details.OffsetSeconds, match.Details.Stretch)
+                )),
+            ],
             ct
         );
 
-        return Result<IReadOnlyList<FinalTrackMatchDetails>>.Success(matches);
+        return Result<IReadOnlyList<FinalTrackMatchDetails>>.Success([
+            .. matches.Select(match => match.Details),
+        ]);
     }
 
     public async Task<Result> SetOffsetAsync(
@@ -191,13 +197,20 @@ public sealed class ActFinalTrackService
         var music = await _timelines.MusicOfAsync(command.ActId, ct);
         if (music.All(source => source.SourceMediaItemId != command.SourceMediaItemId))
             return Result.NotFound(UnknownSourceMessage);
+        var piece = new ActMusic(music.Select(source => source.Cut)).PieceHolding(
+            new MusicAnchor(command.SourceMediaItemId, command.FromSeconds)
+        );
+        if (piece is null)
+            return Result.NotFound(UnknownPieceMessage);
 
         await KeepPlacementsAsync(
             pending.Value,
-            new Dictionary<int, FinalTrackPlacement>
-            {
-                [command.SourceMediaItemId] = new(command.OffsetSeconds, command.Stretch),
-            },
+            [
+                new PiecePlacement(
+                    piece.Value,
+                    new FinalTrackPlacement(command.OffsetSeconds, command.Stretch)
+                ),
+            ],
             ct
         );
 
@@ -238,9 +251,8 @@ public sealed class ActFinalTrackService
         CancellationToken ct
     )
     {
-        var sources = (await _timelines.MusicOfAsync(track.ActId, ct))
-            .Select(source => source.SourceMediaItemId)
-            .ToHashSet();
+        var music = await _timelines.MusicOfAsync(track.ActId, ct);
+        var sources = music.Select(source => source.SourceMediaItemId).ToHashSet();
         var offsets = await _dbContext
             .ActFinalTrackAlignments.Where(alignment => alignment.FinalTrackId == track.Id)
             .ToListAsync(ct);
@@ -250,12 +262,16 @@ public sealed class ActFinalTrackService
             MusicCut
                 .OfFinalTrack(track.MediaItemId, track.MediaItem!.DurationSeconds)
                 .LengthSeconds,
-            offsets
-                .Where(alignment => sources.Contains(alignment.SourceMediaItemId))
-                .ToDictionary(
-                    alignment => alignment.SourceMediaItemId,
-                    alignment => new FinalTrackPlacement(alignment.OffsetSeconds, alignment.Stretch)
-                )
+            new ActMusic(music.Select(source => source.Cut)),
+            [
+                .. offsets
+                    .Where(alignment => sources.Contains(alignment.SourceMediaItemId))
+                    .Select(alignment => new SourceAlignment(
+                        alignment.SourceMediaItemId,
+                        alignment.FromSeconds,
+                        new FinalTrackPlacement(alignment.OffsetSeconds, alignment.Stretch)
+                    )),
+            ]
         );
     }
 
@@ -385,29 +401,53 @@ public sealed class ActFinalTrackService
 
     private async Task KeepPlacementsAsync(
         ActFinalTrack track,
-        IReadOnlyDictionary<int, FinalTrackPlacement> placementsBySource,
+        IReadOnlyList<PiecePlacement> placements,
         CancellationToken ct
     )
     {
         var kept = await _dbContext
             .ActFinalTrackAlignments.Where(row => row.FinalTrackId == track.Id)
-            .ToDictionaryAsync(row => row.SourceMediaItemId, ct);
-        foreach (var (sourceMediaItemId, placement) in placementsBySource)
+            .ToListAsync(ct);
+        foreach (var (piece, placement) in placements)
         {
-            if (!kept.TryGetValue(sourceMediaItemId, out var alignment))
+            var alignment = AlignmentAtStartOf(track, piece, kept);
+            foreach (
+                var replaced in kept.Where(row => IsReplacedBy(row, piece, alignment)).ToList()
+            )
             {
-                alignment = new ActFinalTrackAlignment
-                {
-                    FinalTrackId = track.Id,
-                    SourceMediaItemId = sourceMediaItemId,
-                };
-                _dbContext.ActFinalTrackAlignments.Add(alignment);
+                _dbContext.ActFinalTrackAlignments.Remove(replaced);
+                kept.Remove(replaced);
             }
 
             alignment.OffsetSeconds = placement.OffsetSeconds;
             alignment.Stretch = placement.Stretch;
         }
         await _dbContext.SaveChangesAsync(ct);
+    }
+
+    private ActFinalTrackAlignment AlignmentAtStartOf(
+        ActFinalTrack track,
+        MusicCut piece,
+        List<ActFinalTrackAlignment> kept
+    )
+    {
+        var existing = kept.FirstOrDefault(row =>
+            row.SourceMediaItemId == piece.SourceMediaItemId
+            && row.FromSeconds.Equals(piece.StartSeconds)
+        );
+        if (existing is not null)
+            return existing;
+
+        var added = new ActFinalTrackAlignment
+        {
+            FinalTrackId = track.Id,
+            SourceMediaItemId = piece.SourceMediaItemId,
+            FromSeconds = piece.StartSeconds,
+        };
+        _dbContext.ActFinalTrackAlignments.Add(added);
+        kept.Add(added);
+
+        return added;
     }
 
     private async Task<IReadOnlyList<TrackState>> TrackStatesOfAsync(
@@ -452,22 +492,41 @@ public sealed class ActFinalTrackService
         : null;
 
     [Pure]
-    private static IReadOnlyList<FinalTrackMatchDetails> MatchesOf(
-        IReadOnlyList<CutSound> sounds,
-        SoundProfile finalProfile
-    ) => [.. sounds.Select(sound => MatchOf(sound, finalProfile)).OfType<FinalTrackMatchDetails>()];
+    private static bool IsReplacedBy(
+        ActFinalTrackAlignment row,
+        MusicCut piece,
+        ActFinalTrackAlignment written
+    ) =>
+        row != written
+        && row.SourceMediaItemId == piece.SourceMediaItemId
+        && row.FromSeconds >= piece.StartSeconds
+        && row.FromSeconds < piece.EndSeconds;
 
     [Pure]
-    private static FinalTrackMatchDetails? MatchOf(CutSound sound, SoundProfile finalProfile) =>
+    private static IReadOnlyList<PieceMatch> MatchesOf(
+        IReadOnlyList<CutSound> sounds,
+        SoundProfile finalProfile
+    ) => [.. sounds.Select(sound => MatchOf(sound, finalProfile)).OfType<PieceMatch>()];
+
+    [Pure]
+    private static PieceMatch? MatchOf(CutSound sound, SoundProfile finalProfile) =>
         FinalTrackMatching.AlignmentOf(sound, finalProfile) is { } alignment
-            ? new FinalTrackMatchDetails
-            {
-                SourceMediaItemId = sound.Cut.SourceMediaItemId,
-                OffsetSeconds = alignment.OffsetSeconds,
-                Stretch = alignment.Stretch,
-                Confidence = alignment.Confidence,
-            }
+            ? new PieceMatch(
+                sound.Cut,
+                new FinalTrackMatchDetails
+                {
+                    SourceMediaItemId = sound.Cut.SourceMediaItemId,
+                    FromSeconds = sound.Cut.StartSeconds,
+                    OffsetSeconds = alignment.OffsetSeconds,
+                    Stretch = alignment.Stretch,
+                    Confidence = alignment.Confidence,
+                }
+            )
             : null;
 
     private sealed record TrackState(int Version, bool IsAdopted);
+
+    private sealed record PiecePlacement(MusicCut Piece, FinalTrackPlacement Placement);
+
+    private sealed record PieceMatch(MusicCut Piece, FinalTrackMatchDetails Details);
 }

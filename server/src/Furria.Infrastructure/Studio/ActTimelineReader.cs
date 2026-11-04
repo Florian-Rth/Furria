@@ -78,8 +78,7 @@ public sealed class ActTimelineReader
             .Select(song => new
             {
                 song.MediaItemId,
-                song.StartSeconds,
-                song.EndSeconds,
+                song.Pieces,
                 song.MediaItem!.StorageKey,
                 song.MediaItem.DurationSeconds,
             })
@@ -87,15 +86,11 @@ public sealed class ActTimelineReader
 
         return
         [
-            .. songs.Select(song => new MusicSource(
-                MusicCut.OfSong(
-                    song.MediaItemId,
-                    song.StartSeconds,
-                    song.EndSeconds,
-                    song.DurationSeconds
-                ),
-                song.StorageKey
-            )),
+            .. songs.SelectMany(song =>
+                MusicCut
+                    .OfSong(song.MediaItemId, song.Pieces, song.DurationSeconds)
+                    .Select(cut => new MusicSource(cut, song.StorageKey))
+            ),
         ];
     }
 }

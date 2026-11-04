@@ -1,8 +1,7 @@
-import type { Keyframe, StudioPerson } from '../models/studio-schemas';
+import type { Keyframe, SongPiece, StudioPerson } from '../models/studio-schemas';
 
 export interface DocumentSong {
-  startSeconds: number;
-  endSeconds: number;
+  pieces: SongPiece[];
   firstBeatSeconds: number | null;
   tempoBpm: number | null;
 }
@@ -26,9 +25,12 @@ export interface DocumentSpot {
 export interface DocumentVideo {
   name: string | null;
   startSeconds: number | null;
+  clipStartSeconds: number;
+  clipEndSeconds: number | null;
 }
 
 export interface DocumentAlignment {
+  fromSeconds: number;
   offsetSeconds: number;
   stretch: number;
 }
@@ -36,7 +38,7 @@ export interface DocumentAlignment {
 export interface DocumentFinalTrack {
   firstBeatSeconds: number | null;
   tempoBpm: number | null;
-  alignments: Record<number, DocumentAlignment>;
+  alignments: Record<number, DocumentAlignment[]>;
 }
 
 export interface StudioDocument {

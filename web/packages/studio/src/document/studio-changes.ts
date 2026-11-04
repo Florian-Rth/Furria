@@ -20,6 +20,8 @@ export type StudioChange =
       kind: 'finalOffset';
       finalTrackId: number;
       sourceMediaItemId: number;
+      fromSeconds: number;
+      untilSeconds: number;
       offsetSeconds: number;
       stretch: number;
     }
@@ -44,6 +46,7 @@ export type StudioChange =
   | { kind: 'partRemove'; partId: number }
   | { kind: 'videoName'; videoId: number; name: string | null }
   | { kind: 'videoStart'; videoId: number; startSeconds: number }
+  | { kind: 'videoClip'; videoId: number; startSeconds: number; endSeconds: number }
   | { kind: 'spotAdd'; spotId: number }
   | { kind: 'spotRemove'; spotId: number }
   | { kind: 'spotAssign'; spotId: number; person: StudioPerson | null }
@@ -231,8 +234,7 @@ const songOrdered: Edit<'songOrder'> = (draft, { songIds }) => {
 const songSet: Edit<'songSettings'> = (draft, change) => {
   const song = itemOf(draft.songs, change.songId);
   if (song !== null) {
-    song.startSeconds = change.startSeconds;
-    song.endSeconds = change.endSeconds;
+    song.pieces = change.pieces.map((piece) => ({ ...piece }));
     song.firstBeatSeconds = change.firstBeatSeconds;
     song.tempoBpm = change.tempoBpm;
   }
@@ -248,12 +250,22 @@ const finalBeatSet: Edit<'finalBeat'> = (draft, { finalTrackId, firstBeatSeconds
 
 const finalOffsetSet: Edit<'finalOffset'> = (
   draft,
-  { finalTrackId, sourceMediaItemId, offsetSeconds, stretch },
+  { finalTrackId, sourceMediaItemId, fromSeconds, untilSeconds, offsetSeconds, stretch },
 ) => {
   const track = itemOf(draft.finalTracks, finalTrackId);
-  if (track !== null) {
-    track.alignments[sourceMediaItemId] = { offsetSeconds, stretch };
+  if (track === null) {
+    return;
   }
+
+  const kept = (itemOf(track.alignments, sourceMediaItemId) ?? []).filter(
+    (entry) =>
+      entry.fromSeconds !== fromSeconds &&
+      (entry.fromSeconds < fromSeconds || entry.fromSeconds >= untilSeconds),
+  );
+  track.alignments[sourceMediaItemId] = [
+    ...kept.map((entry) => ({ ...entry })),
+    { fromSeconds, offsetSeconds, stretch },
+  ].sort((left, right) => left.fromSeconds - right.fromSeconds);
 };
 
 export const applyChange = (draft: Draft<StudioDocument>, change: StudioChange): void => {
@@ -306,6 +318,14 @@ export const applyChange = (draft: Draft<StudioDocument>, change: StudioChange):
       }
       return;
     }
+    case 'videoClip': {
+      const video = itemOf(draft.videos, change.videoId);
+      if (video !== null) {
+        video.clipStartSeconds = change.startSeconds;
+        video.clipEndSeconds = change.endSeconds;
+      }
+      return;
+    }
     case 'spotAdd': {
       if (itemOf(draft.spots, change.spotId) === null) {
         draft.spots[change.spotId] = { person: null };
@@ -332,7 +352,7 @@ export const mergeKeyOf = (change: StudioChange): string | null => {
     case 'finalBeat':
       return `finalBeat:${change.finalTrackId}`;
     case 'finalOffset':
-      return `finalOffset:${change.finalTrackId}:${change.sourceMediaItemId}`;
+      return `finalOffset:${change.finalTrackId}:${change.sourceMediaItemId}:${change.fromSeconds}`;
     case 'stepMove':
       return `stepMove:${change.stepId}`;
     case 'stepText':
@@ -343,6 +363,8 @@ export const mergeKeyOf = (change: StudioChange): string | null => {
       return `videoName:${change.videoId}`;
     case 'videoStart':
       return `videoStart:${change.videoId}`;
+    case 'videoClip':
+      return `videoClip:${change.videoId}`;
     case 'tracks':
       return `tracks:${idsOf(change.tracks)
         .sort((left, right) => left - right)
