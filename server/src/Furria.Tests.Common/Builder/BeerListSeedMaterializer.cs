@@ -34,11 +34,19 @@ internal static class BeerListSeedMaterializer
             recorded.StockMovements.Select(intent => NewStockMovement(intent, pots, personIds, now))
         );
 
+        var crates = recorded.Crates.ToDictionary(
+            intent => intent.Alias,
+            intent => NewCrate(intent, pots, personIds, now),
+            StringComparer.Ordinal
+        );
+        dbContext.BeerCrates.AddRange(crates.Values);
+
         await dbContext.SaveChangesAsync(ct);
 
         return new SeededBeerList(
             pots.ToDictionary(entry => entry.Key, entry => entry.Value.Id),
-            enrollments.ToDictionary(entry => entry.Key, entry => entry.Value.Id)
+            enrollments.ToDictionary(entry => entry.Key, entry => entry.Value.Id),
+            crates.ToDictionary(entry => entry.Key, entry => entry.Value.Id)
         );
     }
 
@@ -72,6 +80,34 @@ internal static class BeerListSeedMaterializer
                 : SeedAliases.RequireId(personIds, intent.EndedByAlias, "Person"),
         };
 
+    private static BeerCrate NewCrate(
+        BeerListSeedBuilder.BeerCrateIntent intent,
+        IReadOnlyDictionary<string, BeerPot> pots,
+        IReadOnlyDictionary<string, int> personIds,
+        DateTimeOffset now
+    )
+    {
+        var pot = PotOf(pots, intent.PotAlias);
+        return new()
+        {
+            Pot = pot,
+            PersonId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person"),
+            PriceCents = intent.PriceCents ?? pot.CratePriceCents,
+            EnteredByPersonId = SeedAliases.RequireId(
+                personIds,
+                intent.EnteredByAlias ?? intent.PersonAlias,
+                "Person"
+            ),
+            BookedAt = intent.BookedAt ?? now - SeededStockAge,
+            UndoneAt = intent.UndoneAt,
+        };
+    }
+
+    private static BeerPot PotOf(IReadOnlyDictionary<string, BeerPot> pots, string potAlias) =>
+        pots.TryGetValue(potAlias, out var pot)
+            ? pot
+            : throw new InvalidOperationException($"BeerPot alias '{potAlias}' unknown.");
+
     private static BeerStockMovement NewStockMovement(
         BeerListSeedBuilder.BeerStockMovementIntent intent,
         IReadOnlyDictionary<string, BeerPot> pots,
@@ -80,11 +116,7 @@ internal static class BeerListSeedMaterializer
     ) =>
         new()
         {
-            Pot = pots.TryGetValue(intent.PotAlias, out var pot)
-                ? pot
-                : throw new InvalidOperationException(
-                    $"BeerPot alias '{intent.PotAlias}' unknown."
-                ),
+            Pot = PotOf(pots, intent.PotAlias),
             Kind = intent.Kind,
             Crates = intent.Crates,
             Reason = intent.Reason,

@@ -107,6 +107,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<KeyHoldingService>();
         services.AddScoped<BeerListService>();
         services.AddScoped<BeerStockService>();
+        services.AddScoped<BeerTabService>();
         services.AddScoped<AnnouncementService>();
         services.AddScoped<CalendarService>();
         services.AddScoped<EventService>();

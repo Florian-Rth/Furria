@@ -168,6 +168,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<BeerStockMovement> BeerStockMovements => Set<BeerStockMovement>();
 
+    public DbSet<BeerCrate> BeerCrates => Set<BeerCrate>();
+
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
 
