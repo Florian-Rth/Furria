@@ -218,6 +218,9 @@ public sealed class AccountSecurityService
     public async Task LogOutEverywhereAsync(int accountId, CancellationToken ct)
     {
         await _refreshTokenService.RevokeAllAsync(accountId, ct);
+        await _dbContext
+            .PushSubscriptions.Where(subscription => subscription.AccountId == accountId)
+            .ExecuteDeleteAsync(ct);
         _logger.LogInformation("Account {AccountId} signed out everywhere", accountId);
     }
 

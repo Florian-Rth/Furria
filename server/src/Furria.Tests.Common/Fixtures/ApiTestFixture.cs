@@ -9,6 +9,7 @@ using Furria.Application.Mail;
 using Furria.Application.Media;
 using Furria.Application.Operations;
 using Furria.Application.PreviewAccess;
+using Furria.Application.Push;
 using Furria.Application.Results;
 using Furria.Application.Website;
 using Furria.Core.Club;
@@ -25,6 +26,7 @@ using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Push;
 using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.RunningOrders;
 using Furria.MediaWorker;
@@ -32,6 +34,7 @@ using Furria.MediaWorker.Heartbeat;
 using Furria.MediaWorker.Jobs;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Expectations;
+using Furria.Tests.Common.Push;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Identity;
@@ -95,6 +98,9 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     private const int PermitsPerIpBeyondAnySuite = 1_000_000;
     private const int PasswordHashIterations = 1;
     internal const string MediaSigningKey = "furria-test-media-signing-key-of-32-bytes";
+    public const string VapidPublicKey =
+        "BMhR4mFcMj4K9cYVgsAKgKIGevMvrCQLSM-Jy1kqfP4iSDlC7Pa4vNiXYZKmTo4mclU-aq_1BFfX8QuI46dHofQ";
+    private const string VapidPrivateKey = "GzIA-6S4MRXOlB2w1RDWAq_4D_CAYdtmWQCiTovlRZI";
 
     private static readonly TimeSpan SignedOutWorkTimeout = TimeSpan.FromSeconds(20);
     private static readonly TimeSpan OutboxDrainTimeout = TimeSpan.FromSeconds(20);
@@ -120,6 +126,8 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     public TestClock TimeProvider { get; } = new(WholeSecondNow());
 
     public CapturingLogSink Logs { get; } = new();
+
+    public FakePushService PushService { get; } = new();
 
     public LogMark HostStarted { get; private set; }
 
@@ -279,6 +287,18 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             MediaSigningKey
         );
         builder.UseSetting(
+            $"{PushOptions.SectionName}:{nameof(PushOptions.VapidPublicKey)}",
+            VapidPublicKey
+        );
+        builder.UseSetting(
+            $"{PushOptions.SectionName}:{nameof(PushOptions.VapidPrivateKey)}",
+            VapidPrivateKey
+        );
+        builder.UseSetting(
+            $"{PushOptions.SectionName}:{nameof(PushOptions.Subject)}",
+            ClubAppBaseUrl
+        );
+        builder.UseSetting(
             $"{TrustedProxyOptions.SectionName}:{nameof(TrustedProxyOptions.TrustedProxies)}:0",
             TrustedProxyAddress
         );
@@ -291,6 +311,12 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
                 options.IterationCount = PasswordHashIterations
             );
         });
+        builder.ConfigureTestServices(services =>
+            services
+                .AddHttpClient(PushSender.HttpClientName)
+                .ConfigurePrimaryHttpMessageHandler(() => PushService)
+                .SetHandlerLifetime(Timeout.InfiniteTimeSpan)
+        );
     }
 
     public async ValueTask InitializeAsync()
