@@ -110,6 +110,15 @@ export const CreatedRoleSchema = z.object({ roleId: z.number().int() });
 export const CreatedBoardOfficeSchema = z.object({ boardOfficeId: z.number().int() });
 export const CreatedPersonSchema = PersonIdSchema;
 export const CreatedCalendarEntrySchema = z.object({ calendarEntryId: z.number().int() });
+export const CreatedBeerPotSchema = z.object({ beerPotId: z.number().int() });
+
+export const OpenBeerPotSchema = z.object({
+  pot: z.object({ beerPotId: z.number().int() }).nullable(),
+});
+
+export const BeerEnrollmentsSchema = z.object({
+  enrollments: z.array(z.object({ personId: z.number().int(), endedAt: z.string().nullable() })),
+});
 
 export const RedemptionSchema = z.object({ outcome: z.string() });
 

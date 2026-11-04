@@ -77,6 +77,11 @@ redeeming the link from the invitation mail. Every persona's password is `Furria
 | Gerd | `gerd.lang@furria.local` |
 | Jana | `jana.kuehn@furria.local` |
 
+Frank holds the role *Getränkewart* (`beer_list.manage`) and owns the open beer pot. Lena,
+Frank, Sabine, Kevin and Gerd are enrolled; the pot has two deliveries, a breakage correction,
+crates on several tabs (some booked as already paid), Lena's own booking and a payment by Sabine.
+Jana is not enrolled, so she sees no beer list.
+
 Some facts have no API edit: an account redeemed weeks ago, a contact change from yesterday,
 announcements spread over the last days, start days counted from today, Sabine running the
 Kindergarde without being its member, and who has seen which announcement (the API only moves

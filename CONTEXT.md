@@ -1435,12 +1435,12 @@ _Avoid_: inventory, Lager (that is the storeroom)
 The QR code stuck on the pallet. It opens the **booking page**: a bare page that only confirms
 crates onto the scanner's own tab — no app chrome, no navigation away. It opens in the installed
 app where the phone can hand the link over (Android) and finishes in the browser where it cannot
-(iOS), with a one-time sign-in there (decided 2026-11-04). A member can take back a crate only in
-a short undo window right after confirming it; any later correction is an operator's
-(decided 2026-11-04). An open tab shows on its holder's Start as a task with the owner's payment
-details, and the app reminds her of it by itself — no operator sends reminders: a push once her
-oldest open crate is 7 days old, then every 7 days until the tab is settled, never at night
-(decided 2026-11-04).
+(iOS), with a one-time sign-in there (built 2026-11-04 as `/beer-list/book`). A member can take
+back a crate only in a short undo window right after confirming it; any later correction is an
+operator's (built 2026-11-04). An open tab shows on its holder's Start as a task with the owner's
+payment details, and the app reminds her of it by itself — no operator sends reminders: a push
+once her oldest open crate is 7 days old, then every 7 days until the tab is settled, never at
+night (built 2026-11-04).
 _UI copy_: —
 _Avoid_: QR sticker, scan page
 
