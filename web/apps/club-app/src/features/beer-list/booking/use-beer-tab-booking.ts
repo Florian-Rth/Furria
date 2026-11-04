@@ -18,8 +18,12 @@ export interface BeerTabBooking {
   booking: BeerBooking;
 }
 
-export const useBeerTabBooking = (readsPot: boolean, now: number): BeerTabBooking => {
-  const tabQuery = useMyBeerTabQuery();
+export const useBeerTabBooking = (
+  readsPot: boolean,
+  now: number,
+  readsTab = true,
+): BeerTabBooking => {
+  const tabQuery = useMyBeerTabQuery(readsTab);
   const potQuery = useOpenBeerPotQuery(readsPot);
   const pot = potQuery.data?.pot ?? null;
   const booking = useBeerBooking(pot);

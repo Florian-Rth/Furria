@@ -27,6 +27,7 @@ interface BeerBookingShared {
 
 export interface BeerBookingChoosing extends BeerBookingShared {
   phase: 'choose';
+  lapsed: BeerBookedCrates | null;
   count: number;
   isBooking: boolean;
   chooseCount: (count: number) => void;
@@ -126,6 +127,7 @@ export const useBeerBooking = (pot: OpenBeerPot | null): BeerBooking => {
     return {
       ...shared,
       phase: 'choose',
+      lapsed: deadline?.booked ?? null,
       count,
       isBooking: booking.isPending,
       chooseCount: setCount,

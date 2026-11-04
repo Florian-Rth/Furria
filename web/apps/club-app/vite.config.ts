@@ -32,6 +32,8 @@ export default defineConfig(({ mode }) => ({
         start_url: '/',
         scope: '/',
         display: 'standalone',
+        handle_links: 'preferred',
+        launch_handler: { client_mode: ['navigate-existing', 'auto'] },
         orientation: 'portrait',
         background_color: SCREEN_BACKGROUND,
         theme_color: SCREEN_BACKGROUND,

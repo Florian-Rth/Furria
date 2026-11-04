@@ -13,14 +13,12 @@ import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RequestAccessRouteImport } from './routes/request-access'
 import { Route as PhotosRouteImport } from './routes/photos'
 import { Route as LoginRouteImport } from './routes/login'
-import { Route as LabBeerBookCRouteImport } from './routes/lab-beer-book-c'
-import { Route as LabBeerBookBRouteImport } from './routes/lab-beer-book-b'
-import { Route as LabBeerBookARouteImport } from './routes/lab-beer-book-a'
 import { Route as InvitationRouteImport } from './routes/invitation'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as InvitationCodeRouteImport } from './routes/invitation_.code'
+import { Route as BeerListBookRouteImport } from './routes/beer-list_.book'
 import { Route as AppNewsRouteImport } from './routes/_app/news'
 import { Route as AppMoreRouteImport } from './routes/_app/more'
 import { Route as AppGroupsRouteImport } from './routes/_app/groups'
@@ -158,21 +156,6 @@ const LoginRoute = LoginRouteImport.update({
   path: '/login',
   getParentRoute: () => rootRouteImport,
 } as any)
-const LabBeerBookCRoute = LabBeerBookCRouteImport.update({
-  id: '/lab-beer-book-c',
-  path: '/lab-beer-book-c',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LabBeerBookBRoute = LabBeerBookBRouteImport.update({
-  id: '/lab-beer-book-b',
-  path: '/lab-beer-book-b',
-  getParentRoute: () => rootRouteImport,
-} as any)
-const LabBeerBookARoute = LabBeerBookARouteImport.update({
-  id: '/lab-beer-book-a',
-  path: '/lab-beer-book-a',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const InvitationRoute = InvitationRouteImport.update({
   id: '/invitation',
   path: '/invitation',
@@ -195,6 +178,11 @@ const AppIndexRoute = AppIndexRouteImport.update({
 const InvitationCodeRoute = InvitationCodeRouteImport.update({
   id: '/invitation_/code',
   path: '/invitation/code',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BeerListBookRoute = BeerListBookRouteImport.update({
+  id: '/beer-list_/book',
+  path: '/beer-list/book',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppNewsRoute = AppNewsRouteImport.update({
@@ -823,9 +811,6 @@ export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/invitation': typeof InvitationRoute
-  '/lab-beer-book-a': typeof LabBeerBookARoute
-  '/lab-beer-book-b': typeof LabBeerBookBRoute
-  '/lab-beer-book-c': typeof LabBeerBookCRoute
   '/login': typeof LoginRoute
   '/photos': typeof PhotosRoute
   '/request-access': typeof RequestAccessRoute
@@ -841,6 +826,7 @@ export interface FileRoutesByFullPath {
   '/groups': typeof AppGroupsRoute
   '/more': typeof AppMoreRoute
   '/news': typeof AppNewsRoute
+  '/beer-list/book': typeof BeerListBookRoute
   '/invitation/code': typeof InvitationCodeRoute
   '/members': typeof AppAffiliatedMembersRoute
   '/profile': typeof AppPersonalProfileRoute
@@ -949,9 +935,6 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/forgot-password': typeof ForgotPasswordRoute
   '/invitation': typeof InvitationRoute
-  '/lab-beer-book-a': typeof LabBeerBookARoute
-  '/lab-beer-book-b': typeof LabBeerBookBRoute
-  '/lab-beer-book-c': typeof LabBeerBookCRoute
   '/login': typeof LoginRoute
   '/photos': typeof PhotosRoute
   '/request-access': typeof RequestAccessRoute
@@ -968,6 +951,7 @@ export interface FileRoutesByTo {
   '/groups': typeof AppGroupsRoute
   '/more': typeof AppMoreRoute
   '/news': typeof AppNewsRoute
+  '/beer-list/book': typeof BeerListBookRoute
   '/invitation/code': typeof InvitationCodeRoute
   '/members': typeof AppAffiliatedMembersRoute
   '/profile': typeof AppPersonalProfileRoute
@@ -1078,9 +1062,6 @@ export interface FileRoutesById {
   '/_app': typeof AppRouteWithChildren
   '/forgot-password': typeof ForgotPasswordRoute
   '/invitation': typeof InvitationRoute
-  '/lab-beer-book-a': typeof LabBeerBookARoute
-  '/lab-beer-book-b': typeof LabBeerBookBRoute
-  '/lab-beer-book-c': typeof LabBeerBookCRoute
   '/login': typeof LoginRoute
   '/photos': typeof PhotosRoute
   '/request-access': typeof RequestAccessRoute
@@ -1098,6 +1079,7 @@ export interface FileRoutesById {
   '/_app/groups': typeof AppGroupsRoute
   '/_app/more': typeof AppMoreRoute
   '/_app/news': typeof AppNewsRoute
+  '/beer-list_/book': typeof BeerListBookRoute
   '/invitation_/code': typeof InvitationCodeRoute
   '/_app/': typeof AppIndexRoute
   '/_app/_affiliated/members': typeof AppAffiliatedMembersRoute
@@ -1210,9 +1192,6 @@ export interface FileRouteTypes {
     | '/'
     | '/forgot-password'
     | '/invitation'
-    | '/lab-beer-book-a'
-    | '/lab-beer-book-b'
-    | '/lab-beer-book-c'
     | '/login'
     | '/photos'
     | '/request-access'
@@ -1228,6 +1207,7 @@ export interface FileRouteTypes {
     | '/groups'
     | '/more'
     | '/news'
+    | '/beer-list/book'
     | '/invitation/code'
     | '/members'
     | '/profile'
@@ -1336,9 +1316,6 @@ export interface FileRouteTypes {
   to:
     | '/forgot-password'
     | '/invitation'
-    | '/lab-beer-book-a'
-    | '/lab-beer-book-b'
-    | '/lab-beer-book-c'
     | '/login'
     | '/photos'
     | '/request-access'
@@ -1355,6 +1332,7 @@ export interface FileRouteTypes {
     | '/groups'
     | '/more'
     | '/news'
+    | '/beer-list/book'
     | '/invitation/code'
     | '/members'
     | '/profile'
@@ -1464,9 +1442,6 @@ export interface FileRouteTypes {
     | '/_app'
     | '/forgot-password'
     | '/invitation'
-    | '/lab-beer-book-a'
-    | '/lab-beer-book-b'
-    | '/lab-beer-book-c'
     | '/login'
     | '/photos'
     | '/request-access'
@@ -1484,6 +1459,7 @@ export interface FileRouteTypes {
     | '/_app/groups'
     | '/_app/more'
     | '/_app/news'
+    | '/beer-list_/book'
     | '/invitation_/code'
     | '/_app/'
     | '/_app/_affiliated/members'
@@ -1595,13 +1571,11 @@ export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   InvitationRoute: typeof InvitationRoute
-  LabBeerBookARoute: typeof LabBeerBookARoute
-  LabBeerBookBRoute: typeof LabBeerBookBRoute
-  LabBeerBookCRoute: typeof LabBeerBookCRoute
   LoginRoute: typeof LoginRoute
   PhotosRoute: typeof PhotosRoute
   RequestAccessRoute: typeof RequestAccessRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
+  BeerListBookRoute: typeof BeerListBookRoute
   InvitationCodeRoute: typeof InvitationCodeRoute
 }
 
@@ -1633,27 +1607,6 @@ declare module '@tanstack/react-router' {
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lab-beer-book-c': {
-      id: '/lab-beer-book-c'
-      path: '/lab-beer-book-c'
-      fullPath: '/lab-beer-book-c'
-      preLoaderRoute: typeof LabBeerBookCRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lab-beer-book-b': {
-      id: '/lab-beer-book-b'
-      path: '/lab-beer-book-b'
-      fullPath: '/lab-beer-book-b'
-      preLoaderRoute: typeof LabBeerBookBRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/lab-beer-book-a': {
-      id: '/lab-beer-book-a'
-      path: '/lab-beer-book-a'
-      fullPath: '/lab-beer-book-a'
-      preLoaderRoute: typeof LabBeerBookARouteImport
       parentRoute: typeof rootRouteImport
     }
     '/invitation': {
@@ -1689,6 +1642,13 @@ declare module '@tanstack/react-router' {
       path: '/invitation/code'
       fullPath: '/invitation/code'
       preLoaderRoute: typeof InvitationCodeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/beer-list_/book': {
+      id: '/beer-list_/book'
+      path: '/beer-list/book'
+      fullPath: '/beer-list/book'
+      preLoaderRoute: typeof BeerListBookRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app/news': {
@@ -2791,13 +2751,11 @@ const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
   ForgotPasswordRoute: ForgotPasswordRoute,
   InvitationRoute: InvitationRoute,
-  LabBeerBookARoute: LabBeerBookARoute,
-  LabBeerBookBRoute: LabBeerBookBRoute,
-  LabBeerBookCRoute: LabBeerBookCRoute,
   LoginRoute: LoginRoute,
   PhotosRoute: PhotosRoute,
   RequestAccessRoute: RequestAccessRoute,
   ResetPasswordRoute: ResetPasswordRoute,
+  BeerListBookRoute: BeerListBookRoute,
   InvitationCodeRoute: InvitationCodeRoute,
 }
 export const routeTree = rootRouteImport
