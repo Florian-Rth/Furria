@@ -10,6 +10,8 @@ namespace Furria.Api.Tests.BeerList;
 
 public sealed class UndoMyBeerCratesTests : IClassFixture<ApiTestFixture>
 {
+    private const int UnknownCrateId = 999_993;
+
     private static readonly TimeSpan JustNow = TimeSpan.FromSeconds(4);
 
     private readonly ApiTestFixture _fixture;
@@ -175,6 +177,71 @@ public sealed class UndoMyBeerCratesTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.BeerStockOfPot(ctx.BeerList.Pots.IdOf(Pot))
             .ToStandAt(10)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnConflict_When_ThePotWasHandedOverMeanwhile()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = _fixture.TimeProvider.GetUtcNow();
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                WardenAndDrinker(builder)
+                    .BeerList(beerList =>
+                        beerList
+                            .AddBeerPot(
+                                "alter-topf",
+                                Warden,
+                                openedAt: now.AddDays(-200),
+                                closedAt: now
+                            )
+                            .AddBeerDelivery("alter-topf", 10, now.AddDays(-100))
+                            .AddBeerListEnrollment("mira-bier", Drinker)
+                            .AddBeerCrate("letzte", "alter-topf", Drinker, now - JustNow)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync(Drinker, ct);
+        var response = await client.POSTAsync<UndoMyBeerCrates, UndoMyBeerCratesRequest>(
+            new() { CrateIds = [ctx.BeerList.Crates.IdOf("letzte")] }
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        await ctx
+            .Expected.BeerCrate(ctx.BeerList.Crates.IdOf("letzte"))
+            .ToBeTaken()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnNotFound_When_ACrateIsUnknown()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = _fixture.TimeProvider.GetUtcNow();
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                WardenAndDrinker(builder)
+                    .BeerList(beerList =>
+                        beerList
+                            .AddBeerPot(Pot, Warden)
+                            .AddBeerDelivery(Pot, 10)
+                            .AddBeerListEnrollment("mira-bier", Drinker)
+                            .AddBeerCrate("frisch", Pot, Drinker, now - JustNow)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync(Drinker, ct);
+        var response = await client.POSTAsync<UndoMyBeerCrates, UndoMyBeerCratesRequest>(
+            new() { CrateIds = [ctx.BeerList.Crates.IdOf("frisch"), UnknownCrateId] }
+        );
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+        await ctx
+            .Expected.BeerCrate(ctx.BeerList.Crates.IdOf("frisch"))
+            .ToBeTaken()
             .AssertAsync(ct);
     }
 }

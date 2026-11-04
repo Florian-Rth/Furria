@@ -2,10 +2,7 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.BeerList;
 using Furria.Core.BeerList;
-using Furria.Infrastructure.Persistence;
 using Furria.Tests.Common.Fixtures;
-using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using static Furria.Api.Tests.BeerList.BeerListCast;
 
@@ -180,9 +177,9 @@ public sealed class PostMyBeerCratesTests : IClassFixture<ApiTestFixture>
         var mira = await ctx.Identity.ClientForAsync(Drinker, ct);
         var jonas = await ctx.Identity.ClientForAsync(SecondDrinker, ct);
 
-        var responses = await WhileThePotIsLockedAsync(
+        var responses = await _fixture.WhileBeerPotIsLockedAsync(
             potId,
-            waitingBookings: 2,
+            waitingSessions: 2,
             () =>
                 Task.WhenAll(
                     mira.POSTAsync<PostMyBeerCrates, PostMyBeerCratesRequest>(new() { Count = 1 }),
@@ -196,53 +193,5 @@ public sealed class PostMyBeerCratesTests : IClassFixture<ApiTestFixture>
             responses.Select(response => response.StatusCode).Order()
         );
         await ctx.Expected.BeerStockOfPot(potId).ToStandAt(0).AssertAsync(ct);
-    }
-
-    private async Task<T> WhileThePotIsLockedAsync<T>(
-        int beerPotId,
-        int waitingBookings,
-        Func<Task<T>> book,
-        CancellationToken ct
-    )
-    {
-        await using var scope = _fixture.Services.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        Task<T> booking;
-        await using (var transaction = await dbContext.Database.BeginTransactionAsync(ct))
-        {
-            await dbContext
-                .Database.SqlQuery<int>(
-                    $"SELECT id AS \"Value\" FROM beer_pot WHERE id = {beerPotId} FOR UPDATE"
-                )
-                .ToListAsync(ct);
-            booking = book();
-            await Polling.UntilAsync(
-                async probeCt =>
-                    await BlockedSessionsAsync(probeCt) >= waitingBookings ? "blocked" : null,
-                TimeSpan.FromSeconds(10),
-                "The bookings never queued behind the pot lock",
-                ct
-            );
-            await transaction.CommitAsync(ct);
-        }
-
-        return await booking;
-    }
-
-    private async Task<int> BlockedSessionsAsync(CancellationToken ct)
-    {
-        await using var scope = _fixture.Services.CreateAsyncScope();
-        var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-
-        return await dbContext
-            .Database.SqlQuery<int>(
-                $"""
-                SELECT count(DISTINCT locks.pid)::int AS "Value"
-                FROM pg_locks locks
-                JOIN pg_stat_activity activity ON activity.pid = locks.pid
-                WHERE NOT locks.granted AND activity.datname = current_database()
-                """
-            )
-            .SingleAsync(ct);
     }
 }

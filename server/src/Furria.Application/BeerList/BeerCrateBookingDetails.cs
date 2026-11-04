@@ -1,6 +1,6 @@
 namespace Furria.Application.BeerList;
 
-public sealed record BeerCrateBooking
+public sealed record BeerCrateBookingDetails
 {
     public required IReadOnlyList<int> CrateIds { get; init; }
 

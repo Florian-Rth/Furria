@@ -46,7 +46,7 @@ namespace Furria.Infrastructure.Migrations
                     );
                     table.CheckConstraint(
                         "ck_beer_crate_undone",
-                        "(undone_at IS NULL AND undone_by_person_id IS NULL) OR (undone_at >= booked_at AND paid_by_payment_id IS NULL)"
+                        "(undone_at IS NULL AND undone_by_person_id IS NULL) OR (undone_at IS NOT NULL AND undone_at >= booked_at AND paid_by_payment_id IS NULL)"
                     );
                     table.ForeignKey(
                         name: "fk_beer_crate_beer_pot_beer_pot_id",

@@ -1,3 +1,4 @@
+using System.Data;
 using Furria.Application.BeerList;
 using Furria.Application.Results;
 using Furria.Core.BeerList;
@@ -56,22 +57,20 @@ public sealed class BeerStockService
         if (isOpen is null)
             return Result<BeerStockDetails>.NotFound(BeerListMessages.UnknownPot);
 
+        await using var snapshot = await _dbContext.Database.BeginTransactionAsync(
+            IsolationLevel.RepeatableRead,
+            ct
+        );
         var movements = await MovementsOfAsync(beerPotId, ct);
-        var crates =
-            movements.Sum(movement => movement.Crates)
-            - await BeerPotLedger
-                .TakenCrates(_dbContext)
-                .CountAsync(crate => crate.BeerPotId == beerPotId, ct);
+        var crates = await BeerPotLedger.StockOfAsync(_dbContext, beerPotId, ct);
+        var cratesTakenInPaceWindow = await CratesTakenInPaceWindowAsync(ct);
+        await snapshot.CommitAsync(ct);
 
         return Result<BeerStockDetails>.Success(
             new BeerStockDetails
             {
                 Crates = crates,
-                Forecast = ProjectionOf(
-                    crates,
-                    isOpen.Value,
-                    await CratesTakenInPaceWindowAsync(ct)
-                ),
+                Forecast = ProjectionOf(crates, isOpen.Value, cratesTakenInPaceWindow),
                 Movements = movements,
             }
         );

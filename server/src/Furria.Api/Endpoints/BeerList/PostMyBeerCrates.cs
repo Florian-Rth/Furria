@@ -57,7 +57,8 @@ public sealed record PostMyBeerCratesRequest
 
 public sealed class PostMyBeerCratesValidator : Validator<PostMyBeerCratesRequest>
 {
-    private const string CountMessage = "Du buchst 1 bis 3 Kisten auf einmal.";
+    private static readonly string CountMessage =
+        $"Du buchst 1 bis {BeerCrate.MaxPerOwnBooking} Kisten auf einmal.";
 
     public PostMyBeerCratesValidator()
     {

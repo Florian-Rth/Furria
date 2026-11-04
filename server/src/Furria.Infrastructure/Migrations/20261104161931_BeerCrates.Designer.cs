@@ -90,7 +90,7 @@ namespace Furria.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("ck_beer_crate_price", "price_cents > 0 AND price_cents <= 10000");
 
-                            t.HasCheckConstraint("ck_beer_crate_undone", "(undone_at IS NULL AND undone_by_person_id IS NULL) OR (undone_at >= booked_at AND paid_by_payment_id IS NULL)");
+                            t.HasCheckConstraint("ck_beer_crate_undone", "(undone_at IS NULL AND undone_by_person_id IS NULL) OR (undone_at IS NOT NULL AND undone_at >= booked_at AND paid_by_payment_id IS NULL)");
                         });
                 });
 

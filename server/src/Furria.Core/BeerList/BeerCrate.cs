@@ -6,6 +6,7 @@ public sealed class BeerCrate
 {
     public const int MaxPerOwnBooking = 3;
     public const int MaxPerOperatorBooking = 20;
+    public const int MaxPerUndo = MaxPerOperatorBooking;
 
     public static readonly TimeSpan UndoWindow = TimeSpan.FromSeconds(10);
 

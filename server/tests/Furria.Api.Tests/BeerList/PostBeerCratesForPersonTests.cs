@@ -10,6 +10,7 @@ namespace Furria.Api.Tests.BeerList;
 public sealed class PostBeerCratesForPersonTests : IClassFixture<ApiTestFixture>
 {
     private const int UnknownPersonId = 999_995;
+    private const int UnknownPotId = 999_992;
     private const int CratePrice = 16_00;
     private const string Stranger = "tom";
 
@@ -199,6 +200,33 @@ public sealed class PostBeerCratesForPersonTests : IClassFixture<ApiTestFixture>
             {
                 BeerPotId = ctx.BeerList.Pots.IdOf(Pot),
                 PersonId = UnknownPersonId,
+                Count = 1,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnNotFound_When_ThePotIsUnknown()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                WardenAndDrinker(builder)
+                    .BeerList(beerList => beerList.AddBeerListEnrollment("mira-bier", Drinker)),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync(Warden, ct);
+        var response = await client.POSTAsync<
+            PostBeerCratesForPerson,
+            PostBeerCratesForPersonRequest
+        >(
+            new()
+            {
+                BeerPotId = UnknownPotId,
+                PersonId = ctx.Identity.People.IdOf(Drinker),
                 Count = 1,
             }
         );

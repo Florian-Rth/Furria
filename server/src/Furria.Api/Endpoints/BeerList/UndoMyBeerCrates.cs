@@ -50,7 +50,8 @@ public sealed record UndoMyBeerCratesRequest
 
 public sealed class UndoMyBeerCratesValidator : Validator<UndoMyBeerCratesRequest>
 {
-    private const string CrateIdsMessage = "Nimm 1 bis 20 verschiedene Kisten zurück.";
+    private static readonly string CrateIdsMessage =
+        $"Nimm 1 bis {BeerCrate.MaxPerUndo} verschiedene Kisten zurück.";
 
     public UndoMyBeerCratesValidator()
     {
@@ -59,8 +60,7 @@ public sealed class UndoMyBeerCratesValidator : Validator<UndoMyBeerCratesReques
             .NotNull()
             .WithMessage(CrateIdsMessage)
             .Must(ids =>
-                ids.Count is > 0 and <= BeerCrate.MaxPerOperatorBooking
-                && ids.Distinct().Count() == ids.Count
+                ids.Count is > 0 and <= BeerCrate.MaxPerUndo && ids.Distinct().Count() == ids.Count
             )
             .WithMessage(CrateIdsMessage);
         RuleForEach(request => request.CrateIds).GreaterThan(0);

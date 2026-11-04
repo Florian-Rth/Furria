@@ -21,6 +21,8 @@ public sealed class BeerTabService
     private const string ForeignCrateMessage =
         "Nur wer eine Kiste gebucht hat, kann sie zurücknehmen.";
     private const string UndoneCrateMessage = "Diese Kiste ist schon zurückgenommen.";
+    private const string PaidCrateMessage =
+        "Diese Kiste ist schon bezahlt und lässt sich nicht mehr zurücknehmen.";
     private const string UndoWindowClosedMessage =
         "Eine Kiste lässt sich nur direkt nach dem Buchen zurücknehmen. Später korrigiert sie der Getränkewart.";
 
@@ -33,7 +35,7 @@ public sealed class BeerTabService
         _timeProvider = timeProvider;
     }
 
-    public async Task<Result<BeerCrateBooking>> BookOwnCratesAsync(
+    public async Task<Result<BeerCrateBookingDetails>> BookOwnCratesAsync(
         int personId,
         int count,
         CancellationToken ct
@@ -45,21 +47,21 @@ public sealed class BeerTabService
             .Select(pot => (int?)pot.Id)
             .SingleOrDefaultAsync(ct);
         if (openPotId is null)
-            return Result<BeerCrateBooking>.Conflict(NoOpenPotMessage);
+            return Result<BeerCrateBookingDetails>.Conflict(NoOpenPotMessage);
 
         return await BookAsync(new CrateEntry(openPotId.Value, personId, count, personId), ct);
     }
 
-    public async Task<Result<BeerCrateBooking>> BookCratesForAsync(
+    public async Task<Result<BeerCrateBookingDetails>> BookCratesForAsync(
         BeerCratesForCommand command,
         CancellationToken ct
     )
     {
         if (!await _dbContext.People.AsNoTracking().AnyAsync(p => p.Id == command.PersonId, ct))
-            return Result<BeerCrateBooking>.NotFound(UnknownPersonMessage);
+            return Result<BeerCrateBookingDetails>.NotFound(UnknownPersonMessage);
 
         if (!await HasEnrollmentHistoryAsync(command.PersonId, ct))
-            return Result<BeerCrateBooking>.Validation(NeverEnrolledMessage);
+            return Result<BeerCrateBookingDetails>.Validation(NeverEnrolledMessage);
 
         return await BookAsync(
             new CrateEntry(
@@ -112,52 +114,31 @@ public sealed class BeerTabService
 
     public async Task<BeerTabDetails> GetTabAsync(int personId, CancellationToken ct)
     {
-        var crates = await BeerPotLedger
-            .TakenCrates(_dbContext)
-            .Where(crate => crate.PersonId == personId)
-            .OrderByDescending(crate => crate.BookedAt)
-            .ThenByDescending(crate => crate.Id)
-            .Select(crate => new TabRow(
-                new BeerTabPotDetails
-                {
-                    BeerPotId = crate.BeerPotId,
-                    IsOpen = crate.Pot!.ClosedAt == null,
-                    OpenedAt = crate.Pot.OpenedAt,
-                    Owner =
-                        crate.Pot.Owner == null
-                            ? null
-                            : new BeerListPerson
-                            {
-                                PersonId = crate.Pot.Owner.Id,
-                                FirstName = crate.Pot.Owner.FirstName,
-                                LastName = crate.Pot.Owner.LastName,
-                            },
-                    PaymentLink = crate.Pot.PaymentLink,
-                    PaymentNote = crate.Pot.PaymentNote,
-                    OpenCrates = 0,
-                    OpenCents = 0,
-                    Crates = Array.Empty<BeerTabCrateSummary>(),
-                },
-                new BeerTabCrateSummary
-                {
-                    CrateId = crate.Id,
-                    PriceCents = crate.PriceCents,
-                    BookedAt = crate.BookedAt,
-                    EnteredBy =
-                        crate.EnteredBy == null
-                            ? null
-                            : new BeerListPerson
-                            {
-                                PersonId = crate.EnteredBy.Id,
-                                FirstName = crate.EnteredBy.FirstName,
-                                LastName = crate.EnteredBy.LastName,
-                            },
-                    IsPaid = crate.PaidByPaymentId != null,
-                }
+        var crates = await TabCratesAsync(personId, ct);
+        var potIds = crates.Select(crate => crate.BeerPotId).Distinct().ToList();
+        var pots = await _dbContext
+            .BeerPots.AsNoTracking()
+            .Where(pot => potIds.Contains(pot.Id))
+            .OrderBy(pot => pot.ClosedAt != null)
+            .ThenByDescending(pot => pot.OpenedAt)
+            .Select(pot => new TabPot(
+                pot.Id,
+                pot.ClosedAt == null,
+                pot.OpenedAt,
+                pot.Owner == null
+                    ? null
+                    : new BeerListPerson
+                    {
+                        PersonId = pot.Owner.Id,
+                        FirstName = pot.Owner.FirstName,
+                        LastName = pot.Owner.LastName,
+                    },
+                pot.PaymentLink,
+                pot.PaymentNote
             ))
             .ToListAsync(ct);
 
-        return new BeerTabDetails { Pots = PotsOf(crates) };
+        return new BeerTabDetails { Pots = [.. pots.Select(pot => PotOf(pot, crates))] };
     }
 
     public async Task<IReadOnlyList<BeerGiverSummary>> GetGiversAsync(CancellationToken ct) =>
@@ -183,31 +164,62 @@ public sealed class BeerTabService
             .ToListAsync(ct);
 
     [Pure]
-    private static IReadOnlyList<BeerTabPotDetails> PotsOf(IReadOnlyList<TabRow> rows) =>
-        [
-            .. rows.GroupBy(row => row.Pot.BeerPotId)
-                .Select(potRows => PotOf(potRows.First().Pot, [.. potRows.Select(r => r.Crate)]))
-                .OrderByDescending(pot => pot.IsOpen)
-                .ThenByDescending(pot => pot.OpenedAt),
-        ];
-
-    [Pure]
-    private static BeerTabPotDetails PotOf(
-        BeerTabPotDetails pot,
-        IReadOnlyList<BeerTabCrateSummary> crates
-    )
+    private static BeerTabPotDetails PotOf(TabPot pot, IReadOnlyList<TabCrate> crates)
     {
-        var open = crates.Where(crate => !crate.IsPaid).ToList();
+        var crateSummaries = crates
+            .Where(crate => crate.BeerPotId == pot.BeerPotId)
+            .Select(crate => crate.Summary)
+            .ToList();
+        var open = crateSummaries.Where(crate => !crate.IsPaid).ToList();
 
-        return pot with
+        return new BeerTabPotDetails
         {
+            BeerPotId = pot.BeerPotId,
+            IsOpen = pot.IsOpen,
+            OpenedAt = pot.OpenedAt,
+            Owner = pot.Owner,
+            PaymentLink = pot.PaymentLink,
+            PaymentNote = pot.PaymentNote,
             OpenCrates = open.Count,
             OpenCents = open.Sum(crate => crate.PriceCents),
-            Crates = crates,
+            Crates = crateSummaries,
         };
     }
 
-    private async Task<Result<BeerCrateBooking>> BookAsync(CrateEntry entry, CancellationToken ct)
+    private async Task<IReadOnlyList<TabCrate>> TabCratesAsync(
+        int personId,
+        CancellationToken ct
+    ) =>
+        await BeerPotLedger
+            .TakenCrates(_dbContext)
+            .Where(crate => crate.PersonId == personId)
+            .OrderByDescending(crate => crate.BookedAt)
+            .ThenByDescending(crate => crate.Id)
+            .Select(crate => new TabCrate(
+                crate.BeerPotId,
+                new BeerTabCrateSummary
+                {
+                    CrateId = crate.Id,
+                    PriceCents = crate.PriceCents,
+                    BookedAt = crate.BookedAt,
+                    EnteredBy =
+                        crate.EnteredBy == null
+                            ? null
+                            : new BeerListPerson
+                            {
+                                PersonId = crate.EnteredBy.Id,
+                                FirstName = crate.EnteredBy.FirstName,
+                                LastName = crate.EnteredBy.LastName,
+                            },
+                    IsPaid = crate.PaidByPaymentId != null,
+                }
+            ))
+            .ToListAsync(ct);
+
+    private async Task<Result<BeerCrateBookingDetails>> BookAsync(
+        CrateEntry entry,
+        CancellationToken ct
+    )
     {
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         var pot = await BeerPotLedger
@@ -215,13 +227,13 @@ public sealed class BeerTabService
             .Select(row => new { row.ClosedAt, row.CratePriceCents })
             .SingleOrDefaultAsync(ct);
         if (pot is null)
-            return Result<BeerCrateBooking>.NotFound(BeerListMessages.UnknownPot);
+            return Result<BeerCrateBookingDetails>.NotFound(BeerListMessages.UnknownPot);
 
         if (pot.ClosedAt is not null)
-            return Result<BeerCrateBooking>.Conflict(ClosedPotMessage);
+            return Result<BeerCrateBookingDetails>.Conflict(ClosedPotMessage);
 
         if (await BeerPotLedger.StockOfAsync(_dbContext, entry.BeerPotId, ct) < entry.Count)
-            return Result<BeerCrateBooking>.Conflict(BelowZeroMessage);
+            return Result<BeerCrateBookingDetails>.Conflict(BelowZeroMessage);
 
         var now = _timeProvider.GetUtcNow();
         var crates = NewCrates(entry, pot.CratePriceCents, now);
@@ -229,8 +241,8 @@ public sealed class BeerTabService
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
 
-        return Result<BeerCrateBooking>.Success(
-            new BeerCrateBooking
+        return Result<BeerCrateBookingDetails>.Success(
+            new BeerCrateBookingDetails
             {
                 CrateIds = [.. crates.Select(crate => crate.Id)],
                 UndoableUntil = now + BeerCrate.UndoWindow,
@@ -267,13 +279,20 @@ public sealed class BeerTabService
         if (crates.Any(crate => crate.UndoneAt is not null))
             return Result.Conflict(UndoneCrateMessage);
 
+        if (crates.Any(crate => crate.IsPaid))
+            return Result.Conflict(PaidCrateMessage);
+
         var crateIds = crates.Select(crate => crate.Id).ToList();
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         if (!await LockOpenPotsAsync(crates, ct))
             return Result.Conflict(ClosedPotMessage);
 
         var undone = await _dbContext
-            .BeerCrates.Where(crate => crateIds.Contains(crate.Id) && crate.UndoneAt == null)
+            .BeerCrates.Where(crate =>
+                crateIds.Contains(crate.Id)
+                && crate.UndoneAt == null
+                && crate.PaidByPaymentId == null
+            )
             .ExecuteUpdateAsync(
                 row =>
                     row.SetProperty(crate => crate.UndoneAt, now)
@@ -317,7 +336,8 @@ public sealed class BeerTabService
                 crate.BeerPotId,
                 crate.EnteredByPersonId,
                 crate.BookedAt,
-                crate.UndoneAt
+                crate.UndoneAt,
+                crate.PaidByPaymentId != null
             ))
             .ToListAsync(ct);
 
@@ -338,8 +358,18 @@ public sealed class BeerTabService
         int BeerPotId,
         int? EnteredByPersonId,
         DateTimeOffset BookedAt,
-        DateTimeOffset? UndoneAt
+        DateTimeOffset? UndoneAt,
+        bool IsPaid
     );
 
-    private sealed record TabRow(BeerTabPotDetails Pot, BeerTabCrateSummary Crate);
+    private sealed record TabPot(
+        int BeerPotId,
+        bool IsOpen,
+        DateTimeOffset OpenedAt,
+        BeerListPerson? Owner,
+        string? PaymentLink,
+        string? PaymentNote
+    );
+
+    private sealed record TabCrate(int BeerPotId, BeerTabCrateSummary Summary);
 }

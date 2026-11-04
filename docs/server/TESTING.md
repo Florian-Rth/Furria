@@ -530,8 +530,10 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    minus taken crates), `Expected.BeerTabOf(personId)` (`ToHaveTakenCrates`, `ToEndWithCratesOf`)
    and `Expected.BeerCrate(id)` (`ToBeTaken`, `ToBeUndone`) read the result. The beer-list tests
    share their cast through `BeerListCast.WardenAndDrinker` (Greta holds `beer_list.manage`, Mira
-   is a member). The never-below-zero race is proven deterministically in `PostMyBeerCratesTests`:
-   the test holds the pot row `FOR UPDATE`, polls `pg_locks` until both bookings wait, then lets go. `beer_list.take` is proven through `BeerListTakeProbe` in
+   is a member). A race on the pot lock is proven deterministically with
+   `_fixture.WhileBeerPotIsLockedAsync(potId, waitingSessions, act, ct)`: it holds the pot row
+   `FOR UPDATE`, polls `pg_locks` until the requests wait, then lets go
+   (`PostMyBeerCratesTests` proves never-below-zero this way). `beer_list.take` is proven through `BeerListTakeProbe` in
    `PermissionAuthorizerTests`.
 
 ### Traps worth knowing

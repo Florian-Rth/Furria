@@ -67,7 +67,8 @@ public sealed record PostBeerCratesForPersonRequest
 
 public sealed class PostBeerCratesForPersonValidator : Validator<PostBeerCratesForPersonRequest>
 {
-    private const string CountMessage = "Gebucht werden 1 bis 20 Kisten auf einmal.";
+    private static readonly string CountMessage =
+        $"Gebucht werden 1 bis {BeerCrate.MaxPerOperatorBooking} Kisten auf einmal.";
 
     public PostBeerCratesForPersonValidator()
     {
