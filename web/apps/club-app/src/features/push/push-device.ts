@@ -15,37 +15,27 @@ export class PushPermissionRefusedError extends Error {
 const hasPushApi = (): boolean =>
   'serviceWorker' in navigator && 'PushManager' in window && 'Notification' in window;
 
-const readRegistration = async (): Promise<ServiceWorkerRegistration | undefined> =>
-  hasPushApi() ? navigator.serviceWorker.getRegistration() : undefined;
-
 const readSubscription = async (): Promise<PushSubscription | null> => {
-  const registration = await readRegistration();
+  const registration = hasPushApi() ? await navigator.serviceWorker.getRegistration() : undefined;
 
   return registration === undefined ? null : registration.pushManager.getSubscription();
 };
 
-const requireRegistration = async (): Promise<ServiceWorkerRegistration> => {
-  const registration = await readRegistration();
-  if (registration === undefined) {
+const activeRegistration = async (): Promise<ServiceWorkerRegistration> => {
+  if (!hasPushApi() || (await navigator.serviceWorker.getRegistration()) === undefined) {
     throw new Error('No service worker can receive pushes on this device.');
   }
 
-  return registration;
+  return navigator.serviceWorker.ready;
 };
 
-export const readPushTraits = async (): Promise<PushTraits> => {
-  const registration = await readRegistration();
-  const subscription =
-    registration === undefined ? null : await registration.pushManager.getSubscription();
-
-  return {
-    canPush: registration !== undefined,
-    system: readInstallTarget().system,
-    standalone: readStandalone(),
-    permission: hasPushApi() ? Notification.permission : 'default',
-    subscribed: subscription !== null,
-  };
-};
+export const readPushTraits = async (): Promise<PushTraits> => ({
+  canPush: hasPushApi(),
+  system: readInstallTarget().system,
+  standalone: readStandalone(),
+  permission: hasPushApi() ? Notification.permission : 'default',
+  subscribed: (await readSubscription()) !== null,
+});
 
 export const askPushPermission = (): Promise<NotificationPermission> =>
   hasPushApi() ? Notification.requestPermission() : Promise.resolve('denied');
@@ -90,7 +80,7 @@ export const subscribeThisDevice = async (
   if ((await permission) !== 'granted') {
     throw new PushPermissionRefusedError();
   }
-  const registration = await requireRegistration();
+  const registration = await activeRegistration();
 
   await announce(await subscriptionFor(registration, accessToken), accessToken);
 };
@@ -101,20 +91,22 @@ export const unsubscribeThisDevice = async (accessToken: string): Promise<void> 
     return;
   }
 
-  await requestPushRemoval(subscription.endpoint, accessToken);
-  await subscription.unsubscribe();
+  try {
+    await requestPushRemoval(subscription.endpoint, accessToken);
+  } finally {
+    await subscription.unsubscribe();
+  }
+};
+
+export const unsubscribeLocally = async (): Promise<void> => {
+  await (await readSubscription())?.unsubscribe();
 };
 
 export const resyncThisDevice = async (accessToken: string): Promise<void> => {
-  const registration = await readRegistration();
-  const subscription =
-    registration === undefined ? null : await registration.pushManager.getSubscription();
-  if (registration === undefined || subscription === null) {
+  if ((await readSubscription()) === null || Notification.permission !== 'granted') {
     return;
   }
-  if (Notification.permission !== 'granted') {
-    return;
-  }
+  const registration = await activeRegistration();
 
   await announce(await subscriptionFor(registration, accessToken), accessToken);
 };

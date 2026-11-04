@@ -7,6 +7,7 @@ describe('AppPathSchema', () => {
     ['an app path with a query', '/system?tab=log', '/system?tab=log'],
     ['a protocol-relative URL', '//evil.example/x', '/'],
     ['a backslash escape', '/\\evil.example', '/'],
+    ['a tab that collapses into a protocol-relative URL', '/\t/evil.example', '/'],
     ['an absolute URL', 'https://evil.example/', '/'],
     ['no path at all', undefined, '/'],
   ])('reads %s', (_case, path, expected) => {

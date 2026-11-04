@@ -29,6 +29,8 @@ export const PUSH_PERMISSION_REFUSED =
 
 export const TEST_PUSH_ACTION = 'Testnachricht senden';
 
+export const TEST_PUSH_FAILED = 'Die Testnachricht ließ sich nicht senden. Versuch es noch einmal.';
+
 export const TEST_PUSH_LEAD =
   'Schickt eine Mitteilung an jedes deiner Geräte, auf dem Benachrichtigungen eingeschaltet sind.';
 

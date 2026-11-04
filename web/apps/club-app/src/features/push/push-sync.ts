@@ -3,28 +3,46 @@ import {
   subscribeToSession,
   withFreshAccessToken,
 } from '@/lib/api/session/session-store';
-import { resyncThisDevice, unsubscribeThisDevice } from './push-device';
+import { resyncThisDevice, unsubscribeLocally, unsubscribeThisDevice } from './push-device';
 import { PushOpenMessageSchema } from './schemas';
 
 let wasAuthenticated = false;
 
 const ignoreFailure = (): void => undefined;
 
+const isAuthenticated = (): boolean => getSessionSnapshot().status === 'authenticated';
+
+const resync = (): void => {
+  void withFreshAccessToken(resyncThisDevice).catch(ignoreFailure);
+};
+
 const resyncOnSignIn = (): void => {
-  const authenticated = getSessionSnapshot().status === 'authenticated';
+  const authenticated = isAuthenticated();
   if (authenticated && !wasAuthenticated) {
-    void withFreshAccessToken(resyncThisDevice).catch(ignoreFailure);
+    resync();
   }
   wasAuthenticated = authenticated;
 };
 
+const resyncInForeground = (): void => {
+  if (document.visibilityState === 'visible' && isAuthenticated()) {
+    resync();
+  }
+};
+
 export const startPushSync = (): void => {
   subscribeToSession(resyncOnSignIn);
+  document.addEventListener('visibilitychange', resyncInForeground);
   resyncOnSignIn();
 };
 
-export const releaseThisDevice = (): Promise<void> =>
-  withFreshAccessToken(unsubscribeThisDevice).catch(ignoreFailure);
+export const releaseThisDevice = async (): Promise<void> => {
+  try {
+    await withFreshAccessToken(unsubscribeThisDevice);
+  } catch {
+    await unsubscribeLocally().catch(ignoreFailure);
+  }
+};
 
 export const listenForPushOpens = (open: (path: string) => void): void => {
   if (!('serviceWorker' in navigator)) {

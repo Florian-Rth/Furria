@@ -8,6 +8,7 @@ import {
   PUSH_SWITCH_FAILED,
   PUSH_SWITCHED_OFF,
   PUSH_SWITCHED_ON,
+  TEST_PUSH_FAILED,
   testPushNoticeOf,
 } from './push-copy';
 import {
@@ -46,6 +47,7 @@ export const usePushReadinessQuery = (): UseQueryResult<PushReadiness, Error> =>
     queryKey: queryKeys.pushDevice,
     queryFn: readPushReadiness,
     retry: false,
+    staleTime: 0,
     refetchOnWindowFocus: true,
   });
 
@@ -57,4 +59,8 @@ export const usePushSwitchMutation = (): UseMutationResult<void, Error, PushSwit
   });
 
 export const useTestPushMutation = (): UseMutationResult<TestPushResult, Error, undefined> =>
-  useApiMutation({ request: requestTestPush, changes: [], notice: { success: testPushNotice } });
+  useApiMutation({
+    request: requestTestPush,
+    changes: [],
+    notice: { success: testPushNotice, failure: () => TEST_PUSH_FAILED },
+  });

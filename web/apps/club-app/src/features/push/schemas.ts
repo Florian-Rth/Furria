@@ -23,7 +23,7 @@ export const PUSH_OPEN_MESSAGE = 'furria:push-open';
 
 export const AppPathSchema = z
   .string()
-  .regex(/^\/(?![/\\])/)
+  .regex(/^\/(?![/\\])\P{Cc}*$/u)
   .catch('/');
 
 export const PushOpenMessageSchema = z.object({
