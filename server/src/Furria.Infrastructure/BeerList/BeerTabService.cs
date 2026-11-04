@@ -27,11 +27,17 @@ public sealed class BeerTabService
         "Eine Kiste lässt sich nur direkt nach dem Buchen zurücknehmen. Später korrigiert sie der Getränkewart.";
 
     private readonly AppDbContext _dbContext;
+    private readonly BeerPaymentService _beerPaymentService;
     private readonly TimeProvider _timeProvider;
 
-    public BeerTabService(AppDbContext dbContext, TimeProvider timeProvider)
+    public BeerTabService(
+        AppDbContext dbContext,
+        BeerPaymentService beerPaymentService,
+        TimeProvider timeProvider
+    )
     {
         _dbContext = dbContext;
+        _beerPaymentService = beerPaymentService;
         _timeProvider = timeProvider;
     }
 
@@ -44,12 +50,15 @@ public sealed class BeerTabService
         if (await OpenPotIdAsync(ct) is not { } openPotId)
             return Result<BeerCrateBookingDetails>.Conflict(NoOpenPotMessage);
 
-        var booked = await BookAsync(new CrateEntry(openPotId, personId, count, personId), ct);
+        var booked = await BookAsync(
+            new CrateEntry(openPotId, personId, count, personId, false),
+            ct
+        );
         if (booked.IsSuccess)
             return booked;
 
         return await OpenPotIdAsync(ct) is { } successorPotId && successorPotId != openPotId
-            ? await BookAsync(new CrateEntry(successorPotId, personId, count, personId), ct)
+            ? await BookAsync(new CrateEntry(successorPotId, personId, count, personId, false), ct)
             : booked;
     }
 
@@ -69,7 +78,8 @@ public sealed class BeerTabService
                 command.BeerPotId,
                 command.PersonId,
                 command.Count,
-                command.EnteredByPersonId
+                command.EnteredByPersonId,
+                command.Paid
             ),
             ct
         );
@@ -244,6 +254,16 @@ public sealed class BeerTabService
         var crates = NewCrates(entry, pot.CratePriceCents, now);
         _dbContext.BeerCrates.AddRange(crates);
         await _dbContext.SaveChangesAsync(ct);
+        int? beerPaymentId = null;
+        if (entry.Paid)
+        {
+            var payment = await PayBookedCratesAsync(entry, ct);
+            if (!payment.IsSuccess)
+                return Result<BeerCrateBookingDetails>.Conflict(payment.Error.Message);
+
+            beerPaymentId = payment.Value.BeerPaymentId;
+        }
+
         await transaction.CommitAsync(ct);
 
         return Result<BeerCrateBookingDetails>.Success(
@@ -251,9 +271,25 @@ public sealed class BeerTabService
             {
                 CrateIds = [.. crates.Select(crate => crate.Id)],
                 UndoableUntil = now + BeerCrate.UndoWindow,
+                BeerPaymentId = beerPaymentId,
             }
         );
     }
+
+    private Task<Result<BeerPaymentDetails>> PayBookedCratesAsync(
+        CrateEntry entry,
+        CancellationToken ct
+    ) =>
+        _beerPaymentService.PayUnderPotLockAsync(
+            new BeerPaymentCommand
+            {
+                BeerPotId = entry.BeerPotId,
+                PersonId = entry.PersonId,
+                Crates = entry.Count,
+                BookedByPersonId = entry.EnteredByPersonId,
+            },
+            ct
+        );
 
     [Pure]
     private static List<BeerCrate> NewCrates(
@@ -366,7 +402,8 @@ public sealed class BeerTabService
         int BeerPotId,
         int PersonId,
         int Count,
-        int? EnteredByPersonId
+        int? EnteredByPersonId,
+        bool Paid
     );
 
     private sealed record CrateState(

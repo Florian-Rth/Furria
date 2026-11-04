@@ -5,6 +5,7 @@ using Furria.Core.Club;
 using Furria.Core.MembershipApplications;
 using Furria.Core.Ties;
 using Furria.Infrastructure.Authorization;
+using Furria.Infrastructure.BeerList;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.MembershipApplications;
@@ -71,6 +72,9 @@ public sealed class ManagementService
             Accounts = managesPersons ? await AccountsAsync(ct) : null,
             Applications = granted.Contains(FurriaPermissions.MembershipApplicationsDecide)
                 ? await ApplicationsAsync(today, ct)
+                : null,
+            BeerList = granted.Contains(FurriaPermissions.BeerListManage)
+                ? await BeerListAsync(ct)
                 : null,
             ToDos = await _toDoService.ForAsync(accountId, ct),
         };
@@ -188,6 +192,30 @@ public sealed class ManagementService
                 ct
             ),
         };
+
+    private async Task<ManageHubBeerList> BeerListAsync(CancellationToken ct)
+    {
+        var openPotId = await _dbContext
+            .BeerPots.Where(pot => pot.ClosedAt == null)
+            .Select(pot => (int?)pot.Id)
+            .SingleOrDefaultAsync(ct);
+        var openCrates = BeerPotLedger
+            .OpenCrates(_dbContext)
+            .Where(crate => crate.PersonId != null);
+
+        return new ManageHubBeerList
+        {
+            HasOpenPot = openPotId is not null,
+            StockCrates = openPotId is { } potId
+                ? await BeerPotLedger.StockOfAsync(_dbContext, potId, ct)
+                : 0,
+            OpenTabCount = await openCrates
+                .Select(crate => crate.PersonId)
+                .Distinct()
+                .CountAsync(ct),
+            OpenCents = await openCrates.SumAsync(crate => crate.PriceCents, ct),
+        };
+    }
 
     private async Task<ManageHubKeys> KeysAsync(DateOnly today, CancellationToken ct)
     {

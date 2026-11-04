@@ -34,6 +34,18 @@ public sealed class BeerPaymentService
         if (!await BeerPotLedger.LockedPot(_dbContext, command.BeerPotId).AnyAsync(ct))
             return Result<BeerPaymentDetails>.NotFound(BeerListMessages.UnknownPot);
 
+        var paid = await PayUnderPotLockAsync(command, ct);
+        if (paid.IsSuccess)
+            await transaction.CommitAsync(ct);
+
+        return paid;
+    }
+
+    internal async Task<Result<BeerPaymentDetails>> PayUnderPotLockAsync(
+        BeerPaymentCommand command,
+        CancellationToken ct
+    )
+    {
         var settled = await OldestOpenCratesAsync(command, ct);
         if (settled.Count < command.Crates)
             return Result<BeerPaymentDetails>.Conflict(MoreThanOpenMessage);
@@ -43,8 +55,6 @@ public sealed class BeerPaymentService
         await _dbContext.SaveChangesAsync(ct);
         if (await SettleAsync(settled, payment.Id, ct) != settled.Count)
             return Result<BeerPaymentDetails>.Conflict(MoreThanOpenMessage);
-
-        await transaction.CommitAsync(ct);
 
         return Result<BeerPaymentDetails>.Success(
             new BeerPaymentDetails
