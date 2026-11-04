@@ -205,6 +205,17 @@ const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
           summaryParts: toKeyParts(hub.keys.holdingCount, hub.keys.holderCount),
           attention: null,
         },
+  beerList: ({ hub }) =>
+    hub.beerList === null
+      ? null
+      : {
+          isEmpty: !hub.beerList.hasOpenPot,
+          summaryParts: [
+            toCount(hub.beerList.stockCrates, 'Kiste', 'Kisten'),
+            toCount(hub.beerList.openTabCount, 'Deckel offen', 'Deckel offen'),
+          ],
+          attention: null,
+        },
 };
 
 const toStatus = (facts: ManageRowFacts): ManageRowStatus | undefined => {

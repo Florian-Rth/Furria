@@ -37,7 +37,10 @@ export const DOMAIN_CHANGES = [
   'actEvening',
   'runningOrder',
   'beerListEnrollment',
+  'beerPot',
+  'beerStock',
   'beerCrate',
+  'beerPayment',
   'pushDevice',
 ] as const;
 export type DomainChange = (typeof DOMAIN_CHANGES)[number];
@@ -111,6 +114,11 @@ export const READ_NAMES = [
   'beerPot',
   'beerTab',
   'beerGivers',
+  'beerPots',
+  'beerEnrollments',
+  'beerStock',
+  'beerTabs',
+  'beerJournal',
 ] as const;
 export type ReadName = (typeof READ_NAMES)[number];
 
@@ -183,6 +191,11 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   beerPot: ['beer-list', 'pot'],
   beerTab: ['beer-list', 'tab'],
   beerGivers: ['beer-list', 'givers'],
+  beerPots: ['beer-list', 'pots'],
+  beerEnrollments: ['beer-list', 'enrollments'],
+  beerStock: ['beer-list', 'stock'],
+  beerTabs: ['beer-list', 'tabs'],
+  beerJournal: ['beer-list', 'journal'],
 };
 
 const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
@@ -204,6 +217,9 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   passkeySupport: [],
   pushDevice: ['pushDevice'],
   start: [
+    'beerPot',
+    'beerCrate',
+    'beerPayment',
     'person',
     'picture',
     'membership',
@@ -227,7 +243,6 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'announcementSeen',
     'toDoMark',
     'media',
-    'beerCrate',
   ],
   clubHub: [
     'sessionRecord',
@@ -298,6 +313,10 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'keyHolding',
     'clubRecord',
     'toDoMark',
+    'beerPot',
+    'beerStock',
+    'beerCrate',
+    'beerPayment',
   ],
   invitationRoundPreview: ['account', 'person', 'membership'],
   clubRecord: ['clubRecord'],
@@ -415,9 +434,14 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'groupAdmin',
     'membership',
   ],
-  beerPot: ['beerListEnrollment'],
-  beerTab: ['beerCrate', 'beerListEnrollment'],
-  beerGivers: ['beerCrate', 'beerListEnrollment'],
+  beerPot: ['beerPot', 'beerListEnrollment', 'person'],
+  beerTab: ['beerPot', 'beerCrate', 'beerPayment', 'beerListEnrollment', 'person'],
+  beerGivers: ['beerCrate', 'beerListEnrollment', 'person'],
+  beerPots: ['beerPot', 'beerCrate', 'beerPayment', 'beerStock', 'person'],
+  beerEnrollments: ['beerListEnrollment', 'person'],
+  beerStock: ['beerPot', 'beerStock', 'beerCrate', 'person'],
+  beerTabs: ['beerPot', 'beerCrate', 'beerPayment', 'beerListEnrollment', 'person'],
+  beerJournal: ['beerPot', 'beerCrate', 'beerPayment', 'person'],
 };
 
 export const staleReadsAfter = (changes: readonly DomainChange[]): ReadName[] =>
@@ -519,4 +543,9 @@ export const queryKeys = {
   beerPot: READ_ROOTS.beerPot,
   beerTab: READ_ROOTS.beerTab,
   beerGivers: READ_ROOTS.beerGivers,
+  beerPots: READ_ROOTS.beerPots,
+  beerEnrollments: READ_ROOTS.beerEnrollments,
+  beerStock: (beerPotId: number): QueryKey => keyOf('beerStock', beerPotId),
+  beerTabs: (beerPotId: number): QueryKey => keyOf('beerTabs', beerPotId),
+  beerJournal: (beerPotId: number): QueryKey => keyOf('beerJournal', beerPotId),
 } as const;

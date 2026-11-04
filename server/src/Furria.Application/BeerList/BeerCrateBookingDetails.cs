@@ -5,4 +5,6 @@ public sealed record BeerCrateBookingDetails
     public required IReadOnlyList<int> CrateIds { get; init; }
 
     public required DateTimeOffset UndoableUntil { get; init; }
+
+    public int? BeerPaymentId { get; init; }
 }

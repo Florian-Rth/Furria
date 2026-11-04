@@ -34,26 +34,11 @@ public sealed class BeerPaymentService
         if (!await BeerPotLedger.LockedPot(_dbContext, command.BeerPotId).AnyAsync(ct))
             return Result<BeerPaymentDetails>.NotFound(BeerListMessages.UnknownPot);
 
-        var settled = await OldestOpenCratesAsync(command, ct);
-        if (settled.Count < command.Crates)
-            return Result<BeerPaymentDetails>.Conflict(MoreThanOpenMessage);
+        var paid = await PayUnderPotLockAsync(command, ct);
+        if (paid.IsSuccess)
+            await transaction.CommitAsync(ct);
 
-        var payment = NewPayment(command, settled, _timeProvider.GetUtcNow());
-        _dbContext.BeerPayments.Add(payment);
-        await _dbContext.SaveChangesAsync(ct);
-        if (await SettleAsync(settled, payment.Id, ct) != settled.Count)
-            return Result<BeerPaymentDetails>.Conflict(MoreThanOpenMessage);
-
-        await transaction.CommitAsync(ct);
-
-        return Result<BeerPaymentDetails>.Success(
-            new BeerPaymentDetails
-            {
-                BeerPaymentId = payment.Id,
-                Crates = payment.Crates,
-                AmountCents = payment.AmountCents,
-            }
-        );
+        return paid;
     }
 
     public async Task<Result> UndoAsync(
@@ -118,6 +103,31 @@ public sealed class BeerPaymentService
         return Result<IReadOnlyList<BeerPotTabSummary>>.Success([
             .. tallies.Select(tally => TabOf(tally, enrolled, payments)),
         ]);
+    }
+
+    internal async Task<Result<BeerPaymentDetails>> PayUnderPotLockAsync(
+        BeerPaymentCommand command,
+        CancellationToken ct
+    )
+    {
+        var settled = await OldestOpenCratesAsync(command, ct);
+        if (settled.Count < command.Crates)
+            return Result<BeerPaymentDetails>.Conflict(MoreThanOpenMessage);
+
+        var payment = NewPayment(command, settled, _timeProvider.GetUtcNow());
+        _dbContext.BeerPayments.Add(payment);
+        await _dbContext.SaveChangesAsync(ct);
+        if (await SettleAsync(settled, payment.Id, ct) != settled.Count)
+            return Result<BeerPaymentDetails>.Conflict(MoreThanOpenMessage);
+
+        return Result<BeerPaymentDetails>.Success(
+            new BeerPaymentDetails
+            {
+                BeerPaymentId = payment.Id,
+                Crates = payment.Crates,
+                AmountCents = payment.AmountCents,
+            }
+        );
     }
 
     [Pure]

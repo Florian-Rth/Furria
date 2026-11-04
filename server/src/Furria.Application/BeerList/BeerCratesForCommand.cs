@@ -9,4 +9,6 @@ public sealed record BeerCratesForCommand
     public required int Count { get; init; }
 
     public required int? EnteredByPersonId { get; init; }
+
+    public required bool Paid { get; init; }
 }

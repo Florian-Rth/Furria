@@ -34,6 +34,7 @@ public sealed class PostBeerCratesForPerson
                 PersonId = req.PersonId,
                 Count = req.Count,
                 EnteredByPersonId = User.PersonId(),
+                Paid = req.Paid,
             },
             ct
         );
@@ -49,6 +50,7 @@ public sealed class PostBeerCratesForPerson
             {
                 CrateIds = result.Value.CrateIds,
                 UndoableUntil = result.Value.UndoableUntil,
+                BeerPaymentId = result.Value.BeerPaymentId,
             },
             cancellation: ct
         );
@@ -63,6 +65,8 @@ public sealed record PostBeerCratesForPersonRequest
     public required int PersonId { get; init; }
 
     public required int Count { get; init; }
+
+    public bool Paid { get; init; }
 }
 
 public sealed class PostBeerCratesForPersonValidator : Validator<PostBeerCratesForPersonRequest>
@@ -85,4 +89,6 @@ public sealed record PostBeerCratesForPersonResponse
     public required IReadOnlyList<int> CrateIds { get; init; }
 
     public required DateTimeOffset UndoableUntil { get; init; }
+
+    public required int? BeerPaymentId { get; init; }
 }

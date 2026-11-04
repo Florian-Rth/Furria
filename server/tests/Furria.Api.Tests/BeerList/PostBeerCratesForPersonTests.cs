@@ -70,6 +70,137 @@ public sealed class PostBeerCratesForPersonTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_BookTheCratesAsPaidInOnePayment_When_TheOperatorMarksThemPaid()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = _fixture.TimeProvider.GetUtcNow();
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                WardenAndDrinker(builder)
+                    .BeerList(beerList =>
+                        beerList
+                            .AddBeerPot(Pot, Warden, CratePrice)
+                            .AddBeerDelivery(Pot, 30)
+                            .AddBeerListEnrollment("mira-bier", Drinker)
+                    ),
+            ct
+        );
+        var potId = ctx.BeerList.Pots.IdOf(Pot);
+
+        var client = await ctx.Identity.ClientForAsync(Warden, ct);
+        var (response, result) = await client.POSTAsync<
+            PostBeerCratesForPerson,
+            PostBeerCratesForPersonRequest,
+            PostBeerCratesForPersonResponse
+        >(
+            new()
+            {
+                BeerPotId = potId,
+                PersonId = ctx.Identity.People.IdOf(Drinker),
+                Count = 3,
+                Paid = true,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(result.BeerPaymentId);
+        await ctx
+            .Expected.BeerPayment(result.BeerPaymentId.Value)
+            .ToSettle(3, 3 * CratePrice, ctx.Identity.People.IdOf(Warden), now)
+            .BeerTabOf(ctx.Identity.People.IdOf(Drinker))
+            .ToHaveOpenAndPaidCrates(potId, 0, 3)
+            .BeerStockOfPot(potId)
+            .ToStandAt(27)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_SettleHerOldestOpenCratesFirst_When_SheAlreadyOwesOlderCratesAndTheNewOnesArePaid()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = _fixture.TimeProvider.GetUtcNow();
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                WardenAndDrinker(builder)
+                    .BeerList(beerList =>
+                        beerList
+                            .AddBeerPot(Pot, Warden, CratePrice)
+                            .AddBeerDelivery(Pot, 30)
+                            .AddBeerListEnrollment("mira-bier", Drinker)
+                            .AddBeerCrate("alt", Pot, Drinker, now.AddDays(-9))
+                    ),
+            ct
+        );
+        var potId = ctx.BeerList.Pots.IdOf(Pot);
+
+        var client = await ctx.Identity.ClientForAsync(Warden, ct);
+        var (response, result) = await client.POSTAsync<
+            PostBeerCratesForPerson,
+            PostBeerCratesForPersonRequest,
+            PostBeerCratesForPersonResponse
+        >(
+            new()
+            {
+                BeerPotId = potId,
+                PersonId = ctx.Identity.People.IdOf(Drinker),
+                Count = 2,
+                Paid = true,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(result.BeerPaymentId);
+        await ctx
+            .Expected.BeerCrate(ctx.BeerList.Crates.IdOf("alt"))
+            .ToBePaidBy(result.BeerPaymentId)
+            .BeerCrate(result.CrateIds[0])
+            .ToBePaidBy(result.BeerPaymentId)
+            .BeerCrate(result.CrateIds[1])
+            .ToBePaidBy(null)
+            .BeerTabOf(ctx.Identity.People.IdOf(Drinker))
+            .ToHaveOpenAndPaidCrates(potId, 1, 2)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_BookNeitherCratesNorAPayment_When_PaidCratesWouldEmptyTheStockBelowZero()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                WardenAndDrinker(builder)
+                    .BeerList(beerList =>
+                        beerList
+                            .AddBeerPot(Pot, Warden)
+                            .AddBeerDelivery(Pot, 1)
+                            .AddBeerListEnrollment("mira-bier", Drinker)
+                    ),
+            ct
+        );
+        var potId = ctx.BeerList.Pots.IdOf(Pot);
+
+        var client = await ctx.Identity.ClientForAsync(Warden, ct);
+        var response = await client.POSTAsync<
+            PostBeerCratesForPerson,
+            PostBeerCratesForPersonRequest
+        >(
+            new()
+            {
+                BeerPotId = potId,
+                PersonId = ctx.Identity.People.IdOf(Drinker),
+                Count = 2,
+                Paid = true,
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+        await ctx
+            .Expected.BeerTabOf(ctx.Identity.People.IdOf(Drinker))
+            .ToHaveOpenAndPaidCrates(potId, 0, 0)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_RefuseTheBooking_When_ThePersonWasNeverEnrolled()
     {
         var ct = TestContext.Current.CancellationToken;
