@@ -217,12 +217,12 @@ Built-phase notes (phase 5):
 
 ### Phase 6 — Pallet code and booking page
 Goal: scan, confirm, done, on Android and iOS.
-- [ ] `/beer-list/book`: bare page, no shell, no navigation away; hold-to-confirm, count, undo window
-- [ ] Install gate exemption (`install-gate.ts`) + inline sign-in in the tab (iOS keeps its own Safari session)
-- [ ] Not enrolled → inline enrollment with the declaration, then the crate; not affiliated → plain explanation
-- [ ] Android: confirm the installed app captures the link (manifest scope/`launch_handler`); device check on iPhone + Pixel
+- [x] `/beer-list/book`: bare page, no shell, no navigation away; hold-to-confirm, count, undo window
+- [x] Install gate exemption (`install-gate.ts`) + inline sign-in in the tab (iOS keeps its own Safari session)
+- [x] Not enrolled → inline enrollment with the declaration, then the crate; not affiliated → plain explanation
+- [ ] Android: confirm the installed app captures the link (manifest scope/`launch_handler`); device check on iPhone + Pixel — manifest `launch_handler` + `handle_links` built; device check owed
 - [x] Hub: printable pallet code (`KkQrCode`) with print-ready layout
-- [ ] ADR-0031 amendment rewritten from "decided" to built, with the route
+- [x] ADR-0031 amendment rewritten from "decided" to built, with the route
 
 ### Phase 7 — Web Push foundation
 Goal: the platform can push to installed apps.
