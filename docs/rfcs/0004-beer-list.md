@@ -192,11 +192,17 @@ Built-phase notes (phase 4):
 
 ### Phase 5 — Payments and the Start task
 Goal: operators settle tabs; open tabs reach their holders on Start.
-- [ ] Core: `BeerPayment` (pot, person, crate count, booked by, at) settling oldest open crates, migration
-- [ ] Rules: whole crates only, never more than open; a correction of a payment by an operator
-- [ ] Endpoints + tests: book payment, tabs with open/paid for operators, own tab open/paid
-- [ ] Hub: tabs table with open/paid and the payment action in the picked design
-- [ ] Start: an open tab as a personal task with the amount and the owner's payment details (Start service + client)
+- [x] Core: `BeerPayment` (pot, person, crate count, booked by, at) settling oldest open crates, migration
+- [x] Rules: whole crates only, never more than open; a correction of a payment by an operator
+- [x] Endpoints + tests: book payment, tabs with open/paid for operators, own tab open/paid
+- [ ] Hub: tabs table with open/paid and the payment action in the picked design (waits for the phase 1 pick)
+- [x] Start: an open tab as a personal task with the amount and the owner's payment details (Start service + client)
+
+Built-phase notes (phase 5):
+- A payment settles the oldest open crates of one pot. The FK `(paid_by_payment_id, beer_pot_id)` keeps it inside the pot. Correction = undo the payment (its crates reopen; the row stays as history).
+- A closed pot's open crates stay payable. The tabs read works for closed pots.
+- Start: the "Dein Deckel" tile per owed pot, oldest debt first, opening the paypal.me link with the amount. Its header link to `/beer-list` follows once the member screen exists.
+- Open owner's call: a former enrollee with a fully paid tab loses `GET beer-list/tab` (403), so her paid history is gone.
 
 ### Phase 6 — Pallet code and booking page
 Goal: scan, confirm, done, on Android and iOS.
