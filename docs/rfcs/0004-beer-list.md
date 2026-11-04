@@ -222,10 +222,16 @@ Built-phase notes (phase 7):
 
 ### Phase 8 — Reminders and the stock warning
 Goal: open tabs and running out remind by themselves.
-- [ ] Hosted worker: tabs whose oldest open crate is ≥ 7 days and last reminder ≥ 7 days ago, inside 10:00–20:00 Europe/Berlin → push; state per person
-- [ ] Hosted worker: projected empty within 7 days → one push to operators; re-arms after a delivery
-- [ ] Tests for both schedules with a controllable clock (no `Task.Delay`)
-- [ ] Notification copy + click targets (own tab / hub stock panel)
+- [x] Hosted worker: tabs whose oldest open crate is ≥ 7 days and last reminder ≥ 7 days ago, inside 10:00–20:00 Europe/Berlin → push; state per person
+- [x] Hosted worker: projected empty within 7 days → one push to operators; re-arms after a delivery
+- [x] Tests for both schedules with a controllable clock (no `Task.Delay`)
+- [x] Notification copy + click targets (own tab / hub stock panel)
+
+Built-phase notes (phase 8):
+- Workers `BeerTabReminders` and `BeerStockWarnings` run every 15 minutes, inside 10:00–20:00 Europe/Berlin (the stock warning too).
+- A notice counts only once a device received it, so someone who turns push on later still gets it.
+- Click targets: tab reminder → `/beer-list`, stock warning → `/manage/beer-list/stock`. Both are the final routes for phases 4/3's screens.
+- Settling a tab needs no reset write: the next reminder follows the new oldest open crate.
 
 ### Phase 9 — Handover
 Goal: the pot changes hands cleanly.
