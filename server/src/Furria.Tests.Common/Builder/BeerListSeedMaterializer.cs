@@ -5,6 +5,8 @@ namespace Furria.Tests.Common.Builder;
 
 internal static class BeerListSeedMaterializer
 {
+    private const int SeededPaymentId = 1;
+
     private static readonly TimeSpan SeededAge = TimeSpan.FromDays(30);
     private static readonly TimeSpan SeededStockAge = TimeSpan.FromDays(10);
 
@@ -40,6 +42,10 @@ internal static class BeerListSeedMaterializer
             StringComparer.Ordinal
         );
         dbContext.BeerCrates.AddRange(crates.Values);
+
+        dbContext.BeerTabReminders.AddRange(
+            recorded.TabReminders.Select(intent => NewTabReminder(intent, personIds))
+        );
 
         await dbContext.SaveChangesAsync(ct);
 
@@ -100,8 +106,19 @@ internal static class BeerListSeedMaterializer
             ),
             BookedAt = intent.BookedAt ?? now - SeededStockAge,
             UndoneAt = intent.UndoneAt,
+            PaidByPaymentId = intent.Paid ? SeededPaymentId : null,
         };
     }
+
+    private static BeerTabReminder NewTabReminder(
+        BeerListSeedBuilder.BeerTabReminderIntent intent,
+        IReadOnlyDictionary<string, int> personIds
+    ) =>
+        new()
+        {
+            PersonId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person"),
+            SentAt = intent.SentAt,
+        };
 
     private static BeerPot PotOf(IReadOnlyDictionary<string, BeerPot> pots, string potAlias) =>
         pots.TryGetValue(potAlias, out var pot)

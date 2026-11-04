@@ -23,6 +23,8 @@ public sealed class BeerPot : ITimestamped
 
     public DateTimeOffset? ClosedAt { get; set; }
 
+    public DateTimeOffset? StockWarningSentAt { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }

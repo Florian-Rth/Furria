@@ -191,6 +191,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(500)")
                         .HasColumnName("payment_note");
 
+                    b.Property<DateTimeOffset?>("StockWarningSentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("stock_warning_sent_at");
+
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -278,6 +282,22 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_beer_stock_movement_kind", "(kind IN ('Delivery', 'HandoverCarry') AND reason IS NULL AND crates > 0) OR (kind = 'Correction' AND reason IS NOT NULL AND (reason = 'Miscount' OR (reason IN ('Shrinkage', 'Breakage') AND crates < 0)))");
                         });
+                });
+
+            modelBuilder.Entity("Furria.Core.BeerList.BeerTabReminder", b =>
+                {
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateTimeOffset>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.HasKey("PersonId")
+                        .HasName("pk_beer_tab_reminder");
+
+                    b.ToTable("beer_tab_reminder", (string)null);
                 });
 
             modelBuilder.Entity("Furria.Core.Club.Announcement", b =>
@@ -4589,6 +4609,18 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("BookedBy");
 
                     b.Navigation("Pot");
+                });
+
+            modelBuilder.Entity("Furria.Core.BeerList.BeerTabReminder", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithOne()
+                        .HasForeignKey("Furria.Core.BeerList.BeerTabReminder", "PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_beer_tab_reminder_person_person_id");
+
+                    b.Navigation("Person");
                 });
 
             modelBuilder.Entity("Furria.Core.Club.Announcement", b =>

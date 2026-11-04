@@ -1,0 +1,124 @@
+using Furria.Application.Authorization;
+using Furria.Application.Push;
+using Furria.Core.BeerList;
+using Furria.Core.Club;
+using Furria.Infrastructure.Authorization;
+using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Push;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+
+namespace Furria.Infrastructure.BeerList;
+
+public sealed class BeerStockWarningService
+{
+    private readonly AppDbContext _dbContext;
+    private readonly BeerStockService _beerStockService;
+    private readonly PushSender _pushSender;
+    private readonly TimeProvider _timeProvider;
+    private readonly ILogger<BeerStockWarningService> _logger;
+
+    public BeerStockWarningService(
+        AppDbContext dbContext,
+        BeerStockService beerStockService,
+        PushSender pushSender,
+        TimeProvider timeProvider,
+        ILogger<BeerStockWarningService> logger
+    )
+    {
+        _dbContext = dbContext;
+        _beerStockService = beerStockService;
+        _pushSender = pushSender;
+        _timeProvider = timeProvider;
+        _logger = logger;
+    }
+
+    public async Task WarnIfRunningOutAsync(CancellationToken ct)
+    {
+        var now = _timeProvider.GetUtcNow();
+        if (!BeerListNoticeSchedule.IsSendingTime(now))
+            return;
+
+        var beerPotId = await ArmedOpenPotIdAsync(ct);
+        if (beerPotId is not { } armedPotId)
+            return;
+
+        var stock = await _beerStockService.GetStockAsync(armedPotId, ct);
+        var today = ClubClock.DayOf(now);
+        if (
+            !stock.IsSuccess
+            || stock.Value.Forecast.ProjectedEmptyOn is not { } projectedEmptyOn
+            || !BeerListNoticeSchedule.IsStockWarningDue(projectedEmptyOn, today)
+        )
+            return;
+
+        await RecordWarningAsync(armedPotId, now, ct);
+        await WarnOperatorsAsync(
+            armedPotId,
+            BeerListPushes.StockWarning(stock.Value.Crates, projectedEmptyOn, today),
+            today,
+            ct
+        );
+    }
+
+    private async Task WarnOperatorsAsync(
+        int beerPotId,
+        PushMessage message,
+        DateOnly today,
+        CancellationToken ct
+    )
+    {
+        var delivered = 0;
+        foreach (var accountId in await OperatorAccountsAsync(today, ct))
+            delivered += (await _pushSender.SendAsync(accountId, message, ct)).Delivered;
+
+        _logger.LogInformation(
+            "Beer stock warning for pot {BeerPotId} reached {DeliveredDevices} devices",
+            beerPotId,
+            delivered
+        );
+    }
+
+    private Task<int?> ArmedOpenPotIdAsync(CancellationToken ct) =>
+        _dbContext
+            .BeerPots.AsNoTracking()
+            .Where(pot => pot.ClosedAt == null)
+            .Where(pot =>
+                pot.StockWarningSentAt == null
+                || _dbContext.BeerStockMovements.Any(movement =>
+                    movement.BeerPotId == pot.Id
+                    && movement.Kind == BeerStockMovementKind.Delivery
+                    && movement.BookedAt > pot.StockWarningSentAt
+                )
+            )
+            .Select(pot => (int?)pot.Id)
+            .SingleOrDefaultAsync(ct);
+
+    private Task RecordWarningAsync(int beerPotId, DateTimeOffset sentAt, CancellationToken ct) =>
+        _dbContext
+            .BeerPots.Where(pot => pot.Id == beerPotId)
+            .ExecuteUpdateAsync(
+                setters => setters.SetProperty(pot => pot.StockWarningSentAt, sentAt),
+                ct
+            );
+
+    private Task<List<int>> OperatorAccountsAsync(DateOnly today, CancellationToken ct)
+    {
+        var operatorIds = PermissionHolderQuery.PersonIdsHolding(
+            _dbContext,
+            FurriaPermissions.BeerListManage,
+            today
+        );
+
+        return _dbContext
+            .Users.AsNoTracking()
+            .Where(account =>
+                account.PersonId != null
+                && operatorIds.Contains(account.PersonId.Value)
+                && !account.IsDisabled
+            )
+            .OrderBy(account => account.Id)
+            .Select(account => account.Id)
+            .ToListAsync(ct);
+    }
+}

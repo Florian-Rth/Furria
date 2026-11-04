@@ -24,4 +24,7 @@ internal static class BeerPotLedger
 
     internal static IQueryable<BeerCrate> TakenCrates(AppDbContext dbContext) =>
         dbContext.BeerCrates.AsNoTracking().Where(crate => crate.UndoneAt == null);
+
+    internal static IQueryable<BeerCrate> OpenCrates(AppDbContext dbContext) =>
+        TakenCrates(dbContext).Where(crate => crate.PaidByPaymentId == null);
 }

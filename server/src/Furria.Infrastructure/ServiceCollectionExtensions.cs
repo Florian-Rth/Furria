@@ -108,6 +108,8 @@ public static class ServiceCollectionExtensions
         services.AddScoped<BeerListService>();
         services.AddScoped<BeerStockService>();
         services.AddScoped<BeerTabService>();
+        services.AddScoped<BeerTabReminderService>();
+        services.AddScoped<BeerStockWarningService>();
         services.AddScoped<AnnouncementService>();
         services.AddScoped<CalendarService>();
         services.AddScoped<EventService>();
@@ -192,6 +194,8 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<LogEntryPurge>();
         services.AddHostedService<MediaStorageSurvey>();
         services.AddHostedService<ActCastFreeze>();
+        services.AddHostedService<BeerTabReminders>();
+        services.AddHostedService<BeerStockWarnings>();
         services.Configure<DataProtectionTokenProviderOptions>(options =>
             options.TokenLifespan = PasswordResetService.LinkLifetime
         );

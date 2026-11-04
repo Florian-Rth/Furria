@@ -170,6 +170,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<BeerCrate> BeerCrates => Set<BeerCrate>();
 
+    public DbSet<BeerTabReminder> BeerTabReminders => Set<BeerTabReminder>();
+
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
 
