@@ -7,6 +7,7 @@ import {
   requestBeerCratesBooking,
   requestBeerCratesUndo,
   requestBeerGivers,
+  requestBeerListEnrollment,
   requestMyBeerTab,
   requestOpenBeerPot,
 } from './requests';
@@ -38,3 +39,9 @@ export const useBeerCratesBooking = (): UseMutationResult<BookedBeerCrates, Erro
 
 export const useBeerCratesUndo = (): UseMutationResult<void, Error, readonly number[]> =>
   useApiMutation({ request: requestBeerCratesUndo, changes: ['beerCrate'] });
+
+export const useBeerListJoin = (): UseMutationResult<void, Error, void> =>
+  useApiMutation({
+    request: (_input, accessToken) => requestBeerListEnrollment(accessToken),
+    changes: ['beerListEnrollment'],
+  });

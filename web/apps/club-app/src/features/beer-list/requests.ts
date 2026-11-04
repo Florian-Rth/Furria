@@ -38,3 +38,18 @@ export const requestBeerCratesUndo = (
     schema: NoContentSchema,
     accessToken,
   });
+
+export const requestBeerListEnrollment = (accessToken: string): Promise<void> =>
+  apiFetch('/api/beer-list/enrollment', {
+    method: 'POST',
+    body: { confirmsDeclaration: true },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestBeerListLeave = (accessToken: string): Promise<void> =>
+  apiFetch('/api/beer-list/enrollment/end', {
+    method: 'POST',
+    schema: NoContentSchema,
+    accessToken,
+  });

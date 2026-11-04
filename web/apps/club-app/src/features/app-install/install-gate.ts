@@ -8,7 +8,12 @@ export interface InstallGateInput {
   pathname: string;
 }
 
-const TAB_LINK_PATHS = [/^\/reset-password\/?$/, /^\/invitation(\/.*)?$/, /^\/photos\/?$/];
+const TAB_LINK_PATHS = [
+  /^\/reset-password\/?$/,
+  /^\/invitation(\/.*)?$/,
+  /^\/photos\/?$/,
+  /^\/beer-list\/book\/?$/,
+];
 
 export const isTabLinkPath = (pathname: string): boolean =>
   TAB_LINK_PATHS.some((path) => path.test(pathname));

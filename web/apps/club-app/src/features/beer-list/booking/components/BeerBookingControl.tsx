@@ -1,11 +1,8 @@
-import { KkMeta } from '@furria/ui/KkMeta';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { formatEuroCents } from '@/lib/money';
-import { priceNote } from '../booking-copy';
 import type { BeerBooking } from '../use-beer-booking';
-import { BeerBookingChoose } from './BeerBookingChoose';
 import { BeerBookingFailure } from './BeerBookingFailure';
+import { BeerBookingOffer } from './BeerBookingOffer';
 import { BeerBookingUndo } from './BeerBookingUndo';
 
 interface BeerBookingControlProps {
@@ -13,15 +10,11 @@ interface BeerBookingControlProps {
 }
 
 export const BeerBookingControl: FC<BeerBookingControlProps> = ({ booking }) => {
-  const priceLine = priceNote(formatEuroCents(booking.priceCents));
   const control =
     booking.phase === 'undo' ? (
       <BeerBookingUndo booking={booking} />
     ) : (
-      <>
-        <BeerBookingChoose booking={booking} />
-        <KkMeta>{priceLine}</KkMeta>
-      </>
+      <BeerBookingOffer booking={booking} />
     );
 
   return (

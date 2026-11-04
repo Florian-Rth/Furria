@@ -1,4 +1,5 @@
 import type { UseMutationResult } from '@tanstack/react-query';
+import { requestBeerListEnrollment, requestBeerListLeave } from '@/features/beer-list/requests';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import type { Me } from '@/lib/api/schemas';
@@ -6,12 +7,7 @@ import { queryKeys } from '@/lib/query/reads';
 import { BEER_LIST_ENROLLED_MESSAGE, BEER_LIST_LEFT_MESSAGE } from './profile-beer-list-labels';
 import { CONTACT_DETAILS_SAVED_MESSAGE, toVisibilitySavedMessage } from './profile-labels';
 import { toVisibilityErrorMessage } from './profile-messages';
-import {
-  requestBeerListEnrollment,
-  requestBeerListLeave,
-  requestContactDetailsUpdate,
-  requestContactVisibility,
-} from './requests';
+import { requestContactDetailsUpdate, requestContactVisibility } from './requests';
 import type { ContactDetailsForm } from './schemas';
 
 const applyVisibility = (current: Me | undefined, visible: boolean): Me | undefined => {

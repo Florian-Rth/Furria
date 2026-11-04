@@ -53,25 +53,4 @@ export const LAB_BEER_DRAFTS: readonly LabBeerDraft[] = [
     icon: 'manage',
     to: '/lab/beer-hub-c',
   },
-  {
-    key: 'book-a',
-    label: 'A · Buchen',
-    meta: 'Palettencode-Seite',
-    icon: 'qr',
-    to: '/lab-beer-book-a',
-  },
-  {
-    key: 'book-b',
-    label: 'B · Buchen',
-    meta: 'Palettencode-Seite',
-    icon: 'qr',
-    to: '/lab-beer-book-b',
-  },
-  {
-    key: 'book-c',
-    label: 'C · Buchen',
-    meta: 'Palettencode-Seite',
-    icon: 'qr',
-    to: '/lab-beer-book-c',
-  },
 ];
