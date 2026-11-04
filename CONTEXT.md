@@ -1369,10 +1369,76 @@ _UI copy_: Beitrag
 _Avoid_: dues, subscription fee, contribution
 
 **Ledger**:
-The single source of truth for all money movements (fees, shop, drinks till, tickets). Payment
+The single source of truth for all of the club's money movements (fees, shop, tickets). Payment
 providers (Stripe, PayPal, cash) are pluggable ways to settle ledger entries, never a parallel
-truth.
+truth. The **beer list** is not club money and never enters it (decided 2026-11-04).
 _Avoid_: balance table, payments table (as source of truth)
+
+**Beer list**:
+A private pot outside the club's books: the **drinks warden** buys the beer out of pocket,
+members pay for what they take, and the pot pays the warden back and funds the next purchase
+(decided 2026-11-04). Exactly one person fronts the money; nobody else's purchases are tracked —
+if someone helps out, they settle with the warden privately. The pot names its **owner** (one
+person) as a fact of its own, never derived from who holds a role: a permission only decides who
+may operate it, and several people may, but only the owner is owed money. A handover closes the
+owner's pot (open crates stay owed to her, the remaining crates pass to the successor as a count
+only — no amount in euros, whatever the two settle is private) and the successor opens a new one
+(decided 2026-11-04). A pot lives as long as its owner
+holds it — it knows no **session** boundary; "this session" is only a view on it. Whoever may
+operate the pot may edit its **stock** freely: book crates in and out and correct any count
+(decided 2026-11-04). The pot knows only what members owe and pay, never what the beer cost the
+owner — whether she is paid back is her own reckoning, not the app's (decided 2026-11-04). The
+only thing on the list is the **crate** of beer: one item, one price, always whole crates — no
+other drinks, no single bottles (decided 2026-11-04). A crate on someone's tab keeps the price it
+had when it was taken; a price change only reaches crates taken after it. A member books crates
+only for herself; operators may book for anyone, and every crate records who entered it
+(decided 2026-11-04).
+
+**Enrollment** (beer list):
+A person's running opt-in to the **beer list**. Only an enrolled person (or an operator) sees the
+beer list and may book crates — the enrollment implies those keys, as any running relationship
+does ([ADR-0011](docs/adr/0011-permissions-come-from-roles-and-running-relationships.md)). Any
+affiliated person may enroll herself, confirming a declaration as she does; she may end it herself,
+and an operator may end it for her. Age plays no part (decided 2026-11-04). Ending an enrollment
+stops new crates but never touches the debt: her open crates stay owed, she keeps seeing and
+paying her own tab until it is settled, and a new enrollment continues the same history
+(decided 2026-11-04).
+
+**Tab** (beer list):
+The crates booked to one person, each **open** or **paid**. A payment always settles whole
+crates — no partial payments, no credit (decided 2026-11-04). Only operators book payments;
+there is no "I paid" report from the member — she sees her tab and the owner's payment details,
+pays the owner in whatever way, and the crates turn paid when an operator books it
+(decided 2026-11-04). Enrolled people see who gave how many crates; whether a tab is open or paid
+is visible only to its holder and to operators (decided 2026-11-04). A tab always belongs to one
+person — never to a group or the club; whoever takes crates for others books them and collects
+privately (decided 2026-11-04).
+
+**Stock** (beer list):
+The crates on hand. Every booked crate lowers it; deliveries raise it; when a count disagrees an
+operator books a **stock correction** with a reason, and the loss is the owner's. Stock never goes
+below zero. The app forecasts from the recent pace when the stock will be empty and warns the
+operators when that day comes close; there is no fixed threshold (decided 2026-11-04).
+_UI copy_: Bestand
+_Avoid_: inventory, Lager (that is the storeroom)
+
+**Pallet code** (beer list):
+The QR code stuck on the pallet. It opens the **booking page**: a bare page that only confirms
+crates onto the scanner's own tab — no app chrome, no navigation away. It opens in the installed
+app where the phone can hand the link over (Android) and finishes in the browser where it cannot
+(iOS), with a one-time sign-in there (decided 2026-11-04). A member can take back a crate only in
+a short undo window right after confirming it; any later correction is an operator's
+(decided 2026-11-04). An open tab shows on its holder's Start as a task with the owner's payment
+details, and the app reminds her of it by itself — no operator sends reminders: a push once her
+oldest open crate is 7 days old, then every 7 days until the tab is settled, never at night
+(decided 2026-11-04).
+_UI copy_: —
+_Avoid_: QR sticker, scan page
+_UI copy_: Deckel
+_Avoid_: balance, account, Guthaben
+_Avoid_: participation flag, membership (of the beer list) It never appears in the **ledger** or the club's cash report.
+_UI copy_: Bierliste
+_Avoid_: drinks till, Getränkekasse (both suggest club money)
 
 ## Flagged ambiguities
 

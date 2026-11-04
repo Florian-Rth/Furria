@@ -16,6 +16,11 @@ there shows the install page (`features/app-install`) instead of the app.**
   the installed app, so those one-shot flows finish in the tab and the gate takes over after.
   Since 2026-11-01 also the upload-link page `/photos` (ADR-0034): it is opened from a group
   chat, mostly by people without the app, and finishes in the tab.
+  Decided 2026-11-04 (to be built with the beer list): also the beer-list **booking page** that
+  the **pallet code** opens (ADR-0035). iOS cannot hand a scanned link to the installed app, so
+  the booking finishes in Safari, after a one-time sign-in there; Android opens the installed app.
+  The page is bare — no shell, no navigation away — and only confirms crates onto the scanner's
+  own tab.
 - **The install page picks the steps for the browser in hand** (`install-guide.ts`): one tap via
   `beforeinstallprompt` where the browser offers it (captured before React mounts by
   `public/install-boot.js`), else the menu steps of iPhone Safari (≤18 share bar, 26 "•••"
