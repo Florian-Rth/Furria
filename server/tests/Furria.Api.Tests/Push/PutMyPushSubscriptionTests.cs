@@ -55,6 +55,50 @@ public sealed class PutMyPushSubscriptionTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_ForgetTheEarliestDevice_When_AMemberSubscribesMoreThanTen()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var devices = Enumerable
+            .Range(1, 11)
+            .Select(number => $"https://fcm.googleapis.com/fcm/send/alice-device-{number}")
+            .ToArray();
+
+        foreach (var device in devices)
+            await SubscribeAsync(client, device, PushDevices.FirstPublicKey);
+
+        await ctx
+            .Expected.PushSubscriptionsOfAccount(ctx.Identity.Accounts.IdOf("alice"))
+            .ToHaveCount(10)
+            .PushSubscriptionsOfAccount(ctx.Identity.Accounts.IdOf("alice"))
+            .ToHold(devices[^1], PushDevices.FirstPublicKey, PushDevices.AuthSecret)
+            .PushSubscriptionsOfAccount(ctx.Identity.Accounts.IdOf("alice"))
+            .ToNotHold(devices[0])
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheDevice_When_ItsFieldsAreNull()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildAsync(ct);
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+
+        var response = await client.PutAsync(
+            "/api/push/subscription",
+            new StringContent(
+                """{"endpoint":null,"keys":{"p256dh":null,"auth":null}}""",
+                System.Text.Encoding.UTF8,
+                "application/json"
+            ),
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Should_RenewTheKeys_When_TheSameDeviceSubscribesAgain()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -142,15 +186,13 @@ public sealed class PutMyPushSubscriptionTests : IClassFixture<ApiTestFixture>
         string authSecret = PushDevices.AuthSecret
     )
     {
-        var response = await client.PUTAsync<PutMyPushSubscription, PutMyPushSubscriptionRequest>(
+        return await client.PUTAsync<PutMyPushSubscription, PutMyPushSubscriptionRequest>(
             new PutMyPushSubscriptionRequest
             {
                 Endpoint = endpoint,
                 Keys = new PushSubscriptionKeysDto { P256dh = publicKey, Auth = authSecret },
             }
         );
-
-        return response;
     }
 
     private Task<SeededContext> BuildAsync(CancellationToken ct) =>

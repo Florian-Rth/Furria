@@ -113,7 +113,7 @@ public sealed class ManagingLoginSeeder : IHostedService
         await seeding
             .DbContext.UserPasskeys.Where(passkey => passkey.UserId == formerAdmin.Id)
             .ExecuteDeleteAsync(seeding.Ct);
-        await seeding.RefreshTokens.RevokeAllAsync(formerAdmin.Id, seeding.Ct);
+        await seeding.RefreshTokens.EndAllSessionsAsync(formerAdmin.Id, seeding.Ct);
         await seeding
             .DbContext.People.Where(person => person.Id == formerPersonId)
             .ExecuteDeleteAsync(seeding.Ct);
@@ -162,7 +162,7 @@ public sealed class ManagingLoginSeeder : IHostedService
             await seeding.UserManager.AddPasswordAsync(managingLogin, _options.Password),
             "The managing login could not take the configured password"
         );
-        await seeding.RefreshTokens.RevokeAllAsync(managingLogin.Id, seeding.Ct);
+        await seeding.RefreshTokens.EndAllSessionsAsync(managingLogin.Id, seeding.Ct);
         _logger.LogInformation(
             "Managing login {AccountId} took the configured password, every session ended",
             managingLogin.Id

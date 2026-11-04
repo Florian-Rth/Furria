@@ -9,6 +9,7 @@ namespace Furria.Infrastructure.Push;
 public static class WebPushPayload
 {
     public const int SaltLength = 16;
+    public const int MaxPlaintextLength = RecordSize - TagLength - 1;
 
     private const int RecordSize = 4096;
     private const byte PublicKeyLength = 65;
@@ -32,6 +33,7 @@ public static class WebPushPayload
         ReadOnlySpan<byte> salt
     )
     {
+        ArgumentOutOfRangeException.ThrowIfGreaterThan(plaintext.Length, MaxPlaintextLength);
         var senderPublicKey = PushKeys.PublicKeyOf(sender.ExportParameters(false));
         var inputKey = InputKeyOf(receiver, sender, senderPublicKey);
         var contentPrk = HKDF.Extract(HashAlgorithmName.SHA256, inputKey, salt.ToArray());

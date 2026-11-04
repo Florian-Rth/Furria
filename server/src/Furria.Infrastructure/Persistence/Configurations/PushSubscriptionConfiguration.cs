@@ -9,7 +9,24 @@ public sealed class PushSubscriptionConfiguration : IEntityTypeConfiguration<Pus
 {
     public void Configure(EntityTypeBuilder<PushSubscription> builder)
     {
-        builder.ToTable("push_subscription");
+        builder.ToTable(
+            "push_subscription",
+            table =>
+            {
+                table.HasCheckConstraint(
+                    "ck_push_subscription_endpoint",
+                    "endpoint LIKE 'https://%'"
+                );
+                table.HasCheckConstraint(
+                    "ck_push_subscription_public_key",
+                    $"length(public_key) = {PushKeys.EncodedPublicKeyLength}"
+                );
+                table.HasCheckConstraint(
+                    "ck_push_subscription_auth_secret",
+                    $"length(auth_secret) = {PushKeys.EncodedAuthSecretLength}"
+                );
+            }
+        );
         builder.HasKey(subscription => subscription.Id);
 
         builder

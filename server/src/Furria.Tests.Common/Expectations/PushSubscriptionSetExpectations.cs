@@ -41,4 +41,17 @@ public sealed class PushSubscriptionSetExpectations
                 Assert.Equal(authSecret, subscription.AuthSecret);
             }
         );
+
+    public Expected ToNotHold(string endpoint) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.False(
+                    await dbContext
+                        .PushSubscriptions.AsNoTracking()
+                        .AnyAsync(
+                            row => row.AccountId == _accountId && row.Endpoint == endpoint,
+                            ct
+                        )
+                )
+        );
 }

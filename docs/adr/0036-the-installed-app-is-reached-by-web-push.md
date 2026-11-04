@@ -24,9 +24,13 @@ push provider, no Firebase SDK and no push library.**
 - **A device is a push subscription:** `push_subscription` holds one row per browser endpoint
   (unique) with its `p256dh` key and auth secret, and belongs to one **account**, not to a
   person. Signing in on a device moves its subscription to the new account. The managing login
-  can subscribe too. The row cascades with the account. *Signing out everywhere* deletes all of
-  the account's devices. Signing out on one device removes that device on the server, then
-  unsubscribes it in the browser.
+  can subscribe too. The row cascades with the account. Everything that ends all of an
+  account's sessions also deletes all of its devices: signing out everywhere, a password change
+  or reset, an access recovery or claim, and disabling the account. A device that a stolen
+  session subscribed stops receiving pushes then. The member's own app announces its device
+  again the next time it comes to the foreground. Signing out on one device removes that device
+  on the server and always unsubscribes it in the browser, even when the server cannot be
+  reached. An account keeps at most **10 devices**; subscribing an 11th forgets the earliest one.
 - **Endpoints:**
   - `GET push/key` hands out the public key. The client never builds it in, so a key change
     reaches every installed app.
@@ -39,18 +43,21 @@ push provider, no Firebase SDK and no push library.**
   accepted only for `https` on the default port at a known push service: `fcm.googleapis.com`
   (Chrome, Edge on Android, Samsung Internet), `*.push.apple.com` (Safari, iOS),
   `*.push.services.mozilla.com` (Firefox) and `*.notify.windows.com` (Edge on Windows). A new
-  browser vendor means adding its host.
+  browser vendor means adding its host. The endpoint must be plain ASCII. The push client
+  follows no redirects, so an allowed host cannot point the API at an internal address.
 - **Sending (`PushSender`):**
-  - It sends to every device of one account, one by one, through the named `HttpClient`
-    `web-push` (10 s timeout).
+  - It sends to every device of one account at once (at most 10), through the named
+    `HttpClient` `web-push` (10 s timeout, no redirects).
   - Each push has a fresh ephemeral key and salt and a VAPID JWT (ES256, `aud` = the push
     service's origin, 12 h).
   - The payload is JSON: `title`, `body`, `url` (an app path) and `tag`. The same tag replaces
     an older notification of the same kind instead of stacking it.
   - Every push carries a `TTL`.
   - A `404` or `410` from the push service means the device is gone, and its row is deleted at
-    once. Any other refusal or network failure is logged at Warning, naming the subscription id
-    and the push service host, never the endpoint. The device is kept.
+    once, unless it was re-subscribed with new keys in the meantime.
+  - Any other refusal or failure is logged at Warning, naming the subscription id (and the push
+    service host for a refusal), never the endpoint. The device is kept. One broken device never
+    stops the others.
   - The caller gets `delivered / forgotten / failed` counts.
   - Who receives what is the caller's business. The reminder workers (RFC 0004 phase 8) pick
     accounts; the sender knows only accounts.
@@ -68,8 +75,9 @@ push provider, no Firebase SDK and no push library.**
       ADR-0031 already enforces;
     - the permission was refused, with a pointer to the device settings.
   - The app never asks for the permission on its own or on start.
-  - On every sign-in the app re-announces an existing subscription, which picks up a rotated
-    endpoint or key and an account switch.
+  - On every sign-in, and whenever the app comes to the foreground, it re-announces an existing
+    subscription. This picks up a rotated endpoint or key, an account switch, and a device the
+    server forgot when all sessions ended. The server writes only when something changed.
 - **Service worker:** the generated worker (ADR-0031) imports `push-worker.js`
   (`workbox.importScripts`). It:
   - shows the notification;

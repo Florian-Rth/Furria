@@ -216,7 +216,7 @@ public sealed class AccessRecoveryService
             }
         }
 
-        await _refreshTokenService.RevokeAllAsync(account.Id, ct);
+        await _refreshTokenService.EndAllSessionsAsync(account.Id, ct);
         await _credentialChangeNotifier.NotifyAsync(
             account.Id,
             CredentialChange.AccessRecovered,

@@ -6,6 +6,8 @@ namespace Furria.Infrastructure.Push;
 
 public sealed class PushSubscriptionService
 {
+    public const int MaxDevicesPerAccount = 10;
+
     private readonly AppDbContext _dbContext;
     private readonly TimeProvider _timeProvider;
 
@@ -28,6 +30,21 @@ public sealed class PushSubscriptionService
                 public_key = excluded.public_key,
                 auth_secret = excluded.auth_secret,
                 subscribed_at = excluded.subscribed_at
+            WHERE (push_subscription.account_id, push_subscription.public_key, push_subscription.auth_secret)
+                IS DISTINCT FROM (excluded.account_id, excluded.public_key, excluded.auth_secret)
+            """,
+            ct
+        );
+        await _dbContext.Database.ExecuteSqlAsync(
+            $"""
+            DELETE FROM push_subscription
+            WHERE account_id = {command.AccountId}
+              AND id NOT IN (
+                SELECT id FROM push_subscription
+                WHERE account_id = {command.AccountId}
+                ORDER BY subscribed_at DESC, id DESC
+                LIMIT {MaxDevicesPerAccount}
+              )
             """,
             ct
         );

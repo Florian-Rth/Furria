@@ -197,7 +197,7 @@ public sealed class AccountSecurityService
         if (!changed.Succeeded)
             return Result<SessionTokensDetails>.Carrying(PasswordRefusalOf(changed));
 
-        await _refreshTokenService.RevokeAllAsync(account.Id, ct);
+        await _refreshTokenService.EndAllSessionsAsync(account.Id, ct);
         var session = await _accountService.StartSessionAsync(account, ct);
         _logger.LogInformation(
             "Password changed for account {AccountId}, every earlier session ended",
@@ -217,10 +217,7 @@ public sealed class AccountSecurityService
 
     public async Task LogOutEverywhereAsync(int accountId, CancellationToken ct)
     {
-        await _refreshTokenService.RevokeAllAsync(accountId, ct);
-        await _dbContext
-            .PushSubscriptions.Where(subscription => subscription.AccountId == accountId)
-            .ExecuteDeleteAsync(ct);
+        await _refreshTokenService.EndAllSessionsAsync(accountId, ct);
         _logger.LogInformation("Account {AccountId} signed out everywhere", accountId);
     }
 

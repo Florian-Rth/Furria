@@ -46,6 +46,18 @@ namespace Furria.Infrastructure.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("pk_push_subscription", x => x.id);
+                    table.CheckConstraint(
+                        "ck_push_subscription_auth_secret",
+                        "length(auth_secret) = 22"
+                    );
+                    table.CheckConstraint(
+                        "ck_push_subscription_endpoint",
+                        "endpoint LIKE 'https://%'"
+                    );
+                    table.CheckConstraint(
+                        "ck_push_subscription_public_key",
+                        "length(public_key) = 87"
+                    );
                     table.ForeignKey(
                         name: "fk_push_subscription_account_account_id",
                         column: x => x.account_id,

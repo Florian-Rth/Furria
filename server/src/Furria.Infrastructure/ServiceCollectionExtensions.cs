@@ -84,7 +84,10 @@ public static class ServiceCollectionExtensions
         services.AddScoped<PushSender>();
         services
             .AddHttpClient(PushSender.HttpClientName)
-            .ConfigureHttpClient(client => client.Timeout = PushSender.Timeout);
+            .ConfigureHttpClient(client => client.Timeout = PushSender.Timeout)
+            .ConfigurePrimaryHttpMessageHandler(() =>
+                new SocketsHttpHandler { AllowAutoRedirect = false }
+            );
         services.AddScoped<PermissionAuthorizer>();
         services.AddScoped<AffiliationLookup>();
         services.AddScoped<PersonHonoursQuery>();

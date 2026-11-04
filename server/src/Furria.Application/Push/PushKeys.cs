@@ -52,15 +52,15 @@ public static class PushKeys
     }
 
     [Pure]
-    public static bool IsPublicKey(string encoded) =>
-        encoded.Length == EncodedPublicKeyLength
+    public static bool IsPublicKey(string? encoded) =>
+        encoded?.Length == EncodedPublicKeyLength
         && DecodedOrNull(encoded) is { Length: PublicKeyLength } key
         && key[0] == UncompressedPoint
         && Imports(ParametersOf(key));
 
     [Pure]
-    public static bool IsAuthSecret(string encoded) =>
-        encoded.Length == EncodedAuthSecretLength
+    public static bool IsAuthSecret(string? encoded) =>
+        encoded?.Length == EncodedAuthSecretLength
         && DecodedOrNull(encoded) is { Length: AuthSecretLength };
 
     [Pure]

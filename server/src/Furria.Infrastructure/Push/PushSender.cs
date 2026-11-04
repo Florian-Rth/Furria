@@ -57,24 +57,21 @@ public sealed class PushSender
             .OrderBy(subscription => subscription.Id)
             .ToListAsync(ct);
 
-        var outcomes = new List<(PushSubscription Device, PushOutcome Outcome)>();
-        foreach (var device in devices)
-            outcomes.Add((device, await DeliverAsync(device, message, ct)));
+        var outcomes = await Task.WhenAll(
+            devices.Select(async device =>
+                (Device: device, Outcome: await DeliverAsync(device, message, ct))
+            )
+        );
 
-        await ForgetAsync(GoneDeviceIds(outcomes), ct);
+        await ForgetAsync(GoneDevices(outcomes), ct);
 
         return DeliveryOf([.. outcomes.Select(outcome => outcome.Outcome)]);
     }
 
     [Pure]
-    private static int[] GoneDeviceIds(
+    private static PushSubscription[] GoneDevices(
         IEnumerable<(PushSubscription Device, PushOutcome Outcome)> outcomes
-    ) =>
-        [
-            .. outcomes
-                .Where(pair => pair.Outcome == PushOutcome.Gone)
-                .Select(pair => pair.Device.Id),
-        ];
+    ) => [.. outcomes.Where(pair => pair.Outcome == PushOutcome.Gone).Select(pair => pair.Device)];
 
     [Pure]
     private static PushDeliveryDetails DeliveryOf(IReadOnlyCollection<PushOutcome> outcomes) =>
@@ -100,9 +97,9 @@ public sealed class PushSender
         CancellationToken ct
     )
     {
-        var endpoint = new Uri(device.Endpoint);
         try
         {
+            var endpoint = new Uri(device.Endpoint);
             using var request = RequestFor(endpoint, device, message);
             using var response = await _httpClientFactory
                 .CreateClient(HttpClientName)
@@ -119,17 +116,12 @@ public sealed class PushSender
 
             return outcome;
         }
-        catch (Exception exception)
-            when (exception is HttpRequestException or TaskCanceledException)
+        catch (Exception exception) when (!ct.IsCancellationRequested)
         {
-            if (ct.IsCancellationRequested)
-                throw;
-
             _logger.LogWarning(
                 exception,
-                "Push to device {PushSubscriptionId} at {PushServiceHost} did not reach the push service",
-                device.Id,
-                endpoint.Host
+                "Push to device {PushSubscriptionId} could not be sent",
+                device.Id
             );
             return PushOutcome.Failed;
         }
@@ -194,14 +186,16 @@ public sealed class PushSender
         );
     }
 
-    private async Task ForgetAsync(int[] goneDeviceIds, CancellationToken ct)
+    private async Task ForgetAsync(PushSubscription[] goneDevices, CancellationToken ct)
     {
-        if (goneDeviceIds.Length == 0)
-            return;
-
-        await _dbContext
-            .PushSubscriptions.Where(subscription => goneDeviceIds.Contains(subscription.Id))
-            .ExecuteDeleteAsync(ct);
+        foreach (var device in goneDevices)
+            await _dbContext
+                .PushSubscriptions.Where(subscription =>
+                    subscription.Id == device.Id
+                    && subscription.PublicKey == device.PublicKey
+                    && subscription.AuthSecret == device.AuthSecret
+                )
+                .ExecuteDeleteAsync(ct);
     }
 
     private sealed record PushPayload(string Title, string Body, string Url, string Tag);

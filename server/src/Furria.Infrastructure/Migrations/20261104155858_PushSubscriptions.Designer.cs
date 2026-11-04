@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Furria.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261104153532_PushSubscriptions")]
+    [Migration("20261104155858_PushSubscriptions")]
     partial class PushSubscriptions
     {
         /// <inheritdoc />
@@ -4111,7 +4111,14 @@ namespace Furria.Infrastructure.Migrations
                         .IsUnique()
                         .HasDatabaseName("ix_push_subscription_endpoint");
 
-                    b.ToTable("push_subscription", (string)null);
+                    b.ToTable("push_subscription", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_push_subscription_auth_secret", "length(auth_secret) = 22");
+
+                            t.HasCheckConstraint("ck_push_subscription_endpoint", "endpoint LIKE 'https://%'");
+
+                            t.HasCheckConstraint("ck_push_subscription_public_key", "length(public_key) = 87");
+                        });
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.DataProtection.EntityFrameworkCore.DataProtectionKey", b =>

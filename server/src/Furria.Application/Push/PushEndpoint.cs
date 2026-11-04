@@ -15,8 +15,9 @@ public static class PushEndpoint
     ];
 
     [Pure]
-    public static bool IsKnownPushService(string endpoint) =>
-        endpoint.Length <= MaxLength
+    public static bool IsKnownPushService(string? endpoint) =>
+        endpoint is { Length: <= MaxLength }
+        && endpoint.All(char.IsAscii)
         && Uri.TryCreate(endpoint, UriKind.Absolute, out var uri)
         && uri.Scheme == Uri.UriSchemeHttps
         && uri.IsDefaultPort
