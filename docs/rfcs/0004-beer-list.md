@@ -1,7 +1,7 @@
 ---
 rfc: 0004
 title: Beer list — the drinks warden's private pot, crates by QR, tabs, stock forecast, reminders
-status: draft
+status: in progress
 github_issue: 59
 branch: feat/rfc-59-beer-list
 created: 2026-11-04
@@ -144,11 +144,20 @@ Goal: Florian picks the member beer list and the operator hub layout before anyt
 
 ### Phase 2 — Pot and enrollment
 Goal: an operator opens the pot, people enroll and leave, and `beer_list.take` exists.
-- [ ] Core: `BeerPot` (owner person, crate price, payment link, payment note, opened/closed), `BeerListEnrollment` (person, started/ended, ended by, declaration confirmed), migration
-- [ ] Permission keys `beer_list.manage` + implied `beer_list.take` (`PermissionAuthorizer`), roles matrix shows `manage`
-- [ ] Rules: one open pot; the owner holds `manage`; only affiliated persons enroll; ending keeps history; re-enrolling continues it
-- [ ] Endpoints + tests: open pot, edit pot settings, enroll self, end own enrollment, end someone's enrollment, list enrollments
-- [ ] Club app: enroll/leave with the declaration in *Mein Profil*; hub shell with pot settings and the enrollment panel in the picked design
+- [x] Core: `BeerPot` (owner person, crate price, payment link, payment note, opened/closed), `BeerListEnrollment` (person, started/ended, ended by, declaration confirmed), migration
+- [x] Permission keys `beer_list.manage` + implied `beer_list.take` (`PermissionAuthorizer`), roles matrix shows `manage`
+- [x] Rules: one open pot; the owner holds `manage`; only affiliated persons enroll; ending keeps history; re-enrolling continues it
+- [x] Endpoints + tests: open pot, edit pot settings, enroll self, end own enrollment, end someone's enrollment, list enrollments
+- [x] Club app: enroll/leave with the declaration in *Mein Profil*
+- [ ] Club app: hub shell with pot settings and the enrollment panel in the picked design (waits for the phase 1 pick)
+
+Built-phase decisions (phase 2):
+- `beer_list.take` needs a running enrollment **and** current affiliation; leaving the club stops booking.
+- Erasing the owner's person keeps the pot (owner becomes empty); open tabs survive.
+- `StartedAt` is the moment of confirming the declaration (`confirmsDeclaration: true` required); no separate column.
+- A closed pot is locked, including its payment details.
+- Any `manage` holder may edit the pot settings (open product question for Florian).
+- Still to be built: a read endpoint for the pot and its settings, for the hub and the member screen.
 
 ### Phase 3 — Stock and forecast
 Goal: operators keep the stock; the hub shows the projected empty date.
