@@ -26,8 +26,8 @@ public sealed class DeleteHallByIdTests : IClassFixture<ApiTestFixture>
     public async Task Should_RemoveTheHall_When_NoPlanUsesIt()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
 
         var response = await client.DELETEAsync<DeleteHallById, DeleteHallByIdRequest>(
@@ -43,8 +43,8 @@ public sealed class DeleteHallByIdTests : IClassFixture<ApiTestFixture>
     public async Task Should_Refuse_When_APlanStandsInTheHall()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
         await CreatePlanAsync(client, ctx.Club.Events.IdOf(Gala), hallId);
 

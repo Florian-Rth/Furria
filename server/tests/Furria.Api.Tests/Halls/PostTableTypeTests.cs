@@ -23,11 +23,11 @@ public sealed class PostTableTypeTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListTheNewTypeLast_When_TheSaalchefAddsOne()
+    public async Task Should_ListTheNewTypeLast_When_TheHallManagerAddsOne()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
 
         var (response, created) = await client.POSTAsync<
             PostTableType,
@@ -48,8 +48,8 @@ public sealed class PostTableTypeTests : IClassFixture<ApiTestFixture>
     public async Task Should_MakeARoundTableAsWideAsLongWithoutEnds_When_ItIsRound()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
 
         await client.POSTAsync<PostTableType, PostTableTypeRequest, PostTableTypeResponse>(
             Type("Rund groß", TableShape.Round, 180, 80, seatsAtEnds: true)

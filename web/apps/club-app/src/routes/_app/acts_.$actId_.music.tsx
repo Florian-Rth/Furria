@@ -10,7 +10,7 @@ const ActMusicRoute: FC = () => {
   return <ActMusicPage actId={actId} search={search} />;
 };
 
-export const Route = createFileRoute('/_app/acts_/$actId_/musik')({
+export const Route = createFileRoute('/_app/acts_/$actId_/music')({
   validateSearch: ActMusicSearchSchema,
   component: ActMusicRoute,
 });

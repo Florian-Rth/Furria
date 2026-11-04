@@ -9,7 +9,7 @@ const RunningOrderRoute: FC = () => {
   return <RunningOrderPage eventId={eventId} />;
 };
 
-export const Route = createFileRoute('/_app/events_/$eventId_/ablauf')({
+export const Route = createFileRoute('/_app/events_/$eventId_/running-order')({
   validateSearch: RunningOrderSearchSchema,
   component: RunningOrderRoute,
 });

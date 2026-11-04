@@ -480,21 +480,21 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
     public async Task Should_CountEachEventsTables_When_SomeEventsHavePlans()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(HallSeeds.SaalchefWithGala(_fixture.Today), ct);
-        var saalchef = await ctx.Identity.ClientForAsync(HallSeeds.Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallSeeds.HallManagerWithGala(_fixture.Today), ct);
+        var hallManager = await ctx.Identity.ClientForAsync(HallSeeds.HallManager, ct);
         var gala = ctx.Club.Events.IdOf(HallSeeds.Gala);
         var hallId = await HallSteps.CreateHallAsync(
-            saalchef,
+            hallManager,
             ctx.Club.Venues.IdOf(HallSeeds.Buergerhaus),
             "Saal"
         );
-        await HallSteps.CreatePlanAsync(saalchef, gala, hallId);
+        await HallSteps.CreatePlanAsync(hallManager, gala, hallId);
         await HallSteps.SavedPlanAsync(
-            saalchef,
+            hallManager,
             gala,
             hallId,
             1,
-            [HallSteps.Row("r1", HallSeeds.TischId, 3)]
+            [HallSteps.Row("r1", HallSeeds.PlainTableId, 3)]
         );
         var lead = await ctx.Identity.ClientForAsync(HallSeeds.EventLead, ct);
 

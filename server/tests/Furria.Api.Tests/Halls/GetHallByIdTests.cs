@@ -26,8 +26,8 @@ public sealed class GetHallByIdTests : IClassFixture<ApiTestFixture>
     public async Task Should_ReturnTheDrawingAsSaved_When_TheHallWasDrawn()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
         await client.PUTAsync<PutHall, PutHallRequest, PutHallResponse>(
             new()

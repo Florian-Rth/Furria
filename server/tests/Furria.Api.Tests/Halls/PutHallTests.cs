@@ -26,8 +26,8 @@ public sealed class PutHallTests : IClassFixture<ApiTestFixture>
     public async Task Should_KeepTheDrawingAndCountTheVersionUp_When_TheVersionIsCurrent()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
 
         var (response, result) = await SaveAsync(client, hallId, 1, "Großer Saal", [Wall("w1")]);
@@ -45,8 +45,8 @@ public sealed class PutHallTests : IClassFixture<ApiTestFixture>
     public async Task Should_Refuse_When_SomeoneSavedMeanwhile()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
         await SaveAsync(client, hallId, 1, "Saal", [Wall("w1")]);
 
@@ -59,8 +59,8 @@ public sealed class PutHallTests : IClassFixture<ApiTestFixture>
     public async Task Should_Refuse_When_AnElementLacksItsShape()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
 
         var (response, _) = await SaveAsync(

@@ -94,7 +94,7 @@ export const EventPaneAction: FC<EventPaneActionProps> = ({
           size="large"
           fullWidth
           component={Link}
-          to="/events/$eventId/ablauf"
+          to="/events/$eventId/running-order"
           params={params}
           startIcon={<KkIcon name="timeline" size="small" />}
         >
@@ -107,7 +107,7 @@ export const EventPaneAction: FC<EventPaneActionProps> = ({
           size="large"
           fullWidth
           component={Link}
-          to="/events/$eventId/ablauf"
+          to="/events/$eventId/running-order"
           params={params}
           startIcon={<KkIcon name="timeline" size="small" />}
         >
@@ -120,7 +120,7 @@ export const EventPaneAction: FC<EventPaneActionProps> = ({
           size="large"
           fullWidth
           component={Link}
-          to="/events/$eventId/tischplan"
+          to="/events/$eventId/table-plan"
           params={params}
           startIcon={<KkIcon name="tables" size="small" />}
         >
@@ -133,7 +133,7 @@ export const EventPaneAction: FC<EventPaneActionProps> = ({
           size="large"
           fullWidth
           component={Link}
-          to="/events/$eventId/tischplan"
+          to="/events/$eventId/table-plan"
           params={params}
           startIcon={<KkIcon name="tables" size="small" />}
         >

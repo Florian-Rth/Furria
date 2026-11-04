@@ -26,8 +26,8 @@ public sealed class GetSeatingTests : IClassFixture<ApiTestFixture>
     public async Task Should_ListTheClubStandardAndItsTableTypes_When_NothingWasChanged()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
 
         var (response, result) = await client.GETAsync<GetSeating, GetSeatingResponse>();
 

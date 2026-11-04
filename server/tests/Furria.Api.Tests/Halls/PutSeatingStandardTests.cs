@@ -23,11 +23,11 @@ public sealed class PutSeatingStandardTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepTheNewStandard_When_TheSaalchefChangesIt()
+    public async Task Should_KeepTheNewStandard_When_TheHallManagerChangesIt()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
 
         var response = await client.PUTAsync<PutSeatingStandard, PutSeatingStandardRequest>(
             Standard(comfortable: 70, maximum: 50)
@@ -44,8 +44,8 @@ public sealed class PutSeatingStandardTests : IClassFixture<ApiTestFixture>
     public async Task Should_Refuse_When_FullSeatingWouldSpaceChairsWiderThanComfortable()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
 
         var response = await client.PUTAsync<PutSeatingStandard, PutSeatingStandardRequest>(
             Standard(comfortable: 50, maximum: 60)

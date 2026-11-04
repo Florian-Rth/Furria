@@ -23,17 +23,17 @@ public sealed class PutTableTypeTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ChangeTheType_When_TheSaalchefEditsIt()
+    public async Task Should_ChangeTheType_When_TheHallManagerEditsIt()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
 
-        var response = await client.PUTAsync<PutTableType, PutTableTypeRequest>(Edit(TischId));
+        var response = await client.PUTAsync<PutTableType, PutTableTypeRequest>(Edit(PlainTableId));
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         var (_, seating) = await client.GETAsync<GetSeating, GetSeatingResponse>();
-        var edited = seating.TableTypes.Single(type => type.TableTypeId == TischId);
+        var edited = seating.TableTypes.Single(type => type.TableTypeId == PlainTableId);
         Assert.Equal("Tisch lang", edited.Name);
         Assert.Equal(160, edited.LengthCm);
     }
@@ -42,8 +42,8 @@ public sealed class PutTableTypeTests : IClassFixture<ApiTestFixture>
     public async Task Should_ReturnNotFound_When_TheTypeIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
 
         var response = await client.PUTAsync<PutTableType, PutTableTypeRequest>(Edit(999));
 

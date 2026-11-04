@@ -26,8 +26,8 @@ public sealed class PutTablePlanNeedTests : IClassFixture<ApiTestFixture>
     public async Task Should_DropTheHallStep_When_NoTablePlanIsNeeded()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var eventId = ctx.Club.Events.IdOf(Gala);
 
         var response = await client.PUTAsync<PutTablePlanNeed, PutTablePlanNeedRequest>(
@@ -45,8 +45,8 @@ public sealed class PutTablePlanNeedTests : IClassFixture<ApiTestFixture>
     public async Task Should_BringTheHallStepBack_When_APlanIsNeededAgain()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var eventId = ctx.Club.Events.IdOf(Gala);
         await client.PUTAsync<PutTablePlanNeed, PutTablePlanNeedRequest>(
             new() { EventId = eventId, Needed = false }

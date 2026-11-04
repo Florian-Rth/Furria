@@ -214,7 +214,7 @@ Events wire: `steps[].step` gains `"hall"`; `GET events` / `GET events/{id}` gai
   `api.ts`.
 - `features/hall-builder/` — screen, tools, inspector, hooks. Route `/halls/$hallId`.
 - `features/table-planner/` — screen, tools, inspector, start choice, settings sheet. Route
-  `/events/$eventId/tischplan`; back → `/events/$eventId?step=hall`.
+  `/events/$eventId/table-plan`; back → `/events/$eventId?step=hall`.
 - Leitstand: step `hall` badge column + pane (checks *Saal gewählt* · *Tische gestellt*; facts
   Tische · Stühle; primary *Tischplan anlegen / öffnen*; quiet link *Kein Tischplan nötig* /
   *Doch einen Tischplan*). Venue detail page: panel *Säle* (list, *Saal zeichnen*) for holders of

@@ -23,11 +23,11 @@ public sealed class PostHallTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_StartAnEmptyHall_When_TheSaalchefNamesOne()
+    public async Task Should_StartAnEmptyHall_When_TheHallManagerNamesOne()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
 
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), " Saal ");
 
@@ -44,8 +44,8 @@ public sealed class PostHallTests : IClassFixture<ApiTestFixture>
     public async Task Should_Refuse_When_TheVenueHasAHallOfThatName()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var venueId = ctx.Club.Venues.IdOf(Buergerhaus);
         await CreateHallAsync(client, venueId, "Saal");
 
@@ -62,8 +62,8 @@ public sealed class PostHallTests : IClassFixture<ApiTestFixture>
     public async Task Should_Refuse_When_TheVenueIsArchivedOrUnknown(string? venueAlias)
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var venueId = venueAlias is null ? 99_999 : ctx.Club.Venues.IdOf(venueAlias);
 
         var (response, _) = await client.POSTAsync<PostHall, PostHallRequest, PostHallResponse>(

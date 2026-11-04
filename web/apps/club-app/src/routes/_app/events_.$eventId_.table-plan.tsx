@@ -8,6 +8,6 @@ const TablePlannerRoute: FC = () => {
   return <TablePlannerPage eventId={eventId} />;
 };
 
-export const Route = createFileRoute('/_app/events_/$eventId_/tischplan')({
+export const Route = createFileRoute('/_app/events_/$eventId_/table-plan')({
   component: TablePlannerRoute,
 });

@@ -26,8 +26,8 @@ public sealed class GetTablePlansTests : IClassFixture<ApiTestFixture>
     public async Task Should_ListEveryPlanLatestFirstWithItsTables_When_EventsHavePlans()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var gala = ctx.Club.Events.IdOf(Gala);
         var kinder = ctx.Club.Events.IdOf(KinderGala);
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
@@ -38,7 +38,7 @@ public sealed class GetTablePlansTests : IClassFixture<ApiTestFixture>
             gala,
             hallId,
             1,
-            [Row("r1", BiertischId, 4), Row("r2", RundId, 1)]
+            [Row("r1", BeerTableId, 4), Row("r2", RoundTableId, 1)]
         );
 
         var (response, result) = await client.GETAsync<GetTablePlans, GetTablePlansResponse>();

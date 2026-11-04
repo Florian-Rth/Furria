@@ -5,7 +5,7 @@ describe('hallBuilderOriginOf', () => {
   it.each([
     {
       facts: { eventId: 4, venueId: 2, venueName: 'Turnhalle', canOpenVenue: true },
-      to: '/events/$eventId/tischplan',
+      to: '/events/$eventId/table-plan',
     },
     {
       facts: { eventId: undefined, venueId: 2, venueName: 'Turnhalle', canOpenVenue: true },

@@ -26,8 +26,8 @@ public sealed class PutTablePlanTests : IClassFixture<ApiTestFixture>
     public async Task Should_KeepTheTablesAndCountTheVersionUp_When_TheVersionIsCurrent()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var eventId = ctx.Club.Events.IdOf(Gala);
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
         await CreatePlanAsync(client, eventId, hallId);
@@ -37,7 +37,7 @@ public sealed class PutTablePlanTests : IClassFixture<ApiTestFixture>
             eventId,
             hallId,
             1,
-            [Row("r1", BiertischId, 2, groupId: "g1"), Row("r2", BiertischId, 2, groupId: "g1")],
+            [Row("r1", BeerTableId, 2, groupId: "g1"), Row("r2", BeerTableId, 2, groupId: "g1")],
             [
                 new TableGroupDto
                 {
@@ -63,12 +63,12 @@ public sealed class PutTablePlanTests : IClassFixture<ApiTestFixture>
     public async Task Should_Refuse_When_SomeoneSavedMeanwhile()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var eventId = ctx.Club.Events.IdOf(Gala);
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
         await CreatePlanAsync(client, eventId, hallId);
-        await SavedPlanAsync(client, eventId, hallId, 1, [Row("r1", BiertischId, 1)]);
+        await SavedPlanAsync(client, eventId, hallId, 1, [Row("r1", BeerTableId, 1)]);
 
         var (response, _) = await SavePlanAsync(client, eventId, hallId, 1, []);
 
@@ -79,8 +79,8 @@ public sealed class PutTablePlanTests : IClassFixture<ApiTestFixture>
     public async Task Should_Refuse_When_ARowNamesAnUnknownTableType()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var eventId = ctx.Club.Events.IdOf(Gala);
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
         await CreatePlanAsync(client, eventId, hallId);
@@ -94,8 +94,8 @@ public sealed class PutTablePlanTests : IClassFixture<ApiTestFixture>
     public async Task Should_Refuse_When_ARowNamesAGroupThePlanLacks()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var eventId = ctx.Club.Events.IdOf(Gala);
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
         await CreatePlanAsync(client, eventId, hallId);
@@ -105,7 +105,7 @@ public sealed class PutTablePlanTests : IClassFixture<ApiTestFixture>
             eventId,
             hallId,
             1,
-            [Row("r1", BiertischId, 1, groupId: "g9")]
+            [Row("r1", BeerTableId, 1, groupId: "g9")]
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -115,8 +115,8 @@ public sealed class PutTablePlanTests : IClassFixture<ApiTestFixture>
     public async Task Should_ReturnNotFound_When_TheEventHasNoPlan()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
 
         var (response, _) = await SavePlanAsync(client, ctx.Club.Events.IdOf(Gala), hallId, 1, []);

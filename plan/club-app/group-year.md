@@ -36,7 +36,7 @@ season.
   `Added` rows are the cast.
 - `ActWish`: First/Last/FirstHalf/SecondHalf/Early/Late × Must/Prefer, travels to every Ablauf.
 - Screens: `/acts`, `/groups/$groupId/acts` (catalogue, cast grid, wishes, *Gemeinsame Leute*),
-  planner `/events/$eventId/ablauf`, Leitstand step *Ablauf*.
+  planner `/events/$eventId/running-order`, Leitstand step *Ablauf*.
 - Gaps: no CONTEXT.md entry for Act; `CalendarEntryKind.Performance` (copy *Auftritt*) is not
   linked to acts; later slices of running-order.md still open (participating groups write-through,
   member Start card, website + print after *Ablauf steht*, own picture).

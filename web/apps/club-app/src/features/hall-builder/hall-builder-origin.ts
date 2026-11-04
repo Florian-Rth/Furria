@@ -14,7 +14,7 @@ export const hallBuilderOriginOf = (facts: HallOriginFacts): KkScreenOrigin => {
   if (facts.eventId !== undefined) {
     return {
       label: TABLE_PLAN_LABEL,
-      to: '/events/$eventId/tischplan',
+      to: '/events/$eventId/table-plan',
       params: { eventId: String(facts.eventId) },
     };
   }

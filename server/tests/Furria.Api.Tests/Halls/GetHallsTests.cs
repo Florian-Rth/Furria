@@ -26,8 +26,8 @@ public sealed class GetHallsTests : IClassFixture<ApiTestFixture>
     public async Task Should_ListEveryHallByVenue_When_HallsWereDrawn()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         await CreateHallAsync(client, ctx.Club.Venues.IdOf(Turnhalle), "Ganz");
         await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Großer Saal");
         await CreateHallAsync(client, ctx.Club.Venues.IdOf(Turnhalle), "Halb");

@@ -26,8 +26,8 @@ public sealed class PostTablePlanTests : IClassFixture<ApiTestFixture>
     public async Task Should_StartAnEmptyComfortablePlan_When_NothingIsCopied()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var eventId = ctx.Club.Events.IdOf(Gala);
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
 
@@ -44,13 +44,13 @@ public sealed class PostTablePlanTests : IClassFixture<ApiTestFixture>
     public async Task Should_TakeOverTheTables_When_APlanIsCopied()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var gala = ctx.Club.Events.IdOf(Gala);
         var kinder = ctx.Club.Events.IdOf(KinderGala);
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
         await CreatePlanAsync(client, gala, hallId);
-        await SavedPlanAsync(client, gala, hallId, 1, [Row("r1", BiertischId, 6)]);
+        await SavedPlanAsync(client, gala, hallId, 1, [Row("r1", BeerTableId, 6)]);
 
         await PostAsync(client, kinder, hallId, gala);
 
@@ -63,8 +63,8 @@ public sealed class PostTablePlanTests : IClassFixture<ApiTestFixture>
     public async Task Should_Refuse_When_TheEventHasAPlanAlready()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var eventId = ctx.Club.Events.IdOf(Gala);
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
         await CreatePlanAsync(client, eventId, hallId);
@@ -78,8 +78,8 @@ public sealed class PostTablePlanTests : IClassFixture<ApiTestFixture>
     public async Task Should_Refuse_When_TheCopySourceHasNoPlan()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
 
         var response = await PostAsync(
@@ -96,8 +96,8 @@ public sealed class PostTablePlanTests : IClassFixture<ApiTestFixture>
     public async Task Should_Refuse_When_TheHallIsUnknown()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(SaalchefWithGala(_fixture.Today), ct);
-        var client = await ctx.Identity.ClientForAsync(Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
 
         var response = await PostAsync(client, ctx.Club.Events.IdOf(Gala), 99_999, null);
 

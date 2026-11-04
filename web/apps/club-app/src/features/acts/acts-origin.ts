@@ -14,7 +14,7 @@ import type { ActPageOrigin, ActPageSearch, ActsSearch } from './schemas';
 const DETAILS_VIEW = 'details';
 const CARD_VIEW = 'card';
 
-export const PLANNER_PATH = '/events/$eventId/ablauf';
+export const PLANNER_PATH = '/events/$eventId/running-order';
 export const GROUP_HUB_PATH = '/groups/$groupId';
 export const GROUP_ACTS_PATH = '/groups/$groupId/acts';
 export const ACTS_CATALOGUE_PATH = '/acts';

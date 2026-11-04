@@ -6,7 +6,7 @@ namespace Furria.Api.Tests.Halls;
 
 internal static class HallSeeds
 {
-    internal const string Saalchef = "sven";
+    internal const string HallManager = "sven";
     internal const string EventLead = "eva";
     internal const string Buergerhaus = "buergerhaus";
     internal const string Turnhalle = "turnhalle";
@@ -14,20 +14,20 @@ internal static class HallSeeds
     internal const string Gala = "gala";
     internal const string KinderGala = "kindersitzung";
     internal const int GalaInDays = 30;
-    internal const int BiertischId = 1;
-    internal const int TischId = 2;
-    internal const int RundId = 3;
+    internal const int BeerTableId = 1;
+    internal const int PlainTableId = 2;
+    internal const int RoundTableId = 3;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
 
-    internal static Action<SeedContextBuilder> SaalchefWithGala(DateOnly today) =>
+    internal static Action<SeedContextBuilder> HallManagerWithGala(DateOnly today) =>
         builder =>
             builder
                 .Identity(identity =>
                     identity
-                        .AddPerson(Saalchef, "Sven", "Saalchef")
-                        .AddAccount(Saalchef)
-                        .AddMembership("sven-first", Saalchef, JoinedIn2017)
+                        .AddPerson(HallManager, "Sven", "HallManager")
+                        .AddAccount(HallManager)
+                        .AddMembership("sven-first", HallManager, JoinedIn2017)
                         .AddPerson(EventLead, "Eva", "Eventchefin")
                         .AddAccount(EventLead)
                         .AddMembership("eva-first", EventLead, JoinedIn2017)
@@ -38,7 +38,7 @@ internal static class HallSeeds
                             "saal",
                             "sven-saal",
                             "Saal & Tische",
-                            Saalchef,
+                            HallManager,
                             FurriaPermissions.EventsHall
                         )
                         .AddRoleWithHolder(

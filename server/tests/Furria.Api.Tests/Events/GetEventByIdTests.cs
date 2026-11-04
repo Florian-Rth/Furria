@@ -446,23 +446,23 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
     public async Task Should_CountTablesAndChairsAndFinishTheHallStep_When_TablesStand()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(HallSeeds.SaalchefWithGala(_fixture.Today), ct);
-        var saalchef = await ctx.Identity.ClientForAsync(HallSeeds.Saalchef, ct);
+        var ctx = await _fixture.BuildAsync(HallSeeds.HallManagerWithGala(_fixture.Today), ct);
+        var hallManager = await ctx.Identity.ClientForAsync(HallSeeds.HallManager, ct);
         var eventId = ctx.Club.Events.IdOf(HallSeeds.Gala);
         var hallId = await HallSteps.CreateHallAsync(
-            saalchef,
+            hallManager,
             ctx.Club.Venues.IdOf(HallSeeds.Buergerhaus),
             "Saal"
         );
-        await HallSteps.CreatePlanAsync(saalchef, eventId, hallId);
+        await HallSteps.CreatePlanAsync(hallManager, eventId, hallId);
         await HallSteps.SavedPlanAsync(
-            saalchef,
+            hallManager,
             eventId,
             hallId,
             1,
             [
-                HallSteps.Row("r1", HallSeeds.BiertischId, 4),
-                HallSteps.Row("r2", HallSeeds.RundId, 2),
+                HallSteps.Row("r1", HallSeeds.BeerTableId, 4),
+                HallSteps.Row("r2", HallSeeds.RoundTableId, 2),
             ]
         );
         var lead = await ctx.Identity.ClientForAsync(HallSeeds.EventLead, ct);
@@ -481,7 +481,7 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
     public async Task Should_LeaveTheHallStepOpenWithoutCounts_When_NoPlanExists()
     {
         var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(HallSeeds.SaalchefWithGala(_fixture.Today), ct);
+        var ctx = await _fixture.BuildAsync(HallSeeds.HallManagerWithGala(_fixture.Today), ct);
         var lead = await ctx.Identity.ClientForAsync(HallSeeds.EventLead, ct);
 
         var result = await HallSteps.EventOfAsync(lead, ctx.Club.Events.IdOf(HallSeeds.Gala));
