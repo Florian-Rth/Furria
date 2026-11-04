@@ -151,6 +151,66 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Furria.Core.BeerList.BeerStockMovement", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("BeerPotId")
+                        .HasColumnType("integer")
+                        .HasColumnName("beer_pot_id");
+
+                    b.Property<DateTimeOffset>("BookedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("booked_at");
+
+                    b.Property<int?>("BookedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("booked_by_person_id");
+
+                    b.Property<int>("Crates")
+                        .HasColumnType("integer")
+                        .HasColumnName("crates");
+
+                    b.Property<string>("Kind")
+                        .IsRequired()
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("kind");
+
+                    b.Property<string>("Reason")
+                        .HasMaxLength(16)
+                        .HasColumnType("character varying(16)")
+                        .HasColumnName("reason");
+
+                    b.HasKey("Id")
+                        .HasName("pk_beer_stock_movement");
+
+                    b.HasIndex("BookedByPersonId")
+                        .HasDatabaseName("ix_beer_stock_movement_booked_by_person_id");
+
+                    b.HasIndex("BeerPotId", "BookedAt")
+                        .HasDatabaseName("ix_beer_stock_movement_beer_pot_id_booked_at");
+
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("BeerPotId", "BookedAt"), new[] { "Crates" });
+
+                    b.HasIndex(new[] { "BeerPotId" }, "ix_beer_stock_movement_beer_pot_id_carry")
+                        .IsUnique()
+                        .HasDatabaseName("ix_beer_stock_movement_beer_pot_id_carry")
+                        .HasFilter("kind = 'HandoverCarry'");
+
+                    b.ToTable("beer_stock_movement", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_beer_stock_movement_crates", "crates <> 0 AND abs(crates) <= 500");
+
+                            t.HasCheckConstraint("ck_beer_stock_movement_kind", "(kind IN ('Delivery', 'HandoverCarry') AND reason IS NULL AND crates > 0) OR (kind = 'Correction' AND reason IS NOT NULL AND (reason = 'Miscount' OR (reason IN ('Shrinkage', 'Breakage') AND crates < 0)))");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.Club.Announcement", b =>
                 {
                     b.Property<int>("Id")
@@ -4404,6 +4464,26 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_beer_pot_person_owner_person_id");
 
                     b.Navigation("Owner");
+                });
+
+            modelBuilder.Entity("Furria.Core.BeerList.BeerStockMovement", b =>
+                {
+                    b.HasOne("Furria.Core.BeerList.BeerPot", "Pot")
+                        .WithMany()
+                        .HasForeignKey("BeerPotId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_beer_stock_movement_beer_pot_beer_pot_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "BookedBy")
+                        .WithMany()
+                        .HasForeignKey("BookedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_beer_stock_movement_person_booked_by_person_id");
+
+                    b.Navigation("BookedBy");
+
+                    b.Navigation("Pot");
                 });
 
             modelBuilder.Entity("Furria.Core.Club.Announcement", b =>

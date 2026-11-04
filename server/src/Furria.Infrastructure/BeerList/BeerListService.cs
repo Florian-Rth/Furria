@@ -14,7 +14,6 @@ public sealed class BeerListService
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
     private const string OwnerWithoutRightMessage =
         "Nur wer die Bierliste führen darf, kann ihr Besitzer sein.";
-    private const string UnknownPotMessage = "Diese Bierliste gibt es nicht.";
     private const string NotEnrolledMessage = "Du stehst nicht auf der Bierliste.";
     private const string UnknownEnrollmentMessage =
         "Diese Teilnahme an der Bierliste gibt es nicht.";
@@ -62,7 +61,7 @@ public sealed class BeerListService
     {
         var pot = await _dbContext.BeerPots.SingleOrDefaultAsync(row => row.Id == beerPotId, ct);
         if (pot is null)
-            return Result.NotFound(UnknownPotMessage);
+            return Result.NotFound(BeerListMessages.UnknownPot);
 
         if (pot.ClosedAt is not null)
             return Result.Conflict(ClosedPotMessage);
@@ -72,6 +71,29 @@ public sealed class BeerListService
 
         return Result.Success();
     }
+
+    public Task<BeerPotDetails?> GetOpenPotAsync(CancellationToken ct) =>
+        _dbContext
+            .BeerPots.AsNoTracking()
+            .Where(pot => pot.ClosedAt == null)
+            .Select(pot => new BeerPotDetails
+            {
+                BeerPotId = pot.Id,
+                Owner =
+                    pot.Owner == null
+                        ? null
+                        : new BeerListPerson
+                        {
+                            PersonId = pot.Owner.Id,
+                            FirstName = pot.Owner.FirstName,
+                            LastName = pot.Owner.LastName,
+                        },
+                CratePriceCents = pot.CratePriceCents,
+                PaymentLink = pot.PaymentLink,
+                PaymentNote = pot.PaymentNote,
+                OpenedAt = pot.OpenedAt,
+            })
+            .SingleOrDefaultAsync(ct);
 
     public async Task<Result> EnrollAsync(int personId, CancellationToken ct)
     {
@@ -136,7 +158,7 @@ public sealed class BeerListService
                 EndedBy =
                     enrollment.EndedBy == null
                         ? null
-                        : new BeerListEnrollmentEnder
+                        : new BeerListPerson
                         {
                             PersonId = enrollment.EndedBy.Id,
                             FirstName = enrollment.EndedBy.FirstName,

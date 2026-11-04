@@ -43,7 +43,7 @@ public sealed class GetBeerListEnrollments : EndpointWithoutRequest<GetBeerListE
             EndedBy = enrollment.EndedBy is { } ender ? ToDto(ender) : null,
         };
 
-    private static BeerListEnrollmentEnderDto ToDto(BeerListEnrollmentEnder ender) =>
+    private static BeerListEnrollmentEnderDto ToDto(BeerListPerson ender) =>
         new()
         {
             PersonId = ender.PersonId,

@@ -137,6 +137,8 @@ public sealed class Expected
 
     public BeerPotSetExpectations BeerPots() => new(this);
 
+    public BeerStockExpectations BeerStockOfPot(int beerPotId) => new(this, beerPotId);
+
     public BeerListEnrollmentExpectations BeerListEnrollment(int enrollmentId) =>
         new(this, enrollmentId);
 

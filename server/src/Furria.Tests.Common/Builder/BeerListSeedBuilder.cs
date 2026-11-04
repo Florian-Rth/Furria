@@ -1,3 +1,5 @@
+using Furria.Core.BeerList;
+
 namespace Furria.Tests.Common.Builder;
 
 public sealed class BeerListSeedBuilder
@@ -7,10 +9,13 @@ public sealed class BeerListSeedBuilder
 
     private readonly List<BeerPotIntent> _pots = [];
     private readonly List<BeerListEnrollmentIntent> _enrollments = [];
+    private readonly List<BeerStockMovementIntent> _stockMovements = [];
 
     internal IReadOnlyList<BeerPotIntent> Pots => _pots;
 
     internal IReadOnlyList<BeerListEnrollmentIntent> Enrollments => _enrollments;
+
+    internal IReadOnlyList<BeerStockMovementIntent> StockMovements => _stockMovements;
 
     public BeerListSeedBuilder AddBeerPot(
         string alias,
@@ -50,6 +55,47 @@ public sealed class BeerListSeedBuilder
         return this;
     }
 
+    public BeerListSeedBuilder AddBeerDelivery(
+        string potAlias,
+        int crates,
+        DateTimeOffset? bookedAt = null,
+        string? bookedByAlias = null
+    )
+    {
+        _stockMovements.Add(
+            new BeerStockMovementIntent(
+                potAlias,
+                BeerStockMovementKind.Delivery,
+                crates,
+                null,
+                bookedAt,
+                bookedByAlias
+            )
+        );
+        return this;
+    }
+
+    public BeerListSeedBuilder AddBeerStockCorrection(
+        string potAlias,
+        int crates,
+        BeerStockCorrectionReason reason,
+        DateTimeOffset? bookedAt = null,
+        string? bookedByAlias = null
+    )
+    {
+        _stockMovements.Add(
+            new BeerStockMovementIntent(
+                potAlias,
+                BeerStockMovementKind.Correction,
+                crates,
+                reason,
+                bookedAt,
+                bookedByAlias
+            )
+        );
+        return this;
+    }
+
     internal sealed record BeerPotIntent(
         string Alias,
         string OwnerAlias,
@@ -66,5 +112,14 @@ public sealed class BeerListSeedBuilder
         DateTimeOffset? StartedAt,
         DateTimeOffset? EndedAt,
         string? EndedByAlias
+    );
+
+    internal sealed record BeerStockMovementIntent(
+        string PotAlias,
+        BeerStockMovementKind Kind,
+        int Crates,
+        BeerStockCorrectionReason? Reason,
+        DateTimeOffset? BookedAt,
+        string? BookedByAlias
     );
 }
