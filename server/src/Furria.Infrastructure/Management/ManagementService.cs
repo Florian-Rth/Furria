@@ -199,9 +199,12 @@ public sealed class ManagementService
             .BeerPots.Where(pot => pot.ClosedAt == null)
             .Select(pot => (int?)pot.Id)
             .SingleOrDefaultAsync(ct);
-        var openCrates = BeerPotLedger
+        var openTabCents = await BeerPotLedger
             .OpenCrates(_dbContext)
-            .Where(crate => crate.PersonId != null);
+            .Where(crate => crate.PersonId != null)
+            .GroupBy(crate => crate.PersonId)
+            .Select(tab => tab.Sum(crate => crate.PriceCents))
+            .ToListAsync(ct);
 
         return new ManageHubBeerList
         {
@@ -209,11 +212,8 @@ public sealed class ManagementService
             StockCrates = openPotId is { } potId
                 ? await BeerPotLedger.StockOfAsync(_dbContext, potId, ct)
                 : 0,
-            OpenTabCount = await openCrates
-                .Select(crate => crate.PersonId)
-                .Distinct()
-                .CountAsync(ct),
-            OpenCents = await openCrates.SumAsync(crate => crate.PriceCents, ct),
+            OpenTabCount = openTabCents.Count,
+            OpenCents = openTabCents.Sum(),
         };
     }
 

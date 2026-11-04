@@ -41,31 +41,6 @@ public sealed class BeerPaymentService
         return paid;
     }
 
-    internal async Task<Result<BeerPaymentDetails>> PayUnderPotLockAsync(
-        BeerPaymentCommand command,
-        CancellationToken ct
-    )
-    {
-        var settled = await OldestOpenCratesAsync(command, ct);
-        if (settled.Count < command.Crates)
-            return Result<BeerPaymentDetails>.Conflict(MoreThanOpenMessage);
-
-        var payment = NewPayment(command, settled, _timeProvider.GetUtcNow());
-        _dbContext.BeerPayments.Add(payment);
-        await _dbContext.SaveChangesAsync(ct);
-        if (await SettleAsync(settled, payment.Id, ct) != settled.Count)
-            return Result<BeerPaymentDetails>.Conflict(MoreThanOpenMessage);
-
-        return Result<BeerPaymentDetails>.Success(
-            new BeerPaymentDetails
-            {
-                BeerPaymentId = payment.Id,
-                Crates = payment.Crates,
-                AmountCents = payment.AmountCents,
-            }
-        );
-    }
-
     public async Task<Result> UndoAsync(
         int beerPaymentId,
         int? undoneByPersonId,
@@ -128,6 +103,31 @@ public sealed class BeerPaymentService
         return Result<IReadOnlyList<BeerPotTabSummary>>.Success([
             .. tallies.Select(tally => TabOf(tally, enrolled, payments)),
         ]);
+    }
+
+    internal async Task<Result<BeerPaymentDetails>> PayUnderPotLockAsync(
+        BeerPaymentCommand command,
+        CancellationToken ct
+    )
+    {
+        var settled = await OldestOpenCratesAsync(command, ct);
+        if (settled.Count < command.Crates)
+            return Result<BeerPaymentDetails>.Conflict(MoreThanOpenMessage);
+
+        var payment = NewPayment(command, settled, _timeProvider.GetUtcNow());
+        _dbContext.BeerPayments.Add(payment);
+        await _dbContext.SaveChangesAsync(ct);
+        if (await SettleAsync(settled, payment.Id, ct) != settled.Count)
+            return Result<BeerPaymentDetails>.Conflict(MoreThanOpenMessage);
+
+        return Result<BeerPaymentDetails>.Success(
+            new BeerPaymentDetails
+            {
+                BeerPaymentId = payment.Id,
+                Crates = payment.Crates,
+                AmountCents = payment.AmountCents,
+            }
+        );
     }
 
     [Pure]
