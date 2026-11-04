@@ -194,11 +194,16 @@ Goal: scan, confirm, done, on Android and iOS.
 
 ### Phase 7 — Web Push foundation
 Goal: the platform can push to installed apps.
-- [ ] ADR: Web Push for the installed app (VAPID, subscriptions, iOS installed-only)
-- [ ] Config `Push:VapidPublicKey/PrivateKey/Subject`; live host compose edit prepared, **applied only with Florian's approval**
-- [ ] Core/Infra: push subscription per account+device, subscribe/unsubscribe endpoints + tests, sender that prunes 404/410 subscriptions
-- [ ] Service worker push + notification-click handler (opens the target route); permission prompt UX from a user gesture
-- [ ] A test push path for `system.view` to prove delivery on devices
+- [x] ADR: Web Push for the installed app (VAPID, subscriptions, iOS installed-only)
+- [x] Config `Push:VapidPublicKey/PrivateKey/Subject`; live host compose edit prepared, **applied only with Florian's approval**
+- [x] Core/Infra: push subscription per account+device, subscribe/unsubscribe endpoints + tests, sender that prunes 404/410 subscriptions
+- [x] Service worker push + notification-click handler (opens the target route); permission prompt UX from a user gesture
+- [x] A test push path for `system.view` to prove delivery on devices
+
+Built-phase notes (phase 7):
+- ADR-0036. VAPID config is **required**: the API refuses to start without it. The live `~/furria` compose/.env edit (see `docs/ops/PRODUCTION.md`) must be applied, with Florian's approval, **before this reaches `main`**.
+- Phase 8 sends through `PushSender.SendAsync(accountId, PushMessage)`.
+- Owed: device checks on iPhone and Pixel (production build behind HTTPS with the live config).
 
 ### Phase 8 — Reminders and the stock warning
 Goal: open tabs and running out remind by themselves.
