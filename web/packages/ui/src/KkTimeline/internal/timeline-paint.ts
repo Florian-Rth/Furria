@@ -72,6 +72,31 @@ export const stepsBottom = below('videos', 'keys');
 export const videosTop = `calc(100% - ${stepsBottom})`;
 export const keysTop = `calc(100% - var(${LANE_VARS.keys}))`;
 
+export type KkTimelineLaneKind = KkTimelineRowKind | 'wave';
+
+export type KkTimelineLaneLabels = Readonly<Record<KkTimelineLaneKind, string>>;
+
+export const LANE_KINDS: readonly KkTimelineLaneKind[] = [
+  'ruler',
+  'parts',
+  'wave',
+  'steps',
+  'videos',
+  'keys',
+];
+
+export const LANE_PLACES: Readonly<Record<KkTimelineLaneKind, { top: string; height: string }>> = {
+  ruler: { top: '0rem', height: `var(${LANE_VARS.ruler})` },
+  parts: { top: `var(${LANE_VARS.ruler})`, height: `var(${LANE_VARS.parts})` },
+  wave: { top: waveTop, height: `calc(100% - ${waveTop} - ${waveBottom})` },
+  steps: { top: stepsTop, height: `var(${LANE_VARS.steps})` },
+  videos: { top: videosTop, height: `var(${LANE_VARS.videos})` },
+  keys: { top: keysTop, height: `var(${LANE_VARS.keys})` },
+};
+
+export const shownLanesOf = (rows: KkTimelineRows): KkTimelineLaneKind[] =>
+  LANE_KINDS.filter((kind) => kind === 'wave' || rows[kind]);
+
 export const WAVE_HEIGHT = 100;
 const WAVE_MID = WAVE_HEIGHT / 2;
 const BAR_FILL = 0.72;

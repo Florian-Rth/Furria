@@ -9,6 +9,7 @@ import { KkTimelineCuts } from './internal/ui/KkTimelineCuts';
 import { KkTimelineDiamond } from './internal/ui/KkTimelineDiamond';
 import { KkTimelineHandle } from './internal/ui/KkTimelineHandle';
 import { KkTimelineKeyframes } from './internal/ui/KkTimelineKeyframes';
+import { KkTimelineLaneKeys } from './internal/ui/KkTimelineLaneKeys';
 import { KkTimelineLaneNote } from './internal/ui/KkTimelineLaneNote';
 import { KkTimelineLaneSetup } from './internal/ui/KkTimelineLaneSetup';
 import { KkTimelineLoop } from './internal/ui/KkTimelineLoop';
@@ -32,6 +33,8 @@ export type {
 export type { KkTimelineRowPlace } from './internal/layout/KkTimelineRow';
 export type {
   KkTimelineDensity,
+  KkTimelineLaneKind,
+  KkTimelineLaneLabels,
   KkTimelineRowKind,
   KkTimelineRows,
   KkTimelineSpan,
@@ -53,6 +56,7 @@ export type { KkTimelineTickMark } from './internal/ui/KkTimelineTick';
 export type { KkTimelinePan } from './internal/use-sticky-name';
 
 export const KkTimeline = Object.assign(KkTimelineRoot, {
+  LaneKeys: KkTimelineLaneKeys,
   Strip: KkTimelineStrip,
   Row: KkTimelineRow,
   LaneNote: KkTimelineLaneNote,

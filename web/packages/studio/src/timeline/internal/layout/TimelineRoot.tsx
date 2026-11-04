@@ -14,6 +14,7 @@ interface TimelineBaseProps extends PropsWithChildren {
   density: TimelineDensity;
   rows: KkTimelineRows;
   length: number;
+  keys?: ReactNode;
   overlay?: ReactNode;
   sx?: KkSx;
 }
@@ -37,6 +38,7 @@ export const TimelineRoot: FC<TimelineRootProps> = ({
   length,
   centre = null,
   overview = null,
+  keys = null,
   overlay = null,
   sx,
   children,
@@ -57,6 +59,7 @@ export const TimelineRoot: FC<TimelineRootProps> = ({
         window={visible}
         work={work}
         centred={centred}
+        keys={keys}
         overlay={overlay}
         sx={sx}
       >

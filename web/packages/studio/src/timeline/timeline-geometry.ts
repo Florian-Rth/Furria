@@ -53,6 +53,11 @@ const WAVE_BARS: Record<TimelineDensity, number> = {
 
 export const waveBarsOf = (density: TimelineDensity): number => WAVE_BARS[density];
 
+const UNKEYED_DENSITIES: ReadonlySet<TimelineDensity> = new Set(['strip', 'overview']);
+
+export const laneKeysShownOf = (density: TimelineDensity): boolean =>
+  !UNKEYED_DENSITIES.has(density);
+
 export const shareOf = (seconds: number, length: number): number =>
   length > 0 ? Math.min(1, Math.max(0, seconds / length)) : 0;
 

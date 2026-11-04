@@ -1,4 +1,5 @@
 import type { KkTimelineRows } from '@furria/ui/KkTimeline';
+import { KkTimeline } from '@furria/ui/KkTimeline';
 import type { KkSx } from '@furria/ui/kk-sx';
 import type { FC, ReactNode } from 'react';
 import { TimelineRoot } from './internal/layout/TimelineRoot';
@@ -17,7 +18,9 @@ import type {
   TimelineWaveLayer,
 } from './studio-timeline-layers';
 import { TIMELINE_LANE } from './studio-timeline-layers';
+import { TIMELINE_ROW_LABELS } from './timeline-copy';
 import type { TimelineDensity } from './timeline-geometry';
+import { laneKeysShownOf } from './timeline-geometry';
 import type { CentreScrub } from './use-centre-scrub';
 
 interface StudioTimelineProps {
@@ -69,6 +72,9 @@ export const StudioTimeline: FC<StudioTimelineProps> = ({
   const stepRow = steps === null ? null : <TimelineStepsRow steps={steps} density={density} />;
   const videoRow = videos === null ? null : <TimelineVideosRow videos={videos} />;
   const keyRow = keys === null ? null : <TimelineKeysRow keys={keys} />;
+  const laneKeys = laneKeysShownOf(density) ? (
+    <KkTimeline.LaneKeys rows={rows} labels={TIMELINE_ROW_LABELS} />
+  ) : null;
 
   return (
     <TimelineRoot
@@ -78,6 +84,7 @@ export const StudioTimeline: FC<StudioTimelineProps> = ({
       length={length}
       centre={centre}
       overlay={overlay}
+      keys={laneKeys}
       sx={sx}
     >
       {partBands}

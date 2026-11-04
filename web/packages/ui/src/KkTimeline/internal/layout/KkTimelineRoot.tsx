@@ -1,8 +1,10 @@
 import Box from '@mui/material/Box';
+import Stack from '@mui/material/Stack';
 import type { FC, HTMLAttributes, PropsWithChildren, ReactNode } from 'react';
 import { raisedSurface } from '../../../internal/raised-surface';
 import type { KkSx } from '../../../kk-sx';
 import { kkTokens } from '../../../tokens';
+import { LANE_KEY_WIDTH } from '../lane-sizes';
 import type { KkTimelineDensity, KkTimelineRows } from '../timeline-paint';
 import { rowVarsOf, TIMELINE_DENSITIES } from '../timeline-paint';
 import { KkTimelineCentre } from '../ui/KkTimelineCentre';
@@ -30,6 +32,7 @@ interface KkTimelineRootProps extends PropsWithChildren {
   window: KkTimelineWindow;
   work?: KkTimelineWork | null;
   centred?: boolean;
+  keys?: ReactNode;
   overlay?: ReactNode;
   sx?: KkSx;
 }
@@ -49,6 +52,7 @@ export const KkTimelineRoot: FC<KkTimelineRootProps> = ({
   window,
   work = null,
   centred = false,
+  keys = null,
   overlay = null,
   sx,
   children,
@@ -67,31 +71,40 @@ export const KkTimelineRoot: FC<KkTimelineRootProps> = ({
     </KkTimelineCanvas>
   );
   const cursor = cursorOf(centred, working);
+  const hair = `${kkTokens.line.hair}px`;
+  const workLeft =
+    keys === null
+      ? hair
+      : {
+          xs: `calc(${LANE_KEY_WIDTH.xs} + ${hair})`,
+          desktop: `calc(${LANE_KEY_WIDTH.desktop} + ${hair})`,
+        };
+  const radius = `${kkTokens.radius.base}px`;
+  const clipRadius =
+    keys === null
+      ? { borderRadius: radius }
+      : { borderTopRightRadius: radius, borderBottomRightRadius: radius };
 
   return (
     <Box
-      ref={work?.areaRef}
       role="group"
       aria-label={label}
-      data-kk-timeline={density}
-      data-kk-timeline-work={working || undefined}
-      {...work?.handlers}
       sx={[
         {
           ...rowVars,
           position: 'relative',
           height,
           minWidth: 0,
-          cursor,
         },
         ...(Array.isArray(sx) ? sx : [sx]),
       ]}
     >
-      <Box
+      <Stack
+        direction="row"
         sx={(theme) => ({
           position: 'absolute',
           inset: 0,
-          borderRadius: `${kkTokens.radius.base}px`,
+          borderRadius: radius,
           borderWidth: kkTokens.line.hair,
           borderStyle: 'solid',
           borderColor: 'divider',
@@ -99,9 +112,34 @@ export const KkTimelineRoot: FC<KkTimelineRootProps> = ({
           ...raisedSurface(theme),
         })}
       >
-        {canvas}
+        {keys}
+      </Stack>
+      <Box
+        ref={work?.areaRef}
+        data-kk-timeline={density}
+        data-kk-timeline-work={working || undefined}
+        {...work?.handlers}
+        sx={{
+          position: 'absolute',
+          top: kkTokens.line.hair,
+          bottom: kkTokens.line.hair,
+          right: kkTokens.line.hair,
+          left: workLeft,
+          cursor,
+        }}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            inset: 0,
+            overflow: 'clip',
+            ...clipRadius,
+          }}
+        >
+          {canvas}
+        </Box>
+        {overlay}
       </Box>
-      {overlay}
     </Box>
   );
 };
