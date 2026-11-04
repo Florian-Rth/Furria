@@ -140,7 +140,18 @@ Goal: Florian picks the member beer list and the operator hub layout before anyt
 - [x] Three divergent variants of the member beer list at 390 px (tab, booking, who gave crates) in the lab
 - [x] Three divergent variants of the operator hub (dense, work first: tabs, payment booking, stock + forecast) at 390 px and desktop
 - [x] Bare booking page variant(s) at 390 px, including the not-enrolled state with the declaration
-- [ ] Pitch + Florian's pick; rulings recorded in this RFC
+- [x] Pitch + Florian's pick; rulings recorded in this RFC
+
+Rulings (Florian, 2026-11-04):
+- **Member beer list:** variant A (her tab as a tally disc; pick 1–3, hold) with C's money animation: the open total rolls up with confetti on success.
+- **Operator hub:** variant B (journal + quick entry), with delivery and correction merged into **one** stock action (+/−; a reason is required when lowering the stock).
+- **Hub:** an easy "add crate to a person" action with an optional **"schon bezahlt"** switch. It books the crates and settles them in one transaction.
+- **Booking page:** variant A. A scanner who isn't enrolled sees the declaration first, then the crate.
+- Defaults that stand unless overruled:
+  - declaration wording A
+  - givers cover the whole open pot
+  - any `manage` holder edits pot settings and hands over
+  - a former enrollee with a fully paid tab no longer sees it
 
 ### Phase 2 — Pot and enrollment
 Goal: an operator opens the pot, people enroll and leave, and `beer_list.take` exists.
