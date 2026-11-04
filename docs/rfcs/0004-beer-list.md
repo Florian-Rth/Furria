@@ -176,11 +176,19 @@ Built-phase notes (phase 3):
 
 ### Phase 4 — Crates on tabs
 Goal: enrolled people book crates for themselves, operators for anyone, and the member screen is live.
-- [ ] Core: `BeerCrate` (pot, person, price at booking, entered by, booked at, undone at?, paid by payment?), migration
-- [ ] Rules: members only for themselves; operators for anyone enrolled or with history; stock never below zero; undo only by the booker within the window; stock follows
-- [ ] Endpoints + tests: book crates (count), undo, operator book-for, my tab, who gave crates
-- [ ] Member beer list screen in the picked design; navigation entry gated; former enrollee with open crates sees only her tab
-- [ ] Hub: book-for-someone panel; tabs table (counts only until phase 5)
+- [x] Core: `BeerCrate` (pot, person, price at booking, entered by, booked at, undone at?, paid by payment?), migration
+- [x] Rules: members only for themselves; operators for anyone enrolled or with history; stock never below zero; undo only by the booker within the window; stock follows
+- [x] Endpoints + tests: book crates (count), undo, operator book-for, my tab, who gave crates
+- [ ] Member beer list screen in the picked design; navigation entry gated; former enrollee with open crates sees only her tab (waits for the phase 1 pick)
+- [ ] Hub: book-for-someone panel; tabs table (counts only until phase 5) (waits for the phase 1 pick)
+
+Built-phase notes (phase 4):
+- One row per crate; undo marks `undone_at/by` and keeps the row. If the holder is erased the crate stays with an empty holder, so the stock doesn't jump.
+- Members book 1–3, operators 1–20. Booking for someone needs any enrollment, running or ended.
+- Member undo: own entries within 10 s. Operator undo: any crate of an open pot. A closed pot refuses both.
+- Givers: open pot only, ordered by name (no leaderboard). Open product question: window it per Session?
+- Stock = movements − crates not undone; pace across all pots. A deterministic lock race test exists (`WhileBeerPotIsLockedAsync`).
+- Phase 5 seam: `paid_by_payment_id` has no FK yet. Payments take the pot lock and filter `undone_at IS NULL`.
 
 ### Phase 5 — Payments and the Start task
 Goal: operators settle tabs; open tabs reach their holders on Start.
