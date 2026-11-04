@@ -2,6 +2,8 @@ import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import { useChildMatches, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
 import { useCloseOnEscape } from '@/features/events/hooks/use-close-on-escape';
+import { usePermissions } from '@/features/session/hooks/use-permissions';
+import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import {
   useBeerEnrollmentsQuery,
   useBeerJournalQuery,
@@ -59,6 +61,7 @@ export type BeerHubState =
 
 export interface BeerHub {
   state: BeerHubState;
+  allowed: boolean;
   isWide: boolean;
   now: string;
   todayKey: string;
@@ -88,9 +91,11 @@ export const useBeerHub = (): BeerHub => {
   const [focus, setFocus] = useState<BeerFocus>('all');
   const [kind, setKind] = useState<BeerKindFilter>('all');
   const [personFilter, setPersonFilter] = useState<number | null>(null);
-  const potQuery = useOpenBeerPotQuery();
+  const { has } = usePermissions();
+  const allowed = has(PERMISSION_KEYS.beerListManage);
+  const potQuery = useOpenBeerPotQuery(allowed);
   const beerPotId = potQuery.data?.pot?.beerPotId ?? null;
-  const enrollmentsQuery = useBeerEnrollmentsQuery();
+  const enrollmentsQuery = useBeerEnrollmentsQuery(allowed);
   const stockQuery = useBeerStockQuery(beerPotId);
   const tabsQuery = useBeerTabsQuery(beerPotId);
   const journalQuery = useBeerJournalQuery(beerPotId);
@@ -110,11 +115,11 @@ export const useBeerHub = (): BeerHub => {
   const stateOf = (): BeerHubState => {
     const pot = potQuery.data?.pot;
     const error = firstError([
-      potQuery.error,
-      enrollmentsQuery.error,
-      stockQuery.error,
-      tabsQuery.error,
-      journalQuery.error,
+      pot === undefined ? potQuery.error : null,
+      enrollmentsQuery.data === undefined ? enrollmentsQuery.error : null,
+      stockQuery.data === undefined ? stockQuery.error : null,
+      tabsQuery.data === undefined ? tabsQuery.error : null,
+      journalQuery.data === undefined ? journalQuery.error : null,
     ]);
 
     if (pot === null) {
@@ -169,6 +174,7 @@ export const useBeerHub = (): BeerHub => {
 
   return {
     state: stateOf(),
+    allowed,
     isWide,
     now,
     todayKey: dayKeyOf(now),

@@ -66,7 +66,7 @@ export const STOCK_LABEL = 'Bestand';
 export const STOCK_UNIT = 'Kisten';
 export const COUNTERS_LABEL = 'Deckel filtern';
 export const OPEN_LABEL = 'Deckel offen';
-export const OVERDUE_LABEL = 'über 7 Tage';
+export const OVERDUE_LABEL = 'ab 7 Tagen';
 export const PEOPLE_LABEL = 'nehmen teil';
 export const QUICK_LABEL = 'Schnell eintragen';
 export const KIND_FILTER_LABEL = 'Art';
@@ -75,8 +75,6 @@ export const PERSON_FILTER_ALL = 'Alle Personen';
 export const JOURNAL_EMPTY = 'Keine Einträge.';
 export const ROSTER_LABEL = 'Deckel';
 export const OLDER_LABEL = 'Ältere Tage zeigen';
-
-export type BeerQuickId = 'payment' | 'crates' | 'stock';
 
 export const QUICK_ITEMS: readonly KkPourQuickItem[] = [
   { id: 'payment', label: 'Zahlung', icon: 'fees', lead: true },
@@ -188,7 +186,7 @@ export const rosterFactsOf = (row: BeerRosterRow): string => {
 export const endConfirmOf = (name: string): KkHoldConfirm => ({
   eyebrow: 'Teilnahme',
   question: `Teilnahme von ${name} beenden?`,
-  explanation: `${name} kann dann keine Kisten mehr buchen. Offene Kisten bleiben auf dem Deckel und werden weiter bezahlt.`,
+  explanation: `${name} kann dann selbst keine Kisten mehr buchen. Offene Kisten bleiben auf dem Deckel und werden weiter bezahlt.`,
   confirmLabel: 'Beenden',
   cancelLabel: CANCEL_LABEL,
   closeLabel: CLOSE_LABEL,
@@ -256,7 +254,7 @@ export const FORM_TITLES = {
 
 export const FORM_CONTEXTS = {
   payment: 'ganze Kisten · älteste zuerst',
-  crates: 'für eine Person, die teilnimmt',
+  crates: 'für alle, die teilnehmen oder teilgenommen haben',
   stock: 'Lieferung · Schwund · Bruch · Zählfehler',
 } as const;
 
@@ -293,6 +291,8 @@ export const handoverConfirmOf = (name: string, stock: number): KkHoldConfirm =>
 export const ENROLLMENTS_TITLE = 'Teilnahmen';
 export const POTS_TITLE = 'Frühere Listen';
 export const POTS_EMPTY = 'Es gibt keine früheren Listen.';
+export const POTS_CONTEXT = 'übergeben · offene Deckel bleiben bezahlbar';
+export const ALL_PAID = 'Auf dieser Liste ist alles bezahlt.';
 export const potLabelOf = (
   owner: PersonRef | null,
   openedAt: string,

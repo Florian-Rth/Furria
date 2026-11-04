@@ -12,7 +12,7 @@ import type { BeerPanePath } from '../hooks/use-beer-hub';
 import { useBeerHub } from '../hooks/use-beer-hub';
 import { BeerHubBody } from './BeerHubBody';
 
-const QUICK_PATHS: Record<string, BeerPanePath> = {
+const QUICK_PATHS: Partial<Record<string, BeerPanePath>> = {
   payment: '/manage/beer-list/payment',
   crates: '/manage/beer-list/crates',
   stock: '/manage/beer-list/stock',
@@ -37,7 +37,8 @@ export const BeerHubPage: FC = () => {
       hub.openPane('/manage/beer-list/settings');
     },
   } as const;
-  const actions: KkScreenActions = isOpen ? [settingsAction, potsAction] : [potsAction];
+  const openActions: KkScreenActions = isOpen ? [settingsAction, potsAction] : [potsAction];
+  const actions = hub.allowed ? openActions : undefined;
   const chooseQuick = (id: string): void => {
     const path = QUICK_PATHS[id];
 

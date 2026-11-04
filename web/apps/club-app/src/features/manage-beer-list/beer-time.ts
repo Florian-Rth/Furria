@@ -44,6 +44,3 @@ export const weekdayDateOf = (dayKey: string): string => {
 };
 
 export const shortDateOf = (at: string): string => weekdayDateOf(dayKeyOf(at)).slice(3);
-
-export const dayOffsetKeyOf = (at: string, offsetDays: number): string =>
-  dayKeyOf(new Date(Date.parse(at) + offsetDays * DAY_MS).toISOString());

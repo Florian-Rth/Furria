@@ -2,12 +2,10 @@ import type { KkPourTabState } from '@furria/ui/KkPourStateGlyph';
 import { KkPourTabLine } from '@furria/ui/KkPourTabLine';
 import type { KkSx } from '@furria/ui/kk-sx';
 import type { FC } from 'react';
-import { openDaysOf } from '../beer-hub';
+import { OVERDUE_AFTER_DAYS, openDaysOf } from '../beer-hub';
 import { euroOf, firstNameOf } from '../beer-hub-copy';
 import { clockOf, shortDateOf } from '../beer-time';
 import type { BeerJournalCrate } from '../schemas';
-
-const OVERDUE_DAYS = 7;
 
 interface BeerCrateLineProps {
   crate: BeerJournalCrate;
@@ -26,7 +24,7 @@ const stateOf = (crate: BeerJournalCrate, now: string): KkPourTabState => {
     return 'paid';
   }
 
-  return (openDaysOf(crate.bookedAt, now) ?? 0) >= OVERDUE_DAYS ? 'overdue' : 'open';
+  return (openDaysOf(crate.bookedAt, now) ?? 0) >= OVERDUE_AFTER_DAYS ? 'overdue' : 'open';
 };
 
 export const BeerCrateLine: FC<BeerCrateLineProps> = ({ crate, now, marked = false, sx }) => {

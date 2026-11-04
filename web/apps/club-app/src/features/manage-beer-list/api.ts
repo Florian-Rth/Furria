@@ -48,10 +48,11 @@ import type {
 
 const FAILURE = { failure: toWriteErrorMessage };
 
-export const useOpenBeerPotQuery = (): UseQueryResult<OpenBeerPotResponse, Error> =>
+export const useOpenBeerPotQuery = (enabled = true): UseQueryResult<OpenBeerPotResponse, Error> =>
   useQuery({
     queryKey: queryKeys.beerPot,
     queryFn: () => withFreshAccessToken(requestOpenBeerPot),
+    enabled,
   });
 
 export const useBeerPotsQuery = (): UseQueryResult<BeerPotsResponse, Error> =>
@@ -60,10 +61,13 @@ export const useBeerPotsQuery = (): UseQueryResult<BeerPotsResponse, Error> =>
     queryFn: () => withFreshAccessToken(requestBeerPots),
   });
 
-export const useBeerEnrollmentsQuery = (): UseQueryResult<BeerEnrollmentsResponse, Error> =>
+export const useBeerEnrollmentsQuery = (
+  enabled = true,
+): UseQueryResult<BeerEnrollmentsResponse, Error> =>
   useQuery({
     queryKey: queryKeys.beerEnrollments,
     queryFn: () => withFreshAccessToken(requestBeerEnrollments),
+    enabled,
   });
 
 export const useBeerStockQuery = (

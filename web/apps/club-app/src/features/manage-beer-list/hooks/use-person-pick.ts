@@ -7,8 +7,9 @@ export interface PersonPick {
 }
 
 export const usePersonPick = (initial: number | null, allowed: readonly number[]): PersonPick => {
-  const [picked, setPicked] = useState<number | null>(initial);
-  const personId = picked !== null && allowed.includes(picked) ? picked : null;
+  const [picked, setPicked] = useState<number | null>(null);
+  const candidate = picked ?? initial;
+  const personId = candidate !== null && allowed.includes(candidate) ? candidate : null;
 
   return {
     personId,

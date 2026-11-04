@@ -11,7 +11,7 @@ import type {
 } from './schemas';
 
 const DAY_MS = 86_400_000;
-const REMINDER_AFTER_DAYS = 7;
+export const OVERDUE_AFTER_DAYS = 7;
 const WARN_WITHIN_DAYS = 7;
 
 export const SPARK_DAYS = 60;
@@ -46,7 +46,7 @@ export const openDaysOf = (oldestOpenAt: string | null, now: string): number | n
   oldestOpenAt === null ? null : Math.floor((Date.parse(now) - Date.parse(oldestOpenAt)) / DAY_MS);
 
 const stateOf = (openCrates: number, openDays: number | null): BeerTabState => {
-  if ((openDays ?? 0) >= REMINDER_AFTER_DAYS) {
+  if ((openDays ?? 0) >= OVERDUE_AFTER_DAYS) {
     return 'overdue';
   }
 

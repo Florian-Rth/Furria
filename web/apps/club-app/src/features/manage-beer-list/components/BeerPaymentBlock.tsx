@@ -50,7 +50,7 @@ export const BeerPaymentBlock: FC<BeerPaymentBlockProps> = ({ target, now, onDon
           max={target.oldestFirst.length}
           sx={{ flex: 1 }}
         />
-        <KkText variant="caption" tone="secondary" sx={{ flex: 1, pt: 1 }}>
+        <KkText variant="caption" tone="secondary" sx={{ flex: 1 }}>
           {PAY_OLDEST_NOTE}
         </KkText>
       </Stack>

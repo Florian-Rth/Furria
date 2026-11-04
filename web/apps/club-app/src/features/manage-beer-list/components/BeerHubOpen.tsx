@@ -22,7 +22,7 @@ export const BeerHubOpen: FC<BeerHubOpenProps> = ({ open }) => {
     <Stack sx={{ gap: 2, minWidth: 0 }}>
       <BeerHubHead summary={open.summary} />
       {roster}
-      <BeerHubFilters roster={open.roster} />
+      <BeerHubFilters />
       <BeerJournal days={open.days} />
     </Stack>
   );
