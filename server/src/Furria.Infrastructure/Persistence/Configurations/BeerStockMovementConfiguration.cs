@@ -16,7 +16,8 @@ public sealed class BeerStockMovementConfiguration : IEntityTypeConfiguration<Be
             {
                 table.HasCheckConstraint(
                     "ck_beer_stock_movement_crates",
-                    $"crates <> 0 AND abs(crates) <= {BeerStockMovement.MaxCrates}"
+                    "crates <> 0 AND (kind IN ('HandoverCarry', 'HandedOver')"
+                        + $" OR abs(crates) <= {BeerStockMovement.MaxCrates})"
                 );
                 table.HasCheckConstraint(
                     "ck_beer_stock_movement_kind",

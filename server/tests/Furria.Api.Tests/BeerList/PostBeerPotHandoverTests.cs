@@ -90,6 +90,36 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_CarryEveryCrate_When_MoreAreLeftThanOneDeliveryBrings()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                WithSuccessor(builder)
+                    .BeerList(beerList =>
+                        beerList
+                            .AddBeerPot(Pot, Warden)
+                            .AddBeerDelivery(Pot, BeerStockMovement.MaxCrates)
+                            .AddBeerDelivery(Pot, BeerStockMovement.MaxCrates)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync(Warden, ct);
+        var (response, result) = await client.POSTAsync<
+            PostBeerPotHandover,
+            PostBeerPotHandoverRequest,
+            PostBeerPotHandoverResponse
+        >(HandoverTo(ctx.BeerList.Pots.IdOf(Pot), ctx.Identity.People.IdOf(Successor)));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.BeerStockOfPot(result.BeerPotId)
+            .ToStandAt(2 * BeerStockMovement.MaxCrates)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_OpenTheSuccessorsPotWithoutAnyMovement_When_NoCrateIsLeft()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -250,7 +280,7 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CarryExactlyTheCratesLeft_When_ACrateIsBookedDuringTheHandover()
+    public async Task Should_BookTheCrateAndCarryTheRest_When_SheBooksDuringTheHandover()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildAsync(delivered: 10, taken: 3, ct);
@@ -276,14 +306,17 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
             ct
         );
 
-        Assert.Equal(HttpStatusCode.OK, handover.Response.StatusCode);
-        var bookedInTheOldPot = booking.StatusCode == HttpStatusCode.OK ? 1 : 0;
-        Assert.Equal(7 - bookedInTheOldPot, handover.Result.CarriedCrates);
+        Assert.Equal(
+            (HttpStatusCode.OK, HttpStatusCode.OK),
+            (handover.Response.StatusCode, booking.StatusCode)
+        );
         await ctx
             .Expected.BeerStockOfPot(potId)
             .ToStandAt(0)
             .BeerStockOfPot(handover.Result.BeerPotId)
-            .ToStandAt(handover.Result.CarriedCrates)
+            .ToStandAt(6)
+            .BeerTabOf(ctx.Identity.People.IdOf(Drinker))
+            .ToHaveTakenCrates(4)
             .AssertAsync(ct);
     }
 

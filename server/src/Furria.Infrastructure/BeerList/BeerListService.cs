@@ -59,17 +59,22 @@ public sealed partial class BeerListService
         CancellationToken ct
     )
     {
-        var pot = await _dbContext.BeerPots.SingleOrDefaultAsync(row => row.Id == beerPotId, ct);
-        if (pot is null)
-            return Result.NotFound(BeerListMessages.UnknownPot);
+        var updated = await _dbContext
+            .BeerPots.Where(pot => pot.Id == beerPotId && pot.ClosedAt == null)
+            .ExecuteUpdateAsync(
+                row =>
+                    row.SetProperty(pot => pot.CratePriceCents, settings.CratePriceCents)
+                        .SetProperty(pot => pot.PaymentLink, settings.PaymentLink)
+                        .SetProperty(pot => pot.PaymentNote, settings.PaymentNote)
+                        .SetProperty(pot => pot.UpdatedAt, _timeProvider.GetUtcNow()),
+                ct
+            );
+        if (updated > 0)
+            return Result.Success();
 
-        if (pot.ClosedAt is not null)
-            return Result.Conflict(ClosedPotMessage);
-
-        Apply(settings, pot);
-        await _dbContext.SaveChangesAsync(ct);
-
-        return Result.Success();
+        return await _dbContext.BeerPots.AsNoTracking().AnyAsync(pot => pot.Id == beerPotId, ct)
+            ? Result.Conflict(ClosedPotMessage)
+            : Result.NotFound(BeerListMessages.UnknownPot);
     }
 
     public Task<BeerPotDetails?> GetOpenPotAsync(CancellationToken ct) =>

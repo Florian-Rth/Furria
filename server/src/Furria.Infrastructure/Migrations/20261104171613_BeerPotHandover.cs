@@ -16,6 +16,11 @@ namespace Furria.Infrastructure.Migrations
             );
 
             migrationBuilder.DropCheckConstraint(
+                name: "ck_beer_stock_movement_crates",
+                table: "beer_stock_movement"
+            );
+
+            migrationBuilder.DropCheckConstraint(
                 name: "ck_beer_stock_movement_kind",
                 table: "beer_stock_movement"
             );
@@ -26,6 +31,12 @@ namespace Furria.Infrastructure.Migrations
                 columns: new[] { "beer_pot_id", "kind" },
                 unique: true,
                 filter: "kind IN ('HandoverCarry', 'HandedOver')"
+            );
+
+            migrationBuilder.AddCheckConstraint(
+                name: "ck_beer_stock_movement_crates",
+                table: "beer_stock_movement",
+                sql: "crates <> 0 AND (kind IN ('HandoverCarry', 'HandedOver') OR abs(crates) <= 500)"
             );
 
             migrationBuilder.AddCheckConstraint(
@@ -44,6 +55,11 @@ namespace Furria.Infrastructure.Migrations
             );
 
             migrationBuilder.DropCheckConstraint(
+                name: "ck_beer_stock_movement_crates",
+                table: "beer_stock_movement"
+            );
+
+            migrationBuilder.DropCheckConstraint(
                 name: "ck_beer_stock_movement_kind",
                 table: "beer_stock_movement"
             );
@@ -54,6 +70,12 @@ namespace Furria.Infrastructure.Migrations
                 column: "beer_pot_id",
                 unique: true,
                 filter: "kind = 'HandoverCarry'"
+            );
+
+            migrationBuilder.AddCheckConstraint(
+                name: "ck_beer_stock_movement_crates",
+                table: "beer_stock_movement",
+                sql: "crates <> 0 AND abs(crates) <= 500"
             );
 
             migrationBuilder.AddCheckConstraint(

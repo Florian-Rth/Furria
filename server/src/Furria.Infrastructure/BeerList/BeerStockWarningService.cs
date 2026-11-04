@@ -61,7 +61,7 @@ public sealed class BeerStockWarningService
         if (delivered == 0)
             return;
 
-        await RecordWarningAsync(armedPotId, now, ct);
+        await RecordWarningOnOpenPotAsync(now, ct);
         _logger.LogInformation(
             "Beer stock warning for pot {BeerPotId} reached {DeliveredDevices} devices",
             armedPotId,
@@ -97,9 +97,9 @@ public sealed class BeerStockWarningService
             .Select(pot => (int?)pot.Id)
             .SingleOrDefaultAsync(ct);
 
-    private Task RecordWarningAsync(int beerPotId, DateTimeOffset sentAt, CancellationToken ct) =>
+    private Task RecordWarningOnOpenPotAsync(DateTimeOffset sentAt, CancellationToken ct) =>
         _dbContext
-            .BeerPots.Where(pot => pot.Id == beerPotId)
+            .BeerPots.Where(pot => pot.ClosedAt == null)
             .ExecuteUpdateAsync(
                 setters => setters.SetProperty(pot => pot.StockWarningSentAt, sentAt),
                 ct

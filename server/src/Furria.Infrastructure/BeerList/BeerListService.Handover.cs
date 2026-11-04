@@ -8,7 +8,7 @@ namespace Furria.Infrastructure.BeerList;
 
 public sealed partial class BeerListService
 {
-    private const string HandedOverPotMessage = "Diese Bierliste ist schon übergeben.";
+    private const string PotToHandOverMessage = "Diese Bierliste ist schon übergeben.";
     private const string SuccessorOwnsPotMessage = "Diese Bierliste gehört schon dieser Person.";
 
     public async Task<Result<BeerPotHandoverDetails>> HandOverAsync(
@@ -16,16 +16,10 @@ public sealed partial class BeerListService
         CancellationToken ct
     )
     {
-        if (!await PersonExistsAsync(command.SuccessorPersonId, ct))
-            return Result<BeerPotHandoverDetails>.NotFound(UnknownPersonMessage);
-
-        if (!await MayManageAsync(command.SuccessorPersonId, ct))
-            return Result<BeerPotHandoverDetails>.Validation(OwnerWithoutRightMessage);
-
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         var pot = await BeerPotLedger
             .LockedPot(_dbContext, command.BeerPotId)
-            .Select(row => new HandedOverPot(
+            .Select(row => new PotToHandOver(
                 row.Id,
                 row.OwnerPersonId,
                 row.ClosedAt,
@@ -36,7 +30,13 @@ public sealed partial class BeerListService
             return Result<BeerPotHandoverDetails>.NotFound(BeerListMessages.UnknownPot);
 
         if (pot.ClosedAt is not null)
-            return Result<BeerPotHandoverDetails>.Conflict(HandedOverPotMessage);
+            return Result<BeerPotHandoverDetails>.Conflict(PotToHandOverMessage);
+
+        if (!await PersonExistsAsync(command.SuccessorPersonId, ct))
+            return Result<BeerPotHandoverDetails>.NotFound(UnknownPersonMessage);
+
+        if (!await MayManageAsync(command.SuccessorPersonId, ct))
+            return Result<BeerPotHandoverDetails>.Validation(OwnerWithoutRightMessage);
 
         if (pot.OwnerPersonId == command.SuccessorPersonId)
             return Result<BeerPotHandoverDetails>.Validation(SuccessorOwnsPotMessage);
@@ -50,7 +50,7 @@ public sealed partial class BeerListService
     }
 
     private async Task<Result<BeerPotHandoverDetails>> HandOverLockedAsync(
-        HandedOverPot pot,
+        PotToHandOver pot,
         BeerPotHandoverCommand command,
         CancellationToken ct
     )
@@ -121,7 +121,7 @@ public sealed partial class BeerListService
             );
 
     private async Task<DateTimeOffset?> StockWarningCarriedFromAsync(
-        HandedOverPot pot,
+        PotToHandOver pot,
         CancellationToken ct
     )
     {
@@ -141,7 +141,7 @@ public sealed partial class BeerListService
         return deliveredSinceWarning ? null : sentAt;
     }
 
-    private sealed record HandedOverPot(
+    private sealed record PotToHandOver(
         int Id,
         int? OwnerPersonId,
         DateTimeOffset? ClosedAt,

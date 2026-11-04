@@ -41,15 +41,16 @@ public sealed class BeerTabService
         CancellationToken ct
     )
     {
-        var openPotId = await _dbContext
-            .BeerPots.AsNoTracking()
-            .Where(pot => pot.ClosedAt == null)
-            .Select(pot => (int?)pot.Id)
-            .SingleOrDefaultAsync(ct);
-        if (openPotId is null)
+        if (await OpenPotIdAsync(ct) is not { } openPotId)
             return Result<BeerCrateBookingDetails>.Conflict(NoOpenPotMessage);
 
-        return await BookAsync(new CrateEntry(openPotId.Value, personId, count, personId), ct);
+        var booked = await BookAsync(new CrateEntry(openPotId, personId, count, personId), ct);
+        if (booked.IsSuccess)
+            return booked;
+
+        return await OpenPotIdAsync(ct) is { } successorPotId && successorPotId != openPotId
+            ? await BookAsync(new CrateEntry(successorPotId, personId, count, personId), ct)
+            : booked;
     }
 
     public async Task<Result<BeerCrateBookingDetails>> BookCratesForAsync(
@@ -348,6 +349,13 @@ public sealed class BeerTabService
                 crate.PaidByPaymentId != null
             ))
             .ToListAsync(ct);
+
+    private Task<int?> OpenPotIdAsync(CancellationToken ct) =>
+        _dbContext
+            .BeerPots.AsNoTracking()
+            .Where(pot => pot.ClosedAt == null)
+            .Select(pot => (int?)pot.Id)
+            .SingleOrDefaultAsync(ct);
 
     private Task<bool> HasEnrollmentHistoryAsync(int personId, CancellationToken ct) =>
         _dbContext

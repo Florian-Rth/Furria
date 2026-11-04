@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Furria.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261104170809_BeerPotHandover")]
+    [Migration("20261104171613_BeerPotHandover")]
     partial class BeerPotHandover
     {
         /// <inheritdoc />
@@ -360,7 +360,7 @@ namespace Furria.Infrastructure.Migrations
 
                     b.ToTable("beer_stock_movement", null, t =>
                         {
-                            t.HasCheckConstraint("ck_beer_stock_movement_crates", "crates <> 0 AND abs(crates) <= 500");
+                            t.HasCheckConstraint("ck_beer_stock_movement_crates", "crates <> 0 AND (kind IN ('HandoverCarry', 'HandedOver') OR abs(crates) <= 500)");
 
                             t.HasCheckConstraint("ck_beer_stock_movement_kind", "(kind IN ('Delivery', 'HandoverCarry') AND reason IS NULL AND crates > 0) OR (kind = 'HandedOver' AND reason IS NULL AND crates < 0) OR (kind = 'Correction' AND reason IS NOT NULL AND (reason = 'Miscount' OR (reason IN ('Shrinkage', 'Breakage') AND crates < 0)))");
                         });
