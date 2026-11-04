@@ -161,6 +161,8 @@ export const PERMISSION_KEYS = {
   galleryManage: 'gallery.manage',
   galleryPublish: 'gallery.publish',
   newsManage: 'news.manage',
+  beerListManage: 'beer_list.manage',
+  beerListTake: 'beer_list.take',
   systemView: 'system.view',
 } as const;
 

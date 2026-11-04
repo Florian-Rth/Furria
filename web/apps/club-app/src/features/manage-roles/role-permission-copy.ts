@@ -83,6 +83,14 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
     title: 'Meldungen für Aktuelles schreiben',
     line: 'Meldungen schreiben, auf der Website veröffentlichen, ändern, zurückziehen und löschen.',
   },
+  [PERMISSION_KEYS.beerListManage]: {
+    title: 'Die Bierliste führen',
+    line: 'Die Bierliste eröffnen und einstellen, Bestand, Zahlungen und Kisten für andere buchen, Teilnahmen beenden. Nur wer das darf, kann Besitzer der Bierliste sein.',
+  },
+  [PERMISSION_KEYS.beerListTake]: {
+    title: 'Kisten von der Bierliste nehmen',
+    line: 'Ergibt sich aus der eigenen Teilnahme an der Bierliste, nicht aus einer Rolle.',
+  },
   [PERMISSION_KEYS.systemView]: {
     title: 'System einsehen',
     line: 'Zustand von Datenbank, Medienverarbeitung, Speicher und Protokoll sehen.',
