@@ -5,7 +5,8 @@ import Typography from '@mui/material/Typography';
 import type { FC, MouseEvent, ReactNode } from 'react';
 import { focusRing } from '../internal/focus-ring';
 import { inkWash } from '../internal/ink-wash';
-import { raisedSurface } from '../internal/raised-surface';
+import { raisedSurfaceScheme } from '../internal/raised-surface';
+import { applyScheme } from '../internal/scheme-paint';
 import type { KkIconName } from '../KkIcon';
 import { KkIcon } from '../KkIcon';
 import type { KkSx } from '../kk-sx';
@@ -31,9 +32,10 @@ const barPaint =
           gap: 0.5,
           p: 0.5,
           borderRadius: `${kkTokens.radius.base}px`,
-          ...raisedSurface(theme),
-          boxShadow: kkTokens.shadow.floating,
-          ...theme.applyStyles('dark', { boxShadow: kkTokens.chrome.dark.lift }),
+          ...applyScheme(theme, raisedSurfaceScheme, {
+            light: { boxShadow: kkTokens.shadow.floating },
+            dark: { boxShadow: kkTokens.chrome.dark.lift },
+          }),
         }
       : { gap: 1 };
 
