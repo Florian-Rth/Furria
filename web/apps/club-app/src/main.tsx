@@ -14,6 +14,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { startAppUpdates } from '@/features/app-install/app-update-start';
 import { applyBrowserModeParam } from '@/features/app-install/browser-mode-store';
+import { listenForPushOpens, startPushSync } from '@/features/push/push-sync';
 import { startSession } from '@/lib/api/session/session-boot';
 import { markSessionUnavailable } from '@/lib/api/session/session-store';
 import { withBackStack } from '@/lib/back-stack';
@@ -45,6 +46,10 @@ if (rootElement === null) {
 
 void startSession().catch(markSessionUnavailable);
 startAppUpdates();
+startPushSync();
+listenForPushOpens((path) => {
+  router.history.push(path);
+});
 
 createRoot(rootElement).render(
   <StrictMode>

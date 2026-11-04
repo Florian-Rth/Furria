@@ -4,6 +4,7 @@ import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
+import { PushDevicePanel } from '@/features/push/components/PushDevicePanel';
 import { AppSignOutButton } from '@/features/session/components/AppSignOutButton';
 import { useLanding } from '@/features/write/hooks/use-landing';
 import type { PersonalMe } from '@/lib/api/schemas';
@@ -47,6 +48,7 @@ export const ProfilePanels: FC<ProfilePanelsProps> = ({ me }) => {
           <ProfileMembershipPanel membership={me.membership} />
           <ProfileGroupsPanel />
           <ProfileAppearancePanel />
+          <PushDevicePanel />
           <AppSignOutButton />
         </KkPanelStack>
       </Grid>

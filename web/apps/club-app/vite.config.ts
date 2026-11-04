@@ -56,7 +56,8 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ['**/*.{js,mjs,css,html,svg,png,woff2}'],
-        globIgnores: ['config.js'],
+        globIgnores: ['config.js', 'push-worker.js'],
+        importScripts: ['push-worker.js'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/\.well-known\//],
         cleanupOutdatedCaches: true,

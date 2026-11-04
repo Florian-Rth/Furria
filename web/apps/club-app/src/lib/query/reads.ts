@@ -36,6 +36,7 @@ export const DOMAIN_CHANGES = [
   'actVideos',
   'actEvening',
   'runningOrder',
+  'pushDevice',
 ] as const;
 export type DomainChange = (typeof DOMAIN_CHANGES)[number];
 
@@ -43,6 +44,7 @@ export const READ_NAMES = [
   'me',
   'invitationLookup',
   'passkeySupport',
+  'pushDevice',
   'start',
   'clubHub',
   'announcements',
@@ -111,6 +113,7 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   me: ['auth', 'me'],
   invitationLookup: ['auth', 'invitation-lookup'],
   passkeySupport: ['device', 'passkey-support'],
+  pushDevice: ['device', 'push'],
   start: ['start'],
   clubHub: ['club', 'hub'],
   announcements: ['announcements'],
@@ -190,6 +193,7 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   ],
   invitationLookup: [],
   passkeySupport: [],
+  pushDevice: ['pushDevice'],
   start: [
     'person',
     'picture',
@@ -423,6 +427,7 @@ export const queryKeys = {
   invitationLookup: (credentialKey: string | null): QueryKey =>
     keyOf('invitationLookup', credentialKey),
   passkeySupport: READ_ROOTS.passkeySupport,
+  pushDevice: READ_ROOTS.pushDevice,
   start: READ_ROOTS.start,
   clubHub: READ_ROOTS.clubHub,
   announcements: READ_ROOTS.announcements,

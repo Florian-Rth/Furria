@@ -1,0 +1,32 @@
+import { z } from 'zod';
+
+export const PushKeySchema = z.object({ publicKey: z.string().min(1) });
+export type PushKey = z.infer<typeof PushKeySchema>;
+
+export const PushDeviceSchema = z.object({
+  endpoint: z.url(),
+  keys: z.object({ p256dh: z.string().min(1), auth: z.string().min(1) }),
+});
+export type PushDevice = z.infer<typeof PushDeviceSchema>;
+
+export const PushDeliverySchema = z.object({
+  delivered: z.number().int().nonnegative(),
+  forgotten: z.number().int().nonnegative(),
+  failed: z.number().int().nonnegative(),
+});
+export type PushDelivery = z.infer<typeof PushDeliverySchema>;
+
+export const TestPushResultSchema = z.object({ delivery: PushDeliverySchema });
+export type TestPushResult = z.infer<typeof TestPushResultSchema>;
+
+export const PUSH_OPEN_MESSAGE = 'furria:push-open';
+
+export const AppPathSchema = z
+  .string()
+  .regex(/^\/(?![/\\])/)
+  .catch('/');
+
+export const PushOpenMessageSchema = z.object({
+  type: z.literal(PUSH_OPEN_MESSAGE),
+  path: AppPathSchema,
+});

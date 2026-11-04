@@ -76,6 +76,12 @@ services:
       # signed with this key (ADR-0025) - at least 32 characters, the API refuses to start otherwise.
       Media__RootPath: /media
       Media__SigningKey: ${MEDIA_SIGNING_KEY:?set MEDIA_SIGNING_KEY (>= 32 chars) in .env}
+      # Web Push to the installed club app (ADR-0036): one permanent P-256 key pair, raw base64url
+      # (docs/ops/PRODUCTION.md says how to make it). The API refuses to start unless both keys
+      # are one pair; a new pair orphans every subscribed device until the app's next start.
+      Push__VapidPublicKey: ${PUSH_VAPID_PUBLIC_KEY:?set PUSH_VAPID_PUBLIC_KEY in .env}
+      Push__VapidPrivateKey: ${PUSH_VAPID_PRIVATE_KEY:?set PUSH_VAPID_PRIVATE_KEY in .env}
+      Push__Subject: https://${CLUB_APP_HOST:-app.${CLUB_DOMAIN:?set CLUB_DOMAIN in .env}}
       # The same fingerprints the club-app's assetlinks.json names: each one's app may use passkeys.
       ClubApp__AndroidCertFingerprints: ${ANDROID_CERT_FINGERPRINTS:-}
       # Production refuses to start without trusted proxies.
