@@ -190,7 +190,7 @@ Goal: enrolled people book crates for themselves, operators for anyone, and the 
 - [x] Core: `BeerCrate` (pot, person, price at booking, entered by, booked at, undone at?, paid by payment?), migration
 - [x] Rules: members only for themselves; operators for anyone enrolled or with history; stock never below zero; undo only by the booker within the window; stock follows
 - [x] Endpoints + tests: book crates (count), undo, operator book-for, my tab, who gave crates
-- [ ] Member beer list screen in the picked design; navigation entry gated; former enrollee with open crates sees only her tab (waits for the phase 1 pick)
+- [x] Member beer list screen in the picked design; navigation entry gated; former enrollee with open crates sees only her tab
 - [ ] Hub: book-for-someone panel; tabs table (counts only until phase 5) (waits for the phase 1 pick)
 
 Built-phase notes (phase 4):
