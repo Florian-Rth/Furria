@@ -9,7 +9,6 @@ namespace Furria.Infrastructure.BeerList;
 
 public sealed class BeerStockService
 {
-    private const string UnknownPotMessage = "Diese Bierliste gibt es nicht.";
     private const string ClosedPotMessage =
         "Diese Bierliste ist übergeben, ihr Bestand lässt sich nicht mehr ändern.";
     private const string BelowZeroMessage =
@@ -27,12 +26,12 @@ public sealed class BeerStockService
     public Task<Result> BookDeliveryAsync(BeerDeliveryCommand command, CancellationToken ct) =>
         BookAsync(
             command.BeerPotId,
-            new BeerStockMovement
-            {
-                Kind = BeerStockMovementKind.Delivery,
-                Crates = command.Crates,
-                BookedByPersonId = command.BookedByPersonId,
-            },
+            new StockChange(
+                BeerStockMovementKind.Delivery,
+                command.Crates,
+                null,
+                command.BookedByPersonId
+            ),
             ct
         );
 
@@ -42,37 +41,42 @@ public sealed class BeerStockService
     ) =>
         BookAsync(
             command.BeerPotId,
-            new BeerStockMovement
-            {
-                Kind = BeerStockMovementKind.Correction,
-                Crates = command.Crates,
-                Reason = command.Reason,
-                BookedByPersonId = command.BookedByPersonId,
-            },
+            new StockChange(
+                BeerStockMovementKind.Correction,
+                command.Crates,
+                command.Reason,
+                command.BookedByPersonId
+            ),
             ct
         );
 
     public async Task<Result<BeerStockDetails>> GetStockAsync(int beerPotId, CancellationToken ct)
     {
-        var isOpen = await _dbContext
-            .BeerPots.AsNoTracking()
-            .Where(pot => pot.Id == beerPotId)
-            .Select(pot => (bool?)(pot.ClosedAt == null))
-            .SingleOrDefaultAsync(ct);
+        var isOpen = await IsOpenAsync(_dbContext.BeerPots.AsNoTracking(), beerPotId, ct);
         if (isOpen is null)
-            return Result<BeerStockDetails>.NotFound(UnknownPotMessage);
+            return Result<BeerStockDetails>.NotFound(BeerListMessages.UnknownPot);
 
-        var crates = await StockOfAsync(beerPotId, ct);
+        var movements = await MovementsOfAsync(beerPotId, ct);
+        var crates = movements.Sum(movement => movement.Crates);
 
         return Result<BeerStockDetails>.Success(
             new BeerStockDetails
             {
                 Crates = crates,
                 Forecast = ProjectionOf(crates, isOpen.Value, cratesTakenInPaceWindow: 0),
-                Movements = await MovementsOfAsync(beerPotId, ct),
+                Movements = movements,
             }
         );
     }
+
+    private static Task<bool?> IsOpenAsync(
+        IQueryable<BeerPot> pots,
+        int beerPotId,
+        CancellationToken ct
+    ) =>
+        pots.Where(pot => pot.Id == beerPotId)
+            .Select(pot => (bool?)(pot.ClosedAt == null))
+            .SingleOrDefaultAsync(ct);
 
     private BeerStockProjection ProjectionOf(
         int crates,
@@ -120,26 +124,30 @@ public sealed class BeerStockService
             })
             .ToListAsync(ct);
 
-    private async Task<Result> BookAsync(
-        int beerPotId,
-        BeerStockMovement movement,
-        CancellationToken ct
-    )
+    private async Task<Result> BookAsync(int beerPotId, StockChange change, CancellationToken ct)
     {
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        var pot = await LockedPotAsync(beerPotId, ct);
-        if (pot is null)
-            return Result.NotFound(UnknownPotMessage);
+        var isOpen = await IsOpenAsync(LockedPot(beerPotId), beerPotId, ct);
+        if (isOpen is null)
+            return Result.NotFound(BeerListMessages.UnknownPot);
 
-        if (pot.ClosedAt is not null)
+        if (!isOpen.Value)
             return Result.Conflict(ClosedPotMessage);
 
-        if (await StockOfAsync(beerPotId, ct) + movement.Crates < 0)
+        if (await StockOfAsync(beerPotId, ct) + change.Crates < 0)
             return Result.Conflict(BelowZeroMessage);
 
-        movement.BeerPotId = beerPotId;
-        movement.BookedAt = _timeProvider.GetUtcNow();
-        _dbContext.BeerStockMovements.Add(movement);
+        _dbContext.BeerStockMovements.Add(
+            new BeerStockMovement
+            {
+                BeerPotId = beerPotId,
+                Kind = change.Kind,
+                Crates = change.Crates,
+                Reason = change.Reason,
+                BookedByPersonId = change.BookedByPersonId,
+                BookedAt = _timeProvider.GetUtcNow(),
+            }
+        );
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
 
@@ -152,15 +160,15 @@ public sealed class BeerStockService
             .Where(movement => movement.BeerPotId == beerPotId)
             .SumAsync(movement => movement.Crates, ct);
 
-    private async Task<BeerPot?> LockedPotAsync(int beerPotId, CancellationToken ct)
-    {
-        await _dbContext.Database.ExecuteSqlAsync(
-            $"SELECT 1 FROM beer_pot WHERE id = {beerPotId} FOR UPDATE",
-            ct
-        );
+    private IQueryable<BeerPot> LockedPot(int beerPotId) =>
+        _dbContext
+            .BeerPots.FromSql($"SELECT * FROM beer_pot WHERE id = {beerPotId} FOR UPDATE")
+            .AsNoTracking();
 
-        return await _dbContext
-            .BeerPots.AsNoTracking()
-            .SingleOrDefaultAsync(pot => pot.Id == beerPotId, ct);
-    }
+    private sealed record StockChange(
+        BeerStockMovementKind Kind,
+        int Crates,
+        BeerStockCorrectionReason? Reason,
+        int? BookedByPersonId
+    );
 }

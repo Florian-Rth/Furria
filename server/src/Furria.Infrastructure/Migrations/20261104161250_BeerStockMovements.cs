@@ -49,7 +49,7 @@ namespace Furria.Infrastructure.Migrations
                     );
                     table.CheckConstraint(
                         "ck_beer_stock_movement_kind",
-                        "(kind IN ('Delivery', 'HandoverCarry') AND reason IS NULL AND crates > 0) OR (kind = 'Correction' AND (reason = 'Miscount' OR (reason IN ('Shrinkage', 'Breakage') AND crates < 0)))"
+                        "(kind IN ('Delivery', 'HandoverCarry') AND reason IS NULL AND crates > 0) OR (kind = 'Correction' AND reason IS NOT NULL AND (reason = 'Miscount' OR (reason IN ('Shrinkage', 'Breakage') AND crates < 0)))"
                     );
                     table.ForeignKey(
                         name: "fk_beer_stock_movement_beer_pot_beer_pot_id",
@@ -68,10 +68,20 @@ namespace Furria.Infrastructure.Migrations
                 }
             );
 
+            migrationBuilder
+                .CreateIndex(
+                    name: "ix_beer_stock_movement_beer_pot_id_booked_at",
+                    table: "beer_stock_movement",
+                    columns: new[] { "beer_pot_id", "booked_at" }
+                )
+                .Annotation("Npgsql:IndexInclude", new[] { "crates" });
+
             migrationBuilder.CreateIndex(
-                name: "ix_beer_stock_movement_beer_pot_id_booked_at",
+                name: "ix_beer_stock_movement_beer_pot_id_carry",
                 table: "beer_stock_movement",
-                columns: new[] { "beer_pot_id", "booked_at" }
+                column: "beer_pot_id",
+                unique: true,
+                filter: "kind = 'HandoverCarry'"
             );
 
             migrationBuilder.CreateIndex(

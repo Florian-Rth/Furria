@@ -67,8 +67,7 @@ public sealed class PostBeerStockCorrectionValidator : Validator<PostBeerStockCo
         RuleFor(request => request.BeerPotId).GreaterThan(0);
         RuleFor(request => request.Reason).IsInEnum();
         RuleFor(request => request.Crates)
-            .NotEqual(0)
-            .InclusiveBetween(-BeerStockMovement.MaxCrates, BeerStockMovement.MaxCrates)
+            .Must(crates => crates != 0 && Math.Abs(crates) <= BeerStockMovement.MaxCrates)
             .WithMessage(CratesMessage);
         RuleFor(request => request.Crates)
             .Must((request, crates) => request.Reason.Fits(crates))

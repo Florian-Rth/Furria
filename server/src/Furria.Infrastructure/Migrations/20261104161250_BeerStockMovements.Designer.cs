@@ -12,7 +12,7 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 namespace Furria.Infrastructure.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    [Migration("20261104160302_BeerStockMovements")]
+    [Migration("20261104161250_BeerStockMovements")]
     partial class BeerStockMovements
     {
         /// <inheritdoc />
@@ -199,11 +199,18 @@ namespace Furria.Infrastructure.Migrations
                     b.HasIndex("BeerPotId", "BookedAt")
                         .HasDatabaseName("ix_beer_stock_movement_beer_pot_id_booked_at");
 
+                    NpgsqlIndexBuilderExtensions.IncludeProperties(b.HasIndex("BeerPotId", "BookedAt"), new[] { "Crates" });
+
+                    b.HasIndex(new[] { "BeerPotId" }, "ix_beer_stock_movement_beer_pot_id_carry")
+                        .IsUnique()
+                        .HasDatabaseName("ix_beer_stock_movement_beer_pot_id_carry")
+                        .HasFilter("kind = 'HandoverCarry'");
+
                     b.ToTable("beer_stock_movement", null, t =>
                         {
                             t.HasCheckConstraint("ck_beer_stock_movement_crates", "crates <> 0 AND abs(crates) <= 500");
 
-                            t.HasCheckConstraint("ck_beer_stock_movement_kind", "(kind IN ('Delivery', 'HandoverCarry') AND reason IS NULL AND crates > 0) OR (kind = 'Correction' AND (reason = 'Miscount' OR (reason IN ('Shrinkage', 'Breakage') AND crates < 0)))");
+                            t.HasCheckConstraint("ck_beer_stock_movement_kind", "(kind IN ('Delivery', 'HandoverCarry') AND reason IS NULL AND crates > 0) OR (kind = 'Correction' AND reason IS NOT NULL AND (reason = 'Miscount' OR (reason IN ('Shrinkage', 'Breakage') AND crates < 0)))");
                         });
                 });
 

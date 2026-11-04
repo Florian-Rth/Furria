@@ -69,6 +69,28 @@ public sealed class PostBeerStockCorrectionTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_EmptyTheStock_When_TheCorrectionTakesTheLastCrates()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                WithWarden(builder)
+                    .BeerList(beerList =>
+                        beerList.AddBeerPot("topf", "greta").AddBeerDelivery("topf", 3)
+                    ),
+            ct
+        );
+
+        var response = await CorrectAsync(ctx, -3, BeerStockCorrectionReason.Shrinkage, ct);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx
+            .Expected.BeerStockOfPot(ctx.BeerList.Pots.IdOf("topf"))
+            .ToHaveMovementCount(2)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_ReturnConflict_When_TheCorrectionWouldTakeTheStockBelowZero()
     {
         var ct = TestContext.Current.CancellationToken;

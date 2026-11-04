@@ -14,7 +14,6 @@ public sealed class BeerListService
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
     private const string OwnerWithoutRightMessage =
         "Nur wer die Bierliste führen darf, kann ihr Besitzer sein.";
-    private const string UnknownPotMessage = "Diese Bierliste gibt es nicht.";
     private const string NotEnrolledMessage = "Du stehst nicht auf der Bierliste.";
     private const string UnknownEnrollmentMessage =
         "Diese Teilnahme an der Bierliste gibt es nicht.";
@@ -62,7 +61,7 @@ public sealed class BeerListService
     {
         var pot = await _dbContext.BeerPots.SingleOrDefaultAsync(row => row.Id == beerPotId, ct);
         if (pot is null)
-            return Result.NotFound(UnknownPotMessage);
+            return Result.NotFound(BeerListMessages.UnknownPot);
 
         if (pot.ClosedAt is not null)
             return Result.Conflict(ClosedPotMessage);
