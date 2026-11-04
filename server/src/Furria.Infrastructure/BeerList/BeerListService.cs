@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.BeerList;
 
-public sealed class BeerListService
+public sealed partial class BeerListService
 {
     private const string UnknownPersonMessage = "Diese Person steht nicht im Register.";
     private const string OwnerWithoutRightMessage =
@@ -94,6 +94,43 @@ public sealed class BeerListService
                 OpenedAt = pot.OpenedAt,
             })
             .SingleOrDefaultAsync(ct);
+
+    public async Task<IReadOnlyList<BeerPotSummary>> GetPotsAsync(CancellationToken ct)
+    {
+        var openCrates = BeerPotLedger.OpenCrates(_dbContext);
+
+        return await _dbContext
+            .BeerPots.AsNoTracking()
+            .OrderBy(pot => pot.ClosedAt != null)
+            .ThenByDescending(pot => pot.OpenedAt)
+            .ThenByDescending(pot => pot.Id)
+            .Select(pot => new BeerPotSummary
+            {
+                BeerPotId = pot.Id,
+                Owner =
+                    pot.Owner == null
+                        ? null
+                        : new BeerListPerson
+                        {
+                            PersonId = pot.Owner.Id,
+                            FirstName = pot.Owner.FirstName,
+                            LastName = pot.Owner.LastName,
+                        },
+                CratePriceCents = pot.CratePriceCents,
+                OpenedAt = pot.OpenedAt,
+                ClosedAt = pot.ClosedAt,
+                OpenTabs = openCrates
+                    .Where(crate => crate.BeerPotId == pot.Id && crate.PersonId != null)
+                    .Select(crate => crate.PersonId)
+                    .Distinct()
+                    .Count(),
+                OpenCrates = openCrates.Count(crate => crate.BeerPotId == pot.Id),
+                OpenCents = openCrates
+                    .Where(crate => crate.BeerPotId == pot.Id)
+                    .Sum(crate => crate.PriceCents),
+            })
+            .ToListAsync(ct);
+    }
 
     public async Task<Result> EnrollAsync(int personId, CancellationToken ct)
     {

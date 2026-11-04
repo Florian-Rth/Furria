@@ -21,6 +21,7 @@ public sealed class BeerStockMovementConfiguration : IEntityTypeConfiguration<Be
                 table.HasCheckConstraint(
                     "ck_beer_stock_movement_kind",
                     "(kind IN ('Delivery', 'HandoverCarry') AND reason IS NULL AND crates > 0)"
+                        + " OR (kind = 'HandedOver' AND reason IS NULL AND crates < 0)"
                         + " OR (kind = 'Correction' AND reason IS NOT NULL AND (reason = 'Miscount'"
                         + " OR (reason IN ('Shrinkage', 'Breakage') AND crates < 0)))"
                 );
@@ -55,10 +56,13 @@ public sealed class BeerStockMovementConfiguration : IEntityTypeConfiguration<Be
             .HasIndex(movement => new { movement.BeerPotId, movement.BookedAt })
             .IncludeProperties(movement => movement.Crates);
         builder
-            .HasIndex(movement => movement.BeerPotId, "ix_beer_stock_movement_beer_pot_id_carry")
-            .HasDatabaseName("ix_beer_stock_movement_beer_pot_id_carry")
+            .HasIndex(
+                movement => new { movement.BeerPotId, movement.Kind },
+                "ix_beer_stock_movement_beer_pot_id_kind_handover"
+            )
+            .HasDatabaseName("ix_beer_stock_movement_beer_pot_id_kind_handover")
             .IsUnique()
-            .HasFilter("kind = 'HandoverCarry'");
+            .HasFilter("kind IN ('HandoverCarry', 'HandedOver')");
         builder.HasIndex(movement => movement.BookedByPersonId);
     }
 }

@@ -526,7 +526,7 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    production does, and throws when fewer are open; an undone one settles none); it materializes
    after the news layer. Aliases resolve through
    `ctx.BeerList.{Pots, Enrollments, Crates, Payments}`. `Expected.BeerPot(id)` (`ToBeOwnedBy`, `ToHaveSettings`,
-   `ToBeOpenedAt`), `Expected.BeerPots()` (`ToHaveCount`), `Expected.BeerListEnrollment(id)`
+   `ToBeOpenedAt`, `ToBeOpen`, `ToBeClosedAt`), `Expected.BeerPots()` (`ToHaveCount`), `Expected.BeerListEnrollment(id)`
    (`ToBeEnded(endedAt, endedByPersonId)`) and
    `Expected.BeerListEnrollmentsOfPerson(personId)` (`ToHaveCount`, `ToHaveRunningSince`) and
    `Expected.BeerStockOfPot(potId)` (`ToHaveMovementCount`, `ToEndWith`, `ToStandAt` — movements

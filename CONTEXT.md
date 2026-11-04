@@ -1375,24 +1375,30 @@ truth. The **beer list** is not club money and never enters it (decided 2026-11-
 _Avoid_: balance table, payments table (as source of truth)
 
 **Beer list**:
-A private pot outside the club's books: the **drinks warden** buys the beer out of pocket,
-members pay for what they take, and the pot pays the warden back and funds the next purchase
-(decided 2026-11-04). Exactly one person fronts the money; nobody else's purchases are tracked —
-if someone helps out, they settle with the warden privately. The pot names its **owner** (one
-person) as a fact of its own, never derived from who holds a role: a permission only decides who
-may operate it, and several people may, but only the owner is owed money. A handover closes the
-owner's pot (open crates stay owed to her, the remaining crates pass to the successor as a count
-only — no amount in euros, whatever the two settle is private) and the successor opens a new one
-(decided 2026-11-04). A pot lives as long as its owner
-holds it — it knows no **session** boundary; "this session" is only a view on it. Whoever may
-operate the pot may edit its **stock** freely: book crates in and out and correct any count
-(decided 2026-11-04). The pot knows only what members owe and pay, never what the beer cost the
-owner — whether she is paid back is her own reckoning, not the app's (decided 2026-11-04). The
-only thing on the list is the **crate** of beer: one item, one price, always whole crates — no
-other drinks, no single bottles (decided 2026-11-04). A crate on someone's tab keeps the price it
-had when it was taken; a price change only reaches crates taken after it. A member books crates
-only for herself; operators may book for anyone, and every crate records who entered it
+A private pot outside the club's books: the **drinks warden** buys the beer out of pocket, members
+pay for what they take, and the pot pays the warden back and funds the next purchase (decided
+2026-11-04). Exactly one person fronts the money; nobody else's purchases are tracked — if someone
+helps out, they settle with the warden privately. The pot names its **owner** (one person) as a fact
+of its own, never derived from who holds a role: a permission only decides who may operate it, and
+several people may, but only the owner is owed money. A **handover** closes the owner's pot (open
+crates stay owed to her and stay payable, the remaining crates pass to the successor as a count only
+— no amount in euros, whatever the two settle is private) and the successor opens a new one with her
+own price and payment details (decided 2026-11-04). Any operator hands over, and only to someone
+else who may operate the pot. The crates carried over leave the old pot's **stock** and enter the
+new one's, so the old pot stands at zero; the forecast's pace carries over, and a stock warning
+already sent is not repeated for the same crates until a delivery re-arms it (built 2026-11-04). A
+pot lives as long as its owner holds it — it knows no **session** boundary; "this session" is only a
+view on it. Whoever may operate the pot may edit its **stock** freely: book crates in and out and
+correct any count (decided 2026-11-04). The pot knows only what members owe and pay, never what the
+beer cost the owner — whether she is paid back is her own reckoning, not the app's (decided
+2026-11-04). The only thing on the list is the **crate** of beer: one item, one price, always whole
+crates — no other drinks, no single bottles (decided 2026-11-04). A crate on someone's tab keeps the
+price it had when it was taken; a price change only reaches crates taken after it. A member books
+crates only for herself; operators may book for anyone, and every crate records who entered it
 (decided 2026-11-04).
+It never appears in the **ledger** or the club's cash report.
+_UI copy_: Bierliste
+_Avoid_: drinks till, Getränkekasse (both suggest club money)
 
 **Enrollment** (beer list):
 A person's running opt-in to the **beer list**. Only an enrolled person (or an operator) sees the
@@ -1403,6 +1409,7 @@ and an operator may end it for her. Age plays no part (decided 2026-11-04). Endi
 stops new crates but never touches the debt: her open crates stay owed, she keeps seeing and
 paying her own tab until it is settled, and a new enrollment continues the same history
 (decided 2026-11-04).
+_Avoid_: participation flag, membership (of the beer list)
 
 **Tab** (beer list):
 The crates booked to one person, each **open** or **paid**. A payment always settles whole
@@ -1413,6 +1420,8 @@ pays the owner in whatever way, and the crates turn paid when an operator books 
 is visible only to its holder and to operators (decided 2026-11-04). A tab always belongs to one
 person — never to a group or the club; whoever takes crates for others books them and collects
 privately (decided 2026-11-04).
+_UI copy_: Deckel
+_Avoid_: balance, account, Guthaben
 
 **Stock** (beer list):
 The crates on hand. Every booked crate lowers it; deliveries raise it; when a count disagrees an
@@ -1434,11 +1443,6 @@ oldest open crate is 7 days old, then every 7 days until the tab is settled, nev
 (decided 2026-11-04).
 _UI copy_: —
 _Avoid_: QR sticker, scan page
-_UI copy_: Deckel
-_Avoid_: balance, account, Guthaben
-_Avoid_: participation flag, membership (of the beer list) It never appears in the **ledger** or the club's cash report.
-_UI copy_: Bierliste
-_Avoid_: drinks till, Getränkekasse (both suggest club money)
 
 ## Flagged ambiguities
 

@@ -43,6 +43,17 @@ public sealed class BeerPotExpectations
             }
         );
 
+    public Expected ToBeOpen() =>
+        _expected.Enqueue(
+            async (dbContext, ct) => Assert.Null((await SingleAsync(dbContext, ct)).ClosedAt)
+        );
+
+    public Expected ToBeClosedAt(DateTimeOffset closedAt) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(closedAt, (await SingleAsync(dbContext, ct)).ClosedAt)
+        );
+
     private Task<BeerPot> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
         dbContext.BeerPots.AsNoTracking().SingleAsync(row => row.Id == _beerPotId, ct);
 }

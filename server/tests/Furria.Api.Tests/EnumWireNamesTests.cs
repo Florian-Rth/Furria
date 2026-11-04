@@ -82,7 +82,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(VideoPlacement)] = "onTimeline cutAway musicMissing unaligned",
         [typeof(KeyframeEasing)] = "linear easeIn easeOut easeInOut",
         [typeof(ChoreographyVersionKind)] = "saved restored spotRemoved musicAdopted",
-        [typeof(BeerStockMovementKind)] = "delivery correction handoverCarry",
+        [typeof(BeerStockMovementKind)] = "delivery correction handoverCarry handedOver",
         [typeof(BeerStockCorrectionReason)] = "shrinkage breakage miscount",
     };
 

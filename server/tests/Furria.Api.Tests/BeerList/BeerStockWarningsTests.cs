@@ -114,6 +114,47 @@ public sealed class BeerStockWarningsTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_NotWarnAgain_When_ThePotIsHandedOverAfterTheWarning()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = NoonTomorrow;
+        var ctx = await BuildAsync(cratesLeft: 2, ct);
+        var phone = await SubscribedDeviceAsync(ctx, Warden, "stock-handed-over", ct);
+
+        await WarnAtAsync(now, ct);
+        await HandOverAtAsync(ctx, now + TimeSpan.FromHours(1), ct);
+        await WarnAtAsync(now + TimeSpan.FromHours(2), ct);
+
+        Assert.Single(PushesAt(_fixture, phone));
+    }
+
+    [Fact]
+    public async Task Should_WarnAboutTheSuccessorsPot_When_ADeliveryReArmedTheWarningBeforeTheHandover()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = NoonTomorrow;
+        var ctx = await BuildAsync(cratesLeft: 2, ct);
+        var phone = await SubscribedDeviceAsync(ctx, Warden, "stock-rearmed-handover", ct);
+
+        await WarnAtAsync(now, ct);
+        await _fixture.AtInstantAsync(
+            now + TimeSpan.FromMinutes(30),
+            async () =>
+            {
+                var warden = await ctx.Identity.SignInAgainAsync(Warden, ct);
+                var response = await warden.POSTAsync<PostBeerDelivery, PostBeerDeliveryRequest>(
+                    new() { BeerPotId = ctx.BeerList.Pots.IdOf(Pot), Crates = 3 }
+                );
+                response.EnsureSuccessStatusCode();
+            }
+        );
+        await HandOverAtAsync(ctx, now + TimeSpan.FromHours(1), ct);
+        await WarnAtAsync(now + TimeSpan.FromHours(2), ct);
+
+        Assert.Equal(2, PushesAt(_fixture, phone).Count);
+    }
+
+    [Fact]
     public async Task Should_NotWarn_When_NobodyTookBeerLately()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -137,6 +178,28 @@ public sealed class BeerStockWarningsTests : IClassFixture<ApiTestFixture>
 
     private Task WarnAtAsync(DateTimeOffset instant, CancellationToken ct) =>
         _fixture.AtInstantAsync(instant, () => _fixture.WarnOfBeerStockAsync(ct));
+
+    private Task HandOverAtAsync(SeededContext ctx, DateTimeOffset instant, CancellationToken ct) =>
+        _fixture.AtInstantAsync(
+            instant,
+            async () =>
+            {
+                var warden = await ctx.Identity.SignInAgainAsync(Warden, ct);
+                var response = await warden.POSTAsync<
+                    PostBeerPotHandover,
+                    PostBeerPotHandoverRequest
+                >(
+                    new()
+                    {
+                        BeerPotId = ctx.BeerList.Pots.IdOf(Pot),
+                        SuccessorPersonId = ctx.Identity.People.IdOf(SecondOperator),
+                        CratePriceCents = 15_00,
+                        PaymentLink = "https://paypal.me/ottoott",
+                    }
+                );
+                response.EnsureSuccessStatusCode();
+            }
+        );
 
     private Task<SeededContext> BuildAsync(int cratesLeft, CancellationToken ct)
     {
