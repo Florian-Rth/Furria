@@ -161,11 +161,18 @@ Built-phase decisions (phase 2):
 
 ### Phase 3 — Stock and forecast
 Goal: operators keep the stock; the hub shows the projected empty date.
-- [ ] Core: `BeerStockMovement` (pot, kind delivery/correction/handover-carry, count ±, reason, by, at), migration
-- [ ] Stock = movements − booked crates (crates come in phase 4; until then movements only); never below zero
-- [ ] Pure forecast: 21-day pace → projected empty date (tested), no pace → no projection
-- [ ] Endpoints + tests: book delivery, book correction with reason, read stock + forecast
-- [ ] Hub: stock panel with history, delivery and correction actions, forecast readout
+- [x] Core: `BeerStockMovement` (pot, kind delivery/correction/handover-carry, count ±, reason, by, at), migration
+- [x] Stock = movements − booked crates (crates come in phase 4; until then movements only); never below zero
+- [x] Pure forecast: 21-day pace → projected empty date (tested), no pace → no projection
+- [x] Endpoints + tests: book delivery, book correction with reason, read stock + forecast
+- [ ] Hub: stock panel with history, delivery and correction actions, forecast readout (waits for the phase 1 pick)
+
+Built-phase notes (phase 3):
+- Pot read `GET beer-list/pot` (take/manage, `pot: null` when none open) and stock read `GET beer-list/pots/{id}/stock` (manage) are separate.
+- A correction books a signed change in crates. Schwund and Bruch only lower the stock; Zählfehler goes either way.
+- Movements are append-only. One handover carry per pot (unique partial index). Bookings lock the pot row (`FOR UPDATE`).
+- Phase 4 seam: count crates over the last 21 days across all pots (the pace carries over a handover), and subtract booked crates in `StockOfAsync` under the same lock.
+- Phase 9 seam: closing a pot takes the same lock; decide how the old pot's stock reflects the carried-out count.
 
 ### Phase 4 — Crates on tabs
 Goal: enrolled people book crates for themselves, operators for anyone, and the member screen is live.
