@@ -27,8 +27,7 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
             FurriaPermissions.BoardManage,
             FurriaPermissions.AccountsManage,
             FurriaPermissions.PersonsDelete,
-            FurriaPermissions.MembershipApplicationsDecide,
-            FurriaPermissions.BeerListManage
+            FurriaPermissions.MembershipApplicationsDecide
         );
     }
 
@@ -59,7 +58,6 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
             ClubRecord = hub.ClubRecord is null ? null : ToDto(hub.ClubRecord),
             Accounts = hub.Accounts is null ? null : ToDto(hub.Accounts),
             Applications = hub.Applications is null ? null : ToDto(hub.Applications),
-            BeerList = hub.BeerList is null ? null : ToDto(hub.BeerList),
             ToDos = [.. hub.ToDos.Select(ToDto)],
         };
 
@@ -111,15 +109,6 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
             EligibleWithoutEmailCount = accounts.EligibleWithoutEmailCount,
         };
 
-    private static ManageHubBeerListDto ToDto(ManageHubBeerList beerList) =>
-        new()
-        {
-            HasOpenPot = beerList.HasOpenPot,
-            StockCrates = beerList.StockCrates,
-            OpenTabCount = beerList.OpenTabCount,
-            OpenCents = beerList.OpenCents,
-        };
-
     private static ManageHubApplicationsDto ToDto(ManageHubApplications applications) =>
         new()
         {
@@ -159,8 +148,6 @@ public sealed record GetManageHubResponse
     public required ManageHubAccountsDto? Accounts { get; init; }
 
     public required ManageHubApplicationsDto? Applications { get; init; }
-
-    public required ManageHubBeerListDto? BeerList { get; init; }
 
     public required IReadOnlyList<ManageHubToDoDto> ToDos { get; init; }
 }
@@ -236,17 +223,6 @@ public sealed record ManageHubAccountsDto
     public required int OpenInvitationCount { get; init; }
 
     public required int EligibleWithoutEmailCount { get; init; }
-}
-
-public sealed record ManageHubBeerListDto
-{
-    public required bool HasOpenPot { get; init; }
-
-    public required int StockCrates { get; init; }
-
-    public required int OpenTabCount { get; init; }
-
-    public required int OpenCents { get; init; }
 }
 
 public sealed record ManageHubApplicationsDto

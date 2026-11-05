@@ -22,7 +22,5 @@ public sealed record ManageHubDetails
 
     public required ManageHubApplications? Applications { get; init; }
 
-    public required ManageHubBeerList? BeerList { get; init; }
-
     public required IReadOnlyList<ToDoSummary> ToDos { get; init; }
 }

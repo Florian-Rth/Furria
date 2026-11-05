@@ -41,7 +41,7 @@ public sealed class BeerStockWarningsTests : IClassFixture<ApiTestFixture>
         await WarnAtAsync(now + TimeSpan.FromDays(3), ct);
 
         var push = Assert.Single(PushesAt(_fixture, wardensPhone));
-        Assert.Equal("/manage/beer-list/stock", UrlOf(push));
+        Assert.Equal("/beer-list/manage/stock", UrlOf(push));
         Assert.Single(PushesAt(_fixture, operatorsPhone));
         Assert.Empty(PushesAt(_fixture, drinkersPhone));
     }
