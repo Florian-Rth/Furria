@@ -19,9 +19,13 @@ export const KkFloorPlanMeasure: FC<KkFloorPlanMeasureProps> = ({ from, to, labe
   const length = Math.max(planDistance(from, to), 1e-6);
   const normalX = (-(to.y - from.y) / length) * (TICK_PX / scale);
   const normalY = ((to.x - from.x) / length) * (TICK_PX / scale);
-  const ticks = [from, to].map((end) => (
+  const ends: readonly (readonly [string, KkPlanPoint])[] = [
+    ['start', from],
+    ['end', to],
+  ];
+  const ticks = ends.map(([key, end]) => (
     <line
-      key={`${end.x}:${end.y}`}
+      key={key}
       x1={end.x - normalX}
       y1={end.y - normalY}
       x2={end.x + normalX}
