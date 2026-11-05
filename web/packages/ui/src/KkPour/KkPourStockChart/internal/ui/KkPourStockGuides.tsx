@@ -1,25 +1,25 @@
-import { useDrawingArea, useXScale, useYScale } from '@mui/x-charts/hooks';
 import type { FC } from 'react';
+import type { KkPourStockPlot } from '../../../pour-stock-chart';
 
 interface KkPourStockGuidesProps {
-  nowDay: number;
-  marksToday: boolean;
+  plot: KkPourStockPlot;
 }
 
-export const KkPourStockGuides: FC<KkPourStockGuidesProps> = ({ nowDay, marksToday }) => {
-  const area = useDrawingArea();
-  const xOf = useXScale<'linear'>();
-  const yOf = useYScale<'linear'>();
-  const floor = yOf(0);
-  const todayX = xOf(nowDay);
-  const right = area.left + area.width;
-  const today = marksToday ? (
-    <line data-stock-today x1={todayX} x2={todayX} y1={area.top} y2={floor} />
-  ) : null;
+export const KkPourStockGuides: FC<KkPourStockGuidesProps> = ({ plot }) => {
+  const today =
+    plot.todayRule === null ? null : (
+      <line
+        data-stock-today
+        x1={plot.todayRule}
+        x2={plot.todayRule}
+        y1={plot.top}
+        y2={plot.floor}
+      />
+    );
 
   return (
     <g data-stock-guides>
-      <line data-stock-floor x1={area.left} x2={right} y1={floor} y2={floor} />
+      <line data-stock-floor x1={plot.left} x2={plot.right} y1={plot.floor} y2={plot.floor} />
       {today}
     </g>
   );

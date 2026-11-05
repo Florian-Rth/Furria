@@ -438,7 +438,6 @@
     "@fontsource/archivo": "catalog:",
     "@mui/icons-material": "catalog:",
     "@mui/material": "catalog:",
-    "@mui/x-charts": "catalog:",
     "@mui/x-date-pickers": "catalog:",
     "date-fns": "catalog:",
     "motion": "catalog:",

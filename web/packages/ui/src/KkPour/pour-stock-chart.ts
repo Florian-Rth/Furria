@@ -20,9 +20,8 @@ export interface KkPourStockTick {
 }
 
 export interface KkPourStockModel {
-  days: readonly number[];
-  history: readonly (number | null)[];
-  forecast: readonly (number | null)[];
+  stocks: readonly number[];
+  lastDay: number;
   peak: number;
   now: KkPourStockPoint;
   end: KkPourStockPoint | null;
@@ -70,22 +69,88 @@ export const stockModelOf = (
         stock: emptyReached ? 0 : round(now.stock * (1 - horizon / forecastDays)),
       }
     : null;
-  const historyDays = stocks.map((_, index) => index);
   const lastDay = end?.day ?? nowDay;
   const nowShare = lastDay === 0 ? 1 : round(nowDay / lastDay);
 
   return {
-    days: end === null ? historyDays : [...historyDays, end.day],
-    history: end === null ? stocks : [...stocks, null],
-    forecast:
-      end === null
-        ? []
-        : [...stocks.map((_, index) => (index === nowDay ? now.stock : null)), end.stock],
+    stocks,
+    lastDay,
     peak: Math.max(1, ...stocks) * frame.headroom,
     now,
     end,
     emptyReached,
     ticks: ticksOf(nowShare, hasForecast, emptyReached, frame),
+  };
+};
+
+export interface KkPourStockBox {
+  width: number;
+  height: number;
+  inset: number;
+}
+
+export interface KkPourStockSpot {
+  x: number;
+  y: number;
+}
+
+export interface KkPourStockPlot {
+  line: string;
+  area: string;
+  forecast: string | null;
+  left: number;
+  right: number;
+  top: number;
+  floor: number;
+  now: KkPourStockSpot;
+  todayRule: number | null;
+  empty: KkPourStockSpot | null;
+}
+
+const spotOf =
+  (model: KkPourStockModel, box: KkPourStockBox) =>
+  (point: KkPourStockPoint): KkPourStockSpot => {
+    const span = model.lastDay === 0 ? 1 : model.lastDay;
+    const width = Math.max(0, box.width - 2 * box.inset);
+    const height = Math.max(0, box.height - 2 * box.inset);
+
+    return {
+      x: round(box.inset + (point.day / span) * width),
+      y: round(box.inset + (1 - point.stock / model.peak) * height),
+    };
+  };
+
+const stepsOf = (spots: readonly KkPourStockSpot[]): string =>
+  spots
+    .map((spot, index) => {
+      const previous = spots[index - 1];
+
+      return previous === undefined
+        ? `M${spot.x} ${spot.y}`
+        : `H${spot.x}${spot.y === previous.y ? '' : `V${spot.y}`}`;
+    })
+    .join('');
+
+export const stockPlotOf = (model: KkPourStockModel, box: KkPourStockBox): KkPourStockPlot => {
+  const spot = spotOf(model, box);
+  const spots = model.stocks.map((stock, day) => spot({ day, stock }));
+  const floor = spot({ day: 0, stock: 0 });
+  const right = spot({ day: model.lastDay === 0 ? 1 : model.lastDay, stock: 0 }).x;
+  const now = spot(model.now);
+  const end = model.end === null ? null : spot(model.end);
+  const line = stepsOf(spots);
+
+  return {
+    line,
+    area: line === '' ? '' : `${line}V${floor.y}H${floor.x}Z`,
+    forecast: end === null ? null : `M${now.x} ${now.y}L${end.x} ${end.y}`,
+    left: floor.x,
+    right,
+    top: box.inset,
+    floor: floor.y,
+    now,
+    todayRule: end === null ? null : now.x,
+    empty: model.emptyReached ? end : null,
   };
 };
 

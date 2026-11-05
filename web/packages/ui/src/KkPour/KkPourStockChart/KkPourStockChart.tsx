@@ -1,22 +1,19 @@
 import Box from '@mui/material/Box';
 import type { CSSObject, Theme } from '@mui/material/styles';
-import { ChartsContainer } from '@mui/x-charts/ChartsContainer';
-import { AreaPlot, LinePlot, lineClasses } from '@mui/x-charts/LineChart';
 import type { FC } from 'react';
 import { useId } from 'react';
 import { applyScheme } from '../../internal/scheme-paint';
 import type { KkSx } from '../../kk-sx';
 import { kkTokens } from '../../tokens';
 import type { KkPourStockTickKind } from '../pour-stock-chart';
-import { stockModelOf, svgIdOf } from '../pour-stock-chart';
-import { KkPourStockGuides } from './internal/ui/KkPourStockGuides';
-import { KkPourStockPoints } from './internal/ui/KkPourStockPoints';
+import { stockModelOf, stockPlotOf, svgIdOf } from '../pour-stock-chart';
+import { usePlotBox } from './internal/logic/use-plot-box';
+import { KkPourStockPlotSvg } from './internal/ui/KkPourStockPlotSvg';
 import { KkPourStockTick } from './internal/ui/KkPourStockTick';
 
 const FRAME = { maxForecastDays: 28, headroom: 1.18, nowTickGap: 0.24 } as const;
 const PLOT = { height: '3.75rem', maxWidth: '26rem', dot: 3.5, ring: 2, line: 2 } as const;
 const INSET = PLOT.dot + PLOT.ring;
-const MARGIN = { top: INSET, right: INSET, bottom: INSET, left: INSET } as const;
 const { light, dark } = kkTokens.color;
 
 const inkScheme = (warn: boolean) => ({
@@ -37,7 +34,7 @@ const inkScheme = (warn: boolean) => ({
 });
 
 const chartPaint =
-  (warn: boolean, fadeId: string) =>
+  (warn: boolean) =>
   (theme: Theme): CSSObject => ({
     width: '100%',
     [theme.breakpoints.up('sm')]: { maxWidth: PLOT.maxWidth },
@@ -45,15 +42,19 @@ const chartPaint =
     pointerEvents: 'none',
     ...applyScheme(theme, inkScheme(warn)),
     '& [data-stock-plot]': { position: 'relative', height: PLOT.height },
+    '& [data-stock-svg]': { position: 'absolute', inset: 0, display: 'block' },
     '& [data-stock-fade] stop': { stopColor: 'var(--kk-stock-ink)' },
     '& [data-stock-fade] stop:first-of-type': { stopOpacity: 'var(--kk-stock-fade)' },
     '& [data-stock-fade] stop:last-of-type': { stopOpacity: 0 },
-    [`& .${lineClasses.line}[data-series="history"]`]: {
+    '& [data-stock-history]': {
+      fill: 'none',
       stroke: 'var(--kk-stock-ink)',
+      strokeWidth: PLOT.line,
       strokeLinecap: 'round',
+      strokeLinejoin: 'round',
     },
-    [`& .${lineClasses.area}[data-series="history"]`]: { fill: `url(#${fadeId})`, filter: 'none' },
-    [`& .${lineClasses.line}[data-series="ahead"]`]: {
+    '& [data-stock-ahead]': {
+      fill: 'none',
       stroke: 'var(--kk-stock-ahead)',
       strokeDasharray: '0.1 5',
       strokeLinecap: 'round',
@@ -94,38 +95,19 @@ export const KkPourStockChart: FC<KkPourStockChartProps> = ({
   sx,
 }) => {
   const fadeId = svgIdOf(useId());
+  const box = usePlotBox();
   const model = stockModelOf(values, forecastDays, FRAME);
-  const empty = model.emptyReached ? model.end : null;
-  const marksToday = model.end !== null;
-  const series = [
-    {
-      type: 'line' as const,
-      id: 'history',
-      data: model.history,
-      curve: 'stepAfter' as const,
-      area: true,
-      showMark: false,
-    },
-    {
-      type: 'line' as const,
-      id: 'ahead',
-      data: model.forecast,
-      curve: 'linear' as const,
-      connectNulls: true,
-      showMark: false,
-    },
-  ];
-  const xAxis = [
-    {
-      id: 'days',
-      data: model.days,
-      scaleType: 'linear' as const,
-      min: 0,
-      max: model.days.at(-1) ?? 1,
-      position: 'none' as const,
-    },
-  ];
-  const yAxis = [{ id: 'stock', min: 0, max: model.peak, position: 'none' as const }];
+  const plot = box.size === null ? null : stockPlotOf(model, { ...box.size, inset: INSET });
+  const svg =
+    box.size === null || plot === null ? null : (
+      <KkPourStockPlotSvg
+        plot={plot}
+        width={box.size.width}
+        height={box.size.height}
+        fadeId={fadeId}
+        radius={PLOT.dot}
+      />
+    );
   const ticks = model.ticks.flatMap((tick) => {
     const label = labels[tick.kind];
 
@@ -136,21 +118,10 @@ export const KkPourStockChart: FC<KkPourStockChartProps> = ({
     <Box
       aria-hidden
       data-kk-pour-stock-chart
-      sx={[chartPaint(warn, fadeId), ...(Array.isArray(sx) ? sx : [sx])]}
+      sx={[chartPaint(warn), ...(Array.isArray(sx) ? sx : [sx])]}
     >
-      <Box data-stock-plot>
-        <ChartsContainer series={series} xAxis={xAxis} yAxis={yAxis} margin={MARGIN}>
-          <defs>
-            <linearGradient id={fadeId} data-stock-fade x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0" />
-              <stop offset="1" />
-            </linearGradient>
-          </defs>
-          <KkPourStockGuides nowDay={model.now.day} marksToday={marksToday} />
-          <AreaPlot />
-          <LinePlot />
-          <KkPourStockPoints now={model.now} empty={empty} radius={PLOT.dot} />
-        </ChartsContainer>
+      <Box ref={box.ref} data-stock-plot>
+        {svg}
       </Box>
       <Box data-stock-ticks>{ticks}</Box>
     </Box>

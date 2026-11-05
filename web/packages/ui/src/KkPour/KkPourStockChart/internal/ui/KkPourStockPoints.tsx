@@ -1,25 +1,21 @@
-import { useXScale, useYScale } from '@mui/x-charts/hooks';
 import type { FC } from 'react';
-import type { KkPourStockPoint } from '../../../pour-stock-chart';
+import type { KkPourStockPlot } from '../../../pour-stock-chart';
 
 interface KkPourStockPointsProps {
-  now: KkPourStockPoint;
-  empty: KkPourStockPoint | null;
+  plot: KkPourStockPlot;
   radius: number;
 }
 
-export const KkPourStockPoints: FC<KkPourStockPointsProps> = ({ now, empty, radius }) => {
-  const xOf = useXScale<'linear'>();
-  const yOf = useYScale<'linear'>();
+export const KkPourStockPoints: FC<KkPourStockPointsProps> = ({ plot, radius }) => {
   const emptyPoint =
-    empty === null ? null : (
-      <circle data-stock-empty cx={xOf(empty.day)} cy={yOf(empty.stock)} r={radius} />
+    plot.empty === null ? null : (
+      <circle data-stock-empty cx={plot.empty.x} cy={plot.empty.y} r={radius} />
     );
 
   return (
     <g data-stock-points>
       {emptyPoint}
-      <circle data-stock-now cx={xOf(now.day)} cy={yOf(now.stock)} r={radius} />
+      <circle data-stock-now cx={plot.now.x} cy={plot.now.y} r={radius} />
     </g>
   );
 };
