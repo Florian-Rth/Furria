@@ -154,6 +154,16 @@ export const StartNewsSchema = z.object({
 });
 export type StartNews = z.infer<typeof StartNewsSchema>;
 
+export const StartBeerTabSchema = z.object({
+  beerPotId: z.int().positive(),
+  openCrates: z.int().positive(),
+  openCents: z.int().positive(),
+  oldestOpenBookedAt: z.iso.datetime({ offset: true }),
+  owner: StartPersonRefSchema.nullable(),
+  paymentLink: z.url({ protocol: /^https$/ }).nullable(),
+});
+export type StartBeerTab = z.infer<typeof StartBeerTabSchema>;
+
 export const START_PANEL_KINDS = [
   'calendar',
   'announcements',
@@ -162,6 +172,7 @@ export const START_PANEL_KINDS = [
   'toDos',
   'gallery',
   'news',
+  'beerTab',
 ] as const;
 
 const Base = { shownCount: z.int().nonnegative() };
@@ -190,6 +201,7 @@ export const StartPanelSchema = z.discriminatedUnion('kind', [
   }),
   z.object({ kind: z.literal('gallery'), ...Base, albums: z.array(StartAlbumSchema) }),
   z.object({ kind: z.literal('news'), ...Base, news: z.array(StartNewsSchema) }),
+  z.object({ kind: z.literal('beerTab'), ...Base, beerTabs: z.array(StartBeerTabSchema) }),
 ]);
 export type StartPanel = z.infer<typeof StartPanelSchema>;
 export type StartPanelKind = StartPanel['kind'];
@@ -201,9 +213,17 @@ export const StartPracticePanelSchema = z.object({
 });
 export type StartPracticePanel = z.infer<typeof StartPracticePanelSchema>;
 
+export const StartBeerDeskPanelSchema = z.object({
+  kind: z.literal('beerDesk'),
+  ...Base,
+  beerPotId: z.int().positive(),
+});
+export type StartBeerDeskPanel = z.infer<typeof StartBeerDeskPanelSchema>;
+
 export const BoardPanelSchema = z.discriminatedUnion('kind', [
   ...StartPanelSchema.options,
   StartPracticePanelSchema,
+  StartBeerDeskPanelSchema,
 ]);
 export type BoardPanel = z.infer<typeof BoardPanelSchema>;
 

@@ -53,6 +53,7 @@ public static class StartComposer
                     CalendarPanelOf(calendarRows, moment),
                     MinePanelOf(candidates.Mine, moment),
                     AnnouncementsPanelOf(candidates.Announcements),
+                    BeerTabPanelOf(candidates.BeerTabs),
                     ToDosPanelOf(candidates.ToDos),
                     GroupsPanelOf(candidates.GroupMoments),
                     NewsPanelOf(candidates.News),
@@ -173,10 +174,11 @@ public static class StartComposer
             StartPanelKind.Mine => 1,
             StartPanelKind.Announcements => 2,
             StartPanelKind.News => 3,
-            StartPanelKind.ToDos => 4,
-            StartPanelKind.Groups => 5,
-            StartPanelKind.Gallery => 6,
-            _ => 7,
+            StartPanelKind.BeerTab => 4,
+            StartPanelKind.ToDos => 5,
+            StartPanelKind.Groups => 6,
+            StartPanelKind.Gallery => 7,
+            _ => 8,
         };
 
     [Pure]
@@ -249,6 +251,23 @@ public static class StartComposer
                     ],
                 },
                 StartBand.New
+            );
+
+    [Pure]
+    private static BandedPanel? BeerTabPanelOf(IReadOnlyList<StartBeerTabSummary> beerTabs) =>
+        beerTabs.Count == 0
+            ? null
+            : new BandedPanel(
+                PanelOf(StartPanelKind.BeerTab, beerTabs.Count) with
+                {
+                    BeerTabs =
+                    [
+                        .. beerTabs
+                            .OrderBy(tab => tab.OldestOpenBookedAt)
+                            .ThenBy(tab => tab.BeerPotId),
+                    ],
+                },
+                StartBand.Work
             );
 
     [Pure]
@@ -366,6 +385,7 @@ public static class StartComposer
             ToDos = null,
             Albums = null,
             News = null,
+            BeerTabs = null,
         };
 
     private sealed record BandedPanel(StartPanel Panel, StartBand Band);

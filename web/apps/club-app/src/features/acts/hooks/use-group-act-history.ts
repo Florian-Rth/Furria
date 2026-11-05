@@ -1,13 +1,13 @@
 import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { useCloseOnEscape } from '@/features/events/hooks/use-close-on-escape';
 import { useGroupHubQuery } from '@/features/group-hub/api';
 import type { GroupHub } from '@/features/group-hub/schemas';
 import { useActsQuery } from '@/features/running-order/api';
 import { usePlansRunningOrder } from '@/features/running-order/hooks/use-plans-running-order';
 import type { CatalogueAct } from '@/features/running-order/schemas';
 import { parsePositiveId } from '@/lib/positive-id';
+import { useCloseOnEscape } from '@/lib/use-close-on-escape';
 import type { HistorySession } from '../act-history';
 import { actHistoryOf } from '../act-history';
 import { ACT_PAGE_PATH } from '../acts-origin';

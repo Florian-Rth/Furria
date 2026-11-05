@@ -11,4 +11,6 @@ public enum BackgroundJob
     LogEntryPurge = 8,
     MediaStorageSurvey = 9,
     ActCastFreeze = 10,
+    BeerTabReminders = 11,
+    BeerStockWarnings = 12,
 }

@@ -6,8 +6,10 @@ import { invitationTokenOf, mailSentSince } from './seed-mail.ts';
 import type { GroupDetail, PersonSummary } from './seed-schemas.ts';
 import {
   AnnouncementsSchema,
+  BeerEnrollmentsSchema,
   BoardSchema,
   CalendarEntriesSchema,
+  CreatedBeerPotSchema,
   CreatedBoardOfficeSchema,
   CreatedCalendarEntrySchema,
   CreatedGroupKindSchema,
@@ -21,6 +23,7 @@ import {
   MailMessageSchema,
   MailSearchSchema,
   ManagedGroupsSchema,
+  OpenBeerPotSchema,
   PersonDetailSchema,
   PersonsSchema,
   RedemptionSchema,
@@ -102,6 +105,7 @@ interface VenueSpec {
   readonly zip: string;
   readonly city: string;
   readonly hint: string | null;
+  readonly openingHours: readonly [];
 }
 
 interface GroupMembershipSpec {
@@ -128,6 +132,14 @@ interface RoleSpec {
   readonly description: string;
   readonly permissionKeys: readonly string[];
   readonly icon: ClubIcon;
+}
+
+type BeerTakerKey = (typeof BEER_ENROLLED_KEYS)[number];
+
+interface BeerCratesSpec {
+  readonly person: BeerTakerKey;
+  readonly count: number;
+  readonly paid: boolean;
 }
 
 interface BoardOfficeSpec {
@@ -538,9 +550,16 @@ const VENUES: readonly VenueSpec[] = [
     street: 'Am Ring 7',
     ...GROSSFURRA,
     hint: 'Eingang über den Schulhof. Hallenschuhe mitbringen, Straßenschuhe bleiben im Flur.',
+    openingHours: [],
   },
-  { name: 'Festhalle Großfurra', street: 'Festplatz 1', ...GROSSFURRA, hint: null },
-  { name: 'Vereinsraum', street: 'Hauptstraße 12', ...GROSSFURRA, hint: null },
+  {
+    name: 'Festhalle Großfurra',
+    street: 'Festplatz 1',
+    ...GROSSFURRA,
+    hint: null,
+    openingHours: [],
+  },
+  { name: 'Vereinsraum', street: 'Hauptstraße 12', ...GROSSFURRA, hint: null, openingHours: [] },
 ];
 
 const ROLES: readonly RoleSpec[] = [
@@ -559,6 +578,12 @@ const ROLES: readonly RoleSpec[] = [
     icon: 'key',
   },
   {
+    name: 'Getränkewart',
+    description: 'Führt die Bierliste: Bestand, Kisten auf Deckel und Zahlungen.',
+    permissionKeys: ['beer_list.manage'],
+    icon: 'star',
+  },
+  {
     name: 'Fotografie',
     description: 'Hält Sitzungen, Umzüge und Trainings in Bildern fest.',
     permissionKeys: [],
@@ -573,10 +598,43 @@ const ROLES: readonly RoleSpec[] = [
 ];
 
 const ROLE_HOLDINGS: readonly RoleHoldingSpec[] = [
+  { role: 'Getränkewart', person: 'frank', sinceOn: '2022-11-11' },
   { role: 'Fotografie', person: 'lena', sinceOn: '2023-11-11' },
   { role: 'Technik', person: 'thomas', sinceOn: '2014-11-11' },
   { role: 'Technik', person: 'dirk', sinceOn: '2019-11-11' },
 ];
+
+const BEER_POT = {
+  cratePriceCents: 1600,
+  paymentLink: 'https://paypal.me/frankweber',
+} as const;
+const BEER_OWNER_KEY = 'frank';
+const BEER_ENROLLED_KEYS = ['lena', BEER_OWNER_KEY, 'sabine', 'kevin', 'gerd'] as const;
+const BEER_DELIVERIES = [24, 20] as const;
+const BEER_CRATES_FOR: readonly BeerCratesSpec[] = [
+  { person: 'lena', count: 2, paid: false },
+  { person: 'sabine', count: 3, paid: false },
+  { person: 'kevin', count: 2, paid: true },
+  { person: 'kevin', count: 3, paid: false },
+  { person: 'gerd', count: 1, paid: false },
+  { person: 'frank', count: 4, paid: true },
+  { person: 'lena', count: 1, paid: false },
+];
+const BEER_OWN_CRATES: { readonly person: BeerTakerKey; readonly count: number } = {
+  person: 'lena',
+  count: 2,
+};
+const BEER_PAYMENT: { readonly person: BeerTakerKey; readonly crates: number } = {
+  person: 'sabine',
+  crates: 2,
+};
+const BEER_STOCK_LOSS = 1;
+const BEER_POT_OPENED_DAYS_AGO = 45;
+const BEER_HISTORY_START_DAYS_AGO = BEER_POT_OPENED_DAYS_AGO - 1;
+const BEER_CRATE_SPREAD_DAYS = 30;
+const BEER_CRATE_STEP_HOURS = 36;
+const BEER_DELIVERY_GAP_DAYS = 20;
+const BEER_PAYMENT_DAYS_AGO = 2;
 
 const BOARD_OFFICES: readonly BoardOfficeSpec[] = [
   { name: 'Präsident', sortOrder: 1, impliedRole: 'Präsidium', icon: 'crown' },
@@ -1441,6 +1499,91 @@ const announcementsSeenTweak = (
   };
 };
 
+const ensureBeerEnrollments = async (
+  frank: Session,
+  viewers: ReadonlyMap<string, Session>,
+  personIds: ReadonlyMap<string, number>,
+): Promise<void> => {
+  const existing = await getJson('beer-list/enrollments', frank, BeerEnrollmentsSchema);
+  for (const key of BEER_ENROLLED_KEYS) {
+    const personId = lookUp(personIds, key, 'person');
+    const running = existing.enrollments.some(
+      (enrollment) => enrollment.personId === personId && enrollment.endedAt === null,
+    );
+    if (!running) {
+      await send('POST', 'beer-list/enrollment', lookUp(viewers, key, 'session'), {
+        confirmsDeclaration: true,
+      });
+    }
+  }
+  log(`beer list enrollments: ${BEER_ENROLLED_KEYS.join(', ')}`);
+};
+
+const fillBeerPot = async (
+  frank: Session,
+  viewers: ReadonlyMap<string, Session>,
+  beerPotId: number,
+  personIds: ReadonlyMap<string, number>,
+): Promise<void> => {
+  const pot = `beer-list/pots/${beerPotId}`;
+  for (const crates of BEER_DELIVERIES) {
+    await send('POST', `${pot}/deliveries`, frank, { crates });
+  }
+  await send('POST', `${pot}/stock-corrections`, frank, { crates: -BEER_STOCK_LOSS });
+  for (const crates of BEER_CRATES_FOR) {
+    await send('POST', `${pot}/crates`, frank, {
+      personId: lookUp(personIds, crates.person, 'person'),
+      count: crates.count,
+      paid: crates.paid,
+    });
+  }
+  await send('POST', 'beer-list/crates', lookUp(viewers, BEER_OWN_CRATES.person, 'session'), {
+    count: BEER_OWN_CRATES.count,
+  });
+  await send('POST', `${pot}/payments`, frank, {
+    personId: lookUp(personIds, BEER_PAYMENT.person, 'person'),
+    crates: BEER_PAYMENT.crates,
+  });
+};
+
+const ensureBeerList = async (
+  frank: Session,
+  viewers: ReadonlyMap<string, Session>,
+  personIds: ReadonlyMap<string, number>,
+): Promise<void> => {
+  await ensureBeerEnrollments(frank, viewers, personIds);
+  const open = await getJson('beer-list/pot', frank, OpenBeerPotSchema);
+  if (open.pot !== null) {
+    log(`beer pot: ${open.pot.beerPotId} already open`);
+    return;
+  }
+  const created = await postJson(
+    'beer-list/pots',
+    frank,
+    { ownerPersonId: lookUp(personIds, BEER_OWNER_KEY, 'person'), ...BEER_POT },
+    CreatedBeerPotSchema,
+  );
+  await fillBeerPot(frank, viewers, created.beerPotId, personIds);
+  log(
+    `beer pot: ${created.beerPotId} opened by ${BEER_OWNER_KEY} with deliveries, crates and a payment`,
+  );
+};
+
+const beerHistorySpreadTweak = (moment: Moment): SqlTweak => {
+  const openPot = 'SELECT id FROM beer_pot WHERE closed_at IS NULL';
+  const daysAgo = (days: number): string => sqlInstant(daysAfter(moment.now, -days));
+  return {
+    why: 'The beer list API books everything at this moment. The open pot gets a history: opened weeks ago, enrollments and deliveries before the first crate, crates spread over the last month, the payment two days ago.',
+    statements: [
+      `UPDATE beer_pot SET opened_at = ${daysAgo(BEER_POT_OPENED_DAYS_AGO)} WHERE closed_at IS NULL;`,
+      `UPDATE beer_list_enrollment SET started_at = ${daysAgo(BEER_HISTORY_START_DAYS_AGO)} WHERE ended_at IS NULL;`,
+      `UPDATE beer_stock_movement SET booked_at = ${daysAgo(BEER_HISTORY_START_DAYS_AGO)} + make_interval(days => (ranked.rank - 1)::int * ${BEER_DELIVERY_GAP_DAYS}) FROM (SELECT id AS movement_id, row_number() OVER (ORDER BY id) AS rank FROM beer_stock_movement WHERE beer_pot_id IN (${openPot})) AS ranked WHERE id = ranked.movement_id;`,
+      `UPDATE beer_crate SET booked_at = ${daysAgo(BEER_CRATE_SPREAD_DAYS)} + make_interval(hours => (ranked.rank - 1)::int * ${BEER_CRATE_STEP_HOURS}) FROM (SELECT id AS crate_id, row_number() OVER (ORDER BY id) AS rank FROM beer_crate WHERE beer_pot_id IN (${openPot})) AS ranked WHERE id = ranked.crate_id;`,
+      `UPDATE beer_payment SET booked_at = ${daysAgo(BEER_PAYMENT_DAYS_AGO)} WHERE beer_pot_id IN (${openPot});`,
+    ],
+  };
+};
+
 const run = async (): Promise<void> => {
   const now = new Date();
   const moment = momentOf(now);
@@ -1471,6 +1614,7 @@ const run = async (): Promise<void> => {
   const frank = lookUp(viewers, 'frank', 'session');
 
   await ensureLenaPhoneChangedByFrank(frank, personIds);
+  await ensureBeerList(frank, viewers, personIds);
   const announcementSpecs = announcementSpecsOf(moment);
   await ensureAnnouncements(frank, announcementSpecs);
   const entryIds = await ensureCalendar(admin, viewers, moment, groupIds, venueIds);
@@ -1489,6 +1633,7 @@ const run = async (): Promise<void> => {
     reminderDueTweak(moment, personIds),
     sabineWithoutMembershipTweak(personIds, groupIds),
     announcementsSeenTweak(moment, announcementSpecs, personIds),
+    beerHistorySpreadTweak(moment),
   ]);
   await mkdir(path.dirname(SQL_OUT), { recursive: true });
   await writeFile(SQL_OUT, script);

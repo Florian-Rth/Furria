@@ -10,7 +10,7 @@ export type StartScreen =
 
 export interface StartScreenInput {
   start: Start | null;
-  practised: boolean;
+  ownPanels: boolean;
   failed: boolean;
   skeletonDue: boolean;
 }
@@ -33,7 +33,7 @@ const SINGLE_HIDDEN = 1;
 
 export const startScreenOf = ({
   start,
-  practised,
+  ownPanels,
   failed,
   skeletonDue,
 }: StartScreenInput): StartScreen => {
@@ -42,7 +42,7 @@ export const startScreenOf = ({
       return { kind: 'inactive' };
     }
 
-    return start.panels.length === 0 && !practised ? { kind: 'empty' } : { kind: 'board', start };
+    return start.panels.length === 0 && !ownPanels ? { kind: 'empty' } : { kind: 'board', start };
   }
   if (failed) {
     return { kind: 'error' };
@@ -75,6 +75,9 @@ export const panelSizeOf = (panel: StartPanel): number => {
   }
   if (panel.kind === 'news') {
     return panel.news.length;
+  }
+  if (panel.kind === 'beerTab') {
+    return panel.beerTabs.length;
   }
 
   return panel.toDos.length;

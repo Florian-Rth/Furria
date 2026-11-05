@@ -18,6 +18,8 @@ public sealed record StartCandidates
 
     public required IReadOnlyList<StartNewsSummary> News { get; init; }
 
+    public required IReadOnlyList<StartBeerTabSummary> BeerTabs { get; init; }
+
     public static StartCandidates OnlyToDos(IReadOnlyList<ToDoSummary> toDos) =>
         new()
         {
@@ -28,5 +30,6 @@ public sealed record StartCandidates
             GroupMoments = [],
             Albums = [],
             News = [],
+            BeerTabs = [],
         };
 }

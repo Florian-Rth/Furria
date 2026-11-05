@@ -99,6 +99,7 @@ import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
 import SensorsOutlinedIcon from '@mui/icons-material/SensorsOutlined';
 import SettingsOutlinedIcon from '@mui/icons-material/SettingsOutlined';
 import ShortTextOutlinedIcon from '@mui/icons-material/ShortTextOutlined';
+import SportsBarOutlinedIcon from '@mui/icons-material/SportsBarOutlined';
 import StickyNote2OutlinedIcon from '@mui/icons-material/StickyNote2Outlined';
 import StorefrontOutlinedIcon from '@mui/icons-material/StorefrontOutlined';
 import StraightenOutlinedIcon from '@mui/icons-material/StraightenOutlined';
@@ -136,6 +137,7 @@ export type KkIconName =
   | 'live'
   | 'members'
   | 'fees'
+  | 'beer'
   | 'gallery'
   | 'wardrobe'
   | 'settings'
@@ -275,6 +277,7 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   live: SensorsOutlinedIcon,
   members: GroupsOutlinedIcon,
   fees: EuroOutlinedIcon,
+  beer: SportsBarOutlinedIcon,
   gallery: PhotoLibraryOutlinedIcon,
   wardrobe: CheckroomOutlinedIcon,
   settings: SettingsOutlinedIcon,

@@ -21,4 +21,6 @@ public sealed record StartPanel
     public required IReadOnlyList<StartAlbumSummary>? Albums { get; init; }
 
     public required IReadOnlyList<StartNewsSummary>? News { get; init; }
+
+    public required IReadOnlyList<StartBeerTabSummary>? BeerTabs { get; init; }
 }

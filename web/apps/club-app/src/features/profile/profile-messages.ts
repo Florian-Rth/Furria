@@ -28,3 +28,12 @@ export const toProfileGroupsErrorMessage = (error: Error | null): string | null 
 
 export const toVisibilityErrorMessage = (error: Error | null): string | null =>
   toQueryErrorMessage(error, VISIBILITY_ERROR_MESSAGES);
+
+const BEER_LIST_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
+  unreachable: 'Keine Verbindung zum Server. Prüfe deine Internetverbindung.',
+  unexpected: 'Das hat nicht geklappt. Bitte versuche es erneut.',
+  rejected: 'Der Server hat die Änderung abgelehnt.',
+};
+
+export const toBeerListErrorMessage = (error: Error | null): string | null =>
+  toQueryErrorMessage(error, BEER_LIST_ERROR_MESSAGES);

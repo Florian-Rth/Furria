@@ -4,12 +4,14 @@ import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
+import { PushDevicePanel } from '@/features/push/components/PushDevicePanel';
 import { AppSignOutButton } from '@/features/session/components/AppSignOutButton';
 import { useLanding } from '@/features/write/hooks/use-landing';
 import type { PersonalMe } from '@/lib/api/schemas';
 import { formatIsoDay } from '@/lib/membership-labels';
 import { PROFILE_SECTION_TITLES } from '../profile-labels';
 import { ProfileAppearancePanel } from './ProfileAppearancePanel';
+import { ProfileBeerListPanel } from './ProfileBeerListPanel';
 import { ProfileContactPanel } from './ProfileContactPanel';
 import { ProfileGroupsPanel } from './ProfileGroupsPanel';
 import { ProfileMembershipPanel } from './ProfileMembershipPanel';
@@ -27,6 +29,7 @@ export const ProfilePanels: FC<ProfilePanelsProps> = ({ me }) => {
   const { person } = me;
   const { highlightedKey } = useLanding();
   const birthDate = person.birthDate === null ? EMPTY_VALUE : formatIsoDay(person.birthDate);
+  const beerListPanel = me.isAffiliated ? <ProfileBeerListPanel /> : null;
 
   return (
     <Grid container spacing={{ xs: 3.5, desktop: 5 }} sx={{ minWidth: 0 }}>
@@ -46,7 +49,9 @@ export const ProfilePanels: FC<ProfilePanelsProps> = ({ me }) => {
           <ProfileSecurityPanel loginEmail={me.email} />
           <ProfileMembershipPanel membership={me.membership} />
           <ProfileGroupsPanel />
+          {beerListPanel}
           <ProfileAppearancePanel />
+          <PushDevicePanel />
           <AppSignOutButton />
         </KkPanelStack>
       </Grid>

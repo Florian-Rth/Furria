@@ -1,0 +1,179 @@
+using System.Data;
+using Furria.Application.BeerList;
+using Furria.Application.Results;
+using Furria.Core.BeerList;
+using Furria.Core.Club;
+using Furria.Infrastructure.Persistence;
+using Microsoft.EntityFrameworkCore;
+
+namespace Furria.Infrastructure.BeerList;
+
+public sealed class BeerStockService
+{
+    private const string ClosedPotMessage =
+        "Diese Bierliste ist übergeben, ihr Bestand lässt sich nicht mehr ändern.";
+    private const string BelowZeroMessage =
+        "So viele Kisten sind nicht mehr da. Der Bestand fällt nie unter null.";
+
+    private readonly AppDbContext _dbContext;
+    private readonly TimeProvider _timeProvider;
+
+    public BeerStockService(AppDbContext dbContext, TimeProvider timeProvider)
+    {
+        _dbContext = dbContext;
+        _timeProvider = timeProvider;
+    }
+
+    public Task<Result> BookDeliveryAsync(BeerDeliveryCommand command, CancellationToken ct) =>
+        BookAsync(
+            command.BeerPotId,
+            new StockChange(
+                BeerStockMovementKind.Delivery,
+                command.Crates,
+                command.BookedByPersonId
+            ),
+            ct
+        );
+
+    public Task<Result> BookCorrectionAsync(
+        BeerStockCorrectionCommand command,
+        CancellationToken ct
+    ) =>
+        BookAsync(
+            command.BeerPotId,
+            new StockChange(
+                BeerStockMovementKind.Correction,
+                command.Crates,
+                command.BookedByPersonId
+            ),
+            ct
+        );
+
+    public async Task<Result<BeerStockDetails>> GetStockAsync(int beerPotId, CancellationToken ct)
+    {
+        var isOpen = await IsOpenAsync(_dbContext.BeerPots.AsNoTracking(), beerPotId, ct);
+        if (isOpen is null)
+            return Result<BeerStockDetails>.NotFound(BeerListMessages.UnknownPot);
+
+        await using var snapshot = await _dbContext.Database.BeginTransactionAsync(
+            IsolationLevel.RepeatableRead,
+            ct
+        );
+        var movements = await MovementsOfAsync(beerPotId, ct);
+        var crates = await BeerPotLedger.StockOfAsync(_dbContext, beerPotId, ct);
+        var cratesTakenInPaceWindow = await CratesTakenInPaceWindowAsync(ct);
+        await snapshot.CommitAsync(ct);
+
+        return Result<BeerStockDetails>.Success(
+            new BeerStockDetails
+            {
+                Crates = crates,
+                Forecast = ProjectionOf(crates, isOpen.Value, cratesTakenInPaceWindow),
+                Movements = movements,
+            }
+        );
+    }
+
+    private static Task<bool?> IsOpenAsync(
+        IQueryable<BeerPot> pots,
+        int beerPotId,
+        CancellationToken ct
+    ) =>
+        pots.Where(pot => pot.Id == beerPotId)
+            .Select(pot => (bool?)(pot.ClosedAt == null))
+            .SingleOrDefaultAsync(ct);
+
+    private Task<int> CratesTakenInPaceWindowAsync(CancellationToken ct)
+    {
+        var windowStart =
+            _timeProvider.GetUtcNow() - TimeSpan.FromDays(BeerStockForecast.PaceWindowDays);
+
+        return BeerPotLedger
+            .TakenCrates(_dbContext)
+            .CountAsync(crate => crate.BookedAt > windowStart, ct);
+    }
+
+    private BeerStockProjection ProjectionOf(
+        int crates,
+        bool isOpen,
+        int cratesTakenInPaceWindow
+    ) =>
+        new()
+        {
+            PaceWindowDays = BeerStockForecast.PaceWindowDays,
+            CratesTakenInPaceWindow = cratesTakenInPaceWindow,
+            ProjectedEmptyOn = isOpen
+                ? BeerStockForecast.ProjectedEmptyOn(
+                    crates,
+                    cratesTakenInPaceWindow,
+                    ClubClock.Today(_timeProvider)
+                )
+                : null,
+        };
+
+    private async Task<IReadOnlyList<BeerStockMovementSummary>> MovementsOfAsync(
+        int beerPotId,
+        CancellationToken ct
+    ) =>
+        await _dbContext
+            .BeerStockMovements.AsNoTracking()
+            .Where(movement => movement.BeerPotId == beerPotId)
+            .OrderByDescending(movement => movement.BookedAt)
+            .ThenByDescending(movement => movement.Id)
+            .Select(movement => new BeerStockMovementSummary
+            {
+                MovementId = movement.Id,
+                Kind = movement.Kind,
+                Crates = movement.Crates,
+                BookedAt = movement.BookedAt,
+                BookedBy =
+                    movement.BookedBy == null
+                        ? null
+                        : new BeerListPerson
+                        {
+                            PersonId = movement.BookedBy.Id,
+                            FirstName = movement.BookedBy.FirstName,
+                            LastName = movement.BookedBy.LastName,
+                        },
+            })
+            .ToListAsync(ct);
+
+    private async Task<Result> BookAsync(int beerPotId, StockChange change, CancellationToken ct)
+    {
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        var isOpen = await IsOpenAsync(
+            BeerPotLedger.LockedPot(_dbContext, beerPotId),
+            beerPotId,
+            ct
+        );
+        if (isOpen is null)
+            return Result.NotFound(BeerListMessages.UnknownPot);
+
+        if (!isOpen.Value)
+            return Result.Conflict(ClosedPotMessage);
+
+        if (await BeerPotLedger.StockOfAsync(_dbContext, beerPotId, ct) + change.Crates < 0)
+            return Result.Conflict(BelowZeroMessage);
+
+        _dbContext.BeerStockMovements.Add(
+            new BeerStockMovement
+            {
+                BeerPotId = beerPotId,
+                Kind = change.Kind,
+                Crates = change.Crates,
+                BookedByPersonId = change.BookedByPersonId,
+                BookedAt = _timeProvider.GetUtcNow(),
+            }
+        );
+        await _dbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+
+        return Result.Success();
+    }
+
+    private sealed record StockChange(
+        BeerStockMovementKind Kind,
+        int Crates,
+        int? BookedByPersonId
+    );
+}

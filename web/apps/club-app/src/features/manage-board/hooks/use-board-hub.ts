@@ -1,11 +1,11 @@
 import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate, useSearch } from '@tanstack/react-router';
-import { useCloseOnEscape } from '@/features/events/hooks/use-close-on-escape';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { useLanding } from '@/features/write/hooks/use-landing';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toIsoDay } from '@/lib/day';
+import { useCloseOnEscape } from '@/lib/use-close-on-escape';
 import { useBoardQuery } from '../api';
 import type { BoardSummary, QueueCounts, QueueItem } from '../board-hub';
 import {

@@ -3,6 +3,7 @@ using Furria.Application.Identity;
 using Furria.Application.Mail;
 using Furria.Application.Media;
 using Furria.Application.PreviewAccess;
+using Furria.Application.Push;
 using Furria.Application.Website;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -103,6 +104,20 @@ public static class ServiceCollectionExtensions
                     && options.SigningKey.Length >= MediaOptions.MinimumSigningKeyLength,
                 $"{MediaOptions.SectionName} needs a RootPath and a SigningKey of at least "
                     + $"{MediaOptions.MinimumSigningKeyLength} characters."
+            )
+            .ValidateOnStart();
+
+        services
+            .AddOptions<PushOptions>()
+            .BindConfiguration(PushOptions.SectionName)
+            .Validate(
+                options => PushKeys.ArePair(options.VapidPublicKey, options.VapidPrivateKey),
+                $"{PushOptions.SectionName} needs a VapidPublicKey and the VapidPrivateKey of "
+                    + "the same P-256 key pair, both base64url."
+            )
+            .Validate(
+                options => PushOptions.IsContact(options.Subject),
+                $"{PushOptions.SectionName}:Subject must be a mailto: address or an https URL."
             )
             .ValidateOnStart();
 

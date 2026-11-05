@@ -1,3 +1,4 @@
+using Furria.Core.BeerList;
 using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Gallery;
@@ -16,6 +17,7 @@ using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Mail;
 using Furria.Infrastructure.Management;
 using Furria.Infrastructure.Media;
+using Furria.Infrastructure.Push;
 using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
@@ -60,6 +62,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<EmailConfirmation> EmailConfirmations => Set<EmailConfirmation>();
 
     public DbSet<PasskeyChallenge> PasskeyChallenges => Set<PasskeyChallenge>();
+
+    public DbSet<PushSubscription> PushSubscriptions => Set<PushSubscription>();
 
     public DbSet<Session> Sessions => Set<Session>();
 
@@ -158,6 +162,18 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<ChoreographyVersion> ChoreographyVersions => Set<ChoreographyVersion>();
 
     public DbSet<ActCoEditor> ActCoEditors => Set<ActCoEditor>();
+
+    public DbSet<BeerPot> BeerPots => Set<BeerPot>();
+
+    public DbSet<BeerListEnrollment> BeerListEnrollments => Set<BeerListEnrollment>();
+
+    public DbSet<BeerStockMovement> BeerStockMovements => Set<BeerStockMovement>();
+
+    public DbSet<BeerCrate> BeerCrates => Set<BeerCrate>();
+
+    public DbSet<BeerPayment> BeerPayments => Set<BeerPayment>();
+
+    public DbSet<BeerTabReminder> BeerTabReminders => Set<BeerTabReminder>();
 
     public DbSet<TableType> TableTypes => Set<TableType>();
 

@@ -1,11 +1,13 @@
 import { useMyActsQuery } from '@/features/acts/api';
 import type { MyAct } from '@/features/acts/schemas';
 import { usePendingAnswers } from '@/features/attendance/hooks/use-pending-answers';
+import { useOpenBeerPotQuery } from '@/features/beer-list/api';
 import { useMeQuery } from '@/features/session/api';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { useMinuteNow } from '@/lib/use-minute-now';
 import { useStartQuery } from '../api';
+import { withBeerDesk } from '../beer-desk-tile';
 import { boardPanelsOf, practisableActsOf } from '../practice-tile';
 import type { BoardPanel, Start } from '../schemas';
 import { withPendingAnswers } from '../start-answer';
@@ -47,6 +49,9 @@ export const useStartView = (): StartView => {
   const { memory, quiet } = useQuietMemory(personId);
   const pendingAnswers = usePendingAnswers();
   const practised = practisableActsOf(useMyActsQuery().data?.acts ?? NO_ACTS);
+  const operates = permissions.has(PERMISSION_KEYS.beerListManage);
+  const openBeerPotId = useOpenBeerPotQuery(operates).data?.pot?.beerPotId ?? null;
+  const deskPotId = operates ? openBeerPotId : null;
   const ready = visit !== null && me.data !== undefined;
   const errorMessage = visit === null ? toStartErrorMessage(query.error) : null;
   const skeletonDue = useSkeletonDelay(!ready && errorMessage === null);
@@ -63,7 +68,7 @@ export const useStartView = (): StartView => {
 
   const screen = startScreenOf({
     start,
-    practised: practised.length > 0,
+    ownPanels: practised.length > 0 || deskPotId !== null,
     failed: errorMessage !== null,
     skeletonDue,
   });
@@ -73,7 +78,7 @@ export const useStartView = (): StartView => {
       screen: screen.kind,
       board: {
         start: screen.start,
-        panels: boardPanelsOf(screen.start.panels, practised),
+        panels: withBeerDesk(boardPanelsOf(screen.start.panels, practised), deskPotId),
         dimmedKeys: visit?.dimmedKeys ?? NO_DIMMED_KEYS,
         now,
         canReadClub: permissions.has(PERMISSION_KEYS.clubRead),

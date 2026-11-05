@@ -34,6 +34,7 @@ public sealed class StartComposerTests
         GroupMoments = [],
         Albums = [],
         News = [],
+        BeerTabs = [],
     };
 
     private static readonly StartCandidates CappedCalendar = Nothing with
@@ -80,6 +81,25 @@ public sealed class StartComposerTests
 
         Assert.Equal(
             [StartPanelKind.ToDos, StartPanelKind.Announcements, StartPanelKind.Calendar],
+            KindsOf(start)
+        );
+    }
+
+    [Fact]
+    public void Should_RankHerOpenBeerTabAboveTheClubsToDos_When_NothingIsSoon()
+    {
+        var start = StartComposer.Compose(
+            Nothing with
+            {
+                Entries = [EntryAt(1, OnDay(5, 19, 0))],
+                ToDos = [ToDoOf(ToDoKind.NeverInvited)],
+                BeerTabs = [BeerTabSince(DaysAgo(9))],
+            },
+            TuesdayEvening
+        );
+
+        Assert.Equal(
+            [StartPanelKind.BeerTab, StartPanelKind.ToDos, StartPanelKind.Calendar],
             KindsOf(start)
         );
     }
@@ -734,6 +754,18 @@ public sealed class StartComposerTests
 
     private static IReadOnlyList<StartPanelKind> KindsOf(StartDetails start) =>
         [.. start.Panels.Select(panel => panel.Kind)];
+
+    private static StartBeerTabSummary BeerTabSince(DateTimeOffset oldestOpenBookedAt) =>
+        new()
+        {
+            BeerPotId = 1,
+            PotIsOpen = true,
+            OpenCrates = 2,
+            OpenCents = 30_00,
+            OldestOpenBookedAt = oldestOpenBookedAt,
+            Owner = null,
+            PaymentLink = null,
+        };
 
     private static StartNewsSummary NewsPublishedAt(string slug, DateTimeOffset publishedAt) =>
         new()

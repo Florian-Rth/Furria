@@ -205,6 +205,7 @@ export const RIGHT_GROUP_DEFINITIONS: readonly RightGroupDefinition[] = [
     id: 'media',
     keys: ['gallery.upload', 'gallery.manage', 'gallery.publish', 'news.manage'],
   },
+  { id: 'beerList', keys: ['beer_list.manage', 'beer_list.take'] },
   { id: 'system', keys: ['system.view'] },
 ];
 
@@ -213,6 +214,7 @@ const RIGHT_GROUP_TITLES: Record<string, string> = {
   club: 'Verein',
   events: 'Veranstaltungen',
   media: 'Galerie und Aktuelles',
+  beerList: 'Bierliste',
   system: 'System',
   [OTHER_RIGHTS_GROUP]: 'Weitere',
 };

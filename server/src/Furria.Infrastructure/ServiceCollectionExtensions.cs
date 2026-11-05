@@ -1,6 +1,7 @@
 using Furria.Application.ClubApp;
 using Furria.Application.Identity;
 using Furria.Infrastructure.Authorization;
+using Furria.Infrastructure.BeerList;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Events;
 using Furria.Infrastructure.Gallery;
@@ -16,6 +17,7 @@ using Furria.Infrastructure.News;
 using Furria.Infrastructure.Operations;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Public;
+using Furria.Infrastructure.Push;
 using Furria.Infrastructure.Registry;
 using Furria.Infrastructure.Roles;
 using Furria.Infrastructure.RunningOrders;
@@ -80,6 +82,14 @@ public static class ServiceCollectionExtensions
         services.AddScoped<EmailConfirmationService>();
         services.AddScoped<CredentialChangeNotifier>();
         services.AddScoped<PasskeyService>();
+        services.AddScoped<PushSubscriptionService>();
+        services.AddScoped<PushSender>();
+        services
+            .AddHttpClient(PushSender.HttpClientName)
+            .ConfigureHttpClient(client => client.Timeout = PushSender.Timeout)
+            .ConfigurePrimaryHttpMessageHandler(() =>
+                new SocketsHttpHandler { AllowAutoRedirect = false }
+            );
         services.AddScoped<PermissionAuthorizer>();
         services.AddScoped<AffiliationLookup>();
         services.AddScoped<PersonHonoursQuery>();
@@ -96,6 +106,13 @@ public static class ServiceCollectionExtensions
         services.AddScoped<VenueService>();
         services.AddScoped<BoardService>();
         services.AddScoped<KeyHoldingService>();
+        services.AddScoped<BeerListService>();
+        services.AddScoped<BeerStockService>();
+        services.AddScoped<BeerTabService>();
+        services.AddScoped<BeerPaymentService>();
+        services.AddScoped<BeerJournalService>();
+        services.AddScoped<BeerTabReminderService>();
+        services.AddScoped<BeerStockWarningService>();
         services.AddScoped<AnnouncementService>();
         services.AddScoped<CalendarService>();
         services.AddScoped<EventService>();
@@ -183,6 +200,8 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<LogEntryPurge>();
         services.AddHostedService<MediaStorageSurvey>();
         services.AddHostedService<ActCastFreeze>();
+        services.AddHostedService<BeerTabReminders>();
+        services.AddHostedService<BeerStockWarnings>();
         services.Configure<DataProtectionTokenProviderOptions>(options =>
             options.TokenLifespan = PasswordResetService.LinkLifetime
         );

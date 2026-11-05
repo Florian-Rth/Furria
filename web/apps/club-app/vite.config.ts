@@ -32,6 +32,8 @@ export default defineConfig(({ mode }) => ({
         start_url: '/',
         scope: '/',
         display: 'standalone',
+        handle_links: 'preferred',
+        launch_handler: { client_mode: ['navigate-existing', 'auto'] },
         orientation: 'portrait',
         background_color: SCREEN_BACKGROUND,
         theme_color: SCREEN_BACKGROUND,
@@ -56,7 +58,8 @@ export default defineConfig(({ mode }) => ({
       },
       workbox: {
         globPatterns: ['**/*.{js,mjs,css,html,svg,png,woff2}'],
-        globIgnores: ['config.js'],
+        globIgnores: ['config.js', 'push-worker.js'],
+        importScripts: ['push-worker.js'],
         navigateFallback: '/index.html',
         navigateFallbackDenylist: [/^\/api\//, /^\/\.well-known\//],
         cleanupOutdatedCaches: true,

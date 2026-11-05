@@ -1,4 +1,5 @@
 using System.Diagnostics.Contracts;
+using Furria.Core.BeerList;
 using Furria.Core.Club;
 using Furria.Core.Gallery;
 using Furria.Core.Groups;
@@ -33,10 +34,27 @@ public static class ReferencesToPerson
         HerOwn<FrozenCastMember>(nameof(FrozenCastMember.PersonId)),
         HerOwn<AppearanceCastChange>(nameof(AppearanceCastChange.PersonId)),
         HerOwn<ActCoEditor>(nameof(ActCoEditor.PersonId)),
+        HerOwn<BeerListEnrollment>(nameof(BeerListEnrollment.PersonId)),
+        HerOwn<BeerTabReminder>(nameof(BeerTabReminder.PersonId)),
         Reference<Spot>(nameof(Spot.PersonId), OnAbsorption.BlocksIt, OnErasure.KeptNamingNobody),
         HerOwn<AppearanceSpot>(nameof(AppearanceSpot.PersonId)),
         Reference<Announcement>(
             nameof(Announcement.AuthorPersonId),
+            OnAbsorption.BlocksIt,
+            OnErasure.KeptNamingNobody
+        ),
+        Reference<BeerPot>(
+            nameof(BeerPot.OwnerPersonId),
+            OnAbsorption.BlocksIt,
+            OnErasure.KeptNamingNobody
+        ),
+        Reference<BeerCrate>(
+            nameof(BeerCrate.PersonId),
+            OnAbsorption.BlocksIt,
+            OnErasure.KeptNamingNobody
+        ),
+        Reference<BeerPayment>(
+            nameof(BeerPayment.PersonId),
             OnAbsorption.BlocksIt,
             OnErasure.KeptNamingNobody
         ),
@@ -78,6 +96,12 @@ public static class ReferencesToPerson
         HerAct<ChoreographyVersion>(nameof(ChoreographyVersion.SavedByPersonId)),
         HerAct<AttendanceResponse>(nameof(AttendanceResponse.RecordedByPersonId)),
         HerAct<AttendanceResponseChange>(nameof(AttendanceResponseChange.RecordedByPersonId)),
+        HerAct<BeerListEnrollment>(nameof(BeerListEnrollment.EndedByPersonId)),
+        HerAct<BeerStockMovement>(nameof(BeerStockMovement.BookedByPersonId)),
+        HerAct<BeerCrate>(nameof(BeerCrate.EnteredByPersonId)),
+        HerAct<BeerCrate>(nameof(BeerCrate.UndoneByPersonId)),
+        HerAct<BeerPayment>(nameof(BeerPayment.BookedByPersonId)),
+        HerAct<BeerPayment>(nameof(BeerPayment.UndoneByPersonId)),
     ];
 
     [Pure]

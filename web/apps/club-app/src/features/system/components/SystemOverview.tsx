@@ -1,5 +1,6 @@
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { TestPushSection } from '@/features/push/components/TestPushSection';
 import type { SystemStatus } from '../schemas';
 import type { SystemMoment } from '../system-view';
 import { SystemAreaList } from './SystemAreaList';
@@ -19,5 +20,6 @@ export const SystemOverview: FC<SystemOverviewProps> = ({ status, moment, offlin
     <SystemBoard status={status} moment={moment} offline={offline} />
     <SystemAreaList status={status} moment={moment} />
     <SystemProgramSection status={status} moment={moment} />
+    <TestPushSection />
   </Stack>
 );

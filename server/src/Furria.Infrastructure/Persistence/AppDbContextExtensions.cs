@@ -28,6 +28,9 @@ public static class AppDbContextExtensions
             ["pk_club_record"] = WriteConflictMessages.ClubRecordWrittenMeanwhile,
             ["ix_invitation_person_id_live"] = WriteConflictMessages.InvitationIssuedMeanwhile,
             ["ix_to_do_mark_account_id_kind"] = WriteConflictMessages.ToDoMarkedMeanwhile,
+            ["ix_beer_pot_open"] = WriteConflictMessages.OpenBeerPot,
+            ["ix_beer_list_enrollment_person_id_running"] =
+                WriteConflictMessages.RunningBeerListEnrollment,
             ["ix_hall_venue_id_name"] = WriteConflictMessages.DuplicateHall,
             ["pk_table_plan"] = WriteConflictMessages.TablePlanExists,
         }.ToFrozenDictionary(StringComparer.Ordinal);

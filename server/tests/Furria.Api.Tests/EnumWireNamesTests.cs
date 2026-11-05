@@ -5,6 +5,7 @@ using Furria.Application.Management;
 using Furria.Application.Operations;
 using Furria.Application.Registry;
 using Furria.Application.Start;
+using Furria.Core.BeerList;
 using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Gallery;
@@ -26,7 +27,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         string
     >
     {
-        [typeof(StartPanelKind)] = "calendar announcements mine groups toDos gallery news",
+        [typeof(StartPanelKind)] = "calendar announcements mine groups toDos gallery news beerTab",
         [typeof(StartMineKind)] =
             "newRole newBoardSeat newGroupAdmin newGroupMembership newKey "
             + "contactChangedByOther membershipEnding membershipPaused milestone",
@@ -71,7 +72,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(BackgroundJob)] =
             "abandonedUploadSweep mediaFileReaper galleryBinPurge mailDispatcher "
             + "unconfirmedApplicationPurge signedOutMailRequestWorker "
-            + "logEntryPurge mediaStorageSurvey actCastFreeze",
+            + "logEntryPurge mediaStorageSurvey actCastFreeze beerTabReminders beerStockWarnings",
         [typeof(LogSource)] = "api mediaWorker",
         [typeof(LogEntryLevel)] = "information warning error fatal",
         [typeof(ActKind)] = "dance speech music show point",
@@ -90,6 +91,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(VideoPlacement)] = "onTimeline cutAway musicMissing unaligned",
         [typeof(KeyframeEasing)] = "linear easeIn easeOut easeInOut",
         [typeof(ChoreographyVersionKind)] = "saved restored spotRemoved musicAdopted",
+        [typeof(BeerStockMovementKind)] = "delivery correction handoverCarry handedOver",
     };
 
     private readonly ApiTestFixture _fixture;

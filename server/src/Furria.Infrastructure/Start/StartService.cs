@@ -75,6 +75,7 @@ public sealed partial class StartService
                 GroupMoments = await GroupMomentCandidatesAsync(viewer, ct),
                 Albums = await NewInGalleryAsync(viewer, ct),
                 News = await FreshNewsAsync(viewer, ct),
+                BeerTabs = await OpenBeerTabsAsync(viewer.PersonId, ct),
             },
             moment
         );

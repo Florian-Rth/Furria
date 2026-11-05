@@ -67,6 +67,14 @@ internal static class SeedMaterializer
             ct
         );
 
-        return new SeededRegistry(identity, groups, roles, club, gallery, news);
+        var beerList = await BeerListSeedMaterializer.InsertAsync(
+            dbContext,
+            recorded.RecordedBeerList,
+            identity.PersonIds,
+            scope.ServiceProvider.GetRequiredService<TimeProvider>().GetUtcNow(),
+            ct
+        );
+
+        return new SeededRegistry(identity, groups, roles, club, gallery, news, beerList);
     }
 }

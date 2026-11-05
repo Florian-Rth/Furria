@@ -108,6 +108,9 @@ public sealed class Expected
 
     public PasskeyChallengeSetExpectations PasskeyChallenges() => new(this);
 
+    public PushSubscriptionSetExpectations PushSubscriptionsOfAccount(int accountId) =>
+        new(this, accountId);
+
     public MembershipApplicationSetExpectations MembershipApplications() => new(this);
 
     public MembershipApplicationExpectations MembershipApplication(int membershipApplicationId) =>
@@ -129,6 +132,24 @@ public sealed class Expected
 
     public WebsitePictureExpectations WebsitePicture(string slotKey, int position) =>
         new(this, slotKey, position);
+
+    public BeerPotExpectations BeerPot(int beerPotId) => new(this, beerPotId);
+
+    public BeerPotSetExpectations BeerPots() => new(this);
+
+    public BeerStockExpectations BeerStockOfPot(int beerPotId) => new(this, beerPotId);
+
+    public BeerTabExpectations BeerTabOf(int personId) => new(this, personId);
+
+    public BeerCrateExpectations BeerCrate(int beerCrateId) => new(this, beerCrateId);
+
+    public BeerPaymentExpectations BeerPayment(int beerPaymentId) => new(this, beerPaymentId);
+
+    public BeerListEnrollmentExpectations BeerListEnrollment(int enrollmentId) =>
+        new(this, enrollmentId);
+
+    public BeerListEnrollmentSetExpectations BeerListEnrollmentsOfPerson(int personId) =>
+        new(this, personId);
 
     public async Task AssertAsync(CancellationToken ct = default)
     {

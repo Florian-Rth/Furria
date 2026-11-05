@@ -15,6 +15,7 @@ export const START_MINE_SHEET = 'start-mine';
 export const START_GROUPS_SHEET = 'start-groups';
 export const START_OWED_SHEET = 'start-owed';
 export const START_PRACTICE_SHEET = 'start-practice';
+export const START_BEER_CRATES_SHEET = 'start-beer-crates';
 
 export type StartSheet =
   | { kind: 'entry'; calendarEntryId: number }
@@ -26,6 +27,7 @@ export type StartSheet =
   | { kind: 'groups' }
   | { kind: 'owed' }
   | { kind: 'practice' }
+  | { kind: 'beerCrates' }
   | { kind: 'foreign' };
 
 const FIXED_SHEETS: Readonly<Record<string, StartSheet>> = {
@@ -35,6 +37,7 @@ const FIXED_SHEETS: Readonly<Record<string, StartSheet>> = {
   [START_GROUPS_SHEET]: { kind: 'groups' },
   [START_OWED_SHEET]: { kind: 'owed' },
   [START_PRACTICE_SHEET]: { kind: 'practice' },
+  [START_BEER_CRATES_SHEET]: { kind: 'beerCrates' },
 };
 
 const FOREIGN: StartSheet = { kind: 'foreign' };
@@ -120,7 +123,7 @@ const opensOn = (sheet: StartSheet, start: Start): boolean => {
   if (sheet.kind === 'groups') {
     return groupMomentsOf(start).length > 0;
   }
-  if (sheet.kind === 'practice') {
+  if (sheet.kind === 'practice' || sheet.kind === 'beerCrates') {
     return true;
   }
 
