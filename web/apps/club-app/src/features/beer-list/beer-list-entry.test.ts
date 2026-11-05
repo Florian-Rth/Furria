@@ -11,7 +11,6 @@ const openTab = (beerPotId: number, openCents: number): StartBeerTab => ({
   oldestOpenBookedAt: '2026-11-01T10:00:00Z',
   owner: null,
   paymentLink: null,
-  paymentNote: null,
 });
 
 describe('beerListEntryOf', () => {

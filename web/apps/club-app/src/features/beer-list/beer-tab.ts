@@ -38,7 +38,6 @@ export interface BeerPayee {
   current: boolean;
   openCents: number;
   payHref: string | null;
-  note: string | null;
 }
 
 const byBookedAt = (left: BeerTabCrate, right: BeerTabCrate): number =>
@@ -146,5 +145,4 @@ export const payeesOf = (pots: readonly BeerTabPot[]): readonly BeerPayee[] =>
       current: pot.isOpen,
       openCents,
       payHref: pot.paymentLink === null ? null : payPalLinkOf(pot.paymentLink, openCents),
-      note: pot.paymentNote,
     }));

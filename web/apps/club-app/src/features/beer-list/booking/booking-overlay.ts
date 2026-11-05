@@ -34,7 +34,6 @@ const emptyTabPotOf = (pot: OpenBeerPot): BeerTabPot => ({
   openedAt: pot.openedAt,
   owner: pot.owner,
   paymentLink: pot.paymentLink,
-  paymentNote: pot.paymentNote,
   openCrates: 0,
   openCents: 0,
   paidCrates: 0,

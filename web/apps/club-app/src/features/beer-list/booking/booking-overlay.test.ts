@@ -8,7 +8,6 @@ const OPEN_POT: OpenBeerPot = {
   owner: { personId: 9, firstName: 'Sabine', lastName: 'Kurz' },
   cratePriceCents: 1800,
   paymentLink: 'https://paypal.me/sabine',
-  paymentNote: null,
   openedAt: '2026-09-01T10:00:00Z',
   hasStock: true,
 };
@@ -19,7 +18,6 @@ const tabPot = (beerPotId: number, isOpen: boolean, crateIds: readonly number[])
   openedAt: '2026-09-01T10:00:00Z',
   owner: null,
   paymentLink: null,
-  paymentNote: null,
   openCrates: crateIds.length,
   openCents: crateIds.length * 1500,
   paidCrates: 0,

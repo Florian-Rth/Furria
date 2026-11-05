@@ -22,7 +22,6 @@ const pot = (
   openedAt: '2026-01-01T00:00:00Z',
   owner: null,
   paymentLink,
-  paymentNote: null,
   openCrates: 0,
   openCents: 0,
   paidCrates: 0,

@@ -1,3 +1,4 @@
+import { payWaysLine } from '@/features/beer-list/beer-list-copy';
 import { formatEuroCents, payPalLinkOf } from '@/lib/money';
 import type { Start, StartBeerTab } from './schemas';
 
@@ -44,9 +45,10 @@ export const beerTabLineOf = (tab: StartBeerTab): BeerTabLine => {
   return {
     key: tab.beerPotId,
     title: `${amount} offen${ownerPart}`,
-    meta: [tab.paymentNote, cratesLabelOf(tab.openCrates)]
-      .filter((part): part is string => part !== null)
-      .join(META_SEPARATOR),
+    meta: [
+      cratesLabelOf(tab.openCrates),
+      payWaysLine(tab.owner?.firstName ?? null, tab.paymentLink !== null),
+    ].join(META_SEPARATOR),
     payHref: tab.paymentLink === null ? null : payPalLinkOf(tab.paymentLink, tab.openCents),
     payLabel: `${amount}${ownerPart} per PayPal bezahlen`,
   };

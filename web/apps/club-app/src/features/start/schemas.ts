@@ -161,7 +161,6 @@ export const StartBeerTabSchema = z.object({
   oldestOpenBookedAt: z.iso.datetime({ offset: true }),
   owner: StartPersonRefSchema.nullable(),
   paymentLink: z.url({ protocol: /^https$/ }).nullable(),
-  paymentNote: z.string().nullable(),
 });
 export type StartBeerTab = z.infer<typeof StartBeerTabSchema>;
 

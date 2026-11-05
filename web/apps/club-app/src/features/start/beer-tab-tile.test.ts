@@ -18,7 +18,6 @@ describe('isBeerTabDue', () => {
       oldestOpenBookedAt,
       owner: null,
       paymentLink: null,
-      paymentNote: null,
     }));
 
     expect(isBeerTabDue(tabs, NOW)).toBe(expected);
@@ -37,7 +36,6 @@ describe('beerTabLineOf', () => {
       oldestOpenBookedAt: '2026-10-26T18:00:00+01:00',
       owner: { personId: 3, firstName: 'Greta', lastName: 'Gruber' },
       paymentLink,
-      paymentNote: null,
     });
 
     expect(line.payHref).toBe(expected);
@@ -52,7 +50,6 @@ describe('beerTabsOfStart', () => {
     oldestOpenBookedAt: '2026-11-01T10:00:00Z',
     owner: null,
     paymentLink: null,
-    paymentNote: null,
   };
   const startWith = (panels: Start['panels']): Start => ({
     asOf: '2026-11-04T12:00:00Z',
