@@ -1,7 +1,7 @@
 import type { CSSObject } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import type { KkPourStockTick as KkPourStockTickModel } from '../../../pour-stock-chart';
+import type { KkPourStockTick as KkPourStockTickModel } from '../../../pour-stock-trend';
 
 const SHIFT: Record<KkPourStockTickModel['align'], string> = {
   start: '0',

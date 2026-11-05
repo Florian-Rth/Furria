@@ -41,6 +41,7 @@ export interface BeerHubSummary {
   enrolled: number;
   paceWindowDays: number;
   series: readonly number[];
+  deliveries: readonly number[];
   seriesFromOn: string;
 }
 
@@ -146,6 +147,31 @@ export const stockSeriesOf = (
   });
 };
 
+const restocks = (movement: BeerMovement): boolean =>
+  movement.crates > 0 && (movement.kind === 'delivery' || movement.kind === 'handoverCarry');
+
+export const deliveriesOf = (
+  movements: readonly BeerMovement[],
+  now: string,
+  days: number,
+): readonly number[] => {
+  const end = Date.parse(now);
+  const restocked = movements.filter(restocks);
+
+  return Array.from({ length: days }, (_, index) => {
+    const until = end - (days - 1 - index) * DAY_MS;
+    const since = until - DAY_MS;
+
+    return restocked
+      .filter((movement) => {
+        const at = Date.parse(movement.bookedAt);
+
+        return at > since && at <= until;
+      })
+      .reduce((sum, movement) => sum + movement.crates, 0);
+  });
+};
+
 const daysUntil = (emptyOn: string | null, now: string): number | null =>
   emptyOn === null
     ? null
@@ -173,6 +199,7 @@ export const hubSummaryOf = ({ stock, crates, roster, now }: BeerSummarySource):
     enrolled: roster.filter((row) => row.enrollmentId !== null).length,
     paceWindowDays: stock.forecast.paceWindowDays,
     series: stockSeriesOf(stock.movements, crates, now, SPARK_DAYS),
+    deliveries: deliveriesOf(stock.movements, now, SPARK_DAYS),
     seriesFromOn: dayKeyOf(new Date(Date.parse(now) - (SPARK_DAYS - 1) * DAY_MS).toISOString()),
   };
 };

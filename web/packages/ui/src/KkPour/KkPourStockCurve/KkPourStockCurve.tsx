@@ -5,12 +5,12 @@ import { useId } from 'react';
 import { applyScheme } from '../../internal/scheme-paint';
 import type { KkSx } from '../../kk-sx';
 import { kkTokens } from '../../tokens';
-import { usePlotBox } from '../KkPourStockChart/internal/logic/use-plot-box';
-import { KkPourStockTick } from '../KkPourStockChart/internal/ui/KkPourStockTick';
-import type { KkPourStockTickKind } from '../pour-stock-chart';
-import { stockModelOf, svgIdOf } from '../pour-stock-chart';
-import { stockCurvePlotOf } from '../pour-stock-trend';
+import type { KkPourStockTickKind } from '../pour-stock-trend';
+import { stockCurvePlotOf, stockModelOf, svgIdOf } from '../pour-stock-trend';
+import { usePlotBox } from './internal/logic/use-plot-box';
+import { KkPourStockCurveLabel } from './internal/ui/KkPourStockCurveLabel';
 import { KkPourStockCurveSvg } from './internal/ui/KkPourStockCurveSvg';
+import { KkPourStockTick } from './internal/ui/KkPourStockTick';
 
 const FRAME = { maxForecastDays: 28, headroom: 1.22, nowTickGap: 0.24 } as const;
 const PLOT = {
@@ -20,9 +20,18 @@ const PLOT = {
   glow: 10,
   ring: 2,
   line: 2.25,
+  mark: 2.25,
+  markRing: 1.5,
 } as const;
-const MAX_GLIDE_DAYS = 6;
 const INSET = PLOT.glow;
+const CURVE = {
+  maxGlideDays: 6,
+  labelGap: 34,
+  labelHalf: 13,
+  labelRoom: 10,
+  lift: 5,
+  glow: PLOT.glow,
+} as const;
 const { light, dark } = kkTokens.color;
 
 const inkScheme = (warn: boolean) => ({
@@ -93,6 +102,11 @@ const curvePaint =
       stroke: 'var(--kk-curve-surface)',
       strokeWidth: PLOT.ring,
     },
+    '& [data-curve-mark]': {
+      fill: 'var(--kk-curve-ink)',
+      stroke: 'var(--kk-curve-surface)',
+      strokeWidth: PLOT.markRing,
+    },
     '& [data-curve-empty]': {
       fill: 'var(--kk-curve-surface)',
       stroke: 'var(--kk-curve-ahead-line)',
@@ -107,6 +121,7 @@ const curvePaint =
 
 interface KkPourStockCurveProps {
   values: readonly number[];
+  deliveries: readonly number[];
   forecastDays: number | null;
   warn: boolean;
   labels: Readonly<Record<KkPourStockTickKind, string | null>>;
@@ -115,6 +130,7 @@ interface KkPourStockCurveProps {
 
 export const KkPourStockCurve: FC<KkPourStockCurveProps> = ({
   values,
+  deliveries,
   forecastDays,
   warn,
   labels,
@@ -126,7 +142,7 @@ export const KkPourStockCurve: FC<KkPourStockCurveProps> = ({
   const plot =
     box.size === null
       ? null
-      : stockCurvePlotOf(model, { ...box.size, inset: INSET }, MAX_GLIDE_DAYS);
+      : stockCurvePlotOf(model, deliveries, { ...box.size, inset: INSET }, CURVE);
   const svg =
     box.size === null || plot === null ? null : (
       <KkPourStockCurveSvg
@@ -136,8 +152,13 @@ export const KkPourStockCurve: FC<KkPourStockCurveProps> = ({
         svgId={svgId}
         dot={PLOT.dot}
         glow={PLOT.glow}
+        mark={PLOT.mark}
       />
     );
+  const deliveryLabels =
+    plot === null
+      ? null
+      : plot.labels.map((label) => <KkPourStockCurveLabel key={label.day} label={label} />);
   const ticks = model.ticks.flatMap((tick) => {
     const label = labels[tick.kind];
 
@@ -152,6 +173,7 @@ export const KkPourStockCurve: FC<KkPourStockCurveProps> = ({
     >
       <Box ref={box.ref} data-curve-plot>
         {svg}
+        {deliveryLabels}
       </Box>
       <Box data-curve-ticks>{ticks}</Box>
     </Box>

@@ -3,6 +3,7 @@ import {
   bookableOf,
   centsOfPriceText,
   crateStateOf,
+  deliveriesOf,
   hubSummaryOf,
   journalOf,
   openCratesOf,
@@ -128,6 +129,31 @@ describe('stockSeriesOf', () => {
     ];
 
     expect(stockSeriesOf(movements, crates, NOW, 5)).toEqual([0, 10, 8, 9, 9]);
+  });
+});
+
+describe('deliveriesOf', () => {
+  const movementOf = (
+    kind: 'delivery' | 'correction' | 'handoverCarry',
+    crates: number,
+    bookedAt: string,
+  ) => ({ movementId: 1, kind, crates, bookedAt, bookedBy: null });
+
+  it('sums the restocks of each day and ignores corrections and removals', () => {
+    expect(
+      deliveriesOf(
+        [
+          movementOf('delivery', 10, '2026-11-03T13:00:00.000Z'),
+          movementOf('handoverCarry', 4, '2026-11-03T20:00:00.000Z'),
+          movementOf('correction', 2, '2026-11-04T13:00:00.000Z'),
+          movementOf('delivery', -1, '2026-11-05T09:00:00.000Z'),
+          movementOf('delivery', 6, '2026-11-05T11:00:00.000Z'),
+          movementOf('delivery', 9, '2026-10-01T11:00:00.000Z'),
+        ],
+        '2026-11-05T12:00:00.000Z',
+        3,
+      ),
+    ).toEqual([0, 14, 6]);
   });
 });
 

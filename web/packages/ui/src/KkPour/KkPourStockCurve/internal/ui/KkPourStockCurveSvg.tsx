@@ -8,6 +8,7 @@ interface KkPourStockCurveSvgProps {
   svgId: string;
   dot: number;
   glow: number;
+  mark: number;
 }
 
 export const KkPourStockCurveSvg: FC<KkPourStockCurveSvgProps> = ({
@@ -17,6 +18,7 @@ export const KkPourStockCurveSvg: FC<KkPourStockCurveSvgProps> = ({
   svgId,
   dot,
   glow,
+  mark,
 }) => {
   const viewBox = `0 0 ${width} ${height}`;
   const areaId = `${svgId}-area`;
@@ -32,6 +34,9 @@ export const KkPourStockCurveSvg: FC<KkPourStockCurveSvgProps> = ({
     plot.forecastLine === null ? null : (
       <line data-curve-rule x1={plot.now.x} x2={plot.now.x} y1={plot.top} y2={plot.floor} />
     );
+  const marks = plot.marks.map((rise) => (
+    <circle key={rise.day} data-curve-mark cx={rise.x} cy={rise.y} r={mark} />
+  ));
   const empty =
     plot.empty === null ? null : (
       <circle data-curve-empty cx={plot.empty.x} cy={plot.empty.y} r={dot} />
@@ -56,6 +61,7 @@ export const KkPourStockCurveSvg: FC<KkPourStockCurveSvgProps> = ({
       <path data-curve-area d={plot.area} fill={areaFill} />
       <path data-curve-line d={plot.line} />
       {ahead}
+      {marks}
       {empty}
       <circle data-curve-glow cx={plot.now.x} cy={plot.now.y} r={glow} />
       <circle data-curve-now cx={plot.now.x} cy={plot.now.y} r={dot} />

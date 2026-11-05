@@ -12,7 +12,6 @@ import {
   WELCOME_LAB_TITLE,
   welcomeLabPathOf,
 } from '@/features/welcome/welcome-lab';
-import { LAB_DRAFTS, LAB_DRAFTS_TITLE } from '../lab-drafts';
 import {
   LAB_GREETINGS,
   LAB_LEAD,
@@ -55,17 +54,6 @@ export const LabHubPage: FC = () => {
     />
   ));
 
-  const draftRows = LAB_DRAFTS.map((draft) => (
-    <KkHubRow
-      key={draft.slug}
-      label={draft.title}
-      icon={draft.icon}
-      meta={draft.meta}
-      component={Link}
-      to={draft.to}
-    />
-  ));
-
   return (
     <KkScreen
       kind="detail"
@@ -75,9 +63,6 @@ export const LabHubPage: FC = () => {
       handover={AREA_HANDOVERS.manage}
     >
       <KkPanelStack>
-        <KkPanelSection title={LAB_DRAFTS_TITLE}>
-          <KkPanel>{draftRows}</KkPanel>
-        </KkPanelSection>
         <KkPanelSection title={WELCOME_LAB_TITLE}>
           <KkPanel>{welcomeRows}</KkPanel>
         </KkPanelSection>
