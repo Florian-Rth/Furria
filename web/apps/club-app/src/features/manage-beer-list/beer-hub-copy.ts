@@ -15,7 +15,7 @@ import type {
 } from './beer-hub';
 import { OVERDUE_AFTER_DAYS, STOCK_MAX_CRATES } from './beer-hub';
 import type { BeerDayName } from './beer-time';
-import { clockOf, shortDateOf, weekdayDateOf } from './beer-time';
+import { clockOf, dayMonthOfKey, shortDateOf, weekdayDateOf } from './beer-time';
 import type {
   BeerEnrollment,
   BeerJournalCrate,
@@ -118,6 +118,18 @@ export const stockCaptionOf = (summary: BeerHubSummary): string => {
     ? `leer ≈ ${day} · in ${Math.round(summary.daysLeft)} T.`
     : `reicht bis ≈ ${day}`;
 };
+
+export interface StockChartLabels {
+  from: string;
+  now: string;
+  empty: string | null;
+}
+
+export const stockChartLabelsOf = (summary: BeerHubSummary): StockChartLabels => ({
+  from: dayMonthOfKey(summary.seriesFromOn),
+  now: 'heute',
+  empty: summary.emptyOn === null ? null : dayMonthOfKey(summary.emptyOn),
+});
 
 const actorNote = (entry: BeerJournalEntry, verb: string): string | null =>
   entry.actor === null || entry.actor.personId === entry.person?.personId

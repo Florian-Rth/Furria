@@ -199,6 +199,21 @@ describe('hubSummaryOf', () => {
 
     expect(summary.warns).toBe(warns);
   });
+
+  it('starts the stock series on the Berlin day sixty days back including today', () => {
+    const summary = hubSummaryOf({
+      stock: {
+        crates: 4,
+        forecast: { paceWindowDays: 21, cratesTakenInPaceWindow: 0, projectedEmptyOn: null },
+        movements: [],
+      },
+      crates: [],
+      roster: [],
+      now: '2026-11-04T23:30:00.000Z',
+    });
+
+    expect(summary.seriesFromOn).toBe('2026-09-07');
+  });
 });
 
 describe('journalOf', () => {

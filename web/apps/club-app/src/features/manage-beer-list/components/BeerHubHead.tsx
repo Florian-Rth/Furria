@@ -1,5 +1,5 @@
 import { KkPourHead } from '@furria/ui/KkPourHead';
-import { KkPourSpark } from '@furria/ui/KkPourSpark';
+import { KkPourStockChart } from '@furria/ui/KkPourStockChart';
 import type { FC } from 'react';
 import type { BeerHubSummary } from '../beer-hub';
 import {
@@ -11,6 +11,7 @@ import {
   STOCK_LABEL,
   STOCK_UNIT,
   stockCaptionOf,
+  stockChartLabelsOf,
   tileEuroOf,
 } from '../beer-hub-copy';
 
@@ -26,8 +27,14 @@ export const BeerHubHead: FC<BeerHubHeadProps> = ({ summary }) => {
   const peopleValue = String(summary.enrolled);
   const openLabel = openTabsLabelOf(summary.openTabs);
   const overdueAttention = summary.overdue > 0;
+  const chartLabels = stockChartLabelsOf(summary);
   const spark = (
-    <KkPourSpark values={summary.series} forecastSteps={summary.daysLeft} warn={summary.warns} />
+    <KkPourStockChart
+      values={summary.series}
+      forecastDays={summary.daysLeft}
+      warn={summary.warns}
+      labels={chartLabels}
+    />
   );
 
   return (

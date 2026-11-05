@@ -28,7 +28,15 @@ export const KkPourHeadStock: FC<KkPourHeadStockProps> = ({
 
   return (
     <Box data-kk-pour-head-stock sx={[headCellPaint, { flex: 1 }]}>
-      <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5, flex: 1, minWidth: 0 }}>
+      <Stack
+        direction={{ xs: 'column', sm: 'row' }}
+        sx={{
+          alignItems: { xs: 'stretch', sm: 'center' },
+          gap: { xs: 1, sm: 1.5 },
+          flex: 1,
+          minWidth: 0,
+        }}
+      >
         <Stack sx={{ minWidth: 0, gap: 0.25 }}>
           <Typography
             variant="caption"
@@ -64,7 +72,9 @@ export const KkPourHeadStock: FC<KkPourHeadStockProps> = ({
             </Typography>
           </Stack>
         </Stack>
-        <Stack sx={{ flex: 1, minWidth: 0, alignItems: 'flex-end' }}>{spark}</Stack>
+        <Stack sx={{ flex: 1, minWidth: 0, alignItems: { xs: 'stretch', sm: 'flex-end' } }}>
+          {spark}
+        </Stack>
       </Stack>
     </Box>
   );

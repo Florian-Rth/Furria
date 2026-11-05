@@ -41,6 +41,7 @@ export interface BeerHubSummary {
   enrolled: number;
   paceWindowDays: number;
   series: readonly number[];
+  seriesFromOn: string;
 }
 
 export const openDaysOf = (oldestOpenAt: string | null, now: string): number | null =>
@@ -172,6 +173,7 @@ export const hubSummaryOf = ({ stock, crates, roster, now }: BeerSummarySource):
     enrolled: roster.filter((row) => row.enrollmentId !== null).length,
     paceWindowDays: stock.forecast.paceWindowDays,
     series: stockSeriesOf(stock.movements, crates, now, SPARK_DAYS),
+    seriesFromOn: dayKeyOf(new Date(Date.parse(now) - (SPARK_DAYS - 1) * DAY_MS).toISOString()),
   };
 };
 
