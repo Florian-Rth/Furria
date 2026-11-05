@@ -56,11 +56,13 @@ export const daysLabel = (days: number): string => {
   return days === 1 ? 'seit gestern' : `seit ${days} Tagen`;
 };
 
+const personsOf = (count: number): string => (count === 1 ? '1 Person' : `${count} Personen`);
+
 export const HEAD_LABEL = 'Lage der Bierliste';
 export const STOCK_LABEL = 'Bestand';
 export const STOCK_UNIT = 'Kisten';
-export const COUNTERS_LABEL = 'Deckel filtern';
-export const OPEN_LABEL = 'Deckel offen';
+export const COUNTERS_LABEL = 'Offene Kisten filtern';
+export const OPEN_LABEL = 'offen';
 export const OVERDUE_LABEL = `ab ${OVERDUE_AFTER_DAYS} Tagen`;
 export const PEOPLE_LABEL = 'nehmen teil';
 export const QUICK_LABEL = 'Schnell eintragen';
@@ -68,7 +70,7 @@ export const KIND_FILTER_LABEL = 'Art';
 export const PERSON_FILTER_LABEL = 'Person';
 export const PERSON_FILTER_ALL = 'Alle Personen';
 export const JOURNAL_EMPTY = 'Keine Einträge.';
-export const ROSTER_LABEL = 'Deckel';
+export const ROSTER_LABEL = 'Offene Kisten';
 export const OLDER_LABEL = 'Ältere Tage zeigen';
 
 export const QUICK_ITEMS: readonly KkPourQuickItem[] = [
@@ -179,7 +181,7 @@ export const rosterFactsOf = (row: BeerRosterRow): string => {
 export const endConfirmOf = (name: string): KkHoldConfirm => ({
   eyebrow: 'Teilnahme',
   question: `Teilnahme von ${name} beenden?`,
-  explanation: `${name} kann dann selbst keine Kisten mehr buchen. Offene Kisten bleiben auf dem Deckel und werden weiter bezahlt.`,
+  explanation: `${name} kann dann selbst keine Kisten mehr buchen. Offene Kisten bleiben offen und werden weiter bezahlt.`,
   confirmLabel: 'Beenden',
   cancelLabel: CANCEL_LABEL,
   closeLabel: CLOSE_LABEL,
@@ -188,7 +190,7 @@ export const endConfirmOf = (name: string): KkHoldConfirm => ({
 export const crateUndoConfirmOf = (count: number): KkHoldConfirm => ({
   eyebrow: 'Kiste',
   question: `${cratesLabel(count)} zurücknehmen?`,
-  explanation: 'Die Kiste verschwindet vom Deckel und zählt wieder zum Bestand.',
+  explanation: 'Die Kiste wird gestrichen und zählt wieder zum Bestand.',
   confirmLabel: 'Zurücknehmen',
   cancelLabel: CANCEL_LABEL,
   closeLabel: CLOSE_LABEL,
@@ -197,7 +199,7 @@ export const crateUndoConfirmOf = (count: number): KkHoldConfirm => ({
 export const paymentUndoConfirmOf = (count: number): KkHoldConfirm => ({
   eyebrow: 'Zahlung',
   question: `Zahlung über ${cratesLabel(count)} zurücknehmen?`,
-  explanation: 'Die Kisten dieser Zahlung stehen danach wieder offen auf dem Deckel.',
+  explanation: 'Die Kisten dieser Zahlung sind danach wieder offen.',
   confirmLabel: 'Zurücknehmen',
   cancelLabel: CANCEL_LABEL,
   closeLabel: CLOSE_LABEL,
@@ -212,7 +214,7 @@ export const PERSON_LABEL = 'Person';
 export const COUNT_FIELD_LABEL = 'Anzahl Kisten';
 export const STOCK_FIELD_LABEL = 'Kisten dazu (+) oder weg (−)';
 export const PAY_OLDEST_NOTE = 'Bezahlt werden immer die ältesten offenen Kisten zuerst.';
-export const NO_OPEN_TABS = 'Gerade ist kein Deckel offen.';
+export const NO_OPEN_TABS = 'Gerade sind keine Kisten offen.';
 export const OPEN_SECTION = 'Offen';
 export const PAYMENTS_SECTION = 'Zahlungen';
 export const ENROLL_SECTION = 'Teilnahme';
@@ -280,7 +282,7 @@ export const PRINT_LABEL = 'Drucken';
 
 export const HANDOVER_TITLE = 'Übergabe';
 export const HANDOVER_LEAD =
-  'Die Bierliste geht an eine andere Person, die sie verwalten darf. Offene Deckel bleiben bei der bisherigen Inhaberin und werden weiter bezahlt; der Bestand geht als Anzahl mit.';
+  'Die Bierliste geht an eine andere Person, die sie verwalten darf. Offene Kisten bleiben bei der bisherigen Inhaberin und werden weiter bezahlt; der Bestand geht als Anzahl mit.';
 export const SUCCESSOR_LABEL = 'Neue Inhaberin';
 export const HANDOVER_LABEL = 'Bierliste übergeben';
 export const handoverConfirmOf = (name: string, stock: number): KkHoldConfirm => ({
@@ -295,7 +297,7 @@ export const handoverConfirmOf = (name: string, stock: number): KkHoldConfirm =>
 export const ENROLLMENTS_TITLE = 'Teilnahmen';
 export const POTS_TITLE = 'Frühere Listen';
 export const POTS_EMPTY = 'Es gibt keine früheren Listen.';
-export const POTS_CONTEXT = 'übergeben · offene Deckel bleiben bezahlbar';
+export const POTS_CONTEXT = 'übergeben · offene Kisten bleiben bezahlbar';
 export const ALL_PAID = 'Auf dieser Liste ist alles bezahlt.';
 export const potLabelOf = (
   owner: PersonRef | null,
@@ -304,7 +306,7 @@ export const potLabelOf = (
 ): string =>
   `${fullNameOf(owner)} · ${shortDateOf(openedAt)}–${closedAt === null ? 'heute' : shortDateOf(closedAt)}`;
 export const potFactsOf = (openTabs: number, openCents: number): string =>
-  openTabs === 0 ? 'alles bezahlt' : `${openTabs} Deckel offen · ${euroOf(openCents)}`;
+  openTabs === 0 ? 'alles bezahlt' : `${personsOf(openTabs)} offen · ${euroOf(openCents)}`;
 
 export const EMPTY_TITLE = 'Bierliste eröffnen';
 export const EMPTY_LEAD =
@@ -424,12 +426,12 @@ export const rosterTotalOf = (cents: number): string => (cents === 0 ? '' : euro
 
 export const takenFactsOf = (count: number): string => (count === 0 ? '' : cratesLabel(count));
 
-export const openTabsLabelOf = (openTabs: number): string => `${openTabs} ${OPEN_LABEL}`;
+export const openTabsLabelOf = (openTabs: number): string => `${personsOf(openTabs)} ${OPEN_LABEL}`;
 
 export const openAriaOf = (summary: BeerHubSummary): string =>
-  `${euroOf(summary.openCents)} offen auf ${openTabsLabelOf(summary.openTabs)}`;
+  `${euroOf(summary.openCents)} offen bei ${personsOf(summary.openTabs)}`;
 
-export const overdueAriaOf = (overdue: number): string => `${overdue} Deckel ${OVERDUE_LABEL}`;
+export const overdueAriaOf = (overdue: number): string => `${personsOf(overdue)} ${OVERDUE_LABEL}`;
 
 export const peopleAriaOf = (enrolled: number): string => `${enrolled} ${PEOPLE_LABEL}`;
 

@@ -20,7 +20,7 @@ export interface BeerListStateCopy {
 export const BEER_LIST_STATES: Record<'enrolled' | 'notEnrolled', BeerListStateCopy> = {
   enrolled: {
     status: 'eingetragen',
-    hint: 'Kisten von der Bierliste gehen auf deinen Deckel.',
+    hint: 'Kisten von der Bierliste werden auf deinen Namen gebucht.',
     tone: 'green',
     actionLabel: 'Austragen',
     actionIcon: 'close',
@@ -28,7 +28,7 @@ export const BEER_LIST_STATES: Record<'enrolled' | 'notEnrolled', BeerListStateC
   },
   notEnrolled: {
     status: 'nicht eingetragen',
-    hint: 'Trag dich ein, um Kisten von der Bierliste auf deinen Deckel zu nehmen.',
+    hint: 'Trag dich ein, um Kisten von der Bierliste auf deinen Namen zu buchen.',
     tone: 'neutral',
     actionLabel: 'Eintragen',
     actionIcon: 'add',
@@ -53,8 +53,8 @@ export interface BeerListDialogCopy {
 
 const ENROLL_DECLARATION: readonly KkConfirmFact[] = [
   {
-    label: 'Deckel',
-    value: 'Jede Kiste, die du nimmst, kommt zum aktuellen Kistenpreis auf deinen Deckel.',
+    label: 'Kisten',
+    value: 'Jede Kiste, die du nimmst, wird zum aktuellen Kistenpreis auf deinen Namen gebucht.',
   },
   {
     label: 'Bezahlen',
@@ -83,10 +83,10 @@ export const BEER_LIST_DIALOGS: Record<BeerListDialog, BeerListDialogCopy> = {
   leave: {
     eyebrow: BEER_LIST_TITLE,
     question: 'Von der Bierliste austragen?',
-    explanation: 'Du kannst danach keine Kisten mehr auf deinen Deckel nehmen.',
+    explanation: 'Du kannst danach keine Kisten mehr auf deinen Namen buchen.',
     facts: [],
     consequence:
-      'Offene Kisten bleiben auf deinem Deckel, bis sie bezahlt sind. Du kannst dich jederzeit wieder eintragen.',
+      'Offene Kisten bleiben offen, bis sie bezahlt sind. Du kannst dich jederzeit wieder eintragen.',
     confirmLabel: 'Austragen',
   },
 };

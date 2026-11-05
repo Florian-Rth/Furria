@@ -12,7 +12,7 @@ namespace Furria.Infrastructure.BeerList;
 public sealed class BeerPaymentService
 {
     private const string MoreThanOpenMessage =
-        "So viele offene Kisten stehen auf diesem Deckel nicht. Bezahlt werden nur ganze, offene Kisten.";
+        "So viele offene Kisten hat diese Person nicht. Bezahlt werden nur ganze, offene Kisten.";
     private const string UnknownPaymentMessage = "Diese Zahlung gibt es nicht.";
     private const string UndonePaymentMessage = "Diese Zahlung ist schon zurückgenommen.";
 

@@ -5,7 +5,7 @@ import { useBeerTabTile } from '../hooks/use-beer-tab-tile';
 import type { StartBoard } from '../hooks/use-start-view';
 import type { StartPanelOf } from '../start-board';
 
-const TILE_LABEL = 'Dein Deckel';
+const TILE_LABEL = 'Bierliste';
 const HEAD_LABEL = 'DEIN DECKEL';
 const TITLE_LINES = 2;
 

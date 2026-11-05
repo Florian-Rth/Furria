@@ -1421,7 +1421,7 @@ plus PayPal when the owner gave a link), pays her, and the crates turn paid when
 is visible only to its holder and to operators (decided 2026-11-04). A tab always belongs to one
 person — never to a group or the club; whoever takes crates for others books them and collects
 privately (decided 2026-11-04).
-_UI copy_: Deckel
+_UI copy_: offene Kisten (never "Deckel" in the app)
 _Avoid_: balance, account, Guthaben
 
 **Stock** (beer list):
