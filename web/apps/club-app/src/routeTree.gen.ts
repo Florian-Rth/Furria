@@ -51,6 +51,7 @@ import { Route as AppManageGroupsRouteImport } from './routes/_app/manage.groups
 import { Route as AppManageClubRecordRouteImport } from './routes/_app/manage.club-record'
 import { Route as AppManageBoardRouteImport } from './routes/_app/manage.board'
 import { Route as AppManageApplicationsRouteImport } from './routes/_app/manage.applications'
+import { Route as AppLabStockChartRouteImport } from './routes/_app/lab_.stock-chart'
 import { Route as AppLabGreetingRouteImport } from './routes/_app/lab_.$greeting'
 import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups_.$groupId'
 import { Route as AppGalleryWebsiteRouteImport } from './routes/_app/gallery_.website'
@@ -347,6 +348,11 @@ const AppManageBoardRoute = AppManageBoardRouteImport.update({
 const AppManageApplicationsRoute = AppManageApplicationsRouteImport.update({
   id: '/manage/applications',
   path: '/manage/applications',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLabStockChartRoute = AppLabStockChartRouteImport.update({
+  id: '/lab_/stock-chart',
+  path: '/lab/stock-chart',
   getParentRoute: () => AppRoute,
 } as any)
 const AppLabGreetingRoute = AppLabGreetingRouteImport.update({
@@ -890,6 +896,7 @@ export interface FileRoutesByFullPath {
   '/gallery/website': typeof AppGalleryWebsiteRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/lab/$greeting': typeof AppLabGreetingRoute
+  '/lab/stock-chart': typeof AppLabStockChartRoute
   '/manage/applications': typeof AppManageApplicationsRoute
   '/manage/board': typeof AppManageBoardRoute
   '/manage/club-record': typeof AppManageClubRecordRoute
@@ -1020,6 +1027,7 @@ export interface FileRoutesByTo {
   '/gallery/website': typeof AppGalleryWebsiteRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/lab/$greeting': typeof AppLabGreetingRoute
+  '/lab/stock-chart': typeof AppLabStockChartRoute
   '/manage/applications': typeof AppManageApplicationsRoute
   '/manage/board': typeof AppManageBoardRoute
   '/manage/club-record': typeof AppManageClubRecordRoute
@@ -1155,6 +1163,7 @@ export interface FileRoutesById {
   '/_app/gallery_/website': typeof AppGalleryWebsiteRoute
   '/_app/groups_/$groupId': typeof AppGroupsGroupIdRoute
   '/_app/lab_/$greeting': typeof AppLabGreetingRoute
+  '/_app/lab_/stock-chart': typeof AppLabStockChartRoute
   '/_app/manage/applications': typeof AppManageApplicationsRoute
   '/_app/manage/board': typeof AppManageBoardRoute
   '/_app/manage/club-record': typeof AppManageClubRecordRoute
@@ -1288,6 +1297,7 @@ export interface FileRouteTypes {
     | '/gallery/website'
     | '/groups/$groupId'
     | '/lab/$greeting'
+    | '/lab/stock-chart'
     | '/manage/applications'
     | '/manage/board'
     | '/manage/club-record'
@@ -1418,6 +1428,7 @@ export interface FileRouteTypes {
     | '/gallery/website'
     | '/groups/$groupId'
     | '/lab/$greeting'
+    | '/lab/stock-chart'
     | '/manage/applications'
     | '/manage/board'
     | '/manage/club-record'
@@ -1552,6 +1563,7 @@ export interface FileRouteTypes {
     | '/_app/gallery_/website'
     | '/_app/groups_/$groupId'
     | '/_app/lab_/$greeting'
+    | '/_app/lab_/stock-chart'
     | '/_app/manage/applications'
     | '/_app/manage/board'
     | '/_app/manage/club-record'
@@ -1949,6 +1961,13 @@ declare module '@tanstack/react-router' {
       path: '/manage/applications'
       fullPath: '/manage/applications'
       preLoaderRoute: typeof AppManageApplicationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lab_/stock-chart': {
+      id: '/_app/lab_/stock-chart'
+      path: '/lab/stock-chart'
+      fullPath: '/lab/stock-chart'
+      preLoaderRoute: typeof AppLabStockChartRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/lab_/$greeting': {
@@ -2687,6 +2706,7 @@ interface AppRouteChildren {
   AppGalleryWebsiteRoute: typeof AppGalleryWebsiteRoute
   AppGroupsGroupIdRoute: typeof AppGroupsGroupIdRoute
   AppLabGreetingRoute: typeof AppLabGreetingRoute
+  AppLabStockChartRoute: typeof AppLabStockChartRoute
   AppManageApplicationsRoute: typeof AppManageApplicationsRoute
   AppManageBoardRoute: typeof AppManageBoardRoute
   AppManageClubRecordRoute: typeof AppManageClubRecordRoute
@@ -2794,6 +2814,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppGalleryWebsiteRoute: AppGalleryWebsiteRoute,
   AppGroupsGroupIdRoute: AppGroupsGroupIdRoute,
   AppLabGreetingRoute: AppLabGreetingRoute,
+  AppLabStockChartRoute: AppLabStockChartRoute,
   AppManageApplicationsRoute: AppManageApplicationsRoute,
   AppManageBoardRoute: AppManageBoardRoute,
   AppManageClubRecordRoute: AppManageClubRecordRoute,

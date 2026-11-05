@@ -107,7 +107,7 @@ export interface KkPourStockPlot {
   empty: KkPourStockSpot | null;
 }
 
-const spotOf =
+export const spotOf =
   (model: KkPourStockModel, box: KkPourStockBox) =>
   (point: KkPourStockPoint): KkPourStockSpot => {
     const span = model.lastDay === 0 ? 1 : model.lastDay;
