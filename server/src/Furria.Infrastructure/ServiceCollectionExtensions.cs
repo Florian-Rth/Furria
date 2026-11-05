@@ -6,6 +6,7 @@ using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Events;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Groups;
+using Furria.Infrastructure.Halls;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Mail;
@@ -137,6 +138,9 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ActFinalTrackService>();
         services.AddSingleton<SoundProfiles>();
         services.AddScoped<RunningOrderService>();
+        services.AddScoped<SeatingService>();
+        services.AddScoped<HallService>();
+        services.AddScoped<TablePlanService>();
         services.AddScoped<EventPictures>();
         services.AddScoped<ClubRecordService>();
         services.AddScoped<ManagementService>();

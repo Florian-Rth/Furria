@@ -14,6 +14,7 @@ using Furria.Application.Results;
 using Furria.Application.Website;
 using Furria.Core.Club;
 using Furria.Core.Groups;
+using Furria.Core.Halls;
 using Furria.Core.Identity;
 using Furria.Core.Media;
 using Furria.Core.Roles;
@@ -348,7 +349,13 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         HostStarted = Logs.Mark();
         _resetService = await DatabaseResetService.CreateAsync(
             [db],
-            [typeof(Account), typeof(Role), typeof(RolePermission)],
+            [
+                typeof(Account),
+                typeof(Role),
+                typeof(RolePermission),
+                typeof(TableType),
+                typeof(SeatingStandard),
+            ],
             [typeof(DataProtectionKey)],
             CancellationToken.None
         );

@@ -6,9 +6,11 @@ using Furria.Application.Media;
 using Furria.Application.Results;
 using Furria.Core.Club;
 using Furria.Core.Events;
+using Furria.Core.Halls;
 using Furria.Core.Media;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Gallery;
+using Furria.Infrastructure.Halls;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Persistence;
 using Furria.Infrastructure.Public;
@@ -47,6 +49,7 @@ public sealed class EventService
     private readonly PublicFace _publicFace;
     private readonly MediaPictures _pictures;
     private readonly RunningOrderService _runningOrders;
+    private readonly TablePlanService _tablePlans;
     private readonly TimeProvider _timeProvider;
 
     public EventService(
@@ -54,6 +57,7 @@ public sealed class EventService
         PublicFace publicFace,
         MediaPictures pictures,
         RunningOrderService runningOrders,
+        TablePlanService tablePlans,
         TimeProvider timeProvider
     )
     {
@@ -61,6 +65,7 @@ public sealed class EventService
         _publicFace = publicFace;
         _pictures = pictures;
         _runningOrders = runningOrders;
+        _tablePlans = tablePlans;
         _timeProvider = timeProvider;
     }
 
@@ -109,12 +114,13 @@ public sealed class EventService
                 row.CalendarEntry.Description != null && row.CalendarEntry.Description.Trim() != "",
                 row.CreatedAt,
                 row.PublishedAt,
-                row.PresalePlaces.Any(place => place.Venue!.ArchivedOn == null)
+                row.PresalePlaces.Any(place => place.Venue!.ArchivedOn == null),
+                row.WithoutTablePlan
             ))
             .ToListAsync(ct);
         var eventIds = rows.Select(row => row.EventId).ToList();
-        var tallies = await TalliesOfAsync(eventIds, ct);
         var settled = await _runningOrders.SettledEventIdsAsync(eventIds, ct);
+        var tablePlans = await _tablePlans.CountsOfAsync(eventIds, ct);
 
         return
         [
@@ -129,8 +135,10 @@ public sealed class EventService
                     ),
                     PlanningOf(
                         PlanningInputsOf(row),
-                        tallies.GetValueOrDefault(row.EventId),
-                        settled.Contains(row.EventId),
+                        new PlanningProgress(
+                            settled.Contains(row.EventId),
+                            tablePlans.GetValueOrDefault(row.EventId)
+                        ),
                         now
                     )
                 )
@@ -181,7 +189,8 @@ public sealed class EventService
                         Name = place.Venue!.Name,
                         IsArchived = place.Venue.ArchivedOn != null,
                     })
-                    .ToList()
+                    .ToList(),
+                row.WithoutTablePlan
             ))
             .SingleOrDefaultAsync(ct);
 
@@ -189,12 +198,14 @@ public sealed class EventService
             return null;
 
         var stalledIds = await _dbContext.StalledAmongAsync([row.Picture], now, ct);
-        var tallies = await TalliesOfAsync([row.EventId], ct);
         var settled = await _runningOrders.SettledEventIdsAsync([row.EventId], ct);
+        var tablePlans = await _tablePlans.CountsOfAsync([row.EventId], ct);
         var planning = PlanningOf(
             PlanningInputsOf(row),
-            tallies.GetValueOrDefault(row.EventId),
-            settled.Contains(row.EventId),
+            new PlanningProgress(
+                settled.Contains(row.EventId),
+                tablePlans.GetValueOrDefault(row.EventId)
+            ),
             now
         );
         return ToDetails(row, now, EditingOf(row, stalledIds), planning);
@@ -488,7 +499,8 @@ public sealed class EventService
                 HasPicture = row.PictureId is not null,
                 IsPublished = row.PublishedAt is not null,
             },
-            AreTicketsSet(row.PriceCents, row.PresaleStartsAt, row.HasRunningPresalePlace)
+            AreTicketsSet(row.PriceCents, row.PresaleStartsAt, row.HasRunningPresalePlace),
+            row.WithoutTablePlan
         );
 
     [Pure]
@@ -510,7 +522,8 @@ public sealed class EventService
                 row.PriceCents,
                 row.PresaleStartsAt,
                 row.PresalePlaces.Any(place => !place.IsArchived)
-            )
+            ),
+            row.WithoutTablePlan
         );
 
     [Pure]
@@ -523,8 +536,7 @@ public sealed class EventService
     [Pure]
     private static EventPlanning PlanningOf(
         PlanningInputs inputs,
-        TallyRow? tally,
-        bool isRunningOrderSettled,
+        PlanningProgress progress,
         DateTimeOffset now
     )
     {
@@ -537,19 +549,17 @@ public sealed class EventService
             IsOver = inputs.IsOver,
             AreDetailsDone = detailsMissing.Count == 0,
             AreTicketsSet = inputs.AreTicketsSet,
-            IsRunningOrderDone = isRunningOrderSettled,
-            HasPublishedAlbum = tally?.PublishedAlbums > 0,
+            IsRunningOrderDone = progress.IsRunningOrderSettled,
+            NeedsTablePlan = !inputs.WithoutTablePlan,
+            HasPlacedTables = progress.TablePlan is { Tables: > 0 },
         };
 
         return new EventPlanning
         {
             DetailsMissing = detailsMissing,
-            Review = new EventReviewTally
-            {
-                PublishedAlbums = tally?.PublishedAlbums ?? 0,
-                PublishedNews = tally?.PublishedNews ?? 0,
-            },
             Readiness = EventSteps.ReadinessOf(facts, now),
+            TablePlan = progress.TablePlan,
+            WithoutTablePlan = inputs.WithoutTablePlan,
         };
     }
 
@@ -681,25 +691,6 @@ public sealed class EventService
             ? _pictures.EditingOf(MediaOwner.Event(row.EventId), picture, stalledIds)
             : null;
 
-    private async Task<IReadOnlyDictionary<int, TallyRow>> TalliesOfAsync(
-        IReadOnlyList<int> eventIds,
-        CancellationToken ct
-    )
-    {
-        var albums = _publicFace.Albums;
-        var posts = _publicFace.NewsPosts;
-
-        return await _dbContext
-            .Events.AsNoTracking()
-            .Where(row => eventIds.Contains(row.CalendarEntryId))
-            .Select(row => new TallyRow(
-                row.CalendarEntryId,
-                albums.Count(album => album.CalendarEntryId == row.CalendarEntryId),
-                posts.Count(post => post.EventId == row.CalendarEntryId)
-            ))
-            .ToDictionaryAsync(tally => tally.EventId, ct);
-    }
-
     private Task<CalendarEntry?> TrackedEventEntryAsync(int eventId, CancellationToken ct) =>
         _dbContext
             .CalendarEntries.Include(entry => entry.Event)
@@ -752,7 +743,8 @@ public sealed class EventService
         bool HasDescription,
         DateTimeOffset CreatedAt,
         DateTimeOffset? PublishedAt,
-        bool HasRunningPresalePlace
+        bool HasRunningPresalePlace,
+        bool WithoutTablePlan
     );
 
     private sealed record DetailsRow(
@@ -774,7 +766,8 @@ public sealed class EventService
         MediaPictureRow? Picture,
         DateTimeOffset CreatedAt,
         DateTimeOffset? PublishedAt,
-        IReadOnlyList<EventPresalePlaceSummary> PresalePlaces
+        IReadOnlyList<EventPresalePlaceSummary> PresalePlaces,
+        bool WithoutTablePlan
     );
 
     private sealed record PlanningInputs(
@@ -783,10 +776,11 @@ public sealed class EventService
         bool IsCancelled,
         bool IsOver,
         EventDetailsFacts Details,
-        bool AreTicketsSet
+        bool AreTicketsSet,
+        bool WithoutTablePlan
     );
 
-    private sealed record TallyRow(int EventId, int PublishedAlbums, int PublishedNews);
+    private sealed record PlanningProgress(bool IsRunningOrderSettled, TablePlanCount? TablePlan);
 
     private sealed record VenueStateRow(int VenueId, DateOnly? ArchivedOn);
 }

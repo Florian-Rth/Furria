@@ -66,7 +66,7 @@ const PANE_STEPS: Partial<Record<EventPaneKey, EventStepKey>> = {
   details: 'details',
   tickets: 'tickets',
   runningOrder: 'runningOrder',
-  review: 'review',
+  hall: 'hall',
 };
 
 export const toPaneDueLabel = (

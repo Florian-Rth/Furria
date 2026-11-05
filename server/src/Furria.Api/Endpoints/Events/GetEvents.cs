@@ -50,9 +50,10 @@ public sealed class GetEvents : EndpointWithoutRequest<GetEventsResponse>
             PriceCents = listed.PriceCents,
             DoorsOpenAt = listed.DoorsOpenAt,
             DetailsMissing = listed.Planning.DetailsMissing,
-            Review = EventReviewDto.From(listed.Planning.Review),
             Steps = [.. listed.Planning.Readiness.Steps.Select(EventStepDto.From)],
             CurrentStep = listed.Planning.Readiness.CurrentStep,
+            TablePlan = EventTablePlanDto.From(listed.Planning.TablePlan),
+            WithoutTablePlan = listed.Planning.WithoutTablePlan,
         };
 }
 
@@ -91,9 +92,11 @@ public sealed record EventSummaryDto
 
     public required IReadOnlyList<MissingEventDetail> DetailsMissing { get; init; }
 
-    public required EventReviewDto Review { get; init; }
-
     public required IReadOnlyList<EventStepDto> Steps { get; init; }
 
     public required EventStep? CurrentStep { get; init; }
+
+    public required EventTablePlanDto? TablePlan { get; init; }
+
+    public required bool WithoutTablePlan { get; init; }
 }

@@ -19,9 +19,10 @@ export type PlannedEvent = Pick<
   | 'priceCents'
   | 'presaleStartsAt'
   | 'detailsMissing'
-  | 'review'
   | 'steps'
   | 'currentStep'
+  | 'tablePlan'
+  | 'withoutTablePlan'
 >;
 
 const MS_PER_DAY = 86_400_000;

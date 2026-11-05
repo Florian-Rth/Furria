@@ -67,6 +67,10 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
     title: 'Ablauf planen',
     line: 'Auftritte pflegen und den Ablauf einer Veranstaltung zusammenstellen, prüfen und bestätigen.',
   },
+  [PERMISSION_KEYS.eventsHall]: {
+    title: 'Saal & Tische planen',
+    line: 'Säle zeichnen, Tischarten und Bestuhlung festlegen und den Tischplan einer Veranstaltung stellen.',
+  },
   [PERMISSION_KEYS.galleryUpload]: {
     title: 'Fotos und Videos hochladen',
     line: 'In den eigenen Eingang hochladen, ihn sichten und Alben anlegen. Was im Eingang liegt, sieht niemand sonst.',

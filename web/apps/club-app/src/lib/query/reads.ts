@@ -42,6 +42,9 @@ export const DOMAIN_CHANGES = [
   'beerCrate',
   'beerPayment',
   'pushDevice',
+  'hall',
+  'tablePlan',
+  'seating',
 ] as const;
 export type DomainChange = (typeof DOMAIN_CHANGES)[number];
 
@@ -119,6 +122,11 @@ export const READ_NAMES = [
   'beerStock',
   'beerTabs',
   'beerJournal',
+  'seating',
+  'halls',
+  'hall',
+  'tablePlans',
+  'tablePlan',
 ] as const;
 export type ReadName = (typeof READ_NAMES)[number];
 
@@ -196,6 +204,11 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   beerStock: ['beer-list', 'stock'],
   beerTabs: ['beer-list', 'tabs'],
   beerJournal: ['beer-list', 'journal'],
+  seating: ['seating'],
+  halls: ['halls', 'list'],
+  hall: ['halls', 'detail'],
+  tablePlans: ['table-plans', 'list'],
+  tablePlan: ['table-plans', 'detail'],
 };
 
 const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
@@ -288,8 +301,8 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   members: ['person', 'picture', 'membership', 'group', 'groupMembership', 'role', 'roleHolding'],
   member: ['person', 'picture', 'membership', 'group', 'groupMembership', 'role', 'roleHolding'],
   rolesOverview: ['role', 'roleHolding', 'person'],
-  events: ['event', 'venue', 'media', 'newsPost', 'runningOrder', 'act'],
-  event: ['event', 'venue', 'media', 'newsPost', 'runningOrder', 'act'],
+  events: ['event', 'venue', 'media', 'newsPost', 'runningOrder', 'act', 'tablePlan', 'seating'],
+  event: ['event', 'venue', 'media', 'newsPost', 'runningOrder', 'act', 'tablePlan', 'seating'],
   galleryHub: ['media'],
   album: ['media'],
   inbox: ['media'],
@@ -442,6 +455,11 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   beerStock: ['beerPot', 'beerStock', 'beerCrate', 'person'],
   beerTabs: ['beerPot', 'beerCrate', 'beerPayment', 'beerListEnrollment', 'person'],
   beerJournal: ['beerPot', 'beerCrate', 'beerPayment', 'person'],
+  seating: ['seating'],
+  halls: ['hall', 'venue'],
+  hall: ['venue'],
+  tablePlans: ['tablePlan', 'hall', 'event', 'seating'],
+  tablePlan: ['hall', 'venue', 'seating'],
 };
 
 export const staleReadsAfter = (changes: readonly DomainChange[]): ReadName[] =>
@@ -548,4 +566,9 @@ export const queryKeys = {
   beerStock: (beerPotId: number): QueryKey => keyOf('beerStock', beerPotId),
   beerTabs: (beerPotId: number): QueryKey => keyOf('beerTabs', beerPotId),
   beerJournal: (beerPotId: number): QueryKey => keyOf('beerJournal', beerPotId),
+  seating: READ_ROOTS.seating,
+  halls: READ_ROOTS.halls,
+  hall: (hallId: number): QueryKey => keyOf('hall', hallId),
+  tablePlans: READ_ROOTS.tablePlans,
+  tablePlan: (eventId: number): QueryKey => keyOf('tablePlan', eventId),
 } as const;

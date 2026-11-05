@@ -31,6 +31,8 @@ public static class AppDbContextExtensions
             ["ix_beer_pot_open"] = WriteConflictMessages.OpenBeerPot,
             ["ix_beer_list_enrollment_person_id_running"] =
                 WriteConflictMessages.RunningBeerListEnrollment,
+            ["ix_hall_venue_id_name"] = WriteConflictMessages.DuplicateHall,
+            ["pk_table_plan"] = WriteConflictMessages.TablePlanExists,
         }.ToFrozenDictionary(StringComparer.Ordinal);
 
     public static async Task<Result> SaveOrConflictAsync(

@@ -8,6 +8,7 @@ import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { KkPanelAction } from '@furria/ui/panel-action';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { VenueHallsPanel } from '@/features/hall-builder/components/VenueHallsPanel';
 import { useLanding } from '@/features/write/hooks/use-landing';
 import { toLandingKey } from '@/features/write/landing-target';
 import { toIsoDay } from '@/lib/day';
@@ -74,6 +75,7 @@ export const VenueDetailPanel: FC<VenueDetailPanelProps> = ({ venue }) => {
       <KkPanelSection title={OPENING_HOURS_LABEL}>
         <KkPanel>{openingHours}</KkPanel>
       </KkPanelSection>
+      <VenueHallsPanel venueId={venue.venueId} />
       <KkWriteScreen.Danger label={ARCHIVE_VENUE_LABEL} onSelect={archive.open} />
       <KkConfirmDialog
         open={archive.isOpen}

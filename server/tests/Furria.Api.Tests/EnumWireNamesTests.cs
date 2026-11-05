@@ -10,6 +10,7 @@ using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Gallery;
 using Furria.Core.Groups;
+using Furria.Core.Halls;
 using Furria.Core.Media;
 using Furria.Core.News;
 using Furria.Core.RunningOrders;
@@ -42,7 +43,15 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(DayOfWeek)] = "sunday monday tuesday wednesday thursday friday saturday",
         [typeof(EventSalesStatus)] =
             "announced presaleScheduled available fewLeft soldOut cancelled",
-        [typeof(EventStep)] = "details tickets review runningOrder",
+        [typeof(EventStep)] = "details tickets runningOrder hall",
+        [typeof(TableShape)] = "rectangle round",
+        [typeof(SeatingMode)] = "comfortable maximum",
+        [typeof(TableSide)] = "front back start end around",
+        [typeof(HallElementKind)] = "wall door area pillar line text",
+        [typeof(DoorKind)] = "entrance emergencyExit door",
+        [typeof(HallAreaKind)] = "stage bar technics wardrobe toilets kitchen other",
+        [typeof(HallAreaShape)] = "rect polygon",
+        [typeof(HallTextSize)] = "small medium large",
         [typeof(EventStepState)] = "done overdue open waiting",
         [typeof(MissingEventDetail)] = "venue doorsOpenAt description picture published",
         [typeof(MediaItemState)] = "processing ready failed",

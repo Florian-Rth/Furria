@@ -1200,6 +1200,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("updated_at")
                         .HasDefaultValueSql("now()");
 
+                    b.Property<bool>("WithoutTablePlan")
+                        .HasColumnType("boolean")
+                        .HasColumnName("without_table_plan");
+
                     b.HasKey("CalendarEntryId")
                         .HasName("pk_event");
 
@@ -1698,6 +1702,225 @@ namespace Furria.Infrastructure.Migrations
                             t.HasCheckConstraint("ck_usual_training_time_duration", "duration_minutes > 0 AND duration_minutes <= 480");
 
                             t.HasCheckConstraint("ck_usual_training_time_weekday", "weekday IN ('Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday')");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Halls.Hall", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Document")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("document");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("name")
+                        .UseCollation("de-DE-x-icu");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("VenueId")
+                        .HasColumnType("integer")
+                        .HasColumnName("venue_id");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_hall");
+
+                    b.HasIndex("VenueId", "Name")
+                        .IsUnique()
+                        .HasDatabaseName("ix_hall_venue_id_name");
+
+                    b.ToTable("hall", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_hall_document_shape", "jsonb_typeof(document) = 'object' AND jsonb_typeof(document -> 'elements') = 'array'");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Halls.SeatingStandard", b =>
+                {
+                    b.Property<int>("Id")
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    b.Property<int>("AisleWidthCm")
+                        .HasColumnType("integer")
+                        .HasColumnName("aisle_width_cm");
+
+                    b.Property<int>("ChairDepthCm")
+                        .HasColumnType("integer")
+                        .HasColumnName("chair_depth_cm");
+
+                    b.Property<int>("ComfortableChairSpacingCm")
+                        .HasColumnType("integer")
+                        .HasColumnName("comfortable_chair_spacing_cm");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("ExitClearanceCm")
+                        .HasColumnType("integer")
+                        .HasColumnName("exit_clearance_cm");
+
+                    b.Property<int>("MaximumChairSpacingCm")
+                        .HasColumnType("integer")
+                        .HasColumnName("maximum_chair_spacing_cm");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_seating_standard");
+
+                    b.ToTable("seating_standard", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_seating_standard_singleton", "id = 1");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Halls.TablePlan", b =>
+                {
+                    b.Property<int>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<int>("Chairs")
+                        .HasColumnType("integer")
+                        .HasColumnName("chairs");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Document")
+                        .IsRequired()
+                        .HasColumnType("jsonb")
+                        .HasColumnName("document");
+
+                    b.Property<int>("HallId")
+                        .HasColumnType("integer")
+                        .HasColumnName("hall_id");
+
+                    b.Property<int>("Tables")
+                        .HasColumnType("integer")
+                        .HasColumnName("tables");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("CalendarEntryId")
+                        .HasName("pk_table_plan");
+
+                    b.HasIndex("HallId")
+                        .HasDatabaseName("ix_table_plan_hall_id");
+
+                    b.ToTable("table_plan", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_table_plan_document_shape", "jsonb_typeof(document) = 'object' AND jsonb_typeof(document -> 'rows') = 'array' AND jsonb_typeof(document -> 'groups') = 'array'");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Halls.TableType", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateOnly?>("ArchivedOn")
+                        .HasColumnType("date")
+                        .HasColumnName("archived_on");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("LengthCm")
+                        .HasColumnType("integer")
+                        .HasColumnName("length_cm");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(60)
+                        .HasColumnType("character varying(60)")
+                        .HasColumnName("name")
+                        .UseCollation("de-DE-x-icu");
+
+                    b.Property<bool>("SeatsAtEnds")
+                        .HasColumnType("boolean")
+                        .HasColumnName("seats_at_ends");
+
+                    b.Property<string>("Shape")
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("shape");
+
+                    b.Property<int>("SortOrder")
+                        .HasColumnType("integer")
+                        .HasColumnName("sort_order");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("WidthCm")
+                        .HasColumnType("integer")
+                        .HasColumnName("width_cm");
+
+                    b.HasKey("Id")
+                        .HasName("pk_table_type");
+
+                    b.ToTable("table_type", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_table_type_shape", "shape IN ('Rectangle', 'Round')");
+
+                            t.HasCheckConstraint("ck_table_type_size", "length_cm > 0 AND width_cm > 0");
                         });
                 });
 
@@ -5070,6 +5293,39 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Group");
 
                     b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("Furria.Core.Halls.Hall", b =>
+                {
+                    b.HasOne("Furria.Core.Club.Venue", "Venue")
+                        .WithMany()
+                        .HasForeignKey("VenueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_hall_venue_venue_id");
+
+                    b.Navigation("Venue");
+                });
+
+            modelBuilder.Entity("Furria.Core.Halls.TablePlan", b =>
+                {
+                    b.HasOne("Furria.Core.Events.Event", "Event")
+                        .WithOne()
+                        .HasForeignKey("Furria.Core.Halls.TablePlan", "CalendarEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_table_plan_event_calendar_entry_id");
+
+                    b.HasOne("Furria.Core.Halls.Hall", "Hall")
+                        .WithMany()
+                        .HasForeignKey("HallId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_table_plan_hall_hall_id");
+
+                    b.Navigation("Event");
+
+                    b.Navigation("Hall");
                 });
 
             modelBuilder.Entity("Furria.Core.Identity.FeeReduction", b =>

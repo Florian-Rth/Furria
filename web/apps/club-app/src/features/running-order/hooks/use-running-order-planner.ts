@@ -65,7 +65,7 @@ import { usePlannerDrag } from './use-planner-drag';
 import type { PlannerSuggestion } from './use-planner-suggestion';
 import { usePlannerSuggestion } from './use-planner-suggestion';
 
-const ROUTE_ID = '/_app/events_/$eventId_/ablauf';
+const ROUTE_ID = '/_app/events_/$eventId_/running-order';
 const NO_ACTS: readonly CatalogueAct[] = [];
 const DEFAULT_MODE: PlannerMode = 'pick';
 const CLOCK_MS = 60_000;
@@ -272,7 +272,7 @@ export const useRunningOrderPlanner = (eventId: number): RunningOrderPlanner => 
     setMode: (next) => {
       setWishesOpen(false);
       void navigate({
-        to: '/events/$eventId/ablauf',
+        to: '/events/$eventId/running-order',
         params: { eventId: String(eventId) },
         search: { mode: next === DEFAULT_MODE ? undefined : next },
         replace: true,

@@ -3,6 +3,7 @@ using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Gallery;
 using Furria.Core.Groups;
+using Furria.Core.Halls;
 using Furria.Core.Identity;
 using Furria.Core.Media;
 using Furria.Core.MembershipApplications;
@@ -173,6 +174,14 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<BeerPayment> BeerPayments => Set<BeerPayment>();
 
     public DbSet<BeerTabReminder> BeerTabReminders => Set<BeerTabReminder>();
+
+    public DbSet<TableType> TableTypes => Set<TableType>();
+
+    public DbSet<SeatingStandard> SeatingStandards => Set<SeatingStandard>();
+
+    public DbSet<Hall> Halls => Set<Hall>();
+
+    public DbSet<TablePlan> TablePlans => Set<TablePlan>();
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
