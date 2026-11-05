@@ -1,6 +1,7 @@
 import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import { useChildMatches, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
+import { useOpenBeerPotQuery } from '@/features/beer-list/api';
 import type { OpenBeerPot } from '@/features/beer-list/schemas';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
@@ -11,7 +12,6 @@ import {
   useBeerJournalQuery,
   useBeerStockQuery,
   useBeerTabsQuery,
-  useHubBeerPotQuery,
 } from '../api';
 import type {
   BeerFocus,
@@ -96,7 +96,7 @@ export const useBeerHub = (): BeerHub => {
   const [personFilter, setPersonFilter] = useState<number | null>(null);
   const { has } = usePermissions();
   const allowed = has(PERMISSION_KEYS.beerListManage);
-  const potQuery = useHubBeerPotQuery(allowed);
+  const potQuery = useOpenBeerPotQuery(allowed);
   const beerPotId = potQuery.data?.pot?.beerPotId ?? null;
   const enrollmentsQuery = useBeerEnrollmentsQuery(allowed);
   const stockQuery = useBeerStockQuery(beerPotId);

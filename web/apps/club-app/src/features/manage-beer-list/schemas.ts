@@ -3,6 +3,7 @@ import { PersonRefSchema } from '@/lib/api/schemas';
 import {
   centsOfPriceText,
   countOfText,
+  STOCK_MAX_CRATES,
   signedCountOfText,
   stockChangeOf,
   textOrNull,
@@ -12,6 +13,7 @@ import {
   OWNER_MISSING,
   PERSON_MISSING,
   PRICE_INVALID,
+  STOCK_CEILING,
   STOCK_CHANGE_MISSING,
   SUCCESSOR_MISSING,
   stockFloorOf,
@@ -171,6 +173,11 @@ export const beerStockFormSchema = (stock: number): z.ZodType<BeerStockChange, B
 
     if (change === null) {
       addIssue(ctx, 'crates', STOCK_CHANGE_MISSING);
+
+      return z.NEVER;
+    }
+    if (Math.abs(change.crates) > STOCK_MAX_CRATES) {
+      addIssue(ctx, 'crates', STOCK_CEILING);
 
       return z.NEVER;
     }

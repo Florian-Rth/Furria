@@ -13,7 +13,10 @@ import {
 } from './requests';
 import type { BeerGivers, BeerTab, BookedBeerCrates, OpenBeerPotResponse } from './schemas';
 
-const LIVE_WHILE_VISIBLE = { refetchInterval: 10_000, refetchIntervalInBackground: false } as const;
+export const LIVE_WHILE_VISIBLE = {
+  refetchInterval: 10_000,
+  refetchIntervalInBackground: false,
+} as const;
 
 export const useOpenBeerPotQuery = (enabled = true): UseQueryResult<OpenBeerPotResponse, Error> =>
   useQuery({

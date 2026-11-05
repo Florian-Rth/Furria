@@ -2,7 +2,7 @@ import { KkButton } from '@furria/ui/KkButton';
 import { KkNumberField } from '@furria/ui/KkNumberField';
 import type { FC } from 'react';
 import type { OpenBeerPot } from '@/features/beer-list/schemas';
-import { stockDeltaOf } from '../beer-hub';
+import { STOCK_MAX_CRATES, stockDeltaOf } from '../beer-hub';
 import { STEP_LABELS, STOCK_FIELD_LABEL, stockAfterOf, stockButtonOf } from '../beer-hub-copy';
 import { useStockForm } from '../hooks/use-stock-form';
 import { BeerRejection } from './BeerRejection';
@@ -28,6 +28,7 @@ export const BeerStockForm: FC<BeerStockFormProps> = ({ pot, stock }) => {
         onChange={form.setCratesText}
         stepLabels={STEP_LABELS}
         min={floor}
+        max={STOCK_MAX_CRATES}
         hint={hint}
         error={cratesInvalid}
         helperText={form.cratesError}

@@ -132,6 +132,8 @@ export const KkSegmentSwitch: FC<KkSegmentSwitchProps> = ({
   };
   const segments = items.map((item) => {
     const selected = item.id === value;
+    const accessibleName =
+      item.countLabel === '' ? item.label : `${item.label}, ${item.countLabel}`;
     const severity = item.severity ?? null;
     const glyph =
       severity === null || severity === 'met' ? null : <KkSeverityGlyph state={severity} />;
@@ -147,7 +149,7 @@ export const KkSegmentSwitch: FC<KkSegmentSwitchProps> = ({
         key={item.id}
         role="radio"
         aria-checked={selected}
-        aria-label={`${item.label}, ${item.countLabel}`}
+        aria-label={accessibleName}
         tabIndex={selected ? 0 : -1}
         data-kk-segment={item.id}
         onClick={choose}

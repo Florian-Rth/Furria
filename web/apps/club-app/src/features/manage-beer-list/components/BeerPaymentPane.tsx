@@ -15,7 +15,8 @@ interface BeerPaymentPaneProps {
 export const BeerPaymentPane: FC<BeerPaymentPaneProps> = ({ initialPersonId }) => {
   const hub = useBeerHubContext();
   const { now } = hub;
-  const context = paymentContextOf(openHubOf(hub)?.pot.paymentLink ?? null);
+  const pot = openHubOf(hub)?.pot ?? null;
+  const context = paymentContextOf(pot?.owner ?? null, pot?.paymentLink ?? null);
   const pane = usePaymentPane(initialPersonId);
   const block =
     pane.target === null ? null : (

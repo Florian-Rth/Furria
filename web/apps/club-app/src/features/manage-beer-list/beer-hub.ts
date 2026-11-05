@@ -253,7 +253,9 @@ export const countOfText = (text: string): number => {
   return Number.isFinite(value) && value > 0 ? value : 0;
 };
 
-const SIGNED_COUNT_PATTERN = /^([-−]?)(\d+)$/;
+export const STOCK_MAX_CRATES = 500;
+
+const SIGNED_COUNT_PATTERN = /^([+\-−]?)(\d+)$/;
 
 export const signedCountOfText = (text: string): number => {
   const match = SIGNED_COUNT_PATTERN.exec(text.trim());
@@ -264,7 +266,7 @@ export const signedCountOfText = (text: string): number => {
 
   const count = Number(match[2]);
 
-  return match[1] === '' ? count : -count;
+  return match[1] === '-' || match[1] === '−' ? -count : count;
 };
 
 const PRICE_PATTERN = /^(\d{1,3})(?:[,.](\d{1,2}))?$/;

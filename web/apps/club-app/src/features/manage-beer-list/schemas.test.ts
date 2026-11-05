@@ -13,6 +13,8 @@ describe('beerStockFormSchema', () => {
     [5, '-2', { kind: 'correction', crates: -2 }],
     [5, '-5', { kind: 'correction', crates: -5 }],
     [5, '-6', null],
+    [5, '+500', { kind: 'delivery', crates: 500 }],
+    [5, '501', null],
     [5, '0', null],
     [5, 'x', null],
   ] as const)('stock %i, %s → %j', (stock, crates, expected) => {

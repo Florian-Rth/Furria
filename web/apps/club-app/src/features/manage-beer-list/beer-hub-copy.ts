@@ -1,6 +1,7 @@
 import type { KkHoldConfirm } from '@furria/ui/KkHoldButton';
 import type { KkPourQuickItem } from '@furria/ui/KkPourQuickBar';
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
+import { payWaysLine } from '@/features/beer-list/beer-list-copy';
 import { BEER_LIST_PATH } from '@/features/session/app-sections';
 import type { PersonRef } from '@/lib/api/schemas';
 import { formatEuroCents } from '@/lib/money';
@@ -12,7 +13,7 @@ import type {
   BeerKindFilter,
   BeerRosterRow,
 } from './beer-hub';
-import { OVERDUE_AFTER_DAYS } from './beer-hub';
+import { OVERDUE_AFTER_DAYS, STOCK_MAX_CRATES } from './beer-hub';
 import type { BeerDayName } from './beer-time';
 import { clockOf, shortDateOf, weekdayDateOf } from './beer-time';
 import type {
@@ -236,8 +237,8 @@ export const stockButtonOf = (change: BeerStockChange | null): string => {
     : `Korrektur buchen · ${signed(change.crates)}`;
 };
 
-export const stockAfterOf = (stock: number, delta: number): string =>
-  `Bestand danach: ${stock + delta} Kisten`;
+export const stockAfterOf = (stock: number, delta: number): string | undefined =>
+  stock + delta < 0 ? undefined : `Bestand danach: ${stock + delta} Kisten`;
 
 export const personOptionLabelOf = (row: BeerRosterRow): string =>
   row.openCrates > 0
@@ -264,11 +265,11 @@ export const LINK_HINT = 'Bar geht immer.';
 export const SAVE_LABEL = 'Speichern';
 export const PRICE_INVALID = 'Bitte einen Preis wie 18,00 eingeben.';
 
-export const paymentWaysOf = (paymentLink: string | null): string =>
-  paymentLink === null ? 'nur bar' : 'PayPal oder bar';
+const payWaysOf = (owner: PersonRef | null, paymentLink: string | null): string =>
+  payWaysLine(owner?.firstName ?? null, paymentLink !== null);
 
-export const paymentContextOf = (paymentLink: string | null): string =>
-  `${FORM_CONTEXTS.payment} · ${paymentWaysOf(paymentLink)}`;
+export const paymentContextOf = (owner: PersonRef | null, paymentLink: string | null): string =>
+  `${FORM_CONTEXTS.payment} · ${payWaysOf(owner, paymentLink)}`;
 
 export const CODE_TITLE = 'Palettencode';
 export const CODE_LEAD =
@@ -312,7 +313,7 @@ export const OWNER_LABEL = 'Inhaberin';
 export const OPEN_POT_LABEL = 'Bierliste eröffnen';
 
 export const ownerContextOf = (owner: PersonRef | null, paymentLink: string | null): string =>
-  `privater Topf von ${fullNameOf(owner)} · ${paymentWaysOf(paymentLink)}`;
+  `privater Topf von ${fullNameOf(owner)} · ${payWaysOf(owner, paymentLink)}`;
 
 export const clearPersonLabelOf = (name: string): string => `Nur ${name} · Filter aufheben`;
 export const filterPersonLabelOf = (name: string): string => `Nur ${name} im Journal zeigen`;
@@ -354,6 +355,7 @@ export const dayFactsOf = (entries: readonly BeerJournalEntry[]): string => {
 };
 
 export const STOCK_CHANGE_MISSING = 'Bitte Kisten dazu (+) oder weg (−) angeben.';
+export const STOCK_CEILING = `Höchstens ${STOCK_MAX_CRATES} Kisten auf einmal.`;
 export const stockFloorOf = (stock: number): string =>
   `Es sind nur ${cratesLabel(stock)} da; weniger als null geht nicht.`;
 export const PERSON_MISSING = 'Wähle die Person, für die gebucht wird.';
