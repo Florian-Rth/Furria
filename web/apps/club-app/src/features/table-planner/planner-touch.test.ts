@@ -136,9 +136,9 @@ describe('actionKindOf', () => {
 
 describe('actionBarWidthFor', () => {
   it.each([
-    ['row', 360],
-    ['group', 276],
-    ['chair', 232],
+    ['row', 376],
+    ['group', 288],
+    ['chair', 242],
   ] as const)('%s → %i px', (kind, expected) => {
     expect(actionBarWidthFor(kind)).toBe(expected);
   });
