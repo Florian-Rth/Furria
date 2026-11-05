@@ -17,7 +17,6 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
     private const int UnknownPotId = 999_996;
     private const int SuccessorsPrice = 16_00;
     private const string SuccessorsLink = "https://paypal.me/ottoott";
-    private const string SuccessorsNote = "Bar am Stammtisch";
 
     private readonly ApiTestFixture _fixture;
 
@@ -48,17 +47,17 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
             .Expected.BeerPot(potId)
             .ToBeClosedAt(now)
             .BeerStockOfPot(potId)
-            .ToEndWith(BeerStockMovementKind.HandedOver, -7, null, wardenId, now)
+            .ToEndWith(BeerStockMovementKind.HandedOver, -7, wardenId, now)
             .BeerStockOfPot(potId)
             .ToStandAt(0)
             .BeerPot(result.BeerPotId)
             .ToBeOwnedBy(ctx.Identity.People.IdOf(Successor))
             .BeerPot(result.BeerPotId)
-            .ToHaveSettings(SuccessorsPrice, SuccessorsLink, SuccessorsNote)
+            .ToHaveSettings(SuccessorsPrice, SuccessorsLink)
             .BeerPot(result.BeerPotId)
             .ToBeOpenedAt(now)
             .BeerStockOfPot(result.BeerPotId)
-            .ToEndWith(BeerStockMovementKind.HandoverCarry, 7, null, wardenId, now)
+            .ToEndWith(BeerStockMovementKind.HandoverCarry, 7, wardenId, now)
             .BeerStockOfPot(result.BeerPotId)
             .ToStandAt(7)
             .AssertAsync(ct);
@@ -337,7 +336,6 @@ public sealed class PostBeerPotHandoverTests : IClassFixture<ApiTestFixture>
             SuccessorPersonId = successorPersonId,
             CratePriceCents = SuccessorsPrice,
             PaymentLink = SuccessorsLink,
-            PaymentNote = SuccessorsNote,
         };
 
     private Task<SeededContext> BuildAsync(int delivered, int taken, CancellationToken ct) =>

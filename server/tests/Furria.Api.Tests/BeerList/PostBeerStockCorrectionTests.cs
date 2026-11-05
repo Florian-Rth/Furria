@@ -19,7 +19,7 @@ public sealed class PostBeerStockCorrectionTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_BookTheLossWithItsReason_When_CratesBroke()
+    public async Task Should_BookTheLossWithoutAReason_When_TheWardenTakesCratesOut()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -31,7 +31,7 @@ public sealed class PostBeerStockCorrectionTests : IClassFixture<ApiTestFixture>
             ct
         );
 
-        var response = await CorrectAsync(ctx, -2, BeerStockCorrectionReason.Breakage, ct);
+        var response = await CorrectAsync(ctx, -2, ct);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx
@@ -39,7 +39,6 @@ public sealed class PostBeerStockCorrectionTests : IClassFixture<ApiTestFixture>
             .ToEndWith(
                 BeerStockMovementKind.Correction,
                 -2,
-                BeerStockCorrectionReason.Breakage,
                 ctx.Identity.People.IdOf("greta"),
                 _fixture.TimeProvider.GetUtcNow()
             )
@@ -59,7 +58,7 @@ public sealed class PostBeerStockCorrectionTests : IClassFixture<ApiTestFixture>
             ct
         );
 
-        var response = await CorrectAsync(ctx, 3, BeerStockCorrectionReason.Miscount, ct);
+        var response = await CorrectAsync(ctx, 3, ct);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx
@@ -81,7 +80,7 @@ public sealed class PostBeerStockCorrectionTests : IClassFixture<ApiTestFixture>
             ct
         );
 
-        var response = await CorrectAsync(ctx, -3, BeerStockCorrectionReason.Shrinkage, ct);
+        var response = await CorrectAsync(ctx, -3, ct);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx
@@ -101,12 +100,12 @@ public sealed class PostBeerStockCorrectionTests : IClassFixture<ApiTestFixture>
                         beerList
                             .AddBeerPot("topf", "greta")
                             .AddBeerDelivery("topf", 3)
-                            .AddBeerStockCorrection("topf", -2, BeerStockCorrectionReason.Shrinkage)
+                            .AddBeerStockCorrection("topf", -2)
                     ),
             ct
         );
 
-        var response = await CorrectAsync(ctx, -2, BeerStockCorrectionReason.Miscount, ct);
+        var response = await CorrectAsync(ctx, -2, ct);
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
         await ctx
@@ -115,43 +114,15 @@ public sealed class PostBeerStockCorrectionTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_ReturnBadRequest_When_ShrinkageWouldRaiseTheStock()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WithWarden(builder)
-                    .BeerList(beerList =>
-                        beerList.AddBeerPot("topf", "greta").AddBeerDelivery("topf", 12)
-                    ),
-            ct
-        );
-
-        var response = await CorrectAsync(ctx, 2, BeerStockCorrectionReason.Shrinkage, ct);
-
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await ctx
-            .Expected.BeerStockOfPot(ctx.BeerList.Pots.IdOf("topf"))
-            .ToHaveMovementCount(1)
-            .AssertAsync(ct);
-    }
-
     private static async Task<HttpResponseMessage> CorrectAsync(
         SeededContext ctx,
         int crates,
-        BeerStockCorrectionReason reason,
         CancellationToken ct
     )
     {
         var client = await ctx.Identity.ClientForAsync("greta", ct);
         return await client.POSTAsync<PostBeerStockCorrection, PostBeerStockCorrectionRequest>(
-            new()
-            {
-                BeerPotId = ctx.BeerList.Pots.IdOf("topf"),
-                Crates = crates,
-                Reason = reason,
-            }
+            new() { BeerPotId = ctx.BeerList.Pots.IdOf("topf"), Crates = crates }
         );
     }
 

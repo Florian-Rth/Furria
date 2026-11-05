@@ -31,21 +31,12 @@ public sealed class BeerListSeedBuilder
         string ownerAlias,
         int cratePriceCents = DefaultCratePriceCents,
         string? paymentLink = DefaultPaymentLink,
-        string? paymentNote = null,
         DateTimeOffset? openedAt = null,
         DateTimeOffset? closedAt = null
     )
     {
         _pots.Add(
-            new BeerPotIntent(
-                alias,
-                ownerAlias,
-                cratePriceCents,
-                paymentLink,
-                paymentNote,
-                openedAt,
-                closedAt
-            )
+            new BeerPotIntent(alias, ownerAlias, cratePriceCents, paymentLink, openedAt, closedAt)
         );
         return this;
     }
@@ -76,7 +67,6 @@ public sealed class BeerListSeedBuilder
                 potAlias,
                 BeerStockMovementKind.Delivery,
                 crates,
-                null,
                 bookedAt,
                 bookedByAlias
             )
@@ -87,7 +77,6 @@ public sealed class BeerListSeedBuilder
     public BeerListSeedBuilder AddBeerStockCorrection(
         string potAlias,
         int crates,
-        BeerStockCorrectionReason reason,
         DateTimeOffset? bookedAt = null,
         string? bookedByAlias = null
     )
@@ -97,7 +86,6 @@ public sealed class BeerListSeedBuilder
                 potAlias,
                 BeerStockMovementKind.Correction,
                 crates,
-                reason,
                 bookedAt,
                 bookedByAlias
             )
@@ -182,7 +170,6 @@ public sealed class BeerListSeedBuilder
         string OwnerAlias,
         int CratePriceCents,
         string? PaymentLink,
-        string? PaymentNote,
         DateTimeOffset? OpenedAt,
         DateTimeOffset? ClosedAt
     );
@@ -199,7 +186,6 @@ public sealed class BeerListSeedBuilder
         string PotAlias,
         BeerStockMovementKind Kind,
         int Crates,
-        BeerStockCorrectionReason? Reason,
         DateTimeOffset? BookedAt,
         string? BookedByAlias
     );

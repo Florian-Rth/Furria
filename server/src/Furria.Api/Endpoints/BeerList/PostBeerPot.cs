@@ -39,11 +39,7 @@ public sealed class PostBeerPot : Endpoint<PostBeerPotRequest, PostBeerPotRespon
         new()
         {
             OwnerPersonId = req.OwnerPersonId,
-            Settings = BeerPotSettingsRules.ToSettings(
-                req.CratePriceCents,
-                req.PaymentLink,
-                req.PaymentNote
-            ),
+            Settings = BeerPotSettingsRules.ToSettings(req.CratePriceCents, req.PaymentLink),
         };
 }
 
@@ -54,8 +50,6 @@ public sealed record PostBeerPotRequest
     public required int CratePriceCents { get; init; }
 
     public string? PaymentLink { get; init; }
-
-    public string? PaymentNote { get; init; }
 }
 
 public sealed class PostBeerPotValidator : Validator<PostBeerPotRequest>
@@ -65,13 +59,6 @@ public sealed class PostBeerPotValidator : Validator<PostBeerPotRequest>
         RuleFor(request => request.OwnerPersonId).GreaterThan(0);
         RuleFor(request => request.CratePriceCents).CratePrice();
         RuleFor(request => request.PaymentLink).PaymentLink();
-        RuleFor(request => request.PaymentNote).PaymentNote();
-        RuleFor(request => request)
-            .Must(request =>
-                BeerPotSettingsRules.NamesPaymentDetails(request.PaymentLink, request.PaymentNote)
-            )
-            .OverridePropertyName(BeerPotSettingsRules.PaymentDetailsField)
-            .WithMessage(BeerPotSettingsRules.MissingPaymentDetailsMessage);
     }
 }
 

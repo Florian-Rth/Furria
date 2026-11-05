@@ -12,7 +12,6 @@ public sealed class GetMyBeerTabTests : IClassFixture<ApiTestFixture>
 {
     private const string FormerWarden = "otto";
     private const string OtherDrinker = "jonas";
-    private const string OldPaymentNote = "Bar bei Otto";
     private const int OldPrice = 13_00;
     private const int Price = 15_00;
 
@@ -24,7 +23,7 @@ public sealed class GetMyBeerTabTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ShowHerTakenCratesPerPotWithTheOwnersPaymentDetails_When_SheIsEnrolled()
+    public async Task Should_ShowHerTakenCratesPerPotWithTheOwnersPayPalLink_When_SheIsEnrolled()
     {
         var ct = TestContext.Current.CancellationToken;
         var now = _fixture.TimeProvider.GetUtcNow();
@@ -41,7 +40,6 @@ public sealed class GetMyBeerTabTests : IClassFixture<ApiTestFixture>
                                 FormerWarden,
                                 OldPrice,
                                 paymentLink: null,
-                                paymentNote: OldPaymentNote,
                                 openedAt: now.AddDays(-300),
                                 closedAt: now.AddDays(-40)
                             )
@@ -90,7 +88,7 @@ public sealed class GetMyBeerTabTests : IClassFixture<ApiTestFixture>
         var closed = result.Pots[1];
         Assert.False(closed.IsOpen);
         Assert.Equal("Otto", closed.Owner?.FirstName);
-        Assert.Equal(OldPaymentNote, closed.PaymentNote);
+        Assert.Null(closed.PaymentLink);
         Assert.Equal((2, 2 * OldPrice), (closed.OpenCrates, closed.OpenCents));
     }
 

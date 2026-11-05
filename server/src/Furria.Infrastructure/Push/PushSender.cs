@@ -106,13 +106,7 @@ public sealed class PushSender
                 .SendAsync(request, ct);
 
             var outcome = OutcomeOf(response.StatusCode);
-            if (outcome == PushOutcome.Failed)
-                _logger.LogWarning(
-                    "Push to device {PushSubscriptionId} at {PushServiceHost} was refused with {StatusCode}",
-                    device.Id,
-                    endpoint.Host,
-                    (int)response.StatusCode
-                );
+            LogOutcome(outcome, device.Id, endpoint.Host, response.StatusCode);
 
             return outcome;
         }
@@ -124,6 +118,42 @@ public sealed class PushSender
                 device.Id
             );
             return PushOutcome.Failed;
+        }
+    }
+
+    private void LogOutcome(
+        PushOutcome outcome,
+        int deviceId,
+        string pushServiceHost,
+        HttpStatusCode status
+    )
+    {
+        switch (outcome)
+        {
+            case PushOutcome.Delivered:
+                _logger.LogInformation(
+                    "Push to device {PushSubscriptionId} at {PushServiceHost} was accepted with {StatusCode}",
+                    deviceId,
+                    pushServiceHost,
+                    (int)status
+                );
+                break;
+            case PushOutcome.Gone:
+                _logger.LogInformation(
+                    "Push device {PushSubscriptionId} at {PushServiceHost} is gone ({StatusCode}) and is forgotten",
+                    deviceId,
+                    pushServiceHost,
+                    (int)status
+                );
+                break;
+            case PushOutcome.Failed:
+                _logger.LogWarning(
+                    "Push to device {PushSubscriptionId} at {PushServiceHost} was refused with {StatusCode}",
+                    deviceId,
+                    pushServiceHost,
+                    (int)status
+                );
+                break;
         }
     }
 

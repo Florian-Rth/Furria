@@ -142,8 +142,7 @@ public sealed class BeerTabService
                         FirstName = pot.Owner.FirstName,
                         LastName = pot.Owner.LastName,
                     },
-                pot.PaymentLink,
-                pot.PaymentNote
+                pot.PaymentLink
             ))
             .ToListAsync(ct);
 
@@ -189,7 +188,6 @@ public sealed class BeerTabService
             OpenedAt = pot.OpenedAt,
             Owner = pot.Owner,
             PaymentLink = pot.PaymentLink,
-            PaymentNote = pot.PaymentNote,
             OpenCrates = open.Count,
             OpenCents = open.Sum(crate => crate.PriceCents),
             PaidCrates = paid.Count,
@@ -420,8 +418,7 @@ public sealed class BeerTabService
         bool IsOpen,
         DateTimeOffset OpenedAt,
         BeerListPerson? Owner,
-        string? PaymentLink,
-        string? PaymentNote
+        string? PaymentLink
     );
 
     private sealed record TabCrate(int BeerPotId, BeerTabCrateSummary Summary);

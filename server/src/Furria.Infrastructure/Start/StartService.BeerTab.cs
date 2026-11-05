@@ -18,7 +18,6 @@ public sealed partial class StartService
             OldestOpenBookedAt = tab.OldestOpenBookedAt,
             Owner = pot.Owner,
             PaymentLink = pot.PaymentLink,
-            PaymentNote = pot.PaymentNote,
         };
 
     private async Task<IReadOnlyList<StartBeerTabSummary>> OpenBeerTabsAsync(
@@ -55,8 +54,7 @@ public sealed partial class StartService
                         FirstName = pot.Owner.FirstName,
                         LastName = pot.Owner.LastName,
                     },
-                pot.PaymentLink,
-                pot.PaymentNote
+                pot.PaymentLink
             ))
             .ToDictionaryAsync(pot => pot.BeerPotId, ct);
 
@@ -74,7 +72,6 @@ public sealed partial class StartService
         int BeerPotId,
         bool IsOpen,
         StartPersonRef? Owner,
-        string? PaymentLink,
-        string? PaymentNote
+        string? PaymentLink
     );
 }

@@ -26,7 +26,7 @@ public sealed class PutBeerPot : Endpoint<PutBeerPotRequest>
     {
         var result = await _beerListService.UpdatePotSettingsAsync(
             req.BeerPotId,
-            BeerPotSettingsRules.ToSettings(req.CratePriceCents, req.PaymentLink, req.PaymentNote),
+            BeerPotSettingsRules.ToSettings(req.CratePriceCents, req.PaymentLink),
             ct
         );
 
@@ -48,8 +48,6 @@ public sealed record PutBeerPotRequest
     public required int CratePriceCents { get; init; }
 
     public string? PaymentLink { get; init; }
-
-    public string? PaymentNote { get; init; }
 }
 
 public sealed class PutBeerPotValidator : Validator<PutBeerPotRequest>
@@ -59,12 +57,5 @@ public sealed class PutBeerPotValidator : Validator<PutBeerPotRequest>
         RuleFor(request => request.BeerPotId).GreaterThan(0);
         RuleFor(request => request.CratePriceCents).CratePrice();
         RuleFor(request => request.PaymentLink).PaymentLink();
-        RuleFor(request => request.PaymentNote).PaymentNote();
-        RuleFor(request => request)
-            .Must(request =>
-                BeerPotSettingsRules.NamesPaymentDetails(request.PaymentLink, request.PaymentNote)
-            )
-            .OverridePropertyName(BeerPotSettingsRules.PaymentDetailsField)
-            .WithMessage(BeerPotSettingsRules.MissingPaymentDetailsMessage);
     }
 }

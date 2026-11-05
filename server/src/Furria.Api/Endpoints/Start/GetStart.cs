@@ -118,7 +118,6 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
             OldestOpenBookedAt = tab.OldestOpenBookedAt,
             Owner = tab.Owner is { } owner ? ToDto(owner) : null,
             PaymentLink = tab.PaymentLink,
-            PaymentNote = tab.PaymentNote,
         };
 
     private static StartNewsDto ToDto(StartNewsSummary post) =>
@@ -291,8 +290,6 @@ public sealed record StartBeerTabDto
     public required StartPersonRefDto? Owner { get; init; }
 
     public required string? PaymentLink { get; init; }
-
-    public required string? PaymentNote { get; init; }
 }
 
 public sealed record StartNewsDto

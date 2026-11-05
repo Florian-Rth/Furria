@@ -47,7 +47,6 @@ public sealed class PostBeerDeliveryTests : IClassFixture<ApiTestFixture>
             .ToEndWith(
                 BeerStockMovementKind.Delivery,
                 Pallet,
-                null,
                 ctx.Identity.People.IdOf("greta"),
                 _fixture.TimeProvider.GetUtcNow()
             )

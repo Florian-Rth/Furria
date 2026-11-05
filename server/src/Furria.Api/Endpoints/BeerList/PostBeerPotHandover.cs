@@ -50,8 +50,7 @@ public sealed class PostBeerPotHandover
             SuccessorPersonId = req.SuccessorPersonId,
             SuccessorSettings = BeerPotSettingsRules.ToSettings(
                 req.CratePriceCents,
-                req.PaymentLink,
-                req.PaymentNote
+                req.PaymentLink
             ),
             HandedOverByPersonId = User.PersonId(),
         };
@@ -67,8 +66,6 @@ public sealed record PostBeerPotHandoverRequest
     public required int CratePriceCents { get; init; }
 
     public string? PaymentLink { get; init; }
-
-    public string? PaymentNote { get; init; }
 }
 
 public sealed class PostBeerPotHandoverValidator : Validator<PostBeerPotHandoverRequest>
@@ -79,13 +76,6 @@ public sealed class PostBeerPotHandoverValidator : Validator<PostBeerPotHandover
         RuleFor(request => request.SuccessorPersonId).GreaterThan(0);
         RuleFor(request => request.CratePriceCents).CratePrice();
         RuleFor(request => request.PaymentLink).PaymentLink();
-        RuleFor(request => request.PaymentNote).PaymentNote();
-        RuleFor(request => request)
-            .Must(request =>
-                BeerPotSettingsRules.NamesPaymentDetails(request.PaymentLink, request.PaymentNote)
-            )
-            .OverridePropertyName(BeerPotSettingsRules.PaymentDetailsField)
-            .WithMessage(BeerPotSettingsRules.MissingPaymentDetailsMessage);
     }
 }
 

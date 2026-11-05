@@ -21,10 +21,9 @@ public sealed class BeerStockMovementConfiguration : IEntityTypeConfiguration<Be
                 );
                 table.HasCheckConstraint(
                     "ck_beer_stock_movement_kind",
-                    "(kind IN ('Delivery', 'HandoverCarry') AND reason IS NULL AND crates > 0)"
-                        + " OR (kind = 'HandedOver' AND reason IS NULL AND crates < 0)"
-                        + " OR (kind = 'Correction' AND reason IS NOT NULL AND (reason = 'Miscount'"
-                        + " OR (reason IN ('Shrinkage', 'Breakage') AND crates < 0)))"
+                    "(kind IN ('Delivery', 'HandoverCarry') AND crates > 0)"
+                        + " OR (kind = 'HandedOver' AND crates < 0)"
+                        + " OR kind = 'Correction'"
                 );
             }
         );
@@ -32,10 +31,6 @@ public sealed class BeerStockMovementConfiguration : IEntityTypeConfiguration<Be
 
         builder
             .Property(movement => movement.Kind)
-            .HasConversion<string>()
-            .HasMaxLength(EnumLength);
-        builder
-            .Property(movement => movement.Reason)
             .HasConversion<string>()
             .HasMaxLength(EnumLength);
 

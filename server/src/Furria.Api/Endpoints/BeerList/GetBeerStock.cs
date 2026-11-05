@@ -55,7 +55,6 @@ public sealed class GetBeerStock : Endpoint<GetBeerStockRequest, GetBeerStockRes
             MovementId = movement.MovementId,
             Kind = movement.Kind,
             Crates = movement.Crates,
-            Reason = movement.Reason,
             BookedAt = movement.BookedAt,
             BookedBy = movement.BookedBy is { } booker
                 ? new BeerStockBookerDto
@@ -107,8 +106,6 @@ public sealed record BeerStockMovementSummaryDto
     public required BeerStockMovementKind Kind { get; init; }
 
     public required int Crates { get; init; }
-
-    public required BeerStockCorrectionReason? Reason { get; init; }
 
     public required DateTimeOffset BookedAt { get; init; }
 

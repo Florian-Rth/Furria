@@ -31,7 +31,6 @@ public sealed class PostBeerStockCorrection : Endpoint<PostBeerStockCorrectionRe
             {
                 BeerPotId = req.BeerPotId,
                 Crates = req.Crates,
-                Reason = req.Reason,
                 BookedByPersonId = User.PersonId(),
             },
             ct
@@ -53,25 +52,17 @@ public sealed record PostBeerStockCorrectionRequest
     public required int BeerPotId { get; init; }
 
     public required int Crates { get; init; }
-
-    public required BeerStockCorrectionReason Reason { get; init; }
 }
 
 public sealed class PostBeerStockCorrectionValidator : Validator<PostBeerStockCorrectionRequest>
 {
     private const string CratesMessage = "Eine Korrektur ändert den Bestand um 1 bis 500 Kisten.";
-    private const string LossOnlyMessage = "Schwund und Bruch senken den Bestand nur.";
 
     public PostBeerStockCorrectionValidator()
     {
         RuleFor(request => request.BeerPotId).GreaterThan(0);
-        RuleFor(request => request.Reason).IsInEnum();
         RuleFor(request => request.Crates)
             .Must(crates => crates != 0 && Math.Abs(crates) <= BeerStockMovement.MaxCrates)
             .WithMessage(CratesMessage);
-        RuleFor(request => request.Crates)
-            .Must((request, crates) => request.Reason.Fits(crates))
-            .When(request => request.Crates != 0)
-            .WithMessage(LossOnlyMessage);
     }
 }

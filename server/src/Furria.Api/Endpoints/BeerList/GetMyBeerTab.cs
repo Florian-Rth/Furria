@@ -57,7 +57,6 @@ public sealed class GetMyBeerTab : EndpointWithoutRequest<GetMyBeerTabResponse>
             OpenedAt = pot.OpenedAt,
             Owner = pot.Owner is { } owner ? ToDto(owner) : null,
             PaymentLink = pot.PaymentLink,
-            PaymentNote = pot.PaymentNote,
             OpenCrates = pot.OpenCrates,
             OpenCents = pot.OpenCents,
             PaidCrates = pot.PaidCrates,
@@ -100,8 +99,6 @@ public sealed record BeerTabPotDto
     public required BeerTabPersonDto? Owner { get; init; }
 
     public required string? PaymentLink { get; init; }
-
-    public required string? PaymentNote { get; init; }
 
     public required int OpenCrates { get; init; }
 

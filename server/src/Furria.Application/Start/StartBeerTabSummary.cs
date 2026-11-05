@@ -15,6 +15,4 @@ public sealed record StartBeerTabSummary
     public required StartPersonRef? Owner { get; init; }
 
     public required string? PaymentLink { get; init; }
-
-    public required string? PaymentNote { get; init; }
 }

@@ -10,8 +10,6 @@ public sealed record BeerStockMovementSummary
 
     public required int Crates { get; init; }
 
-    public required BeerStockCorrectionReason? Reason { get; init; }
-
     public required DateTimeOffset BookedAt { get; init; }
 
     public required BeerListPerson? BookedBy { get; init; }

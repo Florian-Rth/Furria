@@ -73,7 +73,6 @@ internal static class BeerListSeedMaterializer
             OwnerPersonId = SeedAliases.RequireId(personIds, intent.OwnerAlias, "Person"),
             CratePriceCents = intent.CratePriceCents,
             PaymentLink = intent.PaymentLink,
-            PaymentNote = intent.PaymentNote,
             OpenedAt = intent.OpenedAt ?? now - SeededAge,
             ClosedAt = intent.ClosedAt,
         };
@@ -187,7 +186,6 @@ internal static class BeerListSeedMaterializer
             Pot = PotOf(pots, intent.PotAlias),
             Kind = intent.Kind,
             Crates = intent.Crates,
-            Reason = intent.Reason,
             BookedAt = intent.BookedAt ?? now - SeededStockAge,
             BookedByPersonId = intent.BookedByAlias is null
                 ? null

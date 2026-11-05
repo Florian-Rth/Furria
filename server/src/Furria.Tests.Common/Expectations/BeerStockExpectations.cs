@@ -47,7 +47,6 @@ public sealed class BeerStockExpectations
     public Expected ToEndWith(
         BeerStockMovementKind kind,
         int crates,
-        BeerStockCorrectionReason? reason,
         int? bookedByPersonId,
         DateTimeOffset bookedAt
     ) =>
@@ -61,7 +60,6 @@ public sealed class BeerStockExpectations
                     .FirstAsync(ct);
                 Assert.Equal(kind, latest.Kind);
                 Assert.Equal(crates, latest.Crates);
-                Assert.Equal(reason, latest.Reason);
                 Assert.Equal(bookedByPersonId, latest.BookedByPersonId);
                 Assert.Equal(bookedAt, latest.BookedAt);
             }

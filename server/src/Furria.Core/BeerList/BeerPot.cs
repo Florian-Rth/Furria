@@ -6,7 +6,6 @@ namespace Furria.Core.BeerList;
 public sealed class BeerPot : ITimestamped
 {
     public const int PaymentLinkLength = 200;
-    public const int PaymentNoteLength = 500;
     public const int MaxCratePriceCents = 10_000;
 
     public int Id { get; set; }
@@ -16,8 +15,6 @@ public sealed class BeerPot : ITimestamped
     public int CratePriceCents { get; set; }
 
     public string? PaymentLink { get; set; }
-
-    public string? PaymentNote { get; set; }
 
     public DateTimeOffset OpenedAt { get; set; }
 

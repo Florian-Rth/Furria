@@ -65,7 +65,6 @@ public sealed partial class BeerListService
                 row =>
                     row.SetProperty(pot => pot.CratePriceCents, settings.CratePriceCents)
                         .SetProperty(pot => pot.PaymentLink, settings.PaymentLink)
-                        .SetProperty(pot => pot.PaymentNote, settings.PaymentNote)
                         .SetProperty(pot => pot.UpdatedAt, _timeProvider.GetUtcNow()),
                 ct
             );
@@ -99,7 +98,6 @@ public sealed partial class BeerListService
                         },
                 CratePriceCents = pot.CratePriceCents,
                 PaymentLink = pot.PaymentLink,
-                PaymentNote = pot.PaymentNote,
                 OpenedAt = pot.OpenedAt,
                 HasStock =
                     stockMovements
@@ -223,7 +221,6 @@ public sealed partial class BeerListService
     {
         pot.CratePriceCents = settings.CratePriceCents;
         pot.PaymentLink = settings.PaymentLink;
-        pot.PaymentNote = settings.PaymentNote;
     }
 
     private async Task<bool> EndRunningAsync(

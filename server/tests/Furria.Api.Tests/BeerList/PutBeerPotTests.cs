@@ -12,7 +12,7 @@ public sealed class PutBeerPotTests : IClassFixture<ApiTestFixture>
 {
     private const int UnknownPotId = 999_997;
     private const int RaisedCratePrice = 16_00;
-    private const string PaymentNote = "Bar bei Greta oder IBAN DE02 1203 0000 0000 2020 51";
+    private const string PaymentLink = "https://paypal.me/gretageldbeutel";
 
     private readonly ApiTestFixture _fixture;
 
@@ -37,15 +37,14 @@ public sealed class PutBeerPotTests : IClassFixture<ApiTestFixture>
             {
                 BeerPotId = ctx.BeerList.Pots.IdOf("topf"),
                 CratePriceCents = RaisedCratePrice,
-                PaymentLink = "",
-                PaymentNote = PaymentNote,
+                PaymentLink = " ",
             }
         );
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx
             .Expected.BeerPot(ctx.BeerList.Pots.IdOf("topf"))
-            .ToHaveSettings(RaisedCratePrice, null, PaymentNote)
+            .ToHaveSettings(RaisedCratePrice, null)
             .AssertAsync(ct);
     }
 
@@ -74,8 +73,7 @@ public sealed class PutBeerPotTests : IClassFixture<ApiTestFixture>
             .Expected.BeerPot(ctx.BeerList.Pots.IdOf("topf"))
             .ToHaveSettings(
                 BeerListSeedBuilder.DefaultCratePriceCents,
-                BeerListSeedBuilder.DefaultPaymentLink,
-                null
+                BeerListSeedBuilder.DefaultPaymentLink
             )
             .AssertAsync(ct);
     }
@@ -105,7 +103,7 @@ public sealed class PutBeerPotTests : IClassFixture<ApiTestFixture>
             {
                 BeerPotId = ctx.BeerList.Pots.IdOf("alter-topf"),
                 CratePriceCents = RaisedCratePrice,
-                PaymentNote = PaymentNote,
+                PaymentLink = PaymentLink,
             }
         );
 
@@ -114,8 +112,7 @@ public sealed class PutBeerPotTests : IClassFixture<ApiTestFixture>
             .Expected.BeerPot(ctx.BeerList.Pots.IdOf("alter-topf"))
             .ToHaveSettings(
                 BeerListSeedBuilder.DefaultCratePriceCents,
-                BeerListSeedBuilder.DefaultPaymentLink,
-                null
+                BeerListSeedBuilder.DefaultPaymentLink
             )
             .AssertAsync(ct);
     }
@@ -132,7 +129,7 @@ public sealed class PutBeerPotTests : IClassFixture<ApiTestFixture>
             {
                 BeerPotId = UnknownPotId,
                 CratePriceCents = RaisedCratePrice,
-                PaymentNote = PaymentNote,
+                PaymentLink = PaymentLink,
             }
         );
 

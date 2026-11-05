@@ -13,7 +13,6 @@ public sealed class PostBeerPotTests : IClassFixture<ApiTestFixture>
     private const int UnknownPersonId = 999_998;
     private const int CratePrice = 14_50;
     private const string PaymentLink = "https://paypal.me/gretageldbeutel";
-    private const string PaymentNote = "IBAN DE02 1203 0000 0000 2020 51";
 
     private readonly ApiTestFixture _fixture;
 
@@ -39,7 +38,6 @@ public sealed class PostBeerPotTests : IClassFixture<ApiTestFixture>
                 OwnerPersonId = ctx.Identity.People.IdOf("greta"),
                 CratePriceCents = CratePrice,
                 PaymentLink = $"  {PaymentLink} ",
-                PaymentNote = PaymentNote,
             }
         );
 
@@ -48,7 +46,7 @@ public sealed class PostBeerPotTests : IClassFixture<ApiTestFixture>
             .Expected.BeerPot(result.BeerPotId)
             .ToBeOwnedBy(ctx.Identity.People.IdOf("greta"))
             .BeerPot(result.BeerPotId)
-            .ToHaveSettings(CratePrice, PaymentLink, PaymentNote)
+            .ToHaveSettings(CratePrice, PaymentLink)
             .BeerPot(result.BeerPotId)
             .ToBeOpenedAt(_fixture.TimeProvider.GetUtcNow())
             .AssertAsync(ct);
@@ -146,13 +144,13 @@ public sealed class PostBeerPotTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnBadRequest_When_NoPaymentDetailIsGiven()
+    public async Task Should_OpenThePotForCashOnly_When_NoPayPalLinkIsGiven()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(builder => WithWarden(builder), ct);
 
         var client = await ctx.Identity.ClientForAsync("greta", ct);
-        var (response, _) = await client.POSTAsync<
+        var (response, result) = await client.POSTAsync<
             PostBeerPot,
             PostBeerPotRequest,
             PostBeerPotResponse
@@ -162,12 +160,14 @@ public sealed class PostBeerPotTests : IClassFixture<ApiTestFixture>
                 OwnerPersonId = ctx.Identity.People.IdOf("greta"),
                 CratePriceCents = CratePrice,
                 PaymentLink = " ",
-                PaymentNote = null,
             }
         );
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
-        await ctx.Expected.BeerPots().ToHaveCount(0).AssertAsync(ct);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.BeerPot(result.BeerPotId)
+            .ToHaveSettings(CratePrice, null)
+            .AssertAsync(ct);
     }
 
     private static PostBeerPotRequest OpenedBy(int ownerPersonId) =>
