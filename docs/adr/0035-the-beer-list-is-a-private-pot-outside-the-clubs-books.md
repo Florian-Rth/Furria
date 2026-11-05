@@ -20,15 +20,16 @@ beer cost the owner, and never any debt between two private people.**
   (open crates stay owed to the old owner) and opens the successor's pot with the remaining crates
   as a count only — no euro amount, because the app does not know what the crates are worth to the
   two of them.
-  The successor must be someone else who may operate the pot; she sets her own price and payment
-  details. The old pot stays readable and its open crates stay payable to the old owner, but it is
+  The successor must be someone else who may operate the pot; she sets her own price and
+  optional PayPal link. The old pot stays readable and its open crates stay payable to the old owner, but it is
   locked for everything else. The carried crates show in both pots' stock history (handed over out
   of the old one, carried into the new one), so the old pot ends at zero (built 2026-11-04).
 - **One item:** whole crates of beer at one price; a crate keeps the price it was taken at.
 - **Tabs belong to persons:** never to a group or the club — that would pull club money back in.
   A payment settles whole crates; no partial payments, no credit.
-- **Money moves outside the app:** members pay the owner however they like (her payment details
-  are shown); only operators book a payment. There is no payment provider — Stripe and the
+- **Money moves outside the app:** members pay the owner in cash, or by PayPal when she gave a
+  link — cash is built in and always shown, the link is optional, and there is no free-text payment
+  hint (decided 2026-11-05); only operators book a payment. There is no payment provider — Stripe and the
   ledger's providers are the club's, not the owner's.
 - **Access is an enrollment:** any affiliated person may enroll herself (confirming a
   declaration) and end it again; an operator may end it for her. The enrollment is a running

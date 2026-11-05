@@ -11,7 +11,6 @@ namespace Furria.Api.Tests.Start;
 public sealed class GetStartBeerTabTests : IClassFixture<ApiTestFixture>
 {
     private const string FormerWarden = "otto";
-    private const string OldPaymentNote = "Bar bei Otto";
     private const int OldPrice = 13_00;
     private const int Price = 15_00;
 
@@ -38,7 +37,6 @@ public sealed class GetStartBeerTabTests : IClassFixture<ApiTestFixture>
                                 FormerWarden,
                                 OldPrice,
                                 paymentLink: null,
-                                paymentNote: OldPaymentNote,
                                 openedAt: now.AddDays(-300),
                                 closedAt: now.AddDays(-40)
                             )
@@ -71,10 +69,7 @@ public sealed class GetStartBeerTabTests : IClassFixture<ApiTestFixture>
         );
         var old = panel.BeerTabs![0];
         Assert.Equal((false, 1, OldPrice), (old.PotIsOpen, old.OpenCrates, old.OpenCents));
-        Assert.Equal(
-            ("Otto", null, OldPaymentNote),
-            (old.Owner?.FirstName, old.PaymentLink, old.PaymentNote)
-        );
+        Assert.Equal(("Otto", null), (old.Owner?.FirstName, old.PaymentLink));
         var current = panel.BeerTabs![1];
         Assert.Equal(
             (true, 2, 2 * Price),

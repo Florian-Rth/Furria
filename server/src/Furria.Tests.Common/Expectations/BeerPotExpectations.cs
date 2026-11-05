@@ -22,14 +22,13 @@ public sealed class BeerPotExpectations
                 Assert.Equal(personId, (await SingleAsync(dbContext, ct)).OwnerPersonId)
         );
 
-    public Expected ToHaveSettings(int cratePriceCents, string? paymentLink, string? paymentNote) =>
+    public Expected ToHaveSettings(int cratePriceCents, string? paymentLink) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
             {
                 var pot = await SingleAsync(dbContext, ct);
                 Assert.Equal(cratePriceCents, pot.CratePriceCents);
                 Assert.Equal(paymentLink, pot.PaymentLink);
-                Assert.Equal(paymentNote, pot.PaymentNote);
             }
         );
 

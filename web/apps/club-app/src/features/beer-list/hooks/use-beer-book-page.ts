@@ -7,10 +7,11 @@ import { toQueryErrorMessage } from '@/lib/query-error';
 import { useMinuteNow } from '@/lib/use-minute-now';
 import { useBeerListJoin } from '../api';
 import { BOOK_ERROR_MESSAGES, doneDetail, JOIN_ERROR_MESSAGES, potLine } from '../beer-book-copy';
-import { BEER_LIST_TITLE } from '../beer-list-copy';
+import { BEER_LIST_TITLE, payWaysLine } from '../beer-list-copy';
 import { personNameOf } from '../beer-list-format';
 import { beerListStandingOf, readsWholeBeerList } from '../beer-list-standing';
-import type { BeerTabTotals } from '../beer-tab';
+import type { BeerPayee, BeerTabTotals } from '../beer-tab';
+import { payeesOf } from '../beer-tab';
 import { bookingGateOf } from '../booking/booking-gate';
 import type { BeerBookedCrates } from '../booking/booking-overlay';
 import type { BeerBookPageStage } from '../booking/booking-page';
@@ -34,12 +35,14 @@ export interface BeerBookLoad {
 export interface BeerBookDone {
   isDone: boolean;
   line: string;
+  payees: readonly BeerPayee[];
   again: () => void;
 }
 
 export interface BeerBookTally {
   totals: BeerTabTotals;
   hasCrates: boolean;
+  payWays: string | undefined;
   strokes: readonly KkTabStrokeState[];
 }
 
@@ -63,12 +66,18 @@ export const useBeerBookPage = (): BeerBookView => {
   const tabBooking = useBeerTabBooking(readsWholeBeerList(standing), now, takes);
   const joining = useBeerListJoin();
   const [dismissed, setDismissed] = useState<BeerBookedCrates | null>(null);
-  const { tabQuery, potQuery, pot, totals, booking } = tabBooking;
+  const { tabQuery, potQuery, pot, pots, totals, booking } = tabBooking;
   const readsError = takes ? (tabQuery.error ?? potQuery.error) : null;
   const error = me.error ?? readsError;
   const person = me.data?.person ?? null;
   const ownerName = personNameOf(pot?.owner ?? null);
   const lapsed = booking.phase === 'undo' ? null : booking.lapsed;
+  const payees = payeesOf(pots);
+  const firstPayee = payees[0];
+  const payWays =
+    firstPayee === undefined
+      ? undefined
+      : payWaysLine(firstPayee.owner?.firstName ?? null, firstPayee.payHref !== null);
 
   const retry = (): void => {
     void me.refetch();
@@ -113,12 +122,14 @@ export const useBeerBookPage = (): BeerBookView => {
     tally: {
       totals,
       hasCrates: totals.openCount + totals.paidCount > 0,
+      payWays,
       strokes: tabBooking.strokes,
     },
     booking,
     done: {
       isDone: isBookingDone(lapsed, dismissed),
       line: doneDetail(lapsed?.crateIds.length ?? 0, formatEuroCents(totals.openCents)),
+      payees,
       again: bookAgain,
     },
   };

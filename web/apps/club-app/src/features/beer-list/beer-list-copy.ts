@@ -19,8 +19,10 @@ export const PAY_EARLIER_LABEL = 'Noch offen bei';
 export const payeeLine = (name: string | null, amount: string): string =>
   name === null ? amount : `${name} · ${amount}`;
 export const PAYPAL_LABEL = 'PayPal';
-export const COPY_LABEL = 'Zahlungsdaten kopieren';
-export const COPIED_LABEL = 'Kopiert';
+export const cashLine = (ownerFirstName: string | null): string =>
+  ownerFirstName === null ? 'Bar' : `Bar an ${ownerFirstName}`;
+export const payWaysLine = (ownerFirstName: string | null, hasPayPal: boolean): string =>
+  hasPayPal ? `${cashLine(ownerFirstName)} oder ${PAYPAL_LABEL}` : cashLine(ownerFirstName);
 
 export const HISTORY_TITLE = 'Deine Kisten';
 export const HISTORY_LABEL = 'Deine Kisten nach Zahlung';

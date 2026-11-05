@@ -30,7 +30,6 @@ public sealed class BeerStockService
             new StockChange(
                 BeerStockMovementKind.Delivery,
                 command.Crates,
-                null,
                 command.BookedByPersonId
             ),
             ct
@@ -45,7 +44,6 @@ public sealed class BeerStockService
             new StockChange(
                 BeerStockMovementKind.Correction,
                 command.Crates,
-                command.Reason,
                 command.BookedByPersonId
             ),
             ct
@@ -127,7 +125,6 @@ public sealed class BeerStockService
                 MovementId = movement.Id,
                 Kind = movement.Kind,
                 Crates = movement.Crates,
-                Reason = movement.Reason,
                 BookedAt = movement.BookedAt,
                 BookedBy =
                     movement.BookedBy == null
@@ -164,7 +161,6 @@ public sealed class BeerStockService
                 BeerPotId = beerPotId,
                 Kind = change.Kind,
                 Crates = change.Crates,
-                Reason = change.Reason,
                 BookedByPersonId = change.BookedByPersonId,
                 BookedAt = _timeProvider.GetUtcNow(),
             }
@@ -178,7 +174,6 @@ public sealed class BeerStockService
     private sealed record StockChange(
         BeerStockMovementKind Kind,
         int Crates,
-        BeerStockCorrectionReason? Reason,
         int? BookedByPersonId
     );
 }

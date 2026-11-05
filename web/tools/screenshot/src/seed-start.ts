@@ -607,7 +607,6 @@ const ROLE_HOLDINGS: readonly RoleHoldingSpec[] = [
 const BEER_POT = {
   cratePriceCents: 1600,
   paymentLink: 'https://paypal.me/frankweber',
-  paymentNote: 'Bar im Vereinsraum oder auf DE12 8205 0000 0123 4567 89',
 } as const;
 const BEER_OWNER_KEY = 'frank';
 const BEER_ENROLLED_KEYS = ['lena', BEER_OWNER_KEY, 'sabine', 'kevin', 'gerd'] as const;
@@ -629,7 +628,7 @@ const BEER_PAYMENT: { readonly person: BeerTakerKey; readonly crates: number } =
   person: 'sabine',
   crates: 2,
 };
-const BEER_BREAKAGE = 1;
+const BEER_STOCK_LOSS = 1;
 const BEER_POT_OPENED_DAYS_AGO = 45;
 const BEER_HISTORY_START_DAYS_AGO = BEER_POT_OPENED_DAYS_AGO - 1;
 const BEER_CRATE_SPREAD_DAYS = 30;
@@ -1530,10 +1529,7 @@ const fillBeerPot = async (
   for (const crates of BEER_DELIVERIES) {
     await send('POST', `${pot}/deliveries`, frank, { crates });
   }
-  await send('POST', `${pot}/stock-corrections`, frank, {
-    crates: -BEER_BREAKAGE,
-    reason: 'breakage',
-  });
+  await send('POST', `${pot}/stock-corrections`, frank, { crates: -BEER_STOCK_LOSS });
   for (const crates of BEER_CRATES_FOR) {
     await send('POST', `${pot}/crates`, frank, {
       personId: lookUp(personIds, crates.person, 'person'),

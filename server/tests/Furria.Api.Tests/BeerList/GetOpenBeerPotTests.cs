@@ -11,7 +11,6 @@ namespace Furria.Api.Tests.BeerList;
 public sealed class GetOpenBeerPotTests : IClassFixture<ApiTestFixture>
 {
     private const int CratePrice = 14_50;
-    private const string PaymentNote = "Bar bei Greta oder IBAN DE02 1203 0000 0000 2020 51";
     private static readonly DateOnly MemberSince2018 = new(2018, 4, 1);
 
     private readonly ApiTestFixture _fixture;
@@ -22,7 +21,7 @@ public sealed class GetOpenBeerPotTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ShowTheOpenPotWithItsOwnerAndPaymentDetails_When_AnEnrolledMemberAsks()
+    public async Task Should_ShowTheOpenPotWithItsOwnerAndPayPalLink_When_AnEnrolledMemberAsks()
     {
         var ct = TestContext.Current.CancellationToken;
         var now = _fixture.TimeProvider.GetUtcNow();
@@ -42,7 +41,6 @@ public sealed class GetOpenBeerPotTests : IClassFixture<ApiTestFixture>
                                 "greta",
                                 CratePrice,
                                 BeerListSeedBuilder.DefaultPaymentLink,
-                                PaymentNote,
                                 openedAt: now.AddDays(-40)
                             )
                             .AddBeerListEnrollment("mira-bier", "mira")
@@ -61,7 +59,6 @@ public sealed class GetOpenBeerPotTests : IClassFixture<ApiTestFixture>
         Assert.Equal("Gruber", pot.Owner?.LastName);
         Assert.Equal(CratePrice, pot.CratePriceCents);
         Assert.Equal(BeerListSeedBuilder.DefaultPaymentLink, pot.PaymentLink);
-        Assert.Equal(PaymentNote, pot.PaymentNote);
         Assert.Equal(now.AddDays(-40), pot.OpenedAt);
     }
 

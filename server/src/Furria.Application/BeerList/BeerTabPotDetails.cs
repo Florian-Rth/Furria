@@ -12,8 +12,6 @@ public sealed record BeerTabPotDetails
 
     public required string? PaymentLink { get; init; }
 
-    public required string? PaymentNote { get; init; }
-
     public required int OpenCrates { get; init; }
 
     public required int OpenCents { get; init; }

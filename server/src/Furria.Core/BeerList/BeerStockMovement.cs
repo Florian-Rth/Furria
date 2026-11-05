@@ -14,8 +14,6 @@ public sealed class BeerStockMovement
 
     public int Crates { get; set; }
 
-    public BeerStockCorrectionReason? Reason { get; set; }
-
     public int? BookedByPersonId { get; set; }
 
     public DateTimeOffset BookedAt { get; set; }

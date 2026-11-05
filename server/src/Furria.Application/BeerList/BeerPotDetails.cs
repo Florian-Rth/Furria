@@ -10,8 +10,6 @@ public sealed record BeerPotDetails
 
     public required string? PaymentLink { get; init; }
 
-    public required string? PaymentNote { get; init; }
-
     public required DateTimeOffset OpenedAt { get; init; }
 
     public required bool HasStock { get; init; }

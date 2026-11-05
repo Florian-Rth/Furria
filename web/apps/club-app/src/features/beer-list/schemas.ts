@@ -14,7 +14,6 @@ export const OpenBeerPotSchema = z.object({
   owner: BeerListPersonSchema.nullable(),
   cratePriceCents: z.int().positive(),
   paymentLink: PaymentLinkSchema,
-  paymentNote: z.string().nullable(),
   openedAt: z.iso.datetime({ offset: true }),
   hasStock: z.boolean(),
 });
@@ -38,7 +37,6 @@ export const BeerTabPotSchema = z.object({
   openedAt: z.iso.datetime({ offset: true }),
   owner: BeerListPersonSchema.nullable(),
   paymentLink: PaymentLinkSchema,
-  paymentNote: z.string().nullable(),
   openCrates: z.int().nonnegative(),
   openCents: z.int().nonnegative(),
   paidCrates: z.int().nonnegative(),

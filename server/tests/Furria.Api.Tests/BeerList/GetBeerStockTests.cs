@@ -41,19 +41,8 @@ public sealed class GetBeerStockTests : IClassFixture<ApiTestFixture>
                             .AddBeerPot("anderer-topf", "greta", closedAt: now.AddDays(-20))
                             .AddBeerDelivery("anderer-topf", 50, now.AddDays(-25))
                             .AddBeerDelivery("topf", 24, now.AddDays(-12), "greta")
-                            .AddBeerStockCorrection(
-                                "topf",
-                                2,
-                                BeerStockCorrectionReason.Miscount,
-                                now.AddDays(-1)
-                            )
-                            .AddBeerStockCorrection(
-                                "topf",
-                                -1,
-                                BeerStockCorrectionReason.Shrinkage,
-                                now.AddDays(-5),
-                                "greta"
-                            )
+                            .AddBeerStockCorrection("topf", 2, now.AddDays(-1))
+                            .AddBeerStockCorrection("topf", -1, now.AddDays(-5), "greta")
                     ),
             ct
         );
@@ -75,7 +64,6 @@ public sealed class GetBeerStockTests : IClassFixture<ApiTestFixture>
             ],
             result.Movements.Select(movement => (movement.Kind, movement.Crates, movement.BookedAt))
         );
-        Assert.Equal(BeerStockCorrectionReason.Shrinkage, result.Movements[1].Reason);
         Assert.Equal(ctx.Identity.People.IdOf("greta"), result.Movements[2].BookedBy?.PersonId);
         Assert.Null(result.Movements[0].BookedBy);
     }

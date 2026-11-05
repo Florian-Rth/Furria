@@ -43,6 +43,8 @@ Logs are for operating the system, not an audit trail.
   bootstrap-admin seeder made.
 - **Authentication and security**: login succeeded or failed (with a `LoginFailureReason`),
   logout, lockout, refresh-token replay, and refreshes refused for disabled accounts.
+- **Web push**: each push a push service accepted, and each device it reports gone, at
+  Information (device id, push service host, status code); a refused or unsent push at Warning.
 - **States that were handled but not expected**, at Warning.
 - A plain CRUD write logs nothing. The request event already says who called which route.
 

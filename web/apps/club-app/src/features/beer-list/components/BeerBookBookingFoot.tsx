@@ -17,7 +17,7 @@ const footOf = (booking: BeerBooking, done: BeerBookDone): ReactNode => {
     return <BeerBookingUndo booking={booking} variant="stage" />;
   }
   if (done.isDone) {
-    return <BeerBookDoneNote line={done.line} onAgain={done.again} />;
+    return <BeerBookDoneNote line={done.line} payees={done.payees} onAgain={done.again} />;
   }
   if (booking.phase === 'empty') {
     return <BeerBookingEmpty />;

@@ -83,7 +83,6 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(KeyframeEasing)] = "linear easeIn easeOut easeInOut",
         [typeof(ChoreographyVersionKind)] = "saved restored spotRemoved musicAdopted",
         [typeof(BeerStockMovementKind)] = "delivery correction handoverCarry handedOver",
-        [typeof(BeerStockCorrectionReason)] = "shrinkage breakage miscount",
     };
 
     private readonly ApiTestFixture _fixture;

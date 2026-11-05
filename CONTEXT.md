@@ -1383,13 +1383,14 @@ of its own, never derived from who holds a role: a permission only decides who m
 several people may, but only the owner is owed money. A **handover** closes the owner's pot (open
 crates stay owed to her and stay payable, the remaining crates pass to the successor as a count only
 — no amount in euros, whatever the two settle is private) and the successor opens a new one with her
-own price and payment details (decided 2026-11-04). Any operator hands over, and only to someone
+own price and optional PayPal link (decided 2026-11-04). Any operator hands over, and only to someone
 else who may operate the pot. The crates carried over leave the old pot's **stock** and enter the
 new one's, so the old pot stands at zero; the forecast's pace carries over, and a stock warning
 already sent is not repeated for the same crates until a delivery re-arms it (built 2026-11-04). A
 pot lives as long as its owner holds it — it knows no **session** boundary; "this session" is only a
 view on it. Whoever may operate the pot may edit its **stock** freely: book crates in and out and
-correct any count (decided 2026-11-04). The pot knows only what members owe and pay, never what the
+correct any count (decided 2026-11-04). Members always pay the owner in **cash**; a PayPal link
+is the only other way and is optional — there is no free-text payment hint (decided 2026-11-05). The pot knows only what members owe and pay, never what the
 beer cost the owner — whether she is paid back is her own reckoning, not the app's (decided
 2026-11-04). The only thing on the list is the **crate** of beer: one item, one price, always whole
 crates — no other drinks, no single bottles (decided 2026-11-04). A crate on someone's tab keeps the
@@ -1414,8 +1415,8 @@ _Avoid_: participation flag, membership (of the beer list)
 **Tab** (beer list):
 The crates booked to one person, each **open** or **paid**. A payment always settles whole
 crates — no partial payments, no credit (decided 2026-11-04). Only operators book payments;
-there is no "I paid" report from the member — she sees her tab and the owner's payment details,
-pays the owner in whatever way, and the crates turn paid when an operator books it
+there is no "I paid" report from the member — she sees her tab and how to pay the owner (cash,
+plus PayPal when the owner gave a link), pays her, and the crates turn paid when an operator books it
 (decided 2026-11-04). Enrolled people see who gave how many crates; whether a tab is open or paid
 is visible only to its holder and to operators (decided 2026-11-04). A tab always belongs to one
 person — never to a group or the club; whoever takes crates for others books them and collects
@@ -1424,8 +1425,10 @@ _UI copy_: Deckel
 _Avoid_: balance, account, Guthaben
 
 **Stock** (beer list):
-The crates on hand. Every booked crate lowers it; deliveries raise it; when a count disagrees an
-operator books a **stock correction** with a reason, and the loss is the owner's. Stock never goes
+The crates on hand. Every booked crate lowers it; a **delivery** raises it and re-arms the stock
+warning; when a count disagrees an operator books a **stock correction** — a plain signed count of
+crates, no reason (the app only offers taking crates out; decided 2026-11-05), and the loss is the
+owner's. Stock never goes
 below zero. The app forecasts from the recent pace when the stock will be empty and warns the
 operators when that day comes close; there is no fixed threshold (decided 2026-11-04).
 _UI copy_: Bestand
@@ -1437,8 +1440,8 @@ crates onto the scanner's own tab — no app chrome, no navigation away. It open
 app where the phone can hand the link over (Android) and finishes in the browser where it cannot
 (iOS), with a one-time sign-in there (built 2026-11-04 as `/beer-list/book`). A member can take
 back a crate only in a short undo window right after confirming it; any later correction is an
-operator's (built 2026-11-04). An open tab shows on its holder's Start as a task with the owner's
-payment details, and the app reminds her of it by itself — no operator sends reminders: a push
+operator's (built 2026-11-04). An open tab shows on its holder's Start as a task with how to pay the
+owner (cash, and PayPal when given), and the app reminds her of it by itself — no operator sends reminders: a push
 once her oldest open crate is 7 days old, then every 7 days until the tab is settled, never at
 night (built 2026-11-04).
 _UI copy_: —

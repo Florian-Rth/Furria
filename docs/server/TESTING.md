@@ -513,11 +513,11 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    (`Expected.MediaWorkerHeartbeats().ToHaveCount`), `SurveyMediaStorageAsync` surveys the media
    root. `SystemVerdictTests` pin the verdict rules as pure tests.
 20. **The beer list (RFC 0004 phases 2–5)** — `builder.BeerList(…)` takes `AddBeerPot(alias,
-   ownerAlias, cratePriceCents, paymentLink, paymentNote, openedAt, closedAt)` (defaults: 15,00 €,
+   ownerAlias, cratePriceCents, paymentLink, openedAt, closedAt)` (defaults: 15,00 €,
    `BeerListSeedBuilder.DefaultPaymentLink`, opened 30 days ago, open) and
    `AddBeerListEnrollment(alias, personAlias, startedAt, endedAt, endedByAlias)` (running, started
    30 days ago), `AddBeerDelivery(potAlias, crates, bookedAt, bookedByAlias)` and
-   `AddBeerStockCorrection(potAlias, crates, reason, bookedAt, bookedByAlias)` (booked 10 days
+   `AddBeerStockCorrection(potAlias, crates, bookedAt, bookedByAlias)` (booked 10 days
    ago, by nobody), `AddBeerCrate(alias, potAlias, personAlias, bookedAt, enteredByAlias,
    priceCents, undoneAt)` (booked 10 days ago, entered by the holder herself, at the pot's price)
    and `AddBeerCrates(potAlias, personAlias, count, bookedAt)` for unnamed ones,

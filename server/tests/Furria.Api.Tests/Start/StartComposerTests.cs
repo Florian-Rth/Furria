@@ -765,7 +765,6 @@ public sealed class StartComposerTests
             OldestOpenBookedAt = oldestOpenBookedAt,
             Owner = null,
             PaymentLink = null,
-            PaymentNote = null,
         };
 
     private static StartNewsSummary NewsPublishedAt(string slug, DateTimeOffset publishedAt) =>

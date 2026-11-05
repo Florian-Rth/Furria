@@ -5,12 +5,16 @@ using Furria.Application.Authorization;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Furria.Tests.Common.Push;
+using Serilog.Events;
 using Xunit;
 
 namespace Furria.Api.Tests.Push;
 
 public sealed class PostTestPushTests : IClassFixture<ApiTestFixture>
 {
+    private const string Delivered =
+        "Push to device {PushSubscriptionId} at {PushServiceHost} was accepted with {StatusCode}";
+
     private readonly ApiTestFixture _fixture;
 
     public PostTestPushTests(ApiTestFixture fixture)
@@ -56,6 +60,24 @@ public sealed class PostTestPushTests : IClassFixture<ApiTestFixture>
             PushDevices.AuthSecret
         );
         Assert.Equal("/system", payload.GetProperty("url").GetString());
+    }
+
+    [Fact]
+    public async Task Should_LogEachDeliveredPushWithItsDeviceAndPushService_When_AnAdminSendsATest()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildAsync(ct);
+        var ilka = await ctx.Identity.ClientForAsync("ilka", ct);
+        var phone = Device("logged-phone");
+        await SubscribeAsync(ilka, phone);
+        var mark = _fixture.Logs.Mark();
+
+        await SendTestAsync(ilka);
+
+        var written = Assert.Single(_fixture.Logs.Written(Delivered, mark));
+        Assert.Equal(LogEventLevel.Information, written.Level);
+        Assert.Equal("fcm.googleapis.com", written.ScalarOf("PushServiceHost"));
+        Assert.Equal((int)HttpStatusCode.Created, written.ScalarOf("StatusCode"));
     }
 
     [Fact]

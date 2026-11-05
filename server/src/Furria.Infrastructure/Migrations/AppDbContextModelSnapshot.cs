@@ -265,11 +265,6 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(200)")
                         .HasColumnName("payment_link");
 
-                    b.Property<string>("PaymentNote")
-                        .HasMaxLength(500)
-                        .HasColumnType("character varying(500)")
-                        .HasColumnName("payment_note");
-
                     b.Property<DateTimeOffset?>("StockWarningSentAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("stock_warning_sent_at");
@@ -296,8 +291,6 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("beer_pot", null, t =>
                         {
                             t.HasCheckConstraint("ck_beer_pot_crate_price", "crate_price_cents > 0 AND crate_price_cents <= 10000");
-
-                            t.HasCheckConstraint("ck_beer_pot_payment_details", "btrim(coalesce(payment_link, '')) <> '' OR btrim(coalesce(payment_note, '')) <> ''");
 
                             t.HasCheckConstraint("ck_beer_pot_period", "closed_at IS NULL OR closed_at >= opened_at");
                         });
@@ -334,11 +327,6 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(16)")
                         .HasColumnName("kind");
 
-                    b.Property<string>("Reason")
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)")
-                        .HasColumnName("reason");
-
                     b.HasKey("Id")
                         .HasName("pk_beer_stock_movement");
 
@@ -359,7 +347,7 @@ namespace Furria.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("ck_beer_stock_movement_crates", "crates <> 0 AND (kind IN ('HandoverCarry', 'HandedOver') OR abs(crates) <= 500)");
 
-                            t.HasCheckConstraint("ck_beer_stock_movement_kind", "(kind IN ('Delivery', 'HandoverCarry') AND reason IS NULL AND crates > 0) OR (kind = 'HandedOver' AND reason IS NULL AND crates < 0) OR (kind = 'Correction' AND reason IS NOT NULL AND (reason = 'Miscount' OR (reason IN ('Shrinkage', 'Breakage') AND crates < 0)))");
+                            t.HasCheckConstraint("ck_beer_stock_movement_kind", "(kind IN ('Delivery', 'HandoverCarry') AND crates > 0) OR (kind = 'HandedOver' AND crates < 0) OR kind = 'Correction'");
                         });
                 });
 

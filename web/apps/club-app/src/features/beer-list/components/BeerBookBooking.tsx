@@ -23,6 +23,7 @@ export const BeerBookBooking: FC<BeerBookBookingProps> = ({ head, tally, booking
     <BeerOpenTotal
       openCents={tally.totals.openCents}
       celebration={quietRoll}
+      detail={tally.payWays}
       size="small"
       sx={FIGURE_SX}
     />
