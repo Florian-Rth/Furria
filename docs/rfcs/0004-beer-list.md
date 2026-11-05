@@ -99,7 +99,7 @@ Constraints:
   - a club-app screen, shown in navigation only to `take`/`manage` holders, or to a former enrollee with an open tab
   - shows her tab, the owner's payment details, and who gave crates
   - booking is hold-to-confirm with a count of 1–3
-- **Operator hub:** a management hub in the existing hub system (`manage-hub`). Panels:
+- **Operator hub:** at `/beer-list/manage`, opened from the member beer list (not part of club management). Panels:
   - tabs (dense, open and paid)
   - book a payment
   - book for someone
