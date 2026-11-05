@@ -140,7 +140,7 @@ public sealed class PushSender
                 break;
             case PushOutcome.Gone:
                 _logger.LogInformation(
-                    "Push device {PushSubscriptionId} at {PushServiceHost} is gone ({StatusCode}) and is forgotten",
+                    "Push device {PushSubscriptionId} at {PushServiceHost} answered {StatusCode}, it is gone",
                     deviceId,
                     pushServiceHost,
                     (int)status

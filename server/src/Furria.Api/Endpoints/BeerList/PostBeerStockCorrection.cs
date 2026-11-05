@@ -62,7 +62,11 @@ public sealed class PostBeerStockCorrectionValidator : Validator<PostBeerStockCo
     {
         RuleFor(request => request.BeerPotId).GreaterThan(0);
         RuleFor(request => request.Crates)
-            .Must(crates => crates != 0 && Math.Abs(crates) <= BeerStockMovement.MaxCrates)
+            .Must(crates =>
+                crates != 0
+                && crates >= -BeerStockMovement.MaxCrates
+                && crates <= BeerStockMovement.MaxCrates
+            )
             .WithMessage(CratesMessage);
     }
 }

@@ -13,15 +13,14 @@ import {
 } from './requests';
 import type { BeerGivers, BeerTab, BookedBeerCrates, OpenBeerPotResponse } from './schemas';
 
-const BEER_LIST_POLL_MS = 10_000;
+const LIVE_WHILE_VISIBLE = { refetchInterval: 10_000, refetchIntervalInBackground: false } as const;
 
 export const useOpenBeerPotQuery = (enabled = true): UseQueryResult<OpenBeerPotResponse, Error> =>
   useQuery({
     queryKey: queryKeys.beerPot,
     queryFn: () => withFreshAccessToken(requestOpenBeerPot),
     enabled,
-    refetchInterval: BEER_LIST_POLL_MS,
-    refetchIntervalInBackground: false,
+    ...LIVE_WHILE_VISIBLE,
   });
 
 export const useMyBeerTabQuery = (enabled = true): UseQueryResult<BeerTab, Error> =>
@@ -29,8 +28,7 @@ export const useMyBeerTabQuery = (enabled = true): UseQueryResult<BeerTab, Error
     queryKey: queryKeys.beerTab,
     queryFn: () => withFreshAccessToken(requestMyBeerTab),
     enabled,
-    refetchInterval: BEER_LIST_POLL_MS,
-    refetchIntervalInBackground: false,
+    ...LIVE_WHILE_VISIBLE,
   });
 
 export const useBeerGiversQuery = (enabled = true): UseQueryResult<BeerGivers, Error> =>
@@ -38,8 +36,7 @@ export const useBeerGiversQuery = (enabled = true): UseQueryResult<BeerGivers, E
     queryKey: queryKeys.beerGivers,
     queryFn: () => withFreshAccessToken(requestBeerGivers),
     enabled,
-    refetchInterval: BEER_LIST_POLL_MS,
-    refetchIntervalInBackground: false,
+    ...LIVE_WHILE_VISIBLE,
   });
 
 export const useBeerCratesBooking = (): UseMutationResult<BookedBeerCrates, Error, number> =>

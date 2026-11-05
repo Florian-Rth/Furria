@@ -114,6 +114,24 @@ public sealed class PostBeerStockCorrectionTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_TheCountIsTheSmallestInteger()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                WithWarden(builder)
+                    .BeerList(beerList =>
+                        beerList.AddBeerPot("topf", "greta").AddBeerDelivery("topf", 12)
+                    ),
+            ct
+        );
+
+        var response = await CorrectAsync(ctx, int.MinValue, ct);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     private static async Task<HttpResponseMessage> CorrectAsync(
         SeededContext ctx,
         int crates,

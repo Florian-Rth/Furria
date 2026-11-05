@@ -72,10 +72,12 @@ export const useBeerBookPage = (): BeerBookView => {
   const person = me.data?.person ?? null;
   const ownerName = personNameOf(pot?.owner ?? null);
   const lapsed = booking.phase === 'undo' ? null : booking.lapsed;
+  const payees = payeesOf(pots);
+  const firstPayee = payees[0];
   const payWays =
-    pot === null || totals.openCount === 0
+    firstPayee === undefined
       ? undefined
-      : payWaysLine(pot.owner?.firstName ?? null, pot.paymentLink !== null);
+      : payWaysLine(firstPayee.owner?.firstName ?? null, firstPayee.payHref !== null);
 
   const retry = (): void => {
     void me.refetch();
@@ -127,7 +129,7 @@ export const useBeerBookPage = (): BeerBookView => {
     done: {
       isDone: isBookingDone(lapsed, dismissed),
       line: doneDetail(lapsed?.crateIds.length ?? 0, formatEuroCents(totals.openCents)),
-      payees: payeesOf(pots),
+      payees,
       again: bookAgain,
     },
   };

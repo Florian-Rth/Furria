@@ -15,13 +15,13 @@ const wayShape: CSSObject = {
   gap: 0.75,
   minHeight: kkTokens.tapTarget,
   px: 1.75,
-  borderRadius: `${kkTokens.radius.pill}px`,
   typography: 'button',
-  whiteSpace: 'nowrap',
 };
 
 const linkPaint = (theme: Theme): CSSObject => ({
   ...wayShape,
+  whiteSpace: 'nowrap',
+  borderRadius: `${kkTokens.radius.pill}px`,
   color: 'background.paper',
   backgroundColor: 'text.primary',
   ...focusRing(theme),
@@ -32,6 +32,8 @@ const cashPaint = (theme: Theme): CSSObject => ({
   ...wayShape,
   alignItems: 'center',
   justifyContent: 'center',
+  textAlign: 'center',
+  borderRadius: `${kkTokens.radius.base - 4}px`,
   color: 'text.primary',
   ...inkWashSurface(theme, '6%', '10%'),
 });
