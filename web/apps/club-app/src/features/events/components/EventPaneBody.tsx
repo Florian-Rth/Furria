@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import type { EventDetails, EventPaneKey } from '../schemas';
 import { EventPaneDetails } from './EventPaneDetails';
-import { EventPaneReview } from './EventPaneReview';
+import { EventPaneHall } from './EventPaneHall';
 import { EventPaneRunningOrder } from './EventPaneRunningOrder';
 import { EventPaneTickets } from './EventPaneTickets';
 import { EventPaneWebsite } from './EventPaneWebsite';
@@ -21,7 +21,7 @@ export const EventPaneBody: FC<EventPaneBodyProps> = ({ event, pane }) => {
       return <EventPaneTickets event={event} />;
     case 'runningOrder':
       return <EventPaneRunningOrder event={event} />;
-    case 'review':
-      return <EventPaneReview event={event} />;
+    case 'hall':
+      return <EventPaneHall event={event} />;
   }
 };

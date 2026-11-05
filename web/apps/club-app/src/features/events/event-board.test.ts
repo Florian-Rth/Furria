@@ -24,13 +24,13 @@ const planned = (overrides: Partial<PlannedEvent> = {}): PlannedEvent => ({
   priceCents: 1900,
   presaleStartsAt: '2026-11-14T10:00:00Z',
   detailsMissing: [],
-  review: { publishedAlbums: 0, publishedNews: 0 },
   steps: [
     { step: 'details', state: 'done', dueOn: '2026-10-18', opensOn: null },
     { step: 'tickets', state: 'open', dueOn: '2026-11-17', opensOn: null },
-    { step: 'review', state: 'waiting', dueOn: '2027-01-30', opensOn: '2027-01-17' },
   ],
   currentStep: 'tickets',
+  tablePlan: null,
+  withoutTablePlan: false,
   ...overrides,
 });
 
@@ -87,6 +87,42 @@ describe('cellOf website', () => {
 });
 
 describe('cellOf steps', () => {
+  it.each([
+    {
+      name: 'no plan yet',
+      overrides: {},
+      state: 'open',
+      fact: { kind: 'noTablePlan' },
+    },
+    {
+      name: 'a plan with tables',
+      overrides: {
+        tablePlan: { tables: 12, chairs: 96 },
+        steps: [
+          { step: 'hall' as const, state: 'done' as const, dueOn: '2026-12-26', opensOn: null },
+        ],
+      },
+      state: 'done',
+      fact: { kind: 'tablePlan', tables: 12, chairs: 96 },
+    },
+    {
+      name: 'no plan needed',
+      overrides: { withoutTablePlan: true, steps: [] },
+      state: 'off',
+      fact: { kind: 'tablePlanSkipped' },
+    },
+  ])('Saal & Tische: $name', ({ overrides, state, fact }) => {
+    const base = {
+      steps: [
+        { step: 'hall' as const, state: 'open' as const, dueOn: '2026-12-26', opensOn: null },
+      ],
+      currentStep: 'tickets' as const,
+    };
+    const cell = cellOf(planned({ ...base, ...overrides }), 'hall', TODAY);
+
+    expect([cell.state, cell.fact]).toEqual([state, fact]);
+  });
+
   it('marks the current step as current', () => {
     expect(cellOf(planned(), 'tickets', TODAY).state).toBe('current');
   });
@@ -134,13 +170,6 @@ describe('cellOf steps', () => {
       priceCents: null,
       presaleStartsAt: '2026-11-14T10:00:00Z',
     });
-  });
-
-  it('shows the review opening day while nothing is published', () => {
-    const cell = cellOf(planned(), 'review', TODAY);
-
-    expect(cell.fact).toEqual({ kind: 'reviewOpens', opensOn: '2027-01-17' });
-    expect(cell.state).toBe('waiting');
   });
 
   it.each([
@@ -334,7 +363,6 @@ describe('sessionTallyOf', () => {
       steps: [
         { step: 'details', state: 'overdue', dueOn: '2026-10-10', opensOn: null },
         { step: 'tickets', state: 'open', dueOn: '2026-10-25', opensOn: null },
-        { step: 'review', state: 'waiting', dueOn: '2027-01-30', opensOn: '2027-01-17' },
       ],
       currentStep: 'details',
     });
@@ -342,8 +370,8 @@ describe('sessionTallyOf', () => {
     const past = planned({ eventId: 4, isOver: true });
 
     expect(sessionTallyOf([planned(), late, cancelled, past], TODAY)).toEqual({
-      counts: { done: 2, overdue: 2, current: 1, open: 1, waiting: 2 },
-      total: 8,
+      counts: { done: 2, overdue: 2, current: 1, open: 1, waiting: 0 },
+      total: 6,
     });
   });
 });

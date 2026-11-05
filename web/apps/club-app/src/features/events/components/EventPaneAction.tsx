@@ -4,6 +4,7 @@ import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { websiteAddressOf } from '@/lib/publish-copy';
 import { ACTION_LABELS, PANE_ICONS, toStepActionLabel } from '../event-board-copy';
+import { ACTION_OPEN_TABLES_LABEL, ACTION_PLAN_TABLES_LABEL } from '../hall-step-copy';
 import type { EventPublishing } from '../hooks/use-event-publishing';
 import type { PaneAction } from '../pane-actions';
 import { ACTION_OPEN_LABEL, ACTION_PLAN_LABEL } from '../running-order-step-copy';
@@ -87,26 +88,13 @@ export const EventPaneAction: FC<EventPaneActionProps> = ({
           {ACTION_LABELS.editTickets}
         </KkButton>
       );
-    case 'album':
-      return (
-        <KkButton
-          size="large"
-          fullWidth
-          component={Link}
-          to="/gallery/new"
-          search={{ entry: event.eventId }}
-          startIcon={<KkIcon name="gallery" size="small" />}
-        >
-          {ACTION_LABELS.album}
-        </KkButton>
-      );
     case 'planRunningOrder':
       return (
         <KkButton
           size="large"
           fullWidth
           component={Link}
-          to="/events/$eventId/ablauf"
+          to="/events/$eventId/running-order"
           params={params}
           startIcon={<KkIcon name="timeline" size="small" />}
         >
@@ -119,11 +107,37 @@ export const EventPaneAction: FC<EventPaneActionProps> = ({
           size="large"
           fullWidth
           component={Link}
-          to="/events/$eventId/ablauf"
+          to="/events/$eventId/running-order"
           params={params}
           startIcon={<KkIcon name="timeline" size="small" />}
         >
           {ACTION_OPEN_LABEL}
+        </KkButton>
+      );
+    case 'planTablePlan':
+      return (
+        <KkButton
+          size="large"
+          fullWidth
+          component={Link}
+          to="/events/$eventId/table-plan"
+          params={params}
+          startIcon={<KkIcon name="tables" size="small" />}
+        >
+          {ACTION_PLAN_TABLES_LABEL}
+        </KkButton>
+      );
+    case 'openTablePlan':
+      return (
+        <KkButton
+          size="large"
+          fullWidth
+          component={Link}
+          to="/events/$eventId/table-plan"
+          params={params}
+          startIcon={<KkIcon name="tables" size="small" />}
+        >
+          {ACTION_OPEN_TABLES_LABEL}
         </KkButton>
       );
     case 'step': {

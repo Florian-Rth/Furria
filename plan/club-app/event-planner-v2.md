@@ -18,6 +18,12 @@ time has run out. The hub row is the track; on the event page the track breaks i
 wall**, and the **band** above it says only what to do next. Learn it once, read it everywhere.
 (The metaphor stays visual; copy says *Schritte*.)
 
+## Ruling 2026-11-04 (Florian)
+
+**Nachbereitung and Aufgaben are dropped** — "not needed". The `review` step, its pane, grid column
+and wire fields are removed; Aufgaben leaves the *Kommt noch* line and is never built. Every
+mention of either below is history. Next: Saal & Tische (hall planner), then Werbung.
+
 ## Rulings needed
 
 1. **An event starts in preparation** (*in Vorbereitung*): not on the website until Eckdaten are

@@ -9,8 +9,10 @@ public static class EventSteps
     private const int TicketsLeadDays = 60;
     private const int RunningOrderOpensDays = 28;
     private const int RunningOrderLeadDays = 14;
-    private const int ReviewDaysAfter = 14;
+    private const int HallLeadDays = 21;
     private const int FewestDaysSinceCreation = 14;
+
+    private static readonly DateOnly HallStepArrivedOn = new(2026, 11, 4);
 
     [Pure]
     public static EventReadiness ReadinessOf(EventReadinessFacts facts, DateTimeOffset now)
@@ -27,7 +29,7 @@ public static class EventSteps
             ),
             PreEventStatusOf(EventStep.Tickets, TicketsLeadDays, facts.AreTicketsSet, facts, today),
             RunningOrderStatusOf(facts, today),
-            ReviewStatusOf(facts, today),
+            .. HallStatusesOf(facts, today),
         ];
 
         return new EventReadiness(steps, facts.IsCancelled ? null : CurrentOf(steps, facts));
@@ -75,18 +77,31 @@ public static class EventSteps
     }
 
     [Pure]
-    private static EventStepStatus ReviewStatusOf(EventReadinessFacts facts, DateOnly today)
-    {
-        var opensOn = facts.EventDay.AddDays(1);
-        var dueOn = DueOf(facts.EventDay.AddDays(ReviewDaysAfter), facts);
-        var state =
-            facts.HasPublishedAlbum ? EventStepState.Done
-            : today < opensOn ? EventStepState.Waiting
-            : today > dueOn ? EventStepState.Overdue
-            : EventStepState.Open;
+    private static IEnumerable<EventStepStatus> HallStatusesOf(
+        EventReadinessFacts facts,
+        DateOnly today
+    ) =>
+        facts.NeedsTablePlan
+            ?
+            [
+                PreEventStatusOf(
+                    EventStep.Hall,
+                    HallLeadDays,
+                    facts.HasPlacedTables,
+                    SinceHallStepArrived(facts),
+                    today
+                ),
+            ]
+            : [];
 
-        return new EventStepStatus(EventStep.Review, state, dueOn, opensOn);
-    }
+    [Pure]
+    private static EventReadinessFacts SinceHallStepArrived(EventReadinessFacts facts) =>
+        facts.CreatedDay < HallStepArrivedOn
+            ? facts with
+            {
+                CreatedDay = HallStepArrivedOn,
+            }
+            : facts;
 
     [Pure]
     private static EventStep? CurrentOf(
@@ -94,17 +109,15 @@ public static class EventSteps
         EventReadinessFacts facts
     )
     {
-        var candidates = steps.Where(status => IsCandidate(status, facts)).ToList();
+        if (facts.IsOver)
+            return null;
+
         var pick =
-            EarliestDueIn(candidates, EventStepState.Overdue)
-            ?? EarliestDueIn(candidates, EventStepState.Open);
+            EarliestDueIn(steps, EventStepState.Overdue)
+            ?? EarliestDueIn(steps, EventStepState.Open);
 
         return pick?.Step;
     }
-
-    [Pure]
-    private static bool IsCandidate(EventStepStatus status, EventReadinessFacts facts) =>
-        !facts.IsOver || status.Step == EventStep.Review;
 
     [Pure]
     private static EventStepStatus? EarliestDueIn(

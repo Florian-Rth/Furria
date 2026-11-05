@@ -7,7 +7,7 @@ export const useStudioMusicRoute = (actId: number): ((tool: StudioMusicTool) => 
   return (tool) => {
     void navigate({
       from: '/acts/$actId',
-      to: '/acts/$actId/musik',
+      to: '/acts/$actId/music',
       params: { actId: String(actId) },
       search: (previous) => ({ ...previous, tool }),
     });

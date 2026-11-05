@@ -1,12 +1,6 @@
 import { nextPaneOf } from './event-board';
 import type { PlannedEvent, PublishState } from './event-plan';
-import {
-  factDetailsOf,
-  isCancelledEvent,
-  publishStateOf,
-  stepStatusOf,
-  ticketFactsOf,
-} from './event-plan';
+import { factDetailsOf, isCancelledEvent, publishStateOf, ticketFactsOf } from './event-plan';
 import type { EventPaneKey } from './schemas';
 
 export type RunningOrderPresence = 'hidden' | 'none' | 'exists';
@@ -17,9 +11,10 @@ export type PaneAction =
   | { kind: 'picture' }
   | { kind: 'editDetails' }
   | { kind: 'editTickets' }
-  | { kind: 'album' }
   | { kind: 'planRunningOrder' }
   | { kind: 'openRunningOrder' }
+  | { kind: 'planTablePlan' }
+  | { kind: 'openTablePlan' }
   | { kind: 'step'; pane: EventPaneKey }
   | { kind: 'none' };
 
@@ -46,20 +41,31 @@ const runningOrderActionOf = (presence: RunningOrderPresence, isOver: boolean): 
   }
 };
 
+const tablePlanActionOf = (event: PlannedEvent, plansHall: boolean): PaneAction => {
+  if (!plansHall) {
+    return NONE;
+  }
+  if (event.tablePlan !== null) {
+    return { kind: 'openTablePlan' };
+  }
+
+  return event.isOver || event.withoutTablePlan ? NONE : { kind: 'planTablePlan' };
+};
+
 export interface PaneActionInput {
   event: PlannedEvent;
   pane: EventPaneKey;
   todayIsoDay: string;
-  addsAlbums: boolean;
   runningOrder: RunningOrderPresence;
+  plansHall: boolean;
 }
 
 export const paneActionOf = ({
   event,
   pane,
   todayIsoDay,
-  addsAlbums,
   runningOrder,
+  plansHall,
 }: PaneActionInput): PaneAction => {
   if (isCancelledEvent(event)) {
     return NONE;
@@ -89,10 +95,7 @@ export const paneActionOf = ({
         : next();
     case 'runningOrder':
       return runningOrderActionOf(runningOrder, event.isOver);
-    case 'review': {
-      const state = stepStatusOf(event, 'review')?.state;
-
-      return addsAlbums && (state === 'open' || state === 'overdue') ? { kind: 'album' } : next();
-    }
+    case 'hall':
+      return tablePlanActionOf(event, plansHall);
   }
 };

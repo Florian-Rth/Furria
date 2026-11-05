@@ -28,6 +28,8 @@ public static class AppDbContextExtensions
             ["pk_club_record"] = WriteConflictMessages.ClubRecordWrittenMeanwhile,
             ["ix_invitation_person_id_live"] = WriteConflictMessages.InvitationIssuedMeanwhile,
             ["ix_to_do_mark_account_id_kind"] = WriteConflictMessages.ToDoMarkedMeanwhile,
+            ["ix_hall_venue_id_name"] = WriteConflictMessages.DuplicateHall,
+            ["pk_table_plan"] = WriteConflictMessages.TablePlanExists,
         }.ToFrozenDictionary(StringComparer.Ordinal);
 
     public static async Task<Result> SaveOrConflictAsync(

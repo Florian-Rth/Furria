@@ -10,7 +10,7 @@ page-rework way: real backend + three lab variants on real data, Florian picks.
 
 Variant B *Eine Liste* becomes the production planner; the lab route and entry are deleted.
 
-- **Route:** `/events/$eventId/ablauf?mode=pick|order|check` (default `pick`); back lands on
+- **Route:** `/events/$eventId/running-order?mode=pick|order|check` (default `pick`); back lands on
   `/events/$eventId?step=runningOrder`. Gate: `events.running_order` or `events.manage`.
 - **Feature folder:** `features/running-order/` (api, ops, review, copy as today + the planner's
   components/hooks/pure modules, `liste-*` renamed to `running-order-*`/plain names). No `lab-` left.

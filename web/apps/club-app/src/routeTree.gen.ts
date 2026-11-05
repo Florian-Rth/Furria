@@ -50,6 +50,7 @@ import { Route as AppManageClubRecordRouteImport } from './routes/_app/manage.cl
 import { Route as AppManageBoardRouteImport } from './routes/_app/manage.board'
 import { Route as AppManageApplicationsRouteImport } from './routes/_app/manage.applications'
 import { Route as AppLabGreetingRouteImport } from './routes/_app/lab_.$greeting'
+import { Route as AppHallsHallIdRouteImport } from './routes/_app/halls_.$hallId'
 import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups_.$groupId'
 import { Route as AppGalleryWebsiteRouteImport } from './routes/_app/gallery_.website'
 import { Route as AppGalleryUploadRouteImport } from './routes/_app/gallery_.upload'
@@ -89,11 +90,12 @@ import { Route as AppGroupsGroupIdAdministrationRouteImport } from './routes/_ap
 import { Route as AppGroupsGroupIdActsRouteImport } from './routes/_app/groups_.$groupId_.acts'
 import { Route as AppGalleryAlbumIdSelectionRouteImport } from './routes/_app/gallery_.$albumId_.selection'
 import { Route as AppGalleryAlbumIdEditRouteImport } from './routes/_app/gallery_.$albumId_.edit'
+import { Route as AppEventsEventIdTablePlanRouteImport } from './routes/_app/events_.$eventId_.table-plan'
+import { Route as AppEventsEventIdRunningOrderRouteImport } from './routes/_app/events_.$eventId_.running-order'
 import { Route as AppEventsEventIdManageRouteImport } from './routes/_app/events_.$eventId_.manage'
 import { Route as AppEventsEventIdEditRouteImport } from './routes/_app/events_.$eventId_.edit'
-import { Route as AppEventsEventIdAblaufRouteImport } from './routes/_app/events_.$eventId_.ablauf'
 import { Route as AppClubNewsSlugRouteImport } from './routes/_app/club_.news_.$slug'
-import { Route as AppActsActIdMusikRouteImport } from './routes/_app/acts_.$actId_.musik'
+import { Route as AppActsActIdMusicRouteImport } from './routes/_app/acts_.$actId_.music'
 import { Route as AppPersonalProfileSecurityRouteImport } from './routes/_app/_personal.profile_.security'
 import { Route as AppAffiliatedMembersPersonIdRouteImport } from './routes/_app/_affiliated.members_.$personId'
 import { Route as AppManageVenuesVenueIdEditRouteImport } from './routes/_app/manage.venues_.$venueId_.edit'
@@ -330,6 +332,11 @@ const AppLabGreetingRoute = AppLabGreetingRouteImport.update({
   path: '/lab/$greeting',
   getParentRoute: () => AppRoute,
 } as any)
+const AppHallsHallIdRoute = AppHallsHallIdRouteImport.update({
+  id: '/halls_/$hallId',
+  path: '/halls/$hallId',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGroupsGroupIdRoute = AppGroupsGroupIdRouteImport.update({
   id: '/groups_/$groupId',
   path: '/groups/$groupId',
@@ -536,6 +543,18 @@ const AppGalleryAlbumIdEditRoute = AppGalleryAlbumIdEditRouteImport.update({
   path: '/gallery/$albumId/edit',
   getParentRoute: () => AppRoute,
 } as any)
+const AppEventsEventIdTablePlanRoute =
+  AppEventsEventIdTablePlanRouteImport.update({
+    id: '/events_/$eventId_/table-plan',
+    path: '/events/$eventId/table-plan',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppEventsEventIdRunningOrderRoute =
+  AppEventsEventIdRunningOrderRouteImport.update({
+    id: '/events_/$eventId_/running-order',
+    path: '/events/$eventId/running-order',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppEventsEventIdManageRoute = AppEventsEventIdManageRouteImport.update({
   id: '/events_/$eventId_/manage',
   path: '/events/$eventId/manage',
@@ -546,19 +565,14 @@ const AppEventsEventIdEditRoute = AppEventsEventIdEditRouteImport.update({
   path: '/events/$eventId/edit',
   getParentRoute: () => AppRoute,
 } as any)
-const AppEventsEventIdAblaufRoute = AppEventsEventIdAblaufRouteImport.update({
-  id: '/events_/$eventId_/ablauf',
-  path: '/events/$eventId/ablauf',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppClubNewsSlugRoute = AppClubNewsSlugRouteImport.update({
   id: '/club_/news_/$slug',
   path: '/club/news/$slug',
   getParentRoute: () => AppRoute,
 } as any)
-const AppActsActIdMusikRoute = AppActsActIdMusikRouteImport.update({
-  id: '/acts_/$actId_/musik',
-  path: '/acts/$actId/musik',
+const AppActsActIdMusicRoute = AppActsActIdMusicRouteImport.update({
+  id: '/acts_/$actId_/music',
+  path: '/acts/$actId/music',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPersonalProfileSecurityRoute =
@@ -796,6 +810,7 @@ export interface FileRoutesByFullPath {
   '/gallery/upload': typeof AppGalleryUploadRoute
   '/gallery/website': typeof AppGalleryWebsiteRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
+  '/halls/$hallId': typeof AppHallsHallIdRoute
   '/lab/$greeting': typeof AppLabGreetingRoute
   '/manage/applications': typeof AppManageApplicationsRoute
   '/manage/board': typeof AppManageBoardRoute
@@ -818,11 +833,12 @@ export interface FileRoutesByFullPath {
   '/system/': typeof AppSystemIndexRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/profile/security': typeof AppPersonalProfileSecurityRoute
-  '/acts/$actId/musik': typeof AppActsActIdMusikRoute
+  '/acts/$actId/music': typeof AppActsActIdMusicRoute
   '/club/news/$slug': typeof AppClubNewsSlugRoute
-  '/events/$eventId/ablauf': typeof AppEventsEventIdAblaufRoute
   '/events/$eventId/edit': typeof AppEventsEventIdEditRoute
   '/events/$eventId/manage': typeof AppEventsEventIdManageRoute
+  '/events/$eventId/running-order': typeof AppEventsEventIdRunningOrderRoute
+  '/events/$eventId/table-plan': typeof AppEventsEventIdTablePlanRoute
   '/gallery/$albumId/edit': typeof AppGalleryAlbumIdEditRoute
   '/gallery/$albumId/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/groups/$groupId/acts': typeof AppGroupsGroupIdActsRoute
@@ -913,6 +929,7 @@ export interface FileRoutesByTo {
   '/gallery/upload': typeof AppGalleryUploadRoute
   '/gallery/website': typeof AppGalleryWebsiteRoute
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
+  '/halls/$hallId': typeof AppHallsHallIdRoute
   '/lab/$greeting': typeof AppLabGreetingRoute
   '/manage/applications': typeof AppManageApplicationsRoute
   '/manage/board': typeof AppManageBoardRoute
@@ -935,11 +952,12 @@ export interface FileRoutesByTo {
   '/system': typeof AppSystemIndexRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/profile/security': typeof AppPersonalProfileSecurityRoute
-  '/acts/$actId/musik': typeof AppActsActIdMusikRoute
+  '/acts/$actId/music': typeof AppActsActIdMusicRoute
   '/club/news/$slug': typeof AppClubNewsSlugRoute
-  '/events/$eventId/ablauf': typeof AppEventsEventIdAblaufRoute
   '/events/$eventId/edit': typeof AppEventsEventIdEditRoute
   '/events/$eventId/manage': typeof AppEventsEventIdManageRoute
+  '/events/$eventId/running-order': typeof AppEventsEventIdRunningOrderRoute
+  '/events/$eventId/table-plan': typeof AppEventsEventIdTablePlanRoute
   '/gallery/$albumId/edit': typeof AppGalleryAlbumIdEditRoute
   '/gallery/$albumId/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/groups/$groupId/acts': typeof AppGroupsGroupIdActsRoute
@@ -1034,6 +1052,7 @@ export interface FileRoutesById {
   '/_app/gallery_/upload': typeof AppGalleryUploadRoute
   '/_app/gallery_/website': typeof AppGalleryWebsiteRoute
   '/_app/groups_/$groupId': typeof AppGroupsGroupIdRoute
+  '/_app/halls_/$hallId': typeof AppHallsHallIdRoute
   '/_app/lab_/$greeting': typeof AppLabGreetingRoute
   '/_app/manage/applications': typeof AppManageApplicationsRoute
   '/_app/manage/board': typeof AppManageBoardRoute
@@ -1056,11 +1075,12 @@ export interface FileRoutesById {
   '/_app/system/': typeof AppSystemIndexRoute
   '/_app/_affiliated/members_/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/_app/_personal/profile_/security': typeof AppPersonalProfileSecurityRoute
-  '/_app/acts_/$actId_/musik': typeof AppActsActIdMusikRoute
+  '/_app/acts_/$actId_/music': typeof AppActsActIdMusicRoute
   '/_app/club_/news_/$slug': typeof AppClubNewsSlugRoute
-  '/_app/events_/$eventId_/ablauf': typeof AppEventsEventIdAblaufRoute
   '/_app/events_/$eventId_/edit': typeof AppEventsEventIdEditRoute
   '/_app/events_/$eventId_/manage': typeof AppEventsEventIdManageRoute
+  '/_app/events_/$eventId_/running-order': typeof AppEventsEventIdRunningOrderRoute
+  '/_app/events_/$eventId_/table-plan': typeof AppEventsEventIdTablePlanRoute
   '/_app/gallery_/$albumId_/edit': typeof AppGalleryAlbumIdEditRoute
   '/_app/gallery_/$albumId_/selection': typeof AppGalleryAlbumIdSelectionRoute
   '/_app/groups_/$groupId_/acts': typeof AppGroupsGroupIdActsRoute
@@ -1153,6 +1173,7 @@ export interface FileRouteTypes {
     | '/gallery/upload'
     | '/gallery/website'
     | '/groups/$groupId'
+    | '/halls/$hallId'
     | '/lab/$greeting'
     | '/manage/applications'
     | '/manage/board'
@@ -1175,11 +1196,12 @@ export interface FileRouteTypes {
     | '/system/'
     | '/members/$personId'
     | '/profile/security'
-    | '/acts/$actId/musik'
+    | '/acts/$actId/music'
     | '/club/news/$slug'
-    | '/events/$eventId/ablauf'
     | '/events/$eventId/edit'
     | '/events/$eventId/manage'
+    | '/events/$eventId/running-order'
+    | '/events/$eventId/table-plan'
     | '/gallery/$albumId/edit'
     | '/gallery/$albumId/selection'
     | '/groups/$groupId/acts'
@@ -1270,6 +1292,7 @@ export interface FileRouteTypes {
     | '/gallery/upload'
     | '/gallery/website'
     | '/groups/$groupId'
+    | '/halls/$hallId'
     | '/lab/$greeting'
     | '/manage/applications'
     | '/manage/board'
@@ -1292,11 +1315,12 @@ export interface FileRouteTypes {
     | '/system'
     | '/members/$personId'
     | '/profile/security'
-    | '/acts/$actId/musik'
+    | '/acts/$actId/music'
     | '/club/news/$slug'
-    | '/events/$eventId/ablauf'
     | '/events/$eventId/edit'
     | '/events/$eventId/manage'
+    | '/events/$eventId/running-order'
+    | '/events/$eventId/table-plan'
     | '/gallery/$albumId/edit'
     | '/gallery/$albumId/selection'
     | '/groups/$groupId/acts'
@@ -1390,6 +1414,7 @@ export interface FileRouteTypes {
     | '/_app/gallery_/upload'
     | '/_app/gallery_/website'
     | '/_app/groups_/$groupId'
+    | '/_app/halls_/$hallId'
     | '/_app/lab_/$greeting'
     | '/_app/manage/applications'
     | '/_app/manage/board'
@@ -1412,11 +1437,12 @@ export interface FileRouteTypes {
     | '/_app/system/'
     | '/_app/_affiliated/members_/$personId'
     | '/_app/_personal/profile_/security'
-    | '/_app/acts_/$actId_/musik'
+    | '/_app/acts_/$actId_/music'
     | '/_app/club_/news_/$slug'
-    | '/_app/events_/$eventId_/ablauf'
     | '/_app/events_/$eventId_/edit'
     | '/_app/events_/$eventId_/manage'
+    | '/_app/events_/$eventId_/running-order'
+    | '/_app/events_/$eventId_/table-plan'
     | '/_app/gallery_/$albumId_/edit'
     | '/_app/gallery_/$albumId_/selection'
     | '/_app/groups_/$groupId_/acts'
@@ -1771,6 +1797,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLabGreetingRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/halls_/$hallId': {
+      id: '/_app/halls_/$hallId'
+      path: '/halls/$hallId'
+      fullPath: '/halls/$hallId'
+      preLoaderRoute: typeof AppHallsHallIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/groups_/$groupId': {
       id: '/_app/groups_/$groupId'
       path: '/groups/$groupId'
@@ -2044,6 +2077,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppGalleryAlbumIdEditRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/events_/$eventId_/table-plan': {
+      id: '/_app/events_/$eventId_/table-plan'
+      path: '/events/$eventId/table-plan'
+      fullPath: '/events/$eventId/table-plan'
+      preLoaderRoute: typeof AppEventsEventIdTablePlanRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/events_/$eventId_/running-order': {
+      id: '/_app/events_/$eventId_/running-order'
+      path: '/events/$eventId/running-order'
+      fullPath: '/events/$eventId/running-order'
+      preLoaderRoute: typeof AppEventsEventIdRunningOrderRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/events_/$eventId_/manage': {
       id: '/_app/events_/$eventId_/manage'
       path: '/events/$eventId/manage'
@@ -2058,13 +2105,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppEventsEventIdEditRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/events_/$eventId_/ablauf': {
-      id: '/_app/events_/$eventId_/ablauf'
-      path: '/events/$eventId/ablauf'
-      fullPath: '/events/$eventId/ablauf'
-      preLoaderRoute: typeof AppEventsEventIdAblaufRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/club_/news_/$slug': {
       id: '/_app/club_/news_/$slug'
       path: '/club/news/$slug'
@@ -2072,11 +2112,11 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppClubNewsSlugRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/acts_/$actId_/musik': {
-      id: '/_app/acts_/$actId_/musik'
-      path: '/acts/$actId/musik'
-      fullPath: '/acts/$actId/musik'
-      preLoaderRoute: typeof AppActsActIdMusikRouteImport
+    '/_app/acts_/$actId_/music': {
+      id: '/_app/acts_/$actId_/music'
+      path: '/acts/$actId/music'
+      fullPath: '/acts/$actId/music'
+      preLoaderRoute: typeof AppActsActIdMusicRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/_personal/profile_/security': {
@@ -2382,6 +2422,7 @@ interface AppRouteChildren {
   AppGalleryUploadRoute: typeof AppGalleryUploadRoute
   AppGalleryWebsiteRoute: typeof AppGalleryWebsiteRoute
   AppGroupsGroupIdRoute: typeof AppGroupsGroupIdRoute
+  AppHallsHallIdRoute: typeof AppHallsHallIdRoute
   AppLabGreetingRoute: typeof AppLabGreetingRoute
   AppManageApplicationsRoute: typeof AppManageApplicationsRoute
   AppManageBoardRoute: typeof AppManageBoardRoute
@@ -2402,11 +2443,12 @@ interface AppRouteChildren {
   AppLabIndexRoute: typeof AppLabIndexRoute
   AppManageIndexRoute: typeof AppManageIndexRoute
   AppSystemIndexRoute: typeof AppSystemIndexRoute
-  AppActsActIdMusikRoute: typeof AppActsActIdMusikRoute
+  AppActsActIdMusicRoute: typeof AppActsActIdMusicRoute
   AppClubNewsSlugRoute: typeof AppClubNewsSlugRoute
-  AppEventsEventIdAblaufRoute: typeof AppEventsEventIdAblaufRoute
   AppEventsEventIdEditRoute: typeof AppEventsEventIdEditRoute
   AppEventsEventIdManageRoute: typeof AppEventsEventIdManageRoute
+  AppEventsEventIdRunningOrderRoute: typeof AppEventsEventIdRunningOrderRoute
+  AppEventsEventIdTablePlanRoute: typeof AppEventsEventIdTablePlanRoute
   AppGalleryAlbumIdEditRoute: typeof AppGalleryAlbumIdEditRoute
   AppGalleryAlbumIdSelectionRoute: typeof AppGalleryAlbumIdSelectionRoute
   AppGroupsGroupIdActsRoute: typeof AppGroupsGroupIdActsRoute
@@ -2487,6 +2529,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppGalleryUploadRoute: AppGalleryUploadRoute,
   AppGalleryWebsiteRoute: AppGalleryWebsiteRoute,
   AppGroupsGroupIdRoute: AppGroupsGroupIdRoute,
+  AppHallsHallIdRoute: AppHallsHallIdRoute,
   AppLabGreetingRoute: AppLabGreetingRoute,
   AppManageApplicationsRoute: AppManageApplicationsRoute,
   AppManageBoardRoute: AppManageBoardRoute,
@@ -2507,11 +2550,12 @@ const AppRouteChildren: AppRouteChildren = {
   AppLabIndexRoute: AppLabIndexRoute,
   AppManageIndexRoute: AppManageIndexRoute,
   AppSystemIndexRoute: AppSystemIndexRoute,
-  AppActsActIdMusikRoute: AppActsActIdMusikRoute,
+  AppActsActIdMusicRoute: AppActsActIdMusicRoute,
   AppClubNewsSlugRoute: AppClubNewsSlugRoute,
-  AppEventsEventIdAblaufRoute: AppEventsEventIdAblaufRoute,
   AppEventsEventIdEditRoute: AppEventsEventIdEditRoute,
   AppEventsEventIdManageRoute: AppEventsEventIdManageRoute,
+  AppEventsEventIdRunningOrderRoute: AppEventsEventIdRunningOrderRoute,
+  AppEventsEventIdTablePlanRoute: AppEventsEventIdTablePlanRoute,
   AppGalleryAlbumIdEditRoute: AppGalleryAlbumIdEditRoute,
   AppGalleryAlbumIdSelectionRoute: AppGalleryAlbumIdSelectionRoute,
   AppGroupsGroupIdActsRoute: AppGroupsGroupIdActsRoute,

@@ -15,13 +15,13 @@ const planned = (overrides: Partial<PlannedEvent> = {}): PlannedEvent => ({
   priceCents: 1900,
   presaleStartsAt: '2026-11-14T10:00:00Z',
   detailsMissing: [],
-  review: { publishedAlbums: 0, publishedNews: 0 },
   steps: [
     { step: 'details', state: 'done', dueOn: '2026-10-18', opensOn: null },
     { step: 'tickets', state: 'open', dueOn: '2026-11-17', opensOn: null },
-    { step: 'review', state: 'waiting', dueOn: '2027-01-30', opensOn: '2027-01-17' },
   ],
   currentStep: 'tickets',
+  tablePlan: null,
+  withoutTablePlan: false,
   ...overrides,
 });
 
@@ -79,16 +79,6 @@ describe('paneActionOf', () => {
       kind: 'editTickets',
     },
     {
-      name: 'open review → album',
-      pane: 'review' as const,
-      overrides: {
-        steps: [
-          { step: 'review' as const, state: 'open' as const, dueOn: '2026-11-01', opensOn: null },
-        ],
-      },
-      kind: 'album',
-    },
-    {
       name: 'cancelled → nothing',
       pane: 'details' as const,
       overrides: { status: 'cancelled' as const, detailsMissing: ['picture' as const] },
@@ -100,8 +90,8 @@ describe('paneActionOf', () => {
         event: planned(overrides),
         pane,
         todayIsoDay: TODAY,
-        addsAlbums: true,
         runningOrder: 'hidden',
+        plansHall: false,
       }).kind,
     ).toBe(kind);
   });
@@ -112,8 +102,8 @@ describe('paneActionOf', () => {
         event: planned(),
         pane: 'details',
         todayIsoDay: TODAY,
-        addsAlbums: true,
         runningOrder: 'hidden',
+        plansHall: false,
       }),
     ).toEqual({ kind: 'step', pane: 'tickets' });
   });
@@ -125,7 +115,6 @@ describe('paneActionOf', () => {
       steps: [
         { step: 'details', state: 'done', dueOn: '2026-10-18', opensOn: null },
         { step: 'tickets', state: 'done', dueOn: '2026-11-17', opensOn: null },
-        { step: 'review', state: 'waiting', dueOn: '2027-01-30', opensOn: '2027-01-17' },
       ],
       currentStep: null,
     });
@@ -135,29 +124,13 @@ describe('paneActionOf', () => {
         event,
         pane: 'tickets',
         todayIsoDay: TODAY,
-        addsAlbums: true,
         runningOrder: 'hidden',
+        plansHall: false,
       }),
     ).toEqual({
       kind: 'step',
       pane: 'website',
     });
-  });
-
-  it('skips the album without the right to add one', () => {
-    const event = planned({
-      steps: [{ step: 'review', state: 'open', dueOn: '2026-11-01', opensOn: null }],
-    });
-
-    expect(
-      paneActionOf({
-        event,
-        pane: 'review',
-        todayIsoDay: TODAY,
-        addsAlbums: false,
-        runningOrder: 'hidden',
-      }).kind,
-    ).not.toBe('album');
   });
 
   it.each<{ name: string; presence: RunningOrderPresence; isOver: boolean; kind: string }>([
@@ -177,8 +150,52 @@ describe('paneActionOf', () => {
         event: planned({ isOver }),
         pane: 'runningOrder',
         todayIsoDay: TODAY,
-        addsAlbums: true,
         runningOrder: presence,
+        plansHall: false,
+      }).kind,
+    ).toBe(kind);
+  });
+
+  it.each<{
+    name: string;
+    overrides: Partial<PlannedEvent>;
+    plansHall: boolean;
+    kind: string;
+  }>([
+    { name: 'no plan yet → plan it', overrides: {}, plansHall: true, kind: 'planTablePlan' },
+    {
+      name: 'a plan → open it',
+      overrides: { tablePlan: { tables: 4, chairs: 32 } },
+      plansHall: true,
+      kind: 'openTablePlan',
+    },
+    {
+      name: 'a plan after the evening → open it',
+      overrides: { tablePlan: { tables: 4, chairs: 32 }, isOver: true },
+      plansHall: true,
+      kind: 'openTablePlan',
+    },
+    {
+      name: 'no plan after the evening → nothing',
+      overrides: { isOver: true },
+      plansHall: true,
+      kind: 'none',
+    },
+    {
+      name: 'no plan needed → nothing',
+      overrides: { withoutTablePlan: true },
+      plansHall: true,
+      kind: 'none',
+    },
+    { name: 'not a hall planner → nothing', overrides: {}, plansHall: false, kind: 'none' },
+  ])('table plan: $name', ({ overrides, plansHall, kind }) => {
+    expect(
+      paneActionOf({
+        event: planned(overrides),
+        pane: 'hall',
+        todayIsoDay: TODAY,
+        runningOrder: 'hidden',
+        plansHall,
       }).kind,
     ).toBe(kind);
   });

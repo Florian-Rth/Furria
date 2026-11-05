@@ -2,6 +2,7 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Events;
 using Furria.Api.Media;
+using Furria.Api.Tests.Halls;
 using Furria.Application.Authorization;
 using Furria.Core.Events;
 using Furria.Core.Media;
@@ -168,15 +169,11 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
 
                 Assert.Empty(result.DetailsMissing);
                 Assert.Equal(
-                    new EventReviewDto { PublishedAlbums = 0, PublishedNews = 0 },
-                    result.Review
-                );
-                Assert.Equal(
                     [
                         EventStepState.Done,
                         EventStepState.Done,
                         EventStepState.Open,
-                        EventStepState.Waiting,
+                        EventStepState.Open,
                     ],
                     result.Steps.Select(status => status.State)
                 );
@@ -444,4 +441,56 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
                     ),
             ct
         );
+
+    [Fact]
+    public async Task Should_ShowTheSavedCountsAndFinishTheHallStep_When_TablesStand()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(HallSeeds.HallManagerWithGala(_fixture.Today), ct);
+        var hallManager = await ctx.Identity.ClientForAsync(HallSeeds.HallManager, ct);
+        var eventId = ctx.Club.Events.IdOf(HallSeeds.Gala);
+        var hallId = await HallSteps.CreateHallAsync(
+            hallManager,
+            ctx.Club.Venues.IdOf(HallSeeds.Buergerhaus),
+            "Saal"
+        );
+        await HallSteps.CreatePlanAsync(hallManager, eventId, hallId);
+        await HallSteps.SavedPlanAsync(
+            hallManager,
+            eventId,
+            hallId,
+            1,
+            [
+                HallSteps.Row("r1", HallSeeds.BeerTableId, 4),
+                HallSteps.Row("r2", HallSeeds.RoundTableId, 2),
+            ],
+            chairs: 41
+        );
+        var lead = await ctx.Identity.ClientForAsync(HallSeeds.EventLead, ct);
+
+        var result = await HallSteps.EventOfAsync(lead, eventId);
+
+        Assert.Equal(new EventTablePlanDto { Tables = 6, Chairs = 41 }, result.TablePlan);
+        Assert.False(result.WithoutTablePlan);
+        Assert.Equal(
+            EventStepState.Done,
+            result.Steps.Single(status => status.Step == EventStep.Hall).State
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveTheHallStepOpenWithoutCounts_When_NoPlanExists()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(HallSeeds.HallManagerWithGala(_fixture.Today), ct);
+        var lead = await ctx.Identity.ClientForAsync(HallSeeds.EventLead, ct);
+
+        var result = await HallSteps.EventOfAsync(lead, ctx.Club.Events.IdOf(HallSeeds.Gala));
+
+        Assert.Null(result.TablePlan);
+        Assert.Equal(
+            EventStepState.Open,
+            result.Steps.Single(status => status.Step == EventStep.Hall).State
+        );
+    }
 }

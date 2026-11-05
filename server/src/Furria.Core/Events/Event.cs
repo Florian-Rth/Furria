@@ -25,6 +25,8 @@ public sealed class Event : ITimestamped
 
     public int? PictureId { get; set; }
 
+    public bool WithoutTablePlan { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }

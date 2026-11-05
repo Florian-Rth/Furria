@@ -1,11 +1,11 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Events;
+using Furria.Api.Tests.Halls;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Media;
-using Furria.Core.News;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -293,41 +293,15 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
                         },
                         new EventStepDto
                         {
-                            Step = EventStep.Review,
-                            State = EventStepState.Waiting,
-                            DueOn = new DateOnly(2027, 4, 3),
-                            OpensOn = new DateOnly(2027, 3, 21),
+                            Step = EventStep.Hall,
+                            State = EventStepState.Open,
+                            DueOn = new DateOnly(2027, 2, 27),
+                            OpensOn = null,
                         },
                     ],
                     planned.Steps
                 );
                 Assert.Equal(EventStep.Details, planned.CurrentStep);
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CountOnlyWhatTheWebsiteShows_When_TheEventIsReviewed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildPlanningAsync(ct);
-
-                var (_, result) = await ReadAsync(ctx, "vera", ct);
-
-                var opening = Assert.Single(result.Events, listed => listed.Title == Opening);
-                Assert.Equal(
-                    new EventReviewDto { PublishedAlbums = 1, PublishedNews = 1 },
-                    opening.Review
-                );
-                Assert.Equal(
-                    EventStepState.Done,
-                    opening.Steps.Single(status => status.Step == EventStep.Review).State
-                );
             }
         );
     }
@@ -498,33 +472,41 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
                                 presaleStartsAt: PresaleStarted
                             )
                             .AddEvent("opening", Opening, AtTheOpening, "buergerhaus")
-                    )
-                    .Gallery(gallery =>
-                        gallery
-                            .AddAlbum(
-                                "opening-album",
-                                Opening,
-                                calendarEntryAlias: "opening",
-                                publishedAt: Now.AddDays(-30)
-                            )
-                            .AddAlbum(
-                                "opening-outtakes",
-                                "Ausschnitte",
-                                calendarEntryAlias: "opening"
-                            )
-                    )
-                    .News(news =>
-                        news.AddNewsPost(
-                                "opening-report",
-                                title: "Session eröffnet",
-                                teaser: "Der Auftakt.",
-                                text: "Ein langer Abend.",
-                                category: NewsCategory.Session,
-                                eventAlias: "opening",
-                                publishedAt: Now.AddDays(-40)
-                            )
-                            .AddNewsPost("opening-draft", title: "Nachlese", eventAlias: "opening")
                     ),
             ct
         );
+
+    [Fact]
+    public async Task Should_CountEachEventsTables_When_SomeEventsHavePlans()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(HallSeeds.HallManagerWithGala(_fixture.Today), ct);
+        var hallManager = await ctx.Identity.ClientForAsync(HallSeeds.HallManager, ct);
+        var gala = ctx.Club.Events.IdOf(HallSeeds.Gala);
+        var hallId = await HallSteps.CreateHallAsync(
+            hallManager,
+            ctx.Club.Venues.IdOf(HallSeeds.Buergerhaus),
+            "Saal"
+        );
+        await HallSteps.CreatePlanAsync(hallManager, gala, hallId);
+        await HallSteps.SavedPlanAsync(
+            hallManager,
+            gala,
+            hallId,
+            1,
+            [HallSteps.Row("r1", HallSeeds.PlainTableId, 3)],
+            chairs: 10
+        );
+        var lead = await ctx.Identity.ClientForAsync(HallSeeds.EventLead, ct);
+
+        var (_, result) = await lead.GETAsync<GetEvents, GetEventsResponse>();
+
+        Assert.Equal(
+            ["1. Prunksitzung 3/10", "Kindersitzung –"],
+            result.Events.Select(listed =>
+                $"{listed.Title} "
+                + (listed.TablePlan is { } plan ? $"{plan.Tables}/{plan.Chairs}" : "–")
+            )
+        );
+    }
 }
