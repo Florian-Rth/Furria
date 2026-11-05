@@ -2,26 +2,21 @@ import { describe, expect, it } from 'vitest';
 import {
   BeerHandoverFormSchema,
   BeerPotSettingsFormSchema,
-  BeerStockFormSchema,
   beerCratesFormSchema,
   beerPaymentFormSchema,
+  beerStockFormSchema,
 } from './schemas';
 
-describe('BeerStockFormSchema', () => {
+describe('beerStockFormSchema', () => {
   it.each([
-    [
-      { direction: 'up', cause: 'delivery', crates: '24' },
-      { kind: 'delivery', crates: 24 },
-    ],
-    [
-      { direction: 'down', cause: 'breakage', crates: '2' },
-      { kind: 'correction', crates: -2, reason: 'breakage' },
-    ],
-    [{ direction: 'down', cause: 'delivery', crates: '2' }, null],
-    [{ direction: 'up', cause: null, crates: '2' }, null],
-    [{ direction: 'up', cause: 'delivery', crates: '0' }, null],
-  ] as const)('%j → %j', (form, expected) => {
-    const parsed = BeerStockFormSchema.safeParse(form);
+    [5, '24', { kind: 'delivery', crates: 24 }],
+    [5, '-2', { kind: 'correction', crates: -2 }],
+    [5, '-5', { kind: 'correction', crates: -5 }],
+    [5, '-6', null],
+    [5, '0', null],
+    [5, 'x', null],
+  ] as const)('stock %i, %s → %j', (stock, crates, expected) => {
+    const parsed = beerStockFormSchema(stock).safeParse({ crates });
 
     expect(parsed.success ? parsed.data : null).toEqual(expected);
   });
@@ -57,11 +52,14 @@ describe('beerCratesFormSchema', () => {
 describe('BeerPotSettingsFormSchema', () => {
   it.each([
     [
-      { person: null, cratePrice: '18,50', paymentLink: ' ', paymentNote: ' IBAN ' },
-      { cratePriceCents: 1850, paymentLink: null, paymentNote: 'IBAN' },
+      { person: null, cratePrice: '18,50', paymentLink: ' ' },
+      { cratePriceCents: 1850, paymentLink: null },
     ],
-    [{ person: null, cratePrice: '18', paymentLink: '', paymentNote: '' }, null],
-    [{ person: null, cratePrice: 'x', paymentLink: 'https://p', paymentNote: '' }, null],
+    [
+      { person: null, cratePrice: '18', paymentLink: ' https://p ' },
+      { cratePriceCents: 1800, paymentLink: 'https://p' },
+    ],
+    [{ person: null, cratePrice: 'x', paymentLink: 'https://p' }, null],
   ])('%j → %j', (form, expected) => {
     const parsed = BeerPotSettingsFormSchema.safeParse(form);
 
@@ -76,14 +74,13 @@ describe('BeerHandoverFormSchema', () => {
         person: { personId: 3, firstName: 'A', lastName: 'B' },
         cratePrice: '18',
         paymentLink: 'https://p',
-        paymentNote: '',
       },
       {
         person: { personId: 3, firstName: 'A', lastName: 'B' },
-        settings: { cratePriceCents: 1800, paymentLink: 'https://p', paymentNote: null },
+        settings: { cratePriceCents: 1800, paymentLink: 'https://p' },
       },
     ],
-    [{ person: null, cratePrice: '18', paymentLink: 'https://p', paymentNote: '' }, null],
+    [{ person: null, cratePrice: '18', paymentLink: 'https://p' }, null],
   ])('%j → %j', (form, expected) => {
     const parsed = BeerHandoverFormSchema.safeParse(form);
 

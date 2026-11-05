@@ -43,7 +43,7 @@ export const BeerPersonBody: FC<BeerPersonBodyProps> = ({ open, person, pane }) 
       <BeerPaymentBlock key={paymentKey} target={target} now={hub.now} landing={landing} />
     );
   const bookCrates = (): void => {
-    hub.openPane('/manage/beer-list/crates', person.personId);
+    hub.openPane('/beer-list/manage/crates', person.personId);
   };
   const filter = (): void => {
     hub.filterPerson(person.personId);

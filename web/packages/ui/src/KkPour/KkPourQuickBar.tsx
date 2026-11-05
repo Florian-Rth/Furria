@@ -6,6 +6,7 @@ import type { FC, MouseEvent, ReactNode } from 'react';
 import { focusRing } from '../internal/focus-ring';
 import { inkWash } from '../internal/ink-wash';
 import { raisedSurfaceScheme } from '../internal/raised-surface';
+import type { KkScheme } from '../internal/scheme-paint';
 import { applyScheme } from '../internal/scheme-paint';
 import type { KkIconName } from '../KkIcon';
 import { KkIcon } from '../KkIcon';
@@ -24,45 +25,58 @@ export interface KkPourQuickItem {
 
 const ICON = '1.25rem';
 
-const barPaint =
-  (placement: KkPourQuickPlacement) =>
-  (theme: Theme): CSSObject =>
-    placement === 'foot'
-      ? {
-          gap: 0.5,
-          p: 0.5,
-          borderRadius: `${kkTokens.radius.base}px`,
-          ...applyScheme(theme, raisedSurfaceScheme, {
-            light: { boxShadow: kkTokens.shadow.floating },
-            dark: { boxShadow: kkTokens.chrome.dark.lift },
-          }),
-        }
-      : { gap: 1 };
+const FLOATING: KkScheme = {
+  light: { boxShadow: kkTokens.shadow.floating },
+  dark: { boxShadow: kkTokens.chrome.dark.lift },
+};
+
+const NO_SCHEME: KkScheme = { light: {}, dark: {} };
+
+const barPaint = (placement: KkPourQuickPlacement): CSSObject =>
+  placement === 'foot' ? { gap: 1, alignItems: 'stretch' } : { gap: 1, alignItems: 'center' };
+
+const leadPaint = (theme: Theme): CSSObject => {
+  const { primary } = (theme.vars ?? theme).palette;
+
+  return {
+    backgroundColor: primary.main,
+    borderColor: primary.main,
+    color: primary.contrastText,
+    '@media (hover: hover)': { '&:hover': { backgroundColor: primary.dark } },
+  };
+};
+
+const followPaint = (theme: Theme): CSSObject => {
+  const wash = inkWash(theme, '6%');
+
+  return {
+    borderColor: 'divider',
+    color: 'text.primary',
+    '@media (hover: hover)': {
+      '&:hover': { backgroundImage: `linear-gradient(${wash}, ${wash})` },
+    },
+  };
+};
 
 const itemPaint =
   (placement: KkPourQuickPlacement, lead: boolean) =>
-  (theme: Theme): CSSObject => ({
-    flex: placement === 'foot' ? 1 : '0 0 auto',
-    flexDirection: placement === 'foot' ? 'column' : 'row',
-    gap: placement === 'foot' ? 0.25 : 0.75,
-    minHeight: placement === 'foot' ? '3.25rem' : '2.5rem',
-    px: placement === 'foot' ? 0.5 : 1.75,
-    borderRadius: `${kkTokens.radius.base}px`,
-    borderWidth: placement === 'foot' ? 0 : kkTokens.line.hair,
-    borderStyle: 'solid',
-    borderColor: 'divider',
-    color: 'text.primary',
-    ...focusRing(theme),
-    ...(lead
-      ? {
-          backgroundColor: (theme.vars ?? theme).palette.primary.main,
-          borderColor: (theme.vars ?? theme).palette.primary.main,
-          color: (theme.vars ?? theme).palette.primary.contrastText,
-        }
-      : {
-          '@media (hover: hover)': { '&:hover': { backgroundColor: inkWash(theme, '6%') } },
-        }),
-  });
+  (theme: Theme): CSSObject => {
+    const floats = placement === 'foot';
+    const fill = lead ? NO_SCHEME : raisedSurfaceScheme;
+
+    return {
+      flex: floats && lead ? '1 1 auto' : '0 0 auto',
+      gap: 0.75,
+      minHeight: floats ? '3rem' : '2.5rem',
+      px: floats ? 1.5 : 1.75,
+      borderRadius: `${kkTokens.radius.pill}px`,
+      borderWidth: kkTokens.line.hair,
+      borderStyle: 'solid',
+      ...focusRing(theme),
+      ...applyScheme(theme, fill, floats ? FLOATING : NO_SCHEME),
+      ...(lead ? leadPaint(theme) : followPaint(theme)),
+    };
+  };
 
 const markOf = (icon: KkPourQuickItem['icon']): ReactNode =>
   icon === 'crate' ? (
@@ -89,7 +103,6 @@ export const KkPourQuickBar: FC<KkPourQuickBarProps> = ({
   const choose = (event: MouseEvent<HTMLButtonElement>): void => {
     onSelect(event.currentTarget.dataset.id ?? '');
   };
-  const textVariant = placement === 'foot' ? 'caption' : 'body2';
   const buttons = items.map((item) => {
     const mark = markOf(item.icon);
     const paint = itemPaint(placement, item.lead === true);
@@ -104,7 +117,7 @@ export const KkPourQuickBar: FC<KkPourQuickBarProps> = ({
       >
         {mark}
         <Typography
-          variant={textVariant}
+          variant="body2"
           component="span"
           noWrap
           sx={{ fontWeight: 800, color: 'inherit', lineHeight: 1.2 }}

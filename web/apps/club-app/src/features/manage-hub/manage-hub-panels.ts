@@ -9,8 +9,7 @@ export type ManagePanelId =
   | 'clubRecord'
   | 'sessions'
   | 'venues'
-  | 'keys'
-  | 'beerList';
+  | 'keys';
 
 export type ManageBankId = 'belonging' | 'rights' | 'record';
 
@@ -73,5 +72,4 @@ export const MANAGE_PANELS: readonly ManagePanelDefinition[] = [
   },
   { id: 'venues', bank: 'record', title: 'Orte', icon: 'place', to: '/manage/venues' },
   { id: 'keys', bank: 'record', title: 'Schlüssel', icon: 'key', to: '/manage/keys' },
-  { id: 'beerList', bank: 'record', title: 'Bierliste', icon: 'fees', to: '/manage/beer-list' },
 ];

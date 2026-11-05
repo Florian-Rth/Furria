@@ -14,7 +14,6 @@ const EMPTY_HUB: ManageHub = {
   keys: null,
   accounts: null,
   applications: null,
-  beerList: null,
   toDos: [],
 };
 

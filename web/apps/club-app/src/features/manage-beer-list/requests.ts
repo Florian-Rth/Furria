@@ -1,7 +1,6 @@
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type {
-  BeerCorrectionReason,
   BeerEnrollmentsResponse,
   BeerHandover,
   BeerJournalResponse,
@@ -59,7 +58,6 @@ export const requestBeerPotOpening = (
       ownerPersonId,
       cratePriceCents: settings.cratePriceCents,
       paymentLink: settings.paymentLink,
-      paymentNote: settings.paymentNote,
     },
     schema: BeerPotCreatedSchema,
     accessToken,
@@ -75,7 +73,6 @@ export const requestBeerPotSettings = (
     body: {
       cratePriceCents: settings.cratePriceCents,
       paymentLink: settings.paymentLink,
-      paymentNote: settings.paymentNote,
     },
     schema: NoContentSchema,
     accessToken,
@@ -96,12 +93,11 @@ export const requestBeerDelivery = (
 export const requestBeerStockCorrection = (
   beerPotId: number,
   crates: number,
-  reason: BeerCorrectionReason,
   accessToken: string,
 ): Promise<void> =>
   apiFetch(`${POTS}/${beerPotId}/stock-corrections`, {
     method: 'POST',
-    body: { crates, reason },
+    body: { crates },
     schema: NoContentSchema,
     accessToken,
   });
@@ -173,7 +169,6 @@ export const requestBeerPotHandover = (
       successorPersonId,
       cratePriceCents: settings.cratePriceCents,
       paymentLink: settings.paymentLink,
-      paymentNote: settings.paymentNote,
     },
     schema: BeerHandoverSchema,
     accessToken,

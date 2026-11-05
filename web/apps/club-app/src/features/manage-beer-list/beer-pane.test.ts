@@ -3,31 +3,31 @@ import { beerPaneKeyOf, beerPaneOf } from './beer-pane';
 
 describe('beerPaneOf', () => {
   it.each([
-    ['/_app/manage/beer-list/stock', {}, {}, { kind: 'stock' }],
-    ['/_app/manage/beer-list/payment', {}, {}, { kind: 'payment', personId: null }],
-    ['/_app/manage/beer-list/payment', {}, { person: 7 }, { kind: 'payment', personId: 7 }],
-    ['/_app/manage/beer-list/crates', {}, { person: 3 }, { kind: 'crates', personId: 3 }],
-    ['/_app/manage/beer-list/crates', {}, { person: -1 }, { kind: 'crates', personId: null }],
-    ['/_app/manage/beer-list/settings', {}, {}, { kind: 'settings' }],
-    ['/_app/manage/beer-list/enrollments', {}, {}, { kind: 'enrollments' }],
-    ['/_app/manage/beer-list/handover', {}, {}, { kind: 'handover' }],
-    ['/_app/manage/beer-list/code', {}, {}, { kind: 'code' }],
-    ['/_app/manage/beer-list/pots', {}, {}, { kind: 'pots' }],
+    ['/_app/beer-list_/manage/stock', {}, {}, { kind: 'stock' }],
+    ['/_app/beer-list_/manage/payment', {}, {}, { kind: 'payment', personId: null }],
+    ['/_app/beer-list_/manage/payment', {}, { person: 7 }, { kind: 'payment', personId: 7 }],
+    ['/_app/beer-list_/manage/crates', {}, { person: 3 }, { kind: 'crates', personId: 3 }],
+    ['/_app/beer-list_/manage/crates', {}, { person: -1 }, { kind: 'crates', personId: null }],
+    ['/_app/beer-list_/manage/settings', {}, {}, { kind: 'settings' }],
+    ['/_app/beer-list_/manage/enrollments', {}, {}, { kind: 'enrollments' }],
+    ['/_app/beer-list_/manage/handover', {}, {}, { kind: 'handover' }],
+    ['/_app/beer-list_/manage/code', {}, {}, { kind: 'code' }],
+    ['/_app/beer-list_/manage/pots', {}, {}, { kind: 'pots' }],
     [
-      '/_app/manage/beer-list/persons/$personId',
+      '/_app/beer-list_/manage/persons/$personId',
       { personId: '12' },
       {},
       { kind: 'person', personId: 12 },
     ],
-    ['/_app/manage/beer-list/persons/$personId', { personId: 'x' }, {}, null],
+    ['/_app/beer-list_/manage/persons/$personId', { personId: 'x' }, {}, null],
     [
-      '/_app/manage/beer-list/pots_/$beerPotId',
+      '/_app/beer-list_/manage/pots_/$beerPotId',
       { beerPotId: '4' },
       {},
       { kind: 'closedPot', beerPotId: 4 },
     ],
-    ['/_app/manage/beer-list/pots_/$beerPotId', { beerPotId: '0' }, {}, null],
-    ['/_app/manage/beer-list/', {}, {}, null],
+    ['/_app/beer-list_/manage/pots_/$beerPotId', { beerPotId: '0' }, {}, null],
+    ['/_app/beer-list_/manage/', {}, {}, null],
   ])('%s %j %j → %j', (routeId, params, search, expected) => {
     expect(beerPaneOf({ routeId, params, search })).toEqual(expected);
   });

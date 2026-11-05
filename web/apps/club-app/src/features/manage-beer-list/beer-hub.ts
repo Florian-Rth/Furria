@@ -1,7 +1,6 @@
 import type { PersonRef } from '@/lib/api/schemas';
 import { dayKeyOf } from './beer-time';
 import type {
-  BeerCorrectionReason,
   BeerEnrollment,
   BeerJournalCrate,
   BeerJournalResponse,
@@ -9,9 +8,7 @@ import type {
   BeerPotForm,
   BeerPotSettings,
   BeerPotTab,
-  BeerStockCause,
   BeerStockChange,
-  BeerStockDirection,
   BeerStockResponse,
 } from './schemas';
 
@@ -240,33 +237,12 @@ export const crateStateOf = (crate: BeerJournalCrate, now: string): BeerTabState
   return (openDaysOf(crate.bookedAt, now) ?? 0) >= OVERDUE_AFTER_DAYS ? 'overdue' : 'open';
 };
 
-export const STOCK_CAUSES: Record<BeerStockDirection, readonly BeerStockCause[]> = {
-  up: ['delivery', 'miscount'],
-  down: ['shrinkage', 'breakage', 'miscount'],
-};
-
-export const causeFor = (
-  direction: BeerStockDirection,
-  cause: BeerStockCause | null,
-): BeerStockCause | null =>
-  cause !== null && STOCK_CAUSES[direction].includes(cause) ? cause : null;
-
-export const stockChangeOf = (
-  direction: BeerStockDirection,
-  cause: BeerStockCause | null,
-  count: number,
-): BeerStockChange | null => {
-  const fitting = causeFor(direction, cause);
-
-  if (fitting === null || count < 1) {
+export const stockChangeOf = (crates: number): BeerStockChange | null => {
+  if (crates === 0) {
     return null;
   }
 
-  if (fitting === 'delivery') {
-    return { kind: 'delivery', crates: count };
-  }
-
-  return { kind: 'correction', crates: direction === 'up' ? count : -count, reason: fitting };
+  return { kind: crates > 0 ? 'delivery' : 'correction', crates };
 };
 
 export const stockDeltaOf = (change: BeerStockChange | null): number => change?.crates ?? 0;
@@ -275,6 +251,20 @@ export const countOfText = (text: string): number => {
   const value = Number.parseInt(text, 10);
 
   return Number.isFinite(value) && value > 0 ? value : 0;
+};
+
+const SIGNED_COUNT_PATTERN = /^([-−]?)(\d+)$/;
+
+export const signedCountOfText = (text: string): number => {
+  const match = SIGNED_COUNT_PATTERN.exec(text.trim());
+
+  if (match === null) {
+    return 0;
+  }
+
+  const count = Number(match[2]);
+
+  return match[1] === '' ? count : -count;
 };
 
 const PRICE_PATTERN = /^(\d{1,3})(?:[,.](\d{1,2}))?$/;
@@ -304,7 +294,6 @@ export const potFormOf = (
   person,
   cratePrice: settings === null ? '' : priceTextOf(settings.cratePriceCents),
   paymentLink: settings?.paymentLink ?? '',
-  paymentNote: settings?.paymentNote ?? '',
 });
 
 export type BeerJournalKind =
@@ -326,7 +315,6 @@ export interface BeerJournalEntry {
   count: number;
   stockDelta: number;
   cents: number | null;
-  reason: BeerCorrectionReason | null;
   movement: BeerMovement['kind'] | null;
   undone: boolean;
 }
@@ -378,7 +366,6 @@ const crateEntriesOf = (crates: readonly BeerJournalCrate[]): readonly BeerJourn
         count: group.length,
         stockDelta: undone ? 0 : -group.length,
         cents: group.reduce((sum, crate) => sum + crate.priceCents, 0),
-        reason: null,
         movement: null,
         undone,
       },
@@ -395,7 +382,6 @@ const movementEntryOf = (movement: BeerMovement): BeerJournalEntry => ({
   count: Math.abs(movement.crates),
   stockDelta: movement.crates,
   cents: null,
-  reason: movement.reason,
   movement: movement.kind,
   undone: false,
 });
@@ -415,7 +401,6 @@ const enrollmentEntriesOf = (enrollment: BeerEnrollment): readonly BeerJournalEn
     count: 0,
     stockDelta: 0,
     cents: null,
-    reason: null,
     movement: null,
     undone: false,
   };
@@ -459,7 +444,6 @@ export const journalOf = ({
         count: payment.crates,
         stockDelta: 0,
         cents: payment.amountCents,
-        reason: null,
         movement: null,
         undone: payment.undoneAt !== null,
       }),

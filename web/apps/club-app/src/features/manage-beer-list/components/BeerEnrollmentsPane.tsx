@@ -10,7 +10,7 @@ import { BeerEnrollmentSection } from './BeerEnrollmentSection';
 import { BeerPaneFrame } from './BeerPaneFrame';
 import { BeerSettingsSwitch } from './BeerSettingsSwitch';
 
-const SWITCHER = <BeerSettingsSwitch value="/manage/beer-list/enrollments" />;
+const SWITCHER = <BeerSettingsSwitch value="/beer-list/manage/enrollments" />;
 
 export const BeerEnrollmentsPane: FC = () => {
   const hub = useBeerHubContext();

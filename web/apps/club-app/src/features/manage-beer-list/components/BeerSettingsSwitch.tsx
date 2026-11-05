@@ -3,13 +3,7 @@ import type { KkSegmentSwitchItem } from '@furria/ui/KkSegmentSwitch';
 import { KkSegmentSwitch } from '@furria/ui/KkSegmentSwitch';
 import type { FC } from 'react';
 import { useBeerHubContext } from '../beer-hub-context';
-import {
-  CODE_TITLE,
-  ENROLLMENTS_TITLE,
-  HANDOVER_TITLE,
-  SETTINGS_TITLE,
-  SETUP_SWITCH_LABEL,
-} from '../beer-hub-copy';
+import { SETUP_SWITCH_LABEL, SETUP_SWITCH_LABELS } from '../beer-hub-copy';
 import type { BeerPanePath } from '../hooks/use-beer-hub';
 
 interface SetupPane {
@@ -19,10 +13,14 @@ interface SetupPane {
 }
 
 const SETUP_PANES: readonly SetupPane[] = [
-  { path: '/manage/beer-list/settings', label: SETTINGS_TITLE, icon: 'settings' },
-  { path: '/manage/beer-list/enrollments', label: ENROLLMENTS_TITLE, icon: 'person' },
-  { path: '/manage/beer-list/code', label: CODE_TITLE, icon: 'qr' },
-  { path: '/manage/beer-list/handover', label: HANDOVER_TITLE, icon: 'handshake' },
+  { path: '/beer-list/manage/settings', label: SETUP_SWITCH_LABELS.settings, icon: 'settings' },
+  {
+    path: '/beer-list/manage/enrollments',
+    label: SETUP_SWITCH_LABELS.enrollments,
+    icon: 'person',
+  },
+  { path: '/beer-list/manage/code', label: SETUP_SWITCH_LABELS.code, icon: 'qr' },
+  { path: '/beer-list/manage/handover', label: SETUP_SWITCH_LABELS.handover, icon: 'handshake' },
 ];
 
 const ITEMS: readonly KkSegmentSwitchItem[] = SETUP_PANES.map((pane) => ({

@@ -66,14 +66,6 @@ export const ManageApplicationsPanelSchema = z.object({
 });
 export type ManageApplicationsPanel = z.infer<typeof ManageApplicationsPanelSchema>;
 
-export const ManageBeerListPanelSchema = z.object({
-  hasOpenPot: z.boolean(),
-  stockCrates: z.number().int(),
-  openTabCount: z.number().int(),
-  openCents: z.number().int(),
-});
-export type ManageBeerListPanel = z.infer<typeof ManageBeerListPanelSchema>;
-
 export const ManageHubSchema = z.object({
   persons: ManagePersonsPanelSchema.nullable(),
   groups: ManageGroupsPanelSchema.nullable(),
@@ -85,7 +77,6 @@ export const ManageHubSchema = z.object({
   keys: ManageKeysPanelSchema.nullable(),
   accounts: ManageAccountsPanelSchema.nullable(),
   applications: ManageApplicationsPanelSchema.nullable(),
-  beerList: ManageBeerListPanelSchema.nullable(),
   toDos: knownKindsOnly(ToDoSchema, TO_DO_KINDS),
 });
 export type ManageHub = z.infer<typeof ManageHubSchema>;

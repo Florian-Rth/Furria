@@ -50,7 +50,6 @@ import { Route as AppManageKeysRouteImport } from './routes/_app/manage.keys'
 import { Route as AppManageGroupsRouteImport } from './routes/_app/manage.groups'
 import { Route as AppManageClubRecordRouteImport } from './routes/_app/manage.club-record'
 import { Route as AppManageBoardRouteImport } from './routes/_app/manage.board'
-import { Route as AppManageBeerListRouteImport } from './routes/_app/manage.beer-list'
 import { Route as AppManageApplicationsRouteImport } from './routes/_app/manage.applications'
 import { Route as AppLabGreetingRouteImport } from './routes/_app/lab_.$greeting'
 import { Route as AppGroupsGroupIdRouteImport } from './routes/_app/groups_.$groupId'
@@ -66,12 +65,13 @@ import { Route as AppEventsEventIdRouteImport } from './routes/_app/events_.$eve
 import { Route as AppClubNewsRouteImport } from './routes/_app/club_.news'
 import { Route as AppCalendarNewRouteImport } from './routes/_app/calendar_.new'
 import { Route as AppCalendarCalendarEntryIdRouteImport } from './routes/_app/calendar_.$calendarEntryId'
+import { Route as AppBeerListManageRouteImport } from './routes/_app/beer-list_.manage'
 import { Route as AppAnnouncementsNewRouteImport } from './routes/_app/announcements_.new'
 import { Route as AppAnnouncementsAnnouncementIdRouteImport } from './routes/_app/announcements_.$announcementId'
 import { Route as AppActsActIdRouteImport } from './routes/_app/acts_.$actId'
 import { Route as AppPersonalProfileRouteImport } from './routes/_app/_personal.profile'
 import { Route as AppAffiliatedMembersRouteImport } from './routes/_app/_affiliated.members'
-import { Route as AppManageBeerListIndexRouteImport } from './routes/_app/manage.beer-list.index'
+import { Route as AppBeerListManageIndexRouteImport } from './routes/_app/beer-list_.manage.index'
 import { Route as AppManageVenuesNewRouteImport } from './routes/_app/manage.venues_.new'
 import { Route as AppManageVenuesVenueIdRouteImport } from './routes/_app/manage.venues_.$venueId'
 import { Route as AppManageSessionsNewRouteImport } from './routes/_app/manage.sessions_.new'
@@ -86,14 +86,6 @@ import { Route as AppManageClubRecordContactRouteImport } from './routes/_app/ma
 import { Route as AppManageClubRecordAccessRouteImport } from './routes/_app/manage.club-record_.access'
 import { Route as AppManageBoardNewRouteImport } from './routes/_app/manage.board_.new'
 import { Route as AppManageBoardBoardOfficeIdRouteImport } from './routes/_app/manage.board_.$boardOfficeId'
-import { Route as AppManageBeerListStockRouteImport } from './routes/_app/manage.beer-list.stock'
-import { Route as AppManageBeerListSettingsRouteImport } from './routes/_app/manage.beer-list.settings'
-import { Route as AppManageBeerListPotsRouteImport } from './routes/_app/manage.beer-list.pots'
-import { Route as AppManageBeerListPaymentRouteImport } from './routes/_app/manage.beer-list.payment'
-import { Route as AppManageBeerListHandoverRouteImport } from './routes/_app/manage.beer-list.handover'
-import { Route as AppManageBeerListEnrollmentsRouteImport } from './routes/_app/manage.beer-list.enrollments'
-import { Route as AppManageBeerListCratesRouteImport } from './routes/_app/manage.beer-list.crates'
-import { Route as AppManageBeerListCodeRouteImport } from './routes/_app/manage.beer-list.code'
 import { Route as AppManageApplicationsMembershipApplicationIdRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId'
 import { Route as AppLabWelcomeCaseRouteImport } from './routes/_app/lab_.welcome.$case'
 import { Route as AppGroupsGroupIdEditRouteImport } from './routes/_app/groups_.$groupId_.edit'
@@ -105,6 +97,14 @@ import { Route as AppEventsEventIdManageRouteImport } from './routes/_app/events
 import { Route as AppEventsEventIdEditRouteImport } from './routes/_app/events_.$eventId_.edit'
 import { Route as AppEventsEventIdAblaufRouteImport } from './routes/_app/events_.$eventId_.ablauf'
 import { Route as AppClubNewsSlugRouteImport } from './routes/_app/club_.news_.$slug'
+import { Route as AppBeerListManageStockRouteImport } from './routes/_app/beer-list_.manage.stock'
+import { Route as AppBeerListManageSettingsRouteImport } from './routes/_app/beer-list_.manage.settings'
+import { Route as AppBeerListManagePotsRouteImport } from './routes/_app/beer-list_.manage.pots'
+import { Route as AppBeerListManagePaymentRouteImport } from './routes/_app/beer-list_.manage.payment'
+import { Route as AppBeerListManageHandoverRouteImport } from './routes/_app/beer-list_.manage.handover'
+import { Route as AppBeerListManageEnrollmentsRouteImport } from './routes/_app/beer-list_.manage.enrollments'
+import { Route as AppBeerListManageCratesRouteImport } from './routes/_app/beer-list_.manage.crates'
+import { Route as AppBeerListManageCodeRouteImport } from './routes/_app/beer-list_.manage.code'
 import { Route as AppActsActIdMusikRouteImport } from './routes/_app/acts_.$actId_.musik'
 import { Route as AppPersonalProfileSecurityRouteImport } from './routes/_app/_personal.profile_.security'
 import { Route as AppAffiliatedMembersPersonIdRouteImport } from './routes/_app/_affiliated.members_.$personId'
@@ -117,8 +117,6 @@ import { Route as AppManageKeysHoldingsKeyHoldingIdRouteImport } from './routes/
 import { Route as AppManageGroupsKindsNewRouteImport } from './routes/_app/manage.groups_.kinds.new'
 import { Route as AppManageGroupsKindsGroupKindIdRouteImport } from './routes/_app/manage.groups_.kinds.$groupKindId'
 import { Route as AppManageBoardBoardOfficeIdEditRouteImport } from './routes/_app/manage.board_.$boardOfficeId_.edit'
-import { Route as AppManageBeerListPotsBeerPotIdRouteImport } from './routes/_app/manage.beer-list.pots_.$beerPotId'
-import { Route as AppManageBeerListPersonsPersonIdRouteImport } from './routes/_app/manage.beer-list.persons.$personId'
 import { Route as AppManageApplicationsMembershipApplicationIdAdmissionRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId_.admission'
 import { Route as AppGroupsGroupIdUsualTrainingTimesNewRouteImport } from './routes/_app/groups_.$groupId_.usual-training-times.new'
 import { Route as AppGroupsGroupIdUsualTrainingTimesUsualTrainingTimeIdRouteImport } from './routes/_app/groups_.$groupId_.usual-training-times.$usualTrainingTimeId'
@@ -127,6 +125,8 @@ import { Route as AppGroupsGroupIdMembershipsNewRouteImport } from './routes/_ap
 import { Route as AppGroupsGroupIdMembershipsMembershipIdRouteImport } from './routes/_app/groups_.$groupId_.memberships.$membershipId'
 import { Route as AppGroupsGroupIdAdminsNewRouteImport } from './routes/_app/groups_.$groupId_.admins.new'
 import { Route as AppGroupsGroupIdAdminsAdminIdRouteImport } from './routes/_app/groups_.$groupId_.admins.$adminId'
+import { Route as AppBeerListManagePotsBeerPotIdRouteImport } from './routes/_app/beer-list_.manage.pots_.$beerPotId'
+import { Route as AppBeerListManagePersonsPersonIdRouteImport } from './routes/_app/beer-list_.manage.persons.$personId'
 import { Route as AppPersonalProfileSecurityPasswordRouteImport } from './routes/_app/_personal.profile_.security_.password'
 import { Route as AppPersonalProfileSecurityLoginEmailRouteImport } from './routes/_app/_personal.profile_.security_.login-email'
 import { Route as AppPersonalProfileContactEditRouteImport } from './routes/_app/_personal.profile_.contact.edit'
@@ -344,11 +344,6 @@ const AppManageBoardRoute = AppManageBoardRouteImport.update({
   path: '/manage/board',
   getParentRoute: () => AppRoute,
 } as any)
-const AppManageBeerListRoute = AppManageBeerListRouteImport.update({
-  id: '/manage/beer-list',
-  path: '/manage/beer-list',
-  getParentRoute: () => AppRoute,
-} as any)
 const AppManageApplicationsRoute = AppManageApplicationsRouteImport.update({
   id: '/manage/applications',
   path: '/manage/applications',
@@ -425,6 +420,11 @@ const AppCalendarCalendarEntryIdRoute =
     path: '/calendar/$calendarEntryId',
     getParentRoute: () => AppRoute,
   } as any)
+const AppBeerListManageRoute = AppBeerListManageRouteImport.update({
+  id: '/beer-list_/manage',
+  path: '/beer-list/manage',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppAnnouncementsNewRoute = AppAnnouncementsNewRouteImport.update({
   id: '/announcements_/new',
   path: '/announcements/new',
@@ -451,10 +451,10 @@ const AppAffiliatedMembersRoute = AppAffiliatedMembersRouteImport.update({
   path: '/members',
   getParentRoute: () => AppAffiliatedRoute,
 } as any)
-const AppManageBeerListIndexRoute = AppManageBeerListIndexRouteImport.update({
+const AppBeerListManageIndexRoute = AppBeerListManageIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AppManageBeerListRoute,
+  getParentRoute: () => AppBeerListManageRoute,
 } as any)
 const AppManageVenuesNewRoute = AppManageVenuesNewRouteImport.update({
   id: '/manage/venues_/new',
@@ -532,50 +532,6 @@ const AppManageBoardBoardOfficeIdRoute =
     path: '/manage/board/$boardOfficeId',
     getParentRoute: () => AppRoute,
   } as any)
-const AppManageBeerListStockRoute = AppManageBeerListStockRouteImport.update({
-  id: '/stock',
-  path: '/stock',
-  getParentRoute: () => AppManageBeerListRoute,
-} as any)
-const AppManageBeerListSettingsRoute =
-  AppManageBeerListSettingsRouteImport.update({
-    id: '/settings',
-    path: '/settings',
-    getParentRoute: () => AppManageBeerListRoute,
-  } as any)
-const AppManageBeerListPotsRoute = AppManageBeerListPotsRouteImport.update({
-  id: '/pots',
-  path: '/pots',
-  getParentRoute: () => AppManageBeerListRoute,
-} as any)
-const AppManageBeerListPaymentRoute =
-  AppManageBeerListPaymentRouteImport.update({
-    id: '/payment',
-    path: '/payment',
-    getParentRoute: () => AppManageBeerListRoute,
-  } as any)
-const AppManageBeerListHandoverRoute =
-  AppManageBeerListHandoverRouteImport.update({
-    id: '/handover',
-    path: '/handover',
-    getParentRoute: () => AppManageBeerListRoute,
-  } as any)
-const AppManageBeerListEnrollmentsRoute =
-  AppManageBeerListEnrollmentsRouteImport.update({
-    id: '/enrollments',
-    path: '/enrollments',
-    getParentRoute: () => AppManageBeerListRoute,
-  } as any)
-const AppManageBeerListCratesRoute = AppManageBeerListCratesRouteImport.update({
-  id: '/crates',
-  path: '/crates',
-  getParentRoute: () => AppManageBeerListRoute,
-} as any)
-const AppManageBeerListCodeRoute = AppManageBeerListCodeRouteImport.update({
-  id: '/code',
-  path: '/code',
-  getParentRoute: () => AppManageBeerListRoute,
-} as any)
 const AppManageApplicationsMembershipApplicationIdRoute =
   AppManageApplicationsMembershipApplicationIdRouteImport.update({
     id: '/manage/applications_/$membershipApplicationId',
@@ -633,6 +589,50 @@ const AppClubNewsSlugRoute = AppClubNewsSlugRouteImport.update({
   id: '/club_/news_/$slug',
   path: '/club/news/$slug',
   getParentRoute: () => AppRoute,
+} as any)
+const AppBeerListManageStockRoute = AppBeerListManageStockRouteImport.update({
+  id: '/stock',
+  path: '/stock',
+  getParentRoute: () => AppBeerListManageRoute,
+} as any)
+const AppBeerListManageSettingsRoute =
+  AppBeerListManageSettingsRouteImport.update({
+    id: '/settings',
+    path: '/settings',
+    getParentRoute: () => AppBeerListManageRoute,
+  } as any)
+const AppBeerListManagePotsRoute = AppBeerListManagePotsRouteImport.update({
+  id: '/pots',
+  path: '/pots',
+  getParentRoute: () => AppBeerListManageRoute,
+} as any)
+const AppBeerListManagePaymentRoute =
+  AppBeerListManagePaymentRouteImport.update({
+    id: '/payment',
+    path: '/payment',
+    getParentRoute: () => AppBeerListManageRoute,
+  } as any)
+const AppBeerListManageHandoverRoute =
+  AppBeerListManageHandoverRouteImport.update({
+    id: '/handover',
+    path: '/handover',
+    getParentRoute: () => AppBeerListManageRoute,
+  } as any)
+const AppBeerListManageEnrollmentsRoute =
+  AppBeerListManageEnrollmentsRouteImport.update({
+    id: '/enrollments',
+    path: '/enrollments',
+    getParentRoute: () => AppBeerListManageRoute,
+  } as any)
+const AppBeerListManageCratesRoute = AppBeerListManageCratesRouteImport.update({
+  id: '/crates',
+  path: '/crates',
+  getParentRoute: () => AppBeerListManageRoute,
+} as any)
+const AppBeerListManageCodeRoute = AppBeerListManageCodeRouteImport.update({
+  id: '/code',
+  path: '/code',
+  getParentRoute: () => AppBeerListManageRoute,
 } as any)
 const AppActsActIdMusikRoute = AppActsActIdMusikRouteImport.update({
   id: '/acts_/$actId_/musik',
@@ -704,18 +704,6 @@ const AppManageBoardBoardOfficeIdEditRoute =
     path: '/manage/board/$boardOfficeId/edit',
     getParentRoute: () => AppRoute,
   } as any)
-const AppManageBeerListPotsBeerPotIdRoute =
-  AppManageBeerListPotsBeerPotIdRouteImport.update({
-    id: '/pots_/$beerPotId',
-    path: '/pots/$beerPotId',
-    getParentRoute: () => AppManageBeerListRoute,
-  } as any)
-const AppManageBeerListPersonsPersonIdRoute =
-  AppManageBeerListPersonsPersonIdRouteImport.update({
-    id: '/persons/$personId',
-    path: '/persons/$personId',
-    getParentRoute: () => AppManageBeerListRoute,
-  } as any)
 const AppManageApplicationsMembershipApplicationIdAdmissionRoute =
   AppManageApplicationsMembershipApplicationIdAdmissionRouteImport.update({
     id: '/manage/applications_/$membershipApplicationId_/admission',
@@ -763,6 +751,18 @@ const AppGroupsGroupIdAdminsAdminIdRoute =
     id: '/groups_/$groupId_/admins/$adminId',
     path: '/groups/$groupId/admins/$adminId',
     getParentRoute: () => AppRoute,
+  } as any)
+const AppBeerListManagePotsBeerPotIdRoute =
+  AppBeerListManagePotsBeerPotIdRouteImport.update({
+    id: '/pots_/$beerPotId',
+    path: '/pots/$beerPotId',
+    getParentRoute: () => AppBeerListManageRoute,
+  } as any)
+const AppBeerListManagePersonsPersonIdRoute =
+  AppBeerListManagePersonsPersonIdRouteImport.update({
+    id: '/persons/$personId',
+    path: '/persons/$personId',
+    getParentRoute: () => AppBeerListManageRoute,
   } as any)
 const AppPersonalProfileSecurityPasswordRoute =
   AppPersonalProfileSecurityPasswordRouteImport.update({
@@ -875,6 +875,7 @@ export interface FileRoutesByFullPath {
   '/acts/$actId': typeof AppActsActIdRoute
   '/announcements/$announcementId': typeof AppAnnouncementsAnnouncementIdRoute
   '/announcements/new': typeof AppAnnouncementsNewRoute
+  '/beer-list/manage': typeof AppBeerListManageRouteWithChildren
   '/calendar/$calendarEntryId': typeof AppCalendarCalendarEntryIdRoute
   '/calendar/new': typeof AppCalendarNewRoute
   '/club/news': typeof AppClubNewsRoute
@@ -890,7 +891,6 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId': typeof AppGroupsGroupIdRoute
   '/lab/$greeting': typeof AppLabGreetingRoute
   '/manage/applications': typeof AppManageApplicationsRoute
-  '/manage/beer-list': typeof AppManageBeerListRouteWithChildren
   '/manage/board': typeof AppManageBoardRoute
   '/manage/club-record': typeof AppManageClubRecordRoute
   '/manage/groups': typeof AppManageGroupsRoute
@@ -912,6 +912,14 @@ export interface FileRoutesByFullPath {
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/profile/security': typeof AppPersonalProfileSecurityRoute
   '/acts/$actId/musik': typeof AppActsActIdMusikRoute
+  '/beer-list/manage/code': typeof AppBeerListManageCodeRoute
+  '/beer-list/manage/crates': typeof AppBeerListManageCratesRoute
+  '/beer-list/manage/enrollments': typeof AppBeerListManageEnrollmentsRoute
+  '/beer-list/manage/handover': typeof AppBeerListManageHandoverRoute
+  '/beer-list/manage/payment': typeof AppBeerListManagePaymentRoute
+  '/beer-list/manage/pots': typeof AppBeerListManagePotsRoute
+  '/beer-list/manage/settings': typeof AppBeerListManageSettingsRoute
+  '/beer-list/manage/stock': typeof AppBeerListManageStockRoute
   '/club/news/$slug': typeof AppClubNewsSlugRoute
   '/events/$eventId/ablauf': typeof AppEventsEventIdAblaufRoute
   '/events/$eventId/edit': typeof AppEventsEventIdEditRoute
@@ -923,14 +931,6 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
   '/lab/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
-  '/manage/beer-list/code': typeof AppManageBeerListCodeRoute
-  '/manage/beer-list/crates': typeof AppManageBeerListCratesRoute
-  '/manage/beer-list/enrollments': typeof AppManageBeerListEnrollmentsRoute
-  '/manage/beer-list/handover': typeof AppManageBeerListHandoverRoute
-  '/manage/beer-list/payment': typeof AppManageBeerListPaymentRoute
-  '/manage/beer-list/pots': typeof AppManageBeerListPotsRoute
-  '/manage/beer-list/settings': typeof AppManageBeerListSettingsRoute
-  '/manage/beer-list/stock': typeof AppManageBeerListStockRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
   '/manage/board/new': typeof AppManageBoardNewRoute
   '/manage/club-record/access': typeof AppManageClubRecordAccessRoute
@@ -945,10 +945,12 @@ export interface FileRoutesByFullPath {
   '/manage/sessions/new': typeof AppManageSessionsNewRoute
   '/manage/venues/$venueId': typeof AppManageVenuesVenueIdRoute
   '/manage/venues/new': typeof AppManageVenuesNewRoute
-  '/manage/beer-list/': typeof AppManageBeerListIndexRoute
+  '/beer-list/manage/': typeof AppBeerListManageIndexRoute
   '/profile/contact/edit': typeof AppPersonalProfileContactEditRoute
   '/profile/security/login-email': typeof AppPersonalProfileSecurityLoginEmailRoute
   '/profile/security/password': typeof AppPersonalProfileSecurityPasswordRoute
+  '/beer-list/manage/persons/$personId': typeof AppBeerListManagePersonsPersonIdRoute
+  '/beer-list/manage/pots/$beerPotId': typeof AppBeerListManagePotsBeerPotIdRoute
   '/groups/$groupId/admins/$adminId': typeof AppGroupsGroupIdAdminsAdminIdRoute
   '/groups/$groupId/admins/new': typeof AppGroupsGroupIdAdminsNewRoute
   '/groups/$groupId/memberships/$membershipId': typeof AppGroupsGroupIdMembershipsMembershipIdRoute
@@ -957,8 +959,6 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId/usual-training-times/$usualTrainingTimeId': typeof AppGroupsGroupIdUsualTrainingTimesUsualTrainingTimeIdRoute
   '/groups/$groupId/usual-training-times/new': typeof AppGroupsGroupIdUsualTrainingTimesNewRoute
   '/manage/applications/$membershipApplicationId/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
-  '/manage/beer-list/persons/$personId': typeof AppManageBeerListPersonsPersonIdRoute
-  '/manage/beer-list/pots/$beerPotId': typeof AppManageBeerListPotsBeerPotIdRoute
   '/manage/board/$boardOfficeId/edit': typeof AppManageBoardBoardOfficeIdEditRoute
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/manage/groups/kinds/new': typeof AppManageGroupsKindsNewRoute
@@ -1042,6 +1042,14 @@ export interface FileRoutesByTo {
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/profile/security': typeof AppPersonalProfileSecurityRoute
   '/acts/$actId/musik': typeof AppActsActIdMusikRoute
+  '/beer-list/manage/code': typeof AppBeerListManageCodeRoute
+  '/beer-list/manage/crates': typeof AppBeerListManageCratesRoute
+  '/beer-list/manage/enrollments': typeof AppBeerListManageEnrollmentsRoute
+  '/beer-list/manage/handover': typeof AppBeerListManageHandoverRoute
+  '/beer-list/manage/payment': typeof AppBeerListManagePaymentRoute
+  '/beer-list/manage/pots': typeof AppBeerListManagePotsRoute
+  '/beer-list/manage/settings': typeof AppBeerListManageSettingsRoute
+  '/beer-list/manage/stock': typeof AppBeerListManageStockRoute
   '/club/news/$slug': typeof AppClubNewsSlugRoute
   '/events/$eventId/ablauf': typeof AppEventsEventIdAblaufRoute
   '/events/$eventId/edit': typeof AppEventsEventIdEditRoute
@@ -1053,14 +1061,6 @@ export interface FileRoutesByTo {
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
   '/lab/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
-  '/manage/beer-list/code': typeof AppManageBeerListCodeRoute
-  '/manage/beer-list/crates': typeof AppManageBeerListCratesRoute
-  '/manage/beer-list/enrollments': typeof AppManageBeerListEnrollmentsRoute
-  '/manage/beer-list/handover': typeof AppManageBeerListHandoverRoute
-  '/manage/beer-list/payment': typeof AppManageBeerListPaymentRoute
-  '/manage/beer-list/pots': typeof AppManageBeerListPotsRoute
-  '/manage/beer-list/settings': typeof AppManageBeerListSettingsRoute
-  '/manage/beer-list/stock': typeof AppManageBeerListStockRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
   '/manage/board/new': typeof AppManageBoardNewRoute
   '/manage/club-record/access': typeof AppManageClubRecordAccessRoute
@@ -1075,10 +1075,12 @@ export interface FileRoutesByTo {
   '/manage/sessions/new': typeof AppManageSessionsNewRoute
   '/manage/venues/$venueId': typeof AppManageVenuesVenueIdRoute
   '/manage/venues/new': typeof AppManageVenuesNewRoute
-  '/manage/beer-list': typeof AppManageBeerListIndexRoute
+  '/beer-list/manage': typeof AppBeerListManageIndexRoute
   '/profile/contact/edit': typeof AppPersonalProfileContactEditRoute
   '/profile/security/login-email': typeof AppPersonalProfileSecurityLoginEmailRoute
   '/profile/security/password': typeof AppPersonalProfileSecurityPasswordRoute
+  '/beer-list/manage/persons/$personId': typeof AppBeerListManagePersonsPersonIdRoute
+  '/beer-list/manage/pots/$beerPotId': typeof AppBeerListManagePotsBeerPotIdRoute
   '/groups/$groupId/admins/$adminId': typeof AppGroupsGroupIdAdminsAdminIdRoute
   '/groups/$groupId/admins/new': typeof AppGroupsGroupIdAdminsNewRoute
   '/groups/$groupId/memberships/$membershipId': typeof AppGroupsGroupIdMembershipsMembershipIdRoute
@@ -1087,8 +1089,6 @@ export interface FileRoutesByTo {
   '/groups/$groupId/usual-training-times/$usualTrainingTimeId': typeof AppGroupsGroupIdUsualTrainingTimesUsualTrainingTimeIdRoute
   '/groups/$groupId/usual-training-times/new': typeof AppGroupsGroupIdUsualTrainingTimesNewRoute
   '/manage/applications/$membershipApplicationId/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
-  '/manage/beer-list/persons/$personId': typeof AppManageBeerListPersonsPersonIdRoute
-  '/manage/beer-list/pots/$beerPotId': typeof AppManageBeerListPotsBeerPotIdRoute
   '/manage/board/$boardOfficeId/edit': typeof AppManageBoardBoardOfficeIdEditRoute
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/manage/groups/kinds/new': typeof AppManageGroupsKindsNewRoute
@@ -1140,6 +1140,7 @@ export interface FileRoutesById {
   '/_app/acts_/$actId': typeof AppActsActIdRoute
   '/_app/announcements_/$announcementId': typeof AppAnnouncementsAnnouncementIdRoute
   '/_app/announcements_/new': typeof AppAnnouncementsNewRoute
+  '/_app/beer-list_/manage': typeof AppBeerListManageRouteWithChildren
   '/_app/calendar_/$calendarEntryId': typeof AppCalendarCalendarEntryIdRoute
   '/_app/calendar_/new': typeof AppCalendarNewRoute
   '/_app/club_/news': typeof AppClubNewsRoute
@@ -1155,7 +1156,6 @@ export interface FileRoutesById {
   '/_app/groups_/$groupId': typeof AppGroupsGroupIdRoute
   '/_app/lab_/$greeting': typeof AppLabGreetingRoute
   '/_app/manage/applications': typeof AppManageApplicationsRoute
-  '/_app/manage/beer-list': typeof AppManageBeerListRouteWithChildren
   '/_app/manage/board': typeof AppManageBoardRoute
   '/_app/manage/club-record': typeof AppManageClubRecordRoute
   '/_app/manage/groups': typeof AppManageGroupsRoute
@@ -1177,6 +1177,14 @@ export interface FileRoutesById {
   '/_app/_affiliated/members_/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/_app/_personal/profile_/security': typeof AppPersonalProfileSecurityRoute
   '/_app/acts_/$actId_/musik': typeof AppActsActIdMusikRoute
+  '/_app/beer-list_/manage/code': typeof AppBeerListManageCodeRoute
+  '/_app/beer-list_/manage/crates': typeof AppBeerListManageCratesRoute
+  '/_app/beer-list_/manage/enrollments': typeof AppBeerListManageEnrollmentsRoute
+  '/_app/beer-list_/manage/handover': typeof AppBeerListManageHandoverRoute
+  '/_app/beer-list_/manage/payment': typeof AppBeerListManagePaymentRoute
+  '/_app/beer-list_/manage/pots': typeof AppBeerListManagePotsRoute
+  '/_app/beer-list_/manage/settings': typeof AppBeerListManageSettingsRoute
+  '/_app/beer-list_/manage/stock': typeof AppBeerListManageStockRoute
   '/_app/club_/news_/$slug': typeof AppClubNewsSlugRoute
   '/_app/events_/$eventId_/ablauf': typeof AppEventsEventIdAblaufRoute
   '/_app/events_/$eventId_/edit': typeof AppEventsEventIdEditRoute
@@ -1188,14 +1196,6 @@ export interface FileRoutesById {
   '/_app/groups_/$groupId_/edit': typeof AppGroupsGroupIdEditRoute
   '/_app/lab_/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/_app/manage/applications_/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
-  '/_app/manage/beer-list/code': typeof AppManageBeerListCodeRoute
-  '/_app/manage/beer-list/crates': typeof AppManageBeerListCratesRoute
-  '/_app/manage/beer-list/enrollments': typeof AppManageBeerListEnrollmentsRoute
-  '/_app/manage/beer-list/handover': typeof AppManageBeerListHandoverRoute
-  '/_app/manage/beer-list/payment': typeof AppManageBeerListPaymentRoute
-  '/_app/manage/beer-list/pots': typeof AppManageBeerListPotsRoute
-  '/_app/manage/beer-list/settings': typeof AppManageBeerListSettingsRoute
-  '/_app/manage/beer-list/stock': typeof AppManageBeerListStockRoute
   '/_app/manage/board_/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
   '/_app/manage/board_/new': typeof AppManageBoardNewRoute
   '/_app/manage/club-record_/access': typeof AppManageClubRecordAccessRoute
@@ -1210,10 +1210,12 @@ export interface FileRoutesById {
   '/_app/manage/sessions_/new': typeof AppManageSessionsNewRoute
   '/_app/manage/venues_/$venueId': typeof AppManageVenuesVenueIdRoute
   '/_app/manage/venues_/new': typeof AppManageVenuesNewRoute
-  '/_app/manage/beer-list/': typeof AppManageBeerListIndexRoute
+  '/_app/beer-list_/manage/': typeof AppBeerListManageIndexRoute
   '/_app/_personal/profile_/contact/edit': typeof AppPersonalProfileContactEditRoute
   '/_app/_personal/profile_/security_/login-email': typeof AppPersonalProfileSecurityLoginEmailRoute
   '/_app/_personal/profile_/security_/password': typeof AppPersonalProfileSecurityPasswordRoute
+  '/_app/beer-list_/manage/persons/$personId': typeof AppBeerListManagePersonsPersonIdRoute
+  '/_app/beer-list_/manage/pots_/$beerPotId': typeof AppBeerListManagePotsBeerPotIdRoute
   '/_app/groups_/$groupId_/admins/$adminId': typeof AppGroupsGroupIdAdminsAdminIdRoute
   '/_app/groups_/$groupId_/admins/new': typeof AppGroupsGroupIdAdminsNewRoute
   '/_app/groups_/$groupId_/memberships/$membershipId': typeof AppGroupsGroupIdMembershipsMembershipIdRoute
@@ -1222,8 +1224,6 @@ export interface FileRoutesById {
   '/_app/groups_/$groupId_/usual-training-times/$usualTrainingTimeId': typeof AppGroupsGroupIdUsualTrainingTimesUsualTrainingTimeIdRoute
   '/_app/groups_/$groupId_/usual-training-times/new': typeof AppGroupsGroupIdUsualTrainingTimesNewRoute
   '/_app/manage/applications_/$membershipApplicationId_/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
-  '/_app/manage/beer-list/persons/$personId': typeof AppManageBeerListPersonsPersonIdRoute
-  '/_app/manage/beer-list/pots_/$beerPotId': typeof AppManageBeerListPotsBeerPotIdRoute
   '/_app/manage/board_/$boardOfficeId_/edit': typeof AppManageBoardBoardOfficeIdEditRoute
   '/_app/manage/groups_/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/_app/manage/groups_/kinds/new': typeof AppManageGroupsKindsNewRoute
@@ -1273,6 +1273,7 @@ export interface FileRouteTypes {
     | '/acts/$actId'
     | '/announcements/$announcementId'
     | '/announcements/new'
+    | '/beer-list/manage'
     | '/calendar/$calendarEntryId'
     | '/calendar/new'
     | '/club/news'
@@ -1288,7 +1289,6 @@ export interface FileRouteTypes {
     | '/groups/$groupId'
     | '/lab/$greeting'
     | '/manage/applications'
-    | '/manage/beer-list'
     | '/manage/board'
     | '/manage/club-record'
     | '/manage/groups'
@@ -1310,6 +1310,14 @@ export interface FileRouteTypes {
     | '/members/$personId'
     | '/profile/security'
     | '/acts/$actId/musik'
+    | '/beer-list/manage/code'
+    | '/beer-list/manage/crates'
+    | '/beer-list/manage/enrollments'
+    | '/beer-list/manage/handover'
+    | '/beer-list/manage/payment'
+    | '/beer-list/manage/pots'
+    | '/beer-list/manage/settings'
+    | '/beer-list/manage/stock'
     | '/club/news/$slug'
     | '/events/$eventId/ablauf'
     | '/events/$eventId/edit'
@@ -1321,14 +1329,6 @@ export interface FileRouteTypes {
     | '/groups/$groupId/edit'
     | '/lab/welcome/$case'
     | '/manage/applications/$membershipApplicationId'
-    | '/manage/beer-list/code'
-    | '/manage/beer-list/crates'
-    | '/manage/beer-list/enrollments'
-    | '/manage/beer-list/handover'
-    | '/manage/beer-list/payment'
-    | '/manage/beer-list/pots'
-    | '/manage/beer-list/settings'
-    | '/manage/beer-list/stock'
     | '/manage/board/$boardOfficeId'
     | '/manage/board/new'
     | '/manage/club-record/access'
@@ -1343,10 +1343,12 @@ export interface FileRouteTypes {
     | '/manage/sessions/new'
     | '/manage/venues/$venueId'
     | '/manage/venues/new'
-    | '/manage/beer-list/'
+    | '/beer-list/manage/'
     | '/profile/contact/edit'
     | '/profile/security/login-email'
     | '/profile/security/password'
+    | '/beer-list/manage/persons/$personId'
+    | '/beer-list/manage/pots/$beerPotId'
     | '/groups/$groupId/admins/$adminId'
     | '/groups/$groupId/admins/new'
     | '/groups/$groupId/memberships/$membershipId'
@@ -1355,8 +1357,6 @@ export interface FileRouteTypes {
     | '/groups/$groupId/usual-training-times/$usualTrainingTimeId'
     | '/groups/$groupId/usual-training-times/new'
     | '/manage/applications/$membershipApplicationId/admission'
-    | '/manage/beer-list/persons/$personId'
-    | '/manage/beer-list/pots/$beerPotId'
     | '/manage/board/$boardOfficeId/edit'
     | '/manage/groups/kinds/$groupKindId'
     | '/manage/groups/kinds/new'
@@ -1440,6 +1440,14 @@ export interface FileRouteTypes {
     | '/members/$personId'
     | '/profile/security'
     | '/acts/$actId/musik'
+    | '/beer-list/manage/code'
+    | '/beer-list/manage/crates'
+    | '/beer-list/manage/enrollments'
+    | '/beer-list/manage/handover'
+    | '/beer-list/manage/payment'
+    | '/beer-list/manage/pots'
+    | '/beer-list/manage/settings'
+    | '/beer-list/manage/stock'
     | '/club/news/$slug'
     | '/events/$eventId/ablauf'
     | '/events/$eventId/edit'
@@ -1451,14 +1459,6 @@ export interface FileRouteTypes {
     | '/groups/$groupId/edit'
     | '/lab/welcome/$case'
     | '/manage/applications/$membershipApplicationId'
-    | '/manage/beer-list/code'
-    | '/manage/beer-list/crates'
-    | '/manage/beer-list/enrollments'
-    | '/manage/beer-list/handover'
-    | '/manage/beer-list/payment'
-    | '/manage/beer-list/pots'
-    | '/manage/beer-list/settings'
-    | '/manage/beer-list/stock'
     | '/manage/board/$boardOfficeId'
     | '/manage/board/new'
     | '/manage/club-record/access'
@@ -1473,10 +1473,12 @@ export interface FileRouteTypes {
     | '/manage/sessions/new'
     | '/manage/venues/$venueId'
     | '/manage/venues/new'
-    | '/manage/beer-list'
+    | '/beer-list/manage'
     | '/profile/contact/edit'
     | '/profile/security/login-email'
     | '/profile/security/password'
+    | '/beer-list/manage/persons/$personId'
+    | '/beer-list/manage/pots/$beerPotId'
     | '/groups/$groupId/admins/$adminId'
     | '/groups/$groupId/admins/new'
     | '/groups/$groupId/memberships/$membershipId'
@@ -1485,8 +1487,6 @@ export interface FileRouteTypes {
     | '/groups/$groupId/usual-training-times/$usualTrainingTimeId'
     | '/groups/$groupId/usual-training-times/new'
     | '/manage/applications/$membershipApplicationId/admission'
-    | '/manage/beer-list/persons/$personId'
-    | '/manage/beer-list/pots/$beerPotId'
     | '/manage/board/$boardOfficeId/edit'
     | '/manage/groups/kinds/$groupKindId'
     | '/manage/groups/kinds/new'
@@ -1537,6 +1537,7 @@ export interface FileRouteTypes {
     | '/_app/acts_/$actId'
     | '/_app/announcements_/$announcementId'
     | '/_app/announcements_/new'
+    | '/_app/beer-list_/manage'
     | '/_app/calendar_/$calendarEntryId'
     | '/_app/calendar_/new'
     | '/_app/club_/news'
@@ -1552,7 +1553,6 @@ export interface FileRouteTypes {
     | '/_app/groups_/$groupId'
     | '/_app/lab_/$greeting'
     | '/_app/manage/applications'
-    | '/_app/manage/beer-list'
     | '/_app/manage/board'
     | '/_app/manage/club-record'
     | '/_app/manage/groups'
@@ -1574,6 +1574,14 @@ export interface FileRouteTypes {
     | '/_app/_affiliated/members_/$personId'
     | '/_app/_personal/profile_/security'
     | '/_app/acts_/$actId_/musik'
+    | '/_app/beer-list_/manage/code'
+    | '/_app/beer-list_/manage/crates'
+    | '/_app/beer-list_/manage/enrollments'
+    | '/_app/beer-list_/manage/handover'
+    | '/_app/beer-list_/manage/payment'
+    | '/_app/beer-list_/manage/pots'
+    | '/_app/beer-list_/manage/settings'
+    | '/_app/beer-list_/manage/stock'
     | '/_app/club_/news_/$slug'
     | '/_app/events_/$eventId_/ablauf'
     | '/_app/events_/$eventId_/edit'
@@ -1585,14 +1593,6 @@ export interface FileRouteTypes {
     | '/_app/groups_/$groupId_/edit'
     | '/_app/lab_/welcome/$case'
     | '/_app/manage/applications_/$membershipApplicationId'
-    | '/_app/manage/beer-list/code'
-    | '/_app/manage/beer-list/crates'
-    | '/_app/manage/beer-list/enrollments'
-    | '/_app/manage/beer-list/handover'
-    | '/_app/manage/beer-list/payment'
-    | '/_app/manage/beer-list/pots'
-    | '/_app/manage/beer-list/settings'
-    | '/_app/manage/beer-list/stock'
     | '/_app/manage/board_/$boardOfficeId'
     | '/_app/manage/board_/new'
     | '/_app/manage/club-record_/access'
@@ -1607,10 +1607,12 @@ export interface FileRouteTypes {
     | '/_app/manage/sessions_/new'
     | '/_app/manage/venues_/$venueId'
     | '/_app/manage/venues_/new'
-    | '/_app/manage/beer-list/'
+    | '/_app/beer-list_/manage/'
     | '/_app/_personal/profile_/contact/edit'
     | '/_app/_personal/profile_/security_/login-email'
     | '/_app/_personal/profile_/security_/password'
+    | '/_app/beer-list_/manage/persons/$personId'
+    | '/_app/beer-list_/manage/pots_/$beerPotId'
     | '/_app/groups_/$groupId_/admins/$adminId'
     | '/_app/groups_/$groupId_/admins/new'
     | '/_app/groups_/$groupId_/memberships/$membershipId'
@@ -1619,8 +1621,6 @@ export interface FileRouteTypes {
     | '/_app/groups_/$groupId_/usual-training-times/$usualTrainingTimeId'
     | '/_app/groups_/$groupId_/usual-training-times/new'
     | '/_app/manage/applications_/$membershipApplicationId_/admission'
-    | '/_app/manage/beer-list/persons/$personId'
-    | '/_app/manage/beer-list/pots_/$beerPotId'
     | '/_app/manage/board_/$boardOfficeId_/edit'
     | '/_app/manage/groups_/kinds/$groupKindId'
     | '/_app/manage/groups_/kinds/new'
@@ -1944,13 +1944,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageBoardRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/manage/beer-list': {
-      id: '/_app/manage/beer-list'
-      path: '/manage/beer-list'
-      fullPath: '/manage/beer-list'
-      preLoaderRoute: typeof AppManageBeerListRouteImport
-      parentRoute: typeof AppRoute
-    }
     '/_app/manage/applications': {
       id: '/_app/manage/applications'
       path: '/manage/applications'
@@ -2056,6 +2049,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppCalendarCalendarEntryIdRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/beer-list_/manage': {
+      id: '/_app/beer-list_/manage'
+      path: '/beer-list/manage'
+      fullPath: '/beer-list/manage'
+      preLoaderRoute: typeof AppBeerListManageRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/announcements_/new': {
       id: '/_app/announcements_/new'
       path: '/announcements/new'
@@ -2091,12 +2091,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppAffiliatedMembersRouteImport
       parentRoute: typeof AppAffiliatedRoute
     }
-    '/_app/manage/beer-list/': {
-      id: '/_app/manage/beer-list/'
+    '/_app/beer-list_/manage/': {
+      id: '/_app/beer-list_/manage/'
       path: '/'
-      fullPath: '/manage/beer-list/'
-      preLoaderRoute: typeof AppManageBeerListIndexRouteImport
-      parentRoute: typeof AppManageBeerListRoute
+      fullPath: '/beer-list/manage/'
+      preLoaderRoute: typeof AppBeerListManageIndexRouteImport
+      parentRoute: typeof AppBeerListManageRoute
     }
     '/_app/manage/venues_/new': {
       id: '/_app/manage/venues_/new'
@@ -2196,62 +2196,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageBoardBoardOfficeIdRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/manage/beer-list/stock': {
-      id: '/_app/manage/beer-list/stock'
-      path: '/stock'
-      fullPath: '/manage/beer-list/stock'
-      preLoaderRoute: typeof AppManageBeerListStockRouteImport
-      parentRoute: typeof AppManageBeerListRoute
-    }
-    '/_app/manage/beer-list/settings': {
-      id: '/_app/manage/beer-list/settings'
-      path: '/settings'
-      fullPath: '/manage/beer-list/settings'
-      preLoaderRoute: typeof AppManageBeerListSettingsRouteImport
-      parentRoute: typeof AppManageBeerListRoute
-    }
-    '/_app/manage/beer-list/pots': {
-      id: '/_app/manage/beer-list/pots'
-      path: '/pots'
-      fullPath: '/manage/beer-list/pots'
-      preLoaderRoute: typeof AppManageBeerListPotsRouteImport
-      parentRoute: typeof AppManageBeerListRoute
-    }
-    '/_app/manage/beer-list/payment': {
-      id: '/_app/manage/beer-list/payment'
-      path: '/payment'
-      fullPath: '/manage/beer-list/payment'
-      preLoaderRoute: typeof AppManageBeerListPaymentRouteImport
-      parentRoute: typeof AppManageBeerListRoute
-    }
-    '/_app/manage/beer-list/handover': {
-      id: '/_app/manage/beer-list/handover'
-      path: '/handover'
-      fullPath: '/manage/beer-list/handover'
-      preLoaderRoute: typeof AppManageBeerListHandoverRouteImport
-      parentRoute: typeof AppManageBeerListRoute
-    }
-    '/_app/manage/beer-list/enrollments': {
-      id: '/_app/manage/beer-list/enrollments'
-      path: '/enrollments'
-      fullPath: '/manage/beer-list/enrollments'
-      preLoaderRoute: typeof AppManageBeerListEnrollmentsRouteImport
-      parentRoute: typeof AppManageBeerListRoute
-    }
-    '/_app/manage/beer-list/crates': {
-      id: '/_app/manage/beer-list/crates'
-      path: '/crates'
-      fullPath: '/manage/beer-list/crates'
-      preLoaderRoute: typeof AppManageBeerListCratesRouteImport
-      parentRoute: typeof AppManageBeerListRoute
-    }
-    '/_app/manage/beer-list/code': {
-      id: '/_app/manage/beer-list/code'
-      path: '/code'
-      fullPath: '/manage/beer-list/code'
-      preLoaderRoute: typeof AppManageBeerListCodeRouteImport
-      parentRoute: typeof AppManageBeerListRoute
-    }
     '/_app/manage/applications_/$membershipApplicationId': {
       id: '/_app/manage/applications_/$membershipApplicationId'
       path: '/manage/applications/$membershipApplicationId'
@@ -2328,6 +2272,62 @@ declare module '@tanstack/react-router' {
       fullPath: '/club/news/$slug'
       preLoaderRoute: typeof AppClubNewsSlugRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/_app/beer-list_/manage/stock': {
+      id: '/_app/beer-list_/manage/stock'
+      path: '/stock'
+      fullPath: '/beer-list/manage/stock'
+      preLoaderRoute: typeof AppBeerListManageStockRouteImport
+      parentRoute: typeof AppBeerListManageRoute
+    }
+    '/_app/beer-list_/manage/settings': {
+      id: '/_app/beer-list_/manage/settings'
+      path: '/settings'
+      fullPath: '/beer-list/manage/settings'
+      preLoaderRoute: typeof AppBeerListManageSettingsRouteImport
+      parentRoute: typeof AppBeerListManageRoute
+    }
+    '/_app/beer-list_/manage/pots': {
+      id: '/_app/beer-list_/manage/pots'
+      path: '/pots'
+      fullPath: '/beer-list/manage/pots'
+      preLoaderRoute: typeof AppBeerListManagePotsRouteImport
+      parentRoute: typeof AppBeerListManageRoute
+    }
+    '/_app/beer-list_/manage/payment': {
+      id: '/_app/beer-list_/manage/payment'
+      path: '/payment'
+      fullPath: '/beer-list/manage/payment'
+      preLoaderRoute: typeof AppBeerListManagePaymentRouteImport
+      parentRoute: typeof AppBeerListManageRoute
+    }
+    '/_app/beer-list_/manage/handover': {
+      id: '/_app/beer-list_/manage/handover'
+      path: '/handover'
+      fullPath: '/beer-list/manage/handover'
+      preLoaderRoute: typeof AppBeerListManageHandoverRouteImport
+      parentRoute: typeof AppBeerListManageRoute
+    }
+    '/_app/beer-list_/manage/enrollments': {
+      id: '/_app/beer-list_/manage/enrollments'
+      path: '/enrollments'
+      fullPath: '/beer-list/manage/enrollments'
+      preLoaderRoute: typeof AppBeerListManageEnrollmentsRouteImport
+      parentRoute: typeof AppBeerListManageRoute
+    }
+    '/_app/beer-list_/manage/crates': {
+      id: '/_app/beer-list_/manage/crates'
+      path: '/crates'
+      fullPath: '/beer-list/manage/crates'
+      preLoaderRoute: typeof AppBeerListManageCratesRouteImport
+      parentRoute: typeof AppBeerListManageRoute
+    }
+    '/_app/beer-list_/manage/code': {
+      id: '/_app/beer-list_/manage/code'
+      path: '/code'
+      fullPath: '/beer-list/manage/code'
+      preLoaderRoute: typeof AppBeerListManageCodeRouteImport
+      parentRoute: typeof AppBeerListManageRoute
     }
     '/_app/acts_/$actId_/musik': {
       id: '/_app/acts_/$actId_/musik'
@@ -2413,20 +2413,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageBoardBoardOfficeIdEditRouteImport
       parentRoute: typeof AppRoute
     }
-    '/_app/manage/beer-list/pots_/$beerPotId': {
-      id: '/_app/manage/beer-list/pots_/$beerPotId'
-      path: '/pots/$beerPotId'
-      fullPath: '/manage/beer-list/pots/$beerPotId'
-      preLoaderRoute: typeof AppManageBeerListPotsBeerPotIdRouteImport
-      parentRoute: typeof AppManageBeerListRoute
-    }
-    '/_app/manage/beer-list/persons/$personId': {
-      id: '/_app/manage/beer-list/persons/$personId'
-      path: '/persons/$personId'
-      fullPath: '/manage/beer-list/persons/$personId'
-      preLoaderRoute: typeof AppManageBeerListPersonsPersonIdRouteImport
-      parentRoute: typeof AppManageBeerListRoute
-    }
     '/_app/manage/applications_/$membershipApplicationId_/admission': {
       id: '/_app/manage/applications_/$membershipApplicationId_/admission'
       path: '/manage/applications/$membershipApplicationId/admission'
@@ -2482,6 +2468,20 @@ declare module '@tanstack/react-router' {
       fullPath: '/groups/$groupId/admins/$adminId'
       preLoaderRoute: typeof AppGroupsGroupIdAdminsAdminIdRouteImport
       parentRoute: typeof AppRoute
+    }
+    '/_app/beer-list_/manage/pots_/$beerPotId': {
+      id: '/_app/beer-list_/manage/pots_/$beerPotId'
+      path: '/pots/$beerPotId'
+      fullPath: '/beer-list/manage/pots/$beerPotId'
+      preLoaderRoute: typeof AppBeerListManagePotsBeerPotIdRouteImport
+      parentRoute: typeof AppBeerListManageRoute
+    }
+    '/_app/beer-list_/manage/persons/$personId': {
+      id: '/_app/beer-list_/manage/persons/$personId'
+      path: '/persons/$personId'
+      fullPath: '/beer-list/manage/persons/$personId'
+      preLoaderRoute: typeof AppBeerListManagePersonsPersonIdRouteImport
+      parentRoute: typeof AppBeerListManageRoute
     }
     '/_app/_personal/profile_/security_/password': {
       id: '/_app/_personal/profile_/security_/password'
@@ -2623,36 +2623,36 @@ const AppPersonalRouteWithChildren = AppPersonalRoute._addFileChildren(
   AppPersonalRouteChildren,
 )
 
-interface AppManageBeerListRouteChildren {
-  AppManageBeerListCodeRoute: typeof AppManageBeerListCodeRoute
-  AppManageBeerListCratesRoute: typeof AppManageBeerListCratesRoute
-  AppManageBeerListEnrollmentsRoute: typeof AppManageBeerListEnrollmentsRoute
-  AppManageBeerListHandoverRoute: typeof AppManageBeerListHandoverRoute
-  AppManageBeerListPaymentRoute: typeof AppManageBeerListPaymentRoute
-  AppManageBeerListPotsRoute: typeof AppManageBeerListPotsRoute
-  AppManageBeerListSettingsRoute: typeof AppManageBeerListSettingsRoute
-  AppManageBeerListStockRoute: typeof AppManageBeerListStockRoute
-  AppManageBeerListIndexRoute: typeof AppManageBeerListIndexRoute
-  AppManageBeerListPersonsPersonIdRoute: typeof AppManageBeerListPersonsPersonIdRoute
-  AppManageBeerListPotsBeerPotIdRoute: typeof AppManageBeerListPotsBeerPotIdRoute
+interface AppBeerListManageRouteChildren {
+  AppBeerListManageCodeRoute: typeof AppBeerListManageCodeRoute
+  AppBeerListManageCratesRoute: typeof AppBeerListManageCratesRoute
+  AppBeerListManageEnrollmentsRoute: typeof AppBeerListManageEnrollmentsRoute
+  AppBeerListManageHandoverRoute: typeof AppBeerListManageHandoverRoute
+  AppBeerListManagePaymentRoute: typeof AppBeerListManagePaymentRoute
+  AppBeerListManagePotsRoute: typeof AppBeerListManagePotsRoute
+  AppBeerListManageSettingsRoute: typeof AppBeerListManageSettingsRoute
+  AppBeerListManageStockRoute: typeof AppBeerListManageStockRoute
+  AppBeerListManageIndexRoute: typeof AppBeerListManageIndexRoute
+  AppBeerListManagePersonsPersonIdRoute: typeof AppBeerListManagePersonsPersonIdRoute
+  AppBeerListManagePotsBeerPotIdRoute: typeof AppBeerListManagePotsBeerPotIdRoute
 }
 
-const AppManageBeerListRouteChildren: AppManageBeerListRouteChildren = {
-  AppManageBeerListCodeRoute: AppManageBeerListCodeRoute,
-  AppManageBeerListCratesRoute: AppManageBeerListCratesRoute,
-  AppManageBeerListEnrollmentsRoute: AppManageBeerListEnrollmentsRoute,
-  AppManageBeerListHandoverRoute: AppManageBeerListHandoverRoute,
-  AppManageBeerListPaymentRoute: AppManageBeerListPaymentRoute,
-  AppManageBeerListPotsRoute: AppManageBeerListPotsRoute,
-  AppManageBeerListSettingsRoute: AppManageBeerListSettingsRoute,
-  AppManageBeerListStockRoute: AppManageBeerListStockRoute,
-  AppManageBeerListIndexRoute: AppManageBeerListIndexRoute,
-  AppManageBeerListPersonsPersonIdRoute: AppManageBeerListPersonsPersonIdRoute,
-  AppManageBeerListPotsBeerPotIdRoute: AppManageBeerListPotsBeerPotIdRoute,
+const AppBeerListManageRouteChildren: AppBeerListManageRouteChildren = {
+  AppBeerListManageCodeRoute: AppBeerListManageCodeRoute,
+  AppBeerListManageCratesRoute: AppBeerListManageCratesRoute,
+  AppBeerListManageEnrollmentsRoute: AppBeerListManageEnrollmentsRoute,
+  AppBeerListManageHandoverRoute: AppBeerListManageHandoverRoute,
+  AppBeerListManagePaymentRoute: AppBeerListManagePaymentRoute,
+  AppBeerListManagePotsRoute: AppBeerListManagePotsRoute,
+  AppBeerListManageSettingsRoute: AppBeerListManageSettingsRoute,
+  AppBeerListManageStockRoute: AppBeerListManageStockRoute,
+  AppBeerListManageIndexRoute: AppBeerListManageIndexRoute,
+  AppBeerListManagePersonsPersonIdRoute: AppBeerListManagePersonsPersonIdRoute,
+  AppBeerListManagePotsBeerPotIdRoute: AppBeerListManagePotsBeerPotIdRoute,
 }
 
-const AppManageBeerListRouteWithChildren =
-  AppManageBeerListRoute._addFileChildren(AppManageBeerListRouteChildren)
+const AppBeerListManageRouteWithChildren =
+  AppBeerListManageRoute._addFileChildren(AppBeerListManageRouteChildren)
 
 interface AppRouteChildren {
   AppSplatRoute: typeof AppSplatRoute
@@ -2672,6 +2672,7 @@ interface AppRouteChildren {
   AppActsActIdRoute: typeof AppActsActIdRoute
   AppAnnouncementsAnnouncementIdRoute: typeof AppAnnouncementsAnnouncementIdRoute
   AppAnnouncementsNewRoute: typeof AppAnnouncementsNewRoute
+  AppBeerListManageRoute: typeof AppBeerListManageRouteWithChildren
   AppCalendarCalendarEntryIdRoute: typeof AppCalendarCalendarEntryIdRoute
   AppCalendarNewRoute: typeof AppCalendarNewRoute
   AppClubNewsRoute: typeof AppClubNewsRoute
@@ -2687,7 +2688,6 @@ interface AppRouteChildren {
   AppGroupsGroupIdRoute: typeof AppGroupsGroupIdRoute
   AppLabGreetingRoute: typeof AppLabGreetingRoute
   AppManageApplicationsRoute: typeof AppManageApplicationsRoute
-  AppManageBeerListRoute: typeof AppManageBeerListRouteWithChildren
   AppManageBoardRoute: typeof AppManageBoardRoute
   AppManageClubRecordRoute: typeof AppManageClubRecordRoute
   AppManageGroupsRoute: typeof AppManageGroupsRoute
@@ -2779,6 +2779,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppActsActIdRoute: AppActsActIdRoute,
   AppAnnouncementsAnnouncementIdRoute: AppAnnouncementsAnnouncementIdRoute,
   AppAnnouncementsNewRoute: AppAnnouncementsNewRoute,
+  AppBeerListManageRoute: AppBeerListManageRouteWithChildren,
   AppCalendarCalendarEntryIdRoute: AppCalendarCalendarEntryIdRoute,
   AppCalendarNewRoute: AppCalendarNewRoute,
   AppClubNewsRoute: AppClubNewsRoute,
@@ -2794,7 +2795,6 @@ const AppRouteChildren: AppRouteChildren = {
   AppGroupsGroupIdRoute: AppGroupsGroupIdRoute,
   AppLabGreetingRoute: AppLabGreetingRoute,
   AppManageApplicationsRoute: AppManageApplicationsRoute,
-  AppManageBeerListRoute: AppManageBeerListRouteWithChildren,
   AppManageBoardRoute: AppManageBoardRoute,
   AppManageClubRecordRoute: AppManageClubRecordRoute,
   AppManageGroupsRoute: AppManageGroupsRoute,

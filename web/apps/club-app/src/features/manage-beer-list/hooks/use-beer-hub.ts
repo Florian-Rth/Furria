@@ -1,7 +1,6 @@
 import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import { useChildMatches, useNavigate } from '@tanstack/react-router';
 import { useState } from 'react';
-import { useOpenBeerPotQuery } from '@/features/beer-list/api';
 import type { OpenBeerPot } from '@/features/beer-list/schemas';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
@@ -12,6 +11,7 @@ import {
   useBeerJournalQuery,
   useBeerStockQuery,
   useBeerTabsQuery,
+  useHubBeerPotQuery,
 } from '../api';
 import type {
   BeerFocus,
@@ -37,14 +37,14 @@ import type { BeerEnrollment, BeerJournalCrate, BeerJournalPayment } from '../sc
 const NO_ENROLLMENTS: readonly BeerEnrollment[] = [];
 
 export type BeerPanePath =
-  | '/manage/beer-list/stock'
-  | '/manage/beer-list/payment'
-  | '/manage/beer-list/crates'
-  | '/manage/beer-list/settings'
-  | '/manage/beer-list/enrollments'
-  | '/manage/beer-list/handover'
-  | '/manage/beer-list/code'
-  | '/manage/beer-list/pots';
+  | '/beer-list/manage/stock'
+  | '/beer-list/manage/payment'
+  | '/beer-list/manage/crates'
+  | '/beer-list/manage/settings'
+  | '/beer-list/manage/enrollments'
+  | '/beer-list/manage/handover'
+  | '/beer-list/manage/code'
+  | '/beer-list/manage/pots';
 
 export interface BeerOpenHub {
   pot: OpenBeerPot;
@@ -96,7 +96,7 @@ export const useBeerHub = (): BeerHub => {
   const [personFilter, setPersonFilter] = useState<number | null>(null);
   const { has } = usePermissions();
   const allowed = has(PERMISSION_KEYS.beerListManage);
-  const potQuery = useOpenBeerPotQuery(allowed);
+  const potQuery = useHubBeerPotQuery(allowed);
   const beerPotId = potQuery.data?.pot?.beerPotId ?? null;
   const enrollmentsQuery = useBeerEnrollmentsQuery(allowed);
   const stockQuery = useBeerStockQuery(beerPotId);
@@ -206,7 +206,7 @@ export const useBeerHub = (): BeerHub => {
     },
     openPerson: (personId) => {
       void navigate({
-        to: '/manage/beer-list/persons/$personId',
+        to: '/beer-list/manage/persons/$personId',
         params: { personId: String(personId) },
         resetScroll: false,
       });

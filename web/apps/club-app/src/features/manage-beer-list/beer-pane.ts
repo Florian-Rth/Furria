@@ -1,6 +1,6 @@
 import { BeerPaneSearchSchema } from './pane-search';
 
-const ROUTE_PREFIX = '/_app/manage/beer-list/';
+const ROUTE_PREFIX = '/_app/beer-list_/manage/';
 const NO_PANE_KEY = 'none';
 
 export type BeerPane =

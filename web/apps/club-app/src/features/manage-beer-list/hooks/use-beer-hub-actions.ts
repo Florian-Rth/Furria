@@ -4,9 +4,9 @@ import { POTS_TITLE, SETTINGS_TITLE } from '../beer-hub-copy';
 import type { BeerHub, BeerPanePath } from './use-beer-hub';
 
 const QUICK_PATHS: Partial<Record<string, BeerPanePath>> = {
-  payment: '/manage/beer-list/payment',
-  crates: '/manage/beer-list/crates',
-  stock: '/manage/beer-list/stock',
+  payment: '/beer-list/manage/payment',
+  crates: '/beer-list/manage/crates',
+  stock: '/beer-list/manage/stock',
 };
 
 export type BeerQuickSlot = 'tools' | 'foot' | null;
@@ -33,7 +33,7 @@ export const useBeerHubActions = (hub: BeerHub): BeerHubActions => {
     label: POTS_TITLE,
     icon: 'archive',
     onSelect: () => {
-      hub.openPane('/manage/beer-list/pots');
+      hub.openPane('/beer-list/manage/pots');
     },
   } as const;
   const settingsAction = {
@@ -41,7 +41,7 @@ export const useBeerHubActions = (hub: BeerHub): BeerHubActions => {
     label: SETTINGS_TITLE,
     icon: 'settings',
     onSelect: () => {
-      hub.openPane('/manage/beer-list/settings');
+      hub.openPane('/beer-list/manage/settings');
     },
   } as const;
   const openActions: KkScreenActions = isOpen ? [settingsAction, potsAction] : [potsAction];

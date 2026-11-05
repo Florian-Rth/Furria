@@ -19,10 +19,6 @@ export interface PotFields {
   link: string;
   changeLink: (event: TextChange) => void;
   touchLink: () => void;
-  note: string;
-  changeNote: (event: TextChange) => void;
-  touchNote: () => void;
-  noteError: string | undefined;
 }
 
 export interface PotWriteForm extends BeerWriteState {
@@ -34,8 +30,7 @@ export const usePotFields = <TSubmitted>(
 ): PotFields => {
   const personField = useController({ control, name: 'person' });
   const priceField = useController({ control, name: 'cratePrice' });
-  const linkField = useController({ control, name: 'paymentLink', rules: { deps: 'paymentNote' } });
-  const noteField = useController({ control, name: 'paymentNote' });
+  const linkField = useController({ control, name: 'paymentLink' });
 
   return {
     person: personField.field.value,
@@ -52,11 +47,5 @@ export const usePotFields = <TSubmitted>(
       linkField.field.onChange(event.target.value);
     },
     touchLink: linkField.field.onBlur,
-    note: noteField.field.value,
-    changeNote: (event) => {
-      noteField.field.onChange(event.target.value);
-    },
-    touchNote: noteField.field.onBlur,
-    noteError: noteField.fieldState.error?.message,
   };
 };

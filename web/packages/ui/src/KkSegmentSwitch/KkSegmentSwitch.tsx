@@ -1,6 +1,5 @@
 import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
-import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import type { FC, KeyboardEvent, MouseEvent } from 'react';
 import { focusRing } from '../internal/focus-ring';
@@ -26,12 +25,41 @@ export interface KkSegmentSwitchItem {
 const ICON_SIZE = '1rem';
 const SEGMENT_ATTRIBUTE = 'data-kk-segment';
 const MARK_HEIGHT = '0.1875rem';
+const SWITCH_CONTAINER = 'kk-segment-switch';
+const ROOMY = `@container ${SWITCH_CONTAINER} (min-width: 36rem)`;
+
+const FRAME: CSSObject = {
+  flex: 1,
+  minWidth: 0,
+  containerType: 'inline-size',
+  containerName: SWITCH_CONTAINER,
+};
+
+const ROW: CSSObject = {
+  display: 'grid',
+  gridAutoFlow: 'column',
+  gridAutoColumns: 'minmax(max-content, 1fr)',
+  alignItems: 'stretch',
+  [ROOMY]: { gridAutoColumns: 'max-content', justifyContent: 'start' },
+};
+
+const ICON: CSSObject = {
+  display: 'none',
+  width: ICON_SIZE,
+  height: ICON_SIZE,
+  [ROOMY]: { display: 'inline-flex' },
+};
+
+const LABEL: CSSObject = {
+  typography: 'body2',
+  fontWeight: 800,
+  lineHeight: 1,
+  whiteSpace: 'nowrap',
+};
 
 const segmentPaint = (theme: Theme): CSSObject => ({
   position: 'relative',
-  flex: 1,
-  [theme.breakpoints.up('md')]: { flex: '0 0 auto', px: 2 },
-  minWidth: 0,
+  [ROOMY]: { px: 2 },
   height: '2.25rem',
   gap: 0.5,
   px: 0.5,
@@ -125,14 +153,8 @@ export const KkSegmentSwitch: FC<KkSegmentSwitchProps> = ({
         onClick={choose}
         sx={segmentPaint}
       >
-        <KkIcon
-          name={item.icon}
-          sx={{ display: { xs: 'none', md: 'inline-flex' }, width: ICON_SIZE, height: ICON_SIZE }}
-        />
-        <Box
-          component="span"
-          sx={{ typography: 'body2', fontWeight: 800, lineHeight: 1, whiteSpace: 'nowrap' }}
-        >
+        <KkIcon name={item.icon} sx={ICON} />
+        <Box component="span" sx={LABEL}>
           {item.label}
         </Box>
         {glyph}
@@ -142,18 +164,10 @@ export const KkSegmentSwitch: FC<KkSegmentSwitchProps> = ({
   });
 
   return (
-    <Stack
-      direction="row"
-      role="radiogroup"
-      aria-label={label}
-      onKeyDown={move}
-      data-kk-segment-switch
-      sx={[
-        { flex: 1, minWidth: 0, gap: 0, alignItems: 'stretch' },
-        ...(Array.isArray(sx) ? sx : [sx]),
-      ]}
-    >
-      {segments}
-    </Stack>
+    <Box sx={[FRAME, ...(Array.isArray(sx) ? sx : [sx])]}>
+      <Box role="radiogroup" aria-label={label} onKeyDown={move} data-kk-segment-switch sx={ROW}>
+        {segments}
+      </Box>
+    </Box>
   );
 };

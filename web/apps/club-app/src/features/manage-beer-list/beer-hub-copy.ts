@@ -1,5 +1,7 @@
 import type { KkHoldConfirm } from '@furria/ui/KkHoldButton';
 import type { KkPourQuickItem } from '@furria/ui/KkPourQuickBar';
+import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
+import { BEER_LIST_PATH } from '@/features/session/app-sections';
 import type { PersonRef } from '@/lib/api/schemas';
 import { formatEuroCents } from '@/lib/money';
 import type { QueryErrorKind } from '@/lib/query-error';
@@ -14,17 +16,16 @@ import { OVERDUE_AFTER_DAYS } from './beer-hub';
 import type { BeerDayName } from './beer-time';
 import { clockOf, shortDateOf, weekdayDateOf } from './beer-time';
 import type {
-  BeerCorrectionReason,
   BeerEnrollment,
   BeerJournalCrate,
   BeerJournalPayment,
-  BeerStockCause,
   BeerStockChange,
-  BeerStockDirection,
 } from './schemas';
 
 export const HUB_TITLE = 'Bierliste';
-export const HUB_PATH = '/manage/beer-list';
+export const HUB_PATH = '/beer-list/manage';
+export const HUB_ENTRY_LABEL = 'Bierliste verwalten';
+export const HUB_ORIGIN: KkScreenOrigin = { label: 'Bierliste', to: BEER_LIST_PATH };
 export const CLOSE_LABEL = 'Schließen';
 export const CANCEL_LABEL = 'Abbrechen';
 
@@ -54,22 +55,6 @@ export const daysLabel = (days: number): string => {
   return days === 1 ? 'seit gestern' : `seit ${days} Tagen`;
 };
 
-export const REASON_LABELS: Record<BeerCorrectionReason, string> = {
-  shrinkage: 'Schwund',
-  breakage: 'Bruch',
-  miscount: 'Zählfehler',
-};
-
-export const CAUSE_LABELS: Record<BeerStockCause, string> = {
-  delivery: 'Lieferung',
-  ...REASON_LABELS,
-};
-
-export const DIRECTION_LABELS: Record<BeerStockDirection, string> = {
-  up: 'Mehr Kisten',
-  down: 'Weniger Kisten',
-};
-
 export const HEAD_LABEL = 'Lage der Bierliste';
 export const STOCK_LABEL = 'Bestand';
 export const STOCK_UNIT = 'Kisten';
@@ -86,8 +71,8 @@ export const ROSTER_LABEL = 'Deckel';
 export const OLDER_LABEL = 'Ältere Tage zeigen';
 
 export const QUICK_ITEMS: readonly KkPourQuickItem[] = [
-  { id: 'payment', label: 'Zahlung', icon: 'fees', lead: true },
-  { id: 'crates', label: 'Kisten', icon: 'crate' },
+  { id: 'payment', label: 'Zahlung', icon: 'add', lead: true },
+  { id: 'crates', label: 'Kisten', icon: 'add' },
   { id: 'stock', label: 'Bestand', icon: 'edit' },
 ];
 
@@ -166,7 +151,7 @@ export const journalCopyOf = (entry: BeerJournalEntry): BeerJournalCopy => {
       return { text: movementTextOf(entry), note: actorNote(entry, 'von'), amount, delta };
     case 'correction':
       return {
-        text: `Korrektur · ${entry.reason === null ? '' : REASON_LABELS[entry.reason]}`,
+        text: `Korrektur · ${cratesLabel(entry.count)}`,
         note: actorNote(entry, 'von'),
         amount,
         delta,
@@ -224,8 +209,7 @@ export const PAY_COUNT_LABEL = 'Bezahlte Kisten';
 export const STEP_LABELS = { less: 'Eine weniger', more: 'Eine mehr' } as const;
 export const PERSON_LABEL = 'Person';
 export const COUNT_FIELD_LABEL = 'Anzahl Kisten';
-export const CAUSE_LABEL = 'Grund';
-export const DIRECTION_LABEL = 'Richtung';
+export const STOCK_FIELD_LABEL = 'Kisten dazu (+) oder weg (−)';
 export const PAY_OLDEST_NOTE = 'Bezahlt werden immer die ältesten offenen Kisten zuerst.';
 export const NO_OPEN_TABS = 'Gerade ist kein Deckel offen.';
 export const OPEN_SECTION = 'Offen';
@@ -242,8 +226,15 @@ export const paymentButtonOf = (count: number, cents: number): string =>
 export const crateButtonOf = (count: number, name: string, paid: boolean): string =>
   `${cratesLabel(count)} für ${name} buchen${paid ? ' · bezahlt' : ''}`;
 
-export const stockButtonOf = (change: BeerStockChange | null): string =>
-  change === null ? 'Bestand buchen' : `Bestand buchen · ${signed(change.crates)}`;
+export const stockButtonOf = (change: BeerStockChange | null): string => {
+  if (change === null) {
+    return 'Bestand buchen';
+  }
+
+  return change.kind === 'delivery'
+    ? `Lieferung buchen · ${signed(change.crates)}`
+    : `Korrektur buchen · ${signed(change.crates)}`;
+};
 
 export const stockAfterOf = (stock: number, delta: number): string =>
   `Bestand danach: ${stock + delta} Kisten`;
@@ -262,17 +253,22 @@ export const FORM_TITLES = {
 export const FORM_CONTEXTS = {
   payment: 'ganze Kisten · älteste zuerst',
   crates: 'für alle, die teilnehmen oder teilgenommen haben',
-  stock: 'Lieferung · Schwund · Bruch · Zählfehler',
+  stock: '+ Lieferung · − Korrektur',
 } as const;
 
 export const SETTINGS_TITLE = 'Einstellungen';
 export const PRICE_LABEL = 'Preis je Kiste';
 export const PRICE_HINT = 'Gilt für neue Kisten; gebuchte behalten ihren Preis.';
-export const LINK_LABEL = 'PayPal-Link';
-export const NOTE_LABEL = 'Zahlungshinweis (z. B. IBAN)';
+export const LINK_LABEL = 'PayPal-Link (optional)';
+export const LINK_HINT = 'Bar geht immer.';
 export const SAVE_LABEL = 'Speichern';
 export const PRICE_INVALID = 'Bitte einen Preis wie 18,00 eingeben.';
-export const DETAILS_MISSING = 'Gib einen PayPal-Link oder einen Zahlungshinweis an.';
+
+export const paymentWaysOf = (paymentLink: string | null): string =>
+  paymentLink === null ? 'nur bar' : 'PayPal oder bar';
+
+export const paymentContextOf = (paymentLink: string | null): string =>
+  `${FORM_CONTEXTS.payment} · ${paymentWaysOf(paymentLink)}`;
 
 export const CODE_TITLE = 'Palettencode';
 export const CODE_LEAD =
@@ -315,8 +311,8 @@ export const EMPTY_LEAD =
 export const OWNER_LABEL = 'Inhaberin';
 export const OPEN_POT_LABEL = 'Bierliste eröffnen';
 
-export const ownerContextOf = (owner: PersonRef | null): string =>
-  `privater Topf von ${fullNameOf(owner)}`;
+export const ownerContextOf = (owner: PersonRef | null, paymentLink: string | null): string =>
+  `privater Topf von ${fullNameOf(owner)} · ${paymentWaysOf(paymentLink)}`;
 
 export const clearPersonLabelOf = (name: string): string => `Nur ${name} · Filter aufheben`;
 export const filterPersonLabelOf = (name: string): string => `Nur ${name} im Journal zeigen`;
@@ -337,8 +333,8 @@ export const ENDED_NOTICE = 'Teilnahme beendet';
 
 export const stockNoticeOf = (change: BeerStockChange): string =>
   change.kind === 'delivery'
-    ? `Lieferung gebucht · +${change.crates}`
-    : `${REASON_LABELS[change.reason]} gebucht · ${signed(change.crates)}`;
+    ? `Lieferung gebucht · ${signed(change.crates)}`
+    : `Korrektur gebucht · ${signed(change.crates)}`;
 
 export const cratesNoticeOf = (input: { count: number; name: string; paid: boolean }): string =>
   `${cratesLabel(input.count)} für ${input.name} gebucht${input.paid ? ' · bezahlt' : ''}`;
@@ -357,8 +353,9 @@ export const dayFactsOf = (entries: readonly BeerJournalEntry[]): string => {
   return crates === 0 ? '' : `${cratesLabel(crates)} gebucht`;
 };
 
-export const COUNT_INVALID = 'Bitte mindestens eine Kiste angeben.';
-export const CAUSE_MISSING = 'Bitte einen Grund wählen.';
+export const STOCK_CHANGE_MISSING = 'Bitte Kisten dazu (+) oder weg (−) angeben.';
+export const stockFloorOf = (stock: number): string =>
+  `Es sind nur ${cratesLabel(stock)} da; weniger als null geht nicht.`;
 export const PERSON_MISSING = 'Wähle die Person, für die gebucht wird.';
 export const OWNER_MISSING = 'Wähle die Inhaberin der Bierliste.';
 export const SUCCESSOR_MISSING = 'Wähle die neue Inhaberin.';
@@ -371,6 +368,12 @@ export const ENDED_SECTION = 'Beendet';
 export const ENROLLMENTS_CONTEXT = 'Person öffnen, um die Teilnahme zu beenden';
 export const TAKEN_SECTION = 'Kisten';
 export const SETUP_SWITCH_LABEL = 'Bierliste einrichten';
+export const SETUP_SWITCH_LABELS = {
+  settings: 'Preis',
+  enrollments: 'Teilnahmen',
+  code: 'Code',
+  handover: 'Übergabe',
+} as const;
 
 export const enrollmentLineOf = (enrollment: BeerEnrollment | null): string => {
   if (enrollment === null) {

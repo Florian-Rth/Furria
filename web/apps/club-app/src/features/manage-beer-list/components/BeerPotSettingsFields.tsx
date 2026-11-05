@@ -1,7 +1,7 @@
 import { KkPriceField } from '@furria/ui/KkPriceField';
 import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
-import { LINK_LABEL, NOTE_LABEL, PRICE_HINT, PRICE_LABEL } from '../beer-hub-copy';
+import { LINK_HINT, LINK_LABEL, PRICE_HINT, PRICE_LABEL } from '../beer-hub-copy';
 import type { PotFields } from '../hooks/use-pot-fields';
 
 interface BeerPotSettingsFieldsProps {
@@ -11,7 +11,6 @@ interface BeerPotSettingsFieldsProps {
 export const BeerPotSettingsFields: FC<BeerPotSettingsFieldsProps> = ({ fields }) => {
   const priceInvalid = fields.priceError !== undefined;
   const priceHelper = fields.priceError ?? PRICE_HINT;
-  const noteInvalid = fields.noteError !== undefined;
 
   return (
     <>
@@ -30,15 +29,7 @@ export const BeerPotSettingsFields: FC<BeerPotSettingsFieldsProps> = ({ fields }
         value={fields.link}
         onChange={fields.changeLink}
         onBlur={fields.touchLink}
-      />
-      <KkTextField
-        name="paymentNote"
-        label={NOTE_LABEL}
-        value={fields.note}
-        onChange={fields.changeNote}
-        onBlur={fields.touchNote}
-        error={noteInvalid}
-        helperText={fields.noteError}
+        hint={LINK_HINT}
       />
     </>
   );

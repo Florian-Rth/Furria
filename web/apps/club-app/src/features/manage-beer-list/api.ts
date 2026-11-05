@@ -1,5 +1,7 @@
 import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
 import { useQuery } from '@tanstack/react-query';
+import { requestOpenBeerPot } from '@/features/beer-list/requests';
+import type { OpenBeerPotResponse } from '@/features/beer-list/schemas';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { queryKeys } from '@/lib/query/reads';
@@ -46,10 +48,22 @@ import type {
 
 const FAILURE = { failure: toWriteErrorMessage };
 
+const HUB_POLL_MS = 10_000;
+const HUB_POLLING = { refetchInterval: HUB_POLL_MS, refetchIntervalInBackground: false } as const;
+
+export const useHubBeerPotQuery = (enabled: boolean): UseQueryResult<OpenBeerPotResponse, Error> =>
+  useQuery({
+    queryKey: queryKeys.beerPot,
+    queryFn: () => withFreshAccessToken(requestOpenBeerPot),
+    enabled,
+    ...HUB_POLLING,
+  });
+
 export const useBeerPotsQuery = (): UseQueryResult<BeerPotsResponse, Error> =>
   useQuery({
     queryKey: queryKeys.beerPots,
     queryFn: () => withFreshAccessToken(requestBeerPots),
+    ...HUB_POLLING,
   });
 
 export const useBeerEnrollmentsQuery = (
@@ -59,6 +73,7 @@ export const useBeerEnrollmentsQuery = (
     queryKey: queryKeys.beerEnrollments,
     queryFn: () => withFreshAccessToken(requestBeerEnrollments),
     enabled,
+    ...HUB_POLLING,
   });
 
 export const useBeerStockQuery = (
@@ -69,6 +84,7 @@ export const useBeerStockQuery = (
     queryFn: () =>
       withFreshAccessToken((accessToken) => requestBeerStock(beerPotId ?? 0, accessToken)),
     enabled: beerPotId !== null,
+    ...HUB_POLLING,
   });
 
 export const useBeerTabsQuery = (
@@ -79,6 +95,7 @@ export const useBeerTabsQuery = (
     queryFn: () =>
       withFreshAccessToken((accessToken) => requestBeerTabs(beerPotId ?? 0, accessToken)),
     enabled: beerPotId !== null,
+    ...HUB_POLLING,
   });
 
 export const useBeerJournalQuery = (
@@ -89,6 +106,7 @@ export const useBeerJournalQuery = (
     queryFn: () =>
       withFreshAccessToken((accessToken) => requestBeerJournal(beerPotId ?? 0, accessToken)),
     enabled: beerPotId !== null,
+    ...HUB_POLLING,
   });
 
 export interface BeerPotOpeningInput {
@@ -121,7 +139,7 @@ export const useBeerStockMutation = (
     request: (change: BeerStockChange, accessToken) =>
       change.kind === 'delivery'
         ? requestBeerDelivery(beerPotId, change.crates, accessToken)
-        : requestBeerStockCorrection(beerPotId, change.crates, change.reason, accessToken),
+        : requestBeerStockCorrection(beerPotId, change.crates, accessToken),
     changes: ['beerStock'],
     notice: { success: stockNoticeOf },
   });

@@ -17,7 +17,7 @@ const print = (): void => {
   window.print();
 };
 
-const SWITCHER = <BeerSettingsSwitch value="/manage/beer-list/code" />;
+const SWITCHER = <BeerSettingsSwitch value="/beer-list/manage/code" />;
 
 export const BeerCodePane: FC = () => {
   const value = beerBookingUrlOf(window.location.origin);

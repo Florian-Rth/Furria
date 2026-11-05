@@ -8,6 +8,7 @@ import {
   openCratesOf,
   paymentPreviewOf,
   rosterOf,
+  signedCountOfText,
   stockChangeOf,
   stockSeriesOf,
 } from './beer-hub';
@@ -16,18 +17,25 @@ const NOW = '2026-11-04T18:00:00.000Z';
 
 describe('stockChangeOf', () => {
   it.each([
-    ['up', 'delivery', 24, { kind: 'delivery', crates: 24 }],
-    ['up', 'miscount', 2, { kind: 'correction', crates: 2, reason: 'miscount' }],
-    ['down', 'miscount', 2, { kind: 'correction', crates: -2, reason: 'miscount' }],
-    ['down', 'shrinkage', 1, { kind: 'correction', crates: -1, reason: 'shrinkage' }],
-    ['down', 'breakage', 3, { kind: 'correction', crates: -3, reason: 'breakage' }],
-    ['up', 'shrinkage', 1, null],
-    ['up', 'breakage', 1, null],
-    ['down', 'delivery', 1, null],
-    ['down', null, 1, null],
-    ['up', 'delivery', 0, null],
-  ] as const)('%s with %s × %i gives %j', (direction, cause, count, expected) => {
-    expect(stockChangeOf(direction, cause, count)).toEqual(expected);
+    [24, { kind: 'delivery', crates: 24 }],
+    [-2, { kind: 'correction', crates: -2 }],
+    [0, null],
+  ] as const)('%i gives %j', (crates, expected) => {
+    expect(stockChangeOf(crates)).toEqual(expected);
+  });
+});
+
+describe('signedCountOfText', () => {
+  it.each([
+    ['3', 3],
+    [' 12 ', 12],
+    ['-4', -4],
+    ['−2', -2],
+    ['', 0],
+    ['x', 0],
+    ['2,5', 0],
+  ])('%j → %i', (text, expected) => {
+    expect(signedCountOfText(text)).toBe(expected);
   });
 });
 
@@ -108,7 +116,6 @@ describe('stockSeriesOf', () => {
         movementId: 1,
         kind: 'delivery' as const,
         crates: 10,
-        reason: null,
         bookedAt: '2026-11-01T10:00:00.000Z',
         bookedBy: null,
       },

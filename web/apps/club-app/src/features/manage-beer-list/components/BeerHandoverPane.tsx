@@ -5,11 +5,11 @@ import { BeerHandoverForm } from './BeerHandoverForm';
 import { BeerPaneFrame } from './BeerPaneFrame';
 import { BeerSettingsSwitch } from './BeerSettingsSwitch';
 
-const SWITCHER = <BeerSettingsSwitch value="/manage/beer-list/handover" />;
+const SWITCHER = <BeerSettingsSwitch value="/beer-list/manage/handover" />;
 
 export const BeerHandoverPane: FC = () => {
   const open = openHubOf(useBeerHubContext());
-  const context = open === null ? '' : ownerContextOf(open.pot.owner);
+  const context = open === null ? '' : ownerContextOf(open.pot.owner, open.pot.paymentLink);
   const body =
     open === null ? null : (
       <BeerHandoverForm beerPotId={open.pot.beerPotId} stock={open.summary.stock} />
