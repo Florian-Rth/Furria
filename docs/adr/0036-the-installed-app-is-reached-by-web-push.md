@@ -14,7 +14,9 @@ push provider, no Firebase SDK and no push library.**
 
 - **Server identity:** one P-256 key pair in config: `Push:VapidPublicKey` and
   `Push:VapidPrivateKey` (raw base64url, 65 and 32 bytes), plus `Push:Subject`, the contact that
-  push services see (`mailto:` or an `https` URL; production uses the club app's URL). **All three
+  push services see (`mailto:` or an `https` URL; production uses the club app's URL). Apple's push service refuses (403) a subject on a
+  non-public domain such as `mailto:…@furria.local`, so even development uses a real `https` URL
+  (found on an iPhone, 2026-11-05). **All three
   are required.** The API refuses to start unless the two keys are one pair and the subject is a
   contact, the same as every other secret (`Media:SigningKey`, `Altcha:HmacKey`). A platform that
   starts without them would silently lose every reminder. A start that fails is visible at once

@@ -153,6 +153,14 @@ Rulings (Florian, 2026-11-04):
   - any `manage` holder edits pot settings and hands over
   - a former enrollee with a fully paid tab no longer sees it
 
+Rulings from the device test (Florian, 2026-11-05):
+- Stock changes take no reason: "+" is a delivery (it re-arms the stock warning), "−" is a correction.
+- No free-text payment note. Cash to the owner is always possible and is always shown; the PayPal link is optional.
+- The member beer list and the hub poll every 10 s while visible.
+- The hub isn't club management. It lives at `/beer-list/manage` and opens from an icon in the `/beer-list` app bar for `manage` holders. It isn't listed in the manage hub.
+- The hub's quick actions are separate action buttons, not a tab-like app bar.
+- The push subject must be a public contact: Apple refuses `mailto:…@furria.local` with 403 (ADR-0036).
+
 ### Phase 2 — Pot and enrollment
 Goal: an operator opens the pot, people enroll and leave, and `beer_list.take` exists.
 - [x] Core: `BeerPot` (owner person, crate price, payment link, payment note, opened/closed), `BeerListEnrollment` (person, started/ended, ended by, declaration confirmed), migration
@@ -247,7 +255,7 @@ Goal: open tabs and running out remind by themselves.
 Built-phase notes (phase 8):
 - Workers `BeerTabReminders` and `BeerStockWarnings` run every 15 minutes, inside 10:00–20:00 Europe/Berlin (the stock warning too).
 - A notice counts only once a device received it, so someone who turns push on later still gets it.
-- Click targets: tab reminder → `/beer-list`, stock warning → `/manage/beer-list/stock`. Both are the final routes for phases 4/3's screens.
+- Click targets: tab reminder → `/beer-list`, stock warning → `/beer-list/manage/stock`. Both are the final routes for phases 4/3's screens.
 - Settling a tab needs no reset write: the next reminder follows the new oldest open crate.
 
 ### Phase 9 — Handover
@@ -263,10 +271,10 @@ Built-phase notes (phase 9):
 - The stock-warning state carries over unless a delivery re-armed it. A member booking that loses the race to a handover is retried on the successor's pot.
 
 Built-phase notes (operator hub):
-- The hub is at `/manage/beer-list`: the journal with quick entry (B), with child panes for `/stock`, `/payment`, `/crates`, `/persons/$personId`, `/settings`, `/enrollments`, `/code`, `/handover` and `/pots`.
+- The hub is at `/beer-list/manage`: the journal with quick entry (B), with child panes for `/stock`, `/payment`, `/crates`, `/persons/$personId`, `/settings`, `/enrollments`, `/code`, `/handover` and `/pots`.
 - One stock action (direction + reason + count) maps onto the two endpoints. A delivery stays its own event because it re-arms the stock warning.
 - "Schon bezahlt" books the crates and a payment in one transaction. The payment settles the oldest open crates, so with older debt the count of open crates on the tab still drops by N.
-- New reads: `GET beer-list/pots/{id}/journal`, and the manage-hub `beerList` panel.
+- New read: `GET beer-list/pots/{id}/journal`.
 
 ## Risks & alternatives
 
