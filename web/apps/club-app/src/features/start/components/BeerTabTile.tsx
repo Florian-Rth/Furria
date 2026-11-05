@@ -5,8 +5,8 @@ import { useBeerTabTile } from '../hooks/use-beer-tab-tile';
 import type { StartBoard } from '../hooks/use-start-view';
 import type { StartPanelOf } from '../start-board';
 
-const TILE_LABEL = 'Bierliste';
-const HEAD_LABEL = 'DEIN DECKEL';
+const TILE_LABEL = 'Deine offenen Kisten';
+const HEAD_LABEL = 'DEINE KISTEN';
 const TITLE_LINES = 2;
 
 interface BeerTabTileProps {

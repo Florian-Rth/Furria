@@ -49,7 +49,11 @@ export const BeerCratesForm: FC<BeerCratesFormProps> = ({
     landing,
   });
   const options = bookable.map(optionOf);
-  const buttonLabel = crateButtonOf(form.count, firstNameOf(form.person), form.paid);
+  const buttonLabel = crateButtonOf(
+    form.count,
+    form.person === null ? null : firstNameOf(form.person),
+    form.paid,
+  );
   const hint = stockAfterOf(stock, -form.count);
   const personInvalid = form.personError !== undefined;
   const countInvalid = form.countError !== undefined;

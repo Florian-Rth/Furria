@@ -250,8 +250,8 @@ export const NO_PEOPLE = 'Noch nimmt niemand teil.';
 export const paymentButtonOf = (count: number, cents: number): string =>
   `${cratesLabel(count)} bezahlt · ${euroOf(cents)}`;
 
-export const crateButtonOf = (count: number, name: string, paid: boolean): string =>
-  `${cratesLabel(count)} für ${name} buchen${paid ? ' · bezahlt' : ''}`;
+export const crateButtonOf = (count: number, name: string | null, paid: boolean): string =>
+  `${cratesLabel(count)}${name === null ? '' : ` für ${name}`} buchen${paid ? ' · bezahlt' : ''}`;
 
 export const stockButtonOf = (change: BeerStockChange | null): string => {
   if (change === null) {
