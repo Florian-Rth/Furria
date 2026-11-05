@@ -13,19 +13,13 @@ import {
   useBeerStockQuery,
   useBeerTabsQuery,
 } from '../api';
-import type {
-  BeerFocus,
-  BeerHubSummary,
-  BeerJournalDay,
-  BeerKindFilter,
-  BeerRosterRow,
-} from '../beer-hub';
+import type { BeerHubSummary, BeerJournalDay, BeerKindFilter, BeerRosterRow } from '../beer-hub';
 import {
   filteredJournalOf,
   hubSummaryOf,
   journalDaysOf,
   journalOf,
-  rosterInFocus,
+  openRosterOf,
   rosterOf,
 } from '../beer-hub';
 import { HUB_PATH } from '../beer-hub-copy';
@@ -49,7 +43,7 @@ export type BeerPanePath =
 export interface BeerOpenHub {
   pot: OpenBeerPot;
   roster: readonly BeerRosterRow[];
-  focusRoster: readonly BeerRosterRow[];
+  openRoster: readonly BeerRosterRow[];
   summary: BeerHubSummary;
   crates: readonly BeerJournalCrate[];
   payments: readonly BeerJournalPayment[];
@@ -71,8 +65,6 @@ export interface BeerHub {
   enrollments: readonly BeerEnrollment[];
   pane: BeerPane | null;
   selectedPersonId: number | null;
-  focus: BeerFocus;
-  chooseFocus: (focus: BeerFocus) => void;
   kind: BeerKindFilter;
   chooseKind: (kind: BeerKindFilter) => void;
   personFilter: number | null;
@@ -91,7 +83,6 @@ export const useBeerHub = (): BeerHub => {
   const isWide = useIsWideScreen();
   const navigate = useNavigate();
   const childMatches = useChildMatches();
-  const [focus, setFocus] = useState<BeerFocus>('all');
   const [kind, setKind] = useState<BeerKindFilter>('all');
   const [personFilter, setPersonFilter] = useState<number | null>(null);
   const { has } = usePermissions();
@@ -140,7 +131,7 @@ export const useBeerHub = (): BeerHub => {
     }
 
     const roster = rosterOf(tabsQuery.data.tabs, enrollments, now);
-    const focusRoster = rosterInFocus(roster, focus);
+    const openRoster = openRosterOf(roster);
     const journal = journalOf({
       journal: journalQuery.data,
       movements: stockQuery.data.movements,
@@ -150,8 +141,6 @@ export const useBeerHub = (): BeerHub => {
     const shown = filteredJournalOf(journal, {
       kind,
       personId: personFilter,
-      focus,
-      focusPersonIds: new Set(focusRoster.map((row) => row.person.personId)),
     });
 
     return {
@@ -159,7 +148,7 @@ export const useBeerHub = (): BeerHub => {
       open: {
         pot,
         roster,
-        focusRoster,
+        openRoster,
         summary: hubSummaryOf({
           stock: stockQuery.data,
           crates: journalQuery.data.crates,
@@ -182,10 +171,6 @@ export const useBeerHub = (): BeerHub => {
     enrollments,
     pane,
     selectedPersonId,
-    focus,
-    chooseFocus: (next) => {
-      setFocus(next === focus ? 'all' : next);
-    },
     kind,
     chooseKind: setKind,
     personFilter,

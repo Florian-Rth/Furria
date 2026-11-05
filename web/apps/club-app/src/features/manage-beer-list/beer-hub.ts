@@ -18,8 +18,6 @@ const WARN_WITHIN_DAYS = 7;
 
 export const SPARK_DAYS = 60;
 
-export type BeerFocus = 'all' | 'stock' | 'open' | 'overdue' | 'people';
-
 export type BeerTabState = 'overdue' | 'open' | 'paid';
 
 export interface BeerRosterRow {
@@ -121,16 +119,8 @@ export const rosterOf = (
   return [...withTab, ...withoutTab].sort(rosterOrder);
 };
 
-export const rosterInFocus = (
-  roster: readonly BeerRosterRow[],
-  focus: BeerFocus,
-): readonly BeerRosterRow[] => {
-  if (focus === 'overdue') {
-    return roster.filter((row) => row.state === 'overdue');
-  }
-
-  return focus === 'open' ? roster.filter((row) => row.openCrates > 0) : roster;
-};
+export const openRosterOf = (roster: readonly BeerRosterRow[]): readonly BeerRosterRow[] =>
+  roster.filter((row) => row.openCrates > 0);
 
 const isTakenAt = (crate: BeerJournalCrate, until: number): boolean =>
   Date.parse(crate.bookedAt) <= until &&
@@ -329,8 +319,6 @@ export interface BeerJournalDay {
 export interface BeerJournalFilter {
   kind: BeerKindFilter;
   personId: number | null;
-  focus: BeerFocus;
-  focusPersonIds: ReadonlySet<number>;
 }
 
 const KIND_GROUPS: Record<BeerKindFilter, readonly BeerJournalKind[]> = {
@@ -459,18 +447,6 @@ export const journalOf = ({
       Date.parse(right.at) - Date.parse(left.at) || left.key.localeCompare(right.key),
   );
 
-const matchesFocus = (entry: BeerJournalEntry, filter: BeerJournalFilter): boolean => {
-  if (filter.focus === 'all' || filter.focus === 'people') {
-    return true;
-  }
-
-  if (filter.focus === 'stock') {
-    return entry.stockDelta !== 0;
-  }
-
-  return entry.person !== null && filter.focusPersonIds.has(entry.person.personId);
-};
-
 export const filteredJournalOf = (
   journal: readonly BeerJournalEntry[],
   filter: BeerJournalFilter,
@@ -478,8 +454,7 @@ export const filteredJournalOf = (
   journal.filter(
     (entry) =>
       KIND_GROUPS[filter.kind].includes(entry.kind) &&
-      (filter.personId === null || entry.person?.personId === filter.personId) &&
-      matchesFocus(entry, filter),
+      (filter.personId === null || entry.person?.personId === filter.personId),
   );
 
 export const journalDaysOf = (entries: readonly BeerJournalEntry[]): readonly BeerJournalDay[] => {

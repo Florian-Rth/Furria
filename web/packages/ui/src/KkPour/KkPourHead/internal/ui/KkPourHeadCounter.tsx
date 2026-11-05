@@ -1,4 +1,4 @@
-import ButtonBase from '@mui/material/ButtonBase';
+import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
@@ -8,27 +8,11 @@ import { headCellPaint } from './head-cell-paint';
 interface KkPourHeadCounterProps {
   value: string;
   label: string;
-  ariaLabel: string;
   attention: boolean;
-  selected: boolean;
-  onSelect: () => void;
 }
 
-export const KkPourHeadCounter: FC<KkPourHeadCounterProps> = ({
-  value,
-  label,
-  ariaLabel,
-  attention,
-  selected,
-  onSelect,
-}) => (
-  <ButtonBase
-    aria-pressed={selected}
-    aria-label={ariaLabel}
-    onClick={onSelect}
-    data-kk-pour-head-counter
-    sx={[headCellPaint, { flex: 1 }]}
-  >
+export const KkPourHeadCounter: FC<KkPourHeadCounterProps> = ({ value, label, attention }) => (
+  <Box data-kk-pour-head-counter sx={[headCellPaint, { flex: 1 }]}>
     <Stack sx={{ minWidth: 0, gap: 0.25 }}>
       <Typography
         variant="h3"
@@ -56,5 +40,5 @@ export const KkPourHeadCounter: FC<KkPourHeadCounterProps> = ({
         {label}
       </Typography>
     </Stack>
-  </ButtonBase>
+  </Box>
 );

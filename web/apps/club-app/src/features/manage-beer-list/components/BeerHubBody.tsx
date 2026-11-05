@@ -7,7 +7,7 @@ import { BeerPaneSlot } from './BeerPaneSlot';
 
 export const BeerHubBody: FC = () => {
   const { state, isWide } = useBeerHubContext();
-  const roster = state.kind === 'open' ? state.open.focusRoster : null;
+  const roster = state.kind === 'open' ? state.open.roster : null;
   const masterSpan = isWide ? HUB_SPANS.masterWide : HUB_SPANS.masterNarrow;
 
   return (

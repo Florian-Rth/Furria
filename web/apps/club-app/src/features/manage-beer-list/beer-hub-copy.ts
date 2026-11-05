@@ -73,7 +73,7 @@ const personsOf = (count: number): string => (count === 1 ? '1 Person' : `${coun
 export const HEAD_LABEL = 'Lage der Bierliste';
 export const STOCK_LABEL = 'Bestand';
 export const STOCK_UNIT = 'Kisten';
-export const COUNTERS_LABEL = 'Offene Kisten filtern';
+export const COUNTERS_LABEL = 'Kennzahlen';
 export const OPEN_LABEL = 'offen';
 export const OVERDUE_LABEL = `ab ${OVERDUE_AFTER_DAYS} Tagen`;
 export const PEOPLE_LABEL = 'nehmen teil';
@@ -439,13 +439,6 @@ export const rosterTotalOf = (cents: number): string => (cents === 0 ? '' : euro
 export const takenFactsOf = (count: number): string => (count === 0 ? '' : cratesLabel(count));
 
 export const openTabsLabelOf = (openTabs: number): string => `${personsOf(openTabs)} ${OPEN_LABEL}`;
-
-export const openAriaOf = (summary: BeerHubSummary): string =>
-  `${euroOf(summary.openCents)} offen bei ${personsOf(summary.openTabs)}`;
-
-export const overdueAriaOf = (overdue: number): string => `${personsOf(overdue)} ${OVERDUE_LABEL}`;
-
-export const peopleAriaOf = (enrolled: number): string => `${enrolled} ${PEOPLE_LABEL}`;
 
 export const personContextOf = (row: BeerRosterRow | null): string =>
   row === null || row.openCrates === 0

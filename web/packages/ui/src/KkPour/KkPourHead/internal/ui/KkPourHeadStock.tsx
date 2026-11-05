@@ -1,4 +1,4 @@
-import ButtonBase from '@mui/material/ButtonBase';
+import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC, ReactNode } from 'react';
@@ -14,8 +14,6 @@ interface KkPourHeadStockProps {
   caption: string;
   warn: boolean;
   spark: ReactNode;
-  selected: boolean;
-  onSelect: () => void;
 }
 
 export const KkPourHeadStock: FC<KkPourHeadStockProps> = ({
@@ -25,18 +23,11 @@ export const KkPourHeadStock: FC<KkPourHeadStockProps> = ({
   caption,
   warn,
   spark,
-  selected,
-  onSelect,
 }) => {
   const warnGlyph = warn ? <KkPourStateGlyph state="overdue" /> : null;
 
   return (
-    <ButtonBase
-      aria-pressed={selected}
-      onClick={onSelect}
-      data-kk-pour-head-stock
-      sx={[headCellPaint, { flex: 1 }]}
-    >
+    <Box data-kk-pour-head-stock sx={[headCellPaint, { flex: 1 }]}>
       <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5, flex: 1, minWidth: 0 }}>
         <Stack sx={{ minWidth: 0, gap: 0.25 }}>
           <Typography
@@ -75,6 +66,6 @@ export const KkPourHeadStock: FC<KkPourHeadStockProps> = ({
         </Stack>
         <Stack sx={{ flex: 1, minWidth: 0, alignItems: 'flex-end' }}>{spark}</Stack>
       </Stack>
-    </ButtonBase>
+    </Box>
   );
 };
