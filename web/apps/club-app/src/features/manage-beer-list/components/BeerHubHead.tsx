@@ -5,7 +5,6 @@ import type { BeerHubSummary } from '../beer-hub';
 import { useBeerHubContext } from '../beer-hub-context';
 import {
   COUNTERS_LABEL,
-  euroOf,
   HEAD_LABEL,
   OVERDUE_LABEL,
   openAriaOf,
@@ -16,6 +15,7 @@ import {
   STOCK_LABEL,
   STOCK_UNIT,
   stockCaptionOf,
+  tileEuroOf,
 } from '../beer-hub-copy';
 
 interface BeerHubHeadProps {
@@ -27,7 +27,7 @@ export const BeerHubHead: FC<BeerHubHeadProps> = ({ summary }) => {
   const { focus } = hub;
   const caption = stockCaptionOf(summary);
   const stockValue = String(summary.stock);
-  const openValue = euroOf(summary.openCents);
+  const openValue = tileEuroOf(summary.openCents);
   const overdueValue = String(summary.overdue);
   const peopleValue = String(summary.enrolled);
   const openLabel = openTabsLabelOf(summary.openTabs);

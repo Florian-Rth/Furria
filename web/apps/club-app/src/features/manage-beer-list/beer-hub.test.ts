@@ -12,6 +12,7 @@ import {
   stockChangeOf,
   stockSeriesOf,
 } from './beer-hub';
+import { tileEuroOf } from './beer-hub-copy';
 
 const NOW = '2026-11-04T18:00:00.000Z';
 
@@ -248,5 +249,16 @@ describe('bookableOf', () => {
       [2, true],
       [3, false],
     ]);
+  });
+});
+
+describe('tileEuroOf', () => {
+  it.each([
+    [17_200, '172,00 €'],
+    [99_999, '999,99 €'],
+    [123_400, '1.234 €'],
+    [123_450, '1.235 €'],
+  ])('shows %i cents as %s', (cents, expected) => {
+    expect(tileEuroOf(cents)).toBe(expected);
   });
 });

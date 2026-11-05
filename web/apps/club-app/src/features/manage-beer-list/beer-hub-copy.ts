@@ -34,6 +34,18 @@ export const cratesLabel = (count: number): string => (count === 1 ? '1 Kiste' :
 
 export const euroOf = formatEuroCents;
 
+const WHOLE_EUROS_FROM_CENTS = 100_000;
+
+const wholeEuroFormat = new Intl.NumberFormat('de-DE', {
+  style: 'currency',
+  currency: 'EUR',
+  maximumFractionDigits: 0,
+});
+
+/** Figure tile: from 1.000 € on, whole euros keep the figure inside a phone-width tile. */
+export const tileEuroOf = (cents: number): string =>
+  cents >= WHOLE_EUROS_FROM_CENTS ? wholeEuroFormat.format(Math.round(cents / 100)) : euroOf(cents);
+
 export const fullNameOf = (person: PersonRef | null): string =>
   person === null ? 'Unbekannt' : `${person.firstName} ${person.lastName}`;
 

@@ -34,11 +34,25 @@ export const KkPourHeadCounter: FC<KkPourHeadCounterProps> = ({
         variant="h3"
         component="span"
         noWrap
-        sx={[{ fontVariantNumeric: 'tabular-nums', lineHeight: 1.1 }, attention ? goldInkOf : {}]}
+        sx={[
+          {
+            fontVariantNumeric: 'tabular-nums',
+            lineHeight: 1.1,
+          },
+          attention ? goldInkOf : {},
+        ]}
       >
         {value}
       </Typography>
-      <Typography variant="caption" noWrap sx={{ fontWeight: 700, color: 'text.secondary' }}>
+      <Typography
+        variant="caption"
+        sx={{
+          fontWeight: 700,
+          color: 'text.secondary',
+          lineHeight: 1.25,
+          overflowWrap: 'break-word',
+        }}
+      >
         {label}
       </Typography>
     </Stack>
