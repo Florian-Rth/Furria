@@ -47,9 +47,10 @@ export const DoorElementSchema = z.object({
 });
 export type DoorElement = z.infer<typeof DoorElementSchema>;
 
-export const AreaElementSchema = z.object({
+export const RectAreaElementSchema = z.object({
   id: z.string(),
   kind: z.literal('area'),
+  shape: z.literal('rect'),
   area: AreaKindSchema,
   x: z.number(),
   y: z.number(),
@@ -58,6 +59,22 @@ export const AreaElementSchema = z.object({
   rotation: z.number(),
   label: z.string().nullable(),
 });
+export type RectAreaElement = z.infer<typeof RectAreaElementSchema>;
+
+export const PolygonAreaElementSchema = z.object({
+  id: z.string(),
+  kind: z.literal('area'),
+  shape: z.literal('polygon'),
+  area: AreaKindSchema,
+  points: z.array(PointSchema),
+  label: z.string().nullable(),
+});
+export type PolygonAreaElement = z.infer<typeof PolygonAreaElementSchema>;
+
+export const AreaElementSchema = z.discriminatedUnion('shape', [
+  RectAreaElementSchema,
+  PolygonAreaElementSchema,
+]);
 export type AreaElement = z.infer<typeof AreaElementSchema>;
 
 export const PillarElementSchema = z.object({
@@ -130,6 +147,7 @@ export const ChairOverrideSchema = z.object({
   number: z.string().nullable(),
   note: z.string().nullable(),
   removed: z.boolean(),
+  kept: z.boolean().default(false),
 });
 export type ChairOverride = z.infer<typeof ChairOverrideSchema>;
 
@@ -275,6 +293,8 @@ export const TablePlanSaveSchema = z.object({
   hallId: z.number().int(),
   document: TablePlanDocumentSchema,
   version: z.number().int(),
+  tables: z.number().int(),
+  chairs: z.number().int(),
 });
 export type TablePlanSave = z.infer<typeof TablePlanSaveSchema>;
 

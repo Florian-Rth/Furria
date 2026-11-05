@@ -37,7 +37,24 @@ public sealed class PutTablePlanTests : IClassFixture<ApiTestFixture>
             eventId,
             hallId,
             1,
-            [Row("r1", BeerTableId, 2, groupId: "g1"), Row("r2", BeerTableId, 2, groupId: "g1")],
+            [
+                Row("r1", BeerTableId, 2, groupId: "g1") with
+                {
+                    Chairs =
+                    [
+                        new ChairOverrideDto
+                        {
+                            Side = TableSide.Front,
+                            Index = 0,
+                            Number = null,
+                            Note = null,
+                            Removed = false,
+                            Kept = true,
+                        },
+                    ],
+                },
+                Row("r2", BeerTableId, 2, groupId: "g1"),
+            ],
             [
                 new TableGroupDto
                 {
@@ -57,6 +74,29 @@ public sealed class PutTablePlanTests : IClassFixture<ApiTestFixture>
         >(new() { EventId = eventId });
         Assert.Equal("Elferrat", plan.Document.Groups.Single().Note);
         Assert.All(plan.Document.Rows, row => Assert.Equal("g1", row.GroupId));
+        Assert.True(plan.Document.Rows[0].Chairs.Single().Kept);
+    }
+
+    [Fact]
+    public async Task Should_Refuse_When_TheTableCountDisagreesWithTheRows()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
+        var eventId = ctx.Club.Events.IdOf(Gala);
+        var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
+        await CreatePlanAsync(client, eventId, hallId);
+
+        var (response, _) = await SavePlanAsync(
+            client,
+            eventId,
+            hallId,
+            1,
+            [Row("r1", BeerTableId, 2)],
+            tables: 5
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]

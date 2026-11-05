@@ -17,12 +17,10 @@ public sealed class TablePlanService
         "Der Tischplan nennt eine Tischart, die es nicht gibt.";
 
     private readonly AppDbContext _dbContext;
-    private readonly SeatingService _seating;
 
-    public TablePlanService(AppDbContext dbContext, SeatingService seating)
+    public TablePlanService(AppDbContext dbContext)
     {
         _dbContext = dbContext;
-        _seating = seating;
     }
 
     public async Task<IReadOnlyList<TablePlanSummary>> GetTablePlansAsync(CancellationToken ct)
@@ -38,7 +36,7 @@ public sealed class TablePlanService
                 plan.Event.CalendarEntry.StartsAt,
                 plan.HallId,
                 HallName = plan.Hall!.Name,
-                plan.Document,
+                plan.Tables,
             })
             .ToListAsync(ct);
 
@@ -51,7 +49,7 @@ public sealed class TablePlanService
                 StartsAt = row.StartsAt,
                 HallId = row.HallId,
                 HallName = row.HallName,
-                Tables = row.Document.Rows.Sum(tableRow => tableRow.Count),
+                Tables = row.Tables,
             }),
         ];
     }
@@ -93,26 +91,25 @@ public sealed class TablePlanService
         if (!await IsHallAsync(command.HallId, ct))
             return Result.Validation(UnknownHallMessage);
 
-        var document = TablePlanDocument.Empty;
-        if (command.CopyFromEventId is { } sourceEventId)
-        {
-            var source = await _dbContext
-                .TablePlans.AsNoTracking()
-                .Where(plan => plan.CalendarEntryId == sourceEventId)
-                .Select(plan => plan.Document)
-                .SingleOrDefaultAsync(ct);
-            if (source is null)
-                return Result.Validation(UnknownCopySourceMessage);
-            document = source;
-        }
-
         var created = new TablePlan
         {
             CalendarEntryId = command.EventId,
             HallId = command.HallId,
-            Document = document,
+            Document = TablePlanDocument.Empty,
             Version = 1,
         };
+        if (command.CopyFromEventId is { } sourceEventId)
+        {
+            var source = await _dbContext
+                .TablePlans.AsNoTracking()
+                .SingleOrDefaultAsync(plan => plan.CalendarEntryId == sourceEventId, ct);
+            if (source is null)
+                return Result.Validation(UnknownCopySourceMessage);
+            created.Document = source.Document;
+            created.Tables = source.Tables;
+            created.Chairs = source.Chairs;
+        }
+
         _dbContext.TablePlans.Add(created);
         return await _dbContext.SaveOrConflictAsync(ct);
     }
@@ -137,6 +134,8 @@ public sealed class TablePlanService
 
         plan.HallId = command.HallId;
         plan.Document = command.Document;
+        plan.Tables = command.Count.Tables;
+        plan.Chairs = command.Count.Chairs;
         plan.Version++;
         await _dbContext.SaveChangesAsync(ct);
 
@@ -161,23 +160,15 @@ public sealed class TablePlanService
     public async Task<IReadOnlyDictionary<int, TablePlanCount>> CountsOfAsync(
         IReadOnlyCollection<int> eventIds,
         CancellationToken ct
-    )
-    {
-        var plans = await _dbContext
+    ) =>
+        await _dbContext
             .TablePlans.AsNoTracking()
             .Where(plan => eventIds.Contains(plan.CalendarEntryId))
-            .Select(plan => new { plan.CalendarEntryId, plan.Document })
-            .ToListAsync(ct);
-        if (plans.Count == 0)
-            return new Dictionary<int, TablePlanCount>();
-
-        var rules = await _seating.RulesAsync(ct);
-
-        return plans.ToDictionary(
-            plan => plan.CalendarEntryId,
-            plan => rules.CountOf(plan.Document)
-        );
-    }
+            .ToDictionaryAsync(
+                plan => plan.CalendarEntryId,
+                plan => new TablePlanCount(plan.Tables, plan.Chairs),
+                ct
+            );
 
     private Task<bool> IsEventAsync(int eventId, CancellationToken ct) =>
         _dbContext.Events.AnyAsync(row => row.CalendarEntryId == eventId, ct);

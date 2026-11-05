@@ -1,6 +1,7 @@
 import { KkFloorPlan } from '@furria/ui/KkFloorPlan';
 import type { FC } from 'react';
 import { areaLabelOf } from '@/features/hall-builder/hall-builder-view';
+import { areaLabelPointOf } from '@/features/hall-plan/area-shape';
 import type { HallElement } from '@/features/hall-plan/schemas';
 
 interface TablePlannerHallElementProps {
@@ -29,7 +30,15 @@ export const TablePlannerHallElement: FC<TablePlannerHallElementProps> = ({
       );
     }
     case 'area':
-      return (
+      return element.shape === 'polygon' ? (
+        <KkFloorPlan.AreaOutline
+          kind={element.area}
+          points={element.points}
+          labelAt={areaLabelPointOf(element)}
+          label={areaLabelOf(element)}
+          muted
+        />
+      ) : (
         <KkFloorPlan.Area
           kind={element.area}
           x={element.x}

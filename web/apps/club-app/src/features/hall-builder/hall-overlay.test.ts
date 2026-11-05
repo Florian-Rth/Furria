@@ -17,6 +17,7 @@ const DOCUMENT: HallDocument = {
     {
       id: 'e2',
       kind: 'area',
+      shape: 'rect',
       area: 'stage',
       x: 200,
       y: 200,

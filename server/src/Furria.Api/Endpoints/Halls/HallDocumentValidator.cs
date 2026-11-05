@@ -63,8 +63,7 @@ internal static class PlanBounds
                 && IsPoint(element.To)
                 && element.Door is { } door
                 && Enum.IsDefined(door),
-            HallElementKind.Area => IsBox(element)
-                && IsRotation(element.Rotation)
+            HallElementKind.Area => IsAreaOutline(element)
                 && element.Area is { } area
                 && Enum.IsDefined(area),
             HallElementKind.Pillar => IsBox(element) && element.Round is not null,
@@ -77,6 +76,19 @@ internal static class PlanBounds
                 && Enum.IsDefined(size),
             _ => false,
         };
+
+    [Pure]
+    private static bool IsAreaOutline(HallElementDto element) =>
+        element.Shape switch
+        {
+            null or HallAreaShape.Rect => IsBox(element) && IsRotation(element.Rotation),
+            HallAreaShape.Polygon => IsPolygon(element.Points),
+            _ => false,
+        };
+
+    [Pure]
+    private static bool IsPolygon(IReadOnlyList<PlanPointDto>? points) =>
+        points is { Count: >= 3 and <= HallLimits.MostPoints } && points.All(IsPoint);
 
     [Pure]
     private static bool IsPolyline(IReadOnlyList<PlanPointDto>? points) =>

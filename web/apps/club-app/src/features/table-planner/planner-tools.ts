@@ -1,6 +1,6 @@
 import type { KkIconName } from '@furria/ui/KkIcon';
 
-export const PLANNER_TOOLS = ['select', 'table', 'row', 'measure'] as const;
+export const PLANNER_TOOLS = ['select', 'table', 'row', 'seats', 'measure'] as const;
 export type PlannerTool = (typeof PLANNER_TOOLS)[number];
 
 export const PLANNER_VIEWS = ['plan', 'setup'] as const;
@@ -10,6 +10,7 @@ export const TOOL_ICONS: Record<PlannerTool, KkIconName> = {
   select: 'pointer',
   table: 'tables',
   row: 'row',
+  seats: 'chair',
   measure: 'ruler',
 };
 
@@ -19,4 +20,5 @@ export const isPlannerTool = (value: string): value is PlannerTool =>
 export const isPlannerView = (value: string): value is PlannerView =>
   PLANNER_VIEWS.some((view) => view === value);
 
-export const placesTables = (tool: PlannerTool): boolean => tool === 'table' || tool === 'row';
+export const placesTables = (tool: PlannerTool): boolean =>
+  tool === 'table' || tool === 'row' || tool === 'seats';

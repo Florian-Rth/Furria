@@ -56,7 +56,9 @@ internal static class HallSteps
         int hallId,
         int version,
         IReadOnlyList<TableRowDto> rows,
-        IReadOnlyList<TableGroupDto>? groups = null
+        IReadOnlyList<TableGroupDto>? groups = null,
+        int chairs = 0,
+        int? tables = null
     ) =>
         client.PUTAsync<PutTablePlan, PutTablePlanRequest, PutTablePlanResponse>(
             new()
@@ -64,6 +66,8 @@ internal static class HallSteps
                 EventId = eventId,
                 HallId = hallId,
                 Version = version,
+                Tables = tables ?? rows.Sum(row => row.Count),
+                Chairs = chairs,
                 Document = new TablePlanDocumentDto
                 {
                     Seating = SeatingMode.Comfortable,
@@ -78,10 +82,18 @@ internal static class HallSteps
         int eventId,
         int hallId,
         int version,
-        IReadOnlyList<TableRowDto> rows
+        IReadOnlyList<TableRowDto> rows,
+        int chairs = 0
     )
     {
-        var (response, result) = await SavePlanAsync(client, eventId, hallId, version, rows);
+        var (response, result) = await SavePlanAsync(
+            client,
+            eventId,
+            hallId,
+            version,
+            rows,
+            chairs: chairs
+        );
         response.EnsureSuccessStatusCode();
 
         return result.Version;
@@ -142,6 +154,17 @@ internal static class HallSteps
             WidthCm = 800,
             HeightCm = 300,
             Rotation = 0,
+            Label = "Bühne",
+        };
+
+    internal static HallElementDto MergedStage(string id, params (double X, double Y)[] corners) =>
+        new()
+        {
+            Id = id,
+            Kind = HallElementKind.Area,
+            Area = HallAreaKind.Stage,
+            Shape = HallAreaShape.Polygon,
+            Points = [.. corners.Select(corner => new PlanPointDto { X = corner.X, Y = corner.Y })],
             Label = "Bühne",
         };
 }

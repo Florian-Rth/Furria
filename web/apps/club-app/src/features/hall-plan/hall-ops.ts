@@ -1,3 +1,11 @@
+import type { AreaMergeRefusal } from './area-shape';
+import {
+  areaOutlineOf,
+  mergeOutlines,
+  movedArea,
+  polygonAreaFrom,
+  rotatedArea,
+} from './area-shape';
 import type { Bounds } from './plan-geometry';
 import {
   add,
@@ -7,6 +15,7 @@ import {
   cornersOf,
   distanceBetween,
   isBoundsInside,
+  isPointInPolygon,
   isPointInRect,
   midpointOf,
   nearestOnPolyline,
@@ -25,6 +34,7 @@ import type {
   LineElement,
   PillarElement,
   Point,
+  RectAreaElement,
   TextElement,
   TextSize,
   WallElement,
@@ -69,12 +79,13 @@ export const createArea = (
   area: AreaKind,
   corner: Point,
   opposite: Point,
-): AreaElement => {
+): RectAreaElement => {
   const bounds = boundsFromCorners(corner, opposite);
 
   return {
     id,
     kind: 'area',
+    shape: 'rect',
     area,
     x: (bounds.minX + bounds.maxX) / 2,
     y: (bounds.minY + bounds.maxY) / 2,
@@ -141,6 +152,8 @@ export const movedElement = (element: HallElement, delta: Point): HallElement =>
       return { ...element, points: element.points.map((point) => movePoint(point, delta)) };
     case 'door':
       return { ...element, from: movePoint(element.from, delta), to: movePoint(element.to, delta) };
+    case 'area':
+      return movedArea(element, delta);
     default:
       return { ...element, x: element.x + delta.x, y: element.y + delta.y };
   }
@@ -156,17 +169,7 @@ export const moveElements = (
   ),
 });
 
-export const vertexCountOf = (element: HallElement): number => {
-  switch (element.kind) {
-    case 'wall':
-    case 'line':
-      return element.points.length;
-    case 'door':
-      return 2;
-    default:
-      return 0;
-  }
-};
+export const vertexCountOf = (element: HallElement): number => verticesOf(element).length;
 
 export const verticesOf = (element: HallElement): Point[] => {
   switch (element.kind) {
@@ -175,6 +178,8 @@ export const verticesOf = (element: HallElement): Point[] => {
       return [...element.points];
     case 'door':
       return [element.from, element.to];
+    case 'area':
+      return element.shape === 'polygon' ? [...element.points] : [];
     default:
       return [];
   }
@@ -202,6 +207,13 @@ export const moveVertex = (
         document,
         vertexIndex === 0 ? { ...element, from: to } : { ...element, to },
       );
+    case 'area':
+      return element.shape === 'polygon'
+        ? replaceElement(document, {
+            ...element,
+            points: element.points.map((point, index) => (index === vertexIndex ? to : point)),
+          })
+        : document;
     default:
       return document;
   }
@@ -220,6 +232,8 @@ const rotatedElement = (element: HallElement, pivot: Point, degrees: number): Ha
 
       return { ...element, x: center.x, y: center.y };
     }
+    case 'area':
+      return rotatedArea(element, pivot, degrees);
     default: {
       const center = turn({ x: element.x, y: element.y });
 
@@ -251,16 +265,7 @@ export const elementBounds = (element: HallElement): Bounds => {
     case 'door':
       return boundsFromCorners(element.from, element.to);
     case 'area':
-      return (
-        boundsOfPoints(
-          cornersOf({
-            center: { x: element.x, y: element.y },
-            width: element.widthCm,
-            height: element.heightCm,
-            rotation: element.rotation,
-          }),
-        ) ?? { minX: element.x, minY: element.y, maxX: element.x, maxY: element.y }
-      );
+      return boundsOfPoints(areaOutlineOf(element)) ?? { minX: 0, minY: 0, maxX: 0, maxY: 0 };
     case 'pillar':
       return {
         minX: element.x - element.widthCm / 2,
@@ -333,6 +338,8 @@ export const duplicateElements = (
   };
 };
 
+const closedOutline = (points: readonly Point[]): Point[] => [...points, ...points.slice(0, 1)];
+
 const isHitByPolyline = (points: readonly Point[], at: Point, tolerance: number): boolean => {
   const nearest = nearestOnPolyline(at, points);
 
@@ -358,12 +365,15 @@ export const isElementHit = (element: HallElement, at: Point, tolerance: number)
             rotation: 0,
           });
     case 'area':
-      return isPointInRect(at, {
-        center: { x: element.x, y: element.y },
-        width: element.widthCm + 2 * tolerance,
-        height: element.heightCm + 2 * tolerance,
-        rotation: element.rotation,
-      });
+      return element.shape === 'polygon'
+        ? isPointInPolygon(at, element.points) ||
+            isHitByPolyline(closedOutline(element.points), at, tolerance)
+        : isPointInRect(at, {
+            center: { x: element.x, y: element.y },
+            width: element.widthCm + 2 * tolerance,
+            height: element.heightCm + 2 * tolerance,
+            rotation: element.rotation,
+          });
     default: {
       const bounds = elementBounds(element);
 
@@ -443,12 +453,7 @@ export const snapCornersOf = (document: HallDocument): Point[] =>
       case 'door':
         return [element.from, element.to, midpointOf(element.from, element.to)];
       case 'area':
-        return cornersOf({
-          center: { x: element.x, y: element.y },
-          width: element.widthCm,
-          height: element.heightCm,
-          rotation: element.rotation,
-        });
+        return areaOutlineOf(element);
       case 'pillar':
         return [{ x: element.x, y: element.y }];
       default:
@@ -456,16 +461,7 @@ export const snapCornersOf = (document: HallDocument): Point[] =>
     }
   });
 
-const closedAreaOutline = (element: AreaElement): Point[] => {
-  const corners = cornersOf({
-    center: { x: element.x, y: element.y },
-    width: element.widthCm,
-    height: element.heightCm,
-    rotation: element.rotation,
-  });
-
-  return [...corners, ...corners.slice(0, 1)];
-};
+const closedAreaOutline = (element: AreaElement): Point[] => closedOutline(areaOutlineOf(element));
 
 const snapOutlineOf = (element: HallElement): readonly Point[] => {
   switch (element.kind) {
@@ -491,3 +487,34 @@ export const snapSegmentsOf = (document: HallDocument): { from: Point; to: Point
   });
 
 export const doorWidthOf = (door: DoorElement): number => distanceBetween(door.from, door.to);
+
+export type AreaMergeResult =
+  | { kind: 'merged'; document: HallDocument; id: string }
+  | { kind: 'refused'; reason: AreaMergeRefusal };
+
+const selectedAreas = (document: HallDocument, ids: readonly string[]): AreaElement[] =>
+  ids.flatMap((id) => {
+    const element = findElement(document, id);
+
+    return element?.kind === 'area' ? [element] : [];
+  });
+
+export const mergeAreas = (document: HallDocument, ids: readonly string[]): AreaMergeResult => {
+  const areas = selectedAreas(document, ids);
+  const [first] = areas;
+  if (first === undefined || areas.length < 2) {
+    return { kind: 'refused', reason: 'tooFew' };
+  }
+  const merge = mergeOutlines(areas.map(areaOutlineOf));
+  if (merge.kind === 'refused') {
+    return merge;
+  }
+  const absorbed = areas.slice(1).map((area) => area.id);
+  const merged = polygonAreaFrom(first, merge.outline);
+
+  return {
+    kind: 'merged',
+    document: removeElements(replaceElement(document, merged), absorbed),
+    id: merged.id,
+  };
+};

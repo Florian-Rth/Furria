@@ -1,4 +1,3 @@
-import type { SideRef } from '@/features/hall-plan/plan-clearance';
 import type {
   Point,
   RectSide,
@@ -7,11 +6,10 @@ import type {
   TablePlanDocument,
   TableType,
 } from '@/features/hall-plan/schemas';
-import type { RowLayout } from '@/features/hall-plan/table-layout';
-import type { ChairPatch, ChairRef, NotePatch } from '@/features/hall-plan/table-plan-ops';
+import type { ChairRef, RowLayout } from '@/features/hall-plan/table-layout';
+import type { ChairPatch, NotePatch } from '@/features/hall-plan/table-plan-ops';
 import {
   changeRowCount,
-  clearSides,
   duplicateRows,
   expandToGroups,
   findRow,
@@ -21,6 +19,7 @@ import {
   patchChair,
   patchGroup,
   patchRow,
+  releaseChairs,
   removeRows,
   rotateRows,
   setPlanSeating,
@@ -45,7 +44,7 @@ export interface PlannerCommands {
   setCount: (rowId: string, count: number) => void;
   setType: (rowId: string, tableTypeId: number) => void;
   setSide: (rowId: string, side: RectSide, seated: boolean) => void;
-  clearSides: (sides: readonly SideRef[]) => void;
+  releaseChairs: (chairs: readonly ChairRef[]) => void;
   setPlanSeating: (seating: Seating) => void;
   setRowSeating: (rowId: string, seating: Seating | null) => void;
   patchRow: (rowId: string, patch: NotePatch, field: string) => void;
@@ -154,8 +153,8 @@ export const usePlannerCommands = ({
     setSide: (rowId, side, seated) => {
       apply(setRowSide(document, rowId, side, seated));
     },
-    clearSides: (sides) => {
-      apply(clearSides(document, sides));
+    releaseChairs: (chairs) => {
+      apply(releaseChairs(document, chairs));
     },
     setPlanSeating: (seating) => {
       apply(setPlanSeating(document, seating));

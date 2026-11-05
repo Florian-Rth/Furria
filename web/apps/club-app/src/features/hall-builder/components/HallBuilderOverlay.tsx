@@ -2,6 +2,7 @@ import { KkFloorPlan } from '@furria/ui/KkFloorPlan';
 import type { FC } from 'react';
 import { useHallBuilderContext } from '../hall-builder-context';
 import { areaLabelOf } from '../hall-builder-view';
+import { HallAreaEdgeLengths } from './HallAreaEdgeLengths';
 import { HallPolylineGhost } from './HallPolylineGhost';
 
 export const HallBuilderOverlay: FC = () => {
@@ -44,6 +45,7 @@ export const HallBuilderOverlay: FC = () => {
           rotation={area.rotation}
           label={areaLabelOf(area)}
         />
+        <HallAreaEdgeLengths area={area} />
       </KkFloorPlan.Ghost>
     );
   const measureLine =

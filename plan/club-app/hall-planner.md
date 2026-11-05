@@ -260,3 +260,106 @@ the inspector.
 - `steps[]` lists `hall` **last** (after `runningOrder`); it is absent when `withoutTablePlan`.
 - Hall elements come back with every field present (`null` where the kind has none).
 - C# enum for the seating mode is `SeatingMode` (wire unchanged: `comfortable|maximum`).
+
+---
+
+## Round 2 — owner findings 2026-11-05 (override everything above where they differ)
+
+Florian tested on the dev server. Findings + his answers:
+
+1. **Bug — stale hall after re-entry.** Edit hall → leave → enter again shows the old hall (only a
+   second re-entry is fresh). Same risk for the table plan. Fix: every successful autosave writes
+   the saved document + new version into the React Query cache (`setQueryData`) for the detail
+   query, and the detail query refetches on mount (`refetchOnMount: 'always'`); the editor still
+   seeds once per mount.
+2. **Area side lengths.** While drawing and when selected, an area shows the length of every edge
+   on the edge (cm < 1 m, else m with two decimals), not only the diagonal/size chip.
+3. **Merge areas.** Two or more selected areas that overlap (or touch) → *Zusammenfügen* →
+   one area whose outline is their union. Area gains `shape`: `"rect"` (x, y, widthCm,
+   heightCm, rotation — as today) or `"polygon"` (`points: Point[]`, 3..200, x/y/width/height/
+   rotation null). Kind + label come from the first selected area. Polygon areas: move, rotate,
+   vertex drag, delete, duplicate; edge lengths shown. Union via the `polygon-clipping` npm
+   package (catalog dependency). Non-overlapping selection → action disabled with reason.
+   Server validates both shapes (polygon: ≥3 points, ≤200, coordinate limits).
+4. **"Für X Personen".** New planner tool: enter the needed chairs, pick the table type and
+   **Reihe** (one row, fewest tables with ≥ X chairs) or **Block** (parallel rows, *Tische pro
+   Reihe* adjustable, rows spaced so chair zones keep exactly the Mindestgang; the rows form one
+   Tischgruppe). Live preview "4 Tische · 24 Stühle"; tap/click places it (ghost follows the
+   pointer on desktop; on touch it appears at the view centre and is draggable). Uses the plan's
+   current Bestuhlung.
+5. **Clashing chairs are left out automatically** (owner pick). A chair whose cell (spacing ×
+   chairDepth, outward) overlaps a table body, another chair cell, a blocker or an exit
+   keep-clear zone is *left out*: drawn faded, not counted. Chair vs chair between two rows:
+   the chair of the row that comes later in the document is left out (deterministic, the one just
+   placed/moved yields). Tapping a faded chair → *Zurückstellen* (override `kept: true`), which
+   then shows as a red Überschneidung. Manual removal stays (`removed: true`). Override shape:
+   `{ rowId, side, index, number, note, removed, kept }`. The chair zone is drawn as the union of
+   the kept chairs' cells (gaps where chairs are left out). The side-removal actions on findings
+   go; findings now speak per chair. Engstelle (gold) stays: gap between a kept chair cell and
+   anything in `[0, Mindestgang)`.
+6. **Grouping = one table block** (owner pick). Rows in a Tischgruppe act as one big table:
+   chair slots stay per row side (keys stable: rowId + side + index, slots evenly along the full
+   side as before), and **every slot whose cell is covered by another table of the same group (or
+   lies within 10 cm of it) is dropped** — inner edges get no chairs, the outer edge keeps them
+   (blocks, L, T, U). Grouping no longer requires alignment; the group still moves/rotates as one.
+7. **Tables snap together.** Moving/placing a row near another row's table body (≤ 12 screen px
+   or ≤ 30 cm) snaps it flush (edge to edge, parallel edges, ends aligned when within threshold)
+   and never leaves table bodies overlapping: a drop that would overlap resolves to the nearest
+   flush position. Alt bypasses the magnetic snap; overlap resolution always applies.
+8. **Counts.** Chair counts now depend on the hall geometry (auto left-out), so the **client sends
+   `tables` and `chairs` with every plan save**; the server stores them as facts of the saved
+   version (validates `tables` = Σ row counts, `chairs` ≥ 0) and the Leitstand reads them. The C#
+   chair maths (`TableChairs`) and the parity file are deleted.
+9. **Touch first on tablet and below** — one designed system (owner pick), below.
+
+**R1 note for R2 (agent F → G, 2026-11-05):** areas are now a union on `shape`
+(`RectAreaElement` | `PolygonAreaElement`, `hall-plan/schemas.ts`). Code that reads `area.x/y/
+widthCm/heightCm/rotation` must narrow on `shape` — or better use `areaOutlineOf(area)` (world
+polygon) and `areaLabelPointOf(area)` from `hall-plan/area-shape.ts`. Blockers: `{ kind:
+'polygon', points: areaOutlineOf(area) }`. Rendering: `KkFloorPlan.AreaOutline` (`points`,
+`labelAt`, `kind`, `label`) draws both shapes. Union lib is `polyclip-ts` (not
+`polygon-clipping`: its types don't match its ESM default export). Edge lengths: a rect area shows
+its width and depth once (two edges), a merged outline every edge. Merging needs ≥ 2 areas whose
+union is one outline (holes are filled); otherwise *Zusammenfügen* stays disabled with a note.
+Hall + plan detail queries use `gcTime: 0` + `refetchOnMount: 'always'` and wait for in-flight
+saves of the same key before fetching; saves also write the result into the cache.
+
+### Touch control system (tablet and below)
+
+*Touch mode* = `(pointer: coarse)` **or** viewport < 1024 px. Mouse desktops keep today's layout.
+
+- **Layout:** full-bleed canvas. Slim top bar: close, title, undo, redo, live facts (Tische ·
+  Stühle / Saalgröße), findings chip. **Bottom dock** (≥ 48 px targets, thumb zone): the tools;
+  planner dock = *Auswahl* · **＋ Hinzufügen** (sheet: Tisch · Tischreihe · Für X Personen,
+  table-type chips inside) · *Messen* · *Planen/Aufbau*; builder dock = *Auswahl* · ＋ (sheet:
+  Wand · Tür · Fläche · Säule · Linie · Text) · *Messen*. The active placing tool shows as a chip
+  above the dock with *Fertig*.
+- **Gestures:** one finger on empty floor = pan; two fingers = pinch-zoom/pan (never edits);
+  **tap** = select (tap empty = deselect); **drag on a selected element** = move it; drag on an
+  unselected element = pan (no accidental moves); **long-press** (400 ms, vibrate if available) on
+  an element = add/remove it to/from the selection; long-press on empty floor = start a marquee;
+  **double-tap** = zoom to the element/fit.
+- **Selection action bar:** a floating pill anchored above the selection (below it when near the
+  top), never under the finger. Row: − · count · + · ⟲15° · ⟳15° · Duplizieren · Löschen · ⋯.
+  Multi: Gruppieren/Lösen (areas: Zusammenfügen) · drehen · Duplizieren · Löschen · ⋯. Chair
+  (Aufbau): Nummer · Notiz · Entfernen/Zurückstellen. Builder element: drehen · Duplizieren ·
+  Löschen · ⋯. *⋯* opens the inspector as a bottom sheet (side sheet ≥ 900 px wide); opening it
+  pans the view so the selection stays visible above the sheet.
+- **Rotate:** a 44 px rotate knob below the selection, drag to rotate (15° steps).
+- **Placing:** tap places at the tap point, the new thing is selected with its action bar so it
+  can be dragged on. *Tischreihe*: drag draws it (as today). Wand/Linie: tap points; live length
+  on the running segment; chips *Fertig · Letzten Punkt weg · Abbrechen*.
+- **Precision:** vertex/endpoint handles are 44 px targets; while dragging a handle the point is
+  drawn **offset 48 px above the finger** with a small loupe ring so the finger never hides it.
+- **Hit tolerance:** 22 px in touch mode (Biertische are thin on a phone).
+- **Never:** hover-only affordances, keyboard-only actions, page scroll, double-tap zoom of the
+  browser (touch-action: none on the canvas).
+
+### Round 2 slices
+
+| S | Slice | Who |
+|---|---|---|
+| R1 | Bug 1 · area side lengths · area merge (client + server) · counts from client (server) | agent F |
+| R2 | Chair model: group = block, auto left-out + Zurückstellen, per-chair findings, flush snapping, *Für X Personen*, counts sent | agent G |
+| R3 | Touch control system for both editors | agent H (after R1+R2) |
+| R4 | Browser check desktop + tablet 820×1180 + phone 390, light/dark | lead |

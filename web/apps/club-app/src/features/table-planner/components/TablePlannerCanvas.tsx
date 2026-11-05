@@ -12,6 +12,7 @@ const CURSORS: Record<PlannerTool, KkPlanCursor> = {
   select: 'default',
   table: 'copy',
   row: 'crosshair',
+  seats: 'copy',
   measure: 'crosshair',
 };
 

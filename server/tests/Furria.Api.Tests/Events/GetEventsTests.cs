@@ -494,14 +494,15 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
             gala,
             hallId,
             1,
-            [HallSteps.Row("r1", HallSeeds.PlainTableId, 3)]
+            [HallSteps.Row("r1", HallSeeds.PlainTableId, 3)],
+            chairs: 10
         );
         var lead = await ctx.Identity.ClientForAsync(HallSeeds.EventLead, ct);
 
         var (_, result) = await lead.GETAsync<GetEvents, GetEventsResponse>();
 
         Assert.Equal(
-            ["1. Prunksitzung 3/12", "Kindersitzung –"],
+            ["1. Prunksitzung 3/10", "Kindersitzung –"],
             result.Events.Select(listed =>
                 $"{listed.Title} "
                 + (listed.TablePlan is { } plan ? $"{plan.Tables}/{plan.Chairs}" : "–")

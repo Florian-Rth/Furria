@@ -1,5 +1,6 @@
 using System.Net;
 using FastEndpoints;
+using Furria.Api.Endpoints.Events;
 using Furria.Api.Endpoints.Halls;
 using Furria.Api.Endpoints.Seating;
 using Furria.Api.Endpoints.TablePlans;
@@ -50,13 +51,16 @@ public sealed class PostTablePlanTests : IClassFixture<ApiTestFixture>
         var kinder = ctx.Club.Events.IdOf(KinderGala);
         var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
         await CreatePlanAsync(client, gala, hallId);
-        await SavedPlanAsync(client, gala, hallId, 1, [Row("r1", BeerTableId, 6)]);
+        await SavedPlanAsync(client, gala, hallId, 1, [Row("r1", BeerTableId, 6)], chairs: 36);
 
         await PostAsync(client, kinder, hallId, gala);
 
         var copied = await PlanOfAsync(client, kinder);
         Assert.Equal(6, copied.Document.Rows.Single().Count);
         Assert.Equal(1, copied.Version);
+        var lead = await ctx.Identity.ClientForAsync(EventLead, ct);
+        var counted = await EventOfAsync(lead, kinder);
+        Assert.Equal(new EventTablePlanDto { Tables = 6, Chairs = 36 }, counted.TablePlan);
     }
 
     [Fact]

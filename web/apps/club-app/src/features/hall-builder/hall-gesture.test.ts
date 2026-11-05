@@ -18,6 +18,7 @@ const ROOM: HallDocument = {
     {
       id: 'e1',
       kind: 'area',
+      shape: 'rect',
       area: 'stage',
       x: 500,
       y: 500,

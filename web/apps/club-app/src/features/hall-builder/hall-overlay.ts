@@ -2,7 +2,7 @@ import { createArea } from '@/features/hall-plan/hall-ops';
 import { distanceBetween } from '@/features/hall-plan/plan-geometry';
 import { formatDistance } from '@/features/hall-plan/plan-measure';
 import type { Guide } from '@/features/hall-plan/plan-snap';
-import type { AreaElement, AreaKind, HallDocument, Point } from '@/features/hall-plan/schemas';
+import type { AreaKind, HallDocument, Point, RectAreaElement } from '@/features/hall-plan/schemas';
 import type { HallTool } from './hall-builder-tools';
 import type { SelectionFrame, VertexHandle } from './hall-builder-view';
 import { selectionFrameOf, vertexHandlesOf } from './hall-builder-view';
@@ -29,7 +29,7 @@ export interface HallOverlay {
   marquee: { from: Point; to: Point } | null;
   polyline: OverlayPolyline | null;
   door: { from: Point; to: Point } | null;
-  area: AreaElement | null;
+  area: RectAreaElement | null;
   measure: OverlayLine | null;
 }
 

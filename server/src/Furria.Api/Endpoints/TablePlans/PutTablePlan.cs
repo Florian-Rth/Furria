@@ -1,8 +1,11 @@
+using System.Diagnostics.Contracts;
 using FastEndpoints;
 using FluentValidation;
 using Furria.Api.Authorization;
+using Furria.Api.Endpoints.Halls;
 using Furria.Api.Results;
 using Furria.Application.Halls;
+using Furria.Core.Halls;
 using Furria.Infrastructure.Halls;
 
 namespace Furria.Api.Endpoints.TablePlans;
@@ -31,6 +34,7 @@ public sealed class PutTablePlan : Endpoint<PutTablePlanRequest, PutTablePlanRes
                 HallId = req.HallId,
                 Document = req.Document.ToDocument(),
                 Version = req.Version,
+                Count = new TablePlanCount(req.Tables, req.Chairs),
             },
             ct
         );
@@ -54,6 +58,10 @@ public sealed record PutTablePlanRequest
     public required TablePlanDocumentDto Document { get; init; }
 
     public required int Version { get; init; }
+
+    public required int Tables { get; init; }
+
+    public required int Chairs { get; init; }
 }
 
 public sealed class PutTablePlanValidator : Validator<PutTablePlanRequest>
@@ -67,7 +75,16 @@ public sealed class PutTablePlanValidator : Validator<PutTablePlanRequest>
             .NotNull()
             .SetValidator(new TablePlanDocumentValidator());
         RuleFor(request => request.Version).GreaterThan(0);
+        RuleFor(request => request.Chairs).InclusiveBetween(0, HallLimits.MostChairs);
+        RuleFor(request => request)
+            .Must(CountAllTables)
+            .When(request => request.Document is { Rows: not null })
+            .WithMessage("Die Zahl der Tische passt nicht zum Tischplan.");
     }
+
+    [Pure]
+    private static bool CountAllTables(PutTablePlanRequest request) =>
+        request.Tables == request.Document.Rows.Sum(row => row.Count);
 }
 
 public sealed record PutTablePlanResponse

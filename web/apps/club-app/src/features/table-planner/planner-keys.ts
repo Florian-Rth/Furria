@@ -30,7 +30,8 @@ const TOOL_KEYS: Record<string, PlannerTool> = {
   '1': 'select',
   '2': 'table',
   '3': 'row',
-  '4': 'measure',
+  '4': 'seats',
+  '5': 'measure',
 };
 
 const ARROWS: Record<string, Point> = {

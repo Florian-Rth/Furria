@@ -16,6 +16,7 @@ internal static class HallLimits
     internal const int MostTablesInRow = 50;
     internal const int MostChairOverrides = 500;
     internal const int MostChairIndex = 1_000;
+    internal const int MostChairs = 100_000;
     internal const int NumberLength = 8;
     internal const int NoteLength = 500;
     internal const int TableTypeNameLength = 60;

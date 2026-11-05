@@ -443,7 +443,7 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
         );
 
     [Fact]
-    public async Task Should_CountTablesAndChairsAndFinishTheHallStep_When_TablesStand()
+    public async Task Should_ShowTheSavedCountsAndFinishTheHallStep_When_TablesStand()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(HallSeeds.HallManagerWithGala(_fixture.Today), ct);
@@ -463,13 +463,14 @@ public sealed class GetEventByIdTests : IClassFixture<ApiTestFixture>
             [
                 HallSteps.Row("r1", HallSeeds.BeerTableId, 4),
                 HallSteps.Row("r2", HallSeeds.RoundTableId, 2),
-            ]
+            ],
+            chairs: 41
         );
         var lead = await ctx.Identity.ClientForAsync(HallSeeds.EventLead, ct);
 
         var result = await HallSteps.EventOfAsync(lead, eventId);
 
-        Assert.Equal(new EventTablePlanDto { Tables = 6, Chairs = 48 }, result.TablePlan);
+        Assert.Equal(new EventTablePlanDto { Tables = 6, Chairs = 41 }, result.TablePlan);
         Assert.False(result.WithoutTablePlan);
         Assert.Equal(
             EventStepState.Done,

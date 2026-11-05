@@ -13,6 +13,10 @@ public sealed class TablePlan : ITimestamped
 
     public int Version { get; set; }
 
+    public int Tables { get; set; }
+
+    public int Chairs { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }

@@ -1,4 +1,5 @@
 import { describe, expect, it } from 'vitest';
+import { blockersOf } from './plan-blockers';
 import type {
   ChairSide,
   Seating,
@@ -7,9 +8,10 @@ import type {
   TableRow,
   TableType,
 } from './schemas';
+import type { RowLayout } from './table-layout';
 import {
-  chairCountOf,
   clockwiseChairs,
+  layoutPlan,
   layoutRow,
   planCountsOf,
   tableTypesById,
@@ -83,6 +85,7 @@ const rowOf = (
     number: null,
     note: null,
     removed: true,
+    kept: false,
   })),
 });
 
@@ -95,7 +98,7 @@ const typeOf = (tableTypeId: number): TableType => {
   return type;
 };
 
-describe('chairCountOf — parity fixtures (plan/club-app/hall-planner-parity.md)', () => {
+describe('layoutRow chair count', () => {
   it.each<[number, number, number, Seating | null, Seating, string, [ChairSide, number][], number]>(
     [
       [1, 1, 1, null, 'comfortable', 'FB', [], 6],
@@ -159,26 +162,9 @@ describe('chairCountOf — parity fixtures (plan/club-app/hall-planner-parity.md
     (_case, typeId, count, rowSeating, planSeating, sides, removed, expected) => {
       const row = rowOf(typeId, count, rowSeating, sides, removed);
 
-      expect(chairCountOf(row, typeOf(typeId), standard, planSeating)).toBe(expected);
       expect(layoutRow(row, typeOf(typeId), standard, planSeating).chairCount).toBe(expected);
     },
   );
-});
-
-describe('planCountsOf', () => {
-  it('sums tables and chairs and skips rows of unknown types', () => {
-    const document: TablePlanDocument = {
-      seating: 'comfortable',
-      rows: [
-        rowOf(1, 4, null, 'FB', []),
-        rowOf(2, 1, null, 'FBSE', []),
-        rowOf(99, 3, null, 'FB', []),
-      ],
-      groups: [],
-    };
-
-    expect(planCountsOf(document, byId, standard)).toEqual({ tables: 5, chairs: 34 });
-  });
 });
 
 describe('layoutRow', () => {
@@ -190,7 +176,7 @@ describe('layoutRow', () => {
       { x: 100, y: 40 },
       { x: 100, y: 160 },
     ]);
-    expect(layout.zones.map((zone) => zone.side)).toEqual(['front', 'start']);
+    expect([...new Set(layout.chairs.map((chair) => chair.side))]).toEqual(['front', 'start']);
     expect(layout.bounds.minX).toBeCloseTo(60);
     expect(layout.bounds.maxX).toBeCloseTo(190);
     expect(layout.bounds.minY).toBeCloseTo(-70);
@@ -201,7 +187,6 @@ describe('layoutRow', () => {
     const layout = layoutRow(rowOf(3, 2, null, '', []), typeOf(3), standard, 'comfortable');
 
     expect(layout.tables.map((table) => table.center.x)).toEqual([-130, 130]);
-    expect(layout.zones).toHaveLength(2);
   });
 
   it('marks removed chairs without dropping their slot', () => {
@@ -212,7 +197,7 @@ describe('layoutRow', () => {
       'comfortable',
     );
 
-    expect(layout.chairs.map((chair) => chair.removed)).toEqual([false, true]);
+    expect(layout.chairs.map((chair) => chair.state)).toEqual(['seated', 'removed']);
   });
 });
 
@@ -228,5 +213,100 @@ describe('clockwiseChairs', () => {
       'back0',
       'start0',
     ]);
+  });
+});
+
+const placed = (
+  id: string,
+  tableTypeId: number,
+  at: { x: number; y: number },
+  extra: Partial<TableRow> = {},
+): TableRow => ({ ...rowOf(tableTypeId, 1, null, 'FBSE', []), id, x: at.x, y: at.y, ...extra });
+
+const planOf = (rows: TableRow[], groups: string[] = []): TablePlanDocument => ({
+  seating: 'comfortable',
+  rows,
+  groups: groups.map((id) => ({ id, number: null, note: null })),
+});
+
+const statesOf = (layout: RowLayout | undefined): string[] =>
+  layout?.chairs.map((chair) => `${chair.side}${chair.index}:${chair.state}`) ?? [];
+
+describe('layoutPlan', () => {
+  it.each<[string, string | null, number, number]>([
+    ['grouped tables drop the chairs between them', 'g1', 5, 0],
+    ['ungrouped tables leave the clashing chairs out', null, 6, 1],
+  ])('%s', (_name, groupId, chairsPerRow, leftOutPerRow) => {
+    const layouts = layoutPlan(
+      planOf(
+        [
+          placed('r1', 2, { x: 0, y: 0 }, { groupId }),
+          placed('r2', 2, { x: 120, y: 0 }, { groupId }),
+        ],
+        groupId === null ? [] : [groupId],
+      ),
+      byId,
+      standard,
+    );
+
+    expect(layouts.map((layout) => layout.chairs.length)).toEqual([chairsPerRow, chairsPerRow]);
+    expect(
+      layouts.map((layout) => layout.chairs.filter((chair) => chair.state === 'leftOut').length),
+    ).toEqual([leftOutPerRow, leftOutPerRow]);
+    expect(planCountsOf(layouts)).toEqual({ tables: 2, chairs: 10 });
+  });
+
+  it('leaves out the chairs of the later row when two rows face each other too closely', () => {
+    const layouts = layoutPlan(
+      planOf([placed('r1', 1, { x: 0, y: 0 }), placed('r2', 1, { x: 0, y: 120 })]),
+      byId,
+      standard,
+    );
+
+    expect(statesOf(layouts[0]).filter((state) => state.endsWith('leftOut'))).toEqual([]);
+    expect(statesOf(layouts[1]).filter((state) => state.endsWith('leftOut'))).toEqual([
+      'front0:leftOut',
+      'front1:leftOut',
+      'front2:leftOut',
+    ]);
+    expect(layouts.map((layout) => layout.chairCount)).toEqual([6, 3]);
+  });
+
+  it('keeps a chair the planner put back despite the clash', () => {
+    const kept = placed(
+      'r2',
+      1,
+      { x: 0, y: 120 },
+      {
+        chairs: [{ side: 'front', index: 0, number: null, note: null, removed: false, kept: true }],
+      },
+    );
+    const layouts = layoutPlan(planOf([placed('r1', 1, { x: 0, y: 0 }), kept]), byId, standard);
+
+    expect(layouts.map((layout) => layout.chairCount)).toEqual([6, 4]);
+  });
+
+  it('leaves out chairs that stand in a wall', () => {
+    const hall = {
+      elements: [
+        {
+          id: 'w1',
+          kind: 'wall' as const,
+          points: [
+            { x: -200, y: -60 },
+            { x: 200, y: -60 },
+          ],
+          thicknessCm: 20,
+        },
+      ],
+    };
+    const layouts = layoutPlan(
+      planOf([placed('r1', 1, { x: 0, y: 0 })]),
+      byId,
+      standard,
+      blockersOf(hall, standard),
+    );
+
+    expect(layouts[0]?.chairCount).toBe(3);
   });
 });

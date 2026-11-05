@@ -49,6 +49,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(HallElementKind)] = "wall door area pillar line text",
         [typeof(DoorKind)] = "entrance emergencyExit door",
         [typeof(HallAreaKind)] = "stage bar technics wardrobe toilets kitchen other",
+        [typeof(HallAreaShape)] = "rect polygon",
         [typeof(HallTextSize)] = "small medium large",
         [typeof(EventStepState)] = "done overdue open waiting",
         [typeof(MissingEventDetail)] = "venue doorsOpenAt description picture published",

@@ -8,6 +8,7 @@ import { useEffect, useRef, useState } from 'react';
 import {
   duplicateElements,
   hallBounds,
+  mergeAreas,
   moveElements,
   removeElements,
   replaceElement,
@@ -31,6 +32,8 @@ import type {
   HallDocument,
   HallElement,
 } from '@/features/hall-plan/schemas';
+import type { AreaMergeState } from '../hall-area-merge';
+import { areaMergeStateOf, selectedAreaCountOf } from '../hall-area-merge';
 import type { HallTool } from '../hall-builder-tools';
 import { isHallTool } from '../hall-builder-tools';
 import type { GestureContext, GesturePointer, GestureResult, HallDraft } from '../hall-gesture';
@@ -86,6 +89,8 @@ export interface HallBuilder {
   finishDraft: () => void;
   dropDraft: () => void;
   updateElement: (element: HallElement, field: string) => void;
+  areaMerge: AreaMergeState;
+  mergeSelectedAreas: () => void;
   deleteSelection: () => void;
   duplicateSelection: () => void;
   rotateSelection: (degrees: number) => void;
@@ -250,6 +255,16 @@ export const useHallBuilder = (
     }
   };
 
+  const merge =
+    selectedAreaCountOf(present, selection) >= 2 ? mergeAreas(present, selection) : null;
+
+  const mergeSelectedAreas = (): void => {
+    if (merge?.kind === 'merged') {
+      apply(merge.document);
+      setSelection([merge.id]);
+    }
+  };
+
   const preview = previewDocument(present, draft);
 
   return {
@@ -304,6 +319,8 @@ export const useHallBuilder = (
       setDraft(IDLE_DRAFT);
     },
     updateElement,
+    areaMerge: areaMergeStateOf(merge),
+    mergeSelectedAreas,
     deleteSelection,
     duplicateSelection,
     rotateSelection,

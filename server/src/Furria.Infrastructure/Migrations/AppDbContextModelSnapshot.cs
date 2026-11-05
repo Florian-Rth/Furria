@@ -1468,6 +1468,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("calendar_entry_id");
 
+                    b.Property<int>("Chairs")
+                        .HasColumnType("integer")
+                        .HasColumnName("chairs");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -1482,6 +1486,10 @@ namespace Furria.Infrastructure.Migrations
                     b.Property<int>("HallId")
                         .HasColumnType("integer")
                         .HasColumnName("hall_id");
+
+                    b.Property<int>("Tables")
+                        .HasColumnType("integer")
+                        .HasColumnName("tables");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
                         .ValueGeneratedOnAdd()

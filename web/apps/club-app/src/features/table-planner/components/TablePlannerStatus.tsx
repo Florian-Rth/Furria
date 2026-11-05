@@ -16,6 +16,7 @@ import {
   VIEW_LABELS,
 } from '../table-planner-copy';
 import { TablePlannerPalette } from './TablePlannerPalette';
+import { TablePlannerSeatRequest } from './TablePlannerSeatRequest';
 
 export const TablePlannerStatus: FC = () => {
   const planner = useTablePlannerContext();
@@ -46,6 +47,7 @@ export const TablePlannerStatus: FC = () => {
       <KkPlanStatusStrip.Chip label={EDIT_SELECTION_LABEL} icon="edit" onClick={openInspector} />
     );
   const palette = placesTables(planner.tool) ? <TablePlannerPalette /> : null;
+  const seatRequest = planner.tool === 'seats' ? <TablePlannerSeatRequest /> : null;
 
   return (
     <Stack sx={{ rowGap: 1 }}>
@@ -89,6 +91,7 @@ export const TablePlannerStatus: FC = () => {
         {editChip}
       </KkPlanStatusStrip>
       {palette}
+      {seatRequest}
     </Stack>
   );
 };

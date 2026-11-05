@@ -20,6 +20,7 @@ export const TOOL_LABELS: Record<PlannerTool, string> = {
   select: 'Auswählen',
   table: 'Tisch stellen',
   row: 'Tischreihe ziehen',
+  seats: 'Für Personen',
   measure: 'Messen',
 };
 
@@ -86,9 +87,6 @@ export const SIDE_LABELS: Record<RectSide, string> = {
   end: 'Rechts',
 };
 
-export const toClearSideLabel = (side: RectSide, rowLabel: string): string =>
-  `Stühle ${SIDE_LABELS[side].toLowerCase()} an ${rowLabel} entfernen`;
-
 export const toRowLabel = (number: string | null, count: number): string => {
   if (number !== null) {
     return `Tisch ${number}`;
@@ -152,7 +150,19 @@ export const UNGROUP_LABEL = 'Gruppe lösen';
 export const WHOLE_GROUP_LABEL = 'Ganze Gruppe wählen';
 export const REMOVE_CHAIR_LABEL = 'Stuhl entfernen';
 export const RESTORE_CHAIR_LABEL = 'Stuhl zurückstellen';
-export const CHAIR_REMOVED_NOTE = 'Dieser Stuhl ist entfernt und zählt nicht mit.';
+export const CHAIR_NOTICES = {
+  removed: 'Dieser Stuhl ist entfernt und zählt nicht mit.',
+  leftOut: 'Hier ist kein Platz für diesen Stuhl, darum ist er weggelassen und zählt nicht mit.',
+  kept: 'Dieser Stuhl steht trotz Platzmangel und zählt mit.',
+} as const;
+export const KEEP_CHAIR_LABEL = 'Trotzdem hinstellen';
+export const RELEASE_CHAIR_LABEL = 'Wieder weglassen';
+export const RELEASE_CHAIRS_LABEL = 'Stühle wieder weglassen';
+export const SEATS_FIELD_LABEL = 'Stühle gebraucht';
+export const TABLES_PER_ROW_LABEL = 'Tische pro Reihe';
+export const SEAT_SHAPE_LABEL = 'Form';
+export const SEAT_SHAPE_LABELS = { row: 'Reihe', block: 'Block' } as const;
+export const SEATS_HINT = 'Tippe in den Saal, um die Tische hinzustellen.';
 
 export const toRotationValue = (degrees: number): string => `${Math.round(degrees)}°`;
 

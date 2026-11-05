@@ -7,19 +7,17 @@ interface TablePlannerSceneLayerProps {
 }
 
 export const TablePlannerSceneLayer: FC<TablePlannerSceneLayerProps> = ({ scene }) => {
-  const zones = scene.zones.map((zone) => (
-    <KkFloorPlan.ChairZone
-      key={zone.key}
-      id={zone.rowId}
-      shape={zone.shape}
-      x={zone.x}
-      y={zone.y}
-      lengthCm={zone.lengthCm}
-      widthCm={zone.widthCm}
-      rotation={zone.rotation}
-      depthCm={zone.depthCm}
-      sides={zone.sides}
-      conflict={zone.conflict}
+  const cells = scene.cells.map((cell) => (
+    <KkFloorPlan.ChairCell
+      key={cell.key}
+      id={cell.id}
+      x={cell.x}
+      y={cell.y}
+      rotation={cell.rotation}
+      widthCm={cell.widthCm}
+      depthCm={cell.depthCm}
+      conflict={cell.conflict}
+      faded={cell.faded}
     />
   ));
   const tables = scene.tables.map((table) => (
@@ -50,6 +48,8 @@ export const TablePlannerSceneLayer: FC<TablePlannerSceneLayerProps> = ({ scene 
       number={chair.number}
       hasNote={chair.hasNote}
       removed={chair.removed}
+      faded={chair.faded}
+      conflict={chair.conflict}
       selected={chair.selected}
     />
   ));
@@ -59,7 +59,7 @@ export const TablePlannerSceneLayer: FC<TablePlannerSceneLayerProps> = ({ scene 
 
   return (
     <>
-      {zones}
+      {cells}
       {tables}
       {chairs}
       {notes}

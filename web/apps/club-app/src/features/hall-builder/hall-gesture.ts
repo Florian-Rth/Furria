@@ -421,7 +421,7 @@ const resizedElement = (
   handle: KkPlanResizeHandle,
   at: Point,
 ): HallElement => {
-  if (element.kind !== 'area' && element.kind !== 'pillar') {
+  if (element.kind !== 'pillar' && !(element.kind === 'area' && element.shape === 'rect')) {
     return element;
   }
   const rotation = element.kind === 'area' ? element.rotation : 0;

@@ -1,5 +1,16 @@
+import type { Blocker } from './plan-blockers';
 import type { Bounds, OrientedRect, Shape } from './plan-geometry';
-import { boundsOfShape, rectShape, toWorld, unionBounds } from './plan-geometry';
+import {
+  add,
+  boundsOfShape,
+  rectShape,
+  rotateVector,
+  scale,
+  toWorld,
+  unionBounds,
+} from './plan-geometry';
+import type { Footprint } from './plan-overlap';
+import { footprintOf, isClearlyOverlapping } from './plan-overlap';
 import type {
   ChairOverride,
   ChairSide,
@@ -17,21 +28,24 @@ export interface ChairKey {
   index: number;
 }
 
+export interface ChairRef extends ChairKey {
+  rowId: string;
+}
+
+export type ChairState = 'seated' | 'leftOut' | 'removed';
+
 export interface PlacedChair {
   side: ChairSide;
   index: number;
   center: Point;
   rotation: number;
-  removed: boolean;
+  slotWidth: number;
+  cellRect: OrientedRect;
+  cell: Footprint;
+  state: ChairState;
+  kept: boolean;
   number: string | null;
   note: string | null;
-}
-
-export interface ChairZone {
-  side: ChairSide;
-  shape: Shape;
-  rect: OrientedRect | null;
-  innerRadius: number | null;
 }
 
 export interface PlacedTable {
@@ -44,12 +58,12 @@ export interface PlacedTable {
 
 export interface RowLayout {
   rowId: string;
+  groupId: string | null;
   shape: TableType['shape'];
   center: Point;
   rotation: number;
   body: Shape[];
   tables: PlacedTable[];
-  zones: ChairZone[];
   chairs: PlacedChair[];
   tableCount: number;
   chairCount: number;
@@ -61,9 +75,15 @@ export interface PlanCounts {
   chairs: number;
 }
 
+interface ChairGeometry {
+  spacing: number;
+  depth: number;
+}
+
 const FULL_TURN = 360;
 const QUARTER_TURN = 90;
 const HALF_TURN = 180;
+const OUTWARD: Point = { x: 0, y: -1 };
 
 export const tableTypesById = (types: readonly TableType[]): Map<number, TableType> =>
   new Map(types.map((type) => [type.tableTypeId, type]));
@@ -115,70 +135,54 @@ export const slotsOnSide = (
     : chairsAlong(rowLengthOf(row, type), spacing);
 };
 
-const slotsAround = (row: TableRow, type: TableType, standard: SeatingStandard, spacing: number) =>
-  row.count * roundChairsPerTable(type.lengthCm, standard.chairDepthCm, spacing);
-
-export const slotCountOf = (
-  row: TableRow,
-  type: TableType,
-  standard: SeatingStandard,
-  side: ChairSide,
-  spacing: number,
-): number => {
-  if (type.shape === 'round') {
-    return side === 'around' ? slotsAround(row, type, standard, spacing) : 0;
-  }
-
-  return side === 'around' ? 0 : slotsOnSide(row, type, side, spacing);
-};
-
 const chairKeyOf = (key: ChairKey): string => `${key.side}:${key.index}`;
 
 const overridesByKey = (chairs: readonly ChairOverride[]): Map<string, ChairOverride> =>
   new Map(chairs.map((chair) => [chairKeyOf(chair), chair]));
 
-export const chairCountOf = (
-  row: TableRow,
-  type: TableType,
-  standard: SeatingStandard,
-  planSeating: Seating,
-): number => {
-  const spacing = spacingOf(standard, effectiveSeating(row, planSeating));
-  const sides: readonly ChairSide[] =
-    type.shape === 'round' ? ['around'] : ['front', 'back', 'start', 'end'];
-  const slots = sides.reduce(
-    (sum, side) => sum + slotCountOf(row, type, standard, side, spacing),
-    0,
-  );
-  const removed = new Set(
-    row.chairs
-      .filter(
-        (chair) =>
-          chair.removed &&
-          chair.index >= 0 &&
-          chair.index < slotCountOf(row, type, standard, chair.side, spacing),
-      )
-      .map(chairKeyOf),
-  );
+export const outwardOf = (chair: Pick<PlacedChair, 'rotation'>): Point =>
+  rotateVector(OUTWARD, chair.rotation);
 
-  return slots - removed.size;
-};
+export const chairCellRect = (
+  center: Point,
+  rotation: number,
+  geometry: ChairGeometry,
+): OrientedRect => ({
+  center,
+  width: geometry.spacing,
+  height: geometry.depth,
+  rotation,
+});
+
+export const aisleRectOf = (chair: PlacedChair, aisle: number): OrientedRect => ({
+  center: add(chair.center, scale(outwardOf(chair), (chair.cellRect.height + aisle) / 2)),
+  width: chair.cellRect.width,
+  height: aisle,
+  rotation: chair.rotation,
+});
 
 const placeChair = (
   row: TableRow,
   overrides: Map<string, ChairOverride>,
   key: ChairKey,
-  local: Point,
-  localRotation: number,
+  local: { at: Point; rotation: number; slotWidth: number },
+  geometry: ChairGeometry,
 ): PlacedChair => {
   const override = overrides.get(chairKeyOf(key));
+  const center = toWorld(local.at, row, row.rotation);
+  const rotation = (((row.rotation + local.rotation) % FULL_TURN) + FULL_TURN) % FULL_TURN;
+  const cellRect = chairCellRect(center, rotation, geometry);
 
   return {
     side: key.side,
     index: key.index,
-    center: toWorld(local, row, row.rotation),
-    rotation: (row.rotation + localRotation + FULL_TURN) % FULL_TURN,
-    removed: override?.removed ?? false,
+    center,
+    rotation,
+    slotWidth: local.slotWidth,
+    cellRect,
+    cell: footprintOf(rectShape(cellRect)),
+    state: override?.removed === true ? 'removed' : 'seated',
+    kept: override?.kept ?? false,
     number: override?.number ?? null,
     note: override?.note ?? null,
   };
@@ -187,15 +191,23 @@ const placeChair = (
 const evenly = (count: number, length: number): number[] =>
   Array.from({ length: count }, (_, index) => -length / 2 + ((index + 0.5) * length) / count);
 
+type RowParts = Pick<RowLayout, 'shape' | 'body' | 'tables' | 'chairs'>;
+
+const SIDE_ROTATION: Record<RectSide, number> = {
+  front: 0,
+  back: HALF_TURN,
+  start: -QUARTER_TURN,
+  end: QUARTER_TURN,
+};
+
 const rectRowLayout = (
   row: TableRow,
   type: TableType,
+  geometry: ChairGeometry,
   standard: SeatingStandard,
-  spacing: number,
-): Omit<RowLayout, 'bounds' | 'chairCount' | 'tableCount' | 'rowId' | 'center' | 'rotation'> => {
+): RowParts => {
   const length = rowLengthOf(row, type);
   const width = type.widthCm;
-  const depth = standard.chairDepthCm;
   const overrides = overridesByKey(row.chairs);
   const worldRect = (center: Point, rectWidth: number, rectHeight: number): OrientedRect => ({
     center: toWorld(center, row, row.rotation),
@@ -203,7 +215,6 @@ const rectRowLayout = (
     height: rectHeight,
     rotation: row.rotation,
   });
-  const bodyRect = worldRect({ x: 0, y: 0 }, length, width);
   const tables = Array.from({ length: row.count }, (_, index): PlacedTable => {
     const rect = worldRect(
       { x: -length / 2 + (index + 0.5) * type.lengthCm, y: 0 },
@@ -213,52 +224,54 @@ const rectRowLayout = (
 
     return { index, shape: rectShape(rect), rect, center: rect.center, radius: null };
   });
-  const zoneSpecs: { side: RectSide; center: Point; width: number; height: number }[] = [
-    { side: 'front', center: { x: 0, y: -(width + depth) / 2 }, width: length, height: depth },
-    { side: 'back', center: { x: 0, y: (width + depth) / 2 }, width: length, height: depth },
-    { side: 'start', center: { x: -(length + depth) / 2, y: 0 }, width: depth, height: width },
-    { side: 'end', center: { x: (length + depth) / 2, y: 0 }, width: depth, height: width },
-  ];
-  const seated = zoneSpecs.filter((spec) => slotsOnSide(row, type, spec.side, spacing) > 0);
-  const zones = seated.map((spec): ChairZone => {
-    const rect = worldRect(spec.center, spec.width, spec.height);
+  const sideOffset = (width + standard.chairDepthCm) / 2;
+  const endOffset = (length + standard.chairDepthCm) / 2;
+  const localOf = (side: RectSide, offset: number): Point => {
+    switch (side) {
+      case 'front':
+        return { x: offset, y: -sideOffset };
+      case 'back':
+        return { x: offset, y: sideOffset };
+      case 'start':
+        return { x: -endOffset, y: offset };
+      default:
+        return { x: endOffset, y: offset };
+    }
+  };
+  const sides: readonly RectSide[] = ['front', 'back', 'start', 'end'];
+  const chairs = sides.flatMap((side) => {
+    const count = slotsOnSide(row, type, side, geometry.spacing);
+    const along = side === 'front' || side === 'back' ? length : width;
 
-    return { side: spec.side, shape: rectShape(rect), rect, innerRadius: null };
-  });
-  const chairOffset = (width + depth) / 2;
-  const endOffset = (length + depth) / 2;
-  const chairs = seated.flatMap((spec) => {
-    const count = slotsOnSide(row, type, spec.side, spacing);
-    const along = spec.side === 'front' || spec.side === 'back' ? length : width;
-
-    return evenly(count, along).map((offset, index) => {
-      const key = { side: spec.side, index };
-      switch (spec.side) {
-        case 'front':
-          return placeChair(row, overrides, key, { x: offset, y: -chairOffset }, 0);
-        case 'back':
-          return placeChair(row, overrides, key, { x: offset, y: chairOffset }, HALF_TURN);
-        case 'start':
-          return placeChair(row, overrides, key, { x: -endOffset, y: offset }, -QUARTER_TURN);
-        default:
-          return placeChair(row, overrides, key, { x: endOffset, y: offset }, QUARTER_TURN);
-      }
-    });
+    return evenly(count, along).map((offset, index) =>
+      placeChair(
+        row,
+        overrides,
+        { side, index },
+        { at: localOf(side, offset), rotation: SIDE_ROTATION[side], slotWidth: along / count },
+        geometry,
+      ),
+    );
   });
 
-  return { shape: 'rectangle', body: [rectShape(bodyRect)], tables, zones, chairs };
+  return {
+    shape: 'rectangle',
+    body: [rectShape(worldRect({ x: 0, y: 0 }, length, width))],
+    tables,
+    chairs,
+  };
 };
 
 const roundRowLayout = (
   row: TableRow,
   type: TableType,
+  geometry: ChairGeometry,
   standard: SeatingStandard,
-  spacing: number,
-): Omit<RowLayout, 'bounds' | 'chairCount' | 'tableCount' | 'rowId' | 'center' | 'rotation'> => {
+): RowParts => {
   const radius = type.lengthCm / 2;
   const depth = standard.chairDepthCm;
   const pitch = roundPitchOf(type, depth);
-  const perTable = roundChairsPerTable(type.lengthCm, depth, spacing);
+  const perTable = roundChairsPerTable(type.lengthCm, depth, geometry.spacing);
   const overrides = overridesByKey(row.chairs);
   const centersLocal = Array.from({ length: row.count }, (_, index) => ({
     x: (index - (row.count - 1) / 2) * pitch,
@@ -269,45 +282,56 @@ const roundRowLayout = (
 
     return { index, shape: { kind: 'circle', center, radius }, rect: null, center, radius };
   });
-  const zones =
-    perTable > 0
-      ? tables.map(
-          (table): ChairZone => ({
-            side: 'around',
-            shape: { kind: 'circle', center: table.center, radius: radius + depth },
-            rect: null,
-            innerRadius: radius,
-          }),
-        )
-      : [];
   const chairRadius = radius + depth / 2;
+  const slotWidth = perTable > 0 ? (2 * Math.PI * chairRadius) / perTable : 0;
   const chairs = centersLocal.flatMap((local, tableIndex) =>
     Array.from({ length: perTable }, (_, seat) => {
       const angle = ((seat + 0.5) * FULL_TURN) / perTable;
       const radians = ((angle - QUARTER_TURN) * Math.PI) / HALF_TURN;
-      const position = {
-        x: local.x + Math.cos(radians) * chairRadius,
-        y: local.y + Math.sin(radians) * chairRadius,
-      };
 
       return placeChair(
         row,
         overrides,
         { side: 'around', index: tableIndex * perTable + seat },
-        position,
-        angle,
+        {
+          at: {
+            x: local.x + Math.cos(radians) * chairRadius,
+            y: local.y + Math.sin(radians) * chairRadius,
+          },
+          rotation: angle,
+          slotWidth,
+        },
+        geometry,
       );
     }),
   );
 
-  return {
-    shape: 'round',
-    body: tables.map((table) => table.shape),
-    tables,
-    zones,
-    chairs,
-  };
+  return { shape: 'round', body: tables.map((table) => table.shape), tables, chairs };
 };
+
+const seatedCount = (chairs: readonly PlacedChair[]): number =>
+  chairs.filter((chair) => chair.state === 'seated').length;
+
+const boundsOfParts = (
+  center: Point,
+  body: readonly Shape[],
+  chairs: readonly PlacedChair[],
+): Bounds =>
+  unionBounds([
+    ...body.map(boundsOfShape),
+    ...chairs.filter((chair) => chair.state === 'seated').map((chair) => chair.cell.bounds),
+  ]) ?? { minX: center.x, minY: center.y, maxX: center.x, maxY: center.y };
+
+const finish = (row: TableRow, parts: RowParts): RowLayout => ({
+  ...parts,
+  rowId: row.id,
+  groupId: row.groupId,
+  center: { x: row.x, y: row.y },
+  rotation: row.rotation,
+  tableCount: row.count,
+  chairCount: seatedCount(parts.chairs),
+  bounds: boundsOfParts({ x: row.x, y: row.y }, parts.body, parts.chairs),
+});
 
 export const layoutRow = (
   row: TableRow,
@@ -315,59 +339,96 @@ export const layoutRow = (
   standard: SeatingStandard,
   planSeating: Seating,
 ): RowLayout => {
-  const spacing = spacingOf(standard, effectiveSeating(row, planSeating));
+  const geometry = {
+    spacing: spacingOf(standard, effectiveSeating(row, planSeating)),
+    depth: standard.chairDepthCm,
+  };
   const parts =
     type.shape === 'round'
-      ? roundRowLayout(row, type, standard, spacing)
-      : rectRowLayout(row, type, standard, spacing);
-  const bounds = unionBounds(
-    [...parts.body, ...parts.zones.map((zone) => zone.shape)].map(boundsOfShape),
-  ) ?? {
-    minX: row.x,
-    minY: row.y,
-    maxX: row.x,
-    maxY: row.y,
-  };
+      ? roundRowLayout(row, type, geometry, standard)
+      : rectRowLayout(row, type, geometry, standard);
 
-  return {
-    ...parts,
-    rowId: row.id,
-    center: { x: row.x, y: row.y },
-    rotation: row.rotation,
-    tableCount: row.count,
-    chairCount: parts.chairs.filter((chair) => !chair.removed).length,
-    bounds,
-  };
+  return finish(row, parts);
+};
+
+const withChairs = (layout: RowLayout, chairs: PlacedChair[]): RowLayout => ({
+  ...layout,
+  chairs,
+  chairCount: seatedCount(chairs),
+  bounds: boundsOfParts(layout.center, layout.body, chairs),
+});
+
+const bodyFootprints = (layout: RowLayout): Footprint[] => layout.body.map(footprintOf);
+
+const dropInnerChairs = (layouts: readonly RowLayout[]): RowLayout[] =>
+  layouts.map((layout) => {
+    if (layout.groupId === null) {
+      return layout;
+    }
+    const partners = layouts
+      .filter((other) => other.groupId === layout.groupId && other.rowId !== layout.rowId)
+      .flatMap(bodyFootprints);
+    if (partners.length === 0) {
+      return layout;
+    }
+
+    return withChairs(
+      layout,
+      layout.chairs.filter(
+        (chair) => !partners.some((body) => isClearlyOverlapping(chair.cell, body)),
+      ),
+    );
+  });
+
+const leaveOutClashes = (
+  layouts: readonly RowLayout[],
+  blockers: readonly Blocker[],
+): RowLayout[] => {
+  const standing: Footprint[] = [];
+  const bodiesOf = new Map(layouts.map((layout) => [layout.rowId, bodyFootprints(layout)]));
+
+  return layouts.map((layout) => {
+    const foreignBodies = layouts
+      .filter((other) => other.rowId !== layout.rowId)
+      .flatMap((other) => bodiesOf.get(other.rowId) ?? []);
+    const clashes = (cell: Footprint): boolean =>
+      foreignBodies.some((body) => isClearlyOverlapping(cell, body)) ||
+      blockers.some((blocker) => isClearlyOverlapping(cell, blocker)) ||
+      standing.some((other) => isClearlyOverlapping(cell, other));
+    const chairs = layout.chairs.map((chair): PlacedChair => {
+      if (chair.state !== 'seated' || chair.kept) {
+        return chair;
+      }
+
+      return clashes(chair.cell) ? { ...chair, state: 'leftOut' } : chair;
+    });
+    standing.push(...chairs.filter((chair) => chair.state === 'seated').map((chair) => chair.cell));
+
+    return withChairs(layout, chairs);
+  });
 };
 
 export const layoutPlan = (
   document: TablePlanDocument,
   types: ReadonlyMap<number, TableType>,
   standard: SeatingStandard,
-): RowLayout[] =>
-  document.rows.flatMap((row) => {
+  blockers: readonly Blocker[] = [],
+): RowLayout[] => {
+  const single = document.rows.flatMap((row) => {
     const type = types.get(row.tableTypeId);
 
     return type === undefined ? [] : [layoutRow(row, type, standard, document.seating)];
   });
 
-export const planCountsOf = (
-  document: TablePlanDocument,
-  types: ReadonlyMap<number, TableType>,
-  standard: SeatingStandard,
-): PlanCounts =>
-  document.rows.reduce<PlanCounts>(
-    (counts, row) => {
-      const type = types.get(row.tableTypeId);
-      if (type === undefined) {
-        return counts;
-      }
+  return leaveOutClashes(dropInnerChairs(single), blockers);
+};
 
-      return {
-        tables: counts.tables + row.count,
-        chairs: counts.chairs + chairCountOf(row, type, standard, document.seating),
-      };
-    },
+export const planCountsOf = (layouts: readonly RowLayout[]): PlanCounts =>
+  layouts.reduce<PlanCounts>(
+    (counts, layout) => ({
+      tables: counts.tables + layout.tableCount,
+      chairs: counts.chairs + layout.chairCount,
+    }),
     { tables: 0, chairs: 0 },
   );
 
@@ -381,3 +442,8 @@ export const clockwiseChairs = (layout: RowLayout): PlacedChair[] =>
 
     return isReversedOnClockwise(side) ? [...onSide].reverse() : onSide;
   });
+
+export const findChair = (layouts: readonly RowLayout[], ref: ChairRef): PlacedChair | null =>
+  layouts
+    .find((layout) => layout.rowId === ref.rowId)
+    ?.chairs.find((chair) => chair.side === ref.side && chair.index === ref.index) ?? null;

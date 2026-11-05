@@ -11,4 +11,6 @@ public sealed record SaveTablePlanCommand
     public required TablePlanDocument Document { get; init; }
 
     public required int Version { get; init; }
+
+    public required TablePlanCount Count { get; init; }
 }

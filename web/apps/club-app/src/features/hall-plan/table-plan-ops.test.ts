@@ -3,7 +3,6 @@ import type { SeatingStandard, TablePlanDocument, TableRow, TableType } from './
 import { layoutPlan, tableTypesById } from './table-layout';
 import {
   changeRowCount,
-  clearSides,
   createRow,
   duplicateRows,
   expandToGroups,
@@ -13,6 +12,7 @@ import {
   numberPlan,
   patchChair,
   readingOrder,
+  releaseChairs,
   removeRows,
   rotateRows,
   rowFromDrag,
@@ -147,18 +147,6 @@ describe('duplicateRows', () => {
   });
 });
 
-describe('clearSides', () => {
-  it('turns off rectangle sides and ignores round ones', () => {
-    const plan = planOf([rowAt('r1', 0, 0)]);
-    const [row] = clearSides(plan, [
-      { rowId: 'r1', side: 'back' },
-      { rowId: 'r1', side: 'around' },
-    ]).rows;
-
-    expect(row?.sides).toEqual({ front: true, back: false, start: true, end: true });
-  });
-});
-
 describe('patchChair', () => {
   it('stores a trimmed note and drops the override once it is plain again', () => {
     const plan = planOf([rowAt('r1', 0, 0)]);
@@ -166,9 +154,29 @@ describe('patchChair', () => {
     const noted = patchChair(plan, ref, { note: '  Oma Erna ' });
 
     expect(noted.rows[0]?.chairs).toEqual([
-      { side: 'front', index: 1, number: null, note: 'Oma Erna', removed: false },
+      { side: 'front', index: 1, number: null, note: 'Oma Erna', removed: false, kept: false },
     ]);
     expect(patchChair(noted, ref, { note: '' }).rows[0]?.chairs).toEqual([]);
+  });
+
+  it.each([
+    ['keeping', { kept: true }, [{ removed: false, kept: true }]],
+    ['removing a kept chair', { removed: true }, [{ removed: true, kept: false }]],
+  ])('records %s', (_name, patch, expected) => {
+    const plan = planOf([rowAt('r1', 0, 0)]);
+    const ref = { rowId: 'r1', side: 'front' as const, index: 0 };
+    const kept = patchChair(plan, ref, { kept: true });
+
+    expect(patchChair(kept, ref, patch).rows[0]?.chairs).toMatchObject(expected);
+  });
+});
+
+describe('releaseChairs', () => {
+  it('lets kept chairs be left out again and forgets plain overrides', () => {
+    const plan = planOf([rowAt('r1', 0, 0)]);
+    const ref = { rowId: 'r1', side: 'front' as const, index: 0 };
+
+    expect(releaseChairs(patchChair(plan, ref, { kept: true }), [ref]).rows[0]?.chairs).toEqual([]);
   });
 });
 
@@ -192,8 +200,8 @@ describe('numberPlan', () => {
         ...rowAt('r2', 0, 0),
         sides: { front: true, back: false, start: false, end: false },
         chairs: [
-          { side: 'front', index: 0, number: null, note: null, removed: true },
-          { side: 'front', index: 9, number: null, note: 'alt', removed: false },
+          { side: 'front', index: 0, number: null, note: null, removed: true, kept: false },
+          { side: 'front', index: 9, number: null, note: 'alt', removed: false, kept: false },
         ],
       },
     ]);
@@ -201,8 +209,8 @@ describe('numberPlan', () => {
 
     expect(numbered.rows.map((row) => row.number)).toEqual(['2', '1']);
     expect(numbered.rows[1]?.chairs).toEqual([
-      { side: 'front', index: 0, number: null, note: null, removed: true },
-      { side: 'front', index: 1, number: '1', note: null, removed: false },
+      { side: 'front', index: 0, number: null, note: null, removed: true, kept: false },
+      { side: 'front', index: 1, number: '1', note: null, removed: false, kept: false },
     ]);
   });
 });

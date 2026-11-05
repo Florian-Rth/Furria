@@ -1,14 +1,12 @@
 import type { ClearanceFinding } from '@/features/hall-plan/plan-clearance';
-import type { RectSide } from '@/features/hall-plan/schemas';
-import { findRow } from '@/features/hall-plan/table-plan-ops';
+import { findChair } from '@/features/hall-plan/table-layout';
 import type { PlannerAction } from '../planner-actions';
 import { useTablePlannerContext } from '../table-planner-context';
 import {
+  RELEASE_CHAIRS_LABEL,
   SHOW_FINDING_LABEL,
-  toClearSideLabel,
   toFindingDistance,
   toFindingTitle,
-  toRowLabel,
 } from '../table-planner-copy';
 
 export interface FindingItem {
@@ -25,32 +23,27 @@ export interface FindingsList {
   items: FindingItem[];
 }
 
-const isRectSide = (side: string): side is RectSide => side !== 'around';
-
 export const useFindingsList = (): FindingsList => {
   const planner = useTablePlannerContext();
-  const document = planner.editor.document;
 
   const itemOf = (finding: ClearanceFinding): FindingItem => {
-    const clears = finding.severity === 'conflict' ? finding.sides : [];
-    const sideActions = clears.flatMap((ref): PlannerAction[] => {
-      const row = findRow(document, ref.rowId);
-      const side = ref.side;
-      if (row === null || !isRectSide(side)) {
-        return [];
-      }
-
-      return [
-        {
-          id: `${ref.rowId}:${side}`,
-          label: toClearSideLabel(side, toRowLabel(row.number, row.count)),
-          icon: 'chair',
-          onClick: () => {
-            planner.commands.clearSides([ref]);
-          },
-        },
-      ];
-    });
+    const keptChairs =
+      finding.severity === 'conflict'
+        ? finding.chairs.filter((chair) => findChair(planner.layouts, chair)?.kept === true)
+        : [];
+    const release: PlannerAction[] =
+      keptChairs.length === 0
+        ? []
+        : [
+            {
+              id: 'release',
+              label: RELEASE_CHAIRS_LABEL,
+              icon: 'chair',
+              onClick: () => {
+                planner.commands.releaseChairs(keptChairs);
+              },
+            },
+          ];
 
     return {
       key: finding.key,
@@ -66,7 +59,7 @@ export const useFindingsList = (): FindingsList => {
             planner.focusFinding(finding);
           },
         },
-        ...sideActions,
+        ...release,
       ],
     };
   };

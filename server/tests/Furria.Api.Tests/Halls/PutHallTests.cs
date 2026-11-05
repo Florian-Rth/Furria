@@ -74,6 +74,65 @@ public sealed class PutHallTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Should_KeepTheMergedOutline_When_AnAreaIsAPolygon()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
+        var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
+
+        await SaveAsync(
+            client,
+            hallId,
+            1,
+            "Saal",
+            [MergedStage("a1", (0, 0), (600, 0), (600, 200), (300, 200), (300, 400), (0, 400))]
+        );
+
+        var (_, hall) = await client.GETAsync<GetHallById, GetHallByIdRequest, GetHallByIdResponse>(
+            new() { HallId = hallId }
+        );
+        var area = hall.Document.Elements.Single();
+        Assert.Equal(HallAreaShape.Polygon, area.Shape);
+        Assert.Equal(6, area.Points?.Count);
+    }
+
+    [Fact]
+    public async Task Should_ReadAnAreaAsARectangle_When_ItWasSavedWithoutAShape()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
+        var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
+
+        await SaveAsync(client, hallId, 1, "Saal", [Stage("a1")]);
+
+        var (_, hall) = await client.GETAsync<GetHallById, GetHallByIdRequest, GetHallByIdResponse>(
+            new() { HallId = hallId }
+        );
+        Assert.Equal(HallAreaShape.Rect, hall.Document.Elements.Single().Shape);
+    }
+
+    [Fact]
+    public async Task Should_Refuse_When_AMergedAreaHasFewerThanThreeCorners()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(HallManagerWithGala(_fixture.Today), ct);
+        var client = await ctx.Identity.ClientForAsync(HallManager, ct);
+        var hallId = await CreateHallAsync(client, ctx.Club.Venues.IdOf(Buergerhaus), "Saal");
+
+        var (response, _) = await SaveAsync(
+            client,
+            hallId,
+            1,
+            "Saal",
+            [MergedStage("a1", (0, 0), (600, 0))]
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
     private static Task<TestResult<PutHallResponse>> SaveAsync(
         HttpClient client,
         int hallId,

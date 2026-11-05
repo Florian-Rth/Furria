@@ -18,6 +18,8 @@ public sealed record HallElement
 
     public HallAreaKind? Area { get; init; }
 
+    public HallAreaShape? Shape { get; init; }
+
     public double? X { get; init; }
 
     public double? Y { get; init; }

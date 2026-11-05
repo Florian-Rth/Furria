@@ -1,16 +1,21 @@
 import { useIsMediumScreen } from '@furria/ui/use-is-medium-screen';
 import { useState } from 'react';
 import { hallBounds } from '@/features/hall-plan/hall-ops';
+import { blockersOf } from '@/features/hall-plan/plan-blockers';
 import type { ClearanceFinding, FindingTally } from '@/features/hall-plan/plan-clearance';
-import { blockersOf, clearanceOf, tallyFindings } from '@/features/hall-plan/plan-clearance';
+import { clearanceOf, tallyFindings } from '@/features/hall-plan/plan-clearance';
 import type { Bounds } from '@/features/hall-plan/plan-geometry';
 import { boundsFromCorners, unionBounds } from '@/features/hall-plan/plan-geometry';
 import type {
+  Point,
   SeatingResponse,
   SeatingStandard,
+  TablePlanDocument,
   TablePlanResponse,
   TableType,
 } from '@/features/hall-plan/schemas';
+import type { SeatOffer, SeatRequestShape } from '@/features/hall-plan/seat-request';
+import { DEFAULT_TABLES_PER_ROW, seatOfferOf } from '@/features/hall-plan/seat-request';
 import type { PlanCounts, RowLayout } from '@/features/hall-plan/table-layout';
 import { layoutPlan, planCountsOf, tableTypesById } from '@/features/hall-plan/table-layout';
 import { layoutsBounds } from '@/features/hall-plan/table-plan-ops';
@@ -34,6 +39,18 @@ const EMPTY_HALL_BOUNDS: Bounds = { minX: 0, minY: 0, maxX: 2000, maxY: 1200 };
 
 export type PlannerDrawer = 'inspector' | 'findings' | 'settings' | null;
 
+export interface SeatRequestDraft {
+  seats: number;
+  shape: SeatRequestShape;
+  tablesPerRow: number;
+}
+
+const DEFAULT_SEAT_REQUEST: SeatRequestDraft = {
+  seats: 20,
+  shape: 'row',
+  tablesPerRow: DEFAULT_TABLES_PER_ROW,
+};
+
 export interface TablePlanner {
   plan: TablePlanResponse;
   standard: SeatingStandard;
@@ -54,6 +71,9 @@ export interface TablePlanner {
   setView: (view: PlannerView) => void;
   paletteType: TableType | null;
   setPaletteType: (tableTypeId: number) => void;
+  seatRequest: SeatRequestDraft;
+  changeSeatRequest: (patch: Partial<SeatRequestDraft>) => void;
+  seatOffer: SeatOffer | null;
   selection: PlannerSelection;
   select: (selection: PlannerSelection) => void;
   target: InspectorTarget;
@@ -76,9 +96,12 @@ export const useTablePlanner = (
   onConflict: () => void,
 ): TablePlanner => {
   const isDesk = useIsMediumScreen();
-  const editor = usePlanEditor(plan, onConflict);
   const standard = seating.standard;
   const types = tableTypesById(seating.tableTypes);
+  const blockers = blockersOf(plan.hall.document, standard);
+  const countsOf = (next: TablePlanDocument): PlanCounts =>
+    planCountsOf(layoutPlan(next, types, standard, blockers));
+  const editor = usePlanEditor(plan, onConflict, countsOf);
   const activeTypes = seating.tableTypes.filter((type) => !type.archived);
   const [tool, setTool] = useState<PlannerTool>('select');
   const [view, setView] = useState<PlannerView>('plan');
@@ -86,16 +109,26 @@ export const useTablePlanner = (
   const [rawSelection, setSelection] = useState<PlannerSelection>(NO_SELECTION);
   const [drawer, setDrawer] = useState<PlannerDrawer>(null);
   const [focusedFinding, setFocusedFinding] = useState<string | null>(null);
+  const [seatRequest, setSeatRequest] = useState<SeatRequestDraft>(DEFAULT_SEAT_REQUEST);
   const document = editor.document;
   const selection = pruneSelection(document, rawSelection);
-  const layouts = layoutPlan(document, types, standard);
-  const findings = clearanceOf(layouts, blockersOf(plan.hall.document, standard), standard);
+  const layouts = layoutPlan(document, types, standard, blockers);
+  const findings = clearanceOf(layouts, blockers, standard);
   const viewport = usePlannerViewport(contentBoundsOf(plan, layouts));
   const paletteType =
     activeTypes.find((type) => type.tableTypeId === paletteTypeId) ?? activeTypes[0] ?? null;
   const select = (next: PlannerSelection): void => {
     setSelection(next);
   };
+  const seatOfferAt = (center: Point): SeatOffer | null =>
+    paletteType === null
+      ? null
+      : seatOfferOf(
+          document,
+          { ...seatRequest, type: paletteType, seating: document.seating },
+          standard,
+          center,
+        );
   const commands = usePlannerCommands({ editor, layouts, types, standard, selection, select });
   const pointer = usePlannerPointer({
     editor,
@@ -103,8 +136,9 @@ export const useTablePlanner = (
     layouts,
     standard,
     paletteType,
+    types,
+    seatOfferAt,
     tool,
-    view,
     scale: viewport.view.scale,
     selection,
     select,
@@ -115,14 +149,25 @@ export const useTablePlanner = (
       }
     },
   });
-  const ghostDocument =
-    pointer.ghost === null ? null : { ...document, rows: [pointer.ghost], groups: [] };
+  const ghostDocument: TablePlanDocument | null =
+    pointer.ghost.length === 0
+      ? null
+      : {
+          ...document,
+          rows: [...pointer.ghost],
+          groups: [...new Set(pointer.ghost.flatMap((row) => row.groupId ?? []))].map((id) => ({
+            id,
+            number: null,
+            note: null,
+          })),
+        };
+  const ghostLayouts = ghostDocument === null ? [] : layoutPlan(ghostDocument, types, standard);
   const ghostScene =
     ghostDocument === null
       ? null
       : plannerSceneOf({
           document: ghostDocument,
-          layouts: layoutPlan(ghostDocument, types, standard),
+          layouts: ghostLayouts,
           types,
           standard,
           findings: [],
@@ -195,7 +240,7 @@ export const useTablePlanner = (
     layouts,
     findings,
     tally: tallyFindings(findings),
-    counts: planCountsOf(document, types, standard),
+    counts: planCountsOf(layouts),
     scene: plannerSceneOf({
       document,
       layouts,
@@ -207,7 +252,7 @@ export const useTablePlanner = (
       focusedFinding,
     }),
     ghostScene,
-    ghostCounts: ghostDocument === null ? null : planCountsOf(ghostDocument, types, standard),
+    ghostCounts: ghostDocument === null ? null : planCountsOf(ghostLayouts),
     tool,
     setTool: changeTool,
     view,
@@ -224,6 +269,11 @@ export const useTablePlanner = (
         changeTool('table');
       }
     },
+    seatRequest,
+    changeSeatRequest: (patch) => {
+      setSeatRequest((current) => ({ ...current, ...patch }));
+    },
+    seatOffer: seatOfferAt({ x: 0, y: 0 }),
     selection,
     select,
     target: inspectorTargetOf(document, selection),

@@ -1,4 +1,3 @@
-import type { SideRef } from './plan-clearance';
 import type { Bounds } from './plan-geometry';
 import {
   add,
@@ -16,7 +15,6 @@ import {
 import { GROUP_ID_PREFIX, nextId, nextIds, ROW_ID_PREFIX } from './plan-ids';
 import type {
   ChairOverride,
-  ChairSide,
   Point,
   RectSide,
   RowSides,
@@ -28,21 +26,18 @@ import type {
   TableType,
 } from './schemas';
 import { ROW_COUNT_MAX, ROW_COUNT_MIN } from './schemas';
-import type { ChairKey, RowLayout } from './table-layout';
+import type { ChairKey, ChairRef, RowLayout } from './table-layout';
 import { clockwiseChairs, rowPitchOf, rowSpanOf } from './table-layout';
 
 export const ALL_SIDES: RowSides = { front: true, back: true, start: true, end: true };
 export const ROW_DUPLICATE_OFFSET: Point = { x: 0, y: 150 };
 export const READING_LINE_TOLERANCE_CM = 100;
 
-export interface ChairRef extends ChairKey {
-  rowId: string;
-}
-
 export interface ChairPatch {
   number?: string | null;
   note?: string | null;
   removed?: boolean;
+  kept?: boolean;
 }
 
 export interface NotePatch {
@@ -194,17 +189,6 @@ export const setRowSide = (
   seated: boolean,
 ): TablePlanDocument =>
   mapRows(document, [rowId], (row) => ({ ...row, sides: { ...row.sides, [side]: seated } }));
-
-const isRectSide = (side: ChairSide): side is RectSide => side !== 'around';
-
-export const clearSides = (
-  document: TablePlanDocument,
-  sides: readonly SideRef[],
-): TablePlanDocument =>
-  sides.reduce(
-    (next, ref) => (isRectSide(ref.side) ? setRowSide(next, ref.rowId, ref.side, false) : next),
-    document,
-  );
 
 export const setPlanSeating = (
   document: TablePlanDocument,
@@ -363,7 +347,7 @@ export const patchGroup = (
 });
 
 const isPlainChair = (chair: ChairOverride): boolean =>
-  !chair.removed && chair.number === null && chair.note === null;
+  !chair.removed && !chair.kept && chair.number === null && chair.note === null;
 
 const isSameChair = (chair: ChairOverride, key: ChairKey): boolean =>
   chair.side === key.side && chair.index === key.index;
@@ -380,15 +364,24 @@ export const patchChair = (
       number: null,
       note: null,
       removed: false,
+      kept: false,
     };
+    const removed = patch.removed ?? existing.removed;
     const next: ChairOverride = {
       ...patchText(existing, patch),
-      removed: patch.removed ?? existing.removed,
+      removed,
+      kept: removed ? false : (patch.kept ?? existing.kept),
     };
     const others = row.chairs.filter((chair) => !isSameChair(chair, ref));
 
     return { ...row, chairs: isPlainChair(next) ? others : [...others, next] };
   });
+
+export const releaseChairs = (
+  document: TablePlanDocument,
+  refs: readonly ChairRef[],
+): TablePlanDocument =>
+  refs.reduce((next, ref) => patchChair(next, ref, { kept: false }), document);
 
 export const readingOrder = <T extends { x: number; y: number }>(
   items: readonly T[],
@@ -418,7 +411,7 @@ const numberedChairs = (row: TableRow, layout: RowLayout | undefined): ChairOver
 
   return clockwiseChairs(layout).flatMap((chair): ChairOverride[] => {
     const override = existing.get(`${chair.side}:${chair.index}`);
-    if (chair.removed) {
+    if (chair.state !== 'seated') {
       return override === undefined ? [] : [{ ...override, number: null }];
     }
     next += 1;
@@ -430,6 +423,7 @@ const numberedChairs = (row: TableRow, layout: RowLayout | undefined): ChairOver
         number: String(next),
         note: override?.note ?? null,
         removed: false,
+        kept: override?.kept ?? false,
       },
     ];
   });
@@ -468,11 +462,11 @@ export const hitTestRows = (layouts: readonly RowLayout[], at: Point): string | 
   if (onBody !== undefined) {
     return onBody.rowId;
   }
-  const onZone = reversed.find((layout) =>
-    layout.zones.some((zone) => isPointInShape(at, zone.shape)),
+  const onChair = reversed.find((layout) =>
+    layout.chairs.some((chair) => chair.state === 'seated' && isPointInShape(at, chair.cell.shape)),
   );
 
-  return onZone?.rowId ?? null;
+  return onChair?.rowId ?? null;
 };
 
 export const hitTestChair = (

@@ -6,7 +6,7 @@ import type {
   TableType,
 } from '@/features/hall-plan/schemas';
 import { RECT_SIDES, SEATINGS, TABLE_SHAPES } from '@/features/hall-plan/schemas';
-import type { PlanCounts, RowLayout } from '@/features/hall-plan/table-layout';
+import type { ChairState, PlanCounts, RowLayout } from '@/features/hall-plan/table-layout';
 
 export const countsOfRows = (
   layouts: readonly RowLayout[],
@@ -41,3 +41,25 @@ export const isSeating = (value: string): value is Seating =>
 
 export const isTableShape = (value: string): value is TableShape =>
   TABLE_SHAPES.some((shape) => shape === value);
+
+export type ChairNotice = 'removed' | 'leftOut' | 'kept' | null;
+
+export const chairNoticeOf = (state: ChairState | null, kept: boolean): ChairNotice => {
+  if (state === 'removed') {
+    return 'removed';
+  }
+  if (state === 'leftOut') {
+    return 'leftOut';
+  }
+
+  return kept ? 'kept' : null;
+};
+
+export const parseWhole = (value: string): number | null => {
+  const trimmed = value.trim();
+  if (!/^\d+$/.test(trimmed)) {
+    return null;
+  }
+
+  return Number(trimmed);
+};

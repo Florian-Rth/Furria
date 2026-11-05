@@ -83,13 +83,11 @@ const plan = (rows: TableRow[]): TablePlanDocument => ({
 });
 
 describe('plannerSceneOf', () => {
-  it('draws a rectangular row as one table body with its seated sides', () => {
+  it('draws a rectangular row as one table body with a cell per seated chair', () => {
     const scene = sceneOf(plan([row('r1')]), { kind: 'none' }, 'plan');
 
-    expect([scene.tables.length, scene.tables[0]?.lengthCm, scene.zones[0]?.sides]).toEqual([
-      1,
-      240,
-      { front: true, back: false, start: true, end: true },
+    expect([scene.tables.length, scene.tables[0]?.lengthCm, scene.cells.length]).toEqual([
+      1, 240, 6,
     ]);
   });
 
@@ -100,16 +98,43 @@ describe('plannerSceneOf', () => {
       'plan',
     );
 
-    expect([scene.tables.length, scene.zones.length]).toEqual([3, 3]);
+    expect([scene.tables.length, scene.cells.length]).toEqual([3, 30]);
   });
 
   it.each([
-    { view: 'plan' as const, zones: 1, chairs: 0 },
-    { view: 'setup' as const, zones: 0, chairs: 6 },
-  ])('shows chairs only in the $view view as expected', ({ view, zones, chairs }) => {
+    { view: 'plan' as const, cells: 6, chairs: 0 },
+    { view: 'setup' as const, cells: 0, chairs: 6 },
+  ])('shows chairs only in the $view view as expected', ({ view, cells, chairs }) => {
     const scene = sceneOf(plan([row('r1')]), { kind: 'none' }, view);
 
-    expect([scene.zones.length, scene.chairs.length]).toEqual([zones, chairs]);
+    expect([scene.cells.length, scene.chairs.length]).toEqual([cells, chairs]);
+  });
+
+  it('gives left-out chair cells their own chair id so they can be tapped', () => {
+    const rows = [
+      row('r1', {
+        rotation: 0,
+        count: 1,
+        x: 0,
+        y: 0,
+        sides: { front: false, back: true, start: false, end: false },
+      }),
+      row('r2', {
+        rotation: 0,
+        count: 1,
+        x: 0,
+        y: 150,
+        sides: { front: true, back: false, start: false, end: false },
+      }),
+    ];
+    const scene = sceneOf(plan(rows), { kind: 'none' }, 'plan');
+
+    expect(scene.cells.map((cell) => [cell.id, cell.faded])).toEqual([
+      ['r1', false],
+      ['r1', false],
+      [chairIdOf('r2', 'front', 0), true],
+      [chairIdOf('r2', 'front', 1), true],
+    ]);
   });
 
   it('frames one selected row along its own rotation', () => {
@@ -128,7 +153,7 @@ describe('plannerSceneOf', () => {
     expect(scene.frame).toEqual({ x: 150, y: 0, widthCm: 420, heightCm: 80, rotation: 0 });
   });
 
-  it('marks the zone of a side caught in an overlap', () => {
+  it('marks the cell of a chair caught in an overlap', () => {
     const finding: ClearanceFinding = {
       key: 'f1',
       severity: 'conflict',
@@ -137,14 +162,16 @@ describe('plannerSceneOf', () => {
       to: { x: 0, y: 0 },
       distanceCm: 0,
       rowIds: ['r1'],
-      sides: [{ rowId: 'r1', side: 'front' }],
+      chairs: [{ rowId: 'r1', side: 'front', index: 0 }],
       blockerId: null,
     };
     const scene = sceneOf(plan([row('r1'), row('r2', { y: 2000 })]), { kind: 'none' }, 'plan', [
       finding,
     ]);
 
-    expect(scene.zones.map((zone) => zone.conflict)).toEqual([true, false]);
+    expect(scene.cells.filter((cell) => cell.conflict).map((cell) => cell.key)).toEqual([
+      chairIdOf('r1', 'front', 0),
+    ]);
   });
 
   it('marks the selected chair', () => {
@@ -155,7 +182,7 @@ describe('plannerSceneOf', () => {
     );
 
     expect(scene.chairs.filter((chair) => chair.selected).map((chair) => chair.key)).toEqual([
-      'start:0',
+      chairIdOf('r1', 'start', 0),
     ]);
   });
 });

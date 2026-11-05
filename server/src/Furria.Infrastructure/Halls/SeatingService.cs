@@ -37,12 +37,6 @@ public sealed class SeatingService
         };
     }
 
-    public async Task<SeatingRules> RulesAsync(CancellationToken ct) =>
-        new(
-            await StandardAsync(ct),
-            await _dbContext.TableTypes.AsNoTracking().ToDictionaryAsync(type => type.Id, ct)
-        );
-
     public async Task<Result> SetStandardAsync(SeatingStandardCommand command, CancellationToken ct)
     {
         var standard = await _dbContext.SeatingStandards.SingleOrDefaultAsync(ct);

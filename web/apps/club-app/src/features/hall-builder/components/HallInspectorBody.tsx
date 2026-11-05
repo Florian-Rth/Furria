@@ -1,6 +1,7 @@
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useHallBuilderContext } from '../hall-builder-context';
+import { HallAreaMergeAction } from './HallAreaMergeAction';
 import { HallElementSection } from './HallElementSection';
 import { HallHelpSection } from './HallHelpSection';
 import { HallManySection } from './HallManySection';
@@ -30,6 +31,7 @@ export const HallInspectorBody: FC = () => {
   return (
     <Stack sx={{ gap: 2 }}>
       {section}
+      <HallAreaMergeAction />
       <HallSelectionActions />
       <HallHelpSection />
     </Stack>

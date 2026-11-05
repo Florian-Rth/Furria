@@ -12,6 +12,7 @@ import {
 } from '@/features/hall-plan/plan-history';
 import { isPlanVersionConflict } from '@/features/hall-plan/requests';
 import type { TablePlanDocument, TablePlanResponse } from '@/features/hall-plan/schemas';
+import type { PlanCounts } from '@/features/hall-plan/table-layout';
 
 const AUTOSAVE_DELAY_MS = 800;
 
@@ -26,7 +27,11 @@ export interface PlanEditor {
   redo: () => void;
 }
 
-export const usePlanEditor = (plan: TablePlanResponse, onConflict: () => void): PlanEditor => {
+export const usePlanEditor = (
+  plan: TablePlanResponse,
+  onConflict: () => void,
+  countsOf: (document: TablePlanDocument) => PlanCounts,
+): PlanEditor => {
   const [history, setHistory] = useState<PlanHistory<TablePlanDocument>>(() =>
     createHistory(plan.document),
   );
@@ -49,7 +54,7 @@ export const usePlanEditor = (plan: TablePlanResponse, onConflict: () => void): 
     }
     inFlight.current = true;
     save.mutate(
-      { hallId: plan.hallId, document, version: version.current },
+      { hallId: plan.hallId, document, version: version.current, ...countsOf(document) },
       {
         onSuccess: (result) => {
           version.current = result.version;

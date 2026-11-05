@@ -1,8 +1,11 @@
 import { KkFloorPlanRoot } from './internal/layout/KkFloorPlanRoot';
 import { KkFloorPlanArea } from './internal/ui/KkFloorPlanArea';
+import { KkFloorPlanAreaOutline } from './internal/ui/KkFloorPlanAreaOutline';
 import { KkFloorPlanChair } from './internal/ui/KkFloorPlanChair';
+import { KkFloorPlanChairCell } from './internal/ui/KkFloorPlanChairCell';
 import { KkFloorPlanChairZone } from './internal/ui/KkFloorPlanChairZone';
 import { KkFloorPlanDoor } from './internal/ui/KkFloorPlanDoor';
+import { KkFloorPlanEdgeLength } from './internal/ui/KkFloorPlanEdgeLength';
 import { KkFloorPlanFinding } from './internal/ui/KkFloorPlanFinding';
 import { KkFloorPlanGhost } from './internal/ui/KkFloorPlanGhost';
 import { KkFloorPlanGuide } from './internal/ui/KkFloorPlanGuide';
@@ -36,11 +39,14 @@ export const KkFloorPlan = Object.assign(KkFloorPlanRoot, {
   Wall: KkFloorPlanWall,
   Door: KkFloorPlanDoor,
   Area: KkFloorPlanArea,
+  AreaOutline: KkFloorPlanAreaOutline,
+  EdgeLength: KkFloorPlanEdgeLength,
   Pillar: KkFloorPlanPillar,
   MarkLine: KkFloorPlanMarkLine,
   Label: KkFloorPlanLabel,
   Table: KkFloorPlanTable,
   ChairZone: KkFloorPlanChairZone,
+  ChairCell: KkFloorPlanChairCell,
   Chair: KkFloorPlanChair,
   NoteMark: KkFloorPlanNoteMark,
   Finding: KkFloorPlanFinding,

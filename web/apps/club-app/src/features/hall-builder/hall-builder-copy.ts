@@ -29,6 +29,9 @@ export const REDO_LABEL = 'Wiederholen';
 export const FIT_LABEL = 'Einpassen';
 export const DUPLICATE_LABEL = 'Duplizieren';
 export const DELETE_LABEL = 'Löschen';
+export const MERGE_AREAS_LABEL = 'Zusammenfügen';
+export const MERGE_AREAS_APART_NOTE =
+  'Zusammenfügen geht nur, wenn sich die Flächen berühren oder überschneiden.';
 export const ROTATE_LEFT_LABEL = '−15°';
 export const ROTATE_RIGHT_LABEL = '+15°';
 export const INSPECTOR_CLOSE_LABEL = 'Schließen';

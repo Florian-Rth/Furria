@@ -6,6 +6,7 @@ import {
   elementsInBounds,
   hitTestHall,
   hitTestVertex,
+  mergeAreas,
   moveElements,
   moveVertex,
   rotateElements,
@@ -24,6 +25,7 @@ const wall: HallElement = {
 const stage: HallElement = {
   id: 'e2',
   kind: 'area',
+  shape: 'rect',
   area: 'stage',
   x: 500,
   y: 200,
@@ -140,5 +142,53 @@ describe('elementBounds / elementsInBounds', () => {
       'e2',
       'e3',
     ]);
+  });
+});
+
+describe('mergeAreas', () => {
+  const rectArea = (id: string, x: number, y: number): HallElement => ({
+    id,
+    kind: 'area',
+    shape: 'rect',
+    area: 'bar',
+    x,
+    y,
+    widthCm: 200,
+    heightCm: 200,
+    rotation: 0,
+    label: null,
+  });
+  const twoBars: HallDocument = {
+    elements: [rectArea('a1', 100, 100), rectArea('a2', 250, 100), rectArea('a3', 900, 900)],
+  };
+
+  it('replaces overlapping areas by one outline that keeps the first id and kind', () => {
+    const result = mergeAreas(twoBars, ['a1', 'a2']);
+
+    expect(result.kind).toBe('merged');
+    expect(result.kind === 'merged' ? result.document.elements.map((e) => e.id) : []).toEqual([
+      'a1',
+      'a3',
+    ]);
+    expect(result.kind === 'merged' ? result.document.elements[0] : null).toMatchObject({
+      shape: 'polygon',
+      area: 'bar',
+      points: expect.arrayContaining([
+        { x: 0, y: 0 },
+        { x: 350, y: 0 },
+        { x: 350, y: 200 },
+        { x: 0, y: 200 },
+      ]),
+    });
+  });
+
+  it.each([
+    ['areas apart', ['a1', 'a3'], 'apart'],
+    ['a single area', ['a1'], 'tooFew'],
+    ['a wall and an area', ['e1', 'a1'], 'tooFew'],
+  ])('refuses %s', (_name, ids, reason) => {
+    const document: HallDocument = { elements: [wall, ...twoBars.elements] };
+
+    expect(mergeAreas(document, ids)).toEqual({ kind: 'refused', reason });
   });
 });

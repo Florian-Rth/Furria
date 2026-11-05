@@ -1,16 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import type { TableRow, TableType } from '@/features/hall-plan/schemas';
 import type { RowLayout } from '@/features/hall-plan/table-layout';
-import { countsOfRows, sideTogglesOf } from './planner-facts';
+import { chairNoticeOf, countsOfRows, parseWhole, sideTogglesOf } from './planner-facts';
 
 const layout = (rowId: string, tableCount: number, chairCount: number): RowLayout => ({
   rowId,
+  groupId: null,
   shape: 'rectangle',
   center: { x: 0, y: 0 },
   rotation: 0,
   body: [],
   tables: [],
-  zones: [],
   chairs: [],
   tableCount,
   chairCount,
@@ -64,5 +64,29 @@ describe('sideTogglesOf', () => {
       seated,
       available,
     ]);
+  });
+});
+
+describe('chairNoticeOf', () => {
+  it.each([
+    ['removed', false, 'removed'],
+    ['leftOut', false, 'leftOut'],
+    ['seated', true, 'kept'],
+    ['seated', false, null],
+    [null, false, null],
+  ] as const)('%s chair (kept %s) → %s', (state, kept, expected) => {
+    expect(chairNoticeOf(state, kept)).toBe(expected);
+  });
+});
+
+describe('parseWhole', () => {
+  it.each([
+    ['42', 42],
+    [' 7 ', 7],
+    ['', null],
+    ['4.5', null],
+    ['-3', null],
+  ])('reads %j as %s', (value, expected) => {
+    expect(parseWhole(value)).toBe(expected);
   });
 });

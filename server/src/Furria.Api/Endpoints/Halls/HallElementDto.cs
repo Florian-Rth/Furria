@@ -21,6 +21,8 @@ public sealed record HallElementDto
 
     public HallAreaKind? Area { get; init; }
 
+    public HallAreaShape? Shape { get; init; }
+
     public double? X { get; init; }
 
     public double? Y { get; init; }
@@ -51,6 +53,7 @@ public sealed record HallElementDto
             To = element.To is null ? null : PlanPointDto.From(element.To),
             Door = element.Door,
             Area = element.Area,
+            Shape = ShapeOf(element),
             X = element.X,
             Y = element.Y,
             WidthCm = element.WidthCm,
@@ -74,6 +77,7 @@ public sealed record HallElementDto
             To = To?.ToPoint(),
             Door = Door,
             Area = Area,
+            Shape = Kind == HallElementKind.Area ? Shape ?? HallAreaShape.Rect : null,
             X = X,
             Y = Y,
             WidthCm = WidthCm,
@@ -84,4 +88,8 @@ public sealed record HallElementDto
             Text = Text,
             Size = Size,
         };
+
+    [Pure]
+    private static HallAreaShape? ShapeOf(HallElement element) =>
+        element.Kind == HallElementKind.Area ? element.Shape ?? HallAreaShape.Rect : null;
 }

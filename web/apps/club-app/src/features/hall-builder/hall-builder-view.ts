@@ -61,15 +61,17 @@ const frameOfBounds = (bounds: Bounds, rotatable: boolean): SelectionFrame => {
 const singleFrameOf = (element: HallElement): SelectionFrame => {
   switch (element.kind) {
     case 'area':
-      return {
-        x: element.x,
-        y: element.y,
-        widthCm: element.widthCm,
-        heightCm: element.heightCm,
-        rotation: element.rotation,
-        resizable: true,
-        rotatable: true,
-      };
+      return element.shape === 'polygon'
+        ? frameOfBounds(elementBounds(element), true)
+        : {
+            x: element.x,
+            y: element.y,
+            widthCm: element.widthCm,
+            heightCm: element.heightCm,
+            rotation: element.rotation,
+            resizable: true,
+            rotatable: true,
+          };
     case 'pillar':
       return {
         x: element.x,

@@ -1,7 +1,7 @@
 import { KkFloorPlan } from '@furria/ui/KkFloorPlan';
 import type { FC } from 'react';
 import type { HallElement } from '@/features/hall-plan/schemas';
-import { areaLabelOf } from '../hall-builder-view';
+import { HallAreaShape } from './HallAreaShape';
 
 interface HallElementShapeProps {
   element: HallElement;
@@ -30,19 +30,7 @@ export const HallElementShape: FC<HallElementShapeProps> = ({ element, selected 
         />
       );
     case 'area':
-      return (
-        <KkFloorPlan.Area
-          id={element.id}
-          kind={element.area}
-          x={element.x}
-          y={element.y}
-          widthCm={element.widthCm}
-          heightCm={element.heightCm}
-          rotation={element.rotation}
-          label={areaLabelOf(element)}
-          selected={selected}
-        />
-      );
+      return <HallAreaShape area={element} selected={selected} />;
     case 'pillar':
       return (
         <KkFloorPlan.Pillar

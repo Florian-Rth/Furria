@@ -1,7 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { blockersOf, clearanceOf, tallyFindings } from './plan-clearance';
+import { blockersOf } from './plan-blockers';
+import { clearanceOf, tallyFindings } from './plan-clearance';
 import type { HallDocument, RowSides, SeatingStandard, TableRow, TableType } from './schemas';
-import { layoutRow } from './table-layout';
+import { layoutPlan, tableTypesById } from './table-layout';
 
 const standard: SeatingStandard = {
   comfortableChairSpacingCm: 60,
@@ -24,6 +25,15 @@ const table: TableType = {
 const LONG_SIDES: RowSides = { front: true, back: true, start: false, end: false };
 const NO_SIDES: RowSides = { front: false, back: false, start: false, end: false };
 
+const KEPT_FRONT = [0, 1].map((index) => ({
+  side: 'front' as const,
+  index,
+  number: null,
+  note: null,
+  removed: false,
+  kept: true,
+}));
+
 const rowAt = (id: string, y: number, sides: RowSides = LONG_SIDES, x = 0): TableRow => ({
   id,
   tableTypeId: 2,
@@ -39,19 +49,26 @@ const rowAt = (id: string, y: number, sides: RowSides = LONG_SIDES, x = 0): Tabl
   chairs: [],
 });
 
-const findingsFor = (rows: TableRow[], hall: HallDocument = { elements: [] }) =>
-  clearanceOf(
-    rows.map((row) => layoutRow(row, table, standard, 'comfortable')),
-    blockersOf(hall, standard),
+const findingsFor = (rows: TableRow[], hall: HallDocument = { elements: [] }) => {
+  const blockers = blockersOf(hall, standard);
+  const layouts = layoutPlan(
+    { seating: 'comfortable', rows, groups: [] },
+    tableTypesById([table]),
     standard,
+    blockers,
   );
+
+  return clearanceOf(layouts, blockers, standard);
+};
+
+const keptFront = (row: TableRow): TableRow => ({ ...row, chairs: KEPT_FRONT });
 
 describe('clearanceOf between rows', () => {
   it.each([
     ['far apart rows', 400, []],
     ['rows with a full aisle', 300, []],
     ['rows with a narrow aisle', 250, ['hint:narrowAisle']],
-    ['rows whose chairs overlap', 150, ['conflict:chairsOverlap']],
+    ['rows whose chairs would overlap leave them out', 150, ['hint:narrowAisle']],
     ['rows whose tables overlap', 40, ['conflict:tablesOverlap']],
   ])('%s', (_name, y, expected) => {
     expect(
@@ -69,13 +86,18 @@ describe('clearanceOf between rows', () => {
     expect(finding?.to.y).toBeCloseTo(160);
   });
 
-  it('offers both facing sides when the chairs overlap', () => {
-    const [finding] = findingsFor([rowAt('r1', 0), rowAt('r2', 150)]);
+  it('reports kept chairs that overlap with every chair involved', () => {
+    const [finding] = findingsFor([rowAt('r1', 0), keptFront(rowAt('r2', 150))]);
 
-    expect(finding?.sides).toEqual([
-      { rowId: 'r1', side: 'back' },
-      { rowId: 'r2', side: 'front' },
-    ]);
+    expect(finding?.kind).toBe('chairsOverlap');
+    expect(finding?.chairs).toEqual(
+      expect.arrayContaining([
+        { rowId: 'r2', side: 'front', index: 0 },
+        { rowId: 'r2', side: 'front', index: 1 },
+        { rowId: 'r1', side: 'back', index: 0 },
+        { rowId: 'r1', side: 'back', index: 1 },
+      ]),
+    );
   });
 
   it('never warns about tables pushed together without chairs between them', () => {
@@ -100,7 +122,7 @@ describe('clearanceOf against the hall', () => {
 
   it.each([
     ['chairs facing a wall too close', 150, LONG_SIDES, ['hint:narrowAisle']],
-    ['chairs running into a wall', 95, LONG_SIDES, ['conflict:chairsBlocked']],
+    ['chairs running into a wall are left out', 95, LONG_SIDES, []],
     ['a bare table touching a wall', 50, NO_SIDES, []],
     ['a table through a wall', 30, NO_SIDES, ['conflict:tableBlocked']],
   ])('%s', (_name, wallY, sides, expected) => {
@@ -109,6 +131,14 @@ describe('clearanceOf against the hall', () => {
         (finding) => `${finding.severity}:${finding.kind}`,
       ),
     ).toEqual(expected);
+  });
+
+  it('reports kept chairs that stand in a wall', () => {
+    const flipped = { ...rowAt('r1', 0), rotation: 180 };
+
+    expect(findingsFor([keptFront(flipped)], wall(95)).map((finding) => finding.kind)).toEqual([
+      'chairsBlocked',
+    ]);
   });
 
   it('flags anything inside an emergency exit keep-clear zone', () => {
@@ -152,7 +182,7 @@ describe('clearanceOf against the hall', () => {
 
 describe('tallyFindings', () => {
   it('counts conflicts and hints', () => {
-    const findings = findingsFor([rowAt('r1', 0), rowAt('r2', 150), rowAt('r3', 400)]);
+    const findings = findingsFor([rowAt('r1', 0), rowAt('r2', 40), rowAt('r3', 290)]);
 
     expect(tallyFindings(findings)).toEqual({ conflicts: 1, hints: 1 });
   });

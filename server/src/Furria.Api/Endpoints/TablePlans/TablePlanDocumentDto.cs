@@ -136,6 +136,8 @@ public sealed record ChairOverrideDto
 
     public required bool Removed { get; init; }
 
+    public bool Kept { get; init; }
+
     [Pure]
     public static ChairOverrideDto Of(ChairOverride chair) =>
         new()
@@ -145,6 +147,7 @@ public sealed record ChairOverrideDto
             Number = chair.Number,
             Note = chair.Note,
             Removed = chair.Removed,
+            Kept = chair.Kept,
         };
 
     [Pure]
@@ -156,6 +159,7 @@ public sealed record ChairOverrideDto
             Number = Number,
             Note = Note,
             Removed = Removed,
+            Kept = Kept,
         };
 }
 

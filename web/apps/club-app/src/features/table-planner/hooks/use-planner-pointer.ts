@@ -1,7 +1,8 @@
 import { PLAN_ROTATE_HANDLE } from '@furria/ui/floor-plan-view';
 import type { KkPlanPointerEvent } from '@furria/ui/KkFloorPlan';
 import { useRef, useState } from 'react';
-import type { Bounds } from '@/features/hall-plan/plan-geometry';
+import { flushMove, flushReachOf } from '@/features/hall-plan/plan-flush';
+import type { Bounds, Shape } from '@/features/hall-plan/plan-geometry';
 import { angleOf, boundsFromCorners, subtract } from '@/features/hall-plan/plan-geometry';
 import type { Guide } from '@/features/hall-plan/plan-snap';
 import { snapAngle, snapToTargets, thresholdInCm } from '@/features/hall-plan/plan-snap';
@@ -13,7 +14,10 @@ import type {
   TableRow,
   TableType,
 } from '@/features/hall-plan/schemas';
+import type { SeatOffer } from '@/features/hall-plan/seat-request';
+import { withSeatOffer } from '@/features/hall-plan/seat-request';
 import type { RowLayout } from '@/features/hall-plan/table-layout';
+import { layoutRow } from '@/features/hall-plan/table-layout';
 import {
   addRow,
   createRow,
@@ -36,7 +40,7 @@ import {
 import { parseChairId } from '../planner-scene';
 import type { PlannerSelection } from '../planner-selection';
 import { NO_SELECTION, pressRow, rowsSelection, selectedRowIdsOf } from '../planner-selection';
-import type { PlannerTool, PlannerView } from '../planner-tools';
+import type { PlannerTool } from '../planner-tools';
 import type { PlanEditor } from './use-plan-editor';
 
 const SNAP_REACH_PX = 10;
@@ -51,6 +55,8 @@ type Gesture =
       origin: TablePlanDocument;
       originBounds: Bounds | null;
       ids: readonly string[];
+      bodies: readonly Shape[];
+      others: readonly Shape[];
       moved: boolean;
       drill: string | null;
       key: string;
@@ -79,7 +85,7 @@ export interface PlannerOverlay {
 
 export interface PlannerPointer {
   overlay: PlannerOverlay;
-  ghost: TableRow | null;
+  ghost: readonly TableRow[];
   down: (event: KkPlanPointerEvent) => void;
   move: (event: KkPlanPointerEvent) => void;
   up: (event: KkPlanPointerEvent) => void;
@@ -94,8 +100,9 @@ interface PointerInput {
   layouts: readonly RowLayout[];
   standard: SeatingStandard;
   paletteType: TableType | null;
+  types: ReadonlyMap<number, TableType>;
+  seatOfferAt: (center: Point) => SeatOffer | null;
   tool: PlannerTool;
-  view: PlannerView;
   scale: number;
   selection: PlannerSelection;
   select: (selection: PlannerSelection) => void;
@@ -119,8 +126,9 @@ export const usePlannerPointer = ({
   layouts,
   standard,
   paletteType,
+  types,
+  seatOfferAt,
   tool,
-  view,
   scale,
   selection,
   select,
@@ -137,6 +145,21 @@ export const usePlannerPointer = ({
   const [overlay, setOverlay] = useState<PlannerOverlay>(EMPTY_OVERLAY);
   const document = editor.document;
   const reach = thresholdInCm(SNAP_REACH_PX, scale);
+  const flushReach = flushReachOf(scale);
+  const bodiesOfRows = (ids: readonly string[]): Shape[] =>
+    layouts.filter((layout) => ids.includes(layout.rowId)).flatMap((layout) => layout.body);
+  const bodiesBesides = (ids: readonly string[]): Shape[] =>
+    layouts.filter((layout) => !ids.includes(layout.rowId)).flatMap((layout) => layout.body);
+  const settledRows = (rows: readonly TableRow[], free: boolean): TableRow[] => {
+    const bodies = rows.flatMap((row) => {
+      const type = types.get(row.tableTypeId);
+
+      return type === undefined ? [] : layoutRow(row, type, standard, document.seating).body;
+    });
+    const delta = flushMove(bodies, { x: 0, y: 0 }, bodiesBesides([]), flushReach, !free);
+
+    return rows.map((row) => ({ ...row, x: row.x + delta.x, y: row.y + delta.y }));
+  };
 
   const measurePoint = (point: Point, free: boolean): Point => {
     if (free) {
@@ -167,6 +190,8 @@ export const usePlannerPointer = ({
           origin: document,
           originBounds: layoutsBounds(layouts, ids),
           ids,
+          bodies: bodiesOfRows(ids),
+          others: bodiesBesides(ids),
           moved: false,
           drill: press.drillOnRelease,
           key: nextGestureKey('move'),
@@ -196,7 +221,7 @@ export const usePlannerPointer = ({
 
       return;
     }
-    const chair = view === 'setup' && event.targetId !== null ? parseChairId(event.targetId) : null;
+    const chair = event.targetId === null ? null : parseChairId(event.targetId);
     if (chair !== null) {
       select({ kind: 'chair', chair });
       gesture.current = { kind: 'tap' };
@@ -229,13 +254,30 @@ export const usePlannerPointer = ({
     if (paletteType === null) {
       return;
     }
-    const row = createRow(
-      newRowId(document),
-      paletteType.tableTypeId,
-      placementPointOf(event, event.altKey),
+    const [row] = settledRows(
+      [
+        createRow(
+          newRowId(document),
+          paletteType.tableTypeId,
+          placementPointOf(event, event.altKey),
+        ),
+      ],
+      event.altKey,
     );
-    editor.apply(addRow(document, row));
-    select(rowsSelection([row.id]));
+    if (row !== undefined) {
+      editor.apply(addRow(document, row));
+      select(rowsSelection([row.id]));
+    }
+  };
+
+  const placeSeats = (event: KkPlanPointerEvent): void => {
+    const offer = seatOfferAt(placementPointOf(event, event.altKey));
+    if (offer === null) {
+      return;
+    }
+    const rows = settledRows(offer.rows, event.altKey);
+    editor.apply(withSeatOffer(document, { ...offer, rows }));
+    select(rowsSelection(rows.map((row) => row.id)));
   };
 
   const down = (event: KkPlanPointerEvent): void => {
@@ -248,6 +290,9 @@ export const usePlannerPointer = ({
         return;
       case 'table':
         placeTable(event);
+        return;
+      case 'seats':
+        placeSeats(event);
         return;
       case 'row': {
         const from = placementPointOf(event, event.altKey);
@@ -283,7 +328,14 @@ export const usePlannerPointer = ({
       scale,
       event.altKey,
     );
-    editor.apply(moveRows(current.origin, current.ids, offset.delta), current.key);
+    const delta = flushMove(
+      current.bodies,
+      offset.delta,
+      current.others,
+      flushReach,
+      !event.altKey,
+    );
+    editor.apply(moveRows(current.origin, current.ids, delta), current.key);
     setOverlay((now) => ({ ...now, guides: offset.guides }));
   };
 
@@ -292,7 +344,7 @@ export const usePlannerPointer = ({
     switch (current.kind) {
       case 'idle':
       case 'tap':
-        if (tool === 'table') {
+        if (tool === 'table' || tool === 'seats') {
           setOverlay((now) => ({ ...now, hover: placementPointOf(event, event.altKey) }));
         }
         return;
@@ -358,16 +410,23 @@ export const usePlannerPointer = ({
     if (paletteType === null) {
       return;
     }
-    const row = drawnRowOf(
-      newRowId(document),
-      paletteType,
-      standard,
-      current.from,
-      { x: event.x, y: event.y },
+    const [row] = settledRows(
+      [
+        drawnRowOf(
+          newRowId(document),
+          paletteType,
+          standard,
+          current.from,
+          { x: event.x, y: event.y },
+          event.altKey,
+        ),
+      ],
       event.altKey,
     );
-    editor.apply(addRow(document, row));
-    select(rowsSelection([row.id]));
+    if (row !== undefined) {
+      editor.apply(addRow(document, row));
+      select(rowsSelection([row.id]));
+    }
   };
 
   const up = (event: KkPlanPointerEvent): void => {
@@ -427,18 +486,27 @@ export const usePlannerPointer = ({
     }
   };
 
-  const ghostFromDraw =
-    overlay.draw === null || paletteType === null
-      ? null
-      : drawnRowOf(GHOST_ID, paletteType, standard, overlay.draw.from, overlay.draw.to, false);
-  const ghostFromHover =
-    tool === 'table' && overlay.hover !== null && paletteType !== null
-      ? createRow(GHOST_ID, paletteType.tableTypeId, overlay.hover)
-      : null;
+  const ghostOf = (): readonly TableRow[] => {
+    if (tool === 'row') {
+      return overlay.draw === null || paletteType === null
+        ? []
+        : [drawnRowOf(GHOST_ID, paletteType, standard, overlay.draw.from, overlay.draw.to, false)];
+    }
+    if (overlay.hover === null) {
+      return [];
+    }
+    if (tool === 'seats') {
+      return seatOfferAt(overlay.hover)?.rows ?? [];
+    }
+
+    return tool === 'table' && paletteType !== null
+      ? [createRow(GHOST_ID, paletteType.tableTypeId, overlay.hover)]
+      : [];
+  };
 
   return {
     overlay,
-    ghost: tool === 'row' ? ghostFromDraw : ghostFromHover,
+    ghost: ghostOf(),
     down,
     move,
     up,

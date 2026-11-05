@@ -1,4 +1,9 @@
-import type { UseMutationResult, UseQueryResult } from '@tanstack/react-query';
+import type {
+  QueryClient,
+  QueryKey,
+  UseMutationResult,
+  UseQueryResult,
+} from '@tanstack/react-query';
 import { skipToken, useQuery, useQueryClient } from '@tanstack/react-query';
 import { useApiMutation } from '@/lib/api/api-mutation';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
@@ -59,6 +64,23 @@ export interface TableTypeMutations {
 const autosaveFailure = (error: Error): string | null =>
   isPlanVersionConflict(error) ? null : toWriteErrorMessage(error);
 
+const EDITOR_DOCUMENT_READ = { gcTime: 0, refetchOnMount: 'always' } as const;
+
+const afterPendingSaves = (queryClient: QueryClient, key: QueryKey): Promise<void> =>
+  new Promise((resolve) => {
+    const isSettled = (): boolean => queryClient.isMutating({ mutationKey: key }) === 0;
+    if (isSettled()) {
+      resolve();
+      return;
+    }
+    const unsubscribe = queryClient.getMutationCache().subscribe(() => {
+      if (isSettled()) {
+        unsubscribe();
+        resolve();
+      }
+    });
+  });
+
 export const useSeatingQuery = (enabled = true): UseQueryResult<SeatingResponse, Error> =>
   useQuery({
     queryKey: queryKeys.seating,
@@ -105,14 +127,22 @@ export const useHallsQuery = (enabled = true): UseQueryResult<HallsResponse, Err
     queryFn: enabled ? () => withFreshAccessToken(requestHalls) : skipToken,
   });
 
-export const useHallQuery = (hallId: number | null): UseQueryResult<HallDetails, Error> =>
-  useQuery({
-    queryKey: queryKeys.hall(hallId ?? 0),
+export const useHallQuery = (hallId: number | null): UseQueryResult<HallDetails, Error> => {
+  const queryClient = useQueryClient();
+  const queryKey = queryKeys.hall(hallId ?? 0);
+
+  return useQuery({
+    ...EDITOR_DOCUMENT_READ,
+    queryKey,
     queryFn:
       hallId === null
         ? skipToken
-        : () => withFreshAccessToken((accessToken) => requestHall(hallId, accessToken)),
+        : async () => {
+            await afterPendingSaves(queryClient, queryKey);
+            return withFreshAccessToken((accessToken) => requestHall(hallId, accessToken));
+          },
   });
+};
 
 export const useCreateHallMutation = (): UseMutationResult<CreatedHall, Error, HallCreation> =>
   useApiMutation({
@@ -123,13 +153,23 @@ export const useCreateHallMutation = (): UseMutationResult<CreatedHall, Error, H
 
 export const useSaveHallMutation = (
   hallId: number,
-): UseMutationResult<SavedVersion, Error, HallSave> =>
-  useApiMutation({
+): UseMutationResult<SavedVersion, Error, HallSave> => {
+  const queryClient = useQueryClient();
+
+  return useApiMutation({
     request: (save: HallSave, accessToken) => requestHallSave(hallId, save, accessToken),
     changes: ['hall'],
     key: queryKeys.hall(hallId),
     notice: { failure: autosaveFailure },
+    afterSuccess: (saved: SavedVersion, save: HallSave) => {
+      queryClient.setQueryData<HallDetails>(queryKeys.hall(hallId), (current) =>
+        current === undefined
+          ? current
+          : { ...current, name: save.name, document: save.document, version: saved.version },
+      );
+    },
   });
+};
 
 export const useDeleteHallMutation = (): UseMutationResult<void, Error, number> =>
   useApiMutation({
@@ -146,14 +186,22 @@ export const useTablePlansQuery = (enabled = true): UseQueryResult<TablePlansRes
 
 export const useTablePlanQuery = (
   eventId: number | null,
-): UseQueryResult<TablePlanResponse | null, Error> =>
-  useQuery({
-    queryKey: queryKeys.tablePlan(eventId ?? 0),
+): UseQueryResult<TablePlanResponse | null, Error> => {
+  const queryClient = useQueryClient();
+  const queryKey = queryKeys.tablePlan(eventId ?? 0);
+
+  return useQuery({
+    ...EDITOR_DOCUMENT_READ,
+    queryKey,
     queryFn:
       eventId === null
         ? skipToken
-        : () => withFreshAccessToken((accessToken) => requestTablePlan(eventId, accessToken)),
+        : async () => {
+            await afterPendingSaves(queryClient, queryKey);
+            return withFreshAccessToken((accessToken) => requestTablePlan(eventId, accessToken));
+          },
   });
+};
 
 export const useCreateTablePlanMutation = (
   eventId: number,
@@ -173,13 +221,23 @@ export const useCreateTablePlanMutation = (
 
 export const useSaveTablePlanMutation = (
   eventId: number,
-): UseMutationResult<SavedVersion, Error, TablePlanSave> =>
-  useApiMutation({
+): UseMutationResult<SavedVersion, Error, TablePlanSave> => {
+  const queryClient = useQueryClient();
+
+  return useApiMutation({
     request: (save: TablePlanSave, accessToken) => requestTablePlanSave(eventId, save, accessToken),
     changes: ['tablePlan'],
     key: queryKeys.tablePlan(eventId),
     notice: { failure: autosaveFailure },
+    afterSuccess: (saved: SavedVersion, save: TablePlanSave) => {
+      queryClient.setQueryData<TablePlanResponse | null>(queryKeys.tablePlan(eventId), (current) =>
+        current === undefined || current === null || current.hallId !== save.hallId
+          ? current
+          : { ...current, document: save.document, version: saved.version },
+      );
+    },
   });
+};
 
 export const useTablePlanNeedMutation = (
   eventId: number,

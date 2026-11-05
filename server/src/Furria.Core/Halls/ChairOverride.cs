@@ -11,4 +11,6 @@ public sealed record ChairOverride
     public string? Note { get; init; }
 
     public required bool Removed { get; init; }
+
+    public bool Kept { get; init; }
 }

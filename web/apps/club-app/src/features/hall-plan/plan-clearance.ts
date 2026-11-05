@@ -1,7 +1,11 @@
-import type { Bounds, Shape, ShapeGap } from './plan-geometry';
-import { areBoundsApart, boundsOfShape, gapBetween, rectShape, segmentRect } from './plan-geometry';
-import type { ChairSide, HallDocument, HallElement, Point, SeatingStandard } from './schemas';
-import type { RowLayout } from './table-layout';
+import type { Blocker } from './plan-blockers';
+import type { ShapeGap } from './plan-geometry';
+import { areBoundsApart, gapBetween, rectShape } from './plan-geometry';
+import type { Footprint } from './plan-overlap';
+import { footprintOf, isClearlyOverlapping } from './plan-overlap';
+import type { Point, SeatingStandard } from './schemas';
+import type { ChairRef, PlacedChair, RowLayout } from './table-layout';
+import { aisleRectOf } from './table-layout';
 
 export type FindingSeverity = 'conflict' | 'hint';
 
@@ -13,11 +17,6 @@ export type FindingKind =
   | 'exitBlocked'
   | 'narrowAisle';
 
-export interface SideRef {
-  rowId: string;
-  side: ChairSide;
-}
-
 export interface ClearanceFinding {
   key: string;
   severity: FindingSeverity;
@@ -26,197 +25,208 @@ export interface ClearanceFinding {
   to: Point;
   distanceCm: number;
   rowIds: string[];
-  sides: SideRef[];
+  chairs: ChairRef[];
   blockerId: string | null;
 }
 
-export interface Blocker {
-  elementId: string;
-  exit: boolean;
-  shape: Shape;
-  bounds: Bounds;
-}
-
-interface Part {
+interface Body {
   rowId: string;
-  side: ChairSide | null;
-  shape: Shape;
-  bounds: Bounds;
+  footprint: Footprint;
 }
 
-const sideKeyOf = (side: ChairSide | null): string => side ?? 'body';
+interface Seat {
+  ref: ChairRef;
+  kept: boolean;
+  footprint: Footprint;
+  aisle: Footprint;
+}
 
-const partsOf = (layout: RowLayout): { bodies: Part[]; zones: Part[] } => ({
-  bodies: layout.body.map((shape) => ({
-    rowId: layout.rowId,
-    side: null,
-    shape,
-    bounds: boundsOfShape(shape),
-  })),
-  zones: layout.zones.map((zone) => ({
-    rowId: layout.rowId,
-    side: zone.side,
-    shape: zone.shape,
-    bounds: boundsOfShape(zone.shape),
-  })),
+interface Obstacle {
+  rowId: string | null;
+  blockerId: string | null;
+  exit: boolean;
+  chair: ChairRef | null;
+  footprint: Footprint;
+}
+
+const bodiesOf = (layout: RowLayout): Body[] =>
+  layout.body.map((shape) => ({ rowId: layout.rowId, footprint: footprintOf(shape) }));
+
+const seatOf = (layout: RowLayout, chair: PlacedChair, aisleWidth: number): Seat => ({
+  ref: { rowId: layout.rowId, side: chair.side, index: chair.index },
+  kept: chair.kept,
+  footprint: chair.cell,
+  aisle: footprintOf(rectShape(aisleRectOf(chair, aisleWidth))),
 });
 
-const wallBlockers = (element: Extract<HallElement, { kind: 'wall' }>): Shape[] =>
-  element.points.slice(1).flatMap((to, index) => {
-    const from = element.points[index];
+const seatsOf = (layout: RowLayout, aisleWidth: number): Seat[] =>
+  layout.chairs
+    .filter((chair) => chair.state === 'seated')
+    .map((chair) => seatOf(layout, chair, aisleWidth));
 
-    return from === undefined ? [] : [rectShape(segmentRect(from, to, element.thicknessCm))];
-  });
-
-const blockerShapesOf = (element: HallElement, standard: SeatingStandard): Shape[] => {
-  switch (element.kind) {
-    case 'wall':
-      return wallBlockers(element);
-    case 'area':
-      return [
-        rectShape({
-          center: { x: element.x, y: element.y },
-          width: element.widthCm,
-          height: element.heightCm,
-          rotation: element.rotation,
-        }),
-      ];
-    case 'pillar':
-      return element.round
-        ? [
-            {
-              kind: 'circle',
-              center: { x: element.x, y: element.y },
-              radius: Math.max(element.widthCm, element.heightCm) / 2,
-            },
-          ]
-        : [
-            rectShape({
-              center: { x: element.x, y: element.y },
-              width: element.widthCm,
-              height: element.heightCm,
-              rotation: 0,
-            }),
-          ];
-    case 'door':
-      return element.door === 'emergencyExit'
-        ? [rectShape(segmentRect(element.from, element.to, 2 * standard.exitClearanceCm))]
-        : [];
-    default:
-      return [];
-  }
-};
-
-export const blockersOf = (hall: HallDocument, standard: SeatingStandard): Blocker[] =>
-  hall.elements.flatMap((element) =>
-    blockerShapesOf(element, standard).map((shape) => ({
-      elementId: element.id,
-      exit: element.kind === 'door',
-      shape,
-      bounds: boundsOfShape(shape),
-    })),
-  );
-
-const findingOf = (
+const finding = (
   gap: ShapeGap,
   severity: FindingSeverity,
   kind: FindingKind,
-  key: string,
-  refs: { rowIds: string[]; sides: SideRef[]; blockerId: string | null },
+  refs: Pick<ClearanceFinding, 'rowIds' | 'chairs' | 'blockerId'>,
 ): ClearanceFinding => ({
-  key,
+  key: '',
   severity,
   kind,
   from: gap.from,
   to: gap.to,
-  distanceCm: gap.distance,
+  distanceCm: gap.overlaps ? 0 : gap.distance,
   ...refs,
 });
 
-const sidesOf = (parts: readonly Part[]): SideRef[] =>
-  parts.flatMap((part) => (part.side === null ? [] : [{ rowId: part.rowId, side: part.side }]));
+const pairKeyOf = (item: Pick<ClearanceFinding, 'rowIds' | 'blockerId'>): string => {
+  const rows = [...new Set(item.rowIds)].sort().join('|');
 
-const pairFinding = (a: Part, b: Part, aisle: number): ClearanceFinding | null => {
-  if (a.side === null && b.side === null) {
-    const gap = gapBetween(a.shape, b.shape);
-
-    return gap.overlaps
-      ? findingOf(gap, 'conflict', 'tablesOverlap', `${a.rowId}|${b.rowId}|body`, {
-          rowIds: [a.rowId, b.rowId],
-          sides: [],
-          blockerId: null,
-        })
-      : null;
-  }
-  const gap = gapBetween(a.shape, b.shape);
-  const refs = { rowIds: [a.rowId, b.rowId], sides: sidesOf([a, b]), blockerId: null };
-  const key = `${a.rowId}:${sideKeyOf(a.side)}|${b.rowId}:${sideKeyOf(b.side)}`;
-  if (gap.overlaps) {
-    return findingOf(gap, 'conflict', 'chairsOverlap', key, refs);
-  }
-
-  return gap.distance < aisle ? findingOf(gap, 'hint', 'narrowAisle', key, refs) : null;
+  return item.blockerId === null ? rows : `${rows}#${item.blockerId}`;
 };
 
-const blockerFinding = (part: Part, blocker: Blocker, aisle: number): ClearanceFinding | null => {
-  const gap = gapBetween(part.shape, blocker.shape);
-  const key = `${part.rowId}:${sideKeyOf(part.side)}|${blocker.elementId}`;
-  const refs = { rowIds: [part.rowId], sides: sidesOf([part]), blockerId: blocker.elementId };
-  if (blocker.exit) {
-    return gap.overlaps ? findingOf(gap, 'conflict', 'exitBlocked', key, refs) : null;
-  }
-  if (gap.overlaps) {
-    return findingOf(
-      gap,
-      'conflict',
-      part.side === null ? 'tableBlocked' : 'chairsBlocked',
-      key,
-      refs,
-    );
+const bodyFindings = (bodies: readonly Body[], blockers: readonly Blocker[]): ClearanceFinding[] =>
+  bodies.flatMap((body, index) => [
+    ...bodies
+      .slice(index + 1)
+      .flatMap((other) =>
+        other.rowId !== body.rowId && isClearlyOverlapping(body.footprint, other.footprint)
+          ? [
+              finding(
+                gapBetween(body.footprint.shape, other.footprint.shape),
+                'conflict',
+                'tablesOverlap',
+                { rowIds: [body.rowId, other.rowId], chairs: [], blockerId: null },
+              ),
+            ]
+          : [],
+      ),
+    ...blockers.flatMap((blocker) =>
+      isClearlyOverlapping(body.footprint, blocker)
+        ? [
+            finding(
+              gapBetween(body.footprint.shape, blocker.shape),
+              'conflict',
+              blocker.exit ? 'exitBlocked' : 'tableBlocked',
+              { rowIds: [body.rowId], chairs: [], blockerId: blocker.elementId },
+            ),
+          ]
+        : [],
+    ),
+  ]);
+
+const obstaclesOf = (
+  bodies: readonly Body[],
+  seats: readonly Seat[],
+  blockers: readonly Blocker[],
+): Obstacle[] => [
+  ...bodies.map((body) => ({
+    rowId: body.rowId,
+    blockerId: null,
+    exit: false,
+    chair: null,
+    footprint: body.footprint,
+  })),
+  ...seats.map((seat) => ({
+    rowId: seat.ref.rowId,
+    blockerId: null,
+    exit: false,
+    chair: seat.ref,
+    footprint: seat.footprint,
+  })),
+  ...blockers.map((blocker) => ({
+    rowId: null,
+    blockerId: blocker.elementId,
+    exit: blocker.exit,
+    chair: null,
+    footprint: blocker,
+  })),
+];
+
+const clashKindOf = (obstacle: Obstacle): FindingKind => {
+  if (obstacle.exit) {
+    return 'exitBlocked';
   }
 
-  return part.side !== null && gap.distance < aisle
-    ? findingOf(gap, 'hint', 'narrowAisle', key, refs)
-    : null;
+  return obstacle.chair === null ? 'chairsBlocked' : 'chairsOverlap';
 };
+
+const refsOf = (
+  seat: Seat,
+  obstacle: Obstacle,
+): Pick<ClearanceFinding, 'rowIds' | 'chairs' | 'blockerId'> => ({
+  rowIds: obstacle.rowId === null ? [seat.ref.rowId] : [seat.ref.rowId, obstacle.rowId],
+  chairs: obstacle.chair === null ? [seat.ref] : [seat.ref, obstacle.chair],
+  blockerId: obstacle.blockerId,
+});
+
+const seatFindings = (
+  seat: Seat,
+  obstacles: readonly Obstacle[],
+  aisleWidth: number,
+): ClearanceFinding[] =>
+  obstacles.flatMap((obstacle) => {
+    if (obstacle.rowId === seat.ref.rowId) {
+      return [];
+    }
+    if (areBoundsApart(seat.footprint.bounds, obstacle.footprint.bounds, aisleWidth)) {
+      return [];
+    }
+    if (isClearlyOverlapping(seat.footprint, obstacle.footprint)) {
+      return seat.kept
+        ? [
+            finding(
+              gapBetween(seat.footprint.shape, obstacle.footprint.shape),
+              'conflict',
+              clashKindOf(obstacle),
+              refsOf(seat, obstacle),
+            ),
+          ]
+        : [];
+    }
+    if (obstacle.exit || !isClearlyOverlapping(seat.aisle, obstacle.footprint)) {
+      return [];
+    }
+    const gap = gapBetween(seat.footprint.shape, obstacle.footprint.shape);
+
+    return gap.distance < aisleWidth
+      ? [finding(gap, 'hint', 'narrowAisle', { ...refsOf(seat, obstacle), chairs: [seat.ref] })]
+      : [];
+  });
 
 const isWorseThan = (candidate: ClearanceFinding, current: ClearanceFinding): boolean =>
   candidate.severity !== current.severity
     ? candidate.severity === 'conflict'
     : candidate.distanceCm < current.distanceCm;
 
-const pairKeyOf = (finding: ClearanceFinding): string =>
-  finding.blockerId === null
-    ? [...finding.rowIds].sort().join('|')
-    : `${finding.rowIds.join('|')}#${finding.blockerId}`;
+const sameChair = (a: ChairRef, b: ChairRef): boolean =>
+  a.rowId === b.rowId && a.side === b.side && a.index === b.index;
+
+const mergeChairs = (all: readonly ChairRef[]): ChairRef[] =>
+  all.filter((chair, index) => all.findIndex((other) => sameChair(chair, other)) === index);
 
 const keepWorstPerPair = (findings: readonly ClearanceFinding[]): ClearanceFinding[] => {
   const worst = new Map<string, ClearanceFinding>();
-  const sides = new Map<string, SideRef[]>();
-  for (const finding of findings) {
-    const pair = pairKeyOf(finding);
+  const chairs = new Map<string, ChairRef[]>();
+  for (const item of findings) {
+    const pair = `${item.severity}|${pairKeyOf(item)}`;
+    chairs.set(pair, mergeChairs([...(chairs.get(pair) ?? []), ...item.chairs]));
     const current = worst.get(pair);
-    const merged = [
-      ...(sides.get(pair) ?? []),
-      ...(finding.severity === 'conflict' ? finding.sides : []),
-    ];
-    sides.set(
-      pair,
-      merged.filter(
-        (side, index) =>
-          merged.findIndex((other) => other.rowId === side.rowId && other.side === side.side) ===
-          index,
-      ),
-    );
-    if (current === undefined || isWorseThan(finding, current)) {
-      worst.set(pair, finding);
+    if (current === undefined || isWorseThan(item, current)) {
+      worst.set(pair, item);
     }
   }
+  const conflictPairs = new Set(
+    [...worst.values()].filter((item) => item.severity === 'conflict').map(pairKeyOf),
+  );
 
-  return [...worst.entries()].map(([pair, finding]) => ({
-    ...finding,
-    sides: finding.severity === 'conflict' ? (sides.get(pair) ?? finding.sides) : finding.sides,
-  }));
+  return [...worst.entries()]
+    .filter(([, item]) => item.severity === 'conflict' || !conflictPairs.has(pairKeyOf(item)))
+    .map(([pair, item]) => ({
+      ...item,
+      key: pair,
+      chairs: chairs.get(pair) ?? item.chairs,
+    }));
 };
 
 export const clearanceOf = (
@@ -225,32 +235,13 @@ export const clearanceOf = (
   standard: SeatingStandard,
 ): ClearanceFinding[] => {
   const aisle = standard.aisleWidthCm;
-  const parts = layouts.map(partsOf);
-  const findings: ClearanceFinding[] = [];
-  const push = (finding: ClearanceFinding | null): void => {
-    if (finding !== null) {
-      findings.push(finding);
-    }
-  };
-  parts.forEach((own, index) => {
-    const ownAll = [...own.bodies, ...own.zones];
-    for (const other of parts.slice(index + 1)) {
-      for (const a of ownAll) {
-        for (const b of [...other.bodies, ...other.zones]) {
-          if (!areBoundsApart(a.bounds, b.bounds, aisle)) {
-            push(pairFinding(a, b, aisle));
-          }
-        }
-      }
-    }
-    for (const part of ownAll) {
-      for (const blocker of blockers) {
-        if (!areBoundsApart(part.bounds, blocker.bounds, aisle)) {
-          push(blockerFinding(part, blocker, aisle));
-        }
-      }
-    }
-  });
+  const bodies = layouts.flatMap(bodiesOf);
+  const seats = layouts.flatMap((layout) => seatsOf(layout, aisle));
+  const obstacles = obstaclesOf(bodies, seats, blockers);
+  const findings = [
+    ...bodyFindings(bodies, blockers),
+    ...seats.flatMap((seat) => seatFindings(seat, obstacles, aisle)),
+  ];
 
   return keepWorstPerPair(findings).sort((a, b) =>
     a.severity !== b.severity ? (a.severity === 'conflict' ? -1 : 1) : a.distanceCm - b.distanceCm,
@@ -263,6 +254,6 @@ export interface FindingTally {
 }
 
 export const tallyFindings = (findings: readonly ClearanceFinding[]): FindingTally => ({
-  conflicts: findings.filter((finding) => finding.severity === 'conflict').length,
-  hints: findings.filter((finding) => finding.severity === 'hint').length,
+  conflicts: findings.filter((item) => item.severity === 'conflict').length,
+  hints: findings.filter((item) => item.severity === 'hint').length,
 });

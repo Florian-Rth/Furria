@@ -1,5 +1,5 @@
 import type { TablePlanDocument, TableRow } from '@/features/hall-plan/schemas';
-import type { ChairRef } from '@/features/hall-plan/table-plan-ops';
+import type { ChairRef } from '@/features/hall-plan/table-layout';
 import { findRow, selectionFor } from '@/features/hall-plan/table-plan-ops';
 
 export type PlannerSelection =

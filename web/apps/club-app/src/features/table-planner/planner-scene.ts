@@ -8,7 +8,6 @@ import { boundsCenter, boundsOfShape, unionBounds } from '@/features/hall-plan/p
 import type {
   ChairSide,
   Point,
-  RowSides,
   SeatingStandard,
   TablePlanDocument,
   TableShape,
@@ -39,18 +38,16 @@ export interface SceneTable {
   conflict: boolean;
 }
 
-export interface SceneZone {
+export interface SceneCell {
   key: string;
-  rowId: string;
-  shape: TableShape;
+  id: string;
   x: number;
   y: number;
-  lengthCm: number;
-  widthCm: number;
   rotation: number;
+  widthCm: number;
   depthCm: number;
-  sides: RowSides;
   conflict: boolean;
+  faded: boolean;
 }
 
 export interface SceneChair {
@@ -64,6 +61,8 @@ export interface SceneChair {
   number: string | null;
   hasNote: boolean;
   removed: boolean;
+  faded: boolean;
+  conflict: boolean;
   selected: boolean;
 }
 
@@ -92,7 +91,7 @@ export interface SceneFrame {
 
 export interface PlannerScene {
   tables: SceneTable[];
-  zones: SceneZone[];
+  cells: SceneCell[];
   chairs: SceneChair[];
   notes: SceneNote[];
   findings: SceneFinding[];
@@ -116,30 +115,21 @@ const CHAIR_ID_SEPARATOR = ':';
 export const chairIdOf = (rowId: string, side: ChairSide, index: number): string =>
   [CHAIR_ID_PREFIX, rowId, side, String(index)].join(CHAIR_ID_SEPARATOR);
 
-const conflictSidesOf = (findings: readonly ClearanceFinding[]): Set<string> =>
+const conflictChairsOf = (findings: readonly ClearanceFinding[]): Set<string> =>
   new Set(
     findings
       .filter((finding) => finding.severity === 'conflict')
-      .flatMap((finding) => finding.sides.map((side) => `${side.rowId}:${side.side}`)),
+      .flatMap((finding) =>
+        finding.chairs.map((chair) => chairIdOf(chair.rowId, chair.side, chair.index)),
+      ),
   );
 
 const conflictRowsOf = (findings: readonly ClearanceFinding[]): Set<string> =>
   new Set(
     findings
-      .filter((finding) => finding.severity === 'conflict' && finding.sides.length === 0)
+      .filter((finding) => finding.severity === 'conflict' && finding.chairs.length === 0)
       .flatMap((finding) => finding.rowIds),
   );
-
-const zoneSidesOf = (layout: RowLayout): RowSides => {
-  const seated = new Set(layout.zones.map((zone) => zone.side));
-
-  return {
-    front: seated.has('front'),
-    back: seated.has('back'),
-    start: seated.has('start'),
-    end: seated.has('end'),
-  };
-};
 
 const tablesOf = (
   layout: RowLayout,
@@ -183,78 +173,62 @@ const tablesOf = (
   ];
 };
 
-const zonesOf = (
+const cellsOf = (
   layout: RowLayout,
-  type: TableType,
   standard: SeatingStandard,
-  conflictSides: ReadonlySet<string>,
-): SceneZone[] => {
-  if (layout.zones.length === 0) {
-    return [];
-  }
-  if (layout.shape === 'round') {
-    const conflict = conflictSides.has(`${layout.rowId}:around`);
+  conflictChairs: ReadonlySet<string>,
+): SceneCell[] =>
+  layout.chairs
+    .filter((chair) => chair.state !== 'removed')
+    .map((chair) => {
+      const id = chairIdOf(layout.rowId, chair.side, chair.index);
+      const faded = chair.state === 'leftOut';
 
-    return layout.tables.map((table) => ({
-      key: `${layout.rowId}:${table.index}`,
-      rowId: layout.rowId,
-      shape: 'round',
-      x: table.center.x,
-      y: table.center.y,
-      lengthCm: type.lengthCm,
-      widthCm: type.lengthCm,
-      rotation: layout.rotation,
-      depthCm: standard.chairDepthCm,
-      sides: { front: true, back: true, start: true, end: true },
-      conflict,
-    }));
-  }
-  const sides = zoneSidesOf(layout);
-  const conflict = layout.zones.some((zone) => conflictSides.has(`${layout.rowId}:${zone.side}`));
-
-  return [
-    {
-      key: layout.rowId,
-      rowId: layout.rowId,
-      shape: 'rectangle',
-      x: layout.center.x,
-      y: layout.center.y,
-      lengthCm: type.lengthCm * layout.tableCount,
-      widthCm: type.widthCm,
-      rotation: layout.rotation,
-      depthCm: standard.chairDepthCm,
-      sides,
-      conflict,
-    },
-  ];
-};
+      return {
+        key: id,
+        id: faded ? id : layout.rowId,
+        x: chair.center.x,
+        y: chair.center.y,
+        rotation: chair.rotation,
+        widthCm: chair.slotWidth,
+        depthCm: standard.chairDepthCm,
+        conflict: conflictChairs.has(id),
+        faded,
+      };
+    });
 
 const chairSizeOf = (standard: SeatingStandard): { widthCm: number; depthCm: number } => ({
   widthCm: Math.min(CHAIR_WIDTH_CM, standard.maximumChairSpacingCm - CHAIR_GAP_CM),
   depthCm: Math.min(CHAIR_WIDTH_CM, standard.chairDepthCm * CHAIR_DEPTH_SHARE),
 });
 
+const BACKREST_TURN = 180;
+
 const chairsOf = (
   layout: RowLayout,
   standard: SeatingStandard,
   selection: PlannerSelection,
+  conflictChairs: ReadonlySet<string>,
 ): SceneChair[] => {
   const size = chairSizeOf(standard);
 
   return layout.chairs.map((chair) => {
     const ref = { rowId: layout.rowId, side: chair.side, index: chair.index };
+    const id = chairIdOf(layout.rowId, chair.side, chair.index);
 
     return {
-      key: `${chair.side}:${chair.index}`,
-      id: chairIdOf(layout.rowId, chair.side, chair.index),
+      key: id,
+      id,
       x: chair.center.x,
       y: chair.center.y,
-      rotation: chair.rotation,
+      rotation: (chair.rotation + BACKREST_TURN) % 360,
       widthCm: size.widthCm,
       depthCm: size.depthCm,
       number: chair.number,
       hasNote: chair.note !== null,
-      removed: chair.removed,
+      removed: chair.state === 'removed',
+      faded: chair.state === 'leftOut',
+      conflict: conflictChairs.has(id),
       selected: isChairSelected(selection, ref),
     };
   });
@@ -315,11 +289,11 @@ export const plannerSceneOf = ({
   focusedFinding,
 }: SceneInput): PlannerScene => {
   const selected = selectedRowIdsOf(selection);
-  const conflictSides = conflictSidesOf(findings);
+  const conflictChairs = conflictChairsOf(findings);
   const conflictRows = conflictRowsOf(findings);
   const rowsById = new Map(document.rows.map((row) => [row.id, row]));
   const tables: SceneTable[] = [];
-  const zones: SceneZone[] = [];
+  const cells: SceneCell[] = [];
   const chairs: SceneChair[] = [];
   const notes: SceneNote[] = [];
 
@@ -333,9 +307,9 @@ export const plannerSceneOf = ({
       ...tablesOf(layout, type, row.number, selected.includes(row.id), conflictRows.has(row.id)),
     );
     if (view === 'plan') {
-      zones.push(...zonesOf(layout, type, standard, conflictSides));
+      cells.push(...cellsOf(layout, standard, conflictChairs));
     } else {
-      chairs.push(...chairsOf(layout, standard, selection));
+      chairs.push(...chairsOf(layout, standard, selection, conflictChairs));
     }
     if (row.note !== null) {
       notes.push({ key: row.id, at: layout.center });
@@ -344,7 +318,7 @@ export const plannerSceneOf = ({
 
   return {
     tables,
-    zones,
+    cells,
     chairs,
     notes,
     findings: findings.map((finding) => ({
