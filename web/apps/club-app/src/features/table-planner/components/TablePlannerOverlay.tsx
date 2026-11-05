@@ -37,7 +37,13 @@ export const TablePlannerOverlay: FC = () => {
       guide.axis === 'x' ? { x: guide.at, y: guide.from } : { x: guide.from, y: guide.at };
     const to = guide.axis === 'x' ? { x: guide.at, y: guide.to } : { x: guide.to, y: guide.at };
 
-    return <KkFloorPlan.Guide key={`${guide.axis}:${guide.at}:${guide.from}:${guide.to}`} from={from} to={to} />;
+    return (
+      <KkFloorPlan.Guide
+        key={`${guide.axis}:${guide.at}:${guide.from}:${guide.to}`}
+        from={from}
+        to={to}
+      />
+    );
   });
   const marquee =
     overlay.marquee === null ? null : (
