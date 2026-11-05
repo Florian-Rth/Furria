@@ -6,7 +6,7 @@ import { HallAreaEdgeLengths } from './HallAreaEdgeLengths';
 import { HallPolylineGhost } from './HallPolylineGhost';
 
 export const HallBuilderOverlay: FC = () => {
-  const { overlay } = useHallBuilderContext();
+  const { overlay, loupe } = useHallBuilderContext();
   const { frame, polyline, door, area, measure, marquee } = overlay;
   const guides = overlay.guides.map((guide) => (
     <KkFloorPlan.Guide key={guide.key} from={guide.from} to={guide.to} />
@@ -52,6 +52,7 @@ export const HallBuilderOverlay: FC = () => {
     measure === null ? null : (
       <KkFloorPlan.Measure from={measure.from} to={measure.to} label={measure.label} />
     );
+  const loupeRing = loupe === null ? null : <KkFloorPlan.Loupe x={loupe.x} y={loupe.y} />;
   const marqueeBox =
     marquee === null ? null : <KkFloorPlan.Marquee from={marquee.from} to={marquee.to} />;
 
@@ -65,6 +66,7 @@ export const HallBuilderOverlay: FC = () => {
       {vertices}
       {measureLine}
       {marqueeBox}
+      {loupeRing}
     </>
   );
 };

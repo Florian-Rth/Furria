@@ -7,9 +7,9 @@ import {
   STROKE,
   screenConstantAt,
 } from '../floor-plan-paint';
-import { useFloorPlanScale } from '../logic/floor-plan-context';
+import { useFloorPlanScale, useFloorPlanTouch } from '../logic/floor-plan-context';
 
-export type KkPlanHandleShape = 'square' | 'round';
+export type KkPlanHandleShape = 'square' | 'round' | 'knob';
 
 interface KkFloorPlanHandleProps {
   id: string;
@@ -19,15 +19,21 @@ interface KkFloorPlanHandleProps {
 }
 
 const HIT_PX = 22;
+const TOUCH_HIT_PX = 44;
+const TOUCH_MARK_PX = 16;
+const KNOB_MARK_PX = 24;
 
 export const KkFloorPlanHandle: FC<KkFloorPlanHandleProps> = ({ id, x, y, shape = 'square' }) => {
   const scale = useFloorPlanScale();
-  const half = PLAN_HANDLE_PX / 2;
+  const touch = useFloorPlanTouch();
+  const markPx = shape === 'knob' ? KNOB_MARK_PX : touch ? TOUCH_MARK_PX : PLAN_HANDLE_PX;
+  const hitPx = touch ? TOUCH_HIT_PX : HIT_PX;
+  const half = markPx / 2;
   const mark =
-    shape === 'round' ? (
-      <circle cx={0} cy={0} r={half} />
+    shape === 'square' ? (
+      <rect x={-half} y={-half} width={markPx} height={markPx} rx={2} />
     ) : (
-      <rect x={-half} y={-half} width={PLAN_HANDLE_PX} height={PLAN_HANDLE_PX} rx={2} />
+      <circle cx={0} cy={0} r={half} />
     );
   const attributes = { [PLAN_HANDLE_ATTRIBUTE]: id };
 
@@ -48,7 +54,7 @@ export const KkFloorPlanHandle: FC<KkFloorPlanHandleProps> = ({ id, x, y, shape 
         component="circle"
         cx={0}
         cy={0}
-        r={HIT_PX / 2}
+        r={hitPx / 2}
         sx={{ fill: 'transparent', stroke: 'none' }}
       />
       {mark}

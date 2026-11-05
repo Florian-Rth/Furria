@@ -9,6 +9,7 @@ import {
   groupRows,
   hitTestChair,
   hitTestRows,
+  hitTestRowsNear,
   numberPlan,
   patchChair,
   readingOrder,
@@ -225,6 +226,14 @@ describe('hit testing', () => {
     [{ x: 10, y: 200 }, null],
   ])('finds the row at %o', (at, expected) => {
     expect(hitTestRows(layouts, at)).toBe(expected);
+  });
+
+  it.each([
+    [{ x: 10, y: 200 }, 200, 'r1'],
+    [{ x: 10, y: 200 }, 10, null],
+    [{ x: 10, y: 10 }, 0, 'r1'],
+  ])('finds the row near %o within %i cm', (at, tolerance, expected) => {
+    expect(hitTestRowsNear(layouts, at, tolerance)).toBe(expected);
   });
 
   it('finds the nearest chair within reach', () => {

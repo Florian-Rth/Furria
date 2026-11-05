@@ -9,7 +9,7 @@ import {
   planPalette,
   STROKE,
 } from '../floor-plan-paint';
-import { useFloorPlanScale } from '../logic/floor-plan-context';
+import { useFloorPlanScale, useFloorPlanTouch } from '../logic/floor-plan-context';
 import { KkFloorPlanHandle } from './KkFloorPlanHandle';
 
 interface KkFloorPlanSelectionProps {
@@ -34,6 +34,7 @@ const RESIZE_HANDLES: readonly { id: KkPlanResizeHandle; x: number; y: number }[
 ];
 
 const FRAME_GAP_PX = 4;
+const KNOB_REACH_PX = 40;
 
 export const KkFloorPlanSelection: FC<KkFloorPlanSelectionProps> = ({
   x,
@@ -48,7 +49,9 @@ export const KkFloorPlanSelection: FC<KkFloorPlanSelectionProps> = ({
   const gap = FRAME_GAP_PX / scale;
   const halfWidth = widthCm / 2 + gap;
   const halfHeight = heightCm / 2 + gap;
+  const touch = useFloorPlanTouch();
   const reach = PLAN_ROTATE_REACH_PX / scale;
+  const knobReach = KNOB_REACH_PX / scale;
   const resizers = resizable
     ? RESIZE_HANDLES.map((handle) => (
         <KkFloorPlanHandle
@@ -59,12 +62,19 @@ export const KkFloorPlanSelection: FC<KkFloorPlanSelectionProps> = ({
         />
       ))
     : null;
-  const rotator = rotatable ? (
+  const desktopRotator = (
     <>
       <line x1={0} y1={-halfHeight} x2={0} y2={-halfHeight - reach} vectorEffect={NON_SCALING} />
       <KkFloorPlanHandle id={PLAN_ROTATE_HANDLE} x={0} y={-halfHeight - reach} shape="round" />
     </>
-  ) : null;
+  );
+  const touchRotator = (
+    <>
+      <line x1={0} y1={halfHeight} x2={0} y2={halfHeight + knobReach} vectorEffect={NON_SCALING} />
+      <KkFloorPlanHandle id={PLAN_ROTATE_HANDLE} x={0} y={halfHeight + knobReach} shape="knob" />
+    </>
+  );
+  const rotator = rotatable ? (touch ? touchRotator : desktopRotator) : null;
 
   return (
     <Box

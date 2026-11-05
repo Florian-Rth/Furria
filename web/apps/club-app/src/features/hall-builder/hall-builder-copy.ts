@@ -138,3 +138,25 @@ export const VENUE_HALLS_ADD_LABEL = 'Saal zeichnen';
 export const VENUE_HALLS_LOADING = 'Säle werden geladen …';
 
 export const toHallUpdatedMeta = (day: string): string => `geändert ${day}`;
+
+export const TOUCH_TOOL_LABELS: Record<HallTool, string> = {
+  select: 'Auswahl',
+  wall: 'Wand',
+  door: 'Tür',
+  area: 'Fläche',
+  pillar: 'Säule',
+  line: 'Linie',
+  text: 'Text',
+  measure: 'Messen',
+};
+
+export const ADD_LABEL = 'Hinzufügen';
+export const ADD_SHEET_CLOSE_LABEL = 'Schließen';
+export const DOCK_LABEL = 'Werkzeuge';
+export const ACTION_BAR_LABEL = 'Auswahl bearbeiten';
+export const MORE_LABEL = 'Mehr';
+export const ROTATE_LEFT_ACTION_LABEL = '15° nach links drehen';
+export const ROTATE_RIGHT_ACTION_LABEL = '15° nach rechts drehen';
+export const DROP_LAST_POINT_LABEL = 'Letzten Punkt weg';
+export const TOOL_DONE_LABEL = 'Fertig';
+export const TOOL_TRAY_LABEL = 'Aktives Werkzeug';

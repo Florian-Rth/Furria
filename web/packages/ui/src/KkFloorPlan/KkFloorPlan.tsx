@@ -11,6 +11,7 @@ import { KkFloorPlanGhost } from './internal/ui/KkFloorPlanGhost';
 import { KkFloorPlanGuide } from './internal/ui/KkFloorPlanGuide';
 import { KkFloorPlanHandle } from './internal/ui/KkFloorPlanHandle';
 import { KkFloorPlanLabel } from './internal/ui/KkFloorPlanLabel';
+import { KkFloorPlanLoupe } from './internal/ui/KkFloorPlanLoupe';
 import { KkFloorPlanMarkLine } from './internal/ui/KkFloorPlanMarkLine';
 import { KkFloorPlanMarquee } from './internal/ui/KkFloorPlanMarquee';
 import { KkFloorPlanMeasure } from './internal/ui/KkFloorPlanMeasure';
@@ -56,4 +57,5 @@ export const KkFloorPlan = Object.assign(KkFloorPlanRoot, {
   Guide: KkFloorPlanGuide,
   Marquee: KkFloorPlanMarquee,
   Ghost: KkFloorPlanGhost,
+  Loupe: KkFloorPlanLoupe,
 });

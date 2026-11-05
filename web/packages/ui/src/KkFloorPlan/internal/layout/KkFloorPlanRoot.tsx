@@ -19,6 +19,7 @@ interface KkFloorPlanRootProps extends PropsWithChildren {
   panning?: boolean;
   cursor?: KkPlanCursor;
   grid?: boolean;
+  touch?: boolean;
   onPlanPointerDown?: (event: KkPlanPointerEvent) => void;
   onPlanPointerMove?: (event: KkPlanPointerEvent) => void;
   onPlanPointerUp?: (event: KkPlanPointerEvent) => void;
@@ -40,6 +41,7 @@ export const KkFloorPlanRoot: FC<KkFloorPlanRootProps> = ({
   panning = false,
   cursor = 'default',
   grid = true,
+  touch = false,
   onPlanPointerDown,
   onPlanPointerMove,
   onPlanPointerUp,
@@ -68,7 +70,7 @@ export const KkFloorPlanRoot: FC<KkFloorPlanRootProps> = ({
   const viewBox = `${box.x} ${box.y} ${box.width} ${box.height}`;
   const gridLayer =
     grid && isMeasured ? <KkFloorPlanGrid box={box} scale={viewport.view.scale} /> : null;
-  const state = { scale: viewport.view.scale };
+  const state = { scale: viewport.view.scale, touch };
   const pointer = cursorOf(viewport.isPanning, viewport.isPanReady, cursor);
 
   return (

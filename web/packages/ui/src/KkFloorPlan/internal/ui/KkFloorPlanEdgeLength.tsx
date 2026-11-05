@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import type { KkPlanPoint } from '../../floor-plan-view';
 import { planMidpoint } from '../../floor-plan-view';
-import { useFloorPlanScale } from '../logic/floor-plan-context';
+import { useFloorPlanScale, useFloorPlanTouch } from '../logic/floor-plan-context';
 import { KkFloorPlanChip } from './KkFloorPlanChip';
 
 interface KkFloorPlanEdgeLengthProps {
@@ -11,7 +11,8 @@ interface KkFloorPlanEdgeLengthProps {
   label: string;
 }
 
-const OFFSET_PX = 16;
+const OFFSET_PX = 26;
+const TOUCH_OFFSET_PX = 40;
 
 export const KkFloorPlanEdgeLength: FC<KkFloorPlanEdgeLengthProps> = ({
   from,
@@ -21,7 +22,8 @@ export const KkFloorPlanEdgeLength: FC<KkFloorPlanEdgeLengthProps> = ({
 }) => {
   const scale = useFloorPlanScale();
   const middle = planMidpoint(from, to);
-  const reach = OFFSET_PX / scale;
+  const touch = useFloorPlanTouch();
+  const reach = (touch ? TOUCH_OFFSET_PX : OFFSET_PX) / scale;
 
   return (
     <KkFloorPlanChip

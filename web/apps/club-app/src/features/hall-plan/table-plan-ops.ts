@@ -5,6 +5,7 @@ import {
   boundsCenter,
   boundsOfPoints,
   distanceBetween,
+  gapBetween,
   isBoundsInside,
   isPointInShape,
   normalizeDegrees,
@@ -467,6 +468,23 @@ export const hitTestRows = (layouts: readonly RowLayout[], at: Point): string | 
   );
 
   return onChair?.rowId ?? null;
+};
+
+export const hitTestRowsNear = (
+  layouts: readonly RowLayout[],
+  at: Point,
+  tolerance: number,
+): string | null => {
+  const exact = hitTestRows(layouts, at);
+  if (exact !== null || tolerance <= 0) {
+    return exact;
+  }
+  const reach = { kind: 'circle', center: at, radius: tolerance } as const;
+  const near = [...layouts]
+    .reverse()
+    .find((layout) => layout.body.some((shape) => gapBetween(reach, shape).overlaps));
+
+  return near?.rowId ?? null;
 };
 
 export const hitTestChair = (

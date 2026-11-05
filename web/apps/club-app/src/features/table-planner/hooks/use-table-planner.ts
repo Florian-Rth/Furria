@@ -1,11 +1,22 @@
+import { panPlanBy } from '@furria/ui/floor-plan-view';
+import type { KkPlanPointerEvent } from '@furria/ui/KkFloorPlan';
 import { useIsMediumScreen } from '@furria/ui/use-is-medium-screen';
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { hallBounds } from '@/features/hall-plan/hall-ops';
 import { blockersOf } from '@/features/hall-plan/plan-blockers';
 import type { ClearanceFinding, FindingTally } from '@/features/hall-plan/plan-clearance';
 import { clearanceOf, tallyFindings } from '@/features/hall-plan/plan-clearance';
 import type { Bounds } from '@/features/hall-plan/plan-geometry';
-import { boundsFromCorners, unionBounds } from '@/features/hall-plan/plan-geometry';
+import { boundsFromCorners, padBounds, unionBounds } from '@/features/hall-plan/plan-geometry';
+import { thresholdInCm } from '@/features/hall-plan/plan-snap';
+import type { ActionBarAnchor, TouchTarget } from '@/features/hall-plan/plan-touch';
+import {
+  actionBarAnchorOf,
+  hitTolerancePxOf,
+  revealPanOf,
+  screenRectOf,
+  visibleRectOf,
+} from '@/features/hall-plan/plan-touch';
 import type {
   Point,
   SeatingResponse,
@@ -18,13 +29,25 @@ import type { SeatOffer, SeatRequestShape } from '@/features/hall-plan/seat-requ
 import { DEFAULT_TABLES_PER_ROW, seatOfferOf } from '@/features/hall-plan/seat-request';
 import type { PlanCounts, RowLayout } from '@/features/hall-plan/table-layout';
 import { layoutPlan, planCountsOf, tableTypesById } from '@/features/hall-plan/table-layout';
-import { layoutsBounds } from '@/features/hall-plan/table-plan-ops';
+import { layoutsBounds, selectionFor } from '@/features/hall-plan/table-plan-ops';
+import { usePlanTouchMode } from '@/features/hall-plan/use-plan-touch-mode';
+import type { PlanPointerHandlers, TouchStyle } from '@/features/hall-plan/use-touch-gestures';
+import { useTouchGestures } from '@/features/hall-plan/use-touch-gestures';
 import type { PlannerKeyCommand } from '../planner-keys';
 import type { PlannerScene } from '../planner-scene';
 import { plannerSceneOf } from '../planner-scene';
 import type { InspectorTarget, PlannerSelection } from '../planner-selection';
 import { inspectorTargetOf, NO_SELECTION, pruneSelection } from '../planner-selection';
 import type { PlannerTool, PlannerView } from '../planner-tools';
+import type { PlannerActionKind } from '../planner-touch';
+import {
+  actionBarWidthFor,
+  actionKindOf,
+  draggedPoint,
+  plannerTouchTargetOf,
+  selectionBoundsOf,
+  touchTargetBoundsOf,
+} from '../planner-touch';
 import type { PlanEditor } from './use-plan-editor';
 import { usePlanEditor } from './use-plan-editor';
 import type { PlannerCommands } from './use-planner-commands';
@@ -36,6 +59,15 @@ import type { PlannerViewport } from './use-planner-viewport';
 import { usePlannerViewport } from './use-planner-viewport';
 
 const EMPTY_HALL_BOUNDS: Bounds = { minX: 0, minY: 0, maxX: 2000, maxY: 1200 };
+const FOCUS_MARGIN_CM = 200;
+
+const touchStyleOf = (isTouch: boolean, tool: PlannerTool): TouchStyle =>
+  isTouch && (tool === 'select' || tool === 'table') ? 'tap' : 'off';
+
+interface SeatsDrag {
+  last: Point;
+  moved: boolean;
+}
 
 export type PlannerDrawer = 'inspector' | 'findings' | 'settings' | null;
 
@@ -85,6 +117,21 @@ export interface TablePlanner {
   openDrawer: (drawer: PlannerDrawer) => void;
   focusedFinding: string | null;
   focusFinding: (finding: ClearanceFinding) => void;
+  isTouch: boolean;
+  hasSideSheet: boolean;
+  usesBottomSheet: boolean;
+  input: PlanPointerHandlers;
+  loupe: Point | null;
+  actionBar: ActionBarAnchor | null;
+  actionKind: PlannerActionKind | null;
+  isAddSheetOpen: boolean;
+  openAddSheet: () => void;
+  closeAddSheet: () => void;
+  pickTool: (tool: PlannerTool) => void;
+  finishTool: () => void;
+  placeSeatsHere: () => void;
+  inspectSelection: () => void;
+  inspectPlan: () => void;
 }
 
 const contentBoundsOf = (plan: TablePlanResponse, layouts: readonly RowLayout[]): Bounds =>
@@ -96,6 +143,9 @@ export const useTablePlanner = (
   onConflict: () => void,
 ): TablePlanner => {
   const isDesk = useIsMediumScreen();
+  const touchMode = usePlanTouchMode();
+  const [isAddSheetOpen, setAddSheetOpen] = useState(false);
+  const seatsDrag = useRef<SeatsDrag | null>(null);
   const standard = seating.standard;
   const types = tableTypesById(seating.tableTypes);
   const blockers = blockersOf(plan.hall.document, standard);
@@ -144,7 +194,7 @@ export const useTablePlanner = (
     select,
     panBy: viewport.panBy,
     onTap: () => {
-      if (!isDesk) {
+      if (!isDesk && !touchMode.isTouch) {
         setDrawer('inspector');
       }
     },
@@ -182,6 +232,87 @@ export const useTablePlanner = (
     if (next !== 'measure') {
       pointer.clearMeasure();
     }
+    const centre = { x: viewport.view.centerX, y: viewport.view.centerY };
+    pointer.setHover(touchMode.isTouch && next === 'seats' ? centre : null);
+  };
+
+  const panBy = (deltaX: number, deltaY: number): void => {
+    viewport.setView(panPlanBy(viewport.view, deltaX, deltaY));
+  };
+  const zoomTo = (target: TouchTarget): void => {
+    const bounds = touchTargetBoundsOf(layouts, (rowId) => selectionFor(document, rowId), target);
+    if (bounds === null) {
+      viewport.fit();
+      return;
+    }
+    viewport.focus(padBounds(bounds, FOCUS_MARGIN_CM));
+  };
+  const hover = pointer.overlay.hover;
+  const seatsInput: PlanPointerHandlers = {
+    down: (event) => {
+      seatsDrag.current = { last: { x: event.x, y: event.y }, moved: false };
+    },
+    move: (event) => {
+      const drag = seatsDrag.current;
+      if (drag === null || hover === null) {
+        return;
+      }
+      pointer.setHover(draggedPoint(hover, drag.last, event));
+      seatsDrag.current = { last: { x: event.x, y: event.y }, moved: true };
+    },
+    up: (event: KkPlanPointerEvent) => {
+      if (seatsDrag.current?.moved === false) {
+        pointer.setHover({ x: event.x, y: event.y });
+      }
+      seatsDrag.current = null;
+    },
+    cancel: () => {
+      seatsDrag.current = null;
+    },
+  };
+  const usesSeatsInput = touchMode.isTouch && tool === 'seats';
+  const touch = useTouchGestures({
+    style: touchStyleOf(touchMode.isTouch, tool),
+    canSelect: tool === 'select',
+    scale: viewport.view.scale,
+    targetOf: (event) =>
+      plannerTouchTargetOf(layouts, selection, {
+        handleId: event.handleId,
+        targetId: event.targetId,
+        at: event,
+        view,
+        tool,
+        toleranceCm: thresholdInCm(hitTolerancePxOf(true), viewport.view.scale),
+      }),
+    forward: usesSeatsInput ? seatsInput : pointer,
+    panBy,
+    zoomTo,
+  });
+
+  const target = inspectorTargetOf(document, selection);
+  const actionKind = actionKindOf(target);
+  const size = viewport.size;
+  const isMeasured = size.width > 0 && size.height > 0;
+  const selectedBounds = selectionBoundsOf(layouts, selection);
+  const selectedRect =
+    selectedBounds === null || !isMeasured
+      ? null
+      : screenRectOf(selectedBounds, viewport.view, size);
+  const actionBar =
+    touchMode.isTouch && tool === 'select' && actionKind !== null && selectedRect !== null
+      ? actionBarAnchorOf(selectedRect, size, actionBarWidthFor(actionKind))
+      : null;
+  const usesBottomSheet = touchMode.isTouch ? !touchMode.hasSideSheet : !isDesk;
+  const inspectSelection = (): void => {
+    setDrawer('inspector');
+    if (selectedRect === null) {
+      return;
+    }
+    const shift = revealPanOf(
+      selectedRect,
+      visibleRectOf(size, touchMode.hasSideSheet ? 'side' : 'bottom'),
+    );
+    panBy(shift.x, shift.y);
   };
 
   const runKey = (command: PlannerKeyCommand): void => {
@@ -276,7 +407,7 @@ export const useTablePlanner = (
     seatOffer: seatOfferAt({ x: 0, y: 0 }),
     selection,
     select,
-    target: inspectorTargetOf(document, selection),
+    target,
     pointer,
     viewport,
     commands,
@@ -284,6 +415,41 @@ export const useTablePlanner = (
     drawer,
     openDrawer: setDrawer,
     focusedFinding,
+    isTouch: touchMode.isTouch,
+    hasSideSheet: touchMode.hasSideSheet,
+    usesBottomSheet,
+    input: touchMode.isTouch ? touch : pointer,
+    loupe: touch.loupe,
+    actionBar,
+    actionKind,
+    isAddSheetOpen,
+    openAddSheet: () => {
+      setAddSheetOpen(true);
+    },
+    closeAddSheet: () => {
+      setAddSheetOpen(false);
+    },
+    pickTool: (next) => {
+      changeTool(next);
+      setSelection(NO_SELECTION);
+      if (next !== 'seats') {
+        setAddSheetOpen(false);
+      }
+    },
+    finishTool: () => {
+      changeTool('select');
+    },
+    placeSeatsHere: () => {
+      if (hover !== null) {
+        pointer.placeSeatsAt(hover);
+        changeTool('select');
+      }
+    },
+    inspectSelection,
+    inspectPlan: () => {
+      setSelection(NO_SELECTION);
+      setDrawer('inspector');
+    },
     focusFinding: (finding) => {
       setFocusedFinding(finding.key);
       viewport.focus(boundsFromCorners(finding.from, finding.to));

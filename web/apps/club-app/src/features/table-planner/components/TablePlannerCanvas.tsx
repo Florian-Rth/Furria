@@ -30,10 +30,12 @@ export const TablePlannerCanvas: FC = () => {
       view={planner.viewport.view}
       onViewChange={planner.viewport.setView}
       cursor={CURSORS[planner.tool]}
-      onPlanPointerDown={planner.pointer.down}
-      onPlanPointerMove={planner.pointer.move}
-      onPlanPointerUp={planner.pointer.up}
-      onPlanPointerCancel={planner.pointer.cancel}
+      touch={planner.isTouch}
+      onViewportResize={planner.viewport.setSize}
+      onPlanPointerDown={planner.input.down}
+      onPlanPointerMove={planner.input.move}
+      onPlanPointerUp={planner.input.up}
+      onPlanPointerCancel={planner.input.cancel}
       onPlanDoubleClick={planner.pointer.doubleClick}
     >
       {hall}

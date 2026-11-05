@@ -1,4 +1,4 @@
-import type { KkPlanView } from '@furria/ui/floor-plan-view';
+import type { KkPlanView, KkPlanViewportSize } from '@furria/ui/floor-plan-view';
 import { DEFAULT_PLAN_VIEW, panPlanBy } from '@furria/ui/floor-plan-view';
 import type { KkFloorPlanHandle, KkPlanPointerEvent } from '@furria/ui/KkFloorPlan';
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
@@ -7,12 +7,16 @@ import type { RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
 import {
   duplicateElements,
+  elementBounds,
+  findElement,
   hallBounds,
+  hitTestHall,
   mergeAreas,
   moveElements,
   removeElements,
   replaceElement,
   rotateElements,
+  selectionBounds,
 } from '@/features/hall-plan/hall-ops';
 import type { Bounds } from '@/features/hall-plan/plan-geometry';
 import { padBounds } from '@/features/hall-plan/plan-geometry';
@@ -26,12 +30,27 @@ import {
   redo,
   undo,
 } from '@/features/hall-plan/plan-history';
+import { thresholdInCm } from '@/features/hall-plan/plan-snap';
+import type { ActionBarAnchor, TouchTarget } from '@/features/hall-plan/plan-touch';
+import {
+  actionBarAnchorOf,
+  actionBarWidthOf,
+  hitTolerancePxOf,
+  revealPanOf,
+  screenRectOf,
+  touchTargetOf,
+  visibleRectOf,
+} from '@/features/hall-plan/plan-touch';
 import type {
   AreaKind,
   HallDetails,
   HallDocument,
   HallElement,
+  Point,
 } from '@/features/hall-plan/schemas';
+import { usePlanTouchMode } from '@/features/hall-plan/use-plan-touch-mode';
+import type { TouchStyle } from '@/features/hall-plan/use-touch-gestures';
+import { useTouchGestures } from '@/features/hall-plan/use-touch-gestures';
 import type { AreaMergeState } from '../hall-area-merge';
 import { areaMergeStateOf, selectedAreaCountOf } from '../hall-area-merge';
 import type { HallTool } from '../hall-builder-tools';
@@ -39,6 +58,7 @@ import { isHallTool } from '../hall-builder-tools';
 import type { GestureContext, GesturePointer, GestureResult, HallDraft } from '../hall-gesture';
 import {
   doubleClick,
+  dropLastPoint,
   finishPolyline,
   IDLE_DRAFT,
   pointerCancel,
@@ -56,7 +76,21 @@ import { useHallKeyboard } from './use-hall-keyboard';
 
 const EMPTY_HALL_BOUNDS: Bounds = { minX: 0, minY: 0, maxX: 2000, maxY: 1500 };
 const FIT_MARGIN_CM = 100;
+const FOCUS_MARGIN_CM = 300;
 const ROTATE_STEP_DEGREES = 15;
+const ACTION_BUTTONS = 5;
+const UNMEASURED: KkPlanViewportSize = { width: 0, height: 0 };
+
+const touchStyleOf = (isTouch: boolean, tool: HallTool): TouchStyle => {
+  if (!isTouch) {
+    return 'off';
+  }
+  if (tool === 'wall' || tool === 'line') {
+    return 'polyline';
+  }
+
+  return tool === 'select' || tool === 'pillar' || tool === 'text' ? 'tap' : 'off';
+};
 
 export interface HallBuilder {
   hall: HallDetails;
@@ -74,7 +108,21 @@ export interface HallBuilder {
   canUndo: boolean;
   canRedo: boolean;
   isPhone: boolean;
+  isTouch: boolean;
+  hasSideSheet: boolean;
+  usesBottomSheet: boolean;
   isInspectorOpen: boolean;
+  isAddSheetOpen: boolean;
+  actionBar: ActionBarAnchor | null;
+  loupe: Point | null;
+  setViewportSize: (size: KkPlanViewportSize) => void;
+  openAddSheet: () => void;
+  closeAddSheet: () => void;
+  pickTool: (tool: HallTool) => void;
+  finishTool: () => void;
+  dropLastPoint: () => void;
+  inspectSelection: () => void;
+  inspectHall: () => void;
   chooseTool: (tool: string) => void;
   changeView: (view: KkPlanView) => void;
   rename: (name: string) => void;
@@ -84,7 +132,7 @@ export interface HallBuilder {
   down: (event: KkPlanPointerEvent) => void;
   move: (event: KkPlanPointerEvent) => void;
   up: (event: KkPlanPointerEvent) => void;
-  cancel: () => void;
+  cancel: (event: KkPlanPointerEvent) => void;
   doubleClick: () => void;
   finishDraft: () => void;
   dropDraft: () => void;
@@ -118,6 +166,9 @@ export const useHallBuilder = (
   onConflict: () => void,
 ): HallBuilder => {
   const isPhone = useIsMobile();
+  const touchMode = usePlanTouchMode();
+  const [viewportSize, setViewportSize] = useState<KkPlanViewportSize>(UNMEASURED);
+  const [isAddSheetOpen, setAddSheetOpen] = useState(false);
   const [history, setHistory] = useState<PlanHistory<HallDocument>>(() =>
     createHistory(hall.document),
   );
@@ -147,6 +198,7 @@ export const useHallBuilder = (
     tool,
     scale: view.scale,
     areaKind,
+    hitTolerancePx: hitTolerancePxOf(touchMode.isTouch),
   };
 
   const apply = (next: HallDocument, coalesceKey: string | null = null): void => {
@@ -267,6 +319,86 @@ export const useHallBuilder = (
 
   const preview = previewDocument(present, draft);
 
+  const rawDown = (event: KkPlanPointerEvent): void => {
+    setHistory(endCoalescing);
+    settle(pointerDown(context, draft, pointerOf(event)));
+  };
+  const rawMove = (event: KkPlanPointerEvent): void => {
+    if (draft.kind !== 'idle') {
+      settle(pointerMove(context, draft, pointerOf(event)));
+    }
+  };
+  const rawUp = (): void => {
+    settle(pointerUp(context, draft));
+  };
+  const rawCancel = (): void => {
+    setDraft(pointerCancel(draft));
+  };
+  const panBy = (deltaX: number, deltaY: number): void => {
+    setView((current) => panPlanBy(current, deltaX, deltaY));
+  };
+  const focusOn = (target: TouchTarget): void => {
+    const element = target.id === null ? null : findElement(present, target.id);
+    if (element === null) {
+      fit();
+      return;
+    }
+    planRef.current?.fit(padBounds(elementBounds(element), FOCUS_MARGIN_CM));
+  };
+  const touch = useTouchGestures({
+    style: touchStyleOf(touchMode.isTouch, tool),
+    canSelect: tool === 'select',
+    scale: view.scale,
+    targetOf: (event) =>
+      tool === 'select'
+        ? touchTargetOf(
+            event.handleId,
+            hitTestHall(present, event, thresholdInCm(context.hitTolerancePx, view.scale)),
+            (id) => selection.includes(id),
+          )
+        : touchTargetOf(null, null, () => false),
+    forward: { down: rawDown, move: rawMove, up: rawUp, cancel: rawCancel },
+    panBy,
+    zoomTo: focusOn,
+  });
+
+  const mergeState = areaMergeStateOf(merge);
+  const selectedBounds = selectionBounds(present, selection);
+  const isMeasured = viewportSize.width > 0 && viewportSize.height > 0;
+  const showsActionBar =
+    touchMode.isTouch &&
+    tool === 'select' &&
+    draft.kind === 'idle' &&
+    selectedBounds !== null &&
+    isMeasured;
+  const selectedRect =
+    selectedBounds === null ? null : screenRectOf(selectedBounds, view, viewportSize);
+  const actionBar =
+    showsActionBar && selectedRect !== null
+      ? actionBarAnchorOf(
+          selectedRect,
+          viewportSize,
+          actionBarWidthOf(ACTION_BUTTONS + (mergeState === 'hidden' ? 0 : 1), 0),
+        )
+      : null;
+  const usesBottomSheet = touchMode.isTouch ? !touchMode.hasSideSheet : isPhone;
+  const inspectSelection = (): void => {
+    setInspectorOpen(true);
+    if (selectedRect === null || !isMeasured) {
+      return;
+    }
+    const shift = revealPanOf(
+      selectedRect,
+      visibleRectOf(viewportSize, touchMode.hasSideSheet ? 'side' : 'bottom'),
+    );
+    panBy(shift.x, shift.y);
+  };
+  const pickTool = (next: HallTool): void => {
+    chooseTool(next);
+    setAddSheetOpen(false);
+    setSelection([]);
+  };
+
   return {
     hall,
     origin,
@@ -283,7 +415,33 @@ export const useHallBuilder = (
     canUndo: canUndo(history),
     canRedo: canRedo(history),
     isPhone,
+    isTouch: touchMode.isTouch,
+    hasSideSheet: touchMode.hasSideSheet,
+    usesBottomSheet,
     isInspectorOpen,
+    isAddSheetOpen,
+    actionBar,
+    loupe: touch.loupe,
+    setViewportSize,
+    openAddSheet: () => {
+      setAddSheetOpen(true);
+    },
+    closeAddSheet: () => {
+      setAddSheetOpen(false);
+    },
+    pickTool,
+    finishTool: () => {
+      settle(finishPolyline(present, draft));
+      setTool('select');
+    },
+    dropLastPoint: () => {
+      setDraft(dropLastPoint(draft));
+    },
+    inspectSelection,
+    inspectHall: () => {
+      setSelection([]);
+      setInspectorOpen(true);
+    },
     chooseTool,
     changeView: setView,
     rename: setName,
@@ -294,21 +452,10 @@ export const useHallBuilder = (
       setHistory(redo);
     },
     fit,
-    down: (event) => {
-      setHistory(endCoalescing);
-      settle(pointerDown(context, draft, pointerOf(event)));
-    },
-    move: (event) => {
-      if (draft.kind !== 'idle') {
-        settle(pointerMove(context, draft, pointerOf(event)));
-      }
-    },
-    up: () => {
-      settle(pointerUp(context, draft));
-    },
-    cancel: () => {
-      setDraft(pointerCancel(draft));
-    },
+    down: touch.down,
+    move: touch.move,
+    up: touch.up,
+    cancel: touch.cancel,
     doubleClick: () => {
       settle(doubleClick(context, draft));
     },
@@ -319,7 +466,7 @@ export const useHallBuilder = (
       setDraft(IDLE_DRAFT);
     },
     updateElement,
-    areaMerge: areaMergeStateOf(merge),
+    areaMerge: mergeState,
     mergeSelectedAreas,
     deleteSelection,
     duplicateSelection,

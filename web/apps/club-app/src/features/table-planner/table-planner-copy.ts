@@ -204,3 +204,37 @@ export const TYPE_REMOVE_LABEL = 'Entfernen';
 export const TYPE_EDIT_LABEL = 'Bearbeiten';
 export const STANDARD_INVALID = 'Bitte ganze Zahlen von 10 bis 500; maximal nicht mehr als bequem.';
 export const TYPE_INVALID = 'Bitte Name und Maße (30 bis 1000 cm) angeben.';
+
+export const TOUCH_TOOL_LABELS: Record<PlannerTool, string> = {
+  select: 'Auswahl',
+  table: 'Tisch',
+  row: 'Tischreihe',
+  seats: 'Für X Personen',
+  measure: 'Messen',
+};
+
+export const TOUCH_TOOL_HINTS: Record<PlannerTool, string> = {
+  select: '',
+  table: 'Tippen stellt einen Tisch',
+  row: 'Ziehen legt eine Reihe',
+  seats: 'Tische für eine Zahl Gäste',
+  measure: '',
+};
+
+export const ADD_LABEL = 'Hinzufügen';
+export const ADD_CLOSE = 'Schließen';
+export const DOCK_LABEL = 'Werkzeuge';
+export const ACTION_BAR_LABEL = 'Auswahl bearbeiten';
+export const MORE_LABEL = 'Mehr';
+export const LESS_TABLE_LABEL = 'Ein Tisch weniger';
+export const MORE_TABLE_LABEL = 'Ein Tisch mehr';
+export const TABLE_COUNT_READOUT_LABEL = 'Tische in der Reihe';
+export const TOOL_DONE_LABEL = 'Fertig';
+export const TOOL_TRAY_LABEL = 'Aktives Werkzeug';
+export const PLACE_SEATS_LABEL = 'Hier hinstellen';
+export const SEATS_CONTINUE_LABEL = 'Weiter';
+export const TOUCH_SEATS_HINT = 'Die Vorschau sitzt in der Mitte. Zieh sie an ihren Platz.';
+export const PLAN_FACTS_LABEL = 'Plan';
+export const MEASURE_CLEAR_LABEL = 'Maß löschen';
+export const CHAIR_NUMBER_ACTION = 'Nummer';
+export const CHAIR_NOTE_ACTION = 'Notiz';

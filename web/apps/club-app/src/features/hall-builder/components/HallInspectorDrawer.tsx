@@ -10,7 +10,7 @@ import { HallInspectorBody } from './HallInspectorBody';
 
 export const HallInspectorDrawer: FC = () => {
   const builder = useHallBuilderContext();
-  const open = builder.isPhone && builder.isInspectorOpen;
+  const open = builder.usesBottomSheet && builder.isInspectorOpen;
   const label = builder.selection.length > 0 ? INSPECT_SELECTION_LABEL : INSPECT_HALL_LABEL;
 
   return (

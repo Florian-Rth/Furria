@@ -91,6 +91,7 @@ import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
 import QrCode2OutlinedIcon from '@mui/icons-material/QrCode2Outlined';
 import RedoOutlinedIcon from '@mui/icons-material/RedoOutlined';
 import RemoveOutlinedIcon from '@mui/icons-material/RemoveOutlined';
+import RotateLeftOutlinedIcon from '@mui/icons-material/RotateLeftOutlined';
 import RotateRightOutlinedIcon from '@mui/icons-material/RotateRightOutlined';
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
@@ -233,6 +234,7 @@ export type KkIconName =
   | 'fit'
   | 'pan'
   | 'rotate'
+  | 'rotateLeft'
   | 'chair'
   | 'note'
   | 'groupTables'
@@ -366,6 +368,7 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   fit: FitScreenOutlinedIcon,
   pan: PanToolOutlinedIcon,
   rotate: RotateRightOutlinedIcon,
+  rotateLeft: RotateLeftOutlinedIcon,
   chair: ChairOutlinedIcon,
   note: StickyNote2OutlinedIcon,
   groupTables: WorkspacesOutlinedIcon,

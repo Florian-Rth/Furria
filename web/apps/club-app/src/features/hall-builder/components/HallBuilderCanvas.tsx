@@ -25,6 +25,8 @@ export const HallBuilderCanvas: FC = () => {
       view={builder.view}
       onViewChange={builder.changeView}
       cursor={cursor}
+      touch={builder.isTouch}
+      onViewportResize={builder.setViewportSize}
       onPlanPointerDown={builder.down}
       onPlanPointerMove={builder.move}
       onPlanPointerUp={builder.up}

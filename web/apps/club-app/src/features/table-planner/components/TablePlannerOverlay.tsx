@@ -59,6 +59,8 @@ export const TablePlannerOverlay: FC = () => {
       </KkFloorPlan.Ghost>
     );
   const readout = overlay.draw === null ? null : <TablePlannerDrawReadout />;
+  const loupe =
+    planner.loupe === null ? null : <KkFloorPlan.Loupe x={planner.loupe.x} y={planner.loupe.y} />;
 
   return (
     <>
@@ -69,6 +71,7 @@ export const TablePlannerOverlay: FC = () => {
       {readout}
       {marquee}
       {measureMark}
+      {loupe}
     </>
   );
 };

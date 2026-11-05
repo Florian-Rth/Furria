@@ -1,4 +1,4 @@
-import type { KkPlanView } from '@furria/ui/floor-plan-view';
+import type { KkPlanView, KkPlanViewportSize } from '@furria/ui/floor-plan-view';
 import { DEFAULT_PLAN_VIEW, panPlanBy } from '@furria/ui/floor-plan-view';
 import type { KkFloorPlanHandle } from '@furria/ui/KkFloorPlan';
 import type { RefObject } from 'react';
@@ -12,6 +12,8 @@ export interface PlannerViewport {
   ref: RefObject<KkFloorPlanHandle | null>;
   view: KkPlanView;
   setView: (view: KkPlanView) => void;
+  size: KkPlanViewportSize;
+  setSize: (size: KkPlanViewportSize) => void;
   panBy: (deltaXPx: number, deltaYPx: number) => void;
   fit: () => void;
   focus: (bounds: Bounds) => void;
@@ -20,6 +22,7 @@ export interface PlannerViewport {
 export const usePlannerViewport = (contentBounds: Bounds | null): PlannerViewport => {
   const ref = useRef<KkFloorPlanHandle | null>(null);
   const [view, setView] = useState<KkPlanView>(DEFAULT_PLAN_VIEW);
+  const [size, setSize] = useState<KkPlanViewportSize>({ width: 0, height: 0 });
   const fit = (): void => {
     if (contentBounds !== null) {
       ref.current?.fit(contentBounds);
@@ -35,6 +38,8 @@ export const usePlannerViewport = (contentBounds: Bounds | null): PlannerViewpor
     ref,
     view,
     setView,
+    size,
+    setSize,
     panBy: (deltaXPx, deltaYPx) => {
       setView((current) => panPlanBy(current, deltaXPx, deltaYPx));
     },

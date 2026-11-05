@@ -92,6 +92,8 @@ export interface PlannerPointer {
   cancel: () => void;
   doubleClick: (event: KkPlanPointerEvent) => void;
   clearMeasure: () => void;
+  setHover: (point: Point | null) => void;
+  placeSeatsAt: (point: Point) => void;
 }
 
 interface PointerInput {
@@ -270,14 +272,18 @@ export const usePlannerPointer = ({
     }
   };
 
-  const placeSeats = (event: KkPlanPointerEvent): void => {
-    const offer = seatOfferAt(placementPointOf(event, event.altKey));
+  const placeSeatsAt = (point: Point, free = false): void => {
+    const offer = seatOfferAt(placementPointOf(point, free));
     if (offer === null) {
       return;
     }
-    const rows = settledRows(offer.rows, event.altKey);
+    const rows = settledRows(offer.rows, free);
     editor.apply(withSeatOffer(document, { ...offer, rows }));
     select(rowsSelection(rows.map((row) => row.id)));
+  };
+
+  const placeSeats = (event: KkPlanPointerEvent): void => {
+    placeSeatsAt(event, event.altKey);
   };
 
   const down = (event: KkPlanPointerEvent): void => {
@@ -514,6 +520,12 @@ export const usePlannerPointer = ({
     doubleClick,
     clearMeasure: () => {
       setOverlay((now) => ({ ...now, measure: null }));
+    },
+    setHover: (point) => {
+      setOverlay((now) => ({ ...now, hover: point }));
+    },
+    placeSeatsAt: (point) => {
+      placeSeatsAt(point);
     },
   };
 };

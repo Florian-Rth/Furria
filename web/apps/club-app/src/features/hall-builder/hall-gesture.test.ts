@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import type { HallDocument, Point } from '@/features/hall-plan/schemas';
 import type { GestureContext, GesturePointer, HallDraft } from './hall-gesture';
 import {
+  dropLastPoint,
   finishPolyline,
   IDLE_DRAFT,
   pointerCancel,
@@ -36,6 +37,7 @@ const contextOf = (overrides: Partial<GestureContext>): GestureContext => ({
   tool: 'select',
   scale: 1,
   areaKind: 'bar',
+  hitTolerancePx: 8,
   ...overrides,
 });
 
@@ -277,5 +279,22 @@ describe('vertexIndexOf', () => {
     { handle: 'vertex:x', expected: null },
   ])('reads $handle', ({ handle, expected }) => {
     expect(vertexIndexOf(handle)).toBe(expected);
+  });
+});
+
+describe('dropLastPoint', () => {
+  it.each([
+    [
+      [
+        { x: 0, y: 0 },
+        { x: 100, y: 0 },
+      ],
+      { kind: 'polyline', tool: 'wall', points: [{ x: 0, y: 0 }], cursor: { x: 0, y: 0 } },
+    ],
+    [[{ x: 0, y: 0 }], IDLE_DRAFT],
+  ])('drops the last of %o', (points, expected) => {
+    const draft: HallDraft = { kind: 'polyline', tool: 'wall', points, cursor: { x: 5, y: 5 } };
+
+    expect(dropLastPoint(draft)).toEqual(expected);
   });
 });

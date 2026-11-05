@@ -7,7 +7,7 @@ import { TablePlannerInspector } from './TablePlannerInspector';
 
 export const TablePlannerInspectorDrawer: FC = () => {
   const planner = useTablePlannerContext();
-  const open = !planner.isDesk && planner.drawer === 'inspector';
+  const open = planner.usesBottomSheet && planner.drawer === 'inspector';
   const close = (): void => {
     planner.openDrawer(null);
   };

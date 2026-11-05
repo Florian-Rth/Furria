@@ -75,6 +75,7 @@ export interface GestureContext {
   tool: HallTool;
   scale: number;
   areaKind: AreaKind;
+  hitTolerancePx: number;
 }
 
 export interface GesturePointer {
@@ -239,7 +240,11 @@ const selectDown = (context: GestureContext, pointer: GesturePointer): GestureRe
   if (vertexIndex !== null && only !== undefined && selection.length === 1) {
     return { draft: { kind: 'vertex', elementId: only, vertexIndex, at: pointer.at } };
   }
-  const hit = hitTestHall(document, pointer.at, toleranceOf(context.scale));
+  const hit = hitTestHall(
+    document,
+    pointer.at,
+    thresholdInCm(context.hitTolerancePx, context.scale),
+  );
   if (hit !== null && pointer.shiftKey) {
     const toggled = selection.includes(hit)
       ? selection.filter((id) => id !== hit)
@@ -541,6 +546,16 @@ export const pointerCancel = (draft: HallDraft): HallDraft => {
     default:
       return IDLE_DRAFT;
   }
+};
+
+export const dropLastPoint = (draft: HallDraft): HallDraft => {
+  if (draft.kind !== 'polyline') {
+    return draft;
+  }
+  const points = draft.points.slice(0, -1);
+  const last = points.at(-1);
+
+  return last === undefined ? IDLE_DRAFT : { ...draft, points, cursor: last };
 };
 
 export const doubleClick = (context: GestureContext, draft: HallDraft): GestureResult =>
