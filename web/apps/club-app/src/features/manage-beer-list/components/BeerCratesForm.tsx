@@ -3,6 +3,7 @@ import { KkNumberField } from '@furria/ui/KkNumberField';
 import { KkSelectField } from '@furria/ui/KkSelectField';
 import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import type { FC } from 'react';
+import type { WriteLanding } from '@/features/write/landing-target';
 import type { BeerBookable } from '../beer-hub';
 import {
   bookableLabelOf,
@@ -23,6 +24,7 @@ interface BeerCratesFormProps {
   bookable: readonly BeerBookable[];
   initialPersonId: number | null;
   stock: number;
+  landing: WriteLanding;
 }
 
 const optionOf = (entry: BeerBookable): { value: string; label: string } => ({
@@ -37,12 +39,14 @@ export const BeerCratesForm: FC<BeerCratesFormProps> = ({
   bookable,
   initialPersonId,
   stock,
+  landing,
 }) => {
   const form = useCratesForm({
     beerPotId,
     candidates: bookable.map(personOf),
     initialPersonId,
     stock,
+    landing,
   });
   const options = bookable.map(optionOf);
   const buttonLabel = crateButtonOf(form.count, firstNameOf(form.person), form.paid);

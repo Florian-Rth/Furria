@@ -2,6 +2,7 @@ import type { FC } from 'react';
 import type { StartBoard } from '../hooks/use-start-view';
 import type { BoardPanel } from '../schemas';
 import { AnnouncementsTile } from './AnnouncementsTile';
+import { BeerDeskTile } from './BeerDeskTile';
 import { BeerTabTile } from './BeerTabTile';
 import { CalendarTile } from './CalendarTile';
 import { GalleryTile } from './GalleryTile';
@@ -38,6 +39,9 @@ export const PanelTile: FC<TileOfProps> = ({ panel, board, order }) => {
   }
   if (panel.kind === 'beerTab') {
     return <BeerTabTile panel={panel} board={board} order={order} />;
+  }
+  if (panel.kind === 'beerDesk') {
+    return <BeerDeskTile panel={panel} order={order} />;
   }
   if (panel.kind === 'practice') {
     return <PracticeTile panel={panel} order={order} />;

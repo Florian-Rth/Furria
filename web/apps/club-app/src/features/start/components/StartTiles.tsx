@@ -2,9 +2,11 @@ import Box from '@mui/material/Box';
 import Grid from '@mui/material/Grid';
 import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';
+import { beerDeskOf } from '../beer-desk-tile';
 import { useStartMosaic } from '../hooks/use-start-mosaic';
 import type { StartBoard } from '../hooks/use-start-view';
 import { AnnouncementsSheet } from './AnnouncementsSheet';
+import { BeerCratesSheet } from './BeerCratesSheet';
 import { CalendarSheet } from './CalendarSheet';
 import { EntrySheet } from './EntrySheet';
 import { OwedSheet } from './OwedSheet';
@@ -28,6 +30,9 @@ interface StartTilesProps {
 
 export const StartTiles: FC<StartTilesProps> = ({ board, focusedDay, strip }) => {
   const mosaic = useStartMosaic(board);
+  const beerDesk = beerDeskOf(board.panels);
+  const beerCratesSheet =
+    beerDesk === null ? null : <BeerCratesSheet beerPotId={beerDesk.beerPotId} />;
 
   const stripCell =
     strip === null ? null : (
@@ -75,6 +80,7 @@ export const StartTiles: FC<StartTilesProps> = ({ board, focusedDay, strip }) =>
       <PanelLinesSheet kind="groups" board={board} />
       <OwedSheet board={board} />
       <PracticeSheet board={board} />
+      {beerCratesSheet}
     </>
   );
 };

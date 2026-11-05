@@ -213,9 +213,17 @@ export const StartPracticePanelSchema = z.object({
 });
 export type StartPracticePanel = z.infer<typeof StartPracticePanelSchema>;
 
+export const StartBeerDeskPanelSchema = z.object({
+  kind: z.literal('beerDesk'),
+  ...Base,
+  beerPotId: z.int().positive(),
+});
+export type StartBeerDeskPanel = z.infer<typeof StartBeerDeskPanelSchema>;
+
 export const BoardPanelSchema = z.discriminatedUnion('kind', [
   ...StartPanelSchema.options,
   StartPracticePanelSchema,
+  StartBeerDeskPanelSchema,
 ]);
 export type BoardPanel = z.infer<typeof BoardPanelSchema>;
 

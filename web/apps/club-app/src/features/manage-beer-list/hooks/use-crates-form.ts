@@ -1,9 +1,9 @@
 import { useController } from 'react-hook-form';
 import { useWriteForm } from '@/features/write/hooks/use-write-form';
+import type { WriteLanding } from '@/features/write/landing-target';
 import type { PersonRef } from '@/lib/api/schemas';
 import { useBeerCratesForMutation } from '../api';
 import { countOfText } from '../beer-hub';
-import { HUB_LANDING } from '../beer-landing';
 import type { BeerWriteState } from '../form-fields';
 import { touchingChangeOf, writeStateOf } from '../form-fields';
 import { beerCratesFormSchema } from '../schemas';
@@ -30,6 +30,7 @@ export interface CratesFormSource {
   candidates: readonly PersonRef[];
   initialPersonId: number | null;
   stock: number;
+  landing: WriteLanding;
 }
 
 const initialPersonOf = (source: CratesFormSource): string =>
@@ -53,7 +54,7 @@ export const useCratesForm = (source: CratesFormSource): CratesForm => {
 
       return booking.mutateAsync({ ...booked, name });
     },
-    landing: () => HUB_LANDING,
+    landing: () => source.landing,
   });
   const personField = useController({ control: write.form.control, name: 'personId' });
   const countField = useController({ control: write.form.control, name: 'count' });

@@ -93,6 +93,9 @@ export const weightOf = (panel: BoardPanel, countersPerRow: number = COUNTERS_PE
   if (panel.kind === 'beerTab') {
     return HEAD_WEIGHT + panel.beerTabs.length * ROW_WEIGHT;
   }
+  if (panel.kind === 'beerDesk') {
+    return HEAD_WEIGHT + ROW_WEIGHT;
+  }
   if (panel.kind === 'practice') {
     return (
       HEAD_WEIGHT +
