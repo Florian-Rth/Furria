@@ -8,6 +8,6 @@ export const HeroIntro: FC = () => (
     <Box component="span" sx={{ color: 'text.primary', fontWeight: 700 }}>
       Großfurra
     </Box>{' '}
-    zur fünften Jahreszeit ein — mit Herz, seit Generationen.
+    zur fünften Jahreszeit ein — seit Generationen.
   </Typography>
 );
