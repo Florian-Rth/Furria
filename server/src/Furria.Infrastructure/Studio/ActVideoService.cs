@@ -25,6 +25,9 @@ public sealed class ActVideoService
     private const string MusicDevelopingMessage = "Die Musik wird noch ausgewertet.";
     private const string NoMatchMessage =
         "Im Ton des Videos wurde die Musik nicht gefunden. Lege es von Hand an.";
+    private const string ClipPastEndMessage = "Das Ende liegt hinter dem Ende des Videos.";
+    private const string SplitTooShortMessage =
+        "Beide Teile des Videos müssen mindestens eine halbe Sekunde lang bleiben.";
 
     private readonly AppDbContext _dbContext;
     private readonly ActStudioGate _gate;
@@ -57,10 +60,7 @@ public sealed class ActVideoService
             return Result<int>.NotFound(UnknownVideoFileMessage);
         if (await _dbContext.ActVideos.AnyAsync(row => row.MediaItemId == command.MediaItemId, ct))
             return Result<int>.Conflict(VideoTwiceMessage);
-        if (
-            await _dbContext.ActVideos.CountAsync(row => row.ActId == command.ActId, ct)
-            >= ActVideo.MostPerAct
-        )
+        if (await IsShelfFullAsync(command.ActId, ct))
             return Result<int>.Conflict(FullShelfMessage);
 
         var video = new ActVideo { ActId = command.ActId, MediaItemId = command.MediaItemId };
@@ -148,6 +148,65 @@ public sealed class ActVideoService
         );
     }
 
+    public async Task<Result> ClipAsync(
+        int accountId,
+        ActVideoClipCommand command,
+        CancellationToken ct
+    )
+    {
+        var editable = await _gate.EditableStudioAsync(accountId, command.ActId, ct);
+        if (!editable.IsSuccess)
+            return editable;
+
+        var video = await VideoRowsOf(command.ActId, command.VideoId)
+            .Include(row => row.MediaItem)
+            .SingleOrDefaultAsync(ct);
+        if (video is null)
+            return Result.NotFound(UnknownVideoMessage);
+        if (ReadinessRefusalOf(video.MediaItem!) is { } refused)
+            return refused;
+        if (MusicFile.IsPastTheEnd(command.EndSeconds, video.MediaItem!.DurationSeconds))
+            return Result.Validation(ClipPastEndMessage);
+
+        video.ClipStartSeconds = command.StartSeconds;
+        video.ClipEndSeconds = command.EndSeconds;
+        await _dbContext.SaveChangesAsync(ct);
+
+        return Result.Success();
+    }
+
+    public async Task<Result<int>> SplitAsync(
+        int accountId,
+        SplitActVideoCommand command,
+        CancellationToken ct
+    )
+    {
+        var editable = await _gate.EditableStudioAsync(accountId, command.ActId, ct);
+        if (!editable.IsSuccess)
+            return Result<int>.Carrying(editable);
+
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        var video = await VideoRowsOf(command.ActId, command.VideoId)
+            .Include(row => row.MediaItem)
+            .SingleOrDefaultAsync(ct);
+        if (video is null)
+            return Result<int>.NotFound(UnknownVideoMessage);
+        if (ReadinessRefusalOf(video.MediaItem!) is { } refused)
+            return Result<int>.Carrying(refused);
+        if (!SplitsIntoLongEnoughClips(video, command.AtSeconds))
+            return Result<int>.Validation(SplitTooShortMessage);
+        if (await IsShelfFullAsync(command.ActId, ct))
+            return Result<int>.Conflict(FullShelfMessage);
+
+        var tail = TailOf(video, command.AtSeconds);
+        video.ClipEndSeconds = command.AtSeconds;
+        _dbContext.ActVideos.Add(tail);
+        await _dbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+
+        return Result<int>.Success(tail.Id);
+    }
+
     public async Task<Result> RemoveAsync(
         int accountId,
         ActVideoCommand command,
@@ -165,7 +224,11 @@ public sealed class ActVideoService
         if (mediaItemId is null)
             return Result.NotFound(UnknownVideoMessage);
 
-        await _dbContext.MediaItems.Where(item => item.Id == mediaItemId).ExecuteDeleteAsync(ct);
+        await VideoRowsOf(command.ActId, command.VideoId).ExecuteDeleteAsync(ct);
+        if (!await _dbContext.ActVideos.AnyAsync(row => row.MediaItemId == mediaItemId, ct))
+            await _dbContext
+                .MediaItems.Where(item => item.Id == mediaItemId)
+                .ExecuteDeleteAsync(ct);
         await transaction.CommitAsync(ct);
 
         return Result.Success();
@@ -182,9 +245,12 @@ public sealed class ActVideoService
         var timeline = await _timelines.TimelineOfAsync(video.ActId, ct);
         if (timeline.Music.LengthSeconds <= 0)
             return Result.Conflict(NoMusicMessage);
-        if (startSeconds + length <= 0)
+        if (startSeconds + (video.ClipEndSeconds ?? length) <= 0)
             return Result.Validation(BeforeTheMusicMessage);
-        if (timeline.Music.VideoAnchorAt(startSeconds) is not { } anchor)
+        if (
+            startSeconds + video.ClipStartSeconds >= timeline.Music.LengthSeconds
+            || timeline.Music.VideoAnchorAt(startSeconds) is not { } anchor
+        )
             return Result.Validation(PastTheMusicMessage);
 
         video.StartSourceMediaItemId = anchor.Music.SourceMediaItemId;
@@ -233,7 +299,8 @@ public sealed class ActVideoService
                 Source = video.StartSourceMediaItemId!.Value,
                 Seconds = video.StartSeconds!.Value,
                 video.StartVideoSeconds,
-                video.MediaItem!.DurationSeconds,
+                video.ClipStartSeconds,
+                ClipEndSeconds = video.ClipEndSeconds ?? video.MediaItem!.DurationSeconds,
             })
             .ToListAsync(ct);
 
@@ -249,7 +316,8 @@ public sealed class ActVideoService
                                 video.StartVideoSeconds
                             )
                         ),
-                        video.DurationSeconds
+                        video.ClipStartSeconds,
+                        video.ClipEndSeconds
                     )
                 )
                 .OfType<VideoSpan>(),
@@ -276,6 +344,9 @@ public sealed class ActVideoService
             : Result<SoundAlignment>.Validation(NoMatchMessage);
     }
 
+    private async Task<bool> IsShelfFullAsync(int actId, CancellationToken ct) =>
+        await _dbContext.ActVideos.CountAsync(row => row.ActId == actId, ct) >= ActVideo.MostPerAct;
+
     private IQueryable<ActVideo> VideoRowsOf(int actId, int videoId) =>
         _dbContext.ActVideos.Where(row => row.Id == videoId && row.ActId == actId);
 
@@ -300,6 +371,35 @@ public sealed class ActVideoService
                 part => (steps[part.StepIds[0]].StartSeconds, steps[part.StepIds[^1]].EndSeconds)
             );
     }
+
+    [Pure]
+    private static Result? ReadinessRefusalOf(MediaItem item) =>
+        item.State == MediaItemState.Failed ? Result.Conflict(FailedVideoMessage)
+        : item.State != MediaItemState.Ready || item.DurationSeconds is null
+            ? Result.Conflict(StillDevelopingMessage)
+        : null;
+
+    [Pure]
+    private static bool SplitsIntoLongEnoughClips(ActVideo video, double atSeconds) =>
+        CutLength.IsLongEnough(video.ClipStartSeconds, atSeconds)
+        && CutLength.IsLongEnough(
+            atSeconds,
+            video.ClipEndSeconds ?? video.MediaItem!.DurationSeconds!.Value
+        );
+
+    [Pure]
+    private static ActVideo TailOf(ActVideo video, double atSeconds) =>
+        new()
+        {
+            ActId = video.ActId,
+            MediaItemId = video.MediaItemId,
+            Name = video.Name,
+            StartSourceMediaItemId = video.StartSourceMediaItemId,
+            StartSeconds = video.StartSeconds,
+            StartVideoSeconds = video.StartVideoSeconds,
+            ClipStartSeconds = atSeconds,
+            ClipEndSeconds = video.ClipEndSeconds,
+        };
 
     [Pure]
     private static string? NameOf(string? name) =>

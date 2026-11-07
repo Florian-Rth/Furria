@@ -6,20 +6,23 @@ public sealed class FinalTrackAdoption
 {
     private readonly int _finalMediaItemId;
     private readonly double _lengthSeconds;
-    private readonly IReadOnlyDictionary<int, FinalTrackPlacement> _placementsBySource;
+    private readonly ActMusic _workingMix;
+    private readonly IReadOnlyList<SourceAlignment> _alignments;
 
     public FinalTrackAdoption(
         int finalMediaItemId,
         double lengthSeconds,
-        IReadOnlyDictionary<int, FinalTrackPlacement> placementsBySource
+        ActMusic workingMix,
+        IReadOnlyList<SourceAlignment> alignments
     )
     {
         _finalMediaItemId = finalMediaItemId;
         _lengthSeconds = lengthSeconds;
-        _placementsBySource = placementsBySource;
+        _workingMix = workingMix;
+        _alignments = alignments;
     }
 
-    public bool MatchesAnyMusic => _placementsBySource.Count > 0;
+    public bool MatchesAnyMusic => _alignments.Count > 0;
 
     [Pure]
     public MusicAnchor Rewritten(MusicAnchor anchor) =>
@@ -60,9 +63,15 @@ public sealed class FinalTrackAdoption
 
     [Pure]
     private double? FinalSecondsOf(MusicAnchor anchor) =>
-        _placementsBySource.TryGetValue(anchor.SourceMediaItemId, out var placement)
-        && placement.FinalSecondsOf(anchor.Seconds) is var seconds
+        AlignmentOf(anchor) is { } alignment
+        && alignment.Placement.FinalSecondsOf(anchor.Seconds) is var seconds
         && seconds <= _lengthSeconds
             ? seconds
             : null;
+
+    [Pure]
+    private SourceAlignment? AlignmentOf(MusicAnchor anchor) =>
+        _workingMix.PieceHolding(anchor) is { } piece
+            ? SourceAlignments.OfPiece(_alignments, piece)
+            : SourceAlignments.Near(_alignments, anchor);
 }

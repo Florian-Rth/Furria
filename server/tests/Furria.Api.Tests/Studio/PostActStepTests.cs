@@ -55,6 +55,42 @@ public sealed class PostActStepTests : IClassFixture<ApiTestFixture>
         Assert.Equal([(0, 30), (30, 90), (90, 180)], await StepSpansOfAsync(admin, actId));
     }
 
+    [Fact]
+    public async Task Should_KeepBothHalvesInThePart_When_ItsLastStepIsSplit()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (admin, actId) = await MusicAsync(ct);
+        var stepIds = await MarkedAsync(admin, actId, 30, 90);
+        await AddPartAsync(admin, actId, stepIds[0], stepIds[1], "Einmarsch");
+
+        var newStepId = Assert.Single(await MarkAsync(admin, actId, 60));
+
+        Assert.Equal(
+            [
+                [stepIds[0], stepIds[1], newStepId],
+            ],
+            await PartStepsOfAsync(admin, actId)
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveTheNewStepUngrouped_When_AStepOutsideAnyPartIsSplit()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (admin, actId) = await MusicAsync(ct);
+        var stepIds = await MarkedAsync(admin, actId, 30, 90);
+        await AddPartAsync(admin, actId, stepIds[1], stepIds[1], "Hauptteil");
+
+        await MarkAsync(admin, actId, 120);
+
+        Assert.Equal(
+            [
+                [stepIds[1]],
+            ],
+            await PartStepsOfAsync(admin, actId)
+        );
+    }
+
     [Theory]
     [InlineData(30)]
     [InlineData(180)]

@@ -19,13 +19,17 @@ const fadeScheme: KkScheme = {
   dark: { backgroundImage: fadeGradient(kkTokens.color.dark.bg) },
 };
 
-const footPaint = (theme: Theme): CSSObject => ({
+const footBasePaint = (theme: Theme): CSSObject => ({
   position: 'relative',
   isolation: 'isolate',
   minWidth: 0,
   gap: theme.spacing(0.5),
   alignItems: 'stretch',
   [theme.breakpoints.up('md')]: { alignItems: 'flex-end' },
+});
+
+const footPaint = (theme: Theme): CSSObject => ({
+  ...footBasePaint(theme),
   '&::before': {
     content: '""',
     position: 'absolute',
@@ -41,9 +45,11 @@ const footPaint = (theme: Theme): CSSObject => ({
 
 interface KkActionFootProps extends PropsWithChildren {
   notice?: string | null;
+  fade?: boolean;
 }
 
-export const KkActionFoot: FC<KkActionFootProps> = ({ notice = null, children }) => {
+export const KkActionFoot: FC<KkActionFootProps> = ({ notice = null, fade = true, children }) => {
+  const paint = fade ? footPaint : footBasePaint;
   const noticeLine =
     notice === null ? null : (
       <Box
@@ -68,7 +74,7 @@ export const KkActionFoot: FC<KkActionFootProps> = ({ notice = null, children })
     );
 
   return (
-    <Stack data-kk-action-foot sx={footPaint}>
+    <Stack data-kk-action-foot sx={paint}>
       {noticeLine}
       <Stack
         direction="row"

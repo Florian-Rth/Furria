@@ -1,5 +1,5 @@
+import type { UploadFailure } from '@furria/api-client/upload-failure';
 import type { KkCrop } from '@furria/ui/image-crop';
-import type { UploadFailure } from './upload-failure';
 
 export interface ChosenPhoto {
   file: File;

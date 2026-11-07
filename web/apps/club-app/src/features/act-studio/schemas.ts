@@ -1,5 +1,4 @@
 import { z } from 'zod';
-import { ActPageSearchSchema } from '@/features/acts/schemas';
 import { PortraitPersonRefSchema } from '@/lib/api/schemas';
 
 export const AddedSongSchema = z.object({ songId: z.int() });
@@ -19,26 +18,11 @@ export type AddedPart = z.infer<typeof AddedPartSchema>;
 export const AddedVideoSchema = z.object({ videoId: z.int() });
 export type AddedVideo = z.infer<typeof AddedVideoSchema>;
 
-export const VideoAlignmentSchema = z.object({
-  startSeconds: z.number(),
-  confidence: z.number(),
-});
-export type VideoAlignment = z.infer<typeof VideoAlignmentSchema>;
+export const SplitVideoSchema = z.object({ videoId: z.int() });
+export type SplitVideo = z.infer<typeof SplitVideoSchema>;
 
 export const AddedFinalTrackSchema = z.object({ finalTrackId: z.int() });
 export type AddedFinalTrack = z.infer<typeof AddedFinalTrackSchema>;
-
-export const FinalTrackMatchesSchema = z.object({
-  matches: z.array(
-    z.object({
-      sourceMediaItemId: z.int(),
-      offsetSeconds: z.number(),
-      stretch: z.number().positive(),
-      confidence: z.number(),
-    }),
-  ),
-});
-export type FinalTrackMatches = z.infer<typeof FinalTrackMatchesSchema>;
 
 export const CHOREOGRAPHY_VERSION_KINDS = [
   'saved',
@@ -72,11 +56,3 @@ export const ChoreographyConflictSchema = z.object({
   ),
 });
 export type ChoreographyConflict = z.infer<typeof ChoreographyConflictSchema>;
-
-export const StudioMusicToolSchema = z.enum(['music', 'video']);
-export type StudioMusicTool = z.infer<typeof StudioMusicToolSchema>;
-
-export const ActMusicSearchSchema = ActPageSearchSchema.extend({
-  tool: StudioMusicToolSchema.optional().catch(undefined),
-});
-export type ActMusicSearch = z.infer<typeof ActMusicSearchSchema>;

@@ -11,12 +11,21 @@ public readonly record struct MusicCut(
     public double LengthSeconds => EndSeconds - StartSeconds;
 
     [Pure]
-    public static MusicCut OfSong(
+    public static IReadOnlyList<MusicCut> OfSong(
         int mediaItemId,
-        double startSeconds,
-        double? endSeconds,
+        IReadOnlyList<SongPiece> pieces,
         double? durationSeconds
-    ) => new(mediaItemId, startSeconds, endSeconds ?? durationSeconds ?? startSeconds);
+    ) =>
+        pieces.Count == 0
+            ? [new MusicCut(mediaItemId, 0, durationSeconds ?? 0)]
+            :
+            [
+                .. pieces.Select(piece => new MusicCut(
+                    mediaItemId,
+                    piece.StartSeconds,
+                    piece.EndSeconds
+                )),
+            ];
 
     [Pure]
     public static MusicCut OfFinalTrack(int mediaItemId, double? durationSeconds) =>

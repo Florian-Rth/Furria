@@ -48,6 +48,7 @@ public sealed class PutActPart : Endpoint<PutActPartRequest>
             PartId = req.PartId,
             Name = req.Name,
             FirstStepId = req.FirstStepId,
+            LastStepId = req.LastStepId,
             MainVideoId = req.MainVideoId,
         };
 }
@@ -64,6 +65,8 @@ public sealed record PutActPartRequest
 
     public required int FirstStepId { get; init; }
 
+    public required int LastStepId { get; init; }
+
     public required int? MainVideoId { get; init; }
 }
 
@@ -75,6 +78,7 @@ public sealed class PutActPartValidator : Validator<PutActPartRequest>
         RuleFor(request => request.PartId).GreaterThan(0);
         RuleFor(request => request.Name).NotEmpty().MaximumLength(ActPart.NameLength);
         RuleFor(request => request.FirstStepId).GreaterThan(0);
+        RuleFor(request => request.LastStepId).GreaterThan(0);
         RuleFor(request => request.MainVideoId).GreaterThan(0);
     }
 }

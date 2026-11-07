@@ -71,6 +71,15 @@ public static class ActSteps
     }
 
     [Pure]
+    public static int? StepAt(StepTiling tiling, double timelineSeconds) =>
+        tiling
+            .Spans.Where(span =>
+                span.StartSeconds <= timelineSeconds && timelineSeconds < span.EndSeconds
+            )
+            .Select(span => (int?)span.StepId)
+            .FirstOrDefault();
+
+    [Pure]
     private static int IndexOf(StepTiling tiling, int stepId)
     {
         for (var index = 0; index < tiling.Spans.Count; index++)

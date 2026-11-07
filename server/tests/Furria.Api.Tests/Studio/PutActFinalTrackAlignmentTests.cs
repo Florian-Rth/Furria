@@ -42,6 +42,57 @@ public sealed class PutActFinalTrackAlignmentTests : IClassFixture<ApiTestFixtur
     }
 
     [Fact]
+    public async Task Should_AlignEachPieceOnItsOwn_When_TheSongIsSplit()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+        var actId = await GardetanzAsync(ctx, ct);
+        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+        var (song, _) = await SplitSongAsync(admin, actId, ct);
+        var (finalTrackId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 90, ct);
+        await TuneOffsetAsync(admin, actId, finalTrackId, song, 3);
+
+        var response = await TuneOffsetAsync(admin, actId, finalTrackId, song, 10, fromSeconds: 30);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal([(0.0, 3.0), (30.0, 10.0)], await AlignmentsOfAsync(admin, actId));
+    }
+
+    [Fact]
+    public async Task Should_ReplaceTheAlignmentsInsideThePiece_When_TheJoinedPieceIsAligned()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+        var actId = await GardetanzAsync(ctx, ct);
+        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+        var (song, songId) = await SplitSongAsync(admin, actId, ct);
+        var (finalTrackId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 90, ct);
+        await TuneOffsetAsync(admin, actId, finalTrackId, song, 3);
+        await TuneOffsetAsync(admin, actId, finalTrackId, song, 10, fromSeconds: 30);
+        await CutSongAsync(admin, actId, songId, (5, 60));
+
+        var response = await TuneOffsetAsync(admin, actId, finalTrackId, song, 7, fromSeconds: 5);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        Assert.Equal([(0.0, 3.0), (5.0, 7.0)], await AlignmentsOfAsync(admin, actId));
+    }
+
+    [Fact]
+    public async Task Should_ReportNotFound_When_NoPieceOfTheSongPlaysThere()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+        var actId = await GardetanzAsync(ctx, ct);
+        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+        var (song, _) = await SplitSongAsync(admin, actId, ct);
+        var (finalTrackId, _) = await FinalTrackOfAsync(_fixture, admin, actId, 90, ct);
+
+        var response = await TuneOffsetAsync(admin, actId, finalTrackId, song, 3, fromSeconds: 25);
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Should_AlignToThePreviousFinalFile_When_ANewerOneFollowsTheAdoptedOne()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -89,4 +140,28 @@ public sealed class PutActFinalTrackAlignmentTests : IClassFixture<ApiTestFixtur
 
         Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
     }
+
+    private async Task<(int MediaItemId, int SongId)> SplitSongAsync(
+        HttpClient admin,
+        int actId,
+        CancellationToken ct
+    )
+    {
+        var mediaItemId = await UploadSongAsync(admin, actId, ct);
+        await _fixture.RenderSongDirectlyAsync(mediaItemId, 60, ct);
+        var songId = await AddSongAsync(admin, actId, mediaItemId);
+        (await CutSongAsync(admin, actId, songId, (0, 20), (30, 60))).EnsureSuccessStatusCode();
+
+        return (mediaItemId, songId);
+    }
+
+    private static async Task<(double From, double Offset)[]> AlignmentsOfAsync(
+        HttpClient admin,
+        int actId
+    ) =>
+        [
+            .. Assert
+                .Single((await StudioOfAsync(admin, actId)).Studio!.FinalTracks)
+                .Alignments.Select(alignment => (alignment.FromSeconds, alignment.OffsetSeconds)),
+        ];
 }

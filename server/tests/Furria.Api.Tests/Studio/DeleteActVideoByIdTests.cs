@@ -30,7 +30,7 @@ public sealed class DeleteActVideoByIdTests : IClassFixture<ApiTestFixture>
         var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
         await SongOfAsync(_fixture, admin, actId, 120, ct);
         var stepIds = await MarkedAsync(admin, actId, 60);
-        await AddPartAsync(admin, actId, stepIds[0], "Einmarsch");
+        await AddPartAsync(admin, actId, stepIds[0], stepIds[0], "Einmarsch");
         var videoId = await VideoOfAsync(_fixture, admin, actId, 70, ct);
         await PlaceVideoAsync(admin, actId, videoId, 0);
 
@@ -41,6 +41,50 @@ public sealed class DeleteActVideoByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         var studio = (await StudioOfAsync(admin, actId)).Studio!;
         Assert.Equal((0, (int?)null), (studio.Videos.Count, studio.Parts[0].MainVideoId));
+    }
+
+    [Fact]
+    public async Task Should_KeepTheOtherClip_When_AnEditorDeletesOneClipOfASplitVideo()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+        var actId = await GardetanzAsync(ctx, ct);
+        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+        await SongOfAsync(_fixture, admin, actId, 120, ct);
+        var videoId = await VideoOfAsync(_fixture, admin, actId, 70, ct);
+        var (_, tailId) = await SplitVideoAsync(admin, actId, videoId, 30);
+
+        var response = await DeleteAsync(admin, actId, videoId);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        var tail = Assert.Single((await StudioOfAsync(admin, actId)).Studio!.Videos);
+        Assert.Equal(
+            (tailId, 30.0, 70.0),
+            (tail.VideoId, tail.ClipStartSeconds, tail.ClipEndSeconds!.Value)
+        );
+    }
+
+    [Fact]
+    public async Task Should_DeleteTheFile_When_ItsLastClipIsRemoved()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+        var actId = await GardetanzAsync(ctx, ct);
+        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+        var mediaItemId = await UploadVideoAsync(admin, actId, ct);
+        await _fixture.RenderSongDirectlyAsync(mediaItemId, 70, ct);
+        var videoId = await AddVideoAsync(admin, actId, mediaItemId);
+        var (_, tailId) = await SplitVideoAsync(admin, actId, videoId, 30);
+        await DeleteAsync(admin, actId, videoId);
+
+        await DeleteAsync(admin, actId, tailId);
+
+        var (readded, _) = await admin.POSTAsync<
+            PostActVideo,
+            PostActVideoRequest,
+            PostActVideoResponse
+        >(new() { ActId = actId, MediaItemId = mediaItemId });
+        Assert.Equal(HttpStatusCode.NotFound, readded.StatusCode);
     }
 
     [Fact]
@@ -63,4 +107,13 @@ public sealed class DeleteActVideoByIdTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
+
+    private static Task<HttpResponseMessage> DeleteAsync(
+        HttpClient client,
+        int actId,
+        int videoId
+    ) =>
+        client.DELETEAsync<DeleteActVideoById, DeleteActVideoByIdRequest>(
+            new() { ActId = actId, VideoId = videoId }
+        );
 }

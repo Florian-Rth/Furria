@@ -41,7 +41,10 @@ public sealed class PostActFinalTrackAlignmentTests : IClassFixture<ApiTestFixtu
         var (response, result) = await PostAsync(admin, actId, finalTrackId);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal([march, polka], result.Matches.Select(match => match.SourceMediaItemId));
+        Assert.Equal(
+            [(march, 10.0), (polka, 0.0)],
+            result.Matches.Select(match => (match.SourceMediaItemId, match.FromSeconds))
+        );
         var alignments = Assert
             .Single((await StudioOfAsync(admin, actId)).Studio!.FinalTracks)
             .Alignments.ToDictionary(
@@ -50,6 +53,35 @@ public sealed class PostActFinalTrackAlignmentTests : IClassFixture<ApiTestFixtu
             );
         Assert.Equal(-5, alignments[march], 0.05);
         Assert.Equal(45, alignments[polka], 0.05);
+    }
+
+    [Fact]
+    public async Task Should_FindEachPieceInTheFinalFile_When_TheSongIsSplit()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+        var actId = await GardetanzAsync(ctx, ct);
+        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+        var march = await AnalysedSongAsync(admin, actId, March, [(0, 25), (35, 60)], ct);
+        var joined = Joined(
+            SoundSamples.Excerpt(March, 0, 25),
+            SoundSamples.Excerpt(March, 35, 60)
+        );
+        var finalTrackId = await AnalysedFinalTrackAsync(admin, actId, joined, ct);
+
+        var (response, result) = await PostAsync(admin, actId, finalTrackId);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(
+            [(march, 0.0), (march, 35.0)],
+            result.Matches.Select(match => (match.SourceMediaItemId, match.FromSeconds))
+        );
+        var alignments = Assert
+            .Single((await StudioOfAsync(admin, actId)).Studio!.FinalTracks)
+            .Alignments;
+        Assert.Equal([0.0, 35.0], alignments.Select(alignment => alignment.FromSeconds));
+        Assert.Equal(0, alignments[0].OffsetSeconds, 0.05);
+        Assert.Equal(-10, alignments[1].OffsetSeconds, 0.05);
     }
 
     [Fact]
@@ -114,8 +146,8 @@ public sealed class PostActFinalTrackAlignmentTests : IClassFixture<ApiTestFixtu
         var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
         var actId = await GardetanzAsync(ctx, ct);
         var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
-        var march = await AnalysedSongAsync(admin, actId, March, 10, 50, ct);
-        var polka = await AnalysedSongAsync(admin, actId, Polka, 0, 40, ct);
+        var march = await AnalysedSongAsync(admin, actId, March, [(10, 50)], ct);
+        var polka = await AnalysedSongAsync(admin, actId, Polka, [(0, 40)], ct);
 
         return (admin, actId, march, polka);
     }
@@ -124,8 +156,7 @@ public sealed class PostActFinalTrackAlignmentTests : IClassFixture<ApiTestFixtu
         HttpClient admin,
         int actId,
         SoundSignal sound,
-        double startSeconds,
-        double endSeconds,
+        (double Start, double End)[] pieces,
         CancellationToken ct
     )
     {
@@ -133,17 +164,7 @@ public sealed class PostActFinalTrackAlignmentTests : IClassFixture<ApiTestFixtu
         await _fixture.RenderSongDirectlyAsync(mediaItemId, SongSeconds, ct);
         await KeepProfileAsync(mediaItemId, sound, ct);
         var songId = await AddSongAsync(admin, actId, mediaItemId);
-        var cut = await admin.PUTAsync<PutActSong, PutActSongRequest>(
-            new()
-            {
-                ActId = actId,
-                SongId = songId,
-                StartSeconds = startSeconds,
-                EndSeconds = endSeconds,
-                FirstBeatSeconds = null,
-                TempoBpm = null,
-            }
-        );
+        var cut = await CutSongAsync(admin, actId, songId, pieces);
         Assert.Equal(HttpStatusCode.NoContent, cut.StatusCode);
 
         return mediaItemId;

@@ -4,13 +4,13 @@ import type { FC } from 'react';
 import type { CatalogueAct } from '@/features/running-order/schemas';
 import { SETTINGS_TITLE } from '../act-page-copy';
 import { CLOSE_LABEL } from '../acts-copy';
-import type { ActPageState } from '../hooks/use-act-page';
+import type { ActDetailsPageState } from '../hooks/use-act-details-page';
 import { ActPane } from './ActPane';
 
 const PANE_SPAN = 5;
 
 interface ActSettingsSideProps {
-  page: ActPageState;
+  page: ActDetailsPageState;
   act: CatalogueAct;
 }
 

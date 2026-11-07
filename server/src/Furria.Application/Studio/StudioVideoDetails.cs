@@ -17,6 +17,10 @@ public sealed record StudioVideoDetails
 
     public required double? StartSeconds { get; init; }
 
+    public required double ClipStartSeconds { get; init; }
+
+    public required double? ClipEndSeconds { get; init; }
+
     public required VideoPlacement Placement { get; init; }
 
     public required bool IsOutdated { get; init; }

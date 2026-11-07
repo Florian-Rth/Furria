@@ -1,5 +1,6 @@
+import type { StudioSpot } from '@furria/studio/studio-schemas';
 import { describe, expect, it } from 'vitest';
-import type { StudioAttendance, StudioSpot, StudioTraining } from '@/features/acts/schemas';
+import type { StudioAttendance, StudioTraining } from '@/features/acts/schemas';
 import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
 import {

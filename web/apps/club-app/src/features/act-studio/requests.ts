@@ -1,4 +1,23 @@
-import type { Choreography } from '@/features/acts/schemas';
+import type { FinalBeatInput, FinalOffsetInput } from '@furria/studio/studio-final';
+import type { SongSettings } from '@furria/studio/studio-music';
+import type {
+  Choreography,
+  FinalTrackMatches,
+  VideoAlignment,
+} from '@furria/studio/studio-schemas';
+import { FinalTrackMatchesSchema, VideoAlignmentSchema } from '@furria/studio/studio-schemas';
+import type {
+  PartOpening,
+  PartSettingsInput,
+  StepNameInput,
+  StepStartInput,
+} from '@furria/studio/studio-steps';
+import type {
+  VideoClipInput,
+  VideoNameInput,
+  VideoSplitInput,
+  VideoStartInput,
+} from '@furria/studio/studio-videos';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type {
@@ -8,10 +27,9 @@ import type {
   AddedSpot,
   AddedVideo,
   ChoreographyVersionPage,
-  FinalTrackMatches,
   MarkedSteps,
   SavedChoreography,
-  VideoAlignment,
+  SplitVideo,
 } from './schemas';
 import {
   AddedFinalTrackSchema,
@@ -20,15 +38,10 @@ import {
   AddedSpotSchema,
   AddedVideoSchema,
   ChoreographyVersionPageSchema,
-  FinalTrackMatchesSchema,
   MarkedStepsSchema,
   SavedChoreographySchema,
-  VideoAlignmentSchema,
+  SplitVideoSchema,
 } from './schemas';
-import type { FinalBeatInput, FinalOffsetInput } from './studio-final';
-import type { SongSettings } from './studio-music';
-import type { PartOpening, PartSettingsInput, StepStartInput, StepTextInput } from './studio-steps';
-import type { VideoNameInput, VideoStartInput } from './studio-videos';
 
 const songsPathOf = (actId: number): string => `/api/acts/${actId}/songs`;
 const stepsPathOf = (actId: number): string => `/api/acts/${actId}/steps`;
@@ -69,8 +82,7 @@ export const requestSongSettings = (
   apiFetch(`${songsPathOf(actId)}/${songId}`, {
     method: 'PUT',
     body: {
-      startSeconds: settings.startSeconds,
-      endSeconds: settings.endSeconds,
+      pieces: settings.pieces.map(({ startSeconds, endSeconds }) => ({ startSeconds, endSeconds })),
       firstBeatSeconds: settings.firstBeatSeconds,
       tempoBpm: settings.tempoBpm,
     },
@@ -148,14 +160,14 @@ export const requestStepMark = (
     accessToken,
   });
 
-export const requestStepText = (
+export const requestStepName = (
   actId: number,
-  { stepId, name, description }: StepTextInput,
+  { stepId, name }: StepNameInput,
   accessToken: string,
 ): Promise<void> =>
   apiFetch(`${stepsPathOf(actId)}/${stepId}`, {
     method: 'PUT',
-    body: { name, description },
+    body: { name },
     schema: NoContentSchema,
     accessToken,
   });
@@ -185,12 +197,12 @@ export const requestStepRemoval = (
 
 export const requestPartAdd = (
   actId: number,
-  { firstStepId, name }: PartOpening,
+  { firstStepId, lastStepId, name }: PartOpening,
   accessToken: string,
 ): Promise<AddedPart> =>
   apiFetch(partsPathOf(actId), {
     method: 'POST',
-    body: { firstStepId, name },
+    body: { firstStepId, lastStepId, name },
     schema: AddedPartSchema,
     accessToken,
   });
@@ -205,6 +217,7 @@ export const requestPartSettings = (
     body: {
       name: settings.name,
       firstStepId: settings.firstStepId,
+      lastStepId: settings.lastStepId,
       mainVideoId: settings.mainVideoId,
     },
     schema: NoContentSchema,
@@ -255,6 +268,30 @@ export const requestVideoStart = (
     method: 'PUT',
     body: { atSeconds: startSeconds },
     schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestVideoClip = (
+  actId: number,
+  { videoId, startSeconds, endSeconds }: VideoClipInput,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`${videosPathOf(actId)}/${videoId}/clip`, {
+    method: 'PUT',
+    body: { startSeconds, endSeconds },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestVideoSplit = (
+  actId: number,
+  { videoId, atSeconds }: VideoSplitInput,
+  accessToken: string,
+): Promise<SplitVideo> =>
+  apiFetch(`${videosPathOf(actId)}/${videoId}/split`, {
+    method: 'POST',
+    body: { atSeconds },
+    schema: SplitVideoSchema,
     accessToken,
   });
 
@@ -445,12 +482,12 @@ export const requestFinalTrackMatch = (
 
 export const requestFinalTrackOffset = (
   actId: number,
-  { finalTrackId, sourceMediaItemId, offsetSeconds, stretch }: FinalOffsetInput,
+  { finalTrackId, sourceMediaItemId, fromSeconds, offsetSeconds, stretch }: FinalOffsetInput,
   accessToken: string,
 ): Promise<void> =>
   apiFetch(`${finalTracksPathOf(actId)}/${finalTrackId}/alignments/${sourceMediaItemId}`, {
     method: 'PUT',
-    body: { offsetSeconds, stretch },
+    body: { fromSeconds, offsetSeconds, stretch },
     schema: NoContentSchema,
     accessToken,
   });

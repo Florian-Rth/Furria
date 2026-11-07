@@ -105,8 +105,14 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
             SongId = song.SongId,
             MediaItemId = song.MediaItemId,
             Position = song.Position,
-            StartSeconds = song.StartSeconds,
-            EndSeconds = song.EndSeconds,
+            Pieces =
+            [
+                .. song.Pieces.Select(piece => new StudioSongPieceDto
+                {
+                    StartSeconds = piece.StartSeconds,
+                    EndSeconds = piece.EndSeconds,
+                }),
+            ],
             FirstBeatSeconds = song.FirstBeatSeconds,
             TempoBpm = song.TempoBpm,
             State = song.State,
@@ -132,6 +138,7 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
                 .. track.Alignments.Select(alignment => new StudioFinalTrackAlignmentDto
                 {
                     SourceMediaItemId = alignment.SourceMediaItemId,
+                    FromSeconds = alignment.FromSeconds,
                     OffsetSeconds = alignment.OffsetSeconds,
                     Stretch = alignment.Stretch,
                 }),
@@ -152,7 +159,6 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
         {
             StepId = step.StepId,
             Name = step.Name,
-            Description = step.Description,
             StartSeconds = step.StartSeconds,
             EndSeconds = step.EndSeconds,
             Placement = step.Placement,
@@ -163,6 +169,8 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
         {
             PartId = part.PartId,
             Name = part.Name,
+            FirstStepId = part.FirstStepId,
+            LastStepId = part.LastStepId,
             StepIds = part.StepIds,
             MainVideoId = part.MainVideoId,
             Adrift = part.IsAdrift,
@@ -185,6 +193,8 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
             State = video.State,
             DurationSeconds = video.DurationSeconds,
             StartSeconds = video.StartSeconds,
+            ClipStartSeconds = video.ClipStartSeconds,
+            ClipEndSeconds = video.ClipEndSeconds,
             Placement = video.Placement,
             Outdated = video.IsOutdated,
             Urls = new StudioVideoUrlsDto
@@ -192,6 +202,7 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
                 Video = video.Urls.Video,
                 Compact = video.Urls.Compact,
                 Poster = video.Urls.Poster,
+                Peaks = video.Urls.Peaks,
             },
         };
 
@@ -473,9 +484,7 @@ public sealed record StudioSongDto
 
     public required int Position { get; init; }
 
-    public required double StartSeconds { get; init; }
-
-    public required double EndSeconds { get; init; }
+    public required IReadOnlyList<StudioSongPieceDto> Pieces { get; init; }
 
     public required double? FirstBeatSeconds { get; init; }
 
@@ -488,6 +497,13 @@ public sealed record StudioSongDto
     public required string FileName { get; init; }
 
     public required StudioAudioUrlsDto Urls { get; init; }
+}
+
+public sealed record StudioSongPieceDto
+{
+    public required double StartSeconds { get; init; }
+
+    public required double EndSeconds { get; init; }
 }
 
 public sealed record StudioFinalTrackDto
@@ -519,6 +535,8 @@ public sealed record StudioFinalTrackAlignmentDto
 {
     public required int SourceMediaItemId { get; init; }
 
+    public required double FromSeconds { get; init; }
+
     public required double OffsetSeconds { get; init; }
 
     public required double Stretch { get; init; }
@@ -529,8 +547,6 @@ public sealed record StudioStepDto
     public required int StepId { get; init; }
 
     public required string Name { get; init; }
-
-    public required string? Description { get; init; }
 
     public required double? StartSeconds { get; init; }
 
@@ -544,6 +560,10 @@ public sealed record StudioPartDto
     public required int PartId { get; init; }
 
     public required string Name { get; init; }
+
+    public required int FirstStepId { get; init; }
+
+    public required int LastStepId { get; init; }
 
     public required IReadOnlyList<int> StepIds { get; init; }
 
@@ -568,6 +588,8 @@ public sealed record StudioVideoUrlsDto
     public required string Compact { get; init; }
 
     public required string Poster { get; init; }
+
+    public required string Peaks { get; init; }
 }
 
 public sealed record StudioVideoDto
@@ -583,6 +605,10 @@ public sealed record StudioVideoDto
     public required double? DurationSeconds { get; init; }
 
     public required double? StartSeconds { get; init; }
+
+    public required double ClipStartSeconds { get; init; }
+
+    public required double? ClipEndSeconds { get; init; }
 
     public required VideoPlacement Placement { get; init; }
 

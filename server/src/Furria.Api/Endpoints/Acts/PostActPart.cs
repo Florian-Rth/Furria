@@ -37,6 +37,7 @@ public sealed class PostActPart : Endpoint<PostActPartRequest, PostActPartRespon
             {
                 ActId = req.ActId,
                 FirstStepId = req.FirstStepId,
+                LastStepId = req.LastStepId,
                 Name = req.Name,
             },
             ct
@@ -58,6 +59,8 @@ public sealed record PostActPartRequest
 
     public required int FirstStepId { get; init; }
 
+    public required int LastStepId { get; init; }
+
     public required string Name { get; init; }
 }
 
@@ -67,6 +70,7 @@ public sealed class PostActPartValidator : Validator<PostActPartRequest>
     {
         RuleFor(request => request.ActId).GreaterThan(0);
         RuleFor(request => request.FirstStepId).GreaterThan(0);
+        RuleFor(request => request.LastStepId).GreaterThan(0);
         RuleFor(request => request.Name).NotEmpty().MaximumLength(ActPart.NameLength);
     }
 }

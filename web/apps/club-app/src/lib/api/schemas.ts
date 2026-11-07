@@ -1,4 +1,4 @@
-import { createMediaSchemas } from '@furria/api-client';
+import { createMediaSchemas, MediaItemStateSchema } from '@furria/api-client';
 import { z } from 'zod';
 import { ClubIconSchema } from '@/lib/club-icon';
 import { GroupToneSchema } from '@/lib/group-tone';
@@ -35,8 +35,8 @@ export const PictureCropSchema = z.object({
 });
 export type PictureCrop = z.infer<typeof PictureCropSchema>;
 
-export const MediaItemStateSchema = z.enum(['processing', 'ready', 'failed']);
-export type MediaItemState = z.infer<typeof MediaItemStateSchema>;
+export type { MediaItemState } from '@furria/api-client';
+export { MediaItemStateSchema };
 
 export const PictureEditingSchema = z.object({
   state: MediaItemStateSchema,

@@ -1,6 +1,7 @@
-import { canPractise, seesDetailsOf } from '@/features/acts/act-studio';
+import { canPractise } from '@furria/studio/music-timeline';
+import { seesDetailsOf } from '@/features/acts/act-studio';
 import type {
-  ActPageSearch,
+  ActScreenSearch,
   ActStudioResponse,
   CoEditor,
   MyAct,
@@ -134,7 +135,7 @@ export const actCardViewOf = (
   data: ActStudioResponse,
   summary: MyAct | undefined,
   viewerId: number | null,
-  search: ActPageSearch,
+  search: ActScreenSearch,
   now: number,
 ): ActCardView => {
   const { act, viewer, studio } = data;

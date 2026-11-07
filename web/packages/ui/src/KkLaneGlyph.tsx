@@ -1,7 +1,6 @@
 import AddRounded from '@mui/icons-material/AddRounded';
 import AlignHorizontalCenterRounded from '@mui/icons-material/AlignHorizontalCenterRounded';
 import AlignVerticalCenterRounded from '@mui/icons-material/AlignVerticalCenterRounded';
-
 import CallSplitRounded from '@mui/icons-material/CallSplitRounded';
 import CheckRounded from '@mui/icons-material/CheckRounded';
 import ChevronLeftRounded from '@mui/icons-material/ChevronLeftRounded';
@@ -16,20 +15,31 @@ import GridViewRounded from '@mui/icons-material/GridViewRounded';
 import GroupsRounded from '@mui/icons-material/GroupsRounded';
 import HistoryRounded from '@mui/icons-material/HistoryRounded';
 import HorizontalRuleRounded from '@mui/icons-material/HorizontalRuleRounded';
+import KeyboardDoubleArrowLeftRounded from '@mui/icons-material/KeyboardDoubleArrowLeftRounded';
+import KeyboardDoubleArrowRightRounded from '@mui/icons-material/KeyboardDoubleArrowRightRounded';
 import LibraryMusicRounded from '@mui/icons-material/LibraryMusicRounded';
+import MoreHorizRounded from '@mui/icons-material/MoreHorizRounded';
 import MusicNoteRounded from '@mui/icons-material/MusicNoteRounded';
 import PauseRounded from '@mui/icons-material/PauseRounded';
 import PersonAddRounded from '@mui/icons-material/PersonAddRounded';
+import PersonOffRounded from '@mui/icons-material/PersonOffRounded';
+import PersonRounded from '@mui/icons-material/PersonRounded';
+import PlaceRounded from '@mui/icons-material/PlaceRounded';
 import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded';
 import RadioButtonUncheckedRounded from '@mui/icons-material/RadioButtonUncheckedRounded';
 import RedoRounded from '@mui/icons-material/RedoRounded';
 import RemoveRounded from '@mui/icons-material/RemoveRounded';
+import RepeatRounded from '@mui/icons-material/RepeatRounded';
 import RouteRounded from '@mui/icons-material/RouteRounded';
 import SegmentRounded from '@mui/icons-material/SegmentRounded';
+import SelectAllRounded from '@mui/icons-material/SelectAllRounded';
 import SkipNextRounded from '@mui/icons-material/SkipNextRounded';
 import SkipPreviousRounded from '@mui/icons-material/SkipPreviousRounded';
 import SplitscreenRounded from '@mui/icons-material/SplitscreenRounded';
+import StraightRounded from '@mui/icons-material/StraightRounded';
 import UndoRounded from '@mui/icons-material/UndoRounded';
+import UnfoldLessRounded from '@mui/icons-material/UnfoldLessRounded';
+import UnfoldMoreRounded from '@mui/icons-material/UnfoldMoreRounded';
 import VideocamRounded from '@mui/icons-material/VideocamRounded';
 import ViewWeekRounded from '@mui/icons-material/ViewWeekRounded';
 import ZoomInRounded from '@mui/icons-material/ZoomInRounded';
@@ -71,7 +81,20 @@ export type KkLaneGlyphName =
   | 'history'
   | 'close'
   | 'left'
-  | 'right';
+  | 'right'
+  | 'loop'
+  | 'cast'
+  | 'more'
+  | 'selectAll'
+  | 'shorter'
+  | 'longer'
+  | 'mark'
+  | 'straight'
+  | 'earlier'
+  | 'later'
+  | 'person'
+  | 'free'
+  | 'spot';
 
 const GLYPHS: Record<KkLaneGlyphName, typeof AddRounded> = {
   play: PlayArrowRounded,
@@ -109,6 +132,19 @@ const GLYPHS: Record<KkLaneGlyphName, typeof AddRounded> = {
   close: CloseRounded,
   left: ChevronLeftRounded,
   right: ChevronRightRounded,
+  loop: RepeatRounded,
+  cast: PersonRounded,
+  more: MoreHorizRounded,
+  selectAll: SelectAllRounded,
+  shorter: UnfoldLessRounded,
+  longer: UnfoldMoreRounded,
+  mark: CallSplitRounded,
+  straight: StraightRounded,
+  earlier: KeyboardDoubleArrowLeftRounded,
+  later: KeyboardDoubleArrowRightRounded,
+  person: PersonRounded,
+  free: PersonOffRounded,
+  spot: PlaceRounded,
 };
 
 interface KkLaneGlyphProps {

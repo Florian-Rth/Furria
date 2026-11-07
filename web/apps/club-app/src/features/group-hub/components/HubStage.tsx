@@ -4,13 +4,13 @@ import { KkGroupStage } from '@furria/ui/KkGroupStage';
 import { KkPhoto } from '@furria/ui/KkPhoto';
 import type { FC } from 'react';
 import { toGroupTone } from '@/features/groups/group-identity';
-import { toGroupKindLabel } from '@/features/groups/groups-labels';
 import { currentSessionYear } from '@/lib/club';
 import { useGroupHubQuery } from '../api';
 import {
   toAnniversarySeal,
   toHubMetaFacts,
   toHubRecruitingChip,
+  toStageKindLabel,
   toStandingLine,
 } from '../group-hub-labels';
 
@@ -47,7 +47,7 @@ export const HubStage: FC<HubStageProps> = ({ groupId }) => {
     <KkGroupStage
       tone={tone}
       name={group.name}
-      kindLabel={toGroupKindLabel(group.groupKindName)}
+      kindLabel={toStageKindLabel(group.groupKindName, group.name)}
       anniversary={toAnniversarySeal(group.foundedYear, currentSessionYear())}
       media={media}
     >

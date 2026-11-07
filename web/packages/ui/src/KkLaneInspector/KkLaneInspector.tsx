@@ -1,5 +1,7 @@
 import { KkLaneInspectorActions } from './internal/layout/KkLaneInspectorActions';
 import { KkLaneInspectorRoot } from './internal/layout/KkLaneInspectorRoot';
+import { KkLaneInspectorTop } from './internal/layout/KkLaneInspectorTop';
+import { KkLaneInspectorClose } from './internal/ui/KkLaneInspectorClose';
 import { KkLaneInspectorFacts } from './internal/ui/KkLaneInspectorFacts';
 import { KkLaneInspectorField } from './internal/ui/KkLaneInspectorField';
 import { KkLaneInspectorHead } from './internal/ui/KkLaneInspectorHead';
@@ -14,6 +16,7 @@ export type { KkLaneInspectorTab } from './internal/ui/KkLaneInspectorTabs';
 
 export const KkLaneInspector = Object.assign(KkLaneInspectorRoot, {
   Actions: KkLaneInspectorActions,
+  Close: KkLaneInspectorClose,
   Facts: KkLaneInspectorFacts,
   Field: KkLaneInspectorField,
   Head: KkLaneInspectorHead,
@@ -21,4 +24,5 @@ export const KkLaneInspector = Object.assign(KkLaneInspectorRoot, {
   Note: KkLaneInspectorNote,
   Section: KkLaneInspectorSection,
   Tabs: KkLaneInspectorTabs,
+  Top: KkLaneInspectorTop,
 });

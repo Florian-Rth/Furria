@@ -48,20 +48,6 @@ export const trainingRowMetaOf = (
     .filter((part) => part !== null)
     .join(' · ');
 
-export const trainingStepMetaOf = (
-  position: number | null,
-  total: number,
-  partName: string | null,
-): string | null => {
-  if (position === null) {
-    return partName;
-  }
-
-  const step = `Schritt ${position} von ${total}`;
-
-  return partName === null ? step : `${step} · ${partName}`;
-};
-
 export const trainingOpenHintOf = (open: number): string => `${open} offen`;
 
 const ANSWER_WORDS: Record<AttendanceAnswer, string> = {

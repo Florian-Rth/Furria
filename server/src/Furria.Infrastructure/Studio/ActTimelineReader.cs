@@ -32,19 +32,12 @@ public sealed class ActTimelineReader
             )),
             music
         );
-        var partStarts = await _dbContext
+        var partRanges = await _dbContext
             .ActParts.Where(part => part.ActId == actId)
-            .Select(part => new { part.Id, part.FirstStepId })
+            .Select(part => new PartRange(part.Id, part.FirstStepId, part.LastStepId))
             .ToListAsync(ct);
 
-        return new ActTimeline(
-            music,
-            steps,
-            ActParts.Tile(
-                steps,
-                partStarts.Select(part => new PartStart(part.Id, part.FirstStepId))
-            )
-        );
+        return new ActTimeline(music, steps, ActParts.Group(steps, partRanges));
     }
 
     public async Task<ActMusic> PlayedMusicOfAsync(int actId, CancellationToken ct) =>
@@ -78,8 +71,7 @@ public sealed class ActTimelineReader
             .Select(song => new
             {
                 song.MediaItemId,
-                song.StartSeconds,
-                song.EndSeconds,
+                song.Pieces,
                 song.MediaItem!.StorageKey,
                 song.MediaItem.DurationSeconds,
             })
@@ -87,15 +79,11 @@ public sealed class ActTimelineReader
 
         return
         [
-            .. songs.Select(song => new MusicSource(
-                MusicCut.OfSong(
-                    song.MediaItemId,
-                    song.StartSeconds,
-                    song.EndSeconds,
-                    song.DurationSeconds
-                ),
-                song.StorageKey
-            )),
+            .. songs.SelectMany(song =>
+                MusicCut
+                    .OfSong(song.MediaItemId, song.Pieces, song.DurationSeconds)
+                    .Select(cut => new MusicSource(cut, song.StorageKey))
+            ),
         ];
     }
 }

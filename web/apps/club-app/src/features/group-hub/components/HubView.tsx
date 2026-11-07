@@ -10,11 +10,10 @@ import { useHubActsAccess } from '../hooks/use-hub-acts-access';
 import { toHubPeople } from '../hub-people';
 import type { GroupHub } from '../schemas';
 import { HubActsPanel } from './HubActsPanel';
-import { HubAdministrationPanel } from './HubAdministrationPanel';
 import { HubCalendarEntriesPanel } from './HubCalendarEntriesPanel';
-import { HubCarePanel } from './HubCarePanel';
-import { HubDescriptionPanel } from './HubDescriptionPanel';
+import { HubDescriptionLead } from './HubDescriptionLead';
 import { HubPeoplePanel } from './HubPeoplePanel';
+import { HubSettingsPanel } from './HubSettingsPanel';
 import { HubUsualTrainingTimesPanel } from './HubUsualTrainingTimesPanel';
 
 interface HubViewProps {
@@ -28,8 +27,14 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
   const tone = toGroupTone(hub.groupId, hub.tone);
   const heldKind = toHeldGroupKind(hub.groupKindId, hub.groupKindName);
   const people = toHubPeople(hub.members, hub.admins);
-
+  const administers = permissions.has(PERMISSION_KEYS.groupsManage);
   const seesCalendarEntries = hub.viewerIsMember || hub.viewerMayManage;
+  const hasHistory = hub.pastMembers.length > 0 || hub.pastAdmins.length > 0;
+
+  const acts = actsAccess.sees ? (
+    <HubActsPanel groupId={hub.groupId} tone={tone} canManage={actsAccess.manages} />
+  ) : null;
+
   const calendarEntries = seesCalendarEntries ? (
     <HubCalendarEntriesPanel
       groupId={hub.groupId}
@@ -39,26 +44,31 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
     />
   ) : null;
 
-  const care = hub.viewerMayManage ? (
-    <HubCarePanel hub={hub} tone={tone} heldKind={heldKind} />
-  ) : null;
+  const history =
+    hub.viewerMayManage && hasHistory ? (
+      <GroupHistoryPanel
+        pastMembers={hub.pastMembers}
+        pastAdmins={hub.pastAdmins}
+        groupTone={tone}
+      />
+    ) : null;
 
-  const history = hub.viewerMayManage ? (
-    <GroupHistoryPanel pastMembers={hub.pastMembers} pastAdmins={hub.pastAdmins} groupTone={tone} />
-  ) : null;
-
-  const acts = actsAccess.sees ? (
-    <HubActsPanel groupId={hub.groupId} tone={tone} canManage={actsAccess.manages} />
-  ) : null;
-
-  const administration = permissions.has(PERMISSION_KEYS.groupsManage) ? (
-    <HubAdministrationPanel hub={hub} tone={tone} />
-  ) : null;
+  const settings =
+    hub.viewerMayManage || administers ? (
+      <HubSettingsPanel hub={hub} tone={tone} heldKind={heldKind} administers={administers} />
+    ) : null;
 
   return (
     <KkPanelStack>
+      <HubDescriptionLead description={hub.description} />
       {acts}
-      <HubDescriptionPanel tone={tone} groupName={hub.name} description={hub.description} />
+      {calendarEntries}
+      <HubUsualTrainingTimesPanel
+        groupId={hub.groupId}
+        tone={tone}
+        usualTimes={hub.usualTrainingTimes}
+        canManage={hub.viewerMayManage}
+      />
       <HubPeoplePanel
         tone={tone}
         people={people}
@@ -67,16 +77,8 @@ export const HubView: FC<HubViewProps> = ({ hub }) => {
         canManage={hub.viewerMayManage}
         highlightedKey={highlightedKey}
       />
-      {calendarEntries}
-      <HubUsualTrainingTimesPanel
-        groupId={hub.groupId}
-        tone={tone}
-        usualTimes={hub.usualTrainingTimes}
-        canManage={hub.viewerMayManage}
-      />
-      {care}
       {history}
-      {administration}
+      {settings}
     </KkPanelStack>
   );
 };

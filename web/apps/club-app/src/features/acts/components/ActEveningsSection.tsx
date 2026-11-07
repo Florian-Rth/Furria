@@ -4,12 +4,12 @@ import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import { EVENINGS_EMPTY, EVENINGS_TITLE } from '../act-evenings-copy';
 import { useActEvenings } from '../hooks/use-act-evenings';
-import type { ActStudioResponse, Studio } from '../schemas';
+import type { ActStudio, ActStudioResponse } from '../schemas';
 import { ActEveningRow } from './ActEveningRow';
 
 interface ActEveningsSectionProps {
   data: ActStudioResponse;
-  studio: Studio;
+  studio: ActStudio;
 }
 
 export const ActEveningsSection: FC<ActEveningsSectionProps> = ({ data, studio }) => {

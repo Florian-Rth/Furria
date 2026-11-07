@@ -4,6 +4,7 @@ import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
+import { inkWash } from '../../../internal/ink-wash';
 import { redInk } from '../../../internal/red-ink';
 import { kkTokens } from '../../../tokens';
 
@@ -16,18 +17,21 @@ const partPaint =
     gap: theme.spacing(0.5),
     height: kkTokens.tapTarget,
     minWidth: kkTokens.tapTarget,
-    paddingInline: theme.spacing(1),
-    borderRadius: `${kkTokens.radius.pill}px`,
+    paddingInline: theme.spacing(1, 1.25),
+    borderRadius: `${kkTokens.radius.bar * 3}px`,
     color: current ? palette(theme).text.primary : palette(theme).text.secondary,
-    boxShadow: looped
-      ? `inset 0 0 0 ${kkTokens.line.section}px ${palette(theme).primary.main}`
-      : 'none',
-    backgroundColor: looped
-      ? `color-mix(in srgb, ${palette(theme).primary.main} 12%, transparent)`
-      : 'transparent',
+    backgroundColor: inkWash(theme, '8%'),
+    boxShadow: `inset 0 0 0 ${kkTokens.line.hair}px ${palette(theme).divider}`,
     transition: 'color 200ms ease-out, box-shadow 200ms ease-out, background-color 200ms ease-out',
     '&:active': { transform: 'scale(0.96)' },
-    ...(looped ? redInk(theme) : {}),
+    '@media (hover: hover)': { '&:hover': { backgroundColor: inkWash(theme, '12%') } },
+    ...(looped
+      ? {
+          ...redInk(theme),
+          backgroundColor: `color-mix(in srgb, ${palette(theme).primary.main} 12%, transparent)`,
+          boxShadow: `inset 0 0 0 ${kkTokens.line.section}px ${palette(theme).primary.main}`,
+        }
+      : {}),
     ...focusRing(theme),
   });
 
@@ -56,14 +60,9 @@ export const KkLessonRailPart: FC<KkLessonRailPartProps> = ({
     <RepeatRoundedIcon aria-hidden fontSize="small" />
     <Typography
       component="span"
-      variant="overline"
+      variant="caption"
       noWrap
-      sx={{
-        ...kkTokens.eyebrow,
-        lineHeight: 1,
-        maxWidth: '8rem',
-        color: 'inherit',
-      }}
+      sx={{ fontWeight: 800, lineHeight: 1, maxWidth: '8rem', color: 'inherit' }}
     >
       {name}
     </Typography>

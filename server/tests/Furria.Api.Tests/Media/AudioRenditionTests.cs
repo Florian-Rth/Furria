@@ -65,7 +65,7 @@ public sealed class AudioRenditionTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepTheSoundtrackProfileAndAPhoneRendition_When_AVideoIsUploadedToAnAct()
+    public async Task Should_KeepTheSoundtrackProfileWaveformAndAPhoneRendition_When_AVideoIsUploadedToAnAct()
     {
         var ct = TestContext.Current.CancellationToken;
         var (ctx, actId) = await GardeWithDanceAsync(ct);
@@ -96,9 +96,42 @@ public sealed class AudioRenditionTests : IClassFixture<ApiTestFixture>
         await ctx.Expected.MediaItem(mediaItemId).ToBeReady(640, 360).AssertAsync(ct);
         var profile = await SoundProfileOfAsync(mediaItemId, ct);
         Assert.Equal(4, profile.DurationSeconds, 0.1);
+        var peaks = await PeaksOfAsync(mediaItemId, ct);
+        Assert.Equal(WaveformPeaks.DefaultPeaksPerSecond, peaks.PeaksPerSecond);
+        Assert.InRange(peaks.Peaks.Count, 395, 405);
+        Assert.Contains(peaks.Peaks, peak => peak > 0);
         Assert.True(
             File.Exists(await _fixture.MediaFileOfAsync(mediaItemId, MediaRendition.Compact, ct))
         );
+    }
+
+    [Fact]
+    public async Task Should_DrawAnEmptyWaveform_When_AnActVideoHasNoSound()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (ctx, actId) = await GardeWithDanceAsync(ct);
+        var video = await MediaSamples.VideoAsync(
+            [
+                "-f",
+                "lavfi",
+                "-i",
+                "testsrc2=size=640x360:rate=25:duration=2",
+                "-c:v",
+                "libx264",
+                "-pix_fmt",
+                "yuv420p",
+            ],
+            ".mp4",
+            ct
+        );
+        var mediaItemId = await UploadAsync(ctx, actId, "Stumm.mp4", video, ct);
+
+        await _fixture.RunMediaWorkerAsync(ct);
+
+        await ctx.Expected.MediaItem(mediaItemId).ToBeReady(640, 360).AssertAsync(ct);
+        var peaks = await PeaksOfAsync(mediaItemId, ct);
+        Assert.Equal(WaveformPeaks.DefaultPeaksPerSecond, peaks.PeaksPerSecond);
+        Assert.Empty(peaks.Peaks);
     }
 
     private async Task<WaveformPeaks> PeaksOfAsync(int mediaItemId, CancellationToken ct)

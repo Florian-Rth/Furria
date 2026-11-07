@@ -8,8 +8,6 @@ public sealed record StudioStepDetails
 
     public required string Name { get; init; }
 
-    public required string? Description { get; init; }
-
     public required double? StartSeconds { get; init; }
 
     public required double? EndSeconds { get; init; }

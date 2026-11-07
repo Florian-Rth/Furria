@@ -4,9 +4,14 @@ import { keyframes } from '@mui/material/styles';
 import type { FC, PropsWithChildren } from 'react';
 import { kkTokens } from '../../../tokens';
 import {
+  BESIDE_STAGE_BOX,
+  BESIDE_VIDEO_BOX,
+  DOCKED_STAGE_ROOM,
+  dockedInsetOf,
   insetBoxOf,
   LESSON_PAIRED,
   LESSON_PICTURE_ROOMY,
+  LESSON_WIDE_TALL,
   MAIN_BOX,
   STACKED_STAGE_BOX,
   STACKED_VIDEO_BOX,
@@ -32,6 +37,13 @@ const palette = (theme: Theme) => (theme.vars ?? theme).palette;
 const toneOf = (theme: Theme, tone: KkLessonLayerTone): string =>
   tone === 'ink' ? kkTokens.overlay.scrimInk : palette(theme).background.default;
 
+const DOCKED_STAGE =
+  '[data-kk-lesson-docked="true"] > &[data-kk-lesson-layer="main"][data-kk-lesson-tone="paper"]';
+
+const dockedStageOf = (theme: Theme): CSSObject => ({
+  [DOCKED_STAGE]: { backgroundColor: palette(theme).background.paper, ...DOCKED_STAGE_ROOM },
+});
+
 const STACKED_PAINT: CSSObject = {
   zIndex: 1,
   borderRadius: 0,
@@ -39,12 +51,22 @@ const STACKED_PAINT: CSSObject = {
   animation: 'none',
 };
 
-const stackedOf = (tone: KkLessonLayerTone): CSSObject => ({
+const RADIUS = `${kkTokens.radius.base}px`;
+
+const besideOf = (tone: KkLessonLayerTone): CSSObject =>
+  tone === 'ink'
+    ? { ...BESIDE_VIDEO_BOX, borderRadius: `${RADIUS} 0 0 0` }
+    : { ...BESIDE_STAGE_BOX, borderRadius: `0 ${RADIUS} 0 0` };
+
+const pairedOf = (tone: KkLessonLayerTone): CSSObject => ({
   [LESSON_PICTURE_ROOMY]: {
     [LESSON_PAIRED]: {
       ...STACKED_PAINT,
       ...(tone === 'ink' ? { ...STACKED_VIDEO_BOX, borderRadius: 'inherit' } : STACKED_STAGE_BOX),
     },
+  },
+  [LESSON_WIDE_TALL]: {
+    [LESSON_PAIRED]: { ...STACKED_PAINT, ...besideOf(tone) },
   },
 });
 
@@ -60,6 +82,7 @@ const placePaint = (place: KkLessonLayerPlace, aspect: number, theme: Theme): CS
 
   return {
     ...insetBoxOf(aspect),
+    ...dockedInsetOf(aspect),
     zIndex: 2,
     transformOrigin: 'bottom right',
     borderRadius: `${kkTokens.radius.base - 4}px`,
@@ -82,6 +105,7 @@ export const KkLessonLayer: FC<KkLessonLayerProps> = ({ place, aspect, tone, chi
     <Box
       aria-hidden={hidden}
       data-kk-lesson-layer={place}
+      data-kk-lesson-tone={tone}
       sx={(theme) => ({
         position: 'absolute',
         display: 'grid',
@@ -90,7 +114,8 @@ export const KkLessonLayer: FC<KkLessonLayerProps> = ({ place, aspect, tone, chi
         overflow: 'clip',
         backgroundColor: toneOf(theme, tone),
         ...placePaint(place, aspect, theme),
-        ...stackedOf(tone),
+        ...pairedOf(tone),
+        ...dockedStageOf(theme),
       })}
     >
       {children}

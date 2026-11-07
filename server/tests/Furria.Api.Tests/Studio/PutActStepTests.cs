@@ -31,31 +31,17 @@ public sealed class PutActStepTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_StoreTheNameAndDescription_When_AnEditorWritesThem()
+    public async Task Should_StoreTheTrimmedName_When_AnEditorRenamesTheStep()
     {
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId) = await MusicAsync(ct);
         var stepId = (await MarkAsync(admin, actId, 0))[0];
 
-        var response = await PutAsync(admin, actId, stepId, " Einmarsch ", "Rechts beginnen");
+        var response = await PutAsync(admin, actId, stepId, " Einmarsch ");
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         var step = Assert.Single((await StudioOfAsync(admin, actId)).Studio!.Steps);
-        Assert.Equal(("Einmarsch", "Rechts beginnen"), (step.Name, step.Description));
-    }
-
-    [Fact]
-    public async Task Should_DropTheDescription_When_ItIsCleared()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId) = await MusicAsync(ct);
-        var stepId = (await MarkAsync(admin, actId, 0))[0];
-        await PutAsync(admin, actId, stepId, "Einmarsch", "Rechts beginnen");
-
-        await PutAsync(admin, actId, stepId, "Einmarsch", "  ");
-
-        var step = Assert.Single((await StudioOfAsync(admin, actId)).Studio!.Steps);
-        Assert.Null(step.Description);
+        Assert.Equal("Einmarsch", step.Name);
     }
 
     [Fact]
@@ -69,7 +55,7 @@ public sealed class PutActStepTests : IClassFixture<ApiTestFixture>
         await SongOfAsync(_fixture, other, otherActId, 60, ct);
         var foreignStep = (await MarkAsync(other, otherActId, 0))[0];
 
-        var response = await PutAsync(other, actId, foreignStep, "Einmarsch", null);
+        var response = await PutAsync(other, actId, foreignStep, "Einmarsch");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -78,8 +64,7 @@ public sealed class PutActStepTests : IClassFixture<ApiTestFixture>
         HttpClient client,
         int actId,
         int stepId,
-        string name,
-        string? description
+        string name
     ) =>
         client.PUTAsync<PutActStep, PutActStepRequest>(
             new()
@@ -87,7 +72,6 @@ public sealed class PutActStepTests : IClassFixture<ApiTestFixture>
                 ActId = actId,
                 StepId = stepId,
                 Name = name,
-                Description = description,
             }
         );
 }

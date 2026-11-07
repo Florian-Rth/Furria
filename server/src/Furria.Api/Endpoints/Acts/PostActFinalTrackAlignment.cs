@@ -53,6 +53,7 @@ public sealed class PostActFinalTrackAlignment
                     .. result.Value.Select(match => new FinalTrackMatchDto
                     {
                         SourceMediaItemId = match.SourceMediaItemId,
+                        FromSeconds = match.FromSeconds,
                         OffsetSeconds = match.OffsetSeconds,
                         Stretch = match.Stretch,
                         Confidence = match.Confidence,
@@ -91,6 +92,8 @@ public sealed record PostActFinalTrackAlignmentResponse
 public sealed record FinalTrackMatchDto
 {
     public required int SourceMediaItemId { get; init; }
+
+    public required double FromSeconds { get; init; }
 
     public required double OffsetSeconds { get; init; }
 

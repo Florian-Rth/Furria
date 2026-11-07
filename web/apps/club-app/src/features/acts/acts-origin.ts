@@ -1,3 +1,4 @@
+import type { KkLinkSearchValues } from '@furria/ui/kk-link-search';
 import type { KkScreenActionLink, KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { CatalogueAct } from '@/features/running-order/schemas';
 import {
@@ -7,12 +8,10 @@ import {
   START_ORIGIN,
 } from '@/features/session/app-sections';
 import type { BackStackSpot } from '@/lib/back-stack';
+import { actDetailsLinkOf, actDetailsPathOf } from './act-details';
 import { ACT_DETAILS_LABEL } from './act-page-copy';
 import { ACTS_TITLE, GROUP_ACTS_TITLE } from './acts-copy';
-import type { ActPageOrigin, ActPageSearch, ActsSearch } from './schemas';
-
-const DETAILS_VIEW = 'details';
-const CARD_VIEW = 'card';
+import type { ActPageOrigin, ActScreenSearch, ActsSearch } from './schemas';
 
 export const PLANNER_PATH = '/events/$eventId/running-order';
 export const GROUP_HUB_PATH = '/groups/$groupId';
@@ -41,6 +40,11 @@ export const actPageLinkOf = (
   search: Record<string, string | number>,
 ): ActPageLink => ({ to: actPagePathOf(actId), search });
 
+const ORIGIN_KEYS: readonly string[] = ['from', 'group', 'event', 'filter', 'person', 'session'];
+
+export const originLinkSearchOf = (previous: KkLinkSearchValues): KkLinkSearchValues =>
+  Object.fromEntries(Object.entries(previous).filter(([key]) => ORIGIN_KEYS.includes(key)));
+
 export const groupActsPathOf = (groupId: number): string =>
   GROUP_ACTS_PATH.replace('$groupId', String(groupId));
 
@@ -57,7 +61,9 @@ export const groupOriginOf = (groupId: number, name: string): KkScreenOrigin => 
   params: { groupId: String(groupId) },
 });
 
-export const actPageSearchOf = (list: ActsListState): ActPageSearch & { from: ActPageOrigin } => ({
+export const actPageSearchOf = (
+  list: ActsListState,
+): ActScreenSearch & { from: ActPageOrigin } => ({
   from: 'catalogue',
   event: list.from,
   filter: list.filter,
@@ -65,7 +71,7 @@ export const actPageSearchOf = (list: ActsListState): ActPageSearch & { from: Ac
   session: list.session,
 });
 
-const listSearchOf = (search: ActPageSearch): Record<string, string> => {
+const listSearchOf = (search: ActScreenSearch): Record<string, string> => {
   const kept = {
     from: search.event,
     filter: search.filter,
@@ -80,7 +86,10 @@ const listSearchOf = (search: ActPageSearch): Record<string, string> => {
   );
 };
 
-export const actPageReturnOf = (search: ActPageSearch, act: CatalogueAct | null): ActPageReturn => {
+export const actPageReturnOf = (
+  search: ActScreenSearch,
+  act: CatalogueAct | null,
+): ActPageReturn => {
   if (search.from === 'catalogue') {
     return { kind: 'catalogue', list: listSearchOf(search) };
   }
@@ -157,17 +166,7 @@ export const actsCatalogueOriginOf = (target: ActsCatalogueReturn): KkScreenOrig
       return START_ORIGIN;
   }
 };
-const detailsSearchOf = (search: ActPageSearch): Record<string, string> => {
-  const details = { ...search, view: DETAILS_VIEW, edit: undefined, training: undefined };
-
-  return Object.fromEntries(
-    Object.entries(details).flatMap(([key, value]) =>
-      value === undefined ? [] : [[key, String(value)]],
-    ),
-  );
-};
-
-const cardSearchOf = (search: ActPageSearch): Record<string, string> => {
+export const originTextSearchOf = (search: ActScreenSearch): Record<string, string> => {
   const kept = {
     from: search.from,
     group: search.group,
@@ -184,51 +183,55 @@ const cardSearchOf = (search: ActPageSearch): Record<string, string> => {
   );
 };
 
-const viewBehindOf = (spot: BackStackSpot | undefined, actId: number): string | null =>
-  spot === undefined || spot.pathname !== actPagePathOf(actId)
-    ? null
-    : (new URLSearchParams(spot.search).get('view') ?? CARD_VIEW);
+type ActViewBehind = 'card' | 'details' | null;
+
+const viewBehindOf = (spot: BackStackSpot | undefined, actId: number): ActViewBehind => {
+  if (spot === undefined) {
+    return null;
+  }
+  if (spot.pathname === actPagePathOf(actId)) {
+    return 'card';
+  }
+
+  const details = actDetailsPathOf(actId, null);
+
+  return spot.pathname === details || spot.pathname.startsWith(`${details}/`) ? 'details' : null;
+};
 
 export const actCardOriginOf = (
   actId: number,
-  search: ActPageSearch,
+  search: ActScreenSearch,
   name: string,
 ): KkScreenOrigin => ({
   label: name,
   to: ACT_PAGE_PATH,
   params: { actId: String(actId) },
-  search: cardSearchOf(search),
+  search: originTextSearchOf(search),
 });
 
-export const actCardLinkOf = (actId: number, search: ActPageSearch): KkScreenActionLink => ({
+export const actCardLinkOf = (actId: number, search: ActScreenSearch): KkScreenActionLink => ({
   to: ACT_PAGE_PATH,
   params: { actId: String(actId) },
-  search: cardSearchOf(search),
-});
-
-export const actDetailsLinkOf = (actId: number, search: ActPageSearch): KkScreenActionLink => ({
-  to: ACT_PAGE_PATH,
-  params: { actId: String(actId) },
-  search: { ...cardSearchOf(search), view: DETAILS_VIEW },
+  search: originTextSearchOf(search),
 });
 
 export const playerOriginOf = (
   actId: number,
-  search: ActPageSearch,
+  search: ActScreenSearch,
+  eventId: number | null,
   behind: BackStackSpot | undefined,
   away: KkScreenOrigin,
   name: string,
 ): KkScreenOrigin => {
   const view = viewBehindOf(behind, actId);
 
-  if (view === DETAILS_VIEW) {
+  if (view === 'details') {
     return {
       label: ACT_DETAILS_LABEL,
-      to: ACT_PAGE_PATH,
-      params: { actId: String(actId) },
-      search: detailsSearchOf(search),
+      ...actDetailsLinkOf(actId, eventId === null ? null : { kind: 'evening', eventId }),
+      search: originTextSearchOf(search),
     };
   }
 
-  return view === CARD_VIEW ? actCardOriginOf(actId, search, name) : away;
+  return view === 'card' ? actCardOriginOf(actId, search, name) : away;
 };

@@ -77,6 +77,3 @@ export const toNoMembersLine = (groupName: string, canManage: boolean): string =
 
   return canManage ? `${line} ${ADD_ANYONE_INVITE}` : line;
 };
-
-export const toNoDescriptionLine = (groupName: string): string =>
-  `Für ${groupName} gibt es noch keine Beschreibung.`;

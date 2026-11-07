@@ -2,15 +2,15 @@ import type { FC } from 'react';
 import { ChoreographyVersionsSection } from '@/features/act-studio/components/ChoreographyVersionsSection';
 import { useEveningMutations } from '@/features/act-studio/evening-api';
 import { EVENING_VERSIONS_TITLE } from '@/features/act-studio/undo-copy';
+import type { ActDetailsPageState } from '../hooks/use-act-details-page';
 import { useActEveningPane } from '../hooks/use-act-evening-pane';
-import type { ActPageState } from '../hooks/use-act-page';
-import type { ActStudioResponse, Studio, StudioEvening } from '../schemas';
+import type { ActStudio, ActStudioResponse, StudioEvening } from '../schemas';
 import { ActEveningSide } from './ActEveningSide';
 
 interface ActEveningPanelProps {
-  page: ActPageState;
+  page: ActDetailsPageState;
   data: ActStudioResponse;
-  studio: Studio;
+  studio: ActStudio;
   evening: StudioEvening;
 }
 

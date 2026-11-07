@@ -22,6 +22,10 @@ public sealed class ActVideo
 
     public double StartVideoSeconds { get; set; }
 
+    public double ClipStartSeconds { get; set; }
+
+    public double? ClipEndSeconds { get; set; }
+
     public Act? Act { get; set; }
 
     public MediaItem? MediaItem { get; set; }

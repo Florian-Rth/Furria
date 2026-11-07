@@ -4,15 +4,11 @@ import type { ActKind } from '@/features/running-order/schemas';
 import {
   answerKeyOf,
   askOf,
-  doorReachOf,
   doorsOf,
   eveningSlotOf,
   hubBandOf,
   isOwed,
   musicClockOf,
-  namesPreviewOf,
-  paneDoorOf,
-  sideDoorOf,
   tallyOf,
   templateOf,
   trainingTallyOf,
@@ -58,15 +54,6 @@ describe('doorsOf', () => {
     ['studio', false, 1],
   ] as const)('gives a %s act seen with studio %s %i doors', (template, hasStudio, count) => {
     expect(doorsOf(template, hasStudio)).toHaveLength(count);
-  });
-});
-
-describe('doorReachOf', () => {
-  it.each([
-    [['evening', 'cast'], 'tile'],
-    [['evening'], 'full'],
-  ] as const)('lets doors %j reach %s', (doors, reach) => {
-    expect(doorReachOf(doors)).toBe(reach);
   });
 });
 
@@ -148,15 +135,6 @@ describe('askOf', () => {
   });
 });
 
-describe('namesPreviewOf', () => {
-  it('shows the first names and counts the rest', () => {
-    expect(namesPreviewOf([person(1, 'Lena'), person(2, 'Jana'), person(3, 'Sophie')], 2)).toEqual({
-      names: ['Lena', 'Jana'],
-      more: 1,
-    });
-  });
-});
-
 describe('musicClockOf', () => {
   it.each([
     [178.3374, '2:58'],
@@ -164,22 +142,6 @@ describe('musicClockOf', () => {
     [59.6, '1:00'],
   ])('formats %s seconds', (seconds, clock) => {
     expect(musicClockOf(seconds)).toBe(clock);
-  });
-});
-
-describe('pane doors', () => {
-  const doors = ['evening', 'training', 'practice', 'cast'] as const;
-
-  it('shows the opened door, else the first door with a sheet', () => {
-    expect(paneDoorOf('cast', doors)).toBe('cast');
-    expect(paneDoorOf(null, doors)).toBe('evening');
-    expect(paneDoorOf('practice', doors)).toBe('evening');
-  });
-
-  it('puts the next door with a sheet beside it', () => {
-    expect(sideDoorOf('evening', doors)).toBe('training');
-    expect(sideDoorOf('training', doors)).toBe('evening');
-    expect(sideDoorOf('evening', ['evening'])).toBeNull();
   });
 });
 

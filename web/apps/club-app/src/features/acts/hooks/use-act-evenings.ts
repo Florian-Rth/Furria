@@ -1,12 +1,13 @@
+import { canPractise } from '@furria/studio/music-timeline';
 import type { KkChipTone } from '@furria/ui/KkChip';
 import type { KkLinkSearch } from '@furria/ui/kk-link-search';
 import { useEveningMutations } from '@/features/act-studio/evening-api';
+import { actDetailsPathOf } from '../act-details';
 import { eveningEntryOf } from '../act-evenings';
 import { EVENING_CHANGED_HINT, toEveningMeta, toEveningStateChip } from '../act-evenings-copy';
-import { canPractise } from '../act-studio';
-import type { ActStudioResponse, Studio } from '../schemas';
-
-const CURRENT_ROUTE = '.';
+import { actScreenPathOf } from '../act-screens';
+import { originLinkSearchOf } from '../acts-origin';
+import type { ActStudio, ActStudioResponse } from '../schemas';
 
 export interface ActEveningRowState {
   eventId: number;
@@ -26,17 +27,14 @@ export interface ActEvenings {
   join: (eventId: number) => void;
 }
 
-const DETAILS_VIEW = 'details';
-
-const searchOf =
-  (eventId: number, opensPane: boolean): KkLinkSearch =>
-  ({ view: _view, settings: _settings, edit: _edit, roll: _roll, ...kept }) =>
-    opensPane ? { ...kept, view: DETAILS_VIEW, evening: eventId } : { ...kept, evening: eventId };
-
-export const useActEvenings = (data: ActStudioResponse, studio: Studio): ActEvenings => {
+export const useActEvenings = (data: ActStudioResponse, studio: ActStudio): ActEvenings => {
   const mutations = useEveningMutations(data.act.actId);
   const canEdit = data.viewer.canEditStudio;
   const practisable = canPractise(studio);
+  const targetOf = (eventId: number): string =>
+    canEdit
+      ? actDetailsPathOf(data.act.actId, { kind: 'evening', eventId })
+      : actScreenPathOf(data.act.actId, { kind: 'practice', eventId });
 
   return {
     rows: studio.evenings.map((evening) => {
@@ -51,8 +49,8 @@ export const useActEvenings = (data: ActStudioResponse, studio: Studio): ActEven
         stateLabel: chip.label,
         stateTone: chip.tone,
         changedFlag: entry.changes.length === 0 ? undefined : EVENING_CHANGED_HINT,
-        to: reachable ? CURRENT_ROUTE : null,
-        search: searchOf(evening.eventId, canEdit),
+        to: reachable ? targetOf(evening.eventId) : null,
+        search: originLinkSearchOf,
         canJoin: canEdit && entry.state === 'open',
       };
     }),

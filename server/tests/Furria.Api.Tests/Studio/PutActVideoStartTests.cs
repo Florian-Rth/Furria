@@ -48,6 +48,19 @@ public sealed class PutActVideoStartTests : IClassFixture<ApiTestFixture>
         Assert.Equal(atSeconds, video.StartSeconds!.Value, 6);
     }
 
+    [Fact]
+    public async Task Should_RefuseThePlace_When_TheClipWouldEndBeforeTheMusic()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (admin, actId) = await MusicAsync(ct);
+        var videoId = await VideoOfAsync(_fixture, admin, actId, 30, ct);
+        await ClipVideoAsync(admin, actId, videoId, 0, 10);
+
+        var response = await PutAsync(admin, actId, videoId, -15);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
     [Theory]
     [InlineData(120)]
     [InlineData(-30)]
@@ -68,8 +81,8 @@ public sealed class PutActVideoStartTests : IClassFixture<ApiTestFixture>
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId) = await MusicAsync(ct);
         var stepIds = await MarkedAsync(admin, actId, 60);
-        await AddPartAsync(admin, actId, stepIds[0], "Marsch");
-        await AddPartAsync(admin, actId, stepIds[1], "Polka");
+        await AddPartAsync(admin, actId, stepIds[0], stepIds[0], "Marsch");
+        await AddPartAsync(admin, actId, stepIds[1], stepIds[1], "Polka");
         var videoId = await VideoOfAsync(_fixture, admin, actId, 50, ct);
 
         await PlaceVideoAsync(admin, actId, videoId, 62);
@@ -84,8 +97,8 @@ public sealed class PutActVideoStartTests : IClassFixture<ApiTestFixture>
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId) = await MusicAsync(ct);
         var stepIds = await MarkedAsync(admin, actId, 60);
-        await AddPartAsync(admin, actId, stepIds[0], "Marsch");
-        await AddPartAsync(admin, actId, stepIds[1], "Polka");
+        await AddPartAsync(admin, actId, stepIds[0], stepIds[0], "Marsch");
+        await AddPartAsync(admin, actId, stepIds[1], stepIds[1], "Polka");
         var older = await VideoOfAsync(_fixture, admin, actId, 40, ct);
         await PlaceVideoAsync(admin, actId, older, 65);
         var newer = await VideoOfAsync(_fixture, admin, actId, 58, ct);

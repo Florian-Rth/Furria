@@ -7,6 +7,8 @@ public sealed record WaveformPeaks(int PeaksPerSecond, IReadOnlyList<int> Peaks)
     public const int DefaultPeaksPerSecond = 100;
     public const int FullScale = 255;
 
+    public static readonly WaveformPeaks Silent = new(DefaultPeaksPerSecond, []);
+
     [Pure]
     public static WaveformPeaks Of(SoundSignal signal)
     {

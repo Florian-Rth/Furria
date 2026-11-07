@@ -1,40 +1,37 @@
 import type { FC } from 'react';
 import { ActStudioBody } from '@/features/act-studio/components/ActStudioBody';
-import type { ActPageState } from '../hooks/use-act-page';
-import { ActPageLoading } from './ActPageLoading';
+import type { ActPracticePage } from '../hooks/use-act-practice-page';
+import type { ActStudio } from '../schemas';
 
 interface ActPracticeBodyProps {
-  page: ActPageState;
+  page: ActPracticePage;
+  actId: number;
+  studio: ActStudio;
 }
 
 const SESSION_KEY = 'session';
 
-export const ActPracticeBody: FC<ActPracticeBodyProps> = ({ page }) => {
-  const studio = page.query.data?.studio;
-
-  if (studio === undefined || studio === null || page.actId === null) {
-    return <ActPageLoading page={page} />;
-  }
-
-  const screenKey = `${page.actId}:${page.evening?.eventId ?? SESSION_KEY}`;
-  const startHall = (): void => {
-    page.startTraining(undefined);
-  };
+export const ActPracticeBody: FC<ActPracticeBodyProps> = ({ page, actId, studio }) => {
+  const tone = page.load.act?.group?.tone ?? null;
+  const screenKey = `${actId}:${page.evening?.eventId ?? SESSION_KEY}`;
   const context = {
     evening: page.evening,
     startEditing: page.startEditing,
-    startHall,
+    startHall: page.startHall,
+    toggleEditing: page.toggleEditing,
     stageEditor: true,
+    tone,
   };
 
   return (
     <ActStudioBody
       key={screenKey}
-      actId={page.actId}
+      actId={actId}
       title={page.title}
+      tone={tone}
       studio={studio}
-      viewerId={page.viewerId}
-      canEdit={page.canEditStudio}
+      viewerId={page.load.viewerId}
+      canEdit={page.load.canEditStudio}
       cast={page.eveningCast}
       context={context}
     />

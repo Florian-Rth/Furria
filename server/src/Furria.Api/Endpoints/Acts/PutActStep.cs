@@ -31,14 +31,13 @@ public sealed class PutActStep : Endpoint<PutActStepRequest>
             return;
         }
 
-        var result = await _stepService.DescribeAsync(
+        var result = await _stepService.RenameAsync(
             accountId.Value,
-            new ActStepTextCommand
+            new RenameActStepCommand
             {
                 ActId = req.ActId,
                 StepId = req.StepId,
                 Name = req.Name,
-                Description = req.Description,
             },
             ct
         );
@@ -61,8 +60,6 @@ public sealed record PutActStepRequest
     public required int StepId { get; init; }
 
     public required string Name { get; init; }
-
-    public required string? Description { get; init; }
 }
 
 public sealed class PutActStepValidator : Validator<PutActStepRequest>
@@ -72,6 +69,5 @@ public sealed class PutActStepValidator : Validator<PutActStepRequest>
         RuleFor(request => request.ActId).GreaterThan(0);
         RuleFor(request => request.StepId).GreaterThan(0);
         RuleFor(request => request.Name).NotNull().MaximumLength(ActStep.NameLength);
-        RuleFor(request => request.Description).MaximumLength(ActStep.DescriptionLength);
     }
 }

@@ -1,7 +1,8 @@
+import type { ActDetailsPane } from '@/features/acts/act-details';
+import { actDetailsLinkOf } from '@/features/acts/act-details';
+import { actScreenLinkOf } from '@/features/acts/act-screens';
 import { ACT_PAGE_PATH, GROUP_HUB_PATH } from '@/features/acts/acts-origin';
-import type { ActPageSearch } from '@/features/acts/schemas';
-
-const CALENDAR_ENTRY_PATH = '/calendar/$calendarEntryId';
+import type { ActScreenSearch } from '@/features/acts/schemas';
 
 export type CardLinkSearch = Record<string, string | number | boolean>;
 
@@ -18,11 +19,9 @@ export interface ActCardLinks {
   settings: CardLink;
 }
 
-type ActPageView = NonNullable<ActPageSearch['view']>;
-
 const ORIGIN_KEYS = ['from', 'group', 'event', 'filter', 'person', 'session'] as const;
 
-export const originSearchOf = (search: ActPageSearch): CardLinkSearch =>
+export const originSearchOf = (search: ActScreenSearch): CardLinkSearch =>
   Object.fromEntries(
     ORIGIN_KEYS.flatMap((key) => {
       const value = search[key];
@@ -31,33 +30,32 @@ export const originSearchOf = (search: ActPageSearch): CardLinkSearch =>
     }),
   );
 
-const actPageLinkOf = (
+const detailsLinkOf = (
   actId: number,
-  search: ActPageSearch,
-  view: ActPageView,
-  extra: CardLinkSearch,
+  search: ActScreenSearch,
+  pane: ActDetailsPane | null,
 ): CardLink => ({
-  to: ACT_PAGE_PATH,
-  params: { actId: String(actId) },
-  search: { ...originSearchOf(search), view, ...extra },
+  ...actDetailsLinkOf(actId, pane),
+  search: originSearchOf(search),
 });
 
-export const actCardLinksOf = (actId: number, search: ActPageSearch): ActCardLinks => ({
-  play: actPageLinkOf(actId, search, 'play', {}),
-  edit: actPageLinkOf(actId, search, 'play', { edit: true }),
-  details: actPageLinkOf(actId, search, 'details', {}),
-  settings: actPageLinkOf(actId, search, 'details', { settings: true }),
+export const actCardLinksOf = (actId: number, search: ActScreenSearch): ActCardLinks => ({
+  play: {
+    ...actScreenLinkOf(actId, { kind: 'practice', eventId: null }),
+    search: originSearchOf(search),
+  },
+  edit: {
+    ...actScreenLinkOf(actId, { kind: 'edit', eventId: null }),
+    search: originSearchOf(search),
+  },
+  details: detailsLinkOf(actId, search, null),
+  settings: detailsLinkOf(actId, search, { kind: 'settings' }),
 });
 
 export const actCardLinkOf = (actId: number, groupId: number): CardLink => ({
   to: ACT_PAGE_PATH,
   params: { actId: String(actId) },
   search: { from: 'group', group: groupId },
-});
-
-export const calendarEntryLinkOf = (calendarEntryId: number): CardLink => ({
-  to: CALENDAR_ENTRY_PATH,
-  params: { calendarEntryId: String(calendarEntryId) },
 });
 
 export const groupHubLinkOf = (groupId: number): CardLink => ({

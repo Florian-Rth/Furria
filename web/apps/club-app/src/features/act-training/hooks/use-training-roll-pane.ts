@@ -1,12 +1,11 @@
+import { spotPathsOf } from '@furria/studio/choreography-motion';
+import { canPractise, musicSegmentsOf } from '@furria/studio/music-timeline';
+import { timedStepsOf } from '@furria/studio/use-studio-playback';
 import { toImageSource } from '@furria/ui/image-source';
 import type { KkCastTile } from '@furria/ui/KkCastGrid';
 import type { KkStepState } from '@furria/ui/step-state';
-import { spotPathsOf } from '@/features/act-player/choreography-motion';
-import { timedStepsOf } from '@/features/act-player/hooks/use-studio-playback';
-import { musicSegmentsOf } from '@/features/act-player/music-timeline';
-import { canPractise } from '@/features/acts/act-studio';
 import { toShortName } from '@/features/acts/acts-copy';
-import type { Studio, StudioTraining } from '@/features/acts/schemas';
+import type { ActStudio, StudioTraining } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
 import { toInitials } from '@/lib/initials';
 import type { AttendanceMarks } from '../api';
@@ -48,7 +47,7 @@ export interface TrainingRollPaneState {
 }
 
 interface TrainingRollSource {
-  studio: Studio;
+  studio: ActStudio;
   training: StudioTraining;
   cast: readonly CastPerson[];
   canMark: boolean;

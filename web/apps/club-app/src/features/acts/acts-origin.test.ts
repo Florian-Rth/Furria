@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import type { CatalogueAct } from '@/features/running-order/schemas';
 import type { ActPageReturn, ActsCatalogueAccess, ActsCatalogueReturn } from './acts-origin';
 import {
-  actDetailsLinkOf,
   actPageReturnOf,
   actPageSearchOf,
   actsCatalogueReturnOf,
@@ -59,55 +58,58 @@ describe('playerOriginOf', () => {
   it('closes back to the act details it was opened from, keeping how the act was reached', () => {
     const origin = playerOriginOf(
       5,
-      { from: 'start', evening: 9, edit: true, training: 4, view: 'training' },
-      { pathname: '/acts/5', search: '?from=start&view=details' },
+      { from: 'start' },
+      9,
+      { pathname: '/acts/5/details/evenings/9', search: '?from=start' },
       away,
       'Marsch',
     );
 
-    expect([origin.params, origin.search]).toEqual([
+    expect([origin.to, origin.params, origin.search]).toEqual([
+      '/acts/$actId/details/evenings/$eventId',
+      { actId: '5', eventId: '9' },
+      { from: 'start' },
+    ]);
+  });
+
+  it('closes back to the plain act details from a screen without an evening', () => {
+    const origin = playerOriginOf(
+      5,
+      { from: 'start' },
+      null,
+      { pathname: '/acts/5/details/trainings/31/roll', search: '?from=start' },
+      away,
+      'Marsch',
+    );
+
+    expect([origin.to, origin.params, origin.search]).toEqual([
+      '/acts/$actId/details',
       { actId: '5' },
-      { from: 'start', evening: '9', view: 'details' },
+      { from: 'start' },
     ]);
   });
 
   it.each([
     ['opened directly', undefined],
     ['opened from elsewhere', { pathname: '/groups/1', search: '' }],
-    ['opened from the same act playing', { pathname: '/acts/5', search: '?view=play' }],
-    ['opened from another act', { pathname: '/acts/6', search: '?view=details' }],
+    ['opened from the same act practising', { pathname: '/acts/5/practice', search: '' }],
+    ['opened from another act', { pathname: '/acts/6/details', search: '' }],
+    ['opened from a look-alike path', { pathname: '/acts/5/detailsx', search: '' }],
   ])('closes to where the act was reached from when %s', (_, behind) => {
-    expect(playerOriginOf(5, { from: 'start' }, behind, away, 'Marsch')).toBe(away);
+    expect(playerOriginOf(5, { from: 'start' }, null, behind, away, 'Marsch')).toBe(away);
   });
 
   it('closes back to the act card it was opened from, keeping how the act was reached', () => {
     const origin = playerOriginOf(
       5,
-      { from: 'group', group: 3, view: 'play', edit: true },
+      { from: 'group', group: 3 },
+      null,
       { pathname: '/acts/5', search: '?from=group&group=3' },
       away,
       'Marsch',
     );
 
     expect([origin.params, origin.search]).toEqual([{ actId: '5' }, { from: 'group', group: '3' }]);
-  });
-});
-
-describe('actDetailsLinkOf', () => {
-  it('links the act details, keeping how the act was reached and dropping the open tools', () => {
-    const link = actDetailsLinkOf(5, {
-      from: 'group',
-      group: 3,
-      view: 'play',
-      edit: true,
-      training: 4,
-      settings: true,
-    });
-
-    expect([link.params, link.search]).toEqual([
-      { actId: '5' },
-      { from: 'group', group: '3', view: 'details' },
-    ]);
   });
 });
 

@@ -1,110 +1,95 @@
+import { canPractise, musicSegmentsOf } from '@furria/studio/music-timeline';
+import { playerKeyActionsOf } from '@furria/studio/practice-key-actions';
+import type { StudioTool } from '@furria/studio/studio-copy';
+import { workedPathsOf } from '@furria/studio/studio-edits';
+import { largeTextFrameOf } from '@furria/studio/studio-layout';
+import { studioEditorOf } from '@furria/studio/studio-mode';
+import type { StudioScreen } from '@furria/studio/studio-screen';
+import { useActStudioEdits, useKeptPosition } from '@furria/studio/use-act-studio-edits';
+import { useActStudioMode } from '@furria/studio/use-act-studio-mode';
+import { usePractice } from '@furria/studio/use-practice';
+import { usePracticeMemory } from '@furria/studio/use-practice-memory';
+import { usePracticeSteps } from '@furria/studio/use-practice-steps';
+import { usePracticeVideo } from '@furria/studio/use-practice-video';
+import { useStudioKeys } from '@furria/studio/use-studio-keys';
+import { useStudioLargeText } from '@furria/studio/use-studio-large-text';
+import type { StudioPlayback } from '@furria/studio/use-studio-playback';
+import { useStudioPlayback } from '@furria/studio/use-studio-playback';
+import type { KkGroupTone } from '@furria/ui/group-tone';
 import { useKkLaneWide } from '@furria/ui/KkLaneWide';
-import type { StudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import { useStudioPlayback } from '@/features/act-player/hooks/use-studio-playback';
-import { usePlayerKeys } from '@/features/act-practice/hooks/use-player-keys';
-import type { Practice } from '@/features/act-practice/hooks/use-practice';
-import { usePractice } from '@/features/act-practice/hooks/use-practice';
-import { usePracticeMemory } from '@/features/act-practice/hooks/use-practice-memory';
-import type { PracticeSteps } from '@/features/act-practice/hooks/use-practice-steps';
-import { usePracticeSteps } from '@/features/act-practice/hooks/use-practice-steps';
-import type { PracticeVideo } from '@/features/act-practice/hooks/use-practice-video';
-import { usePracticeVideo } from '@/features/act-practice/hooks/use-practice-video';
-import { canPractise } from '@/features/acts/act-studio';
-import type { Studio, StudioEvening } from '@/features/acts/schemas';
+import { useAudioPeaks } from '@/features/acts/api';
+import type { ActStudio, StudioEvening } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
 import { useLargeText } from '@/lib/use-large-text';
-import type { SongMutations, StepMutations, VideoMutations } from '../api';
-import { useSongMutations, useStepMutations, useVideoMutations } from '../api';
-import { useEveningStageMutations } from '../evening-api';
-import type { StageMutations } from '../stage-api';
-import { useStageMutations } from '../stage-api';
-import type { StudioTool } from '../studio-copy';
-import { eveningBandOf } from '../studio-copy';
-import { workedPathsOf, workedStepsOf, workedStudioOf } from '../studio-edits';
+import { actUploadPortOf } from '../act-upload-port';
+import type { VideoMutations } from '../api';
+import { useSongMutations, useVideoMutations } from '../api';
 import { eveningStudioOf } from '../studio-evening';
-import type { ActStudioFrame } from '../studio-layout';
-import { largeTextFrameOf } from '../studio-layout';
-import type { StudioEditor } from '../studio-mode';
-import { studioEditorOf } from '../studio-mode';
-import type { ActStudioEdits } from './use-act-studio-edits';
-import { useActStudioEdits, useKeptPosition } from './use-act-studio-edits';
-import type { ActStudioMode } from './use-act-studio-mode';
-import { useActStudioMode } from './use-act-studio-mode';
+import { useStepSetupRoute } from './use-step-setup-route';
 import { useStudioDeveloping } from './use-studio-developing';
-import type { StudioFinal } from './use-studio-final';
+import { useStudioDocument } from './use-studio-document';
 import { useStudioFinal } from './use-studio-final';
-import type { StudioLargeText } from './use-studio-large-text';
-import { useStudioLargeText } from './use-studio-large-text';
+import { useStudioMusicRoute } from './use-studio-music-route';
 import { useVideoAutoAlign } from './use-video-auto-align';
+import { useVisitHistory } from './use-visit-history';
 
-export interface StudioEveningContext {
+export interface StudioScreenContext {
   evening: StudioEvening | null;
   startEditing: boolean;
   startHall: (() => void) | null;
+  toggleEditing?: () => void;
   startTool?: StudioTool;
   stageEditor?: boolean;
+  tone?: KkGroupTone | null;
 }
 
-export interface StudioScreen {
-  actId: number;
-  evening: StudioEvening | null;
-  eveningBand: string | null;
-  music: SongMutations;
-  stageWrites: StageMutations;
-  cast: readonly CastPerson[];
-  manual: StepMutations;
-  videos: VideoMutations;
-  final: StudioFinal;
-  mode: ActStudioMode;
-  editor: StudioEditor | null;
-  frame: ActStudioFrame;
-  large: StudioLargeText;
-  startHall: (() => void) | null;
-  edits: ActStudioEdits;
-  studio: Studio;
-  playback: StudioPlayback;
-  practice: Practice;
-  video: PracticeVideo;
-  steps: PracticeSteps;
-}
+const aligningOf =
+  ({ align, autoAlign }: VideoMutations) =>
+  (videoId: number): boolean =>
+    [align, autoAlign].some((mutation) => mutation.isPending && mutation.variables === videoId);
 
 export const useStudioScreen = (
   actId: number,
-  source: Studio,
+  source: ActStudio,
   viewerId: number | null,
   canEdit: boolean,
   cast: readonly CastPerson[],
-  { evening, startEditing, startHall, startTool, stageEditor = false }: StudioEveningContext,
+  {
+    evening,
+    startEditing,
+    startHall,
+    toggleEditing,
+    startTool,
+    stageEditor = false,
+    tone = null,
+  }: StudioScreenContext,
 ): StudioScreen => {
   const wide = useKkLaneWide();
-  const mode = useActStudioMode(canEdit, {
+  const ownMode = useActStudioMode(canEdit, {
     silent: !canPractise(source),
     evening: evening !== null,
     editing: startEditing,
     stageOnly: stageEditor,
     tool: startTool ?? null,
   });
+  const mode = toggleEditing === undefined ? ownMode : { ...ownMode, toggle: toggleEditing };
   const music = useSongMutations(actId);
-  const stageWrites = useEveningStageMutations(
-    actId,
-    evening?.eventId ?? null,
-    useStageMutations(actId),
-  );
-  const manual = useStepMutations(actId);
+  const work = useStudioDocument({ actId, eventId: null }, source);
+  const stageDocument = useStudioDocument({ actId, eventId: evening?.eventId ?? null }, source);
   const videos = useVideoMutations(actId);
   useVideoAutoAlign(source, canEdit, videos);
   useStudioDeveloping(actId, source);
   const edits = useActStudioEdits();
-  const { studio, final } = useStudioFinal(
+  const { studio, final, add } = useStudioFinal(
     actId,
-    workedStudioOf(eveningStudioOf(source, evening, cast), edits.value),
+    eveningStudioOf(work.studio, stageDocument.studio, evening, cast),
     mode,
     edits,
   );
-  const base = useStudioPlayback(studio, viewerId);
+  const peaksByItem = useAudioPeaks(musicSegmentsOf(studio));
+  const base = useStudioPlayback(studio, viewerId, peaksByItem);
   const playback: StudioPlayback = {
     ...base,
-    steps: workedStepsOf(base.steps, edits.value),
     paths: workedPathsOf(base.paths, edits.value),
   };
   useKeptPosition(base.player, edits.keep);
@@ -113,20 +98,37 @@ export const useStudioScreen = (
   const steps = usePracticeSteps(studio, playback, practice);
   usePracticeMemory({ actId, personId: viewerId }, playback, practice.step?.stepId ?? null);
   const large = useStudioLargeText(useLargeText() && !mode.editing);
-  usePlayerKeys(practice, large.on && !mode.editing && !steps.open);
+  useStudioKeys(playerKeyActionsOf(practice), large.on && !mode.editing && !steps.open);
+  const uploads = {
+    songs: actUploadPortOf(actId, music.add.mutateAsync),
+    videos: actUploadPortOf(actId, videos.add.mutateAsync),
+    final: actUploadPortOf(actId, add),
+  };
+  const history = useVisitHistory(actId, studio);
+  const openMusic = useStudioMusicRoute(actId);
+  const openStepSetup = useStepSetupRoute(actId);
 
   return {
-    actId,
+    tone,
     evening,
-    eveningBand:
-      evening !== null && mode.editing ? eveningBandOf(evening.title, evening.startsAt) : null,
     mode,
     editor: studioEditorOf(stageEditor, mode.editing, wide),
-    music,
-    stageWrites,
+    songs: {
+      remove: music.remove.mutate,
+    },
+    stageDocument,
     cast,
-    manual,
-    videos,
+    document: work,
+    videos: {
+      align: videos.align.mutateAsync,
+      aligning: aligningOf(videos),
+      remove: videos.remove.mutate,
+      split: videos.split.mutate,
+    },
+    uploads,
+    history,
+    openMusic,
+    openStepSetup,
     final,
     frame: largeTextFrameOf(video.hero, large.videoShown),
     large,

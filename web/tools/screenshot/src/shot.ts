@@ -1,7 +1,7 @@
 import { mkdir, writeFile } from 'node:fs/promises';
 import path from 'node:path';
 import type { Browser, BrowserContext, BrowserContextOptions, Page } from 'playwright';
-import { chromium } from 'playwright';
+import { DEV_LOCALE, launchDevBrowser, signIn } from './dev-session.ts';
 import type { ShotRequest, ShotVariant, TimedFrame } from './shot-plan.ts';
 import {
   buildShotVariants,
@@ -12,11 +12,7 @@ import {
   pickFilmstripFrames,
 } from './shot-plan.ts';
 
-const DEV_EMAIL = 'admin@furria.local';
-const DEV_PASSWORD = 'Furria-Dev-Admin-1!';
-const DEFAULT_CHANNEL = 'chrome';
 const DEFAULT_TIMEZONE = 'Europe/Berlin';
-const LOCALE = 'de-DE';
 const TITLE_SELECTOR = '[data-kk-screen-header-title]';
 const START_MEMORY_PREFIX = 'furria.start.';
 const PERCENT = 100;
@@ -49,16 +45,13 @@ type Capture = (
   problems: string[],
 ) => Promise<string[]>;
 
-const launchBrowser = (): Promise<Browser> =>
-  chromium.launch({ channel: process.env.SHOT_BROWSER_CHANNEL ?? DEFAULT_CHANNEL });
-
 const contextOptionsOf = (request: ShotRequest, variant: ShotVariant): BrowserContextOptions => ({
   viewport: { width: variant.width, height: variant.height },
   colorScheme: variant.scheme,
   deviceScaleFactor: 2,
   reducedMotion: request.reducedMotion ? 'reduce' : 'no-preference',
   timezoneId: process.env.SHOT_TIMEZONE ?? DEFAULT_TIMEZONE,
-  locale: LOCALE,
+  locale: DEV_LOCALE,
 });
 
 const forgetStartMemory = (prefix: string): void => {
@@ -132,18 +125,6 @@ const watchProblems = (page: Page, label: string, problems: string[]): void => {
       );
     }
   });
-};
-
-const signIn = async (page: Page, baseUrl: string): Promise<void> => {
-  await page.goto(`${baseUrl}/login`, { waitUntil: 'networkidle' });
-  await page
-    .getByLabel('E-Mail-Adresse', { exact: true })
-    .fill(process.env.SHOT_EMAIL ?? DEV_EMAIL);
-  await page
-    .getByLabel('Passwort', { exact: true })
-    .fill(process.env.SHOT_PASSWORD ?? DEV_PASSWORD);
-  await page.getByRole('button', { name: 'Anmelden', exact: true }).click();
-  await page.waitForURL((url) => !url.pathname.startsWith('/login'));
 };
 
 const withSession = async <TResult>(
@@ -335,7 +316,7 @@ const captureWithRetries = async (
 const run = async (): Promise<void> => {
   const request = parseShotArgs(process.argv.slice(2));
   await mkdir(request.outDir, { recursive: true });
-  const browser = await launchBrowser();
+  const browser = await launchDevBrowser();
   const problems: string[] = [];
   const capture = request.filmstrip ? captureFilmstrip : captureStill;
   try {

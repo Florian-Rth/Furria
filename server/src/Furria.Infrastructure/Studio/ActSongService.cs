@@ -95,25 +95,20 @@ public sealed class ActSongService
             return editable;
 
         var song = await _dbContext
-            .ActSongs.Where(song => song.Id == command.SongId && song.ActId == command.ActId)
-            .Select(song => new { song.MediaItem!.DurationSeconds })
-            .SingleOrDefaultAsync(ct);
-        if (song is null)
-            return Result.NotFound(UnknownSongMessage);
-        if (BeyondTheSongRefusalOf(command, song.DurationSeconds) is { } refused)
-            return refused;
-
-        await _dbContext
-            .ActSongs.Where(row => row.Id == command.SongId)
-            .ExecuteUpdateAsync(
-                setters =>
-                    setters
-                        .SetProperty(row => row.StartSeconds, command.StartSeconds)
-                        .SetProperty(row => row.EndSeconds, command.EndSeconds)
-                        .SetProperty(row => row.FirstBeatSeconds, command.FirstBeatSeconds)
-                        .SetProperty(row => row.TempoBpm, command.TempoBpm),
+            .ActSongs.Include(song => song.MediaItem)
+            .SingleOrDefaultAsync(
+                song => song.Id == command.SongId && song.ActId == command.ActId,
                 ct
             );
+        if (song is null)
+            return Result.NotFound(UnknownSongMessage);
+        if (BeyondTheSongRefusalOf(command, song.MediaItem!.DurationSeconds) is { } refused)
+            return refused;
+
+        song.Pieces = command.Pieces;
+        song.FirstBeatSeconds = command.FirstBeatSeconds;
+        song.TempoBpm = command.TempoBpm;
+        await _dbContext.SaveChangesAsync(ct);
 
         return Result.Success();
     }
@@ -168,7 +163,7 @@ public sealed class ActSongService
 
     [Pure]
     private static Result? BeyondTheSongRefusalOf(ActSongCutCommand cut, double? durationSeconds) =>
-        MusicFile.IsPastTheEnd(cut.EndSeconds, durationSeconds)
+        MusicFile.IsPastTheEnd(cut.Pieces[^1].EndSeconds, durationSeconds)
             ? Result.Validation(CutPastEndMessage)
         : MusicFile.IsPastTheEnd(cut.FirstBeatSeconds, durationSeconds)
             ? Result.Validation(FirstBeatPastEndMessage)

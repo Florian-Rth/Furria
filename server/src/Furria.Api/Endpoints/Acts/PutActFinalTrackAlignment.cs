@@ -41,6 +41,7 @@ public sealed class PutActFinalTrackAlignment : Endpoint<PutActFinalTrackAlignme
                 ActId = req.ActId,
                 FinalTrackId = req.FinalTrackId,
                 SourceMediaItemId = req.SourceMediaItemId,
+                FromSeconds = req.FromSeconds,
                 OffsetSeconds = req.OffsetSeconds,
                 Stretch = req.Stretch,
             },
@@ -67,6 +68,8 @@ public sealed record PutActFinalTrackAlignmentRequest
     [RouteParam]
     public required int SourceMediaItemId { get; init; }
 
+    public required double FromSeconds { get; init; }
+
     public required double OffsetSeconds { get; init; }
 
     public required double Stretch { get; init; }
@@ -79,6 +82,7 @@ public sealed class PutActFinalTrackAlignmentValidator : Validator<PutActFinalTr
         RuleFor(request => request.ActId).GreaterThan(0);
         RuleFor(request => request.FinalTrackId).GreaterThan(0);
         RuleFor(request => request.SourceMediaItemId).GreaterThan(0);
+        RuleFor(request => request.FromSeconds).GreaterThanOrEqualTo(0);
         RuleFor(request => request.OffsetSeconds).Must(double.IsFinite);
         RuleFor(request => request.Stretch)
             .InclusiveBetween(FinalTrackPlacement.LeastStretch, FinalTrackPlacement.MostStretch);

@@ -21,17 +21,19 @@ public sealed class ActMusic
     [Pure]
     public AnchorPlace Locate(MusicAnchor anchor)
     {
-        var placed = _placedCuts.FirstOrDefault(candidate =>
-            candidate.Cut.SourceMediaItemId == anchor.SourceMediaItemId
-        );
-
-        if (placed is null)
+        var ofSource = CutsOf(anchor.SourceMediaItemId);
+        if (ofSource.Count == 0)
             return AnchorPlace.MusicMissing;
 
-        return placed.Holds(anchor.Seconds)
-            ? AnchorPlace.At(placed.TimelineSecondsOf(anchor.Seconds))
-            : AnchorPlace.CutAway;
+        var placed = PieceHolding(ofSource, anchor.Seconds);
+        return placed is null
+            ? AnchorPlace.CutAway
+            : AnchorPlace.At(placed.TimelineSecondsOf(anchor.Seconds));
     }
+
+    [Pure]
+    public MusicCut? PieceHolding(MusicAnchor anchor) =>
+        PieceHolding(CutsOf(anchor.SourceMediaItemId), anchor.Seconds)?.Cut;
 
     [Pure]
     public MusicAnchor? AnchorAt(double timelineSeconds)
@@ -57,6 +59,15 @@ public sealed class ActMusic
             ? AnchorPlace.At(seconds - anchor.VideoSeconds)
             : place;
     }
+
+    [Pure]
+    private List<PlacedCut> CutsOf(int sourceMediaItemId) =>
+        [.. _placedCuts.Where(candidate => candidate.Cut.SourceMediaItemId == sourceMediaItemId)];
+
+    [Pure]
+    private static PlacedCut? PieceHolding(IReadOnlyList<PlacedCut> ofSource, double seconds) =>
+        ofSource.FirstOrDefault(candidate => candidate.HoldsBeforeItsEnd(seconds))
+        ?? ofSource.LastOrDefault(candidate => candidate.Holds(seconds));
 
     [Pure]
     private static VideoAnchor? VideoAnchorOf(MusicAnchor? music, double videoSeconds) =>
@@ -90,6 +101,10 @@ public sealed class ActMusic
         [Pure]
         public bool Holds(double sourceSeconds) =>
             sourceSeconds >= Cut.StartSeconds && sourceSeconds <= Cut.EndSeconds;
+
+        [Pure]
+        public bool HoldsBeforeItsEnd(double sourceSeconds) =>
+            sourceSeconds >= Cut.StartSeconds && sourceSeconds < Cut.EndSeconds;
 
         [Pure]
         public bool Spans(double timelineSeconds) =>

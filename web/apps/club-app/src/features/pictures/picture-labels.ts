@@ -1,6 +1,6 @@
+import type { UploadFailure } from '@furria/api-client/upload-failure';
 import type { KkBannerDeskLabels } from '@furria/ui/banner-desk-types';
 import type { KkCropFrameLabels, KkCropGuide } from '@furria/ui/KkCropFrame';
-import type { UploadFailure } from '@/lib/media/upload-failure';
 import type { PictureKind } from './picture-target';
 
 export interface PictureCopy {

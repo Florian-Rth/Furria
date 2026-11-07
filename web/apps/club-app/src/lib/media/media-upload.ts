@@ -1,6 +1,6 @@
+import type { UploadFailure } from '@furria/api-client/upload-failure';
+import { uploadFailureOfStatus } from '@furria/api-client/upload-failure';
 import type { KkCrop } from '@furria/ui/image-crop';
-import type { UploadFailure } from './upload-failure';
-import { failureOfStatus } from './upload-failure';
 
 export type UploadOwner =
   | { kind: 'person' | 'group' | 'news' | 'event' | 'act' | 'session'; id: number }
@@ -115,7 +115,7 @@ export const uploadVia = (transport: UploadTransport, upload: MediaUpload): Uplo
       finish({ kind: 'sent', mediaItemId });
     },
     onError: (status) => {
-      finish({ kind: 'failed', failure: failureOfStatus(status) });
+      finish({ kind: 'failed', failure: uploadFailureOfStatus(status) });
     },
   });
   const stop = (discard: boolean): void => {

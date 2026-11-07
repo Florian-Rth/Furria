@@ -224,6 +224,20 @@ export const kkTokens = {
     settleSeconds: 0.09,
   },
   tapTarget: '2.75rem',
+  setupFrame: {
+    head: 6.5,
+    pictureMin: 17.5,
+    timeline: 15,
+    transport: 5.5,
+    foot: 7.5,
+    wideTimeline: 23.75,
+    widePictureMin: 16,
+    zoneGap: 1,
+    playerGap: 2,
+    inset: 2,
+    columnGap: 2,
+    stageBar: 1.5,
+  },
   densePanel: {
     anchor: '3.75rem',
     stackedAnchor: '1.625rem',
@@ -297,6 +311,7 @@ export const kkTokens = {
     onPhotoText: '#FFFFFF',
     textShadow: '0 4px 34px rgba(0,0,0,0.5)',
     scrimInk: '#14161A',
+    filmScrim: 'rgba(12,13,16,0.72)',
   },
   glass: {
     tintOpacity: 0.7,

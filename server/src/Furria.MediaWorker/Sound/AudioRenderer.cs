@@ -1,4 +1,3 @@
-using System.Text.Json;
 using Furria.Application.Media;
 using Furria.Core.Media;
 using Furria.Core.Sound;
@@ -10,8 +9,6 @@ namespace Furria.MediaWorker.Sound;
 
 public sealed class AudioRenderer
 {
-    private static readonly JsonSerializerOptions PeaksJson = new(JsonSerializerDefaults.Web);
-
     private readonly MediaWorkerOptions _options;
     private readonly SoundAnalyser _analyser;
 
@@ -44,7 +41,7 @@ public sealed class AudioRenderer
 
         var signal = await _analyser.DecodeAsync(files, ct);
         var onsets = BandOnsets.Of(signal);
-        await KeepPeaksAsync(files, signal, ct);
+        await _analyser.KeepPeaksAsync(files, WaveformPeaks.Of(signal), ct);
         await _analyser.KeepProfileAsync(files, SoundProfile.Of(onsets), ct);
 
         return new RenderedMedia
@@ -92,21 +89,6 @@ public sealed class AudioRenderer
             ct
         );
         files.Publish(scratch, rendition);
-    }
-
-    private static async Task KeepPeaksAsync(
-        RenditionFiles files,
-        SoundSignal signal,
-        CancellationToken ct
-    )
-    {
-        var scratch = files.ScratchFileFor(MediaRendition.Peaks, ".json");
-        await File.WriteAllBytesAsync(
-            scratch,
-            JsonSerializer.SerializeToUtf8Bytes(WaveformPeaks.Of(signal), PeaksJson),
-            ct
-        );
-        files.Publish(scratch, MediaRendition.Peaks);
     }
 
     private static MediaAudioFactsDetails FactsOf(

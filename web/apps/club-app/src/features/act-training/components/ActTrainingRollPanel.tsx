@@ -1,14 +1,14 @@
 import type { FC } from 'react';
-import type { ActPageState } from '@/features/acts/hooks/use-act-page';
-import type { ActStudioResponse, Studio, StudioTraining } from '@/features/acts/schemas';
+import type { ActDetailsPageState } from '@/features/acts/hooks/use-act-details-page';
+import type { ActStudio, ActStudioResponse, StudioTraining } from '@/features/acts/schemas';
 import { useAttendanceMarks } from '../api';
 import { useTrainingRollPane } from '../hooks/use-training-roll-pane';
 import { ActTrainingRollSide } from './ActTrainingRollSide';
 
 interface ActTrainingRollPanelProps {
-  page: ActPageState;
+  page: ActDetailsPageState;
   data: ActStudioResponse;
-  studio: Studio;
+  studio: ActStudio;
   training: StudioTraining;
 }
 

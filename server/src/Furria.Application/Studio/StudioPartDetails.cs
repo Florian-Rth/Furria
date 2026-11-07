@@ -6,6 +6,10 @@ public sealed record StudioPartDetails
 
     public required string Name { get; init; }
 
+    public required int FirstStepId { get; init; }
+
+    public required int LastStepId { get; init; }
+
     public required IReadOnlyList<int> StepIds { get; init; }
 
     public required int? MainVideoId { get; init; }
