@@ -2,7 +2,7 @@
 title: Preview-Gate
 slug: preview-gate
 type: foundation
-status: shipped
+status: removed (launch, 2026-11-07)
 mock: -
 adrs: []
 ---

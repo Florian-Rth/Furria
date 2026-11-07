@@ -24,7 +24,11 @@ describe('siteShareImageMeta', () => {
     ],
   ])('describes the site share image with %s', (_, pictures, altMeta) => {
     expect(siteShareImageMeta(pictures)).toEqual([
-      { property: 'og:image', content: '/api/public/website-pictures/site.shareImage/1/medium' },
+      {
+        property: 'og:image',
+        content:
+          'https://furrscher-carnevals-club.de/api/public/website-pictures/site.shareImage/1/medium',
+      },
       ...altMeta,
     ]);
   });

@@ -7,6 +7,7 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { PageUnavailable } from '@/components/PageUnavailable';
 import { queryClient } from '@/lib/query-client';
+import { PAGE_HEAD_ATTRIBUTE } from '@/lib/seo/head-html';
 import { routeTree } from '@/routeTree.gen';
 
 const router = createRouter({ routeTree, defaultErrorComponent: PageUnavailable });
@@ -15,6 +16,10 @@ declare module '@tanstack/react-router' {
   interface Register {
     router: typeof router;
   }
+}
+
+for (const prerenderedTag of document.head.querySelectorAll(`[${PAGE_HEAD_ATTRIBUTE}]`)) {
+  prerenderedTag.remove();
 }
 
 const rootElement = document.getElementById('root');

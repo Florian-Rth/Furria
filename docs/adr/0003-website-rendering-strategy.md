@@ -61,3 +61,27 @@ ship while the site is gated, and gains nothing meanwhile because `robots.txt` i
 moves to the launch phase, alongside the robots flip and the absolute `og:image` URL.
 
 Neither point changes the static-first, no-SSR ruling; both make it cheaper than first scoped.
+
+## Amendment (2026-11-07, launch: gate removed, SEO built)
+
+The preview gate and the tester changelog are gone (`POST /api/preview/unlock` deleted with them).
+The mechanism this ADR left open is decided — **head prerendering, not body prerendering**:
+
+- **Static pages** (`STATIC_PAGES` in `src/lib/seo/static-pages.ts`, the one source for both the
+  route `head()` and the build) are written by a Vite plugin to `dist/<path>/index.html`, each with
+  its own title, description, canonical, Open Graph and share image in the initial HTML.
+- **API-driven detail pages** (`/events/:slug`, `/news/:slug`, `/gallery/:slug`) get their head
+  from the API (`GET /api/public/page-heads/{events|news|gallery}/{slug}`), which the website's
+  nginx includes into `content-page-shell.html` by SSI. A failed or missing read adds nothing.
+  This is the "meta endpoint on the .NET API" option above — still no second runtime.
+- **Every other path** gets `app-shell.html`, which is `noindex`; the 404 page sets `noindex` too.
+- Prerendered and SSI head tags carry `data-page-head`; the SPA removes them on boot and
+  `HeadContent` takes over, so nothing is doubled for crawlers that run JavaScript.
+- **Sitemaps:** `/sitemap.xml` is an index of the build's `/sitemap-pages.xml` and
+  `/sitemap-content.xml`, which nginx proxies to `GET /api/public/sitemap.xml`. `robots.txt` allows
+  everything (blocking `/api/` would stop Googlebot from rendering the pages' data).
+- Canonicals, `og:url`, `og:image` and JSON-LD URLs are absolute on `SITE_ORIGIN`
+  (`https://furrscher-carnevals-club.de`); the API builds the same URLs from `Website:BaseUrl`.
+  JSON-LD: `WebSite` + `Organization` on `/`, `Event` on events, `NewsArticle` on news.
+
+Body text is still rendered client-side only; the accepted cost above stands.
