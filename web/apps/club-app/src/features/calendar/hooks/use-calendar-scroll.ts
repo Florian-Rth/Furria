@@ -152,7 +152,7 @@ export const useCalendarScroll = (
     activeDay,
     goToDay: (isoDay) => {
       pinned.current = isoDay;
-      board.cover(isoDay);
+      board.reveal(isoDay);
       setActiveDay(isoDay);
       setTarget({ day: isoDay, instant: false });
     },
