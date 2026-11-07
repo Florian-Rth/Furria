@@ -15,7 +15,7 @@ export const privacyContent: LegalDocument = {
     {
       heading: '2. Hosting und Server-Logfiles',
       paragraphs: [
-        'Die Website, die zugehörige Anwendung und ihre Datenbank laufen auf einem Server in Deutschland, den ein Vereinsmitglied im Auftrag des Vereins betreibt (Auftragsverarbeitung nach Art. 28 DSGVO). Die verschlüsselte Verbindung zu deinem Browser stellt ein vorgeschalteter Server der Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen, her (Rechenzentren in der EU); mit Hetzner besteht ein Vertrag über Auftragsverarbeitung.',
+        'Die Website, die zugehörige Anwendung und ihre Datenbank werden auf Servern der Hetzner Online GmbH, Industriestr. 25, 91710 Gunzenhausen, betrieben (Rechenzentren in der EU). Mit Hetzner besteht ein Vertrag über Auftragsverarbeitung nach Art. 28 DSGVO.',
         'Beim Aufruf der Website verarbeiten wir automatisch technisch notwendige Daten: IP-Adresse, Datum und Uhrzeit des Zugriffs, aufgerufene Seite, übertragene Datenmenge sowie Browser- und Betriebssystem-Informationen (User-Agent). Die IP-Adresse nutzen wir außerdem kurzzeitig, um missbräuchlich viele Anfragen zu begrenzen.',
         'Rechtsgrundlage ist Art. 6 Abs. 1 lit. f DSGVO; unser berechtigtes Interesse ist der sichere und fehlerfreie Betrieb der Website. Server-Logfiles werden spätestens nach 30 Tagen gelöscht.',
       ],
