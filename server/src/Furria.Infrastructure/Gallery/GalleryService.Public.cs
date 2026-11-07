@@ -80,7 +80,12 @@ public sealed partial class GalleryService
                     item.Caption,
                     item.RenderedAt
                 ))
-                .FirstOrDefault()
+                .FirstOrDefault(),
+            album.UpdatedAt,
+            album
+                .Items.AsQueryable()
+                .Where(PublicFace.IsSelectedPhoto)
+                .Max(item => (DateTimeOffset?)item.UpdatedAt)
         ));
 
     private static IQueryable<PublicPhotoRow> PublicPhotoRowsOf(IQueryable<MediaItem> items) =>
@@ -128,6 +133,7 @@ public sealed partial class GalleryService
             EntryStartsAt = album.EntryStartsAt,
             PhotoCount = album.PhotoCount,
             Cover = ToPublicPhoto(album.Cover!),
+            ChangedAt = album.ChangedAt,
         };
 
     [Pure]
@@ -158,10 +164,15 @@ public sealed partial class GalleryService
         DateTimeOffset? EntryStartsAt,
         int? LinkedSessionStartYear,
         int PhotoCount,
-        PublicPhotoRow? Cover
+        PublicPhotoRow? Cover,
+        DateTimeOffset UpdatedAt,
+        DateTimeOffset? SelectionUpdatedAt
     )
     {
         public int? SessionStartYear => AlbumSession.YearOf(EntryStartsAt, LinkedSessionStartYear);
+
+        public DateTimeOffset ChangedAt =>
+            SelectionUpdatedAt > UpdatedAt ? SelectionUpdatedAt.Value : UpdatedAt;
     }
 
     private sealed record PublicPhotoRow(

@@ -1,5 +1,7 @@
 import { formatBerlinIsoWithOffset } from '@/lib/date';
 import type { Event, SalesStatus } from '@/lib/public-events/schemas';
+import { absoluteUrlOf } from '@/lib/seo/route-head';
+import { buildEventHref } from './event-display';
 
 const SCHEMA_ORG = 'https://schema.org';
 
@@ -8,6 +10,7 @@ export interface EventJsonLdOffer {
   price: string;
   priceCurrency: 'EUR';
   availability: string;
+  url: string;
 }
 
 export interface EventJsonLdAddress {
@@ -22,15 +25,21 @@ export interface EventJsonLd {
   '@context': typeof SCHEMA_ORG;
   '@type': 'Event';
   name: string;
+  description: string;
+  url: string;
   image?: string[];
   startDate: string;
+  endDate?: string;
   doorTime?: string;
   eventStatus: string;
+  eventAttendanceMode: string;
   location: { '@type': 'Place'; name: string; address: EventJsonLdAddress };
+  organizer: { '@type': 'Organization'; name: string; url: string };
   offers?: EventJsonLdOffer;
 }
 
 const CENTS_PER_EURO = 100;
+const ORGANIZER_NAME = 'Furrscher Carnevals Club e.V.';
 
 const deriveAvailability = (status: SalesStatus): string | null => {
   switch (status) {
@@ -58,6 +67,7 @@ const deriveOffer = (event: Event): EventJsonLdOffer | undefined => {
     price: (event.priceCents / CENTS_PER_EURO).toFixed(2),
     priceCurrency: 'EUR',
     availability,
+    url: absoluteUrlOf(buildEventHref(event)),
   };
 };
 
@@ -67,8 +77,11 @@ export const buildEventJsonLd = (event: Event): EventJsonLd => {
     '@context': SCHEMA_ORG,
     '@type': 'Event',
     name: event.title,
-    ...(event.picture === null ? {} : { image: [event.picture.largeUrl] }),
+    description: event.teaser,
+    url: absoluteUrlOf(buildEventHref(event)),
+    ...(event.picture === null ? {} : { image: [absoluteUrlOf(event.picture.largeUrl)] }),
     startDate: formatBerlinIsoWithOffset(event.startsAt),
+    ...(event.endsAt === null ? {} : { endDate: formatBerlinIsoWithOffset(event.endsAt) }),
     ...(event.doorsOpenAt === null
       ? {}
       : { doorTime: formatBerlinIsoWithOffset(event.doorsOpenAt) }),
@@ -76,6 +89,7 @@ export const buildEventJsonLd = (event: Event): EventJsonLd => {
       event.status === 'cancelled'
         ? `${SCHEMA_ORG}/EventCancelled`
         : `${SCHEMA_ORG}/EventScheduled`,
+    eventAttendanceMode: `${SCHEMA_ORG}/OfflineEventAttendanceMode`,
     location: {
       '@type': 'Place',
       name: event.venue.name,
@@ -87,6 +101,7 @@ export const buildEventJsonLd = (event: Event): EventJsonLd => {
         addressCountry: 'DE',
       },
     },
+    organizer: { '@type': 'Organization', name: ORGANIZER_NAME, url: absoluteUrlOf('/') },
     ...(offer === undefined ? {} : { offers: offer }),
   };
 };

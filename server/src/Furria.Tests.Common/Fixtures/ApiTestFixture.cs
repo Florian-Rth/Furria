@@ -8,7 +8,6 @@ using Furria.Application.Identity;
 using Furria.Application.Mail;
 using Furria.Application.Media;
 using Furria.Application.Operations;
-using Furria.Application.PreviewAccess;
 using Furria.Application.Push;
 using Furria.Application.Results;
 using Furria.Application.Website;
@@ -81,7 +80,6 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         WHERE constraint_row.contype = 'f' AND schema_row.nspname = current_schema()
         """;
 
-    public const string PreviewPassword = "test-preview-password";
     public const string ManagingLoginEmail = "managing-login@test.local";
     public const string ManagingLoginPassword = "Managing-Login-Pw-1!";
     public const string SeededAccountPassword = "Seeded-Account-Pw-1!";
@@ -192,10 +190,6 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             nameof(ConsoleLogFormat.Off)
         );
         builder.UseSetting($"ConnectionStrings:{AppDbContext.ConnectionName}", Database);
-        builder.UseSetting(
-            $"{PreviewAccessOptions.SectionName}:{nameof(PreviewAccessOptions.Password)}",
-            PreviewPassword
-        );
         builder.UseSetting(
             $"{AccessTokenOptions.SectionName}:{nameof(AccessTokenOptions.SigningKey)}",
             SigningKey

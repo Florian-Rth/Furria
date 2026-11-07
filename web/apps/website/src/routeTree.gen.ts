@@ -12,18 +12,17 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as SiteRouteImport } from './routes/_site'
 import { Route as SiteIndexRouteImport } from './routes/_site/index'
 import { Route as SitePrivacyRouteImport } from './routes/_site/privacy'
+import { Route as SiteNewsRouteImport } from './routes/_site/news'
+import { Route as SiteJoinRouteImport } from './routes/_site/join'
 import { Route as SiteImprintRouteImport } from './routes/_site/imprint'
-import { Route as SiteGatedRouteImport } from './routes/_site/_gated'
+import { Route as SiteGalleryRouteImport } from './routes/_site/gallery'
+import { Route as SiteEventsRouteImport } from './routes/_site/events'
+import { Route as SiteClubRouteImport } from './routes/_site/club'
+import { Route as SiteNewsSlugRouteImport } from './routes/_site/news_.$slug'
 import { Route as SiteJoinConfirmRouteImport } from './routes/_site/join_.confirm'
-import { Route as SiteGatedNewsRouteImport } from './routes/_site/_gated/news'
-import { Route as SiteGatedJoinRouteImport } from './routes/_site/_gated/join'
-import { Route as SiteGatedGalleryRouteImport } from './routes/_site/_gated/gallery'
-import { Route as SiteGatedEventsRouteImport } from './routes/_site/_gated/events'
-import { Route as SiteGatedClubRouteImport } from './routes/_site/_gated/club'
-import { Route as SiteGatedNewsSlugRouteImport } from './routes/_site/_gated/news_.$slug'
-import { Route as SiteGatedJoinApplyRouteImport } from './routes/_site/_gated/join_.apply'
-import { Route as SiteGatedGalleryAlbumSlugRouteImport } from './routes/_site/_gated/gallery_.$albumSlug'
-import { Route as SiteGatedEventsEventSlugRouteImport } from './routes/_site/_gated/events_.$eventSlug'
+import { Route as SiteJoinApplyRouteImport } from './routes/_site/join_.apply'
+import { Route as SiteGalleryAlbumSlugRouteImport } from './routes/_site/gallery_.$albumSlug'
+import { Route as SiteEventsEventSlugRouteImport } from './routes/_site/events_.$eventSlug'
 
 const SiteRoute = SiteRouteImport.update({
   id: '/_site',
@@ -39,13 +38,39 @@ const SitePrivacyRoute = SitePrivacyRouteImport.update({
   path: '/privacy',
   getParentRoute: () => SiteRoute,
 } as any)
+const SiteNewsRoute = SiteNewsRouteImport.update({
+  id: '/news',
+  path: '/news',
+  getParentRoute: () => SiteRoute,
+} as any)
+const SiteJoinRoute = SiteJoinRouteImport.update({
+  id: '/join',
+  path: '/join',
+  getParentRoute: () => SiteRoute,
+} as any)
 const SiteImprintRoute = SiteImprintRouteImport.update({
   id: '/imprint',
   path: '/imprint',
   getParentRoute: () => SiteRoute,
 } as any)
-const SiteGatedRoute = SiteGatedRouteImport.update({
-  id: '/_gated',
+const SiteGalleryRoute = SiteGalleryRouteImport.update({
+  id: '/gallery',
+  path: '/gallery',
+  getParentRoute: () => SiteRoute,
+} as any)
+const SiteEventsRoute = SiteEventsRouteImport.update({
+  id: '/events',
+  path: '/events',
+  getParentRoute: () => SiteRoute,
+} as any)
+const SiteClubRoute = SiteClubRouteImport.update({
+  id: '/club',
+  path: '/club',
+  getParentRoute: () => SiteRoute,
+} as any)
+const SiteNewsSlugRoute = SiteNewsSlugRouteImport.update({
+  id: '/news_/$slug',
+  path: '/news/$slug',
   getParentRoute: () => SiteRoute,
 } as any)
 const SiteJoinConfirmRoute = SiteJoinConfirmRouteImport.update({
@@ -53,150 +78,116 @@ const SiteJoinConfirmRoute = SiteJoinConfirmRouteImport.update({
   path: '/join/confirm',
   getParentRoute: () => SiteRoute,
 } as any)
-const SiteGatedNewsRoute = SiteGatedNewsRouteImport.update({
-  id: '/news',
-  path: '/news',
-  getParentRoute: () => SiteGatedRoute,
-} as any)
-const SiteGatedJoinRoute = SiteGatedJoinRouteImport.update({
-  id: '/join',
-  path: '/join',
-  getParentRoute: () => SiteGatedRoute,
-} as any)
-const SiteGatedGalleryRoute = SiteGatedGalleryRouteImport.update({
-  id: '/gallery',
-  path: '/gallery',
-  getParentRoute: () => SiteGatedRoute,
-} as any)
-const SiteGatedEventsRoute = SiteGatedEventsRouteImport.update({
-  id: '/events',
-  path: '/events',
-  getParentRoute: () => SiteGatedRoute,
-} as any)
-const SiteGatedClubRoute = SiteGatedClubRouteImport.update({
-  id: '/club',
-  path: '/club',
-  getParentRoute: () => SiteGatedRoute,
-} as any)
-const SiteGatedNewsSlugRoute = SiteGatedNewsSlugRouteImport.update({
-  id: '/news_/$slug',
-  path: '/news/$slug',
-  getParentRoute: () => SiteGatedRoute,
-} as any)
-const SiteGatedJoinApplyRoute = SiteGatedJoinApplyRouteImport.update({
+const SiteJoinApplyRoute = SiteJoinApplyRouteImport.update({
   id: '/join_/apply',
   path: '/join/apply',
-  getParentRoute: () => SiteGatedRoute,
+  getParentRoute: () => SiteRoute,
 } as any)
-const SiteGatedGalleryAlbumSlugRoute =
-  SiteGatedGalleryAlbumSlugRouteImport.update({
-    id: '/gallery_/$albumSlug',
-    path: '/gallery/$albumSlug',
-    getParentRoute: () => SiteGatedRoute,
-  } as any)
-const SiteGatedEventsEventSlugRoute =
-  SiteGatedEventsEventSlugRouteImport.update({
-    id: '/events_/$eventSlug',
-    path: '/events/$eventSlug',
-    getParentRoute: () => SiteGatedRoute,
-  } as any)
+const SiteGalleryAlbumSlugRoute = SiteGalleryAlbumSlugRouteImport.update({
+  id: '/gallery_/$albumSlug',
+  path: '/gallery/$albumSlug',
+  getParentRoute: () => SiteRoute,
+} as any)
+const SiteEventsEventSlugRoute = SiteEventsEventSlugRouteImport.update({
+  id: '/events_/$eventSlug',
+  path: '/events/$eventSlug',
+  getParentRoute: () => SiteRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof SiteIndexRoute
+  '/club': typeof SiteClubRoute
+  '/events': typeof SiteEventsRoute
+  '/gallery': typeof SiteGalleryRoute
   '/imprint': typeof SiteImprintRoute
+  '/join': typeof SiteJoinRoute
+  '/news': typeof SiteNewsRoute
   '/privacy': typeof SitePrivacyRoute
-  '/club': typeof SiteGatedClubRoute
-  '/events': typeof SiteGatedEventsRoute
-  '/gallery': typeof SiteGatedGalleryRoute
-  '/join': typeof SiteGatedJoinRoute
-  '/news': typeof SiteGatedNewsRoute
+  '/events/$eventSlug': typeof SiteEventsEventSlugRoute
+  '/gallery/$albumSlug': typeof SiteGalleryAlbumSlugRoute
+  '/join/apply': typeof SiteJoinApplyRoute
   '/join/confirm': typeof SiteJoinConfirmRoute
-  '/events/$eventSlug': typeof SiteGatedEventsEventSlugRoute
-  '/gallery/$albumSlug': typeof SiteGatedGalleryAlbumSlugRoute
-  '/join/apply': typeof SiteGatedJoinApplyRoute
-  '/news/$slug': typeof SiteGatedNewsSlugRoute
+  '/news/$slug': typeof SiteNewsSlugRoute
 }
 export interface FileRoutesByTo {
-  '/': typeof SiteIndexRoute
+  '/club': typeof SiteClubRoute
+  '/events': typeof SiteEventsRoute
+  '/gallery': typeof SiteGalleryRoute
   '/imprint': typeof SiteImprintRoute
+  '/join': typeof SiteJoinRoute
+  '/news': typeof SiteNewsRoute
   '/privacy': typeof SitePrivacyRoute
-  '/club': typeof SiteGatedClubRoute
-  '/events': typeof SiteGatedEventsRoute
-  '/gallery': typeof SiteGatedGalleryRoute
-  '/join': typeof SiteGatedJoinRoute
-  '/news': typeof SiteGatedNewsRoute
+  '/': typeof SiteIndexRoute
+  '/events/$eventSlug': typeof SiteEventsEventSlugRoute
+  '/gallery/$albumSlug': typeof SiteGalleryAlbumSlugRoute
+  '/join/apply': typeof SiteJoinApplyRoute
   '/join/confirm': typeof SiteJoinConfirmRoute
-  '/events/$eventSlug': typeof SiteGatedEventsEventSlugRoute
-  '/gallery/$albumSlug': typeof SiteGatedGalleryAlbumSlugRoute
-  '/join/apply': typeof SiteGatedJoinApplyRoute
-  '/news/$slug': typeof SiteGatedNewsSlugRoute
+  '/news/$slug': typeof SiteNewsSlugRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_site': typeof SiteRouteWithChildren
-  '/_site/_gated': typeof SiteGatedRouteWithChildren
+  '/_site/club': typeof SiteClubRoute
+  '/_site/events': typeof SiteEventsRoute
+  '/_site/gallery': typeof SiteGalleryRoute
   '/_site/imprint': typeof SiteImprintRoute
+  '/_site/join': typeof SiteJoinRoute
+  '/_site/news': typeof SiteNewsRoute
   '/_site/privacy': typeof SitePrivacyRoute
   '/_site/': typeof SiteIndexRoute
-  '/_site/_gated/club': typeof SiteGatedClubRoute
-  '/_site/_gated/events': typeof SiteGatedEventsRoute
-  '/_site/_gated/gallery': typeof SiteGatedGalleryRoute
-  '/_site/_gated/join': typeof SiteGatedJoinRoute
-  '/_site/_gated/news': typeof SiteGatedNewsRoute
+  '/_site/events_/$eventSlug': typeof SiteEventsEventSlugRoute
+  '/_site/gallery_/$albumSlug': typeof SiteGalleryAlbumSlugRoute
+  '/_site/join_/apply': typeof SiteJoinApplyRoute
   '/_site/join_/confirm': typeof SiteJoinConfirmRoute
-  '/_site/_gated/events_/$eventSlug': typeof SiteGatedEventsEventSlugRoute
-  '/_site/_gated/gallery_/$albumSlug': typeof SiteGatedGalleryAlbumSlugRoute
-  '/_site/_gated/join_/apply': typeof SiteGatedJoinApplyRoute
-  '/_site/_gated/news_/$slug': typeof SiteGatedNewsSlugRoute
+  '/_site/news_/$slug': typeof SiteNewsSlugRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
-    | '/imprint'
-    | '/privacy'
     | '/club'
     | '/events'
     | '/gallery'
+    | '/imprint'
     | '/join'
     | '/news'
-    | '/join/confirm'
+    | '/privacy'
     | '/events/$eventSlug'
     | '/gallery/$albumSlug'
     | '/join/apply'
+    | '/join/confirm'
     | '/news/$slug'
   fileRoutesByTo: FileRoutesByTo
   to:
-    | '/'
-    | '/imprint'
-    | '/privacy'
     | '/club'
     | '/events'
     | '/gallery'
+    | '/imprint'
     | '/join'
     | '/news'
-    | '/join/confirm'
+    | '/privacy'
+    | '/'
     | '/events/$eventSlug'
     | '/gallery/$albumSlug'
     | '/join/apply'
+    | '/join/confirm'
     | '/news/$slug'
   id:
     | '__root__'
     | '/_site'
-    | '/_site/_gated'
+    | '/_site/club'
+    | '/_site/events'
+    | '/_site/gallery'
     | '/_site/imprint'
+    | '/_site/join'
+    | '/_site/news'
     | '/_site/privacy'
     | '/_site/'
-    | '/_site/_gated/club'
-    | '/_site/_gated/events'
-    | '/_site/_gated/gallery'
-    | '/_site/_gated/join'
-    | '/_site/_gated/news'
+    | '/_site/events_/$eventSlug'
+    | '/_site/gallery_/$albumSlug'
+    | '/_site/join_/apply'
     | '/_site/join_/confirm'
-    | '/_site/_gated/events_/$eventSlug'
-    | '/_site/_gated/gallery_/$albumSlug'
-    | '/_site/_gated/join_/apply'
-    | '/_site/_gated/news_/$slug'
+    | '/_site/news_/$slug'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -226,6 +217,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SitePrivacyRouteImport
       parentRoute: typeof SiteRoute
     }
+    '/_site/news': {
+      id: '/_site/news'
+      path: '/news'
+      fullPath: '/news'
+      preLoaderRoute: typeof SiteNewsRouteImport
+      parentRoute: typeof SiteRoute
+    }
+    '/_site/join': {
+      id: '/_site/join'
+      path: '/join'
+      fullPath: '/join'
+      preLoaderRoute: typeof SiteJoinRouteImport
+      parentRoute: typeof SiteRoute
+    }
     '/_site/imprint': {
       id: '/_site/imprint'
       path: '/imprint'
@@ -233,11 +238,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteImprintRouteImport
       parentRoute: typeof SiteRoute
     }
-    '/_site/_gated': {
-      id: '/_site/_gated'
-      path: ''
-      fullPath: '/'
-      preLoaderRoute: typeof SiteGatedRouteImport
+    '/_site/gallery': {
+      id: '/_site/gallery'
+      path: '/gallery'
+      fullPath: '/gallery'
+      preLoaderRoute: typeof SiteGalleryRouteImport
+      parentRoute: typeof SiteRoute
+    }
+    '/_site/events': {
+      id: '/_site/events'
+      path: '/events'
+      fullPath: '/events'
+      preLoaderRoute: typeof SiteEventsRouteImport
+      parentRoute: typeof SiteRoute
+    }
+    '/_site/club': {
+      id: '/_site/club'
+      path: '/club'
+      fullPath: '/club'
+      preLoaderRoute: typeof SiteClubRouteImport
+      parentRoute: typeof SiteRoute
+    }
+    '/_site/news_/$slug': {
+      id: '/_site/news_/$slug'
+      path: '/news/$slug'
+      fullPath: '/news/$slug'
+      preLoaderRoute: typeof SiteNewsSlugRouteImport
       parentRoute: typeof SiteRoute
     }
     '/_site/join_/confirm': {
@@ -247,114 +273,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SiteJoinConfirmRouteImport
       parentRoute: typeof SiteRoute
     }
-    '/_site/_gated/news': {
-      id: '/_site/_gated/news'
-      path: '/news'
-      fullPath: '/news'
-      preLoaderRoute: typeof SiteGatedNewsRouteImport
-      parentRoute: typeof SiteGatedRoute
-    }
-    '/_site/_gated/join': {
-      id: '/_site/_gated/join'
-      path: '/join'
-      fullPath: '/join'
-      preLoaderRoute: typeof SiteGatedJoinRouteImport
-      parentRoute: typeof SiteGatedRoute
-    }
-    '/_site/_gated/gallery': {
-      id: '/_site/_gated/gallery'
-      path: '/gallery'
-      fullPath: '/gallery'
-      preLoaderRoute: typeof SiteGatedGalleryRouteImport
-      parentRoute: typeof SiteGatedRoute
-    }
-    '/_site/_gated/events': {
-      id: '/_site/_gated/events'
-      path: '/events'
-      fullPath: '/events'
-      preLoaderRoute: typeof SiteGatedEventsRouteImport
-      parentRoute: typeof SiteGatedRoute
-    }
-    '/_site/_gated/club': {
-      id: '/_site/_gated/club'
-      path: '/club'
-      fullPath: '/club'
-      preLoaderRoute: typeof SiteGatedClubRouteImport
-      parentRoute: typeof SiteGatedRoute
-    }
-    '/_site/_gated/news_/$slug': {
-      id: '/_site/_gated/news_/$slug'
-      path: '/news/$slug'
-      fullPath: '/news/$slug'
-      preLoaderRoute: typeof SiteGatedNewsSlugRouteImport
-      parentRoute: typeof SiteGatedRoute
-    }
-    '/_site/_gated/join_/apply': {
-      id: '/_site/_gated/join_/apply'
+    '/_site/join_/apply': {
+      id: '/_site/join_/apply'
       path: '/join/apply'
       fullPath: '/join/apply'
-      preLoaderRoute: typeof SiteGatedJoinApplyRouteImport
-      parentRoute: typeof SiteGatedRoute
+      preLoaderRoute: typeof SiteJoinApplyRouteImport
+      parentRoute: typeof SiteRoute
     }
-    '/_site/_gated/gallery_/$albumSlug': {
-      id: '/_site/_gated/gallery_/$albumSlug'
+    '/_site/gallery_/$albumSlug': {
+      id: '/_site/gallery_/$albumSlug'
       path: '/gallery/$albumSlug'
       fullPath: '/gallery/$albumSlug'
-      preLoaderRoute: typeof SiteGatedGalleryAlbumSlugRouteImport
-      parentRoute: typeof SiteGatedRoute
+      preLoaderRoute: typeof SiteGalleryAlbumSlugRouteImport
+      parentRoute: typeof SiteRoute
     }
-    '/_site/_gated/events_/$eventSlug': {
-      id: '/_site/_gated/events_/$eventSlug'
+    '/_site/events_/$eventSlug': {
+      id: '/_site/events_/$eventSlug'
       path: '/events/$eventSlug'
       fullPath: '/events/$eventSlug'
-      preLoaderRoute: typeof SiteGatedEventsEventSlugRouteImport
-      parentRoute: typeof SiteGatedRoute
+      preLoaderRoute: typeof SiteEventsEventSlugRouteImport
+      parentRoute: typeof SiteRoute
     }
   }
 }
 
-interface SiteGatedRouteChildren {
-  SiteGatedClubRoute: typeof SiteGatedClubRoute
-  SiteGatedEventsRoute: typeof SiteGatedEventsRoute
-  SiteGatedGalleryRoute: typeof SiteGatedGalleryRoute
-  SiteGatedJoinRoute: typeof SiteGatedJoinRoute
-  SiteGatedNewsRoute: typeof SiteGatedNewsRoute
-  SiteGatedEventsEventSlugRoute: typeof SiteGatedEventsEventSlugRoute
-  SiteGatedGalleryAlbumSlugRoute: typeof SiteGatedGalleryAlbumSlugRoute
-  SiteGatedJoinApplyRoute: typeof SiteGatedJoinApplyRoute
-  SiteGatedNewsSlugRoute: typeof SiteGatedNewsSlugRoute
-}
-
-const SiteGatedRouteChildren: SiteGatedRouteChildren = {
-  SiteGatedClubRoute: SiteGatedClubRoute,
-  SiteGatedEventsRoute: SiteGatedEventsRoute,
-  SiteGatedGalleryRoute: SiteGatedGalleryRoute,
-  SiteGatedJoinRoute: SiteGatedJoinRoute,
-  SiteGatedNewsRoute: SiteGatedNewsRoute,
-  SiteGatedEventsEventSlugRoute: SiteGatedEventsEventSlugRoute,
-  SiteGatedGalleryAlbumSlugRoute: SiteGatedGalleryAlbumSlugRoute,
-  SiteGatedJoinApplyRoute: SiteGatedJoinApplyRoute,
-  SiteGatedNewsSlugRoute: SiteGatedNewsSlugRoute,
-}
-
-const SiteGatedRouteWithChildren = SiteGatedRoute._addFileChildren(
-  SiteGatedRouteChildren,
-)
-
 interface SiteRouteChildren {
-  SiteGatedRoute: typeof SiteGatedRouteWithChildren
+  SiteClubRoute: typeof SiteClubRoute
+  SiteEventsRoute: typeof SiteEventsRoute
+  SiteGalleryRoute: typeof SiteGalleryRoute
   SiteImprintRoute: typeof SiteImprintRoute
+  SiteJoinRoute: typeof SiteJoinRoute
+  SiteNewsRoute: typeof SiteNewsRoute
   SitePrivacyRoute: typeof SitePrivacyRoute
   SiteIndexRoute: typeof SiteIndexRoute
+  SiteEventsEventSlugRoute: typeof SiteEventsEventSlugRoute
+  SiteGalleryAlbumSlugRoute: typeof SiteGalleryAlbumSlugRoute
+  SiteJoinApplyRoute: typeof SiteJoinApplyRoute
   SiteJoinConfirmRoute: typeof SiteJoinConfirmRoute
+  SiteNewsSlugRoute: typeof SiteNewsSlugRoute
 }
 
 const SiteRouteChildren: SiteRouteChildren = {
-  SiteGatedRoute: SiteGatedRouteWithChildren,
+  SiteClubRoute: SiteClubRoute,
+  SiteEventsRoute: SiteEventsRoute,
+  SiteGalleryRoute: SiteGalleryRoute,
   SiteImprintRoute: SiteImprintRoute,
+  SiteJoinRoute: SiteJoinRoute,
+  SiteNewsRoute: SiteNewsRoute,
   SitePrivacyRoute: SitePrivacyRoute,
   SiteIndexRoute: SiteIndexRoute,
+  SiteEventsEventSlugRoute: SiteEventsEventSlugRoute,
+  SiteGalleryAlbumSlugRoute: SiteGalleryAlbumSlugRoute,
+  SiteJoinApplyRoute: SiteJoinApplyRoute,
   SiteJoinConfirmRoute: SiteJoinConfirmRoute,
+  SiteNewsSlugRoute: SiteNewsSlugRoute,
 }
 
 const SiteRouteWithChildren = SiteRoute._addFileChildren(SiteRouteChildren)
