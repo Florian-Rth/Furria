@@ -100,8 +100,6 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<MembershipApplication> MembershipApplications => Set<MembershipApplication>();
 
-    public DbSet<ToDoMark> ToDoMarks => Set<ToDoMark>();
-
     public DbSet<MediaItem> MediaItems => Set<MediaItem>();
 
     public DbSet<MediaJob> MediaJobs => Set<MediaJob>();
