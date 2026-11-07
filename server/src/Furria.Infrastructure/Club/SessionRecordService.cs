@@ -49,7 +49,8 @@ public sealed class SessionRecordService
                         session.Logo.State,
                         session.Logo.RenderedAt,
                         session.Logo.Width,
-                        session.Logo.Height
+                        session.Logo.Height,
+                        session.Logo.Crop
                     )
             ))
             .ToListAsync(ct);

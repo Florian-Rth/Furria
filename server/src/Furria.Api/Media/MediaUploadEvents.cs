@@ -34,7 +34,7 @@ public sealed class MediaUploadEvents
     private const string AlbumOfGalleryOnly = "Only a gallery upload goes into an album.";
     private const string AlbumUnknown = "There is no such album.";
     private const string CropRefused =
-        "A crop is left, top, width and height as fractions of a portrait, group, news, event or website picture.";
+        "A crop is left, top, width and height as fractions of a portrait, group, news, event or website picture or a session logo.";
     private const string AspectRefused =
         "A website picture names the aspect of its position; no other upload names one.";
 
@@ -202,8 +202,10 @@ public sealed class MediaUploadEvents
     private static bool CropFits(MediaOwner owner, string? crop) =>
         crop is null
         || (
-            (owner.PictureAspect is not null || owner.Kind == MediaOwnerKind.Website)
-            && PictureCrop.Parse(crop) is not null
+            (
+                owner.PictureAspect is not null
+                || owner.Kind is MediaOwnerKind.Website or MediaOwnerKind.Session
+            ) && PictureCrop.Parse(crop) is not null
         );
 
     private static bool AspectFits(MediaOwner owner, Dictionary<string, Metadata> metadata) =>

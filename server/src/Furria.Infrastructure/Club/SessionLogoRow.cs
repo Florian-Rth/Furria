@@ -8,5 +8,6 @@ public sealed record SessionLogoRow(
     MediaItemState State,
     DateTimeOffset? RenderedAt,
     int? Width,
-    int? Height
+    int? Height,
+    MediaCrop? Crop
 );

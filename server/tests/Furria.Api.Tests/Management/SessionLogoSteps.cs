@@ -19,6 +19,22 @@ internal static class SessionLogoSteps
             ct
         );
 
+    internal static Task<int> UploadAsync(
+        HttpClient client,
+        int sessionId,
+        string crop,
+        CancellationToken ct
+    ) =>
+        TusUploadSteps.UploadAsync(
+            client,
+            SessionOwner(sessionId),
+            "sessionslogo.jpg",
+            MediaSamples.Jpeg(LogoLength),
+            LogoLength,
+            crop,
+            ct
+        );
+
     internal static Task<int> UploadPngAsync(
         HttpClient client,
         int sessionId,
@@ -31,6 +47,23 @@ internal static class SessionLogoSteps
             "sessionslogo.png",
             png,
             ChunkLength,
+            ct
+        );
+
+    internal static Task<int> UploadPngAsync(
+        HttpClient client,
+        int sessionId,
+        byte[] png,
+        string crop,
+        CancellationToken ct
+    ) =>
+        TusUploadSteps.UploadAsync(
+            client,
+            SessionOwner(sessionId),
+            "sessionslogo.png",
+            png,
+            ChunkLength,
+            crop,
             ct
         );
 
@@ -57,6 +90,12 @@ internal static class SessionLogoSteps
         using var logo = clear.Insert(mark, width / 4, height / 4);
         using var srgb = logo.Copy(interpretation: Enums.Interpretation.Srgb);
         return srgb.WriteToBuffer(".png");
+    }
+
+    internal static double AspectOf(string webpPath)
+    {
+        using var image = Image.NewFromFile(webpPath);
+        return (double)image.Width / image.Height;
     }
 
     internal static (double CornerAlpha, double CentreAlpha) AlphaOf(string webpPath)

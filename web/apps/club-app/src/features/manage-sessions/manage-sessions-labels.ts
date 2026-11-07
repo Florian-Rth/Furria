@@ -1,10 +1,12 @@
+import type { KkBannerDeskLabels } from '@furria/ui/banner-desk-types';
 import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
+import { toDeskLabels } from '@/features/pictures/picture-labels';
 import { relevantSessionYear } from '@/lib/club';
 import { formatSessionLabel, formatSessionNumber } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
 import type { SessionRecordSummary } from './schemas';
-import type { SessionLogoPreview } from './session-logo-draft';
+import type { SessionLogoNote } from './session-logo-draft';
 
 const PART_SEPARATOR = ' · ';
 const QUOTE_OPEN = '„';
@@ -187,29 +189,25 @@ export const toSessionLogoLabel = (seasonLabel: string): string => `Sessionslogo
 export const LOGO_FIELD_LABEL = 'Sessionslogo';
 export const LOGO_REMOVE_LABEL = 'Sessionslogo entfernen';
 
-export const LOGO_PREVIEW_LINES: Record<SessionLogoPreview['kind'], string | null> = {
+export const LOGO_NOTES: Record<SessionLogoNote, string | null> = {
   none: null,
-  staged: 'Wird beim Speichern hochgeladen.',
-  stored: 'So erscheint es neben der Session.',
-  developing: 'Das Sessionslogo wird gerade aufbereitet.',
-  failed: 'Das Sessionslogo ließ sich nicht aufbereiten. Lade es bitte noch einmal hoch.',
+  upload: 'Wird beim Speichern hochgeladen.',
+  recut: 'Der neue Zuschnitt wird beim Speichern übernommen.',
 };
+
+export const SESSION_LOGO_DESK_LABELS: KkBannerDeskLabels = toDeskLabels({
+  title: LOGO_FIELD_LABEL,
+  guide: 'none',
+  frame: {
+    frame: 'Ausschnitt des Sessionslogos – ziehen zum Verschieben, Plus und Minus zum Zoomen',
+    zoom: 'Zoom',
+  },
+  emptyNote: 'Am besten PNG oder WebP mit durchsichtigem Hintergrund.',
+  removeLabel: LOGO_REMOVE_LABEL,
+});
 
 const LOGO_NOT_SENT_LEAD = 'Der Sessionseintrag ist gespeichert, das Sessionslogo aber nicht.';
 
 export const toLogoNotSentMessage = (reason: string): string => `${LOGO_NOT_SENT_LEAD} ${reason}`;
 
-const LOGO_DROP_HINT =
-  'Tippen, um ein Bild auszuwählen – am besten PNG oder WebP mit durchsichtigem Hintergrund.';
-const LOGO_PICK_HINT = 'Tippen, um das Sessionslogo durch ein anderes Bild zu ersetzen.';
-const LOGO_RELEASE_HINT = 'Zum Hochladen loslassen.';
-
 export const LOGO_DRAG_HINT = 'Oder Datei hierher ziehen.';
-
-export const toLogoFieldHint = (isOver: boolean, hasLogo: boolean): string => {
-  if (isOver) {
-    return LOGO_RELEASE_HINT;
-  }
-
-  return hasLogo ? LOGO_PICK_HINT : LOGO_DROP_HINT;
-};

@@ -1,3 +1,4 @@
+import type { KkCrop } from '@furria/ui/image-crop';
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
 import type { CreatedSessionRecord, SessionRecordsResponse } from './schemas';
@@ -49,6 +50,18 @@ export const requestSessionRecordRemoval = (
 export const requestSessionLogoRemoval = (sessionId: number, accessToken: string): Promise<void> =>
   apiFetch(`/api/manage/sessions/${sessionId}/logo`, {
     method: 'DELETE',
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestSessionLogoCrop = (
+  sessionId: number,
+  crop: KkCrop,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/manage/sessions/${sessionId}/logo/crop`, {
+    method: 'PUT',
+    body: { left: crop.left, top: crop.top, width: crop.width, height: crop.height },
     schema: NoContentSchema,
     accessToken,
   });

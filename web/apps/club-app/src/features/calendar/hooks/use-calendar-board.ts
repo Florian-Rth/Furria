@@ -53,7 +53,7 @@ export interface CalendarBoard {
   canLater: boolean;
   loadEarlier: () => void;
   loadLater: () => void;
-  cover: (isoDay: string) => void;
+  reveal: (isoDay: string) => void;
   peek: (month: string) => void;
   select: (calendarEntryId: number) => void;
   close: () => void;
@@ -69,6 +69,7 @@ export const useCalendarBoard = (): CalendarBoard => {
   const nowMs = today.getTime();
   const landingDay = search.day ?? null;
   const [window, setWindow] = useState(() => initialWindowOf(todayDay, landingDay));
+  const [revealedDay, setRevealedDay] = useState<string | null>(landingDay);
   const [peeked, setPeeked] = useState(() => gridSpanOf(monthStartOf(landingDay ?? todayDay)));
   const span = fetchSpanOf(window, peeked);
   const query = useCalendarQuery({ scope: 'all', groupId: null, from: span.from, to: span.to });
@@ -108,7 +109,7 @@ export const useCalendarBoard = (): CalendarBoard => {
     entries,
     allEntries: all,
     pending,
-    sections: toCalendarSections(entries, usuals, window, todayDay),
+    sections: toCalendarSections(entries, usuals, window, todayDay, revealedDay),
     byDay: linesByDay(entries, span),
     usuals,
     usualDays: usualsByDay(usuals, span),
@@ -129,7 +130,8 @@ export const useCalendarBoard = (): CalendarBoard => {
         setWindow(later);
       }
     },
-    cover: (isoDay) => {
+    reveal: (isoDay) => {
+      setRevealedDay(isoDay);
       const next = windowCovering(window, isoDay);
 
       if (next.from !== window.from || next.to !== window.to) {
