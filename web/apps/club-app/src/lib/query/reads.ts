@@ -24,7 +24,6 @@ export const DOMAIN_CHANGES = [
   'clubRecord',
   'announcement',
   'announcementSeen',
-  'toDoMark',
   'media',
   'newsPost',
   'websitePicture',
@@ -254,7 +253,6 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'event',
     'announcement',
     'announcementSeen',
-    'toDoMark',
     'media',
   ],
   clubHub: [
@@ -325,7 +323,6 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'venue',
     'keyHolding',
     'clubRecord',
-    'toDoMark',
     'beerPot',
     'beerStock',
     'beerCrate',

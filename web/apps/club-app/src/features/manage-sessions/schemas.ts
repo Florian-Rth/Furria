@@ -1,6 +1,11 @@
 import { z } from 'zod';
 import { AppSearchSchema } from '@/features/session/schemas';
-import { MediaItemStateSchema, SessionLogoSchema } from '@/lib/api/schemas';
+import {
+  MediaItemStateSchema,
+  MediaUrlSchema,
+  PictureCropSchema,
+  SessionLogoSchema,
+} from '@/lib/api/schemas';
 
 export const SESSION_MOTTO_MAX_LENGTH = 160;
 export const EARLIEST_SESSION_YEAR = 1900;
@@ -12,6 +17,8 @@ export const SessionLogoEditingSchema = z.object({
   state: MediaItemStateSchema,
   isStalled: z.boolean(),
   logo: SessionLogoSchema.nullable(),
+  uncroppedUrl: MediaUrlSchema.nullable(),
+  crop: PictureCropSchema.nullable(),
 });
 export type SessionLogoEditing = z.infer<typeof SessionLogoEditingSchema>;
 

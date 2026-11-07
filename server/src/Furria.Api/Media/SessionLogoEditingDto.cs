@@ -12,6 +12,10 @@ public sealed record SessionLogoEditingDto
 
     public required SessionLogoDto? Logo { get; init; }
 
+    public required string? UncroppedUrl { get; init; }
+
+    public required PictureCropDto? Crop { get; init; }
+
     [Pure]
     public static SessionLogoEditingDto? From(SessionLogoEditingDetails? editing) =>
         editing is null
@@ -21,5 +25,15 @@ public sealed record SessionLogoEditingDto
                 State = editing.State,
                 IsStalled = editing.IsStalled,
                 Logo = SessionLogoDto.From(editing.Logo),
+                UncroppedUrl = editing.UncroppedUrl,
+                Crop = editing.Crop is { } crop
+                    ? new PictureCropDto
+                    {
+                        Left = crop.Left,
+                        Top = crop.Top,
+                        Width = crop.Width,
+                        Height = crop.Height,
+                    }
+                    : null,
             };
 }

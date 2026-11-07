@@ -14,7 +14,7 @@ import {
 } from '@furria/ui/globe-tilt';
 import type { RefObject } from 'react';
 import { useEffect, useRef, useState } from 'react';
-import type { MotionAccess, MotionAsk } from '../motion-access';
+import type { MotionAccess } from '../motion-access';
 import { accessAfterAnswer, asksForMotion, motionAccessOf } from '../motion-access';
 import { useGlobeSimulator } from './use-globe-simulator';
 
@@ -38,10 +38,6 @@ const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
 const EASING = 0.3;
 const DIRECT = 1;
 const ORIENTATION_FALLBACK_MS = 500;
-const REFUSED_KEY = 'furria.motion-refused';
-const REFUSED = 'yes';
-const GESTURE_EVENTS = ['touchend', 'click'] as const;
-const GESTURE_LISTENING = { capture: true, passive: true } as const;
 
 const isGated = (value: object): value is PermissionGate =>
   'requestPermission' in value && typeof value.requestPermission === 'function';
@@ -49,47 +45,25 @@ const isGated = (value: object): value is PermissionGate =>
 const motionAvailable = (): boolean =>
   typeof window !== 'undefined' && window.isSecureContext && 'DeviceMotionEvent' in window;
 
-const readRefused = (): boolean => {
-  try {
-    return window.localStorage.getItem(REFUSED_KEY) === REFUSED;
-  } catch {
-    return false;
-  }
-};
-
-const rememberAnswer = (access: MotionAccess): void => {
-  try {
-    if (access === 'denied') {
-      window.localStorage.setItem(REFUSED_KEY, REFUSED);
-      return;
-    }
-    window.localStorage.removeItem(REFUSED_KEY);
-  } catch {}
-};
-
 const initialAccess = (): MotionAccess => {
   const available = motionAvailable();
 
   return motionAccessOf({
     available,
     gated: available && isGated(DeviceMotionEvent),
-    refused: available && readRefused(),
   });
 };
 
 const askForMotion = (
   access: MotionAccess,
-  ask: MotionAsk,
   settle: (access: MotionAccess) => void,
 ): Promise<void> => {
-  if (!asksForMotion(access, ask) || !isGated(DeviceMotionEvent)) {
+  if (!asksForMotion(access) || !isGated(DeviceMotionEvent)) {
     return Promise.resolve();
   }
   return DeviceMotionEvent.requestPermission()
     .then((answer) => {
-      const answered = accessAfterAnswer(answer);
-      rememberAnswer(answered);
-      settle(answered);
+      settle(accessAfterAnswer(answer));
     })
     .catch(() => undefined);
 };
@@ -147,35 +121,8 @@ export const useConfettiGlobe = (): ConfettiGlobe => {
   };
 
   const requestMotion = (): void => {
-    void askForMotion(access, 'deliberate', setAccess);
+    void askForMotion(access, setAccess);
   };
-
-  useEffect(() => {
-    if (access !== 'needsGesture') {
-      return;
-    }
-    let asking = true;
-    const settled = (): void => {
-      asking = false;
-    };
-    void askForMotion(access, 'quiet', setAccess).then(settled);
-    const onGesture = (): void => {
-      if (asking) {
-        return;
-      }
-      asking = true;
-      void askForMotion(access, 'gesture', setAccess).then(settled);
-    };
-    for (const name of GESTURE_EVENTS) {
-      window.addEventListener(name, onGesture, GESTURE_LISTENING);
-    }
-
-    return () => {
-      for (const name of GESTURE_EVENTS) {
-        window.removeEventListener(name, onGesture, GESTURE_LISTENING);
-      }
-    };
-  }, [access]);
 
   useEffect(() => {
     if (access !== 'granted') {

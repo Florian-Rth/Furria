@@ -57,7 +57,7 @@ const UPLOAD_FAILURE_MESSAGES: Record<UploadFailure, string> = {
 export const toUploadFailureMessage = (failure: UploadFailure): string =>
   UPLOAD_FAILURE_MESSAGES[failure];
 
-const toDeskLabels = (copy: PictureCopy): KkBannerDeskLabels => ({
+export const toDeskLabels = (copy: PictureCopy): KkBannerDeskLabels => ({
   upload: 'Hochladen',
   gallery: 'Aus der Galerie',
   emptyNote: copy.emptyNote,

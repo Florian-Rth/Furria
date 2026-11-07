@@ -64,7 +64,8 @@ public sealed partial class ClubService
                         session.Logo.State,
                         session.Logo.RenderedAt,
                         session.Logo.Width,
-                        session.Logo.Height
+                        session.Logo.Height,
+                        session.Logo.Crop
                     )
             ))
             .SingleOrDefaultAsync(ct);

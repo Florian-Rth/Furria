@@ -24,14 +24,6 @@ public static class ToDoKeys
         [ToDoKind.ApplicationWaiting] = [FurriaPermissions.MembershipApplicationsDecide],
     }.ToFrozenDictionary();
 
-    public static readonly string[] Openers =
-    [
-        .. RequiredKeys
-            .Values.Where(keys => keys.Length == 1)
-            .Select(keys => keys[0])
-            .Distinct(StringComparer.Ordinal),
-    ];
-
     [Pure]
     public static bool Shows(ToDoKind kind, IReadOnlySet<string> granted) =>
         RequiredKeys[kind].All(granted.Contains);

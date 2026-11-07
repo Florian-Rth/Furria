@@ -243,6 +243,7 @@ export const toCalendarSections = (
   usuals: readonly UsualTraining[],
   window: CalendarWindow,
   todayDay: string,
+  revealedDay: string | null,
 ): CalendarSection[] => {
   const byDay = linesByDay(entries, window);
   const usualDays = usualsByDay(usuals, window);
@@ -281,7 +282,11 @@ export const toCalendarSections = (
     const dayUsuals = usualDays.get(isoDay) ?? [];
     const mark = dayMarkAt(isoDay);
     const shown =
-      lines.length > 0 || dayUsuals.length > 0 || isoDay === todayDay || mark.landmark !== null;
+      lines.length > 0 ||
+      dayUsuals.length > 0 ||
+      isoDay === todayDay ||
+      isoDay === revealedDay ||
+      mark.landmark !== null;
 
     if (shown) {
       flushGap();
@@ -300,10 +305,12 @@ export const toCalendarSections = (
 
   flushGap();
 
-  const todayMonday = mondayOf(todayDay);
+  const keptMondays = [todayDay, revealedDay].flatMap((day) =>
+    day === null ? [] : [mondayOf(day)],
+  );
 
   return sections.filter(
-    (section) => section.monday === todayMonday || section.items.some(holdsAppointments),
+    (section) => keptMondays.includes(section.monday) || section.items.some(holdsAppointments),
   );
 };
 

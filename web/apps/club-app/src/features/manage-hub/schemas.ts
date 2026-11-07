@@ -1,6 +1,4 @@
 import { z } from 'zod';
-import { TO_DO_KINDS, ToDoSchema } from '@/features/to-dos/schemas';
-import { knownKindsOnly } from '@/lib/api/known-kinds';
 
 export const ManagePersonsPanelSchema = z.object({
   personCount: z.number().int(),
@@ -77,6 +75,5 @@ export const ManageHubSchema = z.object({
   keys: ManageKeysPanelSchema.nullable(),
   accounts: ManageAccountsPanelSchema.nullable(),
   applications: ManageApplicationsPanelSchema.nullable(),
-  toDos: knownKindsOnly(ToDoSchema, TO_DO_KINDS),
 });
 export type ManageHub = z.infer<typeof ManageHubSchema>;

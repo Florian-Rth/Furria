@@ -11,6 +11,9 @@ public sealed class SessionLogoUploadTests : IClassFixture<ApiTestFixture>
     private const int LogoLength = 4096;
     private const int UnknownSessionId = 999_999;
 
+    private static readonly PictureCrop ChosenCut = new(0, 0, 0.5, 0.5);
+    private static readonly PictureCrop MarkCut = new(0.3, 0.3, 0.4, 0.4);
+
     private readonly ApiTestFixture _fixture;
 
     public SessionLogoUploadTests(ApiTestFixture fixture)
@@ -115,22 +118,44 @@ public sealed class SessionLogoUploadTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseACrop_When_TheLogoIsUploaded()
+    public async Task Should_KeepTheChosenCut_When_TheLogoIsUploadedWithACrop()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(SessionLogoSeeds.RunningSessionWithKeeper(), ct);
         var client = await ctx.Identity.ClientForAsync(SessionLogoSeeds.Keeper, ct);
+        var sessionId = ctx.Club.Sessions.IdOf(SessionLogoSeeds.Running);
 
-        var response = await TusUploadSteps.CreateAsync(
+        var logoId = await SessionLogoSteps.UploadAsync(client, sessionId, ChosenCut.Token, ct);
+
+        await ctx
+            .Expected.MediaItem(logoId)
+            .ToBeCroppedTo(ChosenCut)
+            .Session(sessionId)
+            .ToShowLogo(logoId)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RenderOnlyTheCutInItsOwnShape_When_TheLogoIsCutToItsMark()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(SessionLogoSeeds.RunningSessionWithKeeper(), ct);
+        var client = await ctx.Identity.ClientForAsync(SessionLogoSeeds.Keeper, ct);
+        var sessionId = ctx.Club.Sessions.IdOf(SessionLogoSeeds.Running);
+        var logoId = await SessionLogoSteps.UploadPngAsync(
             client,
-            SessionLogoSteps.SessionOwner(ctx.Club.Sessions.IdOf(SessionLogoSeeds.Running)),
-            "sessionslogo.jpg",
-            LogoLength,
-            "0,0,0.5,0.5",
+            sessionId,
+            SessionLogoSteps.TransparentPngWithAMark(1200, 800),
+            MarkCut.Token,
             ct
         );
 
-        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await _fixture.RunMediaWorkerAsync(ct);
+
+        await ctx.Expected.MediaItem(logoId).ToBeReady(1200, 800).AssertAsync(ct);
+        var medium = await _fixture.MediaFileOfAsync(logoId, MediaRendition.Medium, ct);
+        Assert.Equal((255.0, 255.0), SessionLogoSteps.AlphaOf(medium));
+        Assert.Equal(1.5, SessionLogoSteps.AspectOf(medium), 2);
     }
 
     [Fact]
