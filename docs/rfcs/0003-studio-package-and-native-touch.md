@@ -1,7 +1,7 @@
 ---
 rfc: 0003
 title: The studio as its own package — one engine, one stage, one timeline, native-grade touch
-status: built — device checks owed
+status: in work — phase 13 (edit page + step setup promotion); device checks owed
 github_issue: 57
 branch: feat/rfc-57-studio-package
 created: 2026-11-02
@@ -1054,6 +1054,32 @@ Group D built 2026-11-03. Decisions:
   strip offset), and the block's grid no longer inherits the button's centred content, which
   pushed the label right and clipped it on the interactive hub blocks.
 
+### Phase 13 — Promote the one-job edit page and the step setup (2026-11-07)
+
+Florian's verdicts: edit page variant B "one job at a time" with A's selection chip (2026-11-04, round-2
+rulings in `plan/club-app/studio-edit-variants.md`); step setup wizard with 3 stages — Video · Schritte
+trennen · Schritte benennen — and steps named only (2026-11-07, W1–W2 in
+`plan/club-app/studio-step-setup.md`). Both live in the lab (`features/lab-edit-jobs`,
+`features/lab-step-setup`, `/lab/edit-jobs/$actId`, `/lab/step-setup/$actId`) and are promoted together.
+
+#### Phase 13a — Production routes
+
+- [ ] The act page's edit mode (`/acts/$actId?edit=true`, phone and desk) renders the one-job editor instead of the card/desk editor; evening editing keeps working
+- [ ] The step setup gets its own production route under the act (`/acts/$actId/steps/setup`), entered from the step list's *Schritte einrichten* / *Weiter einrichten* and left to the edit page
+- [ ] Views and hooks that do not fetch move into `@furria/studio` (ADR-0035); the club app keeps routes, fetching and the save port
+- [ ] Delete the lab routes, the lab hub entries (`lab-drafts.ts`) and the `lab-*` feature folders
+
+#### Phase 13b — Old editor out, final primitive names
+
+- [ ] Delete the replaced editor (card editor, desk editor and their hooks, kits and copy) once nothing imports it; grep for leftovers
+- [ ] Rename the lab primitives `KkEj*` / `KkSs*` to final names (one name per job, no lab prefixes) with their `exports`
+- [ ] Merge lab clones into the production primitives they copy where both remain
+
+#### Phase 13c — Docs and validation
+
+- [ ] CONTEXT.md (steps have a name only; step setup; jobs), plan files marked promoted, ADR touch-ups if a decision changed
+- [ ] Full web suite (cross-cutting `@furria/ui` change) and backend targeted classes; shots of the edit page and the setup at 390×844 and 1180×820, light + dark
+
 ## Device checks
 
 Every real-screen check this RFC still owes, gathered from the phases (letters mark where they came
@@ -1073,6 +1099,7 @@ from). Run on the HTTPS static build on iPhone, Pixel and iPad Safari unless a l
 - [ ] **L — Video screen (findings 2026-11-03 B):** layout at 390 px and on the iPad, video block drag sets the offset without moving the music, the preview follows play and scrub, the own spot reads clearly at the same size
 - [ ] **M — One timeline (findings 2026-11-03 C):** a fast flick glides far and a normal release stops dead on iPhone and iPad; the part name stays readable while scrubbing; hub, music page, video tab, desk and lesson read the same
 - [ ] **N — Live time (findings 2026-11-03 D):** the readouts and step names follow the line while dragging and gliding on iPhone without dropping frames; the step label stays at the left edge on the hub
+- [ ] **O — Edit page and step setup (phase 13):** every job on the phone and the iPad, the setup from a new upload to named steps, the resume note
 
 ## Risks & alternatives
 
