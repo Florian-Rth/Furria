@@ -1,7 +1,7 @@
 ---
 rfc: 0003
 title: The studio as its own package — one engine, one stage, one timeline, native-grade touch
-status: built — device checks owed
+status: in work — phase 14 (one route per screen); device checks owed
 github_issue: 57
 branch: feat/rfc-57-studio-package
 created: 2026-11-02
@@ -1099,6 +1099,45 @@ folded shell bar no longer draws the page's actions (the act page's (i) sat on *
 picture is the flexible zone again (F7: picture `1fr`, task content-sized). Open design questions for
 Florian: spare height around the stage in the phone jobs, the small view-only stage in the tablet
 *Schritte* job, a 16:9 video letterboxed in the tall setup picture.
+
+### Phase 14 — One route per screen in the act area (2026-11-07)
+
+Florian: "Shouldnt they be own routes? Dont create multiple pages on one route and differentiate them via
+query params." Today `/acts/$actId` renders five screens and three panes chosen by `view`, `edit`,
+`settings`, `evening`, `training`, `roll`, and `/acts/$actId/music` two screens by `tool`. Target route map:
+
+| Screen | Route | Today |
+|---|---|---|
+| Act hub (score) | `/acts/$actId` | no `view` |
+| Practice / lesson | `/acts/$actId/practice` | `view=play` |
+| Practice an evening | `/acts/$actId/evenings/$eventId/practice` | `view=play&evening=` |
+| Edit page | `/acts/$actId/edit` | `view=play&edit=true` |
+| Edit an evening | `/acts/$actId/evenings/$eventId/edit` | `+evening=` |
+| Step setup | `/acts/$actId/steps/setup` | (done in 13a) |
+| Music | `/acts/$actId/music` | `tool=music` |
+| Videos | `/acts/$actId/videos` | `tool=video` |
+| Hall training | `/acts/$actId/trainings/$trainingId` | `view=training&training=` |
+| Details | `/acts/$actId/details` | `view=details` |
+| Details · settings pane | `/acts/$actId/details/settings` | `settings=true` |
+| Details · evening pane | `/acts/$actId/details/evenings/$eventId` | `evening=` |
+| Details · roll call pane | `/acts/$actId/details/trainings/$trainingId/roll` | `roll=` |
+
+Query params stay only for state that is not a screen: the back-navigation origin (`from`, `group`, `event`,
+`filter`, `person`, `session`), the hub's selected step (`stepId`) and the app-wide sheet (`sheet`). Panes are
+child routes of the details layout (master list stays, pane in its outlet; a drawer on the phone). No
+redirects for the old URLs — nothing has shipped publicly.
+
+#### Phase 14a — Screens
+
+- [ ] Routes for practice, edit, the evening variants, hall training, music and videos; each screen reads its ids from the path
+- [ ] Every link and navigation into them re-pointed (act card, hub doors, Start, calendar, entry sheets, events, running order, step setup exit, music/video switch, back origins); tests follow
+- [ ] `view` values `play`/`training`, `edit`, `training`, `tool` and the evening-on-play use removed from the search schemas; `actPageModeOf` reduced to what the hub still needs
+
+#### Phase 14b — Details and its panes
+
+- [ ] Details as a layout route with settings, evening and roll call as child routes (pane on wide, drawer on the phone), Escape/close navigate to the parent
+- [ ] Links re-pointed; `view=details`, `settings`, `evening`, `roll` removed; `ActPageSearchSchema` holds only origin, `stepId`, `sheet`
+- [ ] Full web suite; shots of every route at 390×844 and 1180×820
 
 ## Device checks
 
