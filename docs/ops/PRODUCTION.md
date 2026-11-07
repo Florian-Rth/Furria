@@ -333,7 +333,7 @@ The live `~/furria/docker-compose.yml` predates L1. Bring it onto
 
 1. Diff the live file against the example; carry over only host-specific ports and secrets
    (into `.env`, not the compose file).
-2. Add `CLUB_DOMAIN` (interim `florianrth.com` plus `CLUB_APP_HOST=furria-app.florianrth.com`)
+2. Add `CLUB_DOMAIN=furrscher-carnevals-club.de` (club-app on `app.furrscher-carnevals-club.de`)
    and `EDGE_PROXY_ADDRESS=10.10.20.1` to `.env`; drop `CLUB_APP_BASE_URL`.
 3. Check `172.30.0.0/24` (the compose network) collides with nothing on the host
    (`ip route`, `docker network inspect`).
@@ -343,8 +343,8 @@ The live `~/furria/docker-compose.yml` predates L1. Bring it onto
 
 Test passkeys made before this step stop working (the relying party moves to the domain).
 
-**HSTS with `includeSubDomains`** applies to every subdomain of the host that sends it. While the
-interim website runs on a `florianrth.com` host, its HSTS covers that host's subdomains for a year.
+**HSTS with `includeSubDomains`** applies to every subdomain of the host that sends it: the website
+on `furrscher-carnevals-club.de` covers `app.` and every other subdomain for a year.
 
 ## Not covered yet
 

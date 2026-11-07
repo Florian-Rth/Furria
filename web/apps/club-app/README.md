@@ -47,7 +47,7 @@ debugging**. Plug in and accept *Allow USB debugging?*. `adb devices` must show 
 ### The bundled build
 
 ```bash
-cd web && pnpm build:native                    # dist/ against https://furria.florianrth.com
+cd web && pnpm build:native                    # dist/ against https://app.furrscher-carnevals-club.de
 cd apps/club-app && npx cap sync android       # copies dist/ into the app package
 npx cap run android                            # or: android/gradlew assembleDebug && adb install -r …
 ```
