@@ -211,7 +211,6 @@ export const useUploadLinksPage = (): UploadLinksPage => {
     },
     onSortSelected: () => {
       if (selected !== undefined) {
-        sheets.close();
         void navigate({ to: GALLERY_INBOX_PATH, search: { link: selected.uploadLinkId } });
       }
     },
