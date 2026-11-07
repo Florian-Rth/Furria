@@ -39,7 +39,7 @@ export const KkMottoStageLogo: FC<KkMottoStageLogoProps> = ({ image }) => (
         height: '100%',
         width: WIDTH,
         objectFit: 'contain',
-        objectPosition: 'right bottom',
+        objectPosition: 'right center',
         opacity: LIGHT_OPACITY,
         maskImage: FADE,
         WebkitMaskImage: FADE,
