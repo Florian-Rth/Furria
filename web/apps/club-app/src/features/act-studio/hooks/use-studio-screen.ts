@@ -25,6 +25,7 @@ import { actUploadPortOf } from '../act-upload-port';
 import type { VideoMutations } from '../api';
 import { useSongMutations, useVideoMutations } from '../api';
 import { eveningStudioOf } from '../studio-evening';
+import { useStepSetupRoute } from './use-step-setup-route';
 import { useStudioDeveloping } from './use-studio-developing';
 import { useStudioDocument } from './use-studio-document';
 import { useStudioFinal } from './use-studio-final';
@@ -102,6 +103,7 @@ export const useStudioScreen = (
   };
   const history = useVisitHistory(actId, studio);
   const openMusic = useStudioMusicRoute(actId);
+  const openStepSetup = useStepSetupRoute(actId);
 
   return {
     tone,
@@ -123,6 +125,7 @@ export const useStudioScreen = (
     uploads,
     history,
     openMusic,
+    openStepSetup,
     final,
     frame: largeTextFrameOf(video.hero, large.videoShown),
     large,

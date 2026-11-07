@@ -38,6 +38,7 @@ export interface StudioScreen extends StudioWorkScreen {
   uploads: StudioScreenUploads;
   history: VisitHistory;
   openMusic: (tool: StudioMusicTool) => void;
+  openStepSetup: () => void;
   cast: readonly SpotPerson[];
   editor: StudioEditor | null;
   frame: ActStudioFrame;

@@ -1064,10 +1064,15 @@ trennen · Schritte benennen — and steps named only (2026-11-07, W1–W2 in
 
 #### Phase 13a — Production routes
 
-- [ ] The act page's edit mode (`/acts/$actId?edit=true`, phone and desk) renders the one-job editor instead of the card/desk editor; evening editing keeps working
-- [ ] The step setup gets its own production route under the act (`/acts/$actId/steps/setup`), entered from the step list's *Schritte einrichten* / *Weiter einrichten* and left to the edit page
-- [ ] Views and hooks that do not fetch move into `@furria/studio` (ADR-0035); the club app keeps routes, fetching and the save port
-- [ ] Delete the lab routes, the lab hub entries (`lab-drafts.ts`) and the `lab-*` feature folders
+- [x] The act page's edit mode (`/acts/$actId?edit=true`, phone and desk) renders the one-job editor instead of the card/desk editor; evening editing keeps working
+- [x] The step setup gets its own production route under the act (`/acts/$actId/steps/setup`), entered from the step list's *Schritte einrichten* / *Weiter einrichten* and left to the edit page
+- [x] Views and hooks that do not fetch move into `@furria/studio` (ADR-0035); the club app keeps routes, fetching and the save port
+- [x] Delete the lab routes, the lab hub entries (`lab-drafts.ts`) and the `lab-*` feature folders
+
+Built 2026-11-07. Decisions: edit mode renders the club app's `ActStudioEditor` (versions slot + package
+`JobEditor`); the setup at `/acts/$actId/steps/setup` takes a `StepSetupPort` (chosen video, peaks, leave)
+from the club app; `screen.openStepSetup` like `openMusic`; leaving replaces history; the music page and the
+setup share `useActStudioPage` + `ActStudioPageGate` (not found, denied, error with retry, loading, no studio).
 
 #### Phase 13b — Old editor out, final primitive names
 
