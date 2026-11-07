@@ -2,13 +2,10 @@ import type { SpotPath, StagePoint } from '@furria/studio/choreography-motion';
 import { poseAt } from '@furria/studio/choreography-motion';
 import type { StageScene } from '@furria/studio/practice-stage';
 import { viewShareOf } from '@furria/studio/practice-stage';
-import { formationTextOf, selectionTextOf, spotTitleOf } from '@furria/studio/studio-copy';
 import type { StageShare, TimeSpan } from '@furria/studio/studio-edits';
 import { draggedPointOf } from '@furria/studio/studio-edits';
-import type { ArrangeAxis, FormationPreset } from '@furria/studio/studio-formation';
+import type { FormationPreset } from '@furria/studio/studio-formation';
 import {
-  alignedOf,
-  distributedOf,
   formationAt,
   formationPlacedOf,
   freePointOf,
@@ -41,17 +38,8 @@ export interface ActStudioStage {
   onion: boolean;
   onionPoints: ActStudioOnionPoint[];
   formation: boolean;
-  moving: boolean;
-  formationText: string;
-  selectionText: string;
-  sheetOpen: boolean;
-  canMirror: boolean;
-  canAlign: boolean;
-  canDistribute: boolean;
   formationSeconds: number;
   previousSeconds: number | null;
-  copySource: number;
-  copySteps: number;
   tap: (spotId: number | null) => void;
   hold: (spotId: number) => void;
   grab: (spotId: number, share: StageShare) => readonly number[] | null;
@@ -59,18 +47,11 @@ export interface ActStudioStage {
   end: () => void;
   cancel: () => void;
   nudge: (spotId: number, right: number, down: number) => void;
-  choose: (spotId: number) => void;
   forget: (spotId: number) => void;
   toggleOnion: () => void;
   mirror: () => void;
-  align: (axis: ArrangeAxis) => void;
-  distribute: (axis: ArrangeAxis) => void;
   preset: (kind: FormationPreset) => void;
-  pickCopySource: (direction: -1 | 1) => void;
-  copy: () => void;
   addSpot: () => void;
-  openSheet: () => void;
-  closeSheet: () => void;
 }
 
 interface Grab {
@@ -81,8 +62,6 @@ interface Grab {
 
 const NUDGE_METRES = 0.5;
 const NUDGE_START: StageShare = { x: 0, y: 0 };
-
-const nameOf = (spot: StudioSpot | undefined): string | null => spot?.person?.firstName ?? null;
 
 const byNumber = (spots: readonly StudioSpot[]): StudioSpot[] =>
   [...spots].sort((left, right) => left.number - right.number);
@@ -95,9 +74,6 @@ export const useActStudioStage = (screen: StudioWorkScreen): ActStudioStage => {
   const [picked, setPicked] = useState<readonly number[]>([]);
   const [toolbar, setToolbar] = useState(false);
   const [onion, setOnion] = useState(false);
-  const [sheetOpen, setSheetOpen] = useState(false);
-  const [copyPick, setCopyPick] = useState<number | null>(null);
-  const [copyPickStep, setCopyPickStep] = useState<number | undefined>(undefined);
   const grab = useRef<Grab | null>(null);
   const pending = useRef<readonly number[] | null>(null);
   useLayoutEffect(() => {
@@ -107,15 +83,10 @@ export const useActStudioStage = (screen: StudioWorkScreen): ActStudioStage => {
   const moving = mode.tool === 'movement';
   const step = practice.step;
   const stepIndex = steps.findIndex((candidate) => candidate.stepId === step?.stepId);
-  if (copyPickStep !== step?.stepId) {
-    setCopyPickStep(step?.stepId);
-    setCopyPick(null);
-  }
   const formationSeconds = step?.startSeconds ?? 0;
   const span: TimeSpan = { start: formationSeconds, end: step?.endSeconds ?? length };
   const previous = steps[stepIndex - 1] ?? null;
   const previousSeconds = previous?.startSeconds ?? null;
-  const copySource = Math.min(steps.length - 1, Math.max(0, copyPick ?? stepIndex - 1));
   const pathOf = (spotId: number): SpotPath | null =>
     paths.find((path) => path.spotId === spotId) ?? null;
   const current = formationAt(paths, formationSeconds);
@@ -220,14 +191,6 @@ export const useActStudioStage = (screen: StudioWorkScreen): ActStudioStage => {
     }
   };
 
-  const single =
-    selected.length === 1
-      ? spotTitleOf(
-          studio.spots.find((spot) => spot.spotId === selected[0])?.number ?? 0,
-          nameOf(studio.spots.find((spot) => spot.spotId === selected[0])),
-        )
-      : null;
-
   return {
     scene: { paths, spots: studio.spots, ownSpotId, stage },
     movement,
@@ -246,17 +209,8 @@ export const useActStudioStage = (screen: StudioWorkScreen): ActStudioStage => {
             return [{ key: String(path.spotId), x: share.x, y: share.y }];
           }),
     formation,
-    moving,
-    formationText: formationTextOf(stepIndex + 1, formationSeconds),
-    selectionText: selectionTextOf(selected.length, single),
-    sheetOpen,
-    canMirror: selected.length > 0,
-    canAlign: selected.length >= 2,
-    canDistribute: selected.length >= 3,
     formationSeconds,
     previousSeconds,
-    copySource,
-    copySteps: steps.length,
     tap: (spotId) => {
       setToolbar(false);
       setPicked(
@@ -291,10 +245,6 @@ export const useActStudioStage = (screen: StudioWorkScreen): ActStudioStage => {
       });
       ended();
     },
-    choose: (spotId) => {
-      setToolbar(false);
-      setPicked(nextSelection(spotId, false));
-    },
     forget: (spotId) => {
       setPicked((chosen) => chosen.filter((id) => id !== spotId));
     },
@@ -304,35 +254,11 @@ export const useActStudioStage = (screen: StudioWorkScreen): ActStudioStage => {
     mirror: () => {
       rearranged((points) => points.map(mirroredOf));
     },
-    align: (axis) => {
-      rearranged((points) => alignedOf(points, axis, stage));
-    },
-    distribute: (axis) => {
-      rearranged((points) => distributedOf(points, axis, stage));
-    },
     preset: (kind) => {
       const points = presetPointsOf(kind, targets.length, stage);
       settle(
         new Map(
           targets.map((id, index) => [id, points[index] ?? { rightMetres: 0, backMetres: 0 }]),
-        ),
-      );
-    },
-    pickCopySource: (direction) => {
-      setCopyPick(Math.min(steps.length - 1, Math.max(0, copySource + direction)));
-    },
-    copy: () => {
-      const source = steps[copySource]?.startSeconds;
-      if (source === null || source === undefined || copySource === stepIndex) {
-        return;
-      }
-      const from = formationAt(paths, source);
-      settle(
-        new Map(
-          targets.flatMap((id) => {
-            const point = from.get(id);
-            return point === undefined ? [] : [[id, point] as const];
-          }),
         ),
       );
     },
@@ -342,12 +268,6 @@ export const useActStudioStage = (screen: StudioWorkScreen): ActStudioStage => {
       settle(new Map([[spotId, freePointOf([...current.values()], stage)]]));
       stageDocument.endGesture();
       setPicked([spotId]);
-    },
-    openSheet: () => {
-      setSheetOpen(true);
-    },
-    closeSheet: () => {
-      setSheetOpen(false);
     },
   };
 };

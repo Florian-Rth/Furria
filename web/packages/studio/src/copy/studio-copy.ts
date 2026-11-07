@@ -4,7 +4,6 @@ import { formatReadoutMetres } from '@furria/studio/drag-readout';
 import type { GesturePrecisionTier } from '@furria/studio/gesture-recogniser';
 import type { CountAt, TimelineRange } from '@furria/studio/music-timeline';
 import { clockOf } from '@furria/studio/practice-step-list';
-import { unnamedStepNameOf } from '@furria/studio/step-names';
 import type { CutEdge } from '@furria/studio/studio-cuts';
 import type { OutsideMusic } from '@furria/studio/studio-music';
 import type { SongPiece, StudioVideo } from '@furria/studio/studio-schemas';
@@ -62,11 +61,8 @@ export const STUDIO_SONG_REMOVE_SURE = 'Wirklich entfernen';
 export const STUDIO_SONG_PREPARING = 'wird vorbereitet';
 export const STUDIO_SONG_FAILED = 'ließ sich nicht vorbereiten';
 
-export const STUDIO_STEP = 'Schritt';
-export const STUDIO_PART = 'Teil';
 export const STUDIO_MAIN_VIDEO_NONE = 'Keins';
 export const STUDIO_FRONT = 'Publikum';
-export const STUDIO_NOTHING_SELECTED = 'Punkt antippen';
 export const stagePlaceTextOf = (rightMetres: number, backMetres: number): string =>
   `${formatReadoutMetres(rightMetres)} ${rightMetres < 0 ? 'links' : 'rechts'} · ${formatReadoutMetres(backMetres)} hinten`;
 export const STUDIO_BEND_LABEL = 'Kurve: ziehen zum Biegen';
@@ -238,20 +234,6 @@ export const borderLabelOf = (name: string): string => `Grenze nach ${name} vers
 export const spotTitleOf = (number: number, name: string | null): string =>
   name === null ? `Platz ${number}` : `Platz ${number} · ${name}`;
 
-export const selectionTextOf = (count: number, single: string | null): string => {
-  if (count === 0) {
-    return STUDIO_NOTHING_SELECTED;
-  }
-
-  return count === 1 && single !== null ? single : `${count} Plätze`;
-};
-
-export const formationTextOf = (number: number, start: number): string =>
-  `Aufstellung Schritt ${number} · ab ${fineClockOf(start)}`;
-
-export const placementTextOf = (name: string, start: number): string =>
-  `${name} · ab ${fineClockOf(start)}`;
-
 export const takeMetaOf = (span: TimelineRange | null): string =>
   span === null ? 'noch nicht angelegt' : `${fineClockOf(span.start)}–${fineClockOf(span.end)}`;
 
@@ -344,15 +326,6 @@ export const outsideMusicTextOf = ({ steps, videos, keyframes }: OutsideMusic): 
 };
 
 export const newPartNameOf = (number: number): string => `Teil ${number}`;
-
-export const stepDeskTitleOf = (number: number, name: string): string =>
-  name.trim() === '' ? unnamedStepNameOf(number) : `${STUDIO_STEP} ${number} · „${name.trim()}“`;
-
-export const partDeskTitleOf = (name: string, first: number, last: number): string => {
-  const steps = first === last ? `${STUDIO_STEP} ${first}` : `${STUDIO_STEP} ${first}–${last}`;
-
-  return `${STUDIO_PART} „${name.trim()}“ · ${steps}`;
-};
 
 export const songDeskTitleOf = (
   number: number,

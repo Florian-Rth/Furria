@@ -291,7 +291,6 @@
     "./use-act-studio-routes": "./src/editor/use-act-studio-routes.ts",
     "./use-act-studio-songs": "./src/screen/use-act-studio-songs.ts",
     "./use-act-studio-stage": "./src/editor/use-act-studio-stage.ts",
-    "./use-act-studio-step-tool": "./src/screen/use-act-studio-step-tool.ts",
     "./use-act-studio-takes": "./src/editor/use-act-studio-takes.ts",
     "./use-act-studio-wave": "./src/editor/use-act-studio-wave.ts",
     "./use-centre-scrub": "./src/timeline/use-centre-scrub.ts",

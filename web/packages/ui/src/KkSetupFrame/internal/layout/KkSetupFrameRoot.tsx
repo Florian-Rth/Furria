@@ -15,7 +15,6 @@ const {
   pictureMin,
   timeline,
   transport,
-  taskMin,
   foot,
   wideTimeline,
   widePictureMin,
@@ -31,19 +30,16 @@ const WIDE_PICTURE_SHARE = '2 / 3';
 const footRowOf = (theme: Theme): string =>
   `minmax(calc(${theme.spacing(foot)} + ${safeAreaInset('bottom')}), auto)`;
 
-const phonePictureOf = (theme: Theme): string =>
-  `minmax(${theme.spacing(pictureMin)}, calc((100cqw - ${theme.spacing(inset * 2)}) * ${VIDEO_HEIGHT_SHARE}))`;
-
 const widePictureOf = (theme: Theme): string =>
   `minmax(${theme.spacing(widePictureMin)}, calc(((100cqw - ${theme.spacing(columnGap)}) * ${WIDE_PICTURE_SHARE} - ${theme.spacing(inset)}) * ${VIDEO_HEIGHT_SHARE}))`;
 
 const phoneRowsOf = (theme: Theme): string =>
   [
     theme.spacing(head),
-    phonePictureOf(theme),
+    `minmax(${theme.spacing(pictureMin)}, 1fr)`,
     theme.spacing(timeline),
     theme.spacing(transport + playerGap - zoneGap),
-    `minmax(${theme.spacing(taskMin)}, 1fr)`,
+    'auto',
     footRowOf(theme),
   ].join(' ');
 

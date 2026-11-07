@@ -2,7 +2,6 @@ import type { TimedKeyframe } from '@furria/studio/choreography-motion';
 import {
   bendHandleOf,
   bentMoveOf,
-  easedMoveOf,
   facedMoveOf,
   keyedTrackOf,
   keyIndexAt,
@@ -143,15 +142,6 @@ describe('bentMoveOf', () => {
 
   it('straightens a bend dragged back onto the middle', () => {
     expect(bentMoveOf(track, 0, { rightMetres: 2.05, backMetres: 1 }, stage)[1]?.bend).toBeNull();
-  });
-});
-
-describe('easedMoveOf', () => {
-  it('sets the easing on the arriving keyframe', () => {
-    expect(easedMoveOf([key(0, 0), key(4, 4)], 0, 'easeInOut').map((k) => k.easing)).toEqual([
-      'linear',
-      'easeInOut',
-    ]);
   });
 });
 

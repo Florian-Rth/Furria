@@ -1,5 +1,10 @@
 # Studio edit page — three variants (common brief)
 
+**Promoted 2026-11-07 — RFC 0003 phase 13:** variant B (one job at a time) with the round-2 rulings is the
+production edit page at `/acts/$actId?edit=true`; the step cards, the desk editor and the lab route are
+deleted. The brief below is kept as history — its file paths, lab constraints and function list describe the
+pre-promotion state; step descriptions were removed later (step setup W1).
+
 Worktree: /home/portainer/.herdr/worktrees/Furria/worktree-silver-meadow-b3ef. Owner: Florian. He compares the
 variants on his phone and iPad (lab dev server http://10.10.20.12:3021/lab, test data behind API :5101) and
 picks one. Branch feat/rfc-57-studio-package — the worktree holds uncommitted work of the lead; never revert,

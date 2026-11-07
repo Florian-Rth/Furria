@@ -1,4 +1,4 @@
-import type { KeyframeEasing, StagePoint, TimedKeyframe } from '@furria/studio/choreography-motion';
+import type { StagePoint, TimedKeyframe } from '@furria/studio/choreography-motion';
 import { poseAt } from '@furria/studio/choreography-motion';
 import type { StageShare, TimeSpan } from '@furria/studio/studio-edits';
 import {
@@ -167,13 +167,6 @@ export const straightenedMoveOf = (
   index: number,
 ): readonly TimedKeyframe[] =>
   withArrival(keyframes, index, (keyframe) => ({ ...keyframe, bend: null }));
-
-export const easedMoveOf = (
-  keyframes: readonly TimedKeyframe[],
-  index: number,
-  easing: KeyframeEasing,
-): readonly TimedKeyframe[] =>
-  withArrival(keyframes, index, (keyframe) => ({ ...keyframe, easing }));
 
 export const facedMoveOf = (
   keyframes: readonly TimedKeyframe[],

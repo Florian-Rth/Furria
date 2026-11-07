@@ -1,5 +1,4 @@
 import {
-  placementTextOf,
   STUDIO_NO_VIDEO_HERE,
   STUDIO_VIDEO_GONE,
   shelfMetaOf,
@@ -62,7 +61,6 @@ export interface ActStudioTakeGroup {
 
 export interface ActStudioTakes {
   bars: ActStudioVideoBar[];
-  text: string;
   canNudge: boolean;
   nudge: (direction: VideoNudgeDirection) => void;
   groups: ActStudioTakeGroup[];
@@ -107,7 +105,6 @@ export const useActStudioTakes = (screen: StudioWorkScreen): ActStudioTakes => {
       });
     }
   };
-  const selectedSpan = selected === null ? null : clipSpanOf(selected);
   const pressRow = (candidate: StudioVideo, seekTo: number | null): void => {
     if (candidate.videoId === selected?.videoId) {
       desk.open(candidate.videoId);
@@ -146,10 +143,6 @@ export const useActStudioTakes = (screen: StudioWorkScreen): ActStudioTakes => {
         },
       };
     }),
-    text:
-      selectedSpan === null || selected === null
-        ? STUDIO_NO_VIDEO_HERE
-        : placementTextOf(nameOf(selected), selectedSpan.start),
     canNudge: selected !== null && placedOf(selected),
     nudge: (direction) => {
       if (selected === null || selected.startSeconds === null) {

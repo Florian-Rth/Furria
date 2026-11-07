@@ -42,7 +42,6 @@ import { partOfStep } from '@furria/studio/music-timeline';
 import { stepNumberOf } from '@furria/studio/step-names';
 import type { StudioScreen } from '@furria/studio/studio-screen';
 import { markSecondsOf, startsAPart } from '@furria/studio/studio-steps';
-import type { ActStudioStepTool } from '@furria/studio/use-act-studio-step-tool';
 import type { DeskBorders } from '@furria/studio/use-desk-borders';
 import type { JobConfirm } from '@furria/studio/use-job-confirm';
 import type { StepDeskPart } from '@furria/studio/use-step-desk';
@@ -63,15 +62,7 @@ export const useStepsJob = (
   const { steps, parts, countMarks, length, player } = playback;
   const step = practice.step;
   const texts = useStepNaming(screen);
-  const deskTool: ActStudioStepTool = {
-    deskOpen: true,
-    deskStepId: null,
-    canMark: length > 0,
-    openDesk: ignore,
-    closeDesk: ignore,
-    markHere: ignore,
-  };
-  const desk = useStepDesk(screen, deskTool);
+  const desk = useStepDesk(screen);
   const onSession = evening === null;
   const first = steps.length === 0;
   const mark = jobActionOf(

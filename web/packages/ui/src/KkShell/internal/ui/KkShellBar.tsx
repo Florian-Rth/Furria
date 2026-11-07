@@ -58,6 +58,7 @@ export const KkShellBar: FC<KkShellBarProps> = ({
 
   const searching = search !== undefined && search.query !== null;
   const shownProfile = searching || kind === 'fullscreen' ? null : profile;
+  const shownActions = folded ? undefined : actions;
   const profileLink = shownProfile === null ? null : <KkShellBarProfile profile={shownProfile} />;
 
   const row =
@@ -66,7 +67,7 @@ export const KkShellBar: FC<KkShellBarProps> = ({
     ) : (
       <KkShellBarRest
         key={scene.current.path}
-        actions={actions}
+        actions={shownActions}
         search={search}
         scene={scene}
         divided={shownProfile !== null}

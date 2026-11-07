@@ -911,9 +911,30 @@ where the next begins, the first reaches back to the start, and a new mark split
 falls in. **Parts** are optional: a part is a named range of consecutive steps from its first to
 its last step, parts never overlap, and steps may belong to no part. A removed step shrinks its
 part (an emptied part goes), a mark that splits a part's last step keeps both halves in it, and a
-part may name its main trainer video.
+part may name its main trainer video. A step has a **name only** — no description (ruled
+2026-11-07); an unnamed step reads *Schritt n*.
 _UI copy_: Schritt, Teil
-_Avoid_: section, scene, figure, sequence
+_Avoid_: section, scene, figure, sequence; step description
+
+**Step setup** (act):
+Turns one new trainer video into steps, in three stages: *Video* (pick or upload it and lay it on
+the music, starting from the automatic sound match), *Schritte trennen* (mark where each step ends
+while video and music play) and *Schritte benennen*; a short finish offers *Zum Tanz* or *Noch ein
+Video*. Every write is a normal save, so the setup may stop anywhere and resume (*Weiter
+einrichten*, counted by unnamed steps). Formations are not part of it — they are made later in the
+edit page; parts are grouped in its step list (ruled 2026-11-07, RFC 0003 phase 13).
+_UI copy_: *Schritte einrichten*, *Weiter einrichten*; stages Video, Schritte trennen, Schritte
+benennen
+_Avoid_: wizard (in copy), import
+
+**Edit page** (act):
+Where the act's editors change its steps and choreography — **one job at a time**: *Schritte* (the
+step list: names, marks, parts), *Aufstellung* (the formation at a step's start), *Bewegung* (the
+ways between keyframes, *Wegpunkte*) and *Besetzung* (who holds which spot). The chosen job decides
+what the stage and the timeline let you touch; the selection shows as one chip. Phone and tablet
+offer the same jobs (ruled 2026-11-04, built 2026-11-07, RFC 0003 phase 13).
+_UI copy_: *Sessionsauftritt bearbeiten*; Schritte, Aufstellung, Bewegung, Besetzung; Wegpunkt
+_Avoid_: card editor, desk editor, inspector (retired), Zeitpunkt (for a keyframe)
 
 **Spot**, **choreography** (act):
 A **spot** is a numbered place in the formation (*Platz 1…n*), held by at most one person — at

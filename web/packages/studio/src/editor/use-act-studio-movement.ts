@@ -1,9 +1,4 @@
-import type {
-  KeyframeEasing,
-  SpotPath,
-  StagePoint,
-  TimedKeyframe,
-} from '@furria/studio/choreography-motion';
+import type { SpotPath, StagePoint, TimedKeyframe } from '@furria/studio/choreography-motion';
 import { viewShareOf } from '@furria/studio/practice-stage';
 import type { StageShare, TimeSpan } from '@furria/studio/studio-edits';
 import { draggedPointOf, snappedOf } from '@furria/studio/studio-edits';
@@ -11,7 +6,6 @@ import { formationAt } from '@furria/studio/studio-formation';
 import {
   bendHandleOf,
   bentMoveOf,
-  easedMoveOf,
   facedMoveOf,
   keyedTrackOf,
   keyIndexAt,
@@ -39,14 +33,11 @@ export interface ActStudioBendHandle {
 export interface ActStudioMove {
   fromSeconds: number;
   toSeconds: number;
-  easing: KeyframeEasing;
   bent: boolean;
   facingDegrees: number | null;
 }
 
 export interface ActStudioMovement {
-  span: TimeSpan;
-  movedSpots: number;
   lead: ActStudioMove | null;
   keyed: boolean;
   handles: ActStudioBendHandle[];
@@ -57,7 +48,6 @@ export interface ActStudioMovement {
   bendMove: (share: StageShare) => StagePoint | null;
   bendEnd: () => void;
   cancel: () => void;
-  ease: (easing: KeyframeEasing) => void;
   straighten: () => void;
   turn: (delta: number) => void;
   unface: () => void;
@@ -186,15 +176,12 @@ export const useActStudioMovement = (
   };
 
   return {
-    span,
-    movedSpots: chosen.length,
     lead:
       leadFrom === null || leadFrom === undefined || leadTo === null || leadTo === undefined
         ? null
         : {
             fromSeconds: leadFrom.seconds,
             toSeconds: leadTo.seconds,
-            easing: leadTo.easing,
             bent: leadTo.bend !== null,
             facingDegrees: leadTo.facingDegrees,
           },
@@ -290,9 +277,6 @@ export const useActStudioMovement = (
       if (bent !== null) {
         drop(bent);
       }
-    },
-    ease: (easing) => {
-      onMove((keyframes, index) => easedMoveOf(keyframes, index, easing));
     },
     straighten: () => {
       onMove((keyframes, index) => straightenedMoveOf(keyframes, index));

@@ -229,7 +229,6 @@ export const kkTokens = {
     pictureMin: 17.5,
     timeline: 15,
     transport: 5.5,
-    taskMin: 21,
     foot: 7.5,
     wideTimeline: 23.75,
     widePictureMin: 16,

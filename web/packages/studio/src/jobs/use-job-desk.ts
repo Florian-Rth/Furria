@@ -13,7 +13,6 @@ import type { JobArrange } from '@furria/studio/use-arrange';
 import { useArrange } from '@furria/studio/use-arrange';
 import type { CurrentJob } from '@furria/studio/use-current-job';
 import { useCurrentJob } from '@furria/studio/use-current-job';
-import type { DeskBorders } from '@furria/studio/use-desk-borders';
 import { useDeskBorders } from '@furria/studio/use-desk-borders';
 import type { DeskLaneRows } from '@furria/studio/use-desk-lanes';
 import { useDeskLanes } from '@furria/studio/use-desk-lanes';
@@ -31,7 +30,6 @@ export interface JobDesk {
   desk: ActDesk;
   stage: ActStudioStage;
   arrange: JobArrange;
-  borders: DeskBorders;
   lanes: DeskLaneRows;
   setup: StudioSetup;
   view: JobView;
@@ -122,7 +120,6 @@ export const useJobDesk = (screen: StudioScreen, editor: ActStudioStage): JobDes
     desk,
     stage,
     arrange,
-    borders,
     lanes,
     setup,
     view: partFocused ? partFirstOf(views[jobs.job]) : views[jobs.job],

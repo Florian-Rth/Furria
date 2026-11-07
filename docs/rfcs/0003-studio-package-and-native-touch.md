@@ -1,7 +1,7 @@
 ---
 rfc: 0003
 title: The studio as its own package — one engine, one stage, one timeline, native-grade touch
-status: in work — phase 13 (edit page + step setup promotion); device checks owed
+status: built — device checks owed
 github_issue: 57
 branch: feat/rfc-57-studio-package
 created: 2026-11-02
@@ -1091,8 +1091,14 @@ apart from `KkLaneButton` (different pressed/danger/disabled paint). Copy consta
 
 #### Phase 13c — Docs and validation
 
-- [ ] CONTEXT.md (steps have a name only; step setup; jobs), plan files marked promoted, ADR touch-ups if a decision changed
-- [ ] Full web suite (cross-cutting `@furria/ui` change) and backend targeted classes; shots of the edit page and the setup at 390×844 and 1180×820, light + dark
+- [x] CONTEXT.md (steps have a name only; step setup; jobs), plan files marked promoted, ADR touch-ups if a decision changed
+- [x] Full web suite (cross-cutting `@furria/ui` change) and backend targeted classes; shots of the edit page and the setup at 390×844 and 1180×820, light + dark
+
+Done 2026-11-07. Also removed ~30 screen fields only the old editor read. Shots fixed two layout bugs: a
+folded shell bar no longer draws the page's actions (the act page's (i) sat on *Fertig*), and the setup's
+picture is the flexible zone again (F7: picture `1fr`, task content-sized). Open design questions for
+Florian: spare height around the stage in the phone jobs, the small view-only stage in the tablet
+*Schritte* job, a 16:9 video letterboxed in the tall setup picture.
 
 ## Device checks
 

@@ -1,5 +1,9 @@
 # Studio — guided step setup and the step list
 
+**Promoted 2026-11-07 — RFC 0003 phase 13:** the 3-stage setup (W1–W2) runs at `/acts/$actId/steps/setup`,
+the step list is the edit page's *Schritte* job at `/acts/$actId?edit=true`; the lab routes are deleted.
+S1, S2, S5's resume count and P1 are superseded by W1–W2; S6/S7 belong to the stage editor.
+
 Shaped with Florian 2026-11-04. Builds on [studio-edit-variants.md](studio-edit-variants.md) (edit page
 "one job at a time"); this replaces its *Schritte* job and holds that promotion until both land together.
 
@@ -32,15 +36,15 @@ Shaped with Florian 2026-11-04. Builds on [studio-edit-variants.md](studio-edit-
 | S7 | **Ways are drawn, not placed:** hold a dot and draw its way with the finger while the step plays slowed; the stroke is simplified into a few smooth Wegpunkte. Dragging a point on the line bends it. Several selected dots: draw one way, the others follow keeping their spacing. |
 | S8 | **Parts (*Teile*) become optional**: a named range of consecutive steps (first + last step), steps may stay ungrouped. Backend change: `ActPart` gains `LastStepId`; parts no longer tile. |
 | S10 | **Every time view in the setup is the shared scrollable timeline** (centre-line scrub, zoom, exact time search, waveform) — no own strips. *An die Musik anlegen* shows **two waveform lanes**, music and the video's soundtrack, one above the other; dragging the video lane moves the video against the music, starting from the automatic match (Florian 2026-11-04: "you have to use the scrollable audio component there"). Videos get a peaks rendition of their soundtrack (media worker), like songs. *Built 2026-11-04:* act videos publish `Peaks` (same JSON `{peaksPerSecond, peaks}`) from the signal decoded for the sound profile, one decode for both; a video without a sound track publishes empty peaks (`peaks: []`), so the URL always answers; gallery videos keep none. `GET /acts/{actId}/studio` → `videos[].urls.peaks`. Existing videos get it by the lost-rendition repair (first fetch of a missing file queues the item) or `regenerate all` on deploy. |
-| S9 | **Step list = backbone** of the edit page: steps in music order, under their part when grouped, each row with number, name, length, video thumb and a small before → after formation picture (or "ohne Aufstellung"). Add, rename, describe, split, merge with next, delete, move into/out of a part. Delete gives its time to the previous step and keeps its start formation as a Wegpunkt inside it. |
+| S9 | **Step list = backbone** of the edit page: steps in music order, under their part when grouped, each row with number, name, length, video thumb and a small before → after formation picture (or "ohne Aufstellung"). Add, rename, split, merge with next, delete, move into/out of a part (*describe* dropped by W1). Delete gives its time to the previous step and keeps its start formation as a Wegpunkt inside it. |
 
 ## Slices
 
 1. **Backend — optional parts** (S8): `LastStepId`, migration (existing parts get the last step of their
-   old tiling range), Post/Put validation (first ≤ last, no overlap), `StepIds` from the range, tests.
-2. **Lab — guided setup** on `/lab/step-setup/$actId` (act 3, API :5101), all stages S1–S7 real against the API.
-3. **Lab — step list** inside the edit-jobs lab, replacing the *Schritte* job (S9).
-4. Promote together with the edit-jobs rework (page-rework Phase 5) after Florian's verdict.
+   old tiling range), Post/Put validation (first ≤ last, no overlap), `StepIds` from the range, tests. *Done.*
+2. **Guided setup** — built in the lab, now 3 stages (W2), promoted to `/acts/$actId/steps/setup`. *Done.*
+3. **Step list** as the edit page's *Schritte* job (S9). *Done.*
+4. Promoted together with the edit-jobs rework — RFC 0003 phase 13 (2026-11-07). *Done.*
 
 ## Setup frame (Florian 2026-11-05)
 
