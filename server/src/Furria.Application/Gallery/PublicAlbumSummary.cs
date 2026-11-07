@@ -11,4 +11,6 @@ public sealed record PublicAlbumSummary
     public required int PhotoCount { get; init; }
 
     public required PublicGalleryPhoto Cover { get; init; }
+
+    public required DateTimeOffset ChangedAt { get; init; }
 }

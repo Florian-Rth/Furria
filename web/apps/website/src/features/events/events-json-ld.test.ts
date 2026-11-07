@@ -31,9 +31,12 @@ describe('buildEventsJsonLd', () => {
         '@context': 'https://schema.org',
         '@type': 'Event',
         name: '1. Prunksitzung',
+        description: 'Ein voller Abend.',
+        url: 'https://furrscher-carnevals-club.de/events/1-1-prunksitzung',
         startDate: '2027-01-23T19:11:00+01:00',
         doorTime: '2027-01-23T18:11:00+01:00',
         eventStatus: 'https://schema.org/EventScheduled',
+        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
         location: {
           '@type': 'Place',
           name: 'Dorfgemeindehaus Großfurra',
@@ -45,11 +48,17 @@ describe('buildEventsJsonLd', () => {
             addressCountry: 'DE',
           },
         },
+        organizer: {
+          '@type': 'Organization',
+          name: 'Furrscher Carnevals Club e.V.',
+          url: 'https://furrscher-carnevals-club.de/',
+        },
         offers: {
           '@type': 'Offer',
           price: '14.00',
           priceCurrency: 'EUR',
           availability: 'https://schema.org/InStock',
+          url: 'https://furrscher-carnevals-club.de/events/1-1-prunksitzung',
         },
       },
     ]);
@@ -99,7 +108,7 @@ describe('buildEventsJsonLd', () => {
           largeUrl: '/api/public/events/pictures/7/large',
         },
       },
-      ['/api/public/events/pictures/7/large'],
+      ['https://furrscher-carnevals-club.de/api/public/events/pictures/7/large'],
     ],
   ])('shows the event picture to search engines when there is one (%j)', (overrides, image) => {
     expect(buildEventsJsonLd([seasonEvent(overrides)])[0]?.image).toEqual(image);

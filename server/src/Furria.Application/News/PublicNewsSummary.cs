@@ -18,4 +18,6 @@ public sealed record PublicNewsSummary
     public required DateTimeOffset PublishedAt { get; init; }
 
     public required PictureDetails? Picture { get; init; }
+
+    public required DateTimeOffset ChangedAt { get; init; }
 }

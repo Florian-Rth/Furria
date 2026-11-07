@@ -23,6 +23,7 @@ export const NotFoundPage: FC = () => (
       py: kkTokens.layout.gutterY,
     }}
   >
+    <meta name="robots" content="noindex" />
     <Box aria-hidden sx={{ position: 'absolute', inset: 0, zIndex: 0 }}>
       <KkConfettiRain />
     </Box>

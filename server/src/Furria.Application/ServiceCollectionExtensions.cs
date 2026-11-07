@@ -2,7 +2,6 @@ using Furria.Application.ClubApp;
 using Furria.Application.Identity;
 using Furria.Application.Mail;
 using Furria.Application.Media;
-using Furria.Application.PreviewAccess;
 using Furria.Application.Push;
 using Furria.Application.Website;
 using Microsoft.Extensions.Configuration;
@@ -15,11 +14,6 @@ public static class ServiceCollectionExtensions
 {
     public static IServiceCollection AddApplication(this IServiceCollection services)
     {
-        services
-            .AddOptions<PreviewAccessOptions>()
-            .BindConfiguration(PreviewAccessOptions.SectionName);
-        services.AddSingleton<PreviewAccessService>();
-
         services
             .AddOptions<AccessTokenOptions>()
             .BindConfiguration(AccessTokenOptions.SectionName)

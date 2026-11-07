@@ -27,7 +27,8 @@ public sealed partial class NewsService
             post.Category!.Value,
             post.PublishedAt!.Value,
             post.PictureId,
-            post.Picture == null ? null : post.Picture.RenderedAt
+            post.Picture == null ? null : post.Picture.RenderedAt,
+            post.UpdatedAt
         );
 
     public async Task<IReadOnlyList<PublicNewsSection>> GetPublicNewsAsync(CancellationToken ct)
@@ -251,6 +252,7 @@ public sealed partial class NewsService
                 post.PictureId,
                 post.PictureRenderedAt
             ),
+            ChangedAt = post.UpdatedAt,
         };
 
     private sealed record PublicPostRow(
@@ -262,7 +264,8 @@ public sealed partial class NewsService
         NewsCategory Category,
         DateTimeOffset PublishedAt,
         int? PictureId,
-        DateTimeOffset? PictureRenderedAt
+        DateTimeOffset? PictureRenderedAt,
+        DateTimeOffset UpdatedAt
     );
 
     private sealed record PublicArticleRow(

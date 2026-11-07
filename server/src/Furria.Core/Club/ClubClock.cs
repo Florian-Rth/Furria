@@ -16,6 +16,10 @@ public static class ClubClock
         DateOnly.FromDateTime(TimeZoneInfo.ConvertTime(instant, ClubTimeZone).DateTime);
 
     [Pure]
+    public static DateTimeOffset WallClockOf(DateTimeOffset instant) =>
+        TimeZoneInfo.ConvertTime(instant, ClubTimeZone);
+
+    [Pure]
     public static TimeOnly TimeOf(DateTimeOffset instant) =>
         TimeOnly.FromDateTime(TimeZoneInfo.ConvertTime(instant, ClubTimeZone).DateTime);
 

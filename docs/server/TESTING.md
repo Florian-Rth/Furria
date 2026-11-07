@@ -82,28 +82,30 @@ docker rm -f $(docker ps -aq --filter label=furria.tests)
 ### The shape of a test
 
 ```csharp
-public sealed class UnlockPreviewTests : IClassFixture<ApiTestFixture> // own host, own database
+public sealed class GetPublicGalleryAlbumByIdTests : IClassFixture<ApiTestFixture> // own host, own database
 {
     private readonly ApiTestFixture _fixture;
 
-    public UnlockPreviewTests(ApiTestFixture fixture)
+    public GetPublicGalleryAlbumByIdTests(ApiTestFixture fixture)
     {
         _fixture = fixture;
     }
 
     [Fact]
-    public async Task Should_ReturnGranted_When_PasswordIsCorrect()
+    public async Task Should_AnswerNotFound_When_TheAlbumIsNotPublished()
     {
-        var client = _fixture.CreateClient();
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(Gallery(), ct);
 
-        var (response, result) = await client.POSTAsync<
-            UnlockPreview,
-            UnlockPreviewRequest,
-            UnlockPreviewResponse
-        >(new() { Password = ApiTestFixture.PreviewPassword });
+        var (response, _) = await _fixture
+            .CreateClient()
+            .GETAsync<
+                GetPublicGalleryAlbumById,
+                GetPublicGalleryAlbumByIdRequest,
+                GetPublicGalleryAlbumByIdResponse
+            >(new() { AlbumId = ctx.Gallery.Albums.IdOf("draft") });
 
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.True(result.Granted);
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 }
 ```
@@ -122,9 +124,8 @@ public sealed class UnlockPreviewTests : IClassFixture<ApiTestFixture> // own ho
    init: clone a database from the template, start the host on it (the migrator finds the schema
    up to date, the managing-login seeder seeds the clone), create the reset service. On dispose:
    stop the host, clear its connection pool and `DROP DATABASE … WITH (FORCE)`. Repoints the
-   connection string and preview
-   password via the constants the production code itself uses (`AppDbContext.ConnectionName`,
-   `PreviewAccessOptions.SectionName`), and swaps `TimeProvider` for the project-owned
+   connection string via the constant the production code itself uses
+   (`AppDbContext.ConnectionName`), and swaps `TimeProvider` for the project-owned
    `TestClock`, anchored at real "now" truncated to the whole second and reporting UTC as its
    local zone — so nothing in the suite depends on the developer's machine time zone.
    **Test classes run in parallel; the tests inside one class run one after another.** Every

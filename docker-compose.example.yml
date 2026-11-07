@@ -52,7 +52,6 @@ services:
         condition: service_healthy
     environment:
       ConnectionStrings__AppDb: Host=postgres;Port=5432;Database=${POSTGRES_DB:-furria};Username=${POSTGRES_USER:-furria};Password=${POSTGRES_PASSWORD:-furria}
-      PreviewAccess__Password: ${PREVIEW_ACCESS_PASSWORD:-}
       ASPNETCORE_ENVIRONMENT: Production
       Auth__AccessToken__SigningKey: ${AUTH_SIGNING_KEY:?set AUTH_SIGNING_KEY (>= 32 chars) in .env}
       Auth__BootstrapAdmin__Email: ${BOOTSTRAP_ADMIN_EMAIL:-}
