@@ -9,12 +9,7 @@ import {
 import type { StudioPart } from '@furria/studio/studio-schemas';
 import type { StudioScreen } from '@furria/studio/studio-screen';
 import type { PartDeskAnchor, PartSettings, PartShift } from '@furria/studio/studio-steps';
-import {
-  deskPartOf,
-  partBorderStepOf,
-  partSettingsOf,
-  startsAPart,
-} from '@furria/studio/studio-steps';
+import { deskPartOf, partSettingsOf, partShiftOf, startsAPart } from '@furria/studio/studio-steps';
 import type { ActStudioStepTool } from '@furria/studio/use-act-studio-step-tool';
 import { useState } from 'react';
 
@@ -99,8 +94,7 @@ export const useStepDesk = (screen: StudioScreen, tool: ActStudioStepTool): Step
     }
   };
   const partDeskOf = (target: StudioPart): StepDeskPart => {
-    const borderOf = (direction: PartShift): number | null =>
-      partBorderStepOf(steps, parts, target.partId, direction);
+    const shiftOf = (direction: PartShift) => partShiftOf(steps, parts, target.partId, direction);
     const name = draft?.partId === target.partId ? draft.name : target.name;
     const numbers = target.stepIds
       .map((stepId) => stepNumberOf(steps, stepId))
@@ -122,7 +116,7 @@ export const useStepDesk = (screen: StudioScreen, tool: ActStudioStepTool): Step
       ),
       name,
       leads: startsAPart([target], step.stepId) || anchor?.stepId === step.stepId,
-      shiftLocked: { earlier: borderOf('earlier') === null, later: borderOf('later') === null },
+      shiftLocked: { earlier: shiftOf('earlier') === null, later: shiftOf('later') === null },
       removing: removingPartId === target.partId,
       videos: [
         videoOf(null, STUDIO_MAIN_VIDEO_NONE),
@@ -137,11 +131,19 @@ export const useStepDesk = (screen: StudioScreen, tool: ActStudioStepTool): Step
         commitDraft();
       },
       shift: (direction) => {
-        const firstStepId = borderOf(direction);
-        if (firstStepId !== null) {
-          setAnchor({ stepId: step.stepId, partId: target.partId });
-          settle(target, { firstStepId });
+        const ranges = shiftOf(direction);
+        if (ranges === null) {
+          return;
         }
+        setAnchor({ stepId: step.stepId, partId: target.partId });
+        work.startGesture();
+        for (const range of ranges) {
+          const moved = parts.find((candidate) => candidate.partId === range.partId);
+          if (moved !== undefined) {
+            settle(moved, { firstStepId: range.firstStepId, lastStepId: range.lastStepId });
+          }
+        }
+        work.endGesture();
       },
       remove: () => {
         if (removingPartId !== target.partId) {

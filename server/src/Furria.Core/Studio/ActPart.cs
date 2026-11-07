@@ -12,6 +12,8 @@ public sealed class ActPart
 
     public int FirstStepId { get; set; }
 
+    public int LastStepId { get; set; }
+
     public string Name { get; set; } = "";
 
     public int? MainVideoId { get; set; }
@@ -19,6 +21,8 @@ public sealed class ActPart
     public Act? Act { get; set; }
 
     public ActStep? FirstStep { get; set; }
+
+    public ActStep? LastStep { get; set; }
 
     public ActVideo? MainVideo { get; set; }
 }

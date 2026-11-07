@@ -5,7 +5,6 @@ import type { StudioStep } from './studio-schemas';
 const step = (stepId: number): StudioStep => ({
   stepId,
   name: '',
-  description: null,
   startSeconds: stepId * 4,
   endSeconds: stepId * 4 + 4,
   placement: 'onTimeline',

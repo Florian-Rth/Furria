@@ -36,6 +36,18 @@ export interface TimelineWaveLayer {
   note?: ReactNode;
 }
 
+export interface TimelineSoundBand {
+  key: string;
+  range: TimelineRange;
+  title: string;
+}
+
+export interface TimelineVideoSound {
+  segments: readonly MusicSegment[];
+  peaks: ReadonlyMap<number, AudioPeaks>;
+  band: TimelineSoundBand;
+}
+
 export interface TimelineStepsLayer {
   steps: readonly TimelineStep[];
   activeKey: number | null;
@@ -48,6 +60,7 @@ export interface TimelineStepsLayer {
 
 export interface TimelineVideosLayer {
   blocks: readonly TimelineBlock[];
+  sound?: TimelineVideoSound | null;
   note?: ReactNode;
 }
 

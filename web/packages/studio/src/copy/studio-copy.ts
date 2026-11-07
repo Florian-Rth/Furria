@@ -92,7 +92,7 @@ export const stagePlaceTextOf = (rightMetres: number, backMetres: number): strin
   `${formatReadoutMetres(rightMetres)} ${rightMetres < 0 ? 'links' : 'rechts'} · ${formatReadoutMetres(backMetres)} hinten`;
 export const STUDIO_SPOTS = 'Plätze';
 export const STUDIO_SPOTS_CLOSE = 'Auswahl schließen';
-export const STUDIO_OPEN_SPOT = 'offen';
+export const STUDIO_OPEN_SPOT = 'frei';
 export const STUDIO_SELECTED = 'gewählt';
 export const STUDIO_NOT_PLACED = 'nicht aufgestellt';
 export const STUDIO_SPOT_ADD = 'Platz hinzufügen';
@@ -221,7 +221,7 @@ export const STUDIO_VIDEO_MAIN_FOR = 'Hauptvideo für';
 export const STUDIO_VIDEO_REMOVE = 'Video entfernen';
 export const STUDIO_VIDEO_REMOVE_SURE = 'Wirklich entfernen?';
 export const STUDIO_FILM = 'Gewähltes Video';
-export const STUDIO_FILM_EMPTY = 'Noch kein Video. Unten hinzufügen.';
+export const STUDIO_FILM_EMPTY = 'Noch kein Video.';
 export const STUDIO_FILM_UNPLACED = 'Noch nicht auf der Musik angelegt';
 export const STUDIO_FILM_EARLIER = 'Video früher';
 export const STUDIO_FILM_LATER = 'Video später';

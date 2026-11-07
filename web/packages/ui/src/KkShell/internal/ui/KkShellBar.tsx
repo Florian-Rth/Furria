@@ -19,9 +19,11 @@ import { KkShellThread } from './KkShellThread';
 
 const { barHeight } = kkTokens.shell;
 
-import { BAR_PADDING_X } from '../folded-bar';
+import { BAR_PADDING_X, FOLDED_SHIFT } from '../folded-bar';
 
 const FOLDED_PAINT = {
+  px: 0,
+  ml: FOLDED_SHIFT,
   pointerEvents: 'none',
   borderColor: 'transparent',
   '&::before': { display: 'none' },

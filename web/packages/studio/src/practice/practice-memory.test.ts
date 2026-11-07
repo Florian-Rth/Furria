@@ -5,7 +5,6 @@ import { hintVisitsOf, isHintedVisit, rememberedStepStartOf } from './practice-m
 const step = (stepId: number, startSeconds: number | null): StudioStep => ({
   stepId,
   name: `Schritt ${stepId}`,
-  description: null,
   startSeconds,
   endSeconds: startSeconds === null ? null : startSeconds + 8,
   placement: startSeconds === null ? 'cutAway' : 'onTimeline',

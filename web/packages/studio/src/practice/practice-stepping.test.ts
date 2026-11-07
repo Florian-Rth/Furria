@@ -9,7 +9,6 @@ const step = (
 ): StudioStep => ({
   stepId,
   name: `Schritt ${stepId}`,
-  description: null,
   startSeconds,
   endSeconds,
   placement: 'onTimeline',

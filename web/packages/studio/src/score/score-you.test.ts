@@ -6,7 +6,6 @@ const step = (stepId: number, timed: boolean): ScoreStep => ({
   stepId,
   number: stepId,
   name: '',
-  description: null,
   range: timed ? { start: stepId, end: stepId + 1 } : null,
   partId: null,
   partIndex: null,

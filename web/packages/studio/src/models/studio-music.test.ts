@@ -159,7 +159,6 @@ describe('outsideMusicOf', () => {
         {
           stepId: 1,
           name: 'A',
-          description: null,
           startSeconds: 0,
           endSeconds: 10,
           placement: 'onTimeline',
@@ -167,7 +166,6 @@ describe('outsideMusicOf', () => {
         {
           stepId: 2,
           name: 'B',
-          description: null,
           startSeconds: null,
           endSeconds: null,
           placement: 'cutAway',
@@ -187,7 +185,7 @@ describe('outsideMusicOf', () => {
           startSeconds: null,
           placement: 'musicMissing',
           outdated: false,
-          urls: { video: '/v', compact: '/c', poster: '/p' },
+          urls: { video: '/v', compact: '/c', poster: '/p', peaks: '/k' },
         },
         {
           videoId: 2,
@@ -200,7 +198,7 @@ describe('outsideMusicOf', () => {
           startSeconds: null,
           placement: 'unaligned',
           outdated: false,
-          urls: { video: '/v', compact: '/c', poster: '/p' },
+          urls: { video: '/v', compact: '/c', poster: '/p', peaks: '/k' },
         },
       ],
       choreography: {

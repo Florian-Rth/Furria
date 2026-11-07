@@ -48,8 +48,8 @@ export const KkTimelineTick: FC<KkTimelineTickProps> = ({ tick, active, dropDela
         borderLeftStyle: 'solid',
         borderLeftColor: 'text.secondary',
         '&[data-active="true"]': {
-          borderLeftColor: 'primary.main',
-          backgroundColor: 'primary.main',
+          borderLeftColor: 'text.primary',
+          backgroundColor: 'text.primary',
           opacity: 1,
         },
       }}

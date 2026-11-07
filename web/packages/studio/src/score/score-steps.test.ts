@@ -12,7 +12,6 @@ import { describe, expect, it } from 'vitest';
 const step = (patch: Partial<StudioStep>): StudioStep => ({
   stepId: 1,
   name: 'Einmarsch',
-  description: null,
   startSeconds: 0,
   endSeconds: 8,
   placement: 'onTimeline',
@@ -30,7 +29,7 @@ const video = (patch: Partial<StudioVideo>): StudioVideo => ({
   startSeconds: 0,
   placement: 'onTimeline',
   outdated: false,
-  urls: { video: '/v', compact: '/c', poster: '/p' },
+  urls: { video: '/v', compact: '/c', poster: '/p', peaks: '/k' },
   ...patch,
 });
 
@@ -177,7 +176,6 @@ describe('stepGroupsOf', () => {
     stepId,
     number: stepId,
     name: '',
-    description: null,
     range: null,
     partId,
     partIndex: null,

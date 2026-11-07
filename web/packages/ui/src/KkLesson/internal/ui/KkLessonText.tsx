@@ -1,12 +1,8 @@
-import OpenInFullRoundedIcon from '@mui/icons-material/OpenInFullRounded';
-import ButtonBase from '@mui/material/ButtonBase';
 import Stack from '@mui/material/Stack';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import { focusRing } from '../../../internal/focus-ring';
 import { lineClamp } from '../../../internal/line-clamp';
-import { kkTokens } from '../../../tokens';
 import {
   LESSON_CRAMPED,
   LESSON_TALL,
@@ -35,23 +31,18 @@ const textPaint = (theme: Theme): CSSObject => ({
   justifyContent: 'flex-start',
   gap: theme.spacing(1),
   textAlign: 'left',
-  borderRadius: `${kkTokens.radius.bar * 2}px`,
-  ...focusRing(theme),
 });
 
 interface KkLessonTextProps {
   fadeKey: string;
   text: string;
   muted: boolean;
-  onRead?: () => void;
 }
 
-export const KkLessonText: FC<KkLessonTextProps> = ({ fadeKey, text, muted, onRead }) => {
-  const readable = onRead !== undefined;
-  const lines = (
+export const KkLessonText: FC<KkLessonTextProps> = ({ fadeKey, text, muted }) => (
+  <Stack direction="row" data-kk-lesson-text sx={textPaint}>
     <KkLessonFade
       fadeKey={fadeKey}
-      silent={readable}
       sx={{
         flex: 1,
         ...boxOf(PORTRAIT_LINES),
@@ -79,30 +70,5 @@ export const KkLessonText: FC<KkLessonTextProps> = ({ fadeKey, text, muted, onRe
         {text}
       </Typography>
     </KkLessonFade>
-  );
-
-  if (!readable) {
-    return (
-      <Stack direction="row" data-kk-lesson-text sx={textPaint}>
-        {lines}
-      </Stack>
-    );
-  }
-
-  return (
-    <ButtonBase
-      aria-haspopup="dialog"
-      aria-label={text}
-      onClick={onRead}
-      data-kk-lesson-text
-      sx={textPaint}
-    >
-      {lines}
-      <OpenInFullRoundedIcon
-        aria-hidden
-        fontSize="small"
-        sx={{ flexShrink: 0, color: 'text.secondary', opacity: kkTokens.opacity.dimmed }}
-      />
-    </ButtonBase>
-  );
-};
+  </Stack>
+);

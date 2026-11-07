@@ -10,7 +10,6 @@ const local: Studio = {
     {
       stepId: 11,
       name: '',
-      description: null,
       startSeconds: 0,
       endSeconds: 8,
       placement: 'onTimeline',
@@ -18,13 +17,22 @@ const local: Studio = {
     {
       stepId: -1,
       name: '',
-      description: null,
       startSeconds: 8,
       endSeconds: 30,
       placement: 'onTimeline',
     },
   ],
-  parts: [{ partId: -2, name: 'A', stepIds: [11, -1], mainVideoId: null, adrift: false }],
+  parts: [
+    {
+      partId: -2,
+      name: 'A',
+      firstStepId: 11,
+      lastStepId: -1,
+      stepIds: [11, -1],
+      mainVideoId: null,
+      adrift: false,
+    },
+  ],
   spots: [{ spotId: -3, number: 1, person: null }],
   videos: [],
   choreography: { version: 4, tracks: [{ spotId: -3, keyframes: [] }] },

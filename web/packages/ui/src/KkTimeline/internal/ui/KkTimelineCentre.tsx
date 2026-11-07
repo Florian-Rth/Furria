@@ -25,19 +25,20 @@ export const KkTimelineCentre: FC = () => (
         left: `calc(${HEAD} / -2)`,
         width: HEAD,
         height: HEAD,
-        bgcolor: 'primary.main',
+        bgcolor: 'text.primary',
         clipPath: 'polygon(0 0, 100% 0, 50% 100%)',
       }}
     />
     <Box
-      sx={{
+      sx={(theme) => ({
         position: 'absolute',
         top: 0,
         bottom: 0,
         left: -kkTokens.line.section / 2,
         width: kkTokens.line.section,
-        bgcolor: 'primary.main',
-      }}
+        bgcolor: 'text.primary',
+        boxShadow: `0 0 0 ${kkTokens.line.hair / 2}px ${(theme.vars ?? theme).palette.background.paper}`,
+      })}
     />
   </Box>
 );

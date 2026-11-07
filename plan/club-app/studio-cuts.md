@@ -87,3 +87,19 @@
 2. **Web** — schemas, timeline/segments per piece, document changes + save plan + save port,
    final mode per piece, video sync/lanes by clip, the two desks, copy; drag handles removed.
 3. **Wrap-up** — format/build/lint/typecheck/targeted tests, browser check of both desks.
+
+## Desks beside the timeline (2026-11-04)
+
+- The song, final-track and video desks open in place of the song/video list, not as a sheet:
+  no scrim, the wave, video and transport stay live, scrub keys stay on while a desk is open.
+- The video desk leads with `Schnitt` / `Anfang` / `Ende`; the name field moves to the end.
+
+## One shared video player (2026-11-04)
+
+- `@furria/ui/KkVideo` is the only video player kit: `Picture` (synced, muted), `Clip` (native
+  controls, hub step), `Corner`, `Bar`, `Caption`, `Note`, `Play`, `Mirror`, `Take`, `Fullscreen`.
+  Fits: `fill` (inside a layer/area), `band` (edit page), `card` (hub step).
+- Fullscreen via `useKkFullscreen`: the Fullscreen API where it exists, else the top layer
+  (`popover`, iPhone). In fullscreen every player shows a play/pause key.
+- Removed: `KkLaneFilm`, `KkScoreVideo`, the video/mirror/take/corner parts of `KkPracticeScreen`
+  and `KkLesson.Video`.

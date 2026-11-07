@@ -1,10 +1,17 @@
 import Box from '@mui/material/Box';
+import type { Theme } from '@mui/material/styles';
 import { motion } from 'motion/react';
 import type { FC } from 'react';
 import { inkWash } from '../../../internal/ink-wash';
 import { useReducedMotion } from '../../../internal/use-reduced-motion';
-import type { KkTimelineSpan } from '../timeline-paint';
-import { spanPlaceOf, WAVE_HEIGHT, waveBottom, wavePathOf, waveTop } from '../timeline-paint';
+import type { KkTimelineSpan, KkTimelineWaveLane } from '../timeline-paint';
+import {
+  spanPlaceOf,
+  WAVE_HEIGHT,
+  WAVE_LANE_EDGES,
+  wavePathOf,
+  withinClipOf,
+} from '../timeline-paint';
 
 const HIDDEN = { clipPath: 'inset(0 100% 0 0)' } as const;
 const SHOWN = { clipPath: 'inset(0 0% 0 0)' } as const;
@@ -14,9 +21,25 @@ interface KkTimelineWaveProps {
   bars: readonly number[];
   revealSeconds: number | null;
   span?: KkTimelineSpan;
+  lane?: KkTimelineWaveLane;
+  within?: KkTimelineSpan | null;
 }
 
-export const KkTimelineWave: FC<KkTimelineWaveProps> = ({ bars, revealSeconds, span }) => {
+const palette = (theme: Theme) => (theme.vars ?? theme).palette;
+
+const LANE_FILLS: Record<KkTimelineWaveLane, (theme: Theme) => string> = {
+  wave: (theme) => inkWash(theme, '30%'),
+  videos: (theme) => `color-mix(in srgb, ${palette(theme).info.main} 55%, transparent)`,
+};
+
+export const KkTimelineWave: FC<KkTimelineWaveProps> = ({
+  bars,
+  revealSeconds,
+  span,
+  lane = 'wave',
+  within = null,
+}) => {
+  const clipPath = withinClipOf(span, within);
   const reduced = useReducedMotion();
   const drawn = revealSeconds !== null && !reduced;
   const path = wavePathOf(bars);
@@ -27,12 +50,11 @@ export const KkTimelineWave: FC<KkTimelineWaveProps> = ({ bars, revealSeconds, s
   return (
     <Box
       aria-hidden
-      data-kk-timeline-wave
-      style={spanPlaceOf(span)}
+      data-kk-timeline-wave={lane}
+      style={{ ...spanPlaceOf(span), clipPath }}
       sx={{
         position: 'absolute',
-        top: waveTop,
-        bottom: waveBottom,
+        ...WAVE_LANE_EDGES[lane],
         pointerEvents: 'none',
       }}
     >
@@ -52,7 +74,7 @@ export const KkTimelineWave: FC<KkTimelineWaveProps> = ({ bars, revealSeconds, s
             inset: 0,
             width: '100%',
             height: '100%',
-            fill: inkWash(theme, '30%'),
+            fill: LANE_FILLS[lane](theme),
           })}
         >
           <path d={path} />

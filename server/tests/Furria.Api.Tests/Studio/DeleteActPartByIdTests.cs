@@ -31,13 +31,13 @@ public sealed class DeleteActPartByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_GiveTheStepsToThePreviousPart_When_APartIsRemoved()
+    public async Task Should_LeaveItsStepsUngrouped_When_APartIsRemoved()
     {
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId) = await MusicAsync(ct);
         var stepIds = await MarkedAsync(admin, actId, 30, 90);
-        await AddPartAsync(admin, actId, stepIds[0], "Einmarsch");
-        var partId = await AddPartAsync(admin, actId, stepIds[1], "Hauptteil");
+        await AddPartAsync(admin, actId, stepIds[0], stepIds[0], "Einmarsch");
+        var partId = await AddPartAsync(admin, actId, stepIds[1], stepIds[2], "Hauptteil");
 
         var response = await admin.DELETEAsync<DeleteActPartById, DeleteActPartByIdRequest>(
             new() { ActId = actId, PartId = partId }
@@ -46,7 +46,7 @@ public sealed class DeleteActPartByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         Assert.Equal(
             [
-                [stepIds[0], stepIds[1], stepIds[2]],
+                [stepIds[0]],
             ],
             await PartStepsOfAsync(admin, actId)
         );

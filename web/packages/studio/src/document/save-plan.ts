@@ -36,13 +36,14 @@ export type SaveWrite =
   | { kind: 'stepRemove'; stepId: number }
   | { kind: 'stepMove'; stepId: number; atSeconds: number }
   | { kind: 'stepMark'; stepId: number; openingStepId: number | null; atSeconds: number }
-  | { kind: 'stepText'; stepId: number; name: string; description: string | null }
-  | { kind: 'partAdd'; partId: number; firstStepId: number; name: string }
+  | { kind: 'stepName'; stepId: number; name: string }
+  | { kind: 'partAdd'; partId: number; firstStepId: number; lastStepId: number; name: string }
   | {
       kind: 'partSettings';
       partId: number;
       name: string;
       firstStepId: number;
+      lastStepId: number;
       mainVideoId: number | null;
     }
   | { kind: 'videoName'; videoId: number; name: string | null }
@@ -178,21 +179,23 @@ const stepMarksOf = (saved: StudioDocument, current: StudioDocument): SaveWrite[
   }));
 };
 
-const stepTextsOf = (saved: StudioDocument, current: StudioDocument): SaveWrite[] =>
+const stepNamesOf = (saved: StudioDocument, current: StudioDocument): SaveWrite[] =>
   idsOf(current.steps).flatMap((stepId): SaveWrite[] => {
     const step = itemOf(current.steps, stepId);
-    const before = itemOf(saved.steps, stepId) ?? { name: '', description: null };
+    const before = itemOf(saved.steps, stepId) ?? { name: '' };
 
-    return step === null || (step.name === before.name && step.description === before.description)
+    return step === null || step.name === before.name
       ? []
-      : [{ kind: 'stepText', stepId, name: step.name, description: step.description }];
+      : [{ kind: 'stepName', stepId, name: step.name }];
   });
+
+type PartSettingsWrite = Extract<SaveWrite, { kind: 'partSettings' }>;
 
 const partWritesOf = (saved: StudioDocument, current: StudioDocument): SaveWrite[] =>
   idsOf(current.parts).flatMap((partId): SaveWrite[] => {
     const part = itemOf(current.parts, partId);
     const before = itemOf(saved.parts, partId);
-    if (part === null || part.firstStepId === null) {
+    if (part === null || part.firstStepId === null || part.lastStepId === null) {
       return [];
     }
 
@@ -201,6 +204,7 @@ const partWritesOf = (saved: StudioDocument, current: StudioDocument): SaveWrite
       partId,
       name: part.name,
       firstStepId: part.firstStepId,
+      lastStepId: part.lastStepId,
       mainVideoId: part.mainVideoId,
     };
     if (before === null) {
@@ -208,6 +212,7 @@ const partWritesOf = (saved: StudioDocument, current: StudioDocument): SaveWrite
         kind: 'partAdd',
         partId,
         firstStepId: part.firstStepId,
+        lastStepId: part.lastStepId,
         name: part.name,
       };
 
@@ -217,34 +222,41 @@ const partWritesOf = (saved: StudioDocument, current: StudioDocument): SaveWrite
     return sameValue(before, part) ? [] : [settings];
   });
 
-const partShiftOf = (
+const shrinksOf = (
   saved: StudioDocument,
   order: readonly number[],
-  write: Extract<SaveWrite, { kind: 'partSettings' }>,
-): number => {
-  const from = order.indexOf(itemOf(saved.parts, write.partId)?.firstStepId ?? write.firstStepId);
+  write: PartSettingsWrite,
+): boolean => {
+  const before = itemOf(saved.parts, write.partId);
+  const from = order.indexOf(before?.firstStepId ?? -1);
+  const until = order.indexOf(before?.lastStepId ?? -1);
 
-  return from < 0 ? 0 : order.indexOf(write.firstStepId) - from;
+  return (
+    from >= 0 &&
+    until >= 0 &&
+    order.indexOf(write.firstStepId) >= from &&
+    order.indexOf(write.lastStepId) <= until
+  );
 };
 
 const orderedPartWritesOf = (saved: StudioDocument, current: StudioDocument): SaveWrite[] => {
   const writes = partWritesOf(saved, current);
   const order = timelineStepsOf(current).map((step) => step.stepId);
-  const settings = writes.flatMap((write) =>
-    write.kind === 'partSettings'
-      ? [{ write, shift: partShiftOf(saved, order, write), at: order.indexOf(write.firstStepId) }]
-      : [],
+  const added = new Set(
+    writes.flatMap((write) => (write.kind === 'partAdd' ? [write.partId] : [])),
+  );
+  const settings = writes.filter(
+    (write): write is PartSettingsWrite =>
+      write.kind === 'partSettings' && !added.has(write.partId),
   );
 
-  const later = settings.filter((move) => move.shift > 0).sort((left, right) => right.at - left.at);
-  const kept = settings.filter((move) => move.shift === 0);
-  const earlier = settings
-    .filter((move) => move.shift < 0)
-    .sort((left, right) => left.at - right.at);
-
   return [
-    ...writes.filter((write) => write.kind !== 'partSettings'),
-    ...[...later, ...kept, ...earlier].map((move) => move.write),
+    ...settings.filter((write) => shrinksOf(saved, order, write)),
+    ...writes.filter(
+      (write) =>
+        write.kind === 'partAdd' || (write.kind === 'partSettings' && added.has(write.partId)),
+    ),
+    ...settings.filter((write) => !shrinksOf(saved, order, write)),
   ];
 };
 
@@ -300,7 +312,7 @@ export const savePlanOf = (saved: StudioDocument, current: StudioDocument): Save
   ),
   ...stepMovesOf(saved, current),
   ...stepMarksOf(saved, current),
-  ...stepTextsOf(saved, current),
+  ...stepNamesOf(saved, current),
   ...orderedPartWritesOf(saved, current),
   ...videoWritesOf(saved, current),
   ...trackWritesOf(saved, current),

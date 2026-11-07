@@ -81,8 +81,8 @@ public sealed class PutActVideoStartTests : IClassFixture<ApiTestFixture>
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId) = await MusicAsync(ct);
         var stepIds = await MarkedAsync(admin, actId, 60);
-        await AddPartAsync(admin, actId, stepIds[0], "Marsch");
-        await AddPartAsync(admin, actId, stepIds[1], "Polka");
+        await AddPartAsync(admin, actId, stepIds[0], stepIds[0], "Marsch");
+        await AddPartAsync(admin, actId, stepIds[1], stepIds[1], "Polka");
         var videoId = await VideoOfAsync(_fixture, admin, actId, 50, ct);
 
         await PlaceVideoAsync(admin, actId, videoId, 62);
@@ -97,8 +97,8 @@ public sealed class PutActVideoStartTests : IClassFixture<ApiTestFixture>
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId) = await MusicAsync(ct);
         var stepIds = await MarkedAsync(admin, actId, 60);
-        await AddPartAsync(admin, actId, stepIds[0], "Marsch");
-        await AddPartAsync(admin, actId, stepIds[1], "Polka");
+        await AddPartAsync(admin, actId, stepIds[0], stepIds[0], "Marsch");
+        await AddPartAsync(admin, actId, stepIds[1], stepIds[1], "Polka");
         var older = await VideoOfAsync(_fixture, admin, actId, 40, ct);
         await PlaceVideoAsync(admin, actId, older, 65);
         var newer = await VideoOfAsync(_fixture, admin, actId, 58, ct);

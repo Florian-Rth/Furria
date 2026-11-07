@@ -2,10 +2,9 @@ import type { CountMark } from '@furria/studio/music-timeline';
 import { snappedOf } from '@furria/studio/studio-edits';
 import type { StudioPart, StudioStep } from '@furria/studio/studio-schemas';
 
-export interface StepTextInput {
+export interface StepNameInput {
   stepId: number;
   name: string;
-  description: string | null;
 }
 
 export interface StepStartInput {
@@ -15,13 +14,27 @@ export interface StepStartInput {
 
 export interface PartOpening {
   firstStepId: number;
+  lastStepId: number;
   name: string;
 }
 
 export interface PartSettings {
   name: string;
   firstStepId: number;
+  lastStepId: number;
   mainVideoId: number | null;
+}
+
+export interface PartRange {
+  partId: number;
+  firstStepId: number;
+  lastStepId: number;
+}
+
+export interface NewPartRange {
+  firstStepId: number;
+  lastStepId: number;
+  shrink: PartRange | null;
 }
 
 export interface PartSettingsInput {
@@ -64,7 +77,8 @@ const placedPartsOf = (parts: readonly StudioPart[]): StudioPart[] =>
 
 export const partSettingsOf = (part: StudioPart): PartSettings => ({
   name: part.name,
-  firstStepId: firstStepOf(part) ?? 0,
+  firstStepId: firstStepOf(part) ?? part.firstStepId,
+  lastStepId: part.stepIds.at(-1) ?? part.lastStepId,
   mainVideoId: part.mainVideoId,
 });
 
@@ -82,26 +96,104 @@ export const deskPartOf = (
 export const startsAPart = (parts: readonly StudioPart[], stepId: number): boolean =>
   parts.some((part) => firstStepOf(part) === stepId);
 
-export const partBorderStepOf = (
+interface PartNeighbours {
+  order: number[];
+  part: StudioPart | null;
+  before: StudioPart | null;
+}
+
+const neighboursOf = (
+  steps: readonly StudioStep[],
+  parts: readonly StudioPart[],
+  partId: number,
+): PartNeighbours => {
+  const order = timelineIdsOf(steps);
+  const placed = placedPartsOf(parts).sort(
+    (left, right) =>
+      order.indexOf(firstStepOf(left) ?? -1) - order.indexOf(firstStepOf(right) ?? -1),
+  );
+  const index = placed.findIndex((part) => part.partId === partId);
+  const part = placed[index] ?? null;
+  const before = placed[index - 1];
+  const touches =
+    before !== undefined &&
+    part !== null &&
+    order.indexOf(before.stepIds.at(-1) ?? -1) === order.indexOf(firstStepOf(part) ?? -1) - 1;
+
+  return { order, part, before: touches ? before : null };
+};
+
+const rangeOfPart = (part: StudioPart, firstStepId: number, lastStepId: number): PartRange => ({
+  partId: part.partId,
+  firstStepId,
+  lastStepId,
+});
+
+export const partShiftOf = (
   steps: readonly StudioStep[],
   parts: readonly StudioPart[],
   partId: number,
   shift: PartShift,
-): number | null => {
-  const order = timelineIdsOf(steps);
-  const placed = placedPartsOf(parts);
-  const index = placed.findIndex((part) => part.partId === partId);
-  const before = placed[index - 1];
-  const part = placed[index];
+): PartRange[] | null => {
+  const { order, part, before } = neighboursOf(steps, parts, partId);
+  const first = part === null ? null : firstStepOf(part);
+  const last = part?.stepIds.at(-1) ?? null;
+  if (part === null || first === null || last === null) {
+    return null;
+  }
+  const at = order.indexOf(first);
 
-  if (index <= 0 || before === undefined || part === undefined) {
+  if (shift === 'later') {
+    const next = order[at + 1];
+    if (next === undefined || first === last) {
+      return null;
+    }
+    const grown = before === null ? [] : [rangeOfPart(before, firstStepOf(before) ?? first, first)];
+    return [rangeOfPart(part, next, last), ...grown];
+  }
+
+  const previous = order[at - 1];
+  if (previous === undefined) {
+    return null;
+  }
+  if (before === null) {
+    return [rangeOfPart(part, previous, last)];
+  }
+  const beforeFirst = firstStepOf(before);
+  if (beforeFirst === null || beforeFirst === previous) {
     return null;
   }
 
-  const lower = order.indexOf(firstStepOf(before) ?? -1);
-  const after = placed[index + 1];
-  const upper = after === undefined ? order.length : order.indexOf(firstStepOf(after) ?? -1);
-  const target = order.indexOf(firstStepOf(part) ?? -1) + (shift === 'earlier' ? -1 : 1);
+  return [
+    rangeOfPart(before, beforeFirst, order[at - 2] ?? beforeFirst),
+    rangeOfPart(part, previous, last),
+  ];
+};
 
-  return target > lower && target < upper ? (order[target] ?? null) : null;
+export const newPartOf = (
+  steps: readonly StudioStep[],
+  parts: readonly StudioPart[],
+  stepId: number,
+): NewPartRange | null => {
+  const order = timelineIdsOf(steps);
+  const at = order.indexOf(stepId);
+  if (at < 0 || startsAPart(parts, stepId)) {
+    return null;
+  }
+  const own = partOfStep(parts, stepId);
+  const ownFirst = own === null ? null : firstStepOf(own);
+  const ownLast = own?.stepIds.at(-1) ?? null;
+  const previous = order[at - 1];
+  if (own !== null && ownFirst !== null && ownLast !== null && previous !== undefined) {
+    return {
+      firstStepId: stepId,
+      lastStepId: ownLast,
+      shrink: rangeOfPart(own, ownFirst, previous),
+    };
+  }
+  const grouped = new Set(placedPartsOf(parts).flatMap((part) => part.stepIds));
+  const run = order.slice(at).findIndex((candidate) => grouped.has(candidate));
+  const lastStepId = order[(run < 0 ? order.length : at + run) - 1] ?? stepId;
+
+  return { firstStepId: stepId, lastStepId, shrink: null };
 };

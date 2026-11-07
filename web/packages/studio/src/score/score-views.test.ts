@@ -9,7 +9,6 @@ const stepOf = (stepId: number, partId: number | null, start: number | null): Sc
   stepId,
   number: stepId,
   name: '',
-  description: null,
   range: start === null ? null : { start, end: start + 4 },
   partId,
   partIndex: partId === null ? null : 0,

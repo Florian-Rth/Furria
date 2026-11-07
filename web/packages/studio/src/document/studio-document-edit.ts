@@ -7,7 +7,7 @@ export interface StudioDocumentEdit<TStudio extends Studio = Studio> {
   startGesture: () => void;
   endGesture: () => void;
   mark: (atSeconds: number, lengthSeconds: number) => void;
-  addPart: (firstStepId: number, name: string) => void;
+  addPart: (stepId: number, name: string) => void;
   addSpot: () => number;
   direct: <TResult>(action: () => Promise<TResult>) => Promise<TResult>;
 }

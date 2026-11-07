@@ -84,3 +84,27 @@ export const BESIDE_STAGE_BOX: CSSObject = {
   width: `calc(100cqw - ${BESIDE_VIDEO_WIDTH})`,
   height: '100cqh',
 };
+
+export const LESSON_DOCKED = '[data-kk-lesson-docked="true"] > &';
+const LESSON_PICTURE_UPRIGHT = `@container ${LESSON_PICTURE_CONTAINER} (max-aspect-ratio: 5/4)`;
+const DOCK_SIDE_SHARE = 26;
+const DOCK_BELOW_SHARE = 30;
+
+const dockCornerOf = (aspect: number): CSSObject => ({
+  right: INSET_GAP,
+  bottom: INSET_GAP,
+  width: `min(${DOCK_SIDE_SHARE}cqw, calc((100cqh - ${INSET_GAP} * 2) * ${aspect}))`,
+  height: `calc(min(${DOCK_SIDE_SHARE}cqw, calc((100cqh - ${INSET_GAP} * 2) * ${aspect})) / ${aspect})`,
+  [LESSON_PICTURE_UPRIGHT]: {
+    width: `min(calc(${DOCK_BELOW_SHARE}cqh * ${aspect}), calc(100cqw - ${INSET_GAP} * 2))`,
+    height: `calc(min(calc(${DOCK_BELOW_SHARE}cqh * ${aspect}), calc(100cqw - ${INSET_GAP} * 2)) / ${aspect})`,
+  },
+});
+
+export const DOCKED_STAGE_ROOM: CSSObject = {
+  padding: INSET_GAP,
+};
+
+export const dockedInsetOf = (aspect: number): CSSObject => ({
+  [LESSON_DOCKED]: dockCornerOf(aspect),
+});

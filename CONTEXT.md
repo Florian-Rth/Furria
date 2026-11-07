@@ -908,8 +908,10 @@ _Avoid_: timestamp, mix position
 **Step**, **part** (act):
 The manual of a dance laid over its music. **Steps** tile the music without gaps — a step ends
 where the next begins, the first reaches back to the start, and a new mark splits the step it
-falls in. **Parts** group consecutive steps; a part always begins on a step, the parts tile the
-steps the same way, and a part may name its main trainer video.
+falls in. **Parts** are optional: a part is a named range of consecutive steps from its first to
+its last step, parts never overlap, and steps may belong to no part. A removed step shrinks its
+part (an emptied part goes), a mark that splits a part's last step keeps both halves in it, and a
+part may name its main trainer video.
 _UI copy_: Schritt, Teil
 _Avoid_: section, scene, figure, sequence
 

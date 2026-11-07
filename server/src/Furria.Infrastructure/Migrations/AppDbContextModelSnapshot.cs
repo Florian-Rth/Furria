@@ -3554,6 +3554,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("first_step_id");
 
+                    b.Property<int>("LastStepId")
+                        .HasColumnType("integer")
+                        .HasColumnName("last_step_id");
+
                     b.Property<int?>("MainVideoId")
                         .HasColumnType("integer")
                         .HasColumnName("main_video_id");
@@ -3571,8 +3575,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasDatabaseName("ix_act_part_act_id");
 
                     b.HasIndex("FirstStepId")
-                        .IsUnique()
                         .HasDatabaseName("ix_act_part_first_step_id");
+
+                    b.HasIndex("LastStepId")
+                        .HasDatabaseName("ix_act_part_last_step_id");
 
                     b.HasIndex("MainVideoId")
                         .HasDatabaseName("ix_act_part_main_video_id");
@@ -3648,11 +3654,6 @@ namespace Furria.Infrastructure.Migrations
                     b.Property<int>("ActId")
                         .HasColumnType("integer")
                         .HasColumnName("act_id");
-
-                    b.Property<string>("Description")
-                        .HasMaxLength(2000)
-                        .HasColumnType("character varying(2000)")
-                        .HasColumnName("description");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -5983,6 +5984,13 @@ namespace Furria.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_act_part_act_step_first_step_id");
 
+                    b.HasOne("Furria.Core.Studio.ActStep", "LastStep")
+                        .WithMany()
+                        .HasForeignKey("LastStepId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_act_part_act_step_last_step_id");
+
                     b.HasOne("Furria.Core.Studio.ActVideo", "MainVideo")
                         .WithMany()
                         .HasForeignKey("MainVideoId")
@@ -5992,6 +6000,8 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Act");
 
                     b.Navigation("FirstStep");
+
+                    b.Navigation("LastStep");
 
                     b.Navigation("MainVideo");
                 });

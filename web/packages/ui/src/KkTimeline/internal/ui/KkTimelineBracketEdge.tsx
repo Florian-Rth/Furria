@@ -37,7 +37,7 @@ export const KkTimelineBracketEdge: FC<KkTimelineBracketEdgeProps> = ({ side, ac
       '&[data-active="true"]': {
         top: '12%',
         bottom: '12%',
-        backgroundColor: palette(theme).primary.main,
+        backgroundColor: palette(theme).text.primary,
       },
     })}
   />

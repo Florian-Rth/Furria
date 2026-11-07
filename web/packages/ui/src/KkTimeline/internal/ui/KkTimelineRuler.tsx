@@ -3,6 +3,7 @@ import type { FC } from 'react';
 import { percentOf, SCORE_FIGURES } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
 import { LANE_VARS } from '../timeline-paint';
+import { CUT_LABEL, watchWholeLabel } from '../watch-whole-label';
 
 export interface KkTimelineTick {
   share: number;
@@ -23,19 +24,28 @@ export const KkTimelineRuler: FC<KkTimelineRulerProps> = ({ ticks }) => {
         position: 'absolute',
         top: 0,
         bottom: 0,
-        pl: 0.5,
         borderLeftWidth: kkTokens.line.hair,
         borderLeftStyle: 'solid',
         borderLeftColor: 'divider',
-        typography: 'caption',
-        lineHeight: `var(${LANE_VARS.ruler})`,
-        fontWeight: 700,
-        color: 'text.secondary',
-        whiteSpace: 'nowrap',
-        ...SCORE_FIGURES,
       }}
     >
-      {tick.label}
+      <Box
+        component="span"
+        ref={watchWholeLabel}
+        sx={{
+          display: 'block',
+          pl: 0.5,
+          typography: 'caption',
+          lineHeight: `var(${LANE_VARS.ruler})`,
+          fontWeight: 700,
+          color: 'text.secondary',
+          whiteSpace: 'nowrap',
+          ...SCORE_FIGURES,
+          ...CUT_LABEL,
+        }}
+      >
+        {tick.label}
+      </Box>
     </Box>
   ));
 

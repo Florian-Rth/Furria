@@ -24,6 +24,7 @@ import PlayArrowRounded from '@mui/icons-material/PlayArrowRounded';
 import RadioButtonUncheckedRounded from '@mui/icons-material/RadioButtonUncheckedRounded';
 import RedoRounded from '@mui/icons-material/RedoRounded';
 import RemoveRounded from '@mui/icons-material/RemoveRounded';
+import RepeatRounded from '@mui/icons-material/RepeatRounded';
 import RouteRounded from '@mui/icons-material/RouteRounded';
 import SegmentRounded from '@mui/icons-material/SegmentRounded';
 import SkipNextRounded from '@mui/icons-material/SkipNextRounded';
@@ -71,7 +72,8 @@ export type KkLaneGlyphName =
   | 'history'
   | 'close'
   | 'left'
-  | 'right';
+  | 'right'
+  | 'loop';
 
 const GLYPHS: Record<KkLaneGlyphName, typeof AddRounded> = {
   play: PlayArrowRounded,
@@ -109,6 +111,7 @@ const GLYPHS: Record<KkLaneGlyphName, typeof AddRounded> = {
   close: CloseRounded,
   left: ChevronLeftRounded,
   right: ChevronRightRounded,
+  loop: RepeatRounded,
 };
 
 interface KkLaneGlyphProps {

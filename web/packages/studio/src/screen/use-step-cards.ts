@@ -6,8 +6,8 @@ import { stepCardEyebrowOf, stepCardLabelOf } from '@furria/studio/step-cards-co
 import type { StudioStep } from '@furria/studio/studio-schemas';
 import type { StudioScreen } from '@furria/studio/studio-screen';
 import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
-import type { StepTexts } from '@furria/studio/use-step-texts';
-import { useStepTexts } from '@furria/studio/use-step-texts';
+import type { StepNaming } from '@furria/studio/use-step-naming';
+import { useStepNaming } from '@furria/studio/use-step-naming';
 
 const NEAR = 1;
 
@@ -34,7 +34,7 @@ export interface StepCard {
 export interface StepCards {
   cards: StepCard[];
   index: number;
-  texts: StepTexts;
+  texts: StepNaming;
   choose: (index: number) => void;
 }
 
@@ -42,7 +42,7 @@ export const useStepCards = (screen: StudioScreen, editor: ActStudioStage): Step
   const { practice, playback } = screen;
   const { parts, countMarks, paths } = playback;
   const steps = playback.steps.filter(isTimed);
-  const texts = useStepTexts(screen);
+  const texts = useStepNaming(screen);
   const selected = new Set(editor.selected);
   const keyed = selected.size === 0 ? paths : paths.filter((path) => selected.has(path.spotId));
   const sheet = countSheetOf(

@@ -10,7 +10,6 @@ const step = (
 ): StudioStep => ({
   stepId,
   name: `Schritt ${stepId}`,
-  description: null,
   startSeconds,
   endSeconds,
   placement: 'onTimeline',
@@ -27,7 +26,7 @@ const video = (startSeconds: number, durationSeconds: number, outdated = false):
   startSeconds,
   placement: 'onTimeline',
   outdated,
-  urls: { video: '/v', compact: '/c', poster: '/p' },
+  urls: { video: '/v', compact: '/c', poster: '/p', peaks: '/k' },
 });
 
 const marks: CountMark[] = Array.from({ length: 40 }, (_, index) => ({
@@ -76,7 +75,15 @@ describe('isFilmed', () => {
 
 describe('stepListOf', () => {
   const parts: StudioPart[] = [
-    { partId: 1, name: 'Marsch', stepIds: [1, 2], mainVideoId: null, adrift: false },
+    {
+      partId: 1,
+      name: 'Marsch',
+      firstStepId: 1,
+      lastStepId: 2,
+      stepIds: [1, 2],
+      mainVideoId: null,
+      adrift: false,
+    },
   ];
 
   it('groups the timed steps under their parts and numbers them through', () => {

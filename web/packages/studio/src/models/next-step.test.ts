@@ -12,7 +12,6 @@ describe('nextStepOf', () => {
     const steps = [11, 12, 13].map((id, index) => ({
       stepId: id,
       name: `Schritt ${id}`,
-      description: null,
       startSeconds: index * 4,
       endSeconds: index * 4 + 4,
       placement: 'onTimeline' as const,

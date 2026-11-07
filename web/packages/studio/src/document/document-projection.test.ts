@@ -23,7 +23,6 @@ const song = (songId: number, position: number, startSeconds: number, endSeconds
 const step = (stepId: number, startSeconds: number, endSeconds: number) => ({
   stepId,
   name: '',
-  description: null,
   startSeconds,
   endSeconds,
   placement: 'onTimeline' as const,
@@ -35,8 +34,24 @@ const base: Studio = {
   finalTracks: [],
   steps: [step(11, 0, 8), step(12, 8, 16), step(13, 16, 30)],
   parts: [
-    { partId: 21, name: 'A', stepIds: [11], mainVideoId: null, adrift: false },
-    { partId: 22, name: 'B', stepIds: [12, 13], mainVideoId: null, adrift: false },
+    {
+      partId: 21,
+      name: 'A',
+      firstStepId: 11,
+      lastStepId: 11,
+      stepIds: [11],
+      mainVideoId: null,
+      adrift: false,
+    },
+    {
+      partId: 22,
+      name: 'B',
+      firstStepId: 12,
+      lastStepId: 13,
+      stepIds: [12, 13],
+      mainVideoId: null,
+      adrift: false,
+    },
   ],
   spots: [
     { spotId: 31, number: 1, person: null },
@@ -85,10 +100,10 @@ describe('studioOf', () => {
     ]);
   });
 
-  it('hands the steps of a removed part to the part before', () => {
+  it('leaves the steps of a removed part ungrouped', () => {
     const studio = projected({ kind: 'partRemove', partId: 22 });
 
-    expect(studio.parts.map((part) => [part.partId, part.stepIds])).toEqual([[21, [11, 12, 13]]]);
+    expect(studio.parts.map((part) => [part.partId, part.stepIds])).toEqual([[21, [11]]]);
   });
 
   it('starts the timeline at zero after the first step is removed', () => {

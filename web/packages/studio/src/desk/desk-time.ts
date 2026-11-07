@@ -6,6 +6,8 @@ const BEAT_TICK_PX = 6;
 const COUNT_LABEL_PX = 20;
 const EIGHT_LABEL_PX = 18;
 const COUNTS_PER_EIGHT = 8;
+const TEXT_CHAR_PX = 8;
+const TEXT_GAP_PX = 6;
 
 export interface DeskTick {
   key: string;
@@ -24,7 +26,26 @@ export const beatSecondsOf = (marks: readonly CountMark[]): number => {
   return gaps[Math.floor(gaps.length / 2)] ?? FALLBACK_BEAT_SECONDS;
 };
 
-export const musicTicksOf = (marks: readonly CountMark[], perSecond: number): DeskTick[] => {
+const withoutCrowdedTextOf = (ticks: readonly DeskTick[], perSecond: number): DeskTick[] => {
+  let nextText = Number.POSITIVE_INFINITY;
+
+  return ticks
+    .toReversed()
+    .map((tick) => {
+      if (tick.text === null) {
+        return tick;
+      }
+      if ((nextText - tick.seconds) * perSecond < tick.text.length * TEXT_CHAR_PX + TEXT_GAP_PX) {
+        return { ...tick, text: null };
+      }
+      nextText = tick.seconds;
+
+      return tick;
+    })
+    .toReversed();
+};
+
+const everyMusicTickOf = (marks: readonly CountMark[], perSecond: number): DeskTick[] => {
   const beatPx = beatSecondsOf(marks) * perSecond;
   const eights = countEightsOf(marks);
   const everyCount = beatPx >= BEAT_TICK_PX;
@@ -49,3 +70,6 @@ export const musicTicksOf = (marks: readonly CountMark[], perSecond: number): De
     ];
   });
 };
+
+export const musicTicksOf = (marks: readonly CountMark[], perSecond: number): DeskTick[] =>
+  withoutCrowdedTextOf(everyMusicTickOf(marks, perSecond), perSecond);

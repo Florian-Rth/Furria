@@ -59,7 +59,7 @@ const video: StudioVideo = {
   startSeconds: 0,
   placement: 'onTimeline',
   outdated: false,
-  urls: { video: 'v', compact: 'c', poster: 'p' },
+  urls: { video: 'v', compact: 'c', poster: 'p', peaks: 'k' },
 };
 
 const person = { personId: 4, firstName: 'Lena', lastName: 'B', portrait: null };
@@ -71,7 +71,6 @@ const startedStudio: Studio = {
     {
       stepId: 1,
       name: 'Einmarsch',
-      description: null,
       startSeconds: 0,
       endSeconds: 8,
       placement: 'onTimeline',
@@ -164,7 +163,6 @@ describe('setupOf', () => {
         {
           stepId: 1,
           name: 'Einmarsch',
-          description: null,
           startSeconds: null,
           endSeconds: null,
           placement: 'cutAway',

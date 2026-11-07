@@ -3,6 +3,7 @@ import type { TimedKeyframe } from '../models/choreography-motion';
 import type { MusicSegment } from '../models/music-timeline';
 import {
   countSharesOf,
+  currentStepNameOf,
   cutSharesOf,
   keyframeMarksOf,
   loopSharesOf,
@@ -148,5 +149,24 @@ describe('keyframeMarksOf', () => {
       { key: '6', share: 0.3, selected: true },
       { key: '10', share: 0.5, selected: false },
     ]);
+  });
+});
+
+describe('currentStepNameOf', () => {
+  const steps = [
+    { key: 4, number: 7, name: 'Polka-Wechsel' },
+    { key: 9, number: 8, name: 'Diagonale' },
+  ];
+
+  it.each([
+    { activeKey: 9, expected: '8 Diagonale' },
+    { activeKey: 5, expected: null },
+    { activeKey: null, expected: null },
+  ])('names the step under the playhead for $activeKey', ({ activeKey, expected }) => {
+    expect(currentStepNameOf({ steps, activeKey })).toBe(expected);
+  });
+
+  it('has no name without a steps lane', () => {
+    expect(currentStepNameOf(null)).toBeNull();
   });
 });

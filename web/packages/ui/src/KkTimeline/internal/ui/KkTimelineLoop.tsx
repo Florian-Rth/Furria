@@ -1,6 +1,6 @@
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
-import { accentWash } from '../../../internal/accent-wash';
+import { inkWash } from '../../../internal/ink-wash';
 import { percentOf } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
 import { LANE_VARS } from '../timeline-paint';
@@ -34,10 +34,10 @@ export const KkTimelineLoop: FC<KkTimelineLoopProps> = ({ range }) => {
         borderRightWidth: kkTokens.line.section,
         borderLeftStyle: 'solid',
         borderRightStyle: 'solid',
-        borderColor: 'primary.main',
+        borderColor: 'text.primary',
         pointerEvents: 'none',
         zIndex: 2,
-        ...accentWash(theme),
+        backgroundColor: inkWash(theme, '8%'),
       })}
     />
   );

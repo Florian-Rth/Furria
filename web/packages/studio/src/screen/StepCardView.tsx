@@ -17,7 +17,7 @@ import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 import type { ActStudioStepTool } from '@furria/studio/use-act-studio-step-tool';
 import type { StepCardTool } from '@furria/studio/use-step-card-tools';
 import type { StepCard } from '@furria/studio/use-step-cards';
-import type { StepTexts } from '@furria/studio/use-step-texts';
+import type { StepNaming } from '@furria/studio/use-step-naming';
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
 import { KkLaneButton } from '@furria/ui/KkLaneButton';
 import { KkLaneCards } from '@furria/ui/KkLaneCards';
@@ -28,7 +28,7 @@ interface StepCardViewProps {
   editor: ActStudioStage;
   stepTool: ActStudioStepTool;
   card: StepCard;
-  texts: StepTexts;
+  texts: StepNaming;
   tools: readonly StepCardTool[];
 }
 

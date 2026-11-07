@@ -16,9 +16,11 @@ import { KkTimelineLoop } from './internal/ui/KkTimelineLoop';
 import { KkTimelineMarks } from './internal/ui/KkTimelineMarks';
 import { KkTimelineParts } from './internal/ui/KkTimelineParts';
 import { KkTimelinePlayed } from './internal/ui/KkTimelinePlayed';
+import { KkTimelinePlayheadTag } from './internal/ui/KkTimelinePlayheadTag';
 import { KkTimelineRegion } from './internal/ui/KkTimelineRegion';
 import { KkTimelineRuler } from './internal/ui/KkTimelineRuler';
 import { KkTimelineSnap } from './internal/ui/KkTimelineSnap';
+import { KkTimelineSoundBand } from './internal/ui/KkTimelineSoundBand';
 import { KkTimelineSteps } from './internal/ui/KkTimelineSteps';
 import { KkTimelineTicks } from './internal/ui/KkTimelineTicks';
 import { KkTimelineTrim } from './internal/ui/KkTimelineTrim';
@@ -38,6 +40,7 @@ export type {
   KkTimelineRowKind,
   KkTimelineRows,
   KkTimelineSpan,
+  KkTimelineWaveLane,
 } from './internal/timeline-paint';
 export type { KkTimelineBlockTone } from './internal/ui/KkTimelineBlock';
 export type {
@@ -73,11 +76,13 @@ export const KkTimeline = Object.assign(KkTimelineRoot, {
   Counts: KkTimelineCounts,
   Cuts: KkTimelineCuts,
   Played: KkTimelinePlayed,
+  PlayheadTag: KkTimelinePlayheadTag,
   Steps: KkTimelineSteps,
   Ticks: KkTimelineTicks,
   Keyframes: KkTimelineKeyframes,
   Loop: KkTimelineLoop,
   Trim: KkTimelineTrim,
   Snap: KkTimelineSnap,
+  SoundBand: KkTimelineSoundBand,
   Handle: KkTimelineHandle,
 });

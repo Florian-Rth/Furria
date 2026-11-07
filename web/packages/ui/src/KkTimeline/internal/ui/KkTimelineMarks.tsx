@@ -4,6 +4,8 @@ import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import { percentOf } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
+import { COUNT_BAND_VAR } from '../timeline-paint';
+import { CUT_LABEL, watchWholeLabel } from '../watch-whole-label';
 
 const palette = (theme: Theme) => (theme.vars ?? theme).palette;
 
@@ -26,15 +28,18 @@ export const KkTimelineMarks: FC<KkTimelineMarksProps> = ({ ticks, edge }) => {
         <Typography
           component="span"
           variant="caption"
+          data-kk-timeline-count-text
+          ref={watchWholeLabel}
           sx={{
             position: 'absolute',
             [edge]: 0,
             left: '0.25rem',
-            lineHeight: 1.1,
+            lineHeight: `var(${COUNT_BAND_VAR})`,
             fontWeight: 800,
             fontVariantNumeric: 'tabular-nums',
             whiteSpace: 'nowrap',
             color: tick.strong ? 'text.primary' : 'text.secondary',
+            ...CUT_LABEL,
           }}
         >
           {tick.text}

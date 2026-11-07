@@ -1,7 +1,7 @@
 import {
   STEP_CARD_ACTIONS,
-  STEP_CARD_MARK,
-  STEP_CARD_MARK_LABEL,
+  STEP_CARD_FIRST_MARK,
+  STEP_CARD_FIRST_MARK_LABEL,
   STEP_CARDS_EMPTY,
   STEP_CARDS_LABEL,
   STEP_CARDS_MUSIC_PAGE,
@@ -30,9 +30,9 @@ export const StepCardsEmpty: FC<StepCardsEmptyProps> = ({ screen, stepTool }) =>
     <KkLaneButton text={STEP_CARDS_MUSIC_PAGE} glyph="music" tone="accent" onPress={music} />
   ) : (
     <KkLaneButton
-      text={STEP_CARD_MARK}
+      text={STEP_CARD_FIRST_MARK}
       glyph="add"
-      label={STEP_CARD_MARK_LABEL}
+      label={STEP_CARD_FIRST_MARK_LABEL}
       tone="accent"
       disabled={!stepTool.canMark}
       onPress={stepTool.markHere}

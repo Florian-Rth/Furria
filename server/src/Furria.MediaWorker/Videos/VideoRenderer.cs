@@ -1,4 +1,5 @@
 using Furria.Core.Media;
+using Furria.Core.Sound;
 using Furria.MediaWorker.Photos;
 using Furria.MediaWorker.Renditions;
 using Furria.MediaWorker.Sound;
@@ -25,8 +26,8 @@ public sealed class VideoRenderer
     )
     {
         var facts = await ProbeAsync(files.OriginalPath, ct);
-        if (keeping.SoundProfile && facts.AudioCodec is not null)
-            await _analyser.KeepSoundtrackProfileAsync(files, ct);
+        if (keeping.Soundtrack)
+            await KeepSoundtrackAsync(files, facts, ct);
         var video = await EncodeAsync(files, facts, MediaRendition.Video, VideoBox.Full, ct);
         await RenderPosterAsync(files, video, facts.DurationSeconds, ct);
         files.Publish(video, MediaRendition.Video);
@@ -51,6 +52,18 @@ public sealed class VideoRenderer
         var report = await MediaTool.ProbeAsync(_options.FfprobePath, path, ct);
         return FfprobeReport.FactsOf(report)
             ?? throw new MediaRenderingException("The video has no picture stream");
+    }
+
+    private async Task KeepSoundtrackAsync(
+        RenditionFiles files,
+        VideoFacts facts,
+        CancellationToken ct
+    )
+    {
+        if (facts.AudioCodec is null)
+            await _analyser.KeepPeaksAsync(files, WaveformPeaks.Silent, ct);
+        else
+            await _analyser.KeepSoundtrackAsync(files, ct);
     }
 
     private async Task<string> EncodeAsync(

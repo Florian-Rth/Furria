@@ -51,7 +51,6 @@ const scoreStep = (timed: boolean, movement: boolean, video: boolean): ScoreStep
   stepId: 1,
   number: 1,
   name: '',
-  description: null,
   range: timed ? { start: 0, end: 1 } : null,
   partId: null,
   partIndex: null,

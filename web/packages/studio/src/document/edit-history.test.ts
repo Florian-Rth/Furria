@@ -20,9 +20,9 @@ const document = (patch: Partial<StudioDocument>): StudioDocument => ({
   songOrder: [],
   songs: {},
   steps: {
-    1: { startSeconds: 0, name: 'Auftakt', description: null },
-    2: { startSeconds: 8, name: '', description: null },
-    3: { startSeconds: 16, name: '', description: null },
+    1: { startSeconds: 0, name: 'Auftakt' },
+    2: { startSeconds: 8, name: '' },
+    3: { startSeconds: 16, name: '' },
   },
   parts: {},
   spotOrder: [],
@@ -166,23 +166,23 @@ describe('rebased', () => {
   it('replays pending changes on the newer state; the active edit wins', () => {
     const mine = applied(
       editStateOf(document({})),
-      [move(9), { kind: 'stepText', stepId: 3, name: 'Mein', description: null }],
+      [move(9), { kind: 'stepName', stepId: 3, name: 'Mein' }],
       0,
     );
     const theirs = document({
       steps: {
-        1: { startSeconds: 0, name: 'Auftakt', description: null },
-        2: { startSeconds: 8, name: 'Ihr Name', description: null },
-        3: { startSeconds: 16, name: 'Ihr', description: 'neu' },
+        1: { startSeconds: 0, name: 'Auftakt' },
+        2: { startSeconds: 8, name: 'Ihr Name' },
+        3: { startSeconds: 16, name: 'Ihr' },
       },
     });
 
     const result = rebased(mine, theirs, 'replayPending');
 
     expect(result.state.document.steps).toEqual({
-      1: { startSeconds: 0, name: 'Auftakt', description: null },
-      2: { startSeconds: 9, name: 'Ihr Name', description: null },
-      3: { startSeconds: 16, name: 'Mein', description: 'neu' },
+      1: { startSeconds: 0, name: 'Auftakt' },
+      2: { startSeconds: 9, name: 'Ihr Name' },
+      3: { startSeconds: 16, name: 'Mein' },
     });
   });
 
@@ -191,14 +191,14 @@ describe('rebased', () => {
       editStateOf(document({})),
       [
         { kind: 'videoName', videoId: 5, name: 'Generalprobe' },
-        { kind: 'stepText', stepId: 3, name: 'Mein', description: null },
+        { kind: 'stepName', stepId: 3, name: 'Mein' },
       ],
       0,
     );
     const withoutStepThree = document({
       steps: {
-        1: { startSeconds: 0, name: 'Auftakt', description: null },
-        2: { startSeconds: 8, name: '', description: null },
+        1: { startSeconds: 0, name: 'Auftakt' },
+        2: { startSeconds: 8, name: '' },
       },
     });
 

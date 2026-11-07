@@ -159,7 +159,6 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
         {
             StepId = step.StepId,
             Name = step.Name,
-            Description = step.Description,
             StartSeconds = step.StartSeconds,
             EndSeconds = step.EndSeconds,
             Placement = step.Placement,
@@ -170,6 +169,8 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
         {
             PartId = part.PartId,
             Name = part.Name,
+            FirstStepId = part.FirstStepId,
+            LastStepId = part.LastStepId,
             StepIds = part.StepIds,
             MainVideoId = part.MainVideoId,
             Adrift = part.IsAdrift,
@@ -201,6 +202,7 @@ public sealed class GetActStudio : Endpoint<GetActStudioRequest, GetActStudioRes
                 Video = video.Urls.Video,
                 Compact = video.Urls.Compact,
                 Poster = video.Urls.Poster,
+                Peaks = video.Urls.Peaks,
             },
         };
 
@@ -546,8 +548,6 @@ public sealed record StudioStepDto
 
     public required string Name { get; init; }
 
-    public required string? Description { get; init; }
-
     public required double? StartSeconds { get; init; }
 
     public required double? EndSeconds { get; init; }
@@ -560,6 +560,10 @@ public sealed record StudioPartDto
     public required int PartId { get; init; }
 
     public required string Name { get; init; }
+
+    public required int FirstStepId { get; init; }
+
+    public required int LastStepId { get; init; }
 
     public required IReadOnlyList<int> StepIds { get; init; }
 
@@ -584,6 +588,8 @@ public sealed record StudioVideoUrlsDto
     public required string Compact { get; init; }
 
     public required string Poster { get; init; }
+
+    public required string Peaks { get; init; }
 }
 
 public sealed record StudioVideoDto

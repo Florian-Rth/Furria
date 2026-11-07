@@ -47,17 +47,23 @@ export const serverWriteOf = (
     case 'partSettings': {
       const partId = serverIdOf(ids, 'parts', write.partId);
       const firstStepId = serverIdOf(ids, 'steps', write.firstStepId);
+      const lastStepId = serverIdOf(ids, 'steps', write.lastStepId);
 
-      return partId === null || firstStepId === null ? null : { ...write, partId, firstStepId };
+      return partId === null || firstStepId === null || lastStepId === null
+        ? null
+        : { ...write, partId, firstStepId, lastStepId };
     }
-    case 'partAdd':
-      return resolvedOf(ids, 'steps', write.firstStepId, (firstStepId) => ({
-        ...write,
-        firstStepId,
-      }));
+    case 'partAdd': {
+      const firstStepId = serverIdOf(ids, 'steps', write.firstStepId);
+      const lastStepId = serverIdOf(ids, 'steps', write.lastStepId);
+
+      return firstStepId === null || lastStepId === null
+        ? null
+        : { ...write, firstStepId, lastStepId };
+    }
     case 'stepRemove':
     case 'stepMove':
-    case 'stepText':
+    case 'stepName':
       return resolvedOf(ids, 'steps', write.stepId, (stepId) => ({ ...write, stepId }));
     case 'tracks':
       return resolvedTracksOf(write, ids, choreographyVersion);
@@ -192,17 +198,16 @@ const recorded = (draft: Draft<StudioDocument>, target: StudioDocument, write: S
       return;
     }
     case 'stepMark': {
-      draft.steps[write.stepId] = { startSeconds: write.atSeconds, name: '', description: null };
+      draft.steps[write.stepId] = { startSeconds: write.atSeconds, name: '' };
       if (write.openingStepId !== null) {
-        draft.steps[write.openingStepId] = { startSeconds: 0, name: '', description: null };
+        draft.steps[write.openingStepId] = { startSeconds: 0, name: '' };
       }
       return;
     }
-    case 'stepText': {
+    case 'stepName': {
       const step = itemOf(draft.steps, write.stepId);
       if (step !== null) {
         step.name = write.name;
-        step.description = write.description;
       }
       return;
     }
@@ -210,6 +215,7 @@ const recorded = (draft: Draft<StudioDocument>, target: StudioDocument, write: S
       draft.parts[write.partId] = {
         name: write.name,
         firstStepId: write.firstStepId,
+        lastStepId: write.lastStepId,
         mainVideoId: null,
       };
       return;
@@ -218,6 +224,7 @@ const recorded = (draft: Draft<StudioDocument>, target: StudioDocument, write: S
       draft.parts[write.partId] = {
         name: write.name,
         firstStepId: write.firstStepId,
+        lastStepId: write.lastStepId,
         mainVideoId: write.mainVideoId,
       };
       return;

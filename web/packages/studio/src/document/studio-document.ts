@@ -9,12 +9,12 @@ export interface DocumentSong {
 export interface DocumentStep {
   startSeconds: number | null;
   name: string;
-  description: string | null;
 }
 
 export interface DocumentPart {
   name: string;
   firstStepId: number | null;
+  lastStepId: number | null;
   mainVideoId: number | null;
 }
 

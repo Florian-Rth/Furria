@@ -1,6 +1,6 @@
 import { fineClockOf } from '@furria/studio/studio-copy';
 
-export const STEP_CARDS_LABEL = 'Auftritt bearbeiten';
+export const STEP_CARDS_LABEL = 'Sessionsauftritt bearbeiten';
 export const STEP_CARDS_HEAD = 'Werkzeuge';
 export const STEP_CARDS_LIST = 'Schritte zum Wischen';
 export const STEP_CARDS_HISTORY = 'Rückgängig und Wiederholen';
@@ -20,8 +20,10 @@ export const STEP_CARD_STAGE = 'Bühne';
 export const STEP_CARD_TOOLS = 'Bühne bearbeiten';
 export const STEP_CARD_ACTIONS = 'Schritt';
 export const STEP_CARD_COUNTS = 'Zählzeiten dieses Schritts';
-export const STEP_CARD_MARK = 'Schritt hier';
-export const STEP_CARD_MARK_LABEL = 'Schritt hier: neuen Schritt an der Abspielposition setzen';
+export const STEP_CARD_MARK = 'Hier teilen';
+export const STEP_CARD_MARK_LABEL = 'Schritt an der Abspielposition teilen';
+export const STEP_CARD_FIRST_MARK = 'Ersten Schritt setzen';
+export const STEP_CARD_FIRST_MARK_LABEL = 'Ersten Schritt an der Abspielposition setzen';
 export const STEP_CARD_STEP = 'Schritt …';
 export const STEP_CARD_STEP_LABEL = 'Schritt: löschen oder Teil bilden';
 export const STEP_TOOL_FORMATION = 'Aufstellung';
@@ -52,7 +54,7 @@ export const readoutCountOf = (eight: number | null, count: number | null): stri
 const countShapeOf = (counts: number): string => {
   const eights = Math.floor(counts / COUNTS_PER_EIGHT);
   const rest = counts % COUNTS_PER_EIGHT;
-  const eightText = eights > 0 ? `${eights} × 8` : '';
+  const eightText = eights > 0 ? `${eights} Achter` : '';
   const restText = rest > 0 ? `${rest}` : '';
 
   return [eightText, restText].filter((part) => part !== '').join(' + ');
@@ -76,10 +78,10 @@ export const stepCardLabelOf = (number: number, total: number, name: string): st
 export const countCellLabelOf = (eight: number, count: number, seconds: number): string =>
   `Achter ${eight} · ${count} · ${fineClockOf(seconds)}: hierhin springen`;
 
-export const stepDotNameOf = (name: string | null): string => name ?? 'offen';
+export const stepDotNameOf = (name: string | null): string => name ?? 'frei';
 
 export const stepDotLabelOf = (number: number, name: string | null): string =>
-  `Platz ${number}, ${name ?? 'offen'}: wählen, ziehen oder Pfeiltasten`;
+  `Platz ${number}, ${name ?? 'frei'}: wählen, ziehen oder Pfeiltasten`;
 
 export const MUSIC_PAGE_TITLE = STEP_CARDS_MUSIC_PAGE;
 export const MUSIC_PAGE_TABS = 'Musik oder Video';

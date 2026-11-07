@@ -103,3 +103,22 @@ export const useAudioPeaks = (
     },
   });
 };
+
+export interface SoundSource {
+  mediaItemId: number;
+  peaksUrl: string;
+}
+
+const NO_PEAKS: ReadonlyMap<number, AudioPeaks> = new Map();
+
+export const useSoundPeaks = (source: SoundSource | null): ReadonlyMap<number, AudioPeaks> => {
+  const query = useQuery({
+    queryKey: queryKeys.audioPeaks(source?.mediaItemId ?? 0),
+    queryFn: source === null ? skipToken : () => requestAudioPeaks(source.peaksUrl),
+    staleTime: Number.POSITIVE_INFINITY,
+  });
+
+  return source === null || query.data === undefined
+    ? NO_PEAKS
+    : new Map([[source.mediaItemId, query.data]]);
+};

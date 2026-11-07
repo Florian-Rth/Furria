@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { Theme } from '@mui/material/styles';
 import type { FC, ReactNode } from 'react';
-import { SCORE_FIGURES } from './KkScoreTrack/internal/score-paint';
+import { SCORE_FIGURES } from './internal/score-paint';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 

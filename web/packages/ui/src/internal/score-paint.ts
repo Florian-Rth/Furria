@@ -11,7 +11,7 @@ const SHADE_MIXES: readonly (readonly [string, string])[] = [
   ['78%', GROUP_TONE_ON_FIELD_LIGHT],
 ];
 const NEUTRAL_LIGHT = kkTokens.color.light.neutralInk;
-const NEUTRAL_DARK = kkTokens.color.dark.sub;
+const NEUTRAL_DARK = kkTokens.color.dark.neutralInk;
 
 export const SCORE_FIGURES: CSSObject = {
   fontVariantNumeric: 'tabular-nums lining-nums',
@@ -33,12 +33,18 @@ export const shadeColorsOf = (tone: KkGroupTone | null, shade: number): [string,
         mixOf(groupToneRecipes[tone].fieldDark, shade),
       ];
 
+const fillTextOf = (tone: KkGroupTone | null): [string, string] =>
+  tone === null
+    ? [kkTokens.color.light.panel2, kkTokens.color.dark.bg]
+    : [kkTokens.color.light.panel2, kkTokens.color.dark.ink];
+
 export const shadeFill = (theme: Theme, tone: KkGroupTone | null, shade: number): CSSObject => {
   const [light, dark] = shadeColorsOf(tone, shade);
+  const [lightText, darkText] = fillTextOf(tone);
 
   return applyScheme(theme, {
-    light: { backgroundColor: light, color: kkTokens.color.light.panel2 },
-    dark: { backgroundColor: dark, color: kkTokens.color.dark.ink },
+    light: { backgroundColor: light, color: lightText },
+    dark: { backgroundColor: dark, color: darkText },
   });
 };
 

@@ -9,6 +9,7 @@ import { kkTokens } from '../../../tokens';
 import { LANE_VARS, stepsBottom, waveBottom, waveTop } from '../timeline-paint';
 import type { KkTimelinePan } from '../use-sticky-name';
 import { useStickyName } from '../use-sticky-name';
+import { CUT_LABEL, watchWholeLabel } from '../watch-whole-label';
 
 export interface KkTimelinePart {
   key: number;
@@ -45,6 +46,11 @@ export const KkTimelinePartBand: FC<KkTimelinePartBandProps> = ({
   const select = (event: MouseEvent<HTMLElement>): void => {
     event.stopPropagation();
     onSelect?.(part.key);
+  };
+  const nameRef = (node: HTMLElement | null): (() => void) | undefined => {
+    sticky.nameRef(node);
+
+    return watchWholeLabel(node);
   };
   const wash = (
     <Box
@@ -89,7 +95,7 @@ export const KkTimelinePartBand: FC<KkTimelinePartBandProps> = ({
         textOverflow: 'ellipsis',
         ...shadeFill(theme, tone, part.shade),
         '&[data-current="true"]': {
-          boxShadow: `inset 0 -${kkTokens.line.page}px 0 ${(theme.vars ?? theme).palette.primary.main}`,
+          boxShadow: `0 ${kkTokens.line.section}px 0 ${(theme.vars ?? theme).palette.text.primary}`,
         },
         '&[data-selected="true"]': {
           outline: `${kkTokens.line.section}px solid ${(theme.vars ?? theme).palette.text.primary}`,
@@ -98,10 +104,11 @@ export const KkTimelinePartBand: FC<KkTimelinePartBandProps> = ({
       })}
     >
       <Box
-        ref={sticky.nameRef}
+        ref={nameRef}
         component={motion.span}
         style={{ x: sticky.x }}
         sx={{
+          ...CUT_LABEL,
           justifySelf: 'start',
           minWidth: 0,
           maxWidth: '100%',

@@ -20,9 +20,9 @@ export const KkTimelineSnap: FC<KkTimelineSnapProps> = ({ share }) => (
       pointerEvents: 'none',
       borderLeftWidth: kkTokens.line.section,
       borderLeftStyle: 'solid',
-      borderLeftColor: 'primary.main',
+      borderLeftColor: 'text.primary',
       boxShadow: (theme) =>
-        `0 0 ${kkTokens.line.section * 4}px ${(theme.vars ?? theme).palette.primary.main}`,
+        `0 0 0 ${kkTokens.line.hair / 2}px ${(theme.vars ?? theme).palette.background.paper}`,
     }}
   />
 );

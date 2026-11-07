@@ -11,7 +11,7 @@ export const CHANGE_TEXT: Record<ChangeKind, string> = {
   finalOffset: 'Endfassung ausgerichtet',
   stepMark: 'Schritt gesetzt',
   stepMove: 'Schrittgrenze verschoben',
-  stepText: 'Schritt beschrieben',
+  stepName: 'Schritt umbenannt',
   stepRemove: 'Schritt entfernt',
   partAdd: 'Teil angelegt',
   partSettings: 'Teil geändert',

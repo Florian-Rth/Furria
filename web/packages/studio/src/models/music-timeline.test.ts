@@ -76,7 +76,6 @@ const step = (
 ): StudioStep => ({
   stepId,
   name: `Schritt ${stepId}`,
-  description: null,
   startSeconds,
   endSeconds,
   placement: startSeconds === null ? 'cutAway' : 'onTimeline',
@@ -301,6 +300,8 @@ describe('partRangeOf', () => {
   const part = (stepIds: number[]): StudioPart => ({
     partId: 1,
     name: 'Marsch',
+    firstStepId: stepIds[0] ?? 0,
+    lastStepId: stepIds.at(-1) ?? 0,
     stepIds,
     mainVideoId: null,
     adrift: false,

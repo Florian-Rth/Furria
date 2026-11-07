@@ -36,11 +36,14 @@ const tonePaints: Record<KkLaneButtonTone, (theme: Theme) => CSSObject> = {
   }),
 };
 
+const pressedTint = (theme: Theme): string =>
+  `color-mix(in srgb, ${palette(theme).text.primary} 12%, transparent)`;
+
 const pressedPaint = (theme: Theme): CSSObject => ({
-  color: palette(theme).background.paper,
-  backgroundColor: palette(theme).text.primary,
-  boxShadow: 'none',
-  '&:hover': { backgroundColor: palette(theme).text.primary },
+  color: palette(theme).text.primary,
+  backgroundColor: pressedTint(theme),
+  boxShadow: `inset 0 0 0 ${kkTokens.line.section}px ${palette(theme).text.primary}`,
+  '&:hover': { backgroundColor: pressedTint(theme) },
 });
 
 interface KkLaneButtonProps {
@@ -92,7 +95,7 @@ export const KkLaneButton: FC<KkLaneButtonProps> = ({
         transition: 'background-color 160ms ease-out, color 160ms ease-out',
         ...tonePaints[tone](theme),
         ...(pressed === true ? pressedPaint(theme) : {}),
-        '&.Mui-disabled': { color: palette(theme).text.disabled, boxShadow: 'none' },
+        '&.Mui-disabled': { color: palette(theme).text.disabled },
         ...focusRing(theme),
       })}
     >

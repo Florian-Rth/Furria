@@ -5,10 +5,19 @@ import { raisedSurface } from '../../../internal/raised-surface';
 import type { KkSx } from '../../../kk-sx';
 import { kkTokens } from '../../../tokens';
 import { LANE_KEY_WIDTH } from '../lane-sizes';
-import type { KkTimelineDensity, KkTimelineRows } from '../timeline-paint';
-import { rowVarsOf, TIMELINE_DENSITIES } from '../timeline-paint';
+import type { KkTimelineDensity, KkTimelineLaneKind, KkTimelineRows } from '../timeline-paint';
+import {
+  COUNT_BAND_VAR,
+  COUNT_BANDS,
+  rowVarsOf,
+  scaleOf,
+  TIMELINE_DENSITIES,
+} from '../timeline-paint';
 import { KkTimelineCentre } from '../ui/KkTimelineCentre';
+import { KkTimelineFocus } from '../ui/KkTimelineFocus';
 import { KkTimelineCanvas } from './KkTimelineCanvas';
+
+const COUNTED = '&:has([data-kk-timeline-count-text])';
 
 export interface KkTimelineWindow {
   start: number;
@@ -34,6 +43,7 @@ interface KkTimelineRootProps extends PropsWithChildren {
   centred?: boolean;
   keys?: ReactNode;
   overlay?: ReactNode;
+  focus?: KkTimelineLaneKind | null;
   sx?: KkSx;
 }
 
@@ -54,10 +64,12 @@ export const KkTimelineRoot: FC<KkTimelineRootProps> = ({
   centred = false,
   keys = null,
   overlay = null,
+  focus = null,
   sx,
   children,
 }) => {
   const { height } = TIMELINE_DENSITIES[density];
+  const scale = scaleOf(density);
   const rowVars = rowVarsOf(density, rows);
   const working = work !== null;
   const canvas = centred ? (
@@ -71,6 +83,7 @@ export const KkTimelineRoot: FC<KkTimelineRootProps> = ({
     </KkTimelineCanvas>
   );
   const cursor = cursorOf(centred, working);
+  const focusBand = focus === null ? null : <KkTimelineFocus lane={focus} />;
   const hair = `${kkTokens.line.hair}px`;
   const workLeft =
     keys === null
@@ -89,9 +102,11 @@ export const KkTimelineRoot: FC<KkTimelineRootProps> = ({
     <Box
       role="group"
       aria-label={label}
+      data-kk-timeline-scale={scale}
       sx={[
         {
           ...rowVars,
+          [COUNTED]: { [COUNT_BAND_VAR]: COUNT_BANDS[scale] },
           position: 'relative',
           height,
           minWidth: 0,
@@ -128,7 +143,9 @@ export const KkTimelineRoot: FC<KkTimelineRootProps> = ({
           cursor,
         }}
       >
+        {focusBand}
         <Box
+          data-kk-timeline-view
           sx={{
             position: 'absolute',
             inset: 0,

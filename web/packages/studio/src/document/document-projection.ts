@@ -46,15 +46,17 @@ export const documentOf = (studio: Studio): StudioDocument => ({
     ]),
   ),
   steps: Object.fromEntries(
-    studio.steps.map((step) => [
-      step.stepId,
-      { startSeconds: step.startSeconds, name: step.name, description: step.description },
-    ]),
+    studio.steps.map((step) => [step.stepId, { startSeconds: step.startSeconds, name: step.name }]),
   ),
   parts: Object.fromEntries(
     studio.parts.map((part) => [
       part.partId,
-      { name: part.name, firstStepId: part.stepIds[0] ?? null, mainVideoId: part.mainVideoId },
+      {
+        name: part.name,
+        firstStepId: part.stepIds.length === 0 ? null : part.firstStepId,
+        lastStepId: part.stepIds.length === 0 ? null : part.lastStepId,
+        mainVideoId: part.mainVideoId,
+      },
     ]),
   ),
   spotOrder: [...studio.spots]
@@ -124,7 +126,6 @@ const projectedStepOf = (
 ): StudioStep => ({
   stepId,
   name: step.name,
-  description: step.description,
   startSeconds: step.startSeconds,
   endSeconds,
   placement: step.startSeconds === null ? (base?.placement ?? 'cutAway') : 'onTimeline',
@@ -160,35 +161,23 @@ const stepsOf = (base: Studio, document: StudioDocument, lengthSeconds: number):
 const isAdrift = (base: Studio, partId: number): boolean =>
   base.parts.find((known) => known.partId === partId)?.adrift ?? false;
 
-const placedPartIdsOf = (
-  base: Studio,
-  document: StudioDocument,
-  order: readonly number[],
-): number[] =>
-  idsOf(document.parts)
-    .filter((partId) => {
-      const firstStepId = itemOf(document.parts, partId)?.firstStepId ?? null;
+const rangeStepIdsOf = (part: DocumentPart, order: readonly number[]): number[] => {
+  const first = part.firstStepId === null ? -1 : order.indexOf(part.firstStepId);
+  const last = part.lastStepId === null ? -1 : order.indexOf(part.lastStepId);
 
-      return !isAdrift(base, partId) && firstStepId !== null && order.includes(firstStepId);
-    })
-    .sort(
-      (left, right) =>
-        order.indexOf(itemOf(document.parts, left)?.firstStepId ?? -1) -
-          order.indexOf(itemOf(document.parts, right)?.firstStepId ?? -1) || left - right,
-    );
+  return first < 0 || last < first ? [] : order.slice(first, last + 1);
+};
 
 const partStepIdsOf = (base: Studio, document: StudioDocument): Map<number, number[]> => {
   const order = timelineStepsOf(document).map((step) => step.stepId);
-  const placed = placedPartIdsOf(base, document, order);
-  const firstIndexes = placed.map((partId, index) =>
-    index === 0 ? 0 : order.indexOf(itemOf(document.parts, partId)?.firstStepId ?? -1),
-  );
 
   return new Map(
-    placed.map((partId, index) => [
-      partId,
-      order.slice(firstIndexes[index], firstIndexes[index + 1] ?? order.length),
-    ]),
+    idsOf(document.parts).flatMap((partId): [number, number[]][] => {
+      const part = itemOf(document.parts, partId);
+      const stepIds = part === null || isAdrift(base, partId) ? [] : rangeStepIdsOf(part, order);
+
+      return stepIds.length === 0 ? [] : [[partId, stepIds]];
+    }),
   );
 };
 
@@ -200,6 +189,8 @@ const projectedPartOf = (
 ): StudioPart => ({
   partId,
   name: part.name,
+  firstStepId: stepIds[0] ?? part.firstStepId ?? base?.firstStepId ?? 0,
+  lastStepId: stepIds.at(-1) ?? part.lastStepId ?? base?.lastStepId ?? 0,
   mainVideoId: part.mainVideoId,
   adrift: base?.adrift ?? false,
   stepIds,

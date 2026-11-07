@@ -45,18 +45,7 @@ export const ActStudioVideoDeskBody: FC<ActStudioVideoDeskBodyProps> = ({ desk }
 
   return (
     <KkStudioDesk label={STUDIO_VIDEO_DESK}>
-      <KkStudioDesk.Line>
-        <KkStudioDesk.Title text={STUDIO_VIDEO_NAME} />
-        <KkTextField
-          name="videoName"
-          label={STUDIO_VIDEO_NAME}
-          placeholder={STUDIO_VIDEO_NAME_HINT}
-          value={desk.name}
-          maxLength={STUDIO_VIDEO_NAME_LENGTH}
-          onChange={rename}
-          onBlur={desk.commitName}
-        />
-      </KkStudioDesk.Line>
+      {cutLines}
       <KkStudioDesk.Line>
         <KkStudioDesk.Title text={STUDIO_VIDEO_PLACE} />
         <KkStudioDesk.Controls>
@@ -81,8 +70,19 @@ export const ActStudioVideoDeskBody: FC<ActStudioVideoDeskBodyProps> = ({ desk }
           </KkButton>
         </KkStudioDesk.Controls>
       </KkStudioDesk.Line>
-      {cutLines}
       {mainLine}
+      <KkStudioDesk.Line>
+        <KkStudioDesk.Title text={STUDIO_VIDEO_NAME} />
+        <KkTextField
+          name="videoName"
+          label={STUDIO_VIDEO_NAME}
+          placeholder={STUDIO_VIDEO_NAME_HINT}
+          value={desk.name}
+          maxLength={STUDIO_VIDEO_NAME_LENGTH}
+          onChange={rename}
+          onBlur={desk.commitName}
+        />
+      </KkStudioDesk.Line>
     </KkStudioDesk>
   );
 };

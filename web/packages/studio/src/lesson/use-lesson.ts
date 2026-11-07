@@ -4,7 +4,6 @@ import {
   LESSON_LAST,
   LESSON_LOOP_OFF,
   LESSON_LOOP_ON,
-  LESSON_NO_DESCRIPTION,
   LESSON_TO_STAGE,
   LESSON_TO_VIDEO,
   lessonCardLabelOf,
@@ -35,8 +34,7 @@ export interface LessonCard {
   eyebrow: string;
   name: string;
   label: string;
-  text: string;
-  muted: boolean;
+  note: string | null;
 }
 
 export interface LessonNext {
@@ -64,12 +62,6 @@ export interface LessonStripView extends TimelineRows {
 
 const NO_TARGETS: readonly CentreTarget[] = [];
 
-export interface LessonReading {
-  open: boolean;
-  show: () => void;
-  close: () => void;
-}
-
 export interface Lesson {
   screen: LessonScreen;
   card: LessonCard;
@@ -77,7 +69,6 @@ export interface Lesson {
   next: LessonNext;
   loop: LessonLoop;
   picture: LessonPicture;
-  reading: LessonReading;
   strip: LessonStripView;
   ownPath: SpotPath | null;
   rail: PracticeSegmentGroupRow[];
@@ -87,9 +78,8 @@ export const useLesson = (screen: LessonScreen): Lesson => {
   const { playback, practice, video } = screen;
   const rail = usePracticeSegments(playback, practice);
   const [swapped, setSwapped] = useState(false);
-  const [reading, setReading] = useState(false);
   useScreenWakeLock(true);
-  useStudioKeys(playerKeyActionsOf(practice), !reading);
+  useStudioKeys(playerKeyActionsOf(practice), true);
   const centre = useCentreScrub({
     player: playback.player,
     length: playback.length,
@@ -100,7 +90,6 @@ export const useLesson = (screen: LessonScreen): Lesson => {
 
   const { step } = practice;
   const number = step === null ? 0 : stepNumberOf(playback.steps, step.stepId);
-  const description = practice.note;
   const plan = lessonPictureOf(video.hero, swapped);
   const following = nextStepOf(playback.steps, step?.stepId ?? null);
   const nextName =
@@ -114,8 +103,7 @@ export const useLesson = (screen: LessonScreen): Lesson => {
         step === null ? '' : lessonEyebrowOf(practice.partName, number, playback.steps.length),
       name: practice.stepName,
       label: lessonCardLabelOf(practice.stepName),
-      text: description ?? LESSON_NO_DESCRIPTION,
-      muted: description === null,
+      note: practice.note,
     },
     counts: stepCountsOf(playback.countMarks, step === null ? null : stepRangeOf(step)),
     next: {
@@ -142,15 +130,6 @@ export const useLesson = (screen: LessonScreen): Lesson => {
       swapLabel: plan.video === 'main' ? LESSON_TO_STAGE : LESSON_TO_VIDEO,
       swap: () => {
         setSwapped((flipped) => !flipped);
-      },
-    },
-    reading: {
-      open: reading,
-      show: () => {
-        setReading(true);
-      },
-      close: () => {
-        setReading(false);
       },
     },
     strip: {

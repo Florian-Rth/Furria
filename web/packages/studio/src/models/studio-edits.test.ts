@@ -6,7 +6,6 @@ import { describe, expect, it } from 'vitest';
 const step = (stepId: number, start: number, end: number): StudioStep => ({
   stepId,
   name: `S${stepId}`,
-  description: null,
   startSeconds: start,
   endSeconds: end,
   placement: 'onTimeline',

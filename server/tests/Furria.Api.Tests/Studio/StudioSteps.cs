@@ -237,6 +237,7 @@ internal static class StudioSteps
         HttpClient client,
         int actId,
         int firstStepId,
+        int lastStepId,
         string name
     )
     {
@@ -249,6 +250,7 @@ internal static class StudioSteps
             {
                 ActId = actId,
                 FirstStepId = firstStepId,
+                LastStepId = lastStepId,
                 Name = name,
             }
         );

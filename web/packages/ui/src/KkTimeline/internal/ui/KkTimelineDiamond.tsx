@@ -64,8 +64,8 @@ export const KkTimelineDiamond: FC<KkTimelineDiamondProps> = ({
           backgroundColor: palette(theme).background.paper,
           boxShadow: `inset 0 0 0 ${kkTokens.line.section}px ${palette(theme).text.primary}`,
           '[data-selected="true"] > &': {
-            backgroundColor: palette(theme).primary.main,
-            boxShadow: `inset 0 0 0 ${kkTokens.line.section}px ${palette(theme).primary.main}`,
+            backgroundColor: palette(theme).text.primary,
+            boxShadow: `inset 0 0 0 ${kkTokens.line.section}px ${palette(theme).text.primary}`,
             width: '0.8125rem',
             height: '0.8125rem',
           },

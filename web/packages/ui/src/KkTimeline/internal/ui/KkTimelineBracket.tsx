@@ -79,12 +79,12 @@ export const KkTimelineBracket: FC<KkTimelineBracketProps> = ({
         bottom: 0,
         minWidth: '0.5rem',
         borderRadius: `${kkTokens.radius.bar * 2}px`,
-        backgroundColor: `color-mix(in srgb, ${palette(theme).primary.main} 10%, transparent)`,
+        backgroundColor: `color-mix(in srgb, ${palette(theme).text.primary} 8%, transparent)`,
         boxShadow: `inset 0 0 0 ${kkTokens.line.section}px ${palette(theme).text.primary}`,
         willChange: 'left, width',
         zIndex: 2,
         '&[data-held="true"]': {
-          backgroundColor: `color-mix(in srgb, ${palette(theme).primary.main} 18%, transparent)`,
+          backgroundColor: `color-mix(in srgb, ${palette(theme).text.primary} 16%, transparent)`,
         },
         '&::after': {
           content: '""',
@@ -94,7 +94,7 @@ export const KkTimelineBracket: FC<KkTimelineBracketProps> = ({
           bottom: 0,
           width: kkTokens.line.section,
           transform: 'translateX(-50%)',
-          backgroundColor: palette(theme).primary.main,
+          backgroundColor: palette(theme).text.primary,
         },
         ...focusRing(theme),
       })}

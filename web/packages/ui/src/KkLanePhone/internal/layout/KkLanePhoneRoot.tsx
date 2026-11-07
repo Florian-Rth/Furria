@@ -4,18 +4,15 @@ import { trackEdgeOf } from '../../../KkShell/internal/track-edge';
 
 interface KkLanePhoneRootProps extends PropsWithChildren {
   label: string;
-  narrow?: boolean;
 }
 
-export const KkLanePhoneRoot: FC<KkLanePhoneRootProps> = ({ label, narrow = false, children }) => (
+export const KkLanePhoneRoot: FC<KkLanePhoneRootProps> = ({ label, children }) => (
   <Box
     component="section"
     aria-label={label}
     data-kk-lane-phone
     sx={{
       width: '100%',
-      maxWidth: narrow ? '50rem' : 'none',
-      mx: 'auto',
       minWidth: 0,
       height: `calc(100dvh - ${trackEdgeOf('top')} - ${trackEdgeOf('bottom')})`,
       containerType: 'size',

@@ -11,14 +11,14 @@ import { clipSpanOf, videoNumberOf } from '@furria/studio/studio-videos';
 import type { ActStudioTakes } from '@furria/studio/use-act-studio-takes';
 import { placedOf } from '@furria/studio/use-act-studio-takes';
 import { useSlavedVideo } from '@furria/studio/use-slaved-video';
-import type { KkLaneFilmSource } from '@furria/ui/KkLaneFilm';
+import type { KkVideoSource } from '@furria/ui/KkVideo';
 import { useIsMobile } from '@furria/ui/use-is-mobile';
 import type { RefObject } from 'react';
 import { useRef } from 'react';
 
 export interface VideoFilm {
   ref: RefObject<HTMLVideoElement | null>;
-  source: KkLaneFilmSource | null;
+  source: KkVideoSource | null;
   title: string | null;
   meta: string | null;
   note: string | null;

@@ -9,8 +9,8 @@ import { FinalTrackMatchesSchema, VideoAlignmentSchema } from '@furria/studio/st
 import type {
   PartOpening,
   PartSettingsInput,
+  StepNameInput,
   StepStartInput,
-  StepTextInput,
 } from '@furria/studio/studio-steps';
 import type {
   VideoClipInput,
@@ -160,14 +160,14 @@ export const requestStepMark = (
     accessToken,
   });
 
-export const requestStepText = (
+export const requestStepName = (
   actId: number,
-  { stepId, name, description }: StepTextInput,
+  { stepId, name }: StepNameInput,
   accessToken: string,
 ): Promise<void> =>
   apiFetch(`${stepsPathOf(actId)}/${stepId}`, {
     method: 'PUT',
-    body: { name, description },
+    body: { name },
     schema: NoContentSchema,
     accessToken,
   });
@@ -197,12 +197,12 @@ export const requestStepRemoval = (
 
 export const requestPartAdd = (
   actId: number,
-  { firstStepId, name }: PartOpening,
+  { firstStepId, lastStepId, name }: PartOpening,
   accessToken: string,
 ): Promise<AddedPart> =>
   apiFetch(partsPathOf(actId), {
     method: 'POST',
-    body: { firstStepId, name },
+    body: { firstStepId, lastStepId, name },
     schema: AddedPartSchema,
     accessToken,
   });
@@ -217,6 +217,7 @@ export const requestPartSettings = (
     body: {
       name: settings.name,
       firstStepId: settings.firstStepId,
+      lastStepId: settings.lastStepId,
       mainVideoId: settings.mainVideoId,
     },
     schema: NoContentSchema,

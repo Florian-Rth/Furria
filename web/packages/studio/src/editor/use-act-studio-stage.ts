@@ -94,7 +94,7 @@ export const useActStudioStage = (screen: StudioWorkScreen): ActStudioStage => {
   const { preview, commit, drop } = writes;
   const [picked, setPicked] = useState<readonly number[]>([]);
   const [toolbar, setToolbar] = useState(false);
-  const [onion, setOnion] = useState(true);
+  const [onion, setOnion] = useState(false);
   const [sheetOpen, setSheetOpen] = useState(false);
   const [copyPick, setCopyPick] = useState<number | null>(null);
   const [copyPickStep, setCopyPickStep] = useState<number | undefined>(undefined);

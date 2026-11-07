@@ -89,6 +89,8 @@ import { Route as AppManageBoardNewRouteImport } from './routes/_app/manage.boar
 import { Route as AppManageBoardBoardOfficeIdRouteImport } from './routes/_app/manage.board_.$boardOfficeId'
 import { Route as AppManageApplicationsMembershipApplicationIdRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId'
 import { Route as AppLabWelcomeCaseRouteImport } from './routes/_app/lab_.welcome.$case'
+import { Route as AppLabStepSetupActIdRouteImport } from './routes/_app/lab_.step-setup.$actId'
+import { Route as AppLabEditJobsActIdRouteImport } from './routes/_app/lab_.edit-jobs.$actId'
 import { Route as AppGroupsGroupIdEditRouteImport } from './routes/_app/groups_.$groupId_.edit'
 import { Route as AppGroupsGroupIdAdministrationRouteImport } from './routes/_app/groups_.$groupId_.administration'
 import { Route as AppGroupsGroupIdActsRouteImport } from './routes/_app/groups_.$groupId_.acts'
@@ -550,6 +552,16 @@ const AppLabWelcomeCaseRoute = AppLabWelcomeCaseRouteImport.update({
   path: '/lab/welcome/$case',
   getParentRoute: () => AppRoute,
 } as any)
+const AppLabStepSetupActIdRoute = AppLabStepSetupActIdRouteImport.update({
+  id: '/lab_/step-setup/$actId',
+  path: '/lab/step-setup/$actId',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppLabEditJobsActIdRoute = AppLabEditJobsActIdRouteImport.update({
+  id: '/lab_/edit-jobs/$actId',
+  path: '/lab/edit-jobs/$actId',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGroupsGroupIdEditRoute = AppGroupsGroupIdEditRouteImport.update({
   id: '/groups_/$groupId_/edit',
   path: '/groups/$groupId/edit',
@@ -945,6 +957,8 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId/acts': typeof AppGroupsGroupIdActsRoute
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
+  '/lab/edit-jobs/$actId': typeof AppLabEditJobsActIdRoute
+  '/lab/step-setup/$actId': typeof AppLabStepSetupActIdRoute
   '/lab/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
@@ -1077,6 +1091,8 @@ export interface FileRoutesByTo {
   '/groups/$groupId/acts': typeof AppGroupsGroupIdActsRoute
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
+  '/lab/edit-jobs/$actId': typeof AppLabEditJobsActIdRoute
+  '/lab/step-setup/$actId': typeof AppLabStepSetupActIdRoute
   '/lab/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
@@ -1214,6 +1230,8 @@ export interface FileRoutesById {
   '/_app/groups_/$groupId_/acts': typeof AppGroupsGroupIdActsRoute
   '/_app/groups_/$groupId_/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/_app/groups_/$groupId_/edit': typeof AppGroupsGroupIdEditRoute
+  '/_app/lab_/edit-jobs/$actId': typeof AppLabEditJobsActIdRoute
+  '/_app/lab_/step-setup/$actId': typeof AppLabStepSetupActIdRoute
   '/_app/lab_/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/_app/manage/applications_/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/_app/manage/board_/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
@@ -1349,6 +1367,8 @@ export interface FileRouteTypes {
     | '/groups/$groupId/acts'
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
+    | '/lab/edit-jobs/$actId'
+    | '/lab/step-setup/$actId'
     | '/lab/welcome/$case'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
@@ -1481,6 +1501,8 @@ export interface FileRouteTypes {
     | '/groups/$groupId/acts'
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
+    | '/lab/edit-jobs/$actId'
+    | '/lab/step-setup/$actId'
     | '/lab/welcome/$case'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
@@ -1617,6 +1639,8 @@ export interface FileRouteTypes {
     | '/_app/groups_/$groupId_/acts'
     | '/_app/groups_/$groupId_/administration'
     | '/_app/groups_/$groupId_/edit'
+    | '/_app/lab_/edit-jobs/$actId'
+    | '/_app/lab_/step-setup/$actId'
     | '/_app/lab_/welcome/$case'
     | '/_app/manage/applications_/$membershipApplicationId'
     | '/_app/manage/board_/$boardOfficeId'
@@ -2243,6 +2267,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLabWelcomeCaseRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/lab_/step-setup/$actId': {
+      id: '/_app/lab_/step-setup/$actId'
+      path: '/lab/step-setup/$actId'
+      fullPath: '/lab/step-setup/$actId'
+      preLoaderRoute: typeof AppLabStepSetupActIdRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/lab_/edit-jobs/$actId': {
+      id: '/_app/lab_/edit-jobs/$actId'
+      path: '/lab/edit-jobs/$actId'
+      fullPath: '/lab/edit-jobs/$actId'
+      preLoaderRoute: typeof AppLabEditJobsActIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/groups_/$groupId_/edit': {
       id: '/_app/groups_/$groupId_/edit'
       path: '/groups/$groupId/edit'
@@ -2758,6 +2796,8 @@ interface AppRouteChildren {
   AppGroupsGroupIdActsRoute: typeof AppGroupsGroupIdActsRoute
   AppGroupsGroupIdAdministrationRoute: typeof AppGroupsGroupIdAdministrationRoute
   AppGroupsGroupIdEditRoute: typeof AppGroupsGroupIdEditRoute
+  AppLabEditJobsActIdRoute: typeof AppLabEditJobsActIdRoute
+  AppLabStepSetupActIdRoute: typeof AppLabStepSetupActIdRoute
   AppLabWelcomeCaseRoute: typeof AppLabWelcomeCaseRoute
   AppManageApplicationsMembershipApplicationIdRoute: typeof AppManageApplicationsMembershipApplicationIdRoute
   AppManageBoardBoardOfficeIdRoute: typeof AppManageBoardBoardOfficeIdRoute
@@ -2867,6 +2907,8 @@ const AppRouteChildren: AppRouteChildren = {
   AppGroupsGroupIdActsRoute: AppGroupsGroupIdActsRoute,
   AppGroupsGroupIdAdministrationRoute: AppGroupsGroupIdAdministrationRoute,
   AppGroupsGroupIdEditRoute: AppGroupsGroupIdEditRoute,
+  AppLabEditJobsActIdRoute: AppLabEditJobsActIdRoute,
+  AppLabStepSetupActIdRoute: AppLabStepSetupActIdRoute,
   AppLabWelcomeCaseRoute: AppLabWelcomeCaseRoute,
   AppManageApplicationsMembershipApplicationIdRoute:
     AppManageApplicationsMembershipApplicationIdRoute,

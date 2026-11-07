@@ -24,12 +24,12 @@ const saved: StudioDocument = {
     2: { pieces: [{ startSeconds: 0, endSeconds: 20 }], firstBeatSeconds: null, tempoBpm: null },
   },
   steps: {
-    1: { startSeconds: 0, name: '', description: null },
-    2: { startSeconds: 8, name: '', description: null },
-    3: { startSeconds: 16, name: '', description: null },
-    4: { startSeconds: 24, name: '', description: null },
+    1: { startSeconds: 0, name: '' },
+    2: { startSeconds: 8, name: '' },
+    3: { startSeconds: 16, name: '' },
+    4: { startSeconds: 24, name: '' },
   },
-  parts: { 10: { name: 'A', firstStepId: 1, mainVideoId: null } },
+  parts: { 10: { name: 'A', firstStepId: 1, lastStepId: 1, mainVideoId: null } },
   spotOrder: [31, 32],
   spots: { 31: { person: lena }, 32: { person: tom } },
   tracks: { 31: [keyframe] },
@@ -118,20 +118,26 @@ describe('savePlanOf', () => {
       planned(
         saved,
         { kind: 'stepMark', stepId: -1, openingStepId: -2, atSeconds: 20, lengthSeconds: 40 },
-        { kind: 'stepText', stepId: -1, name: 'Sprung', description: null },
-        { kind: 'partAdd', partId: -3, firstStepId: -1, name: 'B' },
-        { kind: 'partSettings', partId: -3, name: 'B', firstStepId: -1, mainVideoId: 5 },
+        { kind: 'stepName', stepId: -1, name: 'Sprung' },
+        { kind: 'partAdd', partId: -3, firstStepId: -1, lastStepId: -1, name: 'B' },
+        {
+          kind: 'partSettings',
+          partId: -3,
+          name: 'B',
+          firstStepId: -1,
+          lastStepId: -1,
+          mainVideoId: 5,
+        },
       ),
-    ).toEqual(['stepMark -1@20 opening null', 'stepText', 'partAdd', 'partSettings']);
+    ).toEqual(['stepMark -1@20 opening null', 'stepName', 'partAdd', 'partSettings']);
   });
 
-  it('moves part starts so that no part passes its neighbour on the way', () => {
+  it('shrinks parts before others grow into the freed steps', () => {
     const withParts: StudioDocument = {
       ...saved,
       parts: {
-        10: { name: 'A', firstStepId: 1, mainVideoId: null },
-        11: { name: 'B', firstStepId: 2, mainVideoId: null },
-        12: { name: 'C', firstStepId: 3, mainVideoId: null },
+        10: { name: 'A', firstStepId: 1, lastStepId: 1, mainVideoId: null },
+        11: { name: 'B', firstStepId: 2, lastStepId: 3, mainVideoId: null },
       },
     };
 
@@ -139,12 +145,16 @@ describe('savePlanOf', () => {
       savePlanOf(withParts, {
         ...withParts,
         parts: {
-          10: { name: 'A', firstStepId: 1, mainVideoId: null },
-          11: { name: 'B', firstStepId: 3, mainVideoId: null },
-          12: { name: 'C', firstStepId: 4, mainVideoId: null },
+          10: { name: 'A', firstStepId: 1, lastStepId: 2, mainVideoId: null },
+          11: { name: 'B', firstStepId: 3, lastStepId: 3, mainVideoId: null },
+          12: { name: 'C', firstStepId: 4, lastStepId: 4, mainVideoId: null },
         },
-      }).map((write) => (write.kind === 'partSettings' ? write.partId : null)),
-    ).toEqual([12, 11]);
+      }).map((write) =>
+        write.kind === 'partSettings' || write.kind === 'partAdd'
+          ? `${write.kind} ${write.partId}`
+          : null,
+      ),
+    ).toEqual(['partSettings 11', 'partAdd 12', 'partSettings 10']);
   });
 
   it('swaps two holders with one assignment each', () => {

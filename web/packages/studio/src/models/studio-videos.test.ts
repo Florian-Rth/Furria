@@ -20,7 +20,7 @@ const video = (patch: Partial<StudioVideo>): StudioVideo => ({
   startSeconds: null,
   placement: 'unaligned',
   outdated: false,
-  urls: { video: '/v', compact: '/c', poster: '/p' },
+  urls: { video: '/v', compact: '/c', poster: '/p', peaks: '/k' },
   ...patch,
 });
 
@@ -93,7 +93,6 @@ describe('takeGroupsOf', () => {
   const stepOf = (stepId: number, startSeconds: number, endSeconds: number): StudioStep => ({
     stepId,
     name: '',
-    description: null,
     startSeconds,
     endSeconds,
     placement: 'onTimeline',
@@ -108,7 +107,17 @@ describe('takeGroupsOf', () => {
   });
 
   it('puts the main video first and gathers videos outside every part', () => {
-    const parts = [{ partId: 7, name: 'Marsch', stepIds: [1], mainVideoId: 2, adrift: false }];
+    const parts = [
+      {
+        partId: 7,
+        name: 'Marsch',
+        firstStepId: 1,
+        lastStepId: 1,
+        stepIds: [1],
+        mainVideoId: 2,
+        adrift: false,
+      },
+    ];
 
     expect(groupIdsOf(takeGroupsOf(parts, steps, takes))).toEqual([
       [7, [2, 1]],

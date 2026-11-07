@@ -6,7 +6,7 @@ import type { StudioDocument } from './studio-document';
 const document: StudioDocument = {
   songOrder: [1],
   songs: {},
-  steps: { 2: { startSeconds: 8, name: '', description: null } },
+  steps: { 2: { startSeconds: 8, name: '' } },
   parts: {},
   spotOrder: [],
   spots: {},
@@ -33,7 +33,7 @@ describe('patchedWhereFitting', () => {
       patch: {
         op: 'add',
         path: ['steps', -1],
-        value: { startSeconds: 4, name: '', description: null },
+        value: { startSeconds: 4, name: '' },
       },
       skipped: 0,
     },

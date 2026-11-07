@@ -22,7 +22,6 @@ const step = (
 ): StudioStep => ({
   stepId,
   name: `Schritt ${stepId}`,
-  description: null,
   startSeconds,
   endSeconds,
   placement: 'onTimeline',
@@ -31,6 +30,8 @@ const step = (
 const part = (partId: number, stepIds: number[], mainVideoId: number | null): StudioPart => ({
   partId,
   name: `Teil ${partId}`,
+  firstStepId: stepIds[0] ?? 0,
+  lastStepId: stepIds.at(-1) ?? 0,
   stepIds,
   mainVideoId,
   adrift: false,
@@ -47,7 +48,7 @@ const video = (videoId: number, startSeconds: number, durationSeconds: number): 
   startSeconds,
   placement: 'onTimeline',
   outdated: false,
-  urls: { video: '/v', compact: '/c', poster: '/p' },
+  urls: { video: '/v', compact: '/c', poster: '/p', peaks: '/k' },
 });
 
 const steps = [step(1, 0, 10), step(2, 10, 20), step(3, 20, 30), step(4, 30, 40)];

@@ -29,11 +29,11 @@ const saved: StudioDocument = {
     2: { pieces: [{ startSeconds: 0, endSeconds: 20 }], firstBeatSeconds: null, tempoBpm: null },
   },
   steps: {
-    1: { startSeconds: 0, name: '', description: null },
-    2: { startSeconds: 8, name: '', description: null },
-    3: { startSeconds: 16, name: '', description: null },
+    1: { startSeconds: 0, name: '' },
+    2: { startSeconds: 8, name: '' },
+    3: { startSeconds: 16, name: '' },
   },
-  parts: { 10: { name: 'A', firstStepId: 2, mainVideoId: null } },
+  parts: { 10: { name: 'A', firstStepId: 2, lastStepId: 2, mainVideoId: null } },
   spotOrder: [31, 32],
   spots: { 31: { person: lena }, 32: { person: null } },
   tracks: { 31: [keyframe] },
@@ -57,12 +57,26 @@ const known: IdMap = withLearnedId(
 describe('serverWriteOf', () => {
   it.each<{ write: SaveWrite; sent: ServerWrite | null }>([
     {
-      write: { kind: 'stepText', stepId: -1, name: 'A', description: null },
-      sent: { kind: 'stepText', stepId: 77, name: 'A', description: null },
+      write: { kind: 'stepName', stepId: -1, name: 'A' },
+      sent: { kind: 'stepName', stepId: 77, name: 'A' },
     },
     {
-      write: { kind: 'partSettings', partId: 10, name: 'A', firstStepId: -1, mainVideoId: null },
-      sent: { kind: 'partSettings', partId: 10, name: 'A', firstStepId: 77, mainVideoId: null },
+      write: {
+        kind: 'partSettings',
+        partId: 10,
+        name: 'A',
+        firstStepId: -1,
+        lastStepId: -1,
+        mainVideoId: null,
+      },
+      sent: {
+        kind: 'partSettings',
+        partId: 10,
+        name: 'A',
+        firstStepId: 77,
+        lastStepId: 77,
+        mainVideoId: null,
+      },
     },
     {
       write: { kind: 'tracks', tracks: [{ spotId: -2, keyframes: [] }] },
@@ -138,8 +152,8 @@ describe('savedAfter', () => {
       },
       { kind: 'stepRemove', stepId: 2 },
       { kind: 'stepMark', stepId: -1, openingStepId: -2, atSeconds: 12, lengthSeconds: 40 },
-      { kind: 'stepText', stepId: -1, name: 'Sprung', description: 'hoch' },
-      { kind: 'partAdd', partId: -3, firstStepId: -1, name: 'B' },
+      { kind: 'stepName', stepId: -1, name: 'Sprung' },
+      { kind: 'partAdd', partId: -3, firstStepId: -1, lastStepId: -1, name: 'B' },
       { kind: 'spotRemove', spotId: 31 },
       { kind: 'spotAdd', spotId: -4 },
       { kind: 'spotAssign', spotId: -4, person: lena },

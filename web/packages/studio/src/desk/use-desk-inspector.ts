@@ -11,11 +11,11 @@ import {
   DESK_CIRCLE,
   DESK_COPY,
   DESK_DELETE,
-  DESK_DESCRIPTION,
-  DESK_DESCRIPTION_PLACEHOLDER,
   DESK_DISSOLVE,
   DESK_DISTRIBUTE,
   DESK_EARLIER,
+  DESK_FIRST_MARK,
+  DESK_FIRST_MARK_LABEL,
   DESK_LATER,
   DESK_LINE,
   DESK_LONGER,
@@ -68,7 +68,7 @@ import { markSecondsOf, partSettingsOf, startsAPart } from '@furria/studio/studi
 import { clipSpanOf, videoNumberOf } from '@furria/studio/studio-videos';
 import type { ActDesk } from '@furria/studio/use-act-desk';
 import type { DeskBorders } from '@furria/studio/use-desk-borders';
-import { useStepTexts } from '@furria/studio/use-step-texts';
+import { useStepNaming } from '@furria/studio/use-step-naming';
 import type { KkLaneButtonTone } from '@furria/ui/KkLaneButton';
 import type { KkLaneGlyphName } from '@furria/ui/KkLaneGlyph';
 import type { KkLaneInspectorFact } from '@furria/ui/KkLaneInspector';
@@ -179,23 +179,24 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
   const work = screen.document;
   const { steps, parts, countMarks, length, player, paths } = playback;
   const countTrack = countTrackOf(countMarks);
-  const texts = useStepTexts(screen);
+  const texts = useStepNaming(screen);
   const [partDraft, setPartDraft] = useState<{ partId: number; name: string } | null>(null);
   const arrange = useArrangeActions(desk);
   const step = practice.step;
   const stepIndex = steps.findIndex((candidate) => candidate.stepId === step?.stepId);
   const numberOf = (stepId: number): number => stepNumberOf(steps, stepId);
+  const first = steps.length === 0;
   const markHere = actionOf(
     'mark',
-    DESK_MARK_HERE,
+    first ? DESK_FIRST_MARK : DESK_MARK_HERE,
     'add',
     () => {
       work.mark(markSecondsOf(playback, player.position()), length);
     },
     {
-      label: DESK_MARK_HERE_LABEL,
+      label: first ? DESK_FIRST_MARK_LABEL : DESK_MARK_HERE_LABEL,
       disabled: length <= 0,
-      tone: steps.length === 0 ? 'accent' : 'quiet',
+      tone: first ? 'accent' : 'quiet',
     },
   );
 
@@ -436,14 +437,6 @@ const useDeskInspectorView = (desk: ActDesk, borders: DeskBorders): DeskInspecto
         value: texts.name,
         placeholder: step.name,
         change: texts.rename,
-        commit: texts.commit,
-      },
-      {
-        key: 'description',
-        label: DESK_DESCRIPTION,
-        value: texts.description,
-        placeholder: DESK_DESCRIPTION_PLACEHOLDER,
-        change: texts.describe,
         commit: texts.commit,
       },
     ],

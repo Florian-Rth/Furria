@@ -32,19 +32,12 @@ public sealed class ActTimelineReader
             )),
             music
         );
-        var partStarts = await _dbContext
+        var partRanges = await _dbContext
             .ActParts.Where(part => part.ActId == actId)
-            .Select(part => new { part.Id, part.FirstStepId })
+            .Select(part => new PartRange(part.Id, part.FirstStepId, part.LastStepId))
             .ToListAsync(ct);
 
-        return new ActTimeline(
-            music,
-            steps,
-            ActParts.Tile(
-                steps,
-                partStarts.Select(part => new PartStart(part.Id, part.FirstStepId))
-            )
-        );
+        return new ActTimeline(music, steps, ActParts.Group(steps, partRanges));
     }
 
     public async Task<ActMusic> PlayedMusicOfAsync(int actId, CancellationToken ct) =>

@@ -1,4 +1,4 @@
-export const DESK_LABEL = 'Auftritt bearbeiten';
+export const DESK_LABEL = 'Sessionsauftritt bearbeiten';
 export const DESK_BAR_LABEL = 'Wiedergabe und Werkzeuge';
 export const DESK_TRANSPORT = 'Wiedergabe';
 export const DESK_ZOOM = 'Zoom';
@@ -16,7 +16,7 @@ export const DESK_DONE = 'Fertig';
 export const DESK_DONE_LABEL = 'Bearbeiten beenden';
 export const DESK_READOUT = 'Position';
 export const DESK_MUSIC_PAGE = 'Musik & Video';
-export const DESK_LANES = 'Spuren: Teile, Schritte, Musik, Video, Wege';
+export const DESK_LANES = 'Spuren: Teile, Schritte, Musik, Video, Wegpunkte';
 export const DESK_OVERVIEW_AIM = 'Ganzer Auftritt: tippen, um dorthin zu springen';
 export const DESK_BRACKET =
   'Sichtbarer Ausschnitt: ziehen zum Verschieben, Ränder ziehen zum Zoomen, Pfeiltasten';
@@ -34,14 +34,14 @@ export const DESK_ACTIONS = 'Aktionen';
 export const DESK_HISTORY_EMPTY = 'In diesem Besuch noch nichts geändert.';
 export const DESK_HISTORY_LIST = 'Änderungen in diesem Besuch';
 export const DESK_NAME = 'Name';
-export const DESK_DESCRIPTION = 'Beschreibung';
-export const DESK_DESCRIPTION_PLACEHOLDER = 'Was passiert in diesem Schritt?';
-export const DESK_SHORTER = 'Kürzer';
-export const DESK_LONGER = 'Länger';
-export const DESK_SHORTER_LABEL = 'Eine Zählzeit kürzer';
-export const DESK_LONGER_LABEL = 'Eine Zählzeit länger';
-export const DESK_MARK_HERE = 'Schritt hier';
-export const DESK_MARK_HERE_LABEL = 'Neuen Schritt an der Abspielposition setzen';
+export const DESK_SHORTER = 'Ende früher';
+export const DESK_LONGER = 'Ende später';
+export const DESK_SHORTER_LABEL = 'Ende eine Zählzeit früher';
+export const DESK_LONGER_LABEL = 'Ende eine Zählzeit später';
+export const DESK_MARK_HERE = 'Hier teilen';
+export const DESK_MARK_HERE_LABEL = 'Schritt an der Abspielposition teilen';
+export const DESK_FIRST_MARK = 'Ersten Schritt setzen';
+export const DESK_FIRST_MARK_LABEL = 'Ersten Schritt an der Abspielposition setzen';
 export const DESK_NEW_PART = 'Teil ab hier';
 export const DESK_LOOP = 'Schleife';
 export const DESK_DELETE = 'Löschen';
@@ -142,7 +142,7 @@ export const amountOf = (count: number, one: string, many: string): string =>
 export const spotsAmountOf = (count: number): string => amountOf(count, 'Platz', 'Plätze');
 
 export const keyLabelOf = (seconds: number, spots: number): string =>
-  `Zeitpunkt ${clockOf(seconds)} · ${spotsAmountOf(spots)}: wählen, ziehen oder Pfeiltasten`;
+  `Wegpunkt ${clockOf(seconds)} · ${spotsAmountOf(spots)}: wählen, ziehen oder Pfeiltasten`;
 
 export const keyEyebrowOf = (seconds: number): string => `Zeitpunkt ${clockOf(seconds)}`;
 

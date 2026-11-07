@@ -1,5 +1,6 @@
 import type { StudioDocumentEdit } from '@furria/studio/studio-document-edit';
 import type { StudioEditor } from '@furria/studio/studio-editor';
+import { newPartOf, partSettingsOf } from '@furria/studio/studio-steps';
 import { useQueryClient } from '@tanstack/react-query';
 import { useEffect, useSyncExternalStore } from 'react';
 import type { ActStudio } from '@/features/acts/schemas';
@@ -28,8 +29,24 @@ const editsOf = (
       lengthSeconds,
     });
   },
-  addPart: (firstStepId, name) => {
-    editor.change({ kind: 'partAdd', partId: editor.newLocalId(), firstStepId, name });
+  addPart: (stepId, name) => {
+    const range = newPartOf(studio.steps, studio.parts, stepId);
+    if (range === null) {
+      return;
+    }
+    const shrunk = studio.parts.find((part) => part.partId === range.shrink?.partId);
+    editor.startGesture();
+    if (range.shrink !== null && shrunk !== undefined) {
+      editor.change({ kind: 'partSettings', ...partSettingsOf(shrunk), ...range.shrink });
+    }
+    editor.change({
+      kind: 'partAdd',
+      partId: editor.newLocalId(),
+      firstStepId: range.firstStepId,
+      lastStepId: range.lastStepId,
+      name,
+    });
+    editor.endGesture();
   },
   addSpot: () => {
     const spotId = editor.newLocalId();

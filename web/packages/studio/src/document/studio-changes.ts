@@ -33,14 +33,15 @@ export type StudioChange =
       lengthSeconds: number;
     }
   | { kind: 'stepMove'; stepId: number; atSeconds: number; lengthSeconds: number }
-  | { kind: 'stepText'; stepId: number; name: string; description: string | null }
+  | { kind: 'stepName'; stepId: number; name: string }
   | { kind: 'stepRemove'; stepId: number }
-  | { kind: 'partAdd'; partId: number; firstStepId: number; name: string }
+  | { kind: 'partAdd'; partId: number; firstStepId: number; lastStepId: number; name: string }
   | {
       kind: 'partSettings';
       partId: number;
       name: string;
       firstStepId: number;
+      lastStepId: number;
       mainVideoId: number | null;
     }
   | { kind: 'partRemove'; partId: number }
@@ -78,9 +79,17 @@ const stepMarked: Edit<'stepMark'> = (
   }
 
   if (timelineStepsOf(draft).length === 0 && atSeconds > BORDER_TOLERANCE_SECONDS) {
-    draft.steps[openingStepId] = { startSeconds: 0, name: '', description: null };
+    draft.steps[openingStepId] = { startSeconds: 0, name: '' };
   }
-  draft.steps[stepId] = { startSeconds: atSeconds, name: '', description: null };
+  draft.steps[stepId] = { startSeconds: atSeconds, name: '' };
+  const order = timelineStepsOf(draft).map((step) => step.stepId);
+  const split = order[order.indexOf(stepId) - 1];
+  for (const partId of idsOf(draft.parts)) {
+    const part = itemOf(draft.parts, partId);
+    if (part !== null && split !== undefined && part.lastStepId === split) {
+      part.lastStepId = stepId;
+    }
+  }
 };
 
 const stepMoved: Edit<'stepMove'> = (draft, { stepId, atSeconds, lengthSeconds }) => {
@@ -99,79 +108,87 @@ const stepMoved: Edit<'stepMove'> = (draft, { stepId, atSeconds, lengthSeconds }
   }
 };
 
-const stepTexted: Edit<'stepText'> = (draft, { stepId, name, description }) => {
+const stepRenamed: Edit<'stepName'> = (draft, { stepId, name }) => {
   const step = itemOf(draft.steps, stepId);
   if (step !== null) {
     step.name = name;
-    step.description = description;
   }
 };
 
-const partStartsOf = (document: StudioDocument): Set<number> =>
-  new Set(
-    idsOf(document.parts).flatMap((partId) => {
-      const firstStepId = itemOf(document.parts, partId)?.firstStepId ?? null;
+const orderOf = (document: StudioDocument): number[] =>
+  timelineStepsOf(document).map((step) => step.stepId);
 
-      return firstStepId === null ? [] : [firstStepId];
-    }),
+interface StepRange {
+  first: number;
+  last: number;
+}
+
+const rangeOf = (
+  order: readonly number[],
+  firstStepId: number | null,
+  lastStepId: number | null,
+): StepRange | null => {
+  const first = firstStepId === null ? -1 : order.indexOf(firstStepId);
+  const last = lastStepId === null ? -1 : order.indexOf(lastStepId);
+
+  return first < 0 || last < first ? null : { first, last };
+};
+
+const overlaps = (left: StepRange, right: StepRange): boolean =>
+  left.first <= right.last && right.first <= left.last;
+
+const rangeFits = (
+  document: StudioDocument,
+  partId: number,
+  firstStepId: number,
+  lastStepId: number,
+): boolean => {
+  const order = orderOf(document);
+  const wanted = rangeOf(order, firstStepId, lastStepId);
+
+  return (
+    wanted !== null &&
+    idsOf(document.parts).every((otherId) => {
+      const other = itemOf(document.parts, otherId);
+      const range = other === null ? null : rangeOf(order, other.firstStepId, other.lastStepId);
+      return otherId === partId || range === null || !overlaps(range, wanted);
+    })
   );
+};
 
 const stepRemoved: Edit<'stepRemove'> = (draft, { stepId }) => {
   if (itemOf(draft.steps, stepId) === null) {
     return;
   }
 
-  const order = timelineStepsOf(draft).map((step) => step.stepId);
+  const order = orderOf(draft);
   const index = order.indexOf(stepId);
+  const previous = index < 0 ? undefined : order[index - 1];
   const next = index < 0 ? undefined : order[index + 1];
-  const heir = next !== undefined && !partStartsOf(draft).has(next) ? next : null;
 
   for (const partId of idsOf(draft.parts)) {
     const part = itemOf(draft.parts, partId);
-    if (part?.firstStepId === stepId) {
-      if (heir === null) {
-        delete draft.parts[partId];
-      } else {
-        part.firstStepId = heir;
-      }
+    if (part !== null && part.firstStepId === stepId && part.lastStepId === stepId) {
+      delete draft.parts[partId];
+    } else if (part !== null && part.firstStepId === stepId) {
+      part.firstStepId = next ?? null;
+    } else if (part !== null && part.lastStepId === stepId) {
+      part.lastStepId = previous ?? null;
     }
   }
   delete draft.steps[stepId];
 };
 
-const partAdded: Edit<'partAdd'> = (draft, { partId, firstStepId, name }) => {
-  if (
-    itemOf(draft.parts, partId) === null &&
-    itemOf(draft.steps, firstStepId) !== null &&
-    !partStartsOf(draft).has(firstStepId)
-  ) {
-    draft.parts[partId] = { name, firstStepId, mainVideoId: null };
+const partAdded: Edit<'partAdd'> = (draft, { partId, firstStepId, lastStepId, name }) => {
+  if (itemOf(draft.parts, partId) === null && rangeFits(draft, partId, firstStepId, lastStepId)) {
+    draft.parts[partId] = { name, firstStepId, lastStepId, mainVideoId: null };
   }
 };
 
-const partStartIndexesOf = (document: StudioDocument, order: readonly number[]): number[] =>
-  [...partStartsOf(document)]
-    .map((stepId) => order.indexOf(stepId))
-    .filter((index) => index >= 0)
-    .sort((left, right) => left - right);
-
-const partStartFits = (
-  document: StudioDocument,
-  currentStepId: number | null,
-  wantedStepId: number,
-): boolean => {
-  const order = timelineStepsOf(document).map((step) => step.stepId);
-  const starts = partStartIndexesOf(document, order);
-  const current = currentStepId === null ? -1 : order.indexOf(currentStepId);
-  const wanted = order.indexOf(wantedStepId);
-  const at = starts.indexOf(current);
-  const lower = starts[at - 1];
-  const upper = starts[at + 1] ?? order.length;
-
-  return at > 0 && lower !== undefined && wanted > lower && wanted < upper;
-};
-
-const partSet: Edit<'partSettings'> = (draft, { partId, name, firstStepId, mainVideoId }) => {
+const partSet: Edit<'partSettings'> = (
+  draft,
+  { partId, name, firstStepId, lastStepId, mainVideoId },
+) => {
   const part = itemOf(draft.parts, partId);
   if (part === null) {
     return;
@@ -179,8 +196,9 @@ const partSet: Edit<'partSettings'> = (draft, { partId, name, firstStepId, mainV
 
   part.name = name;
   part.mainVideoId = mainVideoId;
-  if (part.firstStepId !== firstStepId && partStartFits(draft, part.firstStepId, firstStepId)) {
+  if (rangeFits(draft, partId, firstStepId, lastStepId)) {
     part.firstStepId = firstStepId;
+    part.lastStepId = lastStepId;
   }
 };
 
@@ -288,8 +306,8 @@ export const applyChange = (draft: Draft<StudioDocument>, change: StudioChange):
     case 'stepMove':
       stepMoved(draft, change);
       return;
-    case 'stepText':
-      stepTexted(draft, change);
+    case 'stepName':
+      stepRenamed(draft, change);
       return;
     case 'stepRemove':
       stepRemoved(draft, change);
@@ -355,8 +373,8 @@ export const mergeKeyOf = (change: StudioChange): string | null => {
       return `finalOffset:${change.finalTrackId}:${change.sourceMediaItemId}:${change.fromSeconds}`;
     case 'stepMove':
       return `stepMove:${change.stepId}`;
-    case 'stepText':
-      return `stepText:${change.stepId}`;
+    case 'stepName':
+      return `stepName:${change.stepId}`;
     case 'partSettings':
       return `partSettings:${change.partId}`;
     case 'videoName':

@@ -33,6 +33,7 @@ public static class MediaRenditions
         MediaRendition.Poster,
         MediaRendition.Video,
         MediaRendition.Compact,
+        MediaRendition.Peaks,
     ];
 
     private static readonly HashSet<MediaRendition> AudioRenditions =

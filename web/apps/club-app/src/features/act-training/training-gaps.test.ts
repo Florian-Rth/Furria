@@ -7,7 +7,6 @@ import { movingStepNumbersOf, trainingGapsOf } from './training-gaps';
 const step = (stepId: number, startSeconds: number, endSeconds: number): StudioStep => ({
   stepId,
   name: `Schritt ${stepId}`,
-  description: null,
   startSeconds,
   endSeconds,
   placement: 'onTimeline',

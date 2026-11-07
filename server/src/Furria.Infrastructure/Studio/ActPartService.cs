@@ -13,11 +13,10 @@ public sealed class ActPartService
     private const string UnknownPartMessage = "Diesen Teil gibt es im Auftritt nicht.";
     private const string UnknownVideoMessage = "Dieses Video gehört nicht zum Auftritt.";
     private const string StepAdriftMessage =
-        "Die Musik dieses Schritts ist nicht mehr da, hier kann kein Teil beginnen.";
-    private const string PartBeginsHereMessage = "Hier beginnt schon ein Teil.";
-    private const string FirstPartMessage = "Der erste Teil beginnt immer mit dem ersten Schritt.";
-    private const string BeyondANeighbourMessage =
-        "Ein Teil beginnt zwischen dem Anfang des vorigen und dem des nächsten Teils.";
+        "Die Musik dieses Schritts ist nicht mehr da, hier kann kein Teil beginnen oder enden.";
+    private const string ReversedMessage =
+        "Ein Teil endet frühestens mit dem Schritt, mit dem er beginnt.";
+    private const string OverlappingMessage = "Diese Schritte gehören schon zu einem anderen Teil.";
 
     private readonly AppDbContext _dbContext;
     private readonly ActStudioGate _gate;
@@ -39,19 +38,20 @@ public sealed class ActPartService
         var editable = await _gate.EditableStudioAsync(accountId, command.ActId, ct);
         if (!editable.IsSuccess)
             return Result<int>.Carrying(editable);
-        if (!await IsStepOfAsync(command.ActId, command.FirstStepId, ct))
+        var range = new PartRange(0, command.FirstStepId, command.LastStepId);
+        if (!await AreStepsOfAsync(command.ActId, range, ct))
             return Result<int>.NotFound(UnknownStepMessage);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         var timeline = await _timelines.TimelineOfAsync(command.ActId, ct);
-        if (OpeningRefusalOf(timeline, command.FirstStepId) is { } refusal)
-            return Result<int>.Conflict(refusal);
+        if (RangeRefusalOf(timeline, range) is { } refusal)
+            return Result<int>.Carrying(refusal);
 
-        await PullReachingPartBackAsync(timeline.Parts, command.FirstStepId, ct);
         var part = new ActPart
         {
             ActId = command.ActId,
             FirstStepId = command.FirstStepId,
+            LastStepId = command.LastStepId,
             Name = command.Name.Trim(),
         };
         _dbContext.ActParts.Add(part);
@@ -81,15 +81,18 @@ public sealed class ActPartService
             return Result.NotFound(UnknownVideoMessage);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        var timeline = await _timelines.TimelineOfAsync(command.ActId, ct);
-        if (!StartsAt(timeline.Parts, part, command.FirstStepId))
+        var range = new PartRange(part.Id, command.FirstStepId, command.LastStepId);
+        if (range != new PartRange(part.Id, part.FirstStepId, part.LastStepId))
         {
-            if (!await IsStepOfAsync(command.ActId, command.FirstStepId, ct))
+            if (!await AreStepsOfAsync(command.ActId, range, ct))
                 return Result.NotFound(UnknownStepMessage);
-            if (MoveRefusalOf(timeline, part.Id, command.FirstStepId) is { } refusal)
+            if (
+                RangeRefusalOf(await _timelines.TimelineOfAsync(command.ActId, ct), range) is
+                { } refusal
+            )
                 return refusal;
-            await PullReachingPartBackAsync(timeline.Parts, command.FirstStepId, ct);
-            part.FirstStepId = command.FirstStepId;
+            part.FirstStepId = range.FirstStepId;
+            part.LastStepId = range.LastStepId;
         }
 
         part.Name = command.Name.Trim();
@@ -117,47 +120,25 @@ public sealed class ActPartService
         return removed == 0 ? Result.NotFound(UnknownPartMessage) : Result.Success();
     }
 
-    private async Task PullReachingPartBackAsync(PartTiling parts, int stepId, CancellationToken ct)
-    {
-        var reaching = await _dbContext.ActParts.SingleOrDefaultAsync(
-            part => part.FirstStepId == stepId,
+    private async Task<bool> AreStepsOfAsync(int actId, PartRange range, CancellationToken ct) =>
+        await _dbContext.ActSteps.CountAsync(
+            step =>
+                step.ActId == actId
+                && (step.Id == range.FirstStepId || step.Id == range.LastStepId),
             ct
-        );
-        var span = parts.Spans.FirstOrDefault(candidate => candidate.PartId == reaching?.Id);
-        if (reaching is null || span is null)
-            return;
-
-        reaching.FirstStepId = span.StepIds[0];
-        await _dbContext.SaveChangesAsync(ct);
-    }
-
-    private Task<bool> IsStepOfAsync(int actId, int stepId, CancellationToken ct) =>
-        _dbContext.ActSteps.AnyAsync(step => step.Id == stepId && step.ActId == actId, ct);
+        ) == (range.FirstStepId == range.LastStepId ? 1 : 2);
 
     private Task<bool> IsVideoOfAsync(int actId, int videoId, CancellationToken ct) =>
         _dbContext.ActVideos.AnyAsync(video => video.Id == videoId && video.ActId == actId, ct);
 
     [Pure]
-    private static string? OpeningRefusalOf(ActTimeline timeline, int stepId) =>
-        !timeline.Steps.Spans.Any(span => span.StepId == stepId) ? StepAdriftMessage
-        : ActParts.StartsAPart(timeline.Parts, stepId) ? PartBeginsHereMessage
-        : null;
-
-    [Pure]
-    private static bool StartsAt(PartTiling parts, ActPart part, int stepId) =>
-        part.FirstStepId == stepId
-        || parts.Spans.Any(span =>
-            span.PartId == part.Id && span.StepIds.Count > 0 && span.StepIds[0] == stepId
-        );
-
-    [Pure]
-    private static Result? MoveRefusalOf(ActTimeline timeline, int partId, int stepId) =>
-        ActParts.RefusalToStartAt(timeline.Steps, timeline.Parts, partId, stepId) switch
+    private static Result? RangeRefusalOf(ActTimeline timeline, PartRange range) =>
+        ActParts.RefusalOf(timeline.Steps, timeline.Parts, range) switch
         {
             null => null,
-            PartMoveRefusal.Adrift => Result.Conflict(StepAdriftMessage),
-            PartMoveRefusal.FirstPart => Result.Validation(FirstPartMessage),
-            PartMoveRefusal.BeyondANeighbour => Result.Validation(BeyondANeighbourMessage),
-            _ => throw new ArgumentOutOfRangeException(nameof(timeline), stepId, null),
+            PartRangeRefusal.Adrift => Result.Conflict(StepAdriftMessage),
+            PartRangeRefusal.Reversed => Result.Validation(ReversedMessage),
+            PartRangeRefusal.Overlapping => Result.Conflict(OverlappingMessage),
+            _ => throw new ArgumentOutOfRangeException(nameof(range), range, null),
         };
 }

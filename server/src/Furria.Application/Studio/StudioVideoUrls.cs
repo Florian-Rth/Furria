@@ -7,4 +7,6 @@ public sealed record StudioVideoUrls
     public required string Compact { get; init; }
 
     public required string Poster { get; init; }
+
+    public required string Peaks { get; init; }
 }

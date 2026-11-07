@@ -34,7 +34,7 @@ export const KkTimelineKeyframes: FC<KkTimelineKeyframesProps> = ({ marks }) => 
         borderStyle: 'solid',
         borderColor: 'text.secondary',
         bgcolor: 'background.paper',
-        '&[data-selected="true"]': { bgcolor: 'primary.main', borderColor: 'primary.main' },
+        '&[data-selected="true"]': { bgcolor: 'text.primary', borderColor: 'text.primary' },
       }}
     />
   ));

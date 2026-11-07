@@ -1,4 +1,4 @@
-import type { KkTimelineRows } from '@furria/ui/KkTimeline';
+import type { KkTimelineLaneKind, KkTimelineRows } from '@furria/ui/KkTimeline';
 import { KkTimeline } from '@furria/ui/KkTimeline';
 import type { KkSx } from '@furria/ui/kk-sx';
 import type { FC, PropsWithChildren, ReactNode } from 'react';
@@ -16,6 +16,7 @@ interface TimelineBaseProps extends PropsWithChildren {
   length: number;
   keys?: ReactNode;
   overlay?: ReactNode;
+  focus?: KkTimelineLaneKind | null;
   sx?: KkSx;
 }
 
@@ -40,6 +41,7 @@ export const TimelineRoot: FC<TimelineRootProps> = ({
   overview = null,
   keys = null,
   overlay = null,
+  focus = null,
   sx,
   children,
 }) => {
@@ -61,6 +63,7 @@ export const TimelineRoot: FC<TimelineRootProps> = ({
         centred={centred}
         keys={keys}
         overlay={overlay}
+        focus={focus}
         sx={sx}
       >
         {children}

@@ -48,7 +48,6 @@ export type StudioMusic = z.infer<typeof StudioMusicSchema>;
 export const StudioStepSchema = z.object({
   stepId: z.int(),
   name: z.string(),
-  description: z.string().nullable(),
   startSeconds: z.number().nullable(),
   endSeconds: z.number().nullable(),
   placement: PlacementSchema,
@@ -58,6 +57,8 @@ export type StudioStep = z.infer<typeof StudioStepSchema>;
 export const StudioPartSchema = z.object({
   partId: z.int(),
   name: z.string(),
+  firstStepId: z.int(),
+  lastStepId: z.int(),
   stepIds: z.array(z.int()),
   mainVideoId: z.int().nullable(),
   adrift: z.boolean(),
@@ -157,7 +158,12 @@ type StudioVideoSchema = z.ZodObject<{
   clipEndSeconds: z.ZodNullable<z.ZodNumber>;
   placement: typeof VideoPlacementSchema;
   outdated: z.ZodBoolean;
-  urls: z.ZodObject<{ video: MediaUrlSchema; compact: MediaUrlSchema; poster: MediaUrlSchema }>;
+  urls: z.ZodObject<{
+    video: MediaUrlSchema;
+    compact: MediaUrlSchema;
+    poster: MediaUrlSchema;
+    peaks: MediaUrlSchema;
+  }>;
 }>;
 
 type StudioSchema = z.ZodObject<{
@@ -240,7 +246,12 @@ export const createStudioSchemas = ({
     clipEndSeconds: z.number().nullable(),
     placement: VideoPlacementSchema,
     outdated: z.boolean(),
-    urls: z.object({ video: MediaUrlSchema, compact: MediaUrlSchema, poster: MediaUrlSchema }),
+    urls: z.object({
+      video: MediaUrlSchema,
+      compact: MediaUrlSchema,
+      poster: MediaUrlSchema,
+      peaks: MediaUrlSchema,
+    }),
   });
 
   return {

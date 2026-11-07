@@ -51,13 +51,7 @@ export const ScoreBody: FC<ScoreBodyProps> = ({ score }) => {
   const pane =
     score.pane === null ? null : (
       <KkScoreDesk.Pane>
-        <ScoreStepPane
-          view={score.pane}
-          tools={score.stepTools}
-          wide={score.wide}
-          framed
-          onClose={null}
-        />
+        <ScoreStepPane view={score.pane} tools={score.stepTools} framed onClose={null} />
       </KkScoreDesk.Pane>
     );
   const evenings =

@@ -2,7 +2,7 @@ import Box from '@mui/material/Box';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import type { FC } from 'react';
 
-export type KkStageInkLineKind = 'way' | 'ghost';
+export type KkStageInkLineKind = 'way' | 'ghost' | 'rest';
 
 export interface KkStageInkPoint {
   x: number;
@@ -11,9 +11,10 @@ export interface KkStageInkPoint {
 
 const palette = (theme: Theme) => (theme.vars ?? theme).palette;
 
-const strokes: Record<KkStageInkLineKind, CSSObject> = {
-  way: { strokeWidth: 2.5, strokeDasharray: '1.5 5' },
-  ghost: { strokeWidth: 4, opacity: 0.5 },
+const strokes: Record<KkStageInkLineKind, (theme: Theme) => CSSObject> = {
+  way: () => ({ strokeWidth: 2.5, strokeDasharray: '1.5 5' }),
+  ghost: () => ({ strokeWidth: 4, opacity: 0.5 }),
+  rest: (theme) => ({ strokeWidth: 1.25, stroke: palette(theme).text.secondary, opacity: 0.55 }),
 };
 
 interface KkStageInkLineProps {
@@ -43,7 +44,7 @@ export const KkStageInkLine: FC<KkStageInkLineProps> = ({ points, kind }) => {
         strokeLinecap: 'round',
         strokeLinejoin: 'round',
         transition: 'opacity 280ms ease-out',
-        ...strokes[kind],
+        ...strokes[kind](theme),
       })}
     >
       <polyline points={line} vectorEffect="non-scaling-stroke" />

@@ -37,4 +37,16 @@ describe('musicTicksOf', () => {
     const ticks = musicTicksOf(marksOf(6, 0.5, 5), 60);
     expect(ticks.map((tick) => tick.text)).toEqual(['5', '6', '7', '8', '2', '2']);
   });
+
+  it('drops the earlier eight number when the next one would collide with it', () => {
+    const marks = [
+      { seconds: 0, count: 1 },
+      { seconds: 0.5, count: 2 },
+      { seconds: 0.6, count: 1 },
+      { seconds: 1.1, count: 2 },
+      { seconds: 4.6, count: 1 },
+    ];
+    const ticks = musicTicksOf(marks, 20);
+    expect(ticks.filter((tick) => tick.strong).map((tick) => tick.text)).toEqual([null, '2', '3']);
+  });
 });

@@ -1,10 +1,11 @@
-import type { KkTimelineRows } from '@furria/ui/KkTimeline';
+import type { KkTimelineLaneKind, KkTimelineRows } from '@furria/ui/KkTimeline';
 import { KkTimeline } from '@furria/ui/KkTimeline';
 import type { KkSx } from '@furria/ui/kk-sx';
 import type { FC, ReactNode } from 'react';
 import { TimelineRoot } from './internal/layout/TimelineRoot';
 import { TimelineKeysRow } from './internal/ui/TimelineKeysRow';
 import { TimelineParts } from './internal/ui/TimelineParts';
+import { TimelinePlayheadTag } from './internal/ui/TimelinePlayheadTag';
 import { TimelineRuler } from './internal/ui/TimelineRuler';
 import { TimelineSnap } from './internal/ui/TimelineSnap';
 import { TimelineStepsRow } from './internal/ui/TimelineStepsRow';
@@ -20,7 +21,7 @@ import type {
 import { TIMELINE_LANE } from './studio-timeline-layers';
 import { TIMELINE_ROW_LABELS } from './timeline-copy';
 import type { TimelineDensity } from './timeline-geometry';
-import { laneKeysShownOf } from './timeline-geometry';
+import { currentStepNameOf, laneKeysShownOf } from './timeline-geometry';
 import type { CentreScrub } from './use-centre-scrub';
 
 interface StudioTimelineProps {
@@ -35,6 +36,8 @@ interface StudioTimelineProps {
   videos?: TimelineVideosLayer | null;
   keys?: TimelineKeysLayer | null;
   overlay?: ReactNode;
+  focus?: KkTimelineLaneKind | null;
+  playheadTag?: boolean;
   sx?: KkSx;
 }
 
@@ -50,6 +53,8 @@ export const StudioTimeline: FC<StudioTimelineProps> = ({
   videos = null,
   keys = null,
   overlay = null,
+  focus = null,
+  playheadTag = false,
   sx,
 }) => {
   const rows: KkTimelineRows = {
@@ -72,8 +77,15 @@ export const StudioTimeline: FC<StudioTimelineProps> = ({
   const stepRow = steps === null ? null : <TimelineStepsRow steps={steps} density={density} />;
   const videoRow = videos === null ? null : <TimelineVideosRow videos={videos} />;
   const keyRow = keys === null ? null : <TimelineKeysRow keys={keys} />;
+  const tag = playheadTag ? <TimelinePlayheadTag name={currentStepNameOf(steps)} /> : null;
+  const overlays = (
+    <>
+      {tag}
+      {overlay}
+    </>
+  );
   const laneKeys = laneKeysShownOf(density) ? (
-    <KkTimeline.LaneKeys rows={rows} labels={TIMELINE_ROW_LABELS} />
+    <KkTimeline.LaneKeys rows={rows} labels={TIMELINE_ROW_LABELS} focus={focus} />
   ) : null;
 
   return (
@@ -83,8 +95,9 @@ export const StudioTimeline: FC<StudioTimelineProps> = ({
       rows={rows}
       length={length}
       centre={centre}
-      overlay={overlay}
+      overlay={overlays}
       keys={laneKeys}
+      focus={focus}
       sx={sx}
     >
       {partBands}

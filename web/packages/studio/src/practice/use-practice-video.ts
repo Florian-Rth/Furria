@@ -11,7 +11,7 @@ import type { Studio } from '@furria/studio/studio-schemas';
 import { usePlaybackSelection } from '@furria/studio/use-playback-seconds';
 import { useSlavedVideo } from '@furria/studio/use-slaved-video';
 import type { StudioPlayback } from '@furria/studio/use-studio-playback';
-import type { KkPracticeScreenVideoSource } from '@furria/ui/KkPracticeScreen';
+import type { KkVideoSource } from '@furria/ui/KkVideo';
 import { useIsMobile } from '@furria/ui/use-is-mobile';
 import type { RefObject } from 'react';
 import { useRef, useState } from 'react';
@@ -27,7 +27,7 @@ export interface PracticeTake {
 export interface PracticeVideo {
   ref: RefObject<HTMLVideoElement | null>;
   shownId: number | null;
-  source: KkPracticeScreenVideoSource | null;
+  source: KkVideoSource | null;
   hero: HeroKind;
   mirrored: boolean;
   take: PracticeTake | null;

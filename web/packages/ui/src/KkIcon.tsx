@@ -180,6 +180,7 @@ export type KkIconName =
   | 'play'
   | 'delete'
   | 'undo'
+  | 'redo'
   | 'zoom'
   | 'zip'
   | 'select'
@@ -320,6 +321,7 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   play: PlayArrowRoundedIcon,
   delete: DeleteOutlineOutlinedIcon,
   undo: UndoOutlinedIcon,
+  redo: RedoOutlinedIcon,
   zoom: ZoomInOutlinedIcon,
   zip: FolderZipOutlinedIcon,
   select: ChecklistOutlinedIcon,
@@ -367,7 +369,6 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   text: TextFieldsOutlinedIcon,
   ruler: StraightenOutlinedIcon,
   row: TableRowsOutlinedIcon,
-  redo: RedoOutlinedIcon,
   fit: FitScreenOutlinedIcon,
   pan: PanToolOutlinedIcon,
   rotate: RotateRightOutlinedIcon,

@@ -36,10 +36,17 @@ public sealed class PutActPartTests : IClassFixture<ApiTestFixture>
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId) = await MusicAsync(ct);
         var stepIds = await MarkedAsync(admin, actId, 30);
-        var partId = await AddPartAsync(admin, actId, stepIds[0], "Einmarsch");
+        var partId = await AddPartAsync(admin, actId, stepIds[0], stepIds[1], "Einmarsch");
         var videoId = await VideoOfAsync(admin, actId, ct);
 
-        var response = await PutAsync(admin, actId, partId, "Auftakt", stepIds[0], videoId);
+        var response = await PutAsync(
+            admin,
+            actId,
+            partId,
+            "Auftakt",
+            (stepIds[0], stepIds[1]),
+            videoId
+        );
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         var part = Assert.Single((await StudioOfAsync(admin, actId)).Studio!.Parts);
@@ -47,54 +54,22 @@ public sealed class PutActPartTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepTheFirstPartReachingBack_When_ItIsRenamedAtItsFirstShownStep()
+    public async Task Should_MoveThePartsEnds_When_ItIsRangedOverOtherSteps()
     {
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId) = await MusicAsync(ct);
-        var stepIds = await MarkedAsync(admin, actId, 30);
-        var partId = await AddPartAsync(admin, actId, stepIds[1], "Einmarsch");
+        var stepIds = await MarkedAsync(admin, actId, 30, 60, 90);
+        await AddPartAsync(admin, actId, stepIds[0], stepIds[0], "Einmarsch");
+        var partId = await AddPartAsync(admin, actId, stepIds[2], stepIds[3], "Ausmarsch");
 
-        var response = await PutAsync(admin, actId, partId, "Auftakt", stepIds[0], null);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        Assert.Equal(
-            [
-                [stepIds[0], stepIds[1]],
-            ],
-            await PartStepsOfAsync(admin, actId)
+        var response = await PutAsync(
+            admin,
+            actId,
+            partId,
+            "Ausmarsch",
+            (stepIds[1], stepIds[2]),
+            null
         );
-    }
-
-    [Fact]
-    public async Task Should_MoveThePartsBorder_When_ItBeginsOnAnotherStep()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId) = await MusicAsync(ct);
-        var stepIds = await MarkedAsync(admin, actId, 30, 90);
-        await AddPartAsync(admin, actId, stepIds[0], "Einmarsch");
-        var partId = await AddPartAsync(admin, actId, stepIds[2], "Ausmarsch");
-
-        await PutAsync(admin, actId, partId, "Ausmarsch", stepIds[1], null);
-
-        Assert.Equal(
-            [
-                [stepIds[0]],
-                [stepIds[1], stepIds[2]],
-            ],
-            await PartStepsOfAsync(admin, actId)
-        );
-    }
-
-    [Fact]
-    public async Task Should_KeepTheFirstPartReachingBack_When_TheNextPartMovesOntoItsStoredStep()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var (admin, actId) = await MusicAsync(ct);
-        var stepIds = await MarkedAsync(admin, actId, 30, 90);
-        await AddPartAsync(admin, actId, stepIds[1], "Einmarsch");
-        var partId = await AddPartAsync(admin, actId, stepIds[2], "Ausmarsch");
-
-        var response = await PutAsync(admin, actId, partId, "Ausmarsch", stepIds[1], null);
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         Assert.Equal(
@@ -107,15 +82,42 @@ public sealed class PutActPartTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseTheBorder_When_ItPassesThePreviousPart()
+    public async Task Should_RefuseTheRange_When_ItReachesIntoAnotherPart()
     {
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId) = await MusicAsync(ct);
         var stepIds = await MarkedAsync(admin, actId, 30, 90);
-        await AddPartAsync(admin, actId, stepIds[1], "Einmarsch");
-        var partId = await AddPartAsync(admin, actId, stepIds[2], "Ausmarsch");
+        await AddPartAsync(admin, actId, stepIds[0], stepIds[0], "Einmarsch");
+        var partId = await AddPartAsync(admin, actId, stepIds[2], stepIds[2], "Ausmarsch");
 
-        var response = await PutAsync(admin, actId, partId, "Ausmarsch", stepIds[0], null);
+        var response = await PutAsync(
+            admin,
+            actId,
+            partId,
+            "Ausmarsch",
+            (stepIds[0], stepIds[2]),
+            null
+        );
+
+        Assert.Equal(HttpStatusCode.Conflict, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheRange_When_ItEndsBeforeItBegins()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var (admin, actId) = await MusicAsync(ct);
+        var stepIds = await MarkedAsync(admin, actId, 30, 90);
+        var partId = await AddPartAsync(admin, actId, stepIds[1], stepIds[1], "Hauptteil");
+
+        var response = await PutAsync(
+            admin,
+            actId,
+            partId,
+            "Hauptteil",
+            (stepIds[2], stepIds[0]),
+            null
+        );
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
@@ -130,10 +132,17 @@ public sealed class PutActPartTests : IClassFixture<ApiTestFixture>
         var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
         await SongOfAsync(_fixture, admin, actId, 180, ct);
         var stepIds = await MarkedAsync(admin, actId, 30);
-        var partId = await AddPartAsync(admin, actId, stepIds[0], "Einmarsch");
+        var partId = await AddPartAsync(admin, actId, stepIds[0], stepIds[0], "Einmarsch");
         var foreignVideo = await VideoOfAsync(admin, otherActId, ct);
 
-        var response = await PutAsync(admin, actId, partId, "Einmarsch", stepIds[0], foreignVideo);
+        var response = await PutAsync(
+            admin,
+            actId,
+            partId,
+            "Einmarsch",
+            (stepIds[0], stepIds[0]),
+            foreignVideo
+        );
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
@@ -150,7 +159,7 @@ public sealed class PutActPartTests : IClassFixture<ApiTestFixture>
         int actId,
         int partId,
         string name,
-        int firstStepId,
+        (int First, int Last) steps,
         int? mainVideoId
     ) =>
         client.PUTAsync<PutActPart, PutActPartRequest>(
@@ -159,7 +168,8 @@ public sealed class PutActPartTests : IClassFixture<ApiTestFixture>
                 ActId = actId,
                 PartId = partId,
                 Name = name,
-                FirstStepId = firstStepId,
+                FirstStepId = steps.First,
+                LastStepId = steps.Last,
                 MainVideoId = mainVideoId,
             }
         );

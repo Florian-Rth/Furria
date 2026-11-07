@@ -15,7 +15,7 @@ export const ScoreStepDrawer: FC<ScoreStepDrawerProps> = ({ view, tools, onClose
   const open = view !== null;
   const step =
     view === null ? null : (
-      <ScoreStepPane view={view} tools={tools} wide={false} framed={false} onClose={onClose} />
+      <ScoreStepPane view={view} tools={tools} framed={false} onClose={onClose} />
     );
 
   return (

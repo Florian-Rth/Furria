@@ -221,9 +221,9 @@ public sealed class ActStudioReader
             .ActParts.AsNoTracking()
             .Where(part => part.ActId == actId)
             .ToDictionaryAsync(part => part.Id, ct);
-        var tiling = ActParts.Tile(
+        var tiling = ActParts.Group(
             steps,
-            parts.Values.Select(part => new PartStart(part.Id, part.FirstStepId))
+            parts.Values.Select(part => new PartRange(part.Id, part.FirstStepId, part.LastStepId))
         );
 
         return
@@ -341,6 +341,7 @@ public sealed class ActStudioReader
                 Video = _signer.UrlOf(row.MediaItemId, owner, MediaRendition.Video),
                 Compact = _signer.UrlOf(row.MediaItemId, owner, MediaRendition.Compact),
                 Poster = _signer.UrlOf(row.MediaItemId, owner, MediaRendition.Poster),
+                Peaks = _signer.UrlOf(row.MediaItemId, owner, MediaRendition.Peaks),
             },
         };
     }
@@ -394,7 +395,6 @@ public sealed class ActStudioReader
         {
             StepId = step.Id,
             Name = step.Name,
-            Description = step.Description,
             StartSeconds = startSeconds,
             EndSeconds = endSeconds,
             Placement = placement,
@@ -410,6 +410,8 @@ public sealed class ActStudioReader
         {
             PartId = part.Id,
             Name = part.Name,
+            FirstStepId = part.FirstStepId,
+            LastStepId = part.LastStepId,
             StepIds = stepIds,
             MainVideoId = part.MainVideoId,
             IsAdrift = adrift,

@@ -1,11 +1,9 @@
 import { ScoreLiveFormation } from '@furria/studio/ScoreLiveFormation';
 import {
   CLOSE_LABEL,
-  DESCRIPTION_TITLE,
   EDIT_FROM_HERE,
   FORMATION_TITLE,
   flagTextOf,
-  NO_DESCRIPTION,
   NO_FORMATION,
   NO_VIDEO,
   PRACTISE_FROM_HERE,
@@ -19,25 +17,20 @@ import { KkButton } from '@furria/ui/KkButton';
 import { KkIconButton } from '@furria/ui/KkIconButton';
 import { KkNote } from '@furria/ui/KkNote';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
-import { KkScoreVideo } from '@furria/ui/KkScoreVideo';
 import { KkStepPane } from '@furria/ui/KkStepPane';
 import { KkText } from '@furria/ui/KkText';
-import Grid from '@mui/material/Grid';
+import { KkVideo } from '@furria/ui/KkVideo';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-
-const HALF = 6;
-const FULL = 12;
 
 interface ScoreStepPaneProps {
   view: ScoreStepView;
   tools: ScoreStepTools;
-  wide: boolean;
   framed: boolean;
   onClose: (() => void) | null;
 }
 
-export const ScoreStepPane: FC<ScoreStepPaneProps> = ({ view, tools, wide, framed, onClose }) => {
+export const ScoreStepPane: FC<ScoreStepPaneProps> = ({ view, tools, framed, onClose }) => {
   const { practiseFrom, editFrom } = tools;
   const { step } = view;
   const ready = step.movement && step.video !== null;
@@ -70,18 +63,18 @@ export const ScoreStepPane: FC<ScoreStepPaneProps> = ({ view, tools, wide, frame
       </KkText>
     ) : (
       <Stack sx={{ gap: 0.5 }}>
-        <KkScoreVideo
-          label={videoLabel}
-          source={view.videoSource}
-          poster={view.videoPoster}
-          offsetSeconds={step.video.offsetSeconds}
-        />
+        <KkVideo label={videoLabel} fit="card">
+          <KkVideo.Clip
+            label={videoLabel}
+            source={view.videoSource}
+            poster={view.videoPoster}
+            offsetSeconds={step.video.offsetSeconds}
+          />
+        </KkVideo>
         {videoCaption}
       </Stack>
     );
   const flag = step.flag === null ? null : <KkNote>{flagTextOf(step.flag)}</KkNote>;
-  const description = step.description ?? NO_DESCRIPTION;
-  const descriptionTone = step.description === null ? 'secondary' : 'primary';
   const practise = (): void => {
     practiseFrom?.(step.stepId);
   };
@@ -109,7 +102,6 @@ export const ScoreStepPane: FC<ScoreStepPaneProps> = ({ view, tools, wide, frame
         </Stack>
       </KkStepPane.Foot>
     );
-  const split = wide ? HALF : FULL;
 
   return (
     <KkStepPane label={STEP_PANE_LABEL} framed={framed}>
@@ -124,18 +116,7 @@ export const ScoreStepPane: FC<ScoreStepPaneProps> = ({ view, tools, wide, frame
       <KkStepPane.Body>
         {flag}
         <KkPanelSection title={FORMATION_TITLE}>{formation}</KkPanelSection>
-        <Grid container spacing={2}>
-          <Grid size={{ xs: FULL, md: split }}>
-            <KkPanelSection title={DESCRIPTION_TITLE}>
-              <KkText variant="body2" tone={descriptionTone}>
-                {description}
-              </KkText>
-            </KkPanelSection>
-          </Grid>
-          <Grid size={{ xs: FULL, md: split }}>
-            <KkPanelSection title={VIDEO_TITLE}>{video}</KkPanelSection>
-          </Grid>
-        </Grid>
+        <KkPanelSection title={VIDEO_TITLE}>{video}</KkPanelSection>
       </KkStepPane.Body>
       {foot}
     </KkStepPane>

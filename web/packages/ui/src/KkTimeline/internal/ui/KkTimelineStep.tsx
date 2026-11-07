@@ -6,7 +6,6 @@ import { motion } from 'motion/react';
 import type { FC, MouseEvent } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { inkWash } from '../../../internal/ink-wash';
-import { redInk } from '../../../internal/red-ink';
 import { percentOf, SCORE_FIGURES } from '../../../internal/score-paint';
 import { useReducedMotion } from '../../../internal/use-reduced-motion';
 import { KkScoreGlyph } from '../../../KkScoreGlyph/KkScoreGlyph';
@@ -14,6 +13,7 @@ import { kkTokens } from '../../../tokens';
 import { stepsBottom, stepsTop } from '../timeline-paint';
 import type { KkTimelinePan } from '../use-sticky-name';
 import { useStickyName } from '../use-sticky-name';
+import { CUT_LABEL, watchWholeLabel } from '../watch-whole-label';
 
 export interface KkTimelineStepBlock {
   key: number;
@@ -30,6 +30,7 @@ const DROP = { y: '-140%', opacity: 0 } as const;
 const LANDED = { y: '0%', opacity: 1 } as const;
 const DROP_SECONDS = 0.42;
 const BLOCK_CONTAINER = 'kk-timeline-step';
+const SETUP_SCALE = '[data-kk-timeline-scale="setup"] &';
 
 const blockPaint = (theme: Theme): CSSObject => ({
   position: 'absolute',
@@ -58,15 +59,23 @@ const blockPaint = (theme: Theme): CSSObject => ({
     backgroundColor: inkWash(theme, '10%'),
   },
   '&[data-active="true"]': {
-    boxShadow: `inset 0 ${kkTokens.line.page}px 0 ${(theme.vars ?? theme).palette.primary.main}`,
+    boxShadow: `inset 0 ${kkTokens.line.page}px 0 ${(theme.vars ?? theme).palette.text.primary}`,
   },
-  '&[data-active="true"] [data-kk-timeline-step-number]': redInk(theme),
+  '& [data-kk-score-glyph][data-present="false"]': { color: 'text.secondary' },
+  [SETUP_SCALE]: {
+    inset: '2px 1px',
+    '& [data-kk-timeline-step-face]': {
+      display: 'flex',
+      alignItems: 'center',
+      gap: 0.5,
+    },
+  },
   '@media (hover: hover)': { '&:hover': { backgroundColor: inkWash(theme, '12%') } },
-  [`@container ${BLOCK_CONTAINER} (max-width: 3.25rem)`]: {
+  [`@container ${BLOCK_CONTAINER} (max-width: 4.5rem)`]: {
     '& [data-kk-timeline-step-name]': { display: 'none' },
   },
-  [`@container ${BLOCK_CONTAINER} (max-width: 1.25rem)`]: {
-    '& [data-kk-timeline-step-glyphs]': { display: 'none' },
+  [`@container ${BLOCK_CONTAINER} (max-width: 1.75rem)`]: {
+    '& [data-kk-timeline-step-number], & [data-kk-timeline-step-glyphs]': { display: 'none' },
   },
 });
 
@@ -109,7 +118,7 @@ export const KkTimelineStep: FC<KkTimelineStepProps> = ({
       direction="row"
       component="span"
       data-kk-timeline-step-glyphs
-      sx={{ gap: 0.375, alignItems: 'center' }}
+      sx={{ gap: 0.375, alignItems: 'center', flexShrink: 0 }}
     >
       <KkScoreGlyph kind="movement" present={block.movement} size="tiny" />
       <KkScoreGlyph kind="video" present={block.video} size="tiny" />
@@ -119,6 +128,7 @@ export const KkTimelineStep: FC<KkTimelineStepProps> = ({
     <Box
       ref={sticky.nameRef}
       component={motion.span}
+      data-kk-timeline-step-face
       style={{ x: sticky.x }}
       sx={{
         display: 'grid',
@@ -149,7 +159,9 @@ export const KkTimelineStep: FC<KkTimelineStepProps> = ({
         <Box
           component="span"
           data-kk-timeline-step-name
+          ref={watchWholeLabel}
           sx={{
+            ...CUT_LABEL,
             typography: 'caption',
             fontWeight: 700,
             lineHeight: 1.1,

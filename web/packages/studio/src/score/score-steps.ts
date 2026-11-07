@@ -24,7 +24,6 @@ export interface ScoreStep {
   stepId: number;
   number: number;
   name: string;
-  description: string | null;
   range: TimelineRange | null;
   partId: number | null;
   partIndex: number | null;
@@ -177,7 +176,6 @@ export const scoreStepsOf = (
       stepId: step.stepId,
       number,
       name: step.name,
-      description: step.description,
       range,
       partId: part?.partId ?? null,
       partIndex: part?.index ?? null,

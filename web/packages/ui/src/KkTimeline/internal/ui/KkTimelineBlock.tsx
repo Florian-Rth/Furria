@@ -6,6 +6,7 @@ import type { FC } from 'react';
 import { focusRing } from '../../../internal/focus-ring';
 import { percentOf } from '../../../internal/score-paint';
 import { kkTokens } from '../../../tokens';
+import { CUT_LABEL, watchWholeLabel } from '../watch-whole-label';
 
 export type KkTimelineBlockTone = 'part' | 'step' | 'video';
 
@@ -119,7 +120,7 @@ export const KkTimelineBlock: FC<KkTimelineBlockProps> = ({
               top: 0,
               bottom: 0,
               width: kkTokens.line.page,
-              backgroundColor: palette(theme).primary.main,
+              backgroundColor: palette(theme).text.primary,
             }
           : {},
         ...focusRing(theme),
@@ -129,7 +130,9 @@ export const KkTimelineBlock: FC<KkTimelineBlockProps> = ({
       {number}
       <Box
         component="span"
+        ref={watchWholeLabel}
         sx={{
+          ...CUT_LABEL,
           minWidth: 0,
           overflow: 'hidden',
           textOverflow: 'ellipsis',
@@ -137,6 +140,7 @@ export const KkTimelineBlock: FC<KkTimelineBlockProps> = ({
           typography: 'caption',
           fontWeight: 800,
           lineHeight: 1.1,
+          '@container (max-width: 4.5rem)': { display: 'none' },
         }}
       >
         {title}

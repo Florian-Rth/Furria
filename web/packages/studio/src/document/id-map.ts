@@ -48,6 +48,8 @@ const renamedStudioOf = <TStudio extends Studio>(
   parts: studio.parts.map((known) => ({
     ...known,
     partId: part(known.partId),
+    firstStepId: step(known.firstStepId),
+    lastStepId: step(known.lastStepId),
     stepIds: known.stepIds.map(step),
   })),
   spots: studio.spots.map((known) => ({ ...known, spotId: spot(known.spotId) })),

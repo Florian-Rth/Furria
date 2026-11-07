@@ -45,9 +45,13 @@ public sealed class ActStepService
         if (mark.Refusal is { } refusal)
             return Result<IReadOnlyList<int>>.Validation(MessageOf(refusal));
 
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         var steps = mark.NewStarts.Select(start => StepAt(command.ActId, start)).ToList();
         _dbContext.ActSteps.AddRange(steps);
         await _dbContext.SaveChangesAsync(ct);
+        if (ActSteps.StepAt(timeline.Steps, command.AtSeconds) is { } splitStepId)
+            await KeepSplitHalvesInTheirPartAsync(timeline.Parts, splitStepId, steps[^1].Id, ct);
+        await transaction.CommitAsync(ct);
 
         return Result<IReadOnlyList<int>>.Success([.. steps.Select(step => step.Id)]);
     }
@@ -88,9 +92,9 @@ public sealed class ActStepService
         return Result.Success();
     }
 
-    public async Task<Result> DescribeAsync(
+    public async Task<Result> RenameAsync(
         int accountId,
-        ActStepTextCommand command,
+        RenameActStepCommand command,
         CancellationToken ct
     )
     {
@@ -98,20 +102,14 @@ public sealed class ActStepService
         if (!editable.IsSuccess)
             return editable;
 
-        var description = string.IsNullOrWhiteSpace(command.Description)
-            ? null
-            : command.Description.Trim();
-        var described = await _dbContext
+        var renamed = await _dbContext
             .ActSteps.Where(step => step.Id == command.StepId && step.ActId == command.ActId)
             .ExecuteUpdateAsync(
-                setters =>
-                    setters
-                        .SetProperty(step => step.Name, command.Name.Trim())
-                        .SetProperty(step => step.Description, description),
+                setters => setters.SetProperty(step => step.Name, command.Name.Trim()),
                 ct
             );
 
-        return described == 0 ? Result.NotFound(UnknownStepMessage) : Result.Success();
+        return renamed == 0 ? Result.NotFound(UnknownStepMessage) : Result.Success();
     }
 
     public async Task<Result> RemoveAsync(
@@ -133,7 +131,7 @@ public sealed class ActStepService
             return Result.NotFound(UnknownStepMessage);
 
         var timeline = await _timelines.TimelineOfAsync(command.ActId, ct);
-        await HandOnPartsStartingAtAsync(step.Id, timeline.Parts, ct);
+        await ShrinkPartsEndingOnAsync(step.Id, timeline.Parts, ct);
         _dbContext.ActSteps.Remove(step);
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
@@ -141,26 +139,55 @@ public sealed class ActStepService
         return Result.Success();
     }
 
-    private async Task HandOnPartsStartingAtAsync(
-        int stepId,
-        PartTiling parts,
-        CancellationToken ct
-    )
+    private async Task ShrinkPartsEndingOnAsync(int stepId, PartTiling parts, CancellationToken ct)
     {
-        var starting = await _dbContext
-            .ActParts.Where(part => part.FirstStepId == stepId)
+        var ending = await _dbContext
+            .ActParts.Where(part => part.FirstStepId == stepId || part.LastStepId == stepId)
             .ToListAsync(ct);
 
-        foreach (var part in starting)
-            if (ActParts.HeirOf(parts, part.Id, stepId) is { } heir)
-                part.FirstStepId = heir;
+        foreach (var part in ending)
+            if (
+                ActParts.Without(
+                    parts,
+                    new PartRange(part.Id, part.FirstStepId, part.LastStepId),
+                    stepId
+                ) is
+                { } shrunk
+            )
+                Reach(part, shrunk);
             else
                 _dbContext.ActParts.Remove(part);
         await _dbContext.SaveChangesAsync(ct);
     }
 
+    private async Task KeepSplitHalvesInTheirPartAsync(
+        PartTiling parts,
+        int splitStepId,
+        int newStepId,
+        CancellationToken ct
+    )
+    {
+        var reaching = ActParts.ReachingInto(parts, splitStepId, newStepId);
+        if (reaching.Count == 0)
+            return;
+
+        var partIds = reaching.Select(range => range.PartId).ToList();
+        var stored = await _dbContext
+            .ActParts.Where(part => partIds.Contains(part.Id))
+            .ToDictionaryAsync(part => part.Id, ct);
+        foreach (var range in reaching)
+            Reach(stored[range.PartId], range);
+        await _dbContext.SaveChangesAsync(ct);
+    }
+
     private Task<bool> IsStepOfAsync(int actId, int stepId, CancellationToken ct) =>
         _dbContext.ActSteps.AnyAsync(step => step.Id == stepId && step.ActId == actId, ct);
+
+    private static void Reach(ActPart part, PartRange range)
+    {
+        part.FirstStepId = range.FirstStepId;
+        part.LastStepId = range.LastStepId;
+    }
 
     [Pure]
     private static ActStep StepAt(int actId, MusicAnchor start) =>

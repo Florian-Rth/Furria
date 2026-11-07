@@ -22,9 +22,9 @@ import {
   requestSpotAssignment,
   requestSpotRemoval,
   requestStepMark,
+  requestStepName,
   requestStepRemoval,
   requestStepStart,
-  requestStepText,
   requestVideoClip,
   requestVideoName,
   requestVideoStart,
@@ -87,8 +87,8 @@ const performed = async (
         kind: 'created',
         ids: (await requestStepMark(actId, write.atSeconds, accessToken)).stepIds,
       };
-    case 'stepText':
-      return sent(requestStepText(actId, write, accessToken));
+    case 'stepName':
+      return sent(requestStepName(actId, write, accessToken));
     case 'partAdd':
       return { kind: 'created', ids: [(await requestPartAdd(actId, write, accessToken)).partId] };
     case 'partSettings':
@@ -100,6 +100,7 @@ const performed = async (
             settings: {
               name: write.name,
               firstStepId: write.firstStepId,
+              lastStepId: write.lastStepId,
               mainVideoId: write.mainVideoId,
             },
           },

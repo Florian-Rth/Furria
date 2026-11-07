@@ -2,6 +2,7 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Acts;
 using Furria.Core.Club;
+using Furria.Core.Media;
 using Furria.Core.RunningOrders;
 using Furria.Tests.Common;
 using Furria.Tests.Common.Builder;
@@ -99,6 +100,27 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
         );
         var video = Assert.Single(studio.Videos);
         Assert.Equal((0.0, 70.0), (video.ClipStartSeconds, video.ClipEndSeconds!.Value));
+    }
+
+    [Fact]
+    public async Task Should_DrawEachVideosSoundtrack_When_TheWorkerHasMeasuredIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(GardeWithDancers(_fixture.Today), ct);
+        var actId = await GardetanzAsync(ctx, ct);
+        var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+        await VideoOfAsync(_fixture, admin, actId, 70, ct);
+        var mediaItemId = Assert
+            .Single((await StudioOfAsync(admin, actId)).Studio!.Videos)
+            .MediaItemId;
+        byte[] peaks = [.. "{\"peaksPerSecond\":100,\"peaks\":[0,255]}"u8];
+        await _fixture.PlaceRenditionAsync(mediaItemId, MediaRendition.Peaks, peaks, ct);
+
+        var video = Assert.Single((await StudioOfAsync(admin, actId)).Studio!.Videos);
+        var response = await _fixture.CreateClient().GetAsync(video.Urls.Peaks, ct);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Equal(peaks, await response.Content.ReadAsByteArrayAsync(ct));
     }
 
     [Fact]

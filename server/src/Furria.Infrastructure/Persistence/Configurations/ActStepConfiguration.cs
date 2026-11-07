@@ -15,7 +15,6 @@ public sealed class ActStepConfiguration : IEntityTypeConfiguration<ActStep>
         builder.HasKey(step => step.Id);
 
         builder.Property(step => step.Name).HasMaxLength(ActStep.NameLength);
-        builder.Property(step => step.Description).HasMaxLength(ActStep.DescriptionLength);
 
         builder
             .HasOne(step => step.Act)

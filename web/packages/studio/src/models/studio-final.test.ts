@@ -61,7 +61,6 @@ const trackOf = (finalTrackId: number, version: number, adopted: boolean): Studi
 const stepOf = (stepId: number, start: number, end: number): StudioStep => ({
   stepId,
   name: '',
-  description: null,
   startSeconds: start,
   endSeconds: end,
   placement: 'onTimeline',
@@ -78,7 +77,7 @@ const videoOf = (videoId: number, start: number): StudioVideo => ({
   startSeconds: start,
   placement: 'onTimeline',
   outdated: false,
-  urls: { video: '/v', compact: '/c', poster: '/p' },
+  urls: { video: '/v', compact: '/c', poster: '/p', peaks: '/k' },
 });
 
 const studioOf = (patch: Partial<Studio>): Studio => ({

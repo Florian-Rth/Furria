@@ -1,29 +1,24 @@
 import { ActStudioFinalDeskBody } from '@furria/studio/ActStudioFinalDeskBody';
 import { finalDeskLabelOf, STUDIO_FINAL_DESK_CLOSE } from '@furria/studio/studio-copy';
-import type { StudioScreen } from '@furria/studio/studio-screen';
-import type { ActStudioFinal } from '@furria/studio/use-act-studio-final';
-import { useFinalDesk } from '@furria/studio/use-final-desk';
-import { KkPracticeSteps } from '@furria/ui/KkPracticeSteps';
+import type { FinalDesk } from '@furria/studio/use-final-desk';
+import { KkLaneInspector } from '@furria/ui/KkLaneInspector';
 import type { FC } from 'react';
 
 interface ActStudioFinalDeskProps {
-  screen: StudioScreen;
-  finalList: ActStudioFinal;
+  desk: FinalDesk;
+  onClose: () => void;
 }
 
-export const ActStudioFinalDesk: FC<ActStudioFinalDeskProps> = ({ screen, finalList }) => {
-  const desk = useFinalDesk(screen, finalList);
-  const label = finalDeskLabelOf(desk?.kind ?? finalList.desk);
-  const title = desk?.title ?? label;
-  const body = desk === null ? null : <ActStudioFinalDeskBody desk={desk} />;
+export const ActStudioFinalDesk: FC<ActStudioFinalDeskProps> = ({ desk, onClose }) => {
+  const label = finalDeskLabelOf(desk.kind);
 
   return (
-    <KkPracticeSteps open={desk !== null} label={label} onClose={finalList.closeDesk}>
-      <KkPracticeSteps.Head>
-        <KkPracticeSteps.Title text={title} />
-        <KkPracticeSteps.Close label={STUDIO_FINAL_DESK_CLOSE} onClose={finalList.closeDesk} />
-      </KkPracticeSteps.Head>
-      <KkPracticeSteps.List>{body}</KkPracticeSteps.List>
-    </KkPracticeSteps>
+    <KkLaneInspector>
+      <KkLaneInspector.Top>
+        <KkLaneInspector.Head eyebrow={label} title={desk.title} />
+        <KkLaneInspector.Close label={STUDIO_FINAL_DESK_CLOSE} onClose={onClose} />
+      </KkLaneInspector.Top>
+      <ActStudioFinalDeskBody desk={desk} />
+    </KkLaneInspector>
   );
 };

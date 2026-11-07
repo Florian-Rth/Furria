@@ -30,7 +30,7 @@ public sealed class DeleteActVideoByIdTests : IClassFixture<ApiTestFixture>
         var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
         await SongOfAsync(_fixture, admin, actId, 120, ct);
         var stepIds = await MarkedAsync(admin, actId, 60);
-        await AddPartAsync(admin, actId, stepIds[0], "Einmarsch");
+        await AddPartAsync(admin, actId, stepIds[0], stepIds[0], "Einmarsch");
         var videoId = await VideoOfAsync(_fixture, admin, actId, 70, ct);
         await PlaceVideoAsync(admin, actId, videoId, 0);
 

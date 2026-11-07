@@ -23,9 +23,9 @@ const document = (patch: Partial<StudioDocument>): StudioDocument => ({
 
 const threeSteps = document({
   steps: {
-    1: { startSeconds: 0, name: 'Auftakt', description: null },
-    2: { startSeconds: 8, name: '', description: null },
-    3: { startSeconds: 16, name: '', description: null },
+    1: { startSeconds: 0, name: 'Auftakt' },
+    2: { startSeconds: 8, name: '' },
+    3: { startSeconds: 16, name: '' },
   },
 });
 
@@ -82,106 +82,107 @@ describe('stepMove', () => {
   });
 });
 
+const part = (name: string, firstStepId: number | null, lastStepId: number | null) => ({
+  name,
+  firstStepId,
+  lastStepId,
+  mainVideoId: null,
+});
+
+const rangesOf = (result: StudioDocument): Record<string, [number | null, number | null]> =>
+  Object.fromEntries(
+    Object.entries(result.parts).map(([id, shown]) => [id, [shown.firstStepId, shown.lastStepId]]),
+  );
+
+describe('stepMark in a part', () => {
+  it('keeps the new step in the part when it splits its last step', () => {
+    const base = { ...threeSteps, parts: { 10: part('A', 1, 2) } };
+
+    const result = changed(base, {
+      kind: 'stepMark',
+      stepId: -1,
+      openingStepId: -2,
+      atSeconds: 12,
+      lengthSeconds: 40,
+    });
+
+    expect(rangesOf(result)).toEqual({ 10: [1, -1] });
+  });
+});
+
 describe('stepRemove', () => {
   it.each([
-    { name: 'hands the part start to the next step', removed: 2, parts: { 10: 3 } },
-    { name: 'keeps parts that start elsewhere', removed: 3, parts: { 10: 2 } },
+    { name: 'hands the part start to the next step', removed: 1, parts: { 10: [2, 3] } },
+    { name: 'hands the part end to the previous step', removed: 3, parts: { 10: [1, 2] } },
+    { name: 'keeps the range around a middle step', removed: 2, parts: { 10: [1, 3] } },
   ])('$name', ({ removed, parts }) => {
-    const base = { ...threeSteps, parts: { 10: { name: 'A', firstStepId: 2, mainVideoId: null } } };
+    const base = { ...threeSteps, parts: { 10: part('A', 1, 3) } };
 
-    const result = changed(base, { kind: 'stepRemove', stepId: removed });
-
-    expect(
-      Object.fromEntries(Object.entries(result.parts).map(([id, part]) => [id, part.firstStepId])),
-    ).toEqual(parts);
+    expect(rangesOf(changed(base, { kind: 'stepRemove', stepId: removed }))).toEqual(parts);
   });
 
-  it('drops a part whose heir already starts another part', () => {
-    const base = {
-      ...threeSteps,
-      parts: {
-        10: { name: 'A', firstStepId: 2, mainVideoId: null },
-        11: { name: 'B', firstStepId: 3, mainVideoId: null },
-      },
-    };
+  it('drops a part whose only step goes', () => {
+    const base = { ...threeSteps, parts: { 10: part('A', 2, 2), 11: part('B', 3, 3) } };
 
-    const result = changed(base, { kind: 'stepRemove', stepId: 2 });
-
-    expect(Object.keys(result.parts)).toEqual(['11']);
+    expect(Object.keys(changed(base, { kind: 'stepRemove', stepId: 2 }).parts)).toEqual(['11']);
   });
 
   it('leaves parts alone when a cut-away step goes', () => {
     const base = {
       ...threeSteps,
-      steps: { ...threeSteps.steps, 4: { startSeconds: null, name: '', description: null } },
-      parts: { 10: { name: 'A', firstStepId: 1, mainVideoId: null } },
+      steps: { ...threeSteps.steps, 4: { startSeconds: null, name: '' } },
+      parts: { 10: part('A', 1, 3) },
     };
 
-    const result = changed(base, { kind: 'stepRemove', stepId: 4 });
-
-    expect(result.parts).toEqual(base.parts);
+    expect(changed(base, { kind: 'stepRemove', stepId: 4 }).parts).toEqual(base.parts);
   });
 });
 
 describe('partAdd and partSettings', () => {
-  const withPart = {
-    ...threeSteps,
-    parts: { 10: { name: 'A', firstStepId: 2, mainVideoId: null } },
-  };
+  const withPart = { ...threeSteps, parts: { 10: part('A', 2, 2) } };
 
   it.each([
-    { firstStepId: 3, added: true },
-    { firstStepId: 2, added: false },
-    { firstStepId: 99, added: false },
-  ])('opens a part at step $firstStepId: $added', ({ firstStepId, added }) => {
-    const result = changed(withPart, { kind: 'partAdd', partId: -1, firstStepId, name: 'B' });
+    { firstStepId: 3, lastStepId: 3, added: true },
+    { firstStepId: 1, lastStepId: 1, added: true },
+    { firstStepId: 1, lastStepId: 2, added: false },
+    { firstStepId: 3, lastStepId: 1, added: false },
+    { firstStepId: 99, lastStepId: 99, added: false },
+  ])('opens a part on $firstStepId–$lastStepId: $added', ({ firstStepId, lastStepId, added }) => {
+    const result = changed(withPart, {
+      kind: 'partAdd',
+      partId: -1,
+      firstStepId,
+      lastStepId,
+      name: 'B',
+    });
 
     expect(result.parts[-1] !== undefined).toBe(added);
   });
 
-  it('keeps the start when the wanted step starts another part', () => {
-    const base = {
-      ...withPart,
-      parts: { ...withPart.parts, 11: { name: 'B', firstStepId: 3, mainVideoId: null } },
-    };
-
-    const result = changed(base, {
-      kind: 'partSettings',
-      partId: 10,
-      name: 'Neu',
-      firstStepId: 3,
-      mainVideoId: 4,
-    });
-
-    expect(result.parts[10]).toEqual({ name: 'Neu', firstStepId: 2, mainVideoId: 4 });
-  });
-
   it.each([
-    { partId: 11, wanted: 2, start: 2 },
-    { partId: 11, wanted: 4, start: 4 },
-    { partId: 11, wanted: 1, start: 3 },
-    { partId: 10, wanted: 2, start: 1 },
+    { firstStepId: 1, lastStepId: 2, range: [1, 2] },
+    { firstStepId: 2, lastStepId: 3, range: [2, 2] },
+    { firstStepId: 3, lastStepId: 2, range: [2, 2] },
   ])(
-    'moves part $partId to step $wanted only between its neighbours',
-    ({ partId, wanted, start }) => {
-      const base = {
-        ...threeSteps,
-        steps: { ...threeSteps.steps, 4: { startSeconds: 24, name: '', description: null } },
-        parts: {
-          10: { name: 'A', firstStepId: 1, mainVideoId: null },
-          11: { name: 'B', firstStepId: 3, mainVideoId: null },
-        },
-      };
+    'moves the range to $firstStepId–$lastStepId only without overlap',
+    ({ firstStepId, lastStepId, range }) => {
+      const base = { ...withPart, parts: { ...withPart.parts, 11: part('B', 3, 3) } };
 
       const result = changed(base, {
         kind: 'partSettings',
-        partId,
-        name: 'B',
-        firstStepId: wanted,
-        mainVideoId: null,
+        partId: 10,
+        name: 'Neu',
+        firstStepId,
+        lastStepId,
+        mainVideoId: 4,
       });
 
-      expect(result.parts[partId]?.firstStepId).toBe(start);
+      expect(result.parts[10]).toEqual({
+        name: 'Neu',
+        firstStepId: range[0],
+        lastStepId: range[1],
+        mainVideoId: 4,
+      });
     },
   );
 });
@@ -283,7 +284,7 @@ describe('mergeKeyOf', () => {
     { change: { kind: 'stepMove', stepId: 1, atSeconds: 2, lengthSeconds: 40 }, merges: true },
     { change: { kind: 'videoStart', videoId: 1, startSeconds: 2 }, merges: true },
     { change: { kind: 'videoClip', videoId: 1, startSeconds: 0, endSeconds: 2 }, merges: true },
-    { change: { kind: 'stepText', stepId: 1, name: 'Wel', description: null }, merges: true },
+    { change: { kind: 'stepName', stepId: 1, name: 'Wel' }, merges: true },
     { change: { kind: 'videoName', videoId: 1, name: 'Probe' }, merges: true },
     { change: { kind: 'tracks', tracks: { 2: [], 1: [] } }, merges: true },
     { change: { kind: 'stepRemove', stepId: 1 }, merges: false },

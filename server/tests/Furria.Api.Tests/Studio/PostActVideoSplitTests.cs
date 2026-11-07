@@ -67,7 +67,7 @@ public sealed class PostActVideoSplitTests : IClassFixture<ApiTestFixture>
         var ct = TestContext.Current.CancellationToken;
         var (admin, actId) = await MusicAsync(ct);
         var stepIds = await MarkedAsync(admin, actId, 60);
-        await AddPartAsync(admin, actId, stepIds[0], "Einmarsch");
+        await AddPartAsync(admin, actId, stepIds[0], stepIds[0], "Einmarsch");
         var videoId = await VideoOfAsync(_fixture, admin, actId, 70, ct);
         await PlaceVideoAsync(admin, actId, videoId, 0);
 

@@ -5,7 +5,13 @@ import type { CentreScrub } from '@furria/studio/use-centre-scrub';
 import { useDeskOverview } from '@furria/studio/use-desk-overview';
 import type { FC } from 'react';
 
-const OVERVIEW_ROWS = { ruler: false, parts: true, steps: false, videos: false, keys: false };
+const OVERVIEW_ROWS = {
+  ruler: false,
+  parts: true,
+  steps: false,
+  videos: false,
+  keys: false,
+};
 
 interface DeskOverviewProps {
   desk: ActDesk;

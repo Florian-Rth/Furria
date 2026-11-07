@@ -3,7 +3,6 @@ import { LessonCountsLive } from '@furria/studio/LessonCountsLive';
 import { LessonDock } from '@furria/studio/LessonDock';
 import { LessonPicture } from '@furria/studio/LessonPicture';
 import { LessonRail } from '@furria/studio/LessonRail';
-import { LessonReadDrawer } from '@furria/studio/LessonReadDrawer';
 import { LessonStrip } from '@furria/studio/LessonStrip';
 import { LESSON_LABEL, LESSON_LOOP, LESSON_NEXT } from '@furria/studio/lesson-copy';
 import type { LessonScreen } from '@furria/studio/lesson-screen';
@@ -22,6 +21,12 @@ export const LessonBody: FC<LessonBodyProps> = ({ title, tone, screen }) => {
   const lesson = useLesson(screen);
   const { card, loop, next } = lesson;
   const { playback, practice } = screen;
+  const note =
+    card.note === null ? null : (
+      <KkLesson.Part name="text">
+        <KkLesson.Text fadeKey={card.key} text={card.note} muted={false} />
+      </KkLesson.Part>
+    );
 
   return (
     <KkLesson label={LESSON_LABEL} title={title}>
@@ -53,14 +58,7 @@ export const LessonBody: FC<LessonBodyProps> = ({ title, tone, screen }) => {
               onToggle={loop.toggle}
             />
           </KkLesson.Part>
-          <KkLesson.Part name="text">
-            <KkLesson.Text
-              fadeKey={card.key}
-              text={card.text}
-              muted={card.muted}
-              onRead={lesson.reading.show}
-            />
-          </KkLesson.Part>
+          {note}
           <KkLesson.Part name="next">
             <KkLesson.Next
               fadeKey={card.key}
@@ -79,7 +77,6 @@ export const LessonBody: FC<LessonBodyProps> = ({ title, tone, screen }) => {
       <KkLesson.Area name="dock">
         <LessonDock screen={screen} />
       </KkLesson.Area>
-      <LessonReadDrawer lesson={lesson} />
     </KkLesson>
   );
 };

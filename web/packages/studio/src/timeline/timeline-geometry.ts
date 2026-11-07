@@ -46,6 +46,7 @@ const WAVE_BARS: Record<TimelineDensity, number> = {
   track: 200,
   full: 720,
   edit: 720,
+  setup: 720,
   desk: 720,
   film: 720,
   overview: 480,
@@ -57,6 +58,23 @@ const UNKEYED_DENSITIES: ReadonlySet<TimelineDensity> = new Set(['strip', 'overv
 
 export const laneKeysShownOf = (density: TimelineDensity): boolean =>
   !UNKEYED_DENSITIES.has(density);
+
+export interface NamedStep {
+  key: number;
+  number: number;
+  name: string;
+}
+
+export interface NamedSteps {
+  steps: readonly NamedStep[];
+  activeKey: number | null;
+}
+
+export const currentStepNameOf = (steps: NamedSteps | null): string | null => {
+  const current = steps?.steps.find((step) => step.key === steps.activeKey) ?? null;
+
+  return current === null ? null : `${current.number} ${current.name}`;
+};
 
 export const shareOf = (seconds: number, length: number): number =>
   length > 0 ? Math.min(1, Math.max(0, seconds / length)) : 0;

@@ -102,7 +102,7 @@ export const usePractice = (playback: StudioPlayback): Practice => {
       step === null
         ? PRACTICE_NO_STEPS
         : shownStepNameOf(step.name, stepNumberOf(steps, step.stepId)),
-    note: state.load === 'failed' ? PRACTICE_LOAD_FAILED : (step?.description ?? null),
+    note: state.load === 'failed' ? PRACTICE_LOAD_FAILED : null,
     partName: part?.name ?? null,
     playing: state.playing,
     playLabel: state.playing ? PRACTICE_PAUSE : PRACTICE_PLAY,
