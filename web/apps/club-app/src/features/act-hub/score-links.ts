@@ -1,5 +1,5 @@
+import { actDetailsPathOf } from '@/features/acts/act-details';
 import { actScreenPathOf, hallScreenOf } from '@/features/acts/act-screens';
-import { actPagePathOf } from '@/features/acts/acts-origin';
 
 export type ScoreLinkSearch = Record<string, string | number | boolean>;
 
@@ -24,18 +24,18 @@ export const musicLinkOf = (actId: number): ScoreLink => ({
 });
 
 export const detailsLinkOf = (actId: number): ScoreLink => ({
-  to: actPagePathOf(actId),
-  search: { view: 'details' },
+  to: actDetailsPathOf(actId, null),
+  search: {},
 });
 
 export const settingsLinkOf = (actId: number): ScoreLink => ({
-  to: actPagePathOf(actId),
-  search: { settings: true },
+  to: actDetailsPathOf(actId, { kind: 'settings' }),
+  search: {},
 });
 
 export const eveningLinkOf = (actId: number, eventId: number | null): ScoreLink => ({
-  to: actPagePathOf(actId),
-  search: eventId === null ? { view: 'details' } : { view: 'details', evening: eventId },
+  to: actDetailsPathOf(actId, eventId === null ? null : { kind: 'evening', eventId }),
+  search: {},
 });
 
 export const hallLinkOf = (actId: number, calendarEntryId: number | null): ScoreLink => ({

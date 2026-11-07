@@ -3,14 +3,14 @@ import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
 import type { FC, PropsWithChildren } from 'react';
 import { EVENING_PANE_LABEL } from '../act-evenings-copy';
 import { CLOSE_LABEL } from '../acts-copy';
+import type { ActDetailsPageState } from '../hooks/use-act-details-page';
 import type { ActEveningPaneState } from '../hooks/use-act-evening-pane';
-import type { ActPageState } from '../hooks/use-act-page';
 import { ActEveningPane } from './ActEveningPane';
 
 const PANE_SPAN = 5;
 
 interface ActEveningSideProps extends PropsWithChildren {
-  page: ActPageState;
+  page: ActDetailsPageState;
   pane: ActEveningPaneState;
 }
 

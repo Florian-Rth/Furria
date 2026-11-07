@@ -1,8 +1,6 @@
 import { canPractise } from '@furria/studio/music-timeline';
 import type { CastPerson } from '@/features/running-order/schemas';
-import type { ActPageSearch, ActStudio, ActViewer, CoEditor } from './schemas';
-
-export type ActPageMode = 'card' | 'details';
+import type { ActStudio, ActViewer, CoEditor } from './schemas';
 
 export type ActStudioScreen = 'practice' | 'edit' | 'training';
 
@@ -27,21 +25,6 @@ export const seesDetailsOf = (viewer: ActViewer): boolean =>
   viewer.canEditSettings ||
   viewer.canGrantCoEditors ||
   viewer.canMarkAttendance;
-
-export interface ActPageViewer {
-  canEditStudio: boolean;
-  seesDetails: boolean;
-}
-
-export const actPageModeOf = (
-  studio: ActStudio | null | undefined,
-  viewer: ActPageViewer,
-  search: Pick<ActPageSearch, 'view' | 'settings'>,
-): ActPageMode => {
-  const asksDetails = search.view === 'details' || search.settings === true;
-
-  return asksDetails && (studio === undefined || viewer.seesDetails) ? 'details' : 'card';
-};
 
 export const actScreenAccessOf = (
   studio: ActStudio | null,

@@ -36,6 +36,6 @@ describe('scoreDoorsOf', () => {
       (candidate) => candidate.key === 'evenings',
     );
 
-    expect(door?.link.search).toEqual({ view: 'details', evening: 8 });
+    expect(door?.link.to).toBe('/acts/3/details/evenings/8');
   });
 });

@@ -1,7 +1,7 @@
 ---
 rfc: 0003
 title: The studio as its own package — one engine, one stage, one timeline, native-grade touch
-status: in work — phase 14 (one route per screen); device checks owed
+status: built — device checks owed
 github_issue: 57
 branch: feat/rfc-57-studio-package
 created: 2026-11-02
@@ -1141,9 +1141,15 @@ for a non-editor on `/edit`); `/acts/$actId/training` is the **free hall** (no c
 
 #### Phase 14b — Details and its panes
 
-- [ ] Details as a layout route with settings, evening and roll call as child routes (pane on wide, drawer on the phone), Escape/close navigate to the parent
-- [ ] Links re-pointed; `view=details`, `settings`, `evening`, `roll` removed; `ActPageSearchSchema` holds only origin, `stepId`, `sheet`
-- [ ] Full web suite; shots of every route at 390×844 and 1180×820
+- [x] Details as a layout route with settings, evening and roll call as child routes (pane on wide, drawer on the phone), Escape/close navigate to the parent
+- [x] Links re-pointed; `view=details`, `settings`, `evening`, `roll` removed; `ActPageSearchSchema` holds only origin, `stepId`, `sheet`
+- [x] Full web suite; shots of every route at 390×844 and 1180×820
+
+Built 2026-11-07. Decisions: panes follow the beer-list hub pattern — empty child routes, the details page
+reads the child match (`actDetailsPaneOf`) and renders the same pane (side pane wide, drawer below `lg`);
+close/Escape replace to `/acts/$actId/details`; access in `actDetailsAccessOf` — no details rights → hub,
+settings without `canEditSettings`, evening without `canEditStudio` or an unknown id → `/details` (replace).
+Practice/edit/training return to the details or the evening pane path.
 
 ## Device checks
 
@@ -1164,7 +1170,7 @@ from). Run on the HTTPS static build on iPhone, Pixel and iPad Safari unless a l
 - [ ] **L — Video screen (findings 2026-11-03 B):** layout at 390 px and on the iPad, video block drag sets the offset without moving the music, the preview follows play and scrub, the own spot reads clearly at the same size
 - [ ] **M — One timeline (findings 2026-11-03 C):** a fast flick glides far and a normal release stops dead on iPhone and iPad; the part name stays readable while scrubbing; hub, music page, video tab, desk and lesson read the same
 - [ ] **N — Live time (findings 2026-11-03 D):** the readouts and step names follow the line while dragging and gliding on iPhone without dropping frames; the step label stays at the left edge on the hub
-- [ ] **O — Edit page and step setup (phase 13):** every job on the phone and the iPad, the setup from a new upload to named steps, the resume note
+- [ ] **O — Edit page and step setup (phases 13–14):** every job on the phone and the iPad, the setup from a new upload to named steps, the resume note; every act-area route by URL, back and close (browser back, Escape, drawer swipe)
 
 ## Risks & alternatives
 

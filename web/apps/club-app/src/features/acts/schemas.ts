@@ -51,10 +51,6 @@ export const ActScreenSearchSchema = z.object({
 export type ActScreenSearch = z.infer<typeof ActScreenSearchSchema>;
 
 export const ActPageSearchSchema = ActScreenSearchSchema.extend({
-  settings: z.boolean().optional().catch(undefined),
-  view: z.enum(['details']).optional().catch(undefined),
-  evening: z.coerce.number().int().positive().optional().catch(undefined),
-  roll: z.coerce.number().int().positive().optional().catch(undefined),
   stepId: z.coerce.number().int().positive().optional().catch(undefined),
   sheet: z.string().optional().catch(undefined),
 });

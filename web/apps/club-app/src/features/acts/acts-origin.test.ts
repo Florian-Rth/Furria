@@ -60,14 +60,15 @@ describe('playerOriginOf', () => {
       5,
       { from: 'start' },
       9,
-      { pathname: '/acts/5', search: '?from=start&view=details' },
+      { pathname: '/acts/5/details/evenings/9', search: '?from=start' },
       away,
       'Marsch',
     );
 
-    expect([origin.params, origin.search]).toEqual([
-      { actId: '5' },
-      { from: 'start', evening: '9', view: 'details' },
+    expect([origin.to, origin.params, origin.search]).toEqual([
+      '/acts/$actId/details/evenings/$eventId',
+      { actId: '5', eventId: '9' },
+      { from: 'start' },
     ]);
   });
 
@@ -76,19 +77,24 @@ describe('playerOriginOf', () => {
       5,
       { from: 'start' },
       null,
-      { pathname: '/acts/5', search: '?from=start&view=details' },
+      { pathname: '/acts/5/details/trainings/31/roll', search: '?from=start' },
       away,
       'Marsch',
     );
 
-    expect(origin.search).toEqual({ from: 'start', view: 'details' });
+    expect([origin.to, origin.params, origin.search]).toEqual([
+      '/acts/$actId/details',
+      { actId: '5' },
+      { from: 'start' },
+    ]);
   });
 
   it.each([
     ['opened directly', undefined],
     ['opened from elsewhere', { pathname: '/groups/1', search: '' }],
     ['opened from the same act practising', { pathname: '/acts/5/practice', search: '' }],
-    ['opened from another act', { pathname: '/acts/6', search: '?view=details' }],
+    ['opened from another act', { pathname: '/acts/6/details', search: '' }],
+    ['opened from a look-alike path', { pathname: '/acts/5/detailsx', search: '' }],
   ])('closes to where the act was reached from when %s', (_, behind) => {
     expect(playerOriginOf(5, { from: 'start' }, null, behind, away, 'Marsch')).toBe(away);
   });

@@ -1,3 +1,5 @@
+import type { ActDetailsPane } from '@/features/acts/act-details';
+import { actDetailsLinkOf } from '@/features/acts/act-details';
 import { actScreenLinkOf } from '@/features/acts/act-screens';
 import { ACT_PAGE_PATH, GROUP_HUB_PATH } from '@/features/acts/acts-origin';
 import type { ActScreenSearch } from '@/features/acts/schemas';
@@ -17,8 +19,6 @@ export interface ActCardLinks {
   settings: CardLink;
 }
 
-const DETAILS_VIEW = 'details';
-
 const ORIGIN_KEYS = ['from', 'group', 'event', 'filter', 'person', 'session'] as const;
 
 export const originSearchOf = (search: ActScreenSearch): CardLinkSearch =>
@@ -33,11 +33,10 @@ export const originSearchOf = (search: ActScreenSearch): CardLinkSearch =>
 const detailsLinkOf = (
   actId: number,
   search: ActScreenSearch,
-  extra: CardLinkSearch,
+  pane: ActDetailsPane | null,
 ): CardLink => ({
-  to: ACT_PAGE_PATH,
-  params: { actId: String(actId) },
-  search: { ...originSearchOf(search), view: DETAILS_VIEW, ...extra },
+  ...actDetailsLinkOf(actId, pane),
+  search: originSearchOf(search),
 });
 
 export const actCardLinksOf = (actId: number, search: ActScreenSearch): ActCardLinks => ({
@@ -49,8 +48,8 @@ export const actCardLinksOf = (actId: number, search: ActScreenSearch): ActCardL
     ...actScreenLinkOf(actId, { kind: 'edit', eventId: null }),
     search: originSearchOf(search),
   },
-  details: detailsLinkOf(actId, search, {}),
-  settings: detailsLinkOf(actId, search, { settings: true }),
+  details: detailsLinkOf(actId, search, null),
+  settings: detailsLinkOf(actId, search, { kind: 'settings' }),
 });
 
 export const actCardLinkOf = (actId: number, groupId: number): CardLink => ({

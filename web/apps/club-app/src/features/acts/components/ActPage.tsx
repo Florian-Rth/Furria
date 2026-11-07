@@ -3,10 +3,9 @@ import type { FC } from 'react';
 import { ActHubOutline } from '@/features/act-hub/components/ActHubOutline';
 import { ActHubScreen } from '@/features/act-hub/components/ActHubScreen';
 import { useStudioVisit } from '@/features/act-studio/hooks/use-studio-visit';
-import { useActPage } from '../hooks/use-act-page';
+import { useActHubPage } from '../hooks/use-act-hub-page';
 import type { ActPageSearch } from '../schemas';
 import { ActLoadGate } from './ActLoadGate';
-import { ActPageBody } from './ActPageBody';
 
 interface ActPageProps {
   actId: string;
@@ -14,18 +13,13 @@ interface ActPageProps {
 }
 
 export const ActPage: FC<ActPageProps> = ({ actId, search }) => {
-  const page = useActPage(actId, search);
+  const page = useActHubPage(actId, search);
   useStudioVisit(page.actId);
-  const data = page.query.data;
+  const data = page.load.query.data;
   const studio = data?.studio ?? null;
-  const details = (
-    <KkScreen kind="detail" title={page.title} origin={page.origin} actions={page.actions}>
-      <ActPageBody page={page} />
-    </KkScreen>
-  );
   const outline =
     data === undefined ? null : (
-      <KkScreen kind="detail" title={page.title} origin={page.origin} actions={page.actions}>
+      <KkScreen kind="detail" title={page.title} origin={page.origin} actions={page.outlineActions}>
         <ActHubOutline data={data} />
       </KkScreen>
     );
@@ -42,11 +36,10 @@ export const ActPage: FC<ActPageProps> = ({ actId, search }) => {
         origin={page.origin}
       />
     );
-  const screen = page.mode === 'details' ? details : hub;
 
   return (
     <ActLoadGate load={page.load} title={page.title} origin={page.origin}>
-      {screen}
+      {hub}
     </ActLoadGate>
   );
 };

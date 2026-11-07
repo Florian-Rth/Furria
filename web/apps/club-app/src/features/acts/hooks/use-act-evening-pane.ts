@@ -21,7 +21,7 @@ import {
 } from '../act-evenings-copy';
 import { GUEST_BADGE, toShortName, toTileStateLabel } from '../acts-copy';
 import type { ActStudio, ActStudioResponse, StudioEvening } from '../schemas';
-import type { ActPageState } from './use-act-page';
+import type { ActDetailsPageState } from './use-act-details-page';
 
 type Confirming = 'reset' | 'leave' | null;
 
@@ -60,7 +60,7 @@ export interface ActEveningPaneState {
 }
 
 export const useActEveningPane = (
-  page: ActPageState,
+  page: ActDetailsPageState,
   data: ActStudioResponse,
   studio: ActStudio,
   evening: StudioEvening,

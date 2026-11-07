@@ -1,12 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import type { CastPerson } from '@/features/running-order/schemas';
 import type { ActScreenAccess, ActStudioScreen } from './act-studio';
-import {
-  actPageModeOf,
-  actScreenAccessOf,
-  canChangeCoEditors,
-  coEditorCandidatesOf,
-} from './act-studio';
+import { actScreenAccessOf, canChangeCoEditors, coEditorCandidatesOf } from './act-studio';
 import type { ActStudio, CoEditor } from './schemas';
 
 const urls = { normalised: '/n', preview: '/p', peaks: '/k' };
@@ -72,33 +67,6 @@ describe('canChangeCoEditors', () => {
     [true, false, true, false],
   ])('grant %s, closed %s, archived %s → %s', (canGrant, closed, archived, expected) => {
     expect(canChangeCoEditors(canGrant, { closed, archived })).toBe(expected);
-  });
-});
-
-describe('actPageModeOf', () => {
-  const playable = studio({
-    songs: [song(1)],
-    music: { lengthSeconds: 60, source: 'workingMix' },
-  });
-  const member = { canEditStudio: false, seesDetails: false };
-  const editor = { canEditStudio: true, seesDetails: true };
-  const details = { view: 'details' as const };
-
-  it.each([
-    ['lands on the act card', playable, member, {}, 'card'],
-    ['lands an editor on the act card too', playable, editor, {}, 'card'],
-    ['shows the details to an editor', playable, editor, details, 'details'],
-    ['keeps a cast member on the card', playable, member, details, 'card'],
-    [
-      'shows the details while the settings are open',
-      playable,
-      editor,
-      { settings: true },
-      'details',
-    ],
-    ['expects the details while loading when asked', undefined, member, details, 'details'],
-  ])('%s', (_case, shown, viewer, search, expected) => {
-    expect(actPageModeOf(shown, viewer, search)).toBe(expected);
   });
 });
 

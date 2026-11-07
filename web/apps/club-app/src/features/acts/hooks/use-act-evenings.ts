@@ -2,13 +2,12 @@ import { canPractise } from '@furria/studio/music-timeline';
 import type { KkChipTone } from '@furria/ui/KkChip';
 import type { KkLinkSearch } from '@furria/ui/kk-link-search';
 import { useEveningMutations } from '@/features/act-studio/evening-api';
+import { actDetailsPathOf } from '../act-details';
 import { eveningEntryOf } from '../act-evenings';
 import { EVENING_CHANGED_HINT, toEveningMeta, toEveningStateChip } from '../act-evenings-copy';
 import { actScreenPathOf } from '../act-screens';
 import { originLinkSearchOf } from '../acts-origin';
 import type { ActStudio, ActStudioResponse } from '../schemas';
-
-const CURRENT_ROUTE = '.';
 
 export interface ActEveningRowState {
   eventId: number;
@@ -28,22 +27,14 @@ export interface ActEvenings {
   join: (eventId: number) => void;
 }
 
-const DETAILS_VIEW = 'details';
-
-const paneSearchOf =
-  (eventId: number): KkLinkSearch =>
-  ({ settings: _settings, roll: _roll, ...kept }) => ({
-    ...kept,
-    view: DETAILS_VIEW,
-    evening: eventId,
-  });
-
 export const useActEvenings = (data: ActStudioResponse, studio: ActStudio): ActEvenings => {
   const mutations = useEveningMutations(data.act.actId);
   const canEdit = data.viewer.canEditStudio;
   const practisable = canPractise(studio);
   const targetOf = (eventId: number): string =>
-    canEdit ? CURRENT_ROUTE : actScreenPathOf(data.act.actId, { kind: 'practice', eventId });
+    canEdit
+      ? actDetailsPathOf(data.act.actId, { kind: 'evening', eventId })
+      : actScreenPathOf(data.act.actId, { kind: 'practice', eventId });
 
   return {
     rows: studio.evenings.map((evening) => {
@@ -59,7 +50,7 @@ export const useActEvenings = (data: ActStudioResponse, studio: ActStudio): ActE
         stateTone: chip.tone,
         changedFlag: entry.changes.length === 0 ? undefined : EVENING_CHANGED_HINT,
         to: reachable ? targetOf(evening.eventId) : null,
-        search: canEdit ? paneSearchOf(evening.eventId) : originLinkSearchOf,
+        search: originLinkSearchOf,
         canJoin: canEdit && entry.state === 'open',
       };
     }),

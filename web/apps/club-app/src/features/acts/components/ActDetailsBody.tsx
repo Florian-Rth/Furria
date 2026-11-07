@@ -10,18 +10,18 @@ import { VERSIONS_TITLE } from '@/features/act-studio/undo-copy';
 import { ActTrainingRollPanel } from '@/features/act-training/components/ActTrainingRollPanel';
 import { ActTrainingsSection } from '@/features/act-training/components/ActTrainingsSection';
 import { CAST_ONLY_NOTE, toActStateNote } from '../act-page-copy';
-import type { ActPageState } from '../hooks/use-act-page';
+import type { ActDetailsPageState } from '../hooks/use-act-details-page';
 import { ActCoEditorsSection } from './ActCoEditorsSection';
 import { ActEveningPanel } from './ActEveningPanel';
 import { ActEveningsSection } from './ActEveningsSection';
 import { ActPageLoading } from './ActPageLoading';
 import { ActSettingsSide } from './ActSettingsSide';
 
-interface ActPageBodyProps {
-  page: ActPageState;
+interface ActDetailsBodyProps {
+  page: ActDetailsPageState;
 }
 
-export const ActPageBody: FC<ActPageBodyProps> = ({ page }) => {
+export const ActDetailsBody: FC<ActDetailsBodyProps> = ({ page }) => {
   const data = page.query.data;
 
   if (data === undefined) {

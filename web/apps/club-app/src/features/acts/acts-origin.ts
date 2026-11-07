@@ -8,12 +8,10 @@ import {
   START_ORIGIN,
 } from '@/features/session/app-sections';
 import type { BackStackSpot } from '@/lib/back-stack';
+import { actDetailsLinkOf, actDetailsPathOf } from './act-details';
 import { ACT_DETAILS_LABEL } from './act-page-copy';
 import { ACTS_TITLE, GROUP_ACTS_TITLE } from './acts-copy';
 import type { ActPageOrigin, ActScreenSearch, ActsSearch } from './schemas';
-
-const DETAILS_VIEW = 'details';
-const CARD_VIEW = 'card';
 
 export const PLANNER_PATH = '/events/$eventId/running-order';
 export const GROUP_HUB_PATH = '/groups/$groupId';
@@ -185,19 +183,20 @@ export const originTextSearchOf = (search: ActScreenSearch): Record<string, stri
   );
 };
 
-const detailsSearchOf = (
-  search: ActScreenSearch,
-  eventId: number | null,
-): Record<string, string> => {
-  const details = { ...originTextSearchOf(search), view: DETAILS_VIEW };
+type ActViewBehind = 'card' | 'details' | null;
 
-  return eventId === null ? details : { ...details, evening: String(eventId) };
+const viewBehindOf = (spot: BackStackSpot | undefined, actId: number): ActViewBehind => {
+  if (spot === undefined) {
+    return null;
+  }
+  if (spot.pathname === actPagePathOf(actId)) {
+    return 'card';
+  }
+
+  const details = actDetailsPathOf(actId, null);
+
+  return spot.pathname === details || spot.pathname.startsWith(`${details}/`) ? 'details' : null;
 };
-
-const viewBehindOf = (spot: BackStackSpot | undefined, actId: number): string | null =>
-  spot === undefined || spot.pathname !== actPagePathOf(actId)
-    ? null
-    : (new URLSearchParams(spot.search).get('view') ?? CARD_VIEW);
 
 export const actCardOriginOf = (
   actId: number,
@@ -226,14 +225,13 @@ export const playerOriginOf = (
 ): KkScreenOrigin => {
   const view = viewBehindOf(behind, actId);
 
-  if (view === DETAILS_VIEW) {
+  if (view === 'details') {
     return {
       label: ACT_DETAILS_LABEL,
-      to: ACT_PAGE_PATH,
-      params: { actId: String(actId) },
-      search: detailsSearchOf(search, eventId),
+      ...actDetailsLinkOf(actId, eventId === null ? null : { kind: 'evening', eventId }),
+      search: originTextSearchOf(search),
     };
   }
 
-  return view === CARD_VIEW ? actCardOriginOf(actId, search, name) : away;
+  return view === 'card' ? actCardOriginOf(actId, search, name) : away;
 };
