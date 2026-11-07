@@ -1,8 +1,8 @@
-import type { JobAction } from '@furria/studio/edit-jobs-view';
 import { JobActionButton } from '@furria/studio/JobActionButton';
 import { JobGroupHead } from '@furria/studio/JobGroupHead';
 import { JobReasonLine } from '@furria/studio/JobReasonLine';
-import { KkEjPanel } from '@furria/ui/KkEjPanel';
+import type { JobAction } from '@furria/studio/job-view';
+import { KkJobPanel } from '@furria/ui/KkJobPanel';
 import type { FC } from 'react';
 
 interface JobToolsSectionProps {
@@ -16,10 +16,10 @@ export const JobToolsSection: FC<JobToolsSectionProps> = ({ label, title, aside,
   const buttons = actions.map((action) => <JobActionButton key={action.key} action={action} />);
 
   return (
-    <KkEjPanel.Group label={label}>
+    <KkJobPanel.Group label={label}>
       <JobGroupHead title={title} aside={aside} />
-      <KkEjPanel.Tools>{buttons}</KkEjPanel.Tools>
+      <KkJobPanel.Tools>{buttons}</KkJobPanel.Tools>
       <JobReasonLine actions={actions} />
-    </KkEjPanel.Group>
+    </KkJobPanel.Group>
   );
 };

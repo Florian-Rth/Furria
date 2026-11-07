@@ -1,6 +1,6 @@
-import { EJ_HISTORY_EMPTY, EJ_HISTORY_LIST } from '@furria/studio/edit-jobs-copy';
+import { JOB_HISTORY_EMPTY, JOB_HISTORY_LIST } from '@furria/studio/job-copy';
 import type { VisitHistory } from '@furria/studio/visit-history';
-import { KkEjPanel } from '@furria/ui/KkEjPanel';
+import { KkJobPanel } from '@furria/ui/KkJobPanel';
 import { KkLaneInspector } from '@furria/ui/KkLaneInspector';
 import type { FC } from 'react';
 
@@ -10,8 +10,8 @@ interface JobHistoryListProps {
 
 export const JobHistoryList: FC<JobHistoryListProps> = ({ history }) => {
   if (history.rows.length === 0) {
-    return <KkEjPanel.Note text={EJ_HISTORY_EMPTY} />;
+    return <KkJobPanel.Note text={JOB_HISTORY_EMPTY} />;
   }
 
-  return <KkLaneInspector.Log label={EJ_HISTORY_LIST} rows={history.rows} />;
+  return <KkLaneInspector.Log label={JOB_HISTORY_LIST} rows={history.rows} />;
 };

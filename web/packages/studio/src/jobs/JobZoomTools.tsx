@@ -1,7 +1,7 @@
-import { EJ_FIT, EJ_ZOOM, EJ_ZOOM_IN, EJ_ZOOM_OUT } from '@furria/studio/edit-jobs-copy';
+import { JOB_FIT, JOB_ZOOM, JOB_ZOOM_IN, JOB_ZOOM_OUT } from '@furria/studio/job-copy';
 import type { CentreScrub } from '@furria/studio/use-centre-scrub';
-import { KkEjButton } from '@furria/ui/KkEjButton';
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
+import { KkPillButton } from '@furria/ui/KkPillButton';
 import type { FC } from 'react';
 
 interface JobZoomToolsProps {
@@ -19,23 +19,23 @@ export const JobZoomTools: FC<JobZoomToolsProps> = ({ centre }) => {
   const inLocked = !centre.canZoomIn;
 
   return (
-    <KkLaneBar.Group label={EJ_ZOOM}>
-      <KkEjButton
-        text={EJ_ZOOM_OUT}
+    <KkLaneBar.Group label={JOB_ZOOM}>
+      <KkPillButton
+        text={JOB_ZOOM_OUT}
         glyph="zoomOut"
         textShown={false}
         disabled={outLocked}
         onPress={zoomOut}
       />
-      <KkEjButton
-        text={EJ_ZOOM_IN}
+      <KkPillButton
+        text={JOB_ZOOM_IN}
         glyph="zoomIn"
         textShown={false}
         disabled={inLocked}
         onPress={zoomIn}
       />
-      <KkEjButton
-        text={EJ_FIT}
+      <KkPillButton
+        text={JOB_FIT}
         glyph="fit"
         textShown={false}
         pressed={centre.fitted}

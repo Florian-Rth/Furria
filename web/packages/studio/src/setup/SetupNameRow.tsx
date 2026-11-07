@@ -1,5 +1,5 @@
 import type { NameRow } from '@furria/studio/use-setup-names';
-import { KkSsNames } from '@furria/ui/KkSsNames';
+import { KkStepNames } from '@furria/ui/KkStepNames';
 import type { FC } from 'react';
 
 interface SetupNameRowProps {
@@ -8,7 +8,7 @@ interface SetupNameRowProps {
 }
 
 export const SetupNameRow: FC<SetupNameRowProps> = ({ row, last }) => (
-  <KkSsNames.Row
+  <KkStepNames.Row
     number={row.number}
     label={row.label}
     value={row.value}

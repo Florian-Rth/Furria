@@ -1,6 +1,6 @@
-import type { JobView } from '@furria/studio/edit-jobs-view';
-import { partFirstOf } from '@furria/studio/edit-jobs-view';
 import { jobStageOf } from '@furria/studio/job-stage';
+import type { JobView } from '@furria/studio/job-view';
+import { partFirstOf } from '@furria/studio/job-view';
 import { scrubKeyActionsOf } from '@furria/studio/studio-key-actions';
 import type { StudioScreen } from '@furria/studio/studio-screen';
 import { setupShownOf, setupStartsOpen } from '@furria/studio/studio-setup';
@@ -11,12 +11,12 @@ import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 import { useActStudioTakes } from '@furria/studio/use-act-studio-takes';
 import type { JobArrange } from '@furria/studio/use-arrange';
 import { useArrange } from '@furria/studio/use-arrange';
+import type { CurrentJob } from '@furria/studio/use-current-job';
+import { useCurrentJob } from '@furria/studio/use-current-job';
 import type { DeskBorders } from '@furria/studio/use-desk-borders';
 import { useDeskBorders } from '@furria/studio/use-desk-borders';
 import type { DeskLaneRows } from '@furria/studio/use-desk-lanes';
 import { useDeskLanes } from '@furria/studio/use-desk-lanes';
-import type { EditJobs } from '@furria/studio/use-edit-jobs';
-import { useEditJobs } from '@furria/studio/use-edit-jobs';
 import { useJobConfirm } from '@furria/studio/use-job-confirm';
 import { useJobSetup } from '@furria/studio/use-job-setup';
 import { useJobViews } from '@furria/studio/use-job-views';
@@ -27,7 +27,7 @@ export type JobDeskPane = 'job' | 'history' | 'setup';
 
 export interface JobDesk {
   screen: StudioScreen;
-  jobs: EditJobs;
+  jobs: CurrentJob;
   desk: ActDesk;
   stage: ActStudioStage;
   arrange: JobArrange;
@@ -61,7 +61,7 @@ export const lockedVideosOf = (desk: ActDesk, openVideos: () => void): ActDesk =
 
 export const useJobDesk = (screen: StudioScreen, editor: ActStudioStage): JobDesk => {
   const confirm = useJobConfirm();
-  const jobs = useEditJobs(screen, confirm);
+  const jobs = useCurrentJob(screen, confirm);
   const takes = useActStudioTakes(screen);
   const plainDesk = useActDesk(screen, editor, takes);
   const onEvening = screen.evening !== null;

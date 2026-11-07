@@ -1,6 +1,6 @@
 import type { SetupTask } from '@furria/studio/setup-task';
 import { unnamedStepNameOf } from '@furria/studio/step-names';
-import { nameLabelOf, SS_NAMES_HINT } from '@furria/studio/step-setup-copy';
+import { nameLabelOf, SETUP_NAMES_HINT } from '@furria/studio/step-setup-copy';
 import type { SetupTimeline } from '@furria/studio/use-setup-timeline';
 import { useSetupTimeline } from '@furria/studio/use-setup-timeline';
 import type { StepSetup } from '@furria/studio/use-step-setup';
@@ -70,7 +70,7 @@ export const useSetupNames = (setup: StepSetup): SetupNames => {
   });
 
   return {
-    task: { sentence: SS_NAMES_HINT, tools: [], more: [] },
+    task: { sentence: SETUP_NAMES_HINT, tools: [], more: [] },
     rows,
     timeline,
   };

@@ -4,7 +4,7 @@ import type { MixPlayer } from '@furria/studio/mix-player';
 import { readoutCountOf, STEP_CARDS_READOUT } from '@furria/studio/step-cards-copy';
 import { fineClockOf } from '@furria/studio/studio-copy';
 import { usePlaybackText } from '@furria/studio/use-playback-seconds';
-import { KkEjReadout } from '@furria/ui/KkEjReadout';
+import { KkClockReadout } from '@furria/ui/KkClockReadout';
 import type { FC } from 'react';
 
 interface JobPhoneReadoutProps {
@@ -21,5 +21,5 @@ export const JobPhoneReadout: FC<JobPhoneReadoutProps> = ({ player, counts }) =>
   const time = usePlaybackText(player, fineClockOf);
   const count = usePlaybackText(player, countAt);
 
-  return <KkEjReadout label={STEP_CARDS_READOUT} time={time} count={count} />;
+  return <KkClockReadout label={STEP_CARDS_READOUT} time={time} count={count} />;
 };

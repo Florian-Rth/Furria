@@ -1,4 +1,4 @@
-import { KkEjPanel } from '@furria/ui/KkEjPanel';
+import { KkJobPanel } from '@furria/ui/KkJobPanel';
 import type { FC } from 'react';
 
 interface JobGroupHeadProps {
@@ -11,5 +11,5 @@ export const JobGroupHead: FC<JobGroupHeadProps> = ({ title, aside }) => {
     return null;
   }
 
-  return <KkEjPanel.GroupHead text={title} aside={aside} />;
+  return <KkJobPanel.GroupHead text={title} aside={aside} />;
 };

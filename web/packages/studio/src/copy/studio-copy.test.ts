@@ -1,4 +1,4 @@
-import { cutClockOf, fineClockOf, offsetTextOf, spotMetaOf } from '@furria/studio/studio-copy';
+import { cutClockOf, fineClockOf, offsetTextOf } from '@furria/studio/studio-copy';
 import { describe, expect, it } from 'vitest';
 
 describe('time formatters', () => {
@@ -26,15 +26,5 @@ describe('time formatters', () => {
     [-1, '0:00,00'],
   ])('cutClockOf(%s)', (seconds, text) => {
     expect(cutClockOf(seconds)).toBe(text);
-  });
-});
-
-describe('spotMetaOf', () => {
-  it.each([
-    [0, 'Mitte · 2,0 m hinten · 0 Wegpunkte'],
-    [1, 'Mitte · 2,0 m hinten · 1 Wegpunkt'],
-    [3, 'Mitte · 2,0 m hinten · 3 Wegpunkte'],
-  ])('counts %s waypoints', (keys, text) => {
-    expect(spotMetaOf(0, 2, keys)).toBe(text);
   });
 });

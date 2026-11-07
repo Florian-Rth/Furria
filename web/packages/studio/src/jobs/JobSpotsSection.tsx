@@ -1,5 +1,5 @@
-import type { JobListRow } from '@furria/studio/edit-jobs-view';
-import { KkEjPanel } from '@furria/ui/KkEjPanel';
+import type { JobListRow } from '@furria/studio/job-view';
+import { KkJobPanel } from '@furria/ui/KkJobPanel';
 import { KkStudioList } from '@furria/ui/KkStudioList';
 import type { FC } from 'react';
 
@@ -25,9 +25,9 @@ export const JobSpotsSection: FC<JobSpotsSectionProps> = ({ title, aside, rows }
   ));
 
   return (
-    <KkEjPanel.Group label={title}>
-      <KkEjPanel.GroupHead text={title} aside={aside} />
+    <KkJobPanel.Group label={title}>
+      <KkJobPanel.GroupHead text={title} aside={aside} />
       {shown}
-    </KkEjPanel.Group>
+    </KkJobPanel.Group>
   );
 };

@@ -3,23 +3,23 @@ import { matchPhaseOf } from '@furria/studio/setup-match';
 import type { SetupTool } from '@furria/studio/setup-task';
 import { toolOf } from '@furria/studio/setup-task';
 import {
-  SS_EARLIER_BIG,
-  SS_EARLIER_BIG_LABEL,
-  SS_EARLIER_SMALL,
-  SS_EARLIER_SMALL_LABEL,
-  SS_LATER_BIG,
-  SS_LATER_BIG_LABEL,
-  SS_LATER_SMALL,
-  SS_LATER_SMALL_LABEL,
-  SS_MATCH_CHECK,
-  SS_MATCH_FAILED,
-  SS_MATCH_MISSING,
-  SS_MATCH_SEARCHING,
-  SS_MATCH_WAITING,
-  SS_SEARCH_AGAIN,
-  SS_START_HERE,
-  SS_START_HERE_LABEL,
-  SS_VIDEO_PICK,
+  SETUP_EARLIER_BIG,
+  SETUP_EARLIER_BIG_LABEL,
+  SETUP_EARLIER_SMALL,
+  SETUP_EARLIER_SMALL_LABEL,
+  SETUP_LATER_BIG,
+  SETUP_LATER_BIG_LABEL,
+  SETUP_LATER_SMALL,
+  SETUP_LATER_SMALL_LABEL,
+  SETUP_MATCH_CHECK,
+  SETUP_MATCH_FAILED,
+  SETUP_MATCH_MISSING,
+  SETUP_MATCH_SEARCHING,
+  SETUP_MATCH_WAITING,
+  SETUP_SEARCH_AGAIN,
+  SETUP_START_HERE,
+  SETUP_START_HERE_LABEL,
+  SETUP_VIDEO_PICK,
 } from '@furria/studio/step-setup-copy';
 import type { CutSpan } from '@furria/studio/studio-cuts';
 import type { VideoAlignment } from '@furria/studio/studio-schemas';
@@ -36,12 +36,12 @@ const SMALL_SECONDS = 0.1;
 const NO_CLIP: CutSpan = { startSeconds: 0, endSeconds: 0 };
 
 const SENTENCE: Record<MatchPhase, string> = {
-  none: SS_VIDEO_PICK,
-  waiting: SS_MATCH_WAITING,
-  searching: SS_MATCH_SEARCHING,
-  check: SS_MATCH_CHECK,
-  missing: SS_MATCH_MISSING,
-  failed: SS_MATCH_FAILED,
+  none: SETUP_VIDEO_PICK,
+  waiting: SETUP_MATCH_WAITING,
+  searching: SETUP_MATCH_SEARCHING,
+  check: SETUP_MATCH_CHECK,
+  missing: SETUP_MATCH_MISSING,
+  failed: SETUP_MATCH_FAILED,
 };
 
 export interface SetupMatch {
@@ -122,13 +122,13 @@ export const useSetupMatch = (setup: StepSetup): SetupMatch => {
     };
   const startHere = toolOf(
     'startHere',
-    SS_START_HERE,
+    SETUP_START_HERE,
     () => {
       startAt(player.position() - clip.startSeconds);
     },
-    SS_START_HERE_LABEL,
+    SETUP_START_HERE_LABEL,
   );
-  const search = toolOf('search', SS_SEARCH_AGAIN, () => {
+  const search = toolOf('search', SETUP_SEARCH_AGAIN, () => {
     setFailedId(null);
     const aligned = ({ startSeconds }: VideoAlignment): void => {
       placeAt(startSeconds);
@@ -146,10 +146,10 @@ export const useSetupMatch = (setup: StepSetup): SetupMatch => {
   return {
     ...base,
     nudges: [
-      toolOf('earlierBig', SS_EARLIER_BIG, shift(-BIG_SECONDS), SS_EARLIER_BIG_LABEL),
-      toolOf('earlierSmall', SS_EARLIER_SMALL, shift(-SMALL_SECONDS), SS_EARLIER_SMALL_LABEL),
-      toolOf('laterSmall', SS_LATER_SMALL, shift(SMALL_SECONDS), SS_LATER_SMALL_LABEL),
-      toolOf('laterBig', SS_LATER_BIG, shift(BIG_SECONDS), SS_LATER_BIG_LABEL),
+      toolOf('earlierBig', SETUP_EARLIER_BIG, shift(-BIG_SECONDS), SETUP_EARLIER_BIG_LABEL),
+      toolOf('earlierSmall', SETUP_EARLIER_SMALL, shift(-SMALL_SECONDS), SETUP_EARLIER_SMALL_LABEL),
+      toolOf('laterSmall', SETUP_LATER_SMALL, shift(SMALL_SECONDS), SETUP_LATER_SMALL_LABEL),
+      toolOf('laterBig', SETUP_LATER_BIG, shift(BIG_SECONDS), SETUP_LATER_BIG_LABEL),
     ],
     fixes: [startHere, search],
   };

@@ -2,7 +2,7 @@ import { SetupDeck } from '@furria/studio/SetupDeck';
 import { SetupTaskPanel } from '@furria/studio/SetupTaskPanel';
 import { SetupVideoCheck } from '@furria/studio/SetupVideoCheck';
 import { SetupVideoPick } from '@furria/studio/SetupVideoPick';
-import { SS_STAGE_TEXT } from '@furria/studio/step-setup-copy';
+import { SETUP_STAGE_TEXT } from '@furria/studio/step-setup-copy';
 import { useSetupVideo } from '@furria/studio/use-setup-video';
 import type { StepSetup } from '@furria/studio/use-step-setup';
 import type { FC } from 'react';
@@ -21,7 +21,7 @@ export const SetupVideoStage: FC<SetupVideoStageProps> = ({ setup }) => {
   return (
     <>
       <SetupDeck setup={setup} timeline={videos.match.timeline} />
-      <SetupTaskPanel task={videos.task} title={SS_STAGE_TEXT.video} wide={wide}>
+      <SetupTaskPanel task={videos.task} title={SETUP_STAGE_TEXT.video} wide={wide}>
         {body}
       </SetupTaskPanel>
     </>

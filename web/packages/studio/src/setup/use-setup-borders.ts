@@ -9,14 +9,14 @@ import {
 import type { SetupTask, SetupTool } from '@furria/studio/setup-task';
 import { toolOf } from '@furria/studio/setup-task';
 import {
-  SS_TAP,
-  SS_TAP_HINT,
-  SS_TAP_LABEL,
-  SS_TUNE_DELETE,
-  SS_TUNE_EARLIER,
-  SS_TUNE_EARLIER_LABEL,
-  SS_TUNE_LATER,
-  SS_TUNE_LATER_LABEL,
+  SETUP_TAP,
+  SETUP_TAP_HINT,
+  SETUP_TAP_LABEL,
+  SETUP_TUNE_DELETE,
+  SETUP_TUNE_EARLIER,
+  SETUP_TUNE_EARLIER_LABEL,
+  SETUP_TUNE_LATER,
+  SETUP_TUNE_LATER_LABEL,
   tuneTitleOf,
   videoStepsOf,
 } from '@furria/studio/step-setup-copy';
@@ -161,9 +161,9 @@ export const useSetupBorders = (setup: StepSetup): SetupBorders => {
           : () => {
               choose(next);
             },
-      earlier: toolOf('earlier', SS_TUNE_EARLIER, shift(-1), SS_TUNE_EARLIER_LABEL),
-      later: toolOf('later', SS_TUNE_LATER, shift(1), SS_TUNE_LATER_LABEL),
-      remove: toolOf('delete', SS_TUNE_DELETE, () => {
+      earlier: toolOf('earlier', SETUP_TUNE_EARLIER, shift(-1), SETUP_TUNE_EARLIER_LABEL),
+      later: toolOf('later', SETUP_TUNE_LATER, shift(1), SETUP_TUNE_LATER_LABEL),
+      remove: toolOf('delete', SETUP_TUNE_DELETE, () => {
         player.setLoop(null);
         setChosenKey(previous?.key ?? null);
         work.change({ kind: 'stepRemove', stepId: border.afterId });
@@ -172,11 +172,11 @@ export const useSetupBorders = (setup: StepSetup): SetupBorders => {
   };
 
   return {
-    task: { sentence: SS_TAP_HINT, tools: [], more: [] },
+    task: { sentence: SETUP_TAP_HINT, tools: [], more: [] },
     tap: {
-      text: SS_TAP,
+      text: SETUP_TAP,
       meta: videoStepsOf(videoSteps.length),
-      label: SS_TAP_LABEL,
+      label: SETUP_TAP_LABEL,
       disabled: range === null || length <= 0,
       press: tap,
     },

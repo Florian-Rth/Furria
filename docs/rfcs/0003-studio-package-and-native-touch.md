@@ -1076,9 +1076,18 @@ setup share `useActStudioPage` + `ActStudioPageGate` (not found, denied, error w
 
 #### Phase 13b — Old editor out, final primitive names
 
-- [ ] Delete the replaced editor (card editor, desk editor and their hooks, kits and copy) once nothing imports it; grep for leftovers
-- [ ] Rename the lab primitives `KkEj*` / `KkSs*` to final names (one name per job, no lab prefixes) with their `exports`
-- [ ] Merge lab clones into the production primitives they copy where both remain
+- [x] Delete the replaced editor (card editor, desk editor and their hooks, kits and copy) once nothing imports it; grep for leftovers
+- [x] Rename the lab primitives `KkEj*` / `KkSs*` to final names (one name per job, no lab prefixes) with their `exports`
+- [x] Merge lab clones into the production primitives they copy where both remain
+
+Built 2026-11-07. Decisions: dead code found by tracing everything reachable from both apps' `main.tsx`
+(38 editor files + ~186 exports gone; desk lanes, overview, borders, desk-time and the song/video/final desks
+stay — the job editor and music page use them). Primitive names: `KkEditor{Stage,Desk,Head,ToolBar}`,
+`KkJobSwitch`, `KkJobPanel`, `KkCompass`, `KkLaneFocus`, `KkMenuItem`, `KkClockReadout`, `KkSelectionChip`,
+`KkStage{Float,Head,Hint,Measure,Name,Tools}`, `KkSetup{Frame,Progress,Title,Task,Summary}`, `KkBigTap`,
+`KkStepNames`, `KkStudioStepList`, `KkPillButton`. `KkEjGlyph` merged into `KkLaneGlyph`; `KkPillButton` stays
+apart from `KkLaneButton` (different pressed/danger/disabled paint). Copy constants `JOB_*`, `SETUP_*`,
+`STEP_LIST_*`; `StudioScreenContext`; `use-step-list` split into rows and detail.
 
 #### Phase 13c — Docs and validation
 

@@ -1,5 +1,5 @@
 import { StudioSaveButton } from '@furria/studio/StudioSaveButton';
-import { SS_SAVE_FAILED, SS_SAVING } from '@furria/studio/step-setup-copy';
+import { SETUP_SAVE_FAILED, SETUP_SAVING } from '@furria/studio/step-setup-copy';
 import type { VisitHistory } from '@furria/studio/visit-history';
 import { KkMeta } from '@furria/ui/KkMeta';
 import type { FC } from 'react';
@@ -13,14 +13,14 @@ export const SetupSaveState: FC<SetupSaveStateProps> = ({ history }) => {
     case 'saving':
       return (
         <KkMeta component="span" sx={{ flexShrink: 0 }}>
-          {SS_SAVING}
+          {SETUP_SAVING}
         </KkMeta>
       );
     case 'failed':
       return (
         <>
           <KkMeta component="span" tone="accent" sx={{ flexShrink: 0 }}>
-            {SS_SAVE_FAILED}
+            {SETUP_SAVE_FAILED}
           </KkMeta>
           <StudioSaveButton history={history} textShown={false} />
         </>

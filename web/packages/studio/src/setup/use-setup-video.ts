@@ -4,12 +4,12 @@ import { stepsInRangeOf } from '@furria/studio/setup-progress';
 import type { SetupTask, SetupTool } from '@furria/studio/setup-task';
 import { toolOf } from '@furria/studio/setup-task';
 import {
-  SS_GATE_TEXT,
-  SS_MUSIC_PAGE,
-  SS_UPLOAD_FAILED,
-  SS_VIDEO_FAILED,
-  SS_VIDEO_UNPLACED,
-  SS_VIDEO_WAITING,
+  SETUP_GATE_TEXT,
+  SETUP_MUSIC_PAGE,
+  SETUP_UPLOAD_FAILED,
+  SETUP_VIDEO_FAILED,
+  SETUP_VIDEO_UNPLACED,
+  SETUP_VIDEO_WAITING,
   uploadMetaOf,
   videoLengthOf,
   videoMetaOf,
@@ -57,11 +57,11 @@ const stateMetaOf = (video: StudioVideo, steps: readonly TimedStep[]): string[] 
       ];
     }
     case 'waiting':
-      return [SS_VIDEO_WAITING];
+      return [SETUP_VIDEO_WAITING];
     case 'failed':
-      return [SS_VIDEO_FAILED];
+      return [SETUP_VIDEO_FAILED];
     case 'unplaced':
-      return [SS_VIDEO_UNPLACED];
+      return [SETUP_VIDEO_UNPLACED];
   }
 };
 
@@ -75,7 +75,7 @@ const uploadRowsOf = (uploads: StudioUploads): SetupVideoRow[] =>
   uploads.rows.map((row) => ({
     key: `upload-${row.key}`,
     title: row.name,
-    meta: row.failure === null ? uploadMetaOf(row.share) : SS_UPLOAD_FAILED,
+    meta: row.failure === null ? uploadMetaOf(row.share) : SETUP_UPLOAD_FAILED,
     selected: false,
     dimmed: true,
     press:
@@ -129,7 +129,7 @@ export const useSetupVideo = (setup: StepSetup): SetupVideo => {
             setup.chooseVideo(null);
           },
         };
-  const musicTool = toolOf('music', SS_MUSIC_PAGE, () => {
+  const musicTool = toolOf('music', SETUP_MUSIC_PAGE, () => {
     setup.screen.openMusic('music');
   });
   const { hasMusic } = setup.facts;
@@ -139,7 +139,7 @@ export const useSetupVideo = (setup: StepSetup): SetupVideo => {
 
   return {
     task: {
-      sentence: noMusic ? SS_GATE_TEXT.noMusic : match.sentence,
+      sentence: noMusic ? SETUP_GATE_TEXT.noMusic : match.sentence,
       tools,
       more: checking ? match.fixes : [],
     },

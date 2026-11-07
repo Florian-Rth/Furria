@@ -1,43 +1,43 @@
 import { countsBetweenOf } from '@furria/studio/count-marks';
 import {
-  EJ_EVENING_STEPS,
-  EJ_FIRST_STEP,
-  EJ_FIRST_STEP_LABEL,
-  EJ_GROUP_LENGTH,
-  EJ_GROUP_MAIN_VIDEO,
-  EJ_GROUP_PART_START,
-  EJ_GROUP_STEPS,
-  EJ_GROUP_TEXT,
-  EJ_LAST_STEP,
-  EJ_LONGER,
-  EJ_LONGER_LABEL,
-  EJ_LOOP_PART,
-  EJ_LOOP_PART_LABEL,
-  EJ_MARK,
-  EJ_MARK_LABEL,
-  EJ_NAME,
-  EJ_NEW_PART,
-  EJ_NO_STEP,
-  EJ_NO_STEP_HINT,
-  EJ_NO_STEP_MUSIC,
-  EJ_PART_DISSOLVE,
-  EJ_PART_EARLIER,
-  EJ_PART_LATER,
-  EJ_PART_NAME,
-  EJ_PART_OWNER,
-  EJ_SHORTER,
-  EJ_SHORTER_LABEL,
-  EJ_STEP_DELETE,
-  EJ_STEP_OWNER,
-  EJ_SURE,
-  EJ_SURE_DISSOLVE,
+  JOB_EVENING_STEPS,
+  JOB_FIRST_STEP,
+  JOB_FIRST_STEP_LABEL,
+  JOB_GROUP_LENGTH,
+  JOB_GROUP_MAIN_VIDEO,
+  JOB_GROUP_PART_START,
+  JOB_GROUP_STEPS,
+  JOB_GROUP_TEXT,
+  JOB_LAST_STEP,
+  JOB_LONGER,
+  JOB_LONGER_LABEL,
+  JOB_LOOP_PART,
+  JOB_LOOP_PART_LABEL,
+  JOB_MARK,
+  JOB_MARK_LABEL,
+  JOB_NAME,
+  JOB_NEW_PART,
+  JOB_NO_STEP,
+  JOB_NO_STEP_HINT,
+  JOB_NO_STEP_MUSIC,
+  JOB_PART_DISSOLVE,
+  JOB_PART_EARLIER,
+  JOB_PART_LATER,
+  JOB_PART_NAME,
+  JOB_PART_OWNER,
+  JOB_SHORTER,
+  JOB_SHORTER_LABEL,
+  JOB_STEP_DELETE,
+  JOB_STEP_OWNER,
+  JOB_SURE,
+  JOB_SURE_DISSOLVE,
   partMetaOf,
   stepMetaOf,
   stepOwnerOf,
   stepTitleOf,
-} from '@furria/studio/edit-jobs-copy';
-import type { JobAction, JobBlock, JobSection, JobView } from '@furria/studio/edit-jobs-view';
-import { actionsIn, jobActionOf } from '@furria/studio/edit-jobs-view';
+} from '@furria/studio/job-copy';
+import type { JobAction, JobBlock, JobSection, JobView } from '@furria/studio/job-view';
+import { actionsIn, jobActionOf } from '@furria/studio/job-view';
 import { partOfStep } from '@furria/studio/music-timeline';
 import { stepNumberOf } from '@furria/studio/step-names';
 import type { StudioScreen } from '@furria/studio/studio-screen';
@@ -76,12 +76,12 @@ export const useStepsJob = (
   const first = steps.length === 0;
   const mark = jobActionOf(
     'mark',
-    first ? EJ_FIRST_STEP : EJ_MARK,
+    first ? JOB_FIRST_STEP : JOB_MARK,
     'mark',
     () => {
       work.mark(markSecondsOf(playback, player.position()), length);
     },
-    { label: first ? EJ_FIRST_STEP_LABEL : EJ_MARK_LABEL, tone: first ? 'accent' : 'quiet' },
+    { label: first ? JOB_FIRST_STEP_LABEL : JOB_MARK_LABEL, tone: first ? 'accent' : 'quiet' },
   );
   const silent = length <= 0;
 
@@ -91,15 +91,15 @@ export const useStepsJob = (
       : [{ kind: 'tools', key: 'mark', title: null, aside: null, actions: [mark] }];
     const noStep: JobBlock = {
       key: 'none',
-      owner: EJ_STEP_OWNER,
-      title: EJ_NO_STEP,
-      meta: silent ? EJ_NO_STEP_MUSIC : EJ_NO_STEP_HINT,
+      owner: JOB_STEP_OWNER,
+      title: JOB_NO_STEP,
+      meta: silent ? JOB_NO_STEP_MUSIC : JOB_NO_STEP_HINT,
       sections: onSession
         ? startSections
-        : [{ kind: 'note', key: 'evening', text: EJ_EVENING_STEPS }],
+        : [{ kind: 'note', key: 'evening', text: JOB_EVENING_STEPS }],
       danger: null,
     };
-    const view = { context: EJ_NO_STEP, blocks: [noStep], bar: [] };
+    const view = { context: JOB_NO_STEP, blocks: [noStep], bar: [] };
 
     return { ...view, bar: actionsIn(view, ['mark']) };
   }
@@ -115,37 +115,37 @@ export const useStepsJob = (
   const lengthTools: JobAction[] = [
     jobActionOf(
       'shorter',
-      EJ_SHORTER,
+      JOB_SHORTER,
       'shorter',
       () => {
         borders.stretch(step.stepId, -1);
       },
-      { label: EJ_SHORTER_LABEL },
+      { label: JOB_SHORTER_LABEL },
     ),
     jobActionOf(
       'longer',
-      EJ_LONGER,
+      JOB_LONGER,
       'longer',
       () => {
         borders.stretch(step.stepId, 1);
       },
-      { label: EJ_LONGER_LABEL },
+      { label: JOB_LONGER_LABEL },
     ),
   ];
-  const newPart = jobActionOf('newPart', EJ_NEW_PART, 'part', desk?.openPart ?? ignore);
+  const newPart = jobActionOf('newPart', JOB_NEW_PART, 'parts', desk?.openPart ?? ignore);
   const splitTools = startsAPart(parts, step.stepId) ? [mark] : [mark, newPart];
   const lengthSection: JobSection = canStretch
-    ? { kind: 'tools', key: 'length', title: EJ_GROUP_LENGTH, aside: null, actions: lengthTools }
-    : { kind: 'note', key: 'length', text: EJ_LAST_STEP };
+    ? { kind: 'tools', key: 'length', title: JOB_GROUP_LENGTH, aside: null, actions: lengthTools }
+    : { kind: 'note', key: 'length', text: JOB_LAST_STEP };
   const sessionSections: JobSection[] = [
     {
       kind: 'fields',
       key: 'text',
-      title: EJ_GROUP_TEXT,
+      title: JOB_GROUP_TEXT,
       fields: [
         {
           key: 'name',
-          label: EJ_NAME,
+          label: JOB_NAME,
           value: texts.name,
           placeholder: step.name,
           change: texts.rename,
@@ -154,7 +154,7 @@ export const useStepsJob = (
       ],
     },
     lengthSection,
-    { kind: 'tools', key: 'steps', title: EJ_GROUP_STEPS, aside: null, actions: splitTools },
+    { kind: 'tools', key: 'steps', title: JOB_GROUP_STEPS, aside: null, actions: splitTools },
   ];
   const stepBlock: JobBlock = {
     key: `step:${step.stepId}`,
@@ -163,11 +163,11 @@ export const useStepsJob = (
     meta: stepMetaOf(start, end, counts),
     sections: onSession
       ? sessionSections
-      : [{ kind: 'note', key: 'evening', text: EJ_EVENING_STEPS }],
+      : [{ kind: 'note', key: 'evening', text: JOB_EVENING_STEPS }],
     danger: onSession
       ? jobActionOf(
           'deleteStep',
-          confirm.armed(deleteKey) ? EJ_SURE : EJ_STEP_DELETE,
+          confirm.armed(deleteKey) ? JOB_SURE : JOB_STEP_DELETE,
           'delete',
           () => {
             confirm.press(deleteKey, () => {
@@ -182,12 +182,12 @@ export const useStepsJob = (
   const partDesk = desk?.part ?? null;
   const loopPart = jobActionOf(
     'loopPart',
-    EJ_LOOP_PART,
+    JOB_LOOP_PART,
     'loop',
     () => {
       practice.loopPart(step.stepId);
     },
-    { label: EJ_LOOP_PART_LABEL, pressed: loopingPart },
+    { label: JOB_LOOP_PART_LABEL, pressed: loopingPart },
   );
   const loopSection: JobSection = {
     kind: 'tools',
@@ -202,14 +202,14 @@ export const useStepsJob = (
           ...(shown.shiftLocked.earlier
             ? []
             : [
-                jobActionOf('partEarlier', EJ_PART_EARLIER, 'earlier', () => {
+                jobActionOf('partEarlier', JOB_PART_EARLIER, 'earlier', () => {
                   shown.shift('earlier');
                 }),
               ]),
           ...(shown.shiftLocked.later
             ? []
             : [
-                jobActionOf('partLater', EJ_PART_LATER, 'later', () => {
+                jobActionOf('partLater', JOB_PART_LATER, 'later', () => {
                   shown.shift('later');
                 }),
               ]),
@@ -222,7 +222,7 @@ export const useStepsJob = (
             {
               kind: 'tools',
               key: 'partStart',
-              title: EJ_GROUP_PART_START,
+              title: JOB_GROUP_PART_START,
               aside: null,
               actions: shifts,
             },
@@ -232,11 +232,11 @@ export const useStepsJob = (
       {
         kind: 'fields',
         key: 'partName',
-        title: EJ_PART_NAME,
+        title: JOB_PART_NAME,
         fields: [
           {
             key: 'partName',
-            label: EJ_PART_NAME,
+            label: JOB_PART_NAME,
             value: shown.name,
             placeholder: name,
             change: shown.rename,
@@ -248,7 +248,7 @@ export const useStepsJob = (
       {
         kind: 'choices',
         key: 'mainVideo',
-        title: EJ_GROUP_MAIN_VIDEO,
+        title: JOB_GROUP_MAIN_VIDEO,
         aside: null,
         choices: shown.videos.map((video) => ({
           key: video.key,
@@ -268,7 +268,7 @@ export const useStepsJob = (
       ? null
       : {
           key: `part:${part.partId}`,
-          owner: EJ_PART_OWNER,
+          owner: JOB_PART_OWNER,
           title: part.name,
           meta: partMetaOf(
             stepNumberOf(steps, part.stepIds[0] ?? -1),
@@ -279,7 +279,7 @@ export const useStepsJob = (
           danger: onSession
             ? jobActionOf(
                 'dissolve',
-                confirm.armed(`part:${part.partId}`) ? EJ_SURE_DISSOLVE : EJ_PART_DISSOLVE,
+                confirm.armed(`part:${part.partId}`) ? JOB_SURE_DISSOLVE : JOB_PART_DISSOLVE,
                 'dissolve',
                 () => {
                   confirm.press(`part:${part.partId}`, () => {

@@ -1,6 +1,5 @@
 import type { MediaItemState } from '@furria/api-client/media-schemas';
 import type { UploadFailure } from '@furria/api-client/upload-failure';
-import type { KeyframeEasing } from '@furria/studio/choreography-motion';
 import { formatReadoutMetres } from '@furria/studio/drag-readout';
 import type { GesturePrecisionTier } from '@furria/studio/gesture-recogniser';
 import type { CountAt, TimelineRange } from '@furria/studio/music-timeline';
@@ -63,106 +62,14 @@ export const STUDIO_SONG_REMOVE_SURE = 'Wirklich entfernen';
 export const STUDIO_SONG_PREPARING = 'wird vorbereitet';
 export const STUDIO_SONG_FAILED = 'ließ sich nicht vorbereiten';
 
-export const STUDIO_STEP_DESK = 'Schritt bearbeiten';
-export const STUDIO_STEP_DESK_CLOSE = 'Schritt schließen';
 export const STUDIO_STEP = 'Schritt';
-export const STUDIO_STEP_REMOVE = 'Schritt entfernen';
-export const STUDIO_STEP_REMOVE_SURE = 'Wirklich entfernen';
 export const STUDIO_PART = 'Teil';
-export const STUDIO_PART_NAME = 'Name des Teils';
-export const STUDIO_PART_OPEN = 'Neuer Teil ab hier';
-export const STUDIO_PART_EARLIER = 'Beginnt früher';
-export const STUDIO_PART_LATER = 'Beginnt später';
-export const STUDIO_PART_REMOVE = 'Teil auflösen';
-export const STUDIO_PART_REMOVE_SURE = 'Wirklich auflösen';
-export const STUDIO_MAIN_VIDEO = 'Hauptvideo';
 export const STUDIO_MAIN_VIDEO_NONE = 'Keins';
-export const STUDIO_PART_NAME_LENGTH = 80;
-
 export const STUDIO_FRONT = 'Publikum';
-export const STUDIO_ONION = 'Vorher';
 export const STUDIO_NOTHING_SELECTED = 'Punkt antippen';
-export const STUDIO_SELECTION_BAR = 'Auswahl';
-export const STUDIO_SELECTION_MIRROR = 'Spiegeln';
-export const STUDIO_SELECTION_ROW = 'Reihe';
-export const STUDIO_SELECTION_SPREAD = 'Verteilen';
-export const STUDIO_SELECTION_CLEAR = 'Abwählen';
-
 export const stagePlaceTextOf = (rightMetres: number, backMetres: number): string =>
   `${formatReadoutMetres(rightMetres)} ${rightMetres < 0 ? 'links' : 'rechts'} · ${formatReadoutMetres(backMetres)} hinten`;
-export const STUDIO_SPOTS = 'Plätze';
-export const STUDIO_SPOTS_CLOSE = 'Auswahl schließen';
-export const STUDIO_OPEN_SPOT = 'frei';
-export const STUDIO_SELECTED = 'gewählt';
-export const STUDIO_NOT_PLACED = 'nicht aufgestellt';
-export const STUDIO_SPOT_ADD = 'Platz hinzufügen';
-export const STUDIO_ARRANGE = 'Anordnen';
-export const STUDIO_ARRANGE_LABEL = 'Aufstellung anordnen';
-export const STUDIO_ALIGN = 'Ausrichten';
-export const STUDIO_ALIGN_ROW = 'In eine Reihe';
-export const STUDIO_ALIGN_COLUMN = 'Hintereinander';
-export const STUDIO_DISTRIBUTE = 'Gleich verteilen';
-export const STUDIO_DISTRIBUTE_ACROSS = 'Quer';
-export const STUDIO_DISTRIBUTE_DEEP = 'In die Tiefe';
-export const STUDIO_PRESETS = 'Vorlage';
-export const STUDIO_PRESET_LINE = 'Linie';
-export const STUDIO_PRESET_BLOCK = 'Block';
-export const STUDIO_PRESET_CIRCLE = 'Kreis';
-export const STUDIO_COPY = 'Von Schritt übernehmen';
-export const STUDIO_NO_COPY_SOURCE = '–';
-export const STUDIO_COPY_APPLY = 'Übernehmen';
-export const STUDIO_COPY_EARLIER = 'Früherer Schritt';
-export const STUDIO_COPY_LATER = 'Späterer Schritt';
-export const STUDIO_SPOT_PERSON = 'Wer steht hier';
-export const STUDIO_SPOT_FREE = 'Frei lassen';
-export const STUDIO_HOLDERS = 'Besetzung';
-export const STUDIO_HOLDERS_FREE = 'frei';
-export const holderChipTextOf = (firstName: string, lastName: string): string =>
-  `${firstName} ${lastName.charAt(0)}.`;
-export const holderMoveLabelOf = (firstName: string, lastName: string): string =>
-  `${firstName} ${lastName} auf einen Platz ziehen`;
-export const STUDIO_SPOT_REMOVE = 'Platz entfernen';
-export const STUDIO_SPOT_REMOVE_SURE = 'Wirklich entfernen';
-
-export const arrangeScopeOf = (selected: number): string =>
-  selected === 0
-    ? 'Alle Plätze'
-    : selected === 1
-      ? '1 Platz gewählt'
-      : `${selected} Plätze gewählt`;
-
-export const copySourceTextOf = (index: number): string => unnamedStepNameOf(index + 1);
-
-export const spotDeskTitleOf = (number: number): string => `Platz ${number}`;
-
-export const castChoiceTextOf = (
-  firstName: string,
-  lastName: string,
-  spot: number | null,
-): string => (spot === null ? `${firstName} ${lastName}` : `${firstName} ${lastName} · ${spot}`);
-
 export const STUDIO_BEND_LABEL = 'Kurve: ziehen zum Biegen';
-export const STUDIO_MOVE_DESK = 'Weg bearbeiten';
-export const STUDIO_MOVE_NONE = 'Kein Weg an dieser Stelle';
-export const STUDIO_MOVE_CURVE = 'Kurve';
-export const STUDIO_MOVE_BENT = 'gebogen';
-export const STUDIO_MOVE_STRAIGHT = 'gerade';
-export const STUDIO_MOVE_STRAIGHTEN = 'Gerade ziehen';
-export const STUDIO_MOVE_EASING = 'Tempo';
-export const STUDIO_MOVE_FACING = 'Blick am Ziel';
-export const STUDIO_MOVE_TURN_LEFT = 'Nach links drehen';
-export const STUDIO_MOVE_TURN_RIGHT = 'Nach rechts drehen';
-export const STUDIO_MOVE_UNFACE = 'Frei';
-export const STUDIO_MOVE_KEY = 'Wegpunkt hier';
-export const STUDIO_MOVE_UNKEY = 'Wegpunkt entfernen';
-
-export const EASING_TEXT: Record<KeyframeEasing, string> = {
-  linear: 'Gleichmäßig',
-  easeIn: 'Langsam los',
-  easeOut: 'Langsam ankommen',
-  easeInOut: 'Weich',
-};
-
 const FACING_TEXT: Readonly<Record<number, string>> = {
   0: 'nach vorn',
   45: 'vorn rechts',
@@ -176,9 +83,6 @@ const FACING_TEXT: Readonly<Record<number, string>> = {
 
 export const facingTextOf = (degrees: number | null): string =>
   degrees === null ? 'frei' : (FACING_TEXT[degrees] ?? `${Math.round(degrees)}°`);
-
-export const moveDeskTitleOf = (from: number, to: number): string =>
-  `Weg ${fineClockOf(from)}–${fineClockOf(to)}`;
 
 export const STUDIO_TAKES = 'Videos je Teil';
 export const STUDIO_TAKES_WITHOUT_PART = 'Ohne Teil';
@@ -342,15 +246,6 @@ export const selectionTextOf = (count: number, single: string | null): string =>
   return count === 1 && single !== null ? single : `${count} Plätze`;
 };
 
-export const spotMetaOf = (rightMetres: number, backMetres: number, keys: number): string => {
-  const side =
-    Math.abs(rightMetres) < 0.05
-      ? 'Mitte'
-      : `${Math.abs(rightMetres).toFixed(1).replace('.', ',')} m ${rightMetres > 0 ? 'rechts' : 'links'}`;
-
-  return `${side} · ${backMetres.toFixed(1).replace('.', ',')} m hinten · ${keys} ${keys === 1 ? 'Wegpunkt' : 'Wegpunkte'}`;
-};
-
 export const formationTextOf = (number: number, start: number): string =>
   `Aufstellung Schritt ${number} · ab ${fineClockOf(start)}`;
 
@@ -469,7 +364,6 @@ export const songDeskTitleOf = (
     ? `Lied ${number} · ${name} · Stück ${piece} von ${pieces}`
     : `Lied ${number} · ${name}`;
 
-export const STUDIO_STEP_GONE = 'Den Schritt gibt es nicht mehr. Sein Fenster ist zu.';
 export const STUDIO_SONG_GONE = 'Das Lied gibt es nicht mehr. Sein Fenster ist zu.';
 export const STUDIO_VIDEO_GONE = 'Das Video gibt es nicht mehr. Sein Fenster ist zu.';
 export const EVENING_BAND_PREFIX = 'Du bearbeitest';

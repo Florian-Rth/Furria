@@ -4,7 +4,7 @@ import { SetupTransport } from '@furria/studio/SetupTransport';
 import { workingLaneOf } from '@furria/studio/setup-task';
 import type { SetupTimeline } from '@furria/studio/use-setup-timeline';
 import type { StepSetup } from '@furria/studio/use-step-setup';
-import { KkSsFrame } from '@furria/ui/KkSsFrame';
+import { KkSetupFrame } from '@furria/ui/KkSetupFrame';
 import type { FC } from 'react';
 
 interface SetupDeckProps {
@@ -19,20 +19,20 @@ export const SetupDeck: FC<SetupDeckProps> = ({ setup, timeline }) => {
 
   return (
     <>
-      <KkSsFrame.Picture>
+      <KkSetupFrame.Picture>
         <SetupPicture setup={setup} />
-      </KkSsFrame.Picture>
-      <KkSsFrame.Timeline>
+      </KkSetupFrame.Picture>
+      <KkSetupFrame.Timeline>
         <SetupTimelineView timeline={timeline} focus={focus} wide={wide} />
-      </KkSsFrame.Timeline>
-      <KkSsFrame.Transport>
+      </KkSetupFrame.Timeline>
+      <KkSetupFrame.Transport>
         <SetupTransport
           screen={setup.screen}
           centre={timeline.centre}
           wide={wide}
           playSpan={playSpan}
         />
-      </KkSsFrame.Transport>
+      </KkSetupFrame.Transport>
     </>
   );
 };

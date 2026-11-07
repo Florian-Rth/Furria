@@ -1,12 +1,12 @@
 import { arrangeActionOf, selectAllActionOf } from '@furria/studio/arrange-actions';
-import { allPickedOf, arrangeToolsOf } from '@furria/studio/edit-jobs';
-import { EJ_STAGE_TOOLS } from '@furria/studio/edit-jobs-copy';
+import { JOB_STAGE_TOOLS } from '@furria/studio/job-copy';
+import { allPickedOf, arrangeToolsOf } from '@furria/studio/job-model';
 import type { SelectionAnchor } from '@furria/studio/studio-dots';
 import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 import type { JobArrange } from '@furria/studio/use-arrange';
-import { KkEjStageFloat } from '@furria/ui/KkEjStageFloat';
-import { KkEjStageTools } from '@furria/ui/KkEjStageTools';
-import { KkEjToolBar } from '@furria/ui/KkEjToolBar';
+import { KkEditorToolBar } from '@furria/ui/KkEditorToolBar';
+import { KkStageFloat } from '@furria/ui/KkStageFloat';
+import { KkStageTools } from '@furria/ui/KkStageTools';
 import type { FC } from 'react';
 
 interface JobStageToolbarProps {
@@ -28,7 +28,7 @@ export const JobStageToolbar: FC<JobStageToolbarProps> = ({ editor, arrange, anc
   }
 
   const tools = actions.map((action) => (
-    <KkEjToolBar.Tool
+    <KkEditorToolBar.Tool
       key={action.key}
       text={action.text}
       glyph={action.glyph}
@@ -38,10 +38,10 @@ export const JobStageToolbar: FC<JobStageToolbarProps> = ({ editor, arrange, anc
   ));
 
   return (
-    <KkEjStageFloat x={anchor.x} y={anchor.y} side={anchor.side}>
-      <KkEjStageTools label={EJ_STAGE_TOOLS}>
-        <KkEjStageTools.Row>{tools}</KkEjStageTools.Row>
-      </KkEjStageTools>
-    </KkEjStageFloat>
+    <KkStageFloat x={anchor.x} y={anchor.y} side={anchor.side}>
+      <KkStageTools label={JOB_STAGE_TOOLS}>
+        <KkStageTools.Row>{tools}</KkStageTools.Row>
+      </KkStageTools>
+    </KkStageFloat>
   );
 };

@@ -1,5 +1,5 @@
-import { EJ_FREE_NAME } from '@furria/studio/edit-jobs-copy';
 import { JobStageToolbar } from '@furria/studio/JobStageToolbar';
+import { JOB_FREE_NAME } from '@furria/studio/job-copy';
 import { Stage } from '@furria/studio/Stage';
 import type { StageNamePlace } from '@furria/studio/stage-names';
 import { stageNamesOf } from '@furria/studio/stage-names';
@@ -11,9 +11,9 @@ import type { JobArrange } from '@furria/studio/use-arrange';
 import { useBoxSize } from '@furria/studio/use-box-size';
 import { usePlaybackSeconds } from '@furria/studio/use-playback-seconds';
 import type { StudioStageWork } from '@furria/studio/use-studio-stage-work';
-import { KkEjStageMeasure } from '@furria/ui/KkEjStageMeasure';
-import type { KkEjStageNameSize } from '@furria/ui/KkEjStageName';
-import { KkEjStageName } from '@furria/ui/KkEjStageName';
+import { KkStageMeasure } from '@furria/ui/KkStageMeasure';
+import type { KkStageNameSize } from '@furria/ui/KkStageName';
+import { KkStageName } from '@furria/ui/KkStageName';
 import type { FC } from 'react';
 
 const NO_PLACES: ReadonlyMap<string, StageNamePlace> = new Map();
@@ -31,7 +31,7 @@ interface JobStageDotsProps {
   work: StudioStageWork;
   named: boolean;
   bigNames: boolean;
-  nameSize: KkEjStageNameSize;
+  nameSize: KkStageNameSize;
 }
 
 export const JobStageDots: FC<JobStageDotsProps> = ({
@@ -63,7 +63,7 @@ export const JobStageDots: FC<JobStageDotsProps> = ({
     key: dot.key,
     x: dot.x,
     y: dot.y,
-    name: names.get(dot.key) ?? EJ_FREE_NAME,
+    name: names.get(dot.key) ?? JOB_FREE_NAME,
   }));
   const places =
     box.size === null || !named
@@ -75,7 +75,7 @@ export const JobStageDots: FC<JobStageDotsProps> = ({
 
     return {
       ...dot,
-      shownName: name ?? EJ_FREE_NAME,
+      shownName: name ?? JOB_FREE_NAME,
       free: name === null,
       place: place ?? null,
     };
@@ -100,7 +100,7 @@ export const JobStageDots: FC<JobStageDotsProps> = ({
     dot.place === null
       ? []
       : [
-          <KkEjStageName
+          <KkStageName
             key={`name:${dot.key}`}
             x={dot.x}
             y={dot.y}
@@ -130,7 +130,7 @@ export const JobStageDots: FC<JobStageDotsProps> = ({
 
   return (
     <>
-      <KkEjStageMeasure measureRef={box.ref} />
+      <KkStageMeasure measureRef={box.ref} />
       {shownDots}
       {tags}
       {handles}

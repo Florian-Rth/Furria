@@ -1,5 +1,5 @@
-import type { JobField } from '@furria/studio/edit-jobs-view';
-import { KkEjPanel } from '@furria/ui/KkEjPanel';
+import type { JobField } from '@furria/studio/job-view';
+import { KkJobPanel } from '@furria/ui/KkJobPanel';
 import { KkLaneInspector } from '@furria/ui/KkLaneInspector';
 import type { FC } from 'react';
 
@@ -23,5 +23,5 @@ export const JobFieldsSection: FC<JobFieldsSectionProps> = ({ title, fields }) =
     />
   ));
 
-  return <KkEjPanel.Group label={title}>{inputs}</KkEjPanel.Group>;
+  return <KkJobPanel.Group label={title}>{inputs}</KkJobPanel.Group>;
 };

@@ -1,7 +1,7 @@
-import { SS_VIDEO_OTHER } from '@furria/studio/step-setup-copy';
+import { SETUP_VIDEO_OTHER } from '@furria/studio/step-setup-copy';
 import type { SetupVideoRow } from '@furria/studio/use-setup-video';
 import { KkButton } from '@furria/ui/KkButton';
-import { KkSsSummary } from '@furria/ui/KkSsSummary';
+import { KkSetupSummary } from '@furria/ui/KkSetupSummary';
 import type { FC } from 'react';
 
 interface SetupVideoCheckProps {
@@ -11,9 +11,9 @@ interface SetupVideoCheckProps {
 export const SetupVideoCheck: FC<SetupVideoCheckProps> = ({ chosen }) => {
   const change = (
     <KkButton variant="outlined" size="small" onClick={chosen.press}>
-      {SS_VIDEO_OTHER}
+      {SETUP_VIDEO_OTHER}
     </KkButton>
   );
 
-  return <KkSsSummary title={chosen.title} meta={chosen.meta} action={change} />;
+  return <KkSetupSummary title={chosen.title} meta={chosen.meta} action={change} />;
 };

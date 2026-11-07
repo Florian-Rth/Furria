@@ -1,6 +1,6 @@
-import { EJ_LOOP_STEP, EJ_LOOP_STEP_LABEL, tempoTextOf } from '@furria/studio/edit-jobs-copy';
+import { JOB_LOOP_STEP, JOB_LOOP_STEP_LABEL, tempoTextOf } from '@furria/studio/job-copy';
 import type { StudioScreen } from '@furria/studio/studio-screen';
-import { KkEjButton } from '@furria/ui/KkEjButton';
+import { KkPillButton } from '@furria/ui/KkPillButton';
 import type { FC } from 'react';
 
 interface JobTransportExtrasProps {
@@ -21,16 +21,16 @@ export const JobTransportExtras: FC<JobTransportExtrasProps> = ({ screen, compac
 
   return (
     <>
-      <KkEjButton
+      <KkPillButton
         text={tempo}
         label={practice.rateLabel}
         pressed={practice.slowed}
         onPress={practice.slowDown}
       />
-      <KkEjButton
-        text={EJ_LOOP_STEP}
+      <KkPillButton
+        text={JOB_LOOP_STEP}
         glyph="loop"
-        label={EJ_LOOP_STEP_LABEL}
+        label={JOB_LOOP_STEP_LABEL}
         textShown={!compact}
         pressed={looping}
         disabled={step === null}

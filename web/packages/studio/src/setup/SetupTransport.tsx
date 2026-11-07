@@ -4,13 +4,13 @@ import type { TimelineRange } from '@furria/studio/music-timeline';
 import { SetupTransportGroup } from '@furria/studio/SetupTransportGroup';
 import { SetupZoomTools } from '@furria/studio/SetupZoomTools';
 import {
-  SS_LOOP_SHORT,
-  SS_LOOP_STEP,
-  SS_STEP_BACK,
-  SS_STEP_FORWARD,
-  SS_TRANSPORT,
-  SS_TRANSPORT_PRACTICE,
-  SS_TRANSPORT_STEPS,
+  SETUP_LOOP_SHORT,
+  SETUP_LOOP_STEP,
+  SETUP_STEP_BACK,
+  SETUP_STEP_FORWARD,
+  SETUP_TRANSPORT,
+  SETUP_TRANSPORT_PRACTICE,
+  SETUP_TRANSPORT_STEPS,
   tempoShortOf,
 } from '@furria/studio/step-setup-copy';
 import type { StudioScreen } from '@furria/studio/studio-screen';
@@ -64,8 +64,8 @@ export const SetupTransport: FC<SetupTransportProps> = ({ screen, centre, wide, 
   const repeatAndTempo = (
     <>
       <KkLaneButton
-        text={SS_LOOP_SHORT}
-        label={SS_LOOP_STEP}
+        text={SETUP_LOOP_SHORT}
+        label={SETUP_LOOP_STEP}
         glyph="loop"
         textShown={wide}
         pressed={looping}
@@ -81,7 +81,7 @@ export const SetupTransport: FC<SetupTransportProps> = ({ screen, centre, wide, 
     </>
   );
   const practiceTools = wide ? (
-    <SetupTransportGroup label={SS_TRANSPORT_PRACTICE}>{repeatAndTempo}</SetupTransportGroup>
+    <SetupTransportGroup label={SETUP_TRANSPORT_PRACTICE}>{repeatAndTempo}</SetupTransportGroup>
   ) : (
     repeatAndTempo
   );
@@ -96,12 +96,12 @@ export const SetupTransport: FC<SetupTransportProps> = ({ screen, centre, wide, 
     <Stack
       direction="row"
       role="toolbar"
-      aria-label={SS_TRANSPORT}
+      aria-label={SETUP_TRANSPORT}
       sx={{ alignItems: 'center', justifyContent: 'space-between', gap: 1, minWidth: 0 }}
     >
-      <SetupTransportGroup label={SS_TRANSPORT_STEPS}>
+      <SetupTransportGroup label={SETUP_TRANSPORT_STEPS}>
         <KkLaneButton
-          text={SS_STEP_BACK}
+          text={SETUP_STEP_BACK}
           glyph="back"
           textShown={false}
           disabled={stepLocked}
@@ -116,7 +116,7 @@ export const SetupTransport: FC<SetupTransportProps> = ({ screen, centre, wide, 
           onPress={toggle}
         />
         <KkLaneButton
-          text={SS_STEP_FORWARD}
+          text={SETUP_STEP_FORWARD}
           glyph="forward"
           textShown={false}
           disabled={stepLocked}

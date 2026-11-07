@@ -1,4 +1,3 @@
-import { ActDeskScreen } from '@furria/studio/ActDeskScreen';
 import { ActStudioHead } from '@furria/studio/ActStudioHead';
 import { ActStudioHero } from '@furria/studio/ActStudioHero';
 import { ActStudioLargeKeys } from '@furria/studio/ActStudioLargeKeys';
@@ -6,14 +5,11 @@ import { LessonBody } from '@furria/studio/LessonBody';
 import { LessonEmpty } from '@furria/studio/LessonEmpty';
 import { canPractise } from '@furria/studio/music-timeline';
 import { PracticeSteps } from '@furria/studio/PracticeSteps';
-import { StepCardsView } from '@furria/studio/StepCardsView';
 import { STUDIO_LABEL } from '@furria/studio/studio-copy';
 import type { StudioScreen } from '@furria/studio/studio-screen';
-import { useActStudioStage } from '@furria/studio/use-act-studio-stage';
 import type { KkGroupTone } from '@furria/ui/group-tone';
 import { KkPracticeView } from '@furria/ui/KkPracticeView';
 import { KkStudioView } from '@furria/ui/KkStudioView';
-import { KkVisuallyHidden } from '@furria/ui/KkVisuallyHidden';
 import type { FC } from 'react';
 
 interface ActStudioViewProps {
@@ -23,27 +19,6 @@ interface ActStudioViewProps {
 }
 
 export const ActStudioView: FC<ActStudioViewProps> = ({ title, tone, screen }) => {
-  const editor = useActStudioStage(screen);
-
-  const heading = <KkVisuallyHidden component="h1">{title}</KkVisuallyHidden>;
-
-  if (screen.editor === 'cards') {
-    return (
-      <>
-        {heading}
-        <StepCardsView screen={screen} editor={editor} />
-      </>
-    );
-  }
-  if (screen.editor === 'desk') {
-    return (
-      <>
-        {heading}
-        <ActDeskScreen screen={screen} editor={editor} />
-      </>
-    );
-  }
-
   if (!screen.mode.editing && !canPractise(screen.studio)) {
     return <LessonEmpty title={title} mode={screen.mode} />;
   }

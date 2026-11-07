@@ -1,5 +1,5 @@
-import type { EditJob } from '@furria/studio/edit-jobs';
-import type { JobView } from '@furria/studio/edit-jobs-view';
+import type { EditJob } from '@furria/studio/job-model';
+import type { JobView } from '@furria/studio/job-view';
 import type { StudioScreen } from '@furria/studio/studio-screen';
 import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 import type { JobArrange } from '@furria/studio/use-arrange';

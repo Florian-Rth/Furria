@@ -3,14 +3,15 @@ import { JobToolsSection } from '@furria/studio/JobToolsSection';
 import { StepListItem } from '@furria/studio/StepListItem';
 import type { StepGroup } from '@furria/studio/step-list';
 import {
-  SL_LOOSE,
-  SL_PART_DETAIL,
-  SL_PART_EYEBROW,
-  slPartLabelOf,
+  STEP_LIST_LOOSE,
+  STEP_LIST_PART_DETAIL,
+  STEP_LIST_PART_EYEBROW,
+  stepListPartLabelOf,
 } from '@furria/studio/step-setup-copy';
 import type { StudioStage } from '@furria/studio/studio-schemas';
-import type { StepList, StepListRow } from '@furria/studio/use-step-list';
-import { KkSsStepList } from '@furria/ui/KkSsStepList';
+import type { StepList } from '@furria/studio/use-step-list';
+import type { StepListRow } from '@furria/studio/use-step-list-rows';
+import { KkStudioStepList } from '@furria/ui/KkStudioStepList';
 import type { FC } from 'react';
 
 interface StepListGroupProps {
@@ -27,9 +28,9 @@ export const StepListGroup: FC<StepListGroupProps> = ({ group, list, stage }) =>
 
   if (group.kind === 'loose') {
     return (
-      <KkSsStepList.Group label={SL_LOOSE} framed={false}>
+      <KkStudioStepList.Group label={STEP_LIST_LOOSE} framed={false}>
         {items}
-      </KkSsStepList.Group>
+      </KkStudioStepList.Group>
     );
   }
 
@@ -38,28 +39,33 @@ export const StepListGroup: FC<StepListGroupProps> = ({ group, list, stage }) =>
   const fields = detail === null ? [] : [detail.field];
   const partEdit =
     detail === null ? null : (
-      <KkSsStepList.Detail label={SL_PART_DETAIL}>
-        <JobFieldsSection title={SL_PART_DETAIL} fields={fields} />
-        <JobToolsSection label={SL_PART_DETAIL} title={null} aside={null} actions={detail.tools} />
-      </KkSsStepList.Detail>
+      <KkStudioStepList.Detail label={STEP_LIST_PART_DETAIL}>
+        <JobFieldsSection title={STEP_LIST_PART_DETAIL} fields={fields} />
+        <JobToolsSection
+          label={STEP_LIST_PART_DETAIL}
+          title={null}
+          aside={null}
+          actions={detail.tools}
+        />
+      </KkStudioStepList.Detail>
     );
   const head =
     part === undefined ? null : (
-      <KkSsStepList.Head
-        eyebrow={SL_PART_EYEBROW}
+      <KkStudioStepList.Head
+        eyebrow={STEP_LIST_PART_EYEBROW}
         title={group.part.name}
         meta={part.meta}
         selected={part.selected}
-        label={slPartLabelOf(group.part.name)}
+        label={stepListPartLabelOf(group.part.name)}
         onPress={part.press}
       />
     );
 
   return (
-    <KkSsStepList.Group label={group.part.name} framed>
+    <KkStudioStepList.Group label={group.part.name} framed>
       {head}
       {partEdit}
       {items}
-    </KkSsStepList.Group>
+    </KkStudioStepList.Group>
   );
 };

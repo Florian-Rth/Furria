@@ -1,34 +1,34 @@
 import { countTrackOf } from '@furria/studio/count-marks';
 import { DeskReadoutLive } from '@furria/studio/DeskReadoutLive';
-import {
-  EJ_DONE,
-  EJ_DONE_LABEL,
-  EJ_HEAD,
-  EJ_HISTORY,
-  EJ_HISTORY_GROUP,
-  EJ_MUSIC_PAGE,
-  EJ_PAUSE,
-  EJ_PLAY,
-  EJ_REDO,
-  EJ_STEP_BACK,
-  EJ_STEP_FORWARD,
-  EJ_TRANSPORT,
-  EJ_UNDO,
-} from '@furria/studio/edit-jobs-copy';
 import { JobTransportExtras } from '@furria/studio/JobTransportExtras';
+import {
+  JOB_DONE,
+  JOB_DONE_LABEL,
+  JOB_HEAD,
+  JOB_HISTORY,
+  JOB_HISTORY_GROUP,
+  JOB_MUSIC_PAGE,
+  JOB_PAUSE,
+  JOB_PLAY,
+  JOB_REDO,
+  JOB_STEP_BACK,
+  JOB_STEP_FORWARD,
+  JOB_TRANSPORT,
+  JOB_UNDO,
+} from '@furria/studio/job-copy';
 import { StudioSaveButton } from '@furria/studio/StudioSaveButton';
 import { StudioSetupChip } from '@furria/studio/StudioSetupChip';
 import type { JobDesk } from '@furria/studio/use-job-desk';
-import { KkEjButton } from '@furria/ui/KkEjButton';
 import { KkLaneBar } from '@furria/ui/KkLaneBar';
+import { KkPillButton } from '@furria/ui/KkPillButton';
 import type { FC } from 'react';
 
 interface JobDeskHeadProps {
-  ej: JobDesk;
+  jobDesk: JobDesk;
 }
 
-export const JobDeskHead: FC<JobDeskHeadProps> = ({ ej }) => {
-  const { screen } = ej;
+export const JobDeskHead: FC<JobDeskHeadProps> = ({ jobDesk }) => {
+  const { screen } = jobDesk;
   const { practice, playback, history, mode } = screen;
   const counts = countTrackOf(playback.countMarks);
   const back = (): void => {
@@ -37,31 +37,31 @@ export const JobDeskHead: FC<JobDeskHeadProps> = ({ ej }) => {
   const forward = (): void => {
     practice.skip('forward');
   };
-  const playText = practice.playing ? EJ_PAUSE : EJ_PLAY;
+  const playText = practice.playing ? JOB_PAUSE : JOB_PLAY;
   const playGlyph = practice.playing ? 'pause' : 'play';
   const stepLocked = !practice.canStep;
   const playLocked = !practice.canPlay;
   const undoLocked = !history.canUndo;
   const redoLocked = !history.canRedo;
-  const historyText = EJ_HISTORY;
-  const historyOpen = ej.pane === 'history';
-  const setupOpen = ej.pane === 'setup';
+  const historyText = JOB_HISTORY;
+  const historyOpen = jobDesk.pane === 'history';
+  const setupOpen = jobDesk.pane === 'setup';
   const music =
     screen.evening === null ? (
-      <KkEjButton text={EJ_MUSIC_PAGE} glyph="music" onPress={ej.openMusic} />
+      <KkPillButton text={JOB_MUSIC_PAGE} glyph="music" onPress={jobDesk.openMusic} />
     ) : null;
 
   return (
-    <KkLaneBar label={EJ_HEAD}>
-      <KkLaneBar.Group label={EJ_TRANSPORT} grow>
-        <KkEjButton
-          text={EJ_STEP_BACK}
+    <KkLaneBar label={JOB_HEAD}>
+      <KkLaneBar.Group label={JOB_TRANSPORT} grow>
+        <KkPillButton
+          text={JOB_STEP_BACK}
           glyph="back"
           textShown={false}
           disabled={stepLocked}
           onPress={back}
         />
-        <KkEjButton
+        <KkPillButton
           text={playText}
           glyph={playGlyph}
           tone="accent"
@@ -69,8 +69,8 @@ export const JobDeskHead: FC<JobDeskHeadProps> = ({ ej }) => {
           disabled={playLocked}
           onPress={practice.toggle}
         />
-        <KkEjButton
-          text={EJ_STEP_FORWARD}
+        <KkPillButton
+          text={JOB_STEP_FORWARD}
           glyph="forward"
           textShown={false}
           disabled={stepLocked}
@@ -79,35 +79,39 @@ export const JobDeskHead: FC<JobDeskHeadProps> = ({ ej }) => {
         <DeskReadoutLive player={playback.player} counts={counts} />
         <JobTransportExtras screen={screen} compact={false} />
       </KkLaneBar.Group>
-      <KkLaneBar.Group label={EJ_HISTORY_GROUP}>
-        <KkEjButton
-          text={EJ_UNDO}
+      <KkLaneBar.Group label={JOB_HISTORY_GROUP}>
+        <KkPillButton
+          text={JOB_UNDO}
           glyph="undo"
           textShown={false}
           disabled={undoLocked}
           onPress={history.undo}
         />
-        <KkEjButton
-          text={EJ_REDO}
+        <KkPillButton
+          text={JOB_REDO}
           glyph="redo"
           textShown={false}
           disabled={redoLocked}
           onPress={history.redo}
         />
         <StudioSaveButton history={history} />
-        <KkEjButton
+        <KkPillButton
           text={historyText}
           glyph="history"
           pressed={historyOpen}
-          onPress={ej.toggleHistory}
+          onPress={jobDesk.toggleHistory}
         />
-        <StudioSetupChip setup={ej.setup} expanded={setupOpen} onToggle={ej.toggleSetup} />
+        <StudioSetupChip
+          setup={jobDesk.setup}
+          expanded={setupOpen}
+          onToggle={jobDesk.toggleSetup}
+        />
         {music}
-        <KkEjButton
-          text={EJ_DONE}
+        <KkPillButton
+          text={JOB_DONE}
           glyph="check"
           tone="accent"
-          label={EJ_DONE_LABEL}
+          label={JOB_DONE_LABEL}
           onPress={mode.toggle}
         />
       </KkLaneBar.Group>

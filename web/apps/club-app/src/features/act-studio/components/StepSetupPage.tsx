@@ -1,4 +1,4 @@
-import { SS_DENIED, SS_TITLE } from '@furria/studio/step-setup-copy';
+import { SETUP_DENIED, STEP_SETUP_TITLE } from '@furria/studio/step-setup-copy';
 import type { FC } from 'react';
 import type { ActPageSearch } from '@/features/acts/schemas';
 import { useStepSetupPage } from '../hooks/use-step-setup-page';
@@ -25,8 +25,8 @@ export const StepSetupPage: FC<StepSetupPageProps> = ({ actId, search }) => {
       page={page}
       title={page.actName}
       heading={null}
-      deniedTitle={SS_TITLE}
-      deniedMessage={SS_DENIED}
+      deniedTitle={STEP_SETUP_TITLE}
+      deniedMessage={SETUP_DENIED}
     >
       {body}
     </ActStudioPageGate>

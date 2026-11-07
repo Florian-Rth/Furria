@@ -6,37 +6,37 @@ import type {
   StageGate,
 } from '@furria/studio/setup-stages';
 
-export const SS_TITLE = 'Schritte einrichten';
-export const SS_HEAD = 'Einrichten';
+export const STEP_SETUP_TITLE = 'Schritte einrichten';
+export const SETUP_HEAD = 'Einrichten';
 export const setupHeadingOf = (title: string, stage: string, wide: boolean): string =>
   wide ? `${title} · ${stage}` : stage;
-export const SS_STAGES = 'Fortschritt der Einrichtung';
-export const SS_BACK = 'Zurück';
-export const SS_UNDO = 'Rückgängig';
-export const SS_REDO = 'Wiederholen';
-export const SS_SAVING = 'Speichert …';
-export const SS_SAVE_FAILED = 'Nicht gespeichert';
-export const SS_VIDEO_AREA = 'Video';
-export const SS_PICTURE = 'Bild';
-export const SS_MORE = 'Mehr Werkzeuge';
-export const SS_SURE = 'Wirklich löschen';
-export const SS_MORE_CLOSE = 'Schließen';
-export const SS_TASK = 'Aufgabe';
-export const SS_TRANSPORT = 'Abspielen';
-export const SS_TRANSPORT_STEPS = 'Schritte';
-export const SS_TRANSPORT_VIEW = 'Ansicht';
-export const SS_TRANSPORT_PRACTICE = 'Üben';
-export const SS_STEP_BACK = 'Voriger Schritt';
-export const SS_STEP_FORWARD = 'Nächster Schritt';
-export const SS_LOOP_STEP = 'Schritt wiederholen';
-export const SS_LOOP_SHORT = 'Wiederholen';
+export const STEP_SETUP_PROGRESS = 'Fortschritt der Einrichtung';
+export const SETUP_BACK = 'Zurück';
+export const SETUP_UNDO = 'Rückgängig';
+export const SETUP_REDO = 'Wiederholen';
+export const SETUP_SAVING = 'Speichert …';
+export const SETUP_SAVE_FAILED = 'Nicht gespeichert';
+export const SETUP_VIDEO_AREA = 'Video';
+export const SETUP_PICTURE = 'Bild';
+export const SETUP_MORE = 'Mehr Werkzeuge';
+export const SETUP_SURE = 'Wirklich löschen';
+export const SETUP_MORE_CLOSE = 'Schließen';
+export const SETUP_TASK = 'Aufgabe';
+export const SETUP_TRANSPORT = 'Abspielen';
+export const SETUP_TRANSPORT_STEPS = 'Schritte';
+export const SETUP_TRANSPORT_VIEW = 'Ansicht';
+export const SETUP_TRANSPORT_PRACTICE = 'Üben';
+export const SETUP_STEP_BACK = 'Voriger Schritt';
+export const SETUP_STEP_FORWARD = 'Nächster Schritt';
+export const SETUP_LOOP_STEP = 'Schritt wiederholen';
+export const SETUP_LOOP_SHORT = 'Wiederholen';
 export const tempoShortOf = (percent: number): string => `${percent} %`;
-export const SS_ZOOM_IN = 'Näher heran';
-export const SS_ZOOM_OUT = 'Weiter weg';
-export const SS_FIT = 'Ganzes Lied';
-export const SS_TIMELINE = 'Zeitleiste: Musik, Schritte und Video';
+export const SETUP_ZOOM_IN = 'Näher heran';
+export const SETUP_ZOOM_OUT = 'Weiter weg';
+export const SETUP_FIT = 'Ganzes Lied';
+export const SETUP_TIMELINE = 'Zeitleiste: Musik, Schritte und Video';
 
-export const SS_STAGE_TEXT: Record<SetupPlace, string> = {
+export const SETUP_STAGE_TEXT: Record<SetupPlace, string> = {
   video: 'Video',
   borders: 'Schritte trennen',
   names: 'Schritte benennen',
@@ -59,9 +59,9 @@ const CELL_STATE_TEXT: Record<StageCellState, string> = {
 };
 
 export const stageCellLabelOf = (stage: SetupStage, state: StageCellState): string =>
-  `${SS_STAGE_TEXT[stage]}: ${CELL_STATE_TEXT[state]}`;
+  `${SETUP_STAGE_TEXT[stage]}: ${CELL_STATE_TEXT[state]}`;
 
-export const SS_GATE_TEXT: Record<StageGate, string> = {
+export const SETUP_GATE_TEXT: Record<StageGate, string> = {
   open: '',
   noMusic: 'Erst ein Lied hochladen – ohne Musik gibt es keine Schritte.',
   noVideo: 'Wähle zuerst ein Video.',
@@ -70,17 +70,17 @@ export const SS_GATE_TEXT: Record<StageGate, string> = {
   noSteps: 'Tippe mindestens einmal „Schritt endet hier“.',
 };
 
-export const SS_MUSIC_PAGE = 'Musik hochladen';
+export const SETUP_MUSIC_PAGE = 'Musik hochladen';
 
-export const SS_VIDEO_PICK = 'Wähle das Video, in dem du die Schritte tanzt.';
-export const SS_VIDEO_UPLOAD = 'Video hochladen';
-export const SS_VIDEO_LIST = 'Videos dieses Tanzes';
-export const SS_VIDEO_EMPTY = 'Noch kein Video.';
-export const SS_VIDEO_UNPLACED = 'noch ohne Stelle in der Musik';
-export const SS_VIDEO_WAITING = 'wird vorbereitet …';
-export const SS_VIDEO_FAILED = 'nicht lesbar';
-export const SS_VIDEO_OTHER = 'Ändern';
-export const SS_UPLOAD_FAILED = 'Hochladen fehlgeschlagen – tippen zum Entfernen';
+export const SETUP_VIDEO_PICK = 'Wähle das Video, in dem du die Schritte tanzt.';
+export const SETUP_VIDEO_UPLOAD = 'Video hochladen';
+export const SETUP_VIDEO_LIST = 'Videos dieses Tanzes';
+export const SETUP_VIDEO_EMPTY = 'Noch kein Video.';
+export const SETUP_VIDEO_UNPLACED = 'noch ohne Stelle in der Musik';
+export const SETUP_VIDEO_WAITING = 'wird vorbereitet …';
+export const SETUP_VIDEO_FAILED = 'nicht lesbar';
+export const SETUP_VIDEO_OTHER = 'Ändern';
+export const SETUP_UPLOAD_FAILED = 'Hochladen fehlgeschlagen – tippen zum Entfernen';
 export const uploadMetaOf = (share: number): string => `Lädt hoch · ${Math.round(share * 100)} %`;
 export const videoMetaOf = (parts: readonly string[]): string => parts.join(' · ');
 export const videoLengthOf = (clock: string): string => `${clock} lang`;
@@ -88,50 +88,50 @@ export const videoPlacedOf = (clock: string): string => `ab ${clock} in der Musi
 export const videoStepCountOf = (count: number): string =>
   count === 1 ? '1 Schritt' : `${count} Schritte`;
 
-export const SS_MATCH_SEARCHING = 'Sucht die passende Stelle in der Musik …';
-export const SS_MATCH_CHECK = 'Passt der Takt? Spiel ab – sonst Video verschieben.';
-export const SS_MATCH_MISSING =
+export const SETUP_MATCH_SEARCHING = 'Sucht die passende Stelle in der Musik …';
+export const SETUP_MATCH_CHECK = 'Passt der Takt? Spiel ab – sonst Video verschieben.';
+export const SETUP_MATCH_MISSING =
   'Keine passende Stelle gefunden. Spiel die Musik bis zum Videoanfang und tippe „Video startet hier“.';
-export const SS_MATCH_FAILED =
+export const SETUP_MATCH_FAILED =
   'Die Suche ging nicht. Spiel die Musik bis zum Videoanfang und tippe „Video startet hier“.';
-export const SS_MATCH_WAITING = 'Das Video wird noch vorbereitet – gleich geht es weiter.';
-export const SS_EARLIER_BIG = '−1 s';
-export const SS_EARLIER_SMALL = '−0,1 s';
-export const SS_LATER_SMALL = '+0,1 s';
-export const SS_LATER_BIG = '+1 s';
-export const SS_EARLIER_BIG_LABEL = 'Video eine Sekunde früher';
-export const SS_EARLIER_SMALL_LABEL = 'Video eine Zehntelsekunde früher';
-export const SS_LATER_SMALL_LABEL = 'Video eine Zehntelsekunde später';
-export const SS_LATER_BIG_LABEL = 'Video eine Sekunde später';
-export const SS_START_HERE = 'Video startet hier';
-export const SS_START_HERE_LABEL = 'Video an der Abspielstelle beginnen lassen';
-export const SS_SEARCH_AGAIN = 'Takt neu suchen';
+export const SETUP_MATCH_WAITING = 'Das Video wird noch vorbereitet – gleich geht es weiter.';
+export const SETUP_EARLIER_BIG = '−1 s';
+export const SETUP_EARLIER_SMALL = '−0,1 s';
+export const SETUP_LATER_SMALL = '+0,1 s';
+export const SETUP_LATER_BIG = '+1 s';
+export const SETUP_EARLIER_BIG_LABEL = 'Video eine Sekunde früher';
+export const SETUP_EARLIER_SMALL_LABEL = 'Video eine Zehntelsekunde früher';
+export const SETUP_LATER_SMALL_LABEL = 'Video eine Zehntelsekunde später';
+export const SETUP_LATER_BIG_LABEL = 'Video eine Sekunde später';
+export const SETUP_START_HERE = 'Video startet hier';
+export const SETUP_START_HERE_LABEL = 'Video an der Abspielstelle beginnen lassen';
+export const SETUP_SEARCH_AGAIN = 'Takt neu suchen';
 
-export const SS_TAP = 'Schritt endet hier';
-export const SS_TAP_LABEL = 'Schrittende an der Abspielstelle setzen';
-export const SS_TAP_HINT = 'Tippe beim Abspielen, wo ein Schritt endet.';
+export const SETUP_TAP = 'Schritt endet hier';
+export const SETUP_TAP_LABEL = 'Schrittende an der Abspielstelle setzen';
+export const SETUP_TAP_HINT = 'Tippe beim Abspielen, wo ein Schritt endet.';
 export const videoStepsOf = (count: number): string =>
   count === 1 ? '1 Schritt im Video' : `${count} Schritte im Video`;
-export const SS_TUNE_GROUP = 'Schrittende anpassen';
-export const SS_TUNE_NONE = 'Noch kein Schrittende gesetzt.';
+export const SETUP_TUNE_GROUP = 'Schrittende anpassen';
+export const SETUP_TUNE_NONE = 'Noch kein Schrittende gesetzt.';
 export const tuneTitleOf = (number: number, clock: string): string =>
   `Ende von Schritt ${number} · ${clock}`;
-export const SS_TUNE_EARLIER = 'Früher';
-export const SS_TUNE_EARLIER_LABEL = 'Schrittende einen Schlag früher';
-export const SS_TUNE_LATER = 'Später';
-export const SS_TUNE_LATER_LABEL = 'Schrittende einen Schlag später';
-export const SS_TUNE_PREVIOUS = 'Voriges Schrittende';
-export const SS_TUNE_NEXT = 'Nächstes Schrittende';
-export const SS_TUNE_DELETE = 'Schrittende löschen';
+export const SETUP_TUNE_EARLIER = 'Früher';
+export const SETUP_TUNE_EARLIER_LABEL = 'Schrittende einen Schlag früher';
+export const SETUP_TUNE_LATER = 'Später';
+export const SETUP_TUNE_LATER_LABEL = 'Schrittende einen Schlag später';
+export const SETUP_TUNE_PREVIOUS = 'Voriges Schrittende';
+export const SETUP_TUNE_NEXT = 'Nächstes Schrittende';
+export const SETUP_TUNE_DELETE = 'Schrittende löschen';
 
-export const SS_NAMES_HINT = 'Gib jedem Schritt einen Namen, den die Gruppe kennt.';
-export const SS_NAMES_LIST = 'Schritte aus diesem Video';
+export const SETUP_NAMES_HINT = 'Gib jedem Schritt einen Namen, den die Gruppe kennt.';
+export const SETUP_NAMES_LIST = 'Schritte aus diesem Video';
 export const nameLabelOf = (number: number): string => `Name von Schritt ${number}`;
 
-export const SS_PART_NAME = 'Name des Teils';
-export const SS_PART_NEW = 'Neuer Teil ab hier';
-export const SS_PART_DISSOLVE = 'Teil auflösen';
-export const SS_PART_MIDDLE = 'Nur der erste oder letzte Schritt eines Teils kann hinaus.';
+export const SETUP_PART_NAME = 'Name des Teils';
+export const SETUP_PART_NEW = 'Neuer Teil ab hier';
+export const SETUP_PART_DISSOLVE = 'Teil auflösen';
+export const SETUP_PART_MIDDLE = 'Nur der erste oder letzte Schritt eines Teils kann hinaus.';
 export const joinPartOf = (name: string): string => `Zu „${name}“`;
 export const leavePartOf = (name: string): string => `Aus „${name}“ nehmen`;
 
@@ -139,51 +139,51 @@ export const finishSentenceOf = (count: number): string =>
   count === 1
     ? '1 Schritt aus diesem Video ist angelegt.'
     : `${count} Schritte aus diesem Video sind angelegt.`;
-export const SS_FINISH_ROWS = 'Was noch offen ist';
-export const SS_FINISH_OPEN = 'Öffnen';
-export const SS_TO_DANCE = 'Zum Tanz';
-export const SS_ANOTHER_VIDEO = 'Noch ein Video';
-export const SS_ALL_NAMED = 'Alle benannt';
+export const SETUP_FINISH_ROWS = 'Was noch offen ist';
+export const SETUP_FINISH_OPEN = 'Öffnen';
+export const SETUP_TO_DANCE = 'Zum Tanz';
+export const SETUP_ANOTHER_VIDEO = 'Noch ein Video';
+export const SETUP_ALL_NAMED = 'Alle benannt';
 export const unnamedOf = (count: number): string =>
   count === 1 ? '1 Schritt ohne Namen' : `${count} Schritte ohne Namen`;
 
-export const SS_OPEN_TEXT: Record<SetupOpen, (count: number, total: number) => string> = {
+export const SETUP_OPEN_TEXT: Record<SetupOpen, (count: number, total: number) => string> = {
   nothing: () => 'Alles eingerichtet',
   names: (count, total) => `${count} von ${total} Schritten ohne Namen`,
 };
-export const SS_RESUME = 'Weiter einrichten';
-export const SS_START_SETUP = 'Schritte einrichten';
+export const SETUP_RESUME = 'Weiter einrichten';
+export const SETUP_START_SETUP = 'Schritte einrichten';
 
-export const SL_LIST = 'Schritte in der Reihenfolge der Musik';
-export const SL_PART_EYEBROW = 'Teil';
-export const slPartMetaOf = (first: number, last: number, count: number): string =>
+export const STEP_LIST_LIST = 'Schritte in der Reihenfolge der Musik';
+export const STEP_LIST_PART_EYEBROW = 'Teil';
+export const stepListPartMetaOf = (first: number, last: number, count: number): string =>
   first === last ? `Schritt ${first}` : `Schritt ${first}–${last} · ${count} Schritte`;
-export const slPartLabelOf = (name: string): string => `Teil ${name}: bearbeiten`;
-export const SL_LOOSE = 'Schritte ohne Teil';
-export const slRowLabelOf = (number: number, name: string): string =>
+export const stepListPartLabelOf = (name: string): string => `Teil ${name}: bearbeiten`;
+export const STEP_LIST_LOOSE = 'Schritte ohne Teil';
+export const stepListRowLabelOf = (number: number, name: string): string =>
   `Schritt ${number}, ${name}: auswählen`;
-export const slRowMetaOf = (clock: string, length: string): string => `${clock} · ${length}`;
-export const SL_NO_FORMATION = 'ohne Aufstellung';
-export const slPairLabelOf = (number: number): string =>
+export const stepListRowMetaOf = (clock: string, length: string): string => `${clock} · ${length}`;
+export const STEP_LIST_NO_FORMATION = 'ohne Aufstellung';
+export const stepListPairLabelOf = (number: number): string =>
   `Aufstellung von Schritt ${number}: Anfang und Ende`;
-export const SL_DETAIL = 'Schritt bearbeiten';
-export const SL_NAME = 'Name';
-export const SL_GROUP_STEP = 'Schritt';
-export const SL_GROUP_PART = 'Teil';
-export const SL_SPLIT = 'Teilen';
-export const SL_SPLIT_LABEL = 'Schritt an der Abspielposition oder in der Mitte teilen';
-export const SL_MERGE = 'Mit nächstem zusammenlegen';
-export const SL_DELETE = 'Löschen';
-export const SL_DELETE_NOTE = 'Die Zeit geht an den Schritt davor.';
-export const SL_LOOP = 'Wiederholen';
-export const SL_ADD = 'Schritt hinzufügen';
-export const SL_ADD_LABEL = 'Neuen Schritt an der Abspielposition beginnen lassen';
-export const SL_PART_DETAIL = 'Teil bearbeiten';
-export const SL_PART_LOOP = 'Teil wiederholen';
-export const SL_EMPTY = 'Noch keine Schritte.';
-export const SL_EVENING = 'An diesem Abend gelten die Schritte der Session – hier nur üben.';
-export const SL_SETUP_OWNER = 'Einrichtung';
+export const STEP_LIST_DETAIL = 'Schritt bearbeiten';
+export const STEP_LIST_NAME = 'Name';
+export const STEP_LIST_GROUP_STEP = 'Schritt';
+export const STEP_LIST_GROUP_PART = 'Teil';
+export const STEP_LIST_SPLIT = 'Teilen';
+export const STEP_LIST_SPLIT_LABEL = 'Schritt an der Abspielposition oder in der Mitte teilen';
+export const STEP_LIST_MERGE = 'Mit nächstem zusammenlegen';
+export const STEP_LIST_DELETE = 'Löschen';
+export const STEP_LIST_DELETE_NOTE = 'Die Zeit geht an den Schritt davor.';
+export const STEP_LIST_LOOP = 'Wiederholen';
+export const STEP_LIST_ADD = 'Schritt hinzufügen';
+export const STEP_LIST_ADD_LABEL = 'Neuen Schritt an der Abspielposition beginnen lassen';
+export const STEP_LIST_PART_DETAIL = 'Teil bearbeiten';
+export const STEP_LIST_PART_LOOP = 'Teil wiederholen';
+export const STEP_LIST_EMPTY = 'Noch keine Schritte.';
+export const STEP_LIST_EVENING = 'An diesem Abend gelten die Schritte der Session – hier nur üben.';
+export const STEP_LIST_SETUP_OWNER = 'Einrichtung';
 export const stepGroupKeyOf = (partId: number): string => `part-${partId}`;
 export const secondsLengthOf = (seconds: number): string =>
   `${seconds.toFixed(1).replace('.', ',')} s`;
-export const SS_DENIED = 'Die Schritte dieses Auftritts kannst du nicht einrichten.';
+export const SETUP_DENIED = 'Die Schritte dieses Auftritts kannst du nicht einrichten.';

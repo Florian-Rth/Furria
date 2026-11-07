@@ -1,16 +1,16 @@
-import type { ArrangeTool } from '@furria/studio/edit-jobs';
-import { allPickedOf } from '@furria/studio/edit-jobs';
 import {
-  EJ_MIRROR,
-  EJ_ROW_ACROSS,
-  EJ_ROW_ACROSS_LABEL,
-  EJ_ROW_DEEP,
-  EJ_ROW_DEEP_LABEL,
-  EJ_SELECT_ALL,
-  EJ_SELECT_ALL_LABEL,
-} from '@furria/studio/edit-jobs-copy';
-import type { JobAction, JobSection } from '@furria/studio/edit-jobs-view';
-import { jobActionOf } from '@furria/studio/edit-jobs-view';
+  JOB_MIRROR,
+  JOB_ROW_ACROSS,
+  JOB_ROW_ACROSS_LABEL,
+  JOB_ROW_DEEP,
+  JOB_ROW_DEEP_LABEL,
+  JOB_SELECT_ALL,
+  JOB_SELECT_ALL_LABEL,
+} from '@furria/studio/job-copy';
+import type { ArrangeTool } from '@furria/studio/job-model';
+import { allPickedOf } from '@furria/studio/job-model';
+import type { JobAction, JobSection } from '@furria/studio/job-view';
+import { jobActionOf } from '@furria/studio/job-view';
 import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 import type { JobArrange } from '@furria/studio/use-arrange';
 
@@ -21,33 +21,33 @@ export const arrangeActionOf = (
 ): JobAction => {
   switch (tool) {
     case 'mirror':
-      return jobActionOf('mirror', EJ_MIRROR, 'mirror', editor.mirror);
+      return jobActionOf('mirror', JOB_MIRROR, 'mirror', editor.mirror);
     case 'rowAcross':
       return jobActionOf(
         'rowAcross',
-        EJ_ROW_ACROSS,
-        'row',
+        JOB_ROW_ACROSS,
+        'alignDeep',
         () => {
           arrange.row('across');
         },
-        { label: EJ_ROW_ACROSS_LABEL },
+        { label: JOB_ROW_ACROSS_LABEL },
       );
     case 'rowDeep':
       return jobActionOf(
         'rowDeep',
-        EJ_ROW_DEEP,
-        'column',
+        JOB_ROW_DEEP,
+        'alignAcross',
         () => {
           arrange.row('deep');
         },
-        { label: EJ_ROW_DEEP_LABEL },
+        { label: JOB_ROW_DEEP_LABEL },
       );
   }
 };
 
 export const selectAllActionOf = (arrange: JobArrange): JobAction =>
-  jobActionOf('selectAll', EJ_SELECT_ALL, 'selectAll', arrange.selectAll, {
-    label: EJ_SELECT_ALL_LABEL,
+  jobActionOf('selectAll', JOB_SELECT_ALL, 'selectAll', arrange.selectAll, {
+    label: JOB_SELECT_ALL_LABEL,
   });
 
 export const selectAllSectionsOf = (

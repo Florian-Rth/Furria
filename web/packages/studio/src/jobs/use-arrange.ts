@@ -1,5 +1,5 @@
 import type { StagePoint, TimedKeyframe } from '@furria/studio/choreography-motion';
-import { copyShiftOf, copySourceOf } from '@furria/studio/edit-jobs';
+import { copyShiftOf, copySourceOf } from '@furria/studio/job-model';
 import { rowPointsOf } from '@furria/studio/stage-writes';
 import type { TimeSpan } from '@furria/studio/studio-edits';
 import type { ArrangeAxis } from '@furria/studio/studio-formation';

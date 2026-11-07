@@ -1,5 +1,5 @@
-import type { EditJob } from '@furria/studio/edit-jobs';
-import { pickedAfterHoldOf, stageGripOf } from '@furria/studio/edit-jobs';
+import type { EditJob } from '@furria/studio/job-model';
+import { pickedAfterHoldOf, stageGripOf } from '@furria/studio/job-model';
 import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 
 const NOTHING: readonly number[] = [];

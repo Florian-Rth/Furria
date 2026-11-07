@@ -1,8 +1,6 @@
 import type { SetupKey, SetupRow, SetupState } from '@furria/studio/studio-setup';
 
 export const SETUP_TITLE = 'Einrichten';
-export const SETUP_LIST_LABEL = 'Auftritt einrichten';
-export const SETUP_TO_EDITOR = 'Zum Bearbeiten';
 export const SETUP_UPLOADING = 'Lädt hoch';
 
 export const SETUP_TITLES: Record<SetupKey, string> = {

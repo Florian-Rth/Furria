@@ -1,9 +1,9 @@
 import { SetupToolButton } from '@furria/studio/SetupToolButton';
 import {
-  SS_TUNE_GROUP,
-  SS_TUNE_NEXT,
-  SS_TUNE_NONE,
-  SS_TUNE_PREVIOUS,
+  SETUP_TUNE_GROUP,
+  SETUP_TUNE_NEXT,
+  SETUP_TUNE_NONE,
+  SETUP_TUNE_PREVIOUS,
 } from '@furria/studio/step-setup-copy';
 import type { BorderTune } from '@furria/studio/use-setup-borders';
 import { KkIconButton } from '@furria/ui/KkIconButton';
@@ -21,7 +21,7 @@ const ignore = (): void => undefined;
 
 export const SetupBorderTune: FC<SetupBorderTuneProps> = ({ tune }) => {
   if (tune === null) {
-    return <KkMeta>{SS_TUNE_NONE}</KkMeta>;
+    return <KkMeta>{SETUP_TUNE_NONE}</KkMeta>;
   }
 
   const firstBorder = tune.previous === null;
@@ -30,11 +30,11 @@ export const SetupBorderTune: FC<SetupBorderTuneProps> = ({ tune }) => {
   const next = tune.next ?? ignore;
 
   return (
-    <Stack role="group" aria-label={SS_TUNE_GROUP} sx={{ gap: 0.5, minWidth: 0 }}>
+    <Stack role="group" aria-label={SETUP_TUNE_GROUP} sx={{ gap: 0.5, minWidth: 0 }}>
       <KkMeta>{tune.title}</KkMeta>
       <Stack direction="row" sx={{ alignItems: 'center', gap: 1, minWidth: 0 }}>
         <KkLaneButton
-          text={SS_TUNE_PREVIOUS}
+          text={SETUP_TUNE_PREVIOUS}
           glyph="left"
           textShown={false}
           disabled={firstBorder}
@@ -48,7 +48,7 @@ export const SetupBorderTune: FC<SetupBorderTuneProps> = ({ tune }) => {
         </Box>
         <KkIconButton label={tune.remove.text} icon="delete" onClick={tune.remove.press} />
         <KkLaneButton
-          text={SS_TUNE_NEXT}
+          text={SETUP_TUNE_NEXT}
           glyph="right"
           textShown={false}
           disabled={lastBorder}

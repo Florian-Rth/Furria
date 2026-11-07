@@ -1,18 +1,18 @@
-import type { EditJob, SelectionChip } from '@furria/studio/edit-jobs';
-import { selectionChipOf } from '@furria/studio/edit-jobs';
 import {
   chipAllOf,
   chipCountOf,
   chipSpotOf,
-  EJ_CHIP_CLEAR,
-  EJ_JOB_GLYPH,
-  EJ_STAGE_HINT,
-} from '@furria/studio/edit-jobs-copy';
+  JOB_CHIP_CLEAR,
+  JOB_GLYPH,
+  JOB_STAGE_HINT,
+} from '@furria/studio/job-copy';
+import type { EditJob, SelectionChip } from '@furria/studio/job-model';
+import { selectionChipOf } from '@furria/studio/job-model';
 import type { StudioScreen } from '@furria/studio/studio-screen';
 import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
-import { KkEjStageChip } from '@furria/ui/KkEjStageChip';
-import { KkEjStageHead } from '@furria/ui/KkEjStageHead';
-import { KkEjStageHint } from '@furria/ui/KkEjStageHint';
+import { KkSelectionChip } from '@furria/ui/KkSelectionChip';
+import { KkStageHead } from '@furria/ui/KkStageHead';
+import { KkStageHint } from '@furria/ui/KkStageHint';
 import type { FC } from 'react';
 
 interface JobStageHeadProps {
@@ -46,10 +46,10 @@ export const JobStageHead: FC<JobStageHeadProps> = ({ screen, editor, job, total
   const chipText = chipTextOf(chip, chosen, single);
   const shown =
     chip === 'none' ? (
-      <KkEjStageHint glyph={EJ_JOB_GLYPH[job]} text={EJ_STAGE_HINT[job]} />
+      <KkStageHint glyph={JOB_GLYPH[job]} text={JOB_STAGE_HINT[job]} />
     ) : (
-      <KkEjStageChip text={chipText} clearLabel={EJ_CHIP_CLEAR} onClear={clear} />
+      <KkSelectionChip text={chipText} clearLabel={JOB_CHIP_CLEAR} onClear={clear} />
     );
 
-  return <KkEjStageHead>{shown}</KkEjStageHead>;
+  return <KkStageHead>{shown}</KkStageHead>;
 };

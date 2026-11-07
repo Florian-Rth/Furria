@@ -1,13 +1,8 @@
-import { COMPASS_POINTS } from '@furria/studio/edit-jobs';
-import {
-  compassLabelOf,
-  EJ_COMPASS,
-  EJ_UNFACE,
-  EJ_UNFACE_LABEL,
-} from '@furria/studio/edit-jobs-copy';
-import type { JobCompass } from '@furria/studio/edit-jobs-view';
-import { KkEjCompass } from '@furria/ui/KkEjCompass';
-import { KkEjPanel } from '@furria/ui/KkEjPanel';
+import { compassLabelOf, JOB_COMPASS, JOB_UNFACE, JOB_UNFACE_LABEL } from '@furria/studio/job-copy';
+import { COMPASS_POINTS } from '@furria/studio/job-model';
+import type { JobCompass } from '@furria/studio/job-view';
+import { KkCompass } from '@furria/ui/KkCompass';
+import { KkJobPanel } from '@furria/ui/KkJobPanel';
 import type { FC } from 'react';
 
 interface JobCompassSectionProps {
@@ -23,7 +18,7 @@ export const JobCompassSection: FC<JobCompassSectionProps> = ({ title, aside, co
     };
 
     return (
-      <KkEjCompass.Arrow
+      <KkCompass.Arrow
         key={point}
         degrees={point}
         label={compassLabelOf(point)}
@@ -35,17 +30,17 @@ export const JobCompassSection: FC<JobCompassSectionProps> = ({ title, aside, co
   const free = compass.point === null;
 
   return (
-    <KkEjPanel.Group label={title}>
-      <KkEjPanel.GroupHead text={title} aside={aside} />
-      <KkEjCompass label={EJ_COMPASS}>
+    <KkJobPanel.Group label={title}>
+      <KkJobPanel.GroupHead text={title} aside={aside} />
+      <KkCompass label={JOB_COMPASS}>
         {arrows}
-        <KkEjCompass.Free
-          text={EJ_UNFACE}
-          label={EJ_UNFACE_LABEL}
+        <KkCompass.Free
+          text={JOB_UNFACE}
+          label={JOB_UNFACE_LABEL}
           pressed={free}
           onPress={compass.free}
         />
-      </KkEjCompass>
-    </KkEjPanel.Group>
+      </KkCompass>
+    </KkJobPanel.Group>
   );
 };

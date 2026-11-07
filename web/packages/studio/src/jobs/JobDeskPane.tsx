@@ -1,43 +1,43 @@
-import { backToOf, EJ_HISTORY, EJ_JOB_TEXT } from '@furria/studio/edit-jobs-copy';
 import { JobHistoryPanel } from '@furria/studio/JobHistoryPanel';
 import { JobPanel } from '@furria/studio/JobPanel';
+import { backToOf, JOB_HISTORY, JOB_TEXT } from '@furria/studio/job-copy';
 import { StepListPanel } from '@furria/studio/StepListPanel';
 import { StudioSetupList } from '@furria/studio/StudioSetupList';
 import { SETUP_TITLE } from '@furria/studio/setup-copy';
 import type { JobDesk } from '@furria/studio/use-job-desk';
-import { KkEjPanel } from '@furria/ui/KkEjPanel';
+import { KkJobPanel } from '@furria/ui/KkJobPanel';
 import type { FC, ReactNode } from 'react';
 
 interface JobDeskPaneProps {
-  ej: JobDesk;
+  jobDesk: JobDesk;
   versions: ReactNode;
 }
 
-export const JobDeskPane: FC<JobDeskPaneProps> = ({ ej, versions }) => {
-  const { screen } = ej;
-  const jobText = EJ_JOB_TEXT[ej.jobs.job];
+export const JobDeskPane: FC<JobDeskPaneProps> = ({ jobDesk, versions }) => {
+  const { screen } = jobDesk;
+  const jobText = JOB_TEXT[jobDesk.jobs.job];
   const back = backToOf(jobText);
 
-  if (ej.pane === 'history') {
+  if (jobDesk.pane === 'history') {
     return (
-      <KkEjPanel label={EJ_HISTORY}>
-        <KkEjPanel.Head title={EJ_HISTORY} closeText={back} onClose={ej.closePane} />
+      <KkJobPanel label={JOB_HISTORY}>
+        <KkJobPanel.Head title={JOB_HISTORY} closeText={back} onClose={jobDesk.closePane} />
         <JobHistoryPanel history={screen.history} versions={versions} />
-      </KkEjPanel>
+      </KkJobPanel>
     );
   }
-  if (ej.pane === 'setup') {
+  if (jobDesk.pane === 'setup') {
     return (
-      <KkEjPanel label={SETUP_TITLE}>
-        <KkEjPanel.Head title={SETUP_TITLE} closeText={back} onClose={ej.closePane} />
-        <StudioSetupList setup={ej.setup} />
-      </KkEjPanel>
+      <KkJobPanel label={SETUP_TITLE}>
+        <KkJobPanel.Head title={SETUP_TITLE} closeText={back} onClose={jobDesk.closePane} />
+        <StudioSetupList setup={jobDesk.setup} />
+      </KkJobPanel>
     );
   }
 
-  if (ej.jobs.job === 'steps') {
+  if (jobDesk.jobs.job === 'steps') {
     return <StepListPanel screen={screen} />;
   }
 
-  return <JobPanel label={jobText} view={ej.view} heading={null} />;
+  return <JobPanel label={jobText} view={jobDesk.view} heading={null} />;
 };

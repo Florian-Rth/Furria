@@ -1,10 +1,10 @@
 import { SetupDeck } from '@furria/studio/SetupDeck';
 import { SetupNameRow } from '@furria/studio/SetupNameRow';
 import { SetupTaskPanel } from '@furria/studio/SetupTaskPanel';
-import { SS_NAMES_LIST, SS_STAGE_TEXT } from '@furria/studio/step-setup-copy';
+import { SETUP_NAMES_LIST, SETUP_STAGE_TEXT } from '@furria/studio/step-setup-copy';
 import { useSetupNames } from '@furria/studio/use-setup-names';
 import type { StepSetup } from '@furria/studio/use-step-setup';
-import { KkSsNames } from '@furria/ui/KkSsNames';
+import { KkStepNames } from '@furria/ui/KkStepNames';
 import type { FC } from 'react';
 
 interface SetupNamesStageProps {
@@ -22,8 +22,8 @@ export const SetupNamesStage: FC<SetupNamesStageProps> = ({ setup }) => {
   return (
     <>
       <SetupDeck setup={setup} timeline={names.timeline} />
-      <SetupTaskPanel task={names.task} title={SS_STAGE_TEXT.names} wide={wide}>
-        <KkSsNames label={SS_NAMES_LIST}>{rows}</KkSsNames>
+      <SetupTaskPanel task={names.task} title={SETUP_STAGE_TEXT.names} wide={wide}>
+        <KkStepNames label={SETUP_NAMES_LIST}>{rows}</KkStepNames>
       </SetupTaskPanel>
     </>
   );

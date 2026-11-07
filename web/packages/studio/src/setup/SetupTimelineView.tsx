@@ -1,6 +1,6 @@
 import { ActStudioWaveReadout } from '@furria/studio/ActStudioWaveReadout';
 import { StudioTimeline } from '@furria/studio/StudioTimeline';
-import { SS_TIMELINE } from '@furria/studio/step-setup-copy';
+import { SETUP_TIMELINE } from '@furria/studio/step-setup-copy';
 import type { TimelineDensity } from '@furria/studio/Timeline';
 import type { SetupTimeline } from '@furria/studio/use-setup-timeline';
 import type { KkTimelineLaneKind } from '@furria/ui/KkTimeline';
@@ -25,7 +25,7 @@ export const SetupTimelineView: FC<SetupTimelineViewProps> = ({ timeline, focus,
 
   return (
     <StudioTimeline
-      label={SS_TIMELINE}
+      label={SETUP_TIMELINE}
       density={density}
       playheadTag={tagged}
       length={timeline.length}

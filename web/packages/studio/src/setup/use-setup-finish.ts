@@ -2,8 +2,8 @@ import type { SetupStage } from '@furria/studio/setup-stages';
 import type { SetupTask } from '@furria/studio/setup-task';
 import {
   finishSentenceOf,
-  SS_ALL_NAMED,
-  SS_STAGE_TEXT,
+  SETUP_ALL_NAMED,
+  SETUP_STAGE_TEXT,
   unnamedOf,
 } from '@furria/studio/step-setup-copy';
 import type { SetupTimeline } from '@furria/studio/use-setup-timeline';
@@ -29,7 +29,7 @@ export const useSetupFinish = (setup: StepSetup): SetupFinish => {
   const timeline = useSetupTimeline(setup, { targets: [], startAt: setup.range?.start ?? null });
   const rowOf = (stage: SetupStage, meta: string): FinishRow => ({
     key: stage,
-    title: SS_STAGE_TEXT[stage],
+    title: SETUP_STAGE_TEXT[stage],
     meta,
     press: () => {
       setup.go(stage);
@@ -38,7 +38,7 @@ export const useSetupFinish = (setup: StepSetup): SetupFinish => {
 
   return {
     task: { sentence: finishSentenceOf(total), tools: [], more: [] },
-    rows: [rowOf('names', progress.unnamed === 0 ? SS_ALL_NAMED : unnamedOf(progress.unnamed))],
+    rows: [rowOf('names', progress.unnamed === 0 ? SETUP_ALL_NAMED : unnamedOf(progress.unnamed))],
     timeline,
   };
 };

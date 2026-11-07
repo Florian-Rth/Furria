@@ -1,51 +1,17 @@
 import { fineClockOf } from '@furria/studio/studio-copy';
 
-export const STEP_CARDS_LABEL = 'Sessionsauftritt bearbeiten';
-export const STEP_CARDS_HEAD = 'Werkzeuge';
-export const STEP_CARDS_LIST = 'Schritte zum Wischen';
 export const STEP_CARDS_HISTORY = 'Rückgängig und Wiederholen';
 export const STEP_CARDS_TRANSPORT = 'Wiedergabe';
 export const STEP_CARDS_UNDO = 'Rückgängig';
 export const STEP_CARDS_REDO = 'Wiederholen';
 export const STEP_CARDS_MUSIC_PAGE = 'Musik & Video';
-export const STEP_CARDS_DONE = 'Fertig';
-export const STEP_CARDS_DONE_LABEL = 'Fertig: Bearbeiten beenden';
 export const STEP_CARDS_PLAY = 'Abspielen';
 export const STEP_CARDS_PAUSE = 'Anhalten';
 export const STEP_CARDS_BACK = 'Voriger Schritt';
 export const STEP_CARDS_FORWARD = 'Nächster Schritt';
 export const STEP_CARDS_READOUT = 'Position';
-export const STEP_CARD_NAME = 'Name des Schritts';
 export const STEP_CARD_STAGE = 'Bühne';
-export const STEP_CARD_TOOLS = 'Bühne bearbeiten';
-export const STEP_CARD_ACTIONS = 'Schritt';
 export const STEP_CARD_COUNTS = 'Zählzeiten dieses Schritts';
-export const STEP_CARD_MARK = 'Hier teilen';
-export const STEP_CARD_MARK_LABEL = 'Schritt an der Abspielposition teilen';
-export const STEP_CARD_FIRST_MARK = 'Ersten Schritt setzen';
-export const STEP_CARD_FIRST_MARK_LABEL = 'Ersten Schritt an der Abspielposition setzen';
-export const STEP_CARD_STEP = 'Schritt …';
-export const STEP_CARD_STEP_LABEL = 'Schritt: löschen oder Teil bilden';
-export const STEP_TOOL_FORMATION = 'Aufstellung';
-export const STEP_TOOL_MOVEMENT = 'Wege';
-export const STEP_TOOL_SPOTS = 'Plätze';
-export const STEP_TOOL_SPOTS_LABEL = 'Plätze und Besetzung';
-export const STEP_TOOL_ADD_SPOT = 'Platz';
-export const STEP_TOOL_ADD_SPOT_LABEL = 'Platz hinzufügen';
-export const STEP_TOOL_LINE = 'Linie';
-export const STEP_TOOL_CIRCLE = 'Kreis';
-export const STEP_TOOL_BLOCK = 'Block';
-export const STEP_TOOL_MIRROR = 'Spiegeln';
-export const STEP_TOOL_ALIGN = 'Ausrichten';
-export const STEP_TOOL_ALIGN_DEEP = 'Ausrichten tief';
-export const STEP_TOOL_DISTRIBUTE = 'Verteilen';
-export const STEP_TOOL_COPY = 'Vom vorigen übernehmen';
-export const STEP_TOOL_ONION = 'Vorher';
-export const STEP_CARDS_EMPTY = 'Noch keine Schritte';
-export const STEP_CARDS_NO_STEP = 'Spiele die Musik ab und setze an jeder Stelle einen Schritt.';
-export const STEP_CARDS_NO_MUSIC =
-  'Noch keine Musik. Lade zuerst unter Musik & Video ein Lied hoch.';
-
 const COUNTS_PER_EIGHT = 8;
 
 export const readoutCountOf = (eight: number | null, count: number | null): string =>

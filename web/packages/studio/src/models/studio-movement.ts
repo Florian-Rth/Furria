@@ -14,13 +14,6 @@ const FULL_TURN_DEGREES = 360;
 const HALF = 0.5;
 const STRAIGHT_METRES = GRID_METRES / 2;
 
-export const KEYFRAME_EASINGS: readonly KeyframeEasing[] = [
-  'linear',
-  'easeIn',
-  'easeOut',
-  'easeInOut',
-];
-
 export const sameTrack = (
   left: readonly TimedKeyframe[],
   right: readonly TimedKeyframe[],

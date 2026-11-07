@@ -1,5 +1,5 @@
-import { KkEjButton } from '@furria/ui/KkEjButton';
 import { KkHubRow } from '@furria/ui/KkHubRow';
+import { KkPillButton } from '@furria/ui/KkPillButton';
 import type { FC } from 'react';
 import type { EditorVersionRowView } from '../hooks/use-editor-versions';
 import { VERSION_CURRENT } from '../undo-copy';
@@ -11,7 +11,7 @@ interface EditorVersionRowProps {
 
 export const EditorVersionRow: FC<EditorVersionRowProps> = ({ row, busy }) => {
   const action = row.current ? undefined : (
-    <KkEjButton
+    <KkPillButton
       text={row.restoreText}
       glyph="history"
       label={row.restoreLabel}

@@ -1,6 +1,6 @@
-import type { JobView } from '@furria/studio/edit-jobs-view';
 import { JobBlockView } from '@furria/studio/JobBlockView';
-import { KkEjPanel } from '@furria/ui/KkEjPanel';
+import type { JobView } from '@furria/studio/job-view';
+import { KkJobPanel } from '@furria/ui/KkJobPanel';
 import type { FC } from 'react';
 
 interface JobPanelProps {
@@ -14,5 +14,5 @@ export const JobPanel: FC<JobPanelProps> = ({ label, view, heading }) => {
     <JobBlockView key={block.key} block={block} heading={heading} />
   ));
 
-  return <KkEjPanel label={label}>{blocks}</KkEjPanel>;
+  return <KkJobPanel label={label}>{blocks}</KkJobPanel>;
 };

@@ -1,8 +1,8 @@
-import type { JobBlock } from '@furria/studio/edit-jobs-view';
 import { JobActionButton } from '@furria/studio/JobActionButton';
 import { JobReasonLine } from '@furria/studio/JobReasonLine';
 import { JobSectionView } from '@furria/studio/JobSectionView';
-import { KkEjPanel } from '@furria/ui/KkEjPanel';
+import type { JobBlock } from '@furria/studio/job-view';
+import { KkJobPanel } from '@furria/ui/KkJobPanel';
 import type { FC } from 'react';
 
 interface JobBlockViewProps {
@@ -18,17 +18,17 @@ export const JobBlockView: FC<JobBlockViewProps> = ({ block, heading }) => {
   const reasoned = block.danger === null ? [] : [block.danger];
   const danger =
     block.danger === null ? null : (
-      <KkEjPanel.Danger>
+      <KkJobPanel.Danger>
         <JobActionButton action={block.danger} />
         <JobReasonLine actions={reasoned} />
-      </KkEjPanel.Danger>
+      </KkJobPanel.Danger>
     );
 
   return (
-    <KkEjPanel.Block label={block.title}>
-      <KkEjPanel.Context owner={owner} title={block.title} meta={block.meta} />
+    <KkJobPanel.Block label={block.title}>
+      <KkJobPanel.Context owner={owner} title={block.title} meta={block.meta} />
       {sections}
       {danger}
-    </KkEjPanel.Block>
+    </KkJobPanel.Block>
   );
 };

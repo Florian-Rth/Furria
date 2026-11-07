@@ -1,35 +1,35 @@
-import { EJ_HISTORY, EJ_MUSIC_PAGE } from '@furria/studio/edit-jobs-copy';
+import { JOB_HISTORY, JOB_MUSIC_PAGE } from '@furria/studio/job-copy';
 import { SETUP_TITLE } from '@furria/studio/setup-copy';
 import type { JobPhone } from '@furria/studio/use-job-phone';
-import { KkEjMenuItem } from '@furria/ui/KkEjMenuItem';
+import { KkMenuItem } from '@furria/ui/KkMenuItem';
 import type { FC } from 'react';
 
 interface JobPhoneMenuProps {
-  ej: JobPhone;
+  jobPhone: JobPhone;
 }
 
-export const JobPhoneMenu: FC<JobPhoneMenuProps> = ({ ej }) => {
-  const { screen } = ej;
+export const JobPhoneMenu: FC<JobPhoneMenuProps> = ({ jobPhone }) => {
+  const { screen } = jobPhone;
   const historyCount = String(screen.history.rows.length);
   const openHistory = (): void => {
-    ej.open('history');
+    jobPhone.open('history');
   };
-  const setup = ej.setup.shown ? (
-    <KkEjMenuItem
+  const setup = jobPhone.setup.shown ? (
+    <KkMenuItem
       text={SETUP_TITLE}
       glyph="check"
-      aside={ej.setup.progressText}
-      onPress={ej.toggleSetup}
+      aside={jobPhone.setup.progressText}
+      onPress={jobPhone.toggleSetup}
     />
   ) : null;
   const music =
     screen.evening === null ? (
-      <KkEjMenuItem text={EJ_MUSIC_PAGE} glyph="music" aside={null} onPress={ej.openMusic} />
+      <KkMenuItem text={JOB_MUSIC_PAGE} glyph="music" aside={null} onPress={jobPhone.openMusic} />
     ) : null;
 
   return (
     <>
-      <KkEjMenuItem text={EJ_HISTORY} glyph="history" aside={historyCount} onPress={openHistory} />
+      <KkMenuItem text={JOB_HISTORY} glyph="history" aside={historyCount} onPress={openHistory} />
       {setup}
       {music}
     </>

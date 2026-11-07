@@ -1,7 +1,7 @@
-import type { JobReason } from '@furria/studio/edit-jobs';
-import { reasonsOf } from '@furria/studio/edit-jobs';
-import { reasonLineOf } from '@furria/studio/edit-jobs-copy';
-import { KkEjPanel } from '@furria/ui/KkEjPanel';
+import { reasonLineOf } from '@furria/studio/job-copy';
+import type { JobReason } from '@furria/studio/job-model';
+import { reasonsOf } from '@furria/studio/job-model';
+import { KkJobPanel } from '@furria/ui/KkJobPanel';
 import type { FC } from 'react';
 
 interface JobReasonLineProps {
@@ -15,5 +15,5 @@ export const JobReasonLine: FC<JobReasonLineProps> = ({ actions }) => {
     return null;
   }
 
-  return <KkEjPanel.Note text={text} />;
+  return <KkJobPanel.Note text={text} />;
 };

@@ -1,4 +1,3 @@
-import type { JobSection } from '@furria/studio/edit-jobs-view';
 import { JobChoicesSection } from '@furria/studio/JobChoicesSection';
 import { JobCompassSection } from '@furria/studio/JobCompassSection';
 import { JobCopySection } from '@furria/studio/JobCopySection';
@@ -6,7 +5,8 @@ import { JobFieldsSection } from '@furria/studio/JobFieldsSection';
 import { JobSpotsSection } from '@furria/studio/JobSpotsSection';
 import { JobSwitchSection } from '@furria/studio/JobSwitchSection';
 import { JobToolsSection } from '@furria/studio/JobToolsSection';
-import { KkEjPanel } from '@furria/ui/KkEjPanel';
+import type { JobSection } from '@furria/studio/job-view';
+import { KkJobPanel } from '@furria/ui/KkJobPanel';
 import type { FC } from 'react';
 
 interface JobSectionViewProps {
@@ -49,6 +49,6 @@ export const JobSectionView: FC<JobSectionViewProps> = ({ owner, section }) => {
         <JobCompassSection title={section.title} aside={section.aside} compass={section.compass} />
       );
     case 'note':
-      return <KkEjPanel.Note text={section.text} />;
+      return <KkJobPanel.Note text={section.text} />;
   }
 };

@@ -1,4 +1,4 @@
-import { SS_PICTURE, SS_VIDEO_AREA, SS_VIDEO_EMPTY } from '@furria/studio/step-setup-copy';
+import { SETUP_PICTURE, SETUP_VIDEO_AREA, SETUP_VIDEO_EMPTY } from '@furria/studio/step-setup-copy';
 import { useSetupFilm } from '@furria/studio/use-setup-film';
 import type { StepSetup } from '@furria/studio/use-step-setup';
 import { KkLesson } from '@furria/ui/KkLesson';
@@ -13,14 +13,14 @@ const VIDEO_ASPECT = 16 / 9;
 
 export const SetupPicture: FC<SetupPictureProps> = ({ setup }) => {
   const film = useSetupFilm(setup);
-  const note = film.source === null ? <KkVideo.Note text={SS_VIDEO_EMPTY} /> : null;
+  const note = film.source === null ? <KkVideo.Note text={SETUP_VIDEO_EMPTY} /> : null;
 
   return (
-    <KkLesson.Picture label={SS_PICTURE} paired={false} docked>
+    <KkLesson.Picture label={SETUP_PICTURE} paired={false} docked>
       <KkLesson.Layer place="main" aspect={VIDEO_ASPECT} tone="ink">
-        <KkVideo label={SS_VIDEO_AREA} fit="fill">
+        <KkVideo label={SETUP_VIDEO_AREA} fit="fill">
           <KkVideo.Picture
-            label={SS_VIDEO_AREA}
+            label={SETUP_VIDEO_AREA}
             source={film.source}
             videoRef={film.ref}
             mirrored={false}

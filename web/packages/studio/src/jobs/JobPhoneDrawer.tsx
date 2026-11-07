@@ -1,4 +1,4 @@
-import { EJ_CLOSE } from '@furria/studio/edit-jobs-copy';
+import { JOB_CLOSE } from '@furria/studio/job-copy';
 import { KkPracticeSteps } from '@furria/ui/KkPracticeSteps';
 import type { FC, PropsWithChildren } from 'react';
 
@@ -12,7 +12,7 @@ export const JobPhoneDrawer: FC<JobPhoneDrawerProps> = ({ open, title, onClose, 
   <KkPracticeSteps open={open} label={title} onClose={onClose}>
     <KkPracticeSteps.Head>
       <KkPracticeSteps.Title text={title} />
-      <KkPracticeSteps.Close label={EJ_CLOSE} onClose={onClose} />
+      <KkPracticeSteps.Close label={JOB_CLOSE} onClose={onClose} />
     </KkPracticeSteps.Head>
     <KkPracticeSteps.List>{children}</KkPracticeSteps.List>
   </KkPracticeSteps>

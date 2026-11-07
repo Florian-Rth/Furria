@@ -1,4 +1,4 @@
-import { EJ_VERSION_RESTORE, EJ_VERSION_SURE } from '@furria/studio/edit-jobs-copy';
+import { JOB_VERSION_RESTORE, JOB_VERSION_SURE } from '@furria/studio/job-copy';
 import { useJobConfirm } from '@furria/studio/use-job-confirm';
 import type { ActStudio } from '@/features/acts/schemas';
 import {
@@ -58,8 +58,8 @@ export const useEditorVersions = (
         label: row.label,
         meta: row.meta,
         current: row.current,
-        restoreText: armed ? EJ_VERSION_SURE : EJ_VERSION_RESTORE,
-        restoreLabel: armed ? EJ_VERSION_SURE : row.restoreLabel,
+        restoreText: armed ? JOB_VERSION_SURE : JOB_VERSION_RESTORE,
+        restoreLabel: armed ? JOB_VERSION_SURE : row.restoreLabel,
         armed,
         restore: () => {
           confirm.press(row.key, row.restore);

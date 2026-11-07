@@ -1,37 +1,37 @@
 import { selectAllSectionsOf } from '@furria/studio/arrange-actions';
 import { countPlaceAt, countTrackOf } from '@furria/studio/count-marks';
 import { keyShiftedTracksOf } from '@furria/studio/desk-keyframes';
-import { compassPointOf, pickedSpotOf, turnToOf } from '@furria/studio/edit-jobs';
 import {
   compassTextOf,
   countPlaceOf,
-  EJ_EARLIER,
-  EJ_FACING,
-  EJ_FACING_LABEL,
-  EJ_GROUP_FACING,
-  EJ_GROUP_SHOW,
-  EJ_GROUP_WAY,
-  EJ_GROUP_WAYPOINT,
-  EJ_LATER,
-  EJ_MOVEMENT_OWNER,
-  EJ_NO_SPOT_PICKED,
-  EJ_NO_WAY,
-  EJ_ONION,
-  EJ_PICK_LINE,
-  EJ_STRAIGHTEN,
-  EJ_SURE,
-  EJ_WAYPOINT_DELETE,
-  EJ_WAYPOINT_EARLIER_LABEL,
-  EJ_WAYPOINT_LATER_LABEL,
-  EJ_WAYPOINT_SET,
+  JOB_EARLIER,
+  JOB_FACING,
+  JOB_FACING_LABEL,
+  JOB_GROUP_FACING,
+  JOB_GROUP_SHOW,
+  JOB_GROUP_WAY,
+  JOB_GROUP_WAYPOINT,
+  JOB_LATER,
+  JOB_MOVEMENT_OWNER,
+  JOB_NO_SPOT_PICKED,
+  JOB_NO_WAY,
+  JOB_ONION,
+  JOB_PICK_LINE,
+  JOB_STRAIGHTEN,
+  JOB_SURE,
+  JOB_WAYPOINT_DELETE,
+  JOB_WAYPOINT_EARLIER_LABEL,
+  JOB_WAYPOINT_LATER_LABEL,
+  JOB_WAYPOINT_SET,
   movementContextOf,
   movementTitleOf,
   pickedTextOf,
   spotTitleOf,
   wayTextOf,
-} from '@furria/studio/edit-jobs-copy';
-import type { JobAction, JobSection, JobView } from '@furria/studio/edit-jobs-view';
-import { actionsIn, jobActionOf } from '@furria/studio/edit-jobs-view';
+} from '@furria/studio/job-copy';
+import { compassPointOf, pickedSpotOf, turnToOf } from '@furria/studio/job-model';
+import type { JobAction, JobSection, JobView } from '@furria/studio/job-view';
+import { actionsIn, jobActionOf } from '@furria/studio/job-view';
 import { neighbourCountOf } from '@furria/studio/music-timeline';
 import type { StudioScreen } from '@furria/studio/studio-screen';
 import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
@@ -67,7 +67,7 @@ export const useMovementJob = (
     singleSpot !== null
       ? spotTitleOf(singleSpot.number, singleSpot.person?.firstName ?? null)
       : chosen === 0
-        ? EJ_NO_SPOT_PICKED
+        ? JOB_NO_SPOT_PICKED
         : pickedTextOf(chosen, arrange.placed);
   const shift = (direction: -1 | 1): void => {
     const from = player.position();
@@ -87,25 +87,25 @@ export const useMovementJob = (
   const keyShifts: JobAction[] = [
     jobActionOf(
       'keyEarlier',
-      EJ_EARLIER,
+      JOB_EARLIER,
       'earlier',
       () => {
         shift(-1);
       },
-      { label: EJ_WAYPOINT_EARLIER_LABEL, reason: keyReason },
+      { label: JOB_WAYPOINT_EARLIER_LABEL, reason: keyReason },
     ),
     jobActionOf(
       'keyLater',
-      EJ_LATER,
+      JOB_LATER,
       'later',
       () => {
         shift(1);
       },
-      { label: EJ_WAYPOINT_LATER_LABEL, reason: keyReason },
+      { label: JOB_WAYPOINT_LATER_LABEL, reason: keyReason },
     ),
   ];
-  const facingTool = jobActionOf('facing', EJ_FACING, 'movement', openCompass, {
-    label: EJ_FACING_LABEL,
+  const facingTool = jobActionOf('facing', JOB_FACING, 'paths', openCompass, {
+    label: JOB_FACING_LABEL,
     reason: lead === null ? 'noWay' : null,
   });
   const waypointSection: JobSection[] = movement.keyed
@@ -113,31 +113,31 @@ export const useMovementJob = (
         {
           kind: 'tools',
           key: 'waypoint',
-          title: EJ_GROUP_WAYPOINT,
-          aside: EJ_WAYPOINT_SET,
+          title: JOB_GROUP_WAYPOINT,
+          aside: JOB_WAYPOINT_SET,
           actions: keyShifts,
         },
       ]
     : [];
   const straight: JobAction[] =
     lead?.bent === true
-      ? [jobActionOf('straight', EJ_STRAIGHTEN, 'straight', movement.straighten)]
+      ? [jobActionOf('straight', JOB_STRAIGHTEN, 'straight', movement.straighten)]
       : [];
   const waySections: JobSection[] =
     lead === null
-      ? [{ kind: 'note', key: 'noWay', text: EJ_NO_WAY }]
+      ? [{ kind: 'note', key: 'noWay', text: JOB_NO_WAY }]
       : [
           {
             kind: 'tools',
             key: 'way',
-            title: EJ_GROUP_WAY,
+            title: JOB_GROUP_WAY,
             aside: wayTextOf(lead.fromSeconds, lead.toSeconds, lead.bent),
             actions: straight,
           },
           {
             kind: 'compass',
             key: 'facing',
-            title: EJ_GROUP_FACING,
+            title: JOB_GROUP_FACING,
             aside: compassTextOf(facing),
             compass: {
               point: facing,
@@ -151,22 +151,22 @@ export const useMovementJob = (
   const onion: JobSection = {
     kind: 'switch',
     key: 'onion',
-    title: EJ_GROUP_SHOW,
-    label: EJ_ONION,
+    title: JOB_GROUP_SHOW,
+    label: JOB_ONION,
     checked: editor.onion,
     change: editor.toggleOnion,
   };
-  const selection = selectAllSectionsOf(chosen, arrange, EJ_PICK_LINE.movement);
+  const selection = selectAllSectionsOf(chosen, arrange, JOB_PICK_LINE.movement);
   const sections: JobSection[] =
     chosen === 0
       ? [...selection, onion]
       : [...selection, ...waypointSection, ...waySections, onion];
   const view: JobView = {
-    context: chosen === 0 ? EJ_PICK_LINE.movement : movementContextOf(place),
+    context: chosen === 0 ? JOB_PICK_LINE.movement : movementContextOf(place),
     blocks: [
       {
         key: 'movement',
-        owner: EJ_MOVEMENT_OWNER,
+        owner: JOB_MOVEMENT_OWNER,
         title: movementTitleOf(place),
         meta,
         sections,
@@ -174,7 +174,7 @@ export const useMovementJob = (
           chosen > 0 && movement.keyed
             ? jobActionOf(
                 'unkey',
-                confirm.armed(UNKEY_CONFIRM) ? EJ_SURE : EJ_WAYPOINT_DELETE,
+                confirm.armed(UNKEY_CONFIRM) ? JOB_SURE : JOB_WAYPOINT_DELETE,
                 'delete',
                 () => {
                   confirm.press(UNKEY_CONFIRM, movement.unkey);

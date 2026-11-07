@@ -1,8 +1,8 @@
 import { countsBetweenOf } from '@furria/studio/count-marks';
-import { cardEyebrowOf, EJ_MORE } from '@furria/studio/edit-jobs-copy';
-import type { JobAction, JobView } from '@furria/studio/edit-jobs-view';
-import { jobActionOf } from '@furria/studio/edit-jobs-view';
+import { cardEyebrowOf, JOB_MORE } from '@furria/studio/job-copy';
 import { jobStageOf } from '@furria/studio/job-stage';
+import type { JobAction, JobView } from '@furria/studio/job-view';
+import { jobActionOf } from '@furria/studio/job-view';
 import { partOfStep } from '@furria/studio/music-timeline';
 import { swallowSequenceClick } from '@furria/studio/pointer-sequence';
 import { timedStepsOf } from '@furria/studio/setup-progress';
@@ -12,9 +12,9 @@ import type { StudioSetup } from '@furria/studio/studio-setup-view';
 import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 import type { JobArrange } from '@furria/studio/use-arrange';
 import { useArrange } from '@furria/studio/use-arrange';
+import type { CurrentJob } from '@furria/studio/use-current-job';
+import { useCurrentJob } from '@furria/studio/use-current-job';
 import { useDeskBorders } from '@furria/studio/use-desk-borders';
-import type { EditJobs } from '@furria/studio/use-edit-jobs';
-import { useEditJobs } from '@furria/studio/use-edit-jobs';
 import { useJobConfirm } from '@furria/studio/use-job-confirm';
 import { useJobSetup } from '@furria/studio/use-job-setup';
 import { useJobViews } from '@furria/studio/use-job-views';
@@ -27,7 +27,7 @@ export type JobPhoneDrawer = 'none' | 'more' | 'menu' | 'history' | 'setup' | 'c
 
 export interface JobPhone {
   screen: StudioScreen;
-  jobs: EditJobs;
+  jobs: CurrentJob;
   stage: ActStudioStage;
   arrange: JobArrange;
   cards: StepCards;
@@ -63,7 +63,7 @@ const countedStepsOf = (screen: StudioScreen): CountedStep[] => {
 
 export const useJobPhone = (screen: StudioScreen, editor: ActStudioStage): JobPhone => {
   const confirm = useJobConfirm();
-  const jobs = useEditJobs(screen, confirm);
+  const jobs = useCurrentJob(screen, confirm);
   const [drawer, setDrawer] = useState<JobPhoneDrawer>('none');
   const openMore = (): void => {
     setDrawer('more');
@@ -93,7 +93,7 @@ export const useJobPhone = (screen: StudioScreen, editor: ActStudioStage): JobPh
     setDrawer('compass');
   });
   const view = views[jobs.job];
-  const more = jobActionOf('more', EJ_MORE, 'more', openMore);
+  const more = jobActionOf('more', JOB_MORE, 'more', openMore);
   const timed = countedStepsOf(screen);
 
   return {

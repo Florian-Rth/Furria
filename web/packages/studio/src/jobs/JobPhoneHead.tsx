@@ -1,43 +1,43 @@
 import type { SaveStatus } from '@furria/studio/autosave';
 import { SAVE_STATUS_SHORT, SAVE_STATUS_TEXT } from '@furria/studio/document-copy';
 import {
-  EJ_DONE,
-  EJ_DONE_LABEL,
-  EJ_HEAD,
-  EJ_MENU,
-  EJ_REDO,
-  EJ_UNDO,
-} from '@furria/studio/edit-jobs-copy';
+  JOB_DONE,
+  JOB_DONE_LABEL,
+  JOB_HEAD,
+  JOB_MENU,
+  JOB_REDO,
+  JOB_UNDO,
+} from '@furria/studio/job-copy';
 import { StudioSaveButton } from '@furria/studio/StudioSaveButton';
 import type { JobPhone } from '@furria/studio/use-job-phone';
-import { KkEjButton } from '@furria/ui/KkEjButton';
-import type { KkEjGlyphName } from '@furria/ui/KkEjGlyph';
-import { KkEjPhoneHead } from '@furria/ui/KkEjPhoneHead';
+import { KkEditorHead } from '@furria/ui/KkEditorHead';
+import type { KkLaneGlyphName } from '@furria/ui/KkLaneGlyph';
+import { KkPillButton } from '@furria/ui/KkPillButton';
 import type { FC } from 'react';
 
 interface JobPhoneHeadProps {
-  ej: JobPhone;
+  jobPhone: JobPhone;
   title: string;
 }
 
-const STATUS_GLYPH: Record<SaveStatus, KkEjGlyphName> = {
+const STATUS_GLYPH: Record<SaveStatus, KkLaneGlyphName> = {
   saved: 'check',
   saving: 'history',
   failed: 'redo',
 };
 
-export const JobPhoneHead: FC<JobPhoneHeadProps> = ({ ej, title }) => {
-  const { history, mode } = ej.screen;
+export const JobPhoneHead: FC<JobPhoneHeadProps> = ({ jobPhone, title }) => {
+  const { history, mode } = jobPhone.screen;
   const undoLocked = !history.canUndo;
   const redoLocked = !history.canRedo;
-  const menuOpen = ej.drawer === 'menu';
+  const menuOpen = jobPhone.drawer === 'menu';
   const openMenu = (): void => {
-    ej.open('menu');
+    jobPhone.open('menu');
   };
   const status = history.status;
   const statusLine =
     status === null ? null : (
-      <KkEjPhoneHead.Status
+      <KkEditorHead.Status
         text={SAVE_STATUS_SHORT[status]}
         label={SAVE_STATUS_TEXT[status]}
         glyph={STATUS_GLYPH[status]}
@@ -48,34 +48,34 @@ export const JobPhoneHead: FC<JobPhoneHeadProps> = ({ ej, title }) => {
     status === 'failed' ? <StudioSaveButton history={history} textShown={false} /> : null;
 
   return (
-    <KkEjPhoneHead label={EJ_HEAD}>
-      <KkEjPhoneHead.Name>
-        <KkEjPhoneHead.Title text={title} />
+    <KkEditorHead label={JOB_HEAD}>
+      <KkEditorHead.Name>
+        <KkEditorHead.Title text={title} />
         {statusLine}
-      </KkEjPhoneHead.Name>
+      </KkEditorHead.Name>
       {retry}
-      <KkEjButton
-        text={EJ_UNDO}
+      <KkPillButton
+        text={JOB_UNDO}
         glyph="undo"
         textShown={false}
         disabled={undoLocked}
         onPress={history.undo}
       />
-      <KkEjButton
-        text={EJ_REDO}
+      <KkPillButton
+        text={JOB_REDO}
         glyph="redo"
         textShown={false}
         disabled={redoLocked}
         onPress={history.redo}
       />
-      <KkEjButton
-        text={EJ_MENU}
+      <KkPillButton
+        text={JOB_MENU}
         glyph="more"
         pressed={menuOpen}
         textShown={false}
         onPress={openMenu}
       />
-      <KkEjButton text={EJ_DONE} tone="accent" label={EJ_DONE_LABEL} onPress={mode.toggle} />
-    </KkEjPhoneHead>
+      <KkPillButton text={JOB_DONE} tone="accent" label={JOB_DONE_LABEL} onPress={mode.toggle} />
+    </KkEditorHead>
   );
 };

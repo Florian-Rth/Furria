@@ -1,18 +1,18 @@
-import { reasonsOf } from '@furria/studio/edit-jobs';
-import { EJ_BAR_LABEL, EJ_JOB_GLYPH, reasonLineOf } from '@furria/studio/edit-jobs-copy';
+import { JOB_BAR_LABEL, JOB_GLYPH, reasonLineOf } from '@furria/studio/job-copy';
+import { reasonsOf } from '@furria/studio/job-model';
 import type { JobPhone } from '@furria/studio/use-job-phone';
-import { KkEjStageHint } from '@furria/ui/KkEjStageHint';
-import { KkEjToolBar } from '@furria/ui/KkEjToolBar';
+import { KkEditorToolBar } from '@furria/ui/KkEditorToolBar';
+import { KkStageHint } from '@furria/ui/KkStageHint';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 
 interface JobPhoneToolsProps {
-  ej: JobPhone;
+  jobPhone: JobPhone;
 }
 
-export const JobPhoneTools: FC<JobPhoneToolsProps> = ({ ej }) => {
-  const tools = ej.bar.map((action) => (
-    <KkEjToolBar.Tool
+export const JobPhoneTools: FC<JobPhoneToolsProps> = ({ jobPhone }) => {
+  const tools = jobPhone.bar.map((action) => (
+    <KkEditorToolBar.Tool
       key={action.key}
       text={action.text}
       glyph={action.glyph}
@@ -24,12 +24,12 @@ export const JobPhoneTools: FC<JobPhoneToolsProps> = ({ ej }) => {
     />
   ));
 
-  const line = reasonLineOf(reasonsOf(ej.bar)) ?? ej.view.context;
+  const line = reasonLineOf(reasonsOf(jobPhone.bar)) ?? jobPhone.view.context;
 
   return (
     <Stack sx={{ gap: 0.5, minWidth: 0 }}>
-      <KkEjStageHint glyph={EJ_JOB_GLYPH[ej.jobs.job]} text={line} wraps />
-      <KkEjToolBar label={EJ_BAR_LABEL}>{tools}</KkEjToolBar>
+      <KkStageHint glyph={JOB_GLYPH[jobPhone.jobs.job]} text={line} wraps />
+      <KkEditorToolBar label={JOB_BAR_LABEL}>{tools}</KkEditorToolBar>
     </Stack>
   );
 };

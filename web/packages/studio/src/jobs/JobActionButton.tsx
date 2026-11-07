@@ -1,5 +1,5 @@
-import type { JobAction } from '@furria/studio/edit-jobs-view';
-import { KkEjButton } from '@furria/ui/KkEjButton';
+import type { JobAction } from '@furria/studio/job-view';
+import { KkPillButton } from '@furria/ui/KkPillButton';
 import type { FC } from 'react';
 
 interface JobActionButtonProps {
@@ -7,7 +7,7 @@ interface JobActionButtonProps {
 }
 
 export const JobActionButton: FC<JobActionButtonProps> = ({ action }) => (
-  <KkEjButton
+  <KkPillButton
     text={action.text}
     glyph={action.glyph}
     tone={action.tone}

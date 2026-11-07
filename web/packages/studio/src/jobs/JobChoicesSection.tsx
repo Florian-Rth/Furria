@@ -1,7 +1,7 @@
-import type { JobChoice } from '@furria/studio/edit-jobs-view';
 import { JobReasonLine } from '@furria/studio/JobReasonLine';
-import { KkEjButton } from '@furria/ui/KkEjButton';
-import { KkEjPanel } from '@furria/ui/KkEjPanel';
+import type { JobChoice } from '@furria/studio/job-view';
+import { KkJobPanel } from '@furria/ui/KkJobPanel';
+import { KkPillButton } from '@furria/ui/KkPillButton';
 import type { FC } from 'react';
 
 interface JobChoicesSectionProps {
@@ -12,7 +12,7 @@ interface JobChoicesSectionProps {
 
 export const JobChoicesSection: FC<JobChoicesSectionProps> = ({ title, aside, choices }) => {
   const buttons = choices.map((choice) => (
-    <KkEjButton
+    <KkPillButton
       key={choice.key}
       text={choice.text}
       label={choice.label}
@@ -23,10 +23,10 @@ export const JobChoicesSection: FC<JobChoicesSectionProps> = ({ title, aside, ch
   ));
 
   return (
-    <KkEjPanel.Group label={title}>
-      <KkEjPanel.GroupHead text={title} aside={aside} />
-      <KkEjPanel.Tools>{buttons}</KkEjPanel.Tools>
+    <KkJobPanel.Group label={title}>
+      <KkJobPanel.GroupHead text={title} aside={aside} />
+      <KkJobPanel.Tools>{buttons}</KkJobPanel.Tools>
       <JobReasonLine actions={choices} />
-    </KkEjPanel.Group>
+    </KkJobPanel.Group>
   );
 };

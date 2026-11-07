@@ -1,5 +1,10 @@
 import { SetupTransportGroup } from '@furria/studio/SetupTransportGroup';
-import { SS_FIT, SS_TRANSPORT_VIEW, SS_ZOOM_IN, SS_ZOOM_OUT } from '@furria/studio/step-setup-copy';
+import {
+  SETUP_FIT,
+  SETUP_TRANSPORT_VIEW,
+  SETUP_ZOOM_IN,
+  SETUP_ZOOM_OUT,
+} from '@furria/studio/step-setup-copy';
 import type { CentreScrub } from '@furria/studio/use-centre-scrub';
 import { KkLaneButton } from '@furria/ui/KkLaneButton';
 import type { FC } from 'react';
@@ -19,23 +24,23 @@ export const SetupZoomTools: FC<SetupZoomToolsProps> = ({ centre }) => {
   const inLocked = !centre.canZoomIn;
 
   return (
-    <SetupTransportGroup label={SS_TRANSPORT_VIEW}>
+    <SetupTransportGroup label={SETUP_TRANSPORT_VIEW}>
       <KkLaneButton
-        text={SS_ZOOM_OUT}
+        text={SETUP_ZOOM_OUT}
         glyph="zoomOut"
         textShown={false}
         disabled={outLocked}
         onPress={zoomOut}
       />
       <KkLaneButton
-        text={SS_ZOOM_IN}
+        text={SETUP_ZOOM_IN}
         glyph="zoomIn"
         textShown={false}
         disabled={inLocked}
         onPress={zoomIn}
       />
       <KkLaneButton
-        text={SS_FIT}
+        text={SETUP_FIT}
         glyph="fit"
         textShown={false}
         pressed={centre.fitted}

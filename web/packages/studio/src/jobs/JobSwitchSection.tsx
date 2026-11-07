@@ -1,4 +1,4 @@
-import { KkEjPanel } from '@furria/ui/KkEjPanel';
+import { KkJobPanel } from '@furria/ui/KkJobPanel';
 import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import type { FC } from 'react';
 
@@ -15,8 +15,8 @@ export const JobSwitchSection: FC<JobSwitchSectionProps> = ({
   checked,
   onChange,
 }) => (
-  <KkEjPanel.Group label={title}>
-    <KkEjPanel.GroupHead text={title} aside={null} />
+  <KkJobPanel.Group label={title}>
+    <KkJobPanel.GroupHead text={title} aside={null} />
     <KkSwitchRow label={label} checked={checked} onChange={onChange} />
-  </KkEjPanel.Group>
+  </KkJobPanel.Group>
 );

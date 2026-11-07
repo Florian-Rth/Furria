@@ -1,4 +1,4 @@
-import type { JobAction } from '@furria/studio/edit-jobs-view';
+import type { JobAction } from '@furria/studio/job-view';
 import { toolsOfActions } from '@furria/studio/setup-task';
 import { describe, expect, it } from 'vitest';
 

@@ -8,7 +8,7 @@ import { useActStudioRoutes } from '@furria/studio/use-act-studio-routes';
 import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
 import type { JobArrange } from '@furria/studio/use-arrange';
 import { useStudioStageWork } from '@furria/studio/use-studio-stage-work';
-import type { KkEjStageNameSize } from '@furria/ui/KkEjStageName';
+import type { KkStageNameSize } from '@furria/ui/KkStageName';
 import type { FC } from 'react';
 
 interface JobStageProps {
@@ -18,7 +18,7 @@ interface JobStageProps {
   label: string;
   named: boolean;
   bigNames: boolean;
-  nameSize: KkEjStageNameSize;
+  nameSize: KkStageNameSize;
 }
 
 export const JobStage: FC<JobStageProps> = ({

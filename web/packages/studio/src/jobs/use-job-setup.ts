@@ -1,15 +1,15 @@
-import { jobOfSetup } from '@furria/studio/edit-jobs';
+import { jobOfSetup } from '@furria/studio/job-model';
 import type { StudioScreen } from '@furria/studio/studio-screen';
 import type { StudioSetup, StudioSetupRow } from '@furria/studio/studio-setup-view';
 import type { ActStudioStage } from '@furria/studio/use-act-studio-stage';
-import type { EditJobs } from '@furria/studio/use-edit-jobs';
+import type { CurrentJob } from '@furria/studio/use-current-job';
 import type { StudioSetupHost } from '@furria/studio/use-studio-setup';
 import { useStudioSetup } from '@furria/studio/use-studio-setup';
 
 export const useJobSetup = (
   screen: StudioScreen,
   editor: ActStudioStage,
-  jobs: EditJobs,
+  jobs: CurrentJob,
   host: StudioSetupHost,
 ): StudioSetup => {
   const setup = useStudioSetup(screen, editor, host);

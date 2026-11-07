@@ -1,7 +1,7 @@
-import { EJ_COPY_NEXT, EJ_COPY_PREVIOUS } from '@furria/studio/edit-jobs-copy';
-import type { JobCopyPick } from '@furria/studio/edit-jobs-view';
-import { KkEjButton } from '@furria/ui/KkEjButton';
-import { KkEjPanel } from '@furria/ui/KkEjPanel';
+import { JOB_COPY_NEXT, JOB_COPY_PREVIOUS } from '@furria/studio/job-copy';
+import type { JobCopyPick } from '@furria/studio/job-view';
+import { KkJobPanel } from '@furria/ui/KkJobPanel';
+import { KkPillButton } from '@furria/ui/KkPillButton';
 import type { FC } from 'react';
 
 interface JobCopySectionProps {
@@ -10,30 +10,30 @@ interface JobCopySectionProps {
 }
 
 export const JobCopySection: FC<JobCopySectionProps> = ({ title, pick }) => (
-  <KkEjPanel.Group label={title}>
-    <KkEjPanel.GroupHead text={title} aside={null} />
-    <KkEjPanel.Tools>
-      <KkEjButton
-        text={EJ_COPY_PREVIOUS}
-        glyph="previous"
+  <KkJobPanel.Group label={title}>
+    <KkJobPanel.GroupHead text={title} aside={null} />
+    <KkJobPanel.Tools>
+      <KkPillButton
+        text={JOB_COPY_PREVIOUS}
+        glyph="left"
         textShown={false}
         disabled={pick.previousLocked}
         onPress={pick.previous}
       />
-      <KkEjButton
+      <KkPillButton
         text={pick.action.text}
         glyph={pick.action.glyph}
         label={pick.action.label}
         tone={pick.action.tone}
         onPress={pick.action.press}
       />
-      <KkEjButton
-        text={EJ_COPY_NEXT}
-        glyph="next"
+      <KkPillButton
+        text={JOB_COPY_NEXT}
+        glyph="right"
         textShown={false}
         disabled={pick.nextLocked}
         onPress={pick.next}
       />
-    </KkEjPanel.Tools>
-  </KkEjPanel.Group>
+    </KkJobPanel.Tools>
+  </KkJobPanel.Group>
 );

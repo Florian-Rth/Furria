@@ -1,4 +1,4 @@
-import { SS_VIDEO_LIST, SS_VIDEO_UPLOAD } from '@furria/studio/step-setup-copy';
+import { SETUP_VIDEO_LIST, SETUP_VIDEO_UPLOAD } from '@furria/studio/step-setup-copy';
 import { STUDIO_VIDEO_ACCEPT } from '@furria/studio/studio-copy';
 import type { SetupVideo } from '@furria/studio/use-setup-video';
 import { KkButton } from '@furria/ui/KkButton';
@@ -29,7 +29,7 @@ export const SetupVideoPick: FC<SetupVideoPickProps> = ({ videos }) => {
   return (
     <Stack sx={{ gap: 1, minWidth: 0 }}>
       <KkButton variant="outlined" startIcon={UPLOAD_ICON} onClick={videos.upload}>
-        {SS_VIDEO_UPLOAD}
+        {SETUP_VIDEO_UPLOAD}
       </KkButton>
       <Box
         component="input"
@@ -39,7 +39,7 @@ export const SetupVideoPick: FC<SetupVideoPickProps> = ({ videos }) => {
         onChange={videos.onChosen}
         hidden
       />
-      <Stack component="nav" aria-label={SS_VIDEO_LIST} sx={{ gap: 0.5, minWidth: 0 }}>
+      <Stack component="nav" aria-label={SETUP_VIDEO_LIST} sx={{ gap: 0.5, minWidth: 0 }}>
         {rows}
       </Stack>
     </Stack>

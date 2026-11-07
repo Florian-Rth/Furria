@@ -33,7 +33,7 @@ import { useStudioMusicRoute } from './use-studio-music-route';
 import { useVideoAutoAlign } from './use-video-auto-align';
 import { useVisitHistory } from './use-visit-history';
 
-export interface StudioEveningContext {
+export interface StudioScreenContext {
   evening: StudioEvening | null;
   startEditing: boolean;
   startHall: (() => void) | null;
@@ -60,7 +60,7 @@ export const useStudioScreen = (
     startTool,
     stageEditor = false,
     tone = null,
-  }: StudioEveningContext,
+  }: StudioScreenContext,
 ): StudioScreen => {
   const wide = useKkLaneWide();
   const mode = useActStudioMode(canEdit, {

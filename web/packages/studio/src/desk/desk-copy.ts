@@ -1,89 +1,12 @@
 export const DESK_LABEL = 'Sessionsauftritt bearbeiten';
-export const DESK_BAR_LABEL = 'Wiedergabe und Werkzeuge';
-export const DESK_TRANSPORT = 'Wiedergabe';
-export const DESK_ZOOM = 'Zoom';
-export const DESK_HISTORY_GROUP = 'Rückgängig, Wiederholen und Fertig';
-export const DESK_PLAY = 'Abspielen';
-export const DESK_PAUSE = 'Anhalten';
-export const DESK_BACK = 'Voriger Schritt';
-export const DESK_FORWARD = 'Nächster Schritt';
-export const DESK_ZOOM_IN = 'Näher';
-export const DESK_ZOOM_OUT = 'Weiter weg';
-export const DESK_FIT = 'Ganzer Auftritt';
-export const DESK_UNDO = 'Rückgängig';
-export const DESK_REDO = 'Wiederholen';
-export const DESK_DONE = 'Fertig';
-export const DESK_DONE_LABEL = 'Bearbeiten beenden';
 export const DESK_READOUT = 'Position';
-export const DESK_MUSIC_PAGE = 'Musik & Video';
 export const DESK_LANES = 'Spuren: Teile, Schritte, Musik, Video, Wegpunkte';
 export const DESK_OVERVIEW_AIM = 'Ganzer Auftritt: tippen, um dorthin zu springen';
 export const DESK_BRACKET =
   'Sichtbarer Ausschnitt: ziehen zum Verschieben, Ränder ziehen zum Zoomen, Pfeiltasten';
-export const DESK_STAGE = 'Bühne';
-export const DESK_STAGE_TOOLS = 'Bühne bearbeiten';
-export const DESK_FORMATION = 'Aufstellung';
-export const DESK_MOVEMENT = 'Wege';
-export const DESK_ADD_SPOT = 'Platz';
-export const DESK_ADD_SPOT_LABEL = 'Platz hinzufügen';
-export const DESK_INSPECTOR = 'Auswahl';
-export const DESK_TABS = 'Auswahl, Verlauf oder Einrichten';
-export const DESK_TAB_SELECTION = 'Auswahl';
-export const DESK_TAB_HISTORY = 'Verlauf';
 export const DESK_ACTIONS = 'Aktionen';
-export const DESK_HISTORY_EMPTY = 'In diesem Besuch noch nichts geändert.';
-export const DESK_HISTORY_LIST = 'Änderungen in diesem Besuch';
-export const DESK_NAME = 'Name';
-export const DESK_SHORTER = 'Ende früher';
-export const DESK_LONGER = 'Ende später';
-export const DESK_SHORTER_LABEL = 'Ende eine Zählzeit früher';
-export const DESK_LONGER_LABEL = 'Ende eine Zählzeit später';
-export const DESK_MARK_HERE = 'Hier teilen';
-export const DESK_MARK_HERE_LABEL = 'Schritt an der Abspielposition teilen';
-export const DESK_FIRST_MARK = 'Ersten Schritt setzen';
-export const DESK_FIRST_MARK_LABEL = 'Ersten Schritt an der Abspielposition setzen';
-export const DESK_NEW_PART = 'Teil ab hier';
-export const DESK_LOOP = 'Schleife';
-export const DESK_DELETE = 'Löschen';
-export const DESK_DISSOLVE = 'Teil auflösen';
-export const DESK_EARLIER = 'Früher';
-export const DESK_LATER = 'Später';
 export const DESK_EARLIER_COUNT = 'Eine Zählzeit früher';
 export const DESK_LATER_COUNT = 'Eine Zählzeit später';
-export const DESK_START_HERE = 'Hier beginnen';
-export const DESK_MIRROR = 'Spiegeln';
-export const DESK_LINE = 'Linie';
-export const DESK_CIRCLE = 'Kreis';
-export const DESK_BLOCK = 'Block';
-export const DESK_ALIGN = 'Ausrichten';
-export const DESK_ALIGN_DEEP = 'Ausrichten tief';
-export const DESK_DISTRIBUTE = 'Verteilen';
-export const DESK_COPY = 'Vom vorigen übernehmen';
-export const DESK_STRAIGHT = 'Weg gerade';
-export const DESK_TURN_LEFT = 'Links drehen';
-export const DESK_TURN_RIGHT = 'Rechts drehen';
-export const DESK_UNKEY = 'Zeitpunkt löschen';
-export const DESK_NO_STEP =
-  'Noch keine Schritte. Spiele die Musik ab und setze den ersten Schritt.';
-export const DESK_NO_MUSIC = 'Noch keine Musik. Lade sie unter Musik & Video hoch.';
-export const DESK_PICK_HINT =
-  'Punkte auf der Bühne antippen, ziehen oder mit den Pfeiltasten schieben.';
-export const DESK_ALL_SPOTS = 'Alle Plätze';
-export const DESK_OPEN = 'offen';
-export const DESK_FORMATION_GROUP = 'Aufstellung';
-
-export const FACT_START = 'Beginn';
-export const FACT_END = 'Ende';
-export const FACT_LENGTH = 'Länge';
-export const FACT_PART = 'Teil';
-export const FACT_STEPS = 'Schritte';
-export const FACT_PERSON = 'Person';
-export const FACT_WHERE = 'Stelle';
-export const FACT_KEYS = 'Zeitpunkte';
-export const FACT_STATE = 'Stand';
-export const FACT_FACING = 'Blick';
-export const FACT_SPOTS = 'Plätze';
-
 const TENTHS = 10;
 const SECONDS_PER_MINUTE = 60;
 const COUNTS_PER_EIGHT = 8;
@@ -106,26 +29,8 @@ export const countShapeOf = (counts: number): string => {
   return [eightText, restText].filter((part) => part !== '').join(' + ');
 };
 
-export const countLengthOf = (counts: number): string => {
-  const shape = countShapeOf(counts);
-
-  return `${counts} Zählzeiten${shape === '' ? '' : ` · ${shape}`}`;
-};
-
-export const countPlaceTextOf = (eight: number, count: number): string =>
-  `Achter ${eight} · ${count}`;
-
 export const readoutCountOf = (eight: number | null, count: number | null): string =>
   eight === null || count === null ? '–' : `${eight} · ${count}`;
-
-export const stepEyebrowOf = (number: number, total: number, part: string | null): string =>
-  part === null ? `Schritt ${number} von ${total}` : `Schritt ${number} von ${total} · ${part}`;
-
-export const partEyebrowOf = (first: number, last: number): string =>
-  `Teil · Schritt ${first}–${last}`;
-
-export const partStepsOf = (first: number, last: number, count: number): string =>
-  `${first}–${last} · ${count} Schritte`;
 
 export const newPartNameOf = (number: number): string => `Teil ${number}`;
 
@@ -133,8 +38,6 @@ export const borderLabelOf = (before: string, after: string): string =>
   `Grenze zwischen ${before} und ${after}: ziehen oder Pfeiltasten`;
 
 export const videoBlockLabelOf = (name: string): string => `Video ${name}: wählen und ziehen`;
-
-export const videoEyebrowOf = (number: number): string => `Video ${number}`;
 
 export const amountOf = (count: number, one: string, many: string): string =>
   `${count} ${count === 1 ? one : many}`;
@@ -144,16 +47,8 @@ export const spotsAmountOf = (count: number): string => amountOf(count, 'Platz',
 export const keyLabelOf = (seconds: number, spots: number): string =>
   `Wegpunkt ${clockOf(seconds)} · ${spotsAmountOf(spots)}: wählen, ziehen oder Pfeiltasten`;
 
-export const keyEyebrowOf = (seconds: number): string => `Zeitpunkt ${clockOf(seconds)}`;
-
-export const spotEyebrowOf = (count: number): string =>
-  count === 1 ? 'Platz' : `${count} Plätze gewählt`;
-
 export const spotTitleOf = (number: number, name: string | null): string =>
   name === null ? `Platz ${number}` : `${number} · ${name}`;
-
-export const pointTextOf = (right: number, back: number): string =>
-  `${right.toFixed(1).replace('.', ',')} m quer · ${back.toFixed(1).replace('.', ',')} m tief`;
 
 export const facingTextOf = (degrees: number | null): string =>
   degrees === null ? 'nach vorn' : `${Math.round(degrees)} Grad`;

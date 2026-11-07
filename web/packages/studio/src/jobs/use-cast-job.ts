@@ -1,44 +1,38 @@
 import { selectAllSectionsOf } from '@furria/studio/arrange-actions';
 import { poseAt } from '@furria/studio/choreography-motion';
-import type { CastAssign, CastSpot } from '@furria/studio/edit-jobs';
-import {
-  castAssignsOf,
-  castChoiceKindOf,
-  castCountOf,
-  pickedSpotOf,
-} from '@furria/studio/edit-jobs';
 import {
   castChoiceLabelOf,
   castChoiceMetaOf,
   castLeadOf,
   castTitleOf,
-  EJ_ADD_SPOT,
-  EJ_ADD_SPOT_LABEL,
-  EJ_CAST_OWNER,
-  EJ_FREE,
-  EJ_FREE_ALL,
-  EJ_FREE_ALL_LABEL,
-  EJ_GROUP_PERSON,
-  EJ_GROUP_SPOTS,
-  EJ_HERE,
-  EJ_PICK_LINE,
-  EJ_PICKED,
-  EJ_SPOT_DELETE,
-  EJ_SPOT_OWNER,
-  EJ_SURE,
+  JOB_ADD_SPOT,
+  JOB_ADD_SPOT_LABEL,
+  JOB_CAST_OWNER,
+  JOB_FREE,
+  JOB_FREE_ALL,
+  JOB_FREE_ALL_LABEL,
+  JOB_GROUP_PERSON,
+  JOB_GROUP_SPOTS,
+  JOB_HERE,
+  JOB_PICK_LINE,
+  JOB_PICKED,
+  JOB_SPOT_DELETE,
+  JOB_SPOT_OWNER,
+  JOB_SURE,
   pickedTextOf,
   spotPlaceOf,
   spotRowLabelOf,
   spotTitleOf,
-} from '@furria/studio/edit-jobs-copy';
-import type {
-  JobAction,
-  JobBlock,
-  JobListRow,
-  JobSection,
-  JobView,
-} from '@furria/studio/edit-jobs-view';
-import { jobActionOf } from '@furria/studio/edit-jobs-view';
+} from '@furria/studio/job-copy';
+import type { CastAssign, CastSpot } from '@furria/studio/job-model';
+import {
+  castAssignsOf,
+  castChoiceKindOf,
+  castCountOf,
+  pickedSpotOf,
+} from '@furria/studio/job-model';
+import type { JobAction, JobBlock, JobListRow, JobSection, JobView } from '@furria/studio/job-view';
+import { jobActionOf } from '@furria/studio/job-view';
 import { stagePlaceTextOf } from '@furria/studio/studio-copy';
 import type { StudioScreen } from '@furria/studio/studio-screen';
 import { byNameOf, spotPersonOf } from '@furria/studio/studio-spots';
@@ -94,7 +88,7 @@ export const useCastJob = (
     stageDocument.endGesture();
   };
   const addSpot = onSession
-    ? [jobActionOf('addSpot', EJ_ADD_SPOT, 'add', editor.addSpot, { label: EJ_ADD_SPOT_LABEL })]
+    ? [jobActionOf('addSpot', JOB_ADD_SPOT, 'add', editor.addSpot, { label: JOB_ADD_SPOT_LABEL })]
     : [];
   const heldChosen = spots.filter(
     (spot) => editor.selected.includes(spot.spotId) && spot.person !== null,
@@ -104,11 +98,11 @@ export const useCastJob = (
   };
   const free: JobAction[] =
     picked !== null && picked.person !== null
-      ? [jobActionOf('free', EJ_FREE, 'free', freeAll)]
+      ? [jobActionOf('free', JOB_FREE, 'free', freeAll)]
       : [];
   const freeMany: JobAction[] =
     chosen > 1 && heldChosen.length > 0
-      ? [jobActionOf('freeAll', EJ_FREE_ALL, 'free', freeAll, { label: EJ_FREE_ALL_LABEL })]
+      ? [jobActionOf('freeAll', JOB_FREE_ALL, 'free', freeAll, { label: JOB_FREE_ALL_LABEL })]
       : [];
   const deleteKey = `spot:${picked?.spotId ?? 0}`;
   const deleteSpot =
@@ -116,7 +110,7 @@ export const useCastJob = (
       ? null
       : jobActionOf(
           'deleteSpot',
-          confirm.armed(deleteKey) ? EJ_SURE : EJ_SPOT_DELETE,
+          confirm.armed(deleteKey) ? JOB_SURE : JOB_SPOT_DELETE,
           'delete',
           () => {
             confirm.press(deleteKey, () => {
@@ -136,7 +130,7 @@ export const useCastJob = (
         lead: castLeadOf(kind, spot.number),
         title: `${person.firstName} ${person.lastName}`,
         meta: castChoiceMetaOf(kind),
-        badge: kind.kind === 'here' ? EJ_HERE : null,
+        badge: kind.kind === 'here' ? JOB_HERE : null,
         selected: kind.kind === 'here',
         label: castChoiceLabelOf(person.firstName, person.lastName, spot.number, swapWith),
         press: () => {
@@ -149,14 +143,14 @@ export const useCastJob = (
       ? null
       : {
           key: `spot:${picked.spotId}`,
-          owner: EJ_SPOT_OWNER,
+          owner: JOB_SPOT_OWNER,
           title: spotTitleOf(picked.number, fullNameOf(picked)),
           meta: placeOf(picked.spotId),
           sections: [
             {
               kind: 'spots',
               key: 'person',
-              title: EJ_GROUP_PERSON,
+              title: JOB_GROUP_PERSON,
               aside: null,
               rows: choicesOf(picked),
             },
@@ -170,7 +164,7 @@ export const useCastJob = (
     chosen > 1 && freeMany.length > 0
       ? {
           key: CHOSEN_KEY,
-          owner: EJ_SPOT_OWNER,
+          owner: JOB_SPOT_OWNER,
           title: pickedTextOf(chosen, arrange.placed),
           meta: null,
           sections: [
@@ -180,11 +174,11 @@ export const useCastJob = (
         }
       : null;
   const overview: JobSection[] = [
-    ...selectAllSectionsOf(chosen, arrange, EJ_PICK_LINE.cast),
+    ...selectAllSectionsOf(chosen, arrange, JOB_PICK_LINE.cast),
     {
       kind: 'spots',
       key: 'spots',
-      title: EJ_GROUP_SPOTS,
+      title: JOB_GROUP_SPOTS,
       aside: null,
       rows: spots.map((spot) => {
         const selected = editor.selected.includes(spot.spotId);
@@ -195,7 +189,7 @@ export const useCastJob = (
           lead: String(spot.number),
           title: name ?? 'frei',
           meta: placeOf(spot.spotId),
-          badge: selected ? EJ_PICKED : null,
+          badge: selected ? JOB_PICKED : null,
           selected,
           label: spotRowLabelOf(spot.number, name),
           press: () => {
@@ -210,7 +204,7 @@ export const useCastJob = (
   ];
   const castBlock: JobBlock = {
     key: 'cast',
-    owner: EJ_CAST_OWNER,
+    owner: JOB_CAST_OWNER,
     title: castTitleOf(count.spots, count.held),
     meta: null,
     sections: overview,
@@ -218,7 +212,7 @@ export const useCastJob = (
   };
   const leading = [spotBlock, chosenBlock].filter((block) => block !== null);
   const pickPerson: JobAction[] = [
-    jobActionOf('pickPerson', EJ_GROUP_PERSON, 'person', openPicker, {
+    jobActionOf('pickPerson', JOB_GROUP_PERSON, 'person', openPicker, {
       reason: picked === null ? 'pickSpot' : null,
     }),
   ];
@@ -231,7 +225,7 @@ export const useCastJob = (
   ];
 
   return {
-    context: chosen === 0 ? EJ_PICK_LINE.cast : castTitleOf(count.spots, count.held),
+    context: chosen === 0 ? JOB_PICK_LINE.cast : castTitleOf(count.spots, count.held),
     blocks: [...leading, castBlock],
     bar,
   };

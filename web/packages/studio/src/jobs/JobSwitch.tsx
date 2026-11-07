@@ -1,11 +1,11 @@
-import { EDIT_JOBS } from '@furria/studio/edit-jobs';
-import { EJ_JOB_GLYPH, EJ_JOB_TEXT, EJ_JOBS_LABEL } from '@furria/studio/edit-jobs-copy';
-import type { EditJobs } from '@furria/studio/use-edit-jobs';
-import { KkEjJobs } from '@furria/ui/KkEjJobs';
+import { JOB_GLYPH, JOB_TEXT, JOBS_LABEL } from '@furria/studio/job-copy';
+import { EDIT_JOBS } from '@furria/studio/job-model';
+import type { CurrentJob } from '@furria/studio/use-current-job';
+import { KkJobSwitch } from '@furria/ui/KkJobSwitch';
 import type { FC } from 'react';
 
 interface JobSwitchProps {
-  jobs: EditJobs;
+  jobs: CurrentJob;
 }
 
 export const JobSwitch: FC<JobSwitchProps> = ({ jobs }) => {
@@ -15,15 +15,15 @@ export const JobSwitch: FC<JobSwitchProps> = ({ jobs }) => {
     };
 
     return (
-      <KkEjJobs.Segment
+      <KkJobSwitch.Segment
         key={job}
-        text={EJ_JOB_TEXT[job]}
-        glyph={EJ_JOB_GLYPH[job]}
+        text={JOB_TEXT[job]}
+        glyph={JOB_GLYPH[job]}
         current={jobs.job === job}
         onChoose={choose}
       />
     );
   });
 
-  return <KkEjJobs label={EJ_JOBS_LABEL}>{segments}</KkEjJobs>;
+  return <KkJobSwitch label={JOBS_LABEL}>{segments}</KkJobSwitch>;
 };

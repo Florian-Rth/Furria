@@ -1,12 +1,12 @@
-import type { JobAction } from '@furria/studio/edit-jobs-view';
-import { jobActionOf } from '@furria/studio/edit-jobs-view';
+import type { JobAction } from '@furria/studio/job-view';
+import { jobActionOf } from '@furria/studio/job-view';
 import type { PartMove, PartMoveLock, PartRange } from '@furria/studio/step-list';
 import { partMovesOf, partRangesOf } from '@furria/studio/step-list';
 import {
   joinPartOf,
   leavePartOf,
-  SS_PART_DISSOLVE,
-  SS_PART_NEW,
+  SETUP_PART_DISSOLVE,
+  SETUP_PART_NEW,
 } from '@furria/studio/step-setup-copy';
 import { newPartNameOf } from '@furria/studio/studio-copy';
 import type { StudioScreen } from '@furria/studio/studio-screen';
@@ -43,7 +43,7 @@ export const usePartMoves = (screen: StudioScreen): PartMoves => {
   const actionOf = (move: PartMove): JobAction => {
     switch (move.kind) {
       case 'join':
-        return jobActionOf(`join-${move.side}`, joinPartOf(nameOf(move.partId)), 'part', () => {
+        return jobActionOf(`join-${move.side}`, joinPartOf(nameOf(move.partId)), 'parts', () => {
           settle(move.partId, { firstStepId: move.firstStepId, lastStepId: move.lastStepId });
         });
       case 'leave':
@@ -51,11 +51,11 @@ export const usePartMoves = (screen: StudioScreen): PartMoves => {
           settle(move.partId, { firstStepId: move.firstStepId, lastStepId: move.lastStepId });
         });
       case 'dissolve':
-        return jobActionOf('dissolve', SS_PART_DISSOLVE, 'dissolve', () => {
+        return jobActionOf('dissolve', SETUP_PART_DISSOLVE, 'dissolve', () => {
           work.change({ kind: 'partRemove', partId: move.partId });
         });
       case 'newPart':
-        return jobActionOf('newPart', SS_PART_NEW, 'part', () => {
+        return jobActionOf('newPart', SETUP_PART_NEW, 'parts', () => {
           work.addPart(move.stepId, newPartNameOf(playback.parts.length + 1));
         });
     }

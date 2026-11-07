@@ -1,9 +1,9 @@
 import {
   nextTextOf,
-  SS_ANOTHER_VIDEO,
-  SS_BACK,
-  SS_GATE_TEXT,
-  SS_TO_DANCE,
+  SETUP_ANOTHER_VIDEO,
+  SETUP_BACK,
+  SETUP_GATE_TEXT,
+  SETUP_TO_DANCE,
 } from '@furria/studio/step-setup-copy';
 import type { StepSetup } from '@furria/studio/use-step-setup';
 import { KkActionFoot } from '@furria/ui/KkActionFoot';
@@ -21,20 +21,20 @@ export const SetupFoot: FC<SetupFootProps> = ({ setup }) => {
     return (
       <KkActionFoot fade={false}>
         <KkButton variant="outlined" onClick={setup.anotherVideo}>
-          {SS_ANOTHER_VIDEO}
+          {SETUP_ANOTHER_VIDEO}
         </KkButton>
-        <KkButton onClick={setup.leave}>{SS_TO_DANCE}</KkButton>
+        <KkButton onClick={setup.leave}>{SETUP_TO_DANCE}</KkButton>
       </KkActionFoot>
     );
   }
 
   const nextText = nextTextOf(nextPlace);
   const locked = leaveGate !== 'open';
-  const notice = locked ? SS_GATE_TEXT[leaveGate] : null;
+  const notice = locked ? SETUP_GATE_TEXT[leaveGate] : null;
   const backButton =
     back === null ? null : (
       <KkButton variant="outlined" onClick={back}>
-        {SS_BACK}
+        {SETUP_BACK}
       </KkButton>
     );
 

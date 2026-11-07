@@ -1,7 +1,7 @@
-import { EJ_HISTORY_VISIT } from '@furria/studio/edit-jobs-copy';
 import { JobHistoryList } from '@furria/studio/JobHistoryList';
+import { JOB_HISTORY_VISIT } from '@furria/studio/job-copy';
 import type { VisitHistory } from '@furria/studio/visit-history';
-import { KkEjPanel } from '@furria/ui/KkEjPanel';
+import { KkJobPanel } from '@furria/ui/KkJobPanel';
 import type { FC, ReactNode } from 'react';
 
 interface JobHistoryPanelProps {
@@ -11,10 +11,10 @@ interface JobHistoryPanelProps {
 
 export const JobHistoryPanel: FC<JobHistoryPanelProps> = ({ history, versions }) => (
   <>
-    <KkEjPanel.Group label={EJ_HISTORY_VISIT}>
-      <KkEjPanel.GroupHead text={EJ_HISTORY_VISIT} aside={null} />
+    <KkJobPanel.Group label={JOB_HISTORY_VISIT}>
+      <KkJobPanel.GroupHead text={JOB_HISTORY_VISIT} aside={null} />
       <JobHistoryList history={history} />
-    </KkEjPanel.Group>
+    </KkJobPanel.Group>
     {versions}
   </>
 );

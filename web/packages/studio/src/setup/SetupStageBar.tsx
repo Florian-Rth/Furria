@@ -1,6 +1,6 @@
-import { SS_STAGES, stageCellLabelOf } from '@furria/studio/step-setup-copy';
+import { STEP_SETUP_PROGRESS, stageCellLabelOf } from '@furria/studio/step-setup-copy';
 import type { StepSetup } from '@furria/studio/use-step-setup';
-import { KkSsStages } from '@furria/ui/KkSsStages';
+import { KkSetupProgress } from '@furria/ui/KkSetupProgress';
 import type { FC } from 'react';
 
 interface SetupStageBarProps {
@@ -15,5 +15,5 @@ export const SetupStageBar: FC<SetupStageBarProps> = ({ setup }) => {
     current: cell.current,
   }));
 
-  return <KkSsStages label={SS_STAGES} cells={cells} />;
+  return <KkSetupProgress label={STEP_SETUP_PROGRESS} cells={cells} />;
 };

@@ -1,4 +1,4 @@
-import type { JobAction } from '@furria/studio/edit-jobs-view';
+import type { JobAction } from '@furria/studio/job-view';
 import type { SetupPlace } from '@furria/studio/setup-stages';
 import type { KkTimelineLaneKind } from '@furria/ui/KkTimeline';
 
