@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { StepSetupPage } from '@/features/act-studio/components/StepSetupPage';
-import { ActPageSearchSchema } from '@/features/acts/schemas';
+import { ActScreenSearchSchema } from '@/features/acts/schemas';
 
 const StepSetupRoute: FC = () => {
   const { actId } = Route.useParams();
@@ -11,6 +11,6 @@ const StepSetupRoute: FC = () => {
 };
 
 export const Route = createFileRoute('/_app/acts_/$actId_/steps/setup')({
-  validateSearch: ActPageSearchSchema,
+  validateSearch: ActScreenSearchSchema,
   component: StepSetupRoute,
 });

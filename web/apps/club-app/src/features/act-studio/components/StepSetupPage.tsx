@@ -1,6 +1,6 @@
 import { SETUP_DENIED, STEP_SETUP_TITLE } from '@furria/studio/step-setup-copy';
 import type { FC } from 'react';
-import type { ActPageSearch } from '@/features/acts/schemas';
+import type { ActScreenSearch } from '@/features/acts/schemas';
 import { useStepSetupPage } from '../hooks/use-step-setup-page';
 import { useStudioVisit } from '../hooks/use-studio-visit';
 import { ActStudioPageGate } from './ActStudioPageGate';
@@ -8,7 +8,7 @@ import { StepSetupBody } from './StepSetupBody';
 
 interface StepSetupPageProps {
   actId: string;
-  search: ActPageSearch;
+  search: ActScreenSearch;
 }
 
 export const StepSetupPage: FC<StepSetupPageProps> = ({ actId, search }) => {

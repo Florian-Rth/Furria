@@ -9,56 +9,38 @@ import type {
 import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { useNavigate } from '@tanstack/react-router';
-import { eveningCastOf } from '@/features/act-studio/studio-evening';
-import { TRAINING_LABEL } from '@/features/act-training/training-copy';
+import { originSearchOf } from '@/features/act-card/act-card-paths';
 import { useActsQuery } from '@/features/running-order/api';
 import { usePlansRunningOrder } from '@/features/running-order/hooks/use-plans-running-order';
-import type { CastPerson, CatalogueAct } from '@/features/running-order/schemas';
-import { useMeQuery } from '@/features/session/api';
-import type { BackStackSpot } from '@/lib/back-stack';
-import { parsePositiveId } from '@/lib/positive-id';
+import type { CatalogueAct } from '@/features/running-order/schemas';
 import { useCloseOnEscape } from '@/lib/use-close-on-escape';
-import { useSpotBehind } from '@/lib/use-spot-behind';
-import { toEveningLabel } from '../act-evenings-copy';
-import {
-  ACT_CARD_LABEL,
-  ACT_FALLBACK_TITLE,
-  SETTINGS_LABEL,
-  STUDIO_MUSIC_LABEL,
-} from '../act-page-copy';
+import { SETTINGS_LABEL, STUDIO_MUSIC_LABEL } from '../act-page-copy';
+import { actScreenPathOf } from '../act-screens';
 import type { ActPageMode } from '../act-studio';
 import { actPageModeOf, seesDetailsOf } from '../act-studio';
-import {
-  actCardLinkOf,
-  actCardOriginOf,
-  actPageOriginOf,
-  actPageReturnOf,
-  playerOriginOf,
-} from '../acts-origin';
-import { useActStudioQuery } from '../api';
+import { actCardOriginOf } from '../acts-origin';
 import type { ActPageSearch, ActStudioResponse, StudioEvening, StudioTraining } from '../schemas';
+import type { ActLoad } from './use-act-load';
+import { useActLoad } from './use-act-load';
 
 const NO_ACTS: readonly CatalogueAct[] = [];
 const SIDE_OPEN_SPAN: KkMasterDetailSpan = 7;
 const FULL_SPAN: KkMasterDetailSpan = 12;
 
 export interface ActPageState {
+  load: ActLoad;
   actId: number | null;
   mode: ActPageMode;
   query: UseQueryResult<ActStudioResponse, Error>;
   title: string;
   origin: KkScreenOrigin;
   actions: KkScreenActions | undefined;
-  practiceActions: readonly [KkQuietScreenAction];
   viewerId: number | null;
   search: ActPageSearch;
   canEditStudio: boolean;
   evening: StudioEvening | null;
-  training: StudioTraining | null;
   rollTraining: StudioTraining | null;
   isRollOpen: boolean;
-  eveningCast: readonly CastPerson[];
-  startEditing: boolean;
   isSettingsOpen: boolean;
   isEveningOpen: boolean;
   isWide: boolean;
@@ -69,35 +51,10 @@ export interface ActPageState {
   openEvening: (eventId: number) => void;
   closeEvening: () => void;
   closeRoll: () => void;
-  startTraining: (calendarEntryId: number | undefined) => void;
+  startTraining: (calendarEntryId: number) => void;
   practiseEvening: (eventId: number, edit: boolean) => void;
   reload: () => void;
 }
-
-const titleOf = (name: string, evening: StudioEvening | null, mode: ActPageMode): string => {
-  if (mode === 'training') {
-    return `${name} · ${TRAINING_LABEL}`;
-  }
-
-  return evening === null || mode !== 'practice' ? name : `${name} · ${toEveningLabel(evening)}`;
-};
-
-const originOf = (
-  mode: ActPageMode,
-  actId: number | null,
-  search: ActPageSearch,
-  away: KkScreenOrigin,
-  behind: BackStackSpot | undefined,
-  name: string,
-): KkScreenOrigin => {
-  if (actId === null || mode === 'card') {
-    return away;
-  }
-
-  return mode === 'details'
-    ? actCardOriginOf(actId, search, name)
-    : playerOriginOf(actId, search, behind, away, name);
-};
 
 const actionsOf = (
   actions: readonly (KkQuietScreenAction | null)[],
@@ -113,48 +70,29 @@ const actionsOf = (
 };
 
 export const useActPage = (rawActId: string, search: ActPageSearch): ActPageState => {
-  const actId = parsePositiveId(rawActId);
-  const query = useActStudioQuery(actId);
-  const me = useMeQuery();
+  const load = useActLoad(rawActId, search);
+  const { actId, query, act, name } = load;
   const plans = usePlansRunningOrder();
   const navigate = useNavigate();
   const isWide = useIsWideScreen();
-  const behind = useSpotBehind();
-  const act = query.data?.act ?? null;
-  const away = actPageOriginOf(actPageReturnOf(search, act), act);
   const canEditSettings = query.data?.viewer.canEditSettings === true;
   const isSettingsOpen = canEditSettings && search.settings === true;
   const catalogue = useActsQuery(act?.sessionYear ?? null, isSettingsOpen);
 
   const studio = query.data?.studio;
   const viewer = query.data?.viewer;
-  const canEditStudio = viewer?.canEditStudio === true;
+  const { canEditStudio } = load;
   const seesDetails = viewer === undefined || seesDetailsOf(viewer);
   const mode = actPageModeOf(studio, { canEditStudio, seesDetails }, search);
   const evening =
     studio?.evenings.find((candidate) => candidate.eventId === search.evening) ?? null;
-  const training =
-    studio?.trainings.find((candidate) => candidate.calendarEntryId === search.training) ?? null;
   const isEveningOpen = mode === 'details' && !isSettingsOpen && canEditStudio && evening !== null;
   const rollTraining =
     studio?.trainings.find((candidate) => candidate.calendarEntryId === search.roll) ?? null;
   const isRollOpen =
     mode === 'details' && !isSettingsOpen && !isEveningOpen && rollTraining !== null;
+  const origin = originSearchOf(search);
 
-  const showView = (view: 'play' | 'details' | undefined): void => {
-    void navigate({
-      to: '.',
-      search: (previous) => ({
-        ...previous,
-        view,
-        settings: undefined,
-        training: undefined,
-        evening: undefined,
-        roll: undefined,
-      }),
-      resetScroll: true,
-    });
-  };
   const showSettings = (settings: true | undefined): void => {
     void navigate({
       to: '.',
@@ -201,39 +139,23 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
       resetScroll: false,
     });
   };
+  const openScreen = (href: string): void => {
+    void navigate({ to: href, search: origin, resetScroll: true });
+  };
 
   useCloseOnEscape(isWide && isSettingsOpen, closeSettings);
   useCloseOnEscape(isWide && isEveningOpen, closeEvening);
   useCloseOnEscape(isWide && isRollOpen, closeRoll);
 
-  const cardAction: KkQuietScreenAction = {
-    id: 'details',
-    label: ACT_CARD_LABEL,
-    icon: 'info',
-    link: actId === null ? undefined : actCardLinkOf(actId, search),
-    onSelect: () => {
-      void navigate({
-        to: '.',
-        search: (previous) => ({
-          ...previous,
-          view: undefined,
-          edit: undefined,
-          training: undefined,
-          evening: undefined,
-          roll: undefined,
-          settings: undefined,
-        }),
-        resetScroll: true,
-      });
-    },
-  };
   const practisable = canPractise(studio ?? null);
   const practiceAction: KkQuietScreenAction = {
     id: 'practice',
     label: practisable ? PRACTICE_LABEL : STUDIO_MUSIC_LABEL,
     icon: practisable ? 'play' : 'music',
     onSelect: () => {
-      showView('play');
+      if (actId !== null) {
+        openScreen(actScreenPathOf(actId, { kind: 'practice', eventId: null }));
+      }
     },
   };
   const sidePaneOpen = isSettingsOpen || isEveningOpen || isRollOpen;
@@ -247,25 +169,23 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
     practisable || canEditStudio ? practiceAction : null,
     canEditSettings ? settingsAction : null,
   ]);
-  const name = act?.name ?? ACT_FALLBACK_TITLE;
+  const shownOrigin: KkScreenOrigin =
+    actId === null || mode === 'card' ? load.away : actCardOriginOf(actId, search, name);
 
   return {
+    load,
     actId,
     query,
-    title: titleOf(name, evening, mode),
-    origin: originOf(mode, actId, search, away, behind, name),
+    title: name,
+    origin: shownOrigin,
     mode,
     actions: mode === 'card' && query.data?.studio !== null ? undefined : detailActions,
-    practiceActions: [cardAction],
-    viewerId: me.data?.person?.id ?? null,
+    viewerId: load.viewerId,
     search,
     canEditStudio,
     evening,
-    training,
     rollTraining,
     isRollOpen,
-    eveningCast: eveningCastOf(act?.cast ?? [], evening?.appearance ?? null),
-    startEditing: search.edit === true,
     isSettingsOpen,
     isEveningOpen,
     isWide,
@@ -277,36 +197,15 @@ export const useActPage = (rawActId: string, search: ActPageSearch): ActPageStat
     closeEvening,
     closeRoll,
     startTraining: (calendarEntryId) => {
-      void navigate({
-        to: '.',
-        search: (previous) => ({
-          ...previous,
-          view: 'training',
-          settings: undefined,
-          evening: undefined,
-          edit: undefined,
-          roll: undefined,
-          training: calendarEntryId,
-        }),
-        resetScroll: true,
-      });
+      if (actId !== null) {
+        openScreen(actScreenPathOf(actId, { kind: 'training', trainingId: calendarEntryId }));
+      }
     },
     practiseEvening: (eventId, edit) => {
-      void navigate({
-        to: '.',
-        search: (previous) => ({
-          ...previous,
-          view: 'play',
-          settings: undefined,
-          roll: undefined,
-          evening: eventId,
-          edit: edit ? true : undefined,
-        }),
-        resetScroll: true,
-      });
+      if (actId !== null) {
+        openScreen(actScreenPathOf(actId, { kind: edit ? 'edit' : 'practice', eventId }));
+      }
     },
-    reload: () => {
-      void query.refetch();
-    },
+    reload: load.reload,
   };
 };

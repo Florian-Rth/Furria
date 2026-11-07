@@ -1,3 +1,6 @@
+import { actScreenPathOf, hallScreenOf } from '@/features/acts/act-screens';
+import { actPagePathOf } from '@/features/acts/acts-origin';
+
 export type ScoreLinkSearch = Record<string, string | number | boolean>;
 
 export interface ScoreLink {
@@ -5,42 +8,37 @@ export interface ScoreLink {
   search: ScoreLinkSearch;
 }
 
-const actPathOf = (actId: number): string => `/acts/${actId}`;
-
 export const playLinkOf = (actId: number): ScoreLink => ({
-  to: actPathOf(actId),
-  search: { view: 'play' },
+  to: actScreenPathOf(actId, { kind: 'practice', eventId: null }),
+  search: {},
 });
 
 export const editorLinkOf = (actId: number): ScoreLink => ({
-  to: actPathOf(actId),
-  search: { view: 'play', edit: true },
+  to: actScreenPathOf(actId, { kind: 'edit', eventId: null }),
+  search: {},
 });
 
 export const musicLinkOf = (actId: number): ScoreLink => ({
-  to: `${actPathOf(actId)}/musik`,
+  to: actScreenPathOf(actId, { kind: 'music' }),
   search: {},
 });
 
 export const detailsLinkOf = (actId: number): ScoreLink => ({
-  to: actPathOf(actId),
+  to: actPagePathOf(actId),
   search: { view: 'details' },
 });
 
 export const settingsLinkOf = (actId: number): ScoreLink => ({
-  to: actPathOf(actId),
+  to: actPagePathOf(actId),
   search: { settings: true },
 });
 
 export const eveningLinkOf = (actId: number, eventId: number | null): ScoreLink => ({
-  to: actPathOf(actId),
+  to: actPagePathOf(actId),
   search: eventId === null ? { view: 'details' } : { view: 'details', evening: eventId },
 });
 
 export const hallLinkOf = (actId: number, calendarEntryId: number | null): ScoreLink => ({
-  to: actPathOf(actId),
-  search:
-    calendarEntryId === null
-      ? { view: 'training' }
-      : { view: 'training', training: calendarEntryId },
+  to: actScreenPathOf(actId, hallScreenOf(calendarEntryId)),
+  search: {},
 });

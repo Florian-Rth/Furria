@@ -40,19 +40,21 @@ export const ACT_PAGE_ORIGINS = ['catalogue', 'groupActs', 'group', 'start'] as 
 export const ActPageOriginSchema = z.enum(ACT_PAGE_ORIGINS);
 export type ActPageOrigin = z.infer<typeof ActPageOriginSchema>;
 
-export const ActPageSearchSchema = z.object({
+export const ActScreenSearchSchema = z.object({
   from: ActPageOriginSchema.optional().catch(undefined),
   group: z.coerce.number().int().positive().optional().catch(undefined),
   event: z.coerce.number().int().positive().optional().catch(undefined),
   filter: ActsFilterSchema.optional().catch(undefined),
   person: z.coerce.number().int().positive().optional().catch(undefined),
   session: z.coerce.number().int().positive().optional().catch(undefined),
+});
+export type ActScreenSearch = z.infer<typeof ActScreenSearchSchema>;
+
+export const ActPageSearchSchema = ActScreenSearchSchema.extend({
   settings: z.boolean().optional().catch(undefined),
-  view: z.enum(['play', 'details', 'training']).optional().catch(undefined),
+  view: z.enum(['details']).optional().catch(undefined),
   evening: z.coerce.number().int().positive().optional().catch(undefined),
-  training: z.coerce.number().int().positive().optional().catch(undefined),
   roll: z.coerce.number().int().positive().optional().catch(undefined),
-  edit: z.boolean().optional().catch(undefined),
   stepId: z.coerce.number().int().positive().optional().catch(undefined),
   sheet: z.string().optional().catch(undefined),
 });

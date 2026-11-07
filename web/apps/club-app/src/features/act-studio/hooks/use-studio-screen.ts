@@ -37,6 +37,7 @@ export interface StudioScreenContext {
   evening: StudioEvening | null;
   startEditing: boolean;
   startHall: (() => void) | null;
+  toggleEditing?: () => void;
   startTool?: StudioTool;
   stageEditor?: boolean;
   tone?: KkGroupTone | null;
@@ -57,19 +58,21 @@ export const useStudioScreen = (
     evening,
     startEditing,
     startHall,
+    toggleEditing,
     startTool,
     stageEditor = false,
     tone = null,
   }: StudioScreenContext,
 ): StudioScreen => {
   const wide = useKkLaneWide();
-  const mode = useActStudioMode(canEdit, {
+  const ownMode = useActStudioMode(canEdit, {
     silent: !canPractise(source),
     evening: evening !== null,
     editing: startEditing,
     stageOnly: stageEditor,
     tool: startTool ?? null,
   });
+  const mode = toggleEditing === undefined ? ownMode : { ...ownMode, toggle: toggleEditing };
   const music = useSongMutations(actId);
   const work = useStudioDocument({ actId, eventId: null }, source);
   const stageDocument = useStudioDocument({ actId, eventId: evening?.eventId ?? null }, source);

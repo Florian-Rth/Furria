@@ -19,7 +19,7 @@ export interface ScoreDoor {
 export interface ScoreDoorFacts {
   actId: number;
   nextEveningId: number | null;
-  nextTrainingId: number | null;
+  hallTrainingId: number | null;
   playable: boolean;
 }
 
@@ -38,7 +38,7 @@ export const scoreDoorsOf = (viewer: ActViewer, facts: ScoreDoorFacts): ScoreDoo
     studio ? { key: 'music', link: musicLinkOf(actId) } : null,
     studio ? { key: 'evenings', link: eveningLinkOf(actId, facts.nextEveningId) } : null,
     studio || viewer.canMarkAttendance ? { key: 'trainings', link: detailsLinkOf(actId) } : null,
-    facts.playable ? { key: 'hall', link: hallLinkOf(actId, facts.nextTrainingId) } : null,
+    facts.playable ? { key: 'hall', link: hallLinkOf(actId, facts.hallTrainingId) } : null,
     viewer.canEditSettings ? { key: 'settings', link: settingsLinkOf(actId) } : null,
   ];
 

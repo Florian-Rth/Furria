@@ -8,7 +8,7 @@ const viewer = (
   canMarkAttendance: boolean,
 ) => ({ inCast: true, canEditStudio, canEditSettings, canGrantCoEditors, canMarkAttendance });
 
-const facts = { actId: 3, nextEveningId: 8, nextTrainingId: 40, playable: true };
+const facts = { actId: 3, nextEveningId: 8, hallTrainingId: 40, playable: true };
 
 describe('scoreDoorsOf', () => {
   it.each([

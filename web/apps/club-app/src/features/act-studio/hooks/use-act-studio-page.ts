@@ -2,14 +2,13 @@ import type { KkGroupTone } from '@furria/ui/group-tone';
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
 import type { UseQueryResult } from '@tanstack/react-query';
 import { ACT_FALLBACK_TITLE } from '@/features/acts/act-page-copy';
-import { ACT_PAGE_PATH } from '@/features/acts/acts-origin';
+import { ACT_EDIT_PATH } from '@/features/acts/act-screens';
+import { originTextSearchOf } from '@/features/acts/acts-origin';
 import { useActStudioQuery } from '@/features/acts/api';
-import type { ActStudioResponse } from '@/features/acts/schemas';
+import type { ActScreenSearch, ActStudioResponse } from '@/features/acts/schemas';
 import type { CastPerson } from '@/features/running-order/schemas';
 import { useMeQuery } from '@/features/session/api';
 import { parsePositiveId } from '@/lib/positive-id';
-import { editorSearchOf } from '../editor-search';
-import type { ActMusicSearch } from '../schemas';
 
 const NO_CAST: readonly CastPerson[] = [];
 
@@ -25,7 +24,7 @@ export interface ActStudioPage {
   reload: () => void;
 }
 
-export const useActStudioPage = (rawActId: string, search: ActMusicSearch): ActStudioPage => {
+export const useActStudioPage = (rawActId: string, search: ActScreenSearch): ActStudioPage => {
   const actId = parsePositiveId(rawActId);
   const query = useActStudioQuery(actId);
   const me = useMeQuery();
@@ -38,9 +37,9 @@ export const useActStudioPage = (rawActId: string, search: ActMusicSearch): ActS
     actName,
     origin: {
       label: actName,
-      to: ACT_PAGE_PATH,
+      to: ACT_EDIT_PATH,
       params: { actId: rawActId },
-      search: editorSearchOf(search),
+      search: originTextSearchOf(search),
     },
     viewerId: me.data?.person?.id ?? null,
     canEdit: query.data?.viewer.canEditStudio === true,

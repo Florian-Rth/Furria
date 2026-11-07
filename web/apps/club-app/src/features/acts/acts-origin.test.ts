@@ -58,7 +58,8 @@ describe('playerOriginOf', () => {
   it('closes back to the act details it was opened from, keeping how the act was reached', () => {
     const origin = playerOriginOf(
       5,
-      { from: 'start', evening: 9, edit: true, training: 4, view: 'training' },
+      { from: 'start' },
+      9,
       { pathname: '/acts/5', search: '?from=start&view=details' },
       away,
       'Marsch',
@@ -70,19 +71,33 @@ describe('playerOriginOf', () => {
     ]);
   });
 
+  it('closes back to the plain act details from a screen without an evening', () => {
+    const origin = playerOriginOf(
+      5,
+      { from: 'start' },
+      null,
+      { pathname: '/acts/5', search: '?from=start&view=details' },
+      away,
+      'Marsch',
+    );
+
+    expect(origin.search).toEqual({ from: 'start', view: 'details' });
+  });
+
   it.each([
     ['opened directly', undefined],
     ['opened from elsewhere', { pathname: '/groups/1', search: '' }],
-    ['opened from the same act playing', { pathname: '/acts/5', search: '?view=play' }],
+    ['opened from the same act practising', { pathname: '/acts/5/practice', search: '' }],
     ['opened from another act', { pathname: '/acts/6', search: '?view=details' }],
   ])('closes to where the act was reached from when %s', (_, behind) => {
-    expect(playerOriginOf(5, { from: 'start' }, behind, away, 'Marsch')).toBe(away);
+    expect(playerOriginOf(5, { from: 'start' }, null, behind, away, 'Marsch')).toBe(away);
   });
 
   it('closes back to the act card it was opened from, keeping how the act was reached', () => {
     const origin = playerOriginOf(
       5,
-      { from: 'group', group: 3, view: 'play', edit: true },
+      { from: 'group', group: 3 },
+      null,
       { pathname: '/acts/5', search: '?from=group&group=3' },
       away,
       'Marsch',

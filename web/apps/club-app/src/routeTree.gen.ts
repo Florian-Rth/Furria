@@ -107,7 +107,11 @@ import { Route as AppBeerListManageHandoverRouteImport } from './routes/_app/bee
 import { Route as AppBeerListManageEnrollmentsRouteImport } from './routes/_app/beer-list_.manage.enrollments'
 import { Route as AppBeerListManageCratesRouteImport } from './routes/_app/beer-list_.manage.crates'
 import { Route as AppBeerListManageCodeRouteImport } from './routes/_app/beer-list_.manage.code'
+import { Route as AppActsActIdVideosRouteImport } from './routes/_app/acts_.$actId_.videos'
+import { Route as AppActsActIdTrainingRouteImport } from './routes/_app/acts_.$actId_.training'
+import { Route as AppActsActIdPracticeRouteImport } from './routes/_app/acts_.$actId_.practice'
 import { Route as AppActsActIdMusicRouteImport } from './routes/_app/acts_.$actId_.music'
+import { Route as AppActsActIdEditRouteImport } from './routes/_app/acts_.$actId_.edit'
 import { Route as AppPersonalProfileSecurityRouteImport } from './routes/_app/_personal.profile_.security'
 import { Route as AppAffiliatedMembersPersonIdRouteImport } from './routes/_app/_affiliated.members_.$personId'
 import { Route as AppManageVenuesVenueIdEditRouteImport } from './routes/_app/manage.venues_.$venueId_.edit'
@@ -129,6 +133,7 @@ import { Route as AppGroupsGroupIdAdminsNewRouteImport } from './routes/_app/gro
 import { Route as AppGroupsGroupIdAdminsAdminIdRouteImport } from './routes/_app/groups_.$groupId_.admins.$adminId'
 import { Route as AppBeerListManagePotsBeerPotIdRouteImport } from './routes/_app/beer-list_.manage.pots_.$beerPotId'
 import { Route as AppBeerListManagePersonsPersonIdRouteImport } from './routes/_app/beer-list_.manage.persons.$personId'
+import { Route as AppActsActIdTrainingsTrainingIdRouteImport } from './routes/_app/acts_.$actId_.trainings.$trainingId'
 import { Route as AppActsActIdStepsSetupRouteImport } from './routes/_app/acts_.$actId_.steps.setup'
 import { Route as AppPersonalProfileSecurityPasswordRouteImport } from './routes/_app/_personal.profile_.security_.password'
 import { Route as AppPersonalProfileSecurityLoginEmailRouteImport } from './routes/_app/_personal.profile_.security_.login-email'
@@ -143,6 +148,8 @@ import { Route as AppManagePersonsPersonIdFeeReductionsNewRouteImport } from './
 import { Route as AppManagePersonsPersonIdFeeReductionsFeeReductionIdRouteImport } from './routes/_app/manage.persons_.$personId_.fee-reductions.$feeReductionId'
 import { Route as AppManageKeysVenueIdHoldingsNewRouteImport } from './routes/_app/manage.keys_.$venueId_.holdings.new'
 import { Route as AppManageGroupsKindsGroupKindIdEditRouteImport } from './routes/_app/manage.groups_.kinds.$groupKindId_.edit'
+import { Route as AppActsActIdEveningsEventIdPracticeRouteImport } from './routes/_app/acts_.$actId_.evenings.$eventId.practice'
+import { Route as AppActsActIdEveningsEventIdEditRouteImport } from './routes/_app/acts_.$actId_.evenings.$eventId.edit'
 import { Route as AppPersonalProfileSecurityPasskeysPasskeyIdRouteImport } from './routes/_app/_personal.profile_.security_.passkeys.$passkeyId'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -649,9 +656,29 @@ const AppBeerListManageCodeRoute = AppBeerListManageCodeRouteImport.update({
   path: '/code',
   getParentRoute: () => AppBeerListManageRoute,
 } as any)
+const AppActsActIdVideosRoute = AppActsActIdVideosRouteImport.update({
+  id: '/acts_/$actId_/videos',
+  path: '/acts/$actId/videos',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppActsActIdTrainingRoute = AppActsActIdTrainingRouteImport.update({
+  id: '/acts_/$actId_/training',
+  path: '/acts/$actId/training',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppActsActIdPracticeRoute = AppActsActIdPracticeRouteImport.update({
+  id: '/acts_/$actId_/practice',
+  path: '/acts/$actId/practice',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppActsActIdMusicRoute = AppActsActIdMusicRouteImport.update({
   id: '/acts_/$actId_/music',
   path: '/acts/$actId/music',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppActsActIdEditRoute = AppActsActIdEditRouteImport.update({
+  id: '/acts_/$actId_/edit',
+  path: '/acts/$actId/edit',
   getParentRoute: () => AppRoute,
 } as any)
 const AppPersonalProfileSecurityRoute =
@@ -779,6 +806,12 @@ const AppBeerListManagePersonsPersonIdRoute =
     path: '/persons/$personId',
     getParentRoute: () => AppBeerListManageRoute,
   } as any)
+const AppActsActIdTrainingsTrainingIdRoute =
+  AppActsActIdTrainingsTrainingIdRouteImport.update({
+    id: '/acts_/$actId_/trainings/$trainingId',
+    path: '/acts/$actId/trainings/$trainingId',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppActsActIdStepsSetupRoute = AppActsActIdStepsSetupRouteImport.update({
   id: '/acts_/$actId_/steps/setup',
   path: '/acts/$actId/steps/setup',
@@ -862,6 +895,18 @@ const AppManageGroupsKindsGroupKindIdEditRoute =
     path: '/manage/groups/kinds/$groupKindId/edit',
     getParentRoute: () => AppRoute,
   } as any)
+const AppActsActIdEveningsEventIdPracticeRoute =
+  AppActsActIdEveningsEventIdPracticeRouteImport.update({
+    id: '/acts_/$actId_/evenings/$eventId/practice',
+    path: '/acts/$actId/evenings/$eventId/practice',
+    getParentRoute: () => AppRoute,
+  } as any)
+const AppActsActIdEveningsEventIdEditRoute =
+  AppActsActIdEveningsEventIdEditRouteImport.update({
+    id: '/acts_/$actId_/evenings/$eventId/edit',
+    path: '/acts/$actId/evenings/$eventId/edit',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppPersonalProfileSecurityPasskeysPasskeyIdRoute =
   AppPersonalProfileSecurityPasskeysPasskeyIdRouteImport.update({
     id: '/profile_/security_/passkeys/$passkeyId',
@@ -932,7 +977,11 @@ export interface FileRoutesByFullPath {
   '/system/': typeof AppSystemIndexRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/profile/security': typeof AppPersonalProfileSecurityRoute
+  '/acts/$actId/edit': typeof AppActsActIdEditRoute
   '/acts/$actId/music': typeof AppActsActIdMusicRoute
+  '/acts/$actId/practice': typeof AppActsActIdPracticeRoute
+  '/acts/$actId/training': typeof AppActsActIdTrainingRoute
+  '/acts/$actId/videos': typeof AppActsActIdVideosRoute
   '/beer-list/manage/code': typeof AppBeerListManageCodeRoute
   '/beer-list/manage/crates': typeof AppBeerListManageCratesRoute
   '/beer-list/manage/enrollments': typeof AppBeerListManageEnrollmentsRoute
@@ -972,6 +1021,7 @@ export interface FileRoutesByFullPath {
   '/profile/security/login-email': typeof AppPersonalProfileSecurityLoginEmailRoute
   '/profile/security/password': typeof AppPersonalProfileSecurityPasswordRoute
   '/acts/$actId/steps/setup': typeof AppActsActIdStepsSetupRoute
+  '/acts/$actId/trainings/$trainingId': typeof AppActsActIdTrainingsTrainingIdRoute
   '/beer-list/manage/persons/$personId': typeof AppBeerListManagePersonsPersonIdRoute
   '/beer-list/manage/pots/$beerPotId': typeof AppBeerListManagePotsBeerPotIdRoute
   '/groups/$groupId/admins/$adminId': typeof AppGroupsGroupIdAdminsAdminIdRoute
@@ -992,6 +1042,8 @@ export interface FileRoutesByFullPath {
   '/manage/sessions/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
   '/manage/venues/$venueId/edit': typeof AppManageVenuesVenueIdEditRoute
   '/profile/security/passkeys/$passkeyId': typeof AppPersonalProfileSecurityPasskeysPasskeyIdRoute
+  '/acts/$actId/evenings/$eventId/edit': typeof AppActsActIdEveningsEventIdEditRoute
+  '/acts/$actId/evenings/$eventId/practice': typeof AppActsActIdEveningsEventIdPracticeRoute
   '/manage/groups/kinds/$groupKindId/edit': typeof AppManageGroupsKindsGroupKindIdEditRoute
   '/manage/keys/$venueId/holdings/new': typeof AppManageKeysVenueIdHoldingsNewRoute
   '/manage/persons/$personId/fee-reductions/$feeReductionId': typeof AppManagePersonsPersonIdFeeReductionsFeeReductionIdRoute
@@ -1065,7 +1117,11 @@ export interface FileRoutesByTo {
   '/system': typeof AppSystemIndexRoute
   '/members/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/profile/security': typeof AppPersonalProfileSecurityRoute
+  '/acts/$actId/edit': typeof AppActsActIdEditRoute
   '/acts/$actId/music': typeof AppActsActIdMusicRoute
+  '/acts/$actId/practice': typeof AppActsActIdPracticeRoute
+  '/acts/$actId/training': typeof AppActsActIdTrainingRoute
+  '/acts/$actId/videos': typeof AppActsActIdVideosRoute
   '/beer-list/manage/code': typeof AppBeerListManageCodeRoute
   '/beer-list/manage/crates': typeof AppBeerListManageCratesRoute
   '/beer-list/manage/enrollments': typeof AppBeerListManageEnrollmentsRoute
@@ -1105,6 +1161,7 @@ export interface FileRoutesByTo {
   '/profile/security/login-email': typeof AppPersonalProfileSecurityLoginEmailRoute
   '/profile/security/password': typeof AppPersonalProfileSecurityPasswordRoute
   '/acts/$actId/steps/setup': typeof AppActsActIdStepsSetupRoute
+  '/acts/$actId/trainings/$trainingId': typeof AppActsActIdTrainingsTrainingIdRoute
   '/beer-list/manage/persons/$personId': typeof AppBeerListManagePersonsPersonIdRoute
   '/beer-list/manage/pots/$beerPotId': typeof AppBeerListManagePotsBeerPotIdRoute
   '/groups/$groupId/admins/$adminId': typeof AppGroupsGroupIdAdminsAdminIdRoute
@@ -1125,6 +1182,8 @@ export interface FileRoutesByTo {
   '/manage/sessions/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
   '/manage/venues/$venueId/edit': typeof AppManageVenuesVenueIdEditRoute
   '/profile/security/passkeys/$passkeyId': typeof AppPersonalProfileSecurityPasskeysPasskeyIdRoute
+  '/acts/$actId/evenings/$eventId/edit': typeof AppActsActIdEveningsEventIdEditRoute
+  '/acts/$actId/evenings/$eventId/practice': typeof AppActsActIdEveningsEventIdPracticeRoute
   '/manage/groups/kinds/$groupKindId/edit': typeof AppManageGroupsKindsGroupKindIdEditRoute
   '/manage/keys/$venueId/holdings/new': typeof AppManageKeysVenueIdHoldingsNewRoute
   '/manage/persons/$personId/fee-reductions/$feeReductionId': typeof AppManagePersonsPersonIdFeeReductionsFeeReductionIdRoute
@@ -1203,7 +1262,11 @@ export interface FileRoutesById {
   '/_app/system/': typeof AppSystemIndexRoute
   '/_app/_affiliated/members_/$personId': typeof AppAffiliatedMembersPersonIdRoute
   '/_app/_personal/profile_/security': typeof AppPersonalProfileSecurityRoute
+  '/_app/acts_/$actId_/edit': typeof AppActsActIdEditRoute
   '/_app/acts_/$actId_/music': typeof AppActsActIdMusicRoute
+  '/_app/acts_/$actId_/practice': typeof AppActsActIdPracticeRoute
+  '/_app/acts_/$actId_/training': typeof AppActsActIdTrainingRoute
+  '/_app/acts_/$actId_/videos': typeof AppActsActIdVideosRoute
   '/_app/beer-list_/manage/code': typeof AppBeerListManageCodeRoute
   '/_app/beer-list_/manage/crates': typeof AppBeerListManageCratesRoute
   '/_app/beer-list_/manage/enrollments': typeof AppBeerListManageEnrollmentsRoute
@@ -1243,6 +1306,7 @@ export interface FileRoutesById {
   '/_app/_personal/profile_/security_/login-email': typeof AppPersonalProfileSecurityLoginEmailRoute
   '/_app/_personal/profile_/security_/password': typeof AppPersonalProfileSecurityPasswordRoute
   '/_app/acts_/$actId_/steps/setup': typeof AppActsActIdStepsSetupRoute
+  '/_app/acts_/$actId_/trainings/$trainingId': typeof AppActsActIdTrainingsTrainingIdRoute
   '/_app/beer-list_/manage/persons/$personId': typeof AppBeerListManagePersonsPersonIdRoute
   '/_app/beer-list_/manage/pots_/$beerPotId': typeof AppBeerListManagePotsBeerPotIdRoute
   '/_app/groups_/$groupId_/admins/$adminId': typeof AppGroupsGroupIdAdminsAdminIdRoute
@@ -1263,6 +1327,8 @@ export interface FileRoutesById {
   '/_app/manage/sessions_/$sessionId/edit': typeof AppManageSessionsSessionIdEditRoute
   '/_app/manage/venues_/$venueId_/edit': typeof AppManageVenuesVenueIdEditRoute
   '/_app/_personal/profile_/security_/passkeys/$passkeyId': typeof AppPersonalProfileSecurityPasskeysPasskeyIdRoute
+  '/_app/acts_/$actId_/evenings/$eventId/edit': typeof AppActsActIdEveningsEventIdEditRoute
+  '/_app/acts_/$actId_/evenings/$eventId/practice': typeof AppActsActIdEveningsEventIdPracticeRoute
   '/_app/manage/groups_/kinds/$groupKindId_/edit': typeof AppManageGroupsKindsGroupKindIdEditRoute
   '/_app/manage/keys_/$venueId_/holdings/new': typeof AppManageKeysVenueIdHoldingsNewRoute
   '/_app/manage/persons_/$personId_/fee-reductions/$feeReductionId': typeof AppManagePersonsPersonIdFeeReductionsFeeReductionIdRoute
@@ -1339,7 +1405,11 @@ export interface FileRouteTypes {
     | '/system/'
     | '/members/$personId'
     | '/profile/security'
+    | '/acts/$actId/edit'
     | '/acts/$actId/music'
+    | '/acts/$actId/practice'
+    | '/acts/$actId/training'
+    | '/acts/$actId/videos'
     | '/beer-list/manage/code'
     | '/beer-list/manage/crates'
     | '/beer-list/manage/enrollments'
@@ -1379,6 +1449,7 @@ export interface FileRouteTypes {
     | '/profile/security/login-email'
     | '/profile/security/password'
     | '/acts/$actId/steps/setup'
+    | '/acts/$actId/trainings/$trainingId'
     | '/beer-list/manage/persons/$personId'
     | '/beer-list/manage/pots/$beerPotId'
     | '/groups/$groupId/admins/$adminId'
@@ -1399,6 +1470,8 @@ export interface FileRouteTypes {
     | '/manage/sessions/$sessionId/edit'
     | '/manage/venues/$venueId/edit'
     | '/profile/security/passkeys/$passkeyId'
+    | '/acts/$actId/evenings/$eventId/edit'
+    | '/acts/$actId/evenings/$eventId/practice'
     | '/manage/groups/kinds/$groupKindId/edit'
     | '/manage/keys/$venueId/holdings/new'
     | '/manage/persons/$personId/fee-reductions/$feeReductionId'
@@ -1472,7 +1545,11 @@ export interface FileRouteTypes {
     | '/system'
     | '/members/$personId'
     | '/profile/security'
+    | '/acts/$actId/edit'
     | '/acts/$actId/music'
+    | '/acts/$actId/practice'
+    | '/acts/$actId/training'
+    | '/acts/$actId/videos'
     | '/beer-list/manage/code'
     | '/beer-list/manage/crates'
     | '/beer-list/manage/enrollments'
@@ -1512,6 +1589,7 @@ export interface FileRouteTypes {
     | '/profile/security/login-email'
     | '/profile/security/password'
     | '/acts/$actId/steps/setup'
+    | '/acts/$actId/trainings/$trainingId'
     | '/beer-list/manage/persons/$personId'
     | '/beer-list/manage/pots/$beerPotId'
     | '/groups/$groupId/admins/$adminId'
@@ -1532,6 +1610,8 @@ export interface FileRouteTypes {
     | '/manage/sessions/$sessionId/edit'
     | '/manage/venues/$venueId/edit'
     | '/profile/security/passkeys/$passkeyId'
+    | '/acts/$actId/evenings/$eventId/edit'
+    | '/acts/$actId/evenings/$eventId/practice'
     | '/manage/groups/kinds/$groupKindId/edit'
     | '/manage/keys/$venueId/holdings/new'
     | '/manage/persons/$personId/fee-reductions/$feeReductionId'
@@ -1609,7 +1689,11 @@ export interface FileRouteTypes {
     | '/_app/system/'
     | '/_app/_affiliated/members_/$personId'
     | '/_app/_personal/profile_/security'
+    | '/_app/acts_/$actId_/edit'
     | '/_app/acts_/$actId_/music'
+    | '/_app/acts_/$actId_/practice'
+    | '/_app/acts_/$actId_/training'
+    | '/_app/acts_/$actId_/videos'
     | '/_app/beer-list_/manage/code'
     | '/_app/beer-list_/manage/crates'
     | '/_app/beer-list_/manage/enrollments'
@@ -1649,6 +1733,7 @@ export interface FileRouteTypes {
     | '/_app/_personal/profile_/security_/login-email'
     | '/_app/_personal/profile_/security_/password'
     | '/_app/acts_/$actId_/steps/setup'
+    | '/_app/acts_/$actId_/trainings/$trainingId'
     | '/_app/beer-list_/manage/persons/$personId'
     | '/_app/beer-list_/manage/pots_/$beerPotId'
     | '/_app/groups_/$groupId_/admins/$adminId'
@@ -1669,6 +1754,8 @@ export interface FileRouteTypes {
     | '/_app/manage/sessions_/$sessionId/edit'
     | '/_app/manage/venues_/$venueId_/edit'
     | '/_app/_personal/profile_/security_/passkeys/$passkeyId'
+    | '/_app/acts_/$actId_/evenings/$eventId/edit'
+    | '/_app/acts_/$actId_/evenings/$eventId/practice'
     | '/_app/manage/groups_/kinds/$groupKindId_/edit'
     | '/_app/manage/keys_/$venueId_/holdings/new'
     | '/_app/manage/persons_/$personId_/fee-reductions/$feeReductionId'
@@ -2381,11 +2468,39 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBeerListManageCodeRouteImport
       parentRoute: typeof AppBeerListManageRoute
     }
+    '/_app/acts_/$actId_/videos': {
+      id: '/_app/acts_/$actId_/videos'
+      path: '/acts/$actId/videos'
+      fullPath: '/acts/$actId/videos'
+      preLoaderRoute: typeof AppActsActIdVideosRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/acts_/$actId_/training': {
+      id: '/_app/acts_/$actId_/training'
+      path: '/acts/$actId/training'
+      fullPath: '/acts/$actId/training'
+      preLoaderRoute: typeof AppActsActIdTrainingRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/acts_/$actId_/practice': {
+      id: '/_app/acts_/$actId_/practice'
+      path: '/acts/$actId/practice'
+      fullPath: '/acts/$actId/practice'
+      preLoaderRoute: typeof AppActsActIdPracticeRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/acts_/$actId_/music': {
       id: '/_app/acts_/$actId_/music'
       path: '/acts/$actId/music'
       fullPath: '/acts/$actId/music'
       preLoaderRoute: typeof AppActsActIdMusicRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/acts_/$actId_/edit': {
+      id: '/_app/acts_/$actId_/edit'
+      path: '/acts/$actId/edit'
+      fullPath: '/acts/$actId/edit'
+      preLoaderRoute: typeof AppActsActIdEditRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/_personal/profile_/security': {
@@ -2535,6 +2650,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppBeerListManagePersonsPersonIdRouteImport
       parentRoute: typeof AppBeerListManageRoute
     }
+    '/_app/acts_/$actId_/trainings/$trainingId': {
+      id: '/_app/acts_/$actId_/trainings/$trainingId'
+      path: '/acts/$actId/trainings/$trainingId'
+      fullPath: '/acts/$actId/trainings/$trainingId'
+      preLoaderRoute: typeof AppActsActIdTrainingsTrainingIdRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/acts_/$actId_/steps/setup': {
       id: '/_app/acts_/$actId_/steps/setup'
       path: '/acts/$actId/steps/setup'
@@ -2631,6 +2753,20 @@ declare module '@tanstack/react-router' {
       path: '/manage/groups/kinds/$groupKindId/edit'
       fullPath: '/manage/groups/kinds/$groupKindId/edit'
       preLoaderRoute: typeof AppManageGroupsKindsGroupKindIdEditRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/acts_/$actId_/evenings/$eventId/practice': {
+      id: '/_app/acts_/$actId_/evenings/$eventId/practice'
+      path: '/acts/$actId/evenings/$eventId/practice'
+      fullPath: '/acts/$actId/evenings/$eventId/practice'
+      preLoaderRoute: typeof AppActsActIdEveningsEventIdPracticeRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/acts_/$actId_/evenings/$eventId/edit': {
+      id: '/_app/acts_/$actId_/evenings/$eventId/edit'
+      path: '/acts/$actId/evenings/$eventId/edit'
+      fullPath: '/acts/$actId/evenings/$eventId/edit'
+      preLoaderRoute: typeof AppActsActIdEveningsEventIdEditRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/_personal/profile_/security_/passkeys/$passkeyId': {
@@ -2766,7 +2902,11 @@ interface AppRouteChildren {
   AppLabIndexRoute: typeof AppLabIndexRoute
   AppManageIndexRoute: typeof AppManageIndexRoute
   AppSystemIndexRoute: typeof AppSystemIndexRoute
+  AppActsActIdEditRoute: typeof AppActsActIdEditRoute
   AppActsActIdMusicRoute: typeof AppActsActIdMusicRoute
+  AppActsActIdPracticeRoute: typeof AppActsActIdPracticeRoute
+  AppActsActIdTrainingRoute: typeof AppActsActIdTrainingRoute
+  AppActsActIdVideosRoute: typeof AppActsActIdVideosRoute
   AppClubNewsSlugRoute: typeof AppClubNewsSlugRoute
   AppEventsEventIdEditRoute: typeof AppEventsEventIdEditRoute
   AppEventsEventIdManageRoute: typeof AppEventsEventIdManageRoute
@@ -2794,6 +2934,7 @@ interface AppRouteChildren {
   AppManageVenuesVenueIdRoute: typeof AppManageVenuesVenueIdRoute
   AppManageVenuesNewRoute: typeof AppManageVenuesNewRoute
   AppActsActIdStepsSetupRoute: typeof AppActsActIdStepsSetupRoute
+  AppActsActIdTrainingsTrainingIdRoute: typeof AppActsActIdTrainingsTrainingIdRoute
   AppGroupsGroupIdAdminsAdminIdRoute: typeof AppGroupsGroupIdAdminsAdminIdRoute
   AppGroupsGroupIdAdminsNewRoute: typeof AppGroupsGroupIdAdminsNewRoute
   AppGroupsGroupIdMembershipsMembershipIdRoute: typeof AppGroupsGroupIdMembershipsMembershipIdRoute
@@ -2811,6 +2952,8 @@ interface AppRouteChildren {
   AppManageRolesRoleIdEditRoute: typeof AppManageRolesRoleIdEditRoute
   AppManageSessionsSessionIdEditRoute: typeof AppManageSessionsSessionIdEditRoute
   AppManageVenuesVenueIdEditRoute: typeof AppManageVenuesVenueIdEditRoute
+  AppActsActIdEveningsEventIdEditRoute: typeof AppActsActIdEveningsEventIdEditRoute
+  AppActsActIdEveningsEventIdPracticeRoute: typeof AppActsActIdEveningsEventIdPracticeRoute
   AppManageGroupsKindsGroupKindIdEditRoute: typeof AppManageGroupsKindsGroupKindIdEditRoute
   AppManageKeysVenueIdHoldingsNewRoute: typeof AppManageKeysVenueIdHoldingsNewRoute
   AppManagePersonsPersonIdFeeReductionsFeeReductionIdRoute: typeof AppManagePersonsPersonIdFeeReductionsFeeReductionIdRoute
@@ -2876,7 +3019,11 @@ const AppRouteChildren: AppRouteChildren = {
   AppLabIndexRoute: AppLabIndexRoute,
   AppManageIndexRoute: AppManageIndexRoute,
   AppSystemIndexRoute: AppSystemIndexRoute,
+  AppActsActIdEditRoute: AppActsActIdEditRoute,
   AppActsActIdMusicRoute: AppActsActIdMusicRoute,
+  AppActsActIdPracticeRoute: AppActsActIdPracticeRoute,
+  AppActsActIdTrainingRoute: AppActsActIdTrainingRoute,
+  AppActsActIdVideosRoute: AppActsActIdVideosRoute,
   AppClubNewsSlugRoute: AppClubNewsSlugRoute,
   AppEventsEventIdEditRoute: AppEventsEventIdEditRoute,
   AppEventsEventIdManageRoute: AppEventsEventIdManageRoute,
@@ -2905,6 +3052,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageVenuesVenueIdRoute: AppManageVenuesVenueIdRoute,
   AppManageVenuesNewRoute: AppManageVenuesNewRoute,
   AppActsActIdStepsSetupRoute: AppActsActIdStepsSetupRoute,
+  AppActsActIdTrainingsTrainingIdRoute: AppActsActIdTrainingsTrainingIdRoute,
   AppGroupsGroupIdAdminsAdminIdRoute: AppGroupsGroupIdAdminsAdminIdRoute,
   AppGroupsGroupIdAdminsNewRoute: AppGroupsGroupIdAdminsNewRoute,
   AppGroupsGroupIdMembershipsMembershipIdRoute:
@@ -2928,6 +3076,9 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageRolesRoleIdEditRoute: AppManageRolesRoleIdEditRoute,
   AppManageSessionsSessionIdEditRoute: AppManageSessionsSessionIdEditRoute,
   AppManageVenuesVenueIdEditRoute: AppManageVenuesVenueIdEditRoute,
+  AppActsActIdEveningsEventIdEditRoute: AppActsActIdEveningsEventIdEditRoute,
+  AppActsActIdEveningsEventIdPracticeRoute:
+    AppActsActIdEveningsEventIdPracticeRoute,
   AppManageGroupsKindsGroupKindIdEditRoute:
     AppManageGroupsKindsGroupKindIdEditRoute,
   AppManageKeysVenueIdHoldingsNewRoute: AppManageKeysVenueIdHoldingsNewRoute,

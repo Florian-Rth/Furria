@@ -10,12 +10,13 @@ import { useActTrainings } from '../hooks/use-act-trainings';
 import { TRAININGS_EMPTY, TRAININGS_TITLE } from '../training-copy';
 
 interface ActTrainingsSectionProps {
+  actId: number;
   studio: ActStudio;
   cast: readonly CastPerson[];
 }
 
-export const ActTrainingsSection: FC<ActTrainingsSectionProps> = ({ studio, cast }) => {
-  const trainings = useActTrainings(studio, cast);
+export const ActTrainingsSection: FC<ActTrainingsSectionProps> = ({ actId, studio, cast }) => {
+  const trainings = useActTrainings(actId, studio, cast);
   const rows = trainings.rows.map((row) => (
     <KkHubRow
       key={row.calendarEntryId}

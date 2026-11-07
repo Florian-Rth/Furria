@@ -1,7 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
-import { ACT_PAGE_PATH } from '@/features/acts/acts-origin';
-import type { ActPageSearch } from '@/features/acts/schemas';
-import { editorTargetOf } from '../editor-search';
+import { originSearchOf } from '@/features/act-card/act-card-paths';
+import { ACT_EDIT_PATH } from '@/features/acts/act-screens';
+import type { ActScreenSearch } from '@/features/acts/schemas';
 import type { ActStudioPage } from './use-act-studio-page';
 import { useActStudioPage } from './use-act-studio-page';
 
@@ -9,7 +9,7 @@ export interface StepSetupPage extends ActStudioPage {
   leave: () => void;
 }
 
-export const useStepSetupPage = (rawActId: string, search: ActPageSearch): StepSetupPage => {
+export const useStepSetupPage = (rawActId: string, search: ActScreenSearch): StepSetupPage => {
   const navigate = useNavigate();
   const page = useActStudioPage(rawActId, search);
 
@@ -17,9 +17,9 @@ export const useStepSetupPage = (rawActId: string, search: ActPageSearch): StepS
     ...page,
     leave: () => {
       void navigate({
-        to: ACT_PAGE_PATH,
+        to: ACT_EDIT_PATH,
         params: { actId: rawActId },
-        search: editorTargetOf(search),
+        search: originSearchOf(search),
         replace: true,
       });
     },

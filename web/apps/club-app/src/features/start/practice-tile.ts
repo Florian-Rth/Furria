@@ -1,6 +1,6 @@
+import { ACT_PRACTICE_PATH, actScreenPathOf } from '@/features/acts/act-screens';
 import { META_SEPARATOR } from '@/features/acts/acts-copy';
 import type { ActPageLink } from '@/features/acts/acts-origin';
-import { ACT_PAGE_PATH, actPageLinkOf } from '@/features/acts/acts-origin';
 import type { MyAct } from '@/features/acts/schemas';
 import { toActKindLabel } from '@/features/running-order/running-order-copy';
 import type { ActKind } from '@/features/running-order/schemas';
@@ -9,14 +9,13 @@ import { toShownCount } from './start-board';
 
 export const PRACTICE_SHOWN = 3;
 const PRACTICE_ORIGIN = 'start';
-const PRACTICE_VIEW = 'play';
 
 export type PracticeReach = { kind: 'act'; act: MyAct } | { kind: 'sheet' };
 
 export interface PracticeTarget {
-  to: typeof ACT_PAGE_PATH;
+  to: typeof ACT_PRACTICE_PATH;
   params: { actId: string };
-  search: { view: typeof PRACTICE_VIEW; from: typeof PRACTICE_ORIGIN };
+  search: { from: typeof PRACTICE_ORIGIN };
 }
 
 export interface PracticeMeta {
@@ -55,13 +54,15 @@ export const practiceReachOf = (acts: readonly MyAct[]): PracticeReach => {
 };
 
 export const practiceTargetOf = (act: MyAct): PracticeTarget => ({
-  to: ACT_PAGE_PATH,
+  to: ACT_PRACTICE_PATH,
   params: { actId: String(act.actId) },
-  search: { view: PRACTICE_VIEW, from: PRACTICE_ORIGIN },
+  search: { from: PRACTICE_ORIGIN },
 });
 
-export const practiceLinkOf = (act: MyAct): ActPageLink =>
-  actPageLinkOf(act.actId, practiceTargetOf(act).search);
+export const practiceLinkOf = (act: MyAct): ActPageLink => ({
+  to: actScreenPathOf(act.actId, { kind: 'practice', eventId: null }),
+  search: practiceTargetOf(act).search,
+});
 
 const sameName = (left: string, right: string): boolean =>
   left.trim().localeCompare(right.trim(), undefined, { sensitivity: 'base' }) === 0;

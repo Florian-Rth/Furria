@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import type { CastPerson } from '@/features/running-order/schemas';
-import { actPageModeOf, canChangeCoEditors, coEditorCandidatesOf } from './act-studio';
+import type { ActScreenAccess, ActStudioScreen } from './act-studio';
+import {
+  actPageModeOf,
+  actScreenAccessOf,
+  canChangeCoEditors,
+  coEditorCandidatesOf,
+} from './act-studio';
 import type { ActStudio, CoEditor } from './schemas';
 
 const urls = { normalised: '/n', preview: '/p', peaks: '/k' };
@@ -74,25 +80,15 @@ describe('actPageModeOf', () => {
     songs: [song(1)],
     music: { lengthSeconds: 60, source: 'workingMix' },
   });
-  const processing = studio({
-    songs: [{ ...song(1), state: 'processing' as const }],
-    music: { lengthSeconds: 60, source: 'workingMix' },
-  });
-
   const member = { canEditStudio: false, seesDetails: false };
   const editor = { canEditStudio: true, seesDetails: true };
-  const play = { view: 'play' as const };
+  const details = { view: 'details' as const };
 
   it.each([
     ['lands on the act card', playable, member, {}, 'card'],
     ['lands an editor on the act card too', playable, editor, {}, 'card'],
-    ['practises a studio with music that plays', playable, member, play, 'practice'],
-    ['falls back to the card when the viewer sees no studio', null, member, play, 'card'],
-    ['falls back to the card while no music is ready', processing, member, play, 'card'],
-    ['opens the studio to an editor while no music is ready', processing, editor, play, 'practice'],
-    ['expects practice while the studio loads', undefined, member, play, 'practice'],
-    ['shows the details to an editor', playable, editor, { view: 'details' as const }, 'details'],
-    ['keeps a cast member on the card', playable, member, { view: 'details' as const }, 'card'],
+    ['shows the details to an editor', playable, editor, details, 'details'],
+    ['keeps a cast member on the card', playable, member, details, 'card'],
     [
       'shows the details while the settings are open',
       playable,
@@ -100,35 +96,33 @@ describe('actPageModeOf', () => {
       { settings: true },
       'details',
     ],
-    [
-      'runs a training on music that plays',
-      playable,
-      member,
-      { view: 'training' as const },
-      'training',
-    ],
-    [
-      'expects the training while loading',
-      undefined,
-      member,
-      { view: 'training' as const },
-      'training',
-    ],
-    [
-      'falls back to the card for a training without music',
-      processing,
-      editor,
-      { view: 'training' as const },
-      'card',
-    ],
-    [
-      'expects the details while loading when asked',
-      undefined,
-      member,
-      { view: 'details' as const },
-      'details',
-    ],
+    ['expects the details while loading when asked', undefined, member, details, 'details'],
   ])('%s', (_case, shown, viewer, search, expected) => {
     expect(actPageModeOf(shown, viewer, search)).toBe(expected);
+  });
+});
+
+describe('actScreenAccessOf', () => {
+  const playable = studio({
+    songs: [song(1)],
+    music: { lengthSeconds: 60, source: 'workingMix' },
+  });
+  const processing = studio({
+    songs: [{ ...song(1), state: 'processing' as const }],
+    music: { lengthSeconds: 60, source: 'workingMix' },
+  });
+
+  it.each<[string, ActStudio | null, boolean, ActStudioScreen, ActScreenAccess]>([
+    ['practises a studio with music that plays', playable, false, 'practice', 'open'],
+    ['sends a viewer without a studio to the hub', null, true, 'practice', 'hub'],
+    ['sends a member to the hub while no music is ready', processing, false, 'practice', 'hub'],
+    ['opens the studio to an editor while no music is ready', processing, true, 'practice', 'open'],
+    ['opens the edit page to an editor', processing, true, 'edit', 'open'],
+    ['turns a member asking to edit to practising', playable, false, 'edit', 'practice'],
+    ['sends a member asking to edit silent music to the hub', processing, false, 'edit', 'hub'],
+    ['runs a training on music that plays', playable, false, 'training', 'open'],
+    ['sends a training without music to the hub', processing, true, 'training', 'hub'],
+  ])('%s', (_case, shown, canEditStudio, screen, expected) => {
+    expect(actScreenAccessOf(shown, canEditStudio, screen)).toBe(expected);
   });
 });

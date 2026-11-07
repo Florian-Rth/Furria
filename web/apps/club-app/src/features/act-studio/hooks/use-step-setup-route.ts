@@ -1,14 +1,16 @@
-import { useNavigate } from '@tanstack/react-router';
+import { useNavigate, useSearch } from '@tanstack/react-router';
+import { originSearchOf } from '@/features/act-card/act-card-paths';
+import { actScreenPathOf } from '@/features/acts/act-screens';
+import { ActScreenSearchSchema } from '@/features/acts/schemas';
 
 export const useStepSetupRoute = (actId: number): (() => void) => {
   const navigate = useNavigate();
+  const search = ActScreenSearchSchema.parse(useSearch({ strict: false }));
 
   return () => {
     void navigate({
-      from: '/acts/$actId',
-      to: '/acts/$actId/steps/setup',
-      params: { actId: String(actId) },
-      search: (previous) => previous,
+      to: actScreenPathOf(actId, { kind: 'stepSetup' }),
+      search: originSearchOf(search),
     });
   };
 };

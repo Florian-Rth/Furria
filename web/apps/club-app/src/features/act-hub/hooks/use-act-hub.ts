@@ -1,3 +1,4 @@
+import { hallTrainingOf } from '@furria/studio/hall-scene';
 import { practiceMemoryKeyOf } from '@furria/studio/practice-memory';
 import { partAnchorOf } from '@furria/studio/score-anchor';
 import { clockOf } from '@furria/studio/score-copy';
@@ -127,7 +128,10 @@ export const useActHub = (
   const doors = scoreDoorsOf(viewer, {
     actId,
     nextEveningId: evening?.eventId ?? null,
-    nextTrainingId: training?.calendarEntryId ?? null,
+    hallTrainingId:
+      training?.calendarEntryId ??
+      hallTrainingOf(studio.trainings, undefined)?.calendarEntryId ??
+      null,
     playable: player.canPlay,
   });
   const scene: LiveScene = {

@@ -1129,9 +1129,15 @@ redirects for the old URLs — nothing has shipped publicly.
 
 #### Phase 14a — Screens
 
-- [ ] Routes for practice, edit, the evening variants, hall training, music and videos; each screen reads its ids from the path
-- [ ] Every link and navigation into them re-pointed (act card, hub doors, Start, calendar, entry sheets, events, running order, step setup exit, music/video switch, back origins); tests follow
-- [ ] `view` values `play`/`training`, `edit`, `training`, `tool` and the evening-on-play use removed from the search schemas; `actPageModeOf` reduced to what the hub still needs
+- [x] Routes for practice, edit, the evening variants, hall training, music and videos; each screen reads its ids from the path
+- [x] Every link and navigation into them re-pointed (act card, hub doors, Start, calendar, entry sheets, events, running order, step setup exit, music/video switch, back origins); tests follow
+- [x] `view` values `play`/`training`, `edit`, `training`, `tool` and the evening-on-play use removed from the search schemas; `actPageModeOf` reduced to what the hub still needs
+
+Built 2026-11-07. Decisions: screen paths come from one module (`features/acts/act-screens.ts`); screens take
+only the origin search (`ActScreenSearchSchema`); practice ⇄ edit replaces the URL (the screen remounts,
+practice memory restores the position); a screen the viewer may not open replaces the URL (hub, or practice
+for a non-editor on `/edit`); `/acts/$actId/training` is the **free hall** (no calendar entry) — every
+"start a training" link resolves its training when built (`startedHallOf`), so no route picks one itself.
 
 #### Phase 14b — Details and its panes
 

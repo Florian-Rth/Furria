@@ -25,14 +25,16 @@ export const ActPageBody: FC<ActPageBodyProps> = ({ page }) => {
   const data = page.query.data;
 
   if (data === undefined) {
-    return <ActPageLoading page={page} />;
+    return <ActPageLoading load={page.load} />;
   }
 
   const studio = data.studio === null ? <KkNote>{CAST_ONLY_NOTE}</KkNote> : null;
   const stateNote = toActStateNote(data.act);
   const state = stateNote === null ? null : <KkMeta tone="accent">{stateNote}</KkMeta>;
   const trainings =
-    data.studio === null ? null : <ActTrainingsSection studio={data.studio} cast={data.act.cast} />;
+    data.studio === null ? null : (
+      <ActTrainingsSection actId={data.act.actId} studio={data.studio} cast={data.act.cast} />
+    );
   const coEditors = data.studio === null ? null : <ActCoEditorsSection page={data} />;
   const editedStudio = data.viewer.canEditStudio ? data.studio : null;
   const history =
