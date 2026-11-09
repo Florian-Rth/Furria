@@ -2,6 +2,7 @@ using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
 using Furria.Core.Groups;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -110,7 +111,7 @@ public sealed class GetManagedGroupsTests : IClassFixture<ApiTestFixture>
             builder =>
                 builder.Groups(groups =>
                     groups
-                        .AddGroup("musikzug", "Musikzug", tone: GroupTone.Teal)
+                        .AddGroup("musikzug", "Musikzug", tone: TestTones.Teal)
                         .AddGroup("elferrat", "Elferrat")
                 ),
             ct
@@ -123,7 +124,7 @@ public sealed class GetManagedGroupsTests : IClassFixture<ApiTestFixture>
         >();
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(GroupTone.Teal, result.Groups.Single(group => group.Name == "Musikzug").Tone);
+        Assert.Equal(TestTones.Teal, result.Groups.Single(group => group.Name == "Musikzug").Tone);
         Assert.Null(result.Groups.Single(group => group.Name == "Elferrat").Tone);
     }
 

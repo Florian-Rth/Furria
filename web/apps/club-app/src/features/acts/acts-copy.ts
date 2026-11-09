@@ -39,11 +39,11 @@ export const toSessionLabel = (sessionYear: number): string =>
 
 export const toClosedActNote = (sessionYear: number | null): string =>
   sessionYear === null
-    ? 'Dieser Sessionsauftritt bleibt, wie er war.'
-    : `Die Session ${sessionYearsLabelOf(sessionYear)} ist vorbei – der Sessionsauftritt bleibt, wie er war.`;
+    ? 'Abgeschlossen.'
+    : `Die Session ${sessionYearsLabelOf(sessionYear)} ist vorbei.`;
 
 export const toClosedSessionNote = (sessionYear: number): string =>
-  `Die Session ${sessionYearsLabelOf(sessionYear)} ist vorbei – ihre Sessionsauftritte bleiben, wie sie waren.`;
+  `Die Session ${sessionYearsLabelOf(sessionYear)} ist vorbei.`;
 export const GROUP_TITLE = 'Gruppe';
 export const GROUP_FIELD_LABEL = 'Gruppe';
 export const NO_GROUP_OPTION = 'Keine Gruppe';
@@ -64,7 +64,7 @@ export const SAVE_LABEL = 'Speichern';
 export const CREATE_LABEL = 'Anlegen';
 export const ARCHIVE_LABEL = 'Archivieren';
 export const RESTORE_LABEL = 'Wiederherstellen';
-export const ARCHIVED_NOTE = 'Archiviert — taucht in keinem neuen Ablauf auf.';
+export const ARCHIVED_NOTE = 'Archiviert.';
 export const MEMBERS_LOADING = 'Mitglieder werden geladen';
 
 const FILTER_LABELS: Record<ActsFilter, string> = {

@@ -14,7 +14,7 @@ import type { LiveInvitation } from '../redeem-stage';
 const CONFIRM_TITLE = 'E-MAIL BESTÄTIGEN';
 const CODE_LABEL = 'Code aus der Mail';
 const CODE_EXPIRED_LINE = 'Der Code ist abgelaufen. Lass dir einen neuen schicken.';
-const RESENT_LINE = 'Ein neuer Code ist unterwegs. Der vorige gilt nicht mehr.';
+const RESENT_LINE = 'Ein neuer Code ist unterwegs.';
 const CONFIRM_LABEL = 'Bestätigen';
 const RESEND_LABEL = 'Neuen Code senden';
 const CHANGE_EMAIL_LABEL = 'Andere Adresse eingeben';

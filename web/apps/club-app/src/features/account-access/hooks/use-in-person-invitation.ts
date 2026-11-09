@@ -8,7 +8,6 @@ import {
   IN_PERSON_FINISH_LABEL,
   IN_PERSON_REISSUE_LABEL,
   IN_PERSON_RETRY_LABEL,
-  IN_PERSON_VALIDITY_NOTES,
   toAccessLandingKey,
 } from '../account-access-labels';
 import { useAccessStateQuery, useInPersonInvitationMutation } from '../api';
@@ -109,7 +108,6 @@ export const useInPersonInvitation = ({
     }
     if (phase.kind === 'expired') {
       return {
-        context: { text: IN_PERSON_VALIDITY_NOTES[purpose], tone: 'quiet' },
         primary: { label: IN_PERSON_REISSUE_LABEL, icon: 'qr', onSelect: reissue },
       };
     }

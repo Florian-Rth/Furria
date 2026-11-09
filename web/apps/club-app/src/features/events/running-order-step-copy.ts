@@ -9,7 +9,6 @@ export const NO_ORDER_LABEL = 'Ablauf';
 export const NO_ORDER_VALUE = 'noch kein Ablauf';
 export const RUNNING_ORDER_LOADING_LABEL = 'Der Ablauf wird geladen';
 export const RUNNING_ORDER_RETRY_LABEL = 'Erneut laden';
-export const NO_PLANNER_NOTE = 'Den Ablauf plant, wer das Recht dafür hat.';
 export const ACTION_PLAN_LABEL = 'Ablauf planen';
 export const ACTION_OPEN_LABEL = 'Ablauf öffnen';
 

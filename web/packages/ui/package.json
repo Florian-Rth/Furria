@@ -388,6 +388,8 @@
     "./KkTenureChainRow": "./src/KkTenureChainRow.tsx",
     "./KkText": "./src/KkText.tsx",
     "./KkTextArea": "./src/KkTextArea.tsx",
+    "./KkTonePicker": "./src/KkTonePicker/KkTonePicker.tsx",
+    "./tone-picker-labels": "./src/KkTonePicker/tone-picker-labels.ts",
     "./KkTextField": "./src/KkTextField.tsx",
     "./KkThemeColorMeta": "./src/KkThemeColorMeta.tsx",
     "./KkThemeProvider": "./src/KkThemeProvider.tsx",

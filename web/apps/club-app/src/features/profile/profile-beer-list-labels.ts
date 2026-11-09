@@ -10,7 +10,6 @@ export const BEER_LIST_STATUS_LABEL = 'Status';
 
 export interface BeerListStateCopy {
   status: string;
-  hint: string;
   tone: KkChipTone;
   actionLabel: string;
   actionIcon: KkIconName;
@@ -20,7 +19,6 @@ export interface BeerListStateCopy {
 export const BEER_LIST_STATES: Record<'enrolled' | 'notEnrolled', BeerListStateCopy> = {
   enrolled: {
     status: 'eingetragen',
-    hint: 'Kisten von der Bierliste werden auf deinen Namen gebucht.',
     tone: 'green',
     actionLabel: 'Austragen',
     actionIcon: 'close',
@@ -28,7 +26,6 @@ export const BEER_LIST_STATES: Record<'enrolled' | 'notEnrolled', BeerListStateC
   },
   notEnrolled: {
     status: 'nicht eingetragen',
-    hint: 'Trag dich ein, um Kisten von der Bierliste auf deinen Namen zu buchen.',
     tone: 'neutral',
     actionLabel: 'Eintragen',
     actionIcon: 'add',
@@ -85,8 +82,7 @@ export const BEER_LIST_DIALOGS: Record<BeerListDialog, BeerListDialogCopy> = {
     question: 'Von der Bierliste austragen?',
     explanation: 'Du kannst danach keine Kisten mehr auf deinen Namen buchen.',
     facts: [],
-    consequence:
-      'Offene Kisten bleiben offen, bis sie bezahlt sind. Du kannst dich jederzeit wieder eintragen.',
+    consequence: 'Offene Kisten bleiben offen, bis sie bezahlt sind.',
     confirmLabel: 'Austragen',
   },
 };

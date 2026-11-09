@@ -62,7 +62,6 @@ export const NewsPressFoot: FC<NewsPressFootProps> = ({ editor, text }) => {
       <KkHoldButton
         label={foot.publishLabel}
         hint={PUBLISH_HOLD_HINT}
-        note={foot.publishNote}
         confirm={foot.publishConfirm}
         disabled={foot.isBlocked}
         onCommit={editor.requestPublish}

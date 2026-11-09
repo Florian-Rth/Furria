@@ -1,16 +1,10 @@
-import { GROUP_TONES } from '@furria/ui/group-tone';
-import { KkEyebrow } from '@furria/ui/KkEyebrow';
-import { KkGroupToneSwatch } from '@furria/ui/KkGroupToneSwatch';
 import { KkNote } from '@furria/ui/KkNote';
-import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import type { GroupTone } from '@/features/groups/group-identity';
-import { toToneLabel } from '@/lib/group-tone';
+import { ToneField } from '@/features/write/components/ToneField';
+import type { GroupTone } from '@/lib/group-tone';
 import { toToneWarning } from '../group-hub-labels';
 
 const PICKER_LABEL = 'Gruppenfarbe';
-const PICKER_HINT = 'Kennzeichnet die Gruppe in App und Kalender.';
-const TAKEN_SUFFIX = ' — schon vergeben';
 
 interface HubTonePickerProps {
   value: GroupTone | '';
@@ -21,33 +15,15 @@ interface HubTonePickerProps {
 export const HubTonePicker: FC<HubTonePickerProps> = ({ value, takenTones, onChange }) => {
   const warning = toToneWarning(value, takenTones);
   const warningNote = warning === null ? null : <KkNote tone="warning">{warning}</KkNote>;
+  const tone = value === '' ? null : value;
 
   return (
-    <Stack sx={{ gap: 1, minWidth: 0 }}>
-      <KkEyebrow tone="muted">{PICKER_LABEL}</KkEyebrow>
-      <Stack direction="row" sx={{ gap: 1, flexWrap: 'wrap', minWidth: 0 }}>
-        {GROUP_TONES.map((tone) => {
-          const taken = takenTones.has(tone);
-          const label = taken ? `${toToneLabel(tone)}${TAKEN_SUFFIX}` : toToneLabel(tone);
-
-          const pick = (): void => {
-            onChange(tone);
-          };
-
-          return (
-            <KkGroupToneSwatch
-              key={tone}
-              tone={tone}
-              label={label}
-              selected={value === tone}
-              taken={taken}
-              onSelect={pick}
-            />
-          );
-        })}
-      </Stack>
-      <KkNote>{PICKER_HINT}</KkNote>
-      {warningNote}
-    </Stack>
+    <ToneField
+      label={PICKER_LABEL}
+      value={tone}
+      onChange={onChange}
+      takenTones={takenTones}
+      notes={warningNote}
+    />
   );
 };

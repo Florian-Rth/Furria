@@ -10,7 +10,6 @@ import {
   COUNT_FIELD_LABEL,
   crateButtonOf,
   firstNameOf,
-  PAID_SWITCH_HINT,
   PAID_SWITCH_LABEL,
   PERSON_LABEL,
   STEP_LABELS,
@@ -82,12 +81,7 @@ export const BeerCratesForm: FC<BeerCratesFormProps> = ({
         error={countInvalid}
         helperText={form.countError}
       />
-      <KkSwitchRow
-        label={PAID_SWITCH_LABEL}
-        description={PAID_SWITCH_HINT}
-        checked={form.paid}
-        onChange={form.setPaid}
-      />
+      <KkSwitchRow label={PAID_SWITCH_LABEL} checked={form.paid} onChange={form.setPaid} />
       <BeerRejection rejection={form.rejection} />
       <KkButton
         variant="contained"

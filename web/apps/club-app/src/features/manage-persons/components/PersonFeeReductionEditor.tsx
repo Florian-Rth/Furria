@@ -17,10 +17,8 @@ import type { PersonDetails, PersonFeeReduction } from '../schemas';
 
 const SECTION_TITLE = 'Ermäßigung';
 const BASIS_LABEL = 'Grundlage';
-const BASIS_HINT = 'Wird manuell angegeben, nicht aus dem Geburtsdatum berechnet.';
 const FIRST_LABEL = 'Von Session';
 const LAST_LABEL = 'Bis Session';
-const LAST_HINT = 'Eine Ermäßigung ist immer befristet und muss danach neu nachgewiesen werden.';
 
 interface PersonFeeReductionEditorProps {
   person: PersonDetails;
@@ -72,7 +70,6 @@ export const PersonFeeReductionEditor: FC<PersonFeeReductionEditorProps> = ({
           onChange={control.selectBasis}
           presentation="choices"
           required
-          hint={BASIS_HINT}
         />
         <KkFormPair
           start={
@@ -97,7 +94,6 @@ export const PersonFeeReductionEditor: FC<PersonFeeReductionEditorProps> = ({
               required
               error={control.lastSessionYearError !== undefined}
               helperText={control.lastSessionYearError}
-              hint={LAST_HINT}
             />
           }
         />

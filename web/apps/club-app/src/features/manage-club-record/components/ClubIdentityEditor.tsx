@@ -11,11 +11,10 @@ import { EARLIEST_FOUNDED_YEAR, LATEST_FOUNDED_YEAR } from '../schemas';
 
 const SAVE_LABEL = 'Speichern';
 const NAME_LABEL = 'Vereinsname';
-const NAME_HINT = 'So wie im Vereinsregister, mit „e.V.“. Steht in der Fußzeile der Website.';
+const NAME_HINT = 'So wie im Vereinsregister, mit „e.V.“.';
 const SHORT_NAME_LABEL = 'Kurzname';
-const SHORT_NAME_HINT = 'Für knappe Stellen, zum Beispiel „GCC“.';
+const SHORT_NAME_HINT = 'Zum Beispiel „GCC“.';
 const FOUNDED_LABEL = 'Gründungsjahr';
-const FOUNDED_HINT = 'Steht in der Fußzeile der Website.';
 const FOUNDED_STEP_LABELS: KkNumberStepLabels = {
   less: 'Ein Jahr früher',
   more: 'Ein Jahr später',
@@ -80,7 +79,6 @@ export const ClubIdentityEditor: FC<ClubIdentityEditorProps> = ({ record }) => {
           stepLabels={FOUNDED_STEP_LABELS}
           min={EARLIEST_FOUNDED_YEAR}
           max={LATEST_FOUNDED_YEAR}
-          hint={FOUNDED_HINT}
           error={foundedYearError !== undefined}
           helperText={foundedYearError}
         />

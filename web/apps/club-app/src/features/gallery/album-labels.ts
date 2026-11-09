@@ -31,8 +31,7 @@ export const PUBLISHED_MARK = 'Auf der Website';
 export const UNPUBLISHED_MARK = 'Nicht veröffentlicht';
 export const NO_SESSION_NOTE = 'Ohne Session nicht veröffentlichbar';
 export const EMPTY_TITLE = 'Noch keine Bilder';
-export const EMPTY_DESCRIPTION =
-  'Sobald jemand Fotos oder Videos hineinlegt, entwickelt sich hier der Abend.';
+export const EMPTY_DESCRIPTION = 'Leeres Album.';
 export const FILTERED_EMPTY_TITLE = 'Nichts in diesem Filter';
 export const FILTERED_EMPTY_DESCRIPTION = 'Für diese Auswahl gibt es in diesem Album keine Bilder.';
 export const NOT_FOUND_TITLE = 'Album nicht gefunden';
@@ -170,8 +169,7 @@ export const moveTargetMeta = (sessionStartYear: number | null, items: number): 
     ? bulkCountLine(items)
     : `Session ${sessionLabel(sessionStartYear)} · ${bulkCountLine(items)}`;
 
-export const SELECTION_EMPTY_NOTE =
-  'Noch keine Fotos ausgewählt. Bilder auswählen und „In Auswahl" tippen.';
+export const SELECTION_EMPTY_NOTE = 'Noch keine Fotos ausgewählt.';
 
 export const selectionFrameLabel = (order: number, title: string): string =>
   `Auswahl ${order}, ${title}`;

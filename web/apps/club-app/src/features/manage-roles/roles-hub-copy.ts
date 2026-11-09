@@ -112,7 +112,7 @@ export const ADD_HOLDER_LABEL = 'Inhaberschaft eintragen';
 export const EDIT_ROLE_LABEL = 'Bearbeiten';
 export const ARCHIVE_LABEL = 'Archivieren';
 export const RESTORE_LABEL = 'Aktivieren';
-export const ARCHIVED_HOLDERS_NOTE = 'Archiviert. Aktiviere die Rolle, um Inhaber einzutragen.';
+export const ARCHIVED_HOLDERS_NOTE = 'Archiviert.';
 export const NO_GRANTED_NOTE = 'Keine Rechte vergeben.';
 export const HOLDING_ENDED_LABEL = 'beendet';
 
@@ -155,16 +155,11 @@ export const toCoinLine = (coin: { icon: ClubIcon; tone: GroupTone } | null): st
 export const OPEN_HOLDING_TITLE = 'Inhaberschaft eintragen';
 export const END_HOLDING_TITLE = 'Inhaberschaft beenden';
 export const EDIT_HOLDING_TITLE = 'Inhaberschaft ändern';
-export const PICKER_NOTE = 'Auch ohne Mitgliedschaft möglich.';
 export const SINCE_LABEL = 'Inne ab';
-export const SINCE_HINT =
-  'Die Rechte gelten ab diesem Tag. Auch ein Datum in der Zukunft ist möglich.';
 export const END_LABEL = 'Letzter Tag';
-export const END_HINT = 'Dieser Tag zählt noch dazu.';
 export const SUBMIT_OPEN = 'Eintragen';
 export const SUBMIT_END = 'Beenden';
 export const UNTIL_EMPTY_LABEL = 'Läuft noch';
-export const UNTIL_HINT = 'Leer, solange die Inhaberschaft läuft. Dieser Tag zählt noch dazu.';
 export const SUBMIT_CORRECT = 'Speichern';
 
 const HOLDING_FORM_TITLES: Record<'open' | 'end' | 'edit', string> = {

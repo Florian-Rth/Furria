@@ -10,11 +10,7 @@ import { useMeQuery } from '@/features/session/api';
 import { toLandingKey } from '@/features/write/landing-target';
 import { formatAddress, formatIsoDay } from '@/lib/membership-labels';
 import { useContactVisibilitySwitch } from '../hooks/use-contact-visibility-switch';
-import {
-  PERSON_SECTION_TITLES,
-  toContactChangeNote,
-  VISIBILITY_DESCRIPTION,
-} from '../manage-persons-labels';
+import { PERSON_SECTION_TITLES, toContactChangeNote } from '../manage-persons-labels';
 import type { PersonDetails } from '../schemas';
 
 const EDIT_LABEL = 'Bearbeiten';
@@ -73,7 +69,6 @@ export const PersonMasterDataPanel: FC<PersonMasterDataPanelProps> = ({
           label={VISIBILITY_LABEL}
           checked={visibility.checked}
           onChange={visibility.onChange}
-          description={VISIBILITY_DESCRIPTION}
           busy={visibility.busy}
         />
       </KkPanel>

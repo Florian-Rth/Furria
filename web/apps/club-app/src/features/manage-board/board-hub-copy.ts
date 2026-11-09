@@ -16,7 +16,6 @@ import { toPersonName } from './manage-board-labels';
 import type { BoardFilter, BoardSeat, OfficePaneSection } from './schemas';
 
 export const BOARD_TITLE = 'Vorstand';
-export const BOARD_LEAD = 'Vorstandsfunktionen und ihre Besetzung.';
 export const HUB_PATH = '/manage/board';
 export const OFFICE_PATH = '/manage/board/$boardOfficeId';
 export const HUB_ORIGIN: KkScreenOrigin = { label: BOARD_TITLE, to: HUB_PATH };
@@ -230,18 +229,15 @@ export const EDIT_OFFICE_PATH = '/manage/board/$boardOfficeId/edit';
 export const ARCHIVE_LABEL = 'Archivieren';
 export const RESTORE_LABEL = 'Aktivieren';
 export const WEBSITE_SWITCH = 'Auf der Website zeigen';
-export const WEBSITE_LINE = 'Name, Funktion und Porträt im Vorstand der Vereinswebsite.';
 export const ROLE_LABEL = 'Verknüpfte Rolle';
 export const ORDER_LABEL = 'Position';
 export const NO_ROLE = 'keine';
-export const ARCHIVED_NOTE = 'Archiviert. Aktiviere die Funktion, um sie wieder zu besetzen.';
+export const ARCHIVED_NOTE = 'Archiviert.';
 
 export const OPEN_SEAT_TITLE = 'Sitz eintragen';
 export const END_SEAT_TITLE = 'Sitz beenden';
-export const PICKER_NOTE = 'Auch ohne Mitgliedschaft möglich.';
 export const SINCE_LABEL = 'Im Vorstand ab';
 export const END_LABEL = 'Letzter Tag';
-export const END_HINT = 'Dieser Tag zählt noch dazu.';
 export const SUBMIT_OPEN = 'Eintragen';
 export const SUBMIT_END = 'Beenden';
 export const TODAY_CHOICE = 'Heute';

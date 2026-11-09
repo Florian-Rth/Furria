@@ -1,4 +1,5 @@
 import type { KkGroupStageAnniversary } from '@furria/ui/group-stage-anniversary';
+import { isToneTaken } from '@furria/ui/group-tone';
 import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
 import type { KkDateQuickChoice } from '@furria/ui/KkDateField';
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
@@ -12,7 +13,6 @@ import type { ClubIcon } from '@/lib/club-icon';
 import { isFutureDay, toIsoDay } from '@/lib/day';
 import { toGroupAdminsLabel, toGroupMembersLabel } from '@/lib/group-sections';
 import type { GroupTone } from '@/lib/group-tone';
-import { toToneLabel } from '@/lib/group-tone';
 import { formatIsoDay, formatPeriod, formatSinceSession } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
 import { toRecruitingChip } from '@/lib/state-chips';
@@ -20,6 +20,7 @@ import type { HubPerson } from './hub-people';
 import type { GroupHub, GroupInfoForm } from './schemas';
 
 const HUB_TITLE_FALLBACK = 'Gruppe';
+const TONE_TAKEN_WARNING = 'Eine sehr ähnliche Farbe hat schon eine andere Gruppe.';
 
 const MEMBER_LINE_PREFIX = 'Du bist Mitglied seit ';
 const LEADING_LINE = 'Du leitest diese Gruppe';
@@ -208,9 +209,7 @@ export const ADMINISTRATION_DENIED_MESSAGE =
   'Nur die Gruppenverwaltung kann Name und Gruppenart ändern.';
 
 export const PERSON_SCREEN_OPEN_LABEL = 'Zum Profil';
-export const PERSON_SCREEN_CONTACT_NOTE = 'Kontaktdaten findest du im Profil der Person.';
-export const PERSON_SCREEN_UNREACHABLE_NOTE =
-  'Diese Person hat kein Profil im Verzeichnis. Wende dich an die Gruppen-Admins.';
+export const PERSON_SCREEN_UNREACHABLE_NOTE = 'Kein Profil im Verzeichnis.';
 export const PERSON_SCREEN_ADD_MEMBERSHIP_LABEL = 'Mitglied aufnehmen';
 export const PERSON_SCREEN_ADD_ADMIN_LABEL = 'Gruppen-Admin ernennen';
 
@@ -272,11 +271,11 @@ export const toToneWarning = (
   tone: GroupTone | '',
   takenTones: ReadonlySet<GroupTone>,
 ): string | null => {
-  if (tone === '' || !takenTones.has(tone)) {
+  if (tone === '' || !isToneTaken(tone, takenTones)) {
     return null;
   }
 
-  return `${toToneLabel(tone)} ist bereits einer anderen Gruppe zugewiesen.`;
+  return TONE_TAKEN_WARNING;
 };
 
 const SEARCH_TERM_MIN_LENGTH = 2;

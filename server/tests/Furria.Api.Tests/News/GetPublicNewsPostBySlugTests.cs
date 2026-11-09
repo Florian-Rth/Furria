@@ -78,7 +78,7 @@ public sealed class GetPublicNewsPostBySlugTests : IClassFixture<ApiTestFixture>
 
         var garde = Assert.Single(result.MentionedGroups);
         Assert.Equal(
-            ("Stadtgarde", "Unsere Tanzgarde", (GroupTone?)GroupTone.Teal),
+            ("Stadtgarde", "Unsere Tanzgarde", (GroupTone?)TestTones.Teal),
             (garde.Name, garde.Description, garde.Tone)
         );
         var paula = Assert.Single(result.MentionedPersons);
@@ -287,7 +287,7 @@ public sealed class GetPublicNewsPostBySlugTests : IClassFixture<ApiTestFixture>
                 )
                 .Groups(groups =>
                     groups
-                        .AddGroup("garde", "Stadtgarde", "Unsere Tanzgarde", tone: GroupTone.Teal)
+                        .AddGroup("garde", "Stadtgarde", "Unsere Tanzgarde", tone: TestTones.Teal)
                         .AddGroup("alt", "Altherren", archivedOn: Archived)
                 )
                 .Club(club =>

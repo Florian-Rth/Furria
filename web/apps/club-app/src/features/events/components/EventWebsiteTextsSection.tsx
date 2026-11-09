@@ -7,11 +7,10 @@ import { EVENT_DESCRIPTION_MAX_LENGTH, EVENT_TEASER_MAX_LENGTH } from '../schema
 const SECTION_TITLE = 'Texte für die Website';
 const TEASER_LABEL = 'Kurzbeschreibung';
 const TEASER_PLACEHOLDER = 'Ein Satz, der Lust auf den Abend macht';
-const TEASER_HINT = 'Steht in der Veranstaltungsübersicht und in Link-Vorschauen.';
 const TEASER_ROWS = 2;
 const DESCRIPTION_LABEL = 'Ausführliche Beschreibung';
 const DESCRIPTION_PLACEHOLDER = 'Programm, Mitwirkende, was die Gäste erwartet';
-const DESCRIPTION_HINT = 'Steht auf der Seite der Veranstaltung. Ohne Formatierung.';
+const DESCRIPTION_HINT = 'Ohne Formatierung.';
 const DESCRIPTION_ROWS = 6;
 
 const toCountLabel = (used: number, max: number): string => `${used} von ${max} Zeichen`;
@@ -38,7 +37,6 @@ export const EventWebsiteTextsSection: FC<EventWebsiteTextsSectionProps> = ({ co
         showCount
         countLabel={toCountLabel}
         placeholder={TEASER_PLACEHOLDER}
-        hint={TEASER_HINT}
         error={teaserErrorText !== undefined}
         helperText={teaserErrorText}
       />

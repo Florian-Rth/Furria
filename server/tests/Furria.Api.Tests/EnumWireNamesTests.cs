@@ -1,6 +1,8 @@
 using System.Diagnostics.Contracts;
 using System.Text.Json;
 using FastEndpoints;
+using Furria.Api.Endpoints.Changes;
+using Furria.Application.Changes;
 using Furria.Application.Management;
 using Furria.Application.Operations;
 using Furria.Application.Registry;
@@ -9,7 +11,6 @@ using Furria.Core.BeerList;
 using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Gallery;
-using Furria.Core.Groups;
 using Furria.Core.Halls;
 using Furria.Core.Media;
 using Furria.Core.News;
@@ -35,7 +36,6 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(ToDoKind)] =
             "neverInvited reminderDue inPersonOnly birthDateUnknown keyToTakeBack "
             + "clubRecordGap applicationWaiting",
-        [typeof(GroupTone)] = "clay olive lime fern teal indigo iris violet orchid rose",
         [typeof(ClubIcon)] =
             "crown euro bolt shield camera sparkle mic musicNote drum mask megaphone star "
             + "trophy flag key shirt pen wrench palette heart mug calendar whistle broom",
@@ -92,6 +92,15 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(KeyframeEasing)] = "linear easeIn easeOut easeInOut",
         [typeof(ChoreographyVersionKind)] = "saved restored spotRemoved musicAdopted",
         [typeof(BeerStockMovementKind)] = "delivery correction handoverCarry handedOver",
+        [typeof(DomainChange)] =
+            "person picture membership membershipApplication account group groupKind "
+            + "groupMembership groupAdmin usualTrainingTime calendarEntry attendanceResponse "
+            + "event role roleHolding boardOffice boardSeat sessionRecord venue keyHolding "
+            + "clubRecord announcement announcementSeen media newsPost websitePicture act "
+            + "actCoEditor actMusic actChoreography actSteps actVideos actEvening runningOrder "
+            + "beerListEnrollment beerPot beerStock beerCrate beerPayment pushDevice hall "
+            + "tablePlan seating",
+        [typeof(ChangeLineKind)] = "ready changes ping",
     };
 
     private readonly ApiTestFixture _fixture;

@@ -10,11 +10,6 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
     private const int EnumLength = 32;
     private const int EarliestFoundedYear = 1800;
 
-    private static readonly string KnownTones = string.Join(
-        ", ",
-        Enum.GetNames<GroupTone>().Select(name => $"'{name}'")
-    );
-
     private static readonly string KnownIcons = string.Join(
         ", ",
         Enum.GetNames<ClubIcon>().Select(name => $"'{name}'")
@@ -30,10 +25,7 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
                     "ck_group_founded_year",
                     $"founded_year IS NULL OR founded_year >= {EarliestFoundedYear}"
                 );
-                table.HasCheckConstraint(
-                    "ck_group_tone",
-                    $"tone IS NULL OR tone IN ({KnownTones})"
-                );
+                table.HasCheckConstraint("ck_group_tone", GroupToneConverter.HexColorCheck);
                 table.HasCheckConstraint(
                     "ck_group_icon",
                     $"icon IS NULL OR icon IN ({KnownIcons})"
@@ -49,7 +41,10 @@ public sealed class GroupConfiguration : IEntityTypeConfiguration<Group>
             .UseCollation(GermanCollation.Name);
         builder.Property(group => group.Description).HasMaxLength(400).IsRequired();
         builder.Property(group => group.IsRecruiting).HasDefaultValue(false);
-        builder.Property(group => group.Tone).HasConversion<string>().HasMaxLength(EnumLength);
+        builder
+            .Property(group => group.Tone)
+            .HasConversion<GroupToneConverter>()
+            .HasMaxLength(GroupTone.HexLength);
         builder.Property(group => group.Icon).HasConversion<string>().HasMaxLength(EnumLength);
 
         builder

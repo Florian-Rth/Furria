@@ -13,7 +13,6 @@ const DOORS_LABEL = 'Einlass';
 const DOORS_EMPTY_LABEL = 'Ohne';
 const START_LABEL = 'Beginn';
 const VENUE_LABEL = 'Ort';
-const VENUE_HINT = 'Die Website zeigt die Anschrift des Ortes.';
 const QUICK_TIMES = ['14:11', '20:11', '21:11'] as const;
 
 interface EventScheduleSectionProps {
@@ -75,7 +74,6 @@ export const EventScheduleSection: FC<EventScheduleSectionProps> = ({ control, v
         options={venueOptions}
         onChange={control.setVenue}
         presentation="select"
-        hint={VENUE_HINT}
         error={venueIdErrorText !== undefined}
         helperText={venueIdErrorText}
       />

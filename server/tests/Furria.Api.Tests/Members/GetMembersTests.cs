@@ -7,6 +7,7 @@ using Furria.Application.Authorization;
 using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Core.Groups;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -471,10 +472,10 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
                             .AddGroup(
                                 "tanzgarde",
                                 "Tanzgarde",
-                                tone: GroupTone.Teal,
+                                tone: TestTones.Teal,
                                 icon: ClubIcon.Drum
                             )
-                            .AddGroup("kapelle", "Kapelle", tone: GroupTone.Rose)
+                            .AddGroup("kapelle", "Kapelle", tone: TestTones.Rose)
                             .AddGroup("alte-garde", "Alte Garde", archivedOn: ArchivedIn2021)
                             .AddGroup("funken", "Funken")
                             .AddGroupAdmin(
@@ -509,19 +510,19 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
                                 "zeugwart",
                                 "Zeugwart",
                                 ClubIcon.Wrench,
-                                GroupTone.Teal
+                                TestTones.Teal
                             )
                             .AddRoleWithCoin(
                                 "webmaster",
                                 "Webmaster",
                                 ClubIcon.Key,
-                                GroupTone.Indigo
+                                TestTones.Indigo
                             )
                             .AddRoleWithCoin(
                                 "chronik",
                                 "Chronik",
                                 ClubIcon.Pen,
-                                GroupTone.Clay,
+                                TestTones.Clay,
                                 ArchivedIn2021
                             )
                             .AddRole("kasse", "Kasse")
@@ -621,28 +622,28 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
                     Kind = PersonFunctionKind.GroupAdmin,
                     Name = "Kapelle",
                     Icon = null,
-                    Tone = GroupTone.Rose,
+                    Tone = TestTones.Rose,
                 },
                 new PersonFunctionDto
                 {
                     Kind = PersonFunctionKind.GroupAdmin,
                     Name = "Tanzgarde",
                     Icon = ClubIcon.Drum,
-                    Tone = GroupTone.Teal,
+                    Tone = TestTones.Teal,
                 },
                 new PersonFunctionDto
                 {
                     Kind = PersonFunctionKind.Role,
                     Name = "Webmaster",
                     Icon = ClubIcon.Key,
-                    Tone = GroupTone.Indigo,
+                    Tone = TestTones.Indigo,
                 },
                 new PersonFunctionDto
                 {
                     Kind = PersonFunctionKind.Role,
                     Name = "Zeugwart",
                     Icon = ClubIcon.Wrench,
-                    Tone = GroupTone.Teal,
+                    Tone = TestTones.Teal,
                 },
             ],
             alice.Honours.Functions

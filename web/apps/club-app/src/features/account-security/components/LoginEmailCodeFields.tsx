@@ -11,7 +11,7 @@ import type { LoginEmailCodeForm } from '../schemas';
 
 const CODE_SECTION = 'Bestätigungscode';
 const CODE_LABEL = 'Code aus der Mail';
-const RESENT_LINE = 'Ein neuer Code ist unterwegs. Der vorige gilt nicht mehr.';
+const RESENT_LINE = 'Ein neuer Code ist unterwegs.';
 const EDIT_ADDRESS_LABEL = 'Andere Adresse eingeben';
 const TICK_MS = 1000;
 

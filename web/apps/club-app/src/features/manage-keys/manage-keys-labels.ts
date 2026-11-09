@@ -24,9 +24,6 @@ export const KEY_SECTION_TITLES = {
   archived: 'Archivierte Orte',
 } as const;
 
-export const MANAGE_KEYS_FOOTNOTE =
-  'Übersicht, wer welchen Ort aufschließen kann. Zurückgegebene Schlüssel bleiben im Verlauf erhalten.';
-
 export const toPersonName = (person: { firstName: string; lastName: string }): string =>
   `${person.firstName} ${person.lastName}`;
 
@@ -137,9 +134,8 @@ export const findKeyVenue = (
   return venues.find((venue) => venue.venueId === venueId) ?? null;
 };
 
-export const MANAGE_KEYS_LEAD = 'Wer welchen Ort aufschließen kann.';
 export const toArchivedVenueNote = (archivedOn: string): string =>
-  `Der Ort ist seit dem ${formatIsoDay(archivedOn)} archiviert. Es können keine Schlüssel mehr ausgegeben werden.`;
+  `Der Ort ist seit dem ${formatIsoDay(archivedOn)} archiviert.`;
 
 export interface KeyVenueEmptyCopy {
   title: string;
@@ -160,10 +156,7 @@ export const toVenueEmptyCopy = (holdings: readonly KeyHolding[]): KeyVenueEmpty
   holdings.length === 0 ? NEVER_HELD : ALL_RETURNED;
 
 export const NO_VENUES_TITLE = 'NOCH KEIN ORT';
-export const NO_VENUES_DESCRIPTION = 'Lege zuerst einen Ort an, um Schlüssel auszugeben.';
-
-export const HANDOUT_EXPLANATION = 'Neue Personen werden in der Personenverwaltung angelegt.';
-export const HANDOUT_PICKER_NOTE = 'Auch ohne Mitgliedschaft möglich.';
+export const NO_VENUES_DESCRIPTION = 'Lege zuerst einen Ort an.';
 
 export const toHandoutConsequence = (
   personName: string,

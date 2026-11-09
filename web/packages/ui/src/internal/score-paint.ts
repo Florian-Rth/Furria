@@ -1,7 +1,7 @@
 import type { CSSObject, Theme } from '@mui/material/styles';
 import { kkTokens } from '../tokens';
 import type { KkGroupTone } from './group-tone';
-import { GROUP_TONE_ON_FIELD_LIGHT, groupToneRecipes } from './group-tone';
+import { GROUP_TONE_ON_FIELD_LIGHT, groupToneRecipe } from './group-tone';
 import { applyScheme } from './scheme-paint';
 
 const PERCENT = 100;
@@ -29,8 +29,8 @@ export const shadeColorsOf = (tone: KkGroupTone | null, shade: number): [string,
   tone === null
     ? [mixOf(NEUTRAL_LIGHT, shade), mixOf(NEUTRAL_DARK, shade)]
     : [
-        mixOf(groupToneRecipes[tone].fieldLight, shade),
-        mixOf(groupToneRecipes[tone].fieldDark, shade),
+        mixOf(groupToneRecipe(tone).fieldLight, shade),
+        mixOf(groupToneRecipe(tone).fieldDark, shade),
       ];
 
 const fillTextOf = (tone: KkGroupTone | null): [string, string] =>

@@ -4,7 +4,6 @@ import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
 import { useGroupKindsQuery } from '@/features/group-kinds/api';
 import {
-  GROUP_KIND_FIELD_HINT,
   GROUP_KIND_FIELD_LABEL,
   toGroupKindOptions,
   toHeldGroupKind,
@@ -21,7 +20,6 @@ const TITLE = 'Name und Gruppenart bearbeiten';
 const SAVE_LABEL = 'Speichern';
 const SECTION_TITLE = 'Gruppe';
 const NAME_LABEL = 'Name';
-const NAME_HINT = 'Erscheint im Gruppenverzeichnis, auf der Gruppenseite und im Kalender.';
 
 interface GroupAdministrationEditorProps {
   hub: GroupHub;
@@ -76,7 +74,6 @@ export const GroupAdministrationEditor: FC<GroupAdministrationEditorProps> = ({ 
           name={control.name.name}
           label={NAME_LABEL}
           required
-          hint={NAME_HINT}
           onChange={control.name.onChange}
           onBlur={control.name.onBlur}
           inputRef={control.name.ref}
@@ -90,7 +87,6 @@ export const GroupAdministrationEditor: FC<GroupAdministrationEditorProps> = ({ 
           options={kindOptions}
           onChange={control.setGroupKindId}
           presentation="select"
-          hint={GROUP_KIND_FIELD_HINT}
         />
       </KkFormSection>
     </WriteScreen>

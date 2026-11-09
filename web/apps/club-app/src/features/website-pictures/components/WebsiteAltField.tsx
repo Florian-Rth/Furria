@@ -11,11 +11,8 @@ import {
   ALT_MAX,
   ALT_REQUIRED_LABEL,
   ALT_SAVE,
-  ALT_SHARE_HINT,
   altCountOf,
 } from '../website-copy';
-
-const SHARE_IMAGE_SLOT = 'site.shareImage';
 
 interface WebsiteAltFieldProps {
   position: BoardPosition;
@@ -24,7 +21,6 @@ interface WebsiteAltFieldProps {
 
 export const WebsiteAltField: FC<WebsiteAltFieldProps> = ({ position, copied }) => {
   const draft = useAltDraft(position);
-  const hint = position.slot === SHARE_IMAGE_SLOT ? `${ALT_HINT} ${ALT_SHARE_HINT}` : ALT_HINT;
   const save = draft.isChanged ? (
     <KkButton
       variant="contained"
@@ -50,7 +46,7 @@ export const WebsiteAltField: FC<WebsiteAltFieldProps> = ({ position, copied }) 
         maxLength={ALT_MAX}
         showCount
         countLabel={altCountOf}
-        hint={hint}
+        hint={ALT_HINT}
         required
         error={hasError}
         helperText={draft.rejection ?? undefined}

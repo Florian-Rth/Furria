@@ -11,11 +11,18 @@ const STATS_TITLE = 'Der Verein in Zahlen';
 
 interface MembersStatsProps {
   totals: Record<MembershipState, number>;
-  note: string;
+  note: string | null;
 }
 
 export const MembersStats: FC<MembersStatsProps> = ({ totals, note }) => {
   const stats = toStateStats(totals);
+  const footnote =
+    note === null ? null : (
+      <>
+        <KkRule weight="hair" />
+        <KkNote>{note}</KkNote>
+      </>
+    );
 
   return (
     <Stack sx={{ gap: 2, minWidth: 0 }}>
@@ -30,8 +37,7 @@ export const MembersStats: FC<MembersStatsProps> = ({ totals, note }) => {
           </KkStatRow.Item>
         ))}
       </KkStatRow>
-      <KkRule weight="hair" />
-      <KkNote>{note}</KkNote>
+      {footnote}
     </Stack>
   );
 };

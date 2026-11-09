@@ -3,7 +3,6 @@ import { KkSelectField } from '@furria/ui/KkSelectField';
 import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
 import {
-  GROUP_KIND_FIELD_HINT,
   GROUP_KIND_FIELD_LABEL,
   toGroupKindOptions,
 } from '@/features/group-kinds/group-kinds-labels';
@@ -17,7 +16,6 @@ const TITLE = 'Gruppe hinzufügen';
 const ADD_LABEL = 'Hinzufügen';
 const SECTION_TITLE = 'Gruppe';
 const NAME_LABEL = 'Name der Gruppe';
-const NAME_HINT = 'Erscheint im Gruppenverzeichnis, auf der Gruppenseite und im Kalender.';
 
 interface GroupCreateEditorProps {
   kinds: readonly RunningGroupKind[];
@@ -49,7 +47,6 @@ export const GroupCreateEditor: FC<GroupCreateEditorProps> = ({ kinds }) => {
           name={nameField.name}
           label={NAME_LABEL}
           required
-          hint={NAME_HINT}
           error={nameErrorText !== undefined}
           helperText={nameErrorText}
           onChange={nameField.onChange}
@@ -63,7 +60,6 @@ export const GroupCreateEditor: FC<GroupCreateEditorProps> = ({ kinds }) => {
           options={kindOptions}
           onChange={control.setGroupKindId}
           presentation="select"
-          hint={GROUP_KIND_FIELD_HINT}
         />
         <ClubIconField value={control.icon} onChange={control.setIcon} />
       </KkFormSection>

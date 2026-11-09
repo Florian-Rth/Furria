@@ -24,7 +24,7 @@ export const DELETE_CONFIRM_LABEL = 'Endgültig löschen';
 export const DELETE_EYEBROW = 'Person löschen';
 
 const WHAT_GOES =
-  'Gelöscht wird alles, was der Verein über die Person festgehalten hat – Mitgliedschaften, Gruppen, Rollen, Ämter, Schlüssel, Zusagen und ihr Account. Wo sie im Verein etwas getan hat, etwa einen Aushang oder eine Aufnahme, nennt das danach niemanden mehr.';
+  'Gelöscht werden Mitgliedschaften, Gruppen, Rollen, Ämter, Schlüssel, Zusagen und ihr Account.';
 const PROOF_BY_PASSWORD = 'Bestätige mit deinem Passwort.';
 const PROOF_BY_EITHER = 'Bestätige mit deinem Passwort oder deinem Passkey.';
 

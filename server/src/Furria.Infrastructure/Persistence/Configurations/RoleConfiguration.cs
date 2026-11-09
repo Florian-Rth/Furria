@@ -15,11 +15,6 @@ public sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
         Enum.GetNames<ClubIcon>().Select(name => $"'{name}'")
     );
 
-    private static readonly string KnownTones = string.Join(
-        ", ",
-        Enum.GetNames<GroupTone>().Select(name => $"'{name}'")
-    );
-
     public void Configure(EntityTypeBuilder<Role> builder)
     {
         builder.ToTable(
@@ -27,7 +22,7 @@ public sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
             table =>
             {
                 table.HasCheckConstraint("ck_role_icon", $"icon IS NULL OR icon IN ({KnownIcons})");
-                table.HasCheckConstraint("ck_role_tone", $"tone IS NULL OR tone IN ({KnownTones})");
+                table.HasCheckConstraint("ck_role_tone", GroupToneConverter.HexColorCheck);
                 table.HasCheckConstraint("ck_role_coin", "(icon IS NULL) = (tone IS NULL)");
             }
         );
@@ -40,7 +35,10 @@ public sealed class RoleConfiguration : IEntityTypeConfiguration<Role>
             .UseCollation(GermanCollation.Name);
         builder.Property(role => role.Description).HasMaxLength(400).IsRequired();
         builder.Property(role => role.Icon).HasConversion<string>().HasMaxLength(EnumLength);
-        builder.Property(role => role.Tone).HasConversion<string>().HasMaxLength(EnumLength);
+        builder
+            .Property(role => role.Tone)
+            .HasConversion<GroupToneConverter>()
+            .HasMaxLength(GroupTone.HexLength);
 
         builder.HasIndex(role => role.Name).HasDatabaseName("ix_role_name_lookup");
 

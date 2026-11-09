@@ -1,6 +1,5 @@
 import { KkBottomDrawer } from '@furria/ui/KkBottomDrawer';
 import { KkButton } from '@furria/ui/KkButton';
-import { KkNote } from '@furria/ui/KkNote';
 import type { KkPlanChoice } from '@furria/ui/KkPlanChoiceGrid';
 import { KkPlanChoiceGrid } from '@furria/ui/KkPlanChoiceGrid';
 import Stack from '@mui/material/Stack';
@@ -12,8 +11,6 @@ import {
   ADD_CLOSE,
   ADD_LABEL,
   SEATS_CONTINUE_LABEL,
-  TOUCH_SEATS_HINT,
-  TOUCH_TOOL_HINTS,
   TOUCH_TOOL_LABELS,
 } from '../table-planner-copy';
 import { TablePlannerPalette } from './TablePlannerPalette';
@@ -25,7 +22,6 @@ const CHOICES: readonly KkPlanChoice[] = ADDING_TOOLS.map((tool) => ({
   id: tool,
   label: TOUCH_TOOL_LABELS[tool],
   icon: TOOL_ICONS[tool],
-  hint: TOUCH_TOOL_HINTS[tool],
 }));
 
 export const TablePlannerAddSheet: FC = () => {
@@ -40,7 +36,6 @@ export const TablePlannerAddSheet: FC = () => {
     planner.tool === 'seats' ? (
       <Stack sx={{ gap: 1.5 }}>
         <TablePlannerSeatRequest />
-        <KkNote tone="muted">{TOUCH_SEATS_HINT}</KkNote>
         <KkButton onClick={planner.closeAddSheet}>{SEATS_CONTINUE_LABEL}</KkButton>
       </Stack>
     ) : null;

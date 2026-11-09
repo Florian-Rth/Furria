@@ -125,13 +125,13 @@ export const ARCHIVE_PERSON_LABEL = 'Person archivieren';
 export const ARCHIVE_CONFIRM_LABEL = 'Archivieren';
 export const ARCHIVE_EYEBROW = 'Person archivieren';
 export const ARCHIVE_EXPLANATION =
-  'Die Person verschwindet aus dem Register und aus jeder Auswahl. Alles, was über sie festgehalten ist, bleibt erhalten – auch ihr Account. Im Register findest du sie unter „archiviert“.';
+  'Die Person verschwindet aus dem Register und aus jeder Auswahl.';
 
 export const toArchiveQuestion = (person: PersonDetails): string =>
   `${toPersonName(person)} archivieren?`;
 
 export const toArchiveConsequence = (person: PersonDetails, todayLabel: string): string =>
-  `Ab dem ${todayLabel} ist ${person.firstName} archiviert. Beginnt etwas Neues für ${person.firstName}, ist die Archivierung von selbst aufgehoben.`;
+  `Ab dem ${todayLabel} ist ${person.firstName} archiviert.`;
 
 export const toArchiveFacts = (person: PersonDetails, todayLabel: string): KkConfirmFact[] => [
   { label: 'Person', value: toPersonName(person) },
@@ -141,8 +141,7 @@ export const toArchiveFacts = (person: PersonDetails, todayLabel: string): KkCon
 
 export const RESTORE_PERSON_LABEL = 'Wiederherstellen';
 export const RESTORE_EYEBROW = 'Person wiederherstellen';
-export const RESTORE_EXPLANATION =
-  'Die Person steht wieder im Register und in jeder Auswahl. Was über sie festgehalten ist, bleibt unverändert.';
+export const RESTORE_EXPLANATION = 'Die Person steht wieder im Register und in jeder Auswahl.';
 
 export const toRestoreQuestion = (person: PersonDetails): string =>
   `${toPersonName(person)} wiederherstellen?`;

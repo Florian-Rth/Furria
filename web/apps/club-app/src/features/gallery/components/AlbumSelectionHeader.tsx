@@ -7,19 +7,17 @@ interface AlbumSelectionHeaderProps {
   isPublished: boolean;
   hangKey: number;
   lead: string;
-  meta: string;
 }
 
 export const AlbumSelectionHeader: FC<AlbumSelectionHeaderProps> = ({
   isPublished,
   hangKey,
   lead,
-  meta,
 }) => (
   <KkScreenHeader>
     <KkScreenHeader.Text>
       <KkScreenHeader.Title>{SELECTION_TITLE}</KkScreenHeader.Title>
-      <AlbumSelectionMarquee isPublished={isPublished} hangKey={hangKey} lead={lead} meta={meta} />
+      <AlbumSelectionMarquee isPublished={isPublished} hangKey={hangKey} lead={lead} />
     </KkScreenHeader.Text>
   </KkScreenHeader>
 );

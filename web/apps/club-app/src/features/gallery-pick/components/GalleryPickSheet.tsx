@@ -1,5 +1,4 @@
 import { KkSheet } from '@furria/ui/KkSheet';
-import { KkText } from '@furria/ui/KkText';
 import { useKkSheet } from '@furria/ui/sheet-store';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
@@ -13,7 +12,6 @@ import { PickListStatus } from './PickListStatus';
 interface GalleryPickSheetProps {
   id: string;
   title: string;
-  note: string;
   emptyNote: string;
   albums: readonly PickableAlbum[] | undefined;
   albumsError: Error | null;
@@ -25,7 +23,6 @@ interface GalleryPickSheetProps {
 export const GalleryPickSheet: FC<GalleryPickSheetProps> = ({
   id,
   title,
-  note,
   emptyNote,
   albums,
   albumsError,
@@ -44,7 +41,6 @@ export const GalleryPickSheet: FC<GalleryPickSheetProps> = ({
   return (
     <KkSheet id={id} title={title} closeLabel={GALLERY_PICK_CLOSE}>
       <KkSheet.Body>
-        <KkText variant="caption">{note}</KkText>
         <Stack sx={{ gap: 2 }}>
           {sections}
           <PickListStatus

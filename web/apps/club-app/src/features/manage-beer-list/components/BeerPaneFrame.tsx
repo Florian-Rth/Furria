@@ -10,7 +10,7 @@ import { CLOSE_LABEL } from '../beer-hub-copy';
 interface BeerPaneFrameProps extends PropsWithChildren {
   icon: KkIconName;
   title: string;
-  context: string;
+  context?: string;
   state?: KkStepState;
   stateLabel?: string;
   switcher?: ReactNode;
@@ -19,7 +19,7 @@ interface BeerPaneFrameProps extends PropsWithChildren {
 export const BeerPaneFrame: FC<BeerPaneFrameProps> = ({
   icon,
   title,
-  context,
+  context = '',
   state = 'open',
   stateLabel = '',
   switcher,

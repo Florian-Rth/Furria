@@ -10,7 +10,6 @@ import {
   aspectWordOf,
   CLOSE_LABEL,
   COPY_EMPTY,
-  COPY_NOTE,
   COPY_SHEET_ID,
   COPY_TITLE,
   positionNameOf,
@@ -51,7 +50,6 @@ export const WebsiteCopySheet: FC<WebsiteCopySheetProps> = ({ sources, onPick })
   return (
     <KkSheet id={COPY_SHEET_ID} title={COPY_TITLE} closeLabel={CLOSE_LABEL}>
       <KkSheet.Body>
-        <KkText variant="caption">{COPY_NOTE}</KkText>
         <Stack>
           {rows}
           {empty}

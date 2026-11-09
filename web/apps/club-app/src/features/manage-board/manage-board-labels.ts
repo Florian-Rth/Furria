@@ -162,7 +162,7 @@ export const toSeatConsequence = (
     : `${personName} sitzt seit dem ${day} als ${officeName} im Vorstand.`;
 
   if (impliedRoleName === null) {
-    return `${opening} Damit sind keine zusätzlichen Rechte verbunden.`;
+    return opening;
   }
 
   return `${opening} ${personName} erhält damit die Rechte von ${impliedRoleName}.`;
@@ -192,7 +192,7 @@ export const ARCHIVE_OFFICE_EYEBROW = 'Vorstandsfunktion archivieren';
 export const toArchiveOfficeQuestion = (name: string): string => `${name} archivieren?`;
 
 export const ARCHIVE_OFFICE_EXPLANATION =
-  'Die Vorstandsfunktion lässt sich danach nicht mehr besetzen. Frühere Sitze bleiben erhalten.';
+  'Die Vorstandsfunktion lässt sich danach nicht mehr besetzen.';
 
 export const toArchiveOfficeConsequence = (name: string, todayIsoDay: string): string =>
   `${name} ist ab heute, dem ${formatIsoDay(todayIsoDay)}, archiviert.`;
@@ -201,8 +201,7 @@ export const RESTORE_OFFICE_EYEBROW = 'Vorstandsfunktion aktivieren';
 
 export const toRestoreOfficeQuestion = (name: string): string => `${name} wieder aktivieren?`;
 
-export const RESTORE_OFFICE_EXPLANATION =
-  'Die Vorstandsfunktion lässt sich wieder besetzen. Ihr Verlauf bleibt unverändert.';
+export const RESTORE_OFFICE_EXPLANATION = 'Die Vorstandsfunktion lässt sich wieder besetzen.';
 
 export const toRestoreOfficeConsequence = (name: string, todayIsoDay: string): string =>
   `${name} ist ab heute, dem ${formatIsoDay(todayIsoDay)}, wieder aktiv.`;

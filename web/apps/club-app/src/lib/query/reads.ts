@@ -303,6 +303,8 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'groupAdmin',
     'boardOffice',
     'boardSeat',
+    'role',
+    'roleHolding',
   ],
   member: [
     'person',
@@ -313,6 +315,8 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'groupAdmin',
     'boardOffice',
     'boardSeat',
+    'role',
+    'roleHolding',
   ],
   events: ['event', 'venue', 'media', 'newsPost', 'runningOrder', 'act', 'tablePlan', 'seating'],
   event: ['event', 'venue', 'media', 'newsPost', 'runningOrder', 'act', 'tablePlan', 'seating'],

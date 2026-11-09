@@ -2,7 +2,6 @@ import { KkButton } from '@furria/ui/KkButton';
 import { KkFieldRow } from '@furria/ui/KkFieldRow';
 import { KkFormPair } from '@furria/ui/KkFormPair';
 import { KkFormSection } from '@furria/ui/KkFormSection';
-import { KkNote } from '@furria/ui/KkNote';
 import type { KkNumberStepLabels } from '@furria/ui/KkNumberField';
 import { KkNumberField } from '@furria/ui/KkNumberField';
 import { KkSelectField } from '@furria/ui/KkSelectField';
@@ -22,12 +21,9 @@ import {
 
 const CREATE_TITLE = 'Vorstandsfunktion hinzufügen';
 const EDIT_TITLE = 'Vorstandsfunktion bearbeiten';
-const CREATE_EXPLANATION = 'Die Besetzung trägst du im Anschluss ein.';
-const EDIT_EXPLANATION = 'Bestehende Sitze bleiben von Änderungen unberührt.';
 const OFFICE_SECTION = 'Funktion';
 const ROLE_SECTION = 'Rolle';
 const NAME_LABEL = 'Name';
-const NAME_HINT = 'Erscheint so im Vorstand auf der Website und in der App.';
 const SORT_ORDER_LABEL = 'Platz im Vorstand';
 const SORT_ORDER_HINT = 'Kleinere Zahlen stehen weiter oben.';
 const SORT_ORDER_MIN = 1;
@@ -36,7 +32,6 @@ const SORT_ORDER_STEPS: KkNumberStepLabels = {
   less: 'Einen Platz höher',
   more: 'Einen Platz tiefer',
 };
-const IMPLIED_ROLE_HINT = 'Wer den Sitz innehat, bekommt diese Rolle samt ihren Rechten.';
 const CREATE_ACTION_LABEL = 'Hinzufügen';
 const EDIT_ACTION_LABEL = 'Speichern';
 const RETRY_ROLES_LABEL = 'Rollen erneut laden';
@@ -51,7 +46,6 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry, returnTo 
   const { errors } = control.form.formState;
 
   const title = entry === null ? CREATE_TITLE : EDIT_TITLE;
-  const explanation = entry === null ? CREATE_EXPLANATION : EDIT_EXPLANATION;
   const actionLabel = entry === null ? CREATE_ACTION_LABEL : EDIT_ACTION_LABEL;
   const origin = entry === null ? BOARD_ORIGIN : toOfficeOrigin(entry, returnTo);
 
@@ -67,7 +61,6 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry, returnTo 
       options={control.impliedRoleChoices}
       onChange={control.setImpliedRoleValue}
       presentation="select"
-      hint={IMPLIED_ROLE_HINT}
       disabled={control.impliedRoleChoicesPending}
       error={impliedRoleError !== undefined}
       helperText={impliedRoleError}
@@ -113,7 +106,6 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry, returnTo 
         },
       }}
     >
-      <KkNote>{explanation}</KkNote>
       <KkFormSection title={OFFICE_SECTION}>
         <KkFormPair
           balance="leading"
@@ -122,7 +114,6 @@ export const BoardOfficeEditor: FC<BoardOfficeEditorProps> = ({ entry, returnTo 
               name={nameField.name}
               label={NAME_LABEL}
               required
-              hint={NAME_HINT}
               inputRef={nameField.ref}
               onChange={nameField.onChange}
               onBlur={nameField.onBlur}

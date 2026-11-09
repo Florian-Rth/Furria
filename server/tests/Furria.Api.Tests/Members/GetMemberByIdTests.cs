@@ -6,6 +6,7 @@ using Furria.Application.Authorization;
 using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Core.Groups;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -654,7 +655,7 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
                             .AddGroup(
                                 "tanzgarde",
                                 "Tanzgarde",
-                                tone: GroupTone.Iris,
+                                tone: TestTones.Iris,
                                 icon: ClubIcon.Star
                             )
                             .AddGroupAdmin("paula-tanzgarde", "tanzgarde", "paula", "Trainerin")
@@ -673,7 +674,7 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal(PersonFunctionKind.GroupAdmin, tenure.Kind);
         Assert.Equal("Tanzgarde", tenure.Name);
         Assert.Equal(ClubIcon.Star, tenure.Icon);
-        Assert.Equal(GroupTone.Iris, tenure.Tone);
+        Assert.Equal(TestTones.Iris, tenure.Tone);
     }
 
     [Fact]

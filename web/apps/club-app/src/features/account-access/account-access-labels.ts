@@ -32,15 +32,14 @@ const ACCOUNT_STATE_CHIPS: Record<AccountState, StateChip> = {
 export const toAccountStateChip = (state: AccountState): StateChip => ACCOUNT_STATE_CHIPS[state];
 
 const ACCESS_BLOCK_LINES: Record<AccessBlock, (firstName: string) => string> = {
-  notAffiliated: (firstName) =>
-    `${firstName} ist nicht im Verein aktiv – ohne Mitgliedschaft, Gruppe oder Rolle gibt es keinen Zugang.`,
+  notAffiliated: (firstName) => `${firstName} ist nicht im Verein aktiv.`,
   noBirthDate: (firstName) =>
     `Für ${firstName} ist kein Geburtsdatum hinterlegt. Trag es in den Stammdaten ein.`,
   underAge: (firstName) => `${firstName} ist jünger als das Mindestalter für die App.`,
 };
 
 export const toNoMailAddressLine = (firstName: string): string =>
-  `Für ${firstName} ist keine E-Mail-Adresse hinterlegt – einladen geht nur vor Ort.`;
+  `Für ${firstName} ist keine E-Mail-Adresse hinterlegt.`;
 
 export const toAccessBlockLine = (reason: AccessBlock, firstName: string): string =>
   ACCESS_BLOCK_LINES[reason](firstName);
@@ -106,8 +105,6 @@ export const MAIL_PILL_LABELS: Record<MailInvitationAct, string> = {
   reinvite: 'Erneut einladen',
 };
 
-export const MAIL_INVITATION_VALIDITY_NOTE = 'Der Link in der Mail gilt 14 Tage.';
-
 export const toInvitationConsequence = (
   firstName: string,
   email: string,
@@ -123,38 +120,23 @@ export const toInvitationSentMessage = (firstName: string): string =>
 
 export const IN_PERSON_ACT_LABEL = 'Vor Ort zeigen';
 export const BIRTH_DATE_ACT_LABEL = 'Geburtsdatum eintragen';
-export const BIRTH_DATE_ROW_META = 'Ohne Geburtsdatum gibt es keine Einladung';
-export const MAIL_ROW_META_FALLBACK = 'Link 14 Tage gültig';
 export const RECOVERY_ACT_LABEL = 'Zugang wiederherstellen';
-export const RECOVERY_ROW_META = 'Neues Passwort vor Ort, QR-Code und Code 15 Minuten gültig';
-export const IN_PERSON_ROW_META = 'QR-Code und Code aufs Handy, 15 Minuten gültig';
 export const IN_PERSON_INSTRUCTION =
   'Mit der Handykamera den QR-Code scannen – oder in der App auf „Code eingeben“ tippen und den Code eintippen.';
 export const IN_PERSON_EXPIRED_LINE = 'Der Code ist abgelaufen und lässt sich nicht mehr nutzen.';
 export const IN_PERSON_REISSUE_LABEL = 'Neuer Code';
 export const IN_PERSON_RETRY_LABEL = 'Erneut versuchen';
 export const IN_PERSON_FINISH_LABEL = 'Fertig';
-export const IN_PERSON_VALIDITY_NOTE =
-  'Der Code gilt 15 Minuten. Eine offene Einladung per Mail gilt dann nicht mehr.';
-export const RECOVERY_VALIDITY_NOTE =
-  'Der Code gilt 15 Minuten. Mit dem neuen Passwort werden alle anderen Geräte abgemeldet.';
 
 export const IN_PERSON_TITLES: Record<InPersonPurpose, string> = {
   onboarding: IN_PERSON_ACT_LABEL,
   recovery: RECOVERY_ACT_LABEL,
 };
 
-export const IN_PERSON_VALIDITY_NOTES: Record<InPersonPurpose, string> = {
-  onboarding: IN_PERSON_VALIDITY_NOTE,
-  recovery: RECOVERY_VALIDITY_NOTE,
-};
-
 export const toInPersonHref = (personId: number): string =>
   `/manage/persons/${personId}/invitations/in-person`;
 
 export const toPersonEditHref = (personId: number): string => `/manage/persons/${personId}/edit`;
-
-export const toMailRowMeta = (email: string | null): string => email ?? MAIL_ROW_META_FALLBACK;
 
 export const toInviteHref = (personId: number): string =>
   `/manage/persons/${personId}/invitations/new`;
@@ -192,7 +174,7 @@ export const toVouchLine = (firstName: string, ageOfConsent: number): string =>
   `Du bestätigst, dass ${firstName} mindestens ${ageOfConsent} ist.`;
 
 export const toVouchableBlockLine = (firstName: string): string =>
-  `Für ${firstName} ist kein Geburtsdatum hinterlegt. Mit einer Einladung bürgst du für das Alter.`;
+  `Für ${firstName} ist kein Geburtsdatum hinterlegt.`;
 
 export const toAccessBlockNote = (
   access: PersonAccess,
@@ -224,8 +206,7 @@ export const ACCOUNT_LOCK_COPY: Record<AccountLockAct, AccountLockCopy> = {
     actLabel: 'Zugang sperren',
     confirmLabel: 'Sperren',
     eyebrow: 'Zugang sperren',
-    explanation:
-      'Der Zugang bleibt mit seinem Verlauf erhalten und lässt sich jederzeit entsperren.',
+    explanation: 'Lässt sich jederzeit entsperren.',
     tone: 'danger',
     question: (firstName) => `Zugang von ${firstName} sperren?`,
     consequence: (firstName) =>

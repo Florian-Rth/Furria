@@ -3,7 +3,7 @@ import GlobalStyles from '@mui/material/GlobalStyles';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { KkQrCode } from './KkQrCode';
-import { stepFigures, stepLabel } from './KkStatePill/state-paint';
+import { stepLabel } from './KkStatePill/state-paint';
 import type { KkSx } from './kk-sx';
 import { kkTokens } from './tokens';
 
@@ -31,7 +31,6 @@ interface KkLedgerPrintSheetProps {
   qrLabel: string;
   eyebrow: string;
   title: string;
-  lines: readonly string[];
   sx?: KkSx;
 }
 
@@ -40,15 +39,8 @@ export const KkLedgerPrintSheet: FC<KkLedgerPrintSheetProps> = ({
   qrLabel,
   eyebrow,
   title,
-  lines,
   sx,
 }) => {
-  const lineItems = lines.map((line) => (
-    <Box key={line} component="span" sx={{ ...stepFigures, typography: 'body2', fontWeight: 700 }}>
-      {line}
-    </Box>
-  ));
-
   return (
     <Stack
       {...{ [PRINT_ATTRIBUTE]: true }}
@@ -75,7 +67,6 @@ export const KkLedgerPrintSheet: FC<KkLedgerPrintSheetProps> = ({
         {title}
       </Box>
       <KkQrCode value={value} label={qrLabel} sx={{ width: '11rem', maxWidth: '100%' }} />
-      <Stack sx={{ gap: 0.25 }}>{lineItems}</Stack>
     </Stack>
   );
 };

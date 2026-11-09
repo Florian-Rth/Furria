@@ -5,7 +5,7 @@ import { useClubHubQuery } from '../api';
 import type { ClubBoardSeat } from '../schemas';
 import { BoardSeatCard } from './BoardSeatCard';
 
-const PANEL_TITLE = 'Wer macht was';
+const PANEL_TITLE = 'Vorstand';
 const BAND_SPACING = { xs: 2, desktop: 2.5 };
 const SEAT_SIZE = { xs: 6, sm: 4, desktop: 3 };
 

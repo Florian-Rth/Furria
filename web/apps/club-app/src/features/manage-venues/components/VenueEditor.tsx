@@ -1,6 +1,5 @@
 import { KkFormPair } from '@furria/ui/KkFormPair';
 import { KkFormSection } from '@furria/ui/KkFormSection';
-import { KkNote } from '@furria/ui/KkNote';
 import { KkTextArea } from '@furria/ui/KkTextArea';
 import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
@@ -20,16 +19,12 @@ const PLACE_SECTION_TITLE = 'Ort';
 const ADDRESS_SECTION_TITLE = 'Anschrift';
 const NAME_LABEL = 'Name des Ortes';
 const NAME_PLACEHOLDER = 'Zum Beispiel Bürgerhaus, Vereinsheim oder Bäckerei';
-const NAME_HINT = 'Steht bei jeder Veranstaltung an diesem Ort — auf der Website und im Kalender.';
 const STREET_LABEL = 'Straße und Hausnummer';
 const ZIP_LABEL = 'PLZ';
 const CITY_LABEL = 'Stadt';
 const HINT_LABEL = 'Anfahrt & Zugang';
 const HINT_PLACEHOLDER = 'Parken, Eingang, Haltestelle';
-const HINT_HINT = 'Steht unter der Anschrift auf der Seite jeder Veranstaltung an diesem Ort.';
 const HINT_ROWS = 3;
-const CREATE_NOTE =
-  'Ein Ort ist ein Saal, das Vereinsheim oder ein Geschäft mit Kartenvorverkauf. Die Anschrift erscheint im Kalender, bei den Schlüsseln und auf der Website.';
 
 const toCountLabel = (used: number, max: number): string => `${used} von ${max} Zeichen`;
 
@@ -61,7 +56,6 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
         params: { venueId: String(venue.venueId) },
       }
     : VENUES_ORIGIN;
-  const intro = isEditing ? null : <KkNote>{CREATE_NOTE}</KkNote>;
 
   return (
     <WriteScreen
@@ -78,14 +72,12 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
         },
       }}
     >
-      {intro}
       <KkFormSection title={PLACE_SECTION_TITLE}>
         <KkTextField
           name={nameField.name}
           label={NAME_LABEL}
           required
           placeholder={NAME_PLACEHOLDER}
-          hint={NAME_HINT}
           error={nameErrorText !== undefined}
           helperText={nameErrorText}
           onChange={nameField.onChange}
@@ -146,7 +138,6 @@ export const VenueEditor: FC<VenueEditorProps> = ({ venue }) => {
           showCount
           countLabel={toCountLabel}
           placeholder={HINT_PLACEHOLDER}
-          hint={HINT_HINT}
           error={hintErrorText !== undefined}
           helperText={hintErrorText}
         />

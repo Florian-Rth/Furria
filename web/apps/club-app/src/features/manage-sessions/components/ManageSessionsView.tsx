@@ -1,7 +1,6 @@
-import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { MANAGE_SESSIONS_FOOTNOTE, partitionSessionRecords } from '../manage-sessions-labels';
+import { partitionSessionRecords } from '../manage-sessions-labels';
 import type { SessionRecordSummary } from '../schemas';
 import { SessionsAheadSection } from './SessionsAheadSection';
 import { SessionsPastSection } from './SessionsPastSection';
@@ -20,7 +19,6 @@ export const ManageSessionsView: FC<ManageSessionsViewProps> = ({ records, today
     <Stack sx={{ gap: VIEW_GAP, minWidth: 0 }}>
       <SessionsAheadSection records={ahead} vacantYear={vacantYear} today={today} />
       <SessionsPastSection records={past} today={today} />
-      <KkNote>{MANAGE_SESSIONS_FOOTNOTE}</KkNote>
     </Stack>
   );
 };

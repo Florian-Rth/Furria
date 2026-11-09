@@ -1,7 +1,6 @@
 import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
 import { KkFormPair } from '@furria/ui/KkFormPair';
 import { KkFormSection } from '@furria/ui/KkFormSection';
-import { KkNote } from '@furria/ui/KkNote';
 import type { KkNumberStepLabels } from '@furria/ui/KkNumberField';
 import { KkNumberField } from '@furria/ui/KkNumberField';
 import { KkSessionField } from '@furria/ui/KkSessionField';
@@ -44,9 +43,7 @@ const NUMBER_STEP_LABELS: KkNumberStepLabels = {
   more: 'Eine Nummer höher',
 };
 const MOTTO_LABEL = 'Motto';
-const MOTTO_HINT = 'Im originalen Wortlaut, erscheint auf der Website.';
-const CREATE_NOTE =
-  'Nur das Jahr ist Pflicht. Sessionsnummer, Motto und Sessionslogo nur eintragen, wenn sie belegt sind.';
+const MOTTO_HINT = 'Im originalen Wortlaut.';
 
 interface SessionEditorProps {
   record: SessionRecordSummary | null;
@@ -66,7 +63,6 @@ export const SessionEditor: FC<SessionEditorProps> = ({ record, draftYear = null
   const isEditing = record !== null;
   const title = isEditing ? EDIT_TITLE : CREATE_TITLE;
   const actionLabel = isEditing ? SAVE_LABEL : ADD_LABEL;
-  const intro = isEditing ? null : <KkNote>{CREATE_NOTE}</KkNote>;
   const logoLabel =
     control.startYear === null
       ? LOGO_FIELD_LABEL
@@ -110,7 +106,6 @@ export const SessionEditor: FC<SessionEditorProps> = ({ record, draftYear = null
         },
       }}
     >
-      {intro}
       <KkFormSection title={SESSION_SECTION_TITLE}>
         <KkFormPair
           balance="leading"

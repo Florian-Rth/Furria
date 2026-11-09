@@ -1,10 +1,8 @@
 import { KkHoldButton } from '@furria/ui/KkHoldButton';
-import { KkText } from '@furria/ui/KkText';
 import type { FC } from 'react';
 import {
   firstNameOf,
   HANDOVER_LABEL,
-  HANDOVER_LEAD,
   HOLD_HINT,
   handoverConfirmOf,
   SUCCESSOR_LABEL,
@@ -25,9 +23,6 @@ export const BeerHandoverForm: FC<BeerHandoverFormProps> = ({ beerPotId, stock }
 
   return (
     <>
-      <KkText variant="body2" tone="secondary">
-        {HANDOVER_LEAD}
-      </KkText>
       <BeerPotPersonField label={SUCCESSOR_LABEL} fields={form.fields} />
       <BeerPotSettingsFields fields={form.fields} />
       <BeerRejection rejection={form.rejection} />

@@ -5,13 +5,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { TransferTarget } from '../transfer-targets';
 import type { SlotPositionRef } from '../types';
-import {
-  CLOSE_LABEL,
-  TRANSFER_NONE,
-  TRANSFER_NOTE,
-  TRANSFER_SHEET_ID,
-  TRANSFER_TITLE,
-} from '../website-copy';
+import { CLOSE_LABEL, TRANSFER_NONE, TRANSFER_SHEET_ID, TRANSFER_TITLE } from '../website-copy';
 
 interface WebsiteTransferSheetProps {
   targets: readonly TransferTarget[];
@@ -37,7 +31,6 @@ export const WebsiteTransferSheet: FC<WebsiteTransferSheetProps> = ({ targets, o
   return (
     <KkSheet id={TRANSFER_SHEET_ID} title={TRANSFER_TITLE} closeLabel={CLOSE_LABEL}>
       <KkSheet.Body>
-        <KkText variant="caption">{TRANSFER_NOTE}</KkText>
         <Stack>
           {rows}
           {empty}

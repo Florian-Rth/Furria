@@ -2,7 +2,6 @@ import { JobActionButton } from '@furria/studio/JobActionButton';
 import { StepListGroup } from '@furria/studio/StepListGroup';
 import {
   STEP_LIST_EMPTY,
-  STEP_LIST_EVENING,
   STEP_LIST_LIST,
   STEP_LIST_SETUP_OWNER,
   STEP_SETUP_TITLE,
@@ -28,7 +27,6 @@ export const StepListPanel: FC<StepListPanelProps> = ({ screen }) => {
     return <StepListGroup key={key} group={group} list={list} stage={stage} />;
   });
   const empty = groups.length === 0 ? <KkJobPanel.Note text={STEP_LIST_EMPTY} /> : null;
-  const evening = list.editable ? null : <KkJobPanel.Note text={STEP_LIST_EVENING} />;
   const add = list.editable ? (
     <KkJobPanel.Tools>
       <JobActionButton action={list.add} />
@@ -50,7 +48,6 @@ export const StepListPanel: FC<StepListPanelProps> = ({ screen }) => {
   return (
     <KkJobPanel label={STEP_LIST_LIST}>
       {setup}
-      {evening}
       <KkStudioStepList label={STEP_LIST_LIST}>{groups}</KkStudioStepList>
       {empty}
       {add}

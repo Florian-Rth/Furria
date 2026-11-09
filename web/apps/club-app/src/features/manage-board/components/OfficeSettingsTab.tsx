@@ -14,7 +14,6 @@ import {
   NO_ROLE,
   ORDER_LABEL,
   ROLE_LABEL,
-  WEBSITE_LINE,
   WEBSITE_SWITCH,
 } from '../board-hub-copy';
 import type { OfficePaneControl } from '../hooks/use-office-pane';
@@ -43,7 +42,6 @@ export const OfficeSettingsTab: FC<OfficeSettingsTabProps> = ({ office, control,
     <Stack sx={{ gap: 0, minWidth: 0 }}>
       <KkSwitchRow
         label={WEBSITE_SWITCH}
-        description={WEBSITE_LINE}
         checked={office.isPublic}
         onChange={publication.toggle}
         stateLabel={SWITCH_STATE_LABELS}

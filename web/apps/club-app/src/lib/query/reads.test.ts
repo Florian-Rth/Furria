@@ -22,12 +22,12 @@ describe('staleReadsAfter', () => {
     {
       label: 'a role holding opens or ends',
       change: 'roleHolding',
-      stale: ['me', 'roles', 'role', 'person'],
+      stale: ['members', 'member', 'me', 'roles', 'role', 'person'],
     },
     {
       label: 'a role is renamed, archived or re-permissioned',
       change: 'role',
-      stale: ['boardRoleOptions', 'me', 'roles', 'role'],
+      stale: ['boardRoleOptions', 'members', 'member', 'me', 'roles', 'role'],
     },
     {
       label: 'a board seat opens or ends',

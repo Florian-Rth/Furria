@@ -1,8 +1,6 @@
 import { KkAlert } from '@furria/ui/KkAlert';
-import { KkNote } from '@furria/ui/KkNote';
 import { KkSkeletonBlock } from '@furria/ui/KkSkeletonBlock';
 import type { FC } from 'react';
-import { IN_PERSON_VALIDITY_NOTES } from '../account-access-labels';
 import type { InPersonPhase } from '../in-person-phase';
 import type { InPersonPurpose } from '../types';
 import { InPersonCodeCard } from './InPersonCodeCard';
@@ -37,15 +35,12 @@ export const InPersonBody: FC<InPersonBodyProps> = ({ purpose, phase, firstName,
   }
   if (phase.kind === 'showing') {
     return (
-      <>
-        <InPersonCodeCard
-          purpose={purpose}
-          invitation={phase.invitation}
-          firstName={firstName}
-          secondsLeft={phase.secondsLeft}
-        />
-        <KkNote tone="muted">{IN_PERSON_VALIDITY_NOTES[purpose]}</KkNote>
-      </>
+      <InPersonCodeCard
+        purpose={purpose}
+        invitation={phase.invitation}
+        firstName={firstName}
+        secondsLeft={phase.secondsLeft}
+      />
     );
   }
 

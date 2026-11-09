@@ -1,7 +1,7 @@
 import type { FC } from 'react';
 import { bookableOf } from '../beer-hub';
 import { openHubOf, useBeerHubContext } from '../beer-hub-context';
-import { FORM_CONTEXTS, FORM_TITLES } from '../beer-hub-copy';
+import { FORM_TITLES } from '../beer-hub-copy';
 import { HUB_LANDING } from '../beer-landing';
 import { BeerCratesForm } from './BeerCratesForm';
 import { BeerPaneFrame } from './BeerPaneFrame';
@@ -26,7 +26,7 @@ export const BeerCratesPane: FC<BeerCratesPaneProps> = ({ initialPersonId }) => 
     );
 
   return (
-    <BeerPaneFrame icon="add" title={FORM_TITLES.crates} context={FORM_CONTEXTS.crates}>
+    <BeerPaneFrame icon="add" title={FORM_TITLES.crates}>
       {body}
     </BeerPaneFrame>
   );

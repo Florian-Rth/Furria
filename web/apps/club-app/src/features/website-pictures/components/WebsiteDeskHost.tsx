@@ -14,7 +14,6 @@ import {
   CLOSE_LABEL,
   DESK_SHEET_ID,
   GALLERY_EMPTY,
-  GALLERY_NOTE,
   GALLERY_SHEET_ID,
   galleryTitleOf,
   positionNameOf,
@@ -86,7 +85,6 @@ export const WebsiteDeskHost: FC<WebsiteDeskHostProps> = ({
       <GalleryPickSheet
         id={GALLERY_SHEET_ID}
         title={galleryTitle}
-        note={GALLERY_NOTE}
         emptyNote={GALLERY_EMPTY}
         albums={albums.data}
         albumsError={albums.error}

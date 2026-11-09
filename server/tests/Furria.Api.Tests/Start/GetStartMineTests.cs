@@ -127,7 +127,7 @@ public sealed class GetStartMineTests : IClassFixture<ApiTestFixture>
             builder =>
                 builder.Groups(groups =>
                     groups
-                        .AddGroup("kindergarde", "Kindergarde", tone: GroupTone.Teal)
+                        .AddGroup("kindergarde", "Kindergarde", tone: TestTones.Teal)
                         .AddGroupAdmin(
                             "lena-kindergarde",
                             "kindergarde",
@@ -144,7 +144,7 @@ public sealed class GetStartMineTests : IClassFixture<ApiTestFixture>
                 Assert.Equal(LastWeek, tenure.On);
                 Assert.Equal(LastWeek.AddDays(13), tenure.Until);
                 Assert.Equal("Kindergarde", tenure.Name);
-                Assert.Equal(GroupTone.Teal, tenure.GroupTone);
+                Assert.Equal(TestTones.Teal, tenure.GroupTone);
                 Assert.Equal("Trainerin", tenure.Function);
             }
         );
@@ -158,7 +158,7 @@ public sealed class GetStartMineTests : IClassFixture<ApiTestFixture>
             builder =>
                 builder.Groups(groups =>
                     groups
-                        .AddGroup("tanzgarde", "Tanzgarde", tone: GroupTone.Rose)
+                        .AddGroup("tanzgarde", "Tanzgarde", tone: TestTones.Rose)
                         .AddGroupMembership("lena-tanzgarde", "tanzgarde", "lena", LastWeek)
                 ),
             (ctx, mine) =>
@@ -172,7 +172,7 @@ public sealed class GetStartMineTests : IClassFixture<ApiTestFixture>
                 Assert.Equal(LastWeek, membership.On);
                 Assert.Equal(LastWeek.AddDays(13), membership.Until);
                 Assert.Equal("Tanzgarde", membership.Name);
-                Assert.Equal(GroupTone.Rose, membership.GroupTone);
+                Assert.Equal(TestTones.Rose, membership.GroupTone);
             }
         );
     }

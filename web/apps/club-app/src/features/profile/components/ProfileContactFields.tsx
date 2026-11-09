@@ -8,7 +8,6 @@ import type { ContactDetailsForm } from '../schemas';
 const CONTACT_SECTION_TITLE = 'Kontakt';
 const ADDRESS_SECTION_TITLE = 'Anschrift';
 const EMAIL_LABEL = 'E-Mail';
-const EMAIL_HINT = 'Darüber erreicht dich der Verein. Deine Anmelde-E-Mail bleibt davon unberührt.';
 const PHONE_LABEL = 'Telefon';
 const STREET_LABEL = 'Straße und Hausnummer';
 const ZIP_LABEL = 'PLZ';
@@ -44,7 +43,6 @@ export const ProfileContactFields: FC<ProfileContactFieldsProps> = ({ form, erro
               type="email"
               inputMode="email"
               autoComplete="email"
-              hint={EMAIL_HINT}
               error={emailError !== undefined}
               helperText={emailError}
               onChange={email.onChange}

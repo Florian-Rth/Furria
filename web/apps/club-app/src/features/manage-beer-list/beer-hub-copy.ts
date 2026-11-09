@@ -205,7 +205,7 @@ export const rosterFactsOf = (row: BeerRosterRow): string => {
 export const endConfirmOf = (name: string): KkHoldConfirm => ({
   eyebrow: 'Teilnahme',
   question: `Teilnahme von ${name} beenden?`,
-  explanation: `${name} kann dann selbst keine Kisten mehr buchen. Offene Kisten bleiben offen und werden weiter bezahlt.`,
+  explanation: `${name} kann dann keine Kisten mehr buchen.`,
   confirmLabel: 'Beenden',
   cancelLabel: CANCEL_LABEL,
   closeLabel: CLOSE_LABEL,
@@ -237,14 +237,11 @@ export const STEP_LABELS = { less: 'Eine weniger', more: 'Eine mehr' } as const;
 export const PERSON_LABEL = 'Person';
 export const COUNT_FIELD_LABEL = 'Anzahl Kisten';
 export const STOCK_FIELD_LABEL = 'Kisten dazu (+) oder weg (−)';
-export const PAY_OLDEST_NOTE = 'Bezahlt werden immer die ältesten offenen Kisten zuerst.';
 export const NO_OPEN_TABS = 'Gerade sind keine Kisten offen.';
 export const OPEN_SECTION = 'Offen';
 export const PAYMENTS_SECTION = 'Zahlungen';
 export const ENROLL_SECTION = 'Teilnahme';
 export const PAID_SWITCH_LABEL = 'Schon bezahlt';
-export const PAID_SWITCH_HINT =
-  'Bucht gleich eine Zahlung über diese Kisten. Stehen ältere Kisten offen, werden die zuerst beglichen.';
 export const NO_PEOPLE = 'Noch nimmt niemand teil.';
 
 export const paymentButtonOf = (count: number, cents: number): string =>
@@ -277,36 +274,20 @@ export const FORM_TITLES = {
   stock: 'Bestand ändern',
 } as const;
 
-export const FORM_CONTEXTS = {
-  payment: 'ganze Kisten · älteste zuerst',
-  crates: 'für alle, die teilnehmen oder teilgenommen haben',
-  stock: '+ Lieferung · − Korrektur',
-} as const;
-
 export const SETTINGS_TITLE = 'Einstellungen';
 export const PRICE_LABEL = 'Preis je Kiste';
-export const PRICE_HINT = 'Gilt für neue Kisten; gebuchte behalten ihren Preis.';
 export const LINK_LABEL = 'PayPal-Link (optional)';
-export const LINK_HINT = 'Bar geht immer.';
 export const SAVE_LABEL = 'Speichern';
 export const PRICE_INVALID = 'Bitte einen Preis wie 18,00 eingeben.';
 
-const payWaysOf = (owner: PersonRef | null, paymentLink: string | null): string =>
+export const payWaysOf = (owner: PersonRef | null, paymentLink: string | null): string =>
   payWaysLine(owner?.firstName ?? null, paymentLink !== null);
 
-export const paymentContextOf = (owner: PersonRef | null, paymentLink: string | null): string =>
-  `${FORM_CONTEXTS.payment} · ${payWaysOf(owner, paymentLink)}`;
-
 export const CODE_TITLE = 'Palettencode';
-export const CODE_LEAD =
-  'Hängt an der Palette. Wer ihn scannt, landet direkt beim Buchen – ohne Menü, ohne Umweg.';
 export const CODE_SHEET_TITLE = 'Kiste genommen?';
-export const CODE_SHEET_LEAD = 'Code scannen, Anzahl wählen, halten – fertig.';
 export const PRINT_LABEL = 'Drucken';
 
 export const HANDOVER_TITLE = 'Übergabe';
-export const HANDOVER_LEAD =
-  'Die Bierliste geht an eine andere Person, die sie verwalten darf. Offene Kisten bleiben bei der bisherigen Inhaberin und werden weiter bezahlt; der Bestand geht als Anzahl mit.';
 export const SUCCESSOR_LABEL = 'Neue Inhaberin';
 export const HANDOVER_LABEL = 'Bierliste übergeben';
 export const handoverConfirmOf = (name: string, stock: number): KkHoldConfirm => ({
@@ -321,7 +302,6 @@ export const handoverConfirmOf = (name: string, stock: number): KkHoldConfirm =>
 export const ENROLLMENTS_TITLE = 'Teilnahmen';
 export const POTS_TITLE = 'Frühere Listen';
 export const POTS_EMPTY = 'Es gibt keine früheren Listen.';
-export const POTS_CONTEXT = 'übergeben · offene Kisten bleiben bezahlbar';
 export const ALL_PAID = 'Auf dieser Liste ist alles bezahlt.';
 export const potLabelOf = (
   owner: PersonRef | null,
@@ -333,13 +313,11 @@ export const potFactsOf = (openTabs: number, openCents: number): string =>
   openTabs === 0 ? 'alles bezahlt' : `${personsOf(openTabs)} offen · ${euroOf(openCents)}`;
 
 export const EMPTY_TITLE = 'Bierliste eröffnen';
-export const EMPTY_LEAD =
-  'Noch ist keine Bierliste offen. Wer sie eröffnet, ist Inhaberin: Sie streckt das Geld vor, und an sie wird gezahlt.';
 export const OWNER_LABEL = 'Inhaberin';
 export const OPEN_POT_LABEL = 'Bierliste eröffnen';
 
 export const ownerContextOf = (owner: PersonRef | null, paymentLink: string | null): string =>
-  `privater Topf von ${fullNameOf(owner)} · ${payWaysOf(owner, paymentLink)}`;
+  `${fullNameOf(owner)} · ${payWaysOf(owner, paymentLink)}`;
 
 export const clearPersonLabelOf = (name: string): string => `Nur ${name} · Filter aufheben`;
 export const filterPersonLabelOf = (name: string): string => `Nur ${name} im Journal zeigen`;
@@ -393,7 +371,6 @@ export const countRangeOf = (max: number): string =>
 
 export const RUNNING_SECTION = 'Nehmen teil';
 export const ENDED_SECTION = 'Beendet';
-export const ENROLLMENTS_CONTEXT = 'Person öffnen, um die Teilnahme zu beenden';
 export const TAKEN_SECTION = 'Kisten';
 export const SETUP_SWITCH_LABEL = 'Bierliste einrichten';
 export const SETUP_SWITCH_LABELS = {

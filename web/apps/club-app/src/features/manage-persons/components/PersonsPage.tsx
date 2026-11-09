@@ -11,7 +11,7 @@ import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { usePersonsQuery } from '../api';
 import { usePersonsAccess } from '../hooks/use-persons-access';
 import { usePersonsSearch } from '../hooks/use-persons-search';
-import { LETTER_INDEX_LABEL, PERSONS_LEAD, PERSONS_TITLE } from '../manage-persons-labels';
+import { LETTER_INDEX_LABEL, PERSONS_TITLE } from '../manage-persons-labels';
 import { toAppFilterValue } from '../person-app-state';
 import { PERSON_READ_KEYS } from '../person-read-keys';
 import type { PersonSummary } from '../schemas';
@@ -75,7 +75,7 @@ export const PersonsPage: FC = () => {
       index={index}
       title={PERSONS_TITLE}
       origin={MANAGE_ORIGIN}
-      header={<KkTitleHeader title={PERSONS_TITLE} lead={PERSONS_LEAD} />}
+      header={<KkTitleHeader title={PERSONS_TITLE} />}
       handover={AREA_HANDOVERS.manage}
     >
       <RequireAnyPermission permissionKeys={PERSON_READ_KEYS}>

@@ -9,7 +9,6 @@ import { toMembershipStateChip } from '@/lib/state-chips';
 import { PROFILE_PATH } from '../app-sections';
 import { usePersonalMe } from '../hooks/use-personal-me';
 
-const PROFILE_META = 'Deine Daten und ihre Sichtbarkeit';
 const SKELETON_ROWS = 1;
 
 export const AppUserLink: FC = () => {
@@ -34,7 +33,6 @@ export const AppUserLink: FC = () => {
       initials={toInitials(person.firstName, person.lastName)}
       portrait={portrait}
       name={`${person.firstName} ${person.lastName}`}
-      meta={PROFILE_META}
       trailing={chip}
       component={Link}
       to={PROFILE_PATH}

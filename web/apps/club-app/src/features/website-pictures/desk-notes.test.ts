@@ -23,17 +23,11 @@ const positionOf = (
 describe('deskNotesOf', () => {
   it.each<[string, DeskPhase, BoardPosition, boolean, DeskNote[]]>([
     ['an empty position', 'view', positionOf('empty'), false, []],
-    ['a shown picture', 'view', positionOf('ready'), false, ['replace']],
-    ['a stale cut', 'view', positionOf('mismatch'), false, ['recut', 'replace']],
-    ['a failed picture', 'view', positionOf('failed'), false, ['failed', 'replace']],
-    ['a developing picture', 'view', positionOf('processing'), false, ['processing', 'replace']],
-    [
-      'a decorative slot',
-      'view',
-      positionOf('ready', { decorative: true }),
-      false,
-      ['replace', 'decorative'],
-    ],
+    ['a shown picture', 'view', positionOf('ready'), false, []],
+    ['a stale cut', 'view', positionOf('mismatch'), false, ['recut']],
+    ['a failed picture', 'view', positionOf('failed'), false, ['failed']],
+    ['a developing picture', 'view', positionOf('processing'), false, ['processing']],
+    ['a decorative slot', 'view', positionOf('ready', { decorative: true }), false, ['decorative']],
     ['an orphan', 'view', positionOf('ready', { orphan: true, decorative: true }), false, []],
     ['an upload the browser could not show', 'uploading', positionOf('empty'), true, ['uncut']],
     ['an upload cut before sending', 'uploading', positionOf('empty'), false, []],
