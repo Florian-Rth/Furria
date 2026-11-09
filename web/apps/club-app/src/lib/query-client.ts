@@ -6,6 +6,7 @@ import { queryKeys } from '@/lib/query/reads';
 import { createWriteCache } from '@/lib/query/refresh-after';
 
 const ME_HASH = hashKey(queryKeys.me);
+const SHOWN_FRESH_MS = 30_000;
 
 const refreshPermissionsOnWriteForbidden = (error: Error): void => {
   refreshPermissionsWhenForbidden(queryClient, error);
@@ -22,9 +23,10 @@ export const queryClient: QueryClient = new QueryClient({
   mutationCache: createWriteCache(refreshPermissionsOnWriteForbidden),
   defaultOptions: {
     queries: {
-      staleTime: 5 * 60 * 1000,
+      staleTime: SHOWN_FRESH_MS,
       retry: shouldRetryRequest,
-      refetchOnWindowFocus: false,
+      refetchOnWindowFocus: true,
+      refetchOnReconnect: true,
       networkMode: 'always',
     },
     mutations: {

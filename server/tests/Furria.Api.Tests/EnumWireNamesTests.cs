@@ -1,6 +1,8 @@
 using System.Diagnostics.Contracts;
 using System.Text.Json;
 using FastEndpoints;
+using Furria.Api.Endpoints.Changes;
+using Furria.Application.Changes;
 using Furria.Application.Management;
 using Furria.Application.Operations;
 using Furria.Application.Registry;
@@ -90,6 +92,15 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(KeyframeEasing)] = "linear easeIn easeOut easeInOut",
         [typeof(ChoreographyVersionKind)] = "saved restored spotRemoved musicAdopted",
         [typeof(BeerStockMovementKind)] = "delivery correction handoverCarry handedOver",
+        [typeof(DomainChange)] =
+            "person picture membership membershipApplication account group groupKind "
+            + "groupMembership groupAdmin usualTrainingTime calendarEntry attendanceResponse "
+            + "event role roleHolding boardOffice boardSeat sessionRecord venue keyHolding "
+            + "clubRecord announcement announcementSeen media newsPost websitePicture act "
+            + "actCoEditor actMusic actChoreography actSteps actVideos actEvening runningOrder "
+            + "beerListEnrollment beerPot beerStock beerCrate beerPayment pushDevice hall "
+            + "tablePlan seating",
+        [typeof(ChangeLineKind)] = "ready changes ping",
     };
 
     private readonly ApiTestFixture _fixture;

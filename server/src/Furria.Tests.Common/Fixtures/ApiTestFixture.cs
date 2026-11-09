@@ -20,6 +20,7 @@ using Furria.Core.Roles;
 using Furria.Core.RunningOrders;
 using Furria.Core.Studio;
 using Furria.Infrastructure.BeerList;
+using Furria.Infrastructure.Changes;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Gallery;
 using Furria.Infrastructure.Identity;
@@ -50,6 +51,7 @@ using Microsoft.Extensions.DependencyInjection.Extensions;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
+using Npgsql;
 using Serilog.Core;
 using Xunit;
 
@@ -79,6 +81,26 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         JOIN pg_namespace schema_row ON schema_row.oid = constraint_row.connamespace
         WHERE constraint_row.contype = 'f' AND schema_row.nspname = current_schema()
         """;
+    private const int AfterEveryWriteStatement = 4 | 8 | 16 | 32;
+    private const string ChangeNotifyingTablesQuery = """
+        SELECT table_row.relname, trigger_row.tgtype = @type
+        FROM pg_trigger trigger_row
+        JOIN pg_class table_row ON table_row.oid = trigger_row.tgrelid
+        JOIN pg_namespace schema_row ON schema_row.oid = table_row.relnamespace
+        WHERE schema_row.nspname = current_schema()
+          AND NOT trigger_row.tgisinternal
+          AND trigger_row.tgname = @trigger
+        """;
+    private const string ListeningChangeListenersQuery = """
+        SELECT count(*)::integer FROM pg_stat_activity
+        WHERE datname = current_database()
+          AND application_name = @listener
+          AND query LIKE 'LISTEN %'
+        """;
+    private const string CutChangeListenersQuery = """
+        SELECT count(pg_terminate_backend(pid))::integer FROM pg_stat_activity
+        WHERE datname = current_database() AND application_name = @listener
+        """;
 
     public const string ManagingLoginEmail = "managing-login@test.local";
     public const string ManagingLoginPassword = "Managing-Login-Pw-1!";
@@ -104,6 +126,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     private static readonly TimeSpan SignedOutWorkTimeout = TimeSpan.FromSeconds(20);
     private static readonly TimeSpan OutboxDrainTimeout = TimeSpan.FromSeconds(20);
+    private static readonly TimeSpan ChangeListenerTimeout = TimeSpan.FromSeconds(20);
 
     private readonly ApiTestInfrastructure _infrastructure;
 
@@ -1052,6 +1075,77 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             $"UPDATE account SET is_disabled = TRUE WHERE id = {accountId}",
             ct
         );
+    }
+
+    public IReadOnlyList<string> ChangedTablesDisagreements()
+    {
+        using var scope = Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        return ChangedTables.DisagreementsWith(db.Model);
+    }
+
+    public async Task<IReadOnlyList<string>> ChangeNotificationDisagreementsAsync(
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var connection = db.Database.GetDbConnection();
+        await connection.OpenAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = ChangeNotifyingTablesQuery;
+        command.Parameters.Add(new NpgsqlParameter("trigger", ChangeNotifications.TriggerName));
+        command.Parameters.Add(new NpgsqlParameter("type", AfterEveryWriteStatement));
+        await using var reader = await command.ExecuteReaderAsync(ct);
+
+        var triggered = new Dictionary<string, bool>(StringComparer.Ordinal);
+        while (await reader.ReadAsync(ct))
+            triggered[reader.GetString(0)] = reader.GetBoolean(1);
+
+        return
+        [
+            .. ChangedTables
+                .ByTable(db.Model)
+                .Keys.Where(table => !triggered.GetValueOrDefault(table))
+                .Order(StringComparer.Ordinal)
+                .Select(table =>
+                    $"{table} names changes but notifies none after every write statement"
+                ),
+            .. ChangedTables
+                .UnrelatedTables(db.Model)
+                .Where(triggered.ContainsKey)
+                .Order(StringComparer.Ordinal)
+                .Select(table => $"{table} is declared unrelated but notifies changes"),
+        ];
+    }
+
+    public Task ChangeListenerListeningAsync(CancellationToken ct = default) =>
+        Polling.UntilAsync(
+            async token =>
+                await ChangeListenersAsync(ListeningChangeListenersQuery, token) > 0
+                    ? (object?)true
+                    : null,
+            ChangeListenerTimeout,
+            "The change listener is not listening",
+            ct
+        );
+
+    public async Task CutChangeListenerAsync(CancellationToken ct = default)
+    {
+        await ChangeListenerListeningAsync(ct);
+        await ChangeListenersAsync(CutChangeListenersQuery, ct);
+    }
+
+    private async Task<int> ChangeListenersAsync(string query, CancellationToken ct)
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var connection = db.Database.GetDbConnection();
+        await connection.OpenAsync(ct);
+        await using var command = connection.CreateCommand();
+        command.CommandText = query;
+        command.Parameters.Add(new NpgsqlParameter("listener", ChangeListener.ApplicationName));
+        return (int)(await command.ExecuteScalarAsync(ct))!;
     }
 
     public Task<IReadOnlyList<string>> GetAppliedMigrationsAsync(CancellationToken ct = default) =>
