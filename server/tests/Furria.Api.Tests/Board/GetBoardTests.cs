@@ -3,7 +3,6 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Board;
 using Furria.Application.Registry;
 using Furria.Core.Club;
-using Furria.Core.Groups;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
@@ -242,7 +241,7 @@ public sealed class GetBoardTests : IClassFixture<ApiTestFixture>
                                 "zeugwart",
                                 "Zeugwart",
                                 ClubIcon.Wrench,
-                                GroupTone.Teal
+                                TestTones.Teal
                             )
                             .AddRoleHolding("bernd-zeugwart", "zeugwart", "bernd")
                     )

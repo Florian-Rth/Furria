@@ -135,7 +135,7 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
                                 "Tanzgarde",
                                 groupKindAlias: "tanz",
                                 foundedYear: FoundedIn1971,
-                                tone: GroupTone.Iris
+                                tone: TestTones.Iris
                             )
                     )
                     .Club(club =>
@@ -159,7 +159,7 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal(ctx.Groups.GroupKinds.IdOf("tanz"), result.GroupKindId);
         Assert.Equal("Tanzgruppe", result.GroupKindName);
         Assert.Equal(FoundedIn1971, result.FoundedYear);
-        Assert.Equal(GroupTone.Iris, result.Tone);
+        Assert.Equal(TestTones.Iris, result.Tone);
         var usualTime = Assert.Single(result.UsualTrainingTimes);
         Assert.Equal(ctx.Club.UsualTrainingTimes.IdOf("dienstags"), usualTime.UsualTrainingTimeId);
         Assert.Equal(DayOfWeek.Tuesday, usualTime.Weekday);
@@ -1003,7 +1003,7 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
                                 "Die Garde tanzt seit 1971.",
                                 groupKindAlias: "tanz",
                                 foundedYear: FoundedIn1971,
-                                tone: GroupTone.Iris,
+                                tone: TestTones.Iris,
                                 icon: ClubIcon.Drum
                             )
                             .AddGroupAdmin(
@@ -1068,7 +1068,7 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
             ],
             document.RootElement.EnumerateObject().Select(field => field.Name)
         );
-        Assert.Equal("iris", document.RootElement.GetProperty("tone").GetString());
+        Assert.Equal("#6E50D1", document.RootElement.GetProperty("tone").GetString());
         Assert.Equal("drum", document.RootElement.GetProperty("icon").GetString());
         Assert.Equal(JsonValueKind.Null, document.RootElement.GetProperty("viewerSince").ValueKind);
         var usualTime = document
@@ -1124,7 +1124,7 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
             anna.EnumerateObject().Select(field => field.Name)
         );
         Assert.Equal(
-            """{"sessions":0,"functions":[{"kind":"groupAdmin","name":"Tanzgarde","icon":"drum","tone":"iris"}]}""",
+            """{"sessions":0,"functions":[{"kind":"groupAdmin","name":"Tanzgarde","icon":"drum","tone":"#6E50D1"}]}""",
             anna.GetProperty("honours").GetRawText()
         );
         var katrin = document.RootElement.GetProperty("pastMembers").EnumerateArray().Single();

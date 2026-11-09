@@ -3,8 +3,8 @@ using System.Net.Http.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
 using Furria.Core.Club;
-using Furria.Core.Groups;
 using Furria.Core.Roles;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -50,13 +50,13 @@ public sealed class PostRoleTests : IClassFixture<ApiTestFixture>
             client,
             "Zeugwart",
             "Hütet das Material des Vereins.",
-            new RoleCoinDto { Icon = ClubIcon.Wrench, Tone = GroupTone.Teal }
+            new RoleCoinDto { Icon = ClubIcon.Wrench, Tone = TestTones.Teal }
         );
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
             .Expected.Role(result.RoleId)
-            .ToHaveCoin(new RoleCoin(ClubIcon.Wrench, GroupTone.Teal))
+            .ToHaveCoin(new RoleCoin(ClubIcon.Wrench, TestTones.Teal))
             .AssertAsync(ct);
     }
 
