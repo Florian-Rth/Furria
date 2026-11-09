@@ -6,7 +6,6 @@ export const HALL_BUILDER_DESK_LABEL = 'Saal zeichnen';
 export const HALL_CANVAS_LABEL = 'Saalplan';
 export const HALL_TOOLS_LABEL = 'Werkzeuge';
 export const HALL_STATUS_LABEL = 'Saal-Übersicht';
-export const HALL_DENIED_MESSAGE = 'Säle zeichnen darf, wer Saal & Tische betreut.';
 export const HALL_LOAD_FAILED = 'Der Saal konnte nicht geladen werden.';
 export const HALL_RETRY_LABEL = 'Erneut laden';
 export const HALL_CONFLICT_MESSAGE =
@@ -30,8 +29,7 @@ export const FIT_LABEL = 'Einpassen';
 export const DUPLICATE_LABEL = 'Duplizieren';
 export const DELETE_LABEL = 'Löschen';
 export const MERGE_AREAS_LABEL = 'Zusammenfügen';
-export const MERGE_AREAS_APART_NOTE =
-  'Zusammenfügen geht nur, wenn sich die Flächen berühren oder überschneiden.';
+export const MERGE_AREAS_APART_NOTE = 'Die Flächen berühren sich nicht.';
 export const ROTATE_LEFT_LABEL = '−15°';
 export const ROTATE_RIGHT_LABEL = '+15°';
 export const INSPECTOR_CLOSE_LABEL = 'Schließen';
@@ -89,14 +87,12 @@ export const HALL_VENUE_LABEL = 'Ort';
 export const HALL_DELETE_LABEL = 'Saal löschen';
 export const HALL_DELETE_QUESTION = 'Diesen Saal löschen?';
 export const HALL_DELETE_EXPLANATION =
-  'Der Saal verschwindet mit allen Wänden, Türen und Flächen. Ein Saal, auf dem ein Tischplan liegt, bleibt.';
+  'Wände, Türen und Flächen werden mit gelöscht. Säle mit Tischplan bleiben.';
 export const HALL_DELETE_EYEBROW = 'Saal';
 export const CANCEL_LABEL = 'Abbrechen';
-export const HELP_TITLE = 'So geht’s';
 export const SELECTION_SECTION_TITLE = 'Auswahl';
 export const KIND_LABEL = 'Art';
 export const LABEL_LABEL = 'Beschriftung';
-export const LABEL_HINT = 'Steht auf dem Plan; leer zeigt die Art.';
 export const TEXT_LABEL = 'Text';
 export const SIZE_LABEL = 'Größe';
 export const WIDTH_LABEL = 'Breite (cm)';
@@ -110,21 +106,6 @@ export const STEP_MORE_LABEL = 'Mehr';
 export const MANY_SELECTED_TITLE = 'Mehrere Elemente';
 
 export const toManySelectedLine = (count: number): string => `${count} Elemente ausgewählt`;
-
-export const TOOL_HINTS: Record<HallTool, string> = {
-  select:
-    'Antippen wählt aus, Ziehen verschiebt. Leere Fläche: Rahmen ziehen (Maus) oder Plan schieben (Finger).',
-  wall: 'Punkte setzen. Doppelklick, Enter oder „Fertig“ beendet; Klick auf den ersten Punkt schließt den Raum.',
-  door: 'Entlang der Wand ziehen. Die Art steht danach in der Auswahl.',
-  area: 'Rechteck aufziehen. Die Art steht danach in der Auswahl.',
-  pillar: 'Antippen setzt eine Säule.',
-  line: 'Punkte setzen wie bei der Wand. Linien markieren nur, sie stehen nichts im Weg.',
-  text: 'Antippen setzt einen Text.',
-  measure: 'Zwei Punkte antippen oder ziehen.',
-};
-
-export const KEY_HINT =
-  'Strg+Z / Strg+Umschalt+Z · Entf löscht · Pfeile schieben (Umschalt: 10 cm) · Strg+D dupliziert · Alt rastet nicht ein';
 
 export const INSPECT_SELECTION_LABEL = 'Auswahl bearbeiten';
 export const INSPECT_HALL_LABEL = 'Saal-Angaben';

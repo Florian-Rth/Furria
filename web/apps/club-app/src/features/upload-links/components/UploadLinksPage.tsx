@@ -12,7 +12,6 @@ import {
   EMPTY_LINKS,
   ENDED_SECTION,
   FAILED_LINE,
-  LINKS_LEAD,
   LINKS_TITLE,
   OPEN_SECTION,
   RETRY_LABEL,
@@ -60,7 +59,7 @@ export const UploadLinksPage: FC = () => {
       kind="detail"
       title={LINKS_TITLE}
       origin={GALLERY_ORIGIN}
-      header={<KkTitleHeader title={LINKS_TITLE} lead={LINKS_LEAD} />}
+      header={<KkTitleHeader title={LINKS_TITLE} />}
       handover={AREA_HANDOVERS.gallery}
     >
       <Stack sx={{ rowGap: 3, minWidth: 0 }}>

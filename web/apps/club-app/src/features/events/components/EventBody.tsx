@@ -10,7 +10,6 @@ import { toEventErrorMessage } from '../events-messages';
 import type { EventPageState } from '../hooks/use-event-page';
 import { EventFactsStrip } from './EventFactsStrip';
 import { EventHeader } from './EventHeader';
-import { EventLaterSheet } from './EventLaterSheet';
 import { EventNotFound } from './EventNotFound';
 import { EventSidePane } from './EventSidePane';
 import { EventStepList } from './EventStepList';
@@ -76,7 +75,6 @@ export const EventBody: FC<EventBodyProps> = ({ page }) => {
         </KkMasterDetail.Master>
         {pane}
       </KkMasterDetail>
-      <EventLaterSheet />
     </Stack>
   );
 };

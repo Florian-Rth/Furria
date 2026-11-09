@@ -15,7 +15,7 @@ export const TEXT_PLACEHOLDER =
 export const CATEGORY_CHOOSE = 'Kategorie wählen';
 export const CATEGORY_MENU_LABEL = 'Kategorie';
 export const TITLE_FIELD_LABEL = 'Titel';
-export const TEASER_FIELD_LABEL = 'Vorspann – erscheint auf Karten und in Link-Vorschauen';
+export const TEASER_FIELD_LABEL = 'Vorspann';
 export const TEXT_FIELD_LABEL = 'Text der Meldung';
 export const BYLINE_DRAFT = 'Entwurf';
 export const BYLINE_AUTHOR = 'von';
@@ -70,7 +70,7 @@ export const LINK_REMOVE = 'Link entfernen';
 export const LINK_INVALID = 'Nur Adressen mit https:// oder http://';
 
 export const PICTURE_UPLOAD = 'Hochladen';
-export const PICTURE_EMPTY_NOTE = 'Ohne Bild zeigt die Website einen Platzhalter.';
+export const PICTURE_EMPTY_NOTE = 'Noch kein Bild.';
 export const PICTURE_FROM_GALLERY = 'Aus der Galerie';
 export const PICTURE_CROP = 'Zuschnitt';
 export const PICTURE_CROP_DONE = 'Übernehmen';
@@ -90,7 +90,6 @@ export const CAPTION_PLACEHOLDER = 'Bildunterschrift oder Fotonachweis (optional
 export const CAPTION_LABEL = 'Bildunterschrift';
 export const GALLERY_SHEET_ID = 'news-gallery-pick';
 export const GALLERY_SHEET_TITLE = 'Bild aus der Galerie';
-export const GALLERY_COPY_NOTE = 'Das Bild wird für die Meldung kopiert.';
 export const GALLERY_EMPTY = 'Kein veröffentlichtes Album mit Fotos.';
 export const PICTURE_ACTION_FAILED = 'Das Bild konnte nicht geändert werden.';
 
@@ -142,8 +141,7 @@ export const GONE_TEXT =
   'Jemand hat sie gelöscht, während du geschrieben hast. Kopiere deinen Text, bevor du gehst.';
 export const GONE_COPY = 'Text kopieren';
 export const MISSING_TITLE = 'DIESE MELDUNG GIBT ES NICHT';
-export const MISSING_TEXT =
-  'Diese Meldung gibt es nicht oder nicht mehr. Vielleicht wurde sie gelöscht.';
+export const MISSING_TEXT = 'Sie wurde gelöscht oder hat nie existiert.';
 export const MISSING_BACK = 'Zu den Meldungen';
 
 export const PUBLISH_FAILED = 'Veröffentlichen fehlgeschlagen – nichts ist live gegangen.';
@@ -163,23 +161,21 @@ export const LIFECYCLE_COPY: Record<'withdraw' | 'discard' | 'delete', Lifecycle
   withdraw: {
     eyebrow: 'Aktuelles',
     question: 'Meldung zurückziehen?',
-    explanation:
-      'Die Website zeigt sie ab sofort nicht mehr. Du kannst sie jederzeit wieder veröffentlichen – Adresse und Datum bleiben.',
+    explanation: 'Die Website zeigt sie ab sofort nicht mehr.',
     confirm: 'Zurückziehen',
     tone: 'danger',
   },
   discard: {
     eyebrow: 'Aktuelles',
     question: 'Änderungen verwerfen?',
-    explanation:
-      'Die Website zeigt weiter die Live-Fassung. Deine offenen Änderungen sind danach weg.',
+    explanation: 'Deine offenen Änderungen sind danach weg.',
     confirm: 'Verwerfen',
     tone: 'danger',
   },
   delete: {
     eyebrow: 'Aktuelles',
     question: 'Meldung löschen?',
-    explanation: 'Für immer, ohne Papierkorb. Das Bild wird mitgelöscht, die Adresse wird frei.',
+    explanation: 'Endgültig, ohne Papierkorb. Das Bild wird mitgelöscht.',
     confirm: 'Löschen',
     tone: 'danger',
   },

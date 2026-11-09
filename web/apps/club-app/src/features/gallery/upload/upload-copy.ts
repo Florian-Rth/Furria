@@ -3,8 +3,8 @@ import { countLabel } from '../gallery-view';
 import type { UploadStatus } from './upload-status';
 
 export const DROP_LEAD = 'Ordner hierher ziehen';
-export const DROP_ACTIVE_LEAD = 'Loslassen — der Abend entwickelt sich';
-export const DROP_META = 'JPEG · HEIC · PNG · WebP · MP4 · MOV — Originale bleiben unverändert';
+export const DROP_ACTIVE_LEAD = 'Loslassen';
+export const DROP_META = 'JPEG · HEIC · PNG · WebP · MP4 · MOV';
 export const PICK_FILES_LABEL = 'Dateien wählen';
 export const PICK_FOLDER_LABEL = 'Ordner wählen';
 export const RETRY_ALL_LABEL = 'Wiederholen';

@@ -22,11 +22,8 @@ const PRICE_PLACEHOLDER = 'offen';
 const PRESALE_DAY_LABEL = 'Vorverkauf ab';
 const PRESALE_DAY_EMPTY_LABEL = 'Noch nicht festgelegt';
 const PRESALE_TIME_LABEL = 'Uhrzeit';
-const PRESALE_HINT = 'Bis dahin zählt die Website die Tage bis zum Start herunter.';
 const PRESALE_QUICK_TIMES = ['10:00', '11:11'] as const;
 const PRESALE_PLACES_LABEL = 'Vorverkaufsstellen';
-const PRESALE_PLACES_HINT =
-  'Wo es Karten gibt. Die Website zeigt die Stellen mit ihren Öffnungszeiten in der Reihenfolge, in der du sie antippst.';
 const PRESALE_PLACES_EMPTY = 'Noch kein Ort eingetragen.';
 const NEW_VENUE_LABEL = 'Ort anlegen';
 const NEW_VENUE_ROUTE = '/manage/venues/new';
@@ -49,8 +46,7 @@ export const EventTicketsSection: FC<EventTicketsSectionProps> = ({
   const errors = control.form.formState.errors;
   const priceErrorText = errors.price?.message;
   const ageHintErrorText = errors.ageHint?.message;
-  const hasPresaleError = errors.presaleTime !== undefined;
-  const presaleHelperText = errors.presaleTime?.message ?? PRESALE_HINT;
+  const presaleErrorText = errors.presaleTime?.message;
   const hasNoPresale = control.values.presaleDay === NO_DAY;
   const presalePlacesErrorText = errors.presaleVenueIds?.message;
   const pickedPresalePlaces = control.values.presaleVenueIds.map(String);
@@ -99,8 +95,8 @@ export const EventTicketsSection: FC<EventTicketsSectionProps> = ({
             onChange={control.setPresaleTime}
             quickTimes={PRESALE_QUICK_TIMES}
             disabled={hasNoPresale}
-            error={hasPresaleError}
-            helperText={presaleHelperText}
+            error={presaleErrorText !== undefined}
+            helperText={presaleErrorText}
           />
         }
       />
@@ -111,7 +107,6 @@ export const EventTicketsSection: FC<EventTicketsSectionProps> = ({
         options={presalePlaceOptions}
         onToggle={control.togglePresaleVenue}
         emptyLabel={PRESALE_PLACES_EMPTY}
-        hint={PRESALE_PLACES_HINT}
         error={presalePlacesErrorText !== undefined}
         helperText={presalePlacesErrorText}
       />

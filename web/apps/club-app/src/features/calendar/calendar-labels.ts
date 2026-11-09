@@ -11,7 +11,6 @@ import type { CalendarEntry, CalendarEntryVisibility, RunningVenue } from './sch
 
 export const CALENDAR_ERROR_TITLE = 'KALENDER NICHT GELADEN';
 export const CALENDAR_RETRY_LABEL = 'Noch einmal';
-export const CALENDAR_LEAD = 'Termine, Trainings und Sitzungen des Vereins.';
 export const CALENDAR_ENTRY_CREATE_TITLE = 'Termin hinzufügen';
 export const CALENDAR_ENTRY_EDIT_TITLE = 'Termin ändern';
 export const DELETE_ENTRY_DANGER_LABEL = 'Termin löschen';

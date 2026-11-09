@@ -1,5 +1,4 @@
 import { KkFormSection } from '@furria/ui/KkFormSection';
-import { KkNote } from '@furria/ui/KkNote';
 import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
 import type { RunningVenue } from '@/features/calendar/schemas';
@@ -18,9 +17,6 @@ const CREATE_TITLE = 'Veranstaltung anlegen';
 const EDIT_TITLE = 'Veranstaltung bearbeiten';
 const CREATE_LABEL = 'Anlegen';
 const SAVE_LABEL = 'Speichern';
-const CREATE_NOTE =
-  'Die Veranstaltung bleibt in Vorbereitung und nur hier sichtbar. Auf die Website und in den Kalender kommt sie, wenn du sie unter „Eckdaten“ veröffentlichst.';
-
 const TITLE_SECTION = 'Veranstaltung';
 const TITLE_LABEL = 'Titel';
 
@@ -48,7 +44,6 @@ export const EventEditor: FC<EventEditorProps> = ({ event, venues }) => {
   const presalePlaceOptions = toPresalePlaceOptions(
     presalePlaceChoicesOf(venues, event?.presalePlaces ?? [], control.values.presaleVenueIds),
   );
-  const intro = control.isEditing ? null : <KkNote>{CREATE_NOTE}</KkNote>;
   const picture =
     event === null ? (
       <EventStagedPicturePanel desk={control.stagedPicture} />
@@ -71,7 +66,6 @@ export const EventEditor: FC<EventEditorProps> = ({ event, venues }) => {
         },
       }}
     >
-      {intro}
       <KkFormSection title={TITLE_SECTION}>
         <KkTextField
           name={titleField.name}

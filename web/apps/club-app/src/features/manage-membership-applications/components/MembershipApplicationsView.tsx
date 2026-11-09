@@ -1,12 +1,10 @@
 import { KkEmptyState } from '@furria/ui/KkEmptyState';
-import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import {
   APPLICATIONS_EMPTY,
-  APPLICATIONS_FOOTNOTE,
   APPLICATIONS_SECTION_TITLE,
 } from '../manage-membership-applications-labels';
 import type { MembershipApplicationSummary } from '../schemas';
@@ -46,7 +44,6 @@ export const MembershipApplicationsView: FC<MembershipApplicationsViewProps> = (
       <KkPanelSection title={APPLICATIONS_SECTION_TITLE}>
         <KkPanel variant={panelVariant}>{body}</KkPanel>
       </KkPanelSection>
-      <KkNote>{APPLICATIONS_FOOTNOTE}</KkNote>
     </Stack>
   );
 };

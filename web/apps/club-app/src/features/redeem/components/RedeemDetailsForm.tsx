@@ -11,25 +11,16 @@ import { usePasswordVisibility } from '@/features/login/hooks/use-password-visib
 import { PASSWORD_RULE_HINT } from '@/lib/password-rule';
 import { useRedeemForm } from '../hooks/use-redeem-form';
 import { toRedeemHeading } from '../redeem-messages';
-import type { InvitationPurpose, LiveInvitation } from '../redeem-stage';
+import type { LiveInvitation } from '../redeem-stage';
 import type { RedeemForm } from '../schemas';
 
-const INTROS: Record<InvitationPurpose, string> = {
-  onboarding: 'Du bist eingeladen. Leg ein Passwort fest, dann bist du im Mitgliederbereich.',
-  recovery:
-    'Der Verein hat deinen Zugang wiederhergestellt. Leg ein neues Passwort fest – auf allen anderen Geräten wirst du dann abgemeldet.',
-};
 const TAKEN_CONTACT_LINE =
-  'Die E-Mail-Adresse, die der Verein von dir hat, nutzt schon jemand anderes zum Anmelden. Gib deine eigene an – wir schicken dir einen Code, um sie zu bestätigen.';
+  'Deine Kontakt-E-Mail nutzt schon jemand anderes zum Anmelden. Gib eine eigene Adresse an.';
 const LOGIN_EMAIL_LABEL = 'Deine Anmelde-E-Mail';
-const LOGIN_EMAIL_HINT = 'Damit meldest du dich künftig an.';
-const CONFIRMATION_HINT = 'An diese Adresse schicken wir dir einen Code zur Bestätigung.';
 const PASSWORD_LABEL = 'Neues Passwort';
 const REDEEM_LABEL = 'Passwort festlegen';
 const REQUEST_CODE_LABEL = 'Code senden';
 const CONTACT_EMAIL_LABEL = 'Kontakt-E-Mail ebenfalls ändern';
-const CONTACT_EMAIL_DESCRIPTION =
-  'Der Verein erreicht dich dann unter der neuen Adresse. Ohne Haken bleibt deine Kontakt-E-Mail, wie sie ist.';
 
 interface RedeemDetailsFormProps {
   invitation: LiveInvitation;
@@ -66,10 +57,9 @@ export const RedeemDetailsForm: FC<RedeemDetailsFormProps> = ({
   const passwordErrorText = form.formState.errors.password?.message;
   const hasLoginEmailError = loginEmailErrorText !== null && loginEmailErrorText !== undefined;
   const hasPasswordError = passwordErrorText !== undefined;
-  const loginEmailHint = needsConfirmation ? CONFIRMATION_HINT : LOGIN_EMAIL_HINT;
+  const loginEmailHelperText = loginEmailErrorText ?? undefined;
   const submitLabel = needsConfirmation ? REQUEST_CODE_LABEL : REDEEM_LABEL;
   const greeting = toRedeemHeading(invitation.purpose, invitation.firstName);
-  const intro = INTROS[invitation.purpose];
   const startsOnEmail = invitation.suggestedLoginEmail === null;
   const offersContactEmailFollow = invitation.purpose === 'recovery' && needsConfirmation;
 
@@ -90,7 +80,6 @@ export const RedeemDetailsForm: FC<RedeemDetailsFormProps> = ({
   const contactEmailFollow = offersContactEmailFollow ? (
     <KkCheckboxRow
       label={CONTACT_EMAIL_LABEL}
-      description={CONTACT_EMAIL_DESCRIPTION}
       checked={contactEmailFollows.field.value}
       onChange={toggleContactEmail}
     />
@@ -107,12 +96,9 @@ export const RedeemDetailsForm: FC<RedeemDetailsFormProps> = ({
 
   return (
     <Stack sx={{ gap: 2.5, minWidth: 0 }}>
-      <Stack sx={{ gap: 1 }}>
-        <KkHeading level={1} component="h1">
-          {greeting}
-        </KkHeading>
-        <KkNote>{intro}</KkNote>
-      </Stack>
+      <KkHeading level={1} component="h1">
+        {greeting}
+      </KkHeading>
       {takenLine}
       <Stack component="form" noValidate onSubmit={submit} sx={{ gap: 2.5 }}>
         <KkTextField
@@ -124,7 +110,7 @@ export const RedeemDetailsForm: FC<RedeemDetailsFormProps> = ({
           autoFocus={startsOnEmail}
           required
           error={hasLoginEmailError}
-          helperText={loginEmailErrorText ?? loginEmailHint}
+          helperText={loginEmailHelperText}
           onChange={editLoginEmail}
           onBlur={loginEmailField.onBlur}
           inputRef={loginEmailField.ref}

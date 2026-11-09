@@ -12,13 +12,7 @@ import { toInitials } from '@/lib/initials';
 import { useHoldingEnding } from '../hooks/use-holding-ending';
 import { toEndQuickChoices, toPersonName } from '../manage-roles-labels';
 import { holderPhaseOf } from '../roles-hub';
-import {
-  END_HINT,
-  END_HOLDING_TITLE,
-  END_LABEL,
-  SUBMIT_END,
-  toHolderPeriod,
-} from '../roles-hub-copy';
+import { END_HOLDING_TITLE, END_LABEL, SUBMIT_END, toHolderPeriod } from '../roles-hub-copy';
 import type { RoleHolder, RoleSummary } from '../schemas';
 import { HoldingPaneHead } from './HoldingPaneHead';
 
@@ -64,7 +58,6 @@ export const HoldingEndPane: FC<HoldingEndPaneProps> = ({
           required
           error={control.endedOnError !== undefined}
           helperText={control.endedOnError}
-          hint={END_HINT}
         />
         {consequence}
         {rejection}

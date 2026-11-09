@@ -23,8 +23,6 @@ export const ANNOUNCEMENT_BODY_FIELD_LABEL = 'Text';
 export const ANNOUNCEMENT_VALID_UNTIL_FIELD_LABEL = 'Gültig bis';
 export const ANNOUNCEMENT_VALID_UNTIL_EMPTY_LABEL = 'hängt bis jemand ihn abnimmt';
 export const ANNOUNCEMENT_BODY_PLACEHOLDER = 'Text des Aushangs';
-export const ANNOUNCEMENT_BODY_HINT = 'Hängt für alle Mitglieder unter „Aushänge“.';
-export const ANNOUNCEMENT_VALID_UNTIL_HINT = 'Danach gilt der Aushang als abgelaufen.';
 export const ANNOUNCEMENT_CONTENT_SECTION_TITLE = 'Aushang';
 export const ANNOUNCEMENT_RUNTIME_SECTION_TITLE = 'Laufzeit';
 
@@ -58,7 +56,7 @@ export const ANNOUNCEMENT_CHANGED_MESSAGE = 'Der Aushang ist geändert.';
 export const ANNOUNCEMENT_WITHDRAWN_MESSAGE = 'Der Aushang ist abgenommen.';
 
 export const NO_ANNOUNCEMENTS_TITLE = 'NOCH NICHTS AM BRETT';
-export const NO_ANNOUNCEMENTS_LINE = 'Neue Aushänge erscheinen hier.';
+export const NO_ANNOUNCEMENTS_LINE = 'Keine Aushänge.';
 
 export const ANNOUNCEMENTS_ERROR_TITLE = 'AUSHÄNGE NICHT GELADEN';
 export const ANNOUNCEMENTS_RETRY_LABEL = 'Erneut laden';
@@ -67,8 +65,6 @@ const VALID_UNTIL_PREFIX = 'Gültig bis';
 
 export const toValidUntilLabel = (validUntil: string | null): string | null =>
   validUntil === null ? null : `${VALID_UNTIL_PREFIX} ${formatIsoDay(validUntil)}`;
-
-export const ANNOUNCEMENTS_LEAD = 'Mitteilungen des Vereins an alle Mitglieder.';
 
 export const toWithdrawQuestion = (title: string): string => `„${title}“ abnehmen?`;
 

@@ -24,8 +24,6 @@ export const toRoleOrigin = (
     ? { label: role.name, to: '/manage/roles/$roleId', params: { roleId: String(role.roleId) } }
     : ROLES_ORIGIN;
 
-export const ROLES_LEAD = 'Rollen, ihre Rechte und Inhaber.';
-
 export interface RolePermissionEntry {
   key: PermissionKey;
   title: string;
@@ -228,14 +226,10 @@ export type ArchivableRole = Pick<RoleSummary, 'name' | 'holders'>;
 export const toArchiveRoleQuestion = (name: string): string => `${name} archivieren?`;
 
 export const ARCHIVE_ROLE_EXPLANATION =
-  'Die Rolle verschwindet aus der Auswahl, ihre Rechte entfallen. Inhaberschaften bleiben erhalten.';
+  'Die Rolle verschwindet aus der Auswahl, ihre Rechte entfallen.';
 
-export const toArchiveRoleConsequence = (
-  name: string,
-  holderCount: number,
-  todayIsoDay: string,
-): string =>
-  `Ab heute, dem ${formatIsoDay(todayIsoDay)}, entfallen die Rechte von ${name}. Die ${toHolderCountLabel(holderCount)} bleiben bestehen.`;
+export const toArchiveRoleConsequence = (name: string, todayIsoDay: string): string =>
+  `Ab heute, dem ${formatIsoDay(todayIsoDay)}, entfallen die Rechte von ${name}.`;
 
 export const toArchiveRoleFacts = (role: ArchivableRole, todayIsoDay: string): KkConfirmFact[] => [
   { label: 'Rolle', value: role.name },

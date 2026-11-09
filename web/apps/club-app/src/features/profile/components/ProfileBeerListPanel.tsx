@@ -20,7 +20,6 @@ export const ProfileBeerListPanel: FC = () => {
               {state.status}
             </KkChip>
           }
-          hint={state.hint}
         />
       </KkPanel>
       <ProfileBeerListDialog control={dialog} />

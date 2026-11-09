@@ -2,14 +2,14 @@ import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { useStartBeerTabsQuery } from '@/features/start/api';
 import type { StartBeerTab } from '@/features/start/schemas';
 import { formatEuroCents } from '@/lib/money';
-import { BEER_LIST_META, openMeta } from '../beer-list-copy';
+import { openMeta } from '../beer-list-copy';
 import { beerListEntryOf } from '../beer-list-entry';
 
 const NO_TABS: readonly StartBeerTab[] = [];
 
 export interface BeerListEntryView {
   visible: boolean;
-  meta: string;
+  meta: string | undefined;
 }
 
 export const useBeerListEntry = (): BeerListEntryView => {
@@ -19,6 +19,6 @@ export const useBeerListEntry = (): BeerListEntryView => {
 
   return {
     visible: entry.standing !== 'none',
-    meta: entry.openCents === 0 ? BEER_LIST_META : openMeta(formatEuroCents(entry.openCents)),
+    meta: entry.openCents === 0 ? undefined : openMeta(formatEuroCents(entry.openCents)),
   };
 };

@@ -29,10 +29,7 @@ import { PersonPauseRow } from './PersonPauseRow';
 
 const SPAN_SECTION_TITLE = 'Zeitraum';
 const START_LABEL = 'Mitglied ab';
-const START_HINT =
-  'Ein Wiedereintritt ist frühestens am Tag nach dem Ende der vorherigen Mitgliedschaft möglich.';
 const END_LABEL = 'Mitglied bis';
-const END_HINT = 'Leer lassen, solange die Mitgliedschaft besteht. Der Tag zählt noch dazu.';
 const END_EMPTY_LABEL = 'Offen lassen';
 const ADD_PAUSE_LABEL = 'Ruhezeit';
 const PAUSE_NEW_ROUTE = '/manage/persons/$personId/pauses/new';
@@ -143,7 +140,6 @@ export const PersonMembershipEditor: FC<PersonMembershipEditorProps> = ({ person
               required
               error={control.startedOnError !== undefined}
               helperText={control.startedOnError}
-              hint={START_HINT}
             />
           }
           end={
@@ -155,7 +151,6 @@ export const PersonMembershipEditor: FC<PersonMembershipEditorProps> = ({ person
               quickChoices={endQuickChoices}
               allowEmpty
               emptyLabel={END_EMPTY_LABEL}
-              hint={END_HINT}
             />
           }
         />

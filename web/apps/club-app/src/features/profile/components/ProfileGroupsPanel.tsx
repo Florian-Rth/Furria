@@ -11,8 +11,7 @@ import { toProfileGroupsErrorMessage } from '../profile-messages';
 import { ProfileGroupRow } from './ProfileGroupRow';
 
 const EMPTY_TITLE = 'IN KEINER GRUPPE';
-const EMPTY_DESCRIPTION =
-  'Du bist in keiner Gruppe. Unter „Gruppen“ siehst du, wer Verstärkung sucht.';
+const EMPTY_DESCRIPTION = 'Du bist in keiner Gruppe.';
 const ERROR_TITLE = 'GRUPPEN NICHT GELADEN';
 const RETRY_LABEL = 'Erneut laden';
 const SKELETON_LINES = 3;

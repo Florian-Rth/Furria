@@ -252,7 +252,7 @@ export const toPlaceChange = (delta: FindingTally): string | null => {
 export const toRemovedMessage = (name: string): string => `${name} aus dem Abend genommen.`;
 
 export const toKeptForEveningMessage = (name: string): string =>
-  `${name} ist für diesen Abend angepasst und bleibt im Ablauf, solange die Anpassung besteht.`;
+  `${name} ist für diesen Abend angepasst und bleibt im Ablauf.`;
 
 export const toPickedMessage = (count: number, archivedLeftOut = 0): string =>
   archivedLeftOut === 0
@@ -392,7 +392,7 @@ export const toRailTail = (kind: FindingKind, count: number): string => {
 export const PERSON_OPEN_LABEL = 'Auftritte zeigen';
 export const STOP_OPEN_LABEL = 'Zum Auftritt';
 export const PERSON_WAITING_TITLE = 'Noch nicht eingeplant';
-export const PERSON_ABSENT_NOTE = 'Hat abgesagt – zählt in keinem Auftritt.';
+export const PERSON_ABSENT_NOTE = 'Hat abgesagt.';
 export const PERSON_NOT_PLACED = 'In keinem eingeplanten Auftritt.';
 
 export const toPersonOpenLabel = (name: string): string => `${name}: ${PERSON_OPEN_LABEL}`;
@@ -479,8 +479,7 @@ export const toProposalReasons = (
 
 export const HOLDS_TITLE = 'Warum Konflikte bleiben';
 export const HOLDS_HIDE_LABEL = 'Ausblenden';
-export const HOLDS_UNAVOIDABLE =
-  'Ohne Konflikt geht es mit diesen Besetzungen nicht: dieselben Leute stehen in zu vielen Auftritten.';
+export const HOLDS_UNAVOIDABLE = 'Ohne Konflikt geht es mit diesen Besetzungen nicht.';
 
 export const toConflictCount = (amount: number): string => count(amount, 'Konflikt', 'Konflikte');
 

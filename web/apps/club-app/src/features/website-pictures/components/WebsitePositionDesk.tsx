@@ -15,7 +15,6 @@ import {
   PROCESSING_NOTE,
   positionNameOf,
   RECUT_NOTE,
-  REPLACE_NOTE,
   STALLED_NOTE,
   UNREADABLE_NOTE,
   updatedLineOf,
@@ -31,7 +30,6 @@ const NOTES: Record<DeskNote, { text: string; tone: 'muted' | 'hint' | 'warning'
   processing: { text: PROCESSING_NOTE, tone: 'hint' },
   stalled: { text: STALLED_NOTE, tone: 'warning' },
   uncut: { text: UNREADABLE_NOTE, tone: 'hint' },
-  replace: { text: REPLACE_NOTE, tone: 'muted' },
   decorative: { text: ALT_DECORATIVE, tone: 'muted' },
 };
 

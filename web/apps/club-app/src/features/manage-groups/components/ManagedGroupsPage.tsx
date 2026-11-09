@@ -10,7 +10,6 @@ import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { useManagedGroupsQuery } from '../api';
 import { useManagedGroupsListing } from '../hooks/use-managed-groups-listing';
 import { MANAGE_GROUPS_TITLE } from '../manage-groups-labels';
-import { MANAGE_GROUPS_LEAD } from '../manage-groups-work';
 import { ManagedGroupsBody } from './ManagedGroupsBody';
 import { ManagedGroupsToolbar } from './ManagedGroupsToolbar';
 
@@ -48,7 +47,7 @@ export const ManagedGroupsPage: FC = () => {
       tools={canManage ? toolRow : undefined}
       title={MANAGE_GROUPS_TITLE}
       origin={MANAGE_ORIGIN}
-      header={<KkTitleHeader title={MANAGE_GROUPS_TITLE} lead={MANAGE_GROUPS_LEAD} />}
+      header={<KkTitleHeader title={MANAGE_GROUPS_TITLE} />}
       handover={AREA_HANDOVERS.manage}
     >
       <RequirePermission permissionKey={PERMISSION_KEYS.groupsManage}>

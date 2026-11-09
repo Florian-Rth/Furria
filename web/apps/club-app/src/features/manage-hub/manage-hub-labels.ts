@@ -4,7 +4,6 @@ import { MANAGE_BANKS, MANAGE_PANELS } from './manage-hub-panels';
 import type { ManageAccountsPanel, ManageHub, ManagePersonsPanel } from './schemas';
 
 export const MANAGE_TITLE = 'Verein verwalten';
-export const MANAGE_LEAD = 'Personen, Gruppen, Ämter und Schlüssel des Vereins verwalten.';
 export const MANAGE_LOADING_LABEL = 'Die Verwaltung wird geladen';
 export const MANAGE_EMPTY_NOTE = 'Es sind noch keine Daten erfasst.';
 export const MANAGE_ERROR_TITLE = 'VERWALTUNG NICHT GELADEN';

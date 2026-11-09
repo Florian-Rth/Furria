@@ -2,13 +2,9 @@ import { browserExitHrefOf } from '../browser-exit';
 import {
   ELSEWHERE_LEAD,
   EXIT_HEADLINES,
-  EXIT_LEAD,
   GUIDE_HEADLINE,
   INSTALLED_LEAD,
-  INSTALLING_LEAD,
   PHASE_HEADLINES,
-  PROMPT_FACTS,
-  stepFactsOf,
   targetLabelOf,
 } from '../install-copy';
 import type { InstallGuide } from '../install-guide';
@@ -28,14 +24,12 @@ export interface InstallScreenModel {
   secret: SecretUnlock;
   headline: InstallHeadline;
   lead: string | null;
-  facts: string | null;
   targetLabel: string;
   celebrationKey: number;
   exitHref: string | null;
 }
 
-const PHASE_LEADS: Record<Exclude<InstallPhase, 'guide'>, string> = {
-  installing: INSTALLING_LEAD,
+const PHASE_LEADS: Partial<Record<InstallPhase, string>> = {
   installed: INSTALLED_LEAD,
   elsewhere: ELSEWHERE_LEAD,
 };
@@ -47,19 +41,7 @@ const headlineOf = (phase: InstallPhase, guide: InstallGuide): InstallHeadline =
   return guide.kind === 'escape' ? EXIT_HEADLINES[guide.exit] : GUIDE_HEADLINE;
 };
 
-const leadOf = (phase: InstallPhase, guide: InstallGuide): string | null => {
-  if (phase !== 'guide') {
-    return PHASE_LEADS[phase];
-  }
-  return guide.kind === 'escape' ? EXIT_LEAD : null;
-};
-
-const factsOf = (phase: InstallPhase, guide: InstallGuide): string | null => {
-  if (phase !== 'guide' || guide.kind === 'escape') {
-    return null;
-  }
-  return guide.kind === 'prompt' ? PROMPT_FACTS : stepFactsOf(guide.steps.length);
-};
+const leadOf = (phase: InstallPhase): string | null => PHASE_LEADS[phase] ?? null;
 
 const INSTALLED_BURST = 1;
 const UNLOCKED_BURST = 2;
@@ -77,8 +59,7 @@ export const useInstallScreen = (): InstallScreenModel => {
     flow,
     secret,
     headline: headlineOf(phase, guide),
-    lead: leadOf(phase, guide),
-    facts: factsOf(phase, guide),
+    lead: leadOf(phase),
     targetLabel: targetLabelOf(target),
     celebrationKey: installedBurst + unlockedBurst,
     exitHref,

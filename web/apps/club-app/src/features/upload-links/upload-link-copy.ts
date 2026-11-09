@@ -1,16 +1,14 @@
 import type { Remaining } from './upload-link-view';
 
 export const LINKS_TITLE = 'Sammellinks';
-export const LINKS_LEAD =
-  'Ein Link für die Gruppe: 7 Tage lang lädt damit jede und jeder Fotos und Videos hoch, ohne Anmeldung. Alles landet im Eingang des Links.';
 export const LINKS_PATH = '/gallery/links';
 export const OPEN_SECTION = 'Offen';
 export const ENDED_SECTION = 'Abgelaufen und beendet';
-export const EMPTY_LINKS = 'Noch kein Sammellink. Erstelle einen für den nächsten Anlass.';
+export const EMPTY_LINKS = 'Noch kein Sammellink.';
 export const LINKS_ERROR = 'Die Sammellinks ließen sich nicht laden.';
 export const RETRY_LABEL = 'Erneut laden';
 export const TITLE_FIELD = 'Anlass';
-export const TITLE_HINT = 'z. B. Rosenmontagszug 2027 – sehen alle, die den Link öffnen';
+export const TITLE_HINT = 'z. B. Rosenmontagszug 2027';
 export const CREATE_LABEL = 'Link erstellen';
 export const CREATED_NOTICE = 'Sammellink erstellt – jetzt in die Gruppe teilen.';
 export const REVOKED_NOTICE = 'Sammellink beendet.';
@@ -25,7 +23,7 @@ export const SHEET_CLOSE = 'Schließen';
 export const REVOKE_EYEBROW = 'Sammellink';
 export const REVOKE_QUESTION = 'Sammellink jetzt beenden?';
 export const REVOKE_EXPLANATION =
-  'Danach lädt niemand mehr über diesen Link hoch, auch angefangene Uploads brechen ab. Was schon angekommen ist, bleibt im Eingang.';
+  'Laufende Uploads brechen ab. Was schon angekommen ist, bleibt im Eingang.';
 export const REVOKE_CONFIRM = 'Beenden';
 export const CANCEL_LABEL = 'Abbrechen';
 export const OCCASION_FACT = 'Anlass';
@@ -84,11 +82,9 @@ export const shareTextOf = (title: string): string => `${SHARE_TEXT_PREFIX} ${ti
 export const PAGE_TITLE = 'Fotos hochladen';
 export const PAGE_OPEN_UNTIL = 'Offen bis';
 export const NAME_FIELD = 'Dein Name (freiwillig)';
-export const NAME_HINT = 'Damit der Verein weiß, von wem die Bilder sind.';
 export const PICK_LABEL = 'Fotos und Videos auswählen';
 export const PICK_MORE_LABEL = 'Weitere auswählen';
-export const PRIVACY_NOTE =
-  'Du siehst hier nur, was du selbst gerade schickst. Die Bilder sieht nur, wer im Verein die Galerie pflegt.';
+export const PRIVACY_NOTE = 'Die Bilder sieht nur, wer im Verein die Galerie pflegt.';
 export const KEEP_OPEN_NOTE = 'Lass die Seite offen, bis alles hochgeladen ist.';
 export const CHECKING_LINE = 'Link wird geprüft …';
 export const CLOSED_TITLES = {
@@ -98,12 +94,10 @@ export const CLOSED_TITLES = {
   missing: 'HIER FEHLT DER LINK',
 } as const;
 export const CLOSED_LINES = {
-  expired: 'Ein Sammellink nimmt 7 Tage lang Fotos an. Frag in der Gruppe nach einem neuen Link.',
-  revoked:
-    'Der Verein hat diesen Link vorzeitig beendet. Frag in der Gruppe nach einem neuen Link.',
-  unknown:
-    'Vielleicht wurde der Link beim Kopieren abgeschnitten. Öffne ihn noch einmal aus der Nachricht.',
-  missing: 'Öffne den Link so, wie er in der Nachricht steht – vollständig, mit allem nach dem #.',
+  expired: 'Frag in der Gruppe nach einem neuen Link.',
+  revoked: 'Frag in der Gruppe nach einem neuen Link.',
+  unknown: 'Öffne den Link noch einmal aus der Nachricht.',
+  missing: 'Öffne den Link vollständig, mit allem nach dem #.',
 } as const;
 export const FAILED_TITLE = 'Der Link ließ sich gerade nicht prüfen.';
 export const FAILED_LINE = 'Prüf deine Verbindung und versuch es noch einmal.';

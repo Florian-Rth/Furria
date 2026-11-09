@@ -18,9 +18,6 @@ export const LESSON_LAST = 'Das war der letzte Schritt';
 
 export const LESSON_EMPTY_EYEBROW = 'Noch nichts zum Üben';
 export const LESSON_EMPTY_NAME = 'Noch keine Musik';
-export const LESSON_EMPTY_PICTURE = 'Hier läuft bald das Trainervideo';
-export const LESSON_EMPTY_TEXT =
-  'Sobald die Musik und die Schritte angelegt sind, übst du hier Schritt für Schritt: mit Trainervideo, deinem Platz und deinem Weg.';
 
 export const lessonEyebrowOf = (part: string | null, number: number, total: number): string => {
   const place = `Schritt ${number}/${total}`;

@@ -5,7 +5,6 @@ import type { ClubRecord } from '../schemas';
 import { ClubRecordSection } from './ClubRecordSection';
 
 const AGE_LABEL = 'Mindestalter für App und Online-Antrag';
-const AGE_HINT = 'Jüngere werden nicht eingeladen und können sich nicht online bewerben.';
 
 interface ClubAccessPanelProps {
   record: ClubRecord;
@@ -17,7 +16,7 @@ export const ClubAccessPanel: FC<ClubAccessPanelProps> = ({ record, highlightedK
 
   return (
     <ClubRecordSection section="access" highlightedKey={highlightedKey}>
-      <KkFieldRow label={AGE_LABEL} value={age} hint={AGE_HINT} />
+      <KkFieldRow label={AGE_LABEL} value={age} />
     </ClubRecordSection>
   );
 };

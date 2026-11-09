@@ -8,10 +8,8 @@ import type { AlbumDetails } from '../schemas';
 const DELETE_LABEL = 'Album löschen';
 const CANCEL_LABEL = 'Abbrechen';
 const CLOSE_LABEL = 'Schließen';
-const EXPLANATION =
-  'Das Album wandert mit allen Fotos und Videos in den Papierkorb und ist sofort von der Website verschwunden.';
-const CONSEQUENCE =
-  'Nach 30 Tagen ist es endgültig gelöscht — bis dahin lässt es sich wiederherstellen.';
+const EXPLANATION = 'Das Album geht mit allen Fotos und Videos in den Papierkorb.';
+const CONSEQUENCE = 'Nach 30 Tagen ist es endgültig gelöscht.';
 
 interface AlbumFormDeletionLineProps {
   album: AlbumDetails;

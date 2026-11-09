@@ -1,9 +1,7 @@
 import Box from '@mui/material/Box';
-import ButtonBase from '@mui/material/ButtonBase';
 import Stack from '@mui/material/Stack';
-import type { CSSObject, Theme } from '@mui/material/styles';
+import type { CSSObject } from '@mui/material/styles';
 import type { FC } from 'react';
-import { focusRing } from '../../../internal/focus-ring';
 import type { KkIconName } from '../../../KkIcon';
 import { KkIcon } from '../../../KkIcon';
 import { stepLabel } from '../../../KkStatePill/state-paint';
@@ -16,7 +14,7 @@ export interface KkStepLaterItem {
   label: string;
 }
 
-const laterPaint = (theme: Theme): CSSObject => ({
+const laterPaint: CSSObject = {
   display: 'flex',
   flexDirection: 'column',
   alignItems: 'stretch',
@@ -26,17 +24,14 @@ const laterPaint = (theme: Theme): CSSObject => ({
   px: 1.5,
   py: 1.25,
   textAlign: 'left',
-  ...focusRing(theme),
-  '@media (hover: hover)': { '&:hover': { backgroundColor: 'action.hover' } },
-});
+};
 
 interface KkStepListLaterProps {
   eyebrow: string;
   items: readonly KkStepLaterItem[];
-  onSelect: () => void;
 }
 
-export const KkStepListLater: FC<KkStepListLaterProps> = ({ eyebrow, items, onSelect }) => {
+export const KkStepListLater: FC<KkStepListLaterProps> = ({ eyebrow, items }) => {
   const shown = items.map((item) => (
     <Stack
       key={item.label}
@@ -50,7 +45,7 @@ export const KkStepListLater: FC<KkStepListLaterProps> = ({ eyebrow, items, onSe
   ));
 
   return (
-    <ButtonBase onClick={onSelect} data-kk-step-list-later sx={laterPaint}>
+    <Box data-kk-step-list-later sx={laterPaint}>
       <Box component="span" sx={{ ...stepLabel, color: 'text.disabled' }}>
         {eyebrow}
       </Box>
@@ -71,6 +66,6 @@ export const KkStepListLater: FC<KkStepListLaterProps> = ({ eyebrow, items, onSe
       >
         {shown}
       </Stack>
-    </ButtonBase>
+    </Box>
   );
 };

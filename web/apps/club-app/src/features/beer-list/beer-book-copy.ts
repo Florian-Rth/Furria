@@ -6,8 +6,6 @@ export const potLine = (owner: string | null): string =>
   owner === null ? BEER_LIST_TITLE : `${BEER_LIST_TITLE} · ${owner}`;
 
 export const SIGN_IN_TITLE = 'Anmelden';
-export const SIGN_IN_TEXT =
-  'Melde dich einmal an, dann buchst du hier deine Kisten. Dieser Browser merkt sich die Anmeldung.';
 
 export const DECLARE_TITLE = 'An der Bierliste teilnehmen';
 export const declareText = (owner: string | null): string =>
@@ -17,12 +15,10 @@ export const declareText = (owner: string | null): string =>
 export const DECLARE_CONFIRM = 'Ich nehme teil';
 
 export const UNAFFILIATED_TITLE = 'Nur für den Verein';
-export const UNAFFILIATED_TEXT =
-  'Die Bierliste ist für Mitglieder, Gruppen und Ämter des Vereins. Zu deinem Zugang gehört gerade nichts davon, deshalb kannst du hier keine Kisten buchen.';
+export const UNAFFILIATED_TEXT = 'Buchen geht nur mit Mitgliedschaft, Gruppe oder Amt.';
 
 export const NO_POT_TITLE = 'Gerade keine Bierliste offen';
-export const NO_POT_TEXT =
-  'Buchen geht wieder, sobald eine Bierliste läuft. Sag dem Getränkewart Bescheid.';
+export const NO_POT_TEXT = 'Sag dem Getränkewart Bescheid.';
 
 export const DONE_TITLE = 'Fertig';
 export const doneDetail = (count: number, openTotal: string): string =>

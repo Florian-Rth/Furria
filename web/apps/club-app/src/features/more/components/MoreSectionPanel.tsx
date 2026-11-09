@@ -20,7 +20,6 @@ export const MoreSectionPanel: FC<MoreSectionPanelProps> = ({ title, sections })
       key={section.id}
       label={section.label}
       icon={section.icon}
-      meta={section.meta}
       component={Link}
       to={section.to}
     />

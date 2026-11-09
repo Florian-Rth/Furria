@@ -5,7 +5,6 @@ import { useDownloadNotice } from '@/features/gallery/download/use-download-noti
 import { useIsOnline } from '@/lib/use-is-online';
 import {
   APP_UPDATE_ACTION,
-  APP_UPDATE_DETAIL,
   APP_UPDATE_MESSAGE,
   CONNECTION_LOST_DETAIL,
   CONNECTION_LOST_MESSAGE,
@@ -24,7 +23,6 @@ const APP_UPDATE_NOTICE: KkSystemNotice = {
   tone: 'info',
   icon: 'download',
   message: APP_UPDATE_MESSAGE,
-  detail: [APP_UPDATE_DETAIL],
   actions: [{ id: 'reload', label: APP_UPDATE_ACTION, onSelect: applyAppUpdate }],
 };
 

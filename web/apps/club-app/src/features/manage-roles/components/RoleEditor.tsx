@@ -1,5 +1,4 @@
 import { KkFormSection } from '@furria/ui/KkFormSection';
-import { KkNote } from '@furria/ui/KkNote';
 import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import { KkTextArea } from '@furria/ui/KkTextArea';
 import { KkTextField } from '@furria/ui/KkTextField';
@@ -15,12 +14,8 @@ import { RoleCoinFields } from './RoleCoinFields';
 
 const CREATE_TITLE = 'Rolle hinzufügen';
 const EDIT_TITLE = 'Rolle bearbeiten';
-const CREATE_EXPLANATION =
-  'Neue Rollen haben zunächst keine Rechte. Diese vergibst du im Anschluss.';
 const ROLE_SECTION = 'Rolle';
 const NAME_LABEL = 'Name';
-const NAME_HINT = 'Erscheint in den Profilen und überall, wo Rollen ausgewählt werden.';
-const DESCRIPTION_HINT = 'Erklärt in der Rollenübersicht, wofür die Rolle da ist.';
 const DESCRIPTION_LABEL = 'Beschreibung';
 const DESCRIPTION_PLACEHOLDER = 'Aufgabe der Rolle';
 const DESCRIPTION_ROWS = 4;
@@ -28,8 +23,6 @@ const CREATE_ACTION_LABEL = 'Hinzufügen';
 const EDIT_ACTION_LABEL = 'Speichern';
 const COIN_SECTION = 'Abzeichen';
 const COIN_SWITCH_LABEL = 'Abzeichen am Profilbild';
-const COIN_SWITCH_DESCRIPTION =
-  'Wer die Rolle innehat, trägt am Profilbild ein Abzeichen in dieser Farbe mit diesem Symbol.';
 const EMPTY_FORM: RoleForm = {
   name: '',
   description: '',
@@ -58,7 +51,6 @@ export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry, returnTo }) => {
   const { errors } = control.form.formState;
 
   const title = roleEntry === null ? CREATE_TITLE : EDIT_TITLE;
-  const intro = roleEntry === null ? <KkNote>{CREATE_EXPLANATION}</KkNote> : null;
   const actionLabel = roleEntry === null ? CREATE_ACTION_LABEL : EDIT_ACTION_LABEL;
   const origin = roleEntry === null ? ROLES_ORIGIN : toRoleOrigin(roleEntry, returnTo);
 
@@ -87,13 +79,11 @@ export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry, returnTo }) => {
         },
       }}
     >
-      {intro}
       <KkFormSection title={ROLE_SECTION}>
         <KkTextField
           name={nameField.name}
           label={NAME_LABEL}
           required
-          hint={NAME_HINT}
           inputRef={nameField.ref}
           onChange={nameField.onChange}
           onBlur={nameField.onBlur}
@@ -111,7 +101,6 @@ export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry, returnTo }) => {
           showCount
           countLabel={toCountLabel}
           placeholder={DESCRIPTION_PLACEHOLDER}
-          hint={DESCRIPTION_HINT}
           error={errors.description !== undefined}
           helperText={errors.description?.message}
         />
@@ -119,7 +108,6 @@ export const RoleEditor: FC<RoleEditorProps> = ({ roleEntry, returnTo }) => {
       <KkFormSection title={COIN_SECTION}>
         <KkSwitchRow
           label={COIN_SWITCH_LABEL}
-          description={COIN_SWITCH_DESCRIPTION}
           checked={control.showsCoin}
           onChange={control.setShowsCoin}
         />

@@ -1,10 +1,9 @@
 import { KkButton } from '@furria/ui/KkButton';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
-import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { PersonRef } from '@/lib/api/schemas';
-import { EMPTY_LEAD, EMPTY_TITLE, OPEN_POT_LABEL, OWNER_LABEL } from '../beer-hub-copy';
+import { EMPTY_TITLE, OPEN_POT_LABEL, OWNER_LABEL } from '../beer-hub-copy';
 import { useOpenPotForm } from '../hooks/use-open-pot-form';
 import { BeerPotPersonField } from './BeerPotPersonField';
 import { BeerPotSettingsFields } from './BeerPotSettingsFields';
@@ -20,9 +19,6 @@ export const BeerOpenPotForm: FC<BeerOpenPotFormProps> = ({ owner }) => {
   return (
     <KkPanelSection title={EMPTY_TITLE}>
       <Stack sx={{ gap: 2, minWidth: 0 }}>
-        <KkText variant="body2" tone="secondary">
-          {EMPTY_LEAD}
-        </KkText>
         <BeerPotPersonField label={OWNER_LABEL} fields={form.fields} />
         <BeerPotSettingsFields fields={form.fields} />
         <BeerRejection rejection={form.rejection} />

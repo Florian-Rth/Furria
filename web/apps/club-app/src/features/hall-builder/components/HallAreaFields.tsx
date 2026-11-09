@@ -4,7 +4,7 @@ import type { ChangeEvent, FC } from 'react';
 import type { AreaElement } from '@/features/hall-plan/schemas';
 import { LABEL_MAX_LENGTH } from '@/features/hall-plan/schemas';
 import { useHallBuilderContext } from '../hall-builder-context';
-import { KIND_LABEL, LABEL_HINT, LABEL_LABEL } from '../hall-builder-copy';
+import { KIND_LABEL, LABEL_LABEL } from '../hall-builder-copy';
 import { AREA_KIND_OPTIONS, asAreaKind } from '../hall-choices';
 import { labelOrNull } from '../hall-element-edits';
 import { HallRectAreaFields } from './HallRectAreaFields';
@@ -45,7 +45,6 @@ export const HallAreaFields: FC<HallAreaFieldsProps> = ({ area }) => {
         value={label}
         onChange={setLabel}
         maxLength={LABEL_MAX_LENGTH}
-        hint={LABEL_HINT}
       />
       {sizeFields}
     </>

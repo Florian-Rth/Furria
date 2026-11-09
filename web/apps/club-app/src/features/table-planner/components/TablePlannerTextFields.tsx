@@ -3,7 +3,7 @@ import { KkTextField } from '@furria/ui/KkTextField';
 import type { ChangeEvent, FC } from 'react';
 import { NOTE_MAX_LENGTH, NUMBER_MAX_LENGTH } from '@/features/hall-plan/schemas';
 import { useDraftText } from '../hooks/use-draft-text';
-import { NOTE_FIELD_HINT, NOTE_FIELD_LABEL, NUMBER_FIELD_LABEL } from '../table-planner-copy';
+import { NOTE_FIELD_LABEL, NUMBER_FIELD_LABEL } from '../table-planner-copy';
 
 const NOTE_ROWS = 3;
 
@@ -38,7 +38,6 @@ export const TablePlannerTextFields: FC<TablePlannerTextFieldsProps> = ({
       <KkTextArea
         name="note"
         label={NOTE_FIELD_LABEL}
-        hint={NOTE_FIELD_HINT}
         value={noteDraft.value}
         rows={NOTE_ROWS}
         maxLength={NOTE_MAX_LENGTH}

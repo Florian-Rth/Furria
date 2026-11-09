@@ -13,7 +13,6 @@ import { formatPeriod } from '@/lib/membership-labels';
 import {
   PERSON_SCREEN_ADD_ADMIN_LABEL,
   PERSON_SCREEN_ADD_MEMBERSHIP_LABEL,
-  PERSON_SCREEN_CONTACT_NOTE,
   PERSON_SCREEN_UNREACHABLE_NOTE,
   toHubEditorOrigin,
 } from '../group-hub-labels';
@@ -147,7 +146,6 @@ export const HubPersonPage: FC<HubPersonPageProps> = ({ hub, personId }) => {
       handover={AREA_HANDOVERS.groups}
     >
       <Stack sx={{ gap: 2, minWidth: 0 }}>
-        <KkNote>{PERSON_SCREEN_CONTACT_NOTE}</KkNote>
         {unreachableNote}
         <KkPanelSection title={MEMBERSHIP_SECTION_TITLE}>
           <KkPanel variant="list">{membershipRows}</KkPanel>

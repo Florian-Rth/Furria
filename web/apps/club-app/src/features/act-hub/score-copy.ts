@@ -44,7 +44,6 @@ export const STUDIO_DOOR_META = 'Schritte, Plätze, Bewegung';
 export const MUSIC_DOOR_META = 'Lieder, Endfassung, Videos';
 export const EVENINGS_DOOR_META = 'Dabei sein, Besetzung je Abend';
 export const SETTINGS_DOOR_META = 'Name, Besetzung, Wünsche, Archiv';
-export const NO_STUDIO = 'Die Einzelheiten sehen nur die Besetzung und die Gruppenleitung.';
 
 export const DOOR_COPY: Record<ScoreDoorKey, { label: string; meta?: string }> = {
   studio: { label: STUDIO_DOOR, meta: STUDIO_DOOR_META },

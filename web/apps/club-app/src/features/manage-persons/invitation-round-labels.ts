@@ -42,8 +42,7 @@ const ROUND_COPY: Record<InvitationRoundKind, RoundCopy> = {
     blockedReason: 'Wer einen Zugang haben kann, ist schon eingeladen.',
     waiting: (persons) => `${persons} noch nie eingeladen`,
     question: (persons) => `Einladung an ${persons}`,
-    explanation:
-      'Wer einen Zugang haben kann und noch nie eingeladen wurde, bekommt eine Mail mit einem persönlichen Link. Der Link gilt 14 Tage.',
+    explanation: 'Jede Person bekommt eine Mail mit persönlichem Link. Der Link gilt 14 Tage.',
     consequence: (persons, verb) => `${persons} ${verb} jetzt eine Mail.`,
     confirmLabel: (persons) => `Einladung an ${persons} senden`,
     sent: (persons) => `Einladung an ${persons} ist unterwegs.`,
@@ -54,8 +53,7 @@ const ROUND_COPY: Record<InvitationRoundKind, RoundCopy> = {
     blockedReason: 'Keine offene Einladung ist älter als drei Tage.',
     waiting: (persons) => `${persons} seit über drei Tagen eingeladen`,
     question: (persons) => `Erinnerung an ${persons}`,
-    explanation:
-      'Wer seit mehr als drei Tagen eine offene Einladung hat, bekommt sie noch einmal mit neuem Link. Der bisherige Link gilt dann nicht mehr.',
+    explanation: 'Jede Person bekommt einen neuen Link. Der bisherige gilt dann nicht mehr.',
     consequence: (persons, verb) => `${persons} ${verb} jetzt eine Erinnerung.`,
     confirmLabel: (persons) => `Erinnerung an ${persons} senden`,
     sent: (persons) => `Erinnerung an ${persons} ist unterwegs.`,

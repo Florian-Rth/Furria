@@ -13,7 +13,6 @@ import type { UsualTrainingTime } from '../schemas';
 import {
   USUAL_TIMES_ADD_ACTION_LABEL,
   USUAL_TIMES_ADD_LABEL,
-  USUAL_TIMES_ADMIN_NOTE,
   USUAL_TIMES_ARCHIVED_VENUE_NOTE,
   USUAL_TIMES_EMPTY_LINE,
   USUAL_TIMES_EMPTY_TITLE,
@@ -85,13 +84,13 @@ export const HubUsualTrainingTimesPanel: FC<HubUsualTrainingTimesPanelProps> = (
       <KkNote tone="warning">{USUAL_TIMES_ARCHIVED_VENUE_NOTE}</KkNote>
     ) : null;
 
-  const tools = canManage ? (
-    <Stack sx={{ gap: 1, minWidth: 0 }}>
-      <KkNote>{USUAL_TIMES_ADMIN_NOTE}</KkNote>
-      {fullNote}
-      {archivedVenueNote}
-    </Stack>
-  ) : null;
+  const tools =
+    fullNote === null && archivedVenueNote === null ? null : (
+      <Stack sx={{ gap: 1, minWidth: 0 }}>
+        {fullNote}
+        {archivedVenueNote}
+      </Stack>
+    );
 
   return (
     <KkPanelSection

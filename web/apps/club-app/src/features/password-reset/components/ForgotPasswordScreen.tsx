@@ -1,6 +1,5 @@
 import { KkButton } from '@furria/ui/KkButton';
 import { KkHeading } from '@furria/ui/KkHeading';
-import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
@@ -11,12 +10,8 @@ import { LOGIN_PATH } from '@/lib/return-to';
 import { useForgotPassword } from '../hooks/use-forgot-password';
 
 const TITLE = 'PASSWORT VERGESSEN';
-const INTRO =
-  'Gib die E-Mail-Adresse an, mit der du dich anmeldest. Dorthin schicken wir dir einen Link, mit dem du ein neues Passwort festlegst.';
 const EMAIL_HINT = 'Deine Anmelde-E-Mail.';
 const SUBMIT_LABEL = 'Link anfordern';
-const SENT_HINT =
-  'Der Link gilt eine Stunde. Kommt nichts an? Prüf, ob du dich mit dieser Adresse anmeldest, und schau auch im Spam-Ordner nach.';
 const LOGIN_LABEL = 'Zur Anmeldung';
 
 export const ForgotPasswordScreen: FC = () => {
@@ -25,7 +20,7 @@ export const ForgotPasswordScreen: FC = () => {
   if (control.isSent) {
     return (
       <SignedOutFrame>
-        <MailRequestSent hint={SENT_HINT} />
+        <MailRequestSent />
       </SignedOutFrame>
     );
   }
@@ -33,12 +28,9 @@ export const ForgotPasswordScreen: FC = () => {
   return (
     <SignedOutFrame>
       <Stack sx={{ gap: 2.5, minWidth: 0 }}>
-        <Stack sx={{ gap: 1 }}>
-          <KkHeading level={1} component="h1">
-            {TITLE}
-          </KkHeading>
-          <KkNote>{INTRO}</KkNote>
-        </Stack>
+        <KkHeading level={1} component="h1">
+          {TITLE}
+        </KkHeading>
         <MailRequestForm
           hint={EMAIL_HINT}
           submitLabel={SUBMIT_LABEL}

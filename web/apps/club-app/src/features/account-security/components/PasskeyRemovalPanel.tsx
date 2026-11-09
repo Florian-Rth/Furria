@@ -7,9 +7,7 @@ import { usePasskeyRemoval } from '../hooks/use-passkey-removal';
 const REMOVE_LABEL = 'Passkey entfernen';
 const EYEBROW = 'Passkey entfernen';
 const QUESTION = 'Diesen Passkey entfernen?';
-const EXPLANATION =
-  'Mit ihm meldest du dich danach nicht mehr an. Auf deinem Gerät bleibt er gespeichert, bis du ihn dort löschst.';
-const CONSEQUENCE = 'Dein Passwort und deine anderen Passkeys gelten weiter.';
+const EXPLANATION = 'Mit ihm meldest du dich danach nicht mehr an.';
 const CANCEL_LABEL = 'Abbrechen';
 const CLOSE_LABEL = 'Schließen';
 
@@ -33,7 +31,6 @@ export const PasskeyRemovalPanel: FC<PasskeyRemovalPanelProps> = ({ passkey }) =
         question={QUESTION}
         explanation={EXPLANATION}
         facts={facts}
-        consequence={CONSEQUENCE}
         error={control.rejection ?? undefined}
         confirmLabel={REMOVE_LABEL}
         cancelLabel={CANCEL_LABEL}

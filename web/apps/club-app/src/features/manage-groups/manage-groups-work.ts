@@ -172,5 +172,3 @@ export const toGroupRegisterBands = (
 
 export const countBandedGroups = (bands: GroupRegisterBands): number =>
   bands.running.length + bands.archived.length;
-
-export const MANAGE_GROUPS_LEAD = 'Gruppen anlegen, einordnen und archivieren.';

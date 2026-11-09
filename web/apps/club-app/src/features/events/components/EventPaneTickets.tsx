@@ -4,7 +4,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { toEventStatusLabel } from '@/lib/event-copy';
 import { ARCHIVED_PLACES_NOTE, toPresalePlacesValue, toPriceValue } from '../event-pane-copy';
-import { AVAILABILITY_NOTES, toAvailabilityState, toPresaleLine } from '../events-labels';
+import { toAvailabilityState, toPresaleLine } from '../events-labels';
 import type { EventDetails } from '../schemas';
 import { EventAvailabilityChoice } from './EventAvailabilityChoice';
 
@@ -23,13 +23,8 @@ export const EventPaneTickets: FC<EventPaneTicketsProps> = ({ event }) => {
   const presaleState = event.presaleStartsAt === null ? 'open' : 'done';
   const hasArchivedPlace = event.presalePlaces.some((place) => place.isArchived);
   const placesState = event.presalePlaces.length === 0 || hasArchivedPlace ? 'open' : 'done';
-  const availabilityState = toAvailabilityState(event);
   const availability =
-    availabilityState === 'settable' ? (
-      <EventAvailabilityChoice event={event} />
-    ) : (
-      <KkNote>{AVAILABILITY_NOTES[availabilityState]}</KkNote>
-    );
+    toAvailabilityState(event) === 'settable' ? <EventAvailabilityChoice event={event} /> : null;
   const archivedNote = hasArchivedPlace ? <KkNote>{ARCHIVED_PLACES_NOTE}</KkNote> : null;
   const price = toPriceValue(event.priceCents);
   const presale = toPresaleLine(event.presaleStartsAt);

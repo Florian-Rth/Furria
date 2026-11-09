@@ -9,13 +9,7 @@ import type { FC } from 'react';
 import { PersonPicker } from '@/features/group-hub/components/PersonPicker';
 import { useHoldingOpening } from '../hooks/use-holding-opening';
 import { toStartQuickChoices } from '../manage-roles-labels';
-import {
-  OPEN_HOLDING_TITLE,
-  PICKER_NOTE,
-  SINCE_HINT,
-  SINCE_LABEL,
-  SUBMIT_OPEN,
-} from '../roles-hub-copy';
+import { OPEN_HOLDING_TITLE, SINCE_LABEL, SUBMIT_OPEN } from '../roles-hub-copy';
 import type { RoleSummary } from '../schemas';
 import { HoldingPaneHead } from './HoldingPaneHead';
 
@@ -44,7 +38,6 @@ export const HoldingOpenPane: FC<HoldingOpenPaneProps> = ({ role, today, framed,
           selected={control.person}
           onSelect={control.select}
           onClear={control.clearPerson}
-          note={PICKER_NOTE}
         />
         {personError}
         <KkDateField
@@ -56,7 +49,6 @@ export const HoldingOpenPane: FC<HoldingOpenPaneProps> = ({ role, today, framed,
           required
           error={control.sinceOnError !== undefined}
           helperText={control.sinceOnError}
-          hint={SINCE_HINT}
         />
         {consequence}
         {rejection}

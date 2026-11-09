@@ -11,7 +11,6 @@ import { toAvatarHonours } from '@/lib/honours';
 import { toInitials } from '@/lib/initials';
 import { seatPhaseOf } from '../board-hub';
 import {
-  END_HINT,
   END_LABEL,
   END_SEAT_TITLE,
   SUBMIT_END,
@@ -59,7 +58,6 @@ export const SeatEndPane: FC<SeatEndPaneProps> = ({ office, seat, today, framed,
           required
           error={control.endedOnError !== undefined}
           helperText={control.endedOnError}
-          hint={END_HINT}
         />
         {consequence}
         {rejection}

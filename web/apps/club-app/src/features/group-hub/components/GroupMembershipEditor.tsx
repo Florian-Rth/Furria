@@ -25,17 +25,11 @@ const PERSON_SECTION = 'Person';
 const MEMBERSHIP_SECTION = 'Zugehörigkeit';
 const END_SECTION = 'Ende der Zugehörigkeit';
 const JOIN_DATE_LABEL = 'Dabei ab';
-const JOIN_DATE_HINT =
-  'Ein Wiedereintritt ist frühestens am Tag nach dem Ende der vorherigen Zugehörigkeit möglich.';
 const ADMIN_LABEL = 'Auch Gruppen-Admin';
-const ADMIN_DESCRIPTION =
-  'Gruppen-Admins verwalten Beschreibung und Zugehörigkeiten. Die Ernennung gilt ab Beginn der Zugehörigkeit.';
 const ADMIN_STATE_LABEL = { on: 'ja', off: 'nein' };
 const FUNCTION_LABEL = 'Funktion';
 const FUNCTION_PLACEHOLDER = 'Optional';
-const FUNCTION_HINT = 'Dient nur der Anzeige und hat keinen Einfluss auf Rechte.';
 const END_DATE_LABEL = 'Letzter Tag';
-const END_DATE_HINT = 'Dieser Tag zählt noch dazu.';
 
 interface GroupMembershipEditorProps {
   hub: GroupHub;
@@ -77,7 +71,6 @@ export const GroupMembershipEditor: FC<GroupMembershipEditorProps> = ({
       onChange={control.setFunctionLabel}
       suggestions={ADMIN_FUNCTION_SUGGESTIONS}
       placeholder={FUNCTION_PLACEHOLDER}
-      hint={FUNCTION_HINT}
       maxLength={ADMIN_FUNCTION_MAX_LENGTH}
     />
   ) : null;
@@ -103,11 +96,9 @@ export const GroupMembershipEditor: FC<GroupMembershipEditorProps> = ({
             required
             error={control.joinedOnError !== undefined}
             helperText={control.joinedOnError}
-            hint={JOIN_DATE_HINT}
           />
           <KkSwitchRow
             label={ADMIN_LABEL}
-            description={ADMIN_DESCRIPTION}
             checked={control.makeAdmin}
             onChange={control.setMakeAdmin}
             stateLabel={ADMIN_STATE_LABEL}
@@ -128,7 +119,6 @@ export const GroupMembershipEditor: FC<GroupMembershipEditorProps> = ({
             required
             error={control.endedOnError !== undefined}
             helperText={control.endedOnError}
-            hint={END_DATE_HINT}
           />
         </KkFormSection>
       </>

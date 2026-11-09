@@ -24,8 +24,7 @@ export const BOOT_RELOGIN_LABEL = 'Neu anmelden';
 
 export const CONNECTION_LOST_MESSAGE = 'Keine Verbindung';
 
-export const CONNECTION_LOST_DETAIL =
-  'Du bist offline. Speichern klappt erst wieder mit Verbindung – dann lädt die App von selbst weiter.';
+export const CONNECTION_LOST_DETAIL = 'Speichern geht erst wieder mit Verbindung.';
 
 export const NOTICE_DISMISS_LABEL = 'Schließen';
 
@@ -82,5 +81,4 @@ export const toMeErrorMessage = (error: Error | null): string | null =>
 export const SHELL_PROFILE_LABEL = 'Mein Profil';
 
 export const APP_UPDATE_MESSAGE = 'Neue Version da';
-export const APP_UPDATE_DETAIL = 'Einmal neu laden, dann ist alles aktuell.';
 export const APP_UPDATE_ACTION = 'Neu laden';

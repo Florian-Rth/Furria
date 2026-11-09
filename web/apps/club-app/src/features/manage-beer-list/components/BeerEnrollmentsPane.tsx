@@ -1,11 +1,6 @@
 import type { FC } from 'react';
 import { useBeerHubContext } from '../beer-hub-context';
-import {
-  ENDED_SECTION,
-  ENROLLMENTS_CONTEXT,
-  ENROLLMENTS_TITLE,
-  RUNNING_SECTION,
-} from '../beer-hub-copy';
+import { ENDED_SECTION, ENROLLMENTS_TITLE, RUNNING_SECTION } from '../beer-hub-copy';
 import { BeerEnrollmentSection } from './BeerEnrollmentSection';
 import { BeerPaneFrame } from './BeerPaneFrame';
 import { BeerSettingsSwitch } from './BeerSettingsSwitch';
@@ -18,12 +13,7 @@ export const BeerEnrollmentsPane: FC = () => {
   const ended = hub.enrollments.filter((enrollment) => enrollment.endedAt !== null);
 
   return (
-    <BeerPaneFrame
-      switcher={SWITCHER}
-      icon="person"
-      title={ENROLLMENTS_TITLE}
-      context={ENROLLMENTS_CONTEXT}
-    >
+    <BeerPaneFrame switcher={SWITCHER} icon="person" title={ENROLLMENTS_TITLE}>
       <BeerEnrollmentSection label={RUNNING_SECTION} enrollments={running} />
       <BeerEnrollmentSection label={ENDED_SECTION} enrollments={ended} />
     </BeerPaneFrame>
