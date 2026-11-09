@@ -9,7 +9,6 @@ using Furria.Core.BeerList;
 using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Gallery;
-using Furria.Core.Groups;
 using Furria.Core.Halls;
 using Furria.Core.Media;
 using Furria.Core.News;
@@ -35,7 +34,6 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(ToDoKind)] =
             "neverInvited reminderDue inPersonOnly birthDateUnknown keyToTakeBack "
             + "clubRecordGap applicationWaiting",
-        [typeof(GroupTone)] = "clay olive lime fern teal indigo iris violet orchid rose",
         [typeof(ClubIcon)] =
             "crown euro bolt shield camera sparkle mic musicNote drum mask megaphone star "
             + "trophy flag key shirt pen wrench palette heart mug calendar whistle broom",

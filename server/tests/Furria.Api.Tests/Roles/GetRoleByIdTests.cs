@@ -5,6 +5,7 @@ using Furria.Application.Authorization;
 using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Core.Groups;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -247,7 +248,7 @@ public sealed class GetRoleByIdTests : IClassFixture<ApiTestFixture>
                     )
                     .Roles(roles =>
                         roles
-                            .AddRoleWithCoin("chronik", "Chronik", ClubIcon.Pen, GroupTone.Clay)
+                            .AddRoleWithCoin("chronik", "Chronik", ClubIcon.Pen, TestTones.Clay)
                             .AddRoleHolding("ilka-chronik", "chronik", "ilka", HeldSince2017)
                     ),
             ct
@@ -256,7 +257,7 @@ public sealed class GetRoleByIdTests : IClassFixture<ApiTestFixture>
         var client = await ctx.Identity.ManagingLoginClientAsync(ct);
         var (_, result) = await ReadRoleAsync(client, ctx.Roles.Roles.IdOf("chronik"));
 
-        Assert.Equal(new RoleCoinDto { Icon = ClubIcon.Pen, Tone = GroupTone.Clay }, result.Coin);
+        Assert.Equal(new RoleCoinDto { Icon = ClubIcon.Pen, Tone = TestTones.Clay }, result.Coin);
         var ilka = Assert.Single(result.Holders);
         Assert.Equal(
             [PersonFunctionKind.GroupAdmin, PersonFunctionKind.Role],

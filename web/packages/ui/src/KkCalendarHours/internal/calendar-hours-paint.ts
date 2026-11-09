@@ -1,6 +1,6 @@
 import type { CSSObject, Theme } from '@mui/material/styles';
 import type { KkGroupTone } from '../../internal/group-tone';
-import { groupToneRecipes } from '../../internal/group-tone';
+import { groupToneRecipe } from '../../internal/group-tone';
 import { applyScheme, schemeEdge, schemeFill, schemeInk } from '../../internal/scheme-paint';
 import { kkTokens } from '../../tokens';
 import type { KkCalendarHoursBadge } from './logic/calendar-hours-types';
@@ -38,7 +38,7 @@ export const hoursFillPaint = (
     };
   }
 
-  const recipe = groupToneRecipes[tone];
+  const recipe = groupToneRecipe(tone);
 
   return {
     backgroundColor: paper,
@@ -62,17 +62,14 @@ export const hoursUsualPaint = (theme: Theme, tone: KkGroupTone | null): CSSObje
     ? { borderColor: (theme.vars ?? theme).palette.text.secondary }
     : applyScheme(
         theme,
-        schemeEdge(groupToneRecipes[tone].edgeLight, groupToneRecipes[tone].edgeDark),
+        schemeEdge(groupToneRecipe(tone).edgeLight, groupToneRecipe(tone).edgeDark),
       )),
 });
 
 export const hoursToneInk = (theme: Theme, tone: KkGroupTone | null): CSSObject =>
   tone === null
     ? { color: 'text.primary' }
-    : applyScheme(
-        theme,
-        schemeInk(groupToneRecipes[tone].inkLight, groupToneRecipes[tone].inkDark),
-      );
+    : applyScheme(theme, schemeInk(groupToneRecipe(tone).inkLight, groupToneRecipe(tone).inkDark));
 
 const BADGE_SCHEMES: Record<Exclude<KkCalendarHoursBadge, null>, (theme: Theme) => CSSObject> = {
   yes: (theme) =>

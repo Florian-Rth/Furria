@@ -1,13 +1,11 @@
-import { GROUP_TONES } from '@furria/ui/group-tone';
 import { KkClubIconPicker } from '@furria/ui/KkClubIconPicker';
 import { KkEyebrow } from '@furria/ui/KkEyebrow';
-import { KkGroupToneSwatch } from '@furria/ui/KkGroupToneSwatch';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { ToneField } from '@/features/write/components/ToneField';
 import type { ClubIcon } from '@/lib/club-icon';
 import { CLUB_ICON_FIELD_LABEL, toClubIconLabel } from '@/lib/club-icon';
 import type { GroupTone } from '@/lib/group-tone';
-import { toToneLabel } from '@/lib/group-tone';
 
 const TONE_FIELD_LABEL = 'Farbe';
 
@@ -23,45 +21,17 @@ export const RoleCoinFields: FC<RoleCoinFieldsProps> = ({
   onIconChange,
   tone,
   onToneChange,
-}) => {
-  const toneSwatches = GROUP_TONES.map((entry) => {
-    const pick = (): void => {
-      onToneChange(entry);
-    };
-
-    return (
-      <KkGroupToneSwatch
-        key={entry}
-        tone={entry}
-        label={toToneLabel(entry)}
-        selected={tone === entry}
-        onSelect={pick}
+}) => (
+  <Stack sx={{ gap: 2, minWidth: 0 }}>
+    <ToneField label={TONE_FIELD_LABEL} value={tone} onChange={onToneChange} />
+    <Stack sx={{ gap: 1, minWidth: 0 }}>
+      <KkEyebrow tone="muted">{CLUB_ICON_FIELD_LABEL}</KkEyebrow>
+      <KkClubIconPicker
+        value={icon}
+        onChange={onIconChange}
+        label={CLUB_ICON_FIELD_LABEL}
+        iconLabel={toClubIconLabel}
       />
-    );
-  });
-
-  return (
-    <Stack sx={{ gap: 2, minWidth: 0 }}>
-      <Stack sx={{ gap: 1, minWidth: 0 }}>
-        <KkEyebrow tone="muted">{TONE_FIELD_LABEL}</KkEyebrow>
-        <Stack
-          direction="row"
-          role="group"
-          aria-label={TONE_FIELD_LABEL}
-          sx={{ gap: 1, flexWrap: 'wrap', minWidth: 0 }}
-        >
-          {toneSwatches}
-        </Stack>
-      </Stack>
-      <Stack sx={{ gap: 1, minWidth: 0 }}>
-        <KkEyebrow tone="muted">{CLUB_ICON_FIELD_LABEL}</KkEyebrow>
-        <KkClubIconPicker
-          value={icon}
-          onChange={onIconChange}
-          label={CLUB_ICON_FIELD_LABEL}
-          iconLabel={toClubIconLabel}
-        />
-      </Stack>
     </Stack>
-  );
-};
+  </Stack>
+);

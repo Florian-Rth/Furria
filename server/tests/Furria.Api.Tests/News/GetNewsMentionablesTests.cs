@@ -1,7 +1,6 @@
 using FastEndpoints;
 using Furria.Api.Endpoints.News;
 using Furria.Api.Tests.Media;
-using Furria.Core.Groups;
 using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
@@ -49,7 +48,7 @@ public sealed class GetNewsMentionablesTests : IClassFixture<ApiTestFixture>
         var (_, result) = await client.GETAsync<GetNewsMentionables, GetNewsMentionablesResponse>();
 
         var garde = result.Groups.Single(group => group.Name == "Stadtgarde");
-        Assert.Equal(GroupTone.Teal, garde.Tone);
+        Assert.Equal(TestTones.Teal, garde.Tone);
         Assert.Equal("Unsere Tanzgarde", garde.Description);
         Assert.Null(garde.Picture);
         Assert.StartsWith(
@@ -69,7 +68,7 @@ public sealed class GetNewsMentionablesTests : IClassFixture<ApiTestFixture>
                 )
                 .Groups(groups =>
                     groups
-                        .AddGroup("garde", "Stadtgarde", "Unsere Tanzgarde", tone: GroupTone.Teal)
+                        .AddGroup("garde", "Stadtgarde", "Unsere Tanzgarde", tone: TestTones.Teal)
                         .AddGroup("ballett", "Männerballett")
                         .AddGroup("alt", "Altherren", archivedOn: Archived)
                 )

@@ -1,5 +1,4 @@
 import { describe, expect, it } from 'vitest';
-import type { GroupTone } from './group-identity';
 import { toAnniversary, toClockSpan, toGroupTone } from './group-identity';
 
 describe('toAnniversary', () => {
@@ -20,9 +19,9 @@ describe('toAnniversary', () => {
 
 describe('toGroupTone', () => {
   it.each([
-    { groupId: 1, tone: 'rose' as GroupTone, expected: 'rose' },
-    { groupId: 2, tone: null, expected: 'lime' },
-    { groupId: 12, tone: null, expected: 'lime' },
+    { groupId: 1, tone: '#12AB9C', expected: '#12AB9C' },
+    { groupId: 2, tone: null, expected: '#43741F' },
+    { groupId: 12, tone: null, expected: '#43741F' },
   ])('paints group $groupId as $expected', ({ groupId, tone, expected }) => {
     expect(toGroupTone(groupId, tone)).toBe(expected);
   });

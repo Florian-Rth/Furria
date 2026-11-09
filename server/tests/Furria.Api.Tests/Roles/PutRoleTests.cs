@@ -1,10 +1,11 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Net.Mime;
+using System.Text;
 using FastEndpoints;
 using Furria.Api.Endpoints.Roles;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
-using Furria.Core.Groups;
 using Furria.Core.Roles;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
@@ -19,6 +20,7 @@ public sealed class PutRoleTests : IClassFixture<ApiTestFixture>
     private const string ArchivedRoleMessage =
         "Eine archivierte Rolle kann nicht bearbeitet werden.";
     private const int UnknownRoleId = 999_999;
+    private const string RolesRoute = "/api/manage/roles";
 
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
@@ -58,13 +60,13 @@ public sealed class PutRoleTests : IClassFixture<ApiTestFixture>
             ctx.Roles.Roles.IdOf("zeugwart"),
             "Zeugwart",
             "Die alte Beschreibung.",
-            new RoleCoinDto { Icon = ClubIcon.Key, Tone = GroupTone.Rose }
+            new RoleCoinDto { Icon = ClubIcon.Key, Tone = TestTones.Rose }
         );
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx
             .Expected.Role(ctx.Roles.Roles.IdOf("zeugwart"))
-            .ToHaveCoin(new RoleCoin(ClubIcon.Key, GroupTone.Rose))
+            .ToHaveCoin(new RoleCoin(ClubIcon.Key, TestTones.Rose))
             .AssertAsync(ct);
     }
 
@@ -75,7 +77,7 @@ public sealed class PutRoleTests : IClassFixture<ApiTestFixture>
         var ctx = await _fixture.BuildAsync(
             builder =>
                 builder.Roles(roles =>
-                    roles.AddRoleWithCoin("zeugwart", "Zeugwart", ClubIcon.Key, GroupTone.Teal)
+                    roles.AddRoleWithCoin("zeugwart", "Zeugwart", ClubIcon.Key, TestTones.Teal)
                 ),
             ct
         );
@@ -237,6 +239,28 @@ public sealed class PutRoleTests : IClassFixture<ApiTestFixture>
         var response = await RenameRoleAsync(client, UnknownRoleId, "Zeugwart", "Gibt es nicht.");
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_TheCoinToneIsNoHexColor()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithEquipmentWardenAsync(ct);
+        var zeugwart = ctx.Roles.Roles.IdOf("zeugwart");
+
+        var client = await ctx.Identity.ManagingLoginClientAsync(ct);
+        var response = await client.PutAsync(
+            $"{RolesRoute}/{zeugwart}",
+            new StringContent(
+                """{"name":"Zeugwart","description":"","coin":{"icon":"key","tone":"rose"}}""",
+                Encoding.UTF8,
+                MediaTypeNames.Application.Json
+            ),
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await ctx.Expected.Role(zeugwart).ToHaveCoin(null).AssertAsync(ct);
     }
 
     private Task<SeededContext> BuildWithEquipmentWardenAsync(CancellationToken ct) =>

@@ -1,10 +1,13 @@
 using System.Net;
 using System.Net.Http.Json;
+using System.Net.Mime;
+using System.Text;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Core.Groups;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -20,6 +23,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
     private const int FoundedIn1971 = 1971;
     private const string ValidationField = "request";
     private const string FoundedYearField = "foundedYear";
+    private const string GroupsRoute = "/api/groups";
 
     private static readonly DateOnly ArchivedIn2021 = new(2021, 1, 1);
 
@@ -392,7 +396,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                 IsRecruiting = true,
                 GroupKindId = ctx.Groups.GroupKinds.IdOf("garden"),
                 FoundedYear = FoundedIn1971,
-                Tone = GroupTone.Rose,
+                Tone = TestTones.Rose,
                 Icon = ClubIcon.Drum,
             }
         );
@@ -404,7 +408,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
             .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
             .ToHaveFoundedYear(FoundedIn1971)
             .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
-            .ToHaveTone(GroupTone.Rose)
+            .ToHaveTone(TestTones.Rose)
             .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
             .ToHaveIcon(ClubIcon.Drum)
             .AssertAsync(ct);
@@ -429,7 +433,7 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
                                 OldDescription,
                                 groupKindAlias: "garden",
                                 foundedYear: FoundedIn1971,
-                                tone: GroupTone.Teal,
+                                tone: TestTones.Teal,
                                 icon: ClubIcon.Drum
                             )
                             .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
@@ -685,6 +689,71 @@ public sealed class PutGroupInfoTests : IClassFixture<ApiTestFixture>
             .ToHaveDescription(OldDescription)
             .AssertAsync(ct);
     }
+
+    [Fact]
+    public async Task Should_StoreAFreeColorInUpperCase_When_TheGroupAdminPicksOneInLowerCase()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithTanzgardeAdminAsync(ct);
+        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var response = await PutInfoWithToneAsync(client, tanzgarde, "\"#12ab9c\"", ct);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await ctx.Expected.Group(tanzgarde).ToHaveTone(GroupTone.Parse("#12AB9C")).AssertAsync(ct);
+    }
+
+    [Theory]
+    [InlineData("\"teal\"")]
+    [InlineData("\"#12AB9\"")]
+    [InlineData("\"#12AB9CF\"")]
+    [InlineData("\"#12AB9G\"")]
+    [InlineData("\"12AB9CF\"")]
+    [InlineData("5")]
+    public async Task Should_ReturnBadRequest_When_TheToneIsNoHexColor(string tone)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildWithTanzgardeAdminAsync(ct);
+        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var response = await PutInfoWithToneAsync(client, tanzgarde, tone, ct);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+        await ctx.Expected.Group(tanzgarde).ToHaveTone(null).AssertAsync(ct);
+    }
+
+    private Task<SeededContext> BuildWithTanzgardeAdminAsync(CancellationToken ct) =>
+        _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity.AddPerson("anna", "Anna", "Kaiser").AddAccount("anna")
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde", OldDescription)
+                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna", "Trainerin")
+                    ),
+            ct
+        );
+
+    private static Task<HttpResponseMessage> PutInfoWithToneAsync(
+        HttpClient client,
+        int groupId,
+        string toneJson,
+        CancellationToken ct
+    ) =>
+        client.PutAsync(
+            $"{GroupsRoute}/{groupId}/info",
+            new StringContent(
+                $$"""{"description":"{{OldDescription}}","isRecruiting":false,"groupKindId":null,"foundedYear":null,"tone":{{toneJson}},"icon":null}""",
+                Encoding.UTF8,
+                MediaTypeNames.Application.Json
+            ),
+            ct
+        );
 
     private static async Task<IDictionary<string, List<string>>> ReadFailuresAsync(
         HttpResponseMessage response,

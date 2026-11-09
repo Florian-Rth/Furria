@@ -1452,8 +1452,8 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnName("picture_id");
 
                     b.Property<string>("Tone")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)")
                         .HasColumnName("tone");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -1481,7 +1481,7 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_group_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom')");
 
-                            t.HasCheckConstraint("ck_group_tone", "tone IS NULL OR tone IN ('Clay', 'Olive', 'Lime', 'Fern', 'Teal', 'Indigo', 'Iris', 'Violet', 'Orchid', 'Rose')");
+                            t.HasCheckConstraint("ck_group_tone", "tone IS NULL OR tone ~ '^#[0-9A-F]{6}$'");
                         });
                 });
 
@@ -2929,8 +2929,8 @@ namespace Furria.Infrastructure.Migrations
                         .UseCollation("de-DE-x-icu");
 
                     b.Property<string>("Tone")
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
+                        .HasMaxLength(7)
+                        .HasColumnType("character varying(7)")
                         .HasColumnName("tone");
 
                     b.Property<DateTimeOffset>("UpdatedAt")
@@ -2951,7 +2951,7 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_role_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom')");
 
-                            t.HasCheckConstraint("ck_role_tone", "tone IS NULL OR tone IN ('Clay', 'Olive', 'Lime', 'Fern', 'Teal', 'Indigo', 'Iris', 'Violet', 'Orchid', 'Rose')");
+                            t.HasCheckConstraint("ck_role_tone", "tone IS NULL OR tone ~ '^#[0-9A-F]{6}$'");
                         });
                 });
 

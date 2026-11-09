@@ -1,4 +1,4 @@
-import { GROUP_TONES } from '@furria/ui/group-tone';
+import { KK_TONE_PATTERN } from '@furria/ui/group-tone';
 import { z } from 'zod';
 import { PictureSchema } from '@/lib/api/schemas';
 
@@ -10,7 +10,7 @@ export const PublicGroupSchema = z.object({
   isRecruiting: z.boolean(),
   groupKindName: z.string().nullable(),
   foundedYear: z.number().int().nullable(),
-  tone: z.enum(GROUP_TONES).nullable(),
+  tone: z.string().regex(KK_TONE_PATTERN).nullable(),
 });
 
 export type PublicGroup = z.infer<typeof PublicGroupSchema>;

@@ -3,7 +3,7 @@ import type { CSSObject, Theme } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
 import type { KkGroupTone } from './internal/group-tone';
-import { groupToneRecipes } from './internal/group-tone';
+import { groupToneRecipe } from './internal/group-tone';
 import type { KkScheme } from './internal/scheme-paint';
 import { applyScheme, schemeFill } from './internal/scheme-paint';
 import { KkIcon } from './KkIcon';
@@ -19,8 +19,8 @@ const placeholderSurface = schemeFill(
 );
 
 const groupToneTint = (tone: KkGroupTone): KkScheme => ({
-  light: { [TINT_PROPERTY]: groupToneRecipes[tone].inkLight },
-  dark: { [TINT_PROPERTY]: groupToneRecipes[tone].inkDark },
+  light: { [TINT_PROPERTY]: groupToneRecipe(tone).inkLight },
+  dark: { [TINT_PROPERTY]: groupToneRecipe(tone).inkDark },
 });
 
 const tintedSurface = (theme: Theme, tint?: string, tone?: KkGroupTone): CSSObject =>

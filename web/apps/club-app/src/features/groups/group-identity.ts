@@ -1,5 +1,5 @@
 import type { KkGroupTone } from '@furria/ui/group-tone';
-import { GROUP_TONES } from '@furria/ui/group-tone';
+import { GROUP_TONE_PRESETS } from '@furria/ui/group-tone';
 
 export type GroupTone = KkGroupTone;
 
@@ -22,7 +22,6 @@ export interface Anniversary {
 
 export const ANNIVERSARY_STEP = 5;
 
-const FALLBACK_TONE: GroupTone = 'clay';
 const FOUNDED_PREFIX = 'seit ';
 const ANNIVERSARY_SUFFIX = ' Jahre';
 const MINUTES_PER_HOUR = 60;
@@ -48,7 +47,7 @@ export const toGroupTone = (groupId: number, tone: GroupTone | null): GroupTone 
     return tone;
   }
 
-  return GROUP_TONES[Math.abs(groupId) % GROUP_TONES.length] ?? FALLBACK_TONE;
+  return GROUP_TONE_PRESETS[Math.abs(groupId) % GROUP_TONE_PRESETS.length] ?? GROUP_TONE_PRESETS[0];
 };
 
 export const toAnniversary = (

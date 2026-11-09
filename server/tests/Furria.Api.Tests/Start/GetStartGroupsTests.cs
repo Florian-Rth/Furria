@@ -60,7 +60,7 @@ public sealed class GetStartGroupsTests : IClassFixture<ApiTestFixture>
                 Assert.Equal(StartGroupMomentKind.Jubilee, jubilee.Kind);
                 Assert.Equal(ctx.Groups.Groups.IdOf("tanzgarde"), jubilee.GroupId);
                 Assert.Equal("Tanzgarde", jubilee.Name);
-                Assert.Equal(GroupTone.Rose, jubilee.Tone);
+                Assert.Equal(TestTones.Rose, jubilee.Tone);
                 Assert.Equal(25, jubilee.Years);
                 Assert.Equal(TanzgardeFounded, jubilee.FoundedYear);
                 Assert.Equal(LastDayOfTheOpeningFortnight, jubilee.Until);
@@ -170,7 +170,7 @@ public sealed class GetStartGroupsTests : IClassFixture<ApiTestFixture>
                                 "tanzgarde",
                                 "Tanzgarde",
                                 foundedYear: TanzgardeFounded,
-                                tone: GroupTone.Rose
+                                tone: TestTones.Rose
                             )
                             .AddGroup("kindergarde", "Kindergarde", foundedYear: KindergardeFounded)
                             .AddGroup(
