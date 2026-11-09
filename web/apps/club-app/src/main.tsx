@@ -18,6 +18,7 @@ import { listenForPushOpens, startPushSync } from '@/features/push/push-sync';
 import { startSession } from '@/lib/api/session/session-boot';
 import { markSessionUnavailable } from '@/lib/api/session/session-store';
 import { withBackStack } from '@/lib/back-stack';
+import { startChangeFeed } from '@/lib/query/change-feed';
 import { queryClient } from '@/lib/query-client';
 import { routeTree } from '@/routeTree.gen';
 
@@ -47,6 +48,7 @@ if (rootElement === null) {
 void startSession().catch(markSessionUnavailable);
 startAppUpdates();
 startPushSync();
+startChangeFeed(queryClient);
 listenForPushOpens((path) => {
   router.history.push(path);
 });
