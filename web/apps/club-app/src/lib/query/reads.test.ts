@@ -32,7 +32,7 @@ describe('staleReadsAfter', () => {
     {
       label: 'a board seat opens or ends',
       change: 'boardSeat',
-      stale: ['board', 'clubHub', 'me', 'person', 'roles', 'role'],
+      stale: ['board', 'clubHub', 'me', 'person', 'roles', 'role', 'member'],
     },
     {
       label: 'a venue changes',

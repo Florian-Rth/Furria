@@ -2,10 +2,10 @@ import { KkPanelStack } from '@furria/ui/KkPanelStack';
 import Grid from '@mui/material/Grid';
 import type { FC } from 'react';
 import type { MemberDetails } from '../schemas';
+import { MemberBoardPanel } from './MemberBoardPanel';
 import { MemberClubPanel } from './MemberClubPanel';
 import { MemberContactPanel } from './MemberContactPanel';
 import { MemberGroupsPanel } from './MemberGroupsPanel';
-import { MemberRolesPanel } from './MemberRolesPanel';
 
 interface MemberViewProps {
   member: MemberDetails;
@@ -17,7 +17,7 @@ export const MemberView: FC<MemberViewProps> = ({ member, isSelf }) => (
     <Grid size={{ xs: 12, desktop: 7 }} sx={{ minWidth: 0 }}>
       <KkPanelStack>
         <MemberGroupsPanel groups={member.groups} firstName={member.firstName} />
-        <MemberRolesPanel roles={member.roles} firstName={member.firstName} />
+        <MemberBoardPanel terms={member.boardTerms} />
       </KkPanelStack>
     </Grid>
     <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>

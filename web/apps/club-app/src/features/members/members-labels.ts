@@ -1,7 +1,9 @@
 import { toInitials } from '@/lib/initials';
+import { formatIsoDay } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
 import { toMembershipStateChip, toNoStateMatchLine } from '@/lib/state-chips';
 import type { LetterAnchor } from '@/lib/use-letter-position';
+import type { BoardTermPeriod } from './board-terms';
 import type { MemberDetails } from './schemas';
 
 const META_SEPARATOR = ' · ';
@@ -78,7 +80,7 @@ export const toPeekAffiliationLine = (entries: readonly { name: string }[]): str
 
 export const MEMBER_SECTION_TITLES = {
   groups: 'Gruppen',
-  roles: 'Rollen',
+  board: 'Vorstand',
   club: 'Im Verein',
   contact: 'Kontakt',
 } as const;
@@ -102,5 +104,15 @@ export const SELF_CONTACT_HIDDEN_LINK = 'In Mein Profil ändern';
 export const toNoGroupsDescription = (firstName: string): string =>
   `${firstName} ist in keiner Gruppe.`;
 
-export const toNoRolesDescription = (firstName: string): string =>
-  `${firstName} hat keine Rolle im Verein.`;
+const BOARD_TERM_SINCE_LABEL = 'seit';
+const BOARD_TERM_UNTIL_PREFIX = '– ';
+
+export const toBoardTermSince = (
+  period: BoardTermPeriod,
+): { sinceLabel: string; sinceValue: string } =>
+  period.kind === 'current'
+    ? { sinceLabel: BOARD_TERM_SINCE_LABEL, sinceValue: formatIsoDay(period.since) }
+    : {
+        sinceLabel: formatIsoDay(period.since),
+        sinceValue: `${BOARD_TERM_UNTIL_PREFIX}${formatIsoDay(period.until)}`,
+      };

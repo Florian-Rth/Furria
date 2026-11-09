@@ -13,7 +13,7 @@ import {
 } from './start-lines';
 
 const mine = (overrides: Partial<StartMine>): StartMine => ({
-  kind: 'newRole',
+  kind: 'newBoardSeat',
   subjectId: 7,
   on: '2027-01-18',
   until: '2027-01-31',
@@ -84,10 +84,10 @@ describe('joinDayOf', () => {
 describe('toMineLine', () => {
   it.each<{ label: string; item: StartMine; context: MineLineContext; target: object }>([
     {
-      label: 'a new role opens its sheet',
-      item: mine({ kind: 'newRole', subjectId: 7 }),
+      label: 'a new board seat opens its sheet',
+      item: mine({ kind: 'newBoardSeat', subjectId: 7 }),
       context: MEMBER,
-      target: { kind: 'sheet', sheetId: 'role-7' },
+      target: { kind: 'sheet', sheetId: 'office-7' },
     },
     {
       label: 'a new group membership leads to the group',

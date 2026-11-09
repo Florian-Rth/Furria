@@ -52,10 +52,6 @@ describe('toMineCoin', () => {
       { glyph: 'crown', groupTone: 'iris' },
     ],
     [
-      { ...mine('newRole'), name: 'Präsident' },
-      { glyph: undefined, groupTone: undefined },
-    ],
-    [
       { ...mine('newBoardSeat'), name: 'Kassier' },
       { glyph: undefined, groupTone: undefined },
     ],

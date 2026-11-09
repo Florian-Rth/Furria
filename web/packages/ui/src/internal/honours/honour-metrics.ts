@@ -31,7 +31,7 @@ export const ringMetrics: Record<KkRingedAvatarSize, RingMetrics> = {
     dotRadius: 2.6,
     coinShare: 0.3,
     coinCount: 1,
-    sash: 'band',
+    sash: 'emblem',
     interactive: false,
   },
   medium: {
@@ -46,7 +46,7 @@ export const ringMetrics: Record<KkRingedAvatarSize, RingMetrics> = {
     dotRadius: 3,
     coinShare: 0.3,
     coinCount: 1,
-    sash: 'band',
+    sash: 'emblem',
     interactive: false,
   },
   large: {
@@ -61,7 +61,7 @@ export const ringMetrics: Record<KkRingedAvatarSize, RingMetrics> = {
     dotRadius: 3.6,
     coinShare: 0.3,
     coinCount: 1,
-    sash: 'band',
+    sash: 'emblem',
     interactive: false,
   },
   header: {

@@ -4,8 +4,8 @@ import {
   HonoursSchema,
   MembershipStateSchema,
   PictureSchema,
-  RoleRefSchema,
 } from '@/lib/api/schemas';
+import { ClubIconSchema } from '@/lib/club-icon';
 
 export const MemberSummarySchema = z.object({
   personId: z.number().int(),
@@ -14,7 +14,6 @@ export const MemberSummarySchema = z.object({
   portrait: PictureSchema.nullable(),
   membershipState: MembershipStateSchema,
   groups: z.array(GroupRefSchema),
-  roles: z.array(RoleRefSchema),
   honours: HonoursSchema,
 });
 export type MemberSummary = z.infer<typeof MemberSummarySchema>;
@@ -38,8 +37,14 @@ export type MemberContact = z.infer<typeof MemberContactSchema>;
 export const MemberGroupSchema = GroupRefSchema.extend({ since: z.iso.date() });
 export type MemberGroup = z.infer<typeof MemberGroupSchema>;
 
-export const MemberRoleSchema = RoleRefSchema.extend({ since: z.iso.date() });
-export type MemberRole = z.infer<typeof MemberRoleSchema>;
+export const MemberBoardTermSchema = z.object({
+  boardOfficeId: z.number().int(),
+  office: z.string(),
+  icon: ClubIconSchema.nullable(),
+  since: z.iso.date(),
+  until: z.iso.date().nullable(),
+});
+export type MemberBoardTerm = z.infer<typeof MemberBoardTermSchema>;
 
 export const MemberDetailsSchema = z.object({
   personId: z.number().int(),
@@ -49,7 +54,7 @@ export const MemberDetailsSchema = z.object({
   membershipState: MembershipStateSchema,
   memberSince: z.iso.date().nullable(),
   groups: z.array(MemberGroupSchema),
-  roles: z.array(MemberRoleSchema),
+  boardTerms: z.array(MemberBoardTermSchema),
   contact: MemberContactSchema,
   honours: HonoursSchema,
 });

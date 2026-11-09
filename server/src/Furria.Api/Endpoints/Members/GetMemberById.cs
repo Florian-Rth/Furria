@@ -61,7 +61,7 @@ public sealed class GetMemberById : Endpoint<GetMemberByIdRequest, GetMemberById
             MembershipState = member.MembershipState,
             MemberSince = member.MemberSince,
             Groups = [.. member.Groups.Select(ToDto)],
-            Roles = [.. member.Roles.Select(ToDto)],
+            BoardTerms = [.. member.BoardTerms.Select(ToDto)],
             Contact = ToDto(member.Contact),
             Honours = PersonHonoursDto.From(honours),
         };
@@ -74,12 +74,14 @@ public sealed class GetMemberById : Endpoint<GetMemberByIdRequest, GetMemberById
             Since = group.Since,
         };
 
-    private static MemberRoleDto ToDto(MemberRole role) =>
+    private static MemberBoardTermDto ToDto(MemberBoardTerm term) =>
         new()
         {
-            RoleId = role.RoleId,
-            Name = role.Name,
-            Since = role.Since,
+            BoardOfficeId = term.BoardOfficeId,
+            Office = term.Office,
+            Icon = term.Icon,
+            Since = term.Since,
+            Until = term.Until,
         };
 
     private static MemberContactDto ToDto(MemberContact contact) =>
@@ -124,7 +126,7 @@ public sealed record GetMemberByIdResponse
 
     public required IReadOnlyList<MemberGroupDto> Groups { get; init; }
 
-    public required IReadOnlyList<MemberRoleDto> Roles { get; init; }
+    public required IReadOnlyList<MemberBoardTermDto> BoardTerms { get; init; }
 
     public required MemberContactDto Contact { get; init; }
 
@@ -140,13 +142,17 @@ public sealed record MemberGroupDto
     public required DateOnly Since { get; init; }
 }
 
-public sealed record MemberRoleDto
+public sealed record MemberBoardTermDto
 {
-    public required int RoleId { get; init; }
+    public required int BoardOfficeId { get; init; }
 
-    public required string Name { get; init; }
+    public required string Office { get; init; }
+
+    public required ClubIcon? Icon { get; init; }
 
     public required DateOnly Since { get; init; }
+
+    public required DateOnly? Until { get; init; }
 }
 
 public sealed record MemberContactDto

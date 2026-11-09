@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { toPersonRowAffiliation } from './person-rows';
+import { toGroupsMeta, toPersonRowAffiliation } from './person-rows';
 
 const groupOf = (groupId: number, name: string): { groupId: number; name: string } => ({
   groupId,
@@ -29,5 +29,14 @@ describe('toPersonRowAffiliation', () => {
 
   it('carries a meta once the person belongs to a group', () => {
     expect(toPersonRowAffiliation([groupOf(1, 'G1')], []).meta).toBeDefined();
+  });
+});
+
+describe('toGroupsMeta', () => {
+  it.each([
+    { label: 'no group', groups: [], expected: undefined },
+    { label: 'two groups', groups: [groupOf(1, 'G1'), groupOf(2, 'G2')], expected: 'G1 · G2' },
+  ])('lists the groups for $label', ({ groups, expected }) => {
+    expect(toGroupsMeta(groups)).toBe(expected);
   });
 });

@@ -10,6 +10,17 @@ export const NO_CLUB_ICON_LABEL = 'Kein Symbol';
 
 const CLUB_ICON_LABELS: Record<KkClubIcon, string> = {
   crown: 'Krone',
+  scepter: 'Zepter',
+  jesterCap: 'Narrenkappe',
+  chain: 'Amtskette',
+  viceCrown: 'Vize-Krone',
+  childCrown: 'Kinderkrone',
+  laurel: 'Lorbeer',
+  medal: 'Orden',
+  gavel: 'Hammer',
+  briefcase: 'Aktentasche',
+  quill: 'Feder',
+  ledger: 'Kassenbuch',
   euro: 'Euro',
   bolt: 'Blitz',
   shield: 'Schild',
@@ -33,6 +44,13 @@ const CLUB_ICON_LABELS: Record<KkClubIcon, string> = {
   calendar: 'Kalender',
   whistle: 'Pfeife',
   broom: 'Besen',
+  jingleBell: 'Schelle',
+  castle: 'Burg',
+  diamond: 'Juwel',
+  handshake: 'Handschlag',
+  child: 'Kind',
+  confetti: 'Konfetti',
+  rocket: 'Rakete',
 };
 
 export const toClubIconLabel = (icon: KkClubIcon): string => CLUB_ICON_LABELS[icon];

@@ -202,13 +202,6 @@ const newSince = (mine: StartMine, context: MineLineContext): string =>
 const nameOf = (mine: StartMine): string => mine.name ?? '';
 
 const MINE_FACES: Record<StartMineKind, (mine: StartMine, context: MineLineContext) => MineFace> = {
-  newRole: (mine, context) => ({
-    anchor: iconAnchor('role'),
-    tick: null,
-    title: `Rolle ${nameOf(mine)}`,
-    meta: [newSince(mine, context)],
-    target: sheetTarget('role', mine.subjectId),
-  }),
   newBoardSeat: (mine, context) => ({
     anchor: iconAnchor('board'),
     tick: null,

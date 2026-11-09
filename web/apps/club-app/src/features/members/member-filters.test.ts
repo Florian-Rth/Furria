@@ -8,7 +8,6 @@ const member = (
   lastName: string,
   membershipState: MemberSummary['membershipState'],
   groups: string[] = [],
-  roles: string[] = [],
 ): MemberSummary => ({
   personId,
   firstName,
@@ -16,14 +15,13 @@ const member = (
   portrait: null,
   membershipState,
   groups: groups.map((name, index) => ({ groupId: personId * 10 + index, name })),
-  roles: roles.map((name, index) => ({ roleId: personId * 100 + index, name })),
   honours: { sessions: 0, functions: [] },
 });
 
-const PAULA = member(1, 'Paula', 'Brendel', 'active', ['Tanzgarde'], []);
-const KATRIN = member(2, 'Katrin', 'Kühnel', 'paused', ['Elferrat'], ['Präsidentin']);
-const JONAS = member(3, 'Jonas', 'Zimmermann', 'none', [], ['Zeugwart']);
-const ANNA = member(4, 'Anna', 'Ärtzel', 'ended', ['Musik & Kapelle'], []);
+const PAULA = member(1, 'Paula', 'Brendel', 'active', ['Tanzgarde']);
+const KATRIN = member(2, 'Katrin', 'Kühnel', 'paused', ['Elferrat']);
+const JONAS = member(3, 'Jonas', 'Zimmermann', 'none', []);
+const ANNA = member(4, 'Anna', 'Ärtzel', 'ended', ['Musik & Kapelle']);
 const ALL = [PAULA, KATRIN, JONAS, ANNA];
 
 const idsOf = (members: readonly MemberSummary[]): number[] =>
@@ -36,7 +34,6 @@ describe('filterMembers', () => {
     { case: 'surname first', query: 'kühnel katrin', expected: [2] },
     { case: 'an umlaut typed without one', query: 'kuhnel', expected: [2] },
     { case: 'a group', query: 'tanzgarde', expected: [1] },
-    { case: 'a role', query: 'präsident', expected: [2] },
     { case: 'surrounding blanks', query: '  zimmer  ', expected: [3] },
   ])('matches $case', ({ query, expected }) => {
     expect(idsOf(filterMembers(ALL, { query, state: 'all' }))).toEqual(expected);

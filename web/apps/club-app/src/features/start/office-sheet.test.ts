@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { toRoleSheet } from './role-sheet';
+import { toOfficeSheet } from './office-sheet';
 import type { StartMine } from './schemas';
 
 const mine = (overrides: Partial<StartMine>): StartMine => ({
-  kind: 'newRole',
+  kind: 'newBoardSeat',
   subjectId: 7,
   on: '2027-01-18',
   until: '2027-01-31',
@@ -17,7 +17,7 @@ const mine = (overrides: Partial<StartMine>): StartMine => ({
   ...overrides,
 });
 
-describe('toRoleSheet', () => {
+describe('toOfficeSheet', () => {
   it.each<{
     label: string;
     keys: string[] | null;
@@ -50,8 +50,8 @@ describe('toRoleSheet', () => {
       permissions: 1,
       workbench: null,
     },
-  ])('explains a role that $label', ({ keys, permissions, workbench }) => {
-    const sheet = toRoleSheet(mine({ permissionKeys: keys }));
+  ])('explains an office that $label', ({ keys, permissions, workbench }) => {
+    const sheet = toOfficeSheet(mine({ permissionKeys: keys }));
 
     expect(sheet.permissions).toHaveLength(permissions);
     expect(sheet.workbench?.to ?? null).toBe(workbench);

@@ -28,7 +28,6 @@ public static class StartComposer
     private static readonly IReadOnlySet<StartMineKind> SoonWhileRecentKinds =
         new HashSet<StartMineKind>
         {
-            StartMineKind.NewRole,
             StartMineKind.NewBoardSeat,
             StartMineKind.NewGroupAdmin,
             StartMineKind.NewGroupMembership,

@@ -176,9 +176,6 @@ public sealed partial class StartService
         CancellationToken ct
     ) =>
         [
-            .. (await NewRolesAsync(viewer, ct)).Select(row =>
-                NewTieOf(StartMineKind.NewRole, row)
-            ),
             .. (await NewBoardSeatsAsync(viewer, ct)).Select(row =>
                 NewTieOf(StartMineKind.NewBoardSeat, row)
             ),
@@ -198,27 +195,6 @@ public sealed partial class StartService
                 viewer.Moment.Today
             ),
         ];
-
-    private Task<List<NewTieRow>> NewRolesAsync(Viewer viewer, CancellationToken ct)
-    {
-        var personId = viewer.PersonId;
-        var today = viewer.Moment.Today;
-        var freshSince = FreshSinceOf(today);
-
-        return _dbContext
-            .RoleHoldings.AsNoTracking()
-            .Where(Conferring.RoleHoldings(today))
-            .Where(holding => holding.PersonId == personId && holding.SinceOn >= freshSince)
-            .Select(holding => new NewTieRow(
-                holding.RoleId,
-                holding.SinceOn,
-                holding.Role!.Name,
-                null,
-                null,
-                holding.Role.Permissions.Select(permission => permission.PermissionKey).ToList()
-            ))
-            .ToListAsync(ct);
-    }
 
     private Task<List<NewTieRow>> NewBoardSeatsAsync(Viewer viewer, CancellationToken ct)
     {

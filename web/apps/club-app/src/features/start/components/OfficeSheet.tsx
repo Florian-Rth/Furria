@@ -4,21 +4,19 @@ import { KkSheet } from '@furria/ui/KkSheet';
 import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { useRoleSheet } from '../hooks/use-role-sheet';
+import { useOfficeSheet } from '../hooks/use-office-sheet';
 import type { StartBoard } from '../hooks/use-start-view';
-import type { RoleSheetVariant } from '../role-sheet';
 
 const CLOSE_LABEL = 'Schließen';
 const PERMISSIONS_TITLE = 'Damit darfst du';
 const NO_PERMISSIONS_LINE = 'Damit sind keine besonderen Rechte verbunden.';
 
-interface RoleSheetProps {
-  variant: RoleSheetVariant;
+interface OfficeSheetProps {
   board: StartBoard;
 }
 
-export const RoleSheet: FC<RoleSheetProps> = ({ variant, board }) => {
-  const sheet = useRoleSheet(variant, board);
+export const OfficeSheet: FC<OfficeSheetProps> = ({ board }) => {
+  const sheet = useOfficeSheet(board);
 
   if (sheet === null) {
     return null;

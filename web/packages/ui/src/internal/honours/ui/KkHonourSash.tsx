@@ -59,8 +59,6 @@ export const KkHonourSash: FC<KkHonourSashProps> = ({
       sx={sashEdgePaint}
     />
   ));
-  const icon =
-    layout.icon === null ? null : <KkHonourSashIcon icon={entry.icon} place={layout.icon} />;
   const text = layout.text === null ? null : <KkHonourSashName name={name} place={layout.text} />;
 
   return (
@@ -80,7 +78,7 @@ export const KkHonourSash: FC<KkHonourSashProps> = ({
               sx={sashBandPaint}
             />
             {edges}
-            {icon}
+            <KkHonourSashIcon icon={entry.icon} place={layout.icon} />
             {text}
           </motion.g>
         </g>

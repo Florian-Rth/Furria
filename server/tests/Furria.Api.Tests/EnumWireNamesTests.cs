@@ -30,7 +30,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
     {
         [typeof(StartPanelKind)] = "calendar announcements mine groups toDos gallery news beerTab",
         [typeof(StartMineKind)] =
-            "newRole newBoardSeat newGroupAdmin newGroupMembership newKey "
+            "newBoardSeat newGroupAdmin newGroupMembership newKey "
             + "contactChangedByOther membershipEnding membershipPaused milestone",
         [typeof(StartGroupMomentKind)] = "jubilee",
         [typeof(ToDoKind)] =
@@ -38,7 +38,9 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             + "clubRecordGap applicationWaiting",
         [typeof(ClubIcon)] =
             "crown euro bolt shield camera sparkle mic musicNote drum mask megaphone star "
-            + "trophy flag key shirt pen wrench palette heart mug calendar whistle broom",
+            + "trophy flag key shirt pen wrench palette heart mug calendar whistle broom scepter "
+            + "jesterCap chain viceCrown childCrown laurel medal gavel briefcase quill ledger "
+            + "jingleBell castle diamond handshake child confetti rocket",
         [typeof(PersonFunctionKind)] = "boardSeat groupAdmin role",
         [typeof(DayOfWeek)] = "sunday monday tuesday wednesday thursday friday saturday",
         [typeof(EventSalesStatus)] =
