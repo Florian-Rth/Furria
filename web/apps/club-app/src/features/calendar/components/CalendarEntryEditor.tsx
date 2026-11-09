@@ -1,4 +1,3 @@
-import { KkNote } from '@furria/ui/KkNote';
 import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
 import { CALENDAR_ORIGIN } from '@/features/session/app-sections';
@@ -23,7 +22,6 @@ import { DeleteCalendarEntryDialog } from './DeleteCalendarEntryDialog';
 
 const ADD_LABEL = 'Hinzufügen';
 const SAVE_LABEL = 'Speichern';
-const CREATE_NOTE = 'Der Termin ist sofort für alle Berechtigten sichtbar.';
 
 const NO_PARTICIPANTS: readonly ParticipatingGroup[] = [];
 
@@ -58,7 +56,6 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
   const ownerSelectOptions = toOwnerSelectOptions(ownerOptions);
   const venueOptions = toVenueOptions(venues);
 
-  const intro = control.isEditing ? null : <KkNote>{CREATE_NOTE}</KkNote>;
   const dangerLine =
     entry === null ? null : (
       <>
@@ -82,7 +79,6 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
         },
       }}
     >
-      {intro}
       <CalendarEntryBasicsSection control={control} />
       <CalendarEntryScheduleSection control={control} venueOptions={venueOptions} />
       <CalendarEntryAudienceSection

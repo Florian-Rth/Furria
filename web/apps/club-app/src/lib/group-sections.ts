@@ -6,9 +6,6 @@ export const GROUP_SECTION_TITLES = {
   settings: 'Einstellungen',
 } as const;
 
-export const GROUP_ADMINS_NOTE =
-  'Gruppen-Admins verwalten die Gruppe und müssen ihr nicht selbst angehören.';
-
 const SUBLINE_SEPARATOR = ' · ';
 
 export const toGroupMembersLabel = (count: number): string => {

@@ -13,7 +13,6 @@ import type { ResetErrorMessages } from '../reset-messages';
 import type { ResetPasswordForm as ResetPasswordValues } from '../schemas';
 
 const TITLE = 'NEUES PASSWORT';
-const INTRO = 'Leg ein neues Passwort fest. Danach meldest du dich damit an.';
 const PASSWORD_LABEL = 'Neues Passwort';
 const SUBMIT_LABEL = 'Passwort festlegen';
 const LOGIN_NOTICE = 'Alle Geräte, auf denen du angemeldet bist, werden dabei abgemeldet.';
@@ -55,12 +54,9 @@ export const ResetPasswordForm: FC<ResetPasswordFormProps> = ({
 
   return (
     <Stack sx={{ gap: 2.5, minWidth: 0 }}>
-      <Stack sx={{ gap: 1 }}>
-        <KkHeading level={1} component="h1">
-          {TITLE}
-        </KkHeading>
-        <KkNote>{INTRO}</KkNote>
-      </Stack>
+      <KkHeading level={1} component="h1">
+        {TITLE}
+      </KkHeading>
       <Stack component="form" noValidate onSubmit={onSubmit} sx={{ gap: 2.5 }}>
         <KkTextField
           name={passwordField.name}

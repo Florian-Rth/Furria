@@ -4,7 +4,6 @@ import { de } from 'date-fns/locale/de';
 import { formatCountdown } from '@/lib/countdown';
 
 export const SECURITY_TITLE = 'Anmeldung & Sicherheit';
-export const SECURITY_LEAD = 'Wie du dich anmeldest und wo du angemeldet bist.';
 export const PASSKEY_EYEBROW = 'Passkey';
 export const SECURITY_PATH = '/profile/security';
 export const SECURITY_ORIGIN: KkScreenOrigin = { label: SECURITY_TITLE, to: SECURITY_PATH };
@@ -40,7 +39,7 @@ export const toLoginEmailSavedMessage = (
     : `Du meldest dich jetzt mit ${loginEmail} an. Deine Kontakt-E-Mail ist unverändert.`;
 
 export const toCodeSentLine = (loginEmail: string): string =>
-  `Wir haben dir einen Code an ${loginEmail} geschickt. Erst wenn du ihn eingibst, meldest du dich mit dieser Adresse an.`;
+  `Wir haben dir einen Code an ${loginEmail} geschickt.`;
 
 export const toCodeValidityLine = (secondsLeft: number): string =>
   secondsLeft > 0 ? `Der Code gilt noch ${formatCountdown(secondsLeft)}.` : CODE_EXPIRED_LINE;

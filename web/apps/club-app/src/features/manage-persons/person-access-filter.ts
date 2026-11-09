@@ -23,21 +23,20 @@ const ACCESS_FILTER_LABELS: Record<PersonAccessFilter, string> = {
   'not-invitable': 'nicht einladbar',
   'with-access': 'mit Zugang',
   'open-invitation': 'mit offener Einladung',
-  'without-email': 'ohne E-Mail-Adresse, nur vor Ort einladbar',
+  'without-email': 'ohne E-Mail-Adresse',
   'birth-date-unknown': 'ohne Geburtsdatum',
 };
 
 const NO_ACCESS_MATCH_LINES: Record<PersonAccessFilter, string> = {
-  none: 'Wer einen Zugang haben kann, ist schon eingeladen oder hat einen.',
+  none: 'Alle haben einen Zugang oder eine Einladung.',
   invited: 'Gerade ist keine Einladung offen.',
   active: 'Noch nutzt niemand die App.',
   disabled: 'Niemandem ist die App gesperrt.',
-  'not-invitable': 'Wer im Verein aktiv ist, kann auch eingeladen werden.',
+  'not-invitable': 'Alle sind einladbar.',
   'with-access': 'Noch hat niemand aus dem Verein einen Zugang.',
   'open-invitation': 'Gerade ist keine Einladung offen.',
   'without-email': 'Alle Einladbaren haben eine E-Mail-Adresse.',
-  'birth-date-unknown':
-    'Bei allen ohne Zugang ist das Geburtsdatum hinterlegt oder eine Einladung offen.',
+  'birth-date-unknown': 'Bei allen ohne Zugang ist das Geburtsdatum hinterlegt.',
 };
 
 export const ACCESS_FILTER_CLEAR_LABEL = 'Alle zeigen';

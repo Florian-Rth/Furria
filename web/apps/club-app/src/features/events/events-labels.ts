@@ -52,11 +52,6 @@ export const toAvailabilityState = (event: Pick<EventDetails, 'status'>): Availa
   return SETTABLE_STATUSES.has(event.status) ? 'settable' : 'beforePresale';
 };
 
-export const AVAILABILITY_NOTES: Record<Exclude<AvailabilityState, 'settable'>, string> = {
-  beforePresale: 'Die Kartenlage lässt sich ab dem Start des Vorverkaufs setzen.',
-  cancelled: 'Abgesagt — die Website zeigt keine Kartenlage, nur die Absage.',
-};
-
 export const toEventFacts = (event: EventDetails): KkConfirmFact[] => {
   const facts: KkConfirmFact[] = [
     { label: 'Veranstaltung', value: event.title },
@@ -108,8 +103,7 @@ export const toEventCancellationCopy = (event: EventDetails): EventCancellationC
         tone: 'danger',
         lineLabel: 'Absagen',
         question: `„${event.title}“ absagen?`,
-        explanation:
-          'Die Veranstaltung bleibt auf der Website stehen und zeigt die Absage, damit geteilte Links und Flyer ehrlich bleiben.',
+        explanation: 'Die Seite bleibt online und zeigt die Absage.',
         consequence: `Die Website zeigt „${event.title}“ ab sofort als abgesagt.`,
         confirmLabel: 'Absagen',
       }
@@ -123,8 +117,7 @@ export const toEventCancellationCopy = (event: EventDetails): EventCancellationC
       };
 
 export const DELETE_EVENT_LABEL = 'Veranstaltung löschen';
-export const DELETE_EVENT_EXPLANATION =
-  'Löschen ist für eine versehentlich angelegte Veranstaltung. Ihre Seite auf der Website verschwindet. Fällt der Abend aus, sage ihn stattdessen ab.';
+export const DELETE_EVENT_EXPLANATION = 'Fällt der Abend aus, sage ihn stattdessen ab.';
 
 export const toDeleteEventQuestion = (title: string): string => `„${title}“ löschen?`;
 

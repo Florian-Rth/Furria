@@ -23,7 +23,6 @@ import {
   USUAL_TIME_REMOVE_EYEBROW,
   USUAL_TIME_REMOVE_LABEL,
   USUAL_TIME_START_LABEL,
-  USUAL_TIME_VENUE_HINT,
   USUAL_TIME_VENUE_LABEL,
   USUAL_TIME_WEEKDAY_LABEL,
   WEEKDAY_OPTIONS,
@@ -161,7 +160,6 @@ export const UsualTrainingTimeEditor: FC<UsualTrainingTimeEditorProps> = ({ hub,
           options={venueOptions}
           onChange={control.setVenueId}
           presentation="select"
-          hint={USUAL_TIME_VENUE_HINT}
         />
       </KkFormSection>
       {danger}

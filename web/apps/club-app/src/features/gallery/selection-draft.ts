@@ -13,8 +13,6 @@ export type PublicationState =
   | { kind: 'ready' }
   | { kind: 'published' };
 
-export const SOFT_SELECTION_SIZE = 12;
-
 const bySelectionPosition = (left: AlbumItem, right: AlbumItem): number =>
   (left.selectionPosition ?? 0) - (right.selectionPosition ?? 0);
 

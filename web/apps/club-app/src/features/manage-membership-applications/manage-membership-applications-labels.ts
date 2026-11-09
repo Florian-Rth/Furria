@@ -9,8 +9,6 @@ const MILLISECONDS_PER_DAY = 86_400_000;
 const META_SEPARATOR = ' · ';
 
 export const APPLICATIONS_TITLE = 'Beitrittsanträge';
-export const APPLICATIONS_LEAD =
-  'Bestätigte Anträge von der Website. Jeder bleibt hier, bis jemand ihn aufnimmt oder ablehnt.';
 export const APPLICATIONS_PATH = '/manage/applications';
 export const APPLICATIONS_ORIGIN: KkScreenOrigin = {
   label: APPLICATIONS_TITLE,
@@ -21,15 +19,13 @@ export const APPLICATIONS_EMPTY = {
   title: 'KEINE OFFENEN ANTRÄGE',
   description: 'Gerade wartet niemand auf eine Entscheidung.',
 };
-export const APPLICATIONS_FOOTNOTE =
-  'Ein Antrag erscheint hier erst, wenn er aus dem angegebenen Postfach bestätigt wurde – unbestätigte verfallen nach 48 Stunden. Entschiedene Anträge werden gelöscht.';
 
 export const APPLICATION_EYEBROW = 'Beitrittsantrag';
 export const APPLICANT_SECTION_TITLE = 'Angaben';
 export const INTAKE_SECTION_TITLE = 'Eingang';
 export const MINOR_CHIP: StateChip = { label: 'minderjährig', tone: 'gold', dot: true };
 export const MINOR_NOTE =
-  'Minderjährig: Vor der Aufnahme muss die Einwilligung der gesetzlichen Vertretung vorliegen. Hol sie beim ersten Kontakt ein.';
+  'Minderjährig: Vor der Aufnahme muss die Einwilligung der gesetzlichen Vertretung vorliegen.';
 export const MISSING_PHONE = 'nicht angegeben';
 
 export const APPLICATION_NOT_FOUND_TITLE = 'DIESEN ANTRAG GIBT ES NICHT MEHR';
@@ -39,8 +35,7 @@ export const APPLICATIONS_BACK_LABEL = 'Zu den Beitrittsanträgen';
 
 export const DECLINE_LABEL = 'Antrag ablehnen';
 export const DECLINE_EYEBROW = 'Antrag ablehnen';
-export const DECLINE_EXPLANATION =
-  'Der Antrag wird sofort gelöscht – so erledigst du auch Spam und zurückgezogene Anträge. Es geht keine Mail raus: Eine Absage überbringt ihr persönlich.';
+export const DECLINE_EXPLANATION = 'Der Antrag wird sofort gelöscht. Es geht keine Mail raus.';
 export const ALREADY_DECIDED_MESSAGE = 'Über diesen Antrag hat inzwischen jemand entschieden.';
 
 export const toApplicantName = (applicant: { firstName: string; lastName: string }): string =>

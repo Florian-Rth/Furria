@@ -11,25 +11,21 @@ export const countCaption = (count: number): string => (count === 1 ? 'Kiste' : 
 export const bookLabel = (count: number): string =>
   count === 1 ? 'Kiste buchen' : `${count} Kisten buchen`;
 export const HOLD_HINT = 'Gedrückt halten zum Buchen';
-export const priceNote = (price: string): string => `${price} je Kiste · kommt auf deine Liste`;
+export const priceNote = (price: string): string => `${price} je Kiste`;
 
 const landsOnTab = (count: number): string =>
   count === 1 ? 'Die Kiste kommt auf deine Liste.' : 'Die Kisten kommen auf deine Liste.';
 
-const paysPrivately = (owner: string | null): string =>
-  owner === null ? 'Du zahlst privat.' : `Du zahlst privat an ${owner}.`;
-
-export const bookConfirm = (count: number, owner: string | null): KkHoldConfirm => ({
+export const bookConfirm = (count: number): KkHoldConfirm => ({
   eyebrow: 'Bierliste',
   question: `${cratesLabel(count)} buchen?`,
-  explanation: `${landsOnTab(count)} ${paysPrivately(owner)}`,
+  explanation: landsOnTab(count),
   confirmLabel: bookLabel(count),
   cancelLabel: 'Abbrechen',
   closeLabel: 'Schließen',
 });
 
-export const EMPTY_STOCK_NOTE =
-  'Bestand leer. Gerade ist keine Kiste mehr da. Buchen geht wieder, sobald neue Kisten geliefert sind.';
+export const EMPTY_STOCK_NOTE = 'Bestand leer.';
 
 export const bookedTitle = (count: number): string => `${cratesLabel(count)} gebucht`;
 export const bookedDetail = (amount: string): string => `+${amount} auf deiner Liste`;

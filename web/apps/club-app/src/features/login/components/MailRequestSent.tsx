@@ -10,11 +10,7 @@ const SENT_TITLE = 'SCHAU IN DEIN POSTFACH';
 const SENT_LINE = 'Wenn die Adresse bei uns hinterlegt ist, bekommst du gleich eine Mail.';
 const LOGIN_LABEL = 'Zur Anmeldung';
 
-interface MailRequestSentProps {
-  hint: string;
-}
-
-export const MailRequestSent: FC<MailRequestSentProps> = ({ hint }) => (
+export const MailRequestSent: FC = () => (
   <Stack sx={{ gap: 2.5, minWidth: 0 }}>
     <Stack sx={{ gap: 1 }}>
       <KkHeading level={1} component="h1">
@@ -22,9 +18,6 @@ export const MailRequestSent: FC<MailRequestSentProps> = ({ hint }) => (
       </KkHeading>
       <KkNote>{SENT_LINE}</KkNote>
     </Stack>
-    <KkNote tone="hint" icon="info">
-      {hint}
-    </KkNote>
     <KkButton variant="outlined" fullWidth component={Link} to={LOGIN_PATH}>
       {LOGIN_LABEL}
     </KkButton>

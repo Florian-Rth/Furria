@@ -66,28 +66,24 @@ export const setupFactOf = (row: SetupRow): string => {
   switch (row.key) {
     case 'music':
       return row.amount === 0
-        ? 'Noch kein Lied – Lieder werden zu einer Mischung geschnitten.'
+        ? 'Noch kein Lied'
         : `${amountOf(row.amount, 'Lied', 'Lieder')} in der Mischung`;
     case 'steps':
       return row.amount === 0
-        ? 'Musik abspielen und an jeder Stelle einen Schritt setzen.'
+        ? 'Noch kein Schritt'
         : `${amountOf(row.amount, 'Schritt', 'Schritte')} gesetzt`;
     case 'spots':
       return row.amount === 0
-        ? 'Für jede Tänzerin einen Platz auf der Bühne.'
+        ? 'Noch kein Platz'
         : `${amountOf(row.amount, 'Platz', 'Plätze')}, davon ${row.open} offen`;
     case 'formation':
       return row.amount === 0
-        ? 'Plätze für den ersten Schritt auf die Bühne ziehen.'
+        ? 'Noch nicht aufgestellt'
         : `${amountOf(row.amount, 'Platz', 'Plätze')} aufgestellt, ${row.open} noch ohne Stelle`;
     case 'video':
-      return row.amount === 0
-        ? 'Ein Probevideo zum Mitlernen hochladen.'
-        : amountOf(row.amount, 'Video', 'Videos');
+      return row.amount === 0 ? 'Noch kein Video' : amountOf(row.amount, 'Video', 'Videos');
     case 'final':
-      return row.amount === 0
-        ? 'Die fertig geschnittene Musik, wenn sie da ist.'
-        : finalFactOf(row.amount, row.open);
+      return row.amount === 0 ? 'Noch keine Endfassung' : finalFactOf(row.amount, row.open);
   }
 };
 

@@ -21,8 +21,6 @@ export const EVENING_FORMATION_RESET_SURE = 'Eigene Aufstellung verwerfen?';
 export const EVENING_PRACTISE = 'Diese Fassung üben';
 export const EVENING_LEAVE = 'Wir tanzen hier nicht';
 export const EVENING_LEAVE_SURE = 'Wirklich abmelden?';
-export const EVENING_PLACED_NOTE =
-  'Der Auftritt steht im Ablauf dieses Abends. Herausnehmen kann ihn nur die Planung.';
 
 const DAY = new Intl.DateTimeFormat('de-DE', {
   weekday: 'short',
@@ -49,10 +47,9 @@ const STATE_CHIPS: Record<EveningEntryState, EveningStateChip> = {
 };
 
 const FORMATION_LINES: Record<EveningChoreographyState, string> = {
-  session: 'Wie in der Session. Was dort geändert wird, gilt auch an diesem Abend.',
+  session: 'Wie in der Session.',
   own: 'Eigene Aufstellung für diesen Abend.',
-  behind:
-    'Eigene Aufstellung für diesen Abend. Die Aufstellung der Session wurde seither geändert und kommt hier nicht an.',
+  behind: 'Eigene Aufstellung für diesen Abend. Die Session wurde seither geändert.',
 };
 
 export const toEveningDay = (startsAt: string): string => DAY.format(new Date(startsAt));

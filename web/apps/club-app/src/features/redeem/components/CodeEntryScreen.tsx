@@ -1,7 +1,6 @@
 import { KkAlert } from '@furria/ui/KkAlert';
 import { KkButton } from '@furria/ui/KkButton';
 import { KkHeading } from '@furria/ui/KkHeading';
-import { KkNote } from '@furria/ui/KkNote';
 import { KkTextField } from '@furria/ui/KkTextField';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
@@ -11,8 +10,6 @@ import { useCodeEntry } from '../hooks/use-code-entry';
 import { RedeemFrame } from './RedeemFrame';
 
 const TITLE = 'CODE EINGEBEN';
-const INTRO =
-  'Jemand vom Verein zeigt dir den Code auf dem Handy. Er hat acht Zeichen, zum Beispiel K7M4-Q2XP.';
 const CODE_LABEL = 'Code';
 const CODE_HINT = 'Groß- und Kleinschreibung ist egal.';
 const SUBMIT_LABEL = 'Weiter';
@@ -26,12 +23,9 @@ export const CodeEntryScreen: FC = () => {
   return (
     <RedeemFrame>
       <Stack sx={{ gap: 2.5, minWidth: 0 }}>
-        <Stack sx={{ gap: 1 }}>
-          <KkHeading level={1} component="h1">
-            {TITLE}
-          </KkHeading>
-          <KkNote>{INTRO}</KkNote>
-        </Stack>
+        <KkHeading level={1} component="h1">
+          {TITLE}
+        </KkHeading>
         <Stack component="form" noValidate onSubmit={control.submit} sx={{ gap: 2.5 }}>
           <KkTextField
             name="code"

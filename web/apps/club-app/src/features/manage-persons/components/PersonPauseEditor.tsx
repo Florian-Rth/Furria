@@ -18,9 +18,7 @@ import type { PersonDetails, PersonMembership, PersonPause } from '../schemas';
 
 const SPAN_SECTION_TITLE = 'Ruhezeit';
 const FIRST_LABEL = 'Von Session';
-const FIRST_HINT = 'Ruhezeiten gelten immer für ganze Sessions.';
 const LAST_LABEL = 'Bis Session';
-const LAST_HINT = 'Leer lassen, solange das Ende nicht feststeht.';
 const OPEN_LABEL = 'offen lassen';
 
 interface PersonPauseEditorProps {
@@ -81,7 +79,6 @@ export const PersonPauseEditor: FC<PersonPauseEditorProps> = ({ person, membersh
               required
               error={control.firstSessionYearError !== undefined}
               helperText={control.firstSessionYearError}
-              hint={FIRST_HINT}
             />
           }
           end={
@@ -93,7 +90,6 @@ export const PersonPauseEditor: FC<PersonPauseEditorProps> = ({ person, membersh
               currentSessionYear={control.currentSessionYear}
               allowOpen
               openLabel={OPEN_LABEL}
-              hint={LAST_HINT}
             />
           }
         />

@@ -1,6 +1,5 @@
 import { KkMasterDetail } from '@furria/ui/KkMasterDetail';
 import { KkMeta } from '@furria/ui/KkMeta';
-import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { ActCardDetailsHead } from '@/features/act-card/components/ActCardDetailsHead';
@@ -9,7 +8,7 @@ import { StudioHistorySection } from '@/features/act-studio/components/StudioHis
 import { VERSIONS_TITLE } from '@/features/act-studio/undo-copy';
 import { ActTrainingRollPanel } from '@/features/act-training/components/ActTrainingRollPanel';
 import { ActTrainingsSection } from '@/features/act-training/components/ActTrainingsSection';
-import { CAST_ONLY_NOTE, toActStateNote } from '../act-page-copy';
+import { toActStateNote } from '../act-page-copy';
 import type { ActDetailsPageState } from '../hooks/use-act-details-page';
 import { ActCoEditorsSection } from './ActCoEditorsSection';
 import { ActEveningPanel } from './ActEveningPanel';
@@ -28,7 +27,6 @@ export const ActDetailsBody: FC<ActDetailsBodyProps> = ({ page }) => {
     return <ActPageLoading load={page.load} />;
   }
 
-  const studio = data.studio === null ? <KkNote>{CAST_ONLY_NOTE}</KkNote> : null;
   const stateNote = toActStateNote(data.act);
   const state = stateNote === null ? null : <KkMeta tone="accent">{stateNote}</KkMeta>;
   const trainings =
@@ -79,7 +77,6 @@ export const ActDetailsBody: FC<ActDetailsBodyProps> = ({ page }) => {
         <Stack sx={{ gap: 2, minWidth: 0 }}>
           <ActCardDetailsHead data={data} viewerId={page.viewerId} search={page.search} />
           {state}
-          {studio}
           {evenings}
           {trainings}
           {history}

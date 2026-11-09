@@ -134,7 +134,6 @@ export const RECRUITING_FILTER_ID = 'recruiting';
 export const SETTLED_FILTER_ID = 'settled';
 
 const ALL_GROUPS_LABEL = 'Alle';
-const ALL_GROUPS_SUGGESTION = 'Wähle „Alle“, um alle anzuzeigen.';
 
 const isRecruiting = (group: GroupSummary): boolean => group.isRecruiting;
 
@@ -213,23 +212,7 @@ export const toNoGroupMatchLine = (query: string, status: string): string => {
     return 'Es sind noch keine Gruppen angelegt.';
   }
 
-  return `${match.line} ${ALL_GROUPS_SUGGESTION}`;
+  return match.line;
 };
 
 export const NO_GROUP_MATCH_TITLE = 'KEINE GRUPPE GEFUNDEN';
-
-export const toGroupsIntroSentence = (total: number, recruiting: number): string => {
-  const groups =
-    total === 1 ? 'Eine Gruppe trägt die Session.' : `${total} Gruppen tragen die Session.`;
-
-  if (recruiting === 0) {
-    return `${groups} Keine davon sucht Verstärkung.`;
-  }
-  if (recruiting === 1) {
-    return `${groups} Eine davon sucht Verstärkung.`;
-  }
-
-  return `${groups} ${recruiting} davon suchen Verstärkung.`;
-};
-
-export const GROUPS_LEAD = 'Alle Gruppen des Vereins und wer Verstärkung sucht.';

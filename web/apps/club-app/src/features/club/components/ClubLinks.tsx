@@ -10,7 +10,6 @@ export const ClubLinks: FC = () => {
       key={section.id}
       label={section.label}
       icon={section.icon}
-      meta={section.meta}
       component={Link}
       to={section.to}
     />

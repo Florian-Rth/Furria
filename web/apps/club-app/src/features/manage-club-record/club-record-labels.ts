@@ -18,7 +18,6 @@ import { formatFormMetres, stageSizeOf } from './stage-metres';
 export type ClubRecordSection = 'identity' | 'contact' | 'access' | 'stage';
 
 export const CLUB_RECORD_TITLE = 'Vereinsdaten';
-export const CLUB_RECORD_LEAD = 'Name, Anschrift, Zugang zur App und Bühne.';
 export const CLUB_RECORD_SAVED_MESSAGE = 'Vereinsdaten gespeichert.';
 export const MISSING_VALUE = 'nicht hinterlegt';
 
@@ -61,7 +60,7 @@ export const AGE_OF_CONSENT_OPTIONS: readonly KkSelectOption[] = Array.from(
 export const toAgeOfConsentLabel = (ageOfConsent: number): string => toAgeLabel(ageOfConsent);
 
 export const toAgeConsequence = (ageOfConsent: string): string =>
-  `Wer jünger als ${ageOfConsent} ist, wird nicht eingeladen und bewirbt sich nicht online, sondern wird vom Verein direkt aufgenommen.`;
+  `Wer jünger als ${ageOfConsent} ist, wird nicht eingeladen und kann sich nicht online bewerben.`;
 
 const toFormText = (value: string | null): string => value ?? '';
 

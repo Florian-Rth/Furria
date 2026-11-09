@@ -1,15 +1,9 @@
 import { KkEmptyState } from '@furria/ui/KkEmptyState';
-import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useLanding } from '@/features/write/hooks/use-landing';
-import {
-  MANAGE_KEYS_FOOTNOTE,
-  NO_VENUES_DESCRIPTION,
-  NO_VENUES_TITLE,
-  partitionKeyVenues,
-} from '../manage-keys-labels';
+import { NO_VENUES_DESCRIPTION, NO_VENUES_TITLE, partitionKeyVenues } from '../manage-keys-labels';
 import type { KeyVenue } from '../schemas';
 import { ArchivedKeyVenues } from './ArchivedKeyVenues';
 import { KeyVenuePanel } from './KeyVenuePanel';
@@ -41,7 +35,6 @@ export const ManagedKeysView: FC<ManagedKeysViewProps> = ({ venues }) => {
         ))}
       </Stack>
       <ArchivedKeyVenues venues={archived} highlightedKey={highlightedKey} />
-      <KkNote>{MANAGE_KEYS_FOOTNOTE}</KkNote>
     </Stack>
   );
 };

@@ -9,10 +9,9 @@ const DELETE_LABEL = 'Account löschen';
 const EYEBROW = 'Account löschen';
 const QUESTION = 'Deinen Account löschen?';
 const EXPLANATION_BY_PASSWORD =
-  'Du meldest dich danach nicht mehr in der Vereins-App an. Einen neuen Zugang bekommst du nur über eine neue Einladung vom Verein. Bestätige mit deinem Passwort.';
+  'Einen neuen Zugang gibt es nur über eine neue Einladung. Bestätige mit deinem Passwort.';
 const EXPLANATION_BY_EITHER =
-  'Du meldest dich danach nicht mehr in der Vereins-App an. Einen neuen Zugang bekommst du nur über eine neue Einladung vom Verein. Bestätige mit deinem Passwort oder deinem Passkey.';
-const CONSEQUENCE = 'Deine Vereinsdaten bleiben beim Verein.';
+  'Einen neuen Zugang gibt es nur über eine neue Einladung. Bestätige mit deinem Passwort oder deinem Passkey.';
 const CANCEL_LABEL = 'Abbrechen';
 const CLOSE_LABEL = 'Schließen';
 const NO_FACTS = [] as const;
@@ -40,7 +39,6 @@ export const AccountDeletionPanel: FC<AccountDeletionPanelProps> = ({ hasPasskey
         explanation={explanation}
         fields={proofFields}
         facts={NO_FACTS}
-        consequence={CONSEQUENCE}
         error={control.rejection ?? undefined}
         confirmLabel={DELETE_LABEL}
         cancelLabel={CANCEL_LABEL}

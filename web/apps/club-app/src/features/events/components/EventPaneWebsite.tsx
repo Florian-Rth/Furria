@@ -1,5 +1,4 @@
 import { KkCheckLine } from '@furria/ui/KkCheckLine';
-import { KkNote } from '@furria/ui/KkNote';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
@@ -15,12 +14,7 @@ const ADDRESS_LABEL = 'Adresse';
 const CALENDAR_LABEL = 'Kalender';
 const CALENDAR_VALUE = 'bei allen Mitgliedern';
 const NEEDS_TITLE = 'Was die Website braucht';
-const READY_NOTE =
-  'Alles steht. Gedrückt halten — dann steht der Abend auf der Website und im Kalender aller Mitglieder.';
-const BLOCKED_NOTE = 'Veröffentlichen geht, sobald jede Angabe steht.';
-const CLOSED_NOTE = 'Abgesagt oder vorbei kommt der Abend nicht mehr auf die Website.';
 const PUBLIC_PATH = '/events/';
-const NOTES = { ready: READY_NOTE, blocked: BLOCKED_NOTE, closed: CLOSED_NOTE } as const;
 
 interface EventPaneWebsiteProps {
   event: EventDetails;
@@ -45,14 +39,10 @@ export const EventPaneWebsite: FC<EventPaneWebsiteProps> = ({ event }) => {
   const rows = checksOf(event, PUBLISH_CHECKS).map((check) => (
     <EventCheckRow key={check.key} check={check} event={event} />
   ));
-  const note = state === 'published' ? null : <KkNote>{NOTES[state]}</KkNote>;
 
   return (
-    <>
-      <KkPanelSection title={NEEDS_TITLE}>
-        <Stack>{rows}</Stack>
-      </KkPanelSection>
-      {note}
-    </>
+    <KkPanelSection title={NEEDS_TITLE}>
+      <Stack>{rows}</Stack>
+    </KkPanelSection>
   );
 };

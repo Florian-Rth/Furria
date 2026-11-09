@@ -40,9 +40,6 @@ export const SESSION_NOT_FOUND_DESCRIPTION = 'Diesen Sessionseintrag gibt es nic
 export const SESSION_EDITOR_DENIED_MESSAGE =
   'Dir fehlt die Berechtigung für Vereinsdaten, Sessions und Orte.';
 
-export const MANAGE_SESSIONS_FOOTNOTE =
-  'Trage nur ein, was belegt ist – durch Orden, Banner oder Festschrift. Nichts wird aus benachbarten Sessions abgeleitet.';
-
 export const SESSION_SECTION_TITLES = {
   ahead: 'Aktuell',
   past: 'Frühere Sessions',
@@ -158,9 +155,8 @@ export const isRelevantSession = (record: SessionRecordSummary, today: Date): bo
 export const toSessionRowChip = (record: SessionRecordSummary, today: Date): StateChip | null =>
   isRelevantSession(record, today) ? RELEVANT_SESSION_CHIP : null;
 
-export const SESSIONS_LEAD = 'Sessionsnummer, Motto und Sessionslogo jeder Session.';
 export const DELETE_EYEBROW = 'Sessionseintrag löschen';
-export const DELETE_EXPLANATION = 'Fehlerhafte Sessionseinträge werden gelöscht, nicht archiviert.';
+export const DELETE_EXPLANATION = 'Der Eintrag wird endgültig gelöscht.';
 
 export const toDeleteQuestion = (record: SessionRecordSummary): string =>
   `${toSessionRowLabel(record)} löschen?`;

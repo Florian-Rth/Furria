@@ -25,9 +25,7 @@ const FOUNDED_LABEL = 'Gründungsjahr';
 const NO_FOUNDED_YEAR = 'noch offen';
 const TONE_FIELD_LABEL = 'Gruppenfarbe';
 const OPENNESS_LABEL = 'Sucht Verstärkung';
-const OPENNESS_DESCRIPTION = 'Zeigt im Verzeichnis an, dass die Gruppe Verstärkung sucht.';
 const RENAME_LABEL = 'Name und Gruppenart';
-const RENAME_META = 'Für die Vereinsverwaltung';
 const EDIT_ROUTE = '/groups/$groupId/edit';
 
 const toAdministrationPath = (groupId: number): string => `/groups/${groupId}/administration`;
@@ -70,7 +68,6 @@ export const HubSettingsPanel: FC<HubSettingsPanelProps> = ({
         label={OPENNESS_LABEL}
         checked={recruiting.checked}
         onChange={recruiting.onChange}
-        description={OPENNESS_DESCRIPTION}
         busy={recruiting.busy}
       />
     </KkPanel>
@@ -82,7 +79,6 @@ export const HubSettingsPanel: FC<HubSettingsPanelProps> = ({
         <KkHubRow
           label={RENAME_LABEL}
           icon="manage"
-          meta={RENAME_META}
           component={Link}
           to={toAdministrationPath(hub.groupId)}
         />

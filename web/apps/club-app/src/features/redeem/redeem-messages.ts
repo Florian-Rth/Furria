@@ -98,6 +98,6 @@ export const toRedeemHeading = (purpose: InvitationPurpose, firstName: string): 
   purpose === 'recovery' ? `NEUES PASSWORT FÜR ${firstName.toUpperCase()}` : toGreeting(firstName);
 
 export const toConfirmationSentLine = (loginEmail: string): string =>
-  `Wir haben dir einen Code an ${loginEmail} geschickt. Gib ihn hier ein, dann ist die Adresse bestätigt.`;
+  `Wir haben dir einen Code an ${loginEmail} geschickt.`;
 
 export const toCodeValidityLine = (countdown: string): string => `Der Code gilt noch ${countdown}.`;

@@ -14,10 +14,9 @@ import { InstallGuideBody } from './InstallGuideBody';
 const BURST_COUNT = 36;
 
 export const InstallScreen: FC = () => {
-  const { flow, secret, headline, lead, facts, targetLabel, celebrationKey, exitHref } =
+  const { flow, secret, headline, lead, targetLabel, celebrationKey, exitHref } =
     useInstallScreen();
   const leadLine = lead === null ? null : <KkNote>{lead}</KkNote>;
-  const factLine = facts === null ? null : <KkEyebrow>{facts}</KkEyebrow>;
   const body =
     flow.phase === 'guide' ? (
       <InstallGuideBody
@@ -50,7 +49,6 @@ export const InstallScreen: FC = () => {
             variant="display"
             posterShadow
           />
-          {factLine}
         </KkInstallStage.Copy>
       </KkInstallStage.Head>
       {leadLine}

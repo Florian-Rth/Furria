@@ -10,7 +10,6 @@ export interface AppSection {
   label: string;
   icon: KkIconName;
   to: string;
-  meta?: string;
   permissionKeys?: readonly PermissionKey[];
 }
 
@@ -119,7 +118,6 @@ export const GALLERY_SECTION: AppSection = {
   label: GALLERY_TITLE,
   icon: 'gallery',
   to: GALLERY_PATH,
-  meta: 'Fotos und Videos des Vereins',
   permissionKeys: GALLERY_KEYS,
 };
 
@@ -155,35 +153,30 @@ export const CLUB_SECTIONS: AppSection[] = [
     label: 'Mitglieder',
     icon: 'members',
     to: MEMBERS_PATH,
-    meta: 'Alle Personen im Verein',
   },
   {
     id: 'groups',
     label: GROUPS_TITLE,
     icon: 'group',
     to: GROUPS_PATH,
-    meta: 'Alle Gruppen des Vereins',
   },
   {
     id: 'calendar',
     label: CALENDAR_TITLE,
     icon: 'calendar',
     to: CALENDAR_PATH,
-    meta: 'Termine, Trainings und Sitzungen',
   },
   {
     id: 'announcements',
     label: 'Aushänge',
     icon: 'info',
     to: ANNOUNCEMENTS_PATH,
-    meta: 'Mitteilungen des Vereins',
   },
   {
     id: 'news',
     label: NEWS_TITLE,
     icon: 'news',
     to: CLUB_NEWS_PATH,
-    meta: 'Meldungen des Vereins von der Website',
   },
 ];
 
@@ -193,7 +186,6 @@ export const MANAGE_SECTIONS: AppSection[] = [
     label: 'Verein verwalten',
     icon: 'manage',
     to: MANAGE_PATH,
-    meta: 'Daten des Vereins pflegen',
     permissionKeys: MANAGE_KEYS,
   },
   {
@@ -201,7 +193,6 @@ export const MANAGE_SECTIONS: AppSection[] = [
     label: EVENTS_TITLE,
     icon: 'events',
     to: EVENTS_PATH,
-    meta: 'Abende mit Karten für die Website',
     permissionKeys: EVENTS_KEYS,
   },
   {
@@ -209,7 +200,6 @@ export const MANAGE_SECTIONS: AppSection[] = [
     label: 'Sessionsauftritte',
     icon: 'stage',
     to: ACTS_PATH,
-    meta: 'Tänze, Reden und Ablaufpunkte mit Besetzung',
     permissionKeys: ACTS_KEYS,
   },
   {
@@ -217,7 +207,6 @@ export const MANAGE_SECTIONS: AppSection[] = [
     label: NEWS_TITLE,
     icon: 'news',
     to: NEWS_PATH,
-    meta: 'Meldungen für die Website schreiben',
     permissionKeys: NEWS_KEYS,
   },
   {
@@ -225,7 +214,6 @@ export const MANAGE_SECTIONS: AppSection[] = [
     label: SYSTEM_TITLE,
     icon: 'system',
     to: SYSTEM_PATH,
-    meta: 'Datenbank, Medien, Speicher und Protokoll',
     permissionKeys: SYSTEM_KEYS,
   },
 ];

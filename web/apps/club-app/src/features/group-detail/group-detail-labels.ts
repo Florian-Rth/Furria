@@ -67,13 +67,7 @@ export const ADD_MEMBER_ACTION_LABEL = 'Mitglied aufnehmen';
 export const NO_MEMBERS_TITLE = 'NOCH NIEMAND DABEI';
 export const NO_ADMINS_TITLE = 'KEIN GRUPPEN-ADMIN';
 export const NO_HISTORY_TITLE = 'NOCH KEINE GESCHICHTE';
-export const NO_HISTORY_LINE =
-  'Beendete Zugehörigkeiten und frühere Gruppen-Admins erscheinen hier.';
+export const NO_HISTORY_LINE = 'Keine beendeten Zugehörigkeiten.';
 
-const ADD_ANYONE_INVITE = 'Jede Person aus dem Register kann aufgenommen werden.';
-
-export const toNoMembersLine = (groupName: string, canManage: boolean): string => {
-  const line = `In ${groupName} ist niemand eingetragen.`;
-
-  return canManage ? `${line} ${ADD_ANYONE_INVITE}` : line;
-};
+export const toNoMembersLine = (groupName: string): string =>
+  `In ${groupName} ist niemand eingetragen.`;

@@ -2,8 +2,6 @@ import {
   LESSON_DOCK_LABEL,
   LESSON_EMPTY_EYEBROW,
   LESSON_EMPTY_NAME,
-  LESSON_EMPTY_PICTURE,
-  LESSON_EMPTY_TEXT,
   LESSON_LABEL,
   LESSON_PICTURE_LABEL,
 } from '@furria/studio/lesson-copy';
@@ -42,9 +40,7 @@ export const LessonEmpty: FC<LessonEmptyProps> = ({ title, mode }) => {
       <KkLesson.Area name="card">
         <KkLesson.Card label={LESSON_EMPTY_NAME}>
           <KkLesson.Picture label={LESSON_PICTURE_LABEL} paired={false}>
-            <KkLesson.Layer place="main" aspect={1} tone="ink">
-              <KkLesson.Quiet text={LESSON_EMPTY_PICTURE} />
-            </KkLesson.Layer>
+            <KkLesson.Layer place="main" aspect={1} tone="ink" />
           </KkLesson.Picture>
           <KkLesson.Part name="head">
             <KkLesson.Title
@@ -52,9 +48,6 @@ export const LessonEmpty: FC<LessonEmptyProps> = ({ title, mode }) => {
               eyebrow={LESSON_EMPTY_EYEBROW}
               name={LESSON_EMPTY_NAME}
             />
-          </KkLesson.Part>
-          <KkLesson.Part name="text">
-            <KkLesson.Text fadeKey={EMPTY_KEY} text={LESSON_EMPTY_TEXT} muted />
           </KkLesson.Part>
         </KkLesson.Card>
       </KkLesson.Area>

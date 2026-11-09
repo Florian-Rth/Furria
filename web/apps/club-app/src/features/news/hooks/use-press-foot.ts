@@ -32,7 +32,6 @@ import {
   showsReadiness,
 } from '../press-bar-facts';
 import {
-  FIRST_PUBLICATION_NOTE,
   LINE_MISSING,
   LINE_PUBLISHING,
   LINE_SINCE,
@@ -40,11 +39,9 @@ import {
   LIVE_VERSION_WORD,
   PRESS_CONFIRM_COPY,
   PUBLISH_SHORT,
-  REPUBLISH_NOTE,
   SHOW_LIVE_ITEM,
   SHOW_WORKING_ITEM,
 } from '../press-copy';
-import type { PressKind } from '../press-kind';
 import { pressKindOf, pressMomentOf } from '../press-kind';
 import type { NewsRequirement, NewsStage } from '../types';
 import type { NewsEditor } from './use-news-editor';
@@ -78,7 +75,6 @@ export interface PressFoot {
   inlineActions: readonly PressFootAction[];
   menuActions: readonly PressFootAction[];
   publishLabel: string | null;
-  publishNote: string | null;
   publishConfirm: KkHoldConfirm;
 }
 
@@ -102,12 +98,6 @@ const TOGGLE_OPTIONS: readonly KkPressToggleOption[] = [
   { id: WORKING_VIEW, label: SHOW_WORKING },
   { id: LIVE_VIEW, label: SHOW_LIVE },
 ];
-
-const PUBLISH_NOTES: Record<PressKind, string | null> = {
-  first: FIRST_PUBLICATION_NOTE,
-  changes: null,
-  republish: REPUBLISH_NOTE,
-};
 
 const lineTextOf = (line: PressLine): string => {
   switch (line.kind) {
@@ -213,7 +203,6 @@ export const usePressFoot = (editor: NewsEditor, text: ProseText): PressFoot => 
     inlineActions: collapses ? [] : dialogActions,
     menuActions: collapses ? [...viewAction, ...dialogActions] : [],
     publishLabel: isCompact ? compactLabel : publishLabel,
-    publishNote: PUBLISH_NOTES[pressKind],
     publishConfirm: publishConfirmOf(PRESS_CONFIRM_COPY[pressKind]),
   };
 };

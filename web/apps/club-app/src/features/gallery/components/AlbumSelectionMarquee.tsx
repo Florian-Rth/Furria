@@ -10,14 +10,12 @@ interface AlbumSelectionMarqueeProps {
   isPublished: boolean;
   hangKey: number;
   lead: string;
-  meta: string;
 }
 
 export const AlbumSelectionMarquee: FC<AlbumSelectionMarqueeProps> = ({
   isPublished,
   hangKey,
   lead,
-  meta,
 }) => {
   const word = isPublished ? HUNG_WORD : CASE_WORD;
   const tone = isPublished ? 'gold' : 'ink';
@@ -31,7 +29,7 @@ export const AlbumSelectionMarquee: FC<AlbumSelectionMarqueeProps> = ({
         replayKey={hangKey}
         sx={{ alignSelf: 'flex-start' }}
       />
-      <KkFilmEdge lead={lead} meta={meta} tone="gold" level="h2" sprockets />
+      <KkFilmEdge lead={lead} tone="gold" level="h2" sprockets />
     </Stack>
   );
 };

@@ -7,7 +7,6 @@ import { KkTextArea } from '@furria/ui/KkTextArea';
 import type { FC } from 'react';
 import { useGroupKindsQuery } from '@/features/group-kinds/api';
 import {
-  GROUP_KIND_FIELD_HINT,
   GROUP_KIND_FIELD_LABEL,
   toGroupKindOptions,
   toHeldGroupKind,
@@ -32,11 +31,8 @@ const ABOUT_SECTION = 'Über die Gruppe';
 const FACTS_SECTION = 'Eckdaten';
 const DESCRIPTION_LABEL = 'Beschreibung';
 const DESCRIPTION_PLACEHOLDER = 'Kurzbeschreibung der Gruppe';
-const DESCRIPTION_HINT =
-  'Erscheint auf der Gruppenseite und in der Vorschau im Gruppenverzeichnis.';
 const DESCRIPTION_ROWS = 5;
 const FOUNDED_LABEL = 'Gründungsjahr';
-const FOUNDED_HINT = 'Nur die Jahreszahl. Die App hebt Jubiläen hervor.';
 const FOUNDED_STEP_LABELS: KkNumberStepLabels = {
   less: 'Ein Jahr früher',
   more: 'Ein Jahr später',
@@ -122,7 +118,6 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
           showCount
           countLabel={toCountLabel}
           placeholder={DESCRIPTION_PLACEHOLDER}
-          hint={DESCRIPTION_HINT}
         />
       </KkFormSection>
       <GroupPictureSection hub={hub} tone={pictureTone} />
@@ -137,7 +132,6 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
               options={kindOptions}
               onChange={control.setGroupKindId}
               presentation="select"
-              hint={GROUP_KIND_FIELD_HINT}
             />
           }
           end={
@@ -149,7 +143,6 @@ export const GroupInfoEditor: FC<GroupInfoEditorProps> = ({ hub }) => {
               stepLabels={FOUNDED_STEP_LABELS}
               min={EARLIEST_FOUNDED_YEAR}
               max={LATEST_FOUNDED_YEAR}
-              hint={FOUNDED_HINT}
               error={control.foundedYearError !== undefined}
               helperText={control.foundedYearError}
             />

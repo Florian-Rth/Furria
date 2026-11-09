@@ -5,7 +5,6 @@ import type { GroupTone } from '@/lib/group-tone';
 import { toToneWarning } from '../group-hub-labels';
 
 const PICKER_LABEL = 'Gruppenfarbe';
-const PICKER_HINT = 'Kennzeichnet die Gruppe in App und Kalender.';
 
 interface HubTonePickerProps {
   value: GroupTone | '';
@@ -17,12 +16,6 @@ export const HubTonePicker: FC<HubTonePickerProps> = ({ value, takenTones, onCha
   const warning = toToneWarning(value, takenTones);
   const warningNote = warning === null ? null : <KkNote tone="warning">{warning}</KkNote>;
   const tone = value === '' ? null : value;
-  const notes = (
-    <>
-      <KkNote>{PICKER_HINT}</KkNote>
-      {warningNote}
-    </>
-  );
 
   return (
     <ToneField
@@ -30,7 +23,7 @@ export const HubTonePicker: FC<HubTonePickerProps> = ({ value, takenTones, onCha
       value={tone}
       onChange={onChange}
       takenTones={takenTones}
-      notes={notes}
+      notes={warningNote}
     />
   );
 };

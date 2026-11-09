@@ -3,7 +3,7 @@ import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import type { FC } from 'react';
 import { AREA_HANDOVERS, CLUB_ORIGIN } from '@/features/session/app-sections';
 import { useLanding } from '@/features/write/hooks/use-landing';
-import { ANNOUNCEMENTS_LEAD, ANNOUNCEMENTS_TITLE } from '../announcements-labels';
+import { ANNOUNCEMENTS_TITLE } from '../announcements-labels';
 import { AnnouncementsBody } from './AnnouncementsBody';
 
 export const AnnouncementsPage: FC = () => {
@@ -14,7 +14,7 @@ export const AnnouncementsPage: FC = () => {
       kind="list"
       title={ANNOUNCEMENTS_TITLE}
       origin={CLUB_ORIGIN}
-      header={<KkTitleHeader title={ANNOUNCEMENTS_TITLE} lead={ANNOUNCEMENTS_LEAD} />}
+      header={<KkTitleHeader title={ANNOUNCEMENTS_TITLE} />}
       handover={AREA_HANDOVERS.announcements}
     >
       <AnnouncementsBody highlightedKey={highlightedKey} />

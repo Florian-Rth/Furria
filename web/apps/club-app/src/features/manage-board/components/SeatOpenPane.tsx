@@ -9,7 +9,6 @@ import type { FC } from 'react';
 import { PersonPicker } from '@/features/group-hub/components/PersonPicker';
 import {
   OPEN_SEAT_TITLE,
-  PICKER_NOTE,
   SINCE_LABEL,
   SUBMIT_OPEN,
   TODAY_CHOICE,
@@ -55,7 +54,6 @@ export const SeatOpenPane: FC<SeatOpenPaneProps> = ({
           selected={control.person}
           onSelect={control.select}
           onClear={control.clearPerson}
-          note={PICKER_NOTE}
         />
         {personError}
         <KkDateField

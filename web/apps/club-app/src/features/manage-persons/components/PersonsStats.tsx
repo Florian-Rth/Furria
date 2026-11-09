@@ -1,6 +1,4 @@
-import { KkNote } from '@furria/ui/KkNote';
 import { KkPanelHeader } from '@furria/ui/KkPanelHeader';
-import { KkRule } from '@furria/ui/KkRule';
 import { KkStatRow } from '@furria/ui/KkStatRow';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
@@ -13,10 +11,9 @@ const STATS_TITLE = 'Das Register in Zahlen';
 interface PersonsStatsProps {
   totals: Record<MembershipState, number>;
   appStats: readonly AppStat[];
-  note: string;
 }
 
-export const PersonsStats: FC<PersonsStatsProps> = ({ totals, appStats, note }) => {
+export const PersonsStats: FC<PersonsStatsProps> = ({ totals, appStats }) => {
   const membershipItems = toStateStats(totals).map((stat) => (
     <KkStatRow.Item key={stat.state}>
       <KkStatRow.Value variant="h3" tone={stat.tone}>
@@ -41,8 +38,6 @@ export const PersonsStats: FC<PersonsStatsProps> = ({ totals, appStats, note }) 
         {membershipItems}
         {appItems}
       </KkStatRow>
-      <KkRule weight="hair" />
-      <KkNote>{note}</KkNote>
     </Stack>
   );
 };

@@ -22,7 +22,7 @@ export const MemberView: FC<MemberViewProps> = ({ member, isSelf }) => (
     </Grid>
     <Grid size={{ xs: 12, desktop: 5 }} sx={{ minWidth: 0 }}>
       <KkPanelStack>
-        <MemberContactPanel contact={member.contact} firstName={member.firstName} isSelf={isSelf} />
+        <MemberContactPanel contact={member.contact} isSelf={isSelf} />
         <MemberClubPanel member={member} />
       </KkPanelStack>
     </Grid>

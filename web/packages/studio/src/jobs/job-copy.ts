@@ -45,8 +45,6 @@ export const JOB_HISTORY_EMPTY = 'In diesem Besuch noch nichts geändert.';
 export const JOB_HISTORY_LIST = 'Änderungen in diesem Besuch';
 export const JOB_HISTORY_VISIT = 'In diesem Besuch';
 export const JOB_VERSIONS = 'Gespeicherte Fassungen';
-export const JOB_VERSIONS_NOTE =
-  'Wiederherstellen gilt sofort für alle und lässt sich nicht mit Rückgängig zurücknehmen.';
 export const JOB_VERSIONS_LOADING = 'Fassungen werden geladen …';
 export const JOB_VERSION_RESTORE = 'Wiederherstellen';
 export const JOB_VERSION_SURE = 'Wirklich wiederherstellen';
@@ -62,7 +60,6 @@ export const backToOf = (job: string): string => `Zurück zu ${job}`;
 export const JOB_BAR_LABEL = 'Werkzeuge';
 export const JOB_SURE = 'Wirklich löschen';
 export const JOB_SURE_DISSOLVE = 'Wirklich auflösen';
-export const JOB_EVENING_STEPS = 'An diesem Abend gelten die Schritte der Session – hier nur üben.';
 
 export const jobHistoryTextOf = (count: number): string => `${JOB_HISTORY} · ${count}`;
 export const jobMoreTitleOf = (job: EditJob): string => JOB_TEXT[job];

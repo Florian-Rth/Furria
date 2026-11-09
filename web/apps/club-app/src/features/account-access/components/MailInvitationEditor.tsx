@@ -1,6 +1,5 @@
 import { KkFactRow } from '@furria/ui/KkFactRow';
 import { KkFieldRow } from '@furria/ui/KkFieldRow';
-import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { KkScreenOrigin } from '@furria/ui/screen-declaration';
@@ -8,7 +7,6 @@ import type { FC } from 'react';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import {
   INVITATION_CHAIN_TITLE,
-  MAIL_INVITATION_VALIDITY_NOTE,
   toInvitationSpan,
   toInvitationValidity,
 } from '../account-access-labels';
@@ -55,7 +53,6 @@ export const MailInvitationEditor: FC<MailInvitationEditorProps> = ({ subject, o
       <KkPanel>
         <KkFieldRow label={RECIPIENT_LABEL} value={subject.email ?? MISSING_VALUE} />
       </KkPanel>
-      <KkNote tone="muted">{MAIL_INVITATION_VALIDITY_NOTE}</KkNote>
     </WriteScreen>
   );
 };

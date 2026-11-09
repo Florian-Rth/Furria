@@ -12,7 +12,6 @@ const ADD_LABEL = 'Hinzufügen';
 const SAVE_LABEL = 'Speichern';
 const SECTION_TITLE = 'Gruppenart';
 const NAME_LABEL = 'Name';
-const NAME_HINT = 'Erscheint bei der Auswahl der Gruppenart und im Gruppenverzeichnis.';
 
 interface GroupKindEditorProps {
   entry: GroupKindEntry | null;
@@ -46,7 +45,6 @@ export const GroupKindEditor: FC<GroupKindEditorProps> = ({ entry }) => {
           name={nameField.name}
           label={NAME_LABEL}
           required
-          hint={NAME_HINT}
           error={nameErrorText !== undefined}
           helperText={nameErrorText}
           onChange={nameField.onChange}

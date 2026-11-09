@@ -20,8 +20,6 @@ import {
 import { reasonCodeOf } from './system-verdict';
 import type { SystemArea } from './types';
 
-export const SYSTEM_LEAD =
-  'Betriebszustand von Datenbank, Medienverarbeitung, Speicher und Hintergrundaufgaben.';
 export const BOARD_LABEL = 'Gesamtzustand';
 export const STATUS_LOADING_LABEL = 'Betriebszustand wird geladen';
 export const STATUS_FAILED_TITLE = 'BETRIEBSZUSTAND NICHT VERFÜGBAR';
@@ -98,7 +96,7 @@ export const LEVEL_WORDS: Record<KkStatusLevel, string> = {
   unknown: 'Unbekannt',
 };
 
-export const AREA_CALM = 'Keine Auffälligkeiten. Alle Prüfungen sind bestanden.';
+export const AREA_CALM = 'Keine Auffälligkeiten.';
 
 export const AREA_LABELS: Record<SystemArea, string> = {
   database: 'Datenbank',
@@ -246,8 +244,7 @@ export const MEDIA_STATE_LABELS: Record<MediaState, string> = {
 
 export const MEDIA_GRID_LABEL = 'Mediendateien nach Verarbeitungsstand';
 export const QUEUE_LABEL = 'Warteschlange';
-export const WORKERS_EMPTY =
-  'Es ist kein Verarbeitungsdienst angemeldet. Neue Bilder und Videos werden erst verarbeitet, wenn einer läuft.';
+export const WORKERS_EMPTY = 'Es ist kein Verarbeitungsdienst angemeldet.';
 export const FAILED_TITLE = 'Zuletzt fehlgeschlagene Verarbeitungen';
 export const NOTHING_WAITING = 'Warteschlange leer';
 

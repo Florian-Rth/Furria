@@ -24,8 +24,6 @@ const REGISTRY_GAP_LABELS: Record<RegistryGap, string> = {
 export const ADMIT_LABEL = 'Aufnehmen';
 export const ADMISSION_ACTION_LABEL = 'Mitglied aufnehmen';
 export const CANDIDATES_SECTION_TITLE = 'Im Register';
-export const CANDIDATES_LEAD =
-  'Diese Personen teilen ihre E-Mail-Adresse oder Name und Geburtsdatum. Entscheide, wer sie ist – zugeordnet wird nichts von allein.';
 export const CANDIDATE_CHOICE_LABEL = 'Wer ist sie im Register?';
 export const NEW_PERSON_LABEL = 'Neue Person';
 export const THIS_IS_HER_CHIP: StateChip = { label: 'Das ist sie', tone: 'green', dot: true };
@@ -37,16 +35,16 @@ export const toNewPersonDescription = (firstName: string): string =>
   `${firstName} wird neu im Register angelegt.`;
 
 export const toNoCandidatesNote = (firstName: string): string =>
-  `Niemand im Register teilt ihre E-Mail-Adresse oder Name und Geburtsdatum – ${firstName} wird als neue Person angelegt.`;
+  `${firstName} wird als neue Person angelegt.`;
 
 export const toAdmittedOnHint = (appliedOn: string): string =>
-  `Ab diesem Tag ist sie Mitglied. Frühestens der Tag ihres Antrags (${formatIsoDay(appliedOn)}), auch ein Tag in der Zukunft geht.`;
+  `Frühestens ${formatIsoDay(appliedOn)}.`;
 
 export const toGuardianConsentDescription = (
   application: MembershipApplicationDetails,
   admittedOn: string,
 ): string =>
-  `${application.firstName} ist am ${formatIsoDay(admittedOn)} erst ${toAgeOn(application.birthDate, admittedOn)}. Hol die Einwilligung beim ersten Kontakt ein – deine Bestätigung wird mit deinem Namen gespeichert.`;
+  `${application.firstName} ist am ${formatIsoDay(admittedOn)} erst ${toAgeOn(application.birthDate, admittedOn)}. Deine Bestätigung wird mit deinem Namen gespeichert.`;
 
 const toTies = (candidate: AdmissionCandidate): string[] => {
   const groups =
@@ -98,8 +96,8 @@ export const toCandidateDescription = (candidate: AdmissionCandidate): string =>
 
 export const toGapNote = (candidate: AdmissionCandidate): string =>
   candidate.gaps.length === 0
-    ? 'Der Antrag ergänzt nichts – alles steht schon im Register.'
-    : `Aus dem Antrag ergänzt: ${candidate.gaps.map((gap) => REGISTRY_GAP_LABELS[gap]).join(LIST_SEPARATOR)}. Alles andere bleibt, wie es im Register steht.`;
+    ? 'Der Antrag ergänzt nichts.'
+    : `Aus dem Antrag ergänzt: ${candidate.gaps.map((gap) => REGISTRY_GAP_LABELS[gap]).join(LIST_SEPARATOR)}.`;
 
 export const toAdmissionQuickChoices = (today: Date): KkDateQuickChoice[] => {
   const nextOpening = new Date(

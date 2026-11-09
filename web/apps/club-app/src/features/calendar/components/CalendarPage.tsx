@@ -3,13 +3,12 @@ import { KkTitleHeader } from '@furria/ui/KkTitleHeader';
 import { useIsWideScreen } from '@furria/ui/use-is-wide-screen';
 import type { FC } from 'react';
 import { AREA_HANDOVERS, CALENDAR_SECTION, CALENDAR_TITLE } from '@/features/session/app-sections';
-import { CALENDAR_LEAD } from '../calendar-labels';
 import { useCalendarAdd } from '../hooks/use-calendar-add';
 import { useCalendarBoard } from '../hooks/use-calendar-board';
 import { useCalendarScroll } from '../hooks/use-calendar-scroll';
 import { CalendarBody } from './CalendarBody';
 
-const HEADER = <KkTitleHeader title={CALENDAR_TITLE} lead={CALENDAR_LEAD} />;
+const HEADER = <KkTitleHeader title={CALENDAR_TITLE} />;
 
 export const CalendarPage: FC = () => {
   const board = useCalendarBoard();

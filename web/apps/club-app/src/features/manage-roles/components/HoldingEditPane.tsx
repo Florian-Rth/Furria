@@ -17,7 +17,6 @@ import {
   SUBMIT_CORRECT,
   toHolderPeriod,
   UNTIL_EMPTY_LABEL,
-  UNTIL_HINT,
 } from '../roles-hub-copy';
 import type { RoleHolder, RoleSummary } from '../schemas';
 import { HoldingPaneHead } from './HoldingPaneHead';
@@ -70,7 +69,6 @@ export const HoldingEditPane: FC<HoldingEditPaneProps> = ({
           emptyLabel={UNTIL_EMPTY_LABEL}
           error={control.untilOnError !== undefined}
           helperText={control.untilOnError}
-          hint={UNTIL_HINT}
         />
         {rejection}
       </KkStepPane.Body>

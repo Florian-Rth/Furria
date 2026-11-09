@@ -6,11 +6,10 @@ import type { FC } from 'react';
 import { AREA_HANDOVERS, MANAGE_ORIGIN } from '@/features/session/app-sections';
 import { RequirePermission } from '@/features/session/components/RequirePermission';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
-import { ROLES_LEAD } from '../manage-roles-labels';
 import { NEW_ROLE_LABEL, NEW_ROLE_PATH, ROLES_TITLE } from '../roles-hub-copy';
 import { RolesBody } from './RolesBody';
 
-const header = <KkTitleHeader title={ROLES_TITLE} lead={ROLES_LEAD} />;
+const header = <KkTitleHeader title={ROLES_TITLE} />;
 
 export const RolesPage: FC = () => {
   const navigate = useNavigate();

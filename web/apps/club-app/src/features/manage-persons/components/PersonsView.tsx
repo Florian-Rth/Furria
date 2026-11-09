@@ -10,7 +10,6 @@ import {
   ADD_PERSON_ACTION_LABEL,
   ADD_PERSON_LABEL,
   PERSON_DIRECTORY_TITLE,
-  PERSONS_STATS_NOTE,
 } from '../manage-persons-labels';
 import { PersonsAccessNote } from './PersonsAccessNote';
 import { PersonsColdEmpty } from './PersonsColdEmpty';
@@ -72,7 +71,7 @@ export const PersonsView: FC<PersonsViewProps> = ({ search, access, canCreate, c
 
   const stats =
     search.isArchivedView || access.filter !== null ? null : (
-      <PersonsStats totals={search.totals} appStats={search.appStats} note={PERSONS_STATS_NOTE} />
+      <PersonsStats totals={search.totals} appStats={search.appStats} />
     );
 
   return (

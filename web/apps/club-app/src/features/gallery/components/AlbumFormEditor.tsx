@@ -22,8 +22,6 @@ const COVER_SECTION_TITLE = 'Titelbild';
 const TITLE_LABEL = 'Titel';
 const DESCRIPTION_LABEL = 'Beschreibung';
 const DESCRIPTION_PLACEHOLDER = 'Ein, zwei Sätze zum Abend';
-const DESCRIPTION_HINT =
-  'Steht über dem Album und, bei Alben mit Session, auf seiner Seite auf der Website.';
 const DESCRIPTION_ROWS = 3;
 
 const toCountLabel = (used: number, max: number): string => `${used} von ${max} Zeichen`;
@@ -97,7 +95,6 @@ export const AlbumFormEditor: FC<AlbumFormEditorProps> = ({ album, presetEntryId
             showCount
             countLabel={toCountLabel}
             placeholder={DESCRIPTION_PLACEHOLDER}
-            hint={DESCRIPTION_HINT}
             error={descriptionErrorText !== undefined}
             helperText={descriptionErrorText}
           />

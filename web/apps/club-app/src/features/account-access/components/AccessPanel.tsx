@@ -9,20 +9,16 @@ import type { FC } from 'react';
 import {
   ACCESS_SECTION_TITLE,
   BIRTH_DATE_ACT_LABEL,
-  BIRTH_DATE_ROW_META,
   IN_PERSON_ACT_LABEL,
-  IN_PERSON_ROW_META,
   INVITATION_LABEL,
   MAIL_ACT_LABELS,
   RECOVERY_ACT_LABEL,
-  RECOVERY_ROW_META,
   toAccessBlockNote,
   toAccessLandingKey,
   toInPersonHref,
   toInvitationSpan,
   toInvitationValidity,
   toInviteHref,
-  toMailRowMeta,
   toNoMailAddressLine,
   toPersonEditHref,
   toRecoveryHref,
@@ -56,18 +52,18 @@ export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey }) =
     <KkHubRow
       label={BIRTH_DATE_ACT_LABEL}
       icon="edit"
-      meta={BIRTH_DATE_ROW_META}
       component={Link}
       to={toPersonEditHref(subject.personId)}
     />
   ) : null;
 
+  const mailMeta = subject.email ?? undefined;
   const mailRow =
     mailInvitation === null ? null : (
       <KkHubRow
         label={MAIL_ACT_LABELS[mailInvitation]}
         icon="mail"
-        meta={toMailRowMeta(subject.email)}
+        meta={mailMeta}
         component={Link}
         to={toInviteHref(subject.personId)}
       />
@@ -75,7 +71,7 @@ export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey }) =
 
   const inPersonMeta = vouchesForAge
     ? toVouchLine(subject.firstName, access.ageOfConsent)
-    : IN_PERSON_ROW_META;
+    : undefined;
   const inPersonRow = inPersonInvitation ? (
     <KkHubRow
       label={IN_PERSON_ACT_LABEL}
@@ -90,7 +86,6 @@ export const AccessPanel: FC<AccessPanelProps> = ({ subject, highlightedKey }) =
     <KkHubRow
       label={RECOVERY_ACT_LABEL}
       icon="key"
-      meta={RECOVERY_ROW_META}
       component={Link}
       to={toRecoveryHref(subject.personId)}
     />

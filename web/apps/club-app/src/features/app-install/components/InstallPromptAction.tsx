@@ -1,9 +1,8 @@
 import { KkButton } from '@furria/ui/KkButton';
 import { KkIcon } from '@furria/ui/KkIcon';
 import { KkInstallStage } from '@furria/ui/KkInstallStage';
-import { KkNote } from '@furria/ui/KkNote';
 import type { FC } from 'react';
-import { PROMPT_ACTION, PROMPT_HINT } from '../install-copy';
+import { PROMPT_ACTION } from '../install-copy';
 
 interface InstallPromptActionProps {
   onInstall: () => void;
@@ -22,6 +21,5 @@ export const InstallPromptAction: FC<InstallPromptActionProps> = ({ onInstall })
     >
       {PROMPT_ACTION}
     </KkButton>
-    <KkNote>{PROMPT_HINT}</KkNote>
   </KkInstallStage.Actions>
 );

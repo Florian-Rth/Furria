@@ -8,7 +8,6 @@ import { WriteScreen } from '@/features/write/WriteScreen';
 import {
   ANNOUNCEMENT_ADD_LABEL,
   ANNOUNCEMENT_BODY_FIELD_LABEL,
-  ANNOUNCEMENT_BODY_HINT,
   ANNOUNCEMENT_BODY_PLACEHOLDER,
   ANNOUNCEMENT_CONTENT_SECTION_TITLE,
   ANNOUNCEMENT_CREATE_TITLE,
@@ -18,7 +17,6 @@ import {
   ANNOUNCEMENT_TITLE_FIELD_LABEL,
   ANNOUNCEMENT_VALID_UNTIL_EMPTY_LABEL,
   ANNOUNCEMENT_VALID_UNTIL_FIELD_LABEL,
-  ANNOUNCEMENT_VALID_UNTIL_HINT,
   ANNOUNCEMENTS_ORIGIN,
   toValidUntilQuickChoices,
   WITHDRAW_ANNOUNCEMENT_DANGER_LABEL,
@@ -97,7 +95,6 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
           showCount
           countLabel={toCountLabel}
           placeholder={ANNOUNCEMENT_BODY_PLACEHOLDER}
-          hint={ANNOUNCEMENT_BODY_HINT}
           error={errors.body !== undefined}
           helperText={errors.body?.message}
         />
@@ -111,7 +108,6 @@ export const AnnouncementEditor: FC<AnnouncementEditorProps> = ({ announcement }
           allowEmpty
           emptyLabel={ANNOUNCEMENT_VALID_UNTIL_EMPTY_LABEL}
           quickChoices={validUntilQuickChoices}
-          hint={ANNOUNCEMENT_VALID_UNTIL_HINT}
           error={errors.validUntil !== undefined}
           helperText={errors.validUntil?.message}
         />

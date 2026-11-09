@@ -127,8 +127,6 @@ export const toTableTypeMeta = (
     : `${lengthCm} × ${widthCm} cm${seatsAtEnds ? ' · Stühle an den Enden' : ''}`;
 
 export const PLAN_PANEL_TITLE = 'Tischplan';
-export const PLAN_PANEL_NOTE =
-  'Tisch wählen und hineinklicken, oder eine Tischreihe ziehen. Antippen wählt aus.';
 export const INSPECTOR_LABEL = 'Auswahl bearbeiten';
 export const INSPECTOR_CLOSE = 'Schließen';
 export const TYPE_FIELD_LABEL = 'Tischart';
@@ -142,7 +140,6 @@ export const ROTATE_LEFT_SHORT = '−15°';
 export const ROTATE_RIGHT_SHORT = '+15°';
 export const NUMBER_FIELD_LABEL = 'Nummer';
 export const NOTE_FIELD_LABEL = 'Notiz';
-export const NOTE_FIELD_HINT = 'Zum Beispiel, wer hier sitzt.';
 export const DUPLICATE_LABEL = 'Duplizieren';
 export const DELETE_LABEL = 'Löschen';
 export const GROUP_LABEL = 'Gruppieren';
@@ -151,9 +148,9 @@ export const WHOLE_GROUP_LABEL = 'Ganze Gruppe wählen';
 export const REMOVE_CHAIR_LABEL = 'Stuhl entfernen';
 export const RESTORE_CHAIR_LABEL = 'Stuhl zurückstellen';
 export const CHAIR_NOTICES = {
-  removed: 'Dieser Stuhl ist entfernt und zählt nicht mit.',
-  leftOut: 'Hier ist kein Platz für diesen Stuhl, darum ist er weggelassen und zählt nicht mit.',
-  kept: 'Dieser Stuhl steht trotz Platzmangel und zählt mit.',
+  removed: 'Stuhl entfernt.',
+  leftOut: 'Kein Platz – Stuhl weggelassen.',
+  kept: 'Stuhl steht trotz Platzmangel.',
 } as const;
 export const KEEP_CHAIR_LABEL = 'Trotzdem hinstellen';
 export const RELEASE_CHAIR_LABEL = 'Wieder weglassen';
@@ -171,9 +168,8 @@ export const START_HALLS_TITLE = 'Saal wählen';
 export const START_COPY_TITLE = 'Übernehmen von';
 export const START_DRAW_LABEL = 'Saal zeichnen';
 export const START_NO_HALLS_TITLE = 'Noch kein Saal';
-export const START_NO_HALLS_NOTE =
-  'Zeichne zuerst den Saal: Wände, Eingänge, Bühne, Theke. Er bleibt für alle Veranstaltungen dort.';
-export const START_NO_VENUE_NOTE = 'Die Veranstaltung hat noch keinen Ort. Lege ihn zuerst fest.';
+export const START_NO_HALLS_NOTE = 'Zeichne zuerst einen Saal.';
+export const START_NO_VENUE_NOTE = 'Die Veranstaltung hat noch keinen Ort.';
 export const START_LOADING_LABEL = 'Säle werden geladen';
 export const toHallMeta = (venueName: string, isEventVenue: boolean): string =>
   isEventVenue ? `${venueName} · Ort der Veranstaltung` : venueName;
@@ -213,14 +209,6 @@ export const TOUCH_TOOL_LABELS: Record<PlannerTool, string> = {
   measure: 'Messen',
 };
 
-export const TOUCH_TOOL_HINTS: Record<PlannerTool, string> = {
-  select: '',
-  table: 'Tippen stellt einen Tisch',
-  row: 'Ziehen legt eine Reihe',
-  seats: 'Tische für eine Zahl Gäste',
-  measure: '',
-};
-
 export const ADD_LABEL = 'Hinzufügen';
 export const ADD_CLOSE = 'Schließen';
 export const DOCK_LABEL = 'Werkzeuge';
@@ -233,7 +221,6 @@ export const TOOL_DONE_LABEL = 'Fertig';
 export const TOOL_TRAY_LABEL = 'Aktives Werkzeug';
 export const PLACE_SEATS_LABEL = 'Hier hinstellen';
 export const SEATS_CONTINUE_LABEL = 'Weiter';
-export const TOUCH_SEATS_HINT = 'Die Vorschau sitzt in der Mitte. Zieh sie an ihren Platz.';
 export const PLAN_FACTS_LABEL = 'Plan';
 export const MEASURE_CLEAR_LABEL = 'Maß löschen';
 export const CHAIR_NUMBER_ACTION = 'Nummer';

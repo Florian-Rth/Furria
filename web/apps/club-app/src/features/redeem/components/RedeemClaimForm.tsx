@@ -12,8 +12,7 @@ import { toGreeting } from '../redeem-messages';
 import type { LiveInvitation } from '../redeem-stage';
 import { RedeemClaimPasskey } from './RedeemClaimPasskey';
 
-const CLAIM_LINE =
-  'Mit dieser Adresse gibt es schon einen Account. Melde dich damit an, dann wird er übernommen.';
+const CLAIM_LINE = 'Mit dieser Adresse gibt es schon einen Account.';
 const LOGIN_EMAIL_LABEL = 'Anmelde-E-Mail';
 const PASSWORD_LABEL = 'Passwort dieses Accounts';
 const CLAIM_LABEL = 'Anmelden';

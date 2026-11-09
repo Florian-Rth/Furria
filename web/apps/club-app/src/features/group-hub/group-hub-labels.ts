@@ -209,9 +209,7 @@ export const ADMINISTRATION_DENIED_MESSAGE =
   'Nur die Gruppenverwaltung kann Name und Gruppenart ändern.';
 
 export const PERSON_SCREEN_OPEN_LABEL = 'Zum Profil';
-export const PERSON_SCREEN_CONTACT_NOTE = 'Kontaktdaten findest du im Profil der Person.';
-export const PERSON_SCREEN_UNREACHABLE_NOTE =
-  'Diese Person hat kein Profil im Verzeichnis. Wende dich an die Gruppen-Admins.';
+export const PERSON_SCREEN_UNREACHABLE_NOTE = 'Kein Profil im Verzeichnis.';
 export const PERSON_SCREEN_ADD_MEMBERSHIP_LABEL = 'Mitglied aufnehmen';
 export const PERSON_SCREEN_ADD_ADMIN_LABEL = 'Gruppen-Admin ernennen';
 

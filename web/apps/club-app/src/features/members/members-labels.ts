@@ -1,4 +1,3 @@
-import type { MembershipState } from '@/lib/api/schemas';
 import { toInitials } from '@/lib/initials';
 import type { StateChip } from '@/lib/state-chips';
 import { toMembershipStateChip, toNoStateMatchLine } from '@/lib/state-chips';
@@ -23,7 +22,6 @@ export const toLetterAnchors = (sections: readonly { letter: string }[]): Letter
 
 export const LETTER_INDEX_LABEL = 'Zu einem Buchstaben springen';
 
-export const MEMBERS_LEAD = 'Kontakte, Gruppen und Rollen aller Personen im Verein.';
 export const toWithoutMembershipSentence = (count: number): string | null => {
   if (count === 0) {
     return null;
@@ -34,12 +32,6 @@ export const toWithoutMembershipSentence = (count: number): string | null => {
 
   return `Darunter ${count} Personen ohne Mitgliedschaft.`;
 };
-
-const COUNTING_FOOTNOTE = 'Gezählt werden alle, die aktuell mit dem FCC verbunden sind.';
-const ALL_FILTER_SUGGESTION = 'Wähle „Alle“, um alle anzuzeigen.';
-
-export const toStatsFootnote = (withoutMembership: number): string =>
-  toWithoutMembershipSentence(withoutMembership) ?? COUNTING_FOOTNOTE;
 
 export type MembersEmptyCause =
   | { kind: 'query'; needle: string }
@@ -68,7 +60,7 @@ export const toEmptyDescription = (query: string, state: string): string => {
     return 'Keine Einträge.';
   }
 
-  return `${cause.stateLine} ${ALL_FILTER_SUGGESTION}`;
+  return cause.stateLine;
 };
 
 export interface MemberHeadline {
@@ -104,26 +96,6 @@ export const toMemberHeadline = (member: MemberDetails | undefined): MemberHeadl
     state: toMembershipStateChip(member.membershipState),
   };
 };
-
-export const toMembershipNote = (state: MembershipState, firstName: string): string | null => {
-  if (state === 'active') {
-    return null;
-  }
-  if (state === 'paused') {
-    return `${firstName} ist in einer Ruhezeit und gilt nicht als aktiv.`;
-  }
-  if (state === 'ended') {
-    return `Die Mitgliedschaft ist beendet, ${firstName} bleibt aber mit dem FCC verbunden.`;
-  }
-
-  return `${firstName} wirkt im Verein mit, ohne Mitglied zu sein.`;
-};
-
-export const toContactHiddenExplanation = (firstName: string): string =>
-  `${firstName} hat die Kontaktdaten nicht für Mitglieder freigegeben.`;
-
-export const SELF_CONTACT_HIDDEN_EXPLANATION =
-  'Deine Kontaktdaten sind für Mitglieder nicht freigegeben.';
 
 export const SELF_CONTACT_HIDDEN_LINK = 'In Mein Profil ändern';
 

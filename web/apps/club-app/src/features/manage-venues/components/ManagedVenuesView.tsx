@@ -1,7 +1,6 @@
-import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { MANAGE_VENUES_FOOTNOTE, partitionVenues } from '../manage-venues-labels';
+import { partitionVenues } from '../manage-venues-labels';
 import type { ManagedVenue } from '../schemas';
 import { ArchivedVenuesPanel } from './ArchivedVenuesPanel';
 import { ManagedVenuesList } from './ManagedVenuesList';
@@ -19,7 +18,6 @@ export const ManagedVenuesView: FC<ManagedVenuesViewProps> = ({ venues }) => {
     <Stack sx={{ gap: VIEW_GAP, minWidth: 0 }}>
       <ManagedVenuesList venues={running} />
       <ArchivedVenuesPanel venues={archived} />
-      <KkNote>{MANAGE_VENUES_FOOTNOTE}</KkNote>
     </Stack>
   );
 };
