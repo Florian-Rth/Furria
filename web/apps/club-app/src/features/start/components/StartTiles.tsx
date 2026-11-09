@@ -9,11 +9,11 @@ import { AnnouncementsSheet } from './AnnouncementsSheet';
 import { BeerCratesSheet } from './BeerCratesSheet';
 import { CalendarSheet } from './CalendarSheet';
 import { EntrySheet } from './EntrySheet';
+import { OfficeSheet } from './OfficeSheet';
 import { OwedSheet } from './OwedSheet';
 import { PanelLinesSheet } from './PanelLinesSheet';
 import { PanelTile } from './PanelTile';
 import { PracticeSheet } from './PracticeSheet';
-import { RoleSheet } from './RoleSheet';
 
 const TILE_SPACING = 1.5;
 const FULL = 12;
@@ -74,8 +74,7 @@ export const StartTiles: FC<StartTilesProps> = ({ board, focusedDay, strip }) =>
       <EntrySheet board={board} />
       <CalendarSheet board={board} focusedDay={focusedDay} />
       <AnnouncementsSheet board={board} />
-      <RoleSheet variant="role" board={board} />
-      <RoleSheet variant="office" board={board} />
+      <OfficeSheet board={board} />
       <PanelLinesSheet kind="mine" board={board} />
       <PanelLinesSheet kind="groups" board={board} />
       <OwedSheet board={board} />

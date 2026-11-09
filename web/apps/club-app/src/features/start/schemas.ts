@@ -79,7 +79,6 @@ export const StartAnnouncementSchema = z.object({
 export type StartAnnouncement = z.infer<typeof StartAnnouncementSchema>;
 
 export const START_MINE_KINDS = [
-  'newRole',
   'newBoardSeat',
   'newGroupAdmin',
   'newGroupMembership',

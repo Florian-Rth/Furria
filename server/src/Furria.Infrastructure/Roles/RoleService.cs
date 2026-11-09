@@ -95,23 +95,6 @@ public sealed class RoleService
         return [.. rows.Select(row => ToSummary(row, today, impliedBy[row.Id]))];
     }
 
-    public async Task<IReadOnlyList<RoleOverviewSummary>> GetRolesOverviewAsync(
-        CancellationToken ct
-    )
-    {
-        var today = ClubClock.Today(_timeProvider);
-
-        var rows = await _dbContext
-            .Roles.AsNoTracking()
-            .Where(role => role.ArchivedOn == null)
-            .OrderBy(role => EF.Functions.Collate(role.Name, GermanCollation.Name))
-            .ThenBy(role => role.Id)
-            .Select(RolePageProjection)
-            .ToListAsync(ct);
-
-        return [.. rows.Select(row => ToOverview(row, today))];
-    }
-
     public async Task<Result<RoleDetails>> GetRoleAsync(int roleId, CancellationToken ct)
     {
         var today = ClubClock.Today(_timeProvider);
@@ -478,30 +461,6 @@ public sealed class RoleService
                     }),
             ],
             ImpliedBy = [.. impliedBy],
-        };
-
-    private static RoleOverviewSummary ToOverview(RolePageRow row, DateOnly today) =>
-        new()
-        {
-            RoleId = row.Id,
-            Name = row.Name,
-            Description = row.Description,
-            Coin = row.Coin,
-            Holders =
-            [
-                .. RunningRows(row.Holdings, today)
-                    .DistinctBy(holding => holding.PersonId)
-                    .Select(ToOverviewHolder),
-            ],
-        };
-
-    private static RoleOverviewHolder ToOverviewHolder(HoldingRow holding) =>
-        new()
-        {
-            PersonId = holding.PersonId,
-            FirstName = holding.FirstName,
-            LastName = holding.LastName,
-            SinceOn = holding.SinceOn,
         };
 
     private static RoleDetails ToDetails(

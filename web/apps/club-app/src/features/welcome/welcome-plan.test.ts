@@ -23,15 +23,16 @@ describe('welcomePlanOf', () => {
     expect({ joining: plan.joining, reel: plan.reelYears }).toEqual({ joining, reel });
   });
 
-  it('bills her session first, then at most two functions with board seats ahead of roles', () => {
+  it('bills her session first, then at most two functions with board seats ahead of group admins and no role', () => {
     const plan = welcomePlanOf(
       {
         firstName: 'Lena',
         memberSince: '2014-03-01',
         sessionOrdinal: 13,
         functions: [
+          { kind: 'role', name: 'Trainerin', icon: 'whistle', tone: 'teal' },
           { kind: 'groupAdmin', name: 'Tanzgarde', icon: null, tone: null },
-          { kind: 'role', name: 'Trainerin', icon: null, tone: null },
+          { kind: 'groupAdmin', name: 'Showtanz', icon: null, tone: null },
           { kind: 'boardSeat', name: 'Kassenprüferin', icon: null, tone: null },
         ],
       },
@@ -41,7 +42,7 @@ describe('welcomePlanOf', () => {
     expect(plan.lines).toEqual([
       { kind: 'session', ordinal: 13 },
       { kind: 'function', name: 'Kassenprüferin' },
-      { kind: 'function', name: 'Trainerin' },
+      { kind: 'function', name: 'Tanzgarde' },
     ]);
   });
 

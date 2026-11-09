@@ -20,7 +20,6 @@ const toHaystacks = (member: MemberSummary): string[] => [
   `${member.firstName} ${member.lastName}`,
   `${member.lastName} ${member.firstName}`,
   ...member.groups.map((group) => group.name),
-  ...member.roles.map((role) => role.name),
 ];
 
 const matchesQuery = (member: MemberSummary, needle: string): boolean =>

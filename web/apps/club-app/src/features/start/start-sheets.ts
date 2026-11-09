@@ -21,7 +21,6 @@ export type StartSheet =
   | { kind: 'entry'; calendarEntryId: number }
   | { kind: 'calendar' }
   | { kind: 'announcements'; announcementId: number | null }
-  | { kind: 'role'; roleId: number }
   | { kind: 'office'; boardOfficeId: number }
   | { kind: 'mine' }
   | { kind: 'groups' }
@@ -73,12 +72,6 @@ export const parseStartSheet = (sheetId: string | null): StartSheet | null => {
     return { kind: 'announcements', announcementId };
   }
 
-  const roleId = toPeekedId(sheetId, 'role');
-
-  if (roleId !== null) {
-    return { kind: 'role', roleId };
-  }
-
   const boardOfficeId = toPeekedId(sheetId, 'office');
 
   return boardOfficeId === null ? FOREIGN : { kind: 'office', boardOfficeId };
@@ -110,9 +103,6 @@ const opensOn = (sheet: StartSheet, start: Start): boolean => {
     return sheet.announcementId === null
       ? announcements.length > 0
       : announcements.some((announcement) => announcement.announcementId === sheet.announcementId);
-  }
-  if (sheet.kind === 'role') {
-    return hasMine(start, 'newRole', sheet.roleId);
   }
   if (sheet.kind === 'office') {
     return hasMine(start, 'newBoardSeat', sheet.boardOfficeId);

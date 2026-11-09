@@ -1,6 +1,7 @@
 import type { GroupRef, RoleRef } from '@/lib/api/schemas';
 
 export const NO_AFFILIATION_META = 'keine Gruppe, keine Rolle';
+export const NO_GROUP_META = 'keine Gruppe';
 
 const META_SEPARATOR = ' · ';
 
@@ -22,7 +23,7 @@ const toAccent = (roles: readonly RoleRef[]): string | undefined => {
   return `${first.name} +${further.length}`;
 };
 
-const toMeta = (groups: readonly GroupRef[]): string | undefined => {
+export const toGroupsMeta = (groups: readonly GroupRef[]): string | undefined => {
   if (groups.length === 0) {
     return undefined;
   }
@@ -33,4 +34,4 @@ const toMeta = (groups: readonly GroupRef[]): string | undefined => {
 export const toPersonRowAffiliation = (
   groups: readonly GroupRef[],
   roles: readonly RoleRef[],
-): PersonRowAffiliation => ({ accent: toAccent(roles), meta: toMeta(groups) });
+): PersonRowAffiliation => ({ accent: toAccent(roles), meta: toGroupsMeta(groups) });

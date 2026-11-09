@@ -70,7 +70,7 @@ const board = start([
     shownCount: 1,
     announcements: [announcement(12, '2027-01-18T09:00:00Z')],
   },
-  { kind: 'mine', shownCount: 2, mine: [mine('newRole', 7), mine('newBoardSeat', 3)] },
+  { kind: 'mine', shownCount: 2, mine: [mine('newGroupAdmin', 7), mine('newBoardSeat', 3)] },
 ]);
 
 describe('parseStartSheet', () => {
@@ -82,9 +82,8 @@ describe('parseStartSheet', () => {
     { sheetId: 'start-announcements', expected: { kind: 'announcements', announcementId: null } },
     { sheetId: 'start-announcements-12', expected: { kind: 'announcements', announcementId: 12 } },
     { sheetId: 'entry-811', expected: { kind: 'entry', calendarEntryId: 811 } },
-    { sheetId: 'role-7', expected: { kind: 'role', roleId: 7 } },
     { sheetId: 'office-3', expected: { kind: 'office', boardOfficeId: 3 } },
-    { sheetId: 'club-roles', expected: { kind: 'foreign' } },
+    { sheetId: 'role-7', expected: { kind: 'foreign' } },
   ])('reads $sheetId', ({ sheetId, expected }) => {
     expect(parseStartSheet(sheetId)).toEqual(expected);
   });
@@ -100,9 +99,8 @@ describe('isStrayStartSheet', () => {
     { sheetId: 'start-announcements', expected: false },
     { sheetId: 'start-announcements-12', expected: false },
     { sheetId: 'start-announcements-13', expected: true },
-    { sheetId: 'role-7', expected: false },
-    { sheetId: 'role-3', expected: true },
     { sheetId: 'office-3', expected: false },
+    { sheetId: 'office-7', expected: true },
     { sheetId: 'start-mine', expected: false },
     { sheetId: 'start-groups', expected: true },
     { sheetId: 'venue-2', expected: true },

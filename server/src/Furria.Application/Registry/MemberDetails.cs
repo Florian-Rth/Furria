@@ -19,7 +19,7 @@ public sealed record MemberDetails
 
     public required IReadOnlyList<MemberGroup> Groups { get; init; }
 
-    public required IReadOnlyList<MemberRole> Roles { get; init; }
+    public required IReadOnlyList<MemberBoardTerm> BoardTerms { get; init; }
 
     public required MemberContact Contact { get; init; }
 }

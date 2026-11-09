@@ -17,7 +17,6 @@ public sealed class GetStartMineTests : IClassFixture<ApiTestFixture>
     private static readonly DateOnly JoinedIn2015 = new(2015, 11, 11);
     private static readonly DateOnly Today = new(2027, 1, 19);
     private static readonly DateOnly ThirteenDaysAgo = new(2027, 1, 6);
-    private static readonly DateOnly FourteenDaysAgo = new(2027, 1, 5);
     private static readonly DateOnly LastWeek = new(2027, 1, 12);
     private static readonly DateOnly LastSummer = new(2026, 6, 30);
     private static readonly DateOnly MidFebruary = new(2027, 2, 15);
@@ -62,39 +61,7 @@ public sealed class GetStartMineTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_AnnounceANewRoleWithItsKeys_When_HerHoldingStartedWithinTwoWeeks()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            builder =>
-                builder.Roles(roles =>
-                    roles
-                        .AddRole(
-                            "aushang",
-                            "Aushang",
-                            FurriaPermissions.PersonsManage,
-                            FurriaPermissions.AnnouncementsPost
-                        )
-                        .AddRoleHolding("lena-aushang", "aushang", "lena", ThirteenDaysAgo)
-                ),
-            (ctx, mine) =>
-            {
-                var role = Assert.Single(mine, item => item.Kind == StartMineKind.NewRole);
-
-                Assert.Equal(ctx.Roles.Roles.IdOf("aushang"), role.SubjectId);
-                Assert.Equal(ThirteenDaysAgo, role.On);
-                Assert.Equal(Today, role.Until);
-                Assert.Equal("Aushang", role.Name);
-                Assert.Equal(
-                    [FurriaPermissions.AnnouncementsPost, FurriaPermissions.PersonsManage],
-                    role.PermissionKeys
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_LeaveOutARole_When_HerHoldingStartedEarlier()
+    public async Task Should_AnnounceNothing_When_SheGotARoleWithinTwoWeeks()
     {
         await OnTuesdayEveningAsync(
             "lena",
@@ -102,30 +69,9 @@ public sealed class GetStartMineTests : IClassFixture<ApiTestFixture>
                 builder.Roles(roles =>
                     roles
                         .AddRole("aushang", "Aushang", FurriaPermissions.AnnouncementsPost)
-                        .AddRoleHolding("lena-aushang", "aushang", "lena", FourteenDaysAgo)
+                        .AddRoleHolding("lena-aushang", "aushang", "lena", ThirteenDaysAgo)
                 ),
-            (_, mine) => Assert.DoesNotContain(mine, item => item.Kind == StartMineKind.NewRole)
-        );
-    }
-
-    [Fact]
-    public async Task Should_LeaveOutANewRole_When_TheRoleIsArchived()
-    {
-        await OnTuesdayEveningAsync(
-            "lena",
-            builder =>
-                builder.Roles(roles =>
-                    roles
-                        .AddRoleWithDetails(
-                            "aushang",
-                            "Aushang",
-                            "",
-                            Today,
-                            FurriaPermissions.AnnouncementsPost
-                        )
-                        .AddRoleHolding("lena-aushang", "aushang", "lena", LastWeek)
-                ),
-            (_, mine) => Assert.DoesNotContain(mine, item => item.Kind == StartMineKind.NewRole)
+            (_, mine) => Assert.Empty(mine)
         );
     }
 

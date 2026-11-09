@@ -3,7 +3,7 @@ import type { QuietMemory } from './start-quiet';
 import { isQuiet, parseQuietMemory, quietAfterOpen } from './start-quiet';
 
 const TODAY = '2027-01-19';
-const ROLE_KEY = 'mine:newRole:4:2027-01-12';
+const SEAT_KEY = 'mine:newBoardSeat:4:2027-01-12';
 const JUBILEE_KEY = 'groups:jubilee:6';
 
 describe('parseQuietMemory', () => {
@@ -12,13 +12,13 @@ describe('parseQuietMemory', () => {
     { label: 'the value is not JSON', raw: 'quiet', expected: { v: 1, items: {} } },
     {
       label: 'another version is stored',
-      raw: `{"v":2,"items":{"${ROLE_KEY}":"2027-01-26"}}`,
+      raw: `{"v":2,"items":{"${SEAT_KEY}":"2027-01-26"}}`,
       expected: { v: 1, items: {} },
     },
     {
       label: 'one item has run out',
-      raw: `{"v":1,"items":{"${ROLE_KEY}":"2027-01-26","${JUBILEE_KEY}":"2027-01-18"}}`,
-      expected: { v: 1, items: { [ROLE_KEY]: '2027-01-26' } },
+      raw: `{"v":1,"items":{"${SEAT_KEY}":"2027-01-26","${JUBILEE_KEY}":"2027-01-18"}}`,
+      expected: { v: 1, items: { [SEAT_KEY]: '2027-01-26' } },
     },
     {
       label: 'an item lasts until today',
@@ -33,10 +33,10 @@ describe('parseQuietMemory', () => {
 describe('isQuiet', () => {
   it.each<{ label: string; items: Record<string, string>; expected: boolean }>([
     { label: 'she never opened it', items: {}, expected: false },
-    { label: 'the quiet lasts until today', items: { [ROLE_KEY]: TODAY }, expected: true },
-    { label: 'the quiet ended yesterday', items: { [ROLE_KEY]: '2027-01-18' }, expected: false },
+    { label: 'the quiet lasts until today', items: { [SEAT_KEY]: TODAY }, expected: true },
+    { label: 'the quiet ended yesterday', items: { [SEAT_KEY]: '2027-01-18' }, expected: false },
   ])('is $expected when $label', ({ items, expected }) => {
-    expect(isQuiet({ v: 1, items }, ROLE_KEY, TODAY)).toBe(expected);
+    expect(isQuiet({ v: 1, items }, SEAT_KEY, TODAY)).toBe(expected);
   });
 });
 
@@ -50,17 +50,17 @@ describe('quietAfterOpen', () => {
     },
     {
       label: 'an earlier quiet is stored',
-      items: { [ROLE_KEY]: '2027-01-20' },
+      items: { [SEAT_KEY]: '2027-01-20' },
       until: '2027-01-26',
       expected: '2027-01-26',
     },
     {
       label: 'a later quiet is stored',
-      items: { [ROLE_KEY]: '2027-02-02' },
+      items: { [SEAT_KEY]: '2027-02-02' },
       until: '2027-01-26',
       expected: '2027-02-02',
     },
   ])('quiets until $expected when $label', ({ items, until, expected }) => {
-    expect(quietAfterOpen({ v: 1, items }, ROLE_KEY, until).items[ROLE_KEY]).toBe(expected);
+    expect(quietAfterOpen({ v: 1, items }, SEAT_KEY, until).items[SEAT_KEY]).toBe(expected);
   });
 });

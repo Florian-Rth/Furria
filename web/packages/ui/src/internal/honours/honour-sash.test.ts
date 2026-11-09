@@ -2,12 +2,12 @@ import { describe, expect, it } from 'vitest';
 import { sashLayoutOf } from './honour-sash';
 
 describe('sashLayoutOf', () => {
-  it('draws only the band in lists', () => {
-    const layout = sashLayoutOf(20, 15.6, 'band', 11);
+  it('centres a large emblem icon on the list band', () => {
+    const layout = sashLayoutOf(20, 15.6, 'emblem', 11);
 
-    expect(layout.icon).toBeNull();
+    expect(layout.icon).toEqual({ x: 16.41, y: 26.24, size: 7.18 });
     expect(layout.text).toBeNull();
-    expect(layout.band).toEqual({ x: -0.28, y: 25.62, width: 40.56, height: 7.8 });
+    expect(layout.band).toEqual({ x: -0.28, y: 25.62, width: 40.56, height: 8.42 });
   });
 
   it('centres the lone icon on the band', () => {

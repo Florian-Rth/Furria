@@ -1,4 +1,4 @@
-export type SashMode = 'band' | 'icon' | 'text';
+export type SashMode = 'emblem' | 'icon' | 'text';
 
 export interface SashRect {
   x: number;
@@ -22,14 +22,14 @@ export interface SashText {
 export interface SashLayout {
   band: SashRect;
   edges: SashRect[];
-  icon: SashIcon | null;
+  icon: SashIcon;
   text: SashText | null;
 }
 
 const BAND_DROP = 0.36;
-const BAND_HEIGHT: Record<SashMode, number> = { band: 0.5, icon: 0.4, text: 0.4 };
+const BAND_HEIGHT: Record<SashMode, number> = { emblem: 0.54, icon: 0.4, text: 0.4 };
 const BAND_REACH = 2.6;
-const ICON_SIZE: Record<SashMode, number> = { band: 0, icon: 0.34, text: 0.28 };
+const ICON_SIZE: Record<SashMode, number> = { emblem: 0.46, icon: 0.34, text: 0.28 };
 const TEXT_CAP = 0.25;
 const TEXT_ROOM = 1.3;
 const GLYPH_WIDTH = 0.47;
@@ -76,10 +76,7 @@ export const sashLayoutOf = (
       width: rounded(width),
       height: rounded(edge),
     })),
-    icon:
-      mode === 'band'
-        ? null
-        : { x: rounded(start), y: rounded(middle - iconSize / 2), size: rounded(iconSize) },
+    icon: { x: rounded(start), y: rounded(middle - iconSize / 2), size: rounded(iconSize) },
     text:
       textSize > 0
         ? {

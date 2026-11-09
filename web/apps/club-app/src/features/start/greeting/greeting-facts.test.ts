@@ -17,11 +17,17 @@ const milestone = (years: number): StartMine => ({
   permissionKeys: null,
 });
 
-const role = (name: string): PersonFunction => ({
-  kind: 'role',
+const groupAdmin = (name: string): PersonFunction => ({
+  kind: 'groupAdmin',
   name,
   icon: 'camera',
   tone: 'iris',
+});
+const coinedRole = (name: string): PersonFunction => ({
+  kind: 'role',
+  name,
+  icon: 'wrench',
+  tone: 'teal',
 });
 const seat = (name: string): PersonFunction => ({
   kind: 'boardSeat',
@@ -60,10 +66,15 @@ describe('toGreetingFacts', () => {
     ).toBe(festive);
   });
 
-  it('puts board seats before roles and keeps two functions', () => {
+  it('puts board seats before group admins, never names a role and keeps two functions', () => {
     const band = toGreetingFacts({
       memberSince: null,
-      functions: [role('Fotografie'), role('Kasse'), seat('Beisitzer')],
+      functions: [
+        coinedRole('Zeugwart'),
+        groupAdmin('Fotografie'),
+        groupAdmin('Kasse'),
+        seat('Beisitzer'),
+      ],
       milestone: null,
     });
 

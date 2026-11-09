@@ -14,7 +14,7 @@ import { MembersToolbar } from './MembersToolbar';
 
 const MEMBERS_TITLE = 'Mitglieder';
 
-const SEARCH_PLACEHOLDER = 'Name, Gruppe oder Rolle';
+const SEARCH_PLACEHOLDER = 'Name oder Gruppe';
 
 const TOOLBAR_CHIPS = 5;
 

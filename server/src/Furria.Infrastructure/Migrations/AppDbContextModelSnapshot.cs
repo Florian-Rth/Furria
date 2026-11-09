@@ -606,7 +606,7 @@ namespace Furria.Infrastructure.Migrations
 
                     b.ToTable("board_office", null, t =>
                         {
-                            t.HasCheckConstraint("ck_board_office_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom')");
+                            t.HasCheckConstraint("ck_board_office_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom', 'Scepter', 'JesterCap', 'Chain', 'ViceCrown', 'ChildCrown', 'Laurel', 'Medal', 'Gavel', 'Briefcase', 'Quill', 'Ledger', 'JingleBell', 'Castle', 'Diamond', 'Handshake', 'Child', 'Confetti', 'Rocket')");
                         });
                 });
 
@@ -1479,7 +1479,7 @@ namespace Furria.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("ck_group_founded_year", "founded_year IS NULL OR founded_year >= 1800");
 
-                            t.HasCheckConstraint("ck_group_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom')");
+                            t.HasCheckConstraint("ck_group_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom', 'Scepter', 'JesterCap', 'Chain', 'ViceCrown', 'ChildCrown', 'Laurel', 'Medal', 'Gavel', 'Briefcase', 'Quill', 'Ledger', 'JingleBell', 'Castle', 'Diamond', 'Handshake', 'Child', 'Confetti', 'Rocket')");
 
                             t.HasCheckConstraint("ck_group_tone", "tone IS NULL OR tone IN ('Clay', 'Olive', 'Lime', 'Fern', 'Teal', 'Indigo', 'Iris', 'Violet', 'Orchid', 'Rose')");
                         });
@@ -2949,7 +2949,7 @@ namespace Furria.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("ck_role_coin", "(icon IS NULL) = (tone IS NULL)");
 
-                            t.HasCheckConstraint("ck_role_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom')");
+                            t.HasCheckConstraint("ck_role_icon", "icon IS NULL OR icon IN ('Crown', 'Euro', 'Bolt', 'Shield', 'Camera', 'Sparkle', 'Mic', 'MusicNote', 'Drum', 'Mask', 'Megaphone', 'Star', 'Trophy', 'Flag', 'Key', 'Shirt', 'Pen', 'Wrench', 'Palette', 'Heart', 'Mug', 'Calendar', 'Whistle', 'Broom', 'Scepter', 'JesterCap', 'Chain', 'ViceCrown', 'ChildCrown', 'Laurel', 'Medal', 'Gavel', 'Briefcase', 'Quill', 'Ledger', 'JingleBell', 'Castle', 'Diamond', 'Handshake', 'Child', 'Confetti', 'Rocket')");
 
                             t.HasCheckConstraint("ck_role_tone", "tone IS NULL OR tone IN ('Clay', 'Olive', 'Lime', 'Fern', 'Teal', 'Indigo', 'Iris', 'Violet', 'Orchid', 'Rose')");
                         });
