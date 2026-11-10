@@ -33,9 +33,11 @@ const SLIM_SHARE = 0.5;
 
 interface GreetingBurstPieceProps {
   piece: Piece;
+  leadSeconds?: number;
 }
 
-export const GreetingBurstPiece: FC<GreetingBurstPieceProps> = ({ piece }) => {
+export const GreetingBurstPiece: FC<GreetingBurstPieceProps> = ({ piece, leadSeconds = 0 }) => {
+  const delaySeconds = leadSeconds + piece.delaySeconds;
   const height = piece.isRound ? piece.size : piece.size * SLIM_SHARE;
   const corner = piece.isRound ? '50%' : `${kkTokens.radius.bar}px`;
 
@@ -51,7 +53,7 @@ export const GreetingBurstPiece: FC<GreetingBurstPieceProps> = ({ piece }) => {
         borderRadius: corner,
         bgcolor: PIECE_COLOR[piece.color],
         opacity: 0,
-        animation: `${fling} ${piece.durationSeconds}s linear ${piece.delaySeconds}s both`,
+        animation: `${fling} ${piece.durationSeconds}s linear ${delaySeconds}s forwards`,
         '--kk-greeting-rise-x': `${piece.riseX}px`,
         '--kk-greeting-rise-y': `${piece.riseY}px`,
         '--kk-greeting-drop-x': `${piece.dropX}px`,

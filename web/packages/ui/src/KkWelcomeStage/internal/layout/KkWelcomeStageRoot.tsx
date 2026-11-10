@@ -1,39 +1,20 @@
 import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
-import { keyframes } from '@mui/material/styles';
 import type { FC, KeyboardEvent, PropsWithChildren } from 'react';
 import { safeArea } from '../../../internal/safe-area';
 import { KkConfettiRain } from '../../../KkConfettiRain';
+import { stampJoltOf } from '../../../stamp-down';
 import { useBeatReached } from '../logic/use-beat-reached';
 import { WelcomeRunContext } from '../logic/welcome-run-context';
 import { WelcomeCorners } from '../ui/WelcomeCorners';
-import { fadeOut, KK_WELCOME_LEAVE_MS, REDUCED_MOTION } from '../welcome-paint';
+import { fadeOut, KK_WELCOME_LEAVE_MS } from '../welcome-paint';
 
 const CONTENT_WIDTH = '30rem';
 const TOP_GAP = 14;
 const BOTTOM_GAP = 28;
-const JOLT_MS = 280;
 const SHEET_FADE_DELAY_MS = 260;
 const ESCAPE = 'Escape';
 const RAIN_COUNT = 36;
-
-const jolt = keyframes`
-  0% {
-    transform: none;
-  }
-  25% {
-    transform: translate(0, 7px) rotate(-0.4deg);
-  }
-  55% {
-    transform: translate(0, -4px) rotate(0.3deg);
-  }
-  80% {
-    transform: translate(0, 2px);
-  }
-  100% {
-    transform: none;
-  }
-`;
 
 interface KkWelcomeStageRootProps extends PropsWithChildren {
   label: string;
@@ -95,8 +76,7 @@ export const KkWelcomeStageRoot: FC<KkWelcomeStageRootProps> = ({
             pb: safeArea('bottom', BOTTOM_GAP),
             rowGap: 3,
             justifyContent: 'space-between',
-            animation: `${jolt} ${JOLT_MS}ms ease-out ${joltAt}ms both`,
-            [REDUCED_MOTION]: { animation: 'none' },
+            ...stampJoltOf(joltAt),
           }}
         >
           {children}
