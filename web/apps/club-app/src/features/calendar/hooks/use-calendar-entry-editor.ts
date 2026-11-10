@@ -9,6 +9,7 @@ import {
   nextFreshKey,
   toAttachedCards,
   toChangedPollCards,
+  toChangedSignUpListCards,
   toDetachedCards,
 } from '../calendar-add-ons';
 import type { CalendarOwnerOption } from '../calendar-authoring';
@@ -25,13 +26,15 @@ import {
   toParticipationKeptForOwner,
   toToggledValue,
 } from '../calendar-authoring';
+import { toDeadlinePaths } from '../calendar-deadlines';
 import type { PollFieldPath, PollOptionsPath } from '../calendar-polls';
-import { toDeadlinePaths } from '../calendar-polls';
+import type { SignUpListFieldPath } from '../calendar-sign-up-lists';
 import type {
   CalendarAddOnKind,
   CalendarEntry,
   CalendarEntryForm,
   CalendarPollForm,
+  CalendarSignUpListForm,
 } from '../schemas';
 import { CalendarEntryFormSchema } from '../schemas';
 
@@ -59,6 +62,11 @@ export interface CalendarEntryEditorControl {
   updatePoll: (key: string, change: (poll: CalendarPollForm) => CalendarPollForm) => void;
   recheckPollField: (path: PollFieldPath) => void;
   forgetPollErrors: (path: PollOptionsPath) => void;
+  updateSignUpList: (
+    key: string,
+    change: (list: CalendarSignUpListForm) => CalendarSignUpListForm,
+  ) => void;
+  recheckSignUpListField: (path: SignUpListFieldPath) => void;
   setStartDay: (value: string | null) => void;
   setStartTime: (value: string) => void;
   setEndDay: (value: string | null) => void;
@@ -211,6 +219,17 @@ export const useCalendarEntryEditor = ({
     form.setValue('addOns', toChangedPollCards(form.getValues('addOns'), key, change), QUIET_EDIT);
   };
 
+  const updateSignUpList = (
+    key: string,
+    change: (list: CalendarSignUpListForm) => CalendarSignUpListForm,
+  ): void => {
+    form.setValue(
+      'addOns',
+      toChangedSignUpListCards(form.getValues('addOns'), key, change),
+      QUIET_EDIT,
+    );
+  };
+
   return {
     form,
     values,
@@ -236,6 +255,10 @@ export const useCalendarEntryEditor = ({
     },
     forgetPollErrors: (path) => {
       form.clearErrors(path);
+    },
+    updateSignUpList,
+    recheckSignUpListField: (path) => {
+      void form.trigger(path);
     },
     setStartDay,
     setStartTime,

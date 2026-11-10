@@ -26,6 +26,10 @@ public sealed class TestClub
 
     public AliasRegistry<int> CalendarPollOptions { get; }
 
+    public AliasRegistry<int> CalendarSignUpLists { get; }
+
+    public AliasRegistry<int> CalendarSignUpLines { get; }
+
     internal TestClub(SeededClub seeded)
     {
         Sessions = new AliasRegistry<int>("Session", seeded.SessionIds);
@@ -48,6 +52,14 @@ public sealed class TestClub
         CalendarPollOptions = new AliasRegistry<int>(
             "CalendarPollOption",
             seeded.CalendarPollOptionIds
+        );
+        CalendarSignUpLists = new AliasRegistry<int>(
+            "CalendarSignUpList",
+            seeded.CalendarSignUpListIds
+        );
+        CalendarSignUpLines = new AliasRegistry<int>(
+            "CalendarSignUpLine",
+            seeded.CalendarSignUpLineIds
         );
     }
 }

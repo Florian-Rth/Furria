@@ -102,6 +102,29 @@ public sealed class CalendarEntryExpectations
                 )
         );
 
+    public Expected ToHaveSignUpListsAt(
+        params (int Position, string Title, string? Hint)[] lists
+    ) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    lists,
+                    (
+                        await dbContext
+                            .CalendarSignUpLists.AsNoTracking()
+                            .Where(list => list.CalendarEntryId == _calendarEntryId)
+                            .OrderBy(list => list.Position)
+                            .Select(list => new
+                            {
+                                list.Position,
+                                list.Title,
+                                list.Hint,
+                            })
+                            .ToListAsync(ct)
+                    ).Select(list => (list.Position, list.Title, list.Hint))
+                )
+        );
+
     public Expected ToHavePeriod(DateTimeOffset startsAt, DateTimeOffset? endsAt) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

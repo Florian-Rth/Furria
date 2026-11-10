@@ -7,6 +7,7 @@ import type { CalendarAddOnCardForm, CalendarEntry } from '../schemas';
 import { CalendarAttendanceCard } from './CalendarAttendanceCard';
 import { CalendarParticipatingGroupsCard } from './CalendarParticipatingGroupsCard';
 import { CalendarPollCard } from './CalendarPollCard';
+import { CalendarSignUpListCard } from './CalendarSignUpListCard';
 
 interface CalendarAddOnCardProps {
   card: CalendarAddOnCardForm;
@@ -50,6 +51,17 @@ export const CalendarAddOnCard: FC<CalendarAddOnCardProps> = ({
           cardKey={card.key}
           index={index}
           poll={card.poll}
+          control={control}
+          entry={entry}
+          onRemove={remove}
+        />
+      );
+    case 'signUpList':
+      return (
+        <CalendarSignUpListCard
+          cardKey={card.key}
+          index={index}
+          list={card.signUpList}
           control={control}
           entry={entry}
           onRemove={remove}

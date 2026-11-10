@@ -27,7 +27,18 @@ public sealed partial class CalendarService
         await LockPollAsync(command.PollId, ct);
 
         if (
-            await PollSightRefusalAsync(command.ActorAccountId, personId, command.PollId, ct) is
+            await AddOnSightRefusalAsync(
+                new AddOnSight(
+                    command.ActorAccountId,
+                    personId,
+                    _dbContext
+                        .CalendarPolls.Where(poll => poll.Id == command.PollId)
+                        .Select(poll => poll.CalendarEntry!),
+                    UnknownPollMessage,
+                    NotYourPollMessage
+                ),
+                ct
+            ) is
             { } unseen
         )
             return unseen;
@@ -65,6 +76,9 @@ public sealed partial class CalendarService
 
     public async Task<Result> ClosePollAsync(int actorAccountId, int pollId, CancellationToken ct)
     {
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await LockPollAsync(pollId, ct);
+
         var ownerGroup = await _dbContext
             .CalendarPolls.AsNoTracking()
             .Where(poll => poll.Id == pollId)
@@ -76,9 +90,6 @@ public sealed partial class CalendarService
 
         if (!await MayOwnAsync(actorAccountId, ownerGroup.OwnerGroupId, ct))
             return Result.Forbidden(NotOwnedMessage);
-
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        await LockPollAsync(pollId, ct);
 
         var poll = await _dbContext.CalendarPolls.SingleOrDefaultAsync(row => row.Id == pollId, ct);
 
@@ -100,7 +111,7 @@ public sealed partial class CalendarService
     )
     {
         if (
-            CalendarPollClosing.IsClosed(
+            CalendarAddOnClosing.IsClosed(
                 ballot.ClosedAt,
                 ballot.VotesUntil,
                 ballot.EntryStartsAt,
@@ -113,34 +124,6 @@ public sealed partial class CalendarService
             return UnknownPollOptionMessage;
 
         return !ballot.AllowsMultipleChoices && optionIds.Count > 1 ? SingleChoiceMessage : null;
-    }
-
-    private async Task<Result?> PollSightRefusalAsync(
-        int actorAccountId,
-        int personId,
-        int pollId,
-        CancellationToken ct
-    )
-    {
-        var rights = await RightsOfAsync(actorAccountId, ct);
-        var entry = await _dbContext
-            .CalendarPolls.AsNoTracking()
-            .Where(poll => poll.Id == pollId)
-            .Select(poll => poll.CalendarEntry!)
-            .Select(EntryFactsRows.Projection)
-            .SingleOrDefaultAsync(ct);
-        var ties = await _dbContext.CalendarTiesOfAsync(
-            personId,
-            ClubClock.Today(_timeProvider),
-            ct
-        );
-
-        if (entry is not null && ties.Sees(entry.ToFacts(), rights))
-            return null;
-
-        return rights.HoldsClubRead
-            ? Result.NotFound(UnknownPollMessage)
-            : Result.Forbidden(NotYourPollMessage);
     }
 
     private async Task LockPollAsync(int pollId, CancellationToken ct)

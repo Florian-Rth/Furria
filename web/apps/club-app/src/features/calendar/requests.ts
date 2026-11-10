@@ -99,6 +99,45 @@ export const requestPollClosing = (pollId: number, accessToken: string): Promise
     accessToken,
   });
 
+export const requestOwnSignUpLine = (
+  signUpListId: number,
+  text: string | null,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/calendar/sign-up-lists/${signUpListId}/my-line`, {
+    method: 'PUT',
+    body: { text },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestOwnSignUpLineDeletion = (
+  signUpListId: number,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/calendar/sign-up-lists/${signUpListId}/my-line`, {
+    method: 'DELETE',
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestSignUpLineRemoval = (lineId: number, accessToken: string): Promise<void> =>
+  apiFetch(`/api/calendar/sign-up-lines/${lineId}`, {
+    method: 'DELETE',
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestSignUpListClosing = (
+  signUpListId: number,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/calendar/sign-up-lists/${signUpListId}/close`, {
+    method: 'POST',
+    schema: NoContentSchema,
+    accessToken,
+  });
+
 export const requestCalendarEntryDeletion = (
   calendarEntryId: number,
   accessToken: string,

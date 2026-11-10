@@ -7,6 +7,8 @@ import { toDayTime, toInstant, toIsoDay } from '@/lib/day';
 import { toAddOnCards } from './calendar-add-ons';
 import type { CalendarPollPayload } from './calendar-polls';
 import { toPollPayload } from './calendar-polls';
+import type { CalendarSignUpListPayload } from './calendar-sign-up-lists';
+import { toSignUpListPayload } from './calendar-sign-up-lists';
 import type {
   CalendarAddOnCardForm,
   CalendarAddOnKind,
@@ -46,6 +48,7 @@ export interface CalendarOwnerOption {
 export type CalendarAddOnPayload = {
   kind: CalendarAddOnKind;
   poll: CalendarPollPayload | null;
+  signUpList: CalendarSignUpListPayload | null;
 };
 
 export type CalendarEntryPayload = {
@@ -238,10 +241,16 @@ export const toCalendarKind = (value: string): CalendarEntryKind =>
 export const toCalendarAudience = (value: string): CalendarEntryAudience | null =>
   AUDIENCE_ORDER.find((known) => known === value) ?? null;
 
-const toAddOnPayload = (card: CalendarAddOnCardForm): CalendarAddOnPayload =>
-  card.kind === 'poll'
-    ? { kind: card.kind, poll: toPollPayload(card.poll) }
-    : { kind: card.kind, poll: null };
+const toAddOnPayload = (card: CalendarAddOnCardForm): CalendarAddOnPayload => {
+  switch (card.kind) {
+    case 'poll':
+      return { kind: card.kind, poll: toPollPayload(card.poll), signUpList: null };
+    case 'signUpList':
+      return { kind: card.kind, poll: null, signUpList: toSignUpListPayload(card.signUpList) };
+    default:
+      return { kind: card.kind, poll: null, signUpList: null };
+  }
+};
 
 export const toEntryPayload = (form: CalendarEntryForm): CalendarEntryPayload => {
   const description = form.description.trim();

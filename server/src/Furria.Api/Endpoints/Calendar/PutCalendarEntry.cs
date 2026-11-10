@@ -71,7 +71,21 @@ public sealed class PutCalendarEntry : Endpoint<PutCalendarEntryRequest, PutCale
         };
 
     private static CalendarEntryAddOnInput ToInput(PutCalendarEntryAddOnDataDto addOn) =>
-        new() { Kind = addOn.Kind, Poll = addOn.Poll is { } poll ? ToInput(poll) : null };
+        new()
+        {
+            Kind = addOn.Kind,
+            Poll = addOn.Poll is { } poll ? ToInput(poll) : null,
+            SignUpList = addOn.SignUpList is { } list ? ToInput(list) : null,
+        };
+
+    private static CalendarSignUpListInput ToInput(PutCalendarEntrySignUpListDataDto list) =>
+        new()
+        {
+            SignUpListId = list.SignUpListId,
+            Title = list.Title,
+            Hint = list.Hint,
+            SignUpUntil = list.SignUpUntil,
+        };
 
     private static CalendarPollInput ToInput(PutCalendarEntryPollDataDto poll) =>
         new()
@@ -151,6 +165,8 @@ public sealed class PutCalendarEntryValidator : Validator<PutCalendarEntryReques
     private const string TooManyAddOnsMessage = "Ein Eintrag trägt höchstens 30 Bausteine.";
     private const string VotesAfterTheStartMessage =
         "Die Abstimmung kann nicht nach dem Beginn enden.";
+    private const string SignUpAfterTheStartMessage =
+        "Das Eintragen kann nicht nach dem Beginn enden.";
     private const string ParticipationWithoutAddOnMessage =
         "Ohne den Baustein „Mitwirkende Gruppen“ wirken keine Gruppen mit.";
     private const string EndsBeforeItStartsMessage =
@@ -215,6 +231,9 @@ public sealed class PutCalendarEntryValidator : Validator<PutCalendarEntryReques
         RuleForEach(request => request.AddOns)
             .Must((request, addOn) => VotesBeforeTheStart(addOn, request.StartsAt))
             .WithMessage(VotesAfterTheStartMessage);
+        RuleForEach(request => request.AddOns)
+            .Must((request, addOn) => SignsUpBeforeTheStart(addOn, request.StartsAt))
+            .WithMessage(SignUpAfterTheStartMessage);
         RuleFor(request => request.AddOns)
             .Must(EachSingleUseAddOnOnce)
             .When(request => request.AddOns is not null)
@@ -241,17 +260,32 @@ public sealed class PutCalendarEntryValidator : Validator<PutCalendarEntryReques
     ) => addOn?.Poll?.VotesUntil is not { } votesUntil || votesUntil <= startsAt;
 
     [Pure]
+    private static bool SignsUpBeforeTheStart(
+        PutCalendarEntryAddOnDataDto addOn,
+        DateTimeOffset startsAt
+    ) => addOn?.SignUpList?.SignUpUntil is not { } signUpUntil || signUpUntil <= startsAt;
+
+    [Pure]
     private static bool EachSingleUseAddOnOnce(IReadOnlyList<PutCalendarEntryAddOnDataDto> addOns)
     {
         var singleUse = addOns
-            .Where(addOn => addOn is not null && addOn.Kind != CalendarEntryAddOnKind.Poll)
+            .Where(addOn => addOn is not null && !IsMultiUse(addOn.Kind))
             .Select(addOn => addOn.Kind)
             .ToList();
         var pollIds = addOns.Select(addOn => addOn?.Poll?.PollId).OfType<int>().ToList();
+        var signUpListIds = addOns
+            .Select(addOn => addOn?.SignUpList?.SignUpListId)
+            .OfType<int>()
+            .ToList();
 
         return singleUse.Distinct().Count() == singleUse.Count
-            && pollIds.Distinct().Count() == pollIds.Count;
+            && pollIds.Distinct().Count() == pollIds.Count
+            && signUpListIds.Distinct().Count() == signUpListIds.Count;
     }
+
+    [Pure]
+    private static bool IsMultiUse(CalendarEntryAddOnKind kind) =>
+        kind is CalendarEntryAddOnKind.Poll or CalendarEntryAddOnKind.SignUpList;
 }
 
 public sealed record PutCalendarEntryAddOnDataDto
@@ -259,6 +293,19 @@ public sealed record PutCalendarEntryAddOnDataDto
     public required CalendarEntryAddOnKind Kind { get; init; }
 
     public required PutCalendarEntryPollDataDto? Poll { get; init; }
+
+    public required PutCalendarEntrySignUpListDataDto? SignUpList { get; init; }
+}
+
+public sealed record PutCalendarEntrySignUpListDataDto
+{
+    public required int? SignUpListId { get; init; }
+
+    public required string Title { get; init; }
+
+    public required string? Hint { get; init; }
+
+    public required DateTimeOffset? SignUpUntil { get; init; }
 }
 
 public sealed record PutCalendarEntryPollDataDto
@@ -289,6 +336,9 @@ public sealed class PutCalendarEntryAddOnDataValidator
     private const string UnknownAddOnMessage = "Diesen Baustein gibt es nicht.";
     private const string PollWithoutQuestionMessage = "Die Umfrage braucht eine Frage.";
     private const string PollOutsideAPollMessage = "Nur eine Umfrage trägt Fragen und Antworten.";
+    private const string SignUpListWithoutTitleMessage = "Die Eintragsliste braucht einen Titel.";
+    private const string SignUpListOutsideAListMessage =
+        "Nur eine Eintragsliste trägt Titel und Hinweis.";
 
     public PutCalendarEntryAddOnDataValidator()
     {
@@ -304,6 +354,43 @@ public sealed class PutCalendarEntryAddOnDataValidator
         RuleFor(addOn => addOn.Poll!)
             .SetValidator(new PutCalendarEntryPollDataValidator())
             .When(addOn => addOn.Poll is not null);
+        RuleFor(addOn => addOn.SignUpList)
+            .NotNull()
+            .When(addOn => addOn.Kind == CalendarEntryAddOnKind.SignUpList)
+            .WithMessage(SignUpListWithoutTitleMessage);
+        RuleFor(addOn => addOn.SignUpList)
+            .Null()
+            .When(addOn => addOn.Kind != CalendarEntryAddOnKind.SignUpList)
+            .WithMessage(SignUpListOutsideAListMessage);
+        RuleFor(addOn => addOn.SignUpList!)
+            .SetValidator(new PutCalendarEntrySignUpListDataValidator())
+            .When(addOn => addOn.SignUpList is not null);
+    }
+}
+
+public sealed class PutCalendarEntrySignUpListDataValidator
+    : AbstractValidator<PutCalendarEntrySignUpListDataDto>
+{
+    private const string UnknownSignUpListMessage = "Diese Eintragsliste gibt es nicht.";
+    private const string TitleMissingMessage = "Die Eintragsliste braucht einen Titel.";
+    private const string TitleTooLongMessage = "Ein Listentitel hat höchstens 120 Zeichen.";
+    private const string HintTooLongMessage = "Ein Hinweis hat höchstens 300 Zeichen.";
+
+    public PutCalendarEntrySignUpListDataValidator()
+    {
+        RuleFor(list => list.SignUpListId)
+            .GreaterThan(0)
+            .When(list => list.SignUpListId is not null)
+            .WithMessage(UnknownSignUpListMessage);
+        RuleFor(list => list.Title)
+            .Cascade(CascadeMode.Stop)
+            .Must(title => !string.IsNullOrWhiteSpace(title))
+            .WithMessage(TitleMissingMessage)
+            .Must(title => title.Trim().Length <= CalendarLimits.SignUpListTitleLength)
+            .WithMessage(TitleTooLongMessage);
+        RuleFor(list => list.Hint)
+            .Must(hint => hint is null || hint.Trim().Length <= CalendarLimits.SignUpListHintLength)
+            .WithMessage(HintTooLongMessage);
     }
 }
 

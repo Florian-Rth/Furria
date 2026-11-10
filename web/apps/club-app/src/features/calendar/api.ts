@@ -8,6 +8,10 @@ import { toEntryWriteNotice } from './calendar-authoring';
 import {
   POLL_CLOSE_FAILED_MESSAGE,
   POLL_VOTE_FAILED_MESSAGE,
+  SIGN_UP_LINE_DELETE_FAILED_MESSAGE,
+  SIGN_UP_LINE_REMOVE_FAILED_MESSAGE,
+  SIGN_UP_LINE_SAVE_FAILED_MESSAGE,
+  SIGN_UP_LIST_CLOSE_FAILED_MESSAGE,
   toEntryCreatedMessage,
   toEntryDeletedMessage,
   toEntrySavedMessage,
@@ -20,9 +24,13 @@ import {
   requestCalendarEntryDeletion,
   requestCalendarEntryUpdate,
   requestChoosablePeople,
+  requestOwnSignUpLine,
+  requestOwnSignUpLineDeletion,
   requestPollClosing,
   requestPollVotes,
   requestRunningVenues,
+  requestSignUpLineRemoval,
+  requestSignUpListClosing,
 } from './requests';
 import type {
   CalendarEntryResponse,
@@ -142,4 +150,57 @@ export const usePollClosingMutation = (): UseMutationResult<void, Error, PollClo
     request: ({ pollId }: PollClosingInput, accessToken) => requestPollClosing(pollId, accessToken),
     changes: ['calendarEntry'],
     notice: { failure: () => POLL_CLOSE_FAILED_MESSAGE },
+  });
+
+export interface OwnSignUpLineInput {
+  signUpListId: number;
+  text: string | null;
+}
+
+export interface SignUpListInput {
+  signUpListId: number;
+}
+
+export interface SignUpLineRemovalInput {
+  lineId: number;
+}
+
+export const useOwnSignUpLineMutation = (): UseMutationResult<void, Error, OwnSignUpLineInput> =>
+  useApiMutation({
+    request: ({ signUpListId, text }: OwnSignUpLineInput, accessToken) =>
+      requestOwnSignUpLine(signUpListId, text, accessToken),
+    changes: ['calendarSignUpLine'],
+    notice: { failure: () => SIGN_UP_LINE_SAVE_FAILED_MESSAGE },
+  });
+
+export const useOwnSignUpLineDeletionMutation = (): UseMutationResult<
+  void,
+  Error,
+  SignUpListInput
+> =>
+  useApiMutation({
+    request: ({ signUpListId }: SignUpListInput, accessToken) =>
+      requestOwnSignUpLineDeletion(signUpListId, accessToken),
+    changes: ['calendarSignUpLine'],
+    notice: { failure: () => SIGN_UP_LINE_DELETE_FAILED_MESSAGE },
+  });
+
+export const useSignUpLineRemovalMutation = (): UseMutationResult<
+  void,
+  Error,
+  SignUpLineRemovalInput
+> =>
+  useApiMutation({
+    request: ({ lineId }: SignUpLineRemovalInput, accessToken) =>
+      requestSignUpLineRemoval(lineId, accessToken),
+    changes: ['calendarSignUpLine'],
+    notice: { failure: () => SIGN_UP_LINE_REMOVE_FAILED_MESSAGE },
+  });
+
+export const useSignUpListClosingMutation = (): UseMutationResult<void, Error, SignUpListInput> =>
+  useApiMutation({
+    request: ({ signUpListId }: SignUpListInput, accessToken) =>
+      requestSignUpListClosing(signUpListId, accessToken),
+    changes: ['calendarEntry'],
+    notice: { failure: () => SIGN_UP_LIST_CLOSE_FAILED_MESSAGE },
   });

@@ -126,18 +126,28 @@ export const toAnswerCountLabel = (count: number): string | undefined =>
 export const toAddOnRemovalQuestion = (kind: CalendarAddOnKind): string =>
   `${CALENDAR_ADD_ON_LABELS[kind]} entfernen?`;
 
-export const toDiscardedAnswersLabel = (kind: CalendarAddOnKind, count: number): string =>
-  kind === 'poll'
-    ? byCount(
+export const toDiscardedAnswersLabel = (kind: CalendarAddOnKind, count: number): string => {
+  switch (kind) {
+    case 'poll':
+      return byCount(
         count,
         'Beim Speichern wird die Stimme von 1 Person gelöscht.',
         `Beim Speichern werden die Stimmen von ${count} Personen gelöscht.`,
-      )
-    : byCount(
+      );
+    case 'signUpList':
+      return byCount(
+        count,
+        'Beim Speichern wird 1 Eintrag gelöscht.',
+        `Beim Speichern werden ${count} Einträge gelöscht.`,
+      );
+    default:
+      return byCount(
         count,
         'Beim Speichern wird 1 Antwort gelöscht.',
         `Beim Speichern werden ${count} Antworten gelöscht.`,
       );
+  }
+};
 
 export const toVoterCountLabel = (count: number): string | undefined =>
   count === 0
@@ -193,3 +203,47 @@ export const toPollVotersLabel = (voters: readonly AudiencePerson[]): string | u
   voters.length === 0 ? undefined : voters.map(toPersonName).join(', ');
 
 export const toPollCloseQuestion = (question: string): string => `„${question}“ beenden?`;
+
+export const toLineCountLabel = (count: number): string | undefined =>
+  count === 0 ? undefined : byCount(count, '1 Eintrag', `${count} Einträge`);
+
+export const toSignUpUntilLabel = (signUpUntil: string): string =>
+  `Eintragen bis ${toDayNumberLabel(signUpUntil)}, ${toTimeLabel(signUpUntil)} Uhr`;
+
+export const toSignUpListRemoveLabel = (title: string): string =>
+  title.trim() === '' ? 'Eintragsliste entfernen' : `Eintragsliste „${title.trim()}“ entfernen`;
+
+const SIGN_UP_LIST_CLOSED_LABEL = 'Geschlossen';
+
+interface SignUpListMetaFacts {
+  isClosed: boolean;
+  signUpUntil: string | null;
+  lineCount: number;
+}
+
+const toSignUpDeadlineLabel = (list: SignUpListMetaFacts): string | undefined => {
+  if (list.isClosed) {
+    return SIGN_UP_LIST_CLOSED_LABEL;
+  }
+
+  return list.signUpUntil === null ? undefined : toSignUpUntilLabel(list.signUpUntil);
+};
+
+export const toSignUpListMetaLabel = (list: SignUpListMetaFacts): string | undefined => {
+  const parts = [toSignUpDeadlineLabel(list), toLineCountLabel(list.lineCount)].filter(
+    (part): part is string => part !== undefined,
+  );
+
+  return parts.length === 0 ? undefined : parts.join(META_SEPARATOR);
+};
+
+export const toSignUpListCloseQuestion = (title: string): string => `„${title}“ schließen?`;
+
+export const toLineRemovalQuestion = (name: string): string => `Eintrag von ${name} entfernen?`;
+
+export const toLineRemoveLabel = (name: string): string => `Eintrag von ${name} entfernen`;
+
+export const SIGN_UP_LINE_SAVE_FAILED_MESSAGE = 'Dein Eintrag wurde nicht gespeichert.';
+export const SIGN_UP_LINE_DELETE_FAILED_MESSAGE = 'Dein Eintrag wurde nicht gelöscht.';
+export const SIGN_UP_LINE_REMOVE_FAILED_MESSAGE = 'Der Eintrag wurde nicht entfernt.';
+export const SIGN_UP_LIST_CLOSE_FAILED_MESSAGE = 'Die Liste wurde nicht geschlossen.';

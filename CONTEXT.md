@@ -1084,8 +1084,8 @@ recorded on behalf all rely on it; it is never rebuilt from a **poll**. Further 
   nobody chose them. An entry may hold several polls; a poll is never owed and never asked on
   Start.
 - **Sign-up list** — a list everyone who sees the entry may add to: one short line per person,
-  always named, which only she may change or delete afterwards (e.g. who brings what to the summer
-  party). Whoever may edit the entry may remove a line, never rewrite it. It has a title and an
+  always named, its text optional, which only she may change or delete afterwards (e.g. who
+  brings what to the summer party). Whoever may edit the entry may remove a line, never rewrite it. It has a title and an
   optional hint, closes like a poll, an entry may hold several, and it is never asked on Start. It
   has no prepared slots.
 _UI copy_: Baustein, Baustein hinzufügen; Zu-/Absage, Umfrage, Eintragsliste, Mitwirkende Gruppen,

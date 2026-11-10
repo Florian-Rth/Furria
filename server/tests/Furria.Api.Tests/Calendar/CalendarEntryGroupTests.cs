@@ -466,8 +466,18 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
     }
 
     private static PostCalendarEntryAddOnDataDto PostAddOn(CalendarEntryAddOnKind kind) =>
-        new() { Kind = kind, Poll = null };
+        new()
+        {
+            Kind = kind,
+            Poll = null,
+            SignUpList = null,
+        };
 
     private static PutCalendarEntryAddOnDataDto PutAddOn(CalendarEntryAddOnKind kind) =>
-        new() { Kind = kind, Poll = null };
+        new()
+        {
+            Kind = kind,
+            Poll = null,
+            SignUpList = null,
+        };
 }

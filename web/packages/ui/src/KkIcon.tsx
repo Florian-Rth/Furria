@@ -64,6 +64,7 @@ import LanguageOutlinedIcon from '@mui/icons-material/LanguageOutlined';
 import LayersClearOutlinedIcon from '@mui/icons-material/LayersClearOutlined';
 import LinkOffOutlinedIcon from '@mui/icons-material/LinkOffOutlined';
 import LinkOutlinedIcon from '@mui/icons-material/LinkOutlined';
+import ListAltOutlinedIcon from '@mui/icons-material/ListAltOutlined';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import LogoutIcon from '@mui/icons-material/Logout';
 import MailOutlinedIcon from '@mui/icons-material/MailOutlined';
@@ -220,6 +221,7 @@ export type KkIconName =
   | 'pin'
   | 'pinFilled'
   | 'poll'
+  | 'signUpList'
   | 'block'
   | 'unblock'
   | 'wish'
@@ -357,6 +359,7 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   pin: PushPinOutlinedIcon,
   pinFilled: PushPinIcon,
   poll: PollOutlinedIcon,
+  signUpList: ListAltOutlinedIcon,
   block: ViewAgendaOutlinedIcon,
   unblock: LinkOffOutlinedIcon,
   wish: TuneRoundedIcon,

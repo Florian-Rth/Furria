@@ -1,7 +1,6 @@
 import type { KkPollBallotMode } from '@furria/ui/KkPollBallot';
-import { useState } from 'react';
 import { usePollClosingMutation, usePollVoteMutation } from '../api';
-import { toPollMetaLabel, toPollVotersLabel } from '../calendar-labels';
+import { toPollCloseQuestion, toPollMetaLabel, toPollVotersLabel } from '../calendar-labels';
 import { toPollResults, toViewerChoice, toVoteSet } from '../calendar-polls';
 import type { CalendarPoll } from '../schemas';
 
@@ -25,16 +24,13 @@ export interface CalendarPollControl {
   isSubmitting: boolean;
   canClose: boolean;
   isClosing: boolean;
-  isCloseAsked: boolean;
-  askClose: () => void;
-  confirmClose: () => void;
-  cancelClose: () => void;
+  closeQuestion: string;
+  close: () => void;
 }
 
 export const useCalendarPoll = (poll: CalendarPoll, mayClose: boolean): CalendarPollControl => {
   const vote = usePollVoteMutation();
   const closing = usePollClosingMutation();
-  const [isCloseAsked, setCloseAsked] = useState(false);
   const pendingVote =
     vote.isPending && vote.variables?.pollId === poll.pollId ? vote.variables : null;
   const chosenIds = pendingVote?.optionIds ?? toViewerChoice(poll);
@@ -75,16 +71,9 @@ export const useCalendarPoll = (poll: CalendarPoll, mayClose: boolean): Calendar
     isSubmitting,
     canClose: mayClose && !poll.isClosed,
     isClosing: closing.isPending,
-    isCloseAsked,
-    askClose: () => {
-      setCloseAsked(true);
-    },
-    confirmClose: () => {
-      setCloseAsked(false);
+    closeQuestion: toPollCloseQuestion(poll.question),
+    close: () => {
       closing.mutate({ pollId: poll.pollId });
-    },
-    cancelClose: () => {
-      setCloseAsked(false);
     },
   };
 };

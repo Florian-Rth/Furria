@@ -309,6 +309,8 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                         CalendarEntryAddOnKind.Attendance,
                         CalendarEntryAddOnKind.Poll,
                         CalendarEntryAddOnKind.Poll,
+                        CalendarEntryAddOnKind.SignUpList,
+                        CalendarEntryAddOnKind.SignUpList,
                     ],
                     result.Entry.AddOns.Select(addOn => addOn.Kind)
                 );
@@ -381,6 +383,41 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
         );
     }
 
+    [Fact]
+    public async Task Should_ShowTheLinesInSignUpOrderMarkingHerOwn_When_TheEntryCarriesAList()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildPollsAsync(ct);
+
+                var (response, result) = await ReadAsync(
+                    ctx,
+                    "alice",
+                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
+                    ct
+                );
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                var lists = result
+                    .Entry.AddOns.Select(addOn => addOn.SignUpList)
+                    .OfType<CalendarSignUpListDto>()
+                    .ToList();
+                Assert.Equal(
+                    [("Mitbringen", false), ("Aufbau", true)],
+                    lists.Select(list => (list.Title, list.IsClosed))
+                );
+                Assert.Equal(
+                    [("Bea", "Salat", false), ("Alice", (string?)null, true)],
+                    lists[0].Lines.Select(line => (line.FirstName, line.Text, line.ByViewer))
+                );
+            }
+        );
+    }
+
     private Task<SeededContext> BuildPollsAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
@@ -411,6 +448,21 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                                 position: 2
                             )
                             .AddCalendarPollVote("secret", "Bea", "bea")
+                            .AddCalendarSignUpList(
+                                "bring",
+                                "club-meeting",
+                                "Mitbringen",
+                                position: 3
+                            )
+                            .AddCalendarSignUpLine("bea-bring", "bring", "bea", "Salat")
+                            .AddCalendarSignUpLine("alice-bring", "bring", "alice")
+                            .AddCalendarSignUpList(
+                                "setup",
+                                "club-meeting",
+                                "Aufbau",
+                                closedAt: Now.AddDays(-1),
+                                position: 4
+                            )
                     ),
             ct
         );

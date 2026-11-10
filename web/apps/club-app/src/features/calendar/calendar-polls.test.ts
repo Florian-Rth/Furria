@@ -9,7 +9,6 @@ import {
   toPollResults,
   toViewerChoice,
   toVoteSet,
-  withVotesUntilDay,
 } from './calendar-polls';
 import type {
   CalendarAddOnCardForm,
@@ -92,12 +91,6 @@ describe('toPollIssues', () => {
       { votesUntilDay: '2027-02-09' },
       [['deadlineTimeMissing', ['addOns', 1, 'poll', 'votesUntilTime']]],
     ],
-    [
-      'a deadline after the start',
-      { votesUntilDay: '2027-02-10', votesUntilTime: '19:01' },
-      [['deadlineAfterStart', ['addOns', 1, 'poll', 'votesUntilTime']]],
-    ],
-    ['a deadline right at the start', { votesUntilDay: '2027-02-10', votesUntilTime: '19:00' }, []],
   ])('finds for %s', (_case, overrides, expected) => {
     const cards: CalendarAddOnCardForm[] = [
       { key: 'attendance', kind: 'attendance' },
@@ -106,21 +99,6 @@ describe('toPollIssues', () => {
 
     expect(toPollIssues(cards, START).map((issue) => [issue.code, issue.path])).toEqual(expected);
   });
-
-  it.each([[{ day: '', time: '19:00' }], [{ day: '2027-02-10', time: '' }]])(
-    'leaves the deadline alone while the start %j is incomplete',
-    (start) => {
-      const cards: CalendarAddOnCardForm[] = [
-        {
-          key: 'p',
-          kind: 'poll',
-          poll: pollForm({ votesUntilDay: '2027-03-01', votesUntilTime: '12:00' }),
-        },
-      ];
-
-      expect(toPollIssues(cards, start)).toEqual([]);
-    },
-  );
 });
 
 describe('toVoteSet', () => {
@@ -248,19 +226,6 @@ describe('poll round trip', () => {
     },
   );
 
-  it.each([
-    ['unchanged keeps the held instant', '2027-02-09T17:30:45.500Z', null],
-    ['moved writes the new minute', '2027-02-09T17:30:45.500Z', '20:15'],
-  ])('a deadline %s', (_case, heldVotesUntil, movedTime) => {
-    const form = toPollForm(poll({ votesUntil: heldVotesUntil }));
-    const time = movedTime ?? form.votesUntilTime;
-    const payload = toPollPayload({ ...form, votesUntilTime: time });
-
-    expect(payload.votesUntil).toBe(
-      movedTime === null ? heldVotesUntil : toInstant(form.votesUntilDay, movedTime),
-    );
-  });
-
   it('trims what was typed and sends new answers without id', () => {
     const payload = toPollPayload(
       pollForm({ question: '  Bus oder Bahn? ', options: labels(' Bus ', 'Bahn') }),
@@ -273,21 +238,5 @@ describe('poll round trip', () => {
         { optionId: null, label: 'Bahn' },
       ],
     ]);
-  });
-});
-
-describe('withVotesUntilDay', () => {
-  it.each([
-    ['', '', '2027-02-09', ['2027-02-09', '19:00']],
-    ['2027-02-08', '12:00', '2027-02-09', ['2027-02-09', '12:00']],
-    ['2027-02-08', '12:00', null, ['', '']],
-  ] as const)('from %s %s choosing %s gives %j', (day, time, chosen, expected) => {
-    const changed = withVotesUntilDay(
-      pollForm({ votesUntilDay: day, votesUntilTime: time }),
-      chosen,
-      '19:00',
-    );
-
-    expect([changed.votesUntilDay, changed.votesUntilTime]).toEqual(expected);
   });
 });

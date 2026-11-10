@@ -1023,7 +1023,12 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     }
 
     private static CalendarEntryAddOnInput SingleUseAddOn(CalendarEntryAddOnKind kind) =>
-        new() { Kind = kind, Poll = null };
+        new()
+        {
+            Kind = kind,
+            Poll = null,
+            SignUpList = null,
+        };
 
     public async Task<Result> SaveSecondActiveGroupAsync(
         string name,

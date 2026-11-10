@@ -633,6 +633,75 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_StoreTheSignUpListsInCardOrder_When_TheEntryAttachesThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                AddOns =
+                [
+                    PostAddOn(CalendarEntryAddOnKind.Attendance),
+                    SignUpListAddOn(" Wer bringt was mit? ", " Bitte bis Freitag "),
+                    PollAddOn("Kommst du?", "Ja", "Nein"),
+                    SignUpListAddOn("Aufbau", "  "),
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(result.CalendarEntryId)
+            .ToHaveSignUpListsAt(
+                (1, "Wer bringt was mit?", "Bitte bis Freitag"),
+                (3, "Aufbau", null)
+            )
+            .AssertAsync(ct);
+    }
+
+    [Theory]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public async Task Should_ReturnBadRequest_When_TheSignUpListHasNoTitle(string? title)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var list = SignUpListAddOn("Aufbau", null);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                AddOns =
+                [
+                    title is null
+                        ? list with
+                        {
+                            SignUpList = null,
+                        }
+                        : list with
+                        {
+                            SignUpList = list.SignUpList! with { Title = title },
+                        },
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
     public async Task Should_ReturnBadRequest_When_ANewPollNamesHeldOptions()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -837,7 +906,26 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
     }
 
     private static PostCalendarEntryAddOnDataDto PostAddOn(CalendarEntryAddOnKind kind) =>
-        new() { Kind = kind, Poll = null };
+        new()
+        {
+            Kind = kind,
+            Poll = null,
+            SignUpList = null,
+        };
+
+    private static PostCalendarEntryAddOnDataDto SignUpListAddOn(string title, string? hint) =>
+        new()
+        {
+            Kind = CalendarEntryAddOnKind.SignUpList,
+            Poll = null,
+            SignUpList = new()
+            {
+                SignUpListId = null,
+                Title = title,
+                Hint = hint,
+                SignUpUntil = null,
+            },
+        };
 
     private static PostCalendarEntryAddOnDataDto PollAddOn(
         string question,
@@ -846,6 +934,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
         new()
         {
             Kind = CalendarEntryAddOnKind.Poll,
+            SignUpList = null,
             Poll = new()
             {
                 PollId = null,

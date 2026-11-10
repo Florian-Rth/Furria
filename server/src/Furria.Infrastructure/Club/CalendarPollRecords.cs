@@ -109,44 +109,6 @@ internal static class CalendarPollRecords
     }
 
     [Pure]
-    internal static IReadOnlyList<CalendarEntryAddOnDetails> AddOnsInCardOrder(
-        int? attendancePosition,
-        int? participatingGroupsPosition,
-        IReadOnlyList<PlacedPoll> polls
-    ) =>
-        [
-            .. new (int? Position, CalendarEntryAddOnDetails AddOn)[]
-            {
-                (attendancePosition, SingleUse(CalendarEntryAddOnKind.Attendance)),
-                (
-                    participatingGroupsPosition,
-                    SingleUse(CalendarEntryAddOnKind.ParticipatingGroups)
-                ),
-            }
-                .Concat(
-                    polls.Select(poll =>
-                        (Position: (int?)poll.Position, AddOn: PollAddOn(poll.Details))
-                    )
-                )
-                .Where(addOn => addOn.Position is not null)
-                .OrderBy(addOn => addOn.Position)
-                .Select(addOn => addOn.AddOn),
-        ];
-
-    [Pure]
-    internal static IReadOnlyList<CalendarEntryAddOnKind> KindsOf(
-        IReadOnlyList<CalendarEntryAddOnInput> addOns
-    ) => [.. addOns.Select(addOn => addOn.Kind)];
-
-    [Pure]
-    private static CalendarEntryAddOnDetails SingleUse(CalendarEntryAddOnKind kind) =>
-        new() { Kind = kind, Poll = null };
-
-    [Pure]
-    private static CalendarEntryAddOnDetails PollAddOn(CalendarPollDetails poll) =>
-        new() { Kind = CalendarEntryAddOnKind.Poll, Poll = poll };
-
-    [Pure]
     private static CalendarPollDetails ToDetails(
         PollRow poll,
         IReadOnlyList<VoterRow> votes,
@@ -161,7 +123,7 @@ internal static class CalendarPollRecords
             IsAnonymous = poll.IsAnonymous,
             VotesUntil = poll.VotesUntil,
             ClosedAt = poll.ClosedAt,
-            IsClosed = CalendarPollClosing.IsClosed(
+            IsClosed = CalendarAddOnClosing.IsClosed(
                 poll.ClosedAt,
                 poll.VotesUntil,
                 poll.EntryStartsAt,

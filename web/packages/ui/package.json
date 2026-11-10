@@ -305,6 +305,7 @@
     "./KkShell": "./src/KkShell/KkShell.tsx",
     "./KkShowcase": "./src/KkShowcase/KkShowcase.tsx",
     "./KkShowcasePiece": "./src/KkShowcase/internal/KkShowcasePiece.tsx",
+    "./KkSignUpSheet": "./src/KkSignUpSheet/KkSignUpSheet.tsx",
     "./KkSinceRow": "./src/KkSinceRow.tsx",
     "./KkSkeletonBlock": "./src/KkSkeletonBlock.tsx",
     "./KkSkeletonRow": "./src/KkSkeletonRow.tsx",

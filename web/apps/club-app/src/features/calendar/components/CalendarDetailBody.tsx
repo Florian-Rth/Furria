@@ -21,7 +21,7 @@ interface CalendarDetailBodyProps {
 }
 
 export const CalendarDetailBody: FC<CalendarDetailBodyProps> = ({ entry }) => {
-  const { view, answer, editLink, mayClosePolls, eventLink } = useCalendarDetail(entry);
+  const { view, answer, editLink, mayModerate, eventLink } = useCalendarDetail(entry);
 
   const picture =
     view.cover === null ? null : (
@@ -56,7 +56,7 @@ export const CalendarDetailBody: FC<CalendarDetailBodyProps> = ({ entry }) => {
         addOn={addOn}
         answer={answer}
         participatingGroups={view.participatingGroups}
-        mayClosePolls={mayClosePolls}
+        mayModerate={mayModerate}
       />
     );
   });

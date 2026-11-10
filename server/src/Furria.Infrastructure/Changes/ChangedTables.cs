@@ -55,6 +55,8 @@ public static class ChangedTables
         [typeof(CalendarPoll)] = [DomainChange.CalendarEntry],
         [typeof(CalendarPollOption)] = [DomainChange.CalendarEntry],
         [typeof(CalendarPollVote)] = [DomainChange.CalendarPollVote],
+        [typeof(CalendarSignUpList)] = [DomainChange.CalendarEntry],
+        [typeof(CalendarSignUpLine)] = [DomainChange.CalendarSignUpLine],
         [typeof(AttendanceResponse)] = [DomainChange.AttendanceResponse],
         [typeof(AttendanceResponseChange)] = [DomainChange.AttendanceResponse],
         [typeof(Event)] = [DomainChange.Event],

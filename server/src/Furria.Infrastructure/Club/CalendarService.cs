@@ -254,7 +254,7 @@ public sealed partial class CalendarService
             command.OwnerGroupId
         );
 
-        var addOnKinds = CalendarPollRecords.KindsOf(command.AddOns);
+        var addOnKinds = CalendarAddOnRecords.KindsOf(command.AddOns);
 
         if (AddOnRefusalOf(addOnKinds, participatingGroupIds) is { } addOnRefusal)
             return Result<CalendarEntryWriteResult>.Validation(addOnRefusal);
@@ -290,6 +290,11 @@ public sealed partial class CalendarService
 
         if (await _dbContext.ReconcilePollsAsync(entry, command.AddOns, ct) is { } pollRefusal)
             return Result<CalendarEntryWriteResult>.Validation(pollRefusal);
+
+        if (
+            CalendarSignUpListRecords.ReconcileSignUpLists(entry, command.AddOns) is { } listRefusal
+        )
+            return Result<CalendarEntryWriteResult>.Validation(listRefusal);
 
         _dbContext.CalendarEntries.Add(entry);
 
@@ -327,7 +332,7 @@ public sealed partial class CalendarService
             command.OwnerGroupId
         );
 
-        var addOnKinds = CalendarPollRecords.KindsOf(command.AddOns);
+        var addOnKinds = CalendarAddOnRecords.KindsOf(command.AddOns);
 
         if (AddOnRefusalOf(addOnKinds, participatingGroupIds) is { } addOnRefusal)
             return Result<CalendarEntryWriteResult>.Validation(addOnRefusal);
@@ -352,6 +357,11 @@ public sealed partial class CalendarService
 
         if (await _dbContext.ReconcilePollsAsync(entry, command.AddOns, ct) is { } pollRefusal)
             return Result<CalendarEntryWriteResult>.Validation(pollRefusal);
+
+        if (
+            CalendarSignUpListRecords.ReconcileSignUpLists(entry, command.AddOns) is { } listRefusal
+        )
+            return Result<CalendarEntryWriteResult>.Validation(listRefusal);
 
         if (DropsAttendance(entry, addOnKinds))
             await DiscardAnswersAsync(entry.Id, ct);
@@ -669,10 +679,11 @@ public sealed partial class CalendarService
             AudienceGroups = [.. row.Audience.Groups.Select(ToAudienceGroup)],
             AudiencePeople = [.. row.Audience.People.Select(ToAudiencePerson)],
             AsksForResponse = row.AsksForResponse,
-            AddOns = CalendarPollRecords.AddOnsInCardOrder(
+            AddOns = CalendarAddOnRecords.InCardOrder(
                 row.AddOnPositions.Attendance,
                 row.AddOnPositions.ParticipatingGroups,
-                extras.Polls.TryGetValue(row.CalendarEntryId, out var polls) ? polls : []
+                extras.Polls.TryGetValue(row.CalendarEntryId, out var polls) ? polls : [],
+                extras.SignUpLists.TryGetValue(row.CalendarEntryId, out var lists) ? lists : []
             ),
             ResponseCount = row.ResponseCount,
             Description = row.Description,
@@ -734,6 +745,7 @@ public sealed partial class CalendarService
             .Include(row => row.AudiencePeople)
             .Include(row => row.Polls)
                 .ThenInclude(poll => poll.Options)
+            .Include(row => row.SignUpLists)
             .AsSplitQuery()
             .SingleOrDefaultAsync(row => row.Id == calendarEntryId, ct);
     }
@@ -935,7 +947,8 @@ public sealed partial class CalendarService
 
         return new EntryExtras(
             await AnswersOfAsync(personId, calendarEntryIds, ct),
-            await _dbContext.PollsOfEntriesAsync(calendarEntryIds, personId, now, ct)
+            await _dbContext.PollsOfEntriesAsync(calendarEntryIds, personId, now, ct),
+            await _dbContext.SignUpListsOfEntriesAsync(calendarEntryIds, personId, now, ct)
         );
     }
 
@@ -997,12 +1010,14 @@ public sealed partial class CalendarService
 
     private sealed record EntryExtras(
         IReadOnlyDictionary<int, AttendanceAnswer> Answers,
-        IReadOnlyDictionary<int, IReadOnlyList<PlacedPoll>> Polls
+        IReadOnlyDictionary<int, IReadOnlyList<PlacedPoll>> Polls,
+        IReadOnlyDictionary<int, IReadOnlyList<PlacedSignUpList>> SignUpLists
     )
     {
         public static readonly EntryExtras Nothing = new(
             new Dictionary<int, AttendanceAnswer>(),
-            new Dictionary<int, IReadOnlyList<PlacedPoll>>()
+            new Dictionary<int, IReadOnlyList<PlacedPoll>>(),
+            new Dictionary<int, IReadOnlyList<PlacedSignUpList>>()
         );
     }
 

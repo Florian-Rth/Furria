@@ -666,6 +666,101 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Should_KeepTheLines_When_TheListSettingsChange()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var listId = ctx.Club.CalendarSignUpLists.IdOf("duties");
+
+        var response = await RewritePollsAsync(
+            ctx,
+            [
+                PutAddOn(CalendarEntryAddOnKind.Attendance),
+                SignUpListAddOn(listId, "Wer hilft beim Aufbau?", "Ab 17 Uhr"),
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarSignUpList(listId)
+            .ToHaveSettings("Wer hilft beim Aufbau?", "Ab 17 Uhr", null)
+            .CalendarSignUpList(listId)
+            .ToHaveLines((ctx.Identity.People.IdOf("chris"), "Tische"))
+            .CalendarEntry(ctx.Club.CalendarEntries.IdOf("poll-meeting"))
+            .ToHaveSignUpListsAt((1, "Wer hilft beim Aufbau?", "Ab 17 Uhr"))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_DiscardTheListWithItsLines_When_TheListIsRemoved()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewritePollsAsync(ctx, [Days(ctx)], ct);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarSignUpList(ctx.Club.CalendarSignUpLists.IdOf("duties"))
+            .ToNotExist()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheList_When_ItBelongsToAnotherEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewritePollsAsync(
+            ctx,
+            [SignUpListAddOn(ctx.Club.CalendarSignUpLists.IdOf("elsewhere-list"), "Fremd", null)],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await ctx
+            .Expected.CalendarSignUpList(ctx.Club.CalendarSignUpLists.IdOf("duties"))
+            .ToHaveLines((ctx.Identity.People.IdOf("chris"), "Tische"))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_SigningUpClosesAfterTheStart()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var list = SignUpListAddOn(ctx.Club.CalendarSignUpLists.IdOf("duties"), "Aufbau", null);
+        var late = list with
+        {
+            SignUpList = list.SignUpList! with { SignUpUntil = TrainingStart.AddMinutes(1) },
+        };
+
+        var response = await RewritePollsAsync(ctx, [late], ct);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    private static PutCalendarEntryAddOnDataDto SignUpListAddOn(
+        int signUpListId,
+        string title,
+        string? hint
+    ) =>
+        new()
+        {
+            Kind = CalendarEntryAddOnKind.SignUpList,
+            Poll = null,
+            SignUpList = new()
+            {
+                SignUpListId = signUpListId,
+                Title = title,
+                Hint = hint,
+                SignUpUntil = null,
+            },
+        };
+
     private static async Task<HttpResponseMessage> RewritePollsAsync(
         SeededContext ctx,
         IReadOnlyList<PutCalendarEntryAddOnDataDto> addOns,
@@ -714,6 +809,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         new()
         {
             Kind = CalendarEntryAddOnKind.Poll,
+            SignUpList = null,
             Poll = new()
             {
                 PollId = pollId,
@@ -866,6 +962,9 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                             .AddCalendarPollVote("days", "Montag", "dana")
                             .AddCalendarPollVote("days", "Dienstag", "dana")
                             .AddCalendarPoll("elsewhere", "farewell", DaysQuestion, ["Ja", "Nein"])
+                            .AddCalendarSignUpList("duties", "poll-meeting", "Aufbau", position: 2)
+                            .AddCalendarSignUpLine("chris-duty", "duties", "chris", "Tische")
+                            .AddCalendarSignUpList("elsewhere-list", "farewell", "Geschenk")
                             .AddAttendanceResponse(
                                 "chris-says-yes",
                                 "asking-meeting",
@@ -888,5 +987,10 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     }
 
     private static PutCalendarEntryAddOnDataDto PutAddOn(CalendarEntryAddOnKind kind) =>
-        new() { Kind = kind, Poll = null };
+        new()
+        {
+            Kind = kind,
+            Poll = null,
+            SignUpList = null,
+        };
 }

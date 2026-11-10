@@ -240,10 +240,35 @@ Decisions taken while building phase 4:
 
 ### Phase 5 — Eintragsliste
 Goal: sign-up lists can be attached, filled and moderated.
-- [ ] Tables, entity config, migration; endpoints for list settings, own line upsert/delete, moderator removal, closing
-- [ ] Rules: one line per person, own line only, editors remove never rewrite, closing like polls
-- [ ] List card in the form; list with own-line editing on the entry detail
-- [ ] Integration tests for the rules
+- [x] Tables, entity config, migration; endpoints for list settings, own line upsert/delete, moderator removal, closing
+- [x] Rules: one line per person, own line only, editors remove never rewrite, closing like polls
+- [x] List card in the form; list with own-line editing on the entry detail
+- [x] Integration tests for the rules
+
+Decisions taken while building phase 5:
+- **Wire shape:** add-on items become `{ kind, poll, signUpList }`; `signUpList` (set iff
+  `kind = signUpList`) carries `signUpListId`, `title` (≤ 120), `hint` (≤ 300, blank = none) and
+  `signUpUntil` (not after the start). Settings and removal travel with the entry write like
+  polls; a list left out of `addOns` is deleted with its lines (the form asks first). Responses
+  carry `closedAt`, `isClosed` and the lines in sign-up order, each with `byViewer`.
+- **Endpoints:** `PUT` / `DELETE /calendar/sign-up-lists/{id}/my-line` write or withdraw her one
+  line while the list is open; `DELETE /calendar/sign-up-lines/{lineId}` lets entry editors remove
+  any line, also after closing; `POST /calendar/sign-up-lists/{id}/close` closes by hand
+  (idempotent).
+- **The line text is optional** (≤ 120, blank = just her name), so a list like *Wer hilft beim
+  Aufbau?* needs no text.
+- **Closing** shares one rule with polls (`CalendarAddOnClosing`): by hand, at *Eintragen bis*, or
+  at the start, whichever comes first.
+- **Concurrency:** her line writes take the entry `FOR SHARE` and the list `FOR NO KEY UPDATE`;
+  `(sign_up_list_id, person_id)` is unique, so parallel taps leave one line.
+- **Change feed:** `calendar_sign_up_list` notifies `calendarEntry`, lines notify the new
+  `calendarSignUpLine`, which refreshes only the calendar reads.
+- **Moderation runs under the entry lock:** removing a line and closing a list (or a poll) take the
+  entry `FOR SHARE` before checking who may edit it, so an owner change can't slip in between.
+- **Club app:** the list renders through the new `KkSignUpSheet` kit; her own line is edited in
+  place (*Eintragen* / *Ändern* / *Austragen*), editors remove foreign lines and close the list
+  after a confirm. Deadline fields (*Abstimmen bis*, *Eintragen bis*) share one module, and the
+  poll and list close/remove confirms share one dialog.
 
 ### Phase 6 — Tagesablauf
 Goal: day schedules can be attached and are shown on the entry.

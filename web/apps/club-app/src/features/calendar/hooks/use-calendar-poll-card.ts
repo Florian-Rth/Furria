@@ -1,5 +1,8 @@
 import { useFormState } from 'react-hook-form';
 import { nextFreshKey } from '../calendar-add-ons';
+import { hasNoDeadline } from '../calendar-deadlines';
+import type { CalendarFieldError } from '../calendar-field-error';
+import { toFieldError } from '../calendar-field-error';
 import {
   toPollOptionFieldLabel,
   toPollOptionRemoveLabel,
@@ -19,11 +22,6 @@ import {
 } from '../calendar-polls';
 import type { CalendarEntry, CalendarPollForm } from '../schemas';
 import type { CalendarEntryEditorControl } from './use-calendar-entry-editor';
-
-export interface CalendarFieldError {
-  hasError: boolean;
-  text: string | undefined;
-}
 
 export interface CalendarPollOptionRowControl {
   key: string;
@@ -71,11 +69,6 @@ interface CalendarPollCardInput {
   poll: CalendarPollForm;
   entry: CalendarEntry | null;
 }
-
-const toFieldError = (message: string | undefined): CalendarFieldError => ({
-  hasError: message !== undefined,
-  text: message,
-});
 
 export const useCalendarPollCard = ({
   control,
@@ -134,7 +127,7 @@ export const useCalendarPollCard = ({
     voterCountLabel: toVoterCountLabel(held?.voterCount ?? 0),
     questionError: errorAt(questionPath),
     deadlineError: errorAt(deadlinePath),
-    hasNoDeadline: poll.votesUntilDay === '',
+    hasNoDeadline: hasNoDeadline(poll.votesUntilDay),
     rows,
     canAddOption: locks.canAddOptions,
     isChoiceModeLocked: locks.isChoiceModeLocked,

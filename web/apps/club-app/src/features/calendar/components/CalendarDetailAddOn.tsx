@@ -7,20 +7,21 @@ import { CALENDAR_ADD_ON_ICONS, CALENDAR_ADD_ON_LABELS } from '../calendar-add-o
 import type { CalendarDetailAnswer } from '../hooks/use-calendar-detail';
 import type { CalendarAddOnKind, CalendarEntryAddOn } from '../schemas';
 import { CalendarDetailPoll } from './CalendarDetailPoll';
+import { CalendarDetailSignUpList } from './CalendarDetailSignUpList';
 import { CalendarGroupTags } from './CalendarGroupTags';
 
 interface CalendarDetailAddOnProps {
   addOn: CalendarEntryAddOn;
   answer: CalendarDetailAnswer | null;
   participatingGroups: readonly KkCalendarLineGroup[];
-  mayClosePolls: boolean;
+  mayModerate: boolean;
 }
 
 export const CalendarDetailAddOn: FC<CalendarDetailAddOnProps> = ({
   addOn,
   answer,
   participatingGroups,
-  mayClosePolls,
+  mayModerate,
 }) => {
   const choice =
     answer === null ? null : (
@@ -34,13 +35,16 @@ export const CalendarDetailAddOn: FC<CalendarDetailAddOnProps> = ({
       />
     );
   const poll =
-    addOn.kind === 'poll' ? (
-      <CalendarDetailPoll poll={addOn.poll} mayClose={mayClosePolls} />
+    addOn.kind === 'poll' ? <CalendarDetailPoll poll={addOn.poll} mayClose={mayModerate} /> : null;
+  const signUpList =
+    addOn.kind === 'signUpList' ? (
+      <CalendarDetailSignUpList list={addOn.signUpList} mayModerate={mayModerate} />
     ) : null;
   const contents: Record<CalendarAddOnKind, ReactNode> = {
     attendance: choice,
     participatingGroups: <CalendarGroupTags groups={participatingGroups} />,
     poll,
+    signUpList,
   };
   const content = contents[addOn.kind];
 

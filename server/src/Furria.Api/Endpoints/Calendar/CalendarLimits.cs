@@ -10,5 +10,8 @@ internal static class CalendarLimits
     internal const int PollOptionLabelLength = 120;
     internal const int PollMinOptions = 2;
     internal const int PollMaxOptions = 20;
+    internal const int SignUpListTitleLength = 120;
+    internal const int SignUpListHintLength = 300;
+    internal const int SignUpLineTextLength = 120;
     internal const int MaxAddOns = 30;
 }

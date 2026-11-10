@@ -1,10 +1,16 @@
 import type { KkIconName } from '@furria/ui/KkIcon';
 import { toDiscardedVoterCount, toNewPollForm, toPollForm } from './calendar-polls';
+import {
+  toDiscardedLineCount,
+  toNewSignUpListForm,
+  toSignUpListForm,
+} from './calendar-sign-up-lists';
 import type {
   CalendarAddOnCardForm,
   CalendarAddOnKind,
   CalendarEntryAddOn,
   CalendarPollForm,
+  CalendarSignUpListForm,
   ParticipatingGroup,
 } from './schemas';
 
@@ -12,20 +18,23 @@ export const ADD_ON_ORDER: readonly CalendarAddOnKind[] = [
   'attendance',
   'participatingGroups',
   'poll',
+  'signUpList',
 ];
 
-const MULTI_USE_KINDS: readonly CalendarAddOnKind[] = ['poll'];
+const MULTI_USE_KINDS: readonly CalendarAddOnKind[] = ['poll', 'signUpList'];
 
 export const CALENDAR_ADD_ON_LABELS: Record<CalendarAddOnKind, string> = {
   attendance: 'Zu-/Absage',
   participatingGroups: 'Mitwirkende Gruppen',
   poll: 'Umfrage',
+  signUpList: 'Eintragsliste',
 };
 
 export const CALENDAR_ADD_ON_ICONS: Record<CalendarAddOnKind, KkIconName> = {
   attendance: 'checkCircle',
   participatingGroups: 'group',
   poll: 'poll',
+  signUpList: 'signUpList',
 };
 
 let freshKeyCount = 0;
@@ -50,15 +59,28 @@ export const toOfferedAddOns = (
         (kind) => isMultiUse(kind) || !attached.some((card) => card.kind === kind),
       );
 
-export const toHeldAddOnKey = (addOn: CalendarEntryAddOn): string =>
-  addOn.kind === 'poll' ? `poll-${addOn.poll.pollId}` : addOn.kind;
+export const toHeldAddOnKey = (addOn: CalendarEntryAddOn): string => {
+  switch (addOn.kind) {
+    case 'poll':
+      return `poll-${addOn.poll.pollId}`;
+    case 'signUpList':
+      return `sign-up-list-${addOn.signUpList.signUpListId}`;
+    default:
+      return addOn.kind;
+  }
+};
 
 const toAddOnCard = (addOn: CalendarEntryAddOn): CalendarAddOnCardForm => {
   const key = toHeldAddOnKey(addOn);
 
-  return addOn.kind === 'poll'
-    ? { key, kind: addOn.kind, poll: toPollForm(addOn.poll) }
-    : { key, kind: addOn.kind };
+  switch (addOn.kind) {
+    case 'poll':
+      return { key, kind: addOn.kind, poll: toPollForm(addOn.poll) };
+    case 'signUpList':
+      return { key, kind: addOn.kind, signUpList: toSignUpListForm(addOn.signUpList) };
+    default:
+      return { key, kind: addOn.kind };
+  }
 };
 
 export const toAddOnCards = (addOns: readonly CalendarEntryAddOn[]): CalendarAddOnCardForm[] =>
@@ -71,6 +93,9 @@ export const toAttachedCards = (
 ): CalendarAddOnCardForm[] => {
   if (kind === 'poll') {
     return [...cards, { key: nextKey(), kind, poll: toNewPollForm([nextKey(), nextKey()]) }];
+  }
+  if (kind === 'signUpList') {
+    return [...cards, { key: nextKey(), kind, signUpList: toNewSignUpListForm() }];
   }
 
   return cards.some((card) => card.kind === kind) ? [...cards] : [...cards, { key: kind, kind }];
@@ -88,6 +113,17 @@ export const toChangedPollCards = (
 ): CalendarAddOnCardForm[] =>
   cards.map((card) =>
     card.kind === 'poll' && card.key === key ? { ...card, poll: change(card.poll) } : card,
+  );
+
+export const toChangedSignUpListCards = (
+  cards: readonly CalendarAddOnCardForm[],
+  key: string,
+  change: (list: CalendarSignUpListForm) => CalendarSignUpListForm,
+): CalendarAddOnCardForm[] =>
+  cards.map((card) =>
+    card.kind === 'signUpList' && card.key === key
+      ? { ...card, signUpList: change(card.signUpList) }
+      : card,
   );
 
 export const hasAddOn = (
@@ -115,5 +151,7 @@ export const toDiscardedAnswerCount = (card: CalendarAddOnCardForm, entry: HeldA
       return 0;
     case 'poll':
       return toDiscardedVoterCount(entry?.addOns ?? null, card.poll.pollId);
+    case 'signUpList':
+      return toDiscardedLineCount(entry?.addOns ?? null, card.signUpList.signUpListId);
   }
 };

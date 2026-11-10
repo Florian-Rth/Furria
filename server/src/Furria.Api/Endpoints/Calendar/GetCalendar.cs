@@ -261,12 +261,72 @@ public sealed record CalendarEntryAddOnDto
 
     public required CalendarPollDto? Poll { get; init; }
 
+    public required CalendarSignUpListDto? SignUpList { get; init; }
+
     [Pure]
     public static CalendarEntryAddOnDto From(CalendarEntryAddOnDetails addOn) =>
         new()
         {
             Kind = addOn.Kind,
             Poll = addOn.Poll is { } poll ? CalendarPollDto.From(poll) : null,
+            SignUpList = addOn.SignUpList is { } list ? CalendarSignUpListDto.From(list) : null,
+        };
+}
+
+public sealed record CalendarSignUpListDto
+{
+    public required int SignUpListId { get; init; }
+
+    public required string Title { get; init; }
+
+    public required string? Hint { get; init; }
+
+    public required DateTimeOffset? SignUpUntil { get; init; }
+
+    public required DateTimeOffset? ClosedAt { get; init; }
+
+    public required bool IsClosed { get; init; }
+
+    public required IReadOnlyList<CalendarSignUpLineDto> Lines { get; init; }
+
+    [Pure]
+    public static CalendarSignUpListDto From(CalendarSignUpListDetails list) =>
+        new()
+        {
+            SignUpListId = list.SignUpListId,
+            Title = list.Title,
+            Hint = list.Hint,
+            SignUpUntil = list.SignUpUntil,
+            ClosedAt = list.ClosedAt,
+            IsClosed = list.IsClosed,
+            Lines = [.. list.Lines.Select(CalendarSignUpLineDto.From)],
+        };
+}
+
+public sealed record CalendarSignUpLineDto
+{
+    public required int LineId { get; init; }
+
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
+
+    public required string? Text { get; init; }
+
+    public required bool ByViewer { get; init; }
+
+    [Pure]
+    public static CalendarSignUpLineDto From(CalendarSignUpLineDetails line) =>
+        new()
+        {
+            LineId = line.LineId,
+            PersonId = line.PersonId,
+            FirstName = line.FirstName,
+            LastName = line.LastName,
+            Text = line.Text,
+            ByViewer = line.ByViewer,
         };
 }
 

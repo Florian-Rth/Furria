@@ -11,6 +11,12 @@ import {
   POLL_QUESTION_MAX_LENGTH,
   toPollIssues,
 } from './calendar-polls';
+import type { CalendarSignUpListIssueCode } from './calendar-sign-up-lists';
+import {
+  SIGN_UP_LIST_HINT_MAX_LENGTH,
+  SIGN_UP_LIST_TITLE_MAX_LENGTH,
+  toSignUpListIssues,
+} from './calendar-sign-up-lists';
 
 export const CalendarSearchSchema = AppSearchSchema.extend({
   day: z.iso.date().optional().catch(undefined),
@@ -47,7 +53,12 @@ export const AudiencePersonSchema = z.object({
 });
 export type AudiencePerson = z.infer<typeof AudiencePersonSchema>;
 
-export const CalendarAddOnKindSchema = z.enum(['attendance', 'participatingGroups', 'poll']);
+export const CalendarAddOnKindSchema = z.enum([
+  'attendance',
+  'participatingGroups',
+  'poll',
+  'signUpList',
+]);
 export type CalendarAddOnKind = z.infer<typeof CalendarAddOnKindSchema>;
 
 export const CalendarPollOptionSchema = z.object({
@@ -72,10 +83,32 @@ export const CalendarPollSchema = z.object({
 });
 export type CalendarPoll = z.infer<typeof CalendarPollSchema>;
 
+export const CalendarSignUpLineSchema = z.object({
+  lineId: z.number().int(),
+  personId: z.number().int(),
+  firstName: z.string(),
+  lastName: z.string(),
+  text: z.string().nullable(),
+  byViewer: z.boolean(),
+});
+export type CalendarSignUpLine = z.infer<typeof CalendarSignUpLineSchema>;
+
+export const CalendarSignUpListSchema = z.object({
+  signUpListId: z.number().int(),
+  title: z.string(),
+  hint: z.string().nullable(),
+  signUpUntil: z.iso.datetime({ offset: true }).nullable(),
+  closedAt: z.iso.datetime({ offset: true }).nullable(),
+  isClosed: z.boolean(),
+  lines: z.array(CalendarSignUpLineSchema),
+});
+export type CalendarSignUpList = z.infer<typeof CalendarSignUpListSchema>;
+
 export const CalendarEntryAddOnSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('attendance') }),
   z.object({ kind: z.literal('participatingGroups') }),
   z.object({ kind: z.literal('poll'), poll: CalendarPollSchema }),
+  z.object({ kind: z.literal('signUpList'), signUpList: CalendarSignUpListSchema }),
 ]);
 export type CalendarEntryAddOn = z.infer<typeof CalendarEntryAddOnSchema>;
 
@@ -206,10 +239,25 @@ export const CalendarPollFormSchema = z.object({
 });
 export type CalendarPollForm = z.infer<typeof CalendarPollFormSchema>;
 
+export const CalendarSignUpListFormSchema = z.object({
+  signUpListId: z.number().int().nullable(),
+  title: z.string(),
+  hint: z.string(),
+  signUpUntilDay: z.string(),
+  signUpUntilTime: z.string(),
+  heldSignUpUntil: z.string().nullable(),
+});
+export type CalendarSignUpListForm = z.infer<typeof CalendarSignUpListFormSchema>;
+
 export const CalendarAddOnCardFormSchema = z.discriminatedUnion('kind', [
   z.object({ key: z.string(), kind: z.literal('attendance') }),
   z.object({ key: z.string(), kind: z.literal('participatingGroups') }),
   z.object({ key: z.string(), kind: z.literal('poll'), poll: CalendarPollFormSchema }),
+  z.object({
+    key: z.string(),
+    kind: z.literal('signUpList'),
+    signUpList: CalendarSignUpListFormSchema,
+  }),
 ]);
 export type CalendarAddOnCardForm = z.infer<typeof CalendarAddOnCardFormSchema>;
 
@@ -221,6 +269,14 @@ const POLL_ISSUE_MESSAGES: Record<CalendarPollIssueCode, string> = {
   optionRepeated: 'Diese Antwort gibt es schon.',
   deadlineTimeMissing: 'Wähle eine Uhrzeit.',
   deadlineAfterStart: 'Abstimmen bis darf nicht nach dem Beginn liegen.',
+};
+
+const SIGN_UP_LIST_ISSUE_MESSAGES: Record<CalendarSignUpListIssueCode, string> = {
+  titleMissing: 'Die Liste braucht einen Titel.',
+  titleTooLong: `Höchstens ${SIGN_UP_LIST_TITLE_MAX_LENGTH} Zeichen.`,
+  hintTooLong: `Höchstens ${SIGN_UP_LIST_HINT_MAX_LENGTH} Zeichen.`,
+  deadlineTimeMissing: 'Wähle eine Uhrzeit.',
+  deadlineAfterStart: 'Eintragen bis darf nicht nach dem Beginn liegen.',
 };
 
 export const CalendarEntryFormSchema = z
@@ -252,8 +308,17 @@ export const CalendarEntryFormSchema = z
   .superRefine((form, ctx) => {
     const hasParticipatingGroups = form.addOns.some((card) => card.kind === 'participatingGroups');
 
-    for (const issue of toPollIssues(form.addOns, { day: form.startDay, time: form.startTime })) {
+    const start = { day: form.startDay, time: form.startTime };
+
+    for (const issue of toPollIssues(form.addOns, start)) {
       ctx.addIssue({ code: 'custom', message: POLL_ISSUE_MESSAGES[issue.code], path: issue.path });
+    }
+    for (const issue of toSignUpListIssues(form.addOns, start)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: SIGN_UP_LIST_ISSUE_MESSAGES[issue.code],
+        path: issue.path,
+      });
     }
 
     if (hasParticipatingGroups && form.participatingGroupIds.includes(form.ownerId)) {
