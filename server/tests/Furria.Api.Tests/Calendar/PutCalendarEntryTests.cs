@@ -495,7 +495,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
 
-        var response = await RewritePollsAsync(
+        var response = await RewriteAddOnsAsync(
             ctx,
             [
                 Snack(
@@ -525,7 +525,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
 
-        var response = await RewritePollsAsync(
+        var response = await RewriteAddOnsAsync(
             ctx,
             [Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Laugenbrezeln")), Days(ctx)],
             ct
@@ -552,7 +552,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             ? [("snack:Brezeln", brezelnLabel), (null, "Obst")]
             : [("snack:Kuchen", kuchenLabel), ("snack:Brezeln", brezelnLabel)];
 
-        var response = await RewritePollsAsync(ctx, [Snack(ctx, options), Days(ctx)], ct);
+        var response = await RewriteAddOnsAsync(ctx, [Snack(ctx, options), Days(ctx)], ct);
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         await ctx
@@ -567,7 +567,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
 
-        var response = await RewritePollsAsync(ctx, [Days(ctx)], ct);
+        var response = await RewriteAddOnsAsync(ctx, [Days(ctx)], ct);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
@@ -584,7 +584,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
 
-        var response = await RewritePollsAsync(
+        var response = await RewriteAddOnsAsync(
             ctx,
             [
                 Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Brezeln")),
@@ -609,7 +609,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
 
-        var response = await RewritePollsAsync(
+        var response = await RewriteAddOnsAsync(
             ctx,
             [
                 Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Brezeln")),
@@ -642,7 +642,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             },
         };
 
-        var response = await RewritePollsAsync(ctx, [foreign], ct);
+        var response = await RewriteAddOnsAsync(ctx, [foreign], ct);
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
         await ctx
@@ -661,7 +661,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             Poll = Days(ctx).Poll! with { VotesUntil = TrainingStart.AddMinutes(1) },
         };
 
-        var response = await RewritePollsAsync(ctx, [late], ct);
+        var response = await RewriteAddOnsAsync(ctx, [late], ct);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -673,7 +673,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         var ctx = await BuildClubAsync(ct);
         var listId = ctx.Club.CalendarSignUpLists.IdOf("duties");
 
-        var response = await RewritePollsAsync(
+        var response = await RewriteAddOnsAsync(
             ctx,
             [
                 PutAddOn(CalendarEntryAddOnKind.Attendance),
@@ -699,7 +699,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
 
-        var response = await RewritePollsAsync(ctx, [Days(ctx)], ct);
+        var response = await RewriteAddOnsAsync(ctx, [Days(ctx)], ct);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         await ctx
@@ -714,7 +714,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
 
-        var response = await RewritePollsAsync(
+        var response = await RewriteAddOnsAsync(
             ctx,
             [SignUpListAddOn(ctx.Club.CalendarSignUpLists.IdOf("elsewhere-list"), "Fremd", null)],
             ct
@@ -738,10 +738,184 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             SignUpList = list.SignUpList! with { SignUpUntil = TrainingStart.AddMinutes(1) },
         };
 
-        var response = await RewritePollsAsync(ctx, [late], ct);
+        var response = await RewriteAddOnsAsync(ctx, [late], ct);
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
+
+    [Fact]
+    public async Task Should_ReplaceTheSteps_When_TheScheduleIsRewritten()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var scheduleId = ctx.Club.CalendarDaySchedules.IdOf("trip-plan");
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [
+                DayScheduleAddOn(
+                    scheduleId,
+                    "Fahrt",
+                    (null, 0, new TimeOnly(17, 0), "Abfahrt"),
+                    (null, 0, new TimeOnly(16, 30), "Treffpunkt")
+                ),
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarDaySchedule(scheduleId)
+            .ToHaveSteps(
+                "Fahrt",
+                (0, new TimeOnly(16, 30), "Treffpunkt"),
+                (0, new TimeOnly(17, 0), "Abfahrt")
+            )
+            .CalendarEntry(ctx.Club.CalendarEntries.IdOf("poll-meeting"))
+            .ToHaveDaySchedulesAt((0, "Fahrt"))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepAHeldStep_When_ItsTextChanges()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var scheduleId = ctx.Club.CalendarDaySchedules.IdOf("trip-plan");
+        var stepId = ctx.Club.CalendarDayScheduleSteps.IdOf("trip-meet");
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [
+                DayScheduleAddOn(
+                    scheduleId,
+                    null,
+                    (stepId, 0, new TimeOnly(18, 15), "Treffpunkt Bus")
+                ),
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarDaySchedule(scheduleId)
+            .ToHaveStep(stepId, 0, new TimeOnly(18, 15), "Treffpunkt Bus")
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheStep_When_ItBelongsToAnotherSchedule()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [
+                DayScheduleAddOn(
+                    ctx.Club.CalendarDaySchedules.IdOf("trip-plan"),
+                    null,
+                    (
+                        ctx.Club.CalendarDayScheduleSteps.IdOf("elsewhere-meet"),
+                        0,
+                        new TimeOnly(17, 0),
+                        "Abfahrt"
+                    )
+                ),
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_DiscardTheSchedule_When_ItIsRemoved()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewriteAddOnsAsync(ctx, [], ct);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarDaySchedule(ctx.Club.CalendarDaySchedules.IdOf("trip-plan"))
+            .ToNotExist()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheSchedule_When_ItBelongsToAnotherEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [
+                DayScheduleAddOn(
+                    ctx.Club.CalendarDaySchedules.IdOf("elsewhere-plan"),
+                    null,
+                    (null, 0, new TimeOnly(17, 0), "Abfahrt")
+                ),
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await ctx
+            .Expected.CalendarDaySchedule(ctx.Club.CalendarDaySchedules.IdOf("trip-plan"))
+            .ToHaveSteps(null, (0, new TimeOnly(18, 0), "Treffpunkt"))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_TheEntryNoLongerReachesAStepsDay()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [
+                DayScheduleAddOn(
+                    ctx.Club.CalendarDaySchedules.IdOf("trip-plan"),
+                    null,
+                    (null, 1, new TimeOnly(9, 0), "Frühstück")
+                ),
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    private static PutCalendarEntryAddOnDataDto DayScheduleAddOn(
+        int dayScheduleId,
+        string? title,
+        params (int? StepId, int Day, TimeOnly Time, string Text)[] steps
+    ) =>
+        new()
+        {
+            Kind = CalendarEntryAddOnKind.DaySchedule,
+            Poll = null,
+            SignUpList = null,
+            DaySchedule = new()
+            {
+                DayScheduleId = dayScheduleId,
+                Title = title,
+                Steps =
+                [
+                    .. steps.Select(step => new PutCalendarEntryDayScheduleStepDataDto
+                    {
+                        StepId = step.StepId,
+                        Day = step.Day,
+                        Time = step.Time,
+                        Text = step.Text,
+                    }),
+                ],
+            },
+        };
 
     private static PutCalendarEntryAddOnDataDto SignUpListAddOn(
         int signUpListId,
@@ -759,9 +933,10 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 Hint = hint,
                 SignUpUntil = null,
             },
+            DaySchedule = null,
         };
 
-    private static async Task<HttpResponseMessage> RewritePollsAsync(
+    private static async Task<HttpResponseMessage> RewriteAddOnsAsync(
         SeededContext ctx,
         IReadOnlyList<PutCalendarEntryAddOnDataDto> addOns,
         CancellationToken ct
@@ -810,6 +985,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         {
             Kind = CalendarEntryAddOnKind.Poll,
             SignUpList = null,
+            DaySchedule = null,
             Poll = new()
             {
                 PollId = pollId,
@@ -965,6 +1141,22 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                             .AddCalendarSignUpList("duties", "poll-meeting", "Aufbau", position: 2)
                             .AddCalendarSignUpLine("chris-duty", "duties", "chris", "Tische")
                             .AddCalendarSignUpList("elsewhere-list", "farewell", "Geschenk")
+                            .AddCalendarDaySchedule("trip-plan", "poll-meeting", null, position: 4)
+                            .AddCalendarDayScheduleStep(
+                                "trip-meet",
+                                "trip-plan",
+                                0,
+                                new TimeOnly(18, 0),
+                                "Treffpunkt"
+                            )
+                            .AddCalendarDaySchedule("elsewhere-plan", "farewell", null)
+                            .AddCalendarDayScheduleStep(
+                                "elsewhere-meet",
+                                "elsewhere-plan",
+                                0,
+                                new TimeOnly(18, 0),
+                                "Treffpunkt"
+                            )
                             .AddAttendanceResponse(
                                 "chris-says-yes",
                                 "asking-meeting",
@@ -992,5 +1184,6 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             Kind = kind,
             Poll = null,
             SignUpList = null,
+            DaySchedule = null,
         };
 }

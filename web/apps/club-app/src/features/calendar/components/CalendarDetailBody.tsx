@@ -57,6 +57,8 @@ export const CalendarDetailBody: FC<CalendarDetailBodyProps> = ({ entry }) => {
         answer={answer}
         participatingGroups={view.participatingGroups}
         mayModerate={mayModerate}
+        startsAt={entry.startsAt}
+        endsAt={entry.endsAt}
       />
     );
   });

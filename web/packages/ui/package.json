@@ -93,6 +93,7 @@
     "./KkCropPreview": "./src/KkCropPreview.tsx",
     "./KkDateField": "./src/KkDateField.tsx",
     "./KkDateline": "./src/KkDateline.tsx",
+    "./KkDaySchedule": "./src/KkDaySchedule/KkDaySchedule.tsx",
     "./KkDensePanel": "./src/KkDensePanel/KkDensePanel.tsx",
     "./KkDensePanelLine": "./src/KkDensePanel/internal/ui/KkDensePanelLine.tsx",
     "./KkDensePanelSkeleton": "./src/KkDensePanel/KkDensePanelSkeleton.tsx",

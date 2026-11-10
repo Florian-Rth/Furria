@@ -8,6 +8,7 @@ import { useCreateCalendarEntryMutation, useUpdateCalendarEntryMutation } from '
 import {
   nextFreshKey,
   toAttachedCards,
+  toChangedDayScheduleCards,
   toChangedPollCards,
   toChangedSignUpListCards,
   toDetachedCards,
@@ -26,11 +27,14 @@ import {
   toParticipationKeptForOwner,
   toToggledValue,
 } from '../calendar-authoring';
+import type { DayScheduleFieldPath } from '../calendar-day-schedules';
+import { toStepDayPaths } from '../calendar-day-schedules';
 import { toDeadlinePaths } from '../calendar-deadlines';
 import type { PollFieldPath, PollOptionsPath } from '../calendar-polls';
 import type { SignUpListFieldPath } from '../calendar-sign-up-lists';
 import type {
   CalendarAddOnKind,
+  CalendarDayScheduleForm,
   CalendarEntry,
   CalendarEntryForm,
   CalendarPollForm,
@@ -67,6 +71,11 @@ export interface CalendarEntryEditorControl {
     change: (list: CalendarSignUpListForm) => CalendarSignUpListForm,
   ) => void;
   recheckSignUpListField: (path: SignUpListFieldPath) => void;
+  updateDaySchedule: (
+    key: string,
+    change: (schedule: CalendarDayScheduleForm) => CalendarDayScheduleForm,
+  ) => void;
+  recheckDayScheduleField: (path: DayScheduleFieldPath) => void;
   setStartDay: (value: string | null) => void;
   setStartTime: (value: string) => void;
   setEndDay: (value: string | null) => void;
@@ -198,7 +207,7 @@ export const useCalendarEntryEditor = ({
   const attachAddOn = (kind: CalendarAddOnKind): void => {
     form.setValue(
       'addOns',
-      toAttachedCards(form.getValues('addOns'), kind, nextFreshKey),
+      toAttachedCards(form.getValues('addOns'), kind, nextFreshKey, form.getValues('startTime')),
       QUIET_EDIT,
     );
   };
@@ -228,6 +237,25 @@ export const useCalendarEntryEditor = ({
       toChangedSignUpListCards(form.getValues('addOns'), key, change),
       QUIET_EDIT,
     );
+  };
+
+  const updateDaySchedule = (
+    key: string,
+    change: (schedule: CalendarDayScheduleForm) => CalendarDayScheduleForm,
+  ): void => {
+    form.setValue(
+      'addOns',
+      toChangedDayScheduleCards(form.getValues('addOns'), key, change),
+      QUIET_EDIT,
+    );
+  };
+
+  const recheckStepDays = (): void => {
+    const paths = toStepDayPaths(form.getValues('addOns'));
+
+    if (paths.length > 0) {
+      void form.trigger(paths);
+    }
   };
 
   return {
@@ -260,10 +288,15 @@ export const useCalendarEntryEditor = ({
     recheckSignUpListField: (path) => {
       void form.trigger(path);
     },
+    updateDaySchedule,
+    recheckDayScheduleField: (path) => {
+      void form.trigger(path);
+    },
     setStartDay,
     setStartTime,
     setEndDay: (value) => {
       form.setValue('endDay', value ?? '', FIELD_EDIT);
+      recheckStepDays();
     },
     setEndTime: (value) => {
       form.setValue('endTime', value, FIELD_EDIT);

@@ -689,6 +689,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                         ? list with
                         {
                             SignUpList = null,
+                            DaySchedule = null,
                         }
                         : list with
                         {
@@ -697,6 +698,140 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 ],
             }
         );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_StoreTheDaySchedulesInCardOrder_When_TheEntryAttachesThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                AddOns =
+                [
+                    PollAddOn("Kommst du?", "Ja", "Nein"),
+                    DayScheduleAddOn(
+                        " Hinfahrt ",
+                        (0, new TimeOnly(19, 30), " Abfahrt am Bus "),
+                        (0, new TimeOnly(18, 45), "Treffpunkt Halle")
+                    ),
+                    DayScheduleAddOn("  ", (0, new TimeOnly(22, 0), "Heimfahrt")),
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(result.CalendarEntryId)
+            .ToHaveDaySchedulesAt((1, "Hinfahrt"), (2, null))
+            .CalendarEntry(result.CalendarEntryId)
+            .ToHaveDayScheduleSteps(
+                (1, 0, new TimeOnly(18, 45), "Treffpunkt Halle"),
+                (1, 0, new TimeOnly(19, 30), "Abfahrt am Bus"),
+                (2, 0, new TimeOnly(22, 0), "Heimfahrt")
+            )
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepAStepOnTheLastDay_When_TheEntrySpansSeveralDays()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                EndsAt = MeetingEnd.AddDays(2),
+                AddOns = [DayScheduleAddOn(null, (2, new TimeOnly(10, 0), "Rückfahrt"))],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(result.CalendarEntryId)
+            .ToHaveDayScheduleSteps((0, 2, new TimeOnly(10, 0), "Rückfahrt"))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_CountTheClubDays_When_TheEntryRunsPastMidnightInTheClubsTimeZone()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var lateEvening = new DateTimeOffset(2027, 1, 20, 22, 30, 0, TimeSpan.Zero);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                StartsAt = lateEvening,
+                EndsAt = lateEvening.AddHours(1),
+                AddOns = [DayScheduleAddOn(null, (1, new TimeOnly(0, 15), "Heimfahrt"))],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(result.CalendarEntryId)
+            .ToHaveDayScheduleSteps((0, 1, new TimeOnly(0, 15), "Heimfahrt"))
+            .AssertAsync(ct);
+    }
+
+    [Theory]
+    [InlineData(1, "Rückfahrt")]
+    [InlineData(-1, "Vorabend")]
+    [InlineData(0, "   ")]
+    public async Task Should_ReturnBadRequest_When_AStepIsInvalid(int day, string text)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                AddOns = [DayScheduleAddOn(null, (day, new TimeOnly(10, 0), text))],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_TheDayScheduleHasNoSteps()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(ClubOwned(ClubMeeting) with { AddOns = [DayScheduleAddOn("Ablauf")] });
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
@@ -911,6 +1046,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
             Kind = kind,
             Poll = null,
             SignUpList = null,
+            DaySchedule = null,
         };
 
     private static PostCalendarEntryAddOnDataDto SignUpListAddOn(string title, string? hint) =>
@@ -925,6 +1061,33 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 Hint = hint,
                 SignUpUntil = null,
             },
+            DaySchedule = null,
+        };
+
+    private static PostCalendarEntryAddOnDataDto DayScheduleAddOn(
+        string? title,
+        params (int Day, TimeOnly Time, string Text)[] steps
+    ) =>
+        new()
+        {
+            Kind = CalendarEntryAddOnKind.DaySchedule,
+            Poll = null,
+            SignUpList = null,
+            DaySchedule = new()
+            {
+                DayScheduleId = null,
+                Title = title,
+                Steps =
+                [
+                    .. steps.Select(step => new PostCalendarEntryDayScheduleStepDataDto
+                    {
+                        StepId = null,
+                        Day = step.Day,
+                        Time = step.Time,
+                        Text = step.Text,
+                    }),
+                ],
+            },
         };
 
     private static PostCalendarEntryAddOnDataDto PollAddOn(
@@ -935,6 +1098,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
         {
             Kind = CalendarEntryAddOnKind.Poll,
             SignUpList = null,
+            DaySchedule = null,
             Poll = new()
             {
                 PollId = null,

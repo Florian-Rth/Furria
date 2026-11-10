@@ -1028,6 +1028,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             Kind = kind,
             Poll = null,
             SignUpList = null,
+            DaySchedule = null,
         };
 
     public async Task<Result> SaveSecondActiveGroupAsync(

@@ -10,6 +10,7 @@ public sealed class ClubSeedBuilder
     private const string DefaultCity = "Großfurra";
     private const int DefaultPollPosition = 9;
     private const int DefaultSignUpListPosition = 19;
+    private const int DefaultDaySchedulePosition = 29;
     private const string DefaultTeaser = "Der Abend, auf den die Session hinfiebert.";
 
     private static readonly DateOnly DefaultSinceOn = new(2020, 11, 11);
@@ -28,6 +29,8 @@ public sealed class ClubSeedBuilder
     private readonly List<CalendarPollVoteIntent> _calendarPollVotes = [];
     private readonly List<CalendarSignUpListIntent> _calendarSignUpLists = [];
     private readonly List<CalendarSignUpLineIntent> _calendarSignUpLines = [];
+    private readonly List<CalendarDayScheduleIntent> _calendarDaySchedules = [];
+    private readonly List<CalendarDayScheduleStepIntent> _calendarDayScheduleSteps = [];
     private readonly List<EventIntent> _events = [];
     private readonly List<EventPresalePlaceIntent> _eventPresalePlaces = [];
     private ClubRecordIntent? _clubRecord;
@@ -59,6 +62,11 @@ public sealed class ClubSeedBuilder
     internal IReadOnlyList<CalendarSignUpListIntent> CalendarSignUpLists => _calendarSignUpLists;
 
     internal IReadOnlyList<CalendarSignUpLineIntent> CalendarSignUpLines => _calendarSignUpLines;
+
+    internal IReadOnlyList<CalendarDayScheduleIntent> CalendarDaySchedules => _calendarDaySchedules;
+
+    internal IReadOnlyList<CalendarDayScheduleStepIntent> CalendarDayScheduleSteps =>
+        _calendarDayScheduleSteps;
 
     internal IReadOnlyList<EventIntent> Events => _events;
 
@@ -379,6 +387,33 @@ public sealed class ClubSeedBuilder
         return this;
     }
 
+    public ClubSeedBuilder AddCalendarDaySchedule(
+        string alias,
+        string calendarEntryAlias,
+        string? title,
+        int position = DefaultDaySchedulePosition
+    )
+    {
+        _calendarDaySchedules.Add(
+            new CalendarDayScheduleIntent(alias, calendarEntryAlias, title, position)
+        );
+        return this;
+    }
+
+    public ClubSeedBuilder AddCalendarDayScheduleStep(
+        string alias,
+        string dayScheduleAlias,
+        int day,
+        TimeOnly time,
+        string text
+    )
+    {
+        _calendarDayScheduleSteps.Add(
+            new CalendarDayScheduleStepIntent(alias, dayScheduleAlias, day, time, text)
+        );
+        return this;
+    }
+
     public ClubSeedBuilder AddCalendarSignUpLine(
         string alias,
         string signUpListAlias,
@@ -564,6 +599,21 @@ public sealed class ClubSeedBuilder
         DateTimeOffset? SignUpUntil,
         DateTimeOffset? ClosedAt,
         int Position
+    );
+
+    internal sealed record CalendarDayScheduleIntent(
+        string Alias,
+        string CalendarEntryAlias,
+        string? Title,
+        int Position
+    );
+
+    internal sealed record CalendarDayScheduleStepIntent(
+        string Alias,
+        string DayScheduleAlias,
+        int Day,
+        TimeOnly Time,
+        string Text
     );
 
     internal sealed record CalendarSignUpLineIntent(

@@ -76,6 +76,12 @@ internal static class ClubSeedMaterializer
             personIds,
             ct
         );
+        var daySchedules = await InsertCalendarDaySchedulesAsync(
+            dbContext,
+            recorded,
+            calendarEntries,
+            ct
+        );
 
         return new SeededClub(
             sessions,
@@ -97,7 +103,9 @@ internal static class ClubSeedMaterializer
                 )
                 .ToDictionary(option => option.Key, option => option.Id, StringComparer.Ordinal),
             signUpLists,
-            signUpLines
+            signUpLines,
+            daySchedules.Schedules,
+            daySchedules.Steps
         );
     }
 
@@ -661,6 +669,70 @@ internal static class ClubSeedMaterializer
         }
 
         return lists.ToDictionary(list => list.Key, list => list.Value.Id, StringComparer.Ordinal);
+    }
+
+    private static async Task<(
+        Dictionary<string, int> Schedules,
+        Dictionary<string, int> Steps
+    )> InsertCalendarDaySchedulesAsync(
+        AppDbContext dbContext,
+        ClubSeedBuilder recorded,
+        IReadOnlyDictionary<string, int> calendarEntryIds,
+        CancellationToken ct
+    )
+    {
+        var schedules = recorded.CalendarDaySchedules.ToDictionary(
+            intent => intent.Alias,
+            intent => new CalendarDaySchedule
+            {
+                CalendarEntryId = SeedAliases.RequireId(
+                    calendarEntryIds,
+                    intent.CalendarEntryAlias,
+                    "CalendarEntry"
+                ),
+                Position = intent.Position,
+                Title = intent.Title,
+            },
+            StringComparer.Ordinal
+        );
+
+        if (schedules.Count > 0)
+        {
+            dbContext.CalendarDaySchedules.AddRange(schedules.Values);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        var scheduleIds = schedules.ToDictionary(
+            schedule => schedule.Key,
+            schedule => schedule.Value.Id,
+            StringComparer.Ordinal
+        );
+        var steps = recorded.CalendarDayScheduleSteps.ToDictionary(
+            intent => intent.Alias,
+            intent => new CalendarDayScheduleStep
+            {
+                DayScheduleId = SeedAliases.RequireId(
+                    scheduleIds,
+                    intent.DayScheduleAlias,
+                    "CalendarDaySchedule"
+                ),
+                Day = intent.Day,
+                Time = intent.Time,
+                Text = intent.Text,
+            },
+            StringComparer.Ordinal
+        );
+
+        foreach (var step in steps.Values)
+        {
+            dbContext.CalendarDayScheduleSteps.Add(step);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        return (
+            scheduleIds,
+            steps.ToDictionary(step => step.Key, step => step.Value.Id, StringComparer.Ordinal)
+        );
     }
 
     private static async Task<Dictionary<string, int>> InsertCalendarSignUpLinesAsync(

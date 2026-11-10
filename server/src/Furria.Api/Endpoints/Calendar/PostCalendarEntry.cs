@@ -76,6 +76,26 @@ public sealed class PostCalendarEntry
             Kind = addOn.Kind,
             Poll = addOn.Poll is { } poll ? ToInput(poll) : null,
             SignUpList = addOn.SignUpList is { } list ? ToInput(list) : null,
+            DaySchedule = addOn.DaySchedule is { } schedule ? ToInput(schedule) : null,
+        };
+
+    private static CalendarDayScheduleInput ToInput(PostCalendarEntryDayScheduleDataDto schedule) =>
+        new()
+        {
+            DayScheduleId = schedule.DayScheduleId,
+            Title = schedule.Title,
+            Steps = [.. schedule.Steps.Select(ToInput)],
+        };
+
+    private static CalendarDayScheduleStepInput ToInput(
+        PostCalendarEntryDayScheduleStepDataDto step
+    ) =>
+        new()
+        {
+            StepId = step.StepId,
+            Day = step.Day,
+            Time = step.Time,
+            Text = step.Text,
         };
 
     private static CalendarSignUpListInput ToInput(PostCalendarEntrySignUpListDataDto list) =>
@@ -164,6 +184,8 @@ public sealed class PostCalendarEntryValidator : Validator<PostCalendarEntryRequ
         "Die Abstimmung kann nicht nach dem Beginn enden.";
     private const string SignUpAfterTheStartMessage =
         "Das Eintragen kann nicht nach dem Beginn enden.";
+    private const string StepOutsideTheDaysMessage =
+        "Ein Schritt im Tagesablauf liegt außerhalb der Tage des Eintrags.";
     private const string ParticipationWithoutAddOnMessage =
         "Ohne den Baustein „Mitwirkende Gruppen“ wirken keine Gruppen mit.";
     private const string EndsBeforeItStartsMessage =
@@ -230,6 +252,9 @@ public sealed class PostCalendarEntryValidator : Validator<PostCalendarEntryRequ
         RuleForEach(request => request.AddOns)
             .Must((request, addOn) => SignsUpBeforeTheStart(addOn, request.StartsAt))
             .WithMessage(SignUpAfterTheStartMessage);
+        RuleForEach(request => request.AddOns)
+            .Must((request, addOn) => StepsWithinTheDays(addOn, request.StartsAt, request.EndsAt))
+            .WithMessage(StepOutsideTheDaysMessage);
         RuleFor(request => request.AddOns)
             .Must(EachSingleUseAddOnOnce)
             .When(request => request.AddOns is not null)
@@ -262,6 +287,15 @@ public sealed class PostCalendarEntryValidator : Validator<PostCalendarEntryRequ
     ) => addOn?.SignUpList?.SignUpUntil is not { } signUpUntil || signUpUntil <= startsAt;
 
     [Pure]
+    private static bool StepsWithinTheDays(
+        PostCalendarEntryAddOnDataDto addOn,
+        DateTimeOffset startsAt,
+        DateTimeOffset? endsAt
+    ) =>
+        addOn?.DaySchedule?.Steps is not { } steps
+        || steps.All(step => step is null || step.Day < ClubClock.DaysSpanned(startsAt, endsAt));
+
+    [Pure]
     private static bool EachSingleUseAddOnOnce(IReadOnlyList<PostCalendarEntryAddOnDataDto> addOns)
     {
         var singleUse = addOns
@@ -273,15 +307,23 @@ public sealed class PostCalendarEntryValidator : Validator<PostCalendarEntryRequ
             .Select(addOn => addOn?.SignUpList?.SignUpListId)
             .OfType<int>()
             .ToList();
+        var dayScheduleIds = addOns
+            .Select(addOn => addOn?.DaySchedule?.DayScheduleId)
+            .OfType<int>()
+            .ToList();
 
         return singleUse.Distinct().Count() == singleUse.Count
             && pollIds.Distinct().Count() == pollIds.Count
-            && signUpListIds.Distinct().Count() == signUpListIds.Count;
+            && signUpListIds.Distinct().Count() == signUpListIds.Count
+            && dayScheduleIds.Distinct().Count() == dayScheduleIds.Count;
     }
 
     [Pure]
     private static bool IsMultiUse(CalendarEntryAddOnKind kind) =>
-        kind is CalendarEntryAddOnKind.Poll or CalendarEntryAddOnKind.SignUpList;
+        kind
+            is CalendarEntryAddOnKind.Poll
+                or CalendarEntryAddOnKind.SignUpList
+                or CalendarEntryAddOnKind.DaySchedule;
 }
 
 public sealed record PostCalendarEntryAddOnDataDto
@@ -291,6 +333,28 @@ public sealed record PostCalendarEntryAddOnDataDto
     public required PostCalendarEntryPollDataDto? Poll { get; init; }
 
     public required PostCalendarEntrySignUpListDataDto? SignUpList { get; init; }
+
+    public required PostCalendarEntryDayScheduleDataDto? DaySchedule { get; init; }
+}
+
+public sealed record PostCalendarEntryDayScheduleDataDto
+{
+    public required int? DayScheduleId { get; init; }
+
+    public required string? Title { get; init; }
+
+    public required IReadOnlyList<PostCalendarEntryDayScheduleStepDataDto> Steps { get; init; }
+}
+
+public sealed record PostCalendarEntryDayScheduleStepDataDto
+{
+    public required int? StepId { get; init; }
+
+    public required int Day { get; init; }
+
+    public required TimeOnly Time { get; init; }
+
+    public required string Text { get; init; }
 }
 
 public sealed record PostCalendarEntrySignUpListDataDto
@@ -335,6 +399,8 @@ public sealed class PostCalendarEntryAddOnDataValidator
     private const string SignUpListWithoutTitleMessage = "Die Eintragsliste braucht einen Titel.";
     private const string SignUpListOutsideAListMessage =
         "Nur eine Eintragsliste trägt Titel und Hinweis.";
+    private const string DayScheduleWithoutStepsMessage = "Der Tagesablauf braucht Schritte.";
+    private const string DayScheduleOutsideAScheduleMessage = "Nur ein Tagesablauf trägt Schritte.";
 
     public PostCalendarEntryAddOnDataValidator()
     {
@@ -361,6 +427,84 @@ public sealed class PostCalendarEntryAddOnDataValidator
         RuleFor(addOn => addOn.SignUpList!)
             .SetValidator(new PostCalendarEntrySignUpListDataValidator())
             .When(addOn => addOn.SignUpList is not null);
+        RuleFor(addOn => addOn.DaySchedule)
+            .NotNull()
+            .When(addOn => addOn.Kind == CalendarEntryAddOnKind.DaySchedule)
+            .WithMessage(DayScheduleWithoutStepsMessage);
+        RuleFor(addOn => addOn.DaySchedule)
+            .Null()
+            .When(addOn => addOn.Kind != CalendarEntryAddOnKind.DaySchedule)
+            .WithMessage(DayScheduleOutsideAScheduleMessage);
+        RuleFor(addOn => addOn.DaySchedule!)
+            .SetValidator(new PostCalendarEntryDayScheduleDataValidator())
+            .When(addOn => addOn.DaySchedule is not null);
+    }
+}
+
+public sealed class PostCalendarEntryDayScheduleDataValidator
+    : AbstractValidator<PostCalendarEntryDayScheduleDataDto>
+{
+    private const string UnknownDayScheduleMessage = "Diesen Tagesablauf gibt es nicht.";
+    private const string TitleTooLongMessage = "Ein Ablauftitel hat höchstens 120 Zeichen.";
+    private const string NoStepsMessage = "Der Tagesablauf braucht mindestens einen Schritt.";
+    private const string TooManyStepsMessage = "Ein Tagesablauf hat höchstens 50 Schritte.";
+    private const string StepTwiceMessage = "Jeder Schritt kann nur einmal vorkommen.";
+
+    public PostCalendarEntryDayScheduleDataValidator()
+    {
+        RuleFor(schedule => schedule.DayScheduleId)
+            .GreaterThan(0)
+            .When(schedule => schedule.DayScheduleId is not null)
+            .WithMessage(UnknownDayScheduleMessage);
+        RuleFor(schedule => schedule.Title)
+            .Must(title =>
+                title is null || title.Trim().Length <= CalendarLimits.DayScheduleTitleLength
+            )
+            .WithMessage(TitleTooLongMessage);
+        RuleFor(schedule => schedule.Steps)
+            .Cascade(CascadeMode.Stop)
+            .NotEmpty()
+            .WithMessage(NoStepsMessage)
+            .Must(steps => steps.Count <= CalendarLimits.DayScheduleMaxSteps)
+            .WithMessage(TooManyStepsMessage)
+            .Must(EachStepOnce)
+            .WithMessage(StepTwiceMessage);
+        RuleForEach(schedule => schedule.Steps)
+            .NotNull()
+            .SetValidator(new PostCalendarEntryDayScheduleStepDataValidator());
+    }
+
+    [Pure]
+    private static bool EachStepOnce(IReadOnlyList<PostCalendarEntryDayScheduleStepDataDto> steps)
+    {
+        var stepIds = steps.Select(step => step?.StepId).OfType<int>().ToList();
+
+        return stepIds.Distinct().Count() == stepIds.Count;
+    }
+}
+
+public sealed class PostCalendarEntryDayScheduleStepDataValidator
+    : AbstractValidator<PostCalendarEntryDayScheduleStepDataDto>
+{
+    private const string UnknownStepMessage = "Diesen Schritt gibt es nicht.";
+    private const string DayBeforeTheStartMessage =
+        "Ein Schritt kann nicht vor dem ersten Tag liegen.";
+    private const string TextMissingMessage = "Jeder Schritt braucht einen Text.";
+    private const string TextTooLongMessage = "Ein Schritt hat höchstens 120 Zeichen.";
+
+    public PostCalendarEntryDayScheduleStepDataValidator()
+    {
+        RuleFor(step => step.StepId)
+            .GreaterThan(0)
+            .When(step => step.StepId is not null)
+            .WithMessage(UnknownStepMessage);
+        RuleFor(step => step.Day).GreaterThanOrEqualTo(0).WithMessage(DayBeforeTheStartMessage);
+        RuleFor(step => step.Text)
+            .Cascade(CascadeMode.Stop)
+            .Must(text => !string.IsNullOrWhiteSpace(text))
+            .WithMessage(TextMissingMessage)
+            .Must(text => text.Trim().Length <= CalendarLimits.DayScheduleStepTextLength)
+            .WithMessage(TextTooLongMessage);
     }
 }
 

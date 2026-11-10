@@ -13,5 +13,8 @@ internal static class CalendarLimits
     internal const int SignUpListTitleLength = 120;
     internal const int SignUpListHintLength = 300;
     internal const int SignUpLineTextLength = 120;
+    internal const int DayScheduleTitleLength = 120;
+    internal const int DayScheduleStepTextLength = 120;
+    internal const int DayScheduleMaxSteps = 50;
     internal const int MaxAddOns = 30;
 }

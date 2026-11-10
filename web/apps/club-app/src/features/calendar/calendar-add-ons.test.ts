@@ -74,22 +74,22 @@ const newList: CalendarSignUpListForm = {
 
 describe('toOfferedAddOns', () => {
   it.each([
-    [[], ['attendance', 'participatingGroups', 'poll', 'signUpList']],
-    [[{ kind: 'participatingGroups' }], ['attendance', 'poll', 'signUpList']],
+    [[], ['attendance', 'participatingGroups', 'poll', 'signUpList', 'daySchedule']],
+    [[{ kind: 'participatingGroups' }], ['attendance', 'poll', 'signUpList', 'daySchedule']],
     [
       [{ kind: 'attendance' }, { kind: 'participatingGroups' }],
-      ['poll', 'signUpList'],
+      ['poll', 'signUpList', 'daySchedule'],
     ],
     [
-      [{ kind: 'poll' }, { kind: 'signUpList' }, { kind: 'signUpList' }, { kind: 'attendance' }],
-      ['participatingGroups', 'poll', 'signUpList'],
+      [{ kind: 'poll' }, { kind: 'signUpList' }, { kind: 'daySchedule' }, { kind: 'attendance' }],
+      ['participatingGroups', 'poll', 'signUpList', 'daySchedule'],
     ],
   ] as const)('offers %j attached as %j', (attached, expected) => {
     expect(toOfferedAddOns(attached)).toEqual(expected);
   });
 
   it.each([
-    [ADD_ON_LIMIT - 1, ['attendance', 'participatingGroups', 'poll', 'signUpList']],
+    [ADD_ON_LIMIT - 1, ['attendance', 'participatingGroups', 'poll', 'signUpList', 'daySchedule']],
     [ADD_ON_LIMIT, []],
   ])('offers with %i polls attached %j', (count, expected) => {
     const attached = Array.from({ length: count }, () => ({ kind: 'poll' as const }));
@@ -107,8 +107,9 @@ describe('toAttachedCards', () => {
     [[attendance], 'participatingGroups', ['attendance', 'participatingGroups']],
     [[attendance], 'poll', ['attendance', 'poll']],
     [[attendance], 'signUpList', ['attendance', 'signUpList']],
+    [[attendance], 'daySchedule', ['attendance', 'daySchedule']],
   ] as const)('attaches to %j the add-on %s as %j', (cards, kind, expected) => {
-    const attached = toAttachedCards([...cards], kind, counter());
+    const attached = toAttachedCards([...cards], kind, counter(), '19:00');
 
     expect(attached.map((card) => card.kind)).toEqual(expected);
   });
@@ -116,9 +117,10 @@ describe('toAttachedCards', () => {
   it('attaches each new sign-up list empty under its own key', () => {
     const next = counter();
     const cards = toAttachedCards(
-      toAttachedCards([attendance], 'signUpList', next),
+      toAttachedCards([attendance], 'signUpList', next, '19:00'),
       'signUpList',
       next,
+      '19:00',
     );
     const lists = cards.flatMap((card) =>
       card.kind === 'signUpList' ? [[card.key, card.signUpList]] : [],
@@ -130,9 +132,32 @@ describe('toAttachedCards', () => {
     ]);
   });
 
+  it('starts a new day schedule with one empty step at the entry start', () => {
+    const cards = toAttachedCards([attendance], 'daySchedule', counter(), '18:30');
+    const schedules = cards.flatMap((card) =>
+      card.kind === 'daySchedule' ? [[card.key, card.daySchedule]] : [],
+    );
+
+    expect(schedules).toEqual([
+      [
+        'k1',
+        {
+          dayScheduleId: null,
+          title: '',
+          steps: [{ key: 'k2', stepId: null, day: 0, time: '18:30', text: '' }],
+        },
+      ],
+    ]);
+  });
+
   it('gives every new poll and its two empty answers their own keys', () => {
     const next = counter();
-    const cards = toAttachedCards(toAttachedCards([attendance], 'poll', next), 'poll', next);
+    const cards = toAttachedCards(
+      toAttachedCards([attendance], 'poll', next, '19:00'),
+      'poll',
+      next,
+      '19:00',
+    );
     const keys = cards.flatMap((card) =>
       card.kind === 'poll'
         ? [card.key, ...card.poll.options.map((option) => option.key)]

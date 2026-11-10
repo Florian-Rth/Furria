@@ -1371,9 +1371,11 @@ const ensureCalendar = async (
       audienceGroupIds: spec.audience === 'groups' && ownerGroupId !== null ? [ownerGroupId] : [],
       audiencePersonIds: [],
       addOns: [
-        ...(spec.asksForResponse ? [{ kind: 'attendance', poll: null, signUpList: null }] : []),
+        ...(spec.asksForResponse
+          ? [{ kind: 'attendance', poll: null, signUpList: null, daySchedule: null }]
+          : []),
         ...(spec.participating.length > 0
-          ? [{ kind: 'participatingGroups', poll: null, signUpList: null }]
+          ? [{ kind: 'participatingGroups', poll: null, signUpList: null, daySchedule: null }]
           : []),
       ],
       participatingGroupIds: spec.participating.map((group) => lookUp(groupIds, group, 'group')),

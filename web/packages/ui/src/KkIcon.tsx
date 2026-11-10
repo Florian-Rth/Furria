@@ -95,6 +95,7 @@ import RedoOutlinedIcon from '@mui/icons-material/RedoOutlined';
 import RemoveOutlinedIcon from '@mui/icons-material/RemoveOutlined';
 import RotateLeftOutlinedIcon from '@mui/icons-material/RotateLeftOutlined';
 import RotateRightOutlinedIcon from '@mui/icons-material/RotateRightOutlined';
+import RouteOutlinedIcon from '@mui/icons-material/RouteOutlined';
 import ScheduleOutlinedIcon from '@mui/icons-material/ScheduleOutlined';
 import SearchOutlinedIcon from '@mui/icons-material/SearchOutlined';
 import SendOutlinedIcon from '@mui/icons-material/SendOutlined';
@@ -222,6 +223,7 @@ export type KkIconName =
   | 'pinFilled'
   | 'poll'
   | 'signUpList'
+  | 'daySchedule'
   | 'block'
   | 'unblock'
   | 'wish'
@@ -360,6 +362,7 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   pinFilled: PushPinIcon,
   poll: PollOutlinedIcon,
   signUpList: ListAltOutlinedIcon,
+  daySchedule: RouteOutlinedIcon,
   block: ViewAgendaOutlinedIcon,
   unblock: LinkOffOutlinedIcon,
   wish: TuneRoundedIcon,

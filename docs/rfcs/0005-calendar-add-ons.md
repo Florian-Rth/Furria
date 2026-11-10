@@ -272,10 +272,28 @@ Decisions taken while building phase 5:
 
 ### Phase 6 — Tagesablauf
 Goal: day schedules can be attached and are shown on the entry.
-- [ ] Tables, entity config, migration; schedule and step writes
-- [ ] Step editor card in the form (time, optional day on multi-day entries, text)
-- [ ] Timeline on the entry detail
-- [ ] Integration tests for ordering and multi-day steps
+- [x] Tables, entity config, migration; schedule and step writes
+- [x] Step editor card in the form (time, optional day on multi-day entries, text)
+- [x] Timeline on the entry detail
+- [x] Integration tests for ordering and multi-day steps
+
+Decisions taken while building phase 6:
+- **Storage:** a step is `(day, time, text)`: `day` counts club days (Europe/Berlin) from the
+  entry's start day, `time` is a wall-clock `time`. Moving the entry moves its schedule with it.
+  Steps are stored as entered and always read sorted by day, time, id.
+- **Wire shape:** add-on items become `{ kind, poll, signUpList, daySchedule }`; `daySchedule`
+  carries `dayScheduleId`, an optional `title` (≤ 120, blank = none) and 1–50 `steps` of
+  `{ stepId, day, time, text }` (text ≤ 120). Schedules and steps travel with the entry write and
+  reconcile by id like poll options, so a kept step keeps its id; unknown ids are refused.
+- **Days:** a step must lie on a day of the entry (`0 ≤ day <` club days spanned, an open end
+  spans one day). The endpoints answer 400, the service guards the same rule (422). Shortening the
+  entry past a step's day is refused until the step moves; the form flags it on the day field.
+- **No answers, no closing:** removing a schedule asks nothing and drops its steps; the change
+  feed reports schedule and step writes as `calendarEntry`.
+- **Club app:** the card holds a title and step rows (time, text; a day select appears once the
+  entry spans several days), the last step can't be removed. The detail renders the new
+  `KkDaySchedule` kit — a time column with a dotted rail — with day headings on multi-day entries.
+  `shiftDay` / `daysBetween` moved to `@/lib/day`.
 
 ### Phase 7 — Push
 Goal: calendar pushes as ruled.

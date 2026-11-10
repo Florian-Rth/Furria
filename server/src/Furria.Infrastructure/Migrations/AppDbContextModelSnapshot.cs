@@ -662,6 +662,107 @@ namespace Furria.Infrastructure.Migrations
                         });
                 });
 
+            modelBuilder.Entity("Furria.Core.Club.CalendarDaySchedule", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<string>("Title")
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("title");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_calendar_day_schedule");
+
+                    b.HasIndex("CalendarEntryId")
+                        .HasDatabaseName("ix_calendar_day_schedule_calendar_entry_id");
+
+                    b.ToTable("calendar_day_schedule", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_calendar_day_schedule_position", "position >= 0");
+
+                            t.HasCheckConstraint("ck_calendar_day_schedule_title", "title IS NULL OR btrim(title) <> ''");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.CalendarDayScheduleStep", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("Day")
+                        .HasColumnType("integer")
+                        .HasColumnName("day");
+
+                    b.Property<int>("DayScheduleId")
+                        .HasColumnType("integer")
+                        .HasColumnName("day_schedule_id");
+
+                    b.Property<string>("Text")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("text");
+
+                    b.Property<TimeOnly>("Time")
+                        .HasColumnType("time without time zone")
+                        .HasColumnName("time");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_calendar_day_schedule_step");
+
+                    b.HasIndex("DayScheduleId", "Day", "Time")
+                        .HasDatabaseName("ix_calendar_day_schedule_step_day_schedule_id_day_time");
+
+                    b.ToTable("calendar_day_schedule_step", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_calendar_day_schedule_step_day", "day >= 0");
+
+                            t.HasCheckConstraint("ck_calendar_day_schedule_step_text", "btrim(text) <> ''");
+                        });
+                });
+
             modelBuilder.Entity("Furria.Core.Club.CalendarEntry", b =>
                 {
                     b.Property<int>("Id")
@@ -5406,6 +5507,30 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Person");
                 });
 
+            modelBuilder.Entity("Furria.Core.Club.CalendarDaySchedule", b =>
+                {
+                    b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
+                        .WithMany("DaySchedules")
+                        .HasForeignKey("CalendarEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_calendar_day_schedule_calendar_entry_calendar_entry_id");
+
+                    b.Navigation("CalendarEntry");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.CalendarDayScheduleStep", b =>
+                {
+                    b.HasOne("Furria.Core.Club.CalendarDaySchedule", "DaySchedule")
+                        .WithMany("Steps")
+                        .HasForeignKey("DayScheduleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_calendar_day_schedule_step_day_schedule_id");
+
+                    b.Navigation("DaySchedule");
+                });
+
             modelBuilder.Entity("Furria.Core.Club.CalendarEntry", b =>
                 {
                     b.HasOne("Furria.Core.Groups.Group", "OwnerGroup")
@@ -6809,11 +6934,18 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_account_token_account_user_id");
                 });
 
+            modelBuilder.Entity("Furria.Core.Club.CalendarDaySchedule", b =>
+                {
+                    b.Navigation("Steps");
+                });
+
             modelBuilder.Entity("Furria.Core.Club.CalendarEntry", b =>
                 {
                     b.Navigation("AudienceGroups");
 
                     b.Navigation("AudiencePeople");
+
+                    b.Navigation("DaySchedules");
 
                     b.Navigation("Event");
 

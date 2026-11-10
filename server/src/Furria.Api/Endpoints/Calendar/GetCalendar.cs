@@ -263,6 +263,8 @@ public sealed record CalendarEntryAddOnDto
 
     public required CalendarSignUpListDto? SignUpList { get; init; }
 
+    public required CalendarDayScheduleDto? DaySchedule { get; init; }
+
     [Pure]
     public static CalendarEntryAddOnDto From(CalendarEntryAddOnDetails addOn) =>
         new()
@@ -270,6 +272,48 @@ public sealed record CalendarEntryAddOnDto
             Kind = addOn.Kind,
             Poll = addOn.Poll is { } poll ? CalendarPollDto.From(poll) : null,
             SignUpList = addOn.SignUpList is { } list ? CalendarSignUpListDto.From(list) : null,
+            DaySchedule = addOn.DaySchedule is { } schedule
+                ? CalendarDayScheduleDto.From(schedule)
+                : null,
+        };
+}
+
+public sealed record CalendarDayScheduleDto
+{
+    public required int DayScheduleId { get; init; }
+
+    public required string? Title { get; init; }
+
+    public required IReadOnlyList<CalendarDayScheduleStepDto> Steps { get; init; }
+
+    [Pure]
+    public static CalendarDayScheduleDto From(CalendarDayScheduleDetails schedule) =>
+        new()
+        {
+            DayScheduleId = schedule.DayScheduleId,
+            Title = schedule.Title,
+            Steps = [.. schedule.Steps.Select(CalendarDayScheduleStepDto.From)],
+        };
+}
+
+public sealed record CalendarDayScheduleStepDto
+{
+    public required int StepId { get; init; }
+
+    public required int Day { get; init; }
+
+    public required TimeOnly Time { get; init; }
+
+    public required string Text { get; init; }
+
+    [Pure]
+    public static CalendarDayScheduleStepDto From(CalendarDayScheduleStepDetails step) =>
+        new()
+        {
+            StepId = step.StepId,
+            Day = step.Day,
+            Time = step.Time,
+            Text = step.Text,
         };
 }
 

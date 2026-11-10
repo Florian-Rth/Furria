@@ -5,6 +5,7 @@ import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-edi
 import type { CalendarEntryReload } from '../hooks/use-calendar-entry-supplies';
 import type { CalendarAddOnCardForm, CalendarEntry } from '../schemas';
 import { CalendarAttendanceCard } from './CalendarAttendanceCard';
+import { CalendarDayScheduleCard } from './CalendarDayScheduleCard';
 import { CalendarParticipatingGroupsCard } from './CalendarParticipatingGroupsCard';
 import { CalendarPollCard } from './CalendarPollCard';
 import { CalendarSignUpListCard } from './CalendarSignUpListCard';
@@ -64,6 +65,16 @@ export const CalendarAddOnCard: FC<CalendarAddOnCardProps> = ({
           list={card.signUpList}
           control={control}
           entry={entry}
+          onRemove={remove}
+        />
+      );
+    case 'daySchedule':
+      return (
+        <CalendarDayScheduleCard
+          cardKey={card.key}
+          index={index}
+          schedule={card.daySchedule}
+          control={control}
           onRemove={remove}
         />
       );

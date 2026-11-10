@@ -9,4 +9,6 @@ public sealed record CalendarEntryAddOnDetails
     public required CalendarPollDetails? Poll { get; init; }
 
     public required CalendarSignUpListDetails? SignUpList { get; init; }
+
+    public required CalendarDayScheduleDetails? DaySchedule { get; init; }
 }

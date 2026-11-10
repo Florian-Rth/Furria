@@ -5,6 +5,12 @@ import { AppSearchSchema } from '@/features/session/schemas';
 import { ClockTimeSchema, PictureSchema } from '@/lib/api/schemas';
 import { EVENT_SALES_STATUS_KEYS } from '@/lib/event-copy';
 import { GroupToneSchema } from '@/lib/group-tone';
+import type { CalendarDayScheduleIssueCode } from './calendar-day-schedules';
+import {
+  DAY_SCHEDULE_STEP_TEXT_MAX_LENGTH,
+  DAY_SCHEDULE_TITLE_MAX_LENGTH,
+  toDayScheduleIssues,
+} from './calendar-day-schedules';
 import type { CalendarPollIssueCode } from './calendar-polls';
 import {
   POLL_OPTION_LABEL_MAX_LENGTH,
@@ -58,6 +64,7 @@ export const CalendarAddOnKindSchema = z.enum([
   'participatingGroups',
   'poll',
   'signUpList',
+  'daySchedule',
 ]);
 export type CalendarAddOnKind = z.infer<typeof CalendarAddOnKindSchema>;
 
@@ -104,11 +111,27 @@ export const CalendarSignUpListSchema = z.object({
 });
 export type CalendarSignUpList = z.infer<typeof CalendarSignUpListSchema>;
 
+export const CalendarDayScheduleStepSchema = z.object({
+  stepId: z.number().int(),
+  day: z.number().int(),
+  time: ClockTimeSchema,
+  text: z.string(),
+});
+export type CalendarDayScheduleStep = z.infer<typeof CalendarDayScheduleStepSchema>;
+
+export const CalendarDayScheduleSchema = z.object({
+  dayScheduleId: z.number().int(),
+  title: z.string().nullable(),
+  steps: z.array(CalendarDayScheduleStepSchema),
+});
+export type CalendarDaySchedule = z.infer<typeof CalendarDayScheduleSchema>;
+
 export const CalendarEntryAddOnSchema = z.discriminatedUnion('kind', [
   z.object({ kind: z.literal('attendance') }),
   z.object({ kind: z.literal('participatingGroups') }),
   z.object({ kind: z.literal('poll'), poll: CalendarPollSchema }),
   z.object({ kind: z.literal('signUpList'), signUpList: CalendarSignUpListSchema }),
+  z.object({ kind: z.literal('daySchedule'), daySchedule: CalendarDayScheduleSchema }),
 ]);
 export type CalendarEntryAddOn = z.infer<typeof CalendarEntryAddOnSchema>;
 
@@ -249,6 +272,22 @@ export const CalendarSignUpListFormSchema = z.object({
 });
 export type CalendarSignUpListForm = z.infer<typeof CalendarSignUpListFormSchema>;
 
+export const CalendarDayScheduleStepFormSchema = z.object({
+  key: z.string(),
+  stepId: z.number().int().nullable(),
+  day: z.number().int(),
+  time: z.string(),
+  text: z.string(),
+});
+export type CalendarDayScheduleStepForm = z.infer<typeof CalendarDayScheduleStepFormSchema>;
+
+export const CalendarDayScheduleFormSchema = z.object({
+  dayScheduleId: z.number().int().nullable(),
+  title: z.string(),
+  steps: z.array(CalendarDayScheduleStepFormSchema),
+});
+export type CalendarDayScheduleForm = z.infer<typeof CalendarDayScheduleFormSchema>;
+
 export const CalendarAddOnCardFormSchema = z.discriminatedUnion('kind', [
   z.object({ key: z.string(), kind: z.literal('attendance') }),
   z.object({ key: z.string(), kind: z.literal('participatingGroups') }),
@@ -257,6 +296,11 @@ export const CalendarAddOnCardFormSchema = z.discriminatedUnion('kind', [
     key: z.string(),
     kind: z.literal('signUpList'),
     signUpList: CalendarSignUpListFormSchema,
+  }),
+  z.object({
+    key: z.string(),
+    kind: z.literal('daySchedule'),
+    daySchedule: CalendarDayScheduleFormSchema,
   }),
 ]);
 export type CalendarAddOnCardForm = z.infer<typeof CalendarAddOnCardFormSchema>;
@@ -277,6 +321,15 @@ const SIGN_UP_LIST_ISSUE_MESSAGES: Record<CalendarSignUpListIssueCode, string> =
   hintTooLong: `Höchstens ${SIGN_UP_LIST_HINT_MAX_LENGTH} Zeichen.`,
   deadlineTimeMissing: 'Wähle eine Uhrzeit.',
   deadlineAfterStart: 'Eintragen bis darf nicht nach dem Beginn liegen.',
+};
+
+const DAY_SCHEDULE_ISSUE_MESSAGES: Record<CalendarDayScheduleIssueCode, string> = {
+  titleTooLong: `Höchstens ${DAY_SCHEDULE_TITLE_MAX_LENGTH} Zeichen.`,
+  stepsMissing: 'Der Tagesablauf braucht mindestens einen Schritt.',
+  stepTimeMissing: 'Wähle eine Uhrzeit.',
+  stepTextMissing: 'Der Schritt braucht einen Text.',
+  stepTextTooLong: `Höchstens ${DAY_SCHEDULE_STEP_TEXT_MAX_LENGTH} Zeichen.`,
+  stepDayOutside: 'Dieser Tag liegt nicht mehr im Termin.',
 };
 
 export const CalendarEntryFormSchema = z
@@ -317,6 +370,14 @@ export const CalendarEntryFormSchema = z
       ctx.addIssue({
         code: 'custom',
         message: SIGN_UP_LIST_ISSUE_MESSAGES[issue.code],
+        path: issue.path,
+      });
+    }
+
+    for (const issue of toDayScheduleIssues(form.addOns, form)) {
+      ctx.addIssue({
+        code: 'custom',
+        message: DAY_SCHEDULE_ISSUE_MESSAGES[issue.code],
         path: issue.path,
       });
     }

@@ -1,10 +1,11 @@
+import { shiftDay } from '@/lib/day';
 import type {
   CalendarLandmark,
   CalendarRelative,
   CalendarTime,
   CalendarWeekName,
 } from './calendar-agenda';
-import { isoWeekOf, shiftDay, weekdayIndexOf } from './calendar-agenda';
+import { isoWeekOf, weekdayIndexOf } from './calendar-agenda';
 
 export const BOARD_LABEL = 'Termine nach Tagen';
 export const STRIP_LABEL = 'Woche';

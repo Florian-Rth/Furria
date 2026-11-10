@@ -125,6 +125,48 @@ public sealed class CalendarEntryExpectations
                 )
         );
 
+    public Expected ToHaveDaySchedulesAt(params (int Position, string? Title)[] schedules) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    schedules,
+                    (
+                        await dbContext
+                            .CalendarDaySchedules.AsNoTracking()
+                            .Where(schedule => schedule.CalendarEntryId == _calendarEntryId)
+                            .OrderBy(schedule => schedule.Position)
+                            .Select(schedule => new { schedule.Position, schedule.Title })
+                            .ToListAsync(ct)
+                    ).Select(schedule => (schedule.Position, schedule.Title))
+                )
+        );
+
+    public Expected ToHaveDayScheduleSteps(
+        params (int Position, int Day, TimeOnly Time, string Text)[] steps
+    ) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    steps,
+                    (
+                        await dbContext
+                            .CalendarDayScheduleSteps.AsNoTracking()
+                            .Where(step => step.DaySchedule!.CalendarEntryId == _calendarEntryId)
+                            .OrderBy(step => step.DaySchedule!.Position)
+                            .ThenBy(step => step.Day)
+                            .ThenBy(step => step.Time)
+                            .Select(step => new
+                            {
+                                step.DaySchedule!.Position,
+                                step.Day,
+                                step.Time,
+                                step.Text,
+                            })
+                            .ToListAsync(ct)
+                    ).Select(step => (step.Position, step.Day, step.Time, step.Text))
+                )
+        );
+
     public Expected ToHavePeriod(DateTimeOffset startsAt, DateTimeOffset? endsAt) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

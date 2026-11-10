@@ -4,6 +4,7 @@ import type { KkCalendarTimeTone } from '@furria/ui/KkCalendarAgendaTime';
 import type { KkEntryKindGlyphKind } from '@furria/ui/KkEntryKindGlyph';
 import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
 import { toLocalIsoDay, toTimeLabel, toTimeSpanLabel } from '@/lib/calendar-days';
+import { shiftDay } from '@/lib/day';
 import { formatPriceCents, toDoorsOpenLabel, toEventStatusLabel } from '@/lib/event-copy';
 import type { EventCover } from '@/lib/event-cover';
 import { toEventCover } from '@/lib/event-cover';
@@ -22,7 +23,6 @@ import {
   markOf,
   relativeDayOf,
   sectionItemsOf,
-  shiftDay,
   toCalendarTime,
   weekNameOf,
 } from './calendar-agenda';

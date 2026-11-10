@@ -1088,6 +1088,11 @@ recorded on behalf all rely on it; it is never rebuilt from a **poll**. Further 
   brings what to the summer party). Whoever may edit the entry may remove a line, never rewrite it. It has a title and an
   optional hint, closes like a poll, an entry may hold several, and it is never asked on Start. It
   has no prepared slots.
+- **Day schedule** — the plan of a long day: steps of a time and a short text, an optional title,
+  always shown sorted by time. A step belongs to a day of the entry (counted from its start day),
+  so moving the entry moves its schedule with it; a day only appears once the entry spans several.
+  Nobody answers it, it never closes, an entry may hold several, and it is never on Start. Never
+  called *Ablauf* — that is the evening's running order.
 _UI copy_: Baustein, Baustein hinzufügen; Zu-/Absage, Umfrage, Eintragsliste, Mitwirkende Gruppen,
 Tagesablauf; Anonym,
 Abstimmen bis, Eintragen bis

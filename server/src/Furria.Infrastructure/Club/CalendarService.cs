@@ -296,6 +296,16 @@ public sealed partial class CalendarService
         )
             return Result<CalendarEntryWriteResult>.Validation(listRefusal);
 
+        if (
+            CalendarDayScheduleRecords.ReconcileDaySchedules(
+                entry,
+                command.AddOns,
+                ClubClock.DaysSpanned(command.StartsAt, command.EndsAt)
+            ) is
+            { } scheduleRefusal
+        )
+            return Result<CalendarEntryWriteResult>.Validation(scheduleRefusal);
+
         _dbContext.CalendarEntries.Add(entry);
 
         var saved = await _dbContext.SaveOrConflictAsync(ct);
@@ -362,6 +372,16 @@ public sealed partial class CalendarService
             CalendarSignUpListRecords.ReconcileSignUpLists(entry, command.AddOns) is { } listRefusal
         )
             return Result<CalendarEntryWriteResult>.Validation(listRefusal);
+
+        if (
+            CalendarDayScheduleRecords.ReconcileDaySchedules(
+                entry,
+                command.AddOns,
+                ClubClock.DaysSpanned(command.StartsAt, command.EndsAt)
+            ) is
+            { } scheduleRefusal
+        )
+            return Result<CalendarEntryWriteResult>.Validation(scheduleRefusal);
 
         if (DropsAttendance(entry, addOnKinds))
             await DiscardAnswersAsync(entry.Id, ct);
@@ -683,7 +703,10 @@ public sealed partial class CalendarService
                 row.AddOnPositions.Attendance,
                 row.AddOnPositions.ParticipatingGroups,
                 extras.Polls.TryGetValue(row.CalendarEntryId, out var polls) ? polls : [],
-                extras.SignUpLists.TryGetValue(row.CalendarEntryId, out var lists) ? lists : []
+                extras.SignUpLists.TryGetValue(row.CalendarEntryId, out var lists) ? lists : [],
+                extras.DaySchedules.TryGetValue(row.CalendarEntryId, out var schedules)
+                    ? schedules
+                    : []
             ),
             ResponseCount = row.ResponseCount,
             Description = row.Description,
@@ -746,6 +769,8 @@ public sealed partial class CalendarService
             .Include(row => row.Polls)
                 .ThenInclude(poll => poll.Options)
             .Include(row => row.SignUpLists)
+            .Include(row => row.DaySchedules)
+                .ThenInclude(schedule => schedule.Steps)
             .AsSplitQuery()
             .SingleOrDefaultAsync(row => row.Id == calendarEntryId, ct);
     }
@@ -948,7 +973,8 @@ public sealed partial class CalendarService
         return new EntryExtras(
             await AnswersOfAsync(personId, calendarEntryIds, ct),
             await _dbContext.PollsOfEntriesAsync(calendarEntryIds, personId, now, ct),
-            await _dbContext.SignUpListsOfEntriesAsync(calendarEntryIds, personId, now, ct)
+            await _dbContext.SignUpListsOfEntriesAsync(calendarEntryIds, personId, now, ct),
+            await _dbContext.DaySchedulesOfEntriesAsync(calendarEntryIds, ct)
         );
     }
 
@@ -1011,13 +1037,15 @@ public sealed partial class CalendarService
     private sealed record EntryExtras(
         IReadOnlyDictionary<int, AttendanceAnswer> Answers,
         IReadOnlyDictionary<int, IReadOnlyList<PlacedPoll>> Polls,
-        IReadOnlyDictionary<int, IReadOnlyList<PlacedSignUpList>> SignUpLists
+        IReadOnlyDictionary<int, IReadOnlyList<PlacedSignUpList>> SignUpLists,
+        IReadOnlyDictionary<int, IReadOnlyList<PlacedDaySchedule>> DaySchedules
     )
     {
         public static readonly EntryExtras Nothing = new(
             new Dictionary<int, AttendanceAnswer>(),
             new Dictionary<int, IReadOnlyList<PlacedPoll>>(),
-            new Dictionary<int, IReadOnlyList<PlacedSignUpList>>()
+            new Dictionary<int, IReadOnlyList<PlacedSignUpList>>(),
+            new Dictionary<int, IReadOnlyList<PlacedDaySchedule>>()
         );
     }
 

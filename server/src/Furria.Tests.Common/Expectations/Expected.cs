@@ -89,6 +89,9 @@ public sealed class Expected
     public CalendarSignUpListExpectations CalendarSignUpList(int signUpListId) =>
         new(this, signUpListId);
 
+    public CalendarDayScheduleExpectations CalendarDaySchedule(int dayScheduleId) =>
+        new(this, dayScheduleId);
+
     public CalendarEntryExpectations CalendarEntry(int calendarEntryId) =>
         new(this, calendarEntryId);
 

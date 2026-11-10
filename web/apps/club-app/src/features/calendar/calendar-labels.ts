@@ -9,10 +9,11 @@ import {
   toTimeLabel,
   toTimeSpanLabel,
 } from '@/lib/calendar-days';
-import { toIsoDay } from '@/lib/day';
+import { shiftDay, toIsoDay } from '@/lib/day';
 import { CALENDAR_ADD_ON_LABELS } from './calendar-add-ons';
 import type { CalendarOwnerOption } from './calendar-authoring';
 import { AUDIENCE_ORDER, AUTHORED_KINDS, NO_VENUE_ID } from './calendar-authoring';
+import { isIsoDay } from './calendar-day-schedules';
 import type { CalendarGroupShortcut } from './calendar-people';
 import { toPersonName } from './calendar-people';
 import type {
@@ -247,3 +248,31 @@ export const SIGN_UP_LINE_SAVE_FAILED_MESSAGE = 'Dein Eintrag wurde nicht gespei
 export const SIGN_UP_LINE_DELETE_FAILED_MESSAGE = 'Dein Eintrag wurde nicht gelöscht.';
 export const SIGN_UP_LINE_REMOVE_FAILED_MESSAGE = 'Der Eintrag wurde nicht entfernt.';
 export const SIGN_UP_LIST_CLOSE_FAILED_MESSAGE = 'Die Liste wurde nicht geschlossen.';
+
+export const toStepCountLabel = (count: number): string | undefined =>
+  count === 0 ? undefined : byCount(count, '1 Schritt', `${count} Schritte`);
+
+export const toDayScheduleRemoveLabel = (title: string): string =>
+  title.trim() === '' ? 'Tagesablauf entfernen' : `Tagesablauf „${title.trim()}“ entfernen`;
+
+export const toStepRemoveLabel = (position: number): string => `Schritt ${position} entfernen`;
+
+export const toStepTextLabel = (position: number): string => `Schritt ${position}`;
+
+export const toScheduleDayLabel = (startDay: string, day: number): string =>
+  isIsoDay(startDay) ? toIsoDayLabel(shiftDay(startDay, day)) : `Tag ${day + 1}`;
+
+export const toScheduleDayOptions = (
+  startDay: string,
+  span: number,
+  heldDays: readonly number[],
+): KkSelectOption[] => {
+  const days = [...new Set([...Array.from({ length: span }, (_, day) => day), ...heldDays])].sort(
+    (left, right) => left - right,
+  );
+
+  return days.map((day) => ({ value: String(day), label: toScheduleDayLabel(startDay, day) }));
+};
+
+export const toScheduleStepsLabel = (title: string | null): string =>
+  title === null ? 'Schritte' : `Schritte: ${title}`;

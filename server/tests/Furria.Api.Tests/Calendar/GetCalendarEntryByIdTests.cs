@@ -384,6 +384,44 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_ShowTheStepsByDayThenTime_When_TheEntryCarriesADaySchedule()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildPollsAsync(ct);
+
+                var (response, result) = await ReadAsync(
+                    ctx,
+                    "alice",
+                    ctx.Club.CalendarEntries.IdOf("weekend-trip"),
+                    ct
+                );
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                var schedule = Assert.Single(
+                    result
+                        .Entry.AddOns.Select(addOn => addOn.DaySchedule)
+                        .OfType<CalendarDayScheduleDto>()
+                );
+                Assert.Equal("Ausflug", schedule.Title);
+                Assert.Equal(
+                    [
+                        (0, new TimeOnly(8, 0), "Abfahrt"),
+                        (0, new TimeOnly(20, 0), "Abendessen"),
+                        (1, new TimeOnly(9, 0), "Frühstück"),
+                        (1, new TimeOnly(15, 0), "Rückfahrt"),
+                    ],
+                    schedule.Steps.Select(step => (step.Day, step.Time, step.Text))
+                );
+            }
+        );
+    }
+
+    [Fact]
     public async Task Should_ShowTheLinesInSignUpOrderMarkingHerOwn_When_TheEntryCarriesAList()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -462,6 +500,41 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                                 "Aufbau",
                                 closedAt: Now.AddDays(-1),
                                 position: 4
+                            )
+                            .AddCalendarEntry(
+                                "weekend-trip",
+                                "Wochenendfahrt",
+                                AtTheMeeting.AddDays(3),
+                                AtTheMeeting.AddDays(4)
+                            )
+                            .AddCalendarDaySchedule("weekend-plan", "weekend-trip", "Ausflug")
+                            .AddCalendarDayScheduleStep(
+                                "weekend-back",
+                                "weekend-plan",
+                                1,
+                                new TimeOnly(15, 0),
+                                "Rückfahrt"
+                            )
+                            .AddCalendarDayScheduleStep(
+                                "weekend-dinner",
+                                "weekend-plan",
+                                0,
+                                new TimeOnly(20, 0),
+                                "Abendessen"
+                            )
+                            .AddCalendarDayScheduleStep(
+                                "weekend-breakfast",
+                                "weekend-plan",
+                                1,
+                                new TimeOnly(9, 0),
+                                "Frühstück"
+                            )
+                            .AddCalendarDayScheduleStep(
+                                "weekend-leave",
+                                "weekend-plan",
+                                0,
+                                new TimeOnly(8, 0),
+                                "Abfahrt"
                             )
                     ),
             ct

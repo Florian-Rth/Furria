@@ -6,11 +6,11 @@ import type {
 } from '@furria/ui/calendar-strip-types';
 import { kkTokens } from '@furria/ui/tokens';
 import { useEffect, useRef, useState } from 'react';
+import { shiftDay } from '@/lib/day';
 import {
   mondayOf,
   monthDaysOf,
   monthStartOf,
-  shiftDay,
   shiftMonth,
   toDayCells,
   weekDaysOf,

@@ -2,7 +2,7 @@ import type { KkGroupTone } from '@furria/ui/group-tone';
 import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import { toGroupTone } from '@/features/groups/group-identity';
 import { sortRunningFirst, toLocalIsoDay, toTimeLabel } from '@/lib/calendar-days';
-import { fromIsoDay, toIsoDay } from '@/lib/day';
+import { daysBetween, fromIsoDay, isoDayPartsOf, shiftDay, toIsoDay } from '@/lib/day';
 import type { CalendarDayMarkKey } from './calendar-board';
 import { dayMarkOf, toEntryDays } from './calendar-board';
 import type { CalendarEntry, UsualTraining } from './schemas';
@@ -10,7 +10,6 @@ import type { CalendarEntry, UsualTraining } from './schemas';
 export const DEFAULT_REACH_DAYS = 120;
 export const MAX_SPAN_DAYS = 399;
 
-const MS_PER_DAY = 86_400_000;
 const DAYS_IN_WEEK = 7;
 const LANDING_TAIL_DAYS = 28;
 const LATER_STEP_DAYS = 56;
@@ -23,21 +22,6 @@ export interface CalendarWindow {
   from: string;
   to: string;
 }
-
-const partsOf = (isoDay: string): [number, number, number] => [
-  Number(isoDay.slice(0, 4)),
-  Number(isoDay.slice(5, 7)) - 1,
-  Number(isoDay.slice(8, 10)),
-];
-
-export const shiftDay = (isoDay: string, days: number): string => {
-  const [year, month, day] = partsOf(isoDay);
-
-  return toIsoDay(new Date(year, month, day + days));
-};
-
-export const daysBetween = (from: string, to: string): number =>
-  Math.round((Date.UTC(...partsOf(to)) - Date.UTC(...partsOf(from))) / MS_PER_DAY);
 
 export const weekdayIndexOf = (isoDay: string): number => (fromIsoDay(isoDay).getDay() + 6) % 7;
 
@@ -54,7 +38,7 @@ export const weekDaysOf = (monday: string): string[] =>
 
 export const monthDaysOf = (monthStart: string): string[] => {
   const first = mondayOf(monthStart);
-  const [year, month] = partsOf(monthStart);
+  const [year, month] = isoDayPartsOf(monthStart);
   const last = toIsoDay(new Date(year, month + 1, 0));
   const span = daysBetween(first, last) + 1;
   const weeks = Math.ceil(span / DAYS_IN_WEEK);
@@ -65,7 +49,7 @@ export const monthDaysOf = (monthStart: string): string[] => {
 export const monthStartOf = (isoDay: string): string => `${isoDay.slice(0, 7)}-01`;
 
 export const shiftMonth = (monthStart: string, months: number): string => {
-  const [year, month] = partsOf(monthStart);
+  const [year, month] = isoDayPartsOf(monthStart);
 
   return toIsoDay(new Date(year, month + months, 1));
 };

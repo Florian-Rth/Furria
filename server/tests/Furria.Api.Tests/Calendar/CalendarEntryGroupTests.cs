@@ -471,6 +471,7 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
             Kind = kind,
             Poll = null,
             SignUpList = null,
+            DaySchedule = null,
         };
 
     private static PutCalendarEntryAddOnDataDto PutAddOn(CalendarEntryAddOnKind kind) =>
@@ -479,5 +480,6 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
             Kind = kind,
             Poll = null,
             SignUpList = null,
+            DaySchedule = null,
         };
 }

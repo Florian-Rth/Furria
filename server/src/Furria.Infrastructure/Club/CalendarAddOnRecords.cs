@@ -11,7 +11,8 @@ internal static class CalendarAddOnRecords
         int? attendancePosition,
         int? participatingGroupsPosition,
         IReadOnlyList<PlacedPoll> polls,
-        IReadOnlyList<PlacedSignUpList> signUpLists
+        IReadOnlyList<PlacedSignUpList> signUpLists,
+        IReadOnlyList<PlacedDaySchedule> daySchedules
     ) =>
         [
             .. new (int? Position, CalendarEntryAddOnDetails AddOn)[]
@@ -32,6 +33,14 @@ internal static class CalendarAddOnRecords
                         (Position: (int?)list.Position, AddOn: SignUpListAddOn(list.Details))
                     )
                 )
+                .Concat(
+                    daySchedules.Select(schedule =>
+                        (
+                            Position: (int?)schedule.Position,
+                            AddOn: DayScheduleAddOn(schedule.Details)
+                        )
+                    )
+                )
                 .Where(addOn => addOn.Position is not null)
                 .OrderBy(addOn => addOn.Position)
                 .Select(addOn => addOn.AddOn),
@@ -49,6 +58,7 @@ internal static class CalendarAddOnRecords
             Kind = kind,
             Poll = null,
             SignUpList = null,
+            DaySchedule = null,
         };
 
     [Pure]
@@ -58,6 +68,7 @@ internal static class CalendarAddOnRecords
             Kind = CalendarEntryAddOnKind.Poll,
             Poll = poll,
             SignUpList = null,
+            DaySchedule = null,
         };
 
     [Pure]
@@ -67,5 +78,18 @@ internal static class CalendarAddOnRecords
             Kind = CalendarEntryAddOnKind.SignUpList,
             Poll = null,
             SignUpList = list,
+            DaySchedule = null,
+        };
+
+    [Pure]
+    private static CalendarEntryAddOnDetails DayScheduleAddOn(
+        CalendarDayScheduleDetails schedule
+    ) =>
+        new()
+        {
+            Kind = CalendarEntryAddOnKind.DaySchedule,
+            Poll = null,
+            SignUpList = null,
+            DaySchedule = schedule,
         };
 }

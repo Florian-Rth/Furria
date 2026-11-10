@@ -1,10 +1,10 @@
 import type { KkCalendarDayData, KkCalendarTravel } from '@furria/ui/calendar-strip-types';
 import { useState } from 'react';
+import { shiftDay } from '@/lib/day';
 import {
   mondayOf,
   monthDaysOf,
   monthStartOf,
-  shiftDay,
   shiftMonth,
   toDayCells,
   weekDaysOf,
