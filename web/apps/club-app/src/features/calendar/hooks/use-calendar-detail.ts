@@ -43,7 +43,7 @@ export const useCalendarDetail = (entry: CalendarEntry): CalendarDetail => {
           label: toAttendanceChoiceLabel(entry.title),
           value: choice.answer,
           error: choice.failureMessage,
-          disabled: choice.isInert,
+          disabled: choice.isInert || entry.attendance?.isClosed === true,
           choose: choice.choose,
         }
       : null,

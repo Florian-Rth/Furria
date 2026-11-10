@@ -97,7 +97,6 @@ public sealed class GetGroupCalendar : Endpoint<GetGroupCalendarRequest, GetGrou
             AudiencePeople = [.. entry.AudiencePeople.Select(ToDto)],
             AsksForResponse = entry.AsksForResponse,
             AddOns = [.. entry.AddOns.Select(addOn => addOn.Kind)],
-            ResponseCount = entry.ResponseCount,
             Description = entry.Description,
             ViewerAnswer = entry.ViewerAnswer,
             ViewerMayAnswer = viewerMayAnswer,
@@ -214,8 +213,6 @@ public sealed record GroupCalendarEntryDto
     public required bool AsksForResponse { get; init; }
 
     public required IReadOnlyList<CalendarEntryAddOnKind> AddOns { get; init; }
-
-    public required int ResponseCount { get; init; }
 
     public required string? Description { get; init; }
 

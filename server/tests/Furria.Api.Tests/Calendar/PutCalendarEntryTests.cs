@@ -279,6 +279,44 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_KeepAnArchivedParticipatingGroup_When_TheEntryAlreadyHoldsIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("garde-parade");
+
+        var client = await ctx.Identity.ClientForAsync("chris", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(
+            new()
+            {
+                CalendarEntryId = entryId,
+                Title = DanceGuardPerformance,
+                Description = null,
+                OwnerGroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
+                VenueId = null,
+                StartsAt = TrainingStart.AddDays(2),
+                EndsAt = null,
+                Kind = CalendarEntryKind.Trip,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
+                AddOns = [PutAddOn(CalendarEntryAddOnKind.ParticipatingGroups)],
+                ParticipatingGroupIds = [ctx.Groups.Groups.IdOf("altgarde")],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(entryId)
+            .ToHaveTitle(DanceGuardPerformance)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_RefuseTheVenue_When_ItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -1079,6 +1117,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                                 "Trainer",
                                 JoinedIn2017
                             )
+                            .AddGroup("altgarde", "Altgarde", archivedOn: ArchivedIn2026)
                             .AddGroupAdmin(
                                 "dana-tanzgarde",
                                 "tanzgarde",
@@ -1097,6 +1136,15 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                                 TrainingEnd,
                                 kind: CalendarEntryKind.Training,
                                 ownerGroupAlias: "tanzgarde"
+                            )
+                            .AddCalendarEntry(
+                                "garde-parade",
+                                DanceGuardTraining,
+                                TrainingStart.AddDays(2),
+                                kind: CalendarEntryKind.Trip,
+                                ownerGroupAlias: "tanzgarde",
+                                audience: CalendarEntryAudience.Club,
+                                participatingGroupAliases: ["altgarde"]
                             )
                             .AddCalendarEntry(
                                 "abendprobe",

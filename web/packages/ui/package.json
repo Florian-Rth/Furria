@@ -52,6 +52,7 @@
     "./KkBandSection": "./src/KkBandSection/KkBandSection.tsx",
     "./KkBandWatermark": "./src/KkBandWatermark.tsx",
     "./KkBannerDesk": "./src/KkBannerDesk/KkBannerDesk.tsx",
+    "./KkAnswerRoll": "./src/KkAnswerRoll/KkAnswerRoll.tsx",
     "./KkBottomDrawer": "./src/KkBottomDrawer/KkBottomDrawer.tsx",
     "./KkBrandLockup": "./src/KkBrandLockup.tsx",
     "./KkBrandStage": "./src/KkBrandStage/KkBrandStage.tsx",

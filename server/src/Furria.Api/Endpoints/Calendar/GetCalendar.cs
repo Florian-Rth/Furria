@@ -217,7 +217,7 @@ public sealed record CalendarEntryDto
 
     public required IReadOnlyList<CalendarEntryAddOnDto> AddOns { get; init; }
 
-    public required int ResponseCount { get; init; }
+    public required CalendarAttendanceDto? Attendance { get; init; }
 
     public required string? Description { get; init; }
 
@@ -247,11 +247,92 @@ public sealed record CalendarEntryDto
             AudiencePeople = [.. entry.AudiencePeople.Select(AudiencePersonDto.From)],
             AsksForResponse = entry.AsksForResponse,
             AddOns = [.. entry.AddOns.Select(CalendarEntryAddOnDto.From)],
-            ResponseCount = entry.ResponseCount,
+            Attendance = entry.Attendance is { } attendance
+                ? CalendarAttendanceDto.From(attendance)
+                : null,
             Description = entry.Description,
             ViewerAnswer = entry.ViewerAnswer,
             IsRunning = entry.IsRunning,
             Event = entry.Event is { } facts ? CalendarEventFactsDto.From(facts) : null,
+        };
+}
+
+public sealed record CalendarAttendanceDto
+{
+    public required bool IsClosed { get; init; }
+
+    public required int Yes { get; init; }
+
+    public required int Maybe { get; init; }
+
+    public required int No { get; init; }
+
+    public required IReadOnlyList<CalendarAttendanceAnswerDto>? Answers { get; init; }
+
+    public required IReadOnlyList<CalendarAttendancePersonDto>? NotAnswered { get; init; }
+
+    [Pure]
+    public static CalendarAttendanceDto From(CalendarAttendanceDetails attendance) =>
+        new()
+        {
+            IsClosed = attendance.IsClosed,
+            Yes = attendance.Yes,
+            Maybe = attendance.Maybe,
+            No = attendance.No,
+            Answers = attendance.Answers is { } answers
+                ? [.. answers.Select(CalendarAttendanceAnswerDto.From)]
+                : null,
+            NotAnswered = attendance.NotAnswered is { } people
+                ? [.. people.Select(CalendarAttendancePersonDto.From)]
+                : null,
+        };
+}
+
+public sealed record CalendarAttendanceAnswerDto
+{
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
+
+    public required AttendanceAnswer Answer { get; init; }
+
+    public required string? RecordedByFirstName { get; init; }
+
+    public required string? RecordedByLastName { get; init; }
+
+    public required DateTimeOffset AnsweredAt { get; init; }
+
+    [Pure]
+    public static CalendarAttendanceAnswerDto From(CalendarAttendanceAnswerDetails answer) =>
+        new()
+        {
+            PersonId = answer.PersonId,
+            FirstName = answer.FirstName,
+            LastName = answer.LastName,
+            Answer = answer.Answer,
+            RecordedByFirstName = answer.RecordedByFirstName,
+            RecordedByLastName = answer.RecordedByLastName,
+            AnsweredAt = answer.AnsweredAt,
+        };
+}
+
+public sealed record CalendarAttendancePersonDto
+{
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
+
+    [Pure]
+    public static CalendarAttendancePersonDto From(CalendarAttendancePerson person) =>
+        new()
+        {
+            PersonId = person.PersonId,
+            FirstName = person.FirstName,
+            LastName = person.LastName,
         };
 }
 

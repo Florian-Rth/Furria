@@ -153,6 +153,31 @@ export const CalendarEventFactsSchema = z.object({
 });
 export type CalendarEventFacts = z.infer<typeof CalendarEventFactsSchema>;
 
+export const CalendarAttendancePersonSchema = z.object({
+  personId: z.number().int(),
+  firstName: z.string(),
+  lastName: z.string(),
+});
+export type CalendarAttendancePerson = z.infer<typeof CalendarAttendancePersonSchema>;
+
+export const CalendarAttendanceAnswerSchema = CalendarAttendancePersonSchema.extend({
+  answer: AttendanceAnswerSchema,
+  recordedByFirstName: z.string().nullable(),
+  recordedByLastName: z.string().nullable(),
+  answeredAt: z.iso.datetime({ offset: true }),
+});
+export type CalendarAttendanceAnswer = z.infer<typeof CalendarAttendanceAnswerSchema>;
+
+export const CalendarAttendanceSchema = z.object({
+  isClosed: z.boolean(),
+  yes: z.number().int(),
+  maybe: z.number().int(),
+  no: z.number().int(),
+  answers: z.array(CalendarAttendanceAnswerSchema).nullable(),
+  notAnswered: z.array(CalendarAttendancePersonSchema).nullable(),
+});
+export type CalendarAttendance = z.infer<typeof CalendarAttendanceSchema>;
+
 export const CalendarEntrySchema = z.object({
   calendarEntryId: z.number().int(),
   title: z.string(),
@@ -170,7 +195,7 @@ export const CalendarEntrySchema = z.object({
   audiencePeople: z.array(AudiencePersonSchema),
   asksForResponse: z.boolean(),
   addOns: z.array(CalendarEntryAddOnSchema),
-  responseCount: z.number().int(),
+  attendance: CalendarAttendanceSchema.nullable(),
   description: z.string().nullable(),
   viewerAnswer: AttendanceAnswerSchema.nullable(),
   isRunning: z.boolean(),

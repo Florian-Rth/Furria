@@ -30,7 +30,7 @@ public static class CalendarPushRules
     ) =>
         reason == CalendarPushReason.AsksForResponse
             ? startsAt > now
-            : EndOf(startsAt, endsAt) > now;
+            : CalendarAddOnClosing.EntryEndOf(startsAt, endsAt) > now;
 
     [Pure]
     public static bool MayConcern(
@@ -52,8 +52,4 @@ public static class CalendarPushRules
         TimeSpan.FromTicks(
             Math.Clamp((startsAt - now).Ticks, ShortestTimeToLive.Ticks, LongestTimeToLive.Ticks)
         );
-
-    [Pure]
-    private static DateTimeOffset EndOf(DateTimeOffset startsAt, DateTimeOffset? endsAt) =>
-        endsAt ?? startsAt.AddHours(CalendarDefaults.OpenEndedHours);
 }

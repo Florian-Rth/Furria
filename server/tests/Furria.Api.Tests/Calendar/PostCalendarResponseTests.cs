@@ -147,7 +147,7 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_TakeTheAnswer_When_TheEntryIsAlreadyPast()
+    public async Task Should_RefuseTheAnswer_When_TheEntryIsOver()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -164,11 +164,11 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
                     AttendanceAnswer.No
                 );
 
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+                Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
 
                 await ctx
                     .Expected.AttendanceResponsesFor(ctx.Club.CalendarEntries.IdOf("letzter-ball"))
-                    .ToCarryAnswerFrom(ctx.Identity.People.IdOf("alice"), AttendanceAnswer.No)
+                    .ToCarryNoAnswerFrom(ctx.Identity.People.IdOf("alice"))
                     .AssertAsync(ct);
             }
         );

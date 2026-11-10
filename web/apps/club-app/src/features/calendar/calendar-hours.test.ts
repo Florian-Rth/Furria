@@ -20,7 +20,7 @@ const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
   audiencePeople: [],
   asksForResponse: false,
   addOns: [],
-  responseCount: 0,
+  attendance: null,
   description: null,
   viewerAnswer: null,
   isRunning: false,

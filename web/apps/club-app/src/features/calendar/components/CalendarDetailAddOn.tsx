@@ -1,11 +1,13 @@
 import { KkCalendarAgenda } from '@furria/ui/KkCalendarAgenda';
 import type { KkCalendarLineGroup } from '@furria/ui/KkCalendarAgendaLine';
 import { KkCalendarDetail } from '@furria/ui/KkCalendarDetail';
+import Stack from '@mui/material/Stack';
 import type { FC, ReactNode } from 'react';
 import { ATTENDANCE_LABELS } from '@/lib/calendar-copy';
 import { CALENDAR_ADD_ON_ICONS, CALENDAR_ADD_ON_LABELS } from '../calendar-add-ons';
 import type { CalendarDetailAnswer } from '../hooks/use-calendar-detail';
-import type { CalendarAddOnKind, CalendarEntryAddOn } from '../schemas';
+import type { CalendarAddOnKind, CalendarAttendance, CalendarEntryAddOn } from '../schemas';
+import { CalendarAttendanceRoll } from './CalendarAttendanceRoll';
 import { CalendarDetailDaySchedule } from './CalendarDetailDaySchedule';
 import { CalendarDetailPoll } from './CalendarDetailPoll';
 import { CalendarDetailSignUpList } from './CalendarDetailSignUpList';
@@ -14,6 +16,7 @@ import { CalendarGroupTags } from './CalendarGroupTags';
 interface CalendarDetailAddOnProps {
   addOn: CalendarEntryAddOn;
   answer: CalendarDetailAnswer | null;
+  attendance: CalendarAttendance | null;
   participatingGroups: readonly KkCalendarLineGroup[];
   mayModerate: boolean;
   startsAt: string;
@@ -23,6 +26,7 @@ interface CalendarDetailAddOnProps {
 export const CalendarDetailAddOn: FC<CalendarDetailAddOnProps> = ({
   addOn,
   answer,
+  attendance,
   participatingGroups,
   mayModerate,
   startsAt,
@@ -39,6 +43,13 @@ export const CalendarDetailAddOn: FC<CalendarDetailAddOnProps> = ({
         disabled={answer.disabled}
       />
     );
+  const roll = attendance === null ? null : <CalendarAttendanceRoll attendance={attendance} />;
+  const attendanceContent = (
+    <Stack sx={{ gap: 1.5, minWidth: 0 }}>
+      {choice}
+      {roll}
+    </Stack>
+  );
   const poll =
     addOn.kind === 'poll' ? <CalendarDetailPoll poll={addOn.poll} mayClose={mayModerate} /> : null;
   const signUpList =
@@ -50,7 +61,7 @@ export const CalendarDetailAddOn: FC<CalendarDetailAddOnProps> = ({
       <CalendarDetailDaySchedule schedule={addOn.daySchedule} startsAt={startsAt} endsAt={endsAt} />
     ) : null;
   const contents: Record<CalendarAddOnKind, ReactNode> = {
-    attendance: choice,
+    attendance: attendanceContent,
     participatingGroups: <CalendarGroupTags groups={participatingGroups} />,
     poll,
     signUpList,

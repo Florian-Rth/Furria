@@ -216,7 +216,9 @@ describe('toDiscardedAnswerCount', () => {
   ];
 
   it.each(cases)('discards for %s', (_case, card, held, expected) => {
-    expect(toDiscardedAnswerCount(card, { addOns: held, responseCount: 4 })).toBe(expected);
+    expect(
+      toDiscardedAnswerCount(card, { addOns: held, attendance: { yes: 2, maybe: 1, no: 1 } }),
+    ).toBe(expected);
   });
 
   it('discards nothing without a held entry', () => {

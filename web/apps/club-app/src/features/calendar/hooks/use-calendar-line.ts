@@ -26,11 +26,13 @@ const stateOf = (
   if (!entry.asksForResponse || !primary) {
     return 'none';
   }
+  const isClosed = entry.attendance?.isClosed === true;
+
   if (answer === null) {
-    return isOver(entry, nowMs) ? 'none' : 'choice';
+    return isClosed || isOver(entry, nowMs) ? 'none' : 'choice';
   }
 
-  return reopened ? 'choice' : 'badge';
+  return reopened && !isClosed ? 'choice' : 'badge';
 };
 
 export const useCalendarLine = (

@@ -18,6 +18,7 @@ internal static class EntryFactsRows
             ),
             entry.Kind,
             entry.StartsAt,
+            entry.EndsAt,
             entry.AsksForResponse
         );
 }
@@ -35,6 +36,7 @@ internal sealed record EntryFactsRow(
     AudienceRow Audience,
     CalendarEntryKind Kind,
     DateTimeOffset StartsAt,
+    DateTimeOffset? EndsAt,
     bool AsksForResponse
 )
 {

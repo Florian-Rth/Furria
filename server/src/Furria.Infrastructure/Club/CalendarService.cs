@@ -141,8 +141,9 @@ public sealed partial class CalendarService
             return Result<CalendarEntrySummary>.NotFound(UnknownEntryMessage);
 
         var extras = await ExtrasOfAsync(viewer.PersonId, [row], now, ct);
+        var roll = await AttendanceRollOfAsync(row, viewerAccountId, today, ct);
 
-        return Result<CalendarEntrySummary>.Success(ToSummary(row, extras, now));
+        return Result<CalendarEntrySummary>.Success(ToSummary(row, extras, now, roll));
     }
 
     public async Task<IReadOnlyList<GroupCalendarEntrySummary>> GetGroupEntriesAsync(
@@ -273,7 +274,7 @@ public sealed partial class CalendarService
 
         var refusal = await PlacementRefusalAsync(
             new Placement(command.OwnerGroupId, command.VenueId, participatingGroupIds, audience),
-            AudienceHeld.Nothing,
+            HeldLinks.Nothing,
             ct
         );
 
@@ -372,7 +373,8 @@ public sealed partial class CalendarService
 
         var refusal = await PlacementRefusalAsync(
             new Placement(command.OwnerGroupId, command.VenueId, participatingGroupIds, audience),
-            new AudienceHeld(
+            new HeldLinks(
+                [.. entry.ParticipatingGroups.Select(link => link.GroupId)],
                 [.. entry.AudienceGroups.Select(link => link.GroupId)],
                 [.. entry.AudiencePeople.Select(link => link.PersonId)]
             ),
@@ -487,6 +489,15 @@ public sealed partial class CalendarService
         if (!entry.AsksForResponse)
             return Result.Validation(NoResponseWantedMessage);
 
+        if (
+            CalendarAddOnClosing.IsAttendanceClosed(
+                entry.StartsAt,
+                entry.EndsAt,
+                _timeProvider.GetUtcNow()
+            )
+        )
+            return Result.Validation(AnswersClosedMessage);
+
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         if (!await _dbContext.StillAsksForResponseAsync(command.CalendarEntryId, ct))
             return Result.Validation(NoResponseWantedMessage);
@@ -560,7 +571,18 @@ public sealed partial class CalendarService
             ),
             entry.AsksForResponse,
             new AddOnPositionsRow(entry.AttendancePosition, entry.ParticipatingGroupsPosition),
-            responses.Count(response => response.CalendarEntryId == entry.Id),
+            new AttendanceCountsRow(
+                responses.Count(response =>
+                    response.CalendarEntryId == entry.Id && response.Answer == AttendanceAnswer.Yes
+                ),
+                responses.Count(response =>
+                    response.CalendarEntryId == entry.Id
+                    && response.Answer == AttendanceAnswer.Maybe
+                ),
+                responses.Count(response =>
+                    response.CalendarEntryId == entry.Id && response.Answer == AttendanceAnswer.No
+                )
+            ),
             entry.Description,
             entry.StartsAt <= now
                 && (entry.EndsAt == null ? entry.StartsAt > openEndedCutoff : entry.EndsAt > now),
@@ -704,7 +726,12 @@ public sealed partial class CalendarService
             LastName = row.LastName,
         };
 
-    private CalendarEntrySummary ToSummary(EntryRow row, EntryExtras extras, DateTimeOffset now) =>
+    private CalendarEntrySummary ToSummary(
+        EntryRow row,
+        EntryExtras extras,
+        DateTimeOffset now,
+        AttendanceRoll? roll = null
+    ) =>
         new()
         {
             CalendarEntryId = row.CalendarEntryId,
@@ -731,7 +758,7 @@ public sealed partial class CalendarService
                     ? schedules
                     : []
             ),
-            ResponseCount = row.ResponseCount,
+            Attendance = row.AsksForResponse ? ToAttendance(row, now, roll) : null,
             Description = row.Description,
             ViewerAnswer = extras.Answers.TryGetValue(row.CalendarEntryId, out var answer)
                 ? answer
@@ -740,6 +767,22 @@ public sealed partial class CalendarService
             Event = row.Event is { } facts
                 ? ToEventFacts(facts, now, EventPictureOf(row.CalendarEntryId, facts))
                 : null,
+        };
+
+    [Pure]
+    private static CalendarAttendanceDetails ToAttendance(
+        EntryRow row,
+        DateTimeOffset now,
+        AttendanceRoll? roll
+    ) =>
+        new()
+        {
+            IsClosed = CalendarAddOnClosing.IsAttendanceClosed(row.StartsAt, row.EndsAt, now),
+            Yes = row.AttendanceCounts.Yes,
+            Maybe = row.AttendanceCounts.Maybe,
+            No = row.AttendanceCounts.No,
+            Answers = roll?.Answers,
+            NotAnswered = roll?.NotAnswered,
         };
 
     private PictureDetails? EventPictureOf(int eventId, EventFactsRow facts) =>
@@ -843,7 +886,7 @@ public sealed partial class CalendarService
 
     private async Task<string?> PlacementRefusalAsync(
         Placement placement,
-        AudienceHeld held,
+        HeldLinks held,
         CancellationToken ct
     )
     {
@@ -851,7 +894,7 @@ public sealed partial class CalendarService
             return UnknownOwnerGroupMessage;
 
         return await GroupsRefusalAsync(
-                placement.ParticipatingGroupIds,
+                [.. placement.ParticipatingGroupIds.Except(held.ParticipatingGroupIds)],
                 ArchivedParticipatingGroupMessage,
                 ct
             )
@@ -1037,7 +1080,7 @@ public sealed partial class CalendarService
         AudienceNamesRow Audience,
         bool AsksForResponse,
         AddOnPositionsRow AddOnPositions,
-        int ResponseCount,
+        AttendanceCountsRow AttendanceCounts,
         string? Description,
         bool IsRunning,
         EventFactsRow? Event
@@ -1074,6 +1117,8 @@ public sealed partial class CalendarService
 
     private sealed record AddOnPositionsRow(int? Attendance, int? ParticipatingGroups);
 
+    private sealed record AttendanceCountsRow(int Yes, int Maybe, int No);
+
     private sealed record PersonRow(int PersonId, string FirstName, string LastName);
 
     private sealed record AudienceNamesRow(
@@ -1088,9 +1133,13 @@ public sealed partial class CalendarService
 
     private sealed record VenueStateRow(int VenueId, DateOnly? ArchivedOn);
 
-    private sealed record AudienceHeld(IReadOnlyList<int> GroupIds, IReadOnlyList<int> PersonIds)
+    private sealed record HeldLinks(
+        IReadOnlyList<int> ParticipatingGroupIds,
+        IReadOnlyList<int> GroupIds,
+        IReadOnlyList<int> PersonIds
+    )
     {
-        public static readonly AudienceHeld Nothing = new([], []);
+        public static readonly HeldLinks Nothing = new([], [], []);
     }
 
     private readonly record struct Placement(

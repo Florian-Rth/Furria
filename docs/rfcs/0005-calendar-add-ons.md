@@ -1,7 +1,7 @@
 ---
 rfc: 0005
 title: Calendar add-ons — three kinds, an audience and building blocks instead of entry kinds
-status: built — device checks owed
+status: phases 1–7 built; result views (phases 8–12) in progress
 github_issue: 70
 branch: feat/rfc-70-calendar-add-ons
 created: 2026-11-10
@@ -352,6 +352,83 @@ Decisions taken while building phase 7:
   (phases 2–5) were never classified in `ReferencesToPerson`. They are now *her own*: erased
   with her, and they block absorption, like attendance responses.
 
+### Results — ruled 2026-11-10
+
+An audit of phases 1–7 found that Zu-/Absage shows nobody who answered what. Polls, sign-up lists
+and day schedules stay readable after they close, but nothing shows who has not answered, a closed
+poll can reopen without notice, and open Funktionen are visible only on the entry itself. Florian
+ruled:
+- **Zu-/Absage names are visible to everyone who sees the entry**, like named polls. Counts are
+  split into *Ja / Vielleicht / Nein*.
+- **Organisers** (the people who may edit the entry) also see **who has not answered yet** on each
+  Funktion that asks: Zu-/Absage, Umfrage and Eintragsliste.
+- **Organisers may remind.** An *Erinnern* action pushes everyone who has not answered. It is manual
+  and throttled; nothing reminds automatically.
+- **Only the people an entry concerns may answer.** On a *Gruppen* entry, other members still see
+  it and its results, but cannot answer, vote or sign up. Organisers may answer as well.
+- **Polls can be reopened** explicitly by an organiser. A closed poll never reopens by itself.
+- **Open Funktionen show in the calendar list and the group hub**, not on Start.
+- Members who left a group do **not** keep its past entries. Poll results stay visible before
+  voting.
+
+### Phase 8 — Zu-/Absage results
+Goal: everyone who sees the entry sees who answered what, and organisers also see who has not
+answered. Zu-/Absage closes when the entry is over.
+- [x] Entry detail carries the attendance results: each answer with its person, answer, who recorded it and when; counts for Ja / Vielleicht / Nein
+- [x] Organisers also get `notAnswered`: the people the entry concerns, minus those who answered (canonical `CalendarTies`)
+- [x] Zu-/Absage closes once the entry is over (open end = start + 3 h); answering after that is refused
+- [x] Replace `responseCount` with the split counts on the wire; the form's removal confirm uses the total
+- [x] Club app: an attendance result block on the entry detail (counts, names per answer, *Noch offen* for organisers, closed state)
+- [x] Bug: an archived participating group no longer blocks editing an entry that already holds it
+- [x] Integration tests (who sees names, who sees `notAnswered`, closing); pure-function tests
+
+Decisions taken while building phase 8:
+- **One `attendance` object** on every calendar entry that asks: `isClosed`, `yes`, `maybe`, `no`
+  in the calendar list; the entry detail adds `answers` (name, answer, recorder's name, time) and,
+  for whoever may edit the entry, `notAnswered`. `responseCount` is gone; the group calendar
+  dropped it unused.
+- **`notAnswered` follows the canonical `CalendarTies.Concerns`.** A superset of candidates (audience
+  and cast groups' members, the acts' casts, running club members for a club audience, chosen
+  people) is filtered through ties loaded in one batch: `CalendarTiesOfManyAsync` builds the same
+  ties for many people in five queries, and `CalendarTiesOfAsync` now delegates to it.
+- **Closing** uses `CalendarAddOnClosing.EntryEndOf` (also the push rules' end). The agenda line
+  never reopens an answer on a closed entry.
+- **Archived participating group:** groups the entry already holds are exempt from the archived
+  check, as held audience groups already were.
+- **Found on the way:** the phase-7 outbox tables were missing from the change feed's unrelated
+  tables, which failed `ChangeFeedCoverageTests`.
+
+### Phase 9 — Only the concerned answer; not answered on polls and lists
+Goal: answering follows concern, and polls and lists show organisers who is still missing.
+- [ ] Answering Zu-/Absage, voting and signing up require that the entry concerns her or that she may edit it (`CalendarTies`); everyone else is refused
+- [ ] Entry detail: `mayAnswer` per entry; the club app hides the controls when it is false
+- [ ] Polls and sign-up lists: `notAnswered` for organisers, and an "x von y" count for everyone
+- [ ] Club app: *Noch offen* on poll and list cards for organisers
+- [ ] Integration and pure-function tests
+
+### Phase 10 — Lifecycle of polls and lists
+Goal: closed means closed, and every close carries a name.
+- [ ] Moving *Abstimmen bis* / *Eintragen bis* or the entry later never reopens a poll or list that had already closed: the close is stamped
+- [ ] Polls and lists record who closed them; the detail shows *Beendet von …*
+- [ ] Organisers can reopen a closed poll (*Wieder öffnen*)
+- [ ] The poll form freezes the question and the answers once the poll is closed, and the question once votes exist
+- [ ] A closed poll says its result: the winning answer with its count, a tie stated as a tie
+- [ ] Integration and pure-function tests
+
+### Phase 11 — Erinnern
+Goal: organisers push the people who have not answered.
+- [ ] `POST` remind per Funktion (Zu-/Absage, Umfrage, Eintragsliste): pushes everyone in `notAnswered` with a device, through the push outbox
+- [ ] Throttle: one reminder per Funktion every 6 hours; the detail shows when the last one went out
+- [ ] Payload: *Erinnerung: …*, deep link to the entry, the entry's tag
+- [ ] CONTEXT.md push ruling updated; integration tests for the recipients and the throttle
+
+### Phase 12 — Open Funktionen outside the entry
+Goal: the calendar list and the group hub show what is open and what she still owes.
+- [ ] Calendar list and group calendar carry per entry: open poll or list and whether she answered, the attendance counts
+- [ ] Club app: marks on calendar lines (*Umfrage offen*, *Du fehlst noch*, *Liste offen*)
+- [ ] Group hub rows link to the entry detail and carry the same marks
+- [ ] Tests for the mark rules
+
 ## Risks & alternatives
 
 - **Going live on 2026-11-11.** Real entries may exist by the time phase 1 lands. The migrations
@@ -372,5 +449,6 @@ Decisions taken while building phase 7:
 - Rides (*Mitfahrgelegenheit*), photos per entry, documents, a helper rota with slots, cost
   shares, packing checklists. Candidates for later RFCs; cost shares need their own grilling
   because of money.
-- Reminder pushes before an entry.
+- Automatic reminder pushes before an entry (manual *Erinnern* is phase 11).
+- Keeping a group's past entries visible to members who left it.
 - Templates for recurring club-wide entries.

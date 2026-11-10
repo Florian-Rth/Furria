@@ -540,6 +540,10 @@ internal static class ClubSeedMaterializer
                 ),
                 PersonId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person"),
                 Answer = intent.Answer,
+                IsRecordedOnBehalf = intent.RecordedByAlias is not null,
+                RecordedByPersonId = intent.RecordedByAlias is { } recordedByAlias
+                    ? SeedAliases.RequireId(personIds, recordedByAlias, "Person")
+                    : null,
             },
             StringComparer.Ordinal
         );

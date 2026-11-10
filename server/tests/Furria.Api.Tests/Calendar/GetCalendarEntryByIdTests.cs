@@ -3,6 +3,7 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Calendar;
 using Furria.Api.Tests.RunningOrders;
 using Furria.Api.Tests.Studio;
+using Furria.Application.Authorization;
 using Furria.Core.Club;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
@@ -260,7 +261,7 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_CountEveryAnswer_When_TheEntryAsksForResponses()
+    public async Task Should_SplitTheAnswers_When_TheEntryAsksForResponses()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -282,7 +283,163 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                     [CalendarEntryAddOnKind.Attendance],
                     result.Entry.AddOns.Select(addOn => addOn.Kind)
                 );
-                Assert.Equal(2, result.Entry.ResponseCount);
+                var attendance = result.Entry.Attendance!;
+                Assert.Equal((1, 1, 1), (attendance.Yes, attendance.Maybe, attendance.No));
+                Assert.False(attendance.IsClosed);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_NameEveryAnswerAndWhoRecordedIt_When_SheSeesTheEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+
+                var (_, result) = await ReadAsync(
+                    ctx,
+                    "alice",
+                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
+                    ct
+                );
+
+                Assert.Equal(
+                    [
+                        ("Bea", AttendanceAnswer.Yes, (string?)null),
+                        ("Dora", AttendanceAnswer.No, null),
+                        ("Mona", AttendanceAnswer.Maybe, "Bea"),
+                    ],
+                    result.Entry.Attendance!.Answers!.Select(answer =>
+                        (answer.FirstName, answer.Answer, answer.RecordedByFirstName)
+                    )
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_KeepWhoHasNotAnsweredHidden_When_SheMayNotEditTheEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+
+                var (_, result) = await ReadAsync(
+                    ctx,
+                    "alice",
+                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
+                    ct
+                );
+
+                Assert.Null(result.Entry.Attendance!.NotAnswered);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_ListEveryoneConcernedWithoutAnAnswer_When_SheManagesTheClubCalendar()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+
+                var (_, result) = await ReadAsync(
+                    ctx,
+                    "ilka",
+                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
+                    ct
+                );
+
+                Assert.Equal(
+                    ["Alice", "Ilka", "Kai"],
+                    result.Entry.Attendance!.NotAnswered!.Select(person => person.FirstName)
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_ListOnlyTheGroupWithoutAnAnswer_When_SheRunsTheOwnerGroup()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+
+                var (_, result) = await ReadAsync(
+                    ctx,
+                    "dora",
+                    ctx.Club.CalendarEntries.IdOf("garde-call"),
+                    ct
+                );
+
+                Assert.Equal(
+                    ["Kai"],
+                    result.Entry.Attendance!.NotAnswered!.Select(person => person.FirstName)
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CloseTheAnswers_When_TheEntryIsOver()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            AtTheMeeting.AddHours(CalendarDefaults.OpenEndedHours),
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+
+                var (_, result) = await ReadAsync(
+                    ctx,
+                    "alice",
+                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
+                    ct
+                );
+
+                Assert.True(result.Entry.Attendance!.IsClosed);
+                Assert.Equal(3, result.Entry.Attendance.Answers!.Count);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CarryNoAttendance_When_TheEntryDoesNotAsk()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+
+                var (_, result) = await ReadAsync(
+                    ctx,
+                    "alice",
+                    ctx.Club.CalendarEntries.IdOf("festival"),
+                    ct
+                );
+
+                Assert.Null(result.Entry.Attendance);
             }
         );
     }
@@ -551,17 +708,34 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
             .AddAccount("bea")
             .AddMembership("bea-first", "bea", JoinedIn2017)
             .AddPerson("dora", "Dora", "Leitung")
-            .AddAccount("dora");
+            .AddAccount("dora")
+            .AddPerson("ilka", "Ilka", "Kalender")
+            .AddAccount("ilka")
+            .AddMembership("ilka-first", "ilka", JoinedIn2017)
+            .AddPerson("kai", "Kai", "Kind")
+            .AddMembership("kai-first", "kai", JoinedIn2017)
+            .AddPerson("mona", "Mona", "Mitglied")
+            .AddMembership("mona-first", "mona", JoinedIn2017);
 
     private Task<SeededContext> BuildCalendarAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder
                     .Identity(WholeClub)
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "terminpflege",
+                            "ilka-terminpflege",
+                            "Terminpflege",
+                            "ilka",
+                            FurriaPermissions.CalendarManageClub
+                        )
+                    )
                     .Groups(groups =>
                         groups
                             .AddGroup("tanzgarde", "Tanzgarde")
                             .AddGroupMembership("bea-tanzgarde", "tanzgarde", "bea", JoinedIn2017)
+                            .AddGroupMembership("kai-tanzgarde", "tanzgarde", "kai", JoinedIn2017)
                             .AddGroupAdmin(
                                 "dora-tanzgarde",
                                 "tanzgarde",
@@ -617,6 +791,26 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                                 "club-meeting",
                                 "dora",
                                 AttendanceAnswer.No
+                            )
+                            .AddAttendanceResponse(
+                                "mona-marked-maybe",
+                                "club-meeting",
+                                "mona",
+                                AttendanceAnswer.Maybe,
+                                recordedByAlias: "bea"
+                            )
+                            .AddCalendarEntry(
+                                "garde-call",
+                                "Probe der Tanzgarde",
+                                AtTheTraining.AddDays(2),
+                                ownerGroupAlias: "tanzgarde",
+                                asksForResponse: true
+                            )
+                            .AddAttendanceResponse(
+                                "bea-comes",
+                                "garde-call",
+                                "bea",
+                                AttendanceAnswer.Yes
                             )
                     ),
             ct

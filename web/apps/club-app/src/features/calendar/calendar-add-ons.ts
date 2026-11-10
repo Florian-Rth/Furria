@@ -9,6 +9,7 @@ import {
 import type {
   CalendarAddOnCardForm,
   CalendarAddOnKind,
+  CalendarAttendance,
   CalendarDayScheduleForm,
   CalendarEntryAddOn,
   CalendarPollForm,
@@ -162,11 +163,18 @@ export const hasAddOn = (
 
 type HeldAnswers = {
   readonly addOns: readonly CalendarEntryAddOn[];
-  readonly responseCount: number;
+  readonly attendance: Pick<CalendarAttendance, 'yes' | 'maybe' | 'no'> | null;
 } | null;
 
-export const toHeldAnswerCount = (entry: HeldAnswers): number =>
-  entry !== null && hasAddOn(entry.addOns, 'attendance') ? entry.responseCount : 0;
+export const toHeldAnswerCount = (entry: HeldAnswers): number => {
+  const attendance = entry?.attendance ?? null;
+
+  if (entry === null || attendance === null || !hasAddOn(entry.addOns, 'attendance')) {
+    return 0;
+  }
+
+  return attendance.yes + attendance.maybe + attendance.no;
+};
 
 export const toHeldParticipatingGroups = (
   entry: { readonly participatingGroups: readonly ParticipatingGroup[] } | null,

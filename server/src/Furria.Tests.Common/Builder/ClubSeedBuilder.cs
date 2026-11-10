@@ -316,11 +316,18 @@ public sealed class ClubSeedBuilder
         string alias,
         string calendarEntryAlias,
         string personAlias,
-        AttendanceAnswer answer
+        AttendanceAnswer answer,
+        string? recordedByAlias = null
     )
     {
         _attendanceResponses.Add(
-            new AttendanceResponseIntent(alias, calendarEntryAlias, personAlias, answer)
+            new AttendanceResponseIntent(
+                alias,
+                calendarEntryAlias,
+                personAlias,
+                answer,
+                recordedByAlias
+            )
         );
         return this;
     }
@@ -570,7 +577,8 @@ public sealed class ClubSeedBuilder
         string Alias,
         string CalendarEntryAlias,
         string PersonAlias,
-        AttendanceAnswer Answer
+        AttendanceAnswer Answer,
+        string? RecordedByAlias
     );
 
     internal sealed record CalendarPollIntent(

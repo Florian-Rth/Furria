@@ -37,7 +37,7 @@ public sealed record CalendarEntrySummary
 
     public required IReadOnlyList<CalendarEntryAddOnDetails> AddOns { get; init; }
 
-    public required int ResponseCount { get; init; }
+    public required CalendarAttendanceDetails? Attendance { get; init; }
 
     public required string? Description { get; init; }
 

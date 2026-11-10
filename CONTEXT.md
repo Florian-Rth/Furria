@@ -1039,7 +1039,12 @@ Made precise when L2 was built (ruled 2026-10-02):
   (ruled 2026-10-30, RFC #53 phase 4; audience 2026-11-10).
 - **Answering.** She may answer an entry she **sees** on one of her surfaces: she holds `club.read`
   or the entry's audience admits her. Concern always
-  grants answering; a past entry stays answerable.
+  grants answering. Answering **closes once the entry is over** — its end, or start + 3 h for an
+  open end (ruled 2026-11-10, RFC 0005 phase 8; until then a past entry stayed answerable).
+- **Who answered what** (ruled 2026-11-10). Everyone who sees an entry sees every answer with its
+  name, who recorded it on her behalf, and the *Zusage / Vielleicht / Absage* counts, also after it
+  closed. Whoever may edit the entry also sees **who has not answered yet**: the people the entry
+  concerns without an answer, kids without accounts included.
 - **Pause.** A club-owned entry does not concern a member whose membership is paused for that
   entry's session.
 - **Her dates.** An entry is one of her dates when it concerns her, when she **runs** it — she holds
