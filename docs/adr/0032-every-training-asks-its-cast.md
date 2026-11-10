@@ -1,3 +1,7 @@
+---
+status: superseded by ADR-0038
+---
+
 # Every training asks its cast
 
 An **attendance response** is switched on per calendar entry by whoever schedules it (decided
