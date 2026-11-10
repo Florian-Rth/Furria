@@ -23,7 +23,7 @@ const stateOf = (
   nowMs: number,
   primary: boolean,
 ): CalendarLineAnswerState => {
-  if (!entry.asksForResponse || !primary) {
+  if (!entry.asksForResponse || !entry.mayAnswer || !primary) {
     return 'none';
   }
   const isClosed = entry.attendance?.isClosed ?? false;

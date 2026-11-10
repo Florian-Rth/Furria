@@ -23,6 +23,7 @@ const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
   attendance: null,
   description: null,
   viewerAnswer: null,
+  mayAnswer: true,
   isRunning: false,
   event: null,
   ...overrides,

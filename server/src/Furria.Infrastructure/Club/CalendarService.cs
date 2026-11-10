@@ -106,9 +106,10 @@ public sealed partial class CalendarService
         rows = [.. rows.Where(row => ties.Sees(FactsOf(row), viewer.Rights))];
 
         var extras = await ExtrasOfAsync(viewer.PersonId, rows, now, ct);
+        var organised = await OrganisedOwnersAsync(query.ViewerAccountId, rows, ct);
 
         return Result<IReadOnlyList<CalendarEntrySummary>>.Success([
-            .. rows.Select(row => ToSummary(row, extras, now)),
+            .. rows.Select(row => ToSummary(row, extras, now, MayAnswer(row, ties, organised))),
         ]);
     }
 
@@ -141,9 +142,13 @@ public sealed partial class CalendarService
             return Result<CalendarEntrySummary>.NotFound(UnknownEntryMessage);
 
         var extras = await ExtrasOfAsync(viewer.PersonId, [row], now, ct);
-        var roll = await AttendanceRollOfAsync(row, viewerAccountId, today, ct);
+        var organises = await MayOwnAsync(viewerAccountId, row.OwnerGroupId, ct);
+        var concern = await ConcernOfAsync(row, extras, organises, today, ct);
+        var mayAnswer = ties.IsHers(FactsOf(row)) || organises;
 
-        return Result<CalendarEntrySummary>.Success(ToSummary(row, extras, now, roll));
+        return Result<CalendarEntrySummary>.Success(
+            ToSummary(row, concern.Extras, now, mayAnswer, concern.Roll)
+        );
     }
 
     public async Task<IReadOnlyList<GroupCalendarEntrySummary>> GetGroupEntriesAsync(
@@ -178,11 +183,17 @@ public sealed partial class CalendarService
 
         var extras = await ExtrasOfAsync(personId, rows, now, ct);
         var ties = await _dbContext.CalendarTiesOfAsync(personId, today, ct);
+        var organised = await OrganisedOwnersAsync(query.ViewerAccountId, rows, ct);
 
         return
         [
             .. rows.Select(row =>
-                ToGroupSummary(ToSummary(row, extras, now), MayAnswer(row, ties, rights))
+                ToGroupSummary(
+                    ToSummary(row, extras, now, MayAnswer(row, ties, organised)),
+                    row.AsksForResponse
+                        && ties.Sees(FactsOf(row), rights)
+                        && MayAnswer(row, ties, organised)
+                )
             ),
         ];
     }
@@ -240,7 +251,7 @@ public sealed partial class CalendarService
                 found[probe] =
                 [
                     .. rows.Where(row => Collides(row, probe))
-                        .Select(row => ToSummary(row, EntryExtras.Nothing, now)),
+                        .Select(row => ToSummary(row, EntryExtras.Nothing, now, mayAnswer: false)),
                 ];
             }
         }
@@ -486,6 +497,12 @@ public sealed partial class CalendarService
                 : Result.Forbidden(NotYoursMessage);
         }
 
+        if (
+            await AnswerRefusalAsync(command.ActorAccountId, entry.ToFacts(), ties, ct) is
+            { } notMeant
+        )
+            return notMeant;
+
         if (!entry.AsksForResponse)
             return Result.Validation(NoResponseWantedMessage);
 
@@ -619,10 +636,6 @@ public sealed partial class CalendarService
     ) => entry.AsksForResponse && !addOns.Contains(CalendarEntryAddOnKind.Attendance);
 
     [Pure]
-    private static bool MayAnswer(EntryRow row, CalendarTies ties, CalendarRights rights) =>
-        row.AsksForResponse && ties.Sees(FactsOf(row), rights);
-
-    [Pure]
     private static CalendarEntryFacts FactsOf(EntryRow row) =>
         new()
         {
@@ -730,6 +743,7 @@ public sealed partial class CalendarService
         EntryRow row,
         EntryExtras extras,
         DateTimeOffset now,
+        bool mayAnswer,
         AttendanceRoll? roll = null
     ) =>
         new()
@@ -763,6 +777,7 @@ public sealed partial class CalendarService
             ViewerAnswer = extras.Answers.TryGetValue(row.CalendarEntryId, out var answer)
                 ? answer
                 : null,
+            MayAnswer = mayAnswer,
             IsRunning = row.IsRunning,
             Event = row.Event is { } facts
                 ? ToEventFacts(facts, now, EventPictureOf(row.CalendarEntryId, facts))

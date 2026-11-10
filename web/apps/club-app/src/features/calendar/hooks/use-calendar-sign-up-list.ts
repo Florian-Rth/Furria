@@ -89,6 +89,7 @@ export const useCalendarSignUpList = (
       isClosed: list.isClosed,
       signUpUntil: list.signUpUntil,
       lineCount: list.lines.length,
+      concernedCount: list.concernedCount,
     }),
     lines,
     isOpen: own.isOpen,

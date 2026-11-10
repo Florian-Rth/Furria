@@ -13,29 +13,6 @@ public sealed partial class CalendarService
     private const string AnswersClosedMessage =
         "Dieser Termin ist vorbei. Antworten sind nicht mehr möglich.";
 
-    private async Task<AttendanceRoll?> AttendanceRollOfAsync(
-        EntryRow row,
-        int viewerAccountId,
-        DateOnly today,
-        CancellationToken ct
-    )
-    {
-        if (!row.AsksForResponse)
-            return null;
-
-        var answers = await AnswersOnAsync(row.CalendarEntryId, ct);
-        var notAnswered = await MayOwnAsync(viewerAccountId, row.OwnerGroupId, ct)
-            ? await NotAnsweredAsync(
-                FactsOf(row),
-                answers.Select(answer => answer.PersonId).ToHashSet(),
-                today,
-                ct
-            )
-            : null;
-
-        return new AttendanceRoll(answers, notAnswered);
-    }
-
     private Task<List<CalendarAttendanceAnswerDetails>> AnswersOnAsync(
         int calendarEntryId,
         CancellationToken ct
@@ -66,19 +43,14 @@ public sealed partial class CalendarService
             })
             .ToListAsync(ct);
 
-    private async Task<IReadOnlyList<CalendarAttendancePerson>> NotAnsweredAsync(
+    private async Task<IReadOnlyList<CalendarAttendancePerson>> ConcernedPeopleOfAsync(
         CalendarEntryFacts entry,
-        IReadOnlySet<int> answeredPersonIds,
         DateOnly today,
         CancellationToken ct
     )
     {
         var candidateIds = await ConcernCandidateIdsOf(entry, today).Distinct().ToListAsync(ct);
-        var ties = await _dbContext.CalendarTiesOfManyAsync(
-            [.. candidateIds.Where(personId => !answeredPersonIds.Contains(personId))],
-            today,
-            ct
-        );
+        var ties = await _dbContext.CalendarTiesOfManyAsync(candidateIds, today, ct);
         var concernedIds = ConcernedIdsOf(entry, ties);
 
         return await _dbContext

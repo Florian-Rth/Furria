@@ -1027,9 +1027,8 @@ nothing. An **owed response** is an entry that asks for one, concerns
 her and has not yet started, which she has not answered (*vielleicht* is an answer) — personal,
 answered in place on **Start**, never a **to-do**. An entry **concerns** everyone in its **audience** —
 for the club everyone with a running membership, for groups their current members, for chosen
-people those people — never a group admin for being one (ruled 2026-11-10). Anyone who can see
-an entry may still answer it; *owed* only decides what Start asks for (ruled 2026-10-02, L2
-shaping).
+people those people — never a group admin for being one (ruled 2026-11-10). Only whom the entry
+is for may answer it (see **Answering**); *owed* only decides what Start asks for.
 
 Made precise when L2 was built (ruled 2026-10-02):
 - **Archived group.** An archived group confers no concern, no running and no sight.
@@ -1037,9 +1036,13 @@ Made precise when L2 was built (ruled 2026-10-02):
   member) her calendar holds only the entries whose audience or participating groups include one of
   her groups, and the chosen-people entries she is chosen for; club-audience entries stay hidden
   (ruled 2026-10-30, RFC #53 phase 4; audience 2026-11-10).
-- **Answering.** She may answer an entry she **sees** on one of her surfaces: she holds `club.read`
-  or the entry's audience admits her. Concern always
-  grants answering. Answering **closes once the entry is over** — its end, or start + 3 h for an
+- **Answering.** She may answer an entry — Zu-/Absage, a poll vote, her own sign-up line — only
+  when it is one of **her dates** (it concerns her, she runs it via the owner or a participating
+  group, or her group takes part in a club entry) or she may edit it. Everyone else who sees the
+  entry sees its results but cannot answer (ruled 2026-11-10, RFC 0005 phase 9; until then anyone
+  who saw an entry could answer). Withdrawing her own sign-up line stays possible. Organisers see,
+  for each Funktion that asks, who it concerns that has not answered yet, and everyone sees
+  *x von y*. Answering **closes once the entry is over** — its end, or start + 3 h for an
   open end (ruled 2026-11-10, RFC 0005 phase 8; until then a past entry stayed answerable).
 - **Who answered what** (ruled 2026-11-10). Everyone who sees an entry sees every answer with its
   name, who recorded it on her behalf, and the *Zusage / Vielleicht / Absage* counts, also after it
@@ -1082,13 +1085,13 @@ date — the members build what they need themselves instead of the calendar gro
 fixed meaning (yes / maybe / no), because Start, the cast's trainings, open spots and answers
 recorded on behalf all rely on it; it is never rebuilt from a **poll**. Further add-ons:
 - **Poll** — a question with answers the scheduler sets, single or multiple choice. Nothing in the
-  app reads meaning into its answers. Whoever sees the entry may vote and change her vote until the
+  app reads meaning into its answers. Whoever may answer the entry may vote and change her vote until the
   poll **closes** — when the entry starts, at an earlier closing time, or when closed by hand.
   Votes carry names unless the poll is **anonymous**, then only counts are shown, to its scheduler
   too. Nobody adds her own answer; answers may be added later, and changed or removed only while
   nobody chose them. An entry may hold several polls; a poll is never owed and never asked on
   Start.
-- **Sign-up list** — a list everyone who sees the entry may add to: one short line per person,
+- **Sign-up list** — a list everyone who may answer the entry may add to: one short line per person,
   always named, its text optional, which only she may change or delete afterwards (e.g. who
   brings what to the summer party). Whoever may edit the entry may remove a line, never rewrite it. It has a title and an
   optional hint, closes like a poll, an entry may hold several, and it is never asked on Start. It

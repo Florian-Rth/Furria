@@ -14,5 +14,9 @@ public sealed record CalendarSignUpListDetails
 
     public required bool IsClosed { get; init; }
 
+    public int? ConcernedCount { get; init; }
+
+    public IReadOnlyList<CalendarAttendancePerson>? NotAnswered { get; init; }
+
     public required IReadOnlyList<CalendarSignUpLineDetails> Lines { get; init; }
 }

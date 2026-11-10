@@ -18,5 +18,9 @@ public sealed record CalendarPollDetails
 
     public required int VoterCount { get; init; }
 
+    public int? ConcernedCount { get; init; }
+
+    public IReadOnlyList<CalendarAttendancePerson>? NotAnswered { get; init; }
+
     public required IReadOnlyList<CalendarPollOptionDetails> Options { get; init; }
 }

@@ -41,15 +41,16 @@ export const useCalendarDetail = (entry: CalendarEntry): CalendarDetail => {
 
   return {
     view: toDetailView(entry),
-    answer: entry.asksForResponse
-      ? {
-          label: toAttendanceChoiceLabel(entry.title),
-          value: choice.answer,
-          error: choice.failureMessage,
-          disabled: choice.isInert || (entry.attendance?.isClosed ?? false),
-          choose: choice.choose,
-        }
-      : null,
+    answer:
+      entry.asksForResponse && entry.mayAnswer
+        ? {
+            label: toAttendanceChoiceLabel(entry.title),
+            value: choice.answer,
+            error: choice.failureMessage,
+            disabled: choice.isInert || (entry.attendance?.isClosed ?? false),
+            choose: choice.choose,
+          }
+        : null,
     roll: entry.attendance === null ? null : toAttendanceRoll(entry.attendance),
     editLink: authoring?.linkOf(entry) ?? null,
     mayModerate: authoring?.mayOwn(entry) ?? false,

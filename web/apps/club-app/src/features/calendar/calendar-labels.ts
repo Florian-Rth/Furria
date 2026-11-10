@@ -162,6 +162,14 @@ export const toVoterCountLabel = (count: number): string | undefined =>
     ? undefined
     : byCount(count, '1 Person hat abgestimmt', `${count} Personen haben abgestimmt`);
 
+export const toVoterShareLabel = (
+  voterCount: number,
+  concernedCount: number | null,
+): string | undefined =>
+  concernedCount === null
+    ? toVoterCountLabel(voterCount)
+    : `${voterCount} von ${concernedCount} haben abgestimmt`;
+
 export const toVotesLabel = (count: number): string =>
   byCount(count, '1 Stimme', `${count} Stimmen`);
 
@@ -188,6 +196,7 @@ interface PollMetaFacts {
   isAnonymous: boolean;
   votesUntil: string | null;
   voterCount: number;
+  concernedCount: number | null;
 }
 
 const toPollDeadlineLabel = (poll: PollMetaFacts): string | undefined => {
@@ -200,9 +209,11 @@ const toPollDeadlineLabel = (poll: PollMetaFacts): string | undefined => {
 
 export const toPollMetaLabel = (poll: PollMetaFacts): string | undefined => {
   const anonymity = poll.isAnonymous ? POLL_ANONYMOUS_LABEL : undefined;
-  const parts = [toPollDeadlineLabel(poll), anonymity, toVoterCountLabel(poll.voterCount)].filter(
-    (part): part is string => part !== undefined,
-  );
+  const parts = [
+    toPollDeadlineLabel(poll),
+    anonymity,
+    toVoterShareLabel(poll.voterCount, poll.concernedCount),
+  ].filter((part): part is string => part !== undefined);
 
   return parts.length === 0 ? undefined : parts.join(META_SEPARATOR);
 };
@@ -214,6 +225,14 @@ export const toPollCloseQuestion = (question: string): string => `„${question}
 
 export const toLineCountLabel = (count: number): string | undefined =>
   count === 0 ? undefined : byCount(count, '1 Eintrag', `${count} Einträge`);
+
+export const toLineShareLabel = (
+  lineCount: number,
+  concernedCount: number | null,
+): string | undefined =>
+  concernedCount === null
+    ? toLineCountLabel(lineCount)
+    : `${lineCount} von ${concernedCount} eingetragen`;
 
 export const toSignUpUntilLabel = (signUpUntil: string): string =>
   `Eintragen bis ${toDayNumberLabel(signUpUntil)}, ${toTimeLabel(signUpUntil)} Uhr`;
@@ -227,6 +246,7 @@ interface SignUpListMetaFacts {
   isClosed: boolean;
   signUpUntil: string | null;
   lineCount: number;
+  concernedCount: number | null;
 }
 
 const toSignUpDeadlineLabel = (list: SignUpListMetaFacts): string | undefined => {
@@ -238,9 +258,10 @@ const toSignUpDeadlineLabel = (list: SignUpListMetaFacts): string | undefined =>
 };
 
 export const toSignUpListMetaLabel = (list: SignUpListMetaFacts): string | undefined => {
-  const parts = [toSignUpDeadlineLabel(list), toLineCountLabel(list.lineCount)].filter(
-    (part): part is string => part !== undefined,
-  );
+  const parts = [
+    toSignUpDeadlineLabel(list),
+    toLineShareLabel(list.lineCount, list.concernedCount),
+  ].filter((part): part is string => part !== undefined);
 
   return parts.length === 0 ? undefined : parts.join(META_SEPARATOR);
 };

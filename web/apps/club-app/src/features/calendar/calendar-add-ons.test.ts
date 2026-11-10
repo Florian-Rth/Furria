@@ -32,6 +32,8 @@ const heldPoll = (pollId: number, voterCount: number): CalendarPoll => ({
   closedAt: null,
   isClosed: false,
   voterCount,
+  concernedCount: null,
+  notAnswered: null,
   options: [],
 });
 
@@ -61,6 +63,8 @@ const heldList = (signUpListId: number, lineCount: number): CalendarSignUpList =
     text: null,
     byViewer: false,
   })),
+  concernedCount: null,
+  notAnswered: null,
 });
 
 const newList: CalendarSignUpListForm = {

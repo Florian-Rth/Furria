@@ -35,7 +35,8 @@ public sealed partial class CalendarService
                         .CalendarPolls.Where(poll => poll.Id == command.PollId)
                         .Select(poll => poll.CalendarEntry!),
                     UnknownPollMessage,
-                    NotYourPollMessage
+                    NotYourPollMessage,
+                    TakesPart: true
                 ),
                 ct
             ) is

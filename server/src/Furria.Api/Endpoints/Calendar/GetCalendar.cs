@@ -223,6 +223,8 @@ public sealed record CalendarEntryDto
 
     public required AttendanceAnswer? ViewerAnswer { get; init; }
 
+    public required bool MayAnswer { get; init; }
+
     public required bool IsRunning { get; init; }
 
     public required CalendarEventFactsDto? Event { get; init; }
@@ -252,6 +254,7 @@ public sealed record CalendarEntryDto
                 : null,
             Description = entry.Description,
             ViewerAnswer = entry.ViewerAnswer,
+            MayAnswer = entry.MayAnswer,
             IsRunning = entry.IsRunning,
             Event = entry.Event is { } facts ? CalendarEventFactsDto.From(facts) : null,
         };
@@ -414,6 +417,10 @@ public sealed record CalendarSignUpListDto
 
     public required IReadOnlyList<CalendarSignUpLineDto> Lines { get; init; }
 
+    public required int? ConcernedCount { get; init; }
+
+    public required IReadOnlyList<CalendarAttendancePersonDto>? NotAnswered { get; init; }
+
     [Pure]
     public static CalendarSignUpListDto From(CalendarSignUpListDetails list) =>
         new()
@@ -425,6 +432,10 @@ public sealed record CalendarSignUpListDto
             ClosedAt = list.ClosedAt,
             IsClosed = list.IsClosed,
             Lines = [.. list.Lines.Select(CalendarSignUpLineDto.From)],
+            ConcernedCount = list.ConcernedCount,
+            NotAnswered = list.NotAnswered is { } missing
+                ? [.. missing.Select(CalendarAttendancePersonDto.From)]
+                : null,
         };
 }
 
@@ -473,6 +484,10 @@ public sealed record CalendarPollDto
 
     public required int VoterCount { get; init; }
 
+    public required int? ConcernedCount { get; init; }
+
+    public required IReadOnlyList<CalendarAttendancePersonDto>? NotAnswered { get; init; }
+
     public required IReadOnlyList<CalendarPollOptionDto> Options { get; init; }
 
     [Pure]
@@ -487,6 +502,10 @@ public sealed record CalendarPollDto
             ClosedAt = poll.ClosedAt,
             IsClosed = poll.IsClosed,
             VoterCount = poll.VoterCount,
+            ConcernedCount = poll.ConcernedCount,
+            NotAnswered = poll.NotAnswered is { } missing
+                ? [.. missing.Select(CalendarAttendancePersonDto.From)]
+                : null,
             Options = [.. poll.Options.Select(CalendarPollOptionDto.From)],
         };
 }

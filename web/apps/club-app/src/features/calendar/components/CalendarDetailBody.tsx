@@ -58,6 +58,7 @@ export const CalendarDetailBody: FC<CalendarDetailBodyProps> = ({ entry }) => {
         roll={roll}
         participatingGroups={view.participatingGroups}
         mayModerate={mayModerate}
+        mayAnswer={entry.mayAnswer}
         startsAt={entry.startsAt}
         endsAt={entry.endsAt}
       />

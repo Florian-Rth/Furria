@@ -806,11 +806,124 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
         );
     }
 
+    [Theory]
+    [InlineData("alice", "club-meeting", true)]
+    [InlineData("alice", "garde-call", false)]
+    [InlineData("bea", "garde-call", true)]
+    [InlineData("dora", "garde-call", true)]
+    [InlineData("ilka", "garde-call", false)]
+    public async Task Should_TellWhetherSheMayAnswer_When_SheReadsTheEntry(
+        string alias,
+        string entryAlias,
+        bool mayAnswer
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+
+                var (_, result) = await ReadAsync(
+                    ctx,
+                    alias,
+                    ctx.Club.CalendarEntries.IdOf(entryAlias),
+                    ct
+                );
+
+                Assert.Equal(mayAnswer, result.Entry.MayAnswer);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_ListWhoHasNotVotedOrSignedUp_When_SheManagesTheClubCalendar()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildPollsAsync(ct);
+
+                var (_, result) = await ReadAsync(
+                    ctx,
+                    "ilka",
+                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
+                    ct
+                );
+
+                var addOns = result.Entry.AddOns;
+                Assert.Equal(
+                    ["5: Ilka, Kai, Mona", "5: Alice, Ilka, Kai, Mona", "5: Ilka, Kai, Mona"],
+                    [
+                        ConcernOf(addOns[1].Poll!.ConcernedCount, addOns[1].Poll!.NotAnswered),
+                        ConcernOf(addOns[2].Poll!.ConcernedCount, addOns[2].Poll!.NotAnswered),
+                        ConcernOf(
+                            addOns[3].SignUpList!.ConcernedCount,
+                            addOns[3].SignUpList!.NotAnswered
+                        ),
+                    ]
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CountTheConcernedButHideWhoIsMissing_When_SheMayNotEditTheEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildPollsAsync(ct);
+
+                var (_, result) = await ReadAsync(
+                    ctx,
+                    "alice",
+                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
+                    ct
+                );
+
+                var poll = result.Entry.AddOns[1].Poll!;
+                var list = result.Entry.AddOns[3].SignUpList!;
+                Assert.Equal(
+                    ((int?)5, true, (int?)5, true),
+                    (
+                        poll.ConcernedCount,
+                        poll.NotAnswered is null,
+                        list.ConcernedCount,
+                        list.NotAnswered is null
+                    )
+                );
+            }
+        );
+    }
+
+    private static string ConcernOf(
+        int? concernedCount,
+        IReadOnlyList<CalendarAttendancePersonDto>? notAnswered
+    ) => $"{concernedCount}: {string.Join(", ", notAnswered!.Select(person => person.FirstName))}";
+
     private Task<SeededContext> BuildPollsAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
                 builder
                     .Identity(WholeClub)
+                    .Roles(roles =>
+                        roles.AddRoleWithHolder(
+                            "terminpflege",
+                            "ilka-terminpflege",
+                            "Terminpflege",
+                            "ilka",
+                            FurriaPermissions.CalendarManageClub
+                        )
+                    )
                     .Club(club =>
                         club.AddCalendarEntry(
                                 "club-meeting",

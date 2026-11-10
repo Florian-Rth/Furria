@@ -220,6 +220,49 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
+    [Fact]
+    public async Task Should_RefuseTheVote_When_TheEntryIsMeantForAnotherGroup()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var pollId = ctx.Club.CalendarPolls.IdOf("garde-snack");
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var response = await VoteAsync(ctx, "dana", pollId, ["garde-snack:Ja"], ct);
+
+                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+            }
+        );
+
+        await ctx.Expected.CalendarPoll(pollId).ToHaveVoteCount(0).AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RecordTheVote_When_SheBelongsToTheGroupTheEntryIsMeantFor()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var pollId = ctx.Club.CalendarPolls.IdOf("garde-snack");
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var response = await VoteAsync(ctx, "elli", pollId, ["garde-snack:Ja"], ct);
+
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            }
+        );
+
+        await ctx
+            .Expected.CalendarPoll(pollId)
+            .ToHaveVotesOf(ctx.Identity.People.IdOf("elli"), "Ja")
+            .AssertAsync(ct);
+    }
+
     private static async Task<HttpResponseMessage> VoteAsync(
         SeededContext ctx,
         string voterAlias,
@@ -254,6 +297,14 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
                             .AddPerson("dana", "Dana", "Doppelt")
                             .AddAccount("dana")
                             .AddMembership("dana-first", "dana", JoinedIn2017)
+                            .AddPerson("elli", "Elli", "Garde")
+                            .AddAccount("elli")
+                            .AddMembership("elli-first", "elli", JoinedIn2017)
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupMembership("elli-tanzgarde", "tanzgarde", "elli", JoinedIn2017)
                     )
                     .Roles(roles =>
                         roles.AddRoleWithHolder(
@@ -303,6 +354,18 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
                             )
                             .AddCalendarPoll("late", "breakfast", "Weißwurst?", ["Ja", "Nein"])
                             .AddCalendarPoll("secret", "farewell", "Geschenk?", ["Ja", "Nein"])
+                            .AddCalendarEntry(
+                                "garde-meeting",
+                                "Gardetreffen",
+                                AtTheCoffee,
+                                ownerGroupAlias: "tanzgarde"
+                            )
+                            .AddCalendarPoll(
+                                "garde-snack",
+                                "garde-meeting",
+                                "Kuchen?",
+                                ["Ja", "Nein"]
+                            )
                     ),
             ct
         );

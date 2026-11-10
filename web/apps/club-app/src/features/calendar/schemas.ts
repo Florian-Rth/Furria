@@ -77,6 +77,13 @@ export const CalendarPollOptionSchema = z.object({
 });
 export type CalendarPollOption = z.infer<typeof CalendarPollOptionSchema>;
 
+export const CalendarAttendancePersonSchema = z.object({
+  personId: z.number().int(),
+  firstName: z.string(),
+  lastName: z.string(),
+});
+export type CalendarAttendancePerson = z.infer<typeof CalendarAttendancePersonSchema>;
+
 export const CalendarPollSchema = z.object({
   pollId: z.number().int(),
   question: z.string(),
@@ -86,6 +93,8 @@ export const CalendarPollSchema = z.object({
   closedAt: z.iso.datetime({ offset: true }).nullable(),
   isClosed: z.boolean(),
   voterCount: z.number().int(),
+  concernedCount: z.number().int().nullable(),
+  notAnswered: z.array(CalendarAttendancePersonSchema).nullable(),
   options: z.array(CalendarPollOptionSchema),
 });
 export type CalendarPoll = z.infer<typeof CalendarPollSchema>;
@@ -108,6 +117,8 @@ export const CalendarSignUpListSchema = z.object({
   closedAt: z.iso.datetime({ offset: true }).nullable(),
   isClosed: z.boolean(),
   lines: z.array(CalendarSignUpLineSchema),
+  concernedCount: z.number().int().nullable(),
+  notAnswered: z.array(CalendarAttendancePersonSchema).nullable(),
 });
 export type CalendarSignUpList = z.infer<typeof CalendarSignUpListSchema>;
 
@@ -153,13 +164,6 @@ export const CalendarEventFactsSchema = z.object({
 });
 export type CalendarEventFacts = z.infer<typeof CalendarEventFactsSchema>;
 
-export const CalendarAttendancePersonSchema = z.object({
-  personId: z.number().int(),
-  firstName: z.string(),
-  lastName: z.string(),
-});
-export type CalendarAttendancePerson = z.infer<typeof CalendarAttendancePersonSchema>;
-
 export const CalendarAttendanceAnswerSchema = CalendarAttendancePersonSchema.extend({
   answer: AttendanceAnswerSchema,
   recordedByFirstName: z.string().nullable(),
@@ -198,6 +202,7 @@ export const CalendarEntrySchema = z.object({
   attendance: CalendarAttendanceSchema.nullable(),
   description: z.string().nullable(),
   viewerAnswer: AttendanceAnswerSchema.nullable(),
+  mayAnswer: z.boolean(),
   isRunning: z.boolean(),
   event: CalendarEventFactsSchema.nullable(),
 });

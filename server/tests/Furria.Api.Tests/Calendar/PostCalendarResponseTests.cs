@@ -300,9 +300,9 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_TakeTheAnswer_When_AClubMemberAnswersAnotherGroupsClubVisibleEntry()
+    public async Task Should_ReturnForbidden_When_AClubMemberAnswersAnEntryMeantForAnotherGroup()
     {
-        await AssertAnswerTakenAsync("alice", "garde-auftritt");
+        await AssertAnswerRefusedAsync("alice", "garde-auftritt", HttpStatusCode.Forbidden);
     }
 
     [Fact]

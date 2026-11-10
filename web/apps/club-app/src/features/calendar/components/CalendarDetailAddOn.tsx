@@ -17,6 +17,7 @@ interface CalendarDetailAddOnProps {
   roll: AttendanceRoll | null;
   participatingGroups: readonly KkCalendarLineGroup[];
   mayModerate: boolean;
+  mayAnswer: boolean;
   startsAt: string;
   endsAt: string | null;
 }
@@ -27,16 +28,23 @@ export const CalendarDetailAddOn: FC<CalendarDetailAddOnProps> = ({
   roll,
   participatingGroups,
   mayModerate,
+  mayAnswer,
   startsAt,
   endsAt,
 }) => {
   const attendance =
     addOn.kind === 'attendance' ? <CalendarDetailAttendance answer={answer} roll={roll} /> : null;
   const poll =
-    addOn.kind === 'poll' ? <CalendarDetailPoll poll={addOn.poll} mayClose={mayModerate} /> : null;
+    addOn.kind === 'poll' ? (
+      <CalendarDetailPoll poll={addOn.poll} mayClose={mayModerate} mayAnswer={mayAnswer} />
+    ) : null;
   const signUpList =
     addOn.kind === 'signUpList' ? (
-      <CalendarDetailSignUpList list={addOn.signUpList} mayModerate={mayModerate} />
+      <CalendarDetailSignUpList
+        list={addOn.signUpList}
+        mayModerate={mayModerate}
+        mayAnswer={mayAnswer}
+      />
     ) : null;
   const daySchedule =
     addOn.kind === 'daySchedule' ? (

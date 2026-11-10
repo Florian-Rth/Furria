@@ -217,6 +217,49 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
             .AssertAsync(ct);
     }
 
+    [Fact]
+    public async Task Should_RefuseTheLine_When_TheEntryIsMeantForAnotherGroup()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var listId = ctx.Club.CalendarSignUpLists.IdOf("garde-helpers");
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var response = await SignUpAsync(ctx, "dana", listId, "Aufbau", ct);
+
+                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+            }
+        );
+
+        await ctx.Expected.CalendarSignUpList(listId).ToHaveLines().AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_AddTheLine_When_SheBelongsToTheGroupTheEntryIsMeantFor()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var listId = ctx.Club.CalendarSignUpLists.IdOf("garde-helpers");
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var response = await SignUpAsync(ctx, "elli", listId, "Aufbau", ct);
+
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            }
+        );
+
+        await ctx
+            .Expected.CalendarSignUpList(listId)
+            .ToHaveLines((ctx.Identity.People.IdOf("elli"), "Aufbau"))
+            .AssertAsync(ct);
+    }
+
     private static async Task<HttpResponseMessage> SignUpAsync(
         SeededContext ctx,
         string personAlias,
@@ -247,6 +290,14 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
                             .AddPerson("dana", "Dana", "Doppelt")
                             .AddAccount("dana")
                             .AddMembership("dana-first", "dana", JoinedIn2017)
+                            .AddPerson("elli", "Elli", "Garde")
+                            .AddAccount("elli")
+                            .AddMembership("elli-first", "elli", JoinedIn2017)
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupMembership("elli-tanzgarde", "tanzgarde", "elli", JoinedIn2017)
                     )
                     .Roles(roles =>
                         roles.AddRoleWithHolder(
@@ -279,6 +330,13 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
                             )
                             .AddCalendarSignUpList("late", "breakfast", "Weißwürste")
                             .AddCalendarSignUpList("secret", "farewell", "Geschenk")
+                            .AddCalendarEntry(
+                                "garde-meeting",
+                                "Gardetreffen",
+                                AtTheCoffee,
+                                ownerGroupAlias: "tanzgarde"
+                            )
+                            .AddCalendarSignUpList("garde-helpers", "garde-meeting", "Helfer")
                     ),
             ct
         );

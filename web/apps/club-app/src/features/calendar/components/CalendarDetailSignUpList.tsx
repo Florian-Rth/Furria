@@ -7,6 +7,7 @@ import { useCalendarSignUpListClosing } from '../hooks/use-calendar-sign-up-list
 import type { CalendarSignUpList } from '../schemas';
 import { CalendarCloseAction } from './CalendarCloseAction';
 import type { CalendarConfirmCopy } from './CalendarConfirmDialog';
+import { CalendarNotAnsweredRoll } from './CalendarNotAnsweredRoll';
 import { CalendarSignUpLineRemovalDialog } from './CalendarSignUpLineRemovalDialog';
 
 const LINES_LABEL = 'Einträge';
@@ -24,11 +25,13 @@ const CLOSE_COPY: Omit<CalendarConfirmCopy, 'question'> = {
 interface CalendarDetailSignUpListProps {
   list: CalendarSignUpList;
   mayModerate: boolean;
+  mayAnswer: boolean;
 }
 
 export const CalendarDetailSignUpList: FC<CalendarDetailSignUpListProps> = ({
   list,
   mayModerate,
+  mayAnswer,
 }) => {
   const removal = useCalendarSignUpLineRemoval();
   const closing = useCalendarSignUpListClosing(list, mayModerate);
@@ -55,7 +58,10 @@ export const CalendarDetailSignUpList: FC<CalendarDetailSignUpListProps> = ({
         {lines}
       </KkSignUpSheet.Lines>
     );
-  const entry = control.isOpen ? (
+  const takesLines = control.isOpen && mayAnswer;
+  const notAnswered =
+    list.notAnswered === null ? null : <CalendarNotAnsweredRoll notAnswered={list.notAnswered} />;
+  const entry = takesLines ? (
     <KkSignUpSheet.Entry
       name={entryName}
       label={ENTRY_LABEL}
@@ -83,6 +89,7 @@ export const CalendarDetailSignUpList: FC<CalendarDetailSignUpListProps> = ({
     <KkSignUpSheet label={control.title}>
       <KkSignUpSheet.Head title={control.title} hint={control.hint} meta={control.meta} />
       {linesList}
+      {notAnswered}
       {entry}
       {closeAction}
       <CalendarSignUpLineRemovalDialog

@@ -44,7 +44,7 @@ const toOpenPerson = (person: CalendarAttendancePerson): AttendanceRollPerson =>
   recordedBy: null,
 });
 
-const toOpenGroup = (
+export const toOpenGroup = (
   notAnswered: readonly CalendarAttendancePerson[] | null,
 ): AttendanceRollGroup[] =>
   notAnswered === null

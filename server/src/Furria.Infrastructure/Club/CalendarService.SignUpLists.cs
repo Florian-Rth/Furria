@@ -29,6 +29,7 @@ public sealed partial class CalendarService
                 command.ActorAccountId,
                 personId,
                 command.SignUpListId,
+                takesPart: true,
                 ct
             ) is
             { } refusal
@@ -69,7 +70,13 @@ public sealed partial class CalendarService
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
 
         if (
-            await OpenSignUpListRefusalAsync(actorAccountId, personId, signUpListId, ct) is
+            await OpenSignUpListRefusalAsync(
+                actorAccountId,
+                personId,
+                signUpListId,
+                takesPart: false,
+                ct
+            ) is
             { } refusal
         )
             return refusal;
@@ -160,6 +167,7 @@ public sealed partial class CalendarService
         int actorAccountId,
         int personId,
         int signUpListId,
+        bool takesPart,
         CancellationToken ct
     )
     {
@@ -172,7 +180,8 @@ public sealed partial class CalendarService
                 .CalendarSignUpLists.Where(list => list.Id == signUpListId)
                 .Select(list => list.CalendarEntry!),
             UnknownSignUpListMessage,
-            NotYourSignUpListMessage
+            NotYourSignUpListMessage,
+            takesPart
         );
 
         if (await AddOnSightRefusalAsync(sight, ct) is { } unseen)

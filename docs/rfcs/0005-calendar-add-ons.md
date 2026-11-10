@@ -1,7 +1,7 @@
 ---
 rfc: 0005
 title: Calendar add-ons — three kinds, an audience and building blocks instead of entry kinds
-status: phases 1–7 built; result views (phases 8–12) in progress
+status: phases 1–9 built; result views (phases 10–12) open
 github_issue: 70
 branch: feat/rfc-70-calendar-add-ons
 created: 2026-11-10
@@ -400,11 +400,20 @@ Decisions taken while building phase 8:
 
 ### Phase 9 — Only the concerned answer; not answered on polls and lists
 Goal: answering follows concern, and polls and lists show organisers who is still missing.
-- [ ] Answering Zu-/Absage, voting and signing up require that the entry concerns her or that she may edit it (`CalendarTies`); everyone else is refused
-- [ ] Entry detail: `mayAnswer` per entry; the club app hides the controls when it is false
-- [ ] Polls and sign-up lists: `notAnswered` for organisers, and an "x von y" count for everyone
-- [ ] Club app: *Noch offen* on poll and list cards for organisers
-- [ ] Integration and pure-function tests
+- [x] Answering Zu-/Absage, voting and signing up require that the entry concerns her or that she may edit it (`CalendarTies`); everyone else is refused
+- [x] Entry detail: `mayAnswer` per entry; the club app hides the controls when it is false
+- [x] Polls and sign-up lists: `notAnswered` for organisers, and an "x von y" count for everyone
+- [x] Club app: *Noch offen* on poll and list cards for organisers
+- [x] Integration and pure-function tests
+
+Decisions taken while building phase 9:
+- **May answer = her dates or may edit.** The rule uses the canonical `CalendarTies.IsHers`
+  (concerns her, runs it via the owner or a participating group, or her group takes part in a club
+  entry), not bare `Concerns`, so trainers and participating groups keep answering. Withdrawing her
+  own sign-up line needs only sight.
+- **Concerned count and *Noch offen* come only with the entry detail;** the calendar list carries
+  `mayAnswer` only. The concerned people are read once per detail and shared by Zu-/Absage, polls
+  and lists. On an anonymous poll, *Noch offen* names who has not voted, never what anyone chose.
 
 ### Phase 10 — Lifecycle of polls and lists
 Goal: closed means closed, and every close carries a name.

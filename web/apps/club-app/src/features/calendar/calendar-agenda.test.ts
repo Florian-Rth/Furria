@@ -55,6 +55,7 @@ const entry = (
   attendance: null,
   description: null,
   viewerAnswer: null,
+  mayAnswer: true,
   isRunning: false,
   event: null,
   ...extra,

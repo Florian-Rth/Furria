@@ -20,7 +20,11 @@ public sealed partial class CalendarService
         );
 
         if (entry is not null && ties.Sees(entry.ToFacts(), rights))
-            return null;
+        {
+            return sight.TakesPart
+                ? await AnswerRefusalAsync(sight.ActorAccountId, entry.ToFacts(), ties, ct)
+                : null;
+        }
 
         return rights.HoldsClubRead
             ? Result.NotFound(sight.UnknownMessage)
@@ -32,6 +36,7 @@ public sealed partial class CalendarService
         int PersonId,
         IQueryable<CalendarEntry> Entry,
         string UnknownMessage,
-        string NotYoursMessage
+        string NotYoursMessage,
+        bool TakesPart
     );
 }
