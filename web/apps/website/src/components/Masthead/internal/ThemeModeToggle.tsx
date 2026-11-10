@@ -13,7 +13,7 @@ export const ThemeModeToggle: FC = () => {
   };
 
   return (
-    <IconButton aria-label={label} onClick={handleClick} sx={{ color: 'text.primary' }}>
+    <IconButton aria-label={label} onClick={handleClick} color="inherit">
       <KkSunMoonMorphIcon scheme={resolved} />
     </IconButton>
   );

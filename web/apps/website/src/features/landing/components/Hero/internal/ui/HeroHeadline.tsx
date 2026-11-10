@@ -1,6 +1,4 @@
-import { KkTwoToneHeadline } from '@furria/ui/KkTwoToneHeadline';
 import type { FC } from 'react';
+import { LandingStampHeadline } from '../../../LandingStampHeadline';
 
-export const HeroHeadline: FC = () => (
-  <KkTwoToneHeadline line1="GROSS" line2="FURRIA!" posterShadow />
-);
+export const HeroHeadline: FC = () => <LandingStampHeadline posterShadow />;

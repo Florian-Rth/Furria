@@ -1,6 +1,7 @@
 import { pseudoRandom } from '../../../confetti-pieces';
 
 export type GreetingBurstColor = 'red' | 'gold' | 'ink';
+export type GreetingBurstFan = 'up' | 'side';
 
 export interface GreetingBurstPiece {
   id: number;
@@ -18,8 +19,10 @@ export interface GreetingBurstPiece {
 
 const PIECES = 11;
 const COLORS: readonly GreetingBurstColor[] = ['red', 'gold', 'ink'];
-const FAN_FROM = -165;
-const FAN_TO = -15;
+const FAN_DEGREES: Record<GreetingBurstFan, readonly [number, number]> = {
+  up: [-165, -15],
+  side: [-62, -6],
+};
 const REACH_MIN = 34;
 const REACH_SPREAD = 44;
 const DRIFT = 1.35;
@@ -35,11 +38,16 @@ const DURATION_SPREAD = 0.3;
 const RADIANS_PER_DEGREE = Math.PI / 180;
 const HALF = 0.5;
 
-export const greetingBurstOf = (seed: number): GreetingBurstPiece[] =>
-  Array.from({ length: PIECES }, (_, id) => {
+export const greetingBurstOf = (
+  seed: number,
+  fan: GreetingBurstFan = 'up',
+): GreetingBurstPiece[] => {
+  const [fanFrom, fanTo] = FAN_DEGREES[fan];
+
+  return Array.from({ length: PIECES }, (_, id) => {
     const random = (offset: number): number => pseudoRandom(seed, id * PIECES + offset);
     const share = (id + random(0)) / PIECES;
-    const angle = (FAN_FROM + (FAN_TO - FAN_FROM) * share) * RADIANS_PER_DEGREE;
+    const angle = (fanFrom + (fanTo - fanFrom) * share) * RADIANS_PER_DEGREE;
     const reach = REACH_MIN + random(1) * REACH_SPREAD;
     const riseX = Math.cos(angle) * reach;
     const riseY = Math.sin(angle) * reach;
@@ -58,3 +66,4 @@ export const greetingBurstOf = (seed: number): GreetingBurstPiece[] =>
       durationSeconds: DURATION_MIN + random(7) * DURATION_SPREAD,
     };
   });
+};
