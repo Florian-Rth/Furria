@@ -208,16 +208,12 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseThePasswordAndKeepTheInvitationLive_When_ItHasSevenCharacters()
+    public async Task Should_RefuseThePasswordAndKeepTheInvitationLive_When_ItIsEmpty()
     {
         var ct = TestContext.Current.CancellationToken;
         var (ctx, annaId, token) = await ArrangeMailInvitationAsync(ct);
 
-        var (response, _) = await InvitationSteps.RedeemAsync(
-            _fixture.CreateClient(),
-            token,
-            "kurzpw1"
-        );
+        var (response, _) = await InvitationSteps.RedeemAsync(_fixture.CreateClient(), token, "");
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         await AssertRefusedOnAsync(response, PasswordField, ct);
@@ -230,7 +226,7 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_SignHerIn_When_ThePasswordIsEightLowercaseLetters()
+    public async Task Should_SignHerIn_When_ThePasswordIsASingleCharacter()
     {
         var ct = TestContext.Current.CancellationToken;
         var (_, annaId, token) = await ArrangeMailInvitationAsync(ct);
@@ -238,7 +234,7 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
         var (response, redemption) = await InvitationSteps.RedeemAsync(
             _fixture.CreateClient(),
             token,
-            "tanzbein"
+            "x"
         );
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -246,7 +242,21 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
             .SignedInClient(_fixture, redemption)
             .GETAsync<GetMe, GetMeResponse>();
         Assert.Equal(annaId, me.Person?.Id);
-        Assert.Equal(HttpStatusCode.OK, await LogInStatusAsync(me.Email, "tanzbein"));
+        Assert.Equal(HttpStatusCode.OK, await LogInStatusAsync(me.Email, "x"));
+    }
+
+    [Fact]
+    public async Task Should_ServeAHallBehindOneAddress_When_ItRedeemsBeyondTheGeneralPerIpLimit()
+    {
+        await _fixture.BuildAsync(TestContext.Current.CancellationToken);
+        await using var host = OnboardingRateLimitSteps.VenueHost(_fixture);
+        var client = OnboardingRateLimitSteps.VenueClient(host);
+
+        await OnboardingRateLimitSteps.AssertServesTheHallAsync(async () =>
+            (await InvitationSteps.RedeemAsync(client, InvitationSteps.UnknownToken()))
+                .Response
+                .StatusCode
+        );
     }
 
     [Fact]
@@ -723,7 +733,7 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseThePasswordBeforeMailingACode_When_ItIsTooShort()
+    public async Task Should_RefuseThePasswordBeforeMailingACode_When_ItIsEmpty()
     {
         var ct = TestContext.Current.CancellationToken;
         var (ctx, annaId, token) = await ArrangeMailInvitationAsync(ct);
@@ -731,7 +741,7 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
         var (response, _) = await InvitationSteps.RedeemAsync(
             _fixture.CreateClient(),
             token,
-            "kurzpw1",
+            "",
             loginEmail: InvitationSteps.UniqueContactEmail("anna-privat")
         );
 

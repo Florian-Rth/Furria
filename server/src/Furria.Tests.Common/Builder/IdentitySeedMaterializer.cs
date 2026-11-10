@@ -369,6 +369,7 @@ internal static class IdentitySeedMaterializer
         );
 
         dbContext.Users.AddRange(accounts.Values);
+        dbContext.AccountEvents.AddRange(RedemptionsOf(recorded, personIds));
         await dbContext.SaveChangesAsync(ct);
 
         return new SeededAccounts(
@@ -384,6 +385,24 @@ internal static class IdentitySeedMaterializer
             )
         );
     }
+
+    private static IEnumerable<AccountEvent> RedemptionsOf(
+        IdentitySeedBuilder recorded,
+        IReadOnlyDictionary<string, int> personIds
+    ) =>
+        recorded
+            .Accounts.Where(intent => intent.RedeemedAt is not null)
+            .Select(intent =>
+            {
+                var personId = SeedAliases.RequireId(personIds, intent.Alias, "Person");
+                return new AccountEvent
+                {
+                    PersonId = personId,
+                    Kind = AccountEventKind.Redeemed,
+                    ActorPersonId = personId,
+                    At = intent.RedeemedAt!.Value,
+                };
+            });
 
     private static Dictionary<string, AccountCredential> Credentials(
         IdentitySeedBuilder recorded,

@@ -246,7 +246,7 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    takes `AddPerson`, `AddPersonContact`, `AddMembership`, `AddAdmission` (stamps a seeded
    membership as admitted: by whom, when, with or without a minor's guardian consent),
    `AddMembershipPause`,
-   `AddFeeReduction`, `AddAccount`, `AddContactChange(personAlias, changedByAlias, changedAt)`
+   `AddFeeReduction`, `AddAccount` (its `redeemedAt` also records the invitation's redemption at that moment, as production does when an account comes into being), `AddContactChange(personAlias, changedByAlias, changedAt)`
    (the last change of a person's contact details and who made it, both persons by alias),
    `AddArchive(personAlias, archivedOn, archivedByAlias)` (files her away; no
    `archivedByAlias` is an archiving by the managing login) and
@@ -339,7 +339,9 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    issuedByPersonId)`) and `Expected.AccountEventsOfPerson(personId)`
    (`ToHaveKindsInOrder(kinds…)`, `ToHaveLatestActor(personId)`, `ToHaveNoLatestActor()` for a
    self-requested invitation). `LiveInvitationOfPerson` also takes `ToBeSelfRequested()` and
-   `ToBeRecoveryIssuedBy(issuedByPersonId)`. A login-email change is asserted on
+   `ToBeRecoveryIssuedBy(issuedByPersonId)`. The claim window is asserted on
+   `Expected.ClaimWindows()` (`ToHaveCount`, `ToHaveLatestEndingAt(closesAt, openedByPersonId)`,
+   `ToHaveLatestClosedAt`). A login-email change is asserted on
    `Expected.EmailConfirmationsOfAccount(accountId)` (`ToHaveCount`, `ToHaveLiveCount`) and
    `Expected.Account(id).ToSignInAs(email)`; the key ring on
    `Expected.DataProtectionKeys().ToHoldAKey()`. A person's contact details are

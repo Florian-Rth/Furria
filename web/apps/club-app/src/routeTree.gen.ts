@@ -11,10 +11,12 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as ResetPasswordRouteImport } from './routes/reset-password'
 import { Route as RequestAccessRouteImport } from './routes/request-access'
+import { Route as PromoRouteImport } from './routes/promo'
 import { Route as PhotosRouteImport } from './routes/photos'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as InvitationRouteImport } from './routes/invitation'
 import { Route as ForgotPasswordRouteImport } from './routes/forgot-password'
+import { Route as ClaimWindowRouteImport } from './routes/claim-window'
 import { Route as AppRouteImport } from './routes/_app'
 import { Route as AppIndexRouteImport } from './routes/_app/index'
 import { Route as InvitationCodeRouteImport } from './routes/invitation_.code'
@@ -41,6 +43,7 @@ import { Route as AppSystemMediaRouteImport } from './routes/_app/system.media'
 import { Route as AppSystemMailRouteImport } from './routes/_app/system.mail'
 import { Route as AppSystemLogRouteImport } from './routes/_app/system.log'
 import { Route as AppSystemDatabaseRouteImport } from './routes/_app/system.database'
+import { Route as AppSystemClaimWindowRouteImport } from './routes/_app/system.claim-window'
 import { Route as AppNewsPostIdRouteImport } from './routes/_app/news_.$postId'
 import { Route as AppManageVenuesRouteImport } from './routes/_app/manage.venues'
 import { Route as AppManageSessionsRouteImport } from './routes/_app/manage.sessions'
@@ -167,6 +170,11 @@ const RequestAccessRoute = RequestAccessRouteImport.update({
   path: '/request-access',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PromoRoute = PromoRouteImport.update({
+  id: '/promo',
+  path: '/promo',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const PhotosRoute = PhotosRouteImport.update({
   id: '/photos',
   path: '/photos',
@@ -185,6 +193,11 @@ const InvitationRoute = InvitationRouteImport.update({
 const ForgotPasswordRoute = ForgotPasswordRouteImport.update({
   id: '/forgot-password',
   path: '/forgot-password',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ClaimWindowRoute = ClaimWindowRouteImport.update({
+  id: '/claim-window',
+  path: '/claim-window',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AppRoute = AppRouteImport.update({
@@ -312,6 +325,11 @@ const AppSystemLogRoute = AppSystemLogRouteImport.update({
 const AppSystemDatabaseRoute = AppSystemDatabaseRouteImport.update({
   id: '/system/database',
   path: '/system/database',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppSystemClaimWindowRoute = AppSystemClaimWindowRouteImport.update({
+  id: '/system/claim-window',
+  path: '/system/claim-window',
   getParentRoute: () => AppRoute,
 } as any)
 const AppNewsPostIdRoute = AppNewsPostIdRouteImport.update({
@@ -950,10 +968,12 @@ const AppActsActIdDetailsTrainingsTrainingIdRollRoute =
 
 export interface FileRoutesByFullPath {
   '/': typeof AppIndexRoute
+  '/claim-window': typeof ClaimWindowRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
   '/photos': typeof PhotosRoute
+  '/promo': typeof PromoRoute
   '/request-access': typeof RequestAccessRoute
   '/reset-password': typeof ResetPasswordRoute
   '/$': typeof AppSplatRoute
@@ -1000,6 +1020,7 @@ export interface FileRoutesByFullPath {
   '/manage/sessions': typeof AppManageSessionsRoute
   '/manage/venues': typeof AppManageVenuesRoute
   '/news/$postId': typeof AppNewsPostIdRoute
+  '/system/claim-window': typeof AppSystemClaimWindowRoute
   '/system/database': typeof AppSystemDatabaseRoute
   '/system/log': typeof AppSystemLogRoute
   '/system/mail': typeof AppSystemMailRoute
@@ -1095,10 +1116,12 @@ export interface FileRoutesByFullPath {
   '/acts/$actId/details/trainings/$trainingId/roll': typeof AppActsActIdDetailsTrainingsTrainingIdRollRoute
 }
 export interface FileRoutesByTo {
+  '/claim-window': typeof ClaimWindowRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
   '/photos': typeof PhotosRoute
+  '/promo': typeof PromoRoute
   '/request-access': typeof RequestAccessRoute
   '/reset-password': typeof ResetPasswordRoute
   '/$': typeof AppSplatRoute
@@ -1145,6 +1168,7 @@ export interface FileRoutesByTo {
   '/manage/sessions': typeof AppManageSessionsRoute
   '/manage/venues': typeof AppManageVenuesRoute
   '/news/$postId': typeof AppNewsPostIdRoute
+  '/system/claim-window': typeof AppSystemClaimWindowRoute
   '/system/database': typeof AppSystemDatabaseRoute
   '/system/log': typeof AppSystemLogRoute
   '/system/mail': typeof AppSystemMailRoute
@@ -1241,10 +1265,12 @@ export interface FileRoutesByTo {
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_app': typeof AppRouteWithChildren
+  '/claim-window': typeof ClaimWindowRoute
   '/forgot-password': typeof ForgotPasswordRoute
   '/invitation': typeof InvitationRoute
   '/login': typeof LoginRoute
   '/photos': typeof PhotosRoute
+  '/promo': typeof PromoRoute
   '/request-access': typeof RequestAccessRoute
   '/reset-password': typeof ResetPasswordRoute
   '/_app/$': typeof AppSplatRoute
@@ -1294,6 +1320,7 @@ export interface FileRoutesById {
   '/_app/manage/sessions': typeof AppManageSessionsRoute
   '/_app/manage/venues': typeof AppManageVenuesRoute
   '/_app/news_/$postId': typeof AppNewsPostIdRoute
+  '/_app/system/claim-window': typeof AppSystemClaimWindowRoute
   '/_app/system/database': typeof AppSystemDatabaseRoute
   '/_app/system/log': typeof AppSystemLogRoute
   '/_app/system/mail': typeof AppSystemMailRoute
@@ -1392,10 +1419,12 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/claim-window'
     | '/forgot-password'
     | '/invitation'
     | '/login'
     | '/photos'
+    | '/promo'
     | '/request-access'
     | '/reset-password'
     | '/$'
@@ -1442,6 +1471,7 @@ export interface FileRouteTypes {
     | '/manage/sessions'
     | '/manage/venues'
     | '/news/$postId'
+    | '/system/claim-window'
     | '/system/database'
     | '/system/log'
     | '/system/mail'
@@ -1537,10 +1567,12 @@ export interface FileRouteTypes {
     | '/acts/$actId/details/trainings/$trainingId/roll'
   fileRoutesByTo: FileRoutesByTo
   to:
+    | '/claim-window'
     | '/forgot-password'
     | '/invitation'
     | '/login'
     | '/photos'
+    | '/promo'
     | '/request-access'
     | '/reset-password'
     | '/$'
@@ -1587,6 +1619,7 @@ export interface FileRouteTypes {
     | '/manage/sessions'
     | '/manage/venues'
     | '/news/$postId'
+    | '/system/claim-window'
     | '/system/database'
     | '/system/log'
     | '/system/mail'
@@ -1682,10 +1715,12 @@ export interface FileRouteTypes {
   id:
     | '__root__'
     | '/_app'
+    | '/claim-window'
     | '/forgot-password'
     | '/invitation'
     | '/login'
     | '/photos'
+    | '/promo'
     | '/request-access'
     | '/reset-password'
     | '/_app/$'
@@ -1735,6 +1770,7 @@ export interface FileRouteTypes {
     | '/_app/manage/sessions'
     | '/_app/manage/venues'
     | '/_app/news_/$postId'
+    | '/_app/system/claim-window'
     | '/_app/system/database'
     | '/_app/system/log'
     | '/_app/system/mail'
@@ -1832,10 +1868,12 @@ export interface FileRouteTypes {
 }
 export interface RootRouteChildren {
   AppRoute: typeof AppRouteWithChildren
+  ClaimWindowRoute: typeof ClaimWindowRoute
   ForgotPasswordRoute: typeof ForgotPasswordRoute
   InvitationRoute: typeof InvitationRoute
   LoginRoute: typeof LoginRoute
   PhotosRoute: typeof PhotosRoute
+  PromoRoute: typeof PromoRoute
   RequestAccessRoute: typeof RequestAccessRoute
   ResetPasswordRoute: typeof ResetPasswordRoute
   BeerListBookRoute: typeof BeerListBookRoute
@@ -1856,6 +1894,13 @@ declare module '@tanstack/react-router' {
       path: '/request-access'
       fullPath: '/request-access'
       preLoaderRoute: typeof RequestAccessRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/promo': {
+      id: '/promo'
+      path: '/promo'
+      fullPath: '/promo'
+      preLoaderRoute: typeof PromoRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/photos': {
@@ -1884,6 +1929,13 @@ declare module '@tanstack/react-router' {
       path: '/forgot-password'
       fullPath: '/forgot-password'
       preLoaderRoute: typeof ForgotPasswordRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/claim-window': {
+      id: '/claim-window'
+      path: '/claim-window'
+      fullPath: '/claim-window'
+      preLoaderRoute: typeof ClaimWindowRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_app': {
@@ -2066,6 +2118,13 @@ declare module '@tanstack/react-router' {
       path: '/system/database'
       fullPath: '/system/database'
       preLoaderRoute: typeof AppSystemDatabaseRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/_app/system/claim-window': {
+      id: '/_app/system/claim-window'
+      path: '/system/claim-window'
+      fullPath: '/system/claim-window'
+      preLoaderRoute: typeof AppSystemClaimWindowRouteImport
       parentRoute: typeof AppRoute
     }
     '/_app/news_/$postId': {
@@ -3009,6 +3068,7 @@ interface AppRouteChildren {
   AppManageSessionsRoute: typeof AppManageSessionsRoute
   AppManageVenuesRoute: typeof AppManageVenuesRoute
   AppNewsPostIdRoute: typeof AppNewsPostIdRoute
+  AppSystemClaimWindowRoute: typeof AppSystemClaimWindowRoute
   AppSystemDatabaseRoute: typeof AppSystemDatabaseRoute
   AppSystemLogRoute: typeof AppSystemLogRoute
   AppSystemMailRoute: typeof AppSystemMailRoute
@@ -3127,6 +3187,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppManageSessionsRoute: AppManageSessionsRoute,
   AppManageVenuesRoute: AppManageVenuesRoute,
   AppNewsPostIdRoute: AppNewsPostIdRoute,
+  AppSystemClaimWindowRoute: AppSystemClaimWindowRoute,
   AppSystemDatabaseRoute: AppSystemDatabaseRoute,
   AppSystemLogRoute: AppSystemLogRoute,
   AppSystemMailRoute: AppSystemMailRoute,
@@ -3222,10 +3283,12 @@ const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
 
 const rootRouteChildren: RootRouteChildren = {
   AppRoute: AppRouteWithChildren,
+  ClaimWindowRoute: ClaimWindowRoute,
   ForgotPasswordRoute: ForgotPasswordRoute,
   InvitationRoute: InvitationRoute,
   LoginRoute: LoginRoute,
   PhotosRoute: PhotosRoute,
+  PromoRoute: PromoRoute,
   RequestAccessRoute: RequestAccessRoute,
   ResetPasswordRoute: ResetPasswordRoute,
   BeerListBookRoute: BeerListBookRoute,

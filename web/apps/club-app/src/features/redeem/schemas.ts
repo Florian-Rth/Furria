@@ -1,6 +1,5 @@
 import { z } from 'zod';
 import { SessionTokensSchema } from '@/lib/api/schemas';
-import { PASSWORD_MIN_LENGTH } from '@/lib/password-rule';
 
 export const CONFIRMATION_CODE_LENGTH = 6;
 
@@ -58,9 +57,7 @@ export type Redemption = z.infer<typeof RedemptionSchema>;
 
 export const RedeemFormSchema = z.object({
   loginEmail: z.string().trim().pipe(z.email(EMAIL_MESSAGE)),
-  password: z
-    .string()
-    .min(PASSWORD_MIN_LENGTH, `Dein Passwort braucht mindestens ${PASSWORD_MIN_LENGTH} Zeichen.`),
+  password: z.string().min(1, 'Bitte gib ein Passwort ein.'),
   updateContactEmail: z.boolean(),
 });
 export type RedeemForm = z.infer<typeof RedeemFormSchema>;

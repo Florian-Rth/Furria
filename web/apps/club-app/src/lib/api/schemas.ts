@@ -165,6 +165,7 @@ export const PERMISSION_KEYS = {
   beerListManage: 'beer_list.manage',
   beerListTake: 'beer_list.take',
   systemView: 'system.view',
+  claimWindowManage: 'claim_window.manage',
 } as const;
 
 export type PermissionKey = (typeof PERMISSION_KEYS)[keyof typeof PERMISSION_KEYS];

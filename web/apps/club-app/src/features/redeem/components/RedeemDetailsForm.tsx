@@ -8,7 +8,6 @@ import { KkTextField } from '@furria/ui/KkTextField';
 import Stack from '@mui/material/Stack';
 import type { ChangeEvent, FC } from 'react';
 import { usePasswordVisibility } from '@/features/login/hooks/use-password-visibility';
-import { PASSWORD_RULE_HINT } from '@/lib/password-rule';
 import { useRedeemForm } from '../hooks/use-redeem-form';
 import { toRedeemHeading } from '../redeem-messages';
 import type { LiveInvitation } from '../redeem-stage';
@@ -124,7 +123,7 @@ export const RedeemDetailsForm: FC<RedeemDetailsFormProps> = ({
           autoFocus={!startsOnEmail}
           required
           error={hasPasswordError}
-          helperText={passwordErrorText ?? PASSWORD_RULE_HINT}
+          helperText={passwordErrorText}
           endAdornment={passwordToggle}
           onChange={passwordField.onChange}
           onBlur={passwordField.onBlur}
