@@ -11,8 +11,8 @@ import { CalendarAddOnCard } from './CalendarAddOnCard';
 import { CalendarAddOnRemovalDialog } from './CalendarAddOnRemovalDialog';
 import { CalendarAddOnSheet } from './CalendarAddOnSheet';
 
-const SECTION_TITLE = 'Bausteine';
-const ADD_LABEL = 'Baustein hinzufügen';
+const SECTION_TITLE = 'Funktionen';
+const ADD_LABEL = 'Funktion hinzufügen';
 
 interface CalendarEntryAddOnsSectionProps {
   control: CalendarEntryEditorControl;

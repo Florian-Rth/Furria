@@ -3,7 +3,7 @@ import type { CalendarEntryKind } from '@/features/club/schemas';
 import type { MyGroupSummary } from '@/features/group-hub/schemas';
 import { toDayNumberLabel, toTimeSpanLabel } from '@/lib/calendar-days';
 import type { DayTime } from '@/lib/day';
-import { toDayTime, toInstant, toIsoDay } from '@/lib/day';
+import { daysBetween, toDayTime, toInstant, toIsoDay } from '@/lib/day';
 import { toAddOnCards } from './calendar-add-ons';
 import type { CalendarDaySchedulePayload } from './calendar-day-schedules';
 import { toDaySchedulePayload } from './calendar-day-schedules';
@@ -26,7 +26,12 @@ export const NO_VENUE_ID = '';
 const CLUB_OWNER_OPTION_LABEL = 'Verein';
 const TRAINING_TITLE = 'Training';
 const DEFAULT_START_TIME = '19:00';
-const DEFAULT_END_TIME = '21:00';
+const ADDED_END_SPAN_MINUTES = 120;
+const MINUTE_MS = 60_000;
+const HOUR_MINUTES = 60;
+const DAY_MINUTES = 24 * HOUR_MINUTES;
+const NO_END_DAY = '';
+const NO_END_TIME = '';
 const ONE_COLLISION = 1;
 const ARCHIVED_SUFFIX = ' — archiviert';
 const PARTICIPANTS_EMPTY = 'Keine weiteren Gruppen verfügbar.';
@@ -357,6 +362,14 @@ const nextDayOf = (isoDay: string): string =>
     ),
   );
 
+const toDraftedEnd = (startDay: string, startTime: string, endTime: string | null): DayTime => {
+  if (endTime === null) {
+    return { day: NO_END_DAY, time: NO_END_TIME };
+  }
+
+  return { day: endTime > startTime ? startDay : nextDayOf(startDay), time: endTime };
+};
+
 const toDraftedFormValues = (
   options: readonly CalendarOwnerOption[],
   startDay: string,
@@ -369,7 +382,7 @@ const toDraftedFormValues = (
   const ownerId = owner?.id ?? CLUB_OWNER_ID;
   const kind = draft.kind ?? 'plain';
   const startTime = draft.startTime ?? DEFAULT_START_TIME;
-  const endTime = draft.endTime ?? DEFAULT_END_TIME;
+  const end = toDraftedEnd(startDay, startTime, draft.endTime);
 
   return {
     title: draft.kind === 'training' ? TRAINING_TITLE : '',
@@ -382,8 +395,8 @@ const toDraftedFormValues = (
     audiencePersonIds: [],
     startDay,
     startTime,
-    endDay: endTime > startTime ? startDay : nextDayOf(startDay),
-    endTime,
+    endDay: end.day,
+    endTime: end.time,
     addOns: [],
     participatingGroupIds: [],
   };
@@ -413,8 +426,8 @@ export const toEntryFormValues = (
     audiencePersonIds: entry.audiencePeople.map((person) => String(person.personId)),
     startDay: start.day,
     startTime: start.time,
-    endDay: end?.day ?? '',
-    endTime: end?.time ?? DEFAULT_END_TIME,
+    endDay: end?.day ?? NO_END_DAY,
+    endTime: end?.time ?? NO_END_TIME,
     addOns: toAddOnCards(entry.addOns),
     participatingGroupIds: entry.participatingGroups.map((group) => toOwnerId(group.groupId)),
   };
@@ -427,16 +440,41 @@ export const toEndKeptInStep = (
   nextStart: DayTime,
   end: DayTime,
 ): DayTime => {
-  const endsAt = atInstant(end);
-  const startsAt = atInstant(nextStart);
+  const span = Math.max(atInstant(end) - atInstant(previousStart), 0);
 
-  if (endsAt >= startsAt) {
-    return end;
+  return toDayTime(new Date(atInstant(nextStart) + span).toISOString());
+};
+
+export const toAddedEnd = (start: DayTime): DayTime =>
+  toDayTime(new Date(atInstant(start) + ADDED_END_SPAN_MINUTES * MINUTE_MS).toISOString());
+
+const toHourSpanLabel = (minutes: number): string => {
+  const hours = Math.floor(minutes / HOUR_MINUTES);
+  const rest = minutes % HOUR_MINUTES;
+
+  if (hours === 0) {
+    return `${rest} Min.`;
+  }
+  if (rest === 0) {
+    return `${hours} Std.`;
   }
 
-  const span = Math.max(endsAt - atInstant(previousStart), 0);
+  return `${hours} Std. ${rest} Min.`;
+};
 
-  return toDayTime(new Date(startsAt + span).toISOString());
+export const toEndSpanLabel = (start: DayTime, end: DayTime): string | null => {
+  const minutes = Math.round((atInstant(end) - atInstant(start)) / MINUTE_MS);
+
+  if (Number.isNaN(minutes) || minutes <= 0) {
+    return null;
+  }
+  if (minutes < DAY_MINUTES) {
+    return toHourSpanLabel(minutes);
+  }
+
+  const days = daysBetween(start.day, end.day) + 1;
+
+  return `${days} Tage`;
 };
 
 export const toCollisionName = (collision: CalendarCollision): string =>

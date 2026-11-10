@@ -79,7 +79,7 @@ English rendering anywhere else, so two translations never drift apart.
 | live direction | Live-Regie | — |
 | calendar entry | Kalendereintrag | `CalendarEntry` |
 | owner / audience | Eigentümer / Für wen | `Owner…`, `CalendarEntryAudience` |
-| add-on (calendar entry) | Baustein | `CalendarEntryAddOn` |
+| add-on (calendar entry) | Funktion | `CalendarEntryAddOn` |
 | participating groups (add-on) | Mitwirkende Gruppen | `CalendarEntryGroup` |
 | attendance response | Zu-/Absage | `AttendanceResponse` |
 | venue / city / note | Ort / Stadt / Hinweis | `Venue` |
@@ -1093,10 +1093,10 @@ recorded on behalf all rely on it; it is never rebuilt from a **poll**. Further 
   so moving the entry moves its schedule with it; a day only appears once the entry spans several.
   Nobody answers it, it never closes, an entry may hold several, and it is never on Start. Never
   called *Ablauf* — that is the evening's running order.
-_UI copy_: Baustein, Baustein hinzufügen; Zu-/Absage, Umfrage, Eintragsliste, Mitwirkende Gruppen,
+_UI copy_: Funktion, Funktion hinzufügen; Zu-/Absage, Umfrage, Eintragsliste, Mitwirkende Gruppen,
 Tagesablauf; Anonym,
 Abstimmen bis, Eintragen bis
-_Avoid_: feature, function, module, widget; building attendance from a poll
+_Avoid_: Baustein; feature, function, module, widget as code names; building attendance from a poll
 
 **Usual training time** (`UsualTrainingTime`):
 What a group says it usually does — optional, any number of `(weekday, time, duration, venue)`.

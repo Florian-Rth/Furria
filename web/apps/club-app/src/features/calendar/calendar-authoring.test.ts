@@ -5,12 +5,14 @@ import {
   mayOwnCalendarEntry,
   NO_DRAFT,
   opensEntrySheet,
+  toAddedEnd,
   toAudienceAfterOwnerChange,
   toAudienceGroupIds,
   toAudienceSwitch,
   toCalendarAudience,
   toDefaultAudience,
   toEndKeptInStep,
+  toEndSpanLabel,
   toEntryDraft,
   toEntryFormValues,
   toEntryLanding,
@@ -369,6 +371,17 @@ describe('toEntryFormValues', () => {
     ]).toEqual(['7', 'training', 'groups', '19:30', '2027-01-19', '21:00', '2', true]);
   });
 
+  it('starts a new entry without an end unless the draft brings one', () => {
+    const values = toEntryFormValues(
+      null,
+      toOwnerOptions([TANZGARDE], false),
+      '2027-01-19',
+      NO_DRAFT,
+    );
+
+    expect([values.endDay, values.endTime]).toEqual(['', '']);
+  });
+
   it('starts a new entry as a plain entry', () => {
     const values = toEntryFormValues(
       null,
@@ -434,34 +447,56 @@ describe('toEntryLanding', () => {
 });
 
 describe('toEndKeptInStep', () => {
-  it('leaves the end alone while it still lies after the start', () => {
-    expect(
-      toEndKeptInStep(
-        { day: '2027-01-20', time: '19:00' },
-        { day: '2027-01-20', time: '20:00' },
-        { day: '2027-01-20', time: '21:00' },
-      ),
-    ).toEqual({ day: '2027-01-20', time: '21:00' });
+  it.each([
+    {
+      previous: { day: '2027-01-20', time: '19:00' },
+      next: { day: '2027-01-20', time: '20:00' },
+      end: { day: '2027-01-20', time: '21:00' },
+      expected: { day: '2027-01-20', time: '22:00' },
+    },
+    {
+      previous: { day: '2027-01-20', time: '19:00' },
+      next: { day: '2027-01-20', time: '22:00' },
+      end: { day: '2027-01-20', time: '21:00' },
+      expected: { day: '2027-01-21', time: '00:00' },
+    },
+    {
+      previous: { day: '2027-01-20', time: '19:00' },
+      next: { day: '2027-01-18', time: '19:00' },
+      end: { day: '2027-01-22', time: '14:00' },
+      expected: { day: '2027-01-20', time: '14:00' },
+    },
+    {
+      previous: { day: '2027-01-20', time: '22:00' },
+      next: { day: '2027-01-20', time: '23:00' },
+      end: { day: '2027-01-20', time: '21:00' },
+      expected: { day: '2027-01-20', time: '23:00' },
+    },
+  ])('moves the end from $end with the start to $expected', ({ previous, next, end, expected }) => {
+    expect(toEndKeptInStep(previous, next, end)).toEqual(expected);
   });
+});
 
-  it('carries the end along with its span when the start moves past it', () => {
-    expect(
-      toEndKeptInStep(
-        { day: '2027-01-20', time: '19:00' },
-        { day: '2027-01-20', time: '22:00' },
-        { day: '2027-01-20', time: '21:00' },
-      ),
-    ).toEqual({ day: '2027-01-21', time: '00:00' });
+describe('toAddedEnd', () => {
+  it.each([
+    { start: { day: '2027-01-20', time: '19:00' }, expected: { day: '2027-01-20', time: '21:00' } },
+    { start: { day: '2027-01-20', time: '23:11' }, expected: { day: '2027-01-21', time: '01:11' } },
+  ])('ends $start two hours later', ({ start, expected }) => {
+    expect(toAddedEnd(start)).toEqual(expected);
   });
+});
 
-  it('collapses an end that already lay before its start onto the new start', () => {
-    expect(
-      toEndKeptInStep(
-        { day: '2027-01-20', time: '22:00' },
-        { day: '2027-01-20', time: '23:00' },
-        { day: '2027-01-20', time: '21:00' },
-      ),
-    ).toEqual({ day: '2027-01-20', time: '23:00' });
+describe('toEndSpanLabel', () => {
+  it.each([
+    { end: { day: '2027-01-20', time: '21:00' }, expected: '2 Std.' },
+    { end: { day: '2027-01-20', time: '20:30' }, expected: '1 Std. 30 Min.' },
+    { end: { day: '2027-01-20', time: '19:45' }, expected: '45 Min.' },
+    { end: { day: '2027-01-21', time: '02:00' }, expected: '7 Std.' },
+    { end: { day: '2027-01-22', time: '14:00' }, expected: '3 Tage' },
+    { end: { day: '2027-01-20', time: '19:00' }, expected: null },
+    { end: { day: '2027-01-20', time: '18:00' }, expected: null },
+  ])('labels the span to $end as $expected', ({ end, expected }) => {
+    expect(toEndSpanLabel({ day: '2027-01-20', time: '19:00' }, end)).toBe(expected);
   });
 });
 

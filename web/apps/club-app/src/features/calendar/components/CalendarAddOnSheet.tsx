@@ -5,7 +5,7 @@ import type { CalendarAddOnsControl } from '../hooks/use-calendar-add-ons';
 import { ADD_ON_SHEET_ID } from '../hooks/use-calendar-add-ons';
 import { CalendarAddOnOption } from './CalendarAddOnOption';
 
-const SHEET_TITLE = 'Baustein hinzufügen';
+const SHEET_TITLE = 'Funktion hinzufügen';
 const SHEET_CLOSE = 'Schließen';
 
 interface CalendarAddOnSheetProps {

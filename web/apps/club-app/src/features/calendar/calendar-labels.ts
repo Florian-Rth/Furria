@@ -32,6 +32,8 @@ export const DELETE_ENTRY_DANGER_LABEL = 'Termin löschen';
 
 const TODAY_LABEL = 'Heute';
 const TOMORROW_LABEL = 'Morgen';
+const SAME_DAY_LABEL = 'Selber Tag';
+const NEXT_DAY_LABEL = 'Folgetag';
 const CLUB_OWNER_LABEL = 'Verein';
 const NO_VENUE_LABEL = 'Kein Ort';
 
@@ -64,6 +66,11 @@ export const toStartDayQuickChoices = (today: Date): KkDateQuickChoice[] => [
     label: TOMORROW_LABEL,
     value: toIsoDay(new Date(today.getFullYear(), today.getMonth(), today.getDate() + 1)),
   },
+];
+
+export const toEndDayQuickChoices = (startDay: string): KkDateQuickChoice[] => [
+  { label: SAME_DAY_LABEL, value: startDay },
+  { label: NEXT_DAY_LABEL, value: shiftDay(startDay, 1) },
 ];
 
 const toEntryOwnerLabel = (entry: CalendarEntry): string =>

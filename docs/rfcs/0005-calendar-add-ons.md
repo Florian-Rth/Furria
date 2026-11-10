@@ -20,7 +20,7 @@ nothing, and every new need asks for another kind. This RFC changes three things
   in the events workbench.
 - **Audience:** a single **Für wen** replaces the visibility. It is *Verein*, *Gruppen* or
   *Ausgewählte Personen*.
-- **Add-ons:** whoever schedules an entry attaches **add-ons** (*Bausteine*): *Zu-/Absage*,
+- **Add-ons:** whoever schedules an entry attaches **add-ons** (*Funktionen*): *Zu-/Absage*,
   *Umfrage*, *Eintragsliste*, *Mitwirkende Gruppen* and *Tagesablauf*.
 
 Push reaches the people concerned. The domain is fixed in `CONTEXT.md` (**Calendar entry**,
@@ -106,8 +106,8 @@ One screen, top to bottom:
 - Für wen: chips, then a picker for groups or people
 - Eigentümer: only shown when there is a choice
 - Beschreibung
-- **Bausteine:** each attached add-on is a card configured in place, with a remove button.
-  *Baustein hinzufügen* opens a sheet with the five add-ons. Single-use add-ons disappear from the
+- **Funktionen:** each attached add-on is a card configured in place, with a remove button.
+  *Funktion hinzufügen* opens a sheet with the five add-ons. Single-use add-ons disappear from the
   sheet once attached.
 
 The entry detail shows the add-ons where people use them: answering, voting and adding a line.
@@ -175,10 +175,10 @@ Decisions taken while building phase 2:
   while answering checks the year; to be aligned with the push work in phase 7 at the latest.
 
 ### Phase 3 — Form: Für wen and the add-on frame
-Goal: the new form. Für wen has group and person pickers. *Bausteine* holds Zu-/Absage and
+Goal: the new form. Für wen has group and person pickers. *Funktionen* holds Zu-/Absage and
 Mitwirkende Gruppen as cards, and the old switch and participating-groups field are gone.
 - [x] Für wen chips + group multi-picker + person search picker with *Ganze Gruppe hinzufügen*
-- [x] *Bausteine* section: add sheet, cards, remove with confirmation when answers exist
+- [x] *Funktionen* section: add sheet, cards, remove with confirmation when answers exist
 - [x] Zu-/Absage card and Mitwirkende Gruppen card replace the switch and the participating-groups field
 - [x] API: removing Zu-/Absage discards its answers; clearing participating groups removes their appearances only when they hold no evening changes (else refused, as today)
 - [x] Entry detail: audience line, add-on sections in add-on order

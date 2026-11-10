@@ -15,6 +15,7 @@ import {
 } from '../calendar-add-ons';
 import type { CalendarOwnerOption } from '../calendar-authoring';
 import {
+  toAddedEnd,
   toAudienceAfterOwnerChange,
   toAudienceSwitch,
   toCalendarAudience,
@@ -44,6 +45,7 @@ import { CalendarEntryFormSchema } from '../schemas';
 
 const FIELD_EDIT = { shouldDirty: true, shouldValidate: true } as const;
 const QUIET_EDIT = { shouldDirty: true } as const;
+const NO_END: DayTime = { day: '', time: '' };
 
 interface CalendarEntryEditorInput {
   entry: CalendarEntry | null;
@@ -76,9 +78,11 @@ export interface CalendarEntryEditorControl {
     change: (schedule: CalendarDayScheduleForm) => CalendarDayScheduleForm,
   ) => void;
   recheckDayScheduleField: (path: DayScheduleFieldPath) => void;
-  setStartDay: (value: string | null) => void;
+  setStartDay: (value: string) => void;
   setStartTime: (value: string) => void;
-  setEndDay: (value: string | null) => void;
+  addEnd: () => void;
+  removeEnd: () => void;
+  setEndDay: (value: string) => void;
   setEndTime: (value: string) => void;
   isEditing: boolean;
   isDirty: boolean;
@@ -165,11 +169,9 @@ export const useCalendarEntryEditor = ({
     }
   };
 
-  const setStartDay = (value: string | null): void => {
-    const day = value ?? '';
-
-    keepEndInStep({ day, time: form.getValues('startTime') });
-    form.setValue('startDay', day, FIELD_EDIT);
+  const setStartDay = (value: string): void => {
+    keepEndInStep({ day: value, time: form.getValues('startTime') });
+    form.setValue('startDay', value, FIELD_EDIT);
     recheckDeadlines();
   };
 
@@ -177,6 +179,20 @@ export const useCalendarEntryEditor = ({
     keepEndInStep({ day: form.getValues('startDay'), time: value });
     form.setValue('startTime', value, FIELD_EDIT);
     recheckDeadlines();
+  };
+
+  const placeEnd = (end: DayTime): void => {
+    form.setValue('endDay', end.day, FIELD_EDIT);
+    form.setValue('endTime', end.time, FIELD_EDIT);
+    recheckStepDays();
+  };
+
+  const addEnd = (): void => {
+    placeEnd(toAddedEnd({ day: form.getValues('startDay'), time: form.getValues('startTime') }));
+  };
+
+  const removeEnd = (): void => {
+    placeEnd(NO_END);
   };
 
   const setKind = (value: string): void => {
@@ -294,8 +310,10 @@ export const useCalendarEntryEditor = ({
     },
     setStartDay,
     setStartTime,
+    addEnd,
+    removeEnd,
     setEndDay: (value) => {
-      form.setValue('endDay', value ?? '', FIELD_EDIT);
+      form.setValue('endDay', value, FIELD_EDIT);
       recheckStepDays();
     },
     setEndTime: (value) => {
