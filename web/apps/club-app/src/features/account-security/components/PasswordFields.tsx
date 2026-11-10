@@ -4,7 +4,6 @@ import { KkTextField } from '@furria/ui/KkTextField';
 import type { FC } from 'react';
 import type { FieldErrors, UseFormReturn } from 'react-hook-form';
 import { usePasswordVisibility } from '@/features/login/hooks/use-password-visibility';
-import { PASSWORD_RULE_HINT } from '@/lib/password-rule';
 import type { PasswordForm } from '../schemas';
 
 const CURRENT_SECTION = 'Anmeldung';
@@ -78,7 +77,6 @@ export const PasswordFields: FC<PasswordFieldsProps> = ({ form, errors, loginEma
           type={newVisibility.fieldType}
           autoComplete="new-password"
           required
-          hint={PASSWORD_RULE_HINT}
           error={newError !== undefined}
           helperText={newError}
           endAdornment={newToggle}

@@ -238,7 +238,7 @@ public sealed class ResetPasswordTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepTheLinkLive_When_TheNewPasswordHasSevenCharacters()
+    public async Task Should_KeepTheLinkLive_When_TheNewPasswordIsEmpty()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -251,7 +251,7 @@ public sealed class ResetPasswordTests : IClassFixture<ApiTestFixture>
         var refused = await SignedOutMailSteps.ResetPasswordAsync(
             _fixture.CreateClient(),
             reset,
-            "kurzpw1"
+            ""
         );
         var accepted = await SignedOutMailSteps.ResetPasswordAsync(_fixture.CreateClient(), reset);
 
@@ -261,7 +261,7 @@ public sealed class ResetPasswordTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LetHerLogIn_When_TheNewPasswordIsEightLowercaseLetters()
+    public async Task Should_LetHerLogIn_When_TheNewPasswordIsASingleCharacter()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -274,11 +274,11 @@ public sealed class ResetPasswordTests : IClassFixture<ApiTestFixture>
         var response = await SignedOutMailSteps.ResetPasswordAsync(
             _fixture.CreateClient(),
             reset,
-            "tanzbein"
+            "x"
         );
 
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        var login = await ctx.Identity.LogInAsync(aliceEmail, "tanzbein", ct);
+        var login = await ctx.Identity.LogInAsync(aliceEmail, "x", ct);
         Assert.NotEmpty(login.AccessToken);
     }
 

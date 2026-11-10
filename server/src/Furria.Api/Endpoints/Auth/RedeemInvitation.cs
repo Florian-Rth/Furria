@@ -246,10 +246,7 @@ public sealed class RedeemInvitationValidator : Validator<RedeemInvitationReques
         When(
             request => !IsClaim(request) || request.Password is not null,
             () =>
-                RuleFor(request => request.Password)
-                    .NotEmpty()
-                    .MinimumLength(PasswordRule.MinimumLength)
-                    .MaximumLength(MaximumPasswordLength)
+                RuleFor(request => request.Password).NotEmpty().MaximumLength(MaximumPasswordLength)
         );
         When(
             request => request.ClaimPassword is not null,

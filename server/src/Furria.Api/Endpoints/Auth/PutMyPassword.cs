@@ -100,7 +100,6 @@ public sealed class PutMyPasswordValidator : Validator<PutMyPasswordRequest>
             .MaximumLength(RedeemInvitationValidator.MaximumPasswordLength);
         RuleFor(request => request.NewPassword)
             .NotEmpty()
-            .MinimumLength(PasswordRule.MinimumLength)
             .MaximumLength(RedeemInvitationValidator.MaximumPasswordLength);
     }
 }

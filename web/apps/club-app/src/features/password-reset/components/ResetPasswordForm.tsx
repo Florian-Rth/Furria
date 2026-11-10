@@ -8,7 +8,6 @@ import Stack from '@mui/material/Stack';
 import type { ChangeEvent, FC, FormEvent } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { usePasswordVisibility } from '@/features/login/hooks/use-password-visibility';
-import { PASSWORD_RULE_HINT } from '@/lib/password-rule';
 import type { ResetErrorMessages } from '../reset-messages';
 import type { ResetPasswordForm as ResetPasswordValues } from '../schemas';
 
@@ -70,7 +69,7 @@ export const ResetPasswordForm: FC<ResetPasswordFormProps> = ({
           autoFocus
           required
           error={hasPasswordError}
-          helperText={passwordErrorText ?? PASSWORD_RULE_HINT}
+          helperText={passwordErrorText ?? undefined}
           endAdornment={passwordToggle}
           onChange={editPassword}
           onBlur={passwordField.onBlur}

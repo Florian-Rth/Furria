@@ -207,7 +207,7 @@ public sealed class PutMyPasswordTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_RefuseOnTheNewPassword_When_ItHasSevenCharacters()
+    public async Task Should_RefuseOnTheNewPassword_When_ItIsEmpty()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await ArrangeAnnaAsync(ct);
@@ -216,7 +216,7 @@ public sealed class PutMyPasswordTests : IClassFixture<ApiTestFixture>
         var (response, _) = await AccountSecuritySteps.ChangePasswordAsync(
             client,
             ApiTestFixture.SeededAccountPassword,
-            "kurzpw1"
+            ""
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -232,7 +232,7 @@ public sealed class PutMyPasswordTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ChangeHerPassword_When_TheNewOneIsEightLowercaseLetters()
+    public async Task Should_ChangeHerPassword_When_TheNewOneIsASingleCharacter()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await ArrangeAnnaAsync(ct);
@@ -241,17 +241,13 @@ public sealed class PutMyPasswordTests : IClassFixture<ApiTestFixture>
         var (response, _) = await AccountSecuritySteps.ChangePasswordAsync(
             client,
             ApiTestFixture.SeededAccountPassword,
-            "tanzbein"
+            "x"
         );
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         Assert.Equal(
             HttpStatusCode.OK,
-            await AccountSecuritySteps.LogInStatusAsync(
-                _fixture,
-                ctx.Identity.EmailOf("anna"),
-                "tanzbein"
-            )
+            await AccountSecuritySteps.LogInStatusAsync(_fixture, ctx.Identity.EmailOf("anna"), "x")
         );
     }
 
