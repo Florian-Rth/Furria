@@ -1370,7 +1370,10 @@ const ensureCalendar = async (
       audience: spec.audience,
       audienceGroupIds: spec.audience === 'groups' && ownerGroupId !== null ? [ownerGroupId] : [],
       audiencePersonIds: [],
-      asksForResponse: spec.asksForResponse,
+      addOns: [
+        ...(spec.asksForResponse ? ['attendance'] : []),
+        ...(spec.participating.length > 0 ? ['participatingGroups'] : []),
+      ],
       participatingGroupIds: spec.participating.map((group) => lookUp(groupIds, group, 'group')),
     };
     const knownId = known.get(entryLookupKeyOf(spec.title, ownerGroupId));

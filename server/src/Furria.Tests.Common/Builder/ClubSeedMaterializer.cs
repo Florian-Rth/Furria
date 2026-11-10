@@ -390,7 +390,6 @@ internal static class ClubSeedMaterializer
                         PersonId = SeedAliases.RequireId(personIds, alias, "Person"),
                     }),
                 ],
-                AsksForResponse = intent.AsksForResponse,
                 VenueId = intent.VenueAlias is null
                     ? null
                     : SeedAliases.RequireId(venueIds, intent.VenueAlias, "Venue"),
@@ -407,6 +406,9 @@ internal static class ClubSeedMaterializer
             },
             StringComparer.Ordinal
         );
+
+        foreach (var intent in recorded.CalendarEntries)
+            CalendarEntryAddOns.Attach(entries[intent.Alias], intent.AddOns);
 
         if (entries.Count > 0)
         {

@@ -41,6 +41,9 @@ export const AudiencePersonSchema = z.object({
 });
 export type AudiencePerson = z.infer<typeof AudiencePersonSchema>;
 
+export const CalendarEntryAddOnSchema = z.enum(['attendance', 'participatingGroups']);
+export type CalendarEntryAddOn = z.infer<typeof CalendarEntryAddOnSchema>;
+
 export const ParticipatingGroupSchema = z.object({
   groupId: z.number().int(),
   name: z.string(),
@@ -75,6 +78,8 @@ export const CalendarEntrySchema = z.object({
   audienceGroups: z.array(AudienceGroupSchema),
   audiencePeople: z.array(AudiencePersonSchema),
   asksForResponse: z.boolean(),
+  addOns: z.array(CalendarEntryAddOnSchema),
+  responseCount: z.number().int(),
   description: z.string().nullable(),
   viewerAnswer: AttendanceAnswerSchema.nullable(),
   isRunning: z.boolean(),
@@ -112,11 +117,25 @@ export type RunningVenue = z.infer<typeof RunningVenueSchema>;
 export const RunningVenuesResponseSchema = z.object({ venues: z.array(RunningVenueSchema) });
 export type RunningVenuesResponse = z.infer<typeof RunningVenuesResponseSchema>;
 
+export const ChoosablePersonSchema = z.object({
+  personId: z.number().int(),
+  firstName: z.string(),
+  lastName: z.string(),
+  groupIds: z.array(z.number().int()),
+});
+export type ChoosablePerson = z.infer<typeof ChoosablePersonSchema>;
+
+export const ChoosablePeopleResponseSchema = z.object({ people: z.array(ChoosablePersonSchema) });
+export type ChoosablePeopleResponse = z.infer<typeof ChoosablePeopleResponseSchema>;
+
 export const CALENDAR_TITLE_MAX_LENGTH = 120;
 export const CALENDAR_DESCRIPTION_MAX_LENGTH = 2000;
 
 const END_BEFORE_START_MESSAGE = 'Das Ende muss nach dem Beginn liegen.';
 const OWNER_CANNOT_PARTICIPATE_MESSAGE = 'Der Eigentümer ist automatisch beteiligt.';
+const NO_PARTICIPATING_GROUP_MESSAGE = 'Wähle mindestens eine mitwirkende Gruppe.';
+const NO_AUDIENCE_GROUP_MESSAGE = 'Wähle mindestens eine Gruppe.';
+const NO_AUDIENCE_PERSON_MESSAGE = 'Wähle mindestens eine Person.';
 const NO_END_DAY = '';
 
 export const CalendarCollisionSchema = z.object({
@@ -156,15 +175,38 @@ export const CalendarEntryFormSchema = z
     startTime: z.string().min(1, 'Der Eintrag braucht eine Uhrzeit.'),
     endDay: z.string(),
     endTime: z.string(),
-    asksForResponse: z.boolean(),
+    addOns: z.array(CalendarEntryAddOnSchema),
     participatingGroupIds: z.array(z.string()),
   })
   .superRefine((form, ctx) => {
-    if (form.participatingGroupIds.includes(form.ownerId)) {
+    const hasParticipatingGroups = form.addOns.includes('participatingGroups');
+
+    if (hasParticipatingGroups && form.participatingGroupIds.includes(form.ownerId)) {
       ctx.addIssue({
         code: 'custom',
         message: OWNER_CANNOT_PARTICIPATE_MESSAGE,
         path: ['participatingGroupIds'],
+      });
+    }
+    if (hasParticipatingGroups && form.participatingGroupIds.length === 0) {
+      ctx.addIssue({
+        code: 'custom',
+        message: NO_PARTICIPATING_GROUP_MESSAGE,
+        path: ['participatingGroupIds'],
+      });
+    }
+    if (form.audience === 'groups' && form.audienceGroupIds.length === 0) {
+      ctx.addIssue({
+        code: 'custom',
+        message: NO_AUDIENCE_GROUP_MESSAGE,
+        path: ['audienceGroupIds'],
+      });
+    }
+    if (form.audience === 'people' && form.audiencePersonIds.length === 0) {
+      ctx.addIssue({
+        code: 'custom',
+        message: NO_AUDIENCE_PERSON_MESSAGE,
+        path: ['audiencePersonIds'],
       });
     }
     if (form.endDay === NO_END_DAY) {

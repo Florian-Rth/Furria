@@ -57,6 +57,7 @@ export const READ_NAMES = [
   'announcements',
   'calendar',
   'runningVenues',
+  'choosablePeople',
   'groups',
   'groupHub',
   'groupCalendar',
@@ -138,6 +139,7 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   announcements: ['announcements'],
   calendar: ['calendar', 'board'],
   runningVenues: ['venues', 'running'],
+  choosablePeople: ['calendar', 'choosable-people'],
   groups: ['groups', 'list'],
   groupHub: ['groups', 'hub'],
   groupCalendar: ['groups', 'calendar'],
@@ -279,6 +281,7 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'groupAdmin',
   ],
   runningVenues: ['venue'],
+  choosablePeople: ['person', 'membership', 'group', 'groupMembership', 'groupAdmin'],
   groups: ['group', 'groupKind', 'groupMembership', 'person', 'picture'],
   groupHub: [
     'group',
@@ -511,6 +514,7 @@ export const queryKeys = {
   calendarEntry: (calendarEntryId: number | null): QueryKey =>
     keyOf('calendar', CALENDAR_ENTRY_PART, calendarEntryId),
   runningVenues: READ_ROOTS.runningVenues,
+  choosablePeople: READ_ROOTS.choosablePeople,
   groups: READ_ROOTS.groups,
   groupHub: (groupId: number | null): QueryKey => keyOf('groupHub', groupId),
   groupCalendar: (groupId: number | null, from: string, to: string): QueryKey =>

@@ -37,6 +37,7 @@ public sealed class CalendarService
     private const string ArchivedAudienceGroupMessage =
         "Eine archivierte Gruppe kann nicht gewählt werden.";
     private const string UnchoosablePersonMessage = "Diese Person kann nicht ausgewählt werden.";
+    private const string NoParticipatingGroupMessage = "Wähle mindestens eine mitwirkende Gruppe.";
 
     private static readonly CalendarRights SeesEveryClubEntry = new(
         HoldsClubRead: true,
@@ -261,6 +262,9 @@ public sealed class CalendarService
             command.OwnerGroupId
         );
 
+        if (AddOnRefusalOf(command.AddOns, participatingGroupIds) is { } addOnRefusal)
+            return Result<CalendarEntryWriteResult>.Validation(addOnRefusal);
+
         var audience = AudienceChoice.Of(
             command.Audience,
             command.AudienceGroupIds,
@@ -286,8 +290,8 @@ public sealed class CalendarService
             EndsAt = command.EndsAt,
             Kind = command.Kind,
             Audience = audience.Audience,
-            AsksForResponse = command.AsksForResponse,
         };
+        CalendarEntryAddOns.Attach(entry, command.AddOns);
         Reconcile(entry, participatingGroupIds, audience);
 
         _dbContext.CalendarEntries.Add(entry);
@@ -326,6 +330,9 @@ public sealed class CalendarService
             command.OwnerGroupId
         );
 
+        if (AddOnRefusalOf(command.AddOns, participatingGroupIds) is { } addOnRefusal)
+            return Result<CalendarEntryWriteResult>.Validation(addOnRefusal);
+
         var audience = AudienceChoice.Of(
             command.Audience,
             command.AudienceGroupIds,
@@ -344,6 +351,10 @@ public sealed class CalendarService
         if (refusal is not null)
             return Result<CalendarEntryWriteResult>.Validation(refusal);
 
+        if (DropsAttendance(entry, command.AddOns))
+            await DiscardAnswersAsync(entry.Id, ct);
+
+        CalendarEntryAddOns.Attach(entry, command.AddOns);
         Reconcile(entry, participatingGroupIds, audience);
 
         entry.Title = command.Title;
@@ -354,7 +365,6 @@ public sealed class CalendarService
         entry.EndsAt = command.EndsAt;
         entry.Kind = command.Kind;
         entry.Audience = audience.Audience;
-        entry.AsksForResponse = command.AsksForResponse;
 
         var saved = await _dbContext.SaveOrConflictAsync(ct);
         if (!saved.IsSuccess)
@@ -423,6 +433,9 @@ public sealed class CalendarService
             return Result.Validation(NoResponseWantedMessage);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        if (!await _dbContext.StillAsksForResponseAsync(command.CalendarEntryId, ct))
+            return Result.Validation(NoResponseWantedMessage);
+
         _dbContext.Record(
             await _dbContext.LockedResponseAsync(command.CalendarEntryId, personId, ct),
             new AttendanceRecord(
@@ -444,12 +457,14 @@ public sealed class CalendarService
         return Result.Success();
     }
 
-    [Pure]
-    private static Expression<Func<CalendarEntry, EntryRow>> RowProjection(
+    private Expression<Func<CalendarEntry, EntryRow>> RowProjection(
         DateTimeOffset now,
         DateTimeOffset openEndedCutoff
-    ) =>
-        entry => new EntryRow(
+    )
+    {
+        var responses = _dbContext.AttendanceResponses;
+
+        return entry => new EntryRow(
             entry.Id,
             entry.Title,
             entry.StartsAt,
@@ -489,6 +504,8 @@ public sealed class CalendarService
                     .ToList()
             ),
             entry.AsksForResponse,
+            new AddOnPositionsRow(entry.AttendancePosition, entry.ParticipatingGroupsPosition),
+            responses.Count(response => response.CalendarEntryId == entry.Id),
             entry.Description,
             entry.StartsAt <= now
                 && (entry.EndsAt == null ? entry.StartsAt > openEndedCutoff : entry.EndsAt > now),
@@ -506,6 +523,23 @@ public sealed class CalendarService
                     entry.Event.Picture == null ? null : entry.Event.Picture.RenderedAt
                 )
         );
+    }
+
+    [Pure]
+    private static string? AddOnRefusalOf(
+        IReadOnlyList<CalendarEntryAddOnKind> addOns,
+        IReadOnlyList<int> participatingGroupIds
+    ) =>
+        addOns.Contains(CalendarEntryAddOnKind.ParticipatingGroups)
+        && participatingGroupIds.Count == 0
+            ? NoParticipatingGroupMessage
+            : null;
+
+    [Pure]
+    private static bool DropsAttendance(
+        CalendarEntry entry,
+        IReadOnlyList<CalendarEntryAddOnKind> addOns
+    ) => entry.AsksForResponse && !addOns.Contains(CalendarEntryAddOnKind.Attendance);
 
     [Pure]
     private static bool MayAnswer(EntryRow row, CalendarTies ties, CalendarRights rights) =>
@@ -637,6 +671,11 @@ public sealed class CalendarService
             AudienceGroups = [.. row.Audience.Groups.Select(ToAudienceGroup)],
             AudiencePeople = [.. row.Audience.People.Select(ToAudiencePerson)],
             AsksForResponse = row.AsksForResponse,
+            AddOns = CalendarEntryAddOns.InCardOrder(
+                row.AddOnPositions.Attendance,
+                row.AddOnPositions.ParticipatingGroups
+            ),
+            ResponseCount = row.ResponseCount,
             Description = row.Description,
             ViewerAnswer = answers.TryGetValue(row.CalendarEntryId, out var answer) ? answer : null,
             IsRunning = row.IsRunning,
@@ -694,6 +733,16 @@ public sealed class CalendarService
             .Include(row => row.AudiencePeople)
             .AsSplitQuery()
             .SingleOrDefaultAsync(row => row.Id == calendarEntryId, ct);
+    }
+
+    private async Task DiscardAnswersAsync(int calendarEntryId, CancellationToken ct)
+    {
+        await _dbContext
+            .AttendanceResponseChanges.Where(change => change.CalendarEntryId == calendarEntryId)
+            .ExecuteDeleteAsync(ct);
+        await _dbContext
+            .AttendanceResponses.Where(response => response.CalendarEntryId == calendarEntryId)
+            .ExecuteDeleteAsync(ct);
     }
 
     private async Task<CalendarEntryWriteResult> WrittenAsync(
@@ -907,6 +956,8 @@ public sealed class CalendarService
         IReadOnlyList<GroupRow> ParticipatingGroups,
         AudienceNamesRow Audience,
         bool AsksForResponse,
+        AddOnPositionsRow AddOnPositions,
+        int ResponseCount,
         string? Description,
         bool IsRunning,
         EventFactsRow? Event
@@ -925,6 +976,8 @@ public sealed class CalendarService
     );
 
     private sealed record GroupRow(int GroupId, string Name, GroupTone? Tone);
+
+    private sealed record AddOnPositionsRow(int? Attendance, int? ParticipatingGroups);
 
     private sealed record PersonRow(int PersonId, string FirstName, string LastName);
 

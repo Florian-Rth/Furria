@@ -1,16 +1,15 @@
 import { aspectRatioCss } from '@furria/ui/image-aspect';
 import { KkButton } from '@furria/ui/KkButton';
-import { KkCalendarAgenda } from '@furria/ui/KkCalendarAgenda';
 import { KkCalendarDetail } from '@furria/ui/KkCalendarDetail';
 import { KkIcon } from '@furria/ui/KkIcon';
 import { KkPhoto } from '@furria/ui/KkPhoto';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { ATTENDANCE_LABELS } from '@/lib/calendar-copy';
 import { EDIT_LABEL, EVENT_LINK_LABEL, FACT_LABELS } from '../calendar-agenda-copy';
 import { useCalendarDetail } from '../hooks/use-calendar-detail';
 import type { CalendarEntry } from '../schemas';
+import { CalendarDetailAddOn } from './CalendarDetailAddOn';
 import { CalendarGroupTags } from './CalendarGroupTags';
 import { CalendarRunningOrderSection } from './CalendarRunningOrderSection';
 
@@ -47,17 +46,14 @@ export const CalendarDetailBody: FC<CalendarDetailBodyProps> = ({ entry }) => {
     );
   const text =
     view.text === null ? null : <KkCalendarDetail.Text>{view.text}</KkCalendarDetail.Text>;
-  const choice =
-    answer === null ? null : (
-      <KkCalendarAgenda.Answer
-        label={answer.label}
-        value={answer.value}
-        onChange={answer.choose}
-        labels={ATTENDANCE_LABELS}
-        error={answer.error}
-        disabled={answer.disabled}
-      />
-    );
+  const addOnSections = view.addOns.map((addOn) => (
+    <CalendarDetailAddOn
+      key={addOn}
+      addOn={addOn}
+      answer={answer}
+      participatingGroups={view.participatingGroups}
+    />
+  ));
   const edit =
     editLink === null ? null : (
       <KkButton
@@ -91,13 +87,7 @@ export const CalendarDetailBody: FC<CalendarDetailBodyProps> = ({ entry }) => {
         {event}
       </Stack>
     );
-  const foot =
-    choice === null && links === null ? null : (
-      <KkCalendarDetail.Foot>
-        {choice}
-        {links}
-      </KkCalendarDetail.Foot>
-    );
+  const foot = links === null ? null : <KkCalendarDetail.Foot>{links}</KkCalendarDetail.Foot>;
 
   return (
     <KkCalendarDetail label={view.title}>
@@ -114,14 +104,15 @@ export const CalendarDetailBody: FC<CalendarDetailBodyProps> = ({ entry }) => {
         {text}
         <KkCalendarDetail.Facts>
           {venue}
-          <KkCalendarDetail.Fact icon="group" label={FACT_LABELS.groups}>
-            <CalendarGroupTags groups={view.groups} />
+          <KkCalendarDetail.Fact icon="group" label={FACT_LABELS.owner}>
+            <CalendarGroupTags groups={view.owner} />
           </KkCalendarDetail.Fact>
           <KkCalendarDetail.Fact icon="visibility" label={FACT_LABELS.audience}>
             {view.audience}
           </KkCalendarDetail.Fact>
           {eventFact}
         </KkCalendarDetail.Facts>
+        {addOnSections}
         <CalendarRunningOrderSection entry={entry} />
       </KkCalendarDetail.Body>
       {foot}

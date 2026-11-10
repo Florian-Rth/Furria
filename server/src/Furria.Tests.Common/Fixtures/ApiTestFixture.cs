@@ -1009,7 +1009,13 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
                 Audience = entry.Audience,
                 AudienceGroupIds = [.. entry.AudienceGroups.Select(link => link.GroupId)],
                 AudiencePersonIds = [.. entry.AudiencePeople.Select(link => link.PersonId)],
-                AsksForResponse = entry.AsksForResponse,
+                AddOns =
+                [
+                    .. entry.AsksForResponse
+                        ? [CalendarEntryAddOnKind.Attendance]
+                        : Array.Empty<CalendarEntryAddOnKind>(),
+                    CalendarEntryAddOnKind.ParticipatingGroups,
+                ],
                 ParticipatingGroupIds = [groupId],
             },
             ct

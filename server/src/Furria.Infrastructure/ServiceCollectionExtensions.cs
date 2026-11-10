@@ -117,6 +117,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<BeerStockWarningService>();
         services.AddScoped<AnnouncementService>();
         services.AddScoped<CalendarService>();
+        services.AddScoped<ChoosablePeopleService>();
         services.AddScoped<EventService>();
         services.AddScoped<ActCatalogue>();
         services.AddScoped<ActService>();

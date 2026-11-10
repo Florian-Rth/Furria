@@ -215,6 +215,10 @@ public sealed record CalendarEntryDto
 
     public required bool AsksForResponse { get; init; }
 
+    public required IReadOnlyList<CalendarEntryAddOnKind> AddOns { get; init; }
+
+    public required int ResponseCount { get; init; }
+
     public required string? Description { get; init; }
 
     public required AttendanceAnswer? ViewerAnswer { get; init; }
@@ -242,6 +246,8 @@ public sealed record CalendarEntryDto
             AudienceGroups = [.. entry.AudienceGroups.Select(AudienceGroupDto.From)],
             AudiencePeople = [.. entry.AudiencePeople.Select(AudiencePersonDto.From)],
             AsksForResponse = entry.AsksForResponse,
+            AddOns = entry.AddOns,
+            ResponseCount = entry.ResponseCount,
             Description = entry.Description,
             ViewerAnswer = entry.ViewerAnswer,
             IsRunning = entry.IsRunning,

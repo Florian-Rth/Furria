@@ -51,6 +51,8 @@ const entry = (
   audienceGroups: [],
   audiencePeople: [],
   asksForResponse: false,
+  addOns: [],
+  responseCount: 0,
   description: null,
   viewerAnswer: null,
   isRunning: false,

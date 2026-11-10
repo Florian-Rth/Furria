@@ -39,6 +39,7 @@
     "./kk-motion": "./src/kk-motion.ts",
     "./kk-sx": "./src/kk-sx.ts",
     "./KkActionFoot": "./src/KkActionFoot.tsx",
+    "./KkAddOnCard": "./src/KkAddOnCard.tsx",
     "./KkAlbumShelf": "./src/KkAlbumShelf.tsx",
     "./KkAlbumTie": "./src/KkAlbumTie.tsx",
     "./KkAlert": "./src/KkAlert.tsx",

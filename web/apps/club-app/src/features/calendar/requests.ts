@@ -6,15 +6,32 @@ import { toCalendarPath } from './calendar-query';
 import type {
   CalendarEntryResponse,
   CalendarResponse,
+  ChoosablePeopleResponse,
   RunningVenuesResponse,
   WrittenCalendarEntry,
 } from './schemas';
 import {
   CalendarEntryResponseSchema,
   CalendarResponseSchema,
+  ChoosablePeopleResponseSchema,
   RunningVenuesResponseSchema,
   WrittenCalendarEntrySchema,
 } from './schemas';
+
+const toEntryBody = (payload: CalendarEntryPayload): CalendarEntryPayload => ({
+  title: payload.title,
+  description: payload.description,
+  ownerGroupId: payload.ownerGroupId,
+  venueId: payload.venueId,
+  startsAt: payload.startsAt,
+  endsAt: payload.endsAt,
+  kind: payload.kind,
+  audience: payload.audience,
+  audienceGroupIds: payload.audienceGroupIds,
+  audiencePersonIds: payload.audiencePersonIds,
+  addOns: payload.addOns,
+  participatingGroupIds: payload.participatingGroupIds,
+});
 
 export const requestCalendar = (
   query: CalendarQuery,
@@ -34,26 +51,19 @@ export const requestCalendarEntry = (
 export const requestRunningVenues = (accessToken: string): Promise<RunningVenuesResponse> =>
   apiFetch('/api/venues', { schema: RunningVenuesResponseSchema, accessToken });
 
+export const requestChoosablePeople = (accessToken: string): Promise<ChoosablePeopleResponse> =>
+  apiFetch('/api/calendar/choosable-people', {
+    schema: ChoosablePeopleResponseSchema,
+    accessToken,
+  });
+
 export const requestCalendarEntryCreation = (
   payload: CalendarEntryPayload,
   accessToken: string,
 ): Promise<WrittenCalendarEntry> =>
   apiFetch('/api/calendar/entries', {
     method: 'POST',
-    body: {
-      title: payload.title,
-      description: payload.description,
-      ownerGroupId: payload.ownerGroupId,
-      venueId: payload.venueId,
-      startsAt: payload.startsAt,
-      endsAt: payload.endsAt,
-      kind: payload.kind,
-      audience: payload.audience,
-      audienceGroupIds: payload.audienceGroupIds,
-      audiencePersonIds: payload.audiencePersonIds,
-      asksForResponse: payload.asksForResponse,
-      participatingGroupIds: payload.participatingGroupIds,
-    },
+    body: toEntryBody(payload),
     schema: WrittenCalendarEntrySchema,
     accessToken,
   });
@@ -65,20 +75,7 @@ export const requestCalendarEntryUpdate = (
 ): Promise<WrittenCalendarEntry> =>
   apiFetch(`/api/calendar/entries/${calendarEntryId}`, {
     method: 'PUT',
-    body: {
-      title: payload.title,
-      description: payload.description,
-      ownerGroupId: payload.ownerGroupId,
-      venueId: payload.venueId,
-      startsAt: payload.startsAt,
-      endsAt: payload.endsAt,
-      kind: payload.kind,
-      audience: payload.audience,
-      audienceGroupIds: payload.audienceGroupIds,
-      audiencePersonIds: payload.audiencePersonIds,
-      asksForResponse: payload.asksForResponse,
-      participatingGroupIds: payload.participatingGroupIds,
-    },
+    body: toEntryBody(payload),
     schema: WrittenCalendarEntrySchema,
     accessToken,
   });

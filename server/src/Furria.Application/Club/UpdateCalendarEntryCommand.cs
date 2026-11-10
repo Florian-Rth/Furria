@@ -30,7 +30,7 @@ public sealed record UpdateCalendarEntryCommand
 
     public required IReadOnlyList<int> AudiencePersonIds { get; init; }
 
-    public required bool AsksForResponse { get; init; }
+    public required IReadOnlyList<CalendarEntryAddOnKind> AddOns { get; init; }
 
     public required IReadOnlyList<int> ParticipatingGroupIds { get; init; }
 }

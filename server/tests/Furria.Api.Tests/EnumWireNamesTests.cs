@@ -78,6 +78,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(LogSource)] = "api mediaWorker",
         [typeof(LogEntryLevel)] = "information warning error fatal",
         [typeof(ActKind)] = "dance speech music show point",
+        [typeof(CalendarEntryAddOnKind)] = "attendance participatingGroups",
         [typeof(RunningOrderRuleKind)] =
             "first last firstHalf secondHalf early late before after apart kindSpread",
         [typeof(RuleStrength)] = "must prefer",

@@ -175,7 +175,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Groups,
                 AudienceGroupIds = [ctx.Groups.Groups.IdOf("tanzgarde")],
                 AudiencePersonIds = [],
-                AsksForResponse = false,
+                AddOns = [],
                 ParticipatingGroupIds = null!,
             }
         );
@@ -210,7 +210,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Groups,
                 AudienceGroupIds = [tanzgarde],
                 AudiencePersonIds = [],
-                AsksForResponse = true,
+                AddOns = [CalendarEntryAddOnKind.Attendance],
                 ParticipatingGroupIds = [],
             }
         );
@@ -257,7 +257,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
-                AsksForResponse = false,
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -302,7 +302,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
-                AsksForResponse = false,
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -434,6 +434,76 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Should_DiscardTheAnswers_When_TheAttendanceAddOnIsRemoved()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("asking-meeting");
+
+        var response = await RewriteAsync(ctx, entryId, [], ct);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.AttendanceResponsesFor(entryId)
+            .ToCarryNoAnswer()
+            .CalendarEntry(entryId)
+            .ToAskForResponse(false)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_StartWithoutAnswers_When_TheAttendanceAddOnIsAttachedAgain()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("asking-meeting");
+        await RewriteAsync(ctx, entryId, [], ct);
+
+        var response = await RewriteAsync(ctx, entryId, [CalendarEntryAddOnKind.Attendance], ct);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.AttendanceResponsesFor(entryId)
+            .ToCarryNoAnswer()
+            .CalendarEntry(entryId)
+            .ToAskForResponse(true)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepTheAnswers_When_TheAttendanceAddOnStaysAttached()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("asking-meeting");
+
+        var response = await RewriteAsync(ctx, entryId, [CalendarEntryAddOnKind.Attendance], ct);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.AttendanceResponsesFor(entryId)
+            .ToCarryAnswerFrom(ctx.Identity.People.IdOf("chris"), AttendanceAnswer.Yes)
+            .AssertAsync(ct);
+    }
+
+    private static async Task<HttpResponseMessage> RewriteAsync(
+        SeededContext ctx,
+        int entryId,
+        IReadOnlyList<CalendarEntryAddOnKind> addOns,
+        CancellationToken ct
+    )
+    {
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(ClubOwned(entryId, Farewell) with { AddOns = addOns });
+
+        return response;
+    }
+
     private static PutCalendarEntryRequest ClubOwned(int calendarEntryId, string title) =>
         new()
         {
@@ -448,7 +518,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             Audience = CalendarEntryAudience.Club,
             AudienceGroupIds = [],
             AudiencePersonIds = [],
-            AsksForResponse = false,
+            AddOns = [],
             ParticipatingGroupIds = [],
         };
 
@@ -521,6 +591,18 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                                 Farewell,
                                 AbendprobeStart.AddDays(3),
                                 audiencePersonAliases: ["frieda", "ilka"]
+                            )
+                            .AddCalendarEntry(
+                                "asking-meeting",
+                                Farewell,
+                                AbendprobeStart.AddDays(5),
+                                asksForResponse: true
+                            )
+                            .AddAttendanceResponse(
+                                "chris-says-yes",
+                                "asking-meeting",
+                                "chris",
+                                AttendanceAnswer.Yes
                             )
                             .AddEvent("gala", Gala, AfterTheAbendprobe, "buehnenhaus")
                     ),

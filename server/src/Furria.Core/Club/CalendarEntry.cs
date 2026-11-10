@@ -25,6 +25,10 @@ public sealed class CalendarEntry : ITimestamped
 
     public bool AsksForResponse { get; set; }
 
+    public int? AttendancePosition { get; set; }
+
+    public int? ParticipatingGroupsPosition { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }

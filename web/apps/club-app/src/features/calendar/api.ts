@@ -17,11 +17,13 @@ import {
   requestCalendarEntryCreation,
   requestCalendarEntryDeletion,
   requestCalendarEntryUpdate,
+  requestChoosablePeople,
   requestRunningVenues,
 } from './requests';
 import type {
   CalendarEntryResponse,
   CalendarResponse,
+  ChoosablePeopleResponse,
   RunningVenuesResponse,
   WrittenCalendarEntry,
 } from './schemas';
@@ -51,6 +53,12 @@ export const useRunningVenuesQuery = (): UseQueryResult<RunningVenuesResponse, E
   useQuery({
     queryKey: queryKeys.runningVenues,
     queryFn: () => withFreshAccessToken((accessToken) => requestRunningVenues(accessToken)),
+  });
+
+export const useChoosablePeopleQuery = (): UseQueryResult<ChoosablePeopleResponse, Error> =>
+  useQuery({
+    queryKey: queryKeys.choosablePeople,
+    queryFn: () => withFreshAccessToken((accessToken) => requestChoosablePeople(accessToken)),
   });
 
 export interface CalendarEntryInput {

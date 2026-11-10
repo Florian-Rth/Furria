@@ -6,6 +6,7 @@ import {
   opensEntrySheet,
   toAudienceAfterOwnerChange,
   toAudienceGroupIds,
+  toAudienceSwitch,
   toCalendarAudience,
   toDayTime,
   toDefaultAudience,
@@ -15,12 +16,11 @@ import {
   toEntryLanding,
   toEntryLink,
   toEntryPayload,
+  toGroupChoices,
   toInstant,
-  toOfferedAudiences,
   toOwnerOptions,
-  toParticipatingGroupChoices,
   toParticipatingGroupIds,
-  toToggledParticipation,
+  toToggledValue,
 } from './calendar-authoring';
 import type { CalendarEntry, CalendarEntryForm } from './schemas';
 
@@ -51,6 +51,8 @@ const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
   audienceGroups: [],
   audiencePeople: [],
   asksForResponse: false,
+  addOns: [],
+  responseCount: 0,
   description: null,
   viewerAnswer: null,
   isRunning: false,
@@ -71,7 +73,7 @@ const form = (overrides: Partial<CalendarEntryForm>): CalendarEntryForm => ({
   startTime: '19:00',
   endDay: '2027-01-20',
   endTime: '22:15',
-  asksForResponse: false,
+  addOns: [],
   participatingGroupIds: [],
   ...overrides,
 });
@@ -142,28 +144,28 @@ describe('toDefaultAudience', () => {
   });
 });
 
-describe('toOfferedAudiences', () => {
+describe('toAudienceSwitch', () => {
   it.each([
-    ['club', [], null, ['club']],
-    ['7', [], null, ['club', 'groups']],
-    ['club', ['4'], null, ['club', 'groups']],
-    ['club', [], 'people', ['club', 'people']],
-    ['club', [], 'groups', ['club', 'groups']],
+    ['7', [], 'groups', ['7']],
+    ['club', [], 'groups', []],
+    ['7', ['4'], 'groups', ['4']],
+    ['7', [], 'people', []],
   ] as const)(
-    'offers owner %s with held groups %j and held audience %s: %j',
-    (ownerId, held, heldAudience, expected) => {
-      expect(toOfferedAudiences({ ownerId, audienceGroupIds: [...held] }, heldAudience)).toEqual(
-        expected,
-      );
+    'switches owner %s with held groups %j to %s with groups %j',
+    (ownerId, held, audience, expected) => {
+      expect(toAudienceSwitch({ ownerId, audienceGroupIds: [...held] }, audience)).toEqual({
+        audience,
+        audienceGroupIds: expected,
+      });
     },
   );
 });
 
 describe('toAudienceAfterOwnerChange', () => {
   it.each([
-    ['club', 'club', [], '7', 'groups', []],
+    ['club', 'club', [], '7', 'groups', ['7']],
     ['7', 'club', [], '9', 'club', []],
-    ['7', 'groups', [], '9', 'groups', []],
+    ['7', 'groups', ['7'], '9', 'groups', ['9']],
     ['7', 'groups', ['7'], 'club', 'groups', ['7']],
     ['7', 'groups', [], 'club', 'groups', ['7']],
     ['7', 'groups', ['7', '4'], '9', 'groups', ['7', '4']],
@@ -235,18 +237,12 @@ describe('audience round trip', () => {
 
 describe('toAudienceGroupIds', () => {
   it.each([
-    ['7', 'club', [], []],
-    ['7', 'groups', [], [7]],
-    ['7', 'groups', ['7', '9'], [7, 9]],
-    ['club', 'people', ['4'], []],
-  ] as const)(
-    'sends owner %s with audience %s and held groups %j as %j',
-    (ownerId, audience, held, expected) => {
-      expect(toAudienceGroupIds({ ownerId, audience, audienceGroupIds: [...held] })).toEqual(
-        expected,
-      );
-    },
-  );
+    ['club', ['7'], []],
+    ['groups', ['7', '9'], [7, 9]],
+    ['people', ['4'], []],
+  ] as const)('sends audience %s with held groups %j as %j', (audience, held, expected) => {
+    expect(toAudienceGroupIds({ audience, audienceGroupIds: [...held] })).toEqual(expected);
+  });
 });
 
 describe('toInstant', () => {
@@ -286,6 +282,24 @@ describe('toEntryPayload', () => {
     expect(toEntryPayload(form({ endDay: '' })).endsAt).toBeNull();
   });
 
+  it.each([
+    [[], ['3'], [], []],
+    [['participatingGroups'], ['3', '3', '7'], ['participatingGroups'], [3]],
+    [['attendance', 'participatingGroups'], ['3'], ['attendance', 'participatingGroups'], [3]],
+  ] as const)(
+    'sends add-ons %j with groups %j as %j and %j',
+    (addOns, groupIds, expectedAddOns, expectedGroupIds) => {
+      const payload = toEntryPayload(
+        form({ ownerId: '7', addOns: [...addOns], participatingGroupIds: [...groupIds] }),
+      );
+
+      expect([payload.addOns, payload.participatingGroupIds]).toEqual([
+        expectedAddOns,
+        expectedGroupIds,
+      ]);
+    },
+  );
+
   it('writes both ends from the chosen days and times', () => {
     const payload = toEntryPayload(form({ endDay: '2027-01-21', endTime: '02:30' }));
 
@@ -305,7 +319,19 @@ describe('toEntryFormValues', () => {
 
     expect(values.ownerId).toBe('7');
     expect(values.audience).toBe('groups');
+    expect(values.audienceGroupIds).toEqual(['7']);
     expect(values.startDay).toBe('2027-01-20');
+  });
+
+  it('keeps the add-ons of an existing calendar entry in their order', () => {
+    const values = toEntryFormValues(
+      entry({ addOns: ['participatingGroups', 'attendance'] }),
+      [],
+      '2027-01-20',
+      NO_DRAFT,
+    );
+
+    expect(values.addOns).toEqual(['participatingGroups', 'attendance']);
   });
 
   it('reads an open end off an existing calendar entry', () => {
@@ -443,7 +469,7 @@ describe('toEndKeptInStep', () => {
   });
 });
 
-describe('toParticipatingGroupChoices', () => {
+describe('toGroupChoices', () => {
   const running = {
     state: 'ready',
     groups: [
@@ -456,16 +482,15 @@ describe('toParticipatingGroupChoices', () => {
   it.each([
     ['the owner left out', '1', [2, 3]],
     ['every group sorted by name when the club owns', 'club', [2, 3, 1]],
+    ['every group sorted by name when nothing is left out', null, [2, 3, 1]],
   ])('lists %s', (_case, ownerId, expected) => {
-    expect(
-      toParticipatingGroupChoices(running, [], ownerId).map((choice) => choice.groupId),
-    ).toEqual(expected);
+    expect(toGroupChoices(running, [], ownerId).map((choice) => choice.groupId)).toEqual(expected);
   });
 
   it('keeps a participating group choosable as archived after it left the directory', () => {
     const held = [{ groupId: 9, name: 'Wirbelwinde' }];
 
-    expect(toParticipatingGroupChoices(running, held, 'club')).toContainEqual({
+    expect(toGroupChoices(running, held, 'club')).toContainEqual({
       groupId: 9,
       name: 'Wirbelwinde',
       isArchived: true,
@@ -475,7 +500,7 @@ describe('toParticipatingGroupChoices', () => {
   it('calls no held group archived while the directory is missing', () => {
     const held = [{ groupId: 9, name: 'Wirbelwinde' }];
 
-    expect(toParticipatingGroupChoices({ state: 'failed' }, held, 'club')).toEqual([
+    expect(toGroupChoices({ state: 'failed' }, held, 'club')).toEqual([
       { groupId: 9, name: 'Wirbelwinde', isArchived: false },
     ]);
   });
@@ -483,7 +508,7 @@ describe('toParticipatingGroupChoices', () => {
   it('lists a held group once when it is still in the directory', () => {
     const held = [{ groupId: 1, name: 'Tanzgarde' }];
 
-    expect(toParticipatingGroupChoices(running, held, 'club')).toHaveLength(3);
+    expect(toGroupChoices(running, held, 'club')).toHaveLength(3);
   });
 });
 
@@ -496,11 +521,11 @@ describe('toParticipatingGroupIds', () => {
   });
 });
 
-describe('toToggledParticipation', () => {
+describe('toToggledValue', () => {
   it.each([
     [['2'], '3', ['2', '3']],
     [['2', '3'], '3', ['2']],
   ])('toggles %s with %s', (values, value, expected) => {
-    expect(toToggledParticipation(values, value)).toEqual(expected);
+    expect(toToggledValue(values, value)).toEqual(expected);
   });
 });

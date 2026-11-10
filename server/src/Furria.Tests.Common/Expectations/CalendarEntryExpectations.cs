@@ -61,6 +61,21 @@ public sealed class CalendarEntryExpectations
                 Assert.Equal(asksForResponse, (await SingleAsync(dbContext, ct)).AsksForResponse)
         );
 
+    public Expected ToCarryAddOns(params CalendarEntryAddOnKind[] addOns) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var entry = await SingleAsync(dbContext, ct);
+                Assert.Equal(
+                    addOns,
+                    CalendarEntryAddOns.InCardOrder(
+                        entry.AttendancePosition,
+                        entry.ParticipatingGroupsPosition
+                    )
+                );
+            }
+        );
+
     public Expected ToHavePeriod(DateTimeOffset startsAt, DateTimeOffset? endsAt) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

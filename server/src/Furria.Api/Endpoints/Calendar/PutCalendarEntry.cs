@@ -65,7 +65,7 @@ public sealed class PutCalendarEntry : Endpoint<PutCalendarEntryRequest, PutCale
             Audience = req.Audience,
             AudienceGroupIds = req.AudienceGroupIds,
             AudiencePersonIds = req.AudiencePersonIds,
-            AsksForResponse = req.AsksForResponse,
+            AddOns = req.AddOns,
             ParticipatingGroupIds = req.ParticipatingGroupIds,
         };
 
@@ -111,7 +111,7 @@ public sealed record PutCalendarEntryRequest
 
     public required IReadOnlyList<int> AudiencePersonIds { get; init; }
 
-    public required bool AsksForResponse { get; init; }
+    public required IReadOnlyList<CalendarEntryAddOnKind> AddOns { get; init; }
 
     public required IReadOnlyList<int> ParticipatingGroupIds { get; init; }
 }
@@ -129,6 +129,10 @@ public sealed class PutCalendarEntryValidator : Validator<PutCalendarEntryReques
     private const string UnknownGroupMessage = "Diese Gruppe gibt es nicht.";
     private const string UnknownVenueMessage = "Diesen Ort gibt es nicht im Verzeichnis.";
     private const string TitleMissingMessage = "Der Eintrag braucht einen Titel.";
+    private const string UnknownAddOnMessage = "Diesen Baustein gibt es nicht.";
+    private const string AddOnTwiceMessage = "Jeder Baustein kann nur einmal angehängt werden.";
+    private const string ParticipationWithoutAddOnMessage =
+        "Ohne den Baustein „Mitwirkende Gruppen“ wirken keine Gruppen mit.";
     private const string EndsBeforeItStartsMessage =
         "Ein Zeitraum kann nicht vor seinem Beginn enden.";
 
@@ -181,7 +185,20 @@ public sealed class PutCalendarEntryValidator : Validator<PutCalendarEntryReques
             .GreaterThanOrEqualTo(request => request.StartsAt)
             .When(request => request.EndsAt is not null)
             .WithMessage(EndsBeforeItStartsMessage);
+        RuleFor(request => request.AddOns).NotNull();
+        RuleForEach(request => request.AddOns).IsInEnum().WithMessage(UnknownAddOnMessage);
+        RuleFor(request => request.AddOns)
+            .Must(addOns => addOns.Distinct().Count() == addOns.Count)
+            .When(request => request.AddOns is not null)
+            .WithMessage(AddOnTwiceMessage);
         RuleFor(request => request.ParticipatingGroupIds).NotNull();
+        RuleFor(request => request.ParticipatingGroupIds)
+            .Empty()
+            .When(request =>
+                request.AddOns is not null
+                && !request.AddOns.Contains(CalendarEntryAddOnKind.ParticipatingGroups)
+            )
+            .WithMessage(ParticipationWithoutAddOnMessage);
         RuleForEach(request => request.ParticipatingGroupIds)
             .GreaterThan(0)
             .WithMessage(UnknownGroupMessage);

@@ -257,6 +257,31 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
         );
     }
 
+    [Fact]
+    public async Task Should_CountEveryAnswer_When_TheEntryAsksForResponses()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+
+                var (response, result) = await ReadAsync(
+                    ctx,
+                    "alice",
+                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
+                    ct
+                );
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal([CalendarEntryAddOnKind.Attendance], result.Entry.AddOns);
+                Assert.Equal(2, result.Entry.ResponseCount);
+            }
+        );
+    }
+
     private static void WholeClub(IdentitySeedBuilder identity) =>
         identity
             .AddPerson("alice", "Alice", "Muster")
@@ -326,6 +351,12 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                                 "club-meeting",
                                 "bea",
                                 AttendanceAnswer.Yes
+                            )
+                            .AddAttendanceResponse(
+                                "dora-says-no",
+                                "club-meeting",
+                                "dora",
+                                AttendanceAnswer.No
                             )
                     ),
             ct

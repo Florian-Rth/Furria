@@ -47,7 +47,8 @@ import {
   WHOLE_CLUB_AUDIENCE_LABEL,
   weekdayOf,
 } from './calendar-agenda-copy';
-import type { CalendarEntry, UsualTraining } from './schemas';
+import { toPersonName } from './calendar-people';
+import type { CalendarEntry, CalendarEntryAddOn, UsualTraining } from './schemas';
 
 const THUMB_SIZES = '72px';
 const COVER_SIZES = '(min-width: 1200px) 30rem, 100vw';
@@ -149,6 +150,8 @@ export const toDayData = (cell: CalendarDayCell, activeDay: string | null): KkCa
   carnival: cell.carnival,
 });
 
+const OWNER_TAG_PREFIX = 'owner-';
+
 export interface CalendarDetailView {
   glyph: CalendarLineView['glyph'];
   kindLabel: string;
@@ -157,8 +160,10 @@ export interface CalendarDetailView {
   liveLabel: string | null;
   mark: CalendarMark;
   venue: string | null;
-  groups: KkCalendarLineGroup[];
+  owner: KkCalendarLineGroup[];
+  participatingGroups: KkCalendarLineGroup[];
   audience: string;
+  addOns: CalendarEntryAddOn[];
   text: string | null;
   eventLine: string | null;
   cover: EventCover | null;
@@ -171,9 +176,7 @@ export const toAudienceLabel = (
     return entry.audienceGroups.map((group) => group.name).join(AUDIENCE_SEPARATOR);
   }
   if (entry.audience === 'people') {
-    return entry.audiencePeople
-      .map((person) => `${person.firstName} ${person.lastName}`)
-      .join(AUDIENCE_SEPARATOR);
+    return entry.audiencePeople.map(toPersonName).join(AUDIENCE_SEPARATOR);
   }
 
   return WHOLE_CLUB_AUDIENCE_LABEL;
@@ -224,8 +227,12 @@ export const toDetailView = (entry: CalendarEntry): CalendarDetailView => ({
   liveLabel: entry.isRunning ? RUNNING_LABEL : null,
   mark: markOf(entry.ownerGroupId, entry.ownerGroupTone),
   venue: entry.venueName,
-  groups: toLineGroups(entry),
+  owner: toLineGroups(entry).filter((group) => group.key.startsWith(OWNER_TAG_PREFIX)),
+  participatingGroups: toLineGroups(entry).filter(
+    (group) => !group.key.startsWith(OWNER_TAG_PREFIX),
+  ),
   audience: toAudienceLabel(entry),
+  addOns: entry.addOns,
   text: textOf(entry),
   eventLine: eventLineOf(entry),
   cover: thumbOf(entry, COVER_SIZES),

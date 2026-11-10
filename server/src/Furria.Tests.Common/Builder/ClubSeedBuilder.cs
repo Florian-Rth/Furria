@@ -269,13 +269,26 @@ public sealed class ClubSeedBuilder
                 new AudienceIntent(resolvedAudience, audienceGroups, audiencePersonAliases ?? []),
                 venueAlias,
                 ownerGroupAlias,
-                asksForResponse,
+                AddOnsOf(asksForResponse, participating),
                 description,
                 participating
             )
         );
         return this;
     }
+
+    private static IReadOnlyList<CalendarEntryAddOnKind> AddOnsOf(
+        bool asksForResponse,
+        IReadOnlyList<string> participatingGroupAliases
+    ) =>
+        [
+            .. asksForResponse
+                ? [CalendarEntryAddOnKind.Attendance]
+                : Array.Empty<CalendarEntryAddOnKind>(),
+            .. participatingGroupAliases.Count > 0
+                ? [CalendarEntryAddOnKind.ParticipatingGroups]
+                : Array.Empty<CalendarEntryAddOnKind>(),
+        ];
 
     public ClubSeedBuilder AddAttendanceResponse(
         string alias,
@@ -418,7 +431,7 @@ public sealed class ClubSeedBuilder
         AudienceIntent Audience,
         string? VenueAlias,
         string? OwnerGroupAlias,
-        bool AsksForResponse,
+        IReadOnlyList<CalendarEntryAddOnKind> AddOns,
         string? Description,
         IReadOnlyList<string> ParticipatingGroupAliases
     );

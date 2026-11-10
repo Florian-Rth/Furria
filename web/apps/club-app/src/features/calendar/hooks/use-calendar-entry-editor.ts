@@ -4,9 +4,11 @@ import type { UseFormReturn } from 'react-hook-form';
 import { useWriteForm } from '@/features/write/hooks/use-write-form';
 import { toIsoDay } from '@/lib/day';
 import { useCreateCalendarEntryMutation, useUpdateCalendarEntryMutation } from '../api';
+import { toAttachedAddOns, toDetachedAddOns } from '../calendar-add-ons';
 import type { CalendarDayTime, CalendarOwnerOption } from '../calendar-authoring';
 import {
   toAudienceAfterOwnerChange,
+  toAudienceSwitch,
   toCalendarAudience,
   toCalendarKind,
   toEndKeptInStep,
@@ -15,9 +17,9 @@ import {
   toEntryLanding,
   toEntryPayload,
   toParticipationKeptForOwner,
-  toToggledParticipation,
+  toToggledValue,
 } from '../calendar-authoring';
-import type { CalendarEntry, CalendarEntryAudience, CalendarEntryForm } from '../schemas';
+import type { CalendarEntry, CalendarEntryAddOn, CalendarEntryForm } from '../schemas';
 import { CalendarEntryFormSchema } from '../schemas';
 
 const FIELD_EDIT = { shouldDirty: true, shouldValidate: true } as const;
@@ -36,12 +38,14 @@ export interface CalendarEntryEditorControl {
   toggleParticipatingGroup: (value: string) => void;
   setKind: (value: string) => void;
   setAudience: (value: string) => void;
-  heldAudience: CalendarEntryAudience | null;
+  toggleAudienceGroup: (value: string) => void;
+  setAudiencePeople: (personIds: string[]) => void;
+  attachAddOn: (addOn: CalendarEntryAddOn) => void;
+  detachAddOn: (addOn: CalendarEntryAddOn) => void;
   setStartDay: (value: string | null) => void;
   setStartTime: (value: string) => void;
   setEndDay: (value: string | null) => void;
   setEndTime: (value: string) => void;
-  setAsksForResponse: (value: boolean) => void;
   isEditing: boolean;
   isDirty: boolean;
   canSubmit: boolean;
@@ -94,7 +98,7 @@ export const useCalendarEntryEditor = ({
   const toggleParticipatingGroup = (value: string): void => {
     form.setValue(
       'participatingGroupIds',
-      toToggledParticipation(form.getValues('participatingGroupIds'), value),
+      toToggledValue(form.getValues('participatingGroupIds'), value),
       FIELD_EDIT,
     );
   };
@@ -135,6 +139,39 @@ export const useCalendarEntryEditor = ({
     form.setValue('kind', toCalendarKind(value), FIELD_EDIT);
   };
 
+  const setAudience = (value: string): void => {
+    const audience = toCalendarAudience(value);
+
+    if (audience === null) {
+      return;
+    }
+
+    const choice = toAudienceSwitch(form.getValues(), audience);
+
+    form.setValue('audience', choice.audience, FIELD_EDIT);
+    form.setValue('audienceGroupIds', choice.audienceGroupIds, FIELD_EDIT);
+  };
+
+  const toggleAudienceGroup = (value: string): void => {
+    form.setValue(
+      'audienceGroupIds',
+      toToggledValue(form.getValues('audienceGroupIds'), value),
+      FIELD_EDIT,
+    );
+  };
+
+  const attachAddOn = (addOn: CalendarEntryAddOn): void => {
+    form.setValue('addOns', toAttachedAddOns(form.getValues('addOns'), addOn), FIELD_EDIT);
+  };
+
+  const detachAddOn = (addOn: CalendarEntryAddOn): void => {
+    form.setValue('addOns', toDetachedAddOns(form.getValues('addOns'), addOn), FIELD_EDIT);
+
+    if (addOn === 'participatingGroups') {
+      form.setValue('participatingGroupIds', [], FIELD_EDIT);
+    }
+  };
+
   return {
     form,
     values,
@@ -147,14 +184,13 @@ export const useCalendarEntryEditor = ({
     },
     toggleParticipatingGroup,
     setKind,
-    setAudience: (value) => {
-      const audience = toCalendarAudience(value);
-
-      if (audience !== null) {
-        form.setValue('audience', audience, FIELD_EDIT);
-      }
+    setAudience,
+    toggleAudienceGroup,
+    setAudiencePeople: (personIds) => {
+      form.setValue('audiencePersonIds', personIds, FIELD_EDIT);
     },
-    heldAudience: entry?.audience ?? null,
+    attachAddOn,
+    detachAddOn,
     setStartDay,
     setStartTime,
     setEndDay: (value) => {
@@ -162,9 +198,6 @@ export const useCalendarEntryEditor = ({
     },
     setEndTime: (value) => {
       form.setValue('endTime', value, FIELD_EDIT);
-    },
-    setAsksForResponse: (value) => {
-      form.setValue('asksForResponse', value, FIELD_EDIT);
     },
     isEditing: entry !== null,
     isDirty: write.isDirty,

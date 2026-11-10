@@ -1,38 +1,76 @@
-import { KkButton } from '@furria/ui/KkButton';
 import { KkFormSection } from '@furria/ui/KkFormSection';
 import { KkMultiSelectField } from '@furria/ui/KkMultiSelectField';
 import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import { KkSelectField } from '@furria/ui/KkSelectField';
-import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import type { FC } from 'react';
-import { toAudienceOptions } from '../calendar-labels';
+import type { CalendarParticipantPool } from '../calendar-authoring';
+import { toAudienceGroupOptions, toParticipantsEmptyLabel } from '../calendar-authoring';
+import { CALENDAR_AUDIENCE_OPTIONS } from '../calendar-labels';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
 import type { CalendarEntryReload } from '../hooks/use-calendar-entry-supplies';
+import type { AudienceGroup, AudiencePerson } from '../schemas';
+import { CalendarGroupsReloadButton } from './CalendarGroupsReloadButton';
+import { CalendarPeoplePicker } from './CalendarPeoplePicker';
 
-const SECTION_TITLE = 'Wer & wie';
-const OWNER_LABEL = 'Eigentümer';
-const PARTICIPANTS_LABEL = 'Mitwirkende Gruppen';
+const SECTION_TITLE = 'Für wen';
 const AUDIENCE_LABEL = 'Für wen';
-const RESPONSE_LABEL = 'Nach Zu-/Absage fragen';
-const PARTICIPANTS_RELOAD_LABEL = 'Gruppen neu laden';
+const GROUPS_LABEL = 'Gruppen';
+const OWNER_LABEL = 'Eigentümer';
 
 interface CalendarEntryAudienceSectionProps {
   control: CalendarEntryEditorControl;
   ownerOptions: readonly KkSelectOption[];
-  participantOptions: readonly KkSelectOption[];
-  participantsEmptyLabel: string;
-  participantsReload: CalendarEntryReload | null;
+  heldGroups: readonly AudienceGroup[];
+  heldPeople: readonly AudiencePerson[];
+  clubGroups: CalendarParticipantPool;
+  clubGroupsReload: CalendarEntryReload | null;
 }
 
 export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps> = ({
   control,
   ownerOptions,
-  participantOptions,
-  participantsEmptyLabel,
-  participantsReload,
+  heldGroups,
+  heldPeople,
+  clubGroups,
+  clubGroupsReload,
 }) => {
-  const participantsErrorText = control.form.formState.errors.participatingGroupIds?.message;
-  const audienceOptions = toAudienceOptions(control.values, control.heldAudience);
+  const errors = control.form.formState.errors;
+  const groupsErrorText = errors.audienceGroupIds?.message;
+  const peopleErrorText = errors.audiencePersonIds?.message;
+  const audience = control.values.audience;
+  const groupOptions = toAudienceGroupOptions(clubGroups, heldGroups);
+  const groupsEmptyLabel = toParticipantsEmptyLabel(clubGroups);
+
+  const reloadButton =
+    clubGroupsReload === null ? null : <CalendarGroupsReloadButton reload={clubGroupsReload} />;
+
+  const groupsPicker =
+    audience === 'groups' ? (
+      <>
+        <KkMultiSelectField
+          name="audienceGroupIds"
+          label={GROUPS_LABEL}
+          required
+          values={control.values.audienceGroupIds}
+          options={groupOptions}
+          onToggle={control.toggleAudienceGroup}
+          emptyLabel={groupsEmptyLabel}
+          error={groupsErrorText !== undefined}
+          helperText={groupsErrorText}
+        />
+        {reloadButton}
+      </>
+    ) : null;
+
+  const peoplePicker =
+    audience === 'people' ? (
+      <CalendarPeoplePicker
+        control={control}
+        held={heldPeople}
+        clubGroups={clubGroups}
+        errorText={peopleErrorText}
+      />
+    ) : null;
 
   const ownerField =
     ownerOptions.length < 2 ? null : (
@@ -46,47 +84,20 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
       />
     );
 
-  const participantsReloadButton =
-    participantsReload === null ? null : (
-      <KkButton
-        variant="outlined"
-        size="small"
-        loading={participantsReload.isRetrying}
-        onClick={participantsReload.retry}
-        sx={{ alignSelf: 'flex-start' }}
-      >
-        {PARTICIPANTS_RELOAD_LABEL}
-      </KkButton>
-    );
-
   return (
     <KkFormSection title={SECTION_TITLE}>
-      {ownerField}
-      <KkMultiSelectField
-        name="participatingGroupIds"
-        label={PARTICIPANTS_LABEL}
-        values={control.values.participatingGroupIds}
-        options={participantOptions}
-        onToggle={control.toggleParticipatingGroup}
-        emptyLabel={participantsEmptyLabel}
-        error={participantsErrorText !== undefined}
-        helperText={participantsErrorText}
-      />
-      {participantsReloadButton}
       <KkSelectField
         name="audience"
         label={AUDIENCE_LABEL}
         required
-        value={control.values.audience}
-        options={audienceOptions}
+        value={audience}
+        options={CALENDAR_AUDIENCE_OPTIONS}
         onChange={control.setAudience}
         presentation="choices"
       />
-      <KkSwitchRow
-        label={RESPONSE_LABEL}
-        checked={control.values.asksForResponse}
-        onChange={control.setAsksForResponse}
-      />
+      {groupsPicker}
+      {peoplePicker}
+      {ownerField}
     </KkFormSection>
   );
 };

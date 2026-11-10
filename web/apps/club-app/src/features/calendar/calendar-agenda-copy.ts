@@ -44,7 +44,7 @@ export const DETAIL_MISSING = 'Dieser Termin ist nicht mehr im Kalender.';
 export const FACT_LABELS = {
   when: 'Wann',
   where: 'Wo',
-  groups: 'Gruppen',
+  owner: 'Eigentümer',
   audience: 'Für wen',
   event: 'Karten',
 } as const;

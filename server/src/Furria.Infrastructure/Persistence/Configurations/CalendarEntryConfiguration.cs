@@ -37,6 +37,16 @@ public sealed class CalendarEntryConfiguration : IEntityTypeConfiguration<Calend
                     $"audience IN ({KnownAudiences})"
                 );
                 table.HasCheckConstraint(
+                    "ck_calendar_entry_attendance_add_on",
+                    "asks_for_response = (attendance_position IS NOT NULL)"
+                );
+                table.HasCheckConstraint(
+                    "ck_calendar_entry_add_on_positions",
+                    "(attendance_position IS NULL OR attendance_position >= 0) "
+                        + "AND (participating_groups_position IS NULL "
+                        + "OR participating_groups_position >= 0)"
+                );
+                table.HasCheckConstraint(
                     "ck_calendar_entry_event_club",
                     "kind <> 'Event' OR (audience = 'Club' AND owner_group_id IS NULL)"
                 );

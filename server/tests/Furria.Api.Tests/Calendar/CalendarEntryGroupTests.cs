@@ -93,7 +93,7 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Groups,
                 AudienceGroupIds = [tanzgarde],
                 AudiencePersonIds = [],
-                AsksForResponse = false,
+                AddOns = [CalendarEntryAddOnKind.ParticipatingGroups],
                 ParticipatingGroupIds = [tanzgarde, ctx.Groups.Groups.IdOf("kindergarde")],
             }
         );
@@ -147,7 +147,7 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
-                AsksForResponse = false,
+                AddOns = [CalendarEntryAddOnKind.ParticipatingGroups],
                 ParticipatingGroupIds = [kindergarde],
             }
         );
@@ -186,7 +186,7 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
-                AsksForResponse = false,
+                AddOns = [CalendarEntryAddOnKind.ParticipatingGroups],
                 ParticipatingGroupIds = [tanzgarde],
             }
         );
@@ -199,7 +199,7 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_DropAllParticipatingGroups_When_TheEntryNamesNoneAnymore()
+    public async Task Should_DropTheParticipatingGroups_When_TheirAddOnIsRemoved()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildGalaSessionAsync(ct);
@@ -224,7 +224,7 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
-                AsksForResponse = false,
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -233,6 +233,8 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
         await ctx
             .Expected.CalendarEntry(calendarEntryId)
             .ToCarryNoParticipatingGroup()
+            .CalendarEntry(calendarEntryId)
+            .ToCarryAddOns()
             .AssertAsync(ct);
     }
 
@@ -298,7 +300,7 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
-                AsksForResponse = false,
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -377,7 +379,7 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
             Audience = CalendarEntryAudience.Club,
             AudienceGroupIds = [],
             AudiencePersonIds = [],
-            AsksForResponse = false,
+            AddOns = [CalendarEntryAddOnKind.ParticipatingGroups],
             ParticipatingGroupIds = participatingGroupIds,
         };
 

@@ -177,12 +177,29 @@ Decisions taken while building phase 2:
 ### Phase 3 — Form: Für wen and the add-on frame
 Goal: the new form. Für wen has group and person pickers. *Bausteine* holds Zu-/Absage and
 Mitwirkende Gruppen as cards, and the old switch and participating-groups field are gone.
-- [ ] Für wen chips + group multi-picker + person search picker with *Ganze Gruppe hinzufügen*
-- [ ] *Bausteine* section: add sheet, cards, remove with confirmation when answers exist
-- [ ] Zu-/Absage card and Mitwirkende Gruppen card replace the switch and the participating-groups field
-- [ ] API: removing Zu-/Absage discards its answers; clearing participating groups removes their appearances only when they hold no evening changes (else refused, as today)
-- [ ] Entry detail: audience line, add-on sections in add-on order
-- [ ] Browser check phone + desktop, light + dark
+- [x] Für wen chips + group multi-picker + person search picker with *Ganze Gruppe hinzufügen*
+- [x] *Bausteine* section: add sheet, cards, remove with confirmation when answers exist
+- [x] Zu-/Absage card and Mitwirkende Gruppen card replace the switch and the participating-groups field
+- [x] API: removing Zu-/Absage discards its answers; clearing participating groups removes their appearances only when they hold no evening changes (else refused, as today)
+- [x] Entry detail: audience line, add-on sections in add-on order
+- [x] Browser check phone + desktop, light + dark
+
+Decisions taken while building phase 3:
+- **Add-on order** is one sequence across all add-ons of an entry. The two kept add-ons store their
+  place as `attendance_position` / `participating_groups_position` on `calendar_entry` (check:
+  `asks_for_response` ⇔ attendance position set). Post/Put take `addOns` (attached single-use
+  add-ons in card order) instead of `asksForResponse`; responses carry `addOns` and `responseCount`.
+  Phases 4–6 extend the same order with their own positions.
+- **Removing Zu-/Absage** deletes its answers and their change history, so re-attaching starts
+  empty. Answering and marking on behalf take a share lock on the entry and re-check that it still
+  asks, so no answer lands after the discard.
+- **Appearances** only ever hang off events, which the calendar API refuses; clearing participating
+  groups there never touches them, so no refusal was needed.
+- **Choosable people** come from `GET /api/calendar/choosable-people` (with each person's current
+  group memberships for *Ganze Gruppe hinzufügen*); callers must be able to schedule an entry.
+  Paused members stay choosable, matching the write guard.
+- **Für wen = Gruppen** always lists its groups explicitly (the owner group is preselected); there
+  is no implicit owner fallback any more.
 
 ### Phase 4 — Umfrage
 Goal: polls can be attached, voted on, closed and shown.

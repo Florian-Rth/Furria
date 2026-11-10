@@ -4,12 +4,14 @@ import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
 import { toIsoDayLabel, toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
 import { toIsoDay } from '@/lib/day';
+import { CALENDAR_ADD_ON_LABELS } from './calendar-add-ons';
 import type { CalendarOwnerOption } from './calendar-authoring';
-import { AUTHORED_KINDS, NO_VENUE_ID, toOfferedAudiences } from './calendar-authoring';
+import { AUDIENCE_ORDER, AUTHORED_KINDS, NO_VENUE_ID } from './calendar-authoring';
+import type { CalendarGroupShortcut } from './calendar-people';
 import type {
   CalendarEntry,
+  CalendarEntryAddOn,
   CalendarEntryAudience,
-  CalendarEntryForm,
   RunningVenue,
 } from './schemas';
 
@@ -35,14 +37,9 @@ export const CALENDAR_KIND_OPTIONS: readonly KkSelectOption[] = AUTHORED_KINDS.m
   label: CALENDAR_KIND_LABELS[kind],
 }));
 
-export const toAudienceOptions = (
-  form: Pick<CalendarEntryForm, 'audienceGroupIds' | 'ownerId'>,
-  heldAudience: CalendarEntryAudience | null,
-): KkSelectOption[] =>
-  toOfferedAudiences(form, heldAudience).map((audience) => ({
-    value: audience,
-    label: CALENDAR_AUDIENCE_LABELS[audience],
-  }));
+export const CALENDAR_AUDIENCE_OPTIONS: readonly KkSelectOption[] = AUDIENCE_ORDER.map(
+  (audience) => ({ value: audience, label: CALENDAR_AUDIENCE_LABELS[audience] }),
+);
 
 export const toVenueOptions = (venues: readonly RunningVenue[]): KkSelectOption[] => [
   { value: NO_VENUE_ID, label: NO_VENUE_LABEL },
@@ -96,3 +93,35 @@ export const toEntrySavedMessage = (title: string): string => `„${title}“ is
 
 export const toEntryDeletedMessage = (title: string): string =>
   `„${title}“ ist aus dem Kalender gelöscht.`;
+
+const NO_MATCH_LABEL = 'Niemand gefunden.';
+
+export const toGroupShortcutOptions = (
+  shortcuts: readonly CalendarGroupShortcut[],
+): KkSelectOption[] =>
+  shortcuts.map((shortcut) => ({
+    value: String(shortcut.groupId),
+    label: `${shortcut.name} (${shortcut.missingIds.length})`,
+  }));
+
+export const toNoMatchLabel = (
+  query: string,
+  matchCount: number,
+  isLoading: boolean,
+): string | null => (query.trim() === '' || matchCount > 0 || isLoading ? null : NO_MATCH_LABEL);
+
+export const toAnswerCountLabel = (count: number): string | undefined => {
+  if (count === 0) {
+    return undefined;
+  }
+
+  return count === 1 ? '1 Antwort' : `${count} Antworten`;
+};
+
+export const toAddOnRemovalQuestion = (addOn: CalendarEntryAddOn): string =>
+  `${CALENDAR_ADD_ON_LABELS[addOn]} entfernen?`;
+
+export const toDiscardedAnswersLabel = (count: number): string =>
+  count === 1
+    ? 'Beim Speichern wird 1 Antwort gelöscht.'
+    : `Beim Speichern werden ${count} Antworten gelöscht.`;

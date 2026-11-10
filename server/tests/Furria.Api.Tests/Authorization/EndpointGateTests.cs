@@ -79,6 +79,7 @@ public sealed class EndpointGateTests : IClassFixture<ApiTestFixture>
         "/api/calendar",
         "/api/calendar/entries",
         "/api/calendar/entries/{calendarEntryId}",
+        "/api/calendar/choosable-people",
         "/api/calendar/entries/{calendarEntryId}/running-order",
         "/api/calendar/{calendarEntryId}/response",
         "/api/auth/me/login-email",

@@ -677,6 +677,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("asks_for_response");
 
+                    b.Property<int?>("AttendancePosition")
+                        .HasColumnType("integer")
+                        .HasColumnName("attendance_position");
+
                     b.Property<string>("Audience")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -709,6 +713,10 @@ namespace Furria.Infrastructure.Migrations
                     b.Property<int?>("OwnerGroupId")
                         .HasColumnType("integer")
                         .HasColumnName("owner_group_id");
+
+                    b.Property<int?>("ParticipatingGroupsPosition")
+                        .HasColumnType("integer")
+                        .HasColumnName("participating_groups_position");
 
                     b.Property<DateTimeOffset>("StartsAt")
                         .HasColumnType("timestamp with time zone")
@@ -744,6 +752,10 @@ namespace Furria.Infrastructure.Migrations
 
                     b.ToTable("calendar_entry", null, t =>
                         {
+                            t.HasCheckConstraint("ck_calendar_entry_add_on_positions", "(attendance_position IS NULL OR attendance_position >= 0) AND (participating_groups_position IS NULL OR participating_groups_position >= 0)");
+
+                            t.HasCheckConstraint("ck_calendar_entry_attendance_add_on", "asks_for_response = (attendance_position IS NOT NULL)");
+
                             t.HasCheckConstraint("ck_calendar_entry_audience", "audience IN ('Club', 'Groups', 'People')");
 
                             t.HasCheckConstraint("ck_calendar_entry_event_club", "kind <> 'Event' OR (audience = 'Club' AND owner_group_id IS NULL)");

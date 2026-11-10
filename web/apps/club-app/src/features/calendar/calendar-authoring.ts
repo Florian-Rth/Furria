@@ -6,6 +6,7 @@ import { toIsoDay } from '@/lib/day';
 import type {
   CalendarCollision,
   CalendarEntry,
+  CalendarEntryAddOn,
   CalendarEntryAudience,
   CalendarEntryForm,
 } from './schemas';
@@ -24,7 +25,7 @@ const PARTICIPANTS_UNAVAILABLE = 'Die Gruppen konnten nicht geladen werden.';
 
 export const AUTHORED_KINDS: readonly CalendarEntryKind[] = ['plain', 'training', 'trip'];
 
-const AUDIENCE_ORDER: readonly CalendarEntryAudience[] = ['club', 'groups', 'people'];
+export const AUDIENCE_ORDER: readonly CalendarEntryAudience[] = ['club', 'groups', 'people'];
 
 export interface CalendarParticipantGroup {
   groupId: number;
@@ -37,7 +38,7 @@ export interface CalendarOwnerOption {
   label: string;
 }
 
-export interface CalendarEntryPayload {
+export type CalendarEntryPayload = {
   title: string;
   description: string | null;
   ownerGroupId: number | null;
@@ -48,9 +49,9 @@ export interface CalendarEntryPayload {
   audience: CalendarEntryAudience;
   audienceGroupIds: number[];
   audiencePersonIds: number[];
-  asksForResponse: boolean;
+  addOns: CalendarEntryAddOn[];
   participatingGroupIds: number[];
-}
+};
 
 export interface CalendarDayTime {
   day: string;
@@ -101,32 +102,43 @@ export interface CalendarParticipantChoice extends CalendarParticipantGroup {
   isArchived: boolean;
 }
 
-export const toParticipatingGroupChoices = (
+export const toGroupChoices = (
   pool: CalendarParticipantPool,
   held: readonly CalendarParticipantGroup[],
-  ownerId: string,
+  excludedId: string | null,
 ): CalendarParticipantChoice[] => {
   const running = pool.state === 'ready' ? pool.groups : [];
   const offered = running
-    .filter((group) => toOwnerId(group.groupId) !== ownerId)
-    .map((group) => ({ ...group, isArchived: false }));
+    .filter((group) => toOwnerId(group.groupId) !== excludedId)
+    .map((group) => ({ groupId: group.groupId, name: group.name, isArchived: false }));
   const listed = new Set(offered.map((choice) => choice.groupId));
   const kept = held
-    .filter((group) => toOwnerId(group.groupId) !== ownerId && !listed.has(group.groupId))
-    .map((group) => ({ ...group, isArchived: pool.state === 'ready' }));
+    .filter((group) => toOwnerId(group.groupId) !== excludedId && !listed.has(group.groupId))
+    .map((group) => ({
+      groupId: group.groupId,
+      name: group.name,
+      isArchived: pool.state === 'ready',
+    }));
 
   return [...offered, ...kept].sort((left, right) => left.name.localeCompare(right.name, 'de'));
 };
+
+const toGroupOptions = (choices: readonly CalendarParticipantChoice[]): KkSelectOption[] =>
+  choices.map((choice) => ({
+    value: toOwnerId(choice.groupId),
+    label: choice.isArchived ? `${choice.name}${ARCHIVED_SUFFIX}` : choice.name,
+  }));
 
 export const toParticipatingGroupOptions = (
   pool: CalendarParticipantPool,
   held: readonly CalendarParticipantGroup[],
   ownerId: string,
-): KkSelectOption[] =>
-  toParticipatingGroupChoices(pool, held, ownerId).map((choice) => ({
-    value: toOwnerId(choice.groupId),
-    label: choice.isArchived ? `${choice.name}${ARCHIVED_SUFFIX}` : choice.name,
-  }));
+): KkSelectOption[] => toGroupOptions(toGroupChoices(pool, held, ownerId));
+
+export const toAudienceGroupOptions = (
+  pool: CalendarParticipantPool,
+  held: readonly CalendarParticipantGroup[],
+): KkSelectOption[] => toGroupOptions(toGroupChoices(pool, held, null));
 
 export const toParticipatingGroupIds = (values: readonly string[], ownerId: string): number[] => [
   ...new Set(values.filter((value) => value !== ownerId).map((value) => Number(value))),
@@ -135,7 +147,7 @@ export const toParticipatingGroupIds = (values: readonly string[], ownerId: stri
 export const toParticipationKeptForOwner = (values: readonly string[], ownerId: string): string[] =>
   values.filter((value) => value !== ownerId);
 
-export const toToggledParticipation = (values: readonly string[], value: string): string[] =>
+export const toToggledValue = (values: readonly string[], value: string): string[] =>
   values.includes(value) ? values.filter((held) => held !== value) : [...values, value];
 
 export interface CalendarEntryOwnership {
@@ -173,6 +185,8 @@ export const toDefaultAudience = (ownerId: string): CalendarEntryAudience =>
 
 type AudienceChoice = Pick<CalendarEntryForm, 'audience' | 'audienceGroupIds'>;
 
+const ownerGroupIdsOf = (ownerId: string): string[] => (ownerId === CLUB_OWNER_ID ? [] : [ownerId]);
+
 const followsTheOwner = (form: Pick<CalendarEntryForm, 'audienceGroupIds' | 'ownerId'>): boolean =>
   form.audienceGroupIds.length === 0 ||
   (form.audienceGroupIds.length === 1 && form.audienceGroupIds[0] === form.ownerId);
@@ -184,43 +198,31 @@ export const toAudienceAfterOwnerChange = (
   const kept = { audience: form.audience, audienceGroupIds: form.audienceGroupIds };
 
   if (form.audience === 'club') {
-    return form.ownerId === CLUB_OWNER_ID
-      ? { audience: toDefaultAudience(nextOwnerId), audienceGroupIds: [] }
+    return form.ownerId === CLUB_OWNER_ID && nextOwnerId !== CLUB_OWNER_ID
+      ? { audience: 'groups', audienceGroupIds: [nextOwnerId] }
       : kept;
   }
   if (form.audience !== 'groups' || !followsTheOwner(form)) {
     return kept;
   }
 
-  return nextOwnerId === CLUB_OWNER_ID && form.ownerId !== CLUB_OWNER_ID
-    ? { audience: 'groups', audienceGroupIds: [form.ownerId] }
-    : { audience: 'groups', audienceGroupIds: [] };
+  return nextOwnerId === CLUB_OWNER_ID
+    ? { audience: 'groups', audienceGroupIds: ownerGroupIdsOf(form.ownerId) }
+    : { audience: 'groups', audienceGroupIds: [nextOwnerId] };
 };
 
-export const toOfferedAudiences = (
+export const toAudienceSwitch = (
   form: Pick<CalendarEntryForm, 'audienceGroupIds' | 'ownerId'>,
-  heldAudience: CalendarEntryAudience | null,
-): CalendarEntryAudience[] =>
-  AUDIENCE_ORDER.filter(
-    (audience) =>
-      audience === 'club' ||
-      audience === heldAudience ||
-      (audience === 'groups' &&
-        (form.ownerId !== CLUB_OWNER_ID || form.audienceGroupIds.length > 0)),
-  );
+  audience: CalendarEntryAudience,
+): AudienceChoice =>
+  audience === 'groups' && form.audienceGroupIds.length === 0
+    ? { audience, audienceGroupIds: ownerGroupIdsOf(form.ownerId) }
+    : { audience, audienceGroupIds: form.audienceGroupIds };
 
 export const toAudienceGroupIds = (
-  form: Pick<CalendarEntryForm, 'audience' | 'audienceGroupIds' | 'ownerId'>,
-): number[] => {
-  if (form.audience !== 'groups') {
-    return [];
-  }
-  if (form.audienceGroupIds.length > 0) {
-    return form.audienceGroupIds.map((groupId) => Number(groupId));
-  }
-
-  return form.ownerId === CLUB_OWNER_ID ? [] : [Number(form.ownerId)];
-};
+  form: Pick<CalendarEntryForm, 'audience' | 'audienceGroupIds'>,
+): number[] =>
+  form.audience === 'groups' ? form.audienceGroupIds.map((groupId) => Number(groupId)) : [];
 
 export const toAudiencePersonIds = (
   form: Pick<CalendarEntryForm, 'audience' | 'audiencePersonIds'>,
@@ -266,8 +268,10 @@ export const toEntryPayload = (form: CalendarEntryForm): CalendarEntryPayload =>
     audience: form.audience,
     audienceGroupIds: toAudienceGroupIds(form),
     audiencePersonIds: toAudiencePersonIds(form),
-    asksForResponse: form.asksForResponse,
-    participatingGroupIds: toParticipatingGroupIds(form.participatingGroupIds, form.ownerId),
+    addOns: form.addOns,
+    participatingGroupIds: form.addOns.includes('participatingGroups')
+      ? toParticipatingGroupIds(form.participatingGroupIds, form.ownerId)
+      : [],
   };
 };
 
@@ -360,13 +364,13 @@ const toDraftedFormValues = (
     venueId: draft.venueId === null ? NO_VENUE_ID : String(draft.venueId),
     kind,
     audience: toDefaultAudience(ownerId),
-    audienceGroupIds: [],
+    audienceGroupIds: ownerGroupIdsOf(ownerId),
     audiencePersonIds: [],
     startDay,
     startTime,
     endDay: endTime > startTime ? startDay : nextDayOf(startDay),
     endTime,
-    asksForResponse: false,
+    addOns: [],
     participatingGroupIds: [],
   };
 };
@@ -397,7 +401,7 @@ export const toEntryFormValues = (
     startTime: start.time,
     endDay: end?.day ?? '',
     endTime: end?.time ?? DEFAULT_END_TIME,
-    asksForResponse: entry.asksForResponse,
+    addOns: entry.addOns,
     participatingGroupIds: entry.participatingGroups.map((group) => toOwnerId(group.groupId)),
   };
 };

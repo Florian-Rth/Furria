@@ -82,7 +82,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
-                AsksForResponse = true,
+                AddOns = [CalendarEntryAddOnKind.Attendance],
                 ParticipatingGroupIds = [],
             }
         );
@@ -132,7 +132,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
-                AsksForResponse = false,
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -168,7 +168,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
-                AsksForResponse = false,
+                AddOns = [],
                 ParticipatingGroupIds = null!,
             }
         );
@@ -217,7 +217,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
-                AsksForResponse = false,
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -257,7 +257,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
-                AsksForResponse = false,
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -305,7 +305,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
-                AsksForResponse = false,
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -377,7 +377,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
-                AsksForResponse = false,
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -423,7 +423,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
-                AsksForResponse = false,
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -562,6 +562,112 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
+    [Fact]
+    public async Task Should_KeepTheAddOnsInCardOrder_When_TheEntryAttachesThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                AddOns =
+                [
+                    CalendarEntryAddOnKind.ParticipatingGroups,
+                    CalendarEntryAddOnKind.Attendance,
+                ],
+                ParticipatingGroupIds = [ctx.Groups.Groups.IdOf("kindergarde")],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(result.CalendarEntryId)
+            .ToCarryAddOns(
+                CalendarEntryAddOnKind.ParticipatingGroups,
+                CalendarEntryAddOnKind.Attendance
+            )
+            .CalendarEntry(result.CalendarEntryId)
+            .ToAskForResponse(true)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_GroupsParticipateWithoutTheirAddOn()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                ParticipatingGroupIds = [ctx.Groups.Groups.IdOf("kindergarde")],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_AnAddOnIsAttachedTwice()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                AddOns = [CalendarEntryAddOnKind.Attendance, CalendarEntryAddOnKind.Attendance],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnUnprocessableEntity_When_OnlyTheOwnerWouldParticipate()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
+
+        var client = await ctx.Identity.ClientForAsync("chris", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(DanceGuardTraining) with
+            {
+                OwnerGroupId = tanzgarde,
+                Kind = CalendarEntryKind.Training,
+                Audience = CalendarEntryAudience.Groups,
+                AudienceGroupIds = [tanzgarde],
+                AddOns = [CalendarEntryAddOnKind.ParticipatingGroups],
+                ParticipatingGroupIds = [tanzgarde],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal(["Wähle mindestens eine mitwirkende Gruppe."], failures[ValidationField]);
+    }
+
     private static PostCalendarEntryRequest ClubOwned(string title) =>
         new()
         {
@@ -575,7 +681,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
             Audience = CalendarEntryAudience.Club,
             AudienceGroupIds = [],
             AudiencePersonIds = [],
-            AsksForResponse = false,
+            AddOns = [],
             ParticipatingGroupIds = [],
         };
 
