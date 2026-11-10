@@ -22,12 +22,9 @@ export interface AnswerTally {
 const FACET_SEPARATOR = ' · ';
 
 const KIND_ICONS: Record<CalendarKindKey, KkIconName> = {
+  plain: 'calendar',
   training: 'bolt',
-  rehearsal: 'stage',
-  performance: 'live',
-  meeting: 'board',
-  party: 'events',
-  other: 'calendar',
+  trip: 'flag',
   event: 'tickets',
 };
 

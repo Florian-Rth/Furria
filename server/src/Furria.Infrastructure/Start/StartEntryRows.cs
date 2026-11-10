@@ -75,6 +75,7 @@ internal sealed record StartEntryRow(
             [.. ParticipatingGroups.Select(group => group.GroupId)],
             Visibility,
             Kind,
+            AsksForResponse,
             StartsAt
         );
 

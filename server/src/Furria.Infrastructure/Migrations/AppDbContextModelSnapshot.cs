@@ -746,7 +746,7 @@ namespace Furria.Infrastructure.Migrations
                         {
                             t.HasCheckConstraint("ck_calendar_entry_event_public", "kind <> 'Event' OR (visibility = 'Public' AND owner_group_id IS NULL)");
 
-                            t.HasCheckConstraint("ck_calendar_entry_kind", "kind IN ('Training', 'Rehearsal', 'Performance', 'Meeting', 'Party', 'Other', 'Event')");
+                            t.HasCheckConstraint("ck_calendar_entry_kind", "kind IN ('Plain', 'Training', 'Trip', 'Event')");
 
                             t.HasCheckConstraint("ck_calendar_entry_owner_visibility", "owner_group_id IS NOT NULL OR visibility <> 'Group'");
 

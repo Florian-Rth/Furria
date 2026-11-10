@@ -1,7 +1,7 @@
 ---
 rfc: 0005
 title: Calendar add-ons — three kinds, an audience and building blocks instead of entry kinds
-status: draft
+status: in-progress
 github_issue: 70
 branch: feat/rfc-70-calendar-add-ons
 created: 2026-11-10
@@ -144,13 +144,13 @@ calendar client.
 ### Phase 1 — Three kinds and optional attendance
 Goal: kinds are Plain / Training / Trip / Event. Zu-/Absage only asks when switched on, a training
 included. Existing data is migrated.
-- [ ] Rework `CalendarEntryKind` to Plain, Training, Trip, Event; migration mapping old kinds (Performance → Trip)
-- [ ] Data migration: upcoming trainings that `AsksTheCast` today get `AsksForResponse = true`
-- [ ] `CastAttendance` / `CalendarEntryFacts`: the cast is asked only when `AsksForResponse`; marks on behalf only then
-- [ ] `StartComposer`: owed horizon (Training 14 days, else 42), "on stage" from participating groups instead of Performance
-- [ ] Studio open spots and training mode read only add-on trainings (no behaviour beyond the rule above)
-- [ ] Club app: kind chips Allgemein / Training / Ausflug, labels, `KkEntryKindGlyph` (trip glyph, plain glyph), filters, agenda copy
-- [ ] Integration tests for kinds, cast asking and migration mapping; pure-function tests on the club app
+- [x] Rework `CalendarEntryKind` to Plain, Training, Trip, Event; migration mapping old kinds (Performance → Trip)
+- [x] Data migration: upcoming trainings that `AsksTheCast` today get `AsksForResponse = true`
+- [x] `CastAttendance` / `CalendarEntryFacts`: the cast is asked only when `AsksForResponse`; marks on behalf only then
+- [x] `StartComposer`: owed horizon (Training 14 days, else 42), "on stage" from participating groups instead of Performance
+- [x] Studio open spots and training mode read only add-on trainings (no behaviour beyond the rule above)
+- [x] Club app: kind chips Allgemein / Training / Ausflug, labels, `KkEntryKindGlyph` (trip glyph, plain glyph), filters, agenda copy
+- [x] Integration tests for kinds, cast asking and migration mapping; pure-function tests on the club app
 
 ### Phase 2 — Audience (backend)
 Goal: the API speaks `audience` instead of `visibility`. Sight, concern and answering follow it.

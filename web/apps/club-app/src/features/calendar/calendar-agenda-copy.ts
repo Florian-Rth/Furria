@@ -1,5 +1,3 @@
-import type { KkEntryKindGlyphKind } from '@furria/ui/KkEntryKindGlyph';
-import type { CalendarKindKey } from '@/lib/calendar-copy';
 import type {
   CalendarLandmark,
   CalendarRelative,
@@ -92,16 +90,6 @@ export const VISIBILITY_LABELS: Record<CalendarEntryVisibility, string> = {
   group: 'Nur Gruppe',
   club: 'Ganzer Verein',
   public: 'Öffentlich',
-};
-
-export const KIND_GLYPHS: Record<CalendarKindKey, KkEntryKindGlyphKind> = {
-  training: 'training',
-  rehearsal: 'rehearsal',
-  performance: 'performance',
-  meeting: 'meeting',
-  party: 'party',
-  other: 'other',
-  event: 'event',
 };
 
 const CLUB_LABEL = 'Verein';

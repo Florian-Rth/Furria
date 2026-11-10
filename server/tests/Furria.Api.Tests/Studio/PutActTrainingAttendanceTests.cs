@@ -198,6 +198,29 @@ public sealed class PutActTrainingAttendanceTests : IClassFixture<ApiTestFixture
         );
 
     [Fact]
+    public Task Should_Refuse_When_TheTrainingDoesNotAskForResponses() =>
+        _fixture.AtInstantAsync(
+            InTheRunningSession,
+            async () =>
+            {
+                var ct = TestContext.Current.CancellationToken;
+                var ctx = await _fixture.BuildAsync(GardeWithTrainings(_fixture.Today), ct);
+                var actId = await GardetanzAsync(ctx, ct);
+                var admin = await ctx.Identity.ClientForAsync(GardeAdmin, ct);
+
+                var response = await MarkAttendanceAsync(
+                    admin,
+                    actId,
+                    ctx.Club.CalendarEntries.IdOf(SilentGardeTraining),
+                    ctx.Identity.People.IdOf(Anna),
+                    AttendanceAnswer.No
+                );
+
+                Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            }
+        );
+
+    [Fact]
     public Task Should_RefuseMaybe_When_TheGroupAdminMarks() =>
         _fixture.AtInstantAsync(
             InTheRunningSession,

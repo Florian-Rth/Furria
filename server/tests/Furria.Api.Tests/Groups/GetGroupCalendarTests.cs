@@ -366,7 +366,7 @@ public sealed class GetGroupCalendarTests : IClassFixture<ApiTestFixture>
                                 "kinder-probe",
                                 ChildrensRehearsal,
                                 AtTheChildrensRehearsal,
-                                kind: CalendarEntryKind.Rehearsal,
+                                kind: CalendarEntryKind.Training,
                                 visibility: CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "kindergarde",
                                 asksForResponse: true,
@@ -383,7 +383,7 @@ public sealed class GetGroupCalendarTests : IClassFixture<ApiTestFixture>
                                 "parade",
                                 Parade,
                                 AtTheParade,
-                                kind: CalendarEntryKind.Performance,
+                                kind: CalendarEntryKind.Trip,
                                 visibility: CalendarEntryVisibility.Public
                             )
                     ),

@@ -5,7 +5,7 @@ import type { StartEntry } from './schemas';
 const entry = (calendarEntryId: number, attendance: StartEntry['attendance']): StartEntry => ({
   calendarEntryId,
   title: 'Generalprobe',
-  kind: 'rehearsal',
+  kind: 'training',
   startsAt: '2026-10-25T19:00:00+01:00',
   endsAt: null,
   isRunning: false,

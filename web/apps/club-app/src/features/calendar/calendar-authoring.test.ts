@@ -36,7 +36,7 @@ const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
   title: 'Prunksitzung',
   startsAt: at(2026, 2, 14, 19),
   endsAt: null,
-  kind: 'performance',
+  kind: 'trip',
   venueId: null,
   venueName: null,
   ownerGroupId: null,
@@ -45,7 +45,6 @@ const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
   participatingGroups: [],
   visibility: 'club',
   asksForResponse: false,
-  asksTheCast: false,
   description: null,
   viewerAnswer: null,
   isRunning: false,
@@ -58,7 +57,7 @@ const form = (overrides: Partial<CalendarEntryForm>): CalendarEntryForm => ({
   description: '   ',
   ownerId: 'club',
   venueId: '',
-  kind: 'meeting',
+  kind: 'plain',
   visibility: 'club',
   startDay: '2027-01-20',
   startTime: '19:00',
@@ -92,22 +91,22 @@ describe('mayOwnCalendarEntry', () => {
     const options = toOwnerOptions([TANZGARDE], false);
 
     expect(mayOwnCalendarEntry(options, { ownerGroupId: 7, kind: 'training' })).toBe(true);
-    expect(mayOwnCalendarEntry(options, { ownerGroupId: null, kind: 'meeting' })).toBe(false);
+    expect(mayOwnCalendarEntry(options, { ownerGroupId: null, kind: 'plain' })).toBe(false);
     expect(mayOwnCalendarEntry(options, { ownerGroupId: 3, kind: 'training' })).toBe(false);
   });
 
   it('never hands an event to the calendar editor, not even to the club calendar', () => {
     const options = toOwnerOptions([TANZGARDE], true);
 
-    expect(mayOwnCalendarEntry(options, { ownerGroupId: null, kind: 'meeting' })).toBe(true);
+    expect(mayOwnCalendarEntry(options, { ownerGroupId: null, kind: 'plain' })).toBe(true);
     expect(mayOwnCalendarEntry(options, { ownerGroupId: null, kind: 'event' })).toBe(false);
   });
 });
 
 describe('toEntryLink', () => {
-  it.each<{ label: string; kind: 'meeting' | 'event'; owned: boolean; to: string | null }>([
-    { label: 'an owned entry', kind: 'meeting', owned: true, to: '/calendar/$calendarEntryId' },
-    { label: 'a foreign entry', kind: 'meeting', owned: false, to: null },
+  it.each<{ label: string; kind: 'plain' | 'event'; owned: boolean; to: string | null }>([
+    { label: 'an owned entry', kind: 'plain', owned: true, to: '/calendar/$calendarEntryId' },
+    { label: 'a foreign entry', kind: 'plain', owned: false, to: null },
     { label: 'an event of the club calendar', kind: 'event', owned: true, to: null },
   ])('opens $label', ({ kind, owned, to }) => {
     const link = toEntryLink({ calendarEntryId: 4, ownerGroupId: null, kind }, owned);
@@ -119,7 +118,7 @@ describe('toEntryLink', () => {
 describe('opensEntrySheet', () => {
   it.each([
     ['event', true],
-    ['meeting', false],
+    ['plain', false],
     ['training', false],
   ] as const)('opens a %s in the entry sheet: %s', (kind, opens) => {
     expect(opensEntrySheet({ kind })).toBe(opens);
@@ -128,9 +127,9 @@ describe('opensEntrySheet', () => {
 
 describe('toDefaultVisibility', () => {
   it.each([
-    [null, 'meeting', 'club'],
+    [null, 'plain', 'club'],
     [7, 'training', 'club'],
-    [7, 'performance', 'group'],
+    [7, 'trip', 'group'],
   ] as const)('reads owner %s and kind %s as %s', (ownerGroupId, kind, expected) => {
     expect(toDefaultVisibility(ownerGroupId, kind)).toBe(expected);
   });
@@ -232,6 +231,17 @@ describe('toEntryFormValues', () => {
       values.venueId,
       values.title.length > 0,
     ]).toEqual(['7', 'training', 'club', '19:30', '2027-01-19', '21:00', '2', true]);
+  });
+
+  it('starts a new entry as a plain entry', () => {
+    const values = toEntryFormValues(
+      null,
+      toOwnerOptions([TANZGARDE], false),
+      '2027-01-19',
+      NO_DRAFT,
+    );
+
+    expect(values.kind).toBe('plain');
   });
 
   it('ends a drafted training on the next day when it runs past midnight', () => {

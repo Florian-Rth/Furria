@@ -58,7 +58,7 @@ type GroupTone =
   | 'orchid'
   | 'rose';
 type ClubIcon = 'crown' | 'euro' | 'key' | 'camera' | 'wrench' | 'star' | 'heart' | 'mask' | 'flag';
-type EntryKind = 'training' | 'rehearsal' | 'performance' | 'meeting' | 'party' | 'other';
+type EntryKind = 'plain' | 'training' | 'trip';
 type EntryVisibility = 'group' | 'club' | 'public';
 
 interface Session {
@@ -728,7 +728,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       venue: 'Festhalle Großfurra',
       startsAt: at(tomorrow, '18:00'),
       endsAt: at(tomorrow, '20:00'),
-      kind: 'rehearsal',
+      kind: 'plain',
       visibility: 'group',
       asksForResponse: true,
       participating: [],
@@ -742,7 +742,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       venue: 'Festhalle Großfurra',
       startsAt: at(generalprobeDay, '19:00'),
       endsAt: at(generalprobeDay, '21:30'),
-      kind: 'rehearsal',
+      kind: 'plain',
       visibility: 'group',
       asksForResponse: true,
       participating: ['Männerballett', 'Elferrat'],
@@ -768,7 +768,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       venue: 'Vereinsraum',
       startsAt: at(thursday, '19:30'),
       endsAt: at(thursday, '21:30'),
-      kind: 'meeting',
+      kind: 'plain',
       visibility: 'group',
       asksForResponse: true,
       participating: [],
@@ -781,7 +781,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       venue: 'Vereinsraum',
       startsAt: at(saturday, '14:11'),
       endsAt: at(saturday, '17:00'),
-      kind: 'other',
+      kind: 'plain',
       visibility: 'club',
       asksForResponse: false,
       participating: [],
@@ -794,7 +794,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       venue: 'Vereinsraum',
       startsAt: at(assembly, '19:30'),
       endsAt: at(assembly, '21:30'),
-      kind: 'meeting',
+      kind: 'plain',
       visibility: 'club',
       asksForResponse: false,
       participating: [],
@@ -807,7 +807,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       venue: 'Festhalle Großfurra',
       startsAt: at(opening, '11:11'),
       endsAt: at(opening, '18:00'),
-      kind: 'performance',
+      kind: 'trip',
       visibility: 'public',
       asksForResponse: true,
       participating: ['Tanzgarde', 'Elferrat', 'Männerballett'],
@@ -820,7 +820,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       venue: 'Festhalle Großfurra',
       startsAt: at(christmasParty, '18:00'),
       endsAt: at(christmasParty, '23:00'),
-      kind: 'party',
+      kind: 'plain',
       visibility: 'club',
       asksForResponse: false,
       participating: [],

@@ -14,6 +14,8 @@ public sealed record CalendarEntryFacts
 
     public required CalendarEntryKind Kind { get; init; }
 
+    public required bool AsksForResponse { get; init; }
+
     public required int CastSessionYear { get; init; }
 
     [Pure]
@@ -22,6 +24,7 @@ public sealed record CalendarEntryFacts
         IReadOnlyList<int> participatingGroupIds,
         CalendarEntryVisibility visibility,
         CalendarEntryKind kind,
+        bool asksForResponse,
         DateTimeOffset startsAt
     ) =>
         new()
@@ -31,6 +34,7 @@ public sealed record CalendarEntryFacts
             Visibility = visibility,
             SessionYear = ClubSession.YearOf(ClubClock.DayOf(startsAt)),
             Kind = kind,
+            AsksForResponse = asksForResponse,
             CastSessionYear = CastAttendance.SessionYearOf(startsAt),
         };
 
@@ -40,5 +44,5 @@ public sealed record CalendarEntryFacts
 
     [Pure]
     public bool AsksTheCastOf(IReadOnlySet<GroupSession> actSessions) =>
-        CastAttendance.AsksTheCast(Kind, GroupIds(), CastSessionYear, actSessions);
+        CastAttendance.AsksTheCast(Kind, AsksForResponse, GroupIds(), CastSessionYear, actSessions);
 }

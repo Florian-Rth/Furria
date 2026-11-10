@@ -776,7 +776,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                                 "garde-auftritt",
                                 DanceGuardPerformance,
                                 AtTheDanceGuardPerformance,
-                                kind: CalendarEntryKind.Performance,
+                                kind: CalendarEntryKind.Trip,
                                 visibility: CalendarEntryVisibility.Club,
                                 ownerGroupAlias: "tanzgarde"
                             )
@@ -784,7 +784,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                                 "garde-feier",
                                 DanceGuardParty,
                                 AtTheDanceGuardParty,
-                                kind: CalendarEntryKind.Party,
+                                kind: CalendarEntryKind.Plain,
                                 visibility: CalendarEntryVisibility.Public,
                                 ownerGroupAlias: "tanzgarde"
                             )
@@ -806,7 +806,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                                 "parade",
                                 Parade,
                                 AtTheParade,
-                                kind: CalendarEntryKind.Performance,
+                                kind: CalendarEntryKind.Trip,
                                 visibility: CalendarEntryVisibility.Public
                             )
                             .AddAttendanceResponse(
@@ -837,7 +837,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                                 "kinder-probe",
                                 KinderRehearsal,
                                 AtTheKinderTraining,
-                                kind: CalendarEntryKind.Rehearsal,
+                                kind: CalendarEntryKind.Training,
                                 visibility: CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "kindergarde",
                                 participatingGroupAliases: ["tanzgarde"]
@@ -880,7 +880,8 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                                     ClubClock.At(today.AddDays(2), new TimeOnly(18, 30)),
                                     kind: CalendarEntryKind.Training,
                                     visibility: CalendarEntryVisibility.Group,
-                                    ownerGroupAlias: RunningOrderSeeds.Garde
+                                    ownerGroupAlias: RunningOrderSeeds.Garde,
+                                    asksForResponse: true
                                 )
                             );
                     },
@@ -905,7 +906,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                         entry.CalendarEntryId
                         == ctx.Club.CalendarEntries.IdOf("garde-only-training")
                 );
-                Assert.Equal((false, true), (training.AsksForResponse, training.AsksTheCast));
+                Assert.True(training.AsksForResponse);
             }
         );
 
@@ -1009,7 +1010,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                             "garde-auftritt",
                             DanceGuardPerformance,
                             ClubClock.At(new DateOnly(2027, 1, 19), new TimeOnly(18, 0)),
-                            kind: CalendarEntryKind.Performance,
+                            kind: CalendarEntryKind.Trip,
                             ownerGroupAlias: "tanzgarde"
                         ),
                     ct

@@ -170,7 +170,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 VenueId = null,
                 StartsAt = TrainingStart,
                 EndsAt = TrainingEnd,
-                Kind = CalendarEntryKind.Performance,
+                Kind = CalendarEntryKind.Trip,
                 Visibility = CalendarEntryVisibility.Group,
                 AsksForResponse = false,
                 ParticipatingGroupIds = null!,
@@ -203,7 +203,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 VenueId = null,
                 StartsAt = TrainingStart,
                 EndsAt = TrainingEnd,
-                Kind = CalendarEntryKind.Performance,
+                Kind = CalendarEntryKind.Trip,
                 Visibility = CalendarEntryVisibility.Group,
                 AsksForResponse = true,
                 ParticipatingGroupIds = [],
@@ -217,7 +217,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             .CalendarEntry(entryId)
             .ToHaveTitle(DanceGuardPerformance)
             .CalendarEntry(entryId)
-            .ToHaveKind(CalendarEntryKind.Performance)
+            .ToHaveKind(CalendarEntryKind.Trip)
             .CalendarEntry(entryId)
             .ToHavePeriod(TrainingStart, TrainingEnd)
             .CalendarEntry(entryId)
@@ -355,7 +355,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         await ctx
             .Expected.CalendarEntry(entryId)
-            .ToHaveKind(CalendarEntryKind.Meeting)
+            .ToHaveKind(CalendarEntryKind.Plain)
             .AssertAsync(ct);
     }
 
@@ -385,7 +385,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             VenueId = null,
             StartsAt = TrainingStart,
             EndsAt = TrainingEnd,
-            Kind = CalendarEntryKind.Performance,
+            Kind = CalendarEntryKind.Trip,
             Visibility = CalendarEntryVisibility.Club,
             AsksForResponse = false,
             ParticipatingGroupIds = [],

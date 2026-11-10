@@ -59,7 +59,6 @@ export const CalendarEntrySchema = z.object({
   participatingGroups: z.array(ParticipatingGroupSchema),
   visibility: CalendarEntryVisibilitySchema,
   asksForResponse: z.boolean(),
-  asksTheCast: z.boolean(),
   description: z.string().nullable(),
   viewerAnswer: AttendanceAnswerSchema.nullable(),
   isRunning: z.boolean(),

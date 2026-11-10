@@ -1,21 +1,10 @@
-export const CALENDAR_KIND_KEYS = [
-  'training',
-  'rehearsal',
-  'performance',
-  'meeting',
-  'party',
-  'other',
-  'event',
-] as const;
+export const CALENDAR_KIND_KEYS = ['plain', 'training', 'trip', 'event'] as const;
 export type CalendarKindKey = (typeof CALENDAR_KIND_KEYS)[number];
 
 export const CALENDAR_KIND_LABELS: Record<CalendarKindKey, string> = {
+  plain: 'Allgemein',
   training: 'Training',
-  rehearsal: 'Probe',
-  performance: 'Auftritt',
-  meeting: 'Sitzung',
-  party: 'Feier',
-  other: 'Sonstiges',
+  trip: 'Ausflug',
   event: 'Veranstaltung',
 };
 

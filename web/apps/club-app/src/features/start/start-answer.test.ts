@@ -6,7 +6,7 @@ import { withPendingAnswers } from './start-answer';
 const entry = (calendarEntryId: number, attendance: StartAttendance | null): StartEntry => ({
   calendarEntryId,
   title: 'Stellprobe',
-  kind: 'rehearsal',
+  kind: 'training',
   startsAt: '2027-01-21T17:00:00Z',
   endsAt: null,
   isRunning: false,

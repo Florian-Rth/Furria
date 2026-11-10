@@ -486,8 +486,13 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
         );
     }
 
-    [Fact]
-    public Task Should_OweAResponse_When_SheIsAGuestInTheCastOfTheGroupsTrainingThatAsksNothing() =>
+    [Theory]
+    [InlineData(true, 1)]
+    [InlineData(false, 0)]
+    public Task Should_OweAResponseOnlyWhenAsked_When_SheIsAGuestInTheCastOfTheGroupsTraining(
+        bool asksForResponse,
+        int owedEntries
+    ) =>
         _fixture.AtInstantAsync(
             RunningOrderSeeds.InTheRunningSession,
             async () =>
@@ -514,7 +519,8 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                     ClubClock.At(today.AddDays(2), new TimeOnly(18, 30)),
                                     kind: CalendarEntryKind.Training,
                                     visibility: CalendarEntryVisibility.Group,
-                                    ownerGroupAlias: RunningOrderSeeds.Garde
+                                    ownerGroupAlias: RunningOrderSeeds.Garde,
+                                    asksForResponse: asksForResponse
                                 )
                             );
                     },
@@ -529,9 +535,14 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
 
                 var (_, start) = await clara.GETAsync<GetStart, GetStartResponse>();
 
-                var training = EntryOf(start, IdOf(ctx, "garde-training"));
-                Assert.NotNull(training.Attendance);
-                Assert.True(training.Attendance.IsOwed);
+                Assert.Equal(
+                    owedEntries,
+                    EntriesOf(start)
+                        .Count(entry =>
+                            entry.CalendarEntryId == IdOf(ctx, "garde-training")
+                            && entry.Attendance is { IsOwed: true }
+                        )
+                );
             }
         );
 
@@ -695,7 +706,7 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 "stellprobe",
                                 "Stellprobe",
                                 InBerlin(1, 21, 18, 0),
-                                kind: CalendarEntryKind.Rehearsal,
+                                kind: CalendarEntryKind.Training,
                                 venueAlias: "festhalle",
                                 asksForResponse: true,
                                 participatingGroupAliases: ["tanzgarde"]
@@ -710,7 +721,7 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 "kinder-probe",
                                 "Probe der Kindergarde",
                                 InBerlin(1, 22, 16, 0),
-                                kind: CalendarEntryKind.Rehearsal,
+                                kind: CalendarEntryKind.Training,
                                 visibility: CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "kindergarde",
                                 asksForResponse: true,
@@ -720,7 +731,7 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 "winterball",
                                 "Winterball",
                                 InBerlin(1, 22, 20, 0),
-                                kind: CalendarEntryKind.Party,
+                                kind: CalendarEntryKind.Plain,
                                 asksForResponse: true
                             )
                             .AddCalendarEntry(
@@ -728,7 +739,7 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 "Prunksitzung",
                                 InBerlin(1, 23, 19, 11),
                                 InBerlin(1, 23, 23, 30),
-                                CalendarEntryKind.Performance,
+                                CalendarEntryKind.Trip,
                                 venueAlias: "festhalle",
                                 asksForResponse: true,
                                 participatingGroupAliases: ["maennerballett"]
@@ -737,7 +748,7 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 "kinderfasching",
                                 "Kinderfasching",
                                 InBerlin(2, 7, 14, 11),
-                                kind: CalendarEntryKind.Performance,
+                                kind: CalendarEntryKind.Trip,
                                 venueAlias: "festhalle",
                                 asksForResponse: true,
                                 participatingGroupAliases: ["kindergarde"]

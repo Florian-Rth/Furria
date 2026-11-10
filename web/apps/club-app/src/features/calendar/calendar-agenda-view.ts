@@ -1,6 +1,7 @@
 import type { KkCalendarDayData } from '@furria/ui/calendar-strip-types';
 import type { KkCalendarLineGroup } from '@furria/ui/KkCalendarAgendaLine';
 import type { KkCalendarTimeTone } from '@furria/ui/KkCalendarAgendaTime';
+import type { KkEntryKindGlyphKind } from '@furria/ui/KkEntryKindGlyph';
 import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
 import { toLocalIsoDay, toTimeLabel, toTimeSpanLabel } from '@/lib/calendar-days';
 import { formatPriceCents, toDoorsOpenLabel, toEventStatusLabel } from '@/lib/event-copy';
@@ -27,7 +28,6 @@ import {
 } from './calendar-agenda';
 import type { CalendarTimeCopy } from './calendar-agenda-copy';
 import {
-  KIND_GLYPHS,
   LANDMARK_LABELS,
   NO_ENTRIES_NOTE,
   RUNNING_LABEL,
@@ -97,7 +97,7 @@ const thumbOf = (entry: CalendarEntry, sizes: string): EventCover | null =>
       );
 
 export interface CalendarLineView {
-  glyph: (typeof KIND_GLYPHS)[keyof typeof KIND_GLYPHS];
+  glyph: KkEntryKindGlyphKind;
   title: string;
   venue: string | null;
   groups: KkCalendarLineGroup[];
@@ -118,7 +118,7 @@ export const toLineView = (line: CalendarLine, nowMs: number): CalendarLineView 
   const kindLabel = CALENDAR_KIND_LABELS[entry.kind];
 
   return {
-    glyph: KIND_GLYPHS[entry.kind],
+    glyph: entry.kind,
     title: entry.title,
     venue: entry.venueName,
     groups: toLineGroups(entry),
@@ -201,7 +201,7 @@ const textOf = (entry: CalendarEntry): string | null => {
 };
 
 export const toDetailView = (entry: CalendarEntry): CalendarDetailView => ({
-  glyph: KIND_GLYPHS[entry.kind],
+  glyph: entry.kind,
   kindLabel: CALENDAR_KIND_LABELS[entry.kind],
   title: entry.title,
   when: `${toDayLongLabel(toLocalIsoDay(entry.startsAt))}${FACT_SEPARATOR}${toTimeSpanLabel(entry.startsAt, entry.endsAt)}`,

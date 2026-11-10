@@ -600,6 +600,21 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         );
     }
 
+    public async Task RewriteCalendarEntryKindDirectlyAsync(
+        int calendarEntryId,
+        string kind,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"UPDATE calendar_entry SET kind = {kind} WHERE id = {calendarEntryId}",
+            ct
+        );
+    }
+
     public async Task DeleteMediaItemDirectlyAsync(int mediaItemId, CancellationToken ct = default)
     {
         await using var scope = Services.CreateAsyncScope();

@@ -139,12 +139,11 @@ public sealed class ActGlanceReader
         CancellationToken ct
     )
     {
-        var kinds = CastAttendance.Kinds;
         var entries = await _dbContext
             .CalendarEntries.AsNoTracking()
+            .Where(CastAttendance.AsksItsCast)
             .Where(entry =>
-                kinds.Contains(entry.Kind)
-                && entry.StartsAt >= from
+                entry.StartsAt >= from
                 && (
                     (entry.OwnerGroupId != null && groupIds.Contains(entry.OwnerGroupId.Value))
                     || entry.ParticipatingGroups.Any(participant =>

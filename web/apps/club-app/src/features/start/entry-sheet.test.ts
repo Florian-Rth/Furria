@@ -18,7 +18,7 @@ const at = (month: number, day: number, hour: number, minute = 0): string =>
 const entry = (overrides: Partial<StartEntry>): StartEntry => ({
   calendarEntryId: 905,
   title: 'Prunksitzung',
-  kind: 'performance',
+  kind: 'trip',
   startsAt: at(1, 23, 19, 11),
   endsAt: at(1, 23, 23, 30),
   isRunning: false,

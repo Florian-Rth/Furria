@@ -4,9 +4,8 @@ import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
 import { toIsoDayLabel, toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
 import { toIsoDay } from '@/lib/day';
-import { asksForAnswer } from './calendar-agenda';
 import type { CalendarOwnerOption } from './calendar-authoring';
-import { NO_VENUE_ID } from './calendar-authoring';
+import { AUTHORED_KINDS, NO_VENUE_ID } from './calendar-authoring';
 import type { CalendarEntry, CalendarEntryVisibility, RunningVenue } from './schemas';
 
 export const CALENDAR_ERROR_TITLE = 'KALENDER NICHT GELADEN';
@@ -26,9 +25,10 @@ const CALENDAR_VISIBILITY_LABELS: Record<CalendarEntryVisibility, string> = {
   public: 'Öffentlich',
 };
 
-export const CALENDAR_KIND_OPTIONS: readonly KkSelectOption[] = (
-  ['training', 'rehearsal', 'performance', 'meeting', 'party', 'other'] as const
-).map((kind) => ({ value: kind, label: CALENDAR_KIND_LABELS[kind] }));
+export const CALENDAR_KIND_OPTIONS: readonly KkSelectOption[] = AUTHORED_KINDS.map((kind) => ({
+  value: kind,
+  label: CALENDAR_KIND_LABELS[kind],
+}));
 
 export const CALENDAR_VISIBILITY_OPTIONS: readonly KkSelectOption[] = (
   ['group', 'club', 'public'] as const
@@ -75,7 +75,7 @@ export const toEntryFacts = (entry: CalendarEntry): KkConfirmFact[] => {
 };
 
 export const toDeleteConsequence = (entry: CalendarEntry): string => {
-  if (asksForAnswer(entry)) {
+  if (entry.asksForResponse) {
     return `„${entry.title}“ wird mit allen Zu- und Absagen gelöscht.`;
   }
 

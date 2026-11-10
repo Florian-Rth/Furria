@@ -25,7 +25,6 @@ public sealed partial class StartService
         StartEntryRow row,
         AttendanceAnswer? answer,
         Viewer viewer,
-        IReadOnlySet<GroupSession> actSessions,
         StartEvent? tiedEvent
     )
     {
@@ -49,10 +48,9 @@ public sealed partial class StartService
                 .. row.GroupIds().Where(groupId => IsTiedToGroup(viewer.Ties, groupId)).Distinct(),
             ],
             ViewerRuns = ViewerRunsOf(viewer.Ties, facts),
-            Attendance =
-                row.AsksForResponse || facts.AsksTheCastOf(actSessions)
-                    ? AttendanceOf(row, answer, viewer.Ties.Concerns(facts), viewer.Moment.Now)
-                    : null,
+            Attendance = row.AsksForResponse
+                ? AttendanceOf(row, answer, viewer.Ties.Concerns(facts), viewer.Moment.Now)
+                : null,
             Description = row.Description,
             Event = tiedEvent,
         };
@@ -121,14 +119,6 @@ public sealed partial class StartService
             [.. rows.Select(row => row.CalendarEntryId)],
             ct
         );
-        var actSessions = await _dbContext.ActSessionsOfAsync(
-            [
-                .. rows.Where(row => CastAttendance.AsksTheCastOn(row.Kind))
-                    .SelectMany(row => row.GroupIds())
-                    .Distinct(),
-            ],
-            ct
-        );
 
         return
         [
@@ -144,7 +134,6 @@ public sealed partial class StartService
                         row,
                         answers.GetValueOrDefault(row.CalendarEntryId),
                         viewer,
-                        actSessions,
                         EventOf(row)
                     )
                 ),

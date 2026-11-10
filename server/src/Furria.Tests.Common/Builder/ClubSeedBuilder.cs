@@ -227,7 +227,7 @@ public sealed class ClubSeedBuilder
         string title,
         DateTimeOffset startsAt,
         DateTimeOffset? endsAt = null,
-        CalendarEntryKind kind = CalendarEntryKind.Meeting,
+        CalendarEntryKind kind = CalendarEntryKind.Plain,
         CalendarEntryVisibility visibility = CalendarEntryVisibility.Club,
         string? venueAlias = null,
         string? ownerGroupAlias = null,

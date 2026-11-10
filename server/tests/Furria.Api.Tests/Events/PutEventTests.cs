@@ -151,7 +151,7 @@ public sealed class PutEventTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
         await ctx
             .Expected.CalendarEntry(meetingId)
-            .ToHaveKind(CalendarEntryKind.Meeting)
+            .ToHaveKind(CalendarEntryKind.Plain)
             .AssertAsync(ct);
     }
 

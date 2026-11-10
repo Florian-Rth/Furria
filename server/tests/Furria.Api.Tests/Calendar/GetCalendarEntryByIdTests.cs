@@ -270,7 +270,7 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                                 "parade",
                                 LastSessionsParade,
                                 AtLastSessionsParade,
-                                kind: CalendarEntryKind.Performance,
+                                kind: CalendarEntryKind.Trip,
                                 visibility: CalendarEntryVisibility.Public
                             )
                             .AddCalendarEntry("festival", NextSummerFestival, AtNextSummerFestival)

@@ -5,7 +5,7 @@ import type {
 } from '@furria/ui/calendar-hours-types';
 import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import { fromIsoDay, toIsoDay } from '@/lib/day';
-import { answerOf, asksForAnswer, daysBetween, isOver } from './calendar-agenda';
+import { answerOf, daysBetween, isOver } from './calendar-agenda';
 import { dayMarkOf, toEntryDays } from './calendar-board';
 import type { CalendarEntry, UsualTraining } from './schemas';
 
@@ -116,7 +116,7 @@ export const hoursBadgeOf = (
   nowMs: number,
   pending: ReadonlyMap<number, AttendanceAnswer>,
 ): KkCalendarHoursBadge => {
-  if (!asksForAnswer(entry)) {
+  if (!entry.asksForResponse) {
     return null;
   }
 

@@ -22,14 +22,7 @@ const ARCHIVED_SUFFIX = ' — archiviert';
 const PARTICIPANTS_EMPTY = 'Keine weiteren Gruppen verfügbar.';
 const PARTICIPANTS_UNAVAILABLE = 'Die Gruppen konnten nicht geladen werden.';
 
-const KIND_ORDER: readonly CalendarEntryKind[] = [
-  'training',
-  'rehearsal',
-  'performance',
-  'meeting',
-  'party',
-  'other',
-];
+export const AUTHORED_KINDS: readonly CalendarEntryKind[] = ['plain', 'training', 'trip'];
 
 const VISIBILITY_ORDER: readonly CalendarEntryVisibility[] = ['group', 'club', 'public'];
 
@@ -185,7 +178,7 @@ export const toDefaultVisibility = (
 };
 
 export const toCalendarKind = (value: string): CalendarEntryKind =>
-  KIND_ORDER.find((known) => known === value) ?? 'other';
+  AUTHORED_KINDS.find((known) => known === value) ?? 'plain';
 
 export const toCalendarVisibility = (value: string): CalendarEntryVisibility =>
   VISIBILITY_ORDER.find((known) => known === value) ?? 'club';
@@ -255,7 +248,7 @@ export interface CalendarEntryDraftInput {
 
 export const toEntryDraft = (search: CalendarEntryDraftInput): CalendarEntryDraft => ({
   ownerGroupId: search.group ?? null,
-  kind: KIND_ORDER.find((known) => known === search.kind) ?? null,
+  kind: AUTHORED_KINDS.find((known) => known === search.kind) ?? null,
   startTime: search.start ?? null,
   endTime: search.end ?? null,
   venueId: search.venue ?? null,
@@ -304,7 +297,7 @@ const toDraftedFormValues = (
       (option) => option.ownerGroupId === draft.ownerGroupId && draft.ownerGroupId !== null,
     ) ?? options[0];
   const ownerGroupId = owner?.ownerGroupId ?? null;
-  const kind = draft.kind ?? 'meeting';
+  const kind = draft.kind ?? 'plain';
   const startTime = draft.startTime ?? DEFAULT_START_TIME;
   const endTime = draft.endTime ?? DEFAULT_END_TIME;
 

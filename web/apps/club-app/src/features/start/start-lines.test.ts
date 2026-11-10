@@ -30,7 +30,7 @@ const mine = (overrides: Partial<StartMine>): StartMine => ({
 const entry = (overrides: Partial<StartEntry>): StartEntry => ({
   calendarEntryId: 811,
   title: 'Stellprobe',
-  kind: 'rehearsal',
+  kind: 'training',
   startsAt: '2027-01-21T17:00:00Z',
   endsAt: null,
   isRunning: false,

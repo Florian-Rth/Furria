@@ -30,5 +30,12 @@ internal sealed record EntryFactsRow(
 {
     [Pure]
     public CalendarEntryFacts ToFacts() =>
-        CalendarEntryFacts.Of(OwnerGroupId, ParticipatingGroupIds, Visibility, Kind, StartsAt);
+        CalendarEntryFacts.Of(
+            OwnerGroupId,
+            ParticipatingGroupIds,
+            Visibility,
+            Kind,
+            AsksForResponse,
+            StartsAt
+        );
 }

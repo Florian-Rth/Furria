@@ -495,7 +495,7 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
                                 "parade",
                                 "Rosenmontagsumzug",
                                 AtTheParade,
-                                kind: CalendarEntryKind.Performance,
+                                kind: CalendarEntryKind.Trip,
                                 visibility: CalendarEntryVisibility.Public
                             )
                             .AddCalendarEntry(
@@ -520,7 +520,7 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
                                 "kinder-probe",
                                 "Probe der Kindergarde",
                                 AtTheChildrensRehearsal,
-                                kind: CalendarEntryKind.Rehearsal,
+                                kind: CalendarEntryKind.Training,
                                 visibility: CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "kindergarde",
                                 asksForResponse: true,
@@ -530,7 +530,7 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
                                 "garde-auftritt",
                                 "Auftritt der Tanzgarde",
                                 AtTheGuardPerformance,
-                                kind: CalendarEntryKind.Performance,
+                                kind: CalendarEntryKind.Trip,
                                 visibility: CalendarEntryVisibility.Club,
                                 ownerGroupAlias: "tanzgarde",
                                 asksForResponse: true
@@ -539,7 +539,7 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
                                 "prunksitzung",
                                 "Prunksitzung",
                                 AtTheGalaSession,
-                                kind: CalendarEntryKind.Performance,
+                                kind: CalendarEntryKind.Trip,
                                 asksForResponse: true,
                                 participatingGroupAliases: ["maennerballett"]
                             )
@@ -554,7 +554,7 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
                                 "letzter-ball",
                                 "Winterball",
                                 AtLastYearsBall,
-                                kind: CalendarEntryKind.Party,
+                                kind: CalendarEntryKind.Plain,
                                 asksForResponse: true
                             )
                     ),

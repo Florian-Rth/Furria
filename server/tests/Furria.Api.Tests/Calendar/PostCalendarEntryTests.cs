@@ -78,7 +78,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 VenueId = ctx.Club.Venues.IdOf("buehnenhaus"),
                 StartsAt = MeetingStart,
                 EndsAt = MeetingEnd,
-                Kind = CalendarEntryKind.Meeting,
+                Kind = CalendarEntryKind.Plain,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = true,
                 ParticipatingGroupIds = [],
@@ -97,7 +97,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
             .CalendarEntry(result.CalendarEntryId)
             .ToHavePeriod(MeetingStart, MeetingEnd)
             .CalendarEntry(result.CalendarEntryId)
-            .ToHaveKind(CalendarEntryKind.Meeting)
+            .ToHaveKind(CalendarEntryKind.Plain)
             .CalendarEntry(result.CalendarEntryId)
             .ToHaveVisibility(CalendarEntryVisibility.Club)
             .CalendarEntry(result.CalendarEntryId)
@@ -126,7 +126,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 VenueId = ctx.Club.Venues.IdOf("buehnenhaus"),
                 StartsAt = MeetingStart.ToOffset(berlinWinter),
                 EndsAt = MeetingEnd.ToOffset(berlinWinter),
-                Kind = CalendarEntryKind.Meeting,
+                Kind = CalendarEntryKind.Plain,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
                 ParticipatingGroupIds = [],
@@ -160,7 +160,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 VenueId = null,
                 StartsAt = MeetingStart,
                 EndsAt = MeetingEnd,
-                Kind = CalendarEntryKind.Meeting,
+                Kind = CalendarEntryKind.Plain,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
                 ParticipatingGroupIds = null!,
@@ -291,7 +291,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 VenueId = ctx.Club.Venues.IdOf("buehnenhaus"),
                 StartsAt = MeetingStart,
                 EndsAt = MeetingEnd,
-                Kind = CalendarEntryKind.Meeting,
+                Kind = CalendarEntryKind.Plain,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
                 ParticipatingGroupIds = [],
@@ -405,7 +405,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 VenueId = ctx.Club.Venues.IdOf("altes-lager"),
                 StartsAt = MeetingStart,
                 EndsAt = MeetingEnd,
-                Kind = CalendarEntryKind.Meeting,
+                Kind = CalendarEntryKind.Plain,
                 Visibility = CalendarEntryVisibility.Club,
                 AsksForResponse = false,
                 ParticipatingGroupIds = [],
@@ -451,7 +451,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
             VenueId = null,
             StartsAt = MeetingStart,
             EndsAt = MeetingEnd,
-            Kind = CalendarEntryKind.Meeting,
+            Kind = CalendarEntryKind.Plain,
             Visibility = CalendarEntryVisibility.Club,
             AsksForResponse = false,
             ParticipatingGroupIds = [],

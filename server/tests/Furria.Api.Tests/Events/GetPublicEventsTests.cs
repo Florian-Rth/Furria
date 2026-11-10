@@ -246,7 +246,7 @@ public sealed class GetPublicEventsTests : IClassFixture<ApiTestFixture>
                             "parade",
                             Parade,
                             AtTheParade,
-                            kind: CalendarEntryKind.Other,
+                            kind: CalendarEntryKind.Plain,
                             visibility: CalendarEntryVisibility.Public,
                             venueAlias: "dgh"
                         )

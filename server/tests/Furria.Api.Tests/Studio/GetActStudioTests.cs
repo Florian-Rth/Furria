@@ -323,7 +323,7 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public Task Should_ListTheGroupsComingTrainingsWithTheSpotsLeftOpen_When_DancersSentAnAbsageEvenWithoutTheSwitch() =>
+    public Task Should_ListTheGroupsComingTrainingsAskingForResponsesWithTheSpotsLeftOpen_When_DancersSentAnAbsage() =>
         _fixture.AtInstantAsync(
             InTheRunningSession,
             async () =>
@@ -363,7 +363,7 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
                                     "meeting",
                                     "Gruppenabend",
                                     TrainingOn(today.AddDays(4)),
-                                    kind: CalendarEntryKind.Meeting,
+                                    kind: CalendarEntryKind.Plain,
                                     ownerGroupAlias: Garde,
                                     asksForResponse: true
                                 )
@@ -371,8 +371,16 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
                                     "rehearsal",
                                     "Stellprobe",
                                     TrainingOn(today.AddDays(5)),
-                                    kind: CalendarEntryKind.Rehearsal,
+                                    kind: CalendarEntryKind.Training,
+                                    asksForResponse: true,
                                     participatingGroupAliases: [Garde]
+                                )
+                                .AddCalendarEntry(
+                                    "silent",
+                                    "Training ohne Zu-/Absage",
+                                    TrainingOn(today.AddDays(6)),
+                                    kind: CalendarEntryKind.Training,
+                                    ownerGroupAlias: Garde
                                 )
                                 .AddCalendarEntry(
                                     "later",
@@ -411,6 +419,12 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
                                     "ben-no-rehearsal",
                                     "rehearsal",
                                     Ben,
+                                    AttendanceAnswer.No
+                                )
+                                .AddAttendanceResponse(
+                                    "anna-no-silent",
+                                    "silent",
+                                    Anna,
                                     AttendanceAnswer.No
                                 )
                         );

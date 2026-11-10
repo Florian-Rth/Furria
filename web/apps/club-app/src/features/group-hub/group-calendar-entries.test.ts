@@ -11,7 +11,7 @@ const anEntry = (overrides: Partial<GroupCalendarEntry>): GroupCalendarEntry => 
   title: 'Prunksitzung',
   startsAt: '2027-02-06T18:00:00.000Z',
   endsAt: '2027-02-06T22:00:00.000Z',
-  kind: 'meeting',
+  kind: 'plain',
   venueId: null,
   venueName: null,
   ownerGroupId: null,

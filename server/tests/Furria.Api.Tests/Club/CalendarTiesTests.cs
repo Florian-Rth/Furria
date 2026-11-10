@@ -113,23 +113,33 @@ public sealed class CalendarTiesTests
     }
 
     [Fact]
-    public void Should_ConcernTheCast_When_TheActsGroupOnlyParticipatesInTheRehearsal()
+    public void Should_ConcernTheCast_When_TheActsGroupOnlyParticipatesInTheTraining()
     {
         var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear)]);
-        var rehearsal = GroupOwned(MensBallet, DanceGuard) with
-        {
-            Kind = CalendarEntryKind.Rehearsal,
-        };
 
-        Assert.True(guest.Concerns(rehearsal));
+        Assert.True(guest.Concerns(TrainingOf(GroupOwned(MensBallet, DanceGuard))));
     }
 
     [Fact]
-    public void Should_NotConcernTheCast_When_TheEntryIsNoTrainingOrRehearsal()
+    public void Should_NotConcernTheCast_When_TheTrainingDoesNotAskForResponses()
     {
         var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear)]);
+        var silentTraining = TrainingOf(GroupOwned(DanceGuard)) with { AsksForResponse = false };
 
-        Assert.False(guest.Concerns(GroupOwned(DanceGuard)));
+        Assert.False(guest.Concerns(silentTraining));
+    }
+
+    [Fact]
+    public void Should_NotConcernTheCast_When_AnEntryAskingForResponsesIsNoTraining()
+    {
+        var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear)]);
+        var trip = GroupOwned(DanceGuard) with
+        {
+            Kind = CalendarEntryKind.Trip,
+            AsksForResponse = true,
+        };
+
+        Assert.False(guest.Concerns(trip));
     }
 
     [Fact]
@@ -144,6 +154,7 @@ public sealed class CalendarTiesTests
         entry with
         {
             Kind = CalendarEntryKind.Training,
+            AsksForResponse = true,
         };
 
     private static CalendarTies TiesOf(
@@ -171,7 +182,8 @@ public sealed class CalendarTiesTests
             ParticipatingGroupIds = participatingGroupIds,
             Visibility = CalendarEntryVisibility.Club,
             SessionYear = SessionYear,
-            Kind = CalendarEntryKind.Meeting,
+            Kind = CalendarEntryKind.Plain,
+            AsksForResponse = false,
             CastSessionYear = SessionYear,
         };
 
@@ -185,7 +197,8 @@ public sealed class CalendarTiesTests
             ParticipatingGroupIds = participatingGroupIds,
             Visibility = CalendarEntryVisibility.Club,
             SessionYear = SessionYear,
-            Kind = CalendarEntryKind.Meeting,
+            Kind = CalendarEntryKind.Plain,
+            AsksForResponse = false,
             CastSessionYear = SessionYear,
         };
 

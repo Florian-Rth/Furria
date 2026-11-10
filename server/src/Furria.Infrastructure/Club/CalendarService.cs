@@ -41,8 +41,6 @@ public sealed class CalendarService
     private static readonly IReadOnlyDictionary<int, AttendanceAnswer> NoAnswers =
         new Dictionary<int, AttendanceAnswer>();
 
-    private static readonly IReadOnlySet<GroupSession> NoActSessions = new HashSet<GroupSession>();
-
     private static readonly IReadOnlyDictionary<
         VenueCollisionQuery,
         IReadOnlyList<CalendarEntrySummary>
@@ -105,10 +103,8 @@ public sealed class CalendarService
             ct
         );
 
-        var actSessions = await ActSessionsOfAsync(rows, ct);
-
         return Result<IReadOnlyList<CalendarEntrySummary>>.Success([
-            .. rows.Select(row => ToSummary(row, answers, actSessions, now)),
+            .. rows.Select(row => ToSummary(row, answers, now)),
         ]);
     }
 
@@ -138,9 +134,7 @@ public sealed class CalendarService
 
         var answers = await AnswersOfAsync(viewer.PersonId, [row.CalendarEntryId], ct);
 
-        return Result<CalendarEntrySummary>.Success(
-            ToSummary(row, answers, await ActSessionsOfAsync([row], ct), now)
-        );
+        return Result<CalendarEntrySummary>.Success(ToSummary(row, answers, now));
     }
 
     public async Task<IReadOnlyList<GroupCalendarEntrySummary>> GetGroupEntriesAsync(
@@ -178,15 +172,11 @@ public sealed class CalendarService
             ct
         );
         var ties = await _dbContext.CalendarTiesOfAsync(personId, today, ct);
-        var actSessions = await ActSessionsOfAsync(rows, ct);
 
         return
         [
             .. rows.Select(row =>
-                ToGroupSummary(
-                    ToSummary(row, answers, actSessions, now),
-                    MayAnswer(row, ties, actSessions, holdsClubRead)
-                )
+                ToGroupSummary(ToSummary(row, answers, now), MayAnswer(row, ties, holdsClubRead))
             ),
         ];
     }
@@ -244,7 +234,7 @@ public sealed class CalendarService
                 found[probe] =
                 [
                     .. rows.Where(row => Collides(row, probe))
-                        .Select(row => ToSummary(row, NoAnswers, NoActSessions, now)),
+                        .Select(row => ToSummary(row, NoAnswers, now)),
                 ];
             }
         }
@@ -418,7 +408,7 @@ public sealed class CalendarService
                 : Result.Forbidden(NotYoursMessage);
         }
 
-        if (!await AsksForResponseAsync(entry, ct))
+        if (!entry.AsksForResponse)
             return Result.Validation(NoResponseWantedMessage);
 
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
@@ -490,14 +480,8 @@ public sealed class CalendarService
         );
 
     [Pure]
-    private static bool MayAnswer(
-        EntryRow row,
-        CalendarTies ties,
-        IReadOnlySet<GroupSession> actSessions,
-        bool holdsClubRead
-    ) =>
-        (row.AsksForResponse || FactsOf(row).AsksTheCastOf(actSessions))
-        && ties.Sees(FactsOf(row), holdsClubRead);
+    private static bool MayAnswer(EntryRow row, CalendarTies ties, bool holdsClubRead) =>
+        row.AsksForResponse && ties.Sees(FactsOf(row), holdsClubRead);
 
     [Pure]
     private static CalendarEntryFacts FactsOf(EntryRow row) =>
@@ -506,6 +490,7 @@ public sealed class CalendarService
             [.. row.ParticipatingGroups.Select(group => group.GroupId)],
             row.Visibility,
             row.Kind,
+            row.AsksForResponse,
             row.StartsAt
         );
 
@@ -557,7 +542,6 @@ public sealed class CalendarService
     private CalendarEntrySummary ToSummary(
         EntryRow row,
         IReadOnlyDictionary<int, AttendanceAnswer> answers,
-        IReadOnlySet<GroupSession> actSessions,
         DateTimeOffset now
     ) =>
         new()
@@ -575,7 +559,6 @@ public sealed class CalendarService
             ParticipatingGroups = [.. row.ParticipatingGroups.Select(ToParticipatingGroup)],
             Visibility = row.Visibility,
             AsksForResponse = row.AsksForResponse,
-            AsksTheCast = FactsOf(row).AsksTheCastOf(actSessions),
             Description = row.Description,
             ViewerAnswer = answers.TryGetValue(row.CalendarEntryId, out var answer) ? answer : null,
             IsRunning = row.IsRunning,
@@ -614,29 +597,6 @@ public sealed class CalendarService
         CalendarEntrySummary entry,
         bool viewerMayAnswer
     ) => new() { Entry = entry, ViewerMayAnswer = viewerMayAnswer };
-
-    private Task<IReadOnlySet<GroupSession>> ActSessionsOfAsync(
-        IReadOnlyList<EntryRow> rows,
-        CancellationToken ct
-    ) =>
-        _dbContext.ActSessionsOfAsync(
-            [
-                .. rows.Where(row => CastAttendance.AsksTheCastOn(row.Kind))
-                    .SelectMany(row => FactsOf(row).GroupIds())
-                    .Distinct(),
-            ],
-            ct
-        );
-
-    private async Task<bool> AsksForResponseAsync(EntryFactsRow entry, CancellationToken ct)
-    {
-        if (entry.AsksForResponse)
-            return true;
-
-        var facts = entry.ToFacts();
-
-        return facts.AsksTheCastOf(await _dbContext.ActSessionsOfAsync([.. facts.GroupIds()], ct));
-    }
 
     private Task<bool> MayOwnAsync(int actorAccountId, int? ownerGroupId, CancellationToken ct) =>
         ownerGroupId is { } groupId
@@ -769,7 +729,6 @@ public sealed class CalendarService
     {
         var tiedGroupIds = _dbContext.TiedGroupIds(personId, today);
         var castGroupIds = _dbContext.CastGroupIds(personId, today);
-        var castKinds = CastAttendance.Kinds;
 
         return entry =>
             (
@@ -778,7 +737,8 @@ public sealed class CalendarService
             )
             || holdsClubRead && entry.Visibility != CalendarEntryVisibility.Group
             || (
-                castKinds.Contains(entry.Kind)
+                entry.Kind == CastAttendance.Kind
+                && entry.AsksForResponse
                 && (
                     (entry.OwnerGroupId != null && castGroupIds.Contains(entry.OwnerGroupId.Value))
                     || entry.ParticipatingGroups.Any(link => castGroupIds.Contains(link.GroupId))
