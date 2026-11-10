@@ -260,6 +260,29 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
             .AssertAsync(ct);
     }
 
+    [Fact]
+    public async Task Should_AddTheLine_When_SheSchedulesAnEntryNotMeantForHer()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var listId = ctx.Club.CalendarSignUpLists.IdOf("board-helpers");
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var response = await SignUpAsync(ctx, "ilka", listId, "Kaffee", ct);
+
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            }
+        );
+
+        await ctx
+            .Expected.CalendarSignUpList(listId)
+            .ToHaveLines((ctx.Identity.People.IdOf("ilka"), "Kaffee"))
+            .AssertAsync(ct);
+    }
+
     private static async Task<HttpResponseMessage> SignUpAsync(
         SeededContext ctx,
         string personAlias,
@@ -330,6 +353,13 @@ public sealed class PutOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixture
                             )
                             .AddCalendarSignUpList("late", "breakfast", "Weißwürste")
                             .AddCalendarSignUpList("secret", "farewell", "Geschenk")
+                            .AddCalendarEntry(
+                                "board-meeting",
+                                "Vorstandstreffen",
+                                AtTheCoffee,
+                                audiencePersonAliases: ["chris"]
+                            )
+                            .AddCalendarSignUpList("board-helpers", "board-meeting", "Helfer")
                             .AddCalendarEntry(
                                 "garde-meeting",
                                 "Gardetreffen",

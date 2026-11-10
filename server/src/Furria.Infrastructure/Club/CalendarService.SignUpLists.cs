@@ -29,7 +29,7 @@ public sealed partial class CalendarService
                 command.ActorAccountId,
                 personId,
                 command.SignUpListId,
-                takesPart: true,
+                AddOnAccess.Answer,
                 ct
             ) is
             { } refusal
@@ -74,7 +74,7 @@ public sealed partial class CalendarService
                 actorAccountId,
                 personId,
                 signUpListId,
-                takesPart: false,
+                AddOnAccess.Sight,
                 ct
             ) is
             { } refusal
@@ -167,7 +167,7 @@ public sealed partial class CalendarService
         int actorAccountId,
         int personId,
         int signUpListId,
-        bool takesPart,
+        AddOnAccess access,
         CancellationToken ct
     )
     {
@@ -181,7 +181,7 @@ public sealed partial class CalendarService
                 .Select(list => list.CalendarEntry!),
             UnknownSignUpListMessage,
             NotYourSignUpListMessage,
-            takesPart
+            access
         );
 
         if (await AddOnSightRefusalAsync(sight, ct) is { } unseen)

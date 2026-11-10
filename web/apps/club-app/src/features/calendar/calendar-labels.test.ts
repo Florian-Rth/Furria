@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import {
+  toAnswerShare,
   toScheduleDayLabel,
   toScheduleDayOptions,
   toStartDayQuickChoices,
@@ -33,5 +34,15 @@ describe('toScheduleDayLabel', () => {
     { startDay: '', day: 1, expected: 'Tag 2' },
   ])('names day $day after $startDay as $expected', ({ startDay, day, expected }) => {
     expect(toScheduleDayLabel(startDay, day)).toBe(expected);
+  });
+});
+
+describe('toAnswerShare', () => {
+  it.each([
+    { count: 2, concernedCount: 5, expected: { kind: 'share', count: 2, of: 5 } },
+    { count: 0, concernedCount: 3, expected: { kind: 'share', count: 0, of: 3 } },
+    { count: 2, concernedCount: null, expected: { kind: 'count', count: 2 } },
+  ])('shares $count of $concernedCount', ({ count, concernedCount, expected }) => {
+    expect(toAnswerShare(count, concernedCount)).toEqual(expected);
   });
 });

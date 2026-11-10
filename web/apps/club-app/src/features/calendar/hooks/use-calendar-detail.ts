@@ -2,6 +2,7 @@ import { useAttendanceChoice } from '@/features/attendance/hooks/use-attendance-
 import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import { usePermissions } from '@/features/session/hooks/use-permissions';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
+import { canAnswer } from '@/lib/calendar-answering';
 import { toAttendanceChoiceLabel } from '@/lib/calendar-copy';
 import type { CalendarDetailView } from '../calendar-agenda-view';
 import { toDetailView } from '../calendar-agenda-view';
@@ -41,16 +42,15 @@ export const useCalendarDetail = (entry: CalendarEntry): CalendarDetail => {
 
   return {
     view: toDetailView(entry),
-    answer:
-      entry.asksForResponse && entry.mayAnswer
-        ? {
-            label: toAttendanceChoiceLabel(entry.title),
-            value: choice.answer,
-            error: choice.failureMessage,
-            disabled: choice.isInert || (entry.attendance?.isClosed ?? false),
-            choose: choice.choose,
-          }
-        : null,
+    answer: canAnswer(entry)
+      ? {
+          label: toAttendanceChoiceLabel(entry.title),
+          value: choice.answer,
+          error: choice.failureMessage,
+          disabled: choice.isInert || (entry.attendance?.isClosed ?? false),
+          choose: choice.choose,
+        }
+      : null,
     roll: entry.attendance === null ? null : toAttendanceRoll(entry.attendance),
     editLink: authoring?.linkOf(entry) ?? null,
     mayModerate: authoring?.mayOwn(entry) ?? false,

@@ -856,24 +856,48 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                     ct
                 );
 
-                var addOns = result.Entry.AddOns;
-                Assert.Equal(
-                    ["5: Ilka, Kai, Mona", "5: Alice, Ilka, Kai, Mona", "5: Ilka, Kai, Mona"],
-                    [
-                        ConcernOf(addOns[1].Poll!.ConcernedCount, addOns[1].Poll!.NotAnswered),
-                        ConcernOf(addOns[2].Poll!.ConcernedCount, addOns[2].Poll!.NotAnswered),
-                        ConcernOf(
-                            addOns[3].SignUpList!.ConcernedCount,
-                            addOns[3].SignUpList!.NotAnswered
-                        ),
-                    ]
-                );
+                var food = PollOf(result, "Was essen wir?");
+                var secret = PollOf(result, "Wer wird Prinz?");
+                var bring = ListOf(result, "Mitbringen");
+                Assert.Equal(5, food.ConcernedCount);
+                Assert.Equal(["Ilka", "Kai", "Mona"], FirstNamesOf(food.NotAnswered));
+                Assert.Equal(["Alice", "Ilka", "Kai", "Mona"], FirstNamesOf(secret.NotAnswered));
+                Assert.Equal(5, bring.ConcernedCount);
+                Assert.Equal(["Ilka", "Kai", "Mona"], FirstNamesOf(bring.NotAnswered));
             }
         );
     }
 
     [Fact]
-    public async Task Should_CountTheConcernedButHideWhoIsMissing_When_SheMayNotEditTheEntry()
+    public async Task Should_CountEveryoneWhoAnsweredInTheTotal_When_AnOrganiserOutsideTheAudienceTakesPart()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildPollsAsync(ct);
+
+                var (_, result) = await ReadAsync(
+                    ctx,
+                    "dora",
+                    ctx.Club.CalendarEntries.IdOf("garde-party"),
+                    ct
+                );
+
+                var drinks = PollOf(result, "Was trinken wir?");
+                var chairs = ListOf(result, "Stühle");
+                Assert.Equal(3, drinks.ConcernedCount);
+                Assert.Equal(["Kai"], FirstNamesOf(drinks.NotAnswered));
+                Assert.Equal(3, chairs.ConcernedCount);
+                Assert.Equal(["Bea", "Kai"], FirstNamesOf(chairs.NotAnswered));
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CountTheConcernedButHideWhoIsMissing_When_TheEntryIsNotMeantForHer()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -886,29 +910,39 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                 var (_, result) = await ReadAsync(
                     ctx,
                     "alice",
-                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
+                    ctx.Club.CalendarEntries.IdOf("garde-party"),
                     ct
                 );
 
-                var poll = result.Entry.AddOns[1].Poll!;
-                var list = result.Entry.AddOns[3].SignUpList!;
-                Assert.Equal(
-                    ((int?)5, true, (int?)5, true),
-                    (
-                        poll.ConcernedCount,
-                        poll.NotAnswered is null,
-                        list.ConcernedCount,
-                        list.NotAnswered is null
-                    )
-                );
+                var drinks = PollOf(result, "Was trinken wir?");
+                var chairs = ListOf(result, "Stühle");
+                Assert.False(result.Entry.MayAnswer);
+                Assert.Equal(3, drinks.ConcernedCount);
+                Assert.Null(drinks.NotAnswered);
+                Assert.Equal(3, chairs.ConcernedCount);
+                Assert.Null(chairs.NotAnswered);
             }
         );
     }
 
-    private static string ConcernOf(
-        int? concernedCount,
-        IReadOnlyList<CalendarAttendancePersonDto>? notAnswered
-    ) => $"{concernedCount}: {string.Join(", ", notAnswered!.Select(person => person.FirstName))}";
+    private static CalendarPollDto PollOf(GetCalendarEntryByIdResponse result, string question) =>
+        result
+            .Entry.AddOns.Select(addOn => addOn.Poll)
+            .OfType<CalendarPollDto>()
+            .Single(poll => poll.Question == question);
+
+    private static CalendarSignUpListDto ListOf(
+        GetCalendarEntryByIdResponse result,
+        string title
+    ) =>
+        result
+            .Entry.AddOns.Select(addOn => addOn.SignUpList)
+            .OfType<CalendarSignUpListDto>()
+            .Single(list => list.Title == title);
+
+    private static IReadOnlyList<string> FirstNamesOf(
+        IReadOnlyList<CalendarAttendancePersonDto>? people
+    ) => people is null ? [] : [.. people.Select(person => person.FirstName)];
 
     private Task<SeededContext> BuildPollsAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
@@ -924,8 +958,37 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                             FurriaPermissions.CalendarManageClub
                         )
                     )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupMembership("bea-tanzgarde", "tanzgarde", "bea", JoinedIn2017)
+                            .AddGroupMembership("kai-tanzgarde", "tanzgarde", "kai", JoinedIn2017)
+                            .AddGroupAdmin(
+                                "dora-tanzgarde",
+                                "tanzgarde",
+                                "dora",
+                                "Trainerin",
+                                JoinedIn2017
+                            )
+                    )
                     .Club(club =>
                         club.AddCalendarEntry(
+                                "garde-party",
+                                "Gardefeier",
+                                AtTheMeeting.AddDays(1),
+                                ownerGroupAlias: "tanzgarde"
+                            )
+                            .AddCalendarPoll(
+                                "garde-drinks",
+                                "garde-party",
+                                "Was trinken wir?",
+                                ["Saft", "Tee"]
+                            )
+                            .AddCalendarPollVote("garde-drinks", "Saft", "bea")
+                            .AddCalendarPollVote("garde-drinks", "Tee", "dora")
+                            .AddCalendarSignUpList("garde-chairs", "garde-party", "Stühle")
+                            .AddCalendarSignUpLine("dora-chairs", "garde-chairs", "dora")
+                            .AddCalendarEntry(
                                 "club-meeting",
                                 ClubMeeting,
                                 AtTheMeeting,

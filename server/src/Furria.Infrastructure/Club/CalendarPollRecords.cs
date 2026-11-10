@@ -102,11 +102,16 @@ internal static class CalendarPollRecords
                         [
                             .. group.Select(poll => new PlacedPoll(
                                 poll.Position,
-                                ToDetails(poll, [.. votesByPoll[poll.PollId]], viewerPersonId, now)
+                                ToDetails(poll, [.. votesByPoll[poll.PollId]], viewerPersonId, now),
+                                VoterIdsOf(votesByPoll[poll.PollId])
                             )),
                         ]
             );
     }
+
+    [Pure]
+    private static IReadOnlySet<int> VoterIdsOf(IEnumerable<VoterRow> votes) =>
+        votes.Select(vote => vote.PersonId).ToHashSet();
 
     [Pure]
     private static CalendarPollDetails ToDetails(
@@ -360,4 +365,8 @@ internal static class CalendarPollRecords
     );
 }
 
-internal sealed record PlacedPoll(int Position, CalendarPollDetails Details);
+internal sealed record PlacedPoll(
+    int Position,
+    CalendarPollDetails Details,
+    IReadOnlySet<int> VoterIds
+);

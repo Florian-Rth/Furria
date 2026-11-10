@@ -2,7 +2,6 @@ using System.Diagnostics.Contracts;
 using Furria.Application.Club;
 using Furria.Application.Results;
 using Furria.Core.Club;
-using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
 
@@ -10,6 +9,8 @@ public sealed partial class CalendarService
 {
     private const string NotMeantForYouMessage =
         "Dieser Termin ist nicht für dich gedacht. Antworten können nur die, für die er ist.";
+
+    private static readonly IReadOnlyList<CalendarAttendancePerson> NobodyNamed = [];
 
     private async Task<Result?> AnswerRefusalAsync(
         int actorAccountId,
@@ -24,10 +25,14 @@ public sealed partial class CalendarService
     private async Task<OrganisedOwners> OrganisedOwnersAsync(
         int viewerAccountId,
         IEnumerable<EntryRow> rows,
+        CalendarTies ties,
         CancellationToken ct
     )
     {
-        var owners = rows.Select(row => row.OwnerGroupId).Distinct().ToList();
+        var owners = rows.Where(row => !ties.IsHers(FactsOf(row)))
+            .Select(row => row.OwnerGroupId)
+            .Distinct()
+            .ToList();
         var groupIds = new HashSet<int>();
         var club = false;
 
@@ -63,8 +68,8 @@ public sealed partial class CalendarService
         if (!row.AsksForResponse && polls.Count == 0 && lists.Count == 0)
             return new EntryConcern(extras, null);
 
-        var concerned = await ConcernedPeopleOfAsync(FactsOf(row), today, ct);
-        var voters = await VotersOfAsync([.. polls.Select(poll => poll.Details.PollId)], ct);
+        var concerned = await ConcernedIdsOfAsync(FactsOf(row), today, ct);
+        var named = organises ? await PeopleNamedAsync(concerned, ct) : NobodyNamed;
         var concernedExtras = extras with
         {
             Polls = new Dictionary<int, IReadOnlyList<PlacedPoll>>
@@ -74,12 +79,11 @@ public sealed partial class CalendarService
                     .. polls.Select(poll =>
                         poll with
                         {
-                            Details = WithConcern(
-                                poll.Details,
-                                concerned,
-                                voters[poll.Details.PollId].ToHashSet(),
-                                organises
-                            ),
+                            Details = poll.Details with
+                            {
+                                ConcernedCount = ShareTotalOf(concerned, poll.VoterIds),
+                                NotAnswered = organises ? MissingFrom(named, poll.VoterIds) : null,
+                            },
                         }
                     ),
                 ],
@@ -91,7 +95,7 @@ public sealed partial class CalendarService
                     .. lists.Select(list =>
                         list with
                         {
-                            Details = WithConcern(list.Details, concerned, organises),
+                            Details = WithConcern(list.Details, concerned, named, organises),
                         }
                     ),
                 ],
@@ -101,14 +105,14 @@ public sealed partial class CalendarService
         return new EntryConcern(
             concernedExtras,
             row.AsksForResponse
-                ? await AttendanceRollOfAsync(row.CalendarEntryId, concerned, organises, ct)
+                ? await AttendanceRollOfAsync(row.CalendarEntryId, named, organises, ct)
                 : null
         );
     }
 
     private async Task<AttendanceRoll> AttendanceRollOfAsync(
         int calendarEntryId,
-        IReadOnlyList<CalendarAttendancePerson> concerned,
+        IReadOnlyList<CalendarAttendancePerson> named,
         bool organises,
         CancellationToken ct
     )
@@ -118,64 +122,48 @@ public sealed partial class CalendarService
         return new AttendanceRoll(
             answers,
             organises
-                ? MissingFrom(concerned, answers.Select(answer => answer.PersonId).ToHashSet())
+                ? MissingFrom(named, answers.Select(answer => answer.PersonId).ToHashSet())
                 : null
         );
     }
 
-    private async Task<ILookup<int, int>> VotersOfAsync(
-        IReadOnlyList<int> pollIds,
-        CancellationToken ct
-    )
-    {
-        if (pollIds.Count == 0)
-            return Array.Empty<int>().ToLookup(id => id);
-
-        var votes = await _dbContext
-            .CalendarPollVotes.AsNoTracking()
-            .Where(vote => pollIds.Contains(vote.PollId))
-            .Select(vote => new { vote.PollId, vote.PersonId })
-            .Distinct()
-            .ToListAsync(ct);
-
-        return votes.ToLookup(vote => vote.PollId, vote => vote.PersonId);
-    }
-
-    [Pure]
-    private static CalendarPollDetails WithConcern(
-        CalendarPollDetails poll,
-        IReadOnlyList<CalendarAttendancePerson> concerned,
-        IReadOnlySet<int> voterIds,
-        bool organises
-    ) =>
-        poll with
-        {
-            ConcernedCount = concerned.Count,
-            NotAnswered = organises ? MissingFrom(concerned, voterIds) : null,
-        };
-
     [Pure]
     private static CalendarSignUpListDetails WithConcern(
         CalendarSignUpListDetails list,
-        IReadOnlyList<CalendarAttendancePerson> concerned,
+        IReadOnlySet<int> concerned,
+        IReadOnlyList<CalendarAttendancePerson> named,
         bool organises
-    ) =>
-        list with
+    )
+    {
+        var signedUpIds = list.Lines.Select(line => line.PersonId).ToHashSet();
+
+        return list with
         {
-            ConcernedCount = concerned.Count,
-            NotAnswered = organises
-                ? MissingFrom(concerned, list.Lines.Select(line => line.PersonId).ToHashSet())
-                : null,
+            ConcernedCount = ShareTotalOf(concerned, signedUpIds),
+            NotAnswered = organises ? MissingFrom(named, signedUpIds) : null,
         };
+    }
+
+    [Pure]
+    private static int ShareTotalOf(IReadOnlySet<int> concerned, IReadOnlySet<int> answeredIds) =>
+        concerned.Count + answeredIds.Count(personId => !concerned.Contains(personId));
 
     [Pure]
     private static IReadOnlyList<CalendarAttendancePerson> MissingFrom(
-        IReadOnlyList<CalendarAttendancePerson> concerned,
+        IReadOnlyList<CalendarAttendancePerson> named,
         IReadOnlySet<int> answeredIds
-    ) => [.. concerned.Where(person => !answeredIds.Contains(person.PersonId))];
+    ) => [.. named.Where(person => !answeredIds.Contains(person.PersonId))];
 
     private sealed record OrganisedOwners(IReadOnlySet<int> GroupIds, bool Club)
     {
+        public static readonly OrganisedOwners Nobody = new(new HashSet<int>(), false);
+
+        [Pure]
+        public static OrganisedOwners Of(int? ownerGroupId, bool organises) =>
+            !organises ? Nobody
+            : ownerGroupId is { } groupId ? new OrganisedOwners(new HashSet<int> { groupId }, false)
+            : new OrganisedOwners(new HashSet<int>(), true);
+
         [Pure]
         public bool Includes(int? ownerGroupId) =>
             ownerGroupId is { } groupId ? GroupIds.Contains(groupId) : Club;

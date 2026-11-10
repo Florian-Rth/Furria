@@ -18,11 +18,12 @@ public sealed partial class CalendarService
             ClubClock.Today(_timeProvider),
             ct
         );
+        var facts = entry?.ToFacts();
 
-        if (entry is not null && ties.Sees(entry.ToFacts(), rights))
+        if (facts is not null && ties.Sees(facts, rights))
         {
-            return sight.TakesPart
-                ? await AnswerRefusalAsync(sight.ActorAccountId, entry.ToFacts(), ties, ct)
+            return sight.Access == AddOnAccess.Answer
+                ? await AnswerRefusalAsync(sight.ActorAccountId, facts, ties, ct)
                 : null;
         }
 
@@ -31,12 +32,18 @@ public sealed partial class CalendarService
             : Result.Forbidden(sight.NotYoursMessage);
     }
 
+    private enum AddOnAccess
+    {
+        Sight,
+        Answer,
+    }
+
     private sealed record AddOnSight(
         int ActorAccountId,
         int PersonId,
         IQueryable<CalendarEntry> Entry,
         string UnknownMessage,
         string NotYoursMessage,
-        bool TakesPart
+        AddOnAccess Access
     );
 }

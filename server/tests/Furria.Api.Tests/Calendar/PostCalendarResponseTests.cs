@@ -306,6 +306,12 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_TakeTheAnswer_When_SheRunsAnEntryNotMeantForHer()
+    {
+        await AssertAnswerTakenAsync("sabine", "kinder-geheim");
+    }
+
+    [Fact]
     public async Task Should_ReturnForbidden_When_AnAccountWithoutClubReadAnswersAnEntryOfNoGroupOfHers()
     {
         await AssertAnswerRefusedAsync("kevin", "club-meeting", HttpStatusCode.Forbidden);
@@ -549,6 +555,14 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
                                 ownerGroupAlias: "kindergarde",
                                 asksForResponse: true,
                                 participatingGroupAliases: ["tanzgarde"]
+                            )
+                            .AddCalendarEntry(
+                                "kinder-geheim",
+                                "Geschenk für die Kinder",
+                                AtTheChildrensRehearsal.AddHours(2),
+                                ownerGroupAlias: "kindergarde",
+                                asksForResponse: true,
+                                audiencePersonAliases: ["bea"]
                             )
                             .AddCalendarEntry(
                                 "garde-auftritt",

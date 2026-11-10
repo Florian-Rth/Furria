@@ -24,6 +24,7 @@ interface KkPollBallotChoiceProps {
   leading: boolean;
   voters?: string;
   disabled?: boolean;
+  readOnly?: boolean;
   onSelect: () => void;
   sx?: KkSx;
 }
@@ -37,6 +38,7 @@ export const KkPollBallotChoice: FC<KkPollBallotChoiceProps> = ({
   leading,
   voters,
   disabled = false,
+  readOnly = false,
   onSelect,
   sx,
 }) => {
@@ -56,7 +58,7 @@ export const KkPollBallotChoice: FC<KkPollBallotChoiceProps> = ({
     borderRadius: `${kkTokens.radius.bar * 2}px`,
     color: (theme.vars ?? theme).palette.text.primary,
     backgroundColor: chosen ? inkWash(theme, '7%') : 'transparent',
-    '&:hover': { backgroundColor: inkWash(theme, '9%') },
+    '&:hover': readOnly ? {} : { backgroundColor: inkWash(theme, '9%') },
     '&.Mui-disabled': { color: (theme.vars ?? theme).palette.text.primary },
     ...focusRing(theme),
   });
@@ -96,22 +98,14 @@ export const KkPollBallotChoice: FC<KkPollBallotChoiceProps> = ({
       </Typography>
     );
 
-  return (
-    <ButtonBase
-      aria-pressed={chosen}
-      aria-describedby={describedBy}
-      disabled={disabled}
-      onClick={onSelect}
-      data-kk-poll-ballot-choice
-      data-kk-poll-ballot-mode={mode}
-      sx={[rowPaint, ...(Array.isArray(sx) ? sx : [sx])]}
-    >
+  const content = (
+    <>
       <Stack
         component="span"
         direction="row"
         sx={{ alignItems: 'center', gap: BALLOT_MARKER_GAP, minWidth: 0 }}
       >
-        <KkPollBallotMarker mode={mode} chosen={chosen} />
+        <KkPollBallotMarker mode={mode} chosen={chosen} blank={readOnly} />
         <Typography
           component="span"
           variant="body2"
@@ -131,6 +125,34 @@ export const KkPollBallotChoice: FC<KkPollBallotChoiceProps> = ({
         <Box component="span" sx={fillPaint} />
       </Box>
       {votersLine}
+    </>
+  );
+
+  if (readOnly) {
+    return (
+      <Stack
+        data-kk-poll-ballot-choice
+        data-kk-poll-ballot-mode={mode}
+        data-kk-poll-ballot-read-only
+        aria-describedby={describedBy}
+        sx={[rowPaint, ...(Array.isArray(sx) ? sx : [sx])]}
+      >
+        {content}
+      </Stack>
+    );
+  }
+
+  return (
+    <ButtonBase
+      aria-pressed={chosen}
+      aria-describedby={describedBy}
+      disabled={disabled}
+      onClick={onSelect}
+      data-kk-poll-ballot-choice
+      data-kk-poll-ballot-mode={mode}
+      sx={[rowPaint, ...(Array.isArray(sx) ? sx : [sx])]}
+    >
+      {content}
     </ButtonBase>
   );
 };

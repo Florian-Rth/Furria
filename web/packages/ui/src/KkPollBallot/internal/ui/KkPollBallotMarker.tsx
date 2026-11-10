@@ -5,6 +5,19 @@ import { kkTokens } from '../../../tokens';
 import { BALLOT_MARKER_SIZE } from '../poll-ballot-geometry';
 import type { KkPollBallotMode } from '../poll-ballot-mode';
 
+interface MarkerInks {
+  primary: { main: string };
+  text: { secondary: string };
+}
+
+const toMarkerBorder = (palette: MarkerInks, chosen: boolean, blank: boolean): string => {
+  if (blank) {
+    return 'transparent';
+  }
+
+  return chosen ? palette.primary.main : palette.text.secondary;
+};
+
 const MARKER_RADII: Record<KkPollBallotMode, string> = {
   single: '50%',
   multiple: `${kkTokens.radius.bar}px`,
@@ -13,9 +26,14 @@ const MARKER_RADII: Record<KkPollBallotMode, string> = {
 interface KkPollBallotMarkerProps {
   mode: KkPollBallotMode;
   chosen: boolean;
+  blank?: boolean;
 }
 
-export const KkPollBallotMarker: FC<KkPollBallotMarkerProps> = ({ mode, chosen }) => {
+export const KkPollBallotMarker: FC<KkPollBallotMarkerProps> = ({
+  mode,
+  chosen,
+  blank = false,
+}) => {
   const radius = MARKER_RADII[mode];
   const paint = (theme: Theme): CSSObject => {
     const palette = (theme.vars ?? theme).palette;
@@ -28,7 +46,7 @@ export const KkPollBallotMarker: FC<KkPollBallotMarkerProps> = ({ mode, chosen }
       borderRadius: radius,
       borderWidth: kkTokens.line.section,
       borderStyle: 'solid',
-      borderColor: chosen ? palette.primary.main : palette.text.secondary,
+      borderColor: toMarkerBorder(palette, chosen, blank),
       backgroundColor: chosen ? palette.primary.main : 'transparent',
       boxShadow: chosen
         ? `inset 0 0 0 ${kkTokens.line.section}px ${palette.background.paper}`

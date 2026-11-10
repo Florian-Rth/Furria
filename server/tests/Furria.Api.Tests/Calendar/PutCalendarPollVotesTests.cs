@@ -263,6 +263,29 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
+    [Fact]
+    public async Task Should_RecordTheVote_When_SheSchedulesAnEntryNotMeantForHer()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var pollId = ctx.Club.CalendarPolls.IdOf("board-snack");
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var response = await VoteAsync(ctx, "ilka", pollId, ["board-snack:Ja"], ct);
+
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            }
+        );
+
+        await ctx
+            .Expected.CalendarPoll(pollId)
+            .ToHaveVotesOf(ctx.Identity.People.IdOf("ilka"), "Ja")
+            .AssertAsync(ct);
+    }
+
     private static async Task<HttpResponseMessage> VoteAsync(
         SeededContext ctx,
         string voterAlias,
@@ -354,6 +377,18 @@ public sealed class PutCalendarPollVotesTests : IClassFixture<ApiTestFixture>
                             )
                             .AddCalendarPoll("late", "breakfast", "Weißwurst?", ["Ja", "Nein"])
                             .AddCalendarPoll("secret", "farewell", "Geschenk?", ["Ja", "Nein"])
+                            .AddCalendarEntry(
+                                "board-meeting",
+                                "Vorstandstreffen",
+                                AtTheCoffee,
+                                audiencePersonAliases: ["chris"]
+                            )
+                            .AddCalendarPoll(
+                                "board-snack",
+                                "board-meeting",
+                                "Kuchen?",
+                                ["Ja", "Nein"]
+                            )
                             .AddCalendarEntry(
                                 "garde-meeting",
                                 "Gardetreffen",

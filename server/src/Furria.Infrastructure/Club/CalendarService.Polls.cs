@@ -36,7 +36,7 @@ public sealed partial class CalendarService
                         .Select(poll => poll.CalendarEntry!),
                     UnknownPollMessage,
                     NotYourPollMessage,
-                    TakesPart: true
+                    AddOnAccess.Answer
                 ),
                 ct
             ) is

@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAttendanceChoice } from '@/features/attendance/hooks/use-attendance-choice';
 import type { AttendanceAnswer } from '@/features/attendance/schemas';
+import { canAnswer } from '@/lib/calendar-answering';
 import { isOver } from '../calendar-agenda';
 import type { CalendarEntry } from '../schemas';
 
@@ -23,7 +24,7 @@ const stateOf = (
   nowMs: number,
   primary: boolean,
 ): CalendarLineAnswerState => {
-  if (!entry.asksForResponse || !entry.mayAnswer || !primary) {
+  if (!canAnswer(entry) || !primary) {
     return 'none';
   }
   const isClosed = entry.attendance?.isClosed ?? false;

@@ -1,29 +1,25 @@
 import { KkAnswerRoll } from '@furria/ui/KkAnswerRoll';
 import type { FC } from 'react';
-import { ATTENDANCE_ROLL_LABELS, toOnBehalfLabel } from '@/lib/calendar-copy';
-import { toOpenGroup, toRollNames } from '../calendar-attendance';
+import { toOpenGroup } from '../calendar-attendance';
 import type { CalendarAttendancePerson } from '../schemas';
-
-const NOT_ANSWERED_LABEL = 'Noch offen';
+import { CalendarRollGroup } from './CalendarRollGroup';
 
 interface CalendarNotAnsweredRollProps {
-  notAnswered: readonly CalendarAttendancePerson[];
+  label: string;
+  notAnswered: readonly CalendarAttendancePerson[] | null;
 }
 
-export const CalendarNotAnsweredRoll: FC<CalendarNotAnsweredRollProps> = ({ notAnswered }) => {
-  const groups = toOpenGroup(notAnswered).map((group) => {
-    const names = toRollNames(group.people, toOnBehalfLabel);
+export const CalendarNotAnsweredRoll: FC<CalendarNotAnsweredRollProps> = ({
+  label,
+  notAnswered,
+}) => {
+  const groups = toOpenGroup(notAnswered);
 
-    return (
-      <KkAnswerRoll.Group
-        key={group.key}
-        tone={group.key}
-        label={ATTENDANCE_ROLL_LABELS[group.key]}
-        count={group.count}
-        names={names}
-      />
-    );
-  });
+  if (groups.length === 0) {
+    return null;
+  }
 
-  return <KkAnswerRoll label={NOT_ANSWERED_LABEL}>{groups}</KkAnswerRoll>;
+  const rows = groups.map((group) => <CalendarRollGroup key={group.key} group={group} />);
+
+  return <KkAnswerRoll label={label}>{rows}</KkAnswerRoll>;
 };

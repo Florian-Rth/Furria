@@ -56,6 +56,26 @@ public sealed class DeleteOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixt
     }
 
     [Fact]
+    public async Task Should_RemoveHerLine_When_TheEntryIsNoLongerMeantForHer()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var listId = ctx.Club.CalendarSignUpLists.IdOf("garde-helpers");
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var response = await WithdrawAsync(ctx, "dana", listId, ct);
+
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+            }
+        );
+
+        await ctx.Expected.CalendarSignUpList(listId).ToHaveLines().AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_KeepHerLine_When_TheListHasClosed()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -118,6 +138,7 @@ public sealed class DeleteOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixt
                             FurriaPermissions.CalendarManageClub
                         )
                     )
+                    .Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde"))
                     .Club(club =>
                         club.AddCalendarEntry("coffee", "Kaffeekränzchen", AtTheCoffee)
                             .AddCalendarEntry("breakfast", "Frühschoppen", AtTheBreakfast)
@@ -140,6 +161,14 @@ public sealed class DeleteOwnCalendarSignUpLineTests : IClassFixture<ApiTestFixt
                             )
                             .AddCalendarSignUpList("late", "breakfast", "Weißwürste")
                             .AddCalendarSignUpList("secret", "farewell", "Geschenk")
+                            .AddCalendarEntry(
+                                "garde-meeting",
+                                "Gardetreffen",
+                                AtTheCoffee,
+                                ownerGroupAlias: "tanzgarde"
+                            )
+                            .AddCalendarSignUpList("garde-helpers", "garde-meeting", "Helfer")
+                            .AddCalendarSignUpLine("dana-helps", "garde-helpers", "dana")
                     ),
             ct
         );

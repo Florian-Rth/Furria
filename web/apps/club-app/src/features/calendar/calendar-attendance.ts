@@ -47,7 +47,7 @@ const toOpenPerson = (person: CalendarAttendancePerson): AttendanceRollPerson =>
 export const toOpenGroup = (
   notAnswered: readonly CalendarAttendancePerson[] | null,
 ): AttendanceRollGroup[] =>
-  notAnswered === null
+  notAnswered === null || notAnswered.length === 0
     ? []
     : [{ key: 'open', count: notAnswered.length, people: notAnswered.map(toOpenPerson) }];
 

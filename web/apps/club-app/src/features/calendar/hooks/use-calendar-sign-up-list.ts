@@ -29,7 +29,7 @@ export interface CalendarSignUpListControl {
   hint: string | undefined;
   meta: string | undefined;
   lines: CalendarSignUpLineView[];
-  isOpen: boolean;
+  takesLines: boolean;
   draft: string;
   saveLabel: string;
   deleteOwnLabel: string | undefined;
@@ -45,6 +45,7 @@ const toHeldText = (list: CalendarSignUpList): string => toViewerLine(list)?.tex
 export const useCalendarSignUpList = (
   list: CalendarSignUpList,
   mayModerate: boolean,
+  mayAnswer: boolean,
   removal: CalendarSignUpLineRemovalControl,
 ): CalendarSignUpListControl => {
   const saving = useOwnSignUpLineMutation();
@@ -60,6 +61,7 @@ export const useCalendarSignUpList = (
 
   const own = toOwnLineState(list, draft);
   const isBusy = saving.isPending || deleting.isPending || removal.isRemoving;
+  const takesLines = own.isOpen && mayAnswer;
 
   const lines = toSignUpLineRows(list, mayModerate).map((row): CalendarSignUpLineView => {
     const name = toPersonName(row);
@@ -85,22 +87,17 @@ export const useCalendarSignUpList = (
   return {
     title: list.title,
     hint: list.hint ?? undefined,
-    meta: toSignUpListMetaLabel({
-      isClosed: list.isClosed,
-      signUpUntil: list.signUpUntil,
-      lineCount: list.lines.length,
-      concernedCount: list.concernedCount,
-    }),
+    meta: toSignUpListMetaLabel(list),
     lines,
-    isOpen: own.isOpen,
+    takesLines,
     draft,
     saveLabel: own.hasLine ? CHANGE_LABEL : SIGN_UP_LABEL,
     deleteOwnLabel: own.hasLine ? DELETE_OWN_LABEL : undefined,
-    canSave: own.canSave && !isBusy,
+    canSave: takesLines && own.canSave && !isBusy,
     isBusy,
     setDraft,
     save: () => {
-      if (isBusy) {
+      if (isBusy || !takesLines) {
         return;
       }
 

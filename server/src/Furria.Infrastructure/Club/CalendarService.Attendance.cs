@@ -43,7 +43,7 @@ public sealed partial class CalendarService
             })
             .ToListAsync(ct);
 
-    private async Task<IReadOnlyList<CalendarAttendancePerson>> ConcernedPeopleOfAsync(
+    private async Task<IReadOnlySet<int>> ConcernedIdsOfAsync(
         CalendarEntryFacts entry,
         DateOnly today,
         CancellationToken ct
@@ -51,11 +51,17 @@ public sealed partial class CalendarService
     {
         var candidateIds = await ConcernCandidateIdsOf(entry, today).Distinct().ToListAsync(ct);
         var ties = await _dbContext.CalendarTiesOfManyAsync(candidateIds, today, ct);
-        var concernedIds = ConcernedIdsOf(entry, ties);
 
-        return await _dbContext
+        return ConcernedIdsOf(entry, ties).ToHashSet();
+    }
+
+    private Task<List<CalendarAttendancePerson>> PeopleNamedAsync(
+        IReadOnlySet<int> personIds,
+        CancellationToken ct
+    ) =>
+        _dbContext
             .People.AsNoTracking()
-            .Where(person => concernedIds.Contains(person.Id))
+            .Where(person => personIds.Contains(person.Id))
             .OrderBy(person => EF.Functions.Collate(person.FirstName, GermanCollation.Name))
             .ThenBy(person => EF.Functions.Collate(person.LastName, GermanCollation.Name))
             .ThenBy(person => person.Id)
@@ -66,7 +72,6 @@ public sealed partial class CalendarService
                 LastName = person.LastName,
             })
             .ToListAsync(ct);
-    }
 
     [Pure]
     private static List<int> ConcernedIdsOf(

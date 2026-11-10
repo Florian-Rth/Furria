@@ -141,6 +141,35 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Theory]
+    [InlineData("alice", DanceGuardTraining, false)]
+    [InlineData("bea", DanceGuardTraining, true)]
+    [InlineData("chris", DanceGuardTraining, true)]
+    [InlineData("alice", ClubMeeting, true)]
+    public async Task Should_TellWhetherSheMayAnswer_When_SheReadsTheCalendar(
+        string alias,
+        string title,
+        bool mayAnswer
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+
+                var result = await ReadAsync(ctx, alias, new GetCalendarRequest(), ct);
+
+                Assert.Equal(
+                    mayAnswer,
+                    result.Entries.Single(entry => entry.Title == title).MayAnswer
+                );
+            }
+        );
+    }
+
+    [Theory]
     [InlineData("alice", false)]
     [InlineData("bea", true)]
     [InlineData("chris", true)]

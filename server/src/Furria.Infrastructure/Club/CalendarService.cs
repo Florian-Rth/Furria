@@ -106,7 +106,7 @@ public sealed partial class CalendarService
         rows = [.. rows.Where(row => ties.Sees(FactsOf(row), viewer.Rights))];
 
         var extras = await ExtrasOfAsync(viewer.PersonId, rows, now, ct);
-        var organised = await OrganisedOwnersAsync(query.ViewerAccountId, rows, ct);
+        var organised = await OrganisedOwnersAsync(query.ViewerAccountId, rows, ties, ct);
 
         return Result<IReadOnlyList<CalendarEntrySummary>>.Success([
             .. rows.Select(row => ToSummary(row, extras, now, MayAnswer(row, ties, organised))),
@@ -144,7 +144,7 @@ public sealed partial class CalendarService
         var extras = await ExtrasOfAsync(viewer.PersonId, [row], now, ct);
         var organises = await MayOwnAsync(viewerAccountId, row.OwnerGroupId, ct);
         var concern = await ConcernOfAsync(row, extras, organises, today, ct);
-        var mayAnswer = ties.IsHers(FactsOf(row)) || organises;
+        var mayAnswer = MayAnswer(row, ties, OrganisedOwners.Of(row.OwnerGroupId, organises));
 
         return Result<CalendarEntrySummary>.Success(
             ToSummary(row, concern.Extras, now, mayAnswer, concern.Roll)
@@ -183,18 +183,19 @@ public sealed partial class CalendarService
 
         var extras = await ExtrasOfAsync(personId, rows, now, ct);
         var ties = await _dbContext.CalendarTiesOfAsync(personId, today, ct);
-        var organised = await OrganisedOwnersAsync(query.ViewerAccountId, rows, ct);
+        var organised = await OrganisedOwnersAsync(query.ViewerAccountId, rows, ties, ct);
 
         return
         [
             .. rows.Select(row =>
-                ToGroupSummary(
-                    ToSummary(row, extras, now, MayAnswer(row, ties, organised)),
-                    row.AsksForResponse
-                        && ties.Sees(FactsOf(row), rights)
-                        && MayAnswer(row, ties, organised)
-                )
-            ),
+            {
+                var mayAnswer = MayAnswer(row, ties, organised);
+
+                return ToGroupSummary(
+                    ToSummary(row, extras, now, mayAnswer),
+                    row.AsksForResponse && ties.Sees(FactsOf(row), rights) && mayAnswer
+                );
+            }),
         ];
     }
 
@@ -478,46 +479,14 @@ public sealed partial class CalendarService
         if (await _authorizer.ActivePersonIdAsync(command.ActorAccountId, ct) is not { } personId)
             return Result.Forbidden(NotYoursMessage);
 
-        var rights = await RightsOfAsync(command.ActorAccountId, ct);
-        var entry = await _dbContext
-            .CalendarEntries.AsNoTracking()
-            .Where(row => row.Id == command.CalendarEntryId)
-            .Select(EntryFactsRows.Projection)
-            .SingleOrDefaultAsync(ct);
-        var ties = await _dbContext.CalendarTiesOfAsync(
-            personId,
-            ClubClock.Today(_timeProvider),
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await _dbContext.Database.ExecuteSqlAsync(
+            $"SELECT 1 FROM calendar_entry WHERE id = {command.CalendarEntryId} FOR SHARE",
             ct
         );
 
-        if (entry is null || !ties.Sees(entry.ToFacts(), rights))
-        {
-            return rights.HoldsClubRead
-                ? Result.NotFound(UnknownEntryMessage)
-                : Result.Forbidden(NotYoursMessage);
-        }
-
-        if (
-            await AnswerRefusalAsync(command.ActorAccountId, entry.ToFacts(), ties, ct) is
-            { } notMeant
-        )
-            return notMeant;
-
-        if (!entry.AsksForResponse)
-            return Result.Validation(NoResponseWantedMessage);
-
-        if (
-            CalendarAddOnClosing.IsAttendanceClosed(
-                entry.StartsAt,
-                entry.EndsAt,
-                _timeProvider.GetUtcNow()
-            )
-        )
-            return Result.Validation(AnswersClosedMessage);
-
-        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
-        if (!await _dbContext.StillAsksForResponseAsync(command.CalendarEntryId, ct))
-            return Result.Validation(NoResponseWantedMessage);
+        if (await ResponseRefusalAsync(command, personId, ct) is { } refusal)
+            return refusal;
 
         _dbContext.Record(
             await _dbContext.LockedResponseAsync(command.CalendarEntryId, personId, ct),
@@ -538,6 +507,48 @@ public sealed partial class CalendarService
         await transaction.CommitAsync(ct);
 
         return Result.Success();
+    }
+
+    private async Task<Result?> ResponseRefusalAsync(
+        SetAttendanceResponseCommand command,
+        int personId,
+        CancellationToken ct
+    )
+    {
+        var rights = await RightsOfAsync(command.ActorAccountId, ct);
+        var entry = await _dbContext
+            .CalendarEntries.AsNoTracking()
+            .Where(row => row.Id == command.CalendarEntryId)
+            .Select(EntryFactsRows.Projection)
+            .SingleOrDefaultAsync(ct);
+        var ties = await _dbContext.CalendarTiesOfAsync(
+            personId,
+            ClubClock.Today(_timeProvider),
+            ct
+        );
+
+        var facts = entry?.ToFacts();
+
+        if (entry is null || facts is null || !ties.Sees(facts, rights))
+        {
+            return rights.HoldsClubRead
+                ? Result.NotFound(UnknownEntryMessage)
+                : Result.Forbidden(NotYoursMessage);
+        }
+
+        if (await AnswerRefusalAsync(command.ActorAccountId, facts, ties, ct) is { } notMeant)
+            return notMeant;
+
+        if (!entry.AsksForResponse)
+            return Result.Validation(NoResponseWantedMessage);
+
+        return CalendarAddOnClosing.IsAttendanceClosed(
+            entry.StartsAt,
+            entry.EndsAt,
+            _timeProvider.GetUtcNow()
+        )
+            ? Result.Validation(AnswersClosedMessage)
+            : null;
     }
 
     private Expression<Func<CalendarEntry, EntryRow>> RowProjection(

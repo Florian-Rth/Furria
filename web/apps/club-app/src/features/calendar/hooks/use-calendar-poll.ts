@@ -2,7 +2,16 @@ import type { KkPollBallotMode } from '@furria/ui/KkPollBallot';
 import { usePollClosingMutation, usePollVoteMutation } from '../api';
 import { toPollCloseQuestion, toPollMetaLabel, toPollVotersLabel } from '../calendar-labels';
 import { toPollResults, toViewerChoice, toVoteSet } from '../calendar-polls';
+import type { CalendarConfirmCopy } from '../components/CalendarConfirmDialog';
 import type { CalendarPoll } from '../schemas';
+
+const CLOSE_COPY: Omit<CalendarConfirmCopy, 'question'> = {
+  eyebrow: 'UMFRAGE BEENDEN',
+  explanation: 'Danach kann niemand mehr abstimmen.',
+  confirmLabel: 'Beenden',
+  cancelLabel: 'Offen lassen',
+  closeLabel: 'Schließen',
+};
 
 export interface CalendarPollChoice {
   optionId: number;
@@ -20,24 +29,30 @@ export interface CalendarPollControl {
   question: string;
   meta: string | undefined;
   choices: CalendarPollChoice[];
-  isClosed: boolean;
+  isLocked: boolean;
+  isReadOnly: boolean;
   isSubmitting: boolean;
   canClose: boolean;
   isClosing: boolean;
-  closeQuestion: string;
+  closeCopy: CalendarConfirmCopy;
   close: () => void;
 }
 
-export const useCalendarPoll = (poll: CalendarPoll, mayClose: boolean): CalendarPollControl => {
+export const useCalendarPoll = (
+  poll: CalendarPoll,
+  mayClose: boolean,
+  mayAnswer: boolean,
+): CalendarPollControl => {
   const vote = usePollVoteMutation();
   const closing = usePollClosingMutation();
   const pendingVote =
     vote.isPending && vote.variables?.pollId === poll.pollId ? vote.variables : null;
   const chosenIds = pendingVote?.optionIds ?? toViewerChoice(poll);
   const isSubmitting = vote.isPending;
+  const isLocked = poll.isClosed || !mayAnswer;
 
   const choose = (optionId: number): void => {
-    if (poll.isClosed || isSubmitting) {
+    if (isLocked || isSubmitting) {
       return;
     }
 
@@ -67,11 +82,12 @@ export const useCalendarPoll = (poll: CalendarPoll, mayClose: boolean): Calendar
     question: poll.question,
     meta: toPollMetaLabel(poll),
     choices,
-    isClosed: poll.isClosed,
+    isLocked,
+    isReadOnly: !mayAnswer,
     isSubmitting,
     canClose: mayClose && !poll.isClosed,
     isClosing: closing.isPending,
-    closeQuestion: toPollCloseQuestion(poll.question),
+    closeCopy: { ...CLOSE_COPY, question: toPollCloseQuestion(poll.question) },
     close: () => {
       closing.mutate({ pollId: poll.pollId });
     },

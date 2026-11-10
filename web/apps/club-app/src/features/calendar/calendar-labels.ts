@@ -21,6 +21,7 @@ import type {
   CalendarAddOnKind,
   CalendarEntry,
   CalendarEntryAudience,
+  CalendarSignUpList,
   RunningVenue,
 } from './schemas';
 
@@ -162,13 +163,17 @@ export const toVoterCountLabel = (count: number): string | undefined =>
     ? undefined
     : byCount(count, '1 Person hat abgestimmt', `${count} Personen haben abgestimmt`);
 
-export const toVoterShareLabel = (
-  voterCount: number,
-  concernedCount: number | null,
-): string | undefined =>
-  concernedCount === null
-    ? toVoterCountLabel(voterCount)
-    : `${voterCount} von ${concernedCount} haben abgestimmt`;
+export type AnswerShare =
+  | { kind: 'share'; count: number; of: number }
+  | { kind: 'count'; count: number };
+
+export const toAnswerShare = (count: number, concernedCount: number | null): AnswerShare =>
+  concernedCount === null ? { kind: 'count', count } : { kind: 'share', count, of: concernedCount };
+
+const toVoterShareLabel = (share: AnswerShare): string | undefined =>
+  share.kind === 'count'
+    ? toVoterCountLabel(share.count)
+    : `${share.count} von ${share.of} haben abgestimmt`;
 
 export const toVotesLabel = (count: number): string =>
   byCount(count, '1 Stimme', `${count} Stimmen`);
@@ -212,7 +217,7 @@ export const toPollMetaLabel = (poll: PollMetaFacts): string | undefined => {
   const parts = [
     toPollDeadlineLabel(poll),
     anonymity,
-    toVoterShareLabel(poll.voterCount, poll.concernedCount),
+    toVoterShareLabel(toAnswerShare(poll.voterCount, poll.concernedCount)),
   ].filter((part): part is string => part !== undefined);
 
   return parts.length === 0 ? undefined : parts.join(META_SEPARATOR);
@@ -226,13 +231,10 @@ export const toPollCloseQuestion = (question: string): string => `„${question}
 export const toLineCountLabel = (count: number): string | undefined =>
   count === 0 ? undefined : byCount(count, '1 Eintrag', `${count} Einträge`);
 
-export const toLineShareLabel = (
-  lineCount: number,
-  concernedCount: number | null,
-): string | undefined =>
-  concernedCount === null
-    ? toLineCountLabel(lineCount)
-    : `${lineCount} von ${concernedCount} eingetragen`;
+const toLineShareLabel = (share: AnswerShare): string | undefined =>
+  share.kind === 'count'
+    ? toLineCountLabel(share.count)
+    : `${share.count} von ${share.of} eingetragen`;
 
 export const toSignUpUntilLabel = (signUpUntil: string): string =>
   `Eintragen bis ${toDayNumberLabel(signUpUntil)}, ${toTimeLabel(signUpUntil)} Uhr`;
@@ -242,12 +244,10 @@ export const toSignUpListRemoveLabel = (title: string): string =>
 
 const SIGN_UP_LIST_CLOSED_LABEL = 'Geschlossen';
 
-interface SignUpListMetaFacts {
-  isClosed: boolean;
-  signUpUntil: string | null;
-  lineCount: number;
-  concernedCount: number | null;
-}
+type SignUpListMetaFacts = Pick<
+  CalendarSignUpList,
+  'isClosed' | 'signUpUntil' | 'lines' | 'concernedCount'
+>;
 
 const toSignUpDeadlineLabel = (list: SignUpListMetaFacts): string | undefined => {
   if (list.isClosed) {
@@ -260,7 +260,7 @@ const toSignUpDeadlineLabel = (list: SignUpListMetaFacts): string | undefined =>
 export const toSignUpListMetaLabel = (list: SignUpListMetaFacts): string | undefined => {
   const parts = [
     toSignUpDeadlineLabel(list),
-    toLineShareLabel(list.lineCount, list.concernedCount),
+    toLineShareLabel(toAnswerShare(list.lines.length, list.concernedCount)),
   ].filter((part): part is string => part !== undefined);
 
   return parts.length === 0 ? undefined : parts.join(META_SEPARATOR);

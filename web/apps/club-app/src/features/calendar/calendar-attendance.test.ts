@@ -4,7 +4,7 @@ import type {
   AttendanceRollName,
   AttendanceRollPerson,
 } from './calendar-attendance';
-import { toAttendanceRoll, toRollNames } from './calendar-attendance';
+import { toAttendanceRoll, toOpenGroup, toRollNames } from './calendar-attendance';
 import type { CalendarAttendance } from './schemas';
 
 const BEA_YES = {
@@ -110,5 +110,20 @@ describe('toRollNames', () => {
     },
   ])('names $people.length people', ({ people, expected }) => {
     expect(toRollNames(people, (recordedBy) => `[${recordedBy}]`)).toEqual(expected);
+  });
+});
+
+describe('toOpenGroup', () => {
+  it.each([
+    { notAnswered: null, expected: [] },
+    { notAnswered: [], expected: [] },
+    {
+      notAnswered: [{ personId: 7, firstName: 'Kai', lastName: 'Kind' }],
+      expected: [
+        { key: 'open', count: 1, people: [{ personId: 7, name: 'Kai Kind', recordedBy: null }] },
+      ],
+    },
+  ])('groups $notAnswered as $expected', ({ notAnswered, expected }) => {
+    expect(toOpenGroup(notAnswered)).toEqual(expected);
   });
 });
