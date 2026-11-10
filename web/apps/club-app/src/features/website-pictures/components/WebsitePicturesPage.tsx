@@ -11,7 +11,6 @@ import {
   LOADING_LABEL,
   RETRY_LABEL,
   toLoadErrorMessage,
-  WEBSITE_LEAD,
   WEBSITE_TITLE,
 } from '../website-copy';
 import { WebsiteBoardBody } from './WebsiteBoardBody';
@@ -40,7 +39,7 @@ export const WebsitePicturesPage: FC = () => {
       kind="working"
       title={WEBSITE_TITLE}
       origin={GALLERY_ORIGIN}
-      header={<KkTitleHeader title={WEBSITE_TITLE} lead={WEBSITE_LEAD} />}
+      header={<KkTitleHeader title={WEBSITE_TITLE} />}
       handover={AREA_HANDOVERS.gallery}
     >
       {content}

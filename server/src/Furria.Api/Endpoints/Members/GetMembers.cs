@@ -47,15 +47,11 @@ public sealed class GetMembers : EndpointWithoutRequest<GetMembersResponse>
             Portrait = PictureDto.From(member.Portrait),
             MembershipState = member.MembershipState,
             Groups = [.. member.Groups.Select(ToDto)],
-            Roles = [.. member.Roles.Select(ToDto)],
             Honours = PersonHonoursDto.From(honours.Of(member.PersonId)),
         };
 
     private static GroupRefDto ToDto(GroupReference group) =>
         new() { GroupId = group.GroupId, Name = group.Name };
-
-    private static RoleRefDto ToDto(RoleReference role) =>
-        new() { RoleId = role.RoleId, Name = role.Name };
 }
 
 public sealed record GetMembersResponse
@@ -77,21 +73,12 @@ public sealed record MemberSummaryDto
 
     public required IReadOnlyList<GroupRefDto> Groups { get; init; }
 
-    public required IReadOnlyList<RoleRefDto> Roles { get; init; }
-
     public required PersonHonoursDto Honours { get; init; }
 }
 
 public sealed record GroupRefDto
 {
     public required int GroupId { get; init; }
-
-    public required string Name { get; init; }
-}
-
-public sealed record RoleRefDto
-{
-    public required int RoleId { get; init; }
 
     public required string Name { get; init; }
 }

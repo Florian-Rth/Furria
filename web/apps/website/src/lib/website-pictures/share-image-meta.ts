@@ -1,6 +1,7 @@
 import type { PublicWebsitePicture } from '@furria/api-client';
 import { slotPictureUrlOf } from '@furria/website-pictures';
-import type { RouteHead } from '@/lib/seo';
+import type { RouteHead } from '../seo/route-head';
+import { absoluteUrlOf } from '../seo/route-head';
 
 const SHARE_IMAGE_SLOT = 'site.shareImage';
 const FIRST_POSITION = 1;
@@ -19,7 +20,7 @@ export const siteShareImageMeta = (
   const alt = shareImageAltOf(pictures);
   const image = {
     property: 'og:image',
-    content: slotPictureUrlOf(SHARE_IMAGE_SLOT, FIRST_POSITION, 'medium'),
+    content: absoluteUrlOf(slotPictureUrlOf(SHARE_IMAGE_SLOT, FIRST_POSITION, 'medium')),
   };
 
   return alt === null ? [image] : [image, { property: 'og:image:alt', content: alt }];

@@ -13,11 +13,9 @@ import { GalleryBinHeader } from './GalleryBinHeader';
 import { GalleryBinItemGroup } from './GalleryBinItemGroup';
 
 const EMPTY_TITLE = 'PAPIERKORB LEER';
-const EMPTY_DESCRIPTION =
-  'Gelöschte Alben, Fotos und Videos liegen hier 30 Tage, bevor sie endgültig verschwinden.';
+const EMPTY_DESCRIPTION = 'Keine gelöschten Alben oder Bilder.';
 const ALBUMS_LEAD = 'Alben';
 const ITEMS_LEAD = 'Einzelne Bilder';
-const ITEMS_META = 'Antippen wählt aus, unten wiederherstellen';
 const ALBUM_SIZE = { xs: 6, sm: 4, desktop: 2 };
 
 interface GalleryBinBodyProps {
@@ -72,7 +70,7 @@ export const GalleryBinBody: FC<GalleryBinBodyProps> = ({ bin, control }) => {
   const items =
     bin.items.length === 0 ? null : (
       <Stack component="section" sx={{ rowGap: 2 }}>
-        <KkFilmEdge lead={itemsLead} meta={ITEMS_META} tone="red" size="title" level="h2" />
+        <KkFilmEdge lead={itemsLead} tone="red" size="title" level="h2" />
         {groups}
       </Stack>
     );

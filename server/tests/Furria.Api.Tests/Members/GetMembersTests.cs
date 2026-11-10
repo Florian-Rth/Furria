@@ -7,6 +7,7 @@ using Furria.Application.Authorization;
 using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Core.Groups;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -93,7 +94,6 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
         var tanzgarde = Assert.Single(paula.Groups);
         Assert.Equal(ctx.Groups.Groups.IdOf("tanzgarde"), tanzgarde.GroupId);
         Assert.Equal("Tanzgarde", tanzgarde.Name);
-        Assert.Empty(paula.Roles);
     }
 
     [Fact]
@@ -198,45 +198,6 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListTheRunningRole_When_APersonHoldsOne()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddPerson("anna", "Anna", "Muster")
-                            .AddAccount("anna")
-                            .AddMembership("anna-membership", "anna")
-                    )
-                    .Roles(roles =>
-                        roles.AddRoleWithHolder(
-                            "gruppenpflege",
-                            "ilka-gruppenpflege",
-                            "Gruppenpflege",
-                            "ilka",
-                            FurriaPermissions.GroupsManage
-                        )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("anna", ct);
-        var (response, result) = await client.GETAsync<GetMembers, GetMembersResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var ilka = Assert.Single(
-            result.Members,
-            member => member.PersonId == ctx.Identity.People.IdOf("ilka")
-        );
-        var groupCare = Assert.Single(ilka.Roles);
-        Assert.Equal(ctx.Roles.Roles.IdOf("gruppenpflege"), groupCare.RoleId);
-        Assert.Equal("Gruppenpflege", groupCare.Name);
-    }
-
-    [Fact]
     public async Task Should_OmitTheGroup_When_TheGroupMembershipEndedOrTheGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -291,65 +252,7 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_OmitTheRole_When_TheRoleHoldingEndedOrTheRoleIsArchived()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                builder
-                    .Identity(identity =>
-                        identity
-                            .AddPerson("ilka", "Ilka", "Reineke")
-                            .AddAccount("ilka")
-                            .AddMembership("ilka-first", "ilka", JoinedIn2017)
-                    )
-                    .Roles(roles =>
-                        roles
-                            .AddRole("kassenpruefung", "Kassenpruefung")
-                            .AddRoleHolding(
-                                "ilka-kassenpruefung",
-                                "kassenpruefung",
-                                "ilka",
-                                JoinedIn2017,
-                                LeftIn2020
-                            )
-                            .AddRoleWithDetails(
-                                "schriftfuehrung",
-                                "Schriftfuehrung",
-                                "Aufgeloest.",
-                                ArchivedIn2021
-                            )
-                            .AddRoleHolding(
-                                "ilka-schriftfuehrung",
-                                "schriftfuehrung",
-                                "ilka",
-                                JoinedIn2017
-                            )
-                            .AddRole("gruppenpflege", "Gruppenpflege")
-                            .AddRoleHolding(
-                                "ilka-gruppenpflege",
-                                "gruppenpflege",
-                                "ilka",
-                                JoinedIn2017
-                            )
-                    ),
-            ct
-        );
-
-        var client = await ctx.Identity.ClientForAsync("ilka", ct);
-        var (response, result) = await client.GETAsync<GetMembers, GetMembersResponse>();
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        var ilka = Assert.Single(
-            result.Members,
-            member => member.PersonId == ctx.Identity.People.IdOf("ilka")
-        );
-        var groupCare = Assert.Single(ilka.Roles);
-        Assert.Equal(ctx.Roles.Roles.IdOf("gruppenpflege"), groupCare.RoleId);
-    }
-
-    [Fact]
-    public async Task Should_NameEachGroupAndRoleOnce_When_ATieEndedAndANewOneStartedToday()
+    public async Task Should_NameEachGroupOnce_When_ATieEndedAndANewOneStartedToday()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -377,23 +280,6 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
                                 "paula",
                                 _fixture.Today
                             )
-                    )
-                    .Roles(roles =>
-                        roles
-                            .AddRole("zeugwartin", "Zeugwartin")
-                            .AddRoleHolding(
-                                "paula-zeugwartin-first",
-                                "zeugwartin",
-                                "paula",
-                                JoinedIn2017,
-                                _fixture.Today
-                            )
-                            .AddRoleHolding(
-                                "paula-zeugwartin-again",
-                                "zeugwartin",
-                                "paula",
-                                _fixture.Today
-                            )
                     ),
             ct
         );
@@ -408,12 +294,10 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
         );
         var tanzgarde = Assert.Single(paula.Groups);
         Assert.Equal(ctx.Groups.Groups.IdOf("tanzgarde"), tanzgarde.GroupId);
-        var equipmentWarden = Assert.Single(paula.Roles);
-        Assert.Equal(ctx.Roles.Roles.IdOf("zeugwartin"), equipmentWarden.RoleId);
     }
 
     [Fact]
-    public async Task Should_SortGroupsAndRolesByName_When_APersonCarriesSeveral()
+    public async Task Should_SortGroupsByName_When_APersonCarriesSeveral()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -441,18 +325,6 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
                                 "paula",
                                 JoinedIn2017
                             )
-                    )
-                    .Roles(roles =>
-                        roles
-                            .AddRole("zeugwartin", "Zeugwartin")
-                            .AddRole("aemterpflege", "Ützelbützel")
-                            .AddRoleHolding("paula-zeugwartin", "zeugwartin", "paula", JoinedIn2017)
-                            .AddRoleHolding(
-                                "paula-aemterpflege",
-                                "aemterpflege",
-                                "paula",
-                                JoinedIn2017
-                            )
                     ),
             ct
         );
@@ -468,10 +340,6 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
         Assert.Equal(
             ["Ältestenrat", "Zwergengarde"],
             paula.Groups.Select(group => group.Name).ToArray()
-        );
-        Assert.Equal(
-            ["Ützelbützel", "Zeugwartin"],
-            paula.Roles.Select(role => role.Name).ToArray()
         );
     }
 
@@ -547,7 +415,6 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
                 "portrait",
                 "membershipState",
                 "groups",
-                "roles",
                 "honours",
             ],
             fields
@@ -605,10 +472,10 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
                             .AddGroup(
                                 "tanzgarde",
                                 "Tanzgarde",
-                                tone: GroupTone.Teal,
+                                tone: TestTones.Teal,
                                 icon: ClubIcon.Drum
                             )
-                            .AddGroup("kapelle", "Kapelle", tone: GroupTone.Rose)
+                            .AddGroup("kapelle", "Kapelle", tone: TestTones.Rose)
                             .AddGroup("alte-garde", "Alte Garde", archivedOn: ArchivedIn2021)
                             .AddGroup("funken", "Funken")
                             .AddGroupAdmin(
@@ -643,19 +510,19 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
                                 "zeugwart",
                                 "Zeugwart",
                                 ClubIcon.Wrench,
-                                GroupTone.Teal
+                                TestTones.Teal
                             )
                             .AddRoleWithCoin(
                                 "webmaster",
                                 "Webmaster",
                                 ClubIcon.Key,
-                                GroupTone.Indigo
+                                TestTones.Indigo
                             )
                             .AddRoleWithCoin(
                                 "chronik",
                                 "Chronik",
                                 ClubIcon.Pen,
-                                GroupTone.Clay,
+                                TestTones.Clay,
                                 ArchivedIn2021
                             )
                             .AddRole("kasse", "Kasse")
@@ -755,28 +622,28 @@ public sealed class GetMembersTests : IClassFixture<ApiTestFixture>
                     Kind = PersonFunctionKind.GroupAdmin,
                     Name = "Kapelle",
                     Icon = null,
-                    Tone = GroupTone.Rose,
+                    Tone = TestTones.Rose,
                 },
                 new PersonFunctionDto
                 {
                     Kind = PersonFunctionKind.GroupAdmin,
                     Name = "Tanzgarde",
                     Icon = ClubIcon.Drum,
-                    Tone = GroupTone.Teal,
+                    Tone = TestTones.Teal,
                 },
                 new PersonFunctionDto
                 {
                     Kind = PersonFunctionKind.Role,
                     Name = "Webmaster",
                     Icon = ClubIcon.Key,
-                    Tone = GroupTone.Indigo,
+                    Tone = TestTones.Indigo,
                 },
                 new PersonFunctionDto
                 {
                     Kind = PersonFunctionKind.Role,
                     Name = "Zeugwart",
                     Icon = ClubIcon.Wrench,
-                    Tone = GroupTone.Teal,
+                    Tone = TestTones.Teal,
                 },
             ],
             alice.Honours.Functions

@@ -52,17 +52,6 @@ public sealed class PersonService
                     membership.JoinedOn,
                     membership.LeftOn
                 ))
-                .ToList(),
-            person
-                .RoleHoldings.Where(holding => holding.Role!.ArchivedOn == null)
-                .OrderBy(holding => EF.Functions.Collate(holding.Role!.Name, GermanCollation.Name))
-                .ThenBy(holding => holding.RoleId)
-                .Select(holding => new TieRow(
-                    holding.RoleId,
-                    holding.Role!.Name,
-                    holding.SinceOn,
-                    holding.UntilOn
-                ))
                 .ToList()
         );
 
@@ -279,19 +268,6 @@ public sealed class PersonService
                         GroupId = membership.GroupId,
                         Name = membership.Group!.Name,
                     })
-                    .ToList(),
-                person
-                    .RoleHoldings.AsQueryable()
-                    .Where(Conferring.RoleHoldings(today))
-                    .OrderBy(holding =>
-                        EF.Functions.Collate(holding.Role!.Name, GermanCollation.Name)
-                    )
-                    .ThenBy(holding => holding.RoleId)
-                    .Select(holding => new RoleReference
-                    {
-                        RoleId = holding.RoleId,
-                        Name = holding.Role!.Name,
-                    })
                     .ToList()
             ))
             .ToListAsync(ct);
@@ -384,9 +360,10 @@ public sealed class PersonService
             return Result<MemberDetails>.NotFound(UnknownMemberMessage);
 
         var visibility = await VisibilityForAsync(row.Contact, viewerAccountId, ct);
+        var boardTerms = await PublicBoardTermsOfAsync(personId, ct);
 
         return Result<MemberDetails>.Success(
-            ToDetails(row, visibility, today) with
+            ToDetails(row, visibility, boardTerms, today) with
             {
                 Portrait = await _pictures.PortraitOfAsync(personId, ct),
             }
@@ -626,6 +603,26 @@ public sealed class PersonService
                 .ToList()
         );
 
+    private Task<List<MemberBoardTerm>> PublicBoardTermsOfAsync(
+        int personId,
+        CancellationToken ct
+    ) =>
+        _dbContext
+            .BoardSeats.AsNoTracking()
+            .Where(seat => seat.PersonId == personId && seat.BoardOffice!.IsPublic)
+            .OrderByDescending(seat => seat.SinceOn)
+            .ThenBy(seat => seat.BoardOffice!.SortOrder)
+            .ThenBy(seat => seat.Id)
+            .Select(seat => new MemberBoardTerm
+            {
+                BoardOfficeId = seat.BoardOfficeId,
+                Office = seat.BoardOffice!.Name,
+                Icon = seat.BoardOffice.Icon,
+                Since = seat.SinceOn,
+                Until = seat.UntilOn,
+            })
+            .ToListAsync(ct);
+
     private async Task<ContactVisibility> VisibilityForAsync(
         ContactRow contact,
         int viewerAccountId,
@@ -647,6 +644,7 @@ public sealed class PersonService
     private static MemberDetails ToDetails(
         MemberCardRow row,
         ContactVisibility visibility,
+        IReadOnlyList<MemberBoardTerm> boardTerms,
         DateOnly today
     )
     {
@@ -669,16 +667,7 @@ public sealed class PersonService
                         Since = tie.Since,
                     }),
             ],
-            Roles =
-            [
-                .. RunningTies(row.Roles, today)
-                    .Select(tie => new MemberRole
-                    {
-                        RoleId = tie.Id,
-                        Name = tie.Name,
-                        Since = tie.Since,
-                    }),
-            ],
+            BoardTerms = boardTerms,
             Contact = ToContact(row.Contact, visibility),
         };
     }
@@ -812,7 +801,6 @@ public sealed class PersonService
             LastName = row.LastName,
             MembershipState = MembershipPeriodRow.ChainOf(row.Memberships, today).State,
             Groups = [.. row.Groups.DistinctBy(group => group.GroupId)],
-            Roles = [.. row.Roles.DistinctBy(role => role.RoleId)],
         };
 
     private static string ToContainsPattern(string folded) =>
@@ -828,8 +816,7 @@ public sealed class PersonService
         string FirstName,
         string LastName,
         IReadOnlyList<MembershipPeriodRow> Memberships,
-        IReadOnlyList<GroupReference> Groups,
-        IReadOnlyList<RoleReference> Roles
+        IReadOnlyList<GroupReference> Groups
     );
 
     private sealed record PersonRegistryRow(
@@ -873,8 +860,7 @@ public sealed class PersonService
         string LastName,
         ContactRow Contact,
         IReadOnlyList<MembershipPeriodRow> Memberships,
-        IReadOnlyList<TieRow> Groups,
-        IReadOnlyList<TieRow> Roles
+        IReadOnlyList<TieRow> Groups
     );
 
     private sealed record ContactRow(

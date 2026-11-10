@@ -7,9 +7,6 @@ export const PUSH_SECTION_TITLE = 'Benachrichtigungen';
 
 export const PUSH_SWITCH_LABEL = 'Auf diesem Gerät benachrichtigen';
 
-export const PUSH_SWITCH_DESCRIPTION =
-  'Erinnerungen und Hinweise aus dem Verein kommen als Mitteilung auf dieses Gerät, auch wenn die App geschlossen ist.';
-
 export const PUSH_READINESS_NOTES: Partial<Record<PushReadiness, string>> = {
   'install-first':
     'Auf dem iPhone kommen Mitteilungen nur in der App an, die auf dem Home-Bildschirm liegt. Öffne FURRIA von dort.',
@@ -30,9 +27,6 @@ export const PUSH_PERMISSION_REFUSED =
 export const TEST_PUSH_ACTION = 'Testnachricht senden';
 
 export const TEST_PUSH_FAILED = 'Die Testnachricht ließ sich nicht senden. Versuch es noch einmal.';
-
-export const TEST_PUSH_LEAD =
-  'Schickt eine Mitteilung an jedes deiner Geräte, auf dem Benachrichtigungen eingeschaltet sind.';
 
 const deviceCount = (count: number): string => (count === 1 ? '1 Gerät' : `${count} Geräte`);
 

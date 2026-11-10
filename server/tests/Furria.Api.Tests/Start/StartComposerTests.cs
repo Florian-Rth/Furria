@@ -111,7 +111,7 @@ public sealed class StartComposerTests
             Nothing with
             {
                 Entries = [RunningSince(1, OnDay(0, 19, 30))],
-                Mine = [MineOn(StartMineKind.NewRole, TuesdayEvening.Today)],
+                Mine = [MineOn(StartMineKind.NewBoardSeat, TuesdayEvening.Today)],
                 Announcements = [AnnouncementPublishedAt(1, DaysAgo(1))],
                 ToDos = [ToDoOf(ToDoKind.NeverInvited)],
             },
@@ -275,7 +275,6 @@ public sealed class StartComposerTests
     }
 
     [Theory]
-    [InlineData(StartMineKind.NewRole, -2)]
     [InlineData(StartMineKind.NewBoardSeat, 0)]
     [InlineData(StartMineKind.NewGroupAdmin, -1)]
     [InlineData(StartMineKind.NewGroupMembership, -2)]
@@ -300,7 +299,7 @@ public sealed class StartComposerTests
     }
 
     [Theory]
-    [InlineData(StartMineKind.NewRole, -3)]
+    [InlineData(StartMineKind.NewBoardSeat, -3)]
     [InlineData(StartMineKind.ContactChangedByOther, -3)]
     [InlineData(StartMineKind.MembershipEnding, 8)]
     [InlineData(StartMineKind.MembershipPaused, 0)]
@@ -560,7 +559,7 @@ public sealed class StartComposerTests
                 [
                     MineOn(StartMineKind.NewKey, today.AddDays(-5)),
                     MineOn(StartMineKind.Milestone, today.AddDays(-3)),
-                    MineOn(StartMineKind.NewRole, today.AddDays(-5)),
+                    MineOn(StartMineKind.NewBoardSeat, today.AddDays(-5)),
                     MineOn(StartMineKind.MembershipEnding, today.AddDays(20)),
                     MineOn(StartMineKind.NewGroupMembership, today.AddDays(-1)),
                 ],
@@ -575,7 +574,7 @@ public sealed class StartComposerTests
                 StartMineKind.NewGroupMembership,
                 StartMineKind.MembershipEnding,
                 StartMineKind.Milestone,
-                StartMineKind.NewRole,
+                StartMineKind.NewBoardSeat,
                 StartMineKind.NewKey,
             ],
             mine.Mine!.Select(item => item.Kind)

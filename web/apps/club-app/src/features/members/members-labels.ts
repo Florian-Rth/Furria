@@ -1,8 +1,9 @@
-import type { MembershipState } from '@/lib/api/schemas';
 import { toInitials } from '@/lib/initials';
+import { formatIsoDay } from '@/lib/membership-labels';
 import type { StateChip } from '@/lib/state-chips';
 import { toMembershipStateChip, toNoStateMatchLine } from '@/lib/state-chips';
 import type { LetterAnchor } from '@/lib/use-letter-position';
+import type { BoardTermPeriod } from './board-terms';
 import type { MemberDetails } from './schemas';
 
 const META_SEPARATOR = ' · ';
@@ -23,7 +24,6 @@ export const toLetterAnchors = (sections: readonly { letter: string }[]): Letter
 
 export const LETTER_INDEX_LABEL = 'Zu einem Buchstaben springen';
 
-export const MEMBERS_LEAD = 'Kontakte, Gruppen und Rollen aller Personen im Verein.';
 export const toWithoutMembershipSentence = (count: number): string | null => {
   if (count === 0) {
     return null;
@@ -34,12 +34,6 @@ export const toWithoutMembershipSentence = (count: number): string | null => {
 
   return `Darunter ${count} Personen ohne Mitgliedschaft.`;
 };
-
-const COUNTING_FOOTNOTE = 'Gezählt werden alle, die aktuell mit dem FCC verbunden sind.';
-const ALL_FILTER_SUGGESTION = 'Wähle „Alle“, um alle anzuzeigen.';
-
-export const toStatsFootnote = (withoutMembership: number): string =>
-  toWithoutMembershipSentence(withoutMembership) ?? COUNTING_FOOTNOTE;
 
 export type MembersEmptyCause =
   | { kind: 'query'; needle: string }
@@ -68,7 +62,7 @@ export const toEmptyDescription = (query: string, state: string): string => {
     return 'Keine Einträge.';
   }
 
-  return `${cause.stateLine} ${ALL_FILTER_SUGGESTION}`;
+  return cause.stateLine;
 };
 
 export interface MemberHeadline {
@@ -86,7 +80,7 @@ export const toPeekAffiliationLine = (entries: readonly { name: string }[]): str
 
 export const MEMBER_SECTION_TITLES = {
   groups: 'Gruppen',
-  roles: 'Rollen',
+  board: 'Vorstand',
   club: 'Im Verein',
   contact: 'Kontakt',
 } as const;
@@ -105,30 +99,20 @@ export const toMemberHeadline = (member: MemberDetails | undefined): MemberHeadl
   };
 };
 
-export const toMembershipNote = (state: MembershipState, firstName: string): string | null => {
-  if (state === 'active') {
-    return null;
-  }
-  if (state === 'paused') {
-    return `${firstName} ist in einer Ruhezeit und gilt nicht als aktiv.`;
-  }
-  if (state === 'ended') {
-    return `Die Mitgliedschaft ist beendet, ${firstName} bleibt aber mit dem FCC verbunden.`;
-  }
-
-  return `${firstName} wirkt im Verein mit, ohne Mitglied zu sein.`;
-};
-
-export const toContactHiddenExplanation = (firstName: string): string =>
-  `${firstName} hat die Kontaktdaten nicht für Mitglieder freigegeben.`;
-
-export const SELF_CONTACT_HIDDEN_EXPLANATION =
-  'Deine Kontaktdaten sind für Mitglieder nicht freigegeben.';
-
 export const SELF_CONTACT_HIDDEN_LINK = 'In Mein Profil ändern';
 
 export const toNoGroupsDescription = (firstName: string): string =>
   `${firstName} ist in keiner Gruppe.`;
 
-export const toNoRolesDescription = (firstName: string): string =>
-  `${firstName} hat keine Rolle im Verein.`;
+const BOARD_TERM_SINCE_LABEL = 'seit';
+const BOARD_TERM_UNTIL_PREFIX = '– ';
+
+export const toBoardTermSince = (
+  period: BoardTermPeriod,
+): { sinceLabel: string; sinceValue: string } =>
+  period.kind === 'current'
+    ? { sinceLabel: BOARD_TERM_SINCE_LABEL, sinceValue: formatIsoDay(period.since) }
+    : {
+        sinceLabel: formatIsoDay(period.since),
+        sinceValue: `${BOARD_TERM_UNTIL_PREFIX}${formatIsoDay(period.until)}`,
+      };

@@ -8,8 +8,6 @@ import type { PersonForm } from '../schemas';
 const NAME_SECTION_TITLE = 'Name';
 const CONTACT_SECTION_TITLE = 'Kontakt';
 const ADDRESS_SECTION_TITLE = 'Anschrift';
-const EMAIL_HINT =
-  'Darüber erreicht der Verein die Person. Ihre Anmelde-E-Mail bleibt davon unberührt.';
 const FIRST_NAME_LABEL = 'Vorname';
 const LAST_NAME_LABEL = 'Nachname';
 const EMAIL_LABEL = 'E-Mail';
@@ -83,7 +81,6 @@ export const PersonFormFields: FC<PersonFormFieldsProps> = ({ form, errors, emai
               type="email"
               inputMode="email"
               autoComplete="email"
-              hint={EMAIL_HINT}
               error={emailError !== undefined}
               helperText={emailError}
               onChange={email.onChange}

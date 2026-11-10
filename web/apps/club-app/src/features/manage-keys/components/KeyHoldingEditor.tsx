@@ -1,15 +1,12 @@
 import { KkDateField } from '@furria/ui/KkDateField';
 import { KkFactRow } from '@furria/ui/KkFactRow';
 import { KkFormSection } from '@furria/ui/KkFormSection';
-import { KkNote } from '@furria/ui/KkNote';
 import { KkWriteScreen } from '@furria/ui/KkWriteScreen';
 import type { FC } from 'react';
 import { PersonPicker } from '@/features/group-hub/components/PersonPicker';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import { useKeyHoldingEditor } from '../hooks/use-key-holding-editor';
 import {
-  HANDOUT_EXPLANATION,
-  HANDOUT_PICKER_NOTE,
   toHandoutQuickChoices,
   toKeyEditorOrigin,
   toKeyHoldingChainRows,
@@ -22,9 +19,7 @@ const PERSON_SECTION = 'Person';
 const HANDOUT_SECTION = 'Übergabe';
 const RETURN_SECTION = 'Rückgabe';
 const SINCE_LABEL = 'Ausgegeben am';
-const SINCE_HINT = 'Auch ein Datum in der Zukunft ist möglich.';
 const UNTIL_LABEL = 'Letzter Tag';
-const UNTIL_HINT = 'Dieser Tag zählt noch dazu.';
 
 interface KeyHoldingEditorProps {
   venue: KeyVenue;
@@ -50,13 +45,11 @@ export const KeyHoldingEditor: FC<KeyHoldingEditorProps> = ({ venue, holding }) 
   const fields =
     holding === null ? (
       <>
-        <KkNote>{HANDOUT_EXPLANATION}</KkNote>
         <KkFormSection title={PERSON_SECTION}>
           <PersonPicker
             selected={control.person}
             onSelect={control.select}
             onClear={control.clearPerson}
-            note={HANDOUT_PICKER_NOTE}
           />
         </KkFormSection>
         {chain}
@@ -70,7 +63,6 @@ export const KeyHoldingEditor: FC<KeyHoldingEditorProps> = ({ venue, holding }) 
             required
             error={control.sinceOnError !== undefined}
             helperText={control.sinceOnError}
-            hint={SINCE_HINT}
           />
         </KkFormSection>
       </>
@@ -87,7 +79,6 @@ export const KeyHoldingEditor: FC<KeyHoldingEditorProps> = ({ venue, holding }) 
             required
             error={control.untilOnError !== undefined}
             helperText={control.untilOnError}
-            hint={UNTIL_HINT}
           />
         </KkFormSection>
       </>

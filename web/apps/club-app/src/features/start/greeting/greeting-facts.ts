@@ -5,11 +5,16 @@ import { isRoundYears, joinDayOf } from '../start-lines';
 
 export const GREETING_FUNCTIONS_SHOWN = 2;
 
-const FUNCTION_ORDER: Record<PersonFunction['kind'], number> = {
+const FUNCTION_ORDER: Readonly<Partial<Record<PersonFunction['kind'], number>>> = {
   boardSeat: 0,
-  role: 1,
-  groupAdmin: 2,
+  groupAdmin: 1,
 };
+
+const rankOf = (entry: PersonFunction): number =>
+  FUNCTION_ORDER[entry.kind] ?? Number.POSITIVE_INFINITY;
+
+const isNamedFunction = (entry: PersonFunction): boolean =>
+  FUNCTION_ORDER[entry.kind] !== undefined;
 
 export type GreetingFact =
   | { kind: 'since'; year: number }
@@ -57,7 +62,8 @@ export const toGreetingFacts = ({
       ? [{ kind: 'since', year: Number(memberSince.slice(0, ISO_YEAR_END)) }]
       : [];
   const held = [...functions]
-    .sort((first, second) => FUNCTION_ORDER[first.kind] - FUNCTION_ORDER[second.kind])
+    .filter(isNamedFunction)
+    .sort((first, second) => rankOf(first) - rankOf(second))
     .slice(0, GREETING_FUNCTIONS_SHOWN)
     .map((entry): GreetingFact => ({ kind: 'function', name: entry.name, glyph: entry.icon }));
 

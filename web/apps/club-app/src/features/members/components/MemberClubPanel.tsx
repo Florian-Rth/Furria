@@ -1,12 +1,11 @@
 import { KkChip } from '@furria/ui/KkChip';
 import { KkFieldRow } from '@furria/ui/KkFieldRow';
-import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
 import { formatIsoDay, toMemberSinceLabel } from '@/lib/membership-labels';
 import { toMembershipStateChip } from '@/lib/state-chips';
-import { MEMBER_SECTION_TITLES, toMembershipNote } from '../members-labels';
+import { MEMBER_SECTION_TITLES } from '../members-labels';
 import type { MemberDetails } from '../schemas';
 
 const MEMBERSHIP_LABEL = 'Mitgliedschaft';
@@ -17,7 +16,6 @@ interface MemberClubPanelProps {
 
 export const MemberClubPanel: FC<MemberClubPanelProps> = ({ member }) => {
   const state = toMembershipStateChip(member.membershipState);
-  const note = toMembershipNote(member.membershipState, member.firstName);
   const { memberSince } = member;
 
   const stateChip = (
@@ -34,14 +32,11 @@ export const MemberClubPanel: FC<MemberClubPanelProps> = ({ member }) => {
       />
     );
 
-  const noteLine = note === null ? null : <KkNote sx={{ py: 1.75 }}>{note}</KkNote>;
-
   return (
     <KkPanelSection title={MEMBER_SECTION_TITLES.club}>
       <KkPanel>
         <KkFieldRow label={MEMBERSHIP_LABEL} value={stateChip} />
         {sinceRow}
-        {noteLine}
       </KkPanel>
     </KkPanelSection>
   );

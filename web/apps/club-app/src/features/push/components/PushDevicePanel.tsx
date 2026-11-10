@@ -5,7 +5,7 @@ import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import type { FC } from 'react';
 import { SWITCH_STATE_LABELS } from '@/lib/state-chips';
 import { usePushSwitch } from '../hooks/use-push-switch';
-import { PUSH_SECTION_TITLE, PUSH_SWITCH_DESCRIPTION, PUSH_SWITCH_LABEL } from '../push-copy';
+import { PUSH_SECTION_TITLE, PUSH_SWITCH_LABEL } from '../push-copy';
 
 export const PushDevicePanel: FC = () => {
   const control = usePushSwitch();
@@ -19,7 +19,6 @@ export const PushDevicePanel: FC = () => {
         label={PUSH_SWITCH_LABEL}
         checked={control.isOn}
         onChange={control.toggle}
-        description={PUSH_SWITCH_DESCRIPTION}
         stateLabel={SWITCH_STATE_LABELS}
         busy={control.isSwitching}
         disabled={control.isSwitching}

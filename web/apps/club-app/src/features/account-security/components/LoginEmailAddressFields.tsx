@@ -10,10 +10,7 @@ const ADDRESS_SECTION = 'Neue E-Mail-Adresse';
 const CONTACT_SECTION = 'Kontakt-E-Mail';
 const CURRENT_LABEL = 'Jetzt';
 const LOGIN_EMAIL_LABEL = 'Neue Anmelde-E-Mail';
-const LOGIN_EMAIL_HINT = 'Wir schicken dir einen Code dorthin, damit du die Adresse bestätigst.';
 const CONTACT_EMAIL_LABEL = 'Kontakt-E-Mail ebenfalls ändern';
-const CONTACT_EMAIL_DESCRIPTION =
-  'Der Verein erreicht dich dann unter der neuen Adresse. Ohne Haken bleibt deine Kontakt-E-Mail, wie sie ist.';
 
 interface LoginEmailAddressFieldsProps {
   form: UseFormReturn<LoginEmailForm>;
@@ -45,7 +42,6 @@ export const LoginEmailAddressFields: FC<LoginEmailAddressFieldsProps> = ({
           autoComplete="email"
           required
           autoFocus
-          hint={LOGIN_EMAIL_HINT}
           error={loginEmailError !== undefined}
           helperText={loginEmailError}
           onChange={loginEmail.onChange}
@@ -56,7 +52,6 @@ export const LoginEmailAddressFields: FC<LoginEmailAddressFieldsProps> = ({
       <KkFormSection title={CONTACT_SECTION}>
         <KkCheckboxRow
           label={CONTACT_EMAIL_LABEL}
-          description={CONTACT_EMAIL_DESCRIPTION}
           checked={contactEmailFollows.field.value}
           onChange={toggleContactEmail}
         />

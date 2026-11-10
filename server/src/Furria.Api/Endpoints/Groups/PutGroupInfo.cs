@@ -100,7 +100,6 @@ public sealed class PutGroupInfoValidator : Validator<PutGroupInfoRequest>
             .InclusiveBetween(GroupLimits.EarliestFoundedYear, GroupLimits.LatestFoundedYear)
             .WithMessage(FoundedYearOutOfRangeMessage)
             .When(request => request.FoundedYear is not null);
-        RuleFor(request => request.Tone).IsInEnum().When(request => request.Tone is not null);
         RuleFor(request => request.Icon).IsInEnum().When(request => request.Icon is not null);
     }
 }

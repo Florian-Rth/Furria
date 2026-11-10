@@ -12,7 +12,6 @@ const TITLE_LABEL = 'Titel';
 const KIND_LABEL = 'Art';
 const DESCRIPTION_LABEL = 'Beschreibung';
 const DESCRIPTION_PLACEHOLDER = 'Weitere Informationen zum Termin';
-const DESCRIPTION_HINT = 'Steht im Kalender unter dem Termin.';
 const DESCRIPTION_ROWS = 4;
 
 const toCountLabel = (used: number, max: number): string => `${used} von ${max} Zeichen`;
@@ -58,7 +57,6 @@ export const CalendarEntryBasicsSection: FC<CalendarEntryBasicsSectionProps> = (
         showCount
         countLabel={toCountLabel}
         placeholder={DESCRIPTION_PLACEHOLDER}
-        hint={DESCRIPTION_HINT}
         error={descriptionErrorText !== undefined}
         helperText={descriptionErrorText}
       />

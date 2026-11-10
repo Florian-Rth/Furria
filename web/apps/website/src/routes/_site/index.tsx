@@ -1,64 +1,23 @@
-import { kkTokens } from '@furria/ui/tokens';
-import Stack from '@mui/material/Stack';
 import { createFileRoute } from '@tanstack/react-router';
 import type { FC } from 'react';
-import { useState } from 'react';
-import { LegalLinks } from '@/components/LegalLinks';
 import { LandingPage } from '@/features/landing/components/LandingPage';
 import { NewsTeaser } from '@/features/news/components/NewsTeaser/NewsTeaser';
-import { PreviewAccessDialog } from '@/features/preview-access/components/PreviewAccessDialog';
-import { PreviewTeaser } from '@/features/preview-access/components/PreviewTeaser/PreviewTeaser';
-import { usePreviewAccess } from '@/features/preview-access/hooks/use-preview-access';
-import type { RouteHead } from '@/lib/seo';
+import { publicClub } from '@/lib/public-club/api';
+import type { PublicClub } from '@/lib/public-club/schemas';
+import type { RouteHead } from '@/lib/seo/route-head';
+import { indexablePageHead, jsonLdScript } from '@/lib/seo/route-head';
+import { buildOrganizationJsonLd, WEBSITE_JSON_LD } from '@/lib/seo/site-json-ld';
+import { STATIC_PAGES } from '@/lib/seo/static-pages';
 
-const HOME_TITLE = 'FURRIA · Gross - Furria!';
-const HOME_DESCRIPTION =
-  'Der Furrsche Carnevals Club e.V. feiert die fünfte Jahreszeit in Großfurra: Veranstaltungen, Karten, Neuigkeiten und der Weg in den Verein. Gross - Furria!';
-
-const HomeComponent: FC = () => {
-  const { granted } = usePreviewAccess();
-  const [dialogOpen, setDialogOpen] = useState(false);
-
-  if (granted) {
-    return <LandingPage newsTeaser={<NewsTeaser />} />;
-  }
-
-  return (
-    <>
-      <Stack
-        sx={{
-          minHeight: '100dvh',
-          filter: dialogOpen ? 'blur(9px)' : 'none',
-        }}
-      >
-        <PreviewTeaser onCtaClick={() => setDialogOpen(true)} confettiPaused={dialogOpen} />
-        <Stack
-          component="footer"
-          direction="row"
-          sx={{
-            justifyContent: 'center',
-            py: 2.5,
-            px: kkTokens.layout.gutterX,
-            borderTop: 1,
-            borderColor: 'divider',
-            color: 'text.secondary',
-          }}
-        >
-          <LegalLinks />
-        </Stack>
-      </Stack>
-      <PreviewAccessDialog open={dialogOpen} onClose={() => setDialogOpen(false)} />
-    </>
-  );
-};
+const HomeComponent: FC = () => <LandingPage newsTeaser={<NewsTeaser />} />;
 
 export const Route = createFileRoute('/_site/')({
-  head: (): RouteHead => ({
-    meta: [
-      { title: HOME_TITLE },
-      { name: 'description', content: HOME_DESCRIPTION },
-      { property: 'og:title', content: HOME_TITLE },
-      { property: 'og:description', content: HOME_DESCRIPTION },
+  loader: (): Promise<PublicClub | null> => publicClub.ensure().catch((): null => null),
+  head: ({ loaderData }): RouteHead => ({
+    ...indexablePageHead(STATIC_PAGES.home),
+    scripts: [
+      jsonLdScript(WEBSITE_JSON_LD),
+      jsonLdScript(buildOrganizationJsonLd(loaderData ?? null)),
     ],
   }),
   component: HomeComponent,

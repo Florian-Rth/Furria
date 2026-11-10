@@ -14,7 +14,6 @@ import type { ClubRecord } from '../schemas';
 
 const SAVE_LABEL = 'Speichern';
 const AGE_LABEL = 'Mindestalter für App und Online-Antrag';
-const AGE_HINT = 'Ab diesem Alter nutzt eine Person die App und bewirbt sich selbst online.';
 const SECTION_TITLE = 'Mindestalter';
 
 interface ClubAccessEditorProps {
@@ -43,7 +42,6 @@ export const ClubAccessEditor: FC<ClubAccessEditorProps> = ({ record }) => {
           options={AGE_OF_CONSENT_OPTIONS}
           onChange={control.setAgeOfConsent}
           presentation="select"
-          hint={AGE_HINT}
         />
         <KkConsequenceNote>{consequence}</KkConsequenceNote>
       </KkFormSection>

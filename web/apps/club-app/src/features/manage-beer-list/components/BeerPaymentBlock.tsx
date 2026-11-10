@@ -1,7 +1,6 @@
 import { KkButton } from '@furria/ui/KkButton';
 import { KkNumberField } from '@furria/ui/KkNumberField';
 import { KkPourDay } from '@furria/ui/KkPourDay';
-import { KkText } from '@furria/ui/KkText';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { WriteLanding } from '@/features/write/landing-target';
@@ -10,7 +9,6 @@ import {
   OPEN_SECTION,
   openFactsOf,
   PAY_COUNT_LABEL,
-  PAY_OLDEST_NOTE,
   paymentButtonOf,
   STEP_LABELS,
 } from '../beer-hub-copy';
@@ -36,23 +34,17 @@ export const BeerPaymentBlock: FC<BeerPaymentBlockProps> = ({ target, now, landi
 
   return (
     <Stack sx={{ gap: 1.5, minWidth: 0 }}>
-      <Stack direction="row" sx={{ gap: 1, alignItems: 'flex-start' }}>
-        <KkNumberField
-          name="crates"
-          label={PAY_COUNT_LABEL}
-          value={payment.cratesText}
-          onChange={payment.setCratesText}
-          stepLabels={STEP_LABELS}
-          min={1}
-          max={target.oldestFirst.length}
-          error={hasError}
-          helperText={payment.cratesError}
-          sx={{ flex: 1 }}
-        />
-        <KkText variant="caption" tone="secondary" sx={{ flex: 1 }}>
-          {PAY_OLDEST_NOTE}
-        </KkText>
-      </Stack>
+      <KkNumberField
+        name="crates"
+        label={PAY_COUNT_LABEL}
+        value={payment.cratesText}
+        onChange={payment.setCratesText}
+        stepLabels={STEP_LABELS}
+        min={1}
+        max={target.oldestFirst.length}
+        error={hasError}
+        helperText={payment.cratesError}
+      />
       <BeerRejection rejection={payment.rejection} />
       <KkButton
         variant="contained"

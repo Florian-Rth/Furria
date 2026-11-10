@@ -1,78 +1,68 @@
 import type { PublicClub } from '@/lib/public-club/schemas';
+import { CLUB_LEGAL } from './club-legal';
 import { OPERATOR_EMAIL } from './operator-content';
 import type { LegalDocument, LegalSection } from './types';
 
-export const imprintContent: LegalDocument = {
-  title: 'Impressum',
-  sections: [
-    {
-      heading: 'Angaben gemäß § 5 DDG',
-      paragraphs: ['Florian Rätsch', 'Martin-Herrmann-Str. 26', '04249 Leipzig', 'Deutschland'],
-    },
-    {
-      heading: 'Kontakt',
-      paragraphs: [`E-Mail: ${OPERATOR_EMAIL}`],
-    },
-    {
-      heading: 'Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV',
-      paragraphs: ['Florian Rätsch (Anschrift wie oben)'],
-    },
-    {
-      heading: 'Hinweis zum Betrieb',
-      paragraphs: [
-        'Diese Website ist ein privates, nicht-kommerzielles Projekt und befindet sich im Aufbau (Vorschau- und Testbetrieb).',
-      ],
-    },
-    {
-      heading: 'Haftung für Links',
-      paragraphs: [
-        'Diese Website enthält derzeit keine Links zu externen Websites Dritter. Sollten künftig Links aufgenommen werden, gilt: Für die Inhalte verlinkter Seiten ist stets der jeweilige Anbieter oder Betreiber der Seiten verantwortlich.',
-      ],
-    },
+const CONTACT_HEADING = 'Kontakt';
+
+const providerSection: LegalSection = {
+  heading: 'Angaben gemäß § 5 DDG',
+  paragraphs: [CLUB_LEGAL.name, CLUB_LEGAL.street, CLUB_LEGAL.place],
+};
+
+const representationSection: LegalSection = {
+  heading: 'Vertreten durch den Vorstand nach § 26 BGB',
+  paragraphs: [...CLUB_LEGAL.representatives],
+};
+
+const registerSection: LegalSection = {
+  heading: 'Registereintrag',
+  paragraphs: [
+    `Eingetragen im ${CLUB_LEGAL.register}`,
+    `Registernummer: ${CLUB_LEGAL.registerNumber}`,
   ],
 };
 
-const CLUB_HEADING = 'Verein';
-const CLUB_SECTION_AFTER = 3;
-
-const presentOnly = (lines: (string | null)[]): string[] =>
-  lines.filter((line): line is string => line !== null && line.trim() !== '');
-
-const labelled = (label: string, value: string | null): string | null =>
-  value === null ? null : `${label}: ${value}`;
-
-const placeLineOf = (zip: string | null, city: string | null): string | null => {
-  const place = presentOnly([zip, city]).join(' ');
-
-  return place === '' ? null : place;
+const responsibleSection: LegalSection = {
+  heading: 'Verantwortlich für den Inhalt nach § 18 Abs. 2 MStV',
+  paragraphs: [CLUB_LEGAL.contentResponsible],
 };
 
-export const toClubSection = (club: PublicClub | undefined): LegalSection | null => {
-  if (club === undefined) {
-    return null;
-  }
-
-  const paragraphs = presentOnly([
-    club.name,
-    club.street,
-    placeLineOf(club.zip, club.city),
-    labelled('E-Mail', club.email),
-    labelled('Telefon', club.phone),
-    labelled('Website', club.websiteUrl),
-  ]);
-
-  return paragraphs.length === 0 ? null : { heading: CLUB_HEADING, paragraphs };
+const linksSection: LegalSection = {
+  heading: 'Haftung für Links',
+  paragraphs: [
+    'Diese Website verweist auf Seiten Dritter, etwa auf unsere Auftritte bei Instagram und Facebook. Für deren Inhalte ist stets der jeweilige Anbieter oder Betreiber verantwortlich. Bei der Verlinkung waren keine Rechtsverstöße erkennbar; werden uns solche bekannt, entfernen wir den Link umgehend.',
+  ],
 };
 
-export const toImprintDocument = (club: PublicClub | undefined): LegalDocument => {
-  const clubSection = toClubSection(club);
+const presentOnly = (lines: (string | null | undefined)[]): string[] =>
+  lines.filter((line): line is string => line !== null && line !== undefined && line.trim() !== '');
 
-  if (clubSection === null) {
-    return imprintContent;
-  }
+const labelled = (label: string, value: string | null | undefined): string | null =>
+  value === null || value === undefined || value.trim() === '' ? null : `${label}: ${value}`;
 
-  return {
-    ...imprintContent,
-    sections: imprintContent.sections.toSpliced(CLUB_SECTION_AFTER, 0, clubSection),
-  };
+const contactEmailOf = (club: PublicClub | undefined): string => {
+  const clubEmail = club?.email?.trim() ?? '';
+
+  return clubEmail === '' ? OPERATOR_EMAIL : clubEmail;
 };
+
+export const toContactSection = (club: PublicClub | undefined): LegalSection => ({
+  heading: CONTACT_HEADING,
+  paragraphs: presentOnly([
+    labelled('E-Mail', contactEmailOf(club)),
+    labelled('Telefon', club?.phone),
+  ]),
+});
+
+export const toImprintDocument = (club: PublicClub | undefined): LegalDocument => ({
+  title: 'Impressum',
+  sections: [
+    providerSection,
+    representationSection,
+    registerSection,
+    toContactSection(club),
+    responsibleSection,
+    linksSection,
+  ],
+});

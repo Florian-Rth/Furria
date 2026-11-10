@@ -1,6 +1,8 @@
 using System.Diagnostics.Contracts;
 using System.Text.Json;
 using FastEndpoints;
+using Furria.Api.Endpoints.Changes;
+using Furria.Application.Changes;
 using Furria.Application.Identity;
 using Furria.Application.Management;
 using Furria.Application.Operations;
@@ -10,7 +12,6 @@ using Furria.Core.BeerList;
 using Furria.Core.Club;
 using Furria.Core.Events;
 using Furria.Core.Gallery;
-using Furria.Core.Groups;
 using Furria.Core.Halls;
 using Furria.Core.Identity;
 using Furria.Core.Media;
@@ -31,16 +32,17 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
     {
         [typeof(StartPanelKind)] = "calendar announcements mine groups toDos gallery news beerTab",
         [typeof(StartMineKind)] =
-            "newRole newBoardSeat newGroupAdmin newGroupMembership newKey "
+            "newBoardSeat newGroupAdmin newGroupMembership newKey "
             + "contactChangedByOther membershipEnding membershipPaused milestone",
         [typeof(StartGroupMomentKind)] = "jubilee",
         [typeof(ToDoKind)] =
             "neverInvited reminderDue inPersonOnly birthDateUnknown keyToTakeBack "
             + "clubRecordGap applicationWaiting",
-        [typeof(GroupTone)] = "clay olive lime fern teal indigo iris violet orchid rose",
         [typeof(ClubIcon)] =
             "crown euro bolt shield camera sparkle mic musicNote drum mask megaphone star "
-            + "trophy flag key shirt pen wrench palette heart mug calendar whistle broom",
+            + "trophy flag key shirt pen wrench palette heart mug calendar whistle broom scepter "
+            + "jesterCap chain viceCrown childCrown laurel medal gavel briefcase quill ledger "
+            + "jingleBell castle diamond handshake child confetti rocket",
         [typeof(PersonFunctionKind)] = "boardSeat groupAdmin role",
         [typeof(DayOfWeek)] = "sunday monday tuesday wednesday thursday friday saturday",
         [typeof(EventSalesStatus)] =
@@ -99,6 +101,15 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
             "invited reminded redeemed recovered disabled enabled deleted loginEmailChanged "
             + "recoveryIssued claimed",
         [typeof(ClaimOutcome)] = "invited hasAccount hasEmail underAge notFound closed",
+        [typeof(DomainChange)] =
+            "person picture membership membershipApplication account group groupKind "
+            + "groupMembership groupAdmin usualTrainingTime calendarEntry attendanceResponse "
+            + "event role roleHolding boardOffice boardSeat sessionRecord venue keyHolding "
+            + "clubRecord announcement announcementSeen media newsPost websitePicture act "
+            + "actCoEditor actMusic actChoreography actSteps actVideos actEvening runningOrder "
+            + "beerListEnrollment beerPot beerStock beerCrate beerPayment pushDevice hall "
+            + "tablePlan seating claimWindow",
+        [typeof(ChangeLineKind)] = "ready changes ping",
     };
 
     private readonly ApiTestFixture _fixture;

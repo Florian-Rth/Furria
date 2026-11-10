@@ -19,7 +19,7 @@ export const PICTURE_COPY: Record<PictureKind, PictureCopy> = {
       frame: 'Ausschnitt des Porträts – ziehen zum Verschieben, Plus und Minus zum Zoomen',
       zoom: 'Zoom',
     },
-    emptyNote: 'Noch kein Porträt. Bis dahin stehen die Initialen.',
+    emptyNote: 'Noch kein Porträt.',
     removeLabel: 'Porträt entfernen',
   },
   groupPicture: {
@@ -29,7 +29,7 @@ export const PICTURE_COPY: Record<PictureKind, PictureCopy> = {
       frame: 'Ausschnitt des Gruppenbilds – ziehen zum Verschieben, Plus und Minus zum Zoomen',
       zoom: 'Zoom',
     },
-    emptyNote: 'Noch kein Gruppenbild. Bis dahin trägt die Gruppe ihre Farbe.',
+    emptyNote: 'Noch kein Gruppenbild.',
     removeLabel: 'Gruppenbild entfernen',
   },
   eventPicture: {
@@ -40,7 +40,7 @@ export const PICTURE_COPY: Record<PictureKind, PictureCopy> = {
         'Ausschnitt des Veranstaltungsbilds – ziehen zum Verschieben, Plus und Minus zum Zoomen',
       zoom: 'Zoom',
     },
-    emptyNote: 'Ohne Bild zeigen App und Website einen gestreiften Platzhalter.',
+    emptyNote: 'Noch kein Bild.',
     removeLabel: 'Bild entfernen',
   },
 };

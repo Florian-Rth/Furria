@@ -20,8 +20,7 @@ const DEFAULT_END_TIME = '21:00';
 const ONE_COLLISION = 1;
 const ARCHIVED_SUFFIX = ' — archiviert';
 const PARTICIPANTS_EMPTY = 'Keine weiteren Gruppen verfügbar.';
-const PARTICIPANTS_UNAVAILABLE =
-  'Die Gruppen konnten nicht geladen werden. Bereits zugeordnete Gruppen bleiben erhalten.';
+const PARTICIPANTS_UNAVAILABLE = 'Die Gruppen konnten nicht geladen werden.';
 
 const KIND_ORDER: readonly CalendarEntryKind[] = [
   'training',

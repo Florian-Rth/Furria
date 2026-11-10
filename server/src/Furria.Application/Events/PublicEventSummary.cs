@@ -27,4 +27,6 @@ public sealed record PublicEventSummary
     public required EventSalesStatus Status { get; init; }
 
     public required PublicEventPicture? Picture { get; init; }
+
+    public required DateTimeOffset ChangedAt { get; init; }
 }

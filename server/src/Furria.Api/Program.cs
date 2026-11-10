@@ -101,6 +101,7 @@ try
             new JsonStringEnumConverter(JsonNamingPolicy.CamelCase)
         );
         c.Serializer.Options.Converters.Add(new UtcDateTimeOffsetConverter());
+        c.Serializer.Options.Converters.Add(new GroupToneJsonConverter());
         c.Endpoints.Configurator = endpoint =>
             endpoint.PreProcessor<PermissionEnforcer>(Order.Before);
     });

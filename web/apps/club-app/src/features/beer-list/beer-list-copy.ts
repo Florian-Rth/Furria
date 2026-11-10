@@ -3,7 +3,6 @@ import { cratesLabel } from './booking/booking-copy';
 import type { BeerBookingGate } from './booking/booking-gate';
 
 export const BEER_LIST_TITLE = 'Bierliste';
-export const BEER_LIST_META = 'Kisten buchen und deine Liste sehen';
 export const openMeta = (amount: string): string => `${amount} offen`;
 
 const daysLabel = (days: number): string => (days === 1 ? '1 Tag' : `${days} Tagen`);
@@ -39,11 +38,9 @@ export const GIVERS_TITLE = 'Wer hat Kisten gegeben';
 export const GIVERS_LABEL = 'Gegebene Kisten nach Name';
 export const NO_GIVERS = 'Noch keine Kisten gegeben.';
 
-const FORMER_NOTE =
-  'Du nimmst nicht mehr an der Bierliste teil. Hier siehst du, was noch offen ist. Wieder teilnehmen kannst du in Mein Profil.';
-const KEEPER_NOTE =
-  'Selbst Kisten buchen kannst du, sobald du in Mein Profil an der Bierliste teilnimmst.';
-const NO_POT_NOTE = 'Gerade ist keine Bierliste offen. Buchen geht wieder, sobald eine läuft.';
+const FORMER_NOTE = 'Du nimmst nicht mehr an der Bierliste teil. Teilnehmen: Mein Profil.';
+const KEEPER_NOTE = 'Zum Buchen in Mein Profil an der Bierliste teilnehmen.';
+const NO_POT_NOTE = 'Gerade ist keine Bierliste offen.';
 
 export const GATE_NOTES: Record<Exclude<BeerBookingGate, 'open'>, string> = {
   former: FORMER_NOTE,

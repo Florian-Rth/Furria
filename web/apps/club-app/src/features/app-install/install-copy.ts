@@ -167,15 +167,10 @@ export const EXIT_HEADLINES: Record<InstallExit, InstallHeadline> = {
   chrome: { line1: 'Erst in', line2: 'Chrome öffnen' },
 };
 
-export const EXIT_LEAD = 'Hier kann die App nicht auf den Startbildschirm. Im Browser klappt es.';
-export const INSTALLED_LEAD =
-  'Du findest FURRIA jetzt auf deinem Startbildschirm. Diesen Tab kannst du schließen.';
-export const INSTALLING_LEAD = 'Dein Handy legt die App gerade an.';
-export const ELSEWHERE_LEAD =
-  'Öffne FURRIA über das Symbol auf deinem Startbildschirm, dann geht’s weiter.';
+export const INSTALLED_LEAD = 'FURRIA liegt jetzt auf deinem Startbildschirm.';
+export const ELSEWHERE_LEAD = 'Öffne FURRIA über das Symbol auf deinem Startbildschirm.';
 
 export const PROMPT_ACTION = 'App installieren';
-export const PROMPT_HINT = 'Ein Tipp, dann bestätigen – fertig.';
 export const CONFIRM_DONE_ACTION = 'Erledigt, ist auf dem Startbildschirm';
 export const REOPEN_GUIDE_ACTION = 'Anleitung nochmal zeigen';
 export const COPY_LINK_ACTION = 'Link kopieren';
@@ -188,8 +183,6 @@ export const EXIT_ACTIONS: Record<InstallExit, string> = {
 
 export const CELEBRATION_CALL = 'Groß – Furria!';
 
-export const stepFactsOf = (stepCount: number): string => `${stepCount} Schritte · 20 Sek.`;
-export const PROMPT_FACTS = '1 Tipp · 5 Sek.';
 export const BROWSER_MODE_LEAVE_EYEBROW = 'Zum Testen';
 export const BROWSER_MODE_LEAVE_CLOSE = 'Schließen';
 
@@ -198,6 +191,6 @@ export const BROWSER_MODE_TAG = 'Browser';
 export const BROWSER_MODE_TAG_LABEL = 'Browser-Ansicht zum Testen beenden';
 export const BROWSER_MODE_LEAVE_TITLE = 'Browser-Ansicht beenden?';
 export const BROWSER_MODE_LEAVE_BODY =
-  'Diese Ansicht ist zum Testen. Danach zeigt dieses Gerät im Browser wieder die Installation.';
+  'Danach zeigt dieses Gerät im Browser wieder die Installation.';
 export const BROWSER_MODE_LEAVE_CONFIRM = 'Beenden';
 export const BROWSER_MODE_LEAVE_CANCEL = 'Weiter testen';

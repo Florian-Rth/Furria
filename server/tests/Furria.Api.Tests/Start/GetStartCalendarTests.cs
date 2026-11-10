@@ -439,7 +439,7 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                 Assert.Equal([danceGuardId], training.ViewerGroupIds);
                 Assert.NotNull(training.OwnerGroup);
                 Assert.Equal("Tanzgarde", training.OwnerGroup.Name);
-                Assert.Equal(GroupTone.Rose, training.OwnerGroup.Tone);
+                Assert.Equal(TestTones.Rose, training.OwnerGroup.Tone);
                 Assert.Equal([danceGuardId], rehearsal.ViewerGroupIds);
                 Assert.Equal(ctx.Groups.Groups.IdOf("kindergarde"), rehearsal.OwnerGroup?.GroupId);
                 Assert.Equal(
@@ -608,9 +608,9 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                     )
                     .Groups(groups =>
                         groups
-                            .AddGroup("tanzgarde", "Tanzgarde", tone: GroupTone.Rose)
-                            .AddGroup("kindergarde", "Kindergarde", tone: GroupTone.Lime)
-                            .AddGroup("maennerballett", "Männerballett", tone: GroupTone.Indigo)
+                            .AddGroup("tanzgarde", "Tanzgarde", tone: TestTones.Rose)
+                            .AddGroup("kindergarde", "Kindergarde", tone: TestTones.Lime)
+                            .AddGroup("maennerballett", "Männerballett", tone: TestTones.Indigo)
                             .AddGroup("altgarde", "Altgarde", archivedOn: ArchivedLastSummer)
                             .AddGroupMembership("lena-tanzgarde", "tanzgarde", "lena", JoinedIn2015)
                             .AddGroupMembership(

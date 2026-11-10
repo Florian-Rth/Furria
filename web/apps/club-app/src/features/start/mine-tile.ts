@@ -14,7 +14,6 @@ export interface MineCoin {
 }
 
 const COIN_FACES: Record<StartMineKind, { icon: KkIconName; tone: KkStartTileCoinTone }> = {
-  newRole: { icon: 'role', tone: 'ink' },
   newBoardSeat: { icon: 'board', tone: 'ink' },
   newGroupAdmin: { icon: 'group', tone: 'ink' },
   newGroupMembership: { icon: 'group', tone: 'ink' },
@@ -26,7 +25,6 @@ const COIN_FACES: Record<StartMineKind, { icon: KkIconName; tone: KkStartTileCoi
 };
 
 const FUNCTION_KINDS: Partial<Record<StartMineKind, PersonFunction['kind']>> = {
-  newRole: 'role',
   newBoardSeat: 'boardSeat',
   newGroupAdmin: 'groupAdmin',
 };

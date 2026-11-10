@@ -30,11 +30,6 @@ export const toProfileHeadline = (me: PersonalMe | undefined): ProfileHeadline =
 
 export const VISIBILITY_SWITCH_LABEL = 'Meine Kontaktdaten für Mitglieder sichtbar';
 
-export const VISIBILITY_EXPLANATION =
-  'Wenn aktiviert, sehen Mitglieder im Verzeichnis deine Telefonnummer, E-Mail und Adresse. Andernfalls erscheint dort ein Hinweis, dass sie nicht freigegeben sind.';
-
-export const VISIBILITY_OFF_NOTE = 'Das gilt auch für deine Gruppen-Admins.';
-
 export const PROFILE_SECTION_TITLES = {
   contact: 'Kontaktdaten',
   data: 'Deine Daten',

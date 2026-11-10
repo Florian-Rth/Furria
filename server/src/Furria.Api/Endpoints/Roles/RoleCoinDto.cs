@@ -26,6 +26,6 @@ public sealed class RoleCoinValidator : AbstractValidator<RoleCoinDto>
     public RoleCoinValidator()
     {
         RuleFor(coin => coin.Icon).IsInEnum();
-        RuleFor(coin => coin.Tone).IsInEnum();
+        RuleFor(coin => coin.Tone).NotNull();
     }
 }

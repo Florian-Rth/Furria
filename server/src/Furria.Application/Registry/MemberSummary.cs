@@ -16,6 +16,4 @@ public sealed record MemberSummary
     public required MembershipState MembershipState { get; init; }
 
     public required IReadOnlyList<GroupReference> Groups { get; init; }
-
-    public required IReadOnlyList<RoleReference> Roles { get; init; }
 }

@@ -4,7 +4,6 @@ import { formatEuroCents } from '@/lib/money';
 import { toQueryErrorKind, toQueryErrorMessage } from '@/lib/query-error';
 import { useNow } from '@/lib/use-now';
 import { useBeerCratesBooking, useBeerCratesUndo } from '../api';
-import { personNameOf } from '../beer-list-format';
 import type { OpenBeerPot } from '../schemas';
 import { BOOKING_ERROR_MESSAGES, bookedStamp, UNDO_ERROR_MESSAGES } from './booking-copy';
 import { bookingPhaseOf } from './booking-gate';
@@ -18,7 +17,6 @@ const NO_CRATE_IDS: readonly number[] = [];
 export type BeerBookingCelebration = KkTabFigureRoll;
 
 interface BeerBookingShared {
-  ownerName: string | null;
   priceCents: number;
   failure: string | null;
   pending: BeerBookingPending;
@@ -126,7 +124,6 @@ export const useBeerBooking = (pot: OpenBeerPot | null): BeerBooking => {
   };
 
   const shared: BeerBookingShared = {
-    ownerName: pot === null ? null : personNameOf(pot.owner),
     priceCents,
     failure:
       toQueryErrorMessage(undoing.error, UNDO_ERROR_MESSAGES) ??

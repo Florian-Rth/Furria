@@ -1,13 +1,6 @@
 import { parsePositiveId } from './positive-id';
 
-export type PeekKind =
-  | 'member'
-  | 'group'
-  | 'venue'
-  | 'entry'
-  | 'role'
-  | 'office'
-  | 'start-announcements';
+export type PeekKind = 'member' | 'group' | 'venue' | 'entry' | 'office' | 'start-announcements';
 
 const SEPARATOR = '-';
 

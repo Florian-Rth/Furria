@@ -3,6 +3,7 @@ using System.Text.Json;
 using FastEndpoints;
 using Furria.Api.Endpoints.Groups;
 using Furria.Core.Groups;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -334,7 +335,7 @@ public sealed class GetGroupsTests : IClassFixture<ApiTestFixture>
                                 "Tanzgarde",
                                 groupKindAlias: "garden",
                                 foundedYear: FoundedIn1971,
-                                tone: GroupTone.Rose
+                                tone: TestTones.Rose
                             )
                             .AddGroup("elferrat", "Elferrat")
                     ),
@@ -354,7 +355,7 @@ public sealed class GetGroupsTests : IClassFixture<ApiTestFixture>
         );
         Assert.Equal("Garden", tanzgarde.GetProperty("groupKindName").GetString());
         Assert.Equal(FoundedIn1971, tanzgarde.GetProperty("foundedYear").GetInt32());
-        Assert.Equal("rose", tanzgarde.GetProperty("tone").GetString());
+        Assert.Equal("#BA3264", tanzgarde.GetProperty("tone").GetString());
         Assert.Equal(JsonValueKind.Null, councilOfEleven.GetProperty("groupKindName").ValueKind);
         Assert.Equal(JsonValueKind.Null, councilOfEleven.GetProperty("foundedYear").ValueKind);
         Assert.Equal(JsonValueKind.Null, councilOfEleven.GetProperty("tone").ValueKind);

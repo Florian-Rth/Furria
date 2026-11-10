@@ -63,7 +63,7 @@ export const stageCellLabelOf = (stage: SetupStage, state: StageCellState): stri
 
 export const SETUP_GATE_TEXT: Record<StageGate, string> = {
   open: '',
-  noMusic: 'Erst ein Lied hochladen – ohne Musik gibt es keine Schritte.',
+  noMusic: 'Erst ein Lied hochladen.',
   noVideo: 'Wähle zuerst ein Video.',
   videoWaiting: 'Das Video wird noch vorbereitet.',
   notPlaced: 'Das Video braucht erst seine Stelle in der Musik.',
@@ -94,7 +94,7 @@ export const SETUP_MATCH_MISSING =
   'Keine passende Stelle gefunden. Spiel die Musik bis zum Videoanfang und tippe „Video startet hier“.';
 export const SETUP_MATCH_FAILED =
   'Die Suche ging nicht. Spiel die Musik bis zum Videoanfang und tippe „Video startet hier“.';
-export const SETUP_MATCH_WAITING = 'Das Video wird noch vorbereitet – gleich geht es weiter.';
+export const SETUP_MATCH_WAITING = 'Das Video wird noch vorbereitet …';
 export const SETUP_EARLIER_BIG = '−1 s';
 export const SETUP_EARLIER_SMALL = '−0,1 s';
 export const SETUP_LATER_SMALL = '+0,1 s';
@@ -124,7 +124,7 @@ export const SETUP_TUNE_PREVIOUS = 'Voriges Schrittende';
 export const SETUP_TUNE_NEXT = 'Nächstes Schrittende';
 export const SETUP_TUNE_DELETE = 'Schrittende löschen';
 
-export const SETUP_NAMES_HINT = 'Gib jedem Schritt einen Namen, den die Gruppe kennt.';
+export const SETUP_NAMES_HINT = 'Gib jedem Schritt einen Namen.';
 export const SETUP_NAMES_LIST = 'Schritte aus diesem Video';
 export const nameLabelOf = (number: number): string => `Name von Schritt ${number}`;
 
@@ -181,7 +181,6 @@ export const STEP_LIST_ADD_LABEL = 'Neuen Schritt an der Abspielposition beginne
 export const STEP_LIST_PART_DETAIL = 'Teil bearbeiten';
 export const STEP_LIST_PART_LOOP = 'Teil wiederholen';
 export const STEP_LIST_EMPTY = 'Noch keine Schritte.';
-export const STEP_LIST_EVENING = 'An diesem Abend gelten die Schritte der Session – hier nur üben.';
 export const STEP_LIST_SETUP_OWNER = 'Einrichtung';
 export const stepGroupKeyOf = (partId: number): string => `part-${partId}`;
 export const secondsLengthOf = (seconds: number): string =>

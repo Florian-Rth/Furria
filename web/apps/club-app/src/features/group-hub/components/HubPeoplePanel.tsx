@@ -55,7 +55,7 @@ export const HubPeoplePanel: FC<HubPeoplePanelProps> = ({
       size="panel"
       icon="members"
       title={NO_MEMBERS_TITLE}
-      description={toNoMembersLine(groupName, canManage)}
+      description={toNoMembersLine(groupName)}
     />
   ) : (
     <Grid container spacing={GRID_SPACING} sx={{ minWidth: 0 }}>

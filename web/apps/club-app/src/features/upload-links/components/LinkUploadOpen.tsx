@@ -15,7 +15,6 @@ import type { LinkUploadPage } from '../hooks/use-link-upload-page';
 import {
   KEEP_OPEN_NOTE,
   NAME_FIELD,
-  NAME_HINT,
   PAGE_OPEN_UNTIL,
   PAGE_TITLE,
   PICK_LABEL,
@@ -57,7 +56,6 @@ export const LinkUploadOpen: FC<LinkUploadOpenProps> = ({ page }) => {
       <KkTextField
         name="uploader-name"
         label={NAME_FIELD}
-        hint={NAME_HINT}
         autoComplete="name"
         maxLength={UPLOADER_NAME_LENGTH}
         value={page.name}

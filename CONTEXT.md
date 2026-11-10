@@ -30,7 +30,7 @@ English rendering anywhere else, so two translations never drift apart.
 | group kind | Gruppenart | `GroupKind` |
 | group profile | Steckbrief | — |
 | founded year | Gründungsjahr | `FoundedYear` |
-| group tone | Gruppenfarbe | `GroupTone` |
+| group tone | Gruppenfarbe | `GroupTone` (`#RRGGBB`) |
 | usual training time | Übliche Trainingszeit | `UsualTrainingTime` |
 | training (planned) | Training | `CalendarEntry` of kind `Training` |
 | anniversary | Jubiläum | — (derived) |
@@ -209,9 +209,11 @@ Since CA-P6 a group also carries a **group profile it maintains itself**
 formed — a **group tone** and its **usual training times** (`UsualTrainingTime`), each
 `(weekday, time, duration, venue)`. The **anniversary** is *derived*
 from the founded year at every fifth year and never stored; a club that celebrates a 13th
-anniversary celebrates nothing. The group tone comes from an identity palette that shares no
-value with the status tones (green = ok/paid, gold = warning, red = action), so a calendar tinted
-by group never accidentally says *paid*.
+anniversary celebrates nothing. The group tone is any colour picked in the shared colour picker —
+one of ten suggested presets or a free colour — and travels as `#RRGGBB`; the app derives readable
+shades from it. The presets stay clear of the status tones (green = ok/paid, gold = warning, red =
+action), but a free colour may land near one, so status is never read from a group tone alone. A
+role coin's tone is the same kind of colour.
 _UI copy_: Gruppe; Steckbrief, Gründungsjahr, Gruppenfarbe, Übliche Trainingszeit, Jubiläum
 _Avoid_: team, squad, gating anything on membership by default, recurring appointment /
 recurrence rule (for the usual training time), storing the anniversary, age group (ruled out

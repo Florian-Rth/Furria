@@ -2,7 +2,6 @@ namespace Furria.Application.Start;
 
 public enum StartMineKind
 {
-    NewRole = 1,
     NewBoardSeat = 2,
     NewGroupAdmin = 3,
     NewGroupMembership = 4,

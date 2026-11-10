@@ -5,7 +5,6 @@ import type { FC } from 'react';
 import { AREA_HANDOVERS, GROUPS_SECTION, GROUPS_TITLE } from '@/features/session/app-sections';
 import { useScreenSearch } from '@/features/session/hooks/use-screen-search';
 import { useGroupsQuery } from '../api';
-import { GROUPS_LEAD } from '../groups-labels';
 import { useGroupsSearch } from '../hooks/use-groups-search';
 import type { GroupSummary } from '../schemas';
 import { GroupsBody } from './GroupsBody';
@@ -41,7 +40,7 @@ export const GroupsPage: FC = () => {
       tools={tools}
       title={GROUPS_TITLE}
       section={GROUPS_SECTION}
-      header={<KkTitleHeader title={GROUPS_TITLE} lead={GROUPS_LEAD} />}
+      header={<KkTitleHeader title={GROUPS_TITLE} />}
       handover={AREA_HANDOVERS.groups}
     >
       <GroupsBody search={search} />

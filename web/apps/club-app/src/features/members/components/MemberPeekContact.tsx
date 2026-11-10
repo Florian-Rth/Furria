@@ -26,14 +26,7 @@ export const MemberPeekContact: FC<MemberPeekContactProps> = ({ member, isSelf }
   };
 
   if (details.data !== undefined && isSelf !== undefined) {
-    return (
-      <MemberContactPanel
-        contact={details.data.contact}
-        firstName={details.data.firstName}
-        isSelf={isSelf}
-        nested
-      />
-    );
+    return <MemberContactPanel contact={details.data.contact} isSelf={isSelf} nested />;
   }
   if (isNotFoundError(details.error)) {
     return <KkAlert severity="error">{NOT_FOUND_MESSAGE}</KkAlert>;

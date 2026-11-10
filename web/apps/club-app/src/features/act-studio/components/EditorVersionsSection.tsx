@@ -1,4 +1,4 @@
-import { JOB_VERSIONS_LOADING, JOB_VERSIONS_NOTE } from '@furria/studio/job-copy';
+import { JOB_VERSIONS_LOADING } from '@furria/studio/job-copy';
 import { KkJobPanel } from '@furria/ui/KkJobPanel';
 import { KkPillButton } from '@furria/ui/KkPillButton';
 import type { FC } from 'react';
@@ -40,7 +40,6 @@ export const EditorVersionsSection: FC<EditorVersionsSectionProps> = ({ versions
   return (
     <KkJobPanel.Group label={versions.title}>
       <KkJobPanel.GroupHead text={versions.title} aside={null} />
-      <KkJobPanel.Note text={JOB_VERSIONS_NOTE} />
       {stateNote}
       {rows}
       {older}

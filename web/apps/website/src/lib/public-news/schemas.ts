@@ -1,4 +1,4 @@
-import { GROUP_TONES } from '@furria/ui/group-tone';
+import { KK_TONE_PATTERN } from '@furria/ui/group-tone';
 import { z } from 'zod';
 import { PictureSchema } from '@/lib/api/schemas';
 import { SessionSectionSchema } from '@/lib/api/session-section';
@@ -42,7 +42,7 @@ export const NewsMentionedGroupSchema = z.object({
   groupId: z.number().int().positive(),
   name: z.string().min(1),
   description: z.string(),
-  tone: z.enum(GROUP_TONES).nullable(),
+  tone: z.string().regex(KK_TONE_PATTERN).nullable(),
   picture: PictureSchema.nullable(),
 });
 

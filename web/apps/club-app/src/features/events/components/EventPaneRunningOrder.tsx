@@ -1,5 +1,4 @@
 import { KkCheckLine } from '@furria/ui/KkCheckLine';
-import { KkNote } from '@furria/ui/KkNote';
 import { KkRetryAlert } from '@furria/ui/KkRetryAlert';
 import { KkSkeletonRow } from '@furria/ui/KkSkeletonRow';
 import Stack from '@mui/material/Stack';
@@ -8,7 +7,6 @@ import { useRunningOrderStep } from '../hooks/use-running-order-step';
 import {
   NO_ORDER_LABEL,
   NO_ORDER_VALUE,
-  NO_PLANNER_NOTE,
   RUNNING_ORDER_LOADING_LABEL,
   RUNNING_ORDER_RETRY_LABEL,
 } from '../running-order-step-copy';
@@ -26,7 +24,7 @@ export const EventPaneRunningOrder: FC<EventPaneRunningOrderProps> = ({ event })
 
   switch (step.kind) {
     case 'denied':
-      return <KkNote>{NO_PLANNER_NOTE}</KkNote>;
+      return null;
     case 'loading':
       return (
         <Stack role="status" aria-label={RUNNING_ORDER_LOADING_LABEL}>

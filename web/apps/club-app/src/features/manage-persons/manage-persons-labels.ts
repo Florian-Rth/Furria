@@ -32,9 +32,6 @@ const PERSON_TITLE_FALLBACK = 'Person';
 
 export const PERSONS_TITLE = 'Personenverwaltung';
 
-export const PERSONS_STATS_NOTE =
-  'Gezählt werden alle Personen, auch ohne Mitgliedschaft oder Gruppe – archivierte nicht.';
-
 export const PERSON_DIRECTORY_TITLE = 'Register';
 export const ADD_PERSON_LABEL = 'Person';
 export const ADD_PERSON_ACTION_LABEL = 'Person hinzufügen';
@@ -53,9 +50,6 @@ export const toContactChangeNote = (
   change === null
     ? undefined
     : `Kontaktdaten ${toContactChangeLine(change, viewerPersonId, today)}`;
-
-export const VISIBILITY_DESCRIPTION =
-  'Nur auf Wunsch der Person setzen. Mit eigenem Account entscheidet sie selbst in „Mein Profil“.';
 
 export const PERSONS_ORIGIN: KkScreenOrigin = {
   label: 'Personenverwaltung',
@@ -150,7 +144,6 @@ export const toPersonsEmptyDescription = (query: string, state: string): string 
   }
 };
 
-export const PERSONS_LEAD = 'Stammdaten, Mitgliedschaften und Zugänge aller Personen.';
 export const PERSON_EYEBROW = 'Person';
 
 export interface PersonHeadline {
@@ -364,10 +357,10 @@ export const toPauseConsequence = (
   lastSessionYear: number | null,
 ): string => {
   if (lastSessionYear === null) {
-    return `${firstName} gilt ab Session ${formatSessionLabel(firstSessionYear)} bis auf Weiteres als nicht aktiv. Gruppenzugehörigkeiten bleiben bestehen.`;
+    return `${firstName} gilt ab Session ${formatSessionLabel(firstSessionYear)} bis auf Weiteres als nicht aktiv.`;
   }
 
-  return `${firstName} gilt in ${formatSessionSpan(firstSessionYear, lastSessionYear)} als nicht aktiv. Gruppenzugehörigkeiten bleiben bestehen.`;
+  return `${firstName} gilt in ${formatSessionSpan(firstSessionYear, lastSessionYear)} als nicht aktiv.`;
 };
 
 export const toFeeReductionConsequence = (
@@ -375,7 +368,7 @@ export const toFeeReductionConsequence = (
   firstSessionYear: number,
   lastSessionYear: number,
 ): string =>
-  `${toFeeReductionBasisLabel(basis)} gilt für ${formatSessionSpan(firstSessionYear, lastSessionYear)}. Danach ist ein neuer Nachweis nötig.`;
+  `${toFeeReductionBasisLabel(basis)} gilt für ${formatSessionSpan(firstSessionYear, lastSessionYear)}.`;
 
 export const OPEN_PAUSE_SENTENCE = 'Eine offene Ruhezeit endet mit der Mitgliedschaft.';
 
@@ -384,7 +377,7 @@ export const toEndMembershipConsequence = (
   endedOn: string,
   hasOpenPause: boolean,
 ): string => {
-  const lead = `Ab dem ${formatIsoDay(endedOn)} ist ${firstName} kein Mitglied mehr. Gruppen und Rollen bleiben bestehen.`;
+  const lead = `Ab dem ${formatIsoDay(endedOn)} ist ${firstName} kein Mitglied mehr.`;
 
   return hasOpenPause ? `${lead} ${OPEN_PAUSE_SENTENCE}` : lead;
 };

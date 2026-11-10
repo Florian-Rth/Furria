@@ -1,16 +1,16 @@
 # Production
 
-How Furria runs in production: the homelab host, the TLS edge in front of it, how a release gets
+How Furria runs in production: the app host on Florian's Hetzner server, the TLS edge in front of it, how a release gets
 there and how to take one back. Shaped in L1 of the launch plan
 ([plan/launch/l1-production-foundation.md](../../plan/launch/l1-production-foundation.md)).
 
 ## Topology
 
 ```
-browser ──HTTPS──▶ edge nginx (Hetzner, outside this repo)
+browser ──HTTPS──▶ edge nginx (on the Hetzner server, outside this repo)
                      │  TLS for <club-domain> and app.<club-domain>
                      ▼  via the gateway 10.10.20.1
-                  homelab 10.10.20.12, ~/furria  (docker-compose.example.yml)
+                  app host 10.10.20.12 (VM on the same Hetzner server), ~/furria  (docker-compose.example.yml)
                      ├─ website   :WEBSITE_PORT  ─┐  /api same-origin
                      ├─ club-app  :CLUB_APP_PORT ─┤
                      ├─ api       :8080 (internal) ◀┘
@@ -24,14 +24,15 @@ The website lives on the `<club-domain>` apex, the club app on `app.<club-domain
 
 ## The edge contract
 
-The edge is Florian's Hetzner nginx and is not in this repo. It must:
+Everything runs on Florian's Hetzner server (EU data centre): the edge nginx and the app host, a VM on its
+internal network. The edge is not in this repo. It must:
 
 | What | Why |
 |---|---|
 | Terminate TLS for `<club-domain>` and `app.<club-domain>` (`www` redirects to the apex) | The apps' nginx speaks plain HTTP |
 | Proxy the apex to `10.10.20.12:WEBSITE_PORT`, `app.` to `10.10.20.12:CLUB_APP_PORT` | |
 | Set `X-Forwarded-For` (`$proxy_add_x_forwarded_for`) and `X-Forwarded-Proto` (`$scheme`) | The API's per-IP limits and the app nginx's scheme come from them |
-| Reach the homelab through the gateway `EDGE_PROXY_ADDRESS` (`10.10.20.1`) | The API trusts forwarded headers only from that address and the compose network |
+| Reach the app host through the gateway `EDGE_PROXY_ADDRESS` (`10.10.20.1`) | The API trusts forwarded headers only from that address and the compose network |
 | Pass `/.well-known/assetlinks.json` through without redirect, on both hosts | Android App Links (`app.`) and passkeys (apex) |
 | On `app.`: `client_max_body_size 20m`, `proxy_request_buffering off`, `proxy_buffering off` | Uploads travel by tus in 16 MB chunks — nginx's default 1 MB answers 413; buffering would spool every chunk, and every original (videos up to 20 GB), video seek and album ZIP, to the edge's disk |
 | Pass `Accept-Encoding` through and never compress itself — no `gzip on`, no `brotli on`, no stripping of `Content-Encoding` | The API compresses its JSON (Brotli, then Gzip) and nothing else; media is already compressed and range requests must stay byte-exact |
@@ -179,15 +180,15 @@ furria_media` names it), `chown -R 1654`, set `MEDIA_PATH`, `docker compose up -
 
 ### Where the media worker runs
 
-**Default: beside the API on the homelab host, on the CPU** (`MEDIA_WORKER_HWACCEL=none`). A video
+**Default: beside the API on the app host, on the CPU** (`MEDIA_WORKER_HWACCEL=none`). A video
 that is already H.264 ≤ 1080p is only remuxed; any other is transcoded on the CPU — one at a time,
 photos never wait behind it.
 
 **On the iGPU VM**, when videos pile up: the worker encodes there with VA-API or QSV.
 
-1. `MEDIA_PATH` on the homelab host must be a host path (above); share it to the VM (NFS) or put
+1. `MEDIA_PATH` on the app host must be a host path (above); share it to the VM (NFS) or put
    it on a NAS both mount. The VM mounts it read-write; uid 1654 must be able to write.
-2. On the homelab host: uncomment the `postgres` `ports:` line in the compose file (the host's LAN
+2. On the app host: uncomment the `postgres` `ports:` line in the compose file (the host's LAN
    address only), set `MEDIA_WORKER_REPLICAS=0`, `docker compose up -d`. Allow `5432/tcp` from the
    VM alone.
 3. On the VM, a compose of its own beside a `.env` (same `DOCKERHUB_USERNAME`, `POSTGRES_*`):
@@ -332,7 +333,7 @@ The live `~/furria/docker-compose.yml` predates L1. Bring it onto
 
 1. Diff the live file against the example; carry over only host-specific ports and secrets
    (into `.env`, not the compose file).
-2. Add `CLUB_DOMAIN` (interim `florianrth.com` plus `CLUB_APP_HOST=furria-app.florianrth.com`)
+2. Add `CLUB_DOMAIN=furrscher-carnevals-club.de` (club-app on `app.furrscher-carnevals-club.de`)
    and `EDGE_PROXY_ADDRESS=10.10.20.1` to `.env`; drop `CLUB_APP_BASE_URL`.
 3. Check `172.30.0.0/24` (the compose network) collides with nothing on the host
    (`ip route`, `docker network inspect`).
@@ -342,8 +343,8 @@ The live `~/furria/docker-compose.yml` predates L1. Bring it onto
 
 Test passkeys made before this step stop working (the relying party moves to the domain).
 
-**HSTS with `includeSubDomains`** applies to every subdomain of the host that sends it. While the
-interim website runs on a `florianrth.com` host, its HSTS covers that host's subdomains for a year.
+**HSTS with `includeSubDomains`** applies to every subdomain of the host that sends it: the website
+on `furrscher-carnevals-club.de` covers `app.` and every other subdomain for a year.
 
 ## Not covered yet
 

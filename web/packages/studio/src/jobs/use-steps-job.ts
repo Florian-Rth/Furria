@@ -1,6 +1,5 @@
 import { countsBetweenOf } from '@furria/studio/count-marks';
 import {
-  JOB_EVENING_STEPS,
   JOB_FIRST_STEP,
   JOB_FIRST_STEP_LABEL,
   JOB_GROUP_LENGTH,
@@ -85,9 +84,7 @@ export const useStepsJob = (
       owner: JOB_STEP_OWNER,
       title: JOB_NO_STEP,
       meta: silent ? JOB_NO_STEP_MUSIC : JOB_NO_STEP_HINT,
-      sections: onSession
-        ? startSections
-        : [{ kind: 'note', key: 'evening', text: JOB_EVENING_STEPS }],
+      sections: onSession ? startSections : [],
       danger: null,
     };
     const view = { context: JOB_NO_STEP, blocks: [noStep], bar: [] };
@@ -152,9 +149,7 @@ export const useStepsJob = (
     owner: stepOwnerOf(number, steps.length),
     title: step.name,
     meta: stepMetaOf(start, end, counts),
-    sections: onSession
-      ? sessionSections
-      : [{ kind: 'note', key: 'evening', text: JOB_EVENING_STEPS }],
+    sections: onSession ? sessionSections : [],
     danger: onSession
       ? jobActionOf(
           'deleteStep',

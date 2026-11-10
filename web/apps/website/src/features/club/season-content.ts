@@ -5,7 +5,7 @@ export const seasonChapter = {
 } as const;
 
 export const seasonIntro =
-  'Eine Session ist unsere fünfte Jahreszeit: Sie beginnt am 11.11. und endet an Aschermittwoch — nach Vereinszeitrechnung dauert sie trotzdem vierzehn Monate. Fünf Etappen zwischen erstem Narrenruf und Kehraus.';
+  'Eine Session ist unsere fünfte Jahreszeit: Sie beginnt am 11.11. und endet am Aschermittwoch — nach Vereinszeitrechnung dauert sie trotzdem vierzehn Monate. Fünf Etappen zwischen erstem Narrenruf und Kehraus.';
 
 export interface SeasonStep {
   tag: string;
@@ -36,7 +36,7 @@ export const SEASON_STEPS: SeasonStep[] = [
     tag: 'Rosenmontag',
     title: 'Der Umzug',
     description:
-      'Wir ziehen durch Großfurra — sofern der Wagen bis dahin eine Halle gefunden hat, in die er liegend passt. Kamelle fliegt bis ins Nachbardorf.',
+      'Wir ziehen durch Großfurra — sofern der Wagen bis dahin eine Halle gefunden hat, in die er liegend passt.',
   },
   {
     tag: 'Aschermittwoch',

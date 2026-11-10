@@ -2,15 +2,11 @@ import { KkAlert } from '@furria/ui/KkAlert';
 import { KkButton } from '@furria/ui/KkButton';
 import { KkHeading } from '@furria/ui/KkHeading';
 import { KkIcon } from '@furria/ui/KkIcon';
-import { KkNote } from '@furria/ui/KkNote';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { usePasskeyOffer } from '../hooks/use-passkey-offer';
 
 const TITLE = 'MIT FINGERABDRUCK ANMELDEN?';
-const LINE =
-  'Du bist drin. Richte jetzt einen Passkey ein, dann meldest du dich auf diesem Gerät ohne Passwort an – per Fingerabdruck, Gesicht oder Displaysperre.';
-const LATER_LINE = 'Du kannst ihn auch später unter Anmeldung & Sicherheit einrichten.';
 const SET_UP_LABEL = 'Einrichten';
 const LATER_LABEL = 'Später';
 
@@ -25,12 +21,9 @@ export const RedeemPasskeyOffer: FC<RedeemPasskeyOfferProps> = ({ onDone }) => {
 
   return (
     <Stack sx={{ gap: 2.5, minWidth: 0 }}>
-      <Stack sx={{ gap: 1 }}>
-        <KkHeading level={1} component="h1">
-          {TITLE}
-        </KkHeading>
-        <KkNote>{LINE}</KkNote>
-      </Stack>
+      <KkHeading level={1} component="h1">
+        {TITLE}
+      </KkHeading>
       {rejection}
       <Stack sx={{ gap: 1.25 }}>
         <KkButton
@@ -45,7 +38,6 @@ export const RedeemPasskeyOffer: FC<RedeemPasskeyOfferProps> = ({ onDone }) => {
           {LATER_LABEL}
         </KkButton>
       </Stack>
-      <KkNote>{LATER_LINE}</KkNote>
     </Stack>
   );
 };

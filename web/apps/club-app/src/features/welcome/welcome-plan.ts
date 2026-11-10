@@ -5,11 +5,16 @@ export const CLUB_FOUNDED_YEAR = 1971;
 const FUNCTIONS_SHOWN = 2;
 const ISO_YEAR_END = 4;
 
-const FUNCTION_ORDER: Record<PersonFunction['kind'], number> = {
+const FUNCTION_ORDER: Readonly<Partial<Record<PersonFunction['kind'], number>>> = {
   boardSeat: 0,
-  role: 1,
-  groupAdmin: 2,
+  groupAdmin: 1,
 };
+
+const rankOf = (entry: PersonFunction): number =>
+  FUNCTION_ORDER[entry.kind] ?? Number.POSITIVE_INFINITY;
+
+const isNamedFunction = (entry: PersonFunction): boolean =>
+  FUNCTION_ORDER[entry.kind] !== undefined;
 
 const DATELINE_AT_MS = 250;
 const REEL_AT_MS = 600;
@@ -89,7 +94,8 @@ const linesOf = (member: WelcomeMember): WelcomeLine[] => {
   const session: WelcomeLine[] =
     member.sessionOrdinal === null ? [] : [{ kind: 'session', ordinal: member.sessionOrdinal }];
   const held = [...member.functions]
-    .sort((first, second) => FUNCTION_ORDER[first.kind] - FUNCTION_ORDER[second.kind])
+    .filter(isNamedFunction)
+    .sort((first, second) => rankOf(first) - rankOf(second))
     .slice(0, FUNCTIONS_SHOWN)
     .map((entry): WelcomeLine => ({ kind: 'function', name: entry.name }));
 

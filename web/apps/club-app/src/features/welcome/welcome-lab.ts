@@ -17,7 +17,7 @@ export const WELCOME_LAB_CASES: readonly WelcomeLabCase[] = [
       memberSince: '2015-09-01',
       sessionOrdinal: 12,
       functions: [
-        { kind: 'role', name: 'Trainerin', icon: null, tone: null },
+        { kind: 'groupAdmin', name: 'Tanzgarde', icon: null, tone: null },
         { kind: 'boardSeat', name: 'Kassenprüferin', icon: null, tone: null },
       ],
     },
@@ -34,7 +34,7 @@ export const WELCOME_LAB_CASES: readonly WelcomeLabCase[] = [
       firstName: 'Gerd',
       memberSince: '1971-11-11',
       sessionOrdinal: 56,
-      functions: [{ kind: 'role', name: 'Ehrenpräsident', icon: null, tone: null }],
+      functions: [{ kind: 'boardSeat', name: 'Ehrenpräsident', icon: null, tone: null }],
     },
   },
   {

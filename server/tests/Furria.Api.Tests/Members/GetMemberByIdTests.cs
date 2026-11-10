@@ -6,6 +6,7 @@ using Furria.Application.Authorization;
 using Furria.Application.Registry;
 using Furria.Core.Club;
 using Furria.Core.Groups;
+using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 
@@ -56,11 +57,6 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
                                 "paula",
                                 JoinedIn2017
                             )
-                    )
-                    .Roles(roles =>
-                        roles
-                            .AddRole("zeugwartin", "Zeugwartin")
-                            .AddRoleHolding("paula-zeugwartin", "zeugwartin", "paula", JoinedIn2017)
                     ),
             ct
         );
@@ -78,10 +74,6 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal(ctx.Groups.Groups.IdOf("tanzgarde"), tanzgarde.GroupId);
         Assert.Equal("Tanzgarde", tanzgarde.Name);
         Assert.Equal(JoinedIn2017, tanzgarde.Since);
-        var equipmentWarden = Assert.Single(result.Roles);
-        Assert.Equal(ctx.Roles.Roles.IdOf("zeugwartin"), equipmentWarden.RoleId);
-        Assert.Equal("Zeugwartin", equipmentWarden.Name);
-        Assert.Equal(JoinedIn2017, equipmentWarden.Since);
         Assert.Equal(ContactVisibility.Hidden, result.Contact.Visibility);
     }
 
@@ -216,7 +208,7 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReportTheChainMinimum_When_SheLeftAndRejoinedTheGroupAndTheRole()
+    public async Task Should_ReportTheChainMinimum_When_SheLeftAndRejoinedTheGroup()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -244,23 +236,6 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
                                 "paula",
                                 RejoinedIn2023
                             )
-                    )
-                    .Roles(roles =>
-                        roles
-                            .AddRole("zeugwartin", "Zeugwartin")
-                            .AddRoleHolding(
-                                "paula-zeugwartin-first",
-                                "zeugwartin",
-                                "paula",
-                                JoinedIn2017,
-                                LeftIn2020
-                            )
-                            .AddRoleHolding(
-                                "paula-zeugwartin-again",
-                                "zeugwartin",
-                                "paula",
-                                RejoinedIn2023
-                            )
                     ),
             ct
         );
@@ -272,12 +247,10 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var tanzgarde = Assert.Single(result.Groups);
         Assert.Equal(JoinedIn2017, tanzgarde.Since);
-        var equipmentWarden = Assert.Single(result.Roles);
-        Assert.Equal(JoinedIn2017, equipmentWarden.Since);
     }
 
     [Fact]
-    public async Task Should_OmitTheTie_When_ItEndedOrItsGroupOrRoleIsArchived()
+    public async Task Should_OmitTheTie_When_ItEndedOrItsGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -314,31 +287,6 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
                                 "paula",
                                 JoinedIn2017
                             )
-                    )
-                    .Roles(roles =>
-                        roles
-                            .AddRole("kassenpruefung", "Kassenpruefung")
-                            .AddRoleHolding(
-                                "paula-kassenpruefung",
-                                "kassenpruefung",
-                                "paula",
-                                JoinedIn2017,
-                                LeftIn2020
-                            )
-                            .AddRoleWithDetails(
-                                "schriftfuehrung",
-                                "Schriftfuehrung",
-                                "Aufgeloest.",
-                                ArchivedIn2021
-                            )
-                            .AddRoleHolding(
-                                "paula-schriftfuehrung",
-                                "schriftfuehrung",
-                                "paula",
-                                JoinedIn2017
-                            )
-                            .AddRole("zeugwartin", "Zeugwartin")
-                            .AddRoleHolding("paula-zeugwartin", "zeugwartin", "paula", JoinedIn2017)
                     ),
             ct
         );
@@ -350,12 +298,10 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var marschmusik = Assert.Single(result.Groups);
         Assert.Equal(ctx.Groups.Groups.IdOf("marschmusik"), marschmusik.GroupId);
-        var equipmentWarden = Assert.Single(result.Roles);
-        Assert.Equal(ctx.Roles.Roles.IdOf("zeugwartin"), equipmentWarden.RoleId);
     }
 
     [Fact]
-    public async Task Should_NameEachGroupAndRoleOnce_When_ATieEndedAndANewOneStartedToday()
+    public async Task Should_NameEachGroupOnce_When_ATieEndedAndANewOneStartedToday()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -383,23 +329,6 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
                                 "paula",
                                 _fixture.Today
                             )
-                    )
-                    .Roles(roles =>
-                        roles
-                            .AddRole("zeugwartin", "Zeugwartin")
-                            .AddRoleHolding(
-                                "paula-zeugwartin-first",
-                                "zeugwartin",
-                                "paula",
-                                JoinedIn2017,
-                                _fixture.Today
-                            )
-                            .AddRoleHolding(
-                                "paula-zeugwartin-again",
-                                "zeugwartin",
-                                "paula",
-                                _fixture.Today
-                            )
                     ),
             ct
         );
@@ -411,12 +340,10 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         var tanzgarde = Assert.Single(result.Groups);
         Assert.Equal(JoinedIn2017, tanzgarde.Since);
-        var equipmentWarden = Assert.Single(result.Roles);
-        Assert.Equal(JoinedIn2017, equipmentWarden.Since);
     }
 
     [Fact]
-    public async Task Should_SortGroupsAndRolesAsGerman_When_SheCarriesSeveral()
+    public async Task Should_SortGroupsAsGerman_When_SheCarriesSeveral()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -446,25 +373,6 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
                                 JoinedIn2017
                             )
                             .AddGroupMembership("paula-archiv", "archiv", "paula", JoinedIn2017)
-                    )
-                    .Roles(roles =>
-                        roles
-                            .AddRole("zeugwartin", "Zeugwartin")
-                            .AddRole("uetzelbuetzel", "Ützelbützel")
-                            .AddRole("umzugsleitung", "Umzugsleitung")
-                            .AddRoleHolding("paula-zeugwartin", "zeugwartin", "paula", JoinedIn2017)
-                            .AddRoleHolding(
-                                "paula-uetzelbuetzel",
-                                "uetzelbuetzel",
-                                "paula",
-                                JoinedIn2017
-                            )
-                            .AddRoleHolding(
-                                "paula-umzugsleitung",
-                                "umzugsleitung",
-                                "paula",
-                                JoinedIn2017
-                            )
                     ),
             ct
         );
@@ -477,10 +385,6 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal(
             ["Ältestenrat", "Archiv", "Zwergengarde"],
             result.Groups.Select(group => group.Name).ToArray()
-        );
-        Assert.Equal(
-            ["Umzugsleitung", "Ützelbützel", "Zeugwartin"],
-            result.Roles.Select(role => role.Name).ToArray()
         );
     }
 
@@ -687,7 +591,7 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
                 "membershipState",
                 "memberSince",
                 "groups",
-                "roles",
+                "boardTerms",
                 "contact",
                 "honours",
             ],
@@ -751,7 +655,7 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
                             .AddGroup(
                                 "tanzgarde",
                                 "Tanzgarde",
-                                tone: GroupTone.Iris,
+                                tone: TestTones.Iris,
                                 icon: ClubIcon.Star
                             )
                             .AddGroupAdmin("paula-tanzgarde", "tanzgarde", "paula", "Trainerin")
@@ -770,6 +674,79 @@ public sealed class GetMemberByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal(PersonFunctionKind.GroupAdmin, tenure.Kind);
         Assert.Equal("Tanzgarde", tenure.Name);
         Assert.Equal(ClubIcon.Star, tenure.Icon);
-        Assert.Equal(GroupTone.Iris, tenure.Tone);
+        Assert.Equal(TestTones.Iris, tenure.Tone);
+    }
+
+    [Fact]
+    public async Task Should_ListHerPublicBoardTermsNewestFirst_When_SheSatOnTheBoard()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity =>
+                        identity
+                            .AddPerson("paula", "Paula", "Brendel")
+                            .AddMembership("paula-first", "paula", JoinedIn2017)
+                            .AddAccount("alice")
+                            .AddMembership("alice-first", "alice", JoinedIn2017)
+                    )
+                    .Club(club =>
+                        club.AddBoardOffice(
+                                "praesidentin",
+                                "Präsidentin",
+                                sortOrder: 1,
+                                isPublic: true,
+                                icon: ClubIcon.Crown
+                            )
+                            .AddBoardOffice(
+                                "schatzmeisterin",
+                                "Schatzmeisterin",
+                                sortOrder: 2,
+                                archivedOn: ArchivedIn2021,
+                                isPublic: true
+                            )
+                            .AddBoardOffice("beisitz", "Beisitz", sortOrder: 3)
+                            .AddBoardSeat(
+                                "paula-schatzmeisterin",
+                                "schatzmeisterin",
+                                "paula",
+                                JoinedIn2017,
+                                LeftIn2020
+                            )
+                            .AddBoardSeat(
+                                "paula-praesidentin",
+                                "praesidentin",
+                                "paula",
+                                RejoinedIn2023
+                            )
+                            .AddBoardSeat("paula-beisitz", "beisitz", "paula", RejoinedIn2023)
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("alice", ct);
+        var (response, result) = await ReadCardAsync(client, ctx.Identity.People.IdOf("paula"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Collection(
+            result.BoardTerms,
+            current =>
+            {
+                Assert.Equal(ctx.Club.BoardOffices.IdOf("praesidentin"), current.BoardOfficeId);
+                Assert.Equal("Präsidentin", current.Office);
+                Assert.Equal(ClubIcon.Crown, current.Icon);
+                Assert.Equal(RejoinedIn2023, current.Since);
+                Assert.Null(current.Until);
+            },
+            past =>
+            {
+                Assert.Equal(ctx.Club.BoardOffices.IdOf("schatzmeisterin"), past.BoardOfficeId);
+                Assert.Equal("Schatzmeisterin", past.Office);
+                Assert.Null(past.Icon);
+                Assert.Equal(JoinedIn2017, past.Since);
+                Assert.Equal(LeftIn2020, past.Until);
+            }
+        );
     }
 }

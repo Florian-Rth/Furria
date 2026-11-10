@@ -15,7 +15,6 @@ const END_DAY_LABEL = 'Letzter Tag';
 const END_DAY_EMPTY_LABEL = 'Offenes Ende';
 const END_TIME_LABEL = 'Ende';
 const VENUE_LABEL = 'Ort';
-const VENUE_HINT = 'Nur mit Ort werden Doppelbelegungen erkannt.';
 const START_QUICK_TIMES = ['11:11', '18:11', '19:11', '20:11'] as const;
 const END_QUICK_TIMES = ['20:11', '21:11', '22:11', '23:11'] as const;
 
@@ -96,7 +95,6 @@ export const CalendarEntryScheduleSection: FC<CalendarEntryScheduleSectionProps>
         options={venueOptions}
         onChange={control.setVenue}
         presentation="select"
-        hint={VENUE_HINT}
       />
     </KkFormSection>
   );

@@ -5,7 +5,6 @@ import type { FC } from 'react';
 import { NEW_PERSON_CHOICE } from '../admission';
 import {
   CANDIDATE_CHOICE_LABEL,
-  CANDIDATES_LEAD,
   CANDIDATES_SECTION_TITLE,
   NEW_PERSON_LABEL,
   toNewPersonDescription,
@@ -43,7 +42,6 @@ export const AdmissionCandidateChoice: FC<AdmissionCandidateChoiceProps> = ({
 
   return (
     <KkFormSection title={CANDIDATES_SECTION_TITLE}>
-      <KkNote tone="muted">{CANDIDATES_LEAD}</KkNote>
       <KkRadioGroup
         name={CHOICE_NAME}
         label={CANDIDATE_CHOICE_LABEL}

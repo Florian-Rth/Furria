@@ -3,7 +3,7 @@ import { KkPanel } from '@furria/ui/KkPanel';
 import type { FC } from 'react';
 
 const EMPTY_TITLE = 'NOCH KEINE GRUPPE';
-const EMPTY_DESCRIPTION = 'Gruppen werden in der Gruppenverwaltung angelegt.';
+const EMPTY_DESCRIPTION = 'Es sind noch keine Gruppen angelegt.';
 
 export const GroupsEmpty: FC = () => (
   <KkPanel variant="block">

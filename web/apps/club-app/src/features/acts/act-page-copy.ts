@@ -11,8 +11,6 @@ export const ACT_DETAILS_LABEL = 'Details';
 export const ACT_CARD_LABEL = 'Zum Sessionsauftritt';
 export const STUDIO_MUSIC_LABEL = 'Musik anlegen';
 export const SETTINGS_TITLE = 'Sessionsauftritt bearbeiten';
-export const CAST_ONLY_NOTE =
-  'Musik, Schritte und Videos sehen die Besetzung und die Leitung der Gruppe.';
 export const CO_EDITORS_TITLE = 'Bearbeiten mit';
 export const CO_EDITORS_EMPTY = 'Bisher pflegt nur die Gruppenleitung.';
 export const CO_EDITOR_GRANT_LABEL = 'Aus der Besetzung dazunehmen';

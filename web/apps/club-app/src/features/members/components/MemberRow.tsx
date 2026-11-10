@@ -6,7 +6,7 @@ import type { FC } from 'react';
 import { toAvatarHonours } from '@/lib/honours';
 import { toInitials } from '@/lib/initials';
 import { toPeekId } from '@/lib/peek';
-import { NO_AFFILIATION_META, toPersonRowAffiliation } from '@/lib/person-rows';
+import { NO_GROUP_META, toGroupsMeta } from '@/lib/person-rows';
 import { toMembershipStateChip } from '@/lib/state-chips';
 import type { MemberSummary } from '../schemas';
 
@@ -16,7 +16,7 @@ interface MemberRowProps {
 
 export const MemberRow: FC<MemberRowProps> = ({ member }) => {
   const sheet = useKkSheetCommands();
-  const { accent, meta } = toPersonRowAffiliation(member.groups, member.roles);
+  const meta = toGroupsMeta(member.groups);
   const state = toMembershipStateChip(member.membershipState);
   const peek = toPeekId('member', member.personId);
   const name = `${member.firstName} ${member.lastName}`;
@@ -39,9 +39,8 @@ export const MemberRow: FC<MemberRowProps> = ({ member }) => {
       portrait={portrait}
       honours={honours}
       name={name}
-      accent={accent}
       meta={meta}
-      emptyMeta={NO_AFFILIATION_META}
+      emptyMeta={NO_GROUP_META}
       trailing={stateChip}
       onClick={openPeek}
     />

@@ -1,4 +1,5 @@
 ﻿using System;
+using Furria.Infrastructure.Changes;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
@@ -65,6 +66,8 @@ namespace Furria.Infrastructure.Migrations
                 table: "claim_window",
                 column: "opened_by_person_id"
             );
+
+            migrationBuilder.NotifyChangesOf("claim_window");
         }
 
         /// <inheritdoc />

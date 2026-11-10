@@ -23,14 +23,10 @@ const CHAIN_TITLE = 'Bisherige Ernennungen';
 const PERSON_SECTION = 'Person';
 const APPOINT_SECTION = 'Ernennung';
 const END_SECTION = 'Ende der Ernennung';
-const APPOINT_NOTE = 'Auch ohne Mitgliedschaft möglich.';
 const FUNCTION_LABEL = 'Funktion';
 const FUNCTION_PLACEHOLDER = 'Optional';
-const FUNCTION_HINT = 'Dient nur der Anzeige und hat keinen Einfluss auf Rechte.';
 const SINCE_LABEL = 'Admin ab';
-const SINCE_HINT = 'Auch ein Datum in der Zukunft ist möglich.';
 const END_DATE_LABEL = 'Letzter Tag';
-const END_DATE_HINT = 'Dieser Tag zählt noch dazu.';
 
 interface GroupAdminEditorProps {
   hub: GroupHub;
@@ -71,7 +67,6 @@ export const GroupAdminEditor: FC<GroupAdminEditorProps> = ({ hub, admin, prefil
             selected={control.person}
             onSelect={control.select}
             onClear={control.clearPerson}
-            note={APPOINT_NOTE}
           />
         </KkFormSection>
         {chain}
@@ -83,7 +78,6 @@ export const GroupAdminEditor: FC<GroupAdminEditorProps> = ({ hub, admin, prefil
             onChange={control.setFunctionLabel}
             suggestions={ADMIN_FUNCTION_SUGGESTIONS}
             placeholder={FUNCTION_PLACEHOLDER}
-            hint={FUNCTION_HINT}
             maxLength={ADMIN_FUNCTION_MAX_LENGTH}
           />
           <KkDateField
@@ -95,7 +89,6 @@ export const GroupAdminEditor: FC<GroupAdminEditorProps> = ({ hub, admin, prefil
             required
             error={control.sinceOnError !== undefined}
             helperText={control.sinceOnError}
-            hint={SINCE_HINT}
           />
         </KkFormSection>
       </>
@@ -112,7 +105,6 @@ export const GroupAdminEditor: FC<GroupAdminEditorProps> = ({ hub, admin, prefil
             required
             error={control.endedOnError !== undefined}
             helperText={control.endedOnError}
-            hint={END_DATE_HINT}
           />
         </KkFormSection>
       </>

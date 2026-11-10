@@ -6,10 +6,10 @@ import type { FC } from 'react';
 import { AREA_HANDOVERS, MANAGE_ORIGIN } from '@/features/session/app-sections';
 import { RequirePermission } from '@/features/session/components/RequirePermission';
 import { PERMISSION_KEYS } from '@/lib/api/schemas';
-import { BOARD_LEAD, BOARD_TITLE, NEW_OFFICE_LABEL, NEW_OFFICE_PATH } from '../board-hub-copy';
+import { BOARD_TITLE, NEW_OFFICE_LABEL, NEW_OFFICE_PATH } from '../board-hub-copy';
 import { BoardBody } from './BoardBody';
 
-const header = <KkTitleHeader title={BOARD_TITLE} lead={BOARD_LEAD} />;
+const header = <KkTitleHeader title={BOARD_TITLE} />;
 
 export const BoardPage: FC = () => {
   const navigate = useNavigate();

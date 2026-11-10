@@ -1,5 +1,4 @@
 import { KkAlert } from '@furria/ui/KkAlert';
-import { KkMeta } from '@furria/ui/KkMeta';
 import { KkPublishCeremony } from '@furria/ui/KkPublishCeremony';
 import { KkScreen } from '@furria/ui/KkScreen';
 import type { KkShowcaseLabels } from '@furria/ui/KkShowcase';
@@ -11,13 +10,12 @@ import { AREA_HANDOVERS } from '@/features/session/app-sections';
 import { PUBLISH_ANNOUNCEMENTS } from '@/lib/publish-copy';
 import { bulkCountLine } from '../album-labels';
 import { SELECTION_TITLE } from '../gallery-copy';
-import { countLabel } from '../gallery-view';
 import { useAlbumPhotoPicker } from '../hooks/use-album-photo-picker';
 import { useAlbumSelection } from '../hooks/use-album-selection';
 import type { AlbumDetails } from '../schemas';
 import { MEDIA_CAPTION_MAX_LENGTH } from '../schemas';
 import { selectionBarOf } from '../selection-bar';
-import { pickableItemsOf, SOFT_SELECTION_SIZE, selectionSlotsOf } from '../selection-draft';
+import { pickableItemsOf, selectionSlotsOf } from '../selection-draft';
 import { selectionPiecesOf } from '../selection-pieces';
 import { AlbumPhotoPickerSheet } from './AlbumPhotoPickerSheet';
 import { AlbumSelectionHeader } from './AlbumSelectionHeader';
@@ -27,17 +25,10 @@ const SHOWCASE_LABELS: KkShowcaseLabels = {
   list: 'Auswahl für die Website',
   add: 'Fotos hinzufügen',
 };
-const HINT =
-  'Am Griff ziehen oder mit den Pfeiltasten ordnen. Ohne Bildunterschrift liest die Website den grauen Text vor.';
 
 interface AlbumSelectionViewProps {
   album: AlbumDetails;
 }
-
-const metaOf = (count: number): string =>
-  count > SOFT_SELECTION_SIZE
-    ? `Mehr als ein gutes Dutzend — die Website zeigt alle ${countLabel(count)}`
-    : `Etwa ${SOFT_SELECTION_SIZE} Fotos zeigen den Abend am besten`;
 
 export const AlbumSelectionView: FC<AlbumSelectionViewProps> = ({ album }) => {
   const selection = useAlbumSelection(album);
@@ -62,15 +53,9 @@ export const AlbumSelectionView: FC<AlbumSelectionViewProps> = ({ album }) => {
   const rejection = selection.rejection === null ? null : <KkAlert>{selection.rejection}</KkAlert>;
   const isPublished = selection.publication.kind === 'published';
   const lead = bulkCountLine(slots.length);
-  const meta = metaOf(slots.length);
   const nothingToAdd = pickable.length === 0;
   const header = (
-    <AlbumSelectionHeader
-      isPublished={isPublished}
-      hangKey={selection.hangKey}
-      lead={lead}
-      meta={meta}
-    />
+    <AlbumSelectionHeader isPublished={isPublished} hangKey={selection.hangKey} lead={lead} />
   );
 
   return (
@@ -96,7 +81,6 @@ export const AlbumSelectionView: FC<AlbumSelectionViewProps> = ({ album }) => {
             onRemove={selection.remove}
             onAdd={picker.open}
           />
-          <KkMeta>{HINT}</KkMeta>
         </Stack>
       </KkPublishCeremony>
       <AlbumPhotoPickerSheet picker={picker} items={pickable} />

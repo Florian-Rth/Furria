@@ -15,13 +15,8 @@ const INSTAGRAM_LABEL = 'Instagram';
 const FACEBOOK_LABEL = 'Facebook';
 const ADDRESS_SECTION_TITLE = 'Anschrift';
 const REACH_SECTION_TITLE = 'Erreichbarkeit';
-const EMAIL_HINT =
-  'Steht im Impressum und überall auf der Website, wo Gäste dem Verein schreiben können.';
-const PHONE_HINT = 'Steht im Impressum und auf der Website unter „Mitglied werden“.';
 const WEB_SECTION_TITLE = 'Im Netz';
-const WEBSITE_HINT = 'Die ganze Adresse, mit https://. Steht im Impressum der Website.';
-const INSTAGRAM_HINT = 'Die ganze Adresse, mit https://. Verlinkt in der Fußzeile der Website.';
-const FACEBOOK_HINT = 'Die ganze Adresse, mit https://. Verlinkt in der Fußzeile der Website.';
+const URL_HINT = 'Die ganze Adresse, mit https://.';
 
 interface ClubContactFieldsProps {
   form: UseFormReturn<ClubContactForm>;
@@ -96,7 +91,6 @@ export const ClubContactFields: FC<ClubContactFieldsProps> = ({ form, errors }) 
           type="email"
           inputMode="email"
           autoComplete="email"
-          hint={EMAIL_HINT}
           error={emailError !== undefined}
           helperText={emailError}
           onChange={email.onChange}
@@ -109,7 +103,6 @@ export const ClubContactFields: FC<ClubContactFieldsProps> = ({ form, errors }) 
           type="tel"
           inputMode="tel"
           autoComplete="tel"
-          hint={PHONE_HINT}
           error={phoneError !== undefined}
           helperText={phoneError}
           onChange={phone.onChange}
@@ -123,7 +116,7 @@ export const ClubContactFields: FC<ClubContactFieldsProps> = ({ form, errors }) 
           label={WEBSITE_LABEL}
           type="url"
           inputMode="url"
-          hint={WEBSITE_HINT}
+          hint={URL_HINT}
           error={websiteUrlError !== undefined}
           helperText={websiteUrlError}
           onChange={websiteUrl.onChange}
@@ -135,7 +128,7 @@ export const ClubContactFields: FC<ClubContactFieldsProps> = ({ form, errors }) 
           label={INSTAGRAM_LABEL}
           type="url"
           inputMode="url"
-          hint={INSTAGRAM_HINT}
+          hint={URL_HINT}
           error={instagramUrlError !== undefined}
           helperText={instagramUrlError}
           onChange={instagramUrl.onChange}
@@ -147,7 +140,7 @@ export const ClubContactFields: FC<ClubContactFieldsProps> = ({ form, errors }) 
           label={FACEBOOK_LABEL}
           type="url"
           inputMode="url"
-          hint={FACEBOOK_HINT}
+          hint={URL_HINT}
           error={facebookUrlError !== undefined}
           helperText={facebookUrlError}
           onChange={facebookUrl.onChange}

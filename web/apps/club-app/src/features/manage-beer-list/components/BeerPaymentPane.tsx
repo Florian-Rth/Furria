@@ -2,7 +2,7 @@ import { KkSelectField } from '@furria/ui/KkSelectField';
 import { KkText } from '@furria/ui/KkText';
 import type { FC } from 'react';
 import { openHubOf, useBeerHubContext } from '../beer-hub-context';
-import { FORM_TITLES, NO_OPEN_TABS, PERSON_LABEL, paymentContextOf } from '../beer-hub-copy';
+import { FORM_TITLES, NO_OPEN_TABS, PERSON_LABEL, payWaysOf } from '../beer-hub-copy';
 import { HUB_LANDING } from '../beer-landing';
 import { usePaymentPane } from '../hooks/use-payment-pane';
 import { BeerPaneFrame } from './BeerPaneFrame';
@@ -16,7 +16,7 @@ export const BeerPaymentPane: FC<BeerPaymentPaneProps> = ({ initialPersonId }) =
   const hub = useBeerHubContext();
   const { now } = hub;
   const pot = openHubOf(hub)?.pot ?? null;
-  const context = paymentContextOf(pot?.owner ?? null, pot?.paymentLink ?? null);
+  const context = payWaysOf(pot?.owner ?? null, pot?.paymentLink ?? null);
   const pane = usePaymentPane(initialPersonId);
   const block =
     pane.target === null ? null : (

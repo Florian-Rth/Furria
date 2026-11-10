@@ -47,6 +47,7 @@ export const MemberPeekSheet: FC<MemberPeekSheetProps> = ({ members }) => {
   const honours = toAvatarHonours(member.honours);
   const state = toMembershipStateChip(member.membershipState);
   const params = { personId: String(member.personId) };
+  const groupsLine = toPeekAffiliationLine(member.groups);
 
   return (
     <KkSheet
@@ -64,11 +65,7 @@ export const MemberPeekSheet: FC<MemberPeekSheetProps> = ({ members }) => {
         <KkPanel>
           <KkFieldRow
             label={MEMBER_SECTION_TITLES.groups}
-            value={<MemberPeekValue line={toPeekAffiliationLine(member.groups)} />}
-          />
-          <KkFieldRow
-            label={MEMBER_SECTION_TITLES.roles}
-            value={<MemberPeekValue line={toPeekAffiliationLine(member.roles)} />}
+            value={<MemberPeekValue line={groupsLine} />}
           />
         </KkPanel>
         <KkPanelSection title={MEMBER_SECTION_TITLES.contact}>

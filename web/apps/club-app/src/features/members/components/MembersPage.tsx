@@ -7,14 +7,14 @@ import { AREA_HANDOVERS, CLUB_ORIGIN } from '@/features/session/app-sections';
 import { useScreenSearch } from '@/features/session/hooks/use-screen-search';
 import { useMembersQuery } from '../api';
 import { useMemberSearch } from '../hooks/use-member-search';
-import { LETTER_INDEX_LABEL, MEMBERS_LEAD } from '../members-labels';
+import { LETTER_INDEX_LABEL } from '../members-labels';
 import type { MemberSummary } from '../schemas';
 import { MembersBody } from './MembersBody';
 import { MembersToolbar } from './MembersToolbar';
 
 const MEMBERS_TITLE = 'Mitglieder';
 
-const SEARCH_PLACEHOLDER = 'Name, Gruppe oder Rolle';
+const SEARCH_PLACEHOLDER = 'Name oder Gruppe';
 
 const TOOLBAR_CHIPS = 5;
 
@@ -55,7 +55,7 @@ export const MembersPage: FC = () => {
       index={index}
       title={MEMBERS_TITLE}
       origin={CLUB_ORIGIN}
-      header={<KkTitleHeader title={MEMBERS_TITLE} lead={MEMBERS_LEAD} />}
+      header={<KkTitleHeader title={MEMBERS_TITLE} />}
       handover={AREA_HANDOVERS.members}
     >
       <MembersBody search={search} />

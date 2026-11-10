@@ -8,8 +8,7 @@ import { AppSignOutButton } from '@/features/session/components/AppSignOutButton
 import { DEFAULT_RETURN_TO } from '@/lib/return-to';
 
 const SIGNED_IN_TITLE = 'DU BIST ANGEMELDET';
-const SIGNED_IN_LINE =
-  'Auf diesem Gerät ist gerade jemand angemeldet. Melde dich ab, um die Einladung anzunehmen.';
+const SIGNED_IN_LINE = 'Melde dich ab, um die Einladung anzunehmen.';
 const APP_LABEL = 'Zur App';
 
 export const RedeemSignedIn: FC = () => (

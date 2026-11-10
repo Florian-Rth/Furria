@@ -1,7 +1,7 @@
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { MemberSearch } from '../hooks/use-member-search';
-import { toStatsFootnote } from '../members-labels';
+import { toWithoutMembershipSentence } from '../members-labels';
 import { MembersEmpty } from './MembersEmpty';
 import { MembersList } from './MembersList';
 import { MembersStats } from './MembersStats';
@@ -13,7 +13,7 @@ interface MembersViewProps {
 }
 
 export const MembersView: FC<MembersViewProps> = ({ search }) => {
-  const footnote = toStatsFootnote(search.totals.none);
+  const footnote = toWithoutMembershipSentence(search.totals.none);
 
   const list =
     search.visibleCount === 0 ? (

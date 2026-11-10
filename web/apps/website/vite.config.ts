@@ -3,6 +3,7 @@ import babel from '@rolldown/plugin-babel';
 import { tanstackRouter } from '@tanstack/router-plugin/vite';
 import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
+import { prerenderedPagesPlugin } from './vite/prerendered-pages-plugin';
 import { websitePictureHeadPlugin } from './vite/website-picture-head-plugin';
 
 const API_PROXY_TARGET = process.env.FURRIA_API_PROXY ?? 'http://localhost:5100';
@@ -17,6 +18,7 @@ export default defineConfig({
     react(),
     babel({ presets: [reactCompilerPreset()] }),
     websitePictureHeadPlugin(),
+    prerenderedPagesPlugin(),
   ],
   build: {
     rolldownOptions: {

@@ -3,7 +3,7 @@ import { byteSizeLabel } from './download/media-download';
 export const ZIP_CONFIRM_EYEBROW = 'ZIP-Download';
 export const ZIP_CONFIRM_QUESTION = 'Ganzes Album als ZIP laden?';
 export const ZIP_CONFIRM_EXPLANATION =
-  'Alle Originale in voller Größe. Die ZIP lädt im Hintergrund, du kannst die App solange weiter nutzen – lass sie dabei geöffnet.';
+  'Alle Originale in voller Größe. Lass die App dabei geöffnet.';
 export const ZIP_CONFIRM_LABEL = 'ZIP laden';
 export const ZIP_CANCEL_LABEL = 'Abbrechen';
 export const ZIP_CLOSE_LABEL = 'Schließen';

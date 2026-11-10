@@ -1,0 +1,49 @@
+import { KkMeta } from '@furria/ui/KkMeta';
+import { KkPanelSection } from '@furria/ui/KkPanelSection';
+import { KkSheet } from '@furria/ui/KkSheet';
+import { KkText } from '@furria/ui/KkText';
+import Stack from '@mui/material/Stack';
+import type { FC } from 'react';
+import { useOfficeSheet } from '../hooks/use-office-sheet';
+import type { StartBoard } from '../hooks/use-start-view';
+
+const CLOSE_LABEL = 'Schließen';
+const PERMISSIONS_TITLE = 'Damit darfst du';
+const NO_PERMISSIONS_LINE = 'Damit sind keine besonderen Rechte verbunden.';
+
+interface OfficeSheetProps {
+  board: StartBoard;
+}
+
+export const OfficeSheet: FC<OfficeSheetProps> = ({ board }) => {
+  const sheet = useOfficeSheet(board);
+
+  if (sheet === null) {
+    return null;
+  }
+
+  const permissions = sheet.permissions.map((permission) => (
+    <Stack key={permission.title} sx={{ gap: 0.25, minWidth: 0 }}>
+      <KkText variant="subtitle2">{permission.title}</KkText>
+      <KkText variant="body2" tone="secondary">
+        {permission.line}
+      </KkText>
+    </Stack>
+  ));
+
+  const body =
+    permissions.length === 0 ? (
+      <KkMeta italic>{NO_PERMISSIONS_LINE}</KkMeta>
+    ) : (
+      <KkPanelSection title={PERMISSIONS_TITLE}>
+        <Stack sx={{ gap: 1.5, minWidth: 0 }}>{permissions}</Stack>
+      </KkPanelSection>
+    );
+
+  return (
+    <KkSheet id={sheet.sheetId} title={sheet.title} closeLabel={CLOSE_LABEL}>
+      <KkSheet.Body>{body}</KkSheet.Body>
+      <KkSheet.Actions primary={sheet.action} />
+    </KkSheet>
+  );
+};

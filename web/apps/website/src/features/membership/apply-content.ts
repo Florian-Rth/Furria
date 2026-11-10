@@ -36,7 +36,7 @@ export const applyPersonLegend = '01 · WER BIST DU';
 export const applyAddressLegend = '02 · WO WOHNST DU';
 
 export const applyAddressNote =
-  'Die Anschrift steht in unseren Mitgliederunterlagen, deshalb fragen wir sie vollständig — nicht, weil der Wohnort eine Rolle spielt. Er spielt keine.';
+  'Die Anschrift steht in unseren Mitgliederunterlagen, deshalb fragen wir sie vollständig ab — nicht, weil der Wohnort eine Rolle spielt. Er spielt keine.';
 
 export const applyContactLegend = '03 · WIE ERREICHEN WIR DICH';
 
@@ -73,7 +73,7 @@ export const applyMinorNote =
 export const applyTooYoungMailLabel = 'Jünger? Schreib uns';
 
 export const buildBelowAgeOfConsentMessage = (ageOfConsent: number): string =>
-  `Online beantragen kann den Beitritt, wer mindestens ${ageOfConsent} Jahre alt ist. Bist du jünger, schreib uns – dann nehmen wir dich direkt auf.`;
+  `Online beantragen kann den Beitritt, wer mindestens ${ageOfConsent} Jahre alt ist. Bist du jünger, schreib uns — dann nehmen wir dich direkt auf.`;
 
 export const applySubmitLabel = 'Antrag absenden →';
 
@@ -107,7 +107,7 @@ export const buildApplyThanksHeadline = (firstName: string): string =>
   `NOCH EIN KLICK, ${firstName}.`;
 
 export const buildApplyThanksText = (email: string): string =>
-  `Wir haben dir eine Mail an ${email} geschickt. Klick darin auf „Antrag bestätigen“ — erst dann kommt dein Antrag beim Verein an. Der Link gilt 48 Stunden; bestätigst du ihn nicht, löschen wir den Antrag wieder.`;
+  `Wir haben dir eine Mail an ${email} geschickt. Klick darin auf „Antrag bestätigen“ — erst dann kommt dein Antrag beim Verein an. Der Link gilt 48 Stunden; bestätigst du den Antrag bis dahin nicht, löschen wir ihn wieder.`;
 
 export const APPLY_THANKS_STEPS: JoinStep[] = [
   {
@@ -140,7 +140,7 @@ export const MEMBERSHIP_TYPE_LABELS: Record<MembershipTypeId, string> = {
   youth: 'Jugend',
 };
 
-const PENDING_DERIVATION = 'steht mit dem Geburtsdatum';
+const PENDING_DERIVATION = 'ergibt sich aus dem Geburtsdatum';
 
 export const applyNothingDueValue = '0 €';
 

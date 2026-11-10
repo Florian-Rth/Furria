@@ -10,8 +10,8 @@ import type { AlbumFormControl } from '../hooks/use-album-form';
 import type { AlbumDetails } from '../schemas';
 
 const COVER_LABEL = 'Titelbild';
-const AUTOMATIC_LINE = 'Automatisch: das erste Foto der Auswahl, sonst das erste des Albums.';
-const CHOSEN_LINE = 'Von Hand gewählt.';
+const AUTOMATIC_LINE = 'Automatisch';
+const CHOSEN_LINE = 'Von Hand gewählt';
 const CHOOSE_LABEL = 'Wählen';
 
 interface AlbumFormCoverFieldProps {

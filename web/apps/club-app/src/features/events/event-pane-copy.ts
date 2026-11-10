@@ -118,8 +118,7 @@ export const toPresalePlacesValue = (places: readonly EventPresalePlace[]): stri
         .map((place) => (place.isArchived ? `${place.name}${ARCHIVED_FLAG}` : place.name))
         .join(PLACE_SEPARATOR);
 
-export const ARCHIVED_PLACES_NOTE =
-  'Archivierte Orte zeigt die Website nicht. Entferne sie in der Bearbeitung oder aktiviere sie wieder.';
+export const ARCHIVED_PLACES_NOTE = 'Archivierte Orte zeigt die Website nicht.';
 
 export const toStepDue = (event: EventDetails, cell: BoardCell): string | undefined => {
   const step = PANE_STEPS[cell.pane];

@@ -136,8 +136,7 @@ const toGroupMembershipsClause = (
 export const toRestoreQuestion = (name: string): string => `${name} wieder aktivieren?`;
 
 export const RESTORE_EYEBROW = 'Gruppe aktivieren';
-export const RESTORE_EXPLANATION =
-  'Die Gruppe erscheint wieder im Verzeichnis und zählt wieder für die Vereinsbindung.';
+export const RESTORE_EXPLANATION = 'Die Gruppe erscheint wieder im Verzeichnis.';
 
 export const toRestoreConsequence = (
   name: string,
@@ -290,7 +289,7 @@ export const ARCHIVE_GROUP_KIND_EYEBROW = 'Gruppenart archivieren';
 export const toArchiveGroupKindQuestion = (name: string): string => `${name} archivieren?`;
 
 export const ARCHIVE_GROUP_KIND_EXPLANATION =
-  'Die Gruppenart lässt sich danach keiner Gruppe mehr zuordnen. Bestehende Zuordnungen bleiben erhalten.';
+  'Die Gruppenart lässt sich danach keiner Gruppe mehr zuordnen.';
 
 export const toArchiveGroupKindConsequence = (name: string, dayLabel: string): string =>
   `Ab dem ${dayLabel} steht ${name} nicht mehr zur Auswahl.`;
@@ -299,8 +298,7 @@ export const RESTORE_GROUP_KIND_EYEBROW = 'Gruppenart aktivieren';
 
 export const toRestoreGroupKindQuestion = (name: string): string => `${name} wieder aktivieren?`;
 
-export const RESTORE_GROUP_KIND_EXPLANATION =
-  'Die Gruppenart lässt sich wieder zuordnen. Bestehende Zuordnungen bleiben unverändert.';
+export const RESTORE_GROUP_KIND_EXPLANATION = 'Die Gruppenart lässt sich wieder zuordnen.';
 
 export const toRestoreGroupKindConsequence = (name: string, dayLabel: string): string =>
   `Ab dem ${dayLabel} steht ${name} wieder zur Auswahl.`;

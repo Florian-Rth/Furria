@@ -9,8 +9,6 @@ import type { AlbumFormEntries } from '../hooks/use-album-form-entries';
 
 const SECTION_TITLE = 'Zuordnung';
 const LINK_LABEL = 'Gehört zu';
-const LINK_HINT =
-  'Ein Termin bringt Datum und Session mit. Auf der Website erscheinen nur Alben mit Session.';
 const LINK_OPTIONS: readonly KkSelectOption[] = [
   { value: 'entry', label: 'Einem Termin' },
   { value: 'session', label: 'Einer Session' },
@@ -79,7 +77,6 @@ export const AlbumFormLinkSection: FC<AlbumFormLinkSectionProps> = ({ control, e
         options={LINK_OPTIONS}
         onChange={control.setLink}
         presentation="choices"
-        hint={LINK_HINT}
       />
       {linkedField}
     </KkFormSection>

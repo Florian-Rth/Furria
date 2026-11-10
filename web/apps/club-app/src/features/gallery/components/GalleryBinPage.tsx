@@ -6,7 +6,7 @@ import type { FC } from 'react';
 import { AREA_HANDOVERS, GALLERY_ORIGIN } from '@/features/session/app-sections';
 import { AppListSkeleton } from '@/features/session/components/AppListSkeleton';
 import { toAlbumErrorMessage } from '../album-form-messages';
-import { BIN_LEAD, BIN_TITLE } from '../gallery-copy';
+import { BIN_TITLE } from '../gallery-copy';
 import { useGalleryBin } from '../hooks/use-gallery-bin';
 import { GalleryBinBody } from './GalleryBinBody';
 
@@ -39,7 +39,7 @@ export const GalleryBinPage: FC = () => {
       title={BIN_TITLE}
       origin={GALLERY_ORIGIN}
       action={control.action}
-      header={<KkTitleHeader title={BIN_TITLE} lead={BIN_LEAD} />}
+      header={<KkTitleHeader title={BIN_TITLE} />}
       handover={AREA_HANDOVERS.gallery}
     >
       {content}

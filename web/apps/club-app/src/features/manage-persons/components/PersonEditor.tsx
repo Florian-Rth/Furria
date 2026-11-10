@@ -1,6 +1,5 @@
 import { KkDateField } from '@furria/ui/KkDateField';
 import { KkFormSection } from '@furria/ui/KkFormSection';
-import { KkNote } from '@furria/ui/KkNote';
 import type { FC } from 'react';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import { usePersonEditor } from '../hooks/use-person-editor';
@@ -12,11 +11,8 @@ import { PersonPortraitSection } from './PersonPortraitSection';
 
 const EDIT_TITLE = 'Stammdaten bearbeiten';
 const CREATE_TITLE = 'Person hinzufügen';
-const CREATE_NOTE =
-  'Nur der Name ist Pflicht. Die Mitgliedschaft wird anschließend im Profil der Person eingetragen.';
 const PERSONAL_SECTION_TITLE = 'Persönliches';
 const BIRTH_DATE_LABEL = 'Geburtsdatum';
-const BIRTH_DATE_HINT = 'Nur die Personenverwaltung sieht das Geburtsdatum.';
 const BIRTH_DATE_EMPTY_LABEL = 'Nicht bekannt';
 
 interface PersonEditorProps {
@@ -27,7 +23,6 @@ export const PersonEditor: FC<PersonEditorProps> = ({ person }) => {
   const control = usePersonEditor({ person });
   const isEdit = person !== null;
   const origin = person === null ? PERSONS_ORIGIN : toPersonOrigin(person);
-  const note = isEdit ? null : <KkNote>{CREATE_NOTE}</KkNote>;
   const portrait = person === null ? null : <PersonPortraitSection person={person} />;
   const adoptionCandidate = control.adoption.candidate;
   const emailSuggestion =
@@ -50,7 +45,6 @@ export const PersonEditor: FC<PersonEditorProps> = ({ person }) => {
         },
       }}
     >
-      {note}
       <PersonFormFields
         form={control.form}
         errors={control.errors}
@@ -64,7 +58,6 @@ export const PersonEditor: FC<PersonEditorProps> = ({ person }) => {
           onChange={control.setBirthDate}
           allowEmpty
           emptyLabel={BIRTH_DATE_EMPTY_LABEL}
-          hint={BIRTH_DATE_HINT}
         />
       </KkFormSection>
       {portrait}

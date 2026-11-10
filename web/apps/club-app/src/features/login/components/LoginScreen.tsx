@@ -1,7 +1,5 @@
 import { KkAlert } from '@furria/ui/KkAlert';
 import { KkHeading } from '@furria/ui/KkHeading';
-import { KkNote } from '@furria/ui/KkNote';
-import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import type { SessionFarewell } from '@/lib/api/session/session-store';
 import {
@@ -14,8 +12,6 @@ import { LoginTestCredentials } from './LoginTestCredentials';
 import { LoginWaysOn } from './LoginWaysOn';
 import { PasskeySignIn } from './PasskeySignIn';
 import { SignedOutFrame } from './SignedOutFrame';
-
-const INTRO = 'Der Mitgliederbereich des FCC.';
 
 interface LoginScreenProps {
   expired: boolean;
@@ -35,12 +31,9 @@ export const LoginScreen: FC<LoginScreenProps> = ({ expired, farewell, passwordR
 
   return (
     <SignedOutFrame>
-      <Stack sx={{ gap: 1 }}>
-        <KkHeading level={1} component="h1">
-          ANMELDEN
-        </KkHeading>
-        <KkNote>{INTRO}</KkNote>
-      </Stack>
+      <KkHeading level={1} component="h1">
+        ANMELDEN
+      </KkHeading>
       {expiredNotice}
       {farewellNotice}
       {passwordResetNotice}

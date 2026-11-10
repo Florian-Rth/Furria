@@ -1,28 +1,13 @@
-import { createFileRoute, Outlet, useLocation } from '@tanstack/react-router';
+import { createFileRoute, Outlet } from '@tanstack/react-router';
 import type { FC } from 'react';
 import { NotFoundPage } from '@/components/NotFoundPage';
 import { SiteChrome } from '@/components/SiteChrome';
-import { TesterChangelog } from '@/features/changelog/components/TesterChangelog/TesterChangelog';
-import { usePreviewAccess } from '@/features/preview-access/hooks/use-preview-access';
 
-const SiteLayout: FC = () => {
-  const { granted } = usePreviewAccess();
-  const { pathname } = useLocation();
-  const showsUngatedTeaser = !granted && pathname === '/';
-
-  if (showsUngatedTeaser) {
-    return <Outlet />;
-  }
-
-  return (
-    <>
-      <SiteChrome>
-        <Outlet />
-      </SiteChrome>
-      {granted && <TesterChangelog />}
-    </>
-  );
-};
+const SiteLayout: FC = () => (
+  <SiteChrome>
+    <Outlet />
+  </SiteChrome>
+);
 
 export const Route = createFileRoute('/_site')({
   component: SiteLayout,

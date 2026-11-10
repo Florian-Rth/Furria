@@ -50,30 +50,3 @@ export const toDueLabel = ({ state, dueOn, opensOn }: DueCopy, daysLeft: number)
         : `fällig ${toShortDay(dueOn)}`;
   }
 };
-
-export const LATER_STEPS: readonly { title: string; line: string }[] = [
-  {
-    title: 'Besetzung',
-    line: 'Wer an dem Abend auf der Bühne steht — Gruppen, Redner und Gastvereine, mit Zu- und Absagen.',
-  },
-  {
-    title: 'Saal & Tische',
-    line: 'Der Saal mit Tischreihen, Stühlen und Bereichen — gezeichnet am Rechner, nachgeschlagen am Handy.',
-  },
-  {
-    title: 'Aufgaben',
-    line: 'Die Liste, was vor dem Abend zu tun ist, je Amt verteilt — vom Sanitätsdienst bis zu den Orden.',
-  },
-  {
-    title: 'Werbung',
-    line: 'Beitrag, Story und Plakat für den Abend, gebaut aus Bild und Eckdaten.',
-  },
-  {
-    title: 'Live-Regie',
-    line: 'Am Abend selbst den Ablauf weiterschalten — alle sehen, wer gerade auf der Bühne steht.',
-  },
-];
-
-export const LATER_SHEET_ID = 'event-later';
-export const LATER_SHEET_TITLE = 'Kommt noch';
-export const SHEET_CLOSE_LABEL = 'Schließen';

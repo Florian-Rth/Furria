@@ -36,9 +36,6 @@ export const MANAGED_VENUES_EMPTY: ManagedVenuesEmptyCopy = {
   description: 'Lege den ersten Ort an.',
 };
 
-export const MANAGE_VENUES_FOOTNOTE =
-  'Archivierte Orte stehen nicht mehr zur Auswahl. Termine und Schlüssel bleiben erhalten.';
-
 export const VENUE_WITHOUT_ADDRESS = 'Anschrift fehlt.';
 
 const isWritten = (part: string): boolean => part.length > 0;
@@ -85,16 +82,13 @@ export const findManagedVenue = (
   return venues.find((venue) => venue.venueId === venueId) ?? null;
 };
 
-export const MANAGE_VENUES_LEAD =
-  'Orte für Termine, Trainings, Schlüssel und den Kartenvorverkauf.';
 export const toArchivedSinceLine = (archivedOn: string): string =>
-  `Archiviert am ${formatIsoDay(archivedOn)}. Aktiviere den Ort, um ihn zu bearbeiten.`;
+  `Archiviert am ${formatIsoDay(archivedOn)}.`;
 
 export const toArchiveQuestion = (name: string): string => `${name} archivieren?`;
 
 export const ARCHIVE_EYEBROW = 'Ort archivieren';
-export const ARCHIVE_EXPLANATION =
-  'Der Ort steht danach nicht mehr zur Auswahl. Termine und Schlüssel bleiben erhalten.';
+export const ARCHIVE_EXPLANATION = 'Der Ort steht danach nicht mehr zur Auswahl.';
 
 export const toArchiveConsequence = (name: string, todayLabel: string): string =>
   `Ab dem ${todayLabel} steht ${name} nicht mehr zur Auswahl.`;

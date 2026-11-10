@@ -8,8 +8,6 @@ export const STAMP_TITLES: Record<PressKind, string> = {
   republish: 'Wieder online',
 };
 export const WITHDRAWN_STAMP = 'Zurückgezogen';
-export const FIRST_PUBLICATION_NOTE = 'Adresse und Datum stehen danach fest';
-export const REPUBLISH_NOTE = 'Adresse und Datum bleiben';
 
 export const LINE_PUBLISHING = 'wird veröffentlicht …';
 export const LINE_VIEW_ONLY = 'nur ansehen, nicht bearbeitbar';

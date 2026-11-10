@@ -1,5 +1,16 @@
 export const KK_CLUB_ICONS = [
   'crown',
+  'scepter',
+  'jesterCap',
+  'chain',
+  'viceCrown',
+  'childCrown',
+  'laurel',
+  'medal',
+  'gavel',
+  'briefcase',
+  'quill',
+  'ledger',
   'euro',
   'bolt',
   'shield',
@@ -23,6 +34,13 @@ export const KK_CLUB_ICONS = [
   'calendar',
   'whistle',
   'broom',
+  'jingleBell',
+  'castle',
+  'diamond',
+  'handshake',
+  'child',
+  'confetti',
+  'rocket',
 ] as const;
 
 export type KkClubIcon = (typeof KK_CLUB_ICONS)[number];

@@ -40,7 +40,7 @@ const TIME_ENTRY: JoinFaqEntry = {
   id: 'time',
   question: 'Ich habe kaum Zeit.',
   answer:
-    'Dann fang bei der Organisation an: Aufbau, Getränke, Kasse — dort zählt, dass du da bist, wenn du kannst. Regelmäßige Proben durch die Session brauchen nur die Gruppen, die auftreten, also Tanzgarde, Männerballett und Kindergarde.',
+    'Dann fang bei der Organisation an: Aufbau, Getränke, Kasse — dort zählt, dass du da bist, wenn du kannst. Regelmäßige Proben während der Session brauchen nur die Gruppen, die auftreten, also Tanzgarde, Männerballett und Kindergarde.',
 };
 
 const LOCAL_ENTRY: JoinFaqEntry = {

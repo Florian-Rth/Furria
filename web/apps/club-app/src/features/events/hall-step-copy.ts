@@ -6,7 +6,6 @@ export const TABLES_CHECK_LABEL = 'Tische gestellt';
 export const CHAIRS_CHECK_LABEL = 'Stühle';
 export const SKIPPED_LABEL = 'Saal & Tische';
 export const SKIPPED_VALUE = 'kein Tischplan nötig';
-export const NO_HALL_PLANNER_NOTE = 'Den Tischplan stellt, wer das Recht dafür hat.';
 export const ACTION_PLAN_TABLES_LABEL = 'Tischplan anlegen';
 export const ACTION_OPEN_TABLES_LABEL = 'Tischplan öffnen';
 

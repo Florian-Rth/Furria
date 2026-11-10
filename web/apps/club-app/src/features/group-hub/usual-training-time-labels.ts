@@ -5,8 +5,6 @@ import type { UsualTrainingTime, UsualTrainingTimeForm } from './schemas';
 
 export const USUAL_TIMES_EMPTY_TITLE = 'KEINE ÜBLICHE ZEIT';
 export const USUAL_TIMES_EMPTY_LINE = 'Die Gruppe nennt keine übliche Trainingszeit.';
-export const USUAL_TIMES_ADMIN_NOTE =
-  'Steht im Kalender nur als Hinweis, nicht als fester Termin. Einzelne Trainings planst du unter Termine.';
 export const USUAL_TIMES_ADD_LABEL = 'Trainingszeit';
 export const USUAL_TIMES_ADD_ACTION_LABEL = 'Übliche Trainingszeit hinzufügen';
 export const USUAL_TIMES_SAVED_MESSAGE = 'Die üblichen Trainingszeiten sind gespeichert.';
@@ -20,7 +18,6 @@ export const USUAL_TIME_WEEKDAY_LABEL = 'Wochentag';
 export const USUAL_TIME_START_LABEL = 'Beginn';
 export const USUAL_TIME_DURATION_LABEL = 'Dauer';
 export const USUAL_TIME_VENUE_LABEL = 'Ort';
-export const USUAL_TIME_VENUE_HINT = 'Nur mit Ort werden Doppelbelegungen erkannt.';
 
 export const USUAL_TIME_REMOVE_LABEL = 'Trainingszeit entfernen';
 export const USUAL_TIME_REMOVE_EYEBROW = 'Trainingszeit entfernen';

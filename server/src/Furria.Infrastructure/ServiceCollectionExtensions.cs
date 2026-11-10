@@ -1,7 +1,9 @@
+using Furria.Application.Changes;
 using Furria.Application.ClubApp;
 using Furria.Application.Identity;
 using Furria.Infrastructure.Authorization;
 using Furria.Infrastructure.BeerList;
+using Furria.Infrastructure.Changes;
 using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Events;
 using Furria.Infrastructure.Gallery;
@@ -205,6 +207,8 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<ActCastFreeze>();
         services.AddHostedService<BeerTabReminders>();
         services.AddHostedService<BeerStockWarnings>();
+        services.AddSingleton<ChangeFeed>();
+        services.AddHostedService<ChangeListener>();
         services.Configure<DataProtectionTokenProviderOptions>(options =>
             options.TokenLifespan = PasswordResetService.LinkLifetime
         );

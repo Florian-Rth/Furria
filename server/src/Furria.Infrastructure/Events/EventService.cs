@@ -599,6 +599,10 @@ public sealed class EventService
                 row.Picture == null ? null : row.Picture.Height,
                 row.Picture == null ? null : row.Picture.Crop
             ),
+            ChangedAt =
+                row.UpdatedAt > row.CalendarEntry.UpdatedAt
+                    ? row.UpdatedAt
+                    : row.CalendarEntry.UpdatedAt,
         };
 
     [Pure]

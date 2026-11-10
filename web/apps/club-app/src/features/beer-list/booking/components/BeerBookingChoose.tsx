@@ -33,7 +33,7 @@ interface BeerBookingChooseProps {
 }
 
 export const BeerBookingChoose: FC<BeerBookingChooseProps> = ({ booking, size = 'medium' }) => {
-  const confirm = bookConfirm(booking.count, booking.ownerName);
+  const confirm = bookConfirm(booking.count);
   const holdLabel = bookLabel(booking.count);
 
   return (
