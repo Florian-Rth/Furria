@@ -14,6 +14,8 @@ public sealed record CalendarPollDetails
 
     public required DateTimeOffset? ClosedAt { get; init; }
 
+    public required CalendarCloser? ClosedBy { get; init; }
+
     public required bool IsClosed { get; init; }
 
     public required int VoterCount { get; init; }

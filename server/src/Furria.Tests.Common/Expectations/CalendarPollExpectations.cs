@@ -77,6 +77,28 @@ public sealed class CalendarPollExpectations
                 Assert.Equal(isClosed, (await SingleAsync(dbContext, ct)).ClosedAt is not null)
         );
 
+    public Expected ToBeClosedBy(int? personId) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var poll = await SingleAsync(dbContext, ct);
+                Assert.NotNull(poll.ClosedAt);
+                Assert.Equal(personId, poll.ClosedByPersonId);
+            }
+        );
+
+    public Expected ToHaveVotesUntil(DateTimeOffset? votesUntil) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(votesUntil, (await SingleAsync(dbContext, ct)).VotesUntil)
+        );
+
+    public Expected ToHaveQuestion(string question) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(question, (await SingleAsync(dbContext, ct)).Question)
+        );
+
     private Task<CalendarPoll> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
         dbContext.CalendarPolls.AsNoTracking().SingleAsync(row => row.Id == _pollId, ct);
 }

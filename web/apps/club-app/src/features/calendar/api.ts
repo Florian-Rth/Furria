@@ -7,6 +7,7 @@ import type { CalendarEntryPayload } from './calendar-authoring';
 import { toEntryWriteNotice } from './calendar-authoring';
 import {
   POLL_CLOSE_FAILED_MESSAGE,
+  POLL_REOPEN_FAILED_MESSAGE,
   POLL_VOTE_FAILED_MESSAGE,
   SIGN_UP_LINE_DELETE_FAILED_MESSAGE,
   SIGN_UP_LINE_REMOVE_FAILED_MESSAGE,
@@ -27,6 +28,7 @@ import {
   requestOwnSignUpLine,
   requestOwnSignUpLineDeletion,
   requestPollClosing,
+  requestPollReopening,
   requestPollVotes,
   requestRunningVenues,
   requestSignUpLineRemoval,
@@ -150,6 +152,14 @@ export const usePollClosingMutation = (): UseMutationResult<void, Error, PollClo
     request: ({ pollId }: PollClosingInput, accessToken) => requestPollClosing(pollId, accessToken),
     changes: ['calendarEntry'],
     notice: { failure: () => POLL_CLOSE_FAILED_MESSAGE },
+  });
+
+export const usePollReopeningMutation = (): UseMutationResult<void, Error, PollClosingInput> =>
+  useApiMutation({
+    request: ({ pollId }: PollClosingInput, accessToken) =>
+      requestPollReopening(pollId, accessToken),
+    changes: ['calendarEntry'],
+    notice: { failure: () => POLL_REOPEN_FAILED_MESSAGE },
   });
 
 export interface OwnSignUpLineInput {

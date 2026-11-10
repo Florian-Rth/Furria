@@ -2,9 +2,11 @@ import { describe, expect, it } from 'vitest';
 import { toInstant } from '@/lib/day';
 import type { CalendarPollIssueCode } from './calendar-polls';
 import {
+  mayReopenPoll,
   toPollForm,
   toPollFormLocks,
   toPollIssues,
+  toPollOutcome,
   toPollPayload,
   toPollResults,
   toViewerChoice,
@@ -32,6 +34,8 @@ const poll = (overrides: Partial<CalendarPoll>): CalendarPoll => ({
   isAnonymous: false,
   votesUntil: null,
   closedAt: null,
+  closedByFirstName: null,
+  closedByLastName: null,
   isClosed: false,
   voterCount: 0,
   concernedCount: null,
@@ -150,7 +154,7 @@ describe('toPollResults', () => {
 
 describe('toPollFormLocks', () => {
   it.each([
-    ['a new poll', null, 2, [[], false, false, false, true]],
+    ['a new poll', null, 2, [[], false, false, false, true, false, false]],
     [
       'a held multiple-choice anonymous poll with votes',
       poll({
@@ -160,7 +164,7 @@ describe('toPollFormLocks', () => {
         options: [option(1, 2), option(2, 0), option(3, 1)],
       }),
       3,
-      [[1, 3], true, true, true, true],
+      [[1, 3], true, true, true, true, true, false],
     ],
     [
       'a held multiple-choice poll where everyone holds one vote',
@@ -170,19 +174,31 @@ describe('toPollFormLocks', () => {
         options: [option(1, 2), option(2, 1)],
       }),
       2,
-      [[1, 2], false, false, false, true],
+      [[1, 2], false, false, false, true, true, false],
     ],
     [
       'a held single-choice open poll with votes',
       poll({ voterCount: 1, options: [option(1, 0), option(2, 1)] }),
       20,
-      [[2], false, false, true, false],
+      [[2], false, false, true, false, true, false],
     ],
     [
       'a held multiple-choice poll without votes',
       poll({ allowsMultipleChoices: true, isAnonymous: true }),
       2,
-      [[], false, false, false, true],
+      [[], false, false, false, true, false, false],
+    ],
+    [
+      'a closed poll',
+      poll({ isClosed: true, voterCount: 1, options: [option(1, 1), option(2, 0)] }),
+      3,
+      [[1, 2], true, true, false, false, true, true],
+    ],
+    [
+      'a closed poll without votes',
+      poll({ isClosed: true }),
+      3,
+      [[1, 2], true, true, false, false, true, true],
     ],
   ] as const)('locks %s', (_case, held, optionCount, expected) => {
     const locks = toPollFormLocks(held, {
@@ -199,6 +215,8 @@ describe('toPollFormLocks', () => {
       locks.isAnonymityLocked,
       locks.canRemoveOptions,
       locks.canAddOptions,
+      locks.isQuestionLocked,
+      locks.isDeadlineLocked,
     ]).toEqual(expected);
   });
 });
@@ -240,5 +258,37 @@ describe('poll round trip', () => {
         { optionId: null, label: 'Bahn' },
       ],
     ]);
+  });
+});
+
+describe('toPollOutcome', () => {
+  it.each([
+    ['an open poll', poll({ options: [option(1, 3), option(2, 1)] }), { kind: 'none' }],
+    ['a closed poll without votes', poll({ isClosed: true }), { kind: 'none' }],
+    [
+      'a closed poll with one leading answer',
+      poll({ isClosed: true, options: [option(1, 1), option(2, 3)] }),
+      { kind: 'winner', optionIds: [2], count: 3 },
+    ],
+    [
+      'a closed poll with a tie',
+      poll({ isClosed: true, options: [option(1, 2), option(2, 0), option(3, 2)] }),
+      { kind: 'tie', optionIds: [1, 3], count: 2 },
+    ],
+  ] as const)('states the outcome of %s', (_case, held, expected) => {
+    expect(toPollOutcome(held)).toEqual(expected);
+  });
+});
+
+describe('mayReopenPoll', () => {
+  const now = new Date('2027-01-15T12:00:00Z');
+
+  it.each([
+    ['an organiser before the start', true, true, '2027-01-20T15:00:00Z', true],
+    ['an organiser after the start', true, true, '2027-01-15T11:00:00Z', false],
+    ['an organiser on an open poll', true, false, '2027-01-20T15:00:00Z', false],
+    ['a member', false, true, '2027-01-20T15:00:00Z', false],
+  ] as const)('lets %s reopen: %s', (_case, mayClose, isClosed, startsAt, expected) => {
+    expect(mayReopenPoll(poll({ isClosed }), mayClose, startsAt, now)).toBe(expected);
   });
 });

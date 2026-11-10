@@ -34,6 +34,8 @@ const list = (overrides: Partial<CalendarSignUpList>): CalendarSignUpList => ({
   hint: null,
   signUpUntil: null,
   closedAt: null,
+  closedByFirstName: null,
+  closedByLastName: null,
   isClosed: false,
   lines: [],
   concernedCount: null,

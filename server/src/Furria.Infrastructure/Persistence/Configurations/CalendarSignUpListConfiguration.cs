@@ -39,6 +39,16 @@ public sealed class CalendarSignUpListConfiguration : IEntityTypeConfiguration<C
             .HasIndex(list => list.CalendarEntryId)
             .HasDatabaseName("ix_calendar_sign_up_list_calendar_entry_id");
 
+        builder
+            .HasOne(list => list.ClosedBy)
+            .WithMany()
+            .HasForeignKey(list => list.ClosedByPersonId)
+            .HasConstraintName("fk_calendar_sign_up_list_person_closed_by_person_id")
+            .OnDelete(DeleteBehavior.SetNull);
+        builder
+            .HasIndex(list => list.ClosedByPersonId)
+            .HasDatabaseName("ix_calendar_sign_up_list_closed_by_person_id");
+
         builder.Property(list => list.CreatedAt).HasDefaultValueSql("now()");
         builder.Property(list => list.UpdatedAt).HasDefaultValueSql("now()");
     }

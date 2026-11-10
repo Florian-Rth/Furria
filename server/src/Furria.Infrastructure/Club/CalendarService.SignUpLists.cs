@@ -152,7 +152,12 @@ public sealed partial class CalendarService
         if (list is null)
             return Result.NotFound(UnknownSignUpListMessage);
 
-        list.ClosedAt ??= _timeProvider.GetUtcNow();
+        if (list.ClosedAt is null)
+        {
+            list.ClosedAt = _timeProvider.GetUtcNow();
+            list.ClosedByPersonId = await _authorizer.ActivePersonIdAsync(actorAccountId, ct);
+        }
+
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
 

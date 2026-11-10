@@ -59,6 +59,16 @@ public sealed class CalendarSignUpListExpectations
                 Assert.Equal(isClosed, (await SingleAsync(dbContext, ct)).ClosedAt is not null)
         );
 
+    public Expected ToBeClosedBy(int? personId) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+            {
+                var list = await SingleAsync(dbContext, ct);
+                Assert.NotNull(list.ClosedAt);
+                Assert.Equal(personId, list.ClosedByPersonId);
+            }
+        );
+
     private Task<CalendarSignUpList> SingleAsync(AppDbContext dbContext, CancellationToken ct) =>
         dbContext
             .CalendarSignUpLists.AsNoTracking()

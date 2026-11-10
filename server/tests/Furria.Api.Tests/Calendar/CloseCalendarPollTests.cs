@@ -33,7 +33,7 @@ public sealed class CloseCalendarPollTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx
             .Expected.CalendarPoll(pollId)
-            .ToBeClosedByHand(true)
+            .ToBeClosedBy(ctx.Identity.People.IdOf("ilka"))
             .CalendarPoll(pollId)
             .ToHaveVoteCount(1)
             .AssertAsync(ct);

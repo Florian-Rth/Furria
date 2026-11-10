@@ -4,10 +4,10 @@ import { hasNoDeadline } from '../calendar-deadlines';
 import type { CalendarFieldError } from '../calendar-field-error';
 import { toFieldError } from '../calendar-field-error';
 import {
+  toPollCardMetaLabel,
   toPollOptionFieldLabel,
   toPollOptionRemoveLabel,
   toPollRemoveLabel,
-  toVoterCountLabel,
   toVotesLabel,
 } from '../calendar-labels';
 import type { PollFieldPath } from '../calendar-polls';
@@ -49,9 +49,11 @@ export interface CalendarPollCardControl {
   voterCountLabel: string | undefined;
   questionError: CalendarFieldError;
   deadlineError: CalendarFieldError;
-  hasNoDeadline: boolean;
   rows: CalendarPollOptionRowControl[];
   canAddOption: boolean;
+  isQuestionLocked: boolean;
+  isDeadlineLocked: boolean;
+  isDeadlineTimeLocked: boolean;
   isChoiceModeLocked: boolean;
   isAnonymityLocked: boolean;
   setQuestion: (question: string) => void;
@@ -124,12 +126,14 @@ export const useCalendarPollCard = ({
       votesUntilTime: deadlinePath,
     },
     removeLabel: toPollRemoveLabel(poll.question),
-    voterCountLabel: toVoterCountLabel(held?.voterCount ?? 0),
+    voterCountLabel: toPollCardMetaLabel(held),
     questionError: errorAt(questionPath),
     deadlineError: errorAt(deadlinePath),
-    hasNoDeadline: hasNoDeadline(poll.votesUntilDay),
     rows,
     canAddOption: locks.canAddOptions,
+    isQuestionLocked: locks.isQuestionLocked,
+    isDeadlineLocked: locks.isDeadlineLocked,
+    isDeadlineTimeLocked: hasNoDeadline(poll.votesUntilDay) || locks.isDeadlineLocked,
     isChoiceModeLocked: locks.isChoiceModeLocked,
     isAnonymityLocked: locks.isAnonymityLocked,
     setQuestion: (question) => {

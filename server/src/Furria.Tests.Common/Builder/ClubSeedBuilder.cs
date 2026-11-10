@@ -341,7 +341,8 @@ public sealed class ClubSeedBuilder
         bool isAnonymous = false,
         DateTimeOffset? votesUntil = null,
         DateTimeOffset? closedAt = null,
-        int position = DefaultPollPosition
+        int position = DefaultPollPosition,
+        string? closedByAlias = null
     )
     {
         _calendarPolls.Add(
@@ -354,7 +355,8 @@ public sealed class ClubSeedBuilder
                 isAnonymous,
                 votesUntil,
                 closedAt,
-                position
+                position,
+                closedByAlias
             )
         );
         return this;
@@ -377,7 +379,8 @@ public sealed class ClubSeedBuilder
         string? hint = null,
         DateTimeOffset? signUpUntil = null,
         DateTimeOffset? closedAt = null,
-        int position = DefaultSignUpListPosition
+        int position = DefaultSignUpListPosition,
+        string? closedByAlias = null
     )
     {
         _calendarSignUpLists.Add(
@@ -388,7 +391,8 @@ public sealed class ClubSeedBuilder
                 hint,
                 signUpUntil,
                 closedAt,
-                position
+                position,
+                closedByAlias
             )
         );
         return this;
@@ -590,7 +594,8 @@ public sealed class ClubSeedBuilder
         bool IsAnonymous,
         DateTimeOffset? VotesUntil,
         DateTimeOffset? ClosedAt,
-        int Position
+        int Position,
+        string? ClosedByAlias
     );
 
     internal sealed record CalendarPollVoteIntent(
@@ -606,7 +611,8 @@ public sealed class ClubSeedBuilder
         string? Hint,
         DateTimeOffset? SignUpUntil,
         DateTimeOffset? ClosedAt,
-        int Position
+        int Position,
+        string? ClosedByAlias
     );
 
     internal sealed record CalendarDayScheduleIntent(

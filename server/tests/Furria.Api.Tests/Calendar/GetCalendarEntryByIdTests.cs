@@ -661,6 +661,7 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                         CalendarEntryAddOnKind.Poll,
                         CalendarEntryAddOnKind.SignUpList,
                         CalendarEntryAddOnKind.SignUpList,
+                        CalendarEntryAddOnKind.Poll,
                     ],
                     result.Entry.AddOns.Select(addOn => addOn.Kind)
                 );
@@ -767,6 +768,41 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                     ],
                     schedule.Steps.Select(step => (step.Day, step.Time, step.Text))
                 );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_NameWhoClosedIt_When_APollOrListWasClosedByHand()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildPollsAsync(ct);
+
+                var (_, result) = await ReadAsync(
+                    ctx,
+                    "alice",
+                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
+                    ct
+                );
+
+                var setup = result
+                    .Entry.AddOns.Select(addOn => addOn.SignUpList)
+                    .OfType<CalendarSignUpListDto>()
+                    .Single(list => list.Title == "Aufbau");
+                var music = result
+                    .Entry.AddOns.Select(addOn => addOn.Poll)
+                    .OfType<CalendarPollDto>()
+                    .Single(poll => poll.Question == "Welche Musik?");
+                Assert.Equal("Ilka", setup.ClosedByFirstName);
+                Assert.Equal("Kalender", setup.ClosedByLastName);
+                Assert.True(music.IsClosed);
+                Assert.Null(music.ClosedByFirstName);
+                Assert.Null(music.ClosedByLastName);
             }
         );
     }
@@ -1025,7 +1061,16 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                                 "club-meeting",
                                 "Aufbau",
                                 closedAt: Now.AddDays(-1),
-                                position: 4
+                                position: 4,
+                                closedByAlias: "ilka"
+                            )
+                            .AddCalendarPoll(
+                                "music",
+                                "club-meeting",
+                                "Welche Musik?",
+                                ["Schlager", "Polka"],
+                                closedAt: Now.AddDays(-1),
+                                position: 5
                             )
                             .AddCalendarEntry(
                                 "weekend-trip",

@@ -15,6 +15,10 @@ internal static class CalendarPollRecords
     private const string AnonymityKeptMessage = "Eine anonyme Umfrage mit Stimmen bleibt anonym.";
     private const string MultipleChoicesKeptMessage =
         "Solange jemand mehrere Antworten gewählt hat, bleibt die Mehrfachauswahl.";
+    private const string ClosedPollEditMessage =
+        "Eine beendete Umfrage kann nicht mehr geändert werden.";
+    private const string VotedQuestionMessage =
+        "Die Frage einer Umfrage mit Stimmen kann nicht mehr geändert werden.";
 
     private static readonly IReadOnlyDictionary<int, IReadOnlyList<PlacedPoll>> NoPolls =
         new Dictionary<int, IReadOnlyList<PlacedPoll>>();
@@ -23,11 +27,15 @@ internal static class CalendarPollRecords
         this AppDbContext dbContext,
         CalendarEntry entry,
         IReadOnlyList<CalendarEntryAddOnInput> addOns,
+        DateTimeOffset now,
         CancellationToken ct
     )
     {
         var wanted = WantedPollsOf(addOns);
         var heldVotes = await dbContext.VotesOfAsync(entry, ct);
+
+        foreach (var poll in entry.Polls)
+            poll.ClosedAt ??= CalendarAddOnClosing.StampOf(poll.VotesUntil, entry.StartsAt, now);
 
         if (EditRefusalOf(entry.Polls, wanted, heldVotes) is { } refusal)
             return refusal;
@@ -66,6 +74,8 @@ internal static class CalendarPollRecords
                 poll.IsAnonymous,
                 poll.VotesUntil,
                 poll.ClosedAt,
+                poll.ClosedBy == null ? null : poll.ClosedBy.FirstName,
+                poll.ClosedBy == null ? null : poll.ClosedBy.LastName,
                 poll.CalendarEntry!.StartsAt,
                 poll.Options.OrderBy(option => option.Position)
                     .Select(option => new OptionRow(option.Id, option.Label))
@@ -128,6 +138,7 @@ internal static class CalendarPollRecords
             IsAnonymous = poll.IsAnonymous,
             VotesUntil = poll.VotesUntil,
             ClosedAt = poll.ClosedAt,
+            ClosedBy = CalendarClosers.Of(poll.ClosedByFirstName, poll.ClosedByLastName),
             IsClosed = CalendarAddOnClosing.IsClosed(
                 poll.ClosedAt,
                 poll.VotesUntil,
@@ -230,6 +241,12 @@ internal static class CalendarPollRecords
         IReadOnlyList<HeldVote> votes
     )
     {
+        if (held.ClosedAt is not null && !IsUnchanged(held, wanted))
+            return ClosedPollEditMessage;
+
+        if (votes.Count > 0 && held.Question != wanted.Question.Trim())
+            return VotedQuestionMessage;
+
         var heldOptionIds = held.Options.Select(option => option.Id).ToHashSet();
         var wantedLabels = wanted
             .Options.SelectMany(option =>
@@ -252,6 +269,18 @@ internal static class CalendarPollRecords
             ? MultipleChoicesKeptMessage
             : null;
     }
+
+    [Pure]
+    private static bool IsUnchanged(CalendarPoll held, CalendarPollInput wanted) =>
+        held.Question == wanted.Question.Trim()
+        && held.AllowsMultipleChoices == wanted.AllowsMultipleChoices
+        && held.IsAnonymous == wanted.IsAnonymous
+        && held.VotesUntil == wanted.VotesUntil
+        && held.Options.OrderBy(option => option.Position)
+            .Select(option => (OptionId: (int?)option.Id, option.Label))
+            .SequenceEqual(
+                wanted.Options.Select(option => (option.OptionId, Label: option.Label.Trim()))
+            );
 
     [Pure]
     private static bool IsVotedAndTouched(
@@ -350,6 +379,8 @@ internal static class CalendarPollRecords
         bool IsAnonymous,
         DateTimeOffset? VotesUntil,
         DateTimeOffset? ClosedAt,
+        string? ClosedByFirstName,
+        string? ClosedByLastName,
         DateTimeOffset EntryStartsAt,
         IReadOnlyList<OptionRow> Options
     );

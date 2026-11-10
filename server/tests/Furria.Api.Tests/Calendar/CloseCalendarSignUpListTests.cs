@@ -33,9 +33,12 @@ public sealed class CloseCalendarSignUpListTests : IClassFixture<ApiTestFixture>
     }
 
     [Theory]
-    [InlineData("cakes")]
-    [InlineData("closed")]
-    public async Task Should_CloseTheListKeepingItsLines_When_AnEditorClosesIt(string listAlias)
+    [InlineData("cakes", "ilka")]
+    [InlineData("closed", null)]
+    public async Task Should_CloseTheListKeepingItsLines_When_AnEditorClosesIt(
+        string listAlias,
+        string? closerAlias
+    )
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
@@ -51,7 +54,10 @@ public sealed class CloseCalendarSignUpListTests : IClassFixture<ApiTestFixture>
             }
         );
 
-        await ctx.Expected.CalendarSignUpList(listId).ToBeClosedByHand(true).AssertAsync(ct);
+        await ctx
+            .Expected.CalendarSignUpList(listId)
+            .ToBeClosedBy(closerAlias is null ? null : ctx.Identity.People.IdOf(closerAlias))
+            .AssertAsync(ct);
     }
 
     [Fact]

@@ -641,6 +641,94 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_KeepThePollAndListClosed_When_TheEntryMovesLaterAfterItStarted()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var meetingStart = AbendprobeStart.AddDays(6);
+
+        await _fixture.AtInstantAsync(
+            meetingStart.AddHours(1),
+            async () =>
+            {
+                var response = await MovePollMeetingAsync(
+                    ctx,
+                    meetingStart.AddDays(7),
+                    [
+                        Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Brezeln")),
+                        Days(ctx),
+                        Duties(ctx),
+                    ],
+                    ct
+                );
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        );
+
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .ToBeClosedBy(null)
+            .CalendarSignUpList(ctx.Club.CalendarSignUpLists.IdOf("duties"))
+            .ToBeClosedBy(null)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheChange_When_AClosedPollIsEdited()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var meetingStart = AbendprobeStart.AddDays(6);
+        var snack = Snack(
+            ctx,
+            ("snack:Kuchen", "Kuchen"),
+            ("snack:Brezeln", "Brezeln"),
+            (null, "Obst")
+        );
+
+        await _fixture.AtInstantAsync(
+            meetingStart.AddHours(1),
+            async () =>
+            {
+                var response = await MovePollMeetingAsync(
+                    ctx,
+                    meetingStart,
+                    [snack, Days(ctx), Duties(ctx)],
+                    ct
+                );
+
+                Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+            }
+        );
+
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .ToHaveOptions("Kuchen", "Brezeln")
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheChange_When_TheQuestionOfAPollWithVotesIsRewritten()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var snack = Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Brezeln"));
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [snack with { Poll = snack.Poll! with { Question = "Was trinkst du?" } }, Days(ctx)],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .ToHaveQuestion(SnackQuestion)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_DiscardThePollWithItsVotes_When_ThePollIsRemoved()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -1014,6 +1102,33 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             },
             DaySchedule = null,
         };
+
+    private static PutCalendarEntryAddOnDataDto Duties(SeededContext ctx) =>
+        SignUpListAddOn(ctx.Club.CalendarSignUpLists.IdOf("duties"), "Aufbau", null);
+
+    private static async Task<HttpResponseMessage> MovePollMeetingAsync(
+        SeededContext ctx,
+        DateTimeOffset startsAt,
+        IReadOnlyList<PutCalendarEntryAddOnDataDto> addOns,
+        CancellationToken ct
+    )
+    {
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(
+            ClubOwned(ctx.Club.CalendarEntries.IdOf("poll-meeting"), Farewell) with
+            {
+                StartsAt = startsAt,
+                EndsAt = null,
+                AddOns = addOns,
+            }
+        );
+
+        return response;
+    }
 
     private static async Task<HttpResponseMessage> RewriteAddOnsAsync(
         SeededContext ctx,

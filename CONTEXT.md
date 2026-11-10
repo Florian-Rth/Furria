@@ -1087,7 +1087,10 @@ recorded on behalf all rely on it; it is never rebuilt from a **poll**. Further 
 - **Poll** — a question with answers the scheduler sets, single or multiple choice. Nothing in the
   app reads meaning into its answers. Whoever may answer the entry may vote and change her vote until the
   poll **closes** — when the entry starts, at an earlier closing time, or when closed by hand.
-  Votes carry names unless the poll is **anonymous**, then only counts are shown, to its scheduler
+  A closed poll stays closed (moving the entry or the closing time later never reopens it), names
+  who closed it by hand and states its result; only an explicit **reopen** by whoever may edit
+  the entry, before the entry starts, opens it again. Once closed it can no longer be changed, and
+  its question is fixed as soon as anyone voted. Votes carry names unless the poll is **anonymous**, then only counts are shown, to its scheduler
   too. Nobody adds her own answer; answers may be added later, and changed or removed only while
   nobody chose them. An entry may hold several polls; a poll is never owed and never asked on
   Start.

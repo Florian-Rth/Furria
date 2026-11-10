@@ -307,11 +307,24 @@ public sealed partial class CalendarService
         CalendarEntryAddOns.Attach(entry, addOnKinds);
         Reconcile(entry, participatingGroupIds, audience);
 
-        if (await _dbContext.ReconcilePollsAsync(entry, command.AddOns, ct) is { } pollRefusal)
+        if (
+            await _dbContext.ReconcilePollsAsync(
+                entry,
+                command.AddOns,
+                _timeProvider.GetUtcNow(),
+                ct
+            ) is
+            { } pollRefusal
+        )
             return Result<CalendarEntryWriteResult>.Validation(pollRefusal);
 
         if (
-            CalendarSignUpListRecords.ReconcileSignUpLists(entry, command.AddOns) is { } listRefusal
+            CalendarSignUpListRecords.ReconcileSignUpLists(
+                entry,
+                command.AddOns,
+                _timeProvider.GetUtcNow()
+            ) is
+            { } listRefusal
         )
             return Result<CalendarEntryWriteResult>.Validation(listRefusal);
 
@@ -396,11 +409,24 @@ public sealed partial class CalendarService
         if (refusal is not null)
             return Result<CalendarEntryWriteResult>.Validation(refusal);
 
-        if (await _dbContext.ReconcilePollsAsync(entry, command.AddOns, ct) is { } pollRefusal)
+        if (
+            await _dbContext.ReconcilePollsAsync(
+                entry,
+                command.AddOns,
+                _timeProvider.GetUtcNow(),
+                ct
+            ) is
+            { } pollRefusal
+        )
             return Result<CalendarEntryWriteResult>.Validation(pollRefusal);
 
         if (
-            CalendarSignUpListRecords.ReconcileSignUpLists(entry, command.AddOns) is { } listRefusal
+            CalendarSignUpListRecords.ReconcileSignUpLists(
+                entry,
+                command.AddOns,
+                _timeProvider.GetUtcNow()
+            ) is
+            { } listRefusal
         )
             return Result<CalendarEntryWriteResult>.Validation(listRefusal);
 

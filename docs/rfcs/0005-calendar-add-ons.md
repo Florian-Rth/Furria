@@ -417,12 +417,30 @@ Decisions taken while building phase 9:
 
 ### Phase 10 — Lifecycle of polls and lists
 Goal: closed means closed, and every close carries a name.
-- [ ] Moving *Abstimmen bis* / *Eintragen bis* or the entry later never reopens a poll or list that had already closed: the close is stamped
-- [ ] Polls and lists record who closed them; the detail shows *Beendet von …*
-- [ ] Organisers can reopen a closed poll (*Wieder öffnen*)
-- [ ] The poll form freezes the question and the answers once the poll is closed, and the question once votes exist
-- [ ] A closed poll says its result: the winning answer with its count, a tie stated as a tie
-- [ ] Integration and pure-function tests
+- [x] Moving *Abstimmen bis* / *Eintragen bis* or the entry later never reopens a poll or list that had already closed: the close is stamped
+- [x] Polls and lists record who closed them; the detail shows *Beendet von …*
+- [x] Organisers can reopen a closed poll (*Wieder öffnen*)
+- [x] The poll form freezes the question and the answers once the poll is closed, and the question once votes exist
+- [x] A closed poll says its result: the winning answer with its count, a tie stated as a tie
+- [x] Integration and pure-function tests
+
+Decisions taken while building phase 10:
+- **Closing is stamped on write:** an entry edit stamps `closed_at` on every poll and list that has
+  already closed by its deadline or by the entry start (at the moment it closed, no closer), before
+  the new values apply. `closed_at` is authoritative afterwards, so moving the deadline or the entry
+  later never reopens it. Reads still derive a deadline close without a write.
+- **Who closed:** `closed_by_person_id` on `calendar_poll` and `calendar_sign_up_list` (SetNull,
+  her act in `ReferencesToPerson`). A close by hand records the closer; the detail sends
+  `closedByFirstName` / `closedByLastName`. The cards read *Beendet von …* (poll) and
+  *Geschlossen von …* (list, matching its *schließen* action); a deadline close reads without a name.
+- **Reopen** (`POST calendar/polls/{pollId}/reopen`, organisers): clears the close and its closer;
+  a passed *Abstimmen bis* is cleared with it. Once the entry has started a poll cannot reopen
+  (closing at the start is not a deadline that can be dropped), so the server refuses and the
+  button is hidden. Lists have no reopen.
+- **Frozen polls:** a closed poll accepts only an unchanged resubmission or its removal; its form
+  fields are read-only. The question is frozen once votes exist.
+- **Result line:** a closed poll with votes states *Ergebnis: … · n Stimmen* or
+  *Gleichstand: …, … · je n Stimmen*.
 
 ### Phase 11 — Erinnern
 Goal: organisers push the people who have not answered.

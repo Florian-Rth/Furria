@@ -99,6 +99,8 @@ public static class ReferencesToPerson
         HerAct<ChoreographyVersion>(nameof(ChoreographyVersion.SavedByPersonId)),
         HerAct<AttendanceResponse>(nameof(AttendanceResponse.RecordedByPersonId)),
         HerAct<AttendanceResponseChange>(nameof(AttendanceResponseChange.RecordedByPersonId)),
+        HerAct<CalendarPoll>(nameof(CalendarPoll.ClosedByPersonId)),
+        HerAct<CalendarSignUpList>(nameof(CalendarSignUpList.ClosedByPersonId)),
         HerAct<BeerListEnrollment>(nameof(BeerListEnrollment.EndedByPersonId)),
         HerAct<BeerStockMovement>(nameof(BeerStockMovement.BookedByPersonId)),
         HerAct<BeerCrate>(nameof(BeerCrate.EnteredByPersonId)),

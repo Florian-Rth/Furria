@@ -71,6 +71,7 @@ export const CalendarPollCard: FC<CalendarPollCardProps> = ({
         name={card.fieldNames.question}
         label={QUESTION_LABEL}
         required
+        readOnly={card.isQuestionLocked}
         value={poll.question}
         maxLength={POLL_QUESTION_MAX_LENGTH}
         error={card.questionError.hasError}
@@ -103,6 +104,7 @@ export const CalendarPollCard: FC<CalendarPollCardProps> = ({
             onChange={card.setVotesUntilDay}
             allowEmpty
             emptyLabel={DEADLINE_EMPTY_LABEL}
+            disabled={card.isDeadlineLocked}
           />
         }
         end={
@@ -111,7 +113,7 @@ export const CalendarPollCard: FC<CalendarPollCardProps> = ({
             label={DEADLINE_TIME_LABEL}
             value={poll.votesUntilTime}
             onChange={card.setVotesUntilTime}
-            disabled={card.hasNoDeadline}
+            disabled={card.isDeadlineTimeLocked}
             error={card.deadlineError.hasError}
             helperText={card.deadlineError.text}
           />

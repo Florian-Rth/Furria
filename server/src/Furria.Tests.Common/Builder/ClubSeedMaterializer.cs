@@ -61,12 +61,19 @@ internal static class ClubSeedMaterializer
             ct
         );
 
-        var polls = await InsertCalendarPollsAsync(dbContext, recorded, calendarEntries, ct);
+        var polls = await InsertCalendarPollsAsync(
+            dbContext,
+            recorded,
+            calendarEntries,
+            personIds,
+            ct
+        );
         await InsertCalendarPollVotesAsync(dbContext, recorded, polls, personIds, ct);
         var signUpLists = await InsertCalendarSignUpListsAsync(
             dbContext,
             recorded,
             calendarEntries,
+            personIds,
             ct
         );
         var signUpLines = await InsertCalendarSignUpLinesAsync(
@@ -575,6 +582,7 @@ internal static class ClubSeedMaterializer
         AppDbContext dbContext,
         ClubSeedBuilder recorded,
         IReadOnlyDictionary<string, int> calendarEntryIds,
+        IReadOnlyDictionary<string, int> personIds,
         CancellationToken ct
     )
     {
@@ -593,6 +601,7 @@ internal static class ClubSeedMaterializer
                 IsAnonymous = intent.IsAnonymous,
                 VotesUntil = intent.VotesUntil,
                 ClosedAt = intent.ClosedAt,
+                ClosedByPersonId = ClosedByIdOf(personIds, intent.ClosedByAlias),
                 Options =
                 [
                     .. intent.Options.Select(
@@ -612,6 +621,11 @@ internal static class ClubSeedMaterializer
 
         return polls;
     }
+
+    private static int? ClosedByIdOf(
+        IReadOnlyDictionary<string, int> personIds,
+        string? closedByAlias
+    ) => closedByAlias is null ? null : SeedAliases.RequireId(personIds, closedByAlias, "Person");
 
     private static async Task InsertCalendarPollVotesAsync(
         AppDbContext dbContext,
@@ -645,6 +659,7 @@ internal static class ClubSeedMaterializer
         AppDbContext dbContext,
         ClubSeedBuilder recorded,
         IReadOnlyDictionary<string, int> calendarEntryIds,
+        IReadOnlyDictionary<string, int> personIds,
         CancellationToken ct
     )
     {
@@ -662,6 +677,7 @@ internal static class ClubSeedMaterializer
                 Hint = intent.Hint,
                 SignUpUntil = intent.SignUpUntil,
                 ClosedAt = intent.ClosedAt,
+                ClosedByPersonId = ClosedByIdOf(personIds, intent.ClosedByAlias),
             },
             StringComparer.Ordinal
         );

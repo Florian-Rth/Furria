@@ -99,6 +99,13 @@ export const requestPollClosing = (pollId: number, accessToken: string): Promise
     accessToken,
   });
 
+export const requestPollReopening = (pollId: number, accessToken: string): Promise<void> =>
+  apiFetch(`/api/calendar/polls/${pollId}/reopen`, {
+    method: 'POST',
+    schema: NoContentSchema,
+    accessToken,
+  });
+
 export const requestOwnSignUpLine = (
   signUpListId: number,
   text: string | null,

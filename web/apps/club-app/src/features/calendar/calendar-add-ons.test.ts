@@ -30,6 +30,8 @@ const heldPoll = (pollId: number, voterCount: number): CalendarPoll => ({
   isAnonymous: false,
   votesUntil: null,
   closedAt: null,
+  closedByFirstName: null,
+  closedByLastName: null,
   isClosed: false,
   voterCount,
   concernedCount: null,
@@ -54,6 +56,8 @@ const heldList = (signUpListId: number, lineCount: number): CalendarSignUpList =
   hint: null,
   signUpUntil: null,
   closedAt: null,
+  closedByFirstName: null,
+  closedByLastName: null,
   isClosed: false,
   lines: Array.from({ length: lineCount }, (_, index) => ({
     lineId: index + 1,

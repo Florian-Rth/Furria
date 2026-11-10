@@ -1,3 +1,5 @@
+using Furria.Core.Identity;
+
 namespace Furria.Core.Club;
 
 public sealed class CalendarSignUpList : ITimestamped
@@ -16,11 +18,15 @@ public sealed class CalendarSignUpList : ITimestamped
 
     public DateTimeOffset? ClosedAt { get; set; }
 
+    public int? ClosedByPersonId { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
 
     public CalendarEntry? CalendarEntry { get; set; }
+
+    public Person? ClosedBy { get; set; }
 
     public ICollection<CalendarSignUpLine> Lines { get; set; } = [];
 }

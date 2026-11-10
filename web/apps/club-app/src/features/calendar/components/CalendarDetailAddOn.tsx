@@ -36,7 +36,12 @@ export const CalendarDetailAddOn: FC<CalendarDetailAddOnProps> = ({
     addOn.kind === 'attendance' ? <CalendarDetailAttendance answer={answer} roll={roll} /> : null;
   const poll =
     addOn.kind === 'poll' ? (
-      <CalendarDetailPoll poll={addOn.poll} mayClose={mayModerate} mayAnswer={mayAnswer} />
+      <CalendarDetailPoll
+        poll={addOn.poll}
+        mayClose={mayModerate}
+        mayAnswer={mayAnswer}
+        entryStartsAt={startsAt}
+      />
     ) : null;
   const signUpList =
     addOn.kind === 'signUpList' ? (

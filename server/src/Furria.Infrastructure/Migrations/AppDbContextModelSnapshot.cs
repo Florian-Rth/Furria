@@ -1017,6 +1017,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("closed_at");
 
+                    b.Property<int?>("ClosedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("closed_by_person_id");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -1054,6 +1058,9 @@ namespace Furria.Infrastructure.Migrations
 
                     b.HasIndex("CalendarEntryId")
                         .HasDatabaseName("ix_calendar_poll_calendar_entry_id");
+
+                    b.HasIndex("ClosedByPersonId")
+                        .HasDatabaseName("ix_calendar_poll_closed_by_person_id");
 
                     b.ToTable("calendar_poll", null, t =>
                         {
@@ -1228,6 +1235,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("closed_at");
 
+                    b.Property<int?>("ClosedByPersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("closed_by_person_id");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -1264,6 +1275,9 @@ namespace Furria.Infrastructure.Migrations
 
                     b.HasIndex("CalendarEntryId")
                         .HasDatabaseName("ix_calendar_sign_up_list_calendar_entry_id");
+
+                    b.HasIndex("ClosedByPersonId")
+                        .HasDatabaseName("ix_calendar_sign_up_list_closed_by_person_id");
 
                     b.ToTable("calendar_sign_up_list", null, t =>
                         {
@@ -5797,7 +5811,15 @@ namespace Furria.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_calendar_poll_calendar_entry_calendar_entry_id");
 
+                    b.HasOne("Furria.Core.Identity.Person", "ClosedBy")
+                        .WithMany()
+                        .HasForeignKey("ClosedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_calendar_poll_person_closed_by_person_id");
+
                     b.Navigation("CalendarEntry");
+
+                    b.Navigation("ClosedBy");
                 });
 
             modelBuilder.Entity("Furria.Core.Club.CalendarPollOption", b =>
@@ -5864,7 +5886,15 @@ namespace Furria.Infrastructure.Migrations
                         .IsRequired()
                         .HasConstraintName("fk_calendar_sign_up_list_calendar_entry_calendar_entry_id");
 
+                    b.HasOne("Furria.Core.Identity.Person", "ClosedBy")
+                        .WithMany()
+                        .HasForeignKey("ClosedByPersonId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_calendar_sign_up_list_person_closed_by_person_id");
+
                     b.Navigation("CalendarEntry");
+
+                    b.Navigation("ClosedBy");
                 });
 
             modelBuilder.Entity("Furria.Core.Club.KeyHolding", b =>

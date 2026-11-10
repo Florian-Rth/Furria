@@ -17,10 +17,14 @@ internal static class CalendarSignUpListRecords
 
     internal static string? ReconcileSignUpLists(
         CalendarEntry entry,
-        IReadOnlyList<CalendarEntryAddOnInput> addOns
+        IReadOnlyList<CalendarEntryAddOnInput> addOns,
+        DateTimeOffset now
     )
     {
         var wanted = WantedListsOf(addOns);
+
+        foreach (var list in entry.SignUpLists)
+            list.ClosedAt ??= CalendarAddOnClosing.StampOf(list.SignUpUntil, entry.StartsAt, now);
 
         if (!wanted.All(placed => IsNewOrHeld(entry, placed)))
             return UnknownSignUpListMessage;
@@ -58,6 +62,8 @@ internal static class CalendarSignUpListRecords
                 list.Hint,
                 list.SignUpUntil,
                 list.ClosedAt,
+                list.ClosedBy == null ? null : list.ClosedBy.FirstName,
+                list.ClosedBy == null ? null : list.ClosedBy.LastName,
                 list.CalendarEntry!.StartsAt,
                 list.Lines.OrderBy(line => line.CreatedAt)
                     .ThenBy(line => line.Id)
@@ -104,6 +110,7 @@ internal static class CalendarSignUpListRecords
             Hint = list.Hint,
             SignUpUntil = list.SignUpUntil,
             ClosedAt = list.ClosedAt,
+            ClosedBy = CalendarClosers.Of(list.ClosedByFirstName, list.ClosedByLastName),
             IsClosed = CalendarAddOnClosing.IsClosed(
                 list.ClosedAt,
                 list.SignUpUntil,
@@ -179,6 +186,8 @@ internal static class CalendarSignUpListRecords
         string? Hint,
         DateTimeOffset? SignUpUntil,
         DateTimeOffset? ClosedAt,
+        string? ClosedByFirstName,
+        string? ClosedByLastName,
         DateTimeOffset EntryStartsAt,
         IReadOnlyList<LineRow> Lines
     );

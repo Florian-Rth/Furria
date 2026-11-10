@@ -17,6 +17,18 @@ public static class CalendarAddOnClosing
     ) => closedAt is not null || now >= ClosesAt(deadline, entryStartsAt);
 
     [Pure]
+    public static DateTimeOffset? StampOf(
+        DateTimeOffset? deadline,
+        DateTimeOffset entryStartsAt,
+        DateTimeOffset now
+    )
+    {
+        var closesAt = ClosesAt(deadline, entryStartsAt);
+
+        return now >= closesAt ? closesAt : null;
+    }
+
+    [Pure]
     public static DateTimeOffset EntryEndOf(DateTimeOffset startsAt, DateTimeOffset? endsAt) =>
         endsAt ?? startsAt.AddHours(CalendarDefaults.OpenEndedHours);
 

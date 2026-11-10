@@ -183,6 +183,8 @@ export interface CalendarPollFormLocks {
   isAnonymityLocked: boolean;
   canRemoveOptions: boolean;
   canAddOptions: boolean;
+  isQuestionLocked: boolean;
+  isDeadlineLocked: boolean;
 }
 
 export const toPollFormLocks = (
@@ -192,15 +194,18 @@ export const toPollFormLocks = (
   const voterCount = held?.voterCount ?? 0;
   const hasVoters = voterCount > 0;
   const votes = (held?.options ?? []).reduce((sum, option) => sum + option.voteCount, 0);
+  const isFrozen = held?.isClosed === true;
 
   return {
     lockedOptionIds: (held?.options ?? [])
-      .filter((option) => option.voteCount > 0)
+      .filter((option) => isFrozen || option.voteCount > 0)
       .map((option) => option.optionId),
-    isChoiceModeLocked: held?.allowsMultipleChoices === true && votes > voterCount,
-    isAnonymityLocked: hasVoters && held?.isAnonymous === true,
-    canRemoveOptions: form.options.length > POLL_OPTIONS_MIN,
-    canAddOptions: form.options.length < POLL_OPTIONS_MAX,
+    isChoiceModeLocked: isFrozen || (held?.allowsMultipleChoices === true && votes > voterCount),
+    isAnonymityLocked: isFrozen || (hasVoters && held?.isAnonymous === true),
+    canRemoveOptions: !isFrozen && form.options.length > POLL_OPTIONS_MIN,
+    canAddOptions: !isFrozen && form.options.length < POLL_OPTIONS_MAX,
+    isQuestionLocked: isFrozen || hasVoters,
+    isDeadlineLocked: isFrozen,
   };
 };
 
@@ -279,6 +284,35 @@ export const toPollResults = (
     voters: option.voters,
   }));
 };
+
+export type CalendarPollOutcome =
+  | { kind: 'none' }
+  | { kind: 'winner' | 'tie'; optionIds: number[]; count: number };
+
+const NO_OUTCOME: CalendarPollOutcome = { kind: 'none' };
+
+export const toPollOutcome = (
+  poll: Pick<CalendarPoll, 'isClosed' | 'options'>,
+): CalendarPollOutcome => {
+  const most = Math.max(0, ...poll.options.map((option) => option.voteCount));
+
+  if (!poll.isClosed || most === 0) {
+    return NO_OUTCOME;
+  }
+
+  const optionIds = poll.options
+    .filter((option) => option.voteCount === most)
+    .map((option) => option.optionId);
+
+  return { kind: optionIds.length === 1 ? 'winner' : 'tie', optionIds, count: most };
+};
+
+export const mayReopenPoll = (
+  poll: Pick<CalendarPoll, 'isClosed'>,
+  mayClose: boolean,
+  entryStartsAt: string,
+  now: Date,
+): boolean => mayClose && poll.isClosed && now.getTime() < Date.parse(entryStartsAt);
 
 export const toDiscardedVoterCount = (
   addOns: readonly CalendarEntryAddOn[] | null,

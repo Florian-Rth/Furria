@@ -413,6 +413,10 @@ public sealed record CalendarSignUpListDto
 
     public required DateTimeOffset? ClosedAt { get; init; }
 
+    public required string? ClosedByFirstName { get; init; }
+
+    public required string? ClosedByLastName { get; init; }
+
     public required bool IsClosed { get; init; }
 
     public required IReadOnlyList<CalendarSignUpLineDto> Lines { get; init; }
@@ -430,6 +434,8 @@ public sealed record CalendarSignUpListDto
             Hint = list.Hint,
             SignUpUntil = list.SignUpUntil,
             ClosedAt = list.ClosedAt,
+            ClosedByFirstName = list.ClosedBy?.FirstName,
+            ClosedByLastName = list.ClosedBy?.LastName,
             IsClosed = list.IsClosed,
             Lines = [.. list.Lines.Select(CalendarSignUpLineDto.From)],
             ConcernedCount = list.ConcernedCount,
@@ -480,6 +486,10 @@ public sealed record CalendarPollDto
 
     public required DateTimeOffset? ClosedAt { get; init; }
 
+    public required string? ClosedByFirstName { get; init; }
+
+    public required string? ClosedByLastName { get; init; }
+
     public required bool IsClosed { get; init; }
 
     public required int VoterCount { get; init; }
@@ -500,6 +510,8 @@ public sealed record CalendarPollDto
             IsAnonymous = poll.IsAnonymous,
             VotesUntil = poll.VotesUntil,
             ClosedAt = poll.ClosedAt,
+            ClosedByFirstName = poll.ClosedBy?.FirstName,
+            ClosedByLastName = poll.ClosedBy?.LastName,
             IsClosed = poll.IsClosed,
             VoterCount = poll.VoterCount,
             ConcernedCount = poll.ConcernedCount,

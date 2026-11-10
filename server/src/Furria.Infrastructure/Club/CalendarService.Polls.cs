@@ -14,6 +14,8 @@ public sealed partial class CalendarService
     private const string ClosedPollMessage = "Diese Umfrage ist beendet.";
     private const string UnknownPollOptionMessage = "Diese Antwort gibt es nicht.";
     private const string SingleChoiceMessage = "Bei dieser Umfrage ist nur eine Antwort möglich.";
+    private const string StartedPollMessage =
+        "Der Termin hat begonnen. Die Umfrage kann nicht wieder geöffnet werden.";
 
     public async Task<Result> CastPollVotesAsync(
         CastCalendarPollVotesCommand command,
@@ -97,11 +99,58 @@ public sealed partial class CalendarService
         if (poll is null)
             return Result.NotFound(UnknownPollMessage);
 
-        poll.ClosedAt ??= _timeProvider.GetUtcNow();
+        if (poll.ClosedAt is null)
+        {
+            poll.ClosedAt = _timeProvider.GetUtcNow();
+            poll.ClosedByPersonId = await _authorizer.ActivePersonIdAsync(actorAccountId, ct);
+        }
+
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);
 
         return Result.Success();
+    }
+
+    public async Task<Result> ReopenPollAsync(int actorAccountId, int pollId, CancellationToken ct)
+    {
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
+        await LockPollAsync(pollId, ct);
+
+        var held = await _dbContext
+            .CalendarPolls.Where(poll => poll.Id == pollId)
+            .Select(poll => new
+            {
+                Poll = poll,
+                poll.CalendarEntry!.OwnerGroupId,
+                poll.CalendarEntry.StartsAt,
+            })
+            .SingleOrDefaultAsync(ct);
+
+        if (held is null)
+            return Result.NotFound(UnknownPollMessage);
+
+        if (!await MayOwnAsync(actorAccountId, held.OwnerGroupId, ct))
+            return Result.Forbidden(NotOwnedMessage);
+
+        var now = _timeProvider.GetUtcNow();
+
+        if (now >= held.StartsAt)
+            return Result.Validation(StartedPollMessage);
+
+        Reopen(held.Poll, now);
+        await _dbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
+
+        return Result.Success();
+    }
+
+    private static void Reopen(CalendarPoll poll, DateTimeOffset now)
+    {
+        poll.ClosedAt = null;
+        poll.ClosedByPersonId = null;
+
+        if (poll.VotesUntil <= now)
+            poll.VotesUntil = null;
     }
 
     [Pure]
