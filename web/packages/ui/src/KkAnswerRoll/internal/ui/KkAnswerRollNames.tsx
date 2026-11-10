@@ -5,7 +5,7 @@ import type { FC } from 'react';
 import type { KkAnswerRollName } from '../answer-roll-name';
 
 const NAMES_INDENT = 2;
-const NAME_SEPARATOR = '", "';
+const NAME_SEPARATOR = '","';
 
 interface KkAnswerRollNamesProps {
   names: readonly KkAnswerRollName[];
@@ -42,7 +42,15 @@ export const KkAnswerRollNames: FC<KkAnswerRollNamesProps> = ({ names }) => {
       component="ul"
       direction="row"
       data-kk-answer-roll-names
-      sx={{ flexWrap: 'wrap', minWidth: 0, m: 0, p: 0, pl: NAMES_INDENT, listStyle: 'none' }}
+      sx={{
+        flexWrap: 'wrap',
+        columnGap: 0.5,
+        minWidth: 0,
+        m: 0,
+        p: 0,
+        pl: NAMES_INDENT,
+        listStyle: 'none',
+      }}
     >
       {items}
     </Stack>
