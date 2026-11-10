@@ -5,8 +5,13 @@ import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
 import { toIsoDayLabel, toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
 import { toIsoDay } from '@/lib/day';
 import type { CalendarOwnerOption } from './calendar-authoring';
-import { AUTHORED_KINDS, NO_VENUE_ID } from './calendar-authoring';
-import type { CalendarEntry, CalendarEntryVisibility, RunningVenue } from './schemas';
+import { AUTHORED_KINDS, NO_VENUE_ID, toOfferedAudiences } from './calendar-authoring';
+import type {
+  CalendarEntry,
+  CalendarEntryAudience,
+  CalendarEntryForm,
+  RunningVenue,
+} from './schemas';
 
 export const CALENDAR_ERROR_TITLE = 'KALENDER NICHT GELADEN';
 export const CALENDAR_RETRY_LABEL = 'Noch einmal';
@@ -19,10 +24,10 @@ const TOMORROW_LABEL = 'Morgen';
 const CLUB_OWNER_LABEL = 'Verein';
 const NO_VENUE_LABEL = 'Kein Ort';
 
-const CALENDAR_VISIBILITY_LABELS: Record<CalendarEntryVisibility, string> = {
-  group: 'Gruppenintern',
+const CALENDAR_AUDIENCE_LABELS: Record<CalendarEntryAudience, string> = {
   club: 'Verein',
-  public: 'Öffentlich',
+  groups: 'Gruppen',
+  people: 'Ausgewählte Personen',
 };
 
 export const CALENDAR_KIND_OPTIONS: readonly KkSelectOption[] = AUTHORED_KINDS.map((kind) => ({
@@ -30,12 +35,14 @@ export const CALENDAR_KIND_OPTIONS: readonly KkSelectOption[] = AUTHORED_KINDS.m
   label: CALENDAR_KIND_LABELS[kind],
 }));
 
-export const CALENDAR_VISIBILITY_OPTIONS: readonly KkSelectOption[] = (
-  ['group', 'club', 'public'] as const
-).map((visibility) => ({
-  value: visibility,
-  label: CALENDAR_VISIBILITY_LABELS[visibility],
-}));
+export const toAudienceOptions = (
+  form: Pick<CalendarEntryForm, 'audienceGroupIds' | 'ownerId'>,
+  heldAudience: CalendarEntryAudience | null,
+): KkSelectOption[] =>
+  toOfferedAudiences(form, heldAudience).map((audience) => ({
+    value: audience,
+    label: CALENDAR_AUDIENCE_LABELS[audience],
+  }));
 
 export const toVenueOptions = (venues: readonly RunningVenue[]): KkSelectOption[] => [
   { value: NO_VENUE_ID, label: NO_VENUE_LABEL },

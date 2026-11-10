@@ -4,8 +4,11 @@ import {
   mayOwnCalendarEntry,
   NO_DRAFT,
   opensEntrySheet,
+  toAudienceAfterOwnerChange,
+  toAudienceGroupIds,
+  toCalendarAudience,
   toDayTime,
-  toDefaultVisibility,
+  toDefaultAudience,
   toEndKeptInStep,
   toEntryDraft,
   toEntryFormValues,
@@ -13,6 +16,7 @@ import {
   toEntryLink,
   toEntryPayload,
   toInstant,
+  toOfferedAudiences,
   toOwnerOptions,
   toParticipatingGroupChoices,
   toParticipatingGroupIds,
@@ -43,7 +47,9 @@ const entry = (overrides: Partial<CalendarEntry>): CalendarEntry => ({
   ownerGroupName: null,
   ownerGroupTone: null,
   participatingGroups: [],
-  visibility: 'club',
+  audience: 'club',
+  audienceGroups: [],
+  audiencePeople: [],
   asksForResponse: false,
   description: null,
   viewerAnswer: null,
@@ -58,7 +64,9 @@ const form = (overrides: Partial<CalendarEntryForm>): CalendarEntryForm => ({
   ownerId: 'club',
   venueId: '',
   kind: 'plain',
-  visibility: 'club',
+  audience: 'club',
+  audienceGroupIds: [],
+  audiencePersonIds: [],
   startDay: '2027-01-20',
   startTime: '19:00',
   endDay: '2027-01-20',
@@ -125,14 +133,120 @@ describe('opensEntrySheet', () => {
   });
 });
 
-describe('toDefaultVisibility', () => {
+describe('toDefaultAudience', () => {
   it.each([
-    [null, 'plain', 'club'],
-    [7, 'training', 'club'],
-    [7, 'trip', 'group'],
-  ] as const)('reads owner %s and kind %s as %s', (ownerGroupId, kind, expected) => {
-    expect(toDefaultVisibility(ownerGroupId, kind)).toBe(expected);
+    ['club', 'club'],
+    ['7', 'groups'],
+  ] as const)('reads owner %s as audience %s', (ownerId, expected) => {
+    expect(toDefaultAudience(ownerId)).toBe(expected);
   });
+});
+
+describe('toOfferedAudiences', () => {
+  it.each([
+    ['club', [], null, ['club']],
+    ['7', [], null, ['club', 'groups']],
+    ['club', ['4'], null, ['club', 'groups']],
+    ['club', [], 'people', ['club', 'people']],
+    ['club', [], 'groups', ['club', 'groups']],
+  ] as const)(
+    'offers owner %s with held groups %j and held audience %s: %j',
+    (ownerId, held, heldAudience, expected) => {
+      expect(toOfferedAudiences({ ownerId, audienceGroupIds: [...held] }, heldAudience)).toEqual(
+        expected,
+      );
+    },
+  );
+});
+
+describe('toAudienceAfterOwnerChange', () => {
+  it.each([
+    ['club', 'club', [], '7', 'groups', []],
+    ['7', 'club', [], '9', 'club', []],
+    ['7', 'groups', [], '9', 'groups', []],
+    ['7', 'groups', ['7'], 'club', 'groups', ['7']],
+    ['7', 'groups', [], 'club', 'groups', ['7']],
+    ['7', 'groups', ['7', '4'], '9', 'groups', ['7', '4']],
+    ['7', 'people', [], 'club', 'people', []],
+  ] as const)(
+    'moves owner %s with audience %s and groups %j to owner %s as %s %j',
+    (ownerId, audience, held, nextOwnerId, expectedAudience, expectedGroups) => {
+      expect(
+        toAudienceAfterOwnerChange({ ownerId, audience, audienceGroupIds: [...held] }, nextOwnerId),
+      ).toEqual({ audience: expectedAudience, audienceGroupIds: expectedGroups });
+    },
+  );
+});
+
+describe('toCalendarAudience', () => {
+  it.each([
+    ['groups', 'groups'],
+    ['public', null],
+  ] as const)('reads %s as %s', (value, expected) => {
+    expect(toCalendarAudience(value)).toBe(expected);
+  });
+});
+
+describe('audience round trip', () => {
+  it.each([
+    [
+      {
+        audience: 'groups',
+        audienceGroups: [
+          { groupId: 3, name: 'A', tone: null },
+          { groupId: 9, name: 'B', tone: null },
+        ],
+      },
+      [3, 9],
+      [],
+    ],
+    [
+      {
+        audience: 'people',
+        audiencePeople: [
+          { personId: 4, firstName: 'A', lastName: 'B' },
+          { personId: 5, firstName: 'C', lastName: 'D' },
+        ],
+      },
+      [],
+      [4, 5],
+    ],
+  ] as const)(
+    'sends an edited entry back with its audience %#',
+    (overrides, groupIds, personIds) => {
+      const payload = toEntryPayload(
+        toEntryFormValues(
+          entry({
+            ownerGroupId: 7,
+            ...overrides,
+            audienceGroups: 'audienceGroups' in overrides ? [...overrides.audienceGroups] : [],
+            audiencePeople: 'audiencePeople' in overrides ? [...overrides.audiencePeople] : [],
+          }),
+          [],
+          '2027-01-20',
+          NO_DRAFT,
+        ),
+      );
+
+      expect([payload.audienceGroupIds, payload.audiencePersonIds]).toEqual([groupIds, personIds]);
+    },
+  );
+});
+
+describe('toAudienceGroupIds', () => {
+  it.each([
+    ['7', 'club', [], []],
+    ['7', 'groups', [], [7]],
+    ['7', 'groups', ['7', '9'], [7, 9]],
+    ['club', 'people', ['4'], []],
+  ] as const)(
+    'sends owner %s with audience %s and held groups %j as %j',
+    (ownerId, audience, held, expected) => {
+      expect(toAudienceGroupIds({ ownerId, audience, audienceGroupIds: [...held] })).toEqual(
+        expected,
+      );
+    },
+  );
 });
 
 describe('toInstant', () => {
@@ -181,7 +295,7 @@ describe('toEntryPayload', () => {
 });
 
 describe('toEntryFormValues', () => {
-  it('fills in the only possible owner and its default visibility', () => {
+  it('fills in the only possible owner and its default audience', () => {
     const values = toEntryFormValues(
       null,
       toOwnerOptions([TANZGARDE], false),
@@ -190,7 +304,7 @@ describe('toEntryFormValues', () => {
     );
 
     expect(values.ownerId).toBe('7');
-    expect(values.visibility).toBe('group');
+    expect(values.audience).toBe('groups');
     expect(values.startDay).toBe('2027-01-20');
   });
 
@@ -224,13 +338,13 @@ describe('toEntryFormValues', () => {
     expect([
       values.ownerId,
       values.kind,
-      values.visibility,
+      values.audience,
       values.startTime,
       values.endDay,
       values.endTime,
       values.venueId,
       values.title.length > 0,
-    ]).toEqual(['7', 'training', 'club', '19:30', '2027-01-19', '21:00', '2', true]);
+    ]).toEqual(['7', 'training', 'groups', '19:30', '2027-01-19', '21:00', '2', true]);
   });
 
   it('starts a new entry as a plain entry', () => {

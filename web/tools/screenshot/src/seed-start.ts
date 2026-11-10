@@ -59,7 +59,7 @@ type GroupTone =
   | 'rose';
 type ClubIcon = 'crown' | 'euro' | 'key' | 'camera' | 'wrench' | 'star' | 'heart' | 'mask' | 'flag';
 type EntryKind = 'plain' | 'training' | 'trip';
-type EntryVisibility = 'group' | 'club' | 'public';
+type EntryAudience = 'club' | 'groups';
 
 interface Session {
   readonly label: string;
@@ -170,7 +170,7 @@ interface EntrySpec {
   readonly startsAt: Date;
   readonly endsAt: Date | null;
   readonly kind: EntryKind;
-  readonly visibility: EntryVisibility;
+  readonly audience: EntryAudience;
   readonly asksForResponse: boolean;
   readonly participating: readonly string[];
 }
@@ -703,7 +703,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       startsAt: runningStart,
       endsAt: hoursAfter(runningStart, 2),
       kind: 'training',
-      visibility: 'group',
+      audience: 'groups',
       asksForResponse: false,
       participating: [],
     },
@@ -716,7 +716,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       startsAt: at(tomorrow, '17:00'),
       endsAt: at(tomorrow, '18:00'),
       kind: 'training',
-      visibility: 'group',
+      audience: 'groups',
       asksForResponse: false,
       participating: [],
     },
@@ -729,7 +729,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       startsAt: at(tomorrow, '18:00'),
       endsAt: at(tomorrow, '20:00'),
       kind: 'plain',
-      visibility: 'group',
+      audience: 'groups',
       asksForResponse: true,
       participating: [],
     },
@@ -743,7 +743,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       startsAt: at(generalprobeDay, '19:00'),
       endsAt: at(generalprobeDay, '21:30'),
       kind: 'plain',
-      visibility: 'group',
+      audience: 'groups',
       asksForResponse: true,
       participating: ['Männerballett', 'Elferrat'],
     },
@@ -756,7 +756,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       startsAt: at(tuesday, '20:00'),
       endsAt: at(tuesday, '21:30'),
       kind: 'training',
-      visibility: 'group',
+      audience: 'groups',
       asksForResponse: true,
       participating: [],
     },
@@ -769,7 +769,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       startsAt: at(thursday, '19:30'),
       endsAt: at(thursday, '21:30'),
       kind: 'plain',
-      visibility: 'group',
+      audience: 'groups',
       asksForResponse: true,
       participating: [],
     },
@@ -782,7 +782,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       startsAt: at(saturday, '14:11'),
       endsAt: at(saturday, '17:00'),
       kind: 'plain',
-      visibility: 'club',
+      audience: 'club',
       asksForResponse: false,
       participating: [],
     },
@@ -795,7 +795,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       startsAt: at(assembly, '19:30'),
       endsAt: at(assembly, '21:30'),
       kind: 'plain',
-      visibility: 'club',
+      audience: 'club',
       asksForResponse: false,
       participating: [],
     },
@@ -808,7 +808,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       startsAt: at(opening, '11:11'),
       endsAt: at(opening, '18:00'),
       kind: 'trip',
-      visibility: 'public',
+      audience: 'club',
       asksForResponse: true,
       participating: ['Tanzgarde', 'Elferrat', 'Männerballett'],
     },
@@ -821,7 +821,7 @@ const entrySpecsOf = (moment: Moment): EntrySpec[] => {
       startsAt: at(christmasParty, '18:00'),
       endsAt: at(christmasParty, '23:00'),
       kind: 'plain',
-      visibility: 'club',
+      audience: 'club',
       asksForResponse: false,
       participating: [],
     },
@@ -1367,7 +1367,9 @@ const ensureCalendar = async (
       startsAt: spec.startsAt.toISOString(),
       endsAt: spec.endsAt?.toISOString() ?? null,
       kind: spec.kind,
-      visibility: spec.visibility,
+      audience: spec.audience,
+      audienceGroupIds: spec.audience === 'groups' && ownerGroupId !== null ? [ownerGroupId] : [],
+      audiencePersonIds: [],
       asksForResponse: spec.asksForResponse,
       participatingGroupIds: spec.participating.map((group) => lookUp(groupIds, group, 'group')),
     };

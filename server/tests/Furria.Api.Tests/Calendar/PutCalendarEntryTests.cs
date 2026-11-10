@@ -20,6 +20,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         "Eine Veranstaltung wird in den Veranstaltungen gepflegt.";
     private const string DanceGuardTraining = "Training der Tanzgarde";
     private const string DanceGuardPerformance = "Auftritt der Tanzgarde";
+    private const string Farewell = "Abschied planen";
     private const string Abendprobe = "Abendprobe";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
@@ -101,7 +102,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             .CalendarEntry(entryId)
             .ToHaveTitle(DanceGuardPerformance)
             .CalendarEntry(entryId)
-            .ToHaveVisibility(CalendarEntryVisibility.Club)
+            .ToHaveAudience(CalendarEntryAudience.Club)
             .AssertAsync(ct);
     }
 
@@ -171,7 +172,9 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 StartsAt = TrainingStart,
                 EndsAt = TrainingEnd,
                 Kind = CalendarEntryKind.Trip,
-                Visibility = CalendarEntryVisibility.Group,
+                Audience = CalendarEntryAudience.Groups,
+                AudienceGroupIds = [ctx.Groups.Groups.IdOf("tanzgarde")],
+                AudiencePersonIds = [],
                 AsksForResponse = false,
                 ParticipatingGroupIds = null!,
             }
@@ -204,7 +207,9 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 StartsAt = TrainingStart,
                 EndsAt = TrainingEnd,
                 Kind = CalendarEntryKind.Trip,
-                Visibility = CalendarEntryVisibility.Group,
+                Audience = CalendarEntryAudience.Groups,
+                AudienceGroupIds = [tanzgarde],
+                AudiencePersonIds = [],
                 AsksForResponse = true,
                 ParticipatingGroupIds = [],
             }
@@ -249,7 +254,9 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 StartsAt = InsideTheAbendprobe,
                 EndsAt = AfterTheAbendprobe,
                 Kind = CalendarEntryKind.Training,
-                Visibility = CalendarEntryVisibility.Club,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
                 AsksForResponse = false,
                 ParticipatingGroupIds = [],
             }
@@ -292,7 +299,9 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 StartsAt = TrainingStart,
                 EndsAt = TrainingEnd,
                 Kind = CalendarEntryKind.Training,
-                Visibility = CalendarEntryVisibility.Club,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
                 AsksForResponse = false,
                 ParticipatingGroupIds = [],
             }
@@ -348,7 +357,9 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             ClubOwned(entryId, Abendprobe) with
             {
                 Kind = CalendarEntryKind.Event,
-                Visibility = CalendarEntryVisibility.Public,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
             }
         );
 
@@ -375,6 +386,54 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Should_KeepAChosenPerson_When_SheMayNoLongerUseTheAppButStaysOnTheList()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("farewell");
+        var frieda = ctx.Identity.People.IdOf("frieda");
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(
+            ClubOwned(entryId, Farewell) with
+            {
+                Audience = CalendarEntryAudience.People,
+                AudiencePersonIds = [frieda],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx.Expected.CalendarEntry(entryId).ToChoosePeople(frieda).AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnUnprocessableEntity_When_SheIsNewlyChosenButMayNotUseTheApp()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("abendprobe");
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(
+            ClubOwned(entryId, Abendprobe) with
+            {
+                Audience = CalendarEntryAudience.People,
+                AudiencePersonIds = [ctx.Identity.People.IdOf("frieda")],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
     private static PutCalendarEntryRequest ClubOwned(int calendarEntryId, string title) =>
         new()
         {
@@ -386,7 +445,9 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             StartsAt = TrainingStart,
             EndsAt = TrainingEnd,
             Kind = CalendarEntryKind.Trip,
-            Visibility = CalendarEntryVisibility.Club,
+            Audience = CalendarEntryAudience.Club,
+            AudienceGroupIds = [],
+            AudiencePersonIds = [],
             AsksForResponse = false,
             ParticipatingGroupIds = [],
         };
@@ -406,6 +467,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                             .AddPerson("dana", "Dana", "Doppelt")
                             .AddAccount("dana")
                             .AddMembership("dana-first", "dana", JoinedIn2017)
+                            .AddPerson("frieda", "Frieda", "Ehemalig")
                     )
                     .Roles(roles =>
                         roles
@@ -445,7 +507,6 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                                 TrainingStart,
                                 TrainingEnd,
                                 kind: CalendarEntryKind.Training,
-                                visibility: CalendarEntryVisibility.Club,
                                 ownerGroupAlias: "tanzgarde"
                             )
                             .AddCalendarEntry(
@@ -454,6 +515,12 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                                 AbendprobeStart,
                                 AbendprobeEnd,
                                 venueAlias: "buehnenhaus"
+                            )
+                            .AddCalendarEntry(
+                                "farewell",
+                                Farewell,
+                                AbendprobeStart.AddDays(3),
+                                audiencePersonAliases: ["frieda", "ilka"]
                             )
                             .AddEvent("gala", Gala, AfterTheAbendprobe, "buehnenhaus")
                     ),

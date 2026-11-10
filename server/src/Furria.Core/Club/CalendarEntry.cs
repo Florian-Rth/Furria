@@ -21,7 +21,7 @@ public sealed class CalendarEntry : ITimestamped
 
     public CalendarEntryKind Kind { get; set; }
 
-    public CalendarEntryVisibility Visibility { get; set; }
+    public CalendarEntryAudience Audience { get; set; }
 
     public bool AsksForResponse { get; set; }
 
@@ -36,4 +36,8 @@ public sealed class CalendarEntry : ITimestamped
     public Event? Event { get; set; }
 
     public ICollection<CalendarEntryGroup> ParticipatingGroups { get; set; } = [];
+
+    public ICollection<CalendarEntryAudienceGroup> AudienceGroups { get; set; } = [];
+
+    public ICollection<CalendarEntryAudiencePerson> AudiencePeople { get; set; } = [];
 }

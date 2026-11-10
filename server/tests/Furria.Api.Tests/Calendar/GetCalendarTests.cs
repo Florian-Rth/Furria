@@ -23,6 +23,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
     private const string KinderTraining = "Training der Kindergarde";
     private const string KinderRehearsal = "Probe der Kindergarde";
     private const string FormerGuardReunion = "Treffen der Altgarde";
+    private const string SurprisePlanning = "Überraschung planen";
     private const string Gala = "1. Prunksitzung";
     private const string ClubTrip = "Vereinsfahrt";
     private const int NinetyMinutes = 90;
@@ -116,7 +117,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LeaveOutAGroupInternalEntry_When_TheCallerIsNotInThatGroup()
+    public async Task Should_CarryAnotherGroupsEntries_When_TheCallerHoldsClubRead()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -129,15 +130,24 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                 var result = await ReadAsync(ctx, "alice", new GetCalendarRequest(), ct);
 
                 Assert.Equal(
-                    new[] { DanceGuardPerformance, ClubMeeting, DanceGuardParty, Parade },
-                    TitlesOf(result)
+                    (true, true),
+                    (
+                        TitlesOf(result).Contains(DanceGuardTraining),
+                        TitlesOf(result).Contains(KinderTraining)
+                    )
                 );
             }
         );
     }
 
-    [Fact]
-    public async Task Should_CarryTheGroupInternalEntry_When_TheCallerBelongsToTheGroup()
+    [Theory]
+    [InlineData("alice", false)]
+    [InlineData("bea", true)]
+    [InlineData("chris", true)]
+    public async Task Should_ShowAChosenPeopleEntryOnlyToTheChosenAndItsScheduler_When_ItIsRead(
+        string viewerAlias,
+        bool shown
+    )
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -145,40 +155,11 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
             Now,
             async () =>
             {
-                var ctx = await BuildCalendarAsync(ct);
+                var ctx = await BuildChosenPeopleEntryAsync(ct);
 
-                var result = await ReadAsync(ctx, "bea", new GetCalendarRequest(), ct);
+                var result = await ReadAsync(ctx, viewerAlias, new GetCalendarRequest(), ct);
 
-                Assert.Equal(
-                    new[]
-                    {
-                        DanceGuardTraining,
-                        DanceGuardPerformance,
-                        ClubMeeting,
-                        DanceGuardParty,
-                        Parade,
-                    },
-                    TitlesOf(result)
-                );
-            }
-        );
-    }
-
-    [Fact]
-    public async Task Should_CarryTheGroupInternalEntry_When_TheCallerAdministersTheGroup()
-    {
-        var ct = TestContext.Current.CancellationToken;
-
-        await _fixture.AtInstantAsync(
-            Now,
-            async () =>
-            {
-                var ctx = await BuildCalendarAsync(ct);
-
-                var result = await ReadAsync(ctx, "chris", new GetCalendarRequest(), ct);
-
-                Assert.Contains(DanceGuardTraining, TitlesOf(result));
-                Assert.DoesNotContain(KinderTraining, TitlesOf(result));
+                Assert.Equal(shown, TitlesOf(result).Contains(SurprisePlanning));
             }
         );
     }
@@ -251,7 +232,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_LeaveOutAGroupOnlyEntry_When_ItsOwnerGroupIsArchived()
+    public async Task Should_LeaveOutAnArchivedGroupsEntry_When_SheHasNoClubMembership()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -261,7 +242,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
             {
                 var ctx = await BuildGroupOnlyEntriesAsync(ct);
 
-                var result = await ReadAsync(ctx, "bea", new GetCalendarRequest(), ct);
+                var result = await ReadAsync(ctx, "dora", new GetCalendarRequest(), ct);
 
                 Assert.DoesNotContain(FormerGuardReunion, TitlesOf(result));
             }
@@ -506,7 +487,11 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                 Assert.Equal(ctx.Groups.Groups.IdOf("tanzgarde"), training.OwnerGroupId);
                 Assert.Equal("Tanzgarde", training.OwnerGroupName);
                 Assert.Equal(CalendarEntryKind.Training, training.Kind);
-                Assert.Equal(CalendarEntryVisibility.Group, training.Visibility);
+                Assert.Equal(CalendarEntryAudience.Groups, training.Audience);
+                Assert.Equal(
+                    [ctx.Groups.Groups.IdOf("tanzgarde")],
+                    training.AudienceGroups.Select(group => group.GroupId)
+                );
 
                 var parade = result.Entries.Single(entry => entry.Title == Parade);
                 Assert.Null(parade.VenueName);
@@ -549,7 +534,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                 var gala = Assert.Single(result.Entries);
                 Assert.Equal(ctx.Club.Events.IdOf("gala"), gala.CalendarEntryId);
                 Assert.Equal(CalendarEntryKind.Event, gala.Kind);
-                Assert.Equal(CalendarEntryVisibility.Public, gala.Visibility);
+                Assert.Equal(CalendarEntryAudience.Club, gala.Audience);
                 Assert.Null(gala.OwnerGroupId);
             }
         );
@@ -768,7 +753,6 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                                 DanceGuardTraining,
                                 AtTheDanceGuardTraining,
                                 kind: CalendarEntryKind.Training,
-                                visibility: CalendarEntryVisibility.Group,
                                 venueAlias: "buehnenhaus",
                                 ownerGroupAlias: "tanzgarde"
                             )
@@ -777,7 +761,6 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                                 DanceGuardPerformance,
                                 AtTheDanceGuardPerformance,
                                 kind: CalendarEntryKind.Trip,
-                                visibility: CalendarEntryVisibility.Club,
                                 ownerGroupAlias: "tanzgarde"
                             )
                             .AddCalendarEntry(
@@ -785,7 +768,6 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                                 DanceGuardParty,
                                 AtTheDanceGuardParty,
                                 kind: CalendarEntryKind.Plain,
-                                visibility: CalendarEntryVisibility.Public,
                                 ownerGroupAlias: "tanzgarde"
                             )
                             .AddCalendarEntry(
@@ -793,7 +775,6 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                                 KinderTraining,
                                 AtTheKinderTraining,
                                 kind: CalendarEntryKind.Training,
-                                visibility: CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "kindergarde"
                             )
                             .AddCalendarEntry(
@@ -806,8 +787,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                                 "parade",
                                 Parade,
                                 AtTheParade,
-                                kind: CalendarEntryKind.Trip,
-                                visibility: CalendarEntryVisibility.Public
+                                kind: CalendarEntryKind.Trip
                             )
                             .AddAttendanceResponse(
                                 "bea-says-yes",
@@ -815,6 +795,41 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                                 "bea",
                                 AttendanceAnswer.Yes
                             )
+                    ),
+            ct
+        );
+
+    private Task<SeededContext> BuildChosenPeopleEntryAsync(CancellationToken ct) =>
+        _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(WholeClub)
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupMembership("bea-tanzgarde", "tanzgarde", "bea", JoinedIn2017)
+                            .AddGroupMembership(
+                                "alice-tanzgarde",
+                                "tanzgarde",
+                                "alice",
+                                JoinedIn2017
+                            )
+                            .AddGroupAdmin(
+                                "chris-tanzgarde",
+                                "tanzgarde",
+                                "chris",
+                                "Trainer",
+                                JoinedIn2017
+                            )
+                    )
+                    .Club(club =>
+                        club.AddCalendarEntry(
+                            "garde-surprise",
+                            SurprisePlanning,
+                            AtTheMeeting,
+                            ownerGroupAlias: "tanzgarde",
+                            audiencePersonAliases: ["bea"]
+                        )
                     ),
             ct
         );
@@ -831,6 +846,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                             .AddGroup("altgarde", "Altgarde", archivedOn: ArchivedLastSummer)
                             .AddGroupMembership("bea-tanzgarde", "tanzgarde", "bea", JoinedIn2017)
                             .AddGroupMembership("bea-altgarde", "altgarde", "bea", JoinedIn2017)
+                            .AddGroupMembership("dora-altgarde", "altgarde", "dora", JoinedIn2017)
                     )
                     .Club(club =>
                         club.AddCalendarEntry(
@@ -838,7 +854,6 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                                 KinderRehearsal,
                                 AtTheKinderTraining,
                                 kind: CalendarEntryKind.Training,
-                                visibility: CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "kindergarde",
                                 participatingGroupAliases: ["tanzgarde"]
                             )
@@ -846,7 +861,6 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                                 "altgarde-treffen",
                                 FormerGuardReunion,
                                 AtTheMeeting,
-                                visibility: CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "altgarde"
                             )
                     ),
@@ -879,7 +893,6 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                                     DanceGuardTraining,
                                     ClubClock.At(today.AddDays(2), new TimeOnly(18, 30)),
                                     kind: CalendarEntryKind.Training,
-                                    visibility: CalendarEntryVisibility.Group,
                                     ownerGroupAlias: RunningOrderSeeds.Garde,
                                     asksForResponse: true
                                 )

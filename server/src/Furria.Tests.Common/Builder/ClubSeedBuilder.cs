@@ -228,14 +228,37 @@ public sealed class ClubSeedBuilder
         DateTimeOffset startsAt,
         DateTimeOffset? endsAt = null,
         CalendarEntryKind kind = CalendarEntryKind.Plain,
-        CalendarEntryVisibility visibility = CalendarEntryVisibility.Club,
+        CalendarEntryAudience? audience = null,
         string? venueAlias = null,
         string? ownerGroupAlias = null,
         bool asksForResponse = false,
         string? description = null,
-        IReadOnlyList<string>? participatingGroupAliases = null
+        IReadOnlyList<string>? participatingGroupAliases = null,
+        IReadOnlyList<string>? audienceGroupAliases = null,
+        IReadOnlyList<string>? audiencePersonAliases = null
     )
     {
+        var participating = participatingGroupAliases ?? [];
+        var resolvedAudience =
+            audience
+            ?? (
+                audiencePersonAliases is not null ? CalendarEntryAudience.People
+                : ownerGroupAlias is not null || audienceGroupAliases is not null
+                    ? CalendarEntryAudience.Groups
+                : CalendarEntryAudience.Club
+            );
+        IReadOnlyList<string> audienceGroups =
+            resolvedAudience != CalendarEntryAudience.Groups
+                ? []
+                : audienceGroupAliases
+                    ??
+                    [
+                        .. new[] { ownerGroupAlias }
+                            .OfType<string>()
+                            .Concat(participating)
+                            .Distinct(),
+                    ];
+
         _calendarEntries.Add(
             new CalendarEntryIntent(
                 alias,
@@ -243,12 +266,12 @@ public sealed class ClubSeedBuilder
                 startsAt,
                 endsAt,
                 kind,
-                visibility,
+                new AudienceIntent(resolvedAudience, audienceGroups, audiencePersonAliases ?? []),
                 venueAlias,
                 ownerGroupAlias,
                 asksForResponse,
                 description,
-                participatingGroupAliases ?? []
+                participating
             )
         );
         return this;
@@ -392,12 +415,18 @@ public sealed class ClubSeedBuilder
         DateTimeOffset StartsAt,
         DateTimeOffset? EndsAt,
         CalendarEntryKind Kind,
-        CalendarEntryVisibility Visibility,
+        AudienceIntent Audience,
         string? VenueAlias,
         string? OwnerGroupAlias,
         bool AsksForResponse,
         string? Description,
         IReadOnlyList<string> ParticipatingGroupAliases
+    );
+
+    internal sealed record AudienceIntent(
+        CalendarEntryAudience Audience,
+        IReadOnlyList<string> GroupAliases,
+        IReadOnlyList<string> PersonAliases
     );
 
     internal sealed record AttendanceResponseIntent(

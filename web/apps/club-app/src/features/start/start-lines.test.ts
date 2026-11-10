@@ -38,6 +38,8 @@ const entry = (overrides: Partial<StartEntry>): StartEntry => ({
   viewerHoldsVenueKey: false,
   ownerGroup: null,
   participatingGroups: [],
+  audience: 'club',
+  audienceGroups: [],
   viewerGroupIds: [],
   viewerRuns: null,
   attendance: null,

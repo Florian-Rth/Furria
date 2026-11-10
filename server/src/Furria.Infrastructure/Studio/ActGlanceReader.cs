@@ -146,9 +146,7 @@ public sealed class ActGlanceReader
                 entry.StartsAt >= from
                 && (
                     (entry.OwnerGroupId != null && groupIds.Contains(entry.OwnerGroupId.Value))
-                    || entry.ParticipatingGroups.Any(participant =>
-                        groupIds.Contains(participant.GroupId)
-                    )
+                    || entry.AudienceGroups.Any(audience => groupIds.Contains(audience.GroupId))
                 )
             )
             .Select(entry => new TrainingRow(
@@ -156,7 +154,7 @@ public sealed class ActGlanceReader
                 entry.Title,
                 entry.StartsAt,
                 entry.OwnerGroupId,
-                entry.ParticipatingGroups.Select(participant => participant.GroupId).ToList()
+                entry.AudienceGroups.Select(audience => audience.GroupId).ToList()
             ))
             .ToListAsync(ct);
         var nextByAct = acts.Where(ActStudioGate.IsEditable)
@@ -232,7 +230,7 @@ public sealed class ActGlanceReader
                 .Where(entry =>
                     (
                         entry.OwnerGroupId == group.GroupId
-                        || entry.ParticipantIds.Contains(group.GroupId)
+                        || entry.AudienceGroupIds.Contains(group.GroupId)
                     )
                     && CastAttendance.SessionYearOf(entry.StartsAt) == sessionYear
                 )
@@ -278,7 +276,7 @@ public sealed class ActGlanceReader
         string Title,
         DateTimeOffset StartsAt,
         int? OwnerGroupId,
-        List<int> ParticipantIds
+        List<int> AudienceGroupIds
     );
 
     private sealed record AnswerRow(int CalendarEntryId, int PersonId, AttendanceAnswer Answer);

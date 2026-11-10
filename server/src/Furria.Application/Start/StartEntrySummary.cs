@@ -24,6 +24,10 @@ public sealed record StartEntrySummary
 
     public required IReadOnlyList<StartGroupRef> ParticipatingGroups { get; init; }
 
+    public required CalendarEntryAudience Audience { get; init; }
+
+    public required IReadOnlyList<StartGroupRef> AudienceGroups { get; init; }
+
     public required IReadOnlyList<int> ViewerGroupIds { get; init; }
 
     public required StartRun? ViewerRuns { get; init; }

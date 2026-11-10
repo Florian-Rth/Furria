@@ -280,6 +280,29 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_OweAResponse_When_SheIsChosenForAnEntryWithoutAClubMembership()
+    {
+        await OnTuesdayEveningAsync(
+            "kevin",
+            (ctx, start) =>
+                Assert.True(EntryOf(start, IdOf(ctx, "geheimtreffen")).Attendance?.IsOwed)
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutAChosenPeopleEntry_When_SheIsNotChosen()
+    {
+        await OnTuesdayEveningAsync(
+            "lena",
+            (ctx, start) =>
+                Assert.DoesNotContain(
+                    EntriesOf(start),
+                    entry => entry.CalendarEntryId == IdOf(ctx, "geheimtreffen")
+                )
+        );
+    }
+
+    [Fact]
     public async Task Should_OweNoResponse_When_SheAnsweredMaybe()
     {
         await OnTuesdayEveningAsync(
@@ -518,7 +541,6 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                     "Training",
                                     ClubClock.At(today.AddDays(2), new TimeOnly(18, 30)),
                                     kind: CalendarEntryKind.Training,
-                                    visibility: CalendarEntryVisibility.Group,
                                     ownerGroupAlias: RunningOrderSeeds.Garde,
                                     asksForResponse: asksForResponse
                                 )
@@ -663,7 +685,6 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 InBerlin(1, 19, 19, 30),
                                 InBerlin(1, 19, 21, 0),
                                 CalendarEntryKind.Training,
-                                CalendarEntryVisibility.Group,
                                 venueAlias: "sporthalle",
                                 ownerGroupAlias: "tanzgarde"
                             )
@@ -686,6 +707,13 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 asksForResponse: true
                             )
                             .AddCalendarEntry(
+                                "geheimtreffen",
+                                "Überraschung planen",
+                                InBerlin(1, 21, 19, 30),
+                                asksForResponse: true,
+                                audiencePersonAliases: ["kevin"]
+                            )
+                            .AddCalendarEntry(
                                 "ballett-training",
                                 "Training Männerballett",
                                 InBerlin(1, 20, 20, 0),
@@ -699,7 +727,6 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 InBerlin(1, 20, 17, 0),
                                 InBerlin(1, 20, 18, 30),
                                 CalendarEntryKind.Training,
-                                CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "kindergarde"
                             )
                             .AddCalendarEntry(
@@ -722,7 +749,6 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 "Probe der Kindergarde",
                                 InBerlin(1, 22, 16, 0),
                                 kind: CalendarEntryKind.Training,
-                                visibility: CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "kindergarde",
                                 asksForResponse: true,
                                 participatingGroupAliases: ["tanzgarde"]

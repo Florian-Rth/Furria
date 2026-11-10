@@ -207,7 +207,11 @@ public sealed record CalendarEntryDto
 
     public required IReadOnlyList<ParticipatingGroupDto> ParticipatingGroups { get; init; }
 
-    public required CalendarEntryVisibility Visibility { get; init; }
+    public required CalendarEntryAudience Audience { get; init; }
+
+    public required IReadOnlyList<AudienceGroupDto> AudienceGroups { get; init; }
+
+    public required IReadOnlyList<AudiencePersonDto> AudiencePeople { get; init; }
 
     public required bool AsksForResponse { get; init; }
 
@@ -234,7 +238,9 @@ public sealed record CalendarEntryDto
             OwnerGroupName = entry.OwnerGroupName,
             OwnerGroupTone = entry.OwnerGroupTone,
             ParticipatingGroups = [.. entry.ParticipatingGroups.Select(ParticipatingGroupDto.From)],
-            Visibility = entry.Visibility,
+            Audience = entry.Audience,
+            AudienceGroups = [.. entry.AudienceGroups.Select(AudienceGroupDto.From)],
+            AudiencePeople = [.. entry.AudiencePeople.Select(AudiencePersonDto.From)],
             AsksForResponse = entry.AsksForResponse,
             Description = entry.Description,
             ViewerAnswer = entry.ViewerAnswer,
@@ -270,6 +276,42 @@ public sealed record CalendarEventFactsDto
             PresaleStartsAt = facts.PresaleStartsAt,
             Status = facts.Status,
             Picture = PictureDto.From(facts.Picture),
+        };
+}
+
+public sealed record AudienceGroupDto
+{
+    public required int GroupId { get; init; }
+
+    public required string Name { get; init; }
+
+    public required GroupTone? Tone { get; init; }
+
+    [Pure]
+    public static AudienceGroupDto From(AudienceGroup group) =>
+        new()
+        {
+            GroupId = group.GroupId,
+            Name = group.Name,
+            Tone = group.Tone,
+        };
+}
+
+public sealed record AudiencePersonDto
+{
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
+
+    [Pure]
+    public static AudiencePersonDto From(AudiencePerson person) =>
+        new()
+        {
+            PersonId = person.PersonId,
+            FirstName = person.FirstName,
+            LastName = person.LastName,
         };
 }
 

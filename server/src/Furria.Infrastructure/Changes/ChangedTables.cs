@@ -50,6 +50,8 @@ public static class ChangedTables
         [typeof(UsualTrainingTime)] = [DomainChange.UsualTrainingTime],
         [typeof(CalendarEntry)] = [DomainChange.CalendarEntry],
         [typeof(CalendarEntryGroup)] = [DomainChange.CalendarEntry],
+        [typeof(CalendarEntryAudienceGroup)] = [DomainChange.CalendarEntry],
+        [typeof(CalendarEntryAudiencePerson)] = [DomainChange.CalendarEntry],
         [typeof(AttendanceResponse)] = [DomainChange.AttendanceResponse],
         [typeof(AttendanceResponseChange)] = [DomainChange.AttendanceResponse],
         [typeof(Event)] = [DomainChange.Event],

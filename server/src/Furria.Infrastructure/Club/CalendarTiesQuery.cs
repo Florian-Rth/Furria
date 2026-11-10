@@ -47,6 +47,7 @@ public static class CalendarTiesQuery
 
         return new CalendarTies
         {
+            PersonId = personId,
             HoldsRunningMembership = runningMembershipPauses.Count > 0,
             Pauses = [.. runningMembershipPauses.SelectMany(pauses => pauses).Select(ToSpan)],
             MemberGroupIds = memberGroupIds.ToHashSet(),
@@ -67,6 +68,13 @@ public static class CalendarTiesQuery
             .Concat(
                 dbContext.RunningGroupAdminTenures(personId, today).Select(admin => admin.GroupId)
             );
+
+    [Pure]
+    public static IQueryable<int> AdministeredGroupIds(
+        this AppDbContext dbContext,
+        int? personId,
+        DateOnly today
+    ) => dbContext.RunningGroupAdminTenures(personId, today).Select(admin => admin.GroupId);
 
     [Pure]
     public static IQueryable<int> CastGroupIds(

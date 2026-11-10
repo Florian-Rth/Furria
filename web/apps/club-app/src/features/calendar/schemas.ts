@@ -24,8 +24,22 @@ export const CalendarEntryDraftSearchSchema = CalendarSearchSchema.extend({
 });
 export type CalendarEntryDraftSearch = z.infer<typeof CalendarEntryDraftSearchSchema>;
 
-export const CalendarEntryVisibilitySchema = z.enum(['group', 'club', 'public']);
-export type CalendarEntryVisibility = z.infer<typeof CalendarEntryVisibilitySchema>;
+export const CalendarEntryAudienceSchema = z.enum(['club', 'groups', 'people']);
+export type CalendarEntryAudience = z.infer<typeof CalendarEntryAudienceSchema>;
+
+export const AudienceGroupSchema = z.object({
+  groupId: z.number().int(),
+  name: z.string(),
+  tone: GroupToneSchema.nullable(),
+});
+export type AudienceGroup = z.infer<typeof AudienceGroupSchema>;
+
+export const AudiencePersonSchema = z.object({
+  personId: z.number().int(),
+  firstName: z.string(),
+  lastName: z.string(),
+});
+export type AudiencePerson = z.infer<typeof AudiencePersonSchema>;
 
 export const ParticipatingGroupSchema = z.object({
   groupId: z.number().int(),
@@ -57,7 +71,9 @@ export const CalendarEntrySchema = z.object({
   ownerGroupName: z.string().nullable(),
   ownerGroupTone: GroupToneSchema.nullable(),
   participatingGroups: z.array(ParticipatingGroupSchema),
-  visibility: CalendarEntryVisibilitySchema,
+  audience: CalendarEntryAudienceSchema,
+  audienceGroups: z.array(AudienceGroupSchema),
+  audiencePeople: z.array(AudiencePersonSchema),
   asksForResponse: z.boolean(),
   description: z.string().nullable(),
   viewerAnswer: AttendanceAnswerSchema.nullable(),
@@ -133,7 +149,9 @@ export const CalendarEntryFormSchema = z
     ownerId: z.string(),
     venueId: z.string(),
     kind: CalendarEntryKindSchema,
-    visibility: CalendarEntryVisibilitySchema,
+    audience: CalendarEntryAudienceSchema,
+    audienceGroupIds: z.array(z.string()),
+    audiencePersonIds: z.array(z.string()),
     startDay: z.string().min(1, 'Der Eintrag braucht einen Tag.'),
     startTime: z.string().min(1, 'Der Eintrag braucht eine Uhrzeit.'),
     endDay: z.string(),

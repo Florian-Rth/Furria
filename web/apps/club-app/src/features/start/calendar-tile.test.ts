@@ -13,6 +13,8 @@ const entry = (calendarEntryId: number, attendance: StartEntry['attendance']): S
   viewerHoldsVenueKey: false,
   ownerGroup: null,
   participatingGroups: [],
+  audience: 'club',
+  audienceGroups: [],
   viewerGroupIds: [],
   viewerRuns: null,
   attendance,

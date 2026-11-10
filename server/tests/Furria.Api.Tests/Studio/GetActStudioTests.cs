@@ -373,7 +373,7 @@ public sealed class GetActStudioTests : IClassFixture<ApiTestFixture>
                                     TrainingOn(today.AddDays(5)),
                                     kind: CalendarEntryKind.Training,
                                     asksForResponse: true,
-                                    participatingGroupAliases: [Garde]
+                                    audienceGroupAliases: [Garde]
                                 )
                                 .AddCalendarEntry(
                                     "silent",

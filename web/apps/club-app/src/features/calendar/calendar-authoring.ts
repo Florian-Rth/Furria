@@ -6,8 +6,8 @@ import { toIsoDay } from '@/lib/day';
 import type {
   CalendarCollision,
   CalendarEntry,
+  CalendarEntryAudience,
   CalendarEntryForm,
-  CalendarEntryVisibility,
 } from './schemas';
 
 export const CLUB_OWNER_ID = 'club';
@@ -24,7 +24,7 @@ const PARTICIPANTS_UNAVAILABLE = 'Die Gruppen konnten nicht geladen werden.';
 
 export const AUTHORED_KINDS: readonly CalendarEntryKind[] = ['plain', 'training', 'trip'];
 
-const VISIBILITY_ORDER: readonly CalendarEntryVisibility[] = ['group', 'club', 'public'];
+const AUDIENCE_ORDER: readonly CalendarEntryAudience[] = ['club', 'groups', 'people'];
 
 export interface CalendarParticipantGroup {
   groupId: number;
@@ -45,7 +45,9 @@ export interface CalendarEntryPayload {
   startsAt: string;
   endsAt: string | null;
   kind: CalendarEntryKind;
-  visibility: CalendarEntryVisibility;
+  audience: CalendarEntryAudience;
+  audienceGroupIds: number[];
+  audiencePersonIds: number[];
   asksForResponse: boolean;
   participatingGroupIds: number[];
 }
@@ -166,22 +168,70 @@ export const mayOwnCalendarEntry = (
 ): boolean =>
   entry.kind !== 'event' && options.some((option) => option.ownerGroupId === entry.ownerGroupId);
 
-export const toDefaultVisibility = (
-  ownerGroupId: number | null,
-  kind: CalendarEntryKind,
-): CalendarEntryVisibility => {
-  if (ownerGroupId === null) {
-    return 'club';
+export const toDefaultAudience = (ownerId: string): CalendarEntryAudience =>
+  ownerId === CLUB_OWNER_ID ? 'club' : 'groups';
+
+type AudienceChoice = Pick<CalendarEntryForm, 'audience' | 'audienceGroupIds'>;
+
+const followsTheOwner = (form: Pick<CalendarEntryForm, 'audienceGroupIds' | 'ownerId'>): boolean =>
+  form.audienceGroupIds.length === 0 ||
+  (form.audienceGroupIds.length === 1 && form.audienceGroupIds[0] === form.ownerId);
+
+export const toAudienceAfterOwnerChange = (
+  form: Pick<CalendarEntryForm, 'audience' | 'audienceGroupIds' | 'ownerId'>,
+  nextOwnerId: string,
+): AudienceChoice => {
+  const kept = { audience: form.audience, audienceGroupIds: form.audienceGroupIds };
+
+  if (form.audience === 'club') {
+    return form.ownerId === CLUB_OWNER_ID
+      ? { audience: toDefaultAudience(nextOwnerId), audienceGroupIds: [] }
+      : kept;
+  }
+  if (form.audience !== 'groups' || !followsTheOwner(form)) {
+    return kept;
   }
 
-  return kind === 'training' ? 'club' : 'group';
+  return nextOwnerId === CLUB_OWNER_ID && form.ownerId !== CLUB_OWNER_ID
+    ? { audience: 'groups', audienceGroupIds: [form.ownerId] }
+    : { audience: 'groups', audienceGroupIds: [] };
 };
+
+export const toOfferedAudiences = (
+  form: Pick<CalendarEntryForm, 'audienceGroupIds' | 'ownerId'>,
+  heldAudience: CalendarEntryAudience | null,
+): CalendarEntryAudience[] =>
+  AUDIENCE_ORDER.filter(
+    (audience) =>
+      audience === 'club' ||
+      audience === heldAudience ||
+      (audience === 'groups' &&
+        (form.ownerId !== CLUB_OWNER_ID || form.audienceGroupIds.length > 0)),
+  );
+
+export const toAudienceGroupIds = (
+  form: Pick<CalendarEntryForm, 'audience' | 'audienceGroupIds' | 'ownerId'>,
+): number[] => {
+  if (form.audience !== 'groups') {
+    return [];
+  }
+  if (form.audienceGroupIds.length > 0) {
+    return form.audienceGroupIds.map((groupId) => Number(groupId));
+  }
+
+  return form.ownerId === CLUB_OWNER_ID ? [] : [Number(form.ownerId)];
+};
+
+export const toAudiencePersonIds = (
+  form: Pick<CalendarEntryForm, 'audience' | 'audiencePersonIds'>,
+): number[] =>
+  form.audience === 'people' ? form.audiencePersonIds.map((personId) => Number(personId)) : [];
 
 export const toCalendarKind = (value: string): CalendarEntryKind =>
   AUTHORED_KINDS.find((known) => known === value) ?? 'plain';
 
-export const toCalendarVisibility = (value: string): CalendarEntryVisibility =>
-  VISIBILITY_ORDER.find((known) => known === value) ?? 'club';
+export const toCalendarAudience = (value: string): CalendarEntryAudience | null =>
+  AUDIENCE_ORDER.find((known) => known === value) ?? null;
 
 export const toInstant = (isoDay: string, time: string): string =>
   new Date(
@@ -213,7 +263,9 @@ export const toEntryPayload = (form: CalendarEntryForm): CalendarEntryPayload =>
     startsAt: toInstant(form.startDay, form.startTime),
     endsAt: endDay === '' ? null : toInstant(endDay, form.endTime),
     kind: form.kind,
-    visibility: form.visibility,
+    audience: form.audience,
+    audienceGroupIds: toAudienceGroupIds(form),
+    audiencePersonIds: toAudiencePersonIds(form),
     asksForResponse: form.asksForResponse,
     participatingGroupIds: toParticipatingGroupIds(form.participatingGroupIds, form.ownerId),
   };
@@ -296,7 +348,7 @@ const toDraftedFormValues = (
     options.find(
       (option) => option.ownerGroupId === draft.ownerGroupId && draft.ownerGroupId !== null,
     ) ?? options[0];
-  const ownerGroupId = owner?.ownerGroupId ?? null;
+  const ownerId = owner?.id ?? CLUB_OWNER_ID;
   const kind = draft.kind ?? 'plain';
   const startTime = draft.startTime ?? DEFAULT_START_TIME;
   const endTime = draft.endTime ?? DEFAULT_END_TIME;
@@ -304,10 +356,12 @@ const toDraftedFormValues = (
   return {
     title: draft.kind === 'training' ? TRAINING_TITLE : '',
     description: '',
-    ownerId: owner?.id ?? CLUB_OWNER_ID,
+    ownerId,
     venueId: draft.venueId === null ? NO_VENUE_ID : String(draft.venueId),
     kind,
-    visibility: toDefaultVisibility(ownerGroupId, kind),
+    audience: toDefaultAudience(ownerId),
+    audienceGroupIds: [],
+    audiencePersonIds: [],
     startDay,
     startTime,
     endDay: endTime > startTime ? startDay : nextDayOf(startDay),
@@ -336,7 +390,9 @@ export const toEntryFormValues = (
     ownerId: toOwnerId(entry.ownerGroupId),
     venueId: entry.venueId === null ? NO_VENUE_ID : String(entry.venueId),
     kind: entry.kind,
-    visibility: entry.visibility,
+    audience: entry.audience,
+    audienceGroupIds: entry.audienceGroups.map((group) => String(group.groupId)),
+    audiencePersonIds: entry.audiencePeople.map((person) => String(person.personId)),
     startDay: start.day,
     startTime: start.time,
     endDay: end?.day ?? '',

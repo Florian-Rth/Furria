@@ -52,18 +52,15 @@ public sealed class GetGroupCalendar : Endpoint<GetGroupCalendarRequest, GetGrou
         var from = req.From ?? ClubClock.Today(_timeProvider);
         var to = req.To ?? from.AddDays(CalendarLimits.DefaultWindowDays);
 
-        var holdsClubRead = await _authorizer.IsGrantedAsync(
-            accountId.Value,
-            FurriaPermissions.ClubRead,
-            ct
-        );
-
         var entries = await _calendarService.GetGroupEntriesAsync(
-            personId,
-            req.GroupId,
-            from,
-            to,
-            holdsClubRead,
+            new GroupCalendarQuery
+            {
+                ViewerAccountId = accountId.Value,
+                ViewerPersonId = personId,
+                GroupId = req.GroupId,
+                From = from,
+                To = to,
+            },
             ct
         );
 
@@ -95,12 +92,30 @@ public sealed class GetGroupCalendar : Endpoint<GetGroupCalendarRequest, GetGrou
             OwnerGroupName = entry.OwnerGroupName,
             OwnerGroupTone = entry.OwnerGroupTone,
             ParticipatingGroups = [.. entry.ParticipatingGroups.Select(ToDto)],
-            Visibility = entry.Visibility,
+            Audience = entry.Audience,
+            AudienceGroups = [.. entry.AudienceGroups.Select(ToDto)],
+            AudiencePeople = [.. entry.AudiencePeople.Select(ToDto)],
             AsksForResponse = entry.AsksForResponse,
             Description = entry.Description,
             ViewerAnswer = entry.ViewerAnswer,
             ViewerMayAnswer = viewerMayAnswer,
             IsRunning = entry.IsRunning,
+        };
+
+    private static GroupCalendarAudienceGroupDto ToDto(AudienceGroup group) =>
+        new()
+        {
+            GroupId = group.GroupId,
+            Name = group.Name,
+            Tone = group.Tone,
+        };
+
+    private static GroupCalendarAudiencePersonDto ToDto(AudiencePerson person) =>
+        new()
+        {
+            PersonId = person.PersonId,
+            FirstName = person.FirstName,
+            LastName = person.LastName,
         };
 
     private static GroupCalendarParticipantDto ToDto(ParticipatingGroup group) =>
@@ -188,7 +203,11 @@ public sealed record GroupCalendarEntryDto
 
     public required IReadOnlyList<GroupCalendarParticipantDto> ParticipatingGroups { get; init; }
 
-    public required CalendarEntryVisibility Visibility { get; init; }
+    public required CalendarEntryAudience Audience { get; init; }
+
+    public required IReadOnlyList<GroupCalendarAudienceGroupDto> AudienceGroups { get; init; }
+
+    public required IReadOnlyList<GroupCalendarAudiencePersonDto> AudiencePeople { get; init; }
 
     public required bool AsksForResponse { get; init; }
 
@@ -208,4 +227,22 @@ public sealed record GroupCalendarParticipantDto
     public required string Name { get; init; }
 
     public required GroupTone? Tone { get; init; }
+}
+
+public sealed record GroupCalendarAudienceGroupDto
+{
+    public required int GroupId { get; init; }
+
+    public required string Name { get; init; }
+
+    public required GroupTone? Tone { get; init; }
+}
+
+public sealed record GroupCalendarAudiencePersonDto
+{
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
 }

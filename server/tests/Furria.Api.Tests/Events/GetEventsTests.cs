@@ -427,7 +427,6 @@ public sealed class GetEventsTests : IClassFixture<ApiTestFixture>
                                 GuardParty,
                                 AtTheGuardParty,
                                 kind: CalendarEntryKind.Plain,
-                                visibility: CalendarEntryVisibility.Public,
                                 venueAlias: "buergerhaus"
                             )
                     ),

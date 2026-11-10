@@ -677,6 +677,14 @@ namespace Furria.Infrastructure.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("asks_for_response");
 
+                    b.Property<string>("Audience")
+                        .IsRequired()
+                        .ValueGeneratedOnAdd()
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasDefaultValue("Club")
+                        .HasColumnName("audience");
+
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
@@ -722,14 +730,6 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("venue_id");
 
-                    b.Property<string>("Visibility")
-                        .IsRequired()
-                        .ValueGeneratedOnAdd()
-                        .HasMaxLength(32)
-                        .HasColumnType("character varying(32)")
-                        .HasDefaultValue("Club")
-                        .HasColumnName("visibility");
-
                     b.HasKey("Id")
                         .HasName("pk_calendar_entry");
 
@@ -744,16 +744,98 @@ namespace Furria.Infrastructure.Migrations
 
                     b.ToTable("calendar_entry", null, t =>
                         {
-                            t.HasCheckConstraint("ck_calendar_entry_event_public", "kind <> 'Event' OR (visibility = 'Public' AND owner_group_id IS NULL)");
+                            t.HasCheckConstraint("ck_calendar_entry_audience", "audience IN ('Club', 'Groups', 'People')");
+
+                            t.HasCheckConstraint("ck_calendar_entry_event_club", "kind <> 'Event' OR (audience = 'Club' AND owner_group_id IS NULL)");
 
                             t.HasCheckConstraint("ck_calendar_entry_kind", "kind IN ('Plain', 'Training', 'Trip', 'Event')");
 
-                            t.HasCheckConstraint("ck_calendar_entry_owner_visibility", "owner_group_id IS NOT NULL OR visibility <> 'Group'");
-
-                            t.HasCheckConstraint("ck_calendar_entry_visibility", "visibility IN ('Group', 'Club', 'Public')");
-
                             t.HasCheckConstraint("ck_calendar_entry_window", "ends_at IS NULL OR ends_at >= starts_at");
                         });
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.CalendarEntryAudienceGroup", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("GroupId")
+                        .HasColumnType("integer")
+                        .HasColumnName("group_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_calendar_entry_audience_group");
+
+                    b.HasIndex("GroupId")
+                        .HasDatabaseName("ix_calendar_entry_audience_group_group_id");
+
+                    b.HasIndex("CalendarEntryId", "GroupId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_calendar_entry_audience_group_calendar_entry_id_group_id");
+
+                    b.ToTable("calendar_entry_audience_group", (string)null);
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.CalendarEntryAudiencePerson", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_calendar_entry_audience_person");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_calendar_entry_audience_person_person_id");
+
+                    b.HasIndex("CalendarEntryId", "PersonId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_calendar_entry_audience_person_calendar_entry_id_person_id");
+
+                    b.ToTable("calendar_entry_audience_person", (string)null);
                 });
 
             modelBuilder.Entity("Furria.Core.Club.CalendarEntryGroup", b =>
@@ -5050,6 +5132,48 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Venue");
                 });
 
+            modelBuilder.Entity("Furria.Core.Club.CalendarEntryAudienceGroup", b =>
+                {
+                    b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
+                        .WithMany("AudienceGroups")
+                        .HasForeignKey("CalendarEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_calendar_entry_audience_group_calendar_entry_calendar_entry_id");
+
+                    b.HasOne("Furria.Core.Groups.Group", "Group")
+                        .WithMany()
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_calendar_entry_audience_group_group_group_id");
+
+                    b.Navigation("CalendarEntry");
+
+                    b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.CalendarEntryAudiencePerson", b =>
+                {
+                    b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
+                        .WithMany("AudiencePeople")
+                        .HasForeignKey("CalendarEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_calendar_entry_audience_person_calendar_entry_calendar_entry_id");
+
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_calendar_entry_audience_person_person_person_id");
+
+                    b.Navigation("CalendarEntry");
+
+                    b.Navigation("Person");
+                });
+
             modelBuilder.Entity("Furria.Core.Club.CalendarEntryGroup", b =>
                 {
                     b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
@@ -6315,6 +6439,10 @@ namespace Furria.Infrastructure.Migrations
 
             modelBuilder.Entity("Furria.Core.Club.CalendarEntry", b =>
                 {
+                    b.Navigation("AudienceGroups");
+
+                    b.Navigation("AudiencePeople");
+
                     b.Navigation("Event");
 
                     b.Navigation("ParticipatingGroups");

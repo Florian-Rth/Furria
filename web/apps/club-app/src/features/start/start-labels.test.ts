@@ -26,6 +26,8 @@ const entry = (overrides: Partial<StartEntry> = {}): StartEntry => ({
   viewerHoldsVenueKey: false,
   ownerGroup: null,
   participatingGroups: [],
+  audience: 'club',
+  audienceGroups: [],
   viewerGroupIds: [],
   viewerRuns: null,
   attendance: null,
@@ -246,6 +248,8 @@ describe('toEntryFacets', () => {
       overrides: {
         title: 'Sitzung Elferrat',
         participatingGroups: [ELFERRAT],
+        audience: 'club',
+        audienceGroups: [],
         viewerGroupIds: [2],
       },
       expected: [],
@@ -255,6 +259,8 @@ describe('toEntryFacets', () => {
       overrides: {
         ownerGroup: TANZGARDE,
         participatingGroups: [TANZGARDE],
+        audience: 'club',
+        audienceGroups: [],
         viewerGroupIds: [4],
       },
       expected: [],
@@ -264,6 +270,8 @@ describe('toEntryFacets', () => {
       overrides: {
         isRunning: true,
         participatingGroups: [KINDERGARDE, TANZGARDE],
+        audience: 'club',
+        audienceGroups: [],
         viewerGroupIds: [6, 4],
         viewerRuns: { groupId: 6, function: 'Trainerin' },
         venue: FESTHALLE,

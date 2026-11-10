@@ -43,6 +43,8 @@ public sealed partial class StartService
                 row.Venue is { } venue && viewer.KeyVenueIds.Contains(venue.VenueId),
             OwnerGroup = row.OwnerGroup is null ? null : ToGroupRef(row.OwnerGroup),
             ParticipatingGroups = [.. row.ParticipatingGroups.Select(ToGroupRef)],
+            Audience = row.Audience.Audience,
+            AudienceGroups = [.. row.Audience.Groups.Select(ToGroupRef)],
             ViewerGroupIds =
             [
                 .. row.GroupIds().Where(groupId => IsTiedToGroup(viewer.Ties, groupId)).Distinct(),
@@ -162,13 +164,25 @@ public sealed partial class StartService
         );
         var holdsRunningMembership = viewer.Ties.HoldsRunningMembership;
         var tieGroupIds = TieGroupIdsOf(viewer.Ties);
+        var personId = viewer.PersonId;
+        var administeredGroupIds = viewer.Ties.AdminFunctions.Keys.ToList();
 
         return _dbContext
             .CalendarEntries.AsNoTracking()
             .Where(entry =>
-                (entry.OwnerGroupId == null && holdsRunningMembership)
-                || (entry.OwnerGroupId != null && tieGroupIds.Contains(entry.OwnerGroupId.Value))
-                || entry.ParticipatingGroups.Any(link => tieGroupIds.Contains(link.GroupId))
+                entry.Audience == CalendarEntryAudience.People
+                    ? entry.AudiencePeople.Any(link => link.PersonId == personId)
+                        || (
+                            entry.OwnerGroupId != null
+                            && administeredGroupIds.Contains(entry.OwnerGroupId.Value)
+                        )
+                    : (entry.Audience == CalendarEntryAudience.Club && holdsRunningMembership)
+                        || (
+                            entry.OwnerGroupId != null
+                            && tieGroupIds.Contains(entry.OwnerGroupId.Value)
+                        )
+                        || entry.ParticipatingGroups.Any(link => tieGroupIds.Contains(link.GroupId))
+                        || entry.AudienceGroups.Any(link => tieGroupIds.Contains(link.GroupId))
             )
             .Where(entry =>
                 entry.EndsAt == null ? entry.StartsAt > openEndedCutoff : entry.EndsAt > now

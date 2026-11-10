@@ -615,6 +615,21 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         );
     }
 
+    public async Task RewriteCalendarEntryVisibilityDirectlyAsync(
+        int calendarEntryId,
+        string visibility,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"UPDATE calendar_entry SET visibility = {visibility} WHERE id = {calendarEntryId}",
+            ct
+        );
+    }
+
     public async Task DeleteMediaItemDirectlyAsync(int mediaItemId, CancellationToken ct = default)
     {
         await using var scope = Services.CreateAsyncScope();
@@ -974,6 +989,8 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
         var entry = await db
             .CalendarEntries.AsNoTracking()
+            .Include(row => row.AudienceGroups)
+            .Include(row => row.AudiencePeople)
             .SingleAsync(row => row.Id == calendarEntryId, ct);
 
         return await calendarService.UpdateAsync(
@@ -989,7 +1006,9 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
                 StartsAt = entry.StartsAt,
                 EndsAt = entry.EndsAt,
                 Kind = entry.Kind,
-                Visibility = entry.Visibility,
+                Audience = entry.Audience,
+                AudienceGroupIds = [.. entry.AudienceGroups.Select(link => link.GroupId)],
+                AudiencePersonIds = [.. entry.AudiencePeople.Select(link => link.PersonId)],
                 AsksForResponse = entry.AsksForResponse,
                 ParticipatingGroupIds = [groupId],
             },

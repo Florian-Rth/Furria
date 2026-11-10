@@ -14,6 +14,8 @@ const entry = (calendarEntryId: number, attendance: StartAttendance | null): Sta
   viewerHoldsVenueKey: false,
   ownerGroup: null,
   participatingGroups: [],
+  audience: 'club',
+  audienceGroups: [],
   viewerGroupIds: [],
   viewerRuns: null,
   attendance,

@@ -5,7 +5,6 @@ import type {
   CalendarWeekName,
 } from './calendar-agenda';
 import { isoWeekOf, shiftDay, weekdayIndexOf } from './calendar-agenda';
-import type { CalendarEntryVisibility } from './schemas';
 
 export const BOARD_LABEL = 'Termine nach Tagen';
 export const STRIP_LABEL = 'Woche';
@@ -46,7 +45,7 @@ export const FACT_LABELS = {
   when: 'Wann',
   where: 'Wo',
   groups: 'Gruppen',
-  visibility: 'Sichtbar',
+  audience: 'Für wen',
   event: 'Karten',
 } as const;
 
@@ -86,11 +85,8 @@ export const LANDMARK_LABELS: Record<CalendarLandmark, string> = {
   ashWednesday: 'Aschermittwoch',
 };
 
-export const VISIBILITY_LABELS: Record<CalendarEntryVisibility, string> = {
-  group: 'Nur Gruppe',
-  club: 'Ganzer Verein',
-  public: 'Öffentlich',
-};
+export const WHOLE_CLUB_AUDIENCE_LABEL = 'Ganzer Verein';
+export const AUDIENCE_SEPARATOR = ', ';
 
 const CLUB_LABEL = 'Verein';
 

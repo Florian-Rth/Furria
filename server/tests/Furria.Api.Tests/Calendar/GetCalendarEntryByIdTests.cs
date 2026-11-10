@@ -14,6 +14,7 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
     private const string LastSessionsParade = "Rosenmontagsumzug 2026";
     private const string NextSummerFestival = "Sommerfest 2028";
     private const string DanceGuardTraining = "Training der Tanzgarde";
+    private const string SurprisePlanning = "Überraschung planen";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
 
@@ -131,7 +132,7 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_AnswerNotFound_When_TheGroupInternalEntryIsHiddenFromTheCaller()
+    public async Task Should_AnswerNotFound_When_SheIsNotChosenForTheEntry()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -144,11 +145,44 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                 var (response, _) = await ReadAsync(
                     ctx,
                     "alice",
-                    ctx.Club.CalendarEntries.IdOf("garde-training"),
+                    ctx.Club.CalendarEntries.IdOf("garde-surprise"),
                     ct
                 );
 
                 Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CarryTheChosenPeople_When_SheIsChosenForTheEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+
+                var (response, entry) = await ReadAsync(
+                    ctx,
+                    "bea",
+                    ctx.Club.CalendarEntries.IdOf("garde-surprise"),
+                    ct
+                );
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal(
+                    (CalendarEntryAudience.People, $"{ctx.Identity.People.IdOf("bea")}"),
+                    (
+                        entry.Entry.Audience,
+                        string.Join(
+                            ",",
+                            entry.Entry.AudiencePeople.Select(person => person.PersonId)
+                        )
+                    )
+                );
             }
         );
     }
@@ -257,8 +291,14 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                                 DanceGuardTraining,
                                 AtTheTraining,
                                 kind: CalendarEntryKind.Training,
-                                visibility: CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "tanzgarde"
+                            )
+                            .AddCalendarEntry(
+                                "garde-surprise",
+                                SurprisePlanning,
+                                AtTheTraining.AddDays(1),
+                                ownerGroupAlias: "tanzgarde",
+                                audiencePersonAliases: ["bea"]
                             )
                             .AddCalendarEntry(
                                 "club-meeting",
@@ -270,8 +310,7 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                                 "parade",
                                 LastSessionsParade,
                                 AtLastSessionsParade,
-                                kind: CalendarEntryKind.Trip,
-                                visibility: CalendarEntryVisibility.Public
+                                kind: CalendarEntryKind.Trip
                             )
                             .AddCalendarEntry("festival", NextSummerFestival, AtNextSummerFestival)
                             .AddVenue("buergerhaus", "Bürgerhaus")

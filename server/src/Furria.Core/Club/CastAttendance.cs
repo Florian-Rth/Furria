@@ -8,7 +8,9 @@ public static class CastAttendance
     public const CalendarEntryKind Kind = CalendarEntryKind.Training;
 
     public static readonly Expression<Func<CalendarEntry, bool>> AsksItsCast = entry =>
-        entry.Kind == Kind && entry.AsksForResponse;
+        entry.Kind == Kind
+        && entry.AsksForResponse
+        && entry.Audience != CalendarEntryAudience.People;
 
     [Pure]
     public static bool AsksTheCastOn(CalendarEntryKind kind, bool asksForResponse) =>

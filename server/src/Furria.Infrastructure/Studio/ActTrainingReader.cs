@@ -81,7 +81,7 @@ public sealed class ActTrainingReader
                 entry.StartsAt >= from
                 && (
                     entry.OwnerGroupId == groupId
-                    || entry.ParticipatingGroups.Any(participant => participant.GroupId == groupId)
+                    || entry.AudienceGroups.Any(audience => audience.GroupId == groupId)
                 )
             )
             .OrderBy(entry => entry.StartsAt)

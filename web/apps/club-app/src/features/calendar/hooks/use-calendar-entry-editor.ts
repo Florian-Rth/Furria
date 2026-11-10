@@ -6,9 +6,9 @@ import { toIsoDay } from '@/lib/day';
 import { useCreateCalendarEntryMutation, useUpdateCalendarEntryMutation } from '../api';
 import type { CalendarDayTime, CalendarOwnerOption } from '../calendar-authoring';
 import {
+  toAudienceAfterOwnerChange,
+  toCalendarAudience,
   toCalendarKind,
-  toCalendarVisibility,
-  toDefaultVisibility,
   toEndKeptInStep,
   toEntryDraft,
   toEntryFormValues,
@@ -17,7 +17,7 @@ import {
   toParticipationKeptForOwner,
   toToggledParticipation,
 } from '../calendar-authoring';
-import type { CalendarEntry, CalendarEntryForm } from '../schemas';
+import type { CalendarEntry, CalendarEntryAudience, CalendarEntryForm } from '../schemas';
 import { CalendarEntryFormSchema } from '../schemas';
 
 const FIELD_EDIT = { shouldDirty: true, shouldValidate: true } as const;
@@ -35,7 +35,8 @@ export interface CalendarEntryEditorControl {
   setVenue: (value: string) => void;
   toggleParticipatingGroup: (value: string) => void;
   setKind: (value: string) => void;
-  setVisibility: (value: string) => void;
+  setAudience: (value: string) => void;
+  heldAudience: CalendarEntryAudience | null;
   setStartDay: (value: string | null) => void;
   setStartTime: (value: string) => void;
   setEndDay: (value: string | null) => void;
@@ -77,16 +78,12 @@ export const useCalendarEntryEditor = ({
   });
   const { form, values } = write;
 
-  const ownerGroupIdOf = (ownerId: string): number | null =>
-    ownerOptions.find((option) => option.id === ownerId)?.ownerGroupId ?? null;
-
   const setOwner = (value: string): void => {
+    const audience = toAudienceAfterOwnerChange(form.getValues(), value);
+
     form.setValue('ownerId', value, FIELD_EDIT);
-    form.setValue(
-      'visibility',
-      toDefaultVisibility(ownerGroupIdOf(value), form.getValues('kind')),
-      FIELD_EDIT,
-    );
+    form.setValue('audience', audience.audience, FIELD_EDIT);
+    form.setValue('audienceGroupIds', audience.audienceGroupIds, FIELD_EDIT);
     form.setValue(
       'participatingGroupIds',
       toParticipationKeptForOwner(form.getValues('participatingGroupIds'), value),
@@ -135,14 +132,7 @@ export const useCalendarEntryEditor = ({
   };
 
   const setKind = (value: string): void => {
-    const kind = toCalendarKind(value);
-
-    form.setValue('kind', kind, FIELD_EDIT);
-    form.setValue(
-      'visibility',
-      toDefaultVisibility(ownerGroupIdOf(form.getValues('ownerId')), kind),
-      FIELD_EDIT,
-    );
+    form.setValue('kind', toCalendarKind(value), FIELD_EDIT);
   };
 
   return {
@@ -157,9 +147,14 @@ export const useCalendarEntryEditor = ({
     },
     toggleParticipatingGroup,
     setKind,
-    setVisibility: (value) => {
-      form.setValue('visibility', toCalendarVisibility(value), FIELD_EDIT);
+    setAudience: (value) => {
+      const audience = toCalendarAudience(value);
+
+      if (audience !== null) {
+        form.setValue('audience', audience, FIELD_EDIT);
+      }
     },
+    heldAudience: entry?.audience ?? null,
     setStartDay,
     setStartTime,
     setEndDay: (value) => {

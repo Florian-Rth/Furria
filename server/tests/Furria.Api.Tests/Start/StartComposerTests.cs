@@ -660,6 +660,8 @@ public sealed class StartComposerTests
             ViewerHoldsVenueKey = false,
             OwnerGroup = null,
             ParticipatingGroups = [],
+            Audience = CalendarEntryAudience.Club,
+            AudienceGroups = [],
             ViewerGroupIds = [],
             ViewerRuns = null,
             Attendance = null,

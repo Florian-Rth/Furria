@@ -128,8 +128,8 @@ Nothing else pushes: no reminder before the start, and nothing for polls, lists 
 | `Training` | `Training` |
 | `Rehearsal`, `Meeting`, `Party`, `Other` | `Plain` |
 | `Performance` | `Trip`; its participating groups stay as *Mitwirkende Gruppen* |
-| Visibility `Group` | Audience `Groups` = the owner group |
-| Visibility `Club` or `Public` | Audience `Club` |
+| Group-owned entry (any visibility) | Audience `Groups` = the owner group plus its participating groups, so exactly the people it concerned before stay concerned |
+| Club-owned entry or event | Audience `Club` |
 | `AsksForResponse` | Unchanged; it is the Zu-/Absage add-on |
 
 **Upcoming trainings that asked the cast automatically** get `AsksForResponse = true`, so their
@@ -155,13 +155,24 @@ included. Existing data is migrated.
 ### Phase 2 — Audience (backend)
 Goal: the API speaks `audience` instead of `visibility`. Sight, concern and answering follow it.
 The club app is adapted to the new contract with its current UI.
-- [ ] `CalendarEntryAudience` (Club, Groups, People), `calendar_entry_audience_group`, `calendar_entry_audience_person`; drop `Visibility`
-- [ ] Migration: Group → Groups (owner group), Club/Public → Club
-- [ ] `CalendarTies` / `CalendarService`: sight, concern, answering, "her dates", no-`club.read` calendar per CONTEXT
-- [ ] Choosable people query: running members plus non-member group members and admins of running groups
-- [ ] Post/Put/Get calendar endpoints, group calendar, Start, change feed carry the audience
-- [ ] Club app schemas and form adapted (temporary mapping of the old visibility chips → audience Club/Groups)
-- [ ] Integration tests: sight and concern per audience, chosen-people privacy, no-membership calendar
+- [x] `CalendarEntryAudience` (Club, Groups, People), `calendar_entry_audience_group`, `calendar_entry_audience_person`; drop `Visibility`
+- [x] Migration: group-owned → Groups (owner ∪ participating groups), club-owned and events → Club
+- [x] `CalendarTies` / `CalendarService`: sight, concern, answering, "her dates", no-`club.read` calendar per CONTEXT
+- [x] Choosable people query: running members plus non-member group members and admins of running groups (guards newly chosen people on write; its endpoint lands with the picker in phase 3)
+- [x] Post/Put/Get calendar endpoints, group calendar, Start, change feed carry the audience
+- [x] Club app schemas and form adapted (Für wen chips Verein / Gruppen = owner group; an existing audience round-trips unchanged)
+- [x] Integration tests: sight and concern per audience, chosen-people privacy, no-membership calendar
+
+Decisions taken while building phase 2:
+- The cast of an act is asked by a training its group **owns or is the audience of** (CONTEXT), no longer by
+  a training it only participates in; studio open spots and training mode read the same set.
+- A chosen-people entry stays out of the cast rule, out of *expected*, and runs only via its owner group.
+- The group calendar lists entries whose owner, participating or audience groups include the group.
+- Archived audience groups and unchoosable people are refused only when newly added; held ones stay.
+- Rolling the image back across the audience migration needs the pre-migration dump: the old API
+  reads `visibility`, which no longer exists.
+- Known, older than this phase: the calendar list shows a cast guest's trainings of any session year
+  while answering checks the year; to be aligned with the push work in phase 7 at the latest.
 
 ### Phase 3 — Form: Für wen and the add-on frame
 Goal: the new form. Für wen has group and person pickers. *Bausteine* holds Zu-/Absage and

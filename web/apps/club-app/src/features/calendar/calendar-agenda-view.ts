@@ -28,6 +28,7 @@ import {
 } from './calendar-agenda';
 import type { CalendarTimeCopy } from './calendar-agenda-copy';
 import {
+  AUDIENCE_SEPARATOR,
   LANDMARK_LABELS,
   NO_ENTRIES_NOTE,
   RUNNING_LABEL,
@@ -43,7 +44,7 @@ import {
   toWeekTitle,
   USUAL_PLAN_LABEL,
   USUAL_TITLE,
-  VISIBILITY_LABELS,
+  WHOLE_CLUB_AUDIENCE_LABEL,
   weekdayOf,
 } from './calendar-agenda-copy';
 import type { CalendarEntry, UsualTraining } from './schemas';
@@ -157,11 +158,26 @@ export interface CalendarDetailView {
   mark: CalendarMark;
   venue: string | null;
   groups: KkCalendarLineGroup[];
-  visibility: string;
+  audience: string;
   text: string | null;
   eventLine: string | null;
   cover: EventCover | null;
 }
+
+export const toAudienceLabel = (
+  entry: Pick<CalendarEntry, 'audience' | 'audienceGroups' | 'audiencePeople'>,
+): string => {
+  if (entry.audience === 'groups') {
+    return entry.audienceGroups.map((group) => group.name).join(AUDIENCE_SEPARATOR);
+  }
+  if (entry.audience === 'people') {
+    return entry.audiencePeople
+      .map((person) => `${person.firstName} ${person.lastName}`)
+      .join(AUDIENCE_SEPARATOR);
+  }
+
+  return WHOLE_CLUB_AUDIENCE_LABEL;
+};
 
 const trimmed = (value: string | null): string | null => {
   const text = value?.trim() ?? '';
@@ -209,7 +225,7 @@ export const toDetailView = (entry: CalendarEntry): CalendarDetailView => ({
   mark: markOf(entry.ownerGroupId, entry.ownerGroupTone),
   venue: entry.venueName,
   groups: toLineGroups(entry),
-  visibility: VISIBILITY_LABELS[entry.visibility],
+  audience: toAudienceLabel(entry),
   text: textOf(entry),
   eventLine: eventLineOf(entry),
   cover: thumbOf(entry, COVER_SIZES),

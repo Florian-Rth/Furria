@@ -27,7 +27,11 @@ public sealed record CalendarEntrySummary
 
     public required IReadOnlyList<ParticipatingGroup> ParticipatingGroups { get; init; }
 
-    public required CalendarEntryVisibility Visibility { get; init; }
+    public required CalendarEntryAudience Audience { get; init; }
+
+    public required IReadOnlyList<AudienceGroup> AudienceGroups { get; init; }
+
+    public required IReadOnlyList<AudiencePerson> AudiencePeople { get; init; }
 
     public required bool AsksForResponse { get; init; }
 

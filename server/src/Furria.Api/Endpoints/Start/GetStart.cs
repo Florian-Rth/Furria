@@ -143,6 +143,8 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
             ViewerHoldsVenueKey = entry.ViewerHoldsVenueKey,
             OwnerGroup = entry.OwnerGroup is null ? null : ToDto(entry.OwnerGroup),
             ParticipatingGroups = [.. entry.ParticipatingGroups.Select(ToDto)],
+            Audience = entry.Audience,
+            AudienceGroups = [.. entry.AudienceGroups.Select(ToDto)],
             ViewerGroupIds = entry.ViewerGroupIds,
             ViewerRuns = entry.ViewerRuns is null ? null : ToDto(entry.ViewerRuns),
             Attendance = entry.Attendance is null ? null : ToDto(entry.Attendance),
@@ -356,6 +358,10 @@ public sealed record StartEntryDto
     public required StartGroupRefDto? OwnerGroup { get; init; }
 
     public required IReadOnlyList<StartGroupRefDto> ParticipatingGroups { get; init; }
+
+    public required CalendarEntryAudience Audience { get; init; }
+
+    public required IReadOnlyList<StartGroupRefDto> AudienceGroups { get; init; }
 
     public required IReadOnlyList<int> ViewerGroupIds { get; init; }
 

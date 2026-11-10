@@ -180,7 +180,6 @@ public sealed class DeleteCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                                 DanceGuardTraining,
                                 TrainingStart,
                                 kind: CalendarEntryKind.Training,
-                                visibility: CalendarEntryVisibility.Club,
                                 ownerGroupAlias: "tanzgarde"
                             )
                             .AddVenue("buergerhaus", "Bürgerhaus")

@@ -5,14 +5,14 @@ import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import { KkSelectField } from '@furria/ui/KkSelectField';
 import { KkSwitchRow } from '@furria/ui/KkSwitchRow';
 import type { FC } from 'react';
-import { CALENDAR_VISIBILITY_OPTIONS } from '../calendar-labels';
+import { toAudienceOptions } from '../calendar-labels';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
 import type { CalendarEntryReload } from '../hooks/use-calendar-entry-supplies';
 
 const SECTION_TITLE = 'Wer & wie';
 const OWNER_LABEL = 'Eigentümer';
 const PARTICIPANTS_LABEL = 'Mitwirkende Gruppen';
-const VISIBILITY_LABEL = 'Sichtbarkeit';
+const AUDIENCE_LABEL = 'Für wen';
 const RESPONSE_LABEL = 'Nach Zu-/Absage fragen';
 const PARTICIPANTS_RELOAD_LABEL = 'Gruppen neu laden';
 
@@ -32,6 +32,7 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
   participantsReload,
 }) => {
   const participantsErrorText = control.form.formState.errors.participatingGroupIds?.message;
+  const audienceOptions = toAudienceOptions(control.values, control.heldAudience);
 
   const ownerField =
     ownerOptions.length < 2 ? null : (
@@ -73,12 +74,12 @@ export const CalendarEntryAudienceSection: FC<CalendarEntryAudienceSectionProps>
       />
       {participantsReloadButton}
       <KkSelectField
-        name="visibility"
-        label={VISIBILITY_LABEL}
+        name="audience"
+        label={AUDIENCE_LABEL}
         required
-        value={control.values.visibility}
-        options={CALENDAR_VISIBILITY_OPTIONS}
-        onChange={control.setVisibility}
+        value={control.values.audience}
+        options={audienceOptions}
+        onChange={control.setAudience}
         presentation="choices"
       />
       <KkSwitchRow

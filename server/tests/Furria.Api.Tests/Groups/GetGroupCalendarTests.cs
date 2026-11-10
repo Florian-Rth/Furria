@@ -359,7 +359,6 @@ public sealed class GetGroupCalendarTests : IClassFixture<ApiTestFixture>
                                 DanceGuardTraining,
                                 AtTheTraining,
                                 kind: CalendarEntryKind.Training,
-                                visibility: CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "tanzgarde"
                             )
                             .AddCalendarEntry(
@@ -367,7 +366,6 @@ public sealed class GetGroupCalendarTests : IClassFixture<ApiTestFixture>
                                 ChildrensRehearsal,
                                 AtTheChildrensRehearsal,
                                 kind: CalendarEntryKind.Training,
-                                visibility: CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "kindergarde",
                                 asksForResponse: true,
                                 participatingGroupAliases: ["tanzgarde"]
@@ -383,8 +381,7 @@ public sealed class GetGroupCalendarTests : IClassFixture<ApiTestFixture>
                                 "parade",
                                 Parade,
                                 AtTheParade,
-                                kind: CalendarEntryKind.Trip,
-                                visibility: CalendarEntryVisibility.Public
+                                kind: CalendarEntryKind.Trip
                             )
                     ),
             ct

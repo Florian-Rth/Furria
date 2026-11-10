@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { MyActSchema } from '@/features/acts/schemas';
 import { AttendanceAnswerSchema } from '@/features/attendance/schemas';
+import { CalendarEntryAudienceSchema } from '@/features/calendar/schemas';
 import { NewsCategorySchema } from '@/features/news/schemas';
 import { TO_DO_KINDS } from '@/features/to-dos/schemas';
 import { knownKindsOnly } from '@/lib/api/known-kinds';
@@ -51,6 +52,8 @@ export const StartEntrySchema = z.object({
   viewerHoldsVenueKey: z.boolean(),
   ownerGroup: StartGroupRefSchema.nullable(),
   participatingGroups: z.array(StartGroupRefSchema),
+  audience: CalendarEntryAudienceSchema,
+  audienceGroups: z.array(StartGroupRefSchema),
   viewerGroupIds: z.array(z.int()),
   viewerRuns: StartRunSchema.nullable(),
   attendance: StartAttendanceSchema.nullable(),

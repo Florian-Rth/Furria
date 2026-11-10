@@ -49,8 +49,7 @@ internal static class ClubSeedMaterializer
         var calendarEntries = await InsertCalendarEntriesAsync(
             dbContext,
             recorded,
-            venues,
-            groupIds,
+            new CalendarEntrySeedIds(venues, groupIds, personIds),
             ct
         );
         var events = await InsertEventsAsync(dbContext, recorded, venues, ct);
@@ -360,11 +359,13 @@ internal static class ClubSeedMaterializer
     private static async Task<Dictionary<string, int>> InsertCalendarEntriesAsync(
         AppDbContext dbContext,
         ClubSeedBuilder recorded,
-        IReadOnlyDictionary<string, int> venueIds,
-        IReadOnlyDictionary<string, int> groupIds,
+        CalendarEntrySeedIds ids,
         CancellationToken ct
     )
     {
+        var venueIds = ids.VenueIds;
+        var groupIds = ids.GroupIds;
+        var personIds = ids.PersonIds;
         var entries = recorded.CalendarEntries.ToDictionary(
             intent => intent.Alias,
             intent => new CalendarEntry
@@ -374,7 +375,21 @@ internal static class ClubSeedMaterializer
                 StartsAt = intent.StartsAt,
                 EndsAt = intent.EndsAt,
                 Kind = intent.Kind,
-                Visibility = intent.Visibility,
+                Audience = intent.Audience.Audience,
+                AudienceGroups =
+                [
+                    .. intent.Audience.GroupAliases.Select(alias => new CalendarEntryAudienceGroup
+                    {
+                        GroupId = SeedAliases.RequireId(groupIds, alias, "Group"),
+                    }),
+                ],
+                AudiencePeople =
+                [
+                    .. intent.Audience.PersonAliases.Select(alias => new CalendarEntryAudiencePerson
+                    {
+                        PersonId = SeedAliases.RequireId(personIds, alias, "Person"),
+                    }),
+                ],
                 AsksForResponse = intent.AsksForResponse,
                 VenueId = intent.VenueAlias is null
                     ? null
@@ -422,7 +437,7 @@ internal static class ClubSeedMaterializer
                 StartsAt = intent.StartsAt,
                 EndsAt = intent.EndsAt,
                 Kind = CalendarEntryKind.Event,
-                Visibility = CalendarEntryVisibility.Public,
+                Audience = CalendarEntryAudience.Club,
                 AsksForResponse = false,
                 VenueId = SeedAliases.RequireId(venueIds, intent.VenueAlias, "Venue"),
                 Event = new Event
@@ -513,4 +528,10 @@ internal static class ClubSeedMaterializer
             StringComparer.Ordinal
         );
     }
+
+    private sealed record CalendarEntrySeedIds(
+        IReadOnlyDictionary<string, int> VenueIds,
+        IReadOnlyDictionary<string, int> GroupIds,
+        IReadOnlyDictionary<string, int> PersonIds
+    );
 }

@@ -88,6 +88,12 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<CalendarEntryGroup> CalendarEntryGroups => Set<CalendarEntryGroup>();
 
+    public DbSet<CalendarEntryAudienceGroup> CalendarEntryAudienceGroups =>
+        Set<CalendarEntryAudienceGroup>();
+
+    public DbSet<CalendarEntryAudiencePerson> CalendarEntryAudiencePeople =>
+        Set<CalendarEntryAudiencePerson>();
+
     public DbSet<Event> Events => Set<Event>();
 
     public DbSet<EventPresalePlace> EventPresalePlaces => Set<EventPresalePlace>();

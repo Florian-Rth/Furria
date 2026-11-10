@@ -62,7 +62,9 @@ public sealed class PostCalendarEntry
             StartsAt = req.StartsAt,
             EndsAt = req.EndsAt,
             Kind = req.Kind,
-            Visibility = req.Visibility,
+            Audience = req.Audience,
+            AudienceGroupIds = req.AudienceGroupIds,
+            AudiencePersonIds = req.AudiencePersonIds,
             AsksForResponse = req.AsksForResponse,
             ParticipatingGroupIds = req.ParticipatingGroupIds,
         };
@@ -100,7 +102,11 @@ public sealed record PostCalendarEntryRequest
 
     public required CalendarEntryKind Kind { get; init; }
 
-    public required CalendarEntryVisibility Visibility { get; init; }
+    public required CalendarEntryAudience Audience { get; init; }
+
+    public required IReadOnlyList<int> AudienceGroupIds { get; init; }
+
+    public required IReadOnlyList<int> AudiencePersonIds { get; init; }
 
     public required bool AsksForResponse { get; init; }
 
@@ -112,7 +118,11 @@ public sealed class PostCalendarEntryValidator : Validator<PostCalendarEntryRequ
     private const string UnknownKindMessage = "Diese Art von Eintrag gibt es nicht.";
     private const string EventsLiveInTheWorkbenchMessage =
         "Eine Veranstaltung wird in den Veranstaltungen gepflegt.";
-    private const string UnknownVisibilityMessage = "Diese Sichtbarkeit gibt es nicht.";
+    private const string UnknownAudienceMessage = "Diese Auswahl für „Für wen“ gibt es nicht.";
+    private const string NoAudienceGroupMessage = "Wähle mindestens eine Gruppe.";
+    private const string NoAudiencePersonMessage = "Wähle mindestens eine Person.";
+    private const string AudienceMismatchMessage = "Diese Auswahl passt nicht zu „Für wen“.";
+    private const string UnknownPersonMessage = "Diese Person gibt es nicht.";
     private const string UnknownGroupMessage = "Diese Gruppe gibt es nicht.";
     private const string UnknownVenueMessage = "Diesen Ort gibt es nicht im Verzeichnis.";
     private const string TitleMissingMessage = "Der Eintrag braucht einen Titel.";
@@ -138,7 +148,31 @@ public sealed class PostCalendarEntryValidator : Validator<PostCalendarEntryRequ
         RuleFor(request => request.Kind)
             .NotEqual(CalendarEntryKind.Event)
             .WithMessage(EventsLiveInTheWorkbenchMessage);
-        RuleFor(request => request.Visibility).IsInEnum().WithMessage(UnknownVisibilityMessage);
+        RuleFor(request => request.Audience).IsInEnum().WithMessage(UnknownAudienceMessage);
+        RuleFor(request => request.AudienceGroupIds).NotNull();
+        RuleFor(request => request.AudiencePersonIds).NotNull();
+        RuleFor(request => request.AudienceGroupIds)
+            .NotEmpty()
+            .When(request => request.Audience == CalendarEntryAudience.Groups)
+            .WithMessage(NoAudienceGroupMessage);
+        RuleFor(request => request.AudienceGroupIds)
+            .Empty()
+            .When(request => request.Audience != CalendarEntryAudience.Groups)
+            .WithMessage(AudienceMismatchMessage);
+        RuleFor(request => request.AudiencePersonIds)
+            .NotEmpty()
+            .When(request => request.Audience == CalendarEntryAudience.People)
+            .WithMessage(NoAudiencePersonMessage);
+        RuleFor(request => request.AudiencePersonIds)
+            .Empty()
+            .When(request => request.Audience != CalendarEntryAudience.People)
+            .WithMessage(AudienceMismatchMessage);
+        RuleForEach(request => request.AudienceGroupIds)
+            .GreaterThan(0)
+            .WithMessage(UnknownGroupMessage);
+        RuleForEach(request => request.AudiencePersonIds)
+            .GreaterThan(0)
+            .WithMessage(UnknownPersonMessage);
         RuleFor(request => request.EndsAt)
             .GreaterThanOrEqualTo(request => request.StartsAt)
             .When(request => request.EndsAt is not null)

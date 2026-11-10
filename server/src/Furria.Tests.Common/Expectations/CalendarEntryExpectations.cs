@@ -37,10 +37,10 @@ public sealed class CalendarEntryExpectations
             async (dbContext, ct) => Assert.Equal(kind, (await SingleAsync(dbContext, ct)).Kind)
         );
 
-    public Expected ToHaveVisibility(CalendarEntryVisibility visibility) =>
+    public Expected ToHaveAudience(CalendarEntryAudience audience) =>
         _expected.Enqueue(
             async (dbContext, ct) =>
-                Assert.Equal(visibility, (await SingleAsync(dbContext, ct)).Visibility)
+                Assert.Equal(audience, (await SingleAsync(dbContext, ct)).Audience)
         );
 
     public Expected ToBeOwnedBy(int? ownerGroupId) =>
@@ -97,6 +97,34 @@ public sealed class CalendarEntryExpectations
     public Expected ToCarryNoParticipatingGroup() =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Empty(await ParticipatingGroupIdsAsync(dbContext, ct))
+        );
+
+    public Expected ToCarryAudienceGroups(params int[] groupIds) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    [.. groupIds.Order()],
+                    await dbContext
+                        .CalendarEntryAudienceGroups.AsNoTracking()
+                        .Where(link => link.CalendarEntryId == _calendarEntryId)
+                        .Select(link => link.GroupId)
+                        .OrderBy(groupId => groupId)
+                        .ToListAsync(ct)
+                )
+        );
+
+    public Expected ToChoosePeople(params int[] personIds) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    [.. personIds.Order()],
+                    await dbContext
+                        .CalendarEntryAudiencePeople.AsNoTracking()
+                        .Where(link => link.CalendarEntryId == _calendarEntryId)
+                        .Select(link => link.PersonId)
+                        .OrderBy(personId => personId)
+                        .ToListAsync(ct)
+                )
         );
 
     private async Task<IReadOnlyList<int>> ParticipatingGroupIdsAsync(

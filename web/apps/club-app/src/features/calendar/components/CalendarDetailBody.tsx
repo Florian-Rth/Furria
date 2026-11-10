@@ -117,8 +117,8 @@ export const CalendarDetailBody: FC<CalendarDetailBodyProps> = ({ entry }) => {
           <KkCalendarDetail.Fact icon="group" label={FACT_LABELS.groups}>
             <CalendarGroupTags groups={view.groups} />
           </KkCalendarDetail.Fact>
-          <KkCalendarDetail.Fact icon="visibility" label={FACT_LABELS.visibility}>
-            {view.visibility}
+          <KkCalendarDetail.Fact icon="visibility" label={FACT_LABELS.audience}>
+            {view.audience}
           </KkCalendarDetail.Fact>
           {eventFact}
         </KkCalendarDetail.Facts>
