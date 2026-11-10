@@ -257,6 +257,8 @@
     "./KkProofSheet": "./src/KkProofSheet/KkProofSheet.tsx",
     "./KkProseField": "./src/KkProseField.tsx",
     "./KkPublishCeremony": "./src/KkPublishCeremony/KkPublishCeremony.tsx",
+    "./KkPromoStage": "./src/KkPromoStage/KkPromoStage.tsx",
+    "./promo-stage-types": "./src/KkPromoStage/promo-stage-types.ts",
     "./KkQrCode": "./src/KkQrCode.tsx",
     "./KkQuietFold": "./src/KkQuietFold.tsx",
     "./KkRadioGroup": "./src/KkRadioGroup/KkRadioGroup.tsx",

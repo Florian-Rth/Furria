@@ -100,9 +100,13 @@ public sealed class IdentitySeedBuilder
         return this;
     }
 
-    public IdentitySeedBuilder AddAccount(string alias, bool disabled = false)
+    public IdentitySeedBuilder AddAccount(
+        string alias,
+        bool disabled = false,
+        DateTimeOffset? redeemedAt = null
+    )
     {
-        _accounts.Add(new AccountIntent(alias, disabled));
+        _accounts.Add(new AccountIntent(alias, disabled, redeemedAt));
         return this;
     }
 
@@ -245,7 +249,7 @@ public sealed class IdentitySeedBuilder
         int LastSessionYear
     );
 
-    internal sealed record AccountIntent(string Alias, bool Disabled);
+    internal sealed record AccountIntent(string Alias, bool Disabled, DateTimeOffset? RedeemedAt);
 
     internal sealed record MembershipApplicationIntent(
         string Alias,

@@ -5,6 +5,8 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
+const API_PROXY_TARGET = process.env.FURRIA_API_PROXY ?? 'http://localhost:5100';
+
 const SCREEN_BACKGROUND = '#F1F2F4';
 const PRECACHE_FILE_LIMIT_BYTES = 6 * 1024 * 1024;
 
@@ -88,7 +90,7 @@ export default defineConfig(({ mode }) => ({
     },
     proxy: {
       '/api': {
-        target: 'http://localhost:5100',
+        target: API_PROXY_TARGET,
         changeOrigin: true,
       },
     },

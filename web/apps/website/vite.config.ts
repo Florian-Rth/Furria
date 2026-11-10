@@ -5,6 +5,8 @@ import react, { reactCompilerPreset } from '@vitejs/plugin-react';
 import { defineConfig } from 'vite';
 import { websitePictureHeadPlugin } from './vite/website-picture-head-plugin';
 
+const API_PROXY_TARGET = process.env.FURRIA_API_PROXY ?? 'http://localhost:5100';
+
 export default defineConfig({
   plugins: [
     tanstackRouter({
@@ -34,7 +36,7 @@ export default defineConfig({
     strictPort: true,
     proxy: {
       '/api': {
-        target: 'http://localhost:5100',
+        target: API_PROXY_TARGET,
         changeOrigin: true,
       },
     },

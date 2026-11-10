@@ -16,6 +16,7 @@ using Furria.Infrastructure.MembershipApplications;
 using Furria.Infrastructure.News;
 using Furria.Infrastructure.Operations;
 using Furria.Infrastructure.Persistence;
+using Furria.Infrastructure.Promo;
 using Furria.Infrastructure.Public;
 using Furria.Infrastructure.Push;
 using Furria.Infrastructure.Registry;
@@ -146,6 +147,7 @@ public static class ServiceCollectionExtensions
         services.AddScoped<ManagementService>();
         services.AddScoped<ToDoService>();
         services.AddScoped<StartService>();
+        services.AddScoped<PromoService>();
         services.AddScoped<InvitationRoundService>();
         services.AddScoped<ReauthenticationService>();
         services.AddScoped<AccountSecurityService>();
