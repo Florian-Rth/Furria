@@ -7,44 +7,49 @@ export const chronicleChapter = {
 } as const;
 
 export interface Milestone {
-  year: string;
+  dateLabel: string;
   title: string;
   description: string;
-  isPlaceholder: boolean;
+  quote: string | null;
 }
+
+const peopleCall = '„Leute, Leute, Leute“';
 
 export const MILESTONES: Milestone[] = [
   {
-    year: '1971',
-    title: 'Der erste Besen',
+    dateLabel: '24.02.1971',
+    title: 'Die Idee',
     description:
-      'In Großfurra gründen elf Narren den Furrschen Carnevals Club. Überliefert ist der Beschluss — nicht, wer den Besen mitgebracht hat.',
-    isPlaceholder: false,
+      'Aschermittwoch, für Karnevalisten sonst ein grauer Tag. Für Großfurras Narrenvolk wird er ein neuer Anfang: Dieter Röhl geht mit seiner Idee zu Otto Teichmann. Es folgen Beratungen über Beratungen – Finanzen, Kostüme, Technik, Programm, Garde, Kapellen und vor allem:',
+    quote: peopleCall,
   },
   {
-    year: '1979',
-    title: 'Die erste Garde',
+    dateLabel: '11.11.1971',
+    title: 'Die erste Eröffnung',
     description:
-      'Platzhalter — überliefert ist nur, dass die Kür damals noch in Echtzeit bewertet werden konnte.',
-    isPlaceholder: true,
+      'Dann ist es so weit: Auf dem Schützenplatz wird die Saison eröffnet – mit allen Helfern. Nach den vielen Beratungen hatten die sich das redlich verdient.',
+    quote: null,
   },
   {
-    year: '1988',
-    title: 'Der Keller wird bezogen',
-    description: 'Platzhalter — beim Einzug war er leer. Das ist der letzte Beleg dafür.',
-    isPlaceholder: true,
+    dateLabel: '27.11.1971',
+    title: 'Große Prunksitzung',
+    description:
+      'Nach elfjähriger Pause findet der Furrsche Fasching zum fünften Mal statt: um 20:11 Uhr in der Sporthalle, Musik vom Nobas-Quintett. Angekündigt wird er im Schaufenster bei Frl. Ernst – und laut Chronik lasen ihn begeistert alle Großbesenstädter. Eine Reichweite, von der man heute nur träumen kann.',
+    quote: null,
   },
   {
-    year: '2004',
-    title: 'Der große Umzug',
-    description: 'Platzhalter — der Wagen passte damals noch unter die Brücke in der Marktstraße.',
-    isPlaceholder: true,
+    dateLabel: '1977',
+    title: 'Die Chronik beginnt',
+    description:
+      'Seit dieser Session hält die Vereinschronik fest, was jedes Jahr auf die Bühne kam: Motto, Programm, Bühnenbild. Sie ist das Gedächtnis des Vereins – auch für Abende, an die sich manche nur noch ungefähr erinnern.',
+    quote: null,
   },
   {
-    year: '2021',
-    title: '50 Jahre, elf Tage',
-    description: 'Platzhalter — gefeiert wurde elf Tage lang, protokolliert wurde davon nichts.',
-    isPlaceholder: true,
+    dateLabel: '2071',
+    title: '100 Jahre FCC',
+    description:
+      'Die Planungen laufen. Beratungen über Beratungen haben bereits begonnen – Finanzen, Kostüme, Technik und vor allem:',
+    quote: peopleCall,
   },
 ];
 
