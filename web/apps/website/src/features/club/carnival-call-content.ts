@@ -6,9 +6,9 @@ export interface CarnivalCallBandContent {
 }
 
 export const carnivalCallBandContent: CarnivalCallBandContent = {
-  kicker: 'UNSER NARRENRUF — UND NUR DIESER',
+  kicker: 'UNSER NARRENRUF – UND NUR DIESER',
   sentence:
-    'Kein „Helau“. Kein „Alaaf“. Wer bei FURRIA feiert, ruft Groß — und die ganze Halle antwortet.',
+    'Kein „Helau“, kein „Alaaf“. Bei uns ruft einer „Groß“ – und der ganze Saal antwortet „Furria!“.',
   shoutLead: 'GROSS',
   shoutCall: 'FURRIA!',
 };

@@ -286,7 +286,7 @@
     "./KkScreenHeader": "./src/KkScreenHeader/KkScreenHeader.tsx",
     "./KkScreenHeaderSkeleton": "./src/KkScreenHeader/KkScreenHeaderSkeleton.tsx",
     "./KkScreenHeaderTitle": "./src/KkScreenHeader/internal/ui/KkScreenHeaderTitle.tsx",
-    "./KkSeal": "./src/KkSeal.tsx",
+    "./KkJesterCap": "./src/KkJesterCap.tsx",
     "./KkSearchField": "./src/KkSearchField.tsx",
     "./KkSeatLine": "./src/KkSeatLine.tsx",
     "./KkSeatList": "./src/KkSeatList.tsx",

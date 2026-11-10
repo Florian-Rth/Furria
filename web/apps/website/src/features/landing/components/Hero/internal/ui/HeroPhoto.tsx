@@ -1,9 +1,8 @@
-import { KkSeal } from '@furria/ui/KkSeal';
+import { KkJesterCap } from '@furria/ui/KkJesterCap';
 import { kkTokens } from '@furria/ui/tokens';
 import Box from '@mui/material/Box';
 import type { FC } from 'react';
 import { WebsitePicture } from '@/components/WebsitePicture';
-import { SESSION_OPENING_DAY, SESSION_OPENING_MONTH } from '@/lib/club';
 import { LANDING_HERO_SIZES } from '@/lib/website-pictures/landing-hero-sizes';
 
 export const HeroPhoto: FC = () => (
@@ -22,16 +21,11 @@ export const HeroPhoto: FC = () => (
     <Box
       sx={(theme) => ({
         position: 'absolute',
-        top: theme.spacing(-3),
-        right: theme.spacing(-2.25),
+        top: theme.spacing(-5),
+        right: theme.spacing(-4),
       })}
     >
-      <KkSeal
-        dateLabel={`${SESSION_OPENING_DAY}.${SESSION_OPENING_MONTH}`}
-        caption="ERÖFFNUNG"
-        size={112}
-        rotation={-6}
-      />
+      <KkJesterCap size={136} rotation={-8} />
     </Box>
   </Box>
 );

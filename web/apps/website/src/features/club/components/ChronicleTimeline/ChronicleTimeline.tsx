@@ -18,7 +18,7 @@ export const ChronicleTimeline: FC = () => {
       <ChronicleSpine>
         {MILESTONES.map((milestone, index) => (
           <ChronicleMilestone
-            key={milestone.year}
+            key={milestone.dateLabel}
             milestone={milestone}
             tint={resolveMilestoneTint(theme, index)}
             accented={index === 0}

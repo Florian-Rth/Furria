@@ -4,17 +4,18 @@ import type { PublicClub } from '@/lib/public-club/schemas';
 export const storyChapter = {
   numeral: '01',
   kicker: 'WER WIR SIND',
-  title: 'EIN VEREIN MIT HERZ',
+  title: 'EINE IDEE, DIE BLIEB',
 } as const;
 
-export const storyPullQuote =
-  'Wir leben die fünfte Jahreszeit — und arbeiten daran, sie auf eine sechste zu erweitern.';
+export const storyPullQuote = '„Das müßte doch zu machen sein!“';
 
-export const storyBodyPlaceholder =
-  'Vom ersten Besen bis zur eigenen Zeitzone: Der Furrsche Carnevals Club bringt Menschen aus Großfurra zusammen, die den Karneval lieben — und die sich einig sind, dass eine Session grundsätzlich zu kurz ist.';
+export const storyPullQuoteSource = 'Dieter Röhl, Aschermittwoch 1971';
 
-export const storyBodyPlaceholderNote =
-  'Hier steht bald die echte Vereinsgeschichte — dieser Text ist noch ein Platzhalter.';
+export const storyLead =
+  'Aus der Idee von damals ist heute der Verein geworden, der in Großfurra die fünfte Jahreszeit macht – für Kinder, Jugendliche, Eltern und Großeltern, auf der Bühne und davor.';
+
+export const storyBody =
+  'Bei uns hat jeder seinen Platz: Die einen tanzen, die anderen reimen in der Bütt, wieder andere malen Kulissen, nähen Kostüme oder stehen hinter dem Tresen. Manche machen alles davon – meist ohne es vorher geplant zu haben. Und wenn die Session vorbei ist, sieht man sich trotzdem: beim Sommerfest, bei der Herbstwanderung und auf dem Hofweihnachtsmarkt.';
 
 export interface StoryStat {
   value: string;
