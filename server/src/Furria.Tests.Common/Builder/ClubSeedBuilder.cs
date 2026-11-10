@@ -8,6 +8,7 @@ public sealed class ClubSeedBuilder
     private const string DefaultStreet = "Schulstraße 4";
     private const string DefaultZip = "99713";
     private const string DefaultCity = "Großfurra";
+    private const int DefaultPollPosition = 9;
     private const string DefaultTeaser = "Der Abend, auf den die Session hinfiebert.";
 
     private static readonly DateOnly DefaultSinceOn = new(2020, 11, 11);
@@ -22,6 +23,8 @@ public sealed class ClubSeedBuilder
     private readonly List<UsualTrainingTimeIntent> _usualTrainingTimes = [];
     private readonly List<CalendarEntryIntent> _calendarEntries = [];
     private readonly List<AttendanceResponseIntent> _attendanceResponses = [];
+    private readonly List<CalendarPollIntent> _calendarPolls = [];
+    private readonly List<CalendarPollVoteIntent> _calendarPollVotes = [];
     private readonly List<EventIntent> _events = [];
     private readonly List<EventPresalePlaceIntent> _eventPresalePlaces = [];
     private ClubRecordIntent? _clubRecord;
@@ -45,6 +48,10 @@ public sealed class ClubSeedBuilder
     internal IReadOnlyList<CalendarEntryIntent> CalendarEntries => _calendarEntries;
 
     internal IReadOnlyList<AttendanceResponseIntent> AttendanceResponses => _attendanceResponses;
+
+    internal IReadOnlyList<CalendarPollIntent> CalendarPolls => _calendarPolls;
+
+    internal IReadOnlyList<CalendarPollVoteIntent> CalendarPollVotes => _calendarPollVotes;
 
     internal IReadOnlyList<EventIntent> Events => _events;
 
@@ -303,6 +310,44 @@ public sealed class ClubSeedBuilder
         return this;
     }
 
+    public ClubSeedBuilder AddCalendarPoll(
+        string alias,
+        string calendarEntryAlias,
+        string question,
+        IReadOnlyList<string> options,
+        bool allowsMultipleChoices = false,
+        bool isAnonymous = false,
+        DateTimeOffset? votesUntil = null,
+        DateTimeOffset? closedAt = null,
+        int position = DefaultPollPosition
+    )
+    {
+        _calendarPolls.Add(
+            new CalendarPollIntent(
+                alias,
+                calendarEntryAlias,
+                question,
+                options,
+                allowsMultipleChoices,
+                isAnonymous,
+                votesUntil,
+                closedAt,
+                position
+            )
+        );
+        return this;
+    }
+
+    public ClubSeedBuilder AddCalendarPollVote(
+        string pollAlias,
+        string optionLabel,
+        string personAlias
+    )
+    {
+        _calendarPollVotes.Add(new CalendarPollVoteIntent(pollAlias, optionLabel, personAlias));
+        return this;
+    }
+
     public ClubSeedBuilder AddEvent(
         string alias,
         string title,
@@ -447,6 +492,24 @@ public sealed class ClubSeedBuilder
         string CalendarEntryAlias,
         string PersonAlias,
         AttendanceAnswer Answer
+    );
+
+    internal sealed record CalendarPollIntent(
+        string Alias,
+        string CalendarEntryAlias,
+        string Question,
+        IReadOnlyList<string> Options,
+        bool AllowsMultipleChoices,
+        bool IsAnonymous,
+        DateTimeOffset? VotesUntil,
+        DateTimeOffset? ClosedAt,
+        int Position
+    );
+
+    internal sealed record CalendarPollVoteIntent(
+        string PollAlias,
+        string OptionLabel,
+        string PersonAlias
     );
 
     internal sealed record EventIntent(

@@ -80,6 +80,25 @@ export const requestCalendarEntryUpdate = (
     accessToken,
   });
 
+export const requestPollVotes = (
+  pollId: number,
+  optionIds: readonly number[],
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/calendar/polls/${pollId}/votes`, {
+    method: 'PUT',
+    body: { optionIds: [...optionIds] },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
+export const requestPollClosing = (pollId: number, accessToken: string): Promise<void> =>
+  apiFetch(`/api/calendar/polls/${pollId}/close`, {
+    method: 'POST',
+    schema: NoContentSchema,
+    accessToken,
+  });
+
 export const requestCalendarEntryDeletion = (
   calendarEntryId: number,
   accessToken: string,

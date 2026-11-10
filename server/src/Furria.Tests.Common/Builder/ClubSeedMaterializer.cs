@@ -61,6 +61,9 @@ internal static class ClubSeedMaterializer
             ct
         );
 
+        var polls = await InsertCalendarPollsAsync(dbContext, recorded, calendarEntries, ct);
+        await InsertCalendarPollVotesAsync(dbContext, recorded, polls, personIds, ct);
+
         return new SeededClub(
             sessions,
             venues,
@@ -71,7 +74,15 @@ internal static class ClubSeedMaterializer
             usualTrainingTimes,
             calendarEntries,
             attendanceResponses,
-            events
+            events,
+            polls.ToDictionary(poll => poll.Key, poll => poll.Value.Id, StringComparer.Ordinal),
+            polls
+                .SelectMany(poll =>
+                    poll.Value.Options.Select(option =>
+                        (Key: OptionKey(poll.Key, option.Label), option.Id)
+                    )
+                )
+                .ToDictionary(option => option.Key, option => option.Id, StringComparer.Ordinal)
         );
     }
 
@@ -529,6 +540,78 @@ internal static class ClubSeedMaterializer
             entry => entry.Value.Id,
             StringComparer.Ordinal
         );
+    }
+
+    private static string OptionKey(string pollAlias, string label) => $"{pollAlias}:{label}";
+
+    private static async Task<Dictionary<string, CalendarPoll>> InsertCalendarPollsAsync(
+        AppDbContext dbContext,
+        ClubSeedBuilder recorded,
+        IReadOnlyDictionary<string, int> calendarEntryIds,
+        CancellationToken ct
+    )
+    {
+        var polls = recorded.CalendarPolls.ToDictionary(
+            intent => intent.Alias,
+            intent => new CalendarPoll
+            {
+                CalendarEntryId = SeedAliases.RequireId(
+                    calendarEntryIds,
+                    intent.CalendarEntryAlias,
+                    "CalendarEntry"
+                ),
+                Position = intent.Position,
+                Question = intent.Question,
+                AllowsMultipleChoices = intent.AllowsMultipleChoices,
+                IsAnonymous = intent.IsAnonymous,
+                VotesUntil = intent.VotesUntil,
+                ClosedAt = intent.ClosedAt,
+                Options =
+                [
+                    .. intent.Options.Select(
+                        (label, position) =>
+                            new CalendarPollOption { Label = label, Position = position }
+                    ),
+                ],
+            },
+            StringComparer.Ordinal
+        );
+
+        if (polls.Count > 0)
+        {
+            dbContext.CalendarPolls.AddRange(polls.Values);
+            await dbContext.SaveChangesAsync(ct);
+        }
+
+        return polls;
+    }
+
+    private static async Task InsertCalendarPollVotesAsync(
+        AppDbContext dbContext,
+        ClubSeedBuilder recorded,
+        IReadOnlyDictionary<string, CalendarPoll> polls,
+        IReadOnlyDictionary<string, int> personIds,
+        CancellationToken ct
+    )
+    {
+        if (recorded.CalendarPollVotes.Count == 0)
+            return;
+
+        dbContext.CalendarPollVotes.AddRange(
+            recorded.CalendarPollVotes.Select(intent =>
+            {
+                var poll = polls[intent.PollAlias];
+                return new CalendarPollVote
+                {
+                    PollId = poll.Id,
+                    PollOptionId = poll
+                        .Options.Single(option => option.Label == intent.OptionLabel)
+                        .Id,
+                    PersonId = SeedAliases.RequireId(personIds, intent.PersonAlias, "Person"),
+                };
+            })
+        );
+        await dbContext.SaveChangesAsync(ct);
     }
 
     private sealed record CalendarEntrySeedIds(

@@ -85,6 +85,7 @@ import PhotoLibraryOutlinedIcon from '@mui/icons-material/PhotoLibraryOutlined';
 import PlaceOutlinedIcon from '@mui/icons-material/PlaceOutlined';
 import PlayArrowRoundedIcon from '@mui/icons-material/PlayArrowRounded';
 import PolicyOutlinedIcon from '@mui/icons-material/PolicyOutlined';
+import PollOutlinedIcon from '@mui/icons-material/PollOutlined';
 import PolylineOutlinedIcon from '@mui/icons-material/PolylineOutlined';
 import PushPinIcon from '@mui/icons-material/PushPin';
 import PushPinOutlinedIcon from '@mui/icons-material/PushPinOutlined';
@@ -218,6 +219,7 @@ export type KkIconName =
   | 'openInBrowser'
   | 'pin'
   | 'pinFilled'
+  | 'poll'
   | 'block'
   | 'unblock'
   | 'wish'
@@ -354,6 +356,7 @@ const icons: Record<KkIconName, typeof HomeIcon> = {
   stage: TheaterComedyOutlinedIcon,
   pin: PushPinOutlinedIcon,
   pinFilled: PushPinIcon,
+  poll: PollOutlinedIcon,
   block: ViewAgendaOutlinedIcon,
   unblock: LinkOffOutlinedIcon,
   wish: TuneRoundedIcon,

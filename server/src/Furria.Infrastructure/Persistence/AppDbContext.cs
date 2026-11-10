@@ -94,6 +94,12 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<CalendarEntryAudiencePerson> CalendarEntryAudiencePeople =>
         Set<CalendarEntryAudiencePerson>();
 
+    public DbSet<CalendarPoll> CalendarPolls => Set<CalendarPoll>();
+
+    public DbSet<CalendarPollOption> CalendarPollOptions => Set<CalendarPollOption>();
+
+    public DbSet<CalendarPollVote> CalendarPollVotes => Set<CalendarPollVote>();
+
     public DbSet<Event> Events => Set<Event>();
 
     public DbSet<EventPresalePlace> EventPresalePlaces => Set<EventPresalePlace>();

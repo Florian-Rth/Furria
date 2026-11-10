@@ -26,6 +26,7 @@ export interface CalendarDetail {
   view: CalendarDetailView;
   answer: CalendarDetailAnswer | null;
   editLink: CalendarEntryLink | null;
+  mayClosePolls: boolean;
   eventLink: CalendarEventLink | null;
 }
 
@@ -47,6 +48,7 @@ export const useCalendarDetail = (entry: CalendarEntry): CalendarDetail => {
         }
       : null,
     editLink: authoring?.linkOf(entry) ?? null,
+    mayClosePolls: authoring?.mayOwn(entry) ?? false,
     eventLink: opensEvent
       ? { to: '/events/$eventId', params: { eventId: String(entry.calendarEntryId) } }
       : null,

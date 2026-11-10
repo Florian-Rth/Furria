@@ -222,6 +222,7 @@
     "./KkOverlapGauge": "./src/KkOverlapGauge.tsx",
     "./KkPageSketch": "./src/KkPageSketch.tsx",
     "./KkPageWatermark": "./src/KkPageWatermark.tsx",
+    "./KkPollBallot": "./src/KkPollBallot/KkPollBallot.tsx",
     "./KkPourCrate": "./src/KkPour/KkPourCrate.tsx",
     "./KkPourDay": "./src/KkPour/KkPourDay.tsx",
     "./KkPourHead": "./src/KkPour/KkPourHead/KkPourHead.tsx",

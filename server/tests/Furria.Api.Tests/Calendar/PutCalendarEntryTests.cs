@@ -22,6 +22,8 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     private const string DanceGuardPerformance = "Auftritt der Tanzgarde";
     private const string Farewell = "Abschied planen";
     private const string Abendprobe = "Abendprobe";
+    private const string SnackQuestion = "Was bringst du mit?";
+    private const string DaysQuestion = "Wann hast du Zeit?";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly ArchivedIn2026 = new(2026, 6, 30);
@@ -210,7 +212,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Groups,
                 AudienceGroupIds = [tanzgarde],
                 AudiencePersonIds = [],
-                AddOns = [CalendarEntryAddOnKind.Attendance],
+                AddOns = [PutAddOn(CalendarEntryAddOnKind.Attendance)],
                 ParticipatingGroupIds = [],
             }
         );
@@ -487,6 +489,251 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
+    [Fact]
+    public async Task Should_AddAnOption_When_ThePollHoldsVotes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewritePollsAsync(
+            ctx,
+            [
+                Snack(
+                    ctx,
+                    ("snack:Kuchen", "Kuchen"),
+                    ("snack:Brezeln", "Brezeln"),
+                    (null, "Obst")
+                ),
+                Days(ctx),
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var pollId = ctx.Club.CalendarPolls.IdOf("snack");
+        await ctx
+            .Expected.CalendarPoll(pollId)
+            .ToHaveOptions("Kuchen", "Brezeln", "Obst")
+            .CalendarPoll(pollId)
+            .ToHaveVotesOf(ctx.Identity.People.IdOf("chris"), "Kuchen")
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RenameAnOption_When_ItHoldsNoVotes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewritePollsAsync(
+            ctx,
+            [Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Laugenbrezeln")), Days(ctx)],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .ToHaveOptions("Kuchen", "Laugenbrezeln")
+            .AssertAsync(ct);
+    }
+
+    [Theory]
+    [InlineData("Torte", "Brezeln")]
+    [InlineData(null, "Brezeln")]
+    public async Task Should_RefuseTheChange_When_AnOptionWithVotesIsRenamedOrRemoved(
+        string? kuchenLabel,
+        string brezelnLabel
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        (string?, string)[] options = kuchenLabel is null
+            ? [("snack:Brezeln", brezelnLabel), (null, "Obst")]
+            : [("snack:Kuchen", kuchenLabel), ("snack:Brezeln", brezelnLabel)];
+
+        var response = await RewritePollsAsync(ctx, [Snack(ctx, options), Days(ctx)], ct);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .ToHaveOptions("Kuchen", "Brezeln")
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_DiscardThePollWithItsVotes_When_ThePollIsRemoved()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewritePollsAsync(ctx, [Days(ctx)], ct);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .ToNotExist()
+            .CalendarPoll(ctx.Club.CalendarPolls.IdOf("days"))
+            .ToHaveVoteCount(2)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseLiftingAnonymity_When_ThePollHoldsVotes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewritePollsAsync(
+            ctx,
+            [
+                Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Brezeln")),
+                Days(ctx) with
+                {
+                    Poll = Days(ctx).Poll! with { IsAnonymous = false },
+                },
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("days"))
+            .ToBeAnonymous(true)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseSingleChoice_When_SomeoneHoldsSeveralVotes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewritePollsAsync(
+            ctx,
+            [
+                Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Brezeln")),
+                Days(ctx) with
+                {
+                    Poll = Days(ctx).Poll! with { AllowsMultipleChoices = false },
+                },
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_RefuseThePoll_When_ItBelongsToAnotherEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var foreign = Days(ctx) with
+        {
+            Poll = Days(ctx).Poll! with
+            {
+                PollId = ctx.Club.CalendarPolls.IdOf("elsewhere"),
+                Options =
+                [
+                    new() { OptionId = null, Label = "Ja" },
+                    new() { OptionId = null, Label = "Nein" },
+                ],
+            },
+        };
+
+        var response = await RewritePollsAsync(ctx, [foreign], ct);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .ToHaveOptions("Kuchen", "Brezeln")
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_TheVotesCloseAfterTheStart()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var late = Days(ctx) with
+        {
+            Poll = Days(ctx).Poll! with { VotesUntil = TrainingStart.AddMinutes(1) },
+        };
+
+        var response = await RewritePollsAsync(ctx, [late], ct);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    private static async Task<HttpResponseMessage> RewritePollsAsync(
+        SeededContext ctx,
+        IReadOnlyList<PutCalendarEntryAddOnDataDto> addOns,
+        CancellationToken ct
+    )
+    {
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(
+            ClubOwned(ctx.Club.CalendarEntries.IdOf("poll-meeting"), Farewell) with
+            {
+                AddOns = addOns,
+            }
+        );
+
+        return response;
+    }
+
+    private static PutCalendarEntryAddOnDataDto Snack(
+        SeededContext ctx,
+        params (string? OptionAlias, string Label)[] options
+    ) => PollAddOn(ctx.Club.CalendarPolls.IdOf("snack"), SnackQuestion, false, false, ctx, options);
+
+    private static PutCalendarEntryAddOnDataDto Days(SeededContext ctx) =>
+        PollAddOn(
+            ctx.Club.CalendarPolls.IdOf("days"),
+            DaysQuestion,
+            true,
+            true,
+            ctx,
+            ("days:Montag", "Montag"),
+            ("days:Dienstag", "Dienstag")
+        );
+
+    private static PutCalendarEntryAddOnDataDto PollAddOn(
+        int pollId,
+        string question,
+        bool allowsMultipleChoices,
+        bool isAnonymous,
+        SeededContext ctx,
+        params (string? OptionAlias, string Label)[] options
+    ) =>
+        new()
+        {
+            Kind = CalendarEntryAddOnKind.Poll,
+            Poll = new()
+            {
+                PollId = pollId,
+                Question = question,
+                AllowsMultipleChoices = allowsMultipleChoices,
+                IsAnonymous = isAnonymous,
+                VotesUntil = null,
+                Options =
+                [
+                    .. options.Select(option => new PutCalendarEntryPollOptionDataDto
+                    {
+                        OptionId = option.OptionAlias is { } alias
+                            ? ctx.Club.CalendarPollOptions.IdOf(alias)
+                            : null,
+                        Label = option.Label,
+                    }),
+                ],
+            },
+        };
+
     private static async Task<HttpResponseMessage> RewriteAsync(
         SeededContext ctx,
         int entryId,
@@ -499,7 +746,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             PutCalendarEntry,
             PutCalendarEntryRequest,
             PutCalendarEntryResponse
-        >(ClubOwned(entryId, Farewell) with { AddOns = addOns });
+        >(ClubOwned(entryId, Farewell) with { AddOns = [.. addOns.Select(PutAddOn)] });
 
         return response;
     }
@@ -598,6 +845,27 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                                 AbendprobeStart.AddDays(5),
                                 asksForResponse: true
                             )
+                            .AddCalendarEntry("poll-meeting", Farewell, AbendprobeStart.AddDays(6))
+                            .AddCalendarPoll(
+                                "snack",
+                                "poll-meeting",
+                                SnackQuestion,
+                                ["Kuchen", "Brezeln"],
+                                position: 0
+                            )
+                            .AddCalendarPollVote("snack", "Kuchen", "chris")
+                            .AddCalendarPoll(
+                                "days",
+                                "poll-meeting",
+                                DaysQuestion,
+                                ["Montag", "Dienstag"],
+                                allowsMultipleChoices: true,
+                                isAnonymous: true,
+                                position: 1
+                            )
+                            .AddCalendarPollVote("days", "Montag", "dana")
+                            .AddCalendarPollVote("days", "Dienstag", "dana")
+                            .AddCalendarPoll("elsewhere", "farewell", DaysQuestion, ["Ja", "Nein"])
                             .AddAttendanceResponse(
                                 "chris-says-yes",
                                 "asking-meeting",
@@ -618,4 +886,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         return payload?.Errors
             ?? throw new InvalidOperationException("The failure response carried no errors.");
     }
+
+    private static PutCalendarEntryAddOnDataDto PutAddOn(CalendarEntryAddOnKind kind) =>
+        new() { Kind = kind, Poll = null };
 }

@@ -6,6 +6,7 @@ import { KkPhoto } from '@furria/ui/KkPhoto';
 import Stack from '@mui/material/Stack';
 import { Link } from '@tanstack/react-router';
 import type { FC } from 'react';
+import { toHeldAddOnKey } from '../calendar-add-ons';
 import { EDIT_LABEL, EVENT_LINK_LABEL, FACT_LABELS } from '../calendar-agenda-copy';
 import { useCalendarDetail } from '../hooks/use-calendar-detail';
 import type { CalendarEntry } from '../schemas';
@@ -20,7 +21,7 @@ interface CalendarDetailBodyProps {
 }
 
 export const CalendarDetailBody: FC<CalendarDetailBodyProps> = ({ entry }) => {
-  const { view, answer, editLink, eventLink } = useCalendarDetail(entry);
+  const { view, answer, editLink, mayClosePolls, eventLink } = useCalendarDetail(entry);
 
   const picture =
     view.cover === null ? null : (
@@ -46,14 +47,19 @@ export const CalendarDetailBody: FC<CalendarDetailBodyProps> = ({ entry }) => {
     );
   const text =
     view.text === null ? null : <KkCalendarDetail.Text>{view.text}</KkCalendarDetail.Text>;
-  const addOnSections = view.addOns.map((addOn) => (
-    <CalendarDetailAddOn
-      key={addOn}
-      addOn={addOn}
-      answer={answer}
-      participatingGroups={view.participatingGroups}
-    />
-  ));
+  const addOnSections = view.addOns.map((addOn) => {
+    const key = toHeldAddOnKey(addOn);
+
+    return (
+      <CalendarDetailAddOn
+        key={key}
+        addOn={addOn}
+        answer={answer}
+        participatingGroups={view.participatingGroups}
+        mayClosePolls={mayClosePolls}
+      />
+    );
+  });
   const edit =
     editLink === null ? null : (
       <KkButton

@@ -14,8 +14,8 @@ interface CalendarAddOnRemovalDialogProps {
 }
 
 export const CalendarAddOnRemovalDialog: FC<CalendarAddOnRemovalDialogProps> = ({ addOns }) => {
-  const question = toAddOnRemovalQuestion(addOns.removal.addOn);
-  const explanation = toDiscardedAnswersLabel(addOns.removal.discardedAnswers);
+  const question = toAddOnRemovalQuestion(addOns.removal.kind);
+  const explanation = toDiscardedAnswersLabel(addOns.removal.kind, addOns.removal.discardedAnswers);
 
   return (
     <KkConfirmDialog

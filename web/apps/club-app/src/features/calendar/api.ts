@@ -6,6 +6,8 @@ import { queryKeys } from '@/lib/query/reads';
 import type { CalendarEntryPayload } from './calendar-authoring';
 import { toEntryWriteNotice } from './calendar-authoring';
 import {
+  POLL_CLOSE_FAILED_MESSAGE,
+  POLL_VOTE_FAILED_MESSAGE,
   toEntryCreatedMessage,
   toEntryDeletedMessage,
   toEntrySavedMessage,
@@ -18,6 +20,8 @@ import {
   requestCalendarEntryDeletion,
   requestCalendarEntryUpdate,
   requestChoosablePeople,
+  requestPollClosing,
+  requestPollVotes,
   requestRunningVenues,
 } from './requests';
 import type {
@@ -114,4 +118,28 @@ export const useDeleteCalendarEntryMutation = (): UseMutationResult<
       requestCalendarEntryDeletion(calendarEntryId, accessToken),
     changes: ['calendarEntry'],
     notice: { success: ({ title }) => toEntryDeletedMessage(title) },
+  });
+
+export interface PollVoteInput {
+  pollId: number;
+  optionIds: number[];
+}
+
+export interface PollClosingInput {
+  pollId: number;
+}
+
+export const usePollVoteMutation = (): UseMutationResult<void, Error, PollVoteInput> =>
+  useApiMutation({
+    request: ({ pollId, optionIds }: PollVoteInput, accessToken) =>
+      requestPollVotes(pollId, optionIds, accessToken),
+    changes: ['calendarPollVote'],
+    notice: { failure: () => POLL_VOTE_FAILED_MESSAGE },
+  });
+
+export const usePollClosingMutation = (): UseMutationResult<void, Error, PollClosingInput> =>
+  useApiMutation({
+    request: ({ pollId }: PollClosingInput, accessToken) => requestPollClosing(pollId, accessToken),
+    changes: ['calendarEntry'],
+    notice: { failure: () => POLL_CLOSE_FAILED_MESSAGE },
   });

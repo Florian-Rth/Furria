@@ -93,7 +93,7 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Groups,
                 AudienceGroupIds = [tanzgarde],
                 AudiencePersonIds = [],
-                AddOns = [CalendarEntryAddOnKind.ParticipatingGroups],
+                AddOns = [PostAddOn(CalendarEntryAddOnKind.ParticipatingGroups)],
                 ParticipatingGroupIds = [tanzgarde, ctx.Groups.Groups.IdOf("kindergarde")],
             }
         );
@@ -147,7 +147,7 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
-                AddOns = [CalendarEntryAddOnKind.ParticipatingGroups],
+                AddOns = [PutAddOn(CalendarEntryAddOnKind.ParticipatingGroups)],
                 ParticipatingGroupIds = [kindergarde],
             }
         );
@@ -186,7 +186,7 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
-                AddOns = [CalendarEntryAddOnKind.ParticipatingGroups],
+                AddOns = [PutAddOn(CalendarEntryAddOnKind.ParticipatingGroups)],
                 ParticipatingGroupIds = [tanzgarde],
             }
         );
@@ -379,7 +379,7 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
             Audience = CalendarEntryAudience.Club,
             AudienceGroupIds = [],
             AudiencePersonIds = [],
-            AddOns = [CalendarEntryAddOnKind.ParticipatingGroups],
+            AddOns = [PostAddOn(CalendarEntryAddOnKind.ParticipatingGroups)],
             ParticipatingGroupIds = participatingGroupIds,
         };
 
@@ -464,4 +464,10 @@ public sealed class CalendarEntryGroupTests : IClassFixture<ApiTestFixture>
         return payload?.Errors
             ?? throw new InvalidOperationException("The failure response carried no errors.");
     }
+
+    private static PostCalendarEntryAddOnDataDto PostAddOn(CalendarEntryAddOnKind kind) =>
+        new() { Kind = kind, Poll = null };
+
+    private static PutCalendarEntryAddOnDataDto PutAddOn(CalendarEntryAddOnKind kind) =>
+        new() { Kind = kind, Poll = null };
 }

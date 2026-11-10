@@ -1,11 +1,11 @@
 import { KkSelectRow } from '@furria/ui/KkSelectRow';
 import type { FC } from 'react';
 import { CALENDAR_ADD_ON_LABELS } from '../calendar-add-ons';
-import type { CalendarEntryAddOn } from '../schemas';
+import type { CalendarAddOnKind } from '../schemas';
 
 interface CalendarAddOnOptionProps {
-  addOn: CalendarEntryAddOn;
-  onAttach: (addOn: CalendarEntryAddOn) => void;
+  addOn: CalendarAddOnKind;
+  onAttach: (addOn: CalendarAddOnKind) => void;
 }
 
 export const CalendarAddOnOption: FC<CalendarAddOnOptionProps> = ({ addOn, onAttach }) => {

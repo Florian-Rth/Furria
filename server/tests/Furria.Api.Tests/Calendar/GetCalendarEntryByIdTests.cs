@@ -276,11 +276,144 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                 );
 
                 Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-                Assert.Equal([CalendarEntryAddOnKind.Attendance], result.Entry.AddOns);
+                Assert.Equal(
+                    [CalendarEntryAddOnKind.Attendance],
+                    result.Entry.AddOns.Select(addOn => addOn.Kind)
+                );
                 Assert.Equal(2, result.Entry.ResponseCount);
             }
         );
     }
+
+    [Fact]
+    public async Task Should_ShowCountsAndNamedVoters_When_ThePollIsNotAnonymous()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildPollsAsync(ct);
+
+                var (response, result) = await ReadAsync(
+                    ctx,
+                    "alice",
+                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
+                    ct
+                );
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal(
+                    [
+                        CalendarEntryAddOnKind.Attendance,
+                        CalendarEntryAddOnKind.Poll,
+                        CalendarEntryAddOnKind.Poll,
+                    ],
+                    result.Entry.AddOns.Select(addOn => addOn.Kind)
+                );
+                var poll = result.Entry.AddOns[1].Poll!;
+                Assert.False(poll.IsClosed);
+                Assert.Equal(2, poll.VoterCount);
+                Assert.Equal(
+                    [("Pizza", 2, true), ("Suppe", 0, false)],
+                    poll.Options.Select(option =>
+                        (option.Label, option.VoteCount, option.ViewerChose)
+                    )
+                );
+                Assert.Equal(
+                    ["Alice", "Bea"],
+                    poll.Options[0].Voters.Select(voter => voter.FirstName)
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_ShowOnlyCounts_When_ThePollIsAnonymous()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildPollsAsync(ct);
+
+                var (_, result) = await ReadAsync(
+                    ctx,
+                    "bea",
+                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
+                    ct
+                );
+
+                var poll = result.Entry.AddOns[2].Poll!;
+                Assert.Equal([1, 0], poll.Options.Select(option => option.VoteCount));
+                Assert.True(poll.Options[0].ViewerChose);
+                Assert.All(poll.Options, option => Assert.Empty(option.Voters));
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_ShowThePollClosed_When_TheEntryHasStarted()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            AtTheMeeting.AddMinutes(1),
+            async () =>
+            {
+                var ctx = await BuildPollsAsync(ct);
+
+                var (_, result) = await ReadAsync(
+                    ctx,
+                    "alice",
+                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
+                    ct
+                );
+
+                Assert.All(
+                    result.Entry.AddOns.Where(addOn => addOn.Poll is not null),
+                    addOn => Assert.True(addOn.Poll!.IsClosed)
+                );
+            }
+        );
+    }
+
+    private Task<SeededContext> BuildPollsAsync(CancellationToken ct) =>
+        _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(WholeClub)
+                    .Club(club =>
+                        club.AddCalendarEntry(
+                                "club-meeting",
+                                ClubMeeting,
+                                AtTheMeeting,
+                                asksForResponse: true
+                            )
+                            .AddCalendarPoll(
+                                "food",
+                                "club-meeting",
+                                "Was essen wir?",
+                                ["Pizza", "Suppe"],
+                                position: 1
+                            )
+                            .AddCalendarPollVote("food", "Pizza", "bea")
+                            .AddCalendarPollVote("food", "Pizza", "alice")
+                            .AddCalendarPoll(
+                                "secret",
+                                "club-meeting",
+                                "Wer wird Prinz?",
+                                ["Bea", "Dora"],
+                                isAnonymous: true,
+                                position: 2
+                            )
+                            .AddCalendarPollVote("secret", "Bea", "bea")
+                    ),
+            ct
+        );
 
     private static void WholeClub(IdentitySeedBuilder identity) =>
         identity

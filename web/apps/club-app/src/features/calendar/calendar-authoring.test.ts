@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { MyGroupSummary } from '@/features/group-hub/schemas';
+import { toDayTime } from '@/lib/day';
 import {
   mayOwnCalendarEntry,
   NO_DRAFT,
@@ -8,7 +9,6 @@ import {
   toAudienceGroupIds,
   toAudienceSwitch,
   toCalendarAudience,
-  toDayTime,
   toDefaultAudience,
   toEndKeptInStep,
   toEntryDraft,
@@ -17,7 +17,6 @@ import {
   toEntryLink,
   toEntryPayload,
   toGroupChoices,
-  toInstant,
   toOwnerOptions,
   toParticipatingGroupIds,
   toToggledValue,
@@ -245,15 +244,6 @@ describe('toAudienceGroupIds', () => {
   });
 });
 
-describe('toInstant', () => {
-  it('carries the chosen day and time back out unchanged', () => {
-    expect(toDayTime(toInstant('2027-01-20', '19:45'))).toEqual({
-      day: '2027-01-20',
-      time: '19:45',
-    });
-  });
-});
-
 describe('toEntryPayload', () => {
   it('trims the title and drops an empty description', () => {
     const payload = toEntryPayload(form({}));
@@ -288,13 +278,17 @@ describe('toEntryPayload', () => {
     [['attendance', 'participatingGroups'], ['3'], ['attendance', 'participatingGroups'], [3]],
   ] as const)(
     'sends add-ons %j with groups %j as %j and %j',
-    (addOns, groupIds, expectedAddOns, expectedGroupIds) => {
+    (kinds, groupIds, expectedKinds, expectedGroupIds) => {
       const payload = toEntryPayload(
-        form({ ownerId: '7', addOns: [...addOns], participatingGroupIds: [...groupIds] }),
+        form({
+          ownerId: '7',
+          addOns: kinds.map((kind) => ({ key: kind, kind })),
+          participatingGroupIds: [...groupIds],
+        }),
       );
 
-      expect([payload.addOns, payload.participatingGroupIds]).toEqual([
-        expectedAddOns,
+      expect([payload.addOns.map((addOn) => addOn.kind), payload.participatingGroupIds]).toEqual([
+        expectedKinds,
         expectedGroupIds,
       ]);
     },
@@ -325,13 +319,15 @@ describe('toEntryFormValues', () => {
 
   it('keeps the add-ons of an existing calendar entry in their order', () => {
     const values = toEntryFormValues(
-      entry({ addOns: ['participatingGroups', 'attendance'] }),
+      entry({
+        addOns: [{ kind: 'participatingGroups' }, { kind: 'attendance' }],
+      }),
       [],
       '2027-01-20',
       NO_DRAFT,
     );
 
-    expect(values.addOns).toEqual(['participatingGroups', 'attendance']);
+    expect(values.addOns.map((card) => card.kind)).toEqual(['participatingGroups', 'attendance']);
   });
 
   it('reads an open end off an existing calendar entry', () => {

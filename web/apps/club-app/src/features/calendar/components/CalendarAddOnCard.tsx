@@ -3,43 +3,55 @@ import type { CalendarParticipantPool } from '../calendar-authoring';
 import type { CalendarAddOnsControl } from '../hooks/use-calendar-add-ons';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
 import type { CalendarEntryReload } from '../hooks/use-calendar-entry-supplies';
-import type { CalendarEntryAddOn, ParticipatingGroup } from '../schemas';
+import type { CalendarAddOnCardForm, CalendarEntry } from '../schemas';
 import { CalendarAttendanceCard } from './CalendarAttendanceCard';
 import { CalendarParticipatingGroupsCard } from './CalendarParticipatingGroupsCard';
+import { CalendarPollCard } from './CalendarPollCard';
 
 interface CalendarAddOnCardProps {
-  addOn: CalendarEntryAddOn;
+  card: CalendarAddOnCardForm;
+  index: number;
   addOns: CalendarAddOnsControl;
   control: CalendarEntryEditorControl;
-  answerCount: number;
-  heldGroups: readonly ParticipatingGroup[];
+  entry: CalendarEntry | null;
   clubGroups: CalendarParticipantPool;
   clubGroupsReload: CalendarEntryReload | null;
 }
 
 export const CalendarAddOnCard: FC<CalendarAddOnCardProps> = ({
-  addOn,
+  card,
+  index,
   addOns,
   control,
-  answerCount,
-  heldGroups,
+  entry,
   clubGroups,
   clubGroupsReload,
 }) => {
   const remove = (): void => {
-    addOns.askRemoval(addOn);
+    addOns.askRemoval(card);
   };
 
-  switch (addOn) {
+  switch (card.kind) {
     case 'attendance':
-      return <CalendarAttendanceCard answerCount={answerCount} onRemove={remove} />;
+      return <CalendarAttendanceCard entry={entry} onRemove={remove} />;
     case 'participatingGroups':
       return (
         <CalendarParticipatingGroupsCard
           control={control}
-          held={heldGroups}
+          entry={entry}
           clubGroups={clubGroups}
           clubGroupsReload={clubGroupsReload}
+          onRemove={remove}
+        />
+      );
+    case 'poll':
+      return (
+        <CalendarPollCard
+          cardKey={card.key}
+          index={index}
+          poll={card.poll}
+          control={control}
+          entry={entry}
           onRemove={remove}
         />
       );

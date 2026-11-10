@@ -97,6 +97,6 @@ public sealed class CalendarEntryAddOnPositionsMigrationTests : IClassFixture<Ap
         >(new() { CalendarEntryId = ctx.Club.CalendarEntries.IdOf(alias) });
         response.EnsureSuccessStatusCode();
 
-        return [.. result.Entry.AddOns];
+        return [.. result.Entry.AddOns.Select(addOn => addOn.Kind)];
     }
 }

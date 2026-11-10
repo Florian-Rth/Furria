@@ -2,15 +2,23 @@ import type { KkConfirmFact } from '@furria/ui/KkConfirmDialog';
 import type { KkDateQuickChoice } from '@furria/ui/KkDateField';
 import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
-import { toIsoDayLabel, toLocalIsoDay, toTimeSpanLabel } from '@/lib/calendar-days';
+import {
+  toDayNumberLabel,
+  toIsoDayLabel,
+  toLocalIsoDay,
+  toTimeLabel,
+  toTimeSpanLabel,
+} from '@/lib/calendar-days';
 import { toIsoDay } from '@/lib/day';
 import { CALENDAR_ADD_ON_LABELS } from './calendar-add-ons';
 import type { CalendarOwnerOption } from './calendar-authoring';
 import { AUDIENCE_ORDER, AUTHORED_KINDS, NO_VENUE_ID } from './calendar-authoring';
 import type { CalendarGroupShortcut } from './calendar-people';
+import { toPersonName } from './calendar-people';
 import type {
+  AudiencePerson,
+  CalendarAddOnKind,
   CalendarEntry,
-  CalendarEntryAddOn,
   CalendarEntryAudience,
   RunningVenue,
 } from './schemas';
@@ -110,18 +118,78 @@ export const toNoMatchLabel = (
   isLoading: boolean,
 ): string | null => (query.trim() === '' || matchCount > 0 || isLoading ? null : NO_MATCH_LABEL);
 
-export const toAnswerCountLabel = (count: number): string | undefined => {
-  if (count === 0) {
-    return undefined;
+const byCount = (count: number, one: string, many: string): string => (count === 1 ? one : many);
+
+export const toAnswerCountLabel = (count: number): string | undefined =>
+  count === 0 ? undefined : byCount(count, '1 Antwort', `${count} Antworten`);
+
+export const toAddOnRemovalQuestion = (kind: CalendarAddOnKind): string =>
+  `${CALENDAR_ADD_ON_LABELS[kind]} entfernen?`;
+
+export const toDiscardedAnswersLabel = (kind: CalendarAddOnKind, count: number): string =>
+  kind === 'poll'
+    ? byCount(
+        count,
+        'Beim Speichern wird die Stimme von 1 Person gelöscht.',
+        `Beim Speichern werden die Stimmen von ${count} Personen gelöscht.`,
+      )
+    : byCount(
+        count,
+        'Beim Speichern wird 1 Antwort gelöscht.',
+        `Beim Speichern werden ${count} Antworten gelöscht.`,
+      );
+
+export const toVoterCountLabel = (count: number): string | undefined =>
+  count === 0
+    ? undefined
+    : byCount(count, '1 Person hat abgestimmt', `${count} Personen haben abgestimmt`);
+
+export const toVotesLabel = (count: number): string =>
+  byCount(count, '1 Stimme', `${count} Stimmen`);
+
+export const toVotesUntilLabel = (votesUntil: string): string =>
+  `Abstimmen bis ${toDayNumberLabel(votesUntil)}, ${toTimeLabel(votesUntil)} Uhr`;
+
+export const toPollOptionFieldLabel = (optionIndex: number): string => `Antwort ${optionIndex + 1}`;
+
+export const toPollOptionRemoveLabel = (optionIndex: number): string =>
+  `Antwort ${optionIndex + 1} entfernen`;
+
+export const toPollRemoveLabel = (question: string): string =>
+  question.trim() === '' ? 'Umfrage entfernen' : `Umfrage „${question.trim()}“ entfernen`;
+
+export const POLL_VOTE_FAILED_MESSAGE = 'Deine Stimme wurde nicht gespeichert.';
+export const POLL_CLOSE_FAILED_MESSAGE = 'Die Umfrage wurde nicht beendet.';
+
+const POLL_CLOSED_LABEL = 'Beendet';
+const POLL_ANONYMOUS_LABEL = 'Anonym';
+const META_SEPARATOR = ' · ';
+
+interface PollMetaFacts {
+  isClosed: boolean;
+  isAnonymous: boolean;
+  votesUntil: string | null;
+  voterCount: number;
+}
+
+const toPollDeadlineLabel = (poll: PollMetaFacts): string | undefined => {
+  if (poll.isClosed) {
+    return POLL_CLOSED_LABEL;
   }
 
-  return count === 1 ? '1 Antwort' : `${count} Antworten`;
+  return poll.votesUntil === null ? undefined : toVotesUntilLabel(poll.votesUntil);
 };
 
-export const toAddOnRemovalQuestion = (addOn: CalendarEntryAddOn): string =>
-  `${CALENDAR_ADD_ON_LABELS[addOn]} entfernen?`;
+export const toPollMetaLabel = (poll: PollMetaFacts): string | undefined => {
+  const anonymity = poll.isAnonymous ? POLL_ANONYMOUS_LABEL : undefined;
+  const parts = [toPollDeadlineLabel(poll), anonymity, toVoterCountLabel(poll.voterCount)].filter(
+    (part): part is string => part !== undefined,
+  );
 
-export const toDiscardedAnswersLabel = (count: number): string =>
-  count === 1
-    ? 'Beim Speichern wird 1 Antwort gelöscht.'
-    : `Beim Speichern werden ${count} Antworten gelöscht.`;
+  return parts.length === 0 ? undefined : parts.join(META_SEPARATOR);
+};
+
+export const toPollVotersLabel = (voters: readonly AudiencePerson[]): string | undefined =>
+  voters.length === 0 ? undefined : voters.map(toPersonName).join(', ');
+
+export const toPollCloseQuestion = (question: string): string => `„${question}“ beenden?`;

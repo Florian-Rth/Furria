@@ -17,7 +17,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
 
-public sealed class CalendarService
+public sealed partial class CalendarService
 {
     private const string UnknownEntryMessage = "Diesen Kalendereintrag gibt es nicht.";
     private const string NoPersonMessage = "Dieser Zugang gehört zu keiner Person.";
@@ -103,14 +103,10 @@ public sealed class CalendarService
             .Select(RowProjection(now, openEndedCutoff))
             .ToListAsync(ct);
 
-        var answers = await AnswersOfAsync(
-            viewer.PersonId,
-            [.. rows.Select(row => row.CalendarEntryId)],
-            ct
-        );
+        var extras = await ExtrasOfAsync(viewer.PersonId, rows, now, ct);
 
         return Result<IReadOnlyList<CalendarEntrySummary>>.Success([
-            .. rows.Select(row => ToSummary(row, answers, now)),
+            .. rows.Select(row => ToSummary(row, extras, now)),
         ]);
     }
 
@@ -138,9 +134,9 @@ public sealed class CalendarService
         if (row is null)
             return Result<CalendarEntrySummary>.NotFound(UnknownEntryMessage);
 
-        var answers = await AnswersOfAsync(viewer.PersonId, [row.CalendarEntryId], ct);
+        var extras = await ExtrasOfAsync(viewer.PersonId, [row], now, ct);
 
-        return Result<CalendarEntrySummary>.Success(ToSummary(row, answers, now));
+        return Result<CalendarEntrySummary>.Success(ToSummary(row, extras, now));
     }
 
     public async Task<IReadOnlyList<GroupCalendarEntrySummary>> GetGroupEntriesAsync(
@@ -173,17 +169,13 @@ public sealed class CalendarService
             .Select(RowProjection(now, openEndedCutoff))
             .ToListAsync(ct);
 
-        var answers = await AnswersOfAsync(
-            personId,
-            [.. rows.Select(row => row.CalendarEntryId)],
-            ct
-        );
+        var extras = await ExtrasOfAsync(personId, rows, now, ct);
         var ties = await _dbContext.CalendarTiesOfAsync(personId, today, ct);
 
         return
         [
             .. rows.Select(row =>
-                ToGroupSummary(ToSummary(row, answers, now), MayAnswer(row, ties, rights))
+                ToGroupSummary(ToSummary(row, extras, now), MayAnswer(row, ties, rights))
             ),
         ];
     }
@@ -241,7 +233,7 @@ public sealed class CalendarService
                 found[probe] =
                 [
                     .. rows.Where(row => Collides(row, probe))
-                        .Select(row => ToSummary(row, NoAnswers, now)),
+                        .Select(row => ToSummary(row, EntryExtras.Nothing, now)),
                 ];
             }
         }
@@ -262,7 +254,9 @@ public sealed class CalendarService
             command.OwnerGroupId
         );
 
-        if (AddOnRefusalOf(command.AddOns, participatingGroupIds) is { } addOnRefusal)
+        var addOnKinds = CalendarPollRecords.KindsOf(command.AddOns);
+
+        if (AddOnRefusalOf(addOnKinds, participatingGroupIds) is { } addOnRefusal)
             return Result<CalendarEntryWriteResult>.Validation(addOnRefusal);
 
         var audience = AudienceChoice.Of(
@@ -291,8 +285,11 @@ public sealed class CalendarService
             Kind = command.Kind,
             Audience = audience.Audience,
         };
-        CalendarEntryAddOns.Attach(entry, command.AddOns);
+        CalendarEntryAddOns.Attach(entry, addOnKinds);
         Reconcile(entry, participatingGroupIds, audience);
+
+        if (await _dbContext.ReconcilePollsAsync(entry, command.AddOns, ct) is { } pollRefusal)
+            return Result<CalendarEntryWriteResult>.Validation(pollRefusal);
 
         _dbContext.CalendarEntries.Add(entry);
 
@@ -330,7 +327,9 @@ public sealed class CalendarService
             command.OwnerGroupId
         );
 
-        if (AddOnRefusalOf(command.AddOns, participatingGroupIds) is { } addOnRefusal)
+        var addOnKinds = CalendarPollRecords.KindsOf(command.AddOns);
+
+        if (AddOnRefusalOf(addOnKinds, participatingGroupIds) is { } addOnRefusal)
             return Result<CalendarEntryWriteResult>.Validation(addOnRefusal);
 
         var audience = AudienceChoice.Of(
@@ -351,10 +350,13 @@ public sealed class CalendarService
         if (refusal is not null)
             return Result<CalendarEntryWriteResult>.Validation(refusal);
 
-        if (DropsAttendance(entry, command.AddOns))
+        if (await _dbContext.ReconcilePollsAsync(entry, command.AddOns, ct) is { } pollRefusal)
+            return Result<CalendarEntryWriteResult>.Validation(pollRefusal);
+
+        if (DropsAttendance(entry, addOnKinds))
             await DiscardAnswersAsync(entry.Id, ct);
 
-        CalendarEntryAddOns.Attach(entry, command.AddOns);
+        CalendarEntryAddOns.Attach(entry, addOnKinds);
         Reconcile(entry, participatingGroupIds, audience);
 
         entry.Title = command.Title;
@@ -649,11 +651,7 @@ public sealed class CalendarService
             LastName = row.LastName,
         };
 
-    private CalendarEntrySummary ToSummary(
-        EntryRow row,
-        IReadOnlyDictionary<int, AttendanceAnswer> answers,
-        DateTimeOffset now
-    ) =>
+    private CalendarEntrySummary ToSummary(EntryRow row, EntryExtras extras, DateTimeOffset now) =>
         new()
         {
             CalendarEntryId = row.CalendarEntryId,
@@ -671,13 +669,16 @@ public sealed class CalendarService
             AudienceGroups = [.. row.Audience.Groups.Select(ToAudienceGroup)],
             AudiencePeople = [.. row.Audience.People.Select(ToAudiencePerson)],
             AsksForResponse = row.AsksForResponse,
-            AddOns = CalendarEntryAddOns.InCardOrder(
+            AddOns = CalendarPollRecords.AddOnsInCardOrder(
                 row.AddOnPositions.Attendance,
-                row.AddOnPositions.ParticipatingGroups
+                row.AddOnPositions.ParticipatingGroups,
+                extras.Polls.TryGetValue(row.CalendarEntryId, out var polls) ? polls : []
             ),
             ResponseCount = row.ResponseCount,
             Description = row.Description,
-            ViewerAnswer = answers.TryGetValue(row.CalendarEntryId, out var answer) ? answer : null,
+            ViewerAnswer = extras.Answers.TryGetValue(row.CalendarEntryId, out var answer)
+                ? answer
+                : null,
             IsRunning = row.IsRunning,
             Event = row.Event is { } facts
                 ? ToEventFacts(facts, now, EventPictureOf(row.CalendarEntryId, facts))
@@ -731,6 +732,8 @@ public sealed class CalendarService
             .CalendarEntries.Include(row => row.ParticipatingGroups)
             .Include(row => row.AudienceGroups)
             .Include(row => row.AudiencePeople)
+            .Include(row => row.Polls)
+                .ThenInclude(poll => poll.Options)
             .AsSplitQuery()
             .SingleOrDefaultAsync(row => row.Id == calendarEntryId, ct);
     }
@@ -921,6 +924,21 @@ public sealed class CalendarService
                     );
     }
 
+    private async Task<EntryExtras> ExtrasOfAsync(
+        int? personId,
+        IReadOnlyList<EntryRow> rows,
+        DateTimeOffset now,
+        CancellationToken ct
+    )
+    {
+        var calendarEntryIds = rows.Select(row => row.CalendarEntryId).ToList();
+
+        return new EntryExtras(
+            await AnswersOfAsync(personId, calendarEntryIds, ct),
+            await _dbContext.PollsOfEntriesAsync(calendarEntryIds, personId, now, ct)
+        );
+    }
+
     private async Task<IReadOnlyDictionary<int, AttendanceAnswer>> AnswersOfAsync(
         int? personId,
         IReadOnlyList<int> calendarEntryIds,
@@ -976,6 +994,17 @@ public sealed class CalendarService
     );
 
     private sealed record GroupRow(int GroupId, string Name, GroupTone? Tone);
+
+    private sealed record EntryExtras(
+        IReadOnlyDictionary<int, AttendanceAnswer> Answers,
+        IReadOnlyDictionary<int, IReadOnlyList<PlacedPoll>> Polls
+    )
+    {
+        public static readonly EntryExtras Nothing = new(
+            new Dictionary<int, AttendanceAnswer>(),
+            new Dictionary<int, IReadOnlyList<PlacedPoll>>()
+        );
+    }
 
     private sealed record AddOnPositionsRow(int? Attendance, int? ParticipatingGroups);
 

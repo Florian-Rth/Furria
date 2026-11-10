@@ -1012,15 +1012,18 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
                 AddOns =
                 [
                     .. entry.AsksForResponse
-                        ? [CalendarEntryAddOnKind.Attendance]
-                        : Array.Empty<CalendarEntryAddOnKind>(),
-                    CalendarEntryAddOnKind.ParticipatingGroups,
+                        ? [SingleUseAddOn(CalendarEntryAddOnKind.Attendance)]
+                        : Array.Empty<CalendarEntryAddOnInput>(),
+                    SingleUseAddOn(CalendarEntryAddOnKind.ParticipatingGroups),
                 ],
                 ParticipatingGroupIds = [groupId],
             },
             ct
         );
     }
+
+    private static CalendarEntryAddOnInput SingleUseAddOn(CalendarEntryAddOnKind kind) =>
+        new() { Kind = kind, Poll = null };
 
     public async Task<Result> SaveSecondActiveGroupAsync(
         string name,

@@ -13,6 +13,7 @@ export const DOMAIN_CHANGES = [
   'usualTrainingTime',
   'calendarEntry',
   'attendanceResponse',
+  'calendarPollVote',
   'event',
   'role',
   'roleHolding',
@@ -273,6 +274,7 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   calendar: [
     'calendarEntry',
     'attendanceResponse',
+    'calendarPollVote',
     'event',
     'group',
     'venue',

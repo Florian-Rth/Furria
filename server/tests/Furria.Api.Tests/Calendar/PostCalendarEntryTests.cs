@@ -82,7 +82,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 Audience = CalendarEntryAudience.Club,
                 AudienceGroupIds = [],
                 AudiencePersonIds = [],
-                AddOns = [CalendarEntryAddOnKind.Attendance],
+                AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
                 ParticipatingGroupIds = [],
             }
         );
@@ -578,8 +578,8 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
             {
                 AddOns =
                 [
-                    CalendarEntryAddOnKind.ParticipatingGroups,
-                    CalendarEntryAddOnKind.Attendance,
+                    PostAddOn(CalendarEntryAddOnKind.ParticipatingGroups),
+                    PostAddOn(CalendarEntryAddOnKind.Attendance),
                 ],
                 ParticipatingGroupIds = [ctx.Groups.Groups.IdOf("kindergarde")],
             }
@@ -595,6 +595,94 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
             .CalendarEntry(result.CalendarEntryId)
             .ToAskForResponse(true)
             .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_StoreThePollsInCardOrder_When_TheEntryAttachesThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                AddOns =
+                [
+                    PollAddOn("Was bringst du mit?", " Kuchen ", "Obst"),
+                    PostAddOn(CalendarEntryAddOnKind.Attendance),
+                    PollAddOn("Wann hast du Zeit?", "Montag", "Dienstag", "Mittwoch"),
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(result.CalendarEntryId)
+            .ToHavePollsAt(
+                (0, "Was bringst du mit?", "Kuchen, Obst"),
+                (2, "Wann hast du Zeit?", "Montag, Dienstag, Mittwoch")
+            )
+            .CalendarEntry(result.CalendarEntryId)
+            .ToCarryAddOns(CalendarEntryAddOnKind.Attendance)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_ANewPollNamesHeldOptions()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var poll = PollAddOn("Kommst du?", "Ja", "Nein");
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                AddOns =
+                [
+                    poll with
+                    {
+                        Poll = poll.Poll! with
+                        {
+                            Options =
+                            [
+                                .. poll.Poll.Options.Select(option => option with { OptionId = 7 }),
+                            ],
+                        },
+                    },
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("Ja")]
+    [InlineData("Ja|ja ")]
+    [InlineData("Ja| ")]
+    public async Task Should_ReturnBadRequest_When_ThePollOptionsAreUnusable(string options)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(ClubOwned(ClubMeeting) with { AddOns = [PollAddOn("Kommst du?", options.Split('|'))] });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
     [Fact]
@@ -632,7 +720,11 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
         >(
             ClubOwned(ClubMeeting) with
             {
-                AddOns = [CalendarEntryAddOnKind.Attendance, CalendarEntryAddOnKind.Attendance],
+                AddOns =
+                [
+                    PostAddOn(CalendarEntryAddOnKind.Attendance),
+                    PostAddOn(CalendarEntryAddOnKind.Attendance),
+                ],
             }
         );
 
@@ -658,7 +750,7 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 Kind = CalendarEntryKind.Training,
                 Audience = CalendarEntryAudience.Groups,
                 AudienceGroupIds = [tanzgarde],
-                AddOns = [CalendarEntryAddOnKind.ParticipatingGroups],
+                AddOns = [PostAddOn(CalendarEntryAddOnKind.ParticipatingGroups)],
                 ParticipatingGroupIds = [tanzgarde],
             }
         );
@@ -743,4 +835,32 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
         return payload?.Errors
             ?? throw new InvalidOperationException("The failure response carried no errors.");
     }
+
+    private static PostCalendarEntryAddOnDataDto PostAddOn(CalendarEntryAddOnKind kind) =>
+        new() { Kind = kind, Poll = null };
+
+    private static PostCalendarEntryAddOnDataDto PollAddOn(
+        string question,
+        params string[] options
+    ) =>
+        new()
+        {
+            Kind = CalendarEntryAddOnKind.Poll,
+            Poll = new()
+            {
+                PollId = null,
+                Question = question,
+                AllowsMultipleChoices = false,
+                IsAnonymous = false,
+                VotesUntil = null,
+                Options =
+                [
+                    .. options.Select(label => new PostCalendarEntryPollOptionDataDto
+                    {
+                        OptionId = null,
+                        Label = label,
+                    }),
+                ],
+            },
+        };
 }

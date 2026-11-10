@@ -2,19 +2,17 @@ import { KkButton } from '@furria/ui/KkButton';
 import { KkIcon } from '@furria/ui/KkIcon';
 import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import type { FC } from 'react';
-import { toHeldAnswerCount } from '../calendar-add-ons';
 import type { CalendarParticipantPool } from '../calendar-authoring';
 import { useCalendarAddOns } from '../hooks/use-calendar-add-ons';
 import type { CalendarEntryEditorControl } from '../hooks/use-calendar-entry-editor';
 import type { CalendarEntryReload } from '../hooks/use-calendar-entry-supplies';
-import type { CalendarEntry, ParticipatingGroup } from '../schemas';
+import type { CalendarEntry } from '../schemas';
 import { CalendarAddOnCard } from './CalendarAddOnCard';
 import { CalendarAddOnRemovalDialog } from './CalendarAddOnRemovalDialog';
 import { CalendarAddOnSheet } from './CalendarAddOnSheet';
 
 const SECTION_TITLE = 'Bausteine';
 const ADD_LABEL = 'Baustein hinzufügen';
-const NO_GROUPS: readonly ParticipatingGroup[] = [];
 
 interface CalendarEntryAddOnsSectionProps {
   control: CalendarEntryEditorControl;
@@ -30,17 +28,15 @@ export const CalendarEntryAddOnsSection: FC<CalendarEntryAddOnsSectionProps> = (
   clubGroupsReload,
 }) => {
   const addOns = useCalendarAddOns(control, entry);
-  const answerCount = toHeldAnswerCount(entry);
-  const heldGroups = entry?.participatingGroups ?? NO_GROUPS;
 
-  const cards = addOns.attached.map((addOn) => (
+  const cards = addOns.attached.map((card, index) => (
     <CalendarAddOnCard
-      key={addOn}
-      addOn={addOn}
+      key={card.key}
+      card={card}
+      index={index}
       addOns={addOns}
       control={control}
-      answerCount={answerCount}
-      heldGroups={heldGroups}
+      entry={entry}
       clubGroups={clubGroups}
       clubGroupsReload={clubGroupsReload}
     />

@@ -892,6 +892,173 @@ namespace Furria.Infrastructure.Migrations
                     b.ToTable("calendar_entry_group", (string)null);
                 });
 
+            modelBuilder.Entity("Furria.Core.Club.CalendarPoll", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<bool>("AllowsMultipleChoices")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("allows_multiple_choices");
+
+                    b.Property<int>("CalendarEntryId")
+                        .HasColumnType("integer")
+                        .HasColumnName("calendar_entry_id");
+
+                    b.Property<DateTimeOffset?>("ClosedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("closed_at");
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<bool>("IsAnonymous")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("boolean")
+                        .HasDefaultValue(false)
+                        .HasColumnName("is_anonymous");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<string>("Question")
+                        .IsRequired()
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("question");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<DateTimeOffset?>("VotesUntil")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("votes_until");
+
+                    b.HasKey("Id")
+                        .HasName("pk_calendar_poll");
+
+                    b.HasIndex("CalendarEntryId")
+                        .HasDatabaseName("ix_calendar_poll_calendar_entry_id");
+
+                    b.ToTable("calendar_poll", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_calendar_poll_position", "position >= 0");
+
+                            t.HasCheckConstraint("ck_calendar_poll_question", "btrim(question) <> ''");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.CalendarPollOption", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<string>("Label")
+                        .IsRequired()
+                        .HasMaxLength(120)
+                        .HasColumnType("character varying(120)")
+                        .HasColumnName("label");
+
+                    b.Property<int>("PollId")
+                        .HasColumnType("integer")
+                        .HasColumnName("poll_id");
+
+                    b.Property<int>("Position")
+                        .HasColumnType("integer")
+                        .HasColumnName("position");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_calendar_poll_option");
+
+                    b.HasAlternateKey("PollId", "Id")
+                        .HasName("ak_calendar_poll_option_poll_id_id");
+
+                    b.ToTable("calendar_poll_option", null, t =>
+                        {
+                            t.HasCheckConstraint("ck_calendar_poll_option_label", "btrim(label) <> ''");
+
+                            t.HasCheckConstraint("ck_calendar_poll_option_position", "position >= 0");
+                        });
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.CalendarPollVote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTimeOffset>("CreatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.Property<int>("PersonId")
+                        .HasColumnType("integer")
+                        .HasColumnName("person_id");
+
+                    b.Property<int>("PollId")
+                        .HasColumnType("integer")
+                        .HasColumnName("poll_id");
+
+                    b.Property<int>("PollOptionId")
+                        .HasColumnType("integer")
+                        .HasColumnName("poll_option_id");
+
+                    b.Property<DateTimeOffset>("UpdatedAt")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("updated_at")
+                        .HasDefaultValueSql("now()");
+
+                    b.HasKey("Id")
+                        .HasName("pk_calendar_poll_vote");
+
+                    b.HasIndex("PersonId")
+                        .HasDatabaseName("ix_calendar_poll_vote_person_id");
+
+                    b.HasIndex("PollId", "PersonId")
+                        .HasDatabaseName("ix_calendar_poll_vote_poll_id_person_id");
+
+                    b.HasIndex("PollId", "PollOptionId", "PersonId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_calendar_poll_vote_poll_id_poll_option_id_person_id");
+
+                    b.ToTable("calendar_poll_vote", (string)null);
+                });
+
             modelBuilder.Entity("Furria.Core.Club.ClubRecord", b =>
                 {
                     b.Property<int>("Id")
@@ -5207,6 +5374,52 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Group");
                 });
 
+            modelBuilder.Entity("Furria.Core.Club.CalendarPoll", b =>
+                {
+                    b.HasOne("Furria.Core.Club.CalendarEntry", "CalendarEntry")
+                        .WithMany("Polls")
+                        .HasForeignKey("CalendarEntryId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_calendar_poll_calendar_entry_calendar_entry_id");
+
+                    b.Navigation("CalendarEntry");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.CalendarPollOption", b =>
+                {
+                    b.HasOne("Furria.Core.Club.CalendarPoll", "Poll")
+                        .WithMany("Options")
+                        .HasForeignKey("PollId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_calendar_poll_option_calendar_poll_poll_id");
+
+                    b.Navigation("Poll");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.CalendarPollVote", b =>
+                {
+                    b.HasOne("Furria.Core.Identity.Person", "Person")
+                        .WithMany()
+                        .HasForeignKey("PersonId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_calendar_poll_vote_person_person_id");
+
+                    b.HasOne("Furria.Core.Club.CalendarPollOption", "PollOption")
+                        .WithMany("Votes")
+                        .HasForeignKey("PollId", "PollOptionId")
+                        .HasPrincipalKey("PollId", "Id")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_calendar_poll_vote_calendar_poll_option_poll_id_poll_option_id");
+
+                    b.Navigation("Person");
+
+                    b.Navigation("PollOption");
+                });
+
             modelBuilder.Entity("Furria.Core.Club.KeyHolding", b =>
                 {
                     b.HasOne("Furria.Core.Identity.Person", "Person")
@@ -6458,6 +6671,18 @@ namespace Furria.Infrastructure.Migrations
                     b.Navigation("Event");
 
                     b.Navigation("ParticipatingGroups");
+
+                    b.Navigation("Polls");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.CalendarPoll", b =>
+                {
+                    b.Navigation("Options");
+                });
+
+            modelBuilder.Entity("Furria.Core.Club.CalendarPollOption", b =>
+                {
+                    b.Navigation("Votes");
                 });
 
             modelBuilder.Entity("Furria.Core.Club.Venue", b =>

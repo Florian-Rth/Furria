@@ -35,7 +35,7 @@ public sealed record CalendarEntrySummary
 
     public required bool AsksForResponse { get; init; }
 
-    public required IReadOnlyList<CalendarEntryAddOnKind> AddOns { get; init; }
+    public required IReadOnlyList<CalendarEntryAddOnDetails> AddOns { get; init; }
 
     public required int ResponseCount { get; init; }
 

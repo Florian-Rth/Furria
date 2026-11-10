@@ -215,7 +215,7 @@ public sealed record CalendarEntryDto
 
     public required bool AsksForResponse { get; init; }
 
-    public required IReadOnlyList<CalendarEntryAddOnKind> AddOns { get; init; }
+    public required IReadOnlyList<CalendarEntryAddOnDto> AddOns { get; init; }
 
     public required int ResponseCount { get; init; }
 
@@ -246,12 +246,105 @@ public sealed record CalendarEntryDto
             AudienceGroups = [.. entry.AudienceGroups.Select(AudienceGroupDto.From)],
             AudiencePeople = [.. entry.AudiencePeople.Select(AudiencePersonDto.From)],
             AsksForResponse = entry.AsksForResponse,
-            AddOns = entry.AddOns,
+            AddOns = [.. entry.AddOns.Select(CalendarEntryAddOnDto.From)],
             ResponseCount = entry.ResponseCount,
             Description = entry.Description,
             ViewerAnswer = entry.ViewerAnswer,
             IsRunning = entry.IsRunning,
             Event = entry.Event is { } facts ? CalendarEventFactsDto.From(facts) : null,
+        };
+}
+
+public sealed record CalendarEntryAddOnDto
+{
+    public required CalendarEntryAddOnKind Kind { get; init; }
+
+    public required CalendarPollDto? Poll { get; init; }
+
+    [Pure]
+    public static CalendarEntryAddOnDto From(CalendarEntryAddOnDetails addOn) =>
+        new()
+        {
+            Kind = addOn.Kind,
+            Poll = addOn.Poll is { } poll ? CalendarPollDto.From(poll) : null,
+        };
+}
+
+public sealed record CalendarPollDto
+{
+    public required int PollId { get; init; }
+
+    public required string Question { get; init; }
+
+    public required bool AllowsMultipleChoices { get; init; }
+
+    public required bool IsAnonymous { get; init; }
+
+    public required DateTimeOffset? VotesUntil { get; init; }
+
+    public required DateTimeOffset? ClosedAt { get; init; }
+
+    public required bool IsClosed { get; init; }
+
+    public required int VoterCount { get; init; }
+
+    public required IReadOnlyList<CalendarPollOptionDto> Options { get; init; }
+
+    [Pure]
+    public static CalendarPollDto From(CalendarPollDetails poll) =>
+        new()
+        {
+            PollId = poll.PollId,
+            Question = poll.Question,
+            AllowsMultipleChoices = poll.AllowsMultipleChoices,
+            IsAnonymous = poll.IsAnonymous,
+            VotesUntil = poll.VotesUntil,
+            ClosedAt = poll.ClosedAt,
+            IsClosed = poll.IsClosed,
+            VoterCount = poll.VoterCount,
+            Options = [.. poll.Options.Select(CalendarPollOptionDto.From)],
+        };
+}
+
+public sealed record CalendarPollOptionDto
+{
+    public required int OptionId { get; init; }
+
+    public required string Label { get; init; }
+
+    public required int VoteCount { get; init; }
+
+    public required bool ViewerChose { get; init; }
+
+    public required IReadOnlyList<CalendarPollVoterDto> Voters { get; init; }
+
+    [Pure]
+    public static CalendarPollOptionDto From(CalendarPollOptionDetails option) =>
+        new()
+        {
+            OptionId = option.OptionId,
+            Label = option.Label,
+            VoteCount = option.VoteCount,
+            ViewerChose = option.ViewerChose,
+            Voters = [.. option.Voters.Select(CalendarPollVoterDto.From)],
+        };
+}
+
+public sealed record CalendarPollVoterDto
+{
+    public required int PersonId { get; init; }
+
+    public required string FirstName { get; init; }
+
+    public required string LastName { get; init; }
+
+    [Pure]
+    public static CalendarPollVoterDto From(CalendarPollVoter voter) =>
+        new()
+        {
+            PersonId = voter.PersonId,
+            FirstName = voter.FirstName,
+            LastName = voter.LastName,
         };
 }
 

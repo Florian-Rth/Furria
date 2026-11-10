@@ -1,24 +1,25 @@
 import { useKkSheetCommands } from '@furria/ui/sheet-store';
 import { useState } from 'react';
 import { toDiscardedAnswerCount, toOfferedAddOns } from '../calendar-add-ons';
-import type { CalendarEntry, CalendarEntryAddOn } from '../schemas';
+import type { CalendarAddOnCardForm, CalendarAddOnKind, CalendarEntry } from '../schemas';
 import type { CalendarEntryEditorControl } from './use-calendar-entry-editor';
 
 export const ADD_ON_SHEET_ID = 'calendar-add-on';
 
 export interface CalendarAddOnRemoval {
-  addOn: CalendarEntryAddOn;
+  key: string;
+  kind: CalendarAddOnKind;
   discardedAnswers: number;
 }
 
-const NO_REMOVAL: CalendarAddOnRemoval = { addOn: 'attendance', discardedAnswers: 0 };
+const NO_REMOVAL: CalendarAddOnRemoval = { key: '', kind: 'attendance', discardedAnswers: 0 };
 
 export interface CalendarAddOnsControl {
-  attached: readonly CalendarEntryAddOn[];
-  offered: readonly CalendarEntryAddOn[];
+  attached: readonly CalendarAddOnCardForm[];
+  offered: readonly CalendarAddOnKind[];
   openSheet: () => void;
-  attach: (addOn: CalendarEntryAddOn) => void;
-  askRemoval: (addOn: CalendarEntryAddOn) => void;
+  attach: (kind: CalendarAddOnKind) => void;
+  askRemoval: (card: CalendarAddOnCardForm) => void;
   removal: CalendarAddOnRemoval;
   isRemovalOpen: boolean;
   confirmRemoval: () => void;
@@ -34,15 +35,15 @@ export const useCalendarAddOns = (
   const [isRemovalOpen, setRemovalOpen] = useState(false);
   const attached = control.values.addOns;
 
-  const askRemoval = (addOn: CalendarEntryAddOn): void => {
-    const discardedAnswers = toDiscardedAnswerCount(addOn, entry);
+  const askRemoval = (card: CalendarAddOnCardForm): void => {
+    const discardedAnswers = toDiscardedAnswerCount(card, entry);
 
     if (discardedAnswers === 0) {
-      control.detachAddOn(addOn);
+      control.detachAddOn(card.key);
       return;
     }
 
-    setRemoval({ addOn, discardedAnswers });
+    setRemoval({ key: card.key, kind: card.kind, discardedAnswers });
     setRemovalOpen(true);
   };
 
@@ -52,15 +53,15 @@ export const useCalendarAddOns = (
     openSheet: () => {
       sheets.open(ADD_ON_SHEET_ID);
     },
-    attach: (addOn) => {
-      control.attachAddOn(addOn);
+    attach: (kind) => {
+      control.attachAddOn(kind);
       sheets.close();
     },
     askRemoval,
     removal,
     isRemovalOpen,
     confirmRemoval: () => {
-      control.detachAddOn(removal.addOn);
+      control.detachAddOn(removal.key);
       setRemovalOpen(false);
     },
     cancelRemoval: () => {

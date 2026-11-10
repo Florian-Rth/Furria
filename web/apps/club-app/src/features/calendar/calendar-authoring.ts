@@ -2,11 +2,16 @@ import type { KkSelectOption } from '@furria/ui/KkSelectField';
 import type { CalendarEntryKind } from '@/features/club/schemas';
 import type { MyGroupSummary } from '@/features/group-hub/schemas';
 import { toDayNumberLabel, toTimeSpanLabel } from '@/lib/calendar-days';
-import { toIsoDay } from '@/lib/day';
+import type { DayTime } from '@/lib/day';
+import { toDayTime, toInstant, toIsoDay } from '@/lib/day';
+import { toAddOnCards } from './calendar-add-ons';
+import type { CalendarPollPayload } from './calendar-polls';
+import { toPollPayload } from './calendar-polls';
 import type {
+  CalendarAddOnCardForm,
+  CalendarAddOnKind,
   CalendarCollision,
   CalendarEntry,
-  CalendarEntryAddOn,
   CalendarEntryAudience,
   CalendarEntryForm,
 } from './schemas';
@@ -38,6 +43,11 @@ export interface CalendarOwnerOption {
   label: string;
 }
 
+export type CalendarAddOnPayload = {
+  kind: CalendarAddOnKind;
+  poll: CalendarPollPayload | null;
+};
+
 export type CalendarEntryPayload = {
   title: string;
   description: string | null;
@@ -49,16 +59,9 @@ export type CalendarEntryPayload = {
   audience: CalendarEntryAudience;
   audienceGroupIds: number[];
   audiencePersonIds: number[];
-  addOns: CalendarEntryAddOn[];
+  addOns: CalendarAddOnPayload[];
   participatingGroupIds: number[];
 };
-
-export interface CalendarDayTime {
-  day: string;
-  time: string;
-}
-
-const pad = (value: number): string => String(value).padStart(2, '0');
 
 export const toOwnerId = (ownerGroupId: number | null): string =>
   ownerGroupId === null ? CLUB_OWNER_ID : String(ownerGroupId);
@@ -235,23 +238,10 @@ export const toCalendarKind = (value: string): CalendarEntryKind =>
 export const toCalendarAudience = (value: string): CalendarEntryAudience | null =>
   AUDIENCE_ORDER.find((known) => known === value) ?? null;
 
-export const toInstant = (isoDay: string, time: string): string =>
-  new Date(
-    Number(isoDay.slice(0, 4)),
-    Number(isoDay.slice(5, 7)) - 1,
-    Number(isoDay.slice(8, 10)),
-    Number(time.slice(0, 2)),
-    Number(time.slice(3, 5)),
-  ).toISOString();
-
-export const toDayTime = (isoInstant: string): CalendarDayTime => {
-  const moment = new Date(isoInstant);
-
-  return {
-    day: toIsoDay(moment),
-    time: `${pad(moment.getHours())}:${pad(moment.getMinutes())}`,
-  };
-};
+const toAddOnPayload = (card: CalendarAddOnCardForm): CalendarAddOnPayload =>
+  card.kind === 'poll'
+    ? { kind: card.kind, poll: toPollPayload(card.poll) }
+    : { kind: card.kind, poll: null };
 
 export const toEntryPayload = (form: CalendarEntryForm): CalendarEntryPayload => {
   const description = form.description.trim();
@@ -268,8 +258,8 @@ export const toEntryPayload = (form: CalendarEntryForm): CalendarEntryPayload =>
     audience: form.audience,
     audienceGroupIds: toAudienceGroupIds(form),
     audiencePersonIds: toAudiencePersonIds(form),
-    addOns: form.addOns,
-    participatingGroupIds: form.addOns.includes('participatingGroups')
+    addOns: form.addOns.map(toAddOnPayload),
+    participatingGroupIds: form.addOns.some((card) => card.kind === 'participatingGroups')
       ? toParticipatingGroupIds(form.participatingGroupIds, form.ownerId)
       : [],
   };
@@ -401,19 +391,18 @@ export const toEntryFormValues = (
     startTime: start.time,
     endDay: end?.day ?? '',
     endTime: end?.time ?? DEFAULT_END_TIME,
-    addOns: entry.addOns,
+    addOns: toAddOnCards(entry.addOns),
     participatingGroupIds: entry.participatingGroups.map((group) => toOwnerId(group.groupId)),
   };
 };
 
-const atInstant = (moment: CalendarDayTime): number =>
-  Date.parse(toInstant(moment.day, moment.time));
+const atInstant = (moment: DayTime): number => Date.parse(toInstant(moment.day, moment.time));
 
 export const toEndKeptInStep = (
-  previousStart: CalendarDayTime,
-  nextStart: CalendarDayTime,
-  end: CalendarDayTime,
-): CalendarDayTime => {
+  previousStart: DayTime,
+  nextStart: DayTime,
+  end: DayTime,
+): DayTime => {
   const endsAt = atInstant(end);
   const startsAt = atInstant(nextStart);
 

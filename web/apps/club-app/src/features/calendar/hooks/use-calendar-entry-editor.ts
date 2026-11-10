@@ -2,10 +2,16 @@ import { useSearch } from '@tanstack/react-router';
 import { useRef, useState } from 'react';
 import type { UseFormReturn } from 'react-hook-form';
 import { useWriteForm } from '@/features/write/hooks/use-write-form';
+import type { DayTime } from '@/lib/day';
 import { toIsoDay } from '@/lib/day';
 import { useCreateCalendarEntryMutation, useUpdateCalendarEntryMutation } from '../api';
-import { toAttachedAddOns, toDetachedAddOns } from '../calendar-add-ons';
-import type { CalendarDayTime, CalendarOwnerOption } from '../calendar-authoring';
+import {
+  nextFreshKey,
+  toAttachedCards,
+  toChangedPollCards,
+  toDetachedCards,
+} from '../calendar-add-ons';
+import type { CalendarOwnerOption } from '../calendar-authoring';
 import {
   toAudienceAfterOwnerChange,
   toAudienceSwitch,
@@ -19,10 +25,18 @@ import {
   toParticipationKeptForOwner,
   toToggledValue,
 } from '../calendar-authoring';
-import type { CalendarEntry, CalendarEntryAddOn, CalendarEntryForm } from '../schemas';
+import type { PollFieldPath, PollOptionsPath } from '../calendar-polls';
+import { toDeadlinePaths } from '../calendar-polls';
+import type {
+  CalendarAddOnKind,
+  CalendarEntry,
+  CalendarEntryForm,
+  CalendarPollForm,
+} from '../schemas';
 import { CalendarEntryFormSchema } from '../schemas';
 
 const FIELD_EDIT = { shouldDirty: true, shouldValidate: true } as const;
+const QUIET_EDIT = { shouldDirty: true } as const;
 
 interface CalendarEntryEditorInput {
   entry: CalendarEntry | null;
@@ -40,8 +54,11 @@ export interface CalendarEntryEditorControl {
   setAudience: (value: string) => void;
   toggleAudienceGroup: (value: string) => void;
   setAudiencePeople: (personIds: string[]) => void;
-  attachAddOn: (addOn: CalendarEntryAddOn) => void;
-  detachAddOn: (addOn: CalendarEntryAddOn) => void;
+  attachAddOn: (kind: CalendarAddOnKind) => void;
+  detachAddOn: (key: string) => void;
+  updatePoll: (key: string, change: (poll: CalendarPollForm) => CalendarPollForm) => void;
+  recheckPollField: (path: PollFieldPath) => void;
+  forgetPollErrors: (path: PollOptionsPath) => void;
   setStartDay: (value: string | null) => void;
   setStartTime: (value: string) => void;
   setEndDay: (value: string | null) => void;
@@ -103,14 +120,14 @@ export const useCalendarEntryEditor = ({
     );
   };
 
-  const keepEndInStep = (nextStart: CalendarDayTime): void => {
+  const keepEndInStep = (nextStart: DayTime): void => {
     const endDay = form.getValues('endDay');
 
     if (endDay === '') {
       return;
     }
 
-    const previousStart: CalendarDayTime = {
+    const previousStart: DayTime = {
       day: form.getValues('startDay'),
       time: form.getValues('startTime'),
     };
@@ -123,16 +140,26 @@ export const useCalendarEntryEditor = ({
     form.setValue('endTime', kept.time, FIELD_EDIT);
   };
 
+  const recheckDeadlines = (): void => {
+    const paths = toDeadlinePaths(form.getValues('addOns'));
+
+    if (paths.length > 0) {
+      void form.trigger(paths);
+    }
+  };
+
   const setStartDay = (value: string | null): void => {
     const day = value ?? '';
 
     keepEndInStep({ day, time: form.getValues('startTime') });
     form.setValue('startDay', day, FIELD_EDIT);
+    recheckDeadlines();
   };
 
   const setStartTime = (value: string): void => {
     keepEndInStep({ day: form.getValues('startDay'), time: value });
     form.setValue('startTime', value, FIELD_EDIT);
+    recheckDeadlines();
   };
 
   const setKind = (value: string): void => {
@@ -160,16 +187,28 @@ export const useCalendarEntryEditor = ({
     );
   };
 
-  const attachAddOn = (addOn: CalendarEntryAddOn): void => {
-    form.setValue('addOns', toAttachedAddOns(form.getValues('addOns'), addOn), FIELD_EDIT);
+  const attachAddOn = (kind: CalendarAddOnKind): void => {
+    form.setValue(
+      'addOns',
+      toAttachedCards(form.getValues('addOns'), kind, nextFreshKey),
+      QUIET_EDIT,
+    );
   };
 
-  const detachAddOn = (addOn: CalendarEntryAddOn): void => {
-    form.setValue('addOns', toDetachedAddOns(form.getValues('addOns'), addOn), FIELD_EDIT);
+  const detachAddOn = (key: string): void => {
+    const cards = form.getValues('addOns');
+    const detached = toDetachedCards(cards, key);
 
-    if (addOn === 'participatingGroups') {
+    form.clearErrors('addOns');
+    form.setValue('addOns', detached, QUIET_EDIT);
+
+    if (!detached.some((card) => card.kind === 'participatingGroups')) {
       form.setValue('participatingGroupIds', [], FIELD_EDIT);
     }
+  };
+
+  const updatePoll = (key: string, change: (poll: CalendarPollForm) => CalendarPollForm): void => {
+    form.setValue('addOns', toChangedPollCards(form.getValues('addOns'), key, change), QUIET_EDIT);
   };
 
   return {
@@ -191,6 +230,13 @@ export const useCalendarEntryEditor = ({
     },
     attachAddOn,
     detachAddOn,
+    updatePoll,
+    recheckPollField: (path) => {
+      void form.trigger(path);
+    },
+    forgetPollErrors: (path) => {
+      form.clearErrors(path);
+    },
     setStartDay,
     setStartTime,
     setEndDay: (value) => {

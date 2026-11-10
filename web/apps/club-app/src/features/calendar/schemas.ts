@@ -5,6 +5,12 @@ import { AppSearchSchema } from '@/features/session/schemas';
 import { ClockTimeSchema, PictureSchema } from '@/lib/api/schemas';
 import { EVENT_SALES_STATUS_KEYS } from '@/lib/event-copy';
 import { GroupToneSchema } from '@/lib/group-tone';
+import type { CalendarPollIssueCode } from './calendar-polls';
+import {
+  POLL_OPTION_LABEL_MAX_LENGTH,
+  POLL_QUESTION_MAX_LENGTH,
+  toPollIssues,
+} from './calendar-polls';
 
 export const CalendarSearchSchema = AppSearchSchema.extend({
   day: z.iso.date().optional().catch(undefined),
@@ -41,7 +47,36 @@ export const AudiencePersonSchema = z.object({
 });
 export type AudiencePerson = z.infer<typeof AudiencePersonSchema>;
 
-export const CalendarEntryAddOnSchema = z.enum(['attendance', 'participatingGroups']);
+export const CalendarAddOnKindSchema = z.enum(['attendance', 'participatingGroups', 'poll']);
+export type CalendarAddOnKind = z.infer<typeof CalendarAddOnKindSchema>;
+
+export const CalendarPollOptionSchema = z.object({
+  optionId: z.number().int(),
+  label: z.string(),
+  voteCount: z.number().int(),
+  viewerChose: z.boolean(),
+  voters: z.array(AudiencePersonSchema),
+});
+export type CalendarPollOption = z.infer<typeof CalendarPollOptionSchema>;
+
+export const CalendarPollSchema = z.object({
+  pollId: z.number().int(),
+  question: z.string(),
+  allowsMultipleChoices: z.boolean(),
+  isAnonymous: z.boolean(),
+  votesUntil: z.iso.datetime({ offset: true }).nullable(),
+  closedAt: z.iso.datetime({ offset: true }).nullable(),
+  isClosed: z.boolean(),
+  voterCount: z.number().int(),
+  options: z.array(CalendarPollOptionSchema),
+});
+export type CalendarPoll = z.infer<typeof CalendarPollSchema>;
+
+export const CalendarEntryAddOnSchema = z.discriminatedUnion('kind', [
+  z.object({ kind: z.literal('attendance') }),
+  z.object({ kind: z.literal('participatingGroups') }),
+  z.object({ kind: z.literal('poll'), poll: CalendarPollSchema }),
+]);
 export type CalendarEntryAddOn = z.infer<typeof CalendarEntryAddOnSchema>;
 
 export const ParticipatingGroupSchema = z.object({
@@ -152,6 +187,42 @@ export const WrittenCalendarEntrySchema = z.object({
 });
 export type WrittenCalendarEntry = z.infer<typeof WrittenCalendarEntrySchema>;
 
+export const CalendarPollOptionFormSchema = z.object({
+  key: z.string(),
+  optionId: z.number().int().nullable(),
+  label: z.string(),
+});
+export type CalendarPollOptionForm = z.infer<typeof CalendarPollOptionFormSchema>;
+
+export const CalendarPollFormSchema = z.object({
+  pollId: z.number().int().nullable(),
+  question: z.string(),
+  allowsMultipleChoices: z.boolean(),
+  isAnonymous: z.boolean(),
+  votesUntilDay: z.string(),
+  votesUntilTime: z.string(),
+  heldVotesUntil: z.string().nullable(),
+  options: z.array(CalendarPollOptionFormSchema),
+});
+export type CalendarPollForm = z.infer<typeof CalendarPollFormSchema>;
+
+export const CalendarAddOnCardFormSchema = z.discriminatedUnion('kind', [
+  z.object({ key: z.string(), kind: z.literal('attendance') }),
+  z.object({ key: z.string(), kind: z.literal('participatingGroups') }),
+  z.object({ key: z.string(), kind: z.literal('poll'), poll: CalendarPollFormSchema }),
+]);
+export type CalendarAddOnCardForm = z.infer<typeof CalendarAddOnCardFormSchema>;
+
+const POLL_ISSUE_MESSAGES: Record<CalendarPollIssueCode, string> = {
+  questionMissing: 'Die Umfrage braucht eine Frage.',
+  questionTooLong: `Höchstens ${POLL_QUESTION_MAX_LENGTH} Zeichen.`,
+  optionMissing: 'Die Antwort braucht einen Text.',
+  optionTooLong: `Höchstens ${POLL_OPTION_LABEL_MAX_LENGTH} Zeichen.`,
+  optionRepeated: 'Diese Antwort gibt es schon.',
+  deadlineTimeMissing: 'Wähle eine Uhrzeit.',
+  deadlineAfterStart: 'Abstimmen bis darf nicht nach dem Beginn liegen.',
+};
+
 export const CalendarEntryFormSchema = z
   .object({
     title: z
@@ -175,11 +246,15 @@ export const CalendarEntryFormSchema = z
     startTime: z.string().min(1, 'Der Eintrag braucht eine Uhrzeit.'),
     endDay: z.string(),
     endTime: z.string(),
-    addOns: z.array(CalendarEntryAddOnSchema),
+    addOns: z.array(CalendarAddOnCardFormSchema),
     participatingGroupIds: z.array(z.string()),
   })
   .superRefine((form, ctx) => {
-    const hasParticipatingGroups = form.addOns.includes('participatingGroups');
+    const hasParticipatingGroups = form.addOns.some((card) => card.kind === 'participatingGroups');
+
+    for (const issue of toPollIssues(form.addOns, { day: form.startDay, time: form.startTime })) {
+      ctx.addIssue({ code: 'custom', message: POLL_ISSUE_MESSAGES[issue.code], path: issue.path });
+    }
 
     if (hasParticipatingGroups && form.participatingGroupIds.includes(form.ownerId)) {
       ctx.addIssue({

@@ -203,11 +203,40 @@ Decisions taken while building phase 3:
 
 ### Phase 4 — Umfrage
 Goal: polls can be attached, voted on, closed and shown.
-- [ ] Tables, entity config, migration; write endpoints for options, settings, closing and votes
-- [ ] Rules: single or multi choice, anonymous counts only, closing (start / *Abstimmen bis* / by hand), option edits only without votes
-- [ ] Poll card in the form; voting and results on the entry detail
-- [ ] Change feed domain change for votes
-- [ ] Integration tests for the rules; pure-function tests for result shaping
+- [x] Tables, entity config, migration; write endpoints for options, settings, closing and votes
+- [x] Rules: single or multi choice, anonymous counts only, closing (start / *Abstimmen bis* / by hand), option edits only without votes
+- [x] Poll card in the form; voting and results on the entry detail
+- [x] Change feed domain change for votes
+- [x] Integration tests for the rules; pure-function tests for result shaping
+
+Decisions taken while building phase 4:
+- **Wire shape:** `addOns` on Post/Put becomes an ordered list of `{ kind, poll }` (poll set iff
+  `kind = poll`); responses carry the same list with the poll's details (options with counts,
+  `viewerChose`, voters, `voterCount`, `isClosed`). Card order is the list index, shared with
+  `attendance_position` / `participating_groups_position`; each poll stores its own `position`.
+  The group calendar keeps a plain list of kinds.
+- **Options, settings and removal travel with the entry write**, so a new entry can carry its polls
+  and the form saves once. A poll left out of `addOns` is deleted with its votes (the form asks
+  first). Only voting (`PUT /calendar/polls/{pollId}/votes`, replaces her whole set, `[]` withdraws)
+  and closing by hand (`POST /calendar/polls/{pollId}/close`, entry editors only, idempotent) have
+  their own endpoints.
+- **Locks once votes exist:** an option with votes can't be renamed or removed; anonymity can't be
+  lifted; single choice can't be set while someone holds several votes. The question stays
+  editable. *Abstimmen bis* may not lie after the entry start (it closes at the earlier of both).
+- **Limits:** question ≤ 200, 2–20 options of ≤ 120 characters, labels unique (trimmed,
+  case-insensitive).
+- **Anonymous** polls still store who voted (she must be able to change her vote); names never
+  leave the server.
+- **Concurrency:** voting takes the entry `FOR SHARE` (the entry write holds it `FOR UPDATE`) and
+  then the poll row `FOR UPDATE`, so a vote never lands beside an option edit and single choice
+  holds under parallel taps. Votes reference their option through `(poll_id, option_id)`.
+- **Change feed:** `calendar_poll` / `calendar_poll_option` notify `calendarEntry`, votes notify the
+  new `calendarPollVote`, which refreshes only the calendar reads (Start and the group calendar carry
+  no poll data).
+- **Club app:** a tap votes at once; tapping the chosen answer of a single-choice poll again
+  withdraws it. *Umfrage beenden* asks first. Anonymous polls say *Anonym* in their meta line. The
+  ballot is the new `KkPollBallot` kit (toggle buttons with `aria-pressed`). A held *Abstimmen bis*
+  is sent back unchanged unless its day or time was edited. At most 30 add-ons per entry.
 
 ### Phase 5 — Eintragsliste
 Goal: sign-up lists can be attached, filled and moderated.

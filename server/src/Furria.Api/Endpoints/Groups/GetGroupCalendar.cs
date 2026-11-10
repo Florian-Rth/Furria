@@ -96,7 +96,7 @@ public sealed class GetGroupCalendar : Endpoint<GetGroupCalendarRequest, GetGrou
             AudienceGroups = [.. entry.AudienceGroups.Select(ToDto)],
             AudiencePeople = [.. entry.AudiencePeople.Select(ToDto)],
             AsksForResponse = entry.AsksForResponse,
-            AddOns = entry.AddOns,
+            AddOns = [.. entry.AddOns.Select(addOn => addOn.Kind)],
             ResponseCount = entry.ResponseCount,
             Description = entry.Description,
             ViewerAnswer = entry.ViewerAnswer,

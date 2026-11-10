@@ -4,4 +4,5 @@ public enum CalendarEntryAddOnKind
 {
     Attendance = 1,
     ParticipatingGroups = 2,
+    Poll = 3,
 }

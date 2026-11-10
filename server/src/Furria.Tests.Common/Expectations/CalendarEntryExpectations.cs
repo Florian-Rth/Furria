@@ -76,6 +76,32 @@ public sealed class CalendarEntryExpectations
             }
         );
 
+    public Expected ToHavePollsAt(params (int Position, string Question, string Options)[] polls) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(
+                    polls,
+                    (
+                        await dbContext
+                            .CalendarPolls.AsNoTracking()
+                            .Where(poll => poll.CalendarEntryId == _calendarEntryId)
+                            .OrderBy(poll => poll.Position)
+                            .Select(poll => new
+                            {
+                                poll.Position,
+                                poll.Question,
+                                Options = poll
+                                    .Options.OrderBy(option => option.Position)
+                                    .Select(option => option.Label)
+                                    .ToList(),
+                            })
+                            .ToListAsync(ct)
+                    ).Select(poll =>
+                        (poll.Position, poll.Question, string.Join(", ", poll.Options))
+                    )
+                )
+        );
+
     public Expected ToHavePeriod(DateTimeOffset startsAt, DateTimeOffset? endsAt) =>
         _expected.Enqueue(
             async (dbContext, ct) =>

@@ -44,4 +44,6 @@ public sealed class CalendarEntry : ITimestamped
     public ICollection<CalendarEntryAudienceGroup> AudienceGroups { get; set; } = [];
 
     public ICollection<CalendarEntryAudiencePerson> AudiencePeople { get; set; } = [];
+
+    public ICollection<CalendarPoll> Polls { get; set; } = [];
 }

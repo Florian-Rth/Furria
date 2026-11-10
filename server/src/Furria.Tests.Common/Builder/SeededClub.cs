@@ -10,5 +10,7 @@ public sealed record SeededClub(
     IReadOnlyDictionary<string, int> UsualTrainingTimeIds,
     IReadOnlyDictionary<string, int> CalendarEntryIds,
     IReadOnlyDictionary<string, int> AttendanceResponseIds,
-    IReadOnlyDictionary<string, int> EventIds
+    IReadOnlyDictionary<string, int> EventIds,
+    IReadOnlyDictionary<string, int> CalendarPollIds,
+    IReadOnlyDictionary<string, int> CalendarPollOptionIds
 );
