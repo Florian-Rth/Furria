@@ -68,31 +68,24 @@ public static class CalendarTiesQuery
             .ToListAsync(ct);
 
         var castSessions = await CastSessionsOfManyAsync(dbContext, ids, today, ct);
+        var membershipsByPerson = memberships.ToLookup(row => row.PersonId);
+        var groupsByPerson = groupMemberships.ToLookup(row => row.PersonId, row => row.GroupId);
+        var tenuresByPerson = adminTenures.ToLookup(row => row.PersonId);
+        var castByPerson = castSessions.ToLookup(
+            row => row.PersonId,
+            row => new GroupSession(row.GroupId, row.SessionYear)
+        );
 
         return ids.ToDictionary(
             id => id,
             id => new CalendarTies
             {
                 PersonId = id,
-                HoldsRunningMembership = memberships.Any(row => row.PersonId == id),
-                Pauses =
-                [
-                    .. memberships
-                        .Where(row => row.PersonId == id)
-                        .SelectMany(row => row.Pauses)
-                        .Select(ToSpan),
-                ],
-                MemberGroupIds = groupMemberships
-                    .Where(row => row.PersonId == id)
-                    .Select(row => row.GroupId)
-                    .ToHashSet(),
-                AdminFunctions = ToAdminFunctions([
-                    .. adminTenures.Where(row => row.PersonId == id),
-                ]),
-                CastSessions = castSessions
-                    .Where(row => row.PersonId == id)
-                    .Select(row => new GroupSession(row.GroupId, row.SessionYear))
-                    .ToHashSet(),
+                HoldsRunningMembership = membershipsByPerson.Contains(id),
+                Pauses = [.. membershipsByPerson[id].SelectMany(row => row.Pauses).Select(ToSpan)],
+                MemberGroupIds = groupsByPerson[id].ToHashSet(),
+                AdminFunctions = ToAdminFunctions([.. tenuresByPerson[id]]),
+                CastSessions = castByPerson[id].ToHashSet(),
             }
         );
     }

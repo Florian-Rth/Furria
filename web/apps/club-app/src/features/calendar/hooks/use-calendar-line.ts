@@ -26,7 +26,7 @@ const stateOf = (
   if (!entry.asksForResponse || !primary) {
     return 'none';
   }
-  const isClosed = entry.attendance?.isClosed === true;
+  const isClosed = entry.attendance?.isClosed ?? false;
 
   if (answer === null) {
     return isClosed || isOver(entry, nowMs) ? 'none' : 'choice';

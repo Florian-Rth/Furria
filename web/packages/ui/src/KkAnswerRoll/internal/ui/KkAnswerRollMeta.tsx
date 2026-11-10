@@ -7,6 +7,7 @@ interface KkAnswerRollMetaProps {
 
 export const KkAnswerRollMeta: FC<KkAnswerRollMetaProps> = ({ text }) => (
   <Typography
+    component="li"
     variant="caption"
     data-kk-answer-roll-meta
     sx={{ color: 'text.secondary', fontWeight: 700 }}

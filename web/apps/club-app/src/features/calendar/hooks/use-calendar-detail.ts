@@ -5,6 +5,8 @@ import { PERMISSION_KEYS } from '@/lib/api/schemas';
 import { toAttendanceChoiceLabel } from '@/lib/calendar-copy';
 import type { CalendarDetailView } from '../calendar-agenda-view';
 import { toDetailView } from '../calendar-agenda-view';
+import type { AttendanceRoll } from '../calendar-attendance';
+import { toAttendanceRoll } from '../calendar-attendance';
 import type { CalendarEntryLink } from '../calendar-authoring';
 import type { CalendarEntry } from '../schemas';
 import { useCalendarAuthoring } from './use-calendar-authoring';
@@ -25,6 +27,7 @@ export interface CalendarDetailAnswer {
 export interface CalendarDetail {
   view: CalendarDetailView;
   answer: CalendarDetailAnswer | null;
+  roll: AttendanceRoll | null;
   editLink: CalendarEntryLink | null;
   mayModerate: boolean;
   eventLink: CalendarEventLink | null;
@@ -43,10 +46,11 @@ export const useCalendarDetail = (entry: CalendarEntry): CalendarDetail => {
           label: toAttendanceChoiceLabel(entry.title),
           value: choice.answer,
           error: choice.failureMessage,
-          disabled: choice.isInert || entry.attendance?.isClosed === true,
+          disabled: choice.isInert || (entry.attendance?.isClosed ?? false),
           choose: choice.choose,
         }
       : null,
+    roll: entry.attendance === null ? null : toAttendanceRoll(entry.attendance),
     editLink: authoring?.linkOf(entry) ?? null,
     mayModerate: authoring?.mayOwn(entry) ?? false,
     eventLink: opensEvent

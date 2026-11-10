@@ -317,6 +317,47 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_RefuseANewArchivedParticipatingGroup_When_AnotherArchivedOneIsHeld()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("garde-parade");
+
+        var client = await ctx.Identity.ClientForAsync("chris", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(
+            new()
+            {
+                CalendarEntryId = entryId,
+                Title = DanceGuardPerformance,
+                Description = null,
+                OwnerGroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
+                VenueId = null,
+                StartsAt = TrainingStart.AddDays(2),
+                EndsAt = null,
+                Kind = CalendarEntryKind.Trip,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
+                AddOns = [PutAddOn(CalendarEntryAddOnKind.ParticipatingGroups)],
+                ParticipatingGroupIds =
+                [
+                    ctx.Groups.Groups.IdOf("altgarde"),
+                    ctx.Groups.Groups.IdOf("seniorengarde"),
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal(["Eine archivierte Gruppe kann nicht mitwirken."], failures[ValidationField]);
+        await ctx.Expected.CalendarEntry(entryId).ToHaveTitle(DanceGuardTraining).AssertAsync(ct);
+    }
+
+    [Fact]
     public async Task Should_RefuseTheVenue_When_ItIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;
@@ -1118,6 +1159,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                                 JoinedIn2017
                             )
                             .AddGroup("altgarde", "Altgarde", archivedOn: ArchivedIn2026)
+                            .AddGroup("seniorengarde", "Seniorengarde", archivedOn: ArchivedIn2026)
                             .AddGroupAdmin(
                                 "dana-tanzgarde",
                                 "tanzgarde",

@@ -1,90 +1,114 @@
 import { describe, expect, it } from 'vitest';
+import type {
+  AttendanceRoll,
+  AttendanceRollName,
+  AttendanceRollPerson,
+} from './calendar-attendance';
 import { toAttendanceRoll, toRollNames } from './calendar-attendance';
+import type { CalendarAttendance } from './schemas';
 
-const answer = (
-  personId: number,
-  firstName: string,
-  value: 'yes' | 'maybe' | 'no',
-  recordedByFirstName: string | null = null,
-) => ({
-  personId,
-  firstName,
-  lastName: 'Muster',
-  answer: value,
-  recordedByFirstName,
-  recordedByLastName: recordedByFirstName === null ? null : 'Garde',
+const BEA_YES = {
+  personId: 1,
+  firstName: 'Bea',
+  lastName: 'Garde',
+  answer: 'yes',
+  recordedByFirstName: null,
+  recordedByLastName: null,
   answeredAt: '2027-01-15T12:00:00+00:00',
-});
+} as const;
+const DORA_NO = {
+  personId: 2,
+  firstName: 'Dora',
+  lastName: 'Leitung',
+  answer: 'no',
+  recordedByFirstName: null,
+  recordedByLastName: null,
+  answeredAt: '2027-01-15T12:00:00+00:00',
+} as const;
+const MONA_YES_BY_BEA = {
+  personId: 3,
+  firstName: 'Mona',
+  lastName: 'Mitglied',
+  answer: 'yes',
+  recordedByFirstName: 'Bea',
+  recordedByLastName: 'Garde',
+  answeredAt: '2027-01-15T12:00:00+00:00',
+} as const;
+const KAI = { personId: 9, firstName: 'Kai', lastName: 'Kind' };
 
 describe('toAttendanceRoll', () => {
-  it('groups the answers in the order yes, maybe, no', () => {
-    const roll = toAttendanceRoll({
-      isClosed: false,
-      yes: 2,
-      maybe: 0,
-      no: 1,
-      answers: [answer(1, 'Bea', 'yes'), answer(2, 'Dora', 'no'), answer(3, 'Mona', 'yes', 'Bea')],
-      notAnswered: null,
-    });
-
-    expect(
-      roll.groups.map((group) => [group.key, group.count, group.people.map((p) => p.personId)]),
-    ).toEqual([
-      ['yes', 2, [1, 3]],
-      ['maybe', 0, []],
-      ['no', 1, [2]],
-    ]);
-    expect(roll.answerCount).toBe(3);
-  });
-
-  it.each([
-    { notAnswered: null, keys: ['yes', 'maybe', 'no'] },
+  it.each<{ attendance: CalendarAttendance; expected: AttendanceRoll }>([
     {
-      notAnswered: [{ personId: 9, firstName: 'Kai', lastName: 'Kind' }],
-      keys: ['yes', 'maybe', 'no', 'open'],
+      attendance: {
+        isClosed: false,
+        yes: 2,
+        maybe: 0,
+        no: 1,
+        answers: [BEA_YES, DORA_NO, MONA_YES_BY_BEA],
+        notAnswered: null,
+      },
+      expected: {
+        isClosed: false,
+        groups: [
+          {
+            key: 'yes',
+            count: 2,
+            people: [
+              { personId: 1, name: 'Bea Garde', recordedBy: null },
+              { personId: 3, name: 'Mona Mitglied', recordedBy: 'Bea' },
+            ],
+          },
+          { key: 'maybe', count: 0, people: [] },
+          {
+            key: 'no',
+            count: 1,
+            people: [{ personId: 2, name: 'Dora Leitung', recordedBy: null }],
+          },
+        ],
+      },
     },
-  ])('adds the open group only when it is known: $keys', ({ notAnswered, keys }) => {
-    const roll = toAttendanceRoll({
-      isClosed: true,
-      yes: 0,
-      maybe: 0,
-      no: 0,
-      answers: [],
-      notAnswered,
-    });
-
-    expect(roll.groups.map((group) => group.key)).toEqual(keys);
-  });
-
-  it('keeps the counts when the names are not sent', () => {
-    const roll = toAttendanceRoll({
-      isClosed: false,
-      yes: 4,
-      maybe: 1,
-      no: 0,
-      answers: null,
-      notAnswered: null,
-    });
-
-    expect(roll.groups.map((group) => [group.count, group.people.length])).toEqual([
-      [4, 0],
-      [1, 0],
-      [0, 0],
-    ]);
+    {
+      attendance: { isClosed: true, yes: 0, maybe: 0, no: 0, answers: [], notAnswered: [KAI] },
+      expected: {
+        isClosed: true,
+        groups: [
+          { key: 'yes', count: 0, people: [] },
+          { key: 'maybe', count: 0, people: [] },
+          { key: 'no', count: 0, people: [] },
+          { key: 'open', count: 1, people: [{ personId: 9, name: 'Kai Kind', recordedBy: null }] },
+        ],
+      },
+    },
+    {
+      attendance: { isClosed: false, yes: 4, maybe: 1, no: 0, answers: null, notAnswered: null },
+      expected: {
+        isClosed: false,
+        groups: [
+          { key: 'yes', count: 4, people: [] },
+          { key: 'maybe', count: 1, people: [] },
+          { key: 'no', count: 0, people: [] },
+        ],
+      },
+    },
+  ])('rolls $attendance.yes/$attendance.maybe/$attendance.no', ({ attendance, expected }) => {
+    expect(toAttendanceRoll(attendance)).toEqual(expected);
   });
 });
 
 describe('toRollNames', () => {
-  it.each([
-    { people: [], expected: undefined },
+  it.each<{ people: AttendanceRollPerson[]; expected: AttendanceRollName[] }>([
+    { people: [], expected: [] },
     {
       people: [
         { personId: 1, name: 'Bea Garde', recordedBy: null },
-        { personId: 2, name: 'Mona Muster', recordedBy: 'Bea' },
+        { personId: 3, name: 'Mona Mitglied', recordedBy: 'Bea' },
       ],
-      expected: 'Bea Garde, Mona Muster (Bea)',
+      expected: [
+        { key: '1', text: 'Bea Garde' },
+        { key: '3', text: 'Mona Mitglied', note: '[Bea]' },
+      ],
     },
-  ])('joins $people.length names', ({ people, expected }) => {
-    expect(toRollNames(people, (recordedBy) => `(${recordedBy})`)).toBe(expected);
+  ])('names $people.length people', ({ people, expected }) => {
+    expect(toRollNames(people, (recordedBy) => `[${recordedBy}]`)).toEqual(expected);
   });
 });

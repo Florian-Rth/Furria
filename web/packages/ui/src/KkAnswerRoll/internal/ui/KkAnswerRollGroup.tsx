@@ -2,45 +2,35 @@ import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import Typography from '@mui/material/Typography';
 import type { FC } from 'react';
-import { useId } from 'react';
 import { statusTick } from '../../../internal/status-paint';
+import type { KkAnswerRollName } from '../answer-roll-name';
 import type { KkAnswerRollTone } from '../answer-roll-tone';
 import { ANSWER_ROLL_LEVELS } from '../answer-roll-tone';
+import { KkAnswerRollNames } from './KkAnswerRollNames';
 
 const TICK_SIZE = 1;
-const NAMES_INDENT = 2;
+const NO_NAMES: readonly KkAnswerRollName[] = [];
 
 interface KkAnswerRollGroupProps {
   tone: KkAnswerRollTone;
   label: string;
   count: number;
-  names?: string;
+  names?: readonly KkAnswerRollName[];
 }
 
-export const KkAnswerRollGroup: FC<KkAnswerRollGroupProps> = ({ tone, label, count, names }) => {
-  const namesId = useId();
+export const KkAnswerRollGroup: FC<KkAnswerRollGroupProps> = ({
+  tone,
+  label,
+  count,
+  names = NO_NAMES,
+}) => {
   const level = ANSWER_ROLL_LEVELS[tone];
   const countWeight = count === 0 ? 600 : 800;
   const countInk = count === 0 ? 'text.secondary' : 'text.primary';
-  const describedBy = names === undefined ? undefined : namesId;
-  const namesLine =
-    names === undefined ? null : (
-      <Typography
-        id={namesId}
-        variant="caption"
-        sx={{
-          display: 'block',
-          color: 'text.secondary',
-          pl: NAMES_INDENT,
-          overflowWrap: 'anywhere',
-        }}
-      >
-        {names}
-      </Typography>
-    );
+  const namesList = names.length === 0 ? null : <KkAnswerRollNames names={names} />;
 
   return (
-    <Stack data-kk-answer-roll-group={tone} aria-describedby={describedBy} sx={{ minWidth: 0 }}>
+    <Stack component="li" data-kk-answer-roll-group={tone} sx={{ minWidth: 0 }}>
       <Stack direction="row" sx={{ alignItems: 'center', gap: 1, minWidth: 0 }}>
         <Box
           aria-hidden
@@ -52,17 +42,22 @@ export const KkAnswerRollGroup: FC<KkAnswerRollGroupProps> = ({ tone, label, cou
             ...statusTick(theme, level),
           })}
         />
-        <Typography variant="body2" sx={{ flexGrow: 1, minWidth: 0, fontWeight: 700 }}>
+        <Typography
+          component="span"
+          variant="body2"
+          sx={{ flexGrow: 1, minWidth: 0, fontWeight: 700 }}
+        >
           {label}
         </Typography>
         <Typography
+          component="span"
           variant="body2"
           sx={{ fontWeight: countWeight, color: countInk, fontVariantNumeric: 'tabular-nums' }}
         >
           {count}
         </Typography>
       </Stack>
-      {namesLine}
+      {namesList}
     </Stack>
   );
 };

@@ -9,10 +9,13 @@ interface KkAnswerRollRootProps extends PropsWithChildren {
 
 export const KkAnswerRollRoot: FC<KkAnswerRollRootProps> = ({ label, sx, children }) => (
   <Stack
-    role="group"
+    component="ul"
     aria-label={label}
     data-kk-answer-roll
-    sx={[{ minWidth: 0, gap: 0.5 }, ...(Array.isArray(sx) ? sx : [sx])]}
+    sx={[
+      { minWidth: 0, gap: 0.5, m: 0, p: 0, listStyle: 'none' },
+      ...(Array.isArray(sx) ? sx : [sx]),
+    ]}
   >
     {children}
   </Stack>

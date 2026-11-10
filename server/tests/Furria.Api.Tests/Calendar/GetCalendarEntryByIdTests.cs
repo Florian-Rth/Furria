@@ -51,6 +51,20 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
         TimeSpan.Zero
     );
 
+    private static readonly DateTimeOffset AtTheWorkshopEnd = new(
+        2027,
+        1,
+        22,
+        21,
+        0,
+        0,
+        TimeSpan.Zero
+    );
+    private static readonly DateTimeOffset AtTheCastTraining = ClubClock.At(
+        new DateOnly(2027, 2, 2),
+        new TimeOnly(18, 30)
+    );
+
     private readonly ApiTestFixture _fixture;
 
     public GetCalendarEntryByIdTests(ApiTestFixture fixture)
@@ -363,10 +377,12 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                     ct
                 );
 
+                var attendance = result.Entry.Attendance!;
                 Assert.Equal(
                     ["Alice", "Ilka", "Kai"],
-                    result.Entry.Attendance!.NotAnswered!.Select(person => person.FirstName)
+                    attendance.NotAnswered!.Select(person => person.FirstName)
                 );
+                Assert.Contains("Dora", attendance.Answers!.Select(answer => answer.FirstName));
             }
         );
     }
@@ -395,6 +411,181 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                 );
             }
         );
+    }
+
+    [Fact]
+    public async Task Should_ListOnlyTheChosenWithoutAnAnswer_When_TheEntryIsForChosenPeople()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+
+                var (_, result) = await ReadAsync(
+                    ctx,
+                    "dora",
+                    ctx.Club.CalendarEntries.IdOf("garde-dinner"),
+                    ct
+                );
+
+                Assert.Equal(
+                    ["Kai"],
+                    result.Entry.Attendance!.NotAnswered!.Select(person => person.FirstName)
+                );
+            }
+        );
+    }
+
+    [Theory]
+    [InlineData("paul")]
+    [InlineData("erik")]
+    public async Task Should_LeaveOutTheMember_When_HerMembershipIsPausedOrEnded(string alias)
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+
+                var (_, result) = await ReadAsync(
+                    ctx,
+                    "ilka",
+                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
+                    ct
+                );
+
+                Assert.DoesNotContain(
+                    ctx.Identity.People.IdOf(alias),
+                    result.Entry.Attendance!.NotAnswered!.Select(person => person.PersonId)
+                );
+            }
+        );
+    }
+
+    [Theory]
+    [InlineData(-1, false)]
+    [InlineData(0, true)]
+    [InlineData(60, true)]
+    public async Task Should_CloseTheAnswersAtTheEnd_When_TheEntryHasAnEnd(
+        int minutesAfterTheEnd,
+        bool isClosed
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            AtTheWorkshopEnd.AddMinutes(minutesAfterTheEnd),
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+
+                var (_, result) = await ReadAsync(
+                    ctx,
+                    "alice",
+                    ctx.Club.CalendarEntries.IdOf("workshop"),
+                    ct
+                );
+
+                Assert.Equal(isClosed, result.Entry.Attendance!.IsClosed);
+            }
+        );
+    }
+
+    [Fact]
+    public Task Should_ListTheAddedCastWithoutAnAnswer_When_TheTrainingAsksTheCast() =>
+        _fixture.AtInstantAsync(
+            RunningOrderSeeds.InTheRunningSession,
+            async () =>
+            {
+                var ct = TestContext.Current.CancellationToken;
+                var ctx = await BuildCastTrainingAsync(ct);
+
+                var result = await ReadAsync(
+                    ctx,
+                    RunningOrderSeeds.GardeAdmin,
+                    ctx.Club.CalendarEntries.IdOf("cast-training"),
+                    ct
+                );
+
+                Assert.Equal(
+                    ["Anna", "Ben", "Clara"],
+                    result.Result.Entry.Attendance!.NotAnswered!.Select(person => person.FirstName)
+                );
+            }
+        );
+
+    [Fact]
+    public async Task Should_ListTheFrozenCastWithoutAnAnswer_When_TheSessionHasClosed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        SeededContext? ctx = null;
+        await _fixture.AtInstantAsync(
+            RunningOrderSeeds.InTheRunningSession,
+            async () => ctx = await BuildCastTrainingAsync(ct)
+        );
+
+        await _fixture.AtInstantAsync(
+            RunningOrderSeeds.AfterItsAshWednesday,
+            async () =>
+            {
+                await _fixture.FreezeActCastsAsync(ct);
+                var seeded = ctx!;
+
+                var client = await seeded.Identity.SignInAgainAsync(
+                    RunningOrderSeeds.GardeAdmin,
+                    ct
+                );
+                var result = await client.GETAsync<
+                    GetCalendarEntryById,
+                    GetCalendarEntryByIdRequest,
+                    GetCalendarEntryByIdResponse
+                >(
+                    new GetCalendarEntryByIdRequest
+                    {
+                        CalendarEntryId = seeded.Club.CalendarEntries.IdOf("cast-training"),
+                    }
+                );
+
+                Assert.Equal(HttpStatusCode.OK, result.Response.StatusCode);
+                Assert.Equal(
+                    ["Anna", "Clara", "Dora"],
+                    result.Result.Entry.Attendance!.NotAnswered!.Select(person => person.FirstName)
+                );
+            }
+        );
+    }
+
+    private async Task<SeededContext> BuildCastTrainingAsync(CancellationToken ct)
+    {
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+            {
+                StudioSeeds.GardeWithDancers(_fixture.Today)(builder);
+                builder.Club(club =>
+                    club.AddCalendarEntry(
+                        "cast-training",
+                        DanceGuardTraining,
+                        AtTheCastTraining,
+                        kind: CalendarEntryKind.Training,
+                        ownerGroupAlias: RunningOrderSeeds.Garde,
+                        asksForResponse: true
+                    )
+                );
+            },
+            ct
+        );
+        await StudioSteps.GardetanzAsync(
+            ctx,
+            ct,
+            added: [ctx.Identity.People.IdOf(RunningOrderSeeds.Clara)]
+        );
+
+        return ctx;
     }
 
     [Fact]
@@ -715,7 +906,12 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
             .AddPerson("kai", "Kai", "Kind")
             .AddMembership("kai-first", "kai", JoinedIn2017)
             .AddPerson("mona", "Mona", "Mitglied")
-            .AddMembership("mona-first", "mona", JoinedIn2017);
+            .AddMembership("mona-first", "mona", JoinedIn2017)
+            .AddPerson("paul", "Paul", "Pause")
+            .AddMembership("paul-first", "paul", JoinedIn2017)
+            .AddMembershipPause("paul-pause", "paul-first", 2026)
+            .AddPerson("erik", "Erik", "Ehemalig")
+            .AddMembership("erik-first", "erik", JoinedIn2017, new DateOnly(2026, 12, 31));
 
     private Task<SeededContext> BuildCalendarAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
@@ -811,6 +1007,27 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                                 "garde-call",
                                 "bea",
                                 AttendanceAnswer.Yes
+                            )
+                            .AddCalendarEntry(
+                                "garde-dinner",
+                                "Essen mit der Garde",
+                                AtTheTraining.AddDays(3),
+                                ownerGroupAlias: "tanzgarde",
+                                asksForResponse: true,
+                                audiencePersonAliases: ["bea", "kai"]
+                            )
+                            .AddAttendanceResponse(
+                                "bea-dines",
+                                "garde-dinner",
+                                "bea",
+                                AttendanceAnswer.Yes
+                            )
+                            .AddCalendarEntry(
+                                "workshop",
+                                "Werkstatt",
+                                AtTheWorkshopEnd.AddHours(-2),
+                                AtTheWorkshopEnd,
+                                asksForResponse: true
                             )
                     ),
             ct

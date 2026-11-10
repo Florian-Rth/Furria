@@ -104,9 +104,16 @@ public sealed class CalendarPushExpansion
         var today = ClubClock.DayOf(now);
         var outgoing = new List<OutboxPush>();
 
-        foreach (var recipient in await CandidateAccountsAsync(push, ct))
+        var recipients = await CandidateAccountsAsync(push, ct);
+        var tiesByPerson = await _dbContext.CalendarTiesOfManyAsync(
+            [.. recipients.Select(recipient => recipient.PersonId)],
+            today,
+            ct
+        );
+
+        foreach (var recipient in recipients)
         {
-            var ties = await _dbContext.CalendarTiesOfAsync(recipient.PersonId, today, ct);
+            var ties = tiesByPerson[recipient.PersonId];
             if (
                 CalendarPushRules.MayConcern(push.Reason, entry, ties)
                 && CalendarPushRules.Reaches(

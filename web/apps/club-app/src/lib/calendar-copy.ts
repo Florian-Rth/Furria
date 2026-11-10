@@ -17,6 +17,15 @@ export const ATTENDANCE_LABELS: Record<AttendanceAnswerKey, string> = {
   no: 'Absage',
 };
 
+export const ATTENDANCE_ROLL_LABEL = 'Antworten';
+export const ATTENDANCE_CLOSED_LABEL = 'Geschlossen';
+export const ATTENDANCE_ROLL_LABELS: Record<AttendanceAnswerKey | 'open', string> = {
+  ...ATTENDANCE_LABELS,
+  open: 'Noch offen',
+};
+
+export const toOnBehalfLabel = (recordedBy: string): string => `durch ${recordedBy}`;
+
 export const ATTENDANCE_SAVED_MESSAGES: Record<AttendanceAnswerKey, string> = {
   yes: 'Deine Zusage ist notiert.',
   maybe: 'Dein Vielleicht ist notiert.',
