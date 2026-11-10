@@ -99,6 +99,10 @@ const PERMISSION_COPY: Record<PermissionKey, RolePermissionCopy> = {
     title: 'System einsehen',
     line: 'Zustand von Datenbank, Medienverarbeitung, Speicher und Protokoll sehen.',
   },
+  [PERMISSION_KEYS.claimWindowManage]: {
+    title: 'Anmeldefenster öffnen',
+    line: 'Für eine begrenzte Zeit erlauben, dass Personen ohne E-Mail-Adresse ihren Zugang mit Name und Geburtsdatum einrichten.',
+  },
 };
 
 const KNOWN_KEYS: readonly PermissionKey[] = Object.values(PERMISSION_KEYS);

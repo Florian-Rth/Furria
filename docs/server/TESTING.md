@@ -338,7 +338,9 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    issuedByPersonId)`) and `Expected.AccountEventsOfPerson(personId)`
    (`ToHaveKindsInOrder(kinds…)`, `ToHaveLatestActor(personId)`, `ToHaveNoLatestActor()` for a
    self-requested invitation). `LiveInvitationOfPerson` also takes `ToBeSelfRequested()` and
-   `ToBeRecoveryIssuedBy(issuedByPersonId)`. A login-email change is asserted on
+   `ToBeRecoveryIssuedBy(issuedByPersonId)`. The claim window is asserted on
+   `Expected.ClaimWindows()` (`ToHaveCount`, `ToHaveLatestEndingAt(closesAt, openedByPersonId)`,
+   `ToHaveLatestClosedAt`). A login-email change is asserted on
    `Expected.EmailConfirmationsOfAccount(accountId)` (`ToHaveCount`, `ToHaveLiveCount`) and
    `Expected.Account(id).ToSignInAs(email)`; the key ring on
    `Expected.DataProtectionKeys().ToHoldAKey()`. A person's contact details are

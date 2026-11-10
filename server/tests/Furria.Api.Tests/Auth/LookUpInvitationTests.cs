@@ -194,6 +194,20 @@ public sealed class LookUpInvitationTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_ServeAHallBehindOneAddress_When_ItLooksUpBeyondTheGeneralPerIpLimit()
+    {
+        await _fixture.BuildAsync(TestContext.Current.CancellationToken);
+        await using var host = OnboardingRateLimitSteps.VenueHost(_fixture);
+        var client = OnboardingRateLimitSteps.VenueClient(host);
+
+        await OnboardingRateLimitSteps.AssertServesTheHallAsync(async () =>
+            (await InvitationSteps.LookUpAsync(client, InvitationSteps.UnknownToken()))
+                .Response
+                .StatusCode
+        );
+    }
+
+    [Fact]
     public async Task Should_ReturnTooManyRequests_When_OneTokenIsLookedUpTooOften()
     {
         var ct = TestContext.Current.CancellationToken;

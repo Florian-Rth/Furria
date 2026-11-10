@@ -23,6 +23,7 @@ public static class FurriaPermissions
     public const string NewsManage = "news.manage";
     public const string BeerListManage = "beer_list.manage";
     public const string SystemView = "system.view";
+    public const string ClaimWindowManage = "claim_window.manage";
     public const string ClubRead = "club.read";
     public const string BeerListTake = "beer_list.take";
 
@@ -49,6 +50,7 @@ public static class FurriaPermissions
         NewsManage,
         BeerListManage,
         SystemView,
+        ClaimWindowManage,
     ];
 
     public static readonly IReadOnlyList<string> ImpliedByRelationship = [ClubRead, BeerListTake];

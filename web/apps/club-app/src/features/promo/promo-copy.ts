@@ -87,7 +87,7 @@ export const WEBSITE_COPY = {
 export const FINALE_COPY = {
   line1: 'Schon dabei.',
   line2: 'Jetzt registrieren.',
-  lead: 'QR-Code scannen, die beim Verein hinterlegte E-Mail-Adresse eingeben und den Link in der Mail öffnen.',
+  lead: 'QR-Code scannen, mit Name und Geburtsdatum anmelden und den Zugang mit der eigenen E-Mail-Adresse einrichten.',
 } as const;
 
 export const WEBSITE_ADDRESS = 'furria.florianrth.com';

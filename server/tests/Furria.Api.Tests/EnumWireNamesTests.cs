@@ -1,6 +1,7 @@
 using System.Diagnostics.Contracts;
 using System.Text.Json;
 using FastEndpoints;
+using Furria.Application.Identity;
 using Furria.Application.Management;
 using Furria.Application.Operations;
 using Furria.Application.Registry;
@@ -11,6 +12,7 @@ using Furria.Core.Events;
 using Furria.Core.Gallery;
 using Furria.Core.Groups;
 using Furria.Core.Halls;
+using Furria.Core.Identity;
 using Furria.Core.Media;
 using Furria.Core.News;
 using Furria.Core.RunningOrders;
@@ -92,6 +94,11 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(KeyframeEasing)] = "linear easeIn easeOut easeInOut",
         [typeof(ChoreographyVersionKind)] = "saved restored spotRemoved musicAdopted",
         [typeof(BeerStockMovementKind)] = "delivery correction handoverCarry handedOver",
+        [typeof(InvitationChannel)] = "mail inPerson request claimWindow",
+        [typeof(AccountEventKind)] =
+            "invited reminded redeemed recovered disabled enabled deleted loginEmailChanged "
+            + "recoveryIssued claimed",
+        [typeof(ClaimOutcome)] = "invited hasAccount hasEmail underAge notFound closed",
     };
 
     private readonly ApiTestFixture _fixture;

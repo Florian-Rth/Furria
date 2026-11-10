@@ -187,6 +187,7 @@ public static class ServiceCollectionExtensions
         services.AddHostedService<GalleryBinPurge>();
         services.AddHostedService<MailDispatcher>();
         services.AddScoped<AccessRequestService>();
+        services.AddScoped<ClaimWindowService>();
         services.AddScoped<PasswordResetService>();
         services.AddSingleton<SignedOutMailRequestQueue>();
         services.AddSingleton<PasswordResetMailThrottle>();

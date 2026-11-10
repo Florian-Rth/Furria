@@ -47,7 +47,7 @@ public sealed class RedeemInvitation : Endpoint<RedeemInvitationRequest, RedeemI
     {
         Post("auth/invitations/redeem");
         AllowAnonymous();
-        Options(route => route.RequireRateLimiting(SignedOutRateLimiting.PerIpPolicy));
+        Options(route => route.RequireRateLimiting(SignedOutRateLimiting.OnboardingPerIpPolicy));
     }
 
     public override async Task HandleAsync(RedeemInvitationRequest req, CancellationToken ct)

@@ -20,7 +20,7 @@ const INDEX_OF: Partial<Record<ReelSceneKey, number>> = {
   beer: 6,
 };
 const NO_INDEX = -1;
-const ACCESS_PATH = '/request-access';
+const ACCESS_PATH = '/claim-window';
 const FIRST_LOOP = reelScenesOf(true);
 const LATER_LOOP = reelScenesOf(false);
 

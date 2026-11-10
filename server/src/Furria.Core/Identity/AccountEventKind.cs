@@ -11,4 +11,5 @@ public enum AccountEventKind
     Deleted = 7,
     LoginEmailChanged = 8,
     RecoveryIssued = 9,
+    Claimed = 10,
 }

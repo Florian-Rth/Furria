@@ -29,6 +29,10 @@ public static class AccountEligibility
         candidate.Email is not (null or "");
 
     [Pure]
+    public static bool IsBelowAgeOfConsent(DateOnly birthDate, int ageOfConsent, DateOnly today) =>
+        !HasReached(birthDate, ageOfConsent, today);
+
+    [Pure]
     public static AccountAccessState StateOf(
         bool? accountIsDisabled,
         bool hasUnexpiredLiveInvitation

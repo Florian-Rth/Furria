@@ -206,7 +206,7 @@ export const RIGHT_GROUP_DEFINITIONS: readonly RightGroupDefinition[] = [
     keys: ['gallery.upload', 'gallery.manage', 'gallery.publish', 'news.manage'],
   },
   { id: 'beerList', keys: ['beer_list.manage', 'beer_list.take'] },
-  { id: 'system', keys: ['system.view'] },
+  { id: 'system', keys: ['system.view', 'claim_window.manage'] },
 ];
 
 const RIGHT_GROUP_TITLES: Record<string, string> = {

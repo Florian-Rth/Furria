@@ -250,6 +250,20 @@ public sealed class RedeemInvitationTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_ServeAHallBehindOneAddress_When_ItRedeemsBeyondTheGeneralPerIpLimit()
+    {
+        await _fixture.BuildAsync(TestContext.Current.CancellationToken);
+        await using var host = OnboardingRateLimitSteps.VenueHost(_fixture);
+        var client = OnboardingRateLimitSteps.VenueClient(host);
+
+        await OnboardingRateLimitSteps.AssertServesTheHallAsync(async () =>
+            (await InvitationSteps.RedeemAsync(client, InvitationSteps.UnknownToken()))
+                .Response
+                .StatusCode
+        );
+    }
+
+    [Fact]
     public async Task Should_ReturnTooManyRequests_When_OneTokenIsTriedTooOften()
     {
         var ct = TestContext.Current.CancellationToken;

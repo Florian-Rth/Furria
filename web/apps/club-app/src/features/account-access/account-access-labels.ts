@@ -66,6 +66,7 @@ const ACCOUNT_EVENT_TITLES: Record<AccountEventKind, string> = {
   deleted: 'Account gelöscht',
   loginEmailChanged: 'Anmelde-E-Mail geändert',
   recoveryIssued: 'Wiederherstellung gestartet',
+  claimed: 'Über das Anmeldefenster gemeldet',
 };
 
 export const toAccountEventTitle = (kind: AccountEventKind): string => ACCOUNT_EVENT_TITLES[kind];
@@ -74,6 +75,7 @@ const INVITATION_CHANNEL_LABELS: Record<InvitationChannel, string> = {
   mail: 'per Mail',
   inPerson: 'vor Ort',
   request: 'selbst angefordert',
+  claimWindow: 'über das Anmeldefenster',
 };
 
 export const formatInstantDay = (at: string): string => formatIsoDay(toIsoDay(new Date(at)));

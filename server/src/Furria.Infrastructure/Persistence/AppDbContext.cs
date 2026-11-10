@@ -59,6 +59,8 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
 
     public DbSet<AccountEvent> AccountEvents => Set<AccountEvent>();
 
+    public DbSet<ClaimWindow> ClaimWindows => Set<ClaimWindow>();
+
     public DbSet<EmailConfirmation> EmailConfirmations => Set<EmailConfirmation>();
 
     public DbSet<PasskeyChallenge> PasskeyChallenges => Set<PasskeyChallenge>();
