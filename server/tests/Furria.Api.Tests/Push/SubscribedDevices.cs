@@ -5,9 +5,9 @@ using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Furria.Tests.Common.Push;
 
-namespace Furria.Api.Tests.BeerList;
+namespace Furria.Api.Tests.Push;
 
-internal static class BeerListDevices
+internal static class SubscribedDevices
 {
     internal static async Task<string> SubscribedDeviceAsync(
         SeededContext ctx,

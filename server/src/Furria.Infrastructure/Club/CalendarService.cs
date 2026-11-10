@@ -102,6 +102,8 @@ public sealed partial class CalendarService
             .ThenBy(entry => entry.Id)
             .Select(RowProjection(now, openEndedCutoff))
             .ToListAsync(ct);
+        var ties = await _dbContext.CalendarTiesOfAsync(viewer.PersonId, today, ct);
+        rows = [.. rows.Where(row => ties.Sees(FactsOf(row), viewer.Rights))];
 
         var extras = await ExtrasOfAsync(viewer.PersonId, rows, now, ct);
 
@@ -132,6 +134,10 @@ public sealed partial class CalendarService
             .SingleOrDefaultAsync(ct);
 
         if (row is null)
+            return Result<CalendarEntrySummary>.NotFound(UnknownEntryMessage);
+
+        var ties = await _dbContext.CalendarTiesOfAsync(viewer.PersonId, today, ct);
+        if (!ties.Sees(FactsOf(row), viewer.Rights))
             return Result<CalendarEntrySummary>.NotFound(UnknownEntryMessage);
 
         var extras = await ExtrasOfAsync(viewer.PersonId, [row], now, ct);
@@ -306,11 +312,16 @@ public sealed partial class CalendarService
         )
             return Result<CalendarEntryWriteResult>.Validation(scheduleRefusal);
 
+        await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
         _dbContext.CalendarEntries.Add(entry);
 
         var saved = await _dbContext.SaveOrConflictAsync(ct);
         if (!saved.IsSuccess)
             return Result<CalendarEntryWriteResult>.Carrying(saved);
+
+        await EnqueueCreatePushesAsync(entry, command.ViewerPersonId, ct);
+        await _dbContext.SaveChangesAsync(ct);
+        await transaction.CommitAsync(ct);
 
         return Result<CalendarEntryWriteResult>.Success(
             await WrittenAsync(entry, command.ViewerPersonId, ct)
@@ -336,6 +347,12 @@ public sealed partial class CalendarService
 
         if (entry.Kind == CalendarEntryKind.Event)
             return Result<CalendarEntryWriteResult>.Conflict(EventsLiveInTheWorkbenchMessage);
+
+        var pushBaseline = await PushBaselineOfAsync(
+            entry,
+            new CalendarEntrySlot(command.StartsAt, command.EndsAt, command.VenueId),
+            ct
+        );
 
         var participatingGroupIds = ParticipationOf(
             command.ParticipatingGroupIds,
@@ -397,6 +414,7 @@ public sealed partial class CalendarService
         entry.EndsAt = command.EndsAt;
         entry.Kind = command.Kind;
         entry.Audience = audience.Audience;
+        await EnqueueUpdatePushesAsync(entry, pushBaseline, command.ViewerPersonId, ct);
 
         var saved = await _dbContext.SaveOrConflictAsync(ct);
         if (!saved.IsSuccess)
@@ -427,6 +445,11 @@ public sealed partial class CalendarService
             return Result.Conflict(EventsLiveInTheWorkbenchMessage);
 
         await _dbContext.KeepSessionOfAlbumsOnAsync(entry, ct);
+        await EnqueueDeletePushAsync(
+            entry,
+            await _authorizer.ActivePersonIdAsync(actorAccountId, ct),
+            ct
+        );
         _dbContext.CalendarEntries.Remove(entry);
         await _dbContext.SaveChangesAsync(ct);
         await transaction.CommitAsync(ct);

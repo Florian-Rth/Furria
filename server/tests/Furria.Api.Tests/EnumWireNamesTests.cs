@@ -74,7 +74,8 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(BackgroundJob)] =
             "abandonedUploadSweep mediaFileReaper galleryBinPurge mailDispatcher "
             + "unconfirmedApplicationPurge signedOutMailRequestWorker "
-            + "logEntryPurge mediaStorageSurvey actCastFreeze beerTabReminders beerStockWarnings",
+            + "logEntryPurge mediaStorageSurvey actCastFreeze beerTabReminders beerStockWarnings "
+            + "pushDispatcher",
         [typeof(LogSource)] = "api mediaWorker",
         [typeof(LogEntryLevel)] = "information warning error fatal",
         [typeof(ActKind)] = "dance speech music show point",

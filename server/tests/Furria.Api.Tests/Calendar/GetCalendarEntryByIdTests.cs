@@ -1,6 +1,8 @@
 using System.Net;
 using FastEndpoints;
 using Furria.Api.Endpoints.Calendar;
+using Furria.Api.Tests.RunningOrders;
+using Furria.Api.Tests.Studio;
 using Furria.Core.Club;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
@@ -618,6 +620,48 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
                             )
                     ),
             ct
+        );
+
+    [Fact]
+    public Task Should_NotFindATrainingOfAnotherSession_When_HerOnlyTieIsTheCastOfTheGroupsAct() =>
+        _fixture.AtInstantAsync(
+            RunningOrderSeeds.InTheRunningSession,
+            async () =>
+            {
+                var ct = TestContext.Current.CancellationToken;
+                var today = _fixture.Today;
+                var ctx = await _fixture.BuildAsync(
+                    builder =>
+                    {
+                        StudioSeeds.GardeWithDancers(today)(builder);
+                        builder.Club(club =>
+                            club.AddCalendarEntry(
+                                "next-session-training",
+                                DanceGuardTraining,
+                                ClubClock.At(today.AddYears(1), new TimeOnly(18, 30)),
+                                kind: CalendarEntryKind.Training,
+                                ownerGroupAlias: RunningOrderSeeds.Garde,
+                                asksForResponse: true
+                            )
+                        );
+                    },
+                    ct
+                );
+                await StudioSteps.GardetanzAsync(
+                    ctx,
+                    ct,
+                    added: [ctx.Identity.People.IdOf(RunningOrderSeeds.Clara)]
+                );
+
+                var result = await ReadAsync(
+                    ctx,
+                    RunningOrderSeeds.Clara,
+                    ctx.Club.CalendarEntries.IdOf("next-session-training"),
+                    ct
+                );
+
+                Assert.Equal(HttpStatusCode.NotFound, result.Response.StatusCode);
+            }
         );
 
     private static async Task<TestResult<GetCalendarEntryByIdResponse>> ReadAsync(

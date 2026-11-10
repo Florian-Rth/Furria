@@ -6,10 +6,11 @@ namespace Furria.Infrastructure.Persistence.Configurations;
 
 public sealed class CalendarEntryConfiguration : IEntityTypeConfiguration<CalendarEntry>
 {
-    private const int TitleLength = 120;
     private const int DescriptionLength = 2_000;
     private const int EnumLength = 32;
     private const CalendarEntryAudience UnsetAudience = 0;
+
+    public const int TitleLength = 120;
 
     private static readonly string KnownKinds = string.Join(
         ", ",

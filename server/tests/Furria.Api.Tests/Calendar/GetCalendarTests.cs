@@ -924,6 +924,62 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
         );
 
     [Fact]
+    public Task Should_ShowACastGuestOnlyTheTrainingsOfHerActsSession_When_SheIsNoClubMember() =>
+        _fixture.AtInstantAsync(
+            RunningOrderSeeds.InTheRunningSession,
+            async () =>
+            {
+                var ct = TestContext.Current.CancellationToken;
+                var today = _fixture.Today;
+                var nextSession = today.AddYears(1);
+                var ctx = await _fixture.BuildAsync(
+                    builder =>
+                    {
+                        StudioSeeds.GardeWithDancers(today)(builder);
+                        builder.Club(club =>
+                            club.AddCalendarEntry(
+                                    "this-session-training",
+                                    DanceGuardTraining,
+                                    ClubClock.At(today.AddDays(2), new TimeOnly(18, 30)),
+                                    kind: CalendarEntryKind.Training,
+                                    ownerGroupAlias: RunningOrderSeeds.Garde,
+                                    asksForResponse: true
+                                )
+                                .AddCalendarEntry(
+                                    "next-session-training",
+                                    DanceGuardTraining,
+                                    ClubClock.At(nextSession, new TimeOnly(18, 30)),
+                                    kind: CalendarEntryKind.Training,
+                                    ownerGroupAlias: RunningOrderSeeds.Garde,
+                                    asksForResponse: true
+                                )
+                        );
+                    },
+                    ct
+                );
+                await StudioSteps.GardetanzAsync(
+                    ctx,
+                    ct,
+                    added: [ctx.Identity.People.IdOf(RunningOrderSeeds.Clara)]
+                );
+
+                var result = await ReadAsync(
+                    ctx,
+                    RunningOrderSeeds.Clara,
+                    new GetCalendarRequest { From = today, To = nextSession },
+                    ct
+                );
+
+                Assert.Equal(
+                    [ctx.Club.CalendarEntries.IdOf("this-session-training")],
+                    result
+                        .Entries.Where(entry => entry.Title == DanceGuardTraining)
+                        .Select(entry => entry.CalendarEntryId)
+                );
+            }
+        );
+
+    [Fact]
     public async Task Should_CarryAGroupsUsualTrainingTimeOnEachComingWeekday_When_TheGroupStatesOne()
     {
         var ct = TestContext.Current.CancellationToken;

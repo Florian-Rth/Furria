@@ -1,7 +1,7 @@
 ---
 rfc: 0005
 title: Calendar add-ons — three kinds, an audience and building blocks instead of entry kinds
-status: in-progress
+status: built — device checks owed
 github_issue: 70
 branch: feat/rfc-70-calendar-add-ons
 created: 2026-11-10
@@ -297,10 +297,60 @@ Decisions taken while building phase 6:
 
 ### Phase 7 — Push
 Goal: calendar pushes as ruled.
-- [ ] New entry asking Zu-/Absage → everyone it concerns
-- [ ] Chosen for a chosen-people entry (on create and when added later) → that person
-- [ ] Time/place change or deletion → everyone with *Ja* / *Vielleicht*
-- [ ] Deep link from the push to the entry; tests for the recipient rules
+- [x] New entry asking Zu-/Absage → everyone it concerns
+- [x] Chosen for a chosen-people entry (on create and when added later) → that person
+- [x] Time/place change or deletion → everyone with *Ja* / *Vielleicht*
+- [x] Deep link from the push to the entry; tests for the recipient rules
+
+Decisions taken while building phase 7:
+- **Two-stage outbox:** a calendar write that should push adds a row to `outbox_calendar_push` in
+  the same transaction as the entry (creating an entry now runs in one transaction). The row
+  snapshots what is needed after the entry is gone: title, time, venue name, and the entry's
+  owner, kind, audience, participating groups and Zu-/Absage. The new `PushDispatcher`
+  (*Mitteilungen versenden* on the System page, every 5 s and woken on commit) first expands each
+  calendar row, in its own short transaction with no network call, into one `outbox_push` row per
+  account. It then sends each `outbox_push` row in its own transaction, as the mail outbox does.
+  `outbox_push` is generic: title, body, app path, tag and expiry for one account, removed with
+  the account. Both tables retry a failing row after 30 s, 2 min and 10 min, then drop it with a
+  warning, so one broken row never blocks the queue. Per-device refusals stay the
+  `PushSender`'s (ADR-0036) and are not retried.
+- **Recipients come from the canonical `CalendarTies` rules** on the snapshot, never a second SQL
+  copy of them:
+  - For a new entry asking Zu-/Absage, everyone with an enabled account and a device whose person
+    the entry concerns and who sees it.
+  - Chosen people and *Ja* / *Vielleicht* answerers are taken at write time, because answers
+    vanish with a deleted entry or a removed Zu-/Absage. Every reason still requires sight of the
+    entry as written, so someone taken off a chosen-people list is not told it moved or was
+    deleted.
+  - The person who made the change is never pushed. Rights are looked up only for people the
+    entry concerns.
+  - Recipients are resolved one person at a time, about 8 queries each. This runs in the
+    background, outside any network call. A batched ties query waits until club size makes it
+    matter.
+- **Only what can still matter:** a new-entry push goes out only before the start; all others
+  only until the entry is over (open end = start + 3 h). A queued push whose expiry passed is
+  dropped. If an entry is deleted before its push went out, its chosen, asked and moved pushes
+  are dropped with it.
+- **One push per person per write:** a new chosen-people entry that asks Zu-/Absage sends one
+  push. Someone newly chosen in the same edit that moves the entry gets only the chosen push.
+  Answers are read only when the edit moves the entry. Attaching Zu-/Absage to an existing entry
+  pushes nothing (ruled: only a *new* entry asks).
+- **Payload:**
+  - Title: the entry title, as *Geändert: …* for a move and *Entfällt: …* for a deletion.
+  - Body: German weekday, date, time and venue, followed by *Bitte sag zu oder ab.* or *Du bist
+    eingeladen.*
+  - `url`: `/calendar/{id}`; a deletion opens `/calendar?day=<day>`.
+  - `tag`: `calendar-entry-{id}`, so a later push about the same entry replaces the earlier one.
+  - TTL: until the start, clamped to 1 h – 28 days.
+- **Ordering** across several API instances is not guaranteed (`SKIP LOCKED`); there is one
+  instance.
+- **Phase-2 carry-over closed:** the calendar list and the entry detail now also check the
+  canonical `ties.Sees` after the SQL pre-filter, so a cast guest without club membership sees a
+  group's trainings only in her act's session year, as answering already required. `VisibleTo`
+  stays a broader SQL superset of `Sees`.
+- **Found on the way:** the audience person, poll vote and sign-up line references to a person
+  (phases 2–5) were never classified in `ReferencesToPerson`. They are now *her own*: erased
+  with her, and they block absorption, like attendance responses.
 
 ## Risks & alternatives
 

@@ -463,6 +463,23 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await db.SaveChangesAsync(ct);
     }
 
+    public Task CalendarPushesDrainedAsync(CancellationToken ct = default) =>
+        Polling.UntilAsync(
+            async token =>
+            {
+                await using var scope = Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                return
+                    await db.OutboxCalendarPushes.AnyAsync(token)
+                    || await db.OutboxPushes.AnyAsync(token)
+                    ? null
+                    : db;
+            },
+            OutboxDrainTimeout,
+            "The calendar push outbox still holds pushes",
+            ct
+        );
+
     public Task OutboxDrainedAsync(CancellationToken ct = default) =>
         Polling.UntilAsync(
             async token =>

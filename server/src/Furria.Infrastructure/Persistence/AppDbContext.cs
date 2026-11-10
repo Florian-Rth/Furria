@@ -12,6 +12,7 @@ using Furria.Core.Roles;
 using Furria.Core.RunningOrders;
 using Furria.Core.Studio;
 using Furria.Core.Website;
+using Furria.Infrastructure.Club;
 using Furria.Infrastructure.Identity;
 using Furria.Infrastructure.Logging;
 using Furria.Infrastructure.Mail;
@@ -118,6 +119,10 @@ public sealed class AppDbContext : IdentityUserContext<Account, int>, IDataProte
     public DbSet<DataProtectionKey> DataProtectionKeys => Set<DataProtectionKey>();
 
     public DbSet<OutboxMail> OutboxMails => Set<OutboxMail>();
+
+    public DbSet<OutboxCalendarPush> OutboxCalendarPushes => Set<OutboxCalendarPush>();
+
+    public DbSet<OutboxPush> OutboxPushes => Set<OutboxPush>();
 
     public DbSet<MembershipApplication> MembershipApplications => Set<MembershipApplication>();
 
