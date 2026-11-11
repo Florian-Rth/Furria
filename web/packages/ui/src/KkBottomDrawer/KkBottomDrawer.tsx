@@ -34,8 +34,15 @@ const paperStyles = (theme: Theme): CSSObject => ({
   }),
 });
 
+const steadyStyles: CSSObject = {
+  height: DRAWER_MAX_HEIGHT,
+  '& :has([data-kk-step-pane])': { display: 'flex', flexDirection: 'column', flexGrow: 1 },
+  '& [data-kk-step-pane], & [data-kk-step-pane-body]': { flexGrow: 1 },
+};
+
 interface KkBottomDrawerProps extends PropsWithChildren {
   open: boolean;
+  steady?: boolean;
   label: string;
   closeLabel: string;
   onClose: () => void;
@@ -43,25 +50,30 @@ interface KkBottomDrawerProps extends PropsWithChildren {
 
 export const KkBottomDrawer: FC<KkBottomDrawerProps> = ({
   open,
+  steady = false,
   label,
   closeLabel,
   onClose,
   children,
-}) => (
-  <Dialog
-    open={open}
-    onClose={onClose}
-    aria-label={label}
-    maxWidth={false}
-    data-kk-bottom-drawer
-    slots={{ transition: KkSheetRise }}
-    slotProps={{
-      container: { sx: { alignItems: 'flex-end' } },
-      backdrop: { sx: backdropStyles },
-      paper: { sx: paperStyles },
-    }}
-  >
-    <KkSheetHandle label={closeLabel} onSelect={onClose} />
-    {children}
-  </Dialog>
-);
+}) => {
+  const paperSx = steady ? [paperStyles, steadyStyles] : paperStyles;
+
+  return (
+    <Dialog
+      open={open}
+      onClose={onClose}
+      aria-label={label}
+      maxWidth={false}
+      data-kk-bottom-drawer
+      slots={{ transition: KkSheetRise }}
+      slotProps={{
+        container: { sx: { alignItems: 'flex-end' } },
+        backdrop: { sx: backdropStyles },
+        paper: { sx: paperSx },
+      }}
+    >
+      <KkSheetHandle label={closeLabel} onSelect={onClose} />
+      {children}
+    </Dialog>
+  );
+};

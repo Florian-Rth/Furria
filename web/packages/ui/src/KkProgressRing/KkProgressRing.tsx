@@ -46,7 +46,7 @@ const segmentInk = (theme: Theme, state: KkStepState): string => {
     case 'overdue':
       return palette(theme).warning.main;
     case 'current':
-      return palette(theme).primary.main;
+      return palette(theme).info.main;
     case 'open':
     case 'waiting':
     case 'off':

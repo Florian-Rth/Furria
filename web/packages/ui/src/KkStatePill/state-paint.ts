@@ -1,6 +1,6 @@
 import type { CSSObject, Theme } from '@mui/material/styles';
+import { blueInkOf } from '../internal/blue-ink';
 import { goldInkOf } from '../internal/gold-ink';
-import { redInk } from '../internal/red-ink';
 import { tonePaint } from '../internal/tone';
 import { kkTokens } from '../tokens';
 import type { KkStepState } from './step-state';
@@ -29,7 +29,7 @@ export const stepFigures: CSSObject = {
 export const stepStateInk = (theme: Theme, state: KkStepState): CSSObject => {
   switch (state) {
     case 'current':
-      return redInk(theme);
+      return blueInkOf(theme);
     case 'overdue':
       return goldInkOf(theme);
     case 'done':
@@ -45,7 +45,7 @@ export const stepStateInk = (theme: Theme, state: KkStepState): CSSObject => {
 export const statePillGround = (theme: Theme, state: KkStepState): CSSObject => {
   switch (state) {
     case 'current':
-      return tonePaint(theme, 'accent');
+      return tonePaint(theme, 'blue');
     case 'overdue':
       return tonePaint(theme, 'gold');
     case 'done':
@@ -63,7 +63,7 @@ export const stateMark = (theme: Theme, state: KkStepState): CSSObject => {
     case 'done':
       return { backgroundColor: palette(theme).text.primary, borderRadius: '50%' };
     case 'current':
-      return { backgroundColor: palette(theme).primary.main, borderRadius: '50%' };
+      return { backgroundColor: palette(theme).info.main, borderRadius: '50%' };
     case 'overdue':
       return { backgroundColor: palette(theme).warning.main, borderRadius: '2px', rotate: '45deg' };
     case 'open':
@@ -84,7 +84,7 @@ export const progressSegment = (theme: Theme, state: KkStepState): CSSObject => 
     case 'done':
       return { backgroundColor: palette(theme).text.primary };
     case 'current':
-      return { backgroundColor: palette(theme).primary.main };
+      return { backgroundColor: palette(theme).info.main };
     case 'overdue':
       return { backgroundColor: palette(theme).warning.main };
     case 'open':

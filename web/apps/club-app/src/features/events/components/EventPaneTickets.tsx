@@ -10,7 +10,7 @@ import { EventAvailabilityChoice } from './EventAvailabilityChoice';
 
 const PRICE_LABEL = 'Preis';
 const PRESALE_LABEL = 'Vorverkauf';
-const PLACES_LABEL = 'Vorverkaufsstellen';
+const PLACES_LABEL = 'VVK-Stellen';
 const SALES_LABEL = 'Website zeigt';
 const PLACES_MAX_LINES = 3;
 

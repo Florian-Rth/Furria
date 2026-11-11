@@ -17,7 +17,7 @@ const duePaint = (theme: Theme, state: KkStepState): CSSObject => {
     case 'overdue':
       return tonePaint(theme, 'gold');
     case 'current':
-      return tonePaint(theme, 'accent');
+      return tonePaint(theme, 'blue');
     case 'open':
       return tonePaint(theme, 'neutral');
     case 'done':

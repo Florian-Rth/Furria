@@ -38,7 +38,7 @@ export const EventsSidePane: FC<EventsSidePaneProps> = ({
 
   if (!isWide) {
     return (
-      <KkBottomDrawer open label={title} closeLabel={CLOSE_LABEL} onClose={onClose}>
+      <KkBottomDrawer open steady label={title} closeLabel={CLOSE_LABEL} onClose={onClose}>
         <EventPane
           key={selection.eventId}
           eventId={selection.eventId}
