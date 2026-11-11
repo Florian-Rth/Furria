@@ -10,6 +10,7 @@ import { toHeldAddOnKey } from '../calendar-add-ons';
 import { EDIT_LABEL, EVENT_LINK_LABEL, FACT_LABELS } from '../calendar-agenda-copy';
 import { useCalendarDetail } from '../hooks/use-calendar-detail';
 import type { CalendarEntry } from '../schemas';
+import { CalendarAudienceValue } from './CalendarAudienceValue';
 import { CalendarDetailAddOn } from './CalendarDetailAddOn';
 import { CalendarGroupTags } from './CalendarGroupTags';
 import { CalendarRunningOrderSection } from './CalendarRunningOrderSection';
@@ -114,7 +115,7 @@ export const CalendarDetailBody: FC<CalendarDetailBodyProps> = ({ entry }) => {
             <CalendarGroupTags groups={view.owner} />
           </KkCalendarDetail.Fact>
           <KkCalendarDetail.Fact icon="visibility" label={FACT_LABELS.audience}>
-            {view.audience}
+            <CalendarAudienceValue entry={entry} label={view.audience} />
           </KkCalendarDetail.Fact>
           {eventFact}
         </KkCalendarDetail.Facts>

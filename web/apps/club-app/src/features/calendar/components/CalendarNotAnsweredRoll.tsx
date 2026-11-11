@@ -1,25 +1,26 @@
 import { KkAnswerRoll } from '@furria/ui/KkAnswerRoll';
 import type { FC } from 'react';
-import { toOpenGroup } from '../calendar-attendance';
-import type { CalendarAttendancePerson } from '../schemas';
+import type { NamesTab } from '../calendar-names';
 import { CalendarRollGroup } from './CalendarRollGroup';
 
 interface CalendarNotAnsweredRollProps {
   label: string;
-  notAnswered: readonly CalendarAttendancePerson[] | null;
+  openTab: NamesTab | null;
+  onOpen: (tabId: string) => void;
 }
 
 export const CalendarNotAnsweredRoll: FC<CalendarNotAnsweredRollProps> = ({
   label,
-  notAnswered,
+  openTab,
+  onOpen,
 }) => {
-  const groups = toOpenGroup(notAnswered);
-
-  if (groups.length === 0) {
+  if (openTab === null) {
     return null;
   }
 
-  const rows = groups.map((group) => <CalendarRollGroup key={group.key} group={group} />);
-
-  return <KkAnswerRoll label={label}>{rows}</KkAnswerRoll>;
+  return (
+    <KkAnswerRoll label={label}>
+      <CalendarRollGroup tab={openTab} showsNames={false} onOpen={onOpen} />
+    </KkAnswerRoll>
+  );
 };

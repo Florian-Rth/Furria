@@ -19,7 +19,6 @@ import { toPersonName } from './calendar-people';
 import type { CalendarPollOutcome } from './calendar-polls';
 import type { RemindedAt, ReminderFailure, ReminderMeta } from './calendar-reminders';
 import type {
-  AudiencePerson,
   CalendarAddOnKind,
   CalendarEntry,
   CalendarEntryAudience,
@@ -247,9 +246,6 @@ export const toPollMetaLabel = (poll: PollMetaFacts): string | undefined => {
     toVoterShareLabel(toAnswerShare(poll.voterCount, poll.concernedCount)),
   ]);
 };
-
-export const toPollVotersLabel = (voters: readonly AudiencePerson[]): string | undefined =>
-  voters.length === 0 ? undefined : voters.map(toPersonName).join(', ');
 
 export const toPollCardMetaLabel = (
   held: Pick<CalendarPoll, 'isClosed' | 'voterCount'> | null,

@@ -1,7 +1,7 @@
 ---
 rfc: 0005
 title: Calendar add-ons — three kinds, an audience and building blocks instead of entry kinds
-status: phases 1–9 built; result views (phases 10–12) open
+status: phases 1–13 built — device checks owed
 github_issue: 70
 branch: feat/rfc-70-calendar-add-ons
 created: 2026-11-10
@@ -511,6 +511,51 @@ Decisions taken while building phase 12:
   under the meta line (a `marks` slot on `KkFactRow`). The hub's owed count stays Zu-/Absage only.
 - **Follow-up:** the group calendar still loads the full poll and list details only to derive
   `openFunctions`; a slimmer read is left for later.
+
+### Phase 13 — Names at club scale
+Goal: with 170 members no entry renders hundreds of names; counts stay inline, names sit one tap
+away. Ruled 2026-11-11: one line of names with a remainder inline, the full names in a sheet.
+- [x] `@furria/ui` names sheet kit: bottom sheet with tabs (label + count), a search field from 15
+      names on, own name first then alphabetical, notes ("durch …") kept
+- [x] Pure helpers: one-line inline names (own first, `+N` remainder), sheet ordering and search,
+      with tests
+- [x] Zu-/Absage: groups show count + one line of names; tapping opens the sheet with tabs
+      *Zusage · Vielleicht · Absage · Offen*
+- [x] *Noch offen* (organisers): count only inline, names in the sheet's *Offen* tab; *Erinnern*
+      moves into that tab
+- [x] Umfrage: each answer's voter line becomes one line with a remainder; the sheet has one tab
+      per answer plus *Offen*; anonymous polls stay counts only
+- [x] Eintragsliste: own line plus the first lines inline, then *Alle N Einträge* opening the
+      sheet with every line (name + text) and *Offen*; search covers name and text
+- [x] *Für wen* on the detail: chosen people as one line with a remainder, the full names in the
+      sheet
+- [x] Form people picker: many chosen people collapse to the first chips plus *+N*, expandable
+- [x] Phone browser check with a large audience (light and dark)
+
+Checked and unaffected: *Mitwirkende Gruppen* (bounded by the club's groups), *Tagesablauf*
+(written by the organiser), calendar and hub marks (one mark per kind), the *Erinnern* confirm
+(counts only).
+
+Decisions taken while building phase 13:
+- **One line, three names.** Inline lines show at most three names (`INLINE_NAME_BUDGET`), hers
+  first as *Du*, the rest alphabetical, then `+N`; the line never wraps and ellipsises on narrow
+  screens. Notes ("durch …") only show in the sheet.
+- **`KkNamesSheet`** (new `@furria/ui` kit) on `KkBottomDrawer`: title, scrollable tabs with
+  answer tone and count, an action slot, the search field from 15 names on (`NAME_SEARCH_FROM`,
+  matches name, note and line text without diacritics), rows with her own first. Tabs without
+  names are left out; a single tab shows no tab bar. `KkNameLine` is the shared one-line
+  primitive (also tappable on its own, used by *Für wen*).
+- **Zu-/Absage groups are buttons** that open the sheet on their tab; a group with no names is
+  not tappable. *Noch offen* shows the count only. *Erinnern* lives in the sheet's *Noch offen*
+  tab for Zu-/Absage, Umfrage and Eintragsliste alike.
+- **Umfrage:** the voter line sits below the vote button (no nested buttons) and opens the
+  answer's tab; the chosen wash spans both. Anonymous polls keep counts only; their *Noch offen*
+  still opens a sheet with the open tab.
+- **Eintragsliste:** her own line first, then up to five lines inline (`INLINE_LINE_LIMIT`), then
+  *Alle N Einträge*; moderators can remove lines from the sheet too.
+- **Form people picker:** beyond eight chosen people the rest collapse behind *+N weitere*, which
+  expands the whole list.
+- Who "she" is comes from `me.person.id`; no server change was needed.
 
 ## Risks & alternatives
 

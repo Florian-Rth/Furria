@@ -1,3 +1,4 @@
+import { KkButton } from '@furria/ui/KkButton';
 import { KkSignUpSheet } from '@furria/ui/KkSignUpSheet';
 import type { FC } from 'react';
 import { SIGN_UP_LINE_TEXT_MAX_LENGTH } from '../calendar-sign-up-lists';
@@ -6,6 +7,7 @@ import { useCalendarSignUpList } from '../hooks/use-calendar-sign-up-list';
 import { useCalendarSignUpListClosing } from '../hooks/use-calendar-sign-up-list-closing';
 import type { CalendarEntry, CalendarSignUpList } from '../schemas';
 import { CalendarCloseAction } from './CalendarCloseAction';
+import { CalendarNamesSheet } from './CalendarNamesSheet';
 import { CalendarNotAnsweredRoll } from './CalendarNotAnsweredRoll';
 import { CalendarReminderAction } from './CalendarReminderAction';
 import { CalendarSignUpLineRemovalDialog } from './CalendarSignUpLineRemovalDialog';
@@ -13,6 +15,7 @@ import { CalendarSignUpLineRemovalDialog } from './CalendarSignUpLineRemovalDial
 const LINES_LABEL = 'Einträge';
 const OWN_LINE_LABEL = 'Dein Eintrag';
 const CLOSE_LABEL = 'Liste schließen';
+const ACTION_SX = { alignSelf: 'flex-start' } as const;
 
 interface CalendarDetailSignUpListProps {
   list: CalendarSignUpList;
@@ -49,6 +52,12 @@ export const CalendarDetailSignUpList: FC<CalendarDetailSignUpListProps> = ({
         {lines}
       </KkSignUpSheet.Lines>
     );
+  const allLines =
+    control.allLinesLabel === undefined ? null : (
+      <KkButton variant="text" size="small" onClick={control.openAllLines} sx={ACTION_SX}>
+        {control.allLinesLabel}
+      </KkButton>
+    );
   const ownLineField = control.takesLines ? (
     <KkSignUpSheet.Entry
       name={entryName}
@@ -77,8 +86,18 @@ export const CalendarDetailSignUpList: FC<CalendarDetailSignUpListProps> = ({
     <KkSignUpSheet label={control.title}>
       <KkSignUpSheet.Head title={control.title} hint={control.hint} meta={control.meta} />
       {linesList}
-      <CalendarNotAnsweredRoll label={control.title} notAnswered={list.notAnswered} />
-      <CalendarReminderAction source={control.reminder} />
+      {allLines}
+      <CalendarNotAnsweredRoll
+        label={control.title}
+        openTab={control.openTab}
+        onOpen={control.sheet.open}
+      />
+      <CalendarNamesSheet
+        title={control.title}
+        tabs={control.tabs}
+        sheet={control.sheet}
+        openAction={<CalendarReminderAction source={control.reminder} />}
+      />
       {ownLineField}
       {closeAction}
       <CalendarSignUpLineRemovalDialog

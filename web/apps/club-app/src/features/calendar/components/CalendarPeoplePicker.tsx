@@ -1,3 +1,4 @@
+import { KkButton } from '@furria/ui/KkButton';
 import { KkMeta } from '@furria/ui/KkMeta';
 import { KkNote } from '@furria/ui/KkNote';
 import { KkPanel } from '@furria/ui/KkPanel';
@@ -44,10 +45,20 @@ export const CalendarPeoplePicker: FC<CalendarPeoplePickerProps> = ({
   const chosenChips = picker.chosen.map((person) => (
     <CalendarChosenPersonChip key={person.personId} person={person} onRemove={picker.unchoose} />
   ));
+  const moreChosen =
+    picker.hiddenChosenLabel === undefined ? null : (
+      <KkButton variant="outlined" size="small" onClick={picker.showAllChosen}>
+        {picker.hiddenChosenLabel}
+      </KkButton>
+    );
   const chosenList =
     chosenChips.length === 0 ? null : (
-      <Stack direction="row" sx={{ flexWrap: 'wrap', gap: 0.75, minWidth: 0 }}>
+      <Stack
+        direction="row"
+        sx={{ flexWrap: 'wrap', alignItems: 'center', gap: 0.75, minWidth: 0 }}
+      >
         {chosenChips}
+        {moreChosen}
       </Stack>
     );
 

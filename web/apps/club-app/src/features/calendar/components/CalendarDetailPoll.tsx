@@ -4,6 +4,7 @@ import { useCalendarPoll } from '../hooks/use-calendar-poll';
 import { useCalendarPollClosing } from '../hooks/use-calendar-poll-closing';
 import type { CalendarEntry, CalendarPoll } from '../schemas';
 import { CalendarCloseAction } from './CalendarCloseAction';
+import { CalendarNamesSheet } from './CalendarNamesSheet';
 import { CalendarNotAnsweredRoll } from './CalendarNotAnsweredRoll';
 import { CalendarReminderAction } from './CalendarReminderAction';
 import { CalendarReopenAction } from './CalendarReopenAction';
@@ -32,6 +33,8 @@ export const CalendarDetailPoll: FC<CalendarDetailPollProps> = ({ poll, entry, m
       chosen={choice.isChosen}
       leading={choice.isLeading}
       voters={choice.voters}
+      votersMore={choice.votersMore}
+      onOpenVoters={choice.openVoters}
       disabled={control.isLocked}
       readOnly={control.isReadOnly}
       onSelect={choice.choose}
@@ -62,8 +65,17 @@ export const CalendarDetailPoll: FC<CalendarDetailPollProps> = ({ poll, entry, m
       <KkPollBallot.Choices label={CHOICES_LABEL} busy={control.isSubmitting}>
         {choices}
       </KkPollBallot.Choices>
-      <CalendarNotAnsweredRoll label={control.question} notAnswered={poll.notAnswered} />
-      <CalendarReminderAction source={control.reminder} />
+      <CalendarNotAnsweredRoll
+        label={control.question}
+        openTab={control.openTab}
+        onOpen={control.sheet.open}
+      />
+      <CalendarNamesSheet
+        title={control.question}
+        tabs={control.tabs}
+        sheet={control.sheet}
+        openAction={<CalendarReminderAction source={control.reminder} />}
+      />
       {closeAction}
       {reopenAction}
     </KkPollBallot>

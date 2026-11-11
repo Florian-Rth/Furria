@@ -1,22 +1,32 @@
 import { KkAnswerRoll } from '@furria/ui/KkAnswerRoll';
 import type { FC } from 'react';
-import { ATTENDANCE_ROLL_LABELS, toOnBehalfLabel } from '@/lib/calendar-copy';
-import type { AttendanceRollGroup } from '../calendar-attendance';
-import { toRollNames } from '../calendar-attendance';
+import type { NamesTab } from '../calendar-names';
+import { toNameLine } from '../calendar-names';
 
 interface CalendarRollGroupProps {
-  group: AttendanceRollGroup;
+  tab: NamesTab;
+  showsNames: boolean;
+  onOpen: (tabId: string) => void;
 }
 
-export const CalendarRollGroup: FC<CalendarRollGroupProps> = ({ group }) => {
-  const names = toRollNames(group.people, toOnBehalfLabel);
+export const CalendarRollGroup: FC<CalendarRollGroupProps> = ({ tab, showsNames, onOpen }) => {
+  const entries = tab.entries ?? [];
+  const line = showsNames ? toNameLine(entries) : null;
+  const open =
+    entries.length === 0
+      ? undefined
+      : () => {
+          onOpen(tab.id);
+        };
 
   return (
     <KkAnswerRoll.Group
-      tone={group.key}
-      label={ATTENDANCE_ROLL_LABELS[group.key]}
-      count={group.count}
-      names={names}
+      tone={tab.tone ?? 'open'}
+      label={tab.label}
+      count={tab.count}
+      names={line?.names}
+      more={line?.more}
+      onOpen={open}
     />
   );
 };

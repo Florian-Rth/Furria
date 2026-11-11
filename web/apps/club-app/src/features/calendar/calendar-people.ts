@@ -16,7 +16,7 @@ export interface CalendarGroupShortcut {
   missingIds: string[];
 }
 
-const folded = (value: string): string =>
+export const folded = (value: string): string =>
   value.normalize('NFD').replace(DIACRITICS, '').toLocaleLowerCase('de');
 
 export const toPersonName = (person: Pick<CalendarPersonName, 'firstName' | 'lastName'>): string =>
