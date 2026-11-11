@@ -14,9 +14,11 @@ describe('StartSchema', () => {
       label: 'a panel kind arrived after this app was built',
       panels: [
         { kind: 'polls', shownCount: 1, polls: [{ pollId: 3 }] },
-        { kind: 'toDos', shownCount: 1, toDos: [{ kind: 'reminderDue', count: 12 }] },
+        { kind: 'toDos', shownCount: 1, toDos: [{ kind: 'reminderDue', count: 12, group: null }] },
       ],
-      expected: [{ kind: 'toDos', shownCount: 1, toDos: [{ kind: 'reminderDue', count: 12 }] }],
+      expected: [
+        { kind: 'toDos', shownCount: 1, toDos: [{ kind: 'reminderDue', count: 12, group: null }] },
+      ],
     },
     {
       label: 'a to-do kind arrived after this app was built',
@@ -25,12 +27,14 @@ describe('StartSchema', () => {
           kind: 'toDos',
           shownCount: 2,
           toDos: [
-            { kind: 'expenseWaiting', count: 2 },
-            { kind: 'clubRecordGap', count: 1 },
+            { kind: 'expenseWaiting', count: 2, group: null },
+            { kind: 'clubRecordGap', count: 1, group: null },
           ],
         },
       ],
-      expected: [{ kind: 'toDos', shownCount: 2, toDos: [{ kind: 'clubRecordGap', count: 1 }] }],
+      expected: [
+        { kind: 'toDos', shownCount: 2, toDos: [{ kind: 'clubRecordGap', count: 1, group: null }] },
+      ],
     },
     {
       label: 'a group moment kind arrived after this app was built',

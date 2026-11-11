@@ -45,6 +45,7 @@ export const DOMAIN_CHANGES = [
   'tablePlan',
   'seating',
   'claimWindow',
+  'groupMatcher',
 ] as const;
 export type DomainChange = (typeof DOMAIN_CHANGES)[number];
 
@@ -129,6 +130,7 @@ export const READ_NAMES = [
   'promoMembers',
   'claimWindowStatus',
   'claimWindowOverview',
+  'groupMatcherPage',
 ] as const;
 export type ReadName = (typeof READ_NAMES)[number];
 
@@ -213,6 +215,7 @@ const READ_ROOTS: Record<ReadName, QueryKey> = {
   promoMembers: ['promo', 'members'],
   claimWindowStatus: ['claim-window', 'status'],
   claimWindowOverview: ['claim-window', 'overview'],
+  groupMatcherPage: ['group-matcher', 'group'],
 };
 
 const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
@@ -259,6 +262,7 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'announcement',
     'announcementSeen',
     'media',
+    'groupMatcher',
   ],
   clubHub: [
     'sessionRecord',
@@ -296,6 +300,7 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'venue',
     'person',
     'picture',
+    'groupMatcher',
   ],
   groupCalendar: ['calendarEntry', 'attendanceResponse', 'event', 'group', 'venue'],
   myGroups: ['group', 'groupMembership', 'groupAdmin', 'picture'],
@@ -353,6 +358,7 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
     'beerStock',
     'beerCrate',
     'beerPayment',
+    'groupMatcher',
   ],
   invitationRoundPreview: ['account', 'person', 'membership'],
   clubRecord: ['clubRecord'],
@@ -486,6 +492,7 @@ const READ_SHOWS: Record<ReadName, readonly DomainChange[]> = {
   promoMembers: ['person', 'account', 'membership', 'groupMembership', 'roleHolding'],
   claimWindowStatus: ['claimWindow'],
   claimWindowOverview: ['claimWindow', 'account', 'person'],
+  groupMatcherPage: ['groupMatcher', 'group'],
 };
 
 export const staleReadsAfter = (changes: readonly DomainChange[]): ReadName[] =>
@@ -599,4 +606,5 @@ export const queryKeys = {
   promoMembers: READ_ROOTS.promoMembers,
   claimWindowStatus: READ_ROOTS.claimWindowStatus,
   claimWindowOverview: READ_ROOTS.claimWindowOverview,
+  groupMatcherPage: (groupId: number | null): QueryKey => keyOf('groupMatcherPage', groupId),
 } as const;

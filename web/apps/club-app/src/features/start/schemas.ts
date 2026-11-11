@@ -126,7 +126,11 @@ export const StartGroupMomentSchema = z.object({
 });
 export type StartGroupMoment = z.infer<typeof StartGroupMomentSchema>;
 
-export const StartToDoSchema = z.object({ kind: z.enum(TO_DO_KINDS), count: z.int().positive() });
+export const StartToDoSchema = z.object({
+  kind: z.enum(TO_DO_KINDS),
+  count: z.int().positive(),
+  group: StartGroupRefSchema.nullable(),
+});
 export type StartToDo = z.infer<typeof StartToDoSchema>;
 
 export const StartAlbumSchema = z.object({

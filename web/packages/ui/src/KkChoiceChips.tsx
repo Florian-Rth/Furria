@@ -1,13 +1,10 @@
 import ButtonBase from '@mui/material/ButtonBase';
 import Stack from '@mui/material/Stack';
-import type { CSSObject, Theme } from '@mui/material/styles';
 import type { FC, MouseEvent } from 'react';
-import { focusRing } from './internal/focus-ring';
-import { inkWashSurface } from './internal/ink-wash';
+import { choiceChipPaint } from './internal/choice-chip-paint';
 import type { KkIconName } from './KkIcon';
 import { KkIcon } from './KkIcon';
 import type { KkSx } from './kk-sx';
-import { kkTokens } from './tokens';
 
 export interface KkChoiceChip {
   id: string;
@@ -15,30 +12,6 @@ export interface KkChoiceChip {
   icon?: KkIconName;
   disabled?: boolean;
 }
-
-const choicePaint = (theme: Theme): CSSObject => ({
-  gap: 0.5,
-  px: 1.25,
-  py: 0.75,
-  borderRadius: `${kkTokens.radius.pill}px`,
-  borderWidth: kkTokens.line.hair,
-  borderStyle: 'solid',
-  borderColor: 'divider',
-  typography: 'caption',
-  fontWeight: 800,
-  lineHeight: 1.2,
-  color: 'text.primary',
-  ...focusRing(theme),
-  '&[aria-checked="true"]': {
-    color: 'background.paper',
-    backgroundColor: 'text.primary',
-    borderColor: 'text.primary',
-  },
-  '&.Mui-disabled': { color: 'text.disabled', borderStyle: 'dashed' },
-  '@media (hover: hover)': {
-    '&:hover:not([aria-checked="true"])': inkWashSurface(theme, '6%', '10%'),
-  },
-});
 
 interface KkChoiceChipsProps {
   label: string;
@@ -67,7 +40,7 @@ export const KkChoiceChips: FC<KkChoiceChipsProps> = ({ label, choices, value, o
         disabled={choice.disabled}
         data-kk-choice-chip={choice.id}
         onClick={choose}
-        sx={choicePaint}
+        sx={choiceChipPaint}
       >
         {icon}
         {choice.label}

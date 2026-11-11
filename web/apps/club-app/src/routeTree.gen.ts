@@ -92,6 +92,7 @@ import { Route as AppManageBoardNewRouteImport } from './routes/_app/manage.boar
 import { Route as AppManageBoardBoardOfficeIdRouteImport } from './routes/_app/manage.board_.$boardOfficeId'
 import { Route as AppManageApplicationsMembershipApplicationIdRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId'
 import { Route as AppLabWelcomeCaseRouteImport } from './routes/_app/lab_.welcome.$case'
+import { Route as AppGroupsGroupIdGroupMatcherRouteImport } from './routes/_app/groups_.$groupId_.group-matcher'
 import { Route as AppGroupsGroupIdEditRouteImport } from './routes/_app/groups_.$groupId_.edit'
 import { Route as AppGroupsGroupIdAdministrationRouteImport } from './routes/_app/groups_.$groupId_.administration'
 import { Route as AppGroupsGroupIdActsRouteImport } from './routes/_app/groups_.$groupId_.acts'
@@ -581,6 +582,12 @@ const AppLabWelcomeCaseRoute = AppLabWelcomeCaseRouteImport.update({
   path: '/lab/welcome/$case',
   getParentRoute: () => AppRoute,
 } as any)
+const AppGroupsGroupIdGroupMatcherRoute =
+  AppGroupsGroupIdGroupMatcherRouteImport.update({
+    id: '/groups_/$groupId_/group-matcher',
+    path: '/groups/$groupId/group-matcher',
+    getParentRoute: () => AppRoute,
+  } as any)
 const AppGroupsGroupIdEditRoute = AppGroupsGroupIdEditRouteImport.update({
   id: '/groups_/$groupId_/edit',
   path: '/groups/$groupId/edit',
@@ -1056,6 +1063,7 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId/acts': typeof AppGroupsGroupIdActsRoute
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
+  '/groups/$groupId/group-matcher': typeof AppGroupsGroupIdGroupMatcherRoute
   '/lab/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
@@ -1203,6 +1211,7 @@ export interface FileRoutesByTo {
   '/groups/$groupId/acts': typeof AppGroupsGroupIdActsRoute
   '/groups/$groupId/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/groups/$groupId/edit': typeof AppGroupsGroupIdEditRoute
+  '/groups/$groupId/group-matcher': typeof AppGroupsGroupIdGroupMatcherRoute
   '/lab/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/manage/applications/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/manage/board/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
@@ -1356,6 +1365,7 @@ export interface FileRoutesById {
   '/_app/groups_/$groupId_/acts': typeof AppGroupsGroupIdActsRoute
   '/_app/groups_/$groupId_/administration': typeof AppGroupsGroupIdAdministrationRoute
   '/_app/groups_/$groupId_/edit': typeof AppGroupsGroupIdEditRoute
+  '/_app/groups_/$groupId_/group-matcher': typeof AppGroupsGroupIdGroupMatcherRoute
   '/_app/lab_/welcome/$case': typeof AppLabWelcomeCaseRoute
   '/_app/manage/applications_/$membershipApplicationId': typeof AppManageApplicationsMembershipApplicationIdRoute
   '/_app/manage/board_/$boardOfficeId': typeof AppManageBoardBoardOfficeIdRoute
@@ -1507,6 +1517,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/acts'
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
+    | '/groups/$groupId/group-matcher'
     | '/lab/welcome/$case'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
@@ -1654,6 +1665,7 @@ export interface FileRouteTypes {
     | '/groups/$groupId/acts'
     | '/groups/$groupId/administration'
     | '/groups/$groupId/edit'
+    | '/groups/$groupId/group-matcher'
     | '/lab/welcome/$case'
     | '/manage/applications/$membershipApplicationId'
     | '/manage/board/$boardOfficeId'
@@ -1806,6 +1818,7 @@ export interface FileRouteTypes {
     | '/_app/groups_/$groupId_/acts'
     | '/_app/groups_/$groupId_/administration'
     | '/_app/groups_/$groupId_/edit'
+    | '/_app/groups_/$groupId_/group-matcher'
     | '/_app/lab_/welcome/$case'
     | '/_app/manage/applications_/$membershipApplicationId'
     | '/_app/manage/board_/$boardOfficeId'
@@ -2463,6 +2476,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppLabWelcomeCaseRouteImport
       parentRoute: typeof AppRoute
     }
+    '/_app/groups_/$groupId_/group-matcher': {
+      id: '/_app/groups_/$groupId_/group-matcher'
+      path: '/groups/$groupId/group-matcher'
+      fullPath: '/groups/$groupId/group-matcher'
+      preLoaderRoute: typeof AppGroupsGroupIdGroupMatcherRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/_app/groups_/$groupId_/edit': {
       id: '/_app/groups_/$groupId_/edit'
       path: '/groups/$groupId/edit'
@@ -3094,6 +3114,7 @@ interface AppRouteChildren {
   AppGroupsGroupIdActsRoute: typeof AppGroupsGroupIdActsRoute
   AppGroupsGroupIdAdministrationRoute: typeof AppGroupsGroupIdAdministrationRoute
   AppGroupsGroupIdEditRoute: typeof AppGroupsGroupIdEditRoute
+  AppGroupsGroupIdGroupMatcherRoute: typeof AppGroupsGroupIdGroupMatcherRoute
   AppLabWelcomeCaseRoute: typeof AppLabWelcomeCaseRoute
   AppManageApplicationsMembershipApplicationIdRoute: typeof AppManageApplicationsMembershipApplicationIdRoute
   AppManageBoardBoardOfficeIdRoute: typeof AppManageBoardBoardOfficeIdRoute
@@ -3213,6 +3234,7 @@ const AppRouteChildren: AppRouteChildren = {
   AppGroupsGroupIdActsRoute: AppGroupsGroupIdActsRoute,
   AppGroupsGroupIdAdministrationRoute: AppGroupsGroupIdAdministrationRoute,
   AppGroupsGroupIdEditRoute: AppGroupsGroupIdEditRoute,
+  AppGroupsGroupIdGroupMatcherRoute: AppGroupsGroupIdGroupMatcherRoute,
   AppLabWelcomeCaseRoute: AppLabWelcomeCaseRoute,
   AppManageApplicationsMembershipApplicationIdRoute:
     AppManageApplicationsMembershipApplicationIdRoute,

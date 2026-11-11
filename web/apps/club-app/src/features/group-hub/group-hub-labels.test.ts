@@ -68,6 +68,7 @@ const groupHub = (overrides: Partial<GroupHub>): GroupHub => ({
   viewerSince: null,
   pastMembers: [],
   pastAdmins: [],
+  groupMatcher: null,
   ...overrides,
 });
 

@@ -136,11 +136,21 @@ so only delete re-runs the stamp (never when the pool becomes empty). To-dos:
 
 ### Phase 3 — Club app: the group's Jeck-Check page
 Goal: group admins maintain admission ages, stances and proposals from the group hub.
-- [ ] 3.1 API client schemas/queries/mutations + `group-matcher` domain change
-- [ ] 3.2 Settings row with status in `HubSettingsPanel` + route `/groups/$groupId/group-matcher`
-- [ ] 3.3 Page: admission-age chips, statement rows (stance + importance, autosave, open/new/changed first), propose field + own proposals
-- [ ] 3.4 Group to-do on Start links to the page
-- [ ] 3.5 Logic tests + phone/desktop shots, light/dark
+- [x] 3.1 API client schemas/queries/mutations + `group-matcher` domain change
+- [x] 3.2 Settings row with status in `HubSettingsPanel` + route `/groups/$groupId/group-matcher`
+- [x] 3.3 Page: admission-age chips, statement rows (stance + importance, autosave, open/new/changed first), propose field + own proposals
+- [x] 3.4 Group to-do on Start links to the page
+- [x] 3.5 Logic tests + phone/desktop shots, light/dark
+
+Built 2026-11-11. As built: `features/group-matcher` (page read, stance/admission-age writes with
+optimistic patches, propose, withdraw). The page runs *Aufnahmealter* (new `KkToggleChips`), then
+*Aussagen* (a "Auf der Website" standing line, then rows on the new `KkStatementList` kit with
+`KkAnswerChoice` Ja/Neutral/Nein and importance chips), then the proposal form and *Eure Vorschläge*.
+The first answer to a statement saves importance *wichtig* (2); importance stays disabled until a
+position is set. Open/new/changed rows sort first once per visit and keep their place while the
+group answers, so rows never jump under a tap. The hub row shows `n offen` / `dabei` /
+`nicht dabei`. The Start to-do reads "Jeck-Check · <group>" and links to the group's page; Start
+to-dos now carry the optional `group` ref.
 
 ### Phase 4 — Club app: Jeck-Check management
 Goal: `group_matcher.manage` holders run the pool from *Verein verwalten*.
