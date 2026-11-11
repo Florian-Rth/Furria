@@ -15,7 +15,7 @@ const glyphInk = (theme: Theme, state: KkStepState): CSSObject => {
     case 'done':
       return { color: palette(theme).text.primary };
     case 'current':
-      return { color: palette(theme).primary.main };
+      return { color: palette(theme).info.main };
     case 'overdue':
       return { color: palette(theme).warning.main };
     case 'open':

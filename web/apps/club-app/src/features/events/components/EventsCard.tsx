@@ -19,6 +19,9 @@ export const EventsCard: FC<EventsCardProps> = ({ row, onSelect }) => {
   const { event, cells, daysLeft } = row;
   const view = toRowView(event, daysLeft);
   const params = { eventId: String(event.eventId) };
+  const countdown = view.cancelled ? undefined : (
+    <EventCountdown view={view} remaining={row.remaining} />
+  );
   const shownCells = view.cancelled
     ? null
     : cells.map((cell) => (
@@ -41,7 +44,7 @@ export const EventsCard: FC<EventsCardProps> = ({ row, onSelect }) => {
       }
       badge={<EventsRowBadge event={event} />}
       due={<EventDueChip due={row.due} />}
-      countdown={<EventCountdown view={view} remaining={row.remaining} />}
+      countdown={countdown}
       cancelled={view.cancelled}
       dimmed={view.dimmed}
       component={Link}

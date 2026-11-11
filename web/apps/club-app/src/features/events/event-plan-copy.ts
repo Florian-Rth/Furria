@@ -24,7 +24,7 @@ export const toFactDetailsLabel = (details: readonly FactDetail[]): string =>
 export const toShortDay = (isoDay: string): string =>
   `${isoDay.slice(8, 10)}.${isoDay.slice(5, 7)}.`;
 
-const daysLabel = (days: number): string => (days === 1 ? '1 Tag' : `${days} Tagen`);
+const daysLabel = (days: number): string => (days === 1 ? '1 Tag' : `${days} Tage`);
 
 export interface DueCopy {
   state: KkStepState;

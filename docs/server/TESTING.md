@@ -49,10 +49,20 @@ dotnet run --project tests/Furria.Api.Tests --no-build -- -class <FQN> [-class <
 ```
 
 The media worker's tests (`PhotoRenditionTests`, `VideoRenditionTests`, `MediaJobTests`) render
-real files and need **libvips** (with the HEIC plugin) and **ffmpeg** on the machine — CI installs
-`libvips42t64 libheif-plugin-libde265 ffmpeg`. Without them locally, run the built test assembly in
-`mcr.microsoft.com/dotnet/sdk:10.0` with those packages added, the worktree mounted at its own path,
-`--network host` and the Docker socket mounted, so Testcontainers reaches its containers.
+real files and need **libvips** (with the HEIC plugin) and **ffmpeg** on the machine. CI runs the
+backend in `server/tests/ci/Dockerfile` — the published media worker image (which carries both)
+plus the .NET SDK, so no job waits on an apt mirror. Without them locally, run the same way:
+
+```bash
+docker build -t furria-tests:ci - < server/tests/ci/Dockerfile
+docker run --rm --network host --user $(id -u):$(id -g) --group-add $(stat -c %g /var/run/docker.sock) \
+  -e HOME=/tmp -e TESTCONTAINERS_HOST_OVERRIDE=127.0.0.1 -v /var/run/docker.sock:/var/run/docker.sock \
+  -v "$PWD:$PWD" -w "$PWD/server" furria-tests:ci tests/ci/run-shard.sh 0
+```
+
+CI splits the integration tests into four shards — every fourth test class, sorted by name
+(`-list classes`), runs in its own job (`server/tests/ci/run-shard.sh <0-3>`) — so the suite
+finishes in about a quarter of the time.
 
 `dotnet test -- --filter-class` from `server/` also runs the analyzer tests with zero matches and
 fails; the VSTest `--filter`/`--treenode-filter` flags are ignored and run the whole suite.
@@ -82,7 +92,7 @@ docker rm -f $(docker ps -aq --filter label=furria.tests)
 ### The shape of a test
 
 ```csharp
-public sealed class GetPublicGalleryAlbumByIdTests : IClassFixture<ApiTestFixture> // own host, own database
+public sealed class GetPublicGalleryAlbumByIdTests : IClassFixture<ApiTestFixture> // a pooled host and its database, for this class alone
 {
     private readonly ApiTestFixture _fixture;
 
@@ -119,20 +129,31 @@ public sealed class GetPublicGalleryAlbumByIdTests : IClassFixture<ApiTestFixtur
    seeded rows) and hands out databases: `CreateDatabaseFromTemplateAsync` (`CREATE DATABASE …
    TEMPLATE`, a copy of the migrated schema) and `CreateEmptyDatabaseAsync`. Postgres runs with
    `max_connections=1000`, because every parallel host keeps its own connection pool.
-2. **`ApiTestFixture`** — a `WebApplicationFactory<Program>` owned by **one test class**
-   (`IClassFixture<ApiTestFixture>`); it takes `ApiTestInfrastructure` through its constructor. On
-   init: clone a database from the template, start the host on it (the migrator finds the schema
-   up to date, the managing-login seeder seeds the clone), create the reset service. On dispose:
-   stop the host, clear its connection pool and `DROP DATABASE … WITH (FORCE)`. Repoints the
-   connection string via the constant the production code itself uses
-   (`AppDbContext.ConnectionName`), and swaps `TimeProvider` for the project-owned
-   `TestClock`, anchored at real "now" truncated to the whole second and reporting UTC as its
-   local zone — so nothing in the suite depends on the developer's machine time zone.
-   **Test classes run in parallel; the tests inside one class run one after another.** Every
-   class has its own host, so every host singleton — the clock, the limiters, the signed-out
-   queues, the outbox dispatcher, the log sink — is shared only by the tests of that class. Mailpit
-   is the one thing all classes share (see *Traps*).
-3. **`DatabaseResetService`** — owned reset instead of Respawn: one batched round trip, one
+2. **`ApiTestHost`** — a `WebApplicationFactory<Program>` on its own database cloned from the
+   template (the migrator finds the schema up to date, the managing-login seeder seeds the clone).
+   It owns the host singletons the tests reach into — the `TestClock`, the `CapturingLogSink`, the
+   `FakePushService`, the media root — and the reset service, snapshotted right after start.
+   Repoints the connection string via the constant the production code itself uses
+   (`AppDbContext.ConnectionName`) and swaps `TimeProvider` for the project-owned `TestClock`,
+   reporting UTC as its local zone — so nothing in the suite depends on the developer's machine
+   time zone. **Hosts are pooled:** `ApiTestInfrastructure` keeps the idle ones and starts a new
+   one only when every host is leased, so a run starts about as many hosts as classes run in
+   parallel, not one per class. Starting a host and warming it up (EF query compilation,
+   FastEndpoints, serializers) costs seconds; a run of ~450 classes used to spend most of its time
+   on exactly that.
+3. **`ApiTestFixture`** — owned by **one test class** (`IClassFixture<ApiTestFixture>`); it takes
+   `ApiTestInfrastructure` through its constructor. On init it leases a host and hands it over
+   clean: database reset, clock back at real "now" truncated to the whole second, push fake
+   forgotten, media files deleted. On dispose it disposes the hosts it derived
+   (`HostWithSettings`, `HostOnDatabase`, `HostOnOwnDatabaseAsync`, …) and returns its host to the
+   pool — unless the class migrated the database by hand (`MigrateDatabaseToAsync`), which taints
+   the host: it is disposed and its database dropped.
+   **Test classes run in parallel; the tests inside one class run one after another, and the
+   classes leasing one host run one after another.** A host singleton — the limiters, the
+   signed-out queues, the outbox dispatchers, the log sink — therefore outlives the class: it must
+   carry nothing a later test could trip over (see *Traps*). Mailpit is the one thing all classes
+   running at the same moment share.
+4. **`DatabaseResetService`** — owned reset instead of Respawn: one batched round trip, one
    transaction — `SET LOCAL session_replication_role = replica` (FK triggers off, so order does
    not matter), a `DELETE FROM` per EF-model table, then one multi-row `INSERT` per snapshotted
    singleton table. `DELETE` on the mostly empty tables costs far less than `TRUNCATE`, which
@@ -553,8 +574,15 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
   address no other test uses: a seeded alias's `EmailOf` (uniquified behind the alias) or
   `UniqueContactEmail`.
 - **A fresh database is a host of its own.** The fixture's database is cloned from the migrated
-  template, so its host finds nothing to migrate. A test about migrating an empty database starts
-  `HostOnOwnDatabaseAsync` after a `Logs.Mark()` — that host logs into the class's sink.
+  template, so its host finds nothing to migrate. A test that needs a host on a database of its
+  own starts `HostOnOwnDatabaseAsync` (a template clone — seconds cheaper than migrating); a test
+  about migrating an empty database starts `HostOnEmptyDatabaseAsync` after a `Logs.Mark()`. Both
+  hosts log into the class's sink.
+- **The log sink and every host singleton outlive the class.** A pooled host serves class after
+  class, so read logs from a `Logs.Mark()` taken in the test (or match on an id or trace id only
+  this test produced), never by counting everything ever written. A test that changes host state
+  the database reset does not undo restores it in a `finally` — the next class depends on it as
+  much as the next test of the same class.
 
 - **The `TestClock` is one singleton shared by every test of the class.** Moving it is safe because
   JWT lifetime validation was wired to the same injected clock (`AccessTokenLifetime`); remove

@@ -401,8 +401,7 @@ public sealed class DeletePersonByIdTests : IClassFixture<ApiTestFixture>
             builder => builder.Identity(identity => identity.AddAccount("paula"))
         );
         var paulaId = ctx.Identity.People.IdOf("paula");
-        await ApiTestFixture.StageOutboxMailAsync(
-            _fixture,
+        await _fixture.StageOutboxMailAsync(
             new OutboxMail
             {
                 Template = MailTemplate.CredentialChangeNotice,
@@ -422,7 +421,7 @@ public sealed class DeletePersonByIdTests : IClassFixture<ApiTestFixture>
         await DeleteWithPasswordAsync(ilka, paulaId, ApiTestFixture.SeededAccountPassword);
 
         Assert.DoesNotContain(
-            await ApiTestFixture.OutboxOfAsync(_fixture, ct),
+            await _fixture.OutboxAsync(ct),
             mail => mail.Template == MailTemplate.CredentialChangeNotice
         );
     }

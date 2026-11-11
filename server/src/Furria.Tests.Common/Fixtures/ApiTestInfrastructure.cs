@@ -1,3 +1,4 @@
+using System.Collections.Concurrent;
 using DotNet.Testcontainers.Builders;
 using DotNet.Testcontainers.Containers;
 using Testcontainers.PostgreSql;
@@ -36,6 +37,8 @@ public sealed class ApiTestInfrastructure : IAsyncLifetime
         .WithLabel(ReuseLabel, ReuseLabelValue)
         .Build();
 
+    private readonly ConcurrentBag<ApiTestHost> _idleHosts = [];
+
     private MailpitInbox? _mailbox;
     private TestDatabaseCatalog? _catalog;
 
@@ -72,8 +75,23 @@ public sealed class ApiTestInfrastructure : IAsyncLifetime
 
     public Task DropDatabaseAsync(string connectionString) => Catalog.DropAsync(connectionString);
 
+    internal async Task<ApiTestHost> LeaseHostAsync()
+    {
+        if (_idleHosts.TryTake(out var idle))
+            return idle;
+
+        var host = new ApiTestHost(this, await CreateDatabaseFromTemplateAsync());
+        await host.StartAsync();
+        return host;
+    }
+
+    internal void ReturnHost(ApiTestHost host) => _idleHosts.Add(host);
+
     public async ValueTask DisposeAsync()
     {
+        while (_idleHosts.TryTake(out var idle))
+            await idle.DisposeAsync();
+
         _mailbox?.Dispose();
         if (_catalog is not null)
             await _catalog.DisposeAsync();

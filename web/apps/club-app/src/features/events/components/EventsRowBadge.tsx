@@ -11,14 +11,14 @@ interface EventsRowBadgeProps {
 export const EventsRowBadge: FC<EventsRowBadgeProps> = ({ event }) => {
   if (isCancelledEvent(event)) {
     return (
-      <KkChip tone="accent" size="small">
+      <KkChip tone="neutral" size="small">
         {CANCELLED_BADGE}
       </KkChip>
     );
   }
   if (isInPreparation(event) && !event.isOver) {
     return (
-      <KkChip tone="blue" size="small">
+      <KkChip tone="neutral" size="small">
         {IN_PREPARATION_BADGE}
       </KkChip>
     );

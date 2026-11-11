@@ -2,9 +2,9 @@ import Box from '@mui/material/Box';
 import ButtonBase from '@mui/material/ButtonBase';
 import type { CSSObject, Theme } from '@mui/material/styles';
 import type { FC } from 'react';
+import { blueInkOf } from '../../../internal/blue-ink';
 import { focusRing } from '../../../internal/focus-ring';
 import { goldInkOf } from '../../../internal/gold-ink';
-import { redInk } from '../../../internal/red-ink';
 import type { KkIconName } from '../../../KkIcon';
 import { KkIcon } from '../../../KkIcon';
 import { stepFigures } from '../../../KkStatePill/state-paint';
@@ -24,7 +24,7 @@ const iconInk = (theme: Theme, tone: KkHealthFilterTone, quiet: boolean): CSSObj
     case 'overdue':
       return goldInkOf(theme);
     case 'current':
-      return redInk(theme);
+      return blueInkOf(theme);
     case 'ink':
       return { color: 'text.primary' };
   }
