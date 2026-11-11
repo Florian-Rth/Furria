@@ -3,7 +3,7 @@ using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
 using Xunit;
 using static Furria.Api.Tests.BeerList.BeerListCast;
-using static Furria.Api.Tests.BeerList.BeerListDevices;
+using static Furria.Api.Tests.Push.SubscribedDevices;
 
 namespace Furria.Api.Tests.BeerList;
 

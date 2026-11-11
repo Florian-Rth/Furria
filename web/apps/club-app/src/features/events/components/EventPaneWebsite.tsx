@@ -1,5 +1,4 @@
 import { KkCheckLine } from '@furria/ui/KkCheckLine';
-import { KkPanelSection } from '@furria/ui/KkPanelSection';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { websiteAddressOf } from '@/lib/publish-copy';
@@ -13,7 +12,6 @@ const ONLINE_LABEL = 'Online seit';
 const ADDRESS_LABEL = 'Adresse';
 const CALENDAR_LABEL = 'Kalender';
 const CALENDAR_VALUE = 'bei allen Mitgliedern';
-const NEEDS_TITLE = 'Was die Website braucht';
 const PUBLIC_PATH = '/events/';
 
 interface EventPaneWebsiteProps {
@@ -40,9 +38,5 @@ export const EventPaneWebsite: FC<EventPaneWebsiteProps> = ({ event }) => {
     <EventCheckRow key={check.key} check={check} event={event} />
   ));
 
-  return (
-    <KkPanelSection title={NEEDS_TITLE}>
-      <Stack>{rows}</Stack>
-    </KkPanelSection>
-  );
+  return <Stack>{rows}</Stack>;
 };

@@ -1,6 +1,6 @@
 import type { CSSObject, Theme } from '@mui/material/styles';
 import { keyframes } from '@mui/material/styles';
-import { redInk } from '../internal/red-ink';
+import { blueInkOf } from '../internal/blue-ink';
 import { tonePaint } from '../internal/tone';
 import type { KkStepState } from '../KkStatePill/step-state';
 import { kkTokens } from '../tokens';
@@ -59,11 +59,11 @@ export const badgeDiscPaint = (theme: Theme, state: KkStepState): CSSObject => {
       return { ...tonePaint(theme, 'gold'), ...hairEdge(palette(theme).warning.main) };
     case 'current':
       return {
-        ...redInk(theme),
+        ...blueInkOf(theme),
         backgroundColor: palette(theme).background.paper,
         borderWidth: CURRENT_RING,
         borderStyle: 'solid',
-        borderColor: palette(theme).primary.main,
+        borderColor: palette(theme).info.main,
       };
     case 'open':
       return {

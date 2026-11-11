@@ -79,7 +79,7 @@ const FILTER_LOOKS: Record<BoardFilter, FilterLook> = {
   all: { icon: 'events', label: 'Alle', tone: 'ink' },
   overdue: { icon: 'alert', label: 'Überfällig', tone: 'overdue' },
   dueSoon: { icon: 'clock', label: 'Bald fällig', tone: 'ink' },
-  offline: { icon: 'website', label: 'Nicht online', tone: 'ink' },
+  offline: { icon: 'website', label: 'In Vorbereitung', tone: 'ink' },
   past: { icon: 'archive', label: 'Vergangen', tone: 'ink' },
 };
 
@@ -141,7 +141,9 @@ export const toCellFactLabel = (fact: CellFact): string => {
     case 'publishReady':
       return 'bereit zum Veröffentlichen';
     case 'blocked':
-      return 'in Vorbereitung';
+      return fact.details.length === 1
+        ? `wartet auf ${toFactDetailsLabel(fact.details)}`
+        : `wartet auf ${fact.details.length} Angaben`;
     case 'neverPublished':
       return 'nie veröffentlicht';
     case 'factsMissing':
@@ -193,6 +195,17 @@ const LEGEND_WORDS: Record<KkStepState, string> = {
   off: '',
 };
 
+const legendWordOf = (state: KkStepState, count: number): string =>
+  state === 'waiting' && count === 1 ? 'wartet' : LEGEND_WORDS[state];
+
+const legendTextOf = (state: KkStepState, count: number, leads: boolean): string => {
+  const noun = count === 1 ? 'Schritt' : 'Schritte';
+
+  return leads
+    ? `${count} ${noun} ${legendWordOf(state, count)}`
+    : `${count} ${legendWordOf(state, count)}`;
+};
+
 export interface TallyView {
   value: string;
   caption: string;
@@ -207,7 +220,7 @@ export const toTallyView = (tally: StateTally): TallyView => ({
   label: `${tally.counts.done} von ${tally.total} Schritten erledigt`,
   parts: COUNTED_STATES.map((state) => ({ state, count: tally.counts[state] })),
   legend: COUNTED_STATES.filter((state) => state !== 'done' && tally.counts[state] > 0).map(
-    (state) => ({ state, text: `${tally.counts[state]} ${LEGEND_WORDS[state]}` }),
+    (state, index) => ({ state, text: legendTextOf(state, tally.counts[state], index === 0) }),
   ),
 });
 
@@ -287,33 +300,33 @@ export const toCellShortFact = (fact: CellFact): string => {
     case 'publishReady':
       return 'bereit';
     case 'blocked':
-      return 'offline';
+      return 'wartet auf Eckdaten';
     case 'neverPublished':
       return 'nie online';
     case 'factsMissing':
       return fact.details.length === 1
         ? `${toFactDetailsLabel(fact.details)} fehlt`
-        : `${fact.details.length} fehlen`;
+        : `${fact.details.length} Angaben fehlen`;
     case 'factsComplete':
       return 'komplett';
     case 'ticketFactsMissing':
       return fact.facts.length === 1
         ? SHORT_TICKET_FACTS[fact.facts[0] ?? 'price']
-        : `${fact.facts.length} fehlen`;
+        : 'Preis und VVK fehlen';
     case 'sales':
       return fact.priceCents === null
         ? toEventStatusShortLabel({ status: fact.status, presaleStartsAt: fact.presaleStartsAt })
         : formatPriceCents(fact.priceCents);
     case 'runningOrder':
-      return fact.stands ? 'steht' : 'noch offen';
+      return fact.stands ? 'Ablauf steht' : 'Ablauf offen';
     case 'runningOrderOpens':
       return `ab ${toShortDay(fact.opensOn)}`;
     case 'tablePlan':
       return `${fact.chairs} Stühle`;
     case 'noTablePlan':
-      return 'noch offen';
+      return 'kein Tischplan';
     case 'tablePlanSkipped':
-      return 'nicht nötig';
+      return 'ohne Tischplan';
     case 'deadline':
       return toShortDay(fact.dueOn);
     case 'allDone':

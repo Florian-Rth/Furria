@@ -1,10 +1,14 @@
 import { useEffect, useState } from 'react';
 import { msUntilNextMinute } from './minute-clock';
 
-export const useMinuteNow = (): Date => {
+export const useMinuteNow = (ticking = true): Date => {
   const [now, setNow] = useState(() => new Date());
 
   useEffect(() => {
+    if (!ticking) {
+      return;
+    }
+
     const timer = setTimeout(() => {
       setNow(new Date());
     }, msUntilNextMinute(now));
@@ -12,7 +16,7 @@ export const useMinuteNow = (): Date => {
     return () => {
       clearTimeout(timer);
     };
-  }, [now]);
+  }, [now, ticking]);
 
   useEffect(() => {
     const catchUp = (): void => {

@@ -147,7 +147,7 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_TakeTheAnswer_When_TheEntryIsAlreadyPast()
+    public async Task Should_RefuseTheAnswer_When_TheEntryIsOver()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -164,11 +164,11 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
                     AttendanceAnswer.No
                 );
 
-                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+                Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
 
                 await ctx
                     .Expected.AttendanceResponsesFor(ctx.Club.CalendarEntries.IdOf("letzter-ball"))
-                    .ToCarryAnswerFrom(ctx.Identity.People.IdOf("alice"), AttendanceAnswer.No)
+                    .ToCarryNoAnswerFrom(ctx.Identity.People.IdOf("alice"))
                     .AssertAsync(ct);
             }
         );
@@ -203,7 +203,7 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ReturnNotFound_When_AClubMemberAnswersAnotherGroupsGroupOnlyEntry()
+    public async Task Should_ReturnNotFound_When_AClubMemberAnswersAnEntrySheIsNotChosenFor()
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -216,11 +216,31 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
 
                 var response = await AnswerAsync(
                     client,
-                    ctx.Club.CalendarEntries.IdOf("garde-training"),
+                    ctx.Club.CalendarEntries.IdOf("garde-secret"),
                     AttendanceAnswer.Yes
                 );
 
                 Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_TakeTheAnswer_When_SheIsChosenForTheEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildCalendarAsync(ct);
+                var client = await ctx.Identity.ClientForAsync("bea", ct);
+                var entryId = ctx.Club.CalendarEntries.IdOf("garde-secret");
+
+                var response = await AnswerAsync(client, entryId, AttendanceAnswer.Yes);
+
+                Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
             }
         );
     }
@@ -280,9 +300,15 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_TakeTheAnswer_When_AClubMemberAnswersAnotherGroupsClubVisibleEntry()
+    public async Task Should_ReturnForbidden_When_AClubMemberAnswersAnEntryMeantForAnotherGroup()
     {
-        await AssertAnswerTakenAsync("alice", "garde-auftritt");
+        await AssertAnswerRefusedAsync("alice", "garde-auftritt", HttpStatusCode.Forbidden);
+    }
+
+    [Fact]
+    public async Task Should_TakeTheAnswer_When_SheRunsAnEntryNotMeantForHer()
+    {
+        await AssertAnswerTakenAsync("sabine", "kinder-geheim");
     }
 
     [Fact]
@@ -495,24 +521,29 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
                                 "parade",
                                 "Rosenmontagsumzug",
                                 AtTheParade,
-                                kind: CalendarEntryKind.Performance,
-                                visibility: CalendarEntryVisibility.Public
+                                kind: CalendarEntryKind.Trip
                             )
                             .AddCalendarEntry(
                                 "garde-training",
                                 "Training der Tanzgarde",
                                 AtTheDanceGuardTraining,
                                 kind: CalendarEntryKind.Training,
-                                visibility: CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "tanzgarde",
                                 asksForResponse: true
+                            )
+                            .AddCalendarEntry(
+                                "garde-secret",
+                                "Überraschung planen",
+                                AtTheDanceGuardTraining.AddHours(3),
+                                ownerGroupAlias: "tanzgarde",
+                                asksForResponse: true,
+                                audiencePersonAliases: ["bea"]
                             )
                             .AddCalendarEntry(
                                 "ballett-training",
                                 "Training des Männerballetts",
                                 AtTheBalletTraining,
                                 kind: CalendarEntryKind.Training,
-                                visibility: CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "maennerballett",
                                 asksForResponse: true
                             )
@@ -520,18 +551,24 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
                                 "kinder-probe",
                                 "Probe der Kindergarde",
                                 AtTheChildrensRehearsal,
-                                kind: CalendarEntryKind.Rehearsal,
-                                visibility: CalendarEntryVisibility.Group,
+                                kind: CalendarEntryKind.Training,
                                 ownerGroupAlias: "kindergarde",
                                 asksForResponse: true,
                                 participatingGroupAliases: ["tanzgarde"]
                             )
                             .AddCalendarEntry(
+                                "kinder-geheim",
+                                "Geschenk für die Kinder",
+                                AtTheChildrensRehearsal.AddHours(2),
+                                ownerGroupAlias: "kindergarde",
+                                asksForResponse: true,
+                                audiencePersonAliases: ["bea"]
+                            )
+                            .AddCalendarEntry(
                                 "garde-auftritt",
                                 "Auftritt der Tanzgarde",
                                 AtTheGuardPerformance,
-                                kind: CalendarEntryKind.Performance,
-                                visibility: CalendarEntryVisibility.Club,
+                                kind: CalendarEntryKind.Trip,
                                 ownerGroupAlias: "tanzgarde",
                                 asksForResponse: true
                             )
@@ -539,7 +576,7 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
                                 "prunksitzung",
                                 "Prunksitzung",
                                 AtTheGalaSession,
-                                kind: CalendarEntryKind.Performance,
+                                kind: CalendarEntryKind.Trip,
                                 asksForResponse: true,
                                 participatingGroupAliases: ["maennerballett"]
                             )
@@ -554,7 +591,7 @@ public sealed class PostCalendarResponseTests : IClassFixture<ApiTestFixture>
                                 "letzter-ball",
                                 "Winterball",
                                 AtLastYearsBall,
-                                kind: CalendarEntryKind.Party,
+                                kind: CalendarEntryKind.Plain,
                                 asksForResponse: true
                             )
                     ),

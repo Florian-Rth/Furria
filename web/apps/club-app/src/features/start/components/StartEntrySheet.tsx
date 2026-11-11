@@ -3,6 +3,7 @@ import { EntrySheetBody } from '@/features/entry-sheet/components/EntrySheetBody
 import { useEntrySheet } from '../hooks/use-entry-sheet';
 import type { StartBoard } from '../hooks/use-start-view';
 import type { StartEntry } from '../schemas';
+import { StartEntryFunctions } from './StartEntryFunctions';
 
 interface StartEntrySheetProps {
   entry: StartEntry;
@@ -12,5 +13,9 @@ interface StartEntrySheetProps {
 export const StartEntrySheet: FC<StartEntrySheetProps> = ({ entry, board }) => {
   const sheet = useEntrySheet(entry, board);
 
-  return <EntrySheetBody sheet={sheet} />;
+  return (
+    <EntrySheetBody sheet={sheet}>
+      <StartEntryFunctions entry={entry} board={board} />
+    </EntrySheetBody>
+  );
 };

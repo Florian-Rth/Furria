@@ -6,19 +6,20 @@ namespace Furria.Infrastructure.Persistence.Configurations;
 
 public sealed class CalendarEntryConfiguration : IEntityTypeConfiguration<CalendarEntry>
 {
-    private const int TitleLength = 120;
     private const int DescriptionLength = 2_000;
     private const int EnumLength = 32;
-    private const CalendarEntryVisibility UnsetVisibility = 0;
+    private const CalendarEntryAudience UnsetAudience = 0;
+
+    public const int TitleLength = 120;
 
     private static readonly string KnownKinds = string.Join(
         ", ",
         Enum.GetNames<CalendarEntryKind>().Select(name => $"'{name}'")
     );
 
-    private static readonly string KnownVisibilities = string.Join(
+    private static readonly string KnownAudiences = string.Join(
         ", ",
-        Enum.GetNames<CalendarEntryVisibility>().Select(name => $"'{name}'")
+        Enum.GetNames<CalendarEntryAudience>().Select(name => $"'{name}'")
     );
 
     public void Configure(EntityTypeBuilder<CalendarEntry> builder)
@@ -33,16 +34,22 @@ public sealed class CalendarEntryConfiguration : IEntityTypeConfiguration<Calend
                 );
                 table.HasCheckConstraint("ck_calendar_entry_kind", $"kind IN ({KnownKinds})");
                 table.HasCheckConstraint(
-                    "ck_calendar_entry_visibility",
-                    $"visibility IN ({KnownVisibilities})"
+                    "ck_calendar_entry_audience",
+                    $"audience IN ({KnownAudiences})"
                 );
                 table.HasCheckConstraint(
-                    "ck_calendar_entry_owner_visibility",
-                    "owner_group_id IS NOT NULL OR visibility <> 'Group'"
+                    "ck_calendar_entry_attendance_add_on",
+                    "asks_for_response = (attendance_position IS NOT NULL)"
                 );
                 table.HasCheckConstraint(
-                    "ck_calendar_entry_event_public",
-                    "kind <> 'Event' OR (visibility = 'Public' AND owner_group_id IS NULL)"
+                    "ck_calendar_entry_add_on_positions",
+                    "(attendance_position IS NULL OR attendance_position >= 0) "
+                        + "AND (participating_groups_position IS NULL "
+                        + "OR participating_groups_position >= 0)"
+                );
+                table.HasCheckConstraint(
+                    "ck_calendar_entry_event_club",
+                    "kind <> 'Event' OR (audience = 'Club' AND owner_group_id IS NULL)"
                 );
             }
         );
@@ -52,11 +59,11 @@ public sealed class CalendarEntryConfiguration : IEntityTypeConfiguration<Calend
         builder.Property(entry => entry.Description).HasMaxLength(DescriptionLength);
         builder.Property(entry => entry.Kind).HasConversion<string>().HasMaxLength(EnumLength);
         builder
-            .Property(entry => entry.Visibility)
+            .Property(entry => entry.Audience)
             .HasConversion<string>()
             .HasMaxLength(EnumLength)
-            .HasDefaultValue(CalendarEntryVisibility.Club)
-            .HasSentinel(UnsetVisibility);
+            .HasDefaultValue(CalendarEntryAudience.Club)
+            .HasSentinel(UnsetAudience);
         builder.Property(entry => entry.AsksForResponse).HasDefaultValue(false);
 
         builder

@@ -8,6 +8,9 @@ public sealed class ClubSeedBuilder
     private const string DefaultStreet = "Schulstraße 4";
     private const string DefaultZip = "99713";
     private const string DefaultCity = "Großfurra";
+    private const int DefaultPollPosition = 9;
+    private const int DefaultSignUpListPosition = 19;
+    private const int DefaultDaySchedulePosition = 29;
     private const string DefaultTeaser = "Der Abend, auf den die Session hinfiebert.";
 
     private static readonly DateOnly DefaultSinceOn = new(2020, 11, 11);
@@ -22,6 +25,12 @@ public sealed class ClubSeedBuilder
     private readonly List<UsualTrainingTimeIntent> _usualTrainingTimes = [];
     private readonly List<CalendarEntryIntent> _calendarEntries = [];
     private readonly List<AttendanceResponseIntent> _attendanceResponses = [];
+    private readonly List<CalendarPollIntent> _calendarPolls = [];
+    private readonly List<CalendarPollVoteIntent> _calendarPollVotes = [];
+    private readonly List<CalendarSignUpListIntent> _calendarSignUpLists = [];
+    private readonly List<CalendarSignUpLineIntent> _calendarSignUpLines = [];
+    private readonly List<CalendarDayScheduleIntent> _calendarDaySchedules = [];
+    private readonly List<CalendarDayScheduleStepIntent> _calendarDayScheduleSteps = [];
     private readonly List<EventIntent> _events = [];
     private readonly List<EventPresalePlaceIntent> _eventPresalePlaces = [];
     private ClubRecordIntent? _clubRecord;
@@ -45,6 +54,19 @@ public sealed class ClubSeedBuilder
     internal IReadOnlyList<CalendarEntryIntent> CalendarEntries => _calendarEntries;
 
     internal IReadOnlyList<AttendanceResponseIntent> AttendanceResponses => _attendanceResponses;
+
+    internal IReadOnlyList<CalendarPollIntent> CalendarPolls => _calendarPolls;
+
+    internal IReadOnlyList<CalendarPollVoteIntent> CalendarPollVotes => _calendarPollVotes;
+
+    internal IReadOnlyList<CalendarSignUpListIntent> CalendarSignUpLists => _calendarSignUpLists;
+
+    internal IReadOnlyList<CalendarSignUpLineIntent> CalendarSignUpLines => _calendarSignUpLines;
+
+    internal IReadOnlyList<CalendarDayScheduleIntent> CalendarDaySchedules => _calendarDaySchedules;
+
+    internal IReadOnlyList<CalendarDayScheduleStepIntent> CalendarDayScheduleSteps =>
+        _calendarDayScheduleSteps;
 
     internal IReadOnlyList<EventIntent> Events => _events;
 
@@ -227,15 +249,38 @@ public sealed class ClubSeedBuilder
         string title,
         DateTimeOffset startsAt,
         DateTimeOffset? endsAt = null,
-        CalendarEntryKind kind = CalendarEntryKind.Meeting,
-        CalendarEntryVisibility visibility = CalendarEntryVisibility.Club,
+        CalendarEntryKind kind = CalendarEntryKind.Plain,
+        CalendarEntryAudience? audience = null,
         string? venueAlias = null,
         string? ownerGroupAlias = null,
         bool asksForResponse = false,
         string? description = null,
-        IReadOnlyList<string>? participatingGroupAliases = null
+        IReadOnlyList<string>? participatingGroupAliases = null,
+        IReadOnlyList<string>? audienceGroupAliases = null,
+        IReadOnlyList<string>? audiencePersonAliases = null
     )
     {
+        var participating = participatingGroupAliases ?? [];
+        var resolvedAudience =
+            audience
+            ?? (
+                audiencePersonAliases is not null ? CalendarEntryAudience.People
+                : ownerGroupAlias is not null || audienceGroupAliases is not null
+                    ? CalendarEntryAudience.Groups
+                : CalendarEntryAudience.Club
+            );
+        IReadOnlyList<string> audienceGroups =
+            resolvedAudience != CalendarEntryAudience.Groups
+                ? []
+                : audienceGroupAliases
+                    ??
+                    [
+                        .. new[] { ownerGroupAlias }
+                            .OfType<string>()
+                            .Concat(participating)
+                            .Distinct(),
+                    ];
+
         _calendarEntries.Add(
             new CalendarEntryIntent(
                 alias,
@@ -243,26 +288,152 @@ public sealed class ClubSeedBuilder
                 startsAt,
                 endsAt,
                 kind,
-                visibility,
+                new AudienceIntent(resolvedAudience, audienceGroups, audiencePersonAliases ?? []),
                 venueAlias,
                 ownerGroupAlias,
-                asksForResponse,
+                AddOnsOf(asksForResponse, participating),
                 description,
-                participatingGroupAliases ?? []
+                participating
             )
         );
         return this;
     }
 
+    private static IReadOnlyList<CalendarEntryAddOnKind> AddOnsOf(
+        bool asksForResponse,
+        IReadOnlyList<string> participatingGroupAliases
+    ) =>
+        [
+            .. asksForResponse
+                ? [CalendarEntryAddOnKind.Attendance]
+                : Array.Empty<CalendarEntryAddOnKind>(),
+            .. participatingGroupAliases.Count > 0
+                ? [CalendarEntryAddOnKind.ParticipatingGroups]
+                : Array.Empty<CalendarEntryAddOnKind>(),
+        ];
+
     public ClubSeedBuilder AddAttendanceResponse(
         string alias,
         string calendarEntryAlias,
         string personAlias,
-        AttendanceAnswer answer
+        AttendanceAnswer answer,
+        string? recordedByAlias = null
     )
     {
         _attendanceResponses.Add(
-            new AttendanceResponseIntent(alias, calendarEntryAlias, personAlias, answer)
+            new AttendanceResponseIntent(
+                alias,
+                calendarEntryAlias,
+                personAlias,
+                answer,
+                recordedByAlias
+            )
+        );
+        return this;
+    }
+
+    public ClubSeedBuilder AddCalendarPoll(
+        string alias,
+        string calendarEntryAlias,
+        string question,
+        IReadOnlyList<string> options,
+        bool allowsMultipleChoices = false,
+        bool isAnonymous = false,
+        DateTimeOffset? votesUntil = null,
+        DateTimeOffset? closedAt = null,
+        int position = DefaultPollPosition,
+        string? closedByAlias = null
+    )
+    {
+        _calendarPolls.Add(
+            new CalendarPollIntent(
+                alias,
+                calendarEntryAlias,
+                question,
+                options,
+                allowsMultipleChoices,
+                isAnonymous,
+                votesUntil,
+                closedAt,
+                position,
+                closedByAlias
+            )
+        );
+        return this;
+    }
+
+    public ClubSeedBuilder AddCalendarPollVote(
+        string pollAlias,
+        string optionLabel,
+        string personAlias
+    )
+    {
+        _calendarPollVotes.Add(new CalendarPollVoteIntent(pollAlias, optionLabel, personAlias));
+        return this;
+    }
+
+    public ClubSeedBuilder AddCalendarSignUpList(
+        string alias,
+        string calendarEntryAlias,
+        string title,
+        string? hint = null,
+        DateTimeOffset? signUpUntil = null,
+        DateTimeOffset? closedAt = null,
+        int position = DefaultSignUpListPosition,
+        string? closedByAlias = null
+    )
+    {
+        _calendarSignUpLists.Add(
+            new CalendarSignUpListIntent(
+                alias,
+                calendarEntryAlias,
+                title,
+                hint,
+                signUpUntil,
+                closedAt,
+                position,
+                closedByAlias
+            )
+        );
+        return this;
+    }
+
+    public ClubSeedBuilder AddCalendarDaySchedule(
+        string alias,
+        string calendarEntryAlias,
+        string? title,
+        int position = DefaultDaySchedulePosition
+    )
+    {
+        _calendarDaySchedules.Add(
+            new CalendarDayScheduleIntent(alias, calendarEntryAlias, title, position)
+        );
+        return this;
+    }
+
+    public ClubSeedBuilder AddCalendarDayScheduleStep(
+        string alias,
+        string dayScheduleAlias,
+        int day,
+        TimeOnly time,
+        string text
+    )
+    {
+        _calendarDayScheduleSteps.Add(
+            new CalendarDayScheduleStepIntent(alias, dayScheduleAlias, day, time, text)
+        );
+        return this;
+    }
+
+    public ClubSeedBuilder AddCalendarSignUpLine(
+        string alias,
+        string signUpListAlias,
+        string personAlias,
+        string? text = null
+    )
+    {
+        _calendarSignUpLines.Add(
+            new CalendarSignUpLineIntent(alias, signUpListAlias, personAlias, text)
         );
         return this;
     }
@@ -392,19 +563,78 @@ public sealed class ClubSeedBuilder
         DateTimeOffset StartsAt,
         DateTimeOffset? EndsAt,
         CalendarEntryKind Kind,
-        CalendarEntryVisibility Visibility,
+        AudienceIntent Audience,
         string? VenueAlias,
         string? OwnerGroupAlias,
-        bool AsksForResponse,
+        IReadOnlyList<CalendarEntryAddOnKind> AddOns,
         string? Description,
         IReadOnlyList<string> ParticipatingGroupAliases
+    );
+
+    internal sealed record AudienceIntent(
+        CalendarEntryAudience Audience,
+        IReadOnlyList<string> GroupAliases,
+        IReadOnlyList<string> PersonAliases
     );
 
     internal sealed record AttendanceResponseIntent(
         string Alias,
         string CalendarEntryAlias,
         string PersonAlias,
-        AttendanceAnswer Answer
+        AttendanceAnswer Answer,
+        string? RecordedByAlias
+    );
+
+    internal sealed record CalendarPollIntent(
+        string Alias,
+        string CalendarEntryAlias,
+        string Question,
+        IReadOnlyList<string> Options,
+        bool AllowsMultipleChoices,
+        bool IsAnonymous,
+        DateTimeOffset? VotesUntil,
+        DateTimeOffset? ClosedAt,
+        int Position,
+        string? ClosedByAlias
+    );
+
+    internal sealed record CalendarPollVoteIntent(
+        string PollAlias,
+        string OptionLabel,
+        string PersonAlias
+    );
+
+    internal sealed record CalendarSignUpListIntent(
+        string Alias,
+        string CalendarEntryAlias,
+        string Title,
+        string? Hint,
+        DateTimeOffset? SignUpUntil,
+        DateTimeOffset? ClosedAt,
+        int Position,
+        string? ClosedByAlias
+    );
+
+    internal sealed record CalendarDayScheduleIntent(
+        string Alias,
+        string CalendarEntryAlias,
+        string? Title,
+        int Position
+    );
+
+    internal sealed record CalendarDayScheduleStepIntent(
+        string Alias,
+        string DayScheduleAlias,
+        int Day,
+        TimeOnly Time,
+        string Text
+    );
+
+    internal sealed record CalendarSignUpLineIntent(
+        string Alias,
+        string SignUpListAlias,
+        string PersonAlias,
+        string? Text
     );
 
     internal sealed record EventIntent(

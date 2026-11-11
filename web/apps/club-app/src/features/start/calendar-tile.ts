@@ -5,6 +5,7 @@ import type { KkStartTileMarkKind } from '@furria/ui/KkStartTileMark';
 import type { KkStartTileWhenTone } from '@furria/ui/when-tone';
 import { toGroupTone } from '@/features/groups/group-identity';
 import type { CalendarKindKey } from '@/lib/calendar-copy';
+import { owesAnything } from './owed-items';
 import type { StartEntry } from './schemas';
 import { toEntryFacets, toFacetText, toStampOf } from './start-labels';
 
@@ -14,20 +15,12 @@ export interface TileWhen {
   time: string;
 }
 
-export interface AnswerTally {
-  owed: number;
-  answered: number;
-}
-
 const FACET_SEPARATOR = ' · ';
 
 const KIND_ICONS: Record<CalendarKindKey, KkIconName> = {
+  plain: 'calendar',
   training: 'bolt',
-  rehearsal: 'stage',
-  performance: 'live',
-  meeting: 'board',
-  party: 'events',
-  other: 'calendar',
+  trip: 'flag',
   event: 'tickets',
 };
 
@@ -41,17 +34,6 @@ export const entryToneOf = (entry: StartEntry): KkGroupTone => {
   return eventToneOf(entry.calendarEntryId);
 };
 
-export const isOwed = (entry: StartEntry): boolean =>
-  entry.attendance?.isOwed === true && entry.attendance.viewerAnswer === null;
-
-export const owedEntriesOf = (entries: readonly StartEntry[]): StartEntry[] =>
-  entries.filter(isOwed);
-
-export const answerTallyOf = (entries: readonly StartEntry[]): AnswerTally => ({
-  owed: entries.filter(isOwed).length,
-  answered: entries.filter((entry) => entry.attendance?.viewerAnswer != null).length,
-});
-
 export const toEntryMark = (entry: StartEntry): KkStartTileMarkKind | null => {
   const answer = entry.attendance?.viewerAnswer ?? null;
 
@@ -59,7 +41,7 @@ export const toEntryMark = (entry: StartEntry): KkStartTileMarkKind | null => {
     return answer;
   }
 
-  return isOwed(entry) ? 'owed' : null;
+  return owesAnything(entry) ? 'owed' : null;
 };
 
 export const toTileWhen = (

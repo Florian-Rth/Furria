@@ -25,14 +25,22 @@ export const EventPaneHall: FC<EventPaneHallProps> = ({ event }) => {
     return <KkCheckLine label={SKIPPED_LABEL} value={SKIPPED_VALUE} state="off" icon="tables" />;
   }
 
+  const planLine = (
+    <KkCheckLine
+      label={PLAN_CHECK_LABEL}
+      value={toPlanValue(checks)}
+      state={checks.planState}
+      icon="tables"
+    />
+  );
+
+  if (checks.tables === null) {
+    return planLine;
+  }
+
   return (
     <Stack>
-      <KkCheckLine
-        label={PLAN_CHECK_LABEL}
-        value={toPlanValue(checks)}
-        state={checks.planState}
-        icon="tables"
-      />
+      {planLine}
       <KkCheckLine
         label={TABLES_CHECK_LABEL}
         value={toTablesValue(checks)}

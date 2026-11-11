@@ -4,7 +4,7 @@ import type { TicketAvailabilityKey } from '@/lib/event-copy';
 import { TICKET_AVAILABILITY_LABELS, toPresaleStartLabel } from '@/lib/event-copy';
 import type { EventDetails, EventSummary } from './schemas';
 
-export const EVENT_MANAGE_TITLE = 'Bild, Absage, Löschen';
+export const EVENT_MANAGE_TITLE = 'Verwalten';
 
 export const EVENT_SECTION_TITLES = {
   picture: 'Bild',

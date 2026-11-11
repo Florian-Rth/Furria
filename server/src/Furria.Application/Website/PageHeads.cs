@@ -11,7 +11,7 @@ namespace Furria.Application.Website;
 
 public static partial class PageHeads
 {
-    private const string SiteName = "FURRIA";
+    private const string TitleSuffix = "FCC Großfurra";
 
     private static readonly string[] GermanMonths =
     [
@@ -69,7 +69,7 @@ public static partial class PageHeads
         };
 
     [Pure]
-    private static string TitleOf(string name) => $"{name} · {SiteName}";
+    private static string TitleOf(string name) => $"{name} · {TitleSuffix}";
 
     [Pure]
     private static string YearsLabelAt(DateTimeOffset instant) =>

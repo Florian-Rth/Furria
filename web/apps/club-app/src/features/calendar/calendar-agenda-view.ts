@@ -1,8 +1,11 @@
 import type { KkCalendarDayData } from '@furria/ui/calendar-strip-types';
 import type { KkCalendarLineGroup } from '@furria/ui/KkCalendarAgendaLine';
 import type { KkCalendarTimeTone } from '@furria/ui/KkCalendarAgendaTime';
+import type { KkEntryKindGlyphKind } from '@furria/ui/KkEntryKindGlyph';
+import type { KkOpenMark } from '@furria/ui/KkOpenMarks';
 import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
 import { toLocalIsoDay, toTimeLabel, toTimeSpanLabel } from '@/lib/calendar-days';
+import { shiftDay } from '@/lib/day';
 import { formatPriceCents, toDoorsOpenLabel, toEventStatusLabel } from '@/lib/event-copy';
 import type { EventCover } from '@/lib/event-cover';
 import { toEventCover } from '@/lib/event-cover';
@@ -21,13 +24,12 @@ import {
   markOf,
   relativeDayOf,
   sectionItemsOf,
-  shiftDay,
   toCalendarTime,
   weekNameOf,
 } from './calendar-agenda';
 import type { CalendarTimeCopy } from './calendar-agenda-copy';
 import {
-  KIND_GLYPHS,
+  AUDIENCE_SEPARATOR,
   LANDMARK_LABELS,
   NO_ENTRIES_NOTE,
   RUNNING_LABEL,
@@ -43,10 +45,12 @@ import {
   toWeekTitle,
   USUAL_PLAN_LABEL,
   USUAL_TITLE,
-  VISIBILITY_LABELS,
+  WHOLE_CLUB_AUDIENCE_LABEL,
   weekdayOf,
 } from './calendar-agenda-copy';
-import type { CalendarEntry, UsualTraining } from './schemas';
+import { toOpenMarks } from './calendar-open-marks';
+import { toPersonName } from './calendar-people';
+import type { CalendarEntry, CalendarEntryAddOn, UsualTraining } from './schemas';
 
 const THUMB_SIZES = '72px';
 const COVER_SIZES = '(min-width: 1200px) 30rem, 100vw';
@@ -97,7 +101,7 @@ const thumbOf = (entry: CalendarEntry, sizes: string): EventCover | null =>
       );
 
 export interface CalendarLineView {
-  glyph: (typeof KIND_GLYPHS)[keyof typeof KIND_GLYPHS];
+  glyph: KkEntryKindGlyphKind;
   title: string;
   venue: string | null;
   groups: KkCalendarLineGroup[];
@@ -108,7 +112,10 @@ export interface CalendarLineView {
   timeTone: KkCalendarTimeTone;
   spoken: string;
   thumb: EventCover | null;
+  marks: KkOpenMark[];
 }
+
+const SPOKEN_SEPARATOR = ', ';
 
 export const toLineView = (line: CalendarLine, nowMs: number): CalendarLineView => {
   const { entry } = line;
@@ -116,9 +123,14 @@ export const toLineView = (line: CalendarLine, nowMs: number): CalendarLineView 
   const quiet = !live && (line.dayIndex > 0 || isPastLine(line, nowMs));
   const time = toTimeCopy(toCalendarTime(line));
   const kindLabel = CALENDAR_KIND_LABELS[entry.kind];
+  const marks = line.dayIndex === 0 ? toOpenMarks(entry) : [];
+  const spoken = [
+    toLineSpoken(entry.title, kindLabel, time.spoken, entry.venueName),
+    ...marks.map((mark) => mark.label),
+  ].join(SPOKEN_SEPARATOR);
 
   return {
-    glyph: KIND_GLYPHS[entry.kind],
+    glyph: entry.kind,
     title: entry.title,
     venue: entry.venueName,
     groups: toLineGroups(entry),
@@ -127,8 +139,9 @@ export const toLineView = (line: CalendarLine, nowMs: number): CalendarLineView 
     quiet,
     time,
     timeTone: live ? 'live' : quiet ? 'quiet' : 'ink',
-    spoken: toLineSpoken(entry.title, kindLabel, time.spoken, entry.venueName),
+    spoken,
     thumb: thumbOf(entry, THUMB_SIZES),
+    marks,
   };
 };
 
@@ -148,6 +161,8 @@ export const toDayData = (cell: CalendarDayCell, activeDay: string | null): KkCa
   carnival: cell.carnival,
 });
 
+const OWNER_TAG_PREFIX = 'owner-';
+
 export interface CalendarDetailView {
   glyph: CalendarLineView['glyph'];
   kindLabel: string;
@@ -156,12 +171,27 @@ export interface CalendarDetailView {
   liveLabel: string | null;
   mark: CalendarMark;
   venue: string | null;
-  groups: KkCalendarLineGroup[];
-  visibility: string;
+  owner: KkCalendarLineGroup[];
+  participatingGroups: KkCalendarLineGroup[];
+  audience: string;
+  addOns: CalendarEntryAddOn[];
   text: string | null;
   eventLine: string | null;
   cover: EventCover | null;
 }
+
+export const toAudienceLabel = (
+  entry: Pick<CalendarEntry, 'audience' | 'audienceGroups' | 'audiencePeople'>,
+): string => {
+  if (entry.audience === 'groups') {
+    return entry.audienceGroups.map((group) => group.name).join(AUDIENCE_SEPARATOR);
+  }
+  if (entry.audience === 'people') {
+    return entry.audiencePeople.map(toPersonName).join(AUDIENCE_SEPARATOR);
+  }
+
+  return WHOLE_CLUB_AUDIENCE_LABEL;
+};
 
 const trimmed = (value: string | null): string | null => {
   const text = value?.trim() ?? '';
@@ -201,15 +231,19 @@ const textOf = (entry: CalendarEntry): string | null => {
 };
 
 export const toDetailView = (entry: CalendarEntry): CalendarDetailView => ({
-  glyph: KIND_GLYPHS[entry.kind],
+  glyph: entry.kind,
   kindLabel: CALENDAR_KIND_LABELS[entry.kind],
   title: entry.title,
   when: `${toDayLongLabel(toLocalIsoDay(entry.startsAt))}${FACT_SEPARATOR}${toTimeSpanLabel(entry.startsAt, entry.endsAt)}`,
   liveLabel: entry.isRunning ? RUNNING_LABEL : null,
   mark: markOf(entry.ownerGroupId, entry.ownerGroupTone),
   venue: entry.venueName,
-  groups: toLineGroups(entry),
-  visibility: VISIBILITY_LABELS[entry.visibility],
+  owner: toLineGroups(entry).filter((group) => group.key.startsWith(OWNER_TAG_PREFIX)),
+  participatingGroups: toLineGroups(entry).filter(
+    (group) => !group.key.startsWith(OWNER_TAG_PREFIX),
+  ),
+  audience: toAudienceLabel(entry),
+  addOns: entry.addOns,
   text: textOf(entry),
   eventLine: eventLineOf(entry),
   cover: thumbOf(entry, COVER_SIZES),

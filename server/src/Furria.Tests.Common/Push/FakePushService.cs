@@ -10,6 +10,12 @@ public sealed class FakePushService : HttpMessageHandler
 
     public void Answer(string endpoint, HttpStatusCode status) => _answers[endpoint] = status;
 
+    public void Forget()
+    {
+        _answers.Clear();
+        _received.Clear();
+    }
+
     public IReadOnlyList<ReceivedPush> ReceivedAt(string endpoint) =>
         [.. _received.Where(push => push.Endpoint == endpoint)];
 

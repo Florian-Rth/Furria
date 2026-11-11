@@ -280,6 +280,29 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_OweAResponse_When_SheIsChosenForAnEntryWithoutAClubMembership()
+    {
+        await OnTuesdayEveningAsync(
+            "kevin",
+            (ctx, start) =>
+                Assert.True(EntryOf(start, IdOf(ctx, "geheimtreffen")).Attendance?.IsOwed)
+        );
+    }
+
+    [Fact]
+    public async Task Should_LeaveOutAChosenPeopleEntry_When_SheIsNotChosen()
+    {
+        await OnTuesdayEveningAsync(
+            "lena",
+            (ctx, start) =>
+                Assert.DoesNotContain(
+                    EntriesOf(start),
+                    entry => entry.CalendarEntryId == IdOf(ctx, "geheimtreffen")
+                )
+        );
+    }
+
+    [Fact]
     public async Task Should_OweNoResponse_When_SheAnsweredMaybe()
     {
         await OnTuesdayEveningAsync(
@@ -487,7 +510,64 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public Task Should_OweAResponse_When_SheIsAGuestInTheCastOfTheGroupsTrainingThatAsksNothing() =>
+    public async Task Should_CarryHerOpenPollsAndLists_When_TheEntryHasOpenFunctions()
+    {
+        await OnTuesdayEveningAsync(
+            "lena",
+            (ctx, start) =>
+            {
+                var meeting = EntryOf(start, IdOf(ctx, "vereinssitzung"));
+
+                Assert.Equal(
+                    [
+                        (ctx.Club.CalendarPolls.IdOf("food"), true, false),
+                        (ctx.Club.CalendarPolls.IdOf("drinks"), false, true),
+                    ],
+                    meeting.OpenPolls.Select(poll =>
+                        (poll.PollId, poll.IsOwed, poll.AllowsMultipleChoices)
+                    )
+                );
+                Assert.Equal(
+                    [("Saft", false), ("Tee", true)],
+                    meeting
+                        .OpenPolls[1]
+                        .Options.Select(option => (option.Label, option.ViewerChose))
+                );
+                Assert.Equal(
+                    [
+                        (ctx.Club.CalendarSignUpLists.IdOf("bring"), true, (string?)null),
+                        (ctx.Club.CalendarSignUpLists.IdOf("setup"), false, "Tische"),
+                    ],
+                    meeting.OpenSignUpLists.Select(list =>
+                        (list.SignUpListId, list.IsOwed, list.ViewerText)
+                    )
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CarryNoOpenFunction_When_TheEntryHasNone()
+    {
+        await OnTuesdayEveningAsync(
+            "lena",
+            (ctx, start) =>
+            {
+                var stellprobe = EntryOf(start, IdOf(ctx, "stellprobe"));
+
+                Assert.Empty(stellprobe.OpenPolls);
+                Assert.Empty(stellprobe.OpenSignUpLists);
+            }
+        );
+    }
+
+    [Theory]
+    [InlineData(true, 1)]
+    [InlineData(false, 0)]
+    public Task Should_OweAResponseOnlyWhenAsked_When_SheIsAGuestInTheCastOfTheGroupsTraining(
+        bool asksForResponse,
+        int owedEntries
+    ) =>
         _fixture.AtInstantAsync(
             RunningOrderSeeds.InTheRunningSession,
             async () =>
@@ -513,8 +593,8 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                     "Training",
                                     ClubClock.At(today.AddDays(2), new TimeOnly(18, 30)),
                                     kind: CalendarEntryKind.Training,
-                                    visibility: CalendarEntryVisibility.Group,
-                                    ownerGroupAlias: RunningOrderSeeds.Garde
+                                    ownerGroupAlias: RunningOrderSeeds.Garde,
+                                    asksForResponse: asksForResponse
                                 )
                             );
                     },
@@ -529,9 +609,14 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
 
                 var (_, start) = await clara.GETAsync<GetStart, GetStartResponse>();
 
-                var training = EntryOf(start, IdOf(ctx, "garde-training"));
-                Assert.NotNull(training.Attendance);
-                Assert.True(training.Attendance.IsOwed);
+                Assert.Equal(
+                    owedEntries,
+                    EntriesOf(start)
+                        .Count(entry =>
+                            entry.CalendarEntryId == IdOf(ctx, "garde-training")
+                            && entry.Attendance is { IsOwed: true }
+                        )
+                );
             }
         );
 
@@ -652,7 +737,6 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 InBerlin(1, 19, 19, 30),
                                 InBerlin(1, 19, 21, 0),
                                 CalendarEntryKind.Training,
-                                CalendarEntryVisibility.Group,
                                 venueAlias: "sporthalle",
                                 ownerGroupAlias: "tanzgarde"
                             )
@@ -675,6 +759,13 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 asksForResponse: true
                             )
                             .AddCalendarEntry(
+                                "geheimtreffen",
+                                "Überraschung planen",
+                                InBerlin(1, 21, 19, 30),
+                                asksForResponse: true,
+                                audiencePersonAliases: ["kevin"]
+                            )
+                            .AddCalendarEntry(
                                 "ballett-training",
                                 "Training Männerballett",
                                 InBerlin(1, 20, 20, 0),
@@ -688,14 +779,13 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 InBerlin(1, 20, 17, 0),
                                 InBerlin(1, 20, 18, 30),
                                 CalendarEntryKind.Training,
-                                CalendarEntryVisibility.Group,
                                 ownerGroupAlias: "kindergarde"
                             )
                             .AddCalendarEntry(
                                 "stellprobe",
                                 "Stellprobe",
                                 InBerlin(1, 21, 18, 0),
-                                kind: CalendarEntryKind.Rehearsal,
+                                kind: CalendarEntryKind.Training,
                                 venueAlias: "festhalle",
                                 asksForResponse: true,
                                 participatingGroupAliases: ["tanzgarde"]
@@ -710,8 +800,7 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 "kinder-probe",
                                 "Probe der Kindergarde",
                                 InBerlin(1, 22, 16, 0),
-                                kind: CalendarEntryKind.Rehearsal,
-                                visibility: CalendarEntryVisibility.Group,
+                                kind: CalendarEntryKind.Training,
                                 ownerGroupAlias: "kindergarde",
                                 asksForResponse: true,
                                 participatingGroupAliases: ["tanzgarde"]
@@ -720,7 +809,7 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 "winterball",
                                 "Winterball",
                                 InBerlin(1, 22, 20, 0),
-                                kind: CalendarEntryKind.Party,
+                                kind: CalendarEntryKind.Plain,
                                 asksForResponse: true
                             )
                             .AddCalendarEntry(
@@ -728,7 +817,7 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 "Prunksitzung",
                                 InBerlin(1, 23, 19, 11),
                                 InBerlin(1, 23, 23, 30),
-                                CalendarEntryKind.Performance,
+                                CalendarEntryKind.Trip,
                                 venueAlias: "festhalle",
                                 asksForResponse: true,
                                 participatingGroupAliases: ["maennerballett"]
@@ -737,10 +826,50 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 "kinderfasching",
                                 "Kinderfasching",
                                 InBerlin(2, 7, 14, 11),
-                                kind: CalendarEntryKind.Performance,
+                                kind: CalendarEntryKind.Trip,
                                 venueAlias: "festhalle",
                                 asksForResponse: true,
                                 participatingGroupAliases: ["kindergarde"]
+                            )
+                            .AddCalendarPoll(
+                                "food",
+                                "vereinssitzung",
+                                "Was essen wir?",
+                                ["Pizza", "Suppe"],
+                                position: 1
+                            )
+                            .AddCalendarPoll(
+                                "drinks",
+                                "vereinssitzung",
+                                "Was trinken wir?",
+                                ["Saft", "Tee"],
+                                allowsMultipleChoices: true,
+                                position: 2
+                            )
+                            .AddCalendarPollVote("drinks", "Tee", "lena")
+                            .AddCalendarPoll(
+                                "closed",
+                                "vereinssitzung",
+                                "Wer leitet?",
+                                ["Otto", "Lena"],
+                                closedAt: InBerlin(1, 18, 12, 0),
+                                position: 3
+                            )
+                            .AddCalendarSignUpList(
+                                "bring",
+                                "vereinssitzung",
+                                "Mitbringen",
+                                hint: "Bitte eintragen",
+                                position: 4
+                            )
+                            .AddCalendarSignUpList("setup", "vereinssitzung", "Aufbau", position: 5)
+                            .AddCalendarSignUpLine("lena-setup", "setup", "lena", "Tische")
+                            .AddCalendarSignUpList(
+                                "shut",
+                                "vereinssitzung",
+                                "Abbau",
+                                closedAt: InBerlin(1, 18, 12, 0),
+                                position: 6
                             )
                             .AddAttendanceResponse(
                                 "lena-stellprobe",

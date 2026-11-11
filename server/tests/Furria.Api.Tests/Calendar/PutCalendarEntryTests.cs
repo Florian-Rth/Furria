@@ -20,7 +20,10 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         "Eine Veranstaltung wird in den Veranstaltungen gepflegt.";
     private const string DanceGuardTraining = "Training der Tanzgarde";
     private const string DanceGuardPerformance = "Auftritt der Tanzgarde";
+    private const string Farewell = "Abschied planen";
     private const string Abendprobe = "Abendprobe";
+    private const string SnackQuestion = "Was bringst du mit?";
+    private const string DaysQuestion = "Wann hast du Zeit?";
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
     private static readonly DateOnly ArchivedIn2026 = new(2026, 6, 30);
@@ -49,6 +52,15 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         1,
         20,
         21,
+        0,
+        0,
+        TimeSpan.Zero
+    );
+    private static readonly DateTimeOffset EarlyMeetingStart = new(
+        2027,
+        2,
+        10,
+        18,
         0,
         0,
         TimeSpan.Zero
@@ -101,7 +113,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             .CalendarEntry(entryId)
             .ToHaveTitle(DanceGuardPerformance)
             .CalendarEntry(entryId)
-            .ToHaveVisibility(CalendarEntryVisibility.Club)
+            .ToHaveAudience(CalendarEntryAudience.Club)
             .AssertAsync(ct);
     }
 
@@ -170,9 +182,11 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 VenueId = null,
                 StartsAt = TrainingStart,
                 EndsAt = TrainingEnd,
-                Kind = CalendarEntryKind.Performance,
-                Visibility = CalendarEntryVisibility.Group,
-                AsksForResponse = false,
+                Kind = CalendarEntryKind.Trip,
+                Audience = CalendarEntryAudience.Groups,
+                AudienceGroupIds = [ctx.Groups.Groups.IdOf("tanzgarde")],
+                AudiencePersonIds = [],
+                AddOns = [],
                 ParticipatingGroupIds = null!,
             }
         );
@@ -203,9 +217,11 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 VenueId = null,
                 StartsAt = TrainingStart,
                 EndsAt = TrainingEnd,
-                Kind = CalendarEntryKind.Performance,
-                Visibility = CalendarEntryVisibility.Group,
-                AsksForResponse = true,
+                Kind = CalendarEntryKind.Trip,
+                Audience = CalendarEntryAudience.Groups,
+                AudienceGroupIds = [tanzgarde],
+                AudiencePersonIds = [],
+                AddOns = [PutAddOn(CalendarEntryAddOnKind.Attendance)],
                 ParticipatingGroupIds = [],
             }
         );
@@ -217,7 +233,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             .CalendarEntry(entryId)
             .ToHaveTitle(DanceGuardPerformance)
             .CalendarEntry(entryId)
-            .ToHaveKind(CalendarEntryKind.Performance)
+            .ToHaveKind(CalendarEntryKind.Trip)
             .CalendarEntry(entryId)
             .ToHavePeriod(TrainingStart, TrainingEnd)
             .CalendarEntry(entryId)
@@ -249,8 +265,10 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 StartsAt = InsideTheAbendprobe,
                 EndsAt = AfterTheAbendprobe,
                 Kind = CalendarEntryKind.Training,
-                Visibility = CalendarEntryVisibility.Club,
-                AsksForResponse = false,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -267,6 +285,85 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             .CalendarEntry(entryId)
             .ToHavePeriod(InsideTheAbendprobe, AfterTheAbendprobe)
             .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepAnArchivedParticipatingGroup_When_TheEntryAlreadyHoldsIt()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("garde-parade");
+
+        var client = await ctx.Identity.ClientForAsync("chris", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(
+            new()
+            {
+                CalendarEntryId = entryId,
+                Title = DanceGuardPerformance,
+                Description = null,
+                OwnerGroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
+                VenueId = null,
+                StartsAt = TrainingStart.AddDays(2),
+                EndsAt = null,
+                Kind = CalendarEntryKind.Trip,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
+                AddOns = [PutAddOn(CalendarEntryAddOnKind.ParticipatingGroups)],
+                ParticipatingGroupIds = [ctx.Groups.Groups.IdOf("altgarde")],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(entryId)
+            .ToHaveTitle(DanceGuardPerformance)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseANewArchivedParticipatingGroup_When_AnotherArchivedOneIsHeld()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("garde-parade");
+
+        var client = await ctx.Identity.ClientForAsync("chris", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(
+            new()
+            {
+                CalendarEntryId = entryId,
+                Title = DanceGuardPerformance,
+                Description = null,
+                OwnerGroupId = ctx.Groups.Groups.IdOf("tanzgarde"),
+                VenueId = null,
+                StartsAt = TrainingStart.AddDays(2),
+                EndsAt = null,
+                Kind = CalendarEntryKind.Trip,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
+                AddOns = [PutAddOn(CalendarEntryAddOnKind.ParticipatingGroups)],
+                ParticipatingGroupIds =
+                [
+                    ctx.Groups.Groups.IdOf("altgarde"),
+                    ctx.Groups.Groups.IdOf("seniorengarde"),
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal(["Eine archivierte Gruppe kann nicht mitwirken."], failures[ValidationField]);
+        await ctx.Expected.CalendarEntry(entryId).ToHaveTitle(DanceGuardTraining).AssertAsync(ct);
     }
 
     [Fact]
@@ -292,8 +389,10 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                 StartsAt = TrainingStart,
                 EndsAt = TrainingEnd,
                 Kind = CalendarEntryKind.Training,
-                Visibility = CalendarEntryVisibility.Club,
-                AsksForResponse = false,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -348,14 +447,16 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             ClubOwned(entryId, Abendprobe) with
             {
                 Kind = CalendarEntryKind.Event,
-                Visibility = CalendarEntryVisibility.Public,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
             }
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
         await ctx
             .Expected.CalendarEntry(entryId)
-            .ToHaveKind(CalendarEntryKind.Meeting)
+            .ToHaveKind(CalendarEntryKind.Plain)
             .AssertAsync(ct);
     }
 
@@ -375,6 +476,830 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
+    [Fact]
+    public async Task Should_KeepAChosenPerson_When_SheMayNoLongerUseTheAppButStaysOnTheList()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("farewell");
+        var frieda = ctx.Identity.People.IdOf("frieda");
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(
+            ClubOwned(entryId, Farewell) with
+            {
+                Audience = CalendarEntryAudience.People,
+                AudiencePersonIds = [frieda],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx.Expected.CalendarEntry(entryId).ToChoosePeople(frieda).AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnUnprocessableEntity_When_SheIsNewlyChosenButMayNotUseTheApp()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("abendprobe");
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(
+            ClubOwned(entryId, Abendprobe) with
+            {
+                Audience = CalendarEntryAudience.People,
+                AudiencePersonIds = [ctx.Identity.People.IdOf("frieda")],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_DiscardTheAnswers_When_TheAttendanceAddOnIsRemoved()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("asking-meeting");
+
+        var response = await RewriteAsync(ctx, entryId, [], ct);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.AttendanceResponsesFor(entryId)
+            .ToCarryNoAnswer()
+            .CalendarEntry(entryId)
+            .ToAskForResponse(false)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_StartWithoutAnswers_When_TheAttendanceAddOnIsAttachedAgain()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("asking-meeting");
+        await RewriteAsync(ctx, entryId, [], ct);
+
+        var response = await RewriteAsync(ctx, entryId, [CalendarEntryAddOnKind.Attendance], ct);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.AttendanceResponsesFor(entryId)
+            .ToCarryNoAnswer()
+            .CalendarEntry(entryId)
+            .ToAskForResponse(true)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepTheAnswers_When_TheAttendanceAddOnStaysAttached()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("asking-meeting");
+
+        var response = await RewriteAsync(ctx, entryId, [CalendarEntryAddOnKind.Attendance], ct);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.AttendanceResponsesFor(entryId)
+            .ToCarryAnswerFrom(ctx.Identity.People.IdOf("chris"), AttendanceAnswer.Yes)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_AddAnOption_When_ThePollHoldsVotes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [
+                Snack(
+                    ctx,
+                    ("snack:Kuchen", "Kuchen"),
+                    ("snack:Brezeln", "Brezeln"),
+                    (null, "Obst")
+                ),
+                Days(ctx),
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        var pollId = ctx.Club.CalendarPolls.IdOf("snack");
+        await ctx
+            .Expected.CalendarPoll(pollId)
+            .ToHaveOptions("Kuchen", "Brezeln", "Obst")
+            .CalendarPoll(pollId)
+            .ToHaveVotesOf(ctx.Identity.People.IdOf("chris"), "Kuchen")
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RenameAnOption_When_ItHoldsNoVotes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Laugenbrezeln")), Days(ctx)],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .ToHaveOptions("Kuchen", "Laugenbrezeln")
+            .AssertAsync(ct);
+    }
+
+    [Theory]
+    [InlineData("Torte", "Brezeln")]
+    [InlineData(null, "Brezeln")]
+    public async Task Should_RefuseTheChange_When_AnOptionWithVotesIsRenamedOrRemoved(
+        string? kuchenLabel,
+        string brezelnLabel
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        (string?, string)[] options = kuchenLabel is null
+            ? [("snack:Brezeln", brezelnLabel), (null, "Obst")]
+            : [("snack:Kuchen", kuchenLabel), ("snack:Brezeln", brezelnLabel)];
+
+        var response = await RewriteAddOnsAsync(ctx, [Snack(ctx, options), Days(ctx)], ct);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .ToHaveOptions("Kuchen", "Brezeln")
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepThePollAndListClosed_When_TheEntryMovesLaterAfterItStarted()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var meetingStart = AbendprobeStart.AddDays(6);
+
+        await _fixture.AtInstantAsync(
+            meetingStart.AddHours(1),
+            async () =>
+            {
+                var response = await MoveEntryAsync(
+                    ctx,
+                    "poll-meeting",
+                    meetingStart.AddDays(7),
+                    [
+                        Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Brezeln")),
+                        Days(ctx),
+                        Duties(ctx),
+                    ],
+                    ct
+                );
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        );
+
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .ToBeClosedAt(meetingStart, null)
+            .CalendarSignUpList(ctx.Club.CalendarSignUpLists.IdOf("duties"))
+            .ToBeClosedAt(meetingStart, null)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepThePollClosedAtItsDeadline_When_TheEntryMovesLaterAfterTheDeadline()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var deadline = EarlyMeetingStart.AddDays(-1);
+        var early = PollAddOn(
+            ctx.Club.CalendarPolls.IdOf("early"),
+            "Wer fährt?",
+            false,
+            false,
+            ctx,
+            ("early:Ich", "Ich"),
+            ("early:Du", "Du")
+        );
+
+        await _fixture.AtInstantAsync(
+            deadline.AddHours(1),
+            async () =>
+            {
+                var response = await MoveEntryAsync(
+                    ctx,
+                    "early-meeting",
+                    EarlyMeetingStart.AddDays(7),
+                    [early with { Poll = early.Poll! with { VotesUntil = deadline } }],
+                    ct
+                );
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            }
+        );
+
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("early"))
+            .ToBeClosedAt(deadline, null)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheChange_When_AClosedListIsEdited()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var meetingStart = AbendprobeStart.AddDays(6);
+
+        await _fixture.AtInstantAsync(
+            meetingStart.AddHours(1),
+            async () =>
+            {
+                var response = await MoveEntryAsync(
+                    ctx,
+                    "poll-meeting",
+                    meetingStart,
+                    [
+                        Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Brezeln")),
+                        Days(ctx),
+                        SignUpListAddOn(ctx.Club.CalendarSignUpLists.IdOf("duties"), "Abbau", null),
+                    ],
+                    ct
+                );
+
+                Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+            }
+        );
+
+        await ctx
+            .Expected.CalendarSignUpList(ctx.Club.CalendarSignUpLists.IdOf("duties"))
+            .ToHaveSettings("Aufbau", null, null)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheChange_When_AClosedPollIsEdited()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var meetingStart = AbendprobeStart.AddDays(6);
+        var snack = Snack(
+            ctx,
+            ("snack:Kuchen", "Kuchen"),
+            ("snack:Brezeln", "Brezeln"),
+            (null, "Obst")
+        );
+
+        await _fixture.AtInstantAsync(
+            meetingStart.AddHours(1),
+            async () =>
+            {
+                var response = await MoveEntryAsync(
+                    ctx,
+                    "poll-meeting",
+                    meetingStart,
+                    [snack, Days(ctx), Duties(ctx)],
+                    ct
+                );
+
+                Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+            }
+        );
+
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .ToHaveOptions("Kuchen", "Brezeln")
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheChange_When_TheQuestionOfAPollWithVotesIsRewritten()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var snack = Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Brezeln"));
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [snack with { Poll = snack.Poll! with { Question = "Was trinkst du?" } }, Days(ctx)],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .ToHaveQuestion(SnackQuestion)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_DiscardThePollWithItsVotes_When_ThePollIsRemoved()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewriteAddOnsAsync(ctx, [Days(ctx)], ct);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .ToNotExist()
+            .CalendarPoll(ctx.Club.CalendarPolls.IdOf("days"))
+            .ToHaveVoteCount(2)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseLiftingAnonymity_When_ThePollHoldsVotes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [
+                Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Brezeln")),
+                Days(ctx) with
+                {
+                    Poll = Days(ctx).Poll! with { IsAnonymous = false },
+                },
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("days"))
+            .ToBeAnonymous(true)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseSingleChoice_When_SomeoneHoldsSeveralVotes()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [
+                Snack(ctx, ("snack:Kuchen", "Kuchen"), ("snack:Brezeln", "Brezeln")),
+                Days(ctx) with
+                {
+                    Poll = Days(ctx).Poll! with { AllowsMultipleChoices = false },
+                },
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_RefuseThePoll_When_ItBelongsToAnotherEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var foreign = Days(ctx) with
+        {
+            Poll = Days(ctx).Poll! with
+            {
+                PollId = ctx.Club.CalendarPolls.IdOf("elsewhere"),
+                Options =
+                [
+                    new() { OptionId = null, Label = "Ja" },
+                    new() { OptionId = null, Label = "Nein" },
+                ],
+            },
+        };
+
+        var response = await RewriteAddOnsAsync(ctx, [foreign], ct);
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await ctx
+            .Expected.CalendarPoll(ctx.Club.CalendarPolls.IdOf("snack"))
+            .ToHaveOptions("Kuchen", "Brezeln")
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_TheVotesCloseAfterTheStart()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var late = Days(ctx) with
+        {
+            Poll = Days(ctx).Poll! with { VotesUntil = TrainingStart.AddMinutes(1) },
+        };
+
+        var response = await RewriteAddOnsAsync(ctx, [late], ct);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_KeepTheLines_When_TheListSettingsChange()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var listId = ctx.Club.CalendarSignUpLists.IdOf("duties");
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [
+                PutAddOn(CalendarEntryAddOnKind.Attendance),
+                SignUpListAddOn(listId, "Wer hilft beim Aufbau?", "Ab 17 Uhr"),
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarSignUpList(listId)
+            .ToHaveSettings("Wer hilft beim Aufbau?", "Ab 17 Uhr", null)
+            .CalendarSignUpList(listId)
+            .ToHaveLines((ctx.Identity.People.IdOf("chris"), "Tische"))
+            .CalendarEntry(ctx.Club.CalendarEntries.IdOf("poll-meeting"))
+            .ToHaveSignUpListsAt((1, "Wer hilft beim Aufbau?", "Ab 17 Uhr"))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_DiscardTheListWithItsLines_When_TheListIsRemoved()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewriteAddOnsAsync(ctx, [Days(ctx)], ct);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarSignUpList(ctx.Club.CalendarSignUpLists.IdOf("duties"))
+            .ToNotExist()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheList_When_ItBelongsToAnotherEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [SignUpListAddOn(ctx.Club.CalendarSignUpLists.IdOf("elsewhere-list"), "Fremd", null)],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await ctx
+            .Expected.CalendarSignUpList(ctx.Club.CalendarSignUpLists.IdOf("duties"))
+            .ToHaveLines((ctx.Identity.People.IdOf("chris"), "Tische"))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_SigningUpClosesAfterTheStart()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var list = SignUpListAddOn(ctx.Club.CalendarSignUpLists.IdOf("duties"), "Aufbau", null);
+        var late = list with
+        {
+            SignUpList = list.SignUpList! with { SignUpUntil = TrainingStart.AddMinutes(1) },
+        };
+
+        var response = await RewriteAddOnsAsync(ctx, [late], ct);
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReplaceTheSteps_When_TheScheduleIsRewritten()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var scheduleId = ctx.Club.CalendarDaySchedules.IdOf("trip-plan");
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [
+                DayScheduleAddOn(
+                    scheduleId,
+                    "Fahrt",
+                    (null, 0, new TimeOnly(17, 0), "Abfahrt"),
+                    (null, 0, new TimeOnly(16, 30), "Treffpunkt")
+                ),
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarDaySchedule(scheduleId)
+            .ToHaveSteps(
+                "Fahrt",
+                (0, new TimeOnly(16, 30), "Treffpunkt"),
+                (0, new TimeOnly(17, 0), "Abfahrt")
+            )
+            .CalendarEntry(ctx.Club.CalendarEntries.IdOf("poll-meeting"))
+            .ToHaveDaySchedulesAt((0, "Fahrt"))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepAHeldStep_When_ItsTextChanges()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var scheduleId = ctx.Club.CalendarDaySchedules.IdOf("trip-plan");
+        var stepId = ctx.Club.CalendarDayScheduleSteps.IdOf("trip-meet");
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [
+                DayScheduleAddOn(
+                    scheduleId,
+                    null,
+                    (stepId, 0, new TimeOnly(18, 15), "Treffpunkt Bus")
+                ),
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarDaySchedule(scheduleId)
+            .ToHaveStep(stepId, 0, new TimeOnly(18, 15), "Treffpunkt Bus")
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheStep_When_ItBelongsToAnotherSchedule()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [
+                DayScheduleAddOn(
+                    ctx.Club.CalendarDaySchedules.IdOf("trip-plan"),
+                    null,
+                    (
+                        ctx.Club.CalendarDayScheduleSteps.IdOf("elsewhere-meet"),
+                        0,
+                        new TimeOnly(17, 0),
+                        "Abfahrt"
+                    )
+                ),
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_DiscardTheSchedule_When_ItIsRemoved()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewriteAddOnsAsync(ctx, [], ct);
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarDaySchedule(ctx.Club.CalendarDaySchedules.IdOf("trip-plan"))
+            .ToNotExist()
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_RefuseTheSchedule_When_ItBelongsToAnotherEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [
+                DayScheduleAddOn(
+                    ctx.Club.CalendarDaySchedules.IdOf("elsewhere-plan"),
+                    null,
+                    (null, 0, new TimeOnly(17, 0), "Abfahrt")
+                ),
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        await ctx
+            .Expected.CalendarDaySchedule(ctx.Club.CalendarDaySchedules.IdOf("trip-plan"))
+            .ToHaveSteps(null, (0, new TimeOnly(18, 0), "Treffpunkt"))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_TheEntryNoLongerReachesAStepsDay()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var response = await RewriteAddOnsAsync(
+            ctx,
+            [
+                DayScheduleAddOn(
+                    ctx.Club.CalendarDaySchedules.IdOf("trip-plan"),
+                    null,
+                    (null, 1, new TimeOnly(9, 0), "Frühstück")
+                ),
+            ],
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    private static PutCalendarEntryAddOnDataDto DayScheduleAddOn(
+        int dayScheduleId,
+        string? title,
+        params (int? StepId, int Day, TimeOnly Time, string Text)[] steps
+    ) =>
+        new()
+        {
+            Kind = CalendarEntryAddOnKind.DaySchedule,
+            Poll = null,
+            SignUpList = null,
+            DaySchedule = new()
+            {
+                DayScheduleId = dayScheduleId,
+                Title = title,
+                Steps =
+                [
+                    .. steps.Select(step => new PutCalendarEntryDayScheduleStepDataDto
+                    {
+                        StepId = step.StepId,
+                        Day = step.Day,
+                        Time = step.Time,
+                        Text = step.Text,
+                    }),
+                ],
+            },
+        };
+
+    private static PutCalendarEntryAddOnDataDto SignUpListAddOn(
+        int signUpListId,
+        string title,
+        string? hint
+    ) =>
+        new()
+        {
+            Kind = CalendarEntryAddOnKind.SignUpList,
+            Poll = null,
+            SignUpList = new()
+            {
+                SignUpListId = signUpListId,
+                Title = title,
+                Hint = hint,
+                SignUpUntil = null,
+            },
+            DaySchedule = null,
+        };
+
+    private static PutCalendarEntryAddOnDataDto Duties(SeededContext ctx) =>
+        SignUpListAddOn(ctx.Club.CalendarSignUpLists.IdOf("duties"), "Aufbau", null);
+
+    private static async Task<HttpResponseMessage> MoveEntryAsync(
+        SeededContext ctx,
+        string entryAlias,
+        DateTimeOffset startsAt,
+        IReadOnlyList<PutCalendarEntryAddOnDataDto> addOns,
+        CancellationToken ct
+    )
+    {
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(
+            ClubOwned(ctx.Club.CalendarEntries.IdOf(entryAlias), Farewell) with
+            {
+                StartsAt = startsAt,
+                EndsAt = null,
+                AddOns = addOns,
+            }
+        );
+
+        return response;
+    }
+
+    private static async Task<HttpResponseMessage> RewriteAddOnsAsync(
+        SeededContext ctx,
+        IReadOnlyList<PutCalendarEntryAddOnDataDto> addOns,
+        CancellationToken ct
+    )
+    {
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(
+            ClubOwned(ctx.Club.CalendarEntries.IdOf("poll-meeting"), Farewell) with
+            {
+                AddOns = addOns,
+            }
+        );
+
+        return response;
+    }
+
+    private static PutCalendarEntryAddOnDataDto Snack(
+        SeededContext ctx,
+        params (string? OptionAlias, string Label)[] options
+    ) => PollAddOn(ctx.Club.CalendarPolls.IdOf("snack"), SnackQuestion, false, false, ctx, options);
+
+    private static PutCalendarEntryAddOnDataDto Days(SeededContext ctx) =>
+        PollAddOn(
+            ctx.Club.CalendarPolls.IdOf("days"),
+            DaysQuestion,
+            true,
+            true,
+            ctx,
+            ("days:Montag", "Montag"),
+            ("days:Dienstag", "Dienstag")
+        );
+
+    private static PutCalendarEntryAddOnDataDto PollAddOn(
+        int pollId,
+        string question,
+        bool allowsMultipleChoices,
+        bool isAnonymous,
+        SeededContext ctx,
+        params (string? OptionAlias, string Label)[] options
+    ) =>
+        new()
+        {
+            Kind = CalendarEntryAddOnKind.Poll,
+            SignUpList = null,
+            DaySchedule = null,
+            Poll = new()
+            {
+                PollId = pollId,
+                Question = question,
+                AllowsMultipleChoices = allowsMultipleChoices,
+                IsAnonymous = isAnonymous,
+                VotesUntil = null,
+                Options =
+                [
+                    .. options.Select(option => new PutCalendarEntryPollOptionDataDto
+                    {
+                        OptionId = option.OptionAlias is { } alias
+                            ? ctx.Club.CalendarPollOptions.IdOf(alias)
+                            : null,
+                        Label = option.Label,
+                    }),
+                ],
+            },
+        };
+
+    private static async Task<HttpResponseMessage> RewriteAsync(
+        SeededContext ctx,
+        int entryId,
+        IReadOnlyList<CalendarEntryAddOnKind> addOns,
+        CancellationToken ct
+    )
+    {
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.PUTAsync<
+            PutCalendarEntry,
+            PutCalendarEntryRequest,
+            PutCalendarEntryResponse
+        >(ClubOwned(entryId, Farewell) with { AddOns = [.. addOns.Select(PutAddOn)] });
+
+        return response;
+    }
+
     private static PutCalendarEntryRequest ClubOwned(int calendarEntryId, string title) =>
         new()
         {
@@ -385,9 +1310,11 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
             VenueId = null,
             StartsAt = TrainingStart,
             EndsAt = TrainingEnd,
-            Kind = CalendarEntryKind.Performance,
-            Visibility = CalendarEntryVisibility.Club,
-            AsksForResponse = false,
+            Kind = CalendarEntryKind.Trip,
+            Audience = CalendarEntryAudience.Club,
+            AudienceGroupIds = [],
+            AudiencePersonIds = [],
+            AddOns = [],
             ParticipatingGroupIds = [],
         };
 
@@ -406,6 +1333,7 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                             .AddPerson("dana", "Dana", "Doppelt")
                             .AddAccount("dana")
                             .AddMembership("dana-first", "dana", JoinedIn2017)
+                            .AddPerson("frieda", "Frieda", "Ehemalig")
                     )
                     .Roles(roles =>
                         roles
@@ -428,6 +1356,8 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                                 "Trainer",
                                 JoinedIn2017
                             )
+                            .AddGroup("altgarde", "Altgarde", archivedOn: ArchivedIn2026)
+                            .AddGroup("seniorengarde", "Seniorengarde", archivedOn: ArchivedIn2026)
                             .AddGroupAdmin(
                                 "dana-tanzgarde",
                                 "tanzgarde",
@@ -445,8 +1375,16 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                                 TrainingStart,
                                 TrainingEnd,
                                 kind: CalendarEntryKind.Training,
-                                visibility: CalendarEntryVisibility.Club,
                                 ownerGroupAlias: "tanzgarde"
+                            )
+                            .AddCalendarEntry(
+                                "garde-parade",
+                                DanceGuardTraining,
+                                TrainingStart.AddDays(2),
+                                kind: CalendarEntryKind.Trip,
+                                ownerGroupAlias: "tanzgarde",
+                                audience: CalendarEntryAudience.Club,
+                                participatingGroupAliases: ["altgarde"]
                             )
                             .AddCalendarEntry(
                                 "abendprobe",
@@ -454,6 +1392,72 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
                                 AbendprobeStart,
                                 AbendprobeEnd,
                                 venueAlias: "buehnenhaus"
+                            )
+                            .AddCalendarEntry(
+                                "farewell",
+                                Farewell,
+                                AbendprobeStart.AddDays(3),
+                                audiencePersonAliases: ["frieda", "ilka"]
+                            )
+                            .AddCalendarEntry(
+                                "asking-meeting",
+                                Farewell,
+                                AbendprobeStart.AddDays(5),
+                                asksForResponse: true
+                            )
+                            .AddCalendarEntry("poll-meeting", Farewell, AbendprobeStart.AddDays(6))
+                            .AddCalendarPoll(
+                                "snack",
+                                "poll-meeting",
+                                SnackQuestion,
+                                ["Kuchen", "Brezeln"],
+                                position: 0
+                            )
+                            .AddCalendarPollVote("snack", "Kuchen", "chris")
+                            .AddCalendarPoll(
+                                "days",
+                                "poll-meeting",
+                                DaysQuestion,
+                                ["Montag", "Dienstag"],
+                                allowsMultipleChoices: true,
+                                isAnonymous: true,
+                                position: 1
+                            )
+                            .AddCalendarPollVote("days", "Montag", "dana")
+                            .AddCalendarPollVote("days", "Dienstag", "dana")
+                            .AddCalendarPoll("elsewhere", "farewell", DaysQuestion, ["Ja", "Nein"])
+                            .AddCalendarSignUpList("duties", "poll-meeting", "Aufbau", position: 2)
+                            .AddCalendarEntry("early-meeting", Farewell, EarlyMeetingStart)
+                            .AddCalendarPoll(
+                                "early",
+                                "early-meeting",
+                                "Wer fährt?",
+                                ["Ich", "Du"],
+                                votesUntil: EarlyMeetingStart.AddDays(-1)
+                            )
+                            .AddCalendarSignUpLine("chris-duty", "duties", "chris", "Tische")
+                            .AddCalendarSignUpList("elsewhere-list", "farewell", "Geschenk")
+                            .AddCalendarDaySchedule("trip-plan", "poll-meeting", null, position: 4)
+                            .AddCalendarDayScheduleStep(
+                                "trip-meet",
+                                "trip-plan",
+                                0,
+                                new TimeOnly(18, 0),
+                                "Treffpunkt"
+                            )
+                            .AddCalendarDaySchedule("elsewhere-plan", "farewell", null)
+                            .AddCalendarDayScheduleStep(
+                                "elsewhere-meet",
+                                "elsewhere-plan",
+                                0,
+                                new TimeOnly(18, 0),
+                                "Treffpunkt"
+                            )
+                            .AddAttendanceResponse(
+                                "chris-says-yes",
+                                "asking-meeting",
+                                "chris",
+                                AttendanceAnswer.Yes
                             )
                             .AddEvent("gala", Gala, AfterTheAbendprobe, "buehnenhaus")
                     ),
@@ -469,4 +1473,13 @@ public sealed class PutCalendarEntryTests : IClassFixture<ApiTestFixture>
         return payload?.Errors
             ?? throw new InvalidOperationException("The failure response carried no errors.");
     }
+
+    private static PutCalendarEntryAddOnDataDto PutAddOn(CalendarEntryAddOnKind kind) =>
+        new()
+        {
+            Kind = kind,
+            Poll = null,
+            SignUpList = null,
+            DaySchedule = null,
+        };
 }

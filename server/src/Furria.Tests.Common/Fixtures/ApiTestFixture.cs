@@ -57,11 +57,11 @@ using Xunit;
 
 namespace Furria.Tests.Common.Fixtures;
 
-public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifetime
+public sealed class ApiTestFixture : IAsyncLifetime
 {
-    private const string SigningKey = "furria-test-signing-key-of-at-least-32-bytes";
-    private const string Issuer = "furria-api-tests";
-    private const string Audience = "furria-clients";
+    internal const string SigningKey = "furria-test-signing-key-of-at-least-32-bytes";
+    internal const string Issuer = "furria-api-tests";
+    internal const string Audience = "furria-clients";
     private const string NotInitialized = "ApiTestFixture has not been initialized yet.";
     private const string AdminRoleName = "Admin";
     private const string ForeignKeysQuery = """
@@ -113,16 +113,16 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     public const int PermitsPerInvitationToken = 10;
     public const string TrustedProxyAddress = "10.10.20.1";
 
-    private const string AltchaHmacKey = "furria-test-altcha-hmac-key-of-32-bytes";
-    private const int AltchaCost = 1;
-    private const int AltchaMinCounter = 1;
-    private const int AltchaMaxCounter = 50;
-    private const int PermitsPerIpBeyondAnySuite = 1_000_000;
-    private const int PasswordHashIterations = 1;
+    internal const string AltchaHmacKey = "furria-test-altcha-hmac-key-of-32-bytes";
+    internal const int AltchaCost = 1;
+    internal const int AltchaMinCounter = 1;
+    internal const int AltchaMaxCounter = 50;
+    internal const int PermitsPerIpBeyondAnySuite = 1_000_000;
+    internal const int PasswordHashIterations = 1;
     internal const string MediaSigningKey = "furria-test-media-signing-key-of-32-bytes";
     public const string VapidPublicKey =
         "BMhR4mFcMj4K9cYVgsAKgKIGevMvrCQLSM-Jy1kqfP4iSDlC7Pa4vNiXYZKmTo4mclU-aq_1BFfX8QuI46dHofQ";
-    private const string VapidPrivateKey = "GzIA-6S4MRXOlB2w1RDWAq_4D_CAYdtmWQCiTovlRZI";
+    internal const string VapidPrivateKey = "GzIA-6S4MRXOlB2w1RDWAq_4D_CAYdtmWQCiTovlRZI";
 
     private static readonly TimeSpan SignedOutWorkTimeout = TimeSpan.FromSeconds(20);
     private static readonly TimeSpan OutboxDrainTimeout = TimeSpan.FromSeconds(20);
@@ -130,29 +130,26 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     private readonly ApiTestInfrastructure _infrastructure;
 
-    private readonly string _mediaRoot = Path.Combine(
-        Path.GetTempPath(),
-        "furria-tests-media",
-        Guid.NewGuid().ToString("N")
-    );
+    private readonly List<WebApplicationFactory<Program>> _derivedHosts = [];
 
-    private string? _database;
+    private ApiTestHost? _host;
     private ServiceProvider? _mediaWorker;
-    private DatabaseResetService? _resetService;
     private SeededManagingLogin? _managingLogin;
     private int? _adminRoleId;
 
-    private string Database => _database ?? throw new InvalidOperationException(NotInitialized);
+    private ApiTestHost Host => _host ?? throw new InvalidOperationException(NotInitialized);
 
     private ServiceProvider MediaWorker => _mediaWorker ??= BuildMediaWorker();
 
-    public TestClock TimeProvider { get; } = new(WholeSecondNow());
+    public TestClock TimeProvider => Host.TimeProvider;
 
-    public CapturingLogSink Logs { get; } = new();
+    public CapturingLogSink Logs => Host.Logs;
 
-    public FakePushService PushService { get; } = new();
+    public FakePushService PushService => Host.PushService;
 
-    public LogMark HostStarted { get; private set; }
+    public LogMark HostStarted => Host.Started;
+
+    public IServiceProvider Services => Host.Services;
 
     public DateOnly Today => ClubClock.Today(TimeProvider);
 
@@ -165,7 +162,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     public MailpitInbox Mailbox => _infrastructure.Mailbox;
 
-    public string MediaRoot => _mediaRoot;
+    public string MediaRoot => Host.MediaRoot;
 
     public ApiTestFixture(ApiTestInfrastructure infrastructure)
     {
@@ -205,150 +202,13 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         await db.SaveChangesAsync(ct);
     }
 
-    protected override void ConfigureWebHost(IWebHostBuilder builder)
-    {
-        builder.UseEnvironment("Testing");
-        builder.UseSetting(
-            $"{ConsoleLogOptions.SectionName}:{nameof(ConsoleLogOptions.Format)}",
-            nameof(ConsoleLogFormat.Off)
-        );
-        builder.UseSetting($"ConnectionStrings:{AppDbContext.ConnectionName}", Database);
-        builder.UseSetting(
-            $"{AccessTokenOptions.SectionName}:{nameof(AccessTokenOptions.SigningKey)}",
-            SigningKey
-        );
-        builder.UseSetting(
-            $"{AccessTokenOptions.SectionName}:{nameof(AccessTokenOptions.Issuer)}",
-            Issuer
-        );
-        builder.UseSetting(
-            $"{AccessTokenOptions.SectionName}:{nameof(AccessTokenOptions.Audience)}",
-            Audience
-        );
-        builder.UseSetting(
-            $"{ManagingLoginOptions.SectionName}:{nameof(ManagingLoginOptions.Email)}",
-            ManagingLoginEmail
-        );
-        builder.UseSetting(
-            $"{ManagingLoginOptions.SectionName}:{nameof(ManagingLoginOptions.Password)}",
-            ManagingLoginPassword
-        );
-        builder.UseSetting(
-            $"{MailOptions.SectionName}:{nameof(MailOptions.Host)}",
-            _infrastructure.MailpitHost
-        );
-        builder.UseSetting(
-            $"{MailOptions.SectionName}:{nameof(MailOptions.Port)}",
-            _infrastructure.MailpitSmtpPublicPort.ToString(CultureInfo.InvariantCulture)
-        );
-        builder.UseSetting(
-            $"{MailOptions.SectionName}:{nameof(MailOptions.From)}",
-            "Furria Tests <no-reply@furria.test>"
-        );
-        builder.UseSetting(
-            $"{ClubAppOptions.SectionName}:{nameof(ClubAppOptions.BaseUrl)}",
-            ClubAppBaseUrl
-        );
-        builder.UseSetting(
-            $"{WebsiteOptions.SectionName}:{nameof(WebsiteOptions.BaseUrl)}",
-            WebsiteBaseUrl
-        );
-        builder.UseSetting(
-            $"{PasskeyOptions.SectionName}:{nameof(PasskeyOptions.RelyingPartyId)}",
-            ClubDomain
-        );
-        builder.UseSetting(
-            $"{ClubAppOptions.SectionName}:{nameof(ClubAppOptions.AndroidCertFingerprints)}:0",
-            AndroidCertFingerprint
-        );
-        builder.UseSetting(
-            $"{SignedOutRateLimitOptions.SectionName}:{nameof(SignedOutRateLimitOptions.PermitsPerIp)}",
-            PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
-        );
-        builder.UseSetting(
-            $"{SignedOutRateLimitOptions.SectionName}:{nameof(SignedOutRateLimitOptions.PermitsPerIpOnboarding)}",
-            PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
-        );
-        builder.UseSetting(
-            $"{SignedOutRateLimitOptions.SectionName}:{nameof(SignedOutRateLimitOptions.PermitsPerClaimName)}",
-            PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
-        );
-        builder.UseSetting(
-            $"{SignedOutRateLimitOptions.SectionName}:{nameof(SignedOutRateLimitOptions.PermitsPerToken)}",
-            PermitsPerInvitationToken.ToString(CultureInfo.InvariantCulture)
-        );
-        builder.UseSetting(
-            $"{SignInRateLimitOptions.SectionName}:{nameof(SignInRateLimitOptions.FailedLoginsPerIp)}",
-            PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
-        );
-        builder.UseSetting(
-            $"{SignInRateLimitOptions.SectionName}:{nameof(SignInRateLimitOptions.RejectedRefreshesPerToken)}",
-            PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
-        );
-        builder.UseSetting(
-            $"{SignInRateLimitOptions.SectionName}:{nameof(SignInRateLimitOptions.RejectedRefreshesPerIp)}",
-            PermitsPerIpBeyondAnySuite.ToString(CultureInfo.InvariantCulture)
-        );
-        builder.UseSetting(
-            $"{AltchaOptions.SectionName}:{nameof(AltchaOptions.HmacKey)}",
-            AltchaHmacKey
-        );
-        builder.UseSetting(
-            $"{AltchaOptions.SectionName}:{nameof(AltchaOptions.Cost)}",
-            AltchaCost.ToString(CultureInfo.InvariantCulture)
-        );
-        builder.UseSetting(
-            $"{AltchaOptions.SectionName}:{nameof(AltchaOptions.MinCounter)}",
-            AltchaMinCounter.ToString(CultureInfo.InvariantCulture)
-        );
-        builder.UseSetting(
-            $"{AltchaOptions.SectionName}:{nameof(AltchaOptions.MaxCounter)}",
-            AltchaMaxCounter.ToString(CultureInfo.InvariantCulture)
-        );
-        builder.UseSetting(
-            $"{MediaOptions.SectionName}:{nameof(MediaOptions.RootPath)}",
-            _mediaRoot
-        );
-        builder.UseSetting(
-            $"{MediaOptions.SectionName}:{nameof(MediaOptions.SigningKey)}",
-            MediaSigningKey
-        );
-        builder.UseSetting(
-            $"{PushOptions.SectionName}:{nameof(PushOptions.VapidPublicKey)}",
-            VapidPublicKey
-        );
-        builder.UseSetting(
-            $"{PushOptions.SectionName}:{nameof(PushOptions.VapidPrivateKey)}",
-            VapidPrivateKey
-        );
-        builder.UseSetting(
-            $"{PushOptions.SectionName}:{nameof(PushOptions.Subject)}",
-            ClubAppBaseUrl
-        );
-        builder.UseSetting(
-            $"{TrustedProxyOptions.SectionName}:{nameof(TrustedProxyOptions.TrustedProxies)}:0",
-            TrustedProxyAddress
-        );
-        builder.ConfigureServices(services =>
-        {
-            services.RemoveAll<TimeProvider>();
-            services.AddSingleton<TimeProvider>(TimeProvider);
-            services.AddSingleton<ILogEventSink>(Logs);
-            services.Configure<PasswordHasherOptions>(options =>
-                options.IterationCount = PasswordHashIterations
-            );
-        });
-        builder.ConfigureTestServices(services =>
-            services
-                .AddHttpClient(PushSender.HttpClientName)
-                .ConfigurePrimaryHttpMessageHandler(() => PushService)
-                .SetHandlerLifetime(Timeout.InfiniteTimeSpan)
-        );
-    }
-
     public async ValueTask InitializeAsync()
     {
-        _database = await _infrastructure.CreateDatabaseFromTemplateAsync();
+        _host = await _infrastructure.LeaseHostAsync();
+        await ResetDatabaseAsync();
+        TimeProvider.SetUtcNow(WholeSecondNow());
+        PushService.Forget();
+        EmptyMediaRoot();
 
         await using var scope = Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -370,33 +230,37 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             .Where(role => role.Name == AdminRoleName)
             .Select(role => role.Id)
             .SingleAsync();
+    }
 
-        HostStarted = Logs.Mark();
-        _resetService = await DatabaseResetService.CreateAsync(
-            [db],
-            [
-                typeof(Account),
-                typeof(Role),
-                typeof(RolePermission),
-                typeof(TableType),
-                typeof(SeatingStandard),
-            ],
-            [typeof(DataProtectionKey)],
-            CancellationToken.None
-        );
+    private void EmptyMediaRoot()
+    {
+        if (!Directory.Exists(MediaRoot))
+            return;
+
+        foreach (var file in Directory.EnumerateFiles(MediaRoot, "*", SearchOption.AllDirectories))
+            File.Delete(file);
+    }
+
+    public HttpClient CreateClient() => Host.CreateClient();
+
+    private WebApplicationFactory<Program> Derived(Action<IWebHostBuilder> configuration)
+    {
+        var derived = Host.WithWebHostBuilder(configuration);
+        _derivedHosts.Add(derived);
+        return derived;
     }
 
     public WebApplicationFactory<Program> HostWithSettings(
         IReadOnlyDictionary<string, string> settings
     ) =>
-        WithWebHostBuilder(builder =>
+        Derived(builder =>
         {
             foreach (var (key, value) in settings)
                 builder.UseSetting(key, value);
         });
 
     public WebApplicationFactory<Program> HostOnDatabase(string connectionString) =>
-        WithWebHostBuilder(builder =>
+        Derived(builder =>
         {
             builder.UseSetting(
                 $"ConnectionStrings:{AppDbContext.ConnectionName}",
@@ -420,16 +284,23 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     public async Task<WebApplicationFactory<Program>> HostOnOwnDatabaseAsync(
         IReadOnlyDictionary<string, string> settings,
         CancellationToken ct = default
-    )
-    {
-        var database = await CreateEmptyDatabaseAsync(ct);
-        return WithWebHostBuilder(builder =>
+    ) => HostOn(await _infrastructure.CreateDatabaseFromTemplateAsync(ct), settings);
+
+    public async Task<WebApplicationFactory<Program>> HostOnEmptyDatabaseAsync(
+        IReadOnlyDictionary<string, string> settings,
+        CancellationToken ct = default
+    ) => HostOn(await CreateEmptyDatabaseAsync(ct), settings);
+
+    private WebApplicationFactory<Program> HostOn(
+        string database,
+        IReadOnlyDictionary<string, string> settings
+    ) =>
+        Derived(builder =>
         {
             builder.UseSetting($"ConnectionStrings:{AppDbContext.ConnectionName}", database);
             foreach (var (key, value) in settings)
                 builder.UseSetting(key, value);
         });
-    }
 
     public static async Task<string> SeedAccountOnAsync(
         WebApplicationFactory<Program> host,
@@ -459,6 +330,12 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         return await db.OutboxMails.AsNoTracking().OrderBy(mail => mail.Id).ToListAsync(ct);
     }
 
+    public Task<IReadOnlyList<OutboxMail>> OutboxAsync(CancellationToken ct = default) =>
+        OutboxOfAsync(Host, ct);
+
+    public Task StageOutboxMailAsync(OutboxMail mail, CancellationToken ct = default) =>
+        StageOutboxMailAsync(Host, mail, ct);
+
     public static async Task StageOutboxMailAsync(
         WebApplicationFactory<Program> host,
         OutboxMail mail,
@@ -470,6 +347,23 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
         db.OutboxMails.Add(mail);
         await db.SaveChangesAsync(ct);
     }
+
+    public Task CalendarPushesDrainedAsync(CancellationToken ct = default) =>
+        Polling.UntilAsync(
+            async token =>
+            {
+                await using var scope = Services.CreateAsyncScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                return
+                    await db.OutboxCalendarPushes.AnyAsync(token)
+                    || await db.OutboxPushes.AnyAsync(token)
+                    ? null
+                    : db;
+            },
+            OutboxDrainTimeout,
+            "The calendar push outbox still holds pushes",
+            ct
+        );
 
     public Task OutboxDrainedAsync(CancellationToken ct = default) =>
         Polling.UntilAsync(
@@ -572,6 +466,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     public async Task MigrateDatabaseToAsync(string migration, CancellationToken ct = default)
     {
+        Host.Taint();
         await using var scope = Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         await db.GetService<IMigrator>().MigrateAsync(migration, cancellationToken: ct);
@@ -605,6 +500,36 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
         await db.Database.ExecuteSqlAsync(
             $"UPDATE event SET cancelled_at = now() WHERE calendar_entry_id = {eventId}",
+            ct
+        );
+    }
+
+    public async Task RewriteCalendarEntryKindDirectlyAsync(
+        int calendarEntryId,
+        string kind,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"UPDATE calendar_entry SET kind = {kind} WHERE id = {calendarEntryId}",
+            ct
+        );
+    }
+
+    public async Task RewriteCalendarEntryVisibilityDirectlyAsync(
+        int calendarEntryId,
+        string visibility,
+        CancellationToken ct = default
+    )
+    {
+        await using var scope = Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+
+        await db.Database.ExecuteSqlAsync(
+            $"UPDATE calendar_entry SET visibility = {visibility} WHERE id = {calendarEntryId}",
             ct
         );
     }
@@ -655,7 +580,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             .MediaItems.Where(item => item.Id == mediaItemId)
             .Select(item => item.StorageKey)
             .SingleAsync(ct);
-        return Path.Combine(_mediaRoot, MediaPaths.RenditionOf(storageKey, rendition));
+        return Path.Combine(MediaRoot, MediaPaths.RenditionOf(storageKey, rendition));
     }
 
     public async Task<string> SoundProfileOfAsync(int mediaItemId, CancellationToken ct = default)
@@ -667,7 +592,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             .MediaItems.Where(item => item.Id == mediaItemId)
             .Select(item => item.StorageKey)
             .SingleAsync(ct);
-        return Path.Combine(_mediaRoot, MediaPaths.SoundProfileOf(storageKey));
+        return Path.Combine(MediaRoot, MediaPaths.SoundProfileOf(storageKey));
     }
 
     public async Task PlaceRenditionAsync(
@@ -825,7 +750,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     }
 
     public Task PurgeLogEntriesAsync(CancellationToken ct = default) =>
-        PurgeLogEntriesOnAsync(this, ct);
+        PurgeLogEntriesOnAsync(Host, ct);
 
     public static Task PurgeLogEntriesOnAsync(
         WebApplicationFactory<Program> host,
@@ -968,6 +893,8 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
         var entry = await db
             .CalendarEntries.AsNoTracking()
+            .Include(row => row.AudienceGroups)
+            .Include(row => row.AudiencePeople)
             .SingleAsync(row => row.Id == calendarEntryId, ct);
 
         return await calendarService.UpdateAsync(
@@ -983,13 +910,30 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
                 StartsAt = entry.StartsAt,
                 EndsAt = entry.EndsAt,
                 Kind = entry.Kind,
-                Visibility = entry.Visibility,
-                AsksForResponse = entry.AsksForResponse,
+                Audience = entry.Audience,
+                AudienceGroupIds = [.. entry.AudienceGroups.Select(link => link.GroupId)],
+                AudiencePersonIds = [.. entry.AudiencePeople.Select(link => link.PersonId)],
+                AddOns =
+                [
+                    .. entry.AsksForResponse
+                        ? [SingleUseAddOn(CalendarEntryAddOnKind.Attendance)]
+                        : Array.Empty<CalendarEntryAddOnInput>(),
+                    SingleUseAddOn(CalendarEntryAddOnKind.ParticipatingGroups),
+                ],
                 ParticipatingGroupIds = [groupId],
             },
             ct
         );
     }
+
+    private static CalendarEntryAddOnInput SingleUseAddOn(CalendarEntryAddOnKind kind) =>
+        new()
+        {
+            Kind = kind,
+            Poll = null,
+            SignUpList = null,
+            DaySchedule = null,
+        };
 
     public async Task<Result> SaveSecondActiveGroupAsync(
         string name,
@@ -1158,7 +1102,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
     }
 
     public Task<IReadOnlyList<string>> GetAppliedMigrationsAsync(CancellationToken ct = default) =>
-        AppliedMigrationsOfAsync(this, ct);
+        AppliedMigrationsOfAsync(Host, ct);
 
     public static async Task<IReadOnlyList<string>> AppliedMigrationsOfAsync(
         WebApplicationFactory<Program> host,
@@ -1199,9 +1143,6 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
 
     public async Task ResetDatabaseAsync(CancellationToken ct = default)
     {
-        if (_resetService is null)
-            throw new InvalidOperationException(NotInitialized);
-
         await Polling.UntilAsync(
             _ =>
                 Task.FromResult(
@@ -1214,17 +1155,21 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             "The signed-out requests of the previous test were never answered",
             ct
         );
-        await _resetService.ResetAsync(ct);
+        await Host.ResetService.ResetAsync(ct);
     }
 
-    public override async ValueTask DisposeAsync()
+    public async ValueTask DisposeAsync()
     {
         if (_mediaWorker is not null)
             await _mediaWorker.DisposeAsync();
-        await base.DisposeAsync();
-        if (_database is not null)
-            await _infrastructure.DropDatabaseAsync(_database);
-        if (Directory.Exists(_mediaRoot))
-            Directory.Delete(_mediaRoot, recursive: true);
+        foreach (var derived in _derivedHosts)
+            await derived.DisposeAsync();
+        if (_host is null)
+            return;
+
+        if (_host.Tainted)
+            await _host.DisposeAsync();
+        else
+            _infrastructure.ReturnHost(_host);
     }
 }

@@ -86,7 +86,7 @@ public sealed class PostEventTests : IClassFixture<ApiTestFixture>
             .CalendarEntry(result.EventId)
             .ToHaveKind(CalendarEntryKind.Event)
             .CalendarEntry(result.EventId)
-            .ToHaveVisibility(CalendarEntryVisibility.Public)
+            .ToHaveAudience(CalendarEntryAudience.Club)
             .CalendarEntry(result.EventId)
             .ToBeClubOwned()
             .CalendarEntry(result.EventId)
@@ -327,7 +327,7 @@ public sealed class PostEventTests : IClassFixture<ApiTestFixture>
                                 "Generalprobe",
                                 AtTheRehearsal,
                                 RehearsalEnds,
-                                kind: CalendarEntryKind.Rehearsal,
+                                kind: CalendarEntryKind.Training,
                                 venueAlias: "buergerhaus"
                             )
                     ),

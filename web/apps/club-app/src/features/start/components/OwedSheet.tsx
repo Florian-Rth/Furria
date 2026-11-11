@@ -3,7 +3,7 @@ import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
 import { useOwedSheet } from '../hooks/use-owed-sheet';
 import type { StartBoard } from '../hooks/use-start-view';
-import { OwedRow } from './OwedRow';
+import { OwedEntry } from './OwedEntry';
 
 const SHEET_TITLE = 'Deine offenen Antworten';
 const CLOSE_LABEL = 'Schließen';
@@ -15,8 +15,8 @@ interface OwedSheetProps {
 export const OwedSheet: FC<OwedSheetProps> = ({ board }) => {
   const sheet = useOwedSheet(board);
 
-  const rows = sheet.entries.map((entry) => (
-    <OwedRow key={entry.calendarEntryId} entry={entry} board={board} />
+  const rows = sheet.groups.map((group) => (
+    <OwedEntry key={group.key} group={group} board={board} />
   ));
 
   return (

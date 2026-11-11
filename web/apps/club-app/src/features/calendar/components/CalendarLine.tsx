@@ -1,5 +1,6 @@
 import { KkCalendarAgenda } from '@furria/ui/KkCalendarAgenda';
 import { KkCoverThumb } from '@furria/ui/KkCoverThumb';
+import { KkOpenMarks } from '@furria/ui/KkOpenMarks';
 import type { FC } from 'react';
 import { toLandingKey } from '@/features/write/landing-target';
 import { ATTENDANCE_LABELS, toAttendanceChoiceLabel } from '@/lib/calendar-copy';
@@ -77,6 +78,7 @@ export const CalendarLine: FC<CalendarLineProps> = ({
         error={answer.error}
       />
     ) : null;
+  const marks = view.marks.length === 0 ? undefined : <KkOpenMarks marks={view.marks} />;
   const shownThumb = quick === null ? thumb : null;
   const trailing =
     shownThumb === null && badge === null ? undefined : (
@@ -102,6 +104,7 @@ export const CalendarLine: FC<CalendarLineProps> = ({
       order={order}
       accessibleLabel={view.spoken}
       time={time}
+      marks={marks}
       trailing={trailing}
       aside={aside}
       onSelect={select}

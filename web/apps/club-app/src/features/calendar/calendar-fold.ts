@@ -1,4 +1,5 @@
-import { daysBetween, mondayOf, monthDaysOf, monthStartOf, shiftDay } from './calendar-agenda';
+import { daysBetween, shiftDay } from '@/lib/day';
+import { mondayOf, monthDaysOf, monthStartOf } from './calendar-agenda';
 
 const DAYS_IN_WEEK = 7;
 const THURSDAY = 3;

@@ -70,7 +70,7 @@ export const useEventsBoard = (): EventsBoardState => {
     rows: filterEvents(events, filter, today).map((event) => ({
       event,
       cells: paneCellsOf(event, today),
-      due: toDueView(cellOf(event, 'deadline', today)),
+      due: event.isOver ? null : toDueView(cellOf(event, 'deadline', today)),
       daysLeft: daysLeftOf(event, today),
       remaining: leadRemainingOf(event, now),
     })),

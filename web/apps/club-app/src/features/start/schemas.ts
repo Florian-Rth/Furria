@@ -1,6 +1,7 @@
 import { z } from 'zod';
 import { MyActSchema } from '@/features/acts/schemas';
 import { AttendanceAnswerSchema } from '@/features/attendance/schemas';
+import { CalendarEntryAudienceSchema } from '@/features/calendar/schemas';
 import { NewsCategorySchema } from '@/features/news/schemas';
 import { TO_DO_KINDS } from '@/features/to-dos/schemas';
 import { knownKindsOnly } from '@/lib/api/known-kinds';
@@ -34,6 +35,34 @@ const StartAttendanceSchema = z.object({
 });
 export type StartAttendance = z.infer<typeof StartAttendanceSchema>;
 
+const StartPollOptionSchema = z.object({
+  optionId: z.int(),
+  label: z.string(),
+  viewerChose: z.boolean(),
+});
+export type StartPollOption = z.infer<typeof StartPollOptionSchema>;
+
+const StartPollSchema = z.object({
+  pollId: z.int(),
+  position: z.int(),
+  question: z.string(),
+  allowsMultipleChoices: z.boolean(),
+  isAnonymous: z.boolean(),
+  isOwed: z.boolean(),
+  options: z.array(StartPollOptionSchema),
+});
+export type StartPoll = z.infer<typeof StartPollSchema>;
+
+const StartSignUpListSchema = z.object({
+  signUpListId: z.int(),
+  position: z.int(),
+  title: z.string(),
+  hint: z.string().nullable(),
+  isOwed: z.boolean(),
+  viewerText: z.string().nullable(),
+});
+export type StartSignUpList = z.infer<typeof StartSignUpListSchema>;
+
 const StartEventSchema = z.object({
   isCancelled: z.boolean(),
   picture: PictureSchema.nullable(),
@@ -51,9 +80,13 @@ export const StartEntrySchema = z.object({
   viewerHoldsVenueKey: z.boolean(),
   ownerGroup: StartGroupRefSchema.nullable(),
   participatingGroups: z.array(StartGroupRefSchema),
+  audience: CalendarEntryAudienceSchema,
+  audienceGroups: z.array(StartGroupRefSchema),
   viewerGroupIds: z.array(z.int()),
   viewerRuns: StartRunSchema.nullable(),
   attendance: StartAttendanceSchema.nullable(),
+  openPolls: z.array(StartPollSchema),
+  openSignUpLists: z.array(StartSignUpListSchema),
   description: z.string().nullable(),
   event: StartEventSchema.nullable(),
 });

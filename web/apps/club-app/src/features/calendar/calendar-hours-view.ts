@@ -10,7 +10,6 @@ import type { AttendanceAnswer } from '@/features/attendance/schemas';
 import { toTimeLabel, toTimeSpanLabel } from '@/lib/calendar-days';
 import { dayMarkAt, markOf } from './calendar-agenda';
 import {
-  KIND_GLYPHS,
   LANDMARK_LABELS,
   toBlockSpoken,
   toGroupName,
@@ -92,7 +91,7 @@ const toUsualBlock = (
       usual.venueName,
       input.mayPlan(usual.groupId),
     ),
-    kind: KIND_GLYPHS.training,
+    kind: 'training',
     tone: mark === 'club' ? null : mark,
     running: false,
     usual: true,
@@ -128,7 +127,7 @@ export const toHoursWeek = (input: CalendarHoursInput): CalendarHoursWeek => {
             entry.isRunning,
             badge === 'owed',
           ),
-          kind: KIND_GLYPHS[entry.kind],
+          kind: entry.kind,
           tone: mark === 'club' ? null : mark,
           running: entry.isRunning,
           usual: false,

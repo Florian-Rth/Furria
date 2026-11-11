@@ -78,7 +78,7 @@ export const toPaneDueLabel = (
   const step = PANE_STEPS[pane];
   const status = step === undefined ? null : stepStatusOf(event, step);
 
-  if (step === undefined || status === null) {
+  if (step === undefined || status === null || event.status === 'cancelled') {
     return toCellFactLabel(cell.fact);
   }
 
@@ -124,7 +124,7 @@ export const toStepDue = (event: EventDetails, cell: BoardCell): string | undefi
   const step = PANE_STEPS[cell.pane];
   const status = step === undefined ? null : stepStatusOf(event, step);
 
-  if (status === null || cell.column === 'deadline') {
+  if (status === null || cell.column === 'deadline' || event.status === 'cancelled') {
     return undefined;
   }
 
@@ -148,6 +148,9 @@ export interface EventFactCopy {
   state?: KkStepState;
 }
 
+const missingFactState = (event: EventDetails, step: EventStepKey): KkStepState =>
+  stepStatusOf(event, step)?.state === 'overdue' ? 'overdue' : 'open';
+
 const toCountdownValue = (days: number): string => {
   if (days === 0) {
     return 'heute';
@@ -159,8 +162,9 @@ const toCountdownValue = (days: number): string => {
 export const toEventFacts = (event: EventDetails, todayIsoDay: string): EventFactCopy[] => {
   const days = daysBetween(todayIsoDay, toLocalIsoDay(event.startsAt));
   const doors = toClockLabel(event.doorsOpenAt);
-
-  return [
+  const cancelled = event.status === 'cancelled';
+  const detailsGap = missingFactState(event, 'details');
+  const facts: EventFactCopy[] = [
     {
       key: 'time',
       label: 'Beginn',
@@ -172,30 +176,41 @@ export const toEventFacts = (event: EventDetails, todayIsoDay: string): EventFac
       label: 'Einlass',
       value: doors ?? MISSING,
       icon: 'door',
-      state: doors === null ? 'open' : undefined,
+      state: doors === null ? detailsGap : undefined,
     },
     {
       key: 'venue',
       label: 'Ort',
       value: event.venueName ?? MISSING,
       icon: 'place',
-      state: event.venueName === null ? 'open' : undefined,
+      state: event.venueName === null ? detailsGap : undefined,
     },
     {
       key: 'price',
       label: 'Preis',
       value: toPriceValue(event.priceCents),
       icon: 'fees',
-      state: event.priceCents === null ? 'open' : undefined,
-    },
-    { key: 'sales', label: 'Verkauf', value: toEventStatusShortLabel(event), icon: 'storefront' },
-    {
-      key: 'countdown',
-      label: days < 0 ? 'Vorbei seit' : 'Noch',
-      value: toCountdownValue(days),
-      icon: 'calendar',
+      state: event.priceCents === null ? missingFactState(event, 'tickets') : undefined,
     },
   ];
+
+  return cancelled
+    ? facts
+    : [
+        ...facts,
+        {
+          key: 'sales',
+          label: 'Verkauf',
+          value: toEventStatusShortLabel(event),
+          icon: 'storefront',
+        },
+        {
+          key: 'countdown',
+          label: days < 0 ? 'Vorbei seit' : 'Noch',
+          value: toCountdownValue(days),
+          icon: 'calendar',
+        },
+      ];
 };
 
 export interface HeadChip {
@@ -211,21 +226,11 @@ export interface EventHeadView {
   tally: TallyView;
 }
 
-const toHeadChips = (event: EventDetails): HeadChip[] => {
-  if (event.status === 'cancelled') {
-    return [{ key: 'cancelled', state: 'off', label: 'abgesagt' }];
-  }
-
-  return [
-    event.publishedAt === null
-      ? { key: 'website', state: 'open', label: 'nicht auf der Website' }
-      : { key: 'website', state: 'done', label: 'auf der Website' },
-    { key: 'sales', state: 'done', label: toEventStatusShortLabel(event) },
-  ];
-};
+const toHeadChips = (event: EventDetails): HeadChip[] =>
+  event.status === 'cancelled' ? [{ key: 'cancelled', state: 'off', label: 'abgesagt' }] : [];
 
 export const toEventHeadView = (event: EventDetails, tally: StateTally): EventHeadView => ({
-  eyebrow: `${toWeekdayEyebrow(event.startsAt)} ${toDayNumberLabel(event.startsAt)} · ${toTimeSpanLabel(event.startsAt, event.endsAt)} · ${event.venueName ?? MISSING}`,
+  eyebrow: `${toWeekdayEyebrow(event.startsAt)} ${toDayNumberLabel(event.startsAt)}`,
   cancelled: event.status === 'cancelled',
   chips: toHeadChips(event),
   tally: toTallyView(tally),

@@ -11,18 +11,21 @@ const anEntry = (overrides: Partial<GroupCalendarEntry>): GroupCalendarEntry => 
   title: 'Prunksitzung',
   startsAt: '2027-02-06T18:00:00.000Z',
   endsAt: '2027-02-06T22:00:00.000Z',
-  kind: 'meeting',
+  kind: 'plain',
   venueId: null,
   venueName: null,
   ownerGroupId: null,
   ownerGroupName: null,
   ownerGroupTone: null,
   participatingGroups: [],
-  visibility: 'club',
+  audience: 'club',
+  audienceGroups: [],
+  audiencePeople: [],
   asksForResponse: false,
   description: null,
   viewerAnswer: null,
-  viewerMayAnswer: false,
+  mayAnswer: false,
+  openFunctions: [],
   isRunning: false,
   ...overrides,
 });
@@ -62,20 +65,31 @@ describe('toCalendarEntryMark', () => {
 
 describe('toCalendarEntryPreview', () => {
   const entries = [
-    anEntry({ calendarEntryId: 1, viewerMayAnswer: true }),
+    anEntry({ calendarEntryId: 1, asksForResponse: true, mayAnswer: true }),
     anEntry({ calendarEntryId: 2 }),
-    anEntry({ calendarEntryId: 3, viewerMayAnswer: true, viewerAnswer: 'yes' }),
-    anEntry({ calendarEntryId: 4, viewerMayAnswer: true }),
-    anEntry({ calendarEntryId: 5, viewerMayAnswer: true, viewerAnswer: 'no' }),
+    anEntry({
+      calendarEntryId: 3,
+      asksForResponse: true,
+      mayAnswer: true,
+      viewerAnswer: 'yes',
+    }),
+    anEntry({ calendarEntryId: 4, asksForResponse: true, mayAnswer: true }),
+    anEntry({
+      calendarEntryId: 5,
+      asksForResponse: true,
+      mayAnswer: true,
+      viewerAnswer: 'no',
+    }),
     anEntry({ calendarEntryId: 6 }),
-    anEntry({ calendarEntryId: 7, viewerMayAnswer: true }),
+    anEntry({ calendarEntryId: 7, asksForResponse: true, mayAnswer: true }),
+    anEntry({ calendarEntryId: 8, mayAnswer: true }),
   ];
 
   it('shows the first entries and counts the rest with their open answers', () => {
     const preview = toCalendarEntryPreview(entries, 3);
 
     expect(preview.shown.map((entry) => entry.calendarEntryId)).toEqual([1, 2, 3]);
-    expect(preview.moreCount).toBe(4);
+    expect(preview.moreCount).toBe(5);
     expect(preview.moreOwedCount).toBe(2);
   });
 

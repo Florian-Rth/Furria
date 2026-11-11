@@ -19,7 +19,7 @@ export interface KkConfirmFact {
   value: string;
 }
 
-type KkConfirmTone = 'neutral' | 'danger';
+export type KkConfirmTone = 'neutral' | 'danger';
 
 interface KkConfirmMark {
   icon: KkIconName;

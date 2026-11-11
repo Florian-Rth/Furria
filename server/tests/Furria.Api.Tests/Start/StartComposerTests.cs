@@ -10,6 +10,13 @@ namespace Furria.Api.Tests.Start;
 public sealed class StartComposerTests
 {
     private const int DanceGuard = 11;
+
+    private static readonly StartGroupRef DanceGuardRef = new()
+    {
+        GroupId = DanceGuard,
+        Name = "Tanzgarde",
+        Tone = null,
+    };
     private const int Running = 1;
     private const int LaterToday = 2;
     private const int Wednesday = 3;
@@ -350,7 +357,7 @@ public sealed class StartComposerTests
                 [
                     EntryAt(1, OnDay(1, 18, 0)),
                     Owed(EntryAt(2, OnDay(15, 19, 0)) with { Kind = CalendarEntryKind.Training }),
-                    Owed(EntryAt(3, OnDay(15, 19, 0)) with { Kind = CalendarEntryKind.Party }),
+                    Owed(EntryAt(3, OnDay(15, 19, 0)) with { Kind = CalendarEntryKind.Plain }),
                 ],
             },
             TuesdayEvening
@@ -359,8 +366,32 @@ public sealed class StartComposerTests
         Assert.Equal([1, 3], EntryIdsOf(start));
     }
 
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void Should_KeepAnEntry_When_SheOwesOnlyAPollOrAListInsideTheOwedHorizon(
+        bool owesPoll,
+        bool owesList
+    )
+    {
+        var start = StartComposer.Compose(
+            Nothing with
+            {
+                Entries =
+                [
+                    EntryAt(1, OnDay(1, 18, 0)),
+                    WithFunctions(EntryAt(2, OnDay(12, 19, 0)), owesPoll, owesList),
+                    WithFunctions(EntryAt(3, OnDay(12, 20, 0)), owesPoll: false, owesList: false),
+                ],
+            },
+            TuesdayEvening
+        );
+
+        Assert.Equal([1, 2], EntryIdsOf(start));
+    }
+
     [Fact]
-    public void Should_KeepHerPerformance_When_ItStartsWithinThreeWeeks()
+    public void Should_KeepAnEntryHerGroupPerformsAt_When_ItStartsWithinThreeWeeks()
     {
         var start = StartComposer.Compose(
             Nothing with
@@ -372,7 +403,12 @@ public sealed class StartComposerTests
                     OnStage(EntryAt(3, OnDay(22, 14, 11))),
                     EntryAt(4, OnDay(20, 19, 0)) with
                     {
-                        Kind = CalendarEntryKind.Performance,
+                        Kind = CalendarEntryKind.Trip,
+                    },
+                    EntryAt(5, OnDay(20, 19, 0)) with
+                    {
+                        OwnerGroup = DanceGuardRef,
+                        ViewerGroupIds = [DanceGuard],
                     },
                 ],
             },
@@ -625,10 +661,44 @@ public sealed class StartComposerTests
             Attendance = new StartAttendance { ViewerAnswer = null, IsOwed = true },
         };
 
+    private static StartEntrySummary WithFunctions(
+        StartEntrySummary entry,
+        bool owesPoll,
+        bool owesList
+    ) =>
+        entry with
+        {
+            OpenPolls =
+            [
+                new StartPoll
+                {
+                    PollId = entry.CalendarEntryId,
+                    Position = 1,
+                    Question = "Was essen wir?",
+                    AllowsMultipleChoices = false,
+                    IsAnonymous = false,
+                    IsOwed = owesPoll,
+                    Options = [],
+                },
+            ],
+            OpenSignUpLists =
+            [
+                new StartSignUpList
+                {
+                    SignUpListId = entry.CalendarEntryId,
+                    Position = 2,
+                    Title = "Mitbringen",
+                    Hint = null,
+                    IsOwed = owesList,
+                    ViewerText = owesList ? null : "Salat",
+                },
+            ],
+        };
+
     private static StartEntrySummary OnStage(StartEntrySummary entry) =>
         entry with
         {
-            Kind = CalendarEntryKind.Performance,
+            ParticipatingGroups = [DanceGuardRef],
             ViewerGroupIds = [DanceGuard],
         };
 
@@ -640,7 +710,7 @@ public sealed class StartComposerTests
         {
             CalendarEntryId = calendarEntryId,
             Title = $"Eintrag {calendarEntryId}",
-            Kind = CalendarEntryKind.Meeting,
+            Kind = CalendarEntryKind.Plain,
             StartsAt = startsAt,
             EndsAt = startsAt.AddHours(2),
             IsRunning = false,
@@ -648,9 +718,13 @@ public sealed class StartComposerTests
             ViewerHoldsVenueKey = false,
             OwnerGroup = null,
             ParticipatingGroups = [],
+            Audience = CalendarEntryAudience.Club,
+            AudienceGroups = [],
             ViewerGroupIds = [],
             ViewerRuns = null,
             Attendance = null,
+            OpenPolls = [],
+            OpenSignUpLists = [],
             Description = null,
             Event = null,
         };

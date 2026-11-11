@@ -8,6 +8,7 @@ import {
   SITE_META,
   SITE_NAME,
 } from './route-head';
+import { siteJsonLdScripts } from './site-json-ld';
 import { STATIC_PAGES } from './static-pages';
 
 export const PAGE_HEAD_PLACEHOLDER = '<!--page-head-->';
@@ -27,7 +28,7 @@ export interface PrerenderedFile {
 
 const APP_SHELL_HEAD: RouteHead = {
   meta: [
-    { title: `${SITE_NAME} — Furrscher Carnevals Club e.V.` },
+    { title: STATIC_PAGES.home.title },
     NO_INDEX_META,
     ...SITE_META,
     ...siteShareImageMeta([]),
@@ -50,10 +51,17 @@ export const pageFileNameOf = (path: string): string => {
   return directory === '' ? 'index.html' : `${directory}/index.html`;
 };
 
+const scriptsOf = (page: PageHeadInput): NonNullable<RouteHead['scripts']> =>
+  page.path === STATIC_PAGES.home.path ? siteJsonLdScripts(null) : [];
+
 const withSiteMeta = (page: PageHeadInput): RouteHead => {
   const head = indexablePageHead(page);
 
-  return { ...head, meta: [...head.meta, ...SITE_FALLBACK_HEAD.meta] };
+  return {
+    ...head,
+    meta: [...head.meta, ...SITE_FALLBACK_HEAD.meta],
+    scripts: scriptsOf(page),
+  };
 };
 
 const fillTemplate = (template: string, headHtml: string): string => {

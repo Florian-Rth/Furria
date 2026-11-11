@@ -24,11 +24,19 @@ public sealed record StartEntrySummary
 
     public required IReadOnlyList<StartGroupRef> ParticipatingGroups { get; init; }
 
+    public required CalendarEntryAudience Audience { get; init; }
+
+    public required IReadOnlyList<StartGroupRef> AudienceGroups { get; init; }
+
     public required IReadOnlyList<int> ViewerGroupIds { get; init; }
 
     public required StartRun? ViewerRuns { get; init; }
 
     public required StartAttendance? Attendance { get; init; }
+
+    public required IReadOnlyList<StartPoll> OpenPolls { get; init; }
+
+    public required IReadOnlyList<StartSignUpList> OpenSignUpLists { get; init; }
 
     public required string? Description { get; init; }
 

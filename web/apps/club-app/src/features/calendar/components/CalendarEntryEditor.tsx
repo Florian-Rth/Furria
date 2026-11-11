@@ -3,7 +3,6 @@ import type { FC } from 'react';
 import { CALENDAR_ORIGIN } from '@/features/session/app-sections';
 import { WriteScreen } from '@/features/write/WriteScreen';
 import type { CalendarOwnerOption, CalendarParticipantPool } from '../calendar-authoring';
-import { toParticipantsEmptyLabel, toParticipatingGroupOptions } from '../calendar-authoring';
 import {
   CALENDAR_ENTRY_CREATE_TITLE,
   CALENDAR_ENTRY_EDIT_TITLE,
@@ -14,16 +13,19 @@ import {
 import { useCalendarEntryEditor } from '../hooks/use-calendar-entry-editor';
 import { useCalendarEntryRemoval } from '../hooks/use-calendar-entry-removal';
 import type { CalendarEntryReload } from '../hooks/use-calendar-entry-supplies';
-import type { CalendarEntry, ParticipatingGroup, RunningVenue } from '../schemas';
+import type { AudienceGroup, AudiencePerson, CalendarEntry, RunningVenue } from '../schemas';
+import { CalendarEntryAddOnsSection } from './CalendarEntryAddOnsSection';
 import { CalendarEntryAudienceSection } from './CalendarEntryAudienceSection';
 import { CalendarEntryBasicsSection } from './CalendarEntryBasicsSection';
+import { CalendarEntryDescriptionSection } from './CalendarEntryDescriptionSection';
 import { CalendarEntryScheduleSection } from './CalendarEntryScheduleSection';
 import { DeleteCalendarEntryDialog } from './DeleteCalendarEntryDialog';
 
 const ADD_LABEL = 'Hinzufügen';
 const SAVE_LABEL = 'Speichern';
 
-const NO_PARTICIPANTS: readonly ParticipatingGroup[] = [];
+const NO_GROUPS: readonly AudienceGroup[] = [];
+const NO_PEOPLE: readonly AudiencePerson[] = [];
 
 interface CalendarEntryEditorProps {
   entry: CalendarEntry | null;
@@ -45,14 +47,9 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
 
   const title = control.isEditing ? CALENDAR_ENTRY_EDIT_TITLE : CALENDAR_ENTRY_CREATE_TITLE;
   const actionLabel = control.isEditing ? SAVE_LABEL : ADD_LABEL;
-  const heldParticipants = entry?.participatingGroups ?? NO_PARTICIPANTS;
-  const participantOptions = toParticipatingGroupOptions(
-    clubGroups,
-    heldParticipants,
-    control.values.ownerId,
-  );
-  const participantsEmptyLabel = toParticipantsEmptyLabel(clubGroups);
-  const participantsReload = clubGroups.state === 'failed' ? clubGroupsReload : null;
+  const heldGroups = entry?.audienceGroups ?? NO_GROUPS;
+  const heldPeople = entry?.audiencePeople ?? NO_PEOPLE;
+  const groupsReload = clubGroups.state === 'failed' ? clubGroupsReload : null;
   const ownerSelectOptions = toOwnerSelectOptions(ownerOptions);
   const venueOptions = toVenueOptions(venues);
 
@@ -84,9 +81,17 @@ export const CalendarEntryEditor: FC<CalendarEntryEditorProps> = ({
       <CalendarEntryAudienceSection
         control={control}
         ownerOptions={ownerSelectOptions}
-        participantOptions={participantOptions}
-        participantsEmptyLabel={participantsEmptyLabel}
-        participantsReload={participantsReload}
+        heldGroups={heldGroups}
+        heldPeople={heldPeople}
+        clubGroups={clubGroups}
+        clubGroupsReload={groupsReload}
+      />
+      <CalendarEntryDescriptionSection control={control} />
+      <CalendarEntryAddOnsSection
+        control={control}
+        entry={entry}
+        clubGroups={clubGroups}
+        clubGroupsReload={groupsReload}
       />
       {dangerLine}
     </WriteScreen>

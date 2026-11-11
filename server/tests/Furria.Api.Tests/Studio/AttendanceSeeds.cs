@@ -14,6 +14,7 @@ internal static class AttendanceSeeds
     internal const string Kim = "kim";
     internal const string GardeTraining = "garde-training";
     internal const string ElferratTraining = "elferrat-training";
+    internal const string SilentGardeTraining = "silent-garde-training";
 
     internal static Action<SeedContextBuilder> GardeWithTrainings(DateOnly today) =>
         builder =>
@@ -26,18 +27,27 @@ internal static class AttendanceSeeds
                 )
                 .Club(club =>
                     club.AddCalendarEntry(
+                            SilentGardeTraining,
+                            "Training ohne Zu-/Absage",
+                            TrainingOn(today.AddDays(1)),
+                            kind: CalendarEntryKind.Training,
+                            ownerGroupAlias: Garde
+                        )
+                        .AddCalendarEntry(
                             GardeTraining,
                             "Training",
                             TrainingOn(today.AddDays(2)),
                             kind: CalendarEntryKind.Training,
-                            ownerGroupAlias: Garde
+                            ownerGroupAlias: Garde,
+                            asksForResponse: true
                         )
                         .AddCalendarEntry(
                             ElferratTraining,
                             "Elferrat-Training",
                             TrainingOn(today.AddDays(3)),
                             kind: CalendarEntryKind.Training,
-                            ownerGroupAlias: Elferrat
+                            ownerGroupAlias: Elferrat,
+                            asksForResponse: true
                         )
                 );
         };

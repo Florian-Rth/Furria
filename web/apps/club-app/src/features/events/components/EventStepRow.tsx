@@ -1,7 +1,7 @@
 import { KkStepList } from '@furria/ui/KkStepList';
 import type { FC } from 'react';
 import type { BoardCell } from '../event-board';
-import { PANE_ICONS, PANE_TITLES, toCellFactLabel, toCellStateLabel } from '../event-board-copy';
+import { PANE_ICONS, PANE_TITLES, toCellGridFact, toCellStateLabel } from '../event-board-copy';
 import { toStepDue } from '../event-pane-copy';
 import type { EventDetails, EventPaneKey } from '../schemas';
 
@@ -14,7 +14,7 @@ interface EventStepRowProps {
 
 export const EventStepRow: FC<EventStepRowProps> = ({ event, cell, selectedPane, onChoose }) => {
   const stateLabel = toCellStateLabel(cell);
-  const fact = toCellFactLabel(cell.fact);
+  const fact = toCellGridFact(cell.fact);
   const due = toStepDue(event, cell);
   const selected = cell.pane === selectedPane;
   const choose = (): void => {

@@ -31,7 +31,7 @@ public sealed class GetGalleryPageHeadTests : IClassFixture<ApiTestFixture>
 
         Assert.Equal(HttpStatusCode.OK, status);
         Assert.Contains(Meta("og:url", $"{Origin}/gallery/{albumId}-prunksitzung"), html);
-        Assert.Contains("<title data-page-head>Prunksitzung 2025/26 · FURRIA</title>", html);
+        Assert.Contains("<title data-page-head>Prunksitzung 2025/26 · FCC Großfurra</title>", html);
         Assert.Contains(
             Meta(
                 "og:description",

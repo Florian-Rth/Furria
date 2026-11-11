@@ -242,7 +242,7 @@ public sealed class EventService
         var entry = new CalendarEntry
         {
             Kind = CalendarEntryKind.Event,
-            Visibility = CalendarEntryVisibility.Public,
+            Audience = CalendarEntryAudience.Club,
             AsksForResponse = false,
             Event = new Event(),
         };

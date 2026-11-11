@@ -2,11 +2,8 @@ namespace Furria.Core.Club;
 
 public enum CalendarEntryKind
 {
-    Training = 1,
-    Rehearsal = 2,
-    Performance = 3,
-    Meeting = 4,
-    Party = 5,
-    Other = 6,
+    Plain = 1,
+    Training = 2,
+    Trip = 3,
     Event = 7,
 }

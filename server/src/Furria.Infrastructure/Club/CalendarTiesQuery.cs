@@ -17,42 +17,77 @@ public static class CalendarTiesQuery
         CancellationToken ct
     )
     {
-        var runningMembershipPauses = await dbContext
+        if (personId is not { } id)
+            return UntiedOf(null);
+
+        var ties = await dbContext.CalendarTiesOfManyAsync([id], today, ct);
+
+        return ties[id];
+    }
+
+    public static async Task<IReadOnlyDictionary<int, CalendarTies>> CalendarTiesOfManyAsync(
+        this AppDbContext dbContext,
+        IReadOnlyCollection<int> personIds,
+        DateOnly today,
+        CancellationToken ct
+    )
+    {
+        var ids = personIds.Distinct().ToList();
+        if (ids.Count == 0)
+            return new Dictionary<int, CalendarTies>();
+
+        var memberships = await dbContext
             .Memberships.AsNoTracking()
             .Where(Running.Memberships(today))
-            .Where(membership => membership.PersonId == personId)
-            .Select(membership =>
+            .Where(membership => ids.Contains(membership.PersonId))
+            .Select(membership => new MembershipRow(
+                membership.PersonId,
                 membership
                     .Pauses.Select(pause => new PauseRow(
                         pause.FirstSessionYear,
                         pause.LastSessionYear
                     ))
                     .ToList()
-            )
+            ))
             .ToListAsync(ct);
 
-        var memberGroupIds = await dbContext
-            .RunningGroupMemberships(personId, today)
-            .AsNoTracking()
-            .Select(membership => membership.GroupId)
+        var groupMemberships = await dbContext
+            .GroupMemberships.AsNoTracking()
+            .Where(Conferring.GroupMemberships(today))
+            .Where(membership => ids.Contains(membership.PersonId))
+            .Select(membership => new PersonGroupRow(membership.PersonId, membership.GroupId))
             .ToListAsync(ct);
 
         var adminTenures = await dbContext
-            .RunningGroupAdminTenures(personId, today)
-            .AsNoTracking()
+            .GroupAdmins.AsNoTracking()
+            .Where(Conferring.GroupAdmins(today))
+            .Where(admin => ids.Contains(admin.PersonId))
             .OrderBy(admin => admin.SinceOn)
             .ThenBy(admin => admin.Id)
-            .Select(admin => new AdminTenureRow(admin.GroupId, admin.Function))
+            .Select(admin => new AdminTenureRow(admin.PersonId, admin.GroupId, admin.Function))
             .ToListAsync(ct);
 
-        return new CalendarTies
-        {
-            HoldsRunningMembership = runningMembershipPauses.Count > 0,
-            Pauses = [.. runningMembershipPauses.SelectMany(pauses => pauses).Select(ToSpan)],
-            MemberGroupIds = memberGroupIds.ToHashSet(),
-            AdminFunctions = ToAdminFunctions(adminTenures),
-            CastSessions = await CastSessionsOfAsync(dbContext, personId, today, ct),
-        };
+        var castSessions = await CastSessionsOfManyAsync(dbContext, ids, today, ct);
+        var membershipsByPerson = memberships.ToLookup(row => row.PersonId);
+        var groupsByPerson = groupMemberships.ToLookup(row => row.PersonId, row => row.GroupId);
+        var tenuresByPerson = adminTenures.ToLookup(row => row.PersonId);
+        var castByPerson = castSessions.ToLookup(
+            row => row.PersonId,
+            row => new GroupSession(row.GroupId, row.SessionYear)
+        );
+
+        return ids.ToDictionary(
+            id => id,
+            id => new CalendarTies
+            {
+                PersonId = id,
+                HoldsRunningMembership = membershipsByPerson.Contains(id),
+                Pauses = [.. membershipsByPerson[id].SelectMany(row => row.Pauses).Select(ToSpan)],
+                MemberGroupIds = groupsByPerson[id].ToHashSet(),
+                AdminFunctions = ToAdminFunctions([.. tenuresByPerson[id]]),
+                CastSessions = castByPerson[id].ToHashSet(),
+            }
+        );
     }
 
     [Pure]
@@ -67,6 +102,13 @@ public static class CalendarTiesQuery
             .Concat(
                 dbContext.RunningGroupAdminTenures(personId, today).Select(admin => admin.GroupId)
             );
+
+    [Pure]
+    public static IQueryable<int> AdministeredGroupIds(
+        this AppDbContext dbContext,
+        int? personId,
+        DateOnly today
+    ) => dbContext.RunningGroupAdminTenures(personId, today).Select(admin => admin.GroupId);
 
     [Pure]
     public static IQueryable<int> CastGroupIds(
@@ -105,29 +147,73 @@ public static class CalendarTiesQuery
             );
     }
 
-    private static async Task<IReadOnlySet<GroupSession>> CastSessionsOfAsync(
+    private static async Task<List<CastSessionRow>> CastSessionsOfManyAsync(
         AppDbContext dbContext,
-        int? personId,
+        IReadOnlyList<int> personIds,
         DateOnly today,
         CancellationToken ct
     )
     {
-        if (personId is null)
-            return new HashSet<GroupSession>();
+        var acts = dbContext.Acts.Where(act =>
+            act.ArchivedAt == null && act.SessionYear != null && act.GroupId != null
+        );
 
-        var rows = await dbContext
-            .CastActs(personId, today)
-            .AsNoTracking()
-            .Select(act => new
-            {
-                GroupId = act.GroupId!.Value,
-                SessionYear = act.SessionYear!.Value,
-            })
-            .Distinct()
-            .ToListAsync(ct);
+        var frozen = acts.Where(act => act.CastFrozenAt != null)
+            .SelectMany(
+                act => act.FrozenCast.Where(member => personIds.Contains(member.PersonId)),
+                (act, member) =>
+                    new CastSessionRow(member.PersonId, act.GroupId!.Value, act.SessionYear!.Value)
+            );
 
-        return rows.Select(row => new GroupSession(row.GroupId, row.SessionYear)).ToHashSet();
+        var added = acts.Where(act => act.CastFrozenAt == null)
+            .SelectMany(
+                act =>
+                    act.CastChanges.Where(change =>
+                        change.Change == CastChange.Added && personIds.Contains(change.PersonId)
+                    ),
+                (act, change) =>
+                    new CastSessionRow(change.PersonId, act.GroupId!.Value, act.SessionYear!.Value)
+            );
+
+        var members = acts.Where(act => act.CastFrozenAt == null)
+            .SelectMany(
+                act =>
+                    dbContext
+                        .GroupMemberships.Where(Conferring.GroupMemberships(today))
+                        .Where(membership =>
+                            membership.GroupId == act.GroupId
+                            && personIds.Contains(membership.PersonId)
+                            && !act.CastChanges.Any(change =>
+                                change.PersonId == membership.PersonId
+                                && change.Change == CastChange.Removed
+                            )
+                        ),
+                (act, membership) =>
+                    new CastSessionRow(
+                        membership.PersonId,
+                        act.GroupId!.Value,
+                        act.SessionYear!.Value
+                    )
+            );
+
+        var rows = await frozen.AsNoTracking().ToListAsync(ct);
+        rows.AddRange(await added.AsNoTracking().ToListAsync(ct));
+        rows.AddRange(await members.AsNoTracking().ToListAsync(ct));
+
+        return [.. rows.Distinct()];
     }
+
+    [Pure]
+    private static CalendarTies UntiedOf(int? personId) =>
+        new()
+        {
+            PersonId = personId,
+            HoldsRunningMembership = false,
+            Pauses = [],
+            MemberGroupIds = new HashSet<int>(),
+            AdminFunctions = new Dictionary<int, string?>(),
+            CastSessions = new HashSet<GroupSession>(),
+        };
 
     [Pure]
     private static IQueryable<GroupMembership> RunningGroupMemberships(
@@ -163,5 +249,11 @@ public static class CalendarTiesQuery
 
     private sealed record PauseRow(int FirstSessionYear, int? LastSessionYear);
 
-    private sealed record AdminTenureRow(int GroupId, string? Function);
+    private sealed record MembershipRow(int PersonId, List<PauseRow> Pauses);
+
+    private sealed record PersonGroupRow(int PersonId, int GroupId);
+
+    private sealed record AdminTenureRow(int PersonId, int GroupId, string? Function);
+
+    private sealed record CastSessionRow(int PersonId, int GroupId, int SessionYear);
 }

@@ -9,14 +9,34 @@ public sealed class CalendarTiesTests
     private const int DanceGuard = 11;
     private const int ChildrensGuard = 22;
     private const int MensBallet = 33;
+    private const int Chosen = 501;
+    private const int Bystander = 502;
     private const string Coach = "Trainerin";
 
+    private static readonly DateTimeOffset InSession = new(
+        2026,
+        12,
+        5,
+        19,
+        0,
+        0,
+        TimeSpan.FromHours(1)
+    );
+    private static readonly CalendarRights ClubReader = new(true, false);
+    private static readonly CalendarRights NoClubRead = new(false, false);
+    private static readonly CalendarRights ClubCalendarManager = new(true, true);
     private static readonly CalendarTies RunningMember = TiesOf(holdsRunningMembership: true);
 
     [Fact]
-    public void Should_Concern_When_AClubOwnedEntryMeetsARunningMembership()
+    public void Should_Concern_When_AClubEntryMeetsARunningMembership()
     {
-        Assert.True(RunningMember.Concerns(ClubOwned()));
+        Assert.True(RunningMember.Concerns(ForClub()));
+    }
+
+    [Fact]
+    public void Should_ConcernEveryRunningMember_When_AGroupOwnsAClubEntry()
+    {
+        Assert.True(RunningMember.Concerns(ForClub(owner: DanceGuard)));
     }
 
     [Fact]
@@ -27,31 +47,48 @@ public sealed class CalendarTiesTests
             Pauses = [new SessionSpan { FirstYear = SessionYear, LastYear = SessionYear }],
         };
 
-        Assert.False(paused.Concerns(ClubOwned()));
+        Assert.False(paused.Concerns(ForClub()));
     }
 
     [Fact]
-    public void Should_Concern_When_SheIsInAParticipatingGroupOfAGroupOwnedEntry()
+    public void Should_Concern_When_SheIsInAnAudienceGroup()
     {
         var ties = TiesOf(memberGroupIds: [DanceGuard]);
 
-        Assert.True(ties.Concerns(GroupOwned(ChildrensGuard, DanceGuard)));
+        Assert.True(ties.Concerns(ForGroups([ChildrensGuard, DanceGuard])));
     }
 
     [Fact]
-    public void Should_NotConcern_When_SheOnlyAdministersTheOwnerGroup()
+    public void Should_NotConcernTheRestOfTheClub_When_TheAudienceIsGroups()
     {
-        var ties = TiesOf(adminGroupIds: [ChildrensGuard]);
-
-        Assert.False(ties.Concerns(GroupOwned(ChildrensGuard)));
+        Assert.False(RunningMember.Concerns(ForGroups([DanceGuard])));
     }
 
     [Fact]
-    public void Should_NotConcern_When_HerMemberGroupOnlyParticipatesInAClubOwnedEntry()
+    public void Should_NotConcern_When_HerGroupOnlyParticipates()
     {
         var ties = TiesOf(memberGroupIds: [MensBallet]);
 
-        Assert.False(ties.Concerns(ClubOwned(MensBallet)));
+        Assert.False(ties.Concerns(ForGroups([DanceGuard], participating: [MensBallet])));
+    }
+
+    [Fact]
+    public void Should_NotConcern_When_SheOnlyAdministersTheAudienceGroup()
+    {
+        var ties = TiesOf(adminGroupIds: [ChildrensGuard]);
+
+        Assert.False(ties.Concerns(ForGroups([ChildrensGuard], owner: ChildrensGuard)));
+    }
+
+    [Fact]
+    public void Should_ConcernOnlyTheChosen_When_TheAudienceIsChosenPeople()
+    {
+        var entry = ForPeople([Chosen]);
+
+        Assert.Equal(
+            (true, false),
+            (TiesOf(personId: Chosen).Concerns(entry), RunningMember.Concerns(entry))
+        );
     }
 
     [Fact]
@@ -59,7 +96,10 @@ public sealed class CalendarTiesTests
     {
         var ties = TiesOf(adminGroupIds: [ChildrensGuard]);
 
-        Assert.Equal(ChildrensGuard, ties.RunsVia(ClubOwned(DanceGuard, ChildrensGuard)));
+        Assert.Equal(
+            ChildrensGuard,
+            ties.RunsVia(ForClub(participating: [DanceGuard, ChildrensGuard]))
+        );
     }
 
     [Fact]
@@ -67,29 +107,29 @@ public sealed class CalendarTiesTests
     {
         var ties = TiesOf(memberGroupIds: [MensBallet]);
 
-        Assert.True(ties.IsHers(ClubOwned(MensBallet)));
+        Assert.True(ties.IsHers(ForClub(participating: [MensBallet])));
     }
 
     [Fact]
-    public void Should_See_When_SheIsInAParticipatingGroupOfAGroupOnlyEntry()
+    public void Should_NotBeHers_When_HerGroupParticipatesInAChosenPeopleEntry()
+    {
+        var ties = TiesOf(memberGroupIds: [MensBallet], adminGroupIds: [MensBallet]);
+
+        Assert.False(ties.IsHers(ForPeople([Chosen], participating: [MensBallet])));
+    }
+
+    [Fact]
+    public void Should_SeeAGroupsEntry_When_SheHoldsClubReadWithoutATie()
+    {
+        Assert.True(RunningMember.Sees(ForGroups([DanceGuard], owner: DanceGuard), ClubReader));
+    }
+
+    [Fact]
+    public void Should_See_When_SheIsInAnAudienceGroupWithoutClubRead()
     {
         var ties = TiesOf(memberGroupIds: [DanceGuard]);
 
-        Assert.True(ties.Sees(GroupOnly(ChildrensGuard, DanceGuard), holdsClubRead: false));
-    }
-
-    [Fact]
-    public void Should_NotSee_When_AGroupOnlyEntryBelongsToGroupsNotHers()
-    {
-        var ties = TiesOf(holdsRunningMembership: true, memberGroupIds: [MensBallet]);
-
-        Assert.False(ties.Sees(GroupOnly(ChildrensGuard, DanceGuard), holdsClubRead: true));
-    }
-
-    [Fact]
-    public void Should_See_When_SheHoldsClubReadAndTheEntryIsClubVisible()
-    {
-        Assert.True(RunningMember.Sees(GroupOwned(DanceGuard), holdsClubRead: true));
+        Assert.True(ties.Sees(ForGroups([DanceGuard]), NoClubRead));
     }
 
     [Fact]
@@ -97,39 +137,94 @@ public sealed class CalendarTiesTests
     {
         var ties = TiesOf(memberGroupIds: [MensBallet]);
 
-        Assert.False(ties.Sees(ClubOwned(), holdsClubRead: false));
+        Assert.False(ties.Sees(ForClub(), NoClubRead));
     }
 
     [Fact]
-    public void Should_ConcernAndShowTheTraining_When_SheIsInTheCastOfAnActOfTheTrainingsGroup()
+    public void Should_NotSeeAChosenPeopleEntry_When_SheHoldsClubReadButIsNotChosen()
+    {
+        var ties = TiesOf(personId: Bystander, holdsRunningMembership: true);
+
+        Assert.False(ties.Sees(ForPeople([Chosen]), ClubReader));
+    }
+
+    [Fact]
+    public void Should_SeeAChosenPeopleEntry_When_SheIsChosenWithoutClubRead()
+    {
+        Assert.True(TiesOf(personId: Chosen).Sees(ForPeople([Chosen]), NoClubRead));
+    }
+
+    [Fact]
+    public void Should_SeeAChosenPeopleEntry_When_SheAdministersTheOwnerGroup()
+    {
+        var ties = TiesOf(personId: Bystander, adminGroupIds: [DanceGuard]);
+
+        Assert.True(ties.Sees(ForPeople([Chosen], owner: DanceGuard), NoClubRead));
+    }
+
+    [Fact]
+    public void Should_SeeAClubOwnedChosenPeopleEntry_When_SheManagesTheClubCalendar()
+    {
+        var ties = TiesOf(personId: Bystander);
+
+        Assert.True(ties.Sees(ForPeople([Chosen]), ClubCalendarManager));
+    }
+
+    [Fact]
+    public void Should_ConcernAndShowTheTraining_When_SheIsInTheCastOfAnActOfTheAudienceGroup()
     {
         var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear)]);
-        var training = TrainingOf(GroupOnly(DanceGuard));
+        var training = TrainingOf(ForGroups([DanceGuard]));
 
-        Assert.Equal(
-            (true, true),
-            (guest.Concerns(training), guest.Sees(training, holdsClubRead: false))
+        Assert.Equal((true, true), (guest.Concerns(training), guest.Sees(training, NoClubRead)));
+    }
+
+    [Fact]
+    public void Should_ConcernTheCast_When_TheActsGroupOwnsAClubTraining()
+    {
+        var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear)]);
+
+        Assert.True(guest.Concerns(TrainingOf(ForClub(owner: DanceGuard))));
+    }
+
+    [Fact]
+    public void Should_NotConcernTheCast_When_TheActsGroupOnlyParticipatesInTheTraining()
+    {
+        var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear)]);
+
+        Assert.False(
+            guest.Concerns(TrainingOf(ForGroups([MensBallet], participating: [DanceGuard])))
         );
     }
 
     [Fact]
-    public void Should_ConcernTheCast_When_TheActsGroupOnlyParticipatesInTheRehearsal()
+    public void Should_NotConcernTheCast_When_TheTrainingIsForChosenPeople()
     {
         var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear)]);
-        var rehearsal = GroupOwned(MensBallet, DanceGuard) with
-        {
-            Kind = CalendarEntryKind.Rehearsal,
-        };
 
-        Assert.True(guest.Concerns(rehearsal));
+        Assert.False(guest.Concerns(TrainingOf(ForPeople([Chosen], owner: DanceGuard))));
     }
 
     [Fact]
-    public void Should_NotConcernTheCast_When_TheEntryIsNoTrainingOrRehearsal()
+    public void Should_NotConcernTheCast_When_TheTrainingDoesNotAskForResponses()
     {
         var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear)]);
+        var silentTraining = TrainingOf(ForGroups([DanceGuard])) with { AsksForResponse = false };
 
-        Assert.False(guest.Concerns(GroupOwned(DanceGuard)));
+        Assert.False(guest.Concerns(silentTraining));
+    }
+
+    [Fact]
+    public void Should_NotConcernTheCast_When_AnEntryAskingForResponsesIsNoTraining()
+    {
+        var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear)]);
+        var trip = ForGroups([DanceGuard]) with
+        {
+            Kind = CalendarEntryKind.Trip,
+            AsksForResponse = true,
+        };
+
+        Assert.False(guest.Concerns(trip));
     }
 
     [Fact]
@@ -137,16 +232,18 @@ public sealed class CalendarTiesTests
     {
         var guest = TiesOf(castSessions: [new GroupSession(DanceGuard, SessionYear + 1)]);
 
-        Assert.False(guest.Concerns(TrainingOf(GroupOwned(DanceGuard))));
+        Assert.False(guest.Concerns(TrainingOf(ForGroups([DanceGuard]))));
     }
 
     private static CalendarEntryFacts TrainingOf(CalendarEntryFacts entry) =>
         entry with
         {
             Kind = CalendarEntryKind.Training,
+            AsksForResponse = true,
         };
 
     private static CalendarTies TiesOf(
+        int? personId = null,
         bool holdsRunningMembership = false,
         int[]? memberGroupIds = null,
         int[]? adminGroupIds = null,
@@ -154,6 +251,7 @@ public sealed class CalendarTiesTests
     ) =>
         new()
         {
+            PersonId = personId,
             HoldsRunningMembership = holdsRunningMembership,
             Pauses = [],
             MemberGroupIds = (memberGroupIds ?? []).ToHashSet(),
@@ -164,37 +262,43 @@ public sealed class CalendarTiesTests
             CastSessions = (castSessions ?? []).ToHashSet(),
         };
 
-    private static CalendarEntryFacts ClubOwned(params int[] participatingGroupIds) =>
-        new()
+    private static CalendarEntryFacts ForClub(int? owner = null, int[]? participating = null) =>
+        Entry(CalendarEntryAudience.Club, owner, participating);
+
+    private static CalendarEntryFacts ForGroups(
+        int[] audienceGroupIds,
+        int? owner = null,
+        int[]? participating = null
+    ) =>
+        Entry(CalendarEntryAudience.Groups, owner, participating) with
         {
-            OwnerGroupId = null,
-            ParticipatingGroupIds = participatingGroupIds,
-            Visibility = CalendarEntryVisibility.Club,
-            SessionYear = SessionYear,
-            Kind = CalendarEntryKind.Meeting,
-            CastSessionYear = SessionYear,
+            AudienceGroupIds = audienceGroupIds,
         };
 
-    private static CalendarEntryFacts GroupOwned(
-        int ownerGroupId,
-        params int[] participatingGroupIds
+    private static CalendarEntryFacts ForPeople(
+        int[] audiencePersonIds,
+        int? owner = null,
+        int[]? participating = null
+    ) =>
+        Entry(CalendarEntryAudience.People, owner, participating) with
+        {
+            AudiencePersonIds = audiencePersonIds,
+        };
+
+    private static CalendarEntryFacts Entry(
+        CalendarEntryAudience audience,
+        int? owner,
+        int[]? participating
     ) =>
         new()
         {
-            OwnerGroupId = ownerGroupId,
-            ParticipatingGroupIds = participatingGroupIds,
-            Visibility = CalendarEntryVisibility.Club,
-            SessionYear = SessionYear,
-            Kind = CalendarEntryKind.Meeting,
-            CastSessionYear = SessionYear,
-        };
-
-    private static CalendarEntryFacts GroupOnly(
-        int ownerGroupId,
-        params int[] participatingGroupIds
-    ) =>
-        GroupOwned(ownerGroupId, participatingGroupIds) with
-        {
-            Visibility = CalendarEntryVisibility.Group,
+            OwnerGroupId = owner,
+            ParticipatingGroupIds = participating ?? [],
+            Audience = audience,
+            AudienceGroupIds = [],
+            AudiencePersonIds = [],
+            Kind = CalendarEntryKind.Plain,
+            AsksForResponse = false,
+            StartsAt = InSession,
         };
 }

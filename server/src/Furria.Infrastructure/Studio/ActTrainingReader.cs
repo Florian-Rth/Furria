@@ -73,16 +73,15 @@ public sealed class ActTrainingReader
 
         var groupId = group.GroupId;
         var from = ClubClock.StartOfDay(ClubClock.Today(_timeProvider));
-        var kinds = CastAttendance.Kinds;
         var rows = await _dbContext
             .CalendarEntries.AsNoTracking()
+            .Where(CastAttendance.AsksItsCast)
             .Where(entry => onlyCalendarEntryId == null || entry.Id == onlyCalendarEntryId)
             .Where(entry =>
-                kinds.Contains(entry.Kind)
-                && entry.StartsAt >= from
+                entry.StartsAt >= from
                 && (
                     entry.OwnerGroupId == groupId
-                    || entry.ParticipatingGroups.Any(participant => participant.GroupId == groupId)
+                    || entry.AudienceGroups.Any(audience => audience.GroupId == groupId)
                 )
             )
             .OrderBy(entry => entry.StartsAt)

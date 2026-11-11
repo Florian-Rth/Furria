@@ -13,8 +13,8 @@ export const useCalendarSelection = (board: CalendarBoard, isWide: boolean): Cal
   const id = board.selectedId ?? (isWide ? board.leadId : null);
   const listed =
     id === null ? null : (board.entries.find((entry) => entry.calendarEntryId === id) ?? null);
-  const fetched = useCalendarEntryQuery(listed === null ? id : null);
-  const entry = listed ?? fetched.data?.entry ?? null;
+  const fetched = useCalendarEntryQuery(id);
+  const entry = fetched.data?.entry ?? listed;
   const [held, setHeld] = useState<CalendarEntry | null>(entry);
 
   if (entry !== null && entry !== held) {

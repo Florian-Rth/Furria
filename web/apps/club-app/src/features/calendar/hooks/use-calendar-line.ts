@@ -1,7 +1,8 @@
 import { useState } from 'react';
 import { useAttendanceChoice } from '@/features/attendance/hooks/use-attendance-choice';
 import type { AttendanceAnswer } from '@/features/attendance/schemas';
-import { asksForAnswer, isOver } from '../calendar-agenda';
+import { canAnswer } from '@/lib/calendar-answering';
+import { isOver } from '../calendar-agenda';
 import type { CalendarEntry } from '../schemas';
 
 export type CalendarLineAnswerState = 'none' | 'choice' | 'badge';
@@ -23,14 +24,16 @@ const stateOf = (
   nowMs: number,
   primary: boolean,
 ): CalendarLineAnswerState => {
-  if (!asksForAnswer(entry) || !primary) {
+  if (!canAnswer(entry) || !primary) {
     return 'none';
   }
+  const isClosed = entry.attendance?.isClosed ?? false;
+
   if (answer === null) {
-    return isOver(entry, nowMs) ? 'none' : 'choice';
+    return isClosed || isOver(entry, nowMs) ? 'none' : 'choice';
   }
 
-  return reopened ? 'choice' : 'badge';
+  return reopened && !isClosed ? 'choice' : 'badge';
 };
 
 export const useCalendarLine = (

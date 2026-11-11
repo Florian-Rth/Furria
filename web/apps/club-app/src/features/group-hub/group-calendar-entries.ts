@@ -1,5 +1,6 @@
 import type { GroupTone } from '@/features/groups/group-identity';
 import { toGroupTone } from '@/features/groups/group-identity';
+import { canAnswer } from '@/lib/calendar-answering';
 import { CALENDAR_KIND_LABELS } from '@/lib/calendar-copy';
 import { toTimeSpanLabel } from '@/lib/calendar-days';
 import { toIsoDay } from '@/lib/day';
@@ -84,7 +85,7 @@ export interface CalendarEntryPreview {
 }
 
 const isOwedAnswer = (entry: GroupCalendarEntry): boolean =>
-  entry.viewerMayAnswer && entry.viewerAnswer === null;
+  canAnswer(entry) && entry.viewerAnswer === null;
 
 export const toCalendarEntryPreview = (
   entries: readonly GroupCalendarEntry[],

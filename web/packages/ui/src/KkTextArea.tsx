@@ -23,6 +23,7 @@ interface KkTextAreaProps {
   placeholder?: string;
   hint?: string;
   required?: boolean;
+  readOnly?: boolean;
   error?: boolean;
   helperText?: string;
   sx?: KkSx;
@@ -41,6 +42,7 @@ export const KkTextArea: FC<KkTextAreaProps> = ({
   placeholder,
   hint,
   required,
+  readOnly,
   error,
   helperText,
   sx,
@@ -85,7 +87,7 @@ export const KkTextArea: FC<KkTextAreaProps> = ({
         rows={rows}
         variant="outlined"
         fullWidth
-        slotProps={{ htmlInput: { maxLength } }}
+        slotProps={{ htmlInput: { maxLength, readOnly } }}
       />
       {counter}
     </Stack>

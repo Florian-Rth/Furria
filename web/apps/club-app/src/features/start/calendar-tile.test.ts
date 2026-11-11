@@ -1,11 +1,15 @@
 import { describe, expect, it } from 'vitest';
-import { answerTallyOf, owedEntriesOf, splitCalendar, toEntryMark } from './calendar-tile';
+import { splitCalendar, toEntryMark } from './calendar-tile';
 import type { StartEntry } from './schemas';
 
-const entry = (calendarEntryId: number, attendance: StartEntry['attendance']): StartEntry => ({
+const entry = (
+  calendarEntryId: number,
+  attendance: StartEntry['attendance'],
+  openPolls: StartEntry['openPolls'] = [],
+): StartEntry => ({
   calendarEntryId,
   title: 'Generalprobe',
-  kind: 'rehearsal',
+  kind: 'training',
   startsAt: '2026-10-25T19:00:00+01:00',
   endsAt: null,
   isRunning: false,
@@ -13,9 +17,13 @@ const entry = (calendarEntryId: number, attendance: StartEntry['attendance']): S
   viewerHoldsVenueKey: false,
   ownerGroup: null,
   participatingGroups: [],
+  audience: 'club',
+  audienceGroups: [],
   viewerGroupIds: [],
   viewerRuns: null,
   attendance,
+  openPolls,
+  openSignUpLists: [],
   description: null,
   event: null,
 });
@@ -25,6 +33,17 @@ const yes = entry(2, { viewerAnswer: 'yes', isOwed: false });
 const maybe = entry(3, { viewerAnswer: 'maybe', isOwed: true });
 const open = entry(4, { viewerAnswer: null, isOwed: false });
 const plain = entry(5, null);
+const pollOnly = entry(6, null, [
+  {
+    pollId: 61,
+    position: 1,
+    question: 'Was essen wir?',
+    allowsMultipleChoices: false,
+    isAnonymous: false,
+    isOwed: true,
+    options: [],
+  },
+]);
 
 describe('toEntryMark', () => {
   it.each([
@@ -33,20 +52,9 @@ describe('toEntryMark', () => {
     [maybe, 'maybe'],
     [open, null],
     [plain, null],
+    [pollOnly, 'owed'],
   ])('marks entry %#', (subject, expected) => {
     expect(toEntryMark(subject)).toBe(expected);
-  });
-});
-
-describe('answerTallyOf', () => {
-  it('counts owed and answered entries apart', () => {
-    expect(answerTallyOf([owed, yes, maybe, open, plain])).toEqual({ owed: 1, answered: 2 });
-  });
-});
-
-describe('owedEntriesOf', () => {
-  it('keeps only entries still waiting for an answer', () => {
-    expect(owedEntriesOf([owed, yes, open]).map((subject) => subject.calendarEntryId)).toEqual([1]);
   });
 });
 

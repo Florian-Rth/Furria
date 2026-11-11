@@ -32,7 +32,7 @@ public sealed class DatabaseMigrationTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var mark = _fixture.Logs.Mark();
-        await using var host = await _fixture.HostOnOwnDatabaseAsync(
+        await using var host = await _fixture.HostOnEmptyDatabaseAsync(
             new Dictionary<string, string>(),
             ct
         );

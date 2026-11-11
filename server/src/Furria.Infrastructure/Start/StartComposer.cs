@@ -17,8 +17,8 @@ public static class StartComposer
     private const int RecentDays = 2;
     private const int SoonDays = 7;
     private const int WindowDays = 7;
-    private const int ShortHorizonDays = 14;
-    private const int LongHorizonDays = 42;
+    private const int TrainingOwedHorizonDays = 14;
+    private const int OwedHorizonDays = 42;
     private const int StageDays = 21;
 
     internal const int NearestReachDays = 60;
@@ -128,20 +128,17 @@ public static class StartComposer
 
     [Pure]
     private static int OwedHorizonOf(CalendarEntryKind kind) =>
-        kind
-            is CalendarEntryKind.Training
-                or CalendarEntryKind.Rehearsal
-                or CalendarEntryKind.Meeting
-            ? ShortHorizonDays
-            : LongHorizonDays;
+        kind == CalendarEntryKind.Training ? TrainingOwedHorizonDays : OwedHorizonDays;
 
     [Pure]
-    private static bool IsOwed(StartEntrySummary entry) => entry.Attendance is { IsOwed: true };
+    private static bool IsOwed(StartEntrySummary entry) =>
+        entry.Attendance is { IsOwed: true }
+        || entry.OpenPolls.Any(poll => poll.IsOwed)
+        || entry.OpenSignUpLists.Any(list => list.IsOwed);
 
     [Pure]
     private static bool IsOnStage(StartEntrySummary entry) =>
-        entry.Kind == CalendarEntryKind.Performance
-        && (entry.ViewerGroupIds.Count > 0 || entry.ViewerRuns is not null);
+        entry.ParticipatingGroups.Any(group => entry.ViewerGroupIds.Contains(group.GroupId));
 
     [Pure]
     private static IEnumerable<StartEntrySummary> InTimeOrder(

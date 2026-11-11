@@ -6,11 +6,12 @@ namespace Furria.Infrastructure.Persistence.Configurations;
 
 public sealed class VenueConfiguration : IEntityTypeConfiguration<Venue>
 {
-    private const int NameLength = 80;
     private const int StreetLength = 120;
     private const int ZipLength = 10;
     private const int CityLength = 80;
     private const int HintLength = 200;
+
+    public const int NameLength = 80;
 
     public void Configure(EntityTypeBuilder<Venue> builder)
     {

@@ -78,9 +78,11 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 VenueId = ctx.Club.Venues.IdOf("buehnenhaus"),
                 StartsAt = MeetingStart,
                 EndsAt = MeetingEnd,
-                Kind = CalendarEntryKind.Meeting,
-                Visibility = CalendarEntryVisibility.Club,
-                AsksForResponse = true,
+                Kind = CalendarEntryKind.Plain,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
+                AddOns = [PostAddOn(CalendarEntryAddOnKind.Attendance)],
                 ParticipatingGroupIds = [],
             }
         );
@@ -97,9 +99,9 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
             .CalendarEntry(result.CalendarEntryId)
             .ToHavePeriod(MeetingStart, MeetingEnd)
             .CalendarEntry(result.CalendarEntryId)
-            .ToHaveKind(CalendarEntryKind.Meeting)
+            .ToHaveKind(CalendarEntryKind.Plain)
             .CalendarEntry(result.CalendarEntryId)
-            .ToHaveVisibility(CalendarEntryVisibility.Club)
+            .ToHaveAudience(CalendarEntryAudience.Club)
             .CalendarEntry(result.CalendarEntryId)
             .ToAskForResponse(true)
             .AssertAsync(ct);
@@ -126,9 +128,11 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 VenueId = ctx.Club.Venues.IdOf("buehnenhaus"),
                 StartsAt = MeetingStart.ToOffset(berlinWinter),
                 EndsAt = MeetingEnd.ToOffset(berlinWinter),
-                Kind = CalendarEntryKind.Meeting,
-                Visibility = CalendarEntryVisibility.Club,
-                AsksForResponse = false,
+                Kind = CalendarEntryKind.Plain,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -160,9 +164,11 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 VenueId = null,
                 StartsAt = MeetingStart,
                 EndsAt = MeetingEnd,
-                Kind = CalendarEntryKind.Meeting,
-                Visibility = CalendarEntryVisibility.Club,
-                AsksForResponse = false,
+                Kind = CalendarEntryKind.Plain,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
+                AddOns = [],
                 ParticipatingGroupIds = null!,
             }
         );
@@ -208,8 +214,10 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 StartsAt = TrainingStart,
                 EndsAt = null,
                 Kind = CalendarEntryKind.Training,
-                Visibility = CalendarEntryVisibility.Club,
-                AsksForResponse = false,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -246,8 +254,10 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 StartsAt = TrainingStart,
                 EndsAt = null,
                 Kind = CalendarEntryKind.Training,
-                Visibility = CalendarEntryVisibility.Club,
-                AsksForResponse = false,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -291,9 +301,11 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 VenueId = ctx.Club.Venues.IdOf("buehnenhaus"),
                 StartsAt = MeetingStart,
                 EndsAt = MeetingEnd,
-                Kind = CalendarEntryKind.Meeting,
-                Visibility = CalendarEntryVisibility.Club,
-                AsksForResponse = false,
+                Kind = CalendarEntryKind.Plain,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -339,9 +351,9 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                                 CrisisMeeting,
                                 AbendprobeStart,
                                 AbendprobeEnd,
-                                visibility: CalendarEntryVisibility.Group,
                                 venueAlias: "buehnenhaus",
-                                ownerGroupAlias: "kindergarde"
+                                ownerGroupAlias: "kindergarde",
+                                audiencePersonAliases: ["ilka"]
                             )
                     ),
             ct
@@ -362,8 +374,10 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 StartsAt = MeetingStart,
                 EndsAt = MeetingEnd,
                 Kind = CalendarEntryKind.Training,
-                Visibility = CalendarEntryVisibility.Club,
-                AsksForResponse = false,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -405,9 +419,11 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                 VenueId = ctx.Club.Venues.IdOf("altes-lager"),
                 StartsAt = MeetingStart,
                 EndsAt = MeetingEnd,
-                Kind = CalendarEntryKind.Meeting,
-                Visibility = CalendarEntryVisibility.Club,
-                AsksForResponse = false,
+                Kind = CalendarEntryKind.Plain,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
+                AddOns = [],
                 ParticipatingGroupIds = [],
             }
         );
@@ -435,11 +451,517 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
             ClubOwned(ClubMeeting) with
             {
                 Kind = CalendarEntryKind.Event,
-                Visibility = CalendarEntryVisibility.Public,
+                Audience = CalendarEntryAudience.Club,
+                AudienceGroupIds = [],
+                AudiencePersonIds = [],
             }
         );
 
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ChooseThePeople_When_TheyMayUseTheAppWithoutAClubMembership()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var kalle = ctx.Identity.People.IdOf("kalle");
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                Audience = CalendarEntryAudience.People,
+                AudiencePersonIds = [kalle],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(result.CalendarEntryId)
+            .ToHaveAudience(CalendarEntryAudience.People)
+            .CalendarEntry(result.CalendarEntryId)
+            .ToChoosePeople(kalle)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_ReturnUnprocessableEntity_When_AChosenPersonMayNotUseTheApp()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                Audience = CalendarEntryAudience.People,
+                AudiencePersonIds = [ctx.Identity.People.IdOf("fred")],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnUnprocessableEntity_When_AnAudienceGroupIsArchived()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                Audience = CalendarEntryAudience.Groups,
+                AudienceGroupIds = [ctx.Groups.Groups.IdOf("altgarde")],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_StoreTheAudienceGroups_When_AClubEntryIsForSomeGroups()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var kindergarde = ctx.Groups.Groups.IdOf("kindergarde");
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                Audience = CalendarEntryAudience.Groups,
+                AudienceGroupIds = [kindergarde],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(result.CalendarEntryId)
+            .ToHaveAudience(CalendarEntryAudience.Groups)
+            .CalendarEntry(result.CalendarEntryId)
+            .ToCarryAudienceGroups(kindergarde)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepTheAddOnsInCardOrder_When_TheEntryAttachesThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                AddOns =
+                [
+                    PostAddOn(CalendarEntryAddOnKind.ParticipatingGroups),
+                    PostAddOn(CalendarEntryAddOnKind.Attendance),
+                ],
+                ParticipatingGroupIds = [ctx.Groups.Groups.IdOf("kindergarde")],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(result.CalendarEntryId)
+            .ToCarryAddOns(
+                CalendarEntryAddOnKind.ParticipatingGroups,
+                CalendarEntryAddOnKind.Attendance
+            )
+            .CalendarEntry(result.CalendarEntryId)
+            .ToAskForResponse(true)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_StoreThePollsInCardOrder_When_TheEntryAttachesThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                AddOns =
+                [
+                    PollAddOn("Was bringst du mit?", " Kuchen ", "Obst"),
+                    PostAddOn(CalendarEntryAddOnKind.Attendance),
+                    PollAddOn("Wann hast du Zeit?", "Montag", "Dienstag", "Mittwoch"),
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(result.CalendarEntryId)
+            .ToHavePollsAt(
+                (0, "Was bringst du mit?", "Kuchen, Obst"),
+                (2, "Wann hast du Zeit?", "Montag, Dienstag, Mittwoch")
+            )
+            .CalendarEntry(result.CalendarEntryId)
+            .ToCarryAddOns(CalendarEntryAddOnKind.Attendance)
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_StoreTheSignUpListsInCardOrder_When_TheEntryAttachesThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                AddOns =
+                [
+                    PostAddOn(CalendarEntryAddOnKind.Attendance),
+                    SignUpListAddOn(" Wer bringt was mit? ", " Bitte bis Freitag "),
+                    PollAddOn("Kommst du?", "Ja", "Nein"),
+                    SignUpListAddOn("Aufbau", "  "),
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(result.CalendarEntryId)
+            .ToHaveSignUpListsAt(
+                (1, "Wer bringt was mit?", "Bitte bis Freitag"),
+                (3, "Aufbau", null)
+            )
+            .AssertAsync(ct);
+    }
+
+    [Theory]
+    [InlineData("   ")]
+    [InlineData(null)]
+    public async Task Should_ReturnBadRequest_When_TheSignUpListHasNoTitle(string? title)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var list = SignUpListAddOn("Aufbau", null);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                AddOns =
+                [
+                    title is null
+                        ? list with
+                        {
+                            SignUpList = null,
+                            DaySchedule = null,
+                        }
+                        : list with
+                        {
+                            SignUpList = list.SignUpList! with { Title = title },
+                        },
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_StoreTheDaySchedulesInCardOrder_When_TheEntryAttachesThem()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                AddOns =
+                [
+                    PollAddOn("Kommst du?", "Ja", "Nein"),
+                    DayScheduleAddOn(
+                        " Hinfahrt ",
+                        (0, new TimeOnly(19, 30), " Abfahrt am Bus "),
+                        (0, new TimeOnly(18, 45), "Treffpunkt Halle")
+                    ),
+                    DayScheduleAddOn("  ", (0, new TimeOnly(22, 0), "Heimfahrt")),
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(result.CalendarEntryId)
+            .ToHaveDaySchedulesAt((1, "Hinfahrt"), (2, null))
+            .CalendarEntry(result.CalendarEntryId)
+            .ToHaveDayScheduleSteps(
+                (1, 0, new TimeOnly(18, 45), "Treffpunkt Halle"),
+                (1, 0, new TimeOnly(19, 30), "Abfahrt am Bus"),
+                (2, 0, new TimeOnly(22, 0), "Heimfahrt")
+            )
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_KeepAStepOnTheLastDay_When_TheEntrySpansSeveralDays()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                EndsAt = MeetingEnd.AddDays(2),
+                AddOns = [DayScheduleAddOn(null, (2, new TimeOnly(10, 0), "Rückfahrt"))],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(result.CalendarEntryId)
+            .ToHaveDayScheduleSteps((0, 2, new TimeOnly(10, 0), "Rückfahrt"))
+            .AssertAsync(ct);
+    }
+
+    [Fact]
+    public async Task Should_CountTheClubDays_When_TheEntryRunsPastMidnightInTheClubsTimeZone()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var lateEvening = new DateTimeOffset(2027, 1, 20, 22, 30, 0, TimeSpan.Zero);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, result) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                StartsAt = lateEvening,
+                EndsAt = lateEvening.AddHours(1),
+                AddOns = [DayScheduleAddOn(null, (1, new TimeOnly(0, 15), "Heimfahrt"))],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        await ctx
+            .Expected.CalendarEntry(result.CalendarEntryId)
+            .ToHaveDayScheduleSteps((0, 1, new TimeOnly(0, 15), "Heimfahrt"))
+            .AssertAsync(ct);
+    }
+
+    [Theory]
+    [InlineData(1, "Rückfahrt")]
+    [InlineData(-1, "Vorabend")]
+    [InlineData(0, "   ")]
+    public async Task Should_ReturnBadRequest_When_AStepIsInvalid(int day, string text)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                AddOns = [DayScheduleAddOn(null, (day, new TimeOnly(10, 0), text))],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_TheDayScheduleHasNoSteps()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(ClubOwned(ClubMeeting) with { AddOns = [DayScheduleAddOn("Ablauf")] });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_ANewPollNamesHeldOptions()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var poll = PollAddOn("Kommst du?", "Ja", "Nein");
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                AddOns =
+                [
+                    poll with
+                    {
+                        Poll = poll.Poll! with
+                        {
+                            Options =
+                            [
+                                .. poll.Poll.Options.Select(option => option with { OptionId = 7 }),
+                            ],
+                        },
+                    },
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Theory]
+    [InlineData("Ja")]
+    [InlineData("Ja|ja ")]
+    [InlineData("Ja| ")]
+    public async Task Should_ReturnBadRequest_When_ThePollOptionsAreUnusable(string options)
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(ClubOwned(ClubMeeting) with { AddOns = [PollAddOn("Kommst du?", options.Split('|'))] });
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_GroupsParticipateWithoutTheirAddOn()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                ParticipatingGroupIds = [ctx.Groups.Groups.IdOf("kindergarde")],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnBadRequest_When_AnAddOnIsAttachedTwice()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+
+        var client = await ctx.Identity.ClientForAsync("ilka", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(ClubMeeting) with
+            {
+                AddOns =
+                [
+                    PostAddOn(CalendarEntryAddOnKind.Attendance),
+                    PostAddOn(CalendarEntryAddOnKind.Attendance),
+                ],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_ReturnUnprocessableEntity_When_OnlyTheOwnerWouldParticipate()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var tanzgarde = ctx.Groups.Groups.IdOf("tanzgarde");
+
+        var client = await ctx.Identity.ClientForAsync("chris", ct);
+        var (response, _) = await client.POSTAsync<
+            PostCalendarEntry,
+            PostCalendarEntryRequest,
+            PostCalendarEntryResponse
+        >(
+            ClubOwned(DanceGuardTraining) with
+            {
+                OwnerGroupId = tanzgarde,
+                Kind = CalendarEntryKind.Training,
+                Audience = CalendarEntryAudience.Groups,
+                AudienceGroupIds = [tanzgarde],
+                AddOns = [PostAddOn(CalendarEntryAddOnKind.ParticipatingGroups)],
+                ParticipatingGroupIds = [tanzgarde],
+            }
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        var failures = await ReadFailuresAsync(response, ct);
+        Assert.Equal(["Wähle mindestens eine mitwirkende Gruppe."], failures[ValidationField]);
     }
 
     private static PostCalendarEntryRequest ClubOwned(string title) =>
@@ -451,9 +973,11 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
             VenueId = null,
             StartsAt = MeetingStart,
             EndsAt = MeetingEnd,
-            Kind = CalendarEntryKind.Meeting,
-            Visibility = CalendarEntryVisibility.Club,
-            AsksForResponse = false,
+            Kind = CalendarEntryKind.Plain,
+            Audience = CalendarEntryAudience.Club,
+            AudienceGroupIds = [],
+            AudiencePersonIds = [],
+            AddOns = [],
             ParticipatingGroupIds = [],
         };
 
@@ -464,7 +988,9 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
             .AddMembership("ilka-first", "ilka", JoinedIn2017)
             .AddPerson("chris", "Chris", "Trainer")
             .AddAccount("chris")
-            .AddMembership("chris-first", "chris", JoinedIn2017);
+            .AddMembership("chris-first", "chris", JoinedIn2017)
+            .AddPerson("kalle", "Kalle", "Kindergarde")
+            .AddPerson("fred", "Fred", "Fremd");
 
     private static void CalendarRole(RoleSeedBuilder roles) =>
         roles.AddRoleWithHolder(
@@ -485,11 +1011,18 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
                         groups
                             .AddGroup("tanzgarde", "Tanzgarde")
                             .AddGroup("kindergarde", "Kindergarde")
+                            .AddGroup("altgarde", "Altgarde", archivedOn: ArchivedIn2026)
                             .AddGroupAdmin(
                                 "chris-tanzgarde",
                                 "tanzgarde",
                                 "chris",
                                 "Trainer",
+                                JoinedIn2017
+                            )
+                            .AddGroupMembership(
+                                "kalle-kindergarde",
+                                "kindergarde",
+                                "kalle",
                                 JoinedIn2017
                             )
                     )
@@ -506,4 +1039,81 @@ public sealed class PostCalendarEntryTests : IClassFixture<ApiTestFixture>
         return payload?.Errors
             ?? throw new InvalidOperationException("The failure response carried no errors.");
     }
+
+    private static PostCalendarEntryAddOnDataDto PostAddOn(CalendarEntryAddOnKind kind) =>
+        new()
+        {
+            Kind = kind,
+            Poll = null,
+            SignUpList = null,
+            DaySchedule = null,
+        };
+
+    private static PostCalendarEntryAddOnDataDto SignUpListAddOn(string title, string? hint) =>
+        new()
+        {
+            Kind = CalendarEntryAddOnKind.SignUpList,
+            Poll = null,
+            SignUpList = new()
+            {
+                SignUpListId = null,
+                Title = title,
+                Hint = hint,
+                SignUpUntil = null,
+            },
+            DaySchedule = null,
+        };
+
+    private static PostCalendarEntryAddOnDataDto DayScheduleAddOn(
+        string? title,
+        params (int Day, TimeOnly Time, string Text)[] steps
+    ) =>
+        new()
+        {
+            Kind = CalendarEntryAddOnKind.DaySchedule,
+            Poll = null,
+            SignUpList = null,
+            DaySchedule = new()
+            {
+                DayScheduleId = null,
+                Title = title,
+                Steps =
+                [
+                    .. steps.Select(step => new PostCalendarEntryDayScheduleStepDataDto
+                    {
+                        StepId = null,
+                        Day = step.Day,
+                        Time = step.Time,
+                        Text = step.Text,
+                    }),
+                ],
+            },
+        };
+
+    private static PostCalendarEntryAddOnDataDto PollAddOn(
+        string question,
+        params string[] options
+    ) =>
+        new()
+        {
+            Kind = CalendarEntryAddOnKind.Poll,
+            SignUpList = null,
+            DaySchedule = null,
+            Poll = new()
+            {
+                PollId = null,
+                Question = question,
+                AllowsMultipleChoices = false,
+                IsAnonymous = false,
+                VotesUntil = null,
+                Options =
+                [
+                    .. options.Select(label => new PostCalendarEntryPollOptionDataDto
+                    {
+                        OptionId = null,
+                        Label = label,
+                    }),
+                ],
+            },
+        };
 }

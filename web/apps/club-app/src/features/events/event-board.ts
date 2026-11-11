@@ -30,7 +30,7 @@ export const DUE_SOON_DAYS = 14;
 export type CellFact =
   | { kind: 'online'; sinceDay: string }
   | { kind: 'publishReady' }
-  | { kind: 'blocked'; missing: number }
+  | { kind: 'blocked'; details: FactDetail[] }
   | { kind: 'neverPublished' }
   | { kind: 'factsMissing'; details: FactDetail[] }
   | { kind: 'factsComplete' }
@@ -91,7 +91,7 @@ const websiteCellOf = (event: PlannedEvent): BoardCell => {
       return {
         ...base,
         state: stepStatusOf(event, 'details')?.state === 'overdue' ? 'overdue' : 'open',
-        fact: { kind: 'blocked', missing: factDetailsOf(event.detailsMissing).length },
+        fact: { kind: 'blocked', details: factDetailsOf(event.detailsMissing) },
       };
   }
 };
