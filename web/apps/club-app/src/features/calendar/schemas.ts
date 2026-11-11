@@ -84,6 +84,12 @@ export const CalendarAttendancePersonSchema = z.object({
 });
 export type CalendarAttendancePerson = z.infer<typeof CalendarAttendancePersonSchema>;
 
+export const CalendarReminderSchema = z.object({
+  lastRemindedAt: z.iso.datetime({ offset: true }).nullable(),
+  remindableFrom: z.iso.datetime({ offset: true }).nullable(),
+});
+export type CalendarReminder = z.infer<typeof CalendarReminderSchema>;
+
 export const CalendarPollSchema = z.object({
   pollId: z.number().int(),
   question: z.string(),
@@ -97,6 +103,7 @@ export const CalendarPollSchema = z.object({
   voterCount: z.number().int(),
   concernedCount: z.number().int().nullable(),
   notAnswered: z.array(CalendarAttendancePersonSchema).nullable(),
+  reminder: CalendarReminderSchema.nullable(),
   options: z.array(CalendarPollOptionSchema),
 });
 export type CalendarPoll = z.infer<typeof CalendarPollSchema>;
@@ -123,6 +130,7 @@ export const CalendarSignUpListSchema = z.object({
   lines: z.array(CalendarSignUpLineSchema),
   concernedCount: z.number().int().nullable(),
   notAnswered: z.array(CalendarAttendancePersonSchema).nullable(),
+  reminder: CalendarReminderSchema.nullable(),
 });
 export type CalendarSignUpList = z.infer<typeof CalendarSignUpListSchema>;
 
@@ -183,6 +191,7 @@ export const CalendarAttendanceSchema = z.object({
   no: z.number().int(),
   answers: z.array(CalendarAttendanceAnswerSchema).nullable(),
   notAnswered: z.array(CalendarAttendancePersonSchema).nullable(),
+  reminder: CalendarReminderSchema.nullable(),
 });
 export type CalendarAttendance = z.infer<typeof CalendarAttendanceSchema>;
 

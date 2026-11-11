@@ -1069,10 +1069,13 @@ Made precise when L2 was built (ruled 2026-10-02):
   the training's trail shows both. Undoing a mark restores the answer before it.
 - **Push** (ruled 2026-11-10). A phone is pushed when a new entry asks her for an attendance
   response, when she is chosen for a chosen-people entry, and when an entry she answered *Ja* or
-  *Vielleicht* moves in time or place or is deleted. Nothing else pushes — no reminder before an
-  unanswered entry, nothing for polls, sign-up lists or day schedules.
+  *Vielleicht* moves in time or place or is deleted.
+- **Reminder** (*Erinnern*, ruled 2026-11-10). An organiser may push everyone a Zu-/Absage, an
+  Umfrage or an Eintragsliste still waits for — the people it concerns who have not answered, not
+  herself. Only by hand, at most once per Funktion every six hours, and only while it is open.
+  Nothing reminds automatically, and day schedules never push.
 _UI copy_: Kalendereintrag; Eigentümer; Für wen (Verein / Gruppen / Ausgewählte Personen);
-Zu-/Absage
+Zu-/Absage; Erinnern, Erinnert um …
 _Avoid_: **appointment**, **group appointment**, schedule, calling it an event, collapsing the
 audience into the owner, participant (that is one person's attendance response), guest group,
 **visibility** (retired 2026-11-10 — say **audience**), confusing participating groups with the

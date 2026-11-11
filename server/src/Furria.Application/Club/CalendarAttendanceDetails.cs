@@ -13,4 +13,6 @@ public sealed record CalendarAttendanceDetails
     public required IReadOnlyList<CalendarAttendanceAnswerDetails>? Answers { get; init; }
 
     public required IReadOnlyList<CalendarAttendancePerson>? NotAnswered { get; init; }
+
+    public CalendarReminderDetails? Reminder { get; init; }
 }

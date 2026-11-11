@@ -821,6 +821,7 @@ public sealed partial class CalendarService
             No = row.AttendanceCounts.No,
             Answers = roll?.Answers,
             NotAnswered = roll?.NotAnswered,
+            Reminder = roll?.Reminder,
         };
 
     private PictureDetails? EventPictureOf(int eventId, EventFactsRow facts) =>

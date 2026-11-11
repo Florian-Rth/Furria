@@ -12,6 +12,8 @@ namespace Furria.Infrastructure.Club;
 
 public sealed class CalendarPushExpansion
 {
+    private static readonly IReadOnlySet<int> NobodyAnswered = new HashSet<int>();
+
     private readonly AppDbContext _dbContext;
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly TimeProvider _timeProvider;
@@ -94,7 +96,7 @@ public sealed class CalendarPushExpansion
         CancellationToken ct
     )
     {
-        if (!CalendarPushRules.IsDue(push.Reason, push.StartsAt, push.EndsAt, now))
+        if (!IsDue(push, now))
             return [];
 
         if (push.Reason != CalendarPushReason.Deleted && !await EntryExistsAsync(push, ct))
@@ -104,7 +106,13 @@ public sealed class CalendarPushExpansion
         var today = ClubClock.DayOf(now);
         var outgoing = new List<OutboxPush>();
 
-        var recipients = await CandidateAccountsAsync(push, ct);
+        var answered = await AnsweredBeforeReminderAsync(push, ct);
+        if (answered is null)
+            return [];
+
+        var recipients = (await CandidateAccountsAsync(push, ct))
+            .Where(recipient => !answered.Contains(recipient.PersonId))
+            .ToList();
         var tiesByPerson = await _dbContext.CalendarTiesOfManyAsync(
             [.. recipients.Select(recipient => recipient.PersonId)],
             today,
@@ -129,6 +137,20 @@ public sealed class CalendarPushExpansion
         return outgoing;
     }
 
+    [Pure]
+    private static bool IsDue(OutboxCalendarPush push, DateTimeOffset now) =>
+        push.ReminderClosesAt is { } closesAt
+            ? CalendarPushRules.IsReminderDue(closesAt, now)
+            : CalendarPushRules.IsDue(push.Reason, push.StartsAt, push.EndsAt, now);
+
+    private async Task<IReadOnlySet<int>?> AnsweredBeforeReminderAsync(
+        OutboxCalendarPush push,
+        CancellationToken ct
+    ) =>
+        push.ReminderKind is { } kind && push.ReminderAddOnId is { } addOnId
+            ? await _dbContext.OpenReminderAnsweredIdsAsync(kind, addOnId, ct)
+            : NobodyAnswered;
+
     private Task<bool> EntryExistsAsync(OutboxCalendarPush push, CancellationToken ct) =>
         _dbContext.CalendarEntries.AnyAsync(entry => entry.Id == push.CalendarEntryId, ct);
 
@@ -147,7 +169,7 @@ public sealed class CalendarPushExpansion
         if (push.ActorPersonId is { } actorPersonId)
             accounts = accounts.Where(account => account.PersonId != actorPersonId);
 
-        if (push.Reason != CalendarPushReason.AsksForResponse)
+        if (!CalendarPushRules.ReachesEveryoneConcerned(push.Reason))
         {
             var personIds = push.PersonIds;
             accounts = accounts.Where(account => personIds.Contains(account.PersonId!.Value));

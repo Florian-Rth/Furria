@@ -33,11 +33,18 @@ public static class CalendarPushRules
             : CalendarAddOnClosing.EntryEndOf(startsAt, endsAt) > now;
 
     [Pure]
+    public static bool IsReminderDue(DateTimeOffset closesAt, DateTimeOffset now) => closesAt > now;
+
+    [Pure]
+    public static bool ReachesEveryoneConcerned(CalendarPushReason reason) =>
+        reason is CalendarPushReason.AsksForResponse or CalendarPushReason.Reminder;
+
+    [Pure]
     public static bool MayConcern(
         CalendarPushReason reason,
         CalendarEntryFacts entry,
         CalendarTies ties
-    ) => reason != CalendarPushReason.AsksForResponse || ties.Concerns(entry);
+    ) => !ReachesEveryoneConcerned(reason) || ties.Concerns(entry);
 
     [Pure]
     public static bool Reaches(

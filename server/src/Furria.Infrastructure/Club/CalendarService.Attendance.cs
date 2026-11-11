@@ -125,6 +125,7 @@ public sealed partial class CalendarService
 
     private sealed record AttendanceRoll(
         IReadOnlyList<CalendarAttendanceAnswerDetails> Answers,
-        IReadOnlyList<CalendarAttendancePerson>? NotAnswered
+        IReadOnlyList<CalendarAttendancePerson>? NotAnswered,
+        CalendarReminderDetails? Reminder
     );
 }

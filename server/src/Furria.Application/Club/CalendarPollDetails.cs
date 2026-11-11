@@ -24,5 +24,7 @@ public sealed record CalendarPollDetails
 
     public IReadOnlyList<CalendarAttendancePerson>? NotAnswered { get; init; }
 
+    public CalendarReminderDetails? Reminder { get; init; }
+
     public required IReadOnlyList<CalendarPollOptionDetails> Options { get; init; }
 }

@@ -77,6 +77,7 @@ internal static class CalendarPollRecords
                 poll.ClosedBy == null ? null : poll.ClosedBy.FirstName,
                 poll.ClosedBy == null ? null : poll.ClosedBy.LastName,
                 poll.CalendarEntry!.StartsAt,
+                poll.LastRemindedAt,
                 poll.Options.OrderBy(option => option.Position)
                     .Select(option => new OptionRow(option.Id, option.Label))
                     .ToList()
@@ -113,7 +114,8 @@ internal static class CalendarPollRecords
                             .. group.Select(poll => new PlacedPoll(
                                 poll.Position,
                                 ToDetails(poll, [.. votesByPoll[poll.PollId]], viewerPersonId, now),
-                                VoterIdsOf(votesByPoll[poll.PollId])
+                                VoterIdsOf(votesByPoll[poll.PollId]),
+                                poll.LastRemindedAt
                             )),
                         ]
             );
@@ -382,6 +384,7 @@ internal static class CalendarPollRecords
         string? ClosedByFirstName,
         string? ClosedByLastName,
         DateTimeOffset EntryStartsAt,
+        DateTimeOffset? LastRemindedAt,
         IReadOnlyList<OptionRow> Options
     );
 
@@ -399,5 +402,6 @@ internal static class CalendarPollRecords
 internal sealed record PlacedPoll(
     int Position,
     CalendarPollDetails Details,
-    IReadOnlySet<int> VoterIds
+    IReadOnlySet<int> VoterIds,
+    DateTimeOffset? LastRemindedAt
 );

@@ -20,5 +20,7 @@ public sealed record CalendarSignUpListDetails
 
     public IReadOnlyList<CalendarAttendancePerson>? NotAnswered { get; init; }
 
+    public CalendarReminderDetails? Reminder { get; init; }
+
     public required IReadOnlyList<CalendarSignUpLineDetails> Lines { get; init; }
 }

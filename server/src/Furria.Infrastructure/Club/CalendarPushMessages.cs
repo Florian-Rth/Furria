@@ -23,7 +23,8 @@ internal static class CalendarPushMessages
                 CultureInfo.InvariantCulture,
                 $"calendar-entry-{push.CalendarEntryId}"
             ),
-            ExpiresAt = now + CalendarPushRules.TimeToLive(push.StartsAt, now),
+            ExpiresAt =
+                now + CalendarPushRules.TimeToLive(push.ReminderClosesAt ?? push.StartsAt, now),
         };
 
     [Pure]
@@ -32,6 +33,7 @@ internal static class CalendarPushMessages
         {
             CalendarPushReason.Moved => $"Geändert: {push.Title}",
             CalendarPushReason.Deleted => $"Entfällt: {push.Title}",
+            CalendarPushReason.Reminder => $"Erinnerung: {push.Title}",
             _ => push.Title,
         };
 
@@ -41,8 +43,18 @@ internal static class CalendarPushMessages
         {
             CalendarPushReason.Moved => $"Jetzt {SlotOf(push)}.",
             CalendarPushReason.Deleted => $"{SlotOf(push)} fällt aus.",
+            CalendarPushReason.Reminder => $"{SlotOf(push)}. {ReminderAskOf(push)}",
             _ when push.AsksForResponse => $"{SlotOf(push)}. Bitte sag zu oder ab.",
             _ => $"{SlotOf(push)}. Du bist eingeladen.",
+        };
+
+    [Pure]
+    private static string ReminderAskOf(OutboxCalendarPush push) =>
+        push.ReminderKind switch
+        {
+            CalendarEntryAddOnKind.Poll => $"Bitte stimm ab: {push.ReminderSubject}",
+            CalendarEntryAddOnKind.SignUpList => $"Bitte trag dich ein: {push.ReminderSubject}",
+            _ => "Bitte sag zu oder ab.",
         };
 
     [Pure]

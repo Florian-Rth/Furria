@@ -2,6 +2,7 @@ using System.Diagnostics.Contracts;
 using Furria.Application.Club;
 using Furria.Application.Results;
 using Furria.Core.Club;
+using Microsoft.EntityFrameworkCore;
 
 namespace Furria.Infrastructure.Club;
 
@@ -83,6 +84,7 @@ public sealed partial class CalendarService
                             {
                                 ConcernedCount = ShareTotalOf(concerned, poll.VoterIds),
                                 NotAnswered = organises ? MissingFrom(named, poll.VoterIds) : null,
+                                Reminder = ReminderOf(poll.LastRemindedAt, organises),
                             },
                         }
                     ),
@@ -95,7 +97,10 @@ public sealed partial class CalendarService
                     .. lists.Select(list =>
                         list with
                         {
-                            Details = WithConcern(list.Details, concerned, named, organises),
+                            Details = WithConcern(list.Details, concerned, named, organises) with
+                            {
+                                Reminder = ReminderOf(list.LastRemindedAt, organises),
+                            },
                         }
                     ),
                 ],
@@ -123,6 +128,9 @@ public sealed partial class CalendarService
             answers,
             organises
                 ? MissingFrom(named, answers.Select(answer => answer.PersonId).ToHashSet())
+                : null,
+            organises
+                ? ReminderOf(await AttendanceLastRemindedAtAsync(calendarEntryId, ct), true)
                 : null
         );
     }
@@ -143,6 +151,29 @@ public sealed partial class CalendarService
             NotAnswered = organises ? MissingFrom(named, signedUpIds) : null,
         };
     }
+
+    private Task<DateTimeOffset?> AttendanceLastRemindedAtAsync(
+        int calendarEntryId,
+        CancellationToken ct
+    ) =>
+        _dbContext
+            .CalendarEntries.AsNoTracking()
+            .Where(entry => entry.Id == calendarEntryId)
+            .Select(entry => entry.AttendanceLastRemindedAt)
+            .SingleOrDefaultAsync(ct);
+
+    [Pure]
+    private static CalendarReminderDetails? ReminderOf(
+        DateTimeOffset? lastRemindedAt,
+        bool organises
+    ) =>
+        organises
+            ? new CalendarReminderDetails
+            {
+                LastRemindedAt = lastRemindedAt,
+                RemindableFrom = CalendarReminderRules.RemindableFrom(lastRemindedAt),
+            }
+            : null;
 
     [Pure]
     private static int ShareTotalOf(IReadOnlySet<int> concerned, IReadOnlySet<int> answeredIds) =>

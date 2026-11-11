@@ -20,6 +20,8 @@ public sealed class CalendarSignUpList : ITimestamped
 
     public int? ClosedByPersonId { get; set; }
 
+    public DateTimeOffset? LastRemindedAt { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }

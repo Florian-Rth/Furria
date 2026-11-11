@@ -145,6 +145,23 @@ export const requestSignUpListClosing = (
     accessToken,
   });
 
+export interface CalendarReminderRequest {
+  calendarEntryId: number;
+  kind: 'attendance' | 'poll' | 'signUpList';
+  addOnId: number | null;
+}
+
+export const requestCalendarReminder = (
+  { calendarEntryId, kind, addOnId }: CalendarReminderRequest,
+  accessToken: string,
+): Promise<void> =>
+  apiFetch(`/api/calendar/entries/${calendarEntryId}/reminders`, {
+    method: 'POST',
+    body: { kind, addOnId },
+    schema: NoContentSchema,
+    accessToken,
+  });
+
 export const requestCalendarEntryDeletion = (
   calendarEntryId: number,
   accessToken: string,

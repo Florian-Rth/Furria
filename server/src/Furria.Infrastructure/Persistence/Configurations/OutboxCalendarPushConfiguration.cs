@@ -8,10 +8,17 @@ namespace Furria.Infrastructure.Persistence.Configurations;
 public sealed class OutboxCalendarPushConfiguration : IEntityTypeConfiguration<OutboxCalendarPush>
 {
     private const int EnumLength = 32;
+    private const int ReminderSubjectLength = 200;
 
     private static readonly string KnownReasons = NamesOf<CalendarPushReason>();
     private static readonly string KnownKinds = NamesOf<CalendarEntryKind>();
     private static readonly string KnownAudiences = NamesOf<CalendarEntryAudience>();
+    private static readonly string KnownReminderKinds = string.Join(
+        ", ",
+        Enum.GetValues<CalendarEntryAddOnKind>()
+            .Where(CalendarReminderRules.Reminds)
+            .Select(kind => $"'{kind}'")
+    );
 
     public void Configure(EntityTypeBuilder<OutboxCalendarPush> builder)
     {
@@ -31,7 +38,15 @@ public sealed class OutboxCalendarPushConfiguration : IEntityTypeConfiguration<O
                 );
                 table.HasCheckConstraint(
                     "ck_outbox_calendar_push_recipients",
-                    $"reason = '{nameof(CalendarPushReason.AsksForResponse)}' OR cardinality(person_ids) > 0"
+                    $"reason IN ('{nameof(CalendarPushReason.AsksForResponse)}', '{nameof(CalendarPushReason.Reminder)}') OR cardinality(person_ids) > 0"
+                );
+                table.HasCheckConstraint(
+                    "ck_outbox_calendar_push_reminder_kind",
+                    $"reminder_kind IS NULL OR reminder_kind IN ({KnownReminderKinds})"
+                );
+                table.HasCheckConstraint(
+                    "ck_outbox_calendar_push_reminder",
+                    $"(reason = '{nameof(CalendarPushReason.Reminder)}') = (reminder_kind IS NOT NULL AND reminder_closes_at IS NOT NULL)"
                 );
             }
         );
@@ -40,6 +55,11 @@ public sealed class OutboxCalendarPushConfiguration : IEntityTypeConfiguration<O
         builder.Property(push => push.Reason).HasConversion<string>().HasMaxLength(EnumLength);
         builder.Property(push => push.Kind).HasConversion<string>().HasMaxLength(EnumLength);
         builder.Property(push => push.Audience).HasConversion<string>().HasMaxLength(EnumLength);
+        builder
+            .Property(push => push.ReminderKind)
+            .HasConversion<string>()
+            .HasMaxLength(EnumLength);
+        builder.Property(push => push.ReminderSubject).HasMaxLength(ReminderSubjectLength);
         builder.Property(push => push.PersonIds).IsRequired();
         builder.Property(push => push.ParticipatingGroupIds).IsRequired();
         builder.Property(push => push.AudienceGroupIds).IsRequired();

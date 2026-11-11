@@ -1,5 +1,6 @@
 import { KkSignUpSheet } from '@furria/ui/KkSignUpSheet';
 import type { FC } from 'react';
+import { toSignUpListReminderSource } from '../calendar-reminders';
 import { SIGN_UP_LINE_TEXT_MAX_LENGTH } from '../calendar-sign-up-lists';
 import { useCalendarSignUpLineRemoval } from '../hooks/use-calendar-sign-up-line-removal';
 import { useCalendarSignUpList } from '../hooks/use-calendar-sign-up-list';
@@ -7,6 +8,7 @@ import { useCalendarSignUpListClosing } from '../hooks/use-calendar-sign-up-list
 import type { CalendarSignUpList } from '../schemas';
 import { CalendarCloseAction } from './CalendarCloseAction';
 import { CalendarNotAnsweredRoll } from './CalendarNotAnsweredRoll';
+import { CalendarReminderAction } from './CalendarReminderAction';
 import { CalendarSignUpLineRemovalDialog } from './CalendarSignUpLineRemovalDialog';
 
 const LINES_LABEL = 'Einträge';
@@ -14,12 +16,14 @@ const OWN_LINE_LABEL = 'Dein Eintrag';
 const CLOSE_LABEL = 'Liste schließen';
 
 interface CalendarDetailSignUpListProps {
+  calendarEntryId: number;
   list: CalendarSignUpList;
   mayModerate: boolean;
   mayAnswer: boolean;
 }
 
 export const CalendarDetailSignUpList: FC<CalendarDetailSignUpListProps> = ({
+  calendarEntryId,
   list,
   mayModerate,
   mayAnswer,
@@ -29,6 +33,7 @@ export const CalendarDetailSignUpList: FC<CalendarDetailSignUpListProps> = ({
   const control = useCalendarSignUpList(list, mayModerate, mayAnswer, removal);
   const entryName = `sign-up-line-${list.signUpListId}`;
   const isRemovalOpen = removal.removal !== null;
+  const reminderSource = toSignUpListReminderSource(calendarEntryId, list);
 
   const lines = control.lines.map((line) => (
     <KkSignUpSheet.Line
@@ -77,6 +82,7 @@ export const CalendarDetailSignUpList: FC<CalendarDetailSignUpListProps> = ({
       <KkSignUpSheet.Head title={control.title} hint={control.hint} meta={control.meta} />
       {linesList}
       <CalendarNotAnsweredRoll label={control.title} notAnswered={list.notAnswered} />
+      <CalendarReminderAction source={reminderSource} />
       {entry}
       {closeAction}
       <CalendarSignUpLineRemovalDialog

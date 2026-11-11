@@ -46,6 +46,7 @@ describe('toAttendanceRoll', () => {
         no: 1,
         answers: [BEA_YES, DORA_NO, MONA_YES_BY_BEA],
         notAnswered: null,
+        reminder: null,
       },
       expected: {
         isClosed: false,
@@ -68,7 +69,15 @@ describe('toAttendanceRoll', () => {
       },
     },
     {
-      attendance: { isClosed: true, yes: 0, maybe: 0, no: 0, answers: [], notAnswered: [KAI] },
+      attendance: {
+        isClosed: true,
+        yes: 0,
+        maybe: 0,
+        no: 0,
+        answers: [],
+        notAnswered: [KAI],
+        reminder: null,
+      },
       expected: {
         isClosed: true,
         groups: [
@@ -80,7 +89,15 @@ describe('toAttendanceRoll', () => {
       },
     },
     {
-      attendance: { isClosed: false, yes: 4, maybe: 1, no: 0, answers: null, notAnswered: null },
+      attendance: {
+        isClosed: false,
+        yes: 4,
+        maybe: 1,
+        no: 0,
+        answers: null,
+        notAnswered: null,
+        reminder: null,
+      },
       expected: {
         isClosed: false,
         groups: [

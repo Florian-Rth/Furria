@@ -274,6 +274,8 @@ public sealed record CalendarAttendanceDto
 
     public required IReadOnlyList<CalendarAttendancePersonDto>? NotAnswered { get; init; }
 
+    public required CalendarReminderDto? Reminder { get; init; }
+
     [Pure]
     public static CalendarAttendanceDto From(CalendarAttendanceDetails attendance) =>
         new()
@@ -288,7 +290,25 @@ public sealed record CalendarAttendanceDto
             NotAnswered = attendance.NotAnswered is { } people
                 ? [.. people.Select(CalendarAttendancePersonDto.From)]
                 : null,
+            Reminder = CalendarReminderDto.From(attendance.Reminder),
         };
+}
+
+public sealed record CalendarReminderDto
+{
+    public required DateTimeOffset? LastRemindedAt { get; init; }
+
+    public required DateTimeOffset? RemindableFrom { get; init; }
+
+    [Pure]
+    public static CalendarReminderDto? From(CalendarReminderDetails? reminder) =>
+        reminder is null
+            ? null
+            : new()
+            {
+                LastRemindedAt = reminder.LastRemindedAt,
+                RemindableFrom = reminder.RemindableFrom,
+            };
 }
 
 public sealed record CalendarAttendanceAnswerDto
@@ -425,6 +445,8 @@ public sealed record CalendarSignUpListDto
 
     public required IReadOnlyList<CalendarAttendancePersonDto>? NotAnswered { get; init; }
 
+    public required CalendarReminderDto? Reminder { get; init; }
+
     [Pure]
     public static CalendarSignUpListDto From(CalendarSignUpListDetails list) =>
         new()
@@ -442,6 +464,7 @@ public sealed record CalendarSignUpListDto
             NotAnswered = list.NotAnswered is { } missing
                 ? [.. missing.Select(CalendarAttendancePersonDto.From)]
                 : null,
+            Reminder = CalendarReminderDto.From(list.Reminder),
         };
 }
 
@@ -498,6 +521,8 @@ public sealed record CalendarPollDto
 
     public required IReadOnlyList<CalendarAttendancePersonDto>? NotAnswered { get; init; }
 
+    public required CalendarReminderDto? Reminder { get; init; }
+
     public required IReadOnlyList<CalendarPollOptionDto> Options { get; init; }
 
     [Pure]
@@ -518,6 +543,7 @@ public sealed record CalendarPollDto
             NotAnswered = poll.NotAnswered is { } missing
                 ? [.. missing.Select(CalendarAttendancePersonDto.From)]
                 : null,
+            Reminder = CalendarReminderDto.From(poll.Reminder),
             Options = [.. poll.Options.Select(CalendarPollOptionDto.From)],
         };
 }

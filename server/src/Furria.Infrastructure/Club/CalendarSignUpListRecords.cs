@@ -70,6 +70,7 @@ internal static class CalendarSignUpListRecords
                 list.ClosedBy == null ? null : list.ClosedBy.FirstName,
                 list.ClosedBy == null ? null : list.ClosedBy.LastName,
                 list.CalendarEntry!.StartsAt,
+                list.LastRemindedAt,
                 list.Lines.OrderBy(line => line.CreatedAt)
                     .ThenBy(line => line.Id)
                     .Select(line => new LineRow(
@@ -96,7 +97,8 @@ internal static class CalendarSignUpListRecords
                         [
                             .. group.Select(list => new PlacedSignUpList(
                                 list.Position,
-                                ToDetails(list, viewerPersonId, now)
+                                ToDetails(list, viewerPersonId, now),
+                                list.LastRemindedAt
                             )),
                         ]
             );
@@ -204,6 +206,7 @@ internal static class CalendarSignUpListRecords
         string? ClosedByFirstName,
         string? ClosedByLastName,
         DateTimeOffset EntryStartsAt,
+        DateTimeOffset? LastRemindedAt,
         IReadOnlyList<LineRow> Lines
     );
 
@@ -216,4 +219,8 @@ internal static class CalendarSignUpListRecords
     );
 }
 
-internal sealed record PlacedSignUpList(int Position, CalendarSignUpListDetails Details);
+internal sealed record PlacedSignUpList(
+    int Position,
+    CalendarSignUpListDetails Details,
+    DateTimeOffset? LastRemindedAt
+);

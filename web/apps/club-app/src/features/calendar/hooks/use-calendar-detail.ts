@@ -9,6 +9,8 @@ import { toDetailView } from '../calendar-agenda-view';
 import type { AttendanceRoll } from '../calendar-attendance';
 import { toAttendanceRoll } from '../calendar-attendance';
 import type { CalendarEntryLink } from '../calendar-authoring';
+import type { CalendarReminderSource } from '../calendar-reminders';
+import { toAttendanceReminderSource } from '../calendar-reminders';
 import type { CalendarEntry } from '../schemas';
 import { useCalendarAuthoring } from './use-calendar-authoring';
 
@@ -29,6 +31,7 @@ export interface CalendarDetail {
   view: CalendarDetailView;
   answer: CalendarDetailAnswer | null;
   roll: AttendanceRoll | null;
+  attendanceReminder: CalendarReminderSource | null;
   editLink: CalendarEntryLink | null;
   mayModerate: boolean;
   eventLink: CalendarEventLink | null;
@@ -52,6 +55,7 @@ export const useCalendarDetail = (entry: CalendarEntry): CalendarDetail => {
         }
       : null,
     roll: entry.attendance === null ? null : toAttendanceRoll(entry.attendance),
+    attendanceReminder: toAttendanceReminderSource(entry),
     editLink: authoring?.linkOf(entry) ?? null,
     mayModerate: authoring?.mayOwn(entry) ?? false,
     eventLink: opensEvent

@@ -779,6 +779,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("asks_for_response");
 
+                    b.Property<DateTimeOffset?>("AttendanceLastRemindedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("attendance_last_reminded_at");
+
                     b.Property<int?>("AttendancePosition")
                         .HasColumnType("integer")
                         .HasColumnName("attendance_position");
@@ -1033,6 +1037,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasDefaultValue(false)
                         .HasColumnName("is_anonymous");
 
+                    b.Property<DateTimeOffset?>("LastRemindedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_reminded_at");
+
                     b.Property<int>("Position")
                         .HasColumnType("integer")
                         .HasColumnName("position");
@@ -1249,6 +1257,10 @@ namespace Furria.Infrastructure.Migrations
                         .HasMaxLength(300)
                         .HasColumnType("character varying(300)")
                         .HasColumnName("hint");
+
+                    b.Property<DateTimeOffset?>("LastRemindedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("last_reminded_at");
 
                     b.Property<int>("Position")
                         .HasColumnType("integer")
@@ -4565,6 +4577,24 @@ namespace Furria.Infrastructure.Migrations
                         .HasColumnType("character varying(32)")
                         .HasColumnName("reason");
 
+                    b.Property<int?>("ReminderAddOnId")
+                        .HasColumnType("integer")
+                        .HasColumnName("reminder_add_on_id");
+
+                    b.Property<DateTimeOffset?>("ReminderClosesAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reminder_closes_at");
+
+                    b.Property<string>("ReminderKind")
+                        .HasMaxLength(32)
+                        .HasColumnType("character varying(32)")
+                        .HasColumnName("reminder_kind");
+
+                    b.Property<string>("ReminderSubject")
+                        .HasMaxLength(200)
+                        .HasColumnType("character varying(200)")
+                        .HasColumnName("reminder_subject");
+
                     b.Property<DateTimeOffset>("StartsAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("starts_at");
@@ -4594,9 +4624,13 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_outbox_calendar_push_kind", "kind IN ('Plain', 'Training', 'Trip', 'Event')");
 
-                            t.HasCheckConstraint("ck_outbox_calendar_push_reason", "reason IN ('AsksForResponse', 'Chosen', 'Moved', 'Deleted')");
+                            t.HasCheckConstraint("ck_outbox_calendar_push_reason", "reason IN ('AsksForResponse', 'Chosen', 'Moved', 'Deleted', 'Reminder')");
 
-                            t.HasCheckConstraint("ck_outbox_calendar_push_recipients", "reason = 'AsksForResponse' OR cardinality(person_ids) > 0");
+                            t.HasCheckConstraint("ck_outbox_calendar_push_recipients", "reason IN ('AsksForResponse', 'Reminder') OR cardinality(person_ids) > 0");
+
+                            t.HasCheckConstraint("ck_outbox_calendar_push_reminder", "(reason = 'Reminder') = (reminder_kind IS NOT NULL AND reminder_closes_at IS NOT NULL)");
+
+                            t.HasCheckConstraint("ck_outbox_calendar_push_reminder_kind", "reminder_kind IS NULL OR reminder_kind IN ('Attendance', 'Poll', 'SignUpList')");
                         });
                 });
 

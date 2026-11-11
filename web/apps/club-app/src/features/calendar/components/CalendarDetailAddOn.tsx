@@ -3,6 +3,7 @@ import { KkCalendarDetail } from '@furria/ui/KkCalendarDetail';
 import type { FC, ReactNode } from 'react';
 import { CALENDAR_ADD_ON_ICONS, CALENDAR_ADD_ON_LABELS } from '../calendar-add-ons';
 import type { AttendanceRoll } from '../calendar-attendance';
+import type { CalendarReminderSource } from '../calendar-reminders';
 import type { CalendarDetailAnswer } from '../hooks/use-calendar-detail';
 import type { CalendarAddOnKind, CalendarEntryAddOn } from '../schemas';
 import { CalendarDetailAttendance } from './CalendarDetailAttendance';
@@ -12,9 +13,11 @@ import { CalendarDetailSignUpList } from './CalendarDetailSignUpList';
 import { CalendarGroupTags } from './CalendarGroupTags';
 
 interface CalendarDetailAddOnProps {
+  calendarEntryId: number;
   addOn: CalendarEntryAddOn;
   answer: CalendarDetailAnswer | null;
   roll: AttendanceRoll | null;
+  attendanceReminder: CalendarReminderSource | null;
   participatingGroups: readonly KkCalendarLineGroup[];
   mayModerate: boolean;
   mayAnswer: boolean;
@@ -23,9 +26,11 @@ interface CalendarDetailAddOnProps {
 }
 
 export const CalendarDetailAddOn: FC<CalendarDetailAddOnProps> = ({
+  calendarEntryId,
   addOn,
   answer,
   roll,
+  attendanceReminder,
   participatingGroups,
   mayModerate,
   mayAnswer,
@@ -33,10 +38,13 @@ export const CalendarDetailAddOn: FC<CalendarDetailAddOnProps> = ({
   endsAt,
 }) => {
   const attendance =
-    addOn.kind === 'attendance' ? <CalendarDetailAttendance answer={answer} roll={roll} /> : null;
+    addOn.kind === 'attendance' ? (
+      <CalendarDetailAttendance answer={answer} roll={roll} reminder={attendanceReminder} />
+    ) : null;
   const poll =
     addOn.kind === 'poll' ? (
       <CalendarDetailPoll
+        calendarEntryId={calendarEntryId}
         poll={addOn.poll}
         mayClose={mayModerate}
         mayAnswer={mayAnswer}
@@ -46,6 +54,7 @@ export const CalendarDetailAddOn: FC<CalendarDetailAddOnProps> = ({
   const signUpList =
     addOn.kind === 'signUpList' ? (
       <CalendarDetailSignUpList
+        calendarEntryId={calendarEntryId}
         list={addOn.signUpList}
         mayModerate={mayModerate}
         mayAnswer={mayAnswer}

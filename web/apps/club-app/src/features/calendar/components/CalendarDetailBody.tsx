@@ -21,7 +21,8 @@ interface CalendarDetailBodyProps {
 }
 
 export const CalendarDetailBody: FC<CalendarDetailBodyProps> = ({ entry }) => {
-  const { view, answer, roll, editLink, mayModerate, eventLink } = useCalendarDetail(entry);
+  const { view, answer, roll, attendanceReminder, editLink, mayModerate, eventLink } =
+    useCalendarDetail(entry);
 
   const picture =
     view.cover === null ? null : (
@@ -53,9 +54,11 @@ export const CalendarDetailBody: FC<CalendarDetailBodyProps> = ({ entry }) => {
     return (
       <CalendarDetailAddOn
         key={key}
+        calendarEntryId={entry.calendarEntryId}
         addOn={addOn}
         answer={answer}
         roll={roll}
+        attendanceReminder={attendanceReminder}
         participatingGroups={view.participatingGroups}
         mayModerate={mayModerate}
         mayAnswer={entry.mayAnswer}

@@ -27,6 +27,8 @@ public sealed class CalendarEntry : ITimestamped
 
     public int? AttendancePosition { get; set; }
 
+    public DateTimeOffset? AttendanceLastRemindedAt { get; set; }
+
     public int? ParticipatingGroupsPosition { get; set; }
 
     public DateTimeOffset CreatedAt { get; set; }

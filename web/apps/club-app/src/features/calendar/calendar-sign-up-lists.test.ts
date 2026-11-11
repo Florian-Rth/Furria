@@ -40,6 +40,7 @@ const list = (overrides: Partial<CalendarSignUpList>): CalendarSignUpList => ({
   lines: [],
   concernedCount: null,
   notAnswered: null,
+  reminder: null,
   ...overrides,
 });
 

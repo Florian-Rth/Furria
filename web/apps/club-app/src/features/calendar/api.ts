@@ -9,6 +9,7 @@ import {
   POLL_CLOSE_FAILED_MESSAGE,
   POLL_REOPEN_FAILED_MESSAGE,
   POLL_VOTE_FAILED_MESSAGE,
+  REMINDER_FAILED_MESSAGE,
   SIGN_UP_LINE_DELETE_FAILED_MESSAGE,
   SIGN_UP_LINE_REMOVE_FAILED_MESSAGE,
   SIGN_UP_LINE_SAVE_FAILED_MESSAGE,
@@ -16,14 +17,17 @@ import {
   toEntryCreatedMessage,
   toEntryDeletedMessage,
   toEntrySavedMessage,
+  toReminderSentMessage,
 } from './calendar-labels';
 import type { CalendarQuery } from './calendar-query';
+import type { CalendarReminderRequest } from './requests';
 import {
   requestCalendar,
   requestCalendarEntry,
   requestCalendarEntryCreation,
   requestCalendarEntryDeletion,
   requestCalendarEntryUpdate,
+  requestCalendarReminder,
   requestChoosablePeople,
   requestOwnSignUpLine,
   requestOwnSignUpLineDeletion,
@@ -214,4 +218,16 @@ export const useSignUpListClosingMutation = (): UseMutationResult<void, Error, S
       requestSignUpListClosing(signUpListId, accessToken),
     changes: ['calendarEntry'],
     notice: { failure: () => SIGN_UP_LIST_CLOSE_FAILED_MESSAGE },
+  });
+
+export const useCalendarReminderMutation = (): UseMutationResult<
+  void,
+  Error,
+  CalendarReminderRequest
+> =>
+  useApiMutation({
+    request: (reminder: CalendarReminderRequest, accessToken) =>
+      requestCalendarReminder(reminder, accessToken),
+    changes: ['calendarEntry'],
+    notice: { success: toReminderSentMessage, failure: () => REMINDER_FAILED_MESSAGE },
   });

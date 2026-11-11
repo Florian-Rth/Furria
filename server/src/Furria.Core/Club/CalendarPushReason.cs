@@ -6,4 +6,5 @@ public enum CalendarPushReason
     Chosen = 2,
     Moved = 3,
     Deleted = 4,
+    Reminder = 5,
 }

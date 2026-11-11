@@ -96,26 +96,36 @@ public sealed partial class CalendarService
             return;
 
         _dbContext.OutboxCalendarPushes.Add(
-            new OutboxCalendarPush
-            {
-                Reason = reason,
-                CalendarEntryId = entry.Id,
-                ActorPersonId = actorPersonId,
-                PersonIds = [.. personIds],
-                Title = entry.Title,
-                StartsAt = entry.StartsAt,
-                EndsAt = entry.EndsAt,
-                VenueName = venueName,
-                Kind = entry.Kind,
-                AsksForResponse = entry.AsksForResponse,
-                OwnerGroupId = entry.OwnerGroupId,
-                ParticipatingGroupIds = [.. entry.ParticipatingGroups.Select(link => link.GroupId)],
-                Audience = entry.Audience,
-                AudienceGroupIds = [.. entry.AudienceGroups.Select(link => link.GroupId)],
-                AudiencePersonIds = [.. ChosenOf(entry)],
-            }
+            PushOf(reason, entry, personIds, actorPersonId, venueName)
         );
     }
+
+    [Pure]
+    private static OutboxCalendarPush PushOf(
+        CalendarPushReason reason,
+        CalendarEntry entry,
+        IReadOnlyList<int> personIds,
+        int? actorPersonId,
+        string? venueName
+    ) =>
+        new()
+        {
+            Reason = reason,
+            CalendarEntryId = entry.Id,
+            ActorPersonId = actorPersonId,
+            PersonIds = [.. personIds],
+            Title = entry.Title,
+            StartsAt = entry.StartsAt,
+            EndsAt = entry.EndsAt,
+            VenueName = venueName,
+            Kind = entry.Kind,
+            AsksForResponse = entry.AsksForResponse,
+            OwnerGroupId = entry.OwnerGroupId,
+            ParticipatingGroupIds = [.. entry.ParticipatingGroups.Select(link => link.GroupId)],
+            Audience = entry.Audience,
+            AudienceGroupIds = [.. entry.AudienceGroups.Select(link => link.GroupId)],
+            AudiencePersonIds = [.. ChosenOf(entry)],
+        };
 
     private async Task<string?> VenueNameAsync(int? venueId, CancellationToken ct) =>
         venueId is { } id

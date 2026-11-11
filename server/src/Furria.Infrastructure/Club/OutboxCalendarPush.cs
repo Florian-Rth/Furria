@@ -36,6 +36,14 @@ public sealed class OutboxCalendarPush
 
     public List<int> AudiencePersonIds { get; set; } = [];
 
+    public CalendarEntryAddOnKind? ReminderKind { get; set; }
+
+    public int? ReminderAddOnId { get; set; }
+
+    public string? ReminderSubject { get; set; }
+
+    public DateTimeOffset? ReminderClosesAt { get; set; }
+
     public int Attempt { get; set; } = 1;
 
     public DateTimeOffset? NextAttemptAt { get; set; }

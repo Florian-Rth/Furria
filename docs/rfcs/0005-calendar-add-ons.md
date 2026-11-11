@@ -447,10 +447,32 @@ Decisions taken while building phase 10:
 
 ### Phase 11 — Erinnern
 Goal: organisers push the people who have not answered.
-- [ ] `POST` remind per Funktion (Zu-/Absage, Umfrage, Eintragsliste): pushes everyone in `notAnswered` with a device, through the push outbox
-- [ ] Throttle: one reminder per Funktion every 6 hours; the detail shows when the last one went out
-- [ ] Payload: *Erinnerung: …*, deep link to the entry, the entry's tag
-- [ ] CONTEXT.md push ruling updated; integration tests for the recipients and the throttle
+- [x] `POST` remind per Funktion (Zu-/Absage, Umfrage, Eintragsliste): pushes everyone in `notAnswered` with a device, through the push outbox
+- [x] Throttle: one reminder per Funktion every 6 hours; the detail shows when the last one went out
+- [x] Payload: *Erinnerung: …*, deep link to the entry, the entry's tag
+- [x] CONTEXT.md push ruling updated; integration tests for the recipients and the throttle
+
+Decisions taken while building phase 11:
+- **One endpoint:** `POST calendar/entries/{id}/reminders` with `{kind, addOnId}`; `addOnId` is
+  the poll or list id and null for Zu-/Absage. Only people who may edit the entry may remind.
+  Refused with 422 when the Funktion is closed or nobody but the organiser is still open, 409
+  when the last reminder is under six hours old, 404 for a poll or list of another entry.
+- **Recipients at expansion time:** the outbox row carries the Funktion (`reminder_kind`,
+  `reminder_add_on_id`, its question or title, its closing moment) but no people. The expansion
+  takes everyone with a device whose person the entry concerns (canonical `CalendarTies`) and who
+  sees it, minus anyone who has answered by then and minus the organiser. A Funktion that was
+  removed or closed by hand before the push went out sends nothing; one past its closing moment
+  is dropped as not due.
+- **Throttle per Funktion:** `calendar_entry.attendance_last_reminded_at`,
+  `calendar_poll.last_reminded_at` and `calendar_sign_up_list.last_reminded_at` (migration
+  `CalendarReminders`). Organisers get `reminder {lastRemindedAt, remindableFrom}` on each
+  Funktion of the detail; everyone else gets null.
+- **Payload:** *Erinnerung: <Titel>*; the body is the slot followed by *Bitte sag zu oder ab.*,
+  *Bitte stimm ab: <Frage>* or *Bitte trag dich ein: <Liste>*; `/calendar/{id}`, tag
+  `calendar-entry-{id}`, TTL until the Funktion closes (1 h – 28 days).
+- **Club app:** *Erinnern* sits under *Noch offen* on each card, asks "n Personen erinnern?",
+  is disabled until six hours have passed and shows *Erinnert um HH:MM* (*Erinnert am TT.MM.* on
+  another day).
 
 ### Phase 12 — Open Funktionen outside the entry
 Goal: the calendar list and the group hub show what is open and what she still owes.

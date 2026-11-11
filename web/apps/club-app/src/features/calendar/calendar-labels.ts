@@ -326,6 +326,22 @@ export const SIGN_UP_LINE_SAVE_FAILED_MESSAGE = 'Dein Eintrag wurde nicht gespei
 export const SIGN_UP_LINE_DELETE_FAILED_MESSAGE = 'Dein Eintrag wurde nicht gelöscht.';
 export const SIGN_UP_LINE_REMOVE_FAILED_MESSAGE = 'Der Eintrag wurde nicht entfernt.';
 export const SIGN_UP_LIST_CLOSE_FAILED_MESSAGE = 'Die Liste wurde nicht geschlossen.';
+export const REMINDER_FAILED_MESSAGE = 'Die Erinnerung wurde nicht verschickt.';
+
+export const toReminderSentMessage = (): string => 'Erinnerung verschickt.';
+
+export const toReminderQuestion = (openCount: number): string =>
+  openCount === 1 ? '1 Person erinnern?' : `${openCount} Personen erinnern?`;
+
+export const toRemindedLabel = (lastRemindedAt: string | null, now: Date): string | null => {
+  if (lastRemindedAt === null) {
+    return null;
+  }
+
+  return toLocalIsoDay(lastRemindedAt) === toIsoDay(now)
+    ? `Erinnert um ${toTimeLabel(lastRemindedAt)}`
+    : `Erinnert am ${toDayNumberLabel(lastRemindedAt)}`;
+};
 
 export const toStepCountLabel = (count: number): string | undefined =>
   count === 0 ? undefined : byCount(count, '1 Schritt', `${count} Schritte`);
