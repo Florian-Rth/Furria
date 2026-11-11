@@ -19,37 +19,16 @@ jobs:
         working-directory: server
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: 10.0.x
-      - name: Install libvips and ffmpeg (the media worker's tests render real photos and videos)
+      - name: Build the tests image (the media worker image plus the .NET SDK — no apt)
         timeout-minutes: 5
+        run: docker build -t furria-tests:ci - < tests/ci/Dockerfile
+      - name: Build and test shard ${{ matrix.shard }}
         run: |
-          apt_options=(-o Acquire::Retries=3 -o Acquire::http::Timeout=20)
-          sudo apt-get "${apt_options[@]}" update
-          sudo apt-get "${apt_options[@]}" install -y --no-install-recommends \
-            libvips42t64 libheif-plugin-libde265 ffmpeg
-      - run: dotnet tool restore
-      - run: dotnet build
-      - if: matrix.shard == 0
-        run: dotnet csharpier check .
-      - if: matrix.shard == 0
-        run: dotnet test tests/Furria.Tests.Analyzers.Tests --no-build
-      # Every fourth test class (sorted by name) runs in this shard, against Testcontainers
-      # Postgres (Docker is preinstalled on ubuntu-latest).
-      - name: Integration tests of shard ${{ matrix.shard }}
-        run: |
-          mapfile -t classes < <(
-            dotnet run --project tests/Furria.Api.Tests --no-build -- -list classes \
-              | grep '^Furria\.' | sort | awk -v shard=${{ matrix.shard }} 'NR % 4 == shard'
-          )
-          if [ "${#classes[@]}" -eq 0 ]; then
-            echo "No test classes found for this shard." >&2
-            exit 1
-          fi
-          filters=()
-          for class in "${classes[@]}"; do filters+=(-class "$class"); done
-          dotnet run --project tests/Furria.Api.Tests --no-build -- "${filters[@]}"
+          docker run --rm --network host \
+            -v /var/run/docker.sock:/var/run/docker.sock \
+            -e TESTCONTAINERS_HOST_OVERRIDE=127.0.0.1 \
+            -v "$GITHUB_WORKSPACE:$GITHUB_WORKSPACE" -w "$GITHUB_WORKSPACE/server" \
+            furria-tests:ci tests/ci/run-shard.sh ${{ matrix.shard }}
 
   web:
     runs-on: ubuntu-latest

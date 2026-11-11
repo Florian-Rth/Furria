@@ -49,13 +49,20 @@ dotnet run --project tests/Furria.Api.Tests --no-build -- -class <FQN> [-class <
 ```
 
 The media worker's tests (`PhotoRenditionTests`, `VideoRenditionTests`, `MediaJobTests`) render
-real files and need **libvips** (with the HEIC plugin) and **ffmpeg** on the machine — CI installs
-`libvips42t64 libheif-plugin-libde265 ffmpeg`. Without them locally, run the built test assembly in
-`mcr.microsoft.com/dotnet/sdk:10.0` with those packages added, the worktree mounted at its own path,
-`--network host` and the Docker socket mounted, so Testcontainers reaches its containers.
+real files and need **libvips** (with the HEIC plugin) and **ffmpeg** on the machine. CI runs the
+backend in `server/tests/ci/Dockerfile` — the published media worker image (which carries both)
+plus the .NET SDK, so no job waits on an apt mirror. Without them locally, run the same way:
+
+```bash
+docker build -t furria-tests:ci - < server/tests/ci/Dockerfile
+docker run --rm --network host --user $(id -u):$(id -g) --group-add $(stat -c %g /var/run/docker.sock) \
+  -e HOME=/tmp -e TESTCONTAINERS_HOST_OVERRIDE=127.0.0.1 -v /var/run/docker.sock:/var/run/docker.sock \
+  -v "$PWD:$PWD" -w "$PWD/server" furria-tests:ci tests/ci/run-shard.sh 0
+```
 
 CI splits the integration tests into four shards — every fourth test class, sorted by name
-(`-list classes`), runs in its own job — so the suite finishes in about a quarter of the time.
+(`-list classes`), runs in its own job (`server/tests/ci/run-shard.sh <0-3>`) — so the suite
+finishes in about a quarter of the time.
 
 `dotnet test -- --filter-class` from `server/` also runs the analyzer tests with zero matches and
 fails; the VSTest `--filter`/`--treenode-filter` flags are ignored and run the whole suite.
