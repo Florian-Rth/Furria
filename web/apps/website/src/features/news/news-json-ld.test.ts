@@ -30,12 +30,12 @@ describe('buildNewsArticleJsonLd', () => {
       mainEntityOfPage: 'https://furrscher-carnevals-club.de/news/motto-2026',
       author: {
         '@type': 'Organization',
-        name: 'FURRIA',
+        name: 'Furrscher Carnevals Club',
         url: 'https://furrscher-carnevals-club.de/',
       },
       publisher: {
         '@type': 'Organization',
-        name: 'FURRIA',
+        name: 'Furrscher Carnevals Club',
         url: 'https://furrscher-carnevals-club.de/',
       },
     });
