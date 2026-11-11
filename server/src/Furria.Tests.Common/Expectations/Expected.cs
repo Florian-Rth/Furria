@@ -29,6 +29,8 @@ public sealed class Expected
 
     public MatcherStatementExpectations MatcherStatement(int statementId) => new(this, statementId);
 
+    public MatcherStatementSetExpectations MatcherStatements() => new(this);
+
     public StanceExpectations Stance(int groupId, int statementId) =>
         new(this, groupId, statementId);
 

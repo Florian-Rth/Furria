@@ -60,7 +60,6 @@ public sealed class GetGroupMatcherPage
             IsTakingPart = page.IsTakingPart,
             Statements = [.. page.Statements.Select(ToDto)],
             AdmissionAges = page.AdmissionAges,
-            Proposals = [.. page.Proposals.Select(ToDto)],
         };
 
     private static GroupStatementSummaryDto ToDto(GroupStatementSummary statement) =>
@@ -71,15 +70,6 @@ public sealed class GetGroupMatcherPage
             Position = statement.Position,
             Importance = statement.Importance,
             State = statement.State,
-        };
-
-    private static GroupProposalSummaryDto ToDto(GroupProposalSummary proposal) =>
-        new()
-        {
-            StatementId = proposal.StatementId,
-            Text = proposal.Text,
-            Status = proposal.Status,
-            ProposedAt = proposal.ProposedAt,
         };
 }
 
@@ -104,8 +94,6 @@ public sealed record GetGroupMatcherPageResponse
     public required IReadOnlyList<GroupStatementSummaryDto> Statements { get; init; }
 
     public required IReadOnlyList<AdmissionAgeBand> AdmissionAges { get; init; }
-
-    public required IReadOnlyList<GroupProposalSummaryDto> Proposals { get; init; }
 }
 
 public sealed record GroupStatementSummaryDto
@@ -119,15 +107,4 @@ public sealed record GroupStatementSummaryDto
     public required int? Importance { get; init; }
 
     public required GroupStatementState State { get; init; }
-}
-
-public sealed record GroupProposalSummaryDto
-{
-    public required int StatementId { get; init; }
-
-    public required string Text { get; init; }
-
-    public required MatcherStatementStatus Status { get; init; }
-
-    public required DateTimeOffset ProposedAt { get; init; }
 }

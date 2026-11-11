@@ -1,7 +1,7 @@
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
-import type { StatementApproval, StatementPool, StatementWording } from './schemas';
-import { StatementPoolSchema } from './schemas';
+import type { AddedStatement, StatementPool, StatementWording } from './schemas';
+import { AddedStatementSchema, StatementPoolSchema } from './schemas';
 
 const POOL_PATH = '/api/manage/group-matcher';
 const statementPath = (statementId: number): string => `${POOL_PATH}/statements/${statementId}`;
@@ -9,21 +9,11 @@ const statementPath = (statementId: number): string => `${POOL_PATH}/statements/
 export const requestStatementPool = (accessToken: string): Promise<StatementPool> =>
   apiFetch(POOL_PATH, { schema: StatementPoolSchema, accessToken });
 
-export const requestApproveStatement = (
-  { statementId, text }: StatementApproval,
-  accessToken: string,
-): Promise<void> =>
-  apiFetch(`${statementPath(statementId)}/approval`, {
+export const requestAddStatement = (text: string, accessToken: string): Promise<AddedStatement> =>
+  apiFetch(`${POOL_PATH}/statements`, {
     method: 'POST',
-    body: text === null ? {} : { text },
-    schema: NoContentSchema,
-    accessToken,
-  });
-
-export const requestRejectStatement = (statementId: number, accessToken: string): Promise<void> =>
-  apiFetch(`${statementPath(statementId)}/rejection`, {
-    method: 'POST',
-    schema: NoContentSchema,
+    body: { text },
+    schema: AddedStatementSchema,
     accessToken,
   });
 

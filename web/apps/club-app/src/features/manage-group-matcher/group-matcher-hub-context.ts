@@ -9,7 +9,6 @@ export interface GroupMatcherHubView {
   isWide: boolean;
   operations: GroupMatcherOperations;
   closePane: () => void;
-  openProposal: (statementId: number) => void;
   openStatement: (statementId: number) => void;
 }
 

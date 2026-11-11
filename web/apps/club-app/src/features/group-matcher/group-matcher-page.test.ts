@@ -133,7 +133,6 @@ describe('withStance', () => {
         statement(2, 'open'),
       ],
       admissionAges: [],
-      proposals: [],
     };
 
     expect(withStance(page, { statementId: 1, position: 'no', importance: 3 })?.statements).toEqual(

@@ -5,11 +5,10 @@ import {
   isPoolFull,
   movedOrderOf,
   resolvePane,
-  toApprovalText,
   toCoverageRows,
   toCoverageTally,
   toStatementCoverageGroups,
-  withApproval,
+  withAddition,
   withoutStatement,
   withRewording,
   withStatementOrder,
@@ -17,11 +16,10 @@ import {
 
 const pool = (): StatementPool => ({
   statements: [
-    { statementId: 1, text: 'A', approvedAt: '2026-11-01T10:00:00Z', rewordedAt: null },
-    { statementId: 2, text: 'B', approvedAt: '2026-11-01T10:00:00Z', rewordedAt: null },
-    { statementId: 3, text: 'C', approvedAt: '2026-11-01T10:00:00Z', rewordedAt: null },
+    { statementId: 1, text: 'A', addedAt: '2026-11-01T10:00:00Z', rewordedAt: null },
+    { statementId: 2, text: 'B', addedAt: '2026-11-01T10:00:00Z', rewordedAt: null },
+    { statementId: 3, text: 'C', addedAt: '2026-11-01T10:00:00Z', rewordedAt: null },
   ],
-  proposals: [],
   coverage: [
     {
       group: { groupId: 7, name: 'Garde', tone: null },
@@ -45,11 +43,6 @@ const pool = (): StatementPool => ({
 
 describe('groupMatcherPaneOf', () => {
   it.each([
-    {
-      routeId: '/_app/manage/group-matcher/proposals/$statementId',
-      statementId: '4',
-      pane: { kind: 'proposal', statementId: 4 },
-    },
     {
       routeId: '/_app/manage/group-matcher/statements/$statementId',
       statementId: '9',
@@ -132,68 +125,31 @@ describe('toCoverageTally', () => {
   });
 });
 
-describe('toApprovalText', () => {
-  const proposal = {
-    statementId: 5,
-    text: 'Wir tanzen gern',
-    proposedAt: '2026-11-10T09:00:00Z',
-    proposedBy: null,
-  };
-
-  it.each([
-    { draft: '  Wir tanzen gern ', text: null },
-    { draft: 'Wir tanzen sehr gern', text: 'Wir tanzen sehr gern' },
-  ])('sends a new wording only when the draft differs ($draft)', ({ draft, text }) => {
-    expect(toApprovalText(proposal, draft)).toBe(text);
-  });
-});
-
 describe('isPoolFull', () => {
   it.each([
     { count: 9, full: false },
     { count: 10, full: true },
-  ])('is full at ten approved statements ($count)', ({ count, full }) => {
+  ])('is full at ten statements ($count)', ({ count, full }) => {
     const statements = Array.from({ length: count }, (_, index) => ({
       statementId: index + 1,
       text: 'A',
-      approvedAt: '2026-11-01T10:00:00Z',
+      addedAt: '2026-11-01T10:00:00Z',
       rewordedAt: null,
     }));
 
-    expect(isPoolFull({ statements, proposals: [], coverage: [] })).toBe(full);
+    expect(isPoolFull({ statements, coverage: [] })).toBe(full);
   });
 });
 
-describe('withApproval', () => {
-  const withProposal = (): StatementPool => ({
-    ...pool(),
-    proposals: [
-      {
-        statementId: 5,
-        text: 'Wir tanzen gern',
-        proposedAt: '2026-11-10T09:00:00Z',
-        proposedBy: null,
-      },
-    ],
-  });
+describe('withAddition', () => {
+  it('appends the new statement at the end of the pool', () => {
+    const added = withAddition(pool(), {
+      provisionalId: -5,
+      text: 'Wir tanzen gern',
+      addedAt: '2026-11-10T09:00:00Z',
+    });
 
-  it.each([
-    { text: null, shown: 'Wir tanzen gern' },
-    { text: 'Wir tanzen sehr gern', shown: 'Wir tanzen sehr gern' },
-  ])('moves the proposal to the end of the pool ($text)', ({ text, shown }) => {
-    const approved = withApproval(withProposal(), { statementId: 5, text });
-
-    expect({
-      last: approved?.statements.at(-1)?.text,
-      count: approved?.statements.length,
-      proposals: approved?.proposals.length,
-    }).toEqual({ last: shown, count: 4, proposals: 0 });
-  });
-
-  it('leaves the pool alone when the proposal is gone', () => {
-    const current = pool();
-
-    expect(withApproval(current, { statementId: 5, text: null })).toBe(current);
+    expect(added?.statements.map((statement) => statement.statementId)).toEqual([1, 2, 3, -5]);
   });
 });
 
@@ -204,7 +160,6 @@ describe('resolvePane', () => {
       resolved: { kind: 'statement', index: 2 },
     },
     { pane: { kind: 'statement', statementId: 9 } as const, resolved: { kind: 'gone' } },
-    { pane: { kind: 'proposal', statementId: 9 } as const, resolved: { kind: 'gone' } },
   ])('finds what $pane.kind $pane.statementId shows', ({ pane, resolved }) => {
     const found = resolvePane(pool(), pane);
 

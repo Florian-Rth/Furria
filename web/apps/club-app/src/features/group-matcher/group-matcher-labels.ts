@@ -4,7 +4,7 @@ import type { KkStatementMark } from '@furria/ui/KkStatementList';
 import type { QueryErrorKind } from '@/lib/query-error';
 import { toQueryErrorMessage } from '@/lib/query-error';
 import type { GroupMatcherStanding } from './group-matcher-page';
-import type { AdmissionAgeBand, Importance, ProposalStatus, StatementState } from './schemas';
+import type { AdmissionAgeBand, Importance, StatementState } from './schemas';
 
 export const GROUP_MATCHER_TITLE = 'Jeck-Check';
 
@@ -31,12 +31,6 @@ export const STATEMENT_MARKS: Record<StatementState, KkStatementMark | null> = {
   answered: null,
 };
 
-export const PROPOSAL_MARKS: Record<ProposalStatus, KkStatementMark> = {
-  proposed: { label: 'offen', tone: 'blue' },
-  approved: { label: 'aufgenommen', tone: 'green' },
-  rejected: { label: 'abgelehnt', tone: 'neutral' },
-};
-
 interface StandingHint {
   label: string;
   tone: KkChipTone;
@@ -53,8 +47,6 @@ export const toStandingHint = (standing: GroupMatcherStanding): StandingHint => 
   }
 };
 
-export const PROPOSAL_SENT_MESSAGE = 'Vorschlag eingereicht.';
-export const PROPOSAL_WITHDRAWN_MESSAGE = 'Vorschlag zurückgezogen.';
 export const GROUP_MATCHER_DENIED_MESSAGE = 'Den Jeck-Check pflegt die Leitung der Gruppe.';
 
 const PAGE_ERROR_MESSAGES: Record<QueryErrorKind, string> = {
@@ -67,4 +59,3 @@ export const toGroupMatcherErrorMessage = (error: Error): string =>
   toQueryErrorMessage(error, PAGE_ERROR_MESSAGES) ?? PAGE_ERROR_MESSAGES.unexpected;
 
 export const IMPORTANCE_QUESTION = 'Wie wichtig ist das der Gruppe?';
-export const WITHDRAW_PROPOSAL_LABEL = 'Vorschlag zurückziehen';

@@ -34,8 +34,6 @@ public sealed class EndpointGateTests : IClassFixture<ApiTestFixture>
         "/api/groups/{groupId}/group-matcher",
         "/api/groups/{groupId}/group-matcher/stances/{statementId}",
         "/api/groups/{groupId}/group-matcher/admission-ages",
-        "/api/groups/{groupId}/group-matcher/proposals",
-        "/api/groups/{groupId}/group-matcher/proposals/{statementId}",
         "/api/persons/{personId}/portrait",
         "/api/persons/{personId}/portrait/crop",
         "/api/person-search",

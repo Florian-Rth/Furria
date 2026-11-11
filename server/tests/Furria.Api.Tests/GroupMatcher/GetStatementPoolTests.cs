@@ -22,24 +22,16 @@ public sealed class GetStatementPoolTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListThePoolInOrderAndOnlyWaitingProposals_When_TheManagerReadsIt()
+    public async Task Should_ListThePoolInOrder_When_TheManagerReadsIt()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
             builder =>
                 WithManagerKlara(builder)
-                    .Groups(groups => groups.AddGroup("tanzgarde", "Tanzgarde"))
                     .GroupMatcher(matcher =>
                         matcher
                             .AddStatement("konfetti", "Konfetti ist Pflicht.")
                             .AddStatement("bierbank", "Bierbänke stelle ich auf.")
-                            .AddProposal("rueckwaerts", "Wir tanzen rückwärts.", "tanzgarde")
-                            .AddProposal(
-                                "tisch",
-                                "Wir tanzen auf dem Tisch.",
-                                "tanzgarde",
-                                MatcherStatementStatus.Rejected
-                            )
                     ),
             ct
         );
@@ -50,9 +42,6 @@ public sealed class GetStatementPoolTests : IClassFixture<ApiTestFixture>
             ["Konfetti ist Pflicht.", "Bierbänke stelle ich auf."],
             pool.Statements.Select(statement => statement.Text)
         );
-        var proposal = Assert.Single(pool.Proposals);
-        Assert.Equal(ctx.GroupMatcher.Statements.IdOf("rueckwaerts"), proposal.StatementId);
-        Assert.Equal(ctx.Groups.Groups.IdOf("tanzgarde"), proposal.ProposedBy?.GroupId);
     }
 
     [Fact]

@@ -53,7 +53,7 @@ public sealed class PutStanceTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_NotStampTheGroup_When_ApprovedStatementsAreStillOpen()
+    public async Task Should_NotStampTheGroup_When_StatementsAreStillOpen()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -133,31 +133,6 @@ public sealed class PutStanceTests : IClassFixture<ApiTestFixture>
                 ctx.GroupMatcher.Statements.IdOf("konfetti")
             )
             .ToBeTakenAt(now)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_AnswerNotFound_When_TheStatementIsOnlyProposed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WithAdminAnna(builder)
-                    .GroupMatcher(matcher =>
-                        matcher.AddProposal("vorschlag", "Wir tanzen auch rückwärts.", "tanzgarde")
-                    ),
-            ct
-        );
-
-        var response = await PutAsync(ctx, "vorschlag", StancePosition.Yes, Minor, ct);
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-        await ctx
-            .Expected.Stance(
-                ctx.Groups.Groups.IdOf("tanzgarde"),
-                ctx.GroupMatcher.Statements.IdOf("vorschlag")
-            )
-            .ToNotExist()
             .AssertAsync(ct);
     }
 

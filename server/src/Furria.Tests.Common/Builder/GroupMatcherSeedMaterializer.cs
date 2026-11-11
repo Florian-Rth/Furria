@@ -9,7 +9,7 @@ internal static class GroupMatcherSeedMaterializer
     private const string GroupKind = "Group";
     private const string StatementKind = "MatcherStatement";
 
-    private static readonly TimeSpan SeededApprovalAge = TimeSpan.FromDays(30);
+    private static readonly TimeSpan SeededPoolAge = TimeSpan.FromDays(30);
     private static readonly TimeSpan SeededStanceAge = TimeSpan.FromDays(20);
     private static readonly TimeSpan SeededJoiningAge = TimeSpan.FromDays(10);
 
@@ -21,13 +21,15 @@ internal static class GroupMatcherSeedMaterializer
         CancellationToken ct
     )
     {
-        var statements = recorded.Statements.ToDictionary(
-            intent => intent.Alias,
-            intent => NewStatement(intent, groupIds, now, recorded.Statements),
-            StringComparer.Ordinal
-        );
+        var statements = recorded
+            .Statements.Select(
+                (intent, index) => (intent.Alias, Statement: NewStatement(intent, index))
+            )
+            .ToDictionary(entry => entry.Alias, entry => entry.Statement, StringComparer.Ordinal);
         dbContext.MatcherStatements.AddRange(statements.Values);
         await dbContext.SaveChangesAsync(ct);
+        foreach (var intent in recorded.Statements)
+            statements[intent.Alias].CreatedAt = intent.AddedAt ?? now - SeededPoolAge;
 
         var statementIds = statements.ToDictionary(
             entry => entry.Key,
@@ -52,31 +54,14 @@ internal static class GroupMatcherSeedMaterializer
 
     private static MatcherStatement NewStatement(
         GroupMatcherSeedBuilder.StatementIntent intent,
-        IReadOnlyDictionary<string, int> groupIds,
-        DateTimeOffset now,
-        IReadOnlyList<GroupMatcherSeedBuilder.StatementIntent> all
-    )
-    {
-        var isApproved = intent.Status == MatcherStatementStatus.Approved;
-        return new()
+        int index
+    ) =>
+        new()
         {
             Text = intent.Text,
-            Status = intent.Status,
-            SortOrder = isApproved ? SortOrderOf(intent, all) : null,
-            ApprovedAt = isApproved ? intent.ApprovedAt ?? now - SeededApprovalAge : null,
+            SortOrder = index + 1,
             RewordedAt = intent.RewordedAt,
-            ProposedByGroupId = intent.ProposedByGroupAlias is null
-                ? null
-                : SeedAliases.RequireId(groupIds, intent.ProposedByGroupAlias, GroupKind),
         };
-    }
-
-    private static int SortOrderOf(
-        GroupMatcherSeedBuilder.StatementIntent intent,
-        IReadOnlyList<GroupMatcherSeedBuilder.StatementIntent> all
-    ) =>
-        all.Where(other => other.Status == MatcherStatementStatus.Approved).ToList().IndexOf(intent)
-        + 1;
 
     private static Stance NewStance(
         GroupMatcherSeedBuilder.StanceIntent intent,

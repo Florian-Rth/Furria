@@ -10,5 +10,4 @@ public enum ToDoKind
     ClubRecordGap = 6,
     ApplicationWaiting = 7,
     GroupMatcherStatementsOpen = 8,
-    GroupMatcherProposalWaiting = 9,
 }

@@ -9,6 +9,4 @@ public sealed record GroupMatcherPageDetails
     public required IReadOnlyList<GroupStatementSummary> Statements { get; init; }
 
     public required IReadOnlyList<AdmissionAgeBand> AdmissionAges { get; init; }
-
-    public required IReadOnlyList<GroupProposalSummary> Proposals { get; init; }
 }

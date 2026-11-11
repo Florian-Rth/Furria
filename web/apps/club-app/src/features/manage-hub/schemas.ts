@@ -65,8 +65,7 @@ export const ManageApplicationsPanelSchema = z.object({
 export type ManageApplicationsPanel = z.infer<typeof ManageApplicationsPanelSchema>;
 
 export const ManageGroupMatcherPanelSchema = z.object({
-  approvedCount: z.number().int(),
-  waitingProposalCount: z.number().int(),
+  statementCount: z.number().int(),
 });
 export type ManageGroupMatcherPanel = z.infer<typeof ManageGroupMatcherPanelSchema>;
 

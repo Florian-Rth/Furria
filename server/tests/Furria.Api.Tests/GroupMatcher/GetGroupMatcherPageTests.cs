@@ -63,42 +63,6 @@ public sealed class GetGroupMatcherPageTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_ListOnlyTheGroupsUndecidedAndRejectedProposals_When_OthersProposedToo()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await _fixture.BuildAsync(
-            builder =>
-                WithAdminAnna(builder)
-                    .Groups(groups => groups.AddGroup("elferrat", "Elferrat"))
-                    .GroupMatcher(matcher =>
-                        matcher
-                            .AddProposal("offen", "Wir tanzen rückwärts.", "tanzgarde")
-                            .AddProposal(
-                                "abgelehnt",
-                                "Wir tanzen auf dem Tisch.",
-                                "tanzgarde",
-                                MatcherStatementStatus.Rejected
-                            )
-                            .AddProposal("fremd", "Wir reden elf Minuten.", "elferrat")
-                    ),
-            ct
-        );
-
-        var (response, result) = await GetAsync(ctx, ct);
-
-        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
-        Assert.Equal(
-            [
-                ctx.GroupMatcher.Statements.IdOf("offen"),
-                ctx.GroupMatcher.Statements.IdOf("abgelehnt"),
-            ],
-            result.Proposals.Select(proposal => proposal.StatementId).Order()
-        );
-        Assert.Empty(result.Statements);
-        Assert.False(result.IsTakingPart);
-    }
-
-    [Fact]
     public async Task Should_NotCountAsTakingPart_When_TheStampedGroupIsArchived()
     {
         var ct = TestContext.Current.CancellationToken;

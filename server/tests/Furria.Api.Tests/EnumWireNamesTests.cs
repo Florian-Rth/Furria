@@ -39,7 +39,7 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(StartGroupMomentKind)] = "jubilee",
         [typeof(ToDoKind)] =
             "neverInvited reminderDue inPersonOnly birthDateUnknown keyToTakeBack "
-            + "clubRecordGap applicationWaiting groupMatcherStatementsOpen groupMatcherProposalWaiting",
+            + "clubRecordGap applicationWaiting groupMatcherStatementsOpen",
         [typeof(ClubIcon)] =
             "crown euro bolt shield camera sparkle mic musicNote drum mask megaphone star "
             + "trophy flag key shirt pen wrench palette heart mug calendar whistle broom scepter "
@@ -115,7 +115,6 @@ public sealed class EnumWireNamesTests : IClassFixture<ApiTestFixture>
         [typeof(StancePosition)] = "yes neutral no",
         [typeof(AdmissionAgeBand)] =
             "underTwelve twelveToThirteen fourteenToFifteen sixteenToSeventeen eighteenPlus",
-        [typeof(MatcherStatementStatus)] = "proposed approved rejected",
         [typeof(GroupStatementState)] = "answered open new changed",
     };
 

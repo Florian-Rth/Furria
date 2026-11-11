@@ -1,7 +1,7 @@
 import { apiFetch } from '@/lib/api/api-fetch';
 import { NoContentSchema } from '@/lib/api/schemas';
-import type { AdmissionAgeBand, GroupMatcherPage, ProposedStatement, StanceInput } from './schemas';
-import { GroupMatcherPageSchema, ProposedStatementSchema } from './schemas';
+import type { AdmissionAgeBand, GroupMatcherPage, StanceInput } from './schemas';
+import { GroupMatcherPageSchema } from './schemas';
 
 const groupMatcherPath = (groupId: number): string => `/api/groups/${groupId}/group-matcher`;
 
@@ -31,29 +31,6 @@ export const requestSetAdmissionAges = (
   apiFetch(`${groupMatcherPath(groupId)}/admission-ages`, {
     method: 'PUT',
     body: { admissionAges: [...admissionAges] },
-    schema: NoContentSchema,
-    accessToken,
-  });
-
-export const requestProposeStatement = (
-  groupId: number,
-  text: string,
-  accessToken: string,
-): Promise<ProposedStatement> =>
-  apiFetch(`${groupMatcherPath(groupId)}/proposals`, {
-    method: 'POST',
-    body: { text },
-    schema: ProposedStatementSchema,
-    accessToken,
-  });
-
-export const requestWithdrawProposal = (
-  groupId: number,
-  statementId: number,
-  accessToken: string,
-): Promise<void> =>
-  apiFetch(`${groupMatcherPath(groupId)}/proposals/${statementId}`, {
-    method: 'DELETE',
     schema: NoContentSchema,
     accessToken,
   });

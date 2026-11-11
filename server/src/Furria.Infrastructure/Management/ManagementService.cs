@@ -80,11 +80,7 @@ public sealed class ManagementService
     }
 
     private async Task<ManageHubGroupMatcher> GroupMatcherAsync(CancellationToken ct) =>
-        new()
-        {
-            ApprovedCount = await _statementPoolService.CountApprovedAsync(ct),
-            WaitingProposalCount = await _statementPoolService.CountWaitingProposalsAsync(ct),
-        };
+        new() { StatementCount = await _statementPoolService.CountAsync(ct) };
 
     private async Task<ManageHubApplications> ApplicationsAsync(
         DateOnly today,

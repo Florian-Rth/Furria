@@ -23,7 +23,7 @@ public sealed class PutStatementTextTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepTheStancesAndMarkThemChanged_When_AnApprovedStatementIsReworded()
+    public async Task Should_KeepTheStancesAndMarkThemChanged_When_AStatementIsReworded()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildAsync(ct);
@@ -63,18 +63,6 @@ public sealed class PutStatementTextTests : IClassFixture<ApiTestFixture>
             .AssertAsync(ct);
     }
 
-    [Fact]
-    public async Task Should_RefuseTheRewording_When_TheStatementIsOnlyProposed()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(ct);
-        var client = await ctx.Identity.ClientForAsync("klara", ct);
-
-        var response = await RewordAsync(client, ctx, "vorschlag", "Wir tanzen gern rückwärts.");
-
-        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
-    }
-
     private Task<SeededContext> BuildAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
@@ -94,7 +82,6 @@ public sealed class PutStatementTextTests : IClassFixture<ApiTestFixture>
                         matcher
                             .AddStatement("konfetti", Original)
                             .AddStance("tanzgarde", "konfetti", StancePosition.Yes, VeryImportant)
-                            .AddProposal("vorschlag", "Wir tanzen rückwärts.", "tanzgarde")
                     ),
             ct
         );

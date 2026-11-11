@@ -11,11 +11,11 @@ created: 2026-11-11
 
 ## Summary
 The website's **Jeck-Check** stops running on a hard-coded seed. It runs on the app's real
-**groups** and one club-wide pool of at most ten approved **statements**. Group admins propose
-statements and maintain their group's **stances** and **admission ages** on the group's own
-Jeck-Check page. Whoever holds the new `group_matcher.manage` permission approves, rewords, orders
-and rejects statements. A group takes part automatically once it has answered every approved
-statement. Decisions: [ADR-0039](../adr/0039-the-jeck-check-is-one-shared-pool-of-statements.md);
+**groups** and one club-wide pool of at most ten **statements**. Group admins maintain their
+group's **stances** and **admission ages** on the group's own Jeck-Check page. Whoever holds the
+new `group_matcher.manage` permission adds, rewords, orders and deletes statements (group
+proposals were built in phases 1–4 and dropped in phase 6). A group takes part automatically once
+it has answered every statement. Decisions: [ADR-0039](../adr/0039-the-jeck-check-is-one-shared-pool-of-statements.md);
 terms: `CONTEXT.md` → *Jeck-Check*, *Statement*, *Stance*, *Admission ages*.
 
 ## Motivation
@@ -88,6 +88,11 @@ the website already work and stay as they are; only their data source changes.
 - Intro counts the real questions (statements + age): at exactly 11 it keeps "Elf Fragen —
   weniger wären im Karneval unpassend."; otherwise "<Zahl> Fragen." without the carnival line.
 - Scoring, reasons and result views stay; only group ids become numeric API ids.
+
+> **Revised 2026-11-11 (phase 6):** groups no longer propose statements. The proposal flow below
+> (proposed / approved / rejected, the group's *Vorschlagen* field, the club's proposal queue and
+> the proposals-waiting to-do) was built in phases 1–4 and removed in phase 6; the club adds
+> statements straight to the pool. The phase notes keep the history as built.
 
 ## Phases
 Each phase leaves the system intact (builds, tests pass, no half-done migrations) and fits a
@@ -189,6 +194,12 @@ the `/join` section — so absent hides the section, the hero's "Wo passe ich hi
 Jeck-Check sentence in the first join step; the join route preloads the read so nothing flashes.
 The intro counts statements + age in words ("Sieben Fragen."), the carnival line only at eleven.
 `lib/seed/` is gone. Shots: `/join` absent and filled, phone + desktop, light + dark.
+
+### Phase 6 — Drop statement proposals
+Goal: the club writes the pool alone; no proposal, approval or rejection remains anywhere.
+- [x] 6.1 Backend: `POST manage/group-matcher/statements` (append, refused at 10); proposal, withdraw, approval and rejection endpoints removed; status, proposing group and `approved_at` dropped by migration (non-pool rows deleted, `created_at` takes the approval time); proposals-waiting to-do and hub count removed; tests adapted
+- [x] 6.2 Club app: group page without *Vorschlagen* / *Eure Vorschläge*; hub without the proposal queue and pane route, with an inline add field in *Aussagen · n / 10*; to-do and hub label adapted
+- [x] 6.3 Docs: CONTEXT.md *Statement*, ADR-0039 revised
 
 ## Risks & alternatives
 - **Too few groups answer by launch** → the section simply stays out. That is acceptable, because

@@ -9,21 +9,16 @@ export const PoolGroupSchema = z.object({
 });
 export type PoolGroup = z.infer<typeof PoolGroupSchema>;
 
+export const STATEMENT_MAX_LENGTH = 160;
+export const STATEMENT_LIMIT = 10;
+
 export const PoolStatementSchema = z.object({
   statementId: z.int().positive(),
   text: z.string(),
-  approvedAt: z.iso.datetime({ offset: true }),
+  addedAt: z.iso.datetime({ offset: true }),
   rewordedAt: z.iso.datetime({ offset: true }).nullable(),
 });
 export type PoolStatement = z.infer<typeof PoolStatementSchema>;
-
-export const WaitingProposalSchema = z.object({
-  statementId: z.int().positive(),
-  text: z.string(),
-  proposedAt: z.iso.datetime({ offset: true }),
-  proposedBy: PoolGroupSchema.nullable(),
-});
-export type WaitingProposal = z.infer<typeof WaitingProposalSchema>;
 
 export const CoverageCellSchema = z.object({
   statementId: z.int().positive(),
@@ -40,17 +35,31 @@ export type GroupCoverage = z.infer<typeof GroupCoverageSchema>;
 
 export const StatementPoolSchema = z.object({
   statements: z.array(PoolStatementSchema),
-  proposals: z.array(WaitingProposalSchema),
   coverage: z.array(GroupCoverageSchema),
 });
 export type StatementPool = z.infer<typeof StatementPoolSchema>;
 
-export interface StatementApproval {
-  statementId: number;
-  text: string | null;
+export const AddedStatementSchema = z.object({ statementId: z.int().positive() });
+export type AddedStatement = z.infer<typeof AddedStatementSchema>;
+
+export interface StatementAddition {
+  provisionalId: number;
+  text: string;
+  addedAt: string;
 }
 
 export interface StatementWording {
   statementId: number;
   text: string;
 }
+
+export const STATEMENT_REQUIRED_MESSAGE = 'Schreib die Aussage auf.';
+export const STATEMENT_TOO_LONG_MESSAGE = `Höchstens ${STATEMENT_MAX_LENGTH} Zeichen.`;
+
+export const StatementTextFormSchema = z.object({
+  text: z
+    .string()
+    .trim()
+    .min(1, STATEMENT_REQUIRED_MESSAGE)
+    .max(STATEMENT_MAX_LENGTH, STATEMENT_TOO_LONG_MESSAGE),
+});

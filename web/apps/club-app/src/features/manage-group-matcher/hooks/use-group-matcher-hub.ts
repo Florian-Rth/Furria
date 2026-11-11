@@ -38,13 +38,6 @@ export const useGroupMatcherHub = (): GroupMatcherHubState => {
         isWide,
         operations,
         closePane,
-        openProposal: (statementId) => {
-          void navigate({
-            to: '/manage/group-matcher/proposals/$statementId',
-            params: { statementId: String(statementId) },
-            resetScroll: false,
-          });
-        },
         openStatement: (statementId) => {
           void navigate({
             to: '/manage/group-matcher/statements/$statementId',

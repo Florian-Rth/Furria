@@ -131,7 +131,6 @@ import { Route as AppManageKeysHoldingsKeyHoldingIdRouteImport } from './routes/
 import { Route as AppManageGroupsKindsNewRouteImport } from './routes/_app/manage.groups_.kinds.new'
 import { Route as AppManageGroupsKindsGroupKindIdRouteImport } from './routes/_app/manage.groups_.kinds.$groupKindId'
 import { Route as AppManageGroupMatcherStatementsStatementIdRouteImport } from './routes/_app/manage.group-matcher.statements.$statementId'
-import { Route as AppManageGroupMatcherProposalsStatementIdRouteImport } from './routes/_app/manage.group-matcher.proposals.$statementId'
 import { Route as AppManageBoardBoardOfficeIdEditRouteImport } from './routes/_app/manage.board_.$boardOfficeId_.edit'
 import { Route as AppManageApplicationsMembershipApplicationIdAdmissionRouteImport } from './routes/_app/manage.applications_.$membershipApplicationId_.admission'
 import { Route as AppGroupsGroupIdUsualTrainingTimesNewRouteImport } from './routes/_app/groups_.$groupId_.usual-training-times.new'
@@ -802,12 +801,6 @@ const AppManageGroupMatcherStatementsStatementIdRoute =
     path: '/statements/$statementId',
     getParentRoute: () => AppManageGroupMatcherRoute,
   } as any)
-const AppManageGroupMatcherProposalsStatementIdRoute =
-  AppManageGroupMatcherProposalsStatementIdRouteImport.update({
-    id: '/proposals/$statementId',
-    path: '/proposals/$statementId',
-    getParentRoute: () => AppManageGroupMatcherRoute,
-  } as any)
 const AppManageBoardBoardOfficeIdEditRoute =
   AppManageBoardBoardOfficeIdEditRouteImport.update({
     id: '/manage/board_/$boardOfficeId_/edit',
@@ -1127,7 +1120,6 @@ export interface FileRoutesByFullPath {
   '/groups/$groupId/usual-training-times/new': typeof AppGroupsGroupIdUsualTrainingTimesNewRoute
   '/manage/applications/$membershipApplicationId/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/manage/board/$boardOfficeId/edit': typeof AppManageBoardBoardOfficeIdEditRoute
-  '/manage/group-matcher/proposals/$statementId': typeof AppManageGroupMatcherProposalsStatementIdRoute
   '/manage/group-matcher/statements/$statementId': typeof AppManageGroupMatcherStatementsStatementIdRoute
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/manage/groups/kinds/new': typeof AppManageGroupsKindsNewRoute
@@ -1278,7 +1270,6 @@ export interface FileRoutesByTo {
   '/groups/$groupId/usual-training-times/new': typeof AppGroupsGroupIdUsualTrainingTimesNewRoute
   '/manage/applications/$membershipApplicationId/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/manage/board/$boardOfficeId/edit': typeof AppManageBoardBoardOfficeIdEditRoute
-  '/manage/group-matcher/proposals/$statementId': typeof AppManageGroupMatcherProposalsStatementIdRoute
   '/manage/group-matcher/statements/$statementId': typeof AppManageGroupMatcherStatementsStatementIdRoute
   '/manage/groups/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/manage/groups/kinds/new': typeof AppManageGroupsKindsNewRoute
@@ -1436,7 +1427,6 @@ export interface FileRoutesById {
   '/_app/groups_/$groupId_/usual-training-times/new': typeof AppGroupsGroupIdUsualTrainingTimesNewRoute
   '/_app/manage/applications_/$membershipApplicationId_/admission': typeof AppManageApplicationsMembershipApplicationIdAdmissionRoute
   '/_app/manage/board_/$boardOfficeId_/edit': typeof AppManageBoardBoardOfficeIdEditRoute
-  '/_app/manage/group-matcher/proposals/$statementId': typeof AppManageGroupMatcherProposalsStatementIdRoute
   '/_app/manage/group-matcher/statements/$statementId': typeof AppManageGroupMatcherStatementsStatementIdRoute
   '/_app/manage/groups_/kinds/$groupKindId': typeof AppManageGroupsKindsGroupKindIdRoute
   '/_app/manage/groups_/kinds/new': typeof AppManageGroupsKindsNewRoute
@@ -1592,7 +1582,6 @@ export interface FileRouteTypes {
     | '/groups/$groupId/usual-training-times/new'
     | '/manage/applications/$membershipApplicationId/admission'
     | '/manage/board/$boardOfficeId/edit'
-    | '/manage/group-matcher/proposals/$statementId'
     | '/manage/group-matcher/statements/$statementId'
     | '/manage/groups/kinds/$groupKindId'
     | '/manage/groups/kinds/new'
@@ -1743,7 +1732,6 @@ export interface FileRouteTypes {
     | '/groups/$groupId/usual-training-times/new'
     | '/manage/applications/$membershipApplicationId/admission'
     | '/manage/board/$boardOfficeId/edit'
-    | '/manage/group-matcher/proposals/$statementId'
     | '/manage/group-matcher/statements/$statementId'
     | '/manage/groups/kinds/$groupKindId'
     | '/manage/groups/kinds/new'
@@ -1900,7 +1888,6 @@ export interface FileRouteTypes {
     | '/_app/groups_/$groupId_/usual-training-times/new'
     | '/_app/manage/applications_/$membershipApplicationId_/admission'
     | '/_app/manage/board_/$boardOfficeId_/edit'
-    | '/_app/manage/group-matcher/proposals/$statementId'
     | '/_app/manage/group-matcher/statements/$statementId'
     | '/_app/manage/groups_/kinds/$groupKindId'
     | '/_app/manage/groups_/kinds/new'
@@ -2798,13 +2785,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppManageGroupMatcherStatementsStatementIdRouteImport
       parentRoute: typeof AppManageGroupMatcherRoute
     }
-    '/_app/manage/group-matcher/proposals/$statementId': {
-      id: '/_app/manage/group-matcher/proposals/$statementId'
-      path: '/proposals/$statementId'
-      fullPath: '/manage/group-matcher/proposals/$statementId'
-      preLoaderRoute: typeof AppManageGroupMatcherProposalsStatementIdRouteImport
-      parentRoute: typeof AppManageGroupMatcherRoute
-    }
     '/_app/manage/board_/$boardOfficeId_/edit': {
       id: '/_app/manage/board_/$boardOfficeId_/edit'
       path: '/manage/board/$boardOfficeId/edit'
@@ -3104,14 +3084,11 @@ const AppBeerListManageRouteWithChildren =
 
 interface AppManageGroupMatcherRouteChildren {
   AppManageGroupMatcherIndexRoute: typeof AppManageGroupMatcherIndexRoute
-  AppManageGroupMatcherProposalsStatementIdRoute: typeof AppManageGroupMatcherProposalsStatementIdRoute
   AppManageGroupMatcherStatementsStatementIdRoute: typeof AppManageGroupMatcherStatementsStatementIdRoute
 }
 
 const AppManageGroupMatcherRouteChildren: AppManageGroupMatcherRouteChildren = {
   AppManageGroupMatcherIndexRoute: AppManageGroupMatcherIndexRoute,
-  AppManageGroupMatcherProposalsStatementIdRoute:
-    AppManageGroupMatcherProposalsStatementIdRoute,
   AppManageGroupMatcherStatementsStatementIdRoute:
     AppManageGroupMatcherStatementsStatementIdRoute,
 }

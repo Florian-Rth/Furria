@@ -59,7 +59,7 @@ public sealed class GetPublicGroupMatcherTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_KeepAGroupIn_When_AStatementApprovedLaterIsStillUnanswered()
+    public async Task Should_KeepAGroupIn_When_AStatementAddedLaterIsStillUnanswered()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await _fixture.BuildAsync(
@@ -108,7 +108,7 @@ public sealed class GetPublicGroupMatcherTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_AnswerNotFound_When_NoStatementIsApproved()
+    public async Task Should_AnswerNotFound_When_ThePoolIsEmpty()
     {
         var ct = TestContext.Current.CancellationToken;
         await _fixture.BuildAsync(
@@ -118,10 +118,7 @@ public sealed class GetPublicGroupMatcherTests : IClassFixture<ApiTestFixture>
                         groups.AddGroup("tanzgarde", "Tanzgarde").AddGroup("elferrat", "Elferrat")
                     )
                     .GroupMatcher(matcher =>
-                        matcher
-                            .AddProposal("vorschlag", "Wir tanzen rückwärts.", "tanzgarde")
-                            .AddTakingPart("tanzgarde")
-                            .AddTakingPart("elferrat")
+                        matcher.AddTakingPart("tanzgarde").AddTakingPart("elferrat")
                     ),
             ct
         );

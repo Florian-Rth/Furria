@@ -2,7 +2,6 @@ import { KkButton } from '@furria/ui/KkButton';
 import { KkTextArea } from '@furria/ui/KkTextArea';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import { STATEMENT_MAX_LENGTH } from '@/features/group-matcher/schemas';
 import { useGroupMatcherHubContext } from '../group-matcher-hub-context';
 import {
   DELETE_LABEL,
@@ -15,6 +14,7 @@ import {
 } from '../group-matcher-hub-copy';
 import { useStatementWording } from '../hooks/use-statement-wording';
 import type { PoolStatement } from '../schemas';
+import { STATEMENT_MAX_LENGTH } from '../schemas';
 import { isAnsweredByAll, toCoverageTally, toStatementCoverageGroups } from '../statement-pool';
 import { DeleteStatementDialog } from './DeleteStatementDialog';
 import { GroupMatcherPaneFrame } from './GroupMatcherPaneFrame';

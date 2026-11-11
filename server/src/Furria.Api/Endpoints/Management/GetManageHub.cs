@@ -111,11 +111,7 @@ public sealed class GetManageHub : EndpointWithoutRequest<GetManageHubResponse>
         };
 
     private static ManageHubGroupMatcherDto ToDto(ManageHubGroupMatcher groupMatcher) =>
-        new()
-        {
-            ApprovedCount = groupMatcher.ApprovedCount,
-            WaitingProposalCount = groupMatcher.WaitingProposalCount,
-        };
+        new() { StatementCount = groupMatcher.StatementCount };
 
     private static ManageHubApplicationsDto ToDto(ManageHubApplications applications) =>
         new()
@@ -232,7 +228,5 @@ public sealed record ManageHubApplicationsDto
 
 public sealed record ManageHubGroupMatcherDto
 {
-    public required int ApprovedCount { get; init; }
-
-    public required int WaitingProposalCount { get; init; }
+    public required int StatementCount { get; init; }
 }

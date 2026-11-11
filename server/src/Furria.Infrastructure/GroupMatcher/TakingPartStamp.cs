@@ -1,4 +1,3 @@
-using Furria.Core.GroupMatcher;
 using Furria.Core.Groups;
 using Furria.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -14,15 +13,13 @@ internal static class TakingPartStamp
         CancellationToken ct
     )
     {
-        var approved = dbContext.MatcherStatements.Where(statement =>
-            statement.Status == MatcherStatementStatus.Approved
-        );
+        var statements = dbContext.MatcherStatements;
 
         return candidates
             .Where(group =>
                 group.GroupMatcherJoinedAt == null
-                && approved.Any()
-                && !approved.Any(statement =>
+                && statements.Any()
+                && !statements.Any(statement =>
                     !statement.Stances.Any(stance => stance.GroupId == group.Id)
                 )
             )

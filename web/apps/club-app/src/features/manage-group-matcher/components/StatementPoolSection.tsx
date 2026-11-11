@@ -5,6 +5,7 @@ import { KkStatementList } from '@furria/ui/KkStatementList';
 import type { FC } from 'react';
 import { POOL_EMPTY, POOL_LABEL, toPoolTitle } from '../group-matcher-hub-copy';
 import { usePoolOrder } from '../hooks/use-pool-order';
+import { StatementAddForm } from './StatementAddForm';
 import { StatementPoolRow } from './StatementPoolRow';
 
 export const StatementPoolSection: FC = () => {
@@ -22,5 +23,10 @@ export const StatementPoolSection: FC = () => {
       </DragDropProvider>
     );
 
-  return <KkPanelSection title={title}>{list}</KkPanelSection>;
+  return (
+    <KkPanelSection title={title}>
+      {list}
+      <StatementAddForm />
+    </KkPanelSection>
+  );
 };

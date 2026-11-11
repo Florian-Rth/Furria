@@ -1,18 +1,18 @@
 import type { StatementState } from '@/features/group-matcher/schemas';
-import { APPROVED_STATEMENT_LIMIT } from '@/features/group-matcher/schemas';
 import type {
   GroupCoverage,
   PoolGroup,
   PoolStatement,
-  StatementApproval,
+  StatementAddition,
   StatementPool,
   StatementWording,
-  WaitingProposal,
 } from './schemas';
+import { STATEMENT_LIMIT } from './schemas';
 
-export type GroupMatcherPane =
-  | { kind: 'proposal'; statementId: number }
-  | { kind: 'statement'; statementId: number };
+export interface GroupMatcherPane {
+  kind: 'statement';
+  statementId: number;
+}
 
 export interface GroupMatcherPaneMatch {
   routeId: string;
@@ -39,6 +39,7 @@ export interface CoverageRow {
 }
 
 const PANE_ROUTE_PREFIX = '/_app/manage/group-matcher/';
+const STATEMENT_PANE_ROUTE = 'statements/$statementId';
 const NO_PANE_KEY = 'none';
 const UNANSWERED_STATES: readonly StatementState[] = ['open', 'new'];
 
@@ -61,28 +62,16 @@ export const groupMatcherPaneOf = (
     return null;
   }
 
-  switch (match.routeId.replace(PANE_ROUTE_PREFIX, '')) {
-    case 'proposals/$statementId':
-      return { kind: 'proposal', statementId };
-    case 'statements/$statementId':
-      return { kind: 'statement', statementId };
-    default:
-      return null;
-  }
+  return match.routeId.replace(PANE_ROUTE_PREFIX, '') === STATEMENT_PANE_ROUTE
+    ? { kind: 'statement', statementId }
+    : null;
 };
 
 export type ResolvedPane =
-  | { kind: 'proposal'; proposal: WaitingProposal }
   | { kind: 'statement'; statement: PoolStatement; index: number }
   | { kind: 'gone' };
 
 export const resolvePane = (pool: StatementPool, pane: GroupMatcherPane): ResolvedPane => {
-  if (pane.kind === 'proposal') {
-    const proposal = pool.proposals.find((entry) => entry.statementId === pane.statementId);
-
-    return proposal === undefined ? { kind: 'gone' } : { kind: 'proposal', proposal };
-  }
-
   const index = pool.statements.findIndex((entry) => entry.statementId === pane.statementId);
   const statement = pool.statements[index];
 
@@ -96,7 +85,7 @@ export const groupMatcherPaneKeyOf = (pane: GroupMatcherPane | null): string =>
   pane === null ? NO_PANE_KEY : `${pane.kind}:${pane.statementId}`;
 
 export const isPoolFull = (pool: StatementPool): boolean =>
-  pool.statements.length >= APPROVED_STATEMENT_LIMIT;
+  pool.statements.length >= STATEMENT_LIMIT;
 
 export const movedOrderOf = (
   statementIds: readonly number[],
@@ -140,41 +129,19 @@ export const withStatementOrder = (
   };
 };
 
-export const withoutProposal = (
+export const withAddition = (
   pool: StatementPool | undefined,
-  statementId: number,
+  { provisionalId, text, addedAt }: StatementAddition,
 ): StatementPool | undefined =>
   pool === undefined
     ? undefined
     : {
         ...pool,
-        proposals: pool.proposals.filter((proposal) => proposal.statementId !== statementId),
+        statements: [
+          ...pool.statements,
+          { statementId: provisionalId, text, addedAt, rewordedAt: null },
+        ],
       };
-
-export const withApproval = (
-  pool: StatementPool | undefined,
-  { statementId, text }: StatementApproval,
-): StatementPool | undefined => {
-  const proposal = pool?.proposals.find((entry) => entry.statementId === statementId);
-
-  if (pool === undefined || proposal === undefined) {
-    return pool;
-  }
-
-  return {
-    ...pool,
-    statements: [
-      ...pool.statements,
-      {
-        statementId,
-        text: text ?? proposal.text,
-        approvedAt: proposal.proposedAt,
-        rewordedAt: null,
-      },
-    ],
-    proposals: pool.proposals.filter((entry) => entry.statementId !== statementId),
-  };
-};
 
 const withoutCell = (coverage: GroupCoverage, statementId: number): GroupCoverage => ({
   ...coverage,
@@ -255,10 +222,4 @@ export const toCoverageTally = (pool: StatementPool, statementId: number): Cover
     changed: groups.changed.length,
     waiting: groups.waiting.length,
   };
-};
-
-export const toApprovalText = (proposal: WaitingProposal, draft: string): string | null => {
-  const text = draft.trim();
-
-  return text === proposal.text ? null : text;
 };

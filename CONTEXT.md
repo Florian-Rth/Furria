@@ -1291,27 +1291,26 @@ The public website's quiz that tells a visitor which **group** fits them. It is 
 voting-advice quiz: the visitor answers one shared set of **statements**, and every group has
 taken a **stance** on the same statements, so groups are compared on equal terms (ruled
 2026-11-11).
-A group **takes part** on its own, with no switch: once it has taken a stance on every approved
-statement it is in, and a statement approved later never pushes it out — that statement simply
+A group **takes part** on its own, with no switch: once it has taken a stance on every
+statement it is in, and a statement added later never pushes it out — that statement simply
 does not count for the group until it answers (ruled 2026-11-11). A group that does not want to be
 in never answers. The website leaves the Jeck-Check out while fewer than two groups take part or
-no statement is approved. Every unanswered approved statement is a to-do for the group's admins,
+the pool is empty. Every unanswered statement is a to-do for the group's admins,
 whether the group takes part or not.
 _UI copy_: Jeck-Check; neue Aussage
 _Avoid_: group matcher (in prose), quiz, test, opting in
 
 **Statement** (Jeck-Check):
-One sentence in the **Jeck-Check**'s shared pool that a visitor agrees or disagrees with. A
-**group admin** may **propose** a statement; whoever may maintain the Jeck-Check **approves** it,
-rewords it, orders it or deletes it, and keeps at most ten approved — with the age question
-that makes eleven questions at most. Only approved statements
-reach the website, and every group takes a **stance** on every approved statement, so no group has
-statements of its own (ruled 2026-11-11). A statement a group has not yet taken a stance on does
-not count for that group. Rewording keeps the stances already taken and flags the statement as
-**changed** for every group until it looks again. A rejected proposal stays visible to its group as rejected, without
-a reason; the club rewords what it can save instead.
-_UI copy_: Aussage; vorschlagen, freigeben, geändert
-_Avoid_: question (for a statement), group question
+One sentence in the **Jeck-Check**'s shared pool that a visitor agrees or disagrees with. Only
+whoever may maintain the Jeck-Check writes statements: they add, reword, order and delete them, and
+keep at most ten in the pool — with the age question that makes eleven questions at most. Groups do
+not propose statements (dropped 2026-11-11). Every statement in the pool reaches the website, and
+every group takes a **stance** on every one, so no group has statements of its own (ruled
+2026-11-11). A statement a group has not yet taken a stance on does not count for that group.
+Rewording keeps the stances already taken and flags the statement as **changed** for every group
+until it looks again.
+_UI copy_: Aussage; hinzufügen, geändert
+_Avoid_: question (for a statement), group question, proposal
 
 **Stance** (Jeck-Check):
 A **group**'s answer to one **statement** — yes, neutral or no — together with how much that

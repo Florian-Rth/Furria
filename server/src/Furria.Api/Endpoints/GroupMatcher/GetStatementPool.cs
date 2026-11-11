@@ -33,26 +33,16 @@ public sealed class GetStatementPool : EndpointWithoutRequest<GetStatementPoolRe
         new()
         {
             Statements = [.. pool.Statements.Select(ToDto)],
-            Proposals = [.. pool.Proposals.Select(ToDto)],
             Coverage = [.. pool.Coverage.Select(ToDto)],
         };
 
-    private static ApprovedStatementSummaryDto ToDto(ApprovedStatementSummary statement) =>
+    private static PoolStatementSummaryDto ToDto(PoolStatementSummary statement) =>
         new()
         {
             StatementId = statement.StatementId,
             Text = statement.Text,
-            ApprovedAt = statement.ApprovedAt,
+            AddedAt = statement.AddedAt,
             RewordedAt = statement.RewordedAt,
-        };
-
-    private static WaitingProposalSummaryDto ToDto(WaitingProposalSummary proposal) =>
-        new()
-        {
-            StatementId = proposal.StatementId,
-            Text = proposal.Text,
-            ProposedAt = proposal.ProposedAt,
-            ProposedBy = proposal.ProposedBy is { } group ? ToDto(group) : null,
         };
 
     private static GroupCoverageSummaryDto ToDto(GroupCoverageSummary coverage) =>
@@ -81,33 +71,20 @@ public sealed class GetStatementPool : EndpointWithoutRequest<GetStatementPoolRe
 
 public sealed record GetStatementPoolResponse
 {
-    public required IReadOnlyList<ApprovedStatementSummaryDto> Statements { get; init; }
-
-    public required IReadOnlyList<WaitingProposalSummaryDto> Proposals { get; init; }
+    public required IReadOnlyList<PoolStatementSummaryDto> Statements { get; init; }
 
     public required IReadOnlyList<GroupCoverageSummaryDto> Coverage { get; init; }
 }
 
-public sealed record ApprovedStatementSummaryDto
+public sealed record PoolStatementSummaryDto
 {
     public required int StatementId { get; init; }
 
     public required string Text { get; init; }
 
-    public required DateTimeOffset ApprovedAt { get; init; }
+    public required DateTimeOffset AddedAt { get; init; }
 
     public required DateTimeOffset? RewordedAt { get; init; }
-}
-
-public sealed record WaitingProposalSummaryDto
-{
-    public required int StatementId { get; init; }
-
-    public required string Text { get; init; }
-
-    public required DateTimeOffset ProposedAt { get; init; }
-
-    public required PoolGroupRefDto? ProposedBy { get; init; }
 }
 
 public sealed record GroupCoverageSummaryDto

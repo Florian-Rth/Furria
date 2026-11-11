@@ -8,8 +8,6 @@ import type { GroupHub } from '@/features/group-hub/schemas';
 import { useGroupMatcherPageQuery } from '../api';
 import { GROUP_MATCHER_TITLE, toGroupMatcherErrorMessage } from '../group-matcher-labels';
 import { AdmissionAgesSection } from './AdmissionAgesSection';
-import { ProposalFormSection } from './ProposalFormSection';
-import { ProposalList } from './ProposalList';
 import { StatementsSection } from './StatementsSection';
 
 interface GroupMatcherEditorProps {
@@ -47,8 +45,6 @@ export const GroupMatcherEditor: FC<GroupMatcherEditorProps> = ({ hub }) => {
       <KkPanelStack>
         <StatementsSection groupId={hub.groupId} page={page.data} />
         <AdmissionAgesSection groupId={hub.groupId} admissionAges={page.data.admissionAges} />
-        <ProposalFormSection groupId={hub.groupId} />
-        <ProposalList groupId={hub.groupId} proposals={page.data.proposals} />
       </KkPanelStack>
     </KkScreen>
   );

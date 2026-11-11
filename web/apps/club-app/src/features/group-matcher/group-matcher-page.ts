@@ -117,17 +117,6 @@ export const withAdmissionAges = (
 ): GroupMatcherPage | undefined =>
   page === undefined ? undefined : { ...page, admissionAges: [...admissionAges] };
 
-export const withoutProposal = (
-  page: GroupMatcherPage | undefined,
-  statementId: number,
-): GroupMatcherPage | undefined =>
-  page === undefined
-    ? undefined
-    : {
-        ...page,
-        proposals: page.proposals.filter((proposal) => proposal.statementId !== statementId),
-      };
-
 export type GroupMatcherStanding =
   | { kind: 'awaiting'; count: number }
   | { kind: 'takingPart' }

@@ -1,7 +1,7 @@
 import Stack from '@mui/material/Stack';
 import type { CSSObject } from '@mui/material/styles';
 import Typography from '@mui/material/Typography';
-import type { FC, PropsWithChildren, ReactNode } from 'react';
+import type { FC, PropsWithChildren } from 'react';
 import { rowDividerTop } from '../../../internal/row-divider';
 import type { KkChipTone } from '../../../KkChip';
 import { KkChip } from '../../../KkChip';
@@ -21,14 +21,12 @@ const MARK_FRAME: CSSObject = { flexShrink: 0 };
 interface KkStatementListRowProps extends PropsWithChildren {
   text: string;
   mark?: KkStatementMark | null;
-  action?: ReactNode;
   sx?: KkSx;
 }
 
 export const KkStatementListRow: FC<KkStatementListRowProps> = ({
   text,
   mark = null,
-  action,
   sx,
   children,
 }) => {
@@ -50,7 +48,6 @@ export const KkStatementListRow: FC<KkStatementListRowProps> = ({
           {text}
         </Typography>
         {markChip}
-        {action}
       </Stack>
       {children}
     </Stack>

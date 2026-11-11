@@ -48,8 +48,8 @@ public sealed class PutStatementOrderValidator : Validator<PutStatementOrderRequ
         RuleFor(request => request.StatementIds)
             .Cascade(CascadeMode.Stop)
             .NotEmpty()
-            .Must(ids => ids.Count <= MatcherStatement.MaxApproved)
-            .WithMessage($"Höchstens {MatcherStatement.MaxApproved} Aussagen.")
+            .Must(ids => ids.Count <= MatcherStatement.MaxInPool)
+            .WithMessage($"Höchstens {MatcherStatement.MaxInPool} Aussagen.")
             .Must(ids => ids.Distinct().Count() == ids.Count)
             .WithMessage("Jede Aussage darf nur einmal vorkommen.");
         RuleForEach(request => request.StatementIds).GreaterThan(0);

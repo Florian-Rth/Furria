@@ -16,26 +16,17 @@ public sealed class GroupMatcherService
     private const string ArchivedGroupMessage =
         "Eine archivierte Gruppe kann beim Jeck-Check nicht mitmachen.";
     private const string UnknownStatementMessage = "Diese Aussage steht nicht im Jeck-Check.";
-    private const string UnknownProposalMessage = "Diesen Vorschlag gibt es nicht.";
-    private const string DecidedProposalMessage = "Über diesen Vorschlag ist schon entschieden.";
 
     private readonly AppDbContext _dbContext;
     private readonly PublicFace _publicFace;
     private readonly TimeProvider _timeProvider;
 
-    private IQueryable<MatcherStatement> ApprovedStatements =>
-        _dbContext
-            .MatcherStatements.AsNoTracking()
-            .Where(statement => statement.Status == MatcherStatementStatus.Approved)
-            .OrderBy(statement => statement.SortOrder)
-            .ThenBy(statement => statement.Id);
+    private IQueryable<MatcherStatement> PoolStatements =>
+        _dbContext.MatcherStatements.AsNoTracking().OrderBy(statement => statement.SortOrder);
 
     private IQueryable<Stance> CurrentStances =>
         _dbContext.Stances.Where(stance =>
-            stance.Statement!.Status == MatcherStatementStatus.Approved
-            && (
-                stance.Statement.RewordedAt == null || stance.Statement.RewordedAt <= stance.TakenAt
-            )
+            stance.Statement!.RewordedAt == null || stance.Statement.RewordedAt <= stance.TakenAt
         );
 
     public GroupMatcherService(
@@ -64,7 +55,6 @@ public sealed class GroupMatcherService
                 IsTakingPart = group.IsTakingPart,
                 Statements = await StatementsOfAsync(groupId, group.JoinedAt, ct),
                 AdmissionAges = await AdmissionAgesOfAsync(groupId, ct),
-                Proposals = await ProposalsOfAsync(groupId, ct),
             }
         );
     }
@@ -77,7 +67,7 @@ public sealed class GroupMatcherService
         {
             IsTakingPart = group?.IsTakingPart ?? false,
             OpenStatements =
-                await ApprovedStatements.CountAsync(ct)
+                await PoolStatements.CountAsync(ct)
                 - await CurrentStances.CountAsync(stance => stance.GroupId == groupId, ct),
         };
     }
@@ -87,7 +77,7 @@ public sealed class GroupMatcherService
         CancellationToken ct
     )
     {
-        var approvedCount = await ApprovedStatements.CountAsync(ct);
+        var statementCount = await PoolStatements.CountAsync(ct);
         var groups = await _dbContext
             .Groups.AsNoTracking()
             .Where(group => groupIds.Contains(group.Id) && group.ArchivedOn == null)
@@ -111,7 +101,7 @@ public sealed class GroupMatcherService
                 .Select(row => new GroupAttentionSummary
                 {
                     Group = row.Group,
-                    StatementCount = approvedCount - row.CurrentCount,
+                    StatementCount = statementCount - row.CurrentCount,
                 })
                 .Where(summary => summary.StatementCount > 0),
         ];
@@ -122,7 +112,7 @@ public sealed class GroupMatcherService
         if (await GroupRefusalAsync(command.GroupId, ct) is { } refusal)
             return refusal;
 
-        if (!await ApprovedStatements.AnyAsync(row => row.Id == command.StatementId, ct))
+        if (!await PoolStatements.AnyAsync(row => row.Id == command.StatementId, ct))
             return Result.NotFound(UnknownStatementMessage);
 
         var now = _timeProvider.GetUtcNow();
@@ -160,51 +150,9 @@ public sealed class GroupMatcherService
         return await _dbContext.SaveOrConflictAsync(ct);
     }
 
-    public async Task<Result<int>> ProposeAsync(int groupId, string text, CancellationToken ct)
-    {
-        if (await GroupRefusalAsync(groupId, ct) is { } refusal)
-            return Result<int>.Carrying(refusal);
-
-        var statement = new MatcherStatement
-        {
-            Text = text.Trim(),
-            Status = MatcherStatementStatus.Proposed,
-            ProposedByGroupId = groupId,
-        };
-        _dbContext.MatcherStatements.Add(statement);
-
-        await _dbContext.SaveChangesAsync(ct);
-
-        return Result<int>.Success(statement.Id);
-    }
-
-    public Task<Result> WithdrawProposalAsync(int groupId, int statementId, CancellationToken ct) =>
-        _dbContext.UnderPoolLockAsync(() => WithdrawLockedAsync(groupId, statementId, ct), ct);
-
-    private async Task<Result> WithdrawLockedAsync(
-        int groupId,
-        int statementId,
-        CancellationToken ct
-    )
-    {
-        var proposal = await _dbContext.MatcherStatements.SingleOrDefaultAsync(
-            statement => statement.Id == statementId && statement.ProposedByGroupId == groupId,
-            ct
-        );
-        if (proposal is null)
-            return Result.NotFound(UnknownProposalMessage);
-
-        if (proposal.Status is not MatcherStatementStatus.Proposed)
-            return Result.Conflict(DecidedProposalMessage);
-
-        _dbContext.MatcherStatements.Remove(proposal);
-
-        return await _dbContext.SaveOrConflictAsync(ct);
-    }
-
     public async Task<PublicGroupMatcherDetails?> GetPublicAsync(CancellationToken ct)
     {
-        var statements = await ApprovedStatements
+        var statements = await PoolStatements
             .Select(statement => new StatementRow(statement.Id, statement.Text))
             .ToListAsync(ct);
         if (statements.Count == 0)
@@ -238,11 +186,11 @@ public sealed class GroupMatcherService
         CancellationToken ct
     )
     {
-        var rows = await ApprovedStatements
+        var rows = await PoolStatements
             .Select(statement => new GroupStatementRow(
                 statement.Id,
                 statement.Text,
-                statement.ApprovedAt!.Value,
+                statement.CreatedAt,
                 statement.RewordedAt,
                 statement
                     .Stances.Where(stance => stance.GroupId == groupId)
@@ -269,12 +217,7 @@ public sealed class GroupMatcherService
             Text = row.Text,
             Position = row.Stance?.Position,
             Importance = row.Stance?.Importance,
-            State = StatementStates.Of(
-                row.Stance?.TakenAt,
-                row.ApprovedAt,
-                row.RewordedAt,
-                joinedAt
-            ),
+            State = StatementStates.Of(row.Stance?.TakenAt, row.AddedAt, row.RewordedAt, joinedAt),
         };
 
     private async Task<IReadOnlyList<AdmissionAgeBand>> AdmissionAgesOfAsync(
@@ -290,27 +233,6 @@ public sealed class GroupMatcherService
 
         return [.. bands.Order()];
     }
-
-    private async Task<IReadOnlyList<GroupProposalSummary>> ProposalsOfAsync(
-        int groupId,
-        CancellationToken ct
-    ) =>
-        await _dbContext
-            .MatcherStatements.AsNoTracking()
-            .Where(statement =>
-                statement.ProposedByGroupId == groupId
-                && statement.Status != MatcherStatementStatus.Approved
-            )
-            .OrderByDescending(statement => statement.CreatedAt)
-            .ThenByDescending(statement => statement.Id)
-            .Select(statement => new GroupProposalSummary
-            {
-                StatementId = statement.Id,
-                Text = statement.Text,
-                Status = statement.Status,
-                ProposedAt = statement.CreatedAt,
-            })
-            .ToListAsync(ct);
 
     private async Task UpsertStanceAsync(
         TakeStanceCommand command,
@@ -365,10 +287,7 @@ public sealed class GroupMatcherService
     ) =>
         await _dbContext
             .Stances.AsNoTracking()
-            .Where(stance =>
-                groupIds.Contains(stance.GroupId)
-                && stance.Statement!.Status == MatcherStatementStatus.Approved
-            )
+            .Where(stance => groupIds.Contains(stance.GroupId))
             .Select(stance => new StanceOfGroupRow(
                 stance.StatementId,
                 stance.GroupId,
@@ -439,7 +358,7 @@ public sealed class GroupMatcherService
     private sealed record GroupStatementRow(
         int Id,
         string Text,
-        DateTimeOffset ApprovedAt,
+        DateTimeOffset AddedAt,
         DateTimeOffset? RewordedAt,
         StanceRow? Stance
     );

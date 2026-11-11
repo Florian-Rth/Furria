@@ -1,8 +1,7 @@
 import { useState } from 'react';
 import {
-  useApproveStatementMutation,
+  useAddStatementMutation,
   useDeleteStatementMutation,
-  useRejectStatementMutation,
   useReorderStatementsMutation,
   useRewordStatementMutation,
 } from '../api';
@@ -10,10 +9,9 @@ import type { GroupMatcherPane } from '../statement-pool';
 
 export interface GroupMatcherOperations {
   deleteTarget: number | null;
-  isReviewing: boolean;
+  isAdding: boolean;
   isRewording: boolean;
-  approve: (statementId: number, text: string | null) => void;
-  reject: (statementId: number) => void;
+  add: (text: string, onFailed: () => void) => void;
   reword: (statementId: number, text: string) => void;
   reorder: (statementIds: readonly number[]) => void;
   askDelete: (statementId: number) => void;
@@ -25,8 +23,7 @@ export const useGroupMatcherOperations = (
   pane: GroupMatcherPane | null,
   closePane: () => void,
 ): GroupMatcherOperations => {
-  const approval = useApproveStatementMutation();
-  const rejection = useRejectStatementMutation();
+  const addition = useAddStatementMutation();
   const rewording = useRewordStatementMutation();
   const ordering = useReorderStatementsMutation();
   const deletion = useDeleteStatementMutation();
@@ -38,14 +35,10 @@ export const useGroupMatcherOperations = (
     }
   };
 
-  const approve = (statementId: number, text: string | null): void => {
-    approval.mutate({ statementId, text });
-    closeWhenShown(statementId);
-  };
+  const add = (text: string, onFailed: () => void): void => {
+    const addedAt = new Date().toISOString();
 
-  const reject = (statementId: number): void => {
-    rejection.mutate(statementId);
-    closeWhenShown(statementId);
+    addition.mutate({ provisionalId: -Date.now(), text, addedAt }, { onError: onFailed });
   };
 
   const confirmDelete = (): void => {
@@ -60,10 +53,9 @@ export const useGroupMatcherOperations = (
 
   return {
     deleteTarget,
-    isReviewing: approval.isPending || rejection.isPending,
+    isAdding: addition.isPending,
     isRewording: rewording.isPending,
-    approve,
-    reject,
+    add,
     reword: (statementId, text) => {
       rewording.mutate({ statementId, text });
     },

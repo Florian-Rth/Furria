@@ -22,31 +22,11 @@ public sealed class GroupMatcherSeedBuilder
     public GroupMatcherSeedBuilder AddStatement(
         string alias,
         string text,
-        DateTimeOffset? approvedAt = null,
+        DateTimeOffset? addedAt = null,
         DateTimeOffset? rewordedAt = null
     )
     {
-        _statements.Add(
-            new StatementIntent(
-                alias,
-                text,
-                MatcherStatementStatus.Approved,
-                null,
-                approvedAt,
-                rewordedAt
-            )
-        );
-        return this;
-    }
-
-    public GroupMatcherSeedBuilder AddProposal(
-        string alias,
-        string text,
-        string proposedByGroupAlias,
-        MatcherStatementStatus status = MatcherStatementStatus.Proposed
-    )
-    {
-        _statements.Add(new StatementIntent(alias, text, status, proposedByGroupAlias, null, null));
+        _statements.Add(new StatementIntent(alias, text, addedAt, rewordedAt));
         return this;
     }
 
@@ -77,9 +57,7 @@ public sealed class GroupMatcherSeedBuilder
     internal sealed record StatementIntent(
         string Alias,
         string Text,
-        MatcherStatementStatus Status,
-        string? ProposedByGroupAlias,
-        DateTimeOffset? ApprovedAt,
+        DateTimeOffset? AddedAt,
         DateTimeOffset? RewordedAt
     );
 

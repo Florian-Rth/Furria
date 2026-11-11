@@ -5,24 +5,17 @@ import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { queryKeys } from '@/lib/query/reads';
 import { toWriteErrorMessage } from '@/lib/write-error';
+import { ADDED_MESSAGE, DELETED_MESSAGE, REWORDED_MESSAGE } from './group-matcher-hub-copy';
 import {
-  APPROVED_MESSAGE,
-  DELETED_MESSAGE,
-  REJECTED_MESSAGE,
-  REWORDED_MESSAGE,
-} from './group-matcher-hub-copy';
-import {
-  requestApproveStatement,
+  requestAddStatement,
   requestDeleteStatement,
-  requestRejectStatement,
   requestReorderStatements,
   requestRewordStatement,
   requestStatementPool,
 } from './requests';
-import type { StatementApproval, StatementPool, StatementWording } from './schemas';
+import type { AddedStatement, StatementAddition, StatementPool, StatementWording } from './schemas';
 import {
-  withApproval,
-  withoutProposal,
+  withAddition,
   withoutStatement,
   withRewording,
   withStatementOrder,
@@ -37,20 +30,16 @@ export const useStatementPoolQuery = (): UseQueryResult<StatementPool, Error> =>
     queryFn: () => withFreshAccessToken(requestStatementPool),
   });
 
-export const useApproveStatementMutation = (): UseMutationResult<void, Error, StatementApproval> =>
+export const useAddStatementMutation = (): UseMutationResult<
+  AddedStatement,
+  Error,
+  StatementAddition
+> =>
   useApiMutation({
-    request: requestApproveStatement,
-    optimistic: [optimisticPatch(queryKeys.statementPool, withApproval)],
+    request: ({ text }: StatementAddition, accessToken) => requestAddStatement(text, accessToken),
+    optimistic: [optimisticPatch(queryKeys.statementPool, withAddition)],
     changes: ['groupMatcher'],
-    notice: { success: () => APPROVED_MESSAGE, ...FAILURE_NOTICE },
-  });
-
-export const useRejectStatementMutation = (): UseMutationResult<void, Error, number> =>
-  useApiMutation({
-    request: requestRejectStatement,
-    optimistic: [optimisticPatch(queryKeys.statementPool, withoutProposal)],
-    changes: ['groupMatcher'],
-    notice: { success: () => REJECTED_MESSAGE, ...FAILURE_NOTICE },
+    notice: { success: () => ADDED_MESSAGE, ...FAILURE_NOTICE },
   });
 
 export const useRewordStatementMutation = (): UseMutationResult<void, Error, StatementWording> =>

@@ -19,7 +19,7 @@ public sealed class DeleteStatementByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_DropItsStancesAndCloseTheGap_When_AnApprovedStatementIsDeleted()
+    public async Task Should_DropItsStancesAndCloseTheGap_When_AStatementIsDeleted()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildAsync(
@@ -44,7 +44,7 @@ public sealed class DeleteStatementByIdTests : IClassFixture<ApiTestFixture>
             )
             .ToNotExist()
             .MatcherStatement(ctx.GroupMatcher.Statements.IdOf("orden"))
-            .ToBeApprovedAs("Orden sind schwer.", sortOrder: 2)
+            .ToBeInPoolAs("Orden sind schwer.", sortOrder: 2)
             .AssertAsync(ct);
     }
 
@@ -71,7 +71,7 @@ public sealed class DeleteStatementByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
-    public async Task Should_StampNoGroup_When_TheLastApprovedStatementIsDeleted()
+    public async Task Should_StampNoGroup_When_TheLastStatementIsDeleted()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildAsync(
@@ -84,31 +84,6 @@ public sealed class DeleteStatementByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
         await ctx
             .Expected.Group(ctx.Groups.Groups.IdOf("tanzgarde"))
-            .ToHaveJoinedTheGroupMatcherAt(null)
-            .AssertAsync(ct);
-    }
-
-    [Fact]
-    public async Task Should_LeaveThePoolAlone_When_AProposalIsDeleted()
-    {
-        var ct = TestContext.Current.CancellationToken;
-        var ctx = await BuildAsync(
-            matcher =>
-                matcher
-                    .AddStatement("konfetti", "Konfetti ist Pflicht.")
-                    .AddProposal("vorschlag", "Wir tanzen rückwärts.", "tanzgarde"),
-            ct
-        );
-
-        var response = await DeleteAsync(ctx, "vorschlag", ct);
-
-        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
-        await ctx
-            .Expected.MatcherStatement(ctx.GroupMatcher.Statements.IdOf("vorschlag"))
-            .ToNotExist()
-            .MatcherStatement(ctx.GroupMatcher.Statements.IdOf("konfetti"))
-            .ToBeApprovedAs("Konfetti ist Pflicht.", sortOrder: 1)
-            .Group(ctx.Groups.Groups.IdOf("tanzgarde"))
             .ToHaveJoinedTheGroupMatcherAt(null)
             .AssertAsync(ct);
     }

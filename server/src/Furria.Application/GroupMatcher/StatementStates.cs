@@ -7,13 +7,13 @@ public static class StatementStates
     [Pure]
     public static GroupStatementState Of(
         DateTimeOffset? stanceTakenAt,
-        DateTimeOffset approvedAt,
+        DateTimeOffset addedAt,
         DateTimeOffset? rewordedAt,
         DateTimeOffset? groupJoinedAt
     ) =>
         stanceTakenAt switch
         {
-            null when groupJoinedAt < approvedAt => GroupStatementState.New,
+            null when groupJoinedAt < addedAt => GroupStatementState.New,
             null => GroupStatementState.Open,
             _ when rewordedAt > stanceTakenAt => GroupStatementState.Changed,
             _ => GroupStatementState.Answered,

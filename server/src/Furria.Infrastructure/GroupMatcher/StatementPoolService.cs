@@ -10,26 +10,16 @@ namespace Furria.Infrastructure.GroupMatcher;
 public sealed class StatementPoolService
 {
     private const string UnknownStatementMessage = "Diese Aussage gibt es nicht.";
-    private const string DecidedProposalMessage = "Über diesen Vorschlag ist schon entschieden.";
-    private const string NotApprovedMessage = "Diese Aussage steht nicht im Jeck-Check.";
     private const string PoolFullMessage =
-        "Der Jeck-Check hat schon zehn Aussagen. Erst eine löschen, dann freigeben.";
+        "Der Jeck-Check hat schon zehn Aussagen. Erst eine löschen, dann hinzufügen.";
     private const string OrderMismatchMessage =
-        "Die Reihenfolge passt nicht mehr zu den freigegebenen Aussagen. Bitte neu laden.";
+        "Die Reihenfolge passt nicht mehr zu den Aussagen im Jeck-Check. Bitte neu laden.";
 
     private readonly AppDbContext _dbContext;
     private readonly TimeProvider _timeProvider;
 
-    private IQueryable<MatcherStatement> ApprovedStatements =>
-        _dbContext
-            .MatcherStatements.AsNoTracking()
-            .Where(statement => statement.Status == MatcherStatementStatus.Approved)
-            .OrderBy(statement => statement.SortOrder);
-
-    private IQueryable<MatcherStatement> WaitingProposals =>
-        _dbContext
-            .MatcherStatements.AsNoTracking()
-            .Where(statement => statement.Status == MatcherStatementStatus.Proposed);
+    private IQueryable<MatcherStatement> PoolStatements =>
+        _dbContext.MatcherStatements.AsNoTracking().OrderBy(statement => statement.SortOrder);
 
     public StatementPoolService(AppDbContext dbContext, TimeProvider timeProvider)
     {
@@ -44,7 +34,6 @@ public sealed class StatementPoolService
         return new StatementPoolDetails
         {
             Statements = statements,
-            Proposals = await ProposalsAsync(ct),
             Coverage = CoverageOf(
                 statements,
                 await CoverageGroupsAsync(ct),
@@ -53,16 +42,15 @@ public sealed class StatementPoolService
         };
     }
 
-    public Task<int> CountWaitingProposalsAsync(CancellationToken ct) =>
-        WaitingProposals.CountAsync(ct);
+    public Task<int> CountAsync(CancellationToken ct) => PoolStatements.CountAsync(ct);
 
-    public Task<int> CountApprovedAsync(CancellationToken ct) => ApprovedStatements.CountAsync(ct);
+    public async Task<Result<int>> AddAsync(string text, CancellationToken ct)
+    {
+        var statement = new MatcherStatement { Text = text.Trim() };
+        var added = await _dbContext.UnderPoolLockAsync(() => AddLockedAsync(statement, ct), ct);
 
-    public Task<Result> ApproveAsync(int statementId, string? text, CancellationToken ct) =>
-        _dbContext.UnderPoolLockAsync(() => ApproveLockedAsync(statementId, text, ct), ct);
-
-    public Task<Result> RejectAsync(int statementId, CancellationToken ct) =>
-        _dbContext.UnderPoolLockAsync(() => RejectLockedAsync(statementId, ct), ct);
+        return added.IsSuccess ? Result<int>.Success(statement.Id) : Result<int>.Carrying(added);
+    }
 
     public Task<Result> RewordAsync(int statementId, string text, CancellationToken ct) =>
         _dbContext.UnderPoolLockAsync(() => RewordLockedAsync(statementId, text, ct), ct);
@@ -73,47 +61,14 @@ public sealed class StatementPoolService
     public Task<Result> DeleteAsync(int statementId, CancellationToken ct) =>
         _dbContext.UnderPoolLockAsync(() => DeleteLockedAsync(statementId, ct), ct);
 
-    private async Task<Result> ApproveLockedAsync(
-        int statementId,
-        string? text,
-        CancellationToken ct
-    )
+    private async Task<Result> AddLockedAsync(MatcherStatement statement, CancellationToken ct)
     {
-        var proposal = await _dbContext.MatcherStatements.SingleOrDefaultAsync(
-            statement => statement.Id == statementId,
-            ct
-        );
-        if (proposal is null)
-            return Result.NotFound(UnknownStatementMessage);
-
-        if (proposal.Status is not MatcherStatementStatus.Proposed)
-            return Result.Conflict(DecidedProposalMessage);
-
-        var approvedCount = await ApprovedStatements.CountAsync(ct);
-        if (approvedCount >= MatcherStatement.MaxApproved)
+        var statementCount = await PoolStatements.CountAsync(ct);
+        if (statementCount >= MatcherStatement.MaxInPool)
             return Result.Conflict(PoolFullMessage);
 
-        proposal.Status = MatcherStatementStatus.Approved;
-        proposal.SortOrder = approvedCount + 1;
-        proposal.ApprovedAt = _timeProvider.GetUtcNow();
-        proposal.Text = text?.Trim() ?? proposal.Text;
-
-        return await _dbContext.SaveOrConflictAsync(ct);
-    }
-
-    private async Task<Result> RejectLockedAsync(int statementId, CancellationToken ct)
-    {
-        var proposal = await _dbContext.MatcherStatements.SingleOrDefaultAsync(
-            statement => statement.Id == statementId,
-            ct
-        );
-        if (proposal is null)
-            return Result.NotFound(UnknownStatementMessage);
-
-        if (proposal.Status is not MatcherStatementStatus.Proposed)
-            return Result.Conflict(DecidedProposalMessage);
-
-        proposal.Status = MatcherStatementStatus.Rejected;
+        statement.SortOrder = statementCount + 1;
+        _dbContext.MatcherStatements.Add(statement);
 
         return await _dbContext.SaveOrConflictAsync(ct);
     }
@@ -121,11 +76,11 @@ public sealed class StatementPoolService
     private async Task<Result> RewordLockedAsync(int statementId, string text, CancellationToken ct)
     {
         var statement = await _dbContext.MatcherStatements.SingleOrDefaultAsync(
-            row => row.Id == statementId && row.Status == MatcherStatementStatus.Approved,
+            row => row.Id == statementId,
             ct
         );
         if (statement is null)
-            return Result.NotFound(NotApprovedMessage);
+            return Result.NotFound(UnknownStatementMessage);
 
         var reworded = text.Trim();
         if (reworded == statement.Text)
@@ -142,14 +97,11 @@ public sealed class StatementPoolService
         CancellationToken ct
     )
     {
-        var approvedIds = await ApprovedStatements
-            .Select(statement => statement.Id)
-            .ToListAsync(ct);
-        if (!IsSameSet(approvedIds, statementIds))
+        var poolIds = await PoolStatements.Select(statement => statement.Id).ToListAsync(ct);
+        if (!IsSameSet(poolIds, statementIds))
             return Result.Conflict(OrderMismatchMessage);
 
         var ids = statementIds.ToArray();
-        var approved = nameof(MatcherStatementStatus.Approved);
         var now = _timeProvider.GetUtcNow();
         await _dbContext.Database.ExecuteSqlAsync(
             $"""
@@ -157,7 +109,6 @@ public sealed class StatementPoolService
             SET sort_order = slot.position, updated_at = {now}
             FROM unnest({ids}) WITH ORDINALITY AS slot(id, position)
             WHERE statement.id = slot.id
-              AND statement.status = {approved}
               AND statement.sort_order IS DISTINCT FROM slot.position
             """,
             ct
@@ -180,8 +131,7 @@ public sealed class StatementPoolService
             .MatcherStatements.Where(statement => statement.Id == statementId)
             .ExecuteDeleteAsync(ct);
 
-        if (slot.SortOrder is { } freedSlot)
-            await CloseGapAndStampAsync(freedSlot, _timeProvider.GetUtcNow(), ct);
+        await CloseGapAndStampAsync(slot.SortOrder, _timeProvider.GetUtcNow(), ct);
 
         return Result.Success();
     }
@@ -193,10 +143,7 @@ public sealed class StatementPoolService
     )
     {
         await _dbContext
-            .MatcherStatements.Where(statement =>
-                statement.Status == MatcherStatementStatus.Approved
-                && statement.SortOrder > freedSlot
-            )
+            .MatcherStatements.Where(statement => statement.SortOrder > freedSlot)
             .ExecuteUpdateAsync(
                 setters =>
                     setters
@@ -216,14 +163,12 @@ public sealed class StatementPoolService
     }
 
     [Pure]
-    private static bool IsSameSet(
-        IReadOnlyList<int> approvedIds,
-        IReadOnlyList<int> requestedIds
-    ) => approvedIds.Count == requestedIds.Count && approvedIds.ToHashSet().SetEquals(requestedIds);
+    private static bool IsSameSet(IReadOnlyList<int> poolIds, IReadOnlyList<int> requestedIds) =>
+        poolIds.Count == requestedIds.Count && poolIds.ToHashSet().SetEquals(requestedIds);
 
     [Pure]
     private static IReadOnlyList<GroupCoverageSummary> CoverageOf(
-        IReadOnlyList<ApprovedStatementSummary> statements,
+        IReadOnlyList<PoolStatementSummary> statements,
         IReadOnlyList<CoverageGroupRow> groups,
         IReadOnlyList<CoverageStanceRow> stances
     )
@@ -248,7 +193,7 @@ public sealed class StatementPoolService
                             takenAtByKey.GetValueOrDefault(
                                 (group.Group.GroupId, statement.StatementId)
                             ),
-                            statement.ApprovedAt,
+                            statement.AddedAt,
                             statement.RewordedAt,
                             group.JoinedAt
                         ),
@@ -258,39 +203,16 @@ public sealed class StatementPoolService
         ];
     }
 
-    private async Task<IReadOnlyList<ApprovedStatementSummary>> PoolStatementsAsync(
+    private async Task<IReadOnlyList<PoolStatementSummary>> PoolStatementsAsync(
         CancellationToken ct
     ) =>
-        await ApprovedStatements
-            .Select(statement => new ApprovedStatementSummary
+        await PoolStatements
+            .Select(statement => new PoolStatementSummary
             {
                 StatementId = statement.Id,
                 Text = statement.Text,
-                ApprovedAt = statement.ApprovedAt!.Value,
+                AddedAt = statement.CreatedAt,
                 RewordedAt = statement.RewordedAt,
-            })
-            .ToListAsync(ct);
-
-    private async Task<IReadOnlyList<WaitingProposalSummary>> ProposalsAsync(
-        CancellationToken ct
-    ) =>
-        await WaitingProposals
-            .OrderBy(statement => statement.CreatedAt)
-            .ThenBy(statement => statement.Id)
-            .Select(statement => new WaitingProposalSummary
-            {
-                StatementId = statement.Id,
-                Text = statement.Text,
-                ProposedAt = statement.CreatedAt,
-                ProposedBy =
-                    statement.ProposedByGroup == null
-                        ? null
-                        : new MatcherGroupRef
-                        {
-                            GroupId = statement.ProposedByGroup.Id,
-                            Name = statement.ProposedByGroup.Name,
-                            Tone = statement.ProposedByGroup.Tone,
-                        },
             })
             .ToListAsync(ct);
 
@@ -314,10 +236,7 @@ public sealed class StatementPoolService
     private async Task<IReadOnlyList<CoverageStanceRow>> StancesAsync(CancellationToken ct) =>
         await _dbContext
             .Stances.AsNoTracking()
-            .Where(stance =>
-                stance.Statement!.Status == MatcherStatementStatus.Approved
-                && stance.Group!.ArchivedOn == null
-            )
+            .Where(stance => stance.Group!.ArchivedOn == null)
             .Select(stance => new CoverageStanceRow(
                 stance.GroupId,
                 stance.StatementId,

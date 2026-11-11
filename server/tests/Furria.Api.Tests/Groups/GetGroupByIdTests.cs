@@ -265,7 +265,6 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
                                 rewordedAt: now
                             )
                             .AddStatement("offen", "Orden sind schwer.")
-                            .AddProposal("vorschlag", "Wir tanzen rückwärts.", "tanzgarde")
                             .AddStance("tanzgarde", "beantwortet", StancePosition.Yes)
                             .AddStance("tanzgarde", "umformuliert", StancePosition.No)
                             .AddTakingPart("tanzgarde")

@@ -51,7 +51,6 @@ describe('toManageRows', () => {
     { hub: hubWith({ sessions: { entryCount: 3, hasCurrentEntry: false } }) },
     { hub: hubWith({ clubRecord: { name: null, missingFactCount: 1 } }) },
     { hub: hubWith({ applications: { undecidedCount: 2, minorCount: 1 } }) },
-    { hub: hubWith({ groupMatcher: { approvedCount: 10, waitingProposalCount: 1 } }) },
     {
       hub: hubWith({
         persons: { personCount: 20, memberCount: 16 },
@@ -96,7 +95,7 @@ describe('toManageRows', () => {
     },
     { hub: hubWith({ keys: { issuedCount: 3, holdingCount: 3, holderCount: 2 } }) },
     { hub: hubWith({ applications: { undecidedCount: 0, minorCount: 0 } }) },
-    { hub: hubWith({ groupMatcher: { approvedCount: 7, waitingProposalCount: 0 } }) },
+    { hub: hubWith({ groupMatcher: { statementCount: 7 } }) },
   ])('flags nothing on a settled row', ({ hub }) => {
     expect(onlyRow(hub).status).toBeUndefined();
   });
@@ -109,7 +108,7 @@ describe('toManageRows', () => {
     { hub: hubWith({ sessions: { entryCount: 0, hasCurrentEntry: false } }) },
     { hub: hubWith({ venues: { venueCount: 0, archivedCount: 0 } }) },
     { hub: hubWith({ keys: { issuedCount: 0, holdingCount: 0, holderCount: 0 } }) },
-    { hub: hubWith({ groupMatcher: { approvedCount: 0, waitingProposalCount: 0 } }) },
+    { hub: hubWith({ groupMatcher: { statementCount: 0 } }) },
   ])('marks an empty register as empty, with no summary and a neutral status', ({ hub }) => {
     const row = onlyRow(hub);
 
@@ -125,7 +124,6 @@ describe('toManageRows', () => {
     { hub: hubWith({ venues: { venueCount: 0, archivedCount: 1 } }) },
     { hub: hubWith({ keys: { issuedCount: 3, holdingCount: 0, holderCount: 0 } }) },
     { hub: hubWith({ applications: { undecidedCount: 0, minorCount: 0 } }) },
-    { hub: hubWith({ groupMatcher: { approvedCount: 0, waitingProposalCount: 2 } }) },
   ])('keeps a register with only history as filled', ({ hub }) => {
     expect(onlyRow(hub).isEmpty).toBe(false);
   });

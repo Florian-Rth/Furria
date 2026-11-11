@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { StatementTextFormSchema } from '@/features/group-matcher/schemas';
+import { StatementTextFormSchema } from '../schemas';
 
 export interface StatementTextField {
   text: string;

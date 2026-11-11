@@ -33,7 +33,6 @@ const CLUB_TO_DO_LINKS: Record<ClubToDoKind, ToDoLink> = {
   keyToTakeBack: { to: '/manage/keys', params: NO_PARAMS, search: {} },
   clubRecordGap: { to: '/manage/club-record', params: NO_PARAMS, search: {} },
   applicationWaiting: { to: '/manage/applications', params: NO_PARAMS, search: {} },
-  groupMatcherProposalWaiting: { to: '/manage/group-matcher', params: NO_PARAMS, search: {} },
 };
 
 const GROUPS_LINK: ToDoLink = { to: '/groups', params: NO_PARAMS, search: {} };

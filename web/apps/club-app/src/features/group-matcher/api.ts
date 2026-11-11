@@ -5,16 +5,9 @@ import { optimisticPatch } from '@/lib/api/optimistic-patch';
 import { withFreshAccessToken } from '@/lib/api/session/session-store';
 import { queryKeys } from '@/lib/query/reads';
 import { toWriteErrorMessage } from '@/lib/write-error';
-import { PROPOSAL_SENT_MESSAGE, PROPOSAL_WITHDRAWN_MESSAGE } from './group-matcher-labels';
-import { withAdmissionAges, withoutProposal, withStance } from './group-matcher-page';
-import {
-  requestGroupMatcherPage,
-  requestProposeStatement,
-  requestSetAdmissionAges,
-  requestTakeStance,
-  requestWithdrawProposal,
-} from './requests';
-import type { AdmissionAgeBand, GroupMatcherPage, ProposedStatement, StanceInput } from './schemas';
+import { withAdmissionAges, withStance } from './group-matcher-page';
+import { requestGroupMatcherPage, requestSetAdmissionAges, requestTakeStance } from './requests';
+import type { AdmissionAgeBand, GroupMatcherPage, StanceInput } from './schemas';
 
 const FAILURE_NOTICE = { failure: toWriteErrorMessage };
 const STANCE_WRITES = 'group-matcher-stance';
@@ -53,24 +46,4 @@ export const useSetAdmissionAgesMutation = (
     changes: ['groupMatcher'],
     key: [ADMISSION_AGE_WRITES, groupId],
     notice: FAILURE_NOTICE,
-  });
-
-export const useProposeStatementMutation = (
-  groupId: number,
-): UseMutationResult<ProposedStatement, Error, string> =>
-  useApiMutation({
-    request: (text: string, accessToken) => requestProposeStatement(groupId, text, accessToken),
-    changes: ['groupMatcher'],
-    notice: { success: () => PROPOSAL_SENT_MESSAGE, ...FAILURE_NOTICE },
-  });
-
-export const useWithdrawProposalMutation = (
-  groupId: number,
-): UseMutationResult<void, Error, number> =>
-  useApiMutation({
-    request: (statementId: number, accessToken) =>
-      requestWithdrawProposal(groupId, statementId, accessToken),
-    optimistic: [optimisticPatch(queryKeys.groupMatcherPage(groupId), withoutProposal)],
-    changes: ['groupMatcher'],
-    notice: { success: () => PROPOSAL_WITHDRAWN_MESSAGE, ...FAILURE_NOTICE },
   });

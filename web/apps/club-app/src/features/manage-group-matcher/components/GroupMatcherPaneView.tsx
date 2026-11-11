@@ -4,7 +4,6 @@ import { useGroupMatcherHubContext } from '../group-matcher-hub-context';
 import { GONE_NOTE } from '../group-matcher-hub-copy';
 import type { GroupMatcherPane } from '../statement-pool';
 import { resolvePane } from '../statement-pool';
-import { ProposalPane } from './ProposalPane';
 import { StatementPane } from './StatementPane';
 
 interface GroupMatcherPaneViewProps {
@@ -22,8 +21,6 @@ export const GroupMatcherPaneView: FC<GroupMatcherPaneViewProps> = ({ pane, isOp
   const resolved = resolvePane(pool, pane);
 
   switch (resolved.kind) {
-    case 'proposal':
-      return <ProposalPane proposal={resolved.proposal} />;
     case 'statement':
       return <StatementPane statement={resolved.statement} index={resolved.index} />;
     case 'gone':

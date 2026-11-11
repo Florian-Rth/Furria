@@ -22,10 +22,6 @@ const TO_DO_LABELS: Record<ToDoKind, ToDoLabel> = {
   clubRecordGap: { one: 'Lücke in Vereinsdaten', other: 'Lücken in Vereinsdaten' },
   applicationWaiting: { one: 'Beitrittsantrag offen', other: 'Beitrittsanträge offen' },
   groupMatcherStatementsOpen: { one: 'Jeck-Check', other: 'Jeck-Check' },
-  groupMatcherProposalWaiting: {
-    one: 'Jeck-Check-Vorschlag offen',
-    other: 'Jeck-Check-Vorschläge offen',
-  },
 };
 
 export const TO_DO_ICONS: Record<ToDoKind, KkIconName> = {
@@ -37,7 +33,6 @@ export const TO_DO_ICONS: Record<ToDoKind, KkIconName> = {
   clubRecordGap: 'club',
   applicationWaiting: 'mail',
   groupMatcherStatementsOpen: 'checkCircle',
-  groupMatcherProposalWaiting: 'checkCircle',
 };
 
 export const toToDoLabel = ({ kind, count }: ToDoCount, groupName: string | null): string => {

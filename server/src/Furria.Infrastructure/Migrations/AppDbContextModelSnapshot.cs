@@ -1425,33 +1425,19 @@ namespace Furria.Infrastructure.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<DateTimeOffset?>("ApprovedAt")
-                        .HasColumnType("timestamp with time zone")
-                        .HasColumnName("approved_at");
-
                     b.Property<DateTimeOffset>("CreatedAt")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("created_at")
                         .HasDefaultValueSql("now()");
 
-                    b.Property<int?>("ProposedByGroupId")
-                        .HasColumnType("integer")
-                        .HasColumnName("proposed_by_group_id");
-
                     b.Property<DateTimeOffset?>("RewordedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("reworded_at");
 
-                    b.Property<int?>("SortOrder")
+                    b.Property<int>("SortOrder")
                         .HasColumnType("integer")
                         .HasColumnName("sort_order");
-
-                    b.Property<string>("Status")
-                        .IsRequired()
-                        .HasMaxLength(16)
-                        .HasColumnType("character varying(16)")
-                        .HasColumnName("status");
 
                     b.Property<string>("Text")
                         .IsRequired()
@@ -1468,19 +1454,9 @@ namespace Furria.Infrastructure.Migrations
                     b.HasKey("Id")
                         .HasName("pk_group_matcher_statement");
 
-                    b.HasIndex("ProposedByGroupId")
-                        .HasDatabaseName("ix_group_matcher_statement_proposed_by_group_id");
-
-                    b.HasIndex("Status", "SortOrder")
-                        .HasDatabaseName("ix_group_matcher_statement_status_sort_order");
-
                     b.ToTable("group_matcher_statement", null, t =>
                         {
-                            t.HasCheckConstraint("ck_group_matcher_statement_approval", "(status = 'Approved') = (sort_order IS NOT NULL AND approved_at IS NOT NULL)");
-
                             t.HasCheckConstraint("ck_group_matcher_statement_sort_order", "sort_order BETWEEN 1 AND 10");
-
-                            t.HasCheckConstraint("ck_group_matcher_statement_status", "status IN ('Proposed', 'Approved', 'Rejected')");
                         });
                 });
 
@@ -5368,17 +5344,6 @@ namespace Furria.Infrastructure.Migrations
                         .HasConstraintName("fk_group_admission_age_group_group_id");
 
                     b.Navigation("Group");
-                });
-
-            modelBuilder.Entity("Furria.Core.GroupMatcher.MatcherStatement", b =>
-                {
-                    b.HasOne("Furria.Core.Groups.Group", "ProposedByGroup")
-                        .WithMany()
-                        .HasForeignKey("ProposedByGroupId")
-                        .OnDelete(DeleteBehavior.SetNull)
-                        .HasConstraintName("fk_group_matcher_statement_group_proposed_by_group_id");
-
-                    b.Navigation("ProposedByGroup");
                 });
 
             modelBuilder.Entity("Furria.Core.GroupMatcher.Stance", b =>

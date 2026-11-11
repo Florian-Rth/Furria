@@ -19,7 +19,6 @@ public sealed class ToDoService
     private readonly InvitationRoundService _invitationRoundService;
     private readonly ClubRecordService _clubRecordService;
     private readonly GroupMatcherService _groupMatcherService;
-    private readonly StatementPoolService _statementPoolService;
     private readonly TimeProvider _timeProvider;
 
     public ToDoService(
@@ -28,7 +27,6 @@ public sealed class ToDoService
         InvitationRoundService invitationRoundService,
         ClubRecordService clubRecordService,
         GroupMatcherService groupMatcherService,
-        StatementPoolService statementPoolService,
         TimeProvider timeProvider
     )
     {
@@ -37,7 +35,6 @@ public sealed class ToDoService
         _invitationRoundService = invitationRoundService;
         _clubRecordService = clubRecordService;
         _groupMatcherService = groupMatcherService;
-        _statementPoolService = statementPoolService;
         _timeProvider = timeProvider;
     }
 
@@ -66,9 +63,6 @@ public sealed class ToDoService
 
         if (ToDoKeys.Shows(ToDoKind.GroupMatcherStatementsOpen, granted))
             toDos.AddRange(await GroupMatcherStatementToDosAsync(accountId, ct));
-
-        if (ToDoKeys.Shows(ToDoKind.GroupMatcherProposalWaiting, granted))
-            toDos.Add(await WaitingProposalsAsync(ct));
 
         return
         [
@@ -145,10 +139,4 @@ public sealed class ToDoService
             ),
         ];
     }
-
-    private async Task<ToDoSummary> WaitingProposalsAsync(CancellationToken ct) =>
-        ToDoOf(
-            ToDoKind.GroupMatcherProposalWaiting,
-            await _statementPoolService.CountWaitingProposalsAsync(ct)
-        );
 }

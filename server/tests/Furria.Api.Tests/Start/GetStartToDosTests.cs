@@ -495,41 +495,9 @@ public sealed class GetStartToDosTests : IClassFixture<ApiTestFixture>
                 var toDos = ToDosOf(await StartOfAsync(ctx, "frank"));
 
                 Assert.Null(CountOf(toDos, ToDoKind.GroupMatcherStatementsOpen));
-                Assert.Null(CountOf(toDos, ToDoKind.GroupMatcherProposalWaiting));
             },
             arrangeGroups: groups => groups.AddGroup("tanzgarde", "Tanzgarde"),
-            arrangeMatcher: matcher =>
-                matcher
-                    .AddStatement("konfetti", "Konfetti ist Pflicht.")
-                    .AddProposal("vorschlag", "Wir tanzen rückwärts.", "tanzgarde")
-        );
-    }
-
-    [Fact]
-    public async Task Should_CountWaitingProposals_When_TheViewerManagesTheJeckCheck()
-    {
-        await OnTuesdayEveningAsync(
-            identity => identity,
-            async ctx =>
-            {
-                var start = await StartOfAsync(
-                    await ctx.Identity.ManagingLoginClientAsync(
-                        TestContext.Current.CancellationToken
-                    )
-                );
-
-                Assert.Equal(1, CountOf(ToDosOf(start), ToDoKind.GroupMatcherProposalWaiting));
-            },
-            arrangeGroups: groups => groups.AddGroup("tanzgarde", "Tanzgarde"),
-            arrangeMatcher: matcher =>
-                matcher
-                    .AddProposal("vorschlag", "Wir tanzen rückwärts.", "tanzgarde")
-                    .AddProposal(
-                        "abgelehnt",
-                        "Wir tanzen auf dem Tisch.",
-                        "tanzgarde",
-                        MatcherStatementStatus.Rejected
-                    )
+            arrangeMatcher: matcher => matcher.AddStatement("konfetti", "Konfetti ist Pflicht.")
         );
     }
 

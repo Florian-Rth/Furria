@@ -1,5 +1,5 @@
 import type { KkIconName } from '@furria/ui/KkIcon';
-import { APPROVED_STATEMENT_LIMIT } from '@/features/group-matcher/schemas';
+import { STATEMENT_LIMIT } from '@/features/manage-group-matcher/schemas';
 import type { ManageBankId, ManagePanelDefinition, ManagePanelId } from './manage-hub-panels';
 import { MANAGE_BANKS, MANAGE_PANELS } from './manage-hub-panels';
 import type { ManageAccountsPanel, ManageHub, ManagePersonsPanel } from './schemas';
@@ -76,11 +76,6 @@ const toApplicationParts = (undecidedCount: number, minorCount: number): string[
 
 const toUndecided = (undecidedCount: number): string | null =>
   undecidedCount > 0 ? `${undecidedCount} offen` : null;
-
-const toWaitingProposals = (waitingProposalCount: number): string | null =>
-  waitingProposalCount > 0
-    ? toCount(waitingProposalCount, 'Vorschlag offen', 'Vorschläge offen')
-    : null;
 
 const toNameParts = (name: string | null): string[] => (name === null ? [] : [name]);
 
@@ -214,11 +209,9 @@ const PANEL_FACTS: Record<ManagePanelId, ManageFactReader> = {
     hub.groupMatcher === null
       ? null
       : {
-          isEmpty: hub.groupMatcher.approvedCount + hub.groupMatcher.waitingProposalCount === 0,
-          summaryParts: [
-            `${hub.groupMatcher.approvedCount} / ${APPROVED_STATEMENT_LIMIT} Aussagen`,
-          ],
-          attention: toWaitingProposals(hub.groupMatcher.waitingProposalCount),
+          isEmpty: hub.groupMatcher.statementCount === 0,
+          summaryParts: [`${hub.groupMatcher.statementCount} / ${STATEMENT_LIMIT} Aussagen`],
+          attention: null,
         },
 };
 
