@@ -1,40 +1,33 @@
 import { describe, expect, it } from 'vitest';
 import type { MatcherAnswers } from '@/features/group-matcher/schemas';
-import type { GroupMatcher } from '@/lib/seed/group-matcher';
-import type { Group } from '@/lib/seed/groups';
+import type { GroupMatcher, MatcherGroup } from '@/features/group-matcher/types';
 import type { MatcherRankingView, MatcherResultView } from './matcher-result';
 import { selectMatcherResult } from './matcher-result';
 
-const buildGroup = (id: string, isRecruiting: boolean): Group => ({
+const buildGroup = (id: number, isRecruiting: boolean): MatcherGroup => ({
   id,
-  name: id.toUpperCase(),
-  ageRange: { from: 6, to: null },
+  name: `G${id}`,
   isRecruiting,
-  tagline: 'Ergebniszeile',
+  description: 'Ergebniszeile',
 });
 
 const matcher: GroupMatcher = {
-  groups: [
-    buildGroup('alpha', true),
-    buildGroup('beta', false),
-    buildGroup('gamma', true),
-    buildGroup('delta', true),
-  ],
+  groups: [buildGroup(1, true), buildGroup(2, false), buildGroup(3, true), buildGroup(4, true)],
   questions: [
     {
       id: 'age-band',
       role: 'filter',
       prompt: 'Wie alt bist du?',
       options: [
-        { id: 'young', label: 'unter 12' },
-        { id: 'old', label: '12 oder älter' },
-        { id: 'ancient', label: '120 oder älter' },
+        { id: 'underTwelve', label: 'unter 12' },
+        { id: 'twelveToThirteen', label: '12 oder älter' },
+        { id: 'eighteenPlus', label: '120 oder älter' },
       ],
       positions: [
-        { groupId: 'alpha', accepts: ['young', 'old'] },
-        { groupId: 'beta', accepts: ['old'] },
-        { groupId: 'gamma', accepts: ['young'] },
-        { groupId: 'delta', accepts: ['old'] },
+        { groupId: 1, accepts: ['underTwelve', 'twelveToThirteen'] },
+        { groupId: 2, accepts: ['twelveToThirteen'] },
+        { groupId: 3, accepts: ['underTwelve'] },
+        { groupId: 4, accepts: ['twelveToThirteen'] },
       ],
     },
     {
@@ -42,10 +35,10 @@ const matcher: GroupMatcher = {
       role: 'weighted',
       prompt: 'Ich will auf die Bühne.',
       positions: [
-        { groupId: 'alpha', stance: 'yes', importance: 1 },
-        { groupId: 'beta', stance: 'no', importance: 1 },
-        { groupId: 'gamma', stance: 'neutral', importance: 1 },
-        { groupId: 'delta', stance: 'yes', importance: 1 },
+        { groupId: 1, stance: 'yes', importance: 1 },
+        { groupId: 2, stance: 'no', importance: 1 },
+        { groupId: 3, stance: 'neutral', importance: 1 },
+        { groupId: 4, stance: 'yes', importance: 1 },
       ],
     },
     {
@@ -53,16 +46,16 @@ const matcher: GroupMatcher = {
       role: 'weighted',
       prompt: 'Ich packe beim Aufbau mit an.',
       positions: [
-        { groupId: 'alpha', stance: 'yes', importance: 2 },
-        { groupId: 'beta', stance: 'yes', importance: 2 },
-        { groupId: 'gamma', stance: 'no', importance: 2 },
-        { groupId: 'delta', stance: 'no', importance: 2 },
+        { groupId: 1, stance: 'yes', importance: 2 },
+        { groupId: 2, stance: 'yes', importance: 2 },
+        { groupId: 3, stance: 'no', importance: 2 },
+        { groupId: 4, stance: 'no', importance: 2 },
       ],
     },
   ],
 };
 
-const answered: MatcherAnswers = { 'age-band': 'old', stage: 'yes', build: 'yes' };
+const answered: MatcherAnswers = { 'age-band': 'twelveToThirteen', stage: 'yes', build: 'yes' };
 
 const resultFor = (answers: MatcherAnswers): MatcherResultView =>
   selectMatcherResult(matcher, answers);
@@ -84,9 +77,9 @@ describe('selectMatcherResult', () => {
     expect(
       [ranking.top, ...ranking.rest].map((match) => [match.group.id, match.rank, match.percentage]),
     ).toEqual([
-      ['alpha', 1, 100],
-      ['beta', 2, 67],
-      ['delta', 3, 33],
+      [1, 1, 100],
+      [2, 2, 67],
+      [4, 3, 33],
     ]);
   });
 
@@ -99,28 +92,23 @@ describe('selectMatcherResult', () => {
   it('lists every excluded group', () => {
     const ranking = rankingFor(answered);
 
-    expect(ranking.excluded.map((exclusion) => exclusion.group.id)).toEqual(['gamma']);
+    expect(ranking.excluded.map((exclusion) => exclusion.group.id)).toEqual([3]);
   });
 
   it.each<[string, MatcherAnswers]>([
     ['no answer', {}],
-    ['only a filter answer', { 'age-band': 'old' }],
+    ['only a filter answer', { 'age-band': 'twelveToThirteen' }],
   ])('asks for a weighted answer instead of ranking %s', (_, answers) => {
     expect(resultFor(answers).kind).toBe('unanswered');
   });
 
   it('stays honest when every group is filtered out', () => {
-    const view = resultFor({ 'age-band': 'ancient', stage: 'yes' });
+    const view = resultFor({ 'age-band': 'eighteenPlus', stage: 'yes' });
 
     if (view.kind !== 'empty') {
       throw new Error(`expected an empty result, got ${view.kind}`);
     }
 
-    expect(view.excluded.map((exclusion) => exclusion.group.id)).toEqual([
-      'alpha',
-      'beta',
-      'gamma',
-      'delta',
-    ]);
+    expect(view.excluded.map((exclusion) => exclusion.group.id)).toEqual([1, 2, 3, 4]);
   });
 });

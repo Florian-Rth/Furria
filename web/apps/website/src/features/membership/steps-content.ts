@@ -12,12 +12,13 @@ export const joinStepsIntro =
 
 export const buildJoinStepNumeral = (index: number): string => String(index + 1).padStart(2, '0');
 
-export const JOIN_STEPS: JoinStep[] = [
-  {
-    title: 'Gruppe finden',
-    description:
-      'Der Jeck-Check zeigt dir, wo du hinpassen könntest. Und wenn dir nichts davon zusagt: ohne Gruppe zu starten ist genauso normal, dazustoßen kannst du später jederzeit.',
-  },
+const groupStepWithMatcher =
+  'Der Jeck-Check zeigt dir, wo du hinpassen könntest. Und wenn dir nichts davon zusagt: ohne Gruppe zu starten ist genauso normal, dazustoßen kannst du später jederzeit.';
+
+const groupStepWithoutMatcher =
+  'Frag uns, welche Gruppe zu dir passen könnte. Und wenn dir keine zusagt: ohne Gruppe zu starten ist genauso normal, dazustoßen kannst du später jederzeit.';
+
+const LATER_JOIN_STEPS: JoinStep[] = [
   {
     title: 'Antrag stellen',
     description:
@@ -26,11 +27,19 @@ export const JOIN_STEPS: JoinStep[] = [
   {
     title: 'Aufnahme',
     description:
-      'Wir entscheiden in der nächsten Sitzung über deinen Antrag und melden uns danach per Mail bei dir. Bis dahin bindet dich nichts.',
+      'Wir entscheiden in der nächsten Sitzung über deinen Antrag und melden uns danach persönlich bei dir. Bis dahin bindet dich nichts.',
   },
   {
     title: 'Willkommen',
     description:
-      'Du bist Mitglied: Training in deiner Gruppe, Auftritte in der Session, dein Orden beim Ordensfest — und der Zugang zur Club-App.',
+      'Du bist Mitglied: Training in deiner Gruppe, Auftritte in der Session — und der Zugang zur Club-App mit allen Terminen und Neuigkeiten aus dem Verein.',
   },
+];
+
+export const buildJoinSteps = (hasGroupMatcher: boolean): JoinStep[] => [
+  {
+    title: 'Gruppe finden',
+    description: hasGroupMatcher ? groupStepWithMatcher : groupStepWithoutMatcher,
+  },
+  ...LATER_JOIN_STEPS,
 ];

@@ -1,7 +1,6 @@
-import type { Importance, MatcherQuestion, Stance } from '@/lib/seed/group-matcher';
-import type { Group } from '@/lib/seed/groups';
-import type { MatcherAnswers } from './schemas';
+import type { Importance, MatcherAnswers, Stance } from './schemas';
 import { agreementScore, FULL_AGREEMENT, readStance, weightedQuestions } from './scoring';
+import type { MatcherGroup, MatcherQuestion } from './types';
 
 export type MatchAgreement = 'agree' | 'partial' | 'disagree';
 
@@ -25,7 +24,7 @@ export const classifyAgreement = (answer: Stance, stance: Stance): MatchAgreemen
 };
 
 export const buildMatchReasons = (
-  group: Group,
+  group: MatcherGroup,
   questions: MatcherQuestion[],
   answers: MatcherAnswers,
 ): MatchReason[] =>

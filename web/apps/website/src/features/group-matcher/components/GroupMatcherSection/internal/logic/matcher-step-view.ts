@@ -1,5 +1,5 @@
 import { buildAnsweredSummary, buildProgressLabel } from '@/features/group-matcher/matcher-content';
-import type { GroupMatcher, MatcherQuestion } from '@/lib/seed/group-matcher';
+import type { GroupMatcher, MatcherQuestion } from '@/features/group-matcher/types';
 import type { MatcherProgress } from './matcher-progress';
 import { countAnsweredQuestions, resolveProgressPercent } from './matcher-progress';
 import type { MatcherResultView } from './matcher-result';

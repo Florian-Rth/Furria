@@ -1,5 +1,5 @@
 import type { FC } from 'react';
-import type { FilterOption } from '@/lib/seed/group-matcher';
+import type { FilterOption } from '@/features/group-matcher/types';
 import { MatcherChoiceButton } from './MatcherChoiceButton';
 
 interface MatcherOptionChoicesProps {

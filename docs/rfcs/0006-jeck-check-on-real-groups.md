@@ -1,7 +1,7 @@
 ---
 rfc: 0006
 title: Jeck-Check on real groups — shared statement pool, group stances, club review
-status: in-progress
+status: done
 github_issue: 73
 branch: feat/rfc-73-jeck-check
 created: 2026-11-11
@@ -174,11 +174,21 @@ one constant (`APPROVED_STATEMENT_LIMIT`) and the kept-pane hook is shared (`lib
 
 ### Phase 5 — Website on the API
 Goal: the public Jeck-Check runs on real data; the seed is gone.
-- [ ] 5.1 `groupMatcher` reads `/api/public/group-matcher`; numeric group ids through scoring/reasons (a statement approved after a group joined may carry no stance from that group — scoring skips it for that group; age bands arrive as `underTwelve … eighteenPlus`)
-- [ ] 5.2 Absent response hides section, nav entry, page head and sitemap entry
-- [ ] 5.3 Intro counts the real questions (joke line only at 11)
-- [ ] 5.4 Remove `lib/seed/group-matcher.ts` and unused seed groups; adapt tests
-- [ ] 5.5 Shots empty/filled (phone + desktop), update `plan/launch.md` (Jeck-Check no longer absent once groups answer)
+- [x] 5.1 `groupMatcher` reads `/api/public/group-matcher`; numeric group ids through scoring/reasons (a statement approved after a group joined may carry no stance from that group — scoring skips it for that group; age bands arrive as `underTwelve … eighteenPlus`)
+- [x] 5.2 Absent response hides section, nav entry, page head and sitemap entry
+- [x] 5.3 Intro counts the real questions (joke line only at 11)
+- [x] 5.4 Remove `lib/seed/group-matcher.ts` and unused seed groups; adapt tests
+- [x] 5.5 Shots empty/filled (phone + desktop), update `plan/launch.md` (Jeck-Check no longer absent once groups answer)
+
+Built 2026-11-11. As built: `features/group-matcher/api.ts` reads `/api/public/group-matcher` and
+maps it (`group-matcher-model.ts`) onto the unchanged matcher model — age question first (all five
+bands; only groups that ticked bands can be knocked out), then the statements in pool order as
+`statement-<id>`; a group without a stance on a statement is skipped for it. A 404 reads as
+*absent* (`null`). The Jeck-Check has no route, nav entry, head or sitemap entry of its own — it is
+the `/join` section — so absent hides the section, the hero's "Wo passe ich hin?" button and the
+Jeck-Check sentence in the first join step; the join route preloads the read so nothing flashes.
+The intro counts statements + age in words ("Sieben Fragen."), the carnival line only at eleven.
+`lib/seed/` is gone. Shots: `/join` absent and filled, phone + desktop, light + dark.
 
 ## Risks & alternatives
 - **Too few groups answer by launch** → the section simply stays out. That is acceptable, because

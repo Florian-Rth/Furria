@@ -1,7 +1,7 @@
 import Button from '@mui/material/Button';
 import type { FC } from 'react';
 import { matcherLabels } from '@/features/group-matcher/matcher-content';
-import type { MatcherQuestion } from '@/lib/seed/group-matcher';
+import type { MatcherQuestion } from '@/features/group-matcher/types';
 import { MatcherChoiceRow } from '../layout/MatcherChoiceRow';
 import { MatcherFooterGroup } from '../layout/MatcherFooterGroup';
 import { MatcherStepBody } from '../layout/MatcherStepBody';

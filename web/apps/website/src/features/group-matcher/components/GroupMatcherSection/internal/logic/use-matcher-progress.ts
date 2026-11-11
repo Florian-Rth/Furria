@@ -4,8 +4,8 @@ import {
   readAnswersFromSession,
   writeAnswersToSession,
 } from '@/features/group-matcher/session-storage';
+import type { GroupMatcher } from '@/features/group-matcher/types';
 import { safeSessionStorage } from '@/lib/browser-storage';
-import type { GroupMatcher } from '@/lib/seed/group-matcher';
 import type { MatcherProgress } from './matcher-progress';
 import {
   emptyMatcherProgress,

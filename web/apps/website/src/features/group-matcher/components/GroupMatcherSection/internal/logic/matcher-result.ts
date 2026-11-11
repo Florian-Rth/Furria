@@ -8,11 +8,10 @@ import {
 import type { MatcherAnswers } from '@/features/group-matcher/schemas';
 import type { GroupExclusion, GroupMatch } from '@/features/group-matcher/scoring';
 import { rankGroups } from '@/features/group-matcher/scoring';
-import type { GroupMatcher, MatcherQuestion } from '@/lib/seed/group-matcher';
-import type { Group } from '@/lib/seed/groups';
+import type { GroupMatcher, MatcherGroup, MatcherQuestion } from '@/features/group-matcher/types';
 
 export interface MatcherMatchView {
-  group: Group;
+  group: MatcherGroup;
   rank: number;
   percentage: number;
   badge: MatcherRecruitingBadge;
@@ -20,7 +19,7 @@ export interface MatcherMatchView {
 }
 
 export interface MatcherExclusionView {
-  group: Group;
+  group: MatcherGroup;
   reason: string;
 }
 

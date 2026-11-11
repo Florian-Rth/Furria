@@ -3,9 +3,10 @@ import { KkSection } from '@furria/ui/KkSection';
 import { kkTokens } from '@furria/ui/tokens';
 import type { FC } from 'react';
 import { MASTHEAD_HEIGHT_CSS_VAR } from '@/components/Masthead/masthead-height';
-import { groupMatcher } from '@/features/group-matcher/api';
+import { countMatcherQuestions } from '@/features/group-matcher/group-matcher-source';
+import { useGroupMatcherSource } from '@/features/group-matcher/hooks/use-group-matcher-source';
 import {
-  matcherIntro,
+  buildMatcherIntro,
   matcherKicker,
   matcherSectionId,
   matcherTitle,
@@ -14,7 +15,13 @@ import { MatcherPanel } from './internal/layout/MatcherPanel';
 import { MatcherBody } from './internal/ui/MatcherBody';
 
 export const GroupMatcherSection: FC = () => {
-  const source = groupMatcher.useSource();
+  const source = useGroupMatcherSource();
+
+  if (source === null) {
+    return null;
+  }
+
+  const intro = buildMatcherIntro(countMatcherQuestions(source));
 
   return (
     <KkSection
@@ -24,7 +31,7 @@ export const GroupMatcherSection: FC = () => {
       })}
     >
       <KkSection.Header kicker={matcherKicker} title={matcherTitle} />
-      <KkLead>{matcherIntro}</KkLead>
+      <KkLead>{intro}</KkLead>
       <MatcherPanel>
         <MatcherBody source={source} />
       </MatcherPanel>

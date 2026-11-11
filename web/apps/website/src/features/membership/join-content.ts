@@ -1,3 +1,4 @@
+import { matcherSectionId } from '@/features/group-matcher/matcher-content';
 import { formatMemberCount, UNKNOWN_FACT } from '@/lib/public-club/club-facts';
 import type { PublicClub } from '@/lib/public-club/schemas';
 
@@ -28,6 +29,5 @@ export const joinHref = '/join';
 export const joinApplyHref = '/join/apply';
 export const joinPrimaryCtaLabel = 'Antrag stellen →';
 
-export const matcherSectionId = 'group-matcher';
 export const matcherSectionHref = `#${matcherSectionId}`;
 export const joinSecondaryCtaLabel = 'Wo passe ich hin? ↓';

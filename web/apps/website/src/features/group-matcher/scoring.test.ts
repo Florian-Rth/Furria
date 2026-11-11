@@ -1,33 +1,31 @@
 import { describe, expect, it } from 'vitest';
-import type { GroupMatcher } from '@/lib/seed/group-matcher';
-import type { Group } from '@/lib/seed/groups';
+import type { GroupMatcher, MatcherGroup } from '@/features/group-matcher/types';
 import type { MatcherAnswers } from './schemas';
 import type { MatchOutcome } from './scoring';
 import { agreementScore, rankGroups } from './scoring';
 
-const buildGroup = (id: string): Group => ({
+const buildGroup = (id: number): MatcherGroup => ({
   id,
-  name: id.toUpperCase(),
-  ageRange: { from: 6, to: null },
+  name: `G${id}`,
   isRecruiting: true,
-  tagline: 'Ergebniszeile',
+  description: 'Ergebniszeile',
 });
 
 const matcher: GroupMatcher = {
-  groups: [buildGroup('alpha'), buildGroup('beta'), buildGroup('gamma')],
+  groups: [buildGroup(1), buildGroup(2), buildGroup(3)],
   questions: [
     {
       id: 'age-band',
       role: 'filter',
       prompt: 'Wie alt bist du?',
       options: [
-        { id: 'young', label: 'unter 12' },
-        { id: 'old', label: '12 oder älter' },
+        { id: 'underTwelve', label: 'unter 12' },
+        { id: 'twelveToThirteen', label: '12 oder älter' },
       ],
       positions: [
-        { groupId: 'alpha', accepts: ['young', 'old'] },
-        { groupId: 'beta', accepts: ['old'] },
-        { groupId: 'gamma', accepts: ['young'] },
+        { groupId: 1, accepts: ['underTwelve', 'twelveToThirteen'] },
+        { groupId: 2, accepts: ['twelveToThirteen'] },
+        { groupId: 3, accepts: ['underTwelve'] },
       ],
     },
     {
@@ -35,9 +33,9 @@ const matcher: GroupMatcher = {
       role: 'weighted',
       prompt: 'Ich will auf die Bühne.',
       positions: [
-        { groupId: 'alpha', stance: 'yes', importance: 1 },
-        { groupId: 'beta', stance: 'no', importance: 1 },
-        { groupId: 'gamma', stance: 'neutral', importance: 1 },
+        { groupId: 1, stance: 'yes', importance: 1 },
+        { groupId: 2, stance: 'no', importance: 1 },
+        { groupId: 3, stance: 'neutral', importance: 1 },
       ],
     },
     {
@@ -45,9 +43,9 @@ const matcher: GroupMatcher = {
       role: 'weighted',
       prompt: 'Ich packe beim Aufbau mit an.',
       positions: [
-        { groupId: 'alpha', stance: 'yes', importance: 2 },
-        { groupId: 'beta', stance: 'yes', importance: 2 },
-        { groupId: 'gamma', stance: 'no', importance: 2 },
+        { groupId: 1, stance: 'yes', importance: 2 },
+        { groupId: 2, stance: 'yes', importance: 2 },
+        { groupId: 3, stance: 'no', importance: 2 },
       ],
     },
   ],
@@ -55,7 +53,7 @@ const matcher: GroupMatcher = {
 
 const rank = (answers: MatcherAnswers): MatchOutcome => rankGroups(matcher, answers);
 
-const percentageOf = (answers: MatcherAnswers, groupId: string): number | undefined => {
+const percentageOf = (answers: MatcherAnswers, groupId: number): number | undefined => {
   const outcome = rank(answers);
 
   if (outcome.status !== 'ranked') {
@@ -78,21 +76,47 @@ describe('agreementScore', () => {
 });
 
 describe('rankGroups', () => {
-  it.each<[MatcherAnswers, string, number]>([
-    [{ stage: 'yes' }, 'alpha', 100],
-    [{ stage: 'yes' }, 'gamma', 50],
-    [{ stage: 'yes' }, 'beta', 0],
-    [{ stage: 'yes', build: 'yes' }, 'beta', 67],
-    [{ stage: 'yes', build: 'yes' }, 'gamma', 17],
-    [{ build: 'yes' }, 'beta', 100],
-    [{ stage: 'vielleicht', build: 'yes' }, 'beta', 100],
+  it.each<[MatcherAnswers, number, number]>([
+    [{ stage: 'yes' }, 1, 100],
+    [{ stage: 'yes' }, 3, 50],
+    [{ stage: 'yes' }, 2, 0],
+    [{ stage: 'yes', build: 'yes' }, 2, 67],
+    [{ stage: 'yes', build: 'yes' }, 3, 17],
+    [{ build: 'yes' }, 2, 100],
+    [{ stage: 'vielleicht', build: 'yes' }, 2, 100],
   ])('scores the answers %j for %s with %i%', (answers, groupId, percentage) => {
     expect(percentageOf(answers, groupId)).toBe(percentage);
   });
 
-  it.each<[MatcherAnswers, string[]]>([
-    [{ stage: 'yes', build: 'yes' }, ['alpha', 'beta', 'gamma']],
-    [{ build: 'yes' }, ['alpha', 'beta', 'gamma']],
+  it('skips a statement for a group that has no stance on it', () => {
+    const joinedEarlier: GroupMatcher = {
+      ...matcher,
+      questions: [
+        ...matcher.questions,
+        {
+          id: 'later',
+          role: 'weighted',
+          prompt: 'Später aufgenommen.',
+          positions: [{ groupId: 2, stance: 'no', importance: 3 }],
+        },
+      ],
+    };
+
+    const outcome = rankGroups(joinedEarlier, { stage: 'yes', later: 'yes' });
+
+    expect(
+      outcome.status === 'ranked' &&
+        outcome.matches.map((match) => [match.group.id, match.percentage]),
+    ).toEqual([
+      [1, 100],
+      [3, 50],
+      [2, 0],
+    ]);
+  });
+
+  it.each<[MatcherAnswers, number[]]>([
+    [{ stage: 'yes', build: 'yes' }, [1, 2, 3]],
+    [{ build: 'yes' }, [1, 2, 3]],
   ])('ranks the answers %j best first, ties in roster order', (answers, order) => {
     const outcome = rank(answers);
 
@@ -102,11 +126,10 @@ describe('rankGroups', () => {
   });
 
   it('excludes a group whose filter rejects the answer and names the reason', () => {
-    const outcome = rank({ 'age-band': 'young', stage: 'yes' });
+    const outcome = rank({ 'age-band': 'underTwelve', stage: 'yes' });
 
     expect(outcome.status === 'ranked' && outcome.matches.map((match) => match.group.id)).toEqual([
-      'alpha',
-      'gamma',
+      1, 3,
     ]);
     expect(outcome.status === 'ranked' && outcome.excluded).toEqual([
       {
@@ -119,7 +142,7 @@ describe('rankGroups', () => {
   });
 
   it('ignores a filter answer that is not one of the offered options', () => {
-    const outcome = rank({ 'age-band': 'ancient', stage: 'yes' });
+    const outcome = rank({ 'age-band': 'eighteenPlus', stage: 'yes' });
 
     expect(outcome.status === 'ranked' && [outcome.matches.length, outcome.excluded]).toEqual([
       3,
@@ -129,7 +152,7 @@ describe('rankGroups', () => {
 
   it.each<[string, MatcherAnswers]>([
     ['no answer', {}],
-    ['only a filter answer', { 'age-band': 'old' }],
+    ['only a filter answer', { 'age-band': 'twelveToThirteen' }],
   ])('asks for an answer instead of dividing by zero after %s', (_, answers) => {
     expect(rank(answers).status).toBe('unanswered');
   });
@@ -139,10 +162,10 @@ describe('rankGroups', () => {
       ...matcher,
       groups: [matcher.groups[1]].flatMap((group) => (group === undefined ? [] : [group])),
     };
-    const outcome = rankGroups(narrow, { 'age-band': 'young', stage: 'yes' });
+    const outcome = rankGroups(narrow, { 'age-band': 'underTwelve', stage: 'yes' });
 
     expect(
       outcome.status === 'no-matches' && outcome.excluded.map((exclusion) => exclusion.group.id),
-    ).toEqual(['beta']);
+    ).toEqual([2]);
   });
 });
