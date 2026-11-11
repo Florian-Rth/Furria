@@ -4,8 +4,11 @@ using FastEndpoints;
 using Furria.Api.Endpoints.Calendar;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
+using Furria.Infrastructure.Club;
+using Furria.Infrastructure.Persistence;
 using Furria.Tests.Common.Builder;
 using Furria.Tests.Common.Fixtures;
+using Microsoft.Extensions.DependencyInjection;
 using Xunit;
 using static Furria.Api.Tests.Push.SubscribedDevices;
 
@@ -109,6 +112,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
+        await DevicesAsync(ctx, ct);
         var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
 
         await RemindAtAsync(Now, ctx, "ilka", Attendance(entryId), ct);
@@ -130,6 +134,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
+        await DevicesAsync(ctx, ct);
         var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
         var pollId = ctx.Club.CalendarPolls.IdOf("snack");
 
@@ -157,25 +162,138 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
     }
 
-    [Theory]
-    [InlineData("closed-poll", CalendarEntryAddOnKind.Poll)]
-    [InlineData("full-list", CalendarEntryAddOnKind.SignUpList)]
-    public async Task Should_RefuseReminding_When_TheFunctionIsClosedOrNobodyIsOpen(
-        string addOnAlias,
-        CalendarEntryAddOnKind kind
-    )
+    [Fact]
+    public async Task Should_RefuseRemindingWithoutStampingTheThrottle_When_TheFunctionIsClosed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        await DevicesAsync(ctx, ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
+        var pollId = ctx.Club.CalendarPolls.IdOf("closed-poll");
+
+        var response = await RemindAtAsync(
+            Now,
+            ctx,
+            "ilka",
+            Reminder(entryId, CalendarEntryAddOnKind.Poll, pollId),
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        var organiser = await DetailAsync(ctx, "ilka", entryId, ct);
+        Assert.Null(PollOf(organiser, pollId).Reminder?.LastRemindedAt);
+    }
+
+    [Fact]
+    public async Task Should_RefuseReminding_When_EveryoneOnTheListHasALine()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        await DevicesAsync(ctx, ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
+        var listId = ctx.Club.CalendarSignUpLists.IdOf("full-list");
+
+        var response = await RemindAtAsync(
+            Now,
+            ctx,
+            "ilka",
+            Reminder(entryId, CalendarEntryAddOnKind.SignUpList, listId),
+            ct
+        );
+
+        Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task Should_RefuseRemindingWithoutStampingTheThrottle_When_NobodyOpenHasTheApp()
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
         var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
-        var addOnId =
-            kind == CalendarEntryAddOnKind.Poll
-                ? ctx.Club.CalendarPolls.IdOf(addOnAlias)
-                : ctx.Club.CalendarSignUpLists.IdOf(addOnAlias);
 
-        var response = await RemindAtAsync(Now, ctx, "ilka", Reminder(entryId, kind, addOnId), ct);
+        var response = await RemindAtAsync(Now, ctx, "ilka", Attendance(entryId), ct);
 
         Assert.Equal(HttpStatusCode.UnprocessableEntity, response.StatusCode);
+        var organiser = await DetailAsync(ctx, "ilka", entryId, ct);
+        Assert.Null(organiser.Attendance?.Reminder?.LastRemindedAt);
+        Assert.Equal(0, organiser.Attendance?.Reminder?.ReachableCount);
+    }
+
+    [Fact]
+    public async Task Should_CountOnlyOpenPeopleWithTheAppButTheOrganiser_When_AnOrganiserViewsTheEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        await DevicesAsync(ctx, ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
+
+        var organiser = await DetailAsync(ctx, "ilka", entryId, ct);
+
+        Assert.Equal(1, organiser.Attendance?.Reminder?.ReachableCount);
+        Assert.Equal(
+            1,
+            PollOf(organiser, ctx.Club.CalendarPolls.IdOf("snack")).Reminder?.ReachableCount
+        );
+    }
+
+    [Fact]
+    public async Task Should_PushOnlyTheMeantGroup_When_AnOrganiserRemindsAGroupEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var devices = await DevicesAsync(ctx, ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("training");
+
+        var response = await RemindAtAsync(Now, ctx, "ilka", Attendance(entryId), ct);
+
+        Assert.Equal(HttpStatusCode.NoContent, response.StatusCode);
+        await _fixture.CalendarPushesDrainedAsync(ct);
+        Assert.Single(PushesAt(_fixture, devices.Fred));
+        Assert.Empty(PushesAt(_fixture, devices.Chris));
+        Assert.Empty(PushesAt(_fixture, devices.Mara));
+    }
+
+    [Theory]
+    [InlineData("closed-poll")]
+    [InlineData(null)]
+    public async Task Should_SendNothing_When_ThePollClosedOrVanishedBeforeThePushWentOut(
+        string? pollAlias
+    )
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var devices = await DevicesAsync(ctx, ct);
+        var pollId = pollAlias is null ? int.MaxValue : ctx.Club.CalendarPolls.IdOf(pollAlias);
+
+        await StageReminderAsync(ctx.Club.CalendarEntries.IdOf("meeting"), pollId, ct);
+
+        await _fixture.CalendarPushesDrainedAsync(ct);
+        Assert.Empty(PushesAt(_fixture, devices.Chris));
+        Assert.Empty(PushesAt(_fixture, devices.Mara));
+    }
+
+    [Fact]
+    public async Task Should_TagEachReminderOnItsOwn_When_ItIsPushed()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var ctx = await BuildClubAsync(ct);
+        var devices = await DevicesAsync(ctx, ct);
+        var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
+        var pollId = ctx.Club.CalendarPolls.IdOf("snack");
+
+        await RemindAtAsync(
+            Now,
+            ctx,
+            "ilka",
+            Reminder(entryId, CalendarEntryAddOnKind.Poll, pollId),
+            ct
+        );
+
+        await _fixture.CalendarPushesDrainedAsync(ct);
+        Assert.Equal(
+            $"calendar-entry-{entryId}-reminder-poll-{pollId}",
+            TagOf(Assert.Single(PushesAt(_fixture, devices.Chris)))
+        );
     }
 
     [Fact]
@@ -214,6 +332,7 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
     {
         var ct = TestContext.Current.CancellationToken;
         var ctx = await BuildClubAsync(ct);
+        await DevicesAsync(ctx, ct);
         var entryId = ctx.Club.CalendarEntries.IdOf("meeting");
 
         await RemindAtAsync(Now, ctx, "ilka", Attendance(entryId), ct);
@@ -293,6 +412,34 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
         return entry ?? throw new InvalidOperationException("No entry.");
     }
 
+    private static CalendarPollDto PollOf(CalendarEntryDto entry, int pollId) =>
+        Assert.Single(entry.AddOns, addOn => addOn.Poll?.PollId == pollId).Poll
+        ?? throw new InvalidOperationException("No poll.");
+
+    private async Task StageReminderAsync(int entryId, int pollId, CancellationToken ct)
+    {
+        await using var scope = _fixture.Services.CreateAsyncScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        db.OutboxCalendarPushes.Add(
+            new OutboxCalendarPush
+            {
+                Reason = CalendarPushReason.Reminder,
+                CalendarEntryId = entryId,
+                Title = ClubMeeting,
+                StartsAt = MeetingStart,
+                EndsAt = MeetingEnd,
+                Kind = CalendarEntryKind.Plain,
+                AsksForResponse = true,
+                Audience = CalendarEntryAudience.Club,
+                ReminderKind = CalendarEntryAddOnKind.Poll,
+                ReminderAddOnId = pollId,
+                ReminderSubject = SnackQuestion,
+                ReminderClosesAt = MeetingStart,
+            }
+        );
+        await db.SaveChangesAsync(ct);
+    }
+
     private static PostCalendarReminderRequest Attendance(int entryId) =>
         Reminder(entryId, CalendarEntryAddOnKind.Attendance, null);
 
@@ -331,6 +478,8 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
 
     private static string BodyOf(JsonElement push) => push.GetProperty("body").GetString() ?? "";
 
+    private static string TagOf(JsonElement push) => push.GetProperty("tag").GetString() ?? "";
+
     private Task<SeededContext> BuildClubAsync(CancellationToken ct) =>
         _fixture.BuildAsync(
             builder =>
@@ -352,6 +501,11 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
                             .AddMembershipPause("paula-pause", "paula-first", 2026, 2026)
                             .AddPerson("fred", "Fred", "Fremd")
                             .AddAccount("fred")
+                    )
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupMembership("fred-tanzgarde", "tanzgarde", "fred", JoinedIn2017)
                     )
                     .Roles(roles =>
                         roles.AddRoleWithHolder(
@@ -398,6 +552,13 @@ public sealed class PostCalendarReminderTests : IClassFixture<ApiTestFixture>
                             .AddCalendarSignUpLine("chris-full", "full-list", "chris")
                             .AddCalendarSignUpLine("mara-full", "full-list", "mara")
                             .AddCalendarEntry("other", "Andere Sitzung", MeetingStart.AddDays(7))
+                            .AddCalendarEntry(
+                                "training",
+                                "Training",
+                                MeetingStart.AddDays(1),
+                                audienceGroupAliases: ["tanzgarde"],
+                                asksForResponse: true
+                            )
                     ),
             ct
         );

@@ -1,7 +1,7 @@
 import { KkCalendarAgenda } from '@furria/ui/KkCalendarAgenda';
 import type { FC } from 'react';
 import { ATTENDANCE_LABELS } from '@/lib/calendar-copy';
-import type { CalendarDetailAnswer } from '../hooks/use-calendar-detail';
+import type { CalendarDetailAnswer } from '../hooks/use-calendar-detail-attendance';
 
 interface CalendarAttendanceAnswerProps {
   answer: CalendarDetailAnswer | null;

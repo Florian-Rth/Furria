@@ -87,8 +87,28 @@ export type CalendarAttendancePerson = z.infer<typeof CalendarAttendancePersonSc
 export const CalendarReminderSchema = z.object({
   lastRemindedAt: z.iso.datetime({ offset: true }).nullable(),
   remindableFrom: z.iso.datetime({ offset: true }).nullable(),
+  reachableCount: z.number().int(),
 });
 export type CalendarReminder = z.infer<typeof CalendarReminderSchema>;
+
+export const CalendarReminderTargetSchema = z.discriminatedUnion('kind', [
+  z.object({
+    calendarEntryId: z.number().int(),
+    kind: z.literal('attendance'),
+    addOnId: z.null(),
+  }),
+  z.object({
+    calendarEntryId: z.number().int(),
+    kind: z.literal('poll'),
+    addOnId: z.number().int(),
+  }),
+  z.object({
+    calendarEntryId: z.number().int(),
+    kind: z.literal('signUpList'),
+    addOnId: z.number().int(),
+  }),
+]);
+export type CalendarReminderTarget = z.infer<typeof CalendarReminderTargetSchema>;
 
 export const CalendarPollSchema = z.object({
   pollId: z.number().int(),

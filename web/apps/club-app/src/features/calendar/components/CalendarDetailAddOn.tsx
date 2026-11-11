@@ -2,10 +2,7 @@ import type { KkCalendarLineGroup } from '@furria/ui/KkCalendarAgendaLine';
 import { KkCalendarDetail } from '@furria/ui/KkCalendarDetail';
 import type { FC, ReactNode } from 'react';
 import { CALENDAR_ADD_ON_ICONS, CALENDAR_ADD_ON_LABELS } from '../calendar-add-ons';
-import type { AttendanceRoll } from '../calendar-attendance';
-import type { CalendarReminderSource } from '../calendar-reminders';
-import type { CalendarDetailAnswer } from '../hooks/use-calendar-detail';
-import type { CalendarAddOnKind, CalendarEntryAddOn } from '../schemas';
+import type { CalendarAddOnKind, CalendarEntry, CalendarEntryAddOn } from '../schemas';
 import { CalendarDetailAttendance } from './CalendarDetailAttendance';
 import { CalendarDetailDaySchedule } from './CalendarDetailDaySchedule';
 import { CalendarDetailPoll } from './CalendarDetailPoll';
@@ -13,56 +10,35 @@ import { CalendarDetailSignUpList } from './CalendarDetailSignUpList';
 import { CalendarGroupTags } from './CalendarGroupTags';
 
 interface CalendarDetailAddOnProps {
-  calendarEntryId: number;
   addOn: CalendarEntryAddOn;
-  answer: CalendarDetailAnswer | null;
-  roll: AttendanceRoll | null;
-  attendanceReminder: CalendarReminderSource | null;
+  entry: CalendarEntry;
   participatingGroups: readonly KkCalendarLineGroup[];
   mayModerate: boolean;
-  mayAnswer: boolean;
-  startsAt: string;
-  endsAt: string | null;
 }
 
 export const CalendarDetailAddOn: FC<CalendarDetailAddOnProps> = ({
-  calendarEntryId,
   addOn,
-  answer,
-  roll,
-  attendanceReminder,
+  entry,
   participatingGroups,
   mayModerate,
-  mayAnswer,
-  startsAt,
-  endsAt,
 }) => {
   const attendance =
-    addOn.kind === 'attendance' ? (
-      <CalendarDetailAttendance answer={answer} roll={roll} reminder={attendanceReminder} />
-    ) : null;
+    addOn.kind === 'attendance' ? <CalendarDetailAttendance entry={entry} /> : null;
   const poll =
     addOn.kind === 'poll' ? (
-      <CalendarDetailPoll
-        calendarEntryId={calendarEntryId}
-        poll={addOn.poll}
-        mayClose={mayModerate}
-        mayAnswer={mayAnswer}
-        entryStartsAt={startsAt}
-      />
+      <CalendarDetailPoll poll={addOn.poll} entry={entry} mayClose={mayModerate} />
     ) : null;
   const signUpList =
     addOn.kind === 'signUpList' ? (
-      <CalendarDetailSignUpList
-        calendarEntryId={calendarEntryId}
-        list={addOn.signUpList}
-        mayModerate={mayModerate}
-        mayAnswer={mayAnswer}
-      />
+      <CalendarDetailSignUpList list={addOn.signUpList} entry={entry} mayModerate={mayModerate} />
     ) : null;
   const daySchedule =
     addOn.kind === 'daySchedule' ? (
-      <CalendarDetailDaySchedule schedule={addOn.daySchedule} startsAt={startsAt} endsAt={endsAt} />
+      <CalendarDetailDaySchedule
+        schedule={addOn.daySchedule}
+        startsAt={entry.startsAt}
+        endsAt={entry.endsAt}
+      />
     ) : null;
   const contents: Record<CalendarAddOnKind, ReactNode> = {
     attendance,

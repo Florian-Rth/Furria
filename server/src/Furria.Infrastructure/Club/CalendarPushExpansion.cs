@@ -139,17 +139,19 @@ public sealed class CalendarPushExpansion
 
     [Pure]
     private static bool IsDue(OutboxCalendarPush push, DateTimeOffset now) =>
-        push.ReminderClosesAt is { } closesAt
-            ? CalendarPushRules.IsReminderDue(closesAt, now)
+        push.Reason == CalendarPushReason.Reminder
+            ? push.ReminderClosesAt is { } closesAt
+                && CalendarPushRules.IsReminderDue(closesAt, now)
             : CalendarPushRules.IsDue(push.Reason, push.StartsAt, push.EndsAt, now);
 
     private async Task<IReadOnlySet<int>?> AnsweredBeforeReminderAsync(
         OutboxCalendarPush push,
         CancellationToken ct
     ) =>
-        push.ReminderKind is { } kind && push.ReminderAddOnId is { } addOnId
+        push.Reason != CalendarPushReason.Reminder ? NobodyAnswered
+        : push.ReminderKind is { } kind && push.ReminderAddOnId is { } addOnId
             ? await _dbContext.OpenReminderAnsweredIdsAsync(kind, addOnId, ct)
-            : NobodyAnswered;
+        : null;
 
     private Task<bool> EntryExistsAsync(OutboxCalendarPush push, CancellationToken ct) =>
         _dbContext.CalendarEntries.AnyAsync(entry => entry.Id == push.CalendarEntryId, ct);
@@ -159,12 +161,7 @@ public sealed class CalendarPushExpansion
         CancellationToken ct
     )
     {
-        var accounts = _dbContext
-            .Users.AsNoTracking()
-            .Where(account => !account.IsDisabled && account.PersonId != null)
-            .Where(account =>
-                _dbContext.PushSubscriptions.Any(device => device.AccountId == account.Id)
-            );
+        var accounts = _dbContext.PushableAccounts();
 
         if (push.ActorPersonId is { } actorPersonId)
             accounts = accounts.Where(account => account.PersonId != actorPersonId);

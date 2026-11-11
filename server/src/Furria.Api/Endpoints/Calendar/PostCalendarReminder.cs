@@ -58,7 +58,7 @@ public sealed record PostCalendarReminderRequest
 
     public required CalendarEntryAddOnKind Kind { get; init; }
 
-    public required int? AddOnId { get; init; }
+    public int? AddOnId { get; init; }
 }
 
 public sealed class PostCalendarReminderValidator : Validator<PostCalendarReminderRequest>
@@ -75,9 +75,11 @@ public sealed class PostCalendarReminderValidator : Validator<PostCalendarRemind
             .WithMessage(UnremindableMessage);
         RuleFor(request => request.AddOnId)
             .NotNull()
-            .GreaterThan(0)
             .When(request => request.Kind != CalendarEntryAddOnKind.Attendance)
             .WithMessage(MissingAddOnMessage);
+        RuleFor(request => request.AddOnId)
+            .GreaterThan(0)
+            .When(request => request.AddOnId is not null);
         RuleFor(request => request.AddOnId)
             .Null()
             .When(request => request.Kind == CalendarEntryAddOnKind.Attendance)

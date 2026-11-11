@@ -1,30 +1,23 @@
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
-import type { AttendanceRoll } from '../calendar-attendance';
-import type { CalendarReminderSource } from '../calendar-reminders';
-import type { CalendarDetailAnswer } from '../hooks/use-calendar-detail';
+import { useCalendarDetailAttendance } from '../hooks/use-calendar-detail-attendance';
+import type { CalendarEntry } from '../schemas';
 import { CalendarAttendanceAnswer } from './CalendarAttendanceAnswer';
 import { CalendarAttendanceRoll } from './CalendarAttendanceRoll';
 import { CalendarReminderAction } from './CalendarReminderAction';
 
 interface CalendarDetailAttendanceProps {
-  answer: CalendarDetailAnswer | null;
-  roll: AttendanceRoll | null;
-  reminder: CalendarReminderSource | null;
+  entry: CalendarEntry;
 }
 
-export const CalendarDetailAttendance: FC<CalendarDetailAttendanceProps> = ({
-  answer,
-  roll,
-  reminder,
-}) => {
-  const reminderAction = reminder === null ? null : <CalendarReminderAction source={reminder} />;
+export const CalendarDetailAttendance: FC<CalendarDetailAttendanceProps> = ({ entry }) => {
+  const control = useCalendarDetailAttendance(entry);
 
   return (
     <Stack sx={{ gap: 1.5, minWidth: 0 }}>
-      <CalendarAttendanceAnswer answer={answer} />
-      <CalendarAttendanceRoll roll={roll} />
-      {reminderAction}
+      <CalendarAttendanceAnswer answer={control.answer} />
+      <CalendarAttendanceRoll roll={control.roll} />
+      <CalendarReminderAction source={control.reminder} />
     </Stack>
   );
 };

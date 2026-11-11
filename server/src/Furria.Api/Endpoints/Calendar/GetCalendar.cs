@@ -300,6 +300,8 @@ public sealed record CalendarReminderDto
 
     public required DateTimeOffset? RemindableFrom { get; init; }
 
+    public required int ReachableCount { get; init; }
+
     [Pure]
     public static CalendarReminderDto? From(CalendarReminderDetails? reminder) =>
         reminder is null
@@ -308,6 +310,7 @@ public sealed record CalendarReminderDto
             {
                 LastRemindedAt = reminder.LastRemindedAt,
                 RemindableFrom = reminder.RemindableFrom,
+                ReachableCount = reminder.ReachableCount,
             };
 }
 

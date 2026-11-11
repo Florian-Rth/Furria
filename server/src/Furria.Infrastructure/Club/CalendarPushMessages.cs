@@ -1,5 +1,6 @@
 using System.Diagnostics.Contracts;
 using System.Globalization;
+using System.Text.Json;
 using Furria.Core.Club;
 using Furria.Infrastructure.Push;
 
@@ -19,13 +20,19 @@ internal static class CalendarPushMessages
             Title = TitleOf(push),
             Body = BodyOf(push),
             Url = UrlOf(push),
-            Tag = string.Create(
-                CultureInfo.InvariantCulture,
-                $"calendar-entry-{push.CalendarEntryId}"
-            ),
+            Tag = TagOf(push),
             ExpiresAt =
                 now + CalendarPushRules.TimeToLive(push.ReminderClosesAt ?? push.StartsAt, now),
         };
+
+    [Pure]
+    private static string TagOf(OutboxCalendarPush push) =>
+        push.ReminderKind is { } kind
+            ? string.Create(
+                CultureInfo.InvariantCulture,
+                $"calendar-entry-{push.CalendarEntryId}-reminder-{JsonNamingPolicy.CamelCase.ConvertName(kind.ToString())}-{push.ReminderAddOnId}"
+            )
+            : string.Create(CultureInfo.InvariantCulture, $"calendar-entry-{push.CalendarEntryId}");
 
     [Pure]
     private static string TitleOf(OutboxCalendarPush push) =>

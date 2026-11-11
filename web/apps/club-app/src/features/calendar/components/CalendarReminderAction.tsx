@@ -1,47 +1,49 @@
 import { KkButton } from '@furria/ui/KkButton';
 import { KkMeta } from '@furria/ui/KkMeta';
-import type { KkSx } from '@furria/ui/kk-sx';
+import Box from '@mui/material/Box';
 import Stack from '@mui/material/Stack';
 import type { FC } from 'react';
+import { REMIND_LABEL } from '../calendar-labels';
 import type { CalendarReminderSource } from '../calendar-reminders';
 import { useCalendarReminder } from '../hooks/use-calendar-reminder';
 import { useConfirmStep } from '../hooks/use-confirm-step';
 import { CalendarConfirmDialog } from './CalendarConfirmDialog';
 
-const REMIND_LABEL = 'Erinnern';
+const NOTHING = (): void => undefined;
 
 interface CalendarReminderActionProps {
-  source: CalendarReminderSource;
-  sx?: KkSx;
+  source: CalendarReminderSource | null;
 }
 
-export const CalendarReminderAction: FC<CalendarReminderActionProps> = ({ source, sx }) => {
+export const CalendarReminderAction: FC<CalendarReminderActionProps> = ({ source }) => {
   const control = useCalendarReminder(source);
-  const step = useConfirmStep(control.remind);
+  const step = useConfirmStep(control?.remind ?? NOTHING);
 
-  if (control.availability === 'hidden') {
+  if (control === null || control.availability === 'hidden') {
     return null;
   }
 
-  const isWaiting = control.availability === 'waiting';
-  const reminded =
-    control.remindedLabel === null ? null : <KkMeta tone="muted">{control.remindedLabel}</KkMeta>;
+  const describedBy = control.metaLabel === null ? undefined : control.metaId;
+  const meta =
+    control.metaLabel === null ? null : (
+      <Box id={control.metaId}>
+        <KkMeta tone="muted">{control.metaLabel}</KkMeta>
+      </Box>
+    );
 
   return (
-    <Stack
-      direction="row"
-      sx={[{ alignItems: 'center', gap: 1.5, minWidth: 0 }, ...(Array.isArray(sx) ? sx : [sx])]}
-    >
+    <Stack direction="row" sx={{ alignItems: 'center', gap: 1.5, minWidth: 0 }}>
       <KkButton
         variant="outlined"
         size="small"
         onClick={step.ask}
         loading={control.isReminding}
-        disabled={isWaiting}
+        disabled={control.isDisabled}
+        ariaDescribedBy={describedBy}
       >
         {REMIND_LABEL}
       </KkButton>
-      {reminded}
+      {meta}
       <CalendarConfirmDialog
         open={step.isAsked}
         copy={control.copy}

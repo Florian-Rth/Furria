@@ -4628,7 +4628,7 @@ namespace Furria.Infrastructure.Migrations
 
                             t.HasCheckConstraint("ck_outbox_calendar_push_recipients", "reason IN ('AsksForResponse', 'Reminder') OR cardinality(person_ids) > 0");
 
-                            t.HasCheckConstraint("ck_outbox_calendar_push_reminder", "(reason = 'Reminder') = (reminder_kind IS NOT NULL AND reminder_closes_at IS NOT NULL)");
+                            t.HasCheckConstraint("ck_outbox_calendar_push_reminder", "(reason = 'Reminder') = (reminder_kind IS NOT NULL AND reminder_add_on_id IS NOT NULL AND reminder_closes_at IS NOT NULL)");
 
                             t.HasCheckConstraint("ck_outbox_calendar_push_reminder_kind", "reminder_kind IS NULL OR reminder_kind IN ('Attendance', 'Poll', 'SignUpList')");
                         });

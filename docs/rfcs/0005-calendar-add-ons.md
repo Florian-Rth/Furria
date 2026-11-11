@@ -470,9 +470,21 @@ Decisions taken while building phase 11:
 - **Payload:** *Erinnerung: <Titel>*; the body is the slot followed by *Bitte sag zu oder ab.*,
   *Bitte stimm ab: <Frage>* or *Bitte trag dich ein: <Liste>*; `/calendar/{id}`, tag
   `calendar-entry-{id}`, TTL until the Funktion closes (1 h – 28 days).
-- **Club app:** *Erinnern* sits under *Noch offen* on each card, asks "n Personen erinnern?",
-  is disabled until six hours have passed and shows *Erinnert um HH:MM* (*Erinnert am TT.MM.* on
-  another day).
+- **Reachable, not just open:** the detail gives organisers `reminder.reachableCount` — open
+  people with an enabled account and a device, the organiser left out, the same account rule the
+  expansion uses. A reminder nobody could receive is refused (422) and never uses up the six
+  hours; no refusal stamps the throttle. Migration `CalendarReminderNamesItsFunction` makes
+  `reminder_add_on_id` part of the reminder row check; the expansion drops a reminder row
+  without its Funktion.
+- **Own tag per reminder:** `calendar-entry-{id}-reminder-{kind}-{addOnId}`, so a reminder never
+  replaces a moved/deleted notice or another Funktion's reminder.
+- **Club app:** *Erinnern* sits under *Noch offen* on each card and asks "n Personen erinnern?"
+  with n = reachable, in the neutral dialog tone. It is disabled while the six hours run (meta
+  *Wieder ab HH:MM*, tied to the button via `aria-describedby`) and when nobody open has the app
+  (*Niemand mit App*); otherwise the meta reads *Erinnert um HH:MM* (*Erinnert am TT.MM.* on
+  another day). A 409 says *Gerade erst erinnert.*
+- **Follow-up:** the expansion still looks up rights per recipient account; batching them waits
+  until club size makes it matter.
 
 ### Phase 12 — Open Funktionen outside the entry
 Goal: the calendar list and the group hub show what is open and what she still owes.

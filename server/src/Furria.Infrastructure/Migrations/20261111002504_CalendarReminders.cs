@@ -100,6 +100,8 @@ namespace Furria.Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.Sql("DELETE FROM outbox_calendar_push WHERE reason = 'Reminder';");
+
             migrationBuilder.DropCheckConstraint(
                 name: "ck_outbox_calendar_push_reason",
                 table: "outbox_calendar_push"

@@ -2,13 +2,15 @@ import { useState } from 'react';
 import { useOwnSignUpLineDeletionMutation, useOwnSignUpLineMutation } from '../api';
 import { toLineRemoveLabel, toSignUpListMetaLabel } from '../calendar-labels';
 import { toPersonName } from '../calendar-people';
+import type { CalendarReminderSource } from '../calendar-reminders';
+import { toSignUpListReminderSource } from '../calendar-reminders';
 import {
   toLineText,
   toOwnLineState,
   toSignUpLineRows,
   toViewerLine,
 } from '../calendar-sign-up-lists';
-import type { CalendarSignUpList } from '../schemas';
+import type { CalendarEntry, CalendarSignUpList } from '../schemas';
 import type { CalendarSignUpLineRemovalControl } from './use-calendar-sign-up-line-removal';
 
 const SIGN_UP_LABEL = 'Eintragen';
@@ -38,6 +40,7 @@ export interface CalendarSignUpListControl {
   setDraft: (draft: string) => void;
   save: () => void;
   deleteOwnLine: () => void;
+  reminder: CalendarReminderSource;
 }
 
 const toHeldText = (list: CalendarSignUpList): string => toViewerLine(list)?.text ?? '';
@@ -45,9 +48,10 @@ const toHeldText = (list: CalendarSignUpList): string => toViewerLine(list)?.tex
 export const useCalendarSignUpList = (
   list: CalendarSignUpList,
   mayModerate: boolean,
-  mayAnswer: boolean,
+  entry: Pick<CalendarEntry, 'calendarEntryId' | 'mayAnswer'>,
   removal: CalendarSignUpLineRemovalControl,
 ): CalendarSignUpListControl => {
+  const mayAnswer = entry.mayAnswer;
   const saving = useOwnSignUpLineMutation();
   const deleting = useOwnSignUpLineDeletionMutation();
   const heldText = toHeldText(list);
@@ -85,6 +89,7 @@ export const useCalendarSignUpList = (
   });
 
   return {
+    reminder: toSignUpListReminderSource(entry.calendarEntryId, list),
     title: list.title,
     hint: list.hint ?? undefined,
     meta: toSignUpListMetaLabel(list),

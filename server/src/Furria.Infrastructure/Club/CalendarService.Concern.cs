@@ -12,6 +12,7 @@ public sealed partial class CalendarService
         "Dieser Termin ist nicht für dich gedacht. Antworten können nur die, für die er ist.";
 
     private static readonly IReadOnlyList<CalendarAttendancePerson> NobodyNamed = [];
+    private static readonly IReadOnlySet<int> NobodyReachable = new HashSet<int>();
 
     private async Task<Result?> AnswerRefusalAsync(
         int actorAccountId,
@@ -58,7 +59,7 @@ public sealed partial class CalendarService
     private async Task<EntryConcern> ConcernOfAsync(
         EntryRow row,
         EntryExtras extras,
-        bool organises,
+        ConcernViewer viewer,
         DateOnly today,
         CancellationToken ct
     )
@@ -69,8 +70,12 @@ public sealed partial class CalendarService
         if (!row.AsksForResponse && polls.Count == 0 && lists.Count == 0)
             return new EntryConcern(extras, null);
 
+        var organises = viewer.Organises;
         var concerned = await ConcernedIdsOfAsync(FactsOf(row), today, ct);
         var named = organises ? await PeopleNamedAsync(concerned, ct) : NobodyNamed;
+        var reachable = organises
+            ? await _dbContext.ReachablePersonIdsAsync(concerned, viewer.PersonId, ct)
+            : NobodyReachable;
         var concernedExtras = extras with
         {
             Polls = new Dictionary<int, IReadOnlyList<PlacedPoll>>
@@ -84,7 +89,9 @@ public sealed partial class CalendarService
                             {
                                 ConcernedCount = ShareTotalOf(concerned, poll.VoterIds),
                                 NotAnswered = organises ? MissingFrom(named, poll.VoterIds) : null,
-                                Reminder = ReminderOf(poll.LastRemindedAt, organises),
+                                Reminder = organises
+                                    ? ReminderOf(poll.LastRemindedAt, reachable, poll.VoterIds)
+                                    : null,
                             },
                         }
                     ),
@@ -99,7 +106,13 @@ public sealed partial class CalendarService
                         {
                             Details = WithConcern(list.Details, concerned, named, organises) with
                             {
-                                Reminder = ReminderOf(list.LastRemindedAt, organises),
+                                Reminder = organises
+                                    ? ReminderOf(
+                                        list.LastRemindedAt,
+                                        reachable,
+                                        SignedUpIdsOf(list.Details)
+                                    )
+                                    : null,
                             },
                         }
                     ),
@@ -110,7 +123,7 @@ public sealed partial class CalendarService
         return new EntryConcern(
             concernedExtras,
             row.AsksForResponse
-                ? await AttendanceRollOfAsync(row.CalendarEntryId, named, organises, ct)
+                ? await AttendanceRollOfAsync(row.CalendarEntryId, named, reachable, organises, ct)
                 : null
         );
     }
@@ -118,19 +131,23 @@ public sealed partial class CalendarService
     private async Task<AttendanceRoll> AttendanceRollOfAsync(
         int calendarEntryId,
         IReadOnlyList<CalendarAttendancePerson> named,
+        IReadOnlySet<int> reachable,
         bool organises,
         CancellationToken ct
     )
     {
         var answers = await AnswersOnAsync(calendarEntryId, ct);
+        var answeredIds = answers.Select(answer => answer.PersonId).ToHashSet();
 
         return new AttendanceRoll(
             answers,
+            organises ? MissingFrom(named, answeredIds) : null,
             organises
-                ? MissingFrom(named, answers.Select(answer => answer.PersonId).ToHashSet())
-                : null,
-            organises
-                ? ReminderOf(await AttendanceLastRemindedAtAsync(calendarEntryId, ct), true)
+                ? ReminderOf(
+                    await AttendanceLastRemindedAtAsync(calendarEntryId, ct),
+                    reachable,
+                    answeredIds
+                )
                 : null
         );
     }
@@ -143,7 +160,7 @@ public sealed partial class CalendarService
         bool organises
     )
     {
-        var signedUpIds = list.Lines.Select(line => line.PersonId).ToHashSet();
+        var signedUpIds = SignedUpIdsOf(list);
 
         return list with
         {
@@ -163,17 +180,21 @@ public sealed partial class CalendarService
             .SingleOrDefaultAsync(ct);
 
     [Pure]
-    private static CalendarReminderDetails? ReminderOf(
+    private static IReadOnlySet<int> SignedUpIdsOf(CalendarSignUpListDetails list) =>
+        list.Lines.Select(line => line.PersonId).ToHashSet();
+
+    [Pure]
+    private static CalendarReminderDetails ReminderOf(
         DateTimeOffset? lastRemindedAt,
-        bool organises
+        IReadOnlySet<int> reachable,
+        IReadOnlySet<int> answeredIds
     ) =>
-        organises
-            ? new CalendarReminderDetails
-            {
-                LastRemindedAt = lastRemindedAt,
-                RemindableFrom = CalendarReminderRules.RemindableFrom(lastRemindedAt),
-            }
-            : null;
+        new()
+        {
+            LastRemindedAt = lastRemindedAt,
+            RemindableFrom = CalendarReminderRules.RemindableFrom(lastRemindedAt),
+            ReachableCount = reachable.Count(personId => !answeredIds.Contains(personId)),
+        };
 
     [Pure]
     private static int ShareTotalOf(IReadOnlySet<int> concerned, IReadOnlySet<int> answeredIds) =>
@@ -201,4 +222,6 @@ public sealed partial class CalendarService
     }
 
     private sealed record EntryConcern(EntryExtras Extras, AttendanceRoll? Roll);
+
+    private sealed record ConcernViewer(int? PersonId, bool Organises);
 }

@@ -5,4 +5,6 @@ public sealed record CalendarReminderDetails
     public required DateTimeOffset? LastRemindedAt { get; init; }
 
     public required DateTimeOffset? RemindableFrom { get; init; }
+
+    public required int ReachableCount { get; init; }
 }

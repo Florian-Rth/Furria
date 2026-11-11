@@ -11,6 +11,7 @@ public sealed partial class CalendarService
     private const string UnremindableMessage = "An diese Funktion lässt sich nicht erinnern.";
     private const string ClosedFunctionMessage = "Diese Funktion ist schon geschlossen.";
     private const string NobodyOpenMessage = "Alle haben schon geantwortet.";
+    private const string NobodyReachableMessage = "Von den Offenen hat niemand die App.";
     private const string RemindedRecentlyMessage =
         "Es wurde gerade erst erinnert. Erinnern geht wieder sechs Stunden danach.";
 
@@ -20,12 +21,12 @@ public sealed partial class CalendarService
             return Result.Validation(UnremindableMessage);
 
         var actorPersonId = await _authorizer.ActivePersonIdAsync(command.ActorAccountId, ct);
-        var now = _timeProvider.GetUtcNow();
         await using var transaction = await _dbContext.Database.BeginTransactionAsync(ct);
 
         if (await LockedEntryAsync(command.CalendarEntryId, ct) is not { } entry)
             return Result.NotFound(UnknownEntryMessage);
 
+        var now = _timeProvider.GetUtcNow();
         if (!await MayOwnAsync(command.ActorAccountId, entry.OwnerGroupId, ct))
             return Result.Forbidden(NotOwnedMessage);
 
@@ -40,8 +41,12 @@ public sealed partial class CalendarService
         if (!CalendarReminderRules.MayRemind(target.LastRemindedAt, now))
             return Result.Conflict(RemindedRecentlyMessage);
 
-        if (!await HasOpenPeopleAsync(entry.Id, target, actorPersonId, ct))
+        var open = await OpenPeopleOfAsync(entry.Id, target, actorPersonId, ct);
+        if (open.Count == 0)
             return Result.Validation(NobodyOpenMessage);
+
+        if ((await _dbContext.ReachablePersonIdsAsync(open, actorPersonId, ct)).Count == 0)
+            return Result.Validation(NobodyReachableMessage);
 
         StampReminder(entry, target, now);
         EnqueueReminder(entry, target, actorPersonId, await VenueNameAsync(entry.VenueId, ct));
@@ -71,8 +76,7 @@ public sealed partial class CalendarService
                     CalendarEntryAddOnKind.Attendance,
                     entry.Id,
                     null,
-                    null,
-                    CalendarAddOnClosing.EntryEndOf(entry.StartsAt, entry.EndsAt),
+                    new ReminderClosing(null, null, entry.StartsAt, entry.EndsAt),
                     entry.AttendanceLastRemindedAt
                 )
             )
@@ -86,8 +90,7 @@ public sealed partial class CalendarService
                     CalendarEntryAddOnKind.Poll,
                     poll.Id,
                     poll.Question,
-                    poll.ClosedAt,
-                    CalendarAddOnClosing.ClosesAt(poll.VotesUntil, entry.StartsAt),
+                    new ReminderClosing(poll.ClosedAt, poll.VotesUntil, entry.StartsAt, null),
                     poll.LastRemindedAt
                 )
             )
@@ -104,8 +107,7 @@ public sealed partial class CalendarService
                     CalendarEntryAddOnKind.SignUpList,
                     list.Id,
                     list.Title,
-                    list.ClosedAt,
-                    CalendarAddOnClosing.ClosesAt(list.SignUpUntil, entry.StartsAt),
+                    new ReminderClosing(list.ClosedAt, list.SignUpUntil, entry.StartsAt, null),
                     list.LastRemindedAt
                 )
             )
@@ -131,7 +133,7 @@ public sealed partial class CalendarService
         }
     }
 
-    private async Task<bool> HasOpenPeopleAsync(
+    private async Task<IReadOnlySet<int>> OpenPeopleOfAsync(
         int calendarEntryId,
         ReminderTarget target,
         int? actorPersonId,
@@ -150,7 +152,9 @@ public sealed partial class CalendarService
         );
         var answered = await _dbContext.ReminderAnsweredIdsAsync(target.Kind, target.AddOnId, ct);
 
-        return concerned.Any(personId => personId != actorPersonId && !answered.Contains(personId));
+        return concerned
+            .Where(personId => personId != actorPersonId && !answered.Contains(personId))
+            .ToHashSet();
     }
 
     private void EnqueueReminder(
@@ -168,16 +172,39 @@ public sealed partial class CalendarService
         _dbContext.OutboxCalendarPushes.Add(push);
     }
 
+    private sealed record ReminderClosing(
+        DateTimeOffset? ClosedAt,
+        DateTimeOffset? Deadline,
+        DateTimeOffset EntryStartsAt,
+        DateTimeOffset? EntryEndsAt
+    );
+
     private sealed record ReminderTarget(
         CalendarEntryAddOnKind Kind,
         int AddOnId,
         string? Subject,
-        DateTimeOffset? ClosedAt,
-        DateTimeOffset ClosesAt,
+        ReminderClosing Closing,
         DateTimeOffset? LastRemindedAt
     )
     {
+        public DateTimeOffset ClosesAt =>
+            Kind == CalendarEntryAddOnKind.Attendance
+                ? CalendarAddOnClosing.EntryEndOf(Closing.EntryStartsAt, Closing.EntryEndsAt)
+                : CalendarAddOnClosing.ClosesAt(Closing.Deadline, Closing.EntryStartsAt);
+
         [Pure]
-        public bool IsClosedAt(DateTimeOffset now) => ClosedAt is not null || now >= ClosesAt;
+        public bool IsClosedAt(DateTimeOffset now) =>
+            Kind == CalendarEntryAddOnKind.Attendance
+                ? CalendarAddOnClosing.IsAttendanceClosed(
+                    Closing.EntryStartsAt,
+                    Closing.EntryEndsAt,
+                    now
+                )
+                : CalendarAddOnClosing.IsClosed(
+                    Closing.ClosedAt,
+                    Closing.Deadline,
+                    Closing.EntryStartsAt,
+                    now
+                );
     }
 }

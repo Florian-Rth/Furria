@@ -5,6 +5,7 @@ import type { CalendarQuery } from './calendar-query';
 import { toCalendarPath } from './calendar-query';
 import type {
   CalendarEntryResponse,
+  CalendarReminderTarget,
   CalendarResponse,
   ChoosablePeopleResponse,
   RunningVenuesResponse,
@@ -145,19 +146,13 @@ export const requestSignUpListClosing = (
     accessToken,
   });
 
-export interface CalendarReminderRequest {
-  calendarEntryId: number;
-  kind: 'attendance' | 'poll' | 'signUpList';
-  addOnId: number | null;
-}
-
 export const requestCalendarReminder = (
-  { calendarEntryId, kind, addOnId }: CalendarReminderRequest,
+  target: CalendarReminderTarget,
   accessToken: string,
 ): Promise<void> =>
-  apiFetch(`/api/calendar/entries/${calendarEntryId}/reminders`, {
+  apiFetch(`/api/calendar/entries/${target.calendarEntryId}/reminders`, {
     method: 'POST',
-    body: { kind, addOnId },
+    body: { kind: target.kind, addOnId: target.addOnId },
     schema: NoContentSchema,
     accessToken,
   });

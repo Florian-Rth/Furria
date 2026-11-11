@@ -1,9 +1,8 @@
 import { KkPollBallot } from '@furria/ui/KkPollBallot';
 import type { FC } from 'react';
-import { toPollReminderSource } from '../calendar-reminders';
 import { useCalendarPoll } from '../hooks/use-calendar-poll';
 import { useCalendarPollClosing } from '../hooks/use-calendar-poll-closing';
-import type { CalendarPoll } from '../schemas';
+import type { CalendarEntry, CalendarPoll } from '../schemas';
 import { CalendarCloseAction } from './CalendarCloseAction';
 import { CalendarNotAnsweredRoll } from './CalendarNotAnsweredRoll';
 import { CalendarReminderAction } from './CalendarReminderAction';
@@ -14,23 +13,14 @@ const CLOSE_LABEL = 'Umfrage beenden';
 const ACTION_SX = { alignSelf: 'flex-start' } as const;
 
 interface CalendarDetailPollProps {
-  calendarEntryId: number;
   poll: CalendarPoll;
+  entry: CalendarEntry;
   mayClose: boolean;
-  mayAnswer: boolean;
-  entryStartsAt: string;
 }
 
-export const CalendarDetailPoll: FC<CalendarDetailPollProps> = ({
-  calendarEntryId,
-  poll,
-  mayClose,
-  mayAnswer,
-  entryStartsAt,
-}) => {
-  const control = useCalendarPoll(poll, mayAnswer);
-  const closing = useCalendarPollClosing({ poll, mayClose, startsAt: entryStartsAt });
-  const reminderSource = toPollReminderSource(calendarEntryId, poll);
+export const CalendarDetailPoll: FC<CalendarDetailPollProps> = ({ poll, entry, mayClose }) => {
+  const control = useCalendarPoll(poll, entry);
+  const closing = useCalendarPollClosing({ poll, mayClose, startsAt: entry.startsAt });
 
   const choices = control.choices.map((choice) => (
     <KkPollBallot.Choice
@@ -73,7 +63,7 @@ export const CalendarDetailPoll: FC<CalendarDetailPollProps> = ({
         {choices}
       </KkPollBallot.Choices>
       <CalendarNotAnsweredRoll label={control.question} notAnswered={poll.notAnswered} />
-      <CalendarReminderAction source={reminderSource} />
+      <CalendarReminderAction source={control.reminder} />
       {closeAction}
       {reopenAction}
     </KkPollBallot>

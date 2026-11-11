@@ -2,7 +2,9 @@ import type { KkPollBallotMode } from '@furria/ui/KkPollBallot';
 import { usePollVoteMutation } from '../api';
 import { toPollMetaLabel, toPollOutcomeLabel, toPollVotersLabel } from '../calendar-labels';
 import { toPollOutcome, toPollResults, toViewerChoice, toVoteSet } from '../calendar-polls';
-import type { CalendarPoll } from '../schemas';
+import type { CalendarReminderSource } from '../calendar-reminders';
+import { toPollReminderSource } from '../calendar-reminders';
+import type { CalendarEntry, CalendarPoll } from '../schemas';
 
 export interface CalendarPollChoice {
   optionId: number;
@@ -24,9 +26,14 @@ export interface CalendarPollControl {
   isLocked: boolean;
   isReadOnly: boolean;
   isSubmitting: boolean;
+  reminder: CalendarReminderSource;
 }
 
-export const useCalendarPoll = (poll: CalendarPoll, mayAnswer: boolean): CalendarPollControl => {
+export const useCalendarPoll = (
+  poll: CalendarPoll,
+  entry: Pick<CalendarEntry, 'calendarEntryId' | 'mayAnswer'>,
+): CalendarPollControl => {
+  const mayAnswer = entry.mayAnswer;
   const vote = usePollVoteMutation();
   const pendingVote =
     vote.isPending && vote.variables?.pollId === poll.pollId ? vote.variables : null;
@@ -61,6 +68,7 @@ export const useCalendarPoll = (poll: CalendarPoll, mayAnswer: boolean): Calenda
   );
 
   return {
+    reminder: toPollReminderSource(entry.calendarEntryId, poll),
     mode: poll.allowsMultipleChoices ? 'multiple' : 'single',
     question: poll.question,
     meta: toPollMetaLabel(poll),

@@ -1,7 +1,9 @@
+import type { KkConfirmTone } from '@furria/ui/KkConfirmDialog';
 import { KkConfirmDialog } from '@furria/ui/KkConfirmDialog';
 import type { FC } from 'react';
 
 const NO_FACTS = [] as const;
+const DEFAULT_TONE: KkConfirmTone = 'danger';
 
 export interface CalendarConfirmCopy {
   eyebrow: string;
@@ -10,6 +12,7 @@ export interface CalendarConfirmCopy {
   confirmLabel: string;
   cancelLabel: string;
   closeLabel: string;
+  tone?: KkConfirmTone;
 }
 
 interface CalendarConfirmDialogProps {
@@ -24,18 +27,22 @@ export const CalendarConfirmDialog: FC<CalendarConfirmDialogProps> = ({
   copy,
   onConfirm,
   onCancel,
-}) => (
-  <KkConfirmDialog
-    open={open}
-    onClose={onCancel}
-    onConfirm={onConfirm}
-    tone="danger"
-    eyebrow={copy.eyebrow}
-    question={copy.question}
-    explanation={copy.explanation}
-    facts={NO_FACTS}
-    confirmLabel={copy.confirmLabel}
-    cancelLabel={copy.cancelLabel}
-    closeLabel={copy.closeLabel}
-  />
-);
+}) => {
+  const tone = copy.tone ?? DEFAULT_TONE;
+
+  return (
+    <KkConfirmDialog
+      open={open}
+      onClose={onCancel}
+      onConfirm={onConfirm}
+      tone={tone}
+      eyebrow={copy.eyebrow}
+      question={copy.question}
+      explanation={copy.explanation}
+      facts={NO_FACTS}
+      confirmLabel={copy.confirmLabel}
+      cancelLabel={copy.cancelLabel}
+      closeLabel={copy.closeLabel}
+    />
+  );
+};

@@ -46,7 +46,7 @@ public sealed class OutboxCalendarPushConfiguration : IEntityTypeConfiguration<O
                 );
                 table.HasCheckConstraint(
                     "ck_outbox_calendar_push_reminder",
-                    $"(reason = '{nameof(CalendarPushReason.Reminder)}') = (reminder_kind IS NOT NULL AND reminder_closes_at IS NOT NULL)"
+                    $"(reason = '{nameof(CalendarPushReason.Reminder)}') = (reminder_kind IS NOT NULL AND reminder_add_on_id IS NOT NULL AND reminder_closes_at IS NOT NULL)"
                 );
             }
         );

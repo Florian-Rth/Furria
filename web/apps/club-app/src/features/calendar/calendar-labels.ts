@@ -17,6 +17,7 @@ import { isIsoDay } from './calendar-day-schedules';
 import type { CalendarGroupShortcut } from './calendar-people';
 import { toPersonName } from './calendar-people';
 import type { CalendarPollOutcome } from './calendar-polls';
+import type { RemindedAt, ReminderFailure, ReminderMeta } from './calendar-reminders';
 import type {
   AudiencePerson,
   CalendarAddOnKind,
@@ -326,21 +327,32 @@ export const SIGN_UP_LINE_SAVE_FAILED_MESSAGE = 'Dein Eintrag wurde nicht gespei
 export const SIGN_UP_LINE_DELETE_FAILED_MESSAGE = 'Dein Eintrag wurde nicht gelöscht.';
 export const SIGN_UP_LINE_REMOVE_FAILED_MESSAGE = 'Der Eintrag wurde nicht entfernt.';
 export const SIGN_UP_LIST_CLOSE_FAILED_MESSAGE = 'Die Liste wurde nicht geschlossen.';
-export const REMINDER_FAILED_MESSAGE = 'Die Erinnerung wurde nicht verschickt.';
+export const REMIND_LABEL = 'Erinnern';
+export const REMINDER_SENT_MESSAGE = 'Erinnerung verschickt.';
+const REMINDER_UNREACHABLE_LABEL = 'Niemand mit App';
 
-export const toReminderSentMessage = (): string => 'Erinnerung verschickt.';
+export const REMINDER_FAILURE_MESSAGES: Record<ReminderFailure, string> = {
+  recentlyReminded: 'Gerade erst erinnert.',
+  failed: 'Die Erinnerung wurde nicht verschickt.',
+};
 
-export const toReminderQuestion = (openCount: number): string =>
-  openCount === 1 ? '1 Person erinnern?' : `${openCount} Personen erinnern?`;
+export const toReminderQuestion = (reachableCount: number): string =>
+  reachableCount === 1 ? '1 Person erinnern?' : `${reachableCount} Personen erinnern?`;
 
-export const toRemindedLabel = (lastRemindedAt: string | null, now: Date): string | null => {
-  if (lastRemindedAt === null) {
-    return null;
+const toRemindedLabel = (reminded: RemindedAt): string =>
+  reminded.kind === 'today' ? `Erinnert um ${reminded.time}` : `Erinnert am ${reminded.day}`;
+
+const toRemindAgainLabel = (time: string): string => `Wieder ab ${time}`;
+
+export const toReminderMetaLabel = (meta: ReminderMeta): string => {
+  switch (meta.kind) {
+    case 'unreachable':
+      return REMINDER_UNREACHABLE_LABEL;
+    case 'again':
+      return toRemindAgainLabel(meta.time);
+    default:
+      return toRemindedLabel(meta.reminded);
   }
-
-  return toLocalIsoDay(lastRemindedAt) === toIsoDay(now)
-    ? `Erinnert um ${toTimeLabel(lastRemindedAt)}`
-    : `Erinnert am ${toDayNumberLabel(lastRemindedAt)}`;
 };
 
 export const toStepCountLabel = (count: number): string | undefined =>

@@ -1,36 +1,53 @@
+import { useId } from 'react';
 import { useMinuteNow } from '@/lib/use-minute-now';
 import { useCalendarReminderMutation } from '../api';
-import { toRemindedLabel, toReminderQuestion } from '../calendar-labels';
+import { REMIND_LABEL, toReminderMetaLabel, toReminderQuestion } from '../calendar-labels';
 import type { CalendarReminderSource, ReminderAvailability } from '../calendar-reminders';
-import { toReminderAvailability } from '../calendar-reminders';
+import { toReminderAvailability, toReminderMeta } from '../calendar-reminders';
 import type { CalendarConfirmCopy } from '../components/CalendarConfirmDialog';
 
 const REMIND_COPY: Omit<CalendarConfirmCopy, 'question'> = {
   eyebrow: 'ERINNERN',
   explanation: 'Wer die App hat, bekommt eine Mitteilung.',
-  confirmLabel: 'Erinnern',
+  confirmLabel: REMIND_LABEL,
   cancelLabel: 'Nicht jetzt',
   closeLabel: 'Abbrechen',
+  tone: 'neutral',
 };
 
 export interface CalendarReminderControl {
   availability: ReminderAvailability;
+  isDisabled: boolean;
   isReminding: boolean;
-  remindedLabel: string | null;
+  metaId: string;
+  metaLabel: string | null;
   copy: CalendarConfirmCopy;
   remind: () => void;
 }
 
-export const useCalendarReminder = (source: CalendarReminderSource): CalendarReminderControl => {
-  const now = useMinuteNow();
+export const useCalendarReminder = (
+  source: CalendarReminderSource | null,
+): CalendarReminderControl | null => {
+  const reminder = source?.reminder ?? null;
+  const isThrottled = (reminder?.remindableFrom ?? null) !== null;
+  const now = useMinuteNow(isThrottled);
   const reminding = useCalendarReminderMutation();
-  const openCount = source.notAnswered?.length ?? 0;
+  const metaId = useId();
+
+  if (source === null) {
+    return null;
+  }
+
+  const availability = toReminderAvailability(source, now.getTime());
+  const meta = toReminderMeta(availability, reminder, now);
 
   return {
-    availability: toReminderAvailability(source, now.getTime()),
+    availability,
+    isDisabled: availability !== 'ready',
     isReminding: reminding.isPending,
-    remindedLabel: toRemindedLabel(source.reminder?.lastRemindedAt ?? null, now),
-    copy: { ...REMIND_COPY, question: toReminderQuestion(openCount) },
+    metaId,
+    metaLabel: meta === null ? null : toReminderMetaLabel(meta),
+    copy: { ...REMIND_COPY, question: toReminderQuestion(reminder?.reachableCount ?? 0) },
     remind: () => {
       reminding.mutate(source.target);
     },

@@ -1,11 +1,10 @@
 import { KkSignUpSheet } from '@furria/ui/KkSignUpSheet';
 import type { FC } from 'react';
-import { toSignUpListReminderSource } from '../calendar-reminders';
 import { SIGN_UP_LINE_TEXT_MAX_LENGTH } from '../calendar-sign-up-lists';
 import { useCalendarSignUpLineRemoval } from '../hooks/use-calendar-sign-up-line-removal';
 import { useCalendarSignUpList } from '../hooks/use-calendar-sign-up-list';
 import { useCalendarSignUpListClosing } from '../hooks/use-calendar-sign-up-list-closing';
-import type { CalendarSignUpList } from '../schemas';
+import type { CalendarEntry, CalendarSignUpList } from '../schemas';
 import { CalendarCloseAction } from './CalendarCloseAction';
 import { CalendarNotAnsweredRoll } from './CalendarNotAnsweredRoll';
 import { CalendarReminderAction } from './CalendarReminderAction';
@@ -16,24 +15,21 @@ const OWN_LINE_LABEL = 'Dein Eintrag';
 const CLOSE_LABEL = 'Liste schließen';
 
 interface CalendarDetailSignUpListProps {
-  calendarEntryId: number;
   list: CalendarSignUpList;
+  entry: CalendarEntry;
   mayModerate: boolean;
-  mayAnswer: boolean;
 }
 
 export const CalendarDetailSignUpList: FC<CalendarDetailSignUpListProps> = ({
-  calendarEntryId,
   list,
+  entry,
   mayModerate,
-  mayAnswer,
 }) => {
   const removal = useCalendarSignUpLineRemoval();
   const closing = useCalendarSignUpListClosing(list, mayModerate);
-  const control = useCalendarSignUpList(list, mayModerate, mayAnswer, removal);
+  const control = useCalendarSignUpList(list, mayModerate, entry, removal);
   const entryName = `sign-up-line-${list.signUpListId}`;
   const isRemovalOpen = removal.removal !== null;
-  const reminderSource = toSignUpListReminderSource(calendarEntryId, list);
 
   const lines = control.lines.map((line) => (
     <KkSignUpSheet.Line
@@ -53,7 +49,7 @@ export const CalendarDetailSignUpList: FC<CalendarDetailSignUpListProps> = ({
         {lines}
       </KkSignUpSheet.Lines>
     );
-  const entry = control.takesLines ? (
+  const ownLineField = control.takesLines ? (
     <KkSignUpSheet.Entry
       name={entryName}
       label={OWN_LINE_LABEL}
@@ -82,8 +78,8 @@ export const CalendarDetailSignUpList: FC<CalendarDetailSignUpListProps> = ({
       <KkSignUpSheet.Head title={control.title} hint={control.hint} meta={control.meta} />
       {linesList}
       <CalendarNotAnsweredRoll label={control.title} notAnswered={list.notAnswered} />
-      <CalendarReminderAction source={reminderSource} />
-      {entry}
+      <CalendarReminderAction source={control.reminder} />
+      {ownLineField}
       {closeAction}
       <CalendarSignUpLineRemovalDialog
         open={isRemovalOpen}

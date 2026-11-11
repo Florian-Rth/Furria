@@ -143,7 +143,13 @@ public sealed partial class CalendarService
 
         var extras = await ExtrasOfAsync(viewer.PersonId, [row], now, ct);
         var organises = await MayOwnAsync(viewerAccountId, row.OwnerGroupId, ct);
-        var concern = await ConcernOfAsync(row, extras, organises, today, ct);
+        var concern = await ConcernOfAsync(
+            row,
+            extras,
+            new ConcernViewer(viewer.PersonId, organises),
+            today,
+            ct
+        );
         var mayAnswer = MayAnswer(row, ties, OrganisedOwners.Of(row.OwnerGroupId, organises));
 
         return Result<CalendarEntrySummary>.Success(

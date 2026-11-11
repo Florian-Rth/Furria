@@ -2,7 +2,6 @@ import { describe, expect, it } from 'vitest';
 import {
   toAnswerShare,
   toCloserName,
-  toRemindedLabel,
   toScheduleDayLabel,
   toScheduleDayOptions,
   toStartDayQuickChoices,
@@ -56,17 +55,5 @@ describe('toCloserName', () => {
     [{ closedByFirstName: 'Ilka', closedByLastName: null }, null],
   ] as const)('names the closer of %o', (closing, expected) => {
     expect(toCloserName(closing)).toBe(expected);
-  });
-});
-
-describe('toRemindedLabel', () => {
-  const now = new Date(2027, 0, 15, 18, 0);
-
-  it.each([
-    { lastRemindedAt: null, expected: null },
-    { lastRemindedAt: new Date(2027, 0, 15, 14, 30).toISOString(), expected: 'Erinnert um 14:30' },
-    { lastRemindedAt: new Date(2027, 0, 14, 21, 5).toISOString(), expected: 'Erinnert am 14.01.' },
-  ])('writes $lastRemindedAt as $expected', ({ lastRemindedAt, expected }) => {
-    expect(toRemindedLabel(lastRemindedAt, now)).toBe(expected);
   });
 });
