@@ -116,6 +116,7 @@ English rendering anywhere else, so two translations never drift apart.
 | motto stage states: teaser / running / resting | Teaser / Läuft / Ruhe | `KkMottoStageState` |
 | door sales | Abendkasse | — |
 | beer list | Bierliste | — |
+| Jeck-Check / statement / stance / admission ages | Jeck-Check / Aussage / Haltung / Aufnahmealter | `GroupMatcher`, `MatcherStatement`, `Stance`, `AdmissionAgeBand` |
 | privacy policy | Datenschutzerklärung | — |
 
 **Carnival vocabulary** — use these English names in prose; the German only appears as copy or
@@ -1284,6 +1285,51 @@ in the club app — a panel on the club hub, a list and the article, exactly wha
 nothing member-only (Florian, 2026-11-01; reverses the L7b ruling of 2026-10-09).
 _UI copy_: Aktuelles
 _Avoid_: news admin, CMS, editor (for the hub)
+
+**Jeck-Check** (`GroupMatcher`):
+The public website's quiz that tells a visitor which **group** fits them. It is built like a
+voting-advice quiz: the visitor answers one shared set of **statements**, and every group has
+taken a **stance** on the same statements, so groups are compared on equal terms (ruled
+2026-11-11).
+A group **takes part** on its own, with no switch: once it has taken a stance on every approved
+statement it is in, and a statement approved later never pushes it out — that statement simply
+does not count for the group until it answers (ruled 2026-11-11). A group that does not want to be
+in never answers. The website leaves the Jeck-Check out while fewer than two groups take part or
+no statement is approved. Every unanswered approved statement is a to-do for the group's admins,
+whether the group takes part or not.
+_UI copy_: Jeck-Check; neue Aussage
+_Avoid_: group matcher (in prose), quiz, test, opting in
+
+**Statement** (Jeck-Check):
+One sentence in the **Jeck-Check**'s shared pool that a visitor agrees or disagrees with. A
+**group admin** may **propose** a statement; whoever may maintain the Jeck-Check **approves** it,
+rewords it, orders it or deletes it, and keeps at most ten approved — with the age question
+that makes eleven questions at most. Only approved statements
+reach the website, and every group takes a **stance** on every approved statement, so no group has
+statements of its own (ruled 2026-11-11). A statement a group has not yet taken a stance on does
+not count for that group. Rewording keeps the stances already taken and flags the statement as
+**changed** for every group until it looks again. A rejected proposal stays visible to its group as rejected, without
+a reason; the club rewords what it can save instead.
+_UI copy_: Aussage; vorschlagen, freigeben, geändert
+_Avoid_: question (for a statement), group question
+
+**Stance** (Jeck-Check):
+A **group**'s answer to one **statement** — yes, neutral or no — together with how much that
+statement matters to the group, on three levels: minor, important, very important. The group's
+admins maintain the stances and **admission ages** on the group's own Jeck-Check page; the club
+side keeps the pool and sees which group has answered what.
+_UI copy_: Haltung; Ja / Neutral / Nein; nebensächlich / wichtig / besonders wichtig
+_Avoid_: position, answer (that is the visitor's)
+
+**Admission ages** (Jeck-Check):
+The **age bands** a **group** takes new people from — ticked by the group from one fixed,
+club-wide set of bands that the club does not edit. The **Jeck-Check** opens by asking the
+visitor's age, and a group whose admission ages do not include it drops out of the result; a
+group that ticked no band never drops out. Admission ages describe who a group *takes in*, not how
+old its people *are*, and they appear nowhere but in the Jeck-Check, never on the **group
+profile** (ruled 2026-11-11; this is not the ruled-out *age group*).
+_UI copy_: Aufnahmealter
+_Avoid_: age group, target age, age range of the group
 
 ### Internal communication
 
