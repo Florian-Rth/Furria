@@ -496,9 +496,10 @@ Goal: the calendar list and the group hub show what is open and what she still o
 Decisions taken while building phase 12:
 - **`openFunctions`** on every calendar list, detail and group calendar entry: one item per poll or
   sign-up list that is still open, with its id and whether she has voted or holds a line. It is
-  derived from the add-ons the read already loads, so no query is added. Closed ones are left out.
-  The group calendar also carries the entry's `mayAnswer` (its `viewerMayAnswer` stays the
-  Zu-/Absage flag).
+  derived from the add-ons the read already loads, so no query is added. Closed ones are left out,
+  and the list is empty when she may not answer the entry. The group calendar carries one
+  `mayAnswer` (already gated by sight); the former `viewerMayAnswer` is gone, and the club app
+  derives Zu-/Absage answering from `asksForResponse && mayAnswer`.
 - **Marks only for what she still owes:** a line shows *Abstimmen* (poll glyph) or *Eintragen*
   (list glyph) when she may answer and has not; one mark per kind, however many are open. Nothing
   is shown once she answered or when she may not answer — results stay on the entry, and a quiet
@@ -507,7 +508,9 @@ Decisions taken while building phase 12:
   The wording replaces the RFC's draft labels (*Umfrage offen*, *Du fehlst noch*, *Liste offen*)
   with the action itself.
 - **Group hub rows** open the entry detail (`/calendar?day=…&entry=…`) and carry the same marks
-  above the description. The hub's owed count stays Zu-/Absage only.
+  under the meta line (a `marks` slot on `KkFactRow`). The hub's owed count stays Zu-/Absage only.
+- **Follow-up:** the group calendar still loads the full poll and list details only to derive
+  `openFunctions`; a slimmer read is left for later.
 
 ## Risks & alternatives
 

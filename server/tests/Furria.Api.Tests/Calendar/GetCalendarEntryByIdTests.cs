@@ -683,6 +683,43 @@ public sealed class GetCalendarEntryByIdTests : IClassFixture<ApiTestFixture>
     }
 
     [Fact]
+    public async Task Should_SummariseTheOpenFunctionsForHer_When_SheReadsTheEntry()
+    {
+        var ct = TestContext.Current.CancellationToken;
+
+        await _fixture.AtInstantAsync(
+            Now,
+            async () =>
+            {
+                var ctx = await BuildPollsAsync(ct);
+
+                var (response, result) = await ReadAsync(
+                    ctx,
+                    "alice",
+                    ctx.Club.CalendarEntries.IdOf("club-meeting"),
+                    ct
+                );
+
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.Equal(
+                    [
+                        (CalendarEntryAddOnKind.Poll, ctx.Club.CalendarPolls.IdOf("food"), true),
+                        (CalendarEntryAddOnKind.Poll, ctx.Club.CalendarPolls.IdOf("secret"), false),
+                        (
+                            CalendarEntryAddOnKind.SignUpList,
+                            ctx.Club.CalendarSignUpLists.IdOf("bring"),
+                            true
+                        ),
+                    ],
+                    result.Entry.OpenFunctions.Select(open =>
+                        (open.Kind, open.AddOnId, open.HasAnswered)
+                    )
+                );
+            }
+        );
+    }
+
+    [Fact]
     public async Task Should_ShowOnlyCounts_When_ThePollIsAnonymous()
     {
         var ct = TestContext.Current.CancellationToken;

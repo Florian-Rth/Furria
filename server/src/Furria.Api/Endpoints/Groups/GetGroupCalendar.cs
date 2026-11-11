@@ -72,13 +72,10 @@ public sealed class GetGroupCalendar : Endpoint<GetGroupCalendarRequest, GetGrou
         || await _authorizer.IsGrantedAsync(accountId, FurriaPermissions.GroupsManage, ct);
 
     private static GetGroupCalendarResponse ToResponse(
-        IReadOnlyList<GroupCalendarEntrySummary> entries
+        IReadOnlyList<CalendarEntrySummary> entries
     ) => new() { Entries = [.. entries.Select(ToDto)] };
 
-    private static GroupCalendarEntryDto ToDto(GroupCalendarEntrySummary summary) =>
-        ToDto(summary.Entry, summary.ViewerMayAnswer);
-
-    private static GroupCalendarEntryDto ToDto(CalendarEntrySummary entry, bool viewerMayAnswer) =>
+    private static GroupCalendarEntryDto ToDto(CalendarEntrySummary entry) =>
         new()
         {
             CalendarEntryId = entry.CalendarEntryId,
@@ -100,7 +97,6 @@ public sealed class GetGroupCalendar : Endpoint<GetGroupCalendarRequest, GetGrou
             OpenFunctions = [.. entry.OpenFunctions.Select(ToDto)],
             Description = entry.Description,
             ViewerAnswer = entry.ViewerAnswer,
-            ViewerMayAnswer = viewerMayAnswer,
             MayAnswer = entry.MayAnswer,
             IsRunning = entry.IsRunning,
         };
@@ -229,8 +225,6 @@ public sealed record GroupCalendarEntryDto
     public required string? Description { get; init; }
 
     public required AttendanceAnswer? ViewerAnswer { get; init; }
-
-    public required bool ViewerMayAnswer { get; init; }
 
     public required bool MayAnswer { get; init; }
 

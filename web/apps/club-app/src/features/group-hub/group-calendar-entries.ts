@@ -85,8 +85,7 @@ export interface CalendarEntryPreview {
 }
 
 const isOwedAnswer = (entry: GroupCalendarEntry): boolean =>
-  canAnswer({ asksForResponse: entry.asksForResponse, mayAnswer: entry.viewerMayAnswer }) &&
-  entry.viewerAnswer === null;
+  canAnswer(entry) && entry.viewerAnswer === null;
 
 export const toCalendarEntryPreview = (
   entries: readonly GroupCalendarEntry[],

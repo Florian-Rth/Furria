@@ -24,7 +24,6 @@ const anEntry = (overrides: Partial<GroupCalendarEntry>): GroupCalendarEntry => 
   asksForResponse: false,
   description: null,
   viewerAnswer: null,
-  viewerMayAnswer: false,
   mayAnswer: false,
   openFunctions: [],
   isRunning: false,
@@ -66,24 +65,24 @@ describe('toCalendarEntryMark', () => {
 
 describe('toCalendarEntryPreview', () => {
   const entries = [
-    anEntry({ calendarEntryId: 1, asksForResponse: true, viewerMayAnswer: true }),
+    anEntry({ calendarEntryId: 1, asksForResponse: true, mayAnswer: true }),
     anEntry({ calendarEntryId: 2 }),
     anEntry({
       calendarEntryId: 3,
       asksForResponse: true,
-      viewerMayAnswer: true,
+      mayAnswer: true,
       viewerAnswer: 'yes',
     }),
-    anEntry({ calendarEntryId: 4, asksForResponse: true, viewerMayAnswer: true }),
+    anEntry({ calendarEntryId: 4, asksForResponse: true, mayAnswer: true }),
     anEntry({
       calendarEntryId: 5,
       asksForResponse: true,
-      viewerMayAnswer: true,
+      mayAnswer: true,
       viewerAnswer: 'no',
     }),
     anEntry({ calendarEntryId: 6 }),
-    anEntry({ calendarEntryId: 7, asksForResponse: true, viewerMayAnswer: true }),
-    anEntry({ calendarEntryId: 8, viewerMayAnswer: true }),
+    anEntry({ calendarEntryId: 7, asksForResponse: true, mayAnswer: true }),
+    anEntry({ calendarEntryId: 8, mayAnswer: true }),
   ];
 
   it('shows the first entries and counts the rest with their open answers', () => {

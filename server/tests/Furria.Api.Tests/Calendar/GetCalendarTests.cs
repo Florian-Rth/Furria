@@ -26,6 +26,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
     private const string SurprisePlanning = "Überraschung planen";
     private const string Gala = "1. Prunksitzung";
     private const string ClubTrip = "Vereinsfahrt";
+    private const string KickOff = "Auftakt";
     private const int NinetyMinutes = 90;
 
     private static readonly DateOnly JoinedIn2017 = new(2017, 9, 1);
@@ -548,6 +549,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                     [
                         (CalendarEntryAddOnKind.Poll, ctx.Club.CalendarPolls.IdOf("food"), true),
                         (CalendarEntryAddOnKind.Poll, ctx.Club.CalendarPolls.IdOf("drinks"), false),
+                        (CalendarEntryAddOnKind.Poll, ctx.Club.CalendarPolls.IdOf("secret"), true),
                         (
                             CalendarEntryAddOnKind.SignUpList,
                             ctx.Club.CalendarSignUpLists.IdOf("bring"),
@@ -567,8 +569,10 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
         );
     }
 
-    [Fact]
-    public async Task Should_CarryNoOpenFunction_When_HerEntryHoldsOnlyClosedOnes()
+    [Theory]
+    [InlineData(ClubTrip)]
+    [InlineData(KickOff)]
+    public async Task Should_CarryNoOpenFunction_When_EveryFunctionOfTheEntryHasClosed(string title)
     {
         var ct = TestContext.Current.CancellationToken;
 
@@ -580,7 +584,7 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
 
                 var result = await ReadAsync(ctx, "alice", new GetCalendarRequest(), ct);
 
-                Assert.Empty(result.Entries.Single(entry => entry.Title == ClubTrip).OpenFunctions);
+                Assert.Empty(result.Entries.Single(entry => entry.Title == title).OpenFunctions);
             }
         );
     }
@@ -608,21 +612,30 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                                 position: 1
                             )
                             .AddCalendarPollVote("drinks", "Tee", "bea")
+                            .AddCalendarPoll(
+                                "secret",
+                                "club-meeting",
+                                "Wer wird Prinz?",
+                                ["Bea", "Dora"],
+                                isAnonymous: true,
+                                position: 2
+                            )
+                            .AddCalendarPollVote("secret", "Dora", "alice")
                             .AddCalendarSignUpList(
                                 "bring",
                                 "club-meeting",
                                 "Mitbringen",
-                                position: 2
+                                position: 3
                             )
                             .AddCalendarSignUpLine("alice-bring", "bring", "alice", "Salat")
-                            .AddCalendarSignUpList("setup", "club-meeting", "Aufbau", position: 3)
+                            .AddCalendarSignUpList("setup", "club-meeting", "Aufbau", position: 4)
                             .AddCalendarPoll(
                                 "music",
                                 "club-meeting",
                                 "Welche Musik?",
                                 ["Schlager", "Polka"],
                                 closedAt: Now.AddDays(-1),
-                                position: 4
+                                position: 5
                             )
                             .AddCalendarEntry("club-trip", ClubTrip, AtTheParade)
                             .AddCalendarPoll(
@@ -632,11 +645,25 @@ public sealed class GetCalendarTests : IClassFixture<ApiTestFixture>
                                 ["Früh", "Spät"],
                                 votesUntil: Now.AddHours(-1)
                             )
+                            .AddCalendarPoll(
+                                "parking",
+                                "club-trip",
+                                "Wo parken wir?",
+                                ["Hof", "Straße"],
+                                votesUntil: Now
+                            )
                             .AddCalendarSignUpList(
                                 "seats",
                                 "club-trip",
                                 "Sitzplätze",
                                 closedAt: Now.AddDays(-2)
+                            )
+                            .AddCalendarEntry("kick-off", KickOff, Now.AddHours(-1))
+                            .AddCalendarPoll(
+                                "kick-off-snacks",
+                                "kick-off",
+                                "Welche Snacks?",
+                                ["Brezeln", "Chips"]
                             )
                     ),
             ct

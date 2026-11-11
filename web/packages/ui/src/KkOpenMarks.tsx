@@ -35,7 +35,6 @@ export const KkOpenMarks: FC<KkOpenMarksProps> = ({ marks, sx }) => {
     <Stack
       direction="row"
       component="span"
-      data-kk-open-marks
       sx={[
         { flexWrap: 'wrap', alignItems: 'center', columnGap: 1, rowGap: 0.25, minWidth: 0 },
         ...(Array.isArray(sx) ? sx : [sx]),

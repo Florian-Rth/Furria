@@ -13,7 +13,7 @@ describe('toOpenMarkKinds', () => {
           { kind: 'signUpList', addOnId: 2, hasAnswered: false },
         ],
       },
-      expected: ['vote', 'signUp'],
+      expected: ['vote', 'signUpList'],
     },
     {
       name: 'leaves out what she has answered',
@@ -24,7 +24,7 @@ describe('toOpenMarkKinds', () => {
           { kind: 'signUpList', addOnId: 2, hasAnswered: false },
         ],
       },
-      expected: ['signUp'],
+      expected: ['signUpList'],
     },
     {
       name: 'marks two open polls once',

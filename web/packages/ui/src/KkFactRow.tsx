@@ -99,6 +99,7 @@ interface KkFactRowProps extends PropsWithChildren {
   span: string;
   spanLabel?: string;
   meta?: string;
+  marks?: ReactNode;
   thumb?: ReactNode;
   tone?: KkFactRowTone;
   groupTone?: KkGroupTone | null;
@@ -120,6 +121,7 @@ export const KkFactRow: FC<KkFactRowProps> = ({
   span,
   spanLabel,
   meta,
+  marks,
   thumb,
   tone = 'neutral',
   groupTone,
@@ -285,6 +287,7 @@ export const KkFactRow: FC<KkFactRowProps> = ({
           {chipSlot}
         </Stack>
         {metaLine}
+        {marks}
       </Stack>
       {spanBlock}
       {chevron}

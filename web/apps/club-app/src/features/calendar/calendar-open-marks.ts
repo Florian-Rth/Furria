@@ -1,23 +1,19 @@
 import type { KkIconName } from '@furria/ui/KkIcon';
 import type { KkOpenMark } from '@furria/ui/KkOpenMarks';
 import { CALENDAR_ADD_ON_ICONS } from './calendar-add-ons';
+import { OPEN_MARK_LABELS } from './calendar-agenda-copy';
 import type { CalendarOpenFunction } from './schemas';
 
-export type OpenMarkKind = 'vote' | 'signUp';
+export type OpenMarkKind = 'vote' | 'signUpList';
 
 export interface OpenMarkFacts {
   mayAnswer: boolean;
   openFunctions: readonly CalendarOpenFunction[];
 }
 
-const OPEN_MARK_LABELS: Record<OpenMarkKind, string> = {
-  vote: 'Abstimmen',
-  signUp: 'Eintragen',
-};
-
 const OPEN_MARK_ICONS: Record<OpenMarkKind, KkIconName> = {
   vote: CALENDAR_ADD_ON_ICONS.poll,
-  signUp: CALENDAR_ADD_ON_ICONS.signUpList,
+  signUpList: CALENDAR_ADD_ON_ICONS.signUpList,
 };
 
 const markKindOf = (open: CalendarOpenFunction): OpenMarkKind | null => {
@@ -28,7 +24,7 @@ const markKindOf = (open: CalendarOpenFunction): OpenMarkKind | null => {
     return 'vote';
   }
   if (open.kind === 'signUpList') {
-    return 'signUp';
+    return 'signUpList';
   }
 
   return null;

@@ -157,7 +157,7 @@ public sealed partial class CalendarService
         );
     }
 
-    public async Task<IReadOnlyList<GroupCalendarEntrySummary>> GetGroupEntriesAsync(
+    public async Task<IReadOnlyList<CalendarEntrySummary>> GetGroupEntriesAsync(
         GroupCalendarQuery query,
         CancellationToken ct
     )
@@ -194,14 +194,13 @@ public sealed partial class CalendarService
         return
         [
             .. rows.Select(row =>
-            {
-                var mayAnswer = MayAnswer(row, ties, organised);
-
-                return ToGroupSummary(
-                    ToSummary(row, extras, now, mayAnswer),
-                    row.AsksForResponse && ties.Sees(FactsOf(row), rights) && mayAnswer
-                );
-            }),
+                ToSummary(
+                    row,
+                    extras,
+                    now,
+                    ties.Sees(FactsOf(row), rights) && MayAnswer(row, ties, organised)
+                )
+            ),
         ];
     }
 
@@ -796,7 +795,7 @@ public sealed partial class CalendarService
             AudiencePeople = [.. row.Audience.People.Select(ToAudiencePerson)],
             AsksForResponse = row.AsksForResponse,
             AddOns = addOns,
-            OpenFunctions = CalendarOpenFunctions.Of(addOns),
+            OpenFunctions = mayAnswer ? CalendarOpenFunctions.Of(addOns) : [],
             Attendance = row.AsksForResponse ? ToAttendance(row, now, roll) : null,
             Description = row.Description,
             ViewerAnswer = extras.Answers.TryGetValue(row.CalendarEntryId, out var answer)
@@ -864,12 +863,6 @@ public sealed partial class CalendarService
             ),
             Picture = picture,
         };
-
-    [Pure]
-    private static GroupCalendarEntrySummary ToGroupSummary(
-        CalendarEntrySummary entry,
-        bool viewerMayAnswer
-    ) => new() { Entry = entry, ViewerMayAnswer = viewerMayAnswer };
 
     private Task<bool> MayOwnAsync(int actorAccountId, int? ownerGroupId, CancellationToken ct) =>
         ownerGroupId is { } groupId

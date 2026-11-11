@@ -6,6 +6,7 @@ import type {
   CalendarWeekName,
 } from './calendar-agenda';
 import { isoWeekOf, weekdayIndexOf } from './calendar-agenda';
+import type { OpenMarkKind } from './calendar-open-marks';
 
 export const BOARD_LABEL = 'Termine nach Tagen';
 export const STRIP_LABEL = 'Woche';
@@ -22,6 +23,11 @@ export const TODAY = 'Heute';
 export const ADD_LABEL = 'Termin hinzufügen';
 export const NO_ENTRIES_NOTE = 'keine Termine';
 export const RUNNING_LABEL = 'läuft gerade';
+
+export const OPEN_MARK_LABELS: Record<OpenMarkKind, string> = {
+  vote: 'Abstimmen',
+  signUpList: 'Eintragen',
+};
 export const LOADING_LABEL = 'Der Kalender wird geladen';
 export const ERROR_MESSAGE = 'Der Kalender konnte nicht geladen werden.';
 export const RETRY_LABEL = 'Noch einmal';

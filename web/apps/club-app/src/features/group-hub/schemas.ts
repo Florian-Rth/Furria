@@ -224,7 +224,6 @@ export const GroupCalendarEntrySchema = z.object({
   asksForResponse: z.boolean(),
   description: z.string().nullable(),
   viewerAnswer: AttendanceAnswerSchema.nullable(),
-  viewerMayAnswer: z.boolean(),
   mayAnswer: z.boolean(),
   openFunctions: z.array(CalendarOpenFunctionSchema),
   isRunning: z.boolean(),
