@@ -25,7 +25,6 @@ jobs:
       - name: Install libvips and ffmpeg (the media worker's tests render real photos and videos)
         timeout-minutes: 5
         run: |
-          echo "http://archive.ubuntu.com/ubuntu" | sudo tee /etc/apt/apt-mirrors.txt
           apt_options=(-o Acquire::Retries=3 -o Acquire::http::Timeout=20)
           sudo apt-get "${apt_options[@]}" update
           sudo apt-get "${apt_options[@]}" install -y --no-install-recommends \
