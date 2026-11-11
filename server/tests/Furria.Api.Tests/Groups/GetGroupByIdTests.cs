@@ -6,6 +6,7 @@ using Furria.Api.Media;
 using Furria.Api.Tests.Media;
 using Furria.Application.Authorization;
 using Furria.Core.Club;
+using Furria.Core.GroupMatcher;
 using Furria.Core.Groups;
 using Furria.Core.Media;
 using Furria.Tests.Common.Builder;
@@ -238,6 +239,47 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
         Assert.Equal(JoinedIn2017, result.ViewerSince);
         Assert.Empty(result.PastMembers);
         Assert.Empty(result.PastAdmins);
+        Assert.Null(result.GroupMatcher);
+    }
+
+    [Fact]
+    public async Task Should_CountOpenAndChangedStatements_When_TheGroupAdminReadsHerHub()
+    {
+        var ct = TestContext.Current.CancellationToken;
+        var now = _fixture.TimeProvider.GetUtcNow();
+        var ctx = await _fixture.BuildAsync(
+            builder =>
+                builder
+                    .Identity(identity => identity.AddAccount("anna"))
+                    .Groups(groups =>
+                        groups
+                            .AddGroup("tanzgarde", "Tanzgarde")
+                            .AddGroupAdmin("anna-tanzgarde", "tanzgarde", "anna")
+                    )
+                    .GroupMatcher(matcher =>
+                        matcher
+                            .AddStatement("beantwortet", "Konfetti ist Pflicht.")
+                            .AddStatement(
+                                "umformuliert",
+                                "Bierbänke stelle ich auf.",
+                                rewordedAt: now
+                            )
+                            .AddStatement("offen", "Orden sind schwer.")
+                            .AddProposal("vorschlag", "Wir tanzen rückwärts.", "tanzgarde")
+                            .AddStance("tanzgarde", "beantwortet", StancePosition.Yes)
+                            .AddStance("tanzgarde", "umformuliert", StancePosition.No)
+                            .AddTakingPart("tanzgarde")
+                    ),
+            ct
+        );
+
+        var client = await ctx.Identity.ClientForAsync("anna", ct);
+        var (response, result) = await ReadHubAsync(client, ctx.Groups.Groups.IdOf("tanzgarde"));
+
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.NotNull(result.GroupMatcher);
+        Assert.True(result.GroupMatcher.IsTakingPart);
+        Assert.Equal(2, result.GroupMatcher.OpenStatements);
     }
 
     [Fact]
@@ -1065,6 +1107,7 @@ public sealed class GetGroupByIdTests : IClassFixture<ApiTestFixture>
                 "viewerSince",
                 "pastMembers",
                 "pastAdmins",
+                "groupMatcher",
             ],
             document.RootElement.EnumerateObject().Select(field => field.Name)
         );

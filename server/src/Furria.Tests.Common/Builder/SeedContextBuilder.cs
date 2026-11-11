@@ -9,6 +9,7 @@ public sealed class SeedContextBuilder
     private readonly GallerySeedBuilder _gallery = new();
     private readonly NewsSeedBuilder _news = new();
     private readonly BeerListSeedBuilder _beerList = new();
+    private readonly GroupMatcherSeedBuilder _groupMatcher = new();
 
     internal IdentitySeedBuilder RecordedIdentity => _identity;
 
@@ -23,6 +24,8 @@ public sealed class SeedContextBuilder
     internal NewsSeedBuilder RecordedNews => _news;
 
     internal BeerListSeedBuilder RecordedBeerList => _beerList;
+
+    internal GroupMatcherSeedBuilder RecordedGroupMatcher => _groupMatcher;
 
     public SeedContextBuilder Identity(Action<IdentitySeedBuilder> configure)
     {
@@ -63,6 +66,12 @@ public sealed class SeedContextBuilder
     public SeedContextBuilder BeerList(Action<BeerListSeedBuilder> configure)
     {
         configure(_beerList);
+        return this;
+    }
+
+    public SeedContextBuilder GroupMatcher(Action<GroupMatcherSeedBuilder> configure)
+    {
+        configure(_groupMatcher);
         return this;
     }
 }

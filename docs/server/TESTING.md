@@ -544,6 +544,19 @@ public sealed class GetMeTests : IClassFixture<ApiTestFixture>
    (`PostMyBeerCratesTests` proves never-below-zero this way, `PostBeerPaymentTests` that two
    payments never settle the same crate). `beer_list.take` is proven through `BeerListTakeProbe` in
    `PermissionAuthorizerTests`.
+21. **The Jeck-Check (RFC 0006)** — `builder.GroupMatcher(…)` takes `AddStatement(alias, text,
+   approvedAt, rewordedAt)` (approved, 30 days ago unless stated, sort order = declaration order of
+   the approved ones), `AddProposal(alias, text, proposedByGroupAlias, status)` (proposed unless
+   `status` says rejected), `AddStance(groupAlias, statementAlias, position, importance, takenAt)`
+   (importance 2 and taken 20 days ago by default), `AddAdmissionAge(groupAlias, band)` and
+   `AddTakingPart(groupAlias, joinedAt)` (stamps the group as taking part, 10 days ago by default —
+   the stamp is set directly, so a test arranges taking part without answering through the API).
+   Statements resolve through `ctx.GroupMatcher.Statements`. State is asserted on
+   `Expected.MatcherStatement(id)` (`ToBeProposedBy`, `ToHaveStatus`, `ToNotExist`),
+   `Expected.Stance(groupId, statementId)` (`ToBe`, `ToBeTakenAt`, `ToNotExist`),
+   `Expected.AdmissionAgesOf(groupId)` (`ToBeExactly`) and
+   `Expected.Group(id).ToHaveJoinedTheGroupMatcherAt(joinedAt)`. The migration's ten carried-over
+   statements live only in the template; every reset clears them.
 
 ### Traps worth knowing
 

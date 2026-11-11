@@ -559,6 +559,7 @@ public sealed class ApiTestFixture : WebApplicationFactory<Program>, IAsyncLifet
             new TestGallery(seeded.Gallery),
             new TestNews(seeded.News),
             new TestBeerList(seeded.BeerList),
+            new TestGroupMatcher(seeded.GroupMatcher),
             new Expected(scopeFactory)
         );
     }

@@ -5,6 +5,7 @@ using Furria.Api.Honours;
 using Furria.Api.Media;
 using Furria.Api.Results;
 using Furria.Application.Authorization;
+using Furria.Application.GroupMatcher;
 using Furria.Application.Groups;
 using Furria.Application.Media;
 using Furria.Application.Registry;
@@ -12,6 +13,7 @@ using Furria.Core.Club;
 using Furria.Core.Groups;
 using Furria.Core.Media;
 using Furria.Infrastructure.Authorization;
+using Furria.Infrastructure.GroupMatcher;
 using Furria.Infrastructure.Groups;
 using Furria.Infrastructure.Media;
 using Furria.Infrastructure.Registry;
@@ -24,18 +26,21 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
     private readonly PermissionAuthorizer _authorizer;
     private readonly PictureService _pictureService;
     private readonly PersonHonoursQuery _honoursQuery;
+    private readonly GroupMatcherService _groupMatcherService;
 
     public GetGroupById(
         GroupService groupService,
         PermissionAuthorizer authorizer,
         PictureService pictureService,
-        PersonHonoursQuery honoursQuery
+        PersonHonoursQuery honoursQuery,
+        GroupMatcherService groupMatcherService
     )
     {
         _groupService = groupService;
         _authorizer = authorizer;
         _pictureService = pictureService;
         _honoursQuery = honoursQuery;
+        _groupMatcherService = groupMatcherService;
     }
 
     public override void Configure()
@@ -77,10 +82,14 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
             ? await _pictureService.EditingOfAsync(MediaOwner.Group(req.GroupId), ct)
             : null;
 
+        var groupMatcher = viewerMayManage
+            ? await _groupMatcherService.GetStatusAsync(req.GroupId, ct)
+            : null;
+
         var honours = await _honoursQuery.OfAsync(RosterOf(group.Value), ct);
 
         await Send.OkAsync(
-            ToResponse(group.Value, viewerMayManage, pictureEditing, honours),
+            ToResponse(group.Value, new(viewerMayManage, pictureEditing, groupMatcher), honours),
             cancellation: ct
         );
     }
@@ -97,8 +106,7 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
 
     private static GetGroupByIdResponse ToResponse(
         GroupDetails group,
-        bool viewerMayManage,
-        PictureEditingDetails? pictureEditing,
+        ManagerView managerView,
         PersonHonoursLookup honours
     ) =>
         new()
@@ -106,7 +114,7 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
             GroupId = group.GroupId,
             Name = group.Name,
             Picture = PictureDto.From(group.Picture),
-            PictureEditing = PictureEditingDto.From(pictureEditing),
+            PictureEditing = PictureEditingDto.From(managerView.PictureEditing),
             Description = group.Description,
             IsRecruiting = group.IsRecruiting,
             GroupKindId = group.GroupKindId,
@@ -119,15 +127,19 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
             Members = [.. group.Members.Select(member => ToDto(member, honours))],
             ViewerIsMember = group.ViewerIsMember,
             ViewerIsAdmin = group.ViewerIsAdmin,
-            ViewerMayManage = viewerMayManage,
+            ViewerMayManage = managerView.ViewerMayManage,
             ViewerSince = group.ViewerSince,
-            PastMembers = viewerMayManage
+            PastMembers = managerView.ViewerMayManage
                 ? [.. group.PastMembers.Select(member => ToDto(member, honours))]
                 : [],
-            PastAdmins = viewerMayManage
+            PastAdmins = managerView.ViewerMayManage
                 ? [.. group.PastAdmins.Select(admin => ToDto(admin, honours))]
                 : [],
+            GroupMatcher = managerView.GroupMatcher is { } status ? ToDto(status) : null,
         };
+
+    private static GroupMatcherStatusDto ToDto(GroupMatcherStatusDetails status) =>
+        new() { IsTakingPart = status.IsTakingPart, OpenStatements = status.OpenStatements };
 
     private static UsualTrainingTimeDto ToDto(UsualTrainingTimeDetails usualTime) =>
         new()
@@ -170,6 +182,12 @@ public sealed class GetGroupById : Endpoint<GetGroupByIdRequest, GetGroupByIdRes
             IsAffiliated = admin.IsAffiliated,
             Honours = PersonHonoursDto.From(honours.Of(admin.PersonId)),
         };
+
+    private sealed record ManagerView(
+        bool ViewerMayManage,
+        PictureEditingDetails? PictureEditing,
+        GroupMatcherStatusDetails? GroupMatcher
+    );
 }
 
 public sealed record GetGroupByIdRequest
@@ -227,6 +245,15 @@ public sealed record GetGroupByIdResponse
     public required IReadOnlyList<HubMemberDto> PastMembers { get; init; }
 
     public required IReadOnlyList<HubAdminDto> PastAdmins { get; init; }
+
+    public required GroupMatcherStatusDto? GroupMatcher { get; init; }
+}
+
+public sealed record GroupMatcherStatusDto
+{
+    public required bool IsTakingPart { get; init; }
+
+    public required int OpenStatements { get; init; }
 }
 
 public sealed record UsualTrainingTimeDto

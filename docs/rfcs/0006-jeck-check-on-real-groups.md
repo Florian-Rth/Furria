@@ -1,7 +1,7 @@
 ---
 rfc: 0006
 title: Jeck-Check on real groups — shared statement pool, group stances, club review
-status: draft
+status: in-progress
 github_issue: 73
 branch: feat/rfc-73-jeck-check
 created: 2026-11-11
@@ -96,18 +96,30 @@ Each phase leaves the system intact (builds, tests pass, no half-done migrations
 ### Phase 1 — Backend: model, group side, public read
 Goal: statements, stances, admission ages and taking part exist with the seed carried over; groups
 can maintain their part; the public read serves the website shape.
-- [ ] 1.1 Entities + EF config + migration (incl. seed-statement data migration, `joined_at`), `ChangedTables` + triggers
-- [ ] 1.2 `group_matcher.manage` permission key
-- [ ] 1.3 Group endpoints: read page, put stance, put admission ages, propose, withdraw proposal (taking-part stamp on completion, changed flag cleared on stance touch)
-- [ ] 1.4 Jeck-Check status on the group hub read
-- [ ] 1.5 `GET /public/group-matcher` incl. the absent rule (<2 groups / no statements, archived out)
-- [ ] 1.6 Integration tests for the business rules (taking part never revoked by a new approval, archived drop-out, absent rule, gate)
+- [x] 1.1 Entities + EF config + migration (incl. seed-statement data migration, `joined_at`), `ChangedTables` + triggers
+- [x] 1.2 `group_matcher.manage` permission key
+- [x] 1.3 Group endpoints: read page, put stance, put admission ages, propose, withdraw proposal (taking-part stamp on completion, changed flag cleared on stance touch)
+- [x] 1.4 Jeck-Check status on the group hub read
+- [x] 1.5 `GET /public/group-matcher` incl. the absent rule (<2 groups / no statements, archived out)
+- [x] 1.6 Integration tests for the business rules (taking part never revoked by a new approval, archived drop-out, absent rule, gate)
+
+Built 2026-11-11. As built: the changed flag compares `group_matcher_statement.reworded_at` with
+`group_matcher_stance.taken_at` (set on every stance write; no separate `seen_at`); admission ages
+live in `group_admission_age`. A statement is *new* for a group when it was approved after the
+group's taking-part stamp and is unanswered, otherwise *open*. The stamp is written by one guarded
+`UPDATE` after the stance commits, so two parallel last answers cannot both miss it. The hub read
+carries `groupMatcher { isTakingPart, openStatements }` for viewers who may manage the group (open =
+unanswered + changed). The public read answers 404 when absent.
 
 ### Phase 2 — Backend: club review and to-dos
 Goal: the pool can be managed end to end and both to-dos appear.
 - [ ] 2.1 Management endpoints: overview (pool, proposals, coverage), approve (cap 10), reject, reword (changed flag), reorder, delete (stances cascade)
 - [ ] 2.2 To-do kinds: group statements open/changed (group admins), proposals waiting (`group_matcher.manage`)
 - [ ] 2.3 Integration tests (cap, reword keeps stances + flags, delete cascades, to-do audiences)
+
+Notes from phase 1 review: make the cap and order a database guarantee (partial unique
+`sort_order` for approved rows, or a lock around approve/reorder); deleting or rejecting a
+statement can complete a group, so it re-runs the guarded taking-part stamp for all groups.
 
 ### Phase 3 — Club app: the group's Jeck-Check page
 Goal: group admins maintain admission ages, stances and proposals from the group hub.
@@ -127,7 +139,7 @@ Goal: `group_matcher.manage` holders run the pool from *Verein verwalten*.
 
 ### Phase 5 — Website on the API
 Goal: the public Jeck-Check runs on real data; the seed is gone.
-- [ ] 5.1 `groupMatcher` reads `/api/public/group-matcher`; numeric group ids through scoring/reasons
+- [ ] 5.1 `groupMatcher` reads `/api/public/group-matcher`; numeric group ids through scoring/reasons (a statement approved after a group joined may carry no stance from that group — scoring skips it for that group; age bands arrive as `underTwelve … eighteenPlus`)
 - [ ] 5.2 Absent response hides section, nav entry, page head and sitemap entry
 - [ ] 5.3 Intro counts the real questions (joke line only at 11)
 - [ ] 5.4 Remove `lib/seed/group-matcher.ts` and unused seed groups; adapt tests

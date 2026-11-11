@@ -46,4 +46,5 @@ public enum DomainChange
     TablePlan = 42,
     Seating = 43,
     ClaimWindow = 44,
+    GroupMatcher = 45,
 }

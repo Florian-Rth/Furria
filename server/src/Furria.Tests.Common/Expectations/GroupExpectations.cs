@@ -51,6 +51,12 @@ public sealed class GroupExpectations
             async (dbContext, ct) => Assert.Equal(tone, (await SingleAsync(dbContext, ct)).Tone)
         );
 
+    public Expected ToHaveJoinedTheGroupMatcherAt(DateTimeOffset? joinedAt) =>
+        _expected.Enqueue(
+            async (dbContext, ct) =>
+                Assert.Equal(joinedAt, (await SingleAsync(dbContext, ct)).GroupMatcherJoinedAt)
+        );
+
     public Expected ToHaveIcon(ClubIcon? icon) =>
         _expected.Enqueue(
             async (dbContext, ct) => Assert.Equal(icon, (await SingleAsync(dbContext, ct)).Icon)

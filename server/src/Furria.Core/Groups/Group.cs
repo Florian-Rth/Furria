@@ -25,6 +25,8 @@ public sealed class Group : ITimestamped
 
     public DateOnly? ArchivedOn { get; set; }
 
+    public DateTimeOffset? GroupMatcherJoinedAt { get; set; }
+
     public DateTimeOffset CreatedAt { get; set; }
 
     public DateTimeOffset UpdatedAt { get; set; }
