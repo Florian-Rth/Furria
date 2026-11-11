@@ -19,10 +19,10 @@ const BAR_HEIGHT = 0.5;
 interface KkPollBallotChoiceProps {
   mode: KkPollBallotMode;
   label: string;
-  count: string;
-  percent: number;
+  count?: string;
+  percent?: number;
   chosen: boolean;
-  leading: boolean;
+  leading?: boolean;
   voters?: string;
   votersMore?: string;
   onOpenVoters?: () => void;
@@ -38,7 +38,7 @@ export const KkPollBallotChoice: FC<KkPollBallotChoiceProps> = ({
   count,
   percent,
   chosen,
-  leading,
+  leading = false,
   voters,
   votersMore,
   onOpenVoters,
@@ -49,7 +49,7 @@ export const KkPollBallotChoice: FC<KkPollBallotChoiceProps> = ({
 }) => {
   const votersId = useId();
   const describedBy = voters === undefined ? undefined : votersId;
-  const width = toBallotBarWidth(percent);
+  const width = toBallotBarWidth(percent ?? 0);
   const labelWeight = chosen ? 800 : 600;
   const countWeight = leading ? 800 : 600;
   const rowPaint = (theme: Theme): CSSObject => ({
@@ -120,6 +120,23 @@ export const KkPollBallotChoice: FC<KkPollBallotChoiceProps> = ({
     );
   const votersBelow = onOpenVoters === undefined ? votersLine : votersAction;
 
+  const countLabel =
+    count === undefined ? null : (
+      <Typography
+        component="span"
+        variant="body2"
+        sx={{ fontWeight: countWeight, fontVariantNumeric: 'tabular-nums' }}
+      >
+        {count}
+      </Typography>
+    );
+  const bar =
+    percent === undefined ? null : (
+      <Box component="span" aria-hidden sx={trackPaint}>
+        <Box component="span" sx={fillPaint} />
+      </Box>
+    );
+
   const content = (
     <>
       <Stack
@@ -135,17 +152,9 @@ export const KkPollBallotChoice: FC<KkPollBallotChoiceProps> = ({
         >
           {label}
         </Typography>
-        <Typography
-          component="span"
-          variant="body2"
-          sx={{ fontWeight: countWeight, fontVariantNumeric: 'tabular-nums' }}
-        >
-          {count}
-        </Typography>
+        {countLabel}
       </Stack>
-      <Box component="span" aria-hidden sx={trackPaint}>
-        <Box component="span" sx={fillPaint} />
-      </Box>
+      {bar}
     </>
   );
 

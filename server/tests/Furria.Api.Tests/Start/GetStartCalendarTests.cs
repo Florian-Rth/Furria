@@ -509,6 +509,58 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
         );
     }
 
+    [Fact]
+    public async Task Should_CarryHerOpenPollsAndLists_When_TheEntryHasOpenFunctions()
+    {
+        await OnTuesdayEveningAsync(
+            "lena",
+            (ctx, start) =>
+            {
+                var meeting = EntryOf(start, IdOf(ctx, "vereinssitzung"));
+
+                Assert.Equal(
+                    [
+                        (ctx.Club.CalendarPolls.IdOf("food"), true, false),
+                        (ctx.Club.CalendarPolls.IdOf("drinks"), false, true),
+                    ],
+                    meeting.OpenPolls.Select(poll =>
+                        (poll.PollId, poll.IsOwed, poll.AllowsMultipleChoices)
+                    )
+                );
+                Assert.Equal(
+                    [("Saft", false), ("Tee", true)],
+                    meeting
+                        .OpenPolls[1]
+                        .Options.Select(option => (option.Label, option.ViewerChose))
+                );
+                Assert.Equal(
+                    [
+                        (ctx.Club.CalendarSignUpLists.IdOf("bring"), true, (string?)null),
+                        (ctx.Club.CalendarSignUpLists.IdOf("setup"), false, "Tische"),
+                    ],
+                    meeting.OpenSignUpLists.Select(list =>
+                        (list.SignUpListId, list.IsOwed, list.ViewerText)
+                    )
+                );
+            }
+        );
+    }
+
+    [Fact]
+    public async Task Should_CarryNoOpenFunction_When_TheEntryHasNone()
+    {
+        await OnTuesdayEveningAsync(
+            "lena",
+            (ctx, start) =>
+            {
+                var stellprobe = EntryOf(start, IdOf(ctx, "stellprobe"));
+
+                Assert.Empty(stellprobe.OpenPolls);
+                Assert.Empty(stellprobe.OpenSignUpLists);
+            }
+        );
+    }
+
     [Theory]
     [InlineData(true, 1)]
     [InlineData(false, 0)]
@@ -778,6 +830,46 @@ public sealed class GetStartCalendarTests : IClassFixture<ApiTestFixture>
                                 venueAlias: "festhalle",
                                 asksForResponse: true,
                                 participatingGroupAliases: ["kindergarde"]
+                            )
+                            .AddCalendarPoll(
+                                "food",
+                                "vereinssitzung",
+                                "Was essen wir?",
+                                ["Pizza", "Suppe"],
+                                position: 1
+                            )
+                            .AddCalendarPoll(
+                                "drinks",
+                                "vereinssitzung",
+                                "Was trinken wir?",
+                                ["Saft", "Tee"],
+                                allowsMultipleChoices: true,
+                                position: 2
+                            )
+                            .AddCalendarPollVote("drinks", "Tee", "lena")
+                            .AddCalendarPoll(
+                                "closed",
+                                "vereinssitzung",
+                                "Wer leitet?",
+                                ["Otto", "Lena"],
+                                closedAt: InBerlin(1, 18, 12, 0),
+                                position: 3
+                            )
+                            .AddCalendarSignUpList(
+                                "bring",
+                                "vereinssitzung",
+                                "Mitbringen",
+                                hint: "Bitte eintragen",
+                                position: 4
+                            )
+                            .AddCalendarSignUpList("setup", "vereinssitzung", "Aufbau", position: 5)
+                            .AddCalendarSignUpLine("lena-setup", "setup", "lena", "Tische")
+                            .AddCalendarSignUpList(
+                                "shut",
+                                "vereinssitzung",
+                                "Abbau",
+                                closedAt: InBerlin(1, 18, 12, 0),
+                                position: 6
                             )
                             .AddAttendanceResponse(
                                 "lena-stellprobe",

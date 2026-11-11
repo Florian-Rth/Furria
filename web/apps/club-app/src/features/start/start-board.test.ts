@@ -39,6 +39,8 @@ const entry = (calendarEntryId: number, startsAt: string): StartEntry => ({
   viewerGroupIds: [],
   viewerRuns: null,
   attendance: null,
+  openPolls: [],
+  openSignUpLists: [],
   description: null,
   event: null,
 });

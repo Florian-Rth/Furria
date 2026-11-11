@@ -131,7 +131,10 @@ public static class StartComposer
         kind == CalendarEntryKind.Training ? TrainingOwedHorizonDays : OwedHorizonDays;
 
     [Pure]
-    private static bool IsOwed(StartEntrySummary entry) => entry.Attendance is { IsOwed: true };
+    private static bool IsOwed(StartEntrySummary entry) =>
+        entry.Attendance is { IsOwed: true }
+        || entry.OpenPolls.Any(poll => poll.IsOwed)
+        || entry.OpenSignUpLists.Any(list => list.IsOwed);
 
     [Pure]
     private static bool IsOnStage(StartEntrySummary entry) =>

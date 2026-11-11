@@ -25,7 +25,8 @@ public sealed partial class StartService
         StartEntryRow row,
         AttendanceAnswer? answer,
         Viewer viewer,
-        StartEvent? tiedEvent
+        StartEvent? tiedEvent,
+        OpenFunctionsOfEntries functions
     )
     {
         var facts = row.ToFacts();
@@ -53,6 +54,8 @@ public sealed partial class StartService
             Attendance = row.AsksForResponse
                 ? AttendanceOf(row, answer, viewer.Ties.Concerns(facts), viewer.Moment.Now)
                 : null,
+            OpenPolls = functions.PollsOf(row.CalendarEntryId),
+            OpenSignUpLists = functions.SignUpListsOf(row.CalendarEntryId),
             Description = row.Description,
             Event = tiedEvent,
         };
@@ -121,25 +124,52 @@ public sealed partial class StartService
             [.. rows.Select(row => row.CalendarEntryId)],
             ct
         );
+        var hers = rows.Where(row =>
+                IsHersAndNotDeclined(
+                    row,
+                    answers.GetValueOrDefault(row.CalendarEntryId),
+                    viewer.Ties
+                )
+            )
+            .ToList();
+        var functions = await OpenFunctionsOfAsync(viewer, hers, ct);
 
         return
         [
-            .. rows.Where(row =>
-                    IsHersAndNotDeclined(
-                        row,
-                        answers.GetValueOrDefault(row.CalendarEntryId),
-                        viewer.Ties
-                    )
+            .. hers.Select(row =>
+                ToEntrySummary(
+                    row,
+                    answers.GetValueOrDefault(row.CalendarEntryId),
+                    viewer,
+                    EventOf(row),
+                    functions
                 )
-                .Select(row =>
-                    ToEntrySummary(
-                        row,
-                        answers.GetValueOrDefault(row.CalendarEntryId),
-                        viewer,
-                        EventOf(row)
-                    )
-                ),
+            ),
         ];
+    }
+
+    private async Task<OpenFunctionsOfEntries> OpenFunctionsOfAsync(
+        Viewer viewer,
+        IReadOnlyList<StartEntryRow> rows,
+        CancellationToken ct
+    )
+    {
+        var calendarEntryIds = rows.Select(row => row.CalendarEntryId).ToList();
+
+        return new OpenFunctionsOfEntries(
+            await _dbContext.PollsOfEntriesAsync(
+                calendarEntryIds,
+                viewer.PersonId,
+                viewer.Moment.Now,
+                ct
+            ),
+            await _dbContext.SignUpListsOfEntriesAsync(
+                calendarEntryIds,
+                viewer.PersonId,
+                viewer.Moment.Now,
+                ct
+            )
+        );
     }
 
     private StartEvent? EventOf(StartEntryRow row) =>

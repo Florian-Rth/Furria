@@ -1,7 +1,7 @@
 ---
 rfc: 0005
 title: Calendar add-ons — three kinds, an audience and building blocks instead of entry kinds
-status: phases 1–13 built — device checks owed
+status: phases 1–14 built — device checks owed
 github_issue: 70
 branch: feat/rfc-70-calendar-add-ons
 created: 2026-11-10
@@ -85,8 +85,8 @@ There is no generic JSON blob, because each add-on has its own rules and tests.
 |---|---|---|---|
 | **Zu-/Absage** | `AsksForResponse` (kept) + `attendance_response` (as today) | 0..1 | Nothing asks by default. On a training it also concerns the act's cast and takes marks recorded on behalf (ADR-0038). Owed on Start: 14 days before a training, 42 days before anything else |
 | **Mitwirkende Gruppen** | `calendar_entry_group` (kept) | 0..1 | Shows the entry in those groups' hubs and on Start as their stage; their acts may join as appearances. Adds no concern |
-| **Umfrage** | `calendar_poll`, `calendar_poll_option`, `calendar_poll_vote` | 0..n | Single or multiple choice; optionally anonymous (only counts, even to the scheduler). Votes can change until it closes: at the start, at *Abstimmen bis*, or by hand. Options can be added later; rename or remove an option only while it has no votes. Never on Start |
-| **Eintragsliste** | `calendar_sign_up_list`, `calendar_sign_up_line` | 0..n | A title and an optional hint. One short named line per person; she edits or deletes her own until it closes (*Eintragen bis*, the start, or by hand). Editors may remove any line but never rewrite it. No slots. Never on Start |
+| **Umfrage** | `calendar_poll`, `calendar_poll_option`, `calendar_poll_vote` | 0..n | Single or multiple choice; optionally anonymous (only counts, even to the scheduler). Votes can change until it closes: at the start, at *Abstimmen bis*, or by hand. Options can be added later; rename or remove an option only while it has no votes. Owed on Start while unvoted (phase 14) |
+| **Eintragsliste** | `calendar_sign_up_list`, `calendar_sign_up_line` | 0..n | A title and an optional hint. One short named line per person; she edits or deletes her own until it closes (*Eintragen bis*, the start, or by hand). Editors may remove any line but never rewrite it. No slots. Owed on Start while she holds no line (phase 14) |
 | **Tagesablauf** | `calendar_day_schedule`, `calendar_day_schedule_step` | 0..n | Steps of time plus a short text, sorted by time; a day appears when the entry spans several days. Never called *Ablauf* |
 
 More rules:
@@ -367,7 +367,8 @@ ruled:
 - **Only the people an entry concerns may answer.** On a *Gruppen* entry, other members still see
   it and its results, but cannot answer, vote or sign up. Organisers may answer as well.
 - **Polls can be reopened** explicitly by an organiser. A closed poll never reopens by itself.
-- **Open Funktionen show in the calendar list and the group hub**, not on Start.
+- **Open Funktionen show in the calendar list and the group hub**, not on Start. *(Superseded
+  2026-11-11 by phase 14: open polls and lists she owes join Start's open answers.)*
 - Members who left a group do **not** keep its past entries. Poll results stay visible before
   voting.
 
@@ -558,6 +559,41 @@ Decisions taken while building phase 13:
 - **Form people picker:** beyond eight chosen people the rest collapse behind *+N weitere*, which
   expands the whole list.
 - Who "she" is comes from `me.person.id`; no server change was needed.
+
+### Phase 14 — Open Funktionen on Start
+Goal: Start's open answers (the ring on the calendar tile and *Deine offenen Antworten*) cover
+every Funktion she still owes, not only Zu-/Absage. Florian ruled on 2026-11-11, reversing "never
+on Start" for Umfrage and Eintragsliste.
+- [x] Start read: every calendar entry carries `openPolls` (question, single/multi, anonymous, options with `viewerChose`, `isOwed`) and `openSignUpLists` (title, hint, `isOwed`, her line's text), loaded in one batch per read
+- [x] Owed on Start = Zu-/Absage owed, or an open poll she has not voted in, or an open list she holds no line on; such entries enter the Start window and its bands like owed Zu-/Absage (Training 14 days, else 42)
+- [x] Ring counts every owed item; calendar tile marks *Antwort offen* when anything is owed
+- [x] *Deine offenen Antworten* lists each entry once with what she owes on it: Zu-/Absage, a ballot to vote inline, a list with the *Dein Eintrag* field
+- [x] Integration and pure-function tests
+
+Decisions taken while building phase 14:
+- **Owed follows phase 12's rule.** Every entry on Start is already hers (`CalendarTies.IsHers`),
+  which is the same gate as `mayAnswer`, so the read lists every still-open poll and list of an
+  entry; closed ones are left out. An entry she declined stays off Start, polls included.
+- **Reuse the calendar loaders.** `PollsOfEntriesAsync` and `SignUpListsOfEntriesAsync` run once
+  over the entries kept for her; `OpenFunctionsOfEntries` maps them to the Start shapes.
+- **One header per entry, items held while open.** The sheet holds the keys of the items owed
+  when it opened (`attendance-…`, `poll-…`, `sign-up-list-…`), so an answered item stays and shows
+  its answer until the sheet closes. Items of one entry sit under one entry header (a first build
+  repeated the header per item, which read as three separate dates). Within an entry, Zu-/Absage
+  comes first, then the Funktionen in their order.
+- **Start re-reads on votes and lines.** The Start read (and the group calendar, which carries
+  `openFunctions` since phase 12) now depends on `calendarPollVote` and `calendarSignUpLine`;
+  before, a vote did not refresh it. The Start ballot keeps the choice it sent until fresh poll
+  data arrives, so a quick second tap on a multiple-choice poll builds on the first.
+- **Ballot without results.** The Start ballot shows options only (no counts, no bars); results
+  stay on the entry. `KkPollBallot.Choice` takes `count` and `percent` as optional for this.
+  Single choice votes on tap, multiple choice toggles each option at once.
+- **List row:** title, hint and the *Du* box; after signing it shows her line read-only. Editing
+  and withdrawing stay on the entry.
+- **Copy:** the ring keeps "N Antworten offen" (voting and signing up are answers too); the tile
+  mark reads *Antwort offen* instead of *Zu-/Absage offen*.
+- **Left as is:** the Start calendar sheet lines, the week strip and the spoken entry name still
+  mark Zu-/Absage only.
 
 ## Risks & alternatives
 

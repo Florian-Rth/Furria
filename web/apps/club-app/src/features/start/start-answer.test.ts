@@ -19,6 +19,8 @@ const entry = (calendarEntryId: number, attendance: StartAttendance | null): Sta
   viewerGroupIds: [],
   viewerRuns: null,
   attendance,
+  openPolls: [],
+  openSignUpLists: [],
   description: null,
   event: null,
 });

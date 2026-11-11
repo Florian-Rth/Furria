@@ -148,6 +148,8 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
             ViewerGroupIds = entry.ViewerGroupIds,
             ViewerRuns = entry.ViewerRuns is null ? null : ToDto(entry.ViewerRuns),
             Attendance = entry.Attendance is null ? null : ToDto(entry.Attendance),
+            OpenPolls = [.. entry.OpenPolls.Select(ToDto)],
+            OpenSignUpLists = [.. entry.OpenSignUpLists.Select(ToDto)],
             Description = entry.Description,
             Event = entry.Event is { } tiedEvent ? ToDto(tiedEvent) : null,
         };
@@ -179,6 +181,37 @@ public sealed class GetStart : EndpointWithoutRequest<GetStartResponse>
 
     private static StartAttendanceDto ToDto(StartAttendance attendance) =>
         new() { ViewerAnswer = attendance.ViewerAnswer, IsOwed = attendance.IsOwed };
+
+    private static StartPollDto ToDto(StartPoll poll) =>
+        new()
+        {
+            PollId = poll.PollId,
+            Position = poll.Position,
+            Question = poll.Question,
+            AllowsMultipleChoices = poll.AllowsMultipleChoices,
+            IsAnonymous = poll.IsAnonymous,
+            IsOwed = poll.IsOwed,
+            Options = [.. poll.Options.Select(ToDto)],
+        };
+
+    private static StartPollOptionDto ToDto(StartPollOption option) =>
+        new()
+        {
+            OptionId = option.OptionId,
+            Label = option.Label,
+            ViewerChose = option.ViewerChose,
+        };
+
+    private static StartSignUpListDto ToDto(StartSignUpList list) =>
+        new()
+        {
+            SignUpListId = list.SignUpListId,
+            Position = list.Position,
+            Title = list.Title,
+            Hint = list.Hint,
+            IsOwed = list.IsOwed,
+            ViewerText = list.ViewerText,
+        };
 
     private static StartAnnouncementDto ToDto(StartAnnouncementSummary announcement) =>
         new()
@@ -369,6 +402,10 @@ public sealed record StartEntryDto
 
     public required StartAttendanceDto? Attendance { get; init; }
 
+    public required IReadOnlyList<StartPollDto> OpenPolls { get; init; }
+
+    public required IReadOnlyList<StartSignUpListDto> OpenSignUpLists { get; init; }
+
     public required string? Description { get; init; }
 
     public required StartEventDto? Event { get; init; }
@@ -417,6 +454,47 @@ public sealed record StartAttendanceDto
     public required AttendanceAnswer? ViewerAnswer { get; init; }
 
     public required bool IsOwed { get; init; }
+}
+
+public sealed record StartPollDto
+{
+    public required int PollId { get; init; }
+
+    public required int Position { get; init; }
+
+    public required string Question { get; init; }
+
+    public required bool AllowsMultipleChoices { get; init; }
+
+    public required bool IsAnonymous { get; init; }
+
+    public required bool IsOwed { get; init; }
+
+    public required IReadOnlyList<StartPollOptionDto> Options { get; init; }
+}
+
+public sealed record StartPollOptionDto
+{
+    public required int OptionId { get; init; }
+
+    public required string Label { get; init; }
+
+    public required bool ViewerChose { get; init; }
+}
+
+public sealed record StartSignUpListDto
+{
+    public required int SignUpListId { get; init; }
+
+    public required int Position { get; init; }
+
+    public required string Title { get; init; }
+
+    public required string? Hint { get; init; }
+
+    public required bool IsOwed { get; init; }
+
+    public required string? ViewerText { get; init; }
 }
 
 public sealed record StartAnnouncementDto

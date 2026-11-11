@@ -366,6 +366,30 @@ public sealed class StartComposerTests
         Assert.Equal([1, 3], EntryIdsOf(start));
     }
 
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public void Should_KeepAnEntry_When_SheOwesOnlyAPollOrAListInsideTheOwedHorizon(
+        bool owesPoll,
+        bool owesList
+    )
+    {
+        var start = StartComposer.Compose(
+            Nothing with
+            {
+                Entries =
+                [
+                    EntryAt(1, OnDay(1, 18, 0)),
+                    WithFunctions(EntryAt(2, OnDay(12, 19, 0)), owesPoll, owesList),
+                    WithFunctions(EntryAt(3, OnDay(12, 20, 0)), owesPoll: false, owesList: false),
+                ],
+            },
+            TuesdayEvening
+        );
+
+        Assert.Equal([1, 2], EntryIdsOf(start));
+    }
+
     [Fact]
     public void Should_KeepAnEntryHerGroupPerformsAt_When_ItStartsWithinThreeWeeks()
     {
@@ -637,6 +661,40 @@ public sealed class StartComposerTests
             Attendance = new StartAttendance { ViewerAnswer = null, IsOwed = true },
         };
 
+    private static StartEntrySummary WithFunctions(
+        StartEntrySummary entry,
+        bool owesPoll,
+        bool owesList
+    ) =>
+        entry with
+        {
+            OpenPolls =
+            [
+                new StartPoll
+                {
+                    PollId = entry.CalendarEntryId,
+                    Position = 1,
+                    Question = "Was essen wir?",
+                    AllowsMultipleChoices = false,
+                    IsAnonymous = false,
+                    IsOwed = owesPoll,
+                    Options = [],
+                },
+            ],
+            OpenSignUpLists =
+            [
+                new StartSignUpList
+                {
+                    SignUpListId = entry.CalendarEntryId,
+                    Position = 2,
+                    Title = "Mitbringen",
+                    Hint = null,
+                    IsOwed = owesList,
+                    ViewerText = owesList ? null : "Salat",
+                },
+            ],
+        };
+
     private static StartEntrySummary OnStage(StartEntrySummary entry) =>
         entry with
         {
@@ -665,6 +723,8 @@ public sealed class StartComposerTests
             ViewerGroupIds = [],
             ViewerRuns = null,
             Attendance = null,
+            OpenPolls = [],
+            OpenSignUpLists = [],
             Description = null,
             Event = null,
         };

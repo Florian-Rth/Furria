@@ -9,7 +9,6 @@ import type { KkStartTileWhenTone } from '@furria/ui/when-tone';
 import { ATTENDANCE_LABELS } from '@/lib/calendar-copy';
 import { toPeekId } from '@/lib/peek';
 import {
-  answerTallyOf,
   entryIconOf,
   entryToneOf,
   splitCalendar,
@@ -17,6 +16,7 @@ import {
   toEntryMetaLine,
   toTileWhen,
 } from '../calendar-tile';
+import { toOwedTally } from '../owed-items';
 import type { StartEntry } from '../schemas';
 import type { StartPanelOf } from '../start-board';
 import { isEntryRunningAt, toEntryAccessibleName, toRunningProgress } from '../start-labels';
@@ -72,7 +72,7 @@ export interface CalendarTileView {
   ring: OwedRingView | null;
 }
 
-const OWED_LABEL = 'Zu-/Absage offen';
+const OWED_LABEL = 'Antwort offen';
 const THUMB_SIZES = '6rem';
 
 const markOf = (entry: StartEntry): EntryMarkView | null => {
@@ -98,7 +98,7 @@ export const useCalendarTile = (
   const sheet = useKkSheetCommands();
   const { now } = board;
   const split = splitCalendar(panel.entries, panel.shownCount);
-  const tally = answerTallyOf(panel.entries);
+  const tally = toOwedTally(panel.entries);
 
   const opener = (entry: StartEntry) => (): void => {
     sheet.open(toPeekId('entry', entry.calendarEntryId));

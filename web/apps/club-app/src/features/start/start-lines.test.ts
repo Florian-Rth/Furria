@@ -43,6 +43,8 @@ const entry = (overrides: Partial<StartEntry>): StartEntry => ({
   viewerGroupIds: [],
   viewerRuns: null,
   attendance: null,
+  openPolls: [],
+  openSignUpLists: [],
   description: null,
   event: null,
   ...overrides,
