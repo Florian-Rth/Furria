@@ -26,9 +26,9 @@ describe('buildOrganizationJsonLd', () => {
       '@context': 'https://schema.org',
       '@type': 'Organization',
       name: 'Furrscher Carnevals Club e.V.',
-      alternateName: 'FURRIA',
+      alternateName: ['FCC Großfurra', 'FCC', 'FURRIA'],
       url: 'https://furrscher-carnevals-club.de/',
-      logo: 'https://furrscher-carnevals-club.de/apple-touch-icon.png',
+      logo: 'https://furrscher-carnevals-club.de/club-logo.png',
       foundingDate: '1990',
       email: 'info@example.test',
       address: {

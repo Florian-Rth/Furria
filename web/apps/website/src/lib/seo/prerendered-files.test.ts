@@ -27,6 +27,15 @@ describe('prerenderedFiles', () => {
     );
   });
 
+  it.each([
+    ['index.html', true],
+    ['club/index.html', false],
+  ])('names the site for search engines in %s: %s', (fileName, namesSite) => {
+    const page = prerenderedFiles(TEMPLATE).find((file) => file.fileName === fileName);
+
+    expect(page?.source.includes('"@type":"WebSite"')).toBe(namesSite);
+  });
+
   it('keeps the shell for unknown paths out of the index', () => {
     const shell = prerenderedFiles(TEMPLATE).find((file) => file.fileName === 'app-shell.html');
 

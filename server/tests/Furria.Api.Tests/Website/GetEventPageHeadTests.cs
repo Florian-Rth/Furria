@@ -42,7 +42,7 @@ public sealed class GetEventPageHeadTests : IClassFixture<ApiTestFixture>
                 );
                 Assert.Contains(Meta("og:url", canonical), html);
                 Assert.Contains(
-                    "<title data-page-head>1. Prunksitzung 2026/27 · FURRIA</title>",
+                    "<title data-page-head>1. Prunksitzung 2026/27 · FCC Großfurra</title>",
                     html
                 );
                 Assert.Contains(Meta("og:description", "Garde &amp; Bütt"), html);

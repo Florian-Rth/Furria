@@ -30,7 +30,7 @@ public sealed class GetNewsPageHeadTests : IClassFixture<ApiTestFixture>
         var (status, html) = await PageHeadAsync(_fixture, Kind, "motto-verkuendet");
 
         Assert.Equal(HttpStatusCode.OK, status);
-        Assert.Contains("<title data-page-head>Motto verkündet · FURRIA</title>", html);
+        Assert.Contains("<title data-page-head>Motto verkündet · FCC Großfurra</title>", html);
         Assert.Contains(
             "<meta data-page-head name=\"description\" content=\"&quot;Hau rein&quot;\">",
             html

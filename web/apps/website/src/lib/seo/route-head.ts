@@ -14,9 +14,13 @@ export interface PageHeadInput {
 
 export const SITE_ORIGIN = 'https://furrscher-carnevals-club.de';
 
-export const SITE_NAME = 'FURRIA';
+export const SITE_NAME = 'Furrscher Carnevals Club';
 
-export const pageTitle = (name: string): string => `${name} · ${SITE_NAME}`;
+export const SITE_ALTERNATE_NAMES = ['FCC Großfurra', 'FCC', 'FURRIA'];
+
+const PAGE_TITLE_SUFFIX = 'FCC Großfurra';
+
+export const pageTitle = (name: string): string => `${name} · ${PAGE_TITLE_SUFFIX}`;
 
 export const NO_INDEX_META: RouteHead['meta'][number] = { name: 'robots', content: 'noindex' };
 
