@@ -221,6 +221,7 @@
     "./KkNumberField": "./src/KkNumberField.tsx",
     "./KkOfficeHead": "./src/KkOfficeHead.tsx",
     "./KkOfficeMark": "./src/KkOfficeMark.tsx",
+    "./KkOrbitScene": "./src/KkOrbitScene/KkOrbitScene.tsx",
     "./KkOutcomeNote": "./src/KkOutcomeNote.tsx",
     "./KkOverlapGauge": "./src/KkOverlapGauge.tsx",
     "./KkPageSketch": "./src/KkPageSketch.tsx",
